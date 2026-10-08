@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     log.error("e2e_auth_test_failed", { err: message });
-    return log.respond(new Response(JSON.stringify({ error: message }), {
+    return log.respond(new Response(JSON.stringify({ error: "e2e_auth_test_failed" }), {
       status: 500, 
       headers: { ...corsHeaders, "Content-Type": "application/json" } 
     }));

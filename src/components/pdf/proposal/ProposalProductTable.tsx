@@ -56,6 +56,60 @@ interface Props {
   };
 }
 
+function ProposalTableCode({ item }: { item: ProposalItem }) {
+  const code = item.composedCode ?? item.sku;
+  if (!code) return null;
+  const background = item.colorHex ?? "#2e7d32";
+  const hex = background.replace("#", "");
+  const luminance = (0.299 * parseInt(hex.substring(0, 2), 16) + 0.587 * parseInt(hex.substring(2, 4), 16) + 0.114 * parseInt(hex.substring(4, 6), 16)) / 255;
+  return <div style={{ display: "block", marginBottom: "4px" }}><span style={{ display: "inline-block", background, color: luminance > 0.5 ? "#1a1a1a" : "#ffffff", fontSize: "9px", padding: "2px 7px", borderRadius: "3px", fontWeight: 700, fontFamily: "'Roboto', sans-serif", whiteSpace: "nowrap", border: luminance > 0.85 ? "1px solid #ccc" : "1px solid transparent" }}>{code}</span></div>;
+}
+
+function ProposalTableImage({ item, visible }: { item: ProposalItem; visible: boolean }) {
+  if (!visible) return null;
+  return <td style={{ padding: "1px", textAlign: "center", verticalAlign: "middle" }}>{item.imageUrl ? <ProductImageTransparent src={item.imageUrl} alt={item.name} /> : <div style={{ width: "92px", height: "92px", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto", boxSizing: "border-box" }}><span style={{ fontSize: "9px", color: "#ccc" }}>—</span></div>}</td>;
+}
+
+function ProposalTableDescription({ item, engraving }: { item: ProposalItem; engraving: string }) {
+  return <td style={{ padding: "8px 10px", verticalAlign: "middle" }}><ProposalTableCode item={item} /><div style={{ fontWeight: 800, color: "#111", fontSize: "13px", lineHeight: "1.3", marginBottom: "2px" }}>{item.name}</div>{item.description ? <span style={{ display: "block", fontSize: "11px", color: "#666", marginBottom: "4px", lineHeight: "1.4", maxWidth: "380px" }}>{item.description}</span> : null}{engraving ? <table style={{ borderCollapse: "collapse", marginTop: "2px" }}><tbody><tr><td style={{ width: "3px", backgroundColor: "#00796b", padding: 0 }} /><td style={{ backgroundColor: "#e0f2f1", padding: "3px 7px", borderRadius: "0 4px 4px 0" }}><span style={{ fontSize: "10px", color: "#00796b", fontWeight: 700 }}>✦ Gravação: </span><span style={{ fontSize: "10px", color: "#00796b", fontWeight: 500 }}>{engraving}</span></td></tr></tbody></table> : null}{!engraving && item.color ? <span style={{ display: "block", fontSize: "10px", color: "#666", marginTop: "2px" }}>Cor: {item.color}</span> : null}</td>;
+}
+
+function ProposalTablePrice({ hidden, unitPrice, discount }: { hidden: boolean | undefined; unitPrice: number; discount: number }) {
+  return <td style={{ padding: "8px 8px", textAlign: "right", verticalAlign: "middle", fontVariantNumeric: "tabular-nums" }}>{hidden ? null : <><span style={{ fontSize: "13px", fontWeight: 600, color: "#333" }}>{fmt(unitPrice)}</span>{discount > 0 ? <span style={{ display: "block", fontSize: "10px", color: "#e53935", marginTop: "2px", fontWeight: 600 }}>-{fmt(discount)}</span> : null}</>}</td>;
+}
+
+type ProposalPersonalization = NonNullable<ProposalItem['personalizations']>[number];
+
+function personalizationDimensions(personalization: ProposalPersonalization) {
+  const current = { width: personalization.width_cm, height: personalization.height_cm };
+  if (current.width && current.height) return current;
+  const match = personalization.notes?.match(/\|\s*([\d.]+)×([\d.]+)cm/);
+  if (!match) return current;
+  return {
+    width: current.width || parseFloat(match[1] || "0"),
+    height: current.height || parseFloat(match[2] || "0"),
+  };
+}
+
+function dimensionDescription(width: number | null | undefined, height: number | null | undefined) {
+  if (!width || !height) return "";
+  return ` ${width}×${height}cm`;
+}
+
+function colorDescription(count: number | null | undefined) {
+  if (!count) return "";
+  return ` | ${count} cor${count > 1 ? "es" : ""}`;
+}
+
+function personalizationDescription(personalization: ProposalPersonalization) {
+  const { width, height } = personalizationDimensions(personalization);
+  const material = personalization.material ? ` | ${personalization.material}` : "";
+  return personalization.technique_name
+    + dimensionDescription(width, height)
+    + colorDescription(personalization.colors_count)
+    + material;
+}
+
 export function ProposalProductTable({ items, showHeader = true, startIndex = 0, options = {} }: Props) {
   const hasAnyImage = !options.hidePhotos && items.some((item) => !!item.imageUrl);
 
@@ -69,7 +123,7 @@ export function ProposalProductTable({ items, showHeader = true, startIndex = 0,
       groups.push({ kitName: gid ? (item.kit_name || "Kit") : null, items: [] });
       currentGroupId = gid;
     }
-    groups[groups.length - 1]!.items.push({ item, globalIdx: startIndex + idx });
+    groups[groups.length - 1]?.items.push({ item, globalIdx: startIndex + idx });
   });
 
   return (
@@ -126,107 +180,19 @@ export function ProposalProductTable({ items, showHeader = true, startIndex = 0,
               const itemDiscount = item.discount || 0;
               const isEven = globalIdx % 2 === 0;
 
-              const gravacao = item.personalizations?.map((p) => {
-                let s = p.technique_name;
-                let widthCm = p.width_cm;
-                let heightCm = p.height_cm;
-                if ((!widthCm || !heightCm) && p.notes) {
-                  const dimMatch = p.notes.match(/\|\s*([\d.]+)×([\d.]+)cm/);
-                  if (dimMatch) {
-                    widthCm = parseFloat(dimMatch[1]!);
-                    heightCm = parseFloat(dimMatch[2]!);
-                  }
-                }
-                if (widthCm && heightCm) s += ` ${widthCm}×${heightCm}cm`;
-                if (p.colors_count) s += ` | ${p.colors_count} cor${p.colors_count > 1 ? "es" : ""}`;
-                if (p.material) s += ` | ${p.material}`;
-                return s;
-              }).join(" · ");
+              const gravacao = item.personalizations?.map(personalizationDescription).join(" · ");
 
               return (
                 <tr key={idx} style={{
                   backgroundColor: isEven ? "#ffffff" : "#f9fafb",
                   borderBottom: "1px solid #eef0f2",
                 }}>
-                  {hasAnyImage && (
-                    <td style={{ padding: "1px", textAlign: "center", verticalAlign: "middle" }}>
-                      {item.imageUrl ? (
-                        <ProductImageTransparent src={item.imageUrl} alt={item.name} />
-                      ) : (
-                        <div style={{
-                          width: "92px", height: "92px",
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          margin: "0 auto", boxSizing: "border-box",
-                        }}>
-                          <span style={{ fontSize: "9px", color: "#ccc" }}>—</span>
-                        </div>
-                      )}
-                    </td>
-                  )}
-                  <td style={{ padding: "8px 10px", verticalAlign: "middle" }}>
-                    {(item.composedCode || item.sku) && (() => {
-                      const bgColor = item.colorHex || "#2e7d32";
-                      const hex = bgColor.replace("#", "");
-                      const r = parseInt(hex.substring(0, 2), 16);
-                      const g = parseInt(hex.substring(2, 4), 16);
-                      const b = parseInt(hex.substring(4, 6), 16);
-                      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-                      const textColor = luminance > 0.5 ? "#1a1a1a" : "#ffffff";
-                       return (
-                        <div style={{ display: "block", marginBottom: "4px" }}>
-                          <span style={{
-                            display: "inline-block", background: bgColor, color: textColor,
-                            fontSize: "9px", padding: "2px 7px", borderRadius: "3px",
-                            fontWeight: 700, fontFamily: "'Roboto', sans-serif", whiteSpace: "nowrap",
-                            border: luminance > 0.85 ? "1px solid #ccc" : "1px solid transparent",
-                          }}>
-                            {item.composedCode || item.sku}
-                          </span>
-                        </div>
-                       );
-                     })()}
-                     <div style={{ fontWeight: 800, color: "#111", fontSize: "13px", lineHeight: "1.3", marginBottom: "2px" }}>
-                       {item.name}
-                     </div>
-                     {item.description && (
-                       <span style={{ display: "block", fontSize: "11px", color: "#666", marginBottom: "4px", lineHeight: "1.4", maxWidth: "380px" }}>
-                         {item.description}
-                       </span>
-                     )}
-                     {gravacao && (
-                       <table style={{ borderCollapse: "collapse", marginTop: "2px" }}>
-                         <tbody>
-                           <tr>
-                             <td style={{ width: "3px", backgroundColor: "#00796b", padding: 0 }} />
-                             <td style={{ backgroundColor: "#e0f2f1", padding: "3px 7px", borderRadius: "0 4px 4px 0" }}>
-                               <span style={{ fontSize: "10px", color: "#00796b", fontWeight: 700 }}>✦ Gravação: </span>
-                               <span style={{ fontSize: "10px", color: "#00796b", fontWeight: 500 }}>{gravacao}</span>
-                             </td>
-                           </tr>
-                         </tbody>
-                       </table>
-                     )}
-                    {!gravacao && item.color && (
-                      <span style={{ display: "block", fontSize: "10px", color: "#666", marginTop: "2px" }}>
-                        Cor: {item.color}
-                      </span>
-                    )}
-                  </td>
+                  <ProposalTableImage item={item} visible={hasAnyImage} />
+                  <ProposalTableDescription item={item} engraving={gravacao ?? ""} />
                   <td style={{ padding: "8px 6px", textAlign: "center", verticalAlign: "middle", fontWeight: 800, fontSize: "14px", color: "#222", fontVariantNumeric: "tabular-nums" }}>
                     {item.quantity}
                   </td>
-                  <td style={{ padding: "8px 8px", textAlign: "right", verticalAlign: "middle", fontVariantNumeric: "tabular-nums" }}>
-                    {!options.hidePrices && (
-                      <>
-                        <span style={{ fontSize: "13px", fontWeight: 600, color: "#333" }}>{fmt(allInUnitPrice)}</span>
-                        {itemDiscount > 0 && (
-                          <span style={{ display: "block", fontSize: "10px", color: "#e53935", marginTop: "2px", fontWeight: 600 }}>
-                            -{fmt(itemDiscount)}
-                          </span>
-                        )}
-                      </>
-                    )}
-                  </td>
+                  <ProposalTablePrice hidden={options.hidePrices} unitPrice={allInUnitPrice} discount={itemDiscount} />
                 </tr>
               );
             })}

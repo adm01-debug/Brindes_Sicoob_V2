@@ -61,6 +61,29 @@ function deriveStatus(row: { revoked_at: string | null; expires_at: string | nul
   return "active";
 }
 
+function searchableCreatorEmail(row: McpKeyRow): string {
+  return row.creator_email ?? "";
+}
+
+function sortMcpKeys(rows: McpKeyRow[], sort: SortKey): McpKeyRow[] {
+  const sorted = [...rows];
+  if (sort === "expires_asc") {
+    return sorted.sort((a, b) => {
+      const left = a.expires_at ? new Date(a.expires_at).getTime() : Number.POSITIVE_INFINITY;
+      const right = b.expires_at ? new Date(b.expires_at).getTime() : Number.POSITIVE_INFINITY;
+      return left - right;
+    });
+  }
+  if (sort === "last_used_desc") {
+    return sorted.sort((a, b) => {
+      const left = a.last_used_at ? new Date(a.last_used_at).getTime() : 0;
+      const right = b.last_used_at ? new Date(b.last_used_at).getTime() : 0;
+      return right - left;
+    });
+  }
+  return sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+}
+
 export function useMcpKeys() {
   const { challenge } = useDevChallenge();
   const [rows, setRows] = useState<McpKeyRow[]>([]);
@@ -136,7 +159,7 @@ export function useMcpKeys() {
         (r) =>
           r.name.toLowerCase().includes(q) ||
           r.key_prefix.toLowerCase().includes(q) ||
-          (r.creator_email ?? "").toLowerCase().includes(q),
+          searchableCreatorEmail(r).toLowerCase().includes(q),
       );
     }
     if (filters.status !== "all") {
@@ -162,28 +185,7 @@ export function useMcpKeys() {
         out = out.filter((r) => new Date(r.created_at).getTime() <= to);
       }
     }
-    const sorted = [...out];
-    switch (filters.sort) {
-      case "expires_asc":
-        sorted.sort((a, b) => {
-          const ax = a.expires_at ? new Date(a.expires_at).getTime() : Number.POSITIVE_INFINITY;
-          const bx = b.expires_at ? new Date(b.expires_at).getTime() : Number.POSITIVE_INFINITY;
-          return ax - bx;
-        });
-        break;
-      case "last_used_desc":
-        sorted.sort((a, b) => {
-          const ax = a.last_used_at ? new Date(a.last_used_at).getTime() : 0;
-          const bx = b.last_used_at ? new Date(b.last_used_at).getTime() : 0;
-          return bx - ax;
-        });
-        break;
-      default:
-        sorted.sort(
-          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-        );
-    }
-    return sorted;
+    return sortMcpKeys(out, filters.sort);
   }, [rows, filters]);
 
   /** Lista única de criadores presentes nas chaves (para popular o filtro). */

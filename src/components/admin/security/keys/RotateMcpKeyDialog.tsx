@@ -34,6 +34,43 @@ interface Props {
   onRotated: () => void;
 }
 
+function validateRotation(source: McpKeyRow, justification: string, confirmation: string): boolean {
+  if (!source.is_full) return true;
+  if (justification.trim().length < FULL_SCOPE_MIN_JUSTIFICATION) {
+    toast.error(`Justificativa precisa de ao menos ${FULL_SCOPE_MIN_JUSTIFICATION} caracteres.`);
+    return false;
+  }
+  if (confirmation !== FULL_SCOPE_CONFIRMATION) {
+    toast.error(`Digite "${FULL_SCOPE_CONFIRMATION}" para confirmar.`);
+    return false;
+  }
+  return true;
+}
+
+function buildRotationRequest(source: McpKeyRow, justification: string, confirmation: string) {
+  if (source.is_full) {
+    return {
+      action: "mcp_full_issue" as const,
+      actionLabel: `Rotacionar chave MCP FULL "${source.name}"`,
+      body: {
+        source_key_id: source.id,
+        justification: justification.trim(),
+        confirmation_phrase: confirmation,
+      },
+    };
+  }
+
+  return {
+    action: "mcp_key_rotate" as const,
+    actionLabel: `Rotacionar chave MCP "${source.name}"`,
+    body: {
+      source_key_id: source.id,
+      justification: null,
+      confirmation_phrase: null,
+    },
+  };
+}
+
 export function RotateMcpKeyDialog({ source, open, onOpenChange, onRotated }: Props) {
   const [justification, setJustification] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -55,40 +92,26 @@ export function RotateMcpKeyDialog({ source, open, onOpenChange, onRotated }: Pr
 
   const submit = async () => {
     if (!source) return;
-    if (source.is_full) {
-      if (justification.trim().length < FULL_SCOPE_MIN_JUSTIFICATION) {
-        toast.error(`Justificativa precisa de ao menos ${FULL_SCOPE_MIN_JUSTIFICATION} caracteres.`);
-        return;
-      }
-      if (confirmation !== FULL_SCOPE_CONFIRMATION) {
-        toast.error(`Digite "${FULL_SCOPE_CONFIRMATION}" para confirmar.`);
-        return;
-      }
-    }
+    if (!validateRotation(source, justification, confirmation)) return;
 
     setSubmitting(true);
     try {
+      const request = buildRotationRequest(source, justification, confirmation);
       const result = await invokeFullScopeFunction<
         { source_key_id: string; justification: string | null; confirmation_phrase: string | null },
         { ok: boolean; key?: string }
-      >({
+      >(({
         challenge,
         functionName: "mcp-keys-rotate",
-        action: source.is_full ? "mcp_full_issue" : "mcp_key_rotate",
-        actionLabel: source.is_full
-          ? `Rotacionar chave MCP FULL "${source.name}"`
-          : `Rotacionar chave MCP "${source.name}"`,
+        action: request.action,
+        actionLabel: request.actionLabel,
         targetRef: source.id,
-        body: {
-          source_key_id: source.id,
-          justification: source.is_full ? justification.trim() : null,
-          confirmation_phrase: source.is_full ? confirmation : null,
-        },
-      });
+        body: request.body,
+      }));
 
-      if (result.status === "cancelled" || result.status === "step_up_error") return;
+      if ((result.status === "cancelled" || result.status === "step_up_error")) return;
       if (result.status === "error") {
-        toast.error("Falha ao rotacionar", { description: sanitizeError(result.error ?? result.data) });
+        toast.error("Falha ao rotacionar", ({ description: sanitizeError(result.error ?? result.data) }));
         return;
       }
       if (!result.data.key) {

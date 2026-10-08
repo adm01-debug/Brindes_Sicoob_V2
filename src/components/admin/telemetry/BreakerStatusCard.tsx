@@ -10,6 +10,7 @@
  * Bypass total no servidor: o endpoint funciona mesmo com circuito aberto,
  * o que é exatamente o que torna este card útil para diagnóstico em outage.
  */
+import { isNullish } from "@/components/admin/utils/nullish";
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -84,7 +85,38 @@ function stateBadge(state: BreakerState) {
   );
 }
 
-export function BreakerStatusCard() {
+function FailureTile({ snapshot }: { snapshot: BreakerStatusResponse }) {
+  const breaker = snapshot.breaker;
+  let color = '';
+  if (breaker && snapshot.failures >= breaker.failureThreshold) color = 'text-destructive';
+  else if (snapshot.failures > 0) color = 'text-warning';
+  return <div className="p-3 rounded-lg border border-border/50 bg-muted/30"><p className="text-[10px] uppercase tracking-wide text-muted-foreground">Falhas (janela)</p><p className={`font-display text-2xl font-bold tabular-nums ${color}`}>{snapshot.failures}{breaker && <span className="text-sm text-muted-foreground font-normal"> / {breaker.failureThreshold}</span>}</p><p className="text-[10px] text-muted-foreground mt-0.5">{breaker ? `janela ${fmtMs(breaker.windowMs)}` : '—'}</p></div>;
+}
+
+function OpenedTile({ openedAt }: { openedAt: number }) {
+  const opened = openedAt > 0;
+  return <div className="p-3 rounded-lg border border-border/50 bg-muted/30"><p className="text-[10px] uppercase tracking-wide text-muted-foreground">Aberto desde</p><p className="font-display text-2xl font-bold tabular-nums">{opened ? new Date(openedAt).toLocaleTimeString() : '—'}</p><p className="text-[10px] text-muted-foreground mt-0.5">{opened ? 'última transição p/ OPEN' : 'nunca abriu nesta vida'}</p></div>;
+}
+
+function ResetTile({ countdown, resetAt }: { countdown: number | null; resetAt: number | null }) {
+  const active = !isNullish(countdown) && countdown > 0;
+  return <div className="p-3 rounded-lg border border-border/50 bg-muted/30"><p className="text-[10px] uppercase tracking-wide text-muted-foreground">Reset em</p><p className={`font-display text-2xl font-bold tabular-nums ${active ? 'text-warning' : ''}`}>{isNullish(countdown) ? '—' : fmtCountdown(countdown)}</p><p className="text-[10px] text-muted-foreground mt-0.5">{resetAt ? `→ ${new Date(resetAt).toLocaleTimeString()}` : 'circuito não está aberto'}</p></div>;
+}
+
+function SnapshotView({ countdown, snapshot }: { countdown: number | null; snapshot: BreakerStatusResponse }) {
+  return <><div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div className="p-3 rounded-lg border border-border/50 bg-muted/30"><p className="text-[10px] uppercase tracking-wide text-muted-foreground">Estado</p><p className="font-display text-2xl font-bold tabular-nums">{snapshot.state}</p><p className="text-[10px] text-muted-foreground mt-0.5">isolate atual</p></div>
+    <FailureTile snapshot={snapshot} /><OpenedTile openedAt={snapshot.openedAt} /><ResetTile countdown={countdown} resetAt={snapshot.willResetAt} />
+  </div>{snapshot.breaker && <p className="text-[10px] text-muted-foreground mt-3">Config: threshold {snapshot.breaker.failureThreshold} falhas em {fmtMs(snapshot.breaker.windowMs)} → OPEN por {fmtMs(snapshot.breaker.openDurationMs)} · atualizado {new Date(snapshot.ts).toLocaleTimeString()}</p>}</>;
+}
+
+function BreakerContent({ countdown, error, loading, snapshot }: {
+  countdown: number | null; error: string | null; loading: boolean; snapshot: BreakerStatusResponse | null;
+}) {
+  return <CardContent>{error && <div className="mb-3 p-2 rounded border border-destructive/30 bg-destructive/5 text-xs text-destructive">Erro ao consultar breaker: {error}</div>}{snapshot ? <SnapshotView countdown={countdown} snapshot={snapshot} /> : <div className="text-center py-6 text-sm text-muted-foreground">{loading ? 'Carregando…' : 'Sem dados.'}</div>}</CardContent>;
+}
+
+function useBreakerStatus() {
   const [snap, setSnap] = useState<BreakerStatusResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -128,10 +160,15 @@ export function BreakerStatusCard() {
     if (!snap?.willResetAt) return null;
     return Math.max(0, snap.willResetAt - now);
   }, [snap, now]);
+  return { countdown, error, fetchStatus, loading, snap };
+}
+
+export function BreakerStatusCard() {
+  const { countdown, error, fetchStatus, loading, snap } = useBreakerStatus();
 
   return (
     <Card>
-      <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
+      {(<CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-base flex items-center gap-2">
           Circuit Breaker — <span className="font-mono text-sm">crm-db-bridge</span>
           {snap && stateBadge(snap.state)}
@@ -141,82 +178,8 @@ export function BreakerStatusCard() {
           <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
           Atualizar
         </Button>
-      </CardHeader>
-      <CardContent>
-        {error && (
-          <div className="mb-3 p-2 rounded border border-destructive/30 bg-destructive/5 text-xs text-destructive">
-            Erro ao consultar breaker: {error}
-          </div>
-        )}
-        {!snap ? (
-          <div className="text-center py-6 text-sm text-muted-foreground">
-            {loading ? 'Carregando…' : 'Sem dados.'}
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="p-3 rounded-lg border border-border/50 bg-muted/30">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Estado</p>
-                <p className="font-display text-2xl font-bold tabular-nums">{snap.state}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">isolate atual</p>
-              </div>
-              <div className="p-3 rounded-lg border border-border/50 bg-muted/30">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Falhas (janela)</p>
-                <p
-                  className={`font-display text-2xl font-bold tabular-nums ${
-                    snap.breaker && snap.failures >= snap.breaker.failureThreshold
-                      ? 'text-destructive'
-                      : snap.failures > 0
-                        ? 'text-warning'
-                        : ''
-                  }`}
-                >
-                  {snap.failures}
-                  {snap.breaker && (
-                    <span className="text-sm text-muted-foreground font-normal">
-                      {' '}/ {snap.breaker.failureThreshold}
-                    </span>
-                  )}
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">
-                  {snap.breaker ? `janela ${fmtMs(snap.breaker.windowMs)}` : '—'}
-                </p>
-              </div>
-              <div className="p-3 rounded-lg border border-border/50 bg-muted/30">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Aberto desde</p>
-                <p className="font-display text-2xl font-bold tabular-nums">
-                  {snap.openedAt > 0 ? new Date(snap.openedAt).toLocaleTimeString() : '—'}
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">
-                  {snap.openedAt > 0 ? 'última transição p/ OPEN' : 'nunca abriu nesta vida'}
-                </p>
-              </div>
-              <div className="p-3 rounded-lg border border-border/50 bg-muted/30">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Reset em</p>
-                <p
-                  className={`font-display text-2xl font-bold tabular-nums ${
-                    countdown != null && countdown > 0 ? 'text-warning' : ''
-                  }`}
-                >
-                  {countdown != null ? fmtCountdown(countdown) : '—'}
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">
-                  {snap.willResetAt
-                    ? `→ ${new Date(snap.willResetAt).toLocaleTimeString()}`
-                    : 'circuito não está aberto'}
-                </p>
-              </div>
-            </div>
-            {snap.breaker && (
-              <p className="text-[10px] text-muted-foreground mt-3">
-                Config: threshold {snap.breaker.failureThreshold} falhas em{' '}
-                {fmtMs(snap.breaker.windowMs)} → OPEN por {fmtMs(snap.breaker.openDurationMs)}
-                {' · '}atualizado {new Date(snap.ts).toLocaleTimeString()}
-              </p>
-            )}
-          </>
-        )}
-      </CardContent>
+      </CardHeader>)}
+      <BreakerContent countdown={countdown} error={error} loading={loading} snapshot={snap} />
     </Card>
   );
 }

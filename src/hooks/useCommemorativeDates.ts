@@ -1,5 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+
+const COMMEMORATIVE_DATES_KEY = "commemorative-dates";
 
 // Tipos baseados nas respostas das RPCs
 export interface CommemorativeDate {
@@ -57,7 +59,7 @@ async function callCommemorativeDatesAPI<T>(
     throw new Error("Usuário não autenticado");
   }
 
-  const { data, error } = await supabase.functions.invoke("commemorative-dates", {
+  const { data, error } = await supabase.functions.invoke(COMMEMORATIVE_DATES_KEY, {
     body: { action, params },
   });
 
@@ -79,7 +81,7 @@ async function callCommemorativeDatesAPI<T>(
  */
 export function useActiveCommemorativeDates() {
   return useQuery({
-    queryKey: ["commemorative-dates", "active"],
+    queryKey: [COMMEMORATIVE_DATES_KEY, "active"],
     queryFn: () => callCommemorativeDatesAPI<CommemorativeDate[]>("get_active_dates"),
     staleTime: 1000 * 60 * 5, // 5 minutos
     gcTime: 1000 * 60 * 30, // 30 minutos
@@ -92,7 +94,7 @@ export function useActiveCommemorativeDates() {
  */
 export function useUpcomingCommemorativeDates(daysAhead: number = 60) {
   return useQuery({
-    queryKey: ["commemorative-dates", "upcoming", daysAhead],
+    queryKey: [COMMEMORATIVE_DATES_KEY, "upcoming", daysAhead],
     queryFn: () =>
       callCommemorativeDatesAPI<CommemorativeDate[]>("get_upcoming_dates", {
         days_ahead: daysAhead,
@@ -108,7 +110,7 @@ export function useUpcomingCommemorativeDates(daysAhead: number = 60) {
  */
 export function useCommemorativeDatesWithColors() {
   return useQuery({
-    queryKey: ["commemorative-dates", "with-colors"],
+    queryKey: [COMMEMORATIVE_DATES_KEY, "with-colors"],
     queryFn: () =>
       callCommemorativeDatesAPI<CommemorativeDateWithColors[]>("get_dates_with_colors"),
     staleTime: 1000 * 60 * 5,
@@ -128,7 +130,7 @@ export function useProductsByCommemorativeDate(
   includeAllColors: boolean = false
 ) {
   return useQuery({
-    queryKey: ["commemorative-dates", "products", slug, limit, includeAllColors],
+    queryKey: [COMMEMORATIVE_DATES_KEY, "products", slug, limit, includeAllColors],
     queryFn: () =>
       callCommemorativeDatesAPI<CommemorativeDateVariant[]>("get_products_by_date", {
         slug,

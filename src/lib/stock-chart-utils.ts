@@ -17,6 +17,9 @@ import {
   Eye,
 } from 'lucide-react';
 
+const DESTRUCTIVE_FLAG_COLORS = 'bg-destructive/15 text-destructive border-destructive/30';
+const ACCENT_FLAG_COLORS = 'bg-accent/15 text-accent-foreground border-accent/30';
+
 // ---------- Deterministic random ----------
 
 export function seededRandom(seed: number): number {
@@ -36,12 +39,12 @@ export function hashCode(str: string): number {
 // ---------- Safe velocity helpers ----------
 
 export function safeVelocityTrend(trend: number | null | undefined): number | null {
-  if (trend == null || !Number.isFinite(trend)) return null;
+  if (trend === null || trend === undefined || !Number.isFinite(trend)) return null;
   return trend;
 }
 
 export function safeNumber(value: number | null | undefined): number | null {
-  if (value == null || !Number.isFinite(value)) return null;
+  if (value === null || value === undefined || !Number.isFinite(value)) return null;
   return value;
 }
 
@@ -175,7 +178,7 @@ export function generateMockSupplierNames(productId: string): Map<string, string
   const map = new Map<string, string>();
   for (let i = 0; i < count; i++) {
     const nameIdx = (Math.floor(seededRandom(baseSeed + 400 + i) * MOCK_SUPPLIER_NAMES.length)) % MOCK_SUPPLIER_NAMES.length;
-    map.set(`mock-supplier-${i}`, MOCK_SUPPLIER_NAMES[nameIdx] ?? MOCK_SUPPLIER_NAMES[0]!);
+    map.set(`mock-supplier-${i}`, MOCK_SUPPLIER_NAMES[nameIdx] ?? MOCK_SUPPLIER_NAMES[0] ?? 'Fornecedor');
   }
   return map;
 }
@@ -229,7 +232,7 @@ export function generateMockIntelligence(productId: string): MockIntelligenceDat
     turnover_score: Math.round(seededRandom(baseSeed + 202) * 100),
     abc_classification: abc,
     is_hot_product: abc === 'A' && vel.velocity_trend > 1.1,
-    is_stockout_risk: vel.days_to_stockout != null && vel.days_to_stockout < 14,
+    is_stockout_risk: vel.days_to_stockout !== null && vel.days_to_stockout !== undefined && vel.days_to_stockout < 14,
     is_stagnant: vel.avg_daily_depletion_7d < 2,
     is_negotiation_opportunity: vel.avg_daily_depletion_7d < 3 && vel.current_stock > 500,
     has_frequent_restock: seededRandom(baseSeed + 203) > 0.6,
@@ -250,13 +253,13 @@ export const COMMERCIAL_FLAG_CONFIG: Record<IntelligenceFlag, FlagConfig> = {
   'hot-product': {
     icon: Flame,
     label: 'Sucesso no Mercado',
-    colors: 'bg-destructive/15 text-destructive border-destructive/30',
+    colors: DESTRUCTIVE_FLAG_COLORS,
     description: 'Alta saída no fornecedor — seus concorrentes estão vendendo bastante',
   },
   'stockout-risk': {
     icon: Zap,
     label: 'Esgotando Rápido',
-    colors: 'bg-accent/15 text-accent-foreground border-accent/30',
+    colors: ACCENT_FLAG_COLORS,
     description: 'Demanda do mercado está consumindo o estoque — feche antes que acabe',
   },
   'stagnant': {
@@ -280,7 +283,7 @@ export const COMMERCIAL_FLAG_CONFIG: Record<IntelligenceFlag, FlagConfig> = {
   'class-a': {
     icon: Trophy,
     label: 'Best-Seller',
-    colors: 'bg-accent/15 text-accent-foreground border-accent/30',
+    colors: ACCENT_FLAG_COLORS,
     description: 'Top 20% em vendas no mercado — produto essencial no portfólio',
   },
 };
@@ -290,13 +293,13 @@ export const OPERATIONAL_FLAG_CONFIG: Record<IntelligenceFlag, FlagConfig> = {
   'hot-product': {
     icon: Flame,
     label: 'Produto Quente',
-    colors: 'bg-destructive/15 text-destructive border-destructive/30',
+    colors: DESTRUCTIVE_FLAG_COLORS,
     description: 'Vendendo rápido no fornecedor — pode acabar em breve',
   },
   'stockout-risk': {
     icon: AlertTriangle,
     label: 'Risco de Ruptura',
-    colors: 'bg-destructive/15 text-destructive border-destructive/30',
+    colors: DESTRUCTIVE_FLAG_COLORS,
     description: 'Menos de 7 dias de estoque restante no fornecedor',
   },
   'stagnant': {
@@ -320,7 +323,7 @@ export const OPERATIONAL_FLAG_CONFIG: Record<IntelligenceFlag, FlagConfig> = {
   'class-a': {
     icon: Star,
     label: 'Classe A',
-    colors: 'bg-accent/15 text-accent-foreground border-accent/30',
+    colors: ACCENT_FLAG_COLORS,
     description: 'Top 20% em giro de estoque no fornecedor',
   },
 };
@@ -328,7 +331,7 @@ export const OPERATIONAL_FLAG_CONFIG: Record<IntelligenceFlag, FlagConfig> = {
 // ---------- Trend display helpers ----------
 
 export function formatVelocityTrendOperational(trend: number | null): { value: string; label: string } {
-  if (trend == null) return { value: '—', label: '' };
+  if (trend === null || trend === undefined) return { value: '—', label: '' };
   const pct = (trend - 1) * 100;
   if (!Number.isFinite(pct)) return { value: '—', label: '' };
   return {
@@ -338,7 +341,7 @@ export function formatVelocityTrendOperational(trend: number | null): { value: s
 }
 
 export function formatVelocityTrendCommercial(trend: number | null): { value: string; sub: string; isPositive: boolean } {
-  if (trend == null) return { value: '—', sub: '', isPositive: false };
+  if (trend === null || trend === undefined) return { value: '—', sub: '', isPositive: false };
   const pct = (trend - 1) * 100;
   if (!Number.isFinite(pct)) return { value: '—', sub: '', isPositive: false };
   return {
@@ -372,7 +375,7 @@ export function safeParseDateForChart(dateStr: string): { dateFormatted: string;
  * without unsafe double casts.
  */
 export function safePriceChanges(velocityData: unknown): number {
-  if (velocityData == null || typeof velocityData !== 'object') return 0;
+  if (velocityData === null || velocityData === undefined || typeof velocityData !== 'object') return 0;
   const record = velocityData as Record<string, unknown>;
   const val = record.price_changes_30d;
   if (typeof val === 'number' && Number.isFinite(val)) return val;
@@ -383,7 +386,7 @@ export function safePriceChanges(velocityData: unknown): number {
 
 export function isRealIntelligence(data: unknown): data is ProductIntelligenceData {
   return (
-    data != null &&
+    data !== null && data !== undefined &&
     typeof data === 'object' &&
     'product_id' in data &&
     'abc_classification' in data &&

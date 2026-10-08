@@ -1,12 +1,10 @@
-import { createContext, useContext, useEffect, useState, useRef, useCallback, type ReactNode, useMemo } from "react";
-import { type User, type Session } from "@supabase/supabase-js";
+import { createContext, useContext, useEffect, useState, useRef, useCallback, type ReactNode, useMemo, type Dispatch, type SetStateAction } from "react";
+import { type User, type Session, type AuthChangeEvent } from "@supabase/supabase-js";
 import { supabase, supabaseUrl } from "@/integrations/supabase/client";
-import { logger } from "@/lib/logger";
 import { createClientLogger } from "@/lib/telemetry/structuredLogger";
 import { checkLoginAllowed, recordFailedAttempt, clearLoginAttempts } from "@/hooks/useLoginRateLimit";
 import { authDebug, authDebugError, summarizeSession, summarizeUser } from "@/lib/auth/auth-debug";
 import { getRandomGreeting, getHighestRole } from "@/lib/auth/auth-utils";
-import { authService } from "@/services/authService";
 import { useUserRoles } from "@/hooks/auth/useUserRoles";
 import { useUserProfile } from "@/hooks/auth/useUserProfile";
 import { useAuthAAL } from "@/hooks/auth/useAuthAAL";
@@ -99,6 +97,98 @@ function hasPersistedSession(): boolean {
   }
 }
 
+function clearSensitiveBrowserData(): void {
+  try {
+    sessionStorage.clear();
+    [
+      "product-favorites",
+      "product-comparison",
+      "recently-viewed-products",
+      "duplicate_product",
+    ].forEach(key => localStorage.removeItem(key));
+  } catch (error) {
+    console.warn("Falha ao limpar armazenamento local no logout", error);
+  }
+}
+
+function notifySignedInUser(user: User): void {
+  const displayName = user.user_metadata?.full_name
+    || user.user_metadata?.name
+    || user.email?.split('@')[0]
+    || 'Usuário';
+  void import("sonner").then(({ toast }) => {
+    toast.success('🤖 Flow', {
+      description: getRandomGreeting(displayName.split(' ')[0]),
+      duration: 3000,
+      closeButton: true,
+    });
+  });
+}
+
+interface AuthStateDependencies {
+  setSession: Dispatch<SetStateAction<Session | null>>;
+  setUser: Dispatch<SetStateAction<User | null>>;
+  setIsLoading: Dispatch<SetStateAction<boolean>>;
+  fetchUserData: (userId: string) => Promise<void>;
+  clearProfile: () => void;
+  clearRoles: () => void;
+  clearAAL: () => void;
+}
+
+function handleAuthenticatedState(event: AuthChangeEvent, session: Session, deps: AuthStateDependencies): void {
+  useRecentlyViewedStore.getState().setScope(`user:${session.user.id}`);
+  if (event === 'SIGNED_IN') notifySignedInUser(session.user);
+  setTimeout(() => {
+    void deps.fetchUserData(session.user.id);
+    void import('@/lib/external-db-prewarm').then(module => module.prewarmExternalDb({ oncePerSession: true }));
+  }, 0);
+}
+
+function handleAnonymousState(deps: AuthStateDependencies): void {
+  authDebug("AuthContext.onAuthStateChange", "no session — clearing state");
+  deps.clearProfile();
+  deps.clearRoles();
+  deps.clearAAL();
+  deps.setIsLoading(false);
+  useRecentlyViewedStore.getState().reset();
+  clearSensitiveBrowserData();
+}
+
+function handleAuthStateChange(
+  event: AuthChangeEvent,
+  session: Session | null,
+  deps: AuthStateDependencies,
+): void {
+  authDebug("AuthContext.onAuthStateChange", `event=${event}`, {
+    hasSession: !!session,
+    user: summarizeUser(session?.user ?? null),
+    session: summarizeSession(session),
+  });
+  deps.setSession(session);
+  deps.setUser(session?.user ?? null);
+  if (session) handleAuthenticatedState(event, session, deps);
+  else handleAnonymousState(deps);
+}
+
+type ClientLogger = ReturnType<typeof createClientLogger>;
+const REFRESH_SESSION_LOG_CONTEXT = "AuthContext.refreshSession";
+const FETCH_USER_DATA_LOG_CONTEXT = "AuthContext.fetchUserData";
+
+async function requestRefreshedSession(log: ClientLogger): Promise<Session | null> {
+  const { data, error } = await supabase.auth.refreshSession();
+  if (error) {
+    authDebugError(REFRESH_SESSION_LOG_CONTEXT, "supabase.auth.refreshSession failed", error);
+    log.warn('refresh_failed', { message: error.message });
+  } else {
+    authDebug(REFRESH_SESSION_LOG_CONTEXT, "refreshSession ok", summarizeSession(data?.session ?? null));
+  }
+  return data?.session ?? (await supabase.auth.getSession()).data.session;
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -114,19 +204,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const mountedRef = useRef(true);
 
   const fetchUserData = useCallback(async (userId: string) => {
-    authDebug("AuthContext.fetchUserData", "start", { userId });
+    authDebug(FETCH_USER_DATA_LOG_CONTEXT, "start", { userId });
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const sess = sessionData?.session ?? null;
       
       if (!sess || sess.user.id !== userId) {
-        authDebugError("AuthContext.fetchUserData", "ABORT — session mismatch", { userId });
+        authDebugError(FETCH_USER_DATA_LOG_CONTEXT, "ABORT — session mismatch", { userId });
         return;
       }
 
       const accessState = await getSicoobAccessState();
       if (!accessState.active) {
-        authDebug("AuthContext.fetchUserData", "access revoked", { reason: accessState.reason });
+        authDebug(FETCH_USER_DATA_LOG_CONTEXT, "access revoked", { reason: accessState.reason });
         await closeRevokedLocalSession(accessState.reason);
         return;
       }
@@ -137,7 +227,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         fetchAAL()
       ]);
     } catch (error) {
-      authDebugError("AuthContext.fetchUserData", "unexpected exception", error);
+      authDebugError(FETCH_USER_DATA_LOG_CONTEXT, "unexpected exception", error);
     } finally {
       if (mountedRef.current) setIsLoading(false);
     }
@@ -184,65 +274,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        authDebug("AuthContext.onAuthStateChange", `event=${event}`, {
-          hasSession: !!session,
-          user: summarizeUser(session?.user ?? null),
-          session: summarizeSession(session),
+        handleAuthStateChange(event, session, {
+          setSession,
+          setUser,
+          setIsLoading,
+          fetchUserData,
+          clearProfile,
+          clearRoles,
+          clearAAL,
         });
-        setSession(session);
-        setUser(session?.user ?? null);
-
-        if (session?.user) {
-          useRecentlyViewedStore.getState().setScope(`user:${session.user.id}`);
-          // Show greeting on login
-          if (event === 'SIGNED_IN') {
-            const displayName = session.user.user_metadata?.full_name
-              || session.user.user_metadata?.name
-              || session.user.email?.split('@')[0]
-              || 'Usuário';
-            const firstName = displayName.split(' ')[0];
-
-            void import("sonner").then(({ toast }) => {
-              toast.success(`🤖 Flow`, {
-                description: getRandomGreeting(firstName),
-                duration: 3000,
-                closeButton: true,
-              });
-            });
-          }
-
-
-          // Defer Supabase calls with setTimeout to avoid deadlocks
-          setTimeout(() => {
-            fetchUserData(session.user.id);
-            // Pre-warm external DB + CRM bridge to avoid cold starts (1x por sessão)
-            import('@/lib/external-db-prewarm').then(m => m.prewarmExternalDb({ oncePerSession: true }));
-          }, 0);
-        } else {
-          authDebug("AuthContext.onAuthStateChange", "no session — clearing state");
-          clearProfile();
-          clearRoles();
-          clearAAL();
-          setIsLoading(false);
-          useRecentlyViewedStore.getState().reset();
-          
-          // Limpeza automática de dados sensíveis da sessão
-          try {
-            sessionStorage.clear();
-            // Não limpamos localStorage.clear() para não perder o tema,
-            // mas limpamos dados de produtos/negócio específicos.
-            const keysToClear = [
-              "product-favorites",
-              "product-comparison",
-              "recently-viewed-products",
-              "duplicate_product"
-            ];
-            keysToClear.forEach(k => localStorage.removeItem(k));
-          } catch (e) {
-            console.warn("Falha ao limpar armazenamento local no logout", e);
-          }
-        }
-        // NÃO seta isLoading=false aqui — espera fetchUserData terminar (#5)
       }
     );
 
@@ -265,7 +305,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       mountedRef.current = false;
       subscription.unsubscribe();
     };
-  }, [fetchUserData, fetchAAL]);
+  }, [clearAAL, clearProfile, clearRoles, fetchUserData, fetchAAL]);
 
   const signUp = async (email: string, password: string, fullName: string) => {
     const redirectUrl = `${window.location.origin}/`;
@@ -342,7 +382,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { error };
   };
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     const log = createClientLogger('auth.signOut');
     log.info('start');
     try {
@@ -360,13 +400,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       log.error('failed', { err });
       throw err;
     }
-  };
+  }, [clearAAL, clearProfile, clearRoles]);
 
-  const refreshProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     if (user) {
       await fetchUserData(user.id);
     }
-  };
+  }, [fetchUserData, user]);
 
   /**
    * Força um refresh completo após login social ou mudança de papéis.
@@ -374,17 +414,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const refreshSession = useCallback(async () => {
     const log = createClientLogger('auth.refreshSession');
     log.info('start');
-    authDebug("AuthContext.refreshSession", "start");
+    authDebug(REFRESH_SESSION_LOG_CONTEXT, "start");
     try {
-      const { data, error } = await supabase.auth.refreshSession();
-      if (error) {
-        authDebugError("AuthContext.refreshSession", "supabase.auth.refreshSession failed", error);
-        log.warn('refresh_failed', { message: error.message });
-      } else {
-        authDebug("AuthContext.refreshSession", "refreshSession ok", summarizeSession(data?.session ?? null));
-      }
-      const nextSession = data?.session ?? (await supabase.auth.getSession()).data.session;
-      authDebug("AuthContext.refreshSession", "resolved nextSession", summarizeSession(nextSession));
+      const nextSession = await requestRefreshedSession(log);
+      authDebug(REFRESH_SESSION_LOG_CONTEXT, "resolved nextSession", summarizeSession(nextSession));
       if (mountedRef.current) {
         setSession(nextSession);
         setUser(nextSession?.user ?? null);
@@ -393,13 +426,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (uid) {
         await fetchUserData(uid);
       } else {
-        authDebug("AuthContext.refreshSession", "no uid — skipping fetchUserData");
+        authDebug(REFRESH_SESSION_LOG_CONTEXT, "no uid — skipping fetchUserData");
       }
       log.info('ok');
-      authDebug("AuthContext.refreshSession", "done");
+      authDebug(REFRESH_SESSION_LOG_CONTEXT, "done");
     } catch (err) {
-      authDebugError("AuthContext.refreshSession", "unexpected exception", err);
-      log.error('failed', { err: err instanceof Error ? err.message : String(err) });
+      authDebugError(REFRESH_SESSION_LOG_CONTEXT, "unexpected exception", err);
+      log.error('failed', { err: errorMessage(err) });
     }
   }, [user, fetchUserData]);
 
@@ -456,7 +489,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user, session, profile, isLoading, userRoles, role, isDev, isGestorCompras, isCompradorSingular, rolesError,
     isGerentePa, isVendedor, isSupervisor, isAgente, isSupervisorOrAbove,
     canManage, cooperativaId, paId, currentAAL, nextAAL, hasMFA, rolesLoaded,
-    fetchAAL, refreshSession
+    fetchAAL, refreshProfile, refreshSession, signOut
   ]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

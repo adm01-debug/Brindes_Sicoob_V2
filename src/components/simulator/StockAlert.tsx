@@ -28,6 +28,8 @@ interface StockAlertProps {
   className?: string;
 }
 
+type AlertLevel = 'unknown' | 'critical' | 'warning' | 'caution' | 'ok';
+
 // Simula informação de estoque (em produção, viria da API Promobrind)
 function getStockInfo(product: Product | undefined): StockInfo {
   if (!product) {
@@ -48,27 +50,35 @@ function getStockInfo(product: Product | undefined): StockInfo {
   return { available, reserved, status };
 }
 
+function getAlertLevel(stockInfo: StockInfo, quantity: number): AlertLevel {
+  if (stockInfo.status === 'unknown') return 'unknown';
+  if (stockInfo.status === 'out_of_stock') return 'critical';
+  if (quantity > stockInfo.available) return 'warning';
+  if (stockInfo.status === 'low_stock') return 'caution';
+  return 'ok';
+}
+
+function StockAlertDescription({ level, stockInfo, quantity }: { level: AlertLevel; stockInfo: StockInfo; quantity: number }) {
+  if (level === 'critical') return <p>Este produto está indisponível no momento. Entre em contato com o fornecedor.</p>;
+  if (level === 'warning') return <><p>Disponível: <strong>{stockInfo.available}</strong> unidades. Você precisa de mais <strong>{quantity - stockInfo.available}</strong> unidades.</p><p className="text-xs opacity-80">Considere reduzir a quantidade ou consultar previsão de reposição.</p></>;
+  if (level === 'caution') return <p>Estoque limitado: <strong>{stockInfo.available}</strong> unidades disponíveis. Confirme disponibilidade antes de fechar o pedido.</p>;
+  return null;
+}
+
+function getAlertTitle(level: AlertLevel): string {
+  if (level === 'critical') return 'Produto sem estoque';
+  if (level === 'warning') return 'Estoque insuficiente';
+  if (level === 'caution') return 'Estoque baixo';
+  return '';
+}
+
 export function StockAlert({
   product,
   quantity,
   className,
 }: StockAlertProps) {
   const stockInfo = useMemo(() => getStockInfo(product), [product]);
-  
-  const alertLevel = useMemo(() => {
-    if (stockInfo.status === 'unknown') return 'unknown';
-    if (stockInfo.status === 'out_of_stock') return 'critical';
-    if (quantity > stockInfo.available) return 'warning';
-    if (stockInfo.status === 'low_stock') return 'caution';
-    return 'ok';
-  }, [stockInfo, quantity]);
-  
-  const shortfall = useMemo(() => {
-    if (alertLevel === 'warning') {
-      return quantity - stockInfo.available;
-    }
-    return 0;
-  }, [alertLevel, quantity, stockInfo.available]);
+  const alertLevel = useMemo(() => getAlertLevel(stockInfo, quantity), [stockInfo, quantity]);
 
   // Não mostrar alerta se estoque OK ou desconhecido
   if (alertLevel === 'ok' || alertLevel === 'unknown') {
@@ -88,42 +98,22 @@ export function StockAlert({
           alertLevel === 'caution' && "border-warning/30 bg-warning/5"
         )}
       >
-        {alertLevel === 'critical' ? (
-          <PackageX className="h-4 w-4" />
-        ) : (
-          <AlertTriangle className="h-4 w-4" />
-        )}
-        <AlertTitle className="flex items-center gap-2">
-          {alertLevel === 'critical' && "Produto sem estoque"}
-          {alertLevel === 'warning' && "Estoque insuficiente"}
-          {alertLevel === 'caution' && "Estoque baixo"}
-        </AlertTitle>
+        {alertLevel === 'critical' ? <PackageX className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+        <AlertTitle className="flex items-center gap-2">{getAlertTitle(alertLevel)}</AlertTitle>
         <AlertDescription className="mt-1 space-y-2">
-          {alertLevel === 'critical' && (
-            <p>Este produto está indisponível no momento. Entre em contato com o fornecedor.</p>
-          )}
-          {alertLevel === 'warning' && (
-            <>
-              <p>
-                Disponível: <strong>{stockInfo.available}</strong> unidades. 
-                Você precisa de mais <strong>{shortfall}</strong> unidades.
-              </p>
-              <p className="text-xs opacity-80">
-                Considere reduzir a quantidade ou consultar previsão de reposição.
-              </p>
-            </>
-          )}
-          {alertLevel === 'caution' && (
-            <p>
-              Estoque limitado: <strong>{stockInfo.available}</strong> unidades disponíveis.
-              Confirme disponibilidade antes de fechar o pedido.
-            </p>
-          )}
+          <StockAlertDescription level={alertLevel} stockInfo={stockInfo} quantity={quantity} />
         </AlertDescription>
       </Alert>
     </motion.div>
   );
 }
+
+const STOCK_BADGE_CONFIG = {
+  ok: { className: "bg-success/10 text-success border-success/30", label: null, icon: CheckCircle2 },
+  caution: { className: "bg-warning/10 text-warning border-warning/30", label: "Estoque baixo", icon: Info },
+  warning: { className: "bg-warning/15 text-warning border-warning/40", label: "Verificar", icon: AlertTriangle },
+  critical: { className: "bg-destructive/10 text-destructive border-destructive/30", label: "Sem estoque", icon: PackageX },
+};
 
 // Badge compacto para exibição em lista
 export function StockBadge({
@@ -132,16 +122,11 @@ export function StockBadge({
   className,
 }: StockAlertProps) {
   const stockInfo = useMemo(() => getStockInfo(product), [product]);
-  
-  const alertLevel = useMemo(() => {
-    if (stockInfo.status === 'unknown') return 'unknown';
-    if (stockInfo.status === 'out_of_stock') return 'critical';
-    if (quantity > stockInfo.available) return 'warning';
-    if (stockInfo.status === 'low_stock') return 'caution';
-    return 'ok';
-  }, [stockInfo, quantity]);
+  const alertLevel = useMemo(() => getAlertLevel(stockInfo, quantity), [stockInfo, quantity]);
 
   if (alertLevel === 'unknown') return null;
+  const config = STOCK_BADGE_CONFIG[alertLevel];
+  const Icon = config.icon;
 
   return (
     <TooltipProvider>
@@ -151,22 +136,12 @@ export function StockBadge({
             variant="outline"
             className={cn(
               "gap-1 text-[10px] cursor-help",
-              alertLevel === 'ok' && "bg-success/10 text-success border-success/30",
-              alertLevel === 'caution' && "bg-warning/10 text-warning border-warning/30",
-              alertLevel === 'warning' && "bg-warning/15 text-warning border-warning/40",
-              alertLevel === 'critical' && "bg-destructive/10 text-destructive border-destructive/30",
+              config.className,
               className
             )}
           >
-            {alertLevel === 'ok' && <CheckCircle2 className="h-3 w-3" />}
-            {alertLevel === 'caution' && <Info className="h-3 w-3" />}
-            {alertLevel === 'warning' && <AlertTriangle className="h-3 w-3" />}
-            {alertLevel === 'critical' && <PackageX className="h-3 w-3" />}
-            
-            {alertLevel === 'ok' && `${stockInfo.available} un`}
-            {alertLevel === 'caution' && "Estoque baixo"}
-            {alertLevel === 'warning' && "Verificar"}
-            {alertLevel === 'critical' && "Sem estoque"}
+            <Icon className="h-3 w-3" />
+            {config.label ?? `${stockInfo.available} un`}
           </Badge>
         </TooltipTrigger>
         <TooltipContent side="top" className="max-w-xs">

@@ -25,7 +25,7 @@ export const SicoobRoute: React.FC<SicoobRouteProps> = ({ children, allowedRoles
 
   if (isRoleResolutionPending(isLoading, Boolean(user), rolesLoaded)) {
     return (
-      <div className="p-8 space-y-4">
+      <div data-route-pending="permissions" className="p-8 space-y-4">
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-64 w-full" />
       </div>

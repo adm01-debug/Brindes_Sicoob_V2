@@ -54,7 +54,7 @@ export function ComparisonWeightsPopover() {
               </div>
               <Slider
                 value={[weights[f.key]]}
-                onValueChange={([v]) => update(f.key, v)}
+                onValueChange={([v]) => update(f.key, v ?? 0)}
                 min={0} max={50} step={1}
                 aria-label={`Peso de ${f.label}`}
               />

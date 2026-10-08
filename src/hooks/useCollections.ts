@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { type Product } from "@/hooks/useProducts";
+import type { Tables, TablesUpdate } from "@/integrations/supabase/types";
 
 const LEGACY_STORAGE_KEY = "product-collections";
 
@@ -47,20 +48,23 @@ const DEFAULT_COLORS = [
 
 const DEFAULT_ICONS = ["📁", "⭐", "🎁", "💼", "🎯", "💡", "🔥", "❤️"];
 
+function collectionItemVariant(item: Tables<"collection_items">): CollectionVariantInfo | undefined {
+  if (!item.color_name && !item.color_hex && !item.thumbnail_url) return undefined;
+  return { color_name: item.color_name, color_hex: item.color_hex, thumbnail: item.thumbnail_url };
+}
+
+function collectionColor(row: Tables<"collections">): string {
+  return row.icon_color || DEFAULT_COLORS[0] || "#8B5CF6";
+}
+
 /** Convert DB rows to Collection interface */
 function dbToCollection(
-  row: any,
-  items: any[]
+  row: Tables<"collections">,
+  items: Tables<"collection_items">[]
 ): Collection {
   const productItems: CollectionProductItem[] = items.map((item) => ({
     productId: item.product_id,
-    variant: item.color_name || item.color_hex || item.thumbnail_url
-      ? {
-          color_name: item.color_name,
-          color_hex: item.color_hex,
-          thumbnail: item.thumbnail_url,
-        }
-      : undefined,
+    variant: collectionItemVariant(item),
     notes: item.notes || undefined,
     priceAtSave: item.price_at_save ?? null,
     addedAt: item.created_at ?? null,
@@ -70,7 +74,7 @@ function dbToCollection(
     id: row.id,
     name: row.name,
     description: row.description || undefined,
-    color: row.icon_color || DEFAULT_COLORS[0],
+    color: collectionColor(row),
     icon: row.icon || "📁",
     isFeatured: row.is_featured ?? false,
     clientId: row.client_id ?? null,
@@ -83,6 +87,111 @@ function dbToCollection(
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+function legacyItems(collection: Partial<Collection>): CollectionProductItem[] {
+  if (collection.productItems?.length) return collection.productItems;
+  return (collection.productIds ?? []).map((productId) => ({ productId }));
+}
+
+async function insertLegacyCollection(userId: string, collection: Partial<Collection>): Promise<void> {
+  if (!collection.name) return;
+  const { data: newCollection } = await supabase
+    .from("collections")
+    .insert({
+      user_id: userId,
+      name: collection.name,
+      description: collection.description || null,
+      is_featured: false,
+      icon_color: collection.color || DEFAULT_COLORS[0],
+    })
+    .select()
+    .single();
+  if (!newCollection) return;
+
+  const items = legacyItems(collection);
+  if (items.length === 0) return;
+  await supabase.from("collection_items").insert(
+    items.map((item, index) => ({
+      collection_id: newCollection.id,
+      product_id: item.productId,
+      color_name: item.variant?.color_name || null,
+      color_hex: item.variant?.color_hex || null,
+      thumbnail_url: item.variant?.thumbnail || null,
+      sort_order: index,
+    }))
+  );
+}
+
+async function migrateLegacyCollections(userId: string): Promise<void> {
+  const stored = localStorage.getItem(LEGACY_STORAGE_KEY);
+  if (!stored) return;
+  const legacyCollections: unknown = JSON.parse(stored);
+  if (!Array.isArray(legacyCollections) || legacyCollections.length === 0) return;
+
+  const { count } = await supabase
+    .from("collections")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId);
+
+  if (count === 0) {
+    for (const candidate of legacyCollections) {
+      if (!candidate || typeof candidate !== "object") continue;
+      await insertLegacyCollection(userId, candidate as Partial<Collection>);
+    }
+  }
+  localStorage.removeItem(LEGACY_STORAGE_KEY);
+}
+
+interface NewCollectionInput {
+  name: string;
+  description?: string;
+  color?: string;
+  icon?: string;
+  clientId?: string | null;
+  clientName?: string | null;
+}
+
+function buildNewCollection(input: NewCollectionInput): Collection {
+  const now = new Date().toISOString();
+  return {
+    id: `temp-${Date.now()}`,
+    name: input.name,
+    description: input.description,
+    color: input.color || DEFAULT_COLORS[Math.floor(Math.random() * DEFAULT_COLORS.length)] || "#8B5CF6",
+    icon: input.icon || DEFAULT_ICONS[0] || "📁",
+    isFeatured: false,
+    clientId: input.clientId ?? null,
+    clientName: input.clientName ?? null,
+    productIds: [],
+    productItems: [],
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+function buildCollectionContentUpdates(
+  updates: Partial<Omit<Collection, "id" | "createdAt">>,
+): TablesUpdate<"collections"> {
+  const result: TablesUpdate<"collections"> = {};
+  if (updates.name !== undefined) result.name = updates.name;
+  if (updates.description !== undefined) result.description = updates.description;
+  if (updates.color !== undefined) result.icon_color = updates.color;
+  if (updates.icon !== undefined) result.icon = updates.icon;
+  if (updates.isFeatured !== undefined) result.is_featured = updates.isFeatured;
+  return result;
+}
+
+function buildCollectionSharingUpdates(
+  updates: Partial<Omit<Collection, "id" | "createdAt">>,
+): TablesUpdate<"collections"> {
+  const result: TablesUpdate<"collections"> = {};
+  if (updates.clientId !== undefined) result.client_id = updates.clientId;
+  if (updates.clientName !== undefined) result.client_name = updates.clientName;
+  if (updates.shareToken !== undefined) result.share_token = updates.shareToken;
+  if (updates.shareExpiresAt !== undefined) result.share_expires_at = updates.shareExpiresAt;
+  if (updates.isPublic !== undefined) result.is_public = updates.isPublic;
+  return result;
 }
 
 export function useCollections() {
@@ -120,7 +229,7 @@ export function useCollections() {
       .in("collection_id", colIds)
       .order("sort_order", { ascending: true });
 
-    const itemsByCollection = new Map<string, any[]>();
+    const itemsByCollection = new Map<string, Tables<"collection_items">[]>();
     (itemRows || []).forEach((item) => {
       const list = itemsByCollection.get(item.collection_id) || [];
       list.push(item);
@@ -141,55 +250,7 @@ export function useCollections() {
 
     const migrateAndLoad = async () => {
       try {
-        const stored = localStorage.getItem(LEGACY_STORAGE_KEY);
-        if (stored) {
-          const legacyCollections = JSON.parse(stored);
-          if (Array.isArray(legacyCollections) && legacyCollections.length > 0) {
-            // Check if user already has DB collections
-            const { count } = await supabase
-              .from("collections")
-              .select("*", { count: "exact", head: true })
-              .eq("user_id", user.id);
-
-            if (count === 0) {
-              // Migrate each collection
-              for (const col of legacyCollections) {
-                const { data: newCol } = await supabase
-                  .from("collections")
-                  .insert({
-                    user_id: user.id,
-                    name: col.name,
-                    description: col.description || null,
-                    is_featured: false,
-                    icon_color: col.color || DEFAULT_COLORS[0],
-                  })
-                  .select()
-                  .single();
-
-                if (newCol) {
-                  const items = (col.productItems || col.productIds?.map((id: string) => ({ productId: id })) || []);
-                  if (items.length > 0) {
-                    await supabase.from("collection_items").insert(
-                      items.map((item: any, idx: number) => ({
-                        collection_id: newCol.id,
-                        product_id: item.productId || item,
-                        color_name: item.variant?.color_name || null,
-                        color_hex: item.variant?.color_hex || null,
-                        thumbnail_url: item.variant?.thumbnail || null,
-                        sort_order: idx,
-                      }))
-                    );
-                  }
-                }
-              }
-              // Clear localStorage after successful migration
-              localStorage.removeItem(LEGACY_STORAGE_KEY);
-            } else {
-              // User already has DB collections, just clear legacy
-              localStorage.removeItem(LEGACY_STORAGE_KEY);
-            }
-          }
-        }
+        await migrateLegacyCollections(user.id);
       } catch (e) {
         console.error("Error migrating collections:", e);
       }
@@ -201,25 +262,9 @@ export function useCollections() {
   }, [user?.id, loadCollections]);
 
   const createCollection = useCallback(
-    (name: string, description?: string, color?: string, icon?: string, clientId?: string | null, clientName?: string | null): Collection => {
-      const tempId = `temp-${Date.now()}`;
-      const now = new Date().toISOString();
-      const chosenColor = color || DEFAULT_COLORS[Math.floor(Math.random() * DEFAULT_COLORS.length)]!;
-
-      const newCollection: Collection = {
-        id: tempId,
-        name,
-        description,
-        color: chosenColor,
-        icon: icon || DEFAULT_ICONS[0]!,
-        isFeatured: false,
-        clientId: clientId ?? null,
-        clientName: clientName ?? null,
-        productIds: [],
-        productItems: [],
-        createdAt: now,
-        updatedAt: now,
-      };
+    (name: string, ...options: [description?: string, color?: string, icon?: string, clientId?: string | null, clientName?: string | null]): Collection => {
+      const [description, color, icon, clientId, clientName] = options;
+      const newCollection = buildNewCollection({ name, description, color, icon, clientId, clientName });
 
       // Optimistic update
       setCollections((prev) => [newCollection, ...prev]);
@@ -232,8 +277,8 @@ export function useCollections() {
             user_id: user.id,
             name,
             description: description || null,
-            icon_color: chosenColor,
-            icon: icon || DEFAULT_ICONS[0],
+            icon_color: newCollection.color,
+            icon: newCollection.icon,
             client_id: clientId ?? null,
             client_name: clientName ?? null,
           })
@@ -243,7 +288,7 @@ export function useCollections() {
             if (data) {
               setCollections((prev) =>
                 prev.map((c) =>
-                  c.id === tempId
+                  c.id === newCollection.id
                     ? { ...c, id: data.id, createdAt: data.created_at, updatedAt: data.updated_at }
                     : c
                 )
@@ -268,17 +313,10 @@ export function useCollections() {
       );
 
       // Persist
-      const dbUpdates: any = {};
-      if (updates.name !== undefined) dbUpdates.name = updates.name;
-      if (updates.description !== undefined) dbUpdates.description = updates.description;
-      if (updates.color !== undefined) dbUpdates.icon_color = updates.color;
-      if (updates.icon !== undefined) dbUpdates.icon = updates.icon;
-      if (updates.isFeatured !== undefined) dbUpdates.is_featured = updates.isFeatured;
-      if (updates.clientId !== undefined) dbUpdates.client_id = updates.clientId;
-      if (updates.clientName !== undefined) dbUpdates.client_name = updates.clientName;
-      if (updates.shareToken !== undefined) dbUpdates.share_token = updates.shareToken;
-      if (updates.shareExpiresAt !== undefined) dbUpdates.share_expires_at = updates.shareExpiresAt;
-      if (updates.isPublic !== undefined) dbUpdates.is_public = updates.isPublic;
+      const dbUpdates: TablesUpdate<"collections"> = {
+        ...buildCollectionContentUpdates(updates),
+        ...buildCollectionSharingUpdates(updates),
+      };
 
       if (Object.keys(dbUpdates).length > 0) {
         supabase.from("collections").update(dbUpdates).eq("id", id).then();
@@ -498,7 +536,7 @@ export function useCollections() {
 
       supabase
         .from("collection_items")
-        .update({ notes } as any)
+        .update({ notes })
         .eq("collection_id", collectionId)
         .eq("product_id", productId)
         .then();

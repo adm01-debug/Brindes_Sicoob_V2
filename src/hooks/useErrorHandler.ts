@@ -12,6 +12,49 @@ interface ErrorHandlerOptions {
   onError?: (error: unknown) => void;
 }
 
+function errorMessage(error: unknown, options?: ErrorHandlerOptions): string {
+  if (options?.message) return options.message;
+  return error instanceof Error ? error.message : 'Ocorreu um erro inesperado';
+}
+
+function isCancellation(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  return error.name === 'AbortError' || error.message.includes('aborted') || error.message.includes('cancel');
+}
+
+function errorMetadata(error: unknown, options?: ErrorHandlerOptions): Record<string, unknown> {
+  const customMessage = options?.message ? { customMessage: options.message } : {};
+  const pgCode = error && typeof error === 'object' && 'code' in error ? { pg_code: error.code } : {};
+  return { context: 'useErrorHandler', severity: options?.silent ? 'info' : 'error', ...customMessage, ...pgCode };
+}
+
+function reportHandledError(error: unknown, message: string, metadata: Record<string, unknown>): void {
+  reportError(error instanceof Error ? error : new Error(message), error instanceof Error ? metadata : { ...metadata, originalError: error });
+}
+
+function logDatabaseError(error: unknown): void {
+  if (!error || typeof error !== 'object' || !('code' in error)) return;
+  const pgError = error as { code: string; message: string };
+  const isRls = pgError.code === '42501';
+  supabase.from('telemetry_events').insert({
+    event_type: 'database_error',
+    severity: isRls ? 'critical' : 'error',
+    metadata: { operation: 'unhandled_error', error_message: pgError.message, error_code: pgError.code, is_rls_violation: isRls },
+  }).then(({ error: logError }) => {
+    if (logError) console.warn('Falha ao logar erro na telemetria', logError);
+  });
+}
+
+function handleErrorValue(error: unknown, options?: ErrorHandlerOptions): void {
+  if (isCancellation(error)) return;
+  const message = errorMessage(error, options);
+  console.error('[useErrorHandler]', error);
+  reportHandledError(error, message, errorMetadata(error, options));
+  logDatabaseError(error);
+  if (!options?.silent) toast.error(message);
+  options?.onError?.(error);
+}
+
 /**
  * useErrorHandler — Centralised async error handling with toast notifications.
  *
@@ -27,58 +70,7 @@ interface ErrorHandlerOptions {
 export function useErrorHandler() {
   const handleError = useCallback(
     (error: unknown, options?: ErrorHandlerOptions) => {
-      const msg =
-        options?.message ||
-        (error instanceof Error ? error.message : 'Ocorreu um erro inesperado');
-
-      // Do not show toasts for intentional cancellations or aborted requests
-      const isCancellation = 
-        error instanceof Error && 
-        (error.name === 'AbortError' || error.message?.includes('aborted') || error.message?.includes('cancel'));
-      
-      if (isCancellation) return;
-
-      console.error('[useErrorHandler]', error);
-      
-      // Centralized reporting
-      const severity = options?.silent ? 'info' : 'error';
-      const metadata = { 
-        context: 'useErrorHandler', 
-        severity,
-        ...(options?.message ? { customMessage: options.message } : {}),
-        ...(error && typeof error === 'object' && 'code' in error ? { pg_code: (error as any).code } : {})
-      };
-
-      if (error instanceof Error) {
-        reportError(error, metadata);
-      } else {
-        reportError(new Error(msg), { ...metadata, originalError: error });
-      }
-
-      // Operational Telemetry
-      if (error && typeof error === 'object' && 'code' in error) {
-        const pgError = error as { code: string; message: string };
-        const isRls = pgError.code === '42501';
-        
-        supabase.from('telemetry_events').insert({
-          event_type: 'database_error',
-          severity: isRls ? 'critical' : 'error',
-          metadata: {
-            operation: 'unhandled_error',
-            error_message: pgError.message,
-            error_code: pgError.code,
-            is_rls_violation: isRls,
-          }
-        }).then(({ error: logErr }) => {
-          if (logErr) console.warn('Falha ao logar erro na telemetria', logErr);
-        });
-      }
-
-      if (!options?.silent) {
-        toast.error(msg);
-      }
-
-      options?.onError?.(error);
+      handleErrorValue(error, options);
     },
     []
   );
@@ -87,11 +79,11 @@ export function useErrorHandler() {
    * Wraps an async function so any thrown error is automatically handled.
    */
   const wrapAsync = useCallback(
-    <T extends (...args: never[]) => Promise<unknown>>(
-      fn: T,
+    <TArgs extends unknown[], TResult>(
+      fn: (...args: TArgs) => Promise<TResult>,
       options?: ErrorHandlerOptions
-    ): ((...args: Parameters<T>) => Promise<ReturnType<T> | undefined>) => {
-      return async (...args: Parameters<T>) => {
+    ): ((...args: TArgs) => Promise<TResult | undefined>) => {
+      return async (...args: TArgs) => {
         try {
           return await fn(...args);
         } catch (error) {

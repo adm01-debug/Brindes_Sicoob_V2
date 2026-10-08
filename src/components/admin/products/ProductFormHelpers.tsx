@@ -1,6 +1,7 @@
 /**
  * Shared helpers for ProductFormFullscreen sections
  */
+import type { ElementType, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
@@ -22,7 +23,7 @@ export type SectionId = 'info' | 'price' | 'commercial' | 'flags' | 'dimensions'
 export interface SectionDef {
   id: SectionId;
   label: string;
-  icon: React.ElementType;
+  icon: ElementType;
   group: string;
 }
 
@@ -38,8 +39,6 @@ export interface FormSectionProps {
 // ============================================
 // CONSTANTS
 // ============================================
-
-export { default as RulerIcon } from 'lucide-react/dist/esm/icons/ruler';
 
 export const SECTIONS: SectionDef[] = [
   { id: 'info', label: 'Informações', icon: Info, group: 'Básico' },
@@ -64,7 +63,7 @@ export function CharCounter({ current, max }: { current: number; max: number }) 
 
 export function FieldLabel({ htmlFor, children, required, charCount, charMax, hint }: {
   htmlFor?: string;
-  children: React.ReactNode;
+  children: ReactNode;
   required?: boolean;
   charCount?: number;
   charMax?: number;
@@ -93,13 +92,14 @@ export function FieldLabel({ htmlFor, children, required, charCount, charMax, hi
   );
 }
 
-export function SectionCard({ id, title, icon: Icon, children, subtitle }: {
+export function SectionCard({ id, title, icon, children, subtitle }: {
   id: string;
   title: string;
-  icon: React.ElementType;
-  children: React.ReactNode;
+  icon: ElementType;
+  children: ReactNode;
   subtitle?: string;
 }) {
+  const Icon = icon;
   return (
     <Card id={`section-${id}`} className="border-border/50 bg-card/60 backdrop-blur-sm overflow-hidden scroll-mt-4">
       <div className="p-5 pb-4 border-b border-border/30">

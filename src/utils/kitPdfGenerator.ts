@@ -6,9 +6,9 @@
 
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { getAutoTableFinalY } from '@/lib/pdf/auto-table';
 import {
   type KitState,
-  type KitPersonalization,
   formatCurrency,
   formatVolume,
   formatDimensions,
@@ -28,9 +28,7 @@ interface KitPdfOptions {
 const PRIMARY = [30, 64, 175] as const;   // blue-700
 const GRAY_800 = [31, 41, 55] as const;
 const GRAY_500 = [107, 114, 128] as const;
-const GRAY_200 = [229, 231, 235] as const;
 const WHITE = [255, 255, 255] as const;
-const GREEN = [16, 185, 129] as const;
 
 function hexToRgb(hex?: string): readonly [number, number, number] | null {
   if (!hex) return null;
@@ -44,9 +42,7 @@ function hexToRgb(hex?: string): readonly [number, number, number] | null {
 function drawHeader(
   doc: jsPDF,
   kitName: string,
-  y: number,
   orgName?: string,
-  orgLogoUrl?: string,
   identity?: { color?: string; tag?: string | null; icon?: string },
 ): number {
   const accent = hexToRgb(identity?.color) ?? PRIMARY;
@@ -207,7 +203,7 @@ function drawCompositionTable(doc: jsPDF, kitState: KitState, y: number): number
     margin: { left: 14, right: 14 },
   });
 
-  return doc.lastAutoTable.finalY + 8;
+  return getAutoTableFinalY(doc, y) + 8;
 }
 
 function drawPersonalizationDetails(
@@ -266,7 +262,7 @@ function drawPersonalizationDetails(
     margin: { left: 14, right: 14 },
   });
 
-  return doc.lastAutoTable.finalY + 8;
+  return getAutoTableFinalY(doc, y) + 8;
 }
 
 function drawPriceBreakdown(
@@ -321,7 +317,7 @@ function drawPriceBreakdown(
     },
   });
 
-  const finalTableY = doc.lastAutoTable.finalY;
+  const finalTableY = getAutoTableFinalY(doc, y);
 
   // Total box
   const totalBoxY = finalTableY + 4;
@@ -368,7 +364,7 @@ export function generateKitPDF(options: KitPdfOptions): Blob {
   const { kitState, kitQuantity, kitName } = options;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-  let y = drawHeader(doc, kitName, 0, options.orgName, options.orgLogoUrl, kitState.identity);
+  let y = drawHeader(doc, kitName, options.orgName, kitState.identity);
 
   // KPI cards
   y = drawKpiCards(doc, kitState, kitQuantity, y);

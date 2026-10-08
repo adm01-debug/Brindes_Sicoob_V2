@@ -17,12 +17,10 @@
  * Como funciona:
  *  1. Lê scripts/db/.inventory-cache.json (tabelas/views/funções/buckets
  *     expostos) — gerado por consulta MCP ou import-api-inventory.mjs,
- *     NÃO atualizado automaticamente por este verificador.
- *     PRECISA SER REGENERADO PERIODICAMENTE (ver Etapa 47 do plano de
- *     correções de 17/09/2026 — ainda não agendado). Um cache desatualizado
- *     produz falso-negativo (objeto que já foi dropado ainda "existe" pro
- *     script) ou falso-positivo (objeto criado depois do cache aparece
- *     como quebrado) — trate a idade do cache como parte do resultado.
+ *     NÃO atualizado automaticamente por este verificador. O gate recusa
+ *     snapshots com mais de 30 dias (configurável por
+ *     RUNTIME_INVENTORY_MAX_AGE_DAYS), porque um cache desatualizado produz
+ *     falso-negativo ou falso-positivo.
  *  2. Para cada arquivo, identifica o identificador do client interno
  *     (import de .../integrations/supabase/client) e quaisquer variáveis
  *     de 1 nível de indireção que apontem pra `<client>.rpc`/`.from`/
@@ -54,11 +52,13 @@ const INTERNAL_CLIENT_IMPORT_RE =
   /import\s*\{\s*([A-Za-z_$][\w$]*)\s*(?:as\s+([A-Za-z_$][\w$]*))?\s*\}\s*from\s*['"][^'"]*integrations\/supabase\/client['"]/;
 
 const EXTERNAL_NAME_HINT_RE = /external|extclient|crmclient|crm_db/i;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const FUTURE_TOLERANCE_MS = 5 * 60 * 1000;
+const DEFAULT_MAX_CACHE_AGE_DAYS = 30;
 
 // Aceita quebra de linha/espaço entre o método e o argumento — o gap que
 // escondeu o bucket `personalization` quebrado em 2 linhas na auditoria original.
-const CALL_RE =
-  /([A-Za-z_$][\w$]*(?:\.storage)?)\s*\.\s*(from|rpc)\s*\(\s*['"]([\w.-]+)['"]/gs;
+const CALL_RE = /([A-Za-z_$][\w$]*(?:\.storage)?)\s*\.\s*(from|rpc)\s*\(\s*['"]([\w.-]+)['"]/gs;
 
 const INDIRECTION_RE =
   /(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*([A-Za-z_$][\w$]*)\s*\.\s*(rpc|from)\b/g;
@@ -89,13 +89,39 @@ function loadJson(path, fallback) {
   }
 }
 
+export function assertInventoryFresh(
+  generatedAt,
+  now = Date.now(),
+  maxAgeDays = Number(process.env.RUNTIME_INVENTORY_MAX_AGE_DAYS ?? DEFAULT_MAX_CACHE_AGE_DAYS),
+) {
+  const capturedAt = Date.parse(generatedAt);
+  if (!Number.isFinite(capturedAt)) throw new Error('Data de coleta do inventário inválida.');
+  if (!Number.isFinite(maxAgeDays) || maxAgeDays <= 0) {
+    throw new Error('RUNTIME_INVENTORY_MAX_AGE_DAYS deve ser um número positivo.');
+  }
+  const ageMs = now - capturedAt;
+  if (ageMs < -FUTURE_TOLERANCE_MS) {
+    throw new Error('Data de coleta do inventário está no futuro.');
+  }
+  const ageDays = Math.max(0, ageMs / DAY_MS);
+  if (ageDays > maxAgeDays) {
+    throw new Error(
+      `Inventário remoto expirado: ${ageDays.toFixed(1)} dias (limite ${maxAgeDays}).`,
+    );
+  }
+  return { ageDays, maxAgeDays };
+}
+
 // Funções edge (Deno) não importam de @/integrations/supabase/client — criam
 // o client via createClient(url, key) lendo Deno.env.get(...). Resolvemos por
 // nome de variável de ambiente: SUPABASE_URL/SERVICE_ROLE_KEY/ANON_KEY (sem
 // prefixo EXTERNAL_/CRM_) apontam pro banco interno; EXTERNAL_*/CRM_* não.
-const ENV_VAR_ASSIGN_RE = /(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*Deno\.env\.get\(\s*['"]([A-Z0-9_]+)['"]\s*\)/g;
-const CREATE_CLIENT_ASSIGN_RE = /(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*createClient\s*\(\s*([A-Za-z_$][\w$]*)\s*,\s*([A-Za-z_$][\w$]*)/g;
-const RETURN_CREATE_CLIENT_RE = /function\s+([A-Za-z_$][\w$]*)\s*\([^)]*\)\s*(?::[^{]+)?\{[^}]*?return\s+createClient\s*\(\s*([A-Za-z_$][\w$]*)\s*,\s*([A-Za-z_$][\w$]*)/gs;
+const ENV_VAR_ASSIGN_RE =
+  /(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*Deno\.env\.get\(\s*['"]([A-Z0-9_]+)['"]\s*\)/g;
+const CREATE_CLIENT_ASSIGN_RE =
+  /(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*createClient\s*\(\s*([A-Za-z_$][\w$]*)\s*,\s*([A-Za-z_$][\w$]*)/g;
+const RETURN_CREATE_CLIENT_RE =
+  /function\s+([A-Za-z_$][\w$]*)\s*\([^)]*\)\s*(?::[^{]+)?\{[^}]*?return\s+createClient\s*\(\s*([A-Za-z_$][\w$]*)\s*,\s*([A-Za-z_$][\w$]*)/gs;
 const CALL_WRAPPER_RE = /(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*([A-Za-z_$][\w$]*)\s*\(/g;
 
 function isInternalEnvName(name) {
@@ -111,28 +137,37 @@ export function analyzeSource(text, filePath) {
   const wrappers = new Set();
   const namespaces = new Set();
   for (const statement of ast.statements) {
-    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) continue;
+    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier))
+      continue;
     if (!statement.moduleSpecifier.text.endsWith('/supabase-untyped')) continue;
     const bindings = statement.importClause?.namedBindings;
     if (bindings && ts.isNamespaceImport(bindings)) namespaces.add(bindings.name.text);
     if (bindings && ts.isNamedImports(bindings)) {
       for (const binding of bindings.elements) {
-        if ((binding.propertyName ?? binding.name).text === 'untypedFrom') wrappers.add(binding.name.text);
+        if ((binding.propertyName ?? binding.name).text === 'untypedFrom')
+          wrappers.add(binding.name.text);
       }
     }
   }
   function visit(node) {
     if (ts.isCallExpression(node)) {
       const fn = node.expression;
-      const wrapper = (ts.isIdentifier(fn) && wrappers.has(fn.text)) ||
-        (ts.isPropertyAccessExpression(fn) && ts.isIdentifier(fn.expression) &&
-          namespaces.has(fn.expression.text) && fn.name.text === 'untypedFrom');
+      const wrapper =
+        (ts.isIdentifier(fn) && wrappers.has(fn.text)) ||
+        (ts.isPropertyAccessExpression(fn) &&
+          ts.isIdentifier(fn.expression) &&
+          namespaces.has(fn.expression.text) &&
+          fn.name.text === 'untypedFrom');
       if (wrapper) {
         const arg = node.arguments[0];
         const literal = arg && (ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg));
-        findings.push({ file: relative(ROOT, filePath),
+        findings.push({
+          file: relative(ROOT, filePath),
           line: ast.getLineAndCharacterOfPosition(node.getStart(ast)).line + 1,
-          kind: 'from', name: literal ? arg.text : '<dinâmico>', unresolved: !literal });
+          kind: 'from',
+          name: literal ? arg.text : '<dinâmico>',
+          unresolved: !literal,
+        });
       }
     }
     ts.forEachChild(node, visit);
@@ -140,7 +175,8 @@ export function analyzeSource(text, filePath) {
   visit(ast);
 
   const importMatch = INTERNAL_CLIENT_IMPORT_RE.exec(text);
-  const isEdgeFunctionStyle = !importMatch && /Deno\.env\.get/.test(text) && /createClient\s*\(/.test(text);
+  const isEdgeFunctionStyle =
+    !importMatch && /Deno\.env\.get/.test(text) && /createClient\s*\(/.test(text);
   if (!importMatch && !isEdgeFunctionStyle) return findings; // arquivo não fala com nenhum client Supabase
 
   const internalName = importMatch ? importMatch[2] || importMatch[1] : null;
@@ -202,7 +238,8 @@ export function analyzeSource(text, filePath) {
   const directCallVars = new Set(); // vars chamadas diretamente como função (não .rpc())
   while ((indMatch = indRe.exec(text))) {
     const [, aliasVar, baseVar, kind] = indMatch;
-    const baseIsInternal = baseVar === internalName || indirectRpcVars.has(baseVar) || indirectFromVars.has(baseVar);
+    const baseIsInternal =
+      baseVar === internalName || indirectRpcVars.has(baseVar) || indirectFromVars.has(baseVar);
     if (!baseIsInternal) continue;
     if (kind === 'rpc') directCallVars.add(aliasVar);
     else {
@@ -215,18 +252,22 @@ export function analyzeSource(text, filePath) {
     let dm;
     while ((dm = directRe.exec(text))) {
       const upto = text.slice(0, dm.index);
-      findings.push({ file: relative(ROOT, filePath), line: upto.split('\n').length, kind: 'rpc', name: dm[1] });
+      findings.push({
+        file: relative(ROOT, filePath),
+        line: upto.split('\n').length,
+        kind: 'rpc',
+        name: dm[1],
+      });
     }
   }
 
-  const lines = text.split('\n');
   const callRe = new RegExp(CALL_RE.source, CALL_RE.flags);
   let m;
   let iter = 0;
   while ((m = callRe.exec(text))) {
     iter++;
     if (iter > 5000) break; // guarda contra regex patológica em arquivo gigante
-    const [full, baseExpr, method, name] = m;
+    const [, baseExpr, method, name] = m;
     const baseIdMatch = baseExpr.match(/^([A-Za-z_$][\w$]*)/);
     const baseId = baseIdMatch ? baseIdMatch[1] : baseExpr;
 
@@ -261,11 +302,20 @@ function main() {
   const cache = loadJson(join(__dirname, '.inventory-cache.json'), null);
   if (!cache) {
     console.error(
-      '[check-runtime-refs] scripts/db/.inventory-cache.json ausente ou inválido — importe uma coleta real antes de rodar (Etapa 47 do plano de correções).'
+      '[check-runtime-refs] scripts/db/.inventory-cache.json ausente ou inválido — importe uma coleta real antes de rodar (Etapa 47 do plano de correções).',
     );
     process.exit(2);
   }
-  const allowlistDoc = loadJson(join(__dirname, '.check-runtime-refs-allowlist.json'), { entries: {} });
+  let inventoryFreshness;
+  try {
+    inventoryFreshness = assertInventoryFresh(cache.generated_at);
+  } catch (error) {
+    console.error(`[check-runtime-refs] ${error.message}`);
+    process.exit(2);
+  }
+  const allowlistDoc = loadJson(join(__dirname, '.check-runtime-refs-allowlist.json'), {
+    entries: {},
+  });
   const allowlist = new Set(Object.keys(allowlistDoc.entries || {}));
 
   const tables = new Set(cache.tables || []);
@@ -275,7 +325,7 @@ function main() {
   const tableLike = new Set(cache.relations ?? [...tables, ...views]);
 
   const files = SCAN_DIRS.flatMap((d) => walk(d));
-  const allFindings = files.flatMap(file => analyzeSource(readFileSync(file, 'utf8'), file));
+  const allFindings = files.flatMap((file) => analyzeSource(readFileSync(file, 'utf8'), file));
 
   const broken = [];
   for (const f of allFindings) {
@@ -291,18 +341,35 @@ function main() {
   const allowed = broken.filter((f) => allowlist.has(f.name));
 
   if (jsonOutput) {
-    console.log(JSON.stringify({ cache_generated_at: cache.generated_at, files_scanned: files.length,
-      references_scanned: allFindings.length, broken, blocking, allowed }, null, 2));
+    console.log(
+      JSON.stringify(
+        {
+          cache_generated_at: cache.generated_at,
+          cache_age_days: Number(inventoryFreshness.ageDays.toFixed(3)),
+          files_scanned: files.length,
+          references_scanned: allFindings.length,
+          broken,
+          blocking,
+          allowed,
+        },
+        null,
+        2,
+      ),
+    );
   } else {
     console.log(
-      `[check-runtime-refs] cache de ${cache.generated_at} · ${files.length} arquivos varridos · ${allFindings.length} referências ao client interno encontradas`
+      `[check-runtime-refs] cache de ${cache.generated_at} (${inventoryFreshness.ageDays.toFixed(1)} dia(s)) · ${files.length} arquivos varridos · ${allFindings.length} referências ao client interno encontradas`,
     );
     if (allowed.length) {
-      console.log(`\n${allowed.length} referência(s) quebrada(s) mas na allowlist (ver .check-runtime-refs-allowlist.json):`);
+      console.log(
+        `\n${allowed.length} referência(s) quebrada(s) mas na allowlist (ver .check-runtime-refs-allowlist.json):`,
+      );
       for (const f of allowed) console.log(`  ${f.file}:${f.line}  ${f.kind}('${f.name}')`);
     }
     if (blocking.length) {
-      console.log(`\n${blocking.length} referência(s) SEM objeto correspondente e FORA da allowlist:`);
+      console.log(
+        `\n${blocking.length} referência(s) SEM objeto correspondente e FORA da allowlist:`,
+      );
       for (const f of blocking) console.log(`  ${f.file}:${f.line}  ${f.kind}('${f.name}')`);
     } else {
       console.log('\n0 referências quebradas fora da allowlist.');

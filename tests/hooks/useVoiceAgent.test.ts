@@ -21,6 +21,7 @@ let scribeConnected = false;
 let onDisconnectHandler: (() => void) | undefined;
 
 vi.mock("@elevenlabs/react", () => ({
+  CommitStrategy: { VAD: "vad" },
   useScribe: (opts: {
     onSessionStarted?: () => void;
     onPartialTranscript?: (data: { text: string }) => void;

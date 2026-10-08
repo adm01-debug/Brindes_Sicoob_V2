@@ -16,6 +16,39 @@ interface GenerateButtonProps {
   className?: string;
 }
 
+function ReadyPulse() {
+  return (
+    <motion.span
+      aria-hidden
+      className="absolute inset-0 rounded-md bg-primary/40 blur-md"
+      animate={{ opacity: [0.3, 0.7, 0.3] }}
+      transition={{ duration: 2, repeat: Infinity }}
+    />
+  );
+}
+
+function ButtonContent({ isGenerating, label }: Pick<GenerateButtonProps, "isGenerating" | "label">) {
+  if (isGenerating) {
+    return (
+      <>
+        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+        Gerando…
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Sparkles className="h-5 w-5 mr-2" />
+      {label}
+    </>
+  );
+}
+
+function readyMotion(isReady: boolean, scale: number) {
+  return isReady ? { scale } : undefined;
+}
+
 export function GenerateButton({
   onClick,
   isGenerating,
@@ -28,18 +61,11 @@ export function GenerateButton({
 
   return (
     <motion.div
-      whileHover={isReady ? { scale: 1.02 } : undefined}
-      whileTap={isReady ? { scale: 0.98 } : undefined}
+      whileHover={readyMotion(isReady, 1.02)}
+      whileTap={readyMotion(isReady, 0.98)}
       className={cn("relative", className)}
     >
-      {isReady && (
-        <motion.span
-          aria-hidden
-          className="absolute inset-0 rounded-md bg-primary/40 blur-md"
-          animate={{ opacity: [0.3, 0.7, 0.3] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
-      )}
+      {isReady && <ReadyPulse />}
       <Button
         type="button"
         size="lg"
@@ -50,17 +76,7 @@ export function GenerateButton({
           isReady && "bg-gradient-to-r from-primary to-primary/80 shadow-lg"
         )}
       >
-        {isGenerating ? (
-          <>
-            <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-            Gerando…
-          </>
-        ) : (
-          <>
-            <Sparkles className="h-5 w-5 mr-2" />
-            {label}
-          </>
-        )}
+        <ButtonContent isGenerating={isGenerating} label={label} />
       </Button>
     </motion.div>
   );

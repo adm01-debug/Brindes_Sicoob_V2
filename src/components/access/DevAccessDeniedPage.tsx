@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { recordDevRouteTelemetry } from "@/lib/access/dev-route-telemetry";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
@@ -123,6 +123,29 @@ function getRoleCopy(role: DevAccessUserRole, blockedPath: string): RoleCopy {
     };
   }
 
+  if (normalized === "gestor_compras" || normalized === "comprador_singular") {
+    return {
+      badge: "Gestor de Compras",
+      title: "Área técnica restrita à equipe de Desenvolvimento",
+      intro: (
+        <>
+          Seu papel permite gerir aprovações, pedidos consolidados e a operação
+          da Singular. Ferramentas de infraestrutura e telemetria exigem o
+          papel <strong>Desenvolvedor</strong>.
+        </>
+      ),
+      hint: (
+        <>
+          Se precisar investigar um incidente técnico, descreva o motivo e
+          encaminhe a solicitação à equipe responsável.
+        </>
+      ),
+      contextualCtaLabel: "Voltar ao Painel Gestor",
+      contextualCtaPath: "/gestor",
+      contextualCtaIcon: <ShoppingCart className="h-4 w-4 mr-2" />,
+    };
+  }
+
   // Fallback genérico (ex.: papel não mapeado).
   return {
     badge: "Sem permissão",
@@ -147,6 +170,14 @@ function getRoleCopy(role: DevAccessUserRole, blockedPath: string): RoleCopy {
     contextualCtaPath: "/",
     contextualCtaIcon: <ArrowLeft className="h-4 w-4 mr-2" />,
   };
+}
+
+function AccessRequestButton({ submitting, isAgent, onRequest }: { submitting: boolean; isAgent: boolean; onRequest: () => void }) {
+  return <Button onClick={onRequest} disabled={submitting} variant={isAgent ? "outline" : "default"} className="w-full">{submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}{isAgent ? "Solicitar via Suporte" : "Solicitar acesso a Dev"}</Button>;
+}
+
+function isAgentRole(role: DevAccessUserRole) {
+  return role === "agente" || role === "agent" || role === "vendedor";
 }
 
 /**
@@ -175,8 +206,7 @@ export function DevAccessDeniedPage({
   const [copied, setCopied] = useState(false);
 
   const copy = getRoleCopy(role, blockedPath);
-  const isAgente =
-    role === "agente" || role === "agent" || role === "vendedor";
+  const isAgente = isAgentRole(role);
   const isSupervisor = role === "supervisor";
 
   // ---- Telemetria de UX (sem PII) -----------------------------------------
@@ -184,21 +214,20 @@ export function DevAccessDeniedPage({
   // final (back/retry/fallback/request_access/abandon).
   const viewedAtRef = useRef<number>(Date.now());
   const finalizedRef = useRef<boolean>(false);
-  const sinceView = () => Date.now() - viewedAtRef.current;
-  const emit = (event: Parameters<typeof recordDevRouteTelemetry>[0]["event"]) =>
+  const emit = useCallback((event: Parameters<typeof recordDevRouteTelemetry>[0]["event"]) =>
     void recordDevRouteTelemetry({
       event,
       blockedPath,
       userRole: typeof role === "string" ? role : null,
-      durationMs: sinceView(),
-    });
-  const finalize = (
+      durationMs: Date.now() - viewedAtRef.current,
+    }), [blockedPath, role]);
+  const finalize = useCallback((
     event: Parameters<typeof recordDevRouteTelemetry>[0]["event"],
   ) => {
     if (finalizedRef.current) return;
     finalizedRef.current = true;
     emit(event);
-  };
+  }, [emit]);
 
   // 1) Registra "view" uma única vez ao montar (sem duration).
   useEffect(() => {
@@ -224,7 +253,7 @@ export function DevAccessDeniedPage({
       document.removeEventListener("visibilitychange", onHide);
       if (!finalizedRef.current) finalize("abandon");
     };
-  }, []);
+  }, [finalize]);
   // -------------------------------------------------------------------------
 
   const handleRequestAccess = async () => {
@@ -285,21 +314,7 @@ export function DevAccessDeniedPage({
     }
   };
 
-  const requestButton = (
-    <Button
-      onClick={handleRequestAccess}
-      disabled={submitting}
-      variant={isAgente ? "outline" : "default"}
-      className="w-full"
-    >
-      {submitting ? (
-        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-      ) : (
-        <Send className="h-4 w-4 mr-2" />
-      )}
-      {isAgente ? "Solicitar via Suporte" : "Solicitar acesso a Dev"}
-    </Button>
-  );
+  const requestButton = <AccessRequestButton submitting={submitting} isAgent={isAgente} onRequest={handleRequestAccess} />;
 
   return (
     <>
@@ -356,7 +371,7 @@ export function DevAccessDeniedPage({
               <p className="text-[10px] font-medium text-muted-foreground/50 uppercase tracking-widest">
                 Identificador de Segurança
               </p>
-              <p className="text-xs font-mono text-muted-foreground mt-1 bg-muted/30 py-1 px-2 rounded inline-block">
+              <p data-testid="dev-access-request-id" className="text-xs font-mono text-muted-foreground mt-1 bg-muted/30 py-1 px-2 rounded inline-block">
                 REQ-{blockedPath.split('/').filter(Boolean).pop()?.toUpperCase() || 'ROOT'}
               </p>
             </div>
@@ -500,6 +515,7 @@ export function DevAccessDeniedPage({
             </Button>
             <Button
               variant="secondary"
+              data-testid="dev-access-contextual-cta"
               onClick={() => {
                 finalize("fallback");
                 navigate(copy.contextualCtaPath, { replace: true });

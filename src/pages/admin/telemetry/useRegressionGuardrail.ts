@@ -41,37 +41,39 @@ export interface GuardrailReport {
 
 const QUERY_KEY = ['telemetry', 'regression-guardrail'];
 
+function errorReport(message: string): GuardrailReport {
+  return { status: 'error', reasons: [message], errorMessage: message };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function parseGuardrailReport(value: unknown): GuardrailReport {
+  const payload = isRecord(value) ? value : {};
+  if (payload.error) return errorReport(String(payload.error));
+  return {
+    status: (payload.status as GuardrailStatus) ?? 'insufficient_data',
+    reasons: Array.isArray(payload.reasons) ? (payload.reasons as string[]) : [],
+    current: payload.current as GuardrailWindow | undefined,
+    baseline: payload.baseline as GuardrailWindow | undefined,
+    deltas: payload.deltas as GuardrailDeltas | undefined,
+    checked_at: payload.checked_at as string | undefined,
+  };
+}
+
+async function fetchRegressionGuardrail(): Promise<GuardrailReport> {
+  const { data, error } = await supabase.rpc('check_telemetry_regression');
+  if (error) return errorReport(error.message);
+  return parseGuardrailReport(data);
+}
+
 export function useRegressionGuardrail() {
   const { data, isLoading, refetch, dataUpdatedAt } = useQuery({
     queryKey: QUERY_KEY,
     refetchInterval: 60_000,
     staleTime: 30_000,
-    queryFn: async (): Promise<GuardrailReport> => {
-      const { data, error } = await supabase.rpc('check_telemetry_regression');
-      if (error) {
-        return {
-          status: 'error',
-          reasons: [error.message],
-          errorMessage: error.message,
-        };
-      }
-      const payload = data as Record<string, unknown>;
-      if (payload?.error) {
-        return {
-          status: 'error',
-          reasons: [String(payload.error)],
-          errorMessage: String(payload.error),
-        };
-      }
-      return {
-        status: (payload?.status as GuardrailStatus) ?? 'insufficient_data',
-        reasons: Array.isArray(payload?.reasons) ? (payload.reasons as string[]) : [],
-        current: payload?.current as GuardrailWindow | undefined,
-        baseline: payload?.baseline as GuardrailWindow | undefined,
-        deltas: payload?.deltas as GuardrailDeltas | undefined,
-        checked_at: payload?.checked_at as string | undefined,
-      };
-    },
+    queryFn: fetchRegressionGuardrail,
   });
 
   return {

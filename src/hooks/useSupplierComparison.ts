@@ -30,7 +30,7 @@ export function useSupplierComparison(product: Product | null | undefined) {
     { enabled: !!product && !!categoryName, staleTime: 10 * 60 * 1000 }
   );
 
-  const result = useMemo((): SupplierComparisonResult | null => {
+  return useMemo((): SupplierComparisonResult | null => {
     if (!product || categoryProducts.length === 0) return null;
 
     const baseProduct = product;
@@ -83,7 +83,6 @@ export function useSupplierComparison(product: Product | null | undefined) {
     };
   }, [product, categoryProducts]);
 
-  return result;
 }
 
 const STOP_WORDS = new Set(['de', 'da', 'do', 'dos', 'das', 'a', 'o', 'e', 'em', 'com', 'para', 'por', 'um', 'uma', 'no', 'na']);
@@ -113,10 +112,9 @@ export function getSupplierProductsInCategory(
     if (product.category.id !== categoryId) return;
 
     const supplierId = product.supplier.id;
-    if (!supplierMap.has(supplierId)) {
-      supplierMap.set(supplierId, []);
-    }
-    supplierMap.get(supplierId)!.push(product);
+    const supplierProducts = supplierMap.get(supplierId) ?? [];
+    supplierProducts.push(product);
+    supplierMap.set(supplierId, supplierProducts);
   });
 
   return supplierMap;

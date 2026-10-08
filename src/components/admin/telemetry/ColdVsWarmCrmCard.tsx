@@ -10,6 +10,7 @@
  *
  * Snapshot reseta sempre que o runtime descarta o isolate por ociosidade.
  */
+import { isNullish } from "@/components/admin/utils/nullish";
 import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -44,7 +45,7 @@ const functionUrl = getSupabaseFunctionUrl('crm-db-bridge', 'op=diag');
 const POLL_MS = 30_000;
 
 function fmtMs(v: number | null | undefined): string {
-  if (v == null) return '—';
+  if (isNullish(v)) return '—';
   if (v < 1000) return `${Math.round(v)} ms`;
   return `${(v / 1000).toFixed(2)} s`;
 }
@@ -57,10 +58,17 @@ function fmtAge(ms: number): string {
 }
 
 function tone(ms: number | null | undefined, warn: number, bad: number): string {
-  if (ms == null) return 'text-muted-foreground';
+  if (isNullish(ms)) return 'text-muted-foreground';
   if (ms >= bad) return 'text-destructive';
   if (ms >= warn) return 'text-warning';
   return 'text-foreground';
+}
+
+function WarmBadge({ warm }: { warm: boolean }) {
+  if (warm) {
+    return <Badge className="bg-success/15 text-success border-success/30 text-[10px]"><Flame className="h-3 w-3 mr-1" />warm</Badge>;
+  }
+  return <Badge className="bg-muted text-muted-foreground border-border text-[10px]"><Snowflake className="h-3 w-3 mr-1" />cold / aquecendo</Badge>;
 }
 
 export function ColdVsWarmCrmCard() {
@@ -98,23 +106,13 @@ export function ColdVsWarmCrmCard() {
     return () => clearInterval(id);
   }, [fetchDiag]);
 
-  const warmBadge = snap?.warm ? (
-    <Badge className="bg-success/15 text-success border-success/30 text-[10px]">
-      <Flame className="h-3 w-3 mr-1" />warm
-    </Badge>
-  ) : (
-    <Badge className="bg-muted text-muted-foreground border-border text-[10px]">
-      <Snowflake className="h-3 w-3 mr-1" />cold / aquecendo
-    </Badge>
-  );
-
   return (
-    <Card>
+    (<Card>
       <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-base flex items-center gap-2">
           <Thermometer className="h-4 w-4" />
           Cold vs Warm — <span className="font-mono text-sm">crm-db-bridge</span>
-          {snap && warmBadge}
+          {snap && <WarmBadge warm={snap.warm} />}
           <Badge variant="secondary" className="text-[10px]">isolate atual · poll 30s</Badge>
         </CardTitle>
         <Button variant="outline" size="sm" onClick={fetchDiag} disabled={loading}>
@@ -191,7 +189,7 @@ export function ColdVsWarmCrmCard() {
           </>
         )}
       </CardContent>
-    </Card>
+    </Card>)
   );
 }
 

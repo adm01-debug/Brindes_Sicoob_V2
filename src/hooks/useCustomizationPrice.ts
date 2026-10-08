@@ -19,6 +19,21 @@ export interface CalculatePriceParamsV6 {
   alturaCm?: number | null;
 }
 
+function buildPriceRpcParams(params: CalculatePriceParamsV6) {
+  const rpcParams: Record<string, unknown> = {
+    p_area_id: params.areaId,
+    p_quantidade: params.quantidade,
+    p_num_cores: params.numCores ?? 1,
+  };
+  if (typeof params.larguraCm === "number" && params.larguraCm > 0) {
+    rpcParams.p_largura_cm = params.larguraCm;
+  }
+  if (typeof params.alturaCm === "number" && params.alturaCm > 0) {
+    rpcParams.p_altura_cm = params.alturaCm;
+  }
+  return rpcParams;
+}
+
 export function useCustomizationPriceCalculator() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,18 +45,7 @@ export function useCustomizationPriceCalculator() {
     setError(null);
 
     try {
-      const rpcParams: Record<string, unknown> = {
-        p_area_id: params.areaId,
-        p_quantidade: params.quantidade,
-        p_num_cores: params.numCores ?? 1,
-      };
-
-      if (params.larguraCm != null && params.larguraCm > 0) {
-        rpcParams.p_largura_cm = params.larguraCm;
-      }
-      if (params.alturaCm != null && params.alturaCm > 0) {
-        rpcParams.p_altura_cm = params.alturaCm;
-      }
+      const rpcParams = buildPriceRpcParams(params);
 
       const result = await invokeExternalRpc<CustomizationPriceResponseV6>(
         'fn_get_customization_price',
@@ -73,10 +77,13 @@ export function useCustomizationPriceReactive(
   techniqueId: string | null,
   quantidade: number,
   numCores: number = 1,
-  larguraCm?: number | null,
-  alturaCm?: number | null,
-  usaDimensao: boolean = false,
+  ...dimensions: [
+    larguraCm?: number | null,
+    alturaCm?: number | null,
+    usaDimensao?: boolean,
+  ]
 ) {
+  const [larguraCm, alturaCm, usaDimensao = false] = dimensions;
   const [price, setPrice] = useState<CustomizationPriceResponseV6 | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

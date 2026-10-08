@@ -2,16 +2,13 @@
  * Comprehensive tests for AdminTelemetriaPage
  * Covers: rendering, filters, stats, exports, cleanup, table display, edge cases
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, fireEvent, within } from '../test-utils';
-import { act } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, waitFor } from '../test-utils';
 
 // ============================================
 // MOCKS
 // ============================================
 
-const mockSelect = vi.fn();
-const mockDelete = vi.fn();
 const mockFrom = vi.fn();
 
 vi.mock('@/integrations/supabase/client', () => ({
@@ -80,8 +77,6 @@ vi.mock('@/components/layout/MainLayout', () => ({
   MainLayout: ({ children }: any) => <div data-testid="main-layout">{children}</div>,
 }));
 
-import { toast } from 'sonner';
-
 // ============================================
 // TEST DATA FACTORIES
 // ============================================
@@ -107,7 +102,7 @@ function createTelemetryRow(overrides: Partial<any> = {}): any {
 
 let _rowCounter = 0;
 function createManyRows(count: number, template: Partial<any> = {}): any[] {
-  return Array.from({ length: count }, (_, i) => {
+  return Array.from({ length: count }, () => {
     const idx = _rowCounter++;
     return createTelemetryRow({
       id: `row-${idx}`,
@@ -117,34 +112,11 @@ function createManyRows(count: number, template: Partial<any> = {}): any[] {
   });
 }
 
-function createMixedRows(): any[] {
-  return [
-    ...createManyRows(50, { severity: 'slow', duration_ms: 4000, table_name: 'products' }),
-    ...createManyRows(20, { severity: 'very_slow', duration_ms: 10000, table_name: 'product_images' }),
-    ...createManyRows(10, { severity: 'error', duration_ms: 15000, table_name: 'categories', error_message: 'statement timeout' }),
-    ...createManyRows(5, { severity: 'slow', duration_ms: 3500, rpc_name: 'get_price', table_name: null }),
-    ...createManyRows(15, { severity: 'very_slow', duration_ms: 9000, table_name: 'product_variants' }),
-  ];
-}
-
 // ============================================
 // SETUP
 // ============================================
 
 function setupSupabaseMock(rows: any[] = [], error: any = null) {
-  const chainObj = {
-    select: vi.fn().mockReturnThis(),
-    gte: vi.fn().mockReturnThis(),
-    lte: vi.fn().mockReturnThis(),
-    order: vi.fn().mockReturnThis(),
-    limit: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    lt: vi.fn().mockReturnThis(),
-    delete: vi.fn().mockReturnThis(),
-    then: vi.fn().mockImplementation((cb: any) => cb({ data: rows, error })),
-  };
-
-  // Make all chain methods return chainObj, but the last one resolves
   const resolveChain = () => {
     const chain: any = {};
     for (const key of ['select', 'gte', 'lte', 'order', 'limit', 'eq', 'lt']) {
@@ -166,7 +138,7 @@ function setupSupabaseMock(rows: any[] = [], error: any = null) {
     value: (resolve: any) => resolve({ error: null }),
   });
 
-  mockFrom.mockImplementation((table: string) => {
+  mockFrom.mockImplementation(() => {
     return {
       select: vi.fn().mockReturnValue(selectChain),
       delete: vi.fn().mockReturnValue(deleteChain),

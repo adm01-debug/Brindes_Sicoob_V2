@@ -20,7 +20,54 @@ interface BulkAddToCartModalProps {
   onDone?: () => void;
 }
 
-export function BulkAddToCartModal({ open, onOpenChange, products, variantSelections, onDone }: BulkAddToCartModalProps) {
+function getItems(products: Product[], selections?: BulkVariantSelection[]): BulkVariantSelection[] {
+  return selections?.length ? selections : products.map((product) => ({ product, variant: null }));
+}
+
+function toCartItem(item: BulkVariantSelection) {
+  const { product, variant } = item;
+  return {
+    product_id: product.id,
+    product_name: product.name,
+    product_sku: product.sku || undefined,
+    product_image_url: variant?.selected_thumbnail || product.images?.[0] || undefined,
+    product_price: product.price,
+    quantity: 1,
+    color_name: variant?.color_name || undefined,
+    color_hex: variant?.color_hex || undefined,
+  };
+}
+
+function plural(count: number, singular: string, pluralValue: string) {
+  return count > 1 ? pluralValue : singular;
+}
+
+function VariantSummary({ selections }: { selections?: BulkVariantSelection[] }) {
+  if (!selections?.some((selection) => selection.variant)) return null;
+  return <div className="space-y-1 max-h-32 overflow-y-auto">{selections.map((selection, index) => <div key={`${selection.product.id}-${index}`} className="flex items-center gap-2 text-xs text-muted-foreground"><span className="truncate flex-1">{selection.product.name}</span>{selection.variant ? <span className="text-foreground font-medium shrink-0">{selection.variant.color_name}{selection.variant.size_code && ` — ${selection.variant.size_code}`}</span> : <span className="text-muted-foreground/60 shrink-0">Sem cor</span>}</div>)}</div>;
+}
+
+function SubmitButton({ adding, done, onClick }: { adding: boolean; done: boolean; onClick: () => void }) {
+  let content = <><ShoppingBag className="h-4 w-4" />Adicionar ao Carrinho</>;
+  if (adding) content = <><Loader2 className="h-4 w-4 animate-spin" />Adicionando...</>;
+  if (done) content = <><Check className="h-4 w-4" />Adicionado!</>;
+  return <Button className="w-full gap-2" onClick={onClick} disabled={adding || done}>{content}</Button>;
+}
+
+interface CartContentProps {
+  companyName: string;
+  count: number;
+  selections?: BulkVariantSelection[];
+  adding: boolean;
+  done: boolean;
+  onAdd: () => void;
+}
+
+function CartContent(props: CartContentProps) {
+  return <div className="space-y-4 py-2"><div className="rounded-lg bg-muted/40 border border-border/50 p-3"><p className="text-xs text-muted-foreground mb-1">Carrinho ativo</p><p className="text-sm font-medium">{props.companyName}</p></div><VariantSummary selections={props.selections} /><div className="text-sm text-muted-foreground">{props.count} produto{plural(props.count, "", "s")} será{plural(props.count, "", "ão")} adicionado{plural(props.count, "", "s")} com quantidade 1.</div><SubmitButton adding={props.adding} done={props.done} onClick={props.onAdd} /></div>;
+}
+
+function useBulkAdd({ open, onOpenChange, products, variantSelections, onDone }: BulkAddToCartModalProps) {
   const { activeCart, addToActiveCart } = useSellerCartContext();
   const [adding, setAdding] = useState(false);
   const [done, setDone] = useState(false);
@@ -31,30 +78,13 @@ export function BulkAddToCartModal({ open, onOpenChange, products, variantSelect
 
   const handleAdd = useCallback(async () => {
     if (!activeCart) return;
-
-    const items = variantSelections && variantSelections.length > 0
-      ? variantSelections
-      : products.map(p => ({ product: p, variant: null }));
-
+    const items = getItems(products, variantSelections);
     if (items.length === 0) return;
     setAdding(true);
     try {
-      for (const item of items) {
-        const p = item.product;
-        const v = item.variant;
-        addToActiveCart({
-          product_id: p.id,
-          product_name: p.name,
-          product_sku: p.sku || undefined,
-          product_image_url: v?.selected_thumbnail || p.images?.[0] || undefined,
-          product_price: p.price,
-          quantity: 1,
-          color_name: v?.color_name || undefined,
-          color_hex: v?.color_hex || undefined,
-        });
-      }
+      items.forEach((item) => addToActiveCart(toCartItem(item)));
       setDone(true);
-      toast.success(`${items.length} produto${items.length > 1 ? 's' : ''} adicionado${items.length > 1 ? 's' : ''} ao carrinho`, {
+      toast.success(`${items.length} produto${plural(items.length, "", "s")} adicionado${plural(items.length, "", "s")} ao carrinho`, {
         description: activeCart.company_name,
       });
       setTimeout(() => {
@@ -67,8 +97,12 @@ export function BulkAddToCartModal({ open, onOpenChange, products, variantSelect
       setAdding(false);
     }
   }, [activeCart, products, variantSelections, addToActiveCart, onOpenChange, onDone]);
+  return { activeCart, adding, done, handleAdd };
+}
 
-  const hasCart = !!activeCart;
+export function BulkAddToCartModal(props: BulkAddToCartModalProps) {
+  const { open, onOpenChange, products, variantSelections } = props;
+  const { activeCart, adding, done, handleAdd } = useBulkAdd(props);
   const count = variantSelections?.length || products.length;
 
   return (
@@ -77,68 +111,17 @@ export function BulkAddToCartModal({ open, onOpenChange, products, variantSelect
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
             <ShoppingBag className="h-4 w-4 text-cart" />
-            Adicionar {count} produto{count > 1 ? 's' : ''} ao carrinho
+            Adicionar {count} produto{plural(count, "", "s")} ao carrinho
           </DialogTitle>
         </DialogHeader>
 
-        {!hasCart ? (
+        {!activeCart ? (
           <CartCompanyPicker
             onCreated={() => {}}
             onCancel={() => onOpenChange(false)}
           />
         ) : (
-          <div className="space-y-4 py-2">
-            <div className="rounded-lg bg-muted/40 border border-border/50 p-3">
-              <p className="text-xs text-muted-foreground mb-1">Carrinho ativo</p>
-              <p className="text-sm font-medium">{activeCart.company_name}</p>
-            </div>
-
-            {/* Show variant selections summary */}
-            {variantSelections && variantSelections.some(s => s.variant) && (
-              <div className="space-y-1 max-h-32 overflow-y-auto">
-                {variantSelections.map((s, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="truncate flex-1">{s.product.name}</span>
-                    {s.variant ? (
-                      <span className="text-foreground font-medium shrink-0">
-                        {s.variant.color_name}
-                        {s.variant.size_code && ` — ${s.variant.size_code}`}
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground/60 shrink-0">Sem cor</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="text-sm text-muted-foreground">
-              {count} produto{count > 1 ? 's' : ''} será{count > 1 ? 'ão' : ''} adicionado{count > 1 ? 's' : ''} com quantidade 1.
-            </div>
-
-            <Button
-              className="w-full gap-2"
-              onClick={handleAdd}
-              disabled={adding || done}
-            >
-              {done ? (
-                <>
-                  <Check className="h-4 w-4" />
-                  Adicionado!
-                </>
-              ) : adding ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Adicionando...
-                </>
-              ) : (
-                <>
-                  <ShoppingBag className="h-4 w-4" />
-                  Adicionar ao Carrinho
-                </>
-              )}
-            </Button>
-          </div>
+          <CartContent companyName={activeCart.company_name} count={count} selections={variantSelections} adding={adding} done={done} onAdd={handleAdd} />
         )}
       </DialogContent>
     </Dialog>

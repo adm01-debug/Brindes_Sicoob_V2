@@ -8,17 +8,82 @@ import {
   type SicoobOrderItemLog,
 } from "@/types/sicoob/orders";
 
+const UNAUTHENTICATED_USER_ERROR = "Usuário não autenticado";
+
 interface ApprovalTransitionInput {
   orderId: string;
   currentStatus: string;
   observations?: string;
 }
 
+interface OrderListFilters {
+  search?: string;
+  status?: string;
+  statuses?: string[];
+  pa_id?: string;
+  cooperative_id?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+function createSicoobOrderQuery() {
+  return supabase
+    .from("sicoob_orders")
+    .select("*, pa:postos_atendimento(nome), cooperativa:cooperativas(nome)", { count: "exact" });
+}
+
+type SicoobOrderQuery = ReturnType<typeof createSicoobOrderQuery>;
+
+function applyStatusFilter(query: SicoobOrderQuery, filters?: OrderListFilters): SicoobOrderQuery {
+  if (filters?.statuses?.length) return query.in("status", filters.statuses);
+  if (filters?.status && filters.status !== "all") return query.eq("status", filters.status);
+  return query;
+}
+
+function applyOrganizationFilters(query: SicoobOrderQuery, filters?: OrderListFilters): SicoobOrderQuery {
+  let filtered = query;
+  if (filters?.pa_id && filters.pa_id !== "all") filtered = filtered.eq("pa_id", filters.pa_id);
+  if (filters?.cooperative_id && filters.cooperative_id !== "all") {
+    filtered = filtered.eq("cooperative_id", filters.cooperative_id);
+  }
+  return filtered;
+}
+
+function applyPeriodAndSearch(query: SicoobOrderQuery, filters?: OrderListFilters): SicoobOrderQuery {
+  let filtered = query;
+  if (filters?.from) filtered = filtered.gte("created_at", filters.from);
+  if (filters?.to) filtered = filtered.lte("created_at", filters.to);
+  if (filters?.search) {
+    const term = filters.search.toLowerCase().trim();
+    filtered = filtered.or(`order_number.ilike.%${term}%,notes.ilike.%${term}%,tracking_code.ilike.%${term}%`);
+  }
+  return filtered;
+}
+
+function applyProfileScope(
+  query: SicoobOrderQuery,
+  profile: { role: string | null; pa_id: string | null; cooperativa_id: string | null } | null,
+): SicoobOrderQuery {
+  if (profile?.role === "gestor_pa" && profile.pa_id) return query.eq("pa_id", profile.pa_id);
+  if (profile?.role === "gestor_singular" && profile.cooperativa_id) {
+    return query.eq("cooperative_id", profile.cooperativa_id);
+  }
+  return query;
+}
+
+function applyPagination(query: SicoobOrderQuery, filters?: OrderListFilters): SicoobOrderQuery {
+  if (!filters?.page || !filters.pageSize) return query;
+  const from = (filters.page - 1) * filters.pageSize;
+  return query.range(from, from + filters.pageSize - 1);
+}
+
 async function prepareOrderConfirmation({ orderId, currentStatus, observations }: ApprovalTransitionInput): Promise<void> {
   const { error } = await supabase.rpc('prepare_sicoob_order_confirmation', {
     p_order_id: orderId,
     p_expected_status: currentStatus,
-    p_comment: observations || null,
+    p_comment: observations || undefined,
   });
   if (error) throw error;
 }
@@ -76,62 +141,18 @@ async function executeApprovalStatusTransition(
  * but client-side checks provide better UX.
  */
 export const sicoobOrderService = {
-  async listOrders(filters?: { 
-    search?: string, 
-    status?: string, 
-    statuses?: string[],
-    pa_id?: string, 
-    cooperative_id?: string,
-    from?: string,
-    to?: string,
-    page?: number,
-    pageSize?: number
-  }): Promise<{ orders: SicoobOrder[], total: number }> {
+  async listOrders(filters?: OrderListFilters): Promise<{ orders: SicoobOrder[], total: number }> {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuário não autenticado");
+    if (!user) throw new Error(UNAUTHENTICATED_USER_ERROR);
 
-    let query = supabase.from("sicoob_orders")
-      .select("*, pa:postos_atendimento(nome), cooperativa:cooperativas(nome)", { count: "exact" });
-
-    if (filters?.statuses?.length) {
-      query = query.in("status", filters.statuses);
-    } else if (filters?.status && filters.status !== "all") {
-      query = query.eq("status", filters.status);
-    }
-    if (filters?.pa_id && filters.pa_id !== "all") {
-      query = query.eq("pa_id", filters.pa_id);
-    }
-    if (filters?.cooperative_id && filters.cooperative_id !== "all") {
-      query = query.eq("cooperative_id", filters.cooperative_id);
-    }
-    if (filters?.from) {
-      query = query.gte("created_at", filters.from);
-    }
-    if (filters?.to) {
-      query = query.lte("created_at", filters.to);
-    }
-
-    if (filters?.search) {
-      const term = filters.search.toLowerCase().trim();
-      // Em uma implementação enterprise real, usaríamos busca full-text ou um operador or complexo.
-      // Aqui, aplicamos o filtro na query principal para campos suportados.
-      query = query.or(`order_number.ilike.%${term}%,notes.ilike.%${term}%,tracking_code.ilike.%${term}%`);
-    }
+    let query = applyStatusFilter(createSicoobOrderQuery(), filters);
+    query = applyOrganizationFilters(query, filters);
+    query = applyPeriodAndSearch(query, filters);
 
     const { data: profile } = await supabase.from("profiles").select("role, pa_id, cooperativa_id").eq("user_id", user.id).single();
 
-    if (profile?.role === 'gestor_pa' && profile.pa_id) {
-      query = query.eq("pa_id", profile.pa_id);
-    } else if (profile?.role === 'gestor_singular' && profile.cooperativa_id) {
-      query = query.eq("cooperative_id", profile.cooperativa_id);
-    }
-
-    // Paginação no servidor para performance máxima
-    if (filters?.page && filters?.pageSize) {
-      const from = (filters.page - 1) * filters.pageSize;
-      const to = from + filters.pageSize - 1;
-      query = query.range(from, to);
-    }
+    query = applyProfileScope(query, profile);
+    query = applyPagination(query, filters);
 
     const { data, error, count } = await query
       .order("created_at", { ascending: false })
@@ -146,7 +167,7 @@ export const sicoobOrderService = {
 
   async getOrderById(id: string): Promise<SicoobOrder> {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuário não autenticado");
+    if (!user) throw new Error(UNAUTHENTICATED_USER_ERROR);
 
     const { data, error } = await supabase
       .from("sicoob_orders")
@@ -160,7 +181,7 @@ export const sicoobOrderService = {
 
   async getOrderItems(orderId: string): Promise<SicoobOrderItem[]> {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuário não autenticado");
+    if (!user) throw new Error(UNAUTHENTICATED_USER_ERROR);
 
     const { data, error } = await supabase
       .from("sicoob_order_items")
@@ -172,7 +193,7 @@ export const sicoobOrderService = {
 
   async getItemLogs(orderId: string): Promise<SicoobOrderItemLog[]> {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuário não autenticado");
+    if (!user) throw new Error(UNAUTHENTICATED_USER_ERROR);
 
     const { data, error } = await supabase
       .from("sicoob_order_item_logs")
@@ -199,7 +220,7 @@ export const sicoobOrderService = {
     }
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuário não autenticado");
+    if (!user) throw new Error(UNAUTHENTICATED_USER_ERROR);
 
     const approvalTransitionExecuted = await executeApprovalStatusTransition(
       orderId,
@@ -212,7 +233,7 @@ export const sicoobOrderService = {
         p_order_id: orderId,
         p_expected_status: currentStatus,
         p_new_status: status,
-        p_comment: observations || null,
+        p_comment: observations || undefined,
       });
       if (error) throw error;
     }
@@ -240,7 +261,8 @@ export const sicoobOrderService = {
       if (res.status === 'fulfilled') {
         successes.push(res.value);
       } else {
-        failures.push({ id: orderIds[index]!, reason: res.reason?.message || "Erro desconhecido" });
+        const orderId = orderIds[index];
+        if (orderId) failures.push({ id: orderId, reason: res.reason?.message || "Erro desconhecido" });
       }
     });
 

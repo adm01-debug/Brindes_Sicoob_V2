@@ -1,18 +1,6 @@
-import { useState } from "react";
+import { type ElementType, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Bot,
-  Sparkles,
-  MessageCircle,
-  X,
-  Send,
-  Loader2,
-  Lightbulb,
-  Palette,
-  Ruler,
-  Target,
-  ChevronDown,
-} from "lucide-react";
+import { Bot, Sparkles, MessageCircle, X, Send, Loader2, Lightbulb, Palette, Ruler, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -30,14 +18,14 @@ interface Message {
 interface QuickAction {
   id: string;
   label: string;
-  icon: React.ElementType;
+  icon: ElementType;
   action: () => void;
 }
 
 interface AIMockupAssistantProps {
   productName?: string;
   techniqueName?: string;
-  onSuggestionApply?: (type: string, value: any) => void;
+  onSuggestionApply?: (type: string, value: unknown) => void;
   className?: string;
 }
 
@@ -58,12 +46,7 @@ const INITIAL_MESSAGES: Message[] = [
   },
 ];
 
-export function AIMockupAssistant({
-  productName,
-  techniqueName,
-  onSuggestionApply,
-  className,
-}: AIMockupAssistantProps) {
+export function AIMockupAssistant({ productName, techniqueName, className }: AIMockupAssistantProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
@@ -96,7 +79,9 @@ export function AIMockupAssistant({
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: responses[Math.floor(Math.random() * responses.length)],
+        content:
+          responses[Math.floor(Math.random() * responses.length)] ??
+          "Posso ajudar a definir a melhor composição para este mockup.",
         timestamp: new Date(),
       };
 

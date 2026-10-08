@@ -45,3 +45,4 @@ smokeHook("useCatalogFiltering (vazio)", () =>
 );
 
 smokeHook("useComparisonSync", () => useComparisonSync());
+import React from 'react';

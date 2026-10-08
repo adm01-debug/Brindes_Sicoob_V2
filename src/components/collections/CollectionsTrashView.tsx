@@ -12,6 +12,7 @@ import { useProductsContext } from "@/contexts/ProductsContext";
 import { useCollectionsContext } from "@/contexts/CollectionsContext";
 import { DeleteConfirmDialog } from "@/components/common/ConfirmDialog";
 import { EmptyState } from "@/components/ui/EmptyState";
+import type { Product } from "@/hooks/useProducts";
 
 interface TrashRow {
   id: string;
@@ -26,6 +27,17 @@ interface TrashRow {
 interface Props {
   collectionId: string;
   onCountChange?: (n: number) => void;
+}
+
+function daysUntil(expiresAt: string) {
+  return Math.max(0, Math.ceil((new Date(expiresAt).getTime() - Date.now()) / 86400_000));
+}
+
+function TrashCard({ item, product, onRestore, onPurge }: { item: TrashRow; product?: Product; onRestore: (productId: string) => void; onPurge: (id: string) => void }) {
+  const daysLeft = daysUntil(item.expires_at);
+  const thumbnail = item.thumbnail_url ?? product?.images?.[0];
+  const name = product?.name ?? item.product_id;
+  return <div className="flex gap-3 p-3 rounded-xl border border-border bg-card"><div className="w-16 h-16 rounded-lg bg-muted overflow-hidden shrink-0">{thumbnail ? <img src={thumbnail} alt={name} className="w-full h-full object-cover" loading="lazy" /> : null}</div><div className="flex-1 min-w-0"><p className="text-sm font-medium truncate">{name}</p>{item.color_name ? <p className="text-xs text-muted-foreground truncate">Cor: {item.color_name}</p> : null}<Badge variant={daysLeft <= 5 ? "destructive" : "secondary"} className="text-[10px] mt-1">{daysLeft} dia{daysLeft !== 1 ? "s" : ""} restantes</Badge><div className="flex gap-1.5 mt-2"><Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => onRestore(item.product_id)}><RotateCcw className="h-3 w-3 mr-1" /> Restaurar</Button><Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive" onClick={() => onPurge(item.id)}><Trash2 className="h-3 w-3" /></Button></div></div></div>;
 }
 
 export function CollectionsTrashView({ collectionId, onCountChange }: Props) {
@@ -65,11 +77,6 @@ export function CollectionsTrashView({ collectionId, onCountChange }: Props) {
     const products = getProductsByIds(ids);
     return new Map(products.map((p) => [p.id, p]));
   }, [items, getProductsByIds]);
-
-  const formatDaysLeft = (expiresAt: string) => {
-    const ms = new Date(expiresAt).getTime() - Date.now();
-    return Math.max(0, Math.ceil(ms / 86400_000));
-  };
 
   const handleRestore = async (productId: string) => {
     const ok = await restoreFromTrash(collectionId, productId);
@@ -113,7 +120,7 @@ export function CollectionsTrashView({ collectionId, onCountChange }: Props) {
   if (items.length === 0) {
     return (
       <EmptyState
-        variant="default"
+        variant="collections"
         title="Lixeira vazia"
         description="Itens removidos aparecem aqui por 30 dias antes de serem excluídos definitivamente."
       />
@@ -137,52 +144,7 @@ export function CollectionsTrashView({ collectionId, onCountChange }: Props) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {items.map((it) => {
-          const p = productMap.get(it.product_id);
-          const daysLeft = formatDaysLeft(it.expires_at);
-          const thumb = it.thumbnail_url ?? p?.images?.[0];
-          return (
-            <div key={it.id} className="flex gap-3 p-3 rounded-xl border border-border bg-card">
-              <div className="w-16 h-16 rounded-lg bg-muted overflow-hidden shrink-0">
-                {thumb && (
-                  <img
-                    src={thumb}
-                    alt={p?.name ?? it.product_id}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{p?.name ?? it.product_id}</p>
-                {it.color_name && (
-                  <p className="text-xs text-muted-foreground truncate">Cor: {it.color_name}</p>
-                )}
-                <Badge variant={daysLeft <= 5 ? "destructive" : "secondary"} className="text-[10px] mt-1">
-                  {daysLeft} dia{daysLeft !== 1 ? "s" : ""} restantes
-                </Badge>
-                <div className="flex gap-1.5 mt-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-xs"
-                    onClick={() => handleRestore(it.product_id)}
-                  >
-                    <RotateCcw className="h-3 w-3 mr-1" /> Restaurar
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 text-xs text-destructive hover:text-destructive"
-                    onClick={() => handlePurge(it.id)}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+        {items.map((item) => <TrashCard key={item.id} item={item} product={productMap.get(item.product_id)} onRestore={handleRestore} onPurge={handlePurge} />)}
       </div>
 
       <DeleteConfirmDialog

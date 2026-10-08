@@ -15,6 +15,18 @@ interface GroupInheritanceSectionProps {
   toggleGroupRules: (params: { id: string; use_group_rules: boolean }) => void;
 }
 
+function InheritanceAction({ productMembership, isUsingGroupRules, isCopying, copyGroupRulesToProduct, toggleGroupRules }: GroupInheritanceSectionProps) {
+  if (isUsingGroupRules) {
+    return <AlertDialog><AlertDialogTrigger asChild><Button variant="outline" disabled={isCopying}>{isCopying ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Copy className="h-4 w-4 mr-2" />}Customizar</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Customizar regras do produto?</AlertDialogTitle><AlertDialogDescription>Isso irá copiar todas as regras do grupo para este produto, permitindo que você as modifique individualmente.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={copyGroupRulesToProduct}>Copiar e Customizar</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>;
+  }
+  return <AlertDialog><AlertDialogTrigger asChild><Button variant="outline"><Link className="h-4 w-4 mr-2" />Voltar para Grupo</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Voltar a usar regras do grupo?</AlertDialogTitle><AlertDialogDescription>Isso irá descartar as regras customizadas deste produto. Esta ação não pode ser desfeita.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => toggleGroupRules({ id: productMembership.id, use_group_rules: true })}>Usar Regras do Grupo</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>;
+}
+
+function InheritedRulesNotice({ membership, show }: { membership: ProductGroupMember; show: boolean }) {
+  if (!show) return null;
+  return <Card><CardContent className="py-12 text-center"><Link className="h-12 w-12 mx-auto mb-4 text-primary opacity-50" /><h3 className="font-display text-lg font-medium mb-2">Usando regras do grupo</h3><p className="text-muted-foreground mb-4">Este produto está herdando as configurações do grupo <strong>{membership.product_group?.group_name}</strong>.</p><p className="text-sm text-muted-foreground">Clique em "Customizar" acima para criar regras específicas para este produto.</p></CardContent></Card>;
+}
+
 export function GroupInheritanceSection({
   productMembership, isUsingGroupRules, isCopying,
   copyGroupRulesToProduct, toggleGroupRules,
@@ -33,66 +45,12 @@ export function GroupInheritanceSection({
                 <CardDescription>{isUsingGroupRules ? "Este produto herda as regras do grupo" : "Este produto usa regras customizadas"}</CardDescription>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              {isUsingGroupRules ? (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="outline" disabled={isCopying}>
-                      {isCopying ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Copy className="h-4 w-4 mr-2" />}
-                      Customizar
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Customizar regras do produto?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Isso irá copiar todas as regras do grupo para este produto, permitindo que você as modifique individualmente.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction onClick={copyGroupRulesToProduct}>Copiar e Customizar</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              ) : (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="outline"><Link className="h-4 w-4 mr-2" />Voltar para Grupo</Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Voltar a usar regras do grupo?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Isso irá descartar as regras customizadas deste produto. Esta ação não pode ser desfeita.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => toggleGroupRules({ id: productMembership.id, use_group_rules: true })}>
-                        Usar Regras do Grupo
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-            </div>
+            <div className="flex items-center gap-3"><InheritanceAction productMembership={productMembership} isUsingGroupRules={isUsingGroupRules} isCopying={isCopying} copyGroupRulesToProduct={copyGroupRulesToProduct} toggleGroupRules={toggleGroupRules} /></div>
           </div>
         </CardHeader>
       </Card>
 
-      {isUsingGroupRules && (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Link className="h-12 w-12 mx-auto mb-4 text-primary opacity-50" />
-            <h3 className="font-display text-lg font-medium mb-2">Usando regras do grupo</h3>
-            <p className="text-muted-foreground mb-4">
-              Este produto está herdando as configurações do grupo <strong>{productMembership.product_group?.group_name}</strong>.
-            </p>
-            <p className="text-sm text-muted-foreground">Clique em "Customizar" acima para criar regras específicas para este produto.</p>
-          </CardContent>
-        </Card>
-      )}
+      <InheritedRulesNotice membership={productMembership} show={isUsingGroupRules} />
     </>
   );
 }

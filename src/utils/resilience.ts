@@ -60,12 +60,12 @@ export class CircuitBreaker {
     this.state = "CLOSED";
   }
 
-  private onFailure(error: any, duration: number) {
+  private onFailure(error: unknown, duration: number) {
     this.failures++;
     this.lastFailureTime = Date.now();
     
     diagnostics.log('error', `Resilience:${this.options.serviceName}`, `Execution failed (${this.failures}/${this.options.failureThreshold})`, { 
-      error: error?.message || error,
+      error: error instanceof Error ? error.message : String(error),
       duration 
     });
 

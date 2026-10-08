@@ -22,17 +22,27 @@ export interface QuoteFunnelData {
   total: number;
 }
 
+function wasViewed(quote: Quote, viewedMap: Record<string, { viewedAt: string }>): boolean {
+  return Boolean(quote.id && viewedMap[quote.id]);
+}
+
+function quoteCycleDays(quote: Quote): number {
+  if (!quote.created_at || !quote.updated_at) return 0;
+  const start = new Date(quote.created_at).getTime();
+  const end = new Date(quote.updated_at).getTime();
+  return (end - start) / (1000 * 60 * 60 * 24);
+}
+
 export function useQuoteFunnel(quotes: Quote[], viewedMap: Record<string, { viewedAt: string }>): QuoteFunnelData {
   return useMemo(() => {
     const total = quotes.length;
-    const draft = quotes.filter((q) => q.status === "draft").length;
     const sent = quotes.filter((q) => ["sent", "pending", "pending_approval"].includes(q.status as string)).length;
     const approved = quotes.filter((q) => q.status === "approved").length;
     const converted = quotes.filter((q) => q.status === "converted").length;
 
     // viewed = sent OU adiante COM evidência de visualização
     const viewedQualifying = quotes.filter(
-      (q) => ["sent", "pending", "approved", "converted"].includes(q.status as string) && viewedMap[q.id!]
+      (q) => ["sent", "pending", "approved", "converted"].includes(q.status as string) && wasViewed(q, viewedMap)
     ).length;
 
     // Funil cumulativo (cada etapa inclui as posteriores)
@@ -51,11 +61,7 @@ export function useQuoteFunnel(quotes: Quote[], viewedMap: Record<string, { view
     // Ciclo médio: created_at → updated_at de quotes aprovadas/convertidas
     const closed = quotes.filter((q) => ["approved", "converted"].includes(q.status as string) && q.created_at && q.updated_at);
     const avgCycleDays = closed.length > 0
-      ? closed.reduce((sum, q) => {
-          const start = new Date(q.created_at!).getTime();
-          const end = new Date(q.updated_at!).getTime();
-          return sum + (end - start) / (1000 * 60 * 60 * 24);
-        }, 0) / closed.length
+      ? closed.reduce((sum, quote) => sum + quoteCycleDays(quote), 0) / closed.length
       : null;
 
     return { stages, avgCycleDays, total };

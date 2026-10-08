@@ -31,6 +31,19 @@ function statusFromOrder(status: string): SicoobLogisticsStatus {
   return 'pending';
 }
 
+function statusFromShipment(status: string | undefined, fallback: string): SicoobLogisticsStatus {
+  if (status === 'delivered') return 'delivered';
+  if (status === 'in_transit') return 'in_transit';
+  return statusFromOrder(fallback);
+}
+
+function orderDestination(order: SicoobOrder): string {
+  if (order.pa?.nome) return order.pa.nome;
+  if (order.pa_id) return order.pa_id;
+  if (order.delivery_address) return order.delivery_address;
+  return 'Destino não informado';
+}
+
 /**
  * Consolida a visão de rastreamento a partir das fontes canônicas Sicoob.
  * A autorização continua no banco: a consulta de pedidos e a de remessas
@@ -90,19 +103,14 @@ function trackingFromOrder(
     delivery_photo_path: string | null;
   } | undefined,
 ): SicoobLogisticsTracking {
-  const shipmentStatus = shipment?.status;
-  const status: SicoobLogisticsStatus = shipmentStatus === 'delivered' || shipmentStatus === 'in_transit'
-    ? shipmentStatus
-    : statusFromOrder(order.status);
-
   return {
     id: shipment?.id ?? order.id,
     orderId: order.id,
     orderNumber: order.order_number,
-    destination: order.pa?.nome ?? order.pa_id ?? order.delivery_address ?? 'Destino não informado',
+    destination: orderDestination(order),
     carrierName: shipment?.carrier_name ?? null,
     estimatedDelivery: shipment?.estimated_delivery ?? null,
-    status,
+    status: statusFromShipment(shipment?.status, order.status),
     hasDeliveryProof: Boolean(shipment?.delivery_photo_path),
   };
 }

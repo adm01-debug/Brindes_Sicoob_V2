@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { sicoobFulfillmentService, type UpdateSicoobShipmentInput } from '@/services/sicoob/fulfillmentService';
+import { requireOrderId } from '@/hooks/orders/require-order-id';
 
 export function useSicoobShipment(orderId?: string) {
   return useQuery({
     queryKey: ['sicoob_order_shipment', orderId],
-    queryFn: () => sicoobFulfillmentService.getShipment(orderId!),
+    queryFn: () => sicoobFulfillmentService.getShipment(requireOrderId(orderId)),
     enabled: Boolean(orderId),
   });
 }

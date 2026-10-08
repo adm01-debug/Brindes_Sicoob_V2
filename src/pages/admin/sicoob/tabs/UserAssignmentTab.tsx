@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Save, UserCheck, ShieldCheck } from "lucide-react";
+import { Search, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import { RoleBadge } from "@/components/ui/RoleBadge";
 import {
@@ -29,6 +29,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { TablesUpdate } from "@/integrations/supabase/types";
+
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : "Erro desconhecido";
 
 export const UserAssignmentTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -88,7 +92,7 @@ export const UserAssignmentTab = () => {
       role?: string;
       approvalThreshold?: number | null;
     }) => {
-      const updates: any = {};
+      const updates: TablesUpdate<"profiles"> = {};
       if (cooperativaId !== undefined) updates.cooperativa_id = cooperativaId;
       if (paId !== undefined) updates.pa_id = paId;
       if (role !== undefined) updates.role = role;
@@ -104,8 +108,8 @@ export const UserAssignmentTab = () => {
       queryClient.invalidateQueries({ queryKey: ["admin_profiles_sicoob"] });
       toast.success("Usuário atualizado com sucesso");
     },
-    onError: (error: any) => {
-      toast.error(`Erro ao atualizar: ${error.message}`);
+    onError: (error: unknown) => {
+      toast.error(`Erro ao atualizar: ${getErrorMessage(error)}`);
     },
   });
 

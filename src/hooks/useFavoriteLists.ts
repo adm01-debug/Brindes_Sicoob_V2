@@ -46,7 +46,10 @@ export interface FavoriteListItem {
 }
 
 const LISTS_KEY = ["favorite-lists"];
-const ITEMS_KEY = (listId: string) => ["favorite-items", listId];
+const FAVORITE_ITEMS_KEY = "favorite-items";
+const FAVORITE_TRASH_KEY = "favorite-trash";
+const NOT_AUTHENTICATED_ERROR = "not-authenticated";
+const ITEMS_KEY = (listId: string) => [FAVORITE_ITEMS_KEY, listId];
 
 /** Hook principal — gerencia listas do usuário autenticado (sync com Supabase). */
 export function useFavoriteLists() {
@@ -74,7 +77,7 @@ export function useFavoriteLists() {
 
       // Counts em paralelo
       const ids = (data ?? []).map((l) => l.id);
-      let counts: Record<string, number> = {};
+      const counts: Record<string, number> = {};
       if (ids.length) {
         const { data: rows } = await supabase
           .from("favorite_items")
@@ -94,7 +97,7 @@ export function useFavoriteLists() {
 
   const createList = useMutation({
     mutationFn: async (input: Partial<FavoriteList> & { name: string }) => {
-      if (!user) throw new Error("not-authenticated");
+      if (!user) throw new Error(NOT_AUTHENTICATED_ERROR);
       const { data, error } = await supabase
         .from("favorite_lists")
         .insert({
@@ -237,7 +240,7 @@ export function useFavoriteListItems(listId: string | null) {
       note?: string | null;
       priceAtSave?: number | null;
     }) => {
-      if (!user) throw new Error("not-authenticated");
+      if (!user) throw new Error(NOT_AUTHENTICATED_ERROR);
       const { data, error } = await supabase
         .from("favorite_items")
         .upsert(
@@ -289,7 +292,7 @@ export function useFavoriteListItems(listId: string | null) {
     onSuccess: (_id, _vars, ctx) => {
       qc.invalidateQueries({ queryKey: ITEMS_KEY(listId ?? "none") });
       qc.invalidateQueries({ queryKey: LISTS_KEY });
-      qc.invalidateQueries({ queryKey: ["favorite-trash"] });
+      qc.invalidateQueries({ queryKey: [FAVORITE_TRASH_KEY] });
       // Toast com undo: restaura o último item da lixeira (que acabou de ser movido pelo trigger)
       if (!user) return;
       const productName = (ctx as { productName?: string } | undefined)?.productName ?? "Item";
@@ -322,7 +325,7 @@ export function useFavoriteListItems(listId: string | null) {
             await supabase.from("favorite_items_trash").delete().eq("id", trashed.id);
             qc.invalidateQueries({ queryKey: ITEMS_KEY(listId ?? "none") });
             qc.invalidateQueries({ queryKey: LISTS_KEY });
-            qc.invalidateQueries({ queryKey: ["favorite-trash"] });
+            qc.invalidateQueries({ queryKey: [FAVORITE_TRASH_KEY] });
             toast.success("Item restaurado");
           },
         },
@@ -340,7 +343,7 @@ export function useFavoriteListItems(listId: string | null) {
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["favorite-items"] });
+      qc.invalidateQueries({ queryKey: [FAVORITE_ITEMS_KEY] });
       qc.invalidateQueries({ queryKey: LISTS_KEY });
       toast.success("Item movido");
     },
@@ -362,7 +365,7 @@ export function useFavoriteListItems(listId: string | null) {
 export function useFavoriteTrash() {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const KEY = ["favorite-trash"];
+  const KEY = [FAVORITE_TRASH_KEY];
 
   const trashQuery = useQuery({
     queryKey: KEY,
@@ -382,7 +385,7 @@ export function useFavoriteTrash() {
 
   const restoreItem = useMutation({
     mutationFn: async (trashId: string) => {
-      if (!user) throw new Error("not-authenticated");
+      if (!user) throw new Error(NOT_AUTHENTICATED_ERROR);
       const trashed = trashQuery.data?.find((t) => t.id === trashId);
       if (!trashed) throw new Error("Item não encontrado na lixeira");
 
@@ -406,7 +409,7 @@ export function useFavoriteTrash() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: KEY });
       qc.invalidateQueries({ queryKey: LISTS_KEY });
-      qc.invalidateQueries({ queryKey: ["favorite-items"] });
+      qc.invalidateQueries({ queryKey: [FAVORITE_ITEMS_KEY] });
       toast.success("Item restaurado");
     },
     onError: (e: Error) => toast.error(e.message),
@@ -422,7 +425,7 @@ export function useFavoriteTrash() {
 
   const purgeAll = useMutation({
     mutationFn: async () => {
-      if (!user) throw new Error("not-authenticated");
+      if (!user) throw new Error(NOT_AUTHENTICATED_ERROR);
       const { error } = await supabase
         .from("favorite_items_trash")
         .delete()

@@ -2,9 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, act } from '@testing-library/react';
 
 // ── Supabase mock — must be defined inside vi.mock factory ───────────────────
-const mockUnsubscribe = vi.fn();
-let authStateCallback: ((event: string, session: any) => void) | null = null;
-
 vi.mock('@/integrations/supabase/client', () => {
   const mockFrom = vi.fn(() => ({
     select: vi.fn().mockReturnThis(),

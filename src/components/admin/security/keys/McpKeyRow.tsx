@@ -8,7 +8,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { ShieldAlert, RefreshCw, Trash2, Eye, ArrowDownLeft, Pencil } from "lucide-react";
-import type { McpKeyRow } from "./useMcpKeys";
+import type { McpKeyRow as McpKeyData } from "./useMcpKeys";
 
 function formatExpiresIn(expiresAt: string | null): string | null {
   if (!expiresAt) return null;
@@ -33,11 +33,19 @@ function formatRelative(date: string | null): string {
 }
 
 interface Props {
-  row: McpKeyRow;
-  onRotate: (row: McpKeyRow) => void;
-  onRevoke: (row: McpKeyRow) => void;
-  onDetails: (row: McpKeyRow) => void;
-  onEdit: (row: McpKeyRow) => void;
+  row: McpKeyData;
+  onRotate: (row: McpKeyData) => void;
+  onRevoke: (row: McpKeyData) => void;
+  onDetails: (row: McpKeyData) => void;
+  onEdit: (row: McpKeyData) => void;
+}
+
+function McpKeyIdentity({ row, expiresLabel }: { row: McpKeyData; expiresLabel: string | null }) {
+  return <><div className="flex items-center gap-2 flex-wrap"><span className="font-medium truncate">{row.name}</span><code className="text-xs text-muted-foreground">{row.key_prefix}…</code>{row.is_full && <Badge variant="destructive" className="text-xs gap-1"><ShieldAlert className="h-3 w-3" /> FULL</Badge>}{row.status === "revoked" && <Badge variant="destructive" className="text-xs">Revogada</Badge>}{row.status === "expired" && <Badge variant="secondary" className="text-xs">Expirada</Badge>}{row.status === "active" && expiresLabel && <Badge variant="outline" className="text-xs">{expiresLabel}</Badge>}{row.rotated_from && <Badge variant="outline" className="text-xs gap-1" title="Resultado de rotação"><ArrowDownLeft className="h-3 w-3" /> rotação</Badge>}</div><div className="flex flex-wrap gap-1">{row.scopes.map(scope => <Badge key={scope} variant={scope === "*" ? "destructive" : "secondary"} className="text-[10px] font-mono">{scope}</Badge>)}</div><div className="text-xs text-muted-foreground flex flex-wrap gap-x-3 gap-y-0.5"><span>Criada por <strong>{row.creator_email ?? row.creator_name ?? "—"}</strong></span><span>•</span><span>Último uso: {formatRelative(row.last_used_at)}</span></div></>;
+}
+
+function RevokeKeyDialog({ row, onRevoke }: Pick<Props, 'row' | 'onRevoke'>) {
+  return <AlertDialog><AlertDialogTrigger asChild><Button size="sm" variant="ghost" aria-label="Revogar chave"><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Revogar "{row.name}"?</AlertDialogTitle><AlertDialogDescription>A chave para de funcionar imediatamente para todos os clientes que a utilizam. Esta ação é registrada no audit log e <strong>não pode ser desfeita</strong>.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => onRevoke(row)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Revogar</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>;
 }
 
 export function McpKeyRow({ row, onRotate, onRevoke, onDetails, onEdit }: Props) {
@@ -46,45 +54,7 @@ export function McpKeyRow({ row, onRotate, onRevoke, onDetails, onEdit }: Props)
   return (
     <div className="flex items-start justify-between gap-3 p-3 border border-border rounded-md hover:bg-muted/30 transition">
       <div className="flex-1 min-w-0 space-y-1.5">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-medium truncate">{row.name}</span>
-          <code className="text-xs text-muted-foreground">{row.key_prefix}…</code>
-          {row.is_full && (
-            <Badge variant="destructive" className="text-xs gap-1">
-              <ShieldAlert className="h-3 w-3" /> FULL
-            </Badge>
-          )}
-          {row.status === "revoked" && <Badge variant="destructive" className="text-xs">Revogada</Badge>}
-          {row.status === "expired" && <Badge variant="secondary" className="text-xs">Expirada</Badge>}
-          {row.status === "active" && expiresLabel && (
-            <Badge variant="outline" className="text-xs">{expiresLabel}</Badge>
-          )}
-          {row.rotated_from && (
-            <Badge variant="outline" className="text-xs gap-1" title="Resultado de rotação">
-              <ArrowDownLeft className="h-3 w-3" /> rotação
-            </Badge>
-          )}
-        </div>
-
-        <div className="flex flex-wrap gap-1">
-          {row.scopes.map((s) => (
-            <Badge
-              key={s}
-              variant={s === "*" ? "destructive" : "secondary"}
-              className="text-[10px] font-mono"
-            >
-              {s}
-            </Badge>
-          ))}
-        </div>
-
-        <div className="text-xs text-muted-foreground flex flex-wrap gap-x-3 gap-y-0.5">
-          <span>
-            Criada por <strong>{row.creator_email ?? row.creator_name ?? "—"}</strong>
-          </span>
-          <span>•</span>
-          <span>Último uso: {formatRelative(row.last_used_at)}</span>
-        </div>
+        <McpKeyIdentity row={row} expiresLabel={expiresLabel} />
       </div>
 
       <div className="flex items-center gap-1 shrink-0">
@@ -99,32 +69,7 @@ export function McpKeyRow({ row, onRotate, onRevoke, onDetails, onEdit }: Props)
             <Button size="sm" variant="ghost" onClick={() => onRotate(row)} aria-label="Rotacionar chave">
               <RefreshCw className="h-4 w-4" />
             </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button size="sm" variant="ghost" aria-label="Revogar chave">
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Revogar "{row.name}"?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    A chave para de funcionar imediatamente para todos os clientes
-                    que a utilizam. Esta ação é registrada no audit log e{" "}
-                    <strong>não pode ser desfeita</strong>.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => onRevoke(row)}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
-                    Revogar
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <RevokeKeyDialog row={row} onRevoke={onRevoke} />
           </>
         )}
       </div>

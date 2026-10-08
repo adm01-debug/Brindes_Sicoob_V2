@@ -8,7 +8,7 @@
  * 
  * Este arquivo contém o hook principal e re-exporta tudo para compatibilidade.
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, type Dispatch, type SetStateAction } from 'react';
 import { toast } from 'sonner';
 
 // Re-exportar tudo dos módulos para manter compatibilidade de imports
@@ -59,6 +59,7 @@ interface QueryOptions {
   orderBy?: { column: string; ascending?: boolean };
   limit?: number;
   offset?: number;
+  countMode?: 'exact' | 'planned' | 'estimated' | 'none';
 }
 
 interface QueryResult<T> {
@@ -78,6 +79,46 @@ interface ExternalDatabaseState<T> {
   count: number | null;
   isLoading: boolean;
   error: string | null;
+}
+
+type StateSetter<T> = Dispatch<SetStateAction<ExternalDatabaseState<T>>>;
+
+async function invokeExternalOperation<T extends object>(
+  tableName: ExternalTable,
+  operation: Operation,
+  options?: QueryOptions & { data?: Partial<T> },
+): Promise<EdgeFunctionEnvelope> {
+  const { data, filters, id, select, orderBy, limit, offset, countMode } = options ?? {};
+  const { data: rawData, error } = await invokeWithRetry({
+    table: tableName,
+    operation,
+    data,
+    filters,
+    id,
+    select,
+    orderBy,
+    limit,
+    offset,
+    countMode,
+  });
+  if (error) throw new Error(await extractFunctionErrorMessage(error));
+  const response = rawData as EdgeFunctionEnvelope | null;
+  if (!response?.success) throw new Error(response?.error || 'Erro desconhecido');
+  return response;
+}
+
+function applyExternalSuccess<T extends object>(
+  operation: Operation,
+  response: EdgeFunctionEnvelope,
+  setState: StateSetter<T>,
+): T | QueryResult<T> {
+  if (operation !== 'select') {
+    setState(previous => ({ ...previous, isLoading: false }));
+    return response.data as T;
+  }
+  const result = response.data as QueryResult<T>;
+  setState(previous => ({ ...previous, data: result.records, count: result.count, isLoading: false }));
+  return result;
 }
 
 // ============================================
@@ -107,42 +148,8 @@ export function useExternalDatabase<T extends object = Record<string, unknown>>(
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const { data: rawData, error } = await invokeWithRetry({
-        table: tableName,
-        operation,
-        data: options?.data,
-        filters: options?.filters,
-        id: options?.id,
-        select: options?.select,
-        orderBy: options?.orderBy,
-        limit: options?.limit,
-        offset: options?.offset,
-      });
-
-      if (error) {
-        const message = await extractFunctionErrorMessage(error);
-        throw new Error(message);
-      }
-
-      const data = rawData as EdgeFunctionEnvelope | null;
-
-      if (!data?.success) {
-        throw new Error(data?.error || 'Erro desconhecido');
-      }
-
-      if (operation === 'select') {
-        const result = data.data as QueryResult<T>;
-        setState(prev => ({
-          ...prev,
-          data: result.records,
-          count: result.count,
-          isLoading: false
-        }));
-        return result;
-      }
-        setState(prev => ({ ...prev, isLoading: false }));
-        return data.data as T;
-
+      const response = await invokeExternalOperation<T>(tableName, operation, options);
+      return applyExternalSuccess(operation, response, setState);
     } catch (err) {
       const errorMessage = await extractFunctionErrorMessage(err);
       setState(prev => ({ ...prev, error: errorMessage, isLoading: false }));

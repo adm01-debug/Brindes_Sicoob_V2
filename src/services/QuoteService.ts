@@ -103,6 +103,52 @@ function throwQuoteSaveError(error: { code?: string; message?: string } | null, 
   throw error;
 }
 
+async function fetchQuoteRecord(quoteId: string) {
+  // rls-allow: lookup por id permanece sujeito a quotes_select_scope e quotes_role_access
+  const { data, error } = await supabase.from("quotes").select("*").eq("id", quoteId).maybeSingle();
+  if (error) {
+    logger.error("Error fetching quote:", error);
+    throw error;
+  }
+  return data;
+}
+
+async function fetchQuoteItems(quoteId: string) {
+  const { data, error } = await supabase
+    .from("quote_items")
+    .select("*")
+    .eq("quote_id", quoteId)
+    .order("sort_order", { ascending: true });
+  if (error) {
+    logger.error("Error fetching quote items:", error);
+    throw error;
+  }
+  return data ?? [];
+}
+
+async function fetchQuotePersonalizations(itemIds: string[]): Promise<Array<Record<string, unknown>>> {
+  if (itemIds.length === 0) return [];
+  const { data, error } = await supabase
+    .from("quote_item_personalizations")
+    .select("*")
+    .in("quote_item_id", itemIds);
+  if (error) {
+    logger.error("Error fetching quote personalizations:", error);
+    throw error;
+  }
+  return (data ?? []) as Array<Record<string, unknown>>;
+}
+
+function createClientMetadata(metadata?: Record<string, unknown>): Record<string, unknown> {
+  const userAgent = typeof navigator === "undefined" ? "unknown" : navigator.userAgent;
+  return {
+    ip: metadata?.ip ?? "client",
+    user_agent: metadata?.user_agent ?? userAgent,
+    timestamp: new Date().toISOString(),
+    ...(metadata ?? {}),
+  };
+}
+
 export class QuoteService {
   static async list(params: { userId: string, scope: SalesScope, orgId: string | null }): Promise<Quote[]> {
     // rls-allow: scope self aplicado no builder seguinte; demais papéis dependem de RLS
@@ -125,32 +171,11 @@ export class QuoteService {
   static async getById(quoteId: string): Promise<Quote | null> {
     if (!quoteId) return null;
     try {
-      // rls-allow: lookup por id; RLS valida ownership e organização
-      const { data: quoteData, error: qErr } = await supabase.from("quotes").select("*").eq("id", quoteId).maybeSingle();
-      if (qErr) {
-        logger.error("Error fetching quote:", qErr);
-        throw qErr;
-      }
+      const quoteData = await fetchQuoteRecord(quoteId);
       if (!quoteData) return null;
-
-      const { data: itemsData, error: iErr } = await supabase.from("quote_items").select("*").eq("quote_id", quoteId).order("sort_order", { ascending: true });
-      if (iErr) {
-        logger.error("Error fetching quote items:", iErr);
-        throw iErr;
-      }
-      
-      const itemIds = (itemsData || []).map((i) => i.id);
-      let allPersonalizations: Array<Record<string, unknown>> = [];
-      if (itemIds.length > 0) {
-        const { data: persData, error: pErr } = await supabase.from("quote_item_personalizations").select("*").in("quote_item_id", itemIds);
-        if (pErr) {
-          logger.error("Error fetching quote personalizations:", pErr);
-          throw pErr;
-        }
-        allPersonalizations = (persData || []) as Array<Record<string, unknown>>;
-      }
-
-      const items: QuoteItem[] = (itemsData || []).map((item) => mapDbQuoteItemRow(item, allPersonalizations));
+      const itemsData = await fetchQuoteItems(quoteId);
+      const allPersonalizations = await fetchQuotePersonalizations(itemsData.map((item) => item.id));
+      const items = itemsData.map((item) => mapDbQuoteItemRow(item, allPersonalizations));
 
       return { ...quoteData, items } as Quote;
     } catch (err) {
@@ -277,20 +302,15 @@ export class QuoteService {
     // abaixo confunda a inferência dos campos ip/user_agent (o TS chega a
     // inferir `{}` pra eles sem a anotação — quirk de spread + index
     // signature).
-    const clientMetadata: Record<string, unknown> = {
-      ip: params.metadata?.ip ?? 'client',
-      user_agent: params.metadata?.user_agent ?? (typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'),
-      timestamp: new Date().toISOString(),
-      ...(params.metadata || {})
-    };
+    const clientMetadata = createClientMetadata(params.metadata);
 
     const { error } = await supabase.rpc("append_quote_history_note", {
       p_quote_id: params.quoteId,
       p_action: params.action,
       p_description: params.description,
-      p_field_changed: params.fieldChanged || null,
-      p_old_value: params.oldValue || null,
-      p_new_value: params.newValue || null,
+      p_field_changed: params.fieldChanged || undefined,
+      p_old_value: params.oldValue || undefined,
+      p_new_value: params.newValue || undefined,
       p_metadata: clientMetadata as Json,
     });
     if (error) {
@@ -316,7 +336,7 @@ export class QuoteService {
     const { data, error } = await supabase.rpc("consolidate_sicoob_quotes", {
       p_singular_id: params.singularId,
       p_quote_ids: params.quoteIds,
-      p_notes: params.notes || null,
+      p_notes: params.notes || undefined,
     });
     if (error) throw error;
     return data;

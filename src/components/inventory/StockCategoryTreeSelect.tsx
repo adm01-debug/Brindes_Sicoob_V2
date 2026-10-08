@@ -5,7 +5,7 @@
 import { useState, useMemo } from "react";
 import { ChevronRight, FolderTree, Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import { cn } from "@/lib/utils";
 import { useCategoriesTree, type CategoryNode } from "@/hooks/useCategoriesTree";
 import { motion } from "framer-motion";
@@ -16,15 +16,7 @@ interface StockCategoryTreeSelectProps {
   productCountMap?: Map<string, number>;
 }
 
-function TreeNodeItem({
-  node,
-  level,
-  selectedId,
-  expandedIds,
-  onToggle,
-  onSelect,
-  searchTerm,
-}: {
+interface TreeNodeItemProps {
   node: CategoryNode;
   level: number;
   selectedId: string | undefined;
@@ -32,8 +24,22 @@ function TreeNodeItem({
   onToggle: (id: string) => void;
   onSelect: (node: CategoryNode) => void;
   searchTerm: string;
-}) {
-  const hasChildren = node.children && node.children.length > 0;
+}
+
+function NodeChevron({ hasChildren, isExpanded }: { hasChildren: boolean; isExpanded: boolean }) {
+  if (!hasChildren) return <span className="w-3 shrink-0" />;
+  return <motion.div animate={{ rotate: isExpanded ? 90 : 0 }} transition={{ duration: 0.15 }} className="text-muted-foreground shrink-0"><ChevronRight className="w-3 h-3" /></motion.div>;
+}
+
+function TreeNodeChildren(props: TreeNodeItemProps & { hasChildren: boolean; isExpanded: boolean; childrenMatch: boolean }) {
+  const { node, hasChildren, isExpanded, searchTerm, childrenMatch } = props;
+  if (!hasChildren || (!isExpanded && !(searchTerm && childrenMatch))) return null;
+  return <div>{node.children.map((child) => <TreeNodeItem key={child.id} {...props} node={child} level={props.level + 1} />)}</div>;
+}
+
+function TreeNodeItem(props: TreeNodeItemProps) {
+  const { node, level, selectedId, expandedIds, onToggle, onSelect, searchTerm } = props;
+  const hasChildren = node.children.length > 0;
   const isExpanded = expandedIds.has(node.id);
   const isSelected = selectedId === node.id;
 
@@ -63,39 +69,14 @@ function TreeNodeItem({
           if (hasChildren) onToggle(node.id);
         }}
       >
-        {hasChildren ? (
-          <motion.div
-            animate={{ rotate: isExpanded ? 90 : 0 }}
-            transition={{ duration: 0.15 }}
-            className="text-muted-foreground shrink-0"
-          >
-            <ChevronRight className="w-3 h-3" />
-          </motion.div>
-        ) : (
-          <span className="w-3 shrink-0" />
-        )}
+        <NodeChevron hasChildren={hasChildren} isExpanded={isExpanded} />
 
         {node.icon && <span className="text-xs shrink-0">{node.icon}</span>}
 
         <span className="truncate flex-1">{node.name}</span>
       </div>
 
-      {hasChildren && (isExpanded || (searchTerm && childrenMatch)) && (
-        <div>
-          {node.children.map(child => (
-            <TreeNodeItem
-              key={child.id}
-              node={child}
-              level={level + 1}
-              selectedId={selectedId}
-              expandedIds={expandedIds}
-              onToggle={onToggle}
-              onSelect={onSelect}
-              searchTerm={searchTerm}
-            />
-          ))}
-        </div>
-      )}
+      <TreeNodeChildren {...props} hasChildren={hasChildren} isExpanded={isExpanded} childrenMatch={Boolean(childrenMatch)} />
     </div>
   );
 }
@@ -103,6 +84,19 @@ function TreeNodeItem({
 function nodeOrDescendantsMatch(node: CategoryNode, term: string): boolean {
   if (node.name.toLowerCase().includes(term.toLowerCase())) return true;
   return node.children?.some(c => nodeOrDescendantsMatch(c, term)) || false;
+}
+
+function CategorySelection({ name, clear }: { name: string | null; clear: () => void }) {
+  if (!name) return null;
+  return <div className="flex items-center gap-1.5 text-xs bg-primary/10 text-primary rounded px-2 py-1"><FolderTree className="h-3 w-3 shrink-0" /><span className="truncate flex-1">{name}</span><button onClick={clear} className="hover:text-foreground"><X className="h-3 w-3" /></button></div>;
+}
+
+function CategorySearch({ search, setSearch }: { search: string; setSearch: (value: string) => void }) {
+  return <div className="relative"><Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" /><Input placeholder="Buscar categoria..." value={search} onChange={(event) => setSearch(event.target.value)} className="h-7 text-xs pl-7 pr-6" />{search && <button onClick={() => setSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"><X className="h-3 w-3" /></button>}</div>;
+}
+
+function CategoryTree({ tree, value, expandedIds, search, onToggle, onSelect, clear }: { tree: CategoryNode[]; value?: string; expandedIds: Set<string>; search: string; onToggle: (id: string) => void; onSelect: (node: CategoryNode) => void; clear: () => void }) {
+  return <div className="h-52 overflow-y-auto border border-border/40 rounded-md scrollbar-thin scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent"><div className="space-y-0.5"><div className={cn("flex items-center gap-1.5 py-1.5 px-2 rounded cursor-pointer transition-all text-xs", "hover:bg-accent/60", !value && "bg-primary/15 text-primary font-semibold")} onClick={clear}><FolderTree className="h-3 w-3 shrink-0" /><span>Todas as categorias</span></div>{tree.map((node) => <TreeNodeItem key={node.id} node={node} level={0} selectedId={value} expandedIds={expandedIds} onToggle={onToggle} onSelect={onSelect} searchTerm={search} />)}</div></div>;
 }
 
 export function StockCategoryTreeSelect({ value, onChange }: StockCategoryTreeSelectProps) {
@@ -133,75 +127,13 @@ export function StockCategoryTreeSelect({ value, onChange }: StockCategoryTreeSe
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-1.5">
-        <div className="h-3 w-20 bg-muted animate-pulse rounded" />
-        <div className="h-3 w-32 bg-muted animate-pulse rounded" />
-        <div className="h-3 w-24 bg-muted animate-pulse rounded" />
-      </div>
-    );
-  }
+  if (isLoading) return <div className="space-y-1.5"><div className="h-3 w-20 bg-muted animate-pulse rounded" /><div className="h-3 w-32 bg-muted animate-pulse rounded" /><div className="h-3 w-24 bg-muted animate-pulse rounded" /></div>;
 
   return (
     <div className="space-y-2">
-      {/* Selected indicator */}
-      {selectedName && (
-        <div className="flex items-center gap-1.5 text-xs bg-primary/10 text-primary rounded px-2 py-1">
-          <FolderTree className="h-3 w-3 shrink-0" />
-          <span className="truncate flex-1">{selectedName}</span>
-          <button onClick={() => onChange(undefined)} className="hover:text-foreground">
-            <X className="h-3 w-3" />
-          </button>
-        </div>
-      )}
-
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-        <Input
-          placeholder="Buscar categoria..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="h-7 text-xs pl-7 pr-6"
-        />
-        {search && (
-          <button onClick={() => setSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-            <X className="h-3 w-3" />
-          </button>
-        )}
-      </div>
-
-      {/* Tree */}
-      <div className="h-52 overflow-y-auto border border-border/40 rounded-md scrollbar-thin scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent">
-        <div className="space-y-0.5">
-          {/* "Todas" option */}
-          <div
-            className={cn(
-              "flex items-center gap-1.5 py-1.5 px-2 rounded cursor-pointer transition-all text-xs",
-              "hover:bg-accent/60",
-              !value && "bg-primary/15 text-primary font-semibold"
-            )}
-            onClick={() => onChange(undefined)}
-          >
-            <FolderTree className="h-3 w-3 shrink-0" />
-            <span>Todas as categorias</span>
-          </div>
-
-          {tree.map(node => (
-            <TreeNodeItem
-              key={node.id}
-              node={node}
-              level={0}
-              selectedId={value}
-              expandedIds={expandedIds}
-              onToggle={handleToggle}
-              onSelect={handleSelect}
-              searchTerm={search}
-            />
-          ))}
-        </div>
-      </div>
+      <CategorySelection name={selectedName} clear={() => onChange(undefined)} />
+      <CategorySearch search={search} setSearch={setSearch} />
+      <CategoryTree tree={tree} value={value} expandedIds={expandedIds} search={search} onToggle={handleToggle} onSelect={handleSelect} clear={() => onChange(undefined)} />
     </div>
   );
 }

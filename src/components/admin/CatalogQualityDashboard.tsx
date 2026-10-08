@@ -27,6 +27,25 @@ interface QualityMetrics {
   duplicatedSkus: number;
 }
 
+function healthBarClass(score: number): string {
+  if (score > 90) return 'bg-green-500';
+  if (score > 70) return 'bg-yellow-500';
+  return 'bg-red-500';
+}
+
+function qualityPercentage(missing: number, catalogSize: number): number {
+  return 100 - Math.round((missing / Math.max(1, catalogSize)) * 100);
+}
+
+function formatLastRun(lastRunAt: string | null): string {
+  if (!lastRunAt) return "Nunca executado";
+  return format(new Date(lastRunAt), "PPp", { locale: ptBR });
+}
+
+function successRate(metrics: QualityMetrics): number {
+  return Math.round(((metrics.totalSyncRuns - metrics.failedRuns) / Math.max(1, metrics.totalSyncRuns)) * 100);
+}
+
 export function CatalogQualityDashboard() {
   const { data: metrics, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ["catalog-quality-metrics"],
@@ -79,7 +98,7 @@ export function CatalogQualityDashboard() {
     );
   }
 
-  if (isError || !metrics) {
+  if ((isError || !metrics)) {
     return (
       <Card className="border-destructive/50 bg-destructive/5">
         <CardContent className="pt-6 text-center">
@@ -93,7 +112,7 @@ export function CatalogQualityDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {(<div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Activity className="h-5 w-5 text-primary" />
@@ -109,11 +128,11 @@ export function CatalogQualityDashboard() {
         >
           <RefreshCw className={`h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} />
         </button>
-      </div>
+      </div>)}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {(<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="relative overflow-hidden">
-          <div className={`absolute top-0 left-0 w-1 h-full ${healthScore > 90 ? 'bg-green-500' : healthScore > 70 ? 'bg-yellow-500' : 'bg-red-500'}`} />
+          <div className={`absolute top-0 left-0 w-1 h-full ${healthBarClass(healthScore)}`} />
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground flex items-center justify-between">
               Saúde do Catálogo
@@ -164,9 +183,9 @@ export function CatalogQualityDashboard() {
             <p className="text-[10px] text-muted-foreground mt-1">SKUs disponíveis no banco externo</p>
           </CardContent>
         </Card>
-      </div>
+      </div>)}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {(<div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -178,15 +197,13 @@ export function CatalogQualityDashboard() {
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">Última execução:</span>
               <span className="font-medium">
-                {metrics.lastRunAt 
-                  ? format(new Date(metrics.lastRunAt), "PPp", { locale: ptBR })
-                  : "Nunca executado"}
+                {formatLastRun(metrics.lastRunAt)}
               </span>
             </div>
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">Taxa de sucesso:</span>
               <Badge variant={healthScore > 90 ? "default" : "secondary"}>
-                {Math.round(((metrics.totalSyncRuns - metrics.failedRuns) / (metrics.totalSyncRuns || 1)) * 100)}%
+                {successRate(metrics)}%
               </Badge>
             </div>
             <div className="pt-2 border-t text-xs text-muted-foreground italic">
@@ -206,25 +223,25 @@ export function CatalogQualityDashboard() {
             <div className="space-y-1">
               <div className="flex justify-between text-xs mb-1">
                 <span>Categorização</span>
-                <span>{100 - Math.round((metrics.missingCategories / (metrics.catalogSize || 1)) * 100)}%</span>
+                <span>{qualityPercentage(metrics.missingCategories, metrics.catalogSize)}%</span>
               </div>
               <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-primary" 
-                  style={{ width: `${100 - Math.round((metrics.missingCategories / (metrics.catalogSize || 1)) * 100)}%` }} 
+                <div
+                  className="h-full bg-primary"
+                  style={{ width: `${qualityPercentage(metrics.missingCategories, metrics.catalogSize)}%` }}
                 />
               </div>
             </div>
-            
+
             <div className="space-y-1">
               <div className="flex justify-between text-xs mb-1">
                 <span>Imagens & Thumbnails</span>
-                <span>{100 - Math.round((metrics.missingImages / (metrics.catalogSize || 1)) * 100)}%</span>
+                <span>{qualityPercentage(metrics.missingImages, metrics.catalogSize)}%</span>
               </div>
               <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-primary" 
-                  style={{ width: `${100 - Math.round((metrics.missingImages / (metrics.catalogSize || 1)) * 100)}%` }} 
+                <div
+                  className="h-full bg-primary"
+                  style={{ width: `${qualityPercentage(metrics.missingImages, metrics.catalogSize)}%` }}
                 />
               </div>
             </div>
@@ -235,8 +252,7 @@ export function CatalogQualityDashboard() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </div>)}
     </div>
   );
 }
-

@@ -5,6 +5,8 @@ import type React from 'react';
 import { Layers, MapPin, Paintbrush, Ruler } from 'lucide-react';
 import { TECHNIQUE_ICONS } from '@/types/gravacao';
 
+const BLUE_TECHNIQUE_COLOR = 'from-blue-500/20 to-blue-600/10 border-info/30';
+
 /** Técnica do catálogo externo (tabela_preco_gravacao_oficial) */
 export interface ExternalTechnique {
   id: string;
@@ -117,9 +119,9 @@ export function getTechniqueIcon(code: string): string {
 export function getTechniqueColor(code: string): string {
   const upper = code?.toUpperCase() || '';
   const colorMap: Record<string, string> = {
-    SERIGRAFIA: 'from-blue-500/20 to-blue-600/10 border-info/30',
-    SER: 'from-blue-500/20 to-blue-600/10 border-info/30',
-    SC: 'from-blue-500/20 to-blue-600/10 border-info/30',
+    SERIGRAFIA: BLUE_TECHNIQUE_COLOR,
+    SER: BLUE_TECHNIQUE_COLOR,
+    SC: BLUE_TECHNIQUE_COLOR,
     LASER: 'from-destructive/20 to-destructive/10 border-destructive/30',
     FB: 'from-destructive/20 to-destructive/10 border-destructive/30',
     UV: 'from-primary/20 to-primary/10 border-primary/30',

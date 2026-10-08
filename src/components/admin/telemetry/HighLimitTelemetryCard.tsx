@@ -54,6 +54,12 @@ const ERROR_COLORS: Record<string, string> = {
   unknown: 'hsl(var(--muted))',
 };
 
+const CHART_TOOLTIP_STYLE = {
+  background: 'hsl(var(--background))',
+  border: '1px solid hsl(var(--border))',
+  fontSize: '12px',
+};
+
 export function HighLimitTelemetryCard() {
   const [filters, setFilters] = useState<HighLimitFiltersState>({
     operation: 'all',
@@ -165,11 +171,7 @@ export function HighLimitTelemetryCard() {
                     <XAxis dataKey="x" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
                     <YAxis tick={{ fontSize: 10 }} />
                     <Tooltip
-                      contentStyle={{
-                        background: 'hsl(var(--background))',
-                        border: '1px solid hsl(var(--border))',
-                        fontSize: '12px',
-                      }}
+                      contentStyle={CHART_TOOLTIP_STYLE}
                     />
                     <Legend wrapperStyle={{ fontSize: '11px' }} />
                     <Line type="monotone" dataKey="p50" stroke="hsl(var(--primary))" dot={false} />
@@ -192,11 +194,7 @@ export function HighLimitTelemetryCard() {
                     <XAxis dataKey="x" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
                     <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
                     <Tooltip
-                      contentStyle={{
-                        background: 'hsl(var(--background))',
-                        border: '1px solid hsl(var(--border))',
-                        fontSize: '12px',
-                      }}
+                      contentStyle={CHART_TOOLTIP_STYLE}
                     />
                     <Legend wrapperStyle={{ fontSize: '11px' }} />
                     {ERROR_KINDS_FOR_STACK.map(kind => (
@@ -226,11 +224,7 @@ export function HighLimitTelemetryCard() {
                     <YAxis yAxisId="records" tick={{ fontSize: 10 }} />
                     <YAxis yAxisId="samples" orientation="right" tick={{ fontSize: 10 }} />
                     <Tooltip
-                      contentStyle={{
-                        background: 'hsl(var(--background))',
-                        border: '1px solid hsl(var(--border))',
-                        fontSize: '12px',
-                      }}
+                      contentStyle={CHART_TOOLTIP_STYLE}
                     />
                     <Legend wrapperStyle={{ fontSize: '11px' }} />
                     <Line

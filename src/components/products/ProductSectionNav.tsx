@@ -1,16 +1,32 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { type MutableRefObject, type ReactNode, useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface SectionTab {
   id: string;
   label: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
 }
 
 interface ProductSectionNavProps {
   tabs: SectionTab[];
   className?: string;
+}
+
+function SectionTabButton({ tab, active, onClick }: { tab: SectionTab; active: boolean; onClick: (id: string) => void }) {
+  return <button data-tab={tab.id} onClick={() => onClick(tab.id)} className={cn("relative whitespace-nowrap px-3 py-1.5 text-xs font-medium rounded-full transition-colors shrink-0", active ? "text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50")}>{tab.icon && <span className="mr-1.5">{tab.icon}</span>}{tab.label}{active && <motion.div layoutId="section-nav-indicator" className="absolute inset-0 bg-secondary rounded-full -z-10" transition={{ type: "spring", stiffness: 400, damping: 30 }} />}</button>;
+}
+
+function useSectionObserver(tabs: SectionTab[], isClickScrolling: MutableRefObject<boolean>, setActiveId: (id: string) => void) {
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      if (isClickScrolling.current) return;
+      const visible = entries.find((entry) => entry.isIntersecting);
+      if (visible) setActiveId(visible.target.id);
+    }, { rootMargin: "-120px 0px -60% 0px", threshold: 0.1 });
+    tabs.forEach(({ id }) => { const element = document.getElementById(id); if (element) observer.observe(element); });
+    return () => observer.disconnect();
+  }, [isClickScrolling, setActiveId, tabs]);
 }
 
 /**
@@ -22,28 +38,7 @@ export function ProductSectionNav({ tabs, className }: ProductSectionNavProps) {
   const navRef = useRef<HTMLDivElement>(null);
   const isClickScrolling = useRef(false);
 
-  // Scroll-spy: observe which section is visible
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (isClickScrolling.current) return;
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            setActiveId(entry.target.id);
-            break;
-          }
-        }
-      },
-      { rootMargin: "-120px 0px -60% 0px", threshold: 0.1 }
-    );
-
-    tabs.forEach(({ id }) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-
-    return () => observer.disconnect();
-  }, [tabs]);
+  useSectionObserver(tabs, isClickScrolling, setActiveId);
 
   const handleClick = useCallback((id: string) => {
     setActiveId(id);
@@ -78,32 +73,7 @@ export function ProductSectionNav({ tabs, className }: ProductSectionNavProps) {
         className
       )}
     >
-      {tabs.map((tab) => {
-        const isActive = activeId === tab.id;
-        return (
-          <button
-            key={tab.id}
-            data-tab={tab.id}
-            onClick={() => handleClick(tab.id)}
-            className={cn(
-              "relative whitespace-nowrap px-3 py-1.5 text-xs font-medium rounded-full transition-colors shrink-0",
-              isActive
-                ? "text-foreground"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-            )}
-          >
-            {tab.icon && <span className="mr-1.5">{tab.icon}</span>}
-            {tab.label}
-            {isActive && (
-              <motion.div
-                layoutId="section-nav-indicator"
-                className="absolute inset-0 bg-secondary rounded-full -z-10"
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              />
-            )}
-          </button>
-        );
-      })}
+      {tabs.map((tab) => <SectionTabButton key={tab.id} tab={tab} active={activeId === tab.id} onClick={handleClick} />)}
     </div>
   );
 }

@@ -84,6 +84,160 @@ const DataTableRow = React.memo(function DataTableRow<T extends { id?: string | 
   onRowClick?: (row: T) => void;
 }) => React.ReactElement;
 
+interface TableToolbarProps<T> {
+  actions?: React.ReactNode;
+  data: T[];
+  filteredData: T[];
+  onExport?: (data: T[]) => void;
+  onPageSizeChange: (size: string) => void;
+  pageSize: number;
+  searchPlaceholder: string;
+  searchTerm: string;
+  serverSide: boolean;
+  setSearchTerm: (value: string) => void;
+  resetLocalPage: () => void;
+}
+
+function TableToolbar<T>({
+  actions, data, filteredData, onExport, onPageSizeChange, pageSize,
+  searchPlaceholder, searchTerm, serverSide, setSearchTerm, resetLocalPage,
+}: TableToolbarProps<T>) {
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    if (!serverSide) resetLocalPage();
+  };
+  const exportData = () => onExport?.(serverSide ? data : filteredData);
+
+  return (
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="relative flex-1 max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input placeholder={searchPlaceholder} value={searchTerm} onChange={(event) => handleSearch(event.target.value)} className="pl-9" />
+      </div>
+      <div className="flex items-center gap-2">
+        {onExport && (
+          <Button variant="outline" size="sm" className="gap-2" onClick={exportData}>
+            <FileDown className="h-4 w-4" /> Exportar
+          </Button>
+        )}
+        {actions}
+        <Select value={String(pageSize)} onValueChange={onPageSizeChange}>
+          <SelectTrigger className="w-[130px]"><SelectValue placeholder="Itens por página" /></SelectTrigger>
+          <SelectContent>
+            {[5, 10, 20, 50, 100].map((size) => <SelectItem key={size} value={String(size)}>{size} por página</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
+}
+
+interface DataGridProps<T extends { id?: string | number }> {
+  columns: Column<T>[];
+  data: T[];
+  emptyState?: React.ReactNode;
+  isLoading: boolean;
+  onRowClick?: (row: T) => void;
+  onSort: (key: string) => void;
+  sortConfig: { key: string; direction: 'asc' | 'desc' } | null;
+}
+
+function DataGrid<T extends { id?: string | number }>({
+  columns, data, emptyState, isLoading, onRowClick, onSort, sortConfig,
+}: DataGridProps<T>) {
+  const body = isLoading ? (
+    <TableRow><TableCell colSpan={columns.length} className="h-48 text-center">
+      <div className="flex flex-col items-center justify-center gap-2">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">Carregando dados...</p>
+      </div>
+    </TableCell></TableRow>
+  ) : data.length === 0 ? (
+    <TableRow><TableCell colSpan={columns.length} className="h-48 text-center">
+      {emptyState || <div className="flex flex-col items-center justify-center gap-2"><Inbox className="h-8 w-8 text-muted-foreground" /><p className="text-sm text-muted-foreground">Nenhum dado encontrado</p></div>}
+    </TableCell></TableRow>
+  ) : data.map((row, index) => (
+    <DataTableRow key={row.id || index} row={row} columns={columns} onRowClick={onRowClick} />
+  ));
+
+  return (
+    <div className="rounded-md border bg-card">
+      <Table>
+        <TableHeader><TableRow>{columns.map((column, index) => (
+          <TableHead key={index} className={column.sortable ? "cursor-pointer select-none" : ""}>
+            <div className="flex items-center gap-2" onClick={() => column.sortable && onSort(String(column.accessorKey))}>
+              {column.header}
+              {column.sortable && <ArrowUpDown className={cn("h-3 w-3 opacity-50", sortConfig?.key === column.accessorKey && "opacity-100 text-primary")} />}
+            </div>
+          </TableHead>
+        ))}</TableRow></TableHeader>
+        <TableBody>{body}</TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function pageNumber(index: number, currentPage: number, totalPages: number): number {
+  if (totalPages <= 5) return index + 1;
+  if (currentPage <= 3) return index + 1;
+  if (currentPage >= totalPages - 2) return totalPages - 4 + index;
+  return currentPage - 2 + index;
+}
+
+interface PaginationProps {
+  actualCount: number;
+  currentPage: number;
+  onPageChange: (page: number) => void;
+  pageSize: number;
+  totalPages: number;
+}
+
+function Pagination({ actualCount, currentPage, onPageChange, pageSize, totalPages }: PaginationProps) {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="flex items-center justify-between px-2">
+      <p className="text-sm text-muted-foreground">
+        Mostrando {Math.min(actualCount, (currentPage - 1) * pageSize + 1)} a {Math.min(actualCount, currentPage * pageSize)} de {actualCount} resultados
+      </p>
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="sm" onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1}>
+          <ChevronLeft className="h-4 w-4" />Anterior
+        </Button>
+        <div className="flex items-center gap-1">
+          {Array.from({ length: Math.min(5, totalPages) }, (_, index) => pageNumber(index, currentPage, totalPages)).map((page) => (
+            <Button key={page} variant={currentPage === page ? "default" : "outline"} size="sm" className="w-8 h-8 p-0" onClick={() => onPageChange(page)}>{page}</Button>
+          ))}
+        </div>
+        <Button variant="outline" size="sm" onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+          Próxima<ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+interface PaginationStateInput<T> {
+  data: T[];
+  filteredData: T[];
+  serverSide: boolean;
+  totalCount: number;
+  pageSize: number;
+  localCurrentPage: number;
+  externalCurrentPage?: number;
+}
+
+function paginationState<T>({
+  data, filteredData, serverSide, totalCount, pageSize, localCurrentPage, externalCurrentPage,
+}: PaginationStateInput<T>) {
+  const currentPage = serverSide ? (externalCurrentPage || 1) : localCurrentPage;
+  const actualCount = serverSide ? totalCount : filteredData.length;
+  const totalPages = Math.ceil(actualCount / pageSize);
+  const paginatedData = serverSide
+    ? data
+    : filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  return { currentPage, actualCount, totalPages, paginatedData };
+}
+
 export function AdminDataTable<T extends { id?: string | number }>({
   data,
   columns,
@@ -108,8 +262,6 @@ export function AdminDataTable<T extends { id?: string | number }>({
   const [localCurrentPage, setLocalCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(initialPageSize);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
-
-  const currentPage = serverSide ? (externalCurrentPage || 1) : localCurrentPage;
 
   // Debounced search for server-side
   useEffect(() => {
@@ -155,13 +307,9 @@ export function AdminDataTable<T extends { id?: string | number }>({
     return result;
   }, [data, searchTerm, searchKey, sortConfig, serverSide]);
 
-  const totalPages = serverSide 
-    ? Math.ceil(totalCount / pageSize) 
-    : Math.ceil(filteredData.length / pageSize);
-
-  const paginatedData = serverSide 
-    ? data 
-    : filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const { currentPage, actualCount, totalPages, paginatedData } = paginationState({
+    data, filteredData, serverSide, totalCount, pageSize, localCurrentPage, externalCurrentPage,
+  });
 
   const handleSort = (key: string) => {
     const newConfig: { key: string; direction: 'asc' | 'desc' } | null = 
@@ -193,153 +341,18 @@ export function AdminDataTable<T extends { id?: string | number }>({
     }
   };
 
-  const actualCount = serverSide ? totalCount : filteredData.length;
-
   return (
     <div className={cn("space-y-4", className)}>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder={searchPlaceholder}
-            value={searchTerm}
-            onChange={(e) => { 
-              setSearchTerm(e.target.value); 
-              if (!serverSide) setLocalCurrentPage(1);
-            }}
-            className="pl-9"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          {onExport && (
-            <Button variant="outline" size="sm" className="gap-2" onClick={() => onExport(serverSide ? data : filteredData)}>
-              <FileDown className="h-4 w-4" /> Exportar
-            </Button>
-          )}
-          {actions}
-          <Select
-            value={String(pageSize)}
-            onValueChange={handlePageSizeChange}
-          >
-            <SelectTrigger className="w-[130px]">
-              <SelectValue placeholder="Itens por página" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="5">5 por página</SelectItem>
-              <SelectItem value="10">10 por página</SelectItem>
-              <SelectItem value="20">20 por página</SelectItem>
-              <SelectItem value="50">50 por página</SelectItem>
-              <SelectItem value="100">100 por página</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="rounded-md border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {columns.map((col, idx) => (
-                <TableHead key={idx} className={col.sortable ? "cursor-pointer select-none" : ""}>
-                  <div 
-                    className="flex items-center gap-2"
-                    onClick={() => col.sortable && handleSort(String(col.accessorKey))}
-                  >
-                    {col.header}
-                    {col.sortable && (
-                      <ArrowUpDown className={cn(
-                        "h-3 w-3 opacity-50",
-                        sortConfig?.key === col.accessorKey && "opacity-100 text-primary"
-                      )} />
-                    )}
-                  </div>
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-48 text-center">
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    <p className="text-sm text-muted-foreground">Carregando dados...</p>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : paginatedData.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-48 text-center">
-                  {emptyState || (
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <Inbox className="h-8 w-8 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">Nenhum dado encontrado</p>
-                    </div>
-                  )}
-                </TableCell>
-              </TableRow>
-            ) : (
-              paginatedData.map((row, idx) => (
-                <DataTableRow 
-                  key={row.id || idx} 
-                  row={row} 
-                  columns={columns} 
-                  onRowClick={onRowClick} 
-                />
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between px-2">
-          <p className="text-sm text-muted-foreground">
-            Mostrando {Math.min(actualCount, (currentPage - 1) * pageSize + 1)} a {Math.min(actualCount, currentPage * pageSize)} de {actualCount} resultados
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Anterior
-            </Button>
-            <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum;
-                if (totalPages <= 5) pageNum = i + 1;
-                else if (currentPage <= 3) pageNum = i + 1;
-                else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
-                else pageNum = currentPage - 2 + i;
-
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={currentPage === pageNum ? "default" : "outline"}
-                    size="sm"
-                    className="w-8 h-8 p-0"
-                    onClick={() => handlePageChange(pageNum)}
-                  >
-                    {pageNum}
-                  </Button>
-                );
-              })}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              Próxima
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
+      <TableToolbar
+        actions={actions} data={data} filteredData={filteredData} onExport={onExport}
+        onPageSizeChange={handlePageSizeChange} pageSize={pageSize} searchPlaceholder={searchPlaceholder}
+        searchTerm={searchTerm} serverSide={serverSide} setSearchTerm={setSearchTerm}
+        resetLocalPage={() => setLocalCurrentPage(1)}
+      />
+      <DataGrid columns={columns} data={paginatedData} emptyState={emptyState} isLoading={isLoading}
+        onRowClick={onRowClick} onSort={handleSort} sortConfig={sortConfig} />
+      <Pagination actualCount={actualCount} currentPage={currentPage} onPageChange={handlePageChange}
+        pageSize={pageSize} totalPages={totalPages} />
     </div>
   );
 }

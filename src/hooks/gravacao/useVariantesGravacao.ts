@@ -36,7 +36,7 @@ export function useVariantesGravacao(tecnicaId?: string) {
         orderBy: { column: 'ordem_exibicao', ascending: true },
       });
 
-      return result.records;
+      return result.records ?? [];
     },
     staleTime: 5 * 60 * 1000,
   });

@@ -13,9 +13,10 @@ import {
   Legend,
   Tooltip,
 } from "recharts";
+import type { Product } from "@/hooks/useProducts";
 
 interface ComparisonRadarChartProps {
-  products: any[];
+  products: Product[];
   className?: string;
 }
 
@@ -59,9 +60,9 @@ export function ComparisonRadarChart({ products, className }: ComparisonRadarCha
     ];
 
     return axes.map(axis => {
-      const row: any = { axis: axis.key };
+      const row: Record<string, string | number> = { axis: axis.key };
       products.forEach((p, i) => {
-        row[String(p.id)] = Math.max(0, Math.min(100, axis.values[i]));
+        row[String(p.id)] = Math.max(0, Math.min(100, axis.values[i] ?? 0));
       });
       return row;
     });
@@ -88,7 +89,7 @@ export function ComparisonRadarChart({ products, className }: ComparisonRadarCha
                 borderRadius: 8,
                 fontSize: 12,
               }}
-              formatter={(value: any, name: string) => {
+              formatter={(value: number, name: string) => {
                 const p = products.find(x => String(x.id) === name);
                 return [value, p?.name ?? name];
               }}

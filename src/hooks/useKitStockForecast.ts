@@ -236,7 +236,7 @@ export function useKitStockForecast(items: KitItem[], kitQuantity: number) {
       const [productsResult, variantsResult] = await Promise.all([
         invokeExternalDb<ForecastProduct>({
           table: 'products', operation: 'select', select: 'id,stock_quantity',
-          filters: { id: productIds, active: true }, limit: productIds.length,
+          filters: { id: productIds, is_active: true }, limit: productIds.length,
         }),
         invokeExternalDb<ForecastVariant>({
           table: 'product_variants', operation: 'select', select: 'id,product_id,stock_quantity',

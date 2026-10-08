@@ -1,124 +1,150 @@
-# 🔐 Runbook P0: Rotação de Credenciais — Incidente `.env` Exposto
+# Rotação de credenciais — Brindes Sicoob V2
 
-**Severidade:** 🚨 P0 — Crítica
-**Janela máxima de execução:** 24 h após detecção
-**Responsável:** Pink (`ti@promobrindes.com.br`)
-**Status:** ⏳ Aguardando execução
+- **Projeto:** `adm01-debug/Brindes_Sicoob_V2`
+- **Supabase canônico:** `cfmzkthhgliqelozlmwu`
+- **Ambiente atual:** construção
+- **Última revisão:** 07/10/2026
+- **Responsável operacional:** administrador do projeto
 
----
+Este runbook separa chaves públicas de credenciais privadas, registra os
+consumidores conhecidos e define uma rotação verificável. Nunca copie valores
+de credenciais para este arquivo, issues, PRs, logs ou artefatos de CI.
 
-## 1. Contexto
+## Classificação
 
-Em sessão de auditoria anterior, detectou-se que um arquivo `.env` foi exposto no histórico do repositório `adm01-debug/Promo_Gifts`. Mesmo após a remoção, **as credenciais que ele continha devem ser tratadas como comprometidas e rotacionadas por padrão**. Esta é prática padrão de incident response — qualquer agente externo pode ter clonado o histórico antes da remoção.
+| Item                                         | Sigilo                     | Escopo conhecido                                 | Rotação ordinária                            |
+| -------------------------------------------- | -------------------------- | ------------------------------------------------ | -------------------------------------------- |
+| URL e project ref do Supabase                | Público                    | Aplicação, CI e documentação                     | Não se aplica                                |
+| `anon`/publishable key                       | Público e limitado por RLS | Frontend e testes                                | Somente em incidente ou reemissão do projeto |
+| `SUPABASE_ACCESS_TOKEN`                      | Privado                    | Management API e workflows de construção         | 90 dias                                      |
+| `SUPABASE_SERVICE_ROLE_KEY` ou `sb_secret_*` | Privado e privilegiado     | Auditoria, testes RLS e automação administrativa | 180 dias ou incidente                        |
+| `SUPABASE_DB_URL`/senha PostgreSQL           | Privado e privilegiado     | Aplicador e auditoria de migrations              | 180 dias ou incidente                        |
+| Contas `E2E_*`                               | Privado, homologação       | Playwright e jornadas autenticadas               | 90 dias                                      |
+| Segredos de integrações externas             | Privado                    | Edge Functions e provedores                      | Conforme o provedor, no máximo 180 dias      |
 
-## 2. Princípio Operacional
+Chaves públicas continuam exigindo RLS, autorização de Edge Functions e
+limites de uso. O rótulo “pública” não permite gravar ou ler dados fora dessas
+políticas.
 
-**Rotacionar > revogar.**
+## Estado verificado em 07/10/2026
 
-- **Rotacionar** = gerar nova credencial e atualizar consumidores → serviço continua operacional.
-- **Revogar** = invalidar a credencial sem substituir → derruba produção sem necessidade.
+- O `SUPABASE_ACCESS_TOKEN` está no environment protegido `construction`, e
+  não no escopo geral do repositório.
+- O environment aceita somente branches protegidas.
+- Os secrets de E2E, banco, service role e configuração pública existem no
+  GitHub; seus valores não foram copiados para evidências.
+- O histórico completo foi varrido pelo Gitleaks: 14.566 commits, zero achados
+  depois da classificação explícita dos falsos positivos.
+- Todas as ocorrências históricas de JWT presentes na baseline foram
+  decodificadas localmente sem exibir os tokens. Todas declaravam `role=anon`;
+  nenhuma era `service_role`.
+- As ocorrências adicionais eram hashes SHA-256 de manifesto ou UUIDs
+  sintéticos de idempotência. A `.gitleaksignore` contém fingerprints exatos,
+  sem regra ampla por arquivo ou tipo.
+- Credenciais privadas informadas fora dos cofres devem ser tratadas como
+  expostas. A revogação exige primeiro inventariar e atualizar todos os
+  consumidores para evitar interrupção de outros agentes e automações.
 
-Sempre rotacionar. Revogação só faz sentido se a credencial já tiver sido confirmadamente usada por terceiros.
+## Consumidores conhecidos
 
-## 3. Ordem de Execução (Sequencial — NÃO Paralela)
+| Credencial                   | Consumidores versionados                                                                   |
+| ---------------------------- | ------------------------------------------------------------------------------------------ |
+| `SUPABASE_ACCESS_TOKEN`      | `apply-sicoob-migrations.yml`, `deploy-sicoob-functions.yml`, `migration-ledger-drift.yml` |
+| `SUPABASE_SERVICE_ROLE_KEY`  | `e2e.yml`, `security-compliance.yml`, `db-performance-audit.yml`                           |
+| `SUPABASE_DB_URL`            | automações administrativas que usam conexão PostgreSQL direta                              |
+| `VITE_SUPABASE_*`            | build do frontend, E2E e clientes públicos                                                 |
+| `E2E_USER_*` e `E2E_ADMIN_*` | `e2e.yml` e fixtures do Playwright                                                         |
 
-A ordem importa. Alguns serviços dependem de outros; rotacionar Supabase antes de o n8n estar pronto para receber a nova chave quebra fluxos.
+Antes de rotacionar, procure consumidores externos no Supabase, Cloudflare,
+n8n, Vercel e nas estações dos operadores. O inventário só está completo
+quando o responsável por cada serviço confirmar o uso.
 
-### 3.1 Supabase (banco + Edge Functions)
+## Procedimento para credencial privada
 
-1. Acessar https://supabase.com/dashboard → projeto `allrjhkpuscmgbsnmjlv`
-2. **Settings → API** → anotar valores atuais:
-   - `Project URL` (não muda — informativo apenas)
-   - `anon` public key (pública por design — não rotacionar)
-   - `service_role` key 🔥 **(PRIVADA — rotacionar)**
-3. Antes de clicar em **Reset service_role key**, listar consumidores em outra aba:
-   - n8n workflows (variáveis com nome `SUPABASE_SERVICE_ROLE_KEY` ou similar)
-   - Edge Functions (Settings → Edge Functions → Secrets)
-   - Cloudflare Workers (env bindings)
-   - Aplicação local em desenvolvimento (`.env`)
-4. **Reset service_role key** → copiar nova key (só aparece UMA VEZ)
-5. ⚡ Imediatamente atualizar todos os consumidores listados (próximas seções)
+1. Abra uma janela de mudança e registre responsável, credencial, consumidores
+   e horário, sem registrar o valor.
+2. Confirme que existe acesso administrativo alternativo e backup válido.
+3. Gere a credencial sucessora no provedor. Não revogue a anterior ainda.
+4. Atualize primeiro GitHub Environments/Secrets e depois cada consumidor
+   externo inventariado.
+5. Execute os testes de leitura, autenticação, RLS, migrations e Edge Functions
+   adequados ao escopo.
+6. Consulte logs por uso da credencial anterior durante a janela de observação.
+7. Revogue a anterior somente depois de zero consumidores pendentes.
+8. Repita os testes e registre data, executor e resultado sanitizado.
+9. Remova arquivos temporários e confirme que o Gitleaks continua verde.
 
-### 3.2 n8n (variáveis e credenciais)
+## Validação mínima por tipo
 
-1. Acessar painel n8n → **Settings → Variables**
-2. Atualizar variáveis Supabase (nova service_role do passo 3.1.4)
-3. **Credentials** → revogar e recriar credenciais que dependem de chaves Supabase
-4. Disparar manualmente um workflow simples para validar conexão (ex.: leitura de uma tabela trivial)
+### Access token da Management API
 
-### 3.3 Bitrix24 (OAuth e webhooks)
+```bash
+SUPABASE_ACCESS_TOKEN='<cofre>' \
+  node scripts/db/check-migration-ledger-drift.mjs \
+  --baseline-file scripts/db/migration-ledger-baseline.json
+```
 
-1. Acessar Bitrix24 → **Aplicativos → Webhooks de entrada/saída**
-2. **Importante:** o webhook clássico `ipkwbb32nhewia33` está marcado como **INVÁLIDO** no histórico. Confirmar que está revogado.
-3. **OAuth Bitrix24 ↔ n8n** (`oEUYsInMBZbNlMoI`):
-   - Verificar se ainda está em uso
-   - Se sim, revogar e gerar novo OAuth client
-   - Atualizar n8n com novo `client_id` + `client_secret`
-4. Para qualquer credencial OAuth ou webhook usado pelo backend:
-   - Revogar o existente
-   - Gerar novo
-   - Atualizar consumidores
-5. **Validar:** disparar uma chamada de teste
+O resultado deve identificar o projeto canônico, aceitar a baseline revisada e
+não criar, alterar ou reaplicar migrations.
 
-### 3.4 Evolution API (WhatsApp)
+### Service role ou secret key
 
-1. Acessar painel Evolution API
-2. Cada instância tem `apikey` própria → **Settings da instância → Regenerate API key**
-3. Atualizar consumidores:
-   - n8n credentials (categoria Evolution)
-   - Backend Promo_Gifts (variável `EVOLUTION_API_KEY`)
-4. **Validar:** enviar mensagem de teste para número próprio
+```bash
+VITE_SUPABASE_URL='https://cfmzkthhgliqelozlmwu.supabase.co' \
+SUPABASE_SERVICE_ROLE_KEY='<cofre>' \
+  node scripts/scan-rls-security.mjs
+```
 
-## 4. Checklist de Fechamento
+Depois, execute `npm run check:security-definer-acl` e os testes remotos de RLS.
+Nunca use a credencial privilegiada no bundle do navegador.
 
-Marcar conforme avança:
+### Senha do banco
 
-- [ ] Supabase `service_role` key rotacionada
-- [ ] n8n com novas variáveis aplicadas
-- [ ] Edge Functions com novos secrets
-- [ ] Cloudflare Workers com novos bindings
-- [ ] Bitrix24 OAuth/webhook regenerado
-- [ ] Evolution API key regenerada
-- [ ] Workflows n8n validados (1 teste por integração)
-- [ ] Aplicação Promo_Gifts redeployada com novas envs
-- [ ] `.env` local atualizado (e nunca commitado)
-- [ ] `.env` confirmado em `.gitignore`
-- [ ] Histórico do git escaneado: `gitleaks detect --source . --no-git`
+Execute o preflight do aplicador em modo somente leitura e confirme TLS,
+project ref, allowlist, hashes e ledger. A rotação não autoriza reaplicar o
+passivo histórico de migrations.
 
-## 5. Pós-Rotação (Hardening)
+### Contas E2E
 
-1. Confirmar que o workflow `gitleaks` no CI está ativo (já presente em `.github/workflows/security.yml`)
-2. Considerar pre-commit hook `gitleaks` localmente
-3. Revisar quem tem acesso aos painéis dos 4 serviços (princípio do menor privilégio)
-4. Documentar este incidente em `docs/INCIDENTS/2026-04-env-exposure.md` com timeline e lições aprendidas
+Execute a configuração autenticada e ao menos uma jornada de usuário e uma de
+administrador. As contas devem ser dedicadas à homologação e não podem
+representar pessoas reais.
 
-## 6. Tempo Estimado
+## Calendário
 
-| Etapa | Duração |
-|---|---|
-| Supabase | 15 min |
-| n8n | 20 min |
-| Bitrix24 | 15 min |
-| Evolution | 10 min |
-| Validação ponta a ponta | 30 min |
-| **Total** | **~90 min** |
+| Item                                                  | Última ação comprovada              | Próxima revisão máxima                |
+| ----------------------------------------------------- | ----------------------------------- | ------------------------------------- |
+| `SUPABASE_ACCESS_TOKEN` do environment `construction` | 07/10/2026                          | 05/01/2027                            |
+| Secrets administrativos do Supabase                   | revisão de presença em 07/10/2026   | 05/01/2027; rotacionar até 05/04/2027 |
+| Senha PostgreSQL                                      | revisão de presença em 07/10/2026   | 05/01/2027; rotacionar até 05/04/2027 |
+| Contas E2E                                            | revisão de presença em 07/10/2026   | 05/01/2027                            |
+| Chaves públicas `VITE_*`                              | validação de contrato em 07/10/2026 | 05/04/2027                            |
 
-## 7. Bloqueios Potenciais e Mitigação
+“Revisão de presença” confirma somente que o secret existe no cofre. Ela não
+comprova a data da última rotação; quando essa data não estiver disponível, o
+responsável deve assumir a data mais antiga e antecipar a troca.
 
-| Bloqueio | Mitigação |
-|---|---|
-| Aplicação produção quebra durante a janela | Aceitável se < 5 min de downtime; comunicar ao time antes |
-| Esquecer um consumidor da credencial | Antes de rotacionar, `grep -r "SUPABASE_SERVICE_ROLE" .` em todos os repos |
-| Nova credencial não copiada (some após o reset) | Armazenar em gerenciador de secrets ANTES de fechar a aba |
-| n8n não reconhece nova variável | Reiniciar workflow / clear cache |
+## Resposta a incidente
 
-## 8. Critério de Sucesso
+1. Desabilite o consumidor suspeito e preserve logs.
+2. Gere sucessora e atualize consumidores conhecidos.
+3. Revogue a credencial comprometida.
+4. Investigue o período entre exposição e revogação.
+5. Revise RLS, grants, logs administrativos e ações no GitHub.
+6. Registre o incidente sem incluir tokens, senhas ou URLs com segredo.
 
-- [ ] Os 4 serviços operacionais com novas credenciais
-- [ ] Nenhum consumidor com credencial antiga ativa
-- [ ] CI verde após o deploy
-- [ ] Workflow de validação executado em cada integração
+Uma chave `service_role`, `sb_secret_*`, senha de banco ou token de conta
+exposto exige rotação. Uma chave `anon`/publishable exposta exige validar RLS e
+uso; sua presença no cliente é esperada e não prova, sozinha, incidente.
 
----
+## Checklist de fechamento
 
-**Referência:** Issue de tracking deste runbook → será criada em conjunto com este PR.
+- [ ] Consumidores internos e externos inventariados.
+- [ ] Sucessora criada e armazenada somente no cofre.
+- [ ] GitHub e serviços externos atualizados.
+- [ ] Testes de autenticação, RLS e banco aprovados.
+- [ ] Edge Functions e automações críticas validadas.
+- [ ] Credencial anterior sem uso na janela de observação.
+- [ ] Credencial anterior revogada.
+- [ ] Gitleaks executado no histórico completo e no candidato de release.
+- [ ] Evidência sanitizada registrada com data e responsável.

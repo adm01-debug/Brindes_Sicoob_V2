@@ -1,7 +1,7 @@
 /**
  * Consulta pública mínima por capacidade do token.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import "../components/render-helpers";
 import { waitFor } from "@testing-library/react";
 import { renderHookWithProviders } from "./_helpers/render-hook-providers";

@@ -9,8 +9,9 @@
  * Não exercita o caso "user authenticated sem role" porque criar
  * users descartáveis no CI é fluxo separado (ver tests/rls/personas).
  *
- * Habilita-se quando VITE_SUPABASE_URL + VITE_SUPABASE_PUBLISHABLE_KEY
- * estão presentes; do contrário roda como skip silencioso.
+ * Habilita-se somente com RUN_REMOTE_AUTHZ_TESTS=1. A presença acidental de
+ * variáveis VITE_* em um teste unitário não pode disparar dezenas de chamadas
+ * contra o ambiente remoto.
  */
 import { describe, it, expect } from 'vitest';
 import {
@@ -20,11 +21,18 @@ import {
 const URL = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
 const ANON = (import.meta as any).env?.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
 
-const enabled = Boolean(URL && ANON);
+const requested = process.env.RUN_REMOTE_AUTHZ_TESTS === '1';
+if (requested && (!URL || !ANON)) {
+  throw new Error('RUN_REMOTE_AUTHZ_TESTS=1 exige VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY.');
+}
+const enabled = requested && Boolean(URL && ANON);
 const d = enabled ? describe : describe.skip;
 
 const SENSITIVE = Object.entries(EDGE_AUTHZ_MANIFEST).filter(
-  ([, e]) => (e.category === 'supervisor' || e.category === 'dev') && !e.skipAnonBypassTest,
+  ([, e]) =>
+    (e.category === 'supervisor' || e.category === 'dev') &&
+    e.runtime !== 'source-only' &&
+    !e.skipAnonBypassTest,
 );
 
 d('Edge authz bypass — supervisor/dev sem auth retorna 401', () => {

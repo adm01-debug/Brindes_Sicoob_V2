@@ -5,12 +5,13 @@
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Crown, X, Check, Minus } from "lucide-react";
+import { Crown, X, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useComparisonScore } from "@/hooks/useComparisonScore";
+import type { Product } from "@/hooks/useProducts";
 
 interface Props {
-  products: any[];
+  products: Product[];
   formatCurrency: (v: number) => string;
   onRemove: (idx: number) => void;
   onProductClick?: (id: string) => void;
@@ -19,8 +20,8 @@ interface Props {
 const ROWS: Array<{
   key: string;
   label: string;
-  format: (p: any) => string | number;
-  raw: (p: any) => number;
+  format: (p: Product) => string | number;
+  raw: (p: Product) => number;
   better: "lower" | "higher";
 }> = [
   { key: "price", label: "Preço unitário", format: p => p.price, raw: p => p.price, better: "lower" },
@@ -34,11 +35,14 @@ export function ComparisonDuelView({ products, formatCurrency, onRemove, onProdu
   const scoreItems = useComparisonScore(products);
   const winnerIdx = useMemo(() => {
     if (scoreItems.length === 0) return -1;
-    return scoreItems.reduce((best, cur, idx, arr) => cur.total > arr[best].total ? idx : best, 0);
+    return scoreItems.reduce(
+      (best, cur, idx, arr) => cur.total > (arr[best]?.total ?? Number.NEGATIVE_INFINITY) ? idx : best,
+      0,
+    );
   }, [scoreItems]);
 
-  if (products.length !== 2) return null;
   const [a, b] = products;
+  if (products.length !== 2 || !a || !b) return null;
 
   const renderRow = (row: typeof ROWS[number]) => {
     const va = row.raw(a);
@@ -68,7 +72,7 @@ export function ComparisonDuelView({ products, formatCurrency, onRemove, onProdu
     );
   };
 
-  const renderHeader = (p: any, idx: number, side: "left" | "right") => (
+  const renderHeader = (p: Product, idx: number, side: "left" | "right") => (
     <div className={cn("space-y-3", side === "right" && "lg:text-right")}>
       <div className="relative aspect-square rounded-2xl overflow-hidden bg-muted border-2 border-border group">
         <img

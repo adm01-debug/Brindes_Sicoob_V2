@@ -253,7 +253,7 @@ export default function GestorConsolidatedOrdersPage() {
         p_received_quantity: received,
         p_damaged_quantity: damaged,
         p_missing_quantity: missing,
-        p_notes: notes.trim() || null,
+        p_notes: notes.trim() || undefined,
       });
       if (error) throw error;
       if (!data) throw new Error("O banco não confirmou o recebimento.");

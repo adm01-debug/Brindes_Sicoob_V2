@@ -1,13 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Slack, Mail, Save, BellRing } from "lucide-react";
+import { Slack, Mail, BellRing } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+interface NotificationSettingPayload {
+  channel: 'slack' | 'email';
+  webhook_url: string | null;
+  recipient_email: string | null;
+  is_active: boolean | null;
+}
 
 export const NotificationSettingsTab = () => {
   const queryClient = useQueryClient();
@@ -22,7 +28,7 @@ export const NotificationSettingsTab = () => {
     },
   });
 
-  const { data: settings, isLoading } = useQuery({
+  const { data: settings } = useQuery({
     queryKey: ["pa_notification_settings", selectedPa],
     queryFn: async () => {
       if (!selectedPa) return [];
@@ -37,7 +43,7 @@ export const NotificationSettingsTab = () => {
   });
 
   const upsertMutation = useMutation({
-    mutationFn: async (payload: any) => {
+    mutationFn: async (payload: NotificationSettingPayload) => {
       const { error } = await supabase
         .from("pa_notification_settings")
         .upsert({
@@ -53,13 +59,21 @@ export const NotificationSettingsTab = () => {
       queryClient.invalidateQueries({ queryKey: ["pa_notification_settings", selectedPa] });
       toast.success("Configurações salvas!");
     },
-    onError: (error: any) => {
-      toast.error("Erro ao salvar: " + error.message);
+    onError: (error: unknown) => {
+      toast.error("Erro ao salvar: " + (error instanceof Error ? error.message : String(error)));
     }
   });
 
-  const getSetting = (channel: 'slack' | 'email') => {
-    return settings?.find(s => s.channel === channel) || { channel, is_active: false, webhook_url: '', recipient_email: '' };
+  const getSetting = (channel: 'slack' | 'email'): NotificationSettingPayload => {
+    const setting = settings?.find(s => s.channel === channel);
+    return setting
+      ? {
+          channel,
+          is_active: setting.is_active,
+          webhook_url: setting.webhook_url,
+          recipient_email: setting.recipient_email,
+        }
+      : { channel, is_active: false, webhook_url: '', recipient_email: '' };
   };
 
   return (

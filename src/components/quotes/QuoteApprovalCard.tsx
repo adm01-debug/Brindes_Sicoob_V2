@@ -76,21 +76,9 @@ function CommercialTerms({ paymentTerms, deliveryTime, shippingCost, notes }: Pi
   );
 }
 
-export function QuoteApprovalCard({
-  quoteNumber,
-  clientName,
-  total,
-  validUntil,
-  status,
-  onApprove,
-  onReject,
-  isResponded,
-  items,
-  paymentTerms,
-  deliveryTime,
-  shippingCost,
-  notes,
-}: QuoteApprovalCardProps) {
+export function QuoteApprovalCard(props: QuoteApprovalCardProps) {
+  const { quoteNumber, clientName, total, validUntil, status, onApprove, onReject, isResponded,
+    items, paymentTerms, deliveryTime, shippingCost, notes } = props;
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>

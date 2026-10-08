@@ -36,6 +36,29 @@ export function isRlsDenialError(error: PostgrestError | null | undefined): bool
   return /row[- ]level security|violates row-level|new row violates/.test(msg);
 }
 
+function currentEndpoint(): string | undefined {
+  return typeof window === "undefined" ? undefined : window.location.pathname;
+}
+
+function currentUserAgent(): string | undefined {
+  return typeof navigator === "undefined" ? undefined : navigator.userAgent;
+}
+
+function rlsLogParams(error: PostgrestError, context: LogRlsDenialContext) {
+  return {
+    p_table_name: context.table,
+    p_operation: context.op,
+    p_endpoint: context.endpoint ?? currentEndpoint(),
+    p_query_summary: context.querySummary ?? undefined,
+    p_target_id: context.targetId ?? undefined,
+    p_target_seller_id: context.targetSellerId ?? undefined,
+    p_policy_hint: context.policyHint ?? undefined,
+    p_error_code: error.code ?? undefined,
+    p_error_message: error.message ?? undefined,
+    p_user_agent: currentUserAgent(),
+  };
+}
+
 /**
  * Registra a negação de forma "fire-and-forget" (não bloqueia UI, não relança).
  * Usa a RPC `log_rls_denial` que é SECURITY DEFINER e enriquece com user/email/role.
@@ -46,18 +69,7 @@ export async function logRlsDenial(
 ): Promise<void> {
   if (!error || !isRlsDenialError(error)) return;
   try {
-    await supabase.rpc("log_rls_denial", {
-      p_table_name: ctx.table,
-      p_operation: ctx.op,
-      p_endpoint: ctx.endpoint ?? (typeof window !== "undefined" ? window.location.pathname : undefined),
-      p_query_summary: ctx.querySummary ?? undefined,
-      p_target_id: ctx.targetId ?? undefined,
-      p_target_seller_id: ctx.targetSellerId ?? undefined,
-      p_policy_hint: ctx.policyHint ?? undefined,
-      p_error_code: error.code ?? undefined,
-      p_error_message: error.message ?? undefined,
-      p_user_agent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
-    });
+    await supabase.rpc("log_rls_denial", rlsLogParams(error, ctx));
   } catch {
     // Logging nunca deve quebrar o fluxo do usuário.
   }

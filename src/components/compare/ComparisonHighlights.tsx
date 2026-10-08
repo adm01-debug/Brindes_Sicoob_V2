@@ -4,11 +4,12 @@
  */
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { TrendingUp, TrendingDown, Minus, Crown, AlertTriangle } from "lucide-react";
+import { TrendingUp, Minus, Crown, AlertTriangle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type HighlightType = "best" | "worst" | "neutral";
-type CompareMode = "lower-is-better" | "higher-is-better";
+const LOWER_IS_BETTER = "lower-is-better" as const;
+type CompareMode = typeof LOWER_IS_BETTER | "higher-is-better";
 
 interface ComparisonHighlightsProps {
   values: (number | null | undefined)[];
@@ -22,7 +23,7 @@ interface ComparisonHighlightsProps {
 export function ComparisonHighlights({
   values,
   labels,
-  mode = "lower-is-better",
+  mode = LOWER_IS_BETTER,
   formatValue = (v) => v.toString(),
   showIndicators = true,
   className,
@@ -37,10 +38,10 @@ export function ComparisonHighlights({
     if (validValues.length === 0) return [];
 
     const sortedAsc = [...validValues].sort((a, b) => a.value - b.value);
-    const bestIndex = mode === "lower-is-better" 
+    const bestIndex = mode === LOWER_IS_BETTER
       ? sortedAsc[0]?.index 
       : sortedAsc[sortedAsc.length - 1]?.index;
-    const worstIndex = mode === "lower-is-better"
+    const worstIndex = mode === LOWER_IS_BETTER
       ? sortedAsc[sortedAsc.length - 1]?.index
       : sortedAsc[0]?.index;
 
@@ -57,7 +58,7 @@ export function ComparisonHighlights({
 
       // Calculate diff from best
       const bestValue = validValues.find(v => v.index === bestIndex)?.value ?? value;
-      const diff = mode === "lower-is-better"
+      const diff = mode === LOWER_IS_BETTER
         ? value - bestValue
         : bestValue - value;
 
@@ -158,7 +159,7 @@ function HighlightCell({
             )}
             {type !== "best" && diff > 0 && (
               <span className="text-xs text-muted-foreground">
-                (+{mode === "lower-is-better" ? formatValue(diff) : formatValue(-diff)})
+                (+{mode === LOWER_IS_BETTER ? formatValue(diff) : formatValue(-diff)})
               </span>
             )}
           </div>
@@ -174,20 +175,9 @@ function HighlightCell({
   );
 }
 
-/**
- * Utility to highlight best/worst in a comparison table row
- */
-interface HighlightRowProps {
-  attribute: string;
-  values: (string | number | boolean | null)[];
-  productNames: string[];
-  mode?: CompareMode;
-  formatFn?: (v: string | number | boolean) => string;
-}
-
 export function useComparisonHighlight(
   values: (number | null | undefined)[],
-  mode: CompareMode = "lower-is-better"
+  mode: CompareMode = LOWER_IS_BETTER
 ) {
   return useMemo(() => {
     const validIndices = values
@@ -202,7 +192,7 @@ export function useComparisonHighlight(
     
     return values.map(v => {
       if (v === null || v === undefined) return "neutral" as HighlightType;
-      if (mode === "lower-is-better") {
+      if (mode === LOWER_IS_BETTER) {
         if (v === min) return "best" as HighlightType;
         if (v === max) return "worst" as HighlightType;
       } else {

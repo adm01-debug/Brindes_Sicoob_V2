@@ -68,7 +68,7 @@ export const useVoiceCommandHistory = (): UseVoiceCommandHistoryReturn => {
         const parsed = JSON.parse(stored);
         return parsed.map((item: { transcript?: string; command?: string; timestamp?: string; type?: string }) => ({
           ...item,
-          timestamp: new Date(item.timestamp),
+          timestamp: item.timestamp ? new Date(item.timestamp) : new Date(0),
         }));
       }
     } catch (error) {
@@ -104,8 +104,7 @@ export const useVoiceCommandHistory = (): UseVoiceCommandHistoryReturn => {
     };
 
     setHistory(prev => {
-      const updated = [newRecord, ...prev].slice(0, MAX_HISTORY);
-      return updated;
+      return [newRecord, ...prev].slice(0, MAX_HISTORY);
     });
   }, []);
 

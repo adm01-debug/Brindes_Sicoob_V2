@@ -11,30 +11,24 @@ import { cn } from "@/lib/utils";
 
 const DAYS_PT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
+async function loadOrdersHeatmap(since: string) {
+  const { data: orders } = await supabase.from("orders").select("created_at").gte("created_at", since); // rls-allow: agregação administrativa; RLS aplica papel e organização
+  const matrix: number[][] = Array.from({ length: 7 }, () => Array(24).fill(0));
+  for (const order of orders ?? []) { const date = new Date(order.created_at); const row = matrix[date.getDay()]; if (row) row[date.getHours()] = (row[date.getHours()] ?? 0) + 1; }
+  return { matrix, max: Math.max(...matrix.flat(), 1) };
+}
+
+function HeatmapGrid({ matrix, max }: { matrix: number[][]; max: number }) {
+  return <div className="overflow-x-auto pb-2"><div className="inline-block min-w-full"><div className="flex gap-px text-[9px] text-muted-foreground pl-9 mb-1">{Array.from({ length: 24 }).map((_, hour) => <div key={hour} className="w-5 text-center">{hour % 3 === 0 ? hour : ""}</div>)}</div>{matrix.map((row, day) => <div key={DAYS_PT[day]} className="flex gap-px items-center mt-px"><div className="w-9 text-[10px] text-muted-foreground font-bold">{DAYS_PT[day]}</div>{row.map((count, hour) => <div key={hour} className={cn("w-5 h-5 rounded-sm transition-transform hover:scale-125 cursor-help", count === 0 && "bg-muted/30")} style={count > 0 ? { backgroundColor: `hsl(var(--primary) / ${0.15 + (count / max) * 0.85})` } : undefined} title={`${DAYS_PT[day]} ${hour}h — ${count} pedidos`} />)}</div>)}<div className="flex items-center gap-2 mt-4 text-[10px] text-muted-foreground pl-9"><span className="font-medium">menor volume</span>{[0.15, 0.35, 0.55, 0.75, 1].map(intensity => <div key={intensity} className="w-4 h-2.5 rounded-sm" style={{ backgroundColor: `hsl(var(--primary) / ${intensity})` }} />)}<span className="font-medium">maior volume</span></div></div></div>;
+}
+
 export function OrdersHeatmap() {
   const days = 90; // Período maior para heatmap de pedidos
   const since = subDays(new Date(), days).toISOString();
 
   const { data, isLoading } = useQuery({
     queryKey: ["orders-heatmap", days],
-    queryFn: async () => {
-      const { data: orders } = await supabase
-        // rls-allow: agregação administrativa; RLS aplica papel e organização
-        .from("orders")
-        .select("created_at")
-        .gte("created_at", since);
-
-      const matrix: number[][] = Array.from({ length: 7 }, () => Array(24).fill(0));
-      orders?.forEach(r => {
-        const d = new Date(r.created_at);
-        const row = matrix[d.getDay()]!;
-        row[d.getHours()] = (row[d.getHours()] ?? 0) + 1;
-      });
-      
-      const flat = matrix.flat();
-      const max = Math.max(...flat, 1);
-      return { matrix, max };
-    },
+    queryFn: () => loadOrdersHeatmap(since),
   });
 
   return (
@@ -55,59 +49,7 @@ export function OrdersHeatmap() {
           <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm">
             Sem dados suficientes para o mapa de calor de pedidos
           </div>
-        ) : (
-          <div className="overflow-x-auto pb-2">
-            <div className="inline-block min-w-full">
-              {/* Header: horas */}
-              <div className="flex gap-px text-[9px] text-muted-foreground pl-9 mb-1">
-                {Array.from({ length: 24 }).map((_, h) => (
-                  <div key={h} className="w-5 text-center">
-                    {h % 3 === 0 ? h : ""}
-                  </div>
-                ))}
-              </div>
-              {data.matrix.map((row, day) => (
-                <div key={day} className="flex gap-px items-center mt-px">
-                  <div className="w-9 text-[10px] text-muted-foreground font-bold">
-                    {DAYS_PT[day]}
-                  </div>
-                  {row.map((count, hour) => {
-                    const intensity = count / data.max;
-                    return (
-                      <div
-                        key={hour}
-                        className={cn(
-                          "w-5 h-5 rounded-sm transition-transform hover:scale-125 cursor-help",
-                          count === 0 && "bg-muted/30",
-                        )}
-                        style={
-                          count > 0
-                            ? {
-                                backgroundColor: `hsl(var(--primary) / ${0.15 + intensity * 0.85})`,
-                              }
-                            : undefined
-                        }
-                        title={`${DAYS_PT[day]} ${hour}h — ${count} pedidos`}
-                      />
-                    );
-                  })}
-                </div>
-              ))}
-              {/* Legenda */}
-              <div className="flex items-center gap-2 mt-4 text-[10px] text-muted-foreground pl-9">
-                <span className="font-medium">menor volume</span>
-                {[0.15, 0.35, 0.55, 0.75, 1].map((i) => (
-                  <div
-                    key={i}
-                    className="w-4 h-2.5 rounded-sm"
-                    style={{ backgroundColor: `hsl(var(--primary) / ${i})` }}
-                  />
-                ))}
-                <span className="font-medium">maior volume</span>
-              </div>
-            </div>
-          </div>
-        )}
+        ) : <HeatmapGrid matrix={data.matrix} max={data.max} />}
       </CardContent>
     </Card>
   );

@@ -42,7 +42,7 @@ const createWrapper = () => {
   );
 };
 
-describe('useCollections', () => {
+describe('useCollections com React Query', () => {
   it('should initialize with empty collections', () => {
     const wrapper = createWrapper();
     const { result } = renderHook(() => useCollections(), { wrapper });

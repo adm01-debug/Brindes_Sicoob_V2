@@ -1,7 +1,7 @@
 /**
  * useQuotes — Hook de orçamentos (refatorado)
  */
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrganization } from "@/contexts/OrganizationContext";
@@ -18,6 +18,24 @@ import { useRBAC } from "@/hooks/useRBAC";
 import { invokeEdgeFunction } from "@/lib/edge-function-client";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 
+const quotesLogger = createClientLogger("quotes.realtime");
+const SINGULAR_DECISIONS: Quote["status"][] = ["approved_singular", "rejected_singular"];
+const MANAGER_DECISIONS: Quote["status"][] = ["approved", "rejected"];
+
+function statusPermissionError(
+  status: Quote["status"],
+  canDecideSingular: boolean,
+  isSupervisorOrAbove: boolean,
+) {
+  if (SINGULAR_DECISIONS.includes(status) && !canDecideSingular) {
+    return "Apenas o comprador autorizado da Singular pode decidir esta solicitação.";
+  }
+  if (MANAGER_DECISIONS.includes(status) && !isSupervisorOrAbove) {
+    return "Apenas supervisores podem aprovar ou rejeitar orçamentos.";
+  }
+  return null;
+}
+
 export function useQuotes() {
   const { user, isGestorCompras, isDev } = useAuth();
   const { isSupervisorOrAbove } = useRBAC();
@@ -31,21 +49,21 @@ export function useQuotes() {
 
   const orgId = currentOrg?.id || null;
 
-  const fetchQuotes = async () => {
+  const fetchQuotes = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
     try {
       const data = await QuoteService.list({ userId: user.id, scope, orgId });
       setQuotes(data);
-    } catch (err) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : String(err));
       toast.error("Erro ao carregar orçamentos");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [orgId, scope, user]);
 
-  const fetchQuote = (quoteId: string) => QuoteService.getById(quoteId);
+  const fetchQuote = useCallback((quoteId: string) => QuoteService.getById(quoteId), []);
 
   const createQuote = async (quote: Partial<Quote>, items: QuoteItem[], idempotencyKey: string) => {
     if (!user) return null;
@@ -58,7 +76,7 @@ export function useQuotes() {
       toast.success("Orçamento criado!");
       fetchQuotes();
       return newQuote;
-    } catch (err) {
+    } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       toast.error("Erro ao criar orçamento", { description: msg });
       return null;
@@ -75,7 +93,7 @@ export function useQuotes() {
       toast.success("Orçamento atualizado!");
       fetchQuotes();
       return updated;
-    } catch (err) {
+    } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       toast.error("Erro ao atualizar orçamento", { description: msg });
       return null;
@@ -87,15 +105,13 @@ export function useQuotes() {
   const updateQuoteStatus = async (quoteId: string, status: Quote["status"], notes?: string) => {
     if (!user) return false;
     
-    const isSingularDecision = ['approved_singular', 'rejected_singular'].includes(status);
-    const isManagerDecision = ['approved', 'rejected'].includes(status);
-
-    if (isSingularDecision && !(isGestorCompras || isDev || isSupervisorOrAbove)) {
-      toast.error("Apenas o comprador autorizado da Singular pode decidir esta solicitação.");
-      return false;
-    }
-    if (isManagerDecision && !isSupervisorOrAbove) {
-      toast.error("Apenas supervisores podem aprovar ou rejeitar orçamentos.");
+    const permissionError = statusPermissionError(
+      status,
+      isGestorCompras || isDev || isSupervisorOrAbove,
+      isSupervisorOrAbove,
+    );
+    if (permissionError) {
+      toast.error(permissionError);
       return false;
     }
 
@@ -114,7 +130,7 @@ export function useQuotes() {
         p_quote_ids: [quoteId],
         p_expected_row_versions: [quote.row_version],
         p_status: status,
-        p_notes: notes ?? null,
+        p_notes: notes ?? undefined,
       });
       
       ensureQuoteMutationApplied(
@@ -127,7 +143,7 @@ export function useQuotes() {
       toast.success("Status atualizado");
       fetchQuotes();
       return true;
-    } catch (err) {
+    } catch {
       toast.error("Erro ao atualizar status");
       return false;
     }
@@ -164,7 +180,7 @@ export function useQuotes() {
         p_quote_ids: uniqueQuoteIds,
         p_expected_row_versions: expectedVersions,
         p_status: status,
-        p_notes: notes ?? null,
+        p_notes: notes ?? undefined,
       });
 
       ensureQuoteMutationApplied(
@@ -252,7 +268,7 @@ export function useQuotes() {
       toast.success("Sincronizado com Bitrix!");
       fetchQuotes();
       return true;
-    } catch (err) {
+    } catch {
       toast.error("Erro ao sincronizar");
       return false;
     }
@@ -265,14 +281,14 @@ export function useQuotes() {
         filters: { is_active: true }, orderBy: { column: "name", ascending: true },
       });
       setTechniques(result.records || []);
-    } catch (err) {
+    } catch {
       // Silent fail as this is background info
     }
   };
 
   useRealtimeSync("quotes", {
     onDataChange: () => {
-      console.info("Quotes table changed, refreshing...");
+      quotesLogger.info("table_changed");
       fetchQuotes();
     }
   });
@@ -282,7 +298,7 @@ export function useQuotes() {
       fetchQuotes();
       fetchTechniques();
     }
-  }, [user]);
+  }, [fetchQuotes, user]);
 
   return {
     quotes, techniques, isLoading, error,

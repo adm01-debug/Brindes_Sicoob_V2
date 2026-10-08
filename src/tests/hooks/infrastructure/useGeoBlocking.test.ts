@@ -2,7 +2,7 @@ import { renderHook, waitFor, act } from '@testing-library/react';
 import { useGeoBlocking } from '@/hooks/useGeoBlocking';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach, type Mock } from 'vitest';
 
 // Mock Supabase
 vi.mock('@/integrations/supabase/client', () => ({
@@ -17,7 +17,7 @@ vi.mock('@/contexts/AuthContext', () => ({
 }));
 
 // Mock fetch for geo location
-global.fetch = vi.fn();
+globalThis.fetch = vi.fn();
 
 describe('useGeoBlocking', () => {
   const mockUser = { id: 'user-123' };
@@ -25,10 +25,10 @@ describe('useGeoBlocking', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useAuth as any).mockReturnValue({ user: mockUser });
-    (global.fetch as any).mockResolvedValue({
+    (useAuth as unknown as Mock).mockReturnValue({ user: mockUser });
+    (globalThis.fetch as Mock).mockResolvedValue({
       json: () => Promise.resolve(mockGeo),
-    });
+    } as Response);
   });
 
   it('should fetch countries and settings on mount', async () => {
@@ -37,7 +37,7 @@ describe('useGeoBlocking', () => {
     ];
     const mockSettings = { city_whitelist_enabled: true };
 
-    const mockFrom = vi.fn((table) => {
+    const mockFrom = vi.fn((table: string) => {
       if (table === 'city_whitelist') {
         return {
           select: vi.fn().mockReturnValue({
@@ -57,7 +57,7 @@ describe('useGeoBlocking', () => {
       return {};
     });
 
-    (supabase.from as any).mockImplementation(mockFrom);
+    (supabase.from as unknown as Mock).mockImplementation(mockFrom);
 
     const { result } = renderHook(() => useGeoBlocking());
 
@@ -72,7 +72,7 @@ describe('useGeoBlocking', () => {
 
   it('should add a country correctly', async () => {
     const mockInsert = vi.fn().mockResolvedValue({ error: null });
-    const mockFrom = vi.fn((table) => {
+    const mockFrom = vi.fn((table: string) => {
       if (table === 'city_whitelist') {
         return {
           insert: mockInsert,
@@ -90,7 +90,7 @@ describe('useGeoBlocking', () => {
       };
     });
 
-    (supabase.from as any).mockImplementation(mockFrom);
+    (supabase.from as unknown as Mock).mockImplementation(mockFrom);
 
     const { result } = renderHook(() => useGeoBlocking());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -100,7 +100,7 @@ describe('useGeoBlocking', () => {
       addResult = await result.current.addCountry('US', 'United States');
     });
 
-    expect(addResult!.success).toBe(true);
+    expect(addResult).toMatchObject({ success: true });
     expect(mockInsert).toHaveBeenCalledWith({
       city_name: 'United States',
       country_code: 'US',
@@ -113,7 +113,7 @@ describe('useGeoBlocking', () => {
       not: vi.fn().mockResolvedValue({ error: null }),
     });
     
-    const mockFrom = vi.fn((table) => {
+    const mockFrom = vi.fn((table: string) => {
       if (table === 'access_security_settings') {
         return {
           update: mockUpdate,
@@ -131,7 +131,7 @@ describe('useGeoBlocking', () => {
       };
     });
 
-    (supabase.from as any).mockImplementation(mockFrom);
+    (supabase.from as unknown as Mock).mockImplementation(mockFrom);
 
     const { result } = renderHook(() => useGeoBlocking());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -141,7 +141,7 @@ describe('useGeoBlocking', () => {
       toggleResult = await result.current.toggleEnabled(true);
     });
 
-    expect(toggleResult!.success).toBe(true);
+    expect(toggleResult).toMatchObject({ success: true });
     expect(mockUpdate).toHaveBeenCalledWith(expect.objectContaining({
       city_whitelist_enabled: true,
     }));
@@ -152,7 +152,7 @@ describe('useGeoBlocking', () => {
       { id: '1', country_code: 'BR', is_active: true },
     ];
     
-    const mockFrom = vi.fn((table) => {
+    const mockFrom = vi.fn((table: string) => {
       if (table === 'city_whitelist') {
         return {
           select: vi.fn().mockReturnValue({
@@ -169,7 +169,7 @@ describe('useGeoBlocking', () => {
       };
     });
 
-    (supabase.from as any).mockImplementation(mockFrom);
+    (supabase.from as unknown as Mock).mockImplementation(mockFrom);
 
     const { result } = renderHook(() => useGeoBlocking());
     await waitFor(() => expect(result.current.isLoading).toBe(false));

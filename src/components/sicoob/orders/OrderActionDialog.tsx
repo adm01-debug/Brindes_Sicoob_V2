@@ -28,6 +28,34 @@ interface OrderActionDialogProps {
   requireSignature?: boolean;
 }
 
+function SignaturePanel({ isSigned, onToggle }: { isSigned: boolean; onToggle: () => void }) {
+  return (
+    <div className={cn("p-4 rounded-xl border-2 border-dashed transition-all duration-300 cursor-pointer group relative overflow-hidden", isSigned ? "bg-sicoob-green/5 border-sicoob-green/40 ring-4 ring-sicoob-green/5" : "bg-muted/10 border-border/60 hover:border-sicoob-green/30 hover:bg-muted/20")} onClick={onToggle} role="button" tabIndex={0} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") onToggle(); }}>
+      <div className="flex items-center gap-3">
+        <div className={cn("p-2 rounded-full transition-colors", isSigned ? "bg-sicoob-green text-white" : "bg-muted text-muted-foreground")}>{isSigned ? <CheckCircle2 className="h-4 w-4" /> : <Fingerprint className="h-4 w-4" />}</div>
+        <div><p className="text-xs font-bold text-foreground">Assinatura Digital Requerida</p><p className="text-[10px] text-muted-foreground">Clique para assinar com suas credenciais Sicoob</p></div>
+        {isSigned && <div className="ml-auto flex flex-col items-end"><span className="text-[8px] font-mono font-bold text-sicoob-green/60">TRUSTED_TOKEN</span><span className="text-[8px] font-mono text-sicoob-green/40">AUTH_SUCCESS</span></div>}
+      </div>
+    </div>
+  );
+}
+
+function ActionHeader({ title, description }: Pick<OrderActionDialogProps, "title" | "description">) {
+  return <DialogHeader><div className="flex items-center gap-2 mb-1"><div className="p-1.5 rounded-lg bg-sicoob-green/10"><ShieldCheck className="h-5 w-5 text-sicoob-green" /></div><DialogTitle className="text-xl font-display font-bold text-sicoob-green-dark">{title}</DialogTitle></div><DialogDescription className="text-sm">{description}</DialogDescription></DialogHeader>;
+}
+
+interface ActionFooterProps extends Pick<OrderActionDialogProps, "confirmLabel" | "confirmVariant" | "confirmDisabled"> {
+  isSigned: boolean;
+  requireSignature: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+function ActionFooter({ confirmLabel, confirmVariant, confirmDisabled, isSigned, requireSignature, onConfirm, onCancel }: ActionFooterProps) {
+  const disabled = Boolean(confirmDisabled || (requireSignature && !isSigned));
+  return <DialogFooter className="gap-2 sm:gap-0"><Button variant="ghost" onClick={onCancel} className="rounded-xl font-bold text-xs uppercase tracking-wider">Cancelar</Button><Button variant={confirmVariant} onClick={onConfirm} disabled={disabled} className={cn("rounded-xl font-bold text-xs uppercase tracking-wider px-6 h-10", confirmVariant === "default" && "bg-sicoob-green hover:bg-sicoob-green-dark text-white")}>{isSigned && <Lock className="h-3.5 w-3.5 mr-2" />}{confirmLabel}</Button></DialogFooter>;
+}
+
 export const OrderActionDialog = ({
   isOpen,
   onOpenChange,
@@ -52,15 +80,7 @@ export const OrderActionDialog = ({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] border-border/40">
-        <DialogHeader>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="p-1.5 rounded-lg bg-sicoob-green/10">
-              <ShieldCheck className="h-5 w-5 text-sicoob-green" />
-            </div>
-            <DialogTitle className="text-xl font-display font-bold text-sicoob-green-dark">{title}</DialogTitle>
-          </div>
-          <DialogDescription className="text-sm">{description}</DialogDescription>
-        </DialogHeader>
+        <ActionHeader title={title} description={description} />
         
         <div className="py-6 space-y-4">
           <div className="space-y-2">
@@ -77,55 +97,9 @@ export const OrderActionDialog = ({
             />
           </div>
 
-          {requireSignature && (
-            <div 
-              className={cn(
-                "p-4 rounded-xl border-2 border-dashed transition-all duration-300 cursor-pointer group relative overflow-hidden",
-                isSigned 
-                  ? "bg-sicoob-green/5 border-sicoob-green/40 ring-4 ring-sicoob-green/5" 
-                  : "bg-muted/10 border-border/60 hover:border-sicoob-green/30 hover:bg-muted/20"
-              )}
-              onClick={() => setIsSigned(!isSigned)}
-            >
-              <div className="flex items-center gap-3">
-                <div className={cn(
-                  "p-2 rounded-full transition-colors",
-                  isSigned ? "bg-sicoob-green text-white" : "bg-muted text-muted-foreground"
-                )}>
-                  {isSigned ? <CheckCircle2 className="h-4 w-4" /> : <Fingerprint className="h-4 w-4" />}
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-foreground">Assinatura Digital Requerida</p>
-                  <p className="text-[10px] text-muted-foreground">Clique para assinar com suas credenciais Sicoob</p>
-                </div>
-                {isSigned && (
-                  <div className="ml-auto flex flex-col items-end">
-                    <span className="text-[8px] font-mono font-bold text-sicoob-green/60">TRUSTED_TOKEN</span>
-                    <span className="text-[8px] font-mono text-sicoob-green/40">AUTH_SUCCESS</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          {requireSignature && <SignaturePanel isSigned={isSigned} onToggle={() => setIsSigned(signed => !signed)} />}
         </div>
-
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button variant="ghost" onClick={() => onOpenChange(false)} className="rounded-xl font-bold text-xs uppercase tracking-wider">
-            Cancelar
-          </Button>
-          <Button 
-            variant={confirmVariant} 
-            onClick={handleConfirm} 
-            disabled={confirmDisabled || (requireSignature && !isSigned)}
-            className={cn(
-              "rounded-xl font-bold text-xs uppercase tracking-wider px-6 h-10",
-              confirmVariant === 'default' && "bg-sicoob-green hover:bg-sicoob-green-dark text-white"
-            )}
-          >
-            {isSigned && <Lock className="h-3.5 w-3.5 mr-2" />}
-            {confirmLabel}
-          </Button>
-        </DialogFooter>
+        <ActionFooter confirmLabel={confirmLabel} confirmVariant={confirmVariant} confirmDisabled={confirmDisabled} isSigned={isSigned} requireSignature={requireSignature} onConfirm={handleConfirm} onCancel={() => onOpenChange(false)} />
       </DialogContent>
     </Dialog>
   );

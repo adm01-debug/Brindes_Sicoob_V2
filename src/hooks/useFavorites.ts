@@ -13,6 +13,21 @@ interface UseFavoritesOptions {
   onFavoriteAdded?: () => void;
 }
 
+function parseFavorites(raw: string): FavoriteItem[] {
+  const parsed: unknown = JSON.parse(raw);
+  if (!Array.isArray(parsed)) {
+    throw new TypeError("O armazenamento de favoritos deve conter uma lista");
+  }
+
+  return parsed.filter((item): item is FavoriteItem =>
+    typeof item === "object" &&
+    item !== null &&
+    typeof (item as FavoriteItem).productId === "string" &&
+    (item as FavoriteItem).productId.trim().length > 0 &&
+    typeof (item as FavoriteItem).addedAt === "string",
+  );
+}
+
 export function useFavorites(options?: UseFavoritesOptions) {
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -29,7 +44,7 @@ export function useFavorites(options?: UseFavoritesOptions) {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        setFavorites(JSON.parse(stored));
+        setFavorites(parseFavorites(stored));
       }
     } catch (e) {
       console.error("Error loading favorites:", e);

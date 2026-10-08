@@ -7,6 +7,20 @@ type QuoteStatusTransition = {
   status: string;
 };
 
+type BulkStatusArgs = {
+  p_quote_ids: string[];
+  p_expected_row_versions: number[];
+  p_status: string;
+  p_notes?: string;
+};
+
+type ApproveWithPdfArgs = {
+  p_quote_id: string;
+  p_expected_quote_row_version: number;
+  p_approved_pdf_url: string;
+  p_notes?: string;
+};
+
 /**
  * Executa uma transição individual pela mesma RPC usada em operações em lote.
  * A leitura da versão ocorre imediatamente antes da chamada; o banco continua
@@ -25,12 +39,17 @@ export async function updateQuoteStatusAtomically(
     .single();
   if (quoteError) throw quoteError;
 
-  const { data, error } = await supabase.rpc("bulk_update_quote_status_atomic", {
+  const rpcArgs = {
     p_quote_ids: [quoteId],
     p_expected_row_versions: [quote.row_version],
     p_status: status,
     p_notes: notes ?? null,
-  });
+  };
+  // A função SQL aceita NULL, embora o tipo gerado represente o parâmetro opcional como string.
+  const { data, error } = await supabase.rpc(
+    "bulk_update_quote_status_atomic",
+    rpcArgs as BulkStatusArgs,
+  );
   if (error) throw error;
   if (!data || data.length !== 1) {
     throw new Error("A transição do orçamento não foi confirmada pelo banco.");
@@ -55,12 +74,17 @@ export async function approveQuoteWithPdfAtomically(
     .single();
   if (quoteError) throw quoteError;
 
-  const { data, error } = await supabase.rpc("approve_quote_with_pdf_atomic", {
+  const rpcArgs = {
     p_quote_id: quoteId,
     p_expected_quote_row_version: quote.row_version,
     p_approved_pdf_url: approvedPdfUrl,
     p_notes: notes ?? null,
-  });
+  };
+  // A função SQL aceita NULL, embora o tipo gerado represente o parâmetro opcional como string.
+  const { data, error } = await supabase.rpc(
+    "approve_quote_with_pdf_atomic",
+    rpcArgs as ApproveWithPdfArgs,
+  );
   if (error) throw error;
   const approved = data?.[0];
   if (!approved) {

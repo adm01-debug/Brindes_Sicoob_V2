@@ -34,12 +34,9 @@ export function LocationPanel({ location, quantity, onPriceCalculated }: Locatio
 
   const handleSelectTechnique = useCallback((technique: TechniqueOption) => {
     if (selectedTechnique?.technique_id === technique.technique_id) {
-      // Deselect
       setSelectedTechnique(null);
       onPriceCalculated(location.location_code, '', null);
-    } else {
-      setSelectedTechnique(technique);
-    }
+    } else setSelectedTechnique(technique);
   }, [selectedTechnique, location.location_code, onPriceCalculated]);
 
   const handlePriceCalculated = useCallback((techniqueId: string, price: CustomizationPriceResponseV6 | null, dimensions?: { width?: number; height?: number }) => {
@@ -56,26 +53,12 @@ export function LocationPanel({ location, quantity, onPriceCalculated }: Locatio
               {grupo}
             </p>
           )}
-          {techs.map((t) => (
-            <TechniqueCard
-              key={t.technique_id}
-              technique={t}
-              isSelected={selectedTechnique?.technique_id === t.technique_id}
-              onSelect={handleSelectTechnique}
-            />
-          ))}
+          {techs.map((technique) => <TechniqueCard key={technique.technique_id} technique={technique} isSelected={selectedTechnique?.technique_id === technique.technique_id} onSelect={handleSelectTechnique} />)}
         </div>
       ))}
 
       {/* Configuration panel */}
-      {selectedTechnique && (
-        <ConfigurationPanelV6
-          key={selectedTechnique.technique_id}
-          technique={selectedTechnique}
-          quantity={quantity}
-          onPriceCalculated={handlePriceCalculated}
-        />
-      )}
+      {selectedTechnique && <ConfigurationPanelV6 key={selectedTechnique.technique_id} technique={selectedTechnique} quantity={quantity} onPriceCalculated={handlePriceCalculated} />}
     </div>
   );
 }

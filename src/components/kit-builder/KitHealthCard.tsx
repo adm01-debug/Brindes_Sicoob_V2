@@ -29,8 +29,51 @@ function percentile(sorted: number[], p: number): number {
   const idx = (p / 100) * (sorted.length - 1);
   const lo = Math.floor(idx);
   const hi = Math.ceil(idx);
-  if (lo === hi) return sorted[lo]!;
-  return sorted[lo]! + (sorted[hi]! - sorted[lo]!) * (idx - lo);
+  const lower = sorted[lo] ?? 0;
+  const upper = sorted[hi] ?? lower;
+  if (lo === hi) return lower;
+  return lower + (upper - lower) * (idx - lo);
+}
+
+function calculateHealthScore(totalPrice: number, inRange: boolean, aboveRange: boolean, diffVsAvg: number) {
+  if (totalPrice <= 0) return 0;
+  if (inRange) return 90;
+  if (aboveRange) return Math.max(40, 90 - (diffVsAvg - 20));
+  return Math.max(50, 70 - Math.abs(diffVsAvg) / 2);
+}
+
+function scoreColor(score: number) {
+  if (score >= 75) return 'success';
+  if (score >= 50) return 'warning';
+  return 'destructive';
+}
+
+function kitHealthMetrics(totalPrice: number, quantity: number, history: readonly HistoricalRow[]) {
+  const sortedHistory = history.map(row => Number(row.total_price)).filter(value => value > 0).sort((a, b) => a - b);
+  const average = sortedHistory.length > 0 ? sortedHistory.reduce((sum, value) => sum + value, 0) / sortedHistory.length : 0;
+  const p25 = percentile(sortedHistory, 25);
+  const p75 = percentile(sortedHistory, 75);
+  const difference = average > 0 ? ((totalPrice - average) / average) * 100 : 0;
+  const inRange = totalPrice >= p25 && totalPrice <= p75;
+  const aboveRange = p75 > 0 && totalPrice > p75;
+  const belowRange = p25 > 0 && totalPrice < p25 && totalPrice > 0;
+  const healthScore = calculateHealthScore(totalPrice, inRange, aboveRange, difference);
+  return { sortedHistory, average, p25, p75, difference, inRange, aboveRange, belowRange, healthScore, color: scoreColor(healthScore), totalRevenue: totalPrice * quantity };
+}
+
+interface HistoricalComparisonProps {
+  readonly metrics: ReturnType<typeof kitHealthMetrics>;
+  readonly kitType: string;
+  readonly totalPrice: number;
+}
+
+function HistoricalComparison({ metrics, kitType, totalPrice }: HistoricalComparisonProps) {
+  if (metrics.sortedHistory.length < 5) {
+    if (totalPrice <= 0) return null;
+    return <div className="flex items-start gap-2 rounded-md bg-muted/40 p-2 text-xs text-muted-foreground"><AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" /><span>Histórico insuficiente para comparativo competitivo.</span></div>;
+  }
+  const differencePrefix = metrics.difference > 0 ? '+' : '';
+  return <div className="space-y-2 pt-2 border-t"><div className="flex items-center justify-between text-xs"><span className="text-muted-foreground">Média histórica ({kitType})</span><span className="font-medium">{formatCurrency(metrics.average)}</span></div><div className="flex items-center justify-between text-xs"><span className="text-muted-foreground">Faixa competitiva (P25–P75)</span><span className="font-medium">{formatCurrency(metrics.p25)} – {formatCurrency(metrics.p75)}</span></div>{metrics.inRange && totalPrice > 0 && <div className="flex items-start gap-2 rounded-md bg-success/10 p-2 text-xs text-success"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 mt-0.5" /><span>Preço dentro do range competitivo do mercado.</span></div>}{metrics.aboveRange && <div className="flex items-start gap-2 rounded-md bg-warning/10 p-2 text-xs text-warning-foreground"><TrendingUp className="h-3.5 w-3.5 shrink-0 mt-0.5 text-warning" /><span>Acima da faixa competitiva ({differencePrefix}{metrics.difference.toFixed(0)}% vs. média). Considere reduzir itens ou ajustar margem.</span></div>}{metrics.belowRange && <div className="flex items-start gap-2 rounded-md bg-destructive/10 p-2 text-xs text-destructive"><TrendingDown className="h-3.5 w-3.5 shrink-0 mt-0.5" /><span>Abaixo da faixa competitiva ({metrics.difference.toFixed(0)}% vs. média). Risco de margem baixa.</span></div>}</div>;
 }
 
 export function KitHealthCard({ kitState, kitQuantity, className }: KitHealthCardProps) {
@@ -51,7 +94,6 @@ export function KitHealthCard({ kitState, kitQuantity, className }: KitHealthCar
   });
 
   const totalPrice = kitState.totalPrice;
-  const totalRevenue = totalPrice * kitQuantity;
 
   // Margem aproximada — usa flag conservadora baseada na composição
   // Sem custo direto exposto: margem é estimada como razão personalização/preço (proxy)
@@ -59,25 +101,7 @@ export function KitHealthCard({ kitState, kitQuantity, className }: KitHealthCar
   const estimatedCostRatio = 0.65;
   const grossMargin = totalPrice > 0 ? ((totalPrice - totalPrice * estimatedCostRatio) / totalPrice) * 100 : 0;
 
-  const sortedHist = (history ?? []).map((r) => Number(r.total_price)).filter((n) => n > 0).sort((a, b) => a - b);
-  const avg = sortedHist.length ? sortedHist.reduce((s, n) => s + n, 0) / sortedHist.length : 0;
-  const p25 = percentile(sortedHist, 25);
-  const p75 = percentile(sortedHist, 75);
-
-  const diffVsAvg = avg > 0 ? ((totalPrice - avg) / avg) * 100 : 0;
-  const inRange = totalPrice >= p25 && totalPrice <= p75;
-  const aboveRange = p75 > 0 && totalPrice > p75;
-  const belowRange = p25 > 0 && totalPrice < p25 && totalPrice > 0;
-
-  const healthScore =
-    totalPrice <= 0 ? 0 :
-    inRange ? 90 :
-    aboveRange ? Math.max(40, 90 - (diffVsAvg - 20)) :
-    Math.max(50, 70 - Math.abs(diffVsAvg) / 2);
-
-  const scoreColor =
-    healthScore >= 75 ? 'success' :
-    healthScore >= 50 ? 'warning' : 'destructive';
+  const metrics = kitHealthMetrics(totalPrice, kitQuantity, history ?? []);
 
   return (
     <Card className={className}>
@@ -91,12 +115,12 @@ export function KitHealthCard({ kitState, kitQuantity, className }: KitHealthCar
             variant="outline"
             className={cn(
               'text-[10px]',
-              scoreColor === 'success' && 'border-success text-success',
-              scoreColor === 'warning' && 'border-warning text-warning',
-              scoreColor === 'destructive' && 'border-destructive text-destructive'
+              metrics.color === 'success' && 'border-success text-success',
+              metrics.color === 'warning' && 'border-warning text-warning',
+              metrics.color === 'destructive' && 'border-destructive text-destructive'
             )}
           >
-            {healthScore.toFixed(0)}/100
+            {metrics.healthScore.toFixed(0)}/100
           </Badge>
         </div>
 
@@ -107,55 +131,11 @@ export function KitHealthCard({ kitState, kitQuantity, className }: KitHealthCar
           </div>
           <div className="rounded-md bg-muted/40 p-2">
             <div className="text-muted-foreground">Receita ({kitQuantity}×)</div>
-            <div className="font-semibold text-foreground">{formatCurrency(totalRevenue)}</div>
+            <div className="font-semibold text-foreground">{formatCurrency(metrics.totalRevenue)}</div>
           </div>
         </div>
 
-        {sortedHist.length >= 5 && (
-          <div className="space-y-2 pt-2 border-t">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Média histórica ({kitState.kitType})</span>
-              <span className="font-medium">{formatCurrency(avg)}</span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Faixa competitiva (P25–P75)</span>
-              <span className="font-medium">
-                {formatCurrency(p25)} – {formatCurrency(p75)}
-              </span>
-            </div>
-
-            {inRange && totalPrice > 0 && (
-              <div className="flex items-start gap-2 rounded-md bg-success/10 p-2 text-xs text-success">
-                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-                <span>Preço dentro do range competitivo do mercado.</span>
-              </div>
-            )}
-            {aboveRange && (
-              <div className="flex items-start gap-2 rounded-md bg-warning/10 p-2 text-xs text-warning-foreground">
-                <TrendingUp className="h-3.5 w-3.5 shrink-0 mt-0.5 text-warning" />
-                <span>
-                  Acima da faixa competitiva ({diffVsAvg > 0 ? '+' : ''}
-                  {diffVsAvg.toFixed(0)}% vs. média). Considere reduzir itens ou ajustar margem.
-                </span>
-              </div>
-            )}
-            {belowRange && (
-              <div className="flex items-start gap-2 rounded-md bg-destructive/10 p-2 text-xs text-destructive">
-                <TrendingDown className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-                <span>
-                  Abaixo da faixa competitiva ({diffVsAvg.toFixed(0)}% vs. média). Risco de margem baixa.
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {sortedHist.length < 5 && totalPrice > 0 && (
-          <div className="flex items-start gap-2 rounded-md bg-muted/40 p-2 text-xs text-muted-foreground">
-            <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-            <span>Histórico insuficiente para comparativo competitivo.</span>
-          </div>
-        )}
+        <HistoricalComparison metrics={metrics} kitType={kitState.kitType} totalPrice={totalPrice} />
       </CardContent>
     </Card>
   );

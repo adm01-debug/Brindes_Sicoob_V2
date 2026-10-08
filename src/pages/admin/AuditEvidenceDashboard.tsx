@@ -6,9 +6,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  FileCode, Shield, CheckCircle2, AlertTriangle, Search, 
-  ChevronDown, ChevronRight, Activity, Clock, ShieldAlert 
+import {
+  FileCode, Shield, CheckCircle2, Search,
+  ChevronDown, ChevronRight, Activity, Clock, ShieldAlert
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -215,7 +215,7 @@ export default function AuditEvidenceDashboard() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {rlsDenials?.map((denial: any) => (
+                    {rlsDenials?.map((denial) => (
                       <div key={denial.id} className="flex gap-4 p-4 border rounded-lg bg-red-50/20 border-red-100 hover:bg-red-50/40 transition-colors">
                         <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
                           <ShieldAlert className="h-5 w-5 text-red-600" />
@@ -229,7 +229,12 @@ export default function AuditEvidenceDashboard() {
                           </div>
                           <p className="text-sm text-red-800/80 font-medium">Operação: {denial.operation || 'SELECT'}</p>
                           <div className="mt-2 text-xs font-mono bg-white p-2 border border-red-100 rounded overflow-x-auto">
-                            {JSON.stringify(denial.error_details || denial.metadata, null, 2)}
+                            {JSON.stringify({
+                              code: denial.error_code,
+                              message: denial.error_message,
+                              policy: denial.policy_hint,
+                              query: denial.query_summary,
+                            }, null, 2)}
                           </div>
                         </div>
                       </div>
@@ -244,4 +249,3 @@ export default function AuditEvidenceDashboard() {
     </>
   );
 }
-

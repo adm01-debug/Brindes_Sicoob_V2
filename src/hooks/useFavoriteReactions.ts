@@ -2,7 +2,7 @@
  * useFavoriteReactions — hook leve para registrar reactions anônimas no public list page.
  * Anon ID é mantido em cookie/localStorage por 30 dias.
  */
-import { useCallback, useEffect, useState } from "react";
+import {  useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 

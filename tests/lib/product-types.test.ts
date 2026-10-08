@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { getProductImageUrl, getProductPrice, getProductStock, shouldFallbackSelect } from '@/lib/external-db/product-types';
+import {
+  getProductImageUrl,
+  getProductPrice,
+  getProductStock,
+  PRODUCT_SELECT_FIELDS_DETAIL,
+  PRODUCT_SELECT_FIELDS_LEGACY,
+  PRODUCT_SELECT_FIELDS_WITH_SALE,
+  shouldFallbackSelect,
+} from '@/lib/external-db/product-types';
 import type { PromobrindProduct } from '@/lib/external-db/product-types';
 
 const baseProduct: PromobrindProduct = {
@@ -25,6 +33,19 @@ describe('getProductImageUrl', () => {
   it('should fallback to first image in images array', () => {
     const p = { ...baseProduct, images: ['arr.jpg'] } as any;
     expect(getProductImageUrl(p)).toBe('arr.jpg');
+  });
+
+  it.each([
+    [{ url: 'legacy-url.jpg' }, 'legacy-url.jpg'],
+    [{ src: 'legacy-src.jpg' }, 'legacy-src.jpg'],
+    [{ image_url: 'legacy-image-url.jpg' }, 'legacy-image-url.jpg'],
+  ])('normaliza objeto legado de imagem %o', (image, expected) => {
+    expect(getProductImageUrl({ ...baseProduct, images: [image] })).toBe(expected);
+  });
+
+  it('ignora valores inválidos até encontrar uma imagem utilizável', () => {
+    const images = [null, {}, { url: '  ' }, { src: 'valid.jpg' }];
+    expect(getProductImageUrl({ ...baseProduct, images })).toBe('valid.jpg');
   });
 
   it('should return null when no images', () => {
@@ -76,5 +97,16 @@ describe('shouldFallbackSelect', () => {
 
   it('should handle string errors', () => {
     expect(shouldFallbackSelect('sale_price does not exist')).toBe(true);
+  });
+});
+
+describe('contrato de seleção do catálogo', () => {
+  it.each([
+    PRODUCT_SELECT_FIELDS_DETAIL,
+    PRODUCT_SELECT_FIELDS_WITH_SALE,
+    PRODUCT_SELECT_FIELDS_LEGACY,
+  ])('não solicita a coluna legada dimensions', (select) => {
+    expect(select.split(',').map((field) => field.trim())).not.toContain('dimensions');
+    expect(select).toContain('height_cm');
   });
 });

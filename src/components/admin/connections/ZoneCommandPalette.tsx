@@ -13,7 +13,7 @@
  * âncora própria (ex: tabs do "Conexões").
  */
 import { useEffect, useMemo, useState } from "react";
-import { Activity, Settings2, Network, Search, Layers } from "lucide-react";
+import { Activity, Settings2, Network, Layers } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -24,6 +24,8 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import type { ZoneId } from "./useZoneVisibility";
+
+const CONNECTIONS_TAB_HINT = "Conexões › Aba";
 
 export interface ZoneCommandEntry {
   /** Zona alvo */
@@ -57,11 +59,11 @@ export const DEFAULT_MODULES: ZoneCommandEntry[] = [
   { zone: "operation", label: "Status do Job de Auto-Test", hint: "Operação", keywords: ["job", "scheduler"] },
   // Conexões
   { zone: "connections", label: "Tabela de Conexões", hint: "Conexões", keywords: ["overview", "lista", "table"] },
-  { zone: "connections", label: "Bancos de Dados", hint: "Conexões › Aba", keywords: ["supabase", "postgres", "db"] },
-  { zone: "connections", label: "Bitrix24", hint: "Conexões › Aba", keywords: ["crm", "bitrix"] },
-  { zone: "connections", label: "n8n", hint: "Conexões › Aba", keywords: ["workflow", "automação"] },
-  { zone: "connections", label: "MCP (Claude)", hint: "Conexões › Aba", keywords: ["claude", "anthropic", "mcp"] },
-  { zone: "connections", label: "Webhooks", hint: "Conexões › Aba", keywords: ["webhook", "events", "outbound"] },
+  { zone: "connections", label: "Bancos de Dados", hint: CONNECTIONS_TAB_HINT, keywords: ["supabase", "postgres", "db"] },
+  { zone: "connections", label: "Bitrix24", hint: CONNECTIONS_TAB_HINT, keywords: ["crm", "bitrix"] },
+  { zone: "connections", label: "n8n", hint: CONNECTIONS_TAB_HINT, keywords: ["workflow", "automação"] },
+  { zone: "connections", label: "MCP (Claude)", hint: CONNECTIONS_TAB_HINT, keywords: ["claude", "anthropic", "mcp"] },
+  { zone: "connections", label: "Webhooks", hint: CONNECTIONS_TAB_HINT, keywords: ["webhook", "events", "outbound"] },
 ];
 
 interface ZoneCommandPaletteProps {
@@ -175,18 +177,21 @@ export function ZoneCommandPalette({
  * Hook utilitário: registra o atalho global Cmd/Ctrl+K para abrir o palette.
  * Ignora quando o foco está em <input>, <textarea> ou contentEditable.
  */
+function isZonePaletteShortcut(event: KeyboardEvent): boolean {
+  return (event.key === "k" || event.key === "K") && (event.metaKey || event.ctrlKey);
+}
+
+function isEditableEventTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  return target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
+}
+
 export function useZoneCommandPaletteShortcut() {
   const [open, setOpen] = useState(false);
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) {
-        const target = e.target as HTMLElement | null;
-        const tag = target?.tagName;
-        const isEditing =
-          tag === "INPUT" ||
-          tag === "TEXTAREA" ||
-          (target?.isContentEditable ?? false);
-        if (isEditing) return;
+      if (isZonePaletteShortcut(e)) {
+        if (isEditableEventTarget(e.target)) return;
         e.preventDefault();
         setOpen((v) => !v);
       }

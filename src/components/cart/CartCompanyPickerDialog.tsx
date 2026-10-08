@@ -2,7 +2,7 @@
  * CartCompanyPickerDialog - Modal de seleção de empresa com Recentes/Favoritas/Buscar.
  * Substitui o picker inline que empurrava conteúdo. Usa localStorage para persistência leve.
  */
-import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { type MouseEvent, useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Fuse from "fuse.js";
 import { Building2, Search, Loader2, Star, Clock, Globe } from "lucide-react";
@@ -12,18 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { selectCrm, searchCrm } from "@/lib/crm-db";
-import { getCompanyDisplayName, type CrmCompany } from "@/types/crm";
 import { useSellerCartContext, type CreateCartInput } from "@/contexts/SellerCartContext";
-
-interface CompanyItem {
-  id: string;
-  name: string;
-  razao_social: string;
-  nome_fantasia: string | null;
-  ramo: string | null;
-  logo_url: string | null;
-}
+import { fetchCartCompanyOptions, type CartCompanyOption as CompanyItem } from "./cart-company-options";
 
 const RECENT_KEY = "cart-companies-recent";
 const FAV_KEY = "cart-companies-favorites";
@@ -45,7 +35,6 @@ interface CartCompanyPickerDialogProps {
 export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartCompanyPickerDialogProps) {
   const [tab, setTab] = useState<"recent" | "favorites" | "search">("recent");
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [recents, setRecents] = useState<CompanyItem[]>(() => readList(RECENT_KEY));
   const [favorites, setFavorites] = useState<CompanyItem[]>(() => readList(FAV_KEY));
   const inputRef = useRef<HTMLInputElement>(null);
@@ -63,53 +52,13 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
       inputRef.current?.select();
     }, 120);
     return () => clearTimeout(t);
-  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(searchTerm), 280);
-    return () => clearTimeout(t);
-  }, [searchTerm]);
+  }, [open]);
 
   const { data: localCompanies = [], isLoading: loadingLocal } = useQuery<CompanyItem[]>({
-    queryKey: ["cart-companies-local"],
-    queryFn: async () => {
-      const companies = await selectCrm<CrmCompany>("companies", {
-        select: "id, razao_social, nome_fantasia, logo_url, ramo_atividade",
-        filters: { deleted_at: null, is_customer: true },
-        orderBy: { column: "razao_social", ascending: true },
-        limit: 200,
-      });
-      return companies.map((c): CompanyItem => ({
-        id: c.id,
-        name: getCompanyDisplayName(c),
-        razao_social: c.razao_social,
-        nome_fantasia: c.nome_fantasia || null,
-        ramo: c.ramo_atividade || null,
-        logo_url: c.logo_url || null,
-      }));
-    },
+    queryKey: ["cart-sicoob-company-options"],
+    queryFn: fetchCartCompanyOptions,
     staleTime: 15 * 60 * 1000,
     enabled: open,
-  });
-
-  const { data: serverResults = [], isLoading: loadingServer } = useQuery<CompanyItem[]>({
-    queryKey: ["cart-companies-search", debouncedSearch],
-    queryFn: async () => {
-      if (debouncedSearch.length < 3) return [];
-      const results = await searchCrm<CrmCompany>("companies", "razao_social", debouncedSearch, {
-        orderBy: { column: "razao_social", ascending: true },
-        limit: 30,
-      });
-      return results.map((c): CompanyItem => ({
-        id: c.id,
-        name: getCompanyDisplayName(c),
-        razao_social: c.razao_social,
-        nome_fantasia: c.nome_fantasia || null,
-        ramo: c.ramo_atividade || null,
-        logo_url: c.logo_url || null,
-      }));
-    },
-    enabled: open && debouncedSearch.length >= 3,
   });
 
   const fuse = useMemo(() =>
@@ -118,16 +67,12 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
 
   const filteredCompanies = useMemo(() => {
     if (!searchTerm) return localCompanies.slice(0, 30);
-    const localMatches = fuse.search(searchTerm).map(r => r.item);
-    const ids = new Set(localMatches.map(c => c.id));
-    const merged = [...localMatches];
-    for (const sr of serverResults) if (!ids.has(sr.id)) { merged.push(sr); ids.add(sr.id); }
-    return merged.slice(0, 40);
-  }, [searchTerm, fuse, localCompanies, serverResults]);
+    return fuse.search(searchTerm).map(result => result.item).slice(0, 40);
+  }, [searchTerm, fuse, localCompanies]);
 
   const isFavorite = useCallback((id: string) => favorites.some(f => f.id === id), [favorites]);
 
-  const toggleFavorite = useCallback((company: CompanyItem, e: React.MouseEvent) => {
+  const toggleFavorite = useCallback((company: CompanyItem, e: MouseEvent) => {
     e.stopPropagation();
     setFavorites(prev => {
       const next = prev.some(f => f.id === company.id)
@@ -155,7 +100,7 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
     }
   }, [createCart, onCreated, onOpenChange, recents]);
 
-  const isLoading = loadingLocal || loadingServer;
+  const isLoading = loadingLocal;
 
   const renderRow = (company: CompanyItem) => (
     <div key={company.id} className="group flex items-center rounded-lg transition-colors hover:bg-accent/60">

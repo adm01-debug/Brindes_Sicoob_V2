@@ -28,7 +28,7 @@ async function testScripts() {
       // Run script and check if it crashes
       execFileSync(process.execPath, [script, '--status=implementado'], { stdio: 'inherit' });
       console.log(`  ✅ ${script} executado com sucesso.`);
-    } catch (e) {
+    } catch {
       console.error(`  ❌ ${script} falhou na execução.`);
       process.exit(1);
     }

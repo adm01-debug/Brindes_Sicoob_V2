@@ -1,7 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home, Bug, ChevronDown, ChevronUp, RotateCcw, Trash2, Copy, Check } from 'lucide-react';
 import { logger } from '@/lib/logger';
-import { reportError } from '@/lib/error-reporter';
 import { attemptChunkRecovery, isChunkLoadError } from '@/lib/chunk-recovery';
 
 interface Props {
@@ -36,6 +35,56 @@ interface State {
 }
 
 const MAX_AUTO_RETRIES = 2;
+
+function AutoRecoveringView() {
+  return <div className="min-h-screen flex items-center justify-center bg-background"><div className="text-center space-y-4 animate-in fade-in duration-300"><RotateCcw className="h-8 w-8 text-primary mx-auto animate-spin" /><p className="text-sm text-muted-foreground">Recuperando automaticamente…</p></div></div>;
+}
+
+function ErrorHero({ isChunk, currentPath, retryCount }: { isChunk: boolean; currentPath: string; retryCount: number }) {
+  return <><div className="flex justify-center"><div className="relative"><div className="h-20 w-20 rounded-2xl bg-destructive/10 flex items-center justify-center"><AlertTriangle className="h-10 w-10 text-destructive" /></div><div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-destructive/20 flex items-center justify-center"><Bug className="h-3.5 w-3.5 text-destructive" /></div></div></div><div className="text-center space-y-2"><h1 className="font-display text-2xl font-bold text-foreground tracking-tight">{isChunk ? 'Atualização disponível' : 'Ops! Algo deu errado'}</h1><p className="text-muted-foreground text-sm leading-relaxed max-w-sm mx-auto">{isChunk ? 'Uma nova versão do aplicativo está disponível. Recarregue para atualizar — seus dados não serão perdidos.' : 'Ocorreu um erro inesperado nesta tela. Tente recarregar, limpar o cache ou voltar ao início.'}</p>{currentPath && <p className="text-[11px] text-muted-foreground/70 font-mono break-all">rota: {currentPath}</p>}{retryCount > 0 && <p className="text-xs text-muted-foreground/60">Tentativas de recuperação: {retryCount}/{MAX_AUTO_RETRIES}</p>}</div></>;
+}
+
+function ErrorMessage({ error, copied, onCopy }: { error: Error | null; copied: boolean; onCopy: () => void }) {
+  if (!error?.message) return null;
+  return <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 space-y-2"><div className="flex items-center justify-between gap-2"><span className="text-[11px] uppercase tracking-wider text-destructive/80 font-semibold">Mensagem do erro</span><button onClick={onCopy} className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors" aria-label="Copiar detalhes do erro">{copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}{copied ? 'Copiado' : 'Copiar'}</button></div><p className="text-sm font-mono text-destructive break-words">{error.message}</p></div>;
+}
+
+interface ErrorActionsProps {
+  isChunk: boolean;
+  isClearingCache: boolean;
+  onGoHome: () => void;
+  onReload: () => void;
+  onClearCache: () => void;
+  onRetry: () => void;
+}
+
+function ErrorActions(props: ErrorActionsProps) {
+  return <><div className="flex gap-3"><button onClick={props.onGoHome} className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><Home className="h-4 w-4" />Início</button><button aria-label="Recarregar" onClick={props.onReload} className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><RefreshCw className="h-4 w-4" />Recarregar</button></div><button onClick={props.onClearCache} disabled={props.isClearingCache} className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-border/60 bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground transition-colors disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{props.isClearingCache ? <RotateCcw className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}{props.isClearingCache ? 'Limpando cache…' : 'Limpar cache e recarregar'}</button>{!props.isChunk && <button onClick={props.onRetry} className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-border/50 bg-background/50 px-4 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"><RotateCcw className="h-3.5 w-3.5" />Tentar renderizar novamente</button>}</>;
+}
+
+interface ErrorDetailsProps {
+  error: Error | null;
+  errorInfo: ErrorInfo | null;
+  showDetails: boolean;
+  onToggle: () => void;
+}
+
+function ErrorDetails({ error, errorInfo, showDetails, onToggle }: ErrorDetailsProps) {
+  if (!errorInfo && !error?.stack) return null;
+  const componentStack = errorInfo?.componentStack ? `\n\nComponent Stack:${errorInfo.componentStack}` : '';
+  return <div className="pt-2"><button onClick={onToggle} className="w-full inline-flex items-center justify-between rounded-lg px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"><span>Detalhes técnicos</span>{showDetails ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}</button>{showDetails && <pre className="mt-2 max-h-48 overflow-auto rounded-lg bg-muted p-4 text-[11px] leading-relaxed text-muted-foreground font-mono">{error?.stack || 'Stack trace não disponível'}{componentStack}</pre>}</div>;
+}
+
+interface FullErrorViewProps extends ErrorActionsProps, ErrorDetailsProps {
+  copied: boolean;
+  retryCount: number;
+  onCopy: () => void;
+}
+
+function FullErrorView(props: FullErrorViewProps) {
+  const currentPath = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '';
+  return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 p-4"><div className="w-full max-w-md space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"><ErrorHero isChunk={props.isChunk} currentPath={currentPath} retryCount={props.retryCount} /><ErrorMessage error={props.error} copied={props.copied} onCopy={props.onCopy} /><ErrorActions {...props} /><ErrorDetails {...props} /></div></div>;
+}
 
 /**
  * EnhancedErrorBoundary — **único** error boundary canônico do projeto.
@@ -93,12 +142,18 @@ class EnhancedErrorBoundary extends Component<Props, State> {
 
     this.props.onError?.(error, errorInfo);
 
-    // Report to centralized error tracking
-    reportError(error, {
+    // O reporter inclui Supabase e Sentry. Carregá-lo somente quando o boundary
+    // captura uma falha mantém a observabilidade fora do caminho crítico do login.
+    const reportContext = {
       type: 'react_error_boundary',
       componentStack: errorInfo.componentStack?.slice(0, 1000),
       retryCount: this.state.retryCount,
-    });
+    } as const;
+    void import('@/lib/error-reporter')
+      .then(({ reportError }) => reportError(error, reportContext))
+      .catch(() => {
+        // O logger acima preserva diagnóstico local se o próprio chunk falhar.
+      });
     if (this.isChunkError(error) && this.state.retryCount < MAX_AUTO_RETRIES) {
       this.setState({ isAutoRecovering: true });
       // Aciona recovery agressivo (hard reload + cache bust + purga SW).
@@ -177,154 +232,13 @@ class EnhancedErrorBoundary extends Component<Props, State> {
   };
 
   override render() {
-    if (this.state.isAutoRecovering) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-background">
-          <div className="text-center space-y-4 animate-in fade-in duration-300">
-            <RotateCcw className="h-8 w-8 text-primary mx-auto animate-spin" />
-            <p className="text-sm text-muted-foreground">Recuperando automaticamente…</p>
-          </div>
-        </div>
-      );
-    }
-
-    if (this.state.hasError) {
-      // Custom fallback (modo inline) — auto-recovery acima continua ativo.
-      if (this.props.fallback !== undefined) {
-        return this.props.fallback;
-      }
-
-      const { error, errorInfo, showDetails, retryCount, isClearingCache, copied } = this.state;
-      const isChunk = error ? this.isChunkError(error) : false;
-      const currentPath = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '';
-
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 p-4">
-          <div className="w-full max-w-md space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Icon */}
-            <div className="flex justify-center">
-              <div className="relative">
-                <div className="h-20 w-20 rounded-2xl bg-destructive/10 flex items-center justify-center">
-                  <AlertTriangle className="h-10 w-10 text-destructive" />
-                </div>
-                <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-destructive/20 flex items-center justify-center">
-                  <Bug className="h-3.5 w-3.5 text-destructive" />
-                </div>
-              </div>
-            </div>
-
-            {/* Text */}
-            <div className="text-center space-y-2">
-              <h1 className="font-display text-2xl font-bold text-foreground tracking-tight">
-                {isChunk ? 'Atualização disponível' : 'Ops! Algo deu errado'}
-              </h1>
-              <p className="text-muted-foreground text-sm leading-relaxed max-w-sm mx-auto">
-                {isChunk
-                  ? 'Uma nova versão do aplicativo está disponível. Recarregue para atualizar — seus dados não serão perdidos.'
-                  : 'Ocorreu um erro inesperado nesta tela. Tente recarregar, limpar o cache ou voltar ao início.'}
-              </p>
-              {currentPath && (
-                <p className="text-[11px] text-muted-foreground/70 font-mono break-all">
-                  rota: {currentPath}
-                </p>
-              )}
-              {retryCount > 0 && (
-                <p className="text-xs text-muted-foreground/60">
-                  Tentativas de recuperação: {retryCount}/{MAX_AUTO_RETRIES}
-                </p>
-              )}
-            </div>
-
-            {/* Error message — sempre visível para o usuário entender o que houve */}
-            {error?.message && (
-              <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-[11px] uppercase tracking-wider text-destructive/80 font-semibold">
-                    Mensagem do erro
-                  </span>
-                  <button
-                    onClick={this.handleCopyError}
-                    className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
-                    aria-label="Copiar detalhes do erro"
-                  >
-                    {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                    {copied ? 'Copiado' : 'Copiar'}
-                  </button>
-                </div>
-                <p className="text-sm font-mono text-destructive break-words">
-                  {error.message}
-                </p>
-              </div>
-            )}
-
-            {/* Actions principais */}
-            <div className="flex gap-3">
-              <button
-                onClick={this.handleGoHome}
-                className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <Home className="h-4 w-4" />
-                Início
-              </button>
-              <button
-                aria-label="Recarregar"
-                onClick={this.handleReload}
-                className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Recarregar
-              </button>
-            </div>
-
-            {/* Limpar cache (ação destrutiva-light) */}
-            <button
-              onClick={this.handleClearCacheReload}
-              disabled={isClearingCache}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-border/60 bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground transition-colors disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              {isClearingCache
-                ? <RotateCcw className="h-4 w-4 animate-spin" />
-                : <Trash2 className="h-4 w-4" />}
-              {isClearingCache ? 'Limpando cache…' : 'Limpar cache e recarregar'}
-            </button>
-
-            {/* Retry sem reload (apenas erros de render) */}
-            {!isChunk && (
-              <button
-                onClick={this.handleRetry}
-                className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-border/50 bg-background/50 px-4 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-              >
-                <RotateCcw className="h-3.5 w-3.5" />
-                Tentar renderizar novamente
-              </button>
-            )}
-
-            {/* Technical details toggle */}
-            {(errorInfo || error?.stack) && (
-              <div className="pt-2">
-                <button
-                  onClick={() => this.setState(prev => ({ showDetails: !prev.showDetails }))}
-                  className="w-full inline-flex items-center justify-between rounded-lg px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                >
-                  <span>Detalhes técnicos</span>
-                  {showDetails
-                    ? <ChevronUp className="h-3.5 w-3.5" />
-                    : <ChevronDown className="h-3.5 w-3.5" />}
-                </button>
-                {showDetails && (
-                  <pre className="mt-2 max-h-48 overflow-auto rounded-lg bg-muted p-4 text-[11px] leading-relaxed text-muted-foreground font-mono">
-                    {error?.stack || 'Stack trace não disponível'}
-                    {errorInfo?.componentStack ? `\n\nComponent Stack:${errorInfo.componentStack}` : ''}
-                  </pre>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    return this.props.children;
+    if (this.state.isAutoRecovering) return <AutoRecoveringView />;
+    if (!this.state.hasError) return this.props.children;
+    if (this.props.fallback !== undefined) return this.props.fallback;
+    const { error, errorInfo, showDetails, retryCount, isClearingCache, copied } = this.state;
+    const isChunk = error ? this.isChunkError(error) : false;
+    const toggleDetails = () => this.setState((previous) => ({ showDetails: !previous.showDetails }));
+    return <FullErrorView error={error} errorInfo={errorInfo} showDetails={showDetails} retryCount={retryCount} copied={copied} isChunk={isChunk} isClearingCache={isClearingCache} onToggle={toggleDetails} onCopy={this.handleCopyError} onGoHome={this.handleGoHome} onReload={this.handleReload} onClearCache={this.handleClearCacheReload} onRetry={this.handleRetry} />;
   }
 }
 

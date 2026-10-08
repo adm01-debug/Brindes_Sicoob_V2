@@ -246,8 +246,8 @@ export function useSellerCarts() {
   // Update item sort order
   const updateItemSortOrder = useMutation({
     mutationFn: async (items: { id: string; sort_order: number }[]) => {
-      const promises = items.map(({ id, sort_order }) =>
-        supabase.from("seller_cart_items").update({ sort_order }).eq("id", id)
+      const promises = items.map(({ id, sort_order: sortOrder }) =>
+        supabase.from("seller_cart_items").update({ sort_order: sortOrder }).eq("id", id)
       );
       await Promise.all(promises);
     },

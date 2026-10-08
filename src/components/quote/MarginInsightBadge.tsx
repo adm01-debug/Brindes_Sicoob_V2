@@ -19,6 +19,49 @@ interface MarginInsightBadgeProps {
   className?: string;
 }
 
+async function fetchMedianMargin(userId: string): Promise<number | null> {
+  const { data, error } = await supabase.from("quotes").select("subtotal, total, discount_amount").eq("seller_id", userId).in("status", ["converted", "approved"]).order("created_at", { ascending: false }).limit(50);
+  if (error || !data?.length) return null;
+  const margins = data.map(quote => {
+    const subtotal = Number(quote.subtotal ?? 0);
+    if (subtotal <= 0) return null;
+    return ((Number(quote.total ?? 0) / subtotal) - 1) * 100 + 100;
+  }).filter((margin): margin is number => margin !== null).sort((first, second) => first - second);
+  return margins.length ? margins[Math.floor(margins.length / 2)] ?? null : null;
+}
+
+function DualMarginBadge({ current, real, markup, className }: { current: number; real: number; markup: number; className?: string }) {
+  return (
+    <TooltipProvider><Tooltip><TooltipTrigger asChild>
+      <Badge variant="outline" className={`gap-1.5 bg-warning/10 text-warning border-warning/30 ${className ?? ""}`}><Info className="h-3 w-3" /><span className="text-[11px] font-medium">Aparente {current.toFixed(1)}% · Real {real.toFixed(1)}%</span></Badge>
+    </TooltipTrigger><TooltipContent side="top" className="text-xs max-w-xs"><p className="font-medium mb-1">Margem de negociação ativa</p><p className="text-muted-foreground">Markup interno: <strong>+{markup.toFixed(1)}%</strong><br />Cliente vê desconto de <strong>{current.toFixed(1)}%</strong><br />Desconto real (alçada): <strong>{real.toFixed(2)}%</strong></p></TooltipContent></Tooltip></TooltipProvider>
+  );
+}
+
+function HistoricalMarginBadge({ current, median, className }: { current: number; median: number; className?: string }) {
+  const delta = current - median;
+  const isAbove = delta >= 0;
+  const TrendIcon = isAbove ? TrendingUp : TrendingDown;
+  const badgeClass = isAbove ? "bg-success/10 text-success border-success/30" : "bg-warning/10 text-warning border-warning/30";
+  return (
+    <TooltipProvider><Tooltip><TooltipTrigger asChild>
+      <Badge variant="outline" className={`gap-1.5 ${badgeClass} ${className ?? ""}`}><TrendIcon className="h-3 w-3" /><span className="text-[11px] font-medium">{isAbove ? "+" : ""}{delta.toFixed(1)}pp vs mediana</span><Info className="h-2.5 w-2.5 opacity-60" /></Badge>
+    </TooltipTrigger><TooltipContent side="top" className="text-xs max-w-xs"><p className="font-medium mb-1">Insight de margem</p><p className="text-muted-foreground">Sua mediana histórica: <strong>{median.toFixed(1)}%</strong><br />Este orçamento: <strong>{current.toFixed(1)}%</strong></p></TooltipContent></Tooltip></TooltipProvider>
+  );
+}
+
+function getDualMargin(real: number | null | undefined, markup: number | undefined): { real: number; markup: number } | null {
+  if (real === null || real === undefined || markup === undefined || markup <= 0) return null;
+  return { real, markup };
+}
+
+function useMedianMargin(userId: string | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: ["seller-margin-median", userId], enabled: Boolean(userId) && enabled,
+    queryFn: () => userId ? fetchMedianMargin(userId) : Promise.resolve(null), staleTime: 1000 * 60 * 10,
+  }).data;
+}
+
 export function MarginInsightBadge({
   currentMarginPercent,
   realMarginPercent,
@@ -26,103 +69,9 @@ export function MarginInsightBadge({
   className,
 }: MarginInsightBadgeProps) {
   const { user } = useAuth();
-  const dualMode = (markupPercent ?? 0) > 0 && realMarginPercent != null;
-
-  const { data: median } = useQuery({
-    queryKey: ["seller-margin-median", user?.id],
-    enabled: !!user?.id && !dualMode,
-    queryFn: async (): Promise<number | null> => {
-      // Aproximação: usa subtotal vs total de orçamentos convertidos do vendedor (proxy de margem)
-      const { data, error } = await supabase
-        .from("quotes")
-        .select("subtotal, total, discount_amount")
-        .eq("seller_id", user!.id)
-        .in("status", ["converted", "approved"])
-        .order("created_at", { ascending: false })
-        .limit(50);
-      if (error || !data?.length) return null;
-
-      const margins = data
-        .map(q => {
-          const sub = Number(q.subtotal ?? 0);
-          const tot = Number(q.total ?? 0);
-          if (sub <= 0) return null;
-          // Margem aparente = (total - desconto) / subtotal — proxy para comparação relativa
-          return ((tot / sub) - 1) * 100 + 100; // normaliza próximo a 100
-        })
-        .filter((v): v is number => v !== null)
-        .sort((a, b) => a - b);
-      if (!margins.length) return null;
-      return margins[Math.floor(margins.length / 2)];
-    },
-    staleTime: 1000 * 60 * 10,
-  });
-
-  // Modo dual: mostra desconto APARENTE (cliente vê) vs REAL (alçada).
-  if (dualMode) {
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Badge
-              variant="outline"
-              className={`gap-1.5 bg-warning/10 text-warning border-warning/30 ${className ?? ""}`}
-            >
-              <Info className="h-3 w-3" />
-              <span className="text-[11px] font-medium">
-                Aparente {currentMarginPercent.toFixed(1)}% · Real {realMarginPercent!.toFixed(1)}%
-              </span>
-            </Badge>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="text-xs max-w-xs">
-            <p className="font-medium mb-1">Margem de negociação ativa</p>
-            <p className="text-muted-foreground">
-              Markup interno: <strong>+{markupPercent!.toFixed(1)}%</strong>
-              <br />
-              Cliente vê desconto de <strong>{currentMarginPercent.toFixed(1)}%</strong>
-              <br />
-              Desconto real (alçada): <strong>{realMarginPercent!.toFixed(2)}%</strong>
-            </p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
-
-  if (median == null) return null;
-
-  const delta = currentMarginPercent - median;
-  const isAbove = delta >= 0;
-  const Icon = isAbove ? TrendingUp : TrendingDown;
-
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Badge
-            variant="outline"
-            className={`gap-1.5 ${
-              isAbove
-                ? "bg-success/10 text-success border-success/30"
-                : "bg-warning/10 text-warning border-warning/30"
-            } ${className ?? ""}`}
-          >
-            <Icon className="h-3 w-3" />
-            <span className="text-[11px] font-medium">
-              {isAbove ? "+" : ""}{delta.toFixed(1)}pp vs mediana
-            </span>
-            <Info className="h-2.5 w-2.5 opacity-60" />
-          </Badge>
-        </TooltipTrigger>
-        <TooltipContent side="top" className="text-xs max-w-xs">
-          <p className="font-medium mb-1">Insight de margem</p>
-          <p className="text-muted-foreground">
-            Sua mediana histórica: <strong>{median.toFixed(1)}%</strong>
-            <br />
-            Este orçamento: <strong>{currentMarginPercent.toFixed(1)}%</strong>
-          </p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
+  const dualMargin = getDualMargin(realMarginPercent, markupPercent);
+  const median = useMedianMargin(user?.id, !dualMargin);
+  if (dualMargin) return <DualMarginBadge current={currentMarginPercent} real={dualMargin.real} markup={dualMargin.markup} className={className} />;
+  if (typeof median !== "number") return null;
+  return <HistoricalMarginBadge current={currentMarginPercent} median={median} className={className} />;
 }

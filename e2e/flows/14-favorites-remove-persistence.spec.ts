@@ -11,13 +11,13 @@
  *  7. O nome do produto NÃO aparece mais no texto da página (toHaveCount(0))
  *  8. Cleanup: restaura o storage original
  */
-import { test, expect, requireAuth } from "../fixtures/test-base";
-import { gotoAndSettle, settleAfterAction } from "../helpers/nav";
-import { installFavoritesCleanup } from "../helpers/favorites";
-import { Sel } from "../fixtures/selectors";
-import type { Locator, Page } from "@playwright/test";
+import { test, expect, requireAuth } from '../fixtures/test-base';
+import { gotoAndSettle, settleAfterAction } from '../helpers/nav';
+import { installFavoritesCleanup, setCatalogFavorite } from '../helpers/favorites';
+import { Sel } from '../fixtures/selectors';
+import type { Locator, Page } from '@playwright/test';
 
-const STORAGE_KEY = "product-favorites";
+const STORAGE_KEY = 'product-favorites';
 
 interface FavoriteItem {
   productId: string;
@@ -36,21 +36,21 @@ async function readStorage(page: Page): Promise<FavoriteItem[]> {
 }
 
 async function writeStorage(page: Page, items: FavoriteItem[]): Promise<void> {
-  await page.evaluate(
-    ({ key, value }) => localStorage.setItem(key, JSON.stringify(value)),
-    { key: STORAGE_KEY, value: items },
-  );
+  await page.evaluate(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), {
+    key: STORAGE_KEY,
+    value: items,
+  });
 }
 
 async function readFavoritesTitle(page: Page): Promise<string> {
   const loc = page.locator(Sel.favorites.title).first();
-  await loc.waitFor({ state: "visible", timeout: 10_000 });
+  await loc.waitFor({ state: 'visible', timeout: 10_000 });
   return (await loc.innerText()).trim();
 }
 
 async function readFavoritesCount(page: Page): Promise<number> {
   const loc = page.locator(Sel.favorites.countItems);
-  await loc.first().waitFor({ state: "visible", timeout: 10_000 });
+  await loc.first().waitFor({ state: 'visible', timeout: 10_000 });
   const txt = (await loc.first().innerText()).trim();
   return Number.parseInt(txt, 10) || 0;
 }
@@ -58,8 +58,8 @@ async function readFavoritesCount(page: Page): Promise<number> {
 /** Lê o texto completo do bloco `favorites-count` (ex.: "3 itens • 2 listas"). */
 async function readFavoritesCountText(page: Page): Promise<string> {
   const loc = page.locator(Sel.favorites.count).first();
-  await loc.waitFor({ state: "visible", timeout: 10_000 });
-  return (await loc.innerText()).trim().replace(/\s+/g, " ");
+  await loc.waitFor({ state: 'visible', timeout: 10_000 });
+  return (await loc.innerText()).trim().replace(/\s+/g, ' ');
 }
 
 /** Conta cards renderizados na lista de favoritos. */
@@ -83,8 +83,8 @@ interface FavoriteRenderedItem {
 async function readFavoritesItems(page: Page): Promise<FavoriteRenderedItem[]> {
   return page.locator(Sel.favorites.item).evaluateAll((nodes) =>
     nodes.map((el) => ({
-      productId: (el as HTMLElement).dataset.productId ?? "",
-      productName: (el as HTMLElement).dataset.productName ?? "",
+      productId: (el as HTMLElement).dataset.productId ?? '',
+      productName: (el as HTMLElement).dataset.productName ?? '',
     })),
   );
 }
@@ -129,6 +129,12 @@ async function expectFavoritesSnapshot(
       timeout: 10_000,
     })
     .toBe(expected.listSize);
+  await expect
+    .poll(() => readFavoritesCountText(page), {
+      message: `[${label}] texto do contador deveria estabilizar após hidratar as listas`,
+      timeout: 10_000,
+    })
+    .toBe(expected.countText);
 
   const actual = await readFavoritesSnapshot(page);
   expect(actual.title, `[${label}] título mudou`).toBe(expected.title);
@@ -140,13 +146,6 @@ async function expectFavoritesSnapshot(
     `[${label}] conjunto de productIds renderizados divergiu`,
   ).toEqual(new Set(expected.items.map((i) => i.productId)));
   return actual;
-}
-
-async function isFavorited(button: Locator): Promise<boolean> {
-  const pressed = await button.getAttribute("aria-pressed");
-  if (pressed === "true") return true;
-  const html = await button.innerHTML();
-  return /fill-destructive|fill-current/.test(html);
 }
 
 /** Aceita diálogo de confirmação se aparecer (best-effort, via testid global). */
@@ -174,14 +173,14 @@ async function acceptConfirmIfAny(page: Page): Promise<void> {
  */
 async function resolveRemoveButton(card: Locator): Promise<Locator> {
   const candidates: Array<{ name: string; locator: Locator }> = [
-    { name: "data-testid=favorite-remove", locator: card.locator(Sel.favorites.remove).first() },
-    { name: "ProductCard favorite toggle", locator: card.locator(Sel.product.favorite).first() },
+    { name: 'data-testid=favorite-remove', locator: card.locator(Sel.favorites.remove).first() },
+    { name: 'ProductCard favorite toggle', locator: card.locator(Sel.product.favorite).first() },
     {
       name: 'aria-label="Remover favorito"',
       locator: card.locator('[aria-label="Remover favorito"]').first(),
     },
     {
-      name: "button > svg.fill-destructive",
+      name: 'button > svg.fill-destructive',
       locator: card.locator('button:has(svg[class*="fill-destructive"])').first(),
     },
   ];
@@ -190,19 +189,18 @@ async function resolveRemoveButton(card: Locator): Promise<Locator> {
     const count = await locator.count().catch(() => 0);
     if (count > 0) {
       const visible = await locator
-        .waitFor({ state: "visible", timeout: 3_000 })
+        .waitFor({ state: 'visible', timeout: 3_000 })
         .then(() => true)
         .catch(() => false);
       if (visible) {
-        // eslint-disable-next-line no-console
         console.log(`[resolveRemoveButton] usando fallback: ${name}`);
         return locator;
       }
     }
   }
   throw new Error(
-    "resolveRemoveButton: nenhum botão de remover encontrado no card " +
-      "(tentou: favorite-remove, product.favorite, aria-label, svg.fill-destructive)",
+    'resolveRemoveButton: nenhum botão de remover encontrado no card ' +
+      '(tentou: favorite-remove, product.favorite, aria-label, svg.fill-destructive)',
   );
 }
 
@@ -214,11 +212,8 @@ async function resolveRemoveButton(card: Locator): Promise<Locator> {
  *   4. Skeletons sumiram (best-effort)
  */
 async function reloadAndSettle(page: Page): Promise<void> {
-  await page.reload({ waitUntil: "load" });
-  await page
-    .locator(Sel.favorites.title)
-    .first()
-    .waitFor({ state: "visible", timeout: 10_000 });
+  await page.reload({ waitUntil: 'load' });
+  await page.locator(Sel.favorites.title).first().waitFor({ state: 'visible', timeout: 10_000 });
   const list = page.locator(Sel.favorites.list).first();
   const empty = page.locator(Sel.favorites.emptyState).first();
   await expect
@@ -227,7 +222,7 @@ async function reloadAndSettle(page: Page): Promise<void> {
         ((await list.count()) > 0 && (await list.isVisible())) ||
         ((await empty.count()) > 0 && (await empty.isVisible())),
       {
-        message: "favorites-list ou favorites-empty-state deveriam estar visíveis pós-reload",
+        message: 'favorites-list ou favorites-empty-state deveriam estar visíveis pós-reload',
         timeout: 10_000,
       },
     )
@@ -235,44 +230,33 @@ async function reloadAndSettle(page: Page): Promise<void> {
   await page
     .waitForFunction(
       () => !document.querySelector('[data-state="loading"], [data-skeleton]'),
+      undefined,
       { timeout: 6_000 },
     )
     .catch(() => {});
 }
 
-test.describe("Fluxo: remover favorito persiste após reload", () => {
+test.describe('Fluxo: remover favorito persiste após reload', () => {
   test.beforeEach(() => requireAuth());
   installFavoritesCleanup(test);
 
-  test("remove em /favoritos, page.reload() e item some da lista (e do texto)", async ({
+  test('remove em /favoritos, page.reload() e item some da lista (e do texto)', async ({
     page,
   }) => {
     // 0. Snapshot inicial
-    await gotoAndSettle(page, "/favoritos");
+    await gotoAndSettle(page, '/favoritos');
     const baselineSnapshot = await readFavoritesSnapshot(page);
-    expect(baselineSnapshot.title).toBe("Meus Favoritos");
+    expect(baselineSnapshot.title).toBe('Meus Produtos Favoritos');
     const original = await readStorage(page);
     const countBefore = baselineSnapshot.count;
 
     // 1. Garante que existe um item para remover — favorita o 1º card do catálogo
-    await gotoAndSettle(page, "/produtos");
+    await gotoAndSettle(page, '/produtos');
     const card = page.locator(Sel.product.card).first();
-    await card.waitFor({ state: "visible", timeout: 15_000 });
+    await card.waitFor({ state: 'visible', timeout: 15_000 });
 
-    const favBtn = card.locator(Sel.product.favorite).first();
-    await favBtn.waitFor({ state: "visible", timeout: 10_000 });
-
-    if (await isFavorited(favBtn)) {
-      await favBtn.click();
-      await expect.poll(() => isFavorited(favBtn), { timeout: 8_000 }).toBe(false);
-    }
-    await favBtn.click();
-    await expect
-      .poll(() => isFavorited(favBtn), {
-        message: "botão não passou para estado favoritado",
-        timeout: 8_000,
-      })
-      .toBe(true);
+    await setCatalogFavorite(page, card, false);
+    await setCatalogFavorite(page, card, true);
 
     // Storage refletiu +1
     await expect
@@ -282,20 +266,21 @@ test.describe("Fluxo: remover favorito persiste após reload", () => {
     const afterAdd = await readStorage(page);
     const beforeIds = new Set(original.map((f) => f.productId));
     const addedId = afterAdd.find((f) => !beforeIds.has(f.productId))?.productId;
-    expect(addedId, "productId recém-adicionado não pôde ser identificado").toBeTruthy();
+    expect(addedId, 'productId recém-adicionado não pôde ser identificado').toBeTruthy();
 
     // 2. /favoritos: confirma +1 no header e captura snapshot ANTES da remoção
-    await gotoAndSettle(page, "/favoritos");
-    await expect
-      .poll(() => readFavoritesCount(page), { timeout: 10_000 })
-      .toBe(countBefore + 1);
+    await gotoAndSettle(page, '/favoritos');
+    await expect.poll(() => readFavoritesCount(page), { timeout: 10_000 }).toBe(countBefore + 1);
 
     const snapshotWithItem = await readFavoritesSnapshot(page);
     expect(snapshotWithItem.title).toBe(baselineSnapshot.title);
-    expect(snapshotWithItem.listSize, "lista deveria conter ao menos 1 card visível").toBeGreaterThan(0);
+    expect(
+      snapshotWithItem.listSize,
+      'lista deveria conter ao menos 1 card visível',
+    ).toBeGreaterThan(0);
     expect(
       snapshotWithItem.items.length,
-      "snapshot.items deve ter o mesmo length que listSize",
+      'snapshot.items deve ter o mesmo length que listSize',
     ).toBe(snapshotWithItem.listSize);
 
     // Confirma via SSOT (readFavoritesItems) que o produto adicionado está na lista renderizada
@@ -307,15 +292,15 @@ test.describe("Fluxo: remover favorito persiste após reload", () => {
 
     // Localiza o card do produto adicionado por data-product-id (presente em ProductCard)
     const targetCard = page.locator(`[data-product-id="${addedId}"]`).first();
-    await targetCard.waitFor({ state: "visible", timeout: 10_000 });
+    await targetCard.waitFor({ state: 'visible', timeout: 10_000 });
     await expect(
       targetCard,
       `card de favorito ${addedId} deveria estar visível antes da remoção`,
     ).toBeVisible({ timeout: 10_000 });
 
     // Nome alvo vem do snapshot SSOT (mesma fonte que será usada nas asserções)
-    const targetName = addedItem?.productName?.trim() ?? "";
-    expect(targetName, "data-product-name do card alvo deveria estar presente").not.toBe("");
+    const targetName = addedItem?.productName?.trim() ?? '';
+    expect(targetName, 'data-product-name do card alvo deveria estar presente').not.toBe('');
 
     // 3. Remove via botão "Remover favorito" do card alvo
     const removeBtn = await resolveRemoveButton(targetCard);
@@ -334,10 +319,7 @@ test.describe("Fluxo: remover favorito persiste após reload", () => {
       .waitForResponse(
         (resp) => {
           const u = resp.url();
-          return (
-            /\/rest\/v1\/favorite_items/.test(u) &&
-            resp.request().method() === "DELETE"
-          );
+          return /\/rest\/v1\/favorite_items/.test(u) && resp.request().method() === 'DELETE';
         },
         { timeout: 4_000 },
       )
@@ -366,17 +348,17 @@ test.describe("Fluxo: remover favorito persiste após reload", () => {
     //        independente de toast/aria-live e tolerante a re-renders lentos).
     await expect
       .poll(async () => (await readStorage(page)).length, {
-        message: "storage local não caiu para length-1 após o clique de remoção",
+        message: 'storage local não caiu para length-1 após o clique de remoção',
         timeout: 8_000,
       })
       .toBe(expectedStorageLen);
 
     // 3.1. FEEDBACK — toast (sonner) com nome do produto removido
     //      Contrato do FavoritesPage: toast.success(`"${name}" removido dos favoritos`)
-    const toast = page.locator(Sel.toast.sonnerToast).filter({
+    const toast = page.locator(Sel.ext.sonnerToast).filter({
       hasText: new RegExp(
-        `${targetName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}.*removido dos favoritos`,
-        "i",
+        `${targetName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}.*removido dos favoritos`,
+        'i',
       ),
     });
     await expect(
@@ -387,22 +369,21 @@ test.describe("Fluxo: remover favorito persiste após reload", () => {
     // 3.2. FEEDBACK A11y — aria-live region anuncia a remoção (role=status)
     const ariaLive = page.locator('[role="status"][aria-live="polite"]').filter({
       hasText: new RegExp(
-        `${targetName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s+removido dos favoritos`,
-        "i",
+        `${targetName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+removido dos favoritos`,
+        'i',
       ),
     });
     await expect(
       ariaLive.first(),
-      "região aria-live deveria anunciar a remoção do produto",
+      'região aria-live deveria anunciar a remoção do produto',
     ).toHaveCount(1, { timeout: 5_000 });
 
     await settleAfterAction(page);
 
-
     // 4. Calcula o snapshot ESPERADO após remoção e valida ANTES do reload
     await expect
       .poll(() => readFavoritesCount(page), {
-        message: "contagem deveria voltar a countBefore após remover",
+        message: 'contagem deveria voltar a countBefore após remover',
         timeout: 10_000,
       })
       .toBe(countBefore);
@@ -423,7 +404,7 @@ test.describe("Fluxo: remover favorito persiste após reload", () => {
     ).toBeUndefined();
     expect(
       expectedAfterRemove.items.length,
-      "pré-reload: items.length deveria igualar listSize",
+      'pré-reload: items.length deveria igualar listSize',
     ).toBe(expectedAfterRemove.listSize);
 
     // Storage também caiu para o baseline
@@ -436,7 +417,7 @@ test.describe("Fluxo: remover favorito persiste após reload", () => {
 
     // 6. Reusa o MESMO snapshot esperado para validar pós-reload
     //    (expectFavoritesSnapshot já compara items por Set de productIds)
-    await expectFavoritesSnapshot(page, expectedAfterRemove, "pós-reload");
+    await expectFavoritesSnapshot(page, expectedAfterRemove, 'pós-reload');
 
     // 6.1. Reafirma via readFavoritesItems direto pós-reload — produto removido ausente
     const itemsAfterReload = await readFavoritesItems(page);
@@ -446,13 +427,11 @@ test.describe("Fluxo: remover favorito persiste após reload", () => {
     ).toBeUndefined();
     expect(
       new Set(itemsAfterReload.map((i) => i.productId)),
-      "pós-reload: conjunto de productIds renderizados divergiu do estado pré-reload",
+      'pós-reload: conjunto de productIds renderizados divergiu do estado pré-reload',
     ).toEqual(new Set(expectedAfterRemove.items.map((i) => i.productId)));
 
     // 7. Card do produto removido NÃO existe mais (SSOT por data-product-id)
-    const removedCardLocator = page.locator(
-      `${Sel.favorites.item}[data-product-id="${addedId}"]`,
-    );
+    const removedCardLocator = page.locator(`${Sel.favorites.item}[data-product-id="${addedId}"]`);
     await expect(
       removedCardLocator,
       `card do produto ${addedId} não deveria existir após reload`,
@@ -466,14 +445,14 @@ test.describe("Fluxo: remover favorito persiste após reload", () => {
     // 8.1. Storage está idêntico ao snapshot inicial (mesmos productIds, mesmo length)
     await expect
       .poll(async () => (await readStorage(page)).length, {
-        message: "cleanup: storage deveria ter o mesmo length do baseline original",
+        message: 'cleanup: storage deveria ter o mesmo length do baseline original',
         timeout: 8_000,
       })
       .toBe(original.length);
     const restored = await readStorage(page);
     expect(
       new Set(restored.map((f) => f.productId)),
-      "cleanup: conjunto de productIds restaurados deve igualar o original",
+      'cleanup: conjunto de productIds restaurados deve igualar o original',
     ).toEqual(new Set(original.map((f) => f.productId)));
 
     // 8.2. Reload final — o estado restaurado precisa SOBREVIVER ao reload
@@ -488,7 +467,7 @@ test.describe("Fluxo: remover favorito persiste após reload", () => {
       .toBe(countBefore);
 
     // 8.4. Snapshot final bate com o baseline (título + count + countText + listSize)
-    await expectFavoritesSnapshot(page, baselineSnapshot, "cleanup pós-reload");
+    await expectFavoritesSnapshot(page, baselineSnapshot, 'cleanup pós-reload');
 
     // 8.5. Produto removido CONTINUA ausente após o reload de cleanup
     //      (garante que o restore não ressuscitou o item alvo)

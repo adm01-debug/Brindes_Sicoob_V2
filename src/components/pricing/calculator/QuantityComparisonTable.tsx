@@ -6,8 +6,7 @@ import { useCustomizationPricing } from '@/hooks/useTecnicasUnificadas';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Calculator, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { CalcProduct, SelectedTechniqueConfig } from './types';
-import { availableSizes, formatCurrency, formatNumber } from './types';
+import { type CalcProduct, type SelectedTechniqueConfig, availableSizes, formatCurrency, formatNumber } from './types';
 
 interface Props {
   product: CalcProduct;

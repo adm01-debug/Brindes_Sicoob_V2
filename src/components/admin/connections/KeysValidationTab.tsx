@@ -1,20 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  ShieldCheck,
-  AlertTriangle,
-  XCircle,
-  CheckCircle2,
-  RefreshCw,
-  Search,
-  X,
-  ChevronDown,
-  ChevronRight,
-  Database,
-  Briefcase,
-  Workflow,
-  Plug,
-  Webhook,
-} from "lucide-react";
+import { ShieldCheck, AlertTriangle, XCircle, CheckCircle2, RefreshCw, Search, X, ChevronDown, ChevronRight, Database, Briefcase, Workflow, Plug } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +8,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { useSecretsManager, type SecretStatus } from "@/hooks/useSecretsManager";
 import { cn } from "@/lib/utils";
+
+const MUTED_TEXT = "text-muted-foreground";
+const DESTRUCTIVE_TEXT = "text-destructive";
+const AMBER_TEXT = "text-amber-600";
+const LARGE_METRIC_CLASS = "text-3xl font-bold tabular-nums";
 
 type Severity = "required" | "recommended" | "optional";
 
@@ -187,6 +177,107 @@ const STATUS_META: Record<EvalRow["status"], { label: string; cls: string; Icon:
   missing: { label: "faltando", cls: "border-destructive/40 text-destructive bg-destructive/5", Icon: XCircle },
 };
 
+interface VisibleGroup {
+  group: FeatureGroup;
+  rows: EvalRow[];
+  allRows: EvalRow[];
+  groupOk: boolean;
+  groupBlockers: number;
+  groupWarnings: number;
+}
+
+function matchesKeyFilter(row: EvalRow, group: FeatureGroup, query: string, onlyIssues: boolean): boolean {
+  if (onlyIssues && row.status === "ok") return false;
+  if (!query) return true;
+  const normalizedName = row.expected.name.toLowerCase();
+  const normalizedLabel = group.label.toLowerCase();
+  return normalizedName.includes(query) || normalizedLabel.includes(query) || group.uiSurfaces.some((surface) => surface.toLowerCase().includes(query));
+}
+
+function buildVisibleGroups(evaluations: EvalRow[], query: string, onlyIssues: boolean): VisibleGroup[] {
+  return FEATURE_GROUPS.map((group) => {
+    const allRows = evaluations.filter((row) => row.group.id === group.id);
+    const rows = allRows.filter((row) => matchesKeyFilter(row, group, query, onlyIssues));
+    const issues = allRows.filter((row) => row.status !== "ok");
+    return {
+      group, rows, allRows,
+      groupOk: issues.length === 0,
+      groupBlockers: issues.filter((row) => row.expected.severity === "required").length,
+      groupWarnings: issues.filter((row) => row.expected.severity === "recommended").length,
+    };
+  }).filter((group) => group.rows.length > 0);
+}
+
+function ValidationKeyRow({ row }: { row: EvalRow }) {
+  const statusMeta = STATUS_META[row.status];
+  const StatusIcon = statusMeta.Icon;
+  const severity = SEV_BADGE[row.expected.severity];
+  return (
+    <li className="py-2.5 flex items-start justify-between gap-3 flex-wrap">
+      <div className="min-w-0 flex-1"><div className="flex items-center gap-2 flex-wrap"><code className="text-xs font-mono px-1.5 py-0.5 rounded bg-muted">{row.expected.name}</code><Badge variant="outline" className={cn("text-[10px]", severity.cls)}>{severity.label}</Badge>{row.status === "ok" && row.source && <Badge variant="outline" className="text-[10px] uppercase font-mono">{row.source}{row.maskedSuffix ? ` • ••••${row.maskedSuffix}` : ""}</Badge>}</div><p className={cn("text-[11px] mt-1", row.status === "ok" ? MUTED_TEXT : "text-foreground")}>{row.status === "ok" ? "Sem impacto — chave presente." : row.expected.impact}</p></div>
+      <Badge variant="outline" className={cn("shrink-0", statusMeta.cls)}><StatusIcon className="h-3 w-3 mr-1" />{statusMeta.label}</Badge>
+    </li>
+  );
+}
+
+function GroupHealthBadges({ view }: { view: VisibleGroup }) {
+  if (view.groupOk) return <Badge variant="outline" className="border-green-500/40 text-green-700 bg-green-500/5"><CheckCircle2 className="h-3 w-3 mr-1" /> ok</Badge>;
+  return <>{view.groupBlockers > 0 && <Badge variant="outline" className="border-destructive/40 text-destructive bg-destructive/5"><XCircle className="h-3 w-3 mr-1" /> {view.groupBlockers} bloqueador(es)</Badge>}{view.groupWarnings > 0 && <Badge variant="outline" className="border-amber-500/40 text-amber-700 bg-amber-500/5"><AlertTriangle className="h-3 w-3 mr-1" /> {view.groupWarnings} aviso(s)</Badge>}</>;
+}
+
+function groupTone(view: VisibleGroup): "green" | "red" | "amber" {
+  if (view.groupOk) return "green";
+  if (view.groupBlockers > 0) return "red";
+  return "amber";
+}
+
+function FeatureGroupCard({ view, collapsed, onToggle }: { view: VisibleGroup; collapsed: boolean; onToggle: () => void }) {
+  const Icon = view.group.Icon;
+  const configured = view.allRows.filter((row) => row.status === "ok").length;
+  const tone = groupTone(view);
+  return (
+    <Card className={cn(tone === "red" && "border-destructive/40", tone === "amber" && "border-amber-500/40")}>
+      <CardHeader className="pb-3"><div className="flex items-start justify-between gap-3 flex-wrap">
+        <button type="button" onClick={onToggle} className="flex items-start gap-3 text-left flex-1 min-w-0" aria-expanded={!collapsed}>
+          <div className="mt-0.5">{collapsed ? <ChevronRight className={cn("h-4 w-4", MUTED_TEXT)} /> : <ChevronDown className={cn("h-4 w-4", MUTED_TEXT)} />}</div>
+          <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center shrink-0", tone === "green" ? "bg-green-500/10" : tone === "red" ? "bg-destructive/10" : "bg-amber-500/10")}><Icon className={cn("h-4 w-4", tone === "green" ? "text-green-600" : tone === "red" ? DESTRUCTIVE_TEXT : AMBER_TEXT)} /></div>
+          <div className="min-w-0"><CardTitle className="text-base">{view.group.label}</CardTitle><CardDescription className="text-xs">{view.group.description}</CardDescription><div className="flex flex-wrap gap-1 mt-1.5">{view.group.uiSurfaces.map((surface) => <Badge key={surface} variant="outline" className="text-[10px] font-mono">{surface}</Badge>)}</div></div>
+        </button>
+        <div className="flex items-center gap-1.5 shrink-0"><GroupHealthBadges view={view} /><span className="text-[10px] text-muted-foreground tabular-nums ml-1">{configured}/{view.allRows.length}</span></div>
+      </div></CardHeader>
+      {!collapsed && <CardContent className="pt-0"><ul className="divide-y border-t">{view.rows.map((row) => <ValidationKeyRow key={row.expected.name} row={row} />)}</ul></CardContent>}
+    </Card>
+  );
+}
+
+function ValidationGroups({ loading, evaluations, groups, collapsed, onToggle }: { loading: boolean; evaluations: EvalRow[]; groups: VisibleGroup[]; collapsed: Set<string>; onToggle: (id: string) => void }) {
+  if (loading && evaluations.length === 0) return <div className="space-y-3">{Array.from({ length: 3 }, (_, index) => <Skeleton key={index} className="h-32 w-full" />)}</div>;
+  if (groups.length === 0) return <Card><CardContent className="py-10 text-center text-sm text-muted-foreground">Nenhum resultado para os filtros atuais.</CardContent></Card>;
+  return <div className="space-y-3">{groups.map((view) => <FeatureGroupCard key={view.group.id} view={view} collapsed={collapsed.has(view.group.id)} onToggle={() => onToggle(view.group.id)} />)}</div>;
+}
+
+function ValidationHeader({ loading, onReload }: { loading: boolean; onReload: () => void }) {
+  return (
+    <div className="flex items-start justify-between gap-3 flex-wrap">
+      <div className="flex items-start gap-3"><div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" /></div><div><h2 className="text-lg font-semibold">Validação de chaves para UI e catálogos</h2><p className="text-sm text-muted-foreground max-w-2xl">Confronta o contrato canônico (definido em <code className="text-xs px-1 py-0.5 rounded bg-muted">secrets-manager</code>) com o estado atual de <code className="text-xs px-1 py-0.5 rounded bg-muted">integration_credentials</code> e ENV. Bloqueadores destacam chaves obrigatórias faltando.</p></div></div>
+      <Button variant="outline" size="sm" onClick={onReload} disabled={loading}><RefreshCw className={cn("h-4 w-4 mr-2", loading && "animate-spin")} />Recarregar</Button>
+    </div>
+  );
+}
+
+function ValidationFilters({ filter, onlyIssues, issuesCount, onFilterChange, onOnlyIssuesChange }: { filter: string; onlyIssues: boolean; issuesCount: number; onFilterChange: (value: string) => void; onOnlyIssuesChange: () => void }) {
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <div className="relative flex-1 min-w-[240px] max-w-md"><Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" /><Input value={filter} onChange={(event) => onFilterChange(event.target.value)} placeholder="Buscar por chave, feature ou superfície da UI…" className="h-9 pl-7 pr-7 text-sm" aria-label="Buscar chave" />{filter && <button type="button" onClick={() => onFilterChange("")} className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-muted" aria-label="Limpar busca"><X className="h-3 w-3 text-muted-foreground" /></button>}</div>
+      <Button variant={onlyIssues ? "default" : "outline"} size="sm" onClick={onOnlyIssuesChange}><AlertTriangle className="h-3.5 w-3.5 mr-1.5" />Só problemas {issuesCount > 0 && `(${issuesCount})`}</Button>
+    </div>
+  );
+}
+
+function configurationScore(ok: number, total: number): number {
+  return total === 0 ? 0 : Math.round((ok / total) * 100);
+}
+
 export function KeysValidationTab() {
   const { secrets, list, isLoading: loading } = useSecretsManager();
   const [filter, setFilter] = useState("");
@@ -224,27 +315,10 @@ export function KeysValidationTab() {
     return { total, ok, blockers, warnings, issuesCount: issues.length };
   }, [evaluations]);
 
-  const score = totals.total === 0 ? 0 : Math.round((totals.ok / totals.total) * 100);
+  const score = configurationScore(totals.ok, totals.total);
   const query = filter.trim().toLowerCase();
 
-  const visibleGroups = useMemo(() => {
-    return FEATURE_GROUPS.map((g) => {
-      const rows = evaluations.filter((e) => e.group.id === g.id);
-      const filteredRows = rows.filter((r) => {
-        if (onlyIssues && r.status === "ok") return false;
-        if (!query) return true;
-        return (
-          r.expected.name.toLowerCase().includes(query) ||
-          g.label.toLowerCase().includes(query) ||
-          g.uiSurfaces.some((u) => u.toLowerCase().includes(query))
-        );
-      });
-      const groupOk = rows.every((r) => r.status === "ok");
-      const groupBlockers = rows.filter((r) => r.status !== "ok" && r.expected.severity === "required").length;
-      const groupWarnings = rows.filter((r) => r.status !== "ok" && r.expected.severity === "recommended").length;
-      return { group: g, rows: filteredRows, allRows: rows, groupOk, groupBlockers, groupWarnings };
-    }).filter((g) => g.rows.length > 0);
-  }, [evaluations, query, onlyIssues]);
+  const visibleGroups = useMemo(() => buildVisibleGroups(evaluations, query, onlyIssues), [evaluations, query, onlyIssues]);
 
   function toggleCollapsed(id: string) {
     setCollapsed((prev) => {
@@ -258,26 +332,10 @@ export function KeysValidationTab() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div className="flex items-start gap-3">
-          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-            <ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold">Validação de chaves para UI e catálogos</h2>
-            <p className="text-sm text-muted-foreground max-w-2xl">
-              Confronta o contrato canônico (definido em <code className="text-xs px-1 py-0.5 rounded bg-muted">secrets-manager</code>) com o estado atual de <code className="text-xs px-1 py-0.5 rounded bg-muted">integration_credentials</code> e ENV. Bloqueadores destacam chaves obrigatórias faltando.
-            </p>
-          </div>
-        </div>
-        <Button variant="outline" size="sm" onClick={() => list()} disabled={loading}>
-          <RefreshCw className={cn("h-4 w-4 mr-2", loading && "animate-spin")} />
-          Recarregar
-        </Button>
-      </div>
+      <ValidationHeader loading={loading} onReload={() => void list()} />
 
       {/* KPIs */}
-      <div className="grid gap-3 md:grid-cols-4">
+      {(<div className="grid gap-3 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">Score de configuração</CardTitle>
@@ -286,7 +344,7 @@ export function KeysValidationTab() {
           <CardContent className="space-y-2">
             {loading ? <Skeleton className="h-8 w-20" /> : (
               <>
-                <div className={cn("text-3xl font-bold tabular-nums", score === 100 ? "text-green-600" : score >= 80 ? "text-amber-600" : "text-destructive")}>
+                <div className={cn(LARGE_METRIC_CLASS, score === 100 ? "text-green-600" : score >= 80 ? AMBER_TEXT : DESTRUCTIVE_TEXT)}>
                   {score}%
                 </div>
                 <Progress value={score} className="h-1.5" />
@@ -297,13 +355,13 @@ export function KeysValidationTab() {
         <Card className={totals.blockers > 0 ? "border-destructive/40 bg-destructive/5" : ""}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-1.5">
-              <XCircle className={cn("h-4 w-4", totals.blockers > 0 ? "text-destructive" : "text-muted-foreground")} />
+              <XCircle className={cn("h-4 w-4", totals.blockers > 0 ? DESTRUCTIVE_TEXT : MUTED_TEXT)} />
               Bloqueadores
             </CardTitle>
             <CardDescription className="text-xs">Chaves obrigatórias faltando</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className={cn("text-3xl font-bold tabular-nums", totals.blockers > 0 ? "text-destructive" : "text-muted-foreground")}>
+            <div className={cn(LARGE_METRIC_CLASS, totals.blockers > 0 ? DESTRUCTIVE_TEXT : MUTED_TEXT)}>
               {totals.blockers}
             </div>
           </CardContent>
@@ -311,13 +369,13 @@ export function KeysValidationTab() {
         <Card className={totals.warnings > 0 ? "border-amber-500/40 bg-amber-500/5" : ""}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-1.5">
-              <AlertTriangle className={cn("h-4 w-4", totals.warnings > 0 ? "text-amber-600" : "text-muted-foreground")} />
+              <AlertTriangle className={cn("h-4 w-4", totals.warnings > 0 ? AMBER_TEXT : MUTED_TEXT)} />
               Avisos
             </CardTitle>
             <CardDescription className="text-xs">Recomendadas faltando</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className={cn("text-3xl font-bold tabular-nums", totals.warnings > 0 ? "text-amber-600" : "text-muted-foreground")}>
+            <div className={cn(LARGE_METRIC_CLASS, totals.warnings > 0 ? AMBER_TEXT : MUTED_TEXT)}>
               {totals.warnings}
             </div>
           </CardContent>
@@ -334,167 +392,13 @@ export function KeysValidationTab() {
             <div className="text-3xl font-bold tabular-nums text-green-600">{totals.ok}</div>
           </CardContent>
         </Card>
-      </div>
+      </div>)}
 
       {/* Filtros */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <div className="relative flex-1 min-w-[240px] max-w-md">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-          <Input
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            placeholder="Buscar por chave, feature ou superfície da UI…"
-            className="h-9 pl-7 pr-7 text-sm"
-            aria-label="Buscar chave"
-          />
-          {filter && (
-            <button
-              type="button"
-              onClick={() => setFilter("")}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-muted"
-              aria-label="Limpar busca"
-            >
-              <X className="h-3 w-3 text-muted-foreground" />
-            </button>
-          )}
-        </div>
-        <Button
-          variant={onlyIssues ? "default" : "outline"}
-          size="sm"
-          onClick={() => setOnlyIssues((v) => !v)}
-        >
-          <AlertTriangle className="h-3.5 w-3.5 mr-1.5" />
-          Só problemas {totals.issuesCount > 0 && `(${totals.issuesCount})`}
-        </Button>
-      </div>
+      <ValidationFilters filter={filter} onlyIssues={onlyIssues} issuesCount={totals.issuesCount} onFilterChange={setFilter} onOnlyIssuesChange={() => setOnlyIssues((value) => !value)} />
 
       {/* Grupos */}
-      {loading && evaluations.length === 0 ? (
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-32 w-full" />)}
-        </div>
-      ) : visibleGroups.length === 0 ? (
-        <Card>
-          <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            Nenhum resultado para os filtros atuais.
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {visibleGroups.map(({ group, rows, allRows, groupOk, groupBlockers, groupWarnings }) => {
-            const Icon = group.Icon;
-            const isCollapsed = collapsed.has(group.id);
-            return (
-              <Card
-                key={group.id}
-                className={cn(
-                  groupBlockers > 0 && "border-destructive/40",
-                  groupBlockers === 0 && groupWarnings > 0 && "border-amber-500/40",
-                )}
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-3 flex-wrap">
-                    <button
-                      type="button"
-                      onClick={() => toggleCollapsed(group.id)}
-                      className="flex items-start gap-3 text-left flex-1 min-w-0"
-                      aria-expanded={!isCollapsed}
-                    >
-                      <div className="mt-0.5">
-                        {isCollapsed ? (
-                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </div>
-                      <div className={cn(
-                        "h-9 w-9 rounded-lg flex items-center justify-center shrink-0",
-                        groupOk ? "bg-green-500/10" : groupBlockers > 0 ? "bg-destructive/10" : "bg-amber-500/10",
-                      )}>
-                        <Icon className={cn(
-                          "h-4 w-4",
-                          groupOk ? "text-green-600" : groupBlockers > 0 ? "text-destructive" : "text-amber-600",
-                        )} />
-                      </div>
-                      <div className="min-w-0">
-                        <CardTitle className="text-base">{group.label}</CardTitle>
-                        <CardDescription className="text-xs">{group.description}</CardDescription>
-                        <div className="flex flex-wrap gap-1 mt-1.5">
-                          {group.uiSurfaces.map((u) => (
-                            <Badge key={u} variant="outline" className="text-[10px] font-mono">{u}</Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </button>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {groupOk ? (
-                        <Badge variant="outline" className="border-green-500/40 text-green-700 bg-green-500/5">
-                          <CheckCircle2 className="h-3 w-3 mr-1" /> ok
-                        </Badge>
-                      ) : (
-                        <>
-                          {groupBlockers > 0 && (
-                            <Badge variant="outline" className="border-destructive/40 text-destructive bg-destructive/5">
-                              <XCircle className="h-3 w-3 mr-1" /> {groupBlockers} bloqueador(es)
-                            </Badge>
-                          )}
-                          {groupWarnings > 0 && (
-                            <Badge variant="outline" className="border-amber-500/40 text-amber-700 bg-amber-500/5">
-                              <AlertTriangle className="h-3 w-3 mr-1" /> {groupWarnings} aviso(s)
-                            </Badge>
-                          )}
-                        </>
-                      )}
-                      <span className="text-[10px] text-muted-foreground tabular-nums ml-1">
-                        {allRows.filter((r) => r.status === "ok").length}/{allRows.length}
-                      </span>
-                    </div>
-                  </div>
-                </CardHeader>
-                {!isCollapsed && (
-                  <CardContent className="pt-0">
-                    <ul className="divide-y border-t">
-                      {rows.map((r) => {
-                        const sm = STATUS_META[r.status];
-                        const SIcon = sm.Icon;
-                        const sev = SEV_BADGE[r.expected.severity];
-                        return (
-                          <li key={r.expected.name} className="py-2.5 flex items-start justify-between gap-3 flex-wrap">
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <code className="text-xs font-mono px-1.5 py-0.5 rounded bg-muted">{r.expected.name}</code>
-                                <Badge variant="outline" className={cn("text-[10px]", sev.cls)}>
-                                  {sev.label}
-                                </Badge>
-                                {r.status === "ok" && r.source && (
-                                  <Badge variant="outline" className="text-[10px] uppercase font-mono">
-                                    {r.source}
-                                    {r.maskedSuffix ? ` • ••••${r.maskedSuffix}` : ""}
-                                  </Badge>
-                                )}
-                              </div>
-                              <p className={cn(
-                                "text-[11px] mt-1",
-                                r.status === "ok" ? "text-muted-foreground" : "text-foreground",
-                              )}>
-                                {r.status === "ok" ? "Sem impacto — chave presente." : r.expected.impact}
-                              </p>
-                            </div>
-                            <Badge variant="outline" className={cn("shrink-0", sm.cls)}>
-                              <SIcon className="h-3 w-3 mr-1" />
-                              {sm.label}
-                            </Badge>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </CardContent>
-                )}
-              </Card>
-            );
-          })}
-        </div>
-      )}
+      <ValidationGroups loading={loading} evaluations={evaluations} groups={visibleGroups} collapsed={collapsed} onToggle={toggleCollapsed} />
     </div>
   );
 }

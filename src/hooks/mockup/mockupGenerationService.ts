@@ -4,7 +4,6 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import { uploadLogoToStorage, downloadImageAsPdfFromUrl } from "@/lib/mockup-storage";
-import { showMockupSuccessToast } from "@/components/mockup/MockupSuccessToast";
 import { toast } from "sonner";
 import type { PersonalizationArea } from "@/components/mockup/MultiAreaManager";
 
@@ -101,26 +100,44 @@ export interface SaveMockupParams {
   extra?: { layoutUrl?: string; locationName?: string; colorsCount?: number };
 }
 
+function valueOr<T>(value: T | null | undefined | false | "" | 0, fallback: T): T {
+  return value ? value as T : fallback;
+}
+
+async function storedLogoUrl(params: SaveMockupParams): Promise<string> {
+  const preview = valueOr(params.area.logoPreview, "");
+  if (!preview.startsWith("data:")) return preview;
+  const uploaded = await uploadLogoToStorage(
+    params.userId,
+    preview,
+    `${valueOr(params.product.sku, "product")}-${valueOr(params.technique.code, "tech")}`,
+  );
+  return valueOr(uploaded, "");
+}
+
+function clientIdentity(client: SaveMockupParams["client"]): { id: string | null; name: string | null } {
+  if (!client) return { id: null, name: null };
+  return {
+    id: valueOr(client.id, null),
+    name: valueOr(client.nome_fantasia, valueOr(client.razao_social, valueOr(client.name, null))),
+  };
+}
+
+function savedAnnotations(annotations: SaveMockupParams["annotations"]) {
+  return annotations?.length ? annotations : null;
+}
+
 export async function saveMockupToDb(params: SaveMockupParams): Promise<string | null> {
   const { userId, product, technique, client, area, mockupUrl, annotations, extra } = params;
 
   try {
-    let logoUrl = area.logoPreview || "";
-    if (area.logoPreview?.startsWith("data:")) {
-      const uploadedUrl = await uploadLogoToStorage(
-        userId, area.logoPreview,
-        `${product.sku || "product"}-${technique.code || "tech"}`
-      );
-      logoUrl = uploadedUrl || "";
-    }
-
-    const clientId = client?.id || null;
-    const clientName = client?.nome_fantasia || client?.razao_social || client?.name || null;
+    const logoUrl = await storedLogoUrl(params);
+    const clientData = clientIdentity(client);
 
     const { data: insertedRow, error } = await supabase.from("generated_mockups").insert({
       seller_id: userId,
-      client_id: clientId,
-      client_name: clientName,
+      client_id: clientData.id,
+      client_name: clientData.name,
       product_id: product.id,
       product_name: product.name,
       product_sku: product.sku ?? null,
@@ -128,14 +145,14 @@ export async function saveMockupToDb(params: SaveMockupParams): Promise<string |
       technique_name: technique.name,
       logo_url: logoUrl,
       mockup_url: mockupUrl,
-      layout_url: extra?.layoutUrl || null,
+      layout_url: valueOr(extra?.layoutUrl, null),
       position_x: area.positionX,
       position_y: area.positionY,
       logo_width_cm: area.logoWidth,
       logo_height_cm: area.logoHeight,
-      location_name: extra?.locationName || area.name || null,
-      colors_count: extra?.colorsCount || null,
-      annotations: annotations && annotations.length > 0 ? annotations : null,
+      location_name: valueOr(extra?.locationName, valueOr(area.name, null)),
+      colors_count: valueOr(extra?.colorsCount, null),
+      annotations: savedAnnotations(annotations),
     }).select("id").single();
 
     if (error) throw error;
@@ -160,76 +177,102 @@ export interface GenerateMockupResult {
   batchResults: { areaName: string; url: string }[];
 }
 
+function mockupAreaPayload(area: PersonalizationArea) {
+  return {
+    name: area.name,
+    positionX: area.positionX,
+    positionY: area.positionY,
+    logoWidth: area.logoWidth,
+    logoHeight: area.logoHeight,
+    logoRotation: valueOr(area.logoRotation, 0),
+    logoScale: valueOr(area.logoScale, 100),
+  };
+}
+
+function mockupRequestBody(
+  params: GenerateMockupParams,
+  area: PersonalizationArea,
+  techniquePrompt: string,
+  includeAllAreas: boolean,
+) {
+  const logoIsUrl = Boolean(area.logoPreview?.startsWith("http"));
+  const requestAreas = includeAllAreas
+    ? params.areas.filter((candidate) => candidate.logoPreview)
+    : [area];
+  return {
+    productImageUrl: params.productImage,
+    logoBase64: logoIsUrl ? undefined : area.logoPreview,
+    logoUrl: logoIsUrl ? area.logoPreview : undefined,
+    techniqueName: params.technique.name,
+    techniquePrompt,
+    positionX: area.positionX,
+    positionY: area.positionY,
+    logoWidthCm: area.logoWidth,
+    logoHeightCm: area.logoHeight,
+    logoRotation: valueOr(area.logoRotation, 0),
+    logoScale: valueOr(area.logoScale, 100),
+    productName: params.productName,
+    areas: requestAreas.map(mockupAreaPayload),
+  };
+}
+
+function mockupUrlFromResponse(response: unknown): string {
+  const result = response as {
+    data?: { mockupUrl?: string; errorCode?: string; error?: string } | null;
+    error?: unknown;
+  };
+  if (result.error) {
+    if (result.data?.errorCode === "SVG_NOT_SUPPORTED") {
+      throw new Error(result.data.error || "Logos SVG não são suportados. Use PNG ou JPG.");
+    }
+    throw result.error;
+  }
+  if (!result.data?.mockupUrl) throw new Error("Nenhuma imagem retornada");
+  return result.data.mockupUrl;
+}
+
+async function generateAreaMockup(
+  params: GenerateMockupParams,
+  area: PersonalizationArea,
+  techniquePrompt: string,
+  includeAllAreas: boolean,
+): Promise<string> {
+  const response = await supabase.functions.invoke("generate-mockup", {
+    body: mockupRequestBody(params, area, techniquePrompt, includeAllAreas),
+  });
+  return mockupUrlFromResponse(response);
+}
+
+async function generateBatchMockups(
+  params: GenerateMockupParams,
+  areas: PersonalizationArea[],
+  techniquePrompt: string,
+): Promise<GenerateMockupResult> {
+  const results: { areaName: string; url: string }[] = [];
+  for (const area of areas) {
+    toast.info(`Gerando ${area.name}...`, { duration: 2000 });
+    try {
+      results.push({ areaName: area.name, url: await generateAreaMockup(params, area, techniquePrompt, false) });
+    } catch (error) {
+      console.error(`Error generating ${area.name}:`, error);
+    }
+  }
+  const first = results[0];
+  if (!first) throw new Error("Nenhum mockup gerado no batch");
+  return { singleUrl: first.url, batchResults: results };
+}
+
 export async function generateMockupApi(params: GenerateMockupParams): Promise<GenerateMockupResult> {
-  const { productImage, productName, technique, areas } = params;
+  const { technique, areas } = params;
   const areasWithLogos = areas.filter(a => a.logoPreview);
   const techniquePrompt = getTechniquePrompt(technique);
 
   if (areasWithLogos.length === 1) {
     const area = areasWithLogos[0];
     if (!area) throw new Error("Nenhuma área com logo encontrada");
-    const isLogoUrl = area.logoPreview?.startsWith("http");
-
-    const response = await supabase.functions.invoke("generate-mockup", {
-      body: {
-        productImageUrl: productImage,
-        logoBase64: isLogoUrl ? undefined : area.logoPreview,
-        logoUrl: isLogoUrl ? area.logoPreview : undefined,
-        techniqueName: technique.name,
-        techniquePrompt,
-        positionX: area.positionX, positionY: area.positionY,
-        logoWidthCm: area.logoWidth, logoHeightCm: area.logoHeight,
-        logoRotation: area.logoRotation || 0, logoScale: area.logoScale ?? 100,
-        productName,
-        areas: areasWithLogos.map(a => ({
-          name: a.name, positionX: a.positionX, positionY: a.positionY,
-          logoWidth: a.logoWidth, logoHeight: a.logoHeight,
-          logoRotation: a.logoRotation || 0, logoScale: a.logoScale ?? 100,
-        })),
-      },
-    });
-
-    if (response.error) {
-      const errData = response.data || response.error;
-      if (errData?.errorCode === "SVG_NOT_SUPPORTED") {
-        throw new Error(errData.error || "Logos SVG não são suportados. Use PNG ou JPG.");
-      }
-      throw response.error;
-    }
-    if (!response.data?.mockupUrl) throw new Error("Nenhuma imagem retornada");
-    return { singleUrl: response.data.mockupUrl, batchResults: [] };
+    return { singleUrl: await generateAreaMockup(params, area, techniquePrompt, true), batchResults: [] };
   }
-
-  // BATCH
-  const results: { areaName: string; url: string }[] = [];
-  for (const area of areasWithLogos) {
-    const isLogoUrl = area.logoPreview?.startsWith("http");
-    toast.info(`Gerando ${area.name}...`, { duration: 2000 });
-
-    const response = await supabase.functions.invoke("generate-mockup", {
-      body: {
-        productImageUrl: productImage,
-        logoBase64: isLogoUrl ? undefined : area.logoPreview,
-        logoUrl: isLogoUrl ? area.logoPreview : undefined,
-        techniqueName: technique.name, techniquePrompt,
-        positionX: area.positionX, positionY: area.positionY,
-        logoWidthCm: area.logoWidth, logoHeightCm: area.logoHeight,
-        logoRotation: area.logoRotation || 0, logoScale: area.logoScale ?? 100,
-        productName,
-        areas: [{ name: area.name, positionX: area.positionX, positionY: area.positionY,
-          logoWidth: area.logoWidth, logoHeight: area.logoHeight,
-          logoRotation: area.logoRotation || 0, logoScale: area.logoScale ?? 100 }],
-      },
-    });
-
-    if (response.error) { console.error(`Error generating ${area.name}:`, response.error); continue; }
-    if (response.data?.mockupUrl) results.push({ areaName: area.name, url: response.data.mockupUrl });
-  }
-
-  if (results.length === 0) throw new Error("Nenhum mockup gerado no batch");
-  const first = results[0];
-  if (!first) throw new Error("Nenhum mockup gerado no batch");
-  return { singleUrl: first.url, batchResults: results };
+  return generateBatchMockups(params, areasWithLogos, techniquePrompt);
 }
 
 // ─── Download ────────────────────────────────────────────────────────

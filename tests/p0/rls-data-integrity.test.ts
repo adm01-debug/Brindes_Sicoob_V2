@@ -44,13 +44,26 @@ describe("P0 — RLS e integridade", () => {
     expect(gate).toMatch(/orders[\s\S]+anon/i);
   });
 
-  it.skip("seller_carts: cross-tenant isolation por workspace_id", async () => {
-    expect(true).toBe(true);
+  it("seller_carts: isola leitura e escrita pelo seller autenticado", () => {
+    const policy = source("supabase/migrations/20260306013723_8ea96e6d-f69b-4bc3-80bc-109377e45a2d.sql");
+
+    expect(policy).toContain('CREATE POLICY "Users can manage own carts"');
+    expect(policy).toMatch(/ON public\.seller_carts FOR ALL\s+TO authenticated/);
+    expect(policy).toContain("USING (seller_id = auth.uid())");
+    expect(policy).toContain("WITH CHECK (seller_id = auth.uid())");
   });
 
   // ─── companies (CRM) ──────────────────────────────────────────────────
-  it.skip("companies (external): RLS bloqueia acesso a CNPJ/contatos sem auth válida", async () => {
-    expect(true).toBe(true);
+  it("companies (external): bridge exige identidade antes de expor dados", () => {
+    const bridge = source("supabase/functions/external-db-bridge/index.ts");
+    const crud = bridge.slice(bridge.indexOf("async function handleCrud"));
+    const userGate = crud.indexOf("const userId = actor?.user.id");
+    const databaseAccess = crud.indexOf("const externalSupabase = await getExternalClient");
+
+    expect(crud).toContain("COMPANY_TABLES");
+    expect(crud).toContain("if (!userId) return jsonResponse({ error: 'Autenticação necessária' }, 401");
+    expect(userGate).toBeGreaterThan(-1);
+    expect(databaseAccess).toBeGreaterThan(userGate);
   });
 
   // ─── mcp_keys (segurança crítica) ─────────────────────────────────────
@@ -79,14 +92,24 @@ describe("P0 — RLS e integridade", () => {
   });
 
   // ─── workspace_notifications ──────────────────────────────────────────
-  it.skip("workspace_notifications: usuário só lê notificações do próprio workspace", async () => {
-    expect(true).toBe(true);
+  it("workspace_notifications: usuário só lê e altera notificações próprias", () => {
+    const policy = source("supabase/migrations/20260503151554_c98e739b-b86f-42f6-9afa-19f4c8243298.sql");
+
+    expect(policy).toContain("ALTER TABLE public.workspace_notifications ENABLE ROW LEVEL SECURITY");
+    expect(policy).toMatch(/FOR SELECT\s+USING \(auth\.uid\(\) = user_id\)/);
+    expect(policy).toMatch(/FOR UPDATE\s+USING \(auth\.uid\(\) = user_id\)/);
+    expect(policy).toMatch(/FOR DELETE\s+USING \(auth\.uid\(\) = user_id\)/);
   });
 
   // ─── realtime ──────────────────────────────────────────────────────────
-  it.skip("realtime: tópicos sem prefixo `user:<uid>:` são bloqueados", async () => {
-    // TODO(P0): mem://security/realtime-channel-authorization.
-    expect(true).toBe(true);
+  it("realtime: leitura e broadcast exigem tópico do próprio usuário", () => {
+    const policy = source("supabase/migrations/20260417001408_df418063-07d5-4aaf-938b-c3e01a5653fb.sql");
+    const ownTopic = "realtime.topic() LIKE ('user:' || auth.uid()::text || '%')";
+
+    expect(policy).toContain("ALTER TABLE IF EXISTS realtime.messages ENABLE ROW LEVEL SECURITY");
+    expect(policy).toContain('CREATE POLICY "authenticated can read own topic"');
+    expect(policy).toContain('CREATE POLICY "authenticated can broadcast own topic"');
+    expect(policy.match(new RegExp(ownTopic.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"))).toHaveLength(2);
   });
 
   // ─── Integridade transacional ─────────────────────────────────────────

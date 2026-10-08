@@ -168,7 +168,8 @@ export function useTechniquePricing(techniqueCode: string | null) {
 
   // Encontrar a tabela correta para uma combinação de cores e tamanho
   const findMatchingTable = useCallback((colors: number, sizeValue: string): TechniquePriceOption | null => {
-    if (priceOptions.length === 0) return null;
+    const fallback = priceOptions[0];
+    if (!fallback) return null;
 
     // Extrair dimensões do sizeValue
     const [width, height] = sizeValue.split('x').map(Number);
@@ -182,10 +183,10 @@ export function useTechniquePricing(techniqueCode: string | null) {
 
     // Se não encontrou exata, pegar a primeira que suporta as cores
     if (!matching && hasPriceByColor) {
-      return priceOptions.find(opt => opt.maxColors >= colors) || priceOptions[0]!;
+      return priceOptions.find(opt => opt.maxColors >= colors) || fallback;
     }
 
-    return matching || priceOptions[0]!;
+    return matching || fallback;
   }, [priceOptions, hasPriceByColor]);
 
   return {

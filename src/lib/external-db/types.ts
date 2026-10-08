@@ -10,6 +10,9 @@ export interface ExternalProduct {
   sku?: string;
   description?: string;
   short_description?: string;
+  /** Preço canônico do catálogo Promobrind. */
+  sale_price?: number | null;
+  /** Alias legado para payloads antigos. */
   price?: number;
   cost_price?: number;
   category_id?: string;
@@ -24,6 +27,9 @@ export interface ExternalProduct {
   is_active?: boolean;
   is_kit?: boolean;
   min_quantity?: number;
+  /** Estoque canônico do catálogo Promobrind. */
+  stock_quantity?: number | null;
+  /** Alias legado para payloads antigos. */
   stock?: number;
   lead_time_days?: number;
   created_at?: string;

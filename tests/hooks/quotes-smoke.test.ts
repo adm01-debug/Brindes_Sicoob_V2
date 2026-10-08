@@ -16,3 +16,4 @@ import { smokeHook } from "./_helpers/smoke-template";
 
 smokeHook("useQuotes", () => useQuotes());
 smokeHook("useQuoteViewedMap", () => useQuoteViewedMap([]));
+import React from 'react';

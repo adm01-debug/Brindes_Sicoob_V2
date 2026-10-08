@@ -14,46 +14,57 @@ export interface SnapshotInput {
   overrideName?: string;
 }
 
+function templateIdentity(identity: KitState['identity']) {
+  return {
+    description: identity?.description ?? null,
+    color: identity?.color ?? '#3B82F6',
+    icon: identity?.icon ?? 'Package',
+    tag: identity?.tag ?? null,
+  };
+}
+
+function buildTemplatePayload(input: SnapshotInput) {
+  const { kitState, category, overrideName } = input;
+  return {
+    name: overrideName || kitState.name || 'Template sem nome',
+    category: category || 'Geral',
+    ...templateIdentity(kitState.identity),
+    box_data: kitState.box ? JSON.parse(JSON.stringify(kitState.box)) : null,
+    items_data: JSON.parse(JSON.stringify(kitState.items)),
+    personalization_data: JSON.parse(JSON.stringify(kitState.personalization)),
+    total_price: kitState.totalPrice,
+    volume_usage_percent: kitState.volumeUsagePercent,
+    is_active: true,
+    updated_at: new Date().toISOString(),
+  };
+}
+
+async function persistTemplate(input: SnapshotInput) {
+  const payload = buildTemplatePayload(input);
+  if (input.templateId) {
+    const { data, error } = await supabase
+      .from('kit_templates')
+      .update(payload as never)
+      .eq('id', input.templateId)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+  const { data, error } = await supabase
+    .from('kit_templates')
+    .insert(payload as never)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 export function useTemplateSnapshot() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async ({ kitState, templateId, category, overrideName }: SnapshotInput) => {
-      const identity = kitState.identity;
-      const payload = {
-        name: overrideName || kitState.name || 'Template sem nome',
-        description: identity?.description ?? null,
-        category: category || 'Geral',
-        color: identity?.color ?? '#3B82F6',
-        icon: identity?.icon ?? 'Package',
-        tag: identity?.tag ?? null,
-        box_data: kitState.box ? JSON.parse(JSON.stringify(kitState.box)) : null,
-        items_data: JSON.parse(JSON.stringify(kitState.items)),
-        personalization_data: JSON.parse(JSON.stringify(kitState.personalization)),
-        total_price: kitState.totalPrice,
-        volume_usage_percent: kitState.volumeUsagePercent,
-        is_active: true,
-        updated_at: new Date().toISOString(),
-      };
-
-      if (templateId) {
-        const { data, error } = await supabase
-          .from('kit_templates')
-          .update(payload as never)
-          .eq('id', templateId)
-          .select()
-          .single();
-        if (error) throw error;
-        return data;
-      }
-      const { data, error } = await supabase
-        .from('kit_templates')
-        .insert(payload as never)
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    },
+    mutationFn: persistTemplate,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-kit-templates'] });
       queryClient.invalidateQueries({ queryKey: ['kit-templates'] });

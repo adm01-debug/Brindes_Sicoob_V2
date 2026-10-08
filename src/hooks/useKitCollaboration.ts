@@ -1,7 +1,7 @@
 /**
  * useKitCollaboration — colaboradores e comentários do kit (com realtime).
  */
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -82,7 +82,7 @@ export function useKitCollaborators(kitId: string | undefined) {
 export function useKitComments(kitId: string | undefined) {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const key = ['kit-comments', kitId] as const;
+  const key = useMemo(() => ['kit-comments', kitId] as const, [kitId]);
 
   const { data: comments = [], isLoading } = useQuery({
     queryKey: key,
@@ -108,7 +108,7 @@ export function useKitComments(kitId: string | undefined) {
         () => qc.invalidateQueries({ queryKey: key }))
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [kitId, qc]);
+  }, [key, kitId, qc]);
 
   const post = useMutation({
     mutationFn: async ({ body, parentId, anchor }: { body: string; parentId?: string; anchor?: string }) => {

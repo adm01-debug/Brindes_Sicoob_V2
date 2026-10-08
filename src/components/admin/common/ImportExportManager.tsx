@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { FileUp, FileDown, AlertCircle, CheckCircle2, Loader2, Table as TableIcon, Download } from "lucide-react";
+import { FileUp, FileDown, AlertCircle, Loader2, Table as TableIcon, Download } from "lucide-react";
 import * as XLSX from '@e965/xlsx';
 import Papa from 'papaparse';
 import { toast } from "sonner";
@@ -26,55 +26,110 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-interface ImportExportManagerProps {
+interface ImportExportManagerProps<T extends Record<string, unknown>> {
   entityName: string;
-  onImport: (data: any[]) => Promise<void>;
+  onImport: (data: T[]) => Promise<void>;
   onExport: () => void;
-  templateData?: any[];
+  templateData?: T[];
   expectedColumns: { key: string, label: string, required?: boolean, type?: 'string' | 'number' | 'email' | 'boolean' }[];
 }
 
-export function ImportExportManager({
+type ColumnDefinition = ImportExportManagerProps<Record<string, unknown>>["expectedColumns"][number];
+type ImportError = { row: number; message: string };
+
+function validateCell(rowNumber: number, column: ColumnDefinition, value: unknown, errors: ImportError[]) {
+  const empty = value === undefined || value === null || value === '';
+  if (column.required && empty) errors.push({ row: rowNumber, message: `Campo "${column.label}" é obrigatório.` });
+  if (empty) return;
+  if (column.type === 'email' && !String(value).match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+    errors.push({ row: rowNumber, message: `Email inválido: ${String(value)}` });
+  }
+  if (column.type === 'number' && Number.isNaN(Number(value))) {
+    errors.push({ row: rowNumber, message: `Valor numérico inválido: ${String(value)}` });
+  }
+}
+
+function validationErrors<T extends Record<string, unknown>>(data: T[], columns: ColumnDefinition[]): ImportError[] {
+  const errors: ImportError[] = [];
+  data.forEach((row, index) => columns.forEach((column) => validateCell(index + 1, column, row[column.key] || row[column.label], errors)));
+  return errors;
+}
+
+function parseExcel<T extends Record<string, unknown>>(file: File, onData: (data: T[]) => void, onDone: () => void) {
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    try {
+      const workbook = XLSX.read(event.target?.result, { type: 'binary' });
+      const sheetName = workbook.SheetNames[0];
+      if (!sheetName) throw new Error('Planilha vazia ou sem abas');
+      const sheet = workbook.Sheets[sheetName];
+      if (!sheet) throw new Error('Planilha vazia ou sem abas');
+      onData(XLSX.utils.sheet_to_json<T>(sheet));
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao processar arquivo Excel");
+    } finally {
+      onDone();
+    }
+  };
+  reader.readAsBinaryString(file);
+}
+
+function parseCsv<T extends Record<string, unknown>>(file: File, onData: (data: T[]) => void, onDone: () => void) {
+  Papa.parse<T>(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete: (results) => { onData(results.data); onDone(); },
+    error: (error) => { toast.error(`Erro ao processar CSV: ${error.message}`); onDone(); },
+  });
+}
+
+function downloadFile(format: 'xlsx' | 'csv', entityName: string, data: Record<string, unknown>[]) {
+  if (format === 'csv') {
+    const blob = new Blob([Papa.unparse(data)], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.setAttribute('href', URL.createObjectURL(blob));
+    link.setAttribute('download', `${entityName}_template.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    return;
+  }
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(data), entityName);
+  XLSX.writeFile(workbook, `${entityName}_template.xlsx`);
+}
+
+function ImportFooter({ errorCount, processing, rowCount, onCancel, onConfirm }: {
+  errorCount: number; processing: boolean; rowCount: number; onCancel: () => void; onConfirm: () => void;
+}) {
+  return (
+    <DialogFooter>
+      <Button variant="ghost" onClick={onCancel}>Cancelar</Button>
+      <Button onClick={onConfirm} disabled={rowCount === 0 || errorCount > 0 || processing}>
+        {processing && <Loader2 className="h-4 w-4 animate-spin mr-2" />}Confirmar Importação
+      </Button>
+    </DialogFooter>
+  );
+}
+
+export function ImportExportManager<T extends Record<string, unknown>>({
   entityName,
   onImport,
   onExport,
   templateData,
   expectedColumns
-}: ImportExportManagerProps) {
+}: ImportExportManagerProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
-  const [previewData, setPreviewData] = useState<any[]>([]);
+  const [previewData, setPreviewData] = useState<T[]>([]);
   const [errors, setErrors] = useState<{ row: number, message: string }[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const validateData = (data: any[]) => {
-    const newErrors: { row: number, message: string }[] = [];
-    const validatedData = data.map((row, index) => {
-      const rowNum = index + 1;
-      const newRow: any = { ...row };
-
-      expectedColumns.forEach(col => {
-        const val = row[col.key] || row[col.label];
-        
-        if (col.required && (val === undefined || val === null || val === '')) {
-          newErrors.push({ row: rowNum, message: `Campo "${col.label}" é obrigatório.` });
-        }
-
-        if (val !== undefined && val !== null && val !== '') {
-          if (col.type === 'email' && !String(val).match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-            newErrors.push({ row: rowNum, message: `Email inválido: ${val}` });
-          }
-          if (col.type === 'number' && isNaN(Number(val))) {
-            newErrors.push({ row: rowNum, message: `Valor numérico inválido: ${val}` });
-          }
-        }
-      });
-
-      return newRow;
-    });
-
-    setErrors(newErrors);
-    setPreviewData(data);
+  const validateData = (data: T[]) => {
+    setErrors(validationErrors(data, expectedColumns));
+    setPreviewData(data.map((row) => ({ ...row })));
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,41 +137,10 @@ export function ImportExportManager({
     if (!file) return;
 
     setIsProcessing(true);
-    const reader = new FileReader();
-
-    reader.onload = (evt) => {
-      try {
-        const bstr = evt.target?.result;
-        const wb = XLSX.read(bstr, { type: 'binary' });
-        const wsname = wb.SheetNames[0];
-        if (!wsname) throw new Error('Planilha vazia ou sem abas');
-        const ws = wb.Sheets[wsname];
-        if (!ws) throw new Error('Planilha vazia ou sem abas');
-        const data = XLSX.utils.sheet_to_json(ws);
-        validateData(data);
-      } catch (err) {
-        console.error(err);
-        toast.error("Erro ao processar arquivo Excel");
-      } finally {
-        setIsProcessing(false);
-      }
-    };
-
     if (file.name.endsWith('.csv')) {
-      Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: (results) => {
-          validateData(results.data);
-          setIsProcessing(false);
-        },
-        error: (err) => {
-          toast.error("Erro ao processar CSV: " + err.message);
-          setIsProcessing(false);
-        }
-      });
+      parseCsv(file, validateData, () => setIsProcessing(false));
     } else {
-      reader.readAsBinaryString(file);
+      parseExcel(file, validateData, () => setIsProcessing(false));
     }
   };
 
@@ -144,24 +168,7 @@ export function ImportExportManager({
     const data = templateData || [
       expectedColumns.reduce((acc, col) => ({ ...acc, [col.label]: '' }), {})
     ];
-    
-    if (format === 'csv') {
-      const csv = Papa.unparse(data);
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `${entityName}_template.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } else {
-      const worksheet = XLSX.utils.json_to_sheet(data);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, entityName);
-      XLSX.writeFile(workbook, `${entityName}_template.xlsx`);
-    }
+    downloadFile(format, entityName, data);
   };
 
   return (
@@ -180,7 +187,7 @@ export function ImportExportManager({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-hidden flex flex-col gap-4 py-4">
+          {(<div className="flex-1 overflow-hidden flex flex-col gap-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex gap-2">
                 <Button variant="secondary" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isProcessing}>
@@ -261,18 +268,10 @@ export function ImportExportManager({
                 <p>Nenhum arquivo carregado</p>
               </div>
             )}
-          </div>
+          </div>)}
 
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsOpen(false)}>Cancelar</Button>
-            <Button 
-              onClick={handleConfirmImport} 
-              disabled={previewData.length === 0 || errors.length > 0 || isProcessing}
-            >
-              {isProcessing && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Confirmar Importação
-            </Button>
-          </DialogFooter>
+          <ImportFooter errorCount={errors.length} processing={isProcessing} rowCount={previewData.length}
+            onCancel={() => setIsOpen(false)} onConfirm={() => { void handleConfirmImport(); }} />
         </DialogContent>
       </Dialog>
 

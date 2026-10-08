@@ -108,3 +108,4 @@ describe("ZoneSection — colapso", () => {
     expect(section.className).toContain("ring-2");
   });
 });
+import React from 'react';

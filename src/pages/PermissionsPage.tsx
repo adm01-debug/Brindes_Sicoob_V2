@@ -26,6 +26,9 @@ interface Permission {
 
 const CATEGORIES = ['geral', 'produtos', 'orcamentos', 'pedidos', 'clientes', 'admin', 'relatorios'];
 
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : "Erro desconhecido";
+
 export default function PermissionsPage() {
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,8 +50,8 @@ export default function PermissionsPage() {
 
       if (error) throw error;
       setPermissions(data || []);
-    } catch (error: any) {
-      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+    } catch (error: unknown) {
+      toast({ title: 'Erro', description: getErrorMessage(error), variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
@@ -72,8 +75,8 @@ export default function PermissionsPage() {
       setEditingPermission(null);
       setFormData({ code: '', name: '', description: '', category: 'geral' });
       fetchPermissions();
-    } catch (error: any) {
-      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+    } catch (error: unknown) {
+      toast({ title: 'Erro', description: getErrorMessage(error), variant: 'destructive' });
     }
   };
 
@@ -94,14 +97,15 @@ export default function PermissionsPage() {
       if (error) throw error;
       toast({ title: 'Permissão excluída com sucesso' });
       fetchPermissions();
-    } catch (error: any) {
-      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+    } catch (error: unknown) {
+      toast({ title: 'Erro', description: getErrorMessage(error), variant: 'destructive' });
     }
   };
 
   const groupedPermissions = permissions.reduce((acc, perm) => {
-    if (!acc[perm.category]) acc[perm.category] = [];
-    acc[perm.category].push(perm);
+    const categoryPermissions = acc[perm.category] ?? [];
+    categoryPermissions.push(perm);
+    acc[perm.category] = categoryPermissions;
     return acc;
   }, {} as Record<string, Permission[]>);
 

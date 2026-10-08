@@ -58,7 +58,7 @@ export function BundleSuggestionCard({ productId, onAdd, className }: BundleSugg
         {isLoading ? (
           [...Array(3)].map((_, i) => <Skeleton key={i} className="h-12 rounded-md" />)
         ) : (
-          data!.map(item => (
+          (data ?? []).map(item => (
             <div
               key={item.product_id}
               className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors"

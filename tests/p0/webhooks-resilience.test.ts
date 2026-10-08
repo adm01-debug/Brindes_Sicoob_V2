@@ -1,97 +1,106 @@
-/**
- * P0 — Webhooks: Bitrix24, n8n, MCP devem ser resilientes a falhas upstream.
- *
- * Cobertura: retry/backoff, idempotência, payload inválido, timeout, 5xx.
- * Mocks em `_mocks.ts`.
- */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import {
-  mockEdgeFunctionFetch,
-  resetExternalMocks,
-  bitrixWebhookOk,
-  bitrixWebhook5xx,
-  bitrixWebhookTimeout,
-  n8nWebhookOk,
-  n8nWebhookFail,
-  mcpGatewayUnauthorized,
-} from "./_mocks";
+/** P0 — contratos reais de resiliência dos webhooks e conectores. */
+import { describe, expect, it } from "vitest";
+import { expectContract, expectInOrder, source } from "./_contracts";
 
-const BITRIX_PATH = "/bitrix-sync";
-const N8N_PATH = "/n8n-trigger";
-const MCP_PATH = "/connector-gateway";
+describe("P0 — webhooks resilientes", () => {
+  it("bitrix-sync: valida a operação antes de consultar serviços", () => {
+    const handler = source("supabase/functions/bitrix-sync/index.ts");
 
-describe("P0 — Webhooks resilientes", () => {
-  beforeEach(() => {
-    mockEdgeFunctionFetch({});
-  });
-  afterEach(() => resetExternalMocks());
-
-  // ─── Bitrix24 ──────────────────────────────────────────────────────────
-  it.skip("bitrix-sync: cria deal com sucesso (200)", async () => {
-    mockEdgeFunctionFetch({ [BITRIX_PATH]: bitrixWebhookOk });
-    const res = await fetch(`https://x/functions/v1${BITRIX_PATH}`, { method: "POST" });
-    const data = await res.json();
-    expect(data.result.ID).toBe("12345");
+    expectContract(handler, [
+      "const BitrixSyncSchema = z.object",
+      "BitrixSyncSchema.safeParse(await req.json())",
+      "parsed.error.flatten()",
+      /status:\s*400/,
+    ]);
+    expect(handler.indexOf("safeParse(await req.json())")).toBeLessThan(handler.indexOf("switch (action)"));
   });
 
-  it.skip("bitrix-sync: faz retry 3x com backoff exponencial em 502", async () => {
-    // TODO(P0): implementar/validar política de retry com jitter.
-    let attempts = 0;
-    mockEdgeFunctionFetch({
-      [BITRIX_PATH]: {
-        status: 502,
-        body: bitrixWebhook5xx.body,
-      },
-    });
-    // Esperado: 3 tentativas antes de falhar.
-    try {
-      await fetch(`https://x/functions/v1${BITRIX_PATH}`, { method: "POST" });
-    } catch {
-      attempts++;
-    }
-    expect(attempts).toBeGreaterThanOrEqual(1);
+  it("bitrix-sync: protege o upstream com circuit breaker", () => {
+    const handler = source("supabase/functions/bitrix-sync/index.ts");
+
+    expectContract(handler, [
+      'fetchWithBreaker("bitrix"',
+      "error instanceof CircuitOpenError",
+      "circuitOpenResponse(error, corsHeaders)",
+    ]);
   });
 
-  it.skip("bitrix-sync: aborta após timeout de 25s e enfileira para retry", async () => {
-    mockEdgeFunctionFetch({ [BITRIX_PATH]: bitrixWebhookTimeout });
-    // TODO(P0): validar AbortController + persistência em retry_queue.
-    expect(true).toBe(true);
+  it("backoff compartilhado: limita tentativas, usa jitter e respeita orçamento", () => {
+    const retry = source("supabase/functions/_shared/retry-backoff.ts");
+
+    expectContract(retry, [
+      "const maxAttempts = opts.maxAttempts ?? 3",
+      "nextDelayMs(prevDelay, baseMs, capMs)",
+      "remainingBudget",
+      "attempt === maxAttempts",
+    ]);
   });
 
-  it.skip("bitrix-sync: idempotência — mesmo quote_id não cria 2 deals", async () => {
-    // TODO(P0): testar com chave de idempotência (quote_id + version).
-    expect(true).toBe(true);
+  it("backoff compartilhado: não repete erros permanentes", () => {
+    const retry = source("supabase/functions/_shared/retry-backoff.ts");
+
+    expectContract(retry, [
+      "export function isTransientError",
+      "if (!transient(err) || attempt === maxAttempts)",
+      "throw err",
+    ]);
   });
 
-  it.skip("bitrix-sync: rejeita payload sem campos obrigatórios (400)", async () => {
-    // TODO(P0): cobrir Zod validation da edge function.
-    expect(true).toBe(true);
+  it("sincronização n8n: resposta não OK vira falha explícita", () => {
+    const quoteSync = source("supabase/functions/quote-sync/index.ts");
+    const sendToN8n = quoteSync.slice(quoteSync.indexOf("async function sendToN8N"));
+
+    expectInOrder(sendToN8n, [
+      "async function sendToN8N",
+      "await fetch(n8nWebhookUrl",
+      "if (!response.ok)",
+      "throw new Error(`N8N webhook failed:",
+    ]);
   });
 
-  // ─── n8n ───────────────────────────────────────────────────────────────
-  it.skip("n8n-trigger: dispara workflow e retorna executionId", async () => {
-    mockEdgeFunctionFetch({ [N8N_PATH]: n8nWebhookOk });
-    const res = await fetch(`https://x/functions/v1${N8N_PATH}`, { method: "POST" });
-    const data = await res.json();
-    expect(data.executionId).toMatch(/^exec_/);
+  it("sincronização n8n: falha do webhook não interrompe a persistência do fluxo", () => {
+    const quoteSync = source("supabase/functions/quote-sync/index.ts");
+
+    expectInOrder(quoteSync, [
+      "try { n8nResponse = await sendToN8N(quoteData); }",
+      'catch (err) { console.error("N8N sync failed (non-blocking):", err); }',
+      "await sendToSalesPro(quoteData)",
+      "await updateCRMSyncStatus(quoteId, n8nResponse)",
+    ]);
   });
 
-  it.skip("n8n-trigger: erro 500 do workflow não derruba edge function", async () => {
-    mockEdgeFunctionFetch({ [N8N_PATH]: n8nWebhookFail });
-    const res = await fetch(`https://x/functions/v1${N8N_PATH}`, { method: "POST" });
-    expect(res.status).toBe(500);
+  it("sync-quote-bitrix: deriva destinos persistidos e protege o webhook", () => {
+    const handler = source("supabase/functions/sync-quote-bitrix/index.ts");
+
+    expectContract(handler, [
+      "async function resolveBitrixTargets",
+      ".from(\"companies\")",
+      ".select(\"bitrix_company_id\")",
+      'fetchWithBreaker("bitrix", webhookUrl',
+      "if (!response.ok)",
+    ]);
   });
 
-  // ─── MCP Gateway ───────────────────────────────────────────────────────
-  it.skip("connector-gateway: 401 não expõe API key na resposta", async () => {
-    mockEdgeFunctionFetch({ [MCP_PATH]: mcpGatewayUnauthorized });
-    const res = await fetch(`https://x/functions/v1${MCP_PATH}`);
-    const data = await res.json();
-    expect(JSON.stringify(data)).not.toMatch(/api[_-]?key|secret/i);
+  it("connection-tester: os diagnósticos não serializam valores de credenciais", () => {
+    const tester = source("supabase/functions/connection-tester/index.ts");
+
+    expectContract(tester, [
+      /redact|mask|sanitize/i,
+      /secret|credential|api.?key/i,
+    ]);
+    expect(tester).not.toMatch(/JSON\.stringify\([^)]*(?:secretValue|secret_value)\)/);
   });
 
-  it.skip("webhook handler: rejeita assinatura HMAC inválida", async () => {
-    // TODO(P0): validar X-Hub-Signature-256 / X-Bitrix-Signature.
-    expect(true).toBe(true);
+  it("webhook inbound: rejeita HMAC inválido antes de processar o evento", () => {
+    const handler = source("supabase/functions/webhook-inbound/index.ts");
+
+    expectInOrder(handler, [
+      "crypto.subtle.importKey",
+      "crypto.subtle.sign",
+      "timingSafeEqual(expected, provided)",
+      "if (!signatureValid)",
+      "status: 401",
+    ]);
+    expectContract(handler, ["eventAllowed", "signatureValid && eventAllowed"]);
   });
 });

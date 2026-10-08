@@ -198,6 +198,10 @@ function clearAll(canonical: string, aliases: string[]) {
   clearEnv(canonical, ...aliases);
 }
 
+function testCredentialValue(name: string, label: string): string {
+  return name.endsWith("_URL") ? `https://${label.toLowerCase().replaceAll("_", "-")}.example.com` : label;
+}
+
 // --- Cobertura tabular: cada alias resolve para o nome canônico --------------
 
 for (const { canonical, aliases } of ALIAS_CONTRACT) {
@@ -207,12 +211,13 @@ for (const { canonical, aliases } of ALIAS_CONTRACT) {
       async () => {
         invalidateCredentialCache();
         clearAll(canonical, aliases);
-        Deno.env.set(alias, `value-from-${alias}`);
+        const aliasValue = testCredentialValue(canonical, `value-from-${alias}`);
+        Deno.env.set(alias, aliasValue);
 
         const client = mockServiceClient({}); // DB vazio
         const result = await resolveCredential(canonical, client);
 
-        assertEquals(result.value, `value-from-${alias}`, `valor vem do alias ${alias}`);
+        assertEquals(result.value, aliasValue, `valor vem do alias ${alias}`);
         assertEquals(result.source, "env", "source=env quando resolvido por alias");
         assertEquals(
           result.resolved_name,
@@ -259,12 +264,13 @@ Deno.test(
     const aliases = ["EXTERNAL_SUPABASE_URL"];
     clearAll(canonical, aliases);
 
-    Deno.env.set(canonical, "from-canonical-env");
-    Deno.env.set("EXTERNAL_SUPABASE_URL", "from-legacy-alias");
+    const canonicalValue = "https://canonical-env.example.com";
+    Deno.env.set(canonical, canonicalValue);
+    Deno.env.set("EXTERNAL_SUPABASE_URL", "https://legacy-alias.example.com");
 
     const result = await resolveCredential(canonical, mockServiceClient({}));
 
-    assertEquals(result.value, "from-canonical-env");
+    assertEquals(result.value, canonicalValue);
     assertEquals(result.resolved_name, canonical, "resolved_name é o canônico, não o alias");
     assertEquals(result.source, "env");
 
@@ -316,10 +322,10 @@ Deno.test(
       clearAll(canonical, aliases);
 
       // Polui env com TODOS os aliases legados
-      for (const a of aliases) Deno.env.set(a, `legacy-${a}`);
-      Deno.env.set(canonical, `env-${canonical}`);
+      for (const a of aliases) Deno.env.set(a, testCredentialValue(canonical, `legacy-${a}`));
+      Deno.env.set(canonical, testCredentialValue(canonical, `env-${canonical}`));
 
-      const dbValue = `db-${canonical}`;
+      const dbValue = testCredentialValue(canonical, `db-${canonical}`);
       const client = mockServiceClient({ [canonical]: dbValue });
 
       const result = await resolveCredential(canonical, client);
@@ -340,14 +346,15 @@ Deno.test(
     const aliases = ["EXTERNAL_SUPABASE_URL"];
     clearAll(canonical, aliases);
 
-    Deno.env.set(canonical, "env-fallback");
+    const fallbackValue = "https://env-fallback.example.com";
+    Deno.env.set(canonical, fallbackValue);
 
     // string vazia em secret_value (cenário borda) não deve ser tratada como hit
     const client = mockServiceClient({ [canonical]: "" });
 
     const result = await resolveCredential(canonical, client);
 
-    assertEquals(result.value, "env-fallback", "string vazia no DB não bloqueia fallback");
+    assertEquals(result.value, fallbackValue, "string vazia no DB não bloqueia fallback");
     assertEquals(result.source, "env");
 
     clearAll(canonical, aliases);
@@ -362,7 +369,8 @@ Deno.test(
     const aliases = ["CRM_SUPABASE_URL"];
     clearAll(canonical, aliases);
 
-    Deno.env.set(canonical, "env-after-db-error");
+    const fallbackValue = "https://env-after-db-error.example.com";
+    Deno.env.set(canonical, fallbackValue);
 
     // deno-lint-ignore no-explicit-any
     const builder: any = {
@@ -377,7 +385,7 @@ Deno.test(
 
     const result = await resolveCredential(canonical, client);
 
-    assertEquals(result.value, "env-after-db-error", "fallback p/ env quando DB lança");
+    assertEquals(result.value, fallbackValue, "fallback p/ env quando DB lança");
     assertEquals(result.source, "env");
     assertEquals(result.resolved_name, canonical);
 
@@ -392,7 +400,7 @@ Deno.test(
     const canonical = "EXTERNAL_PROMOBRIND_URL";
     clearAll(canonical, ["EXTERNAL_SUPABASE_URL"]);
 
-    let dbValue = "db-v1";
+    let dbValue = "https://db-v1.example.com";
     let dbReads = 0;
     // deno-lint-ignore no-explicit-any
     const builder: any = {
@@ -407,20 +415,24 @@ Deno.test(
     const client = { from: () => builder } as any;
 
     const r1 = await resolveCredential(canonical, client);
-    assertEquals(r1.value, "db-v1");
+    assertEquals(r1.value, "https://db-v1.example.com");
     assertEquals(dbReads, 1);
 
     // Cache hit — sem nova leitura
     const r2 = await resolveCredential(canonical, client);
-    assertEquals(r2.value, "db-v1");
+    assertEquals(r2.value, "https://db-v1.example.com");
     assertEquals(dbReads, 1, "cache hit, DB não foi lido de novo");
 
     // Operação admin: rotaciona valor + invalida cache
-    dbValue = "db-v2-rotated";
+    dbValue = "https://db-v2-rotated.example.com";
     invalidateCredentialCache(canonical);
 
     const r3 = await resolveCredential(canonical, client);
-    assertEquals(r3.value, "db-v2-rotated", "após invalidação, DB-first volta a vencer");
+    assertEquals(
+      r3.value,
+      "https://db-v2-rotated.example.com",
+      "após invalidação, DB-first volta a vencer",
+    );
     assertEquals(r3.source, "db");
     assertEquals(dbReads, 2, "DB foi re-lido exatamente 1x após invalidação");
   },

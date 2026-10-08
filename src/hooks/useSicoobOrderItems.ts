@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 export function useSicoobOrderItems(orderId?: string) {
   const queryClient = useQueryClient();
-  const { isVendedorRole, isAdmin } = useAuth();
+  const { isVendedor, isAdmin } = useAuth();
 
 
   const addItem = useMutation({
@@ -20,7 +20,7 @@ export function useSicoobOrderItems(orderId?: string) {
       quantity: number;
       unitPrice: number;
     }) => {
-      if (!isVendedorRole && !isAdmin) {
+      if (!isVendedor && !isAdmin) {
         throw new Error("Apenas vendedores ou administradores podem adicionar itens.");
       }
       if (!orderId) throw new Error("Order ID is required");
@@ -28,7 +28,7 @@ export function useSicoobOrderItems(orderId?: string) {
       const { data, error } = await supabase.rpc("mutate_sicoob_order_item", {
         p_order_id: orderId,
         p_action: "add",
-        p_item_id: null,
+        p_item_id: undefined,
         p_product_id: productId,
         p_product_name: productName,
         p_quantity: quantity,
@@ -45,9 +45,9 @@ export function useSicoobOrderItems(orderId?: string) {
       queryClient.invalidateQueries({ queryKey: ["sicoob_order_items", orderId] });
       queryClient.invalidateQueries({ queryKey: ["sicoob_order_item_logs", orderId] });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error("Error adding item:", error);
-      const message = error.message || "Erro desconhecido ao processar sua solicitação.";
+      const message = error instanceof Error ? error.message : "Erro desconhecido ao processar sua solicitação.";
       toast.error("Não foi possível adicionar o item", {
         description: message,
       });
@@ -56,7 +56,7 @@ export function useSicoobOrderItems(orderId?: string) {
 
   const removeItem = useMutation({
     mutationFn: async (itemId: string) => {
-      if (!isVendedorRole && !isAdmin) {
+      if (!isVendedor && !isAdmin) {
         throw new Error("Apenas vendedores ou administradores podem remover itens.");
       }
       if (!orderId) throw new Error("Order ID is required");
@@ -65,10 +65,10 @@ export function useSicoobOrderItems(orderId?: string) {
         p_order_id: orderId,
         p_action: "remove",
         p_item_id: itemId,
-        p_product_id: null,
-        p_product_name: null,
-        p_quantity: null,
-        p_unit_price: null,
+        p_product_id: undefined,
+        p_product_name: undefined,
+        p_quantity: undefined,
+        p_unit_price: undefined,
       });
       if (error) throw error;
       return Number(data);
@@ -81,9 +81,9 @@ export function useSicoobOrderItems(orderId?: string) {
       queryClient.invalidateQueries({ queryKey: ["sicoob_order_items", orderId] });
       queryClient.invalidateQueries({ queryKey: ["sicoob_order_item_logs", orderId] });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error("Error removing item:", error);
-      const message = error.message || "Não foi possível completar a remoção do item.";
+      const message = error instanceof Error ? error.message : "Não foi possível completar a remoção do item.";
       toast.error("Erro ao remover item", {
         description: message,
       });

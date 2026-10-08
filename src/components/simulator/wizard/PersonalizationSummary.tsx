@@ -8,17 +8,7 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  ShoppingCart, 
-  MapPin, 
-  Plus,
-  Sparkles,
-  Pencil,
-  FileText,
-  Copy,
-  Trash2,
-  MoreHorizontal,
-} from 'lucide-react';
+import { ShoppingCart, MapPin, Plus, Sparkles, Pencil, FileText, Copy, Trash2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,11 +45,15 @@ interface PersonalizationSummaryProps {
   showAddButton?: boolean;
 }
 
+function SummaryFooter({ totals, onGenerateQuote, hasPersonalizations }: { totals: UseSimulatorWizardReturn['totals']; onGenerateQuote?: () => void; hasPersonalizations: boolean }) {
+  return <div className="shrink-0 pt-3 mt-3 border-t border-border/50 space-y-3"><div className="flex items-baseline justify-between gap-2"><div><span className="font-bold text-base">Total</span><p className="text-[11px] text-muted-foreground">≈{formatCurrency(totals.grandTotalPerUnit)}/un.</p></div><span className="font-bold text-xl text-primary whitespace-nowrap">{formatCurrency(totals.grandTotal)}</span></div>{onGenerateQuote && hasPersonalizations ? <Button size="lg" className="w-full gap-2 h-12 text-sm font-bold bg-gradient-to-r from-primary to-primary/80 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all" onClick={onGenerateQuote}><FileText className="h-5 w-5" />Gerar Orçamento</Button> : null}</div>;
+}
+
 /** Extrai nome curto do grupo de técnica (antes do " | ") */
 function shortTechniqueName(name: string): { group: string; variation?: string } {
   const parts = name.split(/\s*\|\s*/);
   if (parts.length >= 2) {
-    return { group: parts[0]!.trim(), variation: parts.slice(1).join(' | ').trim() };
+    return { group: (parts[0] ?? name).trim(), variation: parts.slice(1).join(' | ').trim() };
   }
   return { group: name };
 }
@@ -261,33 +255,7 @@ export function PersonalizationSummary({
         </ScrollArea>
       </div>
 
-      {/* Footer fixo — separado visualmente */}
-      <div className="shrink-0 pt-3 mt-3 border-t border-border/50 space-y-3">
-        {/* Total */}
-        <div className="flex items-baseline justify-between gap-2">
-          <div>
-            <span className="font-bold text-base">Total</span>
-            <p className="text-[11px] text-muted-foreground">
-              ≈{formatCurrency(totals.grandTotalPerUnit)}/un.
-            </p>
-          </div>
-          <span className="font-bold text-xl text-primary whitespace-nowrap">
-            {formatCurrency(totals.grandTotal)}
-          </span>
-        </div>
-
-        {/* CTA Premium */}
-        {onGenerateQuote && personalizations.length > 0 && (
-          <Button
-            size="lg"
-            className="w-full gap-2 h-12 text-sm font-bold bg-gradient-to-r from-primary to-primary/80 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
-            onClick={onGenerateQuote}
-          >
-            <FileText className="h-5 w-5" />
-            Gerar Orçamento
-          </Button>
-        )}
-      </div>
+      <SummaryFooter totals={totals} onGenerateQuote={onGenerateQuote} hasPersonalizations={personalizations.length > 0} />
     </div>
   );
 }

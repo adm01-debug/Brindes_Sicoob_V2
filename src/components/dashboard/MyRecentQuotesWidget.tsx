@@ -55,10 +55,11 @@ export function MyRecentQuotesWidget() {
     staleTime: 30_000,
     initialPageParam: null as string | null,
     queryFn: async ({ pageParam }) => {
+      if (!user) return [];
       let q = supabase
         .from("quotes")
         .select("id, quote_number, status, total, client_name, client_company, updated_at")
-        .eq("seller_id", user!.id)
+        .eq("seller_id", user.id)
         .order("updated_at", { ascending: false })
         .limit(PAGE_SIZE);
       if (pageParam) q = q.lt("updated_at", pageParam);
@@ -140,7 +141,7 @@ export function MyRecentQuotesWidget() {
                     </span>
                   </div>
                 </div>
-                {q.total != null && (
+                {q.total !== null && q.total !== undefined && (
                   <p className="text-sm font-semibold text-primary flex-shrink-0">
                     {Number(q.total).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                   </p>

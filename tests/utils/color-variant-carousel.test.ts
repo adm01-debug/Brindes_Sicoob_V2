@@ -3,7 +3,7 @@
  * Cobre: resolveAllMatchingColors em todos os cenários do dia a dia.
  */
 import { describe, it, expect } from "vitest";
-import { resolveAllMatchingColors, type MatchedColorVariant } from "@/utils/color-variant-carousel";
+import { resolveAllMatchingColors } from "@/utils/color-variant-carousel";
 import { COLOR_GROUP_HEX } from "@/utils/color-group-hex";
 
 // ─── Helpers ────────────────────────────────────────────────────────

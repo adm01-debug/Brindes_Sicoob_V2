@@ -1,11 +1,11 @@
-import { Package, Users, FileText, ShoppingCart, FolderHeart, Boxes, Sparkles, Image as ImageIcon, ClipboardList, Bell, MessageSquare, Wand2, Tag, Puzzle } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
+import { Package, Users, FileText, ShoppingCart, FolderHeart, Boxes, Sparkles, Image as ImageIcon, ClipboardList, Bell, MessageSquare, Wand2, Tag, Puzzle, type LucideIcon } from "lucide-react";
 
 export interface QuickAction {
   id: string;
   title: string;
   description: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   href: string;
   shortcut?: string;
 }

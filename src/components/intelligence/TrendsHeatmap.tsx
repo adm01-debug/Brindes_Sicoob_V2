@@ -36,8 +36,9 @@ export function TrendsHeatmap({ days }: TrendsHeatmapProps) {
       const fill = (rows: Array<{ created_at: string }> | null) => {
         rows?.forEach(r => {
           const d = new Date(r.created_at);
-          const row = matrix[d.getDay()]!;
-          row[d.getHours()]! += 1;
+          const row = matrix[d.getDay()];
+          const hour = d.getHours();
+          if (row) row[hour] = (row[hour] ?? 0) + 1;
         });
       };
       fill(views);

@@ -1,9 +1,12 @@
 import { z } from "zod";
 
+const REQUIRED_EMAIL_MESSAGE = "Email é obrigatório";
+const INVALID_EMAIL_MESSAGE = "Email inválido";
+
 export const loginSchema = z.object({
   email: z.string()
-    .min(1, "Email é obrigatório")
-    .email("Email inválido"),
+    .min(1, REQUIRED_EMAIL_MESSAGE)
+    .email(INVALID_EMAIL_MESSAGE),
   password: z.string()
     .min(6, "Senha deve ter pelo menos 6 caracteres"),
 });
@@ -13,8 +16,8 @@ export const signupSchema = z.object({
     .min(2, "Nome deve ter pelo menos 2 caracteres")
     .max(100, "Nome deve ter no máximo 100 caracteres"),
   email: z.string()
-    .min(1, "Email é obrigatório")
-    .email("Email inválido"),
+    .min(1, REQUIRED_EMAIL_MESSAGE)
+    .email(INVALID_EMAIL_MESSAGE),
   password: z.string()
     .min(8, "Senha deve ter pelo menos 8 caracteres")
     .regex(/[A-Z]/, "Senha deve conter letra maiúscula")
@@ -29,8 +32,8 @@ export const signupSchema = z.object({
 
 export const forgotPasswordSchema = z.object({
   email: z.string()
-    .min(1, "Email é obrigatório")
-    .email("Email inválido"),
+    .min(1, REQUIRED_EMAIL_MESSAGE)
+    .email(INVALID_EMAIL_MESSAGE),
 });
 
 export const resetPasswordSchema = z.object({

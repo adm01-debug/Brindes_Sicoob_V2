@@ -23,6 +23,41 @@ export interface ErrorCopy {
   tone: ErrorTone;
 }
 
+const STATIC_ERROR_COPY: Partial<Record<ErrorKind, ErrorCopy>> = {
+  network: { title: "Sem conexão com o serviço", hint: "Falha de rede ao alcançar o destino. Verifique firewall, VPN ou se o host está no ar.", icon: WifiOff, tone: "network" },
+  dns: { title: "URL não encontrada", hint: "O DNS não resolveu o domínio. Confira a URL configurada na conexão.", icon: Globe, tone: "dns" },
+  auth: { title: "Credenciais rejeitadas", hint: "Token, chave ou senha inválido/expirado. Reabra o secret e cole o valor atualizado.", icon: KeyRound, tone: "auth" },
+  config: { title: "Configuração incompleta", hint: "Faltam campos obrigatórios. Edite a conexão e preencha todas as credenciais.", icon: Settings2, tone: "config" },
+};
+
+function timeoutCopy(timeoutMs?: number | null): ErrorCopy {
+  return {
+    title: "Tempo esgotado",
+    hint: timeoutMs && timeoutMs > 0
+      ? `O endpoint não respondeu em ${timeoutMs}ms. Verifique se o serviço está ativo e acessível.`
+      : "O endpoint não respondeu em tempo. Verifique se o serviço está ativo e acessível.",
+    icon: Clock,
+    tone: "timeout",
+  };
+}
+
+function httpCopy(status?: number | null): ErrorCopy {
+  const normalized = status ?? 0;
+  let hint = "O serviço destino retornou um erro. Inspecione a resposta nos detalhes.";
+  if (normalized >= 400 && normalized < 500) hint = "Requisição rejeitada pelo serviço. Verifique payload, permissões e escopos.";
+  if (normalized >= 500) hint = "Instabilidade no serviço destino. Tente novamente em alguns minutos.";
+  return { title: status ? `Erro HTTP ${status}` : "Erro HTTP", hint, icon: ServerCrash, tone: "http" };
+}
+
+function unknownCopy(fallbackMessage?: string | null): ErrorCopy {
+  return {
+    title: "Falha na conexão",
+    hint: fallbackMessage?.trim() || "Não foi possível identificar a causa. Veja os detalhes do teste.",
+    icon: AlertTriangle,
+    tone: "unknown",
+  };
+}
+
 /**
  * Mapeia `error_kind` (+ `status` HTTP opcional) numa cópia coerente
  * com título, dica acionável e ícone. SSOT para mensagens de erro
@@ -34,70 +69,10 @@ export function getErrorCopy(
   fallbackMessage?: string | null,
   timeoutMs?: number | null,
 ): ErrorCopy {
-  switch (kind) {
-    case "timeout":
-      return {
-        title: "Tempo esgotado",
-        hint: timeoutMs && timeoutMs > 0
-          ? `O endpoint não respondeu em ${timeoutMs}ms. Verifique se o serviço está ativo e acessível.`
-          : "O endpoint não respondeu em tempo. Verifique se o serviço está ativo e acessível.",
-        icon: Clock,
-        tone: "timeout",
-      };
-    case "network":
-      return {
-        title: "Sem conexão com o serviço",
-        hint: "Falha de rede ao alcançar o destino. Verifique firewall, VPN ou se o host está no ar.",
-        icon: WifiOff,
-        tone: "network",
-      };
-    case "dns":
-      return {
-        title: "URL não encontrada",
-        hint: "O DNS não resolveu o domínio. Confira a URL configurada na conexão.",
-        icon: Globe,
-        tone: "dns",
-      };
-    case "auth":
-      return {
-        title: "Credenciais rejeitadas",
-        hint: "Token, chave ou senha inválido/expirado. Reabra o secret e cole o valor atualizado.",
-        icon: KeyRound,
-        tone: "auth",
-      };
-    case "http": {
-      const s = status ?? 0;
-      let hint = "O serviço destino retornou um erro. Inspecione a resposta nos detalhes.";
-      if (s >= 400 && s < 500) {
-        hint = "Requisição rejeitada pelo serviço. Verifique payload, permissões e escopos.";
-      } else if (s >= 500) {
-        hint = "Instabilidade no serviço destino. Tente novamente em alguns minutos.";
-      }
-      return {
-        title: status ? `Erro HTTP ${status}` : "Erro HTTP",
-        hint,
-        icon: ServerCrash,
-        tone: "http",
-      };
-    }
-    case "config":
-      return {
-        title: "Configuração incompleta",
-        hint: "Faltam campos obrigatórios. Edite a conexão e preencha todas as credenciais.",
-        icon: Settings2,
-        tone: "config",
-      };
-    case "unknown":
-    case null:
-    case undefined:
-    default:
-      return {
-        title: "Falha na conexão",
-        hint: fallbackMessage?.trim() || "Não foi possível identificar a causa. Veja os detalhes do teste.",
-        icon: AlertTriangle,
-        tone: "unknown",
-      };
-  }
+  if (kind === "timeout") return timeoutCopy(timeoutMs);
+  if (kind === "http") return httpCopy(status);
+  if (kind && STATIC_ERROR_COPY[kind]) return STATIC_ERROR_COPY[kind];
+  return unknownCopy(fallbackMessage);
 }
 
 /**

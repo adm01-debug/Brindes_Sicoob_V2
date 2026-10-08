@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,10 +8,27 @@ import { QuickReplySelector } from "./QuickReplySelector";
 interface Props {
   orderId: string;
   onSend: (notes: string) => Promise<void>;
-  trigger?: React.ReactNode;
+  trigger?: ReactNode;
 }
 
-export function RevisionRequest({ orderId, onSend, trigger }: Props) {
+function RevisionForm({ notes, sending, onNotesChange, onCancel, onSend }: {
+  notes: string;
+  sending: boolean;
+  onNotesChange: (notes: string) => void;
+  onCancel: () => void;
+  onSend: () => void;
+}) {
+  return <><div className="space-y-4 py-4">
+    <Textarea placeholder="Descreva as alterações necessárias..." className="min-h-[120px]"
+      value={notes} onChange={(event) => onNotesChange(event.target.value)} />
+    <QuickReplySelector onSelect={(reply) => onNotesChange(notes ? `${notes} ${reply}` : reply)} />
+  </div><DialogFooter>
+    <Button variant="outline" onClick={onCancel}>Cancelar</Button>
+    <Button onClick={onSend} disabled={sending || !notes.trim()}>{sending ? "Enviando..." : "Enviar Solicitação"}</Button>
+  </DialogFooter></>;
+}
+
+export function RevisionRequest({ onSend, trigger }: Props) {
   const [notes, setNotes] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -45,23 +62,8 @@ export function RevisionRequest({ orderId, onSend, trigger }: Props) {
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4 py-4">
-          <Textarea 
-            placeholder="Descreva as alterações necessárias..." 
-            className="min-h-[120px]"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-          
-          <QuickReplySelector onSelect={(reply) => setNotes(prev => prev ? `${prev} ${reply}` : reply)} />
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setIsOpen(false)}>Cancelar</Button>
-          <Button onClick={handleSend} disabled={isSending || !notes.trim()}>
-            {isSending ? "Enviando..." : "Enviar Solicitação"}
-          </Button>
-        </DialogFooter>
+        <RevisionForm notes={notes} sending={isSending} onNotesChange={setNotes}
+          onCancel={() => setIsOpen(false)} onSend={handleSend} />
       </DialogContent>
     </Dialog>
   );

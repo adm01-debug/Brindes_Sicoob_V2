@@ -145,6 +145,12 @@ function SearchResult({
   );
 }
 
+function CategoryTreeContent({ searchQuery, searchResults, tree, selectedCategoryId, expandedIds, onToggle, onSelect }: { searchQuery: string; searchResults: CategoryTreeItem[]; tree: CategoryNode[]; selectedCategoryId?: string | null; expandedIds: Set<string>; onToggle: (id: string) => void; onSelect: (category: CategoryNode | CategoryTreeItem) => void }) {
+  if (searchQuery && searchResults.length > 0) return <div className="space-y-1"><p className="text-xs text-muted-foreground px-2 mb-2">{searchResults.length} resultado{searchResults.length !== 1 ? 's' : ''}</p>{searchResults.map((category) => <SearchResult key={category.id} category={category} isSelected={selectedCategoryId === category.id} onSelect={() => onSelect(category)} />)}</div>;
+  if (searchQuery) return <div className="text-center py-8 text-muted-foreground"><Search className="w-8 h-8 mx-auto mb-2 opacity-50" /><p className="text-sm">Nenhuma categoria encontrada</p><p className="text-xs">Tente outra busca</p></div>;
+  return <>{tree.map((node) => <TreeNode key={node.id} node={node} level={0} selectedId={selectedCategoryId ?? null} expandedIds={expandedIds} onToggle={onToggle} onSelect={onSelect} />)}</>;
+}
+
 export function CategoryTreeNavigation({
   onSelectCategory,
   selectedCategoryId,
@@ -257,10 +263,11 @@ export function CategoryTreeNavigation({
               className="pl-8 pr-8"
             />
             {searchQuery && (
-              <button aria-label="Fechar"
+              <button
+                aria-label="Fechar"
                 onClick={clearSearch}
                 className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
-               aria-label="Fechar">
+              >
                 <X className="h-4 w-4" />
               </button>
             )}
@@ -284,40 +291,7 @@ export function CategoryTreeNavigation({
       <ScrollArea style={{ maxHeight }}>
         <div className="p-2">
           {/* Resultados de busca */}
-          {searchQuery && searchResults.length > 0 ? (
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground px-2 mb-2">
-                {searchResults.length} resultado{searchResults.length !== 1 ? 's' : ''}
-              </p>
-              {searchResults.map(cat => (
-                <SearchResult
-                  key={cat.id}
-                  category={cat}
-                  isSelected={selectedCategoryId === cat.id}
-                  onSelect={() => handleSelect(cat)}
-                />
-              ))}
-            </div>
-          ) : searchQuery && searchResults.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Search className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Nenhuma categoria encontrada</p>
-              <p className="text-xs">Tente outra busca</p>
-            </div>
-          ) : (
-            /* Árvore de categorias */
-            tree.map(node => (
-              <TreeNode
-                key={node.id}
-                node={node}
-                level={0}
-                selectedId={selectedCategoryId || null}
-                expandedIds={expandedIds}
-                onToggle={handleToggle}
-                onSelect={handleSelect}
-              />
-            ))
-          )}
+          <CategoryTreeContent searchQuery={searchQuery} searchResults={searchResults} tree={tree} selectedCategoryId={selectedCategoryId} expandedIds={expandedIds} onToggle={handleToggle} onSelect={handleSelect} />
         </div>
       </ScrollArea>
     </div>

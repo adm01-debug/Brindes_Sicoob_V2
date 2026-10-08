@@ -38,39 +38,35 @@ function isRetryableError(error: unknown): boolean {
   return false;
 }
 
+const VOICE_CONNECTION_ERROR = "Não foi possível conectar ao serviço de voz. Tente novamente.";
+
+const FRIENDLY_ERROR_PATTERNS: Array<{ patterns: string[]; message: string }> = [
+  { patterns: ["microphone", "microfone", "permission"], message: "Permissão do microfone negada. Habilite o microfone nas configurações do navegador." },
+  { patterns: ["token"], message: "Não foi possível iniciar a transcrição. Tente novamente." },
+  { patterns: ["timeout"], message: "A conexão de voz demorou demais para responder. Tente novamente." },
+  { patterns: ["429", "rate limit"], message: "Muitas requisições. Aguarde alguns segundos e tente novamente." },
+  { patterns: ["402", "credits"], message: "Créditos de IA esgotados. Contate o administrador." },
+  { patterns: ["websocket", "scribe", "closed unexpectedly", "no reason provided"], message: VOICE_CONNECTION_ERROR },
+  { patterns: ["network", "fetch"], message: "Erro de conexão. Verifique sua internet e tente novamente." },
+  { patterns: ["tts", "audio"], message: "Não foi possível reproduzir o áudio. O comando foi executado silenciosamente." },
+];
+
 /**
  * Translates technical error messages to user-friendly Portuguese messages.
  */
 export function friendlyErrorMessage(error: unknown): string {
   if (error instanceof Event) {
-    return "Não foi possível conectar ao serviço de voz. Tente novamente.";
+    return VOICE_CONNECTION_ERROR;
   }
 
   if (!(error instanceof Error)) return "Erro desconhecido. Tente novamente.";
 
   const rawMessage = error.message?.trim();
   if (!rawMessage) {
-    return "Não foi possível conectar ao serviço de voz. Tente novamente.";
+    return VOICE_CONNECTION_ERROR;
   }
 
   const msg = rawMessage.toLowerCase();
 
-  if (msg.includes("microphone") || msg.includes("microfone") || msg.includes("permission"))
-    return "Permissão do microfone negada. Habilite o microfone nas configurações do navegador.";
-  if (msg.includes("token"))
-    return "Não foi possível iniciar a transcrição. Tente novamente.";
-  if (msg.includes("timeout"))
-    return "A conexão de voz demorou demais para responder. Tente novamente.";
-  if (msg.includes("429") || msg.includes("rate limit"))
-    return "Muitas requisições. Aguarde alguns segundos e tente novamente.";
-  if (msg.includes("402") || msg.includes("credits"))
-    return "Créditos de IA esgotados. Contate o administrador.";
-  if (msg.includes("websocket") || msg.includes("scribe") || msg.includes("closed unexpectedly") || msg.includes("no reason provided"))
-    return "Não foi possível conectar ao serviço de voz. Tente novamente.";
-  if (msg.includes("network") || msg.includes("fetch"))
-    return "Erro de conexão. Verifique sua internet e tente novamente.";
-  if (msg.includes("tts") || msg.includes("audio"))
-    return "Não foi possível reproduzir o áudio. O comando foi executado silenciosamente.";
-
-  return rawMessage || "Erro inesperado. Tente novamente.";
+  return FRIENDLY_ERROR_PATTERNS.find(entry => entry.patterns.some(pattern => msg.includes(pattern)))?.message ?? rawMessage;
 }

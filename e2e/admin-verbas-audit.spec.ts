@@ -1,18 +1,18 @@
-import { test, expect } from "@playwright/test";
+import { gotoAndSettle, waitForRouteIdle } from './helpers/nav';
+import { test, expect } from '@playwright/test';
 
-test.describe("AdminVerbasPage E2E", () => {
+test.describe('AdminVerbasPage E2E', () => {
   test.beforeEach(async ({ page }) => {
-    // No ambiente Lovable, o auth é injetado. Navegamos direto para a página.
-    await page.goto("/admin/verbas");
-    await page.waitForLoadState("networkidle");
+    await gotoAndSettle(page, '/admin/verbas');
+    await waitForRouteIdle(page);
   });
 
-  test("should navigate to changes history tab and see content", async ({ page }) => {
+  test('should navigate to changes history tab and see content', async ({ page }) => {
     // 1. Garantir que a página carregou o título principal
-    await expect(page.locator("h1")).toContainText(/Gestão de Verbas/);
+    await expect(page.locator('h1')).toContainText(/Gestão de Verbas/);
 
     // 2. Localizar e clicar na aba de Histórico de Alterações
-    const auditTab = page.getByRole("tab", { name: /Histórico de Alterações/i });
+    const auditTab = page.getByRole('tab', { name: /Histórico de Alterações/i });
     await expect(auditTab).toBeVisible();
     await auditTab.click();
 
@@ -23,8 +23,8 @@ test.describe("AdminVerbasPage E2E", () => {
     // 4. Verificar se a descrição específica da aba está presente
     const description = page.getByText(/Últimas 50 ações realizadas/i);
     await expect(description).toBeVisible();
-    
+
     // 5. Garantir que a tabela foi montada
-    await expect(page.locator("table")).toBeVisible();
+    await expect(page.locator('table')).toBeVisible();
   });
 });

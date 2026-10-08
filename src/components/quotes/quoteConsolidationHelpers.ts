@@ -38,6 +38,32 @@ function sourceKey(quote: Quote, index: number): string {
   return quote.id ?? quote.quote_number ?? `quote-index:${index}`;
 }
 
+function addQuoteItem(grouped: Map<string, ConsolidatedQuoteItem>, quote: Quote, quoteIndex: number, item: QuoteItem): void {
+  const key = getConsolidationItemKey(item);
+  const quantity = item.quantity || 0;
+  const totalValue = quantity * (item.unit_price || 0);
+  const currentSourceKey = sourceKey(quote, quoteIndex);
+  const existing = grouped.get(key);
+  if (!existing) {
+    grouped.set(key, {
+      key, product_name: item.product_name, product_sku: item.product_sku, total_quantity: quantity,
+      average_price: item.unit_price || 0, total_value: totalValue,
+      sources: [{ key: currentSourceKey, number: quote.quote_number, client: quote.client_name || quote.client_company, quantity, total_value: totalValue }],
+    });
+    return;
+  }
+  existing.total_quantity += quantity;
+  existing.total_value += totalValue;
+  existing.average_price = existing.total_quantity ? existing.total_value / existing.total_quantity : 0;
+  const existingSource = existing.sources.find((source) => source.key === currentSourceKey);
+  if (existingSource) {
+    existingSource.quantity += quantity;
+    existingSource.total_value += totalValue;
+    return;
+  }
+  existing.sources.push({ key: currentSourceKey, number: quote.quote_number, client: quote.client_name || quote.client_company, quantity, total_value: totalValue });
+}
+
 export function consolidateQuoteItems(
   quotes: Quote[],
   searchTerm: string,
@@ -48,47 +74,7 @@ export function consolidateQuoteItems(
   quotes.forEach((quote, quoteIndex) => {
     quote.items?.forEach((item) => {
       if (!matchesSearch(item, searchTerm)) return;
-      const key = getConsolidationItemKey(item);
-      const quantity = item.quantity || 0;
-      const totalValue = quantity * (item.unit_price || 0);
-      const existing = grouped.get(key);
-      const currentSourceKey = sourceKey(quote, quoteIndex);
-
-      if (existing) {
-        existing.total_quantity += quantity;
-        existing.total_value += totalValue;
-        existing.average_price = existing.total_quantity ? existing.total_value / existing.total_quantity : 0;
-        const existingSource = existing.sources.find((source) => source.key === currentSourceKey);
-        if (existingSource) {
-          existingSource.quantity += quantity;
-          existingSource.total_value += totalValue;
-        } else {
-          existing.sources.push({
-            key: currentSourceKey,
-            number: quote.quote_number,
-            client: quote.client_name || quote.client_company,
-            quantity,
-            total_value: totalValue,
-          });
-        }
-        return;
-      }
-
-      grouped.set(key, {
-        key,
-        product_name: item.product_name,
-        product_sku: item.product_sku,
-        total_quantity: quantity,
-        average_price: item.unit_price || 0,
-        total_value: totalValue,
-        sources: [{
-          key: currentSourceKey,
-          number: quote.quote_number,
-          client: quote.client_name || quote.client_company,
-          quantity,
-          total_value: totalValue,
-        }],
-      });
+      addQuoteItem(grouped, quote, quoteIndex, item);
     });
   });
 

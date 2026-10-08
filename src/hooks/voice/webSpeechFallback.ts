@@ -55,8 +55,9 @@ export function startWebSpeech(callbacks: WebSpeechCallbacks): boolean {
       let finalText = "";
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        const result = event.results[i]!;
-        const transcript = result[0]!.transcript;
+        const result = event.results[i];
+        const transcript = result?.[0]?.transcript;
+        if (!result || !transcript) continue;
 
         if (result.isFinal) {
           finalText += transcript;

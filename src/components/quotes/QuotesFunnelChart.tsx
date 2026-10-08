@@ -11,6 +11,21 @@ interface QuotesFunnelChartProps {
   data: QuoteFunnelData;
 }
 
+type FunnelStage = QuoteFunnelData["stages"][number];
+
+function FunnelStageRow({ stage, index, max }: { stage: FunnelStage; index: number; max: number }) {
+  const percent = (stage.count / max) * 100;
+  const rate = stage.rateFromPrev ?? 0;
+  const rateColor = rate >= 50 ? "text-success" : rate >= 20 ? "text-warning" : "text-destructive";
+  return <div className="space-y-0.5"><div className="flex items-center justify-between text-[11px]">
+    <span className="font-medium text-foreground">{stage.label}</span><div className="flex items-center gap-2">
+      <span className="font-bold text-foreground tabular-nums">{stage.count}</span>
+      {index > 0 && stage.rateFromPrev !== null && <span className={`flex items-center gap-0.5 tabular-nums ${rateColor}`}>
+        {stage.rateFromPrev < 50 && <TrendingDown className="h-2.5 w-2.5" />}{stage.rateFromPrev.toFixed(0)}%</span>}
+    </div></div><div className="h-2 rounded-full bg-muted overflow-hidden"><div
+      className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all" style={{ width: `${percent}%` }} /></div></div>;
+}
+
 export function QuotesFunnelChart({ data }: QuotesFunnelChartProps) {
   const { stages, avgCycleDays } = data;
   const max = Math.max(1, ...stages.map((s) => s.count));
@@ -38,39 +53,7 @@ export function QuotesFunnelChart({ data }: QuotesFunnelChartProps) {
           )}
         </div>
         <div className="space-y-1.5">
-          {stages.map((stage, idx) => {
-            const pct = (stage.count / max) * 100;
-            return (
-              <div key={stage.id} className="space-y-0.5">
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="font-medium text-foreground">{stage.label}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-foreground tabular-nums">{stage.count}</span>
-                    {idx > 0 && stage.rateFromPrev !== null && (
-                      <span
-                        className={`flex items-center gap-0.5 tabular-nums ${
-                          stage.rateFromPrev >= 50
-                            ? "text-success"
-                            : stage.rateFromPrev >= 20
-                            ? "text-warning"
-                            : "text-destructive"
-                        }`}
-                      >
-                        {stage.rateFromPrev < 50 && <TrendingDown className="h-2.5 w-2.5" />}
-                        {stage.rateFromPrev.toFixed(0)}%
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all"
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-              </div>
-            );
-          })}
+          {stages.map((stage, index) => <FunnelStageRow key={stage.id} stage={stage} index={index} max={max} />)}
         </div>
       </CardContent>
     </Card>

@@ -19,13 +19,13 @@
  *     localStorage — e o reload deve reidratar dele sem network.
  *  4. SEM ERROS DE API: nenhuma request observada pode ter status >= 400.
  */
-import { test, expect, requireAuth } from "../fixtures/test-base";
-import { gotoAndSettle } from "../helpers/nav";
-import { installFavoritesCleanup } from "../helpers/favorites";
-import { Sel } from "../fixtures/selectors";
-import type { Locator, Page, Request, Route } from "@playwright/test";
+import { test, expect, requireAuth } from '../fixtures/test-base';
+import { gotoAndSettle } from '../helpers/nav';
+import { installFavoritesCleanup, setCatalogFavorite } from '../helpers/favorites';
+import { Sel } from '../fixtures/selectors';
+import type { Page, Request, Route } from '@playwright/test';
 
-const STORAGE_KEY = "product-favorites";
+const STORAGE_KEY = 'product-favorites';
 
 interface FavoriteItem {
   productId: string;
@@ -55,23 +55,16 @@ async function readStorage(page: Page): Promise<FavoriteItem[]> {
 }
 
 async function writeStorage(page: Page, items: FavoriteItem[]): Promise<void> {
-  await page.evaluate(
-    ({ key, value }) => localStorage.setItem(key, JSON.stringify(value)),
-    { key: STORAGE_KEY, value: items },
-  );
+  await page.evaluate(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), {
+    key: STORAGE_KEY,
+    value: items,
+  });
 }
 
 async function readFavoritesCount(page: Page): Promise<number> {
   const loc = page.locator(Sel.favorites.countItems).first();
-  await loc.waitFor({ state: "visible", timeout: 10_000 });
+  await loc.waitFor({ state: 'visible', timeout: 10_000 });
   return Number.parseInt((await loc.innerText()).trim(), 10) || 0;
-}
-
-async function isFavorited(button: Locator): Promise<boolean> {
-  const pressed = await button.getAttribute("aria-pressed");
-  if (pressed === "true") return true;
-  const html = await button.innerHTML();
-  return /fill-destructive|fill-current/.test(html);
 }
 
 /**
@@ -141,38 +134,26 @@ function filterByMethod(captured: CapturedRequest[], method: string): CapturedRe
   return captured.filter((c) => c.method.toUpperCase() === method.toUpperCase());
 }
 
-test.describe("Fluxo: interceptação API favorite_items + validação pós-reload", () => {
+test.describe('Fluxo: interceptação API favorite_items + validação pós-reload', () => {
   test.beforeEach(() => requireAuth());
   installFavoritesCleanup(test);
 
-  test("intercepta add/remove/reload de favoritos e valida echo dos dados", async ({
-    page,
-  }) => {
+  test('intercepta add/remove/reload de favoritos e valida echo dos dados', async ({ page }) => {
     // 0. Instala espião ANTES de qualquer navegação que toque a API
     const spy = await installFavoritesApiSpy(page);
 
     try {
       // 0.1. Baseline em /favoritos
-      await gotoAndSettle(page, "/favoritos");
+      await gotoAndSettle(page, '/favoritos');
       const original = await readStorage(page);
 
       // 1. Favorita o 1º card (captura tudo que tocar a API durante a ação)
       const apiCallsBeforeAdd = spy.captured.length;
-      await gotoAndSettle(page, "/produtos");
+      await gotoAndSettle(page, '/produtos');
       const card = page.locator(Sel.product.card).first();
-      await card.waitFor({ state: "visible", timeout: 15_000 });
-      const favBtn = card.locator(Sel.product.favorite).first();
-      await favBtn.waitFor({ state: "visible", timeout: 10_000 });
-
-      if (await isFavorited(favBtn)) {
-        await favBtn.click();
-        await expect.poll(() => isFavorited(favBtn), { timeout: 8_000 }).toBe(false);
-        await expect
-          .poll(async () => (await readStorage(page)).length, { timeout: 8_000 })
-          .toBe(original.length);
-      }
-      await favBtn.click();
-      await expect.poll(() => isFavorited(favBtn), { timeout: 8_000 }).toBe(true);
+      await card.waitFor({ state: 'visible', timeout: 15_000 });
+      await setCatalogFavorite(page, card, false);
+      await setCatalogFavorite(page, card, true);
       await expect
         .poll(async () => (await readStorage(page)).length, { timeout: 8_000 })
         .toBe(original.length + 1);
@@ -180,13 +161,13 @@ test.describe("Fluxo: interceptação API favorite_items + validação pós-relo
       const afterAdd = await readStorage(page);
       const baselineIds = new Set(original.map((f) => f.productId));
       const addedId = afterAdd.find((f) => !baselineIds.has(f.productId))?.productId;
-      expect(addedId, "productId recém-adicionado não pôde ser identificado").toBeTruthy();
+      expect(addedId, 'productId recém-adicionado não pôde ser identificado').toBeTruthy();
 
       const addCalls = spy.captured.slice(apiCallsBeforeAdd);
 
       // 2. /favoritos: pode disparar SELECTs de favorite_lists/items para popular UI
       const apiCallsBeforeNav = spy.captured.length;
-      await gotoAndSettle(page, "/favoritos");
+      await gotoAndSettle(page, '/favoritos');
       await expect
         .poll(() => readFavoritesCount(page), { timeout: 10_000 })
         .toBe(original.length + 1);
@@ -195,12 +176,9 @@ test.describe("Fluxo: interceptação API favorite_items + validação pós-relo
       // 3. Remove o item recém-adicionado via card alvo
       const apiCallsBeforeRemove = spy.captured.length;
       const targetCard = page.locator(`[data-product-id="${addedId}"]`).first();
-      await targetCard.waitFor({ state: "visible", timeout: 10_000 });
-      const removeBtn = targetCard
-        .locator(Sel.favorites.remove)
-        .or(targetCard.locator(Sel.product.favorite))
-        .first();
-      await removeBtn.waitFor({ state: "visible", timeout: 10_000 });
+      await targetCard.waitFor({ state: 'visible', timeout: 10_000 });
+      const removeBtn = targetCard.locator(Sel.favorites.remove).first();
+      await removeBtn.waitFor({ state: 'visible', timeout: 10_000 });
       await removeBtn.click();
       await expect
         .poll(async () => (await readStorage(page)).length, { timeout: 8_000 })
@@ -208,20 +186,16 @@ test.describe("Fluxo: interceptação API favorite_items + validação pós-relo
       const removeCalls = spy.captured.slice(apiCallsBeforeRemove);
 
       // 4. Re-adiciona (para ter dado para validar pós-reload)
-      await gotoAndSettle(page, "/produtos");
+      await gotoAndSettle(page, '/produtos');
       const card2 = page.locator(Sel.product.card).first();
-      await card2.waitFor({ state: "visible", timeout: 15_000 });
-      const favBtn2 = card2.locator(Sel.product.favorite).first();
-      if (!(await isFavorited(favBtn2))) {
-        await favBtn2.click();
-      }
-      await expect.poll(() => isFavorited(favBtn2), { timeout: 8_000 }).toBe(true);
+      await card2.waitFor({ state: 'visible', timeout: 15_000 });
+      await setCatalogFavorite(page, card2, true);
       await expect
         .poll(async () => (await readStorage(page)).length, { timeout: 8_000 })
         .toBe(original.length + 1);
 
       // 5. Snapshot pré-reload em /favoritos
-      await gotoAndSettle(page, "/favoritos");
+      await gotoAndSettle(page, '/favoritos');
       await expect
         .poll(() => readFavoritesCount(page), { timeout: 10_000 })
         .toBe(original.length + 1);
@@ -230,17 +204,17 @@ test.describe("Fluxo: interceptação API favorite_items + validação pós-relo
 
       // 6. Reload com captura
       const apiCallsBeforeReload = spy.captured.length;
-      await page.reload({ waitUntil: "load" });
+      await page.reload({ waitUntil: 'load' });
       // Sinal SSOT por SELETOR (substitui networkidle — flaky com polling/realtime/spy)
       await page
         .locator(Sel.favorites.title)
         .first()
-        .waitFor({ state: "visible", timeout: 10_000 });
+        .waitFor({ state: 'visible', timeout: 10_000 });
 
       // 6.1. Header — contagem (countItems) reidratada
       await expect
         .poll(() => readFavoritesCount(page), {
-          message: "header countItems deveria reidratar para original.length + 1 após reload",
+          message: 'header countItems deveria reidratar para original.length + 1 após reload',
           timeout: 10_000,
         })
         .toBe(original.length + 1);
@@ -248,29 +222,29 @@ test.describe("Fluxo: interceptação API favorite_items + validação pós-relo
       // 6.2. Header — ícone visível e badge `count` (se exibido) coerente
       const headerIcon = page.locator(Sel.favorites.icon).first();
       if (await headerIcon.count()) {
-        await expect(headerIcon, "ícone de favoritos no header deveria estar visível").toBeVisible();
+        await expect(
+          headerIcon,
+          'ícone de favoritos no header deveria estar visível',
+        ).toBeVisible();
       }
       const headerCount = page.locator(Sel.favorites.count).first();
       if (await headerCount.count()) {
         await expect
-          .poll(
-            async () => Number.parseInt((await headerCount.innerText()).trim(), 10) || 0,
-            {
-              message: "badge `favorites-count` no header deveria refletir o total pós-reload",
-              timeout: 8_000,
-            },
-          )
+          .poll(async () => Number.parseInt((await headerCount.innerText()).trim(), 10) || 0, {
+            message: 'badge `favorites-count` no header deveria refletir o total pós-reload',
+            timeout: 8_000,
+          })
           .toBe(original.length + 1);
       }
 
       // 6.3. Lista /favoritos — container e cards renderizados
       await expect(
         page.locator(Sel.favorites.list).first(),
-        "container `favorites-list` deveria estar visível pós-reload",
+        'container `favorites-list` deveria estar visível pós-reload',
       ).toBeVisible({ timeout: 10_000 });
       await expect
         .poll(() => page.locator(Sel.favorites.item).count(), {
-          message: "qtd. de cards `favorite-item` deveria igualar storage pós-reload",
+          message: 'qtd. de cards `favorite-item` deveria igualar storage pós-reload',
           timeout: 10_000,
         })
         .toBe(original.length + 1);
@@ -301,12 +275,12 @@ test.describe("Fluxo: interceptação API favorite_items + validação pós-relo
       const storageAfterReload = await readStorage(page);
       expect(
         JSON.stringify(storageAfterReload),
-        "storage foi mutado durante o reload (esperado: idêntico)",
+        'storage foi mutado durante o reload (esperado: idêntico)',
       ).toBe(storageBeforeReloadJson);
 
       // Se houver GETs de favorite_items pós-reload (fluxo remoto), o payload
       // retornado deve incluir o productId atualmente favoritado.
-      const reloadGets = filterByMethod(reloadCalls, "GET").filter((c) =>
+      const reloadGets = filterByMethod(reloadCalls, 'GET').filter((c) =>
         /favorite_items/.test(c.url),
       );
       for (const getCall of reloadGets) {
@@ -314,7 +288,7 @@ test.describe("Fluxo: interceptação API favorite_items + validação pós-relo
         if (Array.isArray(body)) {
           const productIds = body
             .map((row) => (row as { product_id?: string }).product_id)
-            .filter((v): v is string => typeof v === "string");
+            .filter((v): v is string => typeof v === 'string');
           // Se o usuário estiver em uma lista remota e o productId estiver lá,
           // exigimos que apareça. Caso contrário (lista vazia / outro contexto),
           // não bloqueia — apenas registra.
@@ -332,17 +306,21 @@ test.describe("Fluxo: interceptação API favorite_items + validação pós-relo
       //   - Caso contrário → fluxo LEGACY (puro localStorage). Prova negativa:
       //     o storage é o ÚNICO veículo, e o reload reidratou dele.
       const isRemoteFlow =
-        filterByMethod(removeCalls, "DELETE").some((c) => /favorite_items/.test(c.url)) ||
-        filterByMethod(addCalls, "POST").some((c) => /favorite_items/.test(c.url));
+        filterByMethod(removeCalls, 'DELETE').some((c) => /favorite_items/.test(c.url)) ||
+        filterByMethod(addCalls, 'POST').some((c) => /favorite_items/.test(c.url));
 
       if (isRemoteFlow) {
         // C3a. Remote: DELETE deveria ter sido 2xx (PostgREST → 204)
-        const deletes = filterByMethod(removeCalls, "DELETE").filter((c) =>
+        const deletes = filterByMethod(removeCalls, 'DELETE').filter((c) =>
           /favorite_items/.test(c.url),
         );
-        expect(deletes.length, "fluxo remoto deveria emitir DELETE favorite_items").toBeGreaterThan(0);
+        expect(deletes.length, 'fluxo remoto deveria emitir DELETE favorite_items').toBeGreaterThan(
+          0,
+        );
         for (const d of deletes) {
-          expect(d.status, `DELETE favorite_items deveria ser 2xx (got ${d.status})`).toBeLessThan(300);
+          expect(d.status, `DELETE favorite_items deveria ser 2xx (got ${d.status})`).toBeLessThan(
+            300,
+          );
           expect(d.status).toBeGreaterThanOrEqual(200);
         }
       } else {
@@ -350,11 +328,11 @@ test.describe("Fluxo: interceptação API favorite_items + validação pós-relo
         const writes = allCalls.filter(
           (c) =>
             /favorite_items/.test(c.url) &&
-            ["POST", "DELETE", "PATCH", "PUT"].includes(c.method.toUpperCase()),
+            ['POST', 'DELETE', 'PATCH', 'PUT'].includes(c.method.toUpperCase()),
         );
         expect(
           writes,
-          "fluxo legacy não deveria emitir writes para favorite_items — " +
+          'fluxo legacy não deveria emitir writes para favorite_items — ' +
             `got: ${JSON.stringify(writes.map((w) => ({ method: w.method, url: w.url })))}`,
         ).toEqual([]);
         // E o reload reidrata exclusivamente do storage local
@@ -362,9 +340,8 @@ test.describe("Fluxo: interceptação API favorite_items + validação pós-relo
       }
 
       // C4. DIAGNÓSTICO — log estruturado p/ debug futuro (não falha)
-      // eslint-disable-next-line no-console
       console.log(
-        `[favorites-api-spy] flow=${isRemoteFlow ? "remote" : "legacy"} ` +
+        `[favorites-api-spy] flow=${isRemoteFlow ? 'remote' : 'legacy'} ` +
           `total=${allCalls.length} add=${addCalls.length} nav=${navCalls.length} ` +
           `remove=${removeCalls.length} reload=${reloadCalls.length}`,
       );

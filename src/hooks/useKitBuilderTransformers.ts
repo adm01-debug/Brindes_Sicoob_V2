@@ -28,34 +28,37 @@ function resolveProductMaterial(product: ExternalProductForKit): string | undefi
   return undefined;
 }
 
+function productDimensions(product: ExternalProductForKit) {
+  const width = mmToCm(product.width_mm);
+  const height = mmToCm(product.height_mm);
+  const depth = mmToCm(product.length_mm);
+  if (width && height && depth) return { width, height, depth };
+  return extractProductDimensions(product);
+}
+
+function hasPositiveDimensions(
+  dimensions: { width: number; height: number; depth: number },
+): boolean {
+  return dimensions.width > 0 && dimensions.height > 0 && dimensions.depth > 0;
+}
+
+function materialMaxWeight(material: string): number | undefined {
+  if (material.includes('micro') || material.includes('papelão')) return 2000;
+  if (material.includes('kraft') || material.includes('cartão')) return 3000;
+  if (material.includes('madeira') || material.includes('mdf')) return 10000;
+  if (material.includes('metal') || material.includes('lata')) return 15000;
+  return undefined;
+}
+
 export function transformToKitBox(product: ExternalProductForKit): KitBox | null {
-  let dimensions: { width: number; height: number; depth: number } | null = null;
-
-  const wMm = mmToCm(product.width_mm);
-  const hMm = mmToCm(product.height_mm);
-  const lMm = mmToCm(product.length_mm);
-  if (wMm && hMm && lMm) {
-    dimensions = { width: wMm, height: hMm, depth: lMm };
-  }
-
-  if (!dimensions) {
-    dimensions = extractProductDimensions(product);
-  }
-
+  const dimensions = productDimensions(product);
   if (!dimensions) return null;
-
-  // Guard against zero dimensions
-  if (dimensions.width <= 0 || dimensions.height <= 0 || dimensions.depth <= 0) return null;
+  if (!hasPositiveDimensions(dimensions)) return null;
 
   const volume = calculateVolume(dimensions.width, dimensions.height, dimensions.depth);
 
   // Estimate max weight based on material
-  let maxWeight: number | undefined;
   const mat = resolveProductMaterial(product)?.toLowerCase() || '';
-  if (mat.includes('micro') || mat.includes('papelão')) maxWeight = 2000;
-  else if (mat.includes('kraft') || mat.includes('cartão')) maxWeight = 3000;
-  else if (mat.includes('madeira') || mat.includes('mdf')) maxWeight = 10000;
-  else if (mat.includes('metal') || mat.includes('lata')) maxWeight = 15000;
 
   return {
     id: product.id,
@@ -69,7 +72,7 @@ export function transformToKitBox(product: ExternalProductForKit): KitBox | null
     internalVolume: volume,
     material: resolveProductMaterial(product),
     weight: product.weight_g ?? undefined,
-    maxWeight,
+    maxWeight: materialMaxWeight(mat),
   };
 }
 

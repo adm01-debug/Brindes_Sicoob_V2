@@ -11,6 +11,96 @@
  */
 import type { PrintAreaWithTechniques, GroupedPrintArea } from "@/types/gravacao";
 
+type GroupedTechnique = GroupedPrintArea["locations"][number]["techniques"][number];
+type LocationTechniqueMap = Map<string, GroupedPrintArea["locations"][number]["techniques"]>;
+
+function valueOr<T>(value: T | null | undefined | false | "" | 0, fallback: T): T {
+  return value ? value as T : fallback;
+}
+
+function techniqueFromArea(
+  area: PrintAreaWithTechniques,
+  technique: PrintAreaWithTechniques["techniques"][number],
+): GroupedTechnique {
+  const hasArea = Boolean(area.max_width) && Boolean(area.max_height);
+  return {
+    id: area.area_id,
+    areaName: area.area_name,
+    techniqueCode: technique.codigo,
+    maxWidth: area.max_width ?? null,
+    maxHeight: area.max_height ?? null,
+    maxColors: null,
+    areaCm2: hasArea ? Math.round(area.max_width * area.max_height * 100) / 100 : null,
+    isCurved: area.is_curved,
+    isPrimary: area.is_primary,
+    servCode: technique.codigo,
+  };
+}
+
+function getLocationMap(
+  componentMap: Map<string, LocationTechniqueMap>,
+  componentName: string,
+): LocationTechniqueMap {
+  const existing = componentMap.get(componentName);
+  if (existing) return existing;
+  const created = new Map<string, GroupedPrintArea["locations"][number]["techniques"]>();
+  componentMap.set(componentName, created);
+  return created;
+}
+
+function getTechniques(locationMap: LocationTechniqueMap, locationName: string) {
+  const existing = locationMap.get(locationName);
+  if (existing) return existing;
+  const created: GroupedPrintArea["locations"][number]["techniques"] = [];
+  locationMap.set(locationName, created);
+  return created;
+}
+
+function addAreaToComponentMap(
+  componentMap: Map<string, LocationTechniqueMap>,
+  area: PrintAreaWithTechniques,
+): void {
+  const componentName = valueOr(area.component_name, "Produto");
+  const locationName = valueOr(area.location_name, valueOr(area.area_name, "Padrão"));
+  const techniques = getTechniques(getLocationMap(componentMap, componentName), locationName);
+  for (const technique of area.techniques) {
+    const duplicate = techniques.some((candidate) => (
+      candidate.techniqueCode === technique.codigo && candidate.id === area.area_id
+    ));
+    if (!duplicate) techniques.push(techniqueFromArea(area, technique));
+  }
+}
+
+function primaryLocationOrder(
+  left: GroupedPrintArea["locations"][number],
+  right: GroupedPrintArea["locations"][number],
+): number {
+  const leftPrimary = left.techniques.some((technique) => technique.isPrimary);
+  const rightPrimary = right.techniques.some((technique) => technique.isPrimary);
+  if (leftPrimary === rightPrimary) return 0;
+  return leftPrimary ? -1 : 1;
+}
+
+function componentOrder(left: GroupedPrintArea, right: GroupedPrintArea): number {
+  if (left.componentName === "Produto") return -1;
+  if (right.componentName === "Produto") return 1;
+  return left.componentName.localeCompare(right.componentName);
+}
+
+function groupedComponent(componentName: string, locationsMap: LocationTechniqueMap): GroupedPrintArea {
+  const locations = Array.from(locationsMap, ([locationName, techniques]) => ({
+    locationName,
+    locationCode: locationName.toLowerCase().replace(/\s+/g, "-"),
+    techniques,
+  }));
+  locations.sort(primaryLocationOrder);
+  return {
+    componentName,
+    componentCode: componentName.toLowerCase().replace(/\s+/g, "-"),
+    locations,
+  };
+}
+
 // ============================================
 // AGRUPAMENTO PRINCIPAL
 // ============================================
@@ -24,87 +114,10 @@ export function groupPrintAreasByComponent(
 ): GroupedPrintArea[] {
   if (!areas.length) return [];
 
-  const componentMap = new Map<string, Map<string, GroupedPrintArea["locations"][number]["techniques"]>>();
-
-  for (const area of areas) {
-    const compName = area.component_name || "Produto";
-    const locName = area.location_name || area.area_name || "Padrão";
-
-    if (!componentMap.has(compName)) {
-      componentMap.set(compName, new Map());
-    }
-    const locMap = componentMap.get(compName)!;
-
-    if (!locMap.has(locName)) {
-      locMap.set(locName, []);
-    }
-
-    const techniques = locMap.get(locName)!;
-
-    for (const tech of area.techniques) {
-      const code = tech.codigo;
-
-      // Deduplicação: evita técnica duplicada na mesma localização+área
-      const isDuplicate = techniques.some(
-        (t) => t.techniqueCode === code && t.id === area.area_id
-      );
-      if (isDuplicate) continue;
-
-      techniques.push({
-        id: area.area_id,
-        areaName: area.area_name,
-        techniqueCode: code,
-        maxWidth: area.max_width ?? null,
-        maxHeight: area.max_height ?? null,
-        maxColors: null, // TecnicaSimples não carrega max_colors; preenchido downstream
-        areaCm2:
-          area.max_width && area.max_height
-            ? Math.round(area.max_width * area.max_height * 100) / 100
-            : null,
-        isCurved: area.is_curved,
-        isPrimary: area.is_primary,
-        servCode: code,
-      });
-    }
-  }
-
-  const grouped: GroupedPrintArea[] = [];
-
-  for (const [compName, locMap] of componentMap) {
-    const locations: GroupedPrintArea["locations"] = [];
-
-    for (const [locName, techniques] of locMap) {
-      locations.push({
-        locationName: locName,
-        locationCode: locName.toLowerCase().replace(/\s+/g, "-"),
-        techniques,
-      });
-    }
-
-    // Sort: primary areas first
-    locations.sort((a, b) => {
-      const aPrimary = a.techniques.some((t) => t.isPrimary);
-      const bPrimary = b.techniques.some((t) => t.isPrimary);
-      if (aPrimary && !bPrimary) return -1;
-      if (!aPrimary && bPrimary) return 1;
-      return 0;
-    });
-
-    grouped.push({
-      componentName: compName,
-      componentCode: compName.toLowerCase().replace(/\s+/g, "-"),
-      locations,
-    });
-  }
-
-  // Sort: "Produto" first, then alphabetical
-  grouped.sort((a, b) => {
-    if (a.componentName === "Produto") return -1;
-    if (b.componentName === "Produto") return 1;
-    return a.componentName.localeCompare(b.componentName);
-  });
-
-  return grouped;
+  const componentMap = new Map<string, LocationTechniqueMap>();
+  for (const area of areas) addAreaToComponentMap(componentMap, area);
+  return Array.from(componentMap, ([name, locations]) => groupedComponent(name, locations))
+    .sort(componentOrder);
 }
 
 // ============================================
@@ -252,40 +265,20 @@ export interface PrintAreaSummary {
  */
 export function summarizeGroups(groups: GroupedPrintArea[]): PrintAreaSummary {
   const uniqueTechniques = getUniqueTechniques(groups);
-  let totalTechniqueSlots = 0;
-  let totalLocations = 0;
-  let hasPrimaryArea = false;
-  let hasCurvedArea = false;
-  let maxAreaCm2: number | null = null;
-  const primaryLocations: string[] = [];
-
-  for (const g of groups) {
-    totalLocations += g.locations.length;
-    for (const loc of g.locations) {
-      totalTechniqueSlots += loc.techniques.length;
-      for (const tech of loc.techniques) {
-        if (tech.isPrimary) {
-          hasPrimaryArea = true;
-          if (!primaryLocations.includes(loc.locationName)) {
-            primaryLocations.push(loc.locationName);
-          }
-        }
-        if (tech.isCurved) hasCurvedArea = true;
-        if (tech.areaCm2 !== null) {
-          maxAreaCm2 = maxAreaCm2 === null ? tech.areaCm2 : Math.max(maxAreaCm2, tech.areaCm2);
-        }
-      }
-    }
-  }
+  const flat = flattenTechniques(groups);
+  const areas = flat.map((technique) => technique.areaCm2).filter((area): area is number => area !== null);
+  const primaryLocations = [...new Set(
+    flat.filter((technique) => technique.isPrimary).map((technique) => technique.locationName),
+  )];
 
   return {
     totalComponents: groups.length,
-    totalLocations,
-    totalTechniqueSlots,
+    totalLocations: countTotalLocations(groups),
+    totalTechniqueSlots: flat.length,
     uniqueTechniques,
-    hasPrimaryArea,
-    hasCurvedArea,
-    maxAreaCm2,
+    hasPrimaryArea: flat.some((technique) => technique.isPrimary),
+    hasCurvedArea: flat.some((technique) => technique.isCurved),
+    maxAreaCm2: areas.length ? Math.max(...areas) : null,
     primaryLocations,
   };
 }
@@ -298,18 +291,14 @@ export function findLargestArea(
 ): { componentName: string; locationName: string; areaCm2: number } | null {
   let largest: { componentName: string; locationName: string; areaCm2: number } | null = null;
 
-  for (const g of groups) {
-    for (const loc of g.locations) {
-      for (const tech of loc.techniques) {
-        if (tech.areaCm2 !== null && (largest === null || tech.areaCm2 > largest.areaCm2)) {
-          largest = {
-            componentName: g.componentName,
-            locationName: loc.locationName,
-            areaCm2: tech.areaCm2,
-          };
-        }
-      }
-    }
+  for (const technique of flattenTechniques(groups)) {
+    if (technique.areaCm2 === null) continue;
+    if (largest && technique.areaCm2 <= largest.areaCm2) continue;
+    largest = {
+      componentName: technique.componentName,
+      locationName: technique.locationName,
+      areaCm2: technique.areaCm2,
+    };
   }
 
   return largest;

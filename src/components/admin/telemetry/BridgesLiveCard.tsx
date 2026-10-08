@@ -20,6 +20,8 @@ import {
 import { shortRequestId } from '@/lib/telemetry/requestId';
 import { BridgeCallDetailDrawer } from './BridgeCallDetailDrawer';
 
+const DESTRUCTIVE_TEXT = 'text-destructive';
+
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -88,10 +90,10 @@ export function BridgesLiveCard() {
     const totalMs = samples.reduce((acc, s) => acc + s.durationMs, 0);
     const sortedDur = samples.map(s => s.durationMs).sort((a, b) => a - b);
     const p50 = sortedDur.length
-      ? sortedDur[Math.min(sortedDur.length - 1, Math.floor(0.5 * sortedDur.length))]!
+      ? (sortedDur[Math.min(sortedDur.length - 1, Math.floor(0.5 * sortedDur.length))] ?? 0)
       : 0;
     const p95 = sortedDur.length
-      ? sortedDur[Math.min(sortedDur.length - 1, Math.floor(0.95 * sortedDur.length))]!
+      ? (sortedDur[Math.min(sortedDur.length - 1, Math.floor(0.95 * sortedDur.length))] ?? 0)
       : 0;
     return {
       total,
@@ -136,7 +138,7 @@ export function BridgesLiveCard() {
             <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Erros</p>
             <p
               className={`font-display text-2xl font-bold tabular-nums ${
-                totals.errors > 0 ? 'text-destructive' : ''
+                totals.errors > 0 ? DESTRUCTIVE_TEXT : ''
               }`}
             >
               {totals.errors}
@@ -151,7 +153,7 @@ export function BridgesLiveCard() {
             <p
               className={`font-display text-2xl font-bold tabular-nums ${
                 totals.p95Ms >= 8000
-                  ? 'text-destructive'
+                  ? DESTRUCTIVE_TEXT
                   : totals.p95Ms >= 3000
                     ? 'text-warning'
                     : ''
@@ -205,7 +207,7 @@ export function BridgesLiveCard() {
                     <td className="p-2 text-right font-mono tabular-nums">{row.count}</td>
                     <td
                       className={`p-2 text-right font-mono tabular-nums ${
-                        row.errors > 0 ? 'text-destructive' : 'text-muted-foreground'
+                        row.errors > 0 ? DESTRUCTIVE_TEXT : 'text-muted-foreground'
                       }`}
                     >
                       {row.errors}
@@ -215,7 +217,7 @@ export function BridgesLiveCard() {
                     <td
                       className={`p-2 text-right font-mono text-xs tabular-nums ${
                         row.p95Ms >= 3000 ? 'text-warning' : ''
-                      } ${row.p95Ms >= 8000 ? 'text-destructive' : ''}`}
+                      } ${row.p95Ms >= 8000 ? DESTRUCTIVE_TEXT : ''}`}
                     >
                       {formatMs(row.p95Ms)}
                     </td>

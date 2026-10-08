@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import type { PromobrindProduct } from '@/lib/external-db';
 
 // Re-export extracted hooks for backwards compatibility
 export { useProductInsights } from './useProductInsights';
@@ -105,7 +106,7 @@ export function useProductRecommendations(productId?: string, productSku?: strin
         const { fetchPromobrindProducts, getProductPrice, getProductImageUrl } = await import('@/lib/external-db');
         const productsData = await fetchPromobrindProducts({ limit: 100 });
         
-        const mapProduct = (p: any, score: number, reason: string) => {
+        const mapProduct = (p: PromobrindProduct, score: number, reason: string) => {
           const imageUrl = getProductImageUrl(p);
           return {
             id: p.id,

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -30,15 +30,24 @@ import {
 import { Plus, Pencil, Trash2, Search, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+
+type CooperativaRow = Tables<"cooperativas"> & {
+  central: Pick<Tables<"sicoob_centrais">, "name"> | null;
+};
+
+type CooperativaUpdate = Pick<CooperativaRow, "id"> & TablesUpdate<"cooperativas">;
+
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : "Erro desconhecido";
 
 export const CooperativasTab = () => {
   const { isDev } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingCoop, setEditingCoop] = useState<any>(null);
-  const [centrais, setCentrais] = useState<any[]>([]);
-  const [temas, setTemas] = useState<any[]>([]);
+  const [editingCoop, setEditingCoop] = useState<CooperativaRow | null>(null);
+  const [centrais, setCentrais] = useState<Array<Pick<Tables<"sicoob_centrais">, "id" | "name">>>([]);
+  const [temas, setTemas] = useState<Array<Pick<Tables<"sicoob_temas">, "id" | "name">>>([]);
   const queryClient = useQueryClient();
 
 
@@ -50,16 +59,20 @@ export const CooperativasTab = () => {
         supabase.from("sicoob_centrais").select("id, name").order("name"),
         supabase.from("sicoob_temas").select("id, name").order("name")
       ]);
+
+      if (coopRes.error) throw coopRes.error;
+      if (centraisRes.error) throw centraisRes.error;
+      if (temasRes.error) throw temasRes.error;
       
       if (centraisRes.data) setCentrais(centraisRes.data);
       if (temasRes.data) setTemas(temasRes.data);
       
-      return coopRes.data;
+      return coopRes.data as CooperativaRow[];
     },
   });
 
   const createMutation = useMutation({
-    mutationFn: async (newCoop: any) => {
+    mutationFn: async (newCoop: TablesInsert<"cooperativas">) => {
       const { data, error } = await supabase
         .from("cooperativas")
         .insert([newCoop])
@@ -73,20 +86,17 @@ export const CooperativasTab = () => {
       toast.success("Cooperativa criada com sucesso");
       setIsCreateOpen(false);
     },
-    onError: (error: any) => {
-      toast.error(`Erro ao criar cooperativa: ${error.message}`);
+    onError: (error: unknown) => {
+      toast.error(`Erro ao criar cooperativa: ${getErrorMessage(error)}`);
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (coop: any) => {
-      const dataToSave = { ...coop };
-      delete dataToSave.id;
-      delete dataToSave.central; // Remove joined data
+    mutationFn: async ({ id, ...dataToSave }: CooperativaUpdate) => {
       const { data, error } = await supabase
         .from("cooperativas")
         .update(dataToSave)
-        .eq("id", coop.id)
+        .eq("id", id)
         .select()
         .single();
       if (error) throw error;
@@ -97,8 +107,8 @@ export const CooperativasTab = () => {
       toast.success("Cooperativa atualizada com sucesso");
       setEditingCoop(null);
     },
-    onError: (error: any) => {
-      toast.error(`Erro ao atualizar cooperativa: ${error.message}`);
+    onError: (error: unknown) => {
+      toast.error(`Erro ao atualizar cooperativa: ${getErrorMessage(error)}`);
     },
   });
 
@@ -111,8 +121,8 @@ export const CooperativasTab = () => {
       queryClient.invalidateQueries({ queryKey: ["cooperativas"] });
       toast.success("Cooperativa removida");
     },
-    onError: (error: any) => {
-      toast.error(`Erro ao remover: ${error.message}`);
+    onError: (error: unknown) => {
+      toast.error(`Erro ao remover: ${getErrorMessage(error)}`);
     },
   });
 
@@ -121,20 +131,21 @@ export const CooperativasTab = () => {
     c.codigo.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleCreate = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     createMutation.mutate({
       nome: formData.get("name") as string,
       codigo: formData.get("code") as string,
-      central_id: formData.get("central_id"),
-      sicoob_tema_id: formData.get("tema_id") === "none" ? null : formData.get("tema_id"),
+      central_id: formData.get("central_id") as string,
+      sicoob_tema_id: formData.get("tema_id") === "none" ? null : formData.get("tema_id") as string,
       alcada_superior_threshold: parseFloat(formData.get("alcada") as string || "50000"),
     });
   };
 
-  const handleUpdate = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleUpdate = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!editingCoop) return;
     const formData = new FormData(e.currentTarget);
     updateMutation.mutate({
       id: editingCoop.id,

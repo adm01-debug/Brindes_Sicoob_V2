@@ -102,3 +102,4 @@ describe('ProtectedRoute', () => {
     expect(screen.getByText('Dev Content')).toBeInTheDocument();
   });
 });
+import React from 'react';

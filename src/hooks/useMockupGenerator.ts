@@ -6,30 +6,166 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { toast } from "sonner";
-import { logger } from "@/lib/logger";
 import { needsConversion, ensureSupportedFormat } from "@/lib/image-converter";
 import { useAuth } from "@/contexts/AuthContext";
-import { useMockupDraft, MockupDraftData } from "@/hooks/useMockupDraft";
+import { useMockupDraft, type MockupDraftData } from "@/hooks/useMockupDraft";
 import { useFilteredTechniques, useProductCustomizationOptionsForMockup, type TechniqueWithLimits } from "@/hooks/useMockupTechniques";
 import { usePositionHistory } from "@/hooks/usePositionHistory";
 import { useProductsContext } from "@/contexts/ProductsContext";
 import { getMockupWizardStep } from "@/components/mockup/mockupWizardStep";
 import { useLogoColorAnalysis } from "@/hooks/useLogoColorAnalysis";
 import { showMockupSuccessToast } from "@/components/mockup/MockupSuccessToast";
-import { classifyTechnique, techniqueNeedsColorConfig, type TechniqueColorConfig } from "@/components/mockup/techniqueColorUtils";
+import {  type TechniqueColorConfig } from "@/components/mockup/techniqueColorUtils";
 import { invokeWithRetry, extractFunctionErrorMessage } from "@/lib/external-db/invoke";
 import { adaptTabelaPrecoRows } from "@/lib/personalization/adapters";
 import type { PersonalizationArea } from "@/components/mockup/MultiAreaManager";
 import type { MockupProductSelection } from "@/components/mockup/MockupProductSelector";
 import type { MockupClient } from "@/components/mockup/MockupConfigPanel";
+import type { Product } from "@/types/product-catalog";
 import {
-  type Technique, type GeneratedMockup,
+  type Technique, type GeneratedMockup, type GenerateMockupResult,
   createDefaultArea, fetchMockupHistory, saveMockupToDb,
   generateMockupApi, downloadMockupAsPdf, deleteMockupFromDb,
 } from "./mockup/mockupGenerationService";
 
 // Re-export types for consumers
 export type { Technique, GeneratedMockup };
+
+interface MockupCustomizationOption {
+  efetiva_largura_max?: number | null;
+  max_width?: number | null;
+  efetiva_altura_max?: number | null;
+  max_height?: number | null;
+  max_cores?: number | null;
+  is_curved?: boolean | null;
+}
+
+const INCOMPLETE_SELECTION_MESSAGE = "Selecione empresa, produto, técnica e faça upload de pelo menos um logo";
+
+function positiveLimit(value: number | null | undefined): number | null {
+  return value && value > 0 ? value : null;
+}
+
+function effectiveLimit(techniqueLimit: number | null, areaLimit: number | null): number | null {
+  if (techniqueLimit && areaLimit) return Math.min(techniqueLimit, areaLimit);
+  return techniqueLimit || areaLimit;
+}
+
+function clampAreaToTechnique(
+  area: PersonalizationArea,
+  maxWidth: number | null,
+  maxHeight: number | null,
+): PersonalizationArea {
+  const width = effectiveLimit(maxWidth, positiveLimit(area.maxWidthCm));
+  const height = effectiveLimit(maxHeight, positiveLimit(area.maxHeightCm));
+  if (!width || !height) return area;
+  const logoWidth = Math.min(area.logoWidth, width);
+  const logoHeight = Math.min(area.logoHeight, height);
+  if (logoWidth === area.logoWidth && logoHeight === area.logoHeight) return area;
+  return { ...area, logoWidth, logoHeight };
+}
+
+function draftHasContent(draft: MockupDraftData | null): draft is MockupDraftData {
+  return Boolean(draft && (draft.productId || draft.techniqueId || draft.personalizationAreas.some(area => area.logoPreview)));
+}
+
+function nullable<T>(value: T | null | undefined): T | null {
+  return value ?? null;
+}
+
+function canRestoreDraft(isLoading: boolean, restored: boolean, restoring: boolean): boolean {
+  return !isLoading && !restored && !restoring;
+}
+
+interface RestoredDraft {
+  productSelection: MockupProductSelection | null;
+  technique: Technique | undefined;
+  client: MockupClient | null;
+  areas: PersonalizationArea[];
+}
+
+function resolveDraft(
+  draft: MockupDraftData,
+  getProductById: (id: string) => Product | null | undefined,
+  techniques: Technique[],
+): RestoredDraft {
+  const product = draft.productId ? getProductById(draft.productId) : undefined;
+  return {
+    productSelection: product ? { product, variant: null, imageUrl: product.images[0] || '/placeholder.svg' } : null,
+    technique: draft.techniqueId ? techniques.find(item => item.id === draft.techniqueId) : undefined,
+    client: draft.clientId && draft.clientName ? { id: draft.clientId, name: draft.clientName } : null,
+    areas: draft.personalizationAreas,
+  };
+}
+
+function buildDraftData(
+  productSelection: MockupProductSelection | null,
+  technique: Technique | TechniqueWithLimits | null,
+  client: MockupClient | null,
+  areas: PersonalizationArea[],
+): MockupDraftData {
+  return {
+    productId: nullable(productSelection?.product.id),
+    productName: nullable(productSelection?.product.name),
+    techniqueId: nullable(technique?.id),
+    techniqueName: nullable(technique?.name),
+    clientId: nullable(client?.id),
+    clientName: nullable(client?.name),
+    personalizationAreas: areas,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+const POSITION_FIELDS = ['positionX', 'positionY', 'logoWidth', 'logoHeight', 'logoRotation', 'logoScale'] as const;
+
+function updatesPosition(updates: Partial<PersonalizationArea>): boolean {
+  return POSITION_FIELDS.some(field => field in updates);
+}
+
+function positionState(area: PersonalizationArea, updates: Partial<PersonalizationArea>) {
+  return {
+    positionX: updates.positionX ?? area.positionX,
+    positionY: updates.positionY ?? area.positionY,
+    logoWidth: updates.logoWidth ?? area.logoWidth,
+    logoHeight: updates.logoHeight ?? area.logoHeight,
+    logoRotation: updates.logoRotation ?? area.logoRotation ?? 0,
+    logoScale: updates.logoScale ?? area.logoScale ?? 100,
+  };
+}
+
+function historyProductSelection(product: Product | undefined): MockupProductSelection | null {
+  return product ? { product, variant: null, imageUrl: product.images[0] || '/placeholder.svg' } : null;
+}
+
+function restoredHistoryArea(mockup: GeneratedMockup): PersonalizationArea {
+  return {
+    id: crypto.randomUUID(),
+    name: "Frente",
+    positionX: mockup.position_x ?? 50,
+    positionY: mockup.position_y ?? 50,
+    logoWidth: mockup.logo_width_cm ?? 5,
+    logoHeight: mockup.logo_height_cm ?? 3,
+    logoRotation: 0,
+    logoScale: 100,
+    logoPreview: mockup.logo_url,
+  };
+}
+
+function resolveUrlPreselection(
+  params: URLSearchParams,
+  getProductById: (id: string) => Product | null | undefined,
+  techniques: Technique[],
+): { productSelection: MockupProductSelection | null; technique: Technique | undefined } | null {
+  const productId = params.get('product_id');
+  if (!productId) return null;
+  const techniqueName = params.get('technique');
+  return {
+    productSelection: historyProductSelection(getProductById(productId) || undefined),
+    technique: techniqueName
+      ? techniques.find(item => item.name.toLowerCase() === techniqueName.toLowerCase())
+      : undefined,
+  };
+}
 
 export function useMockupGenerator() {
   const { user } = useAuth();
@@ -84,6 +220,18 @@ export function useMockupGenerator() {
   // ─── Undo/Redo ───────────────────────────────────────────────────────
   const positionHistory = usePositionHistory({ enabled: true });
 
+  const fetchHistory = useCallback(async () => {
+    setIsLoadingHistory(true);
+    try {
+      const data = await fetchMockupHistory(user?.id);
+      setMockupHistory(data);
+    } catch (error) {
+      console.error("Error fetching history:", error);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  }, [user?.id]);
+
   useEffect(() => {
     positionHistory.setOnApply((state) => {
       if (!activeAreaId) return;
@@ -114,10 +262,10 @@ export function useMockupGenerator() {
   const productLocations = useMemo(() => {
     if (!customizationOptions?.locations?.length) return null;
     return customizationOptions.locations.map(loc => {
-      const opts = loc.options || [];
-      const widths = opts.map((o: any) => o.efetiva_largura_max || o.max_width || 0).filter(Boolean);
-      const heights = opts.map((o: any) => o.efetiva_altura_max || o.max_height || 0).filter(Boolean);
-      const colors = opts.map((o: any) => o.max_cores || 0).filter(Boolean);
+      const opts: MockupCustomizationOption[] = loc.options || [];
+      const widths = opts.map((o) => o.efetiva_largura_max || o.max_width || 0).filter(Boolean);
+      const heights = opts.map((o) => o.efetiva_altura_max || o.max_height || 0).filter(Boolean);
+      const colors = opts.map((o) => o.max_cores || 0).filter(Boolean);
       return {
         code: loc.location_code,
         name: loc.location_name,
@@ -125,7 +273,7 @@ export function useMockupGenerator() {
         maxWidthCm: widths.length ? Math.max(...widths) : null,
         maxHeightCm: heights.length ? Math.max(...heights) : null,
         maxColors: colors.length ? Math.max(...colors) : null,
-        isCurved: opts.some((o: any) => o.is_curved === true),
+        isCurved: opts.some((o) => o.is_curved === true),
         techniquesAvailable: opts.length,
       };
     });
@@ -154,7 +302,7 @@ export function useMockupGenerator() {
     if (!activeAreaId && personalizationAreas.length > 0) setActiveAreaId(personalizationAreas[0]?.id ?? null);
   }, [activeAreaId, personalizationAreas]);
 
-  useEffect(() => { fetchData(); fetchHistory(); }, []);
+  useEffect(() => { fetchData(); fetchHistory(); }, [fetchHistory]);
 
   useEffect(() => {
     if (selectedTechnique && filteredTechniques.length > 0) {
@@ -167,44 +315,27 @@ export function useMockupGenerator() {
     const mw = 'maxWidth' in selectedTechnique ? (selectedTechnique as TechniqueWithLimits).maxWidth : null;
     const mh = 'maxHeight' in selectedTechnique ? (selectedTechnique as TechniqueWithLimits).maxHeight : null;
     if ((!mw || mw <= 0) && (!mh || mh <= 0)) return;
-    setPersonalizationAreas(prev => prev.map(area => {
-      // Limite efetivo = menor entre técnica e área (se ambos definidos)
-      const areaW = area.maxWidthCm && area.maxWidthCm > 0 ? area.maxWidthCm : null;
-      const areaH = area.maxHeightCm && area.maxHeightCm > 0 ? area.maxHeightCm : null;
-      const effW = mw && areaW ? Math.min(mw, areaW) : (mw || areaW);
-      const effH = mh && areaH ? Math.min(mh, areaH) : (mh || areaH);
-      if (!effW || !effH) return area;
-      const clampedW = Math.min(area.logoWidth, effW);
-      const clampedH = Math.min(area.logoHeight, effH);
-      return (clampedW !== area.logoWidth || clampedH !== area.logoHeight)
-        ? { ...area, logoWidth: clampedW, logoHeight: clampedH } : area;
-    }));
+    setPersonalizationAreas(prev => prev.map(area => clampAreaToTechnique(area, mw, mh)));
   }, [selectedTechnique]);
 
   // Draft restoration
   useEffect(() => {
     const restoreDraft = async () => {
-      if (isLoadingData || hasDraftRestored || isRestoringDraft.current) return;
+      if (!canRestoreDraft(isLoadingData, hasDraftRestored, isRestoringDraft.current)) return;
       isRestoringDraft.current = true;
       try {
         const draft = await loadDraft();
-        if (draft && (draft.productId || draft.techniqueId || draft.personalizationAreas.some(a => a.logoPreview))) {
-          if (draft.productId) {
-            const product = getProductById(draft.productId);
-            if (product) setProductSelection({ product, variant: null, imageUrl: product.images?.[0] || '/placeholder.svg' });
-          }
-          if (draft.techniqueId) {
-            const technique = techniques.find(t => t.id === draft.techniqueId);
-            if (technique) setSelectedTechnique(technique);
-          }
-          if (draft.clientId && draft.clientName) setSelectedClient({ id: draft.clientId, name: draft.clientName });
-          if (draft.personalizationAreas.length > 0) {
-            setPersonalizationAreas(draft.personalizationAreas);
-            setActiveAreaId(draft.personalizationAreas[0]?.id ?? null);
-          }
-          setShowDraftRestoredNotice(true);
-          setTimeout(() => setShowDraftRestoredNotice(false), 5000);
+        if (!draftHasContent(draft)) return;
+        const restored = resolveDraft(draft, getProductById, techniques);
+        if (restored.productSelection) setProductSelection(restored.productSelection);
+        if (restored.technique) setSelectedTechnique(restored.technique);
+        if (restored.client) setSelectedClient(restored.client);
+        if (restored.areas.length) {
+          setPersonalizationAreas(restored.areas);
+          setActiveAreaId(restored.areas[0]?.id ?? null);
         }
+        setShowDraftRestoredNotice(true);
+        setTimeout(() => setShowDraftRestoredNotice(false), 5000);
       } catch (err) {
         console.error("Erro ao restaurar rascunho:", err);
       } finally { setHasDraftRestored(true); isRestoringDraft.current = false; }
@@ -216,35 +347,21 @@ export function useMockupGenerator() {
   const urlParamsApplied = useRef(false);
   useEffect(() => {
     if (urlParamsApplied.current || isLoadingData || !hasDraftRestored) return;
-    const params = new URLSearchParams(window.location.search);
-    const productId = params.get('product_id');
-    if (!productId) return;
+    const selection = resolveUrlPreselection(new URLSearchParams(window.location.search), getProductById, techniques);
+    if (!selection) return;
     urlParamsApplied.current = true;
-    const product = getProductById(productId);
-    if (product) setProductSelection({ product, variant: null, imageUrl: product.images?.[0] || '/placeholder.svg' });
-    const techniqueName = params.get('technique');
-    if (techniqueName && techniques.length > 0) {
-      const technique = techniques.find(t => t.name.toLowerCase() === techniqueName.toLowerCase());
-      if (technique) setSelectedTechnique(technique);
-    }
+    if (selection.productSelection) setProductSelection(selection.productSelection);
+    if (selection.technique) setSelectedTechnique(selection.technique);
     window.history.replaceState({}, '', window.location.pathname);
   }, [isLoadingData, hasDraftRestored, techniques, getProductById]);
 
   // Auto-save
   useEffect(() => {
     if (!hasDraftRestored || isRestoringDraft.current) return;
-    saveDraft({
-      productId: productSelection?.product?.id || null,
-      productName: productSelection?.product?.name || null,
-      techniqueId: selectedTechnique?.id || null,
-      techniqueName: selectedTechnique?.name || null,
-      clientId: selectedClient?.id || null,
-      clientName: selectedClient?.name || null,
-      personalizationAreas, updatedAt: new Date().toISOString(),
-    });
+    saveDraft(buildDraftData(productSelection, selectedTechnique, selectedClient, personalizationAreas));
   }, [productSelection, selectedTechnique, selectedClient, personalizationAreas, saveDraft, hasDraftRestored]);
 
-  useEffect(() => { if (user?.id) fetchHistory(); }, [user?.id]);
+  useEffect(() => { if (user?.id) fetchHistory(); }, [user?.id, fetchHistory]);
 
   // ─── Data fetching ──────────────────────────────────────────────────
 
@@ -275,34 +392,15 @@ export function useMockupGenerator() {
     } finally { setIsLoadingData(false); }
   };
 
-  const fetchHistory = useCallback(async () => {
-    setIsLoadingHistory(true);
-    try {
-      const data = await fetchMockupHistory(user?.id);
-      setMockupHistory(data);
-    } catch (error) { console.error("Error fetching history:", error); }
-    finally { setIsLoadingHistory(false); }
-  }, [user?.id]);
-
   // ─── Handlers ───────────────────────────────────────────────────────
 
   const updateActiveArea = useCallback((updates: Partial<PersonalizationArea>) => {
     if (!activeAreaId) return;
     setPersonalizationAreas(prev => prev.map(area => area.id === activeAreaId ? { ...area, ...updates } : area));
-    if ('positionX' in updates || 'positionY' in updates || 'logoWidth' in updates || 'logoHeight' in updates || 'logoRotation' in updates || 'logoScale' in updates) {
-      setHasUserInteractedPosition(true);
-      const current = personalizationAreas.find(a => a.id === activeAreaId);
-      if (current) {
-        positionHistory.pushState({
-          positionX: updates.positionX ?? current.positionX,
-          positionY: updates.positionY ?? current.positionY,
-          logoWidth: updates.logoWidth ?? current.logoWidth,
-          logoHeight: updates.logoHeight ?? current.logoHeight,
-          logoRotation: updates.logoRotation ?? current.logoRotation ?? 0,
-          logoScale: updates.logoScale ?? current.logoScale ?? 100,
-        });
-      }
-    }
+    if (!updatesPosition(updates)) return;
+    setHasUserInteractedPosition(true);
+    const current = personalizationAreas.find(area => area.id === activeAreaId);
+    if (current) positionHistory.pushState(positionState(current, updates));
   }, [activeAreaId, personalizationAreas, positionHistory]);
 
   const handleAreaLogoUpload = useCallback(async (areaId: string, file: File) => {
@@ -343,10 +441,63 @@ export function useMockupGenerator() {
     });
   };
 
+  const rememberSavedMockup = (url: string, recordId: string): void => {
+    setLastSavedMockupUrl(url);
+    setLastSavedLayoutMode('ai');
+    setLastSavedRecordId(recordId);
+  };
+
+  const handleSingleGeneratedMockup = async (
+    result: GenerateMockupResult,
+    areasWithLogos: PersonalizationArea[],
+  ): Promise<void> => {
+    if (!result.singleUrl || !selectedProduct || !selectedTechnique) return;
+    setGeneratedMockup(result.singleUrl);
+    const firstArea = areasWithLogos[0];
+    if (!firstArea) return;
+    const recordId = await saveMockupToHistory(result.singleUrl, firstArea);
+    if (recordId) rememberSavedMockup(result.singleUrl, recordId);
+    showMockupSuccessToast({
+      mockupUrl: result.singleUrl,
+      productName: selectedProduct.name,
+      techniqueName: selectedTechnique.name,
+      onDownload: () => downloadMockup(result.singleUrl as string),
+    });
+  };
+
+  const handleBatchGeneratedMockups = async (
+    result: GenerateMockupResult,
+    areasWithLogos: PersonalizationArea[],
+  ): Promise<void> => {
+    for (let index = 0; index < result.batchResults.length; index++) {
+      const batch = result.batchResults[index];
+      if (!batch) continue;
+      const area = areasWithLogos.find(candidate => candidate.name === batch.areaName) || areasWithLogos[index];
+      if (!area) continue;
+      const recordId = await saveMockupToHistory(batch.url, area);
+      if (recordId && index === result.batchResults.length - 1) rememberSavedMockup(batch.url, recordId);
+    }
+    setGeneratedMockup(result.batchResults[0]?.url || result.singleUrl);
+    setGeneratedBatchMockups(result.batchResults);
+    toast.success(`${result.batchResults.length} mockups gerados com sucesso!`);
+  };
+
   const generateMockup = async () => {
     const areasWithLogos = personalizationAreas.filter(a => a.logoPreview);
-    if (!selectedClient || !productSelection || !selectedTechnique || areasWithLogos.length === 0) {
-      toast.error("Selecione empresa, produto, técnica e faça upload de pelo menos um logo");
+    if (!selectedClient) {
+      toast.error(INCOMPLETE_SELECTION_MESSAGE);
+      return;
+    }
+    if (!productSelection) {
+      toast.error(INCOMPLETE_SELECTION_MESSAGE);
+      return;
+    }
+    if (!selectedTechnique) {
+      toast.error(INCOMPLETE_SELECTION_MESSAGE);
+      return;
+    }
+    if (!areasWithLogos.length) {
+      toast.error(INCOMPLETE_SELECTION_MESSAGE);
       return;
     }
     const productImage = getProductImage();
@@ -358,35 +509,14 @@ export function useMockupGenerator() {
 
     try {
       const result = await generateMockupApi({
-        productImage, productName: selectedProduct!.name,
+        productImage, productName: productSelection.product.name,
         technique: selectedTechnique, areas: personalizationAreas,
       });
 
       if (result.singleUrl && result.batchResults.length === 0) {
-        setGeneratedMockup(result.singleUrl);
-        const firstArea = areasWithLogos[0];
-        if (!firstArea) return;
-        const recordId = await saveMockupToHistory(result.singleUrl, firstArea);
-        if (recordId) { setLastSavedMockupUrl(result.singleUrl); setLastSavedLayoutMode('ai'); setLastSavedRecordId(recordId); }
-        showMockupSuccessToast({
-          mockupUrl: result.singleUrl, productName: selectedProduct!.name,
-          techniqueName: selectedTechnique.name,
-          onDownload: () => downloadMockup(result.singleUrl!),
-        });
+        await handleSingleGeneratedMockup(result, areasWithLogos);
       } else {
-        for (let i = 0; i < result.batchResults.length; i++) {
-          const r = result.batchResults[i];
-          if (!r) continue;
-          const area = areasWithLogos.find(a => a.name === r.areaName) || areasWithLogos[i];
-          if (!area) continue;
-          const recordId = await saveMockupToHistory(r.url, area);
-          if (recordId && i === result.batchResults.length - 1) {
-            setLastSavedMockupUrl(r.url); setLastSavedLayoutMode('ai'); setLastSavedRecordId(recordId);
-          }
-        }
-        setGeneratedMockup(result.batchResults[0]?.url || result.singleUrl);
-        setGeneratedBatchMockups(result.batchResults);
-        toast.success(`${result.batchResults.length} mockups gerados com sucesso!`);
+        await handleBatchGeneratedMockups(result, areasWithLogos);
       }
     } catch (error: unknown) {
       console.error("Error generating mockup:", error);
@@ -428,18 +558,12 @@ export function useMockupGenerator() {
   };
 
   const loadFromHistory = (mockup: GeneratedMockup) => {
-    const product = mockup.product_id ? getProductById(mockup.product_id) : null;
+    const product = mockup.product_id ? getProductById(mockup.product_id) : undefined;
     const technique = mockup.technique_id ? techniques.find(t => t.id === mockup.technique_id) : null;
-    if (product) setProductSelection({ product, variant: null, imageUrl: product.images?.[0] || '/placeholder.svg' });
-    else setProductSelection(null);
+    setProductSelection(historyProductSelection(product || undefined));
     setSelectedTechnique(technique || null);
     setSelectedClient(mockup.client_id ? { id: mockup.client_id, name: mockup.client_name || "Cliente" } : null);
-    const restoredArea: PersonalizationArea = {
-      id: crypto.randomUUID(), name: "Frente",
-      positionX: mockup.position_x ?? 50, positionY: mockup.position_y ?? 50,
-      logoWidth: mockup.logo_width_cm ?? 5, logoHeight: mockup.logo_height_cm ?? 3,
-      logoRotation: 0, logoScale: 100, logoPreview: mockup.logo_url,
-    };
+    const restoredArea = restoredHistoryArea(mockup);
     setPersonalizationAreas([restoredArea]); setActiveAreaId(restoredArea.id);
     setGeneratedMockup(null); setHasUserInteractedPosition(true);
     positionHistory.clear(); setActiveTab("generator");

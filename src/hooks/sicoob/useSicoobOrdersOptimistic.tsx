@@ -31,11 +31,16 @@ export function useSicoobOrdersOptimistic() {
       const previousKanbanOrders = queryClient.getQueryData(["sicoob_orders_list_kanban"]);
 
       // Atualizar otimistamente as queries
-      const updateData = (old: any) => {
-        if (!old) return old;
-        return old.map((order: any) => 
-          order.id === variables.orderId ? { ...order, status: variables.newStatus } : order
-        );
+      const updateOrders = (orders: unknown[]): unknown[] => orders.map((order) => {
+        if (typeof order !== "object" || order === null || !("id" in order)) return order;
+        return order.id === variables.orderId ? { ...order, status: variables.newStatus } : order;
+      });
+      const updateData = (old: unknown): unknown => {
+        if (Array.isArray(old)) return updateOrders(old);
+        if (typeof old === "object" && old !== null && "orders" in old && Array.isArray(old.orders)) {
+          return { ...old, orders: updateOrders(old.orders) };
+        }
+        return old;
       };
 
       queryClient.setQueryData(["sicoob_orders_list"], updateData);
@@ -47,7 +52,7 @@ export function useSicoobOrdersOptimistic() {
       // Rollback em caso de erro
       queryClient.setQueryData(["sicoob_orders_list"], context?.previousOrders);
       queryClient.setQueryData(["sicoob_orders_list_kanban"], context?.previousKanbanOrders);
-      toast.error("Erro na sincronização", { description: (err as any).message });
+      toast.error("Erro na sincronização", { description: err instanceof Error ? err.message : String(err) });
     },
     onSuccess: (_, variables) => {
       const { newStatus } = variables;

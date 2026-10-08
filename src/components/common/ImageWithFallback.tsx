@@ -7,11 +7,11 @@
  * - Propagação de alt_text e title_text
  */
 
-import { useState, forwardRef } from 'react';
+import { type ImgHTMLAttributes, type SyntheticEvent, useState, forwardRef } from 'react';
 import { getCdnUrl, getSrcSet, getImageSizes, type CdnVariant } from '@/utils/image-utils';
 import { cn } from '@/lib/utils';
 
-interface ImageWithFallbackProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> {
+interface ImageWithFallbackProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'> {
   /** URL CDN da imagem (terminada em /public) */
   urlCdn: string;
   /** URL original do fornecedor (fallback para erro de rede) */
@@ -24,6 +24,37 @@ interface ImageWithFallbackProps extends Omit<React.ImgHTMLAttributes<HTMLImageE
   responsive?: boolean;
   /** Mostrar shimmer enquanto carrega */
   showShimmer?: boolean;
+}
+
+function resolveImageSource(
+  error: boolean,
+  urlCdn: string,
+  urlOriginal: string | null | undefined,
+  variant: CdnVariant,
+) {
+  if (error) return urlOriginal || '/placeholder.svg';
+  return getCdnUrl(urlCdn, variant);
+}
+
+function responsiveImageProps(
+  enabled: boolean,
+  error: boolean,
+  urlCdn: string,
+  context: ImageWithFallbackProps['context'],
+) {
+  return {
+    srcSet: enabled && !error ? getSrcSet(urlCdn) : undefined,
+    sizes: enabled && context ? getImageSizes(context) : undefined,
+  };
+}
+
+function LoadingBackground({ loaded }: { loaded: boolean }) {
+  if (loaded) return null;
+  return <div className="absolute inset-0 bg-muted/30" />;
+}
+
+function imageStateClass(loaded: boolean) {
+  return loaded ? 'opacity-100 blur-0 scale-100' : 'opacity-40 blur-md scale-105';
 }
 
 export const ImageWithFallback = forwardRef<HTMLImageElement, ImageWithFallbackProps>(
@@ -42,51 +73,47 @@ export const ImageWithFallback = forwardRef<HTMLImageElement, ImageWithFallbackP
       onError,
       ...props
     },
-    ref
+    ref,
   ) {
     const [error, setError] = useState(false);
     const [loaded, setLoaded] = useState(false);
 
-    const src = error
-      ? (urlOriginal || '/placeholder.svg')
-      : getCdnUrl(urlCdn, variant);
+    const src = resolveImageSource(error, urlCdn, urlOriginal, variant);
+    const responsiveProps = responsiveImageProps(responsive, error, urlCdn, context);
 
-    const handleError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const handleError = (e: SyntheticEvent<HTMLImageElement>) => {
       if (!error) {
         setError(true);
       }
       onError?.(e);
     };
 
-    const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const handleLoad = (e: SyntheticEvent<HTMLImageElement>) => {
       setLoaded(true);
       onLoad?.(e);
     };
 
     return (
       <div className={cn('relative overflow-hidden', className)}>
-      {/* Background while loading */}
-        {!loaded && (
-          <div className="absolute inset-0 bg-muted/30" />
-        )}
+        {/* Background while loading */}
+        {showShimmer && <LoadingBackground loaded={loaded} />}
         <img
           ref={ref}
           src={src}
-          srcSet={responsive && !error ? getSrcSet(urlCdn) : undefined}
-          sizes={responsive && context ? getImageSizes(context) : undefined}
+          {...responsiveProps}
           alt={alt || ''}
           title={title || undefined}
           loading="lazy"
           onError={handleError}
           onLoad={handleLoad}
           className={cn(
-            'w-full h-full object-cover transition-all duration-700 ease-out',
-            loaded ? 'opacity-100 blur-0 scale-100' : 'opacity-40 blur-md scale-105'
+            'h-full w-full object-cover transition-all duration-700 ease-out',
+            imageStateClass(loaded),
           )}
           draggable={false}
           {...props}
         />
       </div>
     );
-  }
+  },
 );

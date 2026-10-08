@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { formatCurrency } from "./quote-calculations";
 import { toast } from "sonner";
 
 /**
@@ -74,7 +73,18 @@ export async function exportOrdersToPDF(orderIds: string[]) {
 
 export const QUOTE_EXPORT_COLUMNS = ["Número", "Cliente", "Vendedor", "Status", "Valor Total", "Data de Criação"];
 
-export async function exportToExcel(data: any[], filename: string) {
+interface ExportRow {
+  quote_number?: string | null;
+  order_number?: string | null;
+  client_company?: string | null;
+  client_name?: string | null;
+  seller_name?: string | null;
+  status?: string | null;
+  total?: number | null;
+  created_at: string;
+}
+
+export async function exportToExcel(data: ExportRow[], filename: string) {
   if (data.length > 10000) {
     toast.error("Limite de exportação excedido (máximo 10.000 registros).");
     return;
@@ -109,7 +119,7 @@ export async function exportToExcel(data: any[], filename: string) {
   }
 }
 
-export async function exportToPDF(data: any[], filename: string) {
+export async function exportToPDF(_data: unknown[], _filename: string) {
   toast.info("Geração de relatório PDF em andamento...");
   // Simulated success
   setTimeout(() => {

@@ -21,11 +21,8 @@ export interface CatalogProduct {
   name: string;
   sku: string | null;
   sale_price: number | null;
-  base_price?: number | null;
   primary_image_url: string | null;
-  image_url?: string | null;
   is_active: boolean | null;
-  active?: boolean | null;
   stock_quantity: number | null;
   min_quantity: number | null;
 }
@@ -145,7 +142,7 @@ export function buildVerifiedKitLines(
       throw new Error('A composição do kit contém produto ou quantidade inválidos.');
     }
     const product = productsById.get(request.productId);
-    if (!product || product.is_active === false || product.active === false) {
+    if (!product || product.is_active === false) {
       throw new Error('Um produto do kit não está mais disponível no catálogo.');
     }
 
@@ -162,7 +159,7 @@ export function buildVerifiedKitLines(
     const quantity = request.unitsPerKit * kitQuantity;
     const minimum = Number(product.min_quantity ?? 1);
     const stock = variant ? Number(variant.stock_quantity) : productStock(product, variants);
-    const price = Number(variant?.sale_price ?? product.sale_price ?? product.base_price ?? 0);
+    const price = Number(variant?.sale_price ?? product.sale_price ?? 0);
     if (!Number.isSafeInteger(quantity) || quantity <= 0) throw new Error(`A quantidade de “${product.name}” é inválida.`);
     if (!Number.isFinite(minimum) || minimum <= 0) throw new Error(`A quantidade mínima de “${product.name}” é inválida.`);
     if (!Number.isFinite(stock) || stock < 0) throw new Error(`O estoque de “${product.name}” está inválido.`);
@@ -212,7 +209,7 @@ export function buildVerifiedKitLines(
     product_id: product.id,
     product_name: product.name,
     product_sku: variant?.sku || product.sku || null,
-    product_image_url: variant?.selected_thumbnail || product.primary_image_url || product.image_url || null,
+    product_image_url: variant?.selected_thumbnail || product.primary_image_url || null,
     quantity,
     unit_price: price,
     minimum_quantity: minimum,

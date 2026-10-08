@@ -1,5 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export type AuditAction = 'INSERT' | 'UPDATE' | 'DELETE';
 
@@ -23,8 +24,8 @@ interface AuditLogParams {
   action: AuditAction;
   entityType: AuditEntityType;
   entityId: string;
-  oldValues?: Record<string, any> | null;
-  newValues?: Record<string, any> | null;
+  oldValues?: Json | null;
+  newValues?: Json | null;
 }
 
 export interface AuditLogEntry {
@@ -33,8 +34,8 @@ export interface AuditLogEntry {
   action: string;
   entity_type: string;
   entity_id: string;
-  old_values: Record<string, any> | null;
-  new_values: Record<string, any> | null;
+  old_values: Json | null;
+  new_values: Json | null;
   ip_address: string | null;
   user_agent: string | null;
   created_at: string;
@@ -64,8 +65,8 @@ async function attachProfiles(
 
   return rows.map(r => ({
     ...r,
-    old_values: r.old_values as Record<string, unknown> | null,
-    new_values: r.new_values as Record<string, unknown> | null,
+    old_values: r.old_values as Json | null,
+    new_values: r.new_values as Json | null,
     profiles: (r.user_id && profileMap.get(r.user_id)) || null,
   }));
 }
@@ -105,11 +106,11 @@ export function useAuditLog() {
   };
 
   const getChangedFields = (
-    oldRecord: Record<string, any>,
-    newRecord: Record<string, any>
-  ): { oldFields: Record<string, any>; newFields: Record<string, any> } => {
-    const oldFields: Record<string, any> = {};
-    const newFields: Record<string, any> = {};
+    oldRecord: Record<string, unknown>,
+    newRecord: Record<string, unknown>
+  ): { oldFields: Record<string, Json | undefined>; newFields: Record<string, Json | undefined> } => {
+    const oldFields: Record<string, Json | undefined> = {};
+    const newFields: Record<string, Json | undefined> = {};
 
     Object.keys(newRecord).forEach(key => {
       if (['updated_at', 'created_at'].includes(key)) return;
@@ -118,8 +119,8 @@ export function useAuditLog() {
       const newValue = newRecord[key];
       
       if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
-        oldFields[key] = oldValue;
-        newFields[key] = newValue;
+        oldFields[key] = oldValue as Json | undefined;
+        newFields[key] = newValue as Json | undefined;
       }
     });
 
@@ -139,7 +140,7 @@ export function useAuditLog() {
         entityType: table,
         entityId: result.data.id,
         oldValues: null,
-        newValues: data
+        newValues: data as unknown as Json,
       });
     }
 
@@ -150,9 +151,12 @@ export function useAuditLog() {
     table: AuditEntityType,
     entityId: string,
     oldRecord: T,
-    updates: Partial<T>,
-    updateFn: () => Promise<{ data: T | null; error: Error | null }>
+    ...operation: [
+      updates: Partial<T>,
+      updateFn: () => Promise<{ data: T | null; error: Error | null }>,
+    ]
   ): Promise<{ data: T | null; error: Error | null }> => {
+    const [updates, updateFn] = operation;
     const result = await updateFn();
     
     if (result.data && !result.error) {
@@ -163,8 +167,8 @@ export function useAuditLog() {
           action: 'UPDATE',
           entityType: table,
           entityId,
-          oldValues: oldFields,
-          newValues: newFields
+          oldValues: oldFields as Json,
+          newValues: newFields as Json,
         });
       }
     }
@@ -185,7 +189,7 @@ export function useAuditLog() {
         action: 'DELETE',
         entityType: table,
         entityId,
-        oldValues: oldRecord,
+        oldValues: oldRecord as unknown as Json,
         newValues: null
       });
     }
@@ -237,21 +241,26 @@ export async function fetchAllAuditLogs(
     .order('created_at', { ascending: false })
     .limit(limit);
 
-  if (filters?.entityType) {
-    query = query.eq('entity_type', filters.entityType);
-  }
-  if (filters?.action) {
-    query = query.eq('action', filters.action);
-  }
-  if (filters?.userId) {
-    query = query.eq('user_id', filters.userId);
-  }
-  if (filters?.startDate) {
-    query = query.gte('created_at', filters.startDate.toISOString());
-  }
-  if (filters?.endDate) {
-    query = query.lte('created_at', filters.endDate.toISOString());
-  }
+  const filterEntity = () => {
+    if (filters?.entityType) query = query.eq('entity_type', filters.entityType);
+  };
+  const filterAction = () => {
+    if (filters?.action) query = query.eq('action', filters.action);
+  };
+  const filterUser = () => {
+    if (filters?.userId) query = query.eq('user_id', filters.userId);
+  };
+  const filterStartDate = () => {
+    if (filters?.startDate) query = query.gte('created_at', filters.startDate.toISOString());
+  };
+  const filterEndDate = () => {
+    if (filters?.endDate) query = query.lte('created_at', filters.endDate.toISOString());
+  };
+  filterEntity();
+  filterAction();
+  filterUser();
+  filterStartDate();
+  filterEndDate();
 
   const { data, error } = await query;
 

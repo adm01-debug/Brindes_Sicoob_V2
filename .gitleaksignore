@@ -38,3 +38,15 @@ f9510465755f73c5db248ed76d5edfce69a7fbdd:.env.production:jwt:2
 f9510465755f73c5db248ed76d5edfce69a7fbdd:.env.production:jwt:3
 fae31e0246c2d27566a59eeacc3155847c6fe406:src/integrations/supabase/client.ts:jwt:10
 fafc9a06cf9750330856f2d0366fd69e69ad5ff7:tmp/proposta_nova-1.html:generic-api-key:596
+# Triagem adicional de 07/10/2026: hashes SHA-256 do manifesto e UUIDs
+# sintéticos de idempotência. Nenhuma entrada contém uma credencial funcional.
+194992624ec22a3f956413280934e825280e46de:docs/execucao/revisao-plano-20261001/fontes-sha256.json:generic-api-key:19
+194992624ec22a3f956413280934e825280e46de:docs/execucao/revisao-plano-20261001/fontes-sha256.json:generic-api-key:60
+194992624ec22a3f956413280934e825280e46de:docs/execucao/revisao-plano-20261001/fontes-sha256.json:generic-api-key:66
+194992624ec22a3f956413280934e825280e46de:docs/execucao/revisao-plano-20261001/fontes-sha256.json:generic-api-key:69
+194992624ec22a3f956413280934e825280e46de:docs/execucao/revisao-plano-20261001/fontes-sha256.json:generic-api-key:178
+194992624ec22a3f956413280934e825280e46de:docs/execucao/revisao-plano-20261001/fontes-sha256.json:sentry-access-token:138
+7d616832b116631523eb6f10ddc93d30fa4496da:tests/services/quoteReorder.test.ts:generic-api-key:56
+7d616832b116631523eb6f10ddc93d30fa4496da:tests/services/quoteReorder.test.ts:generic-api-key:60
+a1f3f00cdcb6e0238ca5efd250c94f659d59075f:tests/services/quoteReorder.test.ts:generic-api-key:56
+a1f3f00cdcb6e0238ca5efd250c94f659d59075f:tests/services/quoteReorder.test.ts:generic-api-key:60

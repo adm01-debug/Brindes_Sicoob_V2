@@ -8,12 +8,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { 
-  ShoppingCart, 
-  ChevronUp, 
-  FileText,
-  Plus,
-} from 'lucide-react';
+import { ShoppingCart, ChevronUp, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatCurrency } from '@/lib/format';
 import type { UseSimulatorWizardReturn } from '@/hooks/simulator/useSimulatorWizard';

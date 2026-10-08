@@ -64,7 +64,7 @@ export function useProductVariantsWithStock(productId: string | undefined) {
       });
 
       // Map to VariantWithStock (next_entry fields come from variant_supplier_sources if available)
-      return result.records.map(v => ({
+      return (result.records ?? []).map(v => ({
         ...v,
         next_entry_date: null,
         next_entry_quantity: null,

@@ -8,11 +8,12 @@ import { CommemorativeDateFilter } from "./CommemorativeDateFilter";
 import type { ColorFilterSelection } from "./ColorGroupFilter";
 
 // Re-export types for backward compatibility
+const ACTIVE_ORANGE_BORDER = 'border-orange/60';
+
 export type { FilterState, FilterPanelProps } from "./filter-panel/types";
 export { defaultFilters, SECTION_CONFIG, SECTION_GROUPS } from "./filter-panel/types";
 
-import type { FilterPanelProps } from "./filter-panel/types";
-import { SECTION_CONFIG, SECTION_GROUPS } from "./filter-panel/types";
+import { type FilterPanelProps, SECTION_CONFIG, SECTION_GROUPS } from "./filter-panel/types";
 import { useFilterPanelState } from "./filter-panel/useFilterPanelState";
 import { FilterSection, GroupSeparator } from "./filter-panel/FilterSection";
 import { FilterPanelHeader } from "./filter-panel/FilterPanelHeader";
@@ -28,10 +29,7 @@ import {
 } from "./filter-panel/sections/SimpleFilters";
 import { SizeFilter } from "./filter-panel/sections/SizeFilter";
 
-export function FilterPanel({
-  filters, onFilterChange, onReset, activeFiltersCount,
-  products = [], viewMode, onViewModeChange, gridColumns, onGridColumnsChange, filteredResultsCount,
-}: FilterPanelProps) {
+export function FilterPanel({ filters, onFilterChange, onReset, activeFiltersCount, products = [] }: FilterPanelProps) {
   const state = useFilterPanelState(filters, onFilterChange, products);
 
   const renderSection = (id: string, renderContent?: () => React.ReactNode) => {
@@ -75,7 +73,7 @@ export function FilterPanel({
       <div className="px-1">
         <div className="flex items-center gap-2 text-sm">
           <span className="text-muted-foreground text-xs whitespace-nowrap">Mínimo por cor</span>
-          <DebouncedPriceInput value={filters.minStock || ''} onChange={(v) => onFilterChange({ ...filters, minStock: v })} fallback={0} placeholder="Ex: 500" min={0} className={filters.minStock > 0 ? 'border-orange/60' : ''} />
+          <DebouncedPriceInput value={filters.minStock || ''} onChange={(v) => onFilterChange({ ...filters, minStock: v })} fallback={0} placeholder="Ex: 500" min={0} className={filters.minStock > 0 ? ACTIVE_ORANGE_BORDER : ''} />
           <span className="text-muted-foreground text-xs">un.</span>
         </div>
       </div>
@@ -85,12 +83,12 @@ export function FilterPanel({
         <div className="flex items-center gap-2 text-sm">
           <div className="flex items-center gap-1 flex-1">
             <span className="text-muted-foreground text-xs">R$</span>
-            <DebouncedPriceInput value={filters.priceRange[0]} onChange={(v) => onFilterChange({ ...filters, priceRange: [v, filters.priceRange[1]] })} fallback={0} min={0} className={filters.priceRange[0] > 0 ? 'border-orange/60' : ''} />
+            <DebouncedPriceInput value={filters.priceRange[0]} onChange={(v) => onFilterChange({ ...filters, priceRange: [v, filters.priceRange[1]] })} fallback={0} min={0} className={filters.priceRange[0] > 0 ? ACTIVE_ORANGE_BORDER : ''} />
           </div>
           <span className="text-muted-foreground text-xs">até</span>
           <div className="flex items-center gap-1 flex-1">
             <span className="text-muted-foreground text-xs">R$</span>
-            <DebouncedPriceInput value={filters.priceRange[1] >= 9999 ? '' : filters.priceRange[1]} onChange={(v) => onFilterChange({ ...filters, priceRange: [filters.priceRange[0], v || 9999] })} fallback={9999} placeholder="Sem limite" min={0} className={filters.priceRange[1] < 9999 ? 'border-orange/60' : ''} />
+            <DebouncedPriceInput value={filters.priceRange[1] >= 9999 ? '' : filters.priceRange[1]} onChange={(v) => onFilterChange({ ...filters, priceRange: [filters.priceRange[0], v || 9999] })} fallback={9999} placeholder="Sem limite" min={0} className={filters.priceRange[1] < 9999 ? ACTIVE_ORANGE_BORDER : ''} />
           </div>
         </div>
       </div>

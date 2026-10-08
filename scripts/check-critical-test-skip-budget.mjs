@@ -3,7 +3,10 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const roots = ["tests/p0", "tests/rls", "tests/security"];
-const baseline = 41;
+// Os testes P0 não têm cenários ignorados. As quatro ocorrências restantes são
+// suites condicionais de RLS/segurança que só executam com credenciais de um
+// banco efêmero; elas continuam visíveis e contabilizadas pelo gate.
+const baseline = 4;
 const testFile = /\.test\.[cm]?[jt]sx?$/;
 const skipPattern = /\b(?:describe|it|test)\.skip\b|\bskipIf\b|\benabled\s*\?\s*describe\s*:\s*describe\.skip/g;
 

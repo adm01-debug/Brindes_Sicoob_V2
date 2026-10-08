@@ -1,11 +1,11 @@
 import { memo } from 'react';
-import { AlertTriangle, Loader2, RefreshCw, WifiOff } from 'lucide-react';
+import { AlertTriangle, Loader2, RefreshCw, WifiOff, type LucideIcon } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useCloudStatus } from '@/hooks/useCloudStatus';
 import { useDevGate } from '@/hooks/useDevGate';
 
-const STATUS_CONFIG: Record<string, { message: string; icon: any; className: string }> = {
+const STATUS_CONFIG: Record<string, { message: string; icon: LucideIcon; className: string }> = {
   down: {
     message: 'Backend indisponível. Verifique sua conexão e tente novamente.',
     icon: WifiOff,

@@ -1,72 +1,267 @@
-import { useEffect, useState, useMemo } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState, useMemo } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 // import { MainLayout } from "@/components/layout/MainLayout";
-import { PageSEO } from "@/components/seo/PageSEO";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, UserCog, Loader2, KeyRound, Plus, Search, Percent, ArrowUpCircle, History, Ticket, Lock, Network, Settings } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { PasswordResetApproval } from "@/components/admin/PasswordResetApproval";
-import { DiscountManagementPanel } from "@/components/admin/DiscountManagementPanel";
-import { CouponManager } from "@/components/admin/CouponManager";
-import { AccessManagement } from "@/components/admin/users/AccessManagement";
-import { SicoobHierarchyTab } from "@/components/admin/users/SicoobHierarchyTab";
-import { usePasswordResetRequests } from "@/hooks/usePasswordResetRequests";
-import { SystemFeatureToggles } from "@/components/admin/SystemFeatureToggles";
+import { PageSEO } from '@/components/seo/PageSEO';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Users,
+  UserCog,
+  Loader2,
+  KeyRound,
+  Plus,
+  Search,
+  Percent,
+  ArrowUpCircle,
+  History,
+  Ticket,
+  Lock,
+  Network,
+  Settings,
+} from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { PasswordResetApproval } from '@/components/admin/PasswordResetApproval';
+import { DiscountManagementPanel } from '@/components/admin/DiscountManagementPanel';
+import { CouponManager } from '@/components/admin/CouponManager';
+import { AccessManagement } from '@/components/admin/users/AccessManagement';
+import { SicoobHierarchyTab } from '@/components/admin/users/SicoobHierarchyTab';
+import { usePasswordResetRequests } from '@/hooks/usePasswordResetRequests';
+import { SystemFeatureToggles } from '@/components/admin/SystemFeatureToggles';
 
-import { useUserManagement } from "@/components/admin/users/useUserManagement";
-import { UserStatsCards } from "@/components/admin/users/UserStatsCards";
-import { UserTable } from "@/components/admin/users/UserTable";
-import { RoleChangeDialog } from "@/components/admin/users/RoleChangeDialog";
-import { EditUserDialog } from "@/components/admin/users/EditUserDialog";
-import { CreateUserDialog } from "@/components/admin/users/CreateUserDialog";
-import { DeleteUserDialog } from "@/components/admin/users/DeleteUserDialog";
-import { PromotionDialog } from "@/components/admin/users/PromotionDialog";
-import { RoleAuditLogPanel } from "@/components/admin/users/RoleAuditLogPanel";
-import { DevAccessAuditAlert } from "@/components/admin/DevAccessAuditAlert";
-import { type UserWithRole } from "@/components/admin/users/types";
+import { useUserManagement } from '@/components/admin/users/useUserManagement';
+import { UserStatsCards } from '@/components/admin/users/UserStatsCards';
+import { UserTable } from '@/components/admin/users/UserTable';
+import { RoleChangeDialog } from '@/components/admin/users/RoleChangeDialog';
+import { EditUserDialog } from '@/components/admin/users/EditUserDialog';
+import { CreateUserDialog } from '@/components/admin/users/CreateUserDialog';
+import { DeleteUserDialog } from '@/components/admin/users/DeleteUserDialog';
+import { PromotionDialog } from '@/components/admin/users/PromotionDialog';
+import { RoleAuditLogPanel } from '@/components/admin/users/RoleAuditLogPanel';
+import { DevAccessAuditAlert } from '@/components/admin/DevAccessAuditAlert';
+import { type UserWithRole } from '@/components/admin/users/types';
 
-const VALID_TABS = ["users", "password-reset", "discounts", "coupons", "access", "audit", "sicoob-hierarchy", "system-config"] as const;
+const VALID_TABS = [
+  'users',
+  'password-reset',
+  'discounts',
+  'coupons',
+  'access',
+  'audit',
+  'sicoob-hierarchy',
+  'system-config',
+] as const;
 type TabValue = (typeof VALID_TABS)[number];
+
+function AdminTabsList({
+  isAdmin,
+  isDev,
+  pendingCount,
+  pendingDiscountCount,
+}: {
+  isAdmin: boolean;
+  isDev: boolean;
+  pendingCount: number;
+  pendingDiscountCount: number;
+}) {
+  return (
+    <TabsList>
+      <TabsTrigger value="users" className="gap-2">
+        <Users className="h-4 w-4" />
+        Usuários & Roles
+      </TabsTrigger>
+      <TabsTrigger value="password-reset" className="gap-2">
+        <KeyRound className="h-4 w-4" />
+        Reset de Senha
+        {pendingCount > 0 && (
+          <Badge
+            variant="destructive"
+            className="ml-1 flex h-5 w-5 items-center justify-center p-0 text-xs"
+          >
+            {pendingCount}
+          </Badge>
+        )}
+      </TabsTrigger>
+      {isAdmin && (
+        <TabsTrigger value="discounts" className="gap-2">
+          <Percent className="h-4 w-4" />
+          Gestão de Descontos
+          {pendingDiscountCount > 0 && (
+            <Badge
+              variant="destructive"
+              className="ml-1 flex h-5 w-5 items-center justify-center p-0 text-xs"
+            >
+              {pendingDiscountCount}
+            </Badge>
+          )}
+        </TabsTrigger>
+      )}
+      {isAdmin && (
+        <TabsTrigger value="coupons" className="gap-2">
+          <Ticket className="h-4 w-4" />
+          Cupons
+        </TabsTrigger>
+      )}
+      {isAdmin && (
+        <TabsTrigger value="access" className="gap-2">
+          <Lock className="h-4 w-4" />
+          Gestão de Acesso
+        </TabsTrigger>
+      )}
+      {isDev && (
+        <TabsTrigger value="audit" className="gap-2">
+          <History className="h-4 w-4" />
+          Auditoria de Roles
+        </TabsTrigger>
+      )}
+      <TabsTrigger value="sicoob-hierarchy" className="gap-2">
+        <Network className="h-4 w-4" />
+        Hierarquia SICOOB
+      </TabsTrigger>
+      {isDev && (
+        <TabsTrigger value="system-config" className="gap-2">
+          <Settings className="h-4 w-4" />
+          Flags de Sistema
+        </TabsTrigger>
+      )}
+    </TabsList>
+  );
+}
+
+function UsersTableState({
+  isLoading,
+  users,
+  searchQuery,
+  currentUserId,
+  updatingUserId,
+  setEditDialogUser,
+  setRoleDialogUser,
+  setDeleteDialogUser,
+  setPromoteDialogUser,
+}: {
+  isLoading: boolean;
+  users: UserWithRole[];
+  searchQuery: string;
+  currentUserId?: string;
+  updatingUserId: string | null;
+  setEditDialogUser: (user: UserWithRole) => void;
+  setRoleDialogUser: (user: UserWithRole) => void;
+  setDeleteDialogUser: (user: UserWithRole) => void;
+  setPromoteDialogUser: (user: UserWithRole) => void;
+}) {
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  if (users.length === 0)
+    return (
+      <div className="py-12 text-center text-muted-foreground">
+        {searchQuery ? 'Nenhum usuário encontrado para esta busca' : 'Nenhum usuário encontrado'}
+      </div>
+    );
+  return (
+    <UserTable
+      users={users}
+      currentUserId={currentUserId}
+      updatingUserId={updatingUserId}
+      onEditUser={setEditDialogUser}
+      onChangeRole={setRoleDialogUser}
+      onDeleteUser={setDeleteDialogUser}
+      onPromoteUser={setPromoteDialogUser}
+    />
+  );
+}
+
+function AdminFeatureTabs({ isAdmin, isDev }: { isAdmin: boolean; isDev: boolean }) {
+  return (
+    <>
+      <TabsContent value="password-reset">
+        <PasswordResetApproval />
+      </TabsContent>
+      {isAdmin && (
+        <TabsContent value="discounts">
+          <DiscountManagementPanel />
+        </TabsContent>
+      )}
+      {isAdmin && (
+        <TabsContent value="coupons">
+          <Card className="border-border/50">
+            <CardHeader>
+              <CardTitle>Gerenciador de Cupons</CardTitle>
+              <CardDescription>Crie e gerencie cupons de desconto para os pedidos</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CouponManager />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      )}
+      {isAdmin && (
+        <TabsContent value="access">
+          <AccessManagement />
+        </TabsContent>
+      )}
+      {isDev && (
+        <TabsContent value="audit">
+          <RoleAuditLogPanel />
+        </TabsContent>
+      )}
+      <TabsContent value="sicoob-hierarchy">
+        <SicoobHierarchyTab />
+      </TabsContent>
+      <TabsContent value="system-config">
+        <SystemFeatureToggles />
+      </TabsContent>
+    </>
+  );
+}
 
 export default function AdminUsuariosPage() {
   const { user, isAdmin, isDev } = useAuth();
   const { pendingCount } = usePasswordResetRequests();
   const {
-    users, isLoading, updatingUserId,
-    fetchUsers, handleRoleChange, handleCreateUser, handleDeleteUser, handleSaveEdit,
-    handleAvatarUpload, handleRemoveAvatar,
+    users,
+    isLoading,
+    updatingUserId,
+    fetchUsers,
+    handleRoleChange,
+    handleCreateUser,
+    handleDeleteUser,
+    handleSaveEdit,
+    handleAvatarUpload,
+    handleRemoveAvatar,
   } = useUserManagement();
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const tabParam = searchParams.get("tab");
-  const initialTab: TabValue = (VALID_TABS as readonly string[]).includes(tabParam ?? "")
+  const tabParam = searchParams.get('tab');
+  const initialTab: TabValue = (VALID_TABS as readonly string[]).includes(tabParam ?? '')
     ? (tabParam as TabValue)
-    : "users";
+    : 'users';
   const [activeTab, setActiveTab] = useState<TabValue>(initialTab);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value as TabValue);
     const next = new URLSearchParams(searchParams);
-    if (value === "users") next.delete("tab");
-    else next.set("tab", value);
+    if (value === 'users') next.delete('tab');
+    else next.set('tab', value);
     setSearchParams(next, { replace: true });
   };
 
   // Pending discount approvals badge
   const { data: pendingDiscountCount = 0 } = useQuery({
-    queryKey: ["pending-discount-approvals-count"],
+    queryKey: ['pending-discount-approvals-count'],
     queryFn: async () => {
       const { count } = await supabase
         // rls-allow: admin-only; RLS filtra
-        .from("discount_approval_requests")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "pending");
+        .from('discount_approval_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
       return count || 0;
     },
     enabled: isAdmin,
@@ -74,42 +269,55 @@ export default function AdminUsuariosPage() {
     staleTime: 15_000,
   });
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [roleDialogUser, setRoleDialogUser] = useState<UserWithRole | null>(null);
   const [editDialogUser, setEditDialogUser] = useState<UserWithRole | null>(null);
   const [deleteDialogUser, setDeleteDialogUser] = useState<UserWithRole | null>(null);
   const [promoteDialogUser, setPromoteDialogUser] = useState<UserWithRole | null>(null);
 
-  useEffect(() => { fetchUsers(); }, [fetchUsers]);
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
-  const devCount = useMemo(() => users.filter((u) => u.role === "dev").length, [users]);
+  const devCount = useMemo(() => users.filter((u) => u.role === 'dev').length, [users]);
   // Legado "admin"/"manager" é normalizado para "supervisor" em normalizeAssignedRoles antes de chegar aqui.
   const supervisorCount = useMemo(
-    () => users.filter((u) => u.role === "supervisor").length,
-    [users]
+    () => users.filter((u) => u.role === 'supervisor').length,
+    [users],
   );
-  const agenteCount = useMemo(() => users.filter((u) => u.role === "vendedor").length, [users]);
+  const agenteCount = useMemo(() => users.filter((u) => u.role === 'vendedor').length, [users]);
 
   const filteredUsers = users
-    .sort((a, b) => (a.full_name || "").localeCompare(b.full_name || "", "pt-BR", { sensitivity: "base" }))
+    .sort((a, b) =>
+      (a.full_name || '').localeCompare(b.full_name || '', 'pt-BR', { sensitivity: 'base' }),
+    )
     .filter((u) => {
       if (!searchQuery.trim()) return true;
       const q = searchQuery.toLowerCase();
-      return (u.full_name || "").toLowerCase().includes(q) || (u.email || "").toLowerCase().includes(q);
+      return (
+        (u.full_name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q)
+      );
     });
 
   return (
     <>
-      <PageSEO title="Gerenciar Usuários" description="Administre usuários, permissões e roles do sistema." path="/admin/usuarios" noIndex />
-      <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in">
+      <PageSEO
+        title="Gerenciar Usuários"
+        description="Administre usuários, permissões e roles do sistema."
+        path="/admin/usuarios"
+        noIndex
+      />
+      <div className="mx-auto w-full max-w-[1920px] animate-fade-in space-y-3 px-3 py-3 pb-24 sm:space-y-4 sm:px-4 sm:py-4 md:pb-6 lg:px-6 xl:px-8">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-primary/10">
+          <div className="rounded-xl bg-primary/10 p-3">
             <UserCog className="h-8 w-8 text-primary" />
           </div>
           <div>
             <h1 className="font-display text-3xl font-bold tracking-tight">Usuários</h1>
-            <p className="text-muted-foreground">Gerencie usuários, roles e aprovações de reset de senha</p>
+            <p className="text-muted-foreground">
+              Gerencie usuários, roles e aprovações de reset de senha
+            </p>
           </div>
         </div>
 
@@ -124,60 +332,12 @@ export default function AdminUsuariosPage() {
         />
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="users" className="gap-2">
-              <Users className="h-4 w-4" />
-              Usuários & Roles
-            </TabsTrigger>
-            <TabsTrigger value="password-reset" className="gap-2">
-              <KeyRound className="h-4 w-4" />
-              Reset de Senha
-              {pendingCount > 0 && (
-                <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
-                  {pendingCount}
-                </Badge>
-              )}
-            </TabsTrigger>
-            {isAdmin && (
-              <TabsTrigger value="discounts" className="gap-2">
-                <Percent className="h-4 w-4" />
-                Gestão de Descontos
-                {pendingDiscountCount > 0 && (
-                  <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
-                    {pendingDiscountCount}
-                  </Badge>
-                )}
-              </TabsTrigger>
-            )}
-            {isAdmin && (
-              <TabsTrigger value="coupons" className="gap-2">
-                <Ticket className="h-4 w-4" />
-                Cupons
-              </TabsTrigger>
-            )}
-            {isAdmin && (
-              <TabsTrigger value="access" className="gap-2">
-                <Lock className="h-4 w-4" />
-                Gestão de Acesso
-              </TabsTrigger>
-            )}
-            {isDev && (
-              <TabsTrigger value="audit" className="gap-2">
-                <History className="h-4 w-4" />
-                Auditoria de Roles
-              </TabsTrigger>
-            )}
-            <TabsTrigger value="sicoob-hierarchy" className="gap-2">
-                <Network className="h-4 w-4" />
-                Hierarquia SICOOB
-              </TabsTrigger>
-              {isDev && (
-                <TabsTrigger value="system-config" className="gap-2">
-                  <Settings className="h-4 w-4" />
-                  Flags de Sistema
-                </TabsTrigger>
-              )}
-            </TabsList>
+          <AdminTabsList
+            isAdmin={isAdmin}
+            isDev={isDev}
+            pendingCount={pendingCount}
+            pendingDiscountCount={pendingDiscountCount}
+          />
 
           <TabsContent value="users">
             <Card className="border-border/50">
@@ -185,7 +345,8 @@ export default function AdminUsuariosPage() {
                 <div>
                   <CardTitle>Gerenciamento de Usuários e Roles</CardTitle>
                   <CardDescription>
-                    Atribua roles aos usuários: Dev (técnico), Supervisor (gestão comercial) ou Agente (acesso básico)
+                    Atribua roles aos usuários: Dev (técnico), Supervisor (gestão comercial) ou
+                    Agente (acesso básico)
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
@@ -203,7 +364,7 @@ export default function AdminUsuariosPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="relative max-w-sm">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     placeholder="Buscar por nome ou email..."
                     value={searchQuery}
@@ -212,69 +373,22 @@ export default function AdminUsuariosPage() {
                   />
                 </div>
 
-                {isLoading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  </div>
-                ) : filteredUsers.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">
-                    {searchQuery ? "Nenhum usuário encontrado para esta busca" : "Nenhum usuário encontrado"}
-                  </div>
-                ) : (
-                  <UserTable
-                    users={filteredUsers}
-                    currentUserId={user?.id}
-                    updatingUserId={updatingUserId}
-                    onEditUser={setEditDialogUser}
-                    onChangeRole={setRoleDialogUser}
-                    onDeleteUser={setDeleteDialogUser}
-                    onPromoteUser={setPromoteDialogUser}
-                  />
-                )}
+                <UsersTableState
+                  isLoading={isLoading}
+                  users={filteredUsers}
+                  searchQuery={searchQuery}
+                  currentUserId={user?.id}
+                  updatingUserId={updatingUserId}
+                  setEditDialogUser={setEditDialogUser}
+                  setRoleDialogUser={setRoleDialogUser}
+                  setDeleteDialogUser={setDeleteDialogUser}
+                  setPromoteDialogUser={setPromoteDialogUser}
+                />
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="password-reset">
-            <PasswordResetApproval />
-          </TabsContent>
-
-          {isAdmin && (
-            <TabsContent value="discounts">
-              <DiscountManagementPanel />
-            </TabsContent>
-          )}
-
-          {isAdmin && (
-            <TabsContent value="coupons">
-              <Card className="border-border/50">
-                <CardHeader>
-                  <CardTitle>Gerenciador de Cupons</CardTitle>
-                  <CardDescription>Crie e gerencie cupons de desconto para os pedidos</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <CouponManager />
-                </CardContent>
-              </Card>
-            </TabsContent>
-          )}
-
-          {isAdmin && (
-            <TabsContent value="access">
-              <AccessManagement />
-            </TabsContent>
-          )}
-          {isDev && (
-            <TabsContent value="audit">
-              <RoleAuditLogPanel />
-            </TabsContent>
-          )}
-          <TabsContent value="sicoob-hierarchy">
-            <SicoobHierarchyTab />
-          </TabsContent>
-          <TabsContent value="system-config">
-            <SystemFeatureToggles />
-          </TabsContent>
+          <AdminFeatureTabs isAdmin={isAdmin} isDev={isDev} />
         </Tabs>
 
         {/* Dialogs */}

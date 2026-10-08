@@ -9,7 +9,7 @@ import { notificationsMetrics } from "@/lib/notifications-metrics";
 
 export function NotificationsBadgeStatsPanel() {
   const { isAdmin } = useAuth();
-  const isDev = Boolean((import.meta as any).env?.DEV);
+  const isDev = import.meta.env.DEV;
   const visible = isDev || isAdmin;
 
   const {
@@ -37,7 +37,7 @@ export function NotificationsBadgeStatsPanel() {
 
   const SPARK_W = 160;
   const SPARK_H = 24;
-  const sparkPoints = useMemo(() => buildSparkPath(samples, SPARK_W, SPARK_H, SPARK_WINDOW_SECONDS), [samples]);
+  const sparkPoints = useMemo(() => buildSparkPath(samples, SPARK_W, SPARK_H, SPARK_WINDOW_SECONDS), [samples, SPARK_WINDOW_SECONDS]);
 
   if (!visible) return null;
 
@@ -143,7 +143,7 @@ export function NotificationsBadgeStatsPanel() {
             <h4 className="font-medium text-muted-foreground">Top Contributors (Last {SPARK_WINDOW_SECONDS}s)</h4>
             <div ref={topContributorsRef} className="space-y-0.5 text-[10px] max-h-24 overflow-y-auto rounded border border-border/50 bg-background/50 p-1">
               {Object.entries(snapshot.coalescingByTrigger)
-                .sort(([, a]: any, [, b]: any) => b.fetches - a.fetches)
+                .sort(([, a], [, b]) => b.fetches - a.fetches)
                 .map(([key, { triggers, fetches }]) => (
                   <div key={key} className="flex justify-between items-center px-1 py-0.5 rounded hover:bg-muted/50">
                     <span className="truncate text-foreground">{key}</span>

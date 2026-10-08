@@ -4,15 +4,32 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, ShieldAlert, Clock, User, Building2, FileText, CheckCircle2, ArrowLeft, Loader2 } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Building2, FileText, CheckCircle2, ArrowLeft, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import type { Tables } from "@/integrations/supabase/types";
+
+type VerificationQuote = Pick<
+  Tables<"quotes">,
+  | "id"
+  | "quote_number"
+  | "status"
+  | "total"
+  | "created_at"
+  | "updated_at"
+  | "client_name"
+  | "client_company"
+  | "client_cnpj"
+  | "approved_at"
+  | "approved_by"
+  | "approved_pdf_url"
+>;
 
 export default function VerificationPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [quote, setQuote] = useState<any>(null);
+  const [quote, setQuote] = useState<VerificationQuote | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -29,7 +46,7 @@ export default function VerificationPage() {
           .from("quotes")
           .select(`
             id, quote_number, status, total, created_at, updated_at, 
-            client_name, client_company, client_document,
+            client_name, client_company, client_cnpj,
             approved_at, approved_by, approved_pdf_url
           `)
           .eq("id", id)
@@ -63,39 +80,52 @@ export default function VerificationPage() {
     );
   }
 
-  const isApproved = quote?.status === "approved" || quote?.status === "converted";
-  const isValid = !!quote;
+  if (!quote) {
+    return (
+      <div className="min-h-screen bg-muted/30 p-4 md:p-8 flex items-center justify-center">
+        <Card className="max-w-2xl w-full shadow-2xl border-2">
+          <CardHeader className="text-center pb-8 border-b">
+            <div className="mx-auto w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+              <ShieldAlert className="h-10 w-10 text-destructive" />
+            </div>
+            <CardTitle className="text-2xl font-bold font-display">Falha na Verificação</CardTitle>
+            <CardDescription>Protocolo de Verificação Digital Gift Store</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-8 space-y-6">
+            <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive flex items-start gap-3">
+              <ShieldAlert className="h-5 w-5 mt-0.5" />
+              <div>
+                <p className="font-bold">Este documento não pôde ser validado.</p>
+                <p className="text-sm mt-1">{error ?? "Documento não encontrado em nossa base de dados."}</p>
+              </div>
+            </div>
+            <Button variant="ghost" className="w-full gap-2 text-muted-foreground" onClick={() => navigate("/")}>
+              <ArrowLeft className="h-4 w-4" />
+              Ir para a página inicial
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const isApproved = ["approved", "converted"].includes(quote.status);
 
   return (
     <div className="min-h-screen bg-muted/30 p-4 md:p-8 flex items-center justify-center">
       <Card className="max-w-2xl w-full shadow-2xl border-2 transition-all">
         <CardHeader className="text-center pb-8 border-b">
           <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-            {isValid ? (
-              <ShieldCheck className="h-10 w-10 text-primary" />
-            ) : (
-              <ShieldAlert className="h-10 w-10 text-destructive" />
-            )}
+            <ShieldCheck className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-bold font-display">
-            {isValid ? "Documento Autêntico" : "Falha na Verificação"}
-          </CardTitle>
+          <CardTitle className="text-2xl font-bold font-display">Documento Autêntico</CardTitle>
           <CardDescription>
             Protocolo de Verificação Digital Gift Store
           </CardDescription>
         </CardHeader>
         
         <CardContent className="pt-8 space-y-6">
-          {error ? (
-            <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive flex items-start gap-3">
-              <ShieldAlert className="h-5 w-5 mt-0.5" />
-              <div>
-                <p className="font-bold">Este documento não pôde ser validado.</p>
-                <p className="text-sm mt-1">{error}</p>
-              </div>
-            </div>
-          ) : (
-            <>
+          <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div className="flex flex-col">
@@ -134,7 +164,7 @@ export default function VerificationPage() {
                     </span>
                   </div>
 
-                  {isApproved && (
+                  {isApproved && quote.approved_at && (
                     <div className="flex flex-col">
                       <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Aprovado em</span>
                       <span className="text-sm font-medium flex items-center gap-1.5 mt-1">
@@ -166,8 +196,7 @@ export default function VerificationPage() {
                   </a>
                 </Button>
               )}
-            </>
-          )}
+          </>
 
           <Button variant="ghost" className="w-full gap-2 text-muted-foreground" onClick={() => navigate("/")}>
             <ArrowLeft className="h-4 w-4" />

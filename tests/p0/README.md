@@ -1,28 +1,29 @@
-# P0 Test Skeletons
+# Contratos P0
 
 Cenários **P0** (sistema fora do ar / dados corrompidos) conforme `docs/RUNBOOK.md`.
 
-Os cenários dependentes de provedores ou de um ambiente Supabase controlado usam
-`test.skip` / `it.skip`. Os contratos que já podem ser exercitados localmente
-devem permanecer ativos e falhar caso a proteção correspondente seja removida.
+Todos os contratos deste diretório executam localmente. Integrações Deno e
+políticas SQL são verificadas diretamente no artefato implantável; funções
+TypeScript puras são exercitadas em runtime. A suíte falha quando uma guarda,
+um fallback ou um efeito obrigatório é removido.
+
 Cada cenário documenta:
 
 1. **Cenário**: descrição do incidente P0 que cobre.
 2. **Pré-condições**: estado do sistema necessário.
-3. **Mocks**: dependências externas a stubar (Bitrix24, n8n, MCP, Cloudflare, CRM, edge functions).
-4. **Critério de aceite**: o que precisa passar para o teste ser destravado (`it`).
+3. **Implementação**: artefato real que sustenta o comportamento.
+4. **Critério de aceite**: encadeamento de guardas e efeitos que deve permanecer ativo.
 
 ## Convenção
 
 - **Vitest** (este diretório): contratos de edge functions, integrações, webhooks, RLS.
 - **Playwright** (`e2e/flows/p0/`): fluxos UI ponta-a-ponta dos mesmos cenários.
 
-## Como destravar
+## Como validar
 
-1. Implementar a correção referenciada no comentário `// TODO(P0):`.
-2. Trocar `it.skip` → `it` (ou remover `test.skip(...)`).
-3. Substituir mocks por chamadas reais quando aplicável (ou validar contrato).
-4. Rodar `npx vitest run tests/p0/` e `npx playwright test e2e/flows/p0/`.
+1. Rodar `npx vitest run tests/p0/` para os contratos locais.
+2. Rodar `npm run check:critical-test-skips` para impedir regressão da dívida.
+3. Rodar `npx playwright test e2e/flows/p0/` para os fluxos ponta a ponta.
 
 ## Mapeamento P0 → Arquivo
 

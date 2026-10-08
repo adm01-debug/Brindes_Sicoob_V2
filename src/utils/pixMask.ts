@@ -50,6 +50,19 @@ function toDigitArray(digits: string): number[] {
   return Array.from(digits, (d) => Number.parseInt(d, 10));
 }
 
+function calculateVerifier(digits: number[], weights: number[]): number {
+  const sum = weights.reduce((total, weight, index) => total + (digits[index] ?? 0) * weight, 0);
+  const remainder = sum % 11;
+  return remainder < 2 ? 0 : 11 - remainder;
+}
+
+function calculateCpfVerifier(digits: number[], length: number): number {
+  const sum = Array.from({ length }, (_, index) => (digits[index] ?? 0) * (length + 1 - index))
+    .reduce((total, value) => total + value, 0);
+  const verifier = 11 - (sum % 11);
+  return verifier >= 10 ? 0 : verifier;
+}
+
 /** Valida dígitos verificadores de CPF */
 export function validateCpfDigits(value: string): boolean {
   const raw = value.replace(/\D/g, '');
@@ -57,17 +70,8 @@ export function validateCpfDigits(value: string): boolean {
   if (/^(\d)\1{10}$/.test(raw)) return false; // todos iguais
 
   const d = toDigitArray(raw);
-  let sum = 0;
-  for (let i = 0; i < 9; i++) sum += (d[i] ?? 0) * (10 - i);
-  let check = 11 - (sum % 11);
-  if (check >= 10) check = 0;
-  if ((d[9] ?? -1) !== check) return false;
-
-  sum = 0;
-  for (let i = 0; i < 10; i++) sum += (d[i] ?? 0) * (11 - i);
-  check = 11 - (sum % 11);
-  if (check >= 10) check = 0;
-  return (d[10] ?? -1) === check;
+  if ((d[9] ?? -1) !== calculateCpfVerifier(d, 9)) return false;
+  return (d[10] ?? -1) === calculateCpfVerifier(d, 10);
 }
 
 /** Valida dígitos verificadores de CNPJ */
@@ -78,16 +82,10 @@ export function validateCnpjDigits(value: string): boolean {
 
   const d = toDigitArray(raw);
   const weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-  let sum = 0;
-  for (let i = 0; i < 12; i++) sum += (d[i] ?? 0) * (weights1[i] ?? 0);
-  let check = sum % 11 < 2 ? 0 : 11 - (sum % 11);
-  if ((d[12] ?? -1) !== check) return false;
+  if ((d[12] ?? -1) !== calculateVerifier(d, weights1)) return false;
 
   const weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-  sum = 0;
-  for (let i = 0; i < 13; i++) sum += (d[i] ?? 0) * (weights2[i] ?? 0);
-  check = sum % 11 < 2 ? 0 : 11 - (sum % 11);
-  return (d[13] ?? -1) === check;
+  return (d[13] ?? -1) === calculateVerifier(d, weights2);
 }
 
 /** Valida chave PIX conforme o tipo. Retorna mensagem de erro ou null se válido. */

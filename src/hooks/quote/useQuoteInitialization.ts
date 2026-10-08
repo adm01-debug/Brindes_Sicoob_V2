@@ -39,63 +39,178 @@ interface InitParams {
   };
 }
 
+interface SimulatorPersonalization {
+  technique?: { id?: string; name?: string };
+  specs?: { colors?: number; width?: number; height?: number };
+  pricing?: { setupPrice?: number; unitPrice?: number; totalPrice?: number };
+}
+
+interface SimulatorImportData {
+  product?: { id: string; name: string; sku?: string; imageUrl?: string; price?: number };
+  quantity?: number;
+  personalizations?: SimulatorPersonalization[];
+}
+
+interface CartImportItem {
+  product_id: string;
+  product_name: string;
+  product_sku?: string;
+  product_image_url?: string | null;
+  quantity: number;
+  unit_price: number;
+  color_name?: string | null;
+  color_hex?: string | null;
+}
+
+interface TemplateImportItem {
+  product_id?: string;
+  productId?: string;
+  product_name?: string;
+  productName?: string;
+  product_sku?: string;
+  productSku?: string;
+  product_image_url?: string;
+  productImageUrl?: string;
+  quantity?: number;
+  unit_price?: number;
+  unitPrice?: number;
+  color_name?: string;
+  colorName?: string;
+  color_hex?: string;
+  colorHex?: string;
+  personalizations?: QuoteItemPersonalization[];
+}
+
+type QuoteSetters = InitParams["setters"];
+
+function fallback<T>(value: T | null | undefined | false | "" | 0, defaultValue: T): T {
+  return value ? value as T : defaultValue;
+}
+
+function validRowVersion(value: number | null | undefined): number | null {
+  return typeof value === "number" && value > 0 ? value : null;
+}
+
+function applyQuoteIdentity(quote: Quote, setters: QuoteSetters): void {
+  setters.setClientId(fallback(quote.client_id, ""));
+  setters.setContactId(fallback(quote.client_id, ""));
+  setters.setValidUntil(fallback(quote.valid_until, format(addDays(new Date(), 30), "yyyy-MM-dd")));
+  setters.setNotes(fallback(quote.notes, ""));
+  setters.setInternalNotes(fallback(quote.internal_notes, ""));
+  setters.setQuoteNumber(fallback(quote.quote_number, ""));
+  setters.setCurrentStatus(quote.status);
+  setters.setExpectedRowVersion(validRowVersion(quote.row_version));
+}
+
+function applyQuoteClient(quote: Quote, setters: QuoteSetters): void {
+  if (quote.client_name) {
+    setters.setContactInfo({
+      id: "",
+      name: quote.client_name,
+      email: quote.client_email || undefined,
+      phone: quote.client_phone || undefined,
+    });
+  }
+  if (quote.client_company) {
+    setters.setCompanyInfo({
+      id: quote.client_id || "",
+      name: quote.client_company,
+      cnpj: quote.client_cnpj || undefined,
+      ramo_atividade: undefined,
+    });
+  }
+}
+
+function applyQuoteDiscount(quote: Quote, setters: QuoteSetters): void {
+  if (quote.discount_percent && quote.discount_percent > 0) {
+    setters.setDiscountType("percent");
+    setters.setDiscountValue(quote.discount_percent);
+    return;
+  }
+  if (quote.discount_amount && quote.discount_amount > 0) {
+    setters.setDiscountType("amount");
+    setters.setDiscountValue(quote.discount_amount);
+  }
+}
+
+function applyQuoteConditions(quote: Quote, setters: QuoteSetters): void {
+  if (typeof quote.negotiation_markup_percent === "number") setters.setNegotiationMarkup(quote.negotiation_markup_percent);
+  if (quote.payment_terms) setters.setPaymentTerms(quote.payment_terms);
+  if (quote.shipping_type) setters.setShippingType(quote.shipping_type);
+  if (quote.shipping_cost) setters.setShippingCost(quote.shipping_cost);
+  if (quote.items) setters.setItems(quote.items);
+  if (quote.tags) setters.setTags(quote.tags);
+}
+
+function applyQuoteDelivery(quote: Quote, setters: QuoteSetters): void {
+  if (!quote.delivery_time) return;
+  if (quote.delivery_time.startsWith("date:")) {
+    setters.setDeliveryMode("data");
+    setters.setDeliveryDate(new Date(`${quote.delivery_time.slice(5)}T12:00:00`));
+  } else {
+    setters.setDeliveryMode("prazo");
+  }
+  setters.setDeliveryTime(quote.delivery_time);
+}
+
+function applyExistingQuote(quote: Quote, setters: QuoteSetters): void {
+  applyQuoteIdentity(quote, setters);
+  applyQuoteClient(quote, setters);
+  applyQuoteDiscount(quote, setters);
+  applyQuoteConditions(quote, setters);
+  applyQuoteDelivery(quote, setters);
+}
+
+function mapSimulatorPersonalization(item: SimulatorPersonalization): QuoteItemPersonalization {
+  const { technique = {}, specs = {}, pricing = {} } = item;
+  const width = fallback(specs.width, 0);
+  const height = fallback(specs.height, 0);
+  return {
+    technique_id: fallback(technique.id, ""),
+    technique_name: fallback(technique.name, ""),
+    colors_count: fallback(specs.colors, 1),
+    positions_count: 1,
+    width_cm: fallback(specs.width, undefined),
+    height_cm: fallback(specs.height, undefined),
+    area_cm2: width * height,
+    setup_cost: fallback(pricing.setupPrice, 0),
+    unit_cost: fallback(pricing.unitPrice, 0),
+    total_cost: fallback(pricing.totalPrice, 0),
+  };
+}
+
+function mapTemplateItem(item: TemplateImportItem): QuoteItem {
+  return {
+    product_id: fallback(item.product_id, fallback(item.productId, "")),
+    product_name: fallback(item.product_name, fallback(item.productName, "")),
+    product_sku: fallback(item.product_sku, fallback(item.productSku, "")),
+    product_image_url: fallback(item.product_image_url, item.productImageUrl),
+    quantity: fallback(item.quantity, 1),
+    unit_price: fallback(item.unit_price, fallback(item.unitPrice, 0)),
+    color_name: fallback(item.color_name, item.colorName),
+    color_hex: fallback(item.color_hex, item.colorHex),
+    personalizations: fallback(item.personalizations, []),
+  };
+}
+
 export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locationState, searchParams, setters }: InitParams) {
   // 1. Load existing quote
   useEffect(() => {
     if (!isEditMode || !quoteId) return;
     setters.setLoadingQuote(true);
     fetchQuote(quoteId).then((quote) => {
-      if (quote) {
-        setters.setClientId(quote.client_id || "");
-        setters.setContactId(quote.client_id || "");
-        setters.setValidUntil(quote.valid_until || format(addDays(new Date(), 30), "yyyy-MM-dd"));
-        setters.setNotes(quote.notes || "");
-        setters.setInternalNotes(quote.internal_notes || "");
-        setters.setQuoteNumber(quote.quote_number || "");
-        setters.setCurrentStatus(quote.status);
-        setters.setExpectedRowVersion(typeof quote.row_version === "number" && quote.row_version > 0 ? quote.row_version : null);
-        if (quote.client_name) {
-          setters.setContactInfo({ id: "", name: quote.client_name, email: quote.client_email || undefined, phone: quote.client_phone || undefined });
-        }
-        if (quote.client_company) {
-          setters.setCompanyInfo({ id: quote.client_id || "", name: quote.client_company, cnpj: quote.client_cnpj || undefined, ramo_atividade: undefined });
-        }
-        if (quote.discount_percent && quote.discount_percent > 0) { setters.setDiscountType("percent"); setters.setDiscountValue(quote.discount_percent); }
-        else if (quote.discount_amount && quote.discount_amount > 0) { setters.setDiscountType("amount"); setters.setDiscountValue(quote.discount_amount); }
-        if (typeof quote.negotiation_markup_percent === "number") setters.setNegotiationMarkup(quote.negotiation_markup_percent);
-        if (quote.payment_terms) setters.setPaymentTerms(quote.payment_terms);
-        if (quote.shipping_type) setters.setShippingType(quote.shipping_type);
-        if (quote.shipping_cost) setters.setShippingCost(quote.shipping_cost);
-        if (quote.delivery_time) {
-          if (quote.delivery_time.startsWith("date:")) {
-            setters.setDeliveryMode("data");
-            setters.setDeliveryDate(new Date(quote.delivery_time.slice(5) + "T12:00:00"));
-          } else {
-            setters.setDeliveryMode("prazo");
-          }
-          setters.setDeliveryTime(quote.delivery_time);
-        }
-        if (quote.items) setters.setItems(quote.items);
-        if (quote.tags) setters.setTags(quote.tags);
-      }
+      if (quote) applyExistingQuote(quote, setters);
       setters.setLoadingQuote(false);
     });
-  }, [isEditMode, quoteId]);
+  }, [fetchQuote, isEditMode, quoteId, setters]);
 
   // 2. Pre-fill from simulator
   useEffect(() => {
-    const state = locationState as { fromSimulator?: boolean; simulationData?: any } | null;
+    const state = locationState as { fromSimulator?: boolean; simulationData?: SimulatorImportData } | null;
     if (!state?.fromSimulator || !state.simulationData) return;
     const { product, quantity, personalizations } = state.simulationData;
     if (!product) return;
-    const quotePersonalizations: QuoteItemPersonalization[] = (personalizations || []).map((p: any) => ({
-      technique_id: p.technique?.id || '', technique_name: p.technique?.name || '',
-      colors_count: p.specs?.colors || 1, positions_count: 1,
-      width_cm: p.specs?.width || undefined, height_cm: p.specs?.height || undefined,
-      area_cm2: (p.specs?.width || 0) * (p.specs?.height || 0),
-      setup_cost: p.pricing?.setupPrice || 0, unit_cost: p.pricing?.unitPrice || 0,
-      total_cost: p.pricing?.totalPrice || 0,
-    }));
+    const quotePersonalizations = fallback(personalizations, []).map(mapSimulatorPersonalization);
     const newItem: QuoteItem = {
       product_id: product.id, product_name: product.name, product_sku: product.sku || '',
       product_image_url: product.imageUrl || undefined, quantity: quantity || 1,
@@ -105,11 +220,11 @@ export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locati
     if (quotePersonalizations.length > 0) setters.setExpandedItems(new Set([0]));
     toast.success(`Produto "${product.name}" importado do simulador`);
     window.history.replaceState({}, document.title);
-  }, [locationState]);
+  }, [locationState, setters]);
 
   // 3. Pre-fill from cart
   useEffect(() => {
-    const state = locationState as { fromCart?: boolean; companyId?: string; companyName?: string; items?: any[] } | null;
+    const state = locationState as { fromCart?: boolean; companyId?: string; companyName?: string; items?: CartImportItem[] } | null;
     if (!state?.fromCart || !state.items?.length) return;
     if (state.companyId) setters.setClientId(state.companyId);
     const cartItems: QuoteItem[] = state.items.map((i) => ({
@@ -121,7 +236,7 @@ export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locati
     setters.setItems(cartItems);
     toast.success(`${cartItems.length} item(ns) importado(s) do carrinho`);
     window.history.replaceState({}, document.title);
-  }, [locationState]);
+  }, [locationState, setters]);
 
   // 4. Pre-fill from URL params
   useEffect(() => {
@@ -146,27 +261,17 @@ export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locati
         }
       } catch (e) { console.warn("Failed to parse items[]", e); }
     }
-  }, []);
+  }, [isEditMode, searchParams, setters]);
 
   // 5. Pre-fill from template (passed via state)
   useEffect(() => {
-    const state = locationState as { templateItems?: any[] } | null;
+    const state = locationState as { templateItems?: TemplateImportItem[] } | null;
     if (!state?.templateItems?.length) return;
     
-    const templateItems: QuoteItem[] = state.templateItems.map((i) => ({
-      product_id: i.product_id || i.productId || "",
-      product_name: i.product_name || i.productName || "",
-      product_sku: i.product_sku || i.productSku || "",
-      product_image_url: i.product_image_url || i.productImageUrl || undefined,
-      quantity: i.quantity || 1,
-      unit_price: i.unit_price || i.unitPrice || 0,
-      color_name: i.color_name || i.colorName || undefined,
-      color_hex: i.color_hex || i.colorHex || undefined,
-      personalizations: i.personalizations || [],
-    }));
+    const templateItems = state.templateItems.map(mapTemplateItem);
     
     setters.setItems(templateItems);
     toast.success(`${templateItems.length} item(ns) importado(s) do template`);
     window.history.replaceState({}, document.title);
-  }, [locationState]);
+  }, [locationState, setters]);
 }

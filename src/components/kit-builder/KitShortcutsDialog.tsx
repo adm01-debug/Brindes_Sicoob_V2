@@ -15,6 +15,22 @@ const SHORTCUTS: { keys: string[]; label: string; section: string }[] = [
   { keys: ['Esc'], label: 'Fechar diálogos', section: 'Ajuda' },
 ];
 
+function ShortcutSections() {
+  const sections = Array.from(new Set(SHORTCUTS.map((shortcut) => shortcut.section)));
+  return <div className="space-y-4">{sections.map((section) => <div key={section}>
+    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">{section}</p>
+    <div className="space-y-1.5">{SHORTCUTS.filter((shortcut) => shortcut.section === section).map((shortcut) =>
+      <div key={shortcut.label} className="flex items-center justify-between py-1.5 px-2 rounded-md hover:bg-muted/40">
+        <span className="text-sm">{shortcut.label}</span><div className="flex items-center gap-1">
+          {shortcut.keys.map((key) => <kbd key={key}
+            className="px-1.5 py-0.5 text-[10px] font-display font-semibold tabular-nums bg-muted border border-border rounded shadow-sm">
+            {key}
+          </kbd>)}
+        </div>
+      </div>)}</div>
+  </div>)}</div>;
+}
+
 export function KitShortcutsDialog() {
   const [open, setOpen] = useState(false);
 
@@ -31,8 +47,6 @@ export function KitShortcutsDialog() {
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
-  const sections = Array.from(new Set(SHORTCUTS.map(s => s.section)));
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-md">
@@ -42,30 +56,7 @@ export function KitShortcutsDialog() {
           </DialogTitle>
           <DialogDescription>Acelere seu fluxo de trabalho</DialogDescription>
         </DialogHeader>
-        <div className="space-y-4">
-          {sections.map(section => (
-            <div key={section}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">{section}</p>
-              <div className="space-y-1.5">
-                {SHORTCUTS.filter(s => s.section === section).map(shortcut => (
-                  <div key={shortcut.label} className="flex items-center justify-between py-1.5 px-2 rounded-md hover:bg-muted/40">
-                    <span className="text-sm">{shortcut.label}</span>
-                    <div className="flex items-center gap-1">
-                      {shortcut.keys.map((key, i) => (
-                        <kbd
-                          key={i}
-                          className="px-1.5 py-0.5 text-[10px] font-display font-semibold tabular-nums bg-muted border border-border rounded shadow-sm"
-                        >
-                          {key}
-                        </kbd>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+        <ShortcutSections />
       </DialogContent>
     </Dialog>
   );

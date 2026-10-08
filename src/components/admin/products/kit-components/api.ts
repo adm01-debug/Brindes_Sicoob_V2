@@ -4,8 +4,10 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { KitComponent, PrintArea } from './types';
 
+const EXTERNAL_DB_BRIDGE = 'external-db-bridge';
+
 export async function fetchKitComponents(productId: string): Promise<KitComponent[]> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
     body: {
       table: 'product_kit_components',
       operation: 'select',
@@ -20,7 +22,7 @@ export async function fetchKitComponents(productId: string): Promise<KitComponen
 }
 
 export async function createComponent(payload: Record<string, unknown>): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
     body: { table: 'product_kit_components', operation: 'insert', data: payload },
   });
   if (error) throw new Error(error.message);
@@ -28,7 +30,7 @@ export async function createComponent(payload: Record<string, unknown>): Promise
 }
 
 export async function updateComponent(id: string, payload: Record<string, unknown>): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
     body: { table: 'product_kit_components', operation: 'update', id, data: payload },
   });
   if (error) throw new Error(error.message);
@@ -36,7 +38,7 @@ export async function updateComponent(id: string, payload: Record<string, unknow
 }
 
 export async function deleteComponent(id: string): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
     body: { table: 'product_kit_components', operation: 'delete', id },
   });
   if (error) throw new Error(error.message);
@@ -44,7 +46,7 @@ export async function deleteComponent(id: string): Promise<void> {
 }
 
 export async function fetchPrintAreas(componentId: string): Promise<PrintArea[]> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
     body: {
       table: 'kit_component_print_areas',
       operation: 'select',
@@ -59,7 +61,7 @@ export async function fetchPrintAreas(componentId: string): Promise<PrintArea[]>
 }
 
 export async function createPrintArea(payload: Record<string, unknown>): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
     body: { table: 'kit_component_print_areas', operation: 'insert', data: payload },
   });
   if (error) throw new Error(error.message);
@@ -67,7 +69,7 @@ export async function createPrintArea(payload: Record<string, unknown>): Promise
 }
 
 export async function updatePrintArea(id: string, payload: Record<string, unknown>): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
     body: { table: 'kit_component_print_areas', operation: 'update', id, data: payload },
   });
   if (error) throw new Error(error.message);
@@ -75,7 +77,7 @@ export async function updatePrintArea(id: string, payload: Record<string, unknow
 }
 
 export async function deletePrintArea(id: string): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
     body: { table: 'kit_component_print_areas', operation: 'delete', id },
   });
   if (error) throw new Error(error.message);
@@ -96,7 +98,7 @@ export interface ComponentMedia {
 }
 
 export async function fetchComponentMedia(componentId: string): Promise<ComponentMedia[]> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
     body: {
       table: 'kit_component_media',
       operation: 'select',
@@ -111,7 +113,7 @@ export async function fetchComponentMedia(componentId: string): Promise<Componen
 }
 
 export async function createComponentMedia(payload: Record<string, unknown>): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
     body: { table: 'kit_component_media', operation: 'insert', data: payload },
   });
   if (error) throw new Error(error.message);
@@ -119,7 +121,7 @@ export async function createComponentMedia(payload: Record<string, unknown>): Pr
 }
 
 export async function updateComponentMedia(id: string, payload: Record<string, unknown>): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
     body: { table: 'kit_component_media', operation: 'update', id, data: payload },
   });
   if (error) throw new Error(error.message);
@@ -127,7 +129,7 @@ export async function updateComponentMedia(id: string, payload: Record<string, u
 }
 
 export async function deleteComponentMedia(id: string): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
     body: { table: 'kit_component_media', operation: 'delete', id },
   });
   if (error) throw new Error(error.message);

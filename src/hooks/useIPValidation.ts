@@ -10,6 +10,50 @@ interface IPValidationResult {
   details?: Record<string, unknown>;
 }
 
+interface AccessValidationResponse {
+  allowed: boolean;
+  reason: string;
+  details?: Record<string, unknown>;
+}
+
+function valueOr<T>(value: T | null | undefined | false | "" | 0, fallback: T): T {
+  return value ? value as T : fallback;
+}
+
+function accessDenialMessage(result: AccessValidationResponse, currentIP: string): string {
+  const details = valueOr(result.details, {});
+  if (result.reason === 'ip_not_whitelisted') {
+    return `Seu IP (${currentIP}) não está autorizado para acessar o sistema.`;
+  }
+  if (result.reason === 'city_not_whitelisted') {
+    return `Acesso negado: sua localização (${valueOr(details.detected_city, 'desconhecida')}) não está autorizada.`;
+  }
+  if (result.reason === 'too_many_attempts') {
+    return `IP bloqueado temporariamente por excesso de tentativas. Tente novamente em ${valueOr(details.lockout_minutes, 15)} minutos.`;
+  }
+  return 'Acesso negado';
+}
+
+function accessValidationResult(data: unknown, currentIP: string): IPValidationResult {
+  if (!data) return { isAllowed: true, currentIP, hasRestrictions: false };
+  const result = data as AccessValidationResponse;
+  if (result.allowed) {
+    return {
+      isAllowed: true,
+      currentIP,
+      hasRestrictions: result.reason !== 'no_settings',
+    };
+  }
+  return {
+    isAllowed: false,
+    currentIP,
+    hasRestrictions: true,
+    error: accessDenialMessage(result, currentIP),
+    reason: result.reason,
+    details: result.details,
+  };
+}
+
 export function useIPValidation() {
   const [isValidating, setIsValidating] = useState(false);
 
@@ -79,39 +123,7 @@ export function useIPValidation() {
         };
       }
 
-      if (!data) {
-        return { isAllowed: true, currentIP, hasRestrictions: false };
-      }
-
-      const result = data as { allowed: boolean; reason: string; details?: Record<string, unknown> };
-
-      if (!result.allowed) {
-        let errorMsg = 'Acesso negado';
-        if (result.reason === 'ip_not_whitelisted') {
-          errorMsg = `Seu IP (${currentIP}) não está autorizado para acessar o sistema.`;
-        } else if (result.reason === 'city_not_whitelisted') {
-          const details = result.details || {};
-          errorMsg = `Acesso negado: sua localização (${details.detected_city || 'desconhecida'}) não está autorizada.`;
-        } else if (result.reason === 'too_many_attempts') {
-          const details = result.details || {};
-          errorMsg = `IP bloqueado temporariamente por excesso de tentativas. Tente novamente em ${details.lockout_minutes || 15} minutos.`;
-        }
-
-        return {
-          isAllowed: false,
-          currentIP,
-          hasRestrictions: true,
-          error: errorMsg,
-          reason: result.reason,
-          details: result.details,
-        };
-      }
-
-      return {
-        isAllowed: true,
-        currentIP,
-        hasRestrictions: result.reason !== 'no_settings',
-      };
+      return accessValidationResult(data, currentIP);
     } catch (error: unknown) {
       console.error('Error in IP validation:', error);
       // Fail-open: se não conseguir validar, permite

@@ -1,3 +1,4 @@
+import { isNullish } from "@/components/admin/utils/nullish";
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,7 @@ const INTERVAL_OPTIONS: Array<{ value: number; label: string }> = [
   { value: 240, label: "4 horas" },
 ];
 
-export function AutoTestIntervalCard() {
+function useAutoTestInterval() {
   const [current, setCurrent] = useState<number | null>(null);
   const [draft, setDraft] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -63,6 +64,16 @@ export function AutoTestIntervalCard() {
     });
   }
 
+  return { current, draft, setDraft, loading, saving, dirty, save };
+}
+
+function IntervalInfoTooltip() {
+  return <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><span className="inline-flex"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span></TooltipTrigger><TooltipContent side="top" className="max-w-[280px]"><p className="text-xs">Apenas administradores podem alterar. A mudança é registrada em auditoria e aplicada imediatamente ao agendamento.</p></TooltipContent></Tooltip></TooltipProvider>;
+}
+
+export function AutoTestIntervalCard() {
+  const state = useAutoTestInterval();
+
   return (
     <Card className="border-dashed">
       <CardContent className="flex flex-wrap items-center gap-3 py-3">
@@ -78,25 +89,13 @@ export function AutoTestIntervalCard() {
           </div>
         </div>
 
-        <TooltipProvider delayDuration={200}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="inline-flex"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="max-w-[280px]">
-              <p className="text-xs">
-                Apenas administradores podem alterar. A mudança é registrada em auditoria
-                e aplicada imediatamente ao agendamento.
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <IntervalInfoTooltip />
 
         <div className="flex items-center gap-2 ml-auto">
           <span className="text-xs text-muted-foreground tabular-nums">
-            Atual: {loading ? "…" : current != null ? formatLabel(current) : "—"}
+            Atual: {state.loading ? "…" : !isNullish(state.current) ? formatLabel(state.current) : "—"}
           </span>
-          <Select value={draft} onValueChange={setDraft} disabled={loading || saving}>
+          <Select value={state.draft} onValueChange={state.setDraft} disabled={state.loading || state.saving}>
             <SelectTrigger className="h-9 w-[120px]" aria-label="Selecionar intervalo">
               <SelectValue placeholder="Intervalo" />
             </SelectTrigger>
@@ -106,8 +105,8 @@ export function AutoTestIntervalCard() {
               ))}
             </SelectContent>
           </Select>
-          <Button size="sm" onClick={save} disabled={!dirty || saving || loading}>
-            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+          <Button size="sm" onClick={state.save} disabled={!state.dirty || state.saving || state.loading}>
+            {state.saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
             Salvar
           </Button>
         </div>

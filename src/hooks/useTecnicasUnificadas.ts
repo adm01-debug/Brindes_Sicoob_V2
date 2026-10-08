@@ -50,8 +50,14 @@ import {
   useTecnicaByCodigo as useTecnicaByCodigoInternal,
   useTecnicaMutations,
   usePrecoCalculation,
+  type PriceCalculation,
+  type PriceTier,
 } from './tecnicas';
 import type { TecnicaFiltros } from '@/types/tecnica-unificada';
+
+function valueOr<T>(value: T | null | undefined | false | '' | 0, fallback: T): T {
+  return value ? value as T : fallback;
+}
 
 /**
  * @deprecated Use useTecnicasList + useTecnicaMutations separadamente
@@ -139,8 +145,8 @@ export interface CustomizationPriceTable {
 /**
  * @deprecated Use extractPriceTiersFromTabela
  */
-export function extractPriceTiers(table: CustomizationPriceTable): import('./tecnicas').PriceTier[] {
-  const tiers: import('./tecnicas').PriceTier[] = [];
+export function extractPriceTiers(table: CustomizationPriceTable): PriceTier[] {
+  const tiers: PriceTier[] = [];
   
   for (let i = 1; i <= 15; i++) {
     const minQty = table[`min_qty_${i}`] as number | undefined;
@@ -170,12 +176,13 @@ export function extractPriceTiers(table: CustomizationPriceTable): import('./tec
 export function calculatePriceForQuantityLegacy(
   table: CustomizationPriceTable,
   quantity: number
-): import('./tecnicas').PriceCalculation | null {
+): PriceCalculation | null {
   const tiers = extractPriceTiers(table);
   
-  if (tiers.length === 0) return null;
+  const firstTier = tiers[0];
+  if (!firstTier) return null;
   
-  let selectedTier = tiers[0]!;
+  let selectedTier = firstTier;
   for (const tier of tiers) {
     if (quantity >= tier.minQuantity) {
       selectedTier = tier;
@@ -184,11 +191,11 @@ export function calculatePriceForQuantityLegacy(
   
   const unitPrice = selectedTier.unitPrice;
   const totalPrice = unitPrice * quantity;
-  const setupPrice = table.setup_price || 0;
-  const handlingPrice = table.handling_price || 0;
+  const setupPrice = valueOr(table.setup_price, 0);
+  const handlingPrice = valueOr(table.handling_price, 0);
   const grandTotal = totalPrice + setupPrice + handlingPrice;
   
-  const minTierPrice = tiers[0]!.unitPrice;
+  const minTierPrice = firstTier.unitPrice;
   const savingsPerUnit = minTierPrice - unitPrice;
   const percentageOff = minTierPrice > 0 ? ((minTierPrice - unitPrice) / minTierPrice) * 100 : 0;
   
@@ -202,10 +209,10 @@ export function calculatePriceForQuantityLegacy(
     handlingPrice,
     grandTotal,
     slaDays: selectedTier.slaDays,
-    maxColors: table.max_colors || 1,
+    maxColors: valueOr(table.max_colors, 1),
     maxArea: {
-      width: table.max_area_width_cm || 0,
-      height: table.max_area_height_cm || 0,
+      width: valueOr(table.max_area_width_cm, 0),
+      height: valueOr(table.max_area_height_cm, 0),
     },
     savings: savingsPerUnit > 0 ? {
       comparedToMin: savingsPerUnit * quantity,

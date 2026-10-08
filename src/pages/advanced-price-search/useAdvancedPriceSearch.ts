@@ -1,23 +1,137 @@
-import { useState, useMemo } from 'react';
-import { useProducts } from '@/hooks/useProducts';
-import { useExternalTechniques } from '@/hooks/useExternalDatabase';
-import { fetchPromobrindPriceTables } from '@/lib/external-db';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import type { SearchFilters, ProductWithCalculatedPrice, ViewMode } from './types';
-import { DEFAULT_FILTERS } from './types';
+import { useExternalTechniques } from '@/hooks/useExternalDatabase';
+import { useProducts, type Product } from '@/hooks/useProducts';
+import { fetchPromobrindPriceTables } from '@/lib/external-db';
+import {
+  DEFAULT_FILTERS,
+  type ProductWithCalculatedPrice,
+  type SearchFilters,
+  type ViewMode,
+} from './types';
 
-export function useAdvancedPriceSearch() {
-  const [filters, setFilters] = useState<SearchFilters>(DEFAULT_FILTERS);
-  const [viewMode, setViewMode] = useState<ViewMode>('cards');
-  const [isSearching, setIsSearching] = useState(false);
+type PriceTable = Awaited<ReturnType<typeof fetchPromobrindPriceTables>>[number];
 
-  const { data: products = [], isLoading: loadingProducts } = useProducts();
-  const { data: techniques = [], isLoading: loadingTechniques } = useExternalTechniques();
+function productCategory(product: Product) {
+  if (typeof product.category === 'string') return product.category;
+  if (typeof product.category === 'object') return product.category?.name ?? null;
+  return null;
+}
 
-  const { data: priceTables = [] } = useQuery({
+function collectCategories(products: Product[]) {
+  const categories = new Set<string>();
+  for (const product of products) {
+    const category = productCategory(product);
+    if (category) categories.add(category);
+  }
+  return Array.from(categories).sort();
+}
+
+function collectColors(products: Product[]) {
+  const colors = new Map<string, { name: string; hex: string }>();
+  for (const product of products) {
+    for (const color of product.colors ?? []) {
+      if (color.hex && !colors.has(color.hex)) {
+        colors.set(color.hex, { name: color.name, hex: color.hex });
+      }
+    }
+  }
+  return Array.from(colors.values());
+}
+
+function matchesSearch(product: Product, searchQuery: string) {
+  if (!searchQuery) return true;
+  const query = searchQuery.toLowerCase();
+  return (
+    product.name.toLowerCase().includes(query) ||
+    Boolean(product.sku?.toLowerCase().includes(query))
+  );
+}
+
+function matchesCategory(product: Product, category: string) {
+  return category === 'all' || productCategory(product) === category;
+}
+
+function matchesColors(product: Product, colors: string[]) {
+  if (colors.length === 0) return true;
+  const productColors = new Set((product.colors ?? []).map((color) => color.hex));
+  return colors.some((color) => productColors.has(color));
+}
+
+function matchesFilters(product: Product, filters: SearchFilters) {
+  return (
+    matchesSearch(product, filters.searchQuery) &&
+    matchesCategory(product, filters.category) &&
+    matchesColors(product, filters.colors)
+  );
+}
+
+function matchesQuantity(table: PriceTable, quantity: number) {
+  if (table.min_quantity > quantity) return false;
+  return table.max_quantity === null || table.max_quantity >= quantity;
+}
+
+function matchingPriceTable(filters: SearchFilters, priceTables: PriceTable[]) {
+  if (filters.technique === 'all' || priceTables.length === 0) return undefined;
+  return priceTables.find((table) => matchesQuantity(table, filters.minQuantity)) ?? priceTables[0];
+}
+
+function numberOrZero(value: number | null | undefined) {
+  return value || 0;
+}
+
+function calculateProductPrice(
+  product: Product,
+  filters: SearchFilters,
+  priceTables: PriceTable[],
+): ProductWithCalculatedPrice {
+  const table = matchingPriceTable(filters, priceTables);
+  const productPrice = numberOrZero(product.price);
+  const customizationPrice = numberOrZero(table?.unit_price);
+  const setupPrice = numberOrZero(table?.setup_price);
+  const handlingPrice = numberOrZero(table?.handling_price);
+  const personalizedPrice =
+    productPrice + customizationPrice + setupPrice / filters.minQuantity + handlingPrice;
+  const totalPerUnit =
+    filters.priceType === 'with_personalization' ? personalizedPrice : productPrice;
+  return {
+    ...product,
+    calculatedUnitPrice: totalPerUnit,
+    priceBreakdown: {
+      productPrice,
+      customizationPrice,
+      setupPrice,
+      handlingPrice,
+      totalPerUnit,
+    },
+    matchingTechnique: table,
+  };
+}
+
+function priceWithinRange(product: ProductWithCalculatedPrice, range: [number, number]) {
+  const price = product.priceBreakdown.totalPerUnit;
+  return price >= range[0] && price <= range[1];
+}
+
+function searchProducts(
+  products: Product[],
+  filters: SearchFilters,
+  priceTables: PriceTable[],
+  isSearching: boolean,
+) {
+  if (!isSearching) return [];
+  return products
+    .filter((product) => matchesFilters(product, filters))
+    .map((product) => calculateProductPrice(product, filters, priceTables))
+    .filter((product) => priceWithinRange(product, filters.priceRange))
+    .sort((left, right) => left.priceBreakdown.totalPerUnit - right.priceBreakdown.totalPerUnit);
+}
+
+function usePriceTables(filters: SearchFilters) {
+  return useQuery({
     queryKey: ['price-tables-search', filters.technique, filters.minQuantity],
-    queryFn: async () => {
-      if (filters.technique === 'all') return [];
+    queryFn: () => {
+      if (filters.technique === 'all') return Promise.resolve([]);
       return fetchPromobrindPriceTables({
         techniqueName: filters.technique,
         quantity: filters.minQuantity,
@@ -25,108 +139,53 @@ export function useAdvancedPriceSearch() {
     },
     enabled: filters.technique !== 'all',
   });
+}
 
-  const categories = useMemo(() => {
-    const cats = new Set<string>();
-    products.forEach(p => {
-      const catName = typeof p.category === 'object' && p.category?.name
-        ? p.category.name
-        : (typeof p.category === 'string' ? p.category : null);
-      if (catName) cats.add(catName);
-    });
-    return Array.from(cats).sort();
-  }, [products]);
-
-  const availableColors = useMemo(() => {
-    const colorMap = new Map<string, { name: string; hex: string }>();
-    products.forEach(p => {
-      p.colors?.forEach(c => {
-        if (c.hex && !colorMap.has(c.hex)) {
-          colorMap.set(c.hex, { name: c.name, hex: c.hex });
-        }
-      });
-    });
-    return Array.from(colorMap.values());
-  }, [products]);
-
-  const filteredProducts = useMemo((): ProductWithCalculatedPrice[] => {
-    if (!isSearching) return [];
-
-    const result = products.filter(product => {
-      if (filters.searchQuery) {
-        const query = filters.searchQuery.toLowerCase();
-        if (!product.name.toLowerCase().includes(query) &&
-            !product.sku?.toLowerCase().includes(query)) return false;
-      }
-      if (filters.category !== 'all') {
-        const cat = typeof product.category === 'object' && product.category?.name
-          ? product.category.name
-          : (typeof product.category === 'string' ? product.category : null);
-        if (cat !== filters.category) return false;
-      }
-      if (filters.colors.length > 0) {
-        const hexes = product.colors?.map(c => c.hex) || [];
-        if (!filters.colors.some(c => hexes.includes(c))) return false;
-      }
-      return true;
-    });
-
-    const withPrices: ProductWithCalculatedPrice[] = result.map(product => {
-      const productPrice = product.price || 0;
-      let customizationPrice = 0, setupPrice = 0, handlingPrice = 0;
-      let matchingTable = undefined as ProductWithCalculatedPrice['matchingTechnique'];
-
-      if (filters.technique !== 'all' && priceTables.length > 0) {
-        matchingTable = priceTables.find(t =>
-          t.min_quantity <= filters.minQuantity &&
-          (t.max_quantity === null || t.max_quantity >= filters.minQuantity)
-        ) || priceTables[0];
-        if (matchingTable) {
-          customizationPrice = matchingTable.unit_price || 0;
-          setupPrice = matchingTable.setup_price || 0;
-          handlingPrice = matchingTable.handling_price || 0;
-        }
-      }
-
-      const setupPerUnit = setupPrice / filters.minQuantity;
-      const totalPerUnit = filters.priceType === 'with_personalization'
-        ? productPrice + customizationPrice + setupPerUnit + handlingPrice
-        : productPrice;
-
-      return {
-        ...product,
-        calculatedUnitPrice: totalPerUnit,
-        priceBreakdown: { productPrice, customizationPrice, setupPrice, handlingPrice, totalPerUnit },
-        matchingTechnique: matchingTable,
-      };
-    });
-
-    return withPrices
-      .filter(p => p.priceBreakdown.totalPerUnit >= filters.priceRange[0] && p.priceBreakdown.totalPerUnit <= filters.priceRange[1])
-      .sort((a, b) => a.priceBreakdown.totalPerUnit - b.priceBreakdown.totalPerUnit);
-  }, [products, priceTables, filters, isSearching]);
-
+export function useAdvancedPriceSearch() {
+  const [filters, setFilters] = useState<SearchFilters>(DEFAULT_FILTERS);
+  const [viewMode, setViewMode] = useState<ViewMode>('cards');
+  const [isSearching, setIsSearching] = useState(false);
+  const { data: products = [], isLoading: loadingProducts } = useProducts();
+  const { data: techniques = [], isLoading: loadingTechniques } = useExternalTechniques();
+  const { data: priceTables = [] } = usePriceTables(filters);
+  const categories = useMemo(() => collectCategories(products), [products]);
+  const availableColors = useMemo(() => collectColors(products), [products]);
+  const filteredProducts = useMemo(
+    () => searchProducts(products, filters, priceTables, isSearching),
+    [products, priceTables, filters, isSearching],
+  );
   const updateFilter = <K extends keyof SearchFilters>(key: K, value: SearchFilters[K]) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters((previous) => ({ ...previous, [key]: value }));
     setIsSearching(false);
   };
-
   const toggleColor = (hex: string) => {
-    setFilters(prev => ({
-      ...prev,
-      colors: prev.colors.includes(hex) ? prev.colors.filter(c => c !== hex) : [...prev.colors, hex],
+    setFilters((previous) => ({
+      ...previous,
+      colors: previous.colors.includes(hex)
+        ? previous.colors.filter((color) => color !== hex)
+        : [...previous.colors, hex],
     }));
     setIsSearching(false);
   };
-
+  const handleReset = () => {
+    setFilters(DEFAULT_FILTERS);
+    setIsSearching(false);
+  };
   return {
-    filters, viewMode, setViewMode, isSearching,
-    setIsSearching, filteredProducts,
-    categories, availableColors, techniques,
+    filters,
+    viewMode,
+    setViewMode,
+    isSearching,
+    setIsSearching,
+    filteredProducts,
+    categories,
+    availableColors,
+    techniques,
     isLoading: loadingProducts || loadingTechniques,
     loadingTechniques,
-    updateFilter, toggleColor,
+    updateFilter,
+    toggleColor,
     handleSearch: () => setIsSearching(true),
-    handleReset: () => { setFilters(DEFAULT_FILTERS); setIsSearching(false); },
+    handleReset,
   };
 }

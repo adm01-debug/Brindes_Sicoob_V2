@@ -1,5 +1,20 @@
 project_id = "cfmzkthhgliqelozlmwu"
 
+# Estas duas funções validam o JWT dentro do handler. O gateway permanece sem
+# validação para aceitar tanto chaves JWT legadas quanto publishable keys.
+[functions.expert-chat]
+verify_jwt = false
+
+[functions.external-db-bridge]
+verify_jwt = false
+
+# Estes handlers mantêm a dupla barreira: gateway e validação auth.getUser.
+[functions.sicoob-kit-quote]
+verify_jwt = true
+
+[functions.sicoob-reorder]
+verify_jwt = true
+
 [functions.migrate-helper]
 verify_jwt = false
 

@@ -2,15 +2,15 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Send, Loader2, Mic, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { type RefObject } from "react";
+import type { KeyboardEvent, MutableRefObject, RefObject } from "react";
 
 interface ChatInputBarProps {
   input: string;
   setInput: (v: string) => void;
   isLoading: boolean;
   inputRef: RefObject<HTMLTextAreaElement | null>;
-  isFromVoiceRef: React.MutableRefObject<boolean>;
-  onKeyDown: (e: React.KeyboardEvent) => void;
+  isFromVoiceRef: MutableRefObject<boolean>;
+  onKeyDown: (e: KeyboardEvent) => void;
   onSend: () => void;
   onStopGenerating: () => void;
   setIsFromVoice: (v: boolean) => void;
@@ -29,7 +29,7 @@ export function ChatInputBar({
     recognition.maxAlternatives = 1;
     toast.info("🎙️ Ouvindo… fale agora", { duration: 3000 });
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = event.results[0]![0]!.transcript;
+      const transcript = event.results[0]?.[0]?.transcript;
       if (transcript) {
         setInput(transcript);
         isFromVoiceRef.current = true;

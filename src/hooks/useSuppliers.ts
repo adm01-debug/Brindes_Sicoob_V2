@@ -23,7 +23,7 @@ export function useSuppliers() {
       orderBy: { column: 'name', ascending: true },
       limit: 100 
     });
-  }, []);
+  }, [fetchAll]);
 
   // Transformar dados para o formato usado pelos componentes
   const suppliers = useMemo((): SupplierOption[] => {

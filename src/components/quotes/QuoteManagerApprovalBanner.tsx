@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { CheckCircle2, XCircle, ShieldCheck, Loader2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
@@ -25,59 +26,85 @@ interface Props {
   onActionComplete?: () => void;
 }
 
-export function QuoteManagerApprovalBanner({ quoteId, status, realDiscountPercent, maxDiscountPercent, onActionComplete }: Props) {
-  const { isSupervisorOrAbove } = useRBAC();
+function ApprovalMessage({ canApprove, realDiscountPercent, maxDiscountPercent }: {
+  canApprove: boolean; realDiscountPercent?: number; maxDiscountPercent?: number;
+}) {
+  return <div className="flex-1 text-center md:text-left"><h4 className="font-display font-bold text-amber-900 text-lg">Aprovação de Alçada Pendente</h4>
+    <div className="flex flex-wrap justify-center md:justify-start items-center gap-3 mt-1"><p className="text-sm text-amber-800/80">
+      Este orçamento possui um desconto de <span className="font-bold text-amber-900">{realDiscountPercent?.toFixed(1)}%</span>,
+      que excede o limite do vendedor (<span className="font-bold">{maxDiscountPercent}%</span>).</p>
+      {!canApprove && <Badge variant="outline" className="bg-white/50 border-amber-200 text-amber-700 gap-1 text-[10px]">
+        <Info className="h-3 w-3" /> Aguardando Gestor</Badge>}
+    </div>
+  </div>;
+}
+
+function ApprovalActions({ processing, onApprove, onReject }: { processing: boolean; onApprove: () => void; onReject: () => void }) {
+  return <div className="flex items-center gap-2 shrink-0"><Button variant="outline" size="sm"
+    className="h-10 px-4 gap-2 border-amber-300 text-amber-700 hover:bg-amber-100" onClick={onReject} disabled={processing}>
+    <XCircle className="h-4 w-4" />Reprovar</Button>
+    <Button size="sm" className="h-10 px-6 gap-2 bg-amber-600 hover:bg-amber-700 text-white shadow-md transition-all active:scale-95"
+      onClick={onApprove} disabled={processing}>{processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+      Aprovar Desconto</Button>
+  </div>;
+}
+
+function RejectDialog({ open, setOpen, notes, setNotes, processing, onConfirm }: {
+  open: boolean; setOpen: (open: boolean) => void; notes: string; setNotes: (value: string) => void;
+  processing: boolean; onConfirm: () => void;
+}) {
+  return <Dialog open={open} onOpenChange={setOpen}><DialogContent className="sm:max-w-md"><DialogHeader>
+    <DialogTitle className="flex items-center gap-2 text-destructive"><XCircle className="h-5 w-5" />Reprovar Desconto</DialogTitle>
+    <DialogDescription>Explique ao vendedor por que o desconto não foi autorizado e o que ele deve ajustar.</DialogDescription>
+  </DialogHeader><div className="py-4"><Label htmlFor="reject-reason" className="text-sm font-semibold mb-2 block">Motivo da Reprovação</Label>
+    <Textarea id="reject-reason" placeholder="Ex: Margem muito baixa para este cliente, tente reduzir o desconto para no máximo 10%..."
+      value={notes} onChange={(event) => setNotes(event.target.value)} rows={4} className="resize-none" autoFocus />
+  </div><DialogFooter className="gap-2 sm:gap-0"><Button variant="ghost" onClick={() => setOpen(false)} disabled={processing}>Cancelar</Button>
+    <Button variant="destructive" className="gap-2" onClick={onConfirm} disabled={processing || !notes.trim()}>
+      {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}Confirmar Reprovação</Button>
+  </DialogFooter></DialogContent></Dialog>;
+}
+
+function useApprovalController({ quoteId, onActionComplete }: Props, canApprove: boolean) {
   const { getApprovalStatus, respondToApproval } = useDiscountApproval();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [rejectOpen, setRejectOpen] = useState(false);
   const [notes, setNotes] = useState("");
-
-  const isPending = status === "pending_approval";
-  const canApprove = isSupervisorOrAbove;
-
-  if (!isPending) return null;
-
-  const handleApprove = async () => {
-    if (!canApprove) {
-      toast.error("Você não possui alçada para responder esta solicitação.");
-      return;
-    }
-    setIsProcessing(true);
+  const requirePermission = () => {
+    if (canApprove) return true;
+    toast.error("Você não possui alçada para responder esta solicitação.");
+    return false;
+  };
+  const approve = async () => {
+    if (!requirePermission()) return;
+    setProcessing(true);
     try {
       const request = await getApprovalStatus(quoteId);
       const ok = request ? await respondToApproval(request.id, true) : false;
-      if (ok) {
-        toast.success("Desconto aprovado! O orçamento agora pode ser enviado ao cliente.");
-        onActionComplete?.();
-      }
-    } finally {
-      setIsProcessing(false);
-    }
+      if (ok) { toast.success("Desconto aprovado! O orçamento agora pode ser enviado ao cliente."); onActionComplete?.(); }
+    } finally { setProcessing(false); }
   };
-
-  const handleReject = async () => {
-    if (!canApprove) {
-      toast.error("Você não possui alçada para responder esta solicitação.");
-      return;
-    }
-    if (!notes.trim()) {
-      toast.error("Por favor, informe o motivo da reprovação");
-      return;
-    }
-
-    setIsProcessing(true);
+  const reject = async () => {
+    if (!requirePermission()) return;
+    if (!notes.trim()) { toast.error("Por favor, informe o motivo da reprovação"); return; }
+    setProcessing(true);
     try {
       const request = await getApprovalStatus(quoteId);
       const ok = request ? await respondToApproval(request.id, false, notes) : false;
-      if (ok) {
-        toast.success("Orçamento devolvido como rascunho para ajuste");
-        setRejectDialogOpen(false);
-        onActionComplete?.();
-      }
-    } finally {
-      setIsProcessing(false);
-    }
+      if (ok) { toast.success("Orçamento devolvido como rascunho para ajuste"); setRejectOpen(false); onActionComplete?.(); }
+    } finally { setProcessing(false); }
   };
+  const openReject = () => { setNotes(""); setRejectOpen(true); };
+  return { processing, rejectOpen, setRejectOpen, notes, setNotes, approve, reject, openReject };
+}
+
+export function QuoteManagerApprovalBanner({ quoteId, status, realDiscountPercent, maxDiscountPercent, onActionComplete }: Props) {
+  const { isSupervisorOrAbove } = useRBAC();
+  const isPending = status === "pending_approval";
+  const canApprove = isSupervisorOrAbove;
+  const controller = useApprovalController({ quoteId, status, realDiscountPercent, maxDiscountPercent, onActionComplete }, canApprove);
+
+  if (!isPending) return null;
 
   return (
     <div className={cn(
@@ -88,84 +115,10 @@ export function QuoteManagerApprovalBanner({ quoteId, status, realDiscountPercen
         <ShieldCheck className="h-6 w-6 text-amber-600" />
       </div>
       
-      <div className="flex-1 text-center md:text-left">
-        <h4 className="font-display font-bold text-amber-900 text-lg">Aprovação de Alçada Pendente</h4>
-        <div className="flex flex-wrap justify-center md:justify-start items-center gap-3 mt-1">
-          <p className="text-sm text-amber-800/80">
-            Este orçamento possui um desconto de <span className="font-bold text-amber-900">{realDiscountPercent?.toFixed(1)}%</span>, 
-            que excede o limite do vendedor (<span className="font-bold">{maxDiscountPercent}%</span>).
-          </p>
-          {!canApprove && (
-            <Badge variant="outline" className="bg-white/50 border-amber-200 text-amber-700 gap-1 text-[10px]">
-              <Info className="h-3 w-3" /> Aguardando Gestor
-            </Badge>
-          )}
-        </div>
-      </div>
-
-      {canApprove && (
-        <div className="flex items-center gap-2 shrink-0">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="h-10 px-4 gap-2 border-amber-300 text-amber-700 hover:bg-amber-100"
-            onClick={() => { setNotes(""); setRejectDialogOpen(true); }}
-            disabled={isProcessing || !canApprove}
-          >
-            <XCircle className="h-4 w-4" />
-            Reprovar
-          </Button>
-          <Button 
-            size="sm" 
-            className="h-10 px-6 gap-2 bg-amber-600 hover:bg-amber-700 text-white shadow-md transition-all active:scale-95"
-            onClick={handleApprove}
-            disabled={isProcessing || !canApprove}
-          >
-            {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-            Aprovar Desconto
-          </Button>
-        </div>
-      )}
-
-      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-destructive">
-              <XCircle className="h-5 w-5" />
-              Reprovar Desconto
-            </DialogTitle>
-            <DialogDescription>
-              Explique ao vendedor por que o desconto não foi autorizado e o que ele deve ajustar.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <Label htmlFor="reject-reason" className="text-sm font-semibold mb-2 block">Motivo da Reprovação</Label>
-            <Textarea
-              id="reject-reason"
-              placeholder="Ex: Margem muito baixa para este cliente, tente reduzir o desconto para no máximo 10%..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={4}
-              className="resize-none"
-              autoFocus
-            />
-          </div>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="ghost" onClick={() => setRejectDialogOpen(false)} disabled={isProcessing}>Cancelar</Button>
-            <Button 
-              variant="destructive" 
-              className="gap-2"
-              onClick={handleReject}
-              disabled={isProcessing || !notes.trim() || !canApprove}
-            >
-              {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
-              Confirmar Reprovação
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ApprovalMessage canApprove={canApprove} realDiscountPercent={realDiscountPercent} maxDiscountPercent={maxDiscountPercent} />
+      {canApprove && <ApprovalActions processing={controller.processing} onApprove={controller.approve} onReject={controller.openReject} />}
+      <RejectDialog open={controller.rejectOpen} setOpen={controller.setRejectOpen} notes={controller.notes} setNotes={controller.setNotes}
+        processing={controller.processing} onConfirm={controller.reject} />
     </div>
   );
 }
-
-import { Badge } from "@/components/ui/badge";

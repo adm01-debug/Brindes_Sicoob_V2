@@ -6,6 +6,8 @@ import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+const EXTERNAL_DB_BRIDGE = 'external-db-bridge';
 import type { BulkAction } from '@/components/products/VariantGridMatrix';
 
 export interface ProductVariant {
@@ -54,7 +56,7 @@ export const EMPTY_FORM: VariantFormData = {
 // ── API helpers ──
 
 async function fetchProductVariants(productId: string): Promise<ProductVariant[]> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
     body: { table: 'product_variants', operation: 'select', filters: { product_id: productId, is_active: true }, limit: 200, orderBy: { column: 'name', ascending: true } },
   });
   if (error) throw new Error(error.message);
@@ -63,7 +65,7 @@ async function fetchProductVariants(productId: string): Promise<ProductVariant[]
 }
 
 async function createVariantApi(payload: Record<string, unknown>): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
     body: { table: 'product_variants', operation: 'insert', data: payload },
   });
   if (error) throw new Error(error.message);
@@ -71,7 +73,7 @@ async function createVariantApi(payload: Record<string, unknown>): Promise<void>
 }
 
 async function updateVariantApi(id: string, payload: Record<string, unknown>): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
     body: { table: 'product_variants', operation: 'update', id, data: payload },
   });
   if (error) throw new Error(error.message);
@@ -79,7 +81,7 @@ async function updateVariantApi(id: string, payload: Record<string, unknown>): P
 }
 
 async function deleteVariantApi(id: string): Promise<void> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
     body: { table: 'product_variants', operation: 'update', id, data: { is_active: false } },
   });
   if (error) throw new Error(error.message);
@@ -99,14 +101,50 @@ function formToPayload(formData: VariantFormData, extra?: Record<string, unknown
   };
 }
 
-export function useProductVariants(productId: string, productName?: string, productSku?: string) {
-  const queryClient = useQueryClient();
+function useVariantCrud(productId: string, invalidate: () => void) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ProductVariant | null>(null);
-  const [isBulkLoading, setIsBulkLoading] = useState(false);
+  const handleCreate = async (formData: VariantFormData) => {
+    setIsSaving(true);
+    try { await createVariantApi(formToPayload(formData, { product_id: productId, is_active: true })); toast.success('Variação criada com sucesso'); setIsCreating(false); invalidate(); }
+    catch (error) { toast.error(error instanceof Error ? error.message : 'Erro ao criar variação'); }
+    finally { setIsSaving(false); }
+  };
+  const handleUpdate = async (variantId: string, formData: VariantFormData) => {
+    setIsSaving(true);
+    try { await updateVariantApi(variantId, formToPayload(formData)); toast.success('Variação atualizada'); setEditingId(null); invalidate(); }
+    catch (error) { toast.error(error instanceof Error ? error.message : 'Erro ao atualizar'); }
+    finally { setIsSaving(false); }
+  };
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setIsSaving(true);
+    try { await deleteVariantApi(deleteTarget.id); toast.success('Variação removida'); setDeleteTarget(null); invalidate(); }
+    catch (error) { toast.error(error instanceof Error ? error.message : 'Erro ao remover'); }
+    finally { setIsSaving(false); }
+  };
+  return { editingId, setEditingId, isCreating, setIsCreating, isSaving, deleteTarget, setDeleteTarget, handleCreate, handleUpdate, handleDelete };
+}
 
+function useVariantBulkActions(invalidate: () => void) {
+  const [isBulkLoading, setIsBulkLoading] = useState(false);
+  const handleBulkAction = useCallback(async (action: BulkAction) => {
+    setIsBulkLoading(true);
+    try {
+      await Promise.all(action.variantIds.map(id => action.type === 'toggle_active' ? updateVariantApi(id, { is_active: action.value as boolean }) : action.type === 'update_stock' ? updateVariantApi(id, { stock_quantity: action.value as number }) : Promise.resolve()));
+      const label = action.type === 'toggle_active' ? (action.value ? 'ativadas' : 'desativadas') : 'atualizadas';
+      toast.success(`${action.variantIds.length} variações ${label}`);
+      invalidate();
+    } catch (error) { toast.error(error instanceof Error ? error.message : 'Erro na operação em lote'); }
+    finally { setIsBulkLoading(false); }
+  }, [invalidate]);
+  return { isBulkLoading, handleBulkAction };
+}
+
+export function useProductVariants(productId: string, productName?: string, productSku?: string) {
+  const queryClient = useQueryClient();
   const { data: variants = [], isLoading, error } = useQuery({
     queryKey: ['product-variants', productId],
     queryFn: () => fetchProductVariants(productId),
@@ -117,56 +155,8 @@ export function useProductVariants(productId: string, productName?: string, prod
   const invalidate = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['product-variants', productId] });
   }, [queryClient, productId]);
-
-  const handleCreate = async (formData: VariantFormData) => {
-    setIsSaving(true);
-    try {
-      await createVariantApi(formToPayload(formData, { product_id: productId, is_active: true }));
-      toast.success('Variação criada com sucesso');
-      setIsCreating(false);
-      invalidate();
-    } catch (err) { toast.error(err instanceof Error ? err.message : 'Erro ao criar variação'); }
-    finally { setIsSaving(false); }
-  };
-
-  const handleUpdate = async (variantId: string, formData: VariantFormData) => {
-    setIsSaving(true);
-    try {
-      await updateVariantApi(variantId, formToPayload(formData));
-      toast.success('Variação atualizada');
-      setEditingId(null);
-      invalidate();
-    } catch (err) { toast.error(err instanceof Error ? err.message : 'Erro ao atualizar'); }
-    finally { setIsSaving(false); }
-  };
-
-  const handleDelete = async () => {
-    if (!deleteTarget) return;
-    setIsSaving(true);
-    try {
-      await deleteVariantApi(deleteTarget.id);
-      toast.success('Variação removida');
-      setDeleteTarget(null);
-      invalidate();
-    } catch (err) { toast.error(err instanceof Error ? err.message : 'Erro ao remover'); }
-    finally { setIsSaving(false); }
-  };
-
-  const handleBulkAction = useCallback(async (action: BulkAction) => {
-    setIsBulkLoading(true);
-    try {
-      const promises = action.variantIds.map(id => {
-        if (action.type === 'toggle_active') return updateVariantApi(id, { is_active: action.value as boolean });
-        if (action.type === 'update_stock') return updateVariantApi(id, { stock_quantity: action.value as number });
-        return Promise.resolve();
-      });
-      await Promise.all(promises);
-      const label = action.type === 'toggle_active' ? (action.value ? 'ativadas' : 'desativadas') : 'atualizadas';
-      toast.success(`${action.variantIds.length} variações ${label}`);
-      invalidate();
-    } catch (err) { toast.error(err instanceof Error ? err.message : 'Erro na operação em lote'); }
-    finally { setIsBulkLoading(false); }
-  }, [invalidate]);
+  const crud = useVariantCrud(productId, invalidate);
+  const bulk = useVariantBulkActions(invalidate);
 
   const totalStock = variants.reduce((sum, v) => sum + (v.stock_quantity ?? 0), 0);
 
@@ -178,9 +168,6 @@ export function useProductVariants(productId: string, productName?: string, prod
 
   return {
     variants, isLoading, error, totalStock,
-    editingId, setEditingId, isCreating, setIsCreating,
-    isSaving, deleteTarget, setDeleteTarget,
-    isBulkLoading, handleCreate, handleUpdate, handleDelete,
-    handleBulkAction, createInitial,
+    ...crud, ...bulk, createInitial,
   };
 }

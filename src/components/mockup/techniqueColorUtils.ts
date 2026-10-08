@@ -16,6 +16,15 @@ export interface TechniqueColorConfig {
   isFullColor?: boolean;
 }
 
+const LASER_TERMS = ["laser", "fibra", "co2"];
+const LASER_UV_TERMS = ["laser uv", "uv laser"];
+const SERIGRAPHY_TERMS = ["serigrafia", "silk", "tampografia"];
+const DIGITAL_TERMS = ["digital", "uv", "sublima", "dtf", "transfer"];
+
+function includesAny(value: string, terms: string[]) {
+  return terms.some((term) => value.includes(term));
+}
+
 /**
  * Determine which category a technique belongs to based on its name/code.
  */
@@ -25,35 +34,21 @@ export function classifyTechnique(techniqueName?: string, techniqueCode?: string
   const combined = [techniqueCode, techniqueName].filter(Boolean).join(" ").toLowerCase();
   
   // Laser detection — must come before UV check since "Laser UV" exists
-  if (
-    combined.includes("laser") ||
-    combined.includes("fibra") ||
-    combined.includes("co2")
-  ) {
+  if (includesAny(combined, LASER_TERMS)) {
     // Laser UV is actually a UV technique (full color capable)
-    if (combined.includes("laser uv") || combined.includes("uv laser")) {
+    if (includesAny(combined, LASER_UV_TERMS)) {
       return "digital";
     }
     return "laser";
   }
   
   // Serigrafia detection
-  if (
-    combined.includes("serigrafia") ||
-    combined.includes("silk") ||
-    combined.includes("tampografia")
-  ) {
+  if (includesAny(combined, SERIGRAPHY_TERMS)) {
     return "serigrafia";
   }
   
   // Digital / Full color techniques
-  if (
-    combined.includes("digital") ||
-    combined.includes("uv") ||
-    combined.includes("sublima") ||
-    combined.includes("dtf") ||
-    combined.includes("transfer")
-  ) {
+  if (includesAny(combined, DIGITAL_TERMS)) {
     return "digital";
   }
   

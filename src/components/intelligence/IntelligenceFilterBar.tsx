@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { Filter, X, ChevronDown, Package, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { useCategories } from "@/hooks/useCategories";
 import { useSuppliers } from "@/hooks/useSuppliers";
-import { useProductsLightweight } from "@/hooks/useProductsLightweight";
+import { useProductsLightweight, type ProductLightweight } from "@/hooks/useProductsLightweight";
 import { cn } from "@/lib/utils";
 
 export interface IntelligenceFilters {
@@ -18,6 +18,10 @@ export interface IntelligenceFilters {
   productId: string | null;
   productName: string | null;
 }
+
+const FILTER_BUTTON_CLASS = "h-8 gap-1.5 text-xs";
+const ACTIVE_FILTER_CLASS = "border-primary/50 bg-primary/5 text-primary";
+const SELECTED_PRODUCT_CLASS = "font-semibold text-primary";
 
 interface IntelligenceFilterBarProps {
   filters: IntelligenceFilters;
@@ -52,6 +56,56 @@ function HighlightText({ text, query }: { text: string; query: string }) {
       )}
     </>
   );
+}
+
+function PeriodSelector({ filters, onChange }: { readonly filters: IntelligenceFilters; readonly onChange: (filters: IntelligenceFilters) => void }) {
+  return <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1 border border-border/50 overflow-x-auto">{PERIOD_OPTIONS.map(period => <Button key={period.days} variant={filters.days === period.days ? "default" : "ghost"} size="sm" className={cn("h-7 text-xs px-2.5 rounded-lg shrink-0 transition-all", filters.days === period.days && "bg-primary shadow-sm")} onClick={() => onChange({ ...filters, days: period.days })}>{period.label}</Button>)}</div>;
+}
+
+interface ProductFilterProps {
+  readonly filters: IntelligenceFilters;
+  readonly open: boolean;
+  readonly search: string;
+  readonly products: readonly ProductLightweight[];
+  readonly onOpenChange: (open: boolean) => void;
+  readonly onSearchChange: (search: string) => void;
+  readonly onFiltersChange: (filters: IntelligenceFilters) => void;
+}
+
+function productFilterLabel(name: string | null) {
+  if (!name) return "Produto";
+  return name.length > 20 ? `${name.slice(0, 20)}…` : name;
+}
+
+function ProductFilter(props: ProductFilterProps) {
+  const clear = () => {
+    props.onFiltersChange({ ...props.filters, productId: null, productName: null });
+    props.onOpenChange(false);
+    props.onSearchChange("");
+  };
+  const select = (product: ProductLightweight) => {
+    props.onFiltersChange({ ...props.filters, productId: product.id, productName: product.name });
+    props.onOpenChange(false);
+    props.onSearchChange("");
+  };
+  return (
+    <Popover open={props.open} onOpenChange={props.onOpenChange}>
+      <PopoverTrigger asChild><Button variant="outline" size="sm" className={cn(FILTER_BUTTON_CLASS, props.filters.productId && ACTIVE_FILTER_CLASS)}><Package className="h-3 w-3" />{productFilterLabel(props.filters.productName)}<ChevronDown className="h-3 w-3 opacity-50" /></Button></PopoverTrigger>
+      <PopoverContent className="w-80 p-0" align="start"><Command shouldFilter={false}><CommandInput placeholder="Buscar produto por nome ou SKU..." value={props.search} onValueChange={props.onSearchChange} /><CommandList className="max-h-72"><CommandEmpty><div className="flex flex-col items-center py-4 text-muted-foreground"><Search className="h-8 w-8 mb-2 opacity-40" /><p className="text-sm">Nenhum produto encontrado</p><p className="text-xs">Tente outro termo de busca</p></div></CommandEmpty><CommandGroup><CommandItem onSelect={clear}><span className="text-muted-foreground">Todos os produtos</span></CommandItem>{props.products.map(product => <CommandItem key={product.id} value={product.id} onSelect={() => select(product)} className="flex items-center gap-2.5 py-2"><div className="w-8 h-8 rounded-md overflow-hidden bg-muted border border-border/50 shrink-0">{product.image_url && product.image_url !== '/placeholder.svg' ? <img src={product.image_url} alt="Imagem do produto" className="w-full h-full object-contain" loading="lazy" /> : <div className="w-full h-full flex items-center justify-center"><Package className="h-3.5 w-3.5 text-muted-foreground" /></div>}</div><div className={cn("flex flex-col min-w-0 flex-1", props.filters.productId === product.id && SELECTED_PRODUCT_CLASS)}><span className="text-sm truncate"><HighlightText text={product.name} query={props.search} /></span>{product.sku && <span className="text-[10px] text-muted-foreground truncate"><HighlightText text={product.sku} query={props.search} /></span>}</div></CommandItem>)}{props.search && props.products.length >= 50 && <div className="px-3 py-2 text-[10px] text-muted-foreground text-center">Mostrando 50 resultados · refine sua busca</div>}</CommandGroup></CommandList></Command></PopoverContent>
+    </Popover>
+  );
+}
+
+interface ActiveFiltersProps {
+  readonly count: number;
+  readonly filters: IntelligenceFilters;
+  readonly onChange: (filters: IntelligenceFilters) => void;
+  readonly onClear: () => void;
+}
+
+function ActiveFilters({ count, filters, onChange, onClear }: ActiveFiltersProps) {
+  if (count === 0) return null;
+  return <><Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs text-muted-foreground" onClick={onClear}><X className="h-3 w-3" />Limpar filtros<Badge variant="secondary" className="text-[10px] px-1.5 py-0 ml-1">{count}</Badge></Button><div className="basis-full flex flex-wrap gap-1.5">{filters.productName && <Badge variant="outline" className="gap-1 text-xs px-2 py-0.5 bg-primary/5 border-primary/20">Produto: {filters.productName}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => onChange({ ...filters, productId: null, productName: null })} /></Badge>}{filters.categoryName && <Badge variant="outline" className="gap-1 text-xs px-2 py-0.5 bg-primary/5 border-primary/20">Categoria: {filters.categoryName}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => onChange({ ...filters, categoryId: null, categoryName: null })} /></Badge>}{filters.supplierName && <Badge variant="outline" className="gap-1 text-xs px-2 py-0.5 bg-primary/5 border-primary/20">Fornecedor: {filters.supplierName}<X className="h-3 w-3 cursor-pointer hover:text-destructive" onClick={() => onChange({ ...filters, supplierId: null, supplierName: null })} /></Badge>}</div></>;
 }
 
 export function IntelligenceFilterBar({ filters, onFiltersChange }: IntelligenceFilterBarProps) {
@@ -94,23 +148,7 @@ export function IntelligenceFilterBar({ filters, onFiltersChange }: Intelligence
     <div className="space-y-3">
       {/* Period + Filters Row */}
       <div className="flex flex-wrap items-center gap-2">
-        {/* Period pills */}
-        <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1 border border-border/50 overflow-x-auto">
-          {PERIOD_OPTIONS.map((p) => (
-            <Button
-              key={p.days}
-              variant={filters.days === p.days ? "default" : "ghost"}
-              size="sm"
-              className={cn(
-                "h-7 text-xs px-2.5 rounded-lg shrink-0 transition-all",
-                filters.days === p.days && "bg-primary shadow-sm"
-              )}
-              onClick={() => onFiltersChange({ ...filters, days: p.days })}
-            >
-              {p.label}
-            </Button>
-          ))}
-        </div>
+        <PeriodSelector filters={filters} onChange={onFiltersChange} />
 
         {/* Category Filter */}
         <Popover open={catOpen} onOpenChange={setCatOpen}>
@@ -119,8 +157,8 @@ export function IntelligenceFilterBar({ filters, onFiltersChange }: Intelligence
               variant="outline"
               size="sm"
               className={cn(
-                "h-8 gap-1.5 text-xs",
-                filters.categoryId && "border-primary/50 bg-primary/5 text-primary"
+                FILTER_BUTTON_CLASS,
+                filters.categoryId && ACTIVE_FILTER_CLASS
               )}
             >
               <Filter className="h-3 w-3" />
@@ -154,7 +192,7 @@ export function IntelligenceFilterBar({ filters, onFiltersChange }: Intelligence
                       }}
                     >
                       <span className={cn(
-                        filters.categoryId === String(cat.id) && "font-semibold text-primary"
+                        filters.categoryId === String(cat.id) && SELECTED_PRODUCT_CLASS
                       )}>
                         <HighlightText text={cat.name} query={catSearch} />
                       </span>
@@ -173,8 +211,8 @@ export function IntelligenceFilterBar({ filters, onFiltersChange }: Intelligence
               variant="outline"
               size="sm"
               className={cn(
-                "h-8 gap-1.5 text-xs",
-                filters.supplierId && "border-primary/50 bg-primary/5 text-primary"
+                FILTER_BUTTON_CLASS,
+                filters.supplierId && ACTIVE_FILTER_CLASS
               )}
             >
               <Filter className="h-3 w-3" />
@@ -208,7 +246,7 @@ export function IntelligenceFilterBar({ filters, onFiltersChange }: Intelligence
                       }}
                     >
                       <span className={cn(
-                        filters.supplierId === sup.id && "font-semibold text-primary"
+                        filters.supplierId === sup.id && SELECTED_PRODUCT_CLASS
                       )}>
                         <HighlightText text={sup.name} query={supSearch} />
                       </span>
@@ -220,144 +258,10 @@ export function IntelligenceFilterBar({ filters, onFiltersChange }: Intelligence
           </PopoverContent>
         </Popover>
 
-        {/* Product Filter */}
-        <Popover open={prodOpen} onOpenChange={setProdOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className={cn(
-                "h-8 gap-1.5 text-xs",
-                filters.productId && "border-primary/50 bg-primary/5 text-primary"
-              )}
-            >
-              <Package className="h-3 w-3" />
-              {filters.productName ? (filters.productName.length > 20 ? filters.productName.slice(0, 20) + '…' : filters.productName) : "Produto"}
-              <ChevronDown className="h-3 w-3 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-80 p-0" align="start">
-            <Command shouldFilter={false}>
-              <CommandInput
-                placeholder="Buscar produto por nome ou SKU..."
-                value={prodSearch}
-                onValueChange={setProdSearch}
-              />
-              <CommandList className="max-h-72">
-                <CommandEmpty>
-                  <div className="flex flex-col items-center py-4 text-muted-foreground">
-                    <Search className="h-8 w-8 mb-2 opacity-40" />
-                    <p className="text-sm">Nenhum produto encontrado</p>
-                    <p className="text-xs">Tente outro termo de busca</p>
-                  </div>
-                </CommandEmpty>
-                <CommandGroup>
-                  <CommandItem
-                    onSelect={() => {
-                      onFiltersChange({ ...filters, productId: null, productName: null });
-                      setProdOpen(false);
-                      setProdSearch("");
-                    }}
-                  >
-                    <span className="text-muted-foreground">Todos os produtos</span>
-                  </CommandItem>
-                  {filteredProducts.map((prod) => (
-                    <CommandItem
-                      key={prod.id}
-                      value={prod.id}
-                      onSelect={() => {
-                        onFiltersChange({ ...filters, productId: prod.id, productName: prod.name });
-                        setProdOpen(false);
-                        setProdSearch("");
-                      }}
-                      className="flex items-center gap-2.5 py-2"
-                    >
-                      {/* Thumbnail */}
-                      <div className="w-8 h-8 rounded-md overflow-hidden bg-muted border border-border/50 shrink-0">
-                        {prod.image_url && prod.image_url !== '/placeholder.svg' ? (
-                          <img
-                            src={prod.image_url}
-                            alt="Imagem do produto"
-                            className="w-full h-full object-contain"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Package className="h-3.5 w-3.5 text-muted-foreground" />
-                          </div>
-                        )}
-                      </div>
-                      {/* Name + SKU with highlight */}
-                      <div className={cn(
-                        "flex flex-col min-w-0 flex-1",
-                        filters.productId === prod.id && "font-semibold text-primary"
-                      )}>
-                        <span className="text-sm truncate">
-                          <HighlightText text={prod.name} query={prodSearch} />
-                        </span>
-                        {prod.sku && (
-                          <span className="text-[10px] text-muted-foreground truncate">
-                            <HighlightText text={prod.sku} query={prodSearch} />
-                          </span>
-                        )}
-                      </div>
-                    </CommandItem>
-                  ))}
-                  {prodSearch && filteredProducts.length >= 50 && (
-                    <div className="px-3 py-2 text-[10px] text-muted-foreground text-center">
-                      Mostrando 50 resultados · refine sua busca
-                    </div>
-                  )}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
+        <ProductFilter filters={filters} open={prodOpen} search={prodSearch} products={filteredProducts} onOpenChange={setProdOpen} onSearchChange={setProdSearch} onFiltersChange={onFiltersChange} />
 
-        {/* Active filter count + clear */}
-        {activeFilterCount > 0 && (
-          <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs text-muted-foreground" onClick={clearAll}>
-            <X className="h-3 w-3" />
-            Limpar filtros
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 ml-1">
-              {activeFilterCount}
-            </Badge>
-          </Button>
-        )}
+        <ActiveFilters count={activeFilterCount} filters={filters} onChange={onFiltersChange} onClear={clearAll} />
       </div>
-
-      {/* Active filter badges */}
-      {activeFilterCount > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {filters.productName && (
-            <Badge variant="outline" className="gap-1 text-xs px-2 py-0.5 bg-primary/5 border-primary/20">
-              Produto: {filters.productName}
-              <X
-                className="h-3 w-3 cursor-pointer hover:text-destructive"
-                onClick={() => onFiltersChange({ ...filters, productId: null, productName: null })}
-              />
-            </Badge>
-          )}
-          {filters.categoryName && (
-            <Badge variant="outline" className="gap-1 text-xs px-2 py-0.5 bg-primary/5 border-primary/20">
-              Categoria: {filters.categoryName}
-              <X
-                className="h-3 w-3 cursor-pointer hover:text-destructive"
-                onClick={() => onFiltersChange({ ...filters, categoryId: null, categoryName: null })}
-              />
-            </Badge>
-          )}
-          {filters.supplierName && (
-            <Badge variant="outline" className="gap-1 text-xs px-2 py-0.5 bg-primary/5 border-primary/20">
-              Fornecedor: {filters.supplierName}
-              <X
-                className="h-3 w-3 cursor-pointer hover:text-destructive"
-                onClick={() => onFiltersChange({ ...filters, supplierId: null, supplierName: null })}
-              />
-            </Badge>
-          )}
-        </div>
-      )}
     </div>
   );
 }

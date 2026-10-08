@@ -211,9 +211,14 @@ Deno.serve(async (req) => {
       status: 200,
     }));
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
     log.error("seed_failed", { err });
-    return log.respond(new Response(JSON.stringify({ error: message, partial_report: stats }), {
+    const partialReport = {
+      orphans_removed: stats.orphans_removed,
+      updated: stats.updated,
+      recreated: stats.recreated,
+      failures: stats.failures.map(({ email }) => ({ email, error: "operation_failed" })),
+    };
+    return log.respond(new Response(JSON.stringify({ error: "seed_failed", partial_report: partialReport }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     }));

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ramoAtividadeService } from '@/services/ramoAtividadeService';
-import type { RamoAtividade, RamoAtividadeGroup } from '@/types/ramo-atividade';
+import type { RamoAtividade } from '@/types/ramo-atividade';
 import { toast } from 'sonner';
 
 // ============================================================

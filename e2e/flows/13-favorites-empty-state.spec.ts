@@ -15,7 +15,7 @@
  */
 import { test, expect, requireAuth } from "../fixtures/test-base";
 import { gotoAndSettle } from "../helpers/nav";
-import { installFavoritesCleanup } from "../helpers/favorites";
+import { installFavoritesCleanup, openCatalogFavoriteAction } from "../helpers/favorites";
 import { Sel } from "../fixtures/selectors";
 import type { Page } from "@playwright/test";
 
@@ -85,7 +85,7 @@ test.describe("Fluxo: /favoritos com lista vazia", () => {
     await expect(page).toHaveURL(/favoritos/);
 
     // Header consistente
-    await expect(page.locator(Sel.favorites.title)).toHaveText("Meus Favoritos");
+    await expect(page.locator(Sel.favorites.title)).toHaveText("Meus Produtos Favoritos");
     const icon = page.locator(Sel.favorites.icon);
     await expect(icon).toBeVisible();
     await expect(icon).toHaveAttribute("aria-label", "Favoritos");
@@ -116,8 +116,7 @@ test.describe("Fluxo: /favoritos com lista vazia", () => {
     const card = page.locator(Sel.product.card).first();
     await card.waitFor({ state: "visible", timeout: 15_000 });
 
-    const favBtn = card.locator(Sel.product.favorite).first();
-    await favBtn.waitFor({ state: "visible", timeout: 10_000 });
+    const favBtn = await openCatalogFavoriteAction(card);
 
     // Estado consistente: aria-pressed deve ser "false" ou ausente
     const pressed = await favBtn.getAttribute("aria-pressed");

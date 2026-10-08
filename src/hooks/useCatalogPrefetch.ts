@@ -1,7 +1,7 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
-import { invokeBatchBridge } from '@/lib/external-db';
+import { invokeBatchBridge, type LightweightProduct } from '@/lib/external-db';
 import { mapLightweightToProduct, PRODUCT_SELECT_LIGHTWEIGHT, CATALOG_PAGE_SIZE, CATALOG_BATCH_PAGES } from '@/hooks/useProductsLightweight';
 
 /**
@@ -29,7 +29,7 @@ export function useCatalogPrefetch() {
             table: 'products',
             operation: 'select' as const,
             select: PRODUCT_SELECT_LIGHTWEIGHT,
-            filters: { active: true },
+            filters: { is_active: true },
             orderBy: { column: 'name', ascending: true },
             limit: CATALOG_PAGE_SIZE,
             offset: i * CATALOG_PAGE_SIZE,
@@ -41,9 +41,9 @@ export function useCatalogPrefetch() {
           let lastPageSize = 0;
           for (const result of batchResults) {
             if (result.success && result.data?.records) {
-              products.push(...(result.data.records as unknown[]).map(mapLightweightToProduct));
+              products.push(...(result.data.records as LightweightProduct[]).map(mapLightweightToProduct));
               lastPageSize = result.data.records.length;
-              if (result.data.count != null && totalEstimate === null) {
+              if (result.data.count !== null && result.data.count !== undefined && totalEstimate === null) {
                 totalEstimate = result.data.count as number;
               }
             }

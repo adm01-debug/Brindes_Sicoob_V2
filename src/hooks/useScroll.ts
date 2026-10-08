@@ -48,14 +48,18 @@ export function useScroll(options: UseScrollOptions = {}) {
 
   useEffect(() => {
     let ticking = false;
+    let throttleTimer: number | null = null;
 
     const onScroll = () => {
       if (!ticking) {
-        window.requestAnimationFrame(() => {
-          handleScroll();
-          ticking = false;
-        });
         ticking = true;
+        throttleTimer = window.setTimeout(() => {
+          window.requestAnimationFrame(() => {
+            handleScroll();
+            ticking = false;
+            throttleTimer = null;
+          });
+        }, throttleMs);
       }
     };
 
@@ -63,8 +67,11 @@ export function useScroll(options: UseScrollOptions = {}) {
     handleScroll();
 
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [handleScroll]);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (throttleTimer !== null) window.clearTimeout(throttleTimer);
+    };
+  }, [handleScroll, throttleMs]);
 
   return scrollState;
 }

@@ -9,6 +9,8 @@ import { toast } from 'sonner';
 import type { SimulatorWizardState, SelectedProduct, Personalization } from '@/types/domain/simulator-wizard';
 import type { Json } from '@/integrations/supabase/types';
 
+const WIZARD_DRAFTS_QUERY_KEY = ['wizard-drafts'] as const;
+
 export interface WizardDraft {
   id: string;
   title: string;
@@ -24,7 +26,7 @@ export function useWizardDrafts() {
   const queryClient = useQueryClient();
 
   const { data: drafts, isLoading } = useQuery({
-    queryKey: ['wizard-drafts'],
+    queryKey: WIZARD_DRAFTS_QUERY_KEY,
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
@@ -66,7 +68,7 @@ export function useWizardDrafts() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wizard-drafts'] });
+      queryClient.invalidateQueries({ queryKey: WIZARD_DRAFTS_QUERY_KEY });
       toast.success('Rascunho salvo!');
     },
     onError: (err) => {
@@ -83,7 +85,7 @@ export function useWizardDrafts() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wizard-drafts'] });
+      queryClient.invalidateQueries({ queryKey: WIZARD_DRAFTS_QUERY_KEY });
       toast.success('Rascunho excluído');
     },
   });

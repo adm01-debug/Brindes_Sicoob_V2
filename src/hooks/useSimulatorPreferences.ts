@@ -5,8 +5,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import type { TechniqueSettings } from "@/types/simulation";
 
 interface SimulatorPreferences {
@@ -37,7 +38,6 @@ const STORAGE_KEY = "simulator_preferences";
 
 export function useSimulatorPreferences() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
   const [preferences, setPreferencesState] = useState<SimulatorPreferences>(DEFAULT_PREFERENCES);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -85,7 +85,7 @@ export function useSimulatorPreferences() {
           preferences: { 
             ...existingPrefs,
             simulator: prefs 
-          } as Record<string, unknown> 
+          } as unknown as Json
         })
         .eq("user_id", user.id);
       

@@ -4,10 +4,12 @@
  */
 import React from "react";
 import { GREEN, GREEN_DARK, DARK, BLUE, fmt, thStyle, tdStyle, totalsRowStyle } from "./ProposalStyles";
-import { formatPaymentTerms, formatDeliveryTime, formatShipping } from "./ProposalHtmlTemplate";
-import type { ProposalItem, ProposalTemplateData } from "./ProposalHtmlTemplate";
+import { formatPaymentTerms, formatDeliveryTime, formatShipping, type ProposalItem, type ProposalTemplateData } from "./ProposalHtmlTemplate";
 
 /* ─── Header ─── */
+const MONTSERRAT = "'Montserrat', sans-serif";
+const LIGHT_BORDER = "1px solid #eee";
+
 export function HeaderSection({ data }: { data: ProposalTemplateData }) {
   const H = 160;
   const W = 794;
@@ -29,10 +31,10 @@ export function HeaderSection({ data }: { data: ProposalTemplateData }) {
         <div style={{ width: "100%", height: "auto", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px", background: "hsl(190 100% 13%)", borderRadius: "8px" }}><span style={{ color: "white", fontSize: "24px", fontWeight: "bold" }}>SICOOB</span></div>
       </div>
       <div style={{ position: "absolute", zIndex: 10, textAlign: "right", color: "#ffffff", top: "50%", right: "32px", transform: "translateY(-60%)" }}>
-        <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: "28px", textTransform: "uppercase", letterSpacing: "3px", margin: "0 0 8px 0", lineHeight: 1, whiteSpace: "nowrap" }}>Proposta Comercial</p>
-        <p style={{ fontSize: "13px", opacity: 0.95, fontWeight: 400, lineHeight: "1.8", margin: 0, fontVariantNumeric: "tabular-nums", fontFamily: "'Montserrat', sans-serif" }}>Nº&nbsp;{(data.quoteNumber || "").replace(/\s+/g, "")} • {data.date}</p>
+        <p style={{ fontFamily: MONTSERRAT, fontWeight: 900, fontSize: "28px", textTransform: "uppercase", letterSpacing: "3px", margin: "0 0 8px 0", lineHeight: 1, whiteSpace: "nowrap" }}>Proposta Comercial</p>
+        <p style={{ fontSize: "13px", opacity: 0.95, fontWeight: 400, lineHeight: "1.8", margin: 0, fontVariantNumeric: "tabular-nums", fontFamily: MONTSERRAT }}>Nº&nbsp;{(data.quoteNumber || "").replace(/\s+/g, "")} • {data.date}</p>
         {data.validUntil && (
-          <p style={{ fontSize: "12px", opacity: 0.75, fontWeight: 400, lineHeight: "1.6", marginTop: "2px", fontFamily: "'Montserrat', sans-serif" }}>Válida até {data.validUntil}</p>
+          <p style={{ fontSize: "12px", opacity: 0.75, fontWeight: 400, lineHeight: "1.6", marginTop: "2px", fontFamily: MONTSERRAT }}>Válida até {data.validUntil}</p>
         )}
       </div>
     </div>
@@ -44,13 +46,13 @@ export function ClientBar({ company, contact, cnpj }: { company: string; contact
   return (
     <div style={{ backgroundColor: "#f5f5f5", borderLeft: `6px solid ${GREEN}`, padding: "20px 25px", display: "flex", justifyContent: "space-between", marginBottom: "30px" }}>
       <div>
-        <div style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: "12px", color: GREEN, textTransform: "uppercase", margin: "0 0 5px 0" }}>Empresa</div>
+        <div style={{ fontFamily: MONTSERRAT, fontWeight: 700, fontSize: "12px", color: GREEN, textTransform: "uppercase", margin: "0 0 5px 0" }}>Empresa</div>
         <div style={{ fontWeight: 600, fontSize: "16px", color: "#222" }}>{company}</div>
         {cnpj && <div style={{ fontSize: "11px", color: "#666", marginTop: "3px", fontWeight: 700 }}>CNPJ: {cnpj}</div>}
       </div>
       {contact && (
         <div style={{ textAlign: "right" }}>
-          <div style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: "12px", color: GREEN, textTransform: "uppercase", margin: "0 0 5px 0" }}>Solicitante</div>
+          <div style={{ fontFamily: MONTSERRAT, fontWeight: 700, fontSize: "12px", color: GREEN, textTransform: "uppercase", margin: "0 0 5px 0" }}>Solicitante</div>
           <div style={{ fontWeight: 600, fontSize: "16px", color: "#222" }}>{contact}</div>
         </div>
       )}
@@ -59,6 +61,43 @@ export function ClientBar({ company, contact, cnpj }: { company: string; contact
 }
 
 /* ─── Product Row ─── */
+type ProposalPersonalization = NonNullable<ProposalItem["personalizations"]>[number];
+
+function personalizationDimensions(personalization: ProposalPersonalization) {
+  if (personalization.width_cm && personalization.height_cm) return { width: personalization.width_cm, height: personalization.height_cm };
+  const dimensions = personalization.notes?.match(/\|\s*([\d.]+)×([\d.]+)cm/);
+  const width = dimensions?.[1];
+  const height = dimensions?.[2];
+  if (!width || !height) return { width: personalization.width_cm, height: personalization.height_cm };
+  return { width: parseFloat(width), height: parseFloat(height) };
+}
+
+function describePersonalization(personalization: ProposalPersonalization) {
+    let description = personalization.technique_name;
+    const { width, height } = personalizationDimensions(personalization);
+    if (width && height) description += ` ${width}×${height}cm`;
+    if (personalization.colors_count) description += ` | ${personalization.colors_count} cor${personalization.colors_count > 1 ? "es" : ""}`;
+    if (personalization.material) description += ` | ${personalization.material}`;
+    return description;
+}
+
+function personalizationDescription(item: ProposalItem) {
+  return item.personalizations?.map(describePersonalization).join(" · ") ?? "";
+}
+
+function ProductCode({ item }: { item: ProposalItem }) {
+  const code = item.composedCode ?? item.sku;
+  if (!code) return null;
+  const background = item.colorHex ?? "#2e7d32";
+  const hex = background.replace("#", "");
+  const luminance = (0.299 * parseInt(hex.substring(0, 2), 16) + 0.587 * parseInt(hex.substring(2, 4), 16) + 0.114 * parseInt(hex.substring(4, 6), 16)) / 255;
+  return <span style={{ display: "inline-block", background, color: luminance > 0.5 ? "#1a1a1a" : "#ffffff", fontSize: "11px", padding: "2px 6px", borderRadius: "4px", fontWeight: 700, fontFamily: "'Roboto Mono', monospace", whiteSpace: "nowrap", marginBottom: "4px" }}>{code}</span>;
+}
+
+function ProductDetails({ item, engraving }: { item: ProposalItem; engraving: string }) {
+  return <td style={{ ...tdStyle, verticalAlign: "top" }}><span style={{ fontWeight: 800, color: "#000", fontSize: "16px", display: "block", marginBottom: "6px" }}>{item.name}</span><ProductCode item={item} />{item.description ? <span style={{ display: "block", fontSize: "13px", color: "#555", marginTop: "6px", lineHeight: "1.5", maxWidth: "450px" }}>{item.description}</span> : null}{engraving ? <span style={{ display: "block", fontSize: "13px", color: "#555", marginTop: "4px", lineHeight: "1.5" }}>Gravação: {engraving}</span> : null}{!engraving && item.color ? <span style={{ display: "block", fontSize: "13px", color: "#555", marginTop: "4px" }}>Cor: {item.color}{item.size ? ` | Tam: ${item.size}` : null}</span> : null}{!item.color && item.size ? <span style={{ display: "block", fontSize: "13px", color: "#555", marginTop: "4px" }}>Tam: {item.size}</span> : null}{item.gender ? <span style={{ display: "block", fontSize: "11px", color: "#888", marginTop: "2px" }}>Gênero: {item.gender}</span> : null}</td>;
+}
+
 export function ProductRow({ item }: { item: ProposalItem }) {
   const persUnitCost = item.personalizations?.reduce((sum, p) => {
     const pTotal = p.total_cost || 0;
@@ -68,53 +107,20 @@ export function ProductRow({ item }: { item: ProposalItem }) {
   const itemDiscount = item.discount || 0;
   const total = item.quantity * allInUnitPrice - itemDiscount * item.quantity;
 
-  const gravacao = item.personalizations?.map((p) => {
-    let s = p.technique_name;
-    let widthCm = p.width_cm;
-    let heightCm = p.height_cm;
-    if ((!widthCm || !heightCm) && p.notes) {
-      const dimMatch = p.notes.match(/\|\s*([\d.]+)×([\d.]+)cm/);
-      if (dimMatch) { widthCm = parseFloat(dimMatch[1]!); heightCm = parseFloat(dimMatch[2]!); }
-    }
-    if (widthCm && heightCm) s += ` ${widthCm}×${heightCm}cm`;
-    if (p.colors_count) s += ` | ${p.colors_count} cor${p.colors_count > 1 ? "es" : ""}`;
-    if (p.material) s += ` | ${p.material}`;
-    return s;
-  }).join(" · ");
+  const gravacao = personalizationDescription(item);
 
   return (
     <tr style={{ borderBottom: "1px solid #f0f0f0" }}>
       <td style={{ ...tdStyle, textAlign: "center", padding: "20px 8px", width: "90px" }}>
         {item.imageUrl ? (
-          <img src={item.imageUrl} alt={item.name} crossOrigin="anonymous" style={{ width: "80px", height: "80px", objectFit: "contain", borderRadius: "6px", border: "1px solid #eee", backgroundColor: "#fff", padding: "4px" }} loading="lazy" />
+          <img src={item.imageUrl} alt={item.name} crossOrigin="anonymous" style={{ width: "80px", height: "80px", objectFit: "contain", borderRadius: "6px", border: LIGHT_BORDER, backgroundColor: "#fff", padding: "4px" }} loading="lazy" />
         ) : (
-          <div style={{ width: "80px", height: "80px", backgroundColor: "#f5f5f5", borderRadius: "6px", border: "1px solid #eee", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto" }}>
+          <div style={{ width: "80px", height: "80px", backgroundColor: "#f5f5f5", borderRadius: "6px", border: LIGHT_BORDER, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto" }}>
             <span style={{ fontSize: "9px", color: "#bbb" }}>—</span>
           </div>
         )}
       </td>
-      <td style={{ ...tdStyle, verticalAlign: "top" }}>
-        <span style={{ fontWeight: 800, color: "#000", fontSize: "16px", display: "block", marginBottom: "6px" }}>{item.name}</span>
-        {(item.composedCode || item.sku) && (() => {
-          const bgColor = item.colorHex || "#2e7d32";
-          const hex = bgColor.replace("#", "");
-          const r = parseInt(hex.substring(0, 2), 16);
-          const g = parseInt(hex.substring(2, 4), 16);
-          const b = parseInt(hex.substring(4, 6), 16);
-          const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-          const textColor = luminance > 0.5 ? "#1a1a1a" : "#ffffff";
-          return (
-            <span style={{ display: "inline-block", background: bgColor, color: textColor, fontSize: "11px", padding: "2px 6px", borderRadius: "4px", fontWeight: 700, fontFamily: "'Roboto Mono', monospace", whiteSpace: "nowrap", marginBottom: "4px" }}>
-              {item.composedCode || item.sku}
-            </span>
-          );
-        })()}
-        {item.description && <span style={{ display: "block", fontSize: "13px", color: "#555", marginTop: "6px", lineHeight: "1.5", maxWidth: "450px" }}>{item.description}</span>}
-        {gravacao && <span style={{ display: "block", fontSize: "13px", color: "#555", marginTop: "4px", lineHeight: "1.5" }}>Gravação: {gravacao}</span>}
-        {!gravacao && item.color && <span style={{ display: "block", fontSize: "13px", color: "#555", marginTop: "4px" }}>Cor: {item.color}{item.size && ` | Tam: ${item.size}`}</span>}
-        {!item.color && item.size && <span style={{ display: "block", fontSize: "13px", color: "#555", marginTop: "4px" }}>Tam: {item.size}</span>}
-        {item.gender && <span style={{ display: "block", fontSize: "11px", color: "#888", marginTop: "2px" }}>Gênero: {item.gender}</span>}
-      </td>
+      <ProductDetails item={item} engraving={gravacao} />
       <td style={{ ...tdStyle, textAlign: "center", fontWeight: 700, fontSize: "15px" }}>{item.quantity}</td>
       <td style={{ ...tdStyle, textAlign: "right" }}>
         <span style={{ fontSize: "15px", fontWeight: 500 }}>{fmt(allInUnitPrice)}</span>
@@ -155,8 +161,8 @@ export function TotalsSection({ data }: { data: ProposalTemplateData }) {
         {data.discount && data.discount > 0 && <div style={totalsRowStyle}><span>Desconto Global:</span><span style={{ fontWeight: 500 }}>- {fmt(data.discount)}</span></div>}
         <div style={totalsRowStyle}><span>Frete:</span><span style={{ fontWeight: 500 }}>{shippingLabel}</span></div>
         <div style={{ backgroundColor: GREEN, color: "#fff", padding: "15px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "15px", borderRadius: "6px", boxShadow: "0 4px 10px rgba(0,200,83, 0.2)" }}>
-          <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, textTransform: "uppercase", fontSize: "15px" }}>Valor Total:</span>
-          <strong style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 800, fontSize: "24px" }}>{fmt(data.total)}</strong>
+          <span style={{ fontFamily: MONTSERRAT, fontWeight: 700, textTransform: "uppercase", fontSize: "15px" }}>Valor Total:</span>
+          <strong style={{ fontFamily: MONTSERRAT, fontWeight: 800, fontSize: "24px" }}>{fmt(data.total)}</strong>
         </div>
       </div>
     </div>
@@ -169,7 +175,7 @@ export function NotesSection({ data }: { data: ProposalTemplateData }) {
   const deliveryLabel = formatDeliveryTime(data.deliveryTime);
   const shippingLabel = formatShipping(data.shippingType, data.shippingCost);
   return (
-    <div style={{ marginTop: "50px", fontSize: "12px", color: "#666", lineHeight: "1.6", borderTop: "1px solid #eee", paddingTop: "20px" }}>
+    <div style={{ marginTop: "50px", fontSize: "12px", color: "#666", lineHeight: "1.6", borderTop: LIGHT_BORDER, paddingTop: "20px" }}>
       <div style={{ fontWeight: 700, fontSize: "13px", color: "#333", marginBottom: "8px" }}>Informações Relevantes:</div>
       <div>- Todos os valores são para produtos já personalizados conforme descrição.</div>
       {paymentLabel && <div>- 💳 Pagamento: {paymentLabel}.</div>}
@@ -206,7 +212,7 @@ export function FooterSection({ data }: { data: ProposalTemplateData }) {
           <ContactDot color={DARK} text="(11) 4637-5517" />
           <ContactDot color={GREEN} text="www.promobrindes.com.br" />
         </div>
-        <div style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "16px", fontWeight: 700, color: BLUE, fontStyle: "italic", marginTop: "8px" }}>adm01@promobrindes.com.br</div>
+        <div style={{ fontFamily: MONTSERRAT, fontSize: "16px", fontWeight: 700, color: BLUE, fontStyle: "italic", marginTop: "8px" }}>adm01@promobrindes.com.br</div>
         <div style={{ position: "absolute", top: "10px", right: "50px", textAlign: "center" }}>
           <div style={{ fontFamily: "'Sacramento', cursive", fontSize: "34px", color: BLUE, marginBottom: "-5px", transform: "rotate(-3deg)" }}>{data.seller.name}</div>
           <div style={{ fontWeight: 800, fontSize: "12px", textTransform: "uppercase", marginTop: "5px", color: "#000" }}>{data.seller.name}</div>

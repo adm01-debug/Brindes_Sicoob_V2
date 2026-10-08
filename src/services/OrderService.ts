@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
-import { OrderRow, OrderFilters, OrderItem, OrderStatus, OrderLogistics, OrderInvoice, OrderComment } from "@/types/orders";
+import type { Json, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import type { OrderRow, OrderFilters, OrderItem, OrderStatus, OrderLogistics, OrderInvoice, OrderComment } from "@/types/orders";
 import { ORDER_STATUS_LABELS } from "@/constants/orders";
 import { logger } from "@/lib/logger";
 import { invokeEdgeFunction } from "@/lib/edge-function-client";
@@ -17,35 +18,54 @@ export interface ConvertedOrder {
   total: number;
 }
 
+function createOrderListQuery() {
+  return supabase
+    // rls-allow: scope self aplicado pelo chamador; demais papéis dependem de RLS
+    .from("orders")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false });
+}
+
+type OrderListQuery = ReturnType<typeof createOrderListQuery>;
+
+function applyOrderScope(query: OrderListQuery, sellerId: string, scope: string): OrderListQuery {
+  return scope === "self" && sellerId ? query.eq("seller_id", sellerId) : query;
+}
+
+function applyOrderFieldFilters(query: OrderListQuery, filters?: OrderFilters): OrderListQuery {
+  let filtered = query;
+  if (filters?.status && filters.status !== "all") filtered = filtered.eq("status", filters.status);
+  if (filters?.clientCompany) filtered = filtered.ilike("client_company", `%${filters.clientCompany}%`);
+  if (filters?.startDate) filtered = filtered.gte("created_at", filters.startDate);
+  if (filters?.endDate) filtered = filtered.lte("created_at", filters.endDate);
+  return filtered;
+}
+
+function applyOrderSearch(query: OrderListQuery, searchValue?: string): OrderListQuery {
+  let filtered = query;
+  if (searchValue) {
+    const search = searchValue.trim();
+    filtered = filtered.or(`order_number.ilike.%${search}%,client_name.ilike.%${search}%,client_company.ilike.%${search}%`);
+  }
+  return filtered;
+}
+
+function applyOrderListFilters(
+  query: OrderListQuery,
+  sellerId: string,
+  scope: string,
+  filters?: OrderFilters,
+): OrderListQuery {
+  let filtered = applyOrderScope(query, sellerId, scope);
+  filtered = applyOrderFieldFilters(filtered, filters);
+  return applyOrderSearch(filtered, filters?.search);
+}
+
 export class OrderService {
   static async list(sellerId: string, scope: string, filters?: OrderFilters & { page?: number; pageSize?: number }): Promise<{ data: OrderRow[]; count: number | null }> {
     const page = filters?.page || 1;
     const pageSize = filters?.pageSize || 20;
-    
-    let q = supabase
-      // rls-allow: scope self aplicado abaixo no mesmo builder; demais papéis dependem de RLS
-      .from("orders")
-      .select("*", { count: 'exact' })
-      .order("created_at", { ascending: false });
-    
-    if (scope === "self" && sellerId) q = q.eq("seller_id", sellerId);
-    
-    if (filters?.status && filters.status !== "all") {
-      q = q.eq("status", filters.status);
-    }
-    
-    if (filters?.clientCompany) {
-      q = q.ilike("client_company", `%${filters.clientCompany}%`);
-    }
-    
-    if (filters?.startDate) q = q.gte("created_at", filters.startDate);
-    if (filters?.endDate) q = q.lte("created_at", filters.endDate);
-    
-    if (filters?.search) {
-      // Improved multi-column search
-      const search = filters.search.trim();
-      q = q.or(`order_number.ilike.%${search}%,client_name.ilike.%${search}%,client_company.ilike.%${search}%`);
-    }
+    const q = applyOrderListFilters(createOrderListQuery(), sellerId, scope, filters);
 
     try {
       const { data, error, count } = await q.range((page - 1) * pageSize, page * pageSize - 1);
@@ -193,10 +213,16 @@ export class OrderService {
 
     const { data, error, count } = await query.range((page - 1) * pageSize, page * pageSize - 1);
     if (error) throw error;
-    return { comments: data as any[], count };
+    return { comments: data as unknown as OrderComment[], count };
   }
 
-  static async addComment(orderId: string, authorId: string, content: string, isInternal = false, attachments: any = null) {
+  static async addComment(
+    orderId: string,
+    authorId: string,
+    content: string,
+    ...options: [isInternal?: boolean, attachments?: Json | null]
+  ) {
+    const [isInternal = false, attachments = null] = options;
     if (!content?.trim()) throw new Error("Conteúdo do comentário é obrigatório");
 
     const { data, error } = await supabase
@@ -221,7 +247,7 @@ export class OrderService {
     orderId: string;
     eventType: string;
     description: string;
-    metadata: any;
+    metadata: Json;
     createdByName?: string;
   }) {
     const { error } = await supabase.rpc('log_order_audit_event', {
@@ -266,7 +292,7 @@ export class OrderService {
     return data;
   }
 
-  static async createPilotApproval(payload: any) {
+  static async createPilotApproval(payload: TablesInsert<"order_pilot_approvals">) {
     const { data, error } = await supabase
       .from("order_pilot_approvals")
       .insert(payload)
@@ -277,7 +303,7 @@ export class OrderService {
     return data;
   }
 
-  static async updatePilotApprovalStatus(id: string, payload: any) {
+  static async updatePilotApprovalStatus(id: string, payload: TablesUpdate<"order_pilot_approvals">) {
     const { error } = await supabase
       .from("order_pilot_approvals")
       .update(payload)
@@ -388,7 +414,7 @@ export class OrderService {
 
     try {
       // Safe origin detection for both browser and SSR/Deno
-      const origin = typeof window !== 'undefined' ? window.location.origin : (process.env.APP_URL || '');
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
       
       await invokeEdgeFunction('send-transactional-email', {
         body: {
@@ -442,7 +468,7 @@ export class OrderService {
         status: order.status,
         total: Number(order.total_amount ?? 0),
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error("Error converting quote to order:", error);
       throw error;
     }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,6 @@ import { useNoveltiesWithDetails, useNoveltyStats } from "@/hooks/useNovelties";
 import { NoveltyBadge } from "@/components/products/NoveltyBadge";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
-import { useMemo } from "react";
 
 function formatDaysAgo(createdAt: string): string {
   const days = Math.floor((Date.now() - new Date(createdAt).getTime()) / 86400000);

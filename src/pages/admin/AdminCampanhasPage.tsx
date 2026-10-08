@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, Pencil, Trash2, Megaphone, Calendar, Tag, Filter, CheckCircle2, AlertCircle, Users, FileDown, Download } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Megaphone, Calendar, CheckCircle2, AlertCircle, Users, FileDown, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -14,17 +14,62 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import { format, startOfDay, endOfDay } from "date-fns";
 import { logAdminAction } from "@/utils/adminAudit";
 import { campaignRowsToCsv } from "@/utils/campaignExport";
+import type { Tables } from "@/integrations/supabase/types";
 // XLSX will be loaded dynamically when needed
 
+type Campaign = Tables<"campaigns">;
+interface CampaignFormData {
+  name: string;
+  status: string;
+  budget: number;
+  start_date: string;
+  end_date: string;
+  description: string;
+}
+
+interface CampaignFormDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  campaign: Campaign | null;
+  onSave: (formData: CampaignFormData) => Promise<void>;
+}
+
+const EMPTY_CAMPAIGN_FORM: CampaignFormData = {
+  name: "",
+  status: "draft",
+  budget: 0,
+  start_date: "",
+  end_date: "",
+  description: "",
+};
+
+function campaignMatchesDate(campaign: Campaign, startDate: string, endDate: string): boolean {
+  if (!startDate && !endDate) return true;
+  if (!campaign.start_date) return false;
+  const campaignStart = new Date(campaign.start_date);
+  if (startDate && campaignStart < startOfDay(new Date(startDate))) return false;
+  if (endDate && campaignStart > endOfDay(new Date(endDate))) return false;
+  return true;
+}
+
+function campaignMatchesFilters(
+  campaign: Campaign,
+  searchTerm: string,
+  filters: { startDate: string; endDate: string },
+): boolean {
+  const matchesSearch = campaign.name.toLowerCase().includes(searchTerm.toLowerCase());
+  return matchesSearch && campaignMatchesDate(campaign, filters.startDate, filters.endDate);
+}
+
 export default function AdminCampanhasPage() {
-  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingCampaign, setEditingCampaign] = useState<any>(null);
+  const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
   
   // Advanced filters state
   const [filters, setFilters] = useState({
@@ -59,7 +104,7 @@ export default function AdminCampanhasPage() {
   useEffect(() => { fetchData(); }, [filters.status]); // Re-fetch on status change
 
 
-  const handleSave = async (formData: any) => {
+  const handleSave = async (formData: CampaignFormData) => {
     try {
       if (editingCampaign?.id) {
         const { error } = await supabase.from('campaigns').update(formData).eq('id', editingCampaign.id);
@@ -68,8 +113,8 @@ export default function AdminCampanhasPage() {
           event_type: 'UPDATE',
           entity_type: 'campaigns',
           entity_id: editingCampaign.id,
-          payload: formData,
-          previous_state: editingCampaign
+          payload: { ...formData },
+          previous_state: { ...editingCampaign }
         });
         toast.success("Campanha atualizada com sucesso");
       } else {
@@ -79,7 +124,7 @@ export default function AdminCampanhasPage() {
           event_type: 'CREATE',
           entity_type: 'campaigns',
           entity_id: data.id,
-          payload: formData
+          payload: { ...formData }
         });
         toast.success("Campanha criada com sucesso");
       }
@@ -111,22 +156,7 @@ export default function AdminCampanhasPage() {
   };
 
   const filtered = useMemo(() => {
-    return campaigns.filter(c => {
-      const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      let matchesDate = true;
-      if (filters.startDate || filters.endDate) {
-        const campaignStart = c.start_date ? new Date(c.start_date) : null;
-        if (campaignStart) {
-          if (filters.startDate && campaignStart < startOfDay(new Date(filters.startDate))) matchesDate = false;
-          if (filters.endDate && campaignStart > endOfDay(new Date(filters.endDate))) matchesDate = false;
-        } else if (filters.startDate || filters.endDate) {
-          matchesDate = false;
-        }
-      }
-      
-      return matchesSearch && matchesDate;
-    });
+    return campaigns.filter(campaign => campaignMatchesFilters(campaign, searchTerm, filters));
   }, [campaigns, searchTerm, filters]);
 
   const handleExport = async (exportFormat: 'xlsx' | 'csv') => {
@@ -136,7 +166,6 @@ export default function AdminCampanhasPage() {
       'Orçamento': c.budget,
       'Data Início': c.start_date ? format(new Date(c.start_date), 'dd/MM/yyyy') : '',
       'Data Fim': c.end_date ? format(new Date(c.end_date), 'dd/MM/yyyy') : '',
-      'Público-Alvo': c.target_audience || ''
     }));
 
     if (exportFormat === 'xlsx') {
@@ -255,7 +284,7 @@ export default function AdminCampanhasPage() {
                           </div>
                         </TableCell>
                         <TableCell>R$ {c.budget?.toLocaleString() || "-"}</TableCell>
-                        <TableCell>{getStatusBadge(c.status)}</TableCell>
+                        <TableCell>{getStatusBadge(c.status ?? "draft")}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button variant="ghost" size="icon" onClick={() => { setEditingCampaign(c); setIsFormOpen(true); }}><Pencil className="h-4 w-4" /></Button>
@@ -282,26 +311,21 @@ export default function AdminCampanhasPage() {
   );
 }
 
-function CampaignFormDialog({ open, onOpenChange, campaign, onSave }: any) {
-  const [formData, setFormData] = useState<any>({ 
-    name: '', 
-    status: 'draft', 
-    budget: 0, 
-    start_date: '', 
-    end_date: '', 
-    description: '',
-    target_audience: ''
-  });
+function CampaignFormDialog({ open, onOpenChange, campaign, onSave }: CampaignFormDialogProps) {
+  const [formData, setFormData] = useState<CampaignFormData>(EMPTY_CAMPAIGN_FORM);
 
   useEffect(() => { 
     if (campaign) {
       setFormData({
-        ...campaign,
+        name: campaign.name,
+        status: campaign.status ?? "draft",
+        budget: campaign.budget ?? 0,
+        description: campaign.description ?? "",
         start_date: campaign.start_date?.split('T')[0] || '',
         end_date: campaign.end_date?.split('T')[0] || ''
       });
     } else {
-      setFormData({ name: '', status: 'draft', budget: 0, start_date: '', end_date: '', description: '', target_audience: '' });
+      setFormData(EMPTY_CAMPAIGN_FORM);
     }
   }, [campaign, open]);
 
@@ -358,10 +382,6 @@ function CampaignFormDialog({ open, onOpenChange, campaign, onSave }: any) {
           </TabsContent>
 
           <TabsContent value="segmentation" className="space-y-4 pt-4">
-            <div className="grid gap-2">
-              <Label htmlFor="audience">Público-Alvo</Label>
-              <Input id="audience" value={formData.target_audience || ''} onChange={(e) => setFormData({ ...formData, target_audience: e.target.value })} placeholder="Ex: Clientes Inativos, Cooperados PAC..." />
-            </div>
             <div className="p-4 bg-muted/30 rounded-lg border border-dashed text-center">
               <Users className="h-8 w-8 mx-auto opacity-20 mb-2" />
               <p className="text-xs text-muted-foreground">Filtros avançados de segmentação por comportamento de compra serão habilitados na Onda 3.</p>

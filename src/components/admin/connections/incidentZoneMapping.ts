@@ -24,21 +24,17 @@ const ZONE_ANCHOR: Record<TargetZone, string> = {
   operation: "zone-operation",
 };
 
+const OPERATION_TERMS = ["secret_stale", "rotation", "autotest", "auto_test", "cron", "failure_window", "config"];
+const HEALTH_TERMS = ["connection", "webhook", "delivery", "auth", "http_5xx", "http_4xx", "platform_error", "timeout", "network"];
+
+function includesAny(value: string, terms: string[]): boolean {
+  return terms.some(term => value.includes(term));
+}
+
 export function getIncidentTargetZone(incident: IncidentItem): TargetZone {
   const kind = (incident.kind ?? "").toLowerCase();
-
-  // Operacional: rotação/cron/configuração
-  if (kind.includes("secret_stale") || kind.includes("rotation")) return "operation";
-  if (kind.includes("autotest") || kind.includes("auto_test") || kind.includes("cron")) return "operation";
-  if (kind.includes("failure_window") || kind.includes("config")) return "operation";
-
-  // Saúde: tudo que é falha imediata da conexão/entrega
-  if (kind.includes("connection") || kind.includes("webhook") || kind.includes("delivery")) return "health";
-  if (["auth", "http_5xx", "http_4xx", "platform_error", "timeout", "network"].some((k) => kind.includes(k))) {
-    return "health";
-  }
-
-  // Default: Saúde (incidentes brutos sem kind ⇒ falha de teste)
+  if (includesAny(kind, OPERATION_TERMS)) return "operation";
+  if (includesAny(kind, HEALTH_TERMS)) return "health";
   return "health";
 }
 

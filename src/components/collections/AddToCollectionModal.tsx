@@ -26,6 +26,20 @@ interface AddToCollectionModalProps {
   variant?: CollectionVariantInfo;
 }
 
+function toggleProductCollection({ contains, collectionId, collectionName, productId, variant, add, remove }: { contains: boolean; collectionId: string; collectionName: string; productId: string; variant?: CollectionVariantInfo; add: (collectionId: string, productId: string, variant?: CollectionVariantInfo) => void; remove: (collectionId: string, productId: string) => void }) {
+  if (contains) {
+    remove(collectionId, productId);
+    toast.success(`Removido de "${collectionName}"`);
+    return;
+  }
+  add(collectionId, productId, variant);
+  toast.success(`Adicionado a "${collectionName}"`);
+}
+
+function collectionDraftName(name: string) {
+  return name.length > 0 ? name : "Nova coleção...";
+}
+
 export const AddToCollectionModal = ({
   open,
   onOpenChange,
@@ -53,13 +67,7 @@ export const AddToCollectionModal = ({
   }, [collections, productId, isProductInCollection]);
 
   const handleToggleCollection = (collectionId: string, collectionName: string) => {
-    if (isProductInCollection(productId, collectionId)) {
-      removeProductFromCollection(collectionId, productId);
-      toast.success(`Removido de "${collectionName}"`);
-    } else {
-      addProductToCollection(collectionId, productId, variant);
-      toast.success(`Adicionado a "${collectionName}"`);
-    }
+    toggleProductCollection({ contains: isProductInCollection(productId, collectionId), collectionId, collectionName, productId, variant, add: addProductToCollection, remove: removeProductFromCollection });
   };
 
   const handleCreateCollection = () => {
@@ -189,7 +197,7 @@ export const AddToCollectionModal = ({
                       {selectedIcon}
                     </motion.div>
                     <span className="text-xs font-medium text-foreground truncate flex-1">
-                      {newName || "Nova coleção..."}
+                      {collectionDraftName(newName)}
                     </span>
                     <Badge variant="secondary" className="text-[10px] shrink-0">Preview</Badge>
                   </div>

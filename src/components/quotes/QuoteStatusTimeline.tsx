@@ -1,4 +1,4 @@
-import { Check, Clock, Eye, FileText, RefreshCw, Send, Shield, ThumbsDown, ThumbsUp, AlertTriangle } from "lucide-react";
+import { Check, Clock, FileText, RefreshCw, Send, Shield, ThumbsDown, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -42,115 +42,87 @@ function formatTs(ts?: string) {
   }
 }
 
-export function QuoteStatusTimeline({
-  status,
-  createdAt,
-  updatedAt,
-  clientResponseAt,
-  isSyncing = false,
-}: QuoteStatusTimelineProps) {
-  const isPendingApproval = status === "pending_approval";
-  const isPendingSingular = status === "pending_singular_approval";
-  
-  // Compute current index based on filtered steps
-  const activeSteps = (isPendingApproval || isPendingSingular) 
-    ? steps 
-    : steps.filter(s => s.key !== "pending_approval" && s.key !== "pending_singular_approval");
-    
-  const stepIdx = activeSteps.findIndex(s => s.key === status);
-  const baseIdx = stepIdx >= 0 ? stepIdx : (statusOrder[status] != null ? Math.min(statusOrder[status], activeSteps.length) : 0);
-  const syncIdx = activeSteps.findIndex(s => s.key === "syncing");
-  const currentIdx = isSyncing && syncIdx >= 0 ? syncIdx : baseIdx;
+type TimelineStep = (typeof steps)[number];
 
-  const isRejected = status === "rejected" || status === "rejected_singular";
-  const isExpired  = status === "expired";
-  const isFinalNegative = isRejected || isExpired;
+function withoutApprovalSteps() {
+  return steps.filter(step => step.key !== "pending_approval" && step.key !== "pending_singular_approval");
+}
 
-  // Filter out approval steps if not relevant to this quote
-  const relevantSteps = (isPendingApproval || isPendingSingular || statusOrder[status] > 0)
-    ? steps
-    : steps.filter(s => s.key !== "pending_approval" && s.key !== "pending_singular_approval");
+function finalStep(step: TimelineStep, options: { index: number; length: number; rejected: boolean; expired: boolean }): TimelineStep {
+  if (options.index !== options.length - 1) return step;
+  if (options.rejected) return { key: "rejected", label: "Rejeitado", icon: ThumbsDown };
+  if (options.expired) return { key: "expired", label: "Expirado", icon: AlertTriangle };
+  return step;
+}
 
-  const displaySteps = relevantSteps.map((step, idx) => {
-    if (idx === relevantSteps.length - 1 && isRejected) {
-      return { key: "rejected", label: "Rejeitado", icon: ThumbsDown };
-    }
-    if (idx === relevantSteps.length - 1 && isExpired) {
-      return { key: "expired", label: "Expirado", icon: AlertTriangle };
-    }
-    return step;
-  });
+function statusFlags(status: string) {
+  return { pendingApproval: status === "pending_approval", pendingSingular: status === "pending_singular_approval",
+    rejected: status === "rejected" || status === "rejected_singular", expired: status === "expired" };
+}
 
-  return (
-    <div className="flex items-center w-full gap-0">
-      {displaySteps.map((step, idx) => {
-        const isCompleted = idx < currentIdx;
-        const isCurrent   = idx === currentIdx;
-        const Icon = step.icon;
-        const isSync = step.key === "syncing";
+function timelineCurrentIndex(status: string, activeSteps: TimelineStep[], isSyncing: boolean) {
+  const stepIndex = activeSteps.findIndex(step => step.key === status);
+  const baseIndex = stepIndex >= 0 ? stepIndex : Math.min(statusOrder[status] ?? 0, activeSteps.length);
+  const syncIndex = activeSteps.findIndex(step => step.key === "syncing");
+  return isSyncing && syncIndex >= 0 ? syncIndex : baseIndex;
+}
 
-        let timestamp: string | null = null;
-        if (idx === 0) timestamp = formatTs(createdAt);
-        else if (isCurrent && !isSyncing) timestamp = formatTs(updatedAt);
-        if (idx === steps.length - 1 && (status === "approved" || isRejected)) {
-          timestamp = formatTs(clientResponseAt || updatedAt);
-        }
+function buildTimeline(status: string, isSyncing: boolean) {
+  const flags = statusFlags(status);
+  const activeSteps = flags.pendingApproval || flags.pendingSingular ? steps : withoutApprovalSteps();
+  const relevant = flags.pendingApproval || flags.pendingSingular || (statusOrder[status] ?? 0) > 0 ? steps : withoutApprovalSteps();
+  const displaySteps = relevant.map((step, index) => finalStep(step, { index, length: relevant.length, rejected: flags.rejected, expired: flags.expired }));
+  return { displaySteps, currentIdx: timelineCurrentIndex(status, activeSteps, isSyncing), isPendingApproval: flags.pendingApproval,
+    isPendingSingular: flags.pendingSingular, isRejected: flags.rejected, isExpired: flags.expired, isFinalNegative: flags.rejected || flags.expired };
+}
 
-        return (
-          <div key={step.key} className="flex items-center flex-1 last:flex-none">
-            {/* Step circle */}
-            <div className="flex flex-col items-center gap-1">
-              <div
-                className={cn(
-                  "w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all",
-                  isCompleted && "bg-primary border-primary text-primary-foreground",
-                  isCurrent && isPendingApproval && step.key === "pending_approval" && "border-amber-500 bg-amber-500/10 text-amber-500 ring-2 ring-amber-500/20",
-                  isCurrent && isPendingSingular && step.key === "pending_singular_approval" && "border-emerald-500 bg-emerald-500/10 text-emerald-500 ring-2 ring-emerald-500/20",
-                  isCurrent && !isFinalNegative && !isSync && !isPendingApproval && !isPendingSingular && "border-primary bg-primary/10 text-primary ring-2 ring-primary/20",
-                  isCurrent && isSync && "border-success bg-primary/10 text-primary ring-2 ring-primary/20",
-                  isCurrent && isRejected && "border-destructive bg-destructive/10 text-destructive ring-2 ring-destructive/20",
-                  isCurrent && isExpired && "border-muted-foreground bg-muted text-muted-foreground ring-2 ring-muted-foreground/20",
-                  !isCompleted && !isCurrent && "border-muted-foreground/30 text-muted-foreground/40"
-                )}
-              >
-                {isCompleted ? (
-                  <Check className="h-4 w-4" />
-                ) : isCurrent && isSync ? (
-                  <Icon className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Icon className="h-4 w-4" />
-                )}
-              </div>
-              <span
-                className={cn(
-                  "text-xs font-medium whitespace-nowrap",
-                  isCompleted && "text-primary",
-                  isCurrent && !isFinalNegative && !isSync && "text-primary font-semibold",
-                  isCurrent && isSync && "text-primary font-semibold",
-                  isCurrent && isRejected && "text-destructive font-semibold",
-                  isCurrent && isExpired && "text-muted-foreground font-semibold",
-                  !isCompleted && !isCurrent && "text-muted-foreground/50"
-                )}
-              >
-                {step.label}
-              </span>
-              {timestamp && (
-                <span className="text-[10px] text-muted-foreground">{timestamp}</span>
-              )}
-            </div>
+type TimelineModel = ReturnType<typeof buildTimeline>;
 
-            {/* Connector line */}
-            {idx < displaySteps.length - 1 && (
-              <div
-                className={cn(
-                  "flex-1 h-0.5 mx-1 rounded-full transition-all",
-                  idx < currentIdx ? "bg-primary" : "bg-muted-foreground/20"
-                )}
-              />
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
+function circleState(model: TimelineModel, step: TimelineStep, completed: boolean, current: boolean) {
+  if (completed) return "bg-primary border-primary text-primary-foreground";
+  if (!current) return "border-muted-foreground/30 text-muted-foreground/40";
+  if (model.isPendingApproval && step.key === "pending_approval") return "border-amber-500 bg-amber-500/10 text-amber-500 ring-2 ring-amber-500/20";
+  if (model.isPendingSingular && step.key === "pending_singular_approval") return "border-emerald-500 bg-emerald-500/10 text-emerald-500 ring-2 ring-emerald-500/20";
+  if (model.isRejected) return "border-destructive bg-destructive/10 text-destructive ring-2 ring-destructive/20";
+  if (model.isExpired) return "border-muted-foreground bg-muted text-muted-foreground ring-2 ring-muted-foreground/20";
+  if (step.key === "syncing") return "border-success bg-primary/10 text-primary ring-2 ring-primary/20";
+  return "border-primary bg-primary/10 text-primary ring-2 ring-primary/20";
+}
+
+function labelState(model: TimelineModel, step: TimelineStep, completed: boolean, current: boolean) {
+  if (completed) return "text-primary";
+  if (!current) return "text-muted-foreground/50";
+  if (model.isRejected) return "text-destructive font-semibold";
+  if (model.isExpired) return "text-muted-foreground font-semibold";
+  return step.key === "syncing" || !model.isFinalNegative ? "text-primary font-semibold" : undefined;
+}
+
+function StepIcon({ step, completed, current }: { step: TimelineStep; completed: boolean; current: boolean }) {
+  if (completed) return <Check className="h-4 w-4" />;
+  const Icon = step.icon;
+  return <Icon className={cn("h-4 w-4", current && step.key === "syncing" && "animate-spin")} />;
+}
+
+function stepTimestamp(options: { index: number; current: boolean; step: TimelineStep; model: TimelineModel; props: QuoteStatusTimelineProps }) {
+  const { index, current, step, model, props } = options;
+  if (index === model.displaySteps.length - 1 && (props.status === "approved" || model.isRejected)) return formatTs(props.clientResponseAt || props.updatedAt);
+  if (index === 0) return formatTs(props.createdAt);
+  return current && !props.isSyncing && step.key !== "syncing" ? formatTs(props.updatedAt) : null;
+}
+
+function TimelineStepView({ step, index, model, props }: { step: TimelineStep; index: number; model: TimelineModel; props: QuoteStatusTimelineProps }) {
+  const completed = index < model.currentIdx;
+  const current = index === model.currentIdx;
+  const timestamp = stepTimestamp({ index, current, step, model, props });
+  return <div className="flex items-center flex-1 last:flex-none"><div className="flex flex-col items-center gap-1">
+    <div className={cn("w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all", circleState(model, step, completed, current))}><StepIcon step={step} completed={completed} current={current} /></div>
+    <span className={cn("text-xs font-medium whitespace-nowrap", labelState(model, step, completed, current))}>{step.label}</span>
+    {timestamp && <span className="text-[10px] text-muted-foreground">{timestamp}</span>}
+  </div>{index < model.displaySteps.length - 1 && <div className={cn("flex-1 h-0.5 mx-1 rounded-full transition-all", index < model.currentIdx ? "bg-primary" : "bg-muted-foreground/20")} />}</div>;
+}
+
+export function QuoteStatusTimeline(props: QuoteStatusTimelineProps) {
+  const model = buildTimeline(props.status, Boolean(props.isSyncing));
+
+  return <div className="flex items-center w-full gap-0">{model.displaySteps.map((step, index) => <TimelineStepView key={step.key} step={step} index={index} model={model} props={props} />)}</div>;
 }

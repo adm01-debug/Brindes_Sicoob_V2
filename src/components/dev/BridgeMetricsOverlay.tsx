@@ -4,7 +4,13 @@
  */
 import { memo, useCallback, useState } from 'react';
 import { useDevGate } from '@/hooks/useDevGate';
-import { useBridgeMetrics, type BridgeMetricsFilter, type BridgeMetricsTab } from '@/hooks/dev/useBridgeMetrics';
+import {
+  useBridgeMetrics,
+  type BridgeMetricsFilter,
+  type BridgeMetricsTab,
+} from '@/hooks/dev/useBridgeMetrics';
+import type { BridgeCallSample } from '@/lib/telemetry/bridgeCallMetrics';
+import type { LongTaskEvent } from '@/lib/telemetry/longTaskWatchdog';
 import { BridgeCallItem } from './metrics/BridgeCallItem';
 import { BridgeMetricsSummary } from './metrics/BridgeMetricsSummary';
 import { latencyClass } from './metrics/MetricUtils';
@@ -108,7 +114,18 @@ export default function BridgeMetricsOverlay() {
   );
 }
 
-const Header = memo(({ paused, onTogglePause, onClear, onClose, onShowInfo }: any) => (
+const ACTIVE_TAB_CLASS = 'bg-white/10 text-white';
+const INACTIVE_TAB_CLASS = 'text-zinc-500 hover:text-zinc-200';
+
+interface HeaderProps {
+  paused: boolean;
+  onTogglePause: () => void;
+  onClear: () => void;
+  onClose: () => void;
+  onShowInfo: () => void;
+}
+
+const Header = memo(({ paused, onTogglePause, onClear, onClose, onShowInfo }: HeaderProps) => (
   <div className="flex items-center justify-between gap-2 border-b border-white/10 bg-zinc-900/80 px-3 py-2">
     <div className="flex items-center gap-2">
       <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
@@ -174,19 +191,27 @@ const InfoModal = memo(({ open, onOpenChange }: { open: boolean, onOpenChange: (
   </Dialog>
 ));
 
-const Tabs = memo(({ tab, setTab, longTasksCount, filter, setFilter }: any) => (
+interface TabsProps {
+  tab: BridgeMetricsTab;
+  setTab: (tab: BridgeMetricsTab) => void;
+  longTasksCount: number;
+  filter: BridgeMetricsFilter;
+  setFilter: (filter: BridgeMetricsFilter) => void;
+}
+
+const Tabs = memo(({ tab, setTab, longTasksCount, filter, setFilter }: TabsProps) => (
   <div className="flex items-center gap-1 border-b border-white/5 px-3 py-1.5 text-[10px] uppercase tracking-wider overflow-x-auto no-scrollbar">
     <button
       type="button"
       onClick={() => setTab('calls')}
-      className={`rounded px-2 py-0.5 ${tab === 'calls' ? 'bg-white/10 text-white' : 'text-zinc-500 hover:text-zinc-200'}`}
+      className={`rounded px-2 py-0.5 ${tab === 'calls' ? ACTIVE_TAB_CLASS : INACTIVE_TAB_CLASS}`}
     >
       calls
     </button>
     <button
       type="button"
       onClick={() => setTab('longtasks')}
-      className={`rounded px-2 py-0.5 ${tab === 'longtasks' ? 'bg-white/10 text-white' : 'text-zinc-500 hover:text-zinc-200'}`}
+      className={`rounded px-2 py-0.5 ${tab === 'longtasks' ? ACTIVE_TAB_CLASS : INACTIVE_TAB_CLASS}`}
     >
       longtasks
       {longTasksCount > 0 && (
@@ -201,7 +226,7 @@ const Tabs = memo(({ tab, setTab, longTasksCount, filter, setFilter }: any) => (
             key={f}
             type="button"
             onClick={() => setFilter(f)}
-            className={`rounded px-2 py-0.5 ${filter === f ? 'bg-white/10 text-white' : 'text-zinc-500 hover:text-zinc-200'}`}
+            className={`rounded px-2 py-0.5 ${filter === f ? ACTIVE_TAB_CLASS : INACTIVE_TAB_CLASS}`}
           >
             {f === 'slow' ? '≥600ms' : f}
           </button>
@@ -211,26 +236,26 @@ const Tabs = memo(({ tab, setTab, longTasksCount, filter, setFilter }: any) => (
   </div>
 ));
 
-const CallsList = memo(({ samples }: any) => {
+const CallsList = memo(({ samples }: { samples: BridgeCallSample[] }) => {
   if (samples.length === 0) {
     return <div className="px-3 py-6 text-center text-zinc-500">Sem chamadas ainda.</div>;
   }
   return (
     <ul className="divide-y divide-white/5">
-      {samples.map((s: any) => (
+      {samples.map((s) => (
         <BridgeCallItem key={s.id} sample={s} />
       ))}
     </ul>
   );
 });
 
-const LongTasksList = memo(({ tasks }: any) => {
+const LongTasksList = memo(({ tasks }: { tasks: readonly LongTaskEvent[] }) => {
   if (tasks.length === 0) {
     return <div className="px-3 py-6 text-center text-zinc-500">Nenhuma long task detectada.</div>;
   }
   return (
     <ul className="divide-y divide-white/5">
-      {[...tasks].slice(-50).reverse().map((lt: any) => (
+      {[...tasks].slice(-50).reverse().map((lt) => (
         <li key={lt.id} className="px-3 py-1.5 hover:bg-white/5">
           <div className="flex items-center justify-between gap-2">
             <span className="truncate text-zinc-200">{new Date(lt.startedAtWallMs).toISOString().slice(11, 23)}</span>

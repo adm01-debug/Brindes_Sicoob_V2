@@ -27,6 +27,7 @@ import {
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 import { DeleteConfirmDialog } from "@/components/common/ConfirmDialog";
 
 import { useCatalogSelection } from "@/components/catalog/useCatalogSelection";
@@ -41,6 +42,7 @@ import { FavoritePresentationLauncher } from "@/components/favorites/FavoritePre
 import { useFavoritesGlobalShortcuts } from "@/hooks/useFavoritesGlobalShortcuts";
 import { useUndoStack } from "@/hooks/useUndoStack";
 import type { FavoritesSort } from "@/components/favorites/FavoritesSortBar";
+import type { Product } from "@/hooks/useProducts";
 
 type ViewMode = "grid" | "list" | "table";
 const VIEW_MODE_KEY = "favorites-view-mode";
@@ -49,11 +51,59 @@ const SELECTED_LIST_KEY = "favorites-selected-list-id";
 const SORT_KEY = "favorites-sort";
 const PRICE_DROP_FILTER_KEY = "favorites-only-drops";
 
+type FavoritePriceMeta = { priceDiffPct: number | null; priceAtSave: number | null; savedAt: string };
+type FavoriteNoteMeta = { itemId: string; note: string | null };
+
+function matchesFavoriteSearch(product: Product, searchQuery: string): boolean {
+  const query = searchQuery.toLowerCase();
+  return product.name.toLowerCase().includes(query)
+    || Boolean(product.sku?.toLowerCase().includes(query))
+    || Boolean(product.brand?.toLowerCase().includes(query));
+}
+
+function hasPriceDrop(product: Product, metaMap: Map<string, FavoritePriceMeta>): boolean {
+  const difference = metaMap.get(product.id)?.priceDiffPct;
+  return typeof difference === 'number' && difference < -2;
+}
+
+function sortFavoriteProducts(products: Product[], sort: FavoritesSort): Product[] {
+  const sorted = [...products];
+  switch (sort) {
+    case 'price-asc': return sorted.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+    case 'price-desc': return sorted.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+    case 'name-asc': return sorted.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+    case 'name-desc': return sorted.sort((a, b) => b.name.localeCompare(a.name, 'pt-BR'));
+    case 'category': return sorted.sort((a, b) => (a.category_name ?? '').localeCompare(b.category_name ?? '', 'pt-BR'));
+    case 'oldest': return sorted.reverse();
+    default: return sorted;
+  }
+}
+
+interface FavoriteFilterOptions {
+  searchQuery: string;
+  onlyPriceDrops: boolean;
+  isRemoteListView: boolean;
+  metaMap: Map<string, FavoritePriceMeta>;
+  sort: FavoritesSort;
+}
+
+function filterFavoriteProducts(products: Product[], options: FavoriteFilterOptions): Product[] {
+  let filtered = options.searchQuery.trim()
+    ? products.filter((product) => matchesFavoriteSearch(product, options.searchQuery))
+    : products;
+  if (options.onlyPriceDrops && options.isRemoteListView) {
+    filtered = filtered.filter((product) => hasPriceDrop(product, options.metaMap));
+  }
+  return sortFavoriteProducts(filtered, options.sort);
+}
+
 function loadViewMode(): ViewMode {
   try {
     const v = localStorage.getItem(VIEW_MODE_KEY);
     if (v === "grid" || v === "list" || v === "table") return v;
-  } catch {}
+  } catch (error) {
+    logger.warn("Não foi possível ler o modo de exibição dos favoritos", error);
+  }
   return "grid";
 }
 
@@ -64,7 +114,9 @@ function loadGridColumns(): ColumnCount {
       const n = Number(v) as ColumnCount;
       if ([3, 4, 5, 6, 8].includes(n)) return n;
     }
-  } catch {}
+  } catch (error) {
+    logger.warn("Não foi possível ler as colunas dos favoritos", error);
+  }
   return getDefaultColumns();
 }
 
@@ -73,7 +125,9 @@ function loadSort(): FavoritesSort {
     const v = localStorage.getItem(SORT_KEY) as FavoritesSort | null;
     const allowed: FavoritesSort[] = ["recent", "oldest", "price-asc", "price-desc", "name-asc", "name-desc", "category"];
     if (v && allowed.includes(v)) return v;
-  } catch {}
+  } catch (error) {
+    logger.warn("Não foi possível ler a ordenação dos favoritos", error);
+  }
   return "recent";
 }
 
@@ -103,7 +157,12 @@ export default function FavoritesPage() {
 
   // Estado: lista selecionada (null = view legado/todos) + lixeira
   const [selectedListId, setSelectedListId] = useState<string | null>(() => {
-    try { return localStorage.getItem(SELECTED_LIST_KEY); } catch { return null; }
+    try {
+      return localStorage.getItem(SELECTED_LIST_KEY);
+    } catch (error) {
+      logger.warn("Não foi possível ler a lista de favoritos selecionada", error);
+      return null;
+    }
   });
   const [showTrash, setShowTrash] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -116,7 +175,9 @@ export default function FavoritesPage() {
     try {
       if (selectedListId) localStorage.setItem(SELECTED_LIST_KEY, selectedListId);
       else localStorage.removeItem(SELECTED_LIST_KEY);
-    } catch {}
+    } catch (error) {
+      logger.warn("Não foi possível salvar a lista de favoritos selecionada", error);
+    }
   }, [selectedListId]);
 
   // Items enriquecidos da lista remota selecionada
@@ -130,17 +191,34 @@ export default function FavoritesPage() {
   const [sort, setSort] = useState<FavoritesSort>(() => loadSort());
   const [selectionMode, setSelectionMode] = useState(false);
   const [onlyPriceDrops, setOnlyPriceDrops] = useState<boolean>(() => {
-    try { return localStorage.getItem(PRICE_DROP_FILTER_KEY) === "1"; } catch { return false; }
+    try {
+      return localStorage.getItem(PRICE_DROP_FILTER_KEY) === "1";
+    } catch (error) {
+      logger.warn("Não foi possível ler o filtro de queda de preço", error);
+      return false;
+    }
   });
 
-  useEffect(() => { try { localStorage.setItem(VIEW_MODE_KEY, viewMode); } catch {} }, [viewMode]);
-  useEffect(() => { try { localStorage.setItem(GRID_COLS_KEY, String(gridColumns)); } catch {} }, [gridColumns]);
-  useEffect(() => { try { localStorage.setItem(SORT_KEY, sort); } catch {} }, [sort]);
-  useEffect(() => { try { localStorage.setItem(PRICE_DROP_FILTER_KEY, onlyPriceDrops ? "1" : "0"); } catch {} }, [onlyPriceDrops]);
+  useEffect(() => {
+    try { localStorage.setItem(VIEW_MODE_KEY, viewMode); }
+    catch (error) { logger.warn("Não foi possível salvar o modo dos favoritos", error); }
+  }, [viewMode]);
+  useEffect(() => {
+    try { localStorage.setItem(GRID_COLS_KEY, String(gridColumns)); }
+    catch (error) { logger.warn("Não foi possível salvar as colunas dos favoritos", error); }
+  }, [gridColumns]);
+  useEffect(() => {
+    try { localStorage.setItem(SORT_KEY, sort); }
+    catch (error) { logger.warn("Não foi possível salvar a ordenação dos favoritos", error); }
+  }, [sort]);
+  useEffect(() => {
+    try { localStorage.setItem(PRICE_DROP_FILTER_KEY, onlyPriceDrops ? "1" : "0"); }
+    catch (error) { logger.warn("Não foi possível salvar o filtro de queda de preço", error); }
+  }, [onlyPriceDrops]);
 
   // Mapa product_id → meta enriquecida (para badges + filtro de queda)
   const enrichedMetaMap = useMemo(() => {
-    const m = new Map<string, { priceDiffPct: number | null; priceAtSave: number | null; savedAt: string }>();
+    const m = new Map<string, FavoritePriceMeta>();
     if (isRemoteListView) {
       enriched.forEach((e) => {
         m.set(e.item.product_id, {
@@ -183,7 +261,7 @@ export default function FavoritesPage() {
 
   // Map de notas (apenas remoto)
   const noteMap = useMemo(() => {
-    const m = new Map<string, { itemId: string; note: string | null }>();
+    const m = new Map<string, FavoriteNoteMeta>();
     if (isRemoteListView) {
       rawItems.forEach((it) => m.set(it.product_id, { itemId: it.id, note: it.note }));
     }
@@ -191,7 +269,7 @@ export default function FavoritesPage() {
   }, [rawItems, isRemoteListView]);
 
   const productsWithVariant = useMemo(() => {
-    const base = isRemoteListView
+    return isRemoteListView
       ? enriched.map((e) => e.productWithVariant).filter((p): p is NonNullable<typeof p> => !!p)
       : legacyFavoriteProducts.map((product) => {
           const variant = variantMap.get(product.id);
@@ -200,39 +278,15 @@ export default function FavoritesPage() {
           }
           return product;
         });
-    return base;
   }, [enriched, legacyFavoriteProducts, variantMap, isRemoteListView]);
 
-  const filteredProducts = useMemo(() => {
-    let list = productsWithVariant;
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter((p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.sku?.toLowerCase().includes(q) ||
-        p.brand?.toLowerCase().includes(q)
-      );
-    }
-    // Filtro "só com queda" (apenas em listas remotas)
-    if (onlyPriceDrops && isRemoteListView) {
-      list = list.filter((p) => {
-        const meta = enrichedMetaMap.get(p.id);
-        return meta?.priceDiffPct !== null && meta?.priceDiffPct !== undefined && meta.priceDiffPct < -2;
-      });
-    }
-    // Aplicar sort
-    const sorted = [...list];
-    switch (sort) {
-      case "price-asc": sorted.sort((a, b) => (a.price ?? 0) - (b.price ?? 0)); break;
-      case "price-desc": sorted.sort((a, b) => (b.price ?? 0) - (a.price ?? 0)); break;
-      case "name-asc": sorted.sort((a, b) => a.name.localeCompare(b.name, "pt-BR")); break;
-      case "name-desc": sorted.sort((a, b) => b.name.localeCompare(a.name, "pt-BR")); break;
-      case "category": sorted.sort((a, b) => (a.category_name ?? "").localeCompare(b.category_name ?? "", "pt-BR")); break;
-      case "oldest": sorted.reverse(); break;
-      case "recent": default: break;
-    }
-    return sorted;
-  }, [productsWithVariant, searchQuery, sort, onlyPriceDrops, isRemoteListView, enrichedMetaMap]);
+  const filteredProducts = useMemo(() => filterFavoriteProducts(productsWithVariant, {
+    searchQuery,
+    onlyPriceDrops,
+    isRemoteListView,
+    metaMap: enrichedMetaMap,
+    sort,
+  }), [productsWithVariant, searchQuery, sort, onlyPriceDrops, isRemoteListView, enrichedMetaMap]);
 
   // Bulk selection
   const sel = useCatalogSelection(filteredProducts, selectionMode);
@@ -338,420 +392,227 @@ export default function FavoritesPage() {
     />
   );
 
-  return (
-    <>
-      <PageSEO title="Favoritos" description="Suas listas de produtos favoritos com organização, anotações e compartilhamento." path="/favoritos" />
-      <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 pb-24 md:pb-6 animate-fade-in">
-        {/* Header global */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-          <div className="flex items-center gap-3">
-            <div
-              data-testid="favorites-icon"
-              aria-label="Favoritos"
-              className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center"
-            >
-              <Heart className="h-6 w-6 text-destructive fill-destructive" />
-            </div>
-            <div>
-              <h1 data-testid="page-title-favoritos" className="text-2xl lg:text-3xl font-display font-bold text-foreground">
-                Meus Produtos Favoritos
-              </h1>
-              <p data-testid="favorites-count" className="text-muted-foreground text-sm">
-                <span data-testid="favorites-count-items">{headerTotalCount}</span>{" "}
-                {headerTotalCount === 1 ? "item" : "itens"}
-                {lists.length > 0 && (
-                  <>
-                    {" • "}
-                    <span data-testid="favorites-count-lists">{lists.length}</span>{" "}
-                    {lists.length === 1 ? "lista" : "listas"}
-                  </>
-                )}
-              </p>
-            </div>
-          </div>
+  function HeaderCount() {
+    return <p data-testid="favorites-count" className="text-muted-foreground text-sm">
+      <span data-testid="favorites-count-items">{headerTotalCount}</span>{' '}
+      {headerTotalCount === 1 ? 'item' : 'itens'}
+      {lists.length > 0 && <>{' • '}<span data-testid="favorites-count-lists">{lists.length}</span>{' '}
+        {lists.length === 1 ? 'lista' : 'listas'}</>}
+    </p>;
+  }
 
-          <div className="flex gap-2 items-center flex-wrap">
-            {/* Mobile: abrir sidebar como sheet */}
-            <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="sm" className="lg:hidden">
-                  <FolderOpen className="h-4 w-4 mr-1.5" />
-                  Listas
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-72 p-4 overflow-y-auto">
-                {sidebarNode}
-              </SheetContent>
-            </Sheet>
+  function ClearAllAction() {
+    if (isRemoteListView) return null;
+    return <><Button variant="outline" size="sm" className="text-destructive hover:text-destructive"
+      onClick={() => setClearAllDialogOpen(true)}><Trash2 className="h-4 w-4 mr-2" />Limpar Tudo</Button>
+      <DeleteConfirmDialog open={clearAllDialogOpen} onOpenChange={setClearAllDialogOpen} entityName="favoritos"
+        itemName={`todos os ${favoriteCount} produtos`} onConfirm={handleClearAll} /></>;
+  }
 
-            {(headerTotalCount > 0 && !showTrash) && (
-              <>
-                {!isRemoteListView && (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => setClearAllDialogOpen(true)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Limpar Tudo
-                    </Button>
-                    <DeleteConfirmDialog
-                      open={clearAllDialogOpen}
-                      onOpenChange={setClearAllDialogOpen}
-                      entityName="favoritos"
-                      itemName={`todos os ${favoriteCount} produtos`}
-                      onConfirm={handleClearAll}
-                    />
-                  </>
-                )}
-                <Button
-                  variant={selectionMode ? "default" : "outline"}
-                  size="sm"
-                  className={cn("gap-1.5 h-8 transition-all relative",
-                    selectionMode ? "bg-primary text-primary-foreground" : "hover:border-primary/50")}
-                  onClick={toggleSelectionMode}
-                >
-                  <CheckSquare className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline text-xs">{selectionMode ? "Cancelar" : "Selecionar"}</span>
-                  <AnimatePresence>
-                    {selectionMode && selectedIds.size > 0 && (
-                      <motion.div
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0, opacity: 0 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                        className="absolute -top-2 -right-2"
-                      >
-                        <Badge className="bg-destructive text-destructive-foreground h-5 min-w-5 text-[10px] font-bold px-1.5 py-0 flex items-center justify-center tabular-nums shadow-lg">
-                          {selectedIds.size}
-                        </Badge>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </Button>
-                <div className="hidden sm:block">
-                  <LayoutPopover
-                    viewMode={viewMode}
-                    setViewMode={setViewMode}
-                    gridColumns={gridColumns}
-                    setGridColumns={setGridColumns}
-                  />
-                </div>
-              </>
-            )}
+  function SelectionAction() {
+    return <><Button variant={selectionMode ? 'default' : 'outline'} size="sm"
+      className={cn('gap-1.5 h-8 transition-all relative', selectionMode
+        ? 'bg-primary text-primary-foreground' : 'hover:border-primary/50')} onClick={toggleSelectionMode}>
+      <CheckSquare className="h-3.5 w-3.5" />
+      <span className="hidden sm:inline text-xs">{selectionMode ? 'Cancelar' : 'Selecionar'}</span>
+      <AnimatePresence>{selectionMode && selectedIds.size > 0 && <motion.div initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 500, damping: 25 }} className="absolute -top-2 -right-2">
+        <Badge className="bg-destructive text-destructive-foreground h-5 min-w-5 text-[10px] font-bold px-1.5 py-0 flex items-center justify-center tabular-nums shadow-lg">
+          {selectedIds.size}
+        </Badge>
+      </motion.div>}</AnimatePresence>
+    </Button><div className="hidden sm:block"><LayoutPopover viewMode={viewMode} setViewMode={setViewMode}
+      gridColumns={gridColumns} setGridColumns={setGridColumns} /></div></>;
+  }
+
+  function HeaderActions() {
+    if (headerTotalCount === 0 || showTrash) return null;
+    return <><ClearAllAction /><SelectionAction /></>;
+  }
+
+  function FavoritesHeader() {
+    return <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+      <div className="flex items-center gap-3"><div data-testid="favorites-icon" aria-label="Favoritos"
+        className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center">
+        <Heart className="h-6 w-6 text-destructive fill-destructive" /></div>
+        <div><h1 data-testid="page-title-favoritos" className="text-2xl lg:text-3xl font-display font-bold text-foreground">
+          Meus Produtos Favoritos</h1><HeaderCount /></div>
+      </div>
+      <div className="flex gap-2 items-center flex-wrap"><Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetTrigger asChild><Button variant="outline" size="sm" className="lg:hidden">
+          <FolderOpen className="h-4 w-4 mr-1.5" />Listas</Button></SheetTrigger>
+        <SheetContent side="left" className="w-72 p-4 overflow-y-auto">{sidebarNode}</SheetContent>
+      </Sheet><HeaderActions /></div>
+    </div>;
+  }
+
+  function StatsCards() {
+    if (!stats) return null;
+    return <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="stat-card flex items-center gap-3"><div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><Package className="h-5 w-5 text-primary" /></div>
+        <div><p className="text-2xl font-display font-bold text-foreground">{stats.total}</p><p className="text-xs text-muted-foreground">Produtos</p></div></div>
+      <div className="stat-card flex items-center gap-3"><div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><Layers className="h-5 w-5 text-primary" /></div>
+        <div><p className="text-2xl font-display font-bold text-foreground">{stats.categories}</p><p className="text-xs text-muted-foreground">Categorias</p></div></div>
+      <div className="stat-card flex items-center gap-3"><div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center shrink-0"><TrendingDown className="h-5 w-5 text-success" /></div>
+        <div><p className="text-2xl font-display font-bold text-foreground">{fmt(stats.minPrice)}</p><p className="text-xs text-muted-foreground">Menor preço</p></div></div>
+      <div className="stat-card flex items-center gap-3"><div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><TrendingUp className="h-5 w-5 text-primary" /></div>
+        <div><p className="text-2xl font-display font-bold text-foreground">{fmt(stats.maxPrice)}</p><p className="text-xs text-muted-foreground">Maior preço</p></div></div>
+    </div>;
+  }
+
+  function FavoritesSearch() {
+    if (productsWithVariant.length === 0) return null;
+    return <div className="relative max-w-md"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <Input placeholder="Buscar nos favoritos..." value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} className="pl-9" />
+    </div>;
+  }
+
+  function SelectionBar() {
+    if (!selectionMode || productsWithVariant.length === 0) return null;
+    return <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-lg border border-primary/30 bg-primary/5 animate-fade-in">
+      <div className="flex items-center gap-2 text-sm"><CheckSquare className="h-4 w-4 text-primary" />
+        <span className="font-medium text-foreground">{selectedIds.size} {selectedIds.size === 1 ? 'selecionado' : 'selecionados'}</span>
+        <span className="text-muted-foreground">de {filteredProducts.length}</span></div>
+      <div className="flex gap-2 items-center"><Button variant="ghost" size="sm" onClick={sel.selectAll}
+        disabled={selectedIds.size === filteredProducts.length}>Selecionar tudo</Button>
+        <Button variant="ghost" size="sm" onClick={sel.clearSelection} disabled={selectedIds.size === 0}><X className="h-3.5 w-3.5 mr-1" />Limpar</Button>
+        <Button variant="destructive" size="sm" disabled={selectedIds.size === 0} onClick={() => setRemoveSelectedDialogOpen(true)}>
+          <Trash2 className="h-3.5 w-3.5 mr-1.5" />Remover ({selectedIds.size})</Button>
+        <DeleteConfirmDialog open={removeSelectedDialogOpen} onOpenChange={setRemoveSelectedDialogOpen}
+          entityName="itens selecionados" itemName={`${selectedIds.size} ${selectedIds.size === 1 ? 'item' : 'itens'}`}
+          onConfirm={handleRemoveSelected} />
+      </div>
+    </div>;
+  }
+
+  function SelectedIndicator({ selected, position }: { selected: boolean; position: 'list' | 'grid' }) {
+    if (!selectionMode) return null;
+    return <div className={position === 'list' ? 'absolute top-2 left-2 z-20' : 'absolute top-3 left-3 z-20'}>
+      <div className={cn('h-6 w-6 rounded-md border-2 flex items-center justify-center transition-all backdrop-blur-sm',
+        selected ? 'bg-primary border-primary' : 'bg-card/90 border-border')}>
+        {selected && <CheckSquare className="h-3.5 w-3.5 text-primary-foreground" />}
+      </div>
+    </div>;
+  }
+
+  function FavoriteListRow({ product }: { product: Product }) {
+    const selected = selectedIds.has(product.id);
+    return <div className={cn('relative rounded-lg transition-all', selectionMode && 'cursor-pointer',
+      selected && 'ring-2 ring-primary ring-offset-2 ring-offset-background')}
+      onClick={selectionMode ? () => sel.toggleSelect(product.id) : undefined}>
+      <div className={cn(selectionMode && 'pointer-events-none')}><ProductListItem product={product}
+        onClick={() => navigate(`/produto/${product.id}`)} isFavorited={isFavorite(product.id)} onToggleFavorite={handleToggleFavorite} /></div>
+      <SelectedIndicator selected={selected} position="list" />
+    </div>;
+  }
+
+  function PriceDropIndicator({ product, meta }: { product: Product; meta: FavoritePriceMeta | undefined }) {
+    if (!isRemoteListView || !meta || selectionMode) return null;
+    return <div className="absolute bottom-3 left-3 z-10 pointer-events-auto"><PriceDropBadge priceDiffPct={meta.priceDiffPct}
+      priceAtSave={meta.priceAtSave} currentPrice={product.price} savedAt={meta.savedAt} /></div>;
+  }
+
+  function VariantBadge({ variant }: { variant: FavoriteVariantInfo | undefined }) {
+    if (!variant?.color_name) return null;
+    return <Badge variant="secondary" className="bg-card/90 backdrop-blur-sm text-[10px] gap-1 px-1.5 py-0.5">
+      {variant.color_hex && <span className="inline-block w-2.5 h-2.5 rounded-full border border-border/50 shrink-0"
+        style={{ backgroundColor: variant.color_hex }} />}<span className="truncate max-w-[80px]">{variant.color_name}</span>
+    </Badge>;
+  }
+
+  function FavoriteCardActions({ product, note, variant }: {
+    product: Product; note: FavoriteNoteMeta | undefined; variant: FavoriteVariantInfo | undefined;
+  }) {
+    if (selectionMode) return null;
+    return <div className="absolute top-3 right-3 z-40 flex flex-col items-end gap-1.5">
+      <Button variant="secondary" size="icon" aria-label="Remover favorito" data-testid="favorite-remove"
+        className="h-8 w-8 bg-card/90 backdrop-blur-sm hover:bg-destructive/20"
+        onClick={(event) => { event.stopPropagation(); handleRemoveFavorite(product.id, product.name); }}>
+        <Heart className="h-4 w-4 fill-destructive text-destructive" /></Button>
+      {isRemoteListView && note && <ItemNoteEditor initialNote={note.note} onSave={(value) => handleSaveNote(product.id, value)} />}
+      <VariantBadge variant={variant} />
+    </div>;
+  }
+
+  function FavoriteGridItem({ product, index }: { product: Product; index: number }) {
+    const selected = selectedIds.has(product.id);
+    return <div data-testid="favorite-item" data-product-id={product.id} data-product-name={product.name}
+      className={cn('animate-fade-in relative rounded-xl transition-all', selectionMode && 'cursor-pointer',
+        selected && 'ring-2 ring-primary ring-offset-2 ring-offset-background')}
+      style={{ animationDelay: `${Math.min(index * 25, 250)}ms` }}
+      onClick={selectionMode ? () => sel.toggleSelect(product.id) : undefined}>
+      <div className={cn(selectionMode && 'pointer-events-none')}><ProductCard product={product}
+        onClick={() => navigate(`/produto/${product.id}`)} onFavorite={() => handleRemoveFavorite(product.id, product.name)} /></div>
+      <PriceDropIndicator product={product} meta={enrichedMetaMap.get(product.id)} />
+      <SelectedIndicator selected={selected} position="grid" />
+      <FavoriteCardActions product={product} note={noteMap.get(product.id)} variant={variantMap.get(product.id)} />
+    </div>;
+  }
+
+  function EmptyFavoriteResults() {
+    if (productsWithVariant.length > 0 && searchQuery) return <div className="text-center py-12 bg-muted/20 rounded-xl border-[1.5px] border-dashed border-primary/10">
+      <Search className="h-12 w-12 text-muted-foreground mx-auto mb-3" /><h3 className="font-display text-lg font-semibold text-foreground mb-1">
+        Nenhum favorito encontrado</h3><p className="text-muted-foreground text-sm">Nenhum produto corresponde a "{searchQuery}"</p>
+    </div>;
+    return <FavoritesEmptyStateSmart onAddProduct={(productId) => {
+      if (isRemoteListView && activeList) toast.info('Abra o produto e use o coração para adicionar a esta lista');
+      navigate(`/produto/${productId}`);
+    }} />;
+  }
+
+  function FavoriteProducts() {
+    if (filteredProducts.length === 0) return <EmptyFavoriteResults />;
+    if (viewMode === 'table') return <ProductTableView products={filteredProducts}
+      onProductClick={(productId) => navigate(`/produto/${productId}`)} isFavorite={isFavorite}
+      onToggleFavorite={handleToggleFavorite} selectionMode={selectionMode} selectedIds={selectedIds} onToggleSelect={sel.toggleSelect} />;
+    if (viewMode === 'list') return <div className="space-y-1.5">
+      {filteredProducts.map((product) => <FavoriteListRow key={product.id} product={product} />)}</div>;
+    return <div data-testid="favorites-list" className={`grid ${getGridColsClass(gridColumns)} ${getGridGapClass(gridColumns)}`}>
+      {filteredProducts.map((product, index) => <FavoriteGridItem key={product.id} product={product} index={index} />)}
+    </div>;
+  }
+
+  function ActiveFavorites() {
+    return <><FavoritesViewHeader list={activeList} itemCount={isRemoteListView ? rawItems.length : favoriteCount}
+      sort={sort} onSortChange={setSort} fallbackTitle={!isRemoteListView ? 'Todos os favoritos' : undefined}
+      fallbackSubtitle={!isRemoteListView && lists.length === 0 ? 'Crie uma lista para organizar' : undefined}
+      onlyPriceDrops={isRemoteListView ? onlyPriceDrops : undefined}
+      onTogglePriceDrops={isRemoteListView ? setOnlyPriceDrops : undefined} priceDropCount={priceDropCount}
+      products={productsWithVariant} rawItems={isRemoteListView ? rawItems : undefined}
+      onPresent={productsWithVariant.length > 0 ? () => setPresenting(true) : undefined} />
+      <StatsCards /><FavoritesSearch /><SelectionBar /><FavoriteProducts /></>;
+  }
+
+  function MainView() {
+    if (showTrash) return <><div className="flex items-center gap-2 px-1"><Trash2 className="h-5 w-5 text-muted-foreground" />
+      <h2 className="text-lg font-display font-semibold text-foreground">Lixeira</h2></div><FavoritesTrashView /></>;
+    return <ActiveFavorites />;
+  }
+
+  function Presentation() {
+    if (!presenting) return null;
+    return <FavoritePresentationLauncher products={productsWithVariant} listName={activeList?.name ?? 'Favoritos'}
+      onClose={() => setPresenting(false)} />;
+  }
+
+  return <FavoritesPageBody />;
+
+  function FavoritesPageBody() {
+    return (
+      <>
+        <PageSEO title="Favoritos" description="Suas listas de produtos favoritos com organização, anotações e compartilhamento." path="/favoritos" />
+        <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 pb-24 md:pb-6 animate-fade-in">
+          <FavoritesHeader />
+          <div className="flex gap-4 lg:gap-6">
+            <div className="hidden lg:block">{sidebarNode}</div>
+            <div className="flex-1 min-w-0 space-y-4"><MainView /></div>
           </div>
         </div>
-
-        {/* Layout 2-col */}
-        <div className="flex gap-4 lg:gap-6">
-          {/* Sidebar desktop */}
-          <div className="hidden lg:block">
-            {sidebarNode}
-          </div>
-
-          {/* View principal */}
-          <div className="flex-1 min-w-0 space-y-4">
-            {showTrash ? (
-              <>
-                <div className="flex items-center gap-2 px-1">
-                  <Trash2 className="h-5 w-5 text-muted-foreground" />
-                  <h2 className="text-lg font-display font-semibold text-foreground">Lixeira</h2>
-                </div>
-                <FavoritesTrashView />
-              </>
-            ) : (
-              <>
-                <FavoritesViewHeader
-                  list={activeList}
-                  itemCount={isRemoteListView ? rawItems.length : favoriteCount}
-                  sort={sort}
-                  onSortChange={setSort}
-                  fallbackTitle={!isRemoteListView ? "Todos os favoritos" : undefined}
-                  fallbackSubtitle={!isRemoteListView && lists.length === 0 ? "Crie uma lista para organizar" : undefined}
-                  onlyPriceDrops={isRemoteListView ? onlyPriceDrops : undefined}
-                  onTogglePriceDrops={isRemoteListView ? setOnlyPriceDrops : undefined}
-                  priceDropCount={priceDropCount}
-                  products={productsWithVariant}
-                  rawItems={isRemoteListView ? rawItems : undefined}
-                  onPresent={productsWithVariant.length > 0 ? () => setPresenting(true) : undefined}
-                />
-
-                {/* KPI cards */}
-                {stats && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div className="stat-card flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                        <Package className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-2xl font-display font-bold text-foreground">{stats.total}</p>
-                        <p className="text-xs text-muted-foreground">Produtos</p>
-                      </div>
-                    </div>
-                    <div className="stat-card flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                        <Layers className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-2xl font-display font-bold text-foreground">{stats.categories}</p>
-                        <p className="text-xs text-muted-foreground">Categorias</p>
-                      </div>
-                    </div>
-                    <div className="stat-card flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center shrink-0">
-                        <TrendingDown className="h-5 w-5 text-success" />
-                      </div>
-                      <div>
-                        <p className="text-2xl font-display font-bold text-foreground">{fmt(stats.minPrice)}</p>
-                        <p className="text-xs text-muted-foreground">Menor preço</p>
-                      </div>
-                    </div>
-                    <div className="stat-card flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                        <TrendingUp className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-2xl font-display font-bold text-foreground">{fmt(stats.maxPrice)}</p>
-                        <p className="text-xs text-muted-foreground">Maior preço</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Search */}
-                {productsWithVariant.length > 0 && (
-                  <div className="relative max-w-md">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Buscar nos favoritos..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9"
-                    />
-                  </div>
-                )}
-
-                {/* Selection action bar */}
-                {selectionMode && productsWithVariant.length > 0 && (
-                  <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-lg border border-primary/30 bg-primary/5 animate-fade-in">
-                    <div className="flex items-center gap-2 text-sm">
-                      <CheckSquare className="h-4 w-4 text-primary" />
-                      <span className="font-medium text-foreground">
-                        {selectedIds.size} {selectedIds.size === 1 ? "selecionado" : "selecionados"}
-                      </span>
-                      <span className="text-muted-foreground">de {filteredProducts.length}</span>
-                    </div>
-                    <div className="flex gap-2 items-center">
-                      <Button variant="ghost" size="sm" onClick={sel.selectAll} disabled={selectedIds.size === filteredProducts.length}>
-                        Selecionar tudo
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={sel.clearSelection} disabled={selectedIds.size === 0}>
-                        <X className="h-3.5 w-3.5 mr-1" />
-                        Limpar
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        disabled={selectedIds.size === 0}
-                        onClick={() => setRemoveSelectedDialogOpen(true)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                        Remover ({selectedIds.size})
-                      </Button>
-                      <DeleteConfirmDialog
-                        open={removeSelectedDialogOpen}
-                        onOpenChange={setRemoveSelectedDialogOpen}
-                        entityName="itens selecionados"
-                        itemName={`${selectedIds.size} ${selectedIds.size === 1 ? "item" : "itens"}`}
-                        onConfirm={handleRemoveSelected}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Products view */}
-                {filteredProducts.length > 0 ? (
-                  viewMode === "table" ? (
-                    <ProductTableView
-                      products={filteredProducts}
-                      onProductClick={(productId) => navigate(`/produto/${productId}`)}
-                      isFavorite={isFavorite}
-                      onToggleFavorite={handleToggleFavorite}
-                      selectionMode={selectionMode}
-                      selectedIds={selectedIds}
-                      onToggleSelect={sel.toggleSelect}
-                    />
-                  ) : viewMode === "list" ? (
-                    <div className="space-y-1.5">
-                      {filteredProducts.map((product) => {
-                        const isSelected = selectedIds.has(product.id);
-                        return (
-                          <div
-                            key={product.id}
-                            className={cn(
-                              "relative rounded-lg transition-all",
-                              selectionMode && "cursor-pointer",
-                              isSelected && "ring-2 ring-primary ring-offset-2 ring-offset-background"
-                            )}
-                            onClick={selectionMode ? () => sel.toggleSelect(product.id) : undefined}
-                          >
-                            <div className={cn(selectionMode && "pointer-events-none")}>
-                              <ProductListItem
-                                product={product}
-                                onClick={() => navigate(`/produto/${product.id}`)}
-                                isFavorited={isFavorite(product.id)}
-                                onToggleFavorite={handleToggleFavorite}
-                              />
-                            </div>
-                            {selectionMode && (
-                              <div className="absolute top-2 left-2 z-20">
-                                <div className={cn(
-                                  "h-6 w-6 rounded-md border-2 flex items-center justify-center transition-all backdrop-blur-sm",
-                                  isSelected ? "bg-primary border-primary" : "bg-card/90 border-border"
-                                )}>
-                                  {isSelected && <CheckSquare className="h-3.5 w-3.5 text-primary-foreground" />}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div data-testid="favorites-list" className={`grid ${getGridColsClass(gridColumns)} ${getGridGapClass(gridColumns)}`}>
-                      {filteredProducts.map((product, index) => {
-                        const variant = variantMap.get(product.id);
-                        const isSelected = selectedIds.has(product.id);
-                        const noteMeta = noteMap.get(product.id);
-                        const priceMeta = enrichedMetaMap.get(product.id);
-                        return (
-                          <div
-                            key={product.id}
-                            data-testid="favorite-item"
-                            data-product-id={product.id}
-                            data-product-name={product.name}
-                            className={cn(
-                              "animate-fade-in relative rounded-xl transition-all",
-                              selectionMode && "cursor-pointer",
-                              isSelected && "ring-2 ring-primary ring-offset-2 ring-offset-background"
-                            )}
-                            style={{ animationDelay: `${Math.min(index * 25, 250)}ms` }}
-                            onClick={selectionMode ? () => sel.toggleSelect(product.id) : undefined}
-                          >
-                            <div className={cn(selectionMode && "pointer-events-none")}>
-                              <ProductCard
-                                product={product}
-                                onClick={() => navigate(`/produto/${product.id}`)}
-                                onFavorite={() => handleRemoveFavorite(product.id, product.name)}
-                              />
-                            </div>
-                            {/* Price drop badge — canto inferior esquerdo, apenas em listas remotas */}
-                            {isRemoteListView && priceMeta && !selectionMode && (
-                              <div className="absolute bottom-3 left-3 z-10 pointer-events-auto">
-                                <PriceDropBadge
-                                  priceDiffPct={priceMeta.priceDiffPct}
-                                  priceAtSave={priceMeta.priceAtSave}
-                                  currentPrice={product.price}
-                                  savedAt={priceMeta.savedAt}
-                                />
-                              </div>
-                            )}
-                            {selectionMode && (
-                              <div className="absolute top-3 left-3 z-20">
-                                <div className={cn(
-                                  "h-6 w-6 rounded-md border-2 flex items-center justify-center transition-all backdrop-blur-sm",
-                                  isSelected ? "bg-primary border-primary" : "bg-card/90 border-border"
-                                )}>
-                                  {isSelected && <CheckSquare className="h-3.5 w-3.5 text-primary-foreground" />}
-                                </div>
-                              </div>
-                            )}
-                            {!selectionMode && (
-                              <div className="absolute top-3 right-3 z-10 flex flex-col items-end gap-1.5">
-                                <Button
-                                  variant="secondary"
-                                  size="icon"
-                                  aria-label="Remover favorito"
-                                  data-testid="favorite-remove"
-                                  className="h-8 w-8 bg-card/90 backdrop-blur-sm hover:bg-destructive/20"
-                                  onClick={(e) => { e.stopPropagation(); handleRemoveFavorite(product.id, product.name); }}
-                                >
-                                  <Heart className="h-4 w-4 fill-destructive text-destructive" />
-                                </Button>
-                                {/* Note editor — apenas em listas remotas */}
-                                {isRemoteListView && noteMeta && (
-                                  <ItemNoteEditor
-                                    initialNote={noteMeta.note}
-                                    onSave={(note) => handleSaveNote(product.id, note)}
-                                  />
-                                )}
-                                {variant?.color_name && (
-                                  <Badge
-                                    variant="secondary"
-                                    className="bg-card/90 backdrop-blur-sm text-[10px] gap-1 px-1.5 py-0.5"
-                                  >
-                                    {variant.color_hex && (
-                                      <span
-                                        className="inline-block w-2.5 h-2.5 rounded-full border border-border/50 shrink-0"
-                                        style={{ backgroundColor: variant.color_hex }}
-                                      />
-                                    )}
-                                    <span className="truncate max-w-[80px]">{variant.color_name}</span>
-                                  </Badge>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )
-                ) : productsWithVariant.length > 0 && searchQuery ? (
-                  <div className="text-center py-12 bg-muted/20 rounded-xl border-[1.5px] border-dashed border-primary/10">
-                    <Search className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                    <h3 className="font-display text-lg font-semibold text-foreground mb-1">
-                      Nenhum favorito encontrado
-                    </h3>
-                    <p className="text-muted-foreground text-sm">
-                      Nenhum produto corresponde a "{searchQuery}"
-                    </p>
-                  </div>
-                ) : (
-                  <FavoritesEmptyStateSmart
-                    onAddProduct={(productId) => {
-                      if (isRemoteListView && activeList) {
-                        toast.info("Abra o produto e use o coração para adicionar a esta lista");
-                        navigate(`/produto/${productId}`);
-                      } else {
-                        navigate(`/produto/${productId}`);
-                      }
-                    }}
-                  />
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Bulk actions: BulkActionBar flutuante + wizard */}
-      <CatalogBulkModals sel={sel} selectionMode={selectionMode} totalCount={filteredProducts.length} />
-
-      {/* ARIA live region para anúncios de favoritar/remover */}
-      <div role="status" aria-live="polite" className="sr-only">
-        {ariaAnnouncement}
-      </div>
-
-      {/* Modo apresentação fullscreen */}
-      {presenting && (
-        <FavoritePresentationLauncher
-          products={productsWithVariant}
-          listName={activeList?.name ?? "Favoritos"}
-          onClose={() => setPresenting(false)}
-        />
-      )}
-    </>
-  );
+        <CatalogBulkModals sel={sel} selectionMode={selectionMode} totalCount={filteredProducts.length} />
+        <div role="status" aria-live="polite" className="sr-only">{ariaAnnouncement}</div>
+        <Presentation />
+      </>
+    );
+  }
 }

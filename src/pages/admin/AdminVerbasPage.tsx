@@ -13,39 +13,81 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
+import type { Tables, TablesInsert } from "@/integrations/supabase/types";
 // XLSX will be loaded dynamically when needed
 
+type PaOption = Pick<Tables<"postos_atendimento">, "id" | "nome" | "codigo">;
+type BudgetRow = Tables<"pa_budgets"> & {
+  postos_atendimento: Pick<Tables<"postos_atendimento">, "nome" | "codigo"> | null;
+};
+type CategoryThresholdRow = Tables<"pa_category_thresholds"> & {
+  postos_atendimento: Pick<Tables<"postos_atendimento">, "nome"> | null;
+};
+type CategoryOption = Pick<Tables<"product_categories">, "id" | "name">;
+type BudgetFormData = Pick<
+  TablesInsert<"pa_budgets">,
+  "pa_id" | "ano" | "mes" | "verba_total" | "limite_alcada" | "observacoes"
+>;
+
+interface BudgetFormDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  budget: BudgetRow | null;
+  onSave: (formData: BudgetFormData) => Promise<void>;
+  pas: PaOption[];
+}
+
+const createEmptyBudgetForm = (paId = ""): BudgetFormData => ({
+  pa_id: paId,
+  ano: new Date().getFullYear(),
+  mes: new Date().getMonth() + 1,
+  verba_total: 0,
+  limite_alcada: 0,
+  observacoes: "",
+});
+
+function usageTextClass(percent: number, warning: number, critical: number): string {
+  if (percent > critical) return "text-red-600 font-bold";
+  if (percent > warning) return "text-yellow-600 font-bold";
+  return "";
+}
+
+function usageBarClass(percent: number, warning: number, critical: number): string {
+  if (percent > critical) return "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]";
+  if (percent > warning) return "bg-yellow-500";
+  return "bg-green-500";
+}
+
 export default function AdminVerbasPage() {
-  const [budgets, setBudgets] = useState<any[]>([]);
-  const [pas, setPas] = useState<any[]>([]);
+  const [budgets, setBudgets] = useState<BudgetRow[]>([]);
+  const [pas, setPas] = useState<PaOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingBudget, setEditingBudget] = useState<any>(null);
+  const [editingBudget, setEditingBudget] = useState<BudgetRow | null>(null);
   const [isCategoryFormOpen, setIsCategoryFormOpen] = useState(false);
   const [newCategoryThreshold, setNewCategoryThreshold] = useState({ pa_id: '', category_id: '', limite_alcada: 0 });
 
   
   // Budget alert settings - hardened with redundancy check
-  const [alertConfig, setAlertConfig] = useState({
+  const [alertConfig] = useState({
     warningThreshold: 70, // 70%
     criticalThreshold: 90, // 90%
     backupStrategy: 'manual-review'
   });
 
 
-  const [categoryThresholds, setCategoryThresholds] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categoryThresholds, setCategoryThresholds] = useState<CategoryThresholdRow[]>([]);
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
 
   const fetchCategoryData = async () => {
     const { data: ctData } = await supabase
       .from('pa_category_thresholds')
       .select('*, postos_atendimento(nome)')
       .order('pa_id');
-    setCategoryThresholds(ctData || []);
+    setCategoryThresholds((ctData || []) as CategoryThresholdRow[]);
 
     const { data: cData } = await supabase
       .from('product_categories')
@@ -115,17 +157,14 @@ export default function AdminVerbasPage() {
 
   useEffect(() => { fetchData(); }, []);
 
-  const handleSave = async (formData: any) => {
+  const handleSave = async (formData: BudgetFormData) => {
     try {
-      const dataToSave = { ...formData };
-      delete dataToSave.postos_atendimento;
-
       if (editingBudget) {
-        const { error } = await supabase.from('pa_budgets').update(dataToSave).eq('id', editingBudget.id);
+        const { error } = await supabase.from('pa_budgets').update(formData).eq('id', editingBudget.id);
         if (error) throw error;
         toast.success("Verba atualizada com sucesso");
       } else {
-        const { error } = await supabase.from('pa_budgets').insert(dataToSave);
+        const { error } = await supabase.from('pa_budgets').insert(formData);
         if (error) throw error;
         toast.success("Verba criada com sucesso");
       }
@@ -301,7 +340,7 @@ export default function AdminVerbasPage() {
                               <TableCell>
                                 <div className="flex flex-col gap-1 min-w-[140px]">
                                   <div className="flex justify-between text-[11px] mb-0.5">
-                                    <span className={percent > alertConfig.criticalThreshold ? "text-red-600 font-bold" : percent > alertConfig.warningThreshold ? "text-yellow-600 font-bold" : ""}>
+                                    <span className={usageTextClass(percent, alertConfig.warningThreshold, alertConfig.criticalThreshold)}>
                                       R$ {(b.verba_consumida || 0).toLocaleString()}
                                     </span>
                                     <span className="text-muted-foreground">{percent.toFixed(1)}%</span>
@@ -315,7 +354,7 @@ export default function AdminVerbasPage() {
                                     aria-label={`Consumo de verba: ${percent.toFixed(1)}%`}
                                   >
                                     <div 
-                                      className={`h-full transition-all duration-500 ${percent > alertConfig.criticalThreshold ? "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]" : percent > alertConfig.warningThreshold ? "bg-yellow-500" : "bg-green-500"}`} 
+                                      className={`h-full transition-all duration-500 ${usageBarClass(percent, alertConfig.warningThreshold, alertConfig.criticalThreshold)}`}
                                       style={{ width: `${Math.min(100, percent)}%` }} 
                                     />
                                   </div>
@@ -367,7 +406,7 @@ export default function AdminVerbasPage() {
                             <TableCell>{ct.postos_atendimento?.nome}</TableCell>
                             <TableCell>
                               <Badge variant="outline">
-                                {categories.find(c => c.id === ct.category_id)?.name || ct.category_id}
+                                {categories.find(c => c.id === String(ct.category_id))?.name || ct.category_id}
                               </Badge>
                             </TableCell>
                             <TableCell className="font-bold text-primary">R$ {ct.limite_alcada.toLocaleString()}</TableCell>
@@ -415,14 +454,24 @@ export default function AdminVerbasPage() {
                       {auditLogs.length === 0 ? (
                         <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Nenhum histórico encontrado</TableCell></TableRow>
                       ) : (
-                        auditLogs.map((log: any) => (
+                        auditLogs.map((log) => {
+                          const details = log.details && typeof log.details === "object" && !Array.isArray(log.details)
+                            ? log.details
+                            : null;
+                          const metadata = details?.metadata;
+                          const userEmail = metadata && typeof metadata === "object" && !Array.isArray(metadata)
+                            && typeof metadata.user_email === "string"
+                            ? metadata.user_email
+                            : "Sistema";
+                          return (
                           <TableRow key={log.id}>
                             <TableCell className="text-xs">{format(new Date(log.created_at), 'dd/MM/yyyy HH:mm')}</TableCell>
-                            <TableCell><Badge variant="outline" className="text-[10px] uppercase">{log.event_type}</Badge></TableCell>
-                            <TableCell className="text-xs">{log.metadata?.user_email || 'Sistema'}</TableCell>
-                            <TableCell className="text-xs font-mono max-w-[400px] truncate">{JSON.stringify(log.payload)}</TableCell>
+                            <TableCell><Badge variant="outline" className="text-[10px] uppercase">{log.action}</Badge></TableCell>
+                            <TableCell className="text-xs">{userEmail}</TableCell>
+                            <TableCell className="text-xs font-mono max-w-[400px] truncate">{JSON.stringify(log.details)}</TableCell>
                           </TableRow>
-                        ))
+                          );
+                        })
                       )}
                     </TableBody>
                   </Table>
@@ -486,9 +535,22 @@ export default function AdminVerbasPage() {
   );
 }
 
-function BudgetFormDialog({ open, onOpenChange, budget, onSave, pas }: any) {
-  const [formData, setFormData] = useState<any>({ pa_id: '', ano: new Date().getFullYear(), mes: new Date().getMonth() + 1, verba_total: 0, limite_alcada: 0, observacoes: '' });
-  useEffect(() => { if (budget) setFormData(budget); else setFormData({ pa_id: pas[0]?.id || '', ano: new Date().getFullYear(), mes: new Date().getMonth() + 1, verba_total: 0, limite_alcada: 0, observacoes: '' }); }, [budget, open, pas]);
+function BudgetFormDialog({ open, onOpenChange, budget, onSave, pas }: BudgetFormDialogProps) {
+  const [formData, setFormData] = useState<BudgetFormData>(() => createEmptyBudgetForm());
+  useEffect(() => {
+    if (budget) {
+      setFormData({
+        pa_id: budget.pa_id,
+        ano: budget.ano,
+        mes: budget.mes,
+        verba_total: budget.verba_total,
+        limite_alcada: budget.limite_alcada,
+        observacoes: budget.observacoes,
+      });
+    } else {
+      setFormData(createEmptyBudgetForm(pas[0]?.id));
+    }
+  }, [budget, open, pas]);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
@@ -499,13 +561,13 @@ function BudgetFormDialog({ open, onOpenChange, budget, onSave, pas }: any) {
             <div className="col-span-3">
               <Select value={formData.pa_id || ""} onValueChange={(val) => setFormData({ ...formData, pa_id: val })}>
                 <SelectTrigger><SelectValue placeholder="Selecione o PA" /></SelectTrigger>
-                <SelectContent>{pas.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.nome} ({p.codigo})</SelectItem>)}</SelectContent>
+                <SelectContent>{pas.map((p) => <SelectItem key={p.id} value={p.id}>{p.nome} ({p.codigo})</SelectItem>)}</SelectContent>
               </Select>
             </div>
           </div>
           <div className="grid grid-cols-4 items-center gap-4"><Label className="text-right">Ano/Mês</Label><div className="col-span-3 flex gap-2"><Input type="number" value={formData.ano} onChange={(e) => setFormData({ ...formData, ano: parseInt(e.target.value) })} /><Input type="number" min="1" max="12" value={formData.mes} onChange={(e) => setFormData({ ...formData, mes: parseInt(e.target.value) })} /></div></div>
           <div className="grid grid-cols-4 items-center gap-4"><Label className="text-right">Verba Total</Label><Input type="number" className="col-span-3" value={formData.verba_total} onChange={(e) => setFormData({ ...formData, verba_total: parseFloat(e.target.value) })} /></div>
-          <div className="grid grid-cols-4 items-center gap-4"><Label className="text-right">Alçada (Aprovação)</Label><Input type="number" className="col-span-3" value={formData.limite_alcada} onChange={(e) => setFormData({ ...formData, limite_alcada: parseFloat(e.target.value) })} /></div>
+          <div className="grid grid-cols-4 items-center gap-4"><Label className="text-right">Alçada (Aprovação)</Label><Input type="number" className="col-span-3" value={formData.limite_alcada ?? ""} onChange={(e) => setFormData({ ...formData, limite_alcada: parseFloat(e.target.value) })} /></div>
         </div>
         <DialogFooter><Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button><Button onClick={() => onSave(formData)}>Salvar</Button></DialogFooter>
       </DialogContent>

@@ -5,13 +5,14 @@
  * Shows "Herdado" badge when data comes from branch defaults.
  * Allows overriding inherited values per product.
  */
+import { isNullish } from "@/components/admin/utils/nullish";
 import { useState, useCallback } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Building2, FileText, Loader2, ArrowDownFromLine, Pencil, Save, X, RotateCcw } from 'lucide-react';
 import { DeleteConfirmDialog } from '@/components/common/ConfirmDialog';
-import { useSupplierFiscalData, type FiscalOverrideInput } from '@/hooks/useSupplierFiscalData';
+import { useSupplierFiscalData, type FiscalOverrideInput, type SupplierFiscalData } from '@/hooks/useSupplierFiscalData';
 import { toast } from 'sonner';
 
 interface Props {
@@ -72,7 +73,7 @@ function FiscalFieldPair({ label1, value1, label2, value2, mono = false }: {
 }
 
 function FiscalField({ label, value, mono = false }: { label: string; value: string | number | null | undefined; mono?: boolean }) {
-  if (value == null || value === '') return null;
+  if (isNullish(value) || value === '') return null;
   return (
     <div className="flex items-baseline gap-1.5">
       <span className="text-[11px] text-muted-foreground whitespace-nowrap">{label}:</span>
@@ -82,7 +83,7 @@ function FiscalField({ label, value, mono = false }: { label: string; value: str
 }
 
 function formatRate(rate: number | null | undefined): string | null {
-  if (rate == null) return null;
+  if (isNullish(rate)) return null;
   return `${rate}%`;
 }
 
@@ -95,6 +96,142 @@ function formatTaxRegime(regime: string | null): string | null {
     mei: 'MEI',
   };
   return map[regime] || regime;
+}
+
+function hasFiscalData(data: SupplierFiscalData): boolean {
+  return Boolean(data.cst || data.cfop || !isNullish(data.icms_rate) || !isNullish(data.pis_rate));
+}
+
+function hasBranchData(data: SupplierFiscalData): boolean {
+  return Boolean(data.branch_name || data.branch_cnpj);
+}
+
+function shouldShowFiscalInfo(data: SupplierFiscalData, isEditing: boolean): boolean {
+  return isEditing || hasFiscalData(data) || hasBranchData(data);
+}
+
+function FiscalHeader({ data, isEditing, isSaving, onEdit, onCancel, onSave, onRevert }: {
+  data: SupplierFiscalData;
+  isEditing: boolean;
+  isSaving: boolean;
+  onEdit: () => void;
+  onCancel: () => void;
+  onSave: () => void;
+  onRevert: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <FileText className="h-3 w-3 text-muted-foreground" />
+      <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Fiscal do Fornecedor</span>
+      {data.isInherited && !isEditing && (
+        <Badge variant="outline" className="text-[10px] h-5 ml-1 gap-1 text-warning border-warning/30 bg-warning/5">
+          <ArrowDownFromLine className="h-2.5 w-2.5" /> Herdado da filial
+        </Badge>
+      )}
+      {isEditing && (
+        <Badge variant="outline" className="text-[10px] h-5 ml-1 gap-1 text-info border-info/30 bg-info/5">
+          <Pencil className="h-2.5 w-2.5" /> Editando
+        </Badge>
+      )}
+      <div className="ml-auto flex items-center gap-1">
+        {isEditing ? (
+          <>
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] gap-1" onClick={onCancel} disabled={isSaving}>
+              <X className="h-3 w-3" /> Cancelar
+            </Button>
+            <Button variant="default" size="sm" className="h-6 px-2 text-[10px] gap-1" onClick={onSave} disabled={isSaving}>
+              {isSaving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />} Salvar
+            </Button>
+          </>
+        ) : (
+          <div className="flex items-center gap-1">
+            {!data.isInherited && (
+              <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] gap-1 text-destructive hover:text-destructive" onClick={onRevert}>
+                <RotateCcw className="h-3 w-3" /> Reverter
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] gap-1" onClick={onEdit}>
+              <Pencil className="h-3 w-3" /> {data.isInherited ? 'Sobrescrever' : 'Editar'}
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BranchInfo({ data }: { data: SupplierFiscalData }) {
+  if (!hasBranchData(data)) return null;
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <Building2 className="h-3 w-3 text-muted-foreground" />
+      <span className="text-xs font-medium">{data.branch_name}</span>
+      {data.branch_cnpj && <Badge variant="outline" className="text-[10px] font-mono h-5">{data.branch_cnpj}</Badge>}
+      {data.branch_state_uf && <Badge variant="secondary" className="text-[10px] h-5">{data.branch_state_uf}</Badge>}
+      {data.branch_tax_regime && <Badge variant="secondary" className="text-[10px] h-5">{formatTaxRegime(data.branch_tax_regime)}</Badge>}
+    </div>
+  );
+}
+
+function inputValue(value: string | null): string {
+  return value ?? '';
+}
+
+function rateInputValue(value: number | null): string {
+  return isNullish(value) ? '' : String(value);
+}
+
+function FiscalEditForm({ form, onChange }: { form: FiscalOverrideInput; onChange: (field: keyof FiscalOverrideInput, value: string) => void }) {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-md bg-muted/30 border border-border/50">
+      <EditField label="CST" value={inputValue(form.cst)} onChange={value => onChange('cst', value)} mono placeholder="Ex: 060" />
+      <EditField label="CFOP" value={inputValue(form.cfop)} onChange={value => onChange('cfop', value)} mono placeholder="Ex: 5102" />
+      <EditField label="ICMS (%)" value={rateInputValue(form.icms_rate)} onChange={value => onChange('icms_rate', value)} type="number" placeholder="Ex: 17" />
+      <EditField label="PIS (%)" value={rateInputValue(form.pis_rate)} onChange={value => onChange('pis_rate', value)} type="number" placeholder="Ex: 0.65" />
+      <EditField label="COFINS (%)" value={rateInputValue(form.cofins_rate)} onChange={value => onChange('cofins_rate', value)} type="number" placeholder="Ex: 3" />
+      <EditField label="CEST" value={inputValue(form.cest)} onChange={value => onChange('cest', value)} mono placeholder="Ex: 2804200" />
+      <EditField label="CSOSN" value={inputValue(form.csosn)} onChange={value => onChange('csosn', value)} mono placeholder="Ex: 500" />
+      <EditField label="Natureza da Op." value={inputValue(form.operation_nature)} onChange={value => onChange('operation_nature', value)} placeholder="Ex: Venda de Merc." />
+    </div>
+  );
+}
+
+function FiscalReadView({ data }: { data: SupplierFiscalData }) {
+  if (!hasFiscalData(data)) return null;
+  return (
+    <div className="flex flex-wrap gap-x-4 gap-y-1">
+      <FiscalField label="CST" value={data.cst} mono />
+      {data.isInherited && data.cfop_interstate
+        ? <FiscalFieldPair label1="CFOP Int." value1={data.cfop} label2="Interestadual" value2={data.cfop_interstate} mono />
+        : <FiscalField label="CFOP" value={data.cfop} mono />}
+      <FiscalField label="ICMS" value={formatRate(data.icms_rate)} />
+      <FiscalField label="PIS" value={formatRate(data.pis_rate)} />
+      <FiscalField label="COFINS" value={formatRate(data.cofins_rate)} />
+      <FiscalField label="CEST" value={data.cest} mono />
+      <FiscalField label="CSOSN" value={data.csosn} mono />
+      <FiscalField label="Natureza" value={data.operation_nature} />
+    </div>
+  );
+}
+
+function BranchReferenceRates({ data, isEditing }: { data: SupplierFiscalData; isEditing: boolean }) {
+  const hasRates = !isNullish(data.branch_icms_internal) || !isNullish(data.branch_icms_interstate);
+  if (isEditing || !hasRates) return null;
+  return (
+    <div className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
+      <FiscalField label="ICMS Ref. Interno" value={formatRate(data.branch_icms_internal)} />
+      <FiscalField label="ICMS Ref. Interestadual" value={formatRate(data.branch_icms_interstate)} />
+    </div>
+  );
+}
+
+function InheritanceHint({ data, isEditing }: { data: SupplierFiscalData; isEditing: boolean }) {
+  if (!data.isInherited || isEditing) return null;
+  return (
+    <p className="text-[10px] text-muted-foreground/70 italic">
+      Dados herdados da filial padrão. Clique em "Sobrescrever" para definir valores específicos para este produto.
+    </p>
+  );
 }
 
 // ── Main component ─────────────────────────────────────────────────────────────
@@ -183,137 +320,25 @@ export function SupplierFiscalInfo({ productId, supplierId }: Props) {
 
   if (!data) return null;
 
-  const hasFiscal = data.cst || data.cfop || data.icms_rate != null || data.pis_rate != null;
-  const hasBranch = data.branch_name || data.branch_cnpj;
-
-  if (!hasFiscal && !hasBranch && !isEditing) return null;
+  if (!shouldShowFiscalInfo(data, isEditing)) return null;
 
   return (
     <div className="mt-2 pt-2 border-t border-border/50 space-y-2">
-      {/* Header */}
-      <div className="flex items-center gap-1.5">
-        <FileText className="h-3 w-3 text-muted-foreground" />
-        <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
-          Fiscal do Fornecedor
-        </span>
-        {data.isInherited && !isEditing && (
-          <Badge variant="outline" className="text-[10px] h-5 ml-1 gap-1 text-warning border-warning/30 bg-warning/5">
-            <ArrowDownFromLine className="h-2.5 w-2.5" />
-            Herdado da filial
-          </Badge>
-        )}
-        {isEditing && (
-          <Badge variant="outline" className="text-[10px] h-5 ml-1 gap-1 text-info border-info/30 bg-info/5">
-            <Pencil className="h-2.5 w-2.5" />
-            Editando
-          </Badge>
-        )}
-        <div className="ml-auto flex items-center gap-1">
-          {!isEditing ? (
-            <div className="flex items-center gap-1">
-              {!data.isInherited && (
-                <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] gap-1 text-destructive hover:text-destructive" onClick={() => setShowRevertDialog(true)}>
-                  <RotateCcw className="h-3 w-3" />
-                  Reverter
-                </Button>
-              )}
-              <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] gap-1" onClick={startEditing}>
-                <Pencil className="h-3 w-3" />
-                {data.isInherited ? 'Sobrescrever' : 'Editar'}
-              </Button>
-            </div>
-          ) : (
-            <>
-              <Button
-                variant="ghost" size="sm"
-                className="h-6 px-2 text-[10px] gap-1"
-                onClick={cancelEditing}
-                disabled={isSaving}
-              >
-                <X className="h-3 w-3" />
-                Cancelar
-              </Button>
-              <Button
-                variant="default" size="sm"
-                className="h-6 px-2 text-[10px] gap-1"
-                onClick={handleSave}
-                disabled={isSaving}
-              >
-                {isSaving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
-                Salvar
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Branch info (always read-only) */}
-      {hasBranch && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <Building2 className="h-3 w-3 text-muted-foreground" />
-          <span className="text-xs font-medium">{data.branch_name}</span>
-          {data.branch_cnpj && (
-            <Badge variant="outline" className="text-[10px] font-mono h-5">{data.branch_cnpj}</Badge>
-          )}
-          {data.branch_state_uf && (
-            <Badge variant="secondary" className="text-[10px] h-5">{data.branch_state_uf}</Badge>
-          )}
-          {data.branch_tax_regime && (
-            <Badge variant="secondary" className="text-[10px] h-5">{formatTaxRegime(data.branch_tax_regime)}</Badge>
-          )}
-        </div>
-      )}
-
-      {/* ── EDIT MODE ── */}
-      {isEditing ? (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-md bg-muted/30 border border-border/50">
-          <EditField label="CST" value={form.cst || ''} onChange={v => updateField('cst', v)} mono placeholder="Ex: 060" />
-          <EditField label="CFOP" value={form.cfop || ''} onChange={v => updateField('cfop', v)} mono placeholder="Ex: 5102" />
-          <EditField label="ICMS (%)" value={form.icms_rate != null ? String(form.icms_rate) : ''} onChange={v => updateField('icms_rate', v)} type="number" placeholder="Ex: 17" />
-          <EditField label="PIS (%)" value={form.pis_rate != null ? String(form.pis_rate) : ''} onChange={v => updateField('pis_rate', v)} type="number" placeholder="Ex: 0.65" />
-          <EditField label="COFINS (%)" value={form.cofins_rate != null ? String(form.cofins_rate) : ''} onChange={v => updateField('cofins_rate', v)} type="number" placeholder="Ex: 3" />
-          <EditField label="CEST" value={form.cest || ''} onChange={v => updateField('cest', v)} mono placeholder="Ex: 2804200" />
-          <EditField label="CSOSN" value={form.csosn || ''} onChange={v => updateField('csosn', v)} mono placeholder="Ex: 500" />
-          <EditField label="Natureza da Op." value={form.operation_nature || ''} onChange={v => updateField('operation_nature', v)} placeholder="Ex: Venda de Merc." />
-        </div>
-      ) : (
-        /* ── READ MODE ── */
-        <>
-          {hasFiscal && (
-            <div className="flex flex-wrap gap-x-4 gap-y-1">
-              <FiscalField label="CST" value={data.cst} mono />
-              {data.isInherited && data.cfop_interstate ? (
-                <FiscalFieldPair label1="CFOP Int." value1={data.cfop} label2="Interestadual" value2={data.cfop_interstate} mono />
-              ) : (
-                <FiscalField label="CFOP" value={data.cfop} mono />
-              )}
-              <FiscalField label="ICMS" value={formatRate(data.icms_rate)} />
-              <FiscalField label="PIS" value={formatRate(data.pis_rate)} />
-              <FiscalField label="COFINS" value={formatRate(data.cofins_rate)} />
-              {data.cest && <FiscalField label="CEST" value={data.cest} mono />}
-              {data.csosn && <FiscalField label="CSOSN" value={data.csosn} mono />}
-              {data.operation_nature && <FiscalField label="Natureza" value={data.operation_nature} />}
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Branch reference rates (always read-only) */}
-      {!isEditing && (data.branch_icms_internal != null || data.branch_icms_interstate != null) && (
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
-          <FiscalField label="ICMS Ref. Interno" value={formatRate(data.branch_icms_internal)} />
-          <FiscalField label="ICMS Ref. Interestadual" value={formatRate(data.branch_icms_interstate)} />
-        </div>
-      )}
-
-      {/* Inheritance hint */}
-      {data.isInherited && !isEditing && (
-        <p className="text-[10px] text-muted-foreground/70 italic">
-          Dados herdados da filial padrão. Clique em "Sobrescrever" para definir valores específicos para este produto.
-        </p>
-      )}
-
-      {/* Revert confirmation dialog */}
+      <FiscalHeader
+        data={data}
+        isEditing={isEditing}
+        isSaving={isSaving}
+        onEdit={startEditing}
+        onCancel={cancelEditing}
+        onSave={handleSave}
+        onRevert={() => setShowRevertDialog(true)}
+      />
+      <BranchInfo data={data} />
+      {isEditing
+        ? <FiscalEditForm form={form} onChange={updateField} />
+        : <FiscalReadView data={data} />}
+      <BranchReferenceRates data={data} isEditing={isEditing} />
+      <InheritanceHint data={data} isEditing={isEditing} />
       <DeleteConfirmDialog
         open={showRevertDialog}
         onOpenChange={setShowRevertDialog}

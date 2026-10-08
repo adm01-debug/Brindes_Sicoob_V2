@@ -11,17 +11,35 @@
  *   - Acesso esperado é via service_role no edge — não é testado
  *     aqui (já é coberto por `tests/p0/edge-functions-failing.test.ts`).
  */
-import { describe, it, expect } from 'vitest';
+import { afterAll, beforeAll, describe, it, expect } from 'vitest';
 import { createClient } from '@supabase/supabase-js';
 
 const URL = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
 const ANON = (import.meta as any).env?.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
+const SERVICE_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const enabled = Boolean(URL && ANON);
+const requested = process.env.RUN_REMOTE_RLS_TESTS === '1';
+if (requested && (!URL || !ANON || !SERVICE_KEY)) {
+  throw new Error('RUN_REMOTE_RLS_TESTS=1 exige URL, chave publicável e chave administrativa do Supabase.');
+}
+const enabled = requested && Boolean(URL && ANON && SERVICE_KEY);
 const d = enabled ? describe : describe.skip;
 
 d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
   const anon = enabled ? createClient(URL!, ANON!) : (null as never);
+  const admin = enabled ? createClient(URL!, SERVICE_KEY!, { auth: { persistSession: false } }) : (null as never);
+  const canaryKey = `rls-e2e-${crypto.randomUUID()}`;
+
+  beforeAll(async () => {
+    const { error } = await admin
+      .from('e2e_cleanup_rate_limit')
+      .insert({ key: canaryKey, count: 1 });
+    expect(error).toBeNull();
+  });
+
+  afterAll(async () => {
+    await admin.from('e2e_cleanup_rate_limit').delete().eq('key', canaryKey);
+  });
 
   it('SELECT como anon retorna zero linhas (policy deny_all)', async () => {
     const { data, error } = await anon
@@ -40,21 +58,35 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
   });
 
   it('UPDATE como anon falha (policy deny_all USING false)', async () => {
-    const { error } = await anon
+    const { data } = await anon
       .from('e2e_cleanup_rate_limit')
       .update({ count: 999 })
-      .eq('key', 'inexistente');
-    // Update bloqueado pelo RLS retorna sucesso com 0 linhas afetadas
-    // OU um erro — ambos provam que o anon não tem leverage.
-    // Garantimos que NÃO há nenhuma linha afetada via re-leitura.
-    expect(error || true).toBeTruthy();
+      .eq('key', canaryKey)
+      .select('key,count');
+    expect(data ?? []).toHaveLength(0);
+
+    const { data: canary, error: verifyError } = await admin
+      .from('e2e_cleanup_rate_limit')
+      .select('count')
+      .eq('key', canaryKey)
+      .single();
+    expect(verifyError).toBeNull();
+    expect(canary?.count).toBe(1);
   });
 
   it('DELETE como anon falha (policy deny_all USING false)', async () => {
-    const { error } = await anon
+    const { data } = await anon
       .from('e2e_cleanup_rate_limit')
       .delete()
-      .eq('key', 'inexistente');
-    expect(error || true).toBeTruthy();
+      .eq('key', canaryKey)
+      .select('key');
+    expect(data ?? []).toHaveLength(0);
+
+    const { count, error: verifyError } = await admin
+      .from('e2e_cleanup_rate_limit')
+      .select('key', { count: 'exact', head: true })
+      .eq('key', canaryKey);
+    expect(verifyError).toBeNull();
+    expect(count).toBe(1);
   });
 });

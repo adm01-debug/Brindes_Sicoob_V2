@@ -6,6 +6,7 @@
  * delay total e motivo) emitidas por `bridge-status-events` e gravadas pelo
  * `cold-start-recorder`.
  */
+import { isNullish } from "@/components/admin/utils/nullish";
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -39,6 +40,20 @@ function OutcomeBadge({ outcome }: { outcome: ColdStartIncident['outcome'] }) {
   );
 }
 
+function AttemptsTable({ incident }: { incident: ColdStartIncident }) {
+  return (
+    <div className="overflow-x-auto rounded border bg-muted/20">
+      <table className="w-full text-xs">
+        <thead><tr className="border-b border-border/50 text-muted-foreground"><th className="text-left px-2 py-1.5 font-medium">#</th><th className="text-right px-2 py-1.5 font-medium">Base</th><th className="text-right px-2 py-1.5 font-medium">Jitter</th><th className="text-right px-2 py-1.5 font-medium">Delay total</th><th className="text-left px-2 py-1.5 font-medium">Motivo</th></tr></thead>
+        <tbody>
+          {incident.attempts.map((attempt, index) => <tr key={index} className="border-b border-border/30 last:border-0"><td className="px-2 py-1.5 tabular-nums">{attempt.attempt}/{attempt.maxAttempts}</td><td className="px-2 py-1.5 tabular-nums text-right text-muted-foreground">{!isNullish(attempt.baseDelayMs) ? `${attempt.baseDelayMs}ms` : '—'}</td><td className="px-2 py-1.5 tabular-nums text-right text-muted-foreground">{!isNullish(attempt.jitterMs) ? `+${attempt.jitterMs}ms` : '—'}</td><td className="px-2 py-1.5 tabular-nums text-right font-medium">{attempt.delayMs}ms</td><td className="px-2 py-1.5 text-muted-foreground"><span className="font-mono text-[10.5px] line-clamp-2 break-all">{attempt.reason}</span></td></tr>)}
+          {incident.outcome === 'unavailable' && incident.finalReason && <tr><td colSpan={5} className="px-2 py-1.5 text-destructive text-[11px]">⚠ Falha definitiva: <span className="font-mono">{incident.finalReason}</span></td></tr>}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function IncidentRow({ incident }: { incident: ColdStartIncident }) {
   const [open, setOpen] = useState(incident.outcome === 'in_progress');
   const totalDelay = incident.attempts.reduce((s, a) => s + a.delayMs, 0);
@@ -66,51 +81,18 @@ function IncidentRow({ incident }: { incident: ColdStartIncident }) {
       </CollapsibleTrigger>
       <CollapsibleContent>
         <div className="px-2 pb-2">
-          <div className="overflow-x-auto rounded border bg-muted/20">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-border/50 text-muted-foreground">
-                  <th className="text-left px-2 py-1.5 font-medium">#</th>
-                  <th className="text-right px-2 py-1.5 font-medium">Base</th>
-                  <th className="text-right px-2 py-1.5 font-medium">Jitter</th>
-                  <th className="text-right px-2 py-1.5 font-medium">Delay total</th>
-                  <th className="text-left px-2 py-1.5 font-medium">Motivo</th>
-                </tr>
-              </thead>
-              <tbody>
-                {incident.attempts.map((a, i) => (
-                  <tr key={i} className="border-b border-border/30 last:border-0">
-                    <td className="px-2 py-1.5 tabular-nums">
-                      {a.attempt}/{a.maxAttempts}
-                    </td>
-                    <td className="px-2 py-1.5 tabular-nums text-right text-muted-foreground">
-                      {a.baseDelayMs != null ? `${a.baseDelayMs}ms` : '—'}
-                    </td>
-                    <td className="px-2 py-1.5 tabular-nums text-right text-muted-foreground">
-                      {a.jitterMs != null ? `+${a.jitterMs}ms` : '—'}
-                    </td>
-                    <td className="px-2 py-1.5 tabular-nums text-right font-medium">
-                      {a.delayMs}ms
-                    </td>
-                    <td className="px-2 py-1.5 text-muted-foreground">
-                      <span className="font-mono text-[10.5px] line-clamp-2 break-all">{a.reason}</span>
-                    </td>
-                  </tr>
-                ))}
-                {incident.outcome === 'unavailable' && incident.finalReason && (
-                  <tr>
-                    <td colSpan={5} className="px-2 py-1.5 text-destructive text-[11px]">
-                      ⚠ Falha definitiva: <span className="font-mono">{incident.finalReason}</span>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          <AttemptsTable incident={incident} />
         </div>
       </CollapsibleContent>
     </Collapsible>
   );
+}
+
+function IncidentsContent({ incidents }: { incidents: ColdStartIncident[] }) {
+  if (incidents.length === 0) {
+    return <div className="text-center py-6 text-muted-foreground"><CheckCircle2 className="h-8 w-8 mx-auto mb-2 text-success/60" aria-hidden /><p className="text-sm font-medium">Nenhum cold-start observado</p><p className="text-xs mt-1">Tentativas de retry com backoff aparecerão aqui automaticamente.</p></div>;
+  }
+  return <div className="space-y-1">{incidents.map((incident) => <IncidentRow key={incident.id} incident={incident} />)}</div>;
 }
 
 export function ColdStartRetriesPanel() {
@@ -157,21 +139,7 @@ export function ColdStartRetriesPanel() {
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        {incidents.length === 0 ? (
-          <div className="text-center py-6 text-muted-foreground">
-            <CheckCircle2 className="h-8 w-8 mx-auto mb-2 text-success/60" aria-hidden />
-            <p className="text-sm font-medium">Nenhum cold-start observado</p>
-            <p className="text-xs mt-1">
-              Tentativas de retry com backoff aparecerão aqui automaticamente.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-1">
-            {incidents.map(inc => (
-              <IncidentRow key={inc.id} incident={inc} />
-            ))}
-          </div>
-        )}
+        <IncidentsContent incidents={incidents} />
       </CardContent>
     </Card>
   );

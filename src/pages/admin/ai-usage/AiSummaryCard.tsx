@@ -1,8 +1,9 @@
+import type { ReactNode } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface SummaryCardProps {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   value: string;
   sub: string;

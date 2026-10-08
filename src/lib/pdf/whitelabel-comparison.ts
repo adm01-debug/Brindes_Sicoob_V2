@@ -4,6 +4,7 @@
  */
 import { selectCrmById } from "@/lib/crm-db";
 import type { CrmCompany } from "@/types/crm";
+import type { jsPDF } from "jspdf";
 
 export interface ClientBranding {
   name: string | null;
@@ -24,6 +25,37 @@ export async function fetchClientBranding(clientId: string | null): Promise<Clie
       brandColor: null,
     };
   } catch { return null; }
+}
+
+async function addClientLogo(pdf: jsPDF, branding: ClientBranding | null, pageWidth: number) {
+  if (!branding?.logoUrl) return;
+  try {
+    const logoData = await fetchImageAsDataUrl(branding.logoUrl);
+    if (logoData) pdf.addImage(logoData, "PNG", pageWidth - 50, 2, 18, 10);
+  } catch {
+    // O logo é opcional e não impede a exportação.
+  }
+}
+
+function addComparisonImage(
+  pdf: jsPDF,
+  imageData: string,
+  imageWidth: number,
+  ...dimensions: [imageHeight: number, pageHeight: number]
+) {
+  const [imageHeight, pageHeight] = dimensions;
+  if (imageHeight < pageHeight - 25) {
+    pdf.addImage(imageData, "PNG", 10, 20, imageWidth, imageHeight);
+    return;
+  }
+  let position = 20;
+  let remaining = imageHeight;
+  const sliceHeight = pageHeight - 25;
+  while (remaining > 0) {
+    pdf.addImage(imageData, "PNG", 10, position - (imageHeight - remaining), imageWidth, imageHeight);
+    remaining -= sliceHeight;
+    if (remaining > 0) { pdf.addPage(); position = 10; }
+  }
 }
 
 export async function exportWhitelabelComparisonPDF(opts: {
@@ -63,28 +95,12 @@ export async function exportWhitelabelComparisonPDF(opts: {
   pdf.text(new Date().toLocaleDateString("pt-BR"), pageWidth - 30, 9);
 
   // Logo do cliente (se houver)
-  if (branding?.logoUrl) {
-    try {
-      const logoData = await fetchImageAsDataUrl(branding.logoUrl);
-      if (logoData) pdf.addImage(logoData, "PNG", pageWidth - 50, 2, 18, 10);
-    } catch { /* silencioso */ }
-  }
+  await addClientLogo(pdf, branding, pageWidth);
 
   pdf.setTextColor(0, 0, 0);
   const imgWidth = pageWidth - 20;
   const imgHeight = (canvas.height * imgWidth) / canvas.width;
-  if (imgHeight < pageHeight - 25) {
-    pdf.addImage(imgData, "PNG", 10, 20, imgWidth, imgHeight);
-  } else {
-    let position = 20;
-    let remaining = imgHeight;
-    const sliceHeight = pageHeight - 25;
-    while (remaining > 0) {
-      pdf.addImage(imgData, "PNG", 10, position - (imgHeight - remaining), imgWidth, imgHeight);
-      remaining -= sliceHeight;
-      if (remaining > 0) { pdf.addPage(); position = 10; }
-    }
-  }
+  addComparisonImage(pdf, imgData, imgWidth, imgHeight, pageHeight);
   pdf.save(opts.fileName ?? `comparacao-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 

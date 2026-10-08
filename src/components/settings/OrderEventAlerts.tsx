@@ -1,22 +1,8 @@
 import { useNotificationPreferences } from "@/hooks/infrastructure/useNotificationPreferences";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Package,
-  Loader2,
-  Clock,
-  CheckCircle2,
-  CheckCircle,
-  Send,
-  Factory,
-  PackageCheck,
-  Truck,
-  PackageOpen,
-  CheckCircle as CircleCheck,
-  XCircle,
-  type LucideIcon,
-} from "lucide-react";
-import { OrderStatus } from "@/types/orders";
+import { Package, Loader2, Clock, CheckCircle2, Send, Factory, PackageCheck, Truck, PackageOpen, CheckCircle as CircleCheck, XCircle, type LucideIcon } from "lucide-react";
+import { type OrderStatus } from "@/types/orders";
 import { ORDER_STATUS_FLOW, ORDER_STATUS_LABELS } from "@/constants/orders";
 
 type EventDef = {
@@ -53,6 +39,24 @@ ORDER_STATUS_FLOW.forEach((s) => {
   }
 });
 
+function EventToggle({ event, enabled, onToggle }: {
+  event: EventDef;
+  enabled: boolean;
+  onToggle: (checked: boolean) => void;
+}) {
+  const EventIcon = event.icon;
+  return <div className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
+    <div className="flex items-start gap-3 min-w-0">
+      <EventIcon className={`h-5 w-5 shrink-0 mt-0.5 ${event.iconClass}`} aria-hidden="true" />
+      <div className="space-y-0.5 min-w-0">
+        <p className="text-sm font-medium leading-none">{event.title}</p>
+        <p className="text-xs text-muted-foreground">{event.description}</p>
+      </div>
+    </div>
+    <Switch checked={enabled} onCheckedChange={onToggle} aria-label={event.title} />
+  </div>;
+}
+
 export function OrderEventAlerts() {
   const { preferences, isLoading, updatePreferences } = useNotificationPreferences();
 
@@ -86,22 +90,8 @@ export function OrderEventAlerts() {
         </CardDescription>
       </CardHeader>
       <CardContent className="divide-y divide-border/60">
-        {EVENT_DEFS.map(({ key, title, description, icon: Icon, iconClass }) => (
-          <div key={key} className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
-            <div className="flex items-start gap-3 min-w-0">
-              <Icon className={`h-5 w-5 shrink-0 mt-0.5 ${iconClass}`} aria-hidden="true" />
-              <div className="space-y-0.5 min-w-0">
-                <p className="text-sm font-medium leading-none">{title}</p>
-                <p className="text-xs text-muted-foreground">{description}</p>
-              </div>
-            </div>
-            <Switch
-              checked={isEnabled(key)}
-              onCheckedChange={(checked) => toggle(key, checked)}
-              aria-label={title}
-            />
-          </div>
-        ))}
+        {EVENT_DEFS.map((event) => <EventToggle key={event.key} event={event} enabled={isEnabled(event.key)}
+          onToggle={(checked) => toggle(event.key, checked)} />)}
       </CardContent>
     </Card>
   );

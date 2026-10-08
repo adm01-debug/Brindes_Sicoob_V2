@@ -17,6 +17,10 @@ import {
   type VerifiedKitPersonalization,
 } from "../sicoob-kit-quote/catalog.ts";
 import { hashReorderIntent, type ReorderSourceKind } from "./idempotency.ts";
+import {
+  EXTERNAL_ACTIVE_PRODUCT_FILTER,
+  EXTERNAL_PRODUCT_REORDER_SELECT,
+} from "../_shared/external-product-contract.ts";
 
 type SupabaseClient = SupabaseJsClient<any, "public", any>;
 
@@ -164,8 +168,8 @@ async function queryCurrentCatalog(userClient: SupabaseClient, source: ReorderSo
     body: {
       table: "products",
       operation: "select",
-      select: "id,name,sku,sale_price,base_price,primary_image_url,is_active,active,stock_quantity,min_quantity,min_order_quantity,is_stockout,last_stock_update_at,price_updated_at,price_verified_at,price_last_verified_at,price_freshness_threshold_days",
-      filters: { id: productIds },
+      select: EXTERNAL_PRODUCT_REORDER_SELECT,
+      filters: { id: productIds, ...EXTERNAL_ACTIVE_PRODUCT_FILTER },
       limit: Math.min(productIds.length, 100),
     },
   });

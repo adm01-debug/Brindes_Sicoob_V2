@@ -3,11 +3,6 @@ name: Security Scan
 on:
   pull_request:
     branches: [main]
-    paths-ignore:
-      - 'docs/**'
-      - '*.md'
-      - '.github/CODEOWNERS'
-      - 'reports/**'
   push:
     branches: [main]
     paths-ignore:
@@ -31,17 +26,19 @@ concurrency:
 jobs:
   gitleaks:
     name: Gitleaks — Secret Scan
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
       - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v3
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HOME: /tmp
-          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+          # Usa uma chave de cache nova; o cache legado 8.24.3 estava
+          # corrompido e restaurava o binário fora de /tmp.
+          GITLEAKS_VERSION: '8.30.1'
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: 'false'

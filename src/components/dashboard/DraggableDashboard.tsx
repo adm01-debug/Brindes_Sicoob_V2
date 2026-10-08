@@ -69,6 +69,31 @@ export interface DraggableWidgetProps {
   onRefresh?: () => void;
 }
 
+function widgetLayoutClass(widget: DashboardWidget) {
+  const columnClasses = { 1: "col-span-1", 2: "col-span-2", 3: "col-span-3", 4: "col-span-4" } as const;
+  const columnClass = columnClasses[widget.colSpan ?? 1];
+  return cn("relative", columnClass, widget.rowSpan === 2 && "row-span-2");
+}
+
+function WidgetActions(props: DraggableWidgetProps) {
+  return <div className="flex items-center gap-1">{props.onRefresh && <Button variant="ghost" size="icon" className="h-7 w-7" onClick={props.onRefresh} aria-label="Atualizar"><RefreshCw className="h-3.5 w-3.5" /></Button>}<Button variant="ghost" size="icon" aria-label="Maximizar" className="h-7 w-7" onClick={props.onToggleCollapse}>{props.widget.isCollapsed ? <Maximize2 className="h-3.5 w-3.5" /> : <Minimize2 className="h-3.5 w-3.5" />}</Button>{props.isEditing && <><Button variant="ghost" size="icon" aria-label="Bloquear" className="h-7 w-7" onClick={props.onToggleLock}>{props.widget.isLocked ? <Lock className="h-3.5 w-3.5 text-warning" /> : <Unlock className="h-3.5 w-3.5" />}</Button><Popover><PopoverTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Settings2"><Settings2 className="h-3.5 w-3.5" /></Button></PopoverTrigger><PopoverContent className="w-48"><div className="space-y-2"><p className="text-xs font-medium text-muted-foreground">Largura</p><div className="flex gap-1">{([1, 2, 3, 4] as const).map(span => <Button key={span} variant={props.widget.colSpan === span ? "secondary" : "ghost"} size="sm" className="flex-1" onClick={() => props.onResize(span)}>{span}</Button>)}</div></div></PopoverContent></Popover>{!props.widget.isLocked && <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={props.onRemove} aria-label="Fechar"><X className="h-3.5 w-3.5" /></Button>}</>}</div>;
+}
+
+function WidgetBody({ widget, component }: { readonly widget: DashboardWidget; readonly component: WidgetConfig['component'] | undefined }) {
+  const WidgetComponent = component;
+  return <AnimatePresence>{!widget.isCollapsed && <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}><CardContent className="p-4 pt-2">{WidgetComponent ? <WidgetComponent widget={widget} /> : <div className="h-32 flex items-center justify-center text-muted-foreground">Widget não configurado</div>}</CardContent></motion.div>}</AnimatePresence>;
+}
+
+function dashboardGridClass(columns: number) {
+  const columnClasses: Record<number, string> = { 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4" };
+  return cn("grid gap-4", columnClasses[columns] ?? "grid-cols-4");
+}
+
+function EmptyDashboard({ visible, isEditing, widgets, onAddWidget }: { readonly visible: boolean; readonly isEditing: boolean; readonly widgets: WidgetConfig[]; readonly onAddWidget: (config: WidgetConfig) => void }) {
+  if (!visible) return null;
+  return <div className="flex flex-col items-center justify-center py-12 text-center"><LayoutGrid className="h-12 w-12 text-muted-foreground/50 mb-4" /><h3 className="font-display text-lg font-semibold mb-2">Dashboard vazio</h3><p className="text-muted-foreground text-sm mb-4">Adicione widgets para personalizar seu dashboard</p>{isEditing && <WidgetPicker availableWidgets={widgets} onAddWidget={onAddWidget} />}</div>;
+}
+
 // ============================================================================
 // HOOK: useDashboardWidgets
 // ============================================================================
@@ -167,14 +192,7 @@ export function DraggableWidget({
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      className={cn(
-        "relative",
-        widget.colSpan === 1 && "col-span-1",
-        widget.colSpan === 2 && "col-span-2",
-        widget.colSpan === 3 && "col-span-3",
-        widget.colSpan === 4 && "col-span-4",
-        widget.rowSpan === 2 && "row-span-2"
-      )}
+      className={widgetLayoutClass(widget)}
     >
       <Card className={cn(
         "h-full transition-all",
@@ -189,106 +207,9 @@ export function DraggableWidget({
             <h3 className="font-display font-semibold text-sm">{widget.title}</h3>
           </div>
 
-          <div className="flex items-center gap-1">
-            {/* Refresh */}
-            {onRefresh && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={onRefresh}
-               aria-label="Atualizar"><RefreshCw className="h-3.5 w-3.5" />
-              </Button>
-            )}
-
-            {/* Collapse */}
-            <Button
-              variant="ghost"
-              size="icon" aria-label="Maximizar"
-              className="h-7 w-7"
-              onClick={onToggleCollapse}
-            >
-              {widget.isCollapsed ? (
-                <Maximize2 className="h-3.5 w-3.5" />
-              ) : (
-                <Minimize2 className="h-3.5 w-3.5" />
-              )}
-            </Button>
-
-            {/* Edit Mode Actions */}
-            {isEditing && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon" aria-label="Bloquear"
-                  className="h-7 w-7"
-                  onClick={onToggleLock}
-                >
-                  {widget.isLocked ? (
-                    <Lock className="h-3.5 w-3.5 text-warning" />
-                  ) : (
-                    <Unlock className="h-3.5 w-3.5" />
-                  )}
-                </Button>
-
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Settings2"><Settings2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-48">
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium text-muted-foreground">Largura</p>
-                      <div className="flex gap-1">
-                        {([1, 2, 3, 4] as const).map((span) => (
-                          <Button
-                            key={span}
-                            variant={widget.colSpan === span ? "secondary" : "ghost"}
-                            size="sm"
-                            className="flex-1"
-                            onClick={() => onResize(span)}
-                          >
-                            {span}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-
-                {!widget.isLocked && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-destructive hover:text-destructive"
-                    onClick={onRemove}
-                   aria-label="Fechar"><X className="h-3.5 w-3.5" />
-                  </Button>
-                )}
-              </>
-            )}
-          </div>
+          <WidgetActions widget={widget} config={config} isEditing={isEditing} onRemove={onRemove} onToggleCollapse={onToggleCollapse} onToggleLock={onToggleLock} onResize={onResize} onRefresh={onRefresh} />
         </CardHeader>
-
-        <AnimatePresence>
-          {!widget.isCollapsed && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-            >
-              <CardContent className="p-4 pt-2">
-                {WidgetComponent ? (
-                  <WidgetComponent widget={widget} />
-                ) : (
-                  <div className="h-32 flex items-center justify-center text-muted-foreground">
-                    Widget não configurado
-                  </div>
-                )}
-              </CardContent>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <WidgetBody widget={widget} component={WidgetComponent} />
       </Card>
     </motion.div>
   );
@@ -414,12 +335,7 @@ export function DraggableDashboard({
         axis="y"
         values={widgets}
         onReorder={onWidgetsChange}
-        className={cn(
-          "grid gap-4",
-          columns === 2 && "grid-cols-2",
-          columns === 3 && "grid-cols-3",
-          columns === 4 && "grid-cols-4"
-        )}
+        className={dashboardGridClass(columns)}
       >
         <AnimatePresence>
           {widgets.map((widget) => (
@@ -446,22 +362,7 @@ export function DraggableDashboard({
         </AnimatePresence>
       </Reorder.Group>
 
-      {/* Empty State */}
-      {widgets.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <LayoutGrid className="h-12 w-12 text-muted-foreground/50 mb-4" />
-          <h3 className="font-display text-lg font-semibold mb-2">Dashboard vazio</h3>
-          <p className="text-muted-foreground text-sm mb-4">
-            Adicione widgets para personalizar seu dashboard
-          </p>
-          {isEditing && (
-            <WidgetPicker
-              availableWidgets={availableWidgets}
-              onAddWidget={handleAddWidget}
-            />
-          )}
-        </div>
-      )}
+      <EmptyDashboard visible={widgets.length === 0} isEditing={isEditing} widgets={availableWidgets} onAddWidget={handleAddWidget} />
     </div>
   );
 }

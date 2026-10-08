@@ -52,6 +52,8 @@ const SEV_META: Record<
   },
 };
 
+const hasIncidents = (items: IncidentItem[] | undefined): boolean => Boolean(items?.length);
+
 function IncidentCard({
   incident,
   onDismiss,
@@ -200,13 +202,13 @@ export function ConnectionsIncidentStrip() {
   // Sem nenhum incidente carregado E sem filtro ativo ⇒ não renderiza nada.
   // Com filtro ativo, mantém a strip visível para deixar claro que há um filtro
   // aplicado (mostra mensagem dentro do corpo).
-  const hasAnyData = (data?.length ?? 0) > 0;
+  const hasAnyData = hasIncidents(data);
   if (!hasAnyData) return null;
 
   const dismiss = (id: string) => setDismissed((prev) => new Set(prev).add(id));
 
   return (
-    <TooltipProvider delayDuration={150}>
+    (<TooltipProvider delayDuration={150}>
       <section
         aria-label="Incidentes recentes"
         className="-mt-3 rounded-lg border border-border/60 bg-card/40 backdrop-blur-sm"
@@ -280,6 +282,6 @@ export function ConnectionsIncidentStrip() {
         open={!!openIncident}
         onOpenChange={(o) => { if (!o) setOpenIncident(null); }}
       />
-    </TooltipProvider>
+    </TooltipProvider>)
   );
 }

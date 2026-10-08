@@ -100,12 +100,7 @@ interface AnimatedCounterProps {
   formatFn?: (value: number) => string;
 }
 
-export function AnimatedCounter({ 
-  value, 
-  duration = 1, 
-  className,
-  formatFn = (v) => v.toLocaleString("pt-BR")
-}: AnimatedCounterProps) {
+export function AnimatedCounter({ value, className, formatFn = (v) => v.toLocaleString("pt-BR") }: AnimatedCounterProps) {
   return (
     <motion.span
       className={className}

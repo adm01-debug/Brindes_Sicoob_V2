@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, createContext, useContext, type ReactNode } from "react";
+import { useState, useEffect, useCallback, createContext, useContext, type ReactNode, forwardRef } from "react";
 
 /**
  * ARIA Live Regions for dynamic content announcements
@@ -22,7 +22,6 @@ export function useAriaLive() {
   return context;
 }
 
-import { forwardRef } from 'react';
 
 export const AriaLiveProvider = forwardRef<HTMLDivElement, { children: ReactNode }>(({ children }, ref) => {
   const [politeMessage, setPoliteMessage] = useState("");
@@ -59,8 +58,11 @@ export const AriaLiveProvider = forwardRef<HTMLDivElement, { children: ReactNode
   }, []);
 
   useEffect(() => {
-    const handler = (e: any) => {
-      const { message, priority = 'polite' } = e.detail || {};
+    const handler = (event: Event) => {
+      const { message, priority = 'polite' } = (event as CustomEvent<{
+        message?: string;
+        priority?: "polite" | "assertive";
+      }>).detail || {};
       if (message) announce(message, priority);
     };
     window.addEventListener('a11y-announce', handler);

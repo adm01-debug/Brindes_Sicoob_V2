@@ -1,3 +1,4 @@
+import type { ComponentType } from "react";
 /**
  * Kit Conflict Alerts
  * Real-time intelligent validations beyond stock/volume:
@@ -17,7 +18,7 @@ interface KitConflictAlertsProps {
 interface Conflict {
   id: string;
   severity: "warning" | "danger" | "info";
-  icon: React.ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
   title: string;
   suggestion: string;
 }
@@ -26,60 +27,69 @@ const THERMAL_KEYWORDS = ["chocolate", "bombom", "trufa", "food", "alimento", "d
 const FRAGILE_KEYWORDS = ["vidro", "porcelana", "cerâmica", "ceramica", "cristal", "garrafa"];
 const ECONOMY_FREIGHT_LIMIT_G = 5000; // 5kg per kit, simplified
 
+function matchingItems(items: KitState["items"], keywords: string[], field: "category" | "material") {
+  return items.filter((item) => {
+    const text = `${item.name} ${item[field] ?? ""}`.toLowerCase();
+    return keywords.some((keyword) => text.includes(keyword));
+  });
+}
+
+function thermalConflict(kitState: KitState): Conflict | null {
+  if (!kitState.box) return null;
+  const items = matchingItems(kitState.items, THERMAL_KEYWORDS, "category");
+  if (items.length === 0) return null;
+  const boxText = `${kitState.box.name} ${kitState.box.material ?? ""} ${kitState.box.boxType ?? ""}`.toLowerCase();
+  if (["térmic", "termic", "isolad", "thermal", "isotérmic"].some((keyword) => boxText.includes(keyword))) return null;
+  return {
+    id: "thermal-mismatch",
+    severity: "warning",
+    icon: Snowflake,
+    title: `Itens sensíveis a calor (${items.length}) em embalagem comum`,
+    suggestion: "Considere uma caixa térmica ou isolada para preservar a qualidade no transporte.",
+  };
+}
+
+function fragileConflict(kitState: KitState): Conflict | null {
+  if (!kitState.box) return null;
+  const items = matchingItems(kitState.items, FRAGILE_KEYWORDS, "material");
+  if (items.length === 0) return null;
+  const boxText = `${kitState.box.name} ${kitState.box.boxType ?? ""}`.toLowerCase();
+  if (["rígid", "rigid", "lata", "metal", "madeira", "mdf", "kraft duplo"].some((keyword) => boxText.includes(keyword))) return null;
+  return {
+    id: "fragile-mismatch",
+    severity: "info",
+    icon: AlertTriangle,
+    title: `${items.length} item(ns) frágeis detectado(s)`,
+    suggestion: "Recomenda-se papel bolha ou enchimento adicional para garantir a integridade.",
+  };
+}
+
+function freightConflict(totalWeight: number): Conflict | null {
+  if (totalWeight <= ECONOMY_FREIGHT_LIMIT_G) return null;
+  return {
+    id: "freight-economy",
+    severity: "warning",
+    icon: Truck,
+    title: `Peso por kit (${(totalWeight / 1000).toFixed(2)} kg) acima do frete econômico`,
+    suggestion: "Avalie reduzir itens pesados ou considerar transportadora dedicada para grandes volumes.",
+  };
+}
+
 function detectConflicts(kitState: KitState): Conflict[] {
-  const out: Conflict[] = [];
-  const { box, items, totalWeight } = kitState;
+  return [thermalConflict(kitState), fragileConflict(kitState), freightConflict(kitState.totalWeight)]
+    .filter((conflict): conflict is Conflict => conflict !== null);
+}
 
-  // Thermal
-  const thermalItems = items.filter((i) => {
-    const text = `${i.name} ${i.category ?? ""}`.toLowerCase();
-    return THERMAL_KEYWORDS.some((k) => text.includes(k));
-  });
-  if (thermalItems.length > 0 && box) {
-    const boxText = `${box.name} ${box.material ?? ""} ${box.boxType ?? ""}`.toLowerCase();
-    const isThermal = ["térmic", "termic", "isolad", "thermal", "isotérmic"].some((k) => boxText.includes(k));
-    if (!isThermal) {
-      out.push({
-        id: "thermal-mismatch",
-        severity: "warning",
-        icon: Snowflake,
-        title: `Itens sensíveis a calor (${thermalItems.length}) em embalagem comum`,
-        suggestion: "Considere uma caixa térmica ou isolada para preservar a qualidade no transporte.",
-      });
-    }
-  }
+function conflictTone(severity: Conflict["severity"]) {
+  if (severity === "danger") return "border-destructive/40 bg-destructive/5";
+  if (severity === "warning") return "border-warning/40 bg-warning/5";
+  return "border-primary/30 bg-primary/5";
+}
 
-  // Fragile
-  const fragileItems = items.filter((i) => {
-    const text = `${i.name} ${i.material ?? ""}`.toLowerCase();
-    return FRAGILE_KEYWORDS.some((k) => text.includes(k));
-  });
-  if (fragileItems.length > 0 && box) {
-    const boxText = `${box.name} ${box.boxType ?? ""}`.toLowerCase();
-    const isProtective = ["rígid", "rigid", "lata", "metal", "madeira", "mdf", "kraft duplo"].some((k) => boxText.includes(k));
-    if (!isProtective) {
-      out.push({
-        id: "fragile-mismatch",
-        severity: "info",
-        icon: AlertTriangle,
-        title: `${fragileItems.length} item(ns) frágeis detectado(s)`,
-        suggestion: "Recomenda-se papel bolha ou enchimento adicional para garantir a integridade.",
-      });
-    }
-  }
-
-  // Freight weight
-  if (totalWeight > ECONOMY_FREIGHT_LIMIT_G) {
-    out.push({
-      id: "freight-economy",
-      severity: "warning",
-      icon: Truck,
-      title: `Peso por kit (${(totalWeight / 1000).toFixed(2)} kg) acima do frete econômico`,
-      suggestion: "Avalie reduzir itens pesados ou considerar transportadora dedicada para grandes volumes.",
-    });
-  }
-
-  return out;
+function conflictIconTone(severity: Conflict["severity"]) {
+  if (severity === "danger") return "text-destructive";
+  if (severity === "warning") return "text-warning";
+  return "text-primary";
 }
 
 export function KitConflictAlerts({ kitState }: KitConflictAlertsProps) {
@@ -90,18 +100,8 @@ export function KitConflictAlerts({ kitState }: KitConflictAlertsProps) {
     <div className="space-y-2">
       {conflicts.map((c) => {
         const Icon = c.icon;
-        const tone =
-          c.severity === "danger"
-            ? "border-destructive/40 bg-destructive/5"
-            : c.severity === "warning"
-            ? "border-warning/40 bg-warning/5"
-            : "border-primary/30 bg-primary/5";
-        const iconTone =
-          c.severity === "danger"
-            ? "text-destructive"
-            : c.severity === "warning"
-            ? "text-warning"
-            : "text-primary";
+        const tone = conflictTone(c.severity);
+        const iconTone = conflictIconTone(c.severity);
         return (
           <Card key={c.id} className={cn("border-[1.5px]", tone)}>
             <CardContent className="p-3 flex items-start gap-3">

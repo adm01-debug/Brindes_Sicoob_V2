@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { Fragment, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import {
   Card,
   CardContent,
@@ -57,6 +57,8 @@ import {
 } from "@/lib/telemetry/secretsManagerCallMetrics";
 import { shortRequestId } from "@/lib/telemetry/requestId";
 
+const SECRETS_MANAGER_SOURCE = "secrets-manager";
+
 /**
  * EdgeFunctionLogsPanel — painel de logs ao vivo das edge functions críticas:
  *  - external-db-bridge / crm-db-bridge (já instrumentadas)
@@ -73,7 +75,7 @@ import { shortRequestId } from "@/lib/telemetry/requestId";
 type UnifiedSample = {
   uid: string;
   ts: number;
-  source: "external-db-bridge" | "crm-db-bridge" | "secrets-manager";
+  source: "external-db-bridge" | "crm-db-bridge" | typeof SECRETS_MANAGER_SOURCE;
   op: string;
   target?: string;
   durationMs: number;
@@ -91,7 +93,7 @@ const SOURCE_OPTIONS = [
   { value: "all", label: "Todas as funções" },
   { value: "external-db-bridge", label: "external-db-bridge" },
   { value: "crm-db-bridge", label: "crm-db-bridge" },
-  { value: "secrets-manager", label: "secrets-manager" },
+  { value: SECRETS_MANAGER_SOURCE, label: SECRETS_MANAGER_SOURCE },
 ] as const;
 
 const STATUS_OPTIONS = [
@@ -123,6 +125,89 @@ async function copyText(text: string, label: string) {
   } catch {
     toast.error("Falha ao copiar");
   }
+}
+
+function RequestIdButton({ requestId, compact = false }: { requestId?: string; compact?: boolean }) {
+  if (!requestId) return <span className="text-[10px] text-muted-foreground">—</span>;
+  if (compact) {
+    return (
+      <button type="button" onClick={(event) => { event.stopPropagation(); void copyText(requestId, "request_id"); }}
+        className="inline-flex items-center gap-1 font-mono text-[10px] text-muted-foreground hover:text-foreground" title={requestId}>
+        {shortRequestId(requestId)}<Copy className="h-2.5 w-2.5" />
+      </button>
+    );
+  }
+  return (
+    <><span>{requestId}</span><Button size="icon" variant="ghost" className="h-5 w-5"
+      onClick={() => void copyText(requestId, "request_id")}><Copy className="h-3 w-3" /></Button></>
+  );
+}
+
+function LogSummaryRow({ row, expanded, onToggle }: { row: UnifiedSample; expanded: boolean; onToggle: () => void }) {
+  return (
+    <TableRow className={cn("cursor-pointer hover:bg-muted/40", !row.ok && "bg-destructive/5")} onClick={onToggle}>
+      <TableCell className="py-1.5">{expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}</TableCell>
+      <TableCell className="py-1.5 font-mono text-[11px]">{fmtTime(row.ts)}</TableCell>
+      <TableCell className="py-1.5"><Badge variant="outline" className="font-mono text-[10px]">{row.source}</Badge></TableCell>
+      <TableCell className="py-1.5">
+        <span className="font-mono text-xs">{row.op}</span>
+        {row.target && <span className="ml-1 text-[10px] text-muted-foreground">· {row.target}</span>}
+      </TableCell>
+      <TableCell className="py-1.5">
+        {row.ok ? (
+          <span className="inline-flex items-center gap-1 text-xs text-success"><CheckCircle2 className="h-3 w-3" />{row.status ?? "ok"}</span>
+        ) : (
+          <Tooltip><TooltipTrigger asChild><span className="inline-flex items-center gap-1 text-xs text-destructive"><XCircle className="h-3 w-3" />{row.status ?? "err"}</span></TooltipTrigger>
+            <TooltipContent className="max-w-xs"><p className="text-xs">{row.errorMessage ?? "Erro sem mensagem"}</p></TooltipContent></Tooltip>
+        )}
+      </TableCell>
+      <TableCell className="py-1.5 text-right font-mono text-[11px]">{row.durationMs} ms</TableCell>
+      <TableCell className="py-1.5"><RequestIdButton requestId={row.requestId} compact /></TableCell>
+    </TableRow>
+  );
+}
+
+function ExpandedLogRow({ row, expanded }: { row: UnifiedSample; expanded: boolean }) {
+  if (!expanded) return null;
+  const bridgeRaw = row.source === SECRETS_MANAGER_SOURCE ? null : row.raw as BridgeCallSample;
+  return (
+    <TableRow className="bg-muted/20">
+      <TableCell colSpan={7} className="py-3">
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-[11px] md:grid-cols-3">
+          <dt className="text-muted-foreground">Timestamp</dt><dd className="col-span-2 font-mono">{new Date(row.ts).toISOString()}</dd>
+          <dt className="text-muted-foreground">request_id (cliente)</dt>
+          <dd className="col-span-2 flex items-center gap-2 font-mono"><RequestIdButton requestId={row.requestId} /></dd>
+          {row.serverRequestId && (
+            <><dt className="text-muted-foreground">request_id (servidor)</dt>
+              <dd className={cn("col-span-2 font-mono", row.serverRequestId === row.requestId ? "" : "text-warning")}>
+                {row.serverRequestId}{row.serverRequestId !== row.requestId && <span className="ml-2 text-[10px]">(diferente — verifique propagação)</span>}
+              </dd></>
+          )}
+          {bridgeRaw && <><dt className="text-muted-foreground">Payload req / resp</dt><dd className="col-span-2 font-mono">{fmtBytes(bridgeRaw.reqBytes)} → {fmtBytes(bridgeRaw.respBytes)}</dd></>}
+          {row.errorCode && <><dt className="text-muted-foreground">Código erro</dt><dd className="col-span-2 font-mono">{row.errorCode}</dd></>}
+          {row.errorMessage && <><dt className="text-muted-foreground">Mensagem</dt><dd className="col-span-2 break-all font-mono text-destructive">{row.errorMessage}</dd></>}
+          <dt className="text-muted-foreground">Como debugar</dt>
+          <dd className="col-span-2 text-muted-foreground"><AlertCircle className="mr-1 inline h-3 w-3" />Filtre os logs da função <code className="font-mono">{row.source}</code> pelo request_id acima para ver o trace completo no servidor.</dd>
+        </dl>
+      </TableCell>
+    </TableRow>
+  );
+}
+
+function LogsTableBody({ filtered, total, expandedUid, setExpandedUid }: {
+  filtered: UnifiedSample[]; total: number; expandedUid: string | null; setExpandedUid: (uid: string | null) => void;
+}) {
+  if (filtered.length === 0) {
+    const message = total === 0
+      ? "Nenhuma chamada registrada ainda. Interaja com a app para popular o painel."
+      : "Nenhuma amostra corresponde aos filtros.";
+    return <TableRow><TableCell colSpan={7} className="py-8 text-center text-xs text-muted-foreground">{message}</TableCell></TableRow>;
+  }
+  return <>{filtered.map((row) => {
+    const expanded = expandedUid === row.uid;
+    return <Fragment key={row.uid}><LogSummaryRow row={row} expanded={expanded}
+      onToggle={() => setExpandedUid(expanded ? null : row.uid)} /><ExpandedLogRow row={row} expanded={expanded} /></Fragment>;
+  })}</>;
 }
 
 export function EdgeFunctionLogsPanel() {
@@ -161,7 +246,7 @@ export function EdgeFunctionLogsPanel() {
     const fromSecrets: UnifiedSample[] = secretsSamples.map((s) => ({
       uid: `s-${s.id}`,
       ts: s.ts,
-      source: "secrets-manager",
+      source: SECRETS_MANAGER_SOURCE,
       op: s.action,
       target: s.target,
       durationMs: s.durationMs,
@@ -317,214 +402,8 @@ export function EdgeFunctionLogsPanel() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={7}
-                    className="py-8 text-center text-xs text-muted-foreground"
-                  >
-                    {unified.length === 0
-                      ? "Nenhuma chamada registrada ainda. Interaja com a app para popular o painel."
-                      : "Nenhuma amostra corresponde aos filtros."}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filtered.map((row) => {
-                  const expanded = expandedUid === row.uid;
-                  const isBridge = row.source !== "secrets-manager";
-                  const bridgeRaw = isBridge
-                    ? (row.raw as BridgeCallSample)
-                    : null;
-                  return (
-                    <>
-                      <TableRow
-                        key={row.uid}
-                        className={cn(
-                          "cursor-pointer hover:bg-muted/40",
-                          !row.ok && "bg-destructive/5",
-                        )}
-                        onClick={() =>
-                          setExpandedUid(expanded ? null : row.uid)
-                        }
-                      >
-                        <TableCell className="py-1.5">
-                          {expanded ? (
-                            <ChevronDown className="h-3.5 w-3.5" />
-                          ) : (
-                            <ChevronRight className="h-3.5 w-3.5" />
-                          )}
-                        </TableCell>
-                        <TableCell className="py-1.5 font-mono text-[11px]">
-                          {fmtTime(row.ts)}
-                        </TableCell>
-                        <TableCell className="py-1.5">
-                          <Badge
-                            variant="outline"
-                            className="font-mono text-[10px]"
-                          >
-                            {row.source}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="py-1.5">
-                          <span className="font-mono text-xs">{row.op}</span>
-                          {row.target && (
-                            <span className="ml-1 text-[10px] text-muted-foreground">
-                              · {row.target}
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell className="py-1.5">
-                          {row.ok ? (
-                            <span className="inline-flex items-center gap-1 text-xs text-success">
-                              <CheckCircle2 className="h-3 w-3" />
-                              {row.status ?? "ok"}
-                            </span>
-                          ) : (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="inline-flex items-center gap-1 text-xs text-destructive">
-                                  <XCircle className="h-3 w-3" />
-                                  {row.status ?? "err"}
-                                </span>
-                              </TooltipTrigger>
-                              <TooltipContent className="max-w-xs">
-                                <p className="text-xs">
-                                  {row.errorMessage ?? "Erro sem mensagem"}
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                        </TableCell>
-                        <TableCell className="py-1.5 text-right font-mono text-[11px]">
-                          {row.durationMs} ms
-                        </TableCell>
-                        <TableCell className="py-1.5">
-                          {row.requestId ? (() => {
-                            const rid = row.requestId;
-                            return (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  copyText(rid, "request_id");
-                                }}
-                                className="inline-flex items-center gap-1 font-mono text-[10px] text-muted-foreground hover:text-foreground"
-                                title={rid}
-                              >
-                                {shortRequestId(rid)}
-                                <Copy className="h-2.5 w-2.5" />
-                              </button>
-                            );
-                          })() : (
-                            <span className="text-[10px] text-muted-foreground">
-                              —
-                            </span>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                      {expanded && (
-                        <TableRow
-                          key={`${row.uid}-detail`}
-                          className="bg-muted/20"
-                        >
-                          <TableCell colSpan={7} className="py-3">
-                            <dl className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-[11px] md:grid-cols-3">
-                              <dt className="text-muted-foreground">
-                                Timestamp
-                              </dt>
-                              <dd className="col-span-2 font-mono">
-                                {new Date(row.ts).toISOString()}
-                              </dd>
-                              <dt className="text-muted-foreground">
-                                request_id (cliente)
-                              </dt>
-                              <dd className="col-span-2 flex items-center gap-2 font-mono">
-                                {row.requestId ?? "—"}
-                                {row.requestId && (() => {
-                                  const rid = row.requestId;
-                                  return (
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      className="h-5 w-5"
-                                      onClick={() => copyText(rid, "request_id")}
-                                    >
-                                      <Copy className="h-3 w-3" />
-                                    </Button>
-                                  );
-                                })()}
-                              </dd>
-                              {row.serverRequestId && (
-                                <>
-                                  <dt className="text-muted-foreground">
-                                    request_id (servidor)
-                                  </dt>
-                                  <dd
-                                    className={cn(
-                                      "col-span-2 font-mono",
-                                      row.serverRequestId === row.requestId
-                                        ? ""
-                                        : "text-warning",
-                                    )}
-                                  >
-                                    {row.serverRequestId}
-                                    {row.serverRequestId !== row.requestId && (
-                                      <span className="ml-2 text-[10px]">
-                                        (diferente — verifique propagação)
-                                      </span>
-                                    )}
-                                  </dd>
-                                </>
-                              )}
-                              {bridgeRaw && (
-                                <>
-                                  <dt className="text-muted-foreground">
-                                    Payload req / resp
-                                  </dt>
-                                  <dd className="col-span-2 font-mono">
-                                    {fmtBytes(bridgeRaw.reqBytes)} →{" "}
-                                    {fmtBytes(bridgeRaw.respBytes)}
-                                  </dd>
-                                </>
-                              )}
-                              {row.errorCode && (
-                                <>
-                                  <dt className="text-muted-foreground">
-                                    Código erro
-                                  </dt>
-                                  <dd className="col-span-2 font-mono">
-                                    {row.errorCode}
-                                  </dd>
-                                </>
-                              )}
-                              {row.errorMessage && (
-                                <>
-                                  <dt className="text-muted-foreground">
-                                    Mensagem
-                                  </dt>
-                                  <dd className="col-span-2 break-all font-mono text-destructive">
-                                    {row.errorMessage}
-                                  </dd>
-                                </>
-                              )}
-                              <dt className="text-muted-foreground">
-                                Como debugar
-                              </dt>
-                              <dd className="col-span-2 text-muted-foreground">
-                                <AlertCircle className="mr-1 inline h-3 w-3" />
-                                Filtre os logs da função{" "}
-                                <code className="font-mono">{row.source}</code>{" "}
-                                pelo request_id acima para ver o trace completo
-                                no servidor.
-                              </dd>
-                            </dl>
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </>
-                  );
-                })
-              )}
+              <LogsTableBody filtered={filtered} total={unified.length} expandedUid={expandedUid}
+                setExpandedUid={setExpandedUid} />
             </TableBody>
           </Table>
         </ScrollArea>

@@ -2,7 +2,6 @@
  * Render tests for FilterPanel (1203 lines)
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderWithProviders } from "../render-helpers";
 import React from "react";
 
 vi.mock("@/hooks/useCategoryIcons", () => ({
@@ -57,7 +56,7 @@ vi.mock("@/data/mockData", () => ({
 }));
 
 vi.mock("@/components/filters/DebouncedPriceInput", () => ({
-  DebouncedPriceInput: (props: any) => <input data-testid="price-input" />,
+  DebouncedPriceInput: () => <input data-testid="price-input" />,
 }));
 
 vi.mock("@/components/filters/ColorGroupFilter", () => ({

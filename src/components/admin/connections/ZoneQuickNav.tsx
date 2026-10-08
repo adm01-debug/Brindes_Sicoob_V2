@@ -9,6 +9,7 @@
  * Inclui botão "Mostrar tudo" quando alguma zona está oculta e
  * shift+clique no chip para isolar (mostrar só aquela zona).
  */
+import type { MouseEvent } from 'react';
 import { Activity, Settings2, Network, Eye, EyeOff, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -27,20 +28,37 @@ const ZONES: ZoneDef[] = [
   { id: "connections", href: "#zone-connections", label: "Conexões", icon: Network },
 ];
 
-export function ZoneQuickNav({
-  visible,
-  onToggle,
-  onIsolate,
-  onShowAll,
-  hiddenCount,
-}: {
+interface ZoneQuickNavProps {
   visible: Record<ZoneId, boolean>;
   onToggle: (zone: ZoneId) => void;
   onIsolate: (zone: ZoneId) => void;
   onShowAll: () => void;
   hiddenCount: number;
-}) {
-  const handleAnchorClick = (e: React.MouseEvent, zone: ZoneDef) => {
+}
+
+function ZoneChip({ zone, isVisible, onAnchorClick, onToggle }: { zone: ZoneDef; isVisible: boolean; onAnchorClick: (event: MouseEvent, zone: ZoneDef) => void; onToggle: (zone: ZoneId) => void }) {
+  const Icon = zone.icon;
+  return (
+    <div className={cn("inline-flex items-stretch rounded-full border overflow-hidden transition-colors", isVisible ? "border-border/60 bg-card" : "border-dashed border-border/50 bg-muted/30 opacity-70")}>
+      <Tooltip>
+        <TooltipTrigger asChild><a href={zone.href} onClick={(event) => onAnchorClick(event, zone)} className={cn("inline-flex items-center gap-1.5 pl-2.5 pr-2 py-1 transition-colors", isVisible ? "text-muted-foreground hover:text-foreground hover:bg-muted/60" : "text-muted-foreground/70 hover:text-foreground line-through decoration-dotted")} aria-label={`${isVisible ? "Ir para" : "Mostrar e ir para"} zona ${zone.label}`}><Icon className="h-3 w-3" /><span>{zone.label}</span></a></TooltipTrigger>
+        <TooltipContent side="bottom" className="max-w-[220px]"><p className="text-xs">{isVisible ? "Clique para rolar até a zona." : "Zona oculta — clique para mostrar e rolar."}</p><p className="text-[10px] text-muted-foreground mt-0.5"><kbd className="font-mono">Shift</kbd> + clique para isolar (mostrar só esta).</p></TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild><button type="button" role="switch" aria-checked={isVisible} aria-label={`${isVisible ? "Ocultar" : "Mostrar"} zona ${zone.label}`} onClick={() => onToggle(zone.id)} className={cn("inline-flex items-center justify-center px-1.5 border-l transition-colors", isVisible ? "border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted/60" : "border-border/40 text-muted-foreground/70 hover:text-foreground hover:bg-muted/60")}>{isVisible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}</button></TooltipTrigger>
+        <TooltipContent side="bottom"><p className="text-xs">{isVisible ? "Ocultar zona" : "Mostrar zona"}</p></TooltipContent>
+      </Tooltip>
+    </div>
+  );
+}
+
+function ShowAllZonesButton({ hiddenCount, onShowAll }: Pick<ZoneQuickNavProps, "hiddenCount" | "onShowAll">) {
+  if (hiddenCount === 0) return null;
+  return <button type="button" onClick={onShowAll} className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-primary hover:bg-primary/15 transition-colors" aria-label="Mostrar todas as zonas"><RotateCcw className="h-3 w-3" /><span>Mostrar tudo ({hiddenCount} oculta{hiddenCount === 1 ? "" : "s"})</span></button>;
+}
+
+export function ZoneQuickNav({ visible, onToggle, onIsolate, onShowAll, hiddenCount }: ZoneQuickNavProps) {
+  const handleAnchorClick = (e: MouseEvent, zone: ZoneDef) => {
     if (e.shiftKey) {
       e.preventDefault();
       onIsolate(zone.id);
@@ -63,83 +81,8 @@ export function ZoneQuickNav({
         aria-label="Navegação por zonas com mostrar/ocultar"
         className="flex flex-wrap items-center gap-2 text-xs"
       >
-        {ZONES.map((z) => {
-          const isVisible = visible[z.id];
-          const Icon = z.icon;
-          return (
-            <div
-              key={z.id}
-              className={cn(
-                "inline-flex items-stretch rounded-full border overflow-hidden transition-colors",
-                isVisible
-                  ? "border-border/60 bg-card"
-                  : "border-dashed border-border/50 bg-muted/30 opacity-70",
-              )}
-            >
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <a
-                    href={z.href}
-                    onClick={(e) => handleAnchorClick(e, z)}
-                    className={cn(
-                      "inline-flex items-center gap-1.5 pl-2.5 pr-2 py-1 transition-colors",
-                      isVisible
-                        ? "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-                        : "text-muted-foreground/70 hover:text-foreground line-through decoration-dotted",
-                    )}
-                    aria-label={`${isVisible ? "Ir para" : "Mostrar e ir para"} zona ${z.label}`}
-                  >
-                    <Icon className="h-3 w-3" />
-                    <span>{z.label}</span>
-                  </a>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-[220px]">
-                  <p className="text-xs">
-                    {isVisible ? "Clique para rolar até a zona." : "Zona oculta — clique para mostrar e rolar."}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
-                    <kbd className="font-mono">Shift</kbd> + clique para isolar (mostrar só esta).
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={isVisible}
-                    aria-label={`${isVisible ? "Ocultar" : "Mostrar"} zona ${z.label}`}
-                    onClick={() => onToggle(z.id)}
-                    className={cn(
-                      "inline-flex items-center justify-center px-1.5 border-l transition-colors",
-                      isVisible
-                        ? "border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted/60"
-                        : "border-border/40 text-muted-foreground/70 hover:text-foreground hover:bg-muted/60",
-                    )}
-                  >
-                    {isVisible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p className="text-xs">{isVisible ? "Ocultar zona" : "Mostrar zona"}</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          );
-        })}
-
-        {hiddenCount > 0 && (
-          <button
-            type="button"
-            onClick={onShowAll}
-            className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-primary hover:bg-primary/15 transition-colors"
-            aria-label="Mostrar todas as zonas"
-          >
-            <RotateCcw className="h-3 w-3" />
-            <span>Mostrar tudo ({hiddenCount} oculta{hiddenCount === 1 ? "" : "s"})</span>
-          </button>
-        )}
+        {ZONES.map((zone) => <ZoneChip key={zone.id} zone={zone} isVisible={visible[zone.id]} onAnchorClick={handleAnchorClick} onToggle={onToggle} />)}
+        <ShowAllZonesButton hiddenCount={hiddenCount} onShowAll={onShowAll} />
       </nav>
     </TooltipProvider>
   );

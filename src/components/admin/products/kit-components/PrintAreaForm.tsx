@@ -13,6 +13,16 @@ interface Props {
   isSaving: boolean;
 }
 
+type FieldSetter = <K extends keyof PrintAreaFormData>(field: K, value: PrintAreaFormData[K]) => void;
+
+function PrintAreaIdentityFields({ form, set }: { form: PrintAreaFormData; set: FieldSetter }) {
+  return <><div className="grid grid-cols-3 gap-2"><div className="space-y-1"><Label className="text-[10px]">Código Local</Label><Input value={form.location_code} onChange={(event) => set('location_code', event.target.value)} placeholder="Ex: CABO" className="h-7 text-xs font-mono uppercase" /></div><div className="space-y-1"><Label className="text-[10px]">Nome Local *</Label><Input value={form.location_name} onChange={(event) => set('location_name', event.target.value)} placeholder="Ex: Cabo, Frente, 360°" className="h-7 text-xs" /></div><div className="space-y-1"><Label className="text-[10px]">Técnica</Label><Input value={form.technique_name} onChange={(event) => set('technique_name', event.target.value)} placeholder="Ex: Laser, Serigrafia" className="h-7 text-xs" /></div></div>{[form.location_name, form.technique_name].filter(Boolean).join(' — ') && <div className="text-[10px] text-muted-foreground">area_name: <span className="font-mono text-foreground">{[form.location_name, form.technique_name].filter(Boolean).join(' — ')}</span></div>}</>;
+}
+
+function PrintAreaDetailsFields({ form, set }: { form: PrintAreaFormData; set: FieldSetter }) {
+  return <><div className="grid grid-cols-5 gap-2"><div className="space-y-1"><Label className="text-[10px]">Larg. Máx (mm)</Label><Input type="number" value={form.max_width_mm ?? ''} onChange={(event) => set('max_width_mm', event.target.value ? parseFloat(event.target.value) : null)} className="h-7 text-xs" /></div><div className="space-y-1"><Label className="text-[10px]">Alt. Máx (mm)</Label><Input type="number" value={form.max_height_mm ?? ''} onChange={(event) => set('max_height_mm', event.target.value ? parseFloat(event.target.value) : null)} className="h-7 text-xs" /></div><div className="space-y-1"><Label className="text-[10px]">ID Técnica</Label><Input value={form.technique_id} onChange={(event) => set('technique_id', event.target.value)} placeholder="UUID" className="h-7 text-xs font-mono" /></div><div className="space-y-1"><Label className="text-[10px]">ID Tabela Preço</Label><Input value={form.tabela_preco_id} onChange={(event) => set('tabela_preco_id', event.target.value)} placeholder="UUID" className="h-7 text-xs font-mono" /></div><div className="space-y-1"><Label className="text-[10px]">Ordem</Label><Input type="number" value={form.display_order} onChange={(event) => set('display_order', parseInt(event.target.value, 10) || 0)} min="0" className="h-7 text-xs" /></div></div><div className="space-y-1"><Label className="text-[10px]">Observações</Label><Input value={form.notes} onChange={(event) => set('notes', event.target.value)} placeholder="Observações sobre a área de gravação" className="h-7 text-xs" /></div></>;
+}
+
 export function PrintAreaForm({ initial, onSave, onCancel, isSaving }: Props) {
   const [form, setForm] = useState<PrintAreaFormData>(initial);
 
@@ -27,8 +37,6 @@ export function PrintAreaForm({ initial, onSave, onCancel, isSaving }: Props) {
     onSave(form);
   };
 
-  const areaNamePreview = [form.location_name, form.technique_name].filter(Boolean).join(' — ');
-
   return (
     <div className="rounded-md border border-primary/20 bg-primary/5 p-2.5 space-y-2.5 ml-6">
       <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
@@ -36,54 +44,8 @@ export function PrintAreaForm({ initial, onSave, onCancel, isSaving }: Props) {
         Área de Gravação
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
-        <div className="space-y-1">
-          <Label className="text-[10px]">Código Local</Label>
-          <Input value={form.location_code} onChange={(e) => set('location_code', e.target.value)} placeholder="Ex: CABO" className="h-7 text-xs font-mono uppercase" />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-[10px]">Nome Local *</Label>
-          <Input value={form.location_name} onChange={(e) => set('location_name', e.target.value)} placeholder="Ex: Cabo, Frente, 360°" className="h-7 text-xs" />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-[10px]">Técnica</Label>
-          <Input value={form.technique_name} onChange={(e) => set('technique_name', e.target.value)} placeholder="Ex: Laser, Serigrafia" className="h-7 text-xs" />
-        </div>
-      </div>
-
-      {areaNamePreview && (
-        <div className="text-[10px] text-muted-foreground">
-          area_name: <span className="font-mono text-foreground">{areaNamePreview}</span>
-        </div>
-      )}
-
-      <div className="grid grid-cols-5 gap-2">
-        <div className="space-y-1">
-          <Label className="text-[10px]">Larg. Máx (mm)</Label>
-          <Input type="number" value={form.max_width_mm ?? ''} onChange={(e) => set('max_width_mm', e.target.value ? parseFloat(e.target.value) : null)} className="h-7 text-xs" />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-[10px]">Alt. Máx (mm)</Label>
-          <Input type="number" value={form.max_height_mm ?? ''} onChange={(e) => set('max_height_mm', e.target.value ? parseFloat(e.target.value) : null)} className="h-7 text-xs" />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-[10px]">ID Técnica</Label>
-          <Input value={form.technique_id} onChange={(e) => set('technique_id', e.target.value)} placeholder="UUID" className="h-7 text-xs font-mono" />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-[10px]">ID Tabela Preço</Label>
-          <Input value={form.tabela_preco_id} onChange={(e) => set('tabela_preco_id', e.target.value)} placeholder="UUID" className="h-7 text-xs font-mono" />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-[10px]">Ordem</Label>
-          <Input type="number" value={form.display_order} onChange={(e) => set('display_order', parseInt(e.target.value, 10) || 0)} min="0" className="h-7 text-xs" />
-        </div>
-      </div>
-
-      <div className="space-y-1">
-        <Label className="text-[10px]">Observações</Label>
-        <Input value={form.notes} onChange={(e) => set('notes', e.target.value)} placeholder="Observações sobre a área de gravação" className="h-7 text-xs" />
-      </div>
+      <PrintAreaIdentityFields form={form} set={set} />
+      <PrintAreaDetailsFields form={form} set={set} />
 
       <div className="flex justify-end gap-1.5">
         <Button type="button" variant="ghost" size="sm" className="h-6 text-[10px] px-2" onClick={onCancel} disabled={isSaving}>

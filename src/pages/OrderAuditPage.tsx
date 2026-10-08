@@ -114,7 +114,7 @@ export default function OrderAuditPage() {
               Nenhum evento encontrado com os filtros aplicados.
             </div>
           ) : (
-            auditEvents?.map((event: any) => (
+            auditEvents?.map((event) => (
               <AuditEventCard key={event.id} event={event} />
             ))
           )}

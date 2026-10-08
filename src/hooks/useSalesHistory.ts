@@ -4,6 +4,9 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSalesScope } from '@/lib/auth/visibility-scope';
+import { applySellerScope } from '@/lib/auth/apply-seller-scope';
 
 // ---------- Types ----------
 
@@ -37,11 +40,162 @@ export interface SalesKpis {
   topSellers: SellerRanking[];
 }
 
+export interface QuoteSalesItem {
+  quantity: number;
+  unit_price: number;
+  subtotal: number | null;
+  created_at: string;
+  quote_id: string;
+}
+
+export interface OrderSalesItem {
+  quantity: number | null;
+  unit_price: number | null;
+  created_at: string;
+  order_id: string | null;
+}
+
+export type SalesDocumentMap = Record<string, { seller_id: string }>;
+
+export async function loadSalesDocumentMaps(
+  quoteIds: string[],
+  orderIds: string[],
+  scope: ReturnType<typeof useSalesScope>,
+  userId?: string,
+): Promise<{ quotesMap: SalesDocumentMap; ordersMap: SalesDocumentMap }> {
+  const [quotesResult, ordersResult] = await Promise.all([
+    quoteIds.length > 0
+      ? applySellerScope(supabase.from('quotes').select('id, seller_id').in('id', quoteIds).in('status', ['sent', 'approved', 'rejected', 'expired', 'converted']), { scope, userId })
+      : Promise.resolve({ data: [] }),
+    orderIds.length > 0
+      ? applySellerScope(supabase.from('orders').select('id, seller_id').in('id', orderIds), { scope, userId })
+      : Promise.resolve({ data: [] }),
+  ]);
+  const quotesMap: SalesDocumentMap = {};
+  const ordersMap: SalesDocumentMap = {};
+  for (const quote of quotesResult.data ?? []) quotesMap[quote.id] = { seller_id: quote.seller_id };
+  for (const order of ordersResult.data ?? []) ordersMap[order.id] = { seller_id: order.seller_id };
+  return { quotesMap, ordersMap };
+}
+
+export async function loadSellerNames(
+  quotesMap: SalesDocumentMap,
+  ordersMap: SalesDocumentMap,
+): Promise<Record<string, string>> {
+  const sellerIds = [...new Set([
+    ...Object.values(quotesMap).map(quote => quote.seller_id),
+    ...Object.values(ordersMap).map(order => order.seller_id),
+  ])];
+  if (sellerIds.length === 0) return {};
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('user_id, full_name')
+    .in('user_id', sellerIds);
+  return Object.fromEntries((profiles ?? []).map(profile => [profile.user_id, profile.full_name || 'Vendedor']));
+}
+
+function addQuoteDaily(map: Map<string, DailySalesPoint>, item: QuoteSalesItem): void {
+  if (!item.created_at) return;
+  const date = item.created_at.substring(0, 10);
+  const entry = map.get(date) || newDailyPoint(date);
+  entry.quotedQty += item.quantity || 0;
+  entry.quotedValue += item.subtotal ?? ((item.quantity ?? 0) * (item.unit_price ?? 0));
+  entry.quoteCount += 1;
+  map.set(date, entry);
+}
+
+function addOrderDaily(map: Map<string, DailySalesPoint>, item: OrderSalesItem): void {
+  if (!item.created_at) return;
+  const date = item.created_at.substring(0, 10);
+  const entry = map.get(date) || newDailyPoint(date);
+  entry.orderedQty += item.quantity || 0;
+  entry.orderedValue += (item.quantity || 0) * (item.unit_price || 0);
+  entry.orderCount += 1;
+  map.set(date, entry);
+}
+
+function sellerEntry(
+  sellerId: string,
+  names: Record<string, string>,
+  map: Map<string, SellerRanking>,
+): SellerRanking {
+  return map.get(sellerId) || {
+    sellerId,
+    sellerName: names[sellerId] || 'Vendedor',
+    totalQty: 0,
+    totalValue: 0,
+    quoteCount: 0,
+    orderCount: 0,
+  };
+}
+
+function addQuoteSeller(
+  map: Map<string, SellerRanking>,
+  item: QuoteSalesItem,
+  documents: SalesDocumentMap,
+  names: Record<string, string>,
+): void {
+  const sellerId = documents[item.quote_id]?.seller_id;
+  if (!sellerId) return;
+  const entry = sellerEntry(sellerId, names, map);
+  entry.totalQty += item.quantity || 0;
+  entry.totalValue += item.subtotal ?? ((item.quantity ?? 0) * (item.unit_price ?? 0));
+  entry.quoteCount += 1;
+  map.set(sellerId, entry);
+}
+
+function addOrderSeller(
+  map: Map<string, SellerRanking>,
+  item: OrderSalesItem,
+  documents: SalesDocumentMap,
+  names: Record<string, string>,
+): void {
+  const sellerId = documents[item.order_id || '']?.seller_id;
+  if (!sellerId) return;
+  const entry = sellerEntry(sellerId, names, map);
+  entry.totalQty += item.quantity || 0;
+  entry.totalValue += (item.quantity || 0) * (item.unit_price || 0);
+  entry.orderCount += 1;
+  map.set(sellerId, entry);
+}
+
+export function aggregateSales({ quoteItems, orderItems, quotesMap, ordersMap, sellerNames }: { quoteItems: QuoteSalesItem[]; orderItems: OrderSalesItem[]; quotesMap: SalesDocumentMap; ordersMap: SalesDocumentMap; sellerNames: Record<string, string> }): { daily: DailySalesPoint[]; kpis: SalesKpis } {
+  const dailyMap = new Map<string, DailySalesPoint>();
+  const sellerMap = new Map<string, SellerRanking>();
+  for (const item of quoteItems) addQuoteDaily(dailyMap, item);
+  for (const item of orderItems) addOrderDaily(dailyMap, item);
+  for (const item of quoteItems) addQuoteSeller(sellerMap, item, quotesMap, sellerNames);
+  for (const item of orderItems) addOrderSeller(sellerMap, item, ordersMap, sellerNames);
+
+  const daily = Array.from(dailyMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+  const totalQuotedQty = daily.reduce((sum, point) => sum + point.quotedQty, 0);
+  const totalOrderedQty = daily.reduce((sum, point) => sum + point.orderedQty, 0);
+  const totalQuotedValue = daily.reduce((sum, point) => sum + point.quotedValue, 0);
+  const totalOrderedValue = daily.reduce((sum, point) => sum + point.orderedValue, 0);
+  const uniqueQuotes = new Set(quoteItems.map(item => item.quote_id)).size;
+  const uniqueOrders = new Set(orderItems.map(item => item.order_id).filter(Boolean)).size;
+  return {
+    daily,
+    kpis: {
+      totalQuotedQty,
+      totalOrderedQty,
+      totalQuotedValue,
+      totalOrderedValue,
+      conversionRate: uniqueQuotes > 0 ? (uniqueOrders / uniqueQuotes) * 100 : 0,
+      uniqueSellers: sellerMap.size,
+      avgOrderValue: uniqueOrders > 0 ? totalOrderedValue / uniqueOrders : 0,
+      topSellers: Array.from(sellerMap.values()).sort((a, b) => b.totalValue - a.totalValue).slice(0, 5),
+    },
+  };
+}
+
 // ---------- Hook ----------
 
 export function useSalesHistory(productId: string | undefined, days = 30) {
+  const { user } = useAuth();
+  const scope = useSalesScope();
   return useQuery({
-    queryKey: ['sales-history', productId, days],
+    queryKey: ['sales-history', productId, days, scope, user?.id],
     queryFn: async (): Promise<{ daily: DailySalesPoint[]; kpis: SalesKpis }> => {
       if (!productId) return { daily: [], kpis: emptyKpis() };
 
@@ -67,138 +221,11 @@ export function useSalesHistory(productId: string | undefined, days = 30) {
         .order('created_at', { ascending: true })
         .limit(5000);
 
-      // Fetch related quotes for seller info
       const quoteIds = [...new Set((quoteItems || []).map(q => q.quote_id))];
-      const orderIds = [...new Set((orderItems || []).map(o => o.order_id))];
-
-      const quotesMap: Record<string, { seller_id: string; status: string }> = {};
-      const ordersMap: Record<string, { seller_id: string; status: string }> = {};
-
-      if (quoteIds.length > 0) {
-        // G15 fix: only count quotes with relevant statuses (not drafts)
-        const { data: quotes } = await supabase
-          // rls-allow: applySellerScope aplicado conforme escopo do usuário
-          .from('quotes')
-          .select('id, seller_id, status')
-          .in('id', quoteIds)
-          .in('status', ['sent', 'approved', 'rejected', 'expired', 'converted']);
-        for (const q of quotes || []) {
-          quotesMap[q.id] = { seller_id: q.seller_id, status: q.status };
-        }
-      }
-
-      if (orderIds.length > 0) {
-        const { data: orders } = await supabase
-          // rls-allow: applySellerScope aplicado conforme escopo do usuário
-          .from('orders')
-          .select('id, seller_id, status')
-          .in('id', orderIds.filter(Boolean) as string[]);
-        for (const o of orders || []) {
-          ordersMap[o.id] = { seller_id: o.seller_id, status: o.status };
-        }
-      }
-
-      // Fetch seller names
-      const allSellerIds = [...new Set([
-        ...Object.values(quotesMap).map(q => q.seller_id),
-        ...Object.values(ordersMap).map(o => o.seller_id),
-      ])];
-      const sellerNames: Record<string, string> = {};
-      if (allSellerIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('user_id, full_name')
-          .in('user_id', allSellerIds);
-        for (const p of profiles || []) {
-          sellerNames[p.user_id] = p.full_name || 'Vendedor';
-        }
-      }
-
-      // Aggregate daily
-      const dailyMap = new Map<string, DailySalesPoint>();
-
-      // #7 fix: guard against null created_at before substring
-      for (const qi of quoteItems || []) {
-        if (!qi.created_at) continue;
-        const date = qi.created_at.substring(0, 10);
-        const entry = dailyMap.get(date) || newDailyPoint(date);
-        entry.quotedQty += qi.quantity || 0;
-        entry.quotedValue += qi.subtotal ?? ((qi.quantity ?? 0) * (qi.unit_price ?? 0));
-        entry.quoteCount += 1;
-        dailyMap.set(date, entry);
-      }
-
-      for (const oi of orderItems || []) {
-        if (!oi.created_at) continue;
-        const date = oi.created_at.substring(0, 10);
-        const entry = dailyMap.get(date) || newDailyPoint(date);
-        entry.orderedQty += oi.quantity || 0;
-        entry.orderedValue += (oi.quantity || 0) * (oi.unit_price || 0);
-        entry.orderCount += 1;
-        dailyMap.set(date, entry);
-      }
-
-      const daily = Array.from(dailyMap.values()).sort((a, b) => a.date.localeCompare(b.date));
-
-      // Aggregate sellers
-      const sellerMap = new Map<string, SellerRanking>();
-
-      for (const qi of quoteItems || []) {
-        const sellerId = quotesMap[qi.quote_id]?.seller_id;
-        if (!sellerId) continue;
-        const s = sellerMap.get(sellerId) || {
-          sellerId,
-          sellerName: sellerNames[sellerId] || 'Vendedor',
-          totalQty: 0, totalValue: 0, quoteCount: 0, orderCount: 0,
-        };
-        s.totalQty += qi.quantity || 0;
-        s.totalValue += qi.subtotal ?? ((qi.quantity ?? 0) * (qi.unit_price ?? 0));
-        s.quoteCount += 1;
-        sellerMap.set(sellerId, s);
-      }
-
-      for (const oi of orderItems || []) {
-        const sellerId = ordersMap[oi.order_id || '']?.seller_id;
-        if (!sellerId) continue;
-        const s = sellerMap.get(sellerId) || {
-          sellerId,
-          sellerName: sellerNames[sellerId] || 'Vendedor',
-          totalQty: 0, totalValue: 0, quoteCount: 0, orderCount: 0,
-        };
-        s.totalQty += oi.quantity || 0;
-        s.totalValue += (oi.quantity || 0) * (oi.unit_price || 0);
-        s.orderCount += 1;
-        sellerMap.set(sellerId, s);
-      }
-
-      const topSellers = Array.from(sellerMap.values())
-        .sort((a, b) => b.totalValue - a.totalValue)
-        .slice(0, 5);
-
-      const totalQuotedQty = daily.reduce((s, d) => s + d.quotedQty, 0);
-      const totalOrderedQty = daily.reduce((s, d) => s + d.orderedQty, 0);
-      const totalQuotedValue = daily.reduce((s, d) => s + d.quotedValue, 0);
-      const totalOrderedValue = daily.reduce((s, d) => s + d.orderedValue, 0);
-
-      // B13 fix: conversion rate uses unique DOCUMENT counts, not item counts
-      const uniqueQuoteIds = new Set((quoteItems || []).map(qi => qi.quote_id));
-      const uniqueOrderIds = new Set((orderItems || []).filter(oi => oi.order_id).map(oi => oi.order_id));
-      const totalUniqueQuotes = uniqueQuoteIds.size;
-      const totalUniqueOrders = uniqueOrderIds.size;
-
-      return {
-        daily,
-        kpis: {
-          totalQuotedQty,
-          totalOrderedQty,
-          totalQuotedValue,
-          totalOrderedValue,
-          conversionRate: totalUniqueQuotes > 0 ? (totalUniqueOrders / totalUniqueQuotes) * 100 : 0,
-          uniqueSellers: sellerMap.size,
-          avgOrderValue: totalUniqueOrders > 0 ? totalOrderedValue / totalUniqueOrders : 0,
-          topSellers,
-        },
-      };
+      const orderIds = [...new Set((orderItems || []).map(o => o.order_id).filter(Boolean))] as string[];
+      const { quotesMap, ordersMap } = await loadSalesDocumentMaps(quoteIds, orderIds, scope, user?.id);
+      const sellerNames = await loadSellerNames(quotesMap, ordersMap);
+      return aggregateSales({ quoteItems: quoteItems || [], orderItems: orderItems || [], quotesMap, ordersMap, sellerNames });
     },
     enabled: !!productId,
     staleTime: 5 * 60 * 1000,

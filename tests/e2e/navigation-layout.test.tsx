@@ -2,10 +2,7 @@
  * E2E Tests — Navigation & Layout Module
  * Covers: Routing, Sidebar, Header, Breadcrumbs, Mobile Nav, Responsive, 404
  */
-import { describe, it, expect, vi } from 'vitest';
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { describe, it, expect } from 'vitest';
 
 // ============ Route Definitions ============
 const PUBLIC_ROUTES = ['/login', '/reset-password', '/approve/:token', '/proposta/:token', '/auth/callback'];

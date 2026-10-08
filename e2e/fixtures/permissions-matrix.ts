@@ -9,7 +9,7 @@ export interface PermissionRoute {
   path: string;
   /** Permite testar rotas com parâmetros substituindo placeholders como :id */
   params?: Record<string, string>;
-  expectedBehavior: "allow" | "deny_redirect_home" | "deny_403" | "deny_login";
+  expectedBehavior: "allow" | "deny_403" | "deny_login";
 }
 
 /** Helper para resolver o path real substituindo parâmetros */
@@ -36,7 +36,7 @@ export const PERMISSION_MATRIX: Record<Role, PermissionRoute[]> = {
     { path: "/orcamentos", expectedBehavior: "allow" },
     { path: "/orcamentos/:id", params: { id: "test-quote-123" }, expectedBehavior: "allow" },
     { path: "/orcamentos/:id/editar", params: { id: "test-quote-123" }, expectedBehavior: "allow" },
-    { path: "/admin/usuarios", expectedBehavior: "deny_redirect_home" },
+    { path: "/admin/usuarios", expectedBehavior: "deny_403" },
   ],
   supervisor: [
     { path: "/produtos", expectedBehavior: "allow" },
@@ -50,4 +50,3 @@ export const PERMISSION_MATRIX: Record<Role, PermissionRoute[]> = {
     { path: "/admin/cadastros/produto/:id", params: { id: "test-prod-123" }, expectedBehavior: "allow" },
   ],
 };
-

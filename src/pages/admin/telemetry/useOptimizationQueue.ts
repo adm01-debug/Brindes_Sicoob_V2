@@ -117,10 +117,11 @@ export function useOptimizationQueue() {
       toast.error(`Falha ao reivindicar: ${claimErr.message}`);
       return 'error';
     }
-    if (!claimed || (Array.isArray(claimed) && claimed.length === 0)) {
+    const claimedResult: unknown = claimed;
+    if (!claimedResult || (Array.isArray(claimedResult) && claimedResult.length === 0)) {
       return 'empty';
     }
-    const item = (Array.isArray(claimed) ? claimed[0] : claimed) as OptimizationItem;
+    const item = (Array.isArray(claimedResult) ? claimedResult[0] : claimedResult) as OptimizationItem;
     invalidate();
 
     // Aguarda janela curta para guardrail medir possíveis regressões pós-execução.

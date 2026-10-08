@@ -1,16 +1,12 @@
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Smartphone, Download, Share, PlusSquare, ArrowRight, ShieldCheck, Zap } from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
-import { useIsMobile } from "@/hooks/common/use-mobile";
-import { cn } from "@/lib/utils";
 
 export default function PWAInstallPage() {
   const { isInstallable, isInstalled, install } = usePWAInstall();
-  const isMobile = useIsMobile();
-
   return (
     <>
       <PageSEO title="Instalar App" description="Tenha o Portal de Brindes Sicoob sempre à mão no seu celular." path="/instalar" noIndex />

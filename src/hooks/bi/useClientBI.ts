@@ -91,7 +91,7 @@ export function useClientBI(clientId?: string): ClientBI {
     const now = Date.now();
     const cutCurrent = now - 90 * DAY_MS;
     const cutPrevious = now - 180 * DAY_MS;
-    const valid = data.orders.filter((o) => o.status !== "cancelled");
+    const valid = data.orders.filter((o) => o.status !== "cancelado");
 
     const inCurrent = valid.filter((o) => {
       const t = new Date(o.created_at).getTime();

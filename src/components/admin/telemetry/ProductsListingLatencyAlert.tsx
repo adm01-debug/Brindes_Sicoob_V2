@@ -42,10 +42,55 @@ function formatPct(pct: number): string {
   return `${sign}${Math.round(pct * 100)}%`;
 }
 
+type ListingAlert = NonNullable<ReturnType<typeof useProductsListingLatencyAlert>['alert']>;
+
+function deltaTone(hasBaseline: boolean, delta: number): 'ok' | 'warning' | 'critical' {
+  if (!hasBaseline) return 'ok';
+  if (delta >= 0.5) return 'critical';
+  if (delta >= 0.25) return 'warning';
+  return 'ok';
+}
+
+function LatencyMetrics({ alert }: { alert: ListingAlert }) {
+  const { current, baseline, avgDeltaPct } = alert;
+  const hasSamples = current.samples > 0;
+  const hasBaseline = baseline.samples > 0;
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <Metric label="Amostras (1h)" value={current.samples.toString()} />
+      <Metric label="Média atual" value={hasSamples ? formatMs(current.avgMs) : '—'} tone={alert.severity} />
+      <Metric label="P95 atual" value={hasSamples ? formatMs(current.p95Ms) : '—'} />
+      <Metric
+        label="Δ vs baseline"
+        value={hasBaseline && hasSamples ? formatPct(avgDeltaPct) : '—'}
+        tone={deltaTone(hasBaseline, avgDeltaPct)}
+      />
+    </div>
+  );
+}
+
+function AlertHeader({ alert }: { alert: ListingAlert }) {
+  const tone = TONE[alert.severity];
+  return (
+    <div className="flex items-start gap-3">
+      <div className={cn('p-2.5 rounded-lg shrink-0', tone.icon)}><tone.Icon className="h-5 w-5" /></div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap"><p className="text-[11px] uppercase tracking-wide text-muted-foreground">Listings de products · limit &gt; 50</p><Badge variant="outline" className={cn('text-[10px]', tone.badge)}>{tone.label}</Badge></div>
+        <p className={cn('font-display text-base font-semibold leading-tight mt-1', tone.title)}>{alert.severity === 'ok' ? 'Latência dentro dos parâmetros esperados.' : 'Possível regressão de latência detectada.'}</p>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Janela atual: 1h · Baseline: 24h prévias · auto-refresh 60s</p>
+      </div>
+    </div>
+  );
+}
+
+function AlertReasons({ alert }: { alert: ListingAlert }) {
+  return <>{alert.reasons.length > 0 && <div className="space-y-1.5 pt-1 border-t border-border/40">{alert.reasons.map((reason, index) => <div key={index} className="flex items-start gap-2 text-xs"><Activity className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" /><span className="text-muted-foreground">{reason.message}</span></div>)}</div>}{alert.baseline.samples > 0 && <p className="text-[10px] text-muted-foreground">Baseline: {alert.baseline.samples} amostras · média {formatMs(alert.baseline.avgMs)} · p95 {formatMs(alert.baseline.p95Ms)}</p>}</>;
+}
+
 export function ProductsListingLatencyAlert() {
   const { alert, isLoading } = useProductsListingLatencyAlert();
 
-  if (isLoading || !alert) {
+  if ((isLoading || !alert)) {
     return (
       <Card className="border-[1.5px]">
         <CardContent className="p-4">
@@ -56,72 +101,12 @@ export function ProductsListingLatencyAlert() {
   }
 
   const tone = TONE[alert.severity];
-  const { current, baseline, avgDeltaPct, reasons } = alert;
-  const hasBaseline = baseline.samples > 0;
-
   return (
     <Card className={cn('border-[1.5px] transition-colors', tone.border)}>
       <CardContent className="p-4 space-y-3">
-        <div className="flex items-start gap-3">
-          <div className={cn('p-2.5 rounded-lg shrink-0', tone.icon)}>
-            <tone.Icon className="h-5 w-5" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                Listings de products · limit &gt; 50
-              </p>
-              <Badge variant="outline" className={cn('text-[10px]', tone.badge)}>
-                {tone.label}
-              </Badge>
-            </div>
-            <p className={cn('font-display text-base font-semibold leading-tight mt-1', tone.title)}>
-              {alert.severity === 'ok'
-                ? 'Latência dentro dos parâmetros esperados.'
-                : 'Possível regressão de latência detectada.'}
-            </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              Janela atual: 1h · Baseline: 24h prévias · auto-refresh 60s
-            </p>
-          </div>
-        </div>
-
-        {/* Métricas */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Metric label="Amostras (1h)" value={current.samples.toString()} />
-          <Metric
-            label="Média atual"
-            value={current.samples > 0 ? formatMs(current.avgMs) : '—'}
-            tone={alert.severity}
-          />
-          <Metric
-            label="P95 atual"
-            value={current.samples > 0 ? formatMs(current.p95Ms) : '—'}
-          />
-          <Metric
-            label="Δ vs baseline"
-            value={hasBaseline && current.samples > 0 ? formatPct(avgDeltaPct) : '—'}
-            tone={hasBaseline && avgDeltaPct >= 0.5 ? 'critical' : avgDeltaPct >= 0.25 ? 'warning' : 'ok'}
-          />
-        </div>
-
-        {/* Razões */}
-        {reasons.length > 0 && (
-          <div className="space-y-1.5 pt-1 border-t border-border/40">
-            {reasons.map((r, i) => (
-              <div key={i} className="flex items-start gap-2 text-xs">
-                <Activity className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
-                <span className="text-muted-foreground">{r.message}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {hasBaseline && (
-          <p className="text-[10px] text-muted-foreground">
-            Baseline: {baseline.samples} amostras · média {formatMs(baseline.avgMs)} · p95 {formatMs(baseline.p95Ms)}
-          </p>
-        )}
+        <AlertHeader alert={alert} />
+        <LatencyMetrics alert={alert} />
+        <AlertReasons alert={alert} />
       </CardContent>
     </Card>
   );

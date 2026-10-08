@@ -66,19 +66,11 @@ interface StockDailySummaryRow {
   [key: string]: unknown;
 }
 
-async function fetchSupplierSparklineBatch(productIds: string[]): Promise<SparklineMap> {
-  if (!productIds.length) return {};
-
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - 30);
-  const cutoffStr = cutoff.toISOString().substring(0, 10);
-
-  // Fetch in batches of 50 product IDs to avoid query size limits
-  const BATCH_SIZE = 50;
-  const allRecords: StockDailySummaryRow[] = [];
-
-  for (let i = 0; i < productIds.length; i += BATCH_SIZE) {
-    const batch = productIds.slice(i, i + BATCH_SIZE);
+async function fetchSparklineRecords(productIds: string[], cutoff: string) {
+  const records: StockDailySummaryRow[] = [];
+  const batchSize = 50;
+  for (let index = 0; index < productIds.length; index += batchSize) {
+    const batch = productIds.slice(index, index + batchSize);
     try {
       const result = await invokeExternalDb<StockDailySummaryRow>({
         table: 'stock_daily_summary',
@@ -86,52 +78,60 @@ async function fetchSupplierSparklineBatch(productIds: string[]): Promise<Sparkl
         select: 'product_id, summary_date, units_depleted',
         filters: {
           product_id: `in.(${batch.join(',')})`,
-          summary_date: `gte.${cutoffStr}`,
+          summary_date: `gte.${cutoff}`,
         },
         limit: batch.length * 31,
         orderBy: { column: 'summary_date', ascending: true },
       });
-      allRecords.push(...(result.records || []));
-    } catch (err) {
-      logger.warn('[sparkline] Failed to fetch stock_daily_summary batch:', err);
+      records.push(...(result.records || []));
+    } catch (error) {
+      logger.warn('[sparkline] Failed to fetch stock_daily_summary batch:', error);
     }
   }
+  return records;
+}
 
-  // Build per-product, per-date map
+function indexSparklineRecords(records: StockDailySummaryRow[]) {
   const map: Record<string, Record<string, number>> = {};
-
-  for (const row of allRecords) {
+  for (const row of records) {
     if (!row.product_id) continue;
     const date = row.summary_date?.substring(0, 10);
     if (!date) continue;
     const productMap = map[row.product_id] ?? (map[row.product_id] = {});
     productMap[date] = (productMap[date] || 0) + (row.units_depleted || 0);
   }
+  return map;
+}
+
+function buildDailySeries(dateMap: Record<string, number>, today: Date) {
+  const dailyQty: number[] = [];
+  let totalQty = 0;
+  for (let index = 29; index >= 0; index -= 1) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - index);
+    const value = dateMap[date.toISOString().substring(0, 10)] ?? 0;
+    dailyQty.push(value);
+    totalQty += value;
+  }
+  return { dailyQty, totalQty, totalReplenished: 0, availableStock: 0 };
+}
+
+async function fetchSupplierSparklineBatch(productIds: string[]): Promise<SparklineMap> {
+  if (!productIds.length) return {};
+
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 30);
+  const cutoffStr = cutoff.toISOString().substring(0, 10);
+
+  const map = indexSparklineRecords(await fetchSparklineRecords(productIds, cutoffStr));
 
   // Generate contiguous 30-day arrays
   const result: SparklineMap = {};
   const today = new Date();
 
   for (const pid of productIds) {
-    const dailyQty: number[] = [];
-    let totalQty = 0;
     const dateMap = map[pid] || {};
-
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
-      const ds = d.toISOString().substring(0, 10);
-      const depleted = dateMap[ds] ?? 0;
-      dailyQty.push(depleted);
-      totalQty += depleted;
-    }
-
-    result[pid] = {
-      dailyQty,
-      totalQty,
-      totalReplenished: 0,
-      availableStock: 0,
-    };
+    result[pid] = buildDailySeries(dateMap, today);
   }
 
   return result;

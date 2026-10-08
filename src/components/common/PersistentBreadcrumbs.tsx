@@ -1,4 +1,4 @@
-import { forwardRef, useMemo, useState } from "react";
+import { forwardRef, useMemo } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { ChevronRight, Home, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-interface BreadcrumbItem {
+interface BreadcrumbItemData {
   label: string;
   href?: string;
   icon?: typeof Home;
@@ -48,7 +48,49 @@ interface PersistentBreadcrumbsProps {
   className?: string;
   showHome?: boolean;
   showBackButton?: boolean;
-  customItems?: BreadcrumbItem[];
+  customItems?: BreadcrumbItemData[];
+}
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isRouteId(value: string | undefined) {
+  return value !== undefined && (UUID_PATTERN.test(value) || /^\d+$/.test(value));
+}
+
+function hidesFollowingId(part: string, nextPart: string | undefined) {
+  return isRouteId(nextPart) && ["produto", "produtos", "orcamentos"].includes(part);
+}
+
+function canShowBreadcrumb(path: string, isDev: boolean) {
+  return isDev || !isDevOnlyPath(path);
+}
+
+function breadcrumbForPart(parts: string[], index: number, currentPath: string, permissions: { isDev: boolean; isAdmin: boolean }): BreadcrumbItemData | null {
+  const part = parts[index];
+  if (!part) return null;
+  if (isRouteId(part)) {
+    const previousPart = parts[index - 1];
+    if (["produto", "produtos", "orcamentos"].includes(previousPart ?? "")) return null;
+    return { label: `#${part.slice(0, 8)}...` };
+  }
+  if (!canShowBreadcrumb(currentPath, permissions.isDev)) return null;
+  const label = routeLabels[currentPath] ?? part.charAt(0).toUpperCase() + part.slice(1);
+  const isLast = index >= parts.length - 1 || hidesFollowingId(part, parts[index + 1]);
+  const navigable = canNavigateTo(currentPath, permissions);
+  return isLast || !navigable ? { label } : { label, href: currentPath };
+}
+
+function buildBreadcrumbs(pathname: string, showHome: boolean, customItems: BreadcrumbItemData[] | undefined, permissions: { isDev: boolean; isAdmin: boolean }) {
+  if (customItems) return customItems;
+  if (pathname === "/") return showHome ? [{ label: "Catálogo de Produtos", icon: Home }] : [];
+  const items: BreadcrumbItemData[] = showHome ? [{ label: "Início", href: "/", icon: Home }] : [];
+  const parts = pathname.split("/").filter(Boolean);
+  parts.forEach((_, index) => {
+    const currentPath = `/${parts.slice(0, index + 1).join("/")}`;
+    const item = breadcrumbForPart(parts, index, currentPath, permissions);
+    if (item) items.push(item);
+  });
+  return items;
 }
 
 export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrumbsProps>(function PersistentBreadcrumbs({ 
@@ -60,56 +102,13 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
   const location = useLocation();
   const { isDev, isAdmin } = useAuth();
   
-  const breadcrumbs = useMemo((): BreadcrumbItem[] => {
-    if (customItems) return customItems;
-    
-    const items: BreadcrumbItem[] = [];
-    const pathParts = location.pathname.split("/").filter(Boolean);
-    
-    if (location.pathname === "/" && showHome) {
-      return [{ label: "Catálogo de Produtos", icon: Home }];
-    }
-    
-    if (showHome && location.pathname !== "/") {
-      items.push({ label: "Início", href: "/", icon: Home });
-    }
-    
-    let currentPath = "";
-    pathParts.forEach((part, index) => {
-      currentPath += `/${part}`;
-      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(part);
-      const isNumericId = /^\d+$/.test(part);
-      
-      if (isUuid || isNumericId) {
-        const prevPart = pathParts[index - 1];
-        if (prevPart === "produto" || prevPart === "produtos" || prevPart === "orcamentos") {
-          return;
-        }
-        items.push({ label: `#${part.slice(0, 8)}...` });
-      } else {
-        if (!isDev && isDevOnlyPath(currentPath)) {
-          return;
-        }
-
-        const label = routeLabels[currentPath] || part.charAt(0).toUpperCase() + part.slice(1);
-        const nextPart = pathParts[index + 1];
-        const nextIsSkippedId = nextPart && (
-          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(nextPart) ||
-          /^\d+$/.test(nextPart)
-        ) && (part === "produto" || part === "produtos" || part === "orcamentos");
-
-        const navigable = canNavigateTo(currentPath, { isDev, isAdmin });
-        const isLastVisible = index >= pathParts.length - 1 || nextIsSkippedId;
-        items.push(isLastVisible || !navigable ? { label } : { label, href: currentPath });
-      }
-    });
-    
-    return items;
-  }, [location.pathname, showHome, customItems, isDev, isAdmin]);
+  const breadcrumbs = useMemo(() => buildBreadcrumbs(location.pathname, showHome, customItems, { isDev, isAdmin }), [location.pathname, showHome, customItems, isDev, isAdmin]);
 
   if (breadcrumbs.length === 0) return null;
 
   const isNotHome = location.pathname !== "/";
+  const firstBreadcrumb = breadcrumbs[0];
+  const lastBreadcrumb = breadcrumbs[breadcrumbs.length - 1];
   
   return (
     <nav 
@@ -134,16 +133,16 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
       )}
       
       <ol className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-1">
-        {breadcrumbs.length > 3 ? (
+        {breadcrumbs.length > 3 && firstBreadcrumb && lastBreadcrumb ? (
           <>
             {/* First Item */}
-            <BreadcrumbItem item={breadcrumbs[0]!} index={0} />
+            <BreadcrumbItem item={firstBreadcrumb} index={0} />
             <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0" />
             
             {/* Dropdown for middle items */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="h-6 w-8 flex items-center justify-center hover:bg-muted/50 rounded-md transition-colors">
+                <button aria-label="Mostrar itens intermediários" className="h-6 w-8 flex items-center justify-center hover:bg-muted/50 rounded-md transition-colors">
                   <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
                 </button>
               </DropdownMenuTrigger>
@@ -162,7 +161,7 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
             
             {/* Last Item */}
             <BreadcrumbItem 
-              item={breadcrumbs[breadcrumbs.length - 1]!}
+              item={lastBreadcrumb}
               index={breadcrumbs.length - 1} 
               isLast 
             />
@@ -182,7 +181,7 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
   );
 });
 
-function BreadcrumbItem({ item, index, isLast }: { item: BreadcrumbItem, index: number, isLast?: boolean }) {
+function BreadcrumbItem({ item, isLast }: { item: BreadcrumbItemData, index: number, isLast?: boolean }) {
   const Icon = item.icon;
   
   if (item.href && !isLast) {

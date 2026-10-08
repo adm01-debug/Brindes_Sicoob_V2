@@ -4,7 +4,7 @@
  */
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCustomizationPricing } from '@/hooks/useTecnicasUnificadas';
+import { useCustomizationPricing, type PriceCalculation } from '@/hooks/useTecnicasUnificadas';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -16,9 +16,8 @@ import { ProductSearch as UnifiedProductSearch } from './simulator/ProductSearch
 import { TechniqueMultiSelector } from './calculator/TechniqueMultiSelector';
 import { TechniqueConfigCard } from './calculator/TechniqueConfigCard';
 import { QuantityComparisonTable } from './calculator/QuantityComparisonTable';
-import type { CalcProduct, ProductTechnique, SelectedTechniqueConfig } from './calculator/types';
-import { formatNumber } from './calculator/types';
-import type { PriceCalculation } from '@/hooks/useTecnicasUnificadas';
+import { type CalcProduct, type ProductTechnique, type SelectedTechniqueConfig, formatNumber } from './calculator/types';
+import type { Product as SearchProduct } from './simulator/types';
 
 interface QuantityPriceCalculatorProps {
   productBasePrice?: number;
@@ -27,7 +26,7 @@ interface QuantityPriceCalculatorProps {
   className?: string;
 }
 
-export function QuantityPriceCalculator({ productBasePrice = 0, productName, onSelectTechnique, className }: QuantityPriceCalculatorProps) {
+export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorProps) {
   const navigate = useNavigate();
   const { isLoading: pricingLoading } = useCustomizationPricing();
 
@@ -36,7 +35,7 @@ export function QuantityPriceCalculator({ productBasePrice = 0, productName, onS
   const [customQuantities, setCustomQuantities] = useState<number[]>([250, 500, 1000, 2500, 5000]);
   const [newQuantity, setNewQuantity] = useState('');
 
-  const handleProductSelect = useCallback((product: any | null) => {
+  const handleProductSelect = useCallback((product: SearchProduct | null) => {
     if (!product) { setSelectedProduct(null); setSelectedConfigs([]); return; }
     setSelectedProduct({ id: product.id, name: product.name, sku: product.sku, price: product.price, images: product.images, category_name: null });
     setSelectedConfigs([]);
@@ -77,7 +76,7 @@ export function QuantityPriceCalculator({ productBasePrice = 0, productName, onS
       {/* Step 1: Product */}
       <Card className="animate-fade-in">
         <CardHeader><div className="flex items-center gap-2"><Package className="w-5 h-5 text-primary" /><CardTitle className="text-lg font-display">1. Selecione o Produto</CardTitle></div><CardDescription>Escolha o produto base para simular preços de gravação em diferentes tiragens</CardDescription></CardHeader>
-        <CardContent><UnifiedProductSearch onSelect={handleProductSelect} selectedProduct={selectedProduct as any} /></CardContent>
+        <CardContent><UnifiedProductSearch onSelect={handleProductSelect} selectedProduct={selectedProduct} /></CardContent>
       </Card>
 
       {/* Step 2: Techniques */}

@@ -36,6 +36,45 @@ export interface PriceTableQueryOptions {
   offset?: number;
 }
 
+function databaseFilters(filters: PriceTableFilters = {}) {
+  const result: Record<string, unknown> = {};
+  if (filters.isActive !== undefined) result.is_active = filters.isActive;
+  if (filters.techniqueId) result.technique_id = filters.techniqueId;
+  if (filters.techniqueName) result.customization_type_name = filters.techniqueName;
+  if (filters.tableCode) result.table_code = filters.tableCode;
+  if (filters.tableCodeOption) result.table_code_option = filters.tableCodeOption;
+  return result;
+}
+
+function filterByColorLimits(tables: TabelaPrecoTecnica[], filters: PriceTableFilters = {}) {
+  let result = tables;
+  const { maxColors, minColors } = filters;
+  if (maxColors !== undefined) {
+    result = result.filter((table) => table.maxCores !== null && table.maxCores <= maxColors);
+  }
+  if (minColors !== undefined) {
+    result = result.filter((table) => table.maxCores !== null && table.maxCores >= minColors);
+  }
+  return result;
+}
+
+function selectBestTable(tables: TabelaPrecoTecnica[], colors?: number) {
+  if (colors) {
+    const matching = tables.find((table) => table.maxCores !== null && table.maxCores >= colors);
+    if (matching) return matching;
+  }
+  return tables[tables.length - 1] ?? null;
+}
+
+function warnDimensionLimits(table: TabelaPrecoTecnica, widthCm?: number, heightCm?: number) {
+  if (widthCm && table.larguraMaxCm && widthCm > table.larguraMaxCm) {
+    logger.warn(`Largura ${widthCm}cm excede máximo ${table.larguraMaxCm}cm`);
+  }
+  if (heightCm && table.alturaMaxCm && heightCm > table.alturaMaxCm) {
+    logger.warn(`Altura ${heightCm}cm excede máximo ${table.alturaMaxCm}cm`);
+  }
+}
+
 // ============================================
 // REPOSITORY
 // ============================================
@@ -47,23 +86,7 @@ export async function findAll(options: PriceTableQueryOptions = {}): Promise<Tab
   const { filters, orderBy, limit = 500, offset } = options;
 
   // Construir filtros para o BD
-  const dbFilters: Record<string, unknown> = {};
-  
-  if (filters?.isActive !== undefined) {
-    dbFilters.is_active = filters.isActive;
-  }
-  if (filters?.techniqueId) {
-    dbFilters.technique_id = filters.techniqueId;
-  }
-  if (filters?.techniqueName) {
-    dbFilters.customization_type_name = filters.techniqueName;
-  }
-  if (filters?.tableCode) {
-    dbFilters.table_code = filters.tableCode;
-  }
-  if (filters?.tableCodeOption) {
-    dbFilters.table_code_option = filters.tableCodeOption;
-  }
+  const dbFilters = databaseFilters(filters);
 
   const result = await invokeExternalDb<CustomizationPriceTableRaw>({
     table: 'customization_price_tables',
@@ -77,17 +100,7 @@ export async function findAll(options: PriceTableQueryOptions = {}): Promise<Tab
     offset,
   });
 
-  let tabelas = transformRawToTabelas(result.records ?? []);
-
-  // Filtros pós-query (não suportados diretamente)
-  if (filters?.maxColors !== undefined) {
-    tabelas = tabelas.filter(t => t.maxCores !== null && t.maxCores <= filters.maxColors!);
-  }
-  if (filters?.minColors !== undefined) {
-    tabelas = tabelas.filter(t => t.maxCores !== null && t.maxCores >= filters.minColors!);
-  }
-
-  return tabelas;
+  return filterByColorLimits(transformRawToTabelas(result.records ?? []), filters);
 }
 
 /**
@@ -146,30 +159,9 @@ export async function findBestMatch(params: {
   if (tabelas.length === 0) return null;
 
   // Encontrar tabela que comporta o número de cores
-  let tabelaAdequada: TabelaPrecoTecnica | null = null;
-  
-  if (colors) {
-    tabelaAdequada = tabelas.find(t => 
-      t.maxCores !== null && t.maxCores >= colors
-    ) || null;
-  }
-
-  // Se não encontrou por cores, pegar a com mais cores disponível
-  if (!tabelaAdequada) {
-    tabelaAdequada = tabelas[tabelas.length - 1]!;
-  }
-
-  // Validar dimensões se fornecidas
-  if (tabelaAdequada && widthCm && heightCm) {
-    if (tabelaAdequada.larguraMaxCm && widthCm > tabelaAdequada.larguraMaxCm) {
-      logger.warn(`Largura ${widthCm}cm excede máximo ${tabelaAdequada.larguraMaxCm}cm`);
-    }
-    if (tabelaAdequada.alturaMaxCm && heightCm > tabelaAdequada.alturaMaxCm) {
-      logger.warn(`Altura ${heightCm}cm excede máximo ${tabelaAdequada.alturaMaxCm}cm`);
-    }
-  }
-
-  return tabelaAdequada;
+  const selected = selectBestTable(tabelas, colors);
+  if (selected) warnDimensionLimits(selected, widthCm, heightCm);
+  return selected;
 }
 
 /**

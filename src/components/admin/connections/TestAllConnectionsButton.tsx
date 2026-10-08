@@ -16,6 +16,7 @@
  *
  * Não expõe nenhum valor de segredo — apenas máscaras e metadados.
  */
+import { isNullish } from "@/components/admin/utils/nullish";
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -85,6 +86,66 @@ const SOURCE_BADGE = {
   none: { label: "AUSENTE", cls: "border-destructive/40 bg-destructive/10 text-destructive" },
 } as const;
 
+type ConnectionTest = ReturnType<typeof useConnectionTester>["test"];
+
+function missingReason(url: SecretStatus | undefined, service: SecretStatus | undefined): string {
+  if (!url?.has_value && !service?.has_value) return "URL e Service Role Key ausentes";
+  if (!url?.has_value) return "URL do projeto ausente";
+  return "Service Role Key ausente";
+}
+
+async function testTarget(
+  target: (typeof TARGETS)[number],
+  credentials: Map<string, SecretStatus>,
+  test: ConnectionTest,
+): Promise<PerEnvResult> {
+  const url = credentials.get(target.urlSecret);
+  const anon = credentials.get(target.anonSecret);
+  const service = credentials.get(target.serviceSecret);
+  const credSummary = { url: resolveSource(url), anon: resolveSource(anon), service: resolveSource(service) };
+  if (!url?.has_value || !service?.has_value) {
+    return { envKey: target.envKey, label: target.label, credSummary, testable: false, skipReason: missingReason(url, service) };
+  }
+  const result = await test("supabase", { env_key: target.envKey, silent: true });
+  return { envKey: target.envKey, label: target.label, credSummary, testable: true, test: result };
+}
+
+function notifyResults(results: PerEnvResult[]) {
+  const tested = results.filter((result) => result.testable);
+  const okCount = tested.filter((result) => result.test?.ok).length;
+  const failed = tested.length - okCount;
+  if (tested.length === 0) {
+    toast.warning("Nenhuma conexão testável", { description: "Configure URL + Service Role Key antes de testar." });
+    return;
+  }
+  if (failed === 0) {
+    toast.success(`Todas as ${okCount} conexões OK`);
+    return;
+  }
+  toast.error(`${failed} de ${tested.length} conexões com falha`);
+}
+
+function summarize(results: PerEnvResult[] | null) {
+  if (!results) return null;
+  const tested = results.filter((result) => result.testable);
+  return {
+    total: results.length,
+    tested: tested.length,
+    ok: tested.filter((result) => result.test?.ok).length,
+    fail: tested.filter((result) => result.test && !result.test.ok).length,
+    skipped: results.length - tested.length,
+  };
+}
+
+function RunAllButton({ className, onClick, running }: { className?: string; onClick: () => void; running: boolean }) {
+  return (
+    <Button size="sm" variant="outline" onClick={onClick} disabled={running} className={className}
+      title="Valida URL + Service Role Key de todos os ambientes externos via integration_credentials">
+      {running ? <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Testando…</> : <><ShieldCheck className="h-4 w-4 mr-1.5" /> Testar conexões</>}
+    </Button>
+  );
+}
+
 export function TestAllConnectionsButton({ className }: { className?: string }) {
   const { list } = useSecretsManager();
   const { test } = useConnectionTester();
@@ -107,90 +168,23 @@ export function TestAllConnectionsButton({ className }: { className?: string }) 
     const byName = new Map<string, SecretStatus>(snapshot.map((s) => [s.name, s]));
 
     // 2) Para cada alvo: resolve origens e dispara o teste em paralelo se testável
-    const tasks = TARGETS.map(async (target): Promise<PerEnvResult> => {
-      const url = byName.get(target.urlSecret);
-      const anon = byName.get(target.anonSecret);
-      const svc = byName.get(target.serviceSecret);
-      const credSummary = {
-        url: resolveSource(url),
-        anon: resolveSource(anon),
-        service: resolveSource(svc),
-      };
-      const testable = !!url?.has_value && !!svc?.has_value;
-      if (!testable) {
-        return {
-          envKey: target.envKey,
-          label: target.label,
-          credSummary,
-          testable: false,
-          skipReason:
-            !url?.has_value && !svc?.has_value
-              ? "URL e Service Role Key ausentes"
-              : !url?.has_value
-                ? "URL do projeto ausente"
-                : "Service Role Key ausente",
-        };
-      }
-      const r = await test("supabase", { env_key: target.envKey, silent: true });
-      return {
-        envKey: target.envKey,
-        label: target.label,
-        credSummary,
-        testable: true,
-        test: r,
-      };
-    });
+    const tasks = TARGETS.map((target) => testTarget(target, byName, test));
 
     const all = await Promise.all(tasks);
     setResults(all);
     setTotalDurationMs(Math.round(performance.now() - t0));
     setRunning(false);
 
-    const tested = all.filter((r) => r.testable);
-    const okCount = tested.filter((r) => r.test?.ok).length;
-    const failed = tested.length - okCount;
-    if (tested.length === 0) {
-      toast.warning("Nenhuma conexão testável", {
-        description: "Configure URL + Service Role Key antes de testar.",
-      });
-    } else if (failed === 0) {
-      toast.success(`Todas as ${okCount} conexões OK`);
-    } else {
-      toast.error(`${failed} de ${tested.length} conexões com falha`);
-    }
+    notifyResults(all);
   }, [list, test]);
 
-  const summary = results
-    ? (() => {
-        const tested = results.filter((r) => r.testable);
-        return {
-          total: results.length,
-          tested: tested.length,
-          ok: tested.filter((r) => r.test?.ok).length,
-          fail: tested.filter((r) => r.test && !r.test.ok).length,
-          skipped: results.length - tested.length,
-        };
-      })()
-    : null;
+  const summary = summarize(results);
 
   return (
     <>
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={runAll}
-        disabled={running}
-        className={className}
-        title="Valida URL + Service Role Key de todos os ambientes externos via integration_credentials"
-      >
-        {running ? (
-          <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Testando…</>
-        ) : (
-          <><ShieldCheck className="h-4 w-4 mr-1.5" /> Testar conexões</>
-        )}
-      </Button>
+      <RunAllButton className={className} onClick={() => { void runAll(); }} running={running} />
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      {(<Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -256,7 +250,7 @@ export function TestAllConnectionsButton({ className }: { className?: string }) 
             </ul>
           )}
         </DialogContent>
-      </Dialog>
+      </Dialog>)}
     </>
   );
 }
@@ -381,7 +375,7 @@ function TestDetails({ test }: { test: TestResult }) {
       <p className="mt-1 text-[10px] text-muted-foreground/80 flex items-center gap-1">
         <ShieldAlert className="h-3 w-3" />
         {test.tested_at ? `às ${fmtTime(test.tested_at)}` : ""}
-        {test.latency_ms != null && <> · {test.latency_ms}ms</>}
+        {!isNullish(test.latency_ms) && <> · {test.latency_ms}ms</>}
       </p>
     </div>
   );

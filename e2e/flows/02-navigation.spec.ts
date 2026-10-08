@@ -1,24 +1,24 @@
 /**
  * Fluxo: Navegação — sidebar, deep-links, 404, voltar.
  */
-import { test, expect, requireAuth } from "../fixtures/test-base";
-import { gotoAndSettle } from "../helpers/nav";
-import { Sel } from "../fixtures/selectors";
+import { test, expect, requireAuth } from '../fixtures/test-base';
+import { gotoAndSettle } from '../helpers/nav';
+import { Sel } from '../fixtures/selectors';
 
 const ROUTES = [
-  "/",
-  "/dashboard",
-  "/produtos",
-  "/orcamentos",
-  "/pedidos",
-  "/colecoes",
-  "/favoritos",
-  "/carrinhos",
-  "/simulador",
-  "/novidades",
+  '/',
+  '/dashboard',
+  '/produtos',
+  '/orcamentos',
+  '/pedidos',
+  '/colecoes',
+  '/favoritos',
+  '/carrinhos',
+  '/simulador',
+  '/novidades',
 ];
 
-test.describe("Fluxo: Navegação", () => {
+test.describe('Fluxo: Navegação', () => {
   test.beforeEach(() => requireAuth());
 
   for (const route of ROUTES) {
@@ -34,16 +34,16 @@ test.describe("Fluxo: Navegação", () => {
     });
   }
 
-  test("rota inexistente exibe 404", async ({ page }) => {
-    await page.goto("/rota-que-nao-existe-xyz");
+  test('rota inexistente exibe 404', async ({ page }) => {
+    await gotoAndSettle(page, '/rota-que-nao-existe-xyz');
     await expect(page.locator(Sel.app.notFound).first()).toBeVisible({
       timeout: 8000,
     });
   });
 
-  test("voltar do navegador retorna à rota anterior", async ({ page }) => {
-    await gotoAndSettle(page, "/produtos");
-    await gotoAndSettle(page, "/favoritos");
+  test('voltar do navegador retorna à rota anterior', async ({ page }) => {
+    await gotoAndSettle(page, '/produtos');
+    await gotoAndSettle(page, '/favoritos');
     await page.goBack();
     await expect(page).toHaveURL(/\/produtos/);
   });

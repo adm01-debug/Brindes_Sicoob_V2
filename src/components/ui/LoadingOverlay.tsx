@@ -18,6 +18,47 @@ const spinnerSizes = {
   lg: "h-12 w-12",
 };
 
+function InlineOverlay({ visible, message, spinnerSize, className }: { visible: boolean; message?: string; spinnerSize: keyof typeof spinnerSizes; className?: string }) {
+  if (!visible) return null;
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className={cn("inline-flex items-center gap-2 text-muted-foreground", className)}>
+      <Loader2 className={cn("animate-spin", spinnerSizes[spinnerSize])} />
+      {message && <span className="text-sm">{message}</span>}
+    </motion.div>
+  );
+}
+
+function OverlayMessage({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-sm text-muted-foreground font-medium">
+      {message}
+    </motion.p>
+  );
+}
+
+function BlockingOverlay({ visible, message, spinnerSize, className, overlayClass, blur }: {
+  visible: boolean;
+  message?: string;
+  spinnerSize: keyof typeof spinnerSizes;
+  className?: string;
+  overlayClass: string;
+  blur: boolean;
+}) {
+  if (!visible) return null;
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className={cn(overlayClass, blur && "backdrop-blur-sm", "bg-background/80 flex items-center justify-center", className)}>
+      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} transition={{ delay: 0.1, duration: 0.2 }} className="flex flex-col items-center gap-3">
+        <div className="relative">
+          <div className={cn("absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse", spinnerSizes[spinnerSize])} />
+          <Loader2 className={cn("relative animate-spin text-primary", spinnerSizes[spinnerSize])} />
+        </div>
+        <OverlayMessage message={message} />
+      </motion.div>
+    </motion.div>
+  );
+}
+
 /**
  * LoadingOverlay - Overlay de carregamento com diferentes variantes
  * 
@@ -49,71 +90,14 @@ export function LoadingOverlay({
   if (variant === "inline") {
     return (
       <AnimatePresence>
-        {isLoading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className={cn("inline-flex items-center gap-2 text-muted-foreground", className)}
-          >
-            <Loader2 className={cn("animate-spin", spinnerSizes[spinnerSize])} />
-            {message && <span className="text-sm">{message}</span>}
-          </motion.div>
-        )}
+        <InlineOverlay visible={isLoading} message={message} spinnerSize={spinnerSize} className={className} />
       </AnimatePresence>
     );
   }
 
   return (
     <AnimatePresence>
-      {isLoading && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className={cn(
-            overlayVariants[variant],
-            blur && "backdrop-blur-sm",
-            "bg-background/80 flex items-center justify-center",
-            className
-          )}
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            transition={{ delay: 0.1, duration: 0.2 }}
-            className="flex flex-col items-center gap-3"
-          >
-            <div className="relative">
-              {/* Glow effect behind spinner */}
-              <div 
-                className={cn(
-                  "absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse",
-                  spinnerSizes[spinnerSize]
-                )} 
-              />
-              <Loader2 
-                className={cn(
-                  "relative animate-spin text-primary",
-                  spinnerSizes[spinnerSize]
-                )} 
-              />
-            </div>
-            {message && (
-              <motion.p
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="text-sm text-muted-foreground font-medium"
-              >
-                {message}
-              </motion.p>
-            )}
-          </motion.div>
-        </motion.div>
-      )}
+      <BlockingOverlay visible={isLoading} message={message} spinnerSize={spinnerSize} className={className} overlayClass={overlayVariants[variant]} blur={blur} />
     </AnimatePresence>
   );
 }

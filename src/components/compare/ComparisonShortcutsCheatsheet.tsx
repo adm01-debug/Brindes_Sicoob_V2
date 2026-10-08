@@ -2,10 +2,12 @@
  * ComparisonShortcutsCheatsheet (C6 #8) — Dialog com todos atalhos do comparador.
  * Aberto por Shift+? (registrado internamente).
  */
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Keyboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+const VISUALIZATION_GROUP = "Visualização";
 
 const SHORTCUTS: Array<{ keys: string[]; label: string; group: string }> = [
   { keys: ["G", "X"], label: "Ir para o Comparador", group: "Navegação" },
@@ -14,13 +16,13 @@ const SHORTCUTS: Array<{ keys: string[]; label: string; group: string }> = [
   { keys: ["2"], label: "Focar produto 2", group: "Navegação" },
   { keys: ["3"], label: "Focar produto 3", group: "Navegação" },
   { keys: ["4"], label: "Focar produto 4", group: "Navegação" },
-  { keys: ["D"], label: "Toggle: somente diferenças", group: "Visualização" },
-  { keys: ["R"], label: "Toggle: radar visual", group: "Visualização" },
-  { keys: ["F"], label: "Toggle: modo Foco", group: "Visualização" },
+  { keys: ["D"], label: "Toggle: somente diferenças", group: VISUALIZATION_GROUP },
+  { keys: ["R"], label: "Toggle: radar visual", group: VISUALIZATION_GROUP },
+  { keys: ["F"], label: "Toggle: modo Foco", group: VISUALIZATION_GROUP },
   { keys: ["Shift", "?"], label: "Mostrar este painel", group: "Ajuda" },
 ];
 
-function Kbd({ children }: { children: React.ReactNode }) {
+function Kbd({ children }: { children: ReactNode }) {
   return (
     <kbd className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded border border-border bg-muted text-xs font-mono font-medium">
       {children}

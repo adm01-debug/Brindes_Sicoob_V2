@@ -76,12 +76,34 @@ type InvokeBody = {
   [key: string]: unknown;
 };
 
-async function invokeSecretsManager(body: InvokeBody): Promise<{
-  data: { ok?: boolean; secrets?: unknown; history?: unknown; message?: string; [k: string]: unknown } | null;
+type SecretsPayload = {
+  ok?: boolean;
+  secrets?: unknown;
+  history?: unknown;
+  message?: string;
+  error?: { message?: string; code?: string };
+  [key: string]: unknown;
+};
+
+type InvokeSecretsResult = {
+  data: SecretsPayload | null;
   error: { message: string; context?: Response } | null;
   requestId: string;
   status?: number;
-}> {
+};
+
+function failedPayload(data: unknown): SecretsPayload | null {
+  if (!data || typeof data !== "object") return null;
+  const payload = data as SecretsPayload;
+  return payload.ok === false ? payload : null;
+}
+
+function metricErrorField(data: unknown, field: "message" | "code"): string | undefined {
+  const value = failedPayload(data)?.error?.[field];
+  return typeof value === "string" ? value : undefined;
+}
+
+async function invokeSecretsManager(body: InvokeBody): Promise<InvokeSecretsResult> {
   const requestId = newRequestId();
   const startedAt = performance.now();
   const { data, error } = await supabase.functions.invoke("secrets-manager", {
@@ -92,31 +114,85 @@ async function invokeSecretsManager(body: InvokeBody): Promise<{
   const ctx = (error as { context?: Response } | null)?.context;
   const status = ctx?.status;
 
+  const payloadError = failedPayload(data);
   recordSecretsManagerCall({
     action: body.action,
     target: body.name,
     durationMs,
-    ok: !error && !(data && (data as { ok?: boolean }).ok === false),
+    ok: !error && !payloadError,
     status,
-    errorMessage: error?.message ?? (data && (data as { ok?: boolean }).ok === false
-      ? (typeof (data as { error?: { message?: string } }).error?.message === "string"
-          ? (data as { error: { message: string } }).error.message
-          : undefined)
-      : undefined),
-    errorCode: data && (data as { ok?: boolean }).ok === false
-      ? (typeof (data as { error?: { code?: string } }).error?.code === "string"
-          ? (data as { error: { code: string } }).error.code
-          : undefined)
-      : undefined,
+    errorMessage: error?.message ?? metricErrorField(data, "message"),
+    errorCode: metricErrorField(data, "code"),
     requestId,
   });
 
   return {
-    data: data as Record<string, unknown> | null,
+    data: data as SecretsPayload | null,
     error: error as { message: string; context?: Response } | null,
     requestId,
     status,
   };
+}
+
+async function errorPayload(error: { context?: Response }): Promise<unknown> {
+  const context = error.context;
+  if (!context || typeof context.json !== "function") return null;
+  try {
+    return await context.json();
+  } catch {
+    return null;
+  }
+}
+
+async function normalizeInvokeError(
+  error: { message: string; context?: Response },
+  status?: number,
+): Promise<SecretError> {
+  const payload = await errorPayload(error);
+  const normalized = normalizeError(payload ?? { message: error.message }, error.message);
+  if (payload && normalized.code !== "unexpected") return normalized;
+  if (status === 401) return {
+    code: "unauthenticated",
+    message: "Sessão expirada — faça login novamente para ver as credenciais.",
+  };
+  if (status === 403) return {
+    code: "forbidden",
+    message: "Sem permissão para acessar credenciais (apenas administradores).",
+  };
+  return normalized;
+}
+
+function shouldClearSecrets(error: SecretError): boolean {
+  return ["unauthenticated", "forbidden", "permission_denied"].includes(error.code);
+}
+
+function successfulMutationResult(
+  action: "set" | "rotate",
+  data: SecretsPayload | null,
+  valueLength: number,
+): SecretMutationResult {
+  return {
+    ok: true,
+    was_update: action === "rotate" || Boolean(data?.was_update),
+    previous_suffix: (data?.previous_suffix as string | null | undefined) ?? null,
+    masked_suffix: (data?.masked_suffix as string | null | undefined) ?? null,
+    length: (data?.length as number | undefined) ?? valueLength,
+    secret: data?.secret as SecretStatus | undefined,
+  };
+}
+
+async function mutateSecret(
+  action: "set" | "rotate",
+  name: string,
+  value: string,
+  notes?: string,
+): Promise<SecretMutationResult> {
+  const { data, error } = await invokeSecretsManager({ action, name, value, notes });
+  if (error) {
+    return { ok: false, error: await normalizeInvokeError(error) };
+  }
+  if (data?.ok === false) return { ok: false, error: normalizeError(data) };
+  return successfulMutationResult(action, data, value.length);
 }
 
 export function useSecretsManager() {
@@ -129,28 +205,13 @@ export function useSecretsManager() {
     try {
       const { data, error, status: httpStatus } = await invokeSecretsManager({ action: "list", names });
       if (error) {
-        // Tenta extrair payload estruturado (ex.: { error: { code, message } }) do FunctionsHttpError.
-        const ctx = (error as { context?: Response }).context;
-        let payload: unknown = null;
-        if (ctx && typeof ctx.json === "function") {
-          try { payload = await ctx.json(); } catch { /* ignore */ }
-        }
-        const normalized = normalizeError(payload ?? { message: error.message }, error.message);
-        // Mapeia 401/403 para um code amigável quando o backend não enviou um.
-        if ((!payload || normalized.code === "unexpected") && (httpStatus === 401 || httpStatus === 403)) {
-          normalized.code = httpStatus === 401 ? "unauthenticated" : "forbidden";
-          normalized.message = httpStatus === 401
-            ? "Sessão expirada — faça login novamente para ver as credenciais."
-            : "Sem permissão para acessar credenciais (apenas administradores).";
-        }
+        const normalized = await normalizeInvokeError(error, httpStatus);
         setListError(normalized);
         // Preserva o snapshot anterior em erros transientes (rede, 5xx, timeout)
         // para que filtros (DB/ENV/AUSENTE) e zonas selecionadas permaneçam
         // visíveis em vez de "resetar" a UI durante um refresh manual.
         // Apenas erros de auth/permissão limpam (estado real desconhecido).
-        if (normalized.code === "unauthenticated" || normalized.code === "forbidden" || normalized.code === "permission_denied") {
-          setSecrets([]);
-        }
+        if (shouldClearSecrets(normalized)) setSecrets([]);
         toast.error("Erro ao listar credenciais", { description: normalized.message });
         return [];
       }
@@ -171,50 +232,11 @@ export function useSecretsManager() {
   }, []);
 
   const setSecret = useCallback(async (name: string, value: string): Promise<SecretMutationResult> => {
-    const { data, error } = await invokeSecretsManager({ action: "set", name, value });
-    if (error) {
-      // Try to read structured payload from FunctionsHttpError context
-      const ctx = (error as { context?: Response }).context;
-      let payload: unknown = null;
-      if (ctx && typeof ctx.json === "function") {
-        try { payload = await ctx.json(); } catch { /* ignore */ }
-      }
-      return { ok: false, error: normalizeError(payload ?? { message: error.message }, error.message) };
-    }
-    if (data && data.ok === false) {
-      return { ok: false, error: normalizeError(data) };
-    }
-    return {
-      ok: true,
-      was_update: !!data?.was_update,
-      previous_suffix: (data?.previous_suffix as string | null | undefined) ?? null,
-      masked_suffix: (data?.masked_suffix as string | null | undefined) ?? null,
-      length: (data?.length as number | undefined) ?? value.length,
-      secret: data?.secret as SecretStatus | undefined,
-    };
+    return mutateSecret("set", name, value);
   }, []);
 
   const rotateSecret = useCallback(async (name: string, value: string, notes?: string): Promise<SecretMutationResult> => {
-    const { data, error } = await invokeSecretsManager({ action: "rotate", name, value, notes });
-    if (error) {
-      const ctx = (error as { context?: Response }).context;
-      let payload: unknown = null;
-      if (ctx && typeof ctx.json === "function") {
-        try { payload = await ctx.json(); } catch { /* ignore */ }
-      }
-      return { ok: false, error: normalizeError(payload ?? { message: error.message }, error.message) };
-    }
-    if (data && data.ok === false) {
-      return { ok: false, error: normalizeError(data) };
-    }
-    return {
-      ok: true,
-      was_update: true,
-      previous_suffix: (data?.previous_suffix as string | null | undefined) ?? null,
-      masked_suffix: (data?.masked_suffix as string | null | undefined) ?? null,
-      length: (data?.length as number | undefined) ?? value.length,
-      secret: data?.secret as SecretStatus | undefined,
-    };
+    return mutateSecret("rotate", name, value, notes);
   }, []);
 
   const getRotationHistory = useCallback(async (name?: string): Promise<RotationHistoryEntry[]> => {

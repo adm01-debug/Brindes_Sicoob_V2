@@ -1,6 +1,6 @@
 
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -13,10 +13,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AdminDataTable } from "@/components/admin/common/AdminDataTable";
+import { AdminDataTable, type Column } from "@/components/admin/common/AdminDataTable";
 import { logAdminAction } from "@/utils/adminAudit";
+import type { Tables } from "@/integrations/supabase/types";
 // XLSX will be loaded dynamically when needed
 
 export default function AdminCMSPage() {
@@ -64,10 +64,10 @@ export default function AdminCMSPage() {
 }
 
 function BannersTab() {
-  const [banners, setBanners] = useState<any[]>([]);
+  const [banners, setBanners] = useState<Tables<"cms_banners">[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const handleExport = async (data: any[]) => {
+  const handleExport = async (data: Tables<"cms_banners">[]) => {
     try {
       const XLSX = await import('@e965/xlsx');
       const exportData = data.map(b => ({
@@ -119,11 +119,11 @@ function BannersTab() {
     }
   };
 
-  const columns = [
+  const columns: Column<Tables<"cms_banners">>[] = [
     {
       header: "Imagem",
       accessorKey: "image_url",
-      cell: (row: any) => <img src={row.image_url} className="w-16 h-8 object-cover rounded border" alt={row.title} />
+      cell: (row) => <img src={row.image_url} className="w-16 h-8 object-cover rounded border" alt={row.title} />
     },
     {
       header: "Título",
@@ -138,7 +138,7 @@ function BannersTab() {
     {
       header: "Status",
       accessorKey: "is_active",
-      cell: (row: any) => (
+      cell: (row) => (
         <Badge variant={row.is_active ? "default" : "secondary"}>
           {row.is_active ? "Ativo" : "Inativo"}
         </Badge>
@@ -148,7 +148,7 @@ function BannersTab() {
     {
       header: "Ações",
       accessorKey: "id",
-      cell: (row: any) => (
+      cell: (row) => (
         <div className="flex justify-end gap-2">
           <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button>
           <Button 
@@ -185,7 +185,7 @@ function BannersTab() {
 }
 
 function SectionsTab() {
-  const [sections, setSections] = useState<any[]>([]);
+  const [sections, setSections] = useState<Tables<"cms_sections">[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchSections = async () => {
@@ -197,19 +197,19 @@ function SectionsTab() {
 
   useEffect(() => { fetchSections(); }, []);
 
-  const columns = [
+  const columns: Column<Tables<"cms_sections">>[] = [
     { header: "Nome", accessorKey: "name", sortable: true },
-    { header: "Tipo", accessorKey: "type", cell: (row: any) => <Badge variant="outline">{row.type}</Badge> },
+    { header: "Tipo", accessorKey: "type", cell: (row) => <Badge variant="outline">{row.type}</Badge> },
     { header: "Ordem", accessorKey: "sort_order", sortable: true },
     { 
       header: "Status", 
       accessorKey: "is_active",
-      cell: (row: any) => <Badge variant={row.is_active ? "default" : "secondary"}>{row.is_active ? "Ativa" : "Inativa"}</Badge>
+      cell: (row) => <Badge variant={row.is_active ? "default" : "secondary"}>{row.is_active ? "Ativa" : "Inativa"}</Badge>
     },
     {
       header: "Ações",
       accessorKey: "id",
-      cell: (row: any) => <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button>
+      cell: () => <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button>
     }
   ];
 
@@ -266,7 +266,7 @@ function SeoTab() {
         entity_type: 'cms_config',
         metadata: { action: 'update_global_seo', config: seoConfig }
       });
-    } catch (err) {
+    } catch {
       toast.error("Erro ao salvar SEO");
     } finally {
       setIsSaving(false);
@@ -370,7 +370,7 @@ function VisualTab() {
       
       if (error) throw error;
       toast.success("Identidade visual salva! Recarregue para aplicar.");
-    } catch (err) {
+    } catch {
       toast.error("Erro ao salvar visual");
     } finally {
       setIsSaving(false);

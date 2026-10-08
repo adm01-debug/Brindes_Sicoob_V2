@@ -11,7 +11,7 @@
  *   - ConnectionsPulseBar permanece global (mostra status real do sistema)
  *   - Outras tabelas que opte usar `useSeverityFilter()` aplicam o mesmo critério
  */
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
 
 export type SeverityFilter = "all" | "P0" | "P1" | "P2";
@@ -38,7 +38,7 @@ interface Ctx {
 
 const SeverityFilterContext = createContext<Ctx | undefined>(undefined);
 
-export function SeverityFilterProvider({ children }: { children: React.ReactNode }) {
+export function SeverityFilterProvider({ children }: { children: ReactNode }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filter, setFilterState] = useState<SeverityFilter>(() => readInitial(searchParams));
 

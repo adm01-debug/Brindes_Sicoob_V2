@@ -18,46 +18,36 @@ interface QuoteShareDialogProps {
   defaultClientName?: string;
 }
 
-export function QuoteShareDialog({ quoteId, open, onOpenChange, defaultClientEmail, defaultClientName }: QuoteShareDialogProps) {
-  const [clientName, setClientName] = useState(defaultClientName ?? "");
-  const [clientEmail, setClientEmail] = useState(defaultClientEmail ?? "");
-  const [generatedToken, setGeneratedToken] = useState<string | null>(null);
+function useApprovalLink(quoteId: string, clientName: string, clientEmail: string) {
+  const [token, setToken] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-
-  const link = generatedToken
-    ? `${window.location.origin}/orcamento/aprovar/${generatedToken}`
-    : null;
-
+  const link = token ? `${window.location.origin}/orcamento/aprovar/${token}` : null;
   const generate = async () => {
     setIsGenerating(true);
     try {
-      const { data: u } = await supabase.auth.getUser();
-      if (!u.user) throw new Error("Não autenticado");
-      const { data, error } = await supabase
-        .from("quote_approval_tokens")
-        .insert({
-          quote_id: quoteId,
-          seller_id: u.user.id,
-          client_name: clientName || null,
-          client_email: clientEmail || null,
-        })
-        .select("token")
-        .single();
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error("Não autenticado");
+      const { data, error } = await supabase.from("quote_approval_tokens").insert({
+        quote_id: quoteId, seller_id: userData.user.id, client_name: clientName || null, client_email: clientEmail || null,
+      }).select("token").single();
       if (error) throw error;
-      setGeneratedToken(data.token);
+      setToken(data.token);
       toast.success("Link gerado!");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao gerar link");
-    } finally {
-      setIsGenerating(false);
-    }
+    } catch (error) { toast.error(error instanceof Error ? error.message : "Erro ao gerar link"); }
+    finally { setIsGenerating(false); }
   };
-
   const copy = async () => {
     if (!link) return;
     await navigator.clipboard.writeText(link);
     toast.success("Link copiado");
   };
+  return { link, isGenerating, generate, copy };
+}
+
+export function QuoteShareDialog({ quoteId, open, onOpenChange, defaultClientEmail, defaultClientName }: QuoteShareDialogProps) {
+  const [clientName, setClientName] = useState(defaultClientName ?? "");
+  const [clientEmail, setClientEmail] = useState(defaultClientEmail ?? "");
+  const { link, isGenerating, generate, copy } = useApprovalLink(quoteId, clientName, clientEmail);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

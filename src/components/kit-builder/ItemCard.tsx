@@ -13,8 +13,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { formatVolume, formatCurrency } from '@/lib/kit-builder';
-import type { KitItem, CompatibilityResult } from '@/lib/kit-builder';
+import { formatVolume, formatCurrency, type KitItem, type CompatibilityResult } from '@/lib/kit-builder';
 
 interface ItemCardProps {
   item: KitItem & { compatibility: CompatibilityResult | null };
@@ -22,6 +21,51 @@ interface ItemCardProps {
   boxSelected: boolean;
   onAdd: (item: KitItem) => void;
   onRemove: (itemId: string) => void;
+}
+
+function ItemImage({ item }: { item: KitItem }) {
+  return (
+    <div className="w-14 h-14 rounded-md bg-secondary overflow-hidden flex-shrink-0">
+      {item.imageUrl
+        ? <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" loading="lazy" />
+        : <div className="w-full h-full flex items-center justify-center"><Package className="h-6 w-6 text-muted-foreground" /></div>}
+    </div>
+  );
+}
+
+function CompatibilityBadge({ item, visible, fits }: { item: ItemCardProps["item"]; visible: boolean; fits: boolean }) {
+  if (!visible) return null;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Badge variant={fits ? "secondary" : "destructive"} className={cn("text-xs", fits && "bg-primary/10 text-primary dark:text-primary hover:bg-primary/20")}>
+          {fits ? <><Check className="h-3 w-3 mr-1" />CABE</> : <><X className="h-3 w-3 mr-1" />NÃO CABE</>}
+        </Badge>
+      </TooltipTrigger>
+      {!fits && item.compatibility?.reason && <TooltipContent><p className="max-w-[200px]">{item.compatibility.reason}</p></TooltipContent>}
+    </Tooltip>
+  );
+}
+
+function ItemAction({ item, selected, cantFit, onAdd, onRemove }: {
+  item: KitItem;
+  selected: boolean;
+  cantFit: boolean;
+  onAdd: ItemCardProps["onAdd"];
+  onRemove: ItemCardProps["onRemove"];
+}) {
+  if (selected) {
+    return (
+      <Button variant="outline" size="sm" className="ml-auto focus-visible:ring-2 focus-visible:ring-primary/60" onClick={() => onRemove(item.id)}>
+        <Check className="h-3 w-3 mr-1 text-success" /><span className="group-hover:hidden">Adicionado</span><span className="hidden group-hover:inline">Remover</span>
+      </Button>
+    );
+  }
+  return (
+    <Button variant="default" size="sm" className="ml-auto opacity-90 group-hover:opacity-100 transition-opacity focus-visible:ring-2 focus-visible:ring-primary/60" disabled={cantFit} onClick={() => onAdd(item)}>
+      <Plus className="h-3 w-3 mr-1" />Adicionar
+    </Button>
+  );
 }
 
 export function ItemCard({ item, isSelected, boxSelected, onAdd, onRemove }: ItemCardProps) {
@@ -41,18 +85,7 @@ export function ItemCard({ item, isSelected, boxSelected, onAdd, onRemove }: Ite
       <CardContent className="p-3">
         <div className="flex gap-3">
           {/* Imagem pequena */}
-          <div className="w-14 h-14 rounded-md bg-secondary overflow-hidden flex-shrink-0">
-            {item.imageUrl ? (
-              <img
-                src={item.imageUrl}
-                alt={item.name}
-                className="w-full h-full object-cover" loading="lazy" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Package className="h-6 w-6 text-muted-foreground" />
-              </div>
-            )}
-          </div>
+          <ItemImage item={item} />
 
           {/* Info */}
           <div className="flex-1 min-w-0">
@@ -71,60 +104,8 @@ export function ItemCard({ item, isSelected, boxSelected, onAdd, onRemove }: Ite
 
         {/* Badge de compatibilidade e ação */}
         <div className="flex items-center justify-between mt-2 pt-2 border-t">
-          {boxSelected && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Badge
-                  variant={fits ? "secondary" : "destructive"}
-                  className={cn(
-                    "text-xs",
-                    fits && "bg-primary/10 text-primary dark:text-primary hover:bg-primary/20"
-                  )}
-                >
-                  {fits ? (
-                    <>
-                      <Check className="h-3 w-3 mr-1" />
-                      CABE
-                    </>
-                  ) : (
-                    <>
-                      <X className="h-3 w-3 mr-1" />
-                      NÃO CABE
-                    </>
-                  )}
-                </Badge>
-              </TooltipTrigger>
-              {!fits && item.compatibility?.reason && (
-                <TooltipContent>
-                  <p className="max-w-[200px]">{item.compatibility.reason}</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-          )}
-
-          {isSelected ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="ml-auto focus-visible:ring-2 focus-visible:ring-primary/60"
-              onClick={() => onRemove(item.id)}
-            >
-              <Check className="h-3 w-3 mr-1 text-success" />
-              <span className="group-hover:hidden">Adicionado</span>
-              <span className="hidden group-hover:inline">Remover</span>
-            </Button>
-          ) : (
-            <Button
-              variant="default"
-              size="sm"
-              className="ml-auto opacity-90 group-hover:opacity-100 transition-opacity focus-visible:ring-2 focus-visible:ring-primary/60"
-              disabled={cantFit}
-              onClick={() => onAdd(item)}
-            >
-              <Plus className="h-3 w-3 mr-1" />
-              Adicionar
-            </Button>
-          )}
+          <CompatibilityBadge item={item} visible={boxSelected} fits={fits} />
+          <ItemAction item={item} selected={isSelected} cantFit={cantFit} onAdd={onAdd} onRemove={onRemove} />
         </div>
       </CardContent>
     </Card>

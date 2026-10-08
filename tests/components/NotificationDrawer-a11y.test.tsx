@@ -12,7 +12,7 @@
  *   - aria-label reflects unreadCount for screen readers
  *   - aria-haspopup / aria-expanded toggle correctly
  */
-import React from "react";
+import React, { type JSX } from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, fireEvent, screen, cleanup } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";

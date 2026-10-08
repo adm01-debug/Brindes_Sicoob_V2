@@ -3,13 +3,12 @@
  * 
  * Loads ~10x faster than useProducts (no color/variant enrichment).
  */
-import { useQuery, useInfiniteQuery, keepPreviousData } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { fetchPromobrindProductsLightweight, invokeBatchBridge, type LightweightProduct } from '@/lib/external-db';
 
 // Re-export type for consumers
 export type { ProductLightweight } from '@/types/product-catalog';
-import type { ProductLightweight } from '@/types/product-catalog';
-import type { Product } from '@/types/product-catalog';
+import type { Product, ProductLightweight } from '@/types/product-catalog';
 
 function shouldRetryCatalog(failureCount: number, error: Error): boolean {
   return failureCount < 3 && !/CATALOG_NOT_CONFIGURED|CATALOG_READ_ONLY/.test(error.message);
@@ -17,7 +16,7 @@ function shouldRetryCatalog(failureCount: number, error: Error): boolean {
 
 function mapLightweight(p: LightweightProduct): ProductLightweight {
   const price = (p.sale_price ?? p.cost_price ?? 0);
-  const imageUrl = p.primary_image_url || p.image_url || '/placeholder.svg';
+  const imageUrl = productImage(p);
 
   return {
     id: p.id,
@@ -28,9 +27,29 @@ function mapLightweight(p: LightweightProduct): ProductLightweight {
     image_url: imageUrl,
     stock: p.stock_quantity ?? 0,
     brand: p.brand,
-    category_id: p.category_id || p.main_category_id,
-    is_active: p.is_active || p.active,
+    category_id: productCategoryId(p),
+    is_active: p.is_active,
   };
+}
+
+function productImage(product: LightweightProduct): string {
+  return product.primary_image_url || '/placeholder.svg';
+}
+
+function productCategoryId(product: LightweightProduct): string | null {
+  return product.category_id || product.main_category_id;
+}
+
+function productCategoryNumericId(product: LightweightProduct): number {
+  return parseInt(productCategoryId(product) || "0") || 0;
+}
+
+function productSupplierId(product: LightweightProduct): string {
+  return product.supplier_id || product.brand || "unknown";
+}
+
+function productSupplierName(product: LightweightProduct): string {
+  return product.brand || "Fornecedor";
 }
 
 function getStockStatus(stock: number): 'in-stock' | 'low-stock' | 'out-of-stock' {
@@ -40,15 +59,14 @@ function getStockStatus(stock: number): 'in-stock' | 'low-stock' | 'out-of-stock
 }
 
 export function mapLightweightToProduct(p: LightweightProduct): Product {
-  const imageUrl = p.primary_image_url || p.image_url || '/placeholder.svg';
+  const imageUrl = productImage(p);
   const price = p.sale_price ?? p.cost_price ?? 0;
-  const stock = p.stock_quantity || 0;
-
+  const stock = p.stock_quantity ?? 0;
   return {
     id: p.id,
     name: p.name,
     description: '',
-    category_id: p.category_id || p.main_category_id,
+    category_id: productCategoryId(p),
     category_name: null,
     price: typeof price === 'number' ? price : 0,
     image_url: imageUrl,
@@ -59,21 +77,21 @@ export function mapLightweightToProduct(p: LightweightProduct): Product {
     materials: [],
     supplier_reference: p.supplier_reference ?? null,
     brand: p.brand,
-    is_active: p.is_active || p.active,
-    minQuantity: p.min_quantity || 1,
+    is_active: p.is_active,
+    minQuantity: p.min_quantity ?? 1,
     stockStatus: getStockStatus(stock),
     featured: false,
     newArrival: false,
     onSale: false,
     isKit: p.is_kit ?? false,
-    gender: p.gender || null,
+    gender: p.gender ?? null,
     category: {
-      id: parseInt(p.category_id || p.main_category_id || "0") || 0,
+      id: productCategoryNumericId(p),
       name: "Sem categoria",
     },
     supplier: {
-      id: p.supplier_id || p.brand || "unknown",
-      name: p.brand || "Fornecedor",
+      id: productSupplierId(p),
+      name: productSupplierName(p),
     },
     tags: {
       publicoAlvo: [],
@@ -100,12 +118,63 @@ export const CATALOG_BATCH_PAGES = 4;
 // `price_updated_at` é o SSOT da idade do preço (trigger no BD externo).
 // `price_freshness_threshold_days` ainda NÃO existe no BD externo — quando
 // existir, basta acrescentar à lista; o mapper já trata como opcional.
-export const PRODUCT_SELECT_LIGHTWEIGHT = 'id, name, sku, sale_price, cost_price, primary_image_url, supplier_id, category_id, main_category_id, brand, is_active, active, stock_quantity, min_quantity, is_kit, gender, price_updated_at';
+export const PRODUCT_SELECT_LIGHTWEIGHT = 'id, name, sku, sale_price, cost_price, primary_image_url, supplier_id, category_id, main_category_id, brand, is_active, stock_quantity, min_quantity, is_kit, gender, price_updated_at';
 
 interface CatalogPage {
   products: Product[];
   nextOffset: number | null; // null = no more pages
   totalEstimate: number | null;
+}
+
+type BatchResults = Awaited<ReturnType<typeof invokeBatchBridge>>;
+
+function buildCatalogBatch(offset: number, filters: Record<string, unknown>, pagesToFetch: number) {
+  const orderBy = { column: 'name', ascending: true };
+  const firstLoad = offset === 0;
+  return Array.from({ length: pagesToFetch }, (_, index) => ({
+    table: 'products',
+    operation: 'select' as const,
+    select: PRODUCT_SELECT_LIGHTWEIGHT,
+    filters,
+    orderBy,
+    limit: CATALOG_PAGE_SIZE,
+    offset: offset + index * CATALOG_PAGE_SIZE,
+    ...(index === 0 && firstLoad ? { countMode: 'exact' as const } : {}),
+  }));
+}
+
+function assertCompleteBatch(results: BatchResults, expectedLength: number): void {
+  const invalid = results.length !== expectedLength || results.some(result => !result.success || !Array.isArray(result.data?.records));
+  if (!invalid) return;
+  throw new Error(results.find(result => !result.success)?.error || 'Consulta incompleta ao catálogo externo');
+}
+
+function mapCatalogBatch(results: BatchResults): { products: Product[]; totalEstimate: number | null; lastPageSize: number } {
+  const products: Product[] = [];
+  let totalEstimate: number | null = null;
+  let lastPageSize = 0;
+  for (const result of results) {
+    if (!result.success || !result.data?.records) continue;
+    products.push(...(result.data.records as LightweightProduct[]).map(mapLightweightToProduct));
+    lastPageSize = result.data.records.length;
+    if (typeof result.data.count === 'number' && totalEstimate === null) totalEstimate = result.data.count;
+  }
+  return { products, totalEstimate, lastPageSize };
+}
+
+async function fallbackCatalogPage(offset: number, search?: string): Promise<CatalogPage> {
+  const fallbackProducts = await fetchPromobrindProductsLightweight({
+    search,
+    limit: CATALOG_PAGE_SIZE,
+    offset,
+    orderBy: { column: 'name', ascending: true },
+    filters: { is_active: true },
+  });
+  return {
+    products: fallbackProducts.map(mapLightweightToProduct),
+    nextOffset: fallbackProducts.length === CATALOG_PAGE_SIZE ? offset + CATALOG_PAGE_SIZE : null,
+    totalEstimate: null,
+  };
 }
 
 /**
@@ -117,60 +186,20 @@ async function fetchCatalogPage(
   offset: number,
   search?: string,
 ): Promise<CatalogPage> {
-  const filters: Record<string, unknown> = { active: true };
+  const filters: Record<string, unknown> = { is_active: true };
   if (search) filters._search = search;
-  const orderBy = { column: 'name', ascending: true };
-
   const isFirstLoad = offset === 0;
   const pagesToFetch = isFirstLoad ? CATALOG_BATCH_PAGES : 1;
-
-  const batchQueries = Array.from({ length: pagesToFetch }, (_, i) => ({
-    table: 'products',
-    operation: 'select' as const,
-    select: PRODUCT_SELECT_LIGHTWEIGHT,
-    filters,
-    orderBy,
-    limit: CATALOG_PAGE_SIZE,
-    offset: offset + i * CATALOG_PAGE_SIZE,
-    ...(i === 0 && isFirstLoad ? { countMode: 'exact' } : {}),
-  }));
+  const batchQueries = buildCatalogBatch(offset, filters, pagesToFetch);
 
   let batchResults;
   try {
     batchResults = await invokeBatchBridge(batchQueries);
-    if (batchResults.length !== batchQueries.length || batchResults.some(result => !result.success || !Array.isArray(result.data?.records))) {
-      throw new Error(batchResults.find(result => !result.success)?.error || 'Consulta incompleta ao catálogo externo');
-    }
+    assertCompleteBatch(batchResults, batchQueries.length);
   } catch {
-    const fallbackProducts = await fetchPromobrindProductsLightweight({
-      search,
-      limit: CATALOG_PAGE_SIZE,
-      offset,
-      orderBy,
-      filters: { active: true },
-    });
-
-    return {
-      products: fallbackProducts.map(mapLightweightToProduct),
-      nextOffset: fallbackProducts.length === CATALOG_PAGE_SIZE ? offset + CATALOG_PAGE_SIZE : null,
-      totalEstimate: null,
-    };
+    return fallbackCatalogPage(offset, search);
   }
-
-  const products: Product[] = [];
-  let totalEstimate: number | null = null;
-  let lastPageSize = 0;
-
-  for (const result of batchResults) {
-    if (result.success && result.data?.records) {
-      const mapped = (result.data.records as LightweightProduct[]).map(mapLightweightToProduct);
-      products.push(...mapped);
-      lastPageSize = result.data.records.length;
-      if (result.data.count != null && totalEstimate === null) {
-        totalEstimate = result.data.count as number;
-      }
-    }
-  }
+  const { products, totalEstimate, lastPageSize } = mapCatalogBatch(batchResults);
 
   const fetchedUpTo = offset + pagesToFetch * CATALOG_PAGE_SIZE;
   const hasMore = lastPageSize === CATALOG_PAGE_SIZE;

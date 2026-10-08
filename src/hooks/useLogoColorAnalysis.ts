@@ -24,6 +24,25 @@ export interface LogoColorAnalysisResult {
   error: string | null;
 }
 
+function detectedColorsFromResponse(data: unknown): DetectedColor[] {
+  const response = data as { error?: string; colors?: Array<{ name: string; hex: string }> } | null;
+  if (response?.error) throw new Error(response.error);
+  return (response?.colors ?? []).map((color) => {
+    const match = getBestPantoneMatch(color.hex);
+    return {
+      name: color.name,
+      hex: color.hex,
+      pantoneMatch: match,
+      selectedPantone: match.pantoneCode,
+    };
+  });
+}
+
+function isCancelledAnalysis(error: unknown, signal: AbortSignal): boolean {
+  const abortError = error instanceof Error && error.name === 'AbortError';
+  return abortError || signal.aborted;
+}
+
 export function useLogoColorAnalysis() {
   const [colors, setColors] = useState<DetectedColor[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -47,34 +66,17 @@ export function useLogoColorAnalysis() {
 
       if (fnError) throw fnError;
 
-      if (data?.error) {
-        throw new Error(data.error);
-      }
-
-      const rawColors: { name: string; hex: string }[] = data?.colors || [];
-
-      if (rawColors.length === 0) {
+      const mapped = detectedColorsFromResponse(data);
+      if (mapped.length === 0) {
         setError('Nenhuma cor detectada na imagem');
         return [];
       }
-
-      // Map each detected color to nearest Pantone
-      const mapped: DetectedColor[] = rawColors.map(c => {
-        const match = getBestPantoneMatch(c.hex);
-        return {
-          name: c.name,
-          hex: c.hex,
-          pantoneMatch: match,
-          selectedPantone: match.pantoneCode,
-        };
-      });
 
       setColors(mapped);
       toast.success(`${mapped.length} cor(es) detectada(s) na logo`);
       return mapped;
     } catch (err: unknown) {
-      if (err instanceof Error && err.name === 'AbortError') return [];
-      if (controller.signal.aborted) return [];
+      if (isCancelledAnalysis(err, controller.signal)) return [];
       const msg = err instanceof Error ? err.message : 'Erro ao analisar cores da logo';
       setError(msg);
       toast.error(msg);

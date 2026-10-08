@@ -9,6 +9,15 @@ interface PhotoSelectorProps {
   onDeselectAll: () => void;
 }
 
+function PhotoOption({ image, index, selected, onToggle }: { image: string; index: number; selected: boolean; onToggle: (index: number) => void }) {
+  return (
+    <button type="button" onClick={() => onToggle(index)} className={cn("relative w-16 h-16 rounded-lg overflow-hidden bg-secondary shrink-0 border-2 transition-all", selected ? "border-primary ring-2 ring-primary/20" : "border-transparent opacity-60 hover:opacity-100")}>
+      <img src={image} alt={`Foto ${index + 1}`} className="w-full h-full object-cover" loading="lazy" />
+      {selected && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-primary flex items-center justify-center"><Check className="h-2.5 w-2.5 text-primary-foreground" /></div>}
+    </button>
+  );
+}
+
 export function PhotoSelector({
   images,
   selectedImages,
@@ -34,32 +43,7 @@ export function PhotoSelector({
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-2">
-        {images.map((img, idx) => {
-          const selected = selectedImages.has(idx);
-          return (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => onToggle(idx)}
-              className={cn(
-                "relative w-16 h-16 rounded-lg overflow-hidden bg-secondary shrink-0 border-2 transition-all",
-                selected
-                  ? "border-primary ring-2 ring-primary/20"
-                  : "border-transparent opacity-60 hover:opacity-100"
-              )}
-            >
-              <img
-                src={img}
-                alt={`Foto ${idx + 1}`}
-                className="w-full h-full object-cover" loading="lazy" />
-              {selected && (
-                <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
-                  <Check className="h-2.5 w-2.5 text-primary-foreground" />
-                </div>
-              )}
-            </button>
-          );
-        })}
+        {images.map((image, index) => <PhotoOption key={index} image={image} index={index} selected={selectedImages.has(index)} onToggle={onToggle} />)}
       </div>
     </div>
   );

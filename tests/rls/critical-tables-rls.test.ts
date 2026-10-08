@@ -143,17 +143,6 @@ function hasPolicy(policies: RLSPolicy[], command: RLSPolicy['command'], name?: 
   return policies.some(p => p.command === command && (!name || p.name === name));
 }
 
-function hasCRUD(policies: RLSPolicy[]): { select: boolean; insert: boolean; update: boolean; delete: boolean } {
-  const commands = new Set(policies.map(p => p.command));
-  const hasAll = commands.has('ALL');
-  return {
-    select: hasAll || commands.has('SELECT'),
-    insert: hasAll || commands.has('INSERT'),
-    update: hasAll || commands.has('UPDATE'),
-    delete: hasAll || commands.has('DELETE'),
-  };
-}
-
 function policyUsesAuthUid(policy: RLSPolicy): boolean {
   const expr = (policy.using || '') + (policy.withCheck || '');
   return expr.includes('auth.uid()');

@@ -72,3 +72,9 @@ bun.lockb
 
 # Saída gerada pelo graphify (grafo local por máquina)
 graphify-out/
+
+# Estado efêmero gerado por `supabase link` e pela CLI local.
+supabase/.temp/*
+
+# Relatórios locais de orçamento de bundle; a CI os publica como artefato.
+bundle-stats/

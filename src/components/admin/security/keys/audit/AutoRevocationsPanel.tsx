@@ -25,6 +25,19 @@ const SOURCE_META: Record<AutoRevocationRow["source"], { label: string; Icon: ty
   manual: { label: "Execução manual", Icon: Wrench, variant: "outline" },
 };
 
+function AutoRevocationItem({ row }: { row: AutoRevocationRow }) {
+  const meta = SOURCE_META[row.source];
+  const Icon = meta.Icon;
+  return <li className="border border-border rounded-md p-3 hover:bg-accent/30 transition-colors"><div className="flex items-start justify-between gap-3"><div className="space-y-1 min-w-0 flex-1"><div className="flex items-center gap-2 flex-wrap"><span className="font-medium text-sm truncate">{row.key_name ?? <span className="text-muted-foreground italic">chave removida</span>}</span>{row.key_prefix && <code className="text-[10px] bg-muted px-1.5 py-0.5 rounded font-mono">{row.key_prefix}…</code>}<Badge variant="destructive" className="text-[10px]">FULL revogada</Badge></div><div className="text-xs text-muted-foreground flex items-center gap-3 flex-wrap"><span>Emissor: <span className="font-medium text-foreground">{row.actor_email ?? row.created_by.slice(0, 8)}</span></span><span>•</span><span>{format(new Date(row.revoked_at), "dd/MM/yyyy HH:mm:ss", { locale: ptBR })}</span></div><div className="text-[11px] text-muted-foreground">Motivo: <code className="bg-muted px-1 py-0.5 rounded">{row.reason}</code></div></div><Badge variant={meta.variant} className="gap-1 shrink-0"><Icon className="h-3 w-3" /><span className="text-[10px]">{meta.label}</span></Badge></div></li>;
+}
+
+function AutoRevocationsContent({ rows, isLoading, error }: { rows?: AutoRevocationRow[]; isLoading: boolean; error: unknown }) {
+  if (error) return <Alert variant="destructive" className="mb-4"><AlertTriangle className="h-4 w-4" /><AlertTitle>Erro ao carregar</AlertTitle><AlertDescription>{error instanceof Error ? error.message : "Falha desconhecida"}</AlertDescription></Alert>;
+  if (isLoading) return <div className="space-y-2">{Array.from({ length: 4 }).map((_, index) => <Skeleton key={index} className="h-16 w-full" />)}</div>;
+  if (!rows?.length) return <div className="text-center py-12 text-sm text-muted-foreground"><ShieldOff className="h-10 w-10 mx-auto mb-3 opacity-30" />Nenhuma auto-revogação registrada — todos os emissores de chaves FULL ativas mantêm o papel <code className="text-xs">dev</code>.</div>;
+  return <ScrollArea className="h-[420px] pr-2"><ul className="space-y-2">{rows.map(row => <AutoRevocationItem key={row.id} row={row} />)}</ul></ScrollArea>;
+}
+
 export function AutoRevocationsPanel() {
   const { data: rows, isLoading, error } = useAutoRevocations();
 
@@ -41,79 +54,7 @@ export function AutoRevocationsPanel() {
           e varredura defensiva a cada 15min.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        {error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Erro ao carregar</AlertTitle>
-            <AlertDescription>{error instanceof Error ? error.message : "Falha desconhecida"}</AlertDescription>
-          </Alert>
-        )}
-
-        {isLoading ? (
-          <div className="space-y-2">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full" />
-            ))}
-          </div>
-        ) : !rows || rows.length === 0 ? (
-          <div className="text-center py-12 text-sm text-muted-foreground">
-            <ShieldOff className="h-10 w-10 mx-auto mb-3 opacity-30" />
-            Nenhuma auto-revogação registrada — todos os emissores de chaves FULL ativas mantêm o papel{" "}
-            <code className="text-xs">dev</code>.
-          </div>
-        ) : (
-          <ScrollArea className="h-[420px] pr-2">
-            <ul className="space-y-2">
-              {rows.map((row) => {
-                const meta = SOURCE_META[row.source];
-                const Icon = meta.Icon;
-                return (
-                  <li
-                    key={row.id}
-                    className="border border-border rounded-md p-3 hover:bg-accent/30 transition-colors"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="space-y-1 min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-medium text-sm truncate">
-                            {row.key_name ?? <span className="text-muted-foreground italic">chave removida</span>}
-                          </span>
-                          {row.key_prefix && (
-                            <code className="text-[10px] bg-muted px-1.5 py-0.5 rounded font-mono">
-                              {row.key_prefix}…
-                            </code>
-                          )}
-                          <Badge variant="destructive" className="text-[10px]">
-                            FULL revogada
-                          </Badge>
-                        </div>
-                        <div className="text-xs text-muted-foreground flex items-center gap-3 flex-wrap">
-                          <span>
-                            Emissor:{" "}
-                            <span className="font-medium text-foreground">
-                              {row.actor_email ?? row.created_by.slice(0, 8)}
-                            </span>
-                          </span>
-                          <span>•</span>
-                          <span>{format(new Date(row.revoked_at), "dd/MM/yyyy HH:mm:ss", { locale: ptBR })}</span>
-                        </div>
-                        <div className="text-[11px] text-muted-foreground">
-                          Motivo: <code className="bg-muted px-1 py-0.5 rounded">{row.reason}</code>
-                        </div>
-                      </div>
-                      <Badge variant={meta.variant} className="gap-1 shrink-0">
-                        <Icon className="h-3 w-3" />
-                        <span className="text-[10px]">{meta.label}</span>
-                      </Badge>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </ScrollArea>
-        )}
-      </CardContent>
+      <CardContent><AutoRevocationsContent rows={rows} isLoading={isLoading} error={error} /></CardContent>
     </Card>
   );
 }

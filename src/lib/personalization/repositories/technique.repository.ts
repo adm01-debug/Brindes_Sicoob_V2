@@ -11,6 +11,8 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { TecnicaUnificada } from '@/types/tecnica-unificada';
 
+const EXTERNAL_DB_BRIDGE_FUNCTION = 'external-db-bridge';
+
 // ============================================
 // TYPES
 // ============================================
@@ -59,6 +61,57 @@ interface TecnicaGravacaoExterno {
   updated_at?: string;
 }
 
+function orDefault<T>(value: T | null | undefined, fallback: T) {
+  return value || fallback;
+}
+
+function definedOr<T>(value: T | null | undefined, fallback: T) {
+  return value ?? fallback;
+}
+
+function externalOrderBy(orderBy?: TechniqueOrderBy) {
+  if (!orderBy) return { column: 'ordem_exibicao', ascending: true };
+  const columns = { name: 'nome', code: 'codigo', display_order: 'ordem_exibicao', created_at: 'ordem_exibicao' };
+  return { column: columns[orderBy.column], ascending: orderBy.ascending };
+}
+
+function filterTechniques(techniques: TecnicaUnificada[], search?: string) {
+  if (!search) return techniques;
+  const query = search.toLowerCase();
+  return techniques.filter((technique) => (
+    technique.nome.toLowerCase().includes(query)
+    || technique.codigo.toLowerCase().includes(query)
+    || technique.descricao?.toLowerCase().includes(query)
+  ));
+}
+
+function techniqueRequestBody(options: TechniqueQueryOptions) {
+  const { filters, orderBy, limit = 100 } = options;
+  const activeFilter = filters?.isActive;
+  return {
+    table: 'tecnica_gravacao',
+    operation: 'select',
+    filters: activeFilter !== undefined ? { ativo: activeFilter } : undefined,
+    orderBy: externalOrderBy(orderBy),
+    limit,
+  };
+}
+
+interface TechniqueBridgeResponse {
+  success?: boolean;
+  error?: string;
+  data?: { records?: TecnicaGravacaoExterno[] };
+}
+
+function requireTechniqueRecords(data: TechniqueBridgeResponse | null, error: unknown) {
+  if (error) {
+    console.error('Repository findAll error:', error);
+    throw error;
+  }
+  if (!data?.success) throw new Error(data?.error || 'Erro ao buscar técnicas');
+  return data.data?.records || [];
+}
+
 // ============================================
 // TRANSFORMER
 // ============================================
@@ -66,20 +119,20 @@ interface TecnicaGravacaoExterno {
 function externalToTecnicaUnificada(row: TecnicaGravacaoExterno): TecnicaUnificada {
   return {
     id: row.id,
-    codigo: row.codigo || '',
-    codigoFornecedor: row.codigo_interno || null,
+    codigo: orDefault(row.codigo, ''),
+    codigoFornecedor: orDefault(row.codigo_interno, null),
     codigoStricker: null,
     nome: row.nome,
-    descricao: row.descricao || null,
+    descricao: orDefault(row.descricao, null),
     categoria: 'geral',
     icone: null,
-    permiteCores: row.permite_cores ?? true,
+    permiteCores: definedOr(row.permite_cores, true),
     minCores: 1,
-    maxCores: parseInt(row.max_cores || '12', 10),
-    precoPorCor: row.cobra_por_cor ?? false,
+    maxCores: parseInt(orDefault(row.max_cores, '12'), 10),
+    precoPorCor: definedOr(row.cobra_por_cor, false),
     precoCorExtra: 0,
-    precoPorArea: row.cobra_por_area ?? false,
-    precoPorPontos: row.cobra_por_pontos ?? false,
+    precoPorArea: definedOr(row.cobra_por_area, false),
+    precoPorPontos: definedOr(row.cobra_por_pontos, false),
     areaMinimaCm2: null,
     areaMaximaCm2: null,
     pontosMaximos: null,
@@ -87,14 +140,14 @@ function externalToTecnicaUnificada(row: TecnicaGravacaoExterno): TecnicaUnifica
     custoManuseio: 0,
     multiplicadorCusto: 1,
     quantidadeMinima: null,
-    prazoEstimado: row.tempo_producao_dias || null,
+    prazoEstimado: orDefault(row.tempo_producao_dias, null),
     aplicaSuperficieCurva: false,
     promptSuffix: null,
-    ativo: row.ativo ?? true,
-    ordemExibicao: row.ordem_exibicao || 0,
+    ativo: definedOr(row.ativo, true),
+    ordemExibicao: orDefault(row.ordem_exibicao, 0),
     fonte: 'externo',
-    criadoEm: row.created_at || '',
-    atualizadoEm: row.updated_at || '',
+    criadoEm: orDefault(row.created_at, ''),
+    atualizadoEm: orDefault(row.updated_at, ''),
   };
 }
 
@@ -106,49 +159,21 @@ function externalToTecnicaUnificada(row: TecnicaGravacaoExterno): TecnicaUnifica
  * Busca todas as técnicas do BD EXTERNO com filtros opcionais
  */
 export async function findAll(options: TechniqueQueryOptions = {}): Promise<TecnicaUnificada[]> {
-  const { filters, orderBy, limit = 100 } = options;
+  const { filters } = options;
 
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-    body: {
-      table: 'tecnica_gravacao',
-      operation: 'select',
-      filters: filters?.isActive !== undefined ? { ativo: filters.isActive } : undefined,
-      orderBy: orderBy 
-        ? { column: orderBy.column === 'name' ? 'nome' : orderBy.column === 'code' ? 'codigo' : 'ordem_exibicao', ascending: orderBy.ascending }
-        : { column: 'ordem_exibicao', ascending: true },
-      limit,
-    },
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE_FUNCTION, {
+    body: techniqueRequestBody(options),
   });
 
-  if (error) {
-    console.error('Repository findAll error:', error);
-    throw error;
-  }
-
-  if (!data?.success) {
-    throw new Error(data?.error || 'Erro ao buscar técnicas');
-  }
-
-  let tecnicas = (data.data?.records || []).map(externalToTecnicaUnificada);
-
-  // Filtros pós-query
-  if (filters?.search) {
-    const search = filters.search.toLowerCase();
-    tecnicas = tecnicas.filter(t =>
-      t.nome.toLowerCase().includes(search) ||
-      t.codigo.toLowerCase().includes(search) ||
-      t.descricao?.toLowerCase().includes(search)
-    );
-  }
-
-  return tecnicas;
+  const tecnicas = requireTechniqueRecords(data, error).map(externalToTecnicaUnificada);
+  return filterTechniques(tecnicas, filters?.search);
 }
 
 /**
  * Busca técnica por ID do BD EXTERNO
  */
 export async function findById(id: string): Promise<TecnicaUnificada | null> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE_FUNCTION, {
     body: {
       table: 'tecnica_gravacao',
       operation: 'select',
@@ -170,7 +195,7 @@ export async function findById(id: string): Promise<TecnicaUnificada | null> {
  * Busca técnica por código do BD EXTERNO
  */
 export async function findByCode(code: string): Promise<TecnicaUnificada | null> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE_FUNCTION, {
     body: {
       table: 'tecnica_gravacao',
       operation: 'select',
@@ -192,7 +217,7 @@ export async function findByCode(code: string): Promise<TecnicaUnificada | null>
  * Busca técnicas ativas do BD EXTERNO (resumo para dropdowns)
  */
 export async function findActiveForDropdown(): Promise<Pick<TecnicaUnificada, 'id' | 'codigo' | 'nome' | 'categoria'>[]> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE_FUNCTION, {
     body: {
       table: 'tecnica_gravacao',
       operation: 'select',
@@ -237,7 +262,7 @@ export async function create(data: {
   tempo_producao_dias?: number;
   ativo?: boolean;
 }): Promise<void> {
-  const { error } = await supabase.functions.invoke('external-db-bridge', {
+  const { error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE_FUNCTION, {
     body: {
       table: 'tecnica_gravacao',
       operation: 'insert',
@@ -269,7 +294,7 @@ export async function update(id: string, data: Partial<{
   tempo_producao_dias: number;
   ativo: boolean;
 }>): Promise<void> {
-  const { error } = await supabase.functions.invoke('external-db-bridge', {
+  const { error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE_FUNCTION, {
     body: {
       table: 'tecnica_gravacao',
       operation: 'update',
@@ -295,7 +320,7 @@ export async function toggleActive(id: string, isActive: boolean): Promise<void>
  * Remove técnica do BD EXTERNO
  */
 export async function remove(id: string): Promise<void> {
-  const { error } = await supabase.functions.invoke('external-db-bridge', {
+  const { error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE_FUNCTION, {
     body: {
       table: 'tecnica_gravacao',
       operation: 'delete',

@@ -4009,3 +4009,4 @@ describe("MagicUpResultPanel — Onda 5: roving tabindex EXCLUSIVO após navega�
     assertExclusiveZero(getThumbs(), to, `N=5 thumbs ${key}`);
   });
 });
+import React from 'react';

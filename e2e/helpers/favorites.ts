@@ -8,11 +8,11 @@
  * Equivalente a um `try/finally` por teste, sem precisar envolver cada
  * assertion em try/catch.
  */
-import type { Page, TestType } from "@playwright/test";
-import { expect } from "@playwright/test";
-import { Sel } from "../fixtures/selectors";
+import type { Locator, Page, TestType } from '@playwright/test';
+import { expect } from '@playwright/test';
+import { Sel } from '../fixtures/selectors';
 
-const STORAGE_KEY = "product-favorites";
+const STORAGE_KEY = 'product-favorites';
 
 export interface FavoriteItem {
   productId: string;
@@ -30,10 +30,7 @@ export async function readFavoritesStorage(page: Page): Promise<FavoriteItem[]> 
   }, STORAGE_KEY);
 }
 
-export async function writeFavoritesStorage(
-  page: Page,
-  items: FavoriteItem[],
-): Promise<void> {
+export async function writeFavoritesStorage(page: Page, items: FavoriteItem[]): Promise<void> {
   await page.evaluate(
     ({ key, value }) => {
       try {
@@ -44,6 +41,76 @@ export async function writeFavoritesStorage(
     },
     { key: STORAGE_KEY, value: items },
   );
+}
+
+/**
+ * Abre as ações rápidas do card e devolve o toggle de favorito acionável.
+ * No desktop os botões expandidos existem no DOM, mas ficam sem eventos até
+ * o usuário abrir o menu; clicar neles diretamente não representa a jornada.
+ */
+export async function openCatalogFavoriteAction(card: Locator): Promise<Locator> {
+  await card.hover();
+  const toggle = card.locator(Sel.product.actionsToggle).first();
+  await expect(toggle).toBeVisible({ timeout: 10_000 });
+  if ((await toggle.getAttribute('data-actions-open')) !== 'true') {
+    await toggle.click();
+  }
+  await expect(toggle).toHaveAttribute('data-actions-open', 'true');
+
+  const favorite = card.locator(Sel.product.favorite).first();
+  await expect(favorite).toBeVisible({ timeout: 10_000 });
+  return favorite;
+}
+
+/** Define o estado do favorito percorrendo também o seletor de variante. */
+export async function setCatalogFavorite(
+  page: Page,
+  card: Locator,
+  desired: boolean,
+): Promise<Locator> {
+  const favorite = await openCatalogFavoriteAction(card);
+  const current = (await favorite.getAttribute('aria-pressed')) === 'true';
+  if (current === desired) return favorite;
+
+  const productId = await card.getAttribute('data-product-id');
+  if (!productId) throw new Error('Card do catálogo sem data-product-id');
+
+  await favorite.click();
+  if (desired) {
+    const noVariant = page.locator(Sel.variant.noVariant).first();
+    await noVariant
+      .waitFor({ state: 'visible', timeout: 1_500 })
+      .then(() => noVariant.click())
+      .catch(() => {
+        // Produtos sem variantes externas concluem a ação automaticamente.
+        // O poll do storage abaixo continua sendo a prova do resultado.
+      });
+  }
+
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          ({ key, id }) => {
+            try {
+              const parsed = JSON.parse(localStorage.getItem(key) ?? '[]') as FavoriteItem[];
+              return parsed.some((item) => item.productId === id);
+            } catch {
+              return false;
+            }
+          },
+          { key: STORAGE_KEY, id: productId },
+        ),
+      { message: 'localStorage não refletiu o favorito', timeout: 10_000 },
+    )
+    .toBe(desired);
+
+  await expect
+    .poll(() => card.locator(Sel.product.favorite).first().getAttribute('aria-pressed'), {
+      timeout: 10_000,
+    })
+    .toBe(String(desired));
+  return card.locator(Sel.product.favorite).first();
 }
 
 /**
@@ -71,14 +138,14 @@ export function installFavoritesCleanup(
   testInstance: TestType<any, any>,
   opts: { warmupPath?: string } = {},
 ): void {
-  const warmupPath = opts.warmupPath ?? "/produtos";
+  const warmupPath = opts.warmupPath ?? '/produtos';
   const snapshots = new WeakMap<Page, FavoriteItem[]>();
 
   testInstance.beforeEach(async ({ page }) => {
     try {
       // Precisa estar na origin para localStorage estar acessível
       if (!/^https?:/.test(page.url())) {
-        await page.goto(warmupPath, { waitUntil: "domcontentloaded" }).catch(() => {});
+        await page.goto(warmupPath, { waitUntil: 'domcontentloaded' }).catch(() => {});
       }
       const snap = await readFavoritesStorage(page).catch(() => [] as FavoriteItem[]);
       snapshots.set(page, snap);
@@ -93,7 +160,7 @@ export function installFavoritesCleanup(
     try {
       // Garante que estamos na origin para conseguir escrever no storage
       if (!/^https?:/.test(page.url())) {
-        await page.goto(warmupPath, { waitUntil: "domcontentloaded" }).catch(() => {});
+        await page.goto(warmupPath, { waitUntil: 'domcontentloaded' }).catch(() => {});
       }
       await writeFavoritesStorage(page, snap).catch(() => {});
     } catch {
@@ -120,12 +187,9 @@ export async function reloadAndAwaitFavoritesPage(
   page: Page,
   expectedCount: number,
 ): Promise<void> {
-  await page.reload({ waitUntil: "load" });
+  await page.reload({ waitUntil: 'load' });
 
-  await page
-    .locator(Sel.favorites.title)
-    .first()
-    .waitFor({ state: "visible", timeout: 10_000 });
+  await page.locator(Sel.favorites.title).first().waitFor({ state: 'visible', timeout: 10_000 });
 
   const list = page.locator(Sel.favorites.list).first();
   const empty = page.locator(Sel.favorites.emptyState).first();
@@ -135,21 +199,18 @@ export async function reloadAndAwaitFavoritesPage(
         ((await list.count()) > 0 && (await list.isVisible())) ||
         ((await empty.count()) > 0 && (await empty.isVisible())),
       {
-        message: "favorites-list ou favorites-empty-state deveriam estar visíveis pós-reload",
+        message: 'favorites-list ou favorites-empty-state deveriam estar visíveis pós-reload',
         timeout: 10_000,
       },
     )
     .toBe(true);
 
   const countLoc = page.locator(Sel.favorites.countItems).first();
-  await countLoc.waitFor({ state: "visible", timeout: 10_000 });
+  await countLoc.waitFor({ state: 'visible', timeout: 10_000 });
   await expect
-    .poll(
-      async () => Number.parseInt((await countLoc.innerText()).trim(), 10) || 0,
-      {
-        message: `header favorites-count-items deveria reidratar para ${expectedCount}`,
-        timeout: 10_000,
-      },
-    )
+    .poll(async () => Number.parseInt((await countLoc.innerText()).trim(), 10) || 0, {
+      message: `header favorites-count-items deveria reidratar para ${expectedCount}`,
+      timeout: 10_000,
+    })
     .toBe(expectedCount);
 }

@@ -2,10 +2,9 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle2, AlertTriangle, Loader2, RotateCcw, FileDown } from 'lucide-react';
-import type { BatchImportProgress, BatchImportResult } from '@/lib/external-db/batch-import';
-import { generateErrorReportCSV } from '@/lib/external-db/batch-import';
+import { type BatchImportProgress, type BatchImportResult, generateErrorReportCSV } from "@/lib/external-db/batch-import";
 import { toast } from 'sonner';
-import type { ValidationResult } from './types';
+import type { SpreadsheetRow, ValidationResult } from './types';
 
 function downloadBlob(content: string, filename: string, type: string) {
   const blob = new Blob([content], { type });
@@ -45,9 +44,21 @@ interface StepCompleteProps {
   importMode: string;
   invalidCount: number;
   validationResults: ValidationResult[];
-  rawData: Record<string, any>[];
+  rawData: SpreadsheetRow[];
   onReset: () => void;
   onClose: () => void;
+}
+
+function ImportErrors({ errors }: { errors: BatchImportResult['errors'] }) {
+  if (errors.length === 0) return null;
+  return (
+    <ScrollArea className="h-[150px] border rounded-lg p-3">
+      <p className="text-xs font-medium mb-2">Erros detalhados:</p>
+      {errors.map((error, index) => (
+        <p key={index} className="text-xs text-destructive mb-1">Linhas {error.startRow}–{error.endRow}: {error.message}</p>
+      ))}
+    </ScrollArea>
+  );
 }
 
 export function StepComplete({ importResult, importMode, invalidCount, validationResults, rawData, onReset, onClose }: StepCompleteProps) {
@@ -56,8 +67,8 @@ export function StepComplete({ importResult, importMode, invalidCount, validatio
       .filter(r => !r.valid)
       .map(r => ({
         row: r.row,
-        sku: r.data?.sku || rawData[r.row - 1]?.sku || '',
-        name: r.data?.name || rawData[r.row - 1]?.name || '',
+        sku: String(r.data?.sku || rawData[r.row - 1]?.sku || ''),
+        name: String(r.data?.name || rawData[r.row - 1]?.name || ''),
         errors: r.errors,
       }));
     const csv = generateErrorReportCSV(importResult.errors, failedRows);
@@ -83,14 +94,7 @@ export function StepComplete({ importResult, importMode, invalidCount, validatio
         </p>
       </div>
 
-      {importResult.errors.length > 0 && (
-        <ScrollArea className="h-[150px] border rounded-lg p-3">
-          <p className="text-xs font-medium mb-2">Erros detalhados:</p>
-          {importResult.errors.map((e, i) => (
-            <p key={i} className="text-xs text-destructive mb-1">Linhas {e.startRow}–{e.endRow}: {e.message}</p>
-          ))}
-        </ScrollArea>
-      )}
+      <ImportErrors errors={importResult.errors} />
 
       <div className="flex justify-center gap-2">
         {(importResult.failed > 0 || invalidCount > 0) && (

@@ -3,11 +3,89 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFavoritesStore, type FavoriteVariantInfo } from "@/stores/useFavoritesStore";
-import { useFavoriteLists, useFavoriteListItems } from "@/hooks/useFavoriteLists";
+import { useFavoriteLists } from "@/hooks/useFavoriteLists";
 import type { Product } from "@/types/product-catalog";
 import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 
 const LAST_LIST_KEY = "favorites-last-used-list-id";
+const FAVORITE_MEMBERSHIP_QUERY_KEY = "favorite-membership";
+
+function membershipMap(rows: Array<{ product_id: string; list_id: string }>) {
+  const result = new Map<string, Set<string>>();
+  for (const row of rows) {
+    const lists = result.get(row.product_id) ?? new Set<string>();
+    lists.add(row.list_id);
+    result.set(row.product_id, lists);
+  }
+  return result;
+}
+
+function preferredListId(
+  forceListId: string | undefined,
+  lastUsedListId: string | null,
+  lists: Array<{ id: string }>,
+  defaultList: { id: string } | null | undefined,
+) {
+  if (forceListId) return forceListId;
+  if (lastUsedListId && lists.some((list) => list.id === lastUsedListId)) return lastUsedListId;
+  return defaultList?.id ?? null;
+}
+
+async function persistFavorite(
+  userId: string,
+  listId: string,
+  product: Product,
+  variant?: FavoriteVariantInfo,
+) {
+  const { error } = await supabase.from("favorite_items").upsert(
+    {
+      list_id: listId,
+      user_id: userId,
+      product_id: product.id,
+      variant_id: variant?.variant_id ?? null,
+      variant_info: (variant ?? null) as never,
+      price_at_save: typeof product.price === "number" ? product.price : null,
+    },
+    { onConflict: "list_id,product_id,variant_id", ignoreDuplicates: false },
+  );
+  if (error) throw error;
+}
+
+function saveLastListId(listId: string) {
+  try {
+    localStorage.setItem(LAST_LIST_KEY, listId);
+  } catch (error) {
+    logger.warn("Não foi possível salvar a última lista de favoritos", error);
+  }
+}
+
+type FavoriteDecision = "local" | "remove" | "add" | "picker";
+interface FavoriteClickOptions {
+  shiftKey?: boolean;
+  variant?: FavoriteVariantInfo;
+  forceListId?: string;
+}
+
+function normalizedFavoriteOptions(options: FavoriteClickOptions | undefined) {
+  return {
+    shiftKey: Boolean(options?.shiftKey),
+    variant: options?.variant,
+    forceListId: options?.forceListId,
+  };
+}
+
+function favoriteDecision(
+  authenticated: boolean,
+  alreadyFavorite: boolean,
+  forceList: boolean,
+  directAdd: boolean,
+): FavoriteDecision {
+  if (!authenticated) return "local";
+  if (alreadyFavorite) return "remove";
+  if (forceList || directAdd) return "add";
+  return "picker";
+}
 
 /**
  * Hook orquestrador para favoritar a partir do catálogo.
@@ -25,7 +103,7 @@ export function useFavoriteQuickAdd() {
 
   // Index global de membership: produto X está em quais listas?
   const { data: membership = new Map<string, Set<string>>() } = useQuery({
-    queryKey: ["favorite-membership", user?.id],
+    queryKey: [FAVORITE_MEMBERSHIP_QUERY_KEY, user?.id],
     queryFn: async () => {
       if (!user) return new Map<string, Set<string>>();
       const { data, error } = await supabase
@@ -33,12 +111,7 @@ export function useFavoriteQuickAdd() {
         .select("product_id, list_id")
         .eq("user_id", user.id);
       if (error) throw error;
-      const map = new Map<string, Set<string>>();
-      (data ?? []).forEach((row: { product_id: string; list_id: string }) => {
-        if (!map.has(row.product_id)) map.set(row.product_id, new Set());
-        map.get(row.product_id)!.add(row.list_id);
-      });
-      return map;
+      return membershipMap(data ?? []);
     },
     enabled: !!user,
     staleTime: 30_000,
@@ -55,22 +128,11 @@ export function useFavoriteQuickAdd() {
     async (listId: string, product: Product, variant?: FavoriteVariantInfo) => {
       if (!user) return;
       try {
-        const { error } = await supabase.from("favorite_items").upsert(
-          {
-            list_id: listId,
-            user_id: user.id,
-            product_id: product.id,
-            variant_id: variant?.variant_id ?? null,
-            variant_info: (variant ?? null) as never,
-            price_at_save: typeof product.price === "number" ? product.price : null,
-          },
-          { onConflict: "list_id,product_id,variant_id", ignoreDuplicates: false }
-        );
-        if (error) throw error;
-        try { localStorage.setItem(LAST_LIST_KEY, listId); } catch {}
+        await persistFavorite(user.id, listId, product, variant);
+        saveLastListId(listId);
         // Sincroniza store legado (estado visual de "favoritado")
         if (!isFavorite(product.id)) toggleFavorite(product.id, variant);
-        qc.invalidateQueries({ queryKey: ["favorite-membership"] });
+        qc.invalidateQueries({ queryKey: [FAVORITE_MEMBERSHIP_QUERY_KEY] });
         qc.invalidateQueries({ queryKey: ["favorite-items"] });
         qc.invalidateQueries({ queryKey: ["favorite-lists"] });
         const listName = lists.find((l) => l.id === listId)?.name ?? "lista";
@@ -94,7 +156,7 @@ export function useFavoriteQuickAdd() {
           .eq("user_id", user.id)
           .eq("product_id", productId);
         if (isFavorite(productId)) toggleFavorite(productId);
-        qc.invalidateQueries({ queryKey: ["favorite-membership"] });
+        qc.invalidateQueries({ queryKey: [FAVORITE_MEMBERSHIP_QUERY_KEY] });
         qc.invalidateQueries({ queryKey: ["favorite-items"] });
         qc.invalidateQueries({ queryKey: ["favorite-lists"] });
       } catch (e) {
@@ -122,36 +184,17 @@ export function useFavoriteQuickAdd() {
   const handleFavoriteClick = useCallback(
     (
       product: Product,
-      opts?: { shiftKey?: boolean; variant?: FavoriteVariantInfo; forceListId?: string },
+      opts?: FavoriteClickOptions,
     ): { resolved: true } | { resolved: false; reason: "picker-needed" } => {
-      if (!user) {
-        toggleFavorite(product.id, opts?.variant);
-        return { resolved: true };
-      }
+      const options = normalizedFavoriteOptions(opts);
       const alreadyFav = isFavorite(product.id);
-      if (alreadyFav) {
-        // Toggle off: remove de tudo
-        void removeFromAll(product.id);
-        return { resolved: true };
-      }
-      // Add path
-      if (opts?.forceListId) {
-        void addToList(opts.forceListId, product, opts.variant);
-        return { resolved: true };
-      }
-      // Sem múltiplas listas OU shift pressionado → vai para a default
-      if (!hasMultipleLists || opts?.shiftKey) {
-        const target = (lastUsedListId && lists.find((l) => l.id === lastUsedListId)) || defaultList;
-        if (target) {
-          void addToList(target.id, product, opts?.variant);
-        } else {
-          // Sem listas remotas ainda — fallback puro store legado
-          toggleFavorite(product.id, opts?.variant);
-        }
-        return { resolved: true };
-      }
-      // Múltiplas listas e sem shift → o caller deve mostrar picker
-      return { resolved: false, reason: "picker-needed" };
+      const targetListId = preferredListId(options.forceListId, lastUsedListId, lists, defaultList);
+      const decision = favoriteDecision(Boolean(user), alreadyFav, Boolean(options.forceListId), !hasMultipleLists || options.shiftKey);
+      if (decision === "picker") return { resolved: false, reason: "picker-needed" };
+      if (decision === "remove") void removeFromAll(product.id);
+      if (decision === "add" && targetListId) void addToList(targetListId, product, options.variant);
+      if (decision === "local" || (decision === "add" && !targetListId)) toggleFavorite(product.id, options.variant);
+      return { resolved: true };
     },
     [user, isFavorite, hasMultipleLists, lastUsedListId, defaultList, lists, toggleFavorite, removeFromAll, addToList]
   );

@@ -1,4 +1,4 @@
-import { Package, Truck, CheckCircle2, Clock, XCircle, Settings2, type LucideIcon } from "lucide-react";
+import { Package, Truck, CheckCircle2, XCircle, Settings2, type LucideIcon } from "lucide-react";
 
 export type SicoobFulfillmentStatus = 
   | 'in_production' 

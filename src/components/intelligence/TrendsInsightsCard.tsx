@@ -2,7 +2,7 @@
  * TrendsInsightsCard — narrativa em IA dos dados de tendências.
  * Consome a edge function `trends-insights` (Lovable AI).
  */
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -107,7 +107,7 @@ export function TrendsInsightsCard({ days }: TrendsInsightsCardProps) {
   );
 }
 
-function InsightRow({ icon, label, text }: { icon: React.ReactNode; label: string; text?: string }) {
+function InsightRow({ icon, label, text }: { icon: ReactNode; label: string; text?: string }) {
   if (!text) return null;
   return (
     <div className="flex items-start gap-2 p-2.5 rounded-md bg-card/60 border border-border/40">

@@ -1,24 +1,14 @@
-import { useEffect, useState, useMemo } from "react";
+import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
-import {
-  FilePlus,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  TrendingUp,
-  FileText,
-  ArrowRight,
-  DollarSign,
-  Target,
-  BarChart3,
-} from "lucide-react";
+import { FilePlus, Clock, TrendingUp, FileText, DollarSign, Target, BarChart3 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useQuotes, Quote } from "@/hooks/quotes/useQuotes";
-import { useAuth } from "@/contexts/AuthContext";
+import { useQuotes } from "@/hooks/quotes/useQuotes";
 import { startOfMonth, endOfMonth, parseISO, isWithinInterval } from "date-fns";
+
+const PRIMARY_TEXT = "text-primary";
 
 function formatCurrency(value: number): string {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -27,7 +17,6 @@ function formatCurrency(value: number): string {
 export function QuickActionsPanel() {
   const navigate = useNavigate();
   const { quotes, isLoading } = useQuotes();
-  const { user } = useAuth();
 
   const stats = useMemo(() => {
     if (!quotes.length) return { pending: 0, approved: 0, rejected: 0, monthTotal: 0, monthCount: 0, conversionRate: 0 };
@@ -88,13 +77,13 @@ export function QuickActionsPanel() {
       label: "Orçamentos no Mês",
       value: stats.monthCount.toString(),
       icon: FileText,
-      color: "text-primary",
+      color: PRIMARY_TEXT,
     },
     {
       label: "Valor Total (Mês)",
       value: formatCurrency(stats.monthTotal),
       icon: DollarSign,
-      color: "text-primary",
+      color: PRIMARY_TEXT,
     },
     {
       label: "Taxa de Conversão",
@@ -106,7 +95,7 @@ export function QuickActionsPanel() {
       label: "Aprovados / Rejeitados",
       value: `${stats.approved} / ${stats.rejected}`,
       icon: TrendingUp,
-      color: "text-primary",
+      color: PRIMARY_TEXT,
     },
   ];
 
@@ -122,11 +111,11 @@ export function QuickActionsPanel() {
             <Button
               key={action.label}
               variant={action.variant}
-              className="h-auto py-4 px-4 flex flex-col items-center gap-2 relative"
+              className="h-auto min-w-0 whitespace-normal py-4 px-2 sm:px-4 flex flex-col items-center gap-2 relative"
               onClick={action.onClick}
             >
               <action.icon className="h-5 w-5" />
-              <span className="text-xs font-medium text-center leading-tight">{action.label}</span>
+              <span className="w-full break-words text-xs font-medium text-center leading-tight">{action.label}</span>
               {action.badge && (
                 <Badge
                   variant="destructive"

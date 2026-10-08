@@ -81,22 +81,20 @@ class RamoAtividadeService extends BaseHttpService {
 
   // Criar ramo
   async createRamo(data: Partial<RamoAtividade>): Promise<RamoAtividade> {
-    const res = await this.callBridge<RamoAtividade>(
+    return this.callBridge<RamoAtividade>(
       'ramo_atividade',
       'insert',
       { data }
     );
-    return res;
   }
 
   // Atualizar ramo
   async updateRamo(id: string, data: Partial<RamoAtividade>): Promise<RamoAtividade> {
-    const res = await this.callBridge<RamoAtividade>(
+    return this.callBridge<RamoAtividade>(
       'ramo_atividade',
       'update',
       { id, data }
     );
-    return res;
   }
 
   // Deletar ramo
@@ -202,22 +200,20 @@ class RamoAtividadeService extends BaseHttpService {
 
   // Criar segmento
   async createSegmento(data: Partial<RamoAtividadeFilho>): Promise<RamoAtividadeFilho> {
-    const res = await this.callBridge<RamoAtividadeFilho>(
+    return this.callBridge<RamoAtividadeFilho>(
       'ramo_atividade_filho',
       'insert',
       { data }
     );
-    return res;
   }
 
   // Atualizar segmento
   async updateSegmento(id: string, data: Partial<RamoAtividadeFilho>): Promise<RamoAtividadeFilho> {
-    const res = await this.callBridge<RamoAtividadeFilho>(
+    return this.callBridge<RamoAtividadeFilho>(
       'ramo_atividade_filho',
       'update',
       { id, data }
     );
-    return res;
   }
 
   // Deletar segmento

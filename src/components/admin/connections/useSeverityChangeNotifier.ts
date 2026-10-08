@@ -74,6 +74,57 @@ const SEV_TITLE: Record<"P0" | "P1", string> = {
   P1: "⚠️ Degradação detectada em integrações (P1)",
 };
 
+function updateLastSeen(state: NotifierState, severity: PulseSeverity): PulseSeverity | null {
+  const previous = state.lastSeen;
+  if (previous === severity) return previous;
+  if (severity === "P2") state.acked = { P0: false, P1: false };
+  state.lastSeen = severity;
+  saveState(state);
+  return previous;
+}
+
+function isAlertSeverity(severity: PulseSeverity): severity is "P0" | "P1" {
+  return severity === "P0" || severity === "P1";
+}
+
+function shouldNotify(state: NotifierState, severity: "P0" | "P1", previous: PulseSeverity | null): boolean {
+  if (state.muted[severity] || state.acked[severity]) return false;
+  if (Date.now() < state.snoozedUntil[severity]) return false;
+  return previous === null || previous !== severity;
+}
+
+function showSeverityToast(severity: "P0" | "P1", state: NotifierState, headline: string, reason: string) {
+  return toast(SEV_TITLE[severity], ({
+    description: `${headline}\n${reason}`,
+    duration: severity === "P0" ? Infinity : 30_000,
+    action: {
+      label: "Reconhecer",
+      onClick: () => {
+        state.acked[severity] = true;
+        saveState(state);
+        toast.success(`Alerta ${severity} reconhecido. Não será repetido até retornar a P2.`);
+      },
+    },
+    cancel: {
+      label: "Adiar 1h",
+      onClick: () => {
+        state.snoozedUntil[severity] = Date.now() + SNOOZE_MS;
+        saveState(state);
+        toast.message(`Alerta ${severity} adiado por 1h.`, {
+          action: {
+            label: "Não mostrar mais",
+            onClick: () => {
+              state.muted[severity] = true;
+              saveState(state);
+              toast.success(`Alertas ${severity} silenciados nesta sessão. Reative em Conexões.`);
+            },
+          },
+        });
+      },
+    },
+  }));
+}
+
 export function useSeverityChangeNotifier() {
   const { data } = usePulseBarStatus();
   const stateRef = useRef<NotifierState>(loadState());
@@ -82,64 +133,13 @@ export function useSeverityChangeNotifier() {
     if (!data) return;
     const sev = data.severity;
     const state = stateRef.current;
-    const prev = state.lastSeen;
+    const prev = updateLastSeen(state, sev);
 
-    // Atualiza lastSeen sempre
-    if (prev !== sev) {
-      // Reset de ack ao voltar para P2 — permite novo alerta na próxima escalada
-      if (sev === "P2") {
-        state.acked = { P0: false, P1: false };
-      }
-      state.lastSeen = sev;
-      saveState(state);
-    }
-
-    // Só notifica para P0/P1
-    if (sev !== "P0" && sev !== "P1") return;
-
-    // Regras de supressão
-    if (state.muted[sev]) return;
-    if (state.acked[sev]) return;
-    if (Date.now() < state.snoozedUntil[sev]) return;
-
-    // Evita re-disparar a cada refetch enquanto severidade fica igual:
-    // só dispara na transição de severidade OU primeira detecção (prev === null)
-    const isTransition = prev === null || prev !== sev;
-    if (!isTransition) return;
-
-    // Dispara toast com ações de confirmação
+    if (!isAlertSeverity(sev)) return;
+    if (!shouldNotify(state, sev, prev)) return;
     const headline = data.headline;
-    const reason = data.reasons[0] ?? "Veja detalhes na barra de status";
-
-    const toastId = toast(SEV_TITLE[sev], {
-      description: `${headline}\n${reason}`,
-      duration: sev === "P0" ? Infinity : 30_000,
-      action: {
-        label: "Reconhecer",
-        onClick: () => {
-          state.acked[sev] = true;
-          saveState(state);
-          toast.success(`Alerta ${sev} reconhecido. Não será repetido até retornar a P2.`);
-        },
-      },
-      cancel: {
-        label: "Adiar 1h",
-        onClick: () => {
-          state.snoozedUntil[sev] = Date.now() + SNOOZE_MS;
-          saveState(state);
-          toast.message(`Alerta ${sev} adiado por 1h.`, {
-            action: {
-              label: "Não mostrar mais",
-              onClick: () => {
-                state.muted[sev] = true;
-                saveState(state);
-                toast.success(`Alertas ${sev} silenciados nesta sessão. Reative em Conexões.`);
-              },
-            },
-          });
-        },
-      },
-    });
+    const reason = (data.reasons[0] ?? "Veja detalhes na barra de status");
+    const toastId = showSeverityToast(sev, state, headline, reason);
 
     return () => {
       toast.dismiss(toastId);

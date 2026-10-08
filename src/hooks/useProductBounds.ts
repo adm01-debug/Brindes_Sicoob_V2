@@ -26,8 +26,10 @@ export function useProductBounds(
   options?: ProductBoundsDetectOptions
 ): ProductBounds {
   const [bounds, setBounds] = useState<ProductBounds>(DEFAULT);
-
-  const optionsKey = `${options?.whiteThreshold ?? ""}|${options?.alphaThreshold ?? ""}|${options?.margin ?? ""}|${options?.maxSize ?? ""}`;
+  const whiteThreshold = options?.whiteThreshold;
+  const alphaThreshold = options?.alphaThreshold;
+  const margin = options?.margin;
+  const maxSize = options?.maxSize;
 
   useEffect(() => {
     if (!imageUrl) {
@@ -37,15 +39,14 @@ export function useProductBounds(
 
     let cancelled = false;
 
-    detectProductBounds(imageUrl, options).then((result) => {
+    detectProductBounds(imageUrl, { whiteThreshold, alphaThreshold, margin, maxSize }).then((result) => {
       if (!cancelled) setBounds(result);
     });
 
     return () => {
       cancelled = true;
     };
-  }, [imageUrl, optionsKey]);
+  }, [alphaThreshold, imageUrl, margin, maxSize, whiteThreshold]);
 
   return bounds;
 }
-

@@ -75,10 +75,9 @@ function buildUnavailableOption(
   technique: Technique,
   settings: TechniqueSettings,
   quantity: number,
-  productUnitPrice: number,
-  reason: string,
-  idSuffix?: string,
+  ...details: [productUnitPrice: number, reason: string, idSuffix?: string]
 ): SimulationOption {
+  const [productUnitPrice, reason, idSuffix] = details;
   const totalProductCost = productUnitPrice * quantity;
   return {
     id: `${technique.id}-${idSuffix ?? 'na'}`,
@@ -116,10 +115,9 @@ function buildLegacyFallbackOption(
   technique: Technique,
   settings: TechniqueSettings,
   quantity: number,
-  productUnitPrice: number,
-  reason: string,
-  idSuffix?: string,
+  ...details: [productUnitPrice: number, reason: string, idSuffix?: string]
 ): SimulationOption {
+  const [productUnitPrice, reason, idSuffix] = details;
   const positions = Math.max(1, settings.positions);
   const colors = Math.max(1, settings.colors);
   // Estimativa: unit_cost por cor por posição × quantidade + setup × posições
@@ -154,88 +152,71 @@ function buildLegacyFallbackOption(
   };
 }
 
-/**
- * Busca o preço de UMA técnica via RPC `fn_get_customization_price` e
- * monta a `SimulationOption` correspondente.
- */
-export async function fetchOptionForTechnique(
-  technique: Technique,
+function effectiveColorCount(area: PrintAreaV2, settings: TechniqueSettings) {
+  if (area.cobra_por_cor === false || (area.max_colors ?? 0) <= 1) return 1;
+  return Math.max(1, settings.colors);
+}
+
+function customizationRpcParams(
+  area: PrintAreaV2,
   settings: TechniqueSettings,
   quantity: number,
-  productUnitPrice: number,
-  printAreas: PrintAreaV2[],
-  idSuffix?: string,
-): Promise<SimulationOption> {
-  const area = resolveAreaIdForTechnique(technique, printAreas);
-
-  if (!area) {
-    return buildUnavailableOption(
-      technique,
-      settings,
-      quantity,
-      productUnitPrice,
-      'Técnica sem área de gravação cadastrada para este produto',
-      idSuffix,
-    );
-  }
-
-  const cobraPorCor = area.cobra_por_cor !== false;
-  const effectiveColors =
-    !cobraPorCor || (area.max_colors ?? 0) <= 1 ? 1 : Math.max(1, settings.colors);
-
-  const rpcParams: Record<string, unknown> = {
+  effectiveColors: number,
+) {
+  const params: Record<string, unknown> = {
     p_area_id: area.area_id,
     p_quantidade: quantity,
     p_num_cores: effectiveColors,
   };
-
   if (settings.width > 0 && settings.height > 0) {
-    rpcParams.p_largura_cm = settings.width;
-    rpcParams.p_altura_cm = settings.height;
+    params.p_largura_cm = settings.width;
+    params.p_altura_cm = settings.height;
   }
+  return params;
+}
 
-  let result: CustomizationPriceResponse | null = null;
-  let rpcError: string | null = null;
+async function fetchCustomizationPrice(params: Record<string, unknown>) {
   try {
-    result = await invokeExternalRpc<CustomizationPriceResponse>(
-      'fn_get_customization_price',
-      rpcParams,
-    );
-  } catch (err) {
-    rpcError = err instanceof Error ? err.message : 'Erro desconhecido na RPC';
-    logger.warn('[simulationPriceFetcher] RPC fn_get_customization_price falhou — usando fallback legado', err);
+    const result = await invokeExternalRpc<CustomizationPriceResponse>('fn_get_customization_price', params);
+    return { result, error: null as string | null };
+  } catch (error) {
+    logger.warn('[simulationPriceFetcher] RPC fn_get_customization_price falhou — usando fallback legado', error);
+    return {
+      result: null,
+      error: error instanceof Error ? error.message : 'Erro desconhecido na RPC',
+    };
   }
+}
 
-  if (!result?.success) {
-    const reason =
-      rpcError ??
-      (typeof result === 'object' && result && 'error' in result && typeof (result as { error?: unknown }).error === 'string'
-        ? (result as { error: string }).error
-        : 'RPC fn_get_customization_price não retornou preço para esta combinação');
-    return buildLegacyFallbackOption(
-      technique,
-      settings,
-      quantity,
-      productUnitPrice,
-      reason,
-      idSuffix,
-    );
+function customizationFailureReason(result: CustomizationPriceResponse | null, rpcError: string | null) {
+  if (rpcError) return rpcError;
+  if (typeof result === 'object' && result && 'error' in result) {
+    const error = (result as { error?: unknown }).error;
+    if (typeof error === 'string') return error;
   }
+  return 'RPC fn_get_customization_price não retornou preço para esta combinação';
+}
 
+function buildRpcOption(
+  technique: Technique,
+  settings: TechniqueSettings,
+  result: CustomizationPriceResponse,
+  ...pricing: [
+    quantity: number,
+    productUnitPrice: number,
+    effectiveColors: number,
+    idSuffix?: string,
+  ]
+): SimulationOption {
+  const [quantity, productUnitPrice, effectiveColors, idSuffix] = pricing;
   const flat = adaptPriceResponse(result as unknown as Record<string, unknown>);
-
-  // Multiplicador por nº de posições (a regra de negócio do simulador
-  // legado preserva esse comportamento — o RPC calcula 1 posição).
   const positions = Math.max(1, settings.positions);
   const unitCost = flat.unit_price * positions;
   const setupCost = flat.cost_setup * positions;
   const totalPersonalizationCost = flat.total_price * positions;
   const costPerUnit = quantity > 0 ? totalPersonalizationCost / quantity : 0;
-
   const totalProductCost = productUnitPrice * quantity;
   const grandTotal = totalProductCost + totalPersonalizationCost;
-  const grandTotalPerUnit = quantity > 0 ? grandTotal / quantity : 0;
-
   return {
     id: `${technique.id}-${idSuffix ?? Date.now()}`,
     techniqueId: technique.id,
@@ -253,11 +234,54 @@ export async function fetchOptionForTechnique(
     productUnitPrice,
     totalProductCost,
     grandTotal,
-    grandTotalPerUnit,
+    grandTotalPerUnit: quantity > 0 ? grandTotal / quantity : 0,
     priceSource: 'rpc',
     calculatedAt: new Date().toISOString(),
     rpcAvailable: true,
   };
+}
+
+/**
+ * Busca o preço de UMA técnica via RPC `fn_get_customization_price` e
+ * monta a `SimulationOption` correspondente.
+ */
+export async function fetchOptionForTechnique(
+  technique: Technique,
+  settings: TechniqueSettings,
+  quantity: number,
+  ...context: [productUnitPrice: number, printAreas: PrintAreaV2[], idSuffix?: string]
+): Promise<SimulationOption> {
+  const [productUnitPrice, printAreas, idSuffix] = context;
+  const area = resolveAreaIdForTechnique(technique, printAreas);
+
+  if (!area) {
+    return buildUnavailableOption(
+      technique,
+      settings,
+      quantity,
+      productUnitPrice,
+      'Técnica sem área de gravação cadastrada para este produto',
+      idSuffix,
+    );
+  }
+
+  const effectiveColors = effectiveColorCount(area, settings);
+  const { result, error: rpcError } = await fetchCustomizationPrice(
+    customizationRpcParams(area, settings, quantity, effectiveColors),
+  );
+
+  if (!result?.success) {
+    return buildLegacyFallbackOption(
+      technique,
+      settings,
+      quantity,
+      productUnitPrice,
+      customizationFailureReason(result, rpcError),
+      idSuffix,
+    );
+  }
+
+  return buildRpcOption(technique, settings, result, quantity, productUnitPrice, effectiveColors, idSuffix);
 }
 
 /**

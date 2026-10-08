@@ -1,14 +1,9 @@
 import { AlertTriangle } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Adjust if needed, or use standard
+import { Tooltip as ShadcnTooltip, TooltipContent as ShadcnTooltipContent, TooltipProvider as ShadcnTooltipProvider, TooltipTrigger as ShadcnTooltipTrigger } from "@/components/ui/tooltip";
+// Adjust if needed, or use standard
 import { cn } from "@/lib/utils";
 
 // Re-using common components from the main project
-import { 
-  Tooltip as ShadcnTooltip, 
-  TooltipContent as ShadcnTooltipContent, 
-  TooltipProvider as ShadcnTooltipProvider, 
-  TooltipTrigger as ShadcnTooltipTrigger 
-} from "@/components/ui/tooltip";
 
 interface SuspiciousWarningProps {
   isSuspicious: boolean;

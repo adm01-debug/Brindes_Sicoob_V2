@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash2, X, Download, RefreshCw } from "lucide-react";
+import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export interface BulkAction {

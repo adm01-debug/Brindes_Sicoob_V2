@@ -98,7 +98,7 @@ const defaultQueryOptions: DefaultOptions = {
     retryDelay: (attemptIndex, error) => {
       // CloudNotReady alinha com o polling adaptativo do status (5→10→15s)
       if (error instanceof Error && (error as { code?: string }).code === 'CLOUD_NOT_READY') {
-        return [3000, 5000, 8000, 12000, 15000][Math.min(attemptIndex, 4)];
+        return [3000, 5000, 8000, 12000, 15000][Math.min(attemptIndex, 4)] ?? 15000;
       }
       return Math.min(1000 * 2 ** attemptIndex, 30000);
     },

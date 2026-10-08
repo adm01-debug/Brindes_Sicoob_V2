@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import React from 'react';
-import { useCollections, type CollectionVariantInfo, type Collection } from '@/hooks/useCollections';
+import { useCollections, type CollectionVariantInfo } from '@/hooks/useCollections';
 
 // Mock AuthContext so useCollections can call useAuth
 vi.mock("@/contexts/AuthContext", () => ({
@@ -31,8 +31,6 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-const STORAGE_KEY = 'product-collections';
-
 describe('useCollections — variant architecture', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -56,8 +54,7 @@ describe('useCollections — variant architecture', () => {
 
   it('creates a collection with empty productItems', () => {
     const { result } = renderHook(() => useCollections());
-    let col: Collection;
-    act(() => { col = result.current.createCollection('Test'); });
+    act(() => { result.current.createCollection('Test'); });
     expect(result.current.collections[0].productItems).toEqual([]);
     expect(result.current.collections[0].productIds).toEqual([]);
   });
@@ -66,8 +63,7 @@ describe('useCollections — variant architecture', () => {
 
   it('stores variant info when adding product to collection', () => {
     const { result } = renderHook(() => useCollections());
-    let col: Collection;
-    act(() => { col = result.current.createCollection('Kits'); });
+    act(() => { result.current.createCollection('Kits'); });
     act(() => { result.current.addProductToCollection(result.current.collections[0].id, 'prod-1', greenVariant); });
 
     const collection = result.current.collections[0];

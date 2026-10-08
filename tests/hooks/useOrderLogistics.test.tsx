@@ -1,7 +1,7 @@
 import { renderHook } from "@testing-library/react";
 import { useOrderLogistics } from "@/hooks/orders/extensions";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -20,3 +20,4 @@ describe("useOrderLogistics", () => {
     expect(result.current.isLoading).toBe(true);
   });
 });
+import React from 'react';

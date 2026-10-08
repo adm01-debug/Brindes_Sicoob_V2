@@ -9,8 +9,8 @@
  *   - Espaçamento interno padronizado (space-y-4)
  *   - Suporte opcional a actions à direita do header
  */
-import type { LucideIcon } from "lucide-react";
-import { ChevronDown } from "lucide-react";
+import type { ReactNode } from 'react';
+import { type LucideIcon, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -22,14 +22,14 @@ interface ZoneSectionProps {
   description?: string;
   /** Tom semântico do header — afeta apenas o ícone + barra lateral */
   tone?: "primary" | "info" | "neutral";
-  actions?: React.ReactNode;
+  actions?: ReactNode;
   /** Quando true, aplica anel + glow temporário (ex: deep-link de incidente) */
   highlight?: boolean;
   /** Estado colapsado (oculta conteúdo, mantém header). */
   collapsed?: boolean;
   /** Handler para alternar colapso. Se ausente, botão de toggle é omitido. */
   onToggleCollapse?: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
 }
 
@@ -39,9 +39,56 @@ const TONE_CLS = {
   neutral: { iconBg: "bg-muted", iconColor: "text-muted-foreground", bar: "bg-border" },
 } as const;
 
+function ZoneActions({ actions, onToggleCollapse, collapsed, contentId, title }: Pick<
+  ZoneSectionProps,
+  'actions' | 'onToggleCollapse' | 'collapsed' | 'title'
+> & { contentId: string }) {
+  if (!actions && !onToggleCollapse) return null;
+  return (
+    <div className="flex items-center gap-2 shrink-0">
+      {actions}
+      {onToggleCollapse && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={onToggleCollapse}
+              aria-expanded={!collapsed}
+              aria-controls={contentId}
+              aria-label={collapsed ? `Expandir ${title}` : `Colapsar ${title}`}
+            >
+              <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", collapsed && "-rotate-90")} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">{collapsed ? "Expandir zona" : "Colapsar zona"}</TooltipContent>
+        </Tooltip>
+      )}
+    </div>
+  );
+}
+
+function ZoneHeader(props: Pick<ZoneSectionProps, "id" | "icon" | "title" | "description" | "tone" | "actions" | "collapsed" | "onToggleCollapse">) {
+  const { id, title, description, tone, actions, collapsed, onToggleCollapse } = props;
+  const Icon = props.icon;
+  const headingId = `${id}-heading`;
+  const contentId = `${id}-content`;
+  const toneClasses = TONE_CLS[tone ?? "primary"];
+  return (
+    <header className="flex items-start gap-3">
+      <span className={cn("h-8 w-1 rounded-full shrink-0 mt-1", toneClasses.bar)} aria-hidden="true" />
+      <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center shrink-0", toneClasses.iconBg)} aria-hidden="true"><Icon className={cn("h-4 w-4", toneClasses.iconColor)} /></div>
+      <div className="flex-1 min-w-0"><h2 id={headingId} className="text-base font-semibold leading-tight tracking-tight">{title}</h2>{description && <p className="text-xs text-muted-foreground leading-snug mt-0.5">{description}</p>}</div>
+      <ZoneActions actions={actions} onToggleCollapse={onToggleCollapse} collapsed={collapsed} contentId={contentId} title={title} />
+    </header>
+  );
+}
+
 export function ZoneSection({
   id,
-  icon: Icon,
+  icon,
   title,
   description,
   tone = "primary",
@@ -54,10 +101,9 @@ export function ZoneSection({
 }: ZoneSectionProps) {
   const headingId = `${id}-heading`;
   const contentId = `${id}-content`;
-  const tcls = TONE_CLS[tone];
 
   return (
-    <section
+    (<section
       id={id}
       aria-labelledby={headingId}
       className={cn(
@@ -66,65 +112,7 @@ export function ZoneSection({
         className,
       )}
     >
-      <header className="flex items-start gap-3">
-        <span
-          className={cn("h-8 w-1 rounded-full shrink-0 mt-1", tcls.bar)}
-          aria-hidden="true"
-        />
-        <div
-          className={cn(
-            "h-9 w-9 rounded-lg flex items-center justify-center shrink-0",
-            tcls.iconBg,
-          )}
-          aria-hidden="true"
-        >
-          <Icon className={cn("h-4 w-4", tcls.iconColor)} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <h2
-            id={headingId}
-            className="text-base font-semibold leading-tight tracking-tight"
-          >
-            {title}
-          </h2>
-          {description && (
-            <p className="text-xs text-muted-foreground leading-snug mt-0.5">
-              {description}
-            </p>
-          )}
-        </div>
-        {(actions || onToggleCollapse) && (
-          <div className="flex items-center gap-2 shrink-0">
-            {actions}
-            {onToggleCollapse && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                    onClick={onToggleCollapse}
-                    aria-expanded={!collapsed}
-                    aria-controls={contentId}
-                    aria-label={collapsed ? `Expandir ${title}` : `Colapsar ${title}`}
-                  >
-                    <ChevronDown
-                      className={cn(
-                        "h-4 w-4 transition-transform duration-200",
-                        collapsed && "-rotate-90",
-                      )}
-                    />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  {collapsed ? "Expandir zona" : "Colapsar zona"}
-                </TooltipContent>
-              </Tooltip>
-            )}
-          </div>
-        )}
-      </header>
+      <ZoneHeader id={id} icon={icon} title={title} description={description} tone={tone} actions={actions} collapsed={collapsed} onToggleCollapse={onToggleCollapse} />
       <div
         id={contentId}
         hidden={collapsed}
@@ -132,6 +120,6 @@ export function ZoneSection({
       >
         {children}
       </div>
-    </section>
+    </section>)
   );
 }

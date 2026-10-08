@@ -54,10 +54,10 @@ try {
       }
 
       await page.addScriptTag({ content: axe.source });
-      const accessibility = await page.evaluate(async () => window.axe.run(document.body, {
+      const accessibility = await page.evaluate(async () => globalThis.window.axe.run(globalThis.document.body, {
         runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] },
       }));
-      const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
+      const overflow = await page.evaluate(() => globalThis.document.documentElement.scrollWidth > globalThis.innerWidth);
 
       await page.screenshot({
         path: `${evidenceDirectory}/${scenario.slug}-${viewport.width}.png`,

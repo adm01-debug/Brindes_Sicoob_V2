@@ -178,17 +178,25 @@ const LIGHT_SPECIFIC_COLORS: Record<string, boolean> = {
   silver: true,
 };
 
+function normalizeColorName(value: string): string {
+  return value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function containsAny(normalized: string, values: string[]): boolean {
+  return values.some((value) => normalized.includes(normalizeColorName(value)));
+}
+
 /**
  * Detecta o grupo de cor baseado no nome
  */
 function getColorGroup(colorName: string): number {
   if (!colorName) return 99;
   
-  const normalized = colorName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const normalized = normalizeColorName(colorName);
   
   // Procura por palavras-chave no nome da cor
   for (const [keyword, order] of Object.entries(COLOR_GROUP_ORDER)) {
-    const normalizedKeyword = keyword.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const normalizedKeyword = normalizeColorName(keyword);
     if (normalized.includes(normalizedKeyword)) {
       return order;
     }
@@ -239,46 +247,12 @@ function getLuminanceFromHex(hex: string | undefined | null): number {
 function getLuminosityPriority(colorName: string): number {
   if (!colorName) return 2;
   
-  const normalized = colorName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  
-  // 1. Primeiro verifica modificadores GENÉRICOS explícitos (mais importante)
-  for (const modifier of DARK_MODIFIERS) {
-    const normalizedMod = modifier.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    if (normalized.includes(normalizedMod)) {
-      return 1; // Escuro primeiro
-    }
-  }
-  
-  for (const modifier of LIGHT_MODIFIERS) {
-    const normalizedMod = modifier.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    if (normalized.includes(normalizedMod)) {
-      return 3; // Claro por último
-    }
-  }
-  
-  for (const modifier of MEDIUM_MODIFIERS) {
-    const normalizedMod = modifier.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    if (normalized.includes(normalizedMod)) {
-      return 2; // Médio
-    }
-  }
-  
-  // 2. Depois verifica se é uma cor específica que indica tom escuro/claro
-  for (const [colorKey, _] of Object.entries(DARK_SPECIFIC_COLORS)) {
-    const normalizedKey = colorKey.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    if (normalized.includes(normalizedKey)) {
-      return 1; // Variação escura do grupo
-    }
-  }
-  
-  for (const [colorKey, _] of Object.entries(LIGHT_SPECIFIC_COLORS)) {
-    const normalizedKey = colorKey.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    if (normalized.includes(normalizedKey)) {
-      return 3; // Variação clara do grupo
-    }
-  }
-  
-  // Padrão: médio (cores base como "Azul", "Verde", etc.)
+  const normalized = normalizeColorName(colorName);
+  if (containsAny(normalized, DARK_MODIFIERS)) return 1;
+  if (containsAny(normalized, LIGHT_MODIFIERS)) return 3;
+  if (containsAny(normalized, MEDIUM_MODIFIERS)) return 2;
+  if (containsAny(normalized, Object.keys(DARK_SPECIFIC_COLORS))) return 1;
+  if (containsAny(normalized, Object.keys(LIGHT_SPECIFIC_COLORS))) return 3;
   return 2;
 }
 

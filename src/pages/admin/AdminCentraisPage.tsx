@@ -4,19 +4,43 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, Pencil, Trash2, Globe, Palette, MapPin } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Globe, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import type { Tables } from "@/integrations/supabase/types";
+
+type Central = Tables<"sicoob_centrais">;
+interface CentralFormData {
+  name: string;
+  code: string;
+  region: string;
+  logo_url: string;
+  primary_color: string;
+}
+
+interface CentralFormDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  central: Central | null;
+  onSave: (formData: CentralFormData) => Promise<void>;
+}
+
+const EMPTY_CENTRAL_FORM: CentralFormData = {
+  name: "",
+  code: "",
+  region: "",
+  logo_url: "",
+  primary_color: "#003641",
+};
 
 export default function AdminCentraisPage() {
-  const [centrais, setCentrais] = useState<any[]>([]);
+  const [centrais, setCentrais] = useState<Central[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingCentral, setEditingCentral] = useState<any>(null);
+  const [editingCentral, setEditingCentral] = useState<Central | null>(null);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -37,7 +61,7 @@ export default function AdminCentraisPage() {
 
   useEffect(() => { fetchData(); }, []);
 
-  const handleSave = async (formData: any) => {
+  const handleSave = async (formData: CentralFormData) => {
     try {
       if (editingCentral) {
         const { error } = await supabase.from('sicoob_centrais').update(formData).eq('id', editingCentral.id);
@@ -72,7 +96,7 @@ export default function AdminCentraisPage() {
 
   const filtered = centrais.filter(c => 
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    c.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (c.code ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.region?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -161,13 +185,22 @@ export default function AdminCentraisPage() {
 }
 
 
-function CentralFormDialog({ open, onOpenChange, central, onSave }: any) {
-  const [formData, setFormData] = useState<any>({ name: '', code: '', region: '', logo_url: '', primary_color: '#003641' });
+function CentralFormDialog({ open, onOpenChange, central, onSave }: CentralFormDialogProps) {
+  const [formData, setFormData] = useState<CentralFormData>(EMPTY_CENTRAL_FORM);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => { 
-    if (central) setFormData(central); 
-    else setFormData({ name: '', code: '', region: '', logo_url: '', primary_color: '#003641' }); 
+    if (central) {
+      setFormData({
+        name: central.name,
+        code: central.code ?? "",
+        region: central.region ?? "",
+        logo_url: central.logo_url ?? "",
+        primary_color: central.primary_color ?? "#003641",
+      });
+    } else {
+      setFormData(EMPTY_CENTRAL_FORM);
+    }
   }, [central, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {

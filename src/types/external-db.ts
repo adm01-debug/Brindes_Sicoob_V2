@@ -12,8 +12,7 @@ export interface ExternalProduct {
   short_description?: string;
   category_name?: string;
   brand?: string;
-  sale_price?: number;
-  base_price?: number;
+  sale_price?: number | null;
   cost_price?: number;
   stock_quantity?: number;
   is_bestseller?: boolean;
@@ -21,7 +20,8 @@ export interface ExternalProduct {
   is_kit?: boolean;
   supplier_code?: string;
   supplier_name?: string;
-  image_url?: string;
+  primary_image_url?: string | null;
+  is_active?: boolean | null;
   videos?: string[];
   [key: string]: unknown;
 }

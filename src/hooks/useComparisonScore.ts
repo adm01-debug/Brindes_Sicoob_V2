@@ -12,6 +12,11 @@
  * Pesos podem ser sobrescritos pelo consumidor (popover de ajuste).
  */
 import { useMemo } from "react";
+import type { Product } from "@/types/product-catalog";
+
+type ComparisonProduct = Product & {
+  supplier: Product["supplier"] & { verified?: boolean; isVerified?: boolean };
+};
 
 export interface ComparisonScoreWeights {
   price: number;
@@ -59,8 +64,12 @@ function normalizeHigherBetter(value: number, min: number, max: number): number 
   return (value - min) / (max - min);
 }
 
+function metricAt(values: number[], index: number, fallback: number): number {
+  return values[index] ?? fallback;
+}
+
 export function useComparisonScore(
-  products: any[],
+  products: ComparisonProduct[],
   weights: ComparisonScoreWeights = DEFAULT_SCORE_WEIGHTS
 ): ProductScore[] {
   return useMemo(() => {
@@ -88,12 +97,12 @@ export function useComparisonScore(
     const scores = products.map((p, i) => {
       const verified = Boolean(p.supplier?.verified ?? p.supplier?.isVerified ?? false);
       const breakdown: Record<keyof ComparisonScoreWeights, number> = {
-        price: normalizeLowerBetter(prices[i]!, minPrice, maxPrice) * weights.price,
-        stock: normalizeHigherBetter(stocks[i]!, minStock, maxStock) * weights.stock,
-        minQuantity: normalizeLowerBetter(mins[i]!, minMin, maxMin) * weights.minQuantity,
-        colorVariety: normalizeHigherBetter(colorCounts[i], minColors, maxColors) * weights.colorVariety,
+        price: normalizeLowerBetter(metricAt(prices, i, 0), minPrice, maxPrice) * weights.price,
+        stock: normalizeHigherBetter(metricAt(stocks, i, 0), minStock, maxStock) * weights.stock,
+        minQuantity: normalizeLowerBetter(metricAt(mins, i, 1), minMin, maxMin) * weights.minQuantity,
+        colorVariety: normalizeHigherBetter(colorCounts[i] ?? 0, minColors, maxColors) * weights.colorVariety,
         verifiedSupplier: (verified ? 1 : 0.4) * weights.verifiedSupplier,
-        leadTime: normalizeLowerBetter(leadTimes[i]!, minLead, maxLead) * weights.leadTime,
+        leadTime: normalizeLowerBetter(metricAt(leadTimes, i, 2), minLead, maxLead) * weights.leadTime,
       };
       const total = Object.values(breakdown).reduce((a, b) => a + b, 0);
       return {
@@ -108,7 +117,8 @@ export function useComparisonScore(
     // Determina vencedor + rank
     const sorted = [...scores].sort((a, b) => b.total - a.total);
     sorted.forEach((s, idx) => {
-      const original = scores.find(x => x.productId === s.productId)!;
+      const original = scores.find(x => x.productId === s.productId);
+      if (!original) return;
       original.rank = idx + 1;
       original.isWinner = idx === 0;
     });

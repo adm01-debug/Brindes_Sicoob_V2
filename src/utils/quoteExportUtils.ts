@@ -35,7 +35,8 @@ export async function exportQuotesAsZip(quoteIds: string[], userId: string) {
 
   const fetchPromises = quotes.map(async (quote) => {
     try {
-      const pdfReference = quote.approved_pdf_url!;
+      const pdfReference = quote.approved_pdf_url;
+      if (!pdfReference) throw new Error(`Orçamento ${quote.quote_number} sem PDF aprovado`);
       const blob = pdfReference.startsWith("http")
         ? await fetch(pdfReference).then(async (response) => {
             if (!response.ok) throw new Error(`Não foi possível baixar o PDF ${quote.quote_number}`);

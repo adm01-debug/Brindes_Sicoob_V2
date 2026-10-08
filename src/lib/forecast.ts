@@ -28,8 +28,9 @@ export function linearRegression(values: number[]): {
 
   let num = 0, den = 0;
   for (let i = 0; i < n; i++) {
-    num += (xs[i]! - meanX) * (values[i]! - meanY);
-    den += (xs[i]! - meanX) ** 2;
+    const x = xs[i] ?? 0;
+    num += (x - meanX) * ((values[i] ?? 0) - meanY);
+    den += (x - meanX) ** 2;
   }
   const slope = den === 0 ? 0 : num / den;
   const intercept = meanY - slope * meanX;
@@ -38,7 +39,7 @@ export function linearRegression(values: number[]): {
   let sumSq = 0;
   for (let i = 0; i < n; i++) {
     const pred = slope * i + intercept;
-    sumSq += (values[i]! - pred) ** 2;
+    sumSq += ((values[i] ?? 0) - pred) ** 2;
   }
   const residualStd = Math.sqrt(sumSq / Math.max(n - 2, 1));
 
@@ -64,7 +65,9 @@ export function projectForecast(
     isForecast: false,
   }));
 
-  const lastDate = new Date(series[series.length - 1]!.date);
+  const lastPoint = series[series.length - 1];
+  if (!lastPoint) return result;
+  const lastDate = new Date(lastPoint.date);
   for (let i = 1; i <= forecastDays; i++) {
     const idx = values.length + i - 1;
     const pred = Math.max(0, slope * idx + intercept);

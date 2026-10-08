@@ -12,7 +12,7 @@ export interface ExportJob {
   user_id: string;
   export_type: 'pdf' | 'excel' | 'csv';
   entity_type: 'orders' | 'quotes';
-  filters: any;
+  filters: Json;
   status: 'pending' | 'processing' | 'completed' | 'failed';
   attempts: number;
   file_url?: string;
@@ -27,7 +27,7 @@ export interface ScheduledExport {
   user_id: string;
   entity_type: 'orders' | 'quotes';
   export_type: 'pdf' | 'excel';
-  filters: any;
+  filters: Json;
   frequency: 'daily' | 'weekly' | 'monthly';
   last_run_at: string | null;
   next_run_at: string | null;
@@ -90,8 +90,8 @@ export function useExportJobs() {
       queryClient.invalidateQueries({ queryKey: ["export_jobs"] });
       toast.success("Exportação solicitada! Você receberá uma notificação quando estiver pronto.");
     },
-    onError: (error: any) => {
-      toast.error(`Erro ao solicitar exportação: ${error.message}`);
+    onError: (error: unknown) => {
+      toast.error(`Erro ao solicitar exportação: ${error instanceof Error ? error.message : String(error)}`);
     },
   });
 

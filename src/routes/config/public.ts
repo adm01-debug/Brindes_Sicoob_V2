@@ -1,3 +1,4 @@
+/* global __ENABLE_DEMO_PAGES__ */
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 import { defineRoute } from "@/lib/router-utils";
 
@@ -6,7 +7,7 @@ import { defineRoute } from "@/lib/router-utils";
  * Refatoradas para excelência técnica 10/10
  */
 export const publicRoutes = [
-  ...(import.meta.env.DEV ? [
+  ...(__ENABLE_DEMO_PAGES__ ? [
     defineRoute({
       path: "/loja-demo",
       component: lazyWithRetry(() => import("@/pages/sicoob/StorefrontDemoPage")),

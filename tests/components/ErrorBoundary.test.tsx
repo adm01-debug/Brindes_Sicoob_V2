@@ -101,7 +101,7 @@ describe('ErrorBoundary', () => {
 
   it('attempts recovery when "Tentar Novamente" is clicked', () => {
     const error = new Error('Recover Error');
-    const { rerender } = render(
+    render(
       <ErrorBoundary>
         <Thrower error={error} />
       </ErrorBoundary>

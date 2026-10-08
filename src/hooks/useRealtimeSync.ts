@@ -2,6 +2,7 @@ import { useEffect, useId, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient, type QueryKey } from "@tanstack/react-query";
 import { logger } from "@/lib/logger";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
 /**
  * Hook to synchronize UI with Supabase Realtime changes.
@@ -11,7 +12,7 @@ export function useRealtimeSync(
   options: {
     event?: 'INSERT' | 'UPDATE' | 'DELETE' | '*';
     filter?: string;
-    onDataChange?: (payload: any) => void;
+    onDataChange?: (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void;
     queryKey?: QueryKey;
   } = {}
 ) {

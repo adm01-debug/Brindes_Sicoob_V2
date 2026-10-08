@@ -46,7 +46,7 @@ async function ensureUser(user: any, log: any, password: string) {
     if (newUser?.user) user.id = newUser.user.id;
   }
 
-  await supabase.from("profiles").upsert({
+  const { error: profileError } = await supabase.from("profiles").upsert({
     id: user.id,
     user_id: user.id,
     email: user.email,
@@ -55,6 +55,13 @@ async function ensureUser(user: any, log: any, password: string) {
     pa_id: user.pa_id || null,
     cooperativa_id: user.cooperativa_id || null
   }, { onConflict: "id" });
+  if (profileError) throw profileError;
+
+  const { error: roleError } = await supabase.from("user_roles").upsert({
+    user_id: user.id,
+    role: user.role,
+  }, { onConflict: "user_id,role" });
+  if (roleError) throw roleError;
 }
 
 Deno.serve(async (req) => {
@@ -91,7 +98,7 @@ Deno.serve(async (req) => {
 
   if (runError) {
     log.error("qa_run_creation_failed", { err: runError });
-    return log.respond(new Response(JSON.stringify({ error: runError.message }), { status: 500 }));
+    return log.respond(new Response(JSON.stringify({ error: "qa_run_creation_failed" }), { status: 500 }));
   }
 
   const report: any = { runId: run.id, scenario, created: [], errors: [], details: [] };
@@ -177,7 +184,7 @@ Deno.serve(async (req) => {
       finished_at: new Date().toISOString() 
     }).eq("id", run.id);
     
-    return log.respond(new Response(JSON.stringify({ error: message, runId: run.id }), {
+    return log.respond(new Response(JSON.stringify({ error: "seed_qa_failed", runId: run.id }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     }));

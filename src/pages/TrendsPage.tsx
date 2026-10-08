@@ -1,38 +1,45 @@
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 // import { MainLayout } from "@/components/layout/MainLayout";
-import { supabase } from "@/integrations/supabase/client";
-import { loadTrendsActivity } from "./trends/trends-queries";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { TrendingUp, Search, Package, Calendar, RefreshCw, Download } from "lucide-react";
-import { format, subDays } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { PageSEO } from "@/components/seo/PageSEO";
-import { ProductsTabContent, SearchesTabContent } from "./trends/TrendsCharts";
-import { TrendsKpiCards } from "./trends/TrendsKpiCards";
-import { UnmetDemandCard } from "@/components/intelligence/UnmetDemandCard";
-import { HotSearchesCard } from "@/components/intelligence/HotSearchesCard";
-import { ConversionFunnel } from "@/components/intelligence/ConversionFunnel";
-import { TrendsHeatmap } from "@/components/intelligence/TrendsHeatmap";
-import { TopCategoriesCard } from "@/components/intelligence/TopCategoriesCard";
-import { TrendsInsightsCard } from "@/components/intelligence/TrendsInsightsCard";
-import { TrendsForecastChart } from "@/components/intelligence/TrendsForecastChart";
-import { SavedViewsManager } from "@/components/intelligence/SavedViewsManager";
-import { RealtimeBadge } from "@/components/intelligence/RealtimeBadge";
-import { TrendsTour } from "@/components/intelligence/TrendsTour";
-import { calculateTrendingScore } from "@/lib/trending-score";
-import { useUrlState, useUrlBoolean } from "@/hooks/useUrlState";
-import { exportTrendsCsv } from "@/lib/trends-export";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
-import { isDemoMode } from "./trends/is-demo-mode";
-import { Badge } from "@/components/ui/badge";
+import { supabase } from '@/integrations/supabase/client';
+import { loadTrendsActivity } from './trends/trends-queries';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { TrendingUp, Search, Package, Calendar, RefreshCw, Download } from 'lucide-react';
+import { format, subDays } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { PageSEO } from '@/components/seo/PageSEO';
+import { ProductsTabContent, SearchesTabContent } from './trends/TrendsCharts';
+import { TrendsKpiCards } from './trends/TrendsKpiCards';
+import { UnmetDemandCard } from '@/components/intelligence/UnmetDemandCard';
+import { HotSearchesCard } from '@/components/intelligence/HotSearchesCard';
+import { ConversionFunnel } from '@/components/intelligence/ConversionFunnel';
+import { TrendsHeatmap } from '@/components/intelligence/TrendsHeatmap';
+import { TopCategoriesCard } from '@/components/intelligence/TopCategoriesCard';
+import { TrendsInsightsCard } from '@/components/intelligence/TrendsInsightsCard';
+import { TrendsForecastChart } from '@/components/intelligence/TrendsForecastChart';
+import { SavedViewsManager } from '@/components/intelligence/SavedViewsManager';
+import { RealtimeBadge } from '@/components/intelligence/RealtimeBadge';
+import { TrendsTour } from '@/components/intelligence/TrendsTour';
+import { calculateTrendingScore } from '@/lib/trending-score';
+import { useUrlState, useUrlBoolean } from '@/hooks/useUrlState';
+import { exportTrendsCsv } from '@/lib/trends-export';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { isDemoMode } from './trends/is-demo-mode';
+import { Badge } from '@/components/ui/badge';
 
-type DateRange = "7d" | "30d" | "90d";
+type DateRange = '7d' | '30d' | '90d';
 
-const RANGE_TO_DAYS: Record<DateRange, number> = { "7d": 7, "30d": 30, "90d": 90 };
+const RANGE_TO_DAYS: Record<DateRange, number> = { '7d': 7, '30d': 30, '90d': 90 };
+const ISO_DAY_FORMAT = 'yyyy-MM-dd';
 
 interface ProductView {
   product_id: string | null;
@@ -69,22 +76,134 @@ interface AggregatedSearch {
   avgResults: number;
 }
 
-export default function TrendsPage() {
+interface DailyTrendData {
+  current: Array<{ date: string; dateLabel: string; views: number; searches: number }>;
+  previous: Array<{ date: string; views: number; searches: number }>;
+}
+
+interface KpiSnapshot {
+  current: {
+    totalViews: number;
+    totalSearches: number;
+    uniqueProducts: number;
+    uniqueSearches: number;
+  };
+  previous: {
+    totalViews: number;
+    totalSearches: number;
+    uniqueProducts: number;
+    uniqueSearches: number;
+  };
+}
+
+interface TrendsMockModule {
+  MOCK_KPI_CURRENT: KpiSnapshot['current'];
+  MOCK_KPI_PREVIOUS: KpiSnapshot['previous'];
+  MOCK_PRODUCTS: AggregatedProduct[];
+  MOCK_SEARCHES: AggregatedSearch[];
+  buildMockDaily: (days: number) => DailyTrendData;
+}
+
+const EMPTY_KPI = { totalViews: 0, totalSearches: 0, uniqueProducts: 0, uniqueSearches: 0 };
+const NO_EXPORT_MESSAGE = 'Nada para exportar ainda.';
+
+interface ProductTrendQueryInput {
+  sellerScope: string | null;
+  sincePrevious: string;
+  sinceCurrent: string;
+  recentCutoff: string;
+  days: number;
+}
+
+function createProductAggregate(view: ProductView, key: string): AggregatedProduct {
+  return {
+    id: key,
+    name: view.product_name ?? 'Produto',
+    sku: view.product_sku ?? undefined,
+    views: 0,
+    details: 0,
+    compares: 0,
+    favorites: 0,
+    recentViews: 0,
+    baselineViews: 0,
+    trendingScore: 0,
+    classification: 'stable',
+  };
+}
+
+function recordCurrentProductView(
+  product: AggregatedProduct,
+  view: ProductView,
+  isRecent: boolean,
+) {
+  product.views += 1;
+  if (view.view_type === 'detail') product.details += 1;
+  if (view.view_type === 'compare') product.compares += 1;
+  if (view.view_type === 'favorite') product.favorites += 1;
+  if (isRecent) product.recentViews += 1;
+}
+
+function aggregateProductViews(data: ProductView[], input: ProductTrendQueryInput) {
+  const productMap = new Map<string, AggregatedProduct>();
+  data.forEach((view) => {
+    const key = view.product_id || view.product_name;
+    if (!key) return;
+    const product = productMap.get(key) ?? createProductAggregate(view, key);
+    if (view.created_at >= input.sinceCurrent) {
+      recordCurrentProductView(product, view, view.created_at >= input.recentCutoff);
+    } else {
+      product.baselineViews += 1;
+    }
+    productMap.set(key, product);
+  });
+  return productMap;
+}
+
+function rankProductTrends(productMap: Map<string, AggregatedProduct>, days: number) {
+  const recentDays = Math.max(Math.floor(days / 3), 1);
+  const baselineDays = days - recentDays;
+  return Array.from(productMap.values())
+    .map((product) => {
+      const score = calculateTrendingScore({
+        recentCount: product.recentViews,
+        baselineCount: product.baselineViews,
+        recentDays,
+        baselineDays,
+        totalVolume: product.views,
+      });
+      return { ...product, trendingScore: score.score, classification: score.classification };
+    })
+    .filter((product) => product.views > 0)
+    .sort(
+      (left, right) =>
+        right.trendingScore * Math.log(right.views + 1) -
+        left.trendingScore * Math.log(left.views + 1),
+    )
+    .slice(0, 10);
+}
+
+async function loadTopProducts(input: ProductTrendQueryInput): Promise<AggregatedProduct[]> {
+  let query = supabase
+    .from('product_views')
+    .select('product_id, product_name, product_sku, view_type, created_at, seller_id')
+    .gte('created_at', input.sincePrevious)
+    .order('created_at', { ascending: false });
+  if (input.sellerScope) query = query.eq('seller_id', input.sellerScope);
+  const { data, error } = await query;
+  if (error) throw error;
+  return rankProductTrends(aggregateProductViews(data ?? [], input), input.days);
+}
+
+function useTrendsControls() {
   const { user, canManage } = useAuth();
-  const { toast } = useToast();
-  const [dateRange, setDateRange] = useUrlState<DateRange>("range", "30d");
-  const [activeTab, setActiveTab] = useUrlState<string>("tab", "products");
-  const [showCompare, setShowCompare] = useUrlBoolean("cmp", false);
-  const [showForecast, setShowForecast] = useUrlBoolean("fc", false);
+  const [dateRange, setDateRange] = useUrlState<DateRange>('range', '30d');
+  const [activeTab, setActiveTab] = useUrlState<string>('tab', 'products');
+  const [showCompare, setShowCompare] = useUrlBoolean('cmp', false);
+  const [showForecast, setShowForecast] = useUrlBoolean('fc', false);
   const days = RANGE_TO_DAYS[dateRange] ?? 30;
-
-  // Vendedores (não-managers) só veem seus próprios eventos.
-  const sellerScope = canManage ? null : user?.id ?? null;
-  const scopeKey = sellerScope ?? "all";
+  const sellerScope = canManage ? null : (user?.id ?? null);
   const demo = isDemoMode();
-  const queryEnabled = !demo && !!user;
-
-  const { sinceCurrent, sincePrevious, recentCutoff } = useMemo(() => {
+  const dates = useMemo(() => {
     const now = new Date();
     return {
       sinceCurrent: subDays(now, days).toISOString(),
@@ -92,332 +211,499 @@ export default function TrendsPage() {
       recentCutoff: subDays(now, Math.max(Math.floor(days / 3), 1)).toISOString(),
     };
   }, [days]);
+  return {
+    canManage,
+    dateRange,
+    setDateRange,
+    activeTab,
+    setActiveTab,
+    showCompare,
+    setShowCompare,
+    showForecast,
+    setShowForecast,
+    days,
+    sellerScope,
+    demo,
+    scopeKey: sellerScope ?? 'all',
+    queryEnabled: !demo && Boolean(user),
+    ...dates,
+  };
+}
 
-  // ============================================
-  // Top Products
-  // ============================================
-  const { data: topProducts, isLoading: loadingProducts, isError: productsError, refetch: refetchProducts } = useQuery({
-    queryKey: ["trends-products", dateRange, scopeKey],
-    enabled: queryEnabled,
-    queryFn: async (): Promise<AggregatedProduct[]> => {
-      let q = supabase.from("product_views")
-        .select("product_id, product_name, product_sku, view_type, created_at, seller_id")
-        .gte("created_at", sincePrevious)
-        .order("created_at", { ascending: false });
-      if (sellerScope) q = q.eq("seller_id", sellerScope);
-      const { data, error } = await q;
-      if (error) throw error;
+function resolveKpiDisplay(
+  demo: boolean,
+  mock: TrendsMockModule | undefined,
+  snapshot: KpiSnapshot | undefined,
+) {
+  if (demo) {
+    return {
+      current: mock?.MOCK_KPI_CURRENT ?? EMPTY_KPI,
+      previous: mock?.MOCK_KPI_PREVIOUS ?? EMPTY_KPI,
+    };
+  }
+  return {
+    current: snapshot?.current ?? EMPTY_KPI,
+    previous: snapshot?.previous ?? EMPTY_KPI,
+  };
+}
 
-      const productMap = new Map<string, AggregatedProduct>();
-      const recentDays = Math.max(Math.floor(days / 3), 1);
-      const baselineDays = days - recentDays;
+interface TrendDataResolutionInput {
+  demo: boolean;
+  mock?: TrendsMockModule;
+  days: number;
+  products?: AggregatedProduct[];
+  searches?: { current: AggregatedSearch[] };
+  daily?: DailyTrendData;
+}
 
-      (data ?? []).forEach((view: ProductView) => {
-        const key = view.product_id || view.product_name;
-        if (!key) return;
-        const isInCurrentWindow = view.created_at >= sinceCurrent;
-        const isRecent = view.created_at >= recentCutoff;
+function resolveTrendData(input: TrendDataResolutionInput) {
+  if (input.demo) {
+    return {
+      products: input.mock?.MOCK_PRODUCTS,
+      searches: input.mock?.MOCK_SEARCHES,
+      daily: input.mock?.buildMockDaily(input.days) ?? null,
+    };
+  }
+  return { products: input.products, searches: input.searches?.current, daily: input.daily };
+}
 
-        const existing = productMap.get(key) ?? {
-          id: key, name: view.product_name ?? "Produto", sku: view.product_sku ?? undefined,
-          views: 0, details: 0, compares: 0, favorites: 0,
-          recentViews: 0, baselineViews: 0, trendingScore: 0, classification: 'stable' as const,
-        };
+interface TrendLoadingInput {
+  demo: boolean;
+  mock: boolean;
+  products: boolean;
+  searches: boolean;
+  daily: boolean;
+}
 
-        if (isInCurrentWindow) {
-          existing.views += 1;
-          if (view.view_type === "detail") existing.details += 1;
-          if (view.view_type === "compare") existing.compares += 1;
-          if (view.view_type === "favorite") existing.favorites += 1;
-          if (isRecent) existing.recentViews += 1;
-        } else {
-          existing.baselineViews += 1;
-        }
-        productMap.set(key, existing);
-      });
+function resolveLoading(input: TrendLoadingInput) {
+  if (input.demo) return { products: input.mock, searches: input.mock, daily: input.mock };
+  return { products: input.products, searches: input.searches, daily: input.daily };
+}
 
-      const enriched = Array.from(productMap.values()).map(p => {
-        const score = calculateTrendingScore({
-          recentCount: p.recentViews, baselineCount: p.baselineViews,
-          recentDays, baselineDays, totalVolume: p.views,
-        });
-        return { ...p, trendingScore: score.score, classification: score.classification };
-      });
+type TrendsControls = ReturnType<typeof useTrendsControls>;
 
-      return enriched
-        .filter(p => p.views > 0)
-        .sort((a, b) => b.trendingScore * Math.log(b.views + 1) - a.trendingScore * Math.log(a.views + 1))
-        .slice(0, 10);
-    },
+async function loadTopSearches(controls: TrendsControls) {
+  let query = supabase
+    .from('search_analytics')
+    .select('search_term, results_count, created_at, user_id')
+    .gte('created_at', controls.sincePrevious)
+    .order('created_at', { ascending: false });
+  if (controls.sellerScope) query = query.eq('user_id', controls.sellerScope);
+  const { data, error } = await query;
+  if (error) throw error;
+  const current = new Map<string, { count: number; totalResults: number }>();
+  (data ?? []).forEach((row: SearchRow) => {
+    const term = (row.search_term ?? '').toLowerCase().trim();
+    if (!term || row.created_at < controls.sinceCurrent) return;
+    const aggregate = current.get(term) ?? { count: 0, totalResults: 0 };
+    aggregate.count += 1;
+    aggregate.totalResults += row.results_count ?? 0;
+    current.set(term, aggregate);
   });
+  const currentRows: AggregatedSearch[] = Array.from(current.entries())
+    .map(([term, aggregate]) => ({
+      term,
+      count: aggregate.count,
+      totalResults: aggregate.totalResults,
+      avgResults: aggregate.count > 0 ? Math.round(aggregate.totalResults / aggregate.count) : 0,
+    }))
+    .sort((left, right) => right.count - left.count)
+    .slice(0, 10);
+  return { current: currentRows };
+}
 
-  // ============================================
-  // Top Searches
-  // ============================================
-  const { data: searchesData, isLoading: loadingSearches, isError: searchesError, refetch: refetchSearches } = useQuery({
-    queryKey: ["trends-searches", dateRange, scopeKey],
-    enabled: queryEnabled,
-    queryFn: async () => {
-      let q = supabase.from("search_analytics")
-        .select("search_term, results_count, created_at, user_id")
-        .gte("created_at", sincePrevious)
-        .order("created_at", { ascending: false });
-      if (sellerScope) q = q.eq("user_id", sellerScope);
-      const { data, error } = await q;
-      if (error) throw error;
+function createActivityBuckets(days: number) {
+  const current = new Map<string, { date: string; views: number; searches: number }>();
+  const previous = new Map<string, { views: number; searches: number }>();
+  for (let index = days - 1; index >= 0; index -= 1) {
+    const date = format(subDays(new Date(), index), ISO_DAY_FORMAT);
+    current.set(date, { date, views: 0, searches: 0 });
+  }
+  for (let index = days - 1; index >= 0; index -= 1) {
+    const date = format(subDays(new Date(), days + index), ISO_DAY_FORMAT);
+    previous.set(date, { views: 0, searches: 0 });
+  }
+  return { current, previous };
+}
 
-      const current = new Map<string, { count: number; totalResults: number }>();
-      const previous = new Map<string, { count: number }>();
-
-      (data ?? []).forEach((s: SearchRow) => {
-        const term = (s.search_term ?? "").toLowerCase().trim();
-        if (!term) return;
-        if (s.created_at >= sinceCurrent) {
-          const e = current.get(term) ?? { count: 0, totalResults: 0 };
-          e.count += 1;
-          e.totalResults += s.results_count ?? 0;
-          current.set(term, e);
-        } else {
-          const e = previous.get(term) ?? { count: 0 };
-          e.count += 1;
-          previous.set(term, e);
-        }
-      });
-
-      const currentArr: AggregatedSearch[] = Array.from(current.entries())
-        .map(([term, d]) => ({ term, count: d.count, totalResults: d.totalResults,
-          avgResults: d.count > 0 ? Math.round(d.totalResults / d.count) : 0 }))
-        .sort((a, b) => b.count - a.count).slice(0, 10);
-
-      return { current: currentArr };
-    },
+function recordDailyActivity(
+  rows: Array<{ created_at: string }>,
+  field: 'views' | 'searches',
+  buckets: ReturnType<typeof createActivityBuckets>,
+) {
+  rows.forEach((row) => {
+    const date = format(new Date(row.created_at), ISO_DAY_FORMAT);
+    const current = buckets.current.get(date);
+    if (current) {
+      current[field] += 1;
+      return;
+    }
+    const previous = buckets.previous.get(date);
+    if (previous) previous[field] += 1;
   });
+}
 
-  const topSearches = searchesData?.current;
+async function loadDailyTrends(controls: TrendsControls): Promise<DailyTrendData> {
+  const activity = await loadTrendsActivity(controls.sincePrevious, controls.sellerScope);
+  const buckets = createActivityBuckets(controls.days);
+  recordDailyActivity(activity.views ?? [], 'views', buckets);
+  recordDailyActivity(activity.searches ?? [], 'searches', buckets);
+  return {
+    current: Array.from(buckets.current.values()).map((row) => ({
+      ...row,
+      dateLabel: format(new Date(row.date), 'dd/MM', { locale: ptBR }),
+    })),
+    previous: Array.from(buckets.previous.values()).map((row) => ({ date: '', ...row })),
+  };
+}
 
-  // ============================================
-  // Daily activity (atual + anterior para comparação)
-  // ============================================
-  const { data: dailyData, isLoading: loadingDaily, isError: dailyError, refetch: refetchDaily } = useQuery({
-    queryKey: ["trends-daily", dateRange, scopeKey],
-    enabled: queryEnabled,
-    queryFn: async () => {
-      const { views, searches } = await loadTrendsActivity(sincePrevious, sellerScope);
-
-      // Buckets atual + anterior (mesmo número de dias)
-      const cur = new Map<string, { date: string; views: number; searches: number }>();
-      const prev = new Map<string, { views: number; searches: number }>();
-      for (let i = days - 1; i >= 0; i--) {
-        const d = format(subDays(new Date(), i), "yyyy-MM-dd");
-        cur.set(d, { date: d, views: 0, searches: 0 });
-      }
-      for (let i = days - 1; i >= 0; i--) {
-        const d = format(subDays(new Date(), days + i), "yyyy-MM-dd");
-        prev.set(d, { views: 0, searches: 0 });
-      }
-      views?.forEach((v: { created_at: string }) => {
-        const d = format(new Date(v.created_at), "yyyy-MM-dd");
-        const c = cur.get(d); if (c) { c.views += 1; return; }
-        const p = prev.get(d); if (p) p.views += 1;
-      });
-      searches?.forEach((s: { created_at: string }) => {
-        const d = format(new Date(s.created_at), "yyyy-MM-dd");
-        const c = cur.get(d); if (c) { c.searches += 1; return; }
-        const p = prev.get(d); if (p) p.searches += 1;
-      });
-      const current = Array.from(cur.values()).map(d => ({ ...d, dateLabel: format(new Date(d.date), "dd/MM", { locale: ptBR }) }));
-      const previous = Array.from(prev.values()).map(p => ({ date: "", views: p.views, searches: p.searches }));
-      return { current, previous };
-    },
+function splitActivityRows<Row extends { created_at: string }>(
+  rows: Row[],
+  sinceCurrent: string,
+  key: (row: Row) => string | null,
+) {
+  let currentTotal = 0;
+  let previousTotal = 0;
+  const currentUnique = new Set<string>();
+  const previousUnique = new Set<string>();
+  rows.forEach((row) => {
+    const value = key(row);
+    if (row.created_at >= sinceCurrent) {
+      currentTotal += 1;
+      if (value) currentUnique.add(value);
+    } else {
+      previousTotal += 1;
+      if (value) previousUnique.add(value);
+    }
   });
+  return {
+    currentTotal,
+    previousTotal,
+    currentUnique: currentUnique.size,
+    previousUnique: previousUnique.size,
+  };
+}
 
-  // ============================================
-  // KPIs (atuais + anteriores)
-  // ============================================
-  const { data: kpiSnapshot, isError: kpiError, isLoading: loadingKpi, refetch: refetchKpi } = useQuery({
-    queryKey: ["trends-kpi-snapshot", dateRange, scopeKey],
-    enabled: queryEnabled,
-    queryFn: async () => {
-      const { views: vAll, searches: sAll } = await loadTrendsActivity(sincePrevious, sellerScope);
-      const split = <Row extends { created_at: string },>(
-        rows: Row[],
-        keyFn: (r: Row) => string | null,
-      ) => {
-        let curTotal = 0, prevTotal = 0;
-        const curUnique = new Set<string>(), prevUnique = new Set<string>();
-        rows?.forEach(r => {
-          const k = keyFn(r);
-          if (r.created_at >= sinceCurrent) {
-            curTotal += 1; if (k) curUnique.add(k);
-          } else {
-            prevTotal += 1; if (k) prevUnique.add(k);
-          }
-        });
-        return { curTotal, prevTotal, curUnique: curUnique.size, prevUnique: prevUnique.size };
-      };
-      const v = split(vAll ?? [], (r) => r.product_id || r.product_name);
-      const s = split(sAll ?? [], (r) => (r.search_term ?? "").toLowerCase());
-      return {
-        current: { totalViews: v.curTotal, totalSearches: s.curTotal, uniqueProducts: v.curUnique, uniqueSearches: s.curUnique },
-        previous: { totalViews: v.prevTotal, totalSearches: s.prevTotal, uniqueProducts: v.prevUnique, uniqueSearches: s.prevUnique },
-      };
+async function loadKpiSnapshot(controls: TrendsControls): Promise<KpiSnapshot> {
+  const { views, searches } = await loadTrendsActivity(
+    controls.sincePrevious,
+    controls.sellerScope,
+  );
+  const viewStats = splitActivityRows(
+    views ?? [],
+    controls.sinceCurrent,
+    (row) => row.product_id || row.product_name,
+  );
+  const searchStats = splitActivityRows(searches ?? [], controls.sinceCurrent, (row) =>
+    (row.search_term ?? '').toLowerCase(),
+  );
+  return {
+    current: {
+      totalViews: viewStats.currentTotal,
+      totalSearches: searchStats.currentTotal,
+      uniqueProducts: viewStats.currentUnique,
+      uniqueSearches: searchStats.currentUnique,
     },
-  });
+    previous: {
+      totalViews: viewStats.previousTotal,
+      totalSearches: searchStats.previousTotal,
+      uniqueProducts: viewStats.previousUnique,
+      uniqueSearches: searchStats.previousUnique,
+    },
+  };
+}
 
-  // Mock do modo demo entra sob demanda, fora do chunk principal.
-  const { data: mock, isLoading: loadingMock, isError: mockError } = useQuery({
-    queryKey: ["trends-mock"],
-    enabled: demo,
+function useTrendQueries(controls: TrendsControls) {
+  const common = { dateRange: controls.dateRange, scopeKey: controls.scopeKey };
+  const products = useQuery({
+    queryKey: ['trends-products', common.dateRange, common.scopeKey],
+    enabled: controls.queryEnabled,
+    queryFn: () => loadTopProducts(controls),
+  });
+  const searches = useQuery({
+    queryKey: ['trends-searches', common.dateRange, common.scopeKey],
+    enabled: controls.queryEnabled,
+    queryFn: () => loadTopSearches(controls),
+  });
+  const daily = useQuery({
+    queryKey: ['trends-daily', common.dateRange, common.scopeKey],
+    enabled: controls.queryEnabled,
+    queryFn: () => loadDailyTrends(controls),
+  });
+  const kpi = useQuery({
+    queryKey: ['trends-kpi-snapshot', common.dateRange, common.scopeKey],
+    enabled: controls.queryEnabled,
+    queryFn: () => loadKpiSnapshot(controls),
+  });
+  const mock = useQuery({
+    queryKey: ['trends-mock'],
+    enabled: controls.demo,
     staleTime: Infinity,
-    queryFn: () => import("./trends/trends-mock"),
+    queryFn: () => import('./trends/trends-mock'),
   });
+  return { products, searches, daily, kpi, mock };
+}
 
-  const kpiZero = { totalViews: 0, totalSearches: 0, uniqueProducts: 0, uniqueSearches: 0 };
-  const kpiCurrent = demo ? (mock?.MOCK_KPI_CURRENT ?? kpiZero) : (kpiSnapshot?.current ?? kpiZero);
-  const kpiPrevious = demo ? (mock?.MOCK_KPI_PREVIOUS ?? kpiZero) : (kpiSnapshot?.previous ?? kpiZero);
+type TrendDisplay = ReturnType<typeof resolveTrendData>;
 
-  // Override de demo para ranking, buscas e série diária
-  const mockDaily = useMemo(() => (demo ? mock?.buildMockDaily(days) ?? null : null), [demo, mock, days]);
-  const displayProducts = demo ? mock?.MOCK_PRODUCTS : topProducts;
-  const displaySearches = demo ? mock?.MOCK_SEARCHES : topSearches;
-  const displayDaily = demo ? mockDaily : dailyData;
-  const displayLoadingProducts = demo ? loadingMock : loadingProducts;
-  const displayLoadingSearches = demo ? loadingMock : loadingSearches;
-  const displayLoadingDaily = demo ? loadingMock : loadingDaily;
-
-  const handleRefresh = () => {
-    if (!queryEnabled) return;
-    void refetchProducts(); void refetchSearches(); void refetchDaily(); void refetchKpi();
-  };
-  const hasQueryError = !demo && [productsError, searchesError, dailyError, kpiError].some(Boolean);
-
+function useTrendsExports(display: TrendDisplay) {
+  const { toast } = useToast();
   const handleExportProducts = () => {
-    if (!displayProducts?.length) {
-      toast({ title: "Sem dados", description: "Nada para exportar ainda.", variant: "destructive" });
+    if (!display.products?.length) {
+      toast({ title: 'Sem dados', description: NO_EXPORT_MESSAGE, variant: 'destructive' });
       return;
     }
-    exportTrendsCsv("tendencias_produtos", displayProducts.map(p => ({
-      Produto: p.name, SKU: p.sku ?? "", Visualizações: p.views,
-      Detalhes: p.details, Comparações: p.compares,
-      "Crescimento %": p.classification === 'new' ? "NOVO" : Math.round((p.trendingScore - 1) * 100),
-      Classificação: p.classification,
-    })));
-    toast({ title: "Exportado", description: "Arquivo CSV baixado." });
+    exportTrendsCsv(
+      'tendencias_produtos',
+      display.products.map((product) => ({
+        Produto: product.name,
+        SKU: product.sku ?? '',
+        Visualizações: product.views,
+        Detalhes: product.details,
+        Comparações: product.compares,
+        'Crescimento %':
+          product.classification === 'new' ? 'NOVO' : Math.round((product.trendingScore - 1) * 100),
+        Classificação: product.classification,
+      })),
+    );
+    toast({ title: 'Exportado', description: 'Arquivo CSV baixado.' });
   };
-
   const handleExportSearches = () => {
-    if (!displaySearches?.length) {
-      toast({ title: "Sem dados", description: "Nada para exportar ainda.", variant: "destructive" });
+    if (!display.searches?.length) {
+      toast({ title: 'Sem dados', description: NO_EXPORT_MESSAGE, variant: 'destructive' });
       return;
     }
-    exportTrendsCsv("tendencias_buscas", displaySearches.map(s => ({
-      Termo: s.term, Buscas: s.count, "Resultados médios": s.avgResults,
-    })));
-    toast({ title: "Exportado", description: "Arquivo CSV baixado." });
+    exportTrendsCsv(
+      'tendencias_buscas',
+      display.searches.map((search) => ({
+        Termo: search.term,
+        Buscas: search.count,
+        'Resultados médios': search.avgResults,
+      })),
+    );
+    toast({ title: 'Exportado', description: 'Arquivo CSV baixado.' });
   };
+  return { handleExportProducts, handleExportSearches };
+}
 
+type TrendQueries = ReturnType<typeof useTrendQueries>;
+
+function useTrendRefresh(controls: TrendsControls, queries: TrendQueries) {
+  return () => {
+    if (!controls.queryEnabled) return;
+    void queries.products.refetch();
+    void queries.searches.refetch();
+    void queries.daily.refetch();
+    void queries.kpi.refetch();
+  };
+}
+
+function useTrendsPageModel() {
+  const controls = useTrendsControls();
+  const queries = useTrendQueries(controls);
+  const kpis = resolveKpiDisplay(controls.demo, queries.mock.data, queries.kpi.data);
+  const display = resolveTrendData({
+    demo: controls.demo,
+    mock: queries.mock.data,
+    days: controls.days,
+    products: queries.products.data,
+    searches: queries.searches.data,
+    daily: queries.daily.data,
+  });
+  const displayLoading = resolveLoading({
+    demo: controls.demo,
+    mock: queries.mock.isLoading,
+    products: queries.products.isLoading,
+    searches: queries.searches.isLoading,
+    daily: queries.daily.isLoading,
+  });
+  const exports = useTrendsExports(display);
+  const handleRefresh = useTrendRefresh(controls, queries);
+  const hasQueryError =
+    !controls.demo &&
+    [
+      queries.products.isError,
+      queries.searches.isError,
+      queries.daily.isError,
+      queries.kpi.isError,
+    ].some(Boolean);
+  return {
+    ...controls,
+    kpiCurrent: kpis.current,
+    kpiPrevious: kpis.previous,
+    loadingMock: queries.mock.isLoading,
+    loadingKpi: queries.kpi.isLoading,
+    mockError: queries.mock.isError,
+    kpiError: queries.kpi.isError,
+    hasQueryError,
+    displayProducts: display.products,
+    displaySearches: display.searches,
+    displayDaily: display.daily,
+    displayLoadingProducts: displayLoading.products,
+    displayLoadingSearches: displayLoading.searches,
+    displayLoadingDaily: displayLoading.daily,
+    handleRefresh,
+    ...exports,
+  };
+}
+
+type TrendsPageModel = ReturnType<typeof useTrendsPageModel>;
+
+function DemoBadge() {
+  return (
+    <Badge variant="outline" className="gap-1 border-chart-4/40 bg-chart-4/10 text-chart-4">
+      <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-chart-4" />
+      MODO DEMO — dados fictícios para avaliação
+    </Badge>
+  );
+}
+
+function TrendsHeader({ model }: { model: TrendsPageModel }) {
+  const subtitle = model.canManage
+    ? 'Crescimento, conversão e demanda reprimida em tempo real'
+    : 'Suas vendas, suas buscas, sua atividade';
+  return (
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1
+            data-testid="page-title-tendencias"
+            className="flex items-center gap-2 font-display text-2xl font-bold text-foreground lg:text-3xl"
+          >
+            <TrendingUp className="h-7 w-7 text-primary" />
+            Análise de Tendências
+          </h1>
+          <RealtimeBadge />
+          {model.demo && <DemoBadge />}
+        </div>
+        <p className="mt-1 text-muted-foreground">{subtitle}</p>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <SavedViewsManager />
+        <Select
+          value={model.dateRange}
+          onValueChange={(value) => model.setDateRange(value as DateRange)}
+        >
+          <SelectTrigger className="w-[140px]">
+            <Calendar className="mr-2 h-4 w-4" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="7d">Últimos 7 dias</SelectItem>
+            <SelectItem value="30d">Últimos 30 dias</SelectItem>
+            <SelectItem value="90d">Últimos 90 dias</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button variant="outline" size="icon" onClick={model.handleRefresh} aria-label="Atualizar">
+          <RefreshCw className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function TrendsDecisionSupport({ model }: { model: TrendsPageModel }) {
+  const isKpiLoading = model.demo ? model.loadingMock : model.loadingKpi;
+  const isKpiError = model.demo ? model.mockError : model.kpiError;
   return (
     <>
-      <PageSEO title="Tendências" description="Analise tendências de produtos e buscas." path="/tendencias" noIndex />
-      <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <h1 data-testid="page-title-tendencias" className="text-2xl lg:text-3xl font-display font-bold text-foreground flex items-center gap-2">
-                <TrendingUp className="h-7 w-7 text-primary" />
-                Análise de Tendências
-              </h1>
-              <RealtimeBadge />
-              {demo && (
-                <Badge variant="outline" className="border-chart-4/40 text-chart-4 bg-chart-4/10 gap-1">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-chart-4 animate-pulse" />
-                  MODO DEMO — dados fictícios para avaliação
-                </Badge>
-              )}
-            </div>
-            <p className="text-muted-foreground mt-1">
-              {canManage
-                ? "Crescimento, conversão e demanda reprimida em tempo real"
-                : "Suas vendas, suas buscas, sua atividade"}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <SavedViewsManager />
-            <Select value={dateRange} onValueChange={(v) => setDateRange(v as DateRange)}>
-              <SelectTrigger className="w-[140px]"><Calendar className="h-4 w-4 mr-2" /><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7d">Últimos 7 dias</SelectItem>
-                <SelectItem value="30d">Últimos 30 dias</SelectItem>
-                <SelectItem value="90d">Últimos 90 dias</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline" size="icon" onClick={handleRefresh} aria-label="Atualizar"><RefreshCw className="h-4 w-4" /></Button>
-          </div>
-        </div>
+      {model.canManage && <TrendsInsightsCard days={model.days} />}
+      {model.hasQueryError && (
+        <p
+          role="alert"
+          className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm"
+        >
+          Não foi possível carregar parte das tendências. Use Atualizar para tentar novamente.
+        </p>
+      )}
+      <TrendsKpiCards
+        current={model.kpiCurrent}
+        previous={model.kpiPrevious}
+        isLoading={isKpiLoading}
+        isError={isKpiError}
+        isDemo={model.demo}
+      />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <ConversionFunnel days={model.days} />
+        <UnmetDemandCard days={model.days} />
+      </div>
+      <HotSearchesCard days={model.days} />
+    </>
+  );
+}
 
-        {/* IA — só para managers */}
-        {canManage && <TrendsInsightsCard days={days} />}
+function TrendsVisualAnalysis({ model }: { model: TrendsPageModel }) {
+  return (
+    <>
+      <TrendsForecastChart
+        dailyTrends={model.displayDaily?.current}
+        previousTrends={model.displayDaily?.previous}
+        isLoading={model.displayLoadingDaily}
+        showForecast={model.showForecast}
+        onToggleForecast={model.setShowForecast}
+        showCompare={model.showCompare}
+        onToggleCompare={model.setShowCompare}
+      />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <TrendsHeatmap days={model.days} />
+        <TopCategoriesCard days={model.days} />
+      </div>
+    </>
+  );
+}
 
-        {hasQueryError && (
-          <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
-            Não foi possível carregar parte das tendências. Use Atualizar para tentar novamente.
-          </p>
-        )}
-
-        {/* Falha ou carregamento não representam atividade zero. */}
-        <TrendsKpiCards current={kpiCurrent} previous={kpiPrevious}
-          isLoading={demo ? loadingMock : loadingKpi}
-          isError={demo ? mockError : kpiError} isDemo={demo} />
-
-        {/* Funil + Demanda Reprimida */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <ConversionFunnel days={days} />
-          <UnmetDemandCard days={days} />
-        </div>
-
-        {/* Buscas Quentes — interesse real do mercado */}
-        <HotSearchesCard days={days} />
-
-        {/* Forecast Chart com toggles vs anterior + previsão + anomalias */}
-        <TrendsForecastChart
-          dailyTrends={displayDaily?.current}
-          previousTrends={displayDaily?.previous}
-          isLoading={displayLoadingDaily}
-          showForecast={showForecast}
-          onToggleForecast={setShowForecast}
-          showCompare={showCompare}
-          onToggleCompare={setShowCompare}
+function TrendsRankingTabs({ model }: { model: TrendsPageModel }) {
+  const handleExport =
+    model.activeTab === 'products' ? model.handleExportProducts : model.handleExportSearches;
+  return (
+    <Tabs value={model.activeTab} onValueChange={model.setActiveTab} className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <TabsList>
+          <TabsTrigger value="products" className="gap-2">
+            <Package className="h-4 w-4" />
+            Produtos em alta
+          </TabsTrigger>
+          <TabsTrigger value="searches" className="gap-2">
+            <Search className="h-4 w-4" />
+            Termos mais buscados
+          </TabsTrigger>
+        </TabsList>
+        <Button variant="outline" size="sm" className="gap-1.5" onClick={handleExport}>
+          <Download className="h-3.5 w-3.5" />
+          Exportar CSV
+        </Button>
+      </div>
+      <TabsContent value="products" className="space-y-4">
+        <ProductsTabContent
+          topProducts={model.displayProducts}
+          isLoading={model.displayLoadingProducts}
         />
+      </TabsContent>
+      <TabsContent value="searches" className="space-y-4">
+        <SearchesTabContent
+          topSearches={model.displaySearches}
+          isLoading={model.displayLoadingSearches}
+        />
+      </TabsContent>
+    </Tabs>
+  );
+}
 
-        {/* Heatmap + Top Categorias */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <TrendsHeatmap days={days} />
-          <TopCategoriesCard days={days} />
-        </div>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <TabsList>
-              <TabsTrigger value="products" className="gap-2"><Package className="h-4 w-4" />Produtos em alta</TabsTrigger>
-              <TabsTrigger value="searches" className="gap-2"><Search className="h-4 w-4" />Termos mais buscados</TabsTrigger>
-            </TabsList>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={activeTab === "products" ? handleExportProducts : handleExportSearches}
-            >
-              <Download className="h-3.5 w-3.5" />
-              Exportar CSV
-            </Button>
-          </div>
-          <TabsContent value="products" className="space-y-4">
-            <ProductsTabContent topProducts={displayProducts} isLoading={displayLoadingProducts} />
-          </TabsContent>
-          <TabsContent value="searches" className="space-y-4">
-            <SearchesTabContent topSearches={displaySearches} isLoading={displayLoadingSearches} />
-          </TabsContent>
-        </Tabs>
+export default function TrendsPage() {
+  const model = useTrendsPageModel();
+  return (
+    <>
+      <PageSEO
+        title="Tendências"
+        description="Analise tendências de produtos e buscas."
+        path="/tendencias"
+        noIndex
+      />
+      <div className="mx-auto w-full max-w-[1920px] animate-fade-in space-y-3 px-3 py-3 pb-24 sm:space-y-4 sm:px-4 sm:py-4 md:pb-6 lg:px-6 xl:px-8">
+        <TrendsHeader model={model} />
+        <TrendsDecisionSupport model={model} />
+        <TrendsVisualAnalysis model={model} />
+        <TrendsRankingTabs model={model} />
       </div>
       <TrendsTour />
     </>

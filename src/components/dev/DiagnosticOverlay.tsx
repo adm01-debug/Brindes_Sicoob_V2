@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, forwardRef } from "react";
-import { diagnostics, DiagnosticLog } from "@/lib/diagnostics";
+import { diagnostics, type DiagnosticLog } from "@/lib/diagnostics";
 import { 
   Terminal, 
   X, 
@@ -130,7 +130,7 @@ export const DiagnosticOverlay = forwardRef<HTMLDivElement>((_props, ref) => {
                               )}>
                                 {log.message}
                               </span>
-                              {log.data && (
+                              {log.data !== null && log.data !== undefined && (
                                 <div className="mt-1 text-[9px] text-zinc-500 bg-black/40 p-1.5 rounded border border-white/5 overflow-x-auto max-h-32">
                                   <pre>{JSON.stringify(log.data, null, 2)}</pre>
                                 </div>

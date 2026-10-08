@@ -17,6 +17,25 @@ interface ImageTransformOptions {
   format?: 'webp' | 'avif' | 'origin';
 }
 
+function appendProxyOptions(url: string, options?: ImageTransformOptions): string {
+  if (!options) return url;
+  const params = new URLSearchParams();
+  if (options.width) params.set('w', String(options.width));
+  if (options.height) params.set('h', String(options.height));
+  if (options.quality) params.set('q', String(options.quality));
+  if (options.format) params.set('fm', options.format);
+  const suffix = params.toString();
+  return suffix ? `${url}&${suffix}` : url;
+}
+
+function storageTransform(options?: ImageTransformOptions): string {
+  if (!options) return '';
+  const width = options.width || '';
+  const height = options.height || '';
+  const quality = options.quality || 80;
+  return `?width=${width}&height=${height}&quality=${quality}&resize=contain`;
+}
+
 /**
  * Retorna a URL proxiada e otimizada via CDN
  */
@@ -26,26 +45,14 @@ export function getProxiedImageUrl(url: string | null | undefined, options?: Ima
   try {
     const parsed = new URL(url);
     const isProxied = PROXIED_DOMAINS.includes(parsed.hostname);
-    
-    // Se precisar de proxy ou se quisermos otimização CDN (ex: Cloudflare/Supabase Image Transformation)
     if (isProxied) {
-      let proxyUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/image-proxy?url=${encodeURIComponent(url)}`;
-      
-      // Adicionar parâmetros de transformação se disponíveis no proxy
-      if (options) {
-        if (options.width) proxyUrl += `&w=${options.width}`;
-        if (options.height) proxyUrl += `&h=${options.height}`;
-        if (options.quality) proxyUrl += `&q=${options.quality}`;
-        if (options.format) proxyUrl += `&fm=${options.format}`;
-      }
-      
-      return proxyUrl;
+      const proxyUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/image-proxy?url=${encodeURIComponent(url)}`;
+      return appendProxyOptions(proxyUrl, options);
     }
 
     // Otimização para imagens do Supabase Storage
     if (url.includes('supabase.co/storage/v1/object/public/')) {
-      const transform = options ? `?width=${options.width || ''}&height=${options.height || ''}&quality=${options.quality || 80}&resize=contain` : '';
-      return `${url}${transform}`;
+      return `${url}${storageTransform(options)}`;
     }
   } catch {
     // URL inválida

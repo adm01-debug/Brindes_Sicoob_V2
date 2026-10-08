@@ -22,6 +22,8 @@ export const TECHNIQUE_FILTERS: Record<string, TechniqueFilter> = {
   default: { filter: "none", opacity: 1, description: "Preview" },
 };
 
+const DEFAULT_TECHNIQUE_FILTER: TechniqueFilter = { filter: "none", opacity: 1, description: "Preview" };
+
 // Ordered matching rules: more specific patterns first to avoid false matches.
 const TECHNIQUE_MATCH_ORDER: Array<{ pattern: string; key: string }> = [
   { pattern: "laser_co2", key: "laser_co2" },
@@ -44,14 +46,14 @@ const TECHNIQUE_MATCH_ORDER: Array<{ pattern: string; key: string }> = [
 ];
 
 export function getTechniqueFilter(techniqueCode?: string | null, techniqueName?: string): TechniqueFilter {
-  if (!techniqueCode && !techniqueName) return TECHNIQUE_FILTERS.default!;
+  if (!techniqueCode && !techniqueName) return TECHNIQUE_FILTERS.default ?? DEFAULT_TECHNIQUE_FILTER;
   const combined = [techniqueCode, techniqueName].filter(Boolean).join(" ").toLowerCase();
   for (const rule of TECHNIQUE_MATCH_ORDER) {
     if (combined.includes(rule.pattern)) {
-      return TECHNIQUE_FILTERS[rule.key]!;
+      return TECHNIQUE_FILTERS[rule.key] ?? DEFAULT_TECHNIQUE_FILTER;
     }
   }
-  return TECHNIQUE_FILTERS.default!;
+  return TECHNIQUE_FILTERS.default ?? DEFAULT_TECHNIQUE_FILTER;
 }
 
 export function clamp(value: number, min: number, max: number) {

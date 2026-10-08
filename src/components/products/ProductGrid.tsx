@@ -2,7 +2,7 @@ import { ProductCard } from "./ProductCard";
 import { ProductGridSkeleton } from "./ProductCardSkeleton";
 import type { Product } from "@/hooks/useProducts";
 import type { ActiveColorFilter } from "@/utils/color-image-resolver";
-import { useEffect, useState, useRef, memo, useCallback } from "react";
+import { type ComponentProps, useEffect, useState, useRef, memo, useCallback } from "react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { SelectionCheckbox } from "@/components/common/SelectionCheckbox";
 import { cn } from "@/lib/utils";
@@ -29,27 +29,24 @@ export interface ProductGridProps {
   onToggleSelect?: (id: string) => void;
 }
 
-const ProductCardWrapper = memo(function ProductCardWrapper({ 
-  product, 
-  index, 
-  isVisible,
-  hideCategoryBadges,
-  selectionMode,
-  selectedIds,
-  onToggleSelect,
-  ...restProps 
-}: { 
-  product: Product; 
-  index: number; 
+function SelectionOverlay({ selected, onToggle }: { selected: boolean; onToggle: () => void }) {
+  return <div className="absolute top-2 left-2 z-20" onClick={(event) => { event.stopPropagation(); onToggle(); }}><SelectionCheckbox checked={selected} onChange={onToggle} size="md" /></div>;
+}
+
+function EmptyProductGrid() {
+  return <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in"><div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4"><span className="text-3xl">📦</span></div><h3 className="font-display text-lg font-semibold text-foreground mb-2">Nenhum produto encontrado</h3><p className="text-muted-foreground max-w-md">Tente ajustar os filtros ou realizar uma nova busca para encontrar os produtos desejados.</p></div>;
+}
+
+const ProductCardWrapper = memo(function ProductCardWrapper({ product, index, hideCategoryBadges, selectionMode, selectedIds, onToggleSelect, ...restProps }: {
+  product: Product;
+  index: number;
   isVisible: boolean;
   hideCategoryBadges?: boolean;
   selectionMode?: boolean;
   selectedIds?: Set<string>;
   onToggleSelect?: (id: string) => void;
-} & Omit<React.ComponentProps<typeof ProductCard>, 'product'>) {
-  const reducedMotion = useReducedMotion();
-  const [hasAnimated, setHasAnimated] = useState(reducedMotion);
-  const ref = useRef<HTMLDivElement>(null);
+} & Omit<ComponentProps<typeof ProductCard>, 'product'>) {
+  const { onClick, ...productCardProps } = restProps; const reducedMotion = useReducedMotion(); const [hasAnimated, setHasAnimated] = useState(reducedMotion); const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (reducedMotion) { setHasAnimated(true); return; }
@@ -61,18 +58,13 @@ const ProductCardWrapper = memo(function ProductCardWrapper({
 
   const isSelected = selectionMode && selectedIds?.has(product.id);
 
-  const handleToggleSelect = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    onToggleSelect?.(product.id);
-  }, [onToggleSelect, product.id]);
-
   const handleCardClick = useCallback(() => {
     if (selectionMode) {
       onToggleSelect?.(product.id);
     } else {
-      restProps.onClick?.();
+      onClick?.();
     }
-  }, [selectionMode, onToggleSelect, product.id, restProps.onClick]);
+  }, [selectionMode, onToggleSelect, onClick, product.id]);
 
   return (
     <div
@@ -90,24 +82,8 @@ const ProductCardWrapper = memo(function ProductCardWrapper({
         transitionDelay: hasAnimated ? '0ms' : `${Math.min(index * 80, 800)}ms`,
       }}
     >
-      {selectionMode && onToggleSelect && (
-        <div 
-          className="absolute top-2 left-2 z-20"
-          onClick={handleToggleSelect}
-        >
-          <SelectionCheckbox
-            checked={!!isSelected}
-            onChange={() => onToggleSelect(product.id)}
-            size="md"
-          />
-        </div>
-      )}
-      <ProductCard 
-        product={product} 
-        hideCategoryBadges={hideCategoryBadges} 
-        {...restProps}
-        onClick={handleCardClick}
-      />
+      {selectionMode && onToggleSelect && <SelectionOverlay selected={Boolean(isSelected)} onToggle={() => onToggleSelect(product.id)} />}
+      <ProductCard product={product} hideCategoryBadges={hideCategoryBadges} {...productCardProps} onClick={handleCardClick} />
     </div>
   );
 });
@@ -120,56 +96,17 @@ const columnClasses: Record<number, string> = {
   8: "grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8",
 };
 
-export function ProductGrid({ 
-  products,
-  isLoading = false,
-  onProductClick,
-  onViewProduct, 
-  onShareProduct, 
-  onFavoriteProduct,
-  isFavorite,
-  onToggleFavorite,
-  isInCompare,
-  onToggleCompare,
-  canAddToCompare = true,
-  highlightColors,
-  hideCategoryBadges = false,
-  activeColorFilter,
-  columns = 5,
-  selectionMode,
-  selectedIds,
-  onToggleSelect,
-}: ProductGridProps) {
-  const [isGridVisible, setIsGridVisible] = useState(false);
-  useEffect(() => {
+export function ProductGrid({ products, isLoading = false, onProductClick, onViewProduct, onShareProduct, onFavoriteProduct, isFavorite, onToggleFavorite, isInCompare, onToggleCompare, canAddToCompare = true, highlightColors, hideCategoryBadges = false, activeColorFilter, columns = 5, selectionMode, selectedIds, onToggleSelect }: ProductGridProps) {
+  const productIdsKey = products.map((product) => product.id).join("|");
+  const [isGridVisible, setIsGridVisible] = useState(false); useEffect(() => {
     setIsGridVisible(false);
     const timer = setTimeout(() => setIsGridVisible(true), 50);
     return () => clearTimeout(timer);
-  }, [products]);
+  }, [productIdsKey]);
 
-  if (isLoading) {
-    return (
-      <div className="w-full" data-testid="product-grid-loading">
-        <ProductGridSkeleton count={columns * 3} variant="default" stagger={true} />
-      </div>
-    );
-  }
+  if (isLoading) return <div className="w-full" data-testid="product-grid-loading"><ProductGridSkeleton count={columns * 3} variant="default" stagger={true} /></div>;
 
-  if (products.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
-        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-          <span className="text-3xl">📦</span>
-        </div>
-        <h3 className="font-display text-lg font-semibold text-foreground mb-2">
-          Nenhum produto encontrado
-        </h3>
-        <p className="text-muted-foreground max-w-md">
-          Tente ajustar os filtros ou realizar uma nova busca para encontrar os produtos desejados.
-        </p>
-      </div>
-    );
-  }
+  if (products.length === 0) return <EmptyProductGrid />;
 
   return (
     <div 

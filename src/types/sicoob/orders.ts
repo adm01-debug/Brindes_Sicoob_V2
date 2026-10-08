@@ -1,3 +1,5 @@
+import type { Json } from "@/integrations/supabase/types";
+
 export type OrderStatus = 'draft' | 'pending' | 'waiting_approval' | 'escalated_to_board' | 'confirmed' | 'logistic' | 'in_production' | 'in_separation' | 'in_transit' | 'delivered' | 'rejected' | 'completed' | 'cancelled';
 
 export interface StatusConfig {
@@ -143,8 +145,8 @@ export interface SicoobApprovalRequest {
 export interface SicoobOrderItemLog {
   id: string;
   action: string;
-  old_data: any;
-  new_data: any;
+  old_data: Json | null;
+  new_data: Json | null;
   created_at: string;
   user?: {
     display_name: string;

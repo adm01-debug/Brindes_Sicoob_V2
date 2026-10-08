@@ -53,10 +53,11 @@ export function MyPendingOrdersWidget() {
     staleTime: 30_000,
     initialPageParam: null as string | null,
     queryFn: async ({ pageParam }) => {
+      if (!user) return [];
       let q = supabase
         .from("orders")
         .select("id, order_number, status, total, client_name, client_company, updated_at")
-        .eq("seller_id", user!.id)
+        .eq("seller_id", user.id)
         .in("status", ["pending", "confirmed", "in_production", "shipping", "shipped"])
         .order("updated_at", { ascending: false })
         .limit(PAGE_SIZE);
@@ -139,7 +140,7 @@ export function MyPendingOrdersWidget() {
                     </span>
                   </div>
                 </div>
-                {o.total != null && (
+                {o.total !== null && o.total !== undefined && (
                   <p className="text-sm font-semibold text-primary flex-shrink-0">
                     {Number(o.total).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                   </p>

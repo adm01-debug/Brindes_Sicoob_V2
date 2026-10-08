@@ -1,6 +1,6 @@
 import { Package } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { OrderItem } from "@/types/orders";
+import { type OrderItem } from "@/types/orders";
 import { formatCurrency } from "@/lib/format";
 
 interface OrderItemsListProps {

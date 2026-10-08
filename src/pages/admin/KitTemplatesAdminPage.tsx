@@ -1,7 +1,7 @@
 /**
  * Admin: gerenciar templates de kits sugeridos pelo sistema.
  */
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ComponentType } from 'react';
 import * as Lucide from 'lucide-react';
 import { Plus, Pencil, Trash2, EyeOff, Eye, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -117,7 +117,7 @@ export default function KitTemplatesAdminPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((t) => {
-            const Icon = (Lucide as unknown as Record<string, React.ComponentType<{ className?: string }>>)[t.icon] || Lucide.Package;
+            const Icon = (Lucide as unknown as Record<string, ComponentType<{ className?: string }>>)[t.icon] || Lucide.Package;
             return (
               <Card key={t.id} className={cn('overflow-hidden', !t.is_active && 'opacity-60')}>
                 <div className="h-1.5 w-full" style={{ background: t.color }} />
@@ -229,7 +229,7 @@ export default function KitTemplatesAdminPage() {
                 <Label className="text-xs">Ícone</Label>
                 <div className="grid grid-cols-6 gap-2">
                   {PRESET_ICONS.map((name) => {
-                    const Cmp = (Lucide as unknown as Record<string, React.ComponentType<{ className?: string }>>)[name];
+                    const Cmp = (Lucide as unknown as Record<string, ComponentType<{ className?: string }>>)[name];
                     if (!Cmp) return null;
                     const active = editing.icon === name;
                     return (

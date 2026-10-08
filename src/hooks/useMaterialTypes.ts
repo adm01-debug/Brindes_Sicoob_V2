@@ -101,7 +101,7 @@ export interface UseMaterialSearchReturn {
 }
 
 export function useMaterialSearch() {
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['material-search'],
     queryFn: () => Promise.resolve({ types: [], count: 0, search: '' }),
     enabled: false,
