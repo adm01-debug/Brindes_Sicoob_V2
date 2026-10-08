@@ -58,7 +58,9 @@ async function generateFreshTotp(
 }
 
 async function ensurePrivilegedAal2(page: Page, role: 'admin' | 'dev'): Promise<void> {
-  await gotoAndSettle(page, role === 'dev' ? '/admin/telemetria' : '/admin/usuarios');
+  await gotoAndSettle(page, role === 'dev' ? '/admin/telemetria' : '/admin/usuarios', {
+    waitForPermissions: false,
+  });
   const enrollment = page.getByRole('dialog', { name: 'Autenticação em duas etapas' });
   const challenge = page.getByRole('dialog', { name: 'Verificação em duas etapas' });
   let outcome = 'waiting';

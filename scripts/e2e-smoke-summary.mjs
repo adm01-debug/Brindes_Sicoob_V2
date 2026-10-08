@@ -14,7 +14,7 @@
  *   3. `playwright-report/smoke-summary.json` — para tooling/dashboards.
  *
  * Exit code:
- *   0 — todos os smoke tests passaram (ou foram pulados intencionalmente)
+ *   0 — ao menos um smoke executou e todos os executados passaram
  *   1 — pelo menos 1 falha (não derruba o job — workflow já decide)
  *   2 — `results.json` ausente ou inválido
  *
@@ -152,6 +152,7 @@ const totals = rows.reduce(
 
 const failed = rows.filter((r) => r.status !== "passed" && r.status !== "skipped");
 const flaky = rows.filter((r) => r.status === "passed" && r.retries > 0);
+const blocked = totals.passed === 0 && totals.skipped === totals.total;
 
 // Quebra de ordem: detecta features que quebraram após uma feature anterior
 // passar — útil pra sinalizar "smoke parou sequencialmente em N".
@@ -294,7 +295,9 @@ if (flaky.length > 0) {
   md.push(``);
 }
 
-if (failed.length === 0 && flaky.length === 0) {
+if (blocked) {
+  md.push(`🛑 **Smoke bloqueado — nenhuma funcionalidade chegou a executar.**`);
+} else if (failed.length === 0 && flaky.length === 0) {
   md.push(`✅ **Smoke verde — gate liberado.**`);
 }
 
@@ -375,7 +378,10 @@ const finalLines = [
   `Duration: ${wallSec}s   Started: ${startedAt}`,
   "",
 ];
-if (failed.length === 0 && flaky.length === 0) {
+if (blocked) {
+  finalLines.push("🛑 Smoke bloqueado — nenhuma funcionalidade chegou a executar.");
+  finalLines.push("Verifique falhas de setup, autenticação e infraestrutura no relatório Playwright.");
+} else if (failed.length === 0 && flaky.length === 0) {
   finalLines.push("✅ Todas as funcionalidades passaram — gate liberado.");
 } else {
   if (failed.length > 0) {
@@ -401,4 +407,4 @@ if (failed.length === 0 && flaky.length === 0) {
 finalLines.push(sep, "");
 console.log(finalLines.join("\n"));
 
-process.exit(totals.failed > 0 ? 1 : 0);
+process.exit(totals.failed > 0 || blocked ? 1 : 0);

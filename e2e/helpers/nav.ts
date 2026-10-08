@@ -93,7 +93,17 @@ export async function expectOnRoute(
   });
 }
 
-export async function gotoAndSettle(page: Page, path: string, opts?: { timeout?: number }) {
+interface RouteSettleOptions {
+  timeout?: number;
+  /**
+   * Gates MFA mantêm o marcador de permissões enquanto aguardam interação.
+   * Nesse fluxo, aguarde apenas o carregamento lazy para não criar uma espera
+   * circular antes de preencher o desafio.
+   */
+  waitForPermissions?: boolean;
+}
+
+export async function gotoAndSettle(page: Page, path: string, opts?: RouteSettleOptions) {
   const response = await page.goto(path, {
     waitUntil: 'domcontentloaded',
     timeout: opts?.timeout ?? 20_000,
@@ -120,8 +130,11 @@ export async function gotoAndSettle(page: Page, path: string, opts?: { timeout?:
 
   // Lazy loading e resolução de papéis fazem parte do carregamento da rota;
   // prosseguir com o fallback ativo gerava aprovações e falhas aleatórias.
+  const pendingSelector = opts?.waitForPermissions === false
+    ? '[data-route-pending="lazy"]'
+    : '[data-route-pending]';
   await page
-    .locator('[data-route-pending]')
+    .locator(pendingSelector)
     .first()
     .waitFor({ state: 'detached', timeout: opts?.timeout ?? 15_000 });
 
