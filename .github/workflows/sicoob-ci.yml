@@ -3,7 +3,7 @@ name: Portal Sicoob
 on:
   push:
     branches: [main]
-    paths: &sicoob_paths
+    paths:
       - 'src/pages/Auth.tsx'
       - 'src/pages/auth/**'
       - 'src/pages/sicoob/**'
@@ -27,7 +27,6 @@ on:
       - '.github/workflows/sicoob-ci.yml'
   pull_request:
     branches: [main]
-    paths: *sicoob_paths
 
 permissions:
   contents: read
@@ -115,3 +114,21 @@ jobs:
           name: evidencias-visuais-sicoob
           path: docs/execucao/evidencias/visual/
           retention-days: 7
+
+  sicoob-gate:
+    name: sicoob-gate
+    if: always()
+    needs: [transacoes, experiencia]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Consolidar resultado dos contratos Sicoob
+        env:
+          RESULTADO_TRANSACOES: ${{ needs.transacoes.result }}
+          RESULTADO_EXPERIENCIA: ${{ needs.experiencia.result }}
+        run: |
+          if [[ "$RESULTADO_TRANSACOES" != "success" || "$RESULTADO_EXPERIENCIA" != "success" ]]; then
+            echo "::error::Gates Sicoob incompletos: transações=$RESULTADO_TRANSACOES, experiência=$RESULTADO_EXPERIENCIA"
+            exit 1
+          fi
+          echo "Contratos transacionais e experiência Sicoob aprovados."

@@ -10,11 +10,6 @@ on:
       - 'reports/**'
   pull_request:
     branches: [main]
-    paths-ignore:
-      - 'docs/**'
-      - '*.md'
-      - '.github/CODEOWNERS'
-      - 'reports/**'
 
 permissions:
   contents: read
