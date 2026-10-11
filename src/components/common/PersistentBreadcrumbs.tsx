@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { canNavigateTo, isDevOnlyPath } from "@/lib/navigation/restricted-routes";
 import { BackButton } from "./BackButton";
+import { NavigationHistoryMenu } from "./NavigationHistoryMenu";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -122,13 +123,14 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
       )}
     >
       {showBackButton && isNotHome && (
-        <div className="flex-shrink-0 border-r border-border/30 pr-3 mr-1">
+        <div className="flex flex-shrink-0 items-center gap-1 border-r border-border/30 pr-3 mr-1">
           <BackButton 
             useChevron 
             showLabel={false} 
             className="h-8 w-8 rounded-full bg-muted/20 hover:bg-muted/40 text-muted-foreground hover:text-foreground transition-all duration-200 border-none shadow-none" 
             variant="ghost" 
           />
+          <NavigationHistoryMenu />
         </div>
       )}
       
