@@ -18,6 +18,8 @@ interface AutoSaveResult {
   isSaving: boolean;
   autoSavedKitId: string | null;
   lastSaveError: string | null;
+  /** true enquanto o snapshot atual difere do último persistido no banco. */
+  isDirty: boolean;
   retry: () => void;
 }
 
@@ -114,6 +116,7 @@ export function useKitAutoSave(
   const [isSaving, setIsSaving] = useState(false);
   const [autoSavedKitId, setAutoSavedKitId] = useState<string | null>(currentKitId || null);
   const [lastSaveError, setLastSaveError] = useState<string | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
   const persistedSnapshotRef = useRef<string>('');
   const latestSnapshotRef = useRef<string>('');
@@ -155,6 +158,7 @@ export function useKitAutoSave(
         persistedSnapshotRef.current = snapshot;
         setLastSavedAt(new Date());
         setLastSaveError(null);
+        setIsDirty(latestSnapshotRef.current !== snapshot);
       }
     } catch (err) {
       if (operationGeneration !== scopeGenerationRef.current) return;
@@ -186,7 +190,11 @@ export function useKitAutoSave(
     const newSnapshot = createSnapshot(kitState, kitQuantity);
     latestSnapshotRef.current = newSnapshot;
 
-    if (newSnapshot === persistedSnapshotRef.current) return;
+    if (newSnapshot === persistedSnapshotRef.current) {
+      setIsDirty(false);
+      return;
+    }
+    setIsDirty(true);
 
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => void saveToDb(newSnapshot), AUTO_SAVE_DELAY_MS);
@@ -228,6 +236,7 @@ export function useKitAutoSave(
     const snapshot = createSnapshot(kitState, kitQuantity);
     persistedSnapshotRef.current = snapshot;
     latestSnapshotRef.current = snapshot;
+    setIsDirty(false);
   }, [currentKitId, user?.id, kitState, kitQuantity]);
 
   const retry = useCallback(() => {
@@ -236,5 +245,5 @@ export function useKitAutoSave(
     if (snapshot && snapshot !== persistedSnapshotRef.current) void saveToDb(snapshot);
   }, [saveToDb]);
 
-  return { lastSavedAt, isSaving, autoSavedKitId, lastSaveError, retry };
+  return { lastSavedAt, isSaving, autoSavedKitId, lastSaveError, isDirty, retry };
 }

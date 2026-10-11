@@ -16,6 +16,9 @@ export function NavigationGuardDialog() {
       message={request?.message}
       onConfirm={() => resolve(true)}
       onCancel={() => resolve(false)}
+      // z-[110]: precisa ficar acima do tour de onboarding (z-[100]) para
+      // continuar visível/clicável quando a guarda dispara durante o tour.
+      contentClassName="z-[110]"
     />
   );
 }

@@ -167,7 +167,7 @@ export default function KitBuilderPage() {
   const { handleAddToQuote, isCreatingQuote } = useKitBuilderQuote();
   useCustomKitsRealtime();
 
-  const { lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, retry: retryAutoSave } = useKitAutoSave(
+  const { lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, isDirty: kitHasUnsavedChanges, retry: retryAutoSave } = useKitAutoSave(
     kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id),
   );
 
@@ -323,7 +323,7 @@ export default function KitBuilderPage() {
 
   const { itemsWeight, weightExceeded, weightPercent } = kitWeightMetrics(kitState);
   const hasContent = kitHasContent(kitState);
-  useDirtyGuard('kit-builder', hasContent);
+  useDirtyGuard('kit-builder', kitHasUnsavedChanges);
   const isExistingKit = Boolean(resolveKitId(currentKitId, autoSavedKitId));
   const pricing = calculateTotalKitPrice(kitState.box, kitState.items, kitState.personalization, kitQuantity);
 
