@@ -105,6 +105,9 @@ function clearSensitiveBrowserData(): void {
       "product-comparison",
       "recently-viewed-products",
       "duplicate_product",
+      // Histórico de navegação persiste títulos de páginas (nomes de
+      // orçamentos/kits) e não pode vazar para o próximo usuário.
+      "navigation-history",
     ].forEach(key => localStorage.removeItem(key));
   } catch (error) {
     console.warn("Falha ao limpar armazenamento local no logout", error);
