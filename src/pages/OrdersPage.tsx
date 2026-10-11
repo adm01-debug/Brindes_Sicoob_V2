@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from '@/components/seo/PageSEO';
 import { useAuth } from '@/contexts/AuthContext';
@@ -183,7 +183,12 @@ function filtersFromSearchParams(searchParams: URLSearchParams): OrdersFilterSta
     status: searchParams.get('status') ?? 'all',
     clientCompany: searchParams.get('empresa') ?? '',
     dateRange: from || to ? { from, to } : undefined,
-    page: Number(searchParams.get('pagina')) || 1,
+    // Aceita só inteiro positivo finito — `pagina=1.5` ou `Infinity`
+    // chegaria ao range() do PostgREST e a página pareceria vazia.
+    page: (() => {
+      const raw = Number(searchParams.get('pagina'));
+      return Number.isInteger(raw) && raw >= 1 && Number.isFinite(raw) ? raw : 1;
+    })(),
   };
 }
 
@@ -215,7 +220,17 @@ function useOrdersPageState() {
   const [filters, setFilters] = useState<OrdersFilterState>(() => filtersFromSearchParams(searchParams));
   // URL -> estado: cobre navegação externa que muda só a query da mesma
   // rota (menu de histórico, voltar do navegador) sem desmontar a página.
+  // Os dois sentidos convivem via lastUrlRef/adoptingRef: quando a URL
+  // muda por fora, o estado adota a nova query e a escrita é suspensa uma
+  // vez — senão o efeito de escrita devolveria a query antiga na mesma
+  // renderização e desfaria a navegação.
+  const lastUrlRef = useRef<string>(searchParams.toString());
+  const adoptingRef = useRef(false);
   useEffect(() => {
+    const url = searchParams.toString();
+    if (url === lastUrlRef.current) return;
+    lastUrlRef.current = url;
+    adoptingRef.current = true;
     setFilters((current) => {
       const next = filtersFromSearchParams(searchParams);
       return filtersToSearchParams(current).toString() === filtersToSearchParams(next).toString() ? current : next;
@@ -223,8 +238,16 @@ function useOrdersPageState() {
   }, [searchParams]);
   // estado -> URL
   useEffect(() => {
+    if (adoptingRef.current) {
+      adoptingRef.current = false;
+      return;
+    }
     const next = filtersToSearchParams(filters);
-    if (next.toString() !== searchParams.toString()) setSearchParams(next, { replace: true });
+    const nextString = next.toString();
+    if (nextString !== searchParams.toString()) {
+      lastUrlRef.current = nextString;
+      setSearchParams(next, { replace: true });
+    }
   }, [filters, searchParams, setSearchParams]);
   const { data: response, isLoading } = useOrdersList(user?.id, scope, {
     search: filters.search,

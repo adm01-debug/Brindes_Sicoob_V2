@@ -9,6 +9,7 @@ import { useUserRoles } from "@/hooks/auth/useUserRoles";
 import { useUserProfile } from "@/hooks/auth/useUserProfile";
 import { useAuthAAL } from "@/hooks/auth/useAuthAAL";
 import { useRecentlyViewedStore } from "@/stores/useRecentlyViewedStore";
+import { useNavigationStore } from "@/stores/useNavigationStore";
 
 
 import { type AppRole, type Profile } from "@/types/users";
@@ -100,6 +101,9 @@ function hasPersistedSession(): boolean {
 function clearSensitiveBrowserData(): void {
   try {
     sessionStorage.clear();
+    // Além da chave persistida, zera o histórico já hidratado na store —
+    // logout seguido de login sem reload não pode mostrar páginas do usuário anterior.
+    useNavigationStore.getState().clear();
     [
       "product-favorites",
       "product-comparison",

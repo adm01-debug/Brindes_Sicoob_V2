@@ -70,7 +70,9 @@ export function isCriticalPathname(pathname: string) {
 // Vários componentes instanciam o hook (BackButton, Breadcrumbs, swipe) —
 // o evento 'smart-back' (atalho/swipe) dispara o goBack da instância mais
 // recente apenas uma vez, senão cada listener navegaria um passo atrás.
-let activeGoBack: (() => void) | null = null;
+// Pilha de registrantes: a instância mais recente atende o smart-back e,
+// ao desmontar, devolve o controle para a anterior (breadcrumb, swipe etc.).
+const goBackStack: Array<() => void> = [];
 let smartBackListenerRegistered = false;
 
 export function useSmartNavigation() {
@@ -104,13 +106,16 @@ export function useSmartNavigation() {
   }, [navigate, setDirection]);
 
   useEffect(() => {
-    activeGoBack = goBack;
+    goBackStack.push(goBack);
     if (!smartBackListenerRegistered) {
       smartBackListenerRegistered = true;
-      window.addEventListener('smart-back', () => activeGoBack?.());
+      window.addEventListener('smart-back', () => {
+        goBackStack[goBackStack.length - 1]?.();
+      });
     }
     return () => {
-      if (activeGoBack === goBack) activeGoBack = null;
+      const index = goBackStack.lastIndexOf(goBack);
+      if (index >= 0) goBackStack.splice(index, 1);
     };
   }, [goBack]);
 

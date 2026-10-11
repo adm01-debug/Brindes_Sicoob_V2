@@ -134,6 +134,9 @@ export function useKitAutoSave(
   // (carga assíncrona de kit via URL, que chega depois do primeiro render).
   const baselineNextRef = useRef(false);
   const latestSnapshotRef = useRef<string>('');
+  // Estado que gerou o último snapshot — usado para regravar o conteúdo
+  // correto quando um save manual ultrapassa um autosave em voo.
+  const latestStateRef = useRef<{ kitState: KitState; kitQuantity: number }>({ kitState, kitQuantity });
   const kitIdRef = useRef<string | null>(currentKitId || null);
   const scopeRef = useRef(`${user?.id ?? 'anon'}:${currentKitId ?? 'new'}`);
   const scopeGenerationRef = useRef(0);
@@ -148,13 +151,18 @@ export function useKitAutoSave(
     onKitIdCreated?.(createdId);
   }, [onKitIdCreated]);
 
-  const saveToDb = useCallback(async (snapshot: string) => {
+  // `source` mantém o estado que gerou `snapshot` — closures antigas não
+  // devem regravar o kitState da renderização em que foram criadas.
+  const saveToDb = useCallback(async (
+    snapshot: string,
+    source: { kitState: KitState; kitQuantity: number },
+  ) => {
     if (!user?.id) return;
 
     // Don't auto-save empty kits
-    if (isEmptyKit(kitState)) return;
+    if (isEmptyKit(source.kitState)) return;
 
-    const payload = buildAutoSavePayload(user.id, kitState, kitQuantity);
+    const payload = buildAutoSavePayload(user.id, source.kitState, source.kitQuantity);
 
     const operationGeneration = scopeGenerationRef.current;
     const operationUserId = user.id;
@@ -168,7 +176,7 @@ export function useKitAutoSave(
       // atual já foi persistido, mas o registro recebeu o snapshot antigo
       // — regrava o mais novo. Edição comum segue a fila do autosave.
       if (persistedSnapshotRef.current === latestSnapshotRef.current) {
-        void saveToDb(latestSnapshotRef.current);
+        void saveToDb(latestSnapshotRef.current, latestStateRef.current);
       }
     };
     const previousSave = saveQueueRef.current;
@@ -201,7 +209,7 @@ export function useKitAutoSave(
         setIsSaving(pendingSavesRef.current > 0);
       }
     }
-  }, [adoptCreatedId, user?.id, kitState, kitQuantity]);
+  }, [adoptCreatedId, user?.id]);
 
   // Create a snapshot hash to detect meaningful changes
   useEffect(() => {
@@ -215,6 +223,7 @@ export function useKitAutoSave(
 
     const newSnapshot = createKitSnapshot(kitState, kitQuantity);
     latestSnapshotRef.current = newSnapshot;
+    latestStateRef.current = { kitState, kitQuantity };
 
     if (baselineNextRef.current) {
       baselineNextRef.current = false;
@@ -230,7 +239,7 @@ export function useKitAutoSave(
     setIsDirty(true);
 
     if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => void saveToDb(newSnapshot), AUTO_SAVE_DELAY_MS);
+    timerRef.current = setTimeout(() => void saveToDb(newSnapshot, { kitState, kitQuantity }), AUTO_SAVE_DELAY_MS);
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -290,7 +299,7 @@ export function useKitAutoSave(
   const retry = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     const snapshot = latestSnapshotRef.current;
-    if (snapshot && snapshot !== persistedSnapshotRef.current) void saveToDb(snapshot);
+    if (snapshot && snapshot !== persistedSnapshotRef.current) void saveToDb(snapshot, latestStateRef.current);
   }, [saveToDb]);
 
   return { lastSavedAt, isSaving, autoSavedKitId, lastSaveError, isDirty, markPersisted, markNextSnapshotPersisted, retry };

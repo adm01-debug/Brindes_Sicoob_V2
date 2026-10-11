@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { PageSEO } from "@/components/seo/PageSEO";
@@ -91,18 +91,35 @@ function useQuotesListState() {
   const [sortBy, setSortBy] = useState<SortOption>(() => sortFromParam(searchParams.get("ordem")));
   // URL -> estado: navegação que muda só a query da mesma rota (menu de
   // histórico, voltar do navegador) ressincroniza os filtros exibidos.
+  // lastUrlRef/adoptingRef impedem a disputa: ao adotar uma URL externa, a
+  // escrita é suspensa uma vez — senão ela devolveria a query antiga na
+  // mesma renderização e desfaria a navegação.
+  const lastUrlRef = useRef<string>(searchParams.toString());
+  const adoptingRef = useRef(false);
   useEffect(() => {
+    const url = searchParams.toString();
+    if (url === lastUrlRef.current) return;
+    lastUrlRef.current = url;
+    adoptingRef.current = true;
     setSearchTerm((current) => (current === (searchParams.get("q") ?? "") ? current : (searchParams.get("q") ?? "")));
     setStatusFilter((current) => (current === (searchParams.get("status") ?? "all") ? current : (searchParams.get("status") ?? "all")));
     setSortBy((current) => (current === sortFromParam(searchParams.get("ordem")) ? current : sortFromParam(searchParams.get("ordem"))));
   }, [searchParams]);
   // estado -> URL
   useEffect(() => {
+    if (adoptingRef.current) {
+      adoptingRef.current = false;
+      return;
+    }
     const next = new URLSearchParams();
     if (searchTerm) next.set("q", searchTerm);
     if (statusFilter !== "all") next.set("status", statusFilter);
     if (sortBy !== "newest") next.set("ordem", sortBy);
-    if (next.toString() !== searchParams.toString()) setSearchParams(next, { replace: true });
+    const nextString = next.toString();
+    if (nextString !== searchParams.toString()) {
+      lastUrlRef.current = nextString;
+      setSearchParams(next, { replace: true });
+    }
   }, [searchTerm, statusFilter, sortBy, searchParams, setSearchParams]);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [bulkDeleteIds, setBulkDeleteIds] = useState<string[]>([]);
