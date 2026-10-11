@@ -1,3 +1,4 @@
+import { type ReactNode } from 'react';
 import { act, render, renderHook, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -85,7 +86,7 @@ describe('useScrollRestoration', () => {
     document.body.appendChild(container);
 
     renderHook(() => useScrollRestoration(), {
-      wrapper: ({ children }: { children: React.ReactNode }) => (
+      wrapper: ({ children }: { children: ReactNode }) => (
         <MemoryRouter initialEntries={['/lista']}>{children}</MemoryRouter>
       ),
     });
