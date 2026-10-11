@@ -54,9 +54,6 @@ export function ProtectedRoute({
   const { user, roles, isLoading, rolesLoaded, rolesError } = useAuth();
   const location = useLocation();
 
-  // TEMP-TEST-BYPASS (remove): allow listed routes unauthenticated for PR #100 UI test
-  if (["/tendencias","/simulador","/mockup-generator","/orcamentos/novo"].includes(location.pathname)) return children ?? <Outlet />;
-
   if (isLoadingPermissions(isLoading, Boolean(user), rolesLoaded)) {
     return <RouteLoader showPermissionsMessage={Boolean(user) && !rolesLoaded} />;
   }

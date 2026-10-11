@@ -18,8 +18,9 @@ interface BackNavigationDeps {
 
 async function performBackNavigation(deps: BackNavigationDeps) {
   const { navigate, pathname, fallbackPath, isCriticalPath, force, getPrevious, pop, setDirection } = deps;
-  if (!force && isCriticalPath) {
-    const confirmed = await useNavigationGuardStore.getState().requestConfirmation();
+  const guard = useNavigationGuardStore.getState();
+  if (!force && (isCriticalPath || guard.hasDirty())) {
+    const confirmed = await guard.requestConfirmation();
     if (!confirmed) return;
   }
 

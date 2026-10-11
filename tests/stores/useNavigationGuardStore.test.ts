@@ -1,7 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { useNavigationGuardStore } from '@/stores/useNavigationGuardStore';
 
 describe('useNavigationGuardStore', () => {
+  beforeEach(() => {
+    useNavigationGuardStore.setState({ request: null, dirtyScopes: {} });
+  });
+
   it('resolve(true) confirma a saída', async () => {
     const promise = useNavigationGuardStore.getState().requestConfirmation();
     expect(useNavigationGuardStore.getState().request).not.toBeNull();
@@ -26,5 +30,20 @@ describe('useNavigationGuardStore', () => {
 
   it('resolve sem pedido é no-op', () => {
     expect(() => useNavigationGuardStore.getState().resolve(true)).not.toThrow();
+  });
+
+  it('setDirty registra e remove escopos; hasDirty reflete qualquer escopo sujo', () => {
+    const s = useNavigationGuardStore.getState();
+    expect(s.hasDirty()).toBe(false);
+    s.setDirty('form-a', true);
+    s.setDirty('form-b', true);
+    expect(s.hasDirty()).toBe(true);
+    s.setDirty('form-a', false);
+    expect(s.hasDirty()).toBe(true);
+    s.setDirty('form-b', false);
+    expect(s.hasDirty()).toBe(false);
+    // remover escopo inexistente é no-op
+    s.setDirty('nunca-registrado', false);
+    expect(s.hasDirty()).toBe(false);
   });
 });

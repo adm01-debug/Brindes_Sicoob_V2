@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useDirtyGuard } from '@/hooks/useDirtyGuard';
 import { toast } from 'sonner';
 import {
   THEME_PRESETS,
@@ -37,6 +38,7 @@ export default function AdminTemasPage() {
   const [savedConfig, setSavedConfig] = useState<ThemeConfig>(loadThemeConfig);
 
   const hasUnsavedChanges = JSON.stringify(config) !== JSON.stringify(savedConfig);
+  useDirtyGuard('admin-temas', hasUnsavedChanges);
 
   const applyAll = useCallback((cfg: ThemeConfig, mode: 'light' | 'dark') => {
     applyThemePreset(cfg.presetId, mode);

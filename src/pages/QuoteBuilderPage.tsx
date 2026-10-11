@@ -29,6 +29,7 @@ import { CommercialConditions } from "@/components/quotes/builder/CommercialCond
 import { ValidityPicker } from "@/components/quotes/builder/ValidityPicker";
 import { useQuoteBuilderState } from "@/hooks/useQuoteBuilderState";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
+import { useDirtyGuard } from "@/hooks/useDirtyGuard";
 import { UnsavedChangesDialog } from "@/components/common/UnsavedChangesDialog";
 import { TagManager } from "@/components/quotes/TagManager";
 import { ReorderCatalogValidityBanner } from "@/components/quotes/ReorderCatalogValidityBanner";
@@ -131,6 +132,7 @@ function QuoteBuilderDialogs({ state }: { state: QuoteBuilderState }) {
 export default function QuoteBuilderPage() {
   const state = useQuoteBuilderState();
   const unsaved = useUnsavedChangesGuard({ hasUnsavedChanges: state.hasUnsavedData });
+  useDirtyGuard("quote-builder", state.hasUnsavedData);
   if (state.loadingQuote) return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   return <><PageSEO title={state.quoteId ? "Editar Orçamento" : "Novo Orçamento"} description="Crie e edite orçamentos com seleção de produtos e personalização." path="/orcamentos/novo" noIndex /><QuoteAutoSave quoteId={state.quoteId} scopeId={state.user?.id} data={{ clientId: state.clientId, validUntil: state.validUntil, discountType: state.discountType, discountValue: state.discountValue, notes: state.notes, internalNotes: state.internalNotes, items: state.items, tags: state.tags }} onRestore={(data) => restoreQuoteDraft(state, data)} className="fixed top-20 right-4 z-40" /><div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in"><QuoteBuilderHeader state={state} onBack={() => unsaved.guardNavigation(() => state.navigate(-1))} /><QuoteBuilderStepper completedSteps={state.completedSteps} /><ReorderCatalogValidityBanner quoteId={state.quoteId} hasUnsavedChanges={state.hasUnsavedData} onRevalidated={() => window.location.reload()} /><QuoteTemplateNotices state={state} /><div className="grid gap-4 lg:grid-cols-12"><QuoteClientColumn state={state} /><QuoteItemsColumn state={state} /><QuoteSummaryColumn state={state} /></div></div><QuoteBuilderDialogs state={state} /><UnsavedChangesDialog open={unsaved.showDialog} onConfirm={unsaved.confirmLeave} onCancel={unsaved.cancelLeave} message={unsaved.message} /></>;
 }

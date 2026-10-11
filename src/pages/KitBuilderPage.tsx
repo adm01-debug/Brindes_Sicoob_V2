@@ -39,6 +39,7 @@ import { PageSEO } from "@/components/seo/PageSEO";
 import { logger } from '@/lib/logger';
 import { useKitBuilderQuote } from './kit-builder/useKitBuilderQuote';
 import { useKitWizardShortcuts } from '@/hooks/useKitWizardShortcuts';
+import { useDirtyGuard } from '@/hooks/useDirtyGuard';
 import { useTemplateSnapshot } from '@/hooks/useTemplateSnapshot';
 import { useCustomKitsRealtime } from '@/hooks/useCustomKitsRealtime';
 import { KitMobileSummaryBar } from '@/components/kit-builder/KitMobileSummaryBar';
@@ -322,6 +323,7 @@ export default function KitBuilderPage() {
 
   const { itemsWeight, weightExceeded, weightPercent } = kitWeightMetrics(kitState);
   const hasContent = kitHasContent(kitState);
+  useDirtyGuard('kit-builder', hasContent);
   const isExistingKit = Boolean(resolveKitId(currentKitId, autoSavedKitId));
   const pricing = calculateTotalKitPrice(kitState.box, kitState.items, kitState.personalization, kitQuantity);
 
