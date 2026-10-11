@@ -12,8 +12,7 @@ function setup(initialPath: string) {
   const locationRef = { current: '' };
   const { result } = renderHook(
     () => {
-      const location = useLocation();
-      locationRef.current = location.pathname;
+      locationRef.current = useLocation().pathname;
       return useSmartNavigation();
     },
     { wrapper },
@@ -21,12 +20,34 @@ function setup(initialPath: string) {
   return { result, locationRef };
 }
 
-function openFakeOverlay(role = 'dialog') {
+function openRoleOverlay(role: string) {
   const overlay = document.createElement('div');
   overlay.setAttribute('role', role);
   overlay.setAttribute('data-state', 'open');
   document.body.appendChild(overlay);
   return overlay;
+}
+
+function openPopperWrapper(child?: HTMLElement) {
+  const wrapper = document.createElement('div');
+  wrapper.setAttribute('data-radix-popper-content-wrapper', '');
+  if (child) wrapper.appendChild(child);
+  document.body.appendChild(wrapper);
+  return wrapper;
+}
+
+async function goBackAndFlush(result: { current: ReturnType<typeof useSmartNavigation> }) {
+  await act(async () => {
+    result.current.goBack();
+    await Promise.resolve();
+  });
+}
+
+async function answerGuard(leave: boolean) {
+  await act(async () => {
+    useNavigationGuardStore.getState().resolve(leave);
+    await Promise.resolve();
+  });
 }
 
 describe('useSmartNavigation.goBack', () => {
@@ -39,114 +60,65 @@ describe('useSmartNavigation.goBack', () => {
     document.body.innerHTML = '';
   });
 
-  it('fecha dialog aberto em vez de navegar', () => {
-    const dialog = openFakeOverlay('dialog');
-    const { result, locationRef } = setup('/pedidos/123');
-
-    act(() => result.current.goBack());
-
-    expect(locationRef.current).toBe('/pedidos/123');
-    expect(document.querySelector('[data-state="open"]')).toBe(dialog);
-  });
-
-  it('fecha dropdown/menu aberto em vez de navegar', () => {
-    openFakeOverlay('menu');
-    const { result, locationRef } = setup('/pedidos/123');
-
-    act(() => result.current.goBack());
-
-    expect(locationRef.current).toBe('/pedidos/123');
-  });
+  it.each(['dialog', 'alertdialog', 'menu', 'listbox'])(
+    'fecha overlay role=%s aberto em vez de navegar',
+    (role) => {
+      openRoleOverlay(role);
+      const { result, locationRef } = setup('/pedidos/123');
+      act(() => result.current.goBack());
+      expect(locationRef.current).toBe('/pedidos/123');
+    },
+  );
 
   it('fecha conteúdo popper (select/popover) aberto em vez de navegar', () => {
-    const wrapper = document.createElement('div');
-    wrapper.setAttribute('data-radix-popper-content-wrapper', '');
-    document.body.appendChild(wrapper);
+    openPopperWrapper();
     const { result, locationRef } = setup('/pedidos/123');
-
     act(() => result.current.goBack());
-
     expect(locationRef.current).toBe('/pedidos/123');
   });
 
   it('tooltip aberto NÃO bloqueia a navegação', async () => {
-    const wrapper = document.createElement('div');
-    wrapper.setAttribute('data-radix-popper-content-wrapper', '');
     const tooltip = document.createElement('div');
     tooltip.setAttribute('role', 'tooltip');
-    wrapper.appendChild(tooltip);
-    document.body.appendChild(wrapper);
+    openPopperWrapper(tooltip);
     const { result, locationRef } = setup('/pedidos/123');
-
-    await act(async () => {
-      result.current.goBack();
-      await Promise.resolve();
-    });
-
+    await goBackAndFlush(result);
     expect(locationRef.current).toBe('/pedidos');
   });
 
   it('navega para o pai hierárquico quando não há histórico', async () => {
     const { result, locationRef } = setup('/pedidos/123');
-
-    await act(async () => {
-      result.current.goBack();
-      await Promise.resolve();
-    });
-
+    await goBackAndFlush(result);
     expect(locationRef.current).toBe('/pedidos');
   });
 
-  it('em rota crítica, pede confirmação no guard global e respeita o cancelamento', async () => {
-    const { result, locationRef } = setup('/simulador');
+  it.each([
+    ['rota crítica', '/simulador', '/', false],
+    ['rota com escopo sujo', '/pedidos/123', '/pedidos', true],
+  ])('%s pede confirmação no guard global', async (_label, path, expected, dirty) => {
+    if (dirty) {
+      useNavigationGuardStore.getState().setDirty('kit-builder', true);
+    }
+    const { result, locationRef } = setup(path);
 
     act(() => result.current.goBack());
     expect(useNavigationGuardStore.getState().request).not.toBeNull();
 
-    await act(async () => {
-      useNavigationGuardStore.getState().resolve(false);
-      await Promise.resolve();
-    });
-    expect(locationRef.current).toBe('/simulador');
+    await answerGuard(false);
+    expect(locationRef.current).toBe(path);
 
     act(() => result.current.goBack());
-    await act(async () => {
-      useNavigationGuardStore.getState().resolve(true);
-      await Promise.resolve();
-    });
-    expect(locationRef.current).toBe('/');
-  });
-
-  it('rota não-crítica com escopo sujo pede confirmação', async () => {
-    const { result, locationRef } = setup('/pedidos/123');
-    useNavigationGuardStore.getState().setDirty('kit-builder', true);
-
-    act(() => result.current.goBack());
-    expect(useNavigationGuardStore.getState().request).not.toBeNull();
-
-    await act(async () => {
-      useNavigationGuardStore.getState().resolve(false);
-      await Promise.resolve();
-    });
-    expect(locationRef.current).toBe('/pedidos/123');
-
-    act(() => result.current.goBack());
-    await act(async () => {
-      useNavigationGuardStore.getState().resolve(true);
-      await Promise.resolve();
-    });
-    expect(locationRef.current).toBe('/pedidos');
+    await answerGuard(true);
+    expect(locationRef.current).toBe(expected);
   });
 
   it('force=true ignora dialog e confirmação', async () => {
-    openFakeOverlay('dialog');
+    openRoleOverlay('dialog');
     const { result, locationRef } = setup('/simulador');
-
     await act(async () => {
       result.current.goBack(undefined, true);
       await Promise.resolve();
     });
-
     expect(useNavigationGuardStore.getState().request).toBeNull();
     expect(locationRef.current).toBe('/');
   });
