@@ -67,6 +67,12 @@ export function isCriticalPathname(pathname: string) {
          pathname.includes('/mockup-generator');
 }
 
+// Vários componentes instanciam o hook (BackButton, Breadcrumbs, swipe) —
+// o evento 'smart-back' (atalho/swipe) dispara o goBack da instância mais
+// recente apenas uma vez, senão cada listener navegaria um passo atrás.
+let activeGoBack: (() => void) | null = null;
+let smartBackListenerRegistered = false;
+
 export function useSmartNavigation() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -98,9 +104,14 @@ export function useSmartNavigation() {
   }, [navigate, setDirection]);
 
   useEffect(() => {
-    const handleSmartBack = () => goBack();
-    window.addEventListener('smart-back', handleSmartBack);
-    return () => window.removeEventListener('smart-back', handleSmartBack);
+    activeGoBack = goBack;
+    if (!smartBackListenerRegistered) {
+      smartBackListenerRegistered = true;
+      window.addEventListener('smart-back', () => activeGoBack?.());
+    }
+    return () => {
+      if (activeGoBack === goBack) activeGoBack = null;
+    };
   }, [goBack]);
 
   return { goBack, goForward, previousItem: getPrevious(), history, direction };

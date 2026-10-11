@@ -12,7 +12,7 @@ import { useSalesScope } from '@/lib/auth/visibility-scope';
 import { ScopeBadge } from '@/components/common/ScopeBadge';
 import { Button } from '@/components/ui/button';
 import { exportToExcel, exportToPDF } from '@/utils/orderExportUtils';
-import { format } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -170,6 +170,34 @@ function OrdersPagination({
   );
 }
 
+function filtersFromSearchParams(searchParams: URLSearchParams): OrdersFilterState {
+  const parseDay = (value: string | null) => {
+    if (!value) return undefined;
+    const parsed = parseISO(value);
+    return isValid(parsed) ? parsed : undefined;
+  };
+  const from = parseDay(searchParams.get('de'));
+  const to = parseDay(searchParams.get('ate'));
+  return {
+    search: searchParams.get('q') ?? '',
+    status: searchParams.get('status') ?? 'all',
+    clientCompany: searchParams.get('empresa') ?? '',
+    dateRange: from || to ? { from, to } : undefined,
+    page: Number(searchParams.get('pagina')) || 1,
+  };
+}
+
+function filtersToSearchParams(filters: OrdersFilterState): URLSearchParams {
+  const next = new URLSearchParams();
+  if (filters.search) next.set('q', filters.search);
+  if (filters.status !== 'all') next.set('status', filters.status);
+  if (filters.clientCompany) next.set('empresa', filters.clientCompany);
+  if (filters.dateRange?.from) next.set('de', format(filters.dateRange.from, 'yyyy-MM-dd'));
+  if (filters.dateRange?.to) next.set('ate', format(filters.dateRange.to, 'yyyy-MM-dd'));
+  if (filters.page > 1) next.set('pagina', String(filters.page));
+  return next;
+}
+
 function useOrdersPageState() {
   const { user } = useAuth();
   const scope = useSalesScope();
@@ -179,30 +207,25 @@ function useOrdersPageState() {
       void queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });
-  // Filtros persistidos na URL: voltar do detalhe do pedido restaura a
-  // listagem exatamente como estava (busca, status, empresa, datas, página).
+  // Filtros persistidos na URL: voltar do detalhe do pedido (ou navegar
+  // pelo histórico entre buscas) restaura a listagem exatamente como
+  // estava. `de`/`ate` são lidos como dia local (parseISO) — `new Date`
+  // interpretaria a string em UTC e andaria um dia em fusos negativos.
   const [searchParams, setSearchParams] = useSearchParams();
-  const [filters, setFilters] = useState<OrdersFilterState>(() => {
-    const from = searchParams.get('de');
-    const to = searchParams.get('ate');
-    return {
-      search: searchParams.get('q') ?? '',
-      status: searchParams.get('status') ?? 'all',
-      clientCompany: searchParams.get('empresa') ?? '',
-      dateRange: from || to ? { from: from ? new Date(from) : undefined, to: to ? new Date(to) : undefined } : undefined,
-      page: Number(searchParams.get('pagina')) || 1,
-    };
-  });
+  const [filters, setFilters] = useState<OrdersFilterState>(() => filtersFromSearchParams(searchParams));
+  // URL -> estado: cobre navegação externa que muda só a query da mesma
+  // rota (menu de histórico, voltar do navegador) sem desmontar a página.
   useEffect(() => {
-    const next = new URLSearchParams();
-    if (filters.search) next.set('q', filters.search);
-    if (filters.status !== 'all') next.set('status', filters.status);
-    if (filters.clientCompany) next.set('empresa', filters.clientCompany);
-    if (filters.dateRange?.from) next.set('de', format(filters.dateRange.from, 'yyyy-MM-dd'));
-    if (filters.dateRange?.to) next.set('ate', format(filters.dateRange.to, 'yyyy-MM-dd'));
-    if (filters.page > 1) next.set('pagina', String(filters.page));
-    setSearchParams(next, { replace: true });
-  }, [filters, setSearchParams]);
+    setFilters((current) => {
+      const next = filtersFromSearchParams(searchParams);
+      return filtersToSearchParams(current).toString() === filtersToSearchParams(next).toString() ? current : next;
+    });
+  }, [searchParams]);
+  // estado -> URL
+  useEffect(() => {
+    const next = filtersToSearchParams(filters);
+    if (next.toString() !== searchParams.toString()) setSearchParams(next, { replace: true });
+  }, [filters, searchParams, setSearchParams]);
   const { data: response, isLoading } = useOrdersList(user?.id, scope, {
     search: filters.search,
     status: filters.status,

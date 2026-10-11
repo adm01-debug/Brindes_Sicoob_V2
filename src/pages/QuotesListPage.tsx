@@ -36,6 +36,9 @@ const sortOptions: { value: SortOption; label: string }[] = [
   { value: "expiring", label: "Vencimento próximo" },
 ];
 
+function sortFromParam(value: string | null): SortOption {
+  return sortOptions.some((option) => option.value === value) ? (value as SortOption) : "newest";
+}
 function quoteDateTimestamp(value: string | null | undefined) { return value ? new Date(value).getTime() : 0; }
 function quoteExpiryTimestamp(value: string | null | undefined) { return value ? new Date(value).getTime() : Infinity; }
 function quoteTotal(quote: Quote) { return quote.total ?? 0; }
@@ -85,17 +88,22 @@ function useQuotesListState() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(() => searchParams.get("q") ?? "");
   const [statusFilter, setStatusFilter] = useState(() => searchParams.get("status") ?? "all");
-  const [sortBy, setSortBy] = useState<SortOption>(() => {
-    const value = searchParams.get("ordem");
-    return sortOptions.some((option) => option.value === value) ? (value as SortOption) : "newest";
-  });
+  const [sortBy, setSortBy] = useState<SortOption>(() => sortFromParam(searchParams.get("ordem")));
+  // URL -> estado: navegação que muda só a query da mesma rota (menu de
+  // histórico, voltar do navegador) ressincroniza os filtros exibidos.
+  useEffect(() => {
+    setSearchTerm((current) => (current === (searchParams.get("q") ?? "") ? current : (searchParams.get("q") ?? "")));
+    setStatusFilter((current) => (current === (searchParams.get("status") ?? "all") ? current : (searchParams.get("status") ?? "all")));
+    setSortBy((current) => (current === sortFromParam(searchParams.get("ordem")) ? current : sortFromParam(searchParams.get("ordem"))));
+  }, [searchParams]);
+  // estado -> URL
   useEffect(() => {
     const next = new URLSearchParams();
     if (searchTerm) next.set("q", searchTerm);
     if (statusFilter !== "all") next.set("status", statusFilter);
     if (sortBy !== "newest") next.set("ordem", sortBy);
-    setSearchParams(next, { replace: true });
-  }, [searchTerm, statusFilter, sortBy, setSearchParams]);
+    if (next.toString() !== searchParams.toString()) setSearchParams(next, { replace: true });
+  }, [searchTerm, statusFilter, sortBy, searchParams, setSearchParams]);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [bulkDeleteIds, setBulkDeleteIds] = useState<string[]>([]);
   const kpis = useMemo(() => calculateKpis(quotesApi.quotes), [quotesApi.quotes]);

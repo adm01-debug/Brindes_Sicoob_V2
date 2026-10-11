@@ -16,4 +16,15 @@ export function useDirtyGuard(scope: string, dirty: boolean) {
     setDirty(scope, dirty);
     return () => setDirty(scope, false);
   }, [scope, dirty, setDirty]);
+
+  // Escopo sujo também avisa ao fechar/recarregar a aba.
+  useEffect(() => {
+    if (!dirty) return;
+    const handler = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [dirty]);
 }
