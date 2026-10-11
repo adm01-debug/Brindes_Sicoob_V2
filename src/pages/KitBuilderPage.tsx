@@ -19,7 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useKitBuilder } from '@/hooks/useKitBuilder';
 import { useCustomKitPersistence } from '@/hooks/useCustomKitPersistence';
-import { useKitAutoSave } from '@/hooks/useKitAutoSave';
+import { useKitAutoSave, createKitSnapshot } from '@/hooks/useKitAutoSave';
 import { useKitUndoRedo } from '@/hooks/useKitUndoRedo';
 import { supabase } from '@/integrations/supabase/client';
 import { invokeExternalDb } from '@/lib/external-db';
@@ -167,7 +167,7 @@ export default function KitBuilderPage() {
   const { handleAddToQuote, isCreatingQuote } = useKitBuilderQuote();
   useCustomKitsRealtime();
 
-  const { lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, isDirty: kitHasUnsavedChanges, retry: retryAutoSave } = useKitAutoSave(
+  const { lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, isDirty: kitHasUnsavedChanges, markPersisted: markKitPersisted, retry: retryAutoSave } = useKitAutoSave(
     kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id),
   );
 
@@ -271,8 +271,10 @@ export default function KitBuilderPage() {
       }
       const editingId = currentKitId || autoSavedKitId || undefined;
       if (!await confirmNewKitSave(editingId)) return;
+      const snapshotAtSave = createKitSnapshot(kitState, kitQuantity);
       const result = await saveKit(kitState, kitQuantity, editingId);
       if (result && 'id' in result) setCurrentKitId((result as { id: string }).id);
+      if (result) markKitPersisted(snapshotAtSave);
     } catch { /* handled by hook */ }
   };
 

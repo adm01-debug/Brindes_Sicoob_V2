@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import type { KitState } from '@/lib/kit-builder';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { kitIdentityDetails, kitIdentityLabels } from '@/hooks/useCustomKitPersistence';
 
 const AUTO_SAVE_DELAY_MS = 5000;
 
@@ -20,12 +21,16 @@ interface AutoSaveResult {
   lastSaveError: string | null;
   /** true enquanto o snapshot atual difere do último persistido no banco. */
   isDirty: boolean;
+  /** Marca um snapshot como persistido (ex.: após salvamento manual).
+   *  Se o estado mudou desde então, isDirty permanece true. */
+  markPersisted: (snapshot: string) => void;
   retry: () => void;
 }
 
-function createSnapshot(kitState: KitState, kitQuantity: number): string {
+export function createKitSnapshot(kitState: KitState, kitQuantity: number): string {
   return JSON.stringify({
     box: kitState.box,
+    identity: kitState.identity,
     items: kitState.items.map(item => ({
       id: item.id,
       quantity: item.quantity,
@@ -77,6 +82,8 @@ function buildAutoSavePayload(userId: string, kitState: KitState, kitQuantity: n
     personalization_price: kitState.personalizationPrice,
     total_price: kitState.totalPrice,
     volume_usage_percent: kitState.volumeUsagePercent,
+    ...kitIdentityLabels(kitState.identity),
+    ...kitIdentityDetails(kitState.identity),
     updated_at: new Date().toISOString(),
   };
 }
@@ -181,13 +188,13 @@ export function useKitAutoSave(
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
-      const initialSnapshot = createSnapshot(kitState, kitQuantity);
+      const initialSnapshot = createKitSnapshot(kitState, kitQuantity);
       persistedSnapshotRef.current = initialSnapshot;
       latestSnapshotRef.current = initialSnapshot;
       return;
     }
 
-    const newSnapshot = createSnapshot(kitState, kitQuantity);
+    const newSnapshot = createKitSnapshot(kitState, kitQuantity);
     latestSnapshotRef.current = newSnapshot;
 
     if (newSnapshot === persistedSnapshotRef.current) {
@@ -233,11 +240,19 @@ export function useKitAutoSave(
     setLastSavedAt(null);
     setLastSaveError(null);
     setIsSaving(false);
-    const snapshot = createSnapshot(kitState, kitQuantity);
+    const snapshot = createKitSnapshot(kitState, kitQuantity);
     persistedSnapshotRef.current = snapshot;
     latestSnapshotRef.current = snapshot;
     setIsDirty(false);
   }, [currentKitId, user?.id, kitState, kitQuantity]);
+
+  // Salvamento manual (fora do autosave) também pode marcar o estado como
+  // persistido; passa o snapshot do momento da gravação para não limpar
+  // edições feitas enquanto a requisição estava pendente.
+  const markPersisted = useCallback((snapshot: string) => {
+    persistedSnapshotRef.current = snapshot;
+    setIsDirty(latestSnapshotRef.current !== snapshot);
+  }, []);
 
   const retry = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -245,5 +260,5 @@ export function useKitAutoSave(
     if (snapshot && snapshot !== persistedSnapshotRef.current) void saveToDb(snapshot);
   }, [saveToDb]);
 
-  return { lastSavedAt, isSaving, autoSavedKitId, lastSaveError, isDirty, retry };
+  return { lastSavedAt, isSaving, autoSavedKitId, lastSaveError, isDirty, markPersisted, retry };
 }

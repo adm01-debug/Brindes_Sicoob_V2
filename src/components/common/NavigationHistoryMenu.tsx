@@ -1,5 +1,7 @@
 import { History } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigationGuardStore } from "@/stores/useNavigationGuardStore";
+import { isCriticalPathname } from "@/hooks/useSmartNavigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,8 +57,15 @@ export function NavigationHistoryMenu({ className }: NavigationHistoryMenuProps)
             key={`${item.pathname}${item.search}-${index}`}
             className="cursor-pointer"
             onSelect={() => {
-              setDirection("backward");
-              navigate(item.pathname + item.search);
+              const guard = useNavigationGuardStore.getState();
+              void (async () => {
+                if (isCriticalPathname(location.pathname) || guard.hasDirty()) {
+                  const confirmed = await guard.requestConfirmation();
+                  if (!confirmed) return;
+                }
+                setDirection("backward");
+                navigate(item.pathname + item.search);
+              })();
             }}
           >
             <div className="flex min-w-0 flex-col">

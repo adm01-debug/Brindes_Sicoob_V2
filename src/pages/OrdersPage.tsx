@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from '@/components/seo/PageSEO';
 import { useAuth } from '@/contexts/AuthContext';
 import { Package, Download, FileSpreadsheet, FileText, ShoppingBag } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useOrdersList, ORDER_STATUS_LABELS } from '@/hooks/orders/useOrders';
 import { OrderCard } from '@/components/orders/OrderCard';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -79,7 +79,7 @@ function OrdersToolbar({
 }) {
   return (
     <div className="space-y-4 rounded-xl border bg-card p-4 shadow-sm">
-      <OrderFilters onFiltersChange={onFiltersChange} />
+      <OrderFilters onFiltersChange={onFiltersChange} initialValues={filters} />
       <div className="flex items-center justify-between gap-2 border-t pt-4">
         <p className="text-sm text-muted-foreground">
           Mostrando <span className="font-medium text-foreground">{orders.length}</span> pedidos
@@ -179,12 +179,30 @@ function useOrdersPageState() {
       void queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });
-  const [filters, setFilters] = useState<OrdersFilterState>({
-    search: '',
-    status: 'all',
-    clientCompany: '',
-    page: 1,
+  // Filtros persistidos na URL: voltar do detalhe do pedido restaura a
+  // listagem exatamente como estava (busca, status, empresa, datas, página).
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [filters, setFilters] = useState<OrdersFilterState>(() => {
+    const from = searchParams.get('de');
+    const to = searchParams.get('ate');
+    return {
+      search: searchParams.get('q') ?? '',
+      status: searchParams.get('status') ?? 'all',
+      clientCompany: searchParams.get('empresa') ?? '',
+      dateRange: from || to ? { from: from ? new Date(from) : undefined, to: to ? new Date(to) : undefined } : undefined,
+      page: Number(searchParams.get('pagina')) || 1,
+    };
   });
+  useEffect(() => {
+    const next = new URLSearchParams();
+    if (filters.search) next.set('q', filters.search);
+    if (filters.status !== 'all') next.set('status', filters.status);
+    if (filters.clientCompany) next.set('empresa', filters.clientCompany);
+    if (filters.dateRange?.from) next.set('de', format(filters.dateRange.from, 'yyyy-MM-dd'));
+    if (filters.dateRange?.to) next.set('ate', format(filters.dateRange.to, 'yyyy-MM-dd'));
+    if (filters.page > 1) next.set('pagina', String(filters.page));
+    setSearchParams(next, { replace: true });
+  }, [filters, setSearchParams]);
   const { data: response, isLoading } = useOrdersList(user?.id, scope, {
     search: filters.search,
     status: filters.status,

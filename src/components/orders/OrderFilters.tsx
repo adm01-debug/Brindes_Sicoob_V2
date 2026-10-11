@@ -32,18 +32,20 @@ export interface OrderFilterValues {
 
 interface OrderFiltersProps {
   onFiltersChange: (filters: OrderFilterValues) => void;
+  initialValues?: Partial<OrderFilterValues>;
 }
 
-export function OrderFilters({ onFiltersChange }: OrderFiltersProps) {
-  const [filters, setFilters] = useState<OrderFilterValues>({
-    search: '',
-    status: 'all',
-    clientCompany: '',
-    dateRange: {
-      from: undefined,
-      to: undefined
-    }
-  });
+function buildInitialFilters(initialValues?: Partial<OrderFilterValues>): OrderFilterValues {
+  return {
+    search: initialValues?.search ?? '',
+    status: initialValues?.status ?? 'all',
+    clientCompany: initialValues?.clientCompany ?? '',
+    dateRange: initialValues?.dateRange ?? { from: undefined, to: undefined },
+  };
+}
+
+export function OrderFilters({ onFiltersChange, initialValues }: OrderFiltersProps) {
+  const [filters, setFilters] = useState<OrderFilterValues>(() => buildInitialFilters(initialValues));
 
   const updateFilters = (updates: Partial<OrderFilterValues>) => {
     const newFilters = { ...filters, ...updates };

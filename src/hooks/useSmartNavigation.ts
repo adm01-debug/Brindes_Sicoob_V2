@@ -60,14 +60,19 @@ function useTrackNavigation(location: ReturnType<typeof useLocation>, push: (ite
   }, [location.pathname, location.search, push]);
 }
 
+// Rotas onde sair sem salvar sempre pede confirmação, independente de escopo sujo.
+export function isCriticalPathname(pathname: string) {
+  return pathname.includes('/simulador') ||
+         pathname.includes('/orcamentos/novo') ||
+         pathname.includes('/mockup-generator');
+}
+
 export function useSmartNavigation() {
   const location = useLocation();
   const navigate = useNavigate();
   const { push, getPrevious, pop, history, direction, setDirection } = useNavigationStore();
 
-  const isCriticalPath = location.pathname.includes('/simulador') ||
-                         location.pathname.includes('/orcamentos/novo') ||
-                         location.pathname.includes('/mockup-generator');
+  const isCriticalPath = isCriticalPathname(location.pathname);
 
   useTrackNavigation(location, push);
 

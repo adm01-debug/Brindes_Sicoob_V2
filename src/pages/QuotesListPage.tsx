@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent } from "@/components/ui/card";
@@ -80,9 +80,22 @@ function useQuotesListState() {
   const { isGestorCompras, isDev } = useAuth();
   const { isSupervisorOrAbove } = useRBAC();
   const quotesApi = useQuotes();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [sortBy, setSortBy] = useState<SortOption>("newest");
+  // Filtros persistidos na URL: sobrevivem ao voltar da página de detalhe
+  // e tornam uma visão filtrada compartilhável por link.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(() => searchParams.get("q") ?? "");
+  const [statusFilter, setStatusFilter] = useState(() => searchParams.get("status") ?? "all");
+  const [sortBy, setSortBy] = useState<SortOption>(() => {
+    const value = searchParams.get("ordem");
+    return sortOptions.some((option) => option.value === value) ? (value as SortOption) : "newest";
+  });
+  useEffect(() => {
+    const next = new URLSearchParams();
+    if (searchTerm) next.set("q", searchTerm);
+    if (statusFilter !== "all") next.set("status", statusFilter);
+    if (sortBy !== "newest") next.set("ordem", sortBy);
+    setSearchParams(next, { replace: true });
+  }, [searchTerm, statusFilter, sortBy, setSearchParams]);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [bulkDeleteIds, setBulkDeleteIds] = useState<string[]>([]);
   const kpis = useMemo(() => calculateKpis(quotesApi.quotes), [quotesApi.quotes]);

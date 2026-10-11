@@ -27,7 +27,7 @@ vi.mock('sonner', () => ({
 
 vi.mock('@/lib/logger', () => ({ logger: { warn: vi.fn() } }));
 
-import { useKitAutoSave } from '@/hooks/useKitAutoSave';
+import { useKitAutoSave, createKitSnapshot } from '@/hooks/useKitAutoSave';
 
 const initialKit = {
   name: 'Kit', kitType: 'montado' as const,
@@ -37,6 +37,7 @@ const initialKit = {
   availableVolume: 0, volumeUsagePercent: 0, totalWeight: 0, boxPrice: 0,
   itemsPrice: 0, personalizationPrice: 0, totalPrice: 0, isValid: false,
   validationErrors: [],
+  identity: undefined as { color: string; icon: string; tag?: string; description?: string; isFavorite: boolean } | undefined,
 };
 
 describe('useKitAutoSave', () => {
@@ -110,6 +111,43 @@ describe('useKitAutoSave', () => {
     expect(update).toHaveBeenCalledTimes(2);
     expect(update.mock.calls[1]?.[0]).toMatchObject({ name: 'Estado mais recente' });
     expect(result.current.lastSaveError).toBeNull();
+  });
+
+  it('marca sujeira em edições de identidade e limpa ao confirmar salvamento manual', async () => {
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, 'kit-1'),
+      { initialProps: { kit: initialKit } },
+    );
+
+    expect(result.current.isDirty).toBe(false);
+
+    const edited = { ...initialKit, identity: { color: '#FF0000', icon: 'Star', isFavorite: true } };
+    rerender({ kit: edited });
+    expect(result.current.isDirty).toBe(true);
+
+    // Salvamento manual bem-sucedido com o estado editado limpa a sujeira.
+    act(() => { result.current.markPersisted(createKitSnapshot(edited, 1)); });
+    expect(result.current.isDirty).toBe(false);
+
+    // Edição posterior à gravação volta a marcar sujeira.
+    rerender({ kit: { ...edited, name: 'Depois do salvar' } });
+    expect(result.current.isDirty).toBe(true);
+  });
+
+  it('markPersisted não limpa edições feitas enquanto o salvamento manual estava pendente', () => {
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, 'kit-1'),
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: { ...initialKit, name: 'Versão enviada' } });
+    const snapshotAtSave = createKitSnapshot({ ...initialKit, name: 'Versão enviada' }, 1);
+
+    // Usuário continua editando enquanto a requisição manual está pendente.
+    rerender({ kit: { ...initialKit, name: 'Edição durante o save' } });
+    act(() => { result.current.markPersisted(snapshotAtSave); });
+
+    expect(result.current.isDirty).toBe(true);
   });
 
   it('preserva a edição enfileirada quando o pai adota o ID recém-criado', async () => {
