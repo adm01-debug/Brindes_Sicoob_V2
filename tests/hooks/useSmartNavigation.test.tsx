@@ -21,12 +21,12 @@ function setup(initialPath: string) {
   return { result, locationRef };
 }
 
-function openFakeDialog() {
-  const dialog = document.createElement('div');
-  dialog.setAttribute('role', 'dialog');
-  dialog.setAttribute('data-state', 'open');
-  document.body.appendChild(dialog);
-  return dialog;
+function openFakeOverlay(role = 'dialog') {
+  const overlay = document.createElement('div');
+  overlay.setAttribute('role', role);
+  overlay.setAttribute('data-state', 'open');
+  document.body.appendChild(overlay);
+  return overlay;
 }
 
 describe('useSmartNavigation.goBack', () => {
@@ -40,13 +40,33 @@ describe('useSmartNavigation.goBack', () => {
   });
 
   it('fecha dialog aberto em vez de navegar', () => {
-    const dialog = openFakeDialog();
+    const dialog = openFakeOverlay('dialog');
     const { result, locationRef } = setup('/pedidos/123');
 
     act(() => result.current.goBack());
 
     expect(locationRef.current).toBe('/pedidos/123');
     expect(document.querySelector('[data-state="open"]')).toBe(dialog);
+  });
+
+  it('fecha dropdown/menu aberto em vez de navegar', () => {
+    openFakeOverlay('menu');
+    const { result, locationRef } = setup('/pedidos/123');
+
+    act(() => result.current.goBack());
+
+    expect(locationRef.current).toBe('/pedidos/123');
+  });
+
+  it('fecha conteúdo popper (select/popover) aberto em vez de navegar', () => {
+    const wrapper = document.createElement('div');
+    wrapper.setAttribute('data-radix-popper-content-wrapper', '');
+    document.body.appendChild(wrapper);
+    const { result, locationRef } = setup('/pedidos/123');
+
+    act(() => result.current.goBack());
+
+    expect(locationRef.current).toBe('/pedidos/123');
   });
 
   it('navega para o pai hierárquico quando não há histórico', async () => {
@@ -81,7 +101,7 @@ describe('useSmartNavigation.goBack', () => {
   });
 
   it('force=true ignora dialog e confirmação', async () => {
-    openFakeDialog();
+    openFakeOverlay('dialog');
     const { result, locationRef } = setup('/simulador');
 
     await act(async () => {

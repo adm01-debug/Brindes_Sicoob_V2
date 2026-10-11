@@ -2,19 +2,8 @@ import { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useNavigationStore } from '@/stores/useNavigationStore';
 import { useNavigationGuardStore } from '@/stores/useNavigationGuardStore';
+import { dismissTopmostOverlay } from '@/lib/overlay';
 import { Haptics } from '@/utils/haptics';
-
-const OPEN_DIALOG_SELECTOR =
-  '[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"]';
-
-// Dispara Escape para que o Radix DismissableLayer feche o dialog aberto.
-function closeTopmostOverlay(): boolean {
-  if (!document.querySelector(OPEN_DIALOG_SELECTOR)) return false;
-  document.dispatchEvent(
-    new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
-  );
-  return true;
-}
 
 interface BackNavigationDeps {
   navigate: ReturnType<typeof useNavigate>;
@@ -83,7 +72,7 @@ export function useSmartNavigation() {
 
   const goBack = useCallback((fallbackPath?: string, force = false) => {
     // Voltar fecha o modal/menu aberto antes de sair da página.
-    if (!force && closeTopmostOverlay()) return;
+    if (!force && dismissTopmostOverlay()) return;
 
     void performBackNavigation({
       navigate,
