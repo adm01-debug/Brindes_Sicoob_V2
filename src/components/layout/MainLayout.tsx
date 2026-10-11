@@ -12,6 +12,7 @@ import { BackButton } from '@/components/common/BackButton';
 import { FloatingBackButton } from '@/components/common/FloatingBackButton';
 import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { RouteLoadingBar } from '@/components/common/RouteLoadingBar';
+import { NavigationGuardDialog } from '@/components/common/NavigationGuardDialog';
 
 import { lazyWithRetry } from '@/lib/lazyWithRetry';
 
@@ -307,6 +308,7 @@ function FloatingLayoutTools() {
         </Suspense>
       </div>
       <FloatingBackButton />
+      <NavigationGuardDialog />
       <APIInspector />
     </>
   );

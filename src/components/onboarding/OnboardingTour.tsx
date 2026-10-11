@@ -114,6 +114,18 @@ function TourTooltip({ tour, position }: { tour: TourContext; position: TooltipP
 export const OnboardingTour = forwardRef<HTMLDivElement, unknown>(function OnboardingTour(_props, ref) {
   const tour = useOnboardingContext();
   useTourRoute(tour);
+  // Esc pula o tour (mesmo comportamento do botão "Pular").
+  useEffect(() => {
+    if (!tour.showTour) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.stopPropagation();
+        void tour.skipTour();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [tour]);
   const position = useTourPosition(tour);
   return <div ref={ref}><AnimatePresence>{tour.showTour && tour.currentStepData && <div data-testid="onboarding-tour" className="fixed inset-0 z-[100] pointer-events-none">
     <TourOverlay rect={position.highlightRect} /><TargetHighlight rect={position.highlightRect} /><TourTooltip tour={tour} position={position.tooltipPosition} />
