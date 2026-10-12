@@ -11,6 +11,7 @@ import { SkipToContent } from '@/components/common/SkipToContent';
 import { BackButton } from '@/components/common/BackButton';
 import { FloatingBackButton } from '@/components/common/FloatingBackButton';
 import { useSwipeBack } from '@/hooks/useSwipeBack';
+import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { RouteLoadingBar } from '@/components/common/RouteLoadingBar';
 import { NavigationGuardDialog } from '@/components/common/NavigationGuardDialog';
 
@@ -104,6 +105,7 @@ function useMainLayoutState() {
   useScrollLockFix();
   useGlobalShortcuts();
   useSwipeBack(!isHome);
+  useScrollRestoration();
   useMainLayoutEffects(location.pathname, isHome, mainRef);
 
   return {
@@ -281,7 +283,7 @@ function MainPageContent({
       aria-label="Conteúdo principal"
     >
       <Suspense fallback={<div>{routeContent}</div>}>
-        <PageTransition variant="morph" duration={0.4} className="min-h-[calc(100vh-140px)]">
+        <PageTransition variant="dynamic-slide" duration={0.3} className="min-h-[calc(100vh-140px)]">
           {routeContent}
         </PageTransition>
       </Suspense>
