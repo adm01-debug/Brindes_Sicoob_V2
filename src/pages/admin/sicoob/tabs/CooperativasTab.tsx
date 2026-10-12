@@ -31,6 +31,7 @@ import { Plus, Pencil, Trash2, Search, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import { askConfirm } from '@/stores/useConfirmDialogStore';
 
 type CooperativaRow = Tables<"cooperativas"> & {
   central: Pick<Tables<"sicoob_centrais">, "name"> | null;
@@ -283,8 +284,8 @@ export const CooperativasTab = () => {
                           variant="ghost"
                           size="icon"
                           className="text-destructive"
-                          onClick={() => {
-                            if (confirm("Deseja realmente remover esta Singular?")) {
+                          onClick={async () => {
+                            if (await askConfirm({ title: 'Remover Singular?', description: 'Esta ação não pode ser desfeita.', variant: 'destructive', confirmLabel: 'Remover' })) {
                               deleteMutation.mutate(coop.id);
                             }
                           }}

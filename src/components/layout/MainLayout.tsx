@@ -14,6 +14,7 @@ import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { RouteLoadingBar } from '@/components/common/RouteLoadingBar';
 import { NavigationGuardDialog } from '@/components/common/NavigationGuardDialog';
+import { GlobalConfirmDialog } from '@/components/common/GlobalConfirmDialog';
 
 import { lazyWithRetry } from '@/lib/lazyWithRetry';
 
@@ -311,6 +312,7 @@ function FloatingLayoutTools() {
       </div>
       <FloatingBackButton />
       <NavigationGuardDialog />
+      <GlobalConfirmDialog />
       <APIInspector />
     </>
   );
