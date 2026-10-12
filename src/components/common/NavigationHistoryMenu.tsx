@@ -1,6 +1,7 @@
 import { History } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useNavigationGuardStore } from "@/stores/useNavigationGuardStore";
+import { trackUx } from "@/lib/uxMetrics";
 import { isCriticalPathname } from "@/hooks/useSmartNavigation";
 import {
   DropdownMenu,
@@ -63,6 +64,7 @@ export function NavigationHistoryMenu({ className }: NavigationHistoryMenuProps)
                   const confirmed = await guard.requestConfirmation();
                   if (!confirmed) return;
                 }
+                trackUx('nav.history-jump', { steps: index + 1 });
                 setDirection("backward");
                 navigate(item.pathname + item.search);
               })();

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { trackUx } from '@/lib/uxMetrics';
 
 interface GuardRequest {
   message: string;
@@ -25,11 +26,13 @@ export const useNavigationGuardStore = create<NavigationGuardState>((set, get) =
     new Promise<boolean>((resolve) => {
       // Se já há um pedido aberto, cancela-o para não deixar a Promise pendurada.
       get().request?.resolve(false);
+      trackUx('guard.shown');
       set({ request: { message, resolve } });
     }),
   resolve: (leave) => {
     const pending = get().request;
     if (!pending) return;
+    trackUx(leave ? 'guard.confirm' : 'guard.cancel');
     set({ request: null });
     pending.resolve(leave);
   },

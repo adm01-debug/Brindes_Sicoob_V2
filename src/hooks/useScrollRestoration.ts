@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLocation, useNavigationType } from 'react-router-dom';
+import { trackUx } from '@/lib/uxMetrics';
 
 // Posições de scroll por rota (pathname+search), persistidas em memória
 // para a sessão inteira — voltar a uma listagem restaura exatamente onde
@@ -52,15 +53,19 @@ export function useScrollRestoration(): void {
     const timers: ReturnType<typeof setTimeout>[] = [];
     if (navType === 'POP') {
       const saved = scrollPositions.get(key);
-      if (saved !== undefined) window.scrollTo(0, saved);
+      if (saved !== undefined) trackUx('nav.scroll-restore');
 
-      const restoreContainers = () => {
+      // A página de destino pode ainda estar curta (conteúdo assíncrono):
+      // reaplicar window e contêineres em tentativas escalonadas evita
+      // que o browser limite o scroll e perca a posição original.
+      const restoreAll = () => {
+        if (saved !== undefined) window.scrollTo(0, saved);
         document.querySelectorAll<HTMLElement>('[data-scroll-restore]').forEach((el) => {
           const position = containerPositions.get(`${key}::${el.dataset.scrollRestore}`);
           if (position !== undefined) el.scrollTop = position;
         });
       };
-      RESTORE_RETRIES_MS.forEach((ms) => timers.push(setTimeout(restoreContainers, ms)));
+      RESTORE_RETRIES_MS.forEach((ms) => timers.push(setTimeout(restoreAll, ms)));
     }
 
     return () => {

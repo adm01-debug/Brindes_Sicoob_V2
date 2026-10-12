@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useNavigationStore } from '@/stores/useNavigationStore';
 import { useNavigationGuardStore } from '@/stores/useNavigationGuardStore';
 import { dismissTopmostOverlay } from '@/lib/overlay';
+import { trackUx } from '@/lib/uxMetrics';
 import { Haptics } from '@/utils/haptics';
 
 interface BackNavigationDeps {
@@ -86,8 +87,12 @@ export function useSmartNavigation() {
 
   const goBack = useCallback((fallbackPath?: string, force = false) => {
     // Voltar fecha o modal/menu aberto antes de sair da página.
-    if (!force && dismissTopmostOverlay()) return;
+    if (!force && dismissTopmostOverlay()) {
+      trackUx('nav.overlay-dismiss');
+      return;
+    }
 
+    trackUx('nav.back');
     void performBackNavigation({
       navigate,
       pathname: location.pathname,
@@ -101,6 +106,7 @@ export function useSmartNavigation() {
   }, [location.pathname, getPrevious, isCriticalPath, pop, navigate, setDirection]);
 
   const goForward = useCallback((path: string) => {
+    trackUx('nav.forward');
     setDirection('forward');
     navigate(path);
   }, [navigate, setDirection]);

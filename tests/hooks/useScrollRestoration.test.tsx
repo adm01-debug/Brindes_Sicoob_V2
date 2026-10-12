@@ -2,6 +2,8 @@ import { type ReactNode } from 'react';
 import { act, render, renderHook, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.useFakeTimers();
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 
 function HookMount() {
@@ -77,6 +79,10 @@ describe('useScrollRestoration', () => {
       screen.getByText('voltar').click();
     });
     expect(pathRef.current).toBe('/inicio');
+    // a restauração é reaplicada em tentativas escalonadas (página assíncrona)
+    act(() => {
+      vi.runAllTimers();
+    });
     expect(scrollToSpy).toHaveBeenCalledWith(0, 640);
   });
 
