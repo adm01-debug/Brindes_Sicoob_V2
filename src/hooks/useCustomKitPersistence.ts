@@ -41,7 +41,7 @@ export interface CustomKitRow {
 
 const QUERY_KEY = ['custom-kits'] as const;
 
-function kitIdentityLabels(identity: KitState['identity']) {
+export function kitIdentityLabels(identity: KitState['identity']) {
   return {
     color: identity?.color ?? '#3B82F6',
     icon: identity?.icon ?? 'Package',
@@ -49,7 +49,7 @@ function kitIdentityLabels(identity: KitState['identity']) {
   };
 }
 
-function kitIdentityDetails(identity: KitState['identity']) {
+export function kitIdentityDetails(identity: KitState['identity']) {
   return {
     description: identity?.description ?? null,
     is_favorite: identity?.isFavorite ?? false,

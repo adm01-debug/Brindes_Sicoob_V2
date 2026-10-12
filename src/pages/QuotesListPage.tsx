@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,6 +36,9 @@ const sortOptions: { value: SortOption; label: string }[] = [
   { value: "expiring", label: "Vencimento próximo" },
 ];
 
+function sortFromParam(value: string | null): SortOption {
+  return sortOptions.some((option) => option.value === value) ? (value as SortOption) : "newest";
+}
 function quoteDateTimestamp(value: string | null | undefined) { return value ? new Date(value).getTime() : 0; }
 function quoteExpiryTimestamp(value: string | null | undefined) { return value ? new Date(value).getTime() : Infinity; }
 function quoteTotal(quote: Quote) { return quote.total ?? 0; }
@@ -80,9 +83,44 @@ function useQuotesListState() {
   const { isGestorCompras, isDev } = useAuth();
   const { isSupervisorOrAbove } = useRBAC();
   const quotesApi = useQuotes();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [sortBy, setSortBy] = useState<SortOption>("newest");
+  // Filtros persistidos na URL: sobrevivem ao voltar da página de detalhe
+  // e tornam uma visão filtrada compartilhável por link.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(() => searchParams.get("q") ?? "");
+  const [statusFilter, setStatusFilter] = useState(() => searchParams.get("status") ?? "all");
+  const [sortBy, setSortBy] = useState<SortOption>(() => sortFromParam(searchParams.get("ordem")));
+  // URL -> estado: navegação que muda só a query da mesma rota (menu de
+  // histórico, voltar do navegador) ressincroniza os filtros exibidos.
+  // lastUrlRef/adoptingRef impedem a disputa: ao adotar uma URL externa, a
+  // escrita é suspensa uma vez — senão ela devolveria a query antiga na
+  // mesma renderização e desfaria a navegação.
+  const lastUrlRef = useRef<string>(searchParams.toString());
+  const adoptingRef = useRef(false);
+  useEffect(() => {
+    const url = searchParams.toString();
+    if (url === lastUrlRef.current) return;
+    lastUrlRef.current = url;
+    adoptingRef.current = true;
+    setSearchTerm((current) => (current === (searchParams.get("q") ?? "") ? current : (searchParams.get("q") ?? "")));
+    setStatusFilter((current) => (current === (searchParams.get("status") ?? "all") ? current : (searchParams.get("status") ?? "all")));
+    setSortBy((current) => (current === sortFromParam(searchParams.get("ordem")) ? current : sortFromParam(searchParams.get("ordem"))));
+  }, [searchParams]);
+  // estado -> URL
+  useEffect(() => {
+    if (adoptingRef.current) {
+      adoptingRef.current = false;
+      return;
+    }
+    const next = new URLSearchParams();
+    if (searchTerm) next.set("q", searchTerm);
+    if (statusFilter !== "all") next.set("status", statusFilter);
+    if (sortBy !== "newest") next.set("ordem", sortBy);
+    const nextString = next.toString();
+    if (nextString !== searchParams.toString()) {
+      lastUrlRef.current = nextString;
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchTerm, statusFilter, sortBy, searchParams, setSearchParams]);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [bulkDeleteIds, setBulkDeleteIds] = useState<string[]>([]);
   const kpis = useMemo(() => calculateKpis(quotesApi.quotes), [quotesApi.quotes]);

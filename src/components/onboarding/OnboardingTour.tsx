@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight, SkipForward, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useOnboardingContext } from "@/contexts/OnboardingContext";
+import { hasOpenOverlay } from "@/lib/overlay";
 import { useNavigate, useLocation } from "react-router-dom";
 
 interface TooltipPosition { top?: number; left?: number; right?: number; bottom?: number }
@@ -114,6 +115,20 @@ function TourTooltip({ tour, position }: { tour: TourContext; position: TooltipP
 export const OnboardingTour = forwardRef<HTMLDivElement, unknown>(function OnboardingTour(_props, ref) {
   const tour = useOnboardingContext();
   useTourRoute(tour);
+  // Esc pula o tour (mesmo comportamento do botão "Pular"), mas só quando
+  // o tour é a camada ativa — Escape destinado a um dialog/menu aberto
+  // não pode encerrar o onboarding (o skip é persistido).
+  useEffect(() => {
+    if (!tour.showTour) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && event.isTrusted && !hasOpenOverlay()) {
+        event.stopPropagation();
+        void tour.skipTour();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [tour]);
   const position = useTourPosition(tour);
   return <div ref={ref}><AnimatePresence>{tour.showTour && tour.currentStepData && <div data-testid="onboarding-tour" className="fixed inset-0 z-[100] pointer-events-none">
     <TourOverlay rect={position.highlightRect} /><TargetHighlight rect={position.highlightRect} /><TourTooltip tour={tour} position={position.tooltipPosition} />

@@ -37,6 +37,8 @@ export default function AdminTemasPage() {
   const [savedConfig, setSavedConfig] = useState<ThemeConfig>(loadThemeConfig);
 
   const hasUnsavedChanges = JSON.stringify(config) !== JSON.stringify(savedConfig);
+  // Sem guarda de saída: updateConfig() persiste cada alteração no
+  // localStorage (saveThemeConfig), então nunca há trabalho a perder.
 
   const applyAll = useCallback((cfg: ThemeConfig, mode: 'light' | 'dark') => {
     applyThemePreset(cfg.presetId, mode);

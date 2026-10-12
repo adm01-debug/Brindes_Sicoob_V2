@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import type { KitState } from '@/lib/kit-builder';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { kitIdentityDetails, kitIdentityLabels } from '@/hooks/useCustomKitPersistence';
 
 const AUTO_SAVE_DELAY_MS = 5000;
 
@@ -18,12 +19,22 @@ interface AutoSaveResult {
   isSaving: boolean;
   autoSavedKitId: string | null;
   lastSaveError: string | null;
+  /** true enquanto o snapshot atual difere do último persistido no banco. */
+  isDirty: boolean;
+  /** Marca um snapshot como persistido (ex.: após salvamento manual).
+   *  Se o estado mudou desde então, isDirty permanece true. */
+  markPersisted: (snapshot: string) => void;
+  /** Adota o próximo snapshot calculado como persistido — para carga
+   *  assíncrona (kit aberto por URL) que preenche o estado após o
+   *  baseline inicial. */
+  markNextSnapshotPersisted: () => void;
   retry: () => void;
 }
 
-function createSnapshot(kitState: KitState, kitQuantity: number): string {
+export function createKitSnapshot(kitState: KitState, kitQuantity: number): string {
   return JSON.stringify({
     box: kitState.box,
+    identity: kitState.identity,
     items: kitState.items.map(item => ({
       id: item.id,
       quantity: item.quantity,
@@ -75,6 +86,8 @@ function buildAutoSavePayload(userId: string, kitState: KitState, kitQuantity: n
     personalization_price: kitState.personalizationPrice,
     total_price: kitState.totalPrice,
     volume_usage_percent: kitState.volumeUsagePercent,
+    ...kitIdentityLabels(kitState.identity),
+    ...kitIdentityDetails(kitState.identity),
     updated_at: new Date().toISOString(),
   };
 }
@@ -114,9 +127,16 @@ export function useKitAutoSave(
   const [isSaving, setIsSaving] = useState(false);
   const [autoSavedKitId, setAutoSavedKitId] = useState<string | null>(currentKitId || null);
   const [lastSaveError, setLastSaveError] = useState<string | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
   const persistedSnapshotRef = useRef<string>('');
+  // Quando marcado, o próximo snapshot calculado vira o baseline persistido
+  // (carga assíncrona de kit via URL, que chega depois do primeiro render).
+  const baselineNextRef = useRef(false);
   const latestSnapshotRef = useRef<string>('');
+  // Estado que gerou o último snapshot — usado para regravar o conteúdo
+  // correto quando um save manual ultrapassa um autosave em voo.
+  const latestStateRef = useRef<{ kitState: KitState; kitQuantity: number }>({ kitState, kitQuantity });
   const kitIdRef = useRef<string | null>(currentKitId || null);
   const scopeRef = useRef(`${user?.id ?? 'anon'}:${currentKitId ?? 'new'}`);
   const scopeGenerationRef = useRef(0);
@@ -131,16 +151,34 @@ export function useKitAutoSave(
     onKitIdCreated?.(createdId);
   }, [onKitIdCreated]);
 
-  const saveToDb = useCallback(async (snapshot: string) => {
+  // `source` mantém o estado que gerou `snapshot` — closures antigas não
+  // devem regravar o kitState da renderização em que foram criadas.
+  const saveToDb = useCallback(async (
+    snapshot: string,
+    source: { kitState: KitState; kitQuantity: number },
+  ) => {
     if (!user?.id) return;
 
     // Don't auto-save empty kits
-    if (isEmptyKit(kitState)) return;
+    if (isEmptyKit(source.kitState)) return;
 
-    const payload = buildAutoSavePayload(user.id, kitState, kitQuantity);
+    const payload = buildAutoSavePayload(user.id, source.kitState, source.kitQuantity);
 
     const operationGeneration = scopeGenerationRef.current;
     const operationUserId = user.id;
+    const settlePersisted = (written: string) => {
+      if (written === latestSnapshotRef.current) {
+        persistedSnapshotRef.current = written;
+        setIsDirty(false);
+        return;
+      }
+      // Save manual mais recente aconteceu durante a gravação: o estado
+      // atual já foi persistido, mas o registro recebeu o snapshot antigo
+      // — regrava o mais novo. Edição comum segue a fila do autosave.
+      if (persistedSnapshotRef.current === latestSnapshotRef.current) {
+        void saveToDb(latestSnapshotRef.current, latestStateRef.current);
+      }
+    };
     const previousSave = saveQueueRef.current;
     let releaseQueue: () => void = () => undefined;
     saveQueueRef.current = new Promise<void>((resolve) => { releaseQueue = resolve; });
@@ -152,9 +190,9 @@ export function useKitAutoSave(
       const createdId = await persistAutoSave(payload, kitIdRef.current, operationUserId);
       adoptCreatedId(createdId);
       if (operationGeneration === scopeGenerationRef.current) {
-        persistedSnapshotRef.current = snapshot;
         setLastSavedAt(new Date());
         setLastSaveError(null);
+        settlePersisted(snapshot);
       }
     } catch (err) {
       if (operationGeneration !== scopeGenerationRef.current) return;
@@ -171,25 +209,37 @@ export function useKitAutoSave(
         setIsSaving(pendingSavesRef.current > 0);
       }
     }
-  }, [adoptCreatedId, user?.id, kitState, kitQuantity]);
+  }, [adoptCreatedId, user?.id]);
 
   // Create a snapshot hash to detect meaningful changes
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
-      const initialSnapshot = createSnapshot(kitState, kitQuantity);
+      const initialSnapshot = createKitSnapshot(kitState, kitQuantity);
       persistedSnapshotRef.current = initialSnapshot;
       latestSnapshotRef.current = initialSnapshot;
       return;
     }
 
-    const newSnapshot = createSnapshot(kitState, kitQuantity);
+    const newSnapshot = createKitSnapshot(kitState, kitQuantity);
     latestSnapshotRef.current = newSnapshot;
+    latestStateRef.current = { kitState, kitQuantity };
 
-    if (newSnapshot === persistedSnapshotRef.current) return;
+    if (baselineNextRef.current) {
+      baselineNextRef.current = false;
+      persistedSnapshotRef.current = newSnapshot;
+      setIsDirty(false);
+      return;
+    }
+
+    if (newSnapshot === persistedSnapshotRef.current) {
+      setIsDirty(false);
+      return;
+    }
+    setIsDirty(true);
 
     if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => void saveToDb(newSnapshot), AUTO_SAVE_DELAY_MS);
+    timerRef.current = setTimeout(() => void saveToDb(newSnapshot, { kitState, kitQuantity }), AUTO_SAVE_DELAY_MS);
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -225,16 +275,32 @@ export function useKitAutoSave(
     setLastSavedAt(null);
     setLastSaveError(null);
     setIsSaving(false);
-    const snapshot = createSnapshot(kitState, kitQuantity);
+    const snapshot = createKitSnapshot(kitState, kitQuantity);
     persistedSnapshotRef.current = snapshot;
     latestSnapshotRef.current = snapshot;
+    setIsDirty(false);
   }, [currentKitId, user?.id, kitState, kitQuantity]);
+
+  // Salvamento manual (fora do autosave) também pode marcar o estado como
+  // persistido; passa o snapshot do momento da gravação para não limpar
+  // edições feitas enquanto a requisição estava pendente.
+  const markPersisted = useCallback((snapshot: string) => {
+    persistedSnapshotRef.current = snapshot;
+    setIsDirty(latestSnapshotRef.current !== snapshot);
+  }, []);
+
+  // Carga assíncrona (ex.: abrir /montar-kit?kit=...) preenche o kit depois
+  // do baseline inicial: o próximo snapshot calculado passa a ser o
+  // estado persistido — os dados carregados não são "edição não salva".
+  const markNextSnapshotPersisted = useCallback(() => {
+    baselineNextRef.current = true;
+  }, []);
 
   const retry = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     const snapshot = latestSnapshotRef.current;
-    if (snapshot && snapshot !== persistedSnapshotRef.current) void saveToDb(snapshot);
+    if (snapshot && snapshot !== persistedSnapshotRef.current) void saveToDb(snapshot, latestStateRef.current);
   }, [saveToDb]);
 
-  return { lastSavedAt, isSaving, autoSavedKitId, lastSaveError, retry };
+  return { lastSavedAt, isSaving, autoSavedKitId, lastSaveError, isDirty, markPersisted, markNextSnapshotPersisted, retry };
 }

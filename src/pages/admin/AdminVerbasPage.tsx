@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import type { Tables, TablesInsert } from "@/integrations/supabase/types";
+import { askConfirm } from '@/stores/useConfirmDialogStore';
 // XLSX will be loaded dynamically when needed
 
 type PaOption = Pick<Tables<"postos_atendimento">, "id" | "nome" | "codigo">;
@@ -201,7 +202,7 @@ export default function AdminVerbasPage() {
   };
 
   const handleDeleteCategoryThreshold = async (id: string) => {
-    if (!confirm("Remover este limite específico?")) return;
+    if (!(await askConfirm({ title: 'Remover limite?', description: 'Remover este limite específico?', variant: 'destructive', confirmLabel: 'Remover' }))) return;
     try {
       const { error } = await supabase.from('pa_category_thresholds').delete().eq('id', id);
       if (error) throw error;

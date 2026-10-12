@@ -1,10 +1,13 @@
-import { forwardRef, useMemo } from "react";
-import { useLocation, Link } from "react-router-dom";
+import { forwardRef, useMemo, type MouseEvent as ReactMouseEvent } from "react";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { ChevronRight, Home, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { canNavigateTo, isDevOnlyPath } from "@/lib/navigation/restricted-routes";
 import { BackButton } from "./BackButton";
+import { NavigationHistoryMenu } from "./NavigationHistoryMenu";
+import { useNavigationGuardStore } from "@/stores/useNavigationGuardStore";
+import { isCriticalPathname } from "@/hooks/useSmartNavigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -103,6 +106,7 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
   const { isDev, isAdmin } = useAuth();
   
   const breadcrumbs = useMemo(() => buildBreadcrumbs(location.pathname, showHome, customItems, { isDev, isAdmin }), [location.pathname, showHome, customItems, isDev, isAdmin]);
+  const guardedNavigateTop = useGuardedBreadcrumbNavigate();
 
   if (breadcrumbs.length === 0) return null;
 
@@ -122,13 +126,14 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
       )}
     >
       {showBackButton && isNotHome && (
-        <div className="flex-shrink-0 border-r border-border/30 pr-3 mr-1">
+        <div className="flex flex-shrink-0 items-center gap-1 border-r border-border/30 pr-3 mr-1">
           <BackButton 
             useChevron 
             showLabel={false} 
             className="h-8 w-8 rounded-full bg-muted/20 hover:bg-muted/40 text-muted-foreground hover:text-foreground transition-all duration-200 border-none shadow-none" 
             variant="ghost" 
           />
+          <NavigationHistoryMenu />
         </div>
       )}
       
@@ -149,7 +154,8 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
               <DropdownMenuContent align="start" className="w-48">
                 {breadcrumbs.slice(1, -1).map((item, i) => (
                   <DropdownMenuItem key={i} asChild>
-                    <Link to={item.href || "#"} className="flex items-center gap-2">
+                    <Link to={item.href || "#"} className="flex items-center gap-2"
+                      onClick={(event) => guardedNavigateTop(event, item.href || "#")}>
                       {item.icon && <item.icon className="h-3.5 w-3.5" />}
                       <span>{item.label}</span>
                     </Link>
@@ -181,13 +187,30 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
   );
 });
 
+// Links do breadcrumb respeitam a mesma guarda de saída do botão Voltar:
+// rota crítica ou formulário sujo pedem confirmação antes de navegar.
+function useGuardedBreadcrumbNavigate() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  return (event: ReactMouseEvent, href: string) => {
+    const guard = useNavigationGuardStore.getState();
+    if (!isCriticalPathname(location.pathname) && !guard.hasDirty()) return;
+    event.preventDefault();
+    void (async () => {
+      if (await guard.requestConfirmation()) navigate(href);
+    })();
+  };
+}
+
 function BreadcrumbItem({ item, isLast }: { item: BreadcrumbItemData, index: number, isLast?: boolean }) {
   const Icon = item.icon;
+  const guardedNavigate = useGuardedBreadcrumbNavigate();
   
   if (item.href && !isLast) {
     return (
       <Link
         to={item.href}
+        onClick={(event) => guardedNavigate(event, item.href!)}
         className={cn(
           "flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-all duration-200",
           "hover:bg-muted/50 px-2 py-0.5 rounded-md -mx-1"

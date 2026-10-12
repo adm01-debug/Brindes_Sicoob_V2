@@ -19,7 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useKitBuilder } from '@/hooks/useKitBuilder';
 import { useCustomKitPersistence } from '@/hooks/useCustomKitPersistence';
-import { useKitAutoSave } from '@/hooks/useKitAutoSave';
+import { useKitAutoSave, createKitSnapshot } from '@/hooks/useKitAutoSave';
 import { useKitUndoRedo } from '@/hooks/useKitUndoRedo';
 import { supabase } from '@/integrations/supabase/client';
 import { invokeExternalDb } from '@/lib/external-db';
@@ -39,6 +39,7 @@ import { PageSEO } from "@/components/seo/PageSEO";
 import { logger } from '@/lib/logger';
 import { useKitBuilderQuote } from './kit-builder/useKitBuilderQuote';
 import { useKitWizardShortcuts } from '@/hooks/useKitWizardShortcuts';
+import { useDirtyGuard } from '@/hooks/useDirtyGuard';
 import { useTemplateSnapshot } from '@/hooks/useTemplateSnapshot';
 import { useCustomKitsRealtime } from '@/hooks/useCustomKitsRealtime';
 import { KitMobileSummaryBar } from '@/components/kit-builder/KitMobileSummaryBar';
@@ -116,6 +117,8 @@ interface LoadCustomKitOptions {
   loadKit: KitBuilderState['loadKit'];
   bumpLastUsed: (id: string) => void;
   hasBumpedRef: MutableRefObject<boolean>;
+  /** Adota o kit carregado como baseline do autosave/guarda de sujeira. */
+  onLoaded?: () => void;
 }
 
 async function loadCustomKit(options: LoadCustomKitOptions): Promise<void> {
@@ -123,6 +126,7 @@ async function loadCustomKit(options: LoadCustomKitOptions): Promise<void> {
     const { data, error } = await supabase.from('custom_kits').select('*').eq('id', options.id).maybeSingle();
     if (error || !data) { toast.error('Kit não encontrado'); return; }
     options.loadKit(customKitPayload(data as Record<string, unknown>));
+    options.onLoaded?.();
     toast.success('Kit carregado para edição');
     if (options.hasBumpedRef.current) return;
     options.hasBumpedRef.current = true;
@@ -166,7 +170,7 @@ export default function KitBuilderPage() {
   const { handleAddToQuote, isCreatingQuote } = useKitBuilderQuote();
   useCustomKitsRealtime();
 
-  const { lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, retry: retryAutoSave } = useKitAutoSave(
+  const { lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, isDirty: kitHasUnsavedChanges, markPersisted: markKitPersisted, markNextSnapshotPersisted: markNextKitPersisted, retry: retryAutoSave } = useKitAutoSave(
     kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id),
   );
 
@@ -218,8 +222,8 @@ export default function KitBuilderPage() {
   useEffect(() => {
     if (!kitIdParam || hasLoadedRef.current) return;
     hasLoadedRef.current = true;
-    void loadCustomKit({ id: kitIdParam, loadKit, bumpLastUsed, hasBumpedRef });
-  }, [kitIdParam, loadKit, bumpLastUsed]);
+    void loadCustomKit({ id: kitIdParam, loadKit, bumpLastUsed, hasBumpedRef, onLoaded: markNextKitPersisted });
+  }, [kitIdParam, loadKit, bumpLastUsed, markNextKitPersisted]);
 
   // Template mode: load a kit_templates row for admin editing
   useEffect(() => {
@@ -270,8 +274,10 @@ export default function KitBuilderPage() {
       }
       const editingId = currentKitId || autoSavedKitId || undefined;
       if (!await confirmNewKitSave(editingId)) return;
+      const snapshotAtSave = createKitSnapshot(kitState, kitQuantity);
       const result = await saveKit(kitState, kitQuantity, editingId);
       if (result && 'id' in result) setCurrentKitId((result as { id: string }).id);
+      if (result) markKitPersisted(snapshotAtSave);
     } catch { /* handled by hook */ }
   };
 
@@ -322,6 +328,7 @@ export default function KitBuilderPage() {
 
   const { itemsWeight, weightExceeded, weightPercent } = kitWeightMetrics(kitState);
   const hasContent = kitHasContent(kitState);
+  useDirtyGuard('kit-builder', kitHasUnsavedChanges);
   const isExistingKit = Boolean(resolveKitId(currentKitId, autoSavedKitId));
   const pricing = calculateTotalKitPrice(kitState.box, kitState.items, kitState.personalization, kitQuantity);
 
