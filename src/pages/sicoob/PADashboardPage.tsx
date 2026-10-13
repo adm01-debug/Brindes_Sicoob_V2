@@ -45,7 +45,7 @@ function DashboardHeader({ paId }: { paId?: string }) {
           </Link>
         </Button>
         <Button asChild>
-          <Link to="/catalogo" className="gap-2">
+          <Link to="/filtros" className="gap-2">
             <Plus className="h-4 w-4" /> Novo Pedido
           </Link>
         </Button>

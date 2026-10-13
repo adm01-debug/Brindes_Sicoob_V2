@@ -63,7 +63,7 @@ export default function SellerPanelPage() {
               Gerencie seus pedidos e acompanhe o volume confirmado.
             </p>
           </div>
-          <Button size="lg" className="gap-2" onClick={() => navigate("/catalogo")}>
+          <Button size="lg" className="gap-2" onClick={() => navigate("/filtros")}>
             <Plus className="h-5 w-5" />
             Novo Pedido
           </Button>

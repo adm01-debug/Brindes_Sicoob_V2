@@ -110,6 +110,7 @@ export const ADMIN_ROUTES: RouteEntry[] = [
   { path: "/admin/usuarios", area: "admin", requiresAdmin: true, feature: "admin-users" },
   { path: "/admin/limites-desconto", area: "admin", requiresAdmin: true, feature: "admin-discount-limits" },
   { path: "/admin/cadastros", area: "admin", requiresAdmin: true, feature: "admin-registrations" },
+  { path: `/admin/cadastros/produto/${SAMPLE_ID}`, area: "admin", requiresAdmin: true, feature: "admin-product-form" },
   { path: "/admin/permissoes", area: "admin", requiresAdmin: true, feature: "admin-permissions" },
   { path: "/admin/roles", area: "admin", requiresAdmin: true, feature: "admin-roles" },
   { path: "/admin/role-permissoes", area: "admin", requiresAdmin: true, feature: "admin-role-permissions" },

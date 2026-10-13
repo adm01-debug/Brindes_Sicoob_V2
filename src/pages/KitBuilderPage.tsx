@@ -545,7 +545,7 @@ export default function KitBuilderPage() {
       radial-gradient(ellipse 80% 50% at 50% -20%, hsl(var(--primary) / 0.08), transparent),
       radial-gradient(ellipse 60% 40% at 100% 100%, hsl(var(--primary) / 0.04), transparent),
       hsl(var(--background))` }}>
-      <PageSEO title="Kit Maker" description="Monte kits personalizados de brindes promocionais." path="/kit-builder" noIndex />
+      <PageSEO title="Kit Maker" description="Monte kits personalizados de brindes promocionais." path="/montar-kit" noIndex />
       <BuilderHeader /><div className="container py-6"><div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <BuilderSteps /><BuilderSidebar /></div></div><div className="h-20 lg:hidden" aria-hidden />
     </div></>;

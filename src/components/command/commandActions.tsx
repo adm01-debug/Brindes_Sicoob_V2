@@ -97,7 +97,7 @@ export function buildActions({ goTo, actualTheme, setTheme, setOpen }: BuildActi
       label: "Catálogo de Produtos",
       description: "Ver todos os produtos",
       icon: <Package className="h-4 w-4" />,
-      action: () => goTo("/catalogo", "Catálogo"),
+      action: () => goTo("/filtros", "Catálogo"),
       keywords: ["produtos", "catálogo", "catalog", "items"],
       category: "navigation",
     },

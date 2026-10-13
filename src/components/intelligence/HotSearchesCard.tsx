@@ -135,7 +135,7 @@ export function HotSearchesCard({ days }: HotSearchesCardProps) {
                     size="sm"
                     variant="outline"
                     className="h-7 text-[10px] gap-1 shrink-0"
-                    onClick={() => navigate(`/catalogo?busca=${encodeURIComponent(item.term)}`)}
+                    onClick={() => navigate(`/filtros?search=${encodeURIComponent(item.term)}`)}
                     aria-label={`Ver catálogo para ${item.term}`}
                   >
                     Ver

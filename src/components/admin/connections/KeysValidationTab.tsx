@@ -43,7 +43,7 @@ const FEATURE_GROUPS: FeatureGroup[] = [
     label: "Catálogo Promobrind",
     description: "Banco externo que alimenta toda a listagem de produtos, variantes e imagens.",
     Icon: Database,
-    uiSurfaces: ["/catalogo", "/produto/:slug", "Kit Maker", "Comparador", "Busca semântica"],
+    uiSurfaces: ["/filtros", "/produto/:slug", "Kit Maker", "Comparador", "Busca semântica"],
     keys: [
       {
         name: "EXTERNAL_PROMOBRIND_URL",
