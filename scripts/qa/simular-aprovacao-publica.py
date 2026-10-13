@@ -244,6 +244,43 @@ try:
       and sql(f"SELECT quantity=10 FROM public.quote_items WHERE id='{fixed_item}';").stdout.strip() == 't'
       and sql(f"SELECT total=100 FROM public.quotes WHERE id='{fixed_quote}';").stdout.strip() == 't'
     )
+    forged_context = actor(
+      "BEGIN; SELECT set_config('app.quote_governance_write','true',true); "
+      f"UPDATE public.quotes SET total=777 WHERE id='{fixed_quote}'; COMMIT;",
+      check=False,
+    )
+    checks['contexto_interno_nao_pode_ser_forjado_por_cliente'] = (
+      forged_context.returncode != 0
+      and sql(f"SELECT total=100 FROM public.quotes WHERE id='{fixed_quote}';").stdout.strip() == 't'
+    )
+    approved_delete = actor(f"DELETE FROM public.quotes WHERE id='{fixed_quote}';", check=False)
+    checks['orcamento_aprovado_nao_pode_ser_excluido'] = (
+      approved_delete.returncode != 0
+      and sql(f"SELECT count(*)=1 FROM public.quotes WHERE id='{fixed_quote}';").stdout.strip() == 't'
+      and sql(f"SELECT count(*)=1 FROM public.quote_items WHERE quote_id='{fixed_quote}';").stdout.strip() == 't'
+    )
+    draft_quote = str(uuid.uuid4())
+    sql(
+      "INSERT INTO public.quotes(id,seller_id,quote_number,client_name,total,status) "
+      f"VALUES ('{draft_quote}','{SELLER}','RASCUNHO','Cliente sintético',100,'draft');"
+      "INSERT INTO public.quote_items(quote_id,product_name,quantity,unit_price) "
+      f"VALUES ('{draft_quote}','Caneca',10,10);"
+      "INSERT INTO public.quote_item_personalizations(quote_item_id,total_cost) "
+      f"SELECT id,5 FROM public.quote_items WHERE quote_id='{draft_quote}';"
+    )
+    draft_delete = actor(f"DELETE FROM public.quotes WHERE id='{draft_quote}';")
+    checks['rascunho_pode_ser_excluido_com_cascata_validada'] = (
+      draft_delete.returncode == 0
+      and sql(f"SELECT count(*)=0 FROM public.quotes WHERE id='{draft_quote}';").stdout.strip() == 't'
+      and sql(f"SELECT count(*)=0 FROM public.quote_items WHERE quote_id='{draft_quote}';").stdout.strip() == 't'
+    )
+    checks['gate_executa_com_privilegios_do_invocador'] = sql(
+      "SELECT NOT prosecdef FROM pg_proc WHERE oid='public.guard_quote_governance_write()'::regprocedure;"
+    ).stdout.strip() == 't'
+    checks['gatilho_principal_cobre_exclusao'] = 'DELETE' in sql(
+      "SELECT pg_get_triggerdef(oid) FROM pg_trigger "
+      "WHERE tgrelid='public.quotes'::regclass AND tgname='aaa_guard_quote_governance_write';"
+    ).stdout
     checks['nucleos_internos_sem_execute_externo'] = sql(
       "SELECT NOT has_function_privilege('authenticated','public.convert_quote_to_sicoob_order_core_20261013(uuid)','EXECUTE') AND NOT has_function_privilege('service_role','public.apply_local_quote_approval_response_core_20261013(text,text,text,text,text,text,text,text)','EXECUTE');"
     ).stdout.strip() == 't'

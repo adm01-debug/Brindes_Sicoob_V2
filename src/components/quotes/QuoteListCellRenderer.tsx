@@ -7,7 +7,7 @@ import { UserPlus } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { formatDeliveryTime } from "@/components/pdf/ProposalHtmlTemplate";
-import { QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
+import { isQuoteCommerciallyEditable, QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
 import type { Quote } from "@/hooks/quotes/useQuotes";
 import type { ReactNode } from "react";
 
@@ -24,7 +24,8 @@ const quoteNumberCell: CellRenderer = quote => <span className="text-xs text-mut
 
 const clientCell: CellRenderer = (quote, navigate) => {
   const hasClient = Boolean(quote.client_name || quote.client_company);
-  if (!hasClient) return <button className="text-xs text-primary/70 hover:text-primary flex items-center gap-1" onClick={event => { event.stopPropagation(); navigate(`/orcamentos/${quote.id}/editar`); }}><UserPlus className="h-3 w-3" /> Vincular cliente</button>;
+  if (!hasClient && isQuoteCommerciallyEditable(quote.status)) return <button className="text-xs text-primary/70 hover:text-primary flex items-center gap-1" onClick={event => { event.stopPropagation(); navigate(`/orcamentos/${quote.id}/editar`); }}><UserPlus className="h-3 w-3" /> Vincular cliente</button>;
+  if (!hasClient) return <span className="text-xs text-muted-foreground/60">Cliente não vinculado</span>;
   return <div className="flex flex-col min-w-0"><span className="text-sm font-semibold text-foreground truncate">{quote.client_company || quote.client_name}</span>{quote.client_cnpj && <span className="text-[10px] text-muted-foreground/70 font-mono truncate">{quote.client_cnpj}</span>}</div>;
 };
 

@@ -7,7 +7,6 @@ import { renderQuoteCell } from "./QuoteListCellRenderer";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,6 +48,7 @@ import { useQuoteViewedMap } from "@/hooks/useQuoteViewedMap";
 import { QuoteViewedBadge } from "./QuoteViewedBadge";
 import { QuoteRowQuickActions } from "./QuoteRowQuickActions";
 import { QuoteOrderBadge } from "./QuoteOrderBadge";
+import { isQuoteCommerciallyEditable } from "@/lib/quote-status-config";
 import {
   DndContext,
   closestCenter,
@@ -181,13 +181,16 @@ type Columns = ReturnType<typeof useQuoteColumns>;
 type Selection = ReturnType<typeof useListSelection>;
 
 function QuoteBulkBar({ props, selection }: { props: QuotesConfigurableListProps; selection: Selection }) {
+  const selectedQuotes = props.quotes.filter(hasQuoteId).filter((quote) => selection.selectedIds.includes(quote.id));
+  const hasProtectedQuote = selectedQuotes.some((quote) => !isQuoteCommerciallyEditable(quote.status));
   const actions = [
     ...(props.onBulkStatusChange ? [{ id: "mark-pending", label: "Marcar Pendente", icon: <RefreshCw className="h-3.5 w-3.5" />,
       variant: "outline" as const, onClick: (ids: string[]) => { props.onBulkStatusChange?.(ids, "pending"); selection.clear(); } }] : []),
     ...(props.onBulkExport ? [{ id: "export", label: "Exportar", icon: <Download className="h-3.5 w-3.5" />,
       variant: "outline" as const, onClick: (ids: string[]) => props.onBulkExport?.(ids) }] : []),
-    { id: "delete", label: "Excluir", icon: <Trash2 className="h-3.5 w-3.5" />, variant: "destructive" as const,
-      onClick: (ids: string[]) => { if (props.isSupervisor) { props.onBulkDelete([...ids]); selection.clear(); } }, disabled: !props.isSupervisor },
+    { id: "delete", label: "Excluir editáveis", icon: <Trash2 className="h-3.5 w-3.5" />, variant: "destructive" as const,
+      onClick: (ids: string[]) => { if (props.isSupervisor && !hasProtectedQuote) { props.onBulkDelete([...ids]); selection.clear(); } },
+      disabled: !props.isSupervisor || hasProtectedQuote },
   ];
   return <BulkActionsBar selectedCount={selection.selectedCount} selectedIds={selection.selectedIds} entityLabel="orçamento"
     onClear={selection.clear} showSelectAllBanner={selection.showSelectAllBanner} totalCount={props.quotes.length}
@@ -238,13 +241,14 @@ function QuoteRow({ quote, props, columns, selection, viewed, navigate }: {
 }
 
 function RowMenu({ quote, props, navigate }: { quote: QuoteWithId; props: QuotesConfigurableListProps; navigate: ReturnType<typeof useNavigate> }) {
+  const editable = isQuoteCommerciallyEditable(quote.status);
   return <DropdownMenu><DropdownMenuTrigger asChild onClick={(event) => event.stopPropagation()}><Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Mais opções">
     <MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
     <DropdownMenuItem onClick={() => navigate(`/orcamentos/${quote.id}`)}><Eye className="h-4 w-4 mr-2" /> Visualizar</DropdownMenuItem>
-    <DropdownMenuItem onClick={() => navigate(`/orcamentos/${quote.id}/editar`)}><Edit className="h-4 w-4 mr-2" /> Editar</DropdownMenuItem>
+    <DropdownMenuItem disabled={!editable} onClick={() => editable && navigate(`/orcamentos/${quote.id}/editar`)}><Edit className="h-4 w-4 mr-2" /> Editar</DropdownMenuItem>
     <DropdownMenuItem onClick={() => props.onDuplicate(quote.id)}><Copy className="h-4 w-4 mr-2" /> Duplicar</DropdownMenuItem><DropdownMenuSeparator />
-    <DropdownMenuItem className={cn("text-destructive", !props.isSupervisor && "opacity-50 pointer-events-none")}
-      onClick={() => props.isSupervisor && props.onDelete(quote.id)}><Trash2 className="h-4 w-4 mr-2" /> Excluir</DropdownMenuItem>
+    <DropdownMenuItem disabled={!props.isSupervisor || !editable} className="text-destructive"
+      onClick={() => props.isSupervisor && editable && props.onDelete(quote.id)}><Trash2 className="h-4 w-4 mr-2" /> Excluir</DropdownMenuItem>
   </DropdownMenuContent></DropdownMenu>;
 }
 

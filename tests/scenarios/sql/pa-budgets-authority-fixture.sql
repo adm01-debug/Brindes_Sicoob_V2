@@ -49,6 +49,19 @@ CREATE TABLE public.pa_budgets (
   UNIQUE (pa_id, ano, mes)
 );
 
+CREATE TABLE public.cooperativa_budgets (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  cooperativa_id uuid NOT NULL,
+  ano integer NOT NULL,
+  mes integer NOT NULL,
+  verba_total numeric NOT NULL DEFAULT 0,
+  limite_alcada numeric,
+  observacoes text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (cooperativa_id, ano, mes)
+);
+
 CREATE FUNCTION public.sicoob_actor_is_active(_user_id uuid)
 RETURNS boolean
 LANGUAGE sql
@@ -131,6 +144,7 @@ AS $$
 $$;
 
 ALTER TABLE public.pa_budgets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.cooperativa_budgets ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY pa_budgets_anon_deny
 ON public.pa_budgets AS RESTRICTIVE FOR ALL TO anon
@@ -165,8 +179,47 @@ CREATE POLICY merged_budget_delete
 ON public.pa_budgets FOR DELETE TO authenticated
 USING (public.has_role(auth.uid(), 'admin') OR public.is_gestor_compras());
 
+CREATE POLICY cooperativa_budgets_anon_deny
+ON public.cooperativa_budgets AS RESTRICTIVE FOR ALL TO anon
+USING (false) WITH CHECK (false);
+
+CREATE POLICY merged_cooperativa_budget_select
+ON public.cooperativa_budgets FOR SELECT TO authenticated
+USING (
+  public.has_role(auth.uid(), 'admin')
+  OR public.is_gestor_compras()
+  OR cooperativa_id = public.current_user_cooperativa_id()
+);
+
+CREATE POLICY merged_cooperativa_budget_insert
+ON public.cooperativa_budgets FOR INSERT TO authenticated
+WITH CHECK (public.has_role(auth.uid(), 'admin') OR public.is_gestor_compras());
+
+CREATE POLICY merged_cooperativa_budget_update
+ON public.cooperativa_budgets FOR UPDATE TO authenticated
+USING (
+  public.has_role(auth.uid(), 'admin')
+  OR (
+    public.is_gestor_compras()
+    AND cooperativa_id = public.current_user_cooperativa_id()
+  )
+)
+WITH CHECK (
+  public.has_role(auth.uid(), 'admin')
+  OR (
+    public.is_gestor_compras()
+    AND cooperativa_id = public.current_user_cooperativa_id()
+  )
+);
+
+CREATE POLICY merged_cooperativa_budget_delete
+ON public.cooperativa_budgets FOR DELETE TO authenticated
+USING (public.has_role(auth.uid(), 'admin'));
+
 GRANT USAGE ON SCHEMA public, auth TO authenticated, anon, service_role;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public, auth TO authenticated, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.pa_budgets TO authenticated;
 GRANT ALL ON public.pa_budgets TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.cooperativa_budgets TO authenticated;
+GRANT ALL ON public.cooperativa_budgets TO service_role;
 GRANT SELECT ON public.profiles, public.user_roles, public.postos_atendimento TO authenticated;

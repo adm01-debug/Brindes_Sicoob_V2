@@ -24,7 +24,7 @@ CREATE TABLE public.quotes (
   organization_id uuid, pa_id uuid, singular_id uuid
 );
 CREATE TABLE public.quote_items (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), quote_id uuid NOT NULL REFERENCES public.quotes(id),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), quote_id uuid NOT NULL REFERENCES public.quotes(id) ON DELETE CASCADE,
   product_id text, product_name text NOT NULL, product_sku text, product_image_url text,
   quantity integer NOT NULL DEFAULT 1, unit_price numeric NOT NULL DEFAULT 0,
   subtotal numeric GENERATED ALWAYS AS (quantity * unit_price) STORED,
@@ -32,7 +32,7 @@ CREATE TABLE public.quote_items (
   created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now()
 );
 CREATE TABLE public.quote_item_personalizations (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), quote_item_id uuid NOT NULL REFERENCES public.quote_items(id),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), quote_item_id uuid NOT NULL REFERENCES public.quote_items(id) ON DELETE CASCADE,
   technique_id uuid, colors_count integer DEFAULT 1, positions_count integer DEFAULT 1,
   area_cm2 numeric, setup_cost numeric DEFAULT 0, unit_cost numeric DEFAULT 0,
   total_cost numeric DEFAULT 0, notes text, created_at timestamptz DEFAULT now()

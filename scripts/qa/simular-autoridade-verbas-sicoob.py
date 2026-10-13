@@ -25,6 +25,8 @@ GERENTE_A = "aaaaaaaa-3000-4000-8000-000000000001"
 ADMIN = "cccccccc-4000-4000-8000-000000000001"
 BUDGET_A = "aaaaaaaa-5000-4000-8000-000000000001"
 BUDGET_B = "bbbbbbbb-5000-4000-8000-000000000002"
+COOP_BUDGET_A = "aaaaaaaa-6000-4000-8000-000000000001"
+COOP_BUDGET_B = "bbbbbbbb-6000-4000-8000-000000000002"
 
 
 def command(args, *, stdin=None, check=True):
@@ -99,6 +101,11 @@ try:
       VALUES
         ('{BUDGET_A}', '{PA_A}', 2026, 10, 1000, 100, 500),
         ('{BUDGET_B}', '{PA_B}', 2026, 10, 2000, 200, 700);
+      INSERT INTO public.cooperativa_budgets
+        (id, cooperativa_id, ano, mes, verba_total, limite_alcada)
+      VALUES
+        ('{COOP_BUDGET_A}', '{COOP_A}', 2026, 10, 5000, 1000),
+        ('{COOP_BUDGET_B}', '{COOP_B}', 2026, 10, 9000, 2000);
     """)
 
     assert scalar(as_actor(GESTOR_A, "SELECT count(*) FROM public.pa_budgets")) == "1"
@@ -128,6 +135,53 @@ try:
     assert inactive_role == "false", repr(inactive_role)
     assert scalar(as_actor(ADMIN, "SELECT count(*) FROM public.pa_budgets")) == "2"
 
+    assert scalar(as_actor(GESTOR_A, "SELECT count(*) FROM public.cooperativa_budgets")) == "1"
+    assert scalar(as_actor(
+        GESTOR_A,
+        f"SELECT count(*) FROM public.cooperativa_budgets WHERE id='{COOP_BUDGET_B}'",
+    )) == "0"
+    assert scalar(as_actor(
+        GESTOR_A,
+        f"UPDATE public.cooperativa_budgets SET verba_total=5500 WHERE id='{COOP_BUDGET_A}' RETURNING verba_total",
+    )) == "5500"
+    assert scalar(as_actor(
+        GESTOR_A,
+        f"UPDATE public.cooperativa_budgets SET verba_total=99999 WHERE id='{COOP_BUDGET_B}'; "
+        f"SELECT count(*) FROM public.cooperativa_budgets WHERE id='{COOP_BUDGET_B}'",
+    )) == "0"
+    cross_coop_insert = as_actor(
+        GESTOR_A,
+        f"INSERT INTO public.cooperativa_budgets "
+        f"(cooperativa_id,ano,mes,verba_total) VALUES ('{COOP_B}',2026,11,500)",
+        check=False,
+    )
+    assert cross_coop_insert.returncode != 0
+    change_identity = as_actor(
+        GESTOR_A,
+        f"UPDATE public.cooperativa_budgets SET cooperativa_id='{COOP_B}' "
+        f"WHERE id='{COOP_BUDGET_A}'",
+        check=False,
+    )
+    assert change_identity.returncode != 0
+    assert scalar(as_actor(ADMIN, "SELECT count(*) FROM public.cooperativa_budgets")) == "2"
+
+    pa_delete = as_actor(
+        GESTOR_A,
+        f"DELETE FROM public.pa_budgets WHERE id='{BUDGET_A}'",
+        check=False,
+    )
+    coop_delete = as_actor(
+        ADMIN,
+        f"DELETE FROM public.cooperativa_budgets WHERE id='{COOP_BUDGET_A}'",
+        check=False,
+    )
+    assert pa_delete.returncode != 0
+    assert coop_delete.returncode != 0
+    assert scalar(sql(f"SELECT count(*) FROM public.pa_budgets WHERE id='{BUDGET_A}'")) == "1"
+    assert scalar(sql(
+        f"SELECT count(*) FROM public.cooperativa_budgets WHERE id='{COOP_BUDGET_A}'"
+    )) == "1"
+
     insert_with_consumption = as_actor(
         GESTOR_A,
         f"INSERT INTO public.pa_budgets (pa_id,ano,mes,verba_total,verba_consumida) VALUES ('{PA_A}',2026,11,500,10)",
@@ -147,6 +201,9 @@ try:
         "gestor_inativo_sem_acesso": True,
         "administrador_ativo_preservado": True,
         "insercao_inicia_consumo_em_zero": True,
+        "verba_cooperativa_isolada": True,
+        "identidade_verba_cooperativa_imutavel": True,
+        "exclusao_direta_de_verba_bloqueada": True,
         "resultado": "aprovado",
     })
     EVIDENCE.parent.mkdir(parents=True, exist_ok=True)

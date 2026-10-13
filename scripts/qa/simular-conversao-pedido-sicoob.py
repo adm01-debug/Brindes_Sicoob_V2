@@ -84,13 +84,13 @@ try:
         organization_id uuid
       );
       CREATE TABLE public.quote_items(
-        id uuid PRIMARY KEY, quote_id uuid REFERENCES public.quotes(id), product_id text,
+        id uuid PRIMARY KEY, quote_id uuid REFERENCES public.quotes(id) ON DELETE CASCADE, product_id text,
         product_name text, product_sku text, product_image_url text, source_variant_id text,
         source_variant_sku text, color_name text, color_hex text, size_code text, notes text,
         quantity integer, unit_price numeric, display_order integer, sort_order integer
       );
       CREATE TABLE public.quote_item_personalizations(
-        id uuid PRIMARY KEY DEFAULT gen_random_uuid(), quote_item_id uuid REFERENCES public.quote_items(id),
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(), quote_item_id uuid REFERENCES public.quote_items(id) ON DELETE CASCADE,
         technique_name text, total_cost numeric DEFAULT 0, created_at timestamptz DEFAULT now()
       );
       GRANT SELECT,INSERT,UPDATE,DELETE ON public.quotes,public.quote_items,
@@ -241,12 +241,35 @@ try:
     checks['acl_authenticated_sem_anon'] = scalar("SELECT has_function_privilege('authenticated','public.convert_quote_to_sicoob_order(uuid)','EXECUTE')::text||'|'||has_function_privilege('anon','public.convert_quote_to_sicoob_order(uuid)','EXECUTE')::text;") == 'true|false'
     checks['nucleo_interno_sem_execute_cliente'] = scalar("SELECT has_function_privilege('authenticated','public.convert_quote_to_sicoob_order_core_20261013(uuid)','EXECUTE')::text||'|'||has_function_privilege('service_role','public.apply_local_quote_approval_response_core_20261013(text,text,text,text,text,text,text,text)','EXECUTE')::text;") == 'false|false'
 
+    forged_context = actor(
+        "BEGIN; SELECT set_config('app.quote_governance_write','true',true); "
+        f"UPDATE public.quotes SET total=777 WHERE id='{quote}'; COMMIT;",
+        check=False,
+    )
+    checks['cliente_nao_forja_contexto_interno'] = (
+        forged_context.returncode != 0
+        and scalar(f"SELECT total=100 FROM public.quotes WHERE id='{quote}';") == 't'
+    )
+    converted_delete = actor(f"DELETE FROM public.quotes WHERE id='{quote}';", check=False)
+    checks['orcamento_convertido_preserva_historico'] = (
+        converted_delete.returncode != 0
+        and scalar(f"SELECT count(*) FROM public.quotes WHERE id='{quote}';") == '1'
+        and scalar(f"SELECT count(*) FROM public.quote_items WHERE quote_id='{quote}';") == '1'
+    )
+
     editable_quote = '44444444-4444-4444-8444-444444444448'
     seed_quote(editable_quote, status='draft')
     editable_item = scalar(f"SELECT id FROM public.quote_items WHERE quote_id='{editable_quote}';")
     checks['rascunho_continua_editavel'] = (
         actor(f"UPDATE public.quote_items SET quantity=3 WHERE id='{editable_item}';").returncode == 0
         and actor(f"INSERT INTO public.quote_item_personalizations(quote_item_id,technique_name,total_cost) VALUES ('{editable_item}','Laser',5);").returncode == 0
+    )
+    editable_delete = actor(f"DELETE FROM public.quotes WHERE id='{editable_quote}';")
+    checks['rascunho_pode_ser_excluido_com_cascata'] = (
+        editable_delete.returncode == 0
+        and scalar(f"SELECT count(*) FROM public.quotes WHERE id='{editable_quote}';") == '0'
+        and scalar(f"SELECT count(*) FROM public.quote_items WHERE quote_id='{editable_quote}';") == '0'
+        and scalar(f"SELECT count(*) FROM public.quote_item_personalizations WHERE quote_item_id='{editable_item}';") == '0'
     )
 
     draft = '55555555-5555-4555-8555-555555555551'

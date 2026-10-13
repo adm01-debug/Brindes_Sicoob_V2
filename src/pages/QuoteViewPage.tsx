@@ -33,7 +33,7 @@ import { QuoteClientInfo } from "@/components/quotes/QuoteClientInfo";
 import { QuoteItemsTable } from "@/components/quotes/QuoteItemsTable";
 import { QuoteTotalsSummary } from "@/components/quotes/QuoteTotalsSummary";
 import { PdfGenerationDialog } from "@/components/quotes/PdfGenerationDialog";
-import { QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
+import { isQuoteCommerciallyEditable, QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
 import { useQuoteViewData } from "./quote-view/useQuoteViewData";
 import { useDiscountApproval, type DiscountApprovalRequest } from "@/hooks/useDiscountApproval";
 import { updateQuoteStatusAtomically } from "@/services/quoteStatusTransition";
@@ -75,7 +75,8 @@ async function duplicateQuote(state: QuoteViewState, quoteId: string, navigate: 
 
 function QuoteMoreActions({ state, quote, quoteId, navigate }: { state: QuoteViewState; quote: Quote; quoteId: string; navigate: NavigateFunction }) {
   const canCancelSync = quote.status === "sent" || state.isSyncing;
-  return <DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline" size="icon" aria-label="Mais opções"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end">{canCancelSync && <DropdownMenuItem onClick={() => cancelSync(state, quote)} className="text-destructive focus:text-destructive"><Undo2 className="h-4 w-4 mr-2" /> Cancelar Sincronização</DropdownMenuItem>}<DropdownMenuItem onClick={() => navigate(`/orcamentos/${quoteId}/editar`)}><Edit2 className="h-4 w-4 mr-2" /> Editar</DropdownMenuItem><DropdownMenuItem onClick={() => duplicateQuote(state, quoteId, navigate)}><Copy className="h-4 w-4 mr-2" /> Duplicar</DropdownMenuItem><DropdownMenuItem onClick={() => state.setShowPresentation(true)}><Monitor className="h-4 w-4 mr-2" /> Modo Apresentação</DropdownMenuItem><QuoteAuditSheet quote={quote} quoteId={quoteId} /></DropdownMenuContent></DropdownMenu>;
+  const editable = isQuoteCommerciallyEditable(quote.status);
+  return <DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline" size="icon" aria-label="Mais opções"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end">{canCancelSync && <DropdownMenuItem onClick={() => cancelSync(state, quote)} className="text-destructive focus:text-destructive"><Undo2 className="h-4 w-4 mr-2" /> Cancelar Sincronização</DropdownMenuItem>}<DropdownMenuItem disabled={!editable} onClick={() => editable && navigate(`/orcamentos/${quoteId}/editar`)}><Edit2 className="h-4 w-4 mr-2" /> Editar</DropdownMenuItem><DropdownMenuItem onClick={() => duplicateQuote(state, quoteId, navigate)}><Copy className="h-4 w-4 mr-2" /> Duplicar</DropdownMenuItem><DropdownMenuItem onClick={() => state.setShowPresentation(true)}><Monitor className="h-4 w-4 mr-2" /> Modo Apresentação</DropdownMenuItem><QuoteAuditSheet quote={quote} quoteId={quoteId} /></DropdownMenuContent></DropdownMenu>;
 }
 
 function refreshQuote(state: QuoteViewState, quoteId: string) {

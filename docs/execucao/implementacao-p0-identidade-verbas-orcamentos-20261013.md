@@ -7,21 +7,23 @@ Data da execução: 13/10/2026.
 Este lote corrige quatro falhas críticas localizadas na auditoria de 11/10 e na revalidação conectada de 13/10:
 
 1. `verify-email` não aceita mais UUID e não confirma contas por credencial administrativa. A função agora responde `410 Gone`, exige JWT no gateway e orienta o uso do fluxo padrão do Supabase Auth.
-2. `pa_budgets` passa a falhar fechado para perfis inativos, restringe gestores à própria cooperativa, impede gerente de PA de alterar verba ou alçada e retira do cliente as colunas de consumo.
+2. `pa_budgets` e `cooperativa_budgets` passam a falhar fechado para perfis inativos, restringem gestores à própria cooperativa, impedem gerente de PA de alterar verba ou alçada e retiram do cliente consumo, identidade e exclusão direta.
 3. Conversão de orçamento e aprovação pública recebem um contexto de governança limitado ao wrapper autorizado; os núcleos internos não são executáveis pelos papéis externos.
-4. Cabeçalho comercial, itens e personalizações ficam imutáveis depois do envio ou decisão. Alterações continuam permitidas apenas em `draft`, `revision`, `rejected` e `rejected_singular` da versão vigente.
+4. Cabeçalho comercial, itens e personalizações ficam imutáveis depois do envio ou decisão. O contexto interno só é aceito quando a escrita parte do proprietário das rotinas autorizadas, e orçamentos enviados, decididos ou convertidos não podem ser excluídos. Alteração e exclusão em cascata continuam permitidas apenas em `draft`, `revision`, `rejected` e `rejected_singular` da versão vigente; a interface usa o mesmo contrato para edição e exclusão individual ou em massa.
 
 ## Simulações executadas
 
 | Prova | Resultado |
 |---|---:|
-| Autoridade de verbas em PostgreSQL 17 isolado | 14/14 asserções em 7 grupos aprovadas |
-| Conversão orçamento → pedido em PostgreSQL 16 isolado | 26/26 cenários aprovados |
-| Aprovação pública, HMAC, locks e rollback | 49/49 cenários aprovados |
-| Testes Vitest focados | 13/13 testes aprovados |
+| Autoridade de verbas em PostgreSQL 17 isolado | 25/25 asserções em 10 grupos aprovadas |
+| Conversão orçamento → pedido em PostgreSQL 16 isolado | 29/29 cenários aprovados |
+| Aprovação pública, HMAC, locks e rollback | 54/54 cenários aprovados |
+| Testes Vitest focados | 20/20 testes aprovados |
+| Suíte Vitest completa com cobertura | 425 arquivos e 5.720 testes aprovados; 94% statements e 86,79% branches |
 | Contratos estáticos das Edge Functions | 106/106 declarados e válidos |
 | TypeScript contra baseline | 0 regressões |
 | ESLint contra baseline | 0 regressões |
+| Build de produção com configuração sintética | aprovado |
 | `npm audit --omit=dev --audit-level=high` | 0 vulnerabilidades |
 | Migration de verbas contra o esquema canônico | aplicada em transação e revertida |
 | Migration de governança contra o esquema canônico | aplicada em transação e revertida |

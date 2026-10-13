@@ -160,16 +160,85 @@ USING (
   )
 );
 
+-- A verba agregada da cooperativa herdava uma alternativa global baseada
+-- apenas no papel gestor. Os guardas abaixo exigem o vínculo institucional
+-- ativo e impedem criação ou alteração em outra cooperativa.
+DROP POLICY IF EXISTS cooperativa_budgets_active_scope_select_guard
+  ON public.cooperativa_budgets;
+CREATE POLICY cooperativa_budgets_active_scope_select_guard
+ON public.cooperativa_budgets
+AS RESTRICTIVE
+FOR SELECT
+TO authenticated
+USING (
+  public.is_admin((SELECT auth.uid()))
+  OR cooperativa_budgets.cooperativa_id = public.current_user_cooperativa_id()
+);
+
+DROP POLICY IF EXISTS cooperativa_budgets_active_scope_insert_guard
+  ON public.cooperativa_budgets;
+CREATE POLICY cooperativa_budgets_active_scope_insert_guard
+ON public.cooperativa_budgets
+AS RESTRICTIVE
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  public.is_admin((SELECT auth.uid()))
+  OR (
+    public.has_role((SELECT auth.uid()), 'gestor_compras'::public.app_role)
+    AND cooperativa_budgets.cooperativa_id = public.current_user_cooperativa_id()
+  )
+);
+
+DROP POLICY IF EXISTS cooperativa_budgets_active_scope_update_guard
+  ON public.cooperativa_budgets;
+CREATE POLICY cooperativa_budgets_active_scope_update_guard
+ON public.cooperativa_budgets
+AS RESTRICTIVE
+FOR UPDATE
+TO authenticated
+USING (
+  public.is_admin((SELECT auth.uid()))
+  OR (
+    public.has_role((SELECT auth.uid()), 'gestor_compras'::public.app_role)
+    AND cooperativa_budgets.cooperativa_id = public.current_user_cooperativa_id()
+  )
+)
+WITH CHECK (
+  public.is_admin((SELECT auth.uid()))
+  OR (
+    public.has_role((SELECT auth.uid()), 'gestor_compras'::public.app_role)
+    AND cooperativa_budgets.cooperativa_id = public.current_user_cooperativa_id()
+  )
+);
+
+DROP POLICY IF EXISTS cooperativa_budgets_active_scope_delete_guard
+  ON public.cooperativa_budgets;
+CREATE POLICY cooperativa_budgets_active_scope_delete_guard
+ON public.cooperativa_budgets
+AS RESTRICTIVE
+FOR DELETE
+TO authenticated
+USING (public.is_admin((SELECT auth.uid())));
+
 -- Consumo e estorno de verba pertencem às rotinas transacionais de pedido,
 -- executadas com privilégio de servidor. Clientes autenticados só podem
 -- alocar a verba e sua alçada; nunca escrever o saldo consumido diretamente.
 REVOKE ALL ON TABLE public.pa_budgets FROM anon;
-REVOKE INSERT, UPDATE ON TABLE public.pa_budgets FROM authenticated;
-GRANT SELECT, DELETE ON TABLE public.pa_budgets TO authenticated;
+REVOKE INSERT, UPDATE, DELETE ON TABLE public.pa_budgets FROM authenticated;
+GRANT SELECT ON TABLE public.pa_budgets TO authenticated;
 GRANT INSERT (pa_id, ano, mes, verba_total, limite_alcada, observacoes)
   ON public.pa_budgets TO authenticated;
 GRANT UPDATE (verba_total, limite_alcada, observacoes)
   ON public.pa_budgets TO authenticated;
+
+REVOKE ALL ON TABLE public.cooperativa_budgets FROM anon;
+REVOKE INSERT, UPDATE, DELETE ON TABLE public.cooperativa_budgets FROM authenticated;
+GRANT SELECT ON TABLE public.cooperativa_budgets TO authenticated;
+GRANT INSERT (cooperativa_id, ano, mes, verba_total, limite_alcada, observacoes)
+  ON public.cooperativa_budgets TO authenticated;
+GRANT UPDATE (verba_total, limite_alcada, observacoes)
+  ON public.cooperativa_budgets TO authenticated;
 
 DO $postflight$
 BEGIN
@@ -184,6 +253,13 @@ BEGIN
     RAISE EXCEPTION 'Privilégios de colunas financeiras não correspondem ao contrato.';
   END IF;
 
+  IF has_table_privilege('authenticated', 'public.pa_budgets', 'DELETE')
+     OR has_table_privilege('authenticated', 'public.cooperativa_budgets', 'DELETE')
+     OR has_column_privilege('authenticated', 'public.cooperativa_budgets', 'cooperativa_id', 'UPDATE')
+     OR NOT has_column_privilege('authenticated', 'public.cooperativa_budgets', 'verba_total', 'UPDATE') THEN
+    RAISE EXCEPTION 'Privilégios de exclusão ou identidade das verbas estão incorretos.';
+  END IF;
+
   IF (
     SELECT count(*)
       FROM pg_policies
@@ -193,6 +269,17 @@ BEGIN
        AND policyname LIKE 'pa_budgets_active_scope_%_guard'
   ) <> 4 THEN
     RAISE EXCEPTION 'Os quatro guardas restritivos de pa_budgets não foram instalados.';
+  END IF;
+
+  IF (
+    SELECT count(*)
+      FROM pg_policies
+     WHERE schemaname = 'public'
+       AND tablename = 'cooperativa_budgets'
+       AND permissive = 'RESTRICTIVE'
+       AND policyname LIKE 'cooperativa_budgets_active_scope_%_guard'
+  ) <> 4 THEN
+    RAISE EXCEPTION 'Os quatro guardas restritivos de cooperativa_budgets não foram instalados.';
   END IF;
 END;
 $postflight$;

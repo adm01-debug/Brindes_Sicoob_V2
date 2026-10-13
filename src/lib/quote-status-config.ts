@@ -90,6 +90,18 @@ export const QUOTE_STATUS_CONFIG: Record<string, QuoteStatusConfig> = {
   },
 };
 
+const EDITABLE_QUOTE_STATUSES = new Set([
+  "draft",
+  "revision",
+  "rejected",
+  "rejected_singular",
+]);
+
+/** Alinha a interface ao gate de imutabilidade comercial do banco. */
+export function isQuoteCommerciallyEditable(status: string | null | undefined): boolean {
+  return typeof status === "string" && EDITABLE_QUOTE_STATUSES.has(status);
+}
+
 /** Helper: get status label with fallback */
 export function getQuoteStatusLabel(status: string): string {
   return QUOTE_STATUS_CONFIG[status]?.label || status;

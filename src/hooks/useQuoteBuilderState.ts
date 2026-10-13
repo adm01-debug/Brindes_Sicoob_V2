@@ -14,7 +14,6 @@ import { validateQuoteForm, QUOTE_FIELD_LABELS } from "@/lib/validations";
 import { useQuotes, type Quote, type QuoteItem, type QuoteItemPersonalization } from "@/hooks/quotes/useQuotes";
 import { useQuoteTemplates, type QuoteTemplate, type QuoteTemplateItem } from "@/hooks/useQuoteTemplates";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRBAC } from "@/hooks/useRBAC";
 import { supabase } from "@/integrations/supabase/client";
 import { getPriceFreshness } from "@/utils/price-freshness";
 import type { SelectedCompanyInfo, SelectedContactInfo } from "@/components/quotes/CompanyContactSelector";
@@ -25,6 +24,7 @@ import { calculateQuoteTotals, formatCurrency, calculateItemTotal, calculateItem
 import type { Product, DiscountType, DeliveryMode } from "@/types/quote-builder";
 import { useQuoteProductSearch } from "@/hooks/quote/useQuoteProductSearch";
 import { useQuoteInitialization } from "@/hooks/quote/useQuoteInitialization";
+import { isQuoteCommerciallyEditable } from "@/lib/quote-status-config";
 
 export function validateBudgetForSubmission<T>(
   budget: T | null,
@@ -356,7 +356,6 @@ export function useQuoteBuilderState() {
   const isEditMode = Boolean(quoteId);
 
   const { user, profile, roles: userRoles, isGerentePa } = useAuth();
-  const { isSupervisorOrAbove } = useRBAC();
   const { createQuote, updateQuote, updateQuoteStatus, fetchQuote, isLoading: quotesLoading } = useQuotes();
   const { templates } = useQuoteTemplates();
   const { myLimit: maxDiscountPercent } = useSellerDiscountLimits();
@@ -445,10 +444,8 @@ export function useQuoteBuilderState() {
 
   const canEdit = useMemo(() => {
     if (!isEditMode) return true;
-    if (isSupervisorOrAbove) return true;
-    // Agentes só editam rascunhos ou pendentes (não enviados/aprovados)
-    return ["draft", "pending"].includes(currentStatus);
-  }, [isEditMode, isSupervisorOrAbove, currentStatus]);
+    return isQuoteCommerciallyEditable(currentStatus);
+  }, [isEditMode, currentStatus]);
 
   const defaultTemplate = useMemo(() => templates.find(t => t.is_default), [templates]);
 

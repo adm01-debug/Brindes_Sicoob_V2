@@ -95,7 +95,7 @@ GRANT EXECUTE ON FUNCTION public.apply_local_quote_approval_response(
 CREATE OR REPLACE FUNCTION public.guard_quote_governance_write()
 RETURNS trigger
 LANGUAGE plpgsql
-SECURITY DEFINER
+SECURITY INVOKER
 SET search_path = pg_catalog, public
 AS $function$
 DECLARE
@@ -110,8 +110,22 @@ DECLARE
   v_old_commercial jsonb;
   v_new_commercial jsonb;
 BEGIN
-  IF current_setting('app.quote_governance_write', true) = 'true' THEN
-    RETURN NEW;
+  IF current_setting('app.quote_governance_write', true) = 'true'
+     AND current_user = pg_catalog.pg_get_userbyid((
+       SELECT relation.relowner
+       FROM pg_catalog.pg_class AS relation
+       WHERE relation.oid = TG_RELID
+     )) THEN
+    RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
+  END IF;
+
+  IF TG_OP = 'DELETE' THEN
+    IF OLD.status::text NOT IN ('draft', 'revision', 'rejected', 'rejected_singular') THEN
+      RAISE EXCEPTION USING
+        ERRCODE = '42501',
+        MESSAGE = 'Um orçamento enviado ou decidido não pode ser excluído; preserve seu histórico.';
+    END IF;
+    RETURN OLD;
   END IF;
 
   IF TG_OP = 'INSERT' THEN
@@ -166,6 +180,11 @@ $function$;
 REVOKE ALL ON FUNCTION public.guard_quote_governance_write()
   FROM PUBLIC, anon, authenticated, service_role;
 
+DROP TRIGGER IF EXISTS aaa_guard_quote_governance_write ON public.quotes;
+CREATE TRIGGER aaa_guard_quote_governance_write
+BEFORE INSERT OR UPDATE OR DELETE ON public.quotes
+FOR EACH ROW EXECUTE FUNCTION public.guard_quote_governance_write();
+
 CREATE OR REPLACE FUNCTION public.assert_quote_content_editable(p_quote_id uuid)
 RETURNS void
 LANGUAGE plpgsql
@@ -212,7 +231,18 @@ SECURITY DEFINER
 SET search_path = pg_catalog, public
 AS $function$
 BEGIN
-  IF TG_OP IN ('UPDATE', 'DELETE') THEN
+  IF TG_OP = 'DELETE' THEN
+    IF EXISTS (SELECT 1 FROM public.quotes q WHERE q.id = OLD.quote_id) THEN
+      PERFORM public.assert_quote_content_editable(OLD.quote_id);
+    ELSIF pg_trigger_depth() <= 1 THEN
+      RAISE EXCEPTION USING
+        ERRCODE = '23503',
+        MESSAGE = 'Orçamento do item não encontrado.';
+    END IF;
+    RETURN OLD;
+  END IF;
+
+  IF TG_OP = 'UPDATE' THEN
     PERFORM public.assert_quote_content_editable(OLD.quote_id);
   END IF;
   IF TG_OP IN ('INSERT', 'UPDATE')
@@ -250,7 +280,7 @@ BEGIN
     -- validada pelo gatilho de quote_items antes de iniciar a cascata.
     IF FOUND THEN
       PERFORM public.assert_quote_content_editable(v_old_quote_id);
-    ELSIF TG_OP <> 'DELETE' THEN
+    ELSIF TG_OP <> 'DELETE' OR pg_trigger_depth() <= 1 THEN
       RAISE EXCEPTION USING
         ERRCODE = '23503',
         MESSAGE = 'Item de orçamento da personalização não encontrado.';
@@ -322,10 +352,44 @@ BEGIN
   IF (SELECT count(*) FROM pg_trigger
       WHERE NOT tgisinternal
         AND tgname IN (
+          'aaa_guard_quote_governance_write',
           'aaa_guard_quote_item_content_write',
           'aaa_guard_quote_personalization_content_write'
-        )) <> 2 THEN
+        )) <> 3 THEN
     RAISE EXCEPTION 'Os gatilhos de imutabilidade comercial não foram instalados.';
+  END IF;
+
+  IF (SELECT prosecdef
+        FROM pg_proc
+       WHERE oid = 'public.guard_quote_governance_write()'::regprocedure)
+     OR NOT EXISTS (
+       SELECT 1
+         FROM pg_trigger
+        WHERE tgrelid = 'public.quotes'::regclass
+          AND tgname = 'aaa_guard_quote_governance_write'
+          AND NOT tgisinternal
+          AND (tgtype::integer & 8) = 8
+     ) THEN
+    RAISE EXCEPTION 'O gate principal precisa ser SECURITY INVOKER e cobrir DELETE.';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+      FROM pg_proc AS routine
+     WHERE routine.oid IN (
+       'public.convert_quote_to_sicoob_order(uuid)'::regprocedure,
+       'public.apply_local_quote_approval_response(text,text,text,text,text,text,text,text)'::regprocedure
+     )
+       AND (
+         NOT routine.prosecdef
+         OR routine.proowner <> (
+           SELECT relation.relowner
+             FROM pg_class AS relation
+            WHERE relation.oid = 'public.quotes'::regclass
+         )
+       )
+  ) THEN
+    RAISE EXCEPTION 'Os wrappers autorizados não executam com o proprietário de quotes.';
   END IF;
 
   IF has_function_privilege('anon', 'public.assert_quote_content_editable(uuid)', 'EXECUTE')

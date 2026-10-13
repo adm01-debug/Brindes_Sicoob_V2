@@ -6,7 +6,7 @@
   "migracao_validada_com_rollback_no_canonico": true,
   "migracao": "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
   "conversao_orcamento_pedido": {
-    "cenarios": 26,
+    "cenarios": 29,
     "resultado": "aprovado",
     "inclui": [
       "concorrencia idempotente",
@@ -14,11 +14,15 @@
       "reconciliacao da formula brl-v1",
       "ACL dos nucleos internos",
       "restauracao do contexto de governanca em sucesso e idempotencia",
-      "imutabilidade de itens e personalizacoes"
+      "imutabilidade de itens e personalizacoes",
+      "contexto interno resistente a forja por cliente",
+      "preservacao de orcamento convertido",
+      "exclusao em cascata restrita a rascunho",
+      "interface alinhada aos estados comerciais editaveis"
     ]
   },
   "aprovacao_publica": {
-    "cenarios": 49,
+    "cenarios": 54,
     "resultado": "aprovado",
     "inclui": [
       "reproducao da falha real anterior",
@@ -26,7 +30,10 @@
       "concorrencia entre links",
       "expiracao apos espera por lock",
       "rollback por falha intermediaria",
-      "imutabilidade do conteudo aprovado",
+      "imutabilidade e preservacao do conteudo aprovado",
+      "contexto interno resistente a forja por cliente",
+      "exclusao em cascata validada para rascunho",
+      "gate principal SECURITY INVOKER com cobertura de DELETE",
       "auditoria SECURITY DEFINER sem violacoes"
     ]
   },

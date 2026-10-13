@@ -160,7 +160,11 @@ export default function AdminVerbasPage() {
   const handleSave = async (formData: BudgetFormData) => {
     try {
       if (editingBudget) {
-        const { error } = await supabase.from('pa_budgets').update(formData).eq('id', editingBudget.id);
+        const { error } = await supabase.from('pa_budgets').update({
+          verba_total: formData.verba_total,
+          limite_alcada: formData.limite_alcada,
+          observacoes: formData.observacoes,
+        }).eq('id', editingBudget.id);
         if (error) throw error;
         toast.success("Verba atualizada com sucesso");
       } else {
