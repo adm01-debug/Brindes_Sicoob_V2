@@ -64,6 +64,28 @@ GRANT EXECUTE ON FUNCTION public.current_user_pa_id() TO authenticated, service_
 -- guardas restritivos abaixo são avaliados em conjunto com qualquer policy
 -- permissiva e impedem que uma alternativa antiga amplie o escopo novamente.
 DROP POLICY IF EXISTS pa_budgets_active_scope_select_guard ON public.pa_budgets;
+DROP POLICY IF EXISTS pa_budgets_buyer_select ON public.pa_budgets;
+CREATE POLICY pa_budgets_buyer_select
+ON public.pa_budgets
+FOR SELECT
+TO authenticated
+USING (
+  (
+    public.has_role((SELECT auth.uid()), 'comprador_pac'::public.app_role)
+    AND pa_budgets.pa_id = public.current_user_pa_id()
+  )
+  OR (
+    public.has_role((SELECT auth.uid()), 'comprador_singular'::public.app_role)
+    AND EXISTS (
+      SELECT 1
+        FROM public.postos_atendimento AS service_point
+       WHERE service_point.id = pa_budgets.pa_id
+         AND service_point.is_active IS TRUE
+         AND service_point.cooperativa_id = public.current_user_cooperativa_id()
+    )
+  )
+);
+
 CREATE POLICY pa_budgets_active_scope_select_guard
 ON public.pa_budgets
 AS RESTRICTIVE
@@ -84,6 +106,20 @@ USING (
   OR (
     public.has_role((SELECT auth.uid()), 'gerente_pa'::public.app_role)
     AND pa_budgets.pa_id = public.current_user_pa_id()
+  )
+  OR (
+    public.has_role((SELECT auth.uid()), 'comprador_pac'::public.app_role)
+    AND pa_budgets.pa_id = public.current_user_pa_id()
+  )
+  OR (
+    public.has_role((SELECT auth.uid()), 'comprador_singular'::public.app_role)
+    AND EXISTS (
+      SELECT 1
+        FROM public.postos_atendimento AS service_point
+       WHERE service_point.id = pa_budgets.pa_id
+         AND service_point.is_active IS TRUE
+         AND service_point.cooperativa_id = public.current_user_cooperativa_id()
+    )
   )
 );
 
@@ -146,19 +182,7 @@ ON public.pa_budgets
 AS RESTRICTIVE
 FOR DELETE
 TO authenticated
-USING (
-  public.is_admin((SELECT auth.uid()))
-  OR (
-    public.has_role((SELECT auth.uid()), 'gestor_compras'::public.app_role)
-    AND EXISTS (
-      SELECT 1
-        FROM public.postos_atendimento AS service_point
-       WHERE service_point.id = pa_budgets.pa_id
-         AND service_point.is_active IS TRUE
-         AND service_point.cooperativa_id = public.current_user_cooperativa_id()
-    )
-  )
-);
+USING (public.is_admin((SELECT auth.uid())));
 
 -- A verba agregada da cooperativa herdava uma alternativa global baseada
 -- apenas no papel gestor. Os guardas abaixo exigem o vínculo institucional
@@ -240,6 +264,54 @@ GRANT INSERT (cooperativa_id, ano, mes, verba_total, limite_alcada, observacoes)
 GRANT UPDATE (verba_total, limite_alcada, observacoes)
   ON public.cooperativa_budgets TO authenticated;
 
+-- O vínculo institucional é fonte de autoridade para RLS. O próprio usuário
+-- pode manter dados pessoais, mas não pode trocar identidade, escopo, alçada
+-- ou estado da conta. Administração ativa, service_role e o proprietário da
+-- tabela preservam os fluxos administrativos já existentes.
+CREATE OR REPLACE FUNCTION public.guard_profile_authority_fields()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = pg_catalog, public
+AS $function$
+DECLARE
+  v_is_trusted_writer boolean :=
+    current_user = pg_catalog.pg_get_userbyid((
+      SELECT relation.relowner
+        FROM pg_catalog.pg_class AS relation
+       WHERE relation.oid = TG_RELID
+    ))
+    OR pg_catalog.pg_has_role(current_user, 'service_role', 'member')
+    OR public.is_admin((SELECT auth.uid()));
+BEGIN
+  IF NOT v_is_trusted_writer
+     AND (
+       NEW.user_id IS DISTINCT FROM OLD.user_id
+       OR NEW.role IS DISTINCT FROM OLD.role
+       OR NEW.is_active IS DISTINCT FROM OLD.is_active
+       OR NEW.deleted_at IS DISTINCT FROM OLD.deleted_at
+       OR NEW.cooperativa_id IS DISTINCT FROM OLD.cooperativa_id
+       OR NEW.pa_id IS DISTINCT FROM OLD.pa_id
+       OR NEW.singular_id IS DISTINCT FROM OLD.singular_id
+       OR NEW.carteira_id IS DISTINCT FROM OLD.carteira_id
+       OR NEW.approval_threshold IS DISTINCT FROM OLD.approval_threshold
+     ) THEN
+    RAISE EXCEPTION USING
+      ERRCODE = '42501',
+      MESSAGE = 'Campos de autoridade do perfil só podem ser alterados pela administração.';
+  END IF;
+  RETURN NEW;
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.guard_profile_authority_fields()
+  FROM PUBLIC, anon, authenticated, service_role;
+
+DROP TRIGGER IF EXISTS aaa_guard_profile_authority_fields ON public.profiles;
+CREATE TRIGGER aaa_guard_profile_authority_fields
+BEFORE UPDATE ON public.profiles
+FOR EACH ROW EXECUTE FUNCTION public.guard_profile_authority_fields();
+
 DO $postflight$
 BEGIN
   IF public.is_gestor_compras(NULL) OR public.is_gerente_pa(NULL) THEN
@@ -281,6 +353,18 @@ BEGIN
   ) <> 4 THEN
     RAISE EXCEPTION 'Os quatro guardas restritivos de cooperativa_budgets não foram instalados.';
   END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+      FROM pg_trigger
+     WHERE tgrelid = 'public.profiles'::regclass
+       AND tgname = 'aaa_guard_profile_authority_fields'
+       AND NOT tgisinternal
+  ) OR (SELECT prosecdef
+          FROM pg_proc
+         WHERE oid = 'public.guard_profile_authority_fields()'::regprocedure) THEN
+    RAISE EXCEPTION 'O gate invocador dos campos de autoridade do perfil não foi instalado.';
+  END IF;
 END;
 $postflight$;
 
@@ -290,3 +374,5 @@ COMMENT ON FUNCTION public.is_gerente_pa(uuid) IS
   'Confirma papel de gerente somente para perfil institucional ativo.';
 COMMENT ON POLICY pa_budgets_active_scope_update_guard ON public.pa_budgets IS
   'Restringe atualização de verba a administração ativa ou gestor da cooperativa do PA.';
+COMMENT ON FUNCTION public.guard_profile_authority_fields() IS
+  'Impede autoalteração de identidade, vínculo institucional, alçada e estado da conta.';

@@ -210,6 +210,40 @@ try:
       AS 'SELECT NULL::uuid,NULL::text,NULL::text,NULL::numeric WHERE false';
       REVOKE ALL ON FUNCTION public.convert_quote_to_sicoob_order(uuid) FROM PUBLIC,anon;
       GRANT EXECUTE ON FUNCTION public.convert_quote_to_sicoob_order(uuid) TO authenticated,service_role;
+      CREATE FUNCTION public.create_quote_version_atomic(uuid)
+      RETURNS uuid LANGUAGE sql SECURITY DEFINER SET search_path=pg_catalog,public
+      AS 'SELECT $1';
+      REVOKE ALL ON FUNCTION public.create_quote_version_atomic(uuid) FROM PUBLIC,anon;
+      GRANT EXECUTE ON FUNCTION public.create_quote_version_atomic(uuid) TO authenticated,service_role;
+      CREATE FUNCTION public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)
+      RETURNS TABLE(id uuid,status text,row_version integer)
+      LANGUAGE sql SECURITY DEFINER SET search_path=pg_catalog,public AS $writer$
+      UPDATE public.quotes q SET status=$3 WHERE q.id=ANY($1) RETURNING q.id,q.status,q.row_version
+      $writer$;
+      CREATE FUNCTION public.approve_quote_with_pdf_atomic(uuid,integer,text,text)
+      RETURNS TABLE(id uuid,status text,row_version integer,approved_pdf_url text)
+      LANGUAGE sql SECURITY DEFINER SET search_path=pg_catalog,public AS $writer$
+      UPDATE public.quotes q SET status='approved',approved_pdf_url=$3 WHERE q.id=$1
+      RETURNING q.id,q.status,q.row_version,q.approved_pdf_url
+      $writer$;
+      CREATE FUNCTION public.request_discount_approval_atomic(uuid,integer,numeric,text)
+      RETURNS TABLE(request_id uuid,quote_id uuid,seller_id uuid,quote_row_version integer,requested_discount_percent numeric,max_allowed_percent numeric,negotiation_markup_percent numeric,real_discount_percent numeric)
+      LANGUAGE sql SECURITY DEFINER SET search_path=pg_catalog,public AS $writer$
+      SELECT gen_random_uuid(),q.id,q.seller_id,q.row_version,$3,0::numeric,0::numeric,$3 FROM public.quotes q WHERE q.id=$1
+      $writer$;
+      CREATE FUNCTION public.respond_discount_approval_atomic(uuid,integer,boolean,text)
+      RETURNS TABLE(request_id uuid,quote_id uuid,seller_id uuid,quote_row_version integer,requested_discount_percent numeric,max_allowed_percent numeric,request_status text)
+      LANGUAGE sql SECURITY DEFINER SET search_path=pg_catalog,public AS $writer$
+      SELECT $1,NULL::uuid,NULL::uuid,$2,0::numeric,0::numeric,CASE WHEN $3 THEN 'approved' ELSE 'rejected' END
+      $writer$;
+      REVOKE ALL ON FUNCTION public.bulk_update_quote_status_atomic(uuid[],integer[],text,text) FROM PUBLIC,anon;
+      REVOKE ALL ON FUNCTION public.approve_quote_with_pdf_atomic(uuid,integer,text,text) FROM PUBLIC,anon;
+      REVOKE ALL ON FUNCTION public.request_discount_approval_atomic(uuid,integer,numeric,text) FROM PUBLIC,anon;
+      REVOKE ALL ON FUNCTION public.respond_discount_approval_atomic(uuid,integer,boolean,text) FROM PUBLIC,anon;
+      GRANT EXECUTE ON FUNCTION public.bulk_update_quote_status_atomic(uuid[],integer[],text,text) TO authenticated;
+      GRANT EXECUTE ON FUNCTION public.approve_quote_with_pdf_atomic(uuid,integer,text,text) TO authenticated;
+      GRANT EXECUTE ON FUNCTION public.request_discount_approval_atomic(uuid,integer,numeric,text) TO authenticated;
+      GRANT EXECUTE ON FUNCTION public.respond_discount_approval_atomic(uuid,integer,boolean,text) TO authenticated;
       INSERT INTO vault.decrypted_secrets(name,decrypted_secret)
       VALUES ('quote_approval_evidence_hmac_v2','segunda-chave-sintetica-com-mais-de-trinta-e-dois-bytes');
     """)
@@ -229,10 +263,43 @@ try:
     ).stdout.strip() == 't'
     sql(governance_fix)
 
+    status_quote = str(uuid.uuid4())
+    sql(
+      "INSERT INTO public.quotes(id,seller_id,quote_number,client_name,total,status) "
+      f"VALUES ('{status_quote}','{SELLER}','STATUS','Cliente sintético',100,'draft');"
+    )
+    status_writer = actor(
+      "BEGIN; SELECT count(*) FROM public.bulk_update_quote_status_atomic("
+      f"ARRAY['{status_quote}'::uuid],ARRAY[1],'sent',NULL);"
+      "SELECT COALESCE(NULLIF(current_setting('app.quote_governance_write',true),''),'restaurado'); COMMIT;"
+    ).stdout.strip()
+    checks['rpc_de_status_atravessa_gate_e_restaura_contexto'] = (
+      status_writer == '1\nrestaurado'
+      and sql(f"SELECT status='sent' FROM public.quotes WHERE id='{status_quote}';").stdout.strip() == 't'
+    )
+    auxiliary_quote = str(uuid.uuid4())
+    auxiliary_request = str(uuid.uuid4())
+    sql(
+      "INSERT INTO public.quotes(id,seller_id,quote_number,client_name,total,status) "
+      f"VALUES ('{auxiliary_quote}','{SELLER}','AUX','Cliente sintético',100,'draft');"
+    )
+    auxiliary_writers = actor(
+      "BEGIN; SELECT count(*) FROM public.approve_quote_with_pdf_atomic("
+      f"'{auxiliary_quote}',1,'quotes/{auxiliary_quote}/aprovado.pdf',NULL);"
+      "SELECT count(*) FROM public.request_discount_approval_atomic("
+      f"'{auxiliary_quote}',2,15,NULL);"
+      "SELECT count(*) FROM public.respond_discount_approval_atomic("
+      f"'{auxiliary_request}',2,true,NULL);"
+      "SELECT COALESCE(NULLIF(current_setting('app.quote_governance_write',true),''),'restaurado'); COMMIT;"
+    ).stdout.strip()
+    checks['rpcs_auxiliares_atravessam_gate_e_restauram_contexto'] = (
+      auxiliary_writers == '1\n1\n1\nrestaurado'
+    )
+
     fixed_quote = new_governed_quote(); issue(fixed_quote,'governanca-corrigida')
     fixed = actor(
-      "SELECT public.submit_signed_quote_response('governanca-corrigida','approved','Pessoa Teste','12345678901','"+SIGNATURE+"','203.0.113.21','teste-corrigido');"
-      "SELECT COALESCE(NULLIF(current_setting('app.quote_governance_write',true),''),'restaurado');",
+      "BEGIN; SELECT public.submit_signed_quote_response('governanca-corrigida','approved','Pessoa Teste','12345678901','"+SIGNATURE+"','203.0.113.21','teste-corrigido');"
+      "SELECT COALESCE(NULLIF(current_setting('app.quote_governance_write',true),''),'restaurado'); COMMIT;",
       role='service_role'
     )
     checks['aprovacao_publica_atravessa_gate_e_restaura_contexto'] = fixed.stdout.strip() == 't\nrestaurado'
@@ -243,6 +310,26 @@ try:
       frozen_item.returncode != 0 and frozen_header.returncode != 0
       and sql(f"SELECT quantity=10 FROM public.quote_items WHERE id='{fixed_item}';").stdout.strip() == 't'
       and sql(f"SELECT total=100 FROM public.quotes WHERE id='{fixed_quote}';").stdout.strip() == 't'
+    )
+    forged_response = actor(
+      f"UPDATE public.quotes SET client_response='rejected', client_response_at=now(), client_response_notes='forjado' WHERE id='{fixed_quote}';",
+      check=False,
+    )
+    checks['resposta_do_cliente_nao_pode_ser_forjada_diretamente'] = (
+      forged_response.returncode != 0
+      and sql(
+        f"SELECT client_response='approved' AND client_response_notes IS NULL FROM public.quotes WHERE id='{fixed_quote}';"
+      ).stdout.strip() == 't'
+    )
+    forged_lifecycle = actor(
+      f"UPDATE public.quotes SET row_version=999, sent_at=now(), deleted_at=now(), is_active=false WHERE id='{fixed_quote}';",
+      check=False,
+    )
+    checks['ciclo_de_vida_e_versao_nao_podem_ser_forjados'] = (
+      forged_lifecycle.returncode != 0
+      and sql(
+        f"SELECT row_version<>999 AND sent_at IS NULL AND deleted_at IS NULL AND is_active FROM public.quotes WHERE id='{fixed_quote}';"
+      ).stdout.strip() == 't'
     )
     forged_context = actor(
       "BEGIN; SELECT set_config('app.quote_governance_write','true',true); "
@@ -258,6 +345,63 @@ try:
       approved_delete.returncode != 0
       and sql(f"SELECT count(*)=1 FROM public.quotes WHERE id='{fixed_quote}';").stdout.strip() == 't'
       and sql(f"SELECT count(*)=1 FROM public.quote_items WHERE quote_id='{fixed_quote}';").stdout.strip() == 't'
+    )
+    rls_quote = str(uuid.uuid4())
+    sql(
+      "INSERT INTO public.quotes(id,seller_id,quote_number,client_name,total,status) "
+      f"VALUES ('{rls_quote}','{SELLER}','RLS','Cliente sintético',100,'draft');"
+      "INSERT INTO public.quote_items(quote_id,product_name,quantity,unit_price) "
+      f"VALUES ('{rls_quote}','Caneca',10,10);"
+    )
+    rls_item = sql(f"SELECT id FROM public.quote_items WHERE quote_id='{rls_quote}';").stdout.strip()
+    outsider_edit = actor(
+      f"UPDATE public.quote_items SET quantity=99 WHERE id='{rls_item}' RETURNING id;",
+      who=OTHER,
+      check=False,
+    )
+    checks['rls_impede_edicao_de_item_de_outro_vendedor'] = (
+      outsider_edit.returncode == 0
+      and outsider_edit.stdout.strip() == ''
+      and sql(f"SELECT quantity=10 FROM public.quote_items WHERE id='{rls_item}';").stdout.strip() == 't'
+      and actor(f"UPDATE public.quote_items SET quantity=11 WHERE id='{rls_item}';").returncode == 0
+    )
+
+    historical_quote = str(uuid.uuid4())
+    sql(
+      "INSERT INTO public.quotes(id,seller_id,quote_number,client_name,total,status) "
+      f"VALUES ('{historical_quote}','{SELLER}','HIST','Cliente sintético',100,'draft');"
+      "INSERT INTO public.quote_items(quote_id,product_name,quantity,unit_price) "
+      f"VALUES ('{historical_quote}','Caneca',10,10);"
+      "BEGIN; SELECT set_config('app.quote_governance_write','true',true); "
+      f"UPDATE public.quotes SET is_latest_version=false WHERE id='{historical_quote}'; COMMIT;"
+    )
+    historical_header = actor(
+      f"UPDATE public.quotes SET total=999 WHERE id='{historical_quote}';",
+      check=False,
+    )
+    historical_reactivate = actor(
+      f"UPDATE public.quotes SET is_latest_version=true WHERE id='{historical_quote}';",
+      check=False,
+    )
+    historical_delete = actor(
+      f"DELETE FROM public.quotes WHERE id='{historical_quote}';",
+      check=False,
+    )
+    checks['versao_historica_e_totalmente_imutavel'] = (
+      historical_header.returncode != 0
+      and historical_reactivate.returncode != 0
+      and historical_delete.returncode != 0
+      and sql(
+        f"SELECT total=100 AND NOT is_latest_version FROM public.quotes WHERE id='{historical_quote}';"
+      ).stdout.strip() == 't'
+    )
+
+    version_context = actor(
+      f"BEGIN; SELECT public.create_quote_version_atomic('{rls_quote}');"
+      "SELECT COALESCE(NULLIF(current_setting('app.quote_governance_write',true),''),'restaurado'); COMMIT;"
+    ).stdout.strip()
+    checks['versionamento_atravessa_gate_e_restaura_contexto'] = (
+      version_context == f'{rls_quote}\nrestaurado'
     )
     draft_quote = str(uuid.uuid4())
     sql(
@@ -282,7 +426,7 @@ try:
       "WHERE tgrelid='public.quotes'::regclass AND tgname='aaa_guard_quote_governance_write';"
     ).stdout
     checks['nucleos_internos_sem_execute_externo'] = sql(
-      "SELECT NOT has_function_privilege('authenticated','public.convert_quote_to_sicoob_order_core_20261013(uuid)','EXECUTE') AND NOT has_function_privilege('service_role','public.apply_local_quote_approval_response_core_20261013(text,text,text,text,text,text,text,text)','EXECUTE');"
+      "SELECT NOT has_function_privilege('authenticated','public.convert_quote_to_sicoob_order_core_20261013(uuid)','EXECUTE') AND NOT has_function_privilege('service_role','public.apply_local_quote_approval_response_core_20261013(text,text,text,text,text,text,text,text)','EXECUTE') AND NOT has_function_privilege('authenticated','public.create_quote_version_atomic_core_20261013(uuid)','EXECUTE');"
     ).stdout.strip() == 't'
     checks['acl_sem_violacoes'] = sql("SELECT count(*) FROM public.audit_security_definer_acl();").stdout.strip() == '0'
     assert all(checks.values()), checks

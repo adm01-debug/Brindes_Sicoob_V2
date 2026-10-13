@@ -9,6 +9,8 @@
   "gestor_inativo_sem_acesso": true,
   "administrador_ativo_preservado": true,
   "insercao_inicia_consumo_em_zero": true,
+  "compradores_legitimos_leem_verba_do_escopo": true,
+  "autoalteracao_de_escopo_do_perfil_bloqueada": true,
   "verba_cooperativa_isolada": true,
   "identidade_verba_cooperativa_imutavel": true,
   "exclusao_direta_de_verba_bloqueada": true,

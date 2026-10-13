@@ -12,14 +12,20 @@ AS $$
 $$;
 
 CREATE TYPE public.app_role AS ENUM (
-  'admin', 'dev', 'supervisor', 'gestor_compras', 'gerente_pa'
+  'admin', 'dev', 'supervisor', 'gestor_compras', 'gerente_pa',
+  'comprador_pac', 'comprador_singular'
 );
 
 CREATE TABLE public.profiles (
   id uuid PRIMARY KEY,
   user_id uuid UNIQUE NOT NULL,
+  full_name text,
   cooperativa_id uuid,
   pa_id uuid,
+  singular_id uuid,
+  carteira_id uuid,
+  role text,
+  approval_threshold numeric,
   is_active boolean NOT NULL DEFAULT true,
   deleted_at timestamptz
 );
@@ -145,6 +151,22 @@ $$;
 
 ALTER TABLE public.pa_budgets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.cooperativa_budgets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY profiles_select_own
+ON public.profiles FOR SELECT TO authenticated
+USING (public.is_admin(auth.uid()) OR user_id = auth.uid());
+
+CREATE POLICY profiles_update_vulnerable
+ON public.profiles FOR UPDATE TO authenticated
+USING (
+  public.is_admin(auth.uid())
+  OR user_id = auth.uid()
+)
+WITH CHECK (
+  public.is_admin(auth.uid())
+  OR user_id = auth.uid()
+);
 
 CREATE POLICY pa_budgets_anon_deny
 ON public.pa_budgets AS RESTRICTIVE FOR ALL TO anon
@@ -222,4 +244,6 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.pa_budgets TO authenticated;
 GRANT ALL ON public.pa_budgets TO service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.cooperativa_budgets TO authenticated;
 GRANT ALL ON public.cooperativa_budgets TO service_role;
-GRANT SELECT ON public.profiles, public.user_roles, public.postos_atendimento TO authenticated;
+GRANT SELECT, UPDATE ON public.profiles TO authenticated;
+GRANT SELECT ON public.user_roles, public.postos_atendimento TO authenticated;
+GRANT ALL ON public.profiles TO service_role;

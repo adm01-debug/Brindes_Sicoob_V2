@@ -1,6 +1,6 @@
--- Corrige os dois escritores autorizados que passaram a ser bloqueados pelo
--- gatilho de governança e congela o conteúdo comercial fora dos estados de
--- edição. Os wrappers restauram o contexto mesmo quando o núcleo lança erro.
+-- Encapsula os escritores autorizados pelo gate de governança e congela o
+-- conteúdo comercial fora dos estados de edição. Os wrappers restauram o
+-- contexto mesmo quando o núcleo lança erro.
 
 ALTER FUNCTION public.convert_quote_to_sicoob_order(uuid)
   RENAME TO convert_quote_to_sicoob_order_core_20261013;
@@ -32,6 +32,38 @@ $function$;
 REVOKE ALL ON FUNCTION public.convert_quote_to_sicoob_order(uuid)
   FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.convert_quote_to_sicoob_order(uuid)
+  TO authenticated, service_role;
+
+ALTER FUNCTION public.create_quote_version_atomic(uuid)
+  RENAME TO create_quote_version_atomic_core_20261013;
+REVOKE ALL ON FUNCTION public.create_quote_version_atomic_core_20261013(uuid)
+  FROM PUBLIC, anon, authenticated, service_role;
+
+CREATE FUNCTION public.create_quote_version_atomic(p_source_quote_id uuid)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $function$
+DECLARE
+  v_previous_context text := current_setting('app.quote_governance_write', true);
+  v_result uuid;
+BEGIN
+  PERFORM set_config('app.quote_governance_write', 'true', true);
+  BEGIN
+    v_result := public.create_quote_version_atomic_core_20261013(p_source_quote_id);
+  EXCEPTION WHEN OTHERS THEN
+    PERFORM set_config('app.quote_governance_write', COALESCE(v_previous_context, ''), true);
+    RAISE;
+  END;
+  PERFORM set_config('app.quote_governance_write', COALESCE(v_previous_context, ''), true);
+  RETURN v_result;
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.create_quote_version_atomic(uuid)
+  FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.create_quote_version_atomic(uuid)
   TO authenticated, service_role;
 
 ALTER FUNCTION public.apply_local_quote_approval_response(
@@ -92,6 +124,151 @@ GRANT EXECUTE ON FUNCTION public.apply_local_quote_approval_response(
 )
   TO service_role;
 
+-- Demais RPCs transacionais que escrevem campos protegidos recebem o mesmo
+-- invólucro: núcleo inacessível, contexto temporário e restauração também em
+-- erro. Cada núcleo mantém suas validações de ator, alçada, lock e versão.
+ALTER FUNCTION public.bulk_update_quote_status_atomic(uuid[], integer[], text, text)
+  RENAME TO bulk_update_quote_status_atomic_core_20261013;
+REVOKE ALL ON FUNCTION public.bulk_update_quote_status_atomic_core_20261013(uuid[], integer[], text, text)
+  FROM PUBLIC, anon, authenticated, service_role;
+
+CREATE FUNCTION public.bulk_update_quote_status_atomic(
+  p_quote_ids uuid[], p_expected_row_versions integer[], p_status text,
+  p_notes text DEFAULT NULL
+)
+RETURNS TABLE(id uuid, status text, row_version integer)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public
+AS $function$
+DECLARE v_previous_context text := current_setting('app.quote_governance_write', true);
+BEGIN
+  PERFORM set_config('app.quote_governance_write', 'true', true);
+  BEGIN
+    RETURN QUERY SELECT result.id, result.status, result.row_version
+    FROM public.bulk_update_quote_status_atomic_core_20261013(
+      p_quote_ids, p_expected_row_versions, p_status, p_notes
+    ) AS result;
+  EXCEPTION WHEN OTHERS THEN
+    PERFORM set_config('app.quote_governance_write', COALESCE(v_previous_context, ''), true);
+    RAISE;
+  END;
+  PERFORM set_config('app.quote_governance_write', COALESCE(v_previous_context, ''), true);
+END;
+$function$;
+REVOKE ALL ON FUNCTION public.bulk_update_quote_status_atomic(uuid[], integer[], text, text)
+  FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.bulk_update_quote_status_atomic(uuid[], integer[], text, text)
+  TO authenticated, service_role;
+
+ALTER FUNCTION public.approve_quote_with_pdf_atomic(uuid, integer, text, text)
+  RENAME TO approve_quote_with_pdf_atomic_core_20261013;
+REVOKE ALL ON FUNCTION public.approve_quote_with_pdf_atomic_core_20261013(uuid, integer, text, text)
+  FROM PUBLIC, anon, authenticated, service_role;
+
+CREATE FUNCTION public.approve_quote_with_pdf_atomic(
+  p_quote_id uuid, p_expected_quote_row_version integer,
+  p_approved_pdf_url text, p_notes text DEFAULT NULL
+)
+RETURNS TABLE(id uuid, status text, row_version integer, approved_pdf_url text)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public
+AS $function$
+DECLARE v_previous_context text := current_setting('app.quote_governance_write', true);
+BEGIN
+  PERFORM set_config('app.quote_governance_write', 'true', true);
+  BEGIN
+    RETURN QUERY SELECT result.id, result.status, result.row_version, result.approved_pdf_url
+    FROM public.approve_quote_with_pdf_atomic_core_20261013(
+      p_quote_id, p_expected_quote_row_version, p_approved_pdf_url, p_notes
+    ) AS result;
+  EXCEPTION WHEN OTHERS THEN
+    PERFORM set_config('app.quote_governance_write', COALESCE(v_previous_context, ''), true);
+    RAISE;
+  END;
+  PERFORM set_config('app.quote_governance_write', COALESCE(v_previous_context, ''), true);
+END;
+$function$;
+REVOKE ALL ON FUNCTION public.approve_quote_with_pdf_atomic(uuid, integer, text, text)
+  FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.approve_quote_with_pdf_atomic(uuid, integer, text, text)
+  TO authenticated, service_role;
+
+ALTER FUNCTION public.request_discount_approval_atomic(uuid, integer, numeric, text)
+  RENAME TO request_discount_approval_atomic_core_20261013;
+REVOKE ALL ON FUNCTION public.request_discount_approval_atomic_core_20261013(uuid, integer, numeric, text)
+  FROM PUBLIC, anon, authenticated, service_role;
+
+CREATE FUNCTION public.request_discount_approval_atomic(
+  p_quote_id uuid, p_expected_quote_row_version integer,
+  p_requested_discount_percent numeric, p_seller_notes text DEFAULT NULL
+)
+RETURNS TABLE(
+  request_id uuid, quote_id uuid, seller_id uuid, quote_row_version integer,
+  requested_discount_percent numeric, max_allowed_percent numeric,
+  negotiation_markup_percent numeric, real_discount_percent numeric
+)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public
+AS $function$
+DECLARE v_previous_context text := current_setting('app.quote_governance_write', true);
+BEGIN
+  PERFORM set_config('app.quote_governance_write', 'true', true);
+  BEGIN
+    RETURN QUERY SELECT
+      result.request_id, result.quote_id, result.seller_id, result.quote_row_version,
+      result.requested_discount_percent, result.max_allowed_percent,
+      result.negotiation_markup_percent, result.real_discount_percent
+    FROM public.request_discount_approval_atomic_core_20261013(
+      p_quote_id, p_expected_quote_row_version,
+      p_requested_discount_percent, p_seller_notes
+    ) AS result;
+  EXCEPTION WHEN OTHERS THEN
+    PERFORM set_config('app.quote_governance_write', COALESCE(v_previous_context, ''), true);
+    RAISE;
+  END;
+  PERFORM set_config('app.quote_governance_write', COALESCE(v_previous_context, ''), true);
+END;
+$function$;
+REVOKE ALL ON FUNCTION public.request_discount_approval_atomic(uuid, integer, numeric, text)
+  FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.request_discount_approval_atomic(uuid, integer, numeric, text)
+  TO authenticated, service_role;
+
+ALTER FUNCTION public.respond_discount_approval_atomic(uuid, integer, boolean, text)
+  RENAME TO respond_discount_approval_atomic_core_20261013;
+REVOKE ALL ON FUNCTION public.respond_discount_approval_atomic_core_20261013(uuid, integer, boolean, text)
+  FROM PUBLIC, anon, authenticated, service_role;
+
+CREATE FUNCTION public.respond_discount_approval_atomic(
+  p_request_id uuid, p_expected_quote_row_version integer,
+  p_approved boolean, p_admin_notes text DEFAULT NULL
+)
+RETURNS TABLE(
+  request_id uuid, quote_id uuid, seller_id uuid, quote_row_version integer,
+  requested_discount_percent numeric, max_allowed_percent numeric,
+  request_status text
+)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public
+AS $function$
+DECLARE v_previous_context text := current_setting('app.quote_governance_write', true);
+BEGIN
+  PERFORM set_config('app.quote_governance_write', 'true', true);
+  BEGIN
+    RETURN QUERY SELECT
+      result.request_id, result.quote_id, result.seller_id, result.quote_row_version,
+      result.requested_discount_percent, result.max_allowed_percent, result.request_status
+    FROM public.respond_discount_approval_atomic_core_20261013(
+      p_request_id, p_expected_quote_row_version, p_approved, p_admin_notes
+    ) AS result;
+  EXCEPTION WHEN OTHERS THEN
+    PERFORM set_config('app.quote_governance_write', COALESCE(v_previous_context, ''), true);
+    RAISE;
+  END;
+  PERFORM set_config('app.quote_governance_write', COALESCE(v_previous_context, ''), true);
+END;
+$function$;
+REVOKE ALL ON FUNCTION public.respond_discount_approval_atomic(uuid, integer, boolean, text)
+  FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.respond_discount_approval_atomic(uuid, integer, boolean, text)
+  TO authenticated, service_role;
+
 CREATE OR REPLACE FUNCTION public.guard_quote_governance_write()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -105,7 +282,7 @@ DECLARE
     'discount_amount', 'total', 'notes', 'payment_terms', 'delivery_time',
     'shipping_type', 'shipping_cost', 'internal_notes', 'valid_until',
     'negotiation_markup_percent', 'real_subtotal', 'real_discount_percent',
-    'suggested_modifications', 'tags', 'total_cost'
+    'suggested_modifications', 'tags', 'total_cost', 'row_version'
   ];
   v_old_commercial jsonb;
   v_new_commercial jsonb;
@@ -120,7 +297,8 @@ BEGIN
   END IF;
 
   IF TG_OP = 'DELETE' THEN
-    IF OLD.status::text NOT IN ('draft', 'revision', 'rejected', 'rejected_singular') THEN
+    IF NOT COALESCE(OLD.is_latest_version, true)
+       OR OLD.status::text NOT IN ('draft', 'revision', 'rejected', 'rejected_singular') THEN
       RAISE EXCEPTION USING
         ERRCODE = '42501',
         MESSAGE = 'Um orçamento enviado ou decidido não pode ser excluído; preserve seu histórico.';
@@ -141,11 +319,22 @@ BEGIN
     RETURN NEW;
   END IF;
 
-  IF NEW.status IS DISTINCT FROM OLD.status
+  IF NEW.id IS DISTINCT FROM OLD.id
+     OR NEW.status IS DISTINCT FROM OLD.status
      OR NEW.approved_by IS DISTINCT FROM OLD.approved_by
      OR NEW.approved_at IS DISTINCT FROM OLD.approved_at
      OR NEW.approved_pdf_url IS DISTINCT FROM OLD.approved_pdf_url
      OR NEW.rejection_notes IS DISTINCT FROM OLD.rejection_notes
+     OR NEW.client_response IS DISTINCT FROM OLD.client_response
+     OR NEW.client_response_at IS DISTINCT FROM OLD.client_response_at
+     OR NEW.client_response_notes IS DISTINCT FROM OLD.client_response_notes
+     OR NEW.version IS DISTINCT FROM OLD.version
+     OR NEW.parent_quote_id IS DISTINCT FROM OLD.parent_quote_id
+     OR NEW.is_latest_version IS DISTINCT FROM OLD.is_latest_version
+     OR NEW.created_at IS DISTINCT FROM OLD.created_at
+     OR NEW.sent_at IS DISTINCT FROM OLD.sent_at
+     OR NEW.deleted_at IS DISTINCT FROM OLD.deleted_at
+     OR NEW.is_active IS DISTINCT FROM OLD.is_active
      OR NEW.seller_id IS DISTINCT FROM OLD.seller_id
      OR NEW.organization_id IS DISTINCT FROM OLD.organization_id
      OR NEW.pa_id IS DISTINCT FROM OLD.pa_id
@@ -155,7 +344,8 @@ BEGIN
       MESSAGE = 'Campos de governança do orçamento só podem ser alterados por fluxo autorizado.';
   END IF;
 
-  IF OLD.status::text NOT IN ('draft', 'revision', 'rejected', 'rejected_singular') THEN
+  IF NOT COALESCE(OLD.is_latest_version, true)
+     OR OLD.status::text NOT IN ('draft', 'revision', 'rejected', 'rejected_singular') THEN
     SELECT COALESCE(jsonb_object_agg(entry.key, entry.value), '{}'::jsonb)
       INTO v_old_commercial
     FROM jsonb_each(to_jsonb(OLD)) AS entry
@@ -204,7 +394,8 @@ BEGIN
   SELECT q.status::text, COALESCE(q.is_latest_version, true)
     INTO v_status, v_is_latest
   FROM public.quotes q
-  WHERE q.id = p_quote_id;
+  WHERE q.id = p_quote_id
+  FOR UPDATE;
 
   IF NOT FOUND THEN
     RAISE EXCEPTION USING
@@ -329,7 +520,25 @@ BEGIN
        'EXECUTE')
      OR has_function_privilege('service_role',
        'public.apply_local_quote_approval_response_core_20261013(text,text,text,text,text,text,text,text)',
-       'EXECUTE') THEN
+       'EXECUTE')
+     OR has_function_privilege('anon',
+       'public.create_quote_version_atomic_core_20261013(uuid)', 'EXECUTE')
+     OR has_function_privilege('authenticated',
+       'public.create_quote_version_atomic_core_20261013(uuid)', 'EXECUTE')
+     OR has_function_privilege('service_role',
+       'public.create_quote_version_atomic_core_20261013(uuid)',
+       'EXECUTE')
+     OR EXISTS (
+       SELECT 1
+       FROM (VALUES ('anon'), ('authenticated'), ('service_role')) AS external_role(name)
+       CROSS JOIN (VALUES
+         ('public.bulk_update_quote_status_atomic_core_20261013(uuid[],integer[],text,text)'::regprocedure),
+         ('public.approve_quote_with_pdf_atomic_core_20261013(uuid,integer,text,text)'::regprocedure),
+         ('public.request_discount_approval_atomic_core_20261013(uuid,integer,numeric,text)'::regprocedure),
+         ('public.respond_discount_approval_atomic_core_20261013(uuid,integer,boolean,text)'::regprocedure)
+       ) AS internal_routine(oid)
+       WHERE has_function_privilege(external_role.name, internal_routine.oid, 'EXECUTE')
+     ) THEN
     RAISE EXCEPTION 'Os núcleos internos mantiveram EXECUTE indevido.';
   END IF;
 
@@ -345,7 +554,37 @@ BEGIN
        'EXECUTE')
      OR NOT has_function_privilege('service_role',
        'public.apply_local_quote_approval_response(text,text,text,text,text,text,text,text)',
-       'EXECUTE') THEN
+       'EXECUTE')
+     OR has_function_privilege('anon',
+       'public.create_quote_version_atomic(uuid)', 'EXECUTE')
+     OR NOT has_function_privilege('authenticated',
+       'public.create_quote_version_atomic(uuid)', 'EXECUTE')
+     OR NOT has_function_privilege('service_role',
+       'public.create_quote_version_atomic(uuid)', 'EXECUTE')
+     OR has_function_privilege('anon',
+       'public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)', 'EXECUTE')
+     OR NOT has_function_privilege('authenticated',
+       'public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)', 'EXECUTE')
+     OR NOT has_function_privilege('service_role',
+       'public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)', 'EXECUTE')
+     OR has_function_privilege('anon',
+       'public.approve_quote_with_pdf_atomic(uuid,integer,text,text)', 'EXECUTE')
+     OR NOT has_function_privilege('authenticated',
+       'public.approve_quote_with_pdf_atomic(uuid,integer,text,text)', 'EXECUTE')
+     OR NOT has_function_privilege('service_role',
+       'public.approve_quote_with_pdf_atomic(uuid,integer,text,text)', 'EXECUTE')
+     OR has_function_privilege('anon',
+       'public.request_discount_approval_atomic(uuid,integer,numeric,text)', 'EXECUTE')
+     OR NOT has_function_privilege('authenticated',
+       'public.request_discount_approval_atomic(uuid,integer,numeric,text)', 'EXECUTE')
+     OR NOT has_function_privilege('service_role',
+       'public.request_discount_approval_atomic(uuid,integer,numeric,text)', 'EXECUTE')
+     OR has_function_privilege('anon',
+       'public.respond_discount_approval_atomic(uuid,integer,boolean,text)', 'EXECUTE')
+     OR NOT has_function_privilege('authenticated',
+       'public.respond_discount_approval_atomic(uuid,integer,boolean,text)', 'EXECUTE')
+     OR NOT has_function_privilege('service_role',
+       'public.respond_discount_approval_atomic(uuid,integer,boolean,text)', 'EXECUTE') THEN
     RAISE EXCEPTION 'As ACLs públicas dos wrappers não correspondem ao contrato.';
   END IF;
 
@@ -378,7 +617,12 @@ BEGIN
       FROM pg_proc AS routine
      WHERE routine.oid IN (
        'public.convert_quote_to_sicoob_order(uuid)'::regprocedure,
-       'public.apply_local_quote_approval_response(text,text,text,text,text,text,text,text)'::regprocedure
+       'public.create_quote_version_atomic(uuid)'::regprocedure,
+       'public.apply_local_quote_approval_response(text,text,text,text,text,text,text,text)'::regprocedure,
+       'public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)'::regprocedure,
+       'public.approve_quote_with_pdf_atomic(uuid,integer,text,text)'::regprocedure,
+       'public.request_discount_approval_atomic(uuid,integer,numeric,text)'::regprocedure,
+       'public.respond_discount_approval_atomic(uuid,integer,boolean,text)'::regprocedure
      )
        AND (
          NOT routine.prosecdef
@@ -397,6 +641,7 @@ BEGIN
      OR has_function_privilege('service_role', 'public.assert_quote_content_editable(uuid)', 'EXECUTE') THEN
     RAISE EXCEPTION 'A função interna de imutabilidade possui EXECUTE indevido.';
   END IF;
+
 END;
 $postflight$;
 

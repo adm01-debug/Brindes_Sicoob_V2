@@ -2,6 +2,7 @@
 from pathlib import Path
 import json
 import subprocess
+import time
 import uuid
 from postgres_ready import wait_for_postgres
 
@@ -81,7 +82,11 @@ try:
         shipping_type text, payment_terms text, delivery_time text, updated_at timestamptz DEFAULT now(),
         is_latest_version boolean NOT NULL DEFAULT true, approved_by uuid,
         approved_at timestamptz, approved_pdf_url text, rejection_notes text,
-        organization_id uuid
+        organization_id uuid, client_response text, client_response_at timestamptz,
+        client_response_notes text, version integer NOT NULL DEFAULT 1,
+        parent_quote_id uuid, row_version integer NOT NULL DEFAULT 1,
+        deleted_at timestamptz, is_active boolean NOT NULL DEFAULT true,
+        sent_at timestamptz, created_at timestamptz NOT NULL DEFAULT now()
       );
       CREATE TABLE public.quote_items(
         id uuid PRIMARY KEY, quote_id uuid REFERENCES public.quotes(id) ON DELETE CASCADE, product_id text,
@@ -145,6 +150,40 @@ try:
       FROM PUBLIC,anon,authenticated;
       GRANT EXECUTE ON FUNCTION public.apply_local_quote_approval_response(text,text,text,text,text,text,text,text)
       TO service_role;
+      CREATE FUNCTION public.create_quote_version_atomic(uuid)
+      RETURNS uuid LANGUAGE sql SECURITY DEFINER SET search_path=pg_catalog,public
+      AS 'SELECT $1';
+      REVOKE ALL ON FUNCTION public.create_quote_version_atomic(uuid) FROM PUBLIC,anon;
+      GRANT EXECUTE ON FUNCTION public.create_quote_version_atomic(uuid) TO authenticated,service_role;
+      CREATE FUNCTION public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)
+      RETURNS TABLE(id uuid,status text,row_version integer)
+      LANGUAGE sql SECURITY DEFINER SET search_path=pg_catalog,public AS $writer$
+      UPDATE public.quotes q SET status=$3 WHERE q.id=ANY($1) RETURNING q.id,q.status,q.row_version
+      $writer$;
+      CREATE FUNCTION public.approve_quote_with_pdf_atomic(uuid,integer,text,text)
+      RETURNS TABLE(id uuid,status text,row_version integer,approved_pdf_url text)
+      LANGUAGE sql SECURITY DEFINER SET search_path=pg_catalog,public AS $writer$
+      UPDATE public.quotes q SET status='approved',approved_pdf_url=$3 WHERE q.id=$1
+      RETURNING q.id,q.status,q.row_version,q.approved_pdf_url
+      $writer$;
+      CREATE FUNCTION public.request_discount_approval_atomic(uuid,integer,numeric,text)
+      RETURNS TABLE(request_id uuid,quote_id uuid,seller_id uuid,quote_row_version integer,requested_discount_percent numeric,max_allowed_percent numeric,negotiation_markup_percent numeric,real_discount_percent numeric)
+      LANGUAGE sql SECURITY DEFINER SET search_path=pg_catalog,public AS $writer$
+      SELECT gen_random_uuid(),q.id,q.seller_id,q.row_version,$3,0::numeric,0::numeric,$3 FROM public.quotes q WHERE q.id=$1
+      $writer$;
+      CREATE FUNCTION public.respond_discount_approval_atomic(uuid,integer,boolean,text)
+      RETURNS TABLE(request_id uuid,quote_id uuid,seller_id uuid,quote_row_version integer,requested_discount_percent numeric,max_allowed_percent numeric,request_status text)
+      LANGUAGE sql SECURITY DEFINER SET search_path=pg_catalog,public AS $writer$
+      SELECT $1,NULL::uuid,NULL::uuid,$2,0::numeric,0::numeric,CASE WHEN $3 THEN 'approved' ELSE 'rejected' END
+      $writer$;
+      REVOKE ALL ON FUNCTION public.bulk_update_quote_status_atomic(uuid[],integer[],text,text) FROM PUBLIC,anon;
+      REVOKE ALL ON FUNCTION public.approve_quote_with_pdf_atomic(uuid,integer,text,text) FROM PUBLIC,anon;
+      REVOKE ALL ON FUNCTION public.request_discount_approval_atomic(uuid,integer,numeric,text) FROM PUBLIC,anon;
+      REVOKE ALL ON FUNCTION public.respond_discount_approval_atomic(uuid,integer,boolean,text) FROM PUBLIC,anon;
+      GRANT EXECUTE ON FUNCTION public.bulk_update_quote_status_atomic(uuid[],integer[],text,text) TO authenticated;
+      GRANT EXECUTE ON FUNCTION public.approve_quote_with_pdf_atomic(uuid,integer,text,text) TO authenticated;
+      GRANT EXECUTE ON FUNCTION public.request_discount_approval_atomic(uuid,integer,numeric,text) TO authenticated;
+      GRANT EXECUTE ON FUNCTION public.respond_discount_approval_atomic(uuid,integer,boolean,text) TO authenticated;
     """
     governance_fix = GOVERNANCE_FIX.read_text()
     sql('BEGIN;\n' + migration + '\n' + mutation + '\n' + governance_contract + '\n' + governance_fix + '\nROLLBACK;')
@@ -178,8 +217,8 @@ try:
     repeated = json.loads(actor(f"SELECT row_to_json(x) FROM public.convert_quote_to_sicoob_order('{quote}') x;").stdout.strip())
     checks['repeticao_idempotente'] = repeated['id'] == order['id'] and scalar(f"SELECT count(*) FROM public.sicoob_orders WHERE source_quote_id='{quote}';") == '1'
     restored_context = actor(
-        f"SELECT count(*) FROM public.convert_quote_to_sicoob_order('{quote}');"
-        "SELECT COALESCE(NULLIF(current_setting('app.quote_governance_write',true),''),'restaurado');"
+        f"BEGIN; SELECT count(*) FROM public.convert_quote_to_sicoob_order('{quote}');"
+        "SELECT COALESCE(NULLIF(current_setting('app.quote_governance_write',true),''),'restaurado'); COMMIT;"
     ).stdout.strip()
     checks['conversao_restaura_contexto_de_governanca'] = restored_context == '1\nrestaurado'
     sql(f"UPDATE public.profiles SET is_active=false WHERE user_id='{ACTOR}';")
@@ -238,8 +277,46 @@ try:
     for process in processes:
         process.wait(timeout=20); outputs.append((process.returncode,process.stdout.read().strip(),process.stderr.read()))
     checks['concorrencia_retorna_mesmo_pedido'] = all(x[0] == 0 for x in outputs) and len({x[1] for x in outputs}) == 1 and scalar(f"SELECT count(*) FROM public.sicoob_orders WHERE source_quote_id='{quote_race}';") == '1'
+
+    quote_state_race = '44444444-4444-4444-8444-444444444449'
+    seed_quote(quote_state_race, status='draft')
+    state_race_item = scalar(f"SELECT id FROM public.quote_items WHERE quote_id='{quote_state_race}';")
+    transition = subprocess.Popen(
+        ['docker','exec','-i',CONTAINER,'psql','-U','postgres','-XqAt','-v','ON_ERROR_STOP=1'],
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+    )
+    transition.stdin.write(
+        "BEGIN; SELECT set_config('app.quote_governance_write','true',true); "
+        f"UPDATE public.quotes SET status='sent' WHERE id='{quote_state_race}'; "
+        "SELECT pg_advisory_xact_lock(981013); SELECT pg_sleep(2); COMMIT;"
+    )
+    transition.stdin.close()
+    transition_locked = False
+    for _ in range(40):
+        lock_probe = scalar('SELECT pg_try_advisory_lock(981013);')
+        if lock_probe == 'f':
+            transition_locked = True
+            break
+        time.sleep(0.05)
+    raced_edit = actor(
+        f"UPDATE public.quote_items SET quantity=9 WHERE id='{state_race_item}';",
+        check=False,
+    )
+    transition.wait(timeout=20)
+    checks['decisao_concorrente_bloqueia_edicao_tardia_de_item'] = (
+        transition_locked
+        and transition.returncode == 0
+        and raced_edit.returncode != 0
+        and scalar(f"SELECT status||'|'||quantity FROM public.quotes q JOIN public.quote_items qi ON qi.quote_id=q.id WHERE q.id='{quote_state_race}';") == 'sent|2'
+    )
     checks['acl_authenticated_sem_anon'] = scalar("SELECT has_function_privilege('authenticated','public.convert_quote_to_sicoob_order(uuid)','EXECUTE')::text||'|'||has_function_privilege('anon','public.convert_quote_to_sicoob_order(uuid)','EXECUTE')::text;") == 'true|false'
-    checks['nucleo_interno_sem_execute_cliente'] = scalar("SELECT has_function_privilege('authenticated','public.convert_quote_to_sicoob_order_core_20261013(uuid)','EXECUTE')::text||'|'||has_function_privilege('service_role','public.apply_local_quote_approval_response_core_20261013(text,text,text,text,text,text,text,text)','EXECUTE')::text;") == 'false|false'
+    checks['nucleo_interno_sem_execute_cliente'] = scalar("SELECT has_function_privilege('authenticated','public.convert_quote_to_sicoob_order_core_20261013(uuid)','EXECUTE')::text||'|'||has_function_privilege('service_role','public.apply_local_quote_approval_response_core_20261013(text,text,text,text,text,text,text,text)','EXECUTE')::text||'|'||has_function_privilege('authenticated','public.create_quote_version_atomic_core_20261013(uuid)','EXECUTE')::text;") == 'false|false|false'
+
+    version_context = actor(
+        f"BEGIN; SELECT public.create_quote_version_atomic('{quote_state_race}');"
+        "SELECT COALESCE(NULLIF(current_setting('app.quote_governance_write',true),''),'restaurado'); COMMIT;"
+    ).stdout.strip()
+    checks['versionamento_restaura_contexto_de_governanca'] = version_context == f'{quote_state_race}\nrestaurado'
 
     forged_context = actor(
         "BEGIN; SELECT set_config('app.quote_governance_write','true',true); "

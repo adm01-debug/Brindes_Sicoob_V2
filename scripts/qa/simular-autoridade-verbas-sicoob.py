@@ -22,6 +22,8 @@ PA_B = "bbbbbbbb-1000-4000-8000-000000000002"
 GESTOR_A = "aaaaaaaa-2000-4000-8000-000000000001"
 GESTOR_INATIVO = "aaaaaaaa-2000-4000-8000-000000000002"
 GERENTE_A = "aaaaaaaa-3000-4000-8000-000000000001"
+COMPRADOR_PA_A = "aaaaaaaa-3000-4000-8000-000000000002"
+COMPRADOR_SINGULAR_A = "aaaaaaaa-3000-4000-8000-000000000003"
 ADMIN = "cccccccc-4000-4000-8000-000000000001"
 BUDGET_A = "aaaaaaaa-5000-4000-8000-000000000001"
 BUDGET_B = "bbbbbbbb-5000-4000-8000-000000000002"
@@ -87,11 +89,15 @@ try:
         ('{GESTOR_A}', '{GESTOR_A}', '{COOP_A}', '{PA_A}', true, null),
         ('{GESTOR_INATIVO}', '{GESTOR_INATIVO}', '{COOP_A}', '{PA_A}', false, null),
         ('{GERENTE_A}', '{GERENTE_A}', '{COOP_A}', '{PA_A}', true, null),
+        ('{COMPRADOR_PA_A}', '{COMPRADOR_PA_A}', '{COOP_A}', '{PA_A}', true, null),
+        ('{COMPRADOR_SINGULAR_A}', '{COMPRADOR_SINGULAR_A}', '{COOP_A}', null, true, null),
         ('{ADMIN}', '{ADMIN}', null, null, true, null);
       INSERT INTO public.user_roles (user_id, role) VALUES
         ('{GESTOR_A}', 'gestor_compras'),
         ('{GESTOR_INATIVO}', 'gestor_compras'),
         ('{GERENTE_A}', 'gerente_pa'),
+        ('{COMPRADOR_PA_A}', 'comprador_pac'),
+        ('{COMPRADOR_SINGULAR_A}', 'comprador_singular'),
         ('{ADMIN}', 'admin');
       INSERT INTO public.postos_atendimento (id, cooperativa_id, is_active) VALUES
         ('{PA_A}', '{COOP_A}', true),
@@ -134,6 +140,31 @@ try:
     inactive_role = scalar(as_actor(GESTOR_INATIVO, "SELECT public.is_gestor_compras()::text"))
     assert inactive_role == "false", repr(inactive_role)
     assert scalar(as_actor(ADMIN, "SELECT count(*) FROM public.pa_budgets")) == "2"
+    assert scalar(as_actor(COMPRADOR_PA_A, "SELECT count(*) FROM public.pa_budgets")) == "1"
+    assert scalar(as_actor(COMPRADOR_SINGULAR_A, "SELECT count(*) FROM public.pa_budgets")) == "1"
+
+    forged_scope = as_actor(
+        GESTOR_A,
+        f"UPDATE public.profiles SET cooperativa_id='{COOP_B}', pa_id='{PA_B}', "
+        "approval_threshold=999999, is_active=false "
+        f"WHERE user_id='{GESTOR_A}'",
+        check=False,
+    )
+    assert forged_scope.returncode != 0
+    assert scalar(sql(
+        f"SELECT cooperativa_id::text||'|'||pa_id::text||'|'||is_active::text "
+        f"FROM public.profiles WHERE user_id='{GESTOR_A}'"
+    )) == f"{COOP_A}|{PA_A}|true"
+    assert scalar(as_actor(
+        GESTOR_A,
+        f"UPDATE public.profiles SET full_name='Gestor QA' WHERE user_id='{GESTOR_A}' "
+        "RETURNING full_name",
+    )) == "Gestor QA"
+    assert scalar(as_actor(
+        ADMIN,
+        f"UPDATE public.profiles SET approval_threshold=1500 WHERE user_id='{GESTOR_A}' "
+        "RETURNING approval_threshold",
+    )) == "1500"
 
     assert scalar(as_actor(GESTOR_A, "SELECT count(*) FROM public.cooperativa_budgets")) == "1"
     assert scalar(as_actor(
@@ -201,6 +232,8 @@ try:
         "gestor_inativo_sem_acesso": True,
         "administrador_ativo_preservado": True,
         "insercao_inicia_consumo_em_zero": True,
+        "compradores_legitimos_leem_verba_do_escopo": True,
+        "autoalteracao_de_escopo_do_perfil_bloqueada": True,
         "verba_cooperativa_isolada": True,
         "identidade_verba_cooperativa_imutavel": True,
         "exclusao_direta_de_verba_bloqueada": True,

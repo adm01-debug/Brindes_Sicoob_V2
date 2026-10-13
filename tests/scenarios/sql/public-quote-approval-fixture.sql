@@ -18,10 +18,12 @@ CREATE TABLE public.quotes (
   client_name text, total numeric, valid_until timestamptz, status text DEFAULT 'sent',
   client_response text, client_response_at timestamptz, client_response_notes text,
   is_latest_version boolean NOT NULL DEFAULT true, deleted_at timestamptz,
+  is_active boolean NOT NULL DEFAULT true, sent_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
   internal_notes text DEFAULT 'anotação interna', total_cost numeric DEFAULT 15,
   version integer DEFAULT 1, row_version bigint DEFAULT 1, rejection_notes text,
   approved_by uuid, approved_at timestamptz, approved_pdf_url text,
-  organization_id uuid, pa_id uuid, singular_id uuid
+  organization_id uuid, pa_id uuid, singular_id uuid, parent_quote_id uuid
 );
 CREATE TABLE public.quote_items (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(), quote_id uuid NOT NULL REFERENCES public.quotes(id) ON DELETE CASCADE,
@@ -53,8 +55,34 @@ CREATE TABLE public.quote_history (
 );
 ALTER TABLE public.quotes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.quote_approval_tokens ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.quote_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.quote_item_personalizations ENABLE ROW LEVEL SECURITY;
 CREATE POLICY quotes_own ON public.quotes TO authenticated USING (seller_id = auth.uid());
 CREATE POLICY tokens_own ON public.quote_approval_tokens TO authenticated USING (seller_id = auth.uid());
+CREATE POLICY quote_items_own ON public.quote_items TO authenticated
+  USING (EXISTS (
+    SELECT 1 FROM public.quotes q
+    WHERE q.id = quote_items.quote_id AND q.seller_id = auth.uid()
+  ))
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM public.quotes q
+    WHERE q.id = quote_items.quote_id AND q.seller_id = auth.uid()
+  ));
+CREATE POLICY quote_item_personalizations_own ON public.quote_item_personalizations TO authenticated
+  USING (EXISTS (
+    SELECT 1
+    FROM public.quote_items qi
+    JOIN public.quotes q ON q.id = qi.quote_id
+    WHERE qi.id = quote_item_personalizations.quote_item_id
+      AND q.seller_id = auth.uid()
+  ))
+  WITH CHECK (EXISTS (
+    SELECT 1
+    FROM public.quote_items qi
+    JOIN public.quotes q ON q.id = qi.quote_id
+    WHERE qi.id = quote_item_personalizations.quote_item_id
+      AND q.seller_id = auth.uid()
+  ));
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.quotes, public.quote_approval_tokens TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.quote_items,
   public.quote_item_personalizations TO authenticated;

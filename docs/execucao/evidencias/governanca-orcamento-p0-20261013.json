@@ -4,15 +4,22 @@
   "banco_canonico": "cfmzkthhgliqelozlmwu",
   "banco_canonico_alterado": false,
   "migracao_validada_com_rollback_no_canonico": true,
+  "pos_rollback": {
+    "artefatos_persistidos": 0,
+    "registros_sinteticos_persistidos": 0,
+    "violacoes_security_definer_acl": 0
+  },
   "migracao": "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
   "conversao_orcamento_pedido": {
-    "cenarios": 29,
+    "cenarios": 31,
     "resultado": "aprovado",
     "inclui": [
       "concorrencia idempotente",
+      "serializacao entre decisao do orcamento e edicao tardia de item",
       "rollback integral",
       "reconciliacao da formula brl-v1",
       "ACL dos nucleos internos",
+      "versionamento autorizado com restauracao do contexto",
       "restauracao do contexto de governanca em sucesso e idempotencia",
       "imutabilidade de itens e personalizacoes",
       "contexto interno resistente a forja por cliente",
@@ -22,7 +29,7 @@
     ]
   },
   "aprovacao_publica": {
-    "cenarios": 54,
+    "cenarios": 61,
     "resultado": "aprovado",
     "inclui": [
       "reproducao da falha real anterior",
@@ -31,6 +38,14 @@
       "expiracao apos espera por lock",
       "rollback por falha intermediaria",
       "imutabilidade e preservacao do conteudo aprovado",
+      "resposta do cliente protegida contra escrita direta",
+      "identidade, timestamps de ciclo de vida, exclusao logica e row_version protegidos",
+      "versao historica integralmente imutavel",
+      "RLS de itens isolada por vendedor",
+      "versionamento autorizado com restauracao do contexto",
+      "RPC de status executada no esquema canonico com rollback e contexto restaurado",
+      "RPCs de status, PDF e desconto encapsuladas com nucleos privados",
+      "execucao local dos quatro wrappers transacionais com contexto restaurado",
       "contexto interno resistente a forja por cliente",
       "exclusao em cascata validada para rascunho",
       "gate principal SECURITY INVOKER com cobertura de DELETE",
