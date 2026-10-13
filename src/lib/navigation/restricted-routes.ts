@@ -23,6 +23,7 @@ export const DEV_ONLY_ROUTE_PREFIXES = [
   "/admin/login-attempts",
   "/admin/status",
   "/admin/rbac-rotas",
+  "/admin/qa",
 ] as const;
 
 /** Prefixos `/admin/*` administrativos (não técnicos) — exigem `admin` ou `dev`. */

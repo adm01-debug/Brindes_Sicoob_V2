@@ -32,19 +32,27 @@ export const adminRoutes = [
   }),
   defineRoute({
     path: '/admin/singulares',
-    component: lazyWithRetry(() => import('@/pages/admin/sicoob/SicoobManagementPage')),
+    component: lazyWithRetry(() => import('@/pages/admin/AdminSingularesPage')),
   }),
   defineRoute({
     path: '/admin/pas',
-    component: lazyWithRetry(() => import('@/pages/admin/sicoob/SicoobManagementPage')),
+    component: lazyWithRetry(() => import('@/pages/admin/AdminPAsPage')),
   }),
   defineRoute({
     path: '/admin/cooperativas',
-    component: lazyWithRetry(() => import('@/pages/admin/sicoob/SicoobManagementPage')),
+    component: lazyWithRetry(() => import('@/pages/admin/AdminCooperativasPage')),
   }),
   defineRoute({
     path: '/admin/cms',
     component: lazyWithRetry(() => import('@/pages/admin/AdminCMSPage')),
+  }),
+  defineRoute({
+    path: '/admin/newsletter',
+    component: lazyWithRetry(() => import('@/pages/admin/AdminNewsletterPage')),
+  }),
+  defineRoute({
+    path: '/admin/campanhas',
+    component: lazyWithRetry(() => import('@/pages/admin/AdminCampanhasPage')),
   }),
   defineRoute({
     path: '/admin/verbas',
