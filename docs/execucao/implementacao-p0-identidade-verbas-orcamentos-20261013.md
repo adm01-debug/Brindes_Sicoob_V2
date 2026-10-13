@@ -18,7 +18,7 @@ Este lote corrige cinco grupos de falhas críticas localizadas na auditoria de 1
 |---|---:|
 | Autoridade de verbas em PostgreSQL 17 isolado | 34/34 asserções em 13 grupos aprovadas |
 | Conversão orçamento → pedido em PostgreSQL 16 isolado | 31/31 cenários aprovados |
-| Aprovação pública, HMAC, locks e rollback | 66/66 cenários aprovados |
+| Aprovação pública, HMAC, locks e rollback | 68/68 cenários aprovados |
 | Salvamento atômico sob o gate de governança | aprovado; RLS preservada, rollback e GUC forjada recusada |
 | Testes Vitest focados | 15/15 testes aprovados |
 | Suíte Vitest completa com cobertura | 425 arquivos e 5.720 testes aprovados; 94% statements e 86,79% branches |

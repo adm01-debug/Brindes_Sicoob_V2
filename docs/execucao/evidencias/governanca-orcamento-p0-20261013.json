@@ -33,7 +33,7 @@
     ]
   },
   "aprovacao_publica": {
-    "cenarios": 66,
+    "cenarios": 68,
     "resultado": "aprovado",
     "inclui": [
       "reproducao da falha real anterior",

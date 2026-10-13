@@ -390,6 +390,65 @@ try:
       ).stdout.strip() == 't'
     )
 
+    order_reorder_quote = str(uuid.uuid4())
+    order_reorder_source = str(uuid.uuid4())
+    sql(
+      "INSERT INTO public.quotes(id,seller_id,quote_number,client_name,total,status) "
+      f"VALUES ('{order_reorder_quote}','{SELLER}','RECOMPRA-PEDIDO','Cliente sintético',100,'draft');"
+      "CREATE OR REPLACE FUNCTION public.reorder_sicoob_order_as_quote(uuid,jsonb,text,uuid,text) "
+      "RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $function$ "
+      "BEGIN UPDATE public.quotes SET reorder_source_order_id=$1, "
+      "catalog_revalidated_at=statement_timestamp(), "
+      "catalog_valid_until=statement_timestamp()+interval '5 minutes', "
+      "catalog_stock_is_reserved=false, reorder_price_changed_items=1 "
+      "WHERE id=$3::uuid; RETURN $3::uuid; END; $function$;"
+    )
+    order_reorder = actor(
+      "SELECT public.reorder_sicoob_order_as_quote("
+      f"'{order_reorder_source}','[]'::jsonb,'{order_reorder_quote}','{SELLER}',repeat('a',64));"
+    )
+    checks['recompra_de_pedido_preenche_linhagem_pelo_escritor_validado'] = (
+      order_reorder.stdout.strip() == order_reorder_quote
+      and sql(
+        f"SELECT reorder_source_order_id='{order_reorder_source}' "
+        "AND catalog_revalidated_at IS NOT NULL "
+        "AND catalog_valid_until>catalog_revalidated_at "
+        "AND catalog_stock_is_reserved=false AND reorder_price_changed_items=1 "
+        f"FROM public.quotes WHERE id='{order_reorder_quote}';"
+      ).stdout.strip() == 't'
+    )
+
+    malicious_reorder_quote = str(uuid.uuid4())
+    sql(
+      "INSERT INTO public.quotes(id,seller_id,quote_number,client_name,total,status) "
+      f"VALUES ('{malicious_reorder_quote}','{SELLER}','RECOMPRA-ABUSIVA','Cliente sintético',100,'draft');"
+      "CREATE OR REPLACE FUNCTION public.reorder_sicoob_order_as_quote(uuid,jsonb,text,uuid,text) "
+      "RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $function$ "
+      "BEGIN UPDATE public.quotes SET reorder_source_order_id=$1, total=999, "
+      "catalog_revalidated_at=statement_timestamp(), "
+      "catalog_valid_until=statement_timestamp()+interval '5 minutes', "
+      "catalog_stock_is_reserved=false, reorder_price_changed_items=1 "
+      "WHERE id=$3::uuid; RETURN $3::uuid; END; $function$;"
+    )
+    malicious_reorder = actor(
+      "SELECT public.reorder_sicoob_order_as_quote("
+      f"'{order_reorder_source}','[]'::jsonb,'{malicious_reorder_quote}','{SELLER}',repeat('b',64));",
+      check=False,
+    )
+    checks['excecao_da_recompra_nao_autoriza_alteracao_comercial'] = (
+      malicious_reorder.returncode != 0
+      and sql(
+        "SELECT reorder_source_order_id IS NULL AND total=100 "
+        f"FROM public.quotes WHERE id='{malicious_reorder_quote}';"
+      ).stdout.strip() == 't'
+    )
+    sql(
+      "REVOKE ALL ON FUNCTION public.reorder_sicoob_order_as_quote(uuid,jsonb,text,uuid,text) "
+      "FROM PUBLIC, anon, authenticated; "
+      "GRANT EXECUTE ON FUNCTION public.reorder_sicoob_order_as_quote(uuid,jsonb,text,uuid,text) "
+      "TO service_role;"
+    )
+
     status_quote = str(uuid.uuid4())
     sql(
       "INSERT INTO public.quotes(id,seller_id,quote_number,client_name,total,status) "

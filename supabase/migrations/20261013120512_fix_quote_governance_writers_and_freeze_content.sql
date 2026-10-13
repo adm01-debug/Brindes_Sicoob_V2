@@ -363,6 +363,35 @@ BEGIN
     RETURN NEW;
   END IF;
 
+  -- A recompra originada de pedido primeiro reutiliza a RPC transacional
+  -- legada e, em seguida, anexa o snapshot vigente do catálogo ao rascunho
+  -- recém-criado. A exceção exige a pilha real da RPC SECURITY DEFINER e
+  -- limita a alteração exatamente aos campos de linhagem e validade.
+  IF TG_OP = 'UPDATE'
+     AND current_user = v_table_owner
+     AND v_call_context ~ 'PL/pgSQL function (public\.)?reorder_sicoob_order_as_quote\('
+     AND OLD.reorder_source_order_id IS NULL
+     AND OLD.reorder_source_quote_id IS NULL
+     AND OLD.catalog_revalidated_at IS NULL
+     AND NEW.reorder_source_order_id IS NOT NULL
+     AND NEW.reorder_source_quote_id IS NULL
+     AND NEW.catalog_revalidated_at IS NOT NULL
+     AND NEW.catalog_valid_until > NEW.catalog_revalidated_at
+     AND COALESCE(NEW.catalog_stock_is_reserved, false) IS FALSE
+     AND COALESCE(NEW.reorder_price_changed_items, 0) >= 0
+     AND (to_jsonb(NEW) - ARRAY[
+           'reorder_source_order_id', 'catalog_revalidated_at',
+           'catalog_valid_until', 'catalog_stock_is_reserved',
+           'reorder_price_changed_items', 'updated_at'
+         ]) IS NOT DISTINCT FROM
+         (to_jsonb(OLD) - ARRAY[
+           'reorder_source_order_id', 'catalog_revalidated_at',
+           'catalog_valid_until', 'catalog_stock_is_reserved',
+           'reorder_price_changed_items', 'updated_at'
+         ]) THEN
+    RETURN NEW;
+  END IF;
+
   IF NEW.id IS DISTINCT FROM OLD.id
      OR NEW.status IS DISTINCT FROM OLD.status
      OR NEW.approved_by IS DISTINCT FROM OLD.approved_by
