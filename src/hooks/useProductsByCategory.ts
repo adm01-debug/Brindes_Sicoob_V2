@@ -40,6 +40,10 @@ function alreadyLoaded(currentKey: string, requestedKey: string, productCount: n
   return currentKey === requestedKey && productCount > 0;
 }
 
+function keepEmptyProductIds(current: Set<string>): Set<string> {
+  return current.size === 0 ? current : new Set();
+}
+
 /**
  * Hook para buscar IDs de produtos vinculados a categorias via tabela relacional
  * Usa a tabela product_category_assignments (ou fallbacks)
@@ -59,6 +63,10 @@ export function useProductsByCategory({
     categoryIds.length > 0 ? [...categoryIds].sort().join(',') : '', 
     [categoryIds]
   );
+  const stableCategoryIds = useMemo(
+    () => categoryIdsKey ? categoryIdsKey.split(',') : [],
+    [categoryIdsKey],
+  );
   
   const lastFetchedKey = useRef<string>('');
   const isFetchingRef = useRef(false);
@@ -72,7 +80,7 @@ export function useProductsByCategory({
     if (isFetchingRef.current) return;
     if (alreadyLoaded(lastFetchedKey.current, categoryIdsKey, productIds.size)) return;
     if (!hasFilter || !enabled) {
-      setProductIds(new Set());
+      setProductIds(keepEmptyProductIds);
       setCategoriesCount(0);
       setSource(null);
       lastFetchedKey.current = '';
@@ -84,9 +92,9 @@ export function useProductsByCategory({
     setError(null);
 
     try {
-      const result = await loadCategoryProducts(categoryIds, includeDescendants);
+      const result = await loadCategoryProducts(stableCategoryIds, includeDescendants);
       setProductIds(new Set(result.productIds));
-      setCategoriesCount(result.categoriesUsed || categoryIds.length);
+      setCategoriesCount(result.categoriesUsed || stableCategoryIds.length);
       setSource(result.source || null);
       lastFetchedKey.current = categoryIdsKey;
 
@@ -99,7 +107,7 @@ export function useProductsByCategory({
       setIsLoading(false);
       isFetchingRef.current = false;
     }
-  }, [categoryIdsKey, includeDescendants, hasFilter, enabled, categoryIds, productIds.size]);
+  }, [categoryIdsKey, includeDescendants, hasFilter, enabled, stableCategoryIds, productIds.size]);
 
   // Buscar quando a chave de categorias muda
   useEffect(() => {

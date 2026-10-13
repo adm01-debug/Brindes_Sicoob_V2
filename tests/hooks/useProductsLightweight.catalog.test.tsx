@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import { useProductsCatalog } from '@/hooks/useProductsLightweight';
+import { CATALOG_BATCH_PAGES, CATALOG_INITIAL_PAGE_SIZE, CATALOG_PAGE_SIZE, useProductsCatalog } from '@/hooks/useProductsLightweight';
 import { fetchPromobrindProductsLightweight, invokeBatchBridge } from '@/lib/external-db';
 
 vi.mock('@/lib/external-db', () => ({
@@ -19,6 +19,24 @@ function createWrapper() {
 
 describe('catálogo externo paginado', () => {
   beforeEach(() => vi.clearAllMocks());
+
+  it('limita o lote inicial para liberar a primeira tela sem esperar o catálogo inteiro', async () => {
+    vi.mocked(invokeBatchBridge).mockResolvedValueOnce(Array.from(
+      { length: CATALOG_BATCH_PAGES },
+      () => ({ success: true, data: { records: [], count: 7_770 } }),
+    ));
+
+    const { result } = renderHook(() => useProductsCatalog(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(CATALOG_INITIAL_PAGE_SIZE).toBe(100);
+    expect(CATALOG_PAGE_SIZE).toBe(800);
+    expect(CATALOG_BATCH_PAGES).toBe(2);
+    expect(invokeBatchBridge).toHaveBeenCalledWith([
+      expect.objectContaining({ limit: 100, offset: 0, countMode: 'exact' }),
+      expect.objectContaining({ limit: 100, offset: 100 }),
+    ]);
+  });
 
   it('reconsulta uma página individual quando o lote volta incompleto', async () => {
     vi.mocked(invokeBatchBridge).mockResolvedValueOnce([{ success: false, error: 'Falha na página' }]);

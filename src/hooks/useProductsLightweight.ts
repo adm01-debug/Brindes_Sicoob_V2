@@ -113,8 +113,12 @@ export function mapLightweightToProduct(p: LightweightProduct): Product {
 // INFINITE CATALOG HOOK
 // ============================================
 
-export const CATALOG_PAGE_SIZE = 800; // Increased for better fill on initial load
-export const CATALOG_BATCH_PAGES = 4;
+// Mantém a primeira resposta pequena e previsível. O bridge canônico entrega
+// dois lotes de 100 em poucos segundos; lotes de 800 retêm a primeira tela por
+// mais de 15 s quando o banco externo está sob concorrência.
+export const CATALOG_INITIAL_PAGE_SIZE = 100;
+export const CATALOG_PAGE_SIZE = 800;
+export const CATALOG_BATCH_PAGES = 2;
 // `price_updated_at` é o SSOT da idade do preço (trigger no BD externo).
 // `price_freshness_threshold_days` ainda NÃO existe no BD externo — quando
 // existir, basta acrescentar à lista; o mapper já trata como opcional.
@@ -128,7 +132,7 @@ interface CatalogPage {
 
 type BatchResults = Awaited<ReturnType<typeof invokeBatchBridge>>;
 
-function buildCatalogBatch(offset: number, filters: Record<string, unknown>, pagesToFetch: number) {
+function buildCatalogBatch(offset: number, filters: Record<string, unknown>, pagesToFetch: number, pageSize: number) {
   const orderBy = { column: 'name', ascending: true };
   const firstLoad = offset === 0;
   return Array.from({ length: pagesToFetch }, (_, index) => ({
@@ -137,8 +141,8 @@ function buildCatalogBatch(offset: number, filters: Record<string, unknown>, pag
     select: PRODUCT_SELECT_LIGHTWEIGHT,
     filters,
     orderBy,
-    limit: CATALOG_PAGE_SIZE,
-    offset: offset + index * CATALOG_PAGE_SIZE,
+    limit: pageSize,
+    offset: offset + index * pageSize,
     ...(index === 0 && firstLoad ? { countMode: 'exact' as const } : {}),
   }));
 }
@@ -163,24 +167,26 @@ function mapCatalogBatch(results: BatchResults): { products: Product[]; totalEst
 }
 
 async function fallbackCatalogPage(offset: number, search?: string): Promise<CatalogPage> {
+  const pageSize = offset === 0 ? CATALOG_INITIAL_PAGE_SIZE : CATALOG_PAGE_SIZE;
   const fallbackProducts = await fetchPromobrindProductsLightweight({
     search,
-    limit: CATALOG_PAGE_SIZE,
+    limit: pageSize,
     offset,
     orderBy: { column: 'name', ascending: true },
     filters: { is_active: true },
   });
   return {
     products: fallbackProducts.map(mapLightweightToProduct),
-    nextOffset: fallbackProducts.length === CATALOG_PAGE_SIZE ? offset + CATALOG_PAGE_SIZE : null,
+    nextOffset: fallbackProducts.length === pageSize ? offset + pageSize : null,
     totalEstimate: null,
   };
 }
 
 /**
  * Fetches a batch of catalog pages starting at the given offset.
- * First call fetches 4 pages (2000 products) via batch bridge.
- * Subsequent calls fetch 1 page (500 products) each.
+ * A primeira chamada busca 2 páginas (200 produtos) via batch bridge.
+ * As chamadas seguintes buscam 1 página (800 produtos) em segundo plano para
+ * completar o catálogo com poucos round-trips.
  */
 async function fetchCatalogPage(
   offset: number,
@@ -190,7 +196,8 @@ async function fetchCatalogPage(
   if (search) filters._search = search;
   const isFirstLoad = offset === 0;
   const pagesToFetch = isFirstLoad ? CATALOG_BATCH_PAGES : 1;
-  const batchQueries = buildCatalogBatch(offset, filters, pagesToFetch);
+  const pageSize = isFirstLoad ? CATALOG_INITIAL_PAGE_SIZE : CATALOG_PAGE_SIZE;
+  const batchQueries = buildCatalogBatch(offset, filters, pagesToFetch, pageSize);
 
   let batchResults;
   try {
@@ -201,8 +208,8 @@ async function fetchCatalogPage(
   }
   const { products, totalEstimate, lastPageSize } = mapCatalogBatch(batchResults);
 
-  const fetchedUpTo = offset + pagesToFetch * CATALOG_PAGE_SIZE;
-  const hasMore = lastPageSize === CATALOG_PAGE_SIZE;
+  const fetchedUpTo = offset + pagesToFetch * pageSize;
+  const hasMore = lastPageSize === pageSize;
 
   return {
     products,

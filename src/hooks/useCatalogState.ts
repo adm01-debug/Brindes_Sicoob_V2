@@ -214,11 +214,6 @@ export function useCatalogState() {
     realProducts.length,
   );
 
-  // Sync search with hook
-  useEffect(() => {
-    search.setSearchQuery(searchQueryFromUrl);
-  }, [searchQueryFromUrl, search]);
-
   // Filtering & Search
   const debouncedSearchQuery = useDebounce(search.searchQuery, 350);
   const { results: fuzzySearchResults, hasSearch: hasFuzzySearch } = useProductFuzzySearch(realProducts, debouncedSearchQuery);
