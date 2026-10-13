@@ -36,7 +36,7 @@ export const quoteRoutes = [
   }),
   defineRoute({ 
     path: "/orcamentos/:id", 
-    component: lazyWithRetry(() => import("@/pages/QuoteDetailPage")) 
+    component: lazyWithRetry(() => import("@/pages/QuoteViewPage"))
   }),
   defineRoute({
     path: "/orcamentos/:id/editar",
