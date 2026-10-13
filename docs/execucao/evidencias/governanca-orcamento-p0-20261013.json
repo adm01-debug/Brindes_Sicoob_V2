@@ -1,0 +1,34 @@
+{
+  "data": "2026-10-13",
+  "ambiente_local": "PostgreSQL 16 descartável, sem rede e com dados sintéticos",
+  "banco_canonico": "cfmzkthhgliqelozlmwu",
+  "banco_canonico_alterado": false,
+  "migracao_validada_com_rollback_no_canonico": true,
+  "migracao": "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
+  "conversao_orcamento_pedido": {
+    "cenarios": 26,
+    "resultado": "aprovado",
+    "inclui": [
+      "concorrencia idempotente",
+      "rollback integral",
+      "reconciliacao da formula brl-v1",
+      "ACL dos nucleos internos",
+      "restauracao do contexto de governanca em sucesso e idempotencia",
+      "imutabilidade de itens e personalizacoes"
+    ]
+  },
+  "aprovacao_publica": {
+    "cenarios": 49,
+    "resultado": "aprovado",
+    "inclui": [
+      "reproducao da falha real anterior",
+      "HMAC versionado",
+      "concorrencia entre links",
+      "expiracao apos espera por lock",
+      "rollback por falha intermediaria",
+      "imutabilidade do conteudo aprovado",
+      "auditoria SECURITY DEFINER sem violacoes"
+    ]
+  },
+  "observacao_operacional": "A migration permanece local ate passar pelo fluxo branch, PR, CI e merge; nenhum dado do banco canonico foi persistido durante a validacao."
+}

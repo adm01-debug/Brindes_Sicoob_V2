@@ -1,5 +1,10 @@
 project_id = "cfmzkthhgliqelozlmwu"
 
+# Endpoint legado inerte. A barreira do gateway impede chamadas anônimas e o
+# handler nunca lê credenciais nem altera contas.
+[functions.verify-email]
+verify_jwt = true
+
 # Estas duas funções validam o JWT dentro do handler. O gateway permanece sem
 # validação para aceitar tanto chaves JWT legadas quanto publishable keys.
 [functions.expert-chat]

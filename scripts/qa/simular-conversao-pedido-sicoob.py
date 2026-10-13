@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 CONTAINER = 'sicoob-conversao-' + uuid.uuid4().hex[:10]
 MIGRATION = ROOT / 'supabase/migrations/20260922224500_convert_quote_to_sicoob_order.sql'
 MUTATION = ROOT / 'supabase/migrations/20260922224600_mutate_sicoob_order_items_atomic.sql'
+GOVERNANCE_FIX = ROOT / 'supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql'
 ACTOR = '11111111-1111-4111-8111-111111111111'
 OUTSIDER = '11111111-1111-4111-8111-111111111112'
 PA = '22222222-2222-4222-8222-222222222222'
@@ -48,7 +49,7 @@ def seed_quote(
         discount_percent,discount_amount,negotiation_markup_percent,
         shipping_type,shipping_cost,pa_id,singular_id,client_name
       ) VALUES (
-        '{quote_id}','ORC-{quote_id[-4:]}','{ACTOR}','{status}',{persisted_total},
+        '{quote_id}','ORC-{quote_id[-4:]}','{ACTOR}','draft',{persisted_total},
         {persisted_subtotal},{persisted_real_subtotal},{discount_percent},{expected_discount},
         {markup},'{shipping_type}',{shipping_cost},'{PA}','{COOP}','Cliente sintético'
       );
@@ -57,6 +58,8 @@ def seed_quote(
     """)
     if personalized:
         sql(f"INSERT INTO public.quote_item_personalizations(quote_item_id,technique_name,total_cost) SELECT id,'Silk',{personalization_cost} FROM public.quote_items WHERE quote_id='{quote_id}';")
+    if status != 'draft':
+        sql(f"BEGIN; SELECT set_config('app.quote_governance_write','true',true); UPDATE public.quotes SET status='{status}' WHERE id='{quote_id}'; COMMIT;")
 
 checks = {}
 try:
@@ -75,7 +78,10 @@ try:
         discount_amount numeric, negotiation_markup_percent numeric, shipping_cost numeric,
         pa_id uuid, singular_id uuid, notes text, client_id text, client_name text,
         client_email text, client_phone text, client_company text, client_cnpj text,
-        shipping_type text, payment_terms text, delivery_time text, updated_at timestamptz DEFAULT now()
+        shipping_type text, payment_terms text, delivery_time text, updated_at timestamptz DEFAULT now(),
+        is_latest_version boolean NOT NULL DEFAULT true, approved_by uuid,
+        approved_at timestamptz, approved_pdf_url text, rejection_notes text,
+        organization_id uuid
       );
       CREATE TABLE public.quote_items(
         id uuid PRIMARY KEY, quote_id uuid REFERENCES public.quotes(id), product_id text,
@@ -87,6 +93,8 @@ try:
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(), quote_item_id uuid REFERENCES public.quote_items(id),
         technique_name text, total_cost numeric DEFAULT 0, created_at timestamptz DEFAULT now()
       );
+      GRANT SELECT,INSERT,UPDATE,DELETE ON public.quotes,public.quote_items,
+        public.quote_item_personalizations TO authenticated;
       CREATE TABLE public.sicoob_orders(
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(), order_number text NOT NULL DEFAULT ('SIC-'||upper(substr(gen_random_uuid()::text,1,8))),
         cooperative_id uuid, pa_id uuid, created_by uuid, status text NOT NULL DEFAULT 'draft',
@@ -112,10 +120,39 @@ try:
     """)
     migration = MIGRATION.read_text()
     mutation = MUTATION.read_text()
-    sql('BEGIN;\n' + migration + '\n' + mutation + '\nROLLBACK;')
+    governance_contract = """
+      CREATE FUNCTION public.guard_quote_governance_write()
+      RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
+      SET search_path=pg_catalog,public AS $guard$
+      BEGIN
+        IF current_setting('app.quote_governance_write',true)='true' THEN RETURN NEW; END IF;
+        IF TG_OP='INSERT' AND COALESCE(NEW.status,'draft')<>'draft' THEN
+          RAISE EXCEPTION 'A criação de orçamento deve iniciar como rascunho.' USING ERRCODE='42501';
+        END IF;
+        IF TG_OP='UPDATE' AND NEW.status IS DISTINCT FROM OLD.status THEN
+          RAISE EXCEPTION 'Campos de governança do orçamento só podem ser alterados por fluxo autorizado.' USING ERRCODE='42501';
+        END IF;
+        RETURN NEW;
+      END;
+      $guard$;
+      CREATE TRIGGER aaa_guard_quote_governance_write BEFORE INSERT OR UPDATE ON public.quotes
+      FOR EACH ROW EXECUTE FUNCTION public.guard_quote_governance_write();
+      REVOKE ALL ON FUNCTION public.guard_quote_governance_write() FROM PUBLIC,anon,authenticated;
+      CREATE FUNCTION public.apply_local_quote_approval_response(text,text,text,text,text,text,text,text)
+      RETURNS boolean LANGUAGE sql SECURITY DEFINER SET search_path=pg_catalog,public
+      AS 'SELECT false';
+      REVOKE ALL ON FUNCTION public.apply_local_quote_approval_response(text,text,text,text,text,text,text,text)
+      FROM PUBLIC,anon,authenticated;
+      GRANT EXECUTE ON FUNCTION public.apply_local_quote_approval_response(text,text,text,text,text,text,text,text)
+      TO service_role;
+    """
+    governance_fix = GOVERNANCE_FIX.read_text()
+    sql('BEGIN;\n' + migration + '\n' + mutation + '\n' + governance_contract + '\n' + governance_fix + '\nROLLBACK;')
     checks['dry_run_reverte_schema'] = scalar("SELECT NOT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name='sicoob_orders' AND column_name='source_quote_id');") == 't'
     sql(migration)
     sql(mutation)
+    sql(governance_contract)
+    sql(governance_fix)
 
     quote = '44444444-4444-4444-8444-444444444441'
     seed_quote(quote, personalized=True)
@@ -126,8 +163,25 @@ try:
     checks['congela_origem_e_hierarquia'] = scalar(f"SELECT source_quote_id::text||'|'||pa_id::text||'|'||cooperative_id::text||'|'||requires_artwork::text FROM public.sicoob_orders WHERE id='{order['id']}';") == f'{quote}|{PA}|{COOP}|true'
     checks['componentes_comerciais_basicos_reconciliados'] = scalar(f"SELECT merchandise_amount||'|'||personalization_amount||'|'||negotiation_markup_amount||'|'||commercial_subtotal_amount||'|'||discount_amount||'|'||shipping_amount||'|'||pricing_formula_version FROM public.sicoob_orders WHERE id='{order['id']}';") == '100.00|0.00|0.00|100.00|0.00|0.00|brl-v1'
     checks['marca_orcamento_convertido'] = scalar(f"SELECT status FROM public.quotes WHERE id='{quote}';") == 'converted'
+    source_item = scalar(f"SELECT id FROM public.quote_items WHERE quote_id='{quote}';")
+    frozen_item = actor(f"UPDATE public.quote_items SET quantity=3 WHERE id='{source_item}';", check=False)
+    frozen_personalization = actor(
+        f"UPDATE public.quote_item_personalizations SET total_cost=99 WHERE quote_item_id='{source_item}';",
+        check=False,
+    )
+    checks['conteudo_convertido_e_imutavel'] = (
+        frozen_item.returncode != 0
+        and frozen_personalization.returncode != 0
+        and scalar(f"SELECT quantity FROM public.quote_items WHERE id='{source_item}';") == '2'
+        and scalar(f"SELECT total_cost FROM public.quote_item_personalizations WHERE quote_item_id='{source_item}';") in ('0', '0.00')
+    )
     repeated = json.loads(actor(f"SELECT row_to_json(x) FROM public.convert_quote_to_sicoob_order('{quote}') x;").stdout.strip())
     checks['repeticao_idempotente'] = repeated['id'] == order['id'] and scalar(f"SELECT count(*) FROM public.sicoob_orders WHERE source_quote_id='{quote}';") == '1'
+    restored_context = actor(
+        f"SELECT count(*) FROM public.convert_quote_to_sicoob_order('{quote}');"
+        "SELECT COALESCE(NULLIF(current_setting('app.quote_governance_write',true),''),'restaurado');"
+    ).stdout.strip()
+    checks['conversao_restaura_contexto_de_governanca'] = restored_context == '1\nrestaurado'
     sql(f"UPDATE public.profiles SET is_active=false WHERE user_id='{ACTOR}';")
     checks['perfil_inativo_nao_acessa_conversao_idempotente'] = actor(f"SELECT * FROM public.convert_quote_to_sicoob_order('{quote}');", check=False).returncode != 0
     sql(f"UPDATE public.profiles SET is_active=true WHERE user_id='{ACTOR}';")
@@ -185,6 +239,15 @@ try:
         process.wait(timeout=20); outputs.append((process.returncode,process.stdout.read().strip(),process.stderr.read()))
     checks['concorrencia_retorna_mesmo_pedido'] = all(x[0] == 0 for x in outputs) and len({x[1] for x in outputs}) == 1 and scalar(f"SELECT count(*) FROM public.sicoob_orders WHERE source_quote_id='{quote_race}';") == '1'
     checks['acl_authenticated_sem_anon'] = scalar("SELECT has_function_privilege('authenticated','public.convert_quote_to_sicoob_order(uuid)','EXECUTE')::text||'|'||has_function_privilege('anon','public.convert_quote_to_sicoob_order(uuid)','EXECUTE')::text;") == 'true|false'
+    checks['nucleo_interno_sem_execute_cliente'] = scalar("SELECT has_function_privilege('authenticated','public.convert_quote_to_sicoob_order_core_20261013(uuid)','EXECUTE')::text||'|'||has_function_privilege('service_role','public.apply_local_quote_approval_response_core_20261013(text,text,text,text,text,text,text,text)','EXECUTE')::text;") == 'false|false'
+
+    editable_quote = '44444444-4444-4444-8444-444444444448'
+    seed_quote(editable_quote, status='draft')
+    editable_item = scalar(f"SELECT id FROM public.quote_items WHERE quote_id='{editable_quote}';")
+    checks['rascunho_continua_editavel'] = (
+        actor(f"UPDATE public.quote_items SET quantity=3 WHERE id='{editable_item}';").returncode == 0
+        and actor(f"INSERT INTO public.quote_item_personalizations(quote_item_id,technique_name,total_cost) VALUES ('{editable_item}','Laser',5);").returncode == 0
+    )
 
     draft = '55555555-5555-4555-8555-555555555551'
     product = '66666666-6666-4666-8666-666666666661'

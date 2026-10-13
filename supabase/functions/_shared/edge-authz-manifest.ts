@@ -64,7 +64,11 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   "system-healthcheck": { category: "dev", rationale: "Diagnóstico global revela topologia e latência internas" },
   "migration-health-check": { category: "dev", rationale: "Metadados administrativos restritos a desenvolvedor" },
   "get-visitor-info": { category: "public", rationale: "Geo/IP do visitante para anti-fraude" },
-  "verify-email": { category: "public", rationale: "Verificação de email no signup público" },
+  "verify-email": {
+    category: "authenticated",
+    rationale: "Endpoint legado inerte; confirmação ocorre somente pelo fluxo assinado do Supabase Auth",
+    gatewayVerifyJwt: true,
+  },
   "log-login-attempt": { category: "public", rationale: "Telemetria de login (anti-bruteforce)" },
   "auth-integrity-check": { category: "dev", rationale: "Diagnóstico restrito à administração técnica" },
   "rate-limit-check": { category: "public", rationale: "Rate-limit consult anonymous" },

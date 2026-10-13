@@ -6,6 +6,7 @@ import uuid
 from postgres_ready import wait_for_postgres
 
 ROOT = Path(__file__).resolve().parents[2]
+GOVERNANCE_FIX = ROOT / 'supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql'
 CONTAINER = 'sicoob-aprovacao-publica-' + uuid.uuid4().hex[:10]
 SELLER = '11111111-1111-4111-8111-111111111111'
 OTHER = '22222222-2222-4222-8222-222222222222'
@@ -22,6 +23,12 @@ def new_quote():
     ident = str(uuid.uuid4())
     sql(f"INSERT INTO public.quotes(id,seller_id,quote_number,client_name,total) VALUES ('{ident}','{SELLER}','TESTE','Cliente sintético',100);")
     sql(f"INSERT INTO public.quote_items(quote_id,product_id,product_name,product_sku,quantity,unit_price,notes) VALUES ('{ident}','produto-1','Caneca térmica','CAN-001',10,10,'Gravação frontal');")
+    return ident
+def new_governed_quote():
+    ident = str(uuid.uuid4())
+    sql(f"INSERT INTO public.quotes(id,seller_id,quote_number,client_name,total,status) VALUES ('{ident}','{SELLER}','TESTE','Cliente sintético',100,'draft');")
+    sql(f"INSERT INTO public.quote_items(quote_id,product_id,product_name,product_sku,quantity,unit_price,notes) VALUES ('{ident}','produto-1','Caneca térmica','CAN-001',10,10,'Gravação frontal');")
+    sql(f"BEGIN; SELECT set_config('app.quote_governance_write','true',true); UPDATE public.quotes SET status='sent' WHERE id='{ident}'; COMMIT;")
     return ident
 def issue(quote, token):
     return actor(f"INSERT INTO public.quote_approval_tokens(quote_id,token,seller_id) VALUES ('{quote}','{token}','{SELLER}');")
@@ -176,6 +183,70 @@ try:
     ).stdout.strip() == 't'
     limits = [json.loads(actor("SELECT public.check_rate_limit('origem-token','quote-approval:respond',2,60,300);",role='service_role').stdout) for _ in range(3)]
     checks['rate_limit_persistente'] = [item['allowed'] for item in limits] == [True,True,False]
+
+    # Reproduz o esquema atual: o gate de governança foi instalado depois do
+    # fluxo público e bloqueia o escritor autorizado até a migration corretiva.
+    sql("""
+      CREATE OR REPLACE FUNCTION public.guard_quote_governance_write()
+      RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
+      SET search_path=pg_catalog,public AS $guard$
+      BEGIN
+        IF current_setting('app.quote_governance_write',true)='true' THEN RETURN NEW; END IF;
+        IF TG_OP='INSERT' AND COALESCE(NEW.status,'draft')<>'draft' THEN
+          RAISE EXCEPTION 'A criação de orçamento deve iniciar como rascunho.' USING ERRCODE='42501';
+        END IF;
+        IF TG_OP='UPDATE' AND NEW.status IS DISTINCT FROM OLD.status THEN
+          RAISE EXCEPTION 'Campos de governança do orçamento só podem ser alterados por fluxo autorizado.' USING ERRCODE='42501';
+        END IF;
+        RETURN NEW;
+      END;
+      $guard$;
+      REVOKE ALL ON FUNCTION public.guard_quote_governance_write() FROM PUBLIC,anon,authenticated;
+      CREATE TRIGGER aaa_guard_quote_governance_write BEFORE INSERT OR UPDATE ON public.quotes
+      FOR EACH ROW EXECUTE FUNCTION public.guard_quote_governance_write();
+      CREATE FUNCTION public.convert_quote_to_sicoob_order(uuid)
+      RETURNS TABLE(id uuid,order_number text,status text,total_amount numeric)
+      LANGUAGE sql SECURITY DEFINER SET search_path=pg_catalog,public
+      AS 'SELECT NULL::uuid,NULL::text,NULL::text,NULL::numeric WHERE false';
+      REVOKE ALL ON FUNCTION public.convert_quote_to_sicoob_order(uuid) FROM PUBLIC,anon;
+      GRANT EXECUTE ON FUNCTION public.convert_quote_to_sicoob_order(uuid) TO authenticated,service_role;
+      INSERT INTO vault.decrypted_secrets(name,decrypted_secret)
+      VALUES ('quote_approval_evidence_hmac_v2','segunda-chave-sintetica-com-mais-de-trinta-e-dois-bytes');
+    """)
+    blocked_quote = new_governed_quote(); issue(blocked_quote,'governanca-bloqueada')
+    blocked = actor(
+      "SELECT public.submit_signed_quote_response('governanca-bloqueada','approved','Pessoa Teste','12345678901','"+SIGNATURE+"','203.0.113.20','teste-gate');",
+      role='service_role', check=False
+    )
+    checks['falha_real_do_gate_reproduzida'] = blocked.returncode != 0 and sql(
+      "SELECT q.status='sent' AND t.status='active' FROM public.quotes q JOIN public.quote_approval_tokens t ON t.quote_id=q.id::text WHERE t.token='governanca-bloqueada';"
+    ).stdout.strip() == 't'
+
+    governance_fix = GOVERNANCE_FIX.read_text()
+    sql('BEGIN;'+governance_fix+'ROLLBACK;')
+    checks['migration_governanca_dryrun_revertida'] = sql(
+      "SELECT to_regprocedure('public.convert_quote_to_sicoob_order_core_20261013(uuid)') IS NULL;"
+    ).stdout.strip() == 't'
+    sql(governance_fix)
+
+    fixed_quote = new_governed_quote(); issue(fixed_quote,'governanca-corrigida')
+    fixed = actor(
+      "SELECT public.submit_signed_quote_response('governanca-corrigida','approved','Pessoa Teste','12345678901','"+SIGNATURE+"','203.0.113.21','teste-corrigido');"
+      "SELECT COALESCE(NULLIF(current_setting('app.quote_governance_write',true),''),'restaurado');",
+      role='service_role'
+    )
+    checks['aprovacao_publica_atravessa_gate_e_restaura_contexto'] = fixed.stdout.strip() == 't\nrestaurado'
+    fixed_item = sql(f"SELECT id FROM public.quote_items WHERE quote_id='{fixed_quote}';").stdout.strip()
+    frozen_item = actor(f"UPDATE public.quote_items SET quantity=99 WHERE id='{fixed_item}';", check=False)
+    frozen_header = actor(f"UPDATE public.quotes SET total=999 WHERE id='{fixed_quote}';", check=False)
+    checks['conteudo_aprovado_e_imutavel'] = (
+      frozen_item.returncode != 0 and frozen_header.returncode != 0
+      and sql(f"SELECT quantity=10 FROM public.quote_items WHERE id='{fixed_item}';").stdout.strip() == 't'
+      and sql(f"SELECT total=100 FROM public.quotes WHERE id='{fixed_quote}';").stdout.strip() == 't'
+    )
+    checks['nucleos_internos_sem_execute_externo'] = sql(
+      "SELECT NOT has_function_privilege('authenticated','public.convert_quote_to_sicoob_order_core_20261013(uuid)','EXECUTE') AND NOT has_function_privilege('service_role','public.apply_local_quote_approval_response_core_20261013(text,text,text,text,text,text,text,text)','EXECUTE');"
+    ).stdout.strip() == 't'
     checks['acl_sem_violacoes'] = sql("SELECT count(*) FROM public.audit_security_definer_acl();").stdout.strip() == '0'
     assert all(checks.values()), checks
     print(json.dumps({'ambiente':'PostgreSQL 16 descartável sem rede','remoto_validado':False,'cenarios':checks},ensure_ascii=False,indent=2))

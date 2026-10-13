@@ -128,7 +128,6 @@ export const BudgetsTab = () => {
       mes: month,
       ano: year,
       verba_total: amount,
-      verba_consumida: 0,
       limite_alcada: alcada || 0,
     });
   };

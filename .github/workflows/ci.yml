@@ -83,6 +83,9 @@ jobs:
       - name: Simular atomicidade da verba em PostgreSQL descartável
         run: python3 scripts/qa/simular-verba-atomica.py
 
+      - name: Simular autoridade e isolamento das verbas Sicoob
+        run: python3 scripts/qa/simular-autoridade-verbas-sicoob.py
+
       - name: Simular controles de auditoria e permissões em PostgreSQL descartável
         run: python3 scripts/qa/simular-controles-auditoria.py
 

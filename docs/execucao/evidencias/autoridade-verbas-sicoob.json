@@ -1,0 +1,13 @@
+{
+  "ambiente": "PostgreSQL 17 descartável, sem rede e com dados sintéticos",
+  "migracao": "supabase/migrations/20261013115605_harden_sicoob_budget_authority.sql",
+  "banco_canonico_alterado": false,
+  "gestor_ve_somente_cooperativa": true,
+  "gestor_nao_altera_outra_cooperativa": true,
+  "gerente_nao_aumenta_propria_alcada": true,
+  "consumo_direto_bloqueado": true,
+  "gestor_inativo_sem_acesso": true,
+  "administrador_ativo_preservado": true,
+  "insercao_inicia_consumo_em_zero": true,
+  "resultado": "aprovado"
+}
