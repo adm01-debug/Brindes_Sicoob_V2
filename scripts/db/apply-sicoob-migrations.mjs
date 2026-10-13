@@ -377,6 +377,7 @@ async function validateContract(client, targets) {
         WHERE p.oid = to_regprocedure('public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)')), false) AS status_public_execute,
       has_function_privilege('authenticated', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE') AS transition_assert_authenticated_execute,
       has_function_privilege('anon', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE') AS transition_assert_anon_execute,
+      has_function_privilege('service_role', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE') AS transition_assert_service_execute,
       COALESCE((SELECT bool_or(a.grantee = 0 AND a.privilege_type = 'EXECUTE')
         FROM pg_proc p,
           LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
@@ -689,8 +690,9 @@ async function validateContract(client, targets) {
     && result.actor_fk_exists && result.quote_fk_exists && result.hash_constraint_exists && constraintsExact
     && result.status_security_safe && result.status_authenticated_execute
     && !result.status_anon_execute && !result.status_public_execute
-    && result.transition_assert_authenticated_execute
-    && !result.transition_assert_anon_execute && !result.transition_assert_public_execute
+    && !result.transition_assert_authenticated_execute
+    && !result.transition_assert_anon_execute && !result.transition_assert_service_execute
+    && !result.transition_assert_public_execute
     && !result.notification_authenticated_execute && !result.notification_anon_execute
     && !result.notification_public_execute
     && result.notification_trigger_safe && triggerDefinitionExact
@@ -861,8 +863,9 @@ BEGIN
        WHERE p.oid = to_regprocedure('public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)')
          AND a.grantee = 0 AND a.privilege_type = 'EXECUTE'
      )
-     OR NOT has_function_privilege('authenticated', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE')
+     OR has_function_privilege('authenticated', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE')
      OR has_function_privilege('anon', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE')
+     OR has_function_privilege('service_role', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE')
      OR EXISTS (
        SELECT 1 FROM pg_proc p,
          LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a

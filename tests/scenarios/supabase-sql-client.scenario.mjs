@@ -65,5 +65,13 @@ test("monta lote atômico somente com migrations allowlisted e guarda do ledger"
   assert.match(batch, /CREATE TABLE public\.quote_save_idempotency/);
   assert.match(batch, /CREATE OR REPLACE FUNCTION public\.bulk_update_quote_status_atomic/);
   assert.match(batch, /O contrato crítico não foi produzido/);
+  assert.doesNotMatch(
+    batch,
+    /OR NOT has_function_privilege\('authenticated', 'public\.assert_quote_transition/,
+  );
+  assert.match(
+    batch,
+    /OR has_function_privilege\('service_role', 'public\.assert_quote_transition/,
+  );
   assert.match(batch, /COMMIT;$/);
 });

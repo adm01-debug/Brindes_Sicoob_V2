@@ -3,6 +3,31 @@ import { test, expect } from '@playwright/test';
 import { loginAs } from '../helpers/auth';
 import { Sel } from '../fixtures/selectors';
 
+async function mockCartCrmCompany(page: Parameters<typeof loginAs>[0]) {
+  await page.route(/\/functions\/v1\/crm-db-bridge(?:\?|$|\/)/, async (route) => {
+    const body = route.request().postDataJSON() as { table?: string; operation?: string } | null;
+    if (body?.table !== 'companies' || body.operation !== 'select') {
+      await route.continue();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: [{
+          id: 'e2e-crm-company',
+          title: 'Cooperativa Sicoob E2E',
+          razao_social: 'Cooperativa Sicoob E2E',
+          nome_fantasia: 'Sicoob E2E',
+          logo_url: null,
+          ramo_atividade: 'Cooperativa de crédito',
+        }],
+        count: 1,
+      }),
+    });
+  });
+}
+
 /**
  * Fluxo de ciclo de vida do carrinho de vendedor (Seller Cart).
  * 1. Autentica
@@ -14,6 +39,7 @@ import { Sel } from '../fixtures/selectors';
  */
 test.describe('Seller Cart Flow E2E', () => {
   test.beforeEach(async ({ page }) => {
+    await mockCartCrmCompany(page);
     // Autentica via helper SSOT
     await loginAs(page);
     // Garantir que estamos no catálogo (Index page)

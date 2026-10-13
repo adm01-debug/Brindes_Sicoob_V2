@@ -98,6 +98,34 @@ describe('useFavoriteQuickAdd', () => {
     expect(useFavoritesStore.getState().isFavorite(product.id)).toBe(false);
   });
 
+  it('mantém removido quando inclusão e remoção rápidas falham no banco', async () => {
+    remote.upsert.mockResolvedValue({ error: new Error('inclusão rejeitada') });
+    remote.finalDelete.mockResolvedValue({ error: new Error('exclusão rejeitada') });
+    const { result } = renderHook(() => useFavoriteQuickAdd(), { wrapper });
+
+    act(() => {
+      result.current.handleFavoriteClick(product);
+      result.current.handleFavoriteClick(product);
+    });
+
+    await waitFor(() => expect(remote.finalDelete).toHaveBeenCalledTimes(1));
+    expect(useFavoritesStore.getState().isFavorite(product.id)).toBe(false);
+  });
+
+  it('restaura após remoção falhar quando a inclusão rápida foi persistida', async () => {
+    remote.upsert.mockResolvedValue({ error: null });
+    remote.finalDelete.mockResolvedValue({ error: new Error('exclusão rejeitada') });
+    const { result } = renderHook(() => useFavoriteQuickAdd(), { wrapper });
+
+    act(() => {
+      result.current.handleFavoriteClick(product);
+      result.current.handleFavoriteClick(product);
+    });
+
+    await waitFor(() => expect(remote.finalDelete).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(useFavoritesStore.getState().isFavorite(product.id)).toBe(true));
+  });
+
   it('reflete a remoção local antes de a exclusão remota terminar', () => {
     useFavoritesStore.getState().addFavorite(product.id);
     remote.finalDelete.mockReturnValue(new Promise(() => {}));

@@ -60,6 +60,48 @@ function saveLastListId(listId: string) {
   }
 }
 
+function handleAddFailure({
+  productId,
+  addedLocally,
+  existsRemotely,
+  latest,
+  error,
+}: {
+  productId: string;
+  addedLocally: boolean;
+  existsRemotely: boolean;
+  latest: boolean;
+  error: unknown;
+}) {
+  if (!latest) return;
+  const store = useFavoritesStore.getState();
+  if (addedLocally && !existsRemotely && store.isFavorite(productId)) {
+    store.removeFavorite(productId);
+  }
+  toast.error(error instanceof Error ? error.message : "Erro ao salvar");
+}
+
+function handleRemoveFailure({
+  productId,
+  previousVariant,
+  existsRemotely,
+  latest,
+  error,
+}: {
+  productId: string;
+  previousVariant: FavoriteVariantInfo | undefined;
+  existsRemotely: boolean;
+  latest: boolean;
+  error: unknown;
+}) {
+  if (!latest) return;
+  const store = useFavoritesStore.getState();
+  if (existsRemotely && !store.isFavorite(productId)) {
+    store.addFavorite(productId, previousVariant);
+  }
+  console.warn("[favoriteQuickAdd] remove failed", error);
+}
+
 type FavoriteDecision = "local" | "remove" | "add" | "picker";
 interface FavoriteClickOptions {
   shiftKey?: boolean;
@@ -102,6 +144,7 @@ export function useFavoriteQuickAdd() {
   const { toggleFavorite, isFavorite } = useFavoritesStore();
   const productMutationTails = useRef(new Map<string, Promise<void>>());
   const productMutationVersions = useRef(new Map<string, number>());
+  const productRemoteStates = useRef(new Map<string, boolean>());
 
   const enqueueProductMutation = useCallback(async (
     productId: string,
@@ -120,6 +163,7 @@ export function useFavoriteQuickAdd() {
       if (productMutationTails.current.get(productId) === current) {
         productMutationTails.current.delete(productId);
         productMutationVersions.current.delete(productId);
+        productRemoteStates.current.delete(productId);
       }
     }
   }, []);
@@ -146,6 +190,12 @@ export function useFavoriteQuickAdd() {
 
   const hasMultipleLists = lists.length > 1;
 
+  const rememberRemoteState = useCallback((productId: string, localFallback: boolean) => {
+    if (!productRemoteStates.current.has(productId)) {
+      productRemoteStates.current.set(productId, membership.has(productId) || localFallback);
+    }
+  }, [membership]);
+
   /** Adiciona produto remotamente em uma lista específica + registra no store legado (sync local). */
   const addToList = useCallback(
     async (listId: string, product: Product, variant?: FavoriteVariantInfo) => {
@@ -153,10 +203,12 @@ export function useFavoriteQuickAdd() {
       // A interação visual e a cópia local são imediatas. A persistência
       // remota não deve congelar o coração do catálogo em redes lentas.
       const addedLocally = !isFavorite(product.id);
+      rememberRemoteState(product.id, !addedLocally);
       if (addedLocally) toggleFavorite(product.id, variant);
       await enqueueProductMutation(product.id, async (isLatest) => {
         try {
           await persistFavorite(user.id, listId, product, variant);
+          productRemoteStates.current.set(product.id, true);
           saveLastListId(listId);
           qc.invalidateQueries({ queryKey: [FAVORITE_MEMBERSHIP_QUERY_KEY] });
           qc.invalidateQueries({ queryKey: ["favorite-items"] });
@@ -164,17 +216,18 @@ export function useFavoriteQuickAdd() {
           const listName = lists.find((l) => l.id === listId)?.name ?? "lista";
           if (isLatest()) toast.success(`Adicionado em "${listName}"`);
         } catch (e) {
-          if (isLatest() && addedLocally && useFavoritesStore.getState().isFavorite(product.id)) {
-            useFavoritesStore.getState().removeFavorite(product.id);
-          }
-          if (isLatest()) {
-            const msg = e instanceof Error ? e.message : "Erro ao salvar";
-            toast.error(msg);
-          }
+          const existsRemotely = productRemoteStates.current.get(product.id) ?? false;
+          handleAddFailure({
+            productId: product.id,
+            addedLocally,
+            existsRemotely,
+            latest: isLatest(),
+            error: e,
+          });
         }
       });
     },
-    [user, qc, lists, isFavorite, toggleFavorite, enqueueProductMutation]
+    [user, qc, lists, isFavorite, toggleFavorite, enqueueProductMutation, rememberRemoteState]
   );
 
   /** Remove produto de TODAS as listas remotas + store legado. */
@@ -185,6 +238,7 @@ export function useFavoriteQuickAdd() {
       // acontece em segundo plano e reverte o estado se o banco a rejeitar.
       const previousVariant = useFavoritesStore.getState().getFavoriteVariant(productId);
       const removedLocally = isFavorite(productId);
+      rememberRemoteState(productId, removedLocally);
       if (removedLocally) toggleFavorite(productId);
       await enqueueProductMutation(productId, async (isLatest) => {
         try {
@@ -194,18 +248,23 @@ export function useFavoriteQuickAdd() {
             .eq("user_id", user.id)
             .eq("product_id", productId);
           if (error) throw error;
+          productRemoteStates.current.set(productId, false);
           qc.invalidateQueries({ queryKey: [FAVORITE_MEMBERSHIP_QUERY_KEY] });
           qc.invalidateQueries({ queryKey: ["favorite-items"] });
           qc.invalidateQueries({ queryKey: ["favorite-lists"] });
         } catch (e) {
-          if (isLatest() && removedLocally && !useFavoritesStore.getState().isFavorite(productId)) {
-            useFavoritesStore.getState().addFavorite(productId, previousVariant);
-          }
-          if (isLatest()) console.warn("[favoriteQuickAdd] remove failed", e);
+          const existsRemotely = productRemoteStates.current.get(productId) ?? removedLocally;
+          handleRemoveFailure({
+            productId,
+            previousVariant,
+            existsRemotely,
+            latest: isLatest(),
+            error: e,
+          });
         }
       });
     },
-    [user, qc, isFavorite, toggleFavorite, enqueueProductMutation]
+    [user, qc, isFavorite, toggleFavorite, enqueueProductMutation, rememberRemoteState]
   );
 
   /** Cria lista nova e adiciona o produto nela. */
