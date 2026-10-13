@@ -141,6 +141,7 @@
 ## 📂 Seção: TOOLS
 | Rota | Componente |
 |------|------------|
+| `/ajuda` | `@/pages/HelpCenterPage` |
 | `/mockup-generator` | `@/pages/MockupGenerator` |
 | `/magic-up` | `@/pages/MagicUp` |
 | `/match` | `@/pages/ProductMatchPage` |

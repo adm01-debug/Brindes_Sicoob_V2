@@ -57,6 +57,7 @@ export const RBAC_ROUTES: RbacRouteEntry[] = [
   // ─── Autenticadas (qualquer papel logado) ────────────────────────────
   { path: "/", label: "Início / Catálogo", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "catalog" },
   { path: "/dashboard", label: "Dashboard pessoal", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "user" },
+  { path: "/ajuda", label: "Central de Ajuda", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "user" },
   { path: "/produtos", label: "Produtos", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "catalog" },
   { path: "/orcamentos", label: "Orçamentos", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "user" },
   { path: "/carrinhos", label: "Carrinhos", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "user" },

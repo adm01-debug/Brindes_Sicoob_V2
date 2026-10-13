@@ -75,9 +75,6 @@ function SearchTrigger({ search }: { search: GlobalSearchState }) {
         <span className="relative flex-1 text-left text-[13px] transition-colors duration-300 [color:hsl(var(--command-text-muted))] group-hover:text-foreground">
           Busca inteligente...
         </span>
-        <kbd className="hidden shrink-0 items-center gap-0.5 rounded-md border border-border/50 bg-muted/50 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground/60 transition-colors group-hover:border-primary/20 group-hover:text-primary/50 sm:inline-flex">
-          ⌘K
-        </kbd>
       </button>
       <Tooltip>
         <TooltipTrigger asChild>

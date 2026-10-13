@@ -61,7 +61,6 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import type { DateRange } from "react-day-picker";
 import { useAuth } from "@/contexts/AuthContext";
-import { useGlobalShortcuts } from "@/hooks/useGlobalShortcuts";
 import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
 import { type OrderStatus, ORDER_STATUS_OPTIONS, type SicoobOrder } from "@/types/sicoob/orders";
 import { sicoobOrderService } from "@/services/sicoob/orderService";
@@ -229,7 +228,6 @@ function useOrdersController() {
   const data = useOrdersData(filters);
   const exports = useOrderExports(data.orders);
   const selection = useOrderSelection(navigate);
-  useGlobalShortcuts({ onSearchFocus: () => document.querySelector<HTMLInputElement>('input[placeholder*="Buscar"]')?.focus() });
   return { navigate, canCreateOrder: isVendedor || isAdmin, filters, data, exports, selection };
 }
 
