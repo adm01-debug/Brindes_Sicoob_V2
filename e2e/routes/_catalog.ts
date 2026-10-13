@@ -73,6 +73,7 @@ export const APP_ROUTES: RouteEntry[] = [
   { path: `/colecoes/${SAMPLE_ID}`, area: "app", feature: "collection-detail" },
   { path: "/tendencias", area: "app", titleSlug: "tendencias", feature: "trends", smoke: true, description: "Tendências" },
   { path: "/simulador", area: "app", titleSlug: "simulador", feature: "simulator", smoke: true, description: "Simulador (wizard)" },
+  { path: "/ajuda", area: "app", titleSlug: "ajuda", feature: "help-center", smoke: true, description: "Central de ajuda" },
   { path: "/simulador-precos", area: "app", titleSlug: "simulador-precos", feature: "price-simulator", smoke: true, description: "Simulador de preços" },
   { path: "/estoque", area: "app", feature: "stock", smoke: true, description: "Estoque" },
   { path: "/busca-preco", area: "app", titleSlug: "busca-avancada-preco", feature: "price-search", smoke: true, description: "Busca avançada de preço" },

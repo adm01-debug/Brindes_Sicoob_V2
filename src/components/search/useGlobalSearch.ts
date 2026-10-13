@@ -105,16 +105,9 @@ async function requestSemanticSearch(searchQuery: string, signal: AbortSignal) {
 
 type QuickSuggestion = { label: string };
 
-function useGlobalSearchShortcuts(
-  setOpen: Dispatch<SetStateAction<boolean>>,
-  setVoiceOverlayOpen: Dispatch<SetStateAction<boolean>>,
-) {
+function useVoiceSearchShortcut(setVoiceOverlayOpen: Dispatch<SetStateAction<boolean>>) {
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
-      if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
-        event.preventDefault();
-        setOpen((current) => !current);
-      }
       if (event.key === 'V' && (event.metaKey || event.ctrlKey) && event.shiftKey) {
         event.preventDefault();
         setVoiceOverlayOpen(true);
@@ -122,7 +115,7 @@ function useGlobalSearchShortcuts(
     };
     document.addEventListener('keydown', handleShortcut);
     return () => document.removeEventListener('keydown', handleShortcut);
-  }, [setOpen, setVoiceOverlayOpen]);
+  }, [setVoiceOverlayOpen]);
 }
 
 function useTypingSuggestions(
@@ -273,7 +266,7 @@ export function useGlobalSearch() {
     addToHistory,
     removeFromHistory,
   });
-  useGlobalSearchShortcuts(setOpen, setVoiceOverlayOpen);
+  useVoiceSearchShortcut(setVoiceOverlayOpen);
   return {
     open,
     setOpen,

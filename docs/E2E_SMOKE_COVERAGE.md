@@ -7,9 +7,9 @@
 
 | Métrica | Valor |
 |---|---|
-| Rotas no catálogo | **65** |
-| Rotas `smoke: true` | **32** |
-| Features autenticadas cobertas | **30** |
+| Rotas no catálogo | **66** |
+| Rotas `smoke: true` | **33** |
+| Features autenticadas cobertas | **31** |
 | Smoke público (sem auth) | **2** |
 
 Suíte: [`e2e/flows/20-all-features-smoke.spec.ts`](../e2e/flows/20-all-features-smoke.spec.ts) · Project Playwright: `chromium-smoke` (workers=1, retries=0).
@@ -36,20 +36,21 @@ Ordem do array `SMOKE_COVERAGE`. Numeração bate com os títulos `NN · Nome` n
 | `14` | `quotes-templates` | Templates de orçamento | `/orcamentos/templates` | — |
 | `15` | `quote-new` | Criar novo orçamento (wizard) | `/orcamentos/novo` | — |
 | `16` | `simulator` | Simulador (wizard) | `/simulador` | — |
-| `17` | `price-simulator` | Simulador de preços | `/simulador-precos` | — |
-| `18` | `price-search` | Busca avançada de preço | `/busca-preco` | — |
-| `19` | `stock` | Estoque | `/estoque` | — |
-| `20` | `restock` | Reposição | `/reposicao` | — |
-| `21` | `kit-builder` | Kit Builder | `/montar-kit` | — |
-| `22` | `my-kits` | Meus Kits | `/meus-kits` | — |
-| `23` | `mockup-generator` | Gerador de Mockup | `/mockup-generator` | — |
-| `24` | `mockup-history` | Histórico de Mockups | `/mockups/historico` | — |
-| `25` | `magic-up` | Magic Up (publicidade IA) | `/magic-up` | — |
-| `26` | `commercial-intel` | Inteligência comercial | `/inteligencia-comercial` | — |
-| `27` | `bi` | Business Intelligence | `/ferramentas/bi` | — |
-| `28` | `bi-compare` | BI — Comparador de clientes | `/ferramentas/bi/comparar` | — |
-| `29` | `match` | Match de produtos | `/match` | — |
-| `30` | `dropbox` | Dropbox browser | `/dropbox` | — |
+| `17` | `help-center` | Central de ajuda | `/ajuda` | — |
+| `18` | `price-simulator` | Simulador de preços | `/simulador-precos` | — |
+| `19` | `price-search` | Busca avançada de preço | `/busca-preco` | — |
+| `20` | `stock` | Estoque | `/estoque` | — |
+| `21` | `restock` | Reposição | `/reposicao` | — |
+| `22` | `kit-builder` | Kit Builder | `/montar-kit` | — |
+| `23` | `my-kits` | Meus Kits | `/meus-kits` | — |
+| `24` | `mockup-generator` | Gerador de Mockup | `/mockup-generator` | — |
+| `25` | `mockup-history` | Histórico de Mockups | `/mockups/historico` | — |
+| `26` | `magic-up` | Magic Up (publicidade IA) | `/magic-up` | — |
+| `27` | `commercial-intel` | Inteligência comercial | `/inteligencia-comercial` | — |
+| `28` | `bi` | Business Intelligence | `/ferramentas/bi` | — |
+| `29` | `bi-compare` | BI — Comparador de clientes | `/ferramentas/bi/comparar` | — |
+| `30` | `match` | Match de produtos | `/match` | — |
+| `31` | `dropbox` | Dropbox browser | `/dropbox` | — |
 
 ## Smoke público (sem auth)
 
