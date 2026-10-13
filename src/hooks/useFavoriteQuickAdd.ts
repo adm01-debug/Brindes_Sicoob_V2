@@ -129,7 +129,8 @@ export function useFavoriteQuickAdd() {
       if (!user) return;
       // A interação visual e a cópia local são imediatas. A persistência
       // remota não deve congelar o coração do catálogo em redes lentas.
-      if (!isFavorite(product.id)) toggleFavorite(product.id, variant);
+      const addedLocally = !isFavorite(product.id);
+      if (addedLocally) toggleFavorite(product.id, variant);
       try {
         await persistFavorite(user.id, listId, product, variant);
         saveLastListId(listId);
@@ -139,6 +140,9 @@ export function useFavoriteQuickAdd() {
         const listName = lists.find((l) => l.id === listId)?.name ?? "lista";
         toast.success(`Adicionado em "${listName}"`);
       } catch (e) {
+        if (addedLocally && useFavoritesStore.getState().isFavorite(product.id)) {
+          useFavoritesStore.getState().removeFavorite(product.id);
+        }
         const msg = e instanceof Error ? e.message : "Erro ao salvar";
         toast.error(msg);
       }
@@ -151,18 +155,24 @@ export function useFavoriteQuickAdd() {
     async (productId: string) => {
       if (!user) return;
       // Mantém a experiência local responsiva; a sincronização com a nuvem
-      // acontece em segundo plano e não redefine a intenção do usuário.
-      if (isFavorite(productId)) toggleFavorite(productId);
+      // acontece em segundo plano e reverte o estado se o banco a rejeitar.
+      const previousVariant = useFavoritesStore.getState().getFavoriteVariant(productId);
+      const removedLocally = isFavorite(productId);
+      if (removedLocally) toggleFavorite(productId);
       try {
-        await supabase
+        const { error } = await supabase
           .from("favorite_items")
           .delete()
           .eq("user_id", user.id)
           .eq("product_id", productId);
+        if (error) throw error;
         qc.invalidateQueries({ queryKey: [FAVORITE_MEMBERSHIP_QUERY_KEY] });
         qc.invalidateQueries({ queryKey: ["favorite-items"] });
         qc.invalidateQueries({ queryKey: ["favorite-lists"] });
       } catch (e) {
+        if (removedLocally && !useFavoritesStore.getState().isFavorite(productId)) {
+          useFavoritesStore.getState().addFavorite(productId, previousVariant);
+        }
         console.warn("[favoriteQuickAdd] remove failed", e);
       }
     },

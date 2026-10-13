@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -87,5 +87,32 @@ describe('useFavoriteQuickAdd', () => {
 
     expect(useFavoritesStore.getState().isFavorite(product.id)).toBe(false);
     expect(JSON.parse(localStorage.getItem('product-favorites') ?? '[]')).toEqual([]);
+  });
+
+  it('reverte a inclusão local quando o banco rejeita a gravação', async () => {
+    remote.upsert.mockResolvedValue({ error: new Error('gravação rejeitada') });
+    const { result } = renderHook(() => useFavoriteQuickAdd(), { wrapper });
+
+    act(() => {
+      result.current.handleFavoriteClick(product);
+    });
+
+    await waitFor(() => {
+      expect(useFavoritesStore.getState().isFavorite(product.id)).toBe(false);
+    });
+  });
+
+  it('restaura a remoção local quando o banco rejeita a exclusão', async () => {
+    useFavoritesStore.getState().addFavorite(product.id, { color_name: 'Verde' });
+    remote.finalDelete.mockResolvedValue({ error: new Error('exclusão rejeitada') });
+    const { result } = renderHook(() => useFavoriteQuickAdd(), { wrapper });
+
+    act(() => {
+      result.current.handleFavoriteClick(product);
+    });
+
+    await waitFor(() => {
+      expect(useFavoritesStore.getState().getFavoriteVariant(product.id)?.color_name).toBe('Verde');
+    });
   });
 });
