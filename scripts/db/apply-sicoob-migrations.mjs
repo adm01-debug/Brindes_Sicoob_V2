@@ -87,6 +87,14 @@ const TARGETS = [
     file: "supabase/migrations/20261008123000_fix_favorite_items_upsert_conflict.sql",
     sha256: "79496a33511eb0fcba9704b41ec97b33622e4b1afaebab6124767f1cd84b2ee6",
   },
+  {
+    file: "supabase/migrations/20261013115605_harden_sicoob_budget_authority.sql",
+    sha256: "0d19bd952c97dd5482f9e4dc4c8656812a868845a2957f07464f406af257053b",
+  },
+  {
+    file: "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
+    sha256: "bb5a50a5a1101133cdfaecdb1988f61431380213500f6d5e1428495c09679522",
+  },
 ];
 
 function sha256(value) {
@@ -220,13 +228,23 @@ function dollarQuote(value, label) {
 // esperado: funções forward-only podem ser substituídas por migrations novas
 // sem que o arquivo antigo deixe de constar no ledger.
 function latestDefiner(targets, functionName) {
+  const declarations = [
+    `CREATE OR REPLACE FUNCTION public.${functionName}(`,
+    `CREATE FUNCTION public.${functionName}(`,
+  ];
   return [...targets].reverse().find((target) =>
-    target.sql.includes(`CREATE OR REPLACE FUNCTION public.${functionName}(`));
+    declarations.some((declaration) => target.sql.includes(declaration)));
 }
 
 function extractFunctionBody(sql, functionName) {
-  const declaration = `CREATE OR REPLACE FUNCTION public.${functionName}(`;
-  const declarationIndex = sql.indexOf(declaration);
+  const declarations = [
+    `CREATE OR REPLACE FUNCTION public.${functionName}(`,
+    `CREATE FUNCTION public.${functionName}(`,
+  ];
+  const declarationIndex = declarations
+    .map((declaration) => sql.indexOf(declaration))
+    .filter((index) => index >= 0)
+    .sort((left, right) => left - right)[0] ?? -1;
   const delimiter = "AS $function$";
   const start = sql.indexOf(delimiter, declarationIndex);
   const bodyStart = start + delimiter.length;
@@ -667,7 +685,7 @@ async function validateContract(client, targets) {
     && result.actor_fk_exists && result.quote_fk_exists && result.hash_constraint_exists && constraintsExact
     && result.status_security_safe && result.status_authenticated_execute
     && !result.status_anon_execute && !result.status_public_execute
-    && !result.transition_assert_authenticated_execute
+    && result.transition_assert_authenticated_execute
     && !result.transition_assert_anon_execute && !result.transition_assert_public_execute
     && !result.notification_authenticated_execute && !result.notification_anon_execute
     && !result.notification_public_execute
@@ -839,7 +857,7 @@ BEGIN
        WHERE p.oid = to_regprocedure('public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)')
          AND a.grantee = 0 AND a.privilege_type = 'EXECUTE'
      )
-     OR has_function_privilege('authenticated', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE')
+     OR NOT has_function_privilege('authenticated', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE')
      OR has_function_privilege('anon', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE')
      OR EXISTS (
        SELECT 1 FROM pg_proc p,
