@@ -139,6 +139,7 @@ function RequestIdButton({ requestId, compact = false }: { requestId?: string; c
   }
   return (
     <><span>{requestId}</span><Button size="icon" variant="ghost" className="h-5 w-5"
+      aria-label={`Copiar request_id ${requestId}`}
       onClick={() => void copyText(requestId, "request_id")}><Copy className="h-3 w-3" /></Button></>
   );
 }
@@ -336,6 +337,7 @@ export function EdgeFunctionLogsPanel() {
               size="sm"
               variant="ghost"
               onClick={handleClearAll}
+              aria-label="Limpar logs de Edge Functions em memória"
               title="Limpar logs em memória"
             >
               <Trash2 className="h-3.5 w-3.5" />

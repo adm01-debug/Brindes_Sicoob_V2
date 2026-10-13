@@ -193,7 +193,7 @@ export async function basicA11yChecks(page: Page) {
     0,
   );
 
-  // 3. Botões devem ter texto ou aria-label
+  // 3. Botões devem ter nome acessível (texto, ARIA, title ou label associado)
   const orphanButtons = await page.evaluate(() => {
     const btns = Array.from(document.querySelectorAll('button:not([disabled])'));
     return btns
@@ -201,21 +201,33 @@ export async function basicA11yChecks(page: Page) {
         const visible = (b as HTMLElement).offsetParent !== null;
         if (!visible) return false;
         const text = (b.textContent ?? '').trim();
+        const ariaLabel = b.getAttribute('aria-label')?.trim();
+        const title = b.getAttribute('title')?.trim();
         const labelledBy = b.getAttribute('aria-labelledby')?.trim();
         const hasAriaLabelledBy = labelledBy?.split(/\s+/).some((labelId) => {
           const label = document.getElementById(labelId);
           return !!(label?.textContent?.trim() || label?.getAttribute('aria-label')?.trim());
         });
-        const hasAria = !!b.getAttribute('aria-label')?.trim() || !!hasAriaLabelledBy;
         const id = b.getAttribute('id');
         const hasLabelFor = id ? !!document.querySelector(`label[for="${id}"]`) : false;
-        return !text && !hasAria && !hasLabelFor;
+        const wrappedLabel = b.closest('label');
+        const hasWrappedLabel = !!(
+          wrappedLabel?.textContent?.trim() || wrappedLabel?.getAttribute('aria-label')?.trim()
+        );
+        return (
+          !text &&
+          !ariaLabel &&
+          !title &&
+          !hasAriaLabelledBy &&
+          !hasLabelFor &&
+          !hasWrappedLabel
+        );
       })
       .map((button) => button.outerHTML.slice(0, 240));
   });
   expect(
     orphanButtons,
-    'botões sem texto/aria-label: ' + JSON.stringify(orphanButtons),
+    'botões sem nome acessível: ' + JSON.stringify(orphanButtons),
   ).toHaveLength(0);
 }
 
