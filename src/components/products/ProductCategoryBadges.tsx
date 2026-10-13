@@ -74,7 +74,7 @@ function ProductActionBadges({ props, navigate }: { props: ProductCategoryBadges
     <>
       {showPersonalizationLink && <ActionBadge icon={<Palette className="h-3.5 w-3.5 mr-1.5" />} label="Personalização" tooltip="Simular preço de personalização" className="border-primary/50 bg-primary/10 hover:bg-primary/20 text-primary hover:text-primary hover:border-primary" onClick={() => navigate("/simulador", { state: { preSelectedProduct: productData } })} />}
       <ActionBadge icon={<Sparkles className="h-3.5 w-3.5 mr-1.5" />} label="Visualizar com Logo" tooltip="Gerar mockup com sua logo" className="border-success/50 bg-success/15 hover:bg-success/25 text-success hover:text-success/80 hover:border-success" onClick={() => navigate("/mockup-generator", { state: { preSelectedProduct: productData } })} />
-      {!isKit && <ActionBadge icon={<Package className="h-3.5 w-3.5 mr-1.5" />} label="Monte seu Kit" tooltip="Montar um kit personalizado com este produto" className="border-warning/50 bg-warning/15 hover:bg-warning/25 text-warning hover:text-warning hover:border-warning" onClick={() => navigate(`/kit-builder?product=${productId}`)} />}
+      {!isKit && <ActionBadge icon={<Package className="h-3.5 w-3.5 mr-1.5" />} label="Monte seu Kit" tooltip="Montar um kit personalizado com este produto" className="border-warning/50 bg-warning/15 hover:bg-warning/25 text-warning hover:text-warning hover:border-warning" onClick={() => navigate(`/montar-kit?product=${productId}`)} />}
     </>
   );
 }

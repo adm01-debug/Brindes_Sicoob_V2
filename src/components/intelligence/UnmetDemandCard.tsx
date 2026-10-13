@@ -119,7 +119,7 @@ export function UnmetDemandCard({ days }: UnmetDemandCardProps) {
                   size="sm"
                   variant="outline"
                   className="h-7 text-[10px] gap-1 shrink-0"
-                  onClick={() => navigate(`/catalogo?busca=${encodeURIComponent(item.term)}`)}
+                  onClick={() => navigate(`/filtros?search=${encodeURIComponent(item.term)}`)}
                   aria-label={`Pesquisar ${item.term} no catálogo`}
                 >
                   <Plus className="h-3 w-3" />

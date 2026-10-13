@@ -118,7 +118,7 @@ function getRoleCopy(role: DevAccessUserRole, blockedPath: string): RoleCopy {
         </>
       ),
       contextualCtaLabel: "Voltar ao Catálogo",
-      contextualCtaPath: "/catalogo",
+      contextualCtaPath: "/filtros",
       contextualCtaIcon: <ShoppingCart className="h-4 w-4 mr-2" />,
     };
   }

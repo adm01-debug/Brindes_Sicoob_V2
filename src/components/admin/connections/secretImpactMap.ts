@@ -31,7 +31,7 @@ const QUOTES_SCREEN = "/orcamentos";
 const PROMOBRIND_FULL: SecretImpact = {
   system: "Banco externo Promobrind (catálogo SSOT)",
   screens: [
-    "/catalogo (grade, lista, tabela)",
+    "/filtros (catálogo em grade, lista e tabela)",
     "/produto/:slug (PDP)",
     "/comparar (comparador)",
     "/admin/conexoes → 🐛 Debug (preview de produtos)",

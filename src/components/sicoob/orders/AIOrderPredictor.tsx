@@ -79,7 +79,7 @@ export function AIOrderPredictor() {
                   variant="ghost" 
                   size="sm" 
                   className="w-full h-8 text-[10px] font-bold transition-all border border-sicoob-green/10 group-hover:bg-sicoob-green group-hover:text-white"
-                  onClick={() => navigate("/catalogo")}
+                  onClick={() => navigate("/filtros")}
                 >
                   Iniciar novo pedido <ArrowRight className="ml-1 h-3 w-3" />
                 </Button>
