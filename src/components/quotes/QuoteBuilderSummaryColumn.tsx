@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { QuoteSummary } from "@/components/quotes/QuoteSummary";
 
 interface Props {
+  readOnly?: boolean;
   items: QuoteItem[];
   activeItemIndex: number | null;
   setActiveItemIndex: (i: number | null) => void;
@@ -263,7 +264,7 @@ function SummaryModals({ model }: { model: SummaryModel }) {
 export function QuoteBuilderSummaryColumn(props: Props) {
   const { isGerentePa } = useAuth();
   const model = useSummaryModel(props);
-  return <div className="lg:col-span-4"><div className="sticky top-24"><div
+  return <div className={cn("lg:col-span-4", props.readOnly && "pointer-events-none grayscale-[0.3] opacity-80")} aria-disabled={props.readOnly || undefined}><div className="sticky top-24"><div
     className="flex flex-col rounded-2xl border border-border/50 bg-card shadow-xl overflow-hidden">
     <div className="flex items-center gap-2 p-4 pb-3"><ShoppingCart className="h-4 w-4 text-primary" />
       <h3 className="font-display font-semibold text-base">Resumo</h3></div>

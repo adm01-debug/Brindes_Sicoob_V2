@@ -577,6 +577,10 @@ export function useQuoteBuilderState() {
   }, []);
 
   const handleSaveQuote = useCallback(async (status: SaveStatus = "draft", sellerNotes?: string) => {
+    if (!canEdit) {
+      toast.error("Este orçamento está disponível somente para leitura.");
+      return;
+    }
     if (!validateSaveForm(status, isDraftValid, isFormValid, validationErrors)) return;
     if (!validateFreshPrices(status, items)) return;
     const isPaUser = isPaPurchaser(isGerentePa, userRoles);
@@ -607,7 +611,7 @@ export function useQuoteBuilderState() {
       result, isEditMode, expectedRowVersion, finalStatus, transitionApplied,
       setExpectedRowVersion, navigate,
     });
-  }, [isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, tags, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, updateQuoteStatus, currentStatus, expectedRowVersion, maxDiscountPercent, requestApproval, isGerentePa, userRoles, profile?.pa_id]);
+  }, [canEdit, isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, tags, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, updateQuoteStatus, currentStatus, expectedRowVersion, maxDiscountPercent, requestApproval, isGerentePa, userRoles, profile?.pa_id]);
 
   return {
     navigate, quoteId, isEditMode, loadingQuote, hasUnsavedData, user,
