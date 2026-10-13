@@ -1,0 +1,155 @@
+[
+  {
+    "jobid": 1,
+    "jobname": "ensure-admin-audit-log-partitions",
+    "schedule": "0 3 1 * *",
+    "active": true,
+    "tipo": "SQL",
+    "edge": null,
+    "funcao": "public.ensure_admin_audit_log_partitions"
+  },
+  {
+    "jobid": 2,
+    "jobname": "cleanup-rate-limits",
+    "schedule": "0 * * * *",
+    "active": true,
+    "tipo": "SQL",
+    "edge": null,
+    "funcao": "public.cleanup_rate_limits"
+  },
+  {
+    "jobid": 3,
+    "jobname": "cleanup-expired-step-up",
+    "schedule": "*/15 * * * *",
+    "active": true,
+    "tipo": "SQL",
+    "edge": null,
+    "funcao": "public.cleanup_expired_step_up"
+  },
+  {
+    "jobid": 5,
+    "jobname": "cleanup-expired-collection-trash",
+    "schedule": "0 3 * * *",
+    "active": true,
+    "tipo": "SQL",
+    "edge": null,
+    "funcao": "public.cleanup_expired_collection_trash"
+  },
+  {
+    "jobid": 6,
+    "jobname": "cleanup-expired-favorite-trash",
+    "schedule": "10 3 * * *",
+    "active": true,
+    "tipo": "SQL",
+    "edge": null,
+    "funcao": "public.cleanup_expired_favorite_trash"
+  },
+  {
+    "jobid": 7,
+    "jobname": "cleanup-expired-public-comparisons",
+    "schedule": "20 3 * * *",
+    "active": true,
+    "tipo": "SQL",
+    "edge": null,
+    "funcao": "public.cleanup_expired_public_comparisons"
+  },
+  {
+    "jobid": 8,
+    "jobname": "cleanup-old-notifications",
+    "schedule": "30 3 * * *",
+    "active": true,
+    "tipo": "SQL",
+    "edge": null,
+    "funcao": "public.cleanup_old_notifications"
+  },
+  {
+    "jobid": 9,
+    "jobname": "cleanup-security-logs",
+    "schedule": "40 3 * * *",
+    "active": true,
+    "tipo": "SQL",
+    "edge": null,
+    "funcao": "public.cleanup_security_logs"
+  },
+  {
+    "jobid": 10,
+    "jobname": "cleanup-webhook-logs",
+    "schedule": "50 3 * * *",
+    "active": true,
+    "tipo": "SQL",
+    "edge": null,
+    "funcao": "public.cleanup_webhook_logs"
+  },
+  {
+    "jobid": 12,
+    "jobname": "cleanup-discount-test-data",
+    "schedule": "10 4 * * *",
+    "active": true,
+    "tipo": "SQL",
+    "edge": null,
+    "funcao": "public.cleanup_discount_test_data"
+  },
+  {
+    "jobid": 17,
+    "jobname": "sicoob-approval-outbox-worker",
+    "schedule": "* * * * *",
+    "active": true,
+    "tipo": "SQL",
+    "edge": null,
+    "funcao": "public.dispatch_sicoob_approval_worker"
+  },
+  {
+    "jobid": 18,
+    "jobname": "sicoob-materialize-overdue-payments",
+    "schedule": "17 * * * *",
+    "active": true,
+    "tipo": "SQL",
+    "edge": null,
+    "funcao": "public.mark_overdue_sicoob_payments"
+  },
+  {
+    "jobid": 19,
+    "jobname": "sicoob-approval-outbox-retention",
+    "schedule": "23 3 * * *",
+    "active": true,
+    "tipo": "SQL",
+    "edge": null,
+    "funcao": "public.archive_sicoob_approval_deliveries"
+  },
+  {
+    "jobid": 20,
+    "jobname": "sicoob-approval-outbox-monitor",
+    "schedule": "*/2 * * * *",
+    "active": true,
+    "tipo": "SQL",
+    "edge": null,
+    "funcao": "public.monitor_sicoob_approval_worker"
+  },
+  {
+    "jobid": 23,
+    "jobname": "process-export-queue",
+    "schedule": "* * * * *",
+    "active": true,
+    "tipo": "SQL",
+    "edge": null,
+    "funcao": "public.dispatch_sicoob_export_worker"
+  },
+  {
+    "jobid": 26,
+    "jobname": "external-db-bridge-keepalive",
+    "schedule": "*/4 * * * *",
+    "active": true,
+    "tipo": "SQL",
+    "edge": null,
+    "funcao": "public.dispatch_sicoob_external_db_keepalive"
+  },
+  {
+    "jobid": 27,
+    "jobname": "connections-auto-test",
+    "schedule": "*/15 * * * *",
+    "active": true,
+    "tipo": "SQL",
+    "edge": null,
+    "funcao": "public.dispatch_sicoob_connections_auto_test"
+  }
+]

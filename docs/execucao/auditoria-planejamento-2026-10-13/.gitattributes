@@ -1,0 +1,5 @@
+# Preserva os bytes dos CSVs coletados para manter válidos os hashes de evidência.
+*.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+# Estas duas capturas históricas preservam o espaçamento original auditado.
+generate_quote_number.sql whitespace=-blank-at-eol
+local-PLANO_100.md whitespace=-blank-at-eof

@@ -1,0 +1,1092 @@
+[
+  {
+    "arquivo": ".github/workflows/e2e.yml",
+    "linha": 110,
+    "texto": "      # Garante que TODO test() no spec do smoke está sob describe @smoke."
+  },
+  {
+    "arquivo": "e2e/admin-conexoes-credentials-active-products.spec.ts",
+    "linha": 35,
+    "texto": "    test.skip(true, 'Rota protegida — necessário login admin para o E2E.');"
+  },
+  {
+    "arquivo": "e2e/admin-conexoes-credentials-active-products.spec.ts",
+    "linha": 41,
+    "texto": "    test.skip(true, 'Sessão atual não possui o papel dev exigido por /admin/conexoes.');"
+  },
+  {
+    "arquivo": "e2e/admin-conexoes-zone-collapse.spec.ts",
+    "linha": 43,
+    "texto": "    test.skip(true, 'Rota protegida — necessário login admin para o E2E.');"
+  },
+  {
+    "arquivo": "e2e/admin-conexoes-zone-collapse.spec.ts",
+    "linha": 50,
+    "texto": "    test.skip(true, 'Sessão admin não disponível.');"
+  },
+  {
+    "arquivo": "e2e/admin-conexoes-zone-collapse.spec.ts",
+    "linha": 56,
+    "texto": "    test.skip(true, 'Sessão atual não possui o papel dev exigido por /admin/conexoes.');"
+  },
+  {
+    "arquivo": "e2e/audit-validation.spec.ts",
+    "linha": 65,
+    "texto": "    test.skip("
+  },
+  {
+    "arquivo": "e2e/editor-permissions.spec.ts",
+    "linha": 98,
+    "texto": "    test.skip("
+  },
+  {
+    "arquivo": "e2e/fixtures/test-base.ts",
+    "linha": 105,
+    "texto": "  test.skip(!process.env.E2E_USER_EMAIL || !process.env.E2E_USER_PASSWORD, reason);"
+  },
+  {
+    "arquivo": "e2e/fixtures/test-base.ts",
+    "linha": 110,
+    "texto": "  test.skip("
+  },
+  {
+    "arquivo": "e2e/flows/10-admin.spec.ts",
+    "linha": 14,
+    "texto": "    test.skip("
+  },
+  {
+    "arquivo": "e2e/flows/12-cart-checkout.spec.ts",
+    "linha": 105,
+    "texto": "    test.skip(!ready, 'Sem empresas cadastradas para criar carrinho de teste');"
+  },
+  {
+    "arquivo": "e2e/flows/12-cart-checkout.spec.ts",
+    "linha": 108,
+    "texto": "    test.skip(!productId, 'Não foi possível adicionar produto (popover/variante indisponível)');"
+  },
+  {
+    "arquivo": "e2e/flows/12-cart-checkout.spec.ts",
+    "linha": 168,
+    "texto": "    test.skip(!ready, 'Sem empresas para preparar carrinho');"
+  },
+  {
+    "arquivo": "e2e/flows/12-cart-checkout.spec.ts",
+    "linha": 191,
+    "texto": "      test.skip(true, 'Sem item/carrinho disponível para testar checkout com falha');"
+  },
+  {
+    "arquivo": "e2e/flows/20-all-features-smoke.spec.ts",
+    "linha": 28,
+    "texto": "/** Ordem fixa: garante mesmo relatório em todo run do CI. */"
+  },
+  {
+    "arquivo": "e2e/flows/20-all-features-smoke.spec.ts",
+    "linha": 337,
+    "texto": "    test.skip(!url || !anon, 'VITE_SUPABASE_* ausentes');"
+  },
+  {
+    "arquivo": "e2e/flows/21-feature-matrix.spec.ts",
+    "linha": 19,
+    "texto": "    if (!(await card.count())) test.skip(true, \"Catálogo vazio neste ambiente\");"
+  },
+  {
+    "arquivo": "e2e/flows/21-feature-matrix.spec.ts",
+    "linha": 30,
+    "texto": "    if (!(await card.count())) test.skip(true, \"Catálogo vazio\");"
+  },
+  {
+    "arquivo": "e2e/flows/22-header-sticky.spec.ts",
+    "linha": 124,
+    "texto": "        test.skip("
+  },
+  {
+    "arquivo": "e2e/flows/22-header-sticky.spec.ts",
+    "linha": 140,
+    "texto": "        test.skip("
+  },
+  {
+    "arquivo": "e2e/flows/23-scroll-to-top-button.spec.ts",
+    "linha": 43,
+    "texto": "      test.skip("
+  },
+  {
+    "arquivo": "e2e/flows/23-scroll-to-top-button.spec.ts",
+    "linha": 123,
+    "texto": "      test.skip(/\\/login(\\?|$)/.test(page.url()), 'Dashboard redirecionou para /login.');"
+  },
+  {
+    "arquivo": "e2e/flows/23-scroll-to-top-button.spec.ts",
+    "linha": 182,
+    "texto": "    test.skip(/\\/login(\\?|$)/.test(page.url()), 'Dashboard redirecionou para /login.');"
+  },
+  {
+    "arquivo": "e2e/flows/p0/01-auth-recovery.spec.ts",
+    "linha": 16,
+    "texto": "  test.skip('login: auth retornando 503 mostra erro amigável e mantém form interativo', async ({"
+  },
+  {
+    "arquivo": "e2e/flows/p0/01-auth-recovery.spec.ts",
+    "linha": 30,
+    "texto": "  test.skip('sessão expirada durante navegação redireciona para /login com returnTo', async ({"
+  },
+  {
+    "arquivo": "e2e/flows/p0/01-auth-recovery.spec.ts",
+    "linha": 39,
+    "texto": "  test.skip('force-global-logout encerra todas as abas em < 5s', async ({ context }) => {"
+  },
+  {
+    "arquivo": "e2e/flows/p0/02-catalog-degraded.spec.ts",
+    "linha": 11,
+    "texto": "  test.skip('external-db-bridge 503: catálogo serve cache e mostra banner', async ({ page }) => {"
+  },
+  {
+    "arquivo": "e2e/flows/p0/02-catalog-degraded.spec.ts",
+    "linha": 21,
+    "texto": "  test.skip('ações de escrita ficam desabilitadas em modo degradado', async ({ page }) => {"
+  },
+  {
+    "arquivo": "e2e/flows/p0/02-catalog-degraded.spec.ts",
+    "linha": 30,
+    "texto": "  test.skip('Cloudflare Stream offline: vídeo cai pra imagem sem erro no console', async ({"
+  },
+  {
+    "arquivo": "e2e/flows/p0/03-quote-blocked.spec.ts",
+    "linha": 11,
+    "texto": "  test.skip('bitrix-sync 502: orçamento é salvo localmente e enfileirado para retry', async ({"
+  },
+  {
+    "arquivo": "e2e/flows/p0/03-quote-blocked.spec.ts",
+    "linha": 19,
+    "texto": "  test.skip('crm-db-bridge 503: seletor de empresa cai pra busca local sem travar', async ({"
+  },
+  {
+    "arquivo": "e2e/flows/p0/03-quote-blocked.spec.ts",
+    "linha": 27,
+    "texto": "  test.skip('aprovação pública: token inválido NÃO expõe outros orçamentos', async ({ page }) => {"
+  },
+  {
+    "arquivo": "e2e/flows/p0/04-checkout-blocked.spec.ts",
+    "linha": 11,
+    "texto": "  test.skip('create-order 500: carrinho permanece intacto, mostra erro acionável', async ({"
+  },
+  {
+    "arquivo": "e2e/flows/p0/04-checkout-blocked.spec.ts",
+    "linha": 20,
+    "texto": "  test.skip('falha após dedução de estoque: rollback completo (nenhum órfão)', async () => {"
+  },
+  {
+    "arquivo": "e2e/flows/p0/04-checkout-blocked.spec.ts",
+    "linha": 24,
+    "texto": "  test.skip('dupla submissão (double-click): cria apenas 1 order (idempotência)', async () => {"
+  },
+  {
+    "arquivo": "e2e/flows/p0/05-admin-down.spec.ts",
+    "linha": 11,
+    "texto": "  test.skip('full-op-diagnostics 500: tela de diagnóstico mostra retry, não tela branca', async ({"
+  },
+  {
+    "arquivo": "e2e/flows/p0/05-admin-down.spec.ts",
+    "linha": 19,
+    "texto": "  test.skip('connections-hub: MCP 401 marca conexão como erro com CTA reconectar', async ({"
+  },
+  {
+    "arquivo": "e2e/flows/p0/05-admin-down.spec.ts",
+    "linha": 27,
+    "texto": "  test.skip('todas edge functions 503: admin não fica em loop infinito de loading', async ({"
+  },
+  {
+    "arquivo": "e2e/flows/p0/05-admin-down.spec.ts",
+    "linha": 37,
+    "texto": "  test.skip('MCP keys: revogação automática refletida na UI sem F5', async () => {"
+  },
+  {
+    "arquivo": "e2e/flows/p0/06-auth-lifecycle.spec.ts",
+    "linha": 30,
+    "texto": "    test.skip(!E2E_USER || !E2E_PASS, 'Credenciais E2E_USER_* ausentes');"
+  },
+  {
+    "arquivo": "e2e/flows/p0/06-auth-lifecycle.spec.ts",
+    "linha": 53,
+    "texto": "    test.skip(!E2E_USER || !E2E_PASS, 'Credenciais E2E_USER_* ausentes');"
+  },
+  {
+    "arquivo": "e2e/flows/p0/06-auth-lifecycle.spec.ts",
+    "linha": 80,
+    "texto": "    // Pode redirecionar imediato OU exigir nova ação — em todo caso, a"
+  },
+  {
+    "arquivo": "e2e/flows/p0/06-auth-lifecycle.spec.ts",
+    "linha": 87,
+    "texto": "    test.skip(!E2E_USER || !E2E_PASS, 'Credenciais E2E_USER_* ausentes');"
+  },
+  {
+    "arquivo": "e2e/flows/p0/06-auth-lifecycle.spec.ts",
+    "linha": 101,
+    "texto": "    test.skip(!E2E_USER || !E2E_PASS, 'Credenciais E2E_USER_* ausentes');"
+  },
+  {
+    "arquivo": "e2e/flows/p0/07-rls-enforcement.spec.ts",
+    "linha": 70,
+    "texto": "    test.skip("
+  },
+  {
+    "arquivo": "e2e/flows/p0/07-rls-enforcement.spec.ts",
+    "linha": 74,
+    "texto": "    test.skip(!E2E_USER || !E2E_PASS, 'Credenciais E2E_USER_* ausentes');"
+  },
+  {
+    "arquivo": "e2e/flows/p0/08-password-recovery.spec.ts",
+    "linha": 154,
+    "texto": "      test.skip(true, 'link de esqueceu-senha não exposto na UI');"
+  },
+  {
+    "arquivo": "e2e/flows/pwa-performance.spec.ts",
+    "linha": 16,
+    "texto": "    test.skip(!swRegistration, \"O servidor E2E de desenvolvimento não registra Service Worker.\");"
+  },
+  {
+    "arquivo": "e2e/helpers/auth.ts",
+    "linha": 5,
+    "texto": " *  - **Todo login UI** deve passar por `loginViaUI` ou `loginAs` — nunca usar"
+  },
+  {
+    "arquivo": "e2e/helpers/auth.ts",
+    "linha": 250,
+    "texto": "    test.skip(true, `Credenciais E2E_${role.toUpperCase()}_EMAIL/PASSWORD ausentes`);"
+  },
+  {
+    "arquivo": "e2e/helpers/e2e-resources.ts",
+    "linha": 4,
+    "texto": " * Garantem que TODO orçamento, coleção, lista de favoritos, kit ou cart"
+  },
+  {
+    "arquivo": "e2e/routes/sicoob/orders-list.spec.ts",
+    "linha": 37,
+    "texto": "    // Verify count reflects filtered results (MOCK_ORDERS based)"
+  },
+  {
+    "arquivo": "e2e/routes/sicoob/orders-list.spec.ts",
+    "linha": 76,
+    "texto": "    // Since OrdersPage.tsx currently uses MOCK_ORDERS, it won't trigger the real error"
+  },
+  {
+    "arquivo": "src/components/admin/CouponManager.tsx",
+    "linha": 212,
+    "texto": "              Em breve você poderá visualizar aqui o histórico detalhado de cada utilização dos cupons."
+  },
+  {
+    "arquivo": "src/components/admin/connections/SecretField.tsx",
+    "linha": 705,
+    "texto": "  // credencial ou conexão, todo o estado sensível é descartado."
+  },
+  {
+    "arquivo": "src/components/bi/ClientCategoryRadar.tsx",
+    "linha": 211,
+    "texto": "            costuma comprar. Clique em uma categoria para focar todo o painel nela."
+  },
+  {
+    "arquivo": "src/components/bi/ClientOverview360.tsx",
+    "linha": 49,
+    "texto": "  return <div className=\"flex items-center justify-between gap-3 flex-wrap\">{bi.isMock ? <Badge variant=\"secondary\" className=\"gap-1 text-[10px]\"><Sparkles className=\"h-3 w-3\" /> Dados simulados · em breve dados reais</Badge> : <span />}<label className=\"flex items-center gap-2 cursor-pointer text-xs\"><Switch checked={comparePeriod} onCheckedChange={setComparePeriod} aria-label=\"Comparar período\" /><span className=\"font-medium text-foreground\">{comparePeriod ? \"90d atual vs 90d anteriores\" : \"Histórico total\"}</span></label></div>;"
+  },
+  {
+    "arquivo": "src/components/errors/EnhancedErrorBoundary.tsx",
+    "linha": 19,
+    "texto": "   * Quando informado, todo o pipeline de auto-recovery (chunk reload,"
+  },
+  {
+    "arquivo": "src/components/intelligence/ConversionFunnel.tsx",
+    "linha": 68,
+    "texto": "    const { MOCK_FUNNEL } = await import(\"@/pages/trends/trends-mock\");"
+  },
+  {
+    "arquivo": "src/components/intelligence/ConversionFunnel.tsx",
+    "linha": 69,
+    "texto": "    return { searches: 3_421, views: MOCK_FUNNEL.views, quotes: MOCK_FUNNEL.quotes, orders: MOCK_FUNNEL.orders };"
+  },
+  {
+    "arquivo": "src/components/intelligence/HotSearchesCard.tsx",
+    "linha": 36,
+    "texto": "        const { MOCK_HOT_SEARCHES } = await import(\"@/pages/trends/trends-mock\");"
+  },
+  {
+    "arquivo": "src/components/intelligence/HotSearchesCard.tsx",
+    "linha": 37,
+    "texto": "        return MOCK_HOT_SEARCHES.map(s => ({"
+  },
+  {
+    "arquivo": "src/components/intelligence/TopCategoriesCard.tsx",
+    "linha": 49,
+    "texto": "        const { MOCK_TOP_CATEGORIES } = await import(\"@/pages/trends/trends-mock\");"
+  },
+  {
+    "arquivo": "src/components/intelligence/TopCategoriesCard.tsx",
+    "linha": 50,
+    "texto": "        return MOCK_TOP_CATEGORIES.map((c, idx) => ({"
+  },
+  {
+    "arquivo": "src/components/intelligence/TopCategoriesCard.tsx",
+    "linha": 55,
+    "texto": "          trendingScore: 2 + (MOCK_TOP_CATEGORIES.length - idx) * 0.3,"
+  },
+  {
+    "arquivo": "src/components/intelligence/TopCategoriesCard.tsx",
+    "linha": 56,
+    "texto": "          classification: idx < 3 ? 'rising' : idx === MOCK_TOP_CATEGORIES.length - 1 ? 'new' : 'stable',"
+  },
+  {
+    "arquivo": "src/components/intelligence/TrendsInsightsCard.tsx",
+    "linha": 34,
+    "texto": "        const { MOCK_INSIGHTS } = await import(\"@/pages/trends/trends-mock\");"
+  },
+  {
+    "arquivo": "src/components/intelligence/TrendsInsightsCard.tsx",
+    "linha": 37,
+    "texto": "        return MOCK_INSIGHTS;"
+  },
+  {
+    "arquivo": "src/components/intelligence/UnmetDemandCard.tsx",
+    "linha": 34,
+    "texto": "        const { MOCK_UNMET_DEMAND } = await import(\"@/pages/trends/trends-mock\");"
+  },
+  {
+    "arquivo": "src/components/intelligence/UnmetDemandCard.tsx",
+    "linha": 36,
+    "texto": "        return MOCK_UNMET_DEMAND.map(d => ({"
+  },
+  {
+    "arquivo": "src/components/mockup/MockupHistoryPanel.tsx",
+    "linha": 213,
+    "texto": "              <SelectTrigger className=\"h-9\"><SelectValue placeholder=\"Todo período\" /></SelectTrigger>"
+  },
+  {
+    "arquivo": "src/components/mockup/MockupHistoryPanel.tsx",
+    "linha": 215,
+    "texto": "                <SelectItem value=\"all\">Todo período</SelectItem>"
+  },
+  {
+    "arquivo": "src/components/products/EnhancedProductCard.tsx",
+    "linha": 96,
+    "texto": "    \"ending-soon\": { icon: <Clock className=\"h-3 w-3\" />, text: text || \"Termina em breve\", className: \"bg-warning/90 text-warning-foreground\" },"
+  },
+  {
+    "arquivo": "src/components/products/FutureStockModal.tsx",
+    "linha": 124,
+    "texto": "  if (urgent) return { label: \"Em breve\", className: \"bg-warning/10 text-warning border-warning/20\" };"
+  },
+  {
+    "arquivo": "src/components/search/GlobalSearch.tsx",
+    "linha": 68,
+    "texto": "const MOCK_RESULTS: SearchResult[] = ["
+  },
+  {
+    "arquivo": "src/components/search/GlobalSearch.tsx",
+    "linha": 89,
+    "texto": "  const matches = MOCK_RESULTS.filter("
+  },
+  {
+    "arquivo": "src/components/search/SmartSuggestions.tsx",
+    "linha": 52,
+    "texto": "const MOCK_SUGGESTIONS: Suggestion[] = ["
+  },
+  {
+    "arquivo": "src/components/search/SmartSuggestions.tsx",
+    "linha": 104,
+    "texto": "      setSuggestions(MOCK_SUGGESTIONS.slice(0, maxItems));"
+  },
+  {
+    "arquivo": "src/components/settings/NotificationPreferences.tsx",
+    "linha": 54,
+    "texto": "      {preferences?.digest_enabled ? <div className=\"pl-9 space-y-3 animate-in fade-in slide-in-from-top-2\"><div className=\"space-y-1.5\"><Label className=\"text-xs\">Frequência do Resumo</Label><Select value={preferences.digest_frequency} onValueChange={(frequency: 'daily' | 'weekly') => update({ digest_frequency: frequency })}><SelectTrigger className=\"h-9\"><SelectValue placeholder=\"Selecione a frequência\" /></SelectTrigger><SelectContent><SelectItem value=\"daily\">Diário (Todo dia às 08:00)</SelectItem><SelectItem value=\"weekly\">Semanal (Segunda-feira às 08:00)</SelectItem></SelectContent></Select></div></div> : null}"
+  },
+  {
+    "arquivo": "src/components/ui/UrgencyBadge.tsx",
+    "linha": 34,
+    "texto": "    label: \"Termina em breve\","
+  },
+  {
+    "arquivo": "src/constants/onboarding.ts",
+    "linha": 93,
+    "texto": "    description: \"Precisa de ajuda? O botão flutuante de chat conecta você a um especialista IA que conhece todo o catálogo e pode sugerir produtos!\","
+  },
+  {
+    "arquivo": "src/contexts/BICategoryFocusContext.tsx",
+    "linha": 7,
+    "texto": " * categoria escolhida em todo o painel. Botão \"Limpar foco\" no header."
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 18,
+    "texto": "const MOCK_CATEGORIES = {"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 27,
+    "texto": "export const MOCK_MATCH_PRODUCTS: Product[] = ["
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 33,
+    "texto": "    category_id: MOCK_CATEGORIES.churrasco.id, category: MOCK_CATEGORIES.churrasco,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 41,
+    "texto": "    category_id: MOCK_CATEGORIES.churrasco.id, category: MOCK_CATEGORIES.churrasco,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 49,
+    "texto": "    category_id: MOCK_CATEGORIES.churrasco.id, category: MOCK_CATEGORIES.churrasco,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 57,
+    "texto": "    category_id: MOCK_CATEGORIES.churrasco.id, category: MOCK_CATEGORIES.churrasco,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 65,
+    "texto": "    category_id: MOCK_CATEGORIES.churrasco.id, category: MOCK_CATEGORIES.churrasco,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 75,
+    "texto": "    category_id: MOCK_CATEGORIES.office.id, category: MOCK_CATEGORIES.office,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 83,
+    "texto": "    category_id: MOCK_CATEGORIES.office.id, category: MOCK_CATEGORIES.office,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 91,
+    "texto": "    category_id: MOCK_CATEGORIES.office.id, category: MOCK_CATEGORIES.office,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 99,
+    "texto": "    category_id: MOCK_CATEGORIES.office.id, category: MOCK_CATEGORIES.office,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 109,
+    "texto": "    category_id: MOCK_CATEGORIES.beverages.id, category: MOCK_CATEGORIES.beverages,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 117,
+    "texto": "    category_id: MOCK_CATEGORIES.beverages.id, category: MOCK_CATEGORIES.beverages,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 125,
+    "texto": "    category_id: MOCK_CATEGORIES.beverages.id, category: MOCK_CATEGORIES.beverages,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 133,
+    "texto": "    category_id: MOCK_CATEGORIES.beverages.id, category: MOCK_CATEGORIES.beverages,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 177,
+    "texto": "    category_id: MOCK_CATEGORIES.apparel.id, category: MOCK_CATEGORIES.apparel,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 185,
+    "texto": "    category_id: MOCK_CATEGORIES.apparel.id, category: MOCK_CATEGORIES.apparel,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 195,
+    "texto": "    category_id: MOCK_CATEGORIES.beverages.id, category: MOCK_CATEGORIES.beverages,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 203,
+    "texto": "    category_id: MOCK_CATEGORIES.beverages.id, category: MOCK_CATEGORIES.beverages,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 213,
+    "texto": "    category_id: MOCK_CATEGORIES.bags.id, category: MOCK_CATEGORIES.bags,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 221,
+    "texto": "    category_id: MOCK_CATEGORIES.bags.id, category: MOCK_CATEGORIES.bags,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 231,
+    "texto": "    category_id: MOCK_CATEGORIES.beverages.id, category: MOCK_CATEGORIES.beverages,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 239,
+    "texto": "    category_id: MOCK_CATEGORIES.beverages.id, category: MOCK_CATEGORIES.beverages,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 247,
+    "texto": "    category_id: MOCK_CATEGORIES.beverages.id, category: MOCK_CATEGORIES.beverages,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 257,
+    "texto": "    category_id: MOCK_CATEGORIES.bath.id, category: MOCK_CATEGORIES.bath,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 265,
+    "texto": "    category_id: MOCK_CATEGORIES.bath.id, category: MOCK_CATEGORIES.bath,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 273,
+    "texto": "    category_id: MOCK_CATEGORIES.bath.id, category: MOCK_CATEGORIES.bath,"
+  },
+  {
+    "arquivo": "src/data/mock-match-products.ts",
+    "linha": 283,
+    "texto": "    category_id: MOCK_CATEGORIES.office.id, category: MOCK_CATEGORIES.office,"
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientAffinity.ts",
+    "linha": 8,
+    "texto": "import { MOCK_CLIENT_STATS } from \"@/lib/bi/mockData\";"
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientAffinity.ts",
+    "linha": 42,
+    "texto": "const MOCK_SUGGESTIONS: Record<string, AffinityCategory[\"suggestions\"]> = {"
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientAffinity.ts",
+    "linha": 140,
+    "texto": "      const mockCategories: AffinityCategory[] = MOCK_CLIENT_STATS.topCategories.map((c) => ({"
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientAffinity.ts",
+    "linha": 142,
+    "texto": "        suggestions: MOCK_SUGGESTIONS[c.category] ?? [],"
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientBI.ts",
+    "linha": 8,
+    "texto": "import { MOCK_CLIENT_STATS } from \"@/lib/bi/mockData\";"
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientBI.ts",
+    "linha": 55,
+    "texto": "      const mockOrders = MOCK_CLIENT_STATS.recentOrders.map((o) => ({"
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientBI.ts",
+    "linha": 62,
+    "texto": "        ...MOCK_CLIENT_STATS,"
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientBI.ts",
+    "linha": 64,
+    "texto": "        lastOrderDate: MOCK_CLIENT_STATS.lastOrderDate,"
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientBI.ts",
+    "linha": 65,
+    "texto": "        daysSinceLastOrder: MOCK_CLIENT_STATS.daysSinceLastOrder,"
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientBI.ts",
+    "linha": 67,
+    "texto": "          ltv: MOCK_CLIENT_STATS.ltv * 0.35,"
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientBI.ts",
+    "linha": 68,
+    "texto": "          avgTicket: MOCK_CLIENT_STATS.avgTicket,"
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientBI.ts",
+    "linha": 69,
+    "texto": "          ordersCount: Math.max(1, Math.floor(MOCK_CLIENT_STATS.ordersCount * 0.3)),"
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientBI.ts",
+    "linha": 72,
+    "texto": "          ltv: MOCK_CLIENT_STATS.ltv * 0.28,"
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientBI.ts",
+    "linha": 73,
+    "texto": "          avgTicket: MOCK_CLIENT_STATS.avgTicket * 0.92,"
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientBI.ts",
+    "linha": 74,
+    "texto": "          ordersCount: Math.max(1, Math.floor(MOCK_CLIENT_STATS.ordersCount * 0.25)),"
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientBI.ts",
+    "linha": 125,
+    "texto": "      topCategories: MOCK_CLIENT_STATS.topCategories,"
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientCategoryAffinity.ts",
+    "linha": 6,
+    "texto": " * cai para mock determinístico baseado em MOCK_CLIENT_STATS.topCategories."
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientCategoryAffinity.ts",
+    "linha": 12,
+    "texto": "import { MOCK_CLIENT_STATS } from \"@/lib/bi/mockData\";"
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientCategoryAffinity.ts",
+    "linha": 62,
+    "texto": "  const totalRev = MOCK_CLIENT_STATS.topCategories.reduce((s, c) => s + c.revenue, 0) || 1;"
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientCategoryAffinity.ts",
+    "linha": 64,
+    "texto": "  const categories: CategoryAggregate[] = MOCK_CLIENT_STATS.topCategories.map((c, i) => {"
+  },
+  {
+    "arquivo": "src/hooks/bi/useClientHealthScore.ts",
+    "linha": 128,
+    "texto": "    detail: \"Cliente entra em mês de pico em breve — momento ideal para envio de orçamento.\","
+  },
+  {
+    "arquivo": "src/hooks/useNovelties.ts",
+    "linha": 207,
+    "texto": " * Hook para buscar novidades expirando em breve (≤ maxDays restantes)"
+  },
+  {
+    "arquivo": "src/lib/bi/mockData.ts",
+    "linha": 22,
+    "texto": "export const MOCK_CLIENT_STATS: MockClientStats = {"
+  },
+  {
+    "arquivo": "src/lib/kit-builder/index.ts",
+    "linha": 11,
+    "texto": "export { MOCK_BOXES, MOCK_ITEMS } from './mock-data';"
+  },
+  {
+    "arquivo": "src/lib/kit-builder/mock-data.ts",
+    "linha": 10,
+    "texto": "export const MOCK_BOXES: KitBox[] = ["
+  },
+  {
+    "arquivo": "src/lib/kit-builder/mock-data.ts",
+    "linha": 65,
+    "texto": "export const MOCK_ITEMS: KitItem[] = ["
+  },
+  {
+    "arquivo": "src/lib/stock-chart-utils.ts",
+    "linha": 94,
+    "texto": "const MOCK_SUPPLIER_NAMES = ['Spot Promo', 'Asia Import', 'Brasil Brindes', 'Premium Gifts', 'Master Promo'];"
+  },
+  {
+    "arquivo": "src/lib/stock-chart-utils.ts",
+    "linha": 180,
+    "texto": "    const nameIdx = (Math.floor(seededRandom(baseSeed + 400 + i) * MOCK_SUPPLIER_NAMES.length)) % MOCK_SUPPLIER_NAMES.length;"
+  },
+  {
+    "arquivo": "src/lib/stock-chart-utils.ts",
+    "linha": 181,
+    "texto": "    map.set(`mock-supplier-${i}`, MOCK_SUPPLIER_NAMES[nameIdx] ?? MOCK_SUPPLIER_NAMES[0] ?? 'Fornecedor');"
+  },
+  {
+    "arquivo": "src/lib/stock-chart-utils.ts",
+    "linha": 297,
+    "texto": "    description: 'Vendendo rápido no fornecedor — pode acabar em breve',"
+  },
+  {
+    "arquivo": "src/lib/system/dev-gate/providers.ts",
+    "linha": 26,
+    "texto": "      // valor para todo o ciclo de vida do módulo e vaza estado entre instâncias."
+  },
+  {
+    "arquivo": "src/lib/telemetry/longTaskWatchdog.ts",
+    "linha": 36,
+    "texto": "  /** Chamadas de bridge que estavam ativas durante TODO ou PARTE do bloqueio. */"
+  },
+  {
+    "arquivo": "src/pages/ProductMatchPage.tsx",
+    "linha": 12,
+    "texto": "import { MOCK_MATCH_PRODUCTS } from '@/data/mock-match-products';"
+  },
+  {
+    "arquivo": "src/pages/ProductMatchPage.tsx",
+    "linha": 32,
+    "texto": "  const allProducts = dbProducts.length > 0 ? dbProducts : MOCK_MATCH_PRODUCTS;"
+  },
+  {
+    "arquivo": "src/pages/TrendsPage.tsx",
+    "linha": 100,
+    "texto": "  MOCK_KPI_CURRENT: KpiSnapshot['current'];"
+  },
+  {
+    "arquivo": "src/pages/TrendsPage.tsx",
+    "linha": 101,
+    "texto": "  MOCK_KPI_PREVIOUS: KpiSnapshot['previous'];"
+  },
+  {
+    "arquivo": "src/pages/TrendsPage.tsx",
+    "linha": 102,
+    "texto": "  MOCK_PRODUCTS: AggregatedProduct[];"
+  },
+  {
+    "arquivo": "src/pages/TrendsPage.tsx",
+    "linha": 103,
+    "texto": "  MOCK_SEARCHES: AggregatedSearch[];"
+  },
+  {
+    "arquivo": "src/pages/TrendsPage.tsx",
+    "linha": 240,
+    "texto": "      current: mock?.MOCK_KPI_CURRENT ?? EMPTY_KPI,"
+  },
+  {
+    "arquivo": "src/pages/TrendsPage.tsx",
+    "linha": 241,
+    "texto": "      previous: mock?.MOCK_KPI_PREVIOUS ?? EMPTY_KPI,"
+  },
+  {
+    "arquivo": "src/pages/TrendsPage.tsx",
+    "linha": 262,
+    "texto": "      products: input.mock?.MOCK_PRODUCTS,"
+  },
+  {
+    "arquivo": "src/pages/TrendsPage.tsx",
+    "linha": 263,
+    "texto": "      searches: input.mock?.MOCK_SEARCHES,"
+  },
+  {
+    "arquivo": "src/pages/admin/ColorDocumentationPage.tsx",
+    "linha": 464,
+    "texto": "                    <span><strong className=\"text-foreground\">Regra AA:</strong> Todo texto deve ter contraste mínimo de 4.5:1.</span>"
+  },
+  {
+    "arquivo": "src/pages/admin/DevChallengeExamplesPage.tsx",
+    "linha": 294,
+    "texto": "            operações sensíveis sobre chaves MCP. Todo o fluxo MFA (senha + OTP + role <code>dev</code>) é validado"
+  },
+  {
+    "arquivo": "src/pages/public-approval/PublicQuoteStatusScreens.tsx",
+    "linha": 113,
+    "texto": "                Obrigado! O vendedor foi notificado e entrará em contato em breve."
+  },
+  {
+    "arquivo": "src/pages/sicoob/reports/SicoobReportsPage.tsx",
+    "linha": 149,
+    "texto": "  if (!date?.from) return 'Todo o período';"
+  },
+  {
+    "arquivo": "src/pages/trends/trends-mock.ts",
+    "linha": 30,
+    "texto": "export const MOCK_KPI_CURRENT = {"
+  },
+  {
+    "arquivo": "src/pages/trends/trends-mock.ts",
+    "linha": 37,
+    "texto": "export const MOCK_KPI_PREVIOUS = {"
+  },
+  {
+    "arquivo": "src/pages/trends/trends-mock.ts",
+    "linha": 44,
+    "texto": "export const MOCK_PRODUCTS: MockProduct[] = ["
+  },
+  {
+    "arquivo": "src/pages/trends/trends-mock.ts",
+    "linha": 177,
+    "texto": "export const MOCK_SEARCHES: MockSearch[] = ["
+  },
+  {
+    "arquivo": "src/pages/trends/trends-mock.ts",
+    "linha": 222,
+    "texto": "export const MOCK_FUNNEL = {"
+  },
+  {
+    "arquivo": "src/pages/trends/trends-mock.ts",
+    "linha": 233,
+    "texto": "export const MOCK_UNMET_DEMAND = ["
+  },
+  {
+    "arquivo": "src/pages/trends/trends-mock.ts",
+    "linha": 242,
+    "texto": "export const MOCK_HOT_SEARCHES = ["
+  },
+  {
+    "arquivo": "src/pages/trends/trends-mock.ts",
+    "linha": 251,
+    "texto": "export const MOCK_TOP_CATEGORIES = ["
+  },
+  {
+    "arquivo": "src/pages/trends/trends-mock.ts",
+    "linha": 260,
+    "texto": "export const MOCK_INSIGHTS = {"
+  },
+  {
+    "arquivo": "src/types/customization.ts",
+    "linha": 69,
+    "texto": " * `prazo_dias` são opcionais (nem todo formato retorna). Limites de"
+  },
+  {
+    "arquivo": "src/utils/proposalPdfReactGenerator.ts",
+    "linha": 132,
+    "texto": "    // linha fantasma após cada imagem, deslocando todo o texto subsequente para"
+  },
+  {
+    "arquivo": "supabase/functions/crm-db-bridge/index.ts",
+    "linha": 798,
+    "texto": "    // Extrai/gera o request-id e roda todo o resto dentro do AsyncLocalStorage,"
+  },
+  {
+    "arquivo": "supabase/functions/expert-chat/index.ts",
+    "linha": 220,
+    "texto": "    \"algum\", \"alguma\", \"alguns\", \"algumas\", \"nenhum\", \"nenhuma\", \"todo\", \"toda\", \"todos\", \"todas\","
+  },
+  {
+    "arquivo": "supabase/functions/market-intelligence-insights/index.ts",
+    "linha": 91,
+    "texto": "    \"todo o catálogo\";"
+  },
+  {
+    "arquivo": "supabase/functions/trends-insights/index.ts",
+    "linha": 185,
+    "texto": "        next_action: \"Continue acompanhando — em breve haverá padrões claros.\","
+  },
+  {
+    "arquivo": "supabase/migrations/20260424110636_f5d85f4b-a5ae-46a4-932a-409dff195653.sql",
+    "linha": 18,
+    "texto": "-- Leitura: todo autenticado (badge precisa do valor para qualquer vendedor)."
+  },
+  {
+    "arquivo": "supabase/migrations/20260916110000_fix_new_user_profile_trigger.sql",
+    "linha": 2,
+    "texto": "-- user_role padrão em todo novo cadastro. A função handle_new_user()"
+  },
+  {
+    "arquivo": "supabase/migrations/20260916110000_fix_new_user_profile_trigger.sql",
+    "linha": 4,
+    "texto": "-- momento — todo cadastro desde então ficou sem perfil (achado durante"
+  },
+  {
+    "arquivo": "supabase/migrations/20260916170000_fix_ensure_admin_audit_log_partitions_rls.sql",
+    "linha": 5,
+    "texto": "-- partições manuais, mas rodando todo mês via pg_cron, para sempre, se não"
+  },
+  {
+    "arquivo": "supabase/migrations/20260916180000_create_password_reset_requests.sql",
+    "linha": 4,
+    "texto": "-- password_reset_requests -- tabela que nunca existiu. Todo usuário"
+  },
+  {
+    "arquivo": "supabase/migrations/20260922162000_sicoob_workflow_function_acl.sql",
+    "linha": 3,
+    "texto": "-- Restringe todo o pacote Sicoob auditado e reabre apenas o contrato chamado"
+  },
+  {
+    "arquivo": "supabase/migrations/20260927190000_atomic_quote_save.sql",
+    "linha": 64,
+    "texto": "  -- Primeira passagem: valida todo o documento e recalcula os totais sem"
+  },
+  {
+    "arquivo": "supabase/migrations/20260927194036_restore_notification_preferences.sql",
+    "linha": 3,
+    "texto": "-- projeto canônico; todo novo usuário abortava com erro 500."
+  },
+  {
+    "arquivo": "supabase/migrations/20261002120000_quote_items_identity_preservation.sql",
+    "linha": 70,
+    "texto": "  -- Primeira passagem: valida todo o documento e recalcula os totais sem"
+  },
+  {
+    "arquivo": "supabase/migrations/20261002120000_quote_items_identity_preservation.sql",
+    "linha": 192,
+    "texto": "    -- Todo `id` declarado precisa ser único e pertencer a este orçamento."
+  },
+  {
+    "arquivo": "supabase/migrations/20261002120000_quote_items_identity_preservation.sql",
+    "linha": 253,
+    "texto": "    -- Ids declarados só valem na edição; na criação todo item nasce com uuid novo."
+  },
+  {
+    "arquivo": "supabase/migrations/20261002160000_quote_items_id_format_validation.sql",
+    "linha": 71,
+    "texto": "  -- Primeira passagem: valida todo o documento e recalcula os totais sem"
+  },
+  {
+    "arquivo": "supabase/migrations/20261002160000_quote_items_id_format_validation.sql",
+    "linha": 200,
+    "texto": "    -- Todo `id` declarado precisa ser único e pertencer a este orçamento."
+  },
+  {
+    "arquivo": "supabase/migrations/20261002160000_quote_items_id_format_validation.sql",
+    "linha": 269,
+    "texto": "    -- Ids declarados só valem na edição; na criação todo item nasce com uuid novo."
+  },
+  {
+    "arquivo": "tests/admin/skeleton-navigation-integration.test.tsx",
+    "linha": 64,
+    "texto": "// Replicamos a definição (não importamos para evitar puxar todo o App.tsx"
+  },
+  {
+    "arquivo": "tests/components/PriceFreshnessBadge.colorMatrix.test.tsx",
+    "linha": 320,
+    "texto": "          // Verifica todo o markup renderizado, não só o badge raiz."
+  },
+  {
+    "arquivo": "tests/components/admin/SecretField.test.tsx",
+    "linha": 261,
+    "texto": "    // Total final: zero chamadas à API em todo o fluxo (a única janela"
+  },
+  {
+    "arquivo": "tests/components/intelligence/commercial-intelligence.test.ts",
+    "linha": 719,
+    "texto": "  const MOCK_TRENDING = ["
+  },
+  {
+    "arquivo": "tests/components/intelligence/commercial-intelligence.test.ts",
+    "linha": 730,
+    "texto": "    const ids = MOCK_TRENDING.map(p => p.productId);"
+  },
+  {
+    "arquivo": "tests/components/intelligence/commercial-intelligence.test.ts",
+    "linha": 735,
+    "texto": "    const skus = MOCK_TRENDING.map(p => p.productSku);"
+  },
+  {
+    "arquivo": "tests/components/intelligence/commercial-intelligence.test.ts",
+    "linha": 740,
+    "texto": "    MOCK_TRENDING.forEach(p => {"
+  },
+  {
+    "arquivo": "tests/components/intelligence/commercial-intelligence.test.ts",
+    "linha": 747,
+    "texto": "    MOCK_TRENDING.forEach(p => expect(p.totalRevenue).toBeGreaterThan(0));"
+  },
+  {
+    "arquivo": "tests/components/intelligence/commercial-intelligence.test.ts",
+    "linha": 751,
+    "texto": "    MOCK_TRENDING.forEach(p => {"
+  },
+  {
+    "arquivo": "tests/components/intelligence/commercial-intelligence.test.ts",
+    "linha": 758,
+    "texto": "    MOCK_TRENDING.forEach(p => expect(validTrends).toContain(p.trend));"
+  },
+  {
+    "arquivo": "tests/components/intelligence/commercial-intelligence.test.ts",
+    "linha": 766,
+    "texto": "  const MOCK_OPPORTUNITIES = ["
+  },
+  {
+    "arquivo": "tests/components/intelligence/commercial-intelligence.test.ts",
+    "linha": 774,
+    "texto": "    MOCK_OPPORTUNITIES.forEach(o => expect(o.conversionRate).toBeLessThan(60));"
+  },
+  {
+    "arquivo": "tests/components/intelligence/commercial-intelligence.test.ts",
+    "linha": 778,
+    "texto": "    MOCK_OPPORTUNITIES.forEach(o => expect(o.quoteCount).toBeGreaterThanOrEqual(2));"
+  },
+  {
+    "arquivo": "tests/components/intelligence/commercial-intelligence.test.ts",
+    "linha": 782,
+    "texto": "    for (let i = 1; i < MOCK_OPPORTUNITIES.length; i++) {"
+  },
+  {
+    "arquivo": "tests/components/intelligence/commercial-intelligence.test.ts",
+    "linha": 783,
+    "texto": "      expect(MOCK_OPPORTUNITIES[i].opportunityScore).toBeLessThanOrEqual(MOCK_OPPORTUNITIES[i - 1].opportunityScore);"
+  },
+  {
+    "arquivo": "tests/components/intelligence/commercial-intelligence.test.ts",
+    "linha": 788,
+    "texto": "    MOCK_OPPORTUNITIES.forEach(o => {"
+  },
+  {
+    "arquivo": "tests/components/magic-up-onda5.test.tsx",
+    "linha": 2702,
+    "texto": "    // Validação cruzada: apenas 1 ocorrência de \", melhor score\" em todo o DOM de aria-labels"
+  },
+  {
+    "arquivo": "tests/hooks/useFocusContext.test.ts",
+    "linha": 53,
+    "texto": "  it(\"clear zera todo o contexto\", () => {"
+  },
+  {
+    "arquivo": "tests/hooks/useSearch.test.ts",
+    "linha": 116,
+    "texto": "    it('limpa todo o histórico', () => {"
+  },
+  {
+    "arquivo": "tests/integration/discountApprovalFlow.test.ts",
+    "linha": 370,
+    "texto": "const liveDescribe = LIVE_URL && LIVE_KEY && SELLER_PWD && ADMIN_PWD ? describe : describe.skip;"
+  },
+  {
+    "arquivo": "tests/lib/personalization/adapters/price-response.adapter.test.ts",
+    "linha": 160,
+    "texto": "  // TODO: ativar quando defaults explícitos para markup ausente forem"
+  },
+  {
+    "arquivo": "tests/lib/theme-presets.test.ts",
+    "linha": 643,
+    "texto": "// §11.5  Diversity (Pride) — distribuição rainbow em todo o sistema"
+  },
+  {
+    "arquivo": "tests/p0/_mocks.ts",
+    "linha": 73,
+    "texto": "      return new Response(JSON.stringify({ error: \"Not mocked: \" + url }), { status: 501 });"
+  },
+  {
+    "arquivo": "tests/rls/e2e-cleanup-rate-limit.test.ts",
+    "linha": 26,
+    "texto": "const d = enabled ? describe : describe.skip;"
+  },
+  {
+    "arquivo": "tests/rls/no-empty-rls-policies.test.ts",
+    "linha": 32,
+    "texto": "const d = enabled ? describe : describe.skip;"
+  },
+  {
+    "arquivo": "tests/rls/personas.test.ts",
+    "linha": 17,
+    "texto": "const d = enabled ? describe : describe.skip;"
+  },
+  {
+    "arquivo": "tests/scenarios/step-up-otp.mjs",
+    "linha": 48,
+    "texto": "    new Response('{}', { status: 501 }),"
+  },
+  {
+    "arquivo": "tests/security/edge-authz-bypass.test.ts",
+    "linha": 29,
+    "texto": "const d = enabled ? describe : describe.skip;"
+  },
+  {
+    "arquivo": "tests/services/improvements-validation.test.ts",
+    "linha": 9,
+    "texto": "  const MOCK_QUOTE = {"
+  },
+  {
+    "arquivo": "tests/services/improvements-validation.test.ts",
+    "linha": 31,
+    "texto": "        quotes: MOCK_QUOTE,"
+  },
+  {
+    "arquivo": "tests/services/improvements-validation.test.ts",
+    "linha": 32,
+    "texto": "        quote_items: MOCK_QUOTE.items,"
+  },
+  {
+    "arquivo": "tests/services/improvements-validation.test.ts",
+    "linha": 38,
+    "texto": "      data: { ...MOCK_QUOTE, id: 'q-recompra', quote_number: 'PED-2024-002', ...args.p_quote },"
+  }
+]

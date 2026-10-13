@@ -1,0 +1,1690 @@
+[
+  {
+    "schema": "public",
+    "relname": "access_blocked_log",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "access_security_settings",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_audit_log",
+    "relkind": "p",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_audit_log_default",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_audit_log_y2024",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_audit_log_y2025",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_audit_log_y2026_m01",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_audit_log_y2026_m02",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_audit_log_y2026_m03",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_audit_log_y2026_m04",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_audit_log_y2026_m05",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_audit_log_y2026_m06",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_audit_log_y2026_m07",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_audit_log_y2026_m08",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_audit_log_y2026_m09",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_audit_log_y2026_m10",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_audit_log_y2026_m11",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_audit_log_y2026_m12",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_audit_log_y2027_m01",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_audit_log_y2027_m02",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_audit_log_y2027_m03",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_config_audit",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "admin_settings",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "ai_insights_cache",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "ai_usage_events",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "ai_usage_logs",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "ai_usage_quotas",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "art_file_attachments",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "audit_log",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "bitrix_clients",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "bitrix_deals",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "bitrix_sync_logs",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "blog_posts",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "bot_detection_log",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "campaigns",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "cart_items",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "cart_templates",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "category_icons",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "city_whitelist",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "cms_banners",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "cms_config",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "cms_sections",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "collection_item_reactions",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "collection_items",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "collection_items_trash",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "collections",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "comparison_reactions",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "component_media",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "connection_test_history",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "cooperativa_budgets",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "cooperativas",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "cooperativas_parceiras",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "coupons",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "custom_kits",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "device_login_notifications",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "discount_approval_requests",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "e2e_cleanup_audit",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "e2e_cleanup_rate_limit",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "expert_conversations",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "expert_messages",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "export_audit_log",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "export_jobs",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "external_connections",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "external_connections_sync_log",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "favorite_item_reactions",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "favorite_items",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "favorite_items_trash",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "favorite_lists",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "file_scan_logs",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "follow_up_reminders",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "generated_mockups",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "hardening_health_snapshots",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "inbound_webhook_endpoints",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "inbound_webhook_events",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "integration_credentials",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "ip_access_control",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "ip_whitelist",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "kit_collaborators",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "kit_comments",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "kit_share_tokens",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "kit_templates",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "kit_variants",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "limit_increase_requests",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "login_attempts",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "magic_up_brand_kits",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "magic_up_campaigns",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "magic_up_comments",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "magic_up_generations",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "magic_up_public_shares",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "magic_up_reactions",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "manager_notification_config",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "mcp_access_violations",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "mcp_api_keys",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "mcp_full_grantors",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "mcp_key_auto_revocations",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "mockup_drafts",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "mockup_prompt_configs",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "mockup_prompt_history",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "mockup_templates",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "newsletter_subscribers",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "notification_channels",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "notification_digests",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "notification_logs",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "notification_preferences",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "notification_templates",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "notifications",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "optimization_queue",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "optimization_queue_runs",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "order_approval_history",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "order_audit_events",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "order_comments",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "order_consolidation_orders",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "order_consolidations",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "order_duplicate_requests",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "order_invoices",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "order_items",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "order_logistics",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "order_logistics_tracking",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "order_payments",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "order_pilot_approvals",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "order_template_items",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "order_templates",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "orders",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "organization_members",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "organizations",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "outbound_webhooks",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "ownership_audit_reports",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "ownership_repair_logs",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "pa_budgets",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "pa_category_thresholds",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "pa_notification_settings",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "pa_singularidades",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "password_reset_requests",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "permissions",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "personalization_simulations",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "pontos_atendimento",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "portfolio_items",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "postos_atendimento",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "price_history",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "product_categories",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "product_component_location_techniques",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "product_component_locations",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "product_components",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "product_group_components",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "product_group_location_techniques",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "product_group_locations",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "product_group_members",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "product_groups",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "product_price_freshness_overrides",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "product_sync_logs",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "product_views",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "profiles",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "public_token_failures",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "qa_release_evidences",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "qa_releases",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "qa_rls_audits",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "qa_run_steps",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "qa_runs",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "query_telemetry",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "quote_approval_evidence_keys",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "quote_approval_tokens",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "quote_audit_logs",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "quote_comments",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "quote_consolidations",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "quote_history",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "quote_item_personalizations",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "quote_items",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "quote_save_idempotency",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "quote_templates",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "quotes",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "request_rate_limits",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "rls_denial_log",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "role_migration_batches",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "role_migration_items",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "role_permissions",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sales_goals",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "saved_filters",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "saved_trends_views",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "scheduled_exports",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "scheduled_notifications",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "scheduled_reports",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "search_analytics",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "secret_rotation_log",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "seller_cart_items",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "seller_carts",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "seller_discount_limits",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sensitive_access_logs",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_approval_delegations",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_approval_deliveries",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_approval_delivery_archive",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_approval_policies",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_approval_requests",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_approval_worker_dispatches",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_budget_audit",
+    "relkind": "v",
+    "relrowsecurity": false,
+    "reloptions": [
+      "security_invoker=on"
+    ]
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_centrais",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_delivery_allocations",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_delivery_destinations",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_delivery_receipt_events",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_document_registry",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_invitation_events",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_invitations",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_kit_quote_requests",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_manager_audit",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_order_artwork_versions",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_order_history",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_order_invoices",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_order_item_logs",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_order_items",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_order_payments",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_order_shipments",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_orders",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_performance_reports",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_quote_reorder_requests",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_reorder_requests",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_rls_audit_logs",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "sicoob_temas",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "simulator_wizard_drafts",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "singulares",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "step_up_audit_log",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "step_up_challenges",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "step_up_tokens",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "system_settings",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "telemetry_events",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "telemetry_logs",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "telemetry_query_performance",
+    "relkind": "v",
+    "relrowsecurity": false,
+    "reloptions": [
+      "security_invoker=on"
+    ]
+  },
+  {
+    "schema": "public",
+    "relname": "test_suites_runs",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "user_comparisons",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "user_known_devices",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "user_onboarding",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "user_preferences",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "user_roles",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "v_full_scope_grants",
+    "relkind": "v",
+    "relrowsecurity": false,
+    "reloptions": [
+      "security_invoker=on"
+    ]
+  },
+  {
+    "schema": "public",
+    "relname": "v_sicoob_hierarchy",
+    "relkind": "v",
+    "relrowsecurity": false,
+    "reloptions": [
+      "security_invoker=on"
+    ]
+  },
+  {
+    "schema": "public",
+    "relname": "video_variant_links",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "voice_command_logs",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "webhook_configs",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "webhook_deliveries",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "webhook_delivery_metrics",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "webhook_logs",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  },
+  {
+    "schema": "public",
+    "relname": "workspace_notifications",
+    "relkind": "r",
+    "relrowsecurity": true,
+    "reloptions": null
+  }
+]

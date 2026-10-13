@@ -1,0 +1,87 @@
+[
+  {
+    "jobid": 2,
+    "status": "succeeded",
+    "total": 24
+  },
+  {
+    "jobid": 3,
+    "status": "succeeded",
+    "total": 96
+  },
+  {
+    "jobid": 5,
+    "status": "succeeded",
+    "total": 1
+  },
+  {
+    "jobid": 6,
+    "status": "succeeded",
+    "total": 1
+  },
+  {
+    "jobid": 7,
+    "status": "succeeded",
+    "total": 1
+  },
+  {
+    "jobid": 8,
+    "status": "succeeded",
+    "total": 1
+  },
+  {
+    "jobid": 9,
+    "status": "succeeded",
+    "total": 1
+  },
+  {
+    "jobid": 10,
+    "status": "succeeded",
+    "total": 1
+  },
+  {
+    "jobid": 12,
+    "status": "succeeded",
+    "total": 1
+  },
+  {
+    "jobid": 17,
+    "status": "failed",
+    "total": 620
+  },
+  {
+    "jobid": 17,
+    "status": "succeeded",
+    "total": 820
+  },
+  {
+    "jobid": 18,
+    "status": "succeeded",
+    "total": 24
+  },
+  {
+    "jobid": 19,
+    "status": "succeeded",
+    "total": 1
+  },
+  {
+    "jobid": 20,
+    "status": "succeeded",
+    "total": 720
+  },
+  {
+    "jobid": 23,
+    "status": "succeeded",
+    "total": 1440
+  },
+  {
+    "jobid": 26,
+    "status": "succeeded",
+    "total": 360
+  },
+  {
+    "jobid": 27,
+    "status": "succeeded",
+    "total": 96
+  }
+]

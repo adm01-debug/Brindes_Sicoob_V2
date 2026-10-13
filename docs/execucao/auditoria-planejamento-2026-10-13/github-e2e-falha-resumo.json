@@ -1,0 +1,8 @@
+{
+  "run_id": 38341739860,
+  "linhas": [
+    "e2e\tUNKNOWN STEP\t2026-10-13T03:28:39.2099792Z ^[[36;1m  echo \"::error title=Credenciais E2E ausentes::Configure as contas de vendedor, gestor, administrador e desenvolvedor, incluindo os segredos TOTP privilegiados. O gate autenticado não pode concluir por skip.\"^[[0m",
+    "e2e\tUNKNOWN STEP\t2026-10-13T03:28:39.2425430Z ##[error]Configure as contas de vendedor, gestor, administrador e desenvolvedor, incluindo os segredos TOTP privilegiados. O gate autenticado não pode concluir por skip.",
+    "e2e\tUNKNOWN STEP\t2026-10-13T03:28:39.2432971Z ##[error]Process completed with exit code 1."
+  ]
+}

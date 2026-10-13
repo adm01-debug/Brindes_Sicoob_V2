@@ -1,0 +1,382 @@
+[
+  {
+    "valor": "/admin/empresas",
+    "arquivo": "src/components/access/DevAccessDeniedPage.tsx",
+    "linha": 66
+  },
+  {
+    "valor": "/admin/configuracoes",
+    "arquivo": "src/components/access/DevAccessDeniedPage.tsx",
+    "linha": 67
+  },
+  {
+    "valor": "/catalogo",
+    "arquivo": "src/components/access/DevAccessDeniedPage.tsx",
+    "linha": 121
+  },
+  {
+    "valor": "/catalogo",
+    "arquivo": "src/components/admin/connections/KeysValidationTab.tsx",
+    "linha": 46
+  },
+  {
+    "valor": "/admin/empresas",
+    "arquivo": "src/components/admin/connections/KeysValidationTab.tsx",
+    "linha": 70
+  },
+  {
+    "valor": "/admin/conexoes › Bitrix24",
+    "arquivo": "src/components/admin/connections/KeysValidationTab.tsx",
+    "linha": 94
+  },
+  {
+    "valor": "/admin/conexoes › n8n",
+    "arquivo": "src/components/admin/connections/KeysValidationTab.tsx",
+    "linha": 123
+  },
+  {
+    "valor": "/admin/conexoes › MCP",
+    "arquivo": "src/components/admin/connections/KeysValidationTab.tsx",
+    "linha": 142
+  },
+  {
+    "valor": "/admin/conexoes → aba Bitrix24",
+    "arquivo": "src/components/admin/connections/secretImpactMap.ts",
+    "linha": 26
+  },
+  {
+    "valor": "/admin/conexoes → aba MCP",
+    "arquivo": "src/components/admin/connections/secretImpactMap.ts",
+    "linha": 27
+  },
+  {
+    "valor": "/catalogo (grade, lista, tabela)",
+    "arquivo": "src/components/admin/connections/secretImpactMap.ts",
+    "linha": 34
+  },
+  {
+    "valor": "/comparar (comparador)",
+    "arquivo": "src/components/admin/connections/secretImpactMap.ts",
+    "linha": 36
+  },
+  {
+    "valor": "/admin/conexoes → 🐛 Debug (preview de produtos)",
+    "arquivo": "src/components/admin/connections/secretImpactMap.ts",
+    "linha": 37
+  },
+  {
+    "valor": "/bi → indicadores de catálogo",
+    "arquivo": "src/components/admin/connections/secretImpactMap.ts",
+    "linha": 38
+  },
+  {
+    "valor": "/orcamentos → contatos e responsáveis",
+    "arquivo": "src/components/admin/connections/secretImpactMap.ts",
+    "linha": 64
+  },
+  {
+    "valor": "/admin/conexoes → CRM bridge",
+    "arquivo": "src/components/admin/connections/secretImpactMap.ts",
+    "linha": 65
+  },
+  {
+    "valor": "/bi → métricas comerciais",
+    "arquivo": "src/components/admin/connections/secretImpactMap.ts",
+    "linha": 66
+  },
+  {
+    "valor": "/orcamentos (status sync)",
+    "arquivo": "src/components/admin/connections/secretImpactMap.ts",
+    "linha": 100
+  },
+  {
+    "valor": "/admin/conexoes → aba n8n",
+    "arquivo": "src/components/admin/connections/secretImpactMap.ts",
+    "linha": 134
+  },
+  {
+    "valor": "/admin/conexoes → aba n8n",
+    "arquivo": "src/components/admin/connections/secretImpactMap.ts",
+    "linha": 145
+  },
+  {
+    "valor": "/admin/conexoes → aba Webhooks",
+    "arquivo": "src/components/admin/connections/secretImpactMap.ts",
+    "linha": 206
+  },
+  {
+    "valor": "/admin/conexoes → aba Webhooks",
+    "arquivo": "src/components/admin/connections/secretImpactMap.ts",
+    "linha": 218
+  },
+  {
+    "valor": "/rest/",
+    "arquivo": "src/components/admin/connections/secretValidators.ts",
+    "linha": 98
+  },
+  {
+    "valor": "/thumbnail",
+    "arquivo": "src/components/catalog/BulkVariantWizard.tsx",
+    "linha": 33
+  },
+  {
+    "valor": "/catalogo",
+    "arquivo": "src/components/command/commandActions.tsx",
+    "linha": 100
+  },
+  {
+    "valor": "/tecnicas",
+    "arquivo": "src/components/command/commandActions.tsx",
+    "linha": 129
+  },
+  {
+    "valor": "/datas-comemorativas",
+    "arquivo": "src/components/command/commandActions.tsx",
+    "linha": 165
+  },
+  {
+    "valor": "/relatorios",
+    "arquivo": "src/components/command/commandActions.tsx",
+    "linha": 174
+  },
+  {
+    "valor": "/ajuda",
+    "arquivo": "src/components/command/commandActions.tsx",
+    "linha": 241
+  },
+  {
+    "valor": "/admin",
+    "arquivo": "src/components/common/BackButton.tsx",
+    "linha": 25
+  },
+  {
+    "valor": "/seguranca",
+    "arquivo": "src/components/common/BackButton.tsx",
+    "linha": 26
+  },
+  {
+    "valor": "/produto",
+    "arquivo": "src/components/common/PersistentBreadcrumbs.tsx",
+    "linha": 24
+  },
+  {
+    "valor": "/admin",
+    "arquivo": "src/components/common/PersistentBreadcrumbs.tsx",
+    "linha": 37
+  },
+  {
+    "valor": "/seguranca",
+    "arquivo": "src/components/common/PersistentBreadcrumbs.tsx",
+    "linha": 38
+  },
+  {
+    "valor": "/admin/descontos",
+    "arquivo": "src/components/dashboard/MyDiscountRequestsWidget.tsx",
+    "linha": 109
+  },
+  {
+    "valor": "/rpc/",
+    "arquivo": "src/components/debug/APIInspector.tsx",
+    "linha": 72
+  },
+  {
+    "valor": "/rpc/",
+    "arquivo": "src/components/debug/APIInspector.tsx",
+    "linha": 90
+  },
+  {
+    "valor": "/produto/",
+    "arquivo": "src/components/layout/SkeletonLoaders.tsx",
+    "linha": 322
+  },
+  {
+    "valor": "/admin",
+    "arquivo": "src/components/layout/SkeletonLoaders.tsx",
+    "linha": 326
+  },
+  {
+    "valor": "/thumbnail",
+    "arquivo": "src/components/mockup/MockupProductSelector.tsx",
+    "linha": 64
+  },
+  {
+    "valor": "/thumbnail",
+    "arquivo": "src/components/mockup/MockupProductSelector.tsx",
+    "linha": 64
+  },
+  {
+    "valor": "/thumbnail",
+    "arquivo": "src/components/mockup/logo-editor/LogoPreviewCanvas.tsx",
+    "linha": 40
+  },
+  {
+    "valor": "/thumbnail",
+    "arquivo": "src/components/mockup/logo-editor/LogoPreviewCanvas.tsx",
+    "linha": 40
+  },
+  {
+    "valor": "/mockup",
+    "arquivo": "src/components/onboarding/OnboardingTour.tsx",
+    "linha": 61
+  },
+  {
+    "valor": "/thumbnail",
+    "arquivo": "src/components/products/SingleVariantPicker.tsx",
+    "linha": 40
+  },
+  {
+    "valor": "/thumbnail",
+    "arquivo": "src/components/quotes/QuoteBuilderProductSearch.tsx",
+    "linha": 47
+  },
+  {
+    "valor": "/thumbnail",
+    "arquivo": "src/components/quotes/QuoteProductColorSelector.tsx",
+    "linha": 37
+  },
+  {
+    "valor": "/admin",
+    "arquivo": "src/components/security/MfaEnrollmentDialog.tsx",
+    "linha": 272
+  },
+  {
+    "valor": "/produto",
+    "arquivo": "src/hooks/useContextualSuggestions.ts",
+    "linha": 28
+  },
+  {
+    "valor": "/admin",
+    "arquivo": "src/hooks/useContextualSuggestions.ts",
+    "linha": 33
+  },
+  {
+    "valor": "/bi",
+    "arquivo": "src/hooks/useContextualSuggestions.ts",
+    "linha": 34
+  },
+  {
+    "valor": "/mockup",
+    "arquivo": "src/hooks/useContextualSuggestions.ts",
+    "linha": 36
+  },
+  {
+    "valor": "/admin",
+    "arquivo": "src/hooks/useCurrentSection.ts",
+    "linha": 21
+  },
+  {
+    "valor": "/seguranca",
+    "arquivo": "src/hooks/useCurrentSection.ts",
+    "linha": 23
+  },
+  {
+    "valor": "/sicoob",
+    "arquivo": "src/hooks/useCurrentSection.ts",
+    "linha": 26
+  },
+  {
+    "valor": "/pa",
+    "arquivo": "src/hooks/useCurrentSection.ts",
+    "linha": 27
+  },
+  {
+    "valor": "/vendedor",
+    "arquivo": "src/hooks/useCurrentSection.ts",
+    "linha": 29
+  },
+  {
+    "valor": "/thumbnail",
+    "arquivo": "src/hooks/useMockupGenerator.ts",
+    "linha": 431
+  },
+  {
+    "valor": "/thumbnail",
+    "arquivo": "src/hooks/useMockupGenerator.ts",
+    "linha": 431
+  },
+  {
+    "valor": "/auth",
+    "arquivo": "src/lib/auth/safe-internal-path.ts",
+    "linha": 21
+  },
+  {
+    "valor": "/admin/status",
+    "arquivo": "src/lib/navigation/restricted-routes.ts",
+    "linha": 24
+  },
+  {
+    "valor": "/admin",
+    "arquivo": "src/lib/navigation/restricted-routes.ts",
+    "linha": 43
+  },
+  {
+    "valor": "/admin/",
+    "arquivo": "src/lib/navigation/restricted-routes.ts",
+    "linha": 43
+  },
+  {
+    "valor": "/mockup",
+    "arquivo": "src/lib/routePrefetch.ts",
+    "linha": 25
+  },
+  {
+    "valor": "/kits",
+    "arquivo": "src/lib/routePrefetch.ts",
+    "linha": 27
+  },
+  {
+    "valor": "/catalogo",
+    "arquivo": "src/pages/OrdersPage.tsx",
+    "linha": 256
+  },
+  {
+    "valor": "/admin",
+    "arquivo": "src/pages/PermissionsPage.tsx",
+    "linha": 120
+  },
+  {
+    "valor": "/auth/login",
+    "arquivo": "src/pages/RateLimitDashboardPage.tsx",
+    "linha": 49
+  },
+  {
+    "valor": "/admin",
+    "arquivo": "src/pages/RolePermissionsPage.tsx",
+    "linha": 207
+  },
+  {
+    "valor": "/admin",
+    "arquivo": "src/pages/RolesPage.tsx",
+    "linha": 24
+  },
+  {
+    "valor": "/carrinhos/novo",
+    "arquivo": "src/pages/seller-carts/useSellerCartsPage.ts",
+    "linha": 41
+  },
+  {
+    "valor": "/catalogo",
+    "arquivo": "src/pages/sicoob/PADashboardPage.tsx",
+    "linha": 48
+  },
+  {
+    "valor": "/catalogo",
+    "arquivo": "src/pages/sicoob/orders/OrdersKanbanPage.tsx",
+    "linha": 408
+  },
+  {
+    "valor": "/catalogo",
+    "arquivo": "src/pages/sicoob/orders/OrdersPage.tsx",
+    "linha": 256
+  },
+  {
+    "valor": "/catalogo",
+    "arquivo": "src/pages/sicoob/orders/SellerPanelPage.tsx",
+    "linha": 66
+  },
+  {
+    "valor": "/un",
+    "arquivo": "src/utils/kitPdfGenerator.ts",
+    "linha": 238
+  }
+]
