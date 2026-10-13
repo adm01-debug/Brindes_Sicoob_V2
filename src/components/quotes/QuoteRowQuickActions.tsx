@@ -1,11 +1,10 @@
 /**
  * QuoteRowQuickActions — botões inline na linha do orçamento.
- * Duplicar · Compartilhar link · WhatsApp · Marcar ganho.
+ * Duplicar · Compartilhar proposta · Marcar ganho.
  * Visíveis no hover da linha (desktop) ou sempre (mobile).
  */
 import { useState, type MouseEvent as ReactMouseEvent } from "react";
-import { Copy, Share2, MessageCircle, Trophy, ListChecks, FileStack, type LucideIcon } from "lucide-react";
-import { toast } from "sonner";
+import { Copy, Share2, Trophy, ListChecks, FileStack, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -21,26 +20,13 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { QuoteShareDialog } from "./QuoteShareDialog";
 
 interface QuoteRowQuickActionsProps {
   quote: Quote;
   onDuplicate: (id: string, itemIds?: string[]) => void;
   onMarkApproved: (id: string) => void;
   isSupervisor?: boolean;
-}
-
-const APP_BASE_URL = typeof window !== "undefined" ? window.location.origin : "";
-
-function buildShareUrl(quote: Quote) {
-  return `${APP_BASE_URL}/orcamentos/${quote.id}`;
-}
-
-function buildWhatsappUrl(quote: Quote) {
-  const amount = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(quote.total || 0);
-  const text = encodeURIComponent(`Olá! Segue a proposta comercial *#${quote.quote_number}* no valor de *${amount}*.\n\nVisualize os detalhes aqui: ${buildShareUrl(quote)}`);
-  const phone = quote.client_phone?.replace(/\D/g, "");
-  const countryPhone = phone && !phone.startsWith("55") ? `55${phone}` : phone || "";
-  return `https://wa.me/${countryPhone}?text=${text}`;
 }
 
 function QuickAction({ icon, label, onClick, success = false }: {
@@ -99,20 +85,11 @@ function useDuplicateDialog(quote: Quote, onDuplicate: QuoteRowQuickActionsProps
 
 export function QuoteRowQuickActions({ quote, onDuplicate, onMarkApproved, isSupervisor = false }: QuoteRowQuickActionsProps) {
   const duplicate = useDuplicateDialog(quote, onDuplicate);
+  const [shareOpen, setShareOpen] = useState(false);
   const isClosed = quote.status === "approved" || quote.status === "converted" || quote.status === "rejected";
-  const handleCopyLink = async (e: ReactMouseEvent) => {
+  const handleShare = (e: ReactMouseEvent) => {
     e.stopPropagation();
-    try {
-      await navigator.clipboard.writeText(buildShareUrl(quote));
-      toast.success("Link copiado", { description: "Cole onde precisar." });
-    } catch {
-      toast.error("Falha ao copiar link");
-    }
-  };
-
-  const handleWhatsapp = (e: ReactMouseEvent) => {
-    e.stopPropagation();
-    window.open(buildWhatsappUrl(quote), "_blank", "noopener,noreferrer");
+    if (quote.id) setShareOpen(true);
   };
 
   const handleApprove = (e: ReactMouseEvent) => {
@@ -126,8 +103,10 @@ export function QuoteRowQuickActions({ quote, onDuplicate, onMarkApproved, isSup
     <QuickAction icon={Copy} label="Duplicar" onClick={duplicate.show} />
     <DuplicateDialog quote={quote} open={duplicate.open} setOpen={duplicate.setOpen} mode={duplicate.mode}
       setMode={duplicate.setMode} selectedItems={duplicate.selectedItems} toggleItem={duplicate.toggleItem} onConfirm={duplicate.confirm} />
-    <QuickAction icon={Share2} label="Copiar link" onClick={handleCopyLink} />
-    <QuickAction icon={MessageCircle} label="Enviar por WhatsApp" onClick={handleWhatsapp} success />
+    <QuickAction icon={Share2} label="Compartilhar proposta" onClick={handleShare} />
+    {quote.id && <QuoteShareDialog quoteId={quote.id} open={shareOpen} onOpenChange={setShareOpen}
+      defaultClientName={quote.client_name} defaultClientEmail={quote.client_email}
+      quoteNumber={quote.quote_number} total={quote.total} clientPhone={quote.client_phone} />}
     {!isClosed && isSupervisor && <QuickAction icon={Trophy} label="Marcar como ganho" onClick={handleApprove} success />}
   </div>;
 }
