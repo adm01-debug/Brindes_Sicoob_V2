@@ -188,7 +188,7 @@ async function fallbackCatalogPage(offset: number, search?: string): Promise<Cat
  * As chamadas seguintes buscam 1 página (800 produtos) em segundo plano para
  * completar o catálogo com poucos round-trips.
  */
-async function fetchCatalogPage(
+export async function fetchCatalogPage(
   offset: number,
   search?: string,
 ): Promise<CatalogPage> {

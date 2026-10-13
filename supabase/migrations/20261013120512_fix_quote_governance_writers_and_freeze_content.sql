@@ -673,9 +673,7 @@ END;
 $function$;
 
 REVOKE ALL ON FUNCTION public.assert_quote_transition(uuid, public.quotes, text)
-  FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.assert_quote_transition(uuid, public.quotes, text)
-  TO authenticated, service_role;
+  FROM PUBLIC, anon, authenticated, service_role;
 
 DO $postflight$
 BEGIN
@@ -701,6 +699,12 @@ BEGIN
      OR has_function_privilege('service_role',
        'public.create_quote_version_atomic_core_20261013(uuid)',
        'EXECUTE')
+     OR has_function_privilege('anon',
+       'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE')
+     OR has_function_privilege('authenticated',
+       'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE')
+     OR has_function_privilege('service_role',
+       'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE')
      OR EXISTS (
        SELECT 1
        FROM (VALUES ('anon'), ('authenticated'), ('service_role')) AS external_role(name)
