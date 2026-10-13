@@ -98,8 +98,11 @@ const EDITABLE_QUOTE_STATUSES = new Set([
 ]);
 
 /** Alinha a interface ao gate de imutabilidade comercial do banco. */
-export function isQuoteCommerciallyEditable(status: string | null | undefined): boolean {
-  return typeof status === "string" && EDITABLE_QUOTE_STATUSES.has(status);
+export function isQuoteCommerciallyEditable(
+  status: string | null | undefined,
+  isLatestVersion = true,
+): boolean {
+  return isLatestVersion && typeof status === "string" && EDITABLE_QUOTE_STATUSES.has(status);
 }
 
 /** Helper: get status label with fallback */

@@ -263,6 +263,33 @@ try:
     ).stdout.strip() == 't'
     sql(governance_fix)
 
+    forged_insert_quote = str(uuid.uuid4())
+    forged_insert = actor(
+      "INSERT INTO public.quotes "
+      "(id,seller_id,quote_number,client_name,total,status,client_response,"
+      "client_response_at,client_response_notes,sent_at,version,row_version,"
+      "is_latest_version,is_active) VALUES "
+      f"('{forged_insert_quote}','{SELLER}','FORJADO','Cliente sintético',100,"
+      "'draft','approved',now(),'resposta falsa',now(),9,9,false,false);",
+      check=False,
+    )
+    canonical_insert_quote = str(uuid.uuid4())
+    canonical_insert = actor(
+      "INSERT INTO public.quotes "
+      "(id,seller_id,quote_number,client_name,total,status) VALUES "
+      f"('{canonical_insert_quote}','{SELLER}','CANONICO','Cliente sintético',100,'draft') "
+      "RETURNING id;",
+    )
+    checks['insercao_direta_nao_forja_resposta_ou_versao'] = (
+      forged_insert.returncode != 0
+      and canonical_insert.stdout.strip() == canonical_insert_quote
+      and sql(
+        f"SELECT client_response IS NULL AND client_response_at IS NULL "
+        f"AND sent_at IS NULL AND version=1 AND row_version=1 "
+        f"AND is_latest_version AND is_active FROM public.quotes WHERE id='{canonical_insert_quote}';"
+      ).stdout.strip() == 't'
+    )
+
     status_quote = str(uuid.uuid4())
     sql(
       "INSERT INTO public.quotes(id,seller_id,quote_number,client_name,total,status) "

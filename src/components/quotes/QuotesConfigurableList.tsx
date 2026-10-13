@@ -182,7 +182,7 @@ type Selection = ReturnType<typeof useListSelection>;
 
 function QuoteBulkBar({ props, selection }: { props: QuotesConfigurableListProps; selection: Selection }) {
   const selectedQuotes = props.quotes.filter(hasQuoteId).filter((quote) => selection.selectedIds.includes(quote.id));
-  const hasProtectedQuote = selectedQuotes.some((quote) => !isQuoteCommerciallyEditable(quote.status));
+  const hasProtectedQuote = selectedQuotes.some((quote) => !isQuoteCommerciallyEditable(quote.status, quote.is_latest_version));
   const actions = [
     ...(props.onBulkStatusChange ? [{ id: "mark-pending", label: "Marcar Pendente", icon: <RefreshCw className="h-3.5 w-3.5" />,
       variant: "outline" as const, onClick: (ids: string[]) => { props.onBulkStatusChange?.(ids, "pending"); selection.clear(); } }] : []),
@@ -241,7 +241,7 @@ function QuoteRow({ quote, props, columns, selection, viewed, navigate }: {
 }
 
 function RowMenu({ quote, props, navigate }: { quote: QuoteWithId; props: QuotesConfigurableListProps; navigate: ReturnType<typeof useNavigate> }) {
-  const editable = isQuoteCommerciallyEditable(quote.status);
+  const editable = isQuoteCommerciallyEditable(quote.status, quote.is_latest_version);
   return <DropdownMenu><DropdownMenuTrigger asChild onClick={(event) => event.stopPropagation()}><Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Mais opções">
     <MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
     <DropdownMenuItem onClick={() => navigate(`/orcamentos/${quote.id}`)}><Eye className="h-4 w-4 mr-2" /> Visualizar</DropdownMenuItem>

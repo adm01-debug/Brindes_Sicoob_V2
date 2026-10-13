@@ -311,10 +311,20 @@ BEGIN
        OR NEW.approved_by IS NOT NULL
        OR NEW.approved_at IS NOT NULL
        OR NEW.approved_pdf_url IS NOT NULL
-       OR NEW.rejection_notes IS NOT NULL THEN
+       OR NEW.rejection_notes IS NOT NULL
+       OR NEW.client_response IS NOT NULL
+       OR NEW.client_response_at IS NOT NULL
+       OR NEW.client_response_notes IS NOT NULL
+       OR NEW.sent_at IS NOT NULL
+       OR NEW.deleted_at IS NOT NULL
+       OR NEW.parent_quote_id IS NOT NULL
+       OR NEW.version IS DISTINCT FROM 1
+       OR NEW.row_version IS DISTINCT FROM 1
+       OR NEW.is_latest_version IS DISTINCT FROM true
+       OR NEW.is_active IS DISTINCT FROM true THEN
       RAISE EXCEPTION USING
         ERRCODE = '42501',
-        MESSAGE = 'A criação de orçamento deve iniciar como rascunho.';
+        MESSAGE = 'A criação de orçamento deve iniciar como rascunho canônico, sem decisão ou histórico forjado.';
     END IF;
     RETURN NEW;
   END IF;

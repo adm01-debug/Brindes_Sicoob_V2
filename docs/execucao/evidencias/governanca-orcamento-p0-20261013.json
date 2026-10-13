@@ -29,7 +29,7 @@
     ]
   },
   "aprovacao_publica": {
-    "cenarios": 61,
+    "cenarios": 62,
     "resultado": "aprovado",
     "inclui": [
       "reproducao da falha real anterior",
@@ -40,6 +40,7 @@
       "imutabilidade e preservacao do conteudo aprovado",
       "resposta do cliente protegida contra escrita direta",
       "identidade, timestamps de ciclo de vida, exclusao logica e row_version protegidos",
+      "insercao direta restrita ao rascunho canonico sem resposta ou versao forjada",
       "versao historica integralmente imutavel",
       "RLS de itens isolada por vendedor",
       "versionamento autorizado com restauracao do contexto",

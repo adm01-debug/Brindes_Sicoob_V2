@@ -75,7 +75,7 @@ async function duplicateQuote(state: QuoteViewState, quoteId: string, navigate: 
 
 function QuoteMoreActions({ state, quote, quoteId, navigate }: { state: QuoteViewState; quote: Quote; quoteId: string; navigate: NavigateFunction }) {
   const canCancelSync = quote.status === "sent" || state.isSyncing;
-  const editable = isQuoteCommerciallyEditable(quote.status);
+  const editable = isQuoteCommerciallyEditable(quote.status, quote.is_latest_version);
   return <DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline" size="icon" aria-label="Mais opções"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end">{canCancelSync && <DropdownMenuItem onClick={() => cancelSync(state, quote)} className="text-destructive focus:text-destructive"><Undo2 className="h-4 w-4 mr-2" /> Cancelar Sincronização</DropdownMenuItem>}<DropdownMenuItem disabled={!editable} onClick={() => editable && navigate(`/orcamentos/${quoteId}/editar`)}><Edit2 className="h-4 w-4 mr-2" /> Editar</DropdownMenuItem><DropdownMenuItem onClick={() => duplicateQuote(state, quoteId, navigate)}><Copy className="h-4 w-4 mr-2" /> Duplicar</DropdownMenuItem><DropdownMenuItem onClick={() => state.setShowPresentation(true)}><Monitor className="h-4 w-4 mr-2" /> Modo Apresentação</DropdownMenuItem><QuoteAuditSheet quote={quote} quoteId={quoteId} /></DropdownMenuContent></DropdownMenu>;
 }
 

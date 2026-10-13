@@ -19,6 +19,7 @@ interface InitParams {
     setInternalNotes: (v: string) => void;
     setQuoteNumber: (v: string) => void;
     setCurrentStatus: (v: string) => void;
+    setIsLatestVersion: (v: boolean) => void;
     setExpectedRowVersion: (v: number | null) => void;
     setContactInfo: (v: SelectedContactInfo | null) => void;
     setCompanyInfo: (v: SelectedCompanyInfo | null) => void;
@@ -99,6 +100,7 @@ function applyQuoteIdentity(quote: Quote, setters: QuoteSetters): void {
   setters.setInternalNotes(fallback(quote.internal_notes, ""));
   setters.setQuoteNumber(fallback(quote.quote_number, ""));
   setters.setCurrentStatus(quote.status);
+  setters.setIsLatestVersion(quote.is_latest_version !== false);
   setters.setExpectedRowVersion(validRowVersion(quote.row_version));
 }
 

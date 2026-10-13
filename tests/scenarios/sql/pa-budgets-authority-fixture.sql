@@ -68,6 +68,11 @@ CREATE TABLE public.cooperativa_budgets (
   UNIQUE (cooperativa_id, ano, mes)
 );
 
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY profiles_self_insert ON public.profiles
+FOR INSERT TO authenticated
+WITH CHECK (user_id = auth.uid());
+
 CREATE FUNCTION public.sicoob_actor_is_active(_user_id uuid)
 RETURNS boolean
 LANGUAGE sql
@@ -244,6 +249,6 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.pa_budgets TO authenticated;
 GRANT ALL ON public.pa_budgets TO service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.cooperativa_budgets TO authenticated;
 GRANT ALL ON public.cooperativa_budgets TO service_role;
-GRANT SELECT, UPDATE ON public.profiles TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.profiles TO authenticated;
 GRANT SELECT ON public.user_roles, public.postos_atendimento TO authenticated;
 GRANT ALL ON public.profiles TO service_role;

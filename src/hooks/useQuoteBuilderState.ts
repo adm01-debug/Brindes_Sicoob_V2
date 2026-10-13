@@ -377,6 +377,7 @@ export function useQuoteBuilderState() {
   const [tags, setTags] = useState<string[]>([]);
   const [quoteNumber, setQuoteNumber] = useState("");
   const [currentStatus, setCurrentStatus] = useState("draft");
+  const [isLatestVersion, setIsLatestVersion] = useState(true);
   const [expectedRowVersion, setExpectedRowVersion] = useState<number | null>(null);
   const [paymentTerms, setPaymentTerms] = useState("");
   const [deliveryTime, setDeliveryTime] = useState("");
@@ -396,7 +397,7 @@ export function useQuoteBuilderState() {
   const search = useQuoteProductSearch();
   const initializationSetters = useMemo(() => ({
     setClientId, setContactId, setValidUntil, setNotes, setInternalNotes,
-    setQuoteNumber, setCurrentStatus, setExpectedRowVersion, setContactInfo, setCompanyInfo,
+    setQuoteNumber, setCurrentStatus, setIsLatestVersion, setExpectedRowVersion, setContactInfo, setCompanyInfo,
     setDiscountType, setDiscountValue, setNegotiationMarkup, setPaymentTerms,
     setShippingType, setShippingCost, setDeliveryMode, setDeliveryDate,
     setDeliveryTime, setItems, setTags, setLoadingQuote, setActiveItemIndex, setExpandedItems,
@@ -444,8 +445,8 @@ export function useQuoteBuilderState() {
 
   const canEdit = useMemo(() => {
     if (!isEditMode) return true;
-    return isQuoteCommerciallyEditable(currentStatus);
-  }, [isEditMode, currentStatus]);
+    return isQuoteCommerciallyEditable(currentStatus, isLatestVersion);
+  }, [isEditMode, currentStatus, isLatestVersion]);
 
   const defaultTemplate = useMemo(() => templates.find(t => t.is_default), [templates]);
 

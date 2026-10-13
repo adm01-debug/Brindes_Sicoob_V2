@@ -25,6 +25,7 @@ GERENTE_A = "aaaaaaaa-3000-4000-8000-000000000001"
 COMPRADOR_PA_A = "aaaaaaaa-3000-4000-8000-000000000002"
 COMPRADOR_SINGULAR_A = "aaaaaaaa-3000-4000-8000-000000000003"
 ADMIN = "cccccccc-4000-4000-8000-000000000001"
+STALE_ROLE_USER = "dddddddd-4000-4000-8000-000000000001"
 BUDGET_A = "aaaaaaaa-5000-4000-8000-000000000001"
 BUDGET_B = "bbbbbbbb-5000-4000-8000-000000000002"
 COOP_BUDGET_A = "aaaaaaaa-6000-4000-8000-000000000001"
@@ -98,6 +99,7 @@ try:
         ('{GERENTE_A}', 'gerente_pa'),
         ('{COMPRADOR_PA_A}', 'comprador_pac'),
         ('{COMPRADOR_SINGULAR_A}', 'comprador_singular'),
+        ('{STALE_ROLE_USER}', 'gestor_compras'),
         ('{ADMIN}', 'admin');
       INSERT INTO public.postos_atendimento (id, cooperativa_id, is_active) VALUES
         ('{PA_A}', '{COOP_A}', true),
@@ -165,6 +167,26 @@ try:
         f"UPDATE public.profiles SET approval_threshold=1500 WHERE user_id='{GESTOR_A}' "
         "RETURNING approval_threshold",
     )) == "1500"
+
+    forged_profile_insert = as_actor(
+        STALE_ROLE_USER,
+        "INSERT INTO public.profiles "
+        "(id,user_id,role,is_active,cooperativa_id,pa_id,approval_threshold) VALUES "
+        f"('{STALE_ROLE_USER}','{STALE_ROLE_USER}','admin',true,'{COOP_A}','{PA_A}',999999)",
+        check=False,
+    )
+    assert forged_profile_insert.returncode != 0
+    assert scalar(as_actor(
+        STALE_ROLE_USER,
+        "INSERT INTO public.profiles "
+        "(id,user_id,role,is_active,approval_threshold) VALUES "
+        f"('{STALE_ROLE_USER}','{STALE_ROLE_USER}','vendedor',false,5000) "
+        "RETURNING is_active::text",
+    )) == "false"
+    assert scalar(as_actor(
+        STALE_ROLE_USER,
+        "SELECT public.is_gestor_compras()::text",
+    )) == "false"
 
     assert scalar(as_actor(GESTOR_A, "SELECT count(*) FROM public.cooperativa_budgets")) == "1"
     assert scalar(as_actor(
@@ -234,6 +256,7 @@ try:
         "insercao_inicia_consumo_em_zero": True,
         "compradores_legitimos_leem_verba_do_escopo": True,
         "autoalteracao_de_escopo_do_perfil_bloqueada": True,
+        "autocadastro_de_perfil_nao_reativa_papel_residual": True,
         "verba_cooperativa_isolada": True,
         "identidade_verba_cooperativa_imutavel": True,
         "exclusao_direta_de_verba_bloqueada": True,

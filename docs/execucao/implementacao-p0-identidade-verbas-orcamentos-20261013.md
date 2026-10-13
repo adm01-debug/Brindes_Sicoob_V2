@@ -15,9 +15,9 @@ Este lote corrige quatro falhas críticas localizadas na auditoria de 11/10 e na
 
 | Prova | Resultado |
 |---|---:|
-| Autoridade de verbas em PostgreSQL 17 isolado | 31/31 asserções em 12 grupos aprovadas |
+| Autoridade de verbas em PostgreSQL 17 isolado | 34/34 asserções em 13 grupos aprovadas |
 | Conversão orçamento → pedido em PostgreSQL 16 isolado | 31/31 cenários aprovados |
-| Aprovação pública, HMAC, locks e rollback | 61/61 cenários aprovados |
+| Aprovação pública, HMAC, locks e rollback | 62/62 cenários aprovados |
 | Testes Vitest focados | 15/15 testes aprovados |
 | Suíte Vitest completa com cobertura | 425 arquivos e 5.720 testes aprovados; 94% statements e 86,79% branches |
 | Contratos estáticos das Edge Functions | 106/106 declarados e válidos |
