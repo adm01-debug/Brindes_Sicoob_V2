@@ -71,7 +71,7 @@ try:
       CREATE SCHEMA auth;
       CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$SELECT NULLIF(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
       CREATE TABLE public.user_roles(user_id uuid, role text);
-      CREATE TABLE public.profiles(id uuid PRIMARY KEY, user_id uuid, pa_id uuid, cooperativa_id uuid, singular_id uuid, is_active boolean DEFAULT true, deleted_at timestamptz);
+      CREATE TABLE public.profiles(id uuid PRIMARY KEY, user_id uuid, pa_id uuid, cooperativa_id uuid, singular_id uuid, role text, is_active boolean DEFAULT true, deleted_at timestamptz);
       CREATE TABLE public.postos_atendimento(id uuid PRIMARY KEY, cooperativa_id uuid, is_active boolean NOT NULL DEFAULT true);
       CREATE TABLE public.quotes(
         id uuid PRIMARY KEY, quote_number text, seller_id uuid NOT NULL, status text NOT NULL,
@@ -86,7 +86,8 @@ try:
         client_response_notes text, version integer NOT NULL DEFAULT 1,
         parent_quote_id uuid, row_version integer NOT NULL DEFAULT 1,
         deleted_at timestamptz, is_active boolean NOT NULL DEFAULT true,
-        sent_at timestamptz, created_at timestamptz NOT NULL DEFAULT now()
+        sent_at timestamptz, created_at timestamptz NOT NULL DEFAULT now(),
+        consolidation_id uuid
       );
       CREATE TABLE public.quote_items(
         id uuid PRIMARY KEY, quote_id uuid REFERENCES public.quotes(id) ON DELETE CASCADE, product_id text,

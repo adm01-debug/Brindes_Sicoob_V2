@@ -19,11 +19,12 @@ CREATE TABLE public.quotes (
   client_response text, client_response_at timestamptz, client_response_notes text,
   is_latest_version boolean NOT NULL DEFAULT true, deleted_at timestamptz,
   is_active boolean NOT NULL DEFAULT true, sent_at timestamptz,
-  created_at timestamptz NOT NULL DEFAULT now(),
+  created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(),
   internal_notes text DEFAULT 'anotação interna', total_cost numeric DEFAULT 15,
   version integer DEFAULT 1, row_version bigint DEFAULT 1, rejection_notes text,
   approved_by uuid, approved_at timestamptz, approved_pdf_url text,
-  organization_id uuid, pa_id uuid, singular_id uuid, parent_quote_id uuid
+  organization_id uuid, pa_id uuid, singular_id uuid, parent_quote_id uuid,
+  consolidation_id uuid
 );
 CREATE TABLE public.quote_items (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(), quote_id uuid NOT NULL REFERENCES public.quotes(id) ON DELETE CASCADE,

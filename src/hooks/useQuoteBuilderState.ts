@@ -24,7 +24,7 @@ import { calculateQuoteTotals, formatCurrency, calculateItemTotal, calculateItem
 import type { Product, DiscountType, DeliveryMode } from "@/types/quote-builder";
 import { useQuoteProductSearch } from "@/hooks/quote/useQuoteProductSearch";
 import { useQuoteInitialization } from "@/hooks/quote/useQuoteInitialization";
-import { isQuoteCommerciallyEditable } from "@/lib/quote-status-config";
+import { isQuoteCommerciallyEditable, quoteStatusRequiresDraftReset } from "@/lib/quote-status-config";
 
 export function validateBudgetForSubmission<T>(
   budget: T | null,
@@ -298,6 +298,12 @@ interface TransitionQuoteParams {
 async function applyQuoteTransition(params: TransitionQuoteParams): Promise<boolean> {
   const quoteId = params.quote.id;
   if (!quoteId) return false;
+  let effectiveStatus = params.persistedStatus;
+  if (quoteStatusRequiresDraftReset(effectiveStatus)) {
+    const reopened = await params.updateQuoteStatus(quoteId, "draft");
+    if (!reopened) return false;
+    effectiveStatus = "draft";
+  }
   if (params.finalStatus === "pending_approval" && params.maxDiscountPercent !== null && params.maxDiscountPercent !== undefined) {
     return params.requestApproval(
       quoteId,
@@ -306,7 +312,7 @@ async function applyQuoteTransition(params: TransitionQuoteParams): Promise<bool
       params.sellerNotes,
     );
   }
-  if (params.finalStatus !== params.persistedStatus) {
+  if (params.finalStatus !== effectiveStatus) {
     return params.updateQuoteStatus(quoteId, params.finalStatus);
   }
   return true;

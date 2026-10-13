@@ -97,12 +97,23 @@ const EDITABLE_QUOTE_STATUSES = new Set([
   "rejected_singular",
 ]);
 
+const QUOTE_STATUSES_REQUIRING_DRAFT_RESET = new Set([
+  "revision",
+  "rejected",
+  "rejected_singular",
+]);
+
 /** Alinha a interface ao gate de imutabilidade comercial do banco. */
 export function isQuoteCommerciallyEditable(
   status: string | null | undefined,
   isLatestVersion = true,
 ): boolean {
   return isLatestVersion && typeof status === "string" && EDITABLE_QUOTE_STATUSES.has(status);
+}
+
+/** Exige registrar a reabertura antes de uma nova submissão. */
+export function quoteStatusRequiresDraftReset(status: string | null | undefined): boolean {
+  return typeof status === "string" && QUOTE_STATUSES_REQUIRING_DRAFT_RESET.has(status);
 }
 
 /** Helper: get status label with fallback */

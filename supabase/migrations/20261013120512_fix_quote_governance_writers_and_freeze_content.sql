@@ -286,13 +286,14 @@ DECLARE
   ];
   v_old_commercial jsonb;
   v_new_commercial jsonb;
+  v_table_owner name := pg_catalog.pg_get_userbyid((
+    SELECT relation.relowner
+    FROM pg_catalog.pg_class AS relation
+    WHERE relation.oid = TG_RELID
+  ));
 BEGIN
   IF current_setting('app.quote_governance_write', true) = 'true'
-     AND current_user = pg_catalog.pg_get_userbyid((
-       SELECT relation.relowner
-       FROM pg_catalog.pg_class AS relation
-       WHERE relation.oid = TG_RELID
-     )) THEN
+     AND current_user = v_table_owner THEN
     RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
   END IF;
 
@@ -329,6 +330,21 @@ BEGIN
     RETURN NEW;
   END IF;
 
+  -- A consolidação histórica é SECURITY DEFINER e já valida papel, Singular,
+  -- elegibilidade e locks. Ela só pode preencher o vínculo uma vez e não pode
+  -- aproveitar esta exceção estreita para alterar qualquer outro campo.
+  IF TG_OP = 'UPDATE'
+     AND current_user = v_table_owner
+     AND OLD.status::text = 'approved_singular'
+     AND NEW.status IS NOT DISTINCT FROM OLD.status
+     AND OLD.consolidation_id IS NULL
+     AND NEW.consolidation_id IS NOT NULL
+     AND (to_jsonb(NEW) - ARRAY['consolidation_id', 'updated_at'])
+         IS NOT DISTINCT FROM
+         (to_jsonb(OLD) - ARRAY['consolidation_id', 'updated_at']) THEN
+    RETURN NEW;
+  END IF;
+
   IF NEW.id IS DISTINCT FROM OLD.id
      OR NEW.status IS DISTINCT FROM OLD.status
      OR NEW.approved_by IS DISTINCT FROM OLD.approved_by
@@ -342,13 +358,15 @@ BEGIN
      OR NEW.parent_quote_id IS DISTINCT FROM OLD.parent_quote_id
      OR NEW.is_latest_version IS DISTINCT FROM OLD.is_latest_version
      OR NEW.created_at IS DISTINCT FROM OLD.created_at
+     OR NEW.updated_at IS DISTINCT FROM OLD.updated_at
      OR NEW.sent_at IS DISTINCT FROM OLD.sent_at
      OR NEW.deleted_at IS DISTINCT FROM OLD.deleted_at
      OR NEW.is_active IS DISTINCT FROM OLD.is_active
      OR NEW.seller_id IS DISTINCT FROM OLD.seller_id
      OR NEW.organization_id IS DISTINCT FROM OLD.organization_id
      OR NEW.pa_id IS DISTINCT FROM OLD.pa_id
-     OR NEW.singular_id IS DISTINCT FROM OLD.singular_id THEN
+     OR NEW.singular_id IS DISTINCT FROM OLD.singular_id
+     OR NEW.consolidation_id IS DISTINCT FROM OLD.consolidation_id THEN
     RAISE EXCEPTION USING
       ERRCODE = '42501',
       MESSAGE = 'Campos de governança do orçamento só podem ser alterados por fluxo autorizado.';
@@ -513,6 +531,75 @@ DROP TRIGGER IF EXISTS aaa_guard_quote_personalization_content_write
 CREATE TRIGGER aaa_guard_quote_personalization_content_write
 BEFORE INSERT OR UPDATE OR DELETE ON public.quote_item_personalizations
 FOR EACH ROW EXECUTE FUNCTION public.guard_quote_personalization_content_write();
+
+-- Uma revisão ou rejeição volta explicitamente a rascunho antes de novo envio.
+-- Isso mantém a trilha de status coerente com a edição comercial liberada.
+CREATE OR REPLACE FUNCTION public.assert_quote_transition(
+  p_actor_id uuid,
+  p_quote public.quotes,
+  p_new_status text
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $function$
+DECLARE
+  v_is_seller boolean := p_quote.seller_id = p_actor_id;
+  v_is_manager boolean := public.can_manage_quote_scope(p_actor_id, p_quote.id);
+  v_is_singular_buyer boolean;
+BEGIN
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.profiles AS profile
+    WHERE profile.user_id = p_actor_id
+      AND profile.cooperativa_id = p_quote.singular_id
+      AND profile.role IN ('comprador_singular', 'gestor_compras')
+  ) INTO v_is_singular_buyer;
+
+  IF p_quote.deleted_at IS NOT NULL
+     OR COALESCE(p_quote.is_latest_version, true) IS NOT TRUE THEN
+    RAISE EXCEPTION USING
+      ERRCODE = '22023',
+      MESSAGE = 'O orçamento não está disponível para transição.';
+  END IF;
+
+  IF p_quote.status::text = p_new_status THEN
+    RETURN;
+  END IF;
+
+  IF v_is_seller AND (
+    (p_quote.status::text IN ('draft', 'revision', 'rejected', 'rejected_singular', 'expired')
+      AND p_new_status = 'draft')
+    OR (p_quote.status::text = 'draft'
+      AND p_new_status IN ('pending', 'sent', 'pending_singular_approval'))
+    OR (p_quote.status::text = 'pending' AND p_new_status = 'sent')
+  ) THEN
+    RETURN;
+  END IF;
+
+  IF v_is_manager
+     AND p_new_status = 'rejected'
+     AND p_quote.status::text IN ('pending', 'sent') THEN
+    RETURN;
+  END IF;
+
+  IF (v_is_singular_buyer OR v_is_manager)
+     AND p_quote.status::text = 'pending_singular_approval'
+     AND p_new_status IN ('approved_singular', 'rejected_singular') THEN
+    RETURN;
+  END IF;
+
+  RAISE EXCEPTION USING
+    ERRCODE = '42501',
+    MESSAGE = 'A transição de status não é permitida para este ator e orçamento.';
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.assert_quote_transition(uuid, public.quotes, text)
+  FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.assert_quote_transition(uuid, public.quotes, text)
+  TO authenticated, service_role;
 
 DO $postflight$
 BEGIN

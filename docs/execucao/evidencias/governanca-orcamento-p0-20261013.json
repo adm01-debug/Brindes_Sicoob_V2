@@ -29,7 +29,7 @@
     ]
   },
   "aprovacao_publica": {
-    "cenarios": 62,
+    "cenarios": 64,
     "resultado": "aprovado",
     "inclui": [
       "reproducao da falha real anterior",
@@ -41,9 +41,12 @@
       "resposta do cliente protegida contra escrita direta",
       "identidade, timestamps de ciclo de vida, exclusao logica e row_version protegidos",
       "insercao direta restrita ao rascunho canonico sem resposta ou versao forjada",
+      "vinculo de consolidacao protegido contra preenchimento ou remocao direta",
+      "updated_at protegido contra toque direto e avanco artificial da versao",
       "versao historica integralmente imutavel",
       "RLS de itens isolada por vendedor",
       "versionamento autorizado com restauracao do contexto",
+      "reabertura revision ou rejeicao registrada como draft antes de novo envio",
       "RPC de status executada no esquema canonico com rollback e contexto restaurado",
       "RPCs de status, PDF e desconto encapsuladas com nucleos privados",
       "execucao local dos quatro wrappers transacionais com contexto restaurado",

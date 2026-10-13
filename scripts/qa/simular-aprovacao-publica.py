@@ -290,6 +290,48 @@ try:
       ).stdout.strip() == 't'
     )
 
+    consolidated_quote = str(uuid.uuid4())
+    consolidation_id = str(uuid.uuid4())
+    sql(
+      "INSERT INTO public.quotes(id,seller_id,quote_number,client_name,total,status) "
+      f"VALUES ('{consolidated_quote}','{SELLER}','CONSOLIDADO','Cliente sintético',100,'draft');"
+      "BEGIN; SELECT set_config('app.quote_governance_write','true',true); "
+      f"UPDATE public.quotes SET status='approved_singular' WHERE id='{consolidated_quote}'; COMMIT;"
+    )
+    forged_consolidation = actor(
+      f"UPDATE public.quotes SET consolidation_id='{consolidation_id}' WHERE id='{consolidated_quote}';",
+      check=False,
+    )
+    authorized_consolidation = sql(
+      f"UPDATE public.quotes SET consolidation_id='{consolidation_id}', updated_at=clock_timestamp() "
+      f"WHERE id='{consolidated_quote}' RETURNING consolidation_id;"
+    )
+    forged_unlink = actor(
+      f"UPDATE public.quotes SET consolidation_id=NULL WHERE id='{consolidated_quote}';",
+      check=False,
+    )
+    row_version_before_touch = sql(
+      f"SELECT row_version FROM public.quotes WHERE id='{consolidated_quote}';"
+    ).stdout.strip()
+    forged_touch = actor(
+      f"UPDATE public.quotes SET updated_at=now()+interval '1 minute' WHERE id='{consolidated_quote}';",
+      check=False,
+    )
+    checks['vinculo_de_consolidacao_so_e_preenchido_pelo_fluxo_privilegiado'] = (
+      forged_consolidation.returncode != 0
+      and authorized_consolidation.stdout.strip() == consolidation_id
+      and forged_unlink.returncode != 0
+      and sql(
+        f"SELECT consolidation_id='{consolidation_id}' FROM public.quotes WHERE id='{consolidated_quote}';"
+      ).stdout.strip() == 't'
+    )
+    checks['toque_direto_em_updated_at_nao_avanca_versao'] = (
+      forged_touch.returncode != 0
+      and sql(
+        f"SELECT row_version={row_version_before_touch} FROM public.quotes WHERE id='{consolidated_quote}';"
+      ).stdout.strip() == 't'
+    )
+
     status_quote = str(uuid.uuid4())
     sql(
       "INSERT INTO public.quotes(id,seller_id,quote_number,client_name,total,status) "
