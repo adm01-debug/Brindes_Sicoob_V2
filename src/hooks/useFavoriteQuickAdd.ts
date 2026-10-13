@@ -127,11 +127,12 @@ export function useFavoriteQuickAdd() {
   const addToList = useCallback(
     async (listId: string, product: Product, variant?: FavoriteVariantInfo) => {
       if (!user) return;
+      // A interação visual e a cópia local são imediatas. A persistência
+      // remota não deve congelar o coração do catálogo em redes lentas.
+      if (!isFavorite(product.id)) toggleFavorite(product.id, variant);
       try {
         await persistFavorite(user.id, listId, product, variant);
         saveLastListId(listId);
-        // Sincroniza store legado (estado visual de "favoritado")
-        if (!isFavorite(product.id)) toggleFavorite(product.id, variant);
         qc.invalidateQueries({ queryKey: [FAVORITE_MEMBERSHIP_QUERY_KEY] });
         qc.invalidateQueries({ queryKey: ["favorite-items"] });
         qc.invalidateQueries({ queryKey: ["favorite-lists"] });
@@ -149,19 +150,20 @@ export function useFavoriteQuickAdd() {
   const removeFromAll = useCallback(
     async (productId: string) => {
       if (!user) return;
+      // Mantém a experiência local responsiva; a sincronização com a nuvem
+      // acontece em segundo plano e não redefine a intenção do usuário.
+      if (isFavorite(productId)) toggleFavorite(productId);
       try {
         await supabase
           .from("favorite_items")
           .delete()
           .eq("user_id", user.id)
           .eq("product_id", productId);
-        if (isFavorite(productId)) toggleFavorite(productId);
         qc.invalidateQueries({ queryKey: [FAVORITE_MEMBERSHIP_QUERY_KEY] });
         qc.invalidateQueries({ queryKey: ["favorite-items"] });
         qc.invalidateQueries({ queryKey: ["favorite-lists"] });
       } catch (e) {
         console.warn("[favoriteQuickAdd] remove failed", e);
-        if (isFavorite(productId)) toggleFavorite(productId);
       }
     },
     [user, qc, isFavorite, toggleFavorite]

@@ -103,7 +103,7 @@ function SearchTrigger({ search }: { search: GlobalSearchState }) {
 function VoiceOverlay({ search }: { search: GlobalSearchState }) {
   if (!search.voiceOverlayOpen) return null;
   return (
-    <Suspense fallback={<div data-route-pending="lazy" aria-label="Carregando assistente de voz" />}>
+    <Suspense fallback={<div data-component-pending="voice-assistant" aria-label="Carregando assistente de voz" />}>
       <LazyVoiceOverlay
         isOpen={search.voiceOverlayOpen}
         onClose={search.handleCloseVoiceOverlay}

@@ -141,7 +141,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
     <header data-testid="app-header" style={{ "--header-h": `${model.headerHeightPx}px` } as CSSProperties} className={cn("border-b transition-all duration-300 print:hidden bg-background/80 backdrop-blur-xl border-border/50 h-[var(--header-h,56px)] sticky top-0 z-50 will-change-transform", model.isScrolled && "bg-background/95 backdrop-blur-2xl shadow-sm border-brand/20")}>
       <div className="flex items-center justify-between h-full px-2 sm:px-4 lg:px-6">
         <HeaderLeft currentSection={model.currentSection} onMenuToggle={onMenuToggle} />
-        <div className="flex-1 max-w-lg mx-4 hidden md:block" data-tour="search"><Suspense fallback={<div data-route-pending="lazy" className="h-10 w-full bg-muted/20 animate-pulse rounded-lg" />}><GlobalSearchPalette /></Suspense></div>
+        <div className="flex-1 max-w-lg mx-4 hidden md:block" data-tour="search"><Suspense fallback={<div data-component-pending="global-search" className="h-10 w-full bg-muted/20 animate-pulse rounded-lg" />}><GlobalSearchPalette /></Suspense></div>
         <HeaderActions model={model} />
       </div>
       <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary via-brand to-primary/40 opacity-40" />

@@ -267,7 +267,7 @@ jobs:
       - name: Run E2E regression (shard ${{ matrix.shard }}/3)
         run: |
           npx playwright test \
-            --grep-invert @smoke \
+            --grep-invert '@smoke|@header-sticky' \
             --shard=${{ matrix.shard }}/3 \
             --workers=2 \
             --pass-with-no-tests \

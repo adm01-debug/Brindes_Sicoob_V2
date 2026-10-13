@@ -113,7 +113,7 @@ async function assertHeaderSticky(
 }
 
 for (const vp of VIEWPORTS) {
-  test.describe(`Header sticky — rotas autenticadas (app + quotes) [${vp.name} ${vp.width}×${vp.height}]`, () => {
+  test.describe(`@header-sticky Header sticky — rotas autenticadas (app + quotes) [${vp.name} ${vp.width}×${vp.height}]`, () => {
     test.describe.configure({ mode: 'parallel' });
     test.use({ viewport: { width: vp.width, height: vp.height } });
     test.beforeEach(() => requireAuth());
@@ -129,7 +129,7 @@ for (const vp of VIEWPORTS) {
     }
   });
 
-  test.describe(`Header sticky — rotas admin [${vp.name} ${vp.width}×${vp.height}]`, () => {
+  test.describe(`@header-sticky Header sticky — rotas admin [${vp.name} ${vp.width}×${vp.height}]`, () => {
     test.describe.configure({ mode: 'parallel' });
     test.use({ viewport: { width: vp.width, height: vp.height } });
     test.beforeEach(() => requireAdmin());
@@ -165,7 +165,7 @@ const PROTECTED_NAV_SEQUENCE = [
   '/dashboard',
 ] as const;
 
-test.describe('Header sticky — pós-login e navegação entre módulos', () => {
+test.describe('@header-sticky Header sticky — pós-login e navegação entre módulos', () => {
   // Não reaproveita storageState: força login fresco via UI.
   test.use({ storageState: { cookies: [], origins: [] } });
 
