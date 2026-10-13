@@ -76,9 +76,10 @@ describe('useFavoriteQuickAdd', () => {
     ]);
   });
 
-  it('ignora uma segunda alteração do mesmo produto enquanto a primeira persiste', async () => {
+  it('serializa duas alterações rápidas e preserva a intenção mais recente', async () => {
     let finishUpsert: ((value: { error: null }) => void) | undefined;
     remote.upsert.mockReturnValue(new Promise((resolve) => { finishUpsert = resolve; }));
+    remote.finalDelete.mockResolvedValue({ error: null });
     const { result } = renderHook(() => useFavoriteQuickAdd(), { wrapper });
 
     act(() => {
@@ -86,13 +87,15 @@ describe('useFavoriteQuickAdd', () => {
       result.current.handleFavoriteClick(product);
     });
 
-    expect(remote.upsert).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(remote.upsert).toHaveBeenCalledTimes(1));
     expect(remote.finalDelete).not.toHaveBeenCalled();
-    expect(useFavoritesStore.getState().isFavorite(product.id)).toBe(true);
+    expect(useFavoritesStore.getState().isFavorite(product.id)).toBe(false);
 
     await act(async () => {
       finishUpsert?.({ error: null });
     });
+    await waitFor(() => expect(remote.finalDelete).toHaveBeenCalledTimes(1));
+    expect(useFavoritesStore.getState().isFavorite(product.id)).toBe(false);
   });
 
   it('reflete a remoção local antes de a exclusão remota terminar', () => {

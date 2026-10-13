@@ -300,7 +300,7 @@ function SearchFilters({ state }: { state: SearchState }) {
             <Search className="mr-2 h-4 w-4" />
             Buscar
           </Button>
-          <Button variant="outline" onClick={state.handleReset}>
+          <Button variant="outline" onClick={state.handleReset} aria-label="Limpar filtros">
             <RotateCcw className="h-4 w-4" />
           </Button>
         </div>
@@ -341,6 +341,7 @@ function ViewModeButtons({ state }: { state: SearchState }) {
         return (
           <Button
             key={mode}
+            aria-label={`Exibir resultados em ${mode === 'cards' ? 'grade' : mode === 'table' ? 'tabela' : 'lista'}`}
             variant={state.viewMode === mode ? 'secondary' : 'ghost'}
             size="sm"
             onClick={() => state.setViewMode(mode)}

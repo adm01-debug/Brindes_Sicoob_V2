@@ -171,6 +171,7 @@ function SellerLimitRow({
       </div>
 
       <Textarea
+        aria-label={`Observações internas do limite de ${row.email}`}
         placeholder="Observações internas (motivo da exceção, validade, etc.)"
         value={currentNotes}
         onChange={(event) => onEdit(row.user_id, { ...edit, notes: event.target.value })}

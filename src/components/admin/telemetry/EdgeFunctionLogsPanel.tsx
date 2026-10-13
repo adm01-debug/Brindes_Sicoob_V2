@@ -370,6 +370,7 @@ export function EdgeFunctionLogsPanel() {
             </SelectContent>
           </Select>
           <Input
+            aria-label="Filtrar logs de Edge Functions"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Filtrar por op, target, request_id, mensagem…"

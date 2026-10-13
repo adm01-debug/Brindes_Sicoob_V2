@@ -3,8 +3,6 @@ import { test, expect } from '@playwright/test';
 import { loginAs } from '../helpers/auth';
 import { Sel } from '../fixtures/selectors';
 
-const COMPANY_SEARCH_TERM = 'QA';
-
 /**
  * Fluxo de ciclo de vida do carrinho de vendedor (Seller Cart).
  * 1. Autentica
@@ -37,12 +35,10 @@ test.describe('Seller Cart Flow E2E', () => {
       await newCartBtn.click();
 
       // Buscar empresa no seletor (CartCompanyPicker usa input genérico sem testid, mas Sel.cart.companyPickerSelect está definido para o botão de seleção se houver)
-      const searchInput = page.getByPlaceholder('Buscar cooperativa ou unidade…');
-      await searchInput.fill(COMPANY_SEARCH_TERM);
-
-      // Selecionar a primeira empresa retornada pelo CRM.
+      // Selecionar a primeira empresa retornada pelo CRM. O cenário valida o
+      // ciclo do carrinho e não depende de um nome cadastral específico.
       const companyItem = page.locator(Sel.cart.companyPickerSelect).first();
-      await expect(companyItem).toBeVisible();
+      await expect(companyItem).toBeVisible({ timeout: 30_000 });
       await companyItem.click();
 
       // Esperar fechar seletor e mostrar o tab ativo

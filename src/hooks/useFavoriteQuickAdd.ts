@@ -100,16 +100,28 @@ export function useFavoriteQuickAdd() {
   const qc = useQueryClient();
   const { lists, defaultList, createList } = useFavoriteLists();
   const { toggleFavorite, isFavorite } = useFavoritesStore();
-  const pendingProductIds = useRef(new Set<string>());
+  const productMutationTails = useRef(new Map<string, Promise<void>>());
+  const productMutationVersions = useRef(new Map<string, number>());
 
-  const beginProductMutation = useCallback((productId: string) => {
-    if (pendingProductIds.current.has(productId)) return false;
-    pendingProductIds.current.add(productId);
-    return true;
-  }, []);
-
-  const finishProductMutation = useCallback((productId: string) => {
-    pendingProductIds.current.delete(productId);
+  const enqueueProductMutation = useCallback(async (
+    productId: string,
+    mutation: (isLatest: () => boolean) => Promise<void>,
+  ) => {
+    const version = (productMutationVersions.current.get(productId) ?? 0) + 1;
+    productMutationVersions.current.set(productId, version);
+    const previous = productMutationTails.current.get(productId) ?? Promise.resolve();
+    const current = previous
+      .catch(() => undefined)
+      .then(() => mutation(() => productMutationVersions.current.get(productId) === version));
+    productMutationTails.current.set(productId, current);
+    try {
+      await current;
+    } finally {
+      if (productMutationTails.current.get(productId) === current) {
+        productMutationTails.current.delete(productId);
+        productMutationVersions.current.delete(productId);
+      }
+    }
   }, []);
 
   // Index global de membership: produto X está em quais listas?
@@ -137,61 +149,63 @@ export function useFavoriteQuickAdd() {
   /** Adiciona produto remotamente em uma lista específica + registra no store legado (sync local). */
   const addToList = useCallback(
     async (listId: string, product: Product, variant?: FavoriteVariantInfo) => {
-      if (!user || !beginProductMutation(product.id)) return;
+      if (!user) return;
       // A interação visual e a cópia local são imediatas. A persistência
       // remota não deve congelar o coração do catálogo em redes lentas.
       const addedLocally = !isFavorite(product.id);
       if (addedLocally) toggleFavorite(product.id, variant);
-      try {
-        await persistFavorite(user.id, listId, product, variant);
-        saveLastListId(listId);
-        qc.invalidateQueries({ queryKey: [FAVORITE_MEMBERSHIP_QUERY_KEY] });
-        qc.invalidateQueries({ queryKey: ["favorite-items"] });
-        qc.invalidateQueries({ queryKey: ["favorite-lists"] });
-        const listName = lists.find((l) => l.id === listId)?.name ?? "lista";
-        toast.success(`Adicionado em "${listName}"`);
-      } catch (e) {
-        if (addedLocally && useFavoritesStore.getState().isFavorite(product.id)) {
-          useFavoritesStore.getState().removeFavorite(product.id);
+      await enqueueProductMutation(product.id, async (isLatest) => {
+        try {
+          await persistFavorite(user.id, listId, product, variant);
+          saveLastListId(listId);
+          qc.invalidateQueries({ queryKey: [FAVORITE_MEMBERSHIP_QUERY_KEY] });
+          qc.invalidateQueries({ queryKey: ["favorite-items"] });
+          qc.invalidateQueries({ queryKey: ["favorite-lists"] });
+          const listName = lists.find((l) => l.id === listId)?.name ?? "lista";
+          if (isLatest()) toast.success(`Adicionado em "${listName}"`);
+        } catch (e) {
+          if (isLatest() && addedLocally && useFavoritesStore.getState().isFavorite(product.id)) {
+            useFavoritesStore.getState().removeFavorite(product.id);
+          }
+          if (isLatest()) {
+            const msg = e instanceof Error ? e.message : "Erro ao salvar";
+            toast.error(msg);
+          }
         }
-        const msg = e instanceof Error ? e.message : "Erro ao salvar";
-        toast.error(msg);
-      } finally {
-        finishProductMutation(product.id);
-      }
+      });
     },
-    [user, qc, lists, isFavorite, toggleFavorite, beginProductMutation, finishProductMutation]
+    [user, qc, lists, isFavorite, toggleFavorite, enqueueProductMutation]
   );
 
   /** Remove produto de TODAS as listas remotas + store legado. */
   const removeFromAll = useCallback(
     async (productId: string) => {
-      if (!user || !beginProductMutation(productId)) return;
+      if (!user) return;
       // Mantém a experiência local responsiva; a sincronização com a nuvem
       // acontece em segundo plano e reverte o estado se o banco a rejeitar.
       const previousVariant = useFavoritesStore.getState().getFavoriteVariant(productId);
       const removedLocally = isFavorite(productId);
       if (removedLocally) toggleFavorite(productId);
-      try {
-        const { error } = await supabase
-          .from("favorite_items")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("product_id", productId);
-        if (error) throw error;
-        qc.invalidateQueries({ queryKey: [FAVORITE_MEMBERSHIP_QUERY_KEY] });
-        qc.invalidateQueries({ queryKey: ["favorite-items"] });
-        qc.invalidateQueries({ queryKey: ["favorite-lists"] });
-      } catch (e) {
-        if (removedLocally && !useFavoritesStore.getState().isFavorite(productId)) {
-          useFavoritesStore.getState().addFavorite(productId, previousVariant);
+      await enqueueProductMutation(productId, async (isLatest) => {
+        try {
+          const { error } = await supabase
+            .from("favorite_items")
+            .delete()
+            .eq("user_id", user.id)
+            .eq("product_id", productId);
+          if (error) throw error;
+          qc.invalidateQueries({ queryKey: [FAVORITE_MEMBERSHIP_QUERY_KEY] });
+          qc.invalidateQueries({ queryKey: ["favorite-items"] });
+          qc.invalidateQueries({ queryKey: ["favorite-lists"] });
+        } catch (e) {
+          if (isLatest() && removedLocally && !useFavoritesStore.getState().isFavorite(productId)) {
+            useFavoritesStore.getState().addFavorite(productId, previousVariant);
+          }
+          if (isLatest()) console.warn("[favoriteQuickAdd] remove failed", e);
         }
-        console.warn("[favoriteQuickAdd] remove failed", e);
-      } finally {
-        finishProductMutation(productId);
-      }
+      });
     },
-    [user, qc, isFavorite, toggleFavorite, beginProductMutation, finishProductMutation]
+    [user, qc, isFavorite, toggleFavorite, enqueueProductMutation]
   );
 
   /** Cria lista nova e adiciona o produto nela. */

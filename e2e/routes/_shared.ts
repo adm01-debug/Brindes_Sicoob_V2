@@ -142,7 +142,7 @@ export function spySupabaseRequests(page: Page) {
   });
   page.on('response', (res) => {
     const i = calls.findIndex((c) => c.url === res.url() && c.status === undefined);
-    if (i >= 0) calls[i].status = res.status();
+    if (i >= 0) calls[i]!.status = res.status();
   });
   return {
     get all() {
@@ -173,6 +173,7 @@ export async function basicA11yChecks(page: Page) {
     );
     return inputs
       .filter((el) => {
+        if (el.getAttribute('aria-hidden') === 'true') return false;
         const visible = (el as HTMLElement).offsetParent !== null;
         if (!visible) return false;
         const id = el.getAttribute('id');

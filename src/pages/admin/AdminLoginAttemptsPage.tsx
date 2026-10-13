@@ -92,6 +92,7 @@ function LoginFilters({
           <div className="relative min-w-[200px] flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
+              aria-label="Filtrar tentativas por email"
               placeholder="Filtrar por email..."
               value={email}
               onChange={(event) => onEmailChange(event.target.value)}

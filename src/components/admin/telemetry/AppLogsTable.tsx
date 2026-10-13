@@ -56,7 +56,7 @@ function AppLogsBody({ logs, loading }: { logs?: AppLog[]; loading: boolean }) {
 }
 
 function AppLogsFilters({ severity, setSeverity, tableName, setTableName }: { severity: string; setSeverity: (value: string) => void; tableName: string; setTableName: (value: string) => void }) {
-  return <div className="flex gap-4 mt-4"><Select value={severity} onValueChange={setSeverity}><SelectTrigger className="w-[180px]"><SelectValue placeholder="Severidade" /></SelectTrigger><SelectContent><SelectItem value="all">Todas</SelectItem><SelectItem value="error">Erros</SelectItem><SelectItem value="warning">Avisos</SelectItem><SelectItem value="info">Info</SelectItem></SelectContent></Select><Input placeholder="Filtrar por tabela..." value={tableName} onChange={event => setTableName(event.target.value)} className="max-w-xs" /></div>;
+  return <div className="flex gap-4 mt-4"><Select value={severity} onValueChange={setSeverity}><SelectTrigger className="w-[180px]"><SelectValue placeholder="Severidade" /></SelectTrigger><SelectContent><SelectItem value="all">Todas</SelectItem><SelectItem value="error">Erros</SelectItem><SelectItem value="warning">Avisos</SelectItem><SelectItem value="info">Info</SelectItem></SelectContent></Select><Input aria-label="Filtrar telemetria por tabela" placeholder="Filtrar por tabela..." value={tableName} onChange={event => setTableName(event.target.value)} className="max-w-xs" /></div>;
 }
 
 export function AppLogsTable() {

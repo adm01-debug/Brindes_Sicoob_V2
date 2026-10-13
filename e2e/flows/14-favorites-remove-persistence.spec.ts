@@ -271,6 +271,12 @@ test.describe('Fluxo: remover favorito persiste após reload', () => {
     // 2. /favoritos: confirma +1 no header e captura snapshot ANTES da remoção
     await gotoAndSettle(page, '/favoritos');
     await expect.poll(() => readFavoritesCount(page), { timeout: 10_000 }).toBe(countBefore + 1);
+    await expect
+      .poll(() => readFavoritesItems(page), {
+        message: `o favorito ${addedId} deveria aparecer após a sincronização remota`,
+        timeout: 15_000,
+      })
+      .toEqual(expect.arrayContaining([expect.objectContaining({ productId: addedId })]));
 
     const snapshotWithItem = await readFavoritesSnapshot(page);
     expect(snapshotWithItem.title).toBe(baselineSnapshot.title);
