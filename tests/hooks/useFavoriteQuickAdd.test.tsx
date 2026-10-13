@@ -76,6 +76,25 @@ describe('useFavoriteQuickAdd', () => {
     ]);
   });
 
+  it('ignora uma segunda alteração do mesmo produto enquanto a primeira persiste', async () => {
+    let finishUpsert: ((value: { error: null }) => void) | undefined;
+    remote.upsert.mockReturnValue(new Promise((resolve) => { finishUpsert = resolve; }));
+    const { result } = renderHook(() => useFavoriteQuickAdd(), { wrapper });
+
+    act(() => {
+      result.current.handleFavoriteClick(product);
+      result.current.handleFavoriteClick(product);
+    });
+
+    expect(remote.upsert).toHaveBeenCalledTimes(1);
+    expect(remote.finalDelete).not.toHaveBeenCalled();
+    expect(useFavoritesStore.getState().isFavorite(product.id)).toBe(true);
+
+    await act(async () => {
+      finishUpsert?.({ error: null });
+    });
+  });
+
   it('reflete a remoção local antes de a exclusão remota terminar', () => {
     useFavoritesStore.getState().addFavorite(product.id);
     remote.finalDelete.mockReturnValue(new Promise(() => {}));

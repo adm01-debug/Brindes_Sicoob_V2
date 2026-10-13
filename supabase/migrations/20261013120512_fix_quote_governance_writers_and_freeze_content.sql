@@ -392,6 +392,21 @@ BEGIN
     RETURN NEW;
   END IF;
 
+  -- A remoção de um usuário no Auth aciona a FK histórica
+  -- quotes.seller_id ON DELETE SET NULL. A atualização acontece em um trigger
+  -- referencial aninhado, com a identidade do proprietário da tabela. Aceita-se
+  -- somente essa nulificação e nenhuma outra alteração no orçamento.
+  IF TG_OP = 'UPDATE'
+     AND pg_trigger_depth() > 1
+     AND current_user = v_table_owner
+     AND OLD.seller_id IS NOT NULL
+     AND NEW.seller_id IS NULL
+     AND (to_jsonb(NEW) - ARRAY['seller_id', 'updated_at'])
+         IS NOT DISTINCT FROM
+         (to_jsonb(OLD) - ARRAY['seller_id', 'updated_at']) THEN
+    RETURN NEW;
+  END IF;
+
   IF NEW.id IS DISTINCT FROM OLD.id
      OR NEW.status IS DISTINCT FROM OLD.status
      OR NEW.approved_by IS DISTINCT FROM OLD.approved_by

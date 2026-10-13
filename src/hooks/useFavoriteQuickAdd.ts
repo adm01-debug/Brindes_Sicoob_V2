@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -100,6 +100,17 @@ export function useFavoriteQuickAdd() {
   const qc = useQueryClient();
   const { lists, defaultList, createList } = useFavoriteLists();
   const { toggleFavorite, isFavorite } = useFavoritesStore();
+  const pendingProductIds = useRef(new Set<string>());
+
+  const beginProductMutation = useCallback((productId: string) => {
+    if (pendingProductIds.current.has(productId)) return false;
+    pendingProductIds.current.add(productId);
+    return true;
+  }, []);
+
+  const finishProductMutation = useCallback((productId: string) => {
+    pendingProductIds.current.delete(productId);
+  }, []);
 
   // Index global de membership: produto X está em quais listas?
   const { data: membership = new Map<string, Set<string>>() } = useQuery({
@@ -126,7 +137,7 @@ export function useFavoriteQuickAdd() {
   /** Adiciona produto remotamente em uma lista específica + registra no store legado (sync local). */
   const addToList = useCallback(
     async (listId: string, product: Product, variant?: FavoriteVariantInfo) => {
-      if (!user) return;
+      if (!user || !beginProductMutation(product.id)) return;
       // A interação visual e a cópia local são imediatas. A persistência
       // remota não deve congelar o coração do catálogo em redes lentas.
       const addedLocally = !isFavorite(product.id);
@@ -145,15 +156,17 @@ export function useFavoriteQuickAdd() {
         }
         const msg = e instanceof Error ? e.message : "Erro ao salvar";
         toast.error(msg);
+      } finally {
+        finishProductMutation(product.id);
       }
     },
-    [user, qc, lists, isFavorite, toggleFavorite]
+    [user, qc, lists, isFavorite, toggleFavorite, beginProductMutation, finishProductMutation]
   );
 
   /** Remove produto de TODAS as listas remotas + store legado. */
   const removeFromAll = useCallback(
     async (productId: string) => {
-      if (!user) return;
+      if (!user || !beginProductMutation(productId)) return;
       // Mantém a experiência local responsiva; a sincronização com a nuvem
       // acontece em segundo plano e reverte o estado se o banco a rejeitar.
       const previousVariant = useFavoritesStore.getState().getFavoriteVariant(productId);
@@ -174,9 +187,11 @@ export function useFavoriteQuickAdd() {
           useFavoritesStore.getState().addFavorite(productId, previousVariant);
         }
         console.warn("[favoriteQuickAdd] remove failed", e);
+      } finally {
+        finishProductMutation(productId);
       }
     },
-    [user, qc, isFavorite, toggleFavorite]
+    [user, qc, isFavorite, toggleFavorite, beginProductMutation, finishProductMutation]
   );
 
   /** Cria lista nova e adiciona o produto nela. */
