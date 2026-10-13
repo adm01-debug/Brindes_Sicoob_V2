@@ -286,12 +286,15 @@ DECLARE
   ];
   v_old_commercial jsonb;
   v_new_commercial jsonb;
+  v_call_context text;
   v_table_owner name := pg_catalog.pg_get_userbyid((
     SELECT relation.relowner
     FROM pg_catalog.pg_class AS relation
     WHERE relation.oid = TG_RELID
   ));
 BEGIN
+  GET DIAGNOSTICS v_call_context = PG_CONTEXT;
+
   IF current_setting('app.quote_governance_write', true) = 'true'
      AND current_user = v_table_owner THEN
     RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
@@ -319,6 +322,21 @@ BEGIN
        OR NEW.sent_at IS NOT NULL
        OR NEW.deleted_at IS NOT NULL
        OR NEW.parent_quote_id IS NOT NULL
+       OR NEW.consolidation_id IS NOT NULL
+       OR (
+         (
+           NEW.reorder_source_order_id IS NOT NULL
+           OR NEW.reorder_source_quote_id IS NOT NULL
+           OR NEW.catalog_revalidated_at IS NOT NULL
+           OR NEW.catalog_valid_until IS NOT NULL
+           OR COALESCE(NEW.reorder_price_changed_items, 0) <> 0
+         )
+         AND NOT (
+           current_user = v_table_owner
+           AND current_setting('app.sicoob_reorder_operation', true) = 'create'
+         )
+       )
+       OR COALESCE(NEW.catalog_stock_is_reserved, false) IS TRUE
        OR NEW.version IS DISTINCT FROM 1
        OR NEW.row_version IS DISTINCT FROM 1
        OR NEW.is_latest_version IS DISTINCT FROM true
@@ -358,7 +376,15 @@ BEGIN
      OR NEW.parent_quote_id IS DISTINCT FROM OLD.parent_quote_id
      OR NEW.is_latest_version IS DISTINCT FROM OLD.is_latest_version
      OR NEW.created_at IS DISTINCT FROM OLD.created_at
-     OR NEW.updated_at IS DISTINCT FROM OLD.updated_at
+     OR (
+       NEW.updated_at IS DISTINCT FROM OLD.updated_at
+       AND NOT (
+         current_setting('app.quote_atomic_save', true) = 'true'
+         AND v_call_context ~ 'PL/pgSQL function (public\.)?save_quote_atomic\('
+         AND COALESCE(OLD.is_latest_version, true)
+         AND OLD.status::text IN ('draft', 'revision', 'rejected', 'rejected_singular')
+       )
+     )
      OR NEW.sent_at IS DISTINCT FROM OLD.sent_at
      OR NEW.deleted_at IS DISTINCT FROM OLD.deleted_at
      OR NEW.is_active IS DISTINCT FROM OLD.is_active
@@ -366,7 +392,13 @@ BEGIN
      OR NEW.organization_id IS DISTINCT FROM OLD.organization_id
      OR NEW.pa_id IS DISTINCT FROM OLD.pa_id
      OR NEW.singular_id IS DISTINCT FROM OLD.singular_id
-     OR NEW.consolidation_id IS DISTINCT FROM OLD.consolidation_id THEN
+     OR NEW.consolidation_id IS DISTINCT FROM OLD.consolidation_id
+     OR NEW.reorder_source_order_id IS DISTINCT FROM OLD.reorder_source_order_id
+     OR NEW.reorder_source_quote_id IS DISTINCT FROM OLD.reorder_source_quote_id
+     OR NEW.catalog_revalidated_at IS DISTINCT FROM OLD.catalog_revalidated_at
+     OR NEW.catalog_valid_until IS DISTINCT FROM OLD.catalog_valid_until
+     OR NEW.catalog_stock_is_reserved IS DISTINCT FROM OLD.catalog_stock_is_reserved
+     OR NEW.reorder_price_changed_items IS DISTINCT FROM OLD.reorder_price_changed_items THEN
     RAISE EXCEPTION USING
       ERRCODE = '42501',
       MESSAGE = 'Campos de governança do orçamento só podem ser alterados por fluxo autorizado.';

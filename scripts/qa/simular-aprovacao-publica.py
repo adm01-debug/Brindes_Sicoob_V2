@@ -280,8 +280,25 @@ try:
       f"('{canonical_insert_quote}','{SELLER}','CANONICO','Cliente sintético',100,'draft') "
       "RETURNING id;",
     )
+    forged_consolidation_insert = actor(
+      "INSERT INTO public.quotes "
+      "(id,seller_id,quote_number,client_name,total,status,consolidation_id) VALUES "
+      f"('{uuid.uuid4()}','{SELLER}','FORJA-CONSOLIDACAO','Cliente sintético',100,"
+      f"'draft','{uuid.uuid4()}');",
+      check=False,
+    )
+    forged_reorder_insert = actor(
+      "BEGIN; SELECT set_config('app.sicoob_reorder_operation','create',true); "
+      "INSERT INTO public.quotes "
+      "(id,seller_id,quote_number,client_name,total,status,reorder_source_quote_id) VALUES "
+      f"('{uuid.uuid4()}','{SELLER}','FORJA-RECOMPRA','Cliente sintético',100,"
+      f"'draft','{uuid.uuid4()}'); COMMIT;",
+      check=False,
+    )
     checks['insercao_direta_nao_forja_resposta_ou_versao'] = (
       forged_insert.returncode != 0
+      and forged_consolidation_insert.returncode != 0
+      and forged_reorder_insert.returncode != 0
       and canonical_insert.stdout.strip() == canonical_insert_quote
       and sql(
         f"SELECT client_response IS NULL AND client_response_at IS NULL "
@@ -317,6 +334,12 @@ try:
       f"UPDATE public.quotes SET updated_at=now()+interval '1 minute' WHERE id='{consolidated_quote}';",
       check=False,
     )
+    forged_atomic_touch = actor(
+      "BEGIN; SELECT set_config('app.quote_atomic_save','true',true); "
+      f"UPDATE public.quotes SET updated_at=now()+interval '1 minute' "
+      f"WHERE id='{consolidated_quote}'; COMMIT;",
+      check=False,
+    )
     checks['vinculo_de_consolidacao_so_e_preenchido_pelo_fluxo_privilegiado'] = (
       forged_consolidation.returncode != 0
       and authorized_consolidation.stdout.strip() == consolidation_id
@@ -327,8 +350,43 @@ try:
     )
     checks['toque_direto_em_updated_at_nao_avanca_versao'] = (
       forged_touch.returncode != 0
+      and forged_atomic_touch.returncode != 0
       and sql(
         f"SELECT row_version={row_version_before_touch} FROM public.quotes WHERE id='{consolidated_quote}';"
+      ).stdout.strip() == 't'
+    )
+    forged_governance_flag = actor(
+      "BEGIN; SELECT set_config('app.quote_governance_write','true',true); "
+      f"UPDATE public.quotes SET status='approved' WHERE id='{canonical_insert_quote}'; COMMIT;",
+      check=False,
+    )
+    checks['flag_de_governanca_nao_elevavel_por_cliente'] = (
+      forged_governance_flag.returncode != 0
+      and sql(
+        f"SELECT status='draft' FROM public.quotes WHERE id='{canonical_insert_quote}';"
+      ).stdout.strip() == 't'
+    )
+
+    reorder_quote = str(uuid.uuid4())
+    reorder_source = str(uuid.uuid4())
+    sql(
+      "BEGIN; SELECT set_config('app.quote_governance_write','true',true); "
+      "INSERT INTO public.quotes "
+      "(id,seller_id,quote_number,client_name,total,status,reorder_source_quote_id,"
+      "catalog_revalidated_at,catalog_valid_until) VALUES "
+      f"('{reorder_quote}','{SELLER}','RECOMPRA','Cliente sintético',100,'draft',"
+      f"'{reorder_source}',now(),now()+interval '5 minutes'); COMMIT;"
+    )
+    forged_reorder_unlink = actor(
+      f"UPDATE public.quotes SET reorder_source_quote_id=NULL, catalog_valid_until=NULL "
+      f"WHERE id='{reorder_quote}';",
+      check=False,
+    )
+    checks['linhagem_e_validade_da_recompra_sao_imutaveis_diretamente'] = (
+      forged_reorder_unlink.returncode != 0
+      and sql(
+        f"SELECT reorder_source_quote_id='{reorder_source}' AND catalog_valid_until IS NOT NULL "
+        f"FROM public.quotes WHERE id='{reorder_quote}';"
       ).stdout.strip() == 't'
     )
 
@@ -375,8 +433,10 @@ try:
     fixed_item = sql(f"SELECT id FROM public.quote_items WHERE quote_id='{fixed_quote}';").stdout.strip()
     frozen_item = actor(f"UPDATE public.quote_items SET quantity=99 WHERE id='{fixed_item}';", check=False)
     frozen_header = actor(f"UPDATE public.quotes SET total=999 WHERE id='{fixed_quote}';", check=False)
+    frozen_delete = actor(f"DELETE FROM public.quotes WHERE id='{fixed_quote}';", check=False)
     checks['conteudo_aprovado_e_imutavel'] = (
       frozen_item.returncode != 0 and frozen_header.returncode != 0
+      and frozen_delete.returncode != 0
       and sql(f"SELECT quantity=10 FROM public.quote_items WHERE id='{fixed_item}';").stdout.strip() == 't'
       and sql(f"SELECT total=100 FROM public.quotes WHERE id='{fixed_quote}';").stdout.strip() == 't'
     )

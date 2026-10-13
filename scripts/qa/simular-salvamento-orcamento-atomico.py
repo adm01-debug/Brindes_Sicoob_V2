@@ -10,7 +10,9 @@ from postgres_ready import wait_for_postgres
 ROOT = Path(__file__).resolve().parents[2]
 CONTAINER = "quote-atomic-save-" + uuid.uuid4().hex[:10]
 FIXTURE = ROOT / "tests/scenarios/sql/quote-atomic-save-fixture.sql"
-MIGRATION = ROOT / "supabase/migrations/20260927190000_atomic_quote_save.sql"
+BASE_MIGRATION = ROOT / "supabase/migrations/20261002160000_quote_items_id_format_validation.sql"
+GOVERNANCE_MIGRATION = ROOT / "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql"
+MIGRATION = ROOT / "supabase/migrations/20261013123000_preserve_atomic_quote_save_under_governance.sql"
 SELLER = "11111111-1111-4111-8111-111111111111"
 ORG = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 OTHER_ORG = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
@@ -128,6 +130,15 @@ try:
     ])
     wait_for_postgres(command, CONTAINER)
     sql(FIXTURE.read_text())
+    sql(BASE_MIGRATION.read_text())
+    governance_sql = GOVERNANCE_MIGRATION.read_text()
+    guard_start = governance_sql.index(
+        "CREATE OR REPLACE FUNCTION public.guard_quote_governance_write()"
+    )
+    guard_end = governance_sql.index(
+        "CREATE OR REPLACE FUNCTION public.assert_quote_content_editable", guard_start
+    )
+    sql(governance_sql[guard_start:guard_end])
     sql(MIGRATION.read_text())
 
     assert scalar(sql("""
@@ -175,6 +186,20 @@ try:
     assert scalar(sql(f"SELECT quantity FROM public.quote_items WHERE quote_id='{quote_id}';")) == "3"
     assert scalar(sql(f"SELECT count(*) FROM public.quote_history WHERE quote_id='{quote_id}';")) == "2"
 
+    direct_touch = actor_sql(
+        f"UPDATE public.quotes SET updated_at=now()+interval '1 minute' WHERE id='{quote_id}';",
+        check=False,
+    )
+    spoofed_touch = actor_sql(
+        "BEGIN; SELECT set_config('app.quote_atomic_save','true',true); "
+        f"UPDATE public.quotes SET updated_at=now()+interval '1 minute' WHERE id='{quote_id}'; "
+        "COMMIT;",
+        check=False,
+    )
+    assert direct_touch.returncode != 0
+    assert spoofed_touch.returncode != 0
+    assert scalar(sql(f"SELECT row_version FROM public.quotes WHERE id='{quote_id}';")) == "2"
+
     stale = rpc(updated_header, updated_items, quote_id=quote_id, version=1, check=False)
     assert stale.returncode != 0 and "orçamento mudou" in stale.stderr.lower()
     assert scalar(sql(f"SELECT row_version FROM public.quotes WHERE id='{quote_id}';")) == "2"
@@ -184,7 +209,10 @@ try:
     assert cross_org.returncode != 0 and "organização informada" in cross_org.stderr
     assert scalar(sql("SELECT count(*) FROM public.quotes;")) == "1"
 
-    sql(f"UPDATE public.quotes SET status='pending' WHERE id='{quote_id}';")
+    sql(
+        "BEGIN; SELECT set_config('app.quote_governance_write','true',true); "
+        f"UPDATE public.quotes SET status='pending' WHERE id='{quote_id}'; COMMIT;"
+    )
     submitted = rpc(updated_header, updated_items, quote_id=quote_id, version=3, check=False)
     assert submitted.returncode != 0 and "nova versão" in submitted.stderr
 
@@ -194,6 +222,7 @@ try:
         "concorrencia": "row_version obsoleto recusado sem alterar itens ou histórico",
         "totais": "subtotal, desconto, frete e custo recalculados no servidor",
         "governanca": "escopo organizacional e edição de orçamento enviado recusados",
+        "integracao_gate": "save_quote_atomic preserva SECURITY INVOKER/RLS; toque direto ou GUC forjado não altera updated_at",
         "resultado": "aprovado",
     })
     evidence = ROOT / "docs/execucao/evidencias/salvamento-orcamento-atomico.json"

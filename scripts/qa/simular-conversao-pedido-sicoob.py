@@ -87,7 +87,11 @@ try:
         parent_quote_id uuid, row_version integer NOT NULL DEFAULT 1,
         deleted_at timestamptz, is_active boolean NOT NULL DEFAULT true,
         sent_at timestamptz, created_at timestamptz NOT NULL DEFAULT now(),
-        consolidation_id uuid
+        consolidation_id uuid,
+        reorder_source_order_id uuid, reorder_source_quote_id uuid,
+        catalog_revalidated_at timestamptz, catalog_valid_until timestamptz,
+        catalog_stock_is_reserved boolean NOT NULL DEFAULT false,
+        reorder_price_changed_items integer NOT NULL DEFAULT 0
       );
       CREATE TABLE public.quote_items(
         id uuid PRIMARY KEY, quote_id uuid REFERENCES public.quotes(id) ON DELETE CASCADE, product_id text,
