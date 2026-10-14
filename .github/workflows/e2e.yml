@@ -88,6 +88,8 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           npx vitest run \
+            --no-file-parallelism \
+            --maxWorkers=1 \
             tests/security/edge-authz-bypass.test.ts \
             tests/rls/e2e-cleanup-rate-limit.test.ts
 

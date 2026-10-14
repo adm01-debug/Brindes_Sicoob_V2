@@ -35,11 +35,11 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
       .from('e2e_cleanup_rate_limit')
       .insert({ key: canaryKey, count: 1 });
     expect(error).toBeNull();
-  });
+  }, 30_000);
 
   afterAll(async () => {
     await admin.from('e2e_cleanup_rate_limit').delete().eq('key', canaryKey);
-  });
+  }, 30_000);
 
   it('SELECT como anon retorna zero linhas (policy deny_all)', async () => {
     const { data, error } = await anon
