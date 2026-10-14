@@ -25,7 +25,8 @@ function normalized(value: string): string {
 }
 
 function selectedValues(values: string[] = []): string[] {
-  return [...new Set(values.map(normalized).filter(Boolean))].sort();
+  return [...new Set(values.map(normalized).filter(Boolean))]
+    .sort((left, right) => left.localeCompare(right, 'pt-BR'));
 }
 
 function termMatches(term: { slug: string; name: string }, wanted: Set<string>): boolean {

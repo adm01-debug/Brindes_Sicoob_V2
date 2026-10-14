@@ -15,7 +15,7 @@ function shouldRetryCatalog(failureCount: number, error: Error): boolean {
 }
 
 function mapLightweight(p: LightweightProduct): ProductLightweight {
-  const price = (p.sale_price ?? p.cost_price ?? 0);
+  const price = (p.sale_price ?? 0);
   const imageUrl = productImage(p);
 
   return {
@@ -74,7 +74,7 @@ function productCatalogFlags(product: LightweightProduct): Pick<
 
 export function mapLightweightToProduct(p: LightweightProduct): Product {
   const imageUrl = productImage(p);
-  const price = p.sale_price ?? p.cost_price ?? 0;
+  const price = p.sale_price ?? 0;
   const stock = p.stock_quantity ?? 0;
   return {
     id: p.id,
@@ -133,7 +133,7 @@ export const CATALOG_BATCH_PAGES = 2;
 // `price_updated_at` é o SSOT da idade do preço (trigger no BD externo).
 // `price_freshness_threshold_days` ainda NÃO existe no BD externo — quando
 // existir, basta acrescentar à lista; o mapper já trata como opcional.
-export const PRODUCT_SELECT_LIGHTWEIGHT = 'id, name, sku, sale_price, cost_price, primary_image_url, supplier_id, category_id, main_category_id, brand, is_active, stock_quantity, min_quantity, is_featured, is_bestseller, is_new, is_on_sale, is_kit, has_commercial_packaging, allows_personalization, gender, price_updated_at';
+export const PRODUCT_SELECT_LIGHTWEIGHT = 'id, name, sku, sale_price, primary_image_url, supplier_id, category_id, main_category_id, brand, is_active, stock_quantity, min_quantity, is_featured, is_bestseller, is_new, is_on_sale, is_kit, has_commercial_packaging, allows_personalization, gender, price_updated_at';
 
 interface CatalogPage {
   products: Product[];

@@ -1,10 +1,8 @@
 import { authorize } from "../_shared/authorize.ts";
-import { createReadOnlyCatalogFetch } from "../_shared/external-read-only.ts";
+import { createExternalCatalogClient } from "../_shared/catalog-client.ts";
 import { getCorsHeaders } from '../_shared/cors.ts';
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { runBotProtection } from '../_shared/bot-protection.ts';
-import { resolveCredential } from '../_shared/credentials.ts';
 
 const BodySchema = z.object({
   mode: z.enum(['tables', 'columns']).default('tables'),
@@ -46,16 +44,11 @@ Deno.serve(async (req) => {
     console.log(`[INSPECT] Mode: ${mode}, Table: ${tableName || 'all'}`);
 
     // External DB connection
-    const [{ value: externalUrl }, { value: externalKey }] = await Promise.all([
-      resolveCredential('EXTERNAL_PROMOBRIND_URL'),
-      resolveCredential('EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY'),
-    ]);
-    if (!externalUrl || !externalKey) {
+    const externalSupabase = await createExternalCatalogClient();
+    if (!externalSupabase) {
       console.warn('[external-db-inspect] credenciais do catálogo externo indisponíveis');
       return jsonResponse({ error: 'CATALOG_NOT_CONFIGURED', message: 'Catálogo indisponível' }, 503);
     }
-
-    const externalSupabase = createClient(externalUrl, externalKey, { global: { fetch: createReadOnlyCatalogFetch() } });
 
     // Inspect specific table columns
     if (mode === 'columns' && tableName) {

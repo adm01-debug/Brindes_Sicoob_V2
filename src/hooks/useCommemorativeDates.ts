@@ -76,7 +76,8 @@ async function callCommemorativeDatesAPI<T>(
 }
 
 export async function fetchProductsByCommemorativeDates(slugs: string[]): Promise<string[]> {
-  const selected = [...new Set(slugs.map((slug) => slug.trim()).filter(Boolean))].sort();
+  const selected = [...new Set(slugs.map((slug) => slug.trim()).filter(Boolean))]
+    .sort((left, right) => left.localeCompare(right, 'pt-BR'));
   if (!selected.length) return [];
   const results = await Promise.all(selected.map((slug) =>
     callCommemorativeDatesAPI<CommemorativeDateVariant[]>('get_products_by_date', {
@@ -89,7 +90,9 @@ export async function fetchProductsByCommemorativeDates(slugs: string[]): Promis
 }
 
 export function useProductsByCommemorativeDates(slugs: string[]) {
-  const valuesKey = [...new Set(slugs.map((slug) => slug.trim()).filter(Boolean))].sort().join(',');
+  const valuesKey = [...new Set(slugs.map((slug) => slug.trim()).filter(Boolean))]
+    .sort((left, right) => left.localeCompare(right, 'pt-BR'))
+    .join(',');
   const selected = valuesKey ? valuesKey.split(',') : [];
   const query = useQuery({
     queryKey: [COMMEMORATIVE_DATES_KEY, 'products-filter', valuesKey],

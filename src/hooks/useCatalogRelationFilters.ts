@@ -23,7 +23,8 @@ export interface CatalogRelationFilterResult {
 }
 
 function normalizedValues(values: string[]): string[] {
-  return [...new Set(values.map((value) => value.trim()).filter(Boolean))].sort();
+  return [...new Set(values.map((value) => value.trim()).filter(Boolean))]
+    .sort((left, right) => left.localeCompare(right, 'pt-BR'));
 }
 
 export async function fetchRelationProductIds({

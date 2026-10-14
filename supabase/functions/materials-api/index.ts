@@ -1,8 +1,5 @@
-import { createReadOnlyCatalogFetch } from "../_shared/external-read-only.ts";
-import { getCorsHeaders } from '../_shared/cors.ts';
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { catalogFunctionErrorResponse, createExternalCatalogClient, prepareAuthenticatedCatalogRequest } from "../_shared/catalog-client.ts";
 import { z } from '../_shared/zod-validate.ts';
-import { resolveCredential } from '../_shared/credentials.ts';
 
 const MaterialsRequestSchema = z.object({
   action: z.enum(['groups', 'types', 'types_by_group', 'product_materials', 'products_by_materials', 'stats', 'search', 'complete']),
@@ -15,36 +12,28 @@ const MaterialsRequestSchema = z.object({
   search: z.string().max(200).optional(),
 });
 
+function mapMaterialType(type: any) {
+  return {
+    id: type.id,
+    name: type.name,
+    slug: type.slug,
+    description: type.description,
+    properties: type.properties,
+    display_order: type.sort_order || 0,
+    is_active: type.is_active,
+    group_id: type.group_id,
+    group_name: type.material_groups?.name,
+    group_slug: type.material_groups?.slug,
+  };
+}
+
 Deno.serve(async (req) => {
-  const corsHeaders = getCorsHeaders(req);
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const context = await prepareAuthenticatedCatalogRequest(req);
+  if (!context.ok) return context.response;
+  const { corsHeaders, userId } = context;
 
   try {
-    // Verificar autenticação
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(
-        JSON.stringify({ error: 'Não autorizado' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const localSupabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: userError } = await localSupabase.auth.getUser();
-    if (userError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Token inválido' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    console.log(`Materials API request from user: ${user.id}`);
+    console.log(`Materials API request from user: ${userId}`);
 
     const rawBody = await req.json().catch(() => ({}));
     const parsed = MaterialsRequestSchema.safeParse(rawBody);
@@ -56,12 +45,8 @@ Deno.serve(async (req) => {
     const { action, groupId, materialId, productId, materialTypeIds, materialGroupSlugs, limit } = parsed.data;
 
     // Conectar ao banco externo
-    const [{ value: externalUrl }, { value: externalKey }] = await Promise.all([
-      resolveCredential('EXTERNAL_PROMOBRIND_URL'),
-      resolveCredential('EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY'),
-    ]);
-
-    if (!externalUrl || !externalKey) {
+    const externalSupabase = await createExternalCatalogClient();
+    if (!externalSupabase) {
       console.warn('[materials-api] credenciais do catálogo externo indisponíveis');
       return new Response(
         JSON.stringify({ error: 'CATALOG_NOT_CONFIGURED', _unconfigured: true, _message: 'Banco externo não configurado' }),
@@ -69,7 +54,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    const externalSupabase = createClient(externalUrl, externalKey, { global: { fetch: createReadOnlyCatalogFetch() } });
     let result;
 
     switch (action) {
@@ -146,18 +130,7 @@ Deno.serve(async (req) => {
 
         if (typesError) throw typesError;
 
-        const mappedTypes = (types || []).map((t: any) => ({
-          id: t.id,
-          name: t.name,
-          slug: t.slug,
-          description: t.description,
-          properties: t.properties,
-          display_order: t.sort_order || 0,
-          is_active: t.is_active,
-          group_id: t.group_id,
-          group_name: t.material_groups?.name,
-          group_slug: t.material_groups?.slug,
-        }));
+        const mappedTypes = (types || []).map(mapMaterialType);
 
         result = { types: mappedTypes, count: mappedTypes.length };
         break;
@@ -206,18 +179,7 @@ Deno.serve(async (req) => {
 
         if (typesError) throw typesError;
 
-        const mappedTypes = (types || []).map((t: any) => ({
-          id: t.id,
-          name: t.name,
-          slug: t.slug,
-          description: t.description,
-          properties: t.properties,
-          display_order: t.sort_order || 0,
-          is_active: t.is_active,
-          group_id: t.group_id,
-          group_name: t.material_groups?.name,
-          group_slug: t.material_groups?.slug,
-        }));
+        const mappedTypes = (types || []).map(mapMaterialType);
 
         result = { types: mappedTypes, count: mappedTypes.length, groupSlug: groupId };
         break;
@@ -440,12 +402,6 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Materials API error:', errorMessage);
-    
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return catalogFunctionErrorResponse(error, corsHeaders, 'materials-api');
   }
 });

@@ -1,9 +1,6 @@
-import { createReadOnlyCatalogFetch } from "../_shared/external-read-only.ts";
-import { getCorsHeaders } from '../_shared/cors.ts';
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { catalogFunctionErrorResponse, createExternalCatalogClient, prepareAuthenticatedCatalogRequest } from "../_shared/catalog-client.ts";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { parseBodyWithSchema } from "../_shared/zod-validate.ts";
-import { resolveCredential } from '../_shared/credentials.ts';
 
 const ActionSchema = z.object({
   action: z.enum(['get_active_dates', 'get_upcoming_dates', 'get_products_by_date', 'get_dates_with_colors']),
@@ -16,35 +13,11 @@ const ActionSchema = z.object({
 });
 
 Deno.serve(async (req) => {
-  const corsHeaders = getCorsHeaders(req);
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const context = await prepareAuthenticatedCatalogRequest(req);
+  if (!context.ok) return context.response;
+  const { corsHeaders } = context;
 
   try {
-    // Auth check
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(
-        JSON.stringify({ error: 'Não autorizado' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const localSupabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: userError } = await localSupabase.auth.getUser();
-    if (userError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Token inválido' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     // Validate body with Zod
     const parsed = await parseBodyWithSchema(req, ActionSchema, corsHeaders);
     if ('error' in parsed) return parsed.error;
@@ -52,12 +25,8 @@ Deno.serve(async (req) => {
     const { action, params } = parsed.data;
 
     // External DB client
-    const [{ value: externalUrl }, { value: externalKey }] = await Promise.all([
-      resolveCredential('EXTERNAL_PROMOBRIND_URL'),
-      resolveCredential('EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY'),
-    ]);
-
-    if (!externalUrl || !externalKey) {
+    const externalSupabase = await createExternalCatalogClient();
+    if (!externalSupabase) {
       console.warn('[commemorative-dates] credenciais do catálogo externo indisponíveis');
       return new Response(
         JSON.stringify({ error: 'CATALOG_NOT_CONFIGURED', _unconfigured: true, _message: 'Banco externo não configurado' }),
@@ -65,7 +34,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    const externalSupabase = createClient(externalUrl, externalKey, { global: { fetch: createReadOnlyCatalogFetch() } });
     let result;
 
     switch (action) {
@@ -136,11 +104,6 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Unexpected error:', errorMessage);
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return catalogFunctionErrorResponse(error, corsHeaders, 'commemorative-dates');
   }
 });

@@ -34,7 +34,6 @@ export const EXTERNAL_PRODUCT_LIGHTWEIGHT_SELECT = [
   'name',
   'sku',
   'sale_price',
-  'cost_price',
   'primary_image_url',
   'category_id',
   'main_category_id',
