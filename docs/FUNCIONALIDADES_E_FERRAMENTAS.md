@@ -107,7 +107,6 @@
 | Edge Function | `supabase/functions/ai-recommendations/index.ts` | Deno, Lovable AI Gateway |
 | Smart Recommendations | `src/components/products/SmartRecommendations.tsx` | React |
 | Product Intelligence | `src/components/products/ProductIntelligence.tsx` | React |
-| Technique Recommendations | `src/hooks/useTechniqueRecommendations.ts` | React |
 
 ### 2.3 Busca Semântica
 | Funcionalidade | Arquivo Principal | Ferramentas/Bibliotecas |
@@ -964,7 +963,6 @@
 | Scenario Comparison | `src/components/simulator/ScenarioComparison.tsx` | React |
 | Smart Product Search | `src/components/simulator/SmartProductSearch.tsx` | React |
 | Stock Alert | `src/components/simulator/StockAlert.tsx` | React |
-| Technique Card | `src/components/simulator/TechniqueCard.tsx` | React |
 | Technique Selection Card | `src/components/simulator/TechniqueSelectionCard.tsx` | React |
 | Upsell++ | `src/components/simulator/UpsellPlusPlus.tsx` | React |
 | Export Actions | `src/components/simulator/ExportActions.tsx` | React |

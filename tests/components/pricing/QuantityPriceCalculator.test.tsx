@@ -1,55 +1,84 @@
-/**
- * Render tests for QuantityPriceCalculator (863 lines)
- */
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderWithProviders } from "../render-helpers";
 import React from "react";
+import { fireEvent, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { renderWithProviders } from "../render-helpers";
 
-vi.mock("@/lib/external-rpc", () => ({
-  invokeExternalRpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+const mocks = vi.hoisted(() => ({
+  navigate: vi.fn(),
+  calculatePrice: vi.fn(),
 }));
 
-vi.mock("@/hooks/useExternalSimulator", () => ({
-  useExternalProductSearch: vi.fn().mockReturnValue({
-    products: [],
-    loading: false,
-    search: vi.fn(),
-  }),
-}));
-
+vi.mock("react-router-dom", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react-router-dom")>();
+  return { ...actual, useNavigate: () => mocks.navigate };
+});
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock("@/hooks/useTecnicasUnificadas", () => ({
-  useCustomizationPricing: vi.fn().mockReturnValue({
-    data: null,
-    loading: false,
-    calculate: vi.fn(),
+  useCustomizationPricing: () => ({
+    isLoading: false,
+    techniques: [{ code: "LASER", priceByColor: true }],
+    calculatePrice: mocks.calculatePrice,
   }),
 }));
+vi.mock("@/components/pricing/simulator/ProductSearch", () => ({
+  ProductSearch: ({ onSelect }: { onSelect: (product: unknown) => void }) => (
+    <button type="button" onClick={() => onSelect({ id: "produto-1", name: "Caneta Sicoob", sku: "CAN-1", price: 25.5, images: ["https://img.test/caneta.png"] })}>
+      Selecionar produto de teste
+    </button>
+  ),
+}));
+vi.mock("@/components/pricing/calculator/TechniqueMultiSelector", () => ({
+  TechniqueMultiSelector: ({ onToggleTechnique }: { onToggleTechnique: (technique: unknown, add: boolean) => void }) => (
+    <button type="button" onClick={() => onToggleTechnique({ id: "vinculo-1", techniqueId: "tecnica-1", techniqueName: "Laser", techniqueCode: "LASER" }, true)}>
+      Selecionar técnica de teste
+    </button>
+  ),
+}));
+vi.mock("@/components/pricing/calculator/TechniqueConfigCard", () => ({ TechniqueConfigCard: () => <div>Configuração real</div> }));
+vi.mock("@/components/pricing/calculator/QuantityComparisonTable", () => ({ QuantityComparisonTable: () => <div>Comparação calculada</div> }));
+
+import { QuantityPriceCalculator } from "@/components/pricing/QuantityPriceCalculator";
 
 describe("QuantityPriceCalculator", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.calculatePrice.mockReturnValue({ unitPrice: 2, setupPrice: 10 });
   });
 
-  it("renders without crashing with no props", async () => {
-    const { QuantityPriceCalculator } = await import("@/components/pricing/QuantityPriceCalculator");
-    const Component = QuantityPriceCalculator || (await import("@/components/pricing/QuantityPriceCalculator")).default;
-    if (Component) {
-      renderWithProviders(<Component />);
-    }
-    expect(document.body).toBeTruthy();
+  it("inicia exigindo a seleção de um produto real", () => {
+    renderWithProviders(<QuantityPriceCalculator />);
+
+    expect(screen.getByText("1. Selecione o Produto")).toBeTruthy();
+    expect(screen.queryByText("4. Compare Preços por Tiragem")).toBeNull();
   });
 
-  it("renders with product base price", async () => {
-    const mod = await import("@/components/pricing/QuantityPriceCalculator");
-    const Component = mod.QuantityPriceCalculator || mod.default;
-    if (Component) {
-      renderWithProviders(
-        <Component
-          productBasePrice={25.50}
-          productName="Caneta Personalizada"
-        />
-      );
-    }
-    expect(document.body).toBeTruthy();
+  it("envia produto, quantidade e personalização calculada ao novo orçamento", () => {
+    renderWithProviders(<QuantityPriceCalculator />);
+    fireEvent.click(screen.getByRole("button", { name: "Selecionar produto de teste" }));
+    fireEvent.click(screen.getByRole("button", { name: "Selecionar técnica de teste" }));
+    fireEvent.change(screen.getByLabelText("Quantidade para o orçamento"), { target: { value: "500" } });
+    fireEvent.click(screen.getByRole("button", { name: "Criar Orçamento a partir desta Simulação" }));
+
+    expect(mocks.calculatePrice).toHaveBeenCalledWith("LASER", 500);
+    expect(mocks.navigate).toHaveBeenCalledWith("/orcamentos/novo", {
+      state: {
+        fromSimulator: true,
+        simulationData: {
+          product: {
+            id: "produto-1",
+            name: "Caneta Sicoob",
+            sku: "CAN-1",
+            imageUrl: "https://img.test/caneta.png",
+            price: 25.5,
+          },
+          quantity: 500,
+          personalizations: [{
+            technique: { id: "tecnica-1", name: "Laser" },
+            specs: { colors: 1 },
+            pricing: { setupPrice: 10, unitPrice: 2, totalPrice: 1010 },
+          }],
+        },
+      },
+    });
   });
 });
