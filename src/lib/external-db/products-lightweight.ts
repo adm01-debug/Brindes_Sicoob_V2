@@ -3,7 +3,7 @@
  * Used for selectors and catalog listing.
  */
 import { logger } from '@/lib/logger';
-import { invokeExternalDb, invokeBatchBridge, type InvokeResult } from './bridge';
+import { invokeExternalDb, invokeBatchBridge, type BatchResult, type InvokeResult } from './bridge';
 
 const PRODUCT_SELECT_LIGHTWEIGHT = 'id, name, sku, supplier_reference, sale_price, cost_price, primary_image_url, supplier_id, category_id, main_category_id, brand, is_active, stock_quantity, min_quantity, is_kit, gender';
 const LIGHTWEIGHT_PAGE_SIZE = 500;          // antes 100 — reduz round-trips em 5x
@@ -139,16 +139,37 @@ function initialBurstQueries(context: LightweightContext) {
 }
 
 async function fetchInitialBurst(context: LightweightContext): Promise<{ products: LightweightProduct[]; lastPageSize: number }> {
-  const batchResults = await invokeBatchBridge(initialBurstQueries(context));
+  const queries = initialBurstQueries(context);
+  const batchResults = await invokeBatchBridge(queries);
+  const pages = await Promise.all(queries.map(async (query, index) => {
+    const result = batchResults[index];
+    const params = {
+      filters: context.filters,
+      orderBy: context.orderBy,
+      limit: query.limit,
+      offset: query.offset,
+      countMode: 'none' as const,
+    };
+
+    if (!result?.success || !result.data?.records) return fetchPageResilient(params);
+    return completeDegradedPage(params, batchResultAsPage(result));
+  }));
   const products: LightweightProduct[] = [];
   let lastPageSize = LIGHTWEIGHT_PAGE_SIZE;
-  for (const result of batchResults) {
-    if (!result.success || !result.data?.records) continue;
-    const records = result.data.records as LightweightProduct[];
+  for (const page of pages) {
+    const records = page.records ?? [];
     products.push(...records);
     lastPageSize = records.length;
   }
   return { products, lastPageSize };
+}
+
+function batchResultAsPage(result: BatchResult): InvokeResult<LightweightProduct> {
+  return {
+    records: (result.data?.records ?? []) as LightweightProduct[],
+    count: result.data?.count ?? null,
+    meta: result.data?.meta,
+  };
 }
 
 async function fetchRemainingPages(context: LightweightContext, initial: LightweightProduct[], maxTotal: number): Promise<LightweightProduct[]> {
