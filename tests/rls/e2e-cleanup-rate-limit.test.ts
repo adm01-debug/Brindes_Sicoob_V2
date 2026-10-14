@@ -25,20 +25,38 @@ if (requested && (!URL || !ANON || !SERVICE_KEY)) {
 const enabled = requested && Boolean(URL && ANON && SERVICE_KEY);
 const d = enabled ? describe : describe.skip;
 
+type PostgrestResult = {
+  error: { code?: string; message?: string } | null;
+};
+
+async function retrySchemaCache<T extends PostgrestResult>(
+  operation: () => Promise<T>,
+): Promise<T> {
+  let result = await operation();
+  for (let attempt = 1; result.error?.code === 'PGRST002' && attempt < 3; attempt += 1) {
+    await new Promise((resolve) => setTimeout(resolve, attempt * 750));
+    result = await operation();
+  }
+  return result;
+}
+
 d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
   const anon = enabled ? createClient(URL!, ANON!) : (null as never);
   const admin = enabled ? createClient(URL!, SERVICE_KEY!, { auth: { persistSession: false } }) : (null as never);
   const canaryKey = `rls-e2e-${crypto.randomUUID()}`;
 
   beforeAll(async () => {
-    const { error } = await admin
+    const { error } = await retrySchemaCache(async () => await admin
       .from('e2e_cleanup_rate_limit')
-      .insert({ key: canaryKey, count: 1 });
+      .insert({ key: canaryKey, count: 1 }));
     expect(error).toBeNull();
   }, 30_000);
 
   afterAll(async () => {
-    await admin.from('e2e_cleanup_rate_limit').delete().eq('key', canaryKey);
+    await retrySchemaCache(async () => await admin
+      .from('e2e_cleanup_rate_limit')
+      .delete()
+      .eq('key', canaryKey));
   }, 30_000);
 
   it('SELECT como anon retorna zero linhas (policy deny_all)', async () => {
@@ -65,11 +83,11 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
       .select('key,count');
     expect(data ?? []).toHaveLength(0);
 
-    const { data: canary, error: verifyError } = await admin
+    const { data: canary, error: verifyError } = await retrySchemaCache(async () => await admin
       .from('e2e_cleanup_rate_limit')
       .select('count')
       .eq('key', canaryKey)
-      .single();
+      .single());
     expect(verifyError).toBeNull();
     expect(canary?.count).toBe(1);
   });
@@ -82,10 +100,10 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
       .select('key');
     expect(data ?? []).toHaveLength(0);
 
-    const { count, error: verifyError } = await admin
+    const { count, error: verifyError } = await retrySchemaCache(async () => await admin
       .from('e2e_cleanup_rate_limit')
       .select('key', { count: 'exact', head: true })
-      .eq('key', canaryKey);
+      .eq('key', canaryKey));
     expect(verifyError).toBeNull();
     expect(count).toBe(1);
   });

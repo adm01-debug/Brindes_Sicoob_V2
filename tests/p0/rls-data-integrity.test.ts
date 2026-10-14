@@ -91,6 +91,21 @@ describe("P0 — RLS e integridade", () => {
     expect(validation).toContain("'grantor_lost_dev'::text");
   });
 
+  it("mcp_keys: rejeição anônima não aguarda a telemetria do banco", () => {
+    for (const name of ["issue", "revoke", "rotate"]) {
+      const worker = source(`supabase/functions/mcp-keys-${name}/index.ts`);
+      const missingJwtPath = worker.slice(
+        worker.indexOf("if (!jwt)"),
+        worker.indexOf("const userClient", worker.indexOf("if (!jwt)")),
+      );
+
+      expect(worker).toContain('import { deferBackgroundTask } from "../_shared/background-task.ts"');
+      expect(missingJwtPath).toContain("deferBackgroundTask(");
+      expect(missingJwtPath).not.toContain("await auditFailure");
+      expect(missingJwtPath).toContain("401");
+    }
+  });
+
   // ─── workspace_notifications ──────────────────────────────────────────
   it("workspace_notifications: usuário só lê e altera notificações próprias", () => {
     const policy = source("supabase/migrations/20260503151554_c98e739b-b86f-42f6-9afa-19f4c8243298.sql");

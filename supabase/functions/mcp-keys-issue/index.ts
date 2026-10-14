@@ -29,6 +29,7 @@ import { getOrCreateRequestId, REQUEST_ID_HEADER } from "../_shared/request-id.t
 import { writeAuditEntry, summarizePayload, extractRequestMeta } from "../_shared/audit-log.ts";
 import { recordMcpViolation, mapViolationReason } from "../_shared/mcp-violations.ts";
 import { castRpcResult } from "../_shared/supabase-client-adapter.ts";
+import { deferBackgroundTask } from "../_shared/background-task.ts";
 
 // Module-scope CORS headers — atribuído per-request no handler.
 let corsHeaders: Record<string, string> = {};
@@ -193,7 +194,10 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization") ?? "";
     const jwt = authHeader.replace(/^Bearer\s+/i, "");
     if (!jwt) {
-      await auditFailure("denied", "mcp_key.issue_denied", { reason: "unauthenticated" });
+      deferBackgroundTask(
+        auditFailure("denied", "mcp_key.issue_denied", { reason: "unauthenticated" }),
+        "mcp-keys-issue:unauthenticated",
+      );
       return jsonResponse({ error: "unauthenticated" }, 401, requestId);
     }
 
@@ -202,7 +206,10 @@ Deno.serve(async (req) => {
     });
     const { data: userData, error: userErr } = await userClient.auth.getUser();
     if (userErr || !userData.user) {
-      await auditFailure("denied", "mcp_key.issue_denied", { reason: "invalid_jwt" });
+      deferBackgroundTask(
+        auditFailure("denied", "mcp_key.issue_denied", { reason: "invalid_jwt" }),
+        "mcp-keys-issue:invalid-jwt",
+      );
       return jsonResponse({ error: "unauthenticated" }, 401, requestId);
     }
     userId = userData.user.id;
