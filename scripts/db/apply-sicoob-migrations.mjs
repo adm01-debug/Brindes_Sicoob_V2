@@ -99,6 +99,10 @@ const TARGETS = [
     file: "supabase/migrations/20261013123000_preserve_atomic_quote_save_under_governance.sql",
     sha256: "0d41715a7eb8e77ff4406ce640647bc2687ab8ca3e2e6d0468e72ca1a8c0f3d0",
   },
+  {
+    file: "supabase/migrations/20261013150000_catalog_marketing_taxonomy.sql",
+    sha256: "5aa4ea56e3a72c0be06d0942a679b075b0d46229fff1f172e1fac8fbf2ba7306",
+  },
 ];
 
 function sha256(value) {
