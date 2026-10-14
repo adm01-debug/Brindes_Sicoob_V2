@@ -62,10 +62,6 @@ vi.mock("@/hooks/useAdvancedFilters", () => ({
   SORT_OPTIONS: [{ value: "name", label: "Nome" }],
 }));
 
-vi.mock("@/data/mockData", () => ({
-  FAIXAS_PRECO: [{ label: "Até R$10", min: 0, max: 10 }],
-}));
-
 vi.mock("@/components/filters/DebouncedPriceInput", () => ({
   DebouncedPriceInput: () => <input data-testid="price-input" />,
 }));

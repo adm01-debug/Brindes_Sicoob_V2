@@ -1,12 +1,11 @@
 /**
  * Hook that derives visual badges from market intelligence data + catalog flags.
- * Uses real data from mv_product_intelligence + mv_stock_velocity,
- * falling back to mock data when MVs aren't populated.
+ * Uses real data from mv_product_intelligence + mv_stock_velocity.
+ * An empty materialized view produces no market badge.
  * Also incorporates catalog flags (featured, newArrival, onSale) from product data.
  */
 import { useMemo } from 'react';
 import { useProductIntelligenceData, useStockVelocity } from '@/hooks/useStockHistory';
-import { generateMockIntelligence, generateMockVelocities } from '@/lib/stock-chart-utils';
 
 export type IntelligenceBadgeType =
   | 'best-seller'   // ABC A
@@ -39,7 +38,6 @@ export interface ProductIntelligenceBadgesResult {
   turnoverScore: number | null;
   demandLevel: 'muito-alta' | 'alta' | 'moderada' | 'baixa' | null;
   isLoading: boolean;
-  isDemo: boolean;
 }
 
 function catalogBadges(flags: CatalogFlags | undefined) {
@@ -96,27 +94,21 @@ function addMarketBadges(
 function buildBadgeResult(
   intelligence: IntelligenceData | null | undefined,
   velocity: VelocityData | undefined,
-  productId: string | undefined,
   ...state: [catalogFlags: CatalogFlags | undefined, isLoading: boolean]
 ): ProductIntelligenceBadgesResult {
   const [catalogFlags, isLoading] = state;
-  const mockIntel = productId ? generateMockIntelligence(productId) : null;
-  const mockVelocities = productId ? generateMockVelocities(productId) : [];
-  const effectiveIntel = intelligence ?? mockIntel;
-  const effectiveVelocities = velocity?.length ? velocity : mockVelocities;
   const badges = catalogBadges(catalogFlags);
-  if (!effectiveIntel) {
-    return { badges, turnoverScore: null, demandLevel: null, isLoading, isDemo: true };
+  if (!intelligence) {
+    return { badges, turnoverScore: null, demandLevel: null, isLoading };
   }
-  const velocityPeak = bestVelocity(effectiveVelocities);
-  addMarketBadges(badges, effectiveIntel, velocityPeak);
-  const avgDaily = velocityPeak?.avg_daily_depletion_7d ?? effectiveIntel.avg_velocity_7d ?? 0;
+  const velocityPeak = bestVelocity(velocity ?? []);
+  addMarketBadges(badges, intelligence, velocityPeak);
+  const avgDaily = velocityPeak?.avg_daily_depletion_7d ?? intelligence.avg_velocity_7d ?? 0;
   return {
     badges,
-    turnoverScore: finiteTurnoverScore(effectiveIntel.turnover_score),
+    turnoverScore: finiteTurnoverScore(intelligence.turnover_score),
     demandLevel: demandLevel(avgDaily),
     isLoading,
-    isDemo: !intelligence,
   };
 }
 
@@ -125,7 +117,7 @@ export function useProductIntelligenceBadges(productId?: string, catalogFlags?: 
   const { data: velocity, isLoading: loadingVel } = useStockVelocity(productId);
 
   return useMemo(
-    () => buildBadgeResult(intelligence, velocity, productId, catalogFlags, loadingIntel || loadingVel),
-    [intelligence, velocity, productId, loadingIntel, loadingVel, catalogFlags],
+    () => buildBadgeResult(intelligence, velocity, catalogFlags, loadingIntel || loadingVel),
+    [intelligence, velocity, loadingIntel, loadingVel, catalogFlags],
   );
 }

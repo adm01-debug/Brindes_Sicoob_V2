@@ -32,15 +32,10 @@ import {
 import {
   safeVelocityTrend,
   safeNumber,
-  generateMockStockData,
-  generateMockVelocity,
-  generateMockIntelligence,
   formatVelocityTrendOperational,
   safeParseDateForChart,
-  isRealIntelligence,
   OPERATIONAL_FLAG_CONFIG,
   safePriceChanges,
-  type MockIntelligenceData,
 } from "@/lib/stock-chart-utils";
 import { RiskKpi } from "./RiskKpi";
 import { RiskTooltip } from "./RiskTooltip";
@@ -51,8 +46,8 @@ interface ProductRiskDetailProps {
   productSku?: string;
 }
 
-function buildRiskChartData(summaries: Parameters<typeof aggregateDailySummaryByDate>[0] | undefined, fallback: ReturnType<typeof generateMockStockData>, days: number) {
-  if (!summaries?.length) return fallback;
+function buildRiskChartData(summaries: Parameters<typeof aggregateDailySummaryByDate>[0] | undefined, days: number) {
+  if (!summaries?.length) return [];
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - days);
   return aggregateDailySummaryByDate(summaries).filter(item => new Date(item.date) >= cutoff).reduce<Array<{ date: string; stockClose: number; depleted: number; restocked: number; restockDetected: boolean; costPriceClose: number | null; dateFormatted: string; fullDate: string }>>((result, item) => {
@@ -62,18 +57,8 @@ function buildRiskChartData(summaries: Parameters<typeof aggregateDailySummaryBy
   }, []);
 }
 
-function deriveFlags(intelligence: ProductIntelligenceData | MockIntelligenceData | null): IntelligenceFlag[] {
-  if (!intelligence) return [];
-  if (isRealIntelligence(intelligence)) return getActiveFlags(intelligence);
-  const mock = intelligence as MockIntelligenceData;
-  const result: IntelligenceFlag[] = [];
-  if (mock.is_hot_product) result.push('hot-product');
-  if (mock.is_stockout_risk) result.push('stockout-risk');
-  if (mock.is_stagnant) result.push('stagnant');
-  if (mock.is_negotiation_opportunity) result.push('negotiation-opportunity');
-  if (mock.has_frequent_restock) result.push('frequent-restock');
-  if (mock.abc_classification === 'A') result.push('class-a');
-  return result;
+function deriveFlags(intelligence: ProductIntelligenceData | null | undefined): IntelligenceFlag[] {
+  return intelligence ? getActiveFlags(intelligence) : [];
 }
 
 function RiskLoading() {
@@ -84,14 +69,18 @@ function RiskError({ onRetry }: { onRetry: () => void }) {
   return <div className="flex flex-col items-center justify-center py-8 gap-2 text-center"><AlertCircle className="h-6 w-6 text-destructive" /><p className="text-sm font-medium text-destructive">Erro ao carregar dados</p><p className="text-xs text-muted-foreground max-w-[250px]">Não foi possível buscar o histórico deste produto. Tente novamente em alguns instantes.</p><Button variant="outline" size="sm" onClick={onRetry} className="gap-1.5 mt-1"><RefreshCw className="h-3.5 w-3.5" />Tentar novamente</Button></div>;
 }
 
+function RiskEmpty({ productName }: { productName?: string }) {
+  return <div className="flex flex-col items-center justify-center py-8 gap-2 text-center"><BarChart3 className="h-6 w-6 text-muted-foreground" /><p className="text-sm font-medium">Sem histórico operacional{productName ? ` para ${productName}` : ''}</p><p className="text-xs text-muted-foreground max-w-[280px]">As métricas de risco aparecerão quando houver movimentos reais de estoque para este produto.</p></div>;
+}
+
 function classificationClass(classification: string): string {
   if (classification === 'A') return 'bg-warning/15 text-warning border-warning/30';
   if (classification === 'B') return 'bg-primary/15 text-primary border-primary/30';
   return 'bg-muted text-muted-foreground border-border';
 }
 
-function RiskHeader({ name, productId, demo, partial, classification, onNavigate }: { name?: string; productId: string; demo: boolean; partial: boolean; classification?: string | null; onNavigate: () => void }) {
-  return <div className="flex items-center justify-between flex-wrap gap-2"><div className="flex items-center gap-2 min-w-0"><h4 className="font-semibold text-sm truncate">{name || productId}</h4>{demo && <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">demo</Badge>}{partial && <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0 bg-destructive/10 text-destructive border-destructive/30">parcial</Badge>}{classification && <Badge variant="outline" className={cn("font-bold text-[10px] shrink-0", classificationClass(classification))}>Classe {classification}</Badge>}</div><Button variant="ghost" size="sm" className="h-6 text-[10px] gap-1 px-2 shrink-0" onClick={onNavigate}><ExternalLink className="h-3 w-3" />Ver produto</Button></div>;
+function RiskHeader({ name, productId, partial, classification, onNavigate }: { name?: string; productId: string; partial: boolean; classification?: string | null; onNavigate: () => void }) {
+  return <div className="flex items-center justify-between flex-wrap gap-2"><div className="flex items-center gap-2 min-w-0"><h4 className="font-semibold text-sm truncate">{name || productId}</h4>{partial && <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0 bg-destructive/10 text-destructive border-destructive/30">parcial</Badge>}{classification && <Badge variant="outline" className={cn("font-bold text-[10px] shrink-0", classificationClass(classification))}>Classe {classification}</Badge>}</div><Button variant="ghost" size="sm" className="h-6 text-[10px] gap-1 px-2 shrink-0" onClick={onNavigate}><ExternalLink className="h-3 w-3" />Ver produto</Button></div>;
 }
 
 function RiskFlags({ flags }: { flags: IntelligenceFlag[] }) {
@@ -126,17 +115,11 @@ function ChartControls({ period, expanded, onPeriodChange, onToggle }: { period:
 }
 
 type RealVelocity = NonNullable<ReturnType<typeof useStockVelocity>['data']>[number];
-type EffectiveVelocity = RealVelocity | ReturnType<typeof generateMockVelocity>;
 
-function selectBestVelocity(velocity: ReturnType<typeof useStockVelocity>['data'], demo: boolean, fallback: ReturnType<typeof generateMockVelocity>): EffectiveVelocity | null {
+function selectBestVelocity(velocity: ReturnType<typeof useStockVelocity>['data']): RealVelocity | null {
   const first = velocity?.[0];
-  if (!first) return demo ? fallback : null;
+  if (!first) return null;
   return velocity.reduce((best, item) => item.avg_daily_depletion_7d > (best.avg_daily_depletion_7d ?? 0) ? item : best, first);
-}
-
-function resolveIntelligence(intelligence: ProductIntelligenceData | null | undefined, demo: boolean, fallback: MockIntelligenceData): ProductIntelligenceData | MockIntelligenceData | null {
-  if (intelligence) return intelligence;
-  return demo ? fallback : null;
 }
 
 function stockoutState(days: number | null | undefined) {
@@ -149,18 +132,18 @@ function formatStockoutDays(days: number | null | undefined, finite: boolean): s
   return String(Math.round(days));
 }
 
-function formatCurrentStock(velocity: EffectiveVelocity | null, intelligence: ProductIntelligenceData | MockIntelligenceData | null): string {
+function formatCurrentStock(velocity: RealVelocity | null, intelligence: ProductIntelligenceData | null | undefined): string {
   const stock = intelligence?.total_current_stock ?? velocity?.current_stock;
   return stock?.toLocaleString('pt-BR') ?? '—';
 }
 
-function formatSupplier(intelligence: ProductIntelligenceData | MockIntelligenceData | null): string {
+function formatSupplier(intelligence: ProductIntelligenceData | null | undefined): string {
   const count = intelligence?.supplier_count;
   if (!count) return 'no fornecedor';
   return `${count} fornecedor${count > 1 ? 'es' : ''}`;
 }
 
-function buildRiskMetrics(velocity: EffectiveVelocity | null, intelligence: ProductIntelligenceData | MockIntelligenceData | null): RiskMetricsProps {
+function buildRiskMetrics(velocity: RealVelocity | null, intelligence: ProductIntelligenceData | null | undefined): RiskMetricsProps {
   const days = velocity?.days_to_stockout;
   const stockout = stockoutState(days);
   const trend = safeVelocityTrend(velocity?.velocity_trend);
@@ -179,24 +162,21 @@ export function ProductRiskDetail({ productId, productName }: ProductRiskDetailP
   const [period, setPeriod] = useState<string>('30');
   const [chartExpanded, setChartExpanded] = useState(false);
   const days = Number(period);
-  const { data: summaries, isLoading, error: summaryError, refetch: refetchSummary } = useStockDailySummary(productId, days);
-  const { data: velocity, error: velocityError, refetch: refetchVelocity } = useStockVelocity(productId);
-  const { data: intelligence, error: intelligenceError, refetch: refetchIntelligence } = useProductIntelligenceData(productId);
-  const hasData = Boolean(summaries?.length);
+  const { data: summaries, isLoading: loadingSummary, error: summaryError, refetch: refetchSummary } = useStockDailySummary(productId, days);
+  const { data: velocity, isLoading: loadingVelocity, error: velocityError, refetch: refetchVelocity } = useStockVelocity(productId);
+  const { data: intelligence, isLoading: loadingIntelligence, error: intelligenceError, refetch: refetchIntelligence } = useProductIntelligenceData(productId);
+  const hasData = [summaries?.length, velocity?.length, intelligence].some(Boolean);
   const hasError = [summaryError, velocityError, intelligenceError].some(Boolean);
-  const isDemo = !hasData && !hasError;
-  const mockVelocity = useMemo(() => generateMockVelocity(productId), [productId]);
-  const mockIntel = useMemo(() => generateMockIntelligence(productId), [productId]);
-  const mockChartData = useMemo(() => generateMockStockData(productId, days), [days, productId]);
-  const chartData = useMemo(() => buildRiskChartData(summaries, mockChartData, days), [summaries, mockChartData, days]);
-  const effectiveIntelligence = resolveIntelligence(intelligence, isDemo, mockIntel);
-  const bestVelocity = selectBestVelocity(velocity, isDemo, mockVelocity);
-  const flags = useMemo(() => deriveFlags(effectiveIntelligence), [effectiveIntelligence]);
+  const isLoading = [loadingSummary, loadingVelocity, loadingIntelligence].some(Boolean);
+  const chartData = useMemo(() => buildRiskChartData(summaries, days), [summaries, days]);
+  const bestVelocity = selectBestVelocity(velocity);
+  const flags = useMemo(() => deriveFlags(intelligence), [intelligence]);
   const handleRetry = () => { void refetchSummary(); void refetchVelocity(); void refetchIntelligence(); };
   if (isLoading) return <RiskLoading />;
   if (hasError && !hasData) return <RiskError onRetry={handleRetry} />;
+  if (!hasData) return <RiskEmpty productName={productName} />;
   const priceChanges = safePriceChanges(bestVelocity);
-  const metrics = buildRiskMetrics(bestVelocity, effectiveIntelligence);
+  const metrics = buildRiskMetrics(bestVelocity, intelligence);
   const partial = hasError && hasData;
-  return <div className="space-y-3"><RiskHeader name={productName} productId={productId} demo={isDemo} partial={partial} classification={effectiveIntelligence?.abc_classification} onNavigate={() => navigate(`/produto/${productId}`)} /><RiskFlags flags={flags} /><RiskMetrics {...metrics} /><ChartControls period={period} expanded={chartExpanded} onPeriodChange={setPeriod} onToggle={() => setChartExpanded(previous => !previous)} /><RiskChart data={chartData} expanded={chartExpanded} /><PriceChangesNotice count={priceChanges} /></div>;
+  return <div className="space-y-3"><RiskHeader name={productName} productId={productId} partial={partial} classification={intelligence?.abc_classification} onNavigate={() => navigate(`/produto/${productId}`)} /><RiskFlags flags={flags} /><RiskMetrics {...metrics} /><ChartControls period={period} expanded={chartExpanded} onPeriodChange={setPeriod} onToggle={() => setChartExpanded(previous => !previous)} /><RiskChart data={chartData} expanded={chartExpanded} /><PriceChangesNotice count={priceChanges} /></div>;
 }
