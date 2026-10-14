@@ -871,11 +871,9 @@
 ### 21.1 Busca Global
 | Funcionalidade | Arquivo Principal | Ferramentas/Bibliotecas |
 |----------------|-------------------|-------------------------|
-| Global Search | `src/components/search/GlobalSearch.tsx` | React |
-| Search Palette | `src/components/search/GlobalSearchPalette.tsx` | React, cmdk |
+| Busca global canônica | `src/components/search/GlobalSearchPalette.tsx` | React, cmdk |
 | Smart Search Input | `src/components/search/SmartSearchInput.tsx` | React |
 | Search with Suggestions | `src/components/search/SearchWithSuggestions.tsx` | React |
-| Smart Suggestions | `src/components/search/SmartSuggestions.tsx` | React |
 | Advanced Search | `src/components/search/AdvancedSearch.tsx` | React |
 | Global Command Bar | `src/components/command/GlobalCommandBar.tsx` | React, cmdk |
 | Hook Search | `src/hooks/useSearch.ts` | React |

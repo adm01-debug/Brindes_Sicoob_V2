@@ -1,7 +1,8 @@
 /**
  * useClientVsIndustry — compara métricas do cliente com a média do seu ramo.
  * Resolve company IDs do mesmo ramo (excluindo o próprio), chama RPC de benchmark,
- * calcula deltas e classificação. Fallback mock quando amostra insuficiente.
+ * calcula deltas e classificação. Dados simulados existem somente para o
+ * cliente de demonstração explícito.
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +25,8 @@ export interface MetricComparison {
 export interface ClientVsIndustryResult {
   isLoading: boolean;
   isMock: boolean;
+  hasClientData: boolean;
+  isClientDataUnavailable: boolean;
   hasEnoughSample: boolean;
   sampleSize: number;
   daysWindow: number;
@@ -109,6 +112,91 @@ interface BenchmarkRow {
   total_revenue: number;
 }
 
+async function fetchIndustryBenchmark(
+  clientId: string | null | undefined,
+  ramoAtividade: string | null | undefined,
+): Promise<{ rows: BenchmarkRow[]; sampleSize: number }> {
+  if (!ramoAtividade) return { rows: [], sampleSize: 0 };
+  if (isDemoClient(clientId)) {
+    const demoRow: BenchmarkRow = {
+      total_clients_sampled: 24,
+      avg_ltv: 38500,
+      avg_ticket: 2850,
+      avg_quotes_per_client: 11,
+      avg_items_per_quote: 2.4,
+      top_product_name: "Garrafa Térmica Inox 500ml",
+      total_revenue: 924000,
+    };
+    return { rows: [demoRow], sampleSize: 24 };
+  }
+
+  const companies = await selectCrm<Pick<CrmCompany, "id">>("companies", {
+    select: "id",
+    filters: { ramo_atividade: ramoAtividade, deleted_at: null },
+    limit: 500,
+  });
+  const ids = companies.map((company) => company.id).filter((id) => id && id !== clientId);
+  if (ids.length === 0) return { rows: [], sampleSize: 0 };
+
+  const { data, error } = await supabase.rpc("get_industry_benchmark_stats", {
+    _company_ids: ids,
+    _days: DAYS_WINDOW,
+  });
+  if (error) throw error;
+  return { rows: (data ?? []) as BenchmarkRow[], sampleSize: ids.length };
+}
+
+function emptyComparison(
+  clientBI: ReturnType<typeof useClientBI>,
+  input: Pick<ClientVsIndustryResult, "isLoading" | "isMock" | "hasEnoughSample" | "sampleSize">,
+): ClientVsIndustryResult {
+  return {
+    ...input,
+    hasClientData: clientBI.hasData,
+    isClientDataUnavailable: clientBI.isUnavailable,
+    daysWindow: DAYS_WINDOW,
+    metrics: [],
+    insight: null,
+  };
+}
+
+interface ComparisonContext {
+  clientBI: ReturnType<typeof useClientBI>;
+  benchmark?: BenchmarkRow;
+  sampleSize: number;
+  isLoading: boolean;
+  demo: boolean;
+}
+
+function resolveComparison(context: ComparisonContext): ClientVsIndustryResult {
+  const { clientBI, benchmark, sampleSize, isLoading, demo } = context;
+  const hasEnoughSample = sampleSize >= MIN_SAMPLE;
+  if (!benchmark || !hasEnoughSample) {
+    return emptyComparison(clientBI, { isLoading, isMock: demo, hasEnoughSample: false, sampleSize });
+  }
+  if (!clientBI.hasData) {
+    return emptyComparison(clientBI, { isLoading, isMock: demo, hasEnoughSample: true, sampleSize });
+  }
+
+  const metrics: MetricComparison[] = [
+    comparisonMetric("LTV", clientBI.ltv, Number(benchmark.avg_ltv), "currency"),
+    comparisonMetric("Ticket médio", clientBI.avgTicket, Number(benchmark.avg_ticket), "currency"),
+    comparisonMetric("Frequência (pedidos)", clientBI.ordersCount, Number(benchmark.avg_quotes_per_client), "number"),
+    comparisonMetric("Itens por orçamento", averageItems(clientBI.recentOrders), Number(benchmark.avg_items_per_quote), "number"),
+  ];
+  return {
+    isLoading,
+    isMock: demo,
+    hasClientData: true,
+    isClientDataUnavailable: false,
+    hasEnoughSample: true,
+    sampleSize,
+    daysWindow: DAYS_WINDOW,
+    metrics,
+    insight: buildInsight(metrics),
+  };
+}
+
 export function useClientVsIndustry(
   clientId: string | null | undefined,
   ramoAtividade: string | null | undefined,
@@ -120,79 +208,11 @@ export function useClientVsIndustry(
     queryKey: ["bi", "industry-benchmark", ramoAtividade, clientId],
     enabled: !!ramoAtividade && !!clientId,
     staleTime: 5 * 60 * 1000,
-    queryFn: async () => {
-      if (!ramoAtividade) return { rows: [] as BenchmarkRow[], sampleSize: 0 };
-      // Demo: retorna benchmark mockado plausível
-      if (isDemoClient(clientId)) {
-        const mockRow: BenchmarkRow = {
-          total_clients_sampled: 24,
-          avg_ltv: 38500,
-          avg_ticket: 2850,
-          avg_quotes_per_client: 11,
-          avg_items_per_quote: 2.4,
-          top_product_name: "Garrafa Térmica Inox 500ml",
-          total_revenue: 924000,
-        };
-        return { rows: [mockRow], sampleSize: 24 };
-      }
-
-      // 1) Resolver IDs de empresas do mesmo ramo, excluindo o próprio cliente
-      const companies = await selectCrm<Pick<CrmCompany, "id">>("companies", {
-        select: "id",
-        filters: { ramo_atividade: ramoAtividade, deleted_at: null },
-        limit: 500,
-      });
-      const ids = companies
-        .map((c) => c.id)
-        .filter((id) => id && id !== clientId);
-
-      if (ids.length === 0) {
-        return { rows: [] as BenchmarkRow[], sampleSize: 0 };
-      }
-
-      const { data, error } = await supabase.rpc("get_industry_benchmark_stats", {
-        _company_ids: ids,
-        _days: DAYS_WINDOW,
-      });
-      if (error) throw error;
-      return { rows: (data ?? []) as BenchmarkRow[], sampleSize: ids.length };
-    },
+    queryFn: () => fetchIndustryBenchmark(clientId, ramoAtividade),
   });
 
   const isLoading = clientBI.isLoading || benchmarkQuery.isLoading;
   const benchmark = benchmarkQuery.data?.rows?.[0];
   const sampleSize = Number(benchmark?.total_clients_sampled ?? 0);
-  const hasEnoughSample = sampleSize >= MIN_SAMPLE;
-
-  if (!benchmark || !hasEnoughSample) {
-    return {
-      isLoading,
-      isMock: demo,
-      hasEnoughSample: false,
-      sampleSize,
-      daysWindow: DAYS_WINDOW,
-      metrics: [],
-      insight: null,
-    };
-  }
-
-  // Estimativa: itens/orçamento do cliente — sem RPC dedicada, derivamos de recentOrders
-  const clientAvgItems = averageItems(clientBI.recentOrders);
-
-  const metrics: MetricComparison[] = [
-    comparisonMetric("LTV", clientBI.ltv, Number(benchmark.avg_ltv), "currency"),
-    comparisonMetric("Ticket médio", clientBI.avgTicket, Number(benchmark.avg_ticket), "currency"),
-    comparisonMetric("Frequência (pedidos)", clientBI.ordersCount, Number(benchmark.avg_quotes_per_client), "number"),
-    comparisonMetric("Itens por orçamento", clientAvgItems, Number(benchmark.avg_items_per_quote), "number"),
-  ];
-
-  return {
-    isLoading,
-    isMock: demo,
-    hasEnoughSample: true,
-    sampleSize,
-    daysWindow: DAYS_WINDOW,
-    metrics,
-    insight: buildInsight(metrics),
-  };
+  return resolveComparison({ clientBI, benchmark, sampleSize, isLoading, demo });
 }

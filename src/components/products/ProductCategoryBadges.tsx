@@ -4,7 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Package, Palette, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCategoryIcons, getCategoryIcon } from "@/hooks/useCategoryIcons";
-import type { Category } from "@/data/mockData";
+
+interface Category {
+  id: string | number;
+  name: string;
+  icon?: string;
+}
 
 const CLICKABLE_BADGE_CLASS = "px-2.5 py-1 text-sm font-medium cursor-pointer";
 

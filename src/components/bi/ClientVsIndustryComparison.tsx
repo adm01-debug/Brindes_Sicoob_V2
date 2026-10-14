@@ -136,11 +136,33 @@ function ShareOfWalletCard({ clientLtv, industryAvgLtv }: { clientLtv: number; i
 }
 
 export function ClientVsIndustryComparison({ clientId, ramoAtividade }: Props) {
-  const { isLoading, isMock, hasEnoughSample, sampleSize, daysWindow, metrics, insight } =
-    useClientVsIndustry(clientId, ramoAtividade);
+  const comparison = useClientVsIndustry(clientId, ramoAtividade);
+  const {
+    isLoading, isMock, hasClientData, isClientDataUnavailable,
+    hasEnoughSample, sampleSize, daysWindow, metrics, insight,
+  } = comparison;
 
   if (!ramoAtividade) return null;
   if (isLoading) return <ComparisonSkeleton />;
+
+  if (!hasClientData) {
+    const message = isClientDataUnavailable
+      ? "O histórico deste cliente não pôde ser consultado agora. Tente novamente antes de usar o comparativo."
+      : "Este cliente ainda não possui pedidos concluídos para comparação com o setor.";
+    return (
+      <Card className="border-[1.5px] border-dashed">
+        <CardContent className="p-6 flex items-start gap-3">
+          <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
+            <Info className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="font-display font-semibold text-sm">Comparativo Cliente × Setor</h3>
+            <p className="text-xs text-muted-foreground">{message}</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!hasEnoughSample) {
     return (
