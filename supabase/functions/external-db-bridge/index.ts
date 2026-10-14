@@ -694,7 +694,12 @@ async function handleBatch(body: any, req: Request, corsHeaders: Record<string, 
               return { success: false, error: retryError.message };
             }
 
-            const retryRecords = ((retryData || []) as Record<string, unknown>[]);
+            const retryRecords = Array.isArray(retryData)
+              ? (retryData as unknown[]).filter(
+                (record): record is Record<string, unknown> =>
+                  record !== null && typeof record === 'object' && !Array.isArray(record),
+              )
+              : [];
             const retryResult = {
               records: q.aliasType === 'techniqueOptions'
                 ? retryRecords.map(mapTechniqueRowToLegacyShape)
