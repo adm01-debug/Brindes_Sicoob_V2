@@ -12,15 +12,25 @@ import { readFileSync } from "node:fs";
 const source = (path: string) => readFileSync(path, "utf8");
 
 describe("P0 — RLS e integridade", () => {
-  it("PostgREST: o cache de esquema tem tempo suficiente e recarga explícita", () => {
-    const migration = source(
+  it("PostgREST: separa o timeout do cache do limite por requisição", () => {
+    const initialMigration = source(
       "supabase/migrations/20261014113000_raise_postgrest_schema_cache_timeout.sql",
     );
+    const finalMigration = source(
+      "supabase/migrations/20261014121500_separate_postgrest_cache_and_request_timeouts.sql",
+    );
 
-    expect(migration).toContain("ALTER ROLE authenticator SET statement_timeout = '30s'");
-    expect(migration).toContain("NOTIFY pgrst, 'reload config'");
-    expect(migration).toContain("NOTIFY pgrst, 'reload schema'");
-    expect(migration.indexOf("reload config")).toBeLessThan(migration.indexOf("reload schema"));
+    expect(initialMigration).toContain("ALTER ROLE authenticator SET statement_timeout = '30s'");
+    expect(finalMigration).toContain("ALTER ROLE authenticator SET statement_timeout = '2min'");
+    expect(finalMigration).toContain("set_config('statement_timeout', '8s', true)");
+    expect(finalMigration).toContain(
+      "ALTER ROLE authenticator SET pgrst.db_pre_request = 'public.set_postgrest_request_timeout'",
+    );
+    expect(finalMigration).toContain("NOTIFY pgrst, 'reload config'");
+    expect(finalMigration).toContain("NOTIFY pgrst, 'reload schema'");
+    expect(finalMigration.indexOf("reload config")).toBeLessThan(
+      finalMigration.indexOf("reload schema"),
+    );
   });
 
   // ─── user_roles (privilege escalation) ────────────────────────────────
