@@ -12,6 +12,17 @@ import { readFileSync } from "node:fs";
 const source = (path: string) => readFileSync(path, "utf8");
 
 describe("P0 — RLS e integridade", () => {
+  it("PostgREST: o cache de esquema tem tempo suficiente e recarga explícita", () => {
+    const migration = source(
+      "supabase/migrations/20261014113000_raise_postgrest_schema_cache_timeout.sql",
+    );
+
+    expect(migration).toContain("ALTER ROLE authenticator SET statement_timeout = '30s'");
+    expect(migration).toContain("NOTIFY pgrst, 'reload config'");
+    expect(migration).toContain("NOTIFY pgrst, 'reload schema'");
+    expect(migration.indexOf("reload config")).toBeLessThan(migration.indexOf("reload schema"));
+  });
+
   // ─── user_roles (privilege escalation) ────────────────────────────────
   it("user_roles: mantém gate executável contra autoelevação", () => {
     const gate = source("tests/rls/critical-tables-rls.test.ts");
