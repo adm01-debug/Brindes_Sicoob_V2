@@ -31,6 +31,44 @@ def scalar(statement):
 def actor(statement, actor_id=ACTOR, check=True):
     return sql(f"SET ROLE authenticated; SET request.jwt.claim.sub='{actor_id}'; {statement}", check)
 
+def prepare_governance_prerequisites():
+    # A migration de governança é aplicada sobre o schema canônico completo.
+    # Esta fixture histórica contém só o domínio da conversão; declaramos aqui
+    # os contratos institucionais usados pelas funções novas.
+    sql("""
+      CREATE TYPE public.app_role AS ENUM (
+        'admin','manager','vendedor','supervisor','dev','gestor_compras',
+        'gerente_pa','comprador_pac','comprador_singular'
+      );
+      CREATE FUNCTION public.sicoob_actor_is_active(_user_id uuid)
+      RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=pg_catalog,public
+      AS $helper$
+        SELECT EXISTS (
+          SELECT 1 FROM public.profiles
+          WHERE user_id=_user_id AND is_active AND deleted_at IS NULL
+        )
+      $helper$;
+      CREATE FUNCTION public.has_role(_user_id uuid, _role public.app_role)
+      RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=pg_catalog,public
+      AS $helper$
+        SELECT EXISTS (
+          SELECT 1 FROM public.user_roles WHERE user_id=_user_id AND role=_role::text
+        )
+      $helper$;
+      CREATE FUNCTION public.get_user_org_ids(_user_id uuid)
+      RETURNS SETOF uuid LANGUAGE sql STABLE SECURITY DEFINER SET search_path=pg_catalog,public
+      AS $helper$
+        SELECT DISTINCT cooperativa_id FROM public.profiles
+        WHERE user_id=_user_id AND cooperativa_id IS NOT NULL
+      $helper$;
+      REVOKE ALL ON FUNCTION public.sicoob_actor_is_active(uuid) FROM PUBLIC,anon;
+      REVOKE ALL ON FUNCTION public.has_role(uuid,public.app_role) FROM PUBLIC,anon;
+      REVOKE ALL ON FUNCTION public.get_user_org_ids(uuid) FROM PUBLIC,anon;
+      GRANT EXECUTE ON FUNCTION public.sicoob_actor_is_active(uuid) TO authenticated,service_role;
+      GRANT EXECUTE ON FUNCTION public.has_role(uuid,public.app_role) TO authenticated,service_role;
+      GRANT EXECUTE ON FUNCTION public.get_user_org_ids(uuid) TO authenticated,service_role;
+    """)
+
 def seed_quote(
     quote_id, status='approved', price=50, personalized=False,
     personalization_cost=0, markup=0, discount_percent=0,
@@ -128,6 +166,7 @@ try:
       INSERT INTO public.postos_atendimento VALUES ('{PA}','{COOP}',true);
       INSERT INTO public.profiles(id,user_id,pa_id,cooperativa_id,singular_id,is_active) VALUES ('{ACTOR}','{ACTOR}','{PA}','{COOP}','{COOP}',true);
     """)
+    prepare_governance_prerequisites()
     migration = MIGRATION.read_text()
     mutation = MUTATION.read_text()
     governance_contract = """
