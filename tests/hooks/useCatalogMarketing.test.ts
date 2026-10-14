@@ -9,6 +9,11 @@ import { fetchCatalogMarketingProductIds } from '@/hooks/useCatalogMarketing';
 describe('curadoria editorial do catálogo', () => {
   beforeEach(() => vi.clearAllMocks());
 
+  it('não consulta o banco quando nenhuma classificação foi selecionada', async () => {
+    await expect(fetchCatalogMarketingProductIds('publico_alvo', [])).resolves.toEqual([]);
+    expect(from).not.toHaveBeenCalled();
+  });
+
   it('aceita slug ou nome normalizado, pagina vínculos e elimina duplicados', async () => {
     const termsEq = vi.fn();
     termsEq
