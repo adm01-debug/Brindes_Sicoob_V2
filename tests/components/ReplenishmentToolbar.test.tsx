@@ -12,7 +12,6 @@ const baseProps = {
   totalCount: 200,
   filteredCount: 150,
   isLoading: false,
-  loadingProgress: 0,
   searchQuery: "",
   onSearchChange: vi.fn(),
   selectedSupplier: "all",
@@ -60,11 +59,12 @@ describe("ReplenishmentToolbar", () => {
     expect(screen.getByText("/200")).toBeInTheDocument();
   });
 
-  it("shows progress bar when loading with progress", () => {
+  it("shows an indeterminate status while refreshing existing products", () => {
     renderWithProviders(
-      <ReplenishmentToolbar {...baseProps} isLoading loadingProgress={45} />
+      <ReplenishmentToolbar {...baseProps} isLoading />
     );
-    expect(screen.getByText("45%")).toBeInTheDocument();
+    expect(screen.getByRole("status", { name: "Atualizando produtos" })).toBeInTheDocument();
+    expect(screen.queryByText(/%/)).not.toBeInTheDocument();
   });
 
   it("toggles selection mode on button click", () => {
