@@ -34,6 +34,8 @@ export interface LoginCreds {
   expectFail?: boolean;
   /** Timeout customizado para o redirect pós-login. */
   timeoutMs?: number;
+  /** Aguarda a resolução de permissões; desative até concluir um desafio MFA. */
+  waitForPermissions?: boolean;
 }
 
 export type Role = 'user' | 'admin' | 'dev' | 'editor';
@@ -43,10 +45,7 @@ const AUTH_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../
 const TOTP_PERIOD_MS = 30_000;
 const lastTotpCodeByRole = new Map<'admin' | 'dev', string>();
 
-async function generateFreshTotp(
-  role: 'admin' | 'dev',
-  totp: OTPAuth.TOTP,
-): Promise<string> {
+async function generateFreshTotp(role: 'admin' | 'dev', totp: OTPAuth.TOTP): Promise<string> {
   let code = totp.generate();
   if (lastTotpCodeByRole.get(role) === code) {
     const waitMs = TOTP_PERIOD_MS - (Date.now() % TOTP_PERIOD_MS) + 750;
@@ -185,7 +184,9 @@ async function restoreRoleStorage(page: Page, role: Role, email: string): Promis
   await expect(page, `esperado ativar a sessão ${role}`).not.toHaveURL(LOGIN_URL_RE, {
     timeout: 10_000,
   });
-  await waitForRouteIdle(page);
+  await waitForRouteIdle(page, {
+    waitForPermissions: role !== 'admin' && role !== 'dev',
+  });
   return true;
 }
 
@@ -222,7 +223,10 @@ export async function loginViaUI(page: Page, creds: LoginCreds): Promise<boolean
   // O carregamento de permissões pode consumir a maior parte da janela do
   // redirect em runners frios. Preserve o mesmo orçamento do login para não
   // transformar uma sessão válida em flake de 10 segundos.
-  await waitForRouteIdle(page, { timeout });
+  await waitForRouteIdle(page, {
+    timeout,
+    waitForPermissions: creds.waitForPermissions,
+  });
   return true;
 }
 
@@ -271,13 +275,15 @@ export async function loginAs(page: Page, role: Role = 'user'): Promise<void> {
   if (currentEmail || !LOGIN_URL_RE.test(page.url())) await logout(page);
 
   if (await restoreRoleStorage(page, role, email!)) {
-    // Os estados privilegiados só são gravados pelo setup depois da elevação
-    // AAL2. Reabrir aqui uma rota administrativa duplicaria navegação em cada
-    // teste e criaria contenção artificial no backend.
+    if (role === 'admin' || role === 'dev') await ensurePrivilegedAal2(page, role);
     return;
   }
 
-  await loginViaUI(page, { email: email!, password: password! });
+  await loginViaUI(page, {
+    email: email!,
+    password: password!,
+    waitForPermissions: role !== 'admin' && role !== 'dev',
+  });
   if (role === 'admin' || role === 'dev') await ensurePrivilegedAal2(page, role);
 }
 

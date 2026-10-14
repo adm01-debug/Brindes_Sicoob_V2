@@ -57,10 +57,27 @@ async function injectAnimKill(page: Page) {
  * Substitui usos de `waitForLoadState("networkidle")` em specs (proibido pelo
  * lint), pois `networkidle` é flaky em SPAs com realtime/polling.
  */
-export async function waitForRouteIdle(page: Page, opts?: { timeout?: number }) {
+interface RouteIdleOptions {
+  timeout?: number;
+  /**
+   * Gates MFA mantêm o marcador de permissões enquanto aguardam interação.
+   * Nesse fluxo, aguarde apenas o carregamento lazy para não criar uma espera
+   * circular antes de preencher o desafio.
+   */
+  waitForPermissions?: boolean;
+}
+
+function pendingRouteSelector(waitForPermissions: boolean | undefined): string {
+  return waitForPermissions === false ? '[data-route-pending="lazy"]' : '[data-route-pending]';
+}
+
+export async function waitForRouteIdle(page: Page, opts?: RouteIdleOptions) {
   const timeout = opts?.timeout ?? 10_000;
   await page.waitForLoadState('domcontentloaded', { timeout });
-  await page.locator('[data-route-pending]').first().waitFor({ state: 'detached', timeout });
+  await page
+    .locator(pendingRouteSelector(opts?.waitForPermissions))
+    .first()
+    .waitFor({ state: 'detached', timeout });
   await page
     .waitForFunction(
       () => !document.querySelector('[data-state="loading"], [data-skeleton]'),
@@ -93,16 +110,6 @@ export async function expectOnRoute(
   });
 }
 
-interface RouteSettleOptions {
-  timeout?: number;
-  /**
-   * Gates MFA mantêm o marcador de permissões enquanto aguardam interação.
-   * Nesse fluxo, aguarde apenas o carregamento lazy para não criar uma espera
-   * circular antes de preencher o desafio.
-   */
-  waitForPermissions?: boolean;
-}
-
 const TRANSIENT_NAVIGATION_ERRORS = [
   'is interrupted by another navigation',
   'Frame load interrupted',
@@ -132,7 +139,7 @@ async function navigateToPath(page: Page, path: string, timeout: number) {
   throw lastError;
 }
 
-export async function gotoAndSettle(page: Page, path: string, opts?: RouteSettleOptions) {
+export async function gotoAndSettle(page: Page, path: string, opts?: RouteIdleOptions) {
   const timeout = opts?.timeout ?? 20_000;
   const response = await navigateToPath(page, path, timeout);
 
@@ -157,9 +164,7 @@ export async function gotoAndSettle(page: Page, path: string, opts?: RouteSettle
 
   // Lazy loading e resolução de papéis fazem parte do carregamento da rota;
   // prosseguir com o fallback ativo gerava aprovações e falhas aleatórias.
-  const pendingSelector = opts?.waitForPermissions === false
-    ? '[data-route-pending="lazy"]'
-    : '[data-route-pending]';
+  const pendingSelector = pendingRouteSelector(opts?.waitForPermissions);
   await page
     .locator(pendingSelector)
     .first()
