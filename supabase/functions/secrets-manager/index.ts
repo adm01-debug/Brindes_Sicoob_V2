@@ -10,6 +10,7 @@ import {
 } from "../_shared/credentials.ts";
 import { writeAuditEntry, extractRequestMeta } from "../_shared/audit-log.ts";
 import { getOrCreateRequestId, REQUEST_ID_HEADER } from "../_shared/request-id.ts";
+import { deferBackgroundTask } from "../_shared/background-task.ts";
 
 const SOURCE = "secrets-manager";
 
@@ -112,7 +113,10 @@ Deno.serve(async (req) => {
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
-      await auditDenied(null, "missing_token");
+      deferBackgroundTask(
+        auditDenied(null, "missing_token"),
+        "secrets-manager:missing-token",
+      );
       return new Response(JSON.stringify({ error: "Token de autenticação ausente" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -123,7 +127,10 @@ Deno.serve(async (req) => {
     });
     const { data: userData, error: userErr } = await userClient.auth.getUser();
     if (userErr || !userData?.user) {
-      await auditDenied(null, "invalid_jwt", { detail: userErr?.message });
+      deferBackgroundTask(
+        auditDenied(null, "invalid_jwt", { detail: userErr?.message }),
+        "secrets-manager:invalid-jwt",
+      );
       return new Response(JSON.stringify({ error: "Token inválido" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

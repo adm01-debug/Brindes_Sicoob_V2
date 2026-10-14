@@ -92,7 +92,7 @@ describe("P0 — RLS e integridade", () => {
   });
 
   it("mcp_keys: rejeição anônima não aguarda a telemetria do banco", () => {
-    for (const name of ["issue", "revoke", "rotate"]) {
+    for (const name of ["issue", "revoke", "rotate", "update"]) {
       const worker = source(`supabase/functions/mcp-keys-${name}/index.ts`);
       const missingJwtPath = worker.slice(
         worker.indexOf("if (!jwt)"),
@@ -104,6 +104,17 @@ describe("P0 — RLS e integridade", () => {
       expect(missingJwtPath).not.toContain("await auditFailure");
       expect(missingJwtPath).toContain("401");
     }
+  });
+
+  it("edges técnicas rejeitam antes de depender de telemetria persistida", () => {
+    const secrets = source("supabase/functions/secrets-manager/index.ts");
+    const inspect = source("supabase/functions/external-db-inspect/index.ts");
+
+    expect(secrets).toContain("deferBackgroundTask(");
+    expect(secrets).toContain('"secrets-manager:missing-token"');
+    expect(inspect.indexOf("await authorize(req")).toBeLessThan(
+      inspect.indexOf("await runBotProtection(req"),
+    );
   });
 
   // ─── workspace_notifications ──────────────────────────────────────────
