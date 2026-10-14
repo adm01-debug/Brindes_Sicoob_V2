@@ -100,6 +100,10 @@ const TARGETS = [
     sha256: "0d41715a7eb8e77ff4406ce640647bc2687ab8ca3e2e6d0468e72ca1a8c0f3d0",
   },
   {
+    file: "supabase/migrations/20261013150000_catalog_marketing_taxonomy.sql",
+    sha256: "5aa4ea56e3a72c0be06d0942a679b075b0d46229fff1f172e1fac8fbf2ba7306",
+  },
+  {
     file: "supabase/migrations/20261014113000_raise_postgrest_schema_cache_timeout.sql",
     sha256: "a36ad6e9c5fee9a910453dbf1c6fb0729c6126cfef10570a4c08b8af50bd53b3",
   },
