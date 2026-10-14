@@ -14,6 +14,7 @@ import { createSupabaseSqlClient } from "./supabase-sql-client.mjs";
 
 const ROOT = process.cwd();
 const PROJECT_REF = "cfmzkthhgliqelozlmwu";
+const LEDGER_HASH_MARKER = /^sha256:([a-f0-9]{64}); executor:allowlisted-management-api$/;
 const TARGETS = [
   {
     file: "supabase/migrations/20260928140600_rls_deny_all_internal_tables.sql",
@@ -287,7 +288,7 @@ async function readApplied(client, targets) {
   return new Map(rows.map((row) => [row.version, row]));
 }
 
-function validateLedger(targets, applied) {
+export function validateLedger(targets, applied) {
   for (const target of targets) {
     const row = applied.get(target.version);
     if (!row) continue;
@@ -296,6 +297,15 @@ function validateLedger(targets, applied) {
     }
     if (!Array.isArray(row.statements)) {
       throw new Error(`Statements ausentes no ledger para ${target.version}.`);
+    }
+    const hashMarker = row.statements.length === 1
+      ? LEDGER_HASH_MARKER.exec(row.statements[0].trim())
+      : null;
+    if (hashMarker) {
+      if (hashMarker[1] !== target.sha256) {
+        throw new Error(`Conteúdo divergente no ledger para ${target.version}.`);
+      }
+      continue;
     }
     const remoteSql = row.statements.map((statement) => statement.trim().replace(/;\s*$/, "")).join(";\n");
     const remoteHash = sha256(normalizedSql(remoteSql));

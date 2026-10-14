@@ -1,11 +1,12 @@
 // Executado pelo node:test; fica fora da descoberta do Vitest.
 import assert from "node:assert/strict";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import test from "node:test";
 import { createManagementSqlClient } from "../../scripts/db/supabase-sql-client.mjs";
 import {
   buildManagementApiBatch,
   loadAuthorizedTargets,
+  validateLedger,
 } from "../../scripts/db/apply-sicoob-migrations.mjs";
 
 const PROJECT_REF = "cfmzkthhgliqelozlmwu";
@@ -74,4 +75,26 @@ test("monta lote atômico somente com migrations allowlisted e guarda do ledger"
     /OR has_function_privilege\('service_role', 'public\.assert_quote_transition/,
   );
   assert.match(batch, /COMMIT;$/);
+});
+
+test("valida marcador criptográfico registrado pelo executor administrativo", () => {
+  const sql = "select 1;";
+  const sha256 = createHash("sha256").update(sql).digest("hex");
+  const target = { version: "20261014124500", name: "exemplo", sql, sha256 };
+  const applied = new Map([
+    [
+      target.version,
+      {
+        version: target.version,
+        name: target.name,
+        statements: [`sha256:${sha256}; executor:allowlisted-management-api`],
+      },
+    ],
+  ]);
+
+  assert.doesNotThrow(() => validateLedger([target], applied));
+  applied.get(target.version).statements = [
+    `sha256:${"0".repeat(64)}; executor:allowlisted-management-api`,
+  ];
+  assert.throws(() => validateLedger([target], applied), /Conteúdo divergente/);
 });

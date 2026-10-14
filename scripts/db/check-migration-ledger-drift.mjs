@@ -9,6 +9,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const PROJECT_REF = 'cfmzkthhgliqelozlmwu';
 const hash = (value) => createHash('sha256').update(value).digest('hex');
 const ACCEPTED_STATUSES = new Set(['alinhada', 'aplicada_arquivada', 'arquivada_sem_ledger']);
+const LEDGER_HASH_MARKER = /^sha256:([a-f0-9]{64}); executor:allowlisted-management-api$/;
 
 // Preserva literais e corpos SQL; diferenças normalizadas exigem revisão,
 // não significam necessariamente divergência semântica.
@@ -74,7 +75,12 @@ export function compareLedger(local, ledger) {
     const sql = Array.isArray(row.statements)
       ? row.statements.map((s) => s.trim().replace(/;\s*$/, '')).join(';\n')
       : null;
-    const remoteHash = sql === null ? null : hash(normalizedSql(sql));
+    const hashMarker =
+      row.statements?.length === 1 ? LEDGER_HASH_MARKER.exec(row.statements[0]?.trim()) : null;
+    const remoteHash = hashMarker?.[1] ?? (sql === null ? null : hash(normalizedSql(sql)));
+    const hashesMatch = hashMarker
+      ? remoteHash === file.sha256
+      : remoteHash === file.normalized_sha256;
     results.push({
       version: row.version,
       path: file.path,
@@ -84,7 +90,7 @@ export function compareLedger(local, ledger) {
       status:
         remoteHash === null
           ? 'conteudo_nao_verificado'
-          : remoteHash !== file.normalized_sha256
+          : !hashesMatch
             ? 'conteudo_divergente'
             : row.name !== file.name
               ? 'nome_divergente'
