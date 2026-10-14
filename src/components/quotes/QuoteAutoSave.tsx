@@ -23,6 +23,8 @@ interface QuoteAutoSaveProps {
   quoteId?: string;
   /** Identificador do usuário autenticado; impede restauração entre contas. */
   scopeId?: string | null;
+  /** Desliga persistência e restauração em propostas imutáveis. */
+  enabled?: boolean;
   data: unknown;
   onChange?: (hasUnsavedChanges: boolean) => void;
   onRestore?: (data: Record<string, unknown>) => void;
@@ -79,35 +81,45 @@ function AutoSaveIndicator({ status, lastSaved, hasChanges, className }: {
 function useDraftLifecycle(args: {
   data: unknown; storageKey: string; lastError: unknown; restore: () => unknown;
   onChange?: (hasUnsavedChanges: boolean) => void; onRestore?: (data: Record<string, unknown>) => void;
-  setStatus: (status: SaveStatus) => void;
+  setStatus: (status: SaveStatus) => void; enabled: boolean;
 }): boolean {
-  const { data, storageKey, lastError, restore, onChange, onRestore, setStatus } = args;
+  const { data, storageKey, lastError, restore, onChange, onRestore, setStatus, enabled } = args;
   const [hasChanges, setHasChanges] = useState(false);
   const initialDataRef = useRef<string | null>(null);
   const currentDataRef = useRef(data);
   const onRestoreRef = useRef(onRestore);
   currentDataRef.current = data;
   onRestoreRef.current = onRestore;
-  useEffect(() => { initialDataRef.current = JSON.stringify(currentDataRef.current); }, [storageKey]);
-  useEffect(() => { if (lastError) setStatus("error"); }, [lastError, setStatus]);
   useEffect(() => {
+    initialDataRef.current = enabled ? JSON.stringify(currentDataRef.current) : null;
+  }, [enabled, storageKey]);
+  useEffect(() => { if (enabled && lastError) setStatus("error"); }, [enabled, lastError, setStatus]);
+  useEffect(() => {
+    if (!enabled) {
+      setHasChanges(false);
+      onChange?.(false);
+      setStatus("idle");
+      return;
+    }
     const changed = JSON.stringify(data) !== initialDataRef.current;
     setHasChanges(changed);
     onChange?.(changed);
     if (changed) setStatus(navigator.onLine ? "saving" : "offline");
-  }, [data, onChange, setStatus]);
+  }, [data, enabled, onChange, setStatus]);
   useEffect(() => {
+    if (!enabled) return;
     const restoreDraft = onRestoreRef.current;
     const draft = restoreDraft ? restore() : null;
     if (restoreDraft && draft && typeof draft === "object" && !Array.isArray(draft)
       && JSON.stringify(draft) !== JSON.stringify(currentDataRef.current)) restoreDraft(draft as Record<string, unknown>);
-  }, [restore, storageKey]);
+  }, [enabled, restore, storageKey]);
   return hasChanges;
 }
 
 export function QuoteAutoSave({
   quoteId,
   scopeId,
+  enabled = true,
   data,
   onChange,
   onRestore,
@@ -115,13 +127,13 @@ export function QuoteAutoSave({
 }: QuoteAutoSaveProps) {
   const [status, setStatus] = useState<SaveStatus>("idle");
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const draftId = useMemo(() => scopeId ? getQuoteDraftIdForScope(scopeId) : null, [scopeId]);
-  const storageKey = scopeId ? (quoteId ? `quote:${scopeId}:${quoteId}` : `draft:${scopeId}:${draftId}`) : "";
+  const draftId = useMemo(() => enabled && scopeId ? getQuoteDraftIdForScope(scopeId) : null, [enabled, scopeId]);
+  const storageKey = enabled && scopeId ? (quoteId ? `quote:${scopeId}:${quoteId}` : `draft:${scopeId}:${draftId}`) : "";
 
   const { restore, lastError } = useAutoSave({
     key: storageKey,
     data,
-    enabled: Boolean(storageKey),
+    enabled: enabled && Boolean(storageKey),
     onSave: () => {
       setLastSaved(new Date());
       setStatus("saved");
@@ -129,7 +141,8 @@ export function QuoteAutoSave({
     },
     onError: () => setStatus("error"),
   });
-  const hasUnsavedChanges = useDraftLifecycle({ data, storageKey, lastError, restore, onChange, onRestore, setStatus });
+  const hasUnsavedChanges = useDraftLifecycle({ data, storageKey, lastError, restore, onChange, onRestore, setStatus, enabled });
 
+  if (!enabled) return null;
   return <AutoSaveIndicator status={status} lastSaved={lastSaved} hasChanges={hasUnsavedChanges} className={className} />;
 }

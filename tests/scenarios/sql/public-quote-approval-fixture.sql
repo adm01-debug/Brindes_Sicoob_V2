@@ -28,7 +28,11 @@ CREATE TABLE public.quotes (
   reorder_source_order_id uuid, reorder_source_quote_id uuid,
   catalog_revalidated_at timestamptz, catalog_valid_until timestamptz,
   catalog_stock_is_reserved boolean NOT NULL DEFAULT false,
-  reorder_price_changed_items integer NOT NULL DEFAULT 0
+  reorder_price_changed_items integer NOT NULL DEFAULT 0,
+  synced_to_bitrix boolean NOT NULL DEFAULT false,
+  synced_at timestamptz,
+  bitrix_deal_id text,
+  bitrix_quote_id text
 );
 CREATE TABLE public.quote_items (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(), quote_id uuid NOT NULL REFERENCES public.quotes(id) ON DELETE CASCADE,

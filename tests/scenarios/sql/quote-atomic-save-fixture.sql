@@ -55,6 +55,10 @@ CREATE TABLE public.quotes (
   catalog_valid_until timestamptz,
   catalog_stock_is_reserved boolean NOT NULL DEFAULT false,
   reorder_price_changed_items integer NOT NULL DEFAULT 0,
+  synced_to_bitrix boolean NOT NULL DEFAULT false,
+  synced_at timestamptz,
+  bitrix_deal_id text,
+  bitrix_quote_id text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );

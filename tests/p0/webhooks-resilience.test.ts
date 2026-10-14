@@ -78,6 +78,7 @@ describe("P0 — webhooks resilientes", () => {
       ".select(\"bitrix_company_id\")",
       'fetchWithBreaker("bitrix", webhookUrl',
       "if (!response.ok)",
+      'admin.rpc("record_quote_bitrix_sync"',
     ]);
   });
 

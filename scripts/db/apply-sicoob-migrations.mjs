@@ -93,7 +93,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
-    sha256: "f30d8f9bef2eeca6ec1f0a3f0c02924912396d089927a6e1ea0da5274d7dd78b",
+    sha256: "4bc1b931436c5ee412f07d45878a22912f4f79e80136129f75924d9641507e3f",
   },
   {
     file: "supabase/migrations/20261013123000_preserve_atomic_quote_save_under_governance.sql",

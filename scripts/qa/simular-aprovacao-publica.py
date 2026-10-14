@@ -594,6 +594,29 @@ try:
         f"SELECT row_version<>999 AND sent_at IS NULL AND deleted_at IS NULL AND is_active FROM public.quotes WHERE id='{fixed_quote}';"
       ).stdout.strip() == 't'
     )
+    sync_row_version = sql(
+      f"SELECT row_version FROM public.quotes WHERE id='{fixed_quote}';"
+    ).stdout.strip()
+    forged_sync = actor(
+      f"UPDATE public.quotes SET synced_to_bitrix=true, synced_at=now(), "
+      f"bitrix_quote_id='FORJADO-Q', bitrix_deal_id='FORJADO-D' WHERE id='{fixed_quote}';",
+      check=False,
+    )
+    authorized_sync = actor(
+      "BEGIN; SELECT count(*) FROM public.record_quote_bitrix_sync("
+      f"'{fixed_quote}','BITRIX-Q-1','BITRIX-D-1');"
+      "SELECT COALESCE(NULLIF(current_setting('app.quote_sync_metadata',true),''),'restaurado'); COMMIT;",
+      role='service_role',
+    )
+    checks['metadados_bitrix_so_pelo_fluxo_autorizado'] = (
+      forged_sync.returncode != 0
+      and authorized_sync.stdout.strip() == '1\nrestaurado'
+      and sql(
+        "SELECT synced_to_bitrix AND synced_at IS NOT NULL "
+        "AND bitrix_quote_id='BITRIX-Q-1' AND bitrix_deal_id='BITRIX-D-1' "
+        f"AND row_version={sync_row_version} FROM public.quotes WHERE id='{fixed_quote}';"
+      ).stdout.strip() == 't'
+    )
     forged_context = actor(
       "BEGIN; SELECT set_config('app.quote_governance_write','true',true); "
       f"UPDATE public.quotes SET total=777 WHERE id='{fixed_quote}'; COMMIT;",

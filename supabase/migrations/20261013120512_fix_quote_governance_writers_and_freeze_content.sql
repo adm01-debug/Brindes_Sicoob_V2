@@ -269,6 +269,101 @@ REVOKE ALL ON FUNCTION public.respond_discount_approval_atomic(uuid, integer, bo
 GRANT EXECUTE ON FUNCTION public.respond_discount_approval_atomic(uuid, integer, boolean, text)
   TO authenticated, service_role;
 
+-- Metadados de integração não representam uma alteração comercial e não devem
+-- invalidar aprovações por incremento de row_version. A exceção só existe
+-- durante a RPC SECURITY DEFINER abaixo; clientes não conseguem elevá-la
+-- porque seus UPDATEs executam como authenticated, e não como o owner.
+CREATE OR REPLACE FUNCTION public.handle_row_version()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = pg_catalog, public
+AS $function$
+DECLARE
+  v_table_owner name := pg_catalog.pg_get_userbyid((
+    SELECT relation.relowner
+    FROM pg_catalog.pg_class AS relation
+    WHERE relation.oid = TG_RELID
+  ));
+BEGIN
+  IF current_setting('app.quote_sync_metadata', true) = 'true'
+     AND current_user = v_table_owner THEN
+    NEW.row_version := OLD.row_version;
+  ELSE
+    NEW.row_version := OLD.row_version + 1;
+  END IF;
+  RETURN NEW;
+END;
+$function$;
+REVOKE ALL ON FUNCTION public.handle_row_version()
+  FROM PUBLIC, anon, authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.record_quote_bitrix_sync(
+  p_quote_id uuid,
+  p_bitrix_quote_id text DEFAULT NULL,
+  p_bitrix_deal_id text DEFAULT NULL
+)
+RETURNS TABLE(
+  quote_id uuid,
+  bitrix_quote_id text,
+  bitrix_deal_id text,
+  synced_at timestamptz
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $function$
+DECLARE
+  v_previous_governance text := current_setting('app.quote_governance_write', true);
+  v_previous_sync text := current_setting('app.quote_sync_metadata', true);
+  v_result record;
+BEGIN
+  IF p_quote_id IS NULL
+     OR length(COALESCE(p_bitrix_quote_id, '')) > 200
+     OR length(COALESCE(p_bitrix_deal_id, '')) > 200 THEN
+    RAISE EXCEPTION USING
+      ERRCODE = '22023',
+      MESSAGE = 'Metadados de sincronização com Bitrix inválidos.';
+  END IF;
+
+  PERFORM set_config('app.quote_governance_write', 'true', true);
+  PERFORM set_config('app.quote_sync_metadata', 'true', true);
+  BEGIN
+    UPDATE public.quotes AS quote
+    SET synced_to_bitrix = true,
+        synced_at = clock_timestamp(),
+        bitrix_quote_id = COALESCE(NULLIF(btrim(p_bitrix_quote_id), ''), quote.bitrix_quote_id),
+        bitrix_deal_id = COALESCE(NULLIF(btrim(p_bitrix_deal_id), ''), quote.bitrix_deal_id)
+    WHERE quote.id = p_quote_id
+      AND quote.deleted_at IS NULL
+    RETURNING quote.id, quote.bitrix_quote_id, quote.bitrix_deal_id, quote.synced_at
+      INTO v_result;
+
+    IF NOT FOUND THEN
+      RAISE EXCEPTION USING
+        ERRCODE = 'P0002',
+        MESSAGE = 'Orçamento indisponível para registrar sincronização com Bitrix.';
+    END IF;
+  EXCEPTION WHEN OTHERS THEN
+    PERFORM set_config('app.quote_sync_metadata', COALESCE(v_previous_sync, ''), true);
+    PERFORM set_config('app.quote_governance_write', COALESCE(v_previous_governance, ''), true);
+    RAISE;
+  END;
+  PERFORM set_config('app.quote_sync_metadata', COALESCE(v_previous_sync, ''), true);
+  PERFORM set_config('app.quote_governance_write', COALESCE(v_previous_governance, ''), true);
+
+  RETURN QUERY SELECT
+    v_result.id::uuid,
+    v_result.bitrix_quote_id::text,
+    v_result.bitrix_deal_id::text,
+    v_result.synced_at::timestamptz;
+END;
+$function$;
+REVOKE ALL ON FUNCTION public.record_quote_bitrix_sync(uuid, text, text)
+  FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.record_quote_bitrix_sync(uuid, text, text)
+  TO service_role;
+
 CREATE OR REPLACE FUNCTION public.guard_quote_governance_write()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -312,10 +407,10 @@ BEGIN
 
   IF TG_OP = 'INSERT' THEN
     -- Chamadas externas devem deixar a organização dentro do escopo do ator e
-    -- o identificador comercial a cargo do trigger gerador. RPCs canônicas
-    -- SECURITY DEFINER entram como o owner da tabela e validam esses dados no
-    -- próprio contrato transacional; service_role permanece reservado às
-    -- rotinas administrativas do backend.
+    -- o identificador comercial a cargo do servidor. A RPC canônica
+    -- save_quote_atomic é SECURITY INVOKER, mas sua pilha inequívoca permite o
+    -- default/trigger de numeração depois de ela validar identidade e escopo.
+    -- service_role permanece reservado às rotinas administrativas do backend.
     IF current_user <> v_table_owner
        AND current_user <> 'service_role' THEN
       IF NEW.organization_id IS NOT NULL
@@ -329,7 +424,8 @@ BEGIN
           MESSAGE = 'A organização do orçamento não pertence ao usuário autenticado.';
       END IF;
 
-      IF COALESCE(NEW.quote_number, '') <> '' THEN
+      IF COALESCE(NEW.quote_number, '') <> ''
+         AND v_call_context !~ 'PL/pgSQL function (public\.)?save_quote_atomic\(' THEN
         RAISE EXCEPTION USING
           ERRCODE = '42501',
           MESSAGE = 'O número do orçamento deve ser gerado pelo servidor.';
@@ -346,6 +442,10 @@ BEGIN
        OR NEW.client_response_notes IS NOT NULL
        OR NEW.sent_at IS NOT NULL
        OR NEW.deleted_at IS NOT NULL
+       OR COALESCE(NEW.synced_to_bitrix, false) IS TRUE
+       OR NEW.synced_at IS NOT NULL
+       OR NEW.bitrix_deal_id IS NOT NULL
+       OR NEW.bitrix_quote_id IS NOT NULL
        OR NEW.parent_quote_id IS NOT NULL
        OR NEW.consolidation_id IS NOT NULL
        OR (
@@ -476,7 +576,11 @@ BEGIN
      OR NEW.catalog_revalidated_at IS DISTINCT FROM OLD.catalog_revalidated_at
      OR NEW.catalog_valid_until IS DISTINCT FROM OLD.catalog_valid_until
      OR NEW.catalog_stock_is_reserved IS DISTINCT FROM OLD.catalog_stock_is_reserved
-     OR NEW.reorder_price_changed_items IS DISTINCT FROM OLD.reorder_price_changed_items THEN
+     OR NEW.reorder_price_changed_items IS DISTINCT FROM OLD.reorder_price_changed_items
+     OR NEW.synced_to_bitrix IS DISTINCT FROM OLD.synced_to_bitrix
+     OR NEW.synced_at IS DISTINCT FROM OLD.synced_at
+     OR NEW.bitrix_deal_id IS DISTINCT FROM OLD.bitrix_deal_id
+     OR NEW.bitrix_quote_id IS DISTINCT FROM OLD.bitrix_quote_id THEN
     RAISE EXCEPTION USING
       ERRCODE = '42501',
       MESSAGE = 'Campos de governança do orçamento só podem ser alterados por fluxo autorizado.';
