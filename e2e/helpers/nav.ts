@@ -103,11 +103,38 @@ interface RouteSettleOptions {
   waitForPermissions?: boolean;
 }
 
+const TRANSIENT_NAVIGATION_ERRORS = [
+  'is interrupted by another navigation',
+  'Frame load interrupted',
+  'net::ERR_ABORTED',
+];
+
+function isTransientNavigationError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  return TRANSIENT_NAVIGATION_ERRORS.some((message) => error.message.includes(message));
+}
+
+async function navigateToPath(page: Page, path: string, timeout: number) {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      return await page.goto(path, { waitUntil: 'domcontentloaded', timeout });
+    } catch (error) {
+      lastError = error;
+      if (!isTransientNavigationError(error) || attempt === 2) throw error;
+
+      // O mecanismo de recuperação de chunks pode substituir a URL enquanto
+      // o teste inicia a próxima rota. Aguarde esse reload terminar e tente o
+      // destino original novamente, sem mascarar timeout ou erro HTTP real.
+      await page.waitForLoadState('domcontentloaded', { timeout }).catch(() => {});
+    }
+  }
+  throw lastError;
+}
+
 export async function gotoAndSettle(page: Page, path: string, opts?: RouteSettleOptions) {
-  const response = await page.goto(path, {
-    waitUntil: 'domcontentloaded',
-    timeout: opts?.timeout ?? 20_000,
-  });
+  const timeout = opts?.timeout ?? 20_000;
+  const response = await navigateToPath(page, path, timeout);
 
   await Promise.all([
     page.waitForLoadState('networkidle', { timeout: 1_500 }).catch(() => {

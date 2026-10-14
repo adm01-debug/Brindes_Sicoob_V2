@@ -132,6 +132,7 @@ export function AIMockupAssistant({ productName, techniqueName, className }: AIM
           size="lg"
           className="h-14 w-14 rounded-full shadow-lg gap-0 p-0 relative overflow-hidden group bg-primary hover:bg-primary/90 text-primary-foreground border-0"
           onClick={() => setIsOpen(true)}
+          aria-label="Abrir Matheus, assistente de layouts"
         >
           <motion.div
             animate={{ rotate: [0, 10, -10, 0] }}
