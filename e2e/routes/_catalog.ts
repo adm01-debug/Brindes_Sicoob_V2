@@ -102,6 +102,7 @@ export const QUOTES_ROUTES: RouteEntry[] = [
   { path: "/orcamentos/templates", area: "quotes", titleSlug: "orcamentos-templates", feature: "quotes-templates", smoke: true, description: "Templates de orçamento" },
   { path: "/orcamentos/novo", area: "quotes", titleSlug: "orcamento-novo", feature: "quote-new", smoke: true, description: "Criar novo orçamento (wizard)" },
   { path: `/orcamentos/${SAMPLE_ID}`, area: "quotes", feature: "quote-detail" },
+  { path: `/orcamentos/${SAMPLE_ID}/visualizar`, area: "quotes", feature: "quote-view" },
   { path: `/orcamentos/${SAMPLE_ID}/editar`, area: "quotes", feature: "quote-edit" },
 ];
 
