@@ -44,7 +44,8 @@ test.describe('Enterprise Audit Validation Suite', () => {
     const startTime = Date.now();
     await gotoAndSettle(page, '/admin/cadastros');
 
-    await expect(page.getByRole('heading', { name: 'Cadastro de Produtos' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Cadastros', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Gerenciador de Produtos' })).toBeVisible();
 
     const loadTime = Date.now() - startTime;
     console.log(`Tempo de carregamento do cadastro: ${loadTime}ms`);
@@ -52,10 +53,15 @@ test.describe('Enterprise Audit Validation Suite', () => {
     // Limite de regressão inclui rede e carregamento lazy do módulo administrativo.
     expect(loadTime).toBeLessThan(10_000);
 
-    // O formulário principal precisa estar integralmente operável após o carregamento.
+    // A listagem é a entrada canônica. O formulário só é montado depois da ação
+    // explícita de cadastro, evitando que o teste valide uma interface antiga.
+    await page.getByRole('button', { name: 'Novo Produto' }).click();
+    await expect(page).toHaveURL(/\/admin\/cadastros\/produto\/novo$/);
     await expect(page.getByRole('textbox', { name: 'Nome do Produto *' })).toBeVisible();
-    await expect(page.getByRole('textbox', { name: 'SKU *' })).toBeVisible();
-    await expect(page.getByRole('spinbutton', { name: 'Preço (R$) *' })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'SKU Interno *' })).toBeVisible();
+
+    await page.getByRole('tab', { name: /^Financeiro e Fiscal:/ }).click();
+    await expect(page.getByRole('textbox', { name: 'Preço Venda (R$) *' })).toBeVisible();
   });
 
   test('Endpoint de recomendações de IA responde com fallback ou cota explícita', async ({
