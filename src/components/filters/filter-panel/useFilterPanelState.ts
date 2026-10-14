@@ -213,6 +213,10 @@ function useSectionInfo(filters: FilterState, material: MaterialState, search: S
   return { sectionCounts, sectionSummaries, sectionMatchesSearch };
 }
 
+function queryError(error: unknown): Error | null {
+  return error instanceof Error ? error : null;
+}
+
 export function useFilterPanelState(filters: FilterState, onFilterChange: FilterPanelProps["onFilterChange"], products: Products = []) {
   const search = usePanelSearchState(filters, onFilterChange);
   const productOptions = useProductOptions(products);
@@ -238,6 +242,15 @@ export function useFilterPanelState(filters: FilterState, onFilterChange: Filter
     endomarketingOptions: optionsWithSelected(endomarketingOptions, filters.endomarketing, 'endomarketing'),
     temaSicoobOptions: optionsWithSelected(temaOptions, filters.sicoobThemes, 'tema_sicoob'),
     marketingOptionsLoading: publicoAlvo.isPending || endomarketing.isPending || temasSicoob.isPending,
+    publicoAlvoOptionsLoading: publicoAlvo.isPending,
+    publicoAlvoOptionsError: queryError(publicoAlvo.error),
+    retryPublicoAlvoOptions: () => { void publicoAlvo.refetch(); },
+    endomarketingOptionsLoading: endomarketing.isPending,
+    endomarketingOptionsError: queryError(endomarketing.error),
+    retryEndomarketingOptions: () => { void endomarketing.refetch(); },
+    temaSicoobOptionsLoading: temasSicoob.isPending,
+    temaSicoobOptionsError: queryError(temasSicoob.error),
+    retryTemaSicoobOptions: () => { void temasSicoob.refetch(); },
     techniqueOptions: advanced.techniqueOptions, tagOptions: advanced.tagOptions,
     availableSizes: availableSizes.sizes, availableSizesLoading: availableSizes.isLoading,
     availableSizesError: availableSizes.error, retryAvailableSizes: availableSizes.retry,

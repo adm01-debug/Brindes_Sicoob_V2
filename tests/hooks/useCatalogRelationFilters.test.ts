@@ -34,7 +34,9 @@ describe('filtros relacionais do catálogo', () => {
 
     expect(ids).toHaveLength(501);
     expect(invokeExternalDb).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      select: 'product_id,id',
       filters: { tag_id: ['tag-a', 'tag-b'] },
+      orderBy: { column: 'id', ascending: true },
       limit: 500,
       offset: 0,
     }));
@@ -68,7 +70,8 @@ describe('filtros relacionais do catálogo', () => {
     await expect(fetchActivityProductIds(['cooperativismo'], [])).resolves.toEqual(['produto-1']);
     expect(invokeExternalDb).toHaveBeenCalledWith(expect.objectContaining({
       table: 'produto_ramo_atividade',
-      select: 'produto_id',
+      select: 'produto_id,id',
+      orderBy: { column: 'id', ascending: true },
       filters: { ramo_atividade_filho_id: ['segmento-1'] },
     }));
   });

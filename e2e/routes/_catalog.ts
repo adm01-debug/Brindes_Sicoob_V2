@@ -114,7 +114,6 @@ export const ADMIN_ROUTES: RouteEntry[] = [
   { path: "/admin/usuarios", area: "admin", requiresAdmin: true, feature: "admin-users" },
   { path: "/admin/limites-desconto", area: "admin", requiresAdmin: true, feature: "admin-discount-limits" },
   { path: "/admin/cadastros", area: "admin", requiresAdmin: true, feature: "admin-registrations" },
-  { path: `/admin/cadastros/produto/${SAMPLE_ID}`, area: "admin", requiresAdmin: true, feature: "admin-product-form" },
   { path: "/admin/newsletter", area: "admin", requiresAdmin: true, feature: "admin-newsletter" },
   { path: "/admin/campanhas", area: "admin", requiresAdmin: true, feature: "admin-campaigns" },
   { path: "/admin/singulares", area: "admin", requiresAdmin: true, feature: "admin-singulars" },

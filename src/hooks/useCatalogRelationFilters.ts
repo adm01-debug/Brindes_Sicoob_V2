@@ -34,9 +34,12 @@ async function fetchRelationPages(
     const result = await invokeExternalDb<Record<string, string | null | undefined>>({
       table,
       operation: 'select',
-      select: productColumn,
+      select: `${productColumn},id`,
       filters: { ...filters, [column]: selected },
-      orderBy: { column: productColumn, ascending: true },
+      // Todas as relações do catálogo têm UUID primário. Ordenar por ele torna
+      // a paginação por offset determinística mesmo quando um produto aparece
+      // em vários vínculos selecionados.
+      orderBy: { column: 'id', ascending: true },
       limit: RELATION_PAGE_SIZE,
       offset,
     });

@@ -3,6 +3,17 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import React from "react";
+import { screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { renderWithProviders } from "../render-helpers";
+
+const { filterPanelStateMock } = vi.hoisted(() => ({
+  filterPanelStateMock: vi.fn(),
+}));
+
+vi.mock("@/components/filters/filter-panel/useFilterPanelState", () => ({
+  useFilterPanelState: filterPanelStateMock,
+}));
 
 vi.mock("@/hooks/useCategoryIcons", () => ({
   useCategoryIcons: vi.fn().mockReturnValue({ data: [], isLoading: false }),
@@ -115,5 +126,48 @@ describe("FilterPanel", () => {
     expect(defaultFilters.isNew).toBe(false);
     expect(defaultFilters.hasPersonalization).toBe(false);
     expect(defaultFilters.hasCommercialPackaging).toBe(false);
+  });
+
+  it("mantém a seção editorial visível e permite repetir após falha", async () => {
+    const retry = vi.fn();
+    filterPanelStateMock.mockReturnValue({
+      openSections: ["publico"],
+      toggleSection: vi.fn(),
+      collapseAllSections: vi.fn(),
+      filterSearch: "",
+      setFilterSearch: vi.fn(),
+      sectionMatchesSearch: (id: string) => id === "publico",
+      sectionCounts: {},
+      sectionSummaries: {},
+      techniqueOptions: [],
+      tagOptions: [],
+      publicoAlvoOptions: [],
+      publicoAlvoOptionsLoading: false,
+      publicoAlvoOptionsError: new Error("indisponível"),
+      retryPublicoAlvoOptions: retry,
+      endomarketingOptions: [],
+      endomarketingOptionsLoading: false,
+      endomarketingOptionsError: null,
+      temaSicoobOptions: [],
+      temaSicoobOptionsLoading: false,
+      temaSicoobOptionsError: null,
+      publicoSearch: "",
+      setPublicoSearch: vi.fn(),
+      toggleArrayFilter: vi.fn(),
+    });
+    const { FilterPanel, defaultFilters } = await import("@/components/filters/FilterPanel");
+
+    renderWithProviders(
+      <FilterPanel
+        filters={defaultFilters}
+        onFilterChange={vi.fn()}
+        onReset={vi.fn()}
+        activeFiltersCount={0}
+      />,
+    );
+
+    expect(screen.getByRole("alert").textContent).toContain("Não foi possível carregar estas opções.");
+    await userEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
+    expect(retry).toHaveBeenCalledOnce();
   });
 });
