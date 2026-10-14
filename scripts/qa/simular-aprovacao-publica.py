@@ -408,6 +408,11 @@ try:
       f"WHERE id='{consolidated_quote}'; COMMIT;",
       check=False,
     )
+    forged_noop = actor(
+      f"UPDATE public.quotes SET internal_notes=internal_notes "
+      f"WHERE id='{consolidated_quote}';",
+      check=False,
+    )
     checks['vinculo_de_consolidacao_so_e_preenchido_pelo_fluxo_privilegiado'] = (
       forged_consolidation.returncode != 0
       and authorized_consolidation.stdout.strip() == consolidation_id
@@ -419,6 +424,8 @@ try:
     checks['toque_direto_em_updated_at_nao_avanca_versao'] = (
       forged_touch.returncode != 0
       and forged_atomic_touch.returncode != 0
+      and forged_noop.returncode != 0
+      and 'atualização sem alteração efetiva' in forged_noop.stderr.lower()
       and sql(
         f"SELECT row_version={row_version_before_touch} FROM public.quotes WHERE id='{consolidated_quote}';"
       ).stdout.strip() == 't'

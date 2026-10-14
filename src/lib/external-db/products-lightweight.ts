@@ -67,6 +67,33 @@ async function fetchPage(params: {
   });
 }
 
+function isPaginationDegraded(page: InvokeResult<LightweightProduct>): boolean {
+  return Boolean(
+    page.meta
+    && typeof page.meta === 'object'
+    && (page.meta as { pagination_degraded?: boolean }).pagination_degraded === true,
+  );
+}
+
+async function completeDegradedPage(
+  params: Parameters<typeof fetchPage>[0],
+  page: InvokeResult<LightweightProduct>,
+): Promise<InvokeResult<LightweightProduct>> {
+  const records = page.records ?? [];
+  if (!isPaginationDegraded(page) || records.length === 0 || records.length >= params.limit) return page;
+
+  const remainder = await fetchPageResilient({
+    ...params,
+    limit: params.limit - records.length,
+    offset: params.offset + records.length,
+    countMode: 'none',
+  });
+  return {
+    records: [...records, ...(remainder.records ?? [])],
+    count: page.count ?? remainder.count ?? null,
+  };
+}
+
 async function fetchPageResilient(params: {
   filters: Record<string, unknown>;
   orderBy: { column: string; ascending?: boolean };
@@ -75,7 +102,8 @@ async function fetchPageResilient(params: {
   countMode?: 'exact' | 'planned' | 'estimated' | 'none';
 }): Promise<InvokeResult<LightweightProduct>> {
   try {
-    return await fetchPage(params);
+    const page = await fetchPage(params);
+    return completeDegradedPage(params, page);
   } catch (error) {
     if (!isTimeoutError(error) || params.limit <= LIGHTWEIGHT_MIN_SPLIT_PAGE_SIZE) throw error;
     const firstHalf = Math.ceil(params.limit / 2);

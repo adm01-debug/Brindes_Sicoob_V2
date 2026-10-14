@@ -432,6 +432,15 @@ BEGIN
     RETURN NEW;
   END IF;
 
+  -- Um UPDATE idempotente ainda acionaria os gatilhos posteriores de versão,
+  -- row_version e updated_at. Recusá-lo aqui preserva o snapshot de propostas
+  -- já enviadas e impede invalidar aprovações sem mudança comercial real.
+  IF to_jsonb(NEW) IS NOT DISTINCT FROM to_jsonb(OLD) THEN
+    RAISE EXCEPTION USING
+      ERRCODE = '42501',
+      MESSAGE = 'Atualização sem alteração efetiva não é permitida no orçamento.';
+  END IF;
+
   IF NEW.id IS DISTINCT FROM OLD.id
      OR NEW.status IS DISTINCT FROM OLD.status
      OR NEW.approved_by IS DISTINCT FROM OLD.approved_by

@@ -148,7 +148,11 @@ function buildCatalogBatch(offset: number, filters: Record<string, unknown>, pag
 }
 
 function assertCompleteBatch(results: BatchResults, expectedLength: number): void {
-  const invalid = results.length !== expectedLength || results.some(result => !result.success || !Array.isArray(result.data?.records));
+  const invalid = results.length !== expectedLength || results.some(result => (
+    !result.success
+    || !Array.isArray(result.data?.records)
+    || result.data?.meta?.pagination_degraded === true
+  ));
   if (!invalid) return;
   throw new Error(results.find(result => !result.success)?.error || 'Consulta incompleta ao catálogo externo');
 }

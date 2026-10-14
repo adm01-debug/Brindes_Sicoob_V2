@@ -41,15 +41,48 @@ describe('catálogo externo paginado', () => {
   it('reconsulta uma página individual quando o lote volta incompleto', async () => {
     vi.mocked(invokeBatchBridge).mockResolvedValueOnce([{ success: false, error: 'Falha na página' }]);
     vi.mocked(fetchPromobrindProductsLightweight).mockResolvedValueOnce([{
-      id: 'produto-1', name: 'Garrafa', sku: 'G1', image_url: null,
+      id: 'produto-1', name: 'Garrafa', sku: 'G1',
       primary_image_url: null, supplier_id: null, category_id: null,
-      main_category_id: null, brand: null, is_active: true, active: true,
+      main_category_id: null, brand: null, is_active: true,
     }]);
 
     const { result } = renderHook(() => useProductsCatalog(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.pages[0].products.map(product => product.id)).toEqual(['produto-1']);
+    expect(result.current.data?.pages[0]?.products.map(product => product.id)).toEqual(['produto-1']);
     expect(fetchPromobrindProductsLightweight).toHaveBeenCalledOnce();
+  });
+
+  it('reconsulta sem pular offsets quando o bridge reduz uma página após timeout', async () => {
+    vi.mocked(invokeBatchBridge).mockResolvedValueOnce([
+      {
+        success: true,
+        data: {
+          records: Array.from({ length: 50 }, (_, index) => ({ id: `degradado-${index}` })),
+          count: null,
+          meta: { pagination_degraded: true, requested_limit: 100, effective_limit: 50, offset: 0 },
+        },
+      },
+      { success: true, data: { records: Array.from({ length: 100 }, (_, index) => ({ id: `pagina-2-${index}` })), count: null } },
+    ]);
+    vi.mocked(fetchPromobrindProductsLightweight).mockResolvedValueOnce(Array.from(
+      { length: CATALOG_INITIAL_PAGE_SIZE },
+      (_, index) => ({
+        id: `completo-${index}`, name: `Produto ${index}`, sku: `SKU-${index}`,
+        primary_image_url: null, supplier_id: null,
+        category_id: null, main_category_id: null, brand: null,
+        is_active: true,
+      }),
+    ));
+
+    const { result } = renderHook(() => useProductsCatalog(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(result.current.data?.pages[0]?.products).toHaveLength(CATALOG_INITIAL_PAGE_SIZE);
+    expect(result.current.data?.pages[0]?.nextOffset).toBe(CATALOG_INITIAL_PAGE_SIZE);
+    expect(fetchPromobrindProductsLightweight).toHaveBeenCalledWith(expect.objectContaining({
+      limit: CATALOG_INITIAL_PAGE_SIZE,
+      offset: 0,
+    }));
   });
 
   it('mostra erro de configuração sem repetir a consulta', async () => {
