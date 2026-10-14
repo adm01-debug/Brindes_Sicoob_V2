@@ -7,6 +7,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useProductsByMaterial } from "@/hooks/useProductsByMaterial";
 import { useProductsByCategory } from "@/hooks/useProductsByCategory";
 import { useProductsByColor } from "@/hooks/useProductsByColor";
+import { useProductsByActivity, useProductsBySize, useProductsByTag, useProductsByTechnique } from "@/hooks/useCatalogRelationFilters";
 import { useProductFuzzySearch } from "@/hooks/useProductFuzzySearch";
 import { useColorEnrichment } from "@/hooks/useColorEnrichment";
 import { usePromoSalesRanking } from "@/hooks/usePromoSalesRanking";
@@ -59,6 +60,10 @@ export function useFiltersPageState() {
   const { productIds: materialFilteredProductIds, hasFilter: hasMaterialFilter, isLoading: isLoadingMaterialFilter } = useProductsByMaterial({ materialGroupSlugs: filters.materialGroups, materialTypeSlugs: filters.materialTypes });
   const { productIds: categoryFilteredProductIds, hasFilter: hasCategoryFilter, isLoading: isLoadingCategoryFilter } = useProductsByCategory({ categoryIds: filters.categories, includeDescendants: true });
   const { productIds: colorFilteredProductIds, hasFilter: hasColorFilter, isLoading: isLoadingColorFilter } = useProductsByColor({ colorGroups: filters.colorGroups, colorVariations: filters.colorVariations, colorNuances: filters.colorNuances, colors: filters.colors });
+  const { productIds: tagFilteredProductIds, hasFilter: hasTagFilter, isLoading: isLoadingTagFilter } = useProductsByTag(filters.tags);
+  const { productIds: techniqueFilteredProductIds, hasFilter: hasTechniqueFilter, isLoading: isLoadingTechniqueFilter } = useProductsByTechnique(filters.techniques);
+  const { productIds: sizeFilteredProductIds, hasFilter: hasSizeFilter, isLoading: isLoadingSizeFilter } = useProductsBySize(filters.sizes);
+  const { productIds: activityFilteredProductIds, hasFilter: hasActivityFilter, isLoading: isLoadingActivityFilter } = useProductsByActivity(filters.ramosAtividade, filters.segmentosAtividade);
 
   const [activePresetId, setActivePresetId] = useState<string | undefined>();
   const [viewMode, setViewMode] = useState<"grid" | "list" | "table">("grid");
@@ -115,12 +120,24 @@ export function useFiltersPageState() {
       loadingMaterial: isLoadingMaterialFilter,
       loadingCategory: isLoadingCategoryFilter,
       loadingColor: isLoadingColorFilter,
+      tagIds: tagFilteredProductIds,
+      techniqueIds: techniqueFilteredProductIds,
+      sizeIds: sizeFilteredProductIds,
+      activityIds: activityFilteredProductIds,
+      hasTagFilter,
+      hasTechniqueFilter,
+      hasSizeFilter,
+      hasActivityFilter,
+      loadingTag: isLoadingTagFilter,
+      loadingTechnique: isLoadingTechniqueFilter,
+      loadingSize: isLoadingSizeFilter,
+      loadingActivity: isLoadingActivityFilter,
       sortBy,
       promoSalesMap,
       supplierSalesMap,
       skipSort: hasFuzzySearch && sortBy === 'name',
     });
-  }, [filters, sortBy, hasFuzzySearch, fuzzySearchResults, realProducts, hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter, hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter, hasColorFilter, colorFilteredProductIds, isLoadingColorFilter, promoSalesMap, supplierSalesMap]);
+  }, [filters, sortBy, hasFuzzySearch, fuzzySearchResults, realProducts, hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter, hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter, hasColorFilter, colorFilteredProductIds, isLoadingColorFilter, tagFilteredProductIds, hasTagFilter, isLoadingTagFilter, techniqueFilteredProductIds, hasTechniqueFilter, isLoadingTechniqueFilter, sizeFilteredProductIds, hasSizeFilter, isLoadingSizeFilter, activityFilteredProductIds, hasActivityFilter, isLoadingActivityFilter, promoSalesMap, supplierSalesMap]);
 
   // Color enrichment: fetch variant images/stock for filtered products when color filter is active
   const filteredProductIds = useMemo(() => filteredProducts.map(p => p.id), [filteredProducts]);
@@ -160,6 +177,8 @@ export function useFiltersPageState() {
   return {
     filters, setFilters, searchParams, realProducts, isLoadingProducts, isFullyLoaded, totalEstimate, loadedCount, loadingProgress,
     isLoadingMaterialFilter, isLoadingCategoryFilter, isLoadingColorFilter,
+    isLoadingTagFilter, isLoadingTechniqueFilter, isLoadingSizeFilter,
+    isLoadingActivityFilter,
     activePresetId, viewMode, setViewMode, gridColumns, setGridColumns,
     selectionMode, setSelectionMode,
     voiceOverlayOpen, setVoiceOverlayOpen, commandAction, setCommandAction,

@@ -253,6 +253,8 @@ export function FilterPanel({ filters, onFilterChange, onReset, activeFiltersCou
         selectedSizes={filters.sizes || []}
         onToggleSize={(size) => state.toggleArrayFilter("sizes", size)}
         products={products as Array<{ variations?: Array<{ size_code?: string | null }> }>}
+        availableSizes={state.availableSizes}
+        isLoading={state.availableSizesLoading}
       />
     ),
   };

@@ -58,6 +58,20 @@ function getStockStatus(stock: number): 'in-stock' | 'low-stock' | 'out-of-stock
   return 'in-stock';
 }
 
+function productCatalogFlags(product: LightweightProduct): Pick<
+  Product,
+  'featured' | 'newArrival' | 'onSale' | 'isKit' | 'hasCommercialPackaging' | 'allowsPersonalization'
+> {
+  return {
+    featured: Boolean(product.is_featured || product.is_bestseller),
+    newArrival: Boolean(product.is_new),
+    onSale: Boolean(product.is_on_sale),
+    isKit: product.is_kit ?? false,
+    hasCommercialPackaging: product.has_commercial_packaging ?? false,
+    allowsPersonalization: product.allows_personalization ?? false,
+  };
+}
+
 export function mapLightweightToProduct(p: LightweightProduct): Product {
   const imageUrl = productImage(p);
   const price = p.sale_price ?? p.cost_price ?? 0;
@@ -80,10 +94,7 @@ export function mapLightweightToProduct(p: LightweightProduct): Product {
     is_active: p.is_active,
     minQuantity: p.min_quantity ?? 1,
     stockStatus: getStockStatus(stock),
-    featured: false,
-    newArrival: false,
-    onSale: false,
-    isKit: p.is_kit ?? false,
+    ...productCatalogFlags(p),
     gender: p.gender ?? null,
     category: {
       id: productCategoryNumericId(p),
@@ -122,7 +133,7 @@ export const CATALOG_BATCH_PAGES = 2;
 // `price_updated_at` é o SSOT da idade do preço (trigger no BD externo).
 // `price_freshness_threshold_days` ainda NÃO existe no BD externo — quando
 // existir, basta acrescentar à lista; o mapper já trata como opcional.
-export const PRODUCT_SELECT_LIGHTWEIGHT = 'id, name, sku, sale_price, cost_price, primary_image_url, supplier_id, category_id, main_category_id, brand, is_active, stock_quantity, min_quantity, is_kit, gender, price_updated_at';
+export const PRODUCT_SELECT_LIGHTWEIGHT = 'id, name, sku, sale_price, cost_price, primary_image_url, supplier_id, category_id, main_category_id, brand, is_active, stock_quantity, min_quantity, is_featured, is_bestseller, is_new, is_on_sale, is_kit, has_commercial_packaging, allows_personalization, gender, price_updated_at';
 
 interface CatalogPage {
   products: Product[];
