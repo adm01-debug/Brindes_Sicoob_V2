@@ -9,6 +9,10 @@ export function isTechniqueTableAlias(table: string) {
   return table === 'personalization_techniques' || table === 'tecnica_gravacao';
 }
 
+export function isTechniqueOptionsAlias(table: string) {
+  return table === 'personalization_technique_options';
+}
+
 export function isTechniqueVarianteAlias(table: string) {
   return table === 'tecnica_gravacao_variante';
 }
@@ -172,7 +176,7 @@ export interface AliasResolution {
   filters?: Record<string, unknown>;
   orderBy?: { column: string; ascending?: boolean };
   select: string;
-  aliasType: 'technique' | 'variante' | 'priceTable' | null;
+  aliasType: 'technique' | 'techniqueOptions' | 'variante' | 'priceTable' | null;
   parentTechniqueId?: unknown;
 }
 
@@ -182,6 +186,16 @@ export function resolveTableAlias(
   orderBy?: { column: string; ascending?: boolean },
   select?: string,
 ): AliasResolution {
+  if (isTechniqueOptionsAlias(table)) {
+    return {
+      table: 'tabela_preco_gravacao_oficial',
+      filters: mapTechniqueFiltersToExternal(filters),
+      orderBy: mapTechniqueOrderByToExternal(orderBy),
+      select: 'id,nome,codigo,tempo_producao_dias,ativo',
+      aliasType: 'techniqueOptions',
+    };
+  }
+
   if (isTechniqueTableAlias(table)) {
     return {
       table: 'tabela_preco_gravacao_oficial',

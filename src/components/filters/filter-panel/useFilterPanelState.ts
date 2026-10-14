@@ -5,6 +5,7 @@ import { useMaterialFilter } from "@/hooks/useMaterialFilter";
 import { useSuppliers } from "@/hooks/useSuppliers";
 import { useRamoAtividadeFilter } from "@/hooks/useRamoAtividadeFilter";
 import { useAdvancedFilters, SORT_OPTIONS } from "@/hooks/useAdvancedFilters";
+import { useAvailableCatalogSizes } from "@/hooks/useCatalogRelationFilters";
 import type { FilterState, FilterPanelProps } from "./types";
 
 type Products = FilterPanelProps["products"];
@@ -163,6 +164,7 @@ export function useFilterPanelState(filters: FilterState, onFilterChange: Filter
   const productOptions = useProductOptions(products);
   const { data: categoryIcons = [] } = useCategoryIcons();
   const advanced = useAdvancedFilters();
+  const availableSizes = useAvailableCatalogSizes();
   const suppliers = useSuppliers();
   const material = useMaterialFilter();
   const ramo = useRamoAtividadeFilter();
@@ -171,6 +173,7 @@ export function useFilterPanelState(filters: FilterState, onFilterChange: Filter
   const actions = useFilterActions(filters, onFilterChange);
   const sectionInfo = useSectionInfo(filters, material, search);
   return { ...sections, ...search, categoryIcons, ...productOptions, techniqueOptions: advanced.techniqueOptions, tagOptions: advanced.tagOptions,
+    availableSizes: availableSizes.sizes, availableSizesLoading: availableSizes.isLoading,
     supplierOptions: suppliers.suppliers, suppliersLoading: suppliers.isLoading, materialGroups: material.groups, allMaterials: material.materials,
     materialsLoading: material.isLoading, materialFilterState: material.filterState, toggleMaterialGroup: material.toggleGroup,
     toggleMaterialType: material.toggleType, isMaterialGroupSelected: material.isGroupSelected, getTypesForGroup: material.getTypesForGroup,

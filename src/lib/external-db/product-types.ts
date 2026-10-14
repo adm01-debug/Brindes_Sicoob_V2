@@ -51,6 +51,7 @@ export interface PromobrindProduct {
   packing_type?: string | null;
   packing_classification?: string | null;
   has_commercial_packaging?: boolean | null;
+  allows_personalization?: boolean | null;
   repacking_type?: string | null;
   packaging_context?: string | null;
   box_image?: string | null;

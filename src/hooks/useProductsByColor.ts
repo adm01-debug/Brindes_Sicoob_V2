@@ -70,7 +70,27 @@ function addGroupFilters(
 ): void {
   const selectedGroupIds = new Set(slugs.map((slug) => groups.get(slug)).filter(Boolean));
   for (const variation of variations) {
-    if (selectedGroupIds.has(variation.group_id as string) && typeof variation.id === 'string') {
+    const groupId = variation.group_id ?? variation.color_group_id;
+    if (selectedGroupIds.has(groupId as string) && typeof variation.id === 'string') {
+      target.add(variation.id);
+    }
+  }
+}
+
+function addNuanceFilters(
+  target: Set<string>,
+  slugs: string[],
+  nuances: Record<string, unknown>[],
+  variations: Record<string, unknown>[],
+): void {
+  const nuanceIds = new Set(
+    nuances
+      .filter((nuance) => typeof nuance.slug === 'string' && slugs.includes(nuance.slug))
+      .map((nuance) => nuance.id)
+      .filter((id): id is string => typeof id === 'string'),
+  );
+  for (const variation of variations) {
+    if (nuanceIds.has(variation.nuance_id as string) && typeof variation.id === 'string') {
       target.add(variation.id);
     }
   }
@@ -89,33 +109,51 @@ function addLegacyColorFilters(
 }
 
 function resolveTargetColorIds(
-  options: Pick<UseProductsByColorOptions, 'colorGroups' | 'colorVariations' | 'colors'>,
+  options: UseProductsByColorOptions,
   groups: Record<string, unknown>[],
   variations: Record<string, unknown>[],
+  nuances: Record<string, unknown>[],
 ): Set<string> {
   const target = new Set<string>();
   addVariationFilters(target, options.colorVariations, variationsBySlug(variations));
   addGroupFilters(target, options.colorGroups, groupIdsBySlug(groups), variations);
+  addNuanceFilters(target, options.colorNuances, nuances, variations);
   addLegacyColorFilters(target, options.colors, variations);
   return target;
 }
 
-async function fetchMatchingProductIds(colorIds: string[]): Promise<Set<string>> {
+const COLOR_RELATION_PAGE_SIZE = 500;
+const MAX_COLOR_RELATION_PAGES = 100;
+
+async function fetchColorChunk(colorIds: string[]): Promise<Set<string>> {
   const matching = new Set<string>();
-  const chunkSize = 50;
-  for (let index = 0; index < colorIds.length; index += chunkSize) {
-    const chunk = colorIds.slice(index, index + chunkSize);
+  for (let page = 0; page < MAX_COLOR_RELATION_PAGES; page += 1) {
     const results = await invokeBatchBridge([{
       table: 'product_variants',
       operation: 'select',
       select: 'product_id',
-      filters: { is_active: true, color_id: chunk },
-      limit: 5000,
-      offset: 0,
+      filters: { is_active: true, color_id: colorIds },
+      limit: COLOR_RELATION_PAGE_SIZE,
+      offset: page * COLOR_RELATION_PAGE_SIZE,
     }]);
-    for (const record of recordsFromResult(results[0])) {
+    const records = recordsFromResult(results[0]);
+    for (const record of records) {
       if (typeof record.product_id === 'string') matching.add(record.product_id);
     }
+    if (records.length < COLOR_RELATION_PAGE_SIZE) break;
+    if (page === MAX_COLOR_RELATION_PAGES - 1) {
+      throw new Error('Consulta de cores excedeu o limite seguro de vínculos');
+    }
+  }
+  return matching;
+}
+
+export async function fetchMatchingProductIds(colorIds: string[]): Promise<Set<string>> {
+  const matching = new Set<string>();
+  const chunkSize = 50;
+  for (let index = 0; index < colorIds.length; index += chunkSize) {
+    const chunkMatches = await fetchColorChunk(colorIds.slice(index, index + chunkSize));
+    chunkMatches.forEach((productId) => matching.add(productId));
   }
   return matching;
 }
@@ -143,19 +181,24 @@ export function useProductsByColor({
   );
 
   const lastFetchedKey = useRef('');
-  const isFetchingRef = useRef(false);
+  const inFlightKeyRef = useRef('');
+  const requestSequenceRef = useRef(0);
 
   const fetchProductIds = useCallback(async () => {
-    if (isFetchingRef.current) return;
     if (lastFetchedKey.current === filterKey) return;
+    if (inFlightKeyRef.current === filterKey) return;
 
     if (!hasFilter) {
+      requestSequenceRef.current += 1;
+      inFlightKeyRef.current = '';
       setProductIds(new Set());
       lastFetchedKey.current = '';
       return;
     }
 
-    isFetchingRef.current = true;
+    const requestId = requestSequenceRef.current + 1;
+    requestSequenceRef.current = requestId;
+    inFlightKeyRef.current = filterKey;
     setIsLoading(true);
 
     try {
@@ -173,11 +216,20 @@ export function useProductsByColor({
         {
           table: 'color_variations',
           operation: 'select' as const,
-          select: 'id, name, slug, group_id',
+          select: 'id, name, slug, group_id, color_group_id, nuance_id',
           filters: { is_active: true },
           limit: 500,
           offset: 0,
           cacheKey: 'ref:color_variations',
+        },
+        {
+          table: 'color_nuances',
+          operation: 'select' as const,
+          select: 'id, name, slug',
+          filters: { is_active: true },
+          limit: 100,
+          offset: 0,
+          cacheKey: 'ref:color_nuances',
         },
       ];
 
@@ -185,16 +237,20 @@ export function useProductsByColor({
 
       const groupsData = recordsFromResult(refResults[0]);
       const variationsData = recordsFromResult(refResults[1]);
+      const nuancesData = recordsFromResult(refResults[2]);
       const targetColorIds = resolveTargetColorIds(
-        { colorGroups, colorVariations, colors },
+        { colorGroups, colorVariations, colorNuances, colors },
         groupsData,
         variationsData,
+        nuancesData,
       );
 
-      if (targetColorIds.size === 0 && colorNuances.length === 0) {
+      if (targetColorIds.size === 0) {
         // No matching color_ids found — no products match
-        setProductIds(new Set());
-        lastFetchedKey.current = filterKey;
+        if (requestSequenceRef.current === requestId) {
+          setProductIds(new Set());
+          lastFetchedKey.current = filterKey;
+        }
         return;
       }
 
@@ -202,17 +258,20 @@ export function useProductsByColor({
       const colorIdArray = [...targetColorIds];
       const matchingProductIds = await fetchMatchingProductIds(colorIdArray);
 
+      if (requestSequenceRef.current !== requestId) return;
       setProductIds(matchingProductIds);
       lastFetchedKey.current = filterKey;
       logger.log(`[useProductsByColor] Found ${matchingProductIds.size} products for ${colorIdArray.length} color IDs`);
     } catch (err) {
       logger.warn('[useProductsByColor] Error:', err);
-      setProductIds(new Set());
+      if (requestSequenceRef.current === requestId) setProductIds(new Set());
     } finally {
-      setIsLoading(false);
-      isFetchingRef.current = false;
+      if (requestSequenceRef.current === requestId) {
+        setIsLoading(false);
+        inFlightKeyRef.current = '';
+      }
     }
-  }, [colorGroups, colorNuances.length, colorVariations, colors, filterKey, hasFilter]);
+  }, [colorGroups, colorNuances, colorVariations, colors, filterKey, hasFilter]);
 
   useEffect(() => {
     if (filterKey !== lastFetchedKey.current || !hasFilter) {

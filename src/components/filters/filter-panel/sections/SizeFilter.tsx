@@ -29,9 +29,11 @@ interface SizeFilterProps {
   onToggleSize: (size: string) => void;
   /** Products with variations containing size_code */
   products?: Array<{ variations?: Array<{ size_code?: string | null }> }>;
+  availableSizes?: string[];
+  isLoading?: boolean;
 }
 
-export function SizeFilter({ selectedSizes, onToggleSize, products = [] }: SizeFilterProps) {
+export function SizeFilter({ selectedSizes, onToggleSize, products = [], availableSizes: externalSizes = [], isLoading = false }: SizeFilterProps) {
   const [search, setSearch] = useState("");
 
   const availableSizes = useMemo(() => {
@@ -41,8 +43,9 @@ export function SizeFilter({ selectedSizes, onToggleSize, products = [] }: SizeF
         if (v.size_code) sizeSet.add(v.size_code);
       });
     });
+    externalSizes.forEach((size) => sizeSet.add(size));
     return Array.from(sizeSet).sort((a, b) => getSizeOrder(a) - getSizeOrder(b));
-  }, [products]);
+  }, [externalSizes, products]);
 
   const filteredSizes = useMemo(() => {
     if (!search) return availableSizes;
@@ -53,7 +56,7 @@ export function SizeFilter({ selectedSizes, onToggleSize, products = [] }: SizeF
   if (availableSizes.length === 0) {
     return (
       <p className="text-xs text-muted-foreground px-1">
-        Nenhum tamanho disponível nos produtos carregados.
+        {isLoading ? 'Carregando tamanhos disponíveis...' : 'Nenhum tamanho disponível no catálogo.'}
       </p>
     );
   }

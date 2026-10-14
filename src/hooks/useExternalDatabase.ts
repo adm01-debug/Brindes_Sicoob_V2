@@ -274,7 +274,7 @@ export function useExternalProductSuppliers() {
 }
 
 export function useExternalTechniques() {
-  return useExternalDatabase<ExternalTechnique>('personalization_techniques');
+  return useExternalDatabase<ExternalTechnique>('personalization_technique_options');
 }
 
 export function useExternalPriceTables() {

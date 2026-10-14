@@ -207,21 +207,6 @@ function filterByTag(
   );
 }
 
-function matchesAny(values: string[], selected: string[]): boolean {
-  return selected.some((value) =>
-    values.some((tag) => tag.toLowerCase().includes(value.toLowerCase())),
-  );
-}
-
-function filterBySegments(products: Product[], branches: string[], segments: string[]): Product[] {
-  if (!branches.length && !segments.length) return products;
-  return products.filter((product) => {
-    const matchesBranch = !branches.length || matchesAny(product.tags?.ramo || [], branches);
-    const matchesSegment = !segments.length || matchesAny(product.tags?.nicho || [], segments);
-    return matchesBranch || matchesSegment;
-  });
-}
-
 function filterByMaterials(products: Product[], active: boolean, selected: string[]): Product[] {
   if (active || !selected.length) return products;
   return products.filter((product) => {
@@ -255,7 +240,17 @@ function filterByFlags(products: Product[], filters: FilterState): Product[] {
   if (filters.hasCommercialPackaging)
     result = result.filter((product) => product.hasCommercialPackaging === true);
   if (filters.isKit) result = result.filter((product) => product.isKit === true);
+  if (filters.featured) result = result.filter((product) => product.featured === true);
+  if (filters.isNew) result = result.filter((product) => product.newArrival === true);
+  if (filters.hasPersonalization)
+    result = result.filter((product) => product.allowsPersonalization === true);
   return result;
+}
+
+function filterByGender(products: Product[], selected: string[]): Product[] {
+  if (!selected.length) return products;
+  const normalized = new Set(selected.map((value) => value.toLocaleLowerCase('pt-BR').trim()));
+  return products.filter((product) => normalized.has((product.gender || '').toLocaleLowerCase('pt-BR').trim()));
 }
 
 export interface ProductFilterContext {
@@ -270,6 +265,18 @@ export interface ProductFilterContext {
   loadingMaterial: boolean;
   loadingCategory: boolean;
   loadingColor: boolean;
+  tagIds: Set<string>;
+  techniqueIds: Set<string>;
+  sizeIds: Set<string>;
+  activityIds: Set<string>;
+  hasTagFilter: boolean;
+  hasTechniqueFilter: boolean;
+  hasSizeFilter: boolean;
+  hasActivityFilter: boolean;
+  loadingTag: boolean;
+  loadingTechnique: boolean;
+  loadingSize: boolean;
+  loadingActivity: boolean;
   sortBy: string;
   promoSalesMap?: Map<string, number>;
   supplierSalesMap?: Map<string, SupplierSalesEntry>;
@@ -289,11 +296,6 @@ export function applyProductFilters(context: ProductFilterContext): Product[] {
   result = filterByTag(result, context.filters.publicoAlvo, 'publicoAlvo', false);
   result = filterByTag(result, context.filters.datasComemorativas, 'datasComemorativas', true);
   result = filterByTag(result, context.filters.endomarketing, 'endomarketing', false);
-  result = filterBySegments(
-    result,
-    context.filters.ramosAtividade,
-    context.filters.segmentosAtividade,
-  );
   result = filterByIdSet(
     result,
     context.hasMaterialFilter,
@@ -304,6 +306,11 @@ export function applyProductFilters(context: ProductFilterContext): Product[] {
   result = filterByPrice(result, context.filters.priceRange);
   result = filterByStock(result, context.filters);
   result = filterByFlags(result, context.filters);
+  result = filterByGender(result, context.filters.gender);
+  result = filterByIdSet(result, context.hasTagFilter, context.tagIds, context.loadingTag);
+  result = filterByIdSet(result, context.hasTechniqueFilter, context.techniqueIds, context.loadingTechnique);
+  result = filterByIdSet(result, context.hasSizeFilter, context.sizeIds, context.loadingSize);
+  result = filterByIdSet(result, context.hasActivityFilter, context.activityIds, context.loadingActivity);
   return sortProducts(result, context.sortBy, {
     promoSalesMap: context.promoSalesMap,
     supplierSalesMap: context.supplierSalesMap,

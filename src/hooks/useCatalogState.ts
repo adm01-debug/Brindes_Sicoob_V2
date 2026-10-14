@@ -14,6 +14,8 @@ import { useComparisonStore } from "@/stores/useComparisonStore";
 import { useProductsByMaterial } from "@/hooks/useProductsByMaterial";
 import { useProductFuzzySearch } from "@/hooks/useProductFuzzySearch";
 import { useProductsByCategory } from "@/hooks/useProductsByCategory";
+import { useProductsByColor } from "@/hooks/useProductsByColor";
+import { useProductsByActivity, useProductsBySize, useProductsByTag, useProductsByTechnique } from "@/hooks/useCatalogRelationFilters";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useCatalogRealStats } from "@/hooks/useCatalogRealStats";
 import { useToast } from "@/hooks/use-toast";
@@ -204,12 +206,30 @@ export function useCatalogState() {
     categoryIds: listOrEmpty(filterState.filters.categories?.map(String)),
     includeDescendants: true,
   });
+  const { productIds: colorFilteredProductIds, hasFilter: hasColorFilter, isLoading: isLoadingColorFilter } = useProductsByColor({
+    colorGroups: filterState.filters.colorGroups,
+    colorVariations: filterState.filters.colorVariations,
+    colorNuances: filterState.filters.colorNuances,
+    colors: filterState.filters.colors,
+  });
+  const { productIds: tagFilteredProductIds, hasFilter: hasTagFilter, isLoading: isLoadingTagFilter } = useProductsByTag(filterState.filters.tags);
+  const { productIds: techniqueFilteredProductIds, hasFilter: hasTechniqueFilter, isLoading: isLoadingTechniqueFilter } = useProductsByTechnique(filterState.filters.techniques);
+  const { productIds: sizeFilteredProductIds, hasFilter: hasSizeFilter, isLoading: isLoadingSizeFilter } = useProductsBySize(filterState.filters.sizes);
+  const { productIds: activityFilteredProductIds, hasFilter: hasActivityFilter, isLoading: isLoadingActivityFilter } = useProductsByActivity(filterState.filters.ramosAtividade, filterState.filters.segmentosAtividade);
+  const isLoadingRelations = [
+    isLoadingMaterialFilter,
+    isLoadingColorFilter,
+    isLoadingTagFilter,
+    isLoadingTechniqueFilter,
+    isLoadingSizeFilter,
+    isLoadingActivityFilter,
+  ].some(Boolean);
 
   const { data: realStats } = useCatalogRealStats();
   const { isLoading, isInitial: isInitialCatalogLoad } = catalogLoadingState(
     isLoadingProducts,
     isFetchingProducts,
-    isLoadingMaterialFilter,
+    isLoadingRelations,
     isLoadingCategoryFilter,
     realProducts.length,
   );
@@ -222,6 +242,11 @@ export function useCatalogState() {
     realProducts, filters: filterState.filters, sortBy: display.sortBy, hasFuzzySearch, fuzzySearchResults,
     hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter,
     hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter,
+    hasColorFilter, colorFilteredProductIds, isLoadingColorFilter,
+    hasTagFilter, tagFilteredProductIds, isLoadingTagFilter,
+    hasTechniqueFilter, techniqueFilteredProductIds, isLoadingTechniqueFilter,
+    hasSizeFilter, sizeFilteredProductIds, isLoadingSizeFilter,
+    hasActivityFilter, activityFilteredProductIds, isLoadingActivityFilter,
     promoSalesMap, supplierSalesMap,
   });
 

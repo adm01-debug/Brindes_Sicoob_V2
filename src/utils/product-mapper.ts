@@ -157,6 +157,7 @@ function packagingFields(product: PromobrindProduct): Partial<Product> {
     packingType: product.packing_type,
     packingClassification: product.packing_classification,
     hasCommercialPackaging: product.has_commercial_packaging,
+    allowsPersonalization: product.allows_personalization,
     repackingType: product.repacking_type,
     packagingContext: product.packaging_context as Product['packagingContext'],
     boxImage: product.box_image,
