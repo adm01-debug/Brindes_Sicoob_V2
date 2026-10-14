@@ -109,8 +109,10 @@ function useCategoryProductIds(category: CatalogMarketingCategory, values: strin
 }
 
 function intersectProductIds(sets: Set<string>[]): Set<string> {
-  if (!sets.length) return new Set();
-  const [first, ...rest] = sets.sort((a, b) => a.size - b.size);
+  const orderedSets = sets.slice().sort((a, b) => a.size - b.size);
+  const first = orderedSets[0];
+  if (!first) return new Set();
+  const rest = orderedSets.slice(1);
   return new Set([...first].filter((productId) => rest.every((set) => set.has(productId))));
 }
 
