@@ -65,15 +65,21 @@ export async function mockAuthenticatedBootstrap(page: Page) {
     if (route.request().method() !== 'GET') {
       return route.fulfill({ status: 204, body: '' });
     }
+    const profile = {
+      id: 'e2e-profile',
+      user_id: 'e2e-user',
+      full_name: 'Usuário E2E',
+      email: 'e2e@example.test',
+      role: bootstrapRoleFor(route.request()),
+    };
+    const expectsObject = route
+      .request()
+      .headers()
+      .accept?.includes('application/vnd.pgrst.object+json');
     return route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({
-        id: 'e2e-profile',
-        user_id: 'e2e-user',
-        full_name: 'Usuário E2E',
-        role: bootstrapRoleFor(route.request()),
-      }),
+      body: JSON.stringify(expectsObject ? profile : [profile]),
     });
   });
 }
