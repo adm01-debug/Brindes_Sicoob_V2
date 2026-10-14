@@ -311,6 +311,31 @@ BEGIN
   END IF;
 
   IF TG_OP = 'INSERT' THEN
+    -- Chamadas externas devem deixar a organização dentro do escopo do ator e
+    -- o identificador comercial a cargo do trigger gerador. RPCs canônicas
+    -- SECURITY DEFINER entram como o owner da tabela e validam esses dados no
+    -- próprio contrato transacional; service_role permanece reservado às
+    -- rotinas administrativas do backend.
+    IF current_user <> v_table_owner
+       AND current_user <> 'service_role' THEN
+      IF NEW.organization_id IS NOT NULL
+         AND NOT EXISTS (
+           SELECT 1
+           FROM public.get_user_org_ids(auth.uid()) AS allowed_organization_id
+           WHERE allowed_organization_id = NEW.organization_id
+         ) THEN
+        RAISE EXCEPTION USING
+          ERRCODE = '42501',
+          MESSAGE = 'A organização do orçamento não pertence ao usuário autenticado.';
+      END IF;
+
+      IF COALESCE(NEW.quote_number, '') <> '' THEN
+        RAISE EXCEPTION USING
+          ERRCODE = '42501',
+          MESSAGE = 'O número do orçamento deve ser gerado pelo servidor.';
+      END IF;
+    END IF;
+
     IF COALESCE(NEW.status::text, 'draft') <> 'draft'
        OR NEW.approved_by IS NOT NULL
        OR NEW.approved_at IS NOT NULL

@@ -56,6 +56,22 @@ def prepare_governance_prerequisites():
       CREATE OR REPLACE FUNCTION public.get_user_org_ids(_user_id uuid)
       RETURNS SETOF uuid LANGUAGE sql STABLE SECURITY DEFINER SET search_path=''
       AS $helper$ SELECT NULL::uuid WHERE false $helper$;
+      CREATE OR REPLACE FUNCTION public.generate_quote_number_for_qa()
+      RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
+      AS $helper$
+      BEGIN
+        IF NEW.quote_number IS NULL OR NEW.quote_number = '' THEN
+          NEW.quote_number := 'QA-' || left(NEW.id::text, 8);
+        END IF;
+        RETURN NEW;
+      END
+      $helper$;
+      DROP TRIGGER IF EXISTS set_quote_number ON public.quotes;
+      CREATE TRIGGER set_quote_number
+        BEFORE INSERT ON public.quotes
+        FOR EACH ROW EXECUTE FUNCTION public.generate_quote_number_for_qa();
+      REVOKE ALL ON FUNCTION public.generate_quote_number_for_qa()
+        FROM PUBLIC, anon, authenticated, service_role;
       REVOKE ALL ON FUNCTION public.sicoob_actor_is_active(uuid) FROM PUBLIC, anon;
       REVOKE ALL ON FUNCTION public.has_role(uuid, public.app_role) FROM PUBLIC, anon;
       REVOKE ALL ON FUNCTION public.get_user_org_ids(uuid) FROM PUBLIC, anon;
@@ -307,8 +323,20 @@ try:
     canonical_insert = actor(
       "INSERT INTO public.quotes "
       "(id,seller_id,quote_number,client_name,total,status) VALUES "
-      f"('{canonical_insert_quote}','{SELLER}','CANONICO','Cliente sintético',100,'draft') "
+      f"('{canonical_insert_quote}','{SELLER}','','Cliente sintético',100,'draft') "
       "RETURNING id;",
+    )
+    forged_organization_insert = actor(
+      "INSERT INTO public.quotes "
+      "(id,seller_id,quote_number,client_name,total,status,organization_id) VALUES "
+      f"('{uuid.uuid4()}','{SELLER}','','Cliente sintético',100,'draft','{uuid.uuid4()}');",
+      check=False,
+    )
+    forged_number_insert = actor(
+      "INSERT INTO public.quotes "
+      "(id,seller_id,quote_number,client_name,total,status) VALUES "
+      f"('{uuid.uuid4()}','{SELLER}','FORJADO','Cliente sintético',100,'draft');",
+      check=False,
     )
     forged_consolidation_insert = actor(
       "INSERT INTO public.quotes "
@@ -334,6 +362,16 @@ try:
         f"SELECT client_response IS NULL AND client_response_at IS NULL "
         f"AND sent_at IS NULL AND version=1 AND row_version=1 "
         f"AND is_latest_version AND is_active FROM public.quotes WHERE id='{canonical_insert_quote}';"
+      ).stdout.strip() == 't'
+    )
+    checks['insercao_direta_respeita_organizacao_e_numero_do_servidor'] = (
+      forged_organization_insert.returncode != 0
+      and 'organização do orçamento não pertence' in forged_organization_insert.stderr.lower()
+      and forged_number_insert.returncode != 0
+      and 'número do orçamento deve ser gerado' in forged_number_insert.stderr.lower()
+      and sql(
+        f"SELECT quote_number = 'QA-' || left(id::text, 8) "
+        f"FROM public.quotes WHERE id='{canonical_insert_quote}';"
       ).stdout.strip() == 't'
     )
 
