@@ -1,10 +1,12 @@
 /**
  * useClientBI — orquestra estatísticas 360° do cliente.
- * Tenta dados reais (orders); se vazio, retorna mock com flag `isMock: true`.
+ * Usa exclusivamente pedidos persistidos. Ausência de histórico e falha de
+ * consulta são estados explícitos; dados fictícios nunca entram nos KPIs.
  * Sprint 3: também calcula deltas vs período anterior (90d atual vs 90d anteriores).
  */
 import { useMemo } from "react";
 import { useClientOrdersHistory } from "@/hooks/useClientOrdersHistory";
+import { isDemoClient } from "@/lib/bi/demoClient";
 import { MOCK_CLIENT_STATS } from "@/lib/bi/mockData";
 
 export interface PeriodDelta {
@@ -16,6 +18,8 @@ export interface PeriodDelta {
 
 export interface ClientBI {
   isMock: boolean;
+  hasData: boolean;
+  isUnavailable: boolean;
   ltv: number;
   avgTicket: number;
   ordersCount: number;
@@ -48,21 +52,21 @@ function pctDelta(current: number, previous: number): number {
 }
 
 export function useClientBI(clientId?: string): ClientBI {
-  const { data, isLoading } = useClientOrdersHistory(clientId);
+  const demo = isDemoClient(clientId);
+  const { data, isLoading, isError } = useClientOrdersHistory(demo ? undefined : clientId);
 
   return useMemo(() => {
-    if (!data || data.ordersCount === 0) {
-      const mockOrders = MOCK_CLIENT_STATS.recentOrders.map((o) => ({
-        ...o,
-        isAnomaly: false,
-        deviation: 0,
-      }));
+    if (demo) {
       return {
         isMock: true,
+        hasData: true,
+        isUnavailable: false,
         ...MOCK_CLIENT_STATS,
-        recentOrders: mockOrders,
-        lastOrderDate: MOCK_CLIENT_STATS.lastOrderDate,
-        daysSinceLastOrder: MOCK_CLIENT_STATS.daysSinceLastOrder,
+        recentOrders: MOCK_CLIENT_STATS.recentOrders.map((order) => ({
+          ...order,
+          isAnomaly: false,
+          deviation: 0,
+        })),
         current90d: {
           ltv: MOCK_CLIENT_STATS.ltv * 0.35,
           avgTicket: MOCK_CLIENT_STATS.avgTicket,
@@ -78,6 +82,30 @@ export function useClientBI(clientId?: string): ClientBI {
           avgTicketDeltaPct: 8,
           ordersCountDeltaPct: 20,
           hasPreviousData: true,
+        },
+        isLoading: false,
+      };
+    }
+
+    if (!data || data.ordersCount === 0) {
+      return {
+        isMock: false,
+        hasData: false,
+        isUnavailable: isError,
+        ltv: 0,
+        avgTicket: 0,
+        ordersCount: 0,
+        lastOrderDate: null,
+        daysSinceLastOrder: null,
+        topCategories: [],
+        recentOrders: [],
+        current90d: { ltv: 0, avgTicket: 0, ordersCount: 0 },
+        previous90d: { ltv: 0, avgTicket: 0, ordersCount: 0 },
+        delta: {
+          ltvDeltaPct: 0,
+          avgTicketDeltaPct: 0,
+          ordersCountDeltaPct: 0,
+          hasPreviousData: false,
         },
         isLoading,
       };
@@ -116,13 +144,15 @@ export function useClientBI(clientId?: string): ClientBI {
 
     return {
       isMock: false,
+      hasData: true,
+      isUnavailable: false,
       ltv: data.totalLtv,
       avgTicket: data.avgTicket,
       ordersCount: data.ordersCount,
       lastOrderDate: data.lastOrderAt,
       daysSinceLastOrder: daysSince,
-      // Categorias reais ainda não temos (depende de order_items + categoria) — fallback mock parcial
-      topCategories: MOCK_CLIENT_STATS.topCategories,
+      // Categorias só aparecem quando houver agregação real de itens de pedido.
+      topCategories: [],
       recentOrders: (() => {
         const totals = valid.map((o) => o.total ?? 0).filter((t) => t > 0);
         const mean = totals.length > 0 ? totals.reduce((s, v) => s + v, 0) / totals.length : 0;
@@ -155,5 +185,5 @@ export function useClientBI(clientId?: string): ClientBI {
       },
       isLoading,
     };
-  }, [data, isLoading]);
+  }, [data, demo, isError, isLoading]);
 }

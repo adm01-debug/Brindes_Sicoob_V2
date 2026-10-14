@@ -3,12 +3,13 @@
  *
  * Reaproveita o RPC `get_client_top_products` (já usado em useClientAffinity)
  * e dobra o resultado por categoria via `categoryResolver`. Quando vazio,
- * cai para mock determinístico baseado em MOCK_CLIENT_STATS.topCategories.
+ * preserva a ausência de histórico sem fabricar afinidade.
  */
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveBICategory, type BICategorySlug } from "@/lib/bi/categoryResolver";
+import { isDemoClient } from "@/lib/bi/demoClient";
 import { MOCK_CLIENT_STATS } from "@/lib/bi/mockData";
 
 export interface ClientTopProductRow {
@@ -58,37 +59,29 @@ export interface ClientCategoryAffinityResult {
   favorite: CategoryAggregate | null;
 }
 
-function buildMockResult(): ClientCategoryAffinityResult {
-  const totalRev = MOCK_CLIENT_STATS.topCategories.reduce((s, c) => s + c.revenue, 0) || 1;
-  // Mock: distribuir 60% receita "recente" e 40% "anterior" com leve variação determinística por slug
-  const categories: CategoryAggregate[] = MOCK_CLIENT_STATS.topCategories.map((c, i) => {
-    const meta = resolveBICategory(c.category, c.category);
-    const recentBias = 0.55 + ((i % 3) - 1) * 0.12; // 0.43, 0.55, 0.67
-    const revenueRecent = c.revenue * recentBias;
-    const revenuePrevious = c.revenue * (1 - recentBias);
+function buildDemoResult(): ClientCategoryAffinityResult {
+  const totalRevenue = MOCK_CLIENT_STATS.topCategories.reduce((sum, category) => sum + category.revenue, 0) || 1;
+  const categories: CategoryAggregate[] = MOCK_CLIENT_STATS.topCategories.map((category, index) => {
+    const meta = resolveBICategory(category.category, category.category);
+    const recentBias = 0.55 + ((index % 3) - 1) * 0.12;
+    const revenueRecent = category.revenue * recentBias;
+    const revenuePrevious = category.revenue * (1 - recentBias);
     const deltaPct = revenuePrevious > 0 ? ((revenueRecent - revenuePrevious) / revenuePrevious) * 100 : null;
-    const trend: CategoryAggregate["trend"] =
-      deltaPct === null || deltaPct === undefined ? "stable" : deltaPct > 15 ? "up" : deltaPct < -15 ? "down" : "stable";
     return {
       slug: meta.slug,
-      label: c.category,
-      occurrences: c.count,
-      totalQuantity: c.count * 12,
-      totalRevenue: c.revenue,
-      revenueSharePct: (c.revenue / totalRev) * 100,
+      label: category.category,
+      occurrences: category.count,
+      totalQuantity: category.count * 12,
+      totalRevenue: category.revenue,
+      revenueSharePct: (category.revenue / totalRevenue) * 100,
       revenueRecent,
       revenuePrevious,
       deltaPct,
-      trend,
+      trend: categoryTrend(deltaPct),
       topProducts: [],
     };
   });
-  return {
-    isMock: true,
-    realProductsCount: 0,
-    categories,
-    favorite: categories[0] ?? null,
-  };
+  return { isMock: true, realProductsCount: 0, categories, favorite: categories[0] ?? null };
 }
 
 function emptyCategory(row: ClientTopProductRow): CategoryAggregate {
@@ -180,9 +173,10 @@ function finalizeCategories(byCategory: Map<string, CategoryAggregate>) {
 }
 
 export function useClientCategoryAffinity(clientId?: string) {
+  const demo = isDemoClient(clientId);
   const query = useQuery<ClientTopProductRow[]>({
     queryKey: ["bi-client-category-affinity-raw", clientId],
-    enabled: !!clientId,
+    enabled: !!clientId && !demo,
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       if (!clientId) return [];
@@ -196,8 +190,11 @@ export function useClientCategoryAffinity(clientId?: string) {
   });
 
   const result = useMemo<ClientCategoryAffinityResult>(() => {
+    if (demo) return buildDemoResult();
     const rows = query.data ?? [];
-    if (rows.length === 0) return buildMockResult();
+    if (rows.length === 0) {
+      return { isMock: false, realProductsCount: 0, categories: [], favorite: null };
+    }
 
     const categories = finalizeCategories(aggregateCategories(rows));
 
@@ -207,7 +204,7 @@ export function useClientCategoryAffinity(clientId?: string) {
       categories,
       favorite: categories[0] ?? null,
     };
-  }, [query.data]);
+  }, [demo, query.data]);
 
   return { ...result, isLoading: query.isLoading };
 }

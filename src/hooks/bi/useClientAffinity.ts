@@ -1,10 +1,11 @@
 /**
  * useClientAffinity — produtos reais já orçados pelo cliente + sugestões similares.
  * Estratégia: usa quote_items via RPC get_client_top_products (proxy de "interesse confirmado").
- * Quando vazio → fallback mock determinístico por ramo.
+ * Quando vazio, mantém um estado vazio em vez de sugerir produtos fictícios.
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { isDemoClient } from "@/lib/bi/demoClient";
 import { MOCK_CLIENT_STATS } from "@/lib/bi/mockData";
 
 export interface ClientTopProduct {
@@ -43,27 +44,33 @@ const MOCK_SUGGESTIONS: Record<string, AffinityCategory["suggestions"]> = {
   "Garrafas e Squeezes": [
     { name: "Garrafa Térmica Inox 750ml", priceFrom: 45, priceTo: 95, reason: "Upgrade da linha que ele já compra" },
     { name: "Squeeze Esportivo Premium", priceFrom: 22, priceTo: 48, reason: "Categoria favorita do cliente" },
-    { name: "Garrafa Vidro com Capa Silicone", priceFrom: 30, priceTo: 65, reason: "Novidade na categoria preferida" },
   ],
   "Canetas Premium": [
     { name: "Caneta Roller Premium", priceFrom: 28, priceTo: 75, reason: "Próximo nível em canetas executivas" },
-    { name: "Kit Caneta + Lapiseira", priceFrom: 45, priceTo: 120, reason: "Bundle dentro da categoria forte" },
     { name: "Caneta Bambu Sustentável", priceFrom: 12, priceTo: 30, reason: "Alternativa ESG" },
   ],
   "Mochilas e Bolsas": [
     { name: "Mochila Antifurto Premium", priceFrom: 95, priceTo: 220, reason: "Upgrade da linha mochilas" },
-    { name: "Bolsa Térmica Executiva", priceFrom: 55, priceTo: 130, reason: "Complemento natural" },
-    { name: "Sling Bag Compacta", priceFrom: 38, priceTo: 90, reason: "Tendência atual" },
   ],
-  "Agendas": [
+  Agendas: [
     { name: "Agenda Permanente Couro", priceFrom: 60, priceTo: 150, reason: "Linha premium da categoria" },
-    { name: "Planner Mensal A4", priceFrom: 25, priceTo: 65, reason: "Variação útil" },
   ],
   "Brindes Tecnológicos": [
-    { name: "Carregador Wireless 15W", priceFrom: 40, priceTo: 110, reason: "Tech atualizado" },
-    { name: "Caixa de Som Bluetooth", priceFrom: 60, priceTo: 180, reason: "Categoria em alta" },
+    { name: "Carregador Wireless 15W", priceFrom: 40, priceTo: 110, reason: "Tecnologia atual" },
   ],
 };
+
+function demoAffinity(): ClientAffinityResult {
+  return {
+    isMock: true,
+    realProductsCount: 0,
+    categories: MOCK_CLIENT_STATS.topCategories.map((category) => ({
+      ...category,
+      suggestions: MOCK_SUGGESTIONS[category.category] ?? [],
+    })),
+    topProducts: [],
+  };
+}
 
 /**
  * Agrupa top produtos reais em "categorias" derivadas do nome do produto.
@@ -88,8 +95,9 @@ export function useClientAffinity(clientId?: string) {
     enabled: !!clientId,
     queryFn: async () => {
       if (!clientId) {
-        return { isMock: true, realProductsCount: 0, categories: [], topProducts: [] };
+        return { isMock: false, realProductsCount: 0, categories: [], topProducts: [] };
       }
+      if (isDemoClient(clientId)) return demoAffinity();
 
       // 1) Tenta dados reais via RPC
       const { data: rpcData, error } = await supabase.rpc("get_client_top_products", {
@@ -136,12 +144,7 @@ export function useClientAffinity(clientId?: string) {
         };
       }
 
-      // 2) Fallback mock
-      const mockCategories: AffinityCategory[] = MOCK_CLIENT_STATS.topCategories.map((c) => ({
-        ...c,
-        suggestions: MOCK_SUGGESTIONS[c.category] ?? [],
-      }));
-      return { isMock: true, realProductsCount: 0, categories: mockCategories, topProducts: [] };
+      return { isMock: false, realProductsCount: 0, categories: [], topProducts: [] };
     },
     staleTime: 5 * 60 * 1000,
   });
