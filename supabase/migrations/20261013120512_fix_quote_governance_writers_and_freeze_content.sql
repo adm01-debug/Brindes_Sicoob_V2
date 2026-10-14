@@ -610,6 +610,74 @@ FOR EACH ROW EXECUTE FUNCTION public.guard_quote_personalization_content_write()
 
 -- Uma revisão ou rejeição volta explicitamente a rascunho antes de novo envio.
 -- Isso mantém a trilha de status coerente com a edição comercial liberada.
+CREATE OR REPLACE FUNCTION public.can_manage_quote_scope(
+  p_actor_id uuid,
+  p_quote_id uuid
+)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $function$
+  SELECT public.sicoob_actor_is_active(p_actor_id)
+    AND EXISTS (
+      SELECT 1
+      FROM public.quotes q
+      WHERE q.id = p_quote_id
+        AND (
+          public.has_role(p_actor_id, 'admin'::public.app_role)
+          OR public.has_role(p_actor_id, 'dev'::public.app_role)
+          OR (
+            (
+              public.has_role(p_actor_id, 'manager'::public.app_role)
+              OR public.has_role(p_actor_id, 'supervisor'::public.app_role)
+            )
+            AND (
+              (q.organization_id IS NOT NULL AND q.organization_id IN (
+                SELECT public.get_user_org_ids(p_actor_id)
+              ))
+              OR q.singular_id = (
+                SELECT p.cooperativa_id
+                FROM public.profiles p
+                WHERE p.user_id = p_actor_id
+                  AND p.is_active IS TRUE
+                  AND p.deleted_at IS NULL
+                LIMIT 1
+              )
+              OR q.pa_id = (
+                SELECT p.pa_id
+                FROM public.profiles p
+                WHERE p.user_id = p_actor_id
+                  AND p.is_active IS TRUE
+                  AND p.deleted_at IS NULL
+                LIMIT 1
+              )
+            )
+          )
+          OR (
+            (
+              public.has_role(p_actor_id, 'comprador_singular'::public.app_role)
+              OR public.has_role(p_actor_id, 'gestor_compras'::public.app_role)
+            )
+            AND EXISTS (
+              SELECT 1
+              FROM public.profiles p
+              WHERE p.user_id = p_actor_id
+                AND p.cooperativa_id = q.singular_id
+                AND p.is_active IS TRUE
+                AND p.deleted_at IS NULL
+            )
+          )
+        )
+    );
+$function$;
+
+REVOKE ALL ON FUNCTION public.can_manage_quote_scope(uuid, uuid)
+  FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.can_manage_quote_scope(uuid, uuid)
+  TO authenticated;
+
 CREATE OR REPLACE FUNCTION public.assert_quote_transition(
   p_actor_id uuid,
   p_quote public.quotes,
@@ -621,7 +689,8 @@ SECURITY DEFINER
 SET search_path = pg_catalog, public
 AS $function$
 DECLARE
-  v_is_seller boolean := p_quote.seller_id = p_actor_id;
+  v_actor_is_active boolean := public.sicoob_actor_is_active(p_actor_id);
+  v_is_seller boolean := v_actor_is_active AND p_quote.seller_id = p_actor_id;
   v_is_manager boolean := public.can_manage_quote_scope(p_actor_id, p_quote.id);
   v_is_singular_buyer boolean;
 BEGIN
@@ -630,7 +699,12 @@ BEGIN
     FROM public.profiles AS profile
     WHERE profile.user_id = p_actor_id
       AND profile.cooperativa_id = p_quote.singular_id
-      AND profile.role IN ('comprador_singular', 'gestor_compras')
+      AND profile.is_active IS TRUE
+      AND profile.deleted_at IS NULL
+      AND (
+        public.has_role(p_actor_id, 'comprador_singular'::public.app_role)
+        OR public.has_role(p_actor_id, 'gestor_compras'::public.app_role)
+      )
   ) INTO v_is_singular_buyer;
 
   IF p_quote.deleted_at IS NOT NULL

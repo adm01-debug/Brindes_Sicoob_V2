@@ -539,7 +539,7 @@ export default function AdminVerbasPage() {
   );
 }
 
-function BudgetFormDialog({ open, onOpenChange, budget, onSave, pas }: BudgetFormDialogProps) {
+export function BudgetFormDialog({ open, onOpenChange, budget, onSave, pas }: BudgetFormDialogProps) {
   const [formData, setFormData] = useState<BudgetFormData>(() => createEmptyBudgetForm());
   useEffect(() => {
     if (budget) {
@@ -563,13 +563,14 @@ function BudgetFormDialog({ open, onOpenChange, budget, onSave, pas }: BudgetFor
           <div className="grid grid-cols-4 items-center gap-4">
             <Label className="text-right">PA</Label>
             <div className="col-span-3">
-              <Select value={formData.pa_id || ""} onValueChange={(val) => setFormData({ ...formData, pa_id: val })}>
+              <Select disabled={!!budget} value={formData.pa_id || ""} onValueChange={(val) => setFormData({ ...formData, pa_id: val })}>
                 <SelectTrigger><SelectValue placeholder="Selecione o PA" /></SelectTrigger>
                 <SelectContent>{pas.map((p) => <SelectItem key={p.id} value={p.id}>{p.nome} ({p.codigo})</SelectItem>)}</SelectContent>
               </Select>
             </div>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4"><Label className="text-right">Ano/Mês</Label><div className="col-span-3 flex gap-2"><Input type="number" value={formData.ano} onChange={(e) => setFormData({ ...formData, ano: parseInt(e.target.value) })} /><Input type="number" min="1" max="12" value={formData.mes} onChange={(e) => setFormData({ ...formData, mes: parseInt(e.target.value) })} /></div></div>
+          <div className="grid grid-cols-4 items-center gap-4"><Label className="text-right">Ano/Mês</Label><div className="col-span-3 flex gap-2"><Input disabled={!!budget} type="number" value={formData.ano} onChange={(e) => setFormData({ ...formData, ano: parseInt(e.target.value) })} /><Input disabled={!!budget} type="number" min="1" max="12" value={formData.mes} onChange={(e) => setFormData({ ...formData, mes: parseInt(e.target.value) })} /></div></div>
+          {budget && <p className="col-start-2 col-span-3 text-xs text-muted-foreground">PA e competência são imutáveis após a criação da verba.</p>}
           <div className="grid grid-cols-4 items-center gap-4"><Label className="text-right">Verba Total</Label><Input type="number" className="col-span-3" value={formData.verba_total} onChange={(e) => setFormData({ ...formData, verba_total: parseFloat(e.target.value) })} /></div>
           <div className="grid grid-cols-4 items-center gap-4"><Label className="text-right">Alçada (Aprovação)</Label><Input type="number" className="col-span-3" value={formData.limite_alcada ?? ""} onChange={(e) => setFormData({ ...formData, limite_alcada: parseFloat(e.target.value) })} /></div>
         </div>

@@ -93,7 +93,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
-    sha256: "a2cd986b65410f4cc9713e2b8d823844711a1d3bca7f37e17a0cfdd58152183b",
+    sha256: "105647a990169b080039b6824bcacd0e54c6c3c5508796db5bd8750ab64d0e8a",
   },
   {
     file: "supabase/migrations/20261013123000_preserve_atomic_quote_save_under_governance.sql",
@@ -365,6 +365,10 @@ async function validateContract(client, targets) {
       (SELECT p.prosrc FROM pg_proc p
         WHERE p.oid = to_regprocedure('public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)')) AS status_source,
       (SELECT p.prosrc FROM pg_proc p
+        WHERE p.oid = to_regprocedure('public.assert_quote_transition(uuid,public.quotes,text)')) AS transition_assert_source,
+      (SELECT p.prosrc FROM pg_proc p
+        WHERE p.oid = to_regprocedure('public.can_manage_quote_scope(uuid,uuid)')) AS quote_scope_source,
+      (SELECT p.prosrc FROM pg_proc p
         WHERE p.oid = to_regprocedure('public.notify_singular_quote_submission()')) AS notification_source,
       COALESCE((SELECT p.prosecdef AND p.proconfig @> ARRAY['search_path=pg_catalog, public']::text[]
         FROM pg_proc p
@@ -635,13 +639,18 @@ async function validateContract(client, targets) {
   const statusMigration = latestDefiner(targets, "bulk_update_quote_status_atomic");
   const notificationMigration = latestDefiner(targets, "notify_singular_quote_submission");
   const identityMigration = latestDefiner(targets, "save_quote_atomic");
-  if (!idempotencyMigration || !statusMigration || !notificationMigration || !identityMigration) {
+  const transitionMigration = latestDefiner(targets, "assert_quote_transition");
+  const quoteScopeMigration = latestDefiner(targets, "can_manage_quote_scope");
+  if (!idempotencyMigration || !statusMigration || !notificationMigration || !identityMigration
+      || !transitionMigration || !quoteScopeMigration) {
     throw new Error("Allowlist incompleta para validar os corpos das funções críticas.");
   }
   const sourceHashesValid = typeof result?.idempotency_source === "string"
     && typeof result.status_source === "string"
     && typeof result.notification_source === "string"
     && typeof result.save_atomic_source === "string"
+    && typeof result.transition_assert_source === "string"
+    && typeof result.quote_scope_source === "string"
     && sha256(result.idempotency_source.trim()) === sha256(
       extractFunctionBody(idempotencyMigration.sql, "save_quote_atomic_idempotent"),
     )
@@ -653,6 +662,12 @@ async function validateContract(client, targets) {
     )
     && sha256(result.save_atomic_source.trim()) === sha256(
       extractFunctionBody(identityMigration.sql, "save_quote_atomic"),
+    )
+    && sha256(result.transition_assert_source.trim()) === sha256(
+      extractFunctionBody(transitionMigration.sql, "assert_quote_transition"),
+    )
+    && sha256(result.quote_scope_source.trim()) === sha256(
+      extractFunctionBody(quoteScopeMigration.sql, "can_manage_quote_scope"),
     );
   const normalizeExpression = (value) => typeof value === "string"
     ? value.replace(/\s+/g, " ").trim()
@@ -759,7 +774,10 @@ VALUES (
   const statusMigration = latestDefiner(targets, "bulk_update_quote_status_atomic");
   const notificationMigration = latestDefiner(targets, "notify_singular_quote_submission");
   const identityMigration = latestDefiner(targets, "save_quote_atomic");
-  if (!idempotencyMigration || !statusMigration || !notificationMigration || !identityMigration) {
+  const transitionMigration = latestDefiner(targets, "assert_quote_transition");
+  const quoteScopeMigration = latestDefiner(targets, "can_manage_quote_scope");
+  if (!idempotencyMigration || !statusMigration || !notificationMigration || !identityMigration
+      || !transitionMigration || !quoteScopeMigration) {
     throw new Error("Allowlist incompleta para montar a validação transacional.");
   }
   const idempotencyBody = dollarQuote(
@@ -777,6 +795,14 @@ VALUES (
   const saveAtomicBody = dollarQuote(
     extractFunctionBody(identityMigration.sql, "save_quote_atomic"),
     "save_atomic_body",
+  );
+  const transitionBody = dollarQuote(
+    extractFunctionBody(transitionMigration.sql, "assert_quote_transition"),
+    "transition_body",
+  );
+  const quoteScopeBody = dollarQuote(
+    extractFunctionBody(quoteScopeMigration.sql, "can_manage_quote_scope"),
+    "quote_scope_body",
   );
 
   return `BEGIN;
@@ -813,6 +839,10 @@ BEGIN
         IS DISTINCT FROM ${notificationBody}
      OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)'))
         IS DISTINCT FROM ${saveAtomicBody}
+     OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.assert_quote_transition(uuid,public.quotes,text)'))
+        IS DISTINCT FROM ${transitionBody}
+     OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.can_manage_quote_scope(uuid,uuid)'))
+        IS DISTINCT FROM ${quoteScopeBody}
      OR COALESCE((SELECT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
         FROM pg_proc WHERE oid = to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)')), true)
      OR COALESCE((SELECT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])

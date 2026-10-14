@@ -128,7 +128,7 @@ describe("QuoteBuilderSummaryColumn — reatividade do chip + botão de confirma
     );
 
     expect(container.firstElementChild).toHaveAttribute("aria-disabled", "true");
-    expect(container.firstElementChild).toHaveClass("pointer-events-none");
+    expect(screen.getAllByRole("button").every(button => (button as HTMLButtonElement).disabled)).toBe(true);
   });
 
   it("monta com 2 stale → chip mostra '2' e botão 'Confirmar todos' aparece", () => {

@@ -128,6 +128,9 @@ jobs:
       - name: Simular retry idempotente e notificação atômica de status
         run: bash scripts/qa/simular-governanca-orcamento.sh
 
+      - name: Simular escopo ativo de orçamentos
+        run: python3 scripts/qa/simular-escopo-orcamento-ativo.py
+
       - name: Compilar artefato de produção
         env:
           VITE_SUPABASE_URL: http://127.0.0.1:59999
