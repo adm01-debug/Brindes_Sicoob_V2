@@ -17,6 +17,7 @@ interface ReorderCatalogState {
 interface ReorderCatalogValidityBannerProps {
   quoteId?: string;
   hasUnsavedChanges?: boolean;
+  canRevalidate?: boolean;
   onRevalidated?: () => void | Promise<void>;
 }
 
@@ -35,8 +36,8 @@ function ValidityIcon({ expired }: { expired: boolean }) {
     : <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />;
 }
 
-function CatalogValidityContent({ state, expired, unsaved }: {
-  state: ReorderCatalogState; expired: boolean; unsaved: boolean;
+function CatalogValidityContent({ state, expired, unsaved, readOnly }: {
+  state: ReorderCatalogState; expired: boolean; unsaved: boolean; readOnly: boolean;
 }) {
   return <div className="flex items-start gap-3"><ValidityIcon expired={expired} /><div className="space-y-1">
     <p className="text-sm font-semibold">{expired ? 'Revalide preço e disponibilidade' : 'Consulta atual do catálogo registrada'}</p>
@@ -45,6 +46,7 @@ function CatalogValidityContent({ state, expired, unsaved }: {
     {state.reorder_price_changed_items > 0 && <p className="text-xs font-medium">
       {state.reorder_price_changed_items} item(ns) mudaram de preço em relação à origem.</p>}
     {unsaved && <p className="text-xs font-medium">Salve ou descarte as alterações locais antes de reconsultar.</p>}
+    {readOnly && <p className="text-xs font-medium">Reabra a versão vigente antes de reconsultar o catálogo.</p>}
   </div></div>;
 }
 
@@ -98,6 +100,7 @@ function useCatalogRecord(quoteId?: string) {
 export function ReorderCatalogValidityBanner({
   quoteId,
   hasUnsavedChanges = false,
+  canRevalidate = true,
   onRevalidated,
 }: ReorderCatalogValidityBannerProps) {
   const [revalidating, setRevalidating] = useState(false);
@@ -107,7 +110,7 @@ export function ReorderCatalogValidityBanner({
   if (!state.reorder_source_order_id && !state.reorder_source_quote_id) return null;
 
   const handleRevalidate = async () => {
-    if (hasUnsavedChanges) return;
+    if (hasUnsavedChanges || !canRevalidate) return;
     await revalidateCatalog({ quoteId, load, onRevalidated, setRevalidating });
   };
 
@@ -120,8 +123,8 @@ export function ReorderCatalogValidityBanner({
           : 'flex flex-col gap-3 rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-4 text-emerald-900 dark:text-emerald-100 sm:flex-row sm:items-center sm:justify-between'
       }
     >
-      <CatalogValidityContent state={state} expired={expired} unsaved={hasUnsavedChanges} />
-      <RevalidateButton loading={revalidating} disabled={hasUnsavedChanges} onClick={handleRevalidate} />
+      <CatalogValidityContent state={state} expired={expired} unsaved={hasUnsavedChanges} readOnly={!canRevalidate} />
+      <RevalidateButton loading={revalidating} disabled={hasUnsavedChanges || !canRevalidate} onClick={handleRevalidate} />
     </div>
   );
 }

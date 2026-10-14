@@ -78,13 +78,13 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
   }, 45_000);
 
   it('SELECT como anon retorna zero linhas (policy deny_all)', async () => {
-    const { data, error } = await anon
+    const { data, error } = await retryTransientPostgrest(async () => await anon
       .from('e2e_cleanup_rate_limit')
       .select('key')
-      .limit(1);
+      .limit(1));
     // Ou erro de RLS, ou data vazio — nunca leak de linhas.
     expect(error !== null || (Array.isArray(data) && data.length === 0)).toBe(true);
-  }, 15_000);
+  }, 45_000);
 
   it('INSERT como anon falha (policy deny_all WITH CHECK false)', async () => {
     const { error } = await anon

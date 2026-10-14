@@ -48,7 +48,7 @@ import { useQuoteViewedMap } from "@/hooks/useQuoteViewedMap";
 import { QuoteViewedBadge } from "./QuoteViewedBadge";
 import { QuoteRowQuickActions } from "./QuoteRowQuickActions";
 import { QuoteOrderBadge } from "./QuoteOrderBadge";
-import { isQuoteCommerciallyEditable } from "@/lib/quote-status-config";
+import { canBulkMarkQuotesPending, isQuoteCommerciallyEditable } from "@/lib/quote-status-config";
 import {
   DndContext,
   closestCenter,
@@ -183,9 +183,11 @@ type Selection = ReturnType<typeof useListSelection>;
 function QuoteBulkBar({ props, selection }: { props: QuotesConfigurableListProps; selection: Selection }) {
   const selectedQuotes = props.quotes.filter(hasQuoteId).filter((quote) => selection.selectedIds.includes(quote.id));
   const hasProtectedQuote = selectedQuotes.some((quote) => !isQuoteCommerciallyEditable(quote.status, quote.is_latest_version));
+  const canMarkPending = canBulkMarkQuotesPending(selectedQuotes);
   const actions = [
     ...(props.onBulkStatusChange ? [{ id: "mark-pending", label: "Marcar Pendente", icon: <RefreshCw className="h-3.5 w-3.5" />,
-      variant: "outline" as const, onClick: (ids: string[]) => { props.onBulkStatusChange?.(ids, "pending"); selection.clear(); } }] : []),
+      variant: "outline" as const, onClick: (ids: string[]) => { if (canMarkPending) { props.onBulkStatusChange?.(ids, "pending"); selection.clear(); } },
+      disabled: !canMarkPending }] : []),
     ...(props.onBulkExport ? [{ id: "export", label: "Exportar", icon: <Download className="h-3.5 w-3.5" />,
       variant: "outline" as const, onClick: (ids: string[]) => props.onBulkExport?.(ids) }] : []),
     { id: "delete", label: "Excluir editáveis", icon: <Trash2 className="h-3.5 w-3.5" />, variant: "destructive" as const,

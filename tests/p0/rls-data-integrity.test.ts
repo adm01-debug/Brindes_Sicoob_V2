@@ -12,6 +12,18 @@ import { readFileSync } from "node:fs";
 const source = (path: string) => readFileSync(path, "utf8");
 
 describe("P0 — RLS e integridade", () => {
+  it("quotes: timestamps de criação externos são definidos pelo servidor", () => {
+    const migration = source(
+      "supabase/migrations/20261014124500_canonicalize_quote_insert_timestamps.sql",
+    );
+    expect(migration).toContain("SECURITY INVOKER");
+    expect(migration).toContain("NEW.created_at := statement_timestamp()");
+    expect(migration).toContain("NEW.updated_at := NEW.created_at");
+    expect(migration.indexOf("NEW.created_at := statement_timestamp()")).toBeLessThan(
+      migration.indexOf("RETURN NEW"),
+    );
+  });
+
   it("PostgREST: separa o timeout do cache do limite por requisição", () => {
     const initialMigration = source(
       "supabase/migrations/20261014113000_raise_postgrest_schema_cache_timeout.sql",

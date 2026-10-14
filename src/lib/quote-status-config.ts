@@ -116,6 +116,15 @@ export function quoteStatusRequiresDraftReset(status: string | null | undefined)
   return typeof status === "string" && QUOTE_STATUSES_REQUIRING_DRAFT_RESET.has(status);
 }
 
+/** A ação em lote só é válida para versões vigentes que ainda estão em rascunho. */
+export function canBulkMarkQuotesPending(
+  quotes: Array<{ status: string | null | undefined; is_latest_version?: boolean }>,
+): boolean {
+  return quotes.length > 0 && quotes.every(
+    (quote) => quote.status === "draft" && quote.is_latest_version !== false,
+  );
+}
+
 /** Helper: get status label with fallback */
 export function getQuoteStatusLabel(status: string): string {
   return QUOTE_STATUS_CONFIG[status]?.label || status;

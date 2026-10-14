@@ -70,4 +70,14 @@ describe('ReorderCatalogValidityBanner', () => {
     expect(await screen.findByText(/salve ou descarte as alterações locais/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /reconsultar agora/i })).toBeDisabled();
   });
+
+  it('não revalida uma versão histórica ou somente leitura', async () => {
+    render(<ReorderCatalogValidityBanner quoteId="quote-1" canRevalidate={false} />);
+
+    expect(await screen.findByText(/reabra a versão vigente/i)).toBeInTheDocument();
+    const button = screen.getByRole('button', { name: /reconsultar agora/i });
+    expect(button).toBeDisabled();
+    fireEvent.click(button);
+    expect(mocks.revalidate).not.toHaveBeenCalled();
+  });
 });

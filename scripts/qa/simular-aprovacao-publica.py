@@ -7,6 +7,7 @@ from postgres_ready import wait_for_postgres
 
 ROOT = Path(__file__).resolve().parents[2]
 GOVERNANCE_FIX = ROOT / 'supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql'
+TIMESTAMP_FIX = ROOT / 'supabase/migrations/20261014124500_canonicalize_quote_insert_timestamps.sql'
 CONTAINER = 'sicoob-aprovacao-publica-' + uuid.uuid4().hex[:10]
 SELLER = '11111111-1111-4111-8111-111111111111'
 OTHER = '22222222-2222-4222-8222-222222222222'
@@ -308,6 +309,7 @@ try:
       "SELECT to_regprocedure('public.convert_quote_to_sicoob_order_core_20261013(uuid)') IS NULL;"
     ).stdout.strip() == 't'
     sql(governance_fix)
+    sql(TIMESTAMP_FIX.read_text())
 
     forged_insert_quote = str(uuid.uuid4())
     forged_insert = actor(
@@ -322,8 +324,9 @@ try:
     canonical_insert_quote = str(uuid.uuid4())
     canonical_insert = actor(
       "INSERT INTO public.quotes "
-      "(id,seller_id,quote_number,client_name,total,status) VALUES "
-      f"('{canonical_insert_quote}','{SELLER}','','Cliente sintético',100,'draft') "
+      "(id,seller_id,quote_number,client_name,total,status,created_at,updated_at) VALUES "
+      f"('{canonical_insert_quote}','{SELLER}','','Cliente sintético',100,'draft',"
+      "'2000-01-01T00:00:00Z','2099-01-01T00:00:00Z') "
       "RETURNING id;",
     )
     forged_organization_insert = actor(
@@ -374,6 +377,10 @@ try:
         f"FROM public.quotes WHERE id='{canonical_insert_quote}';"
       ).stdout.strip() == 't'
     )
+    checks['insercao_direta_usa_relogio_canonico_do_servidor'] = sql(
+      f"SELECT created_at = updated_at AND created_at > now() - interval '1 minute' "
+      f"AND created_at <= now() FROM public.quotes WHERE id='{canonical_insert_quote}';"
+    ).stdout.strip() == 't'
 
     consolidated_quote = str(uuid.uuid4())
     consolidation_id = str(uuid.uuid4())

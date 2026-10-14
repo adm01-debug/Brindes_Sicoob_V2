@@ -107,6 +107,10 @@ const TARGETS = [
     file: "supabase/migrations/20261014121500_separate_postgrest_cache_and_request_timeouts.sql",
     sha256: "5f12ed1add8ca141b9a6568951571439c13c765817d85910dba21d2524d1a289",
   },
+  {
+    file: "supabase/migrations/20261014124500_canonicalize_quote_insert_timestamps.sql",
+    sha256: "5a6aa6ee442f351ea470d5eb6d1652077764f5716848e75bd33820f0e57c06e4",
+  },
 ];
 
 function sha256(value) {
