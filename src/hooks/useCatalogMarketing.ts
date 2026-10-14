@@ -39,8 +39,10 @@ async function fetchProductIdsForTerms(termIds: string[]): Promise<string[]> {
     const start = page * PAGE_SIZE;
     const { data, error } = await supabase
       .from('catalog_product_marketing')
-      .select('product_id')
+      .select('product_id,term_id')
       .in('term_id', termIds)
+      .order('product_id', { ascending: true })
+      .order('term_id', { ascending: true })
       .range(start, start + PAGE_SIZE - 1);
     if (error) throw error;
     for (const row of data ?? []) productIds.add(row.product_id);
@@ -137,7 +139,7 @@ export function useCatalogMarketingProductFilter({
     selectedEndomarketing.length ? endo : null,
     selectedTemas.length ? tema : null,
   ].filter((query): query is typeof publico => query !== null);
-  const isLoading = activeQueries.some((query) => query.isPending || query.isFetching);
+  const isLoading = activeQueries.some((query) => query.isPending);
   const error = activeQueries.find((query) => query.error)?.error ?? null;
   const productIds = useMemo(
     () => intersectProductIds(activeQueries.map((query) => new Set(query.data ?? []))),

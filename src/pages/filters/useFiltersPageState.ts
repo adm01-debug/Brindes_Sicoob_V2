@@ -148,8 +148,8 @@ export function useFiltersPageState() {
       loadingActivity: isLoadingActivityFilter,
       marketingIds: marketingFilteredProductIds,
       commemorativeDateIds: commemorativeDateProductIds,
-      hasMarketingFilter,
-      hasCommemorativeDateFilter,
+      hasMarketingFilter: hasMarketingFilter && !marketingFilterError,
+      hasCommemorativeDateFilter: hasCommemorativeDateFilter && !commemorativeDateFilterError,
       loadingMarketing: isLoadingMarketingFilter,
       loadingCommemorativeDate: isLoadingCommemorativeDateFilter,
       sortBy,
@@ -157,7 +157,7 @@ export function useFiltersPageState() {
       supplierSalesMap,
       skipSort: hasFuzzySearch && sortBy === 'name',
     });
-  }, [filters, sortBy, hasFuzzySearch, fuzzySearchResults, realProducts, hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter, hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter, hasColorFilter, colorFilteredProductIds, isLoadingColorFilter, colorFilterError, tagFilteredProductIds, hasTagFilter, isLoadingTagFilter, tagFilterError, techniqueFilteredProductIds, hasTechniqueFilter, isLoadingTechniqueFilter, techniqueFilterError, sizeFilteredProductIds, hasSizeFilter, isLoadingSizeFilter, sizeFilterError, activityFilteredProductIds, hasActivityFilter, isLoadingActivityFilter, activityFilterError, marketingFilteredProductIds, hasMarketingFilter, isLoadingMarketingFilter, commemorativeDateProductIds, hasCommemorativeDateFilter, isLoadingCommemorativeDateFilter, promoSalesMap, supplierSalesMap]);
+  }, [filters, sortBy, hasFuzzySearch, fuzzySearchResults, realProducts, hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter, hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter, hasColorFilter, colorFilteredProductIds, isLoadingColorFilter, colorFilterError, tagFilteredProductIds, hasTagFilter, isLoadingTagFilter, tagFilterError, techniqueFilteredProductIds, hasTechniqueFilter, isLoadingTechniqueFilter, techniqueFilterError, sizeFilteredProductIds, hasSizeFilter, isLoadingSizeFilter, sizeFilterError, activityFilteredProductIds, hasActivityFilter, isLoadingActivityFilter, activityFilterError, marketingFilteredProductIds, hasMarketingFilter, isLoadingMarketingFilter, marketingFilterError, commemorativeDateProductIds, hasCommemorativeDateFilter, isLoadingCommemorativeDateFilter, commemorativeDateFilterError, promoSalesMap, supplierSalesMap]);
 
   // Color enrichment: fetch variant images/stock for filtered products when color filter is active
   const filteredProductIds = useMemo(() => filteredProducts.map(p => p.id), [filteredProducts]);

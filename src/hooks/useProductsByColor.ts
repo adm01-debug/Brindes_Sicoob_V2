@@ -25,7 +25,10 @@ interface UseProductsByColorResult {
 
 interface BatchResultShape {
   success?: boolean;
-  data?: { records?: unknown[] };
+  data?: {
+    records?: unknown[];
+    meta?: { effective_limit?: number };
+  };
   error?: string;
 }
 
@@ -129,23 +132,35 @@ function resolveTargetColorIds(
 const COLOR_RELATION_PAGE_SIZE = 500;
 const MAX_COLOR_RELATION_PAGES = 100;
 
+function addProductIds(target: Set<string>, records: Record<string, unknown>[]): void {
+  for (const record of records) {
+    if (typeof record.product_id === 'string') target.add(record.product_id);
+  }
+}
+
+function effectivePageLimit(result: BatchResultShape | undefined): number {
+  return Number(result?.data?.meta?.effective_limit) || COLOR_RELATION_PAGE_SIZE;
+}
+
 async function fetchColorChunk(colorIds: string[]): Promise<Set<string>> {
   const matching = new Set<string>();
+  let offset = 0;
   for (let page = 0; page < MAX_COLOR_RELATION_PAGES; page += 1) {
     const results = await invokeBatchBridge([{
       table: 'product_variants',
       operation: 'select',
-      select: 'product_id',
+      select: 'id,product_id',
       filters: { is_active: true, color_id: colorIds },
-      orderBy: { column: 'product_id', ascending: true },
+      orderBy: { column: 'id', ascending: true },
       limit: COLOR_RELATION_PAGE_SIZE,
-      offset: page * COLOR_RELATION_PAGE_SIZE,
+      offset,
     }]);
-    const records = recordsFromResult(results[0], 'produtos por cor');
-    for (const record of records) {
-      if (typeof record.product_id === 'string') matching.add(record.product_id);
-    }
-    if (records.length < COLOR_RELATION_PAGE_SIZE) break;
+    const result = results[0] as BatchResultShape | undefined;
+    const records = recordsFromResult(result, 'produtos por cor');
+    addProductIds(matching, records);
+    const effectiveLimit = effectivePageLimit(result);
+    if (records.length === 0 || records.length < effectiveLimit) break;
+    offset += records.length;
     if (page === MAX_COLOR_RELATION_PAGES - 1) {
       throw new Error('Consulta de cores excedeu o limite seguro de vínculos');
     }

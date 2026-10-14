@@ -119,12 +119,12 @@ function ReducedApp({
             <Route path="/dashboard" element={<DashboardStub />} />
             <Route path="/produtos" element={<ProductsStub />} />
             <Route path="/orcamentos" element={<QuotesStub />} />
+            <Route path="/admin/temas" element={<AdminThemesStub />} />
 
             {/* Admin layer */}
             <Route element={<AdminRoute />}>
               <Route path="/admin" element={<Navigate to="/admin/usuarios" replace />} />
               <Route path="/admin/usuarios" element={<AdminUsersStub />} />
-              <Route path="/admin/temas" element={<AdminThemesStub />} />
 
               {/* Dev layer */}
               <Route element={<DevRoute />}>
@@ -228,6 +228,17 @@ describe("Reduced App integration — navegação não emite ref warning", () =>
     // Sob não-dev a rota Dev cai no DevAccessDeniedPage (mockado).
     screen.getByText("access-denied");
     guard.expectNoRefWarning("não-dev em rota dev");
+  });
+
+  it("usuário autenticado básico acessa a preferência de temas", () => {
+    Object.assign(authState, {
+      canManage: false, isDev: false, isSupervisorOrAbove: false,
+      role: "agente", roles: ["agente"], hasMFA: false, mfaRequired: false,
+      currentAAL: "aal1",
+    });
+    render(<ReducedApp initial="/admin/temas" />);
+    screen.getByTestId("page-admin-themes");
+    guard.expectNoRefWarning("temas para usuário autenticado básico");
   });
 
   it("usuário sem sessão em rota protegida → redirect /login sem warning", () => {

@@ -273,8 +273,8 @@ export function useCatalogState() {
     hasTechniqueFilter: enabledFilter(hasTechniqueFilter, techniqueFilterError), techniqueFilteredProductIds, isLoadingTechniqueFilter,
     hasSizeFilter: enabledFilter(hasSizeFilter, sizeFilterError), sizeFilteredProductIds, isLoadingSizeFilter,
     hasActivityFilter: enabledFilter(hasActivityFilter, activityFilterError), activityFilteredProductIds, isLoadingActivityFilter,
-    hasMarketingFilter, marketingFilteredProductIds, isLoadingMarketingFilter,
-    hasCommemorativeDateFilter, commemorativeDateProductIds, isLoadingCommemorativeDateFilter,
+    hasMarketingFilter: enabledFilter(hasMarketingFilter, marketingFilterError), marketingFilteredProductIds, isLoadingMarketingFilter,
+    hasCommemorativeDateFilter: enabledFilter(hasCommemorativeDateFilter, commemorativeDateFilterError), commemorativeDateProductIds, isLoadingCommemorativeDateFilter,
     promoSalesMap, supplierSalesMap,
   });
 

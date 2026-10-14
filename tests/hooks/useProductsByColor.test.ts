@@ -42,6 +42,26 @@ describe('consulta relacional de cores', () => {
     expect(invokeBatchBridge).toHaveBeenNthCalledWith(2, [expect.objectContaining({ offset: 500, limit: 500 })]);
   });
 
+  it('continua a paginação pelo limite efetivo quando o bridge degrada o lote', async () => {
+    invokeBatchBridge
+      .mockResolvedValueOnce([{
+        success: true,
+        data: {
+          records: Array.from({ length: 50 }, (_, index) => ({ product_id: `produto-${index}` })),
+          meta: { effective_limit: 50 },
+        },
+      }])
+      .mockResolvedValueOnce([{
+        success: true,
+        data: { records: [{ product_id: 'produto-50' }], meta: { effective_limit: 50 } },
+      }]);
+
+    const result = await fetchMatchingProductIds(['cor-1']);
+
+    expect(result.size).toBe(51);
+    expect(invokeBatchBridge).toHaveBeenNthCalledWith(2, [expect.objectContaining({ offset: 50, limit: 500 })]);
+  });
+
   it('descarta a resposta antiga quando o usuário troca a cor durante a consulta', async () => {
     const first = deferred<ReturnType<typeof referenceResult>>();
     const second = deferred<ReturnType<typeof referenceResult>>();

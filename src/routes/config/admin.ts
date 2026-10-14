@@ -23,10 +23,6 @@ export const adminRoutes = [
     component: lazyWithRetry(() => import('@/pages/admin/AdminCadastrosPage')),
   }),
   defineRoute({
-    path: '/admin/cadastros/produto/:id',
-    component: lazyWithRetry(() => import('@/pages/admin/AdminProductFormPage')),
-  }),
-  defineRoute({
     path: '/admin/categories',
     component: lazyWithRetry(() => import('@/pages/admin/AdminCategoriesPage')),
   }),

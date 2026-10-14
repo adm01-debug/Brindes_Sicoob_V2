@@ -113,10 +113,10 @@ function ReducedApp({
             <Route path="/dashboard" element={<DashboardStub />} />
             <Route path="/produtos" element={<ProductsStub />} />
             <Route path="/orcamentos" element={<QuotesStub />} />
+            <Route path="/admin/temas" element={<AdminThemesStub />} />
             <Route element={<AdminRoute />}>
               <Route path="/admin" element={<Navigate to="/admin/usuarios" replace />} />
               <Route path="/admin/usuarios" element={<AdminUsersStub />} />
-              <Route path="/admin/temas" element={<AdminThemesStub />} />
               <Route element={<DevRoute />}>
                 <Route path="/admin/telemetria" element={<AdminTelemetryStub />} />
                 <Route path="/admin/conexoes" element={<AdminConnectionsStub />} />
