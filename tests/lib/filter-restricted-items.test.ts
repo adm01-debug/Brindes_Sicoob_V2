@@ -14,6 +14,7 @@ const items: Item[] = [
   { id: "connections", path: "/admin/conexoes/status" },
   { id: "rbac", path: "/admin/rbac-rotas" },
   { id: "manager-quotes", path: "/gestor/orcamentos" },
+  { id: "themes", path: "/admin/temas" },
   { id: "theme-toggle" }, // sem path → sempre visível
 ];
 
@@ -24,7 +25,7 @@ describe("filterByRoutePermission", () => {
       isAdmin: false,
       assignedRoles: ['agente'],
     });
-    expect(out.map((i) => i.id)).toEqual(["home", "quotes", "theme-toggle"]);
+    expect(out.map((i) => i.id)).toEqual(["home", "quotes", "themes", "theme-toggle"]);
   });
 
   it("admin vê admin + autenticadas, mas NÃO vê dev-only", () => {

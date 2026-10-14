@@ -18,6 +18,8 @@ import {
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
+import { filterByRoutePermission } from '@/lib/navigation/filter-restricted-items';
 
 const QUICK_PATHS = [
   {
@@ -70,9 +72,15 @@ const FAQ = [
 ] as const;
 
 function QuickPathCards() {
+  const { isDev, isAdmin, roles } = useAuth();
+  const visiblePaths = filterByRoutePermission(
+    QUICK_PATHS,
+    (item) => item.path,
+    { isDev, isAdmin, assignedRoles: roles },
+  );
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      {QUICK_PATHS.map((item) => {
+      {visiblePaths.map((item) => {
         const Icon = item.icon;
         return (
           <Card key={item.path} className="transition-colors hover:border-primary/40">
