@@ -34,6 +34,35 @@ def issue(quote, token):
     return actor(f"INSERT INTO public.quote_approval_tokens(quote_id,token,seller_id) VALUES ('{quote}','{token}','{SELLER}');")
 def signed(token, response='approved'):
     return f"SELECT public.submit_signed_quote_response('{token}','{response}','Pessoa Teste','12345678901','{SIGNATURE}');"
+def prepare_governance_prerequisites():
+    # A migration de governança parte do schema canônico já migrado. A fixture
+    # histórica deste cenário é propositalmente mínima; reproduzimos somente os
+    # contratos institucionais dos quais a migration depende para manter o teste
+    # isolado sem aplicar todo o backlog do banco.
+    for role_name in ('admin', 'manager', 'supervisor', 'gestor_compras', 'comprador_singular'):
+        sql(f"ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS '{role_name}';")
+    sql("""
+      CREATE TABLE IF NOT EXISTS public.profiles (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid,
+        cooperativa_id uuid, pa_id uuid, is_active boolean NOT NULL DEFAULT true,
+        deleted_at timestamptz
+      );
+      CREATE OR REPLACE FUNCTION public.sicoob_actor_is_active(_user_id uuid)
+      RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=''
+      AS $helper$ SELECT _user_id IS NOT NULL $helper$;
+      CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _role public.app_role)
+      RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=''
+      AS $helper$ SELECT false $helper$;
+      CREATE OR REPLACE FUNCTION public.get_user_org_ids(_user_id uuid)
+      RETURNS SETOF uuid LANGUAGE sql STABLE SECURITY DEFINER SET search_path=''
+      AS $helper$ SELECT NULL::uuid WHERE false $helper$;
+      REVOKE ALL ON FUNCTION public.sicoob_actor_is_active(uuid) FROM PUBLIC, anon;
+      REVOKE ALL ON FUNCTION public.has_role(uuid, public.app_role) FROM PUBLIC, anon;
+      REVOKE ALL ON FUNCTION public.get_user_org_ids(uuid) FROM PUBLIC, anon;
+      GRANT EXECUTE ON FUNCTION public.sicoob_actor_is_active(uuid) TO authenticated, service_role;
+      GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticated, service_role;
+      GRANT EXECUTE ON FUNCTION public.get_user_org_ids(uuid) TO authenticated, service_role;
+    """)
 checks = {}
 try:
     command(['docker','run','--rm','-d','--name',CONTAINER,'--network','none','-e','POSTGRES_HOST_AUTH_METHOD=trust','postgres:16-alpine'])
@@ -256,6 +285,7 @@ try:
       "SELECT q.status='sent' AND t.status='active' FROM public.quotes q JOIN public.quote_approval_tokens t ON t.quote_id=q.id::text WHERE t.token='governanca-bloqueada';"
     ).stdout.strip() == 't'
 
+    prepare_governance_prerequisites()
     governance_fix = GOVERNANCE_FIX.read_text()
     sql('BEGIN;'+governance_fix+'ROLLBACK;')
     checks['migration_governanca_dryrun_revertida'] = sql(
