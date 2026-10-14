@@ -14,6 +14,7 @@ interface SupplierTableProps {
   deleting: string | null;
   onEdit: (s: Supplier) => void;
   onDelete: (s: Supplier) => void;
+  readOnly?: boolean;
 }
 
 function SupplierIdentity({ supplier }: { supplier: Supplier }) {
@@ -29,11 +30,11 @@ function SupplierActions({ supplier, deleting, onEdit, onDelete }: { supplier: S
   return <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><Button variant="ghost" size="icon" aria-label="Editar" className="h-7 w-7" onClick={(event) => { event.stopPropagation(); onEdit(supplier); }}><Pencil className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" aria-label="Carregando" className="h-7 w-7 text-destructive hover:text-destructive" onClick={(event) => { event.stopPropagation(); onDelete(supplier); }} disabled={deleting === supplier.id}>{deleting === supplier.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}</Button></div>;
 }
 
-function SupplierRow({ supplier, deleting, onEdit, onDelete }: { supplier: Supplier } & Pick<SupplierTableProps, "deleting" | "onEdit" | "onDelete">) {
-  return <TableRow className="group cursor-pointer hover:bg-accent/50" onClick={() => onEdit(supplier)}><TableCell>{supplier.active ? <CheckCircle2 className="h-4 w-4 text-primary" /> : <XCircle className="h-4 w-4 text-muted-foreground" />}</TableCell><TableCell><SupplierIdentity supplier={supplier} /></TableCell><TableCell><code className="text-xs bg-muted px-1.5 py-0.5 rounded">{supplier.code}</code></TableCell><TableCell><SupplierContact supplier={supplier} /></TableCell><TableCell className="text-right">{!isNullish(supplier.default_markup_percent) ? <span className="text-sm font-mono">{supplier.default_markup_percent}%</span> : '—'}</TableCell><TableCell className="text-center"><div className="flex gap-1 justify-center">{supplier.is_product_supplier && <Badge variant="outline" className="text-[10px] px-1.5">Produtos</Badge>}{supplier.is_engraving_supplier && <Badge variant="outline" className="text-[10px] px-1.5">Gravação</Badge>}</div></TableCell><TableCell className="text-right"><span className="text-sm font-mono">{supplier.priority ?? '—'}</span></TableCell><TableCell><SupplierActions supplier={supplier} deleting={deleting} onEdit={onEdit} onDelete={onDelete} /></TableCell></TableRow>;
+function SupplierRow({ supplier, deleting, onEdit, onDelete, readOnly }: { supplier: Supplier } & Pick<SupplierTableProps, "deleting" | "onEdit" | "onDelete" | "readOnly">) {
+  return <TableRow className="group hover:bg-accent/50" onClick={readOnly ? undefined : () => onEdit(supplier)}><TableCell>{supplier.active ? <CheckCircle2 className="h-4 w-4 text-primary" /> : <XCircle className="h-4 w-4 text-muted-foreground" />}</TableCell><TableCell><SupplierIdentity supplier={supplier} /></TableCell><TableCell><code className="text-xs bg-muted px-1.5 py-0.5 rounded">{supplier.code}</code></TableCell><TableCell><SupplierContact supplier={supplier} /></TableCell><TableCell className="text-right">{!isNullish(supplier.default_markup_percent) ? <span className="text-sm font-mono">{supplier.default_markup_percent}%</span> : '—'}</TableCell><TableCell className="text-center"><div className="flex gap-1 justify-center">{supplier.is_product_supplier && <Badge variant="outline" className="text-[10px] px-1.5">Produtos</Badge>}{supplier.is_engraving_supplier && <Badge variant="outline" className="text-[10px] px-1.5">Gravação</Badge>}</div></TableCell><TableCell className="text-right"><span className="text-sm font-mono">{supplier.priority ?? '—'}</span></TableCell><TableCell>{!readOnly && <SupplierActions supplier={supplier} deleting={deleting} onEdit={onEdit} onDelete={onDelete} />}</TableCell></TableRow>;
 }
 
-export function SupplierTable({ suppliers, loading, search, deleting, onEdit, onDelete }: SupplierTableProps) {
+export function SupplierTable({ suppliers, loading, search, deleting, onEdit, onDelete, readOnly = false }: SupplierTableProps) {
   return (
     <Card className="overflow-hidden">
       <ScrollArea className="max-h-[600px]">
@@ -56,7 +57,7 @@ export function SupplierTable({ suppliers, loading, search, deleting, onEdit, on
             ) : suppliers.length === 0 ? (
               <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">{search ? 'Nenhum fornecedor encontrado' : 'Nenhum fornecedor cadastrado'}</TableCell></TableRow>
             ) : (
-              suppliers.map((supplier) => <SupplierRow key={supplier.id} supplier={supplier} deleting={deleting} onEdit={onEdit} onDelete={onDelete} />)
+              suppliers.map((supplier) => <SupplierRow key={supplier.id} supplier={supplier} deleting={deleting} onEdit={onEdit} onDelete={onDelete} readOnly={readOnly} />)
             )}
           </TableBody>
         </Table>

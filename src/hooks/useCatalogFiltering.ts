@@ -84,14 +84,16 @@ interface CatalogFilterContext {
 
 function relationalIdFilter(products: Product[], active: boolean, ids: Set<string>, loading: boolean): Product[] {
   if (!active) return products;
+  if (loading) return products;
   if (ids.size > 0) return products.filter(product => ids.has(product.id));
-  return loading ? products : [];
+  return [];
 }
 
 function relationalCategoryFilter(products: Product[], context: CatalogFilterContext): Product[] {
   if (!context.hasCategoryFilter) return products;
+  if (context.isLoadingCategoryFilter) return products;
   if (context.categoryFilteredProductIds.size > 0) return products.filter(product => context.categoryFilteredProductIds.has(product.id));
-  return context.isLoadingCategoryFilter ? products : [];
+  return [];
 }
 
 function minimumQuantityFilter(products: Product[], minimum?: number): Product[] {
@@ -133,7 +135,7 @@ function supplierFilter(products: Product[], suppliers: Set<string>): Product[] 
 }
 
 function priceFilter(products: Product[], range: FilterState['priceRange']): Product[] {
-  if (range[0] <= 0 && range[1] >= 500) return products;
+  if (range[0] <= 0 && range[1] >= 9999) return products;
   return products.filter(product => product.price >= range[0] && product.price <= range[1]);
 }
 
@@ -174,7 +176,6 @@ function quickOptionsFilter(products: Product[], filters: FilterState): Product[
   if (filters.featured) result = result.filter(product => product.featured);
   if (filters.isNew) result = result.filter(product => product.newArrival);
   if (filters.hasPersonalization) result = result.filter(product => product.allowsPersonalization === true);
-  if (filters.hasCommercialPackaging) result = result.filter(product => product.hasCommercialPackaging === true);
   return result;
 }
 

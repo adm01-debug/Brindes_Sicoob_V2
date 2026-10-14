@@ -561,6 +561,9 @@ async function handleBatch(body: any, req: Request, corsHeaders: Record<string, 
   // O lote recebe a mesma autorização da consulta individual, antes do cache.
   const actor = requestCtx.getStore()?.actor;
   for (const query of queries) {
+    if (query.operation !== undefined && query.operation !== 'select') {
+      return jsonResponse({ error: 'Lotes aceitam exclusivamente operações de leitura.' }, 403, corsHeaders);
+    }
     const alias = resolveTableAlias(String(query.table), query.filters as Record<string, unknown> | undefined, query.orderBy as { column: string; ascending?: boolean } | undefined, query.select as string | undefined);
     query.table = alias.table;
     query.filters = alias.filters;
@@ -691,8 +694,11 @@ async function handleBatch(body: any, req: Request, corsHeaders: Record<string, 
               return { success: false, error: retryError.message };
             }
 
+            const retryRecords = ((retryData || []) as Record<string, unknown>[]);
             const retryResult = {
-              records: retryData || [],
+              records: q.aliasType === 'techniqueOptions'
+                ? retryRecords.map(mapTechniqueRowToLegacyShape)
+                : retryRecords,
               count: null,
               meta: {
                 pagination_degraded: true,

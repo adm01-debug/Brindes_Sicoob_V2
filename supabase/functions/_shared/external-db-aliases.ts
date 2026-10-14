@@ -128,6 +128,28 @@ export function mapTechniqueOrderByToExternal(orderBy: { column: string; ascendi
   return { ...orderBy, column: columnMap[orderBy.column] ?? orderBy.column };
 }
 
+const TECHNIQUE_OPTIONS_PUBLIC_COLUMNS = new Set([
+  'id', 'nome', 'codigo', 'tempo_producao_dias', 'ativo',
+]);
+
+function filterBaseColumn(key: string): string {
+  return key.replace(/_(?:eq|neq|gt|gte|lt|lte|like|ilike|in|is)$/, '');
+}
+
+function publicTechniqueOptionFilters(filters: Record<string, unknown> | undefined) {
+  if (!filters) return undefined;
+  return Object.fromEntries(
+    Object.entries(filters).filter(([key]) => TECHNIQUE_OPTIONS_PUBLIC_COLUMNS.has(filterBaseColumn(key))),
+  );
+}
+
+function publicTechniqueOptionOrder(orderBy: { column: string; ascending?: boolean } | undefined) {
+  const mapped = mapTechniqueOrderByToExternal(orderBy);
+  return TECHNIQUE_OPTIONS_PUBLIC_COLUMNS.has(mapped.column)
+    ? mapped
+    : { column: 'nome', ascending: true };
+}
+
 export function mapTechniqueRowToLegacyShape(row: Record<string, unknown>) {
   const codigo = (row.codigo as string | undefined) ?? null;
   const nome = (row.nome as string | undefined) ?? '';
@@ -187,10 +209,11 @@ export function resolveTableAlias(
   select?: string,
 ): AliasResolution {
   if (isTechniqueOptionsAlias(table)) {
+    const mappedFilters = mapTechniqueFiltersToExternal(filters);
     return {
       table: 'tabela_preco_gravacao_oficial',
-      filters: mapTechniqueFiltersToExternal(filters),
-      orderBy: mapTechniqueOrderByToExternal(orderBy),
+      filters: publicTechniqueOptionFilters(mappedFilters),
+      orderBy: publicTechniqueOptionOrder(orderBy),
       select: 'id,nome,codigo,tempo_producao_dias,ativo',
       aliasType: 'techniqueOptions',
     };

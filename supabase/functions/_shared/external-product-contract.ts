@@ -52,7 +52,6 @@ export const EXTERNAL_PRODUCT_LIGHTWEIGHT_SELECT = [
   'is_new',
   'is_on_sale',
   'is_kit',
-  'has_commercial_packaging',
   'allows_personalization',
   'gender',
   'price_updated_at',

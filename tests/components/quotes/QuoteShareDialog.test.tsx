@@ -63,6 +63,27 @@ describe("QuoteShareDialog", () => {
     ));
     expect(await screen.findByDisplayValue(generated.link)).toBeTruthy();
   });
+
+  it.each(["expired", "responded"])("oferece novo link quando o token está %s", async (status) => {
+    approval.getApprovalStatus.mockResolvedValue({ token: `token-${status}`, status });
+
+    render(<QuoteShareDialog quoteId={`quote-${status}`} open onOpenChange={vi.fn()} />);
+
+    expect(await screen.findByRole("button", { name: "Gerar link público" })).toBeTruthy();
+    expect(screen.queryByDisplayValue(`${window.location.origin}/proposta/token-${status}`)).toBeNull();
+  });
+
+  it("oferece novo link quando o token ativo expirou pelo relógio", async () => {
+    approval.getApprovalStatus.mockResolvedValue({
+      token: "token-vencido",
+      status: "active",
+      expires_at: "2000-01-01T00:00:00.000Z",
+    });
+
+    render(<QuoteShareDialog quoteId="quote-vencida" open onOpenChange={vi.fn()} />);
+
+    expect(await screen.findByRole("button", { name: "Gerar link público" })).toBeTruthy();
+  });
 });
 
 describe("buildQuoteWhatsappUrl", () => {
@@ -73,5 +94,23 @@ describe("buildQuoteWhatsappUrl", () => {
     expect(result).toContain("https://wa.me/5511988887777");
     expect(decodeURIComponent(result)).toContain(link);
     expect(decodeURIComponent(result)).toContain("ORC-7");
+  });
+
+  it("distingue o DDD 55 do DDI 55", () => {
+    const result = buildQuoteWhatsappUrl({
+      link: "https://portal.test/proposta/abc",
+      clientPhone: "(55) 99999-1234",
+    });
+
+    expect(result).toContain("https://wa.me/5555999991234");
+  });
+
+  it("preserva telefone brasileiro já internacional", () => {
+    const result = buildQuoteWhatsappUrl({
+      link: "https://portal.test/proposta/abc",
+      clientPhone: "+55 11 98888-7777",
+    });
+
+    expect(result).toContain("https://wa.me/5511988887777");
   });
 });

@@ -196,7 +196,7 @@ export function mapPromobrindToProduct(p: PromobrindProduct): Product {
     is_active: p.is_active,
     minQuantity: firstTruthyOr(1, p.min_quantity),
     stockStatus: getStockStatus(stock),
-    featured: Boolean(firstTruthyOr(false, p.is_featured, p.is_bestseller)),
+    featured: Boolean(p.is_featured),
     newArrival: Boolean(p.is_new),
     onSale: Boolean(p.is_on_sale),
     isKit: Boolean(p.is_kit),

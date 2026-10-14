@@ -16,9 +16,10 @@ describe('ações da barra global', () => {
     const navigations = actions.filter((action) => action.category === 'navigation');
 
     expect(navigations.every((action) => Boolean(action.path))).toBe(true);
-    expect(navigations.map((action) => action.path)).not.toEqual(
-      expect.arrayContaining(['/tecnicas', '/datas-comemorativas', '/relatorios']),
-    );
+    const paths = navigations.map((action) => action.path);
+    for (const stalePath of ['/tecnicas', '/datas-comemorativas', '/relatorios']) {
+      expect(paths).not.toContain(stalePath);
+    }
   });
 
   it('direciona ajuda, relatórios e configurações para as rotas canônicas', () => {

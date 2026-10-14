@@ -213,6 +213,12 @@ export const navGroups: NavGroup[] = [
         adminOnly: true,
         children: [
           {
+            icon: Users,
+            label: 'Lista de usuários',
+            href: '/admin/usuarios',
+            adminOnly: true,
+          },
+          {
             icon: ClipboardCheck,
             label: 'Aprovações de desconto',
             href: '/admin/usuarios?tab=discounts',
@@ -587,7 +593,7 @@ function enrichNavigationGroups(
     }
     const canApprovePac = auth.isGestorCompras || auth.isCompradorSingular || auth.isDev;
     if (group.id === 'quotes' && canApprovePac) {
-      return withItemBadge(group, '/gestor/aprovacoes', pacRequests);
+      return withItemBadge(group, '/gestor/orcamentos', pacRequests);
     }
     return group;
   });

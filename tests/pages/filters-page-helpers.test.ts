@@ -77,14 +77,13 @@ describe('desserialização dos filtros do catálogo', () => {
 describe('aplicação dos filtros do catálogo', () => {
   const products = [
     product('a', { featured: true, newArrival: true, allowsPersonalization: true, gender: 'Unissex' }),
-    product('b', { hasCommercialPackaging: true, isKit: true, gender: 'Masculino' }),
+    product('b', { isKit: true, gender: 'Masculino' }),
   ];
 
   it.each([
     ['featured', 'a'],
     ['isNew', 'a'],
     ['hasPersonalization', 'a'],
-    ['hasCommercialPackaging', 'b'],
     ['isKit', 'b'],
   ] as const)('aplica a opção rápida %s', (key, expectedId) => {
     const filters = { ...defaultFilters, [key]: true };

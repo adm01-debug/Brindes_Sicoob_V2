@@ -1,6 +1,6 @@
 const BRAZIL_COUNTRY_CODE = "55";
 
-function normalizePhoneForWhatsApp(phone?: string | null) {
+export function normalizePhoneForWhatsApp(phone?: string | null) {
   if (!phone) return "";
 
   const digits = phone.replace(/\D/g, "");

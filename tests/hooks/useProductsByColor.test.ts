@@ -17,6 +17,7 @@ function referenceResult(slug: string, groupId: string, colorId: string) {
   return [
     { success: true, data: { records: [{ id: groupId, name: slug, slug }] } },
     { success: true, data: { records: [{ id: colorId, name: slug, slug, group_id: groupId }] } },
+    { success: true, data: { records: [] } },
   ];
 }
 
@@ -83,5 +84,22 @@ describe('consulta relacional de cores', () => {
     expect(invokeBatchBridge).toHaveBeenLastCalledWith([
       expect.objectContaining({ filters: { is_active: true, color_id: ['cor-clara'] } }),
     ]);
+  });
+
+  it('expõe falha parcial do lote sem interpretar erro como catálogo vazio', async () => {
+    invokeBatchBridge.mockResolvedValueOnce([
+      { success: true, data: { records: [] } },
+      { success: false, error: 'Falha na consulta de variações' },
+      { success: true, data: { records: [] } },
+    ]);
+
+    const { result } = renderHook(() => useProductsByColor({
+      colorGroups: ['azul'], colorVariations: [], colorNuances: [], colors: [],
+    }));
+
+    await waitFor(() => expect(result.current.error?.message).toBe('Falha na consulta de variações'));
+    expect(result.current.hasFilter).toBe(true);
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.productIds.size).toBe(0);
   });
 });

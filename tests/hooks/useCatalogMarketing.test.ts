@@ -36,7 +36,8 @@ describe('curadoria editorial do catálogo', () => {
         data: [{ product_id: 'produto-999' }, { product_id: 'produto-1000' }],
         error: null,
       });
-    const mappingSelect = vi.fn(() => ({ in: vi.fn(() => ({ range })) }));
+    const mappingIn = vi.fn(() => ({ range }));
+    const mappingSelect = vi.fn(() => ({ in: mappingIn }));
 
     from.mockImplementation((table: string) => (
       table === 'catalog_marketing_terms'
@@ -47,6 +48,7 @@ describe('curadoria editorial do catálogo', () => {
     const result = await fetchCatalogMarketingProductIds('publico_alvo', ['PRODUTOR RURAL', 'médico']);
 
     expect(result).toHaveLength(1001);
+    expect(mappingIn).toHaveBeenCalledWith('term_id', ['termo-1', 'termo-2']);
     expect(range).toHaveBeenNthCalledWith(1, 0, 999);
     expect(range).toHaveBeenNthCalledWith(2, 1000, 1999);
   });

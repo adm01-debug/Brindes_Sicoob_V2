@@ -20,16 +20,20 @@ interface UseProductsByColorResult {
   productIds: Set<string>;
   hasFilter: boolean;
   isLoading: boolean;
+  error: Error | null;
 }
 
 interface BatchResultShape {
   success?: boolean;
   data?: { records?: unknown[] };
+  error?: string;
 }
 
-function recordsFromResult(result: unknown): Record<string, unknown>[] {
+function recordsFromResult(result: unknown, source: string): Record<string, unknown>[] {
   const batchResult = result as BatchResultShape | undefined;
-  if (!batchResult?.success || !Array.isArray(batchResult.data?.records)) return [];
+  if (!batchResult?.success || !Array.isArray(batchResult.data?.records)) {
+    throw new Error(batchResult?.error || `Consulta de ${source} não retornou dados válidos`);
+  }
   return batchResult.data.records as Record<string, unknown>[];
 }
 
@@ -133,10 +137,11 @@ async function fetchColorChunk(colorIds: string[]): Promise<Set<string>> {
       operation: 'select',
       select: 'product_id',
       filters: { is_active: true, color_id: colorIds },
+      orderBy: { column: 'product_id', ascending: true },
       limit: COLOR_RELATION_PAGE_SIZE,
       offset: page * COLOR_RELATION_PAGE_SIZE,
     }]);
-    const records = recordsFromResult(results[0]);
+    const records = recordsFromResult(results[0], 'produtos por cor');
     for (const record of records) {
       if (typeof record.product_id === 'string') matching.add(record.product_id);
     }
@@ -158,6 +163,52 @@ export async function fetchMatchingProductIds(colorIds: string[]): Promise<Set<s
   return matching;
 }
 
+async function loadMatchingProductIds(options: UseProductsByColorOptions): Promise<{
+  productIds: Set<string>;
+  colorCount: number;
+}> {
+  const refResults = await invokeBatchBridge([
+    {
+      table: 'color_groups',
+      operation: 'select',
+      select: 'id, name, slug',
+      filters: { is_active: true },
+      limit: 200,
+      offset: 0,
+      cacheKey: 'ref:color_groups',
+    },
+    {
+      table: 'color_variations',
+      operation: 'select',
+      select: 'id, name, slug, group_id, color_group_id, nuance_id',
+      filters: { is_active: true },
+      limit: 500,
+      offset: 0,
+      cacheKey: 'ref:color_variations',
+    },
+    {
+      table: 'color_nuances',
+      operation: 'select',
+      select: 'id, name, slug',
+      filters: { is_active: true },
+      limit: 100,
+      offset: 0,
+      cacheKey: 'ref:color_nuances',
+    },
+  ]);
+  const targetColorIds = resolveTargetColorIds(
+    options,
+    recordsFromResult(refResults[0], 'grupos de cores'),
+    recordsFromResult(refResults[1], 'variações de cores'),
+    recordsFromResult(refResults[2], 'nuances de cores'),
+  );
+  const colorIds = [...targetColorIds];
+  return {
+    productIds: colorIds.length ? await fetchMatchingProductIds(colorIds) : new Set<string>(),
+    colorCount: colorIds.length,
+  };
+}
+
 export function useProductsByColor({
   colorGroups,
   colorVariations,
@@ -166,6 +217,7 @@ export function useProductsByColor({
 }: UseProductsByColorOptions): UseProductsByColorResult {
   const [productIds, setProductIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   const hasFilter = useMemo(() =>
     colorGroups.length > 0 || colorVariations.length > 0 || colorNuances.length > 0 || colors.length > 0,
@@ -191,6 +243,8 @@ export function useProductsByColor({
     if (!hasFilter) {
       requestSequenceRef.current += 1;
       inFlightKeyRef.current = '';
+      setIsLoading(false);
+      setError(null);
       setProductIds(new Set());
       lastFetchedKey.current = '';
       return;
@@ -200,71 +254,22 @@ export function useProductsByColor({
     requestSequenceRef.current = requestId;
     inFlightKeyRef.current = filterKey;
     setIsLoading(true);
+    setError(null);
 
     try {
-      // Step 1: Load color_groups and color_variations reference tables
-      const refQueries = [
-        {
-          table: 'color_groups',
-          operation: 'select' as const,
-          select: 'id, name, slug',
-          filters: { is_active: true },
-          limit: 200,
-          offset: 0,
-          cacheKey: 'ref:color_groups',
-        },
-        {
-          table: 'color_variations',
-          operation: 'select' as const,
-          select: 'id, name, slug, group_id, color_group_id, nuance_id',
-          filters: { is_active: true },
-          limit: 500,
-          offset: 0,
-          cacheKey: 'ref:color_variations',
-        },
-        {
-          table: 'color_nuances',
-          operation: 'select' as const,
-          select: 'id, name, slug',
-          filters: { is_active: true },
-          limit: 100,
-          offset: 0,
-          cacheKey: 'ref:color_nuances',
-        },
-      ];
-
-      const refResults = await invokeBatchBridge(refQueries);
-
-      const groupsData = recordsFromResult(refResults[0]);
-      const variationsData = recordsFromResult(refResults[1]);
-      const nuancesData = recordsFromResult(refResults[2]);
-      const targetColorIds = resolveTargetColorIds(
-        { colorGroups, colorVariations, colorNuances, colors },
-        groupsData,
-        variationsData,
-        nuancesData,
-      );
-
-      if (targetColorIds.size === 0) {
-        // No matching color_ids found — no products match
-        if (requestSequenceRef.current === requestId) {
-          setProductIds(new Set());
-          lastFetchedKey.current = filterKey;
-        }
-        return;
-      }
-
-      // Step 2: Query product_variants to get product_ids matching those color_ids
-      const colorIdArray = [...targetColorIds];
-      const matchingProductIds = await fetchMatchingProductIds(colorIdArray);
+      const result = await loadMatchingProductIds({ colorGroups, colorVariations, colorNuances, colors });
 
       if (requestSequenceRef.current !== requestId) return;
-      setProductIds(matchingProductIds);
+      setProductIds(result.productIds);
       lastFetchedKey.current = filterKey;
-      logger.log(`[useProductsByColor] Found ${matchingProductIds.size} products for ${colorIdArray.length} color IDs`);
+      logger.log(`[useProductsByColor] Found ${result.productIds.size} products for ${result.colorCount} color IDs`);
     } catch (err) {
       logger.warn('[useProductsByColor] Error:', err);
-      if (requestSequenceRef.current === requestId) setProductIds(new Set());
+      if (requestSequenceRef.current === requestId) {
+        setProductIds(new Set());
+        setError(err instanceof Error ? err : new Error('Falha ao consultar produtos por cor'));
+        lastFetchedKey.current = filterKey;
+      }
     } finally {
       if (requestSequenceRef.current === requestId) {
         setIsLoading(false);
@@ -279,5 +284,5 @@ export function useProductsByColor({
     }
   }, [filterKey, hasFilter, fetchProductIds]);
 
-  return { productIds, hasFilter, isLoading };
+  return { productIds, hasFilter, isLoading, error };
 }

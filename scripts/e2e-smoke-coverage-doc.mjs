@@ -30,12 +30,15 @@ const OUT = resolve(ROOT, "docs/E2E_SMOKE_COVERAGE.md");
 function parseCatalog(src) {
   const SAMPLE_ID = (src.match(/SAMPLE_ID\s*=\s*"([^"]+)"/) ?? [])[1] ?? "";
   const SAMPLE_TOKEN = (src.match(/SAMPLE_TOKEN\s*=\s*"([^"]+)"/) ?? [])[1] ?? "";
+  const expandedSrc = src
+    .replace(/\$\{SAMPLE_ID\}/g, SAMPLE_ID)
+    .replace(/\$\{SAMPLE_TOKEN\}/g, SAMPLE_TOKEN);
 
   const entries = [];
   // Captura blocos `{ ... }` dentro de arrays *_ROUTES
   const arrRe = /export const (\w+_ROUTES)[^=]*=\s*\[([\s\S]*?)\n\];/g;
   let m;
-  while ((m = arrRe.exec(src)) !== null) {
+  while ((m = arrRe.exec(expandedSrc)) !== null) {
     const [, arrName, body] = m;
     const objRe = /\{\s*([^{}]+?)\s*\}/g;
     let o;

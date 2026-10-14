@@ -116,6 +116,10 @@ const TARGETS = [
     file: "supabase/migrations/20261014124500_canonicalize_quote_insert_timestamps.sql",
     sha256: "5a6aa6ee442f351ea470d5eb6d1652077764f5716848e75bd33820f0e57c06e4",
   },
+  {
+    file: "supabase/migrations/20261014151000_harden_catalog_marketing_authorship.sql",
+    sha256: "f34673b492a9d222c955bed53d396121473fdbd1a32dba2e3fde3f3041f96803",
+  },
 ];
 
 function sha256(value) {
@@ -625,6 +629,49 @@ async function validateContract(client, targets) {
           AND roles = ARRAY['anon']::name[]
           AND permissive = 'PERMISSIVE'
       ) AS explicit_anon_policy_count,
+      (SELECT count(*)
+        FROM pg_policies
+        WHERE schemaname = 'public'
+          AND tablename = 'sicoob_rls_audit_logs'
+      ) AS audit_rls_policy_count,
+      EXISTS (
+        SELECT 1
+        FROM pg_policies
+        WHERE schemaname = 'public'
+          AND tablename = 'sicoob_rls_audit_logs'
+          AND policyname = 'Devs consultam auditoria RLS'
+          AND roles = ARRAY['authenticated']::name[]
+          AND cmd = 'SELECT'
+          AND qual LIKE '%can_view_audit_logs%'
+      ) AS audit_rls_policy_safe,
+      NOT has_table_privilege('anon', 'public.sicoob_rls_audit_logs', 'SELECT')
+        AS audit_anon_select_revoked,
+      EXISTS (
+        SELECT 1
+        FROM pg_trigger AS t
+        JOIN pg_proc AS p ON p.oid = t.tgfoid
+        WHERE t.tgrelid = 'public.catalog_marketing_terms'::regclass
+          AND t.tgname = 'preserve_catalog_marketing_term_authorship'
+          AND NOT t.tgisinternal
+          AND t.tgenabled = 'O'
+          AND p.proname = 'preserve_catalog_marketing_term_authorship'
+          AND NOT p.prosecdef
+          AND p.proconfig @> ARRAY['search_path=""']::text[]
+          AND p.prosrc LIKE '%NEW.created_by IS DISTINCT FROM OLD.created_by%'
+          AND p.prosrc LIKE '%NEW.updated_by := (SELECT auth.uid())%'
+          AND NOT has_function_privilege('anon', p.oid, 'EXECUTE')
+          AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE')
+      ) AS marketing_authorship_trigger_safe,
+      EXISTS (
+        SELECT 1
+        FROM pg_policies
+        WHERE schemaname = 'public'
+          AND tablename = 'catalog_marketing_terms'
+          AND policyname = 'Curadores inserem termos de marketing'
+          AND roles = ARRAY['authenticated']::name[]
+          AND cmd = 'INSERT'
+          AND with_check LIKE '%created_by%auth.uid()%'
+      ) AS marketing_insert_authorship_safe,
       COALESCE((SELECT
           p.prosecdef
           AND p.proconfig @> ARRAY['search_path=pg_catalog, public']::text[]
@@ -751,13 +798,16 @@ async function validateContract(client, targets) {
     && Number(result.covered_fk_index_count) === 17
     && Number(result.obsolete_duplicate_index_count) === 0
     && Number(result.rls_auth_initplan_candidate_count) === 0
-    && Number(result.consolidated_rls_policy_count) === 227
-    && Number(result.consolidated_rls_table_count) === 64
+    && Number(result.consolidated_rls_policy_count) === 226
+    && Number(result.consolidated_rls_table_count) === 63
     && Number(result.consolidated_rls_public_policy_count) === 59
-    && Number(result.consolidated_rls_protected_policy_count) === 168
+    && Number(result.consolidated_rls_protected_policy_count) === 167
     && Number(result.invalid_consolidated_rls_policy_count) === 0
     && Number(result.anon_blocked_rls_dependency_count) === 0
     && Number(result.explicit_anon_policy_count) === 4
+    && Number(result.audit_rls_policy_count) === 1
+    && result.audit_rls_policy_safe && result.audit_anon_select_revoked
+    && result.marketing_authorship_trigger_safe && result.marketing_insert_authorship_safe
     && result.semantic_search_contract_safe
     && result.pa_budgets_restrictive_policy_safe
     && result.favorite_items_upsert_constraint_safe
@@ -1041,11 +1091,11 @@ BEGIN
      OR (SELECT count(*)
        FROM pg_policies
        WHERE schemaname = 'public'
-         AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$') <> 227
+         AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$') <> 226
      OR (SELECT count(DISTINCT tablename)
        FROM pg_policies
        WHERE schemaname = 'public'
-         AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$') <> 64
+         AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$') <> 63
      OR (SELECT count(*)
        FROM pg_policies
        WHERE schemaname = 'public'
@@ -1055,7 +1105,7 @@ BEGIN
        FROM pg_policies
        WHERE schemaname = 'public'
          AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$'
-         AND roles = ARRAY['authenticated', 'service_role']::name[]) <> 168
+         AND roles = ARRAY['authenticated', 'service_role']::name[]) <> 167
      OR EXISTS (
        SELECT 1
        FROM pg_policies
@@ -1095,6 +1145,47 @@ BEGIN
          ])
          AND roles = ARRAY['anon']::name[]
          AND permissive = 'PERMISSIVE') <> 4
+     OR (SELECT count(*)
+       FROM pg_policies
+       WHERE schemaname = 'public'
+         AND tablename = 'sicoob_rls_audit_logs') <> 1
+     OR NOT EXISTS (
+       SELECT 1
+       FROM pg_policies
+       WHERE schemaname = 'public'
+         AND tablename = 'sicoob_rls_audit_logs'
+         AND policyname = 'Devs consultam auditoria RLS'
+         AND roles = ARRAY['authenticated']::name[]
+         AND cmd = 'SELECT'
+         AND qual LIKE '%can_view_audit_logs%'
+     )
+     OR has_table_privilege('anon', 'public.sicoob_rls_audit_logs', 'SELECT')
+     OR NOT EXISTS (
+       SELECT 1
+       FROM pg_trigger AS t
+       JOIN pg_proc AS p ON p.oid = t.tgfoid
+       WHERE t.tgrelid = 'public.catalog_marketing_terms'::regclass
+         AND t.tgname = 'preserve_catalog_marketing_term_authorship'
+         AND NOT t.tgisinternal
+         AND t.tgenabled = 'O'
+         AND p.proname = 'preserve_catalog_marketing_term_authorship'
+         AND NOT p.prosecdef
+         AND p.proconfig @> ARRAY['search_path=""']::text[]
+         AND p.prosrc LIKE '%NEW.created_by IS DISTINCT FROM OLD.created_by%'
+         AND p.prosrc LIKE '%NEW.updated_by := (SELECT auth.uid())%'
+         AND NOT has_function_privilege('anon', p.oid, 'EXECUTE')
+         AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE')
+     )
+     OR NOT EXISTS (
+       SELECT 1
+       FROM pg_policies
+       WHERE schemaname = 'public'
+         AND tablename = 'catalog_marketing_terms'
+         AND policyname = 'Curadores inserem termos de marketing'
+         AND roles = ARRAY['authenticated']::name[]
+         AND cmd = 'INSERT'
+         AND with_check LIKE '%created_by%auth.uid()%'
+     )
      OR COALESCE((SELECT
        NOT p.prosecdef
        OR NOT (p.proconfig @> ARRAY['search_path=pg_catalog, public']::text[])

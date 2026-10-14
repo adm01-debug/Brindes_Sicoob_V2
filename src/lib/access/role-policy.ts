@@ -47,8 +47,8 @@ export const SICOOB_ROUTE_ACCESS: Record<string, readonly AppRole[]> = {
 };
 
 function matchesRoutePattern(pattern: string, pathname: string): boolean {
-  const expected = pattern.split('/').filter(Boolean);
-  const actual = pathname.split('?')[0]?.split('/').filter(Boolean) ?? [];
+  const expected = pattern.toLocaleLowerCase('pt-BR').split('/').filter(Boolean);
+  const actual = pathname.split('?')[0]?.toLocaleLowerCase('pt-BR').split('/').filter(Boolean) ?? [];
   return expected.length === actual.length && expected.every((part, index) => (
     part.startsWith(':') || part === actual[index]
   ));

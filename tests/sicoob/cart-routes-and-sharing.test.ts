@@ -35,7 +35,7 @@ describe("rotas de carrinhos compartilháveis", () => {
     ]));
   });
 
-  it("copia uma URL navegável para o carrinho selecionado", async () => {
+  it("copia a URL pessoal do carrinho e informa sua restrição de acesso", async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
@@ -45,8 +45,8 @@ describe("rotas de carrinhos compartilháveis", () => {
     await shareCartLink("carrinho-123");
 
     expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/carrinhos/carrinho-123`);
-    expect(toastMocks.success).toHaveBeenCalledWith("Link copiado!", {
-      description: `${window.location.origin}/carrinhos/carrinho-123`,
+    expect(toastMocks.success).toHaveBeenCalledWith("Link pessoal copiado!", {
+      description: "Este endereço exige login e só abre para o proprietário do carrinho.",
     });
   });
 

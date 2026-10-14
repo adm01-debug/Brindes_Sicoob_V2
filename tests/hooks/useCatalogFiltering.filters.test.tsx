@@ -95,4 +95,13 @@ describe('filtros da vitrine principal', () => {
     })));
     expect(result.current.map((item) => item.id)).toEqual(['B']);
   });
+
+  it('aplica limite superior de preço abaixo do teto padrão', () => {
+    const { result } = renderHook(() => useCatalogFiltering(options({
+      realProducts: [product('A', { price: 750 }), product('B', { price: 1_250 })],
+      filters: { ...defaultFilters, priceRange: [0, 900] },
+    })));
+
+    expect(result.current.map((item) => item.id)).toEqual(['A']);
+  });
 });

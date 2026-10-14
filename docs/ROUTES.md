@@ -77,8 +77,8 @@
 ## 📂 Seção: PUBLIC
 | Rota | Componente |
 |------|------------|
-| `/loja-demo` | `@/pages/sicoob/StorefrontDemoPage` |
-| `/demonstracao` | `@/pages/sicoob/DemoPortalPage` |
+| `/loja-demo` | `@/pages/sicoob/StorefrontDemoPage` (somente dev ou `VITE_ENABLE_DEMO_PAGES=true`) |
+| `/demonstracao` | `@/pages/sicoob/DemoPortalPage` (somente dev ou `VITE_ENABLE_DEMO_PAGES=true`) |
 | `/login` | `@/pages/Auth` |
 | `/reset-password` | `@/pages/ResetPassword` |
 | `/convite/:token` | `@/pages/sicoob/SicoobInvitationAcceptPage` |
@@ -111,7 +111,6 @@
 | `/orcamentos/:id` | `@/pages/QuoteViewPage` |
 | `/orcamentos/:id/editar` | `@/pages/QuoteBuilderPage` |
 | `/orcamentos/:id/visualizar` | `@/pages/QuoteViewPage` |
-| `/gestor/orcamentos` | `@/pages/GestorOrcamentos` |
 | `/carrinhos` | `@/pages/SellerCartsPage` |
 | `/carrinhos/novo` | `@/pages/SellerCartsPage` |
 | `/carrinhos/:cartId` | `@/pages/SellerCartsPage` |
@@ -134,6 +133,7 @@
 ## 📂 Seção: SICOOB
 | Rota | Componente |
 |------|------------|
+| `/gestor/orcamentos` | `@/pages/GestorOrcamentos` |
 | `/sicoob/pedidos` | `@/pages/sicoob/orders/OrdersPage` |
 | `/sicoob/pedidos/kanban` | `@/pages/sicoob/orders/OrdersKanbanPage` |
 | `/sicoob/pedidos/:id` | `@/pages/sicoob/orders/OrderDetailPage` |

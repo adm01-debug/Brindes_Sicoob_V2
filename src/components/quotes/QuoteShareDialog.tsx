@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useQuoteApproval, type ApprovalToken } from "@/hooks/useQuoteApproval";
+import { normalizePhoneForWhatsApp } from "@/components/products/share/whatsapp";
 
 interface QuoteShareDialogProps {
   quoteId: string;
@@ -34,8 +35,7 @@ export function buildQuoteWhatsappUrl({ link, quoteNumber, total, clientPhone }:
   const text = encodeURIComponent(
     `Olá! Segue a proposta comercial *#${quoteNumber || "-"}* no valor de *${amount}*.\n\nVisualize e responda aqui: ${link}`,
   );
-  const phone = clientPhone?.replace(/\D/g, "") ?? "";
-  const countryPhone = phone && !phone.startsWith("55") ? `55${phone}` : phone;
+  const countryPhone = normalizePhoneForWhatsApp(clientPhone);
   return `https://wa.me/${countryPhone}?text=${text}`;
 }
 
@@ -49,7 +49,8 @@ function useShareController(quoteId: string, open: boolean, clientName: string, 
     let active = true;
     void getApprovalStatus(quoteId).then((current) => {
       if (!active) return;
-      const available = current?.status !== "revoked" ? current : null;
+      const expiresAt = current?.expires_at ? new Date(current.expires_at).getTime() : Number.POSITIVE_INFINITY;
+      const available = current?.status === "active" && expiresAt > Date.now() ? current : null;
       setToken(available);
       setLink(available ? publicProposalLink(available.token) : "");
     });

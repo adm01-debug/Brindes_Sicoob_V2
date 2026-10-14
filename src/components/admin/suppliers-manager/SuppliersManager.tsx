@@ -8,7 +8,7 @@ import { SupplierListHeader } from './SupplierListHeader';
 import { SupplierTable } from './SupplierTable';
 import { SupplierFormDialog } from './SupplierFormDialog';
 
-export function SuppliersManager() {
+export function SuppliersManager({ readOnly = false }: { readOnly?: boolean }) {
   const m = useSuppliersManager();
 
   return (
@@ -20,13 +20,13 @@ export function SuppliersManager() {
         loading={m.loading} totalCount={m.suppliers.length}
         filteredCount={m.filtered.length}
         showFilteredBadge={!!(m.search || m.filterType !== 'all' || m.filterStatus !== 'all')}
-        onRefresh={m.fetchSuppliers} onNew={m.handleNew}
+        onRefresh={m.fetchSuppliers} onNew={m.handleNew} readOnly={readOnly}
       />
       <SupplierTable
         suppliers={m.filtered} loading={m.loading} search={m.search}
-        deleting={m.deleting} onEdit={m.handleEdit} onDelete={m.handleDelete}
+        deleting={m.deleting} onEdit={m.handleEdit} onDelete={m.handleDelete} readOnly={readOnly}
       />
-      <SupplierFormDialog
+      {!readOnly && <SupplierFormDialog
         editingSupplier={m.editingSupplier} setEditingSupplier={m.setEditingSupplier}
         isNew={m.isNew} saving={m.saving} uploadingLogo={m.uploadingLogo}
         fetchingCnpj={m.fetchingCnpj} contacts={m.contacts}
@@ -48,7 +48,7 @@ export function SuppliersManager() {
         handleCepLookup={m.handleCepLookup}
         updateContact={m.updateContact} addContact={m.addContact} removeContact={m.removeContact}
         updatePixKey={m.updatePixKey} addPixKey={m.addPixKey} removePixKey={m.removePixKey}
-      />
+      />}
     </div>
   );
 }

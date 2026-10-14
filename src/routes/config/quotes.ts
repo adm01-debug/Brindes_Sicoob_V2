@@ -48,10 +48,6 @@ export const quoteRoutes = [
   }),
 
   defineRoute({ 
-    path: "/gestor/orcamentos", 
-    component: lazyWithRetry(() => import("@/pages/GestorOrcamentos")) 
-  }),
-  defineRoute({ 
     path: "/carrinhos", 
     component: lazyWithRetry(() => import("@/pages/SellerCartsPage")) 
   }),

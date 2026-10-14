@@ -117,6 +117,10 @@ function nullableNumber(value: number | null | undefined): number | null {
   return value ?? null;
 }
 
+function enabledFilter(active: boolean, error: Error | null): boolean {
+  return active && !error;
+}
+
 function catalogVisibility(
   initialLoading: boolean,
   loading: boolean,
@@ -208,16 +212,16 @@ export function useCatalogState() {
     categoryIds: listOrEmpty(filterState.filters.categories?.map(String)),
     includeDescendants: true,
   });
-  const { productIds: colorFilteredProductIds, hasFilter: hasColorFilter, isLoading: isLoadingColorFilter } = useProductsByColor({
+  const { productIds: colorFilteredProductIds, hasFilter: hasColorFilter, isLoading: isLoadingColorFilter, error: colorFilterError } = useProductsByColor({
     colorGroups: filterState.filters.colorGroups,
     colorVariations: filterState.filters.colorVariations,
     colorNuances: filterState.filters.colorNuances,
     colors: filterState.filters.colors,
   });
-  const { productIds: tagFilteredProductIds, hasFilter: hasTagFilter, isLoading: isLoadingTagFilter } = useProductsByTag(filterState.filters.tags);
-  const { productIds: techniqueFilteredProductIds, hasFilter: hasTechniqueFilter, isLoading: isLoadingTechniqueFilter } = useProductsByTechnique(filterState.filters.techniques);
-  const { productIds: sizeFilteredProductIds, hasFilter: hasSizeFilter, isLoading: isLoadingSizeFilter } = useProductsBySize(filterState.filters.sizes);
-  const { productIds: activityFilteredProductIds, hasFilter: hasActivityFilter, isLoading: isLoadingActivityFilter } = useProductsByActivity(filterState.filters.ramosAtividade, filterState.filters.segmentosAtividade);
+  const { productIds: tagFilteredProductIds, hasFilter: hasTagFilter, isLoading: isLoadingTagFilter, error: tagFilterError } = useProductsByTag(filterState.filters.tags);
+  const { productIds: techniqueFilteredProductIds, hasFilter: hasTechniqueFilter, isLoading: isLoadingTechniqueFilter, error: techniqueFilterError } = useProductsByTechnique(filterState.filters.techniques);
+  const { productIds: sizeFilteredProductIds, hasFilter: hasSizeFilter, isLoading: isLoadingSizeFilter, error: sizeFilterError } = useProductsBySize(filterState.filters.sizes);
+  const { productIds: activityFilteredProductIds, hasFilter: hasActivityFilter, isLoading: isLoadingActivityFilter, error: activityFilterError } = useProductsByActivity(filterState.filters.ramosAtividade, filterState.filters.segmentosAtividade);
   const { productIds: marketingFilteredProductIds, hasFilter: hasMarketingFilter, isLoading: isLoadingMarketingFilter, error: marketingFilterError } = useCatalogMarketingProductFilter({
     publicoAlvo: filterState.filters.publicoAlvo,
     endomarketing: filterState.filters.endomarketing,
@@ -236,14 +240,16 @@ export function useCatalogState() {
   ].some(Boolean);
 
   useEffect(() => {
-    const error = marketingFilterError ?? commemorativeDateFilterError;
+    const error = [colorFilterError, tagFilterError, techniqueFilterError, sizeFilterError,
+      activityFilterError, marketingFilterError, commemorativeDateFilterError]
+      .find((candidate): candidate is Error => Boolean(candidate));
     if (!error) return;
     toast({
       title: 'Não foi possível aplicar um filtro',
       description: error.message,
       variant: 'destructive',
     });
-  }, [commemorativeDateFilterError, marketingFilterError, toast]);
+  }, [activityFilterError, colorFilterError, commemorativeDateFilterError, marketingFilterError, sizeFilterError, tagFilterError, techniqueFilterError, toast]);
 
   const { data: realStats } = useCatalogRealStats();
   const { isLoading, isInitial: isInitialCatalogLoad } = catalogLoadingState(
@@ -262,11 +268,11 @@ export function useCatalogState() {
     realProducts, filters: filterState.filters, sortBy: display.sortBy, hasFuzzySearch, fuzzySearchResults,
     hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter,
     hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter,
-    hasColorFilter, colorFilteredProductIds, isLoadingColorFilter,
-    hasTagFilter, tagFilteredProductIds, isLoadingTagFilter,
-    hasTechniqueFilter, techniqueFilteredProductIds, isLoadingTechniqueFilter,
-    hasSizeFilter, sizeFilteredProductIds, isLoadingSizeFilter,
-    hasActivityFilter, activityFilteredProductIds, isLoadingActivityFilter,
+    hasColorFilter: enabledFilter(hasColorFilter, colorFilterError), colorFilteredProductIds, isLoadingColorFilter,
+    hasTagFilter: enabledFilter(hasTagFilter, tagFilterError), tagFilteredProductIds, isLoadingTagFilter,
+    hasTechniqueFilter: enabledFilter(hasTechniqueFilter, techniqueFilterError), techniqueFilteredProductIds, isLoadingTechniqueFilter,
+    hasSizeFilter: enabledFilter(hasSizeFilter, sizeFilterError), sizeFilteredProductIds, isLoadingSizeFilter,
+    hasActivityFilter: enabledFilter(hasActivityFilter, activityFilterError), activityFilteredProductIds, isLoadingActivityFilter,
     hasMarketingFilter, marketingFilteredProductIds, isLoadingMarketingFilter,
     hasCommemorativeDateFilter, commemorativeDateProductIds, isLoadingCommemorativeDateFilter,
     promoSalesMap, supplierSalesMap,

@@ -56,6 +56,12 @@ smokeHook("useCatalogFiltering (vazio)", () =>
     hasActivityFilter: false,
     activityFilteredProductIds: new Set(),
     isLoadingActivityFilter: false,
+    hasMarketingFilter: false,
+    marketingFilteredProductIds: new Set(),
+    isLoadingMarketingFilter: false,
+    hasCommemorativeDateFilter: false,
+    commemorativeDateProductIds: new Set(),
+    isLoadingCommemorativeDateFilter: false,
   }),
 );
 

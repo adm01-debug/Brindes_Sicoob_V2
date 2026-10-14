@@ -7,7 +7,7 @@
 
 | Métrica | Valor |
 |---|---|
-| Rotas no catálogo | **67** |
+| Rotas no catálogo | **80** |
 | Rotas `smoke: true` | **33** |
 | Features autenticadas cobertas | **31** |
 | Smoke público (sem auth) | **2** |

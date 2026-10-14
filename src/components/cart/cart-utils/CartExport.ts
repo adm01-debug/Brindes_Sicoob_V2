@@ -84,7 +84,9 @@ export function shareCartLink(cartId: string) {
 
   return navigator.clipboard.writeText(url)
     .then(() => {
-      toast.success("Link copiado!", { description: url });
+      toast.success("Link pessoal copiado!", {
+        description: "Este endereço exige login e só abre para o proprietário do carrinho.",
+      });
     })
     .catch(() => {
       toast.error("Não foi possível copiar o link do carrinho");

@@ -126,20 +126,23 @@ export function useCatalogMarketingProductFilter({
   endomarketing?: string[];
   temas?: string[];
 }) {
+  const selectedPublico = selectedValues(publicoAlvo);
+  const selectedEndomarketing = selectedValues(endomarketing);
+  const selectedTemas = selectedValues(temas);
   const publico = useCategoryProductIds('publico_alvo', publicoAlvo);
   const endo = useCategoryProductIds('endomarketing', endomarketing);
   const tema = useCategoryProductIds('tema_sicoob', temas);
   const activeQueries = [
-    publicoAlvo.length ? publico : null,
-    endomarketing.length ? endo : null,
-    temas.length ? tema : null,
+    selectedPublico.length ? publico : null,
+    selectedEndomarketing.length ? endo : null,
+    selectedTemas.length ? tema : null,
   ].filter((query): query is typeof publico => query !== null);
   const isLoading = activeQueries.some((query) => query.isPending || query.isFetching);
   const error = activeQueries.find((query) => query.error)?.error ?? null;
   const productIds = useMemo(
     () => intersectProductIds(activeQueries.map((query) => new Set(query.data ?? []))),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [publico.data, endo.data, tema.data, publicoAlvo.length, endomarketing.length, temas.length],
+    [publico.data, endo.data, tema.data, selectedPublico.length, selectedEndomarketing.length, selectedTemas.length],
   );
   return {
     productIds,

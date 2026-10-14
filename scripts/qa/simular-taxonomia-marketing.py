@@ -70,7 +70,14 @@ try:
     sql(migration)
     sql(migration)
     checks["migration_idempotente"] = sql("SELECT count(*)=30 FROM public.catalog_marketing_terms;").stdout.strip() == "t"
-    checks["anon_sem_acesso"] = actor("SELECT count(*) FROM public.catalog_marketing_terms;", role="anon", check=False).returncode != 0
+    checks["anon_sem_acesso"] = all(
+        actor(f"SELECT count(*) FROM public.{relation};", role="anon", check=False).returncode != 0
+        for relation in (
+            "catalog_marketing_terms",
+            "catalog_product_marketing",
+            "catalog_marketing_term_usage",
+        )
+    )
     checks["usuario_ativo_le_vocabulario"] = actor("SELECT count(*)=30 FROM public.catalog_marketing_terms;").stdout.strip() == "t"
     checks["usuario_comum_nao_classifica"] = actor(
         "INSERT INTO public.catalog_product_marketing(product_id,term_id) SELECT 'produto-negado',id FROM public.catalog_marketing_terms LIMIT 1;",

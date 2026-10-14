@@ -63,7 +63,7 @@ function productCatalogFlags(product: LightweightProduct): Pick<
   'featured' | 'newArrival' | 'onSale' | 'isKit' | 'hasCommercialPackaging' | 'allowsPersonalization'
 > {
   return {
-    featured: Boolean(product.is_featured || product.is_bestseller),
+    featured: Boolean(product.is_featured),
     newArrival: Boolean(product.is_new),
     onSale: Boolean(product.is_on_sale),
     isKit: product.is_kit ?? false,
@@ -133,7 +133,7 @@ export const CATALOG_BATCH_PAGES = 2;
 // `price_updated_at` é o SSOT da idade do preço (trigger no BD externo).
 // `price_freshness_threshold_days` ainda NÃO existe no BD externo — quando
 // existir, basta acrescentar à lista; o mapper já trata como opcional.
-export const PRODUCT_SELECT_LIGHTWEIGHT = 'id, name, sku, sale_price, primary_image_url, supplier_id, category_id, main_category_id, brand, is_active, stock_quantity, min_quantity, is_featured, is_bestseller, is_new, is_on_sale, is_kit, has_commercial_packaging, allows_personalization, gender, price_updated_at';
+export const PRODUCT_SELECT_LIGHTWEIGHT = 'id, name, sku, sale_price, primary_image_url, supplier_id, category_id, main_category_id, brand, is_active, stock_quantity, min_quantity, is_featured, is_bestseller, is_new, is_on_sale, is_kit, allows_personalization, gender, price_updated_at';
 
 interface CatalogPage {
   products: Product[];

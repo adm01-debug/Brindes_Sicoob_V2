@@ -109,9 +109,9 @@ function KeyboardShortcuts() {
       <CardContent className="grid gap-2 text-sm sm:grid-cols-2">
         {[
           ['Ctrl ou ⌘ + K', 'Abrir comandos e navegação'],
-          ['Alt + F', 'Abrir favoritos'],
-          ['Alt + C', 'Abrir comparador'],
-          ['Alt + T', 'Alternar tema'],
+          ['Alt + N', 'Criar novo orçamento'],
+          ['Alt + O', 'Abrir meus orçamentos'],
+          ['Alt + P', 'Abrir produtos'],
         ].map(([shortcut, label]) => (
           <div
             key={shortcut}

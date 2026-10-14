@@ -28,8 +28,13 @@ describe('filtro por datas comemorativas', () => {
     await expect(fetchProductsByCommemorativeDates(['natal', 'natal', 'dia-das-maes']))
       .resolves.toEqual(['produto-a', 'produto-b', 'produto-c']);
     expect(invoke).toHaveBeenCalledTimes(2);
-    expect(invoke).toHaveBeenCalledWith('commemorative-dates', expect.objectContaining({
-      body: expect.objectContaining({ action: 'get_products_by_date' }),
-    }));
+    expect(invoke.mock.calls.map(([name, options]) => [
+      name,
+      options.body.action,
+      options.body.params.slug,
+    ])).toEqual([
+      ['commemorative-dates', 'get_products_by_date', 'dia-das-maes'],
+      ['commemorative-dates', 'get_products_by_date', 'natal'],
+    ]);
   });
 });

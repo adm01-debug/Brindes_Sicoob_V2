@@ -2,7 +2,7 @@
  * Curadoria editorial de produtos do catálogo externo.
  * As classificações pertencem ao banco local do portal e não alteram o cadastro mestre.
  */
-import { useCallback, useEffect, useMemo, useState, type ElementType } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ElementType } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Briefcase, ChevronDown, Gem, Loader2, Search, Users, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -147,7 +147,11 @@ export function ProductMarketingSection({ productId }: ProductMarketingSectionPr
   const temas = useCatalogMarketingOptions('tema_sicoob', true);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [loadingAssignments, setLoadingAssignments] = useState(true);
+  const [assignmentError, setAssignmentError] = useState<string | null>(null);
+  const [reloadAssignments, setReloadAssignments] = useState(0);
   const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
+  const [clearing, setClearing] = useState(false);
+  const mutationBusyRef = useRef(false);
   const [openGroups, setOpenGroups] = useState<Set<CategoryKey>>(new Set());
   const [search, setSearch] = useState('');
 
@@ -159,16 +163,24 @@ export function ProductMarketingSection({ productId }: ProductMarketingSectionPr
 
   useEffect(() => {
     let active = true;
+    setSelectedIds(new Set());
+    setAssignmentError(null);
     setLoadingAssignments(true);
     fetchAssignedTermIds(productId)
       .then((ids) => { if (active) setSelectedIds(new Set(ids)); })
-      .catch((error: unknown) => { if (active) toast.error(error instanceof Error ? error.message : 'Erro ao carregar classificações'); })
+      .catch((error: unknown) => {
+        if (!active) return;
+        const message = error instanceof Error ? error.message : 'Erro ao carregar classificações';
+        setAssignmentError(message);
+        toast.error(message);
+      })
       .finally(() => { if (active) setLoadingAssignments(false); });
     return () => { active = false; };
-  }, [productId]);
+  }, [productId, reloadAssignments]);
 
   const toggleItem = useCallback(async (term: CatalogMarketingOption) => {
-    if (togglingIds.has(term.id)) return;
+    if (assignmentError || mutationBusyRef.current) return;
+    mutationBusyRef.current = true;
     const wasSelected = selectedIds.has(term.id);
     setTogglingIds((current) => new Set(current).add(term.id));
     setSelectedIds((current) => {
@@ -178,7 +190,10 @@ export function ProductMarketingSection({ productId }: ProductMarketingSectionPr
     });
     try {
       await setProductTerm(productId, term.id, !wasSelected);
-      await queryClient.invalidateQueries({ queryKey: ['catalog-marketing-options'] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['catalog-marketing-options'] }),
+        queryClient.invalidateQueries({ queryKey: ['catalog-marketing-products'] }),
+      ]);
       toast.success(wasSelected ? 'Classificação removida' : 'Classificação adicionada');
     } catch (error) {
       setSelectedIds((current) => {
@@ -189,27 +204,44 @@ export function ProductMarketingSection({ productId }: ProductMarketingSectionPr
       toast.error(error instanceof Error ? error.message : 'Erro ao salvar classificação');
     } finally {
       setTogglingIds((current) => { const next = new Set(current); next.delete(term.id); return next; });
+      mutationBusyRef.current = false;
     }
-  }, [productId, queryClient, selectedIds, togglingIds]);
+  }, [assignmentError, productId, queryClient, selectedIds]);
 
   const clearAll = useCallback(async () => {
+    if (assignmentError || mutationBusyRef.current) return;
+    mutationBusyRef.current = true;
     const previous = new Set(selectedIds);
     setSelectedIds(new Set());
-    const { error } = await supabase.from('catalog_product_marketing').delete().eq('product_id', productId);
-    if (error) {
+    setClearing(true);
+    try {
+      const { error } = await supabase.from('catalog_product_marketing').delete().eq('product_id', productId);
+      if (error) throw error;
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['catalog-marketing-options'] }),
+        queryClient.invalidateQueries({ queryKey: ['catalog-marketing-products'] }),
+      ]);
+      toast.success('Todas as classificações foram removidas');
+    } catch (error) {
       setSelectedIds(previous);
-      toast.error(error.message);
-      return;
+      toast.error(error instanceof Error ? error.message : 'Erro ao remover classificações');
+    } finally {
+      setClearing(false);
+      mutationBusyRef.current = false;
     }
-    await queryClient.invalidateQueries({ queryKey: ['catalog-marketing-options'] });
-    toast.success('Todas as classificações foram removidas');
-  }, [productId, queryClient, selectedIds]);
+  }, [assignmentError, productId, queryClient, selectedIds]);
 
   const optionsState = marketingOptionsState([publico, endomarketing, temas]);
   if ([loadingAssignments, optionsState.isPending].some(Boolean)) {
     return <div className="space-y-2"><Skeleton className="h-12 w-full rounded-lg" /><Skeleton className="h-12 w-full rounded-lg" /><Skeleton className="h-12 w-full rounded-lg" /></div>;
   }
   if (optionsState.error) return <p className="text-sm text-destructive">Não foi possível carregar a taxonomia editorial.</p>;
+  if (assignmentError) return <div className="space-y-2 text-sm text-destructive">
+    <p>Não foi possível carregar as classificações deste produto.</p>
+    <button type="button" className="text-primary underline" onClick={() => setReloadAssignments((value) => value + 1)}>
+      Tentar novamente
+    </button>
+  </div>;
 
   const selectedOptions = categories.flatMap((category) => category.options.map((option) => ({ category, option }))).filter(({ option }) => selectedIds.has(option.id));
   const totalOptions = categories.reduce((total, category) => total + category.options.length, 0);
@@ -217,9 +249,9 @@ export function ProductMarketingSection({ productId }: ProductMarketingSectionPr
     <div className="space-y-3">
       {selectedOptions.length > 0 && (
         <div className="p-2.5 bg-primary/5 rounded-lg border border-primary/20">
-          <div className="flex items-center justify-between mb-2"><span className="text-xs font-medium text-primary">Selecionados</span><button type="button" onClick={() => void clearAll()} className="text-[10px] text-muted-foreground hover:text-destructive transition-colors">Limpar todos</button></div>
+          <div className="flex items-center justify-between mb-2"><span className="text-xs font-medium text-primary">Selecionados</span><button type="button" disabled={clearing || togglingIds.size > 0} onClick={() => void clearAll()} className="text-[10px] text-muted-foreground hover:text-destructive transition-colors disabled:opacity-50">{clearing ? 'Limpando...' : 'Limpar todos'}</button></div>
           <div className="flex flex-wrap gap-1.5">
-            {selectedOptions.map(({ category, option }) => <button type="button" key={option.id} onClick={() => void toggleItem(option)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-medium border border-border bg-background text-foreground hover:bg-muted/50"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[category.key] }} /><span className="truncate max-w-[140px]">{option.name}</span><X className="w-2.5 h-2.5" /></button>)}
+            {selectedOptions.map(({ category, option }) => <button type="button" key={option.id} disabled={clearing || togglingIds.size > 0} onClick={() => void toggleItem(option)} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-medium border border-border bg-background text-foreground hover:bg-muted/50 disabled:opacity-50"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[category.key] }} /><span className="truncate max-w-[140px]">{option.name}</span><X className="w-2.5 h-2.5" /></button>)}
           </div>
         </div>
       )}

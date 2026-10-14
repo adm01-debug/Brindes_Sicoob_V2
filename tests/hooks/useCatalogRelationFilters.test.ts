@@ -1,13 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { invokeExternalDb, invokeBatchBridge } = vi.hoisted(() => ({
+const { invokeExternalDb } = vi.hoisted(() => ({
   invokeExternalDb: vi.fn(),
-  invokeBatchBridge: vi.fn(),
 }));
 
 vi.mock('@/lib/external-db', () => ({
   invokeExternalDb,
-  invokeBatchBridge,
 }));
 
 import {
@@ -44,36 +42,28 @@ describe('filtros relacionais do catálogo', () => {
   });
 
   it('carrega somente valores ligados ao tipo tamanho', async () => {
-    invokeBatchBridge.mockResolvedValueOnce([
-      {
-        success: true,
-        data: { records: [
-          { id: 'tipo-tamanho', name: 'Tamanho' },
-          { id: 'tipo-cor', name: 'Cor' },
-        ] },
-      },
-      {
-        success: true,
-        data: { records: [
-          { variation_type_id: 'tipo-tamanho', label: 'M', value: 'M' },
-          { variation_type_id: 'tipo-tamanho', label: 'G', value: 'G' },
-          { variation_type_id: 'tipo-cor', label: 'Azul', value: 'azul' },
-        ] },
-      },
-    ]);
+    invokeExternalDb
+      .mockResolvedValueOnce({ records: [
+        { id: 'tipo-tamanho', name: 'Tamanho' },
+        { id: 'tipo-cor', name: 'Cor' },
+      ] })
+      .mockResolvedValueOnce({ records: [
+        { variation_type_id: 'tipo-tamanho', label: 'Médio', value: 'M' },
+        { variation_type_id: 'tipo-tamanho', label: 'G', value: 'G' },
+        { variation_type_id: 'tipo-cor', label: 'Azul', value: 'azul' },
+      ] });
 
     await expect(fetchAvailableCatalogSizes()).resolves.toEqual(['M', 'G']);
   });
 
   it('resolve ramos e segmentos antes de buscar os produtos vinculados', async () => {
-    invokeBatchBridge.mockResolvedValueOnce([
-      { success: true, data: { records: [{ id: 'ramo-1', slug: 'cooperativismo' }] } },
-      { success: true, data: { records: [
+    invokeExternalDb
+      .mockResolvedValueOnce({ records: [{ id: 'ramo-1', slug: 'cooperativismo' }] })
+      .mockResolvedValueOnce({ records: [
         { id: 'segmento-1', slug: 'credito', ramo_atividade_id: 'ramo-1' },
         { id: 'segmento-2', slug: 'seguros', ramo_atividade_id: 'ramo-2' },
-      ] } },
-    ]);
-    invokeExternalDb.mockResolvedValueOnce({ records: [{ produto_id: 'produto-1' }] });
+      ] })
+      .mockResolvedValueOnce({ records: [{ produto_id: 'produto-1' }] });
 
     await expect(fetchActivityProductIds(['cooperativismo'], [])).resolves.toEqual(['produto-1']);
     expect(invokeExternalDb).toHaveBeenCalledWith(expect.objectContaining({

@@ -1,15 +1,18 @@
 import { useMemo, useState } from "react";
 import { defaultFilters, type FilterState } from "@/components/filters/FilterPanel";
 
-function countActiveFilters(filters: FilterState): number {
+export function countActiveFilters(filters: FilterState): number {
   const listCount = [
     filters.colors, filters.colorGroups, filters.colorVariations, filters.colorNuances,
     filters.categories, filters.suppliers, filters.publicoAlvo, filters.datasComemorativas,
-    filters.endomarketing, filters.ramosAtividade, filters.segmentosAtividade,
+    filters.endomarketing, filters.sicoobThemes, filters.ramosAtividade, filters.segmentosAtividade,
     filters.materialGroups, filters.materialTypes, filters.materiais, filters.gender,
+    filters.tags, filters.techniques, filters.sizes,
   ].reduce((total, values) => total + (values?.length ?? 0), 0);
-  const priceRangeActive = filters.priceRange[0] > 0 || filters.priceRange[1] < 500;
-  return listCount + Number(priceRangeActive) + Number(filters.inStock) + Number(filters.isKit) + Number(filters.featured);
+  const priceRangeActive = filters.priceRange[0] > 0 || filters.priceRange[1] < 9999;
+  const flags = [priceRangeActive, filters.minStock > 0, filters.inStock, filters.isKit,
+    filters.featured, filters.isNew, filters.hasPersonalization, Boolean(filters.search)];
+  return listCount + flags.filter(Boolean).length;
 }
 
 export function useCatalogFilters() {

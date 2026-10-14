@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { invokeBatchBridge, invokeExternalDb } from '@/lib/external-db';
+import { invokeExternalDb } from '@/lib/external-db';
 
 const RELATION_PAGE_SIZE = 500;
-const MAX_RELATION_PAGES = 100;
+const MAX_RELATION_RECORDS = 100_000;
 
 type RelationTable = 'product_tags' | 'product_variants' | 'print_area_techniques' | 'produto_ramo_atividade';
 
@@ -22,6 +22,36 @@ export interface CatalogRelationFilterResult {
   error: Error | null;
 }
 
+async function fetchRelationPages(
+  config: Omit<RelationFilterConfig, 'values'>,
+  selected: string[],
+): Promise<string[]> {
+  const { table, column, filters = {}, productColumn = 'product_id' } = config;
+  const productIds = new Set<string>();
+  let offset = 0;
+  while (offset < MAX_RELATION_RECORDS) {
+    const result = await invokeExternalDb<Record<string, string | null | undefined>>({
+      table,
+      operation: 'select',
+      select: productColumn,
+      filters: { ...filters, [column]: selected },
+      orderBy: { column: productColumn, ascending: true },
+      limit: RELATION_PAGE_SIZE,
+      offset,
+    });
+    const records = result.records ?? [];
+    for (const record of records) {
+      const productId = record[productColumn];
+      if (productId) productIds.add(productId);
+    }
+    const effectiveLimit = Number((result.meta as { effective_limit?: number } | undefined)?.effective_limit)
+      || RELATION_PAGE_SIZE;
+    if (records.length < effectiveLimit) return [...productIds];
+    offset += records.length;
+  }
+  throw new Error(`Consulta relacional excedeu ${MAX_RELATION_RECORDS} vínculos`);
+}
+
 function normalizedValues(values: string[]): string[] {
   return [...new Set(values.map((value) => value.trim()).filter(Boolean))]
     .sort((left, right) => left.localeCompare(right, 'pt-BR'));
@@ -36,25 +66,7 @@ export async function fetchRelationProductIds({
 }: RelationFilterConfig): Promise<string[]> {
   const selected = normalizedValues(values);
   if (!selected.length) return [];
-
-  const productIds = new Set<string>();
-  for (let page = 0; page < MAX_RELATION_PAGES; page += 1) {
-    const result = await invokeExternalDb<Record<string, string | null | undefined>>({
-      table,
-      operation: 'select',
-      select: productColumn,
-      filters: { ...filters, [column]: selected },
-      limit: RELATION_PAGE_SIZE,
-      offset: page * RELATION_PAGE_SIZE,
-    });
-    const records = result.records ?? [];
-    for (const record of records) {
-      const productId = record[productColumn];
-      if (productId) productIds.add(productId);
-    }
-    if (records.length < RELATION_PAGE_SIZE) return [...productIds];
-  }
-  throw new Error(`Consulta relacional excedeu ${MAX_RELATION_PAGES * RELATION_PAGE_SIZE} vínculos`);
+  return fetchRelationPages({ table, column, filters, productColumn }, selected);
 }
 
 function useRelationFilter(config: RelationFilterConfig): CatalogRelationFilterResult {
@@ -101,17 +113,11 @@ export function useProductsBySize(sizes: string[]): CatalogRelationFilterResult 
 }
 
 async function fetchActivityReference(): Promise<{ branches: ReferenceRecord[]; segments: ReferenceRecord[] }> {
-  const results = await invokeBatchBridge([
-    {
-      table: 'ramo_atividade', operation: 'select', select: 'id,slug',
-      filters: { ativo: true }, limit: 100,
-    },
-    {
-      table: 'ramo_atividade_filho', operation: 'select', select: 'id,slug,ramo_atividade_id',
-      filters: { ativo: true }, limit: 500,
-    },
+  const [branches, segments] = await Promise.all([
+    fetchReferenceRecords('ramo_atividade', 'id,slug', { ativo: true }),
+    fetchReferenceRecords('ramo_atividade_filho', 'id,slug,ramo_atividade_id', { ativo: true }),
   ]);
-  return { branches: recordsAt(results, 0), segments: recordsAt(results, 1) };
+  return { branches, segments };
 }
 
 export async function fetchActivityProductIds(branchSlugs: string[], segmentSlugs: string[]): Promise<string[]> {
@@ -171,11 +177,31 @@ interface ReferenceRecord {
   ramo_atividade_id?: string;
 }
 
-function recordsAt(results: Awaited<ReturnType<typeof invokeBatchBridge>>, index: number): ReferenceRecord[] {
-  const result = results[index];
-  return result?.success && Array.isArray(result.data?.records)
-    ? (result.data.records as ReferenceRecord[])
-    : [];
+async function fetchReferenceRecords(
+  table: string,
+  select: string,
+  filters: Record<string, unknown>,
+): Promise<ReferenceRecord[]> {
+  const records: ReferenceRecord[] = [];
+  let offset = 0;
+  while (offset < MAX_RELATION_RECORDS) {
+    const result = await invokeExternalDb<ReferenceRecord>({
+      table,
+      operation: 'select',
+      select,
+      filters,
+      orderBy: { column: 'id', ascending: true },
+      limit: RELATION_PAGE_SIZE,
+      offset,
+    });
+    const page = result.records ?? [];
+    records.push(...page);
+    const effectiveLimit = Number((result.meta as { effective_limit?: number } | undefined)?.effective_limit)
+      || RELATION_PAGE_SIZE;
+    if (page.length < effectiveLimit || page.length === 0) return records;
+    offset += page.length;
+  }
+  throw new Error(`Referência ${table} excedeu ${MAX_RELATION_RECORDS} registros`);
 }
 
 function normalizedText(value: string): string {
@@ -183,24 +209,12 @@ function normalizedText(value: string): string {
 }
 
 export async function fetchAvailableCatalogSizes(): Promise<string[]> {
-  const results = await invokeBatchBridge([
-    {
-      table: 'variation_types',
-      operation: 'select',
-      select: 'id,name,code,slug',
-      filters: { is_active: true },
-      limit: 100,
-    },
-    {
-      table: 'variation_values',
-      operation: 'select',
-      select: 'variation_type_id,label,value',
-      filters: { is_active: true },
-      limit: 500,
-    },
+  const [types, values] = await Promise.all([
+    fetchReferenceRecords('variation_types', 'id,name,code,slug', { is_active: true }),
+    fetchReferenceRecords('variation_values', 'id,variation_type_id,label,value', { is_active: true }),
   ]);
   const sizeTypeIds = new Set(
-    recordsAt(results, 0)
+    types
       .filter((type) => [type.name, type.code, type.slug].some((value) => {
         const normalized = normalizedText(value ?? '');
         return normalized.includes('tamanho') || normalized === 'size';
@@ -209,9 +223,11 @@ export async function fetchAvailableCatalogSizes(): Promise<string[]> {
       .filter((id): id is string => Boolean(id)),
   );
   return [...new Set(
-    recordsAt(results, 1)
+    values
       .filter((value) => value.variation_type_id && sizeTypeIds.has(value.variation_type_id))
-      .map((value) => (value.label || value.value || '').trim())
+      // `product_variants.size_code` armazena o valor canônico da variação.
+      // O label é apenas apresentação e pode ser "Grande" enquanto value é "G".
+      .map((value) => (value.value || value.label || '').trim())
       .filter(Boolean),
   )];
 }

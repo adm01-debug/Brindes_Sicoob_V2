@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 const COMMEMORATIVE_DATES_KEY = "commemorative-dates";
+const FILTER_VARIANT_LIMIT = 10_001;
 
 // Tipos baseados nas respostas das RPCs
 export interface CommemorativeDate {
@@ -82,10 +83,13 @@ export async function fetchProductsByCommemorativeDates(slugs: string[]): Promis
   const results = await Promise.all(selected.map((slug) =>
     callCommemorativeDatesAPI<CommemorativeDateVariant[]>('get_products_by_date', {
       slug,
-      limit: 500,
+      limit: FILTER_VARIANT_LIMIT,
       include_all_colors: false,
     })
   ));
+  if (results.some((records) => records.length >= FILTER_VARIANT_LIMIT)) {
+    throw new Error('A data comemorativa excedeu o limite seguro de variantes; refine a associação no catálogo.');
+  }
   return [...new Set(results.flatMap((records) => records.map((record) => record.product_id).filter(Boolean)))];
 }
 
@@ -105,7 +109,7 @@ export function useProductsByCommemorativeDates(slugs: string[]) {
   return {
     productIds: new Set(query.data ?? []),
     hasFilter: selected.length > 0,
-    isLoading: query.isPending || query.isFetching,
+    isLoading: selected.length > 0 && (query.isPending || query.isFetching),
     error: query.error instanceof Error ? query.error : null,
   };
 }

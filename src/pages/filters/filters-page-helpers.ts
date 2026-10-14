@@ -13,6 +13,7 @@ const ARRAY_FILTER_KEYS = [
   'publicoAlvo',
   'datasComemorativas',
   'endomarketing',
+  'sicoobThemes',
   'ramosAtividade',
   'segmentosAtividade',
   'materialGroups',
@@ -30,7 +31,6 @@ const BOOLEAN_FILTER_KEYS = [
   'featured',
   'isNew',
   'hasPersonalization',
-  'hasCommercialPackaging',
 ] as const;
 
 type ArrayFilterKey = (typeof ARRAY_FILTER_KEYS)[number];
@@ -136,6 +136,7 @@ export function countActiveFilters(filters: FilterState): number {
     filters.publicoAlvo,
     filters.datasComemorativas,
     filters.endomarketing,
+    filters.sicoobThemes,
     filters.techniques,
     filters.tags,
     filters.gender,
@@ -143,7 +144,7 @@ export function countActiveFilters(filters: FilterState): number {
   ];
   const activeFlags = [
     ...groupedCounts.map((count) => count > 0),
-    ...individualArrays.map((values) => values.length > 0),
+    ...individualArrays.map((values) => (values?.length ?? 0) > 0),
     filters.priceRange[0] > 0 || filters.priceRange[1] < 9999,
     filters.minStock > 0,
     ...BOOLEAN_FILTER_KEYS.map((key) => filters[key]),
@@ -159,8 +160,9 @@ function filterByIdSet(
   loading: boolean,
 ): Product[] {
   if (!active) return products;
+  if (loading) return products;
   if (ids.size) return products.filter((product) => ids.has(product.id));
-  return loading ? products : [];
+  return [];
 }
 
 function filterBySearch(products: Product[], search: string): Product[] {
@@ -217,8 +219,6 @@ function filterByStock(products: Product[], filters: FilterState): Product[] {
 
 function filterByFlags(products: Product[], filters: FilterState): Product[] {
   let result = products;
-  if (filters.hasCommercialPackaging)
-    result = result.filter((product) => product.hasCommercialPackaging === true);
   if (filters.isKit) result = result.filter((product) => product.isKit === true);
   if (filters.featured) result = result.filter((product) => product.featured === true);
   if (filters.isNew) result = result.filter((product) => product.newArrival === true);

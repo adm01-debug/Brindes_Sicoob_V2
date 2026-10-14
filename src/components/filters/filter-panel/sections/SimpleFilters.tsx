@@ -1,5 +1,5 @@
 import React from "react";
-import { Search, X, Clock, Gift } from "lucide-react";
+import { Search, X, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -248,18 +248,6 @@ export function QuickOptionsFilter({
       <div className="flex items-center gap-2">
         <Checkbox id="filter-inStock" checked={filters.inStock} onCheckedChange={() => toggleBooleanFilter('inStock')} />
         <Label htmlFor="filter-inStock" className="text-sm cursor-pointer">Em Estoque</Label>
-      </div>
-      <div className="flex items-center gap-2 p-2 rounded-lg border border-warning/20 bg-warning/5">
-        <Checkbox
-          id="has-commercial-packaging"
-          checked={filters.hasCommercialPackaging}
-          onCheckedChange={() => toggleBooleanFilter('hasCommercialPackaging')}
-          className="border-warning/50 data-[state=checked]:bg-warning data-[state=checked]:border-warning"
-        />
-        <Label htmlFor="has-commercial-packaging" className="text-sm cursor-pointer flex items-center gap-1.5">
-          <Gift className="h-3.5 w-3.5 text-warning" />
-          Com Embalagem Nativa
-        </Label>
       </div>
     </div>
   );

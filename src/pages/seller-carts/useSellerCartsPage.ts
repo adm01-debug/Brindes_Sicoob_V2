@@ -24,7 +24,7 @@ export function useSellerCartsPage() {
   const location = useLocation();
   const { cartId: routeCartId } = useParams<{ cartId?: string }>();
   const {
-    carts, activeCart, activeCartId, isLoading, totalItems, canCreateCart,
+    carts, activeCart, activeCartId, isLoading, isFetching, queryError, refetchCarts, totalItems, canCreateCart,
     setActiveCartId, deleteCart, addToActiveCart, removeItem, updateItemQuantity,
     updateItemNotes, updateItemSortOrder, updateCartNotes, updateCartStatus,
     duplicateCart, moveItemToCart, duplicateItemToCart,
@@ -37,9 +37,11 @@ export function useSellerCartsPage() {
 
   const [showNewCart, setShowNewCart] = useState(false);
   const invalidRouteCartRef = useRef<string | null>(null);
+  const validatedRouteCartRef = useRef<string | null>(null);
+  const failedRouteCartRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (location.pathname === "/carrinhos/novo") setShowNewCart(true);
+    setShowNewCart(location.pathname === "/carrinhos/novo");
   }, [location.pathname]);
 
   const handleNewCartOpenChange = useCallback((open: boolean) => {
@@ -79,12 +81,34 @@ export function useSellerCartsPage() {
   }, [activeCart, allProducts]);
 
   useEffect(() => {
-    if (!routeCartId || isLoading) return;
+    if (!routeCartId) {
+      invalidRouteCartRef.current = null;
+      validatedRouteCartRef.current = null;
+      failedRouteCartRef.current = null;
+      return;
+    }
+    if (isLoading || isFetching) return;
+
+    if (queryError) {
+      if (failedRouteCartRef.current !== routeCartId) {
+        failedRouteCartRef.current = routeCartId;
+        toast.error("Não foi possível confirmar o acesso ao carrinho");
+      }
+      return;
+    }
 
     const found = carts.find(c => c.id === routeCartId);
     if (found) {
       invalidRouteCartRef.current = null;
+      validatedRouteCartRef.current = routeCartId;
+      failedRouteCartRef.current = null;
       setActiveCartId(routeCartId);
+      return;
+    }
+
+    if (validatedRouteCartRef.current !== routeCartId) {
+      validatedRouteCartRef.current = routeCartId;
+      void refetchCarts();
       return;
     }
 
@@ -92,7 +116,7 @@ export function useSellerCartsPage() {
     invalidRouteCartRef.current = routeCartId;
     toast.error("Carrinho não encontrado ou sem acesso");
     navigate("/carrinhos", { replace: true });
-  }, [routeCartId, carts, isLoading, navigate, setActiveCartId]);
+  }, [routeCartId, carts, isFetching, isLoading, navigate, queryError, refetchCarts, setActiveCartId]);
 
   useEffect(() => {
     setLocalCartNotes(activeCart?.notes || "");

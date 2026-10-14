@@ -7,7 +7,7 @@ const ActionSchema = z.object({
   params: z.object({
     days_ahead: z.number().int().min(1).max(365).optional(),
     slug: z.string().trim().min(1).max(200).optional(),
-    limit: z.number().int().min(1).max(500).optional(),
+    limit: z.number().int().min(1).max(10_001).optional(),
     include_all_colors: z.boolean().optional(),
   }).optional(),
 });

@@ -22,7 +22,7 @@ export const EnhancedSpotlight = forwardRef<HTMLDivElement, unknown>(function En
   const [recentActions, setRecentActions] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
-  const { isDev, isAdmin } = useAuth();
+  const { isDev, isAdmin, roles } = useAuth();
 
   // Load recent actions from localStorage
   useEffect(() => {
@@ -45,8 +45,8 @@ export const EnhancedSpotlight = forwardRef<HTMLDivElement, unknown>(function En
   const items: SpotlightItem[] = useMemo(() => {
     const all = buildSpotlightItems(navigate);
     // Esconde itens cujas rotas exigem papel que o usuário não tem.
-    return filterByRoutePermission(all, (i) => i.path, { isDev, isAdmin });
-  }, [navigate, isDev, isAdmin]);
+    return filterByRoutePermission(all, (i) => i.path, { isDev, isAdmin, assignedRoles: roles });
+  }, [navigate, isDev, isAdmin, roles]);
 
   // Fuse.js para busca fuzzy
   const fuse = useMemo(() => {

@@ -14,6 +14,7 @@ describe('política de navegação Sicoob', () => {
   it('resolve rotas dinâmicas e ignora query string', () => {
     expect(rolesForSicoobPath('/sicoob/pedidos/pedido-1')).toContain('vendedor');
     expect(rolesForSicoobPath('/gestor/aprovacoes?status=pending')).toContain('gerente_pa');
+    expect(rolesForSicoobPath('/SICOOB/PEDIDOS/PEDIDO-1')).toContain('vendedor');
   });
 
   it('esconde rotas incompatíveis com o papel do usuário', () => {
