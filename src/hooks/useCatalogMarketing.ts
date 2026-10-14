@@ -149,6 +149,7 @@ export function useCatalogMarketingProductFilter({
   return {
     productIds,
     hasFilter: activeQueries.length > 0,
+    hasData: activeQueries.every((query) => query.data !== undefined),
     isLoading,
     error: error instanceof Error ? error : null,
   };

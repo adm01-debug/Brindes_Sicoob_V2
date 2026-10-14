@@ -2,17 +2,20 @@
  * Consulta paginada do catálogo mestre, com modo somente leitura.
  * Refatorado: lógica extraída para useProductsManager hook.
  */
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Search, Package, ImageIcon, RefreshCw, ChevronLeft, ChevronRight, X, Boxes } from "lucide-react";
+import { Loader2, Search, Package, ImageIcon, RefreshCw, ChevronLeft, ChevronRight, X, Boxes, Tags } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { ProductFiltersBar } from "./products/ProductFiltersBar";
 import { useProductsManager } from "./products/useProductsManager";
+import { ProductMarketingSection } from "./products/ProductMarketingSection";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const PRIMARY_ICON_BACKGROUND = 'bg-primary/10';
 
@@ -47,7 +50,7 @@ function ProductFlags({ product }: { product: ManagedProduct }) {
   );
 }
 
-function ProductRow({ product }: { product: ManagedProduct }) {
+function ProductRow({ product, onCurate }: { product: ManagedProduct; onCurate: () => void }) {
   const stock = product.stock ?? 0;
   return (
     <TableRow key={product.id} className="group hover:bg-muted/40 transition-colors border-border/30">
@@ -64,6 +67,11 @@ function ProductRow({ product }: { product: ManagedProduct }) {
       <TableCell className="text-center">
         {product.is_active ? <Badge className="text-[10px] bg-primary/10 text-primary border border-primary/20 hover:bg-primary/15">Ativo</Badge> : <Badge variant="secondary" className="text-[10px] opacity-60">Inativo</Badge>}
       </TableCell>
+      <TableCell className="text-right">
+        <Button type="button" variant="outline" size="sm" className="gap-1.5" aria-label={`Classificar marketing de ${product.name}`} onClick={onCurate}>
+          <Tags className="h-3.5 w-3.5" />Classificar
+        </Button>
+      </TableCell>
     </TableRow>
   );
 }
@@ -77,7 +85,7 @@ function visiblePages(currentPage: number, totalPages: number): number[] {
   });
 }
 
-function ProductTableContent({ state }: { state: ProductsState }) {
+function ProductTableContent({ state, onCurate }: { state: ProductsState; onCurate: (product: ManagedProduct) => void }) {
   if (state.isLoading) {
     return <div className="flex items-center justify-center py-16"><div className="flex flex-col items-center gap-3"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="text-sm text-muted-foreground">Carregando produtos...</p></div></div>;
   }
@@ -92,11 +100,28 @@ function ProductTableContent({ state }: { state: ProductsState }) {
             <TableHead className="w-14">Foto</TableHead><TableHead className="w-28">SKU</TableHead><TableHead>Produto</TableHead>
             <TableHead className="w-28 text-right">Preço</TableHead><TableHead className="w-24 text-center">Estoque</TableHead>
             <TableHead className="w-24 text-center">Status</TableHead>
+            <TableHead className="w-36 text-right">Curadoria local</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>{state.products.map((product) => <ProductRow key={product.id} product={product} />)}</TableBody>
+        <TableBody>{state.products.map((product) => <ProductRow key={product.id} product={product} onCurate={() => onCurate(product)} />)}</TableBody>
       </Table>
     </div>
+  );
+}
+
+function ProductCurationDialog({ product, onOpenChange }: { product: ManagedProduct | null; onOpenChange: (open: boolean) => void }) {
+  return (
+    <Dialog open={Boolean(product)} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Curadoria de marketing</DialogTitle>
+          <DialogDescription>
+            {product ? `${product.name} · ${product.sku}. As classificações são salvas no portal e não alteram o catálogo mestre.` : 'Classifique o produto no portal sem alterar o catálogo mestre.'}
+          </DialogDescription>
+        </DialogHeader>
+        {product && <ProductMarketingSection productId={product.id} />}
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -124,6 +149,7 @@ function ProductPagination({ state }: { state: ProductsState }) {
 
 export function ProductsManager() {
   const s = useProductsManager();
+  const [curationProduct, setCurationProduct] = useState<ManagedProduct | null>(null);
 
   return (
     <div className="space-y-4">
@@ -135,6 +161,7 @@ export function ProductsManager() {
             Consulta de Produtos
           </h2>
           <p className="text-sm text-muted-foreground mt-1">Dados sincronizados do catálogo mestre em modo somente leitura</p>
+          <p className="text-xs text-muted-foreground mt-1">A ação Classificar grava somente a taxonomia editorial local do portal.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => s.fetchProducts()} className="gap-2">
@@ -188,10 +215,12 @@ export function ProductsManager() {
       {/* Table */}
       {(<Card className="border-border/40">
         <CardContent className="p-0">
-          <ProductTableContent state={s} />
+          <ProductTableContent state={s} onCurate={setCurationProduct} />
           <ProductPagination state={s} />
         </CardContent>
       </Card>)}
+
+      <ProductCurationDialog product={curationProduct} onOpenChange={(open) => { if (!open) setCurationProduct(null); }} />
 
     </div>
   );

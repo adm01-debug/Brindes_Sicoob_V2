@@ -109,6 +109,7 @@ export function useProductsByCommemorativeDates(slugs: string[]) {
   return {
     productIds: new Set(query.data ?? []),
     hasFilter: selected.length > 0,
+    hasData: query.data !== undefined,
     isLoading: selected.length > 0 && query.isPending,
     error: query.error instanceof Error ? query.error : null,
   };

@@ -240,6 +240,7 @@ export function useFilterPanelState(filters: FilterState, onFilterChange: Filter
     marketingOptionsLoading: publicoAlvo.isPending || endomarketing.isPending || temasSicoob.isPending,
     techniqueOptions: advanced.techniqueOptions, tagOptions: advanced.tagOptions,
     availableSizes: availableSizes.sizes, availableSizesLoading: availableSizes.isLoading,
+    availableSizesError: availableSizes.error, retryAvailableSizes: availableSizes.retry,
     supplierOptions: suppliers.suppliers, suppliersLoading: suppliers.isLoading, materialGroups: material.groups, allMaterials: material.materials,
     materialsLoading: material.isLoading, materialFilterState: material.filterState, toggleMaterialGroup: material.toggleGroup,
     toggleMaterialType: material.toggleType, isMaterialGroupSelected: material.isGroupSelected, getTypesForGroup: material.getTypesForGroup,

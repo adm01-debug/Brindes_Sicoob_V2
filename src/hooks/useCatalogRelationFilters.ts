@@ -18,6 +18,7 @@ interface RelationFilterConfig {
 export interface CatalogRelationFilterResult {
   productIds: Set<string>;
   hasFilter: boolean;
+  hasData: boolean;
   isLoading: boolean;
   error: Error | null;
 }
@@ -85,6 +86,7 @@ function useRelationFilter(config: RelationFilterConfig): CatalogRelationFilterR
   return {
     productIds,
     hasFilter,
+    hasData: query.data !== undefined,
     isLoading: hasFilter && query.isPending,
     error: query.error,
   };
@@ -163,7 +165,7 @@ export function useProductsByActivity(branchSlugs: string[], segmentSlugs: strin
     retry: 1,
   });
   const productIds = useMemo(() => new Set(query.data ?? []), [query.data]);
-  return { productIds, hasFilter, isLoading: hasFilter && query.isPending, error: query.error };
+  return { productIds, hasFilter, hasData: query.data !== undefined, isLoading: hasFilter && query.isPending, error: query.error };
 }
 
 interface ReferenceRecord {
@@ -232,7 +234,7 @@ export async function fetchAvailableCatalogSizes(): Promise<string[]> {
   )];
 }
 
-export function useAvailableCatalogSizes(): { sizes: string[]; isLoading: boolean } {
+export function useAvailableCatalogSizes(): { sizes: string[]; isLoading: boolean; error: Error | null; retry: () => void } {
   const query = useQuery({
     queryKey: ['catalog-available-sizes'],
     queryFn: fetchAvailableCatalogSizes,
@@ -240,5 +242,10 @@ export function useAvailableCatalogSizes(): { sizes: string[]; isLoading: boolea
     gcTime: 60 * 60 * 1000,
     retry: 1,
   });
-  return { sizes: query.data ?? [], isLoading: query.isPending };
+  return {
+    sizes: query.data ?? [],
+    isLoading: query.isPending,
+    error: query.error instanceof Error ? query.error : null,
+    retry: () => { void query.refetch(); },
+  };
 }

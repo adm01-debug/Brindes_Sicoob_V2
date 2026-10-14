@@ -35,6 +35,7 @@ import { useCatalogSelectionState } from "./catalog/useCatalogSelectionState";
 import { useCatalogStats } from "./catalog/useCatalogStats";
 import { defaultFilters } from "@/components/filters/FilterPanel";
 import { useAuth } from "@/contexts/AuthContext";
+import { canApplyCatalogFilter } from "@/lib/catalog-filter-state";
 
 export type { ViewMode, SortOption };
 
@@ -115,10 +116,6 @@ function catalogSearchOptions(search: string): { search: string } | undefined {
 
 function nullableNumber(value: number | null | undefined): number | null {
   return value ?? null;
-}
-
-function enabledFilter(active: boolean, error: Error | null): boolean {
-  return active && !error;
 }
 
 function catalogVisibility(
@@ -212,22 +209,22 @@ export function useCatalogState() {
     categoryIds: listOrEmpty(filterState.filters.categories?.map(String)),
     includeDescendants: true,
   });
-  const { productIds: colorFilteredProductIds, hasFilter: hasColorFilter, isLoading: isLoadingColorFilter, error: colorFilterError } = useProductsByColor({
+  const { productIds: colorFilteredProductIds, hasFilter: hasColorFilter, hasData: hasColorFilterData, isLoading: isLoadingColorFilter, error: colorFilterError } = useProductsByColor({
     colorGroups: filterState.filters.colorGroups,
     colorVariations: filterState.filters.colorVariations,
     colorNuances: filterState.filters.colorNuances,
     colors: filterState.filters.colors,
   });
-  const { productIds: tagFilteredProductIds, hasFilter: hasTagFilter, isLoading: isLoadingTagFilter, error: tagFilterError } = useProductsByTag(filterState.filters.tags);
-  const { productIds: techniqueFilteredProductIds, hasFilter: hasTechniqueFilter, isLoading: isLoadingTechniqueFilter, error: techniqueFilterError } = useProductsByTechnique(filterState.filters.techniques);
-  const { productIds: sizeFilteredProductIds, hasFilter: hasSizeFilter, isLoading: isLoadingSizeFilter, error: sizeFilterError } = useProductsBySize(filterState.filters.sizes);
-  const { productIds: activityFilteredProductIds, hasFilter: hasActivityFilter, isLoading: isLoadingActivityFilter, error: activityFilterError } = useProductsByActivity(filterState.filters.ramosAtividade, filterState.filters.segmentosAtividade);
-  const { productIds: marketingFilteredProductIds, hasFilter: hasMarketingFilter, isLoading: isLoadingMarketingFilter, error: marketingFilterError } = useCatalogMarketingProductFilter({
+  const { productIds: tagFilteredProductIds, hasFilter: hasTagFilter, hasData: hasTagFilterData, isLoading: isLoadingTagFilter, error: tagFilterError } = useProductsByTag(filterState.filters.tags);
+  const { productIds: techniqueFilteredProductIds, hasFilter: hasTechniqueFilter, hasData: hasTechniqueFilterData, isLoading: isLoadingTechniqueFilter, error: techniqueFilterError } = useProductsByTechnique(filterState.filters.techniques);
+  const { productIds: sizeFilteredProductIds, hasFilter: hasSizeFilter, hasData: hasSizeFilterData, isLoading: isLoadingSizeFilter, error: sizeFilterError } = useProductsBySize(filterState.filters.sizes);
+  const { productIds: activityFilteredProductIds, hasFilter: hasActivityFilter, hasData: hasActivityFilterData, isLoading: isLoadingActivityFilter, error: activityFilterError } = useProductsByActivity(filterState.filters.ramosAtividade, filterState.filters.segmentosAtividade);
+  const { productIds: marketingFilteredProductIds, hasFilter: hasMarketingFilter, hasData: hasMarketingFilterData, isLoading: isLoadingMarketingFilter, error: marketingFilterError } = useCatalogMarketingProductFilter({
     publicoAlvo: filterState.filters.publicoAlvo,
     endomarketing: filterState.filters.endomarketing,
     temas: filterState.filters.sicoobThemes,
   });
-  const { productIds: commemorativeDateProductIds, hasFilter: hasCommemorativeDateFilter, isLoading: isLoadingCommemorativeDateFilter, error: commemorativeDateFilterError } = useProductsByCommemorativeDates(filterState.filters.datasComemorativas);
+  const { productIds: commemorativeDateProductIds, hasFilter: hasCommemorativeDateFilter, hasData: hasCommemorativeDateFilterData, isLoading: isLoadingCommemorativeDateFilter, error: commemorativeDateFilterError } = useProductsByCommemorativeDates(filterState.filters.datasComemorativas);
   const isLoadingRelations = [
     isLoadingMaterialFilter,
     isLoadingColorFilter,
@@ -268,13 +265,13 @@ export function useCatalogState() {
     realProducts, filters: filterState.filters, sortBy: display.sortBy, hasFuzzySearch, fuzzySearchResults,
     hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter,
     hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter,
-    hasColorFilter: enabledFilter(hasColorFilter, colorFilterError), colorFilteredProductIds, isLoadingColorFilter,
-    hasTagFilter: enabledFilter(hasTagFilter, tagFilterError), tagFilteredProductIds, isLoadingTagFilter,
-    hasTechniqueFilter: enabledFilter(hasTechniqueFilter, techniqueFilterError), techniqueFilteredProductIds, isLoadingTechniqueFilter,
-    hasSizeFilter: enabledFilter(hasSizeFilter, sizeFilterError), sizeFilteredProductIds, isLoadingSizeFilter,
-    hasActivityFilter: enabledFilter(hasActivityFilter, activityFilterError), activityFilteredProductIds, isLoadingActivityFilter,
-    hasMarketingFilter: enabledFilter(hasMarketingFilter, marketingFilterError), marketingFilteredProductIds, isLoadingMarketingFilter,
-    hasCommemorativeDateFilter: enabledFilter(hasCommemorativeDateFilter, commemorativeDateFilterError), commemorativeDateProductIds, isLoadingCommemorativeDateFilter,
+    hasColorFilter: canApplyCatalogFilter(hasColorFilter, colorFilterError, hasColorFilterData), colorFilteredProductIds, isLoadingColorFilter,
+    hasTagFilter: canApplyCatalogFilter(hasTagFilter, tagFilterError, hasTagFilterData), tagFilteredProductIds, isLoadingTagFilter,
+    hasTechniqueFilter: canApplyCatalogFilter(hasTechniqueFilter, techniqueFilterError, hasTechniqueFilterData), techniqueFilteredProductIds, isLoadingTechniqueFilter,
+    hasSizeFilter: canApplyCatalogFilter(hasSizeFilter, sizeFilterError, hasSizeFilterData), sizeFilteredProductIds, isLoadingSizeFilter,
+    hasActivityFilter: canApplyCatalogFilter(hasActivityFilter, activityFilterError, hasActivityFilterData), activityFilteredProductIds, isLoadingActivityFilter,
+    hasMarketingFilter: canApplyCatalogFilter(hasMarketingFilter, marketingFilterError, hasMarketingFilterData), marketingFilteredProductIds, isLoadingMarketingFilter,
+    hasCommemorativeDateFilter: canApplyCatalogFilter(hasCommemorativeDateFilter, commemorativeDateFilterError, hasCommemorativeDateFilterData), commemorativeDateProductIds, isLoadingCommemorativeDateFilter,
     promoSalesMap, supplierSalesMap,
   });
 

@@ -19,6 +19,7 @@ interface UseProductsByColorOptions {
 interface UseProductsByColorResult {
   productIds: Set<string>;
   hasFilter: boolean;
+  hasData: boolean;
   isLoading: boolean;
   error: Error | null;
 }
@@ -233,6 +234,7 @@ export function useProductsByColor({
   const [productIds, setProductIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [hasData, setHasData] = useState(false);
 
   const hasFilter = useMemo(() =>
     colorGroups.length > 0 || colorVariations.length > 0 || colorNuances.length > 0 || colors.length > 0,
@@ -261,6 +263,7 @@ export function useProductsByColor({
       setIsLoading(false);
       setError(null);
       setProductIds(new Set());
+      setHasData(false);
       lastFetchedKey.current = '';
       return;
     }
@@ -276,12 +279,14 @@ export function useProductsByColor({
 
       if (requestSequenceRef.current !== requestId) return;
       setProductIds(result.productIds);
+      setHasData(true);
       lastFetchedKey.current = filterKey;
       logger.log(`[useProductsByColor] Found ${result.productIds.size} products for ${result.colorCount} color IDs`);
     } catch (err) {
       logger.warn('[useProductsByColor] Error:', err);
       if (requestSequenceRef.current === requestId) {
         setProductIds(new Set());
+        setHasData(false);
         setError(err instanceof Error ? err : new Error('Falha ao consultar produtos por cor'));
         lastFetchedKey.current = filterKey;
       }
@@ -299,5 +304,5 @@ export function useProductsByColor({
     }
   }, [filterKey, hasFilter, fetchProductIds]);
 
-  return { productIds, hasFilter, isLoading, error };
+  return { productIds, hasFilter, hasData, isLoading, error };
 }

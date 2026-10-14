@@ -75,7 +75,6 @@ export const RBAC_ROUTES: RbacRouteEntry[] = [
   { path: "/admin/usuarios", label: "Usuários", guard: "AdminRoute", role: "admin", mfaAal2: true, rlsHelper: "is_admin / has_role(_,'admin')", category: "admin" },
   { path: "/admin/usuarios/promover", label: "Promover usuário", guard: "AdminRoute", role: "admin", mfaAal2: true, rlsHelper: "is_admin", category: "admin", notes: "Step-up de segurança aplicado no diálogo." },
   { path: "/admin/cadastros", label: "Cadastros", guard: "AdminRoute", role: "admin", mfaAal2: true, category: "admin" },
-  { path: "/admin/cadastros/produto/:id", label: "Cadastro de produto", guard: "AdminRoute", role: "admin", mfaAal2: true, category: "admin" },
   { path: "/admin/newsletter", label: "Newsletter", guard: "AdminRoute", role: "admin", mfaAal2: true, category: "admin" },
   { path: "/admin/campanhas", label: "Campanhas", guard: "AdminRoute", role: "admin", mfaAal2: true, category: "admin" },
   { path: "/admin/singulares", label: "Singulares", guard: "AdminRoute", role: "admin", mfaAal2: true, category: "admin" },

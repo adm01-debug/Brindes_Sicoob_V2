@@ -3,7 +3,7 @@
  * Extrai size_codes únicos das variações dos produtos carregados.
  */
 import { useMemo, useState } from "react";
-import { Search, X } from "lucide-react";
+import { AlertCircle, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
@@ -31,9 +31,43 @@ interface SizeFilterProps {
   products?: Array<{ variations?: Array<{ size_code?: string | null }> }>;
   availableSizes?: string[];
   isLoading?: boolean;
+  error?: Error | null;
+  onRetry?: () => void;
 }
 
-export function SizeFilter({ selectedSizes, onToggleSize, products = [], availableSizes: externalSizes = [], isLoading = false }: SizeFilterProps) {
+function RetryButton({ onRetry }: { onRetry?: () => void }) {
+  if (!onRetry) return null;
+  return <button type="button" className="font-medium underline" onClick={onRetry}>Tentar novamente</button>;
+}
+
+function EmptySizesState({ isLoading, error, onRetry }: Pick<SizeFilterProps, "isLoading" | "error" | "onRetry">) {
+  if (!error) return <p className="text-xs text-muted-foreground px-1">{isLoading ? "Carregando tamanhos disponíveis..." : "Nenhum tamanho disponível no catálogo."}</p>;
+  return (
+    <div role="alert" className="space-y-2 rounded-md border border-destructive/30 bg-destructive/5 p-2 text-xs text-destructive">
+      <p className="flex items-center gap-1.5"><AlertCircle className="h-3.5 w-3.5" />Não foi possível carregar os tamanhos disponíveis.</p>
+      <RetryButton onRetry={onRetry} />
+    </div>
+  );
+}
+
+function CachedSizesWarning({ onRetry }: Pick<SizeFilterProps, "onRetry">) {
+  return (
+    <div role="alert" className="flex items-center justify-between gap-2 rounded-md border border-warning/30 bg-warning/5 p-2 text-xs text-foreground">
+      <span>Exibindo tamanhos em cache; a atualização falhou.</span><RetryButton onRetry={onRetry} />
+    </div>
+  );
+}
+
+function SizeOptions({ sizes, selectedSizes, onToggleSize }: { sizes: string[]; selectedSizes: string[]; onToggleSize: (size: string) => void }) {
+  return <div className="flex flex-wrap gap-1.5">{sizes.map((size) => (
+    <button key={size} type="button" onClick={() => onToggleSize(size)} className={cn(
+      "px-2.5 py-1 rounded-md text-xs font-medium border transition-all",
+      selectedSizes.includes(size) ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-card border-border text-foreground hover:border-primary/40 hover:bg-accent"
+    )}>{size}</button>
+  ))}</div>;
+}
+
+export function SizeFilter({ selectedSizes, onToggleSize, products = [], availableSizes: externalSizes = [], isLoading = false, error = null, onRetry }: SizeFilterProps) {
   const [search, setSearch] = useState("");
 
   const availableSizes = useMemo(() => {
@@ -54,15 +88,12 @@ export function SizeFilter({ selectedSizes, onToggleSize, products = [], availab
   }, [availableSizes, search]);
 
   if (availableSizes.length === 0) {
-    return (
-      <p className="text-xs text-muted-foreground px-1">
-        {isLoading ? 'Carregando tamanhos disponíveis...' : 'Nenhum tamanho disponível no catálogo.'}
-      </p>
-    );
+    return <EmptySizesState isLoading={isLoading} error={error} onRetry={onRetry} />;
   }
 
   return (
     <div className="space-y-2 px-1">
+      {error && <CachedSizesWarning onRetry={onRetry} />}
       {availableSizes.length > 10 && (
         <div className="relative">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -79,25 +110,7 @@ export function SizeFilter({ selectedSizes, onToggleSize, products = [], availab
           )}
         </div>
       )}
-      <div className="flex flex-wrap gap-1.5">
-        {filteredSizes.map((size) => {
-          const isSelected = selectedSizes.includes(size);
-          return (
-            <button
-              key={size}
-              onClick={() => onToggleSize(size)}
-              className={cn(
-                "px-2.5 py-1 rounded-md text-xs font-medium border transition-all",
-                isSelected
-                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                  : "bg-card border-border text-foreground hover:border-primary/40 hover:bg-accent"
-              )}
-            >
-              {size}
-            </button>
-          );
-        })}
-      </div>
+      <SizeOptions sizes={filteredSizes} selectedSizes={selectedSizes} onToggleSize={onToggleSize} />
       {selectedSizes.length > 0 && (
         <p className="text-[10px] text-muted-foreground">
           {selectedSizes.length} tamanho(s) selecionado(s)
