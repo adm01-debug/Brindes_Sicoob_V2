@@ -5,12 +5,78 @@
  * `page.route()` e utilitários de a11y/mobile que padronizam os 8 casos por
  * rota: render, happy, auth-fail, payload-invalido, timeout, 5xx, a11y, mobile.
  */
-import type { Page, Route } from '@playwright/test';
+import type { Page, Request, Route } from '@playwright/test';
 import { expect } from '@playwright/test';
 
 const SUPABASE_HOST_RE = /supabase\.(co|in)/;
 const FN_RE = /\/functions\/v1\//;
 const AUTH_RE = /\/auth\/v1\//;
+
+type BootstrapRole = 'dev' | 'admin' | 'gestor_compras' | 'vendedor';
+
+function decodeRequestEmail(request: Request): string {
+  const authorization = request.headers().authorization ?? '';
+  const token = authorization.replace(/^Bearer\s+/i, '');
+  const payload = token.split('.')[1];
+  if (!payload) return '';
+
+  try {
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const decoded = Buffer.from(normalized, 'base64').toString('utf8');
+    const email = (JSON.parse(decoded) as { email?: unknown }).email;
+    return typeof email === 'string' ? email.toLowerCase() : '';
+  } catch {
+    return '';
+  }
+}
+
+function bootstrapRoleFor(request: Request): BootstrapRole {
+  const email = decodeRequestEmail(request);
+  if (email && email === process.env.E2E_DEV_EMAIL?.toLowerCase()) return 'dev';
+  if (email && email === process.env.E2E_ADMIN_EMAIL?.toLowerCase()) return 'admin';
+  if (email && email === process.env.E2E_MANAGER_EMAIL?.toLowerCase()) return 'gestor_compras';
+  return 'vendedor';
+}
+
+/**
+ * Isola as suítes estruturais por rota das consultas de bootstrap da sessão.
+ * Autenticação, RLS e revogação continuam cobertas pelos gates remotos e pelas
+ * jornadas dedicadas. Repetir essas consultas ao vivo em centenas de casos de
+ * layout saturava o endpoint e deixava o guard preso em permissões.
+ */
+export async function mockAuthenticatedBootstrap(page: Page) {
+  await page.route(/\/rest\/v1\/rpc\/get_sicoob_access_state(?:\?|$)/, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([{ active: true, reason: 'active' }]),
+    }),
+  );
+
+  await page.route(/\/rest\/v1\/user_roles(?:\?|$)/, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([{ role: bootstrapRoleFor(route.request()) }]),
+    }),
+  );
+
+  await page.route(/\/rest\/v1\/profiles(?:\?|$)/, (route) => {
+    if (route.request().method() !== 'GET') {
+      return route.fulfill({ status: 204, body: '' });
+    }
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: 'e2e-profile',
+        user_id: 'e2e-user',
+        full_name: 'Usuário E2E',
+        role: bootstrapRoleFor(route.request()),
+      }),
+    });
+  });
+}
 
 /* ============================================================
  * Mocks de falha

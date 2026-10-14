@@ -84,7 +84,7 @@ function CompanyDropdown(props: DropdownProps) {
 }
 
 function SearchField({ inputRef, query, setQuery, onFocus, isLoading }: { inputRef: RefObject<HTMLInputElement>; query: string; setQuery: (query: string) => void; onFocus: () => void; isLoading: boolean }) {
-  return <div className="relative z-50 isolate"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input ref={inputRef} placeholder="Buscar empresa..." value={query} onChange={(event) => setQuery(event.target.value)} onFocus={onFocus} className="pl-9 h-11 bg-background" />{isLoading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />}</div>;
+  return <div className="relative z-50 isolate"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input ref={inputRef} aria-label="Buscar empresa" placeholder="Buscar empresa..." value={query} onChange={(event) => setQuery(event.target.value)} onFocus={onFocus} className="pl-9 h-11 bg-background" />{isLoading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />}</div>;
 }
 
 function DropdownBackdrop({ visible, dismiss }: { visible: boolean; dismiss: () => void }) {
