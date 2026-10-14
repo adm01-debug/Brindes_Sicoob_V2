@@ -24,7 +24,7 @@ function normalized(value: string): string {
     .toLowerCase();
 }
 
-function selectedValues(values: string[]): string[] {
+function selectedValues(values: string[] = []): string[] {
   return [...new Set(values.map(normalized).filter(Boolean))].sort();
 }
 
@@ -115,13 +115,13 @@ function intersectProductIds(sets: Set<string>[]): Set<string> {
 }
 
 export function useCatalogMarketingProductFilter({
-  publicoAlvo,
-  endomarketing,
-  temas,
+  publicoAlvo = [],
+  endomarketing = [],
+  temas = [],
 }: {
-  publicoAlvo: string[];
-  endomarketing: string[];
-  temas: string[];
+  publicoAlvo?: string[];
+  endomarketing?: string[];
+  temas?: string[];
 }) {
   const publico = useCategoryProductIds('publico_alvo', publicoAlvo);
   const endo = useCategoryProductIds('endomarketing', endomarketing);
