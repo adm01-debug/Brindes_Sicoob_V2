@@ -152,7 +152,7 @@ export function OrderPaymentsTab({ orderId }: OrderPaymentsTabProps) {
               </div>
               <div className="space-y-2">
                 <Label>Situação</Label>
-                <Select value={status} onValueChange={(value: 'pending' | 'paid') => setStatus(value)}>
+                <Select value={status} onValueChange={(value) => setStatus(value as 'pending' | 'paid')}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pending">Pendente</SelectItem>

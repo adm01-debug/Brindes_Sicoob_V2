@@ -87,6 +87,30 @@ const TARGETS = [
     file: "supabase/migrations/20261008123000_fix_favorite_items_upsert_conflict.sql",
     sha256: "79496a33511eb0fcba9704b41ec97b33622e4b1afaebab6124767f1cd84b2ee6",
   },
+  {
+    file: "supabase/migrations/20261013115605_harden_sicoob_budget_authority.sql",
+    sha256: "0d19bd952c97dd5482f9e4dc4c8656812a868845a2957f07464f406af257053b",
+  },
+  {
+    file: "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
+    sha256: "4bc1b931436c5ee412f07d45878a22912f4f79e80136129f75924d9641507e3f",
+  },
+  {
+    file: "supabase/migrations/20261013123000_preserve_atomic_quote_save_under_governance.sql",
+    sha256: "0d41715a7eb8e77ff4406ce640647bc2687ab8ca3e2e6d0468e72ca1a8c0f3d0",
+  },
+  {
+    file: "supabase/migrations/20261014113000_raise_postgrest_schema_cache_timeout.sql",
+    sha256: "a36ad6e9c5fee9a910453dbf1c6fb0729c6126cfef10570a4c08b8af50bd53b3",
+  },
+  {
+    file: "supabase/migrations/20261014121500_separate_postgrest_cache_and_request_timeouts.sql",
+    sha256: "5f12ed1add8ca141b9a6568951571439c13c765817d85910dba21d2524d1a289",
+  },
+  {
+    file: "supabase/migrations/20261014124500_canonicalize_quote_insert_timestamps.sql",
+    sha256: "5a6aa6ee442f351ea470d5eb6d1652077764f5716848e75bd33820f0e57c06e4",
+  },
 ];
 
 function sha256(value) {
@@ -220,13 +244,23 @@ function dollarQuote(value, label) {
 // esperado: funções forward-only podem ser substituídas por migrations novas
 // sem que o arquivo antigo deixe de constar no ledger.
 function latestDefiner(targets, functionName) {
+  const declarations = [
+    `CREATE OR REPLACE FUNCTION public.${functionName}(`,
+    `CREATE FUNCTION public.${functionName}(`,
+  ];
   return [...targets].reverse().find((target) =>
-    target.sql.includes(`CREATE OR REPLACE FUNCTION public.${functionName}(`));
+    declarations.some((declaration) => target.sql.includes(declaration)));
 }
 
 function extractFunctionBody(sql, functionName) {
-  const declaration = `CREATE OR REPLACE FUNCTION public.${functionName}(`;
-  const declarationIndex = sql.indexOf(declaration);
+  const declarations = [
+    `CREATE OR REPLACE FUNCTION public.${functionName}(`,
+    `CREATE FUNCTION public.${functionName}(`,
+  ];
+  const declarationIndex = declarations
+    .map((declaration) => sql.indexOf(declaration))
+    .filter((index) => index >= 0)
+    .sort((left, right) => left - right)[0] ?? -1;
   const delimiter = "AS $function$";
   const start = sql.indexOf(delimiter, declarationIndex);
   const bodyStart = start + delimiter.length;
@@ -343,6 +377,10 @@ async function validateContract(client, targets) {
       (SELECT p.prosrc FROM pg_proc p
         WHERE p.oid = to_regprocedure('public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)')) AS status_source,
       (SELECT p.prosrc FROM pg_proc p
+        WHERE p.oid = to_regprocedure('public.assert_quote_transition(uuid,public.quotes,text)')) AS transition_assert_source,
+      (SELECT p.prosrc FROM pg_proc p
+        WHERE p.oid = to_regprocedure('public.can_manage_quote_scope(uuid,uuid)')) AS quote_scope_source,
+      (SELECT p.prosrc FROM pg_proc p
         WHERE p.oid = to_regprocedure('public.notify_singular_quote_submission()')) AS notification_source,
       COALESCE((SELECT p.prosecdef AND p.proconfig @> ARRAY['search_path=pg_catalog, public']::text[]
         FROM pg_proc p
@@ -355,6 +393,7 @@ async function validateContract(client, targets) {
         WHERE p.oid = to_regprocedure('public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)')), false) AS status_public_execute,
       has_function_privilege('authenticated', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE') AS transition_assert_authenticated_execute,
       has_function_privilege('anon', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE') AS transition_assert_anon_execute,
+      has_function_privilege('service_role', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE') AS transition_assert_service_execute,
       COALESCE((SELECT bool_or(a.grantee = 0 AND a.privilege_type = 'EXECUTE')
         FROM pg_proc p,
           LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
@@ -612,13 +651,18 @@ async function validateContract(client, targets) {
   const statusMigration = latestDefiner(targets, "bulk_update_quote_status_atomic");
   const notificationMigration = latestDefiner(targets, "notify_singular_quote_submission");
   const identityMigration = latestDefiner(targets, "save_quote_atomic");
-  if (!idempotencyMigration || !statusMigration || !notificationMigration || !identityMigration) {
+  const transitionMigration = latestDefiner(targets, "assert_quote_transition");
+  const quoteScopeMigration = latestDefiner(targets, "can_manage_quote_scope");
+  if (!idempotencyMigration || !statusMigration || !notificationMigration || !identityMigration
+      || !transitionMigration || !quoteScopeMigration) {
     throw new Error("Allowlist incompleta para validar os corpos das funções críticas.");
   }
   const sourceHashesValid = typeof result?.idempotency_source === "string"
     && typeof result.status_source === "string"
     && typeof result.notification_source === "string"
     && typeof result.save_atomic_source === "string"
+    && typeof result.transition_assert_source === "string"
+    && typeof result.quote_scope_source === "string"
     && sha256(result.idempotency_source.trim()) === sha256(
       extractFunctionBody(idempotencyMigration.sql, "save_quote_atomic_idempotent"),
     )
@@ -630,6 +674,12 @@ async function validateContract(client, targets) {
     )
     && sha256(result.save_atomic_source.trim()) === sha256(
       extractFunctionBody(identityMigration.sql, "save_quote_atomic"),
+    )
+    && sha256(result.transition_assert_source.trim()) === sha256(
+      extractFunctionBody(transitionMigration.sql, "assert_quote_transition"),
+    )
+    && sha256(result.quote_scope_source.trim()) === sha256(
+      extractFunctionBody(quoteScopeMigration.sql, "can_manage_quote_scope"),
     );
   const normalizeExpression = (value) => typeof value === "string"
     ? value.replace(/\s+/g, " ").trim()
@@ -668,7 +718,8 @@ async function validateContract(client, targets) {
     && result.status_security_safe && result.status_authenticated_execute
     && !result.status_anon_execute && !result.status_public_execute
     && !result.transition_assert_authenticated_execute
-    && !result.transition_assert_anon_execute && !result.transition_assert_public_execute
+    && !result.transition_assert_anon_execute && !result.transition_assert_service_execute
+    && !result.transition_assert_public_execute
     && !result.notification_authenticated_execute && !result.notification_anon_execute
     && !result.notification_public_execute
     && result.notification_trigger_safe && triggerDefinitionExact
@@ -735,7 +786,10 @@ VALUES (
   const statusMigration = latestDefiner(targets, "bulk_update_quote_status_atomic");
   const notificationMigration = latestDefiner(targets, "notify_singular_quote_submission");
   const identityMigration = latestDefiner(targets, "save_quote_atomic");
-  if (!idempotencyMigration || !statusMigration || !notificationMigration || !identityMigration) {
+  const transitionMigration = latestDefiner(targets, "assert_quote_transition");
+  const quoteScopeMigration = latestDefiner(targets, "can_manage_quote_scope");
+  if (!idempotencyMigration || !statusMigration || !notificationMigration || !identityMigration
+      || !transitionMigration || !quoteScopeMigration) {
     throw new Error("Allowlist incompleta para montar a validação transacional.");
   }
   const idempotencyBody = dollarQuote(
@@ -753,6 +807,14 @@ VALUES (
   const saveAtomicBody = dollarQuote(
     extractFunctionBody(identityMigration.sql, "save_quote_atomic"),
     "save_atomic_body",
+  );
+  const transitionBody = dollarQuote(
+    extractFunctionBody(transitionMigration.sql, "assert_quote_transition"),
+    "transition_body",
+  );
+  const quoteScopeBody = dollarQuote(
+    extractFunctionBody(quoteScopeMigration.sql, "can_manage_quote_scope"),
+    "quote_scope_body",
   );
 
   return `BEGIN;
@@ -789,6 +851,10 @@ BEGIN
         IS DISTINCT FROM ${notificationBody}
      OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)'))
         IS DISTINCT FROM ${saveAtomicBody}
+     OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.assert_quote_transition(uuid,public.quotes,text)'))
+        IS DISTINCT FROM ${transitionBody}
+     OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.can_manage_quote_scope(uuid,uuid)'))
+        IS DISTINCT FROM ${quoteScopeBody}
      OR COALESCE((SELECT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
         FROM pg_proc WHERE oid = to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)')), true)
      OR COALESCE((SELECT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
@@ -841,6 +907,7 @@ BEGIN
      )
      OR has_function_privilege('authenticated', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE')
      OR has_function_privilege('anon', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE')
+     OR has_function_privilege('service_role', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE')
      OR EXISTS (
        SELECT 1 FROM pg_proc p,
          LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a

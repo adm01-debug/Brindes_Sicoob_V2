@@ -10,7 +10,7 @@ import { sicoobBudgetService } from "@/services/sicoob/budgetService";
 
 function makeChain(result: { data: unknown; error: Error | null }) {
   const chain: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "in", "update"]) {
+  for (const method of ["select", "eq", "in"]) {
     chain[method] = vi.fn().mockReturnValue(chain);
   }
   chain.maybeSingle = vi.fn().mockResolvedValue(result);
@@ -67,18 +67,5 @@ describe("sicoobBudgetService por competência", () => {
     expect(chain.eq as Mock).toHaveBeenCalledWith("pa_id", "pa-1");
     expect(chain.eq as Mock).toHaveBeenCalledWith("ano", 2026);
     expect(chain.eq as Mock).toHaveBeenCalledWith("mes", 5);
-  });
-
-  it("atualiza somente a competência solicitada", async () => {
-    const readChain = makeChain({ data: { id: "verba-junho" }, error: null });
-    const updateChain = makeChain({ data: null, error: null });
-    mocks.from.mockReturnValueOnce(readChain).mockReturnValueOnce(updateChain);
-
-    await sicoobBudgetService.updateBudget("pa-2", 750, { year: 2026, month: 6 });
-
-    expect(updateChain.update as Mock).toHaveBeenCalledWith(expect.objectContaining({ verba_consumida: 750 }));
-    expect(updateChain.eq as Mock).toHaveBeenCalledWith("pa_id", "pa-2");
-    expect(updateChain.eq as Mock).toHaveBeenCalledWith("ano", 2026);
-    expect(updateChain.eq as Mock).toHaveBeenCalledWith("mes", 6);
   });
 });

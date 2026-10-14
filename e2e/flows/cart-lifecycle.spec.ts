@@ -3,7 +3,30 @@ import { test, expect } from '@playwright/test';
 import { loginAs } from '../helpers/auth';
 import { Sel } from '../fixtures/selectors';
 
-const COMPANY_SEARCH_TERM = 'QA';
+async function mockCartCrmCompany(page: Parameters<typeof loginAs>[0]) {
+  await page.route(/\/functions\/v1\/crm-db-bridge(?:\?|$|\/)/, async (route) => {
+    const body = route.request().postDataJSON() as { table?: string; operation?: string } | null;
+    if (body?.table !== 'companies' || body.operation !== 'select') {
+      await route.continue();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: [{
+          id: 'e2e-crm-company',
+          title: 'Cooperativa Sicoob E2E',
+          razao_social: 'Cooperativa Sicoob E2E',
+          nome_fantasia: 'Sicoob E2E',
+          logo_url: null,
+          ramo_atividade: 'Cooperativa de crédito',
+        }],
+        count: 1,
+      }),
+    });
+  });
+}
 
 /**
  * Fluxo de ciclo de vida do carrinho de vendedor (Seller Cart).
@@ -16,6 +39,7 @@ const COMPANY_SEARCH_TERM = 'QA';
  */
 test.describe('Seller Cart Flow E2E', () => {
   test.beforeEach(async ({ page }) => {
+    await mockCartCrmCompany(page);
     // Autentica via helper SSOT
     await loginAs(page);
     // Garantir que estamos no catálogo (Index page)
@@ -37,12 +61,10 @@ test.describe('Seller Cart Flow E2E', () => {
       await newCartBtn.click();
 
       // Buscar empresa no seletor (CartCompanyPicker usa input genérico sem testid, mas Sel.cart.companyPickerSelect está definido para o botão de seleção se houver)
-      const searchInput = page.getByPlaceholder('Buscar cooperativa ou unidade…');
-      await searchInput.fill(COMPANY_SEARCH_TERM);
-
-      // Selecionar a primeira empresa retornada pelo CRM.
+      // Selecionar a primeira empresa retornada pelo CRM. O cenário valida o
+      // ciclo do carrinho e não depende de um nome cadastral específico.
       const companyItem = page.locator(Sel.cart.companyPickerSelect).first();
-      await expect(companyItem).toBeVisible();
+      await expect(companyItem).toBeVisible({ timeout: 30_000 });
       await companyItem.click();
 
       // Esperar fechar seletor e mostrar o tab ativo

@@ -67,9 +67,14 @@ export default defineConfig(({ mode }) => ({
             return 'core-vendor';
           }
           
-          // Data & API
-          if (id.includes('node_modules/@tanstack/') || id.includes('node_modules/@supabase/') || id.includes('node_modules/supabase')) {
-            return 'data-vendor';
+          // O login precisa do cliente Supabase, mas não do TanStack Query usado
+          // no aplicativo interno. Mantê-los no mesmo chunk fazia a entrada
+          // pública baixar dezenas de KiB de código sem uso antes do LCP.
+          if (id.includes('node_modules/@supabase/') || id.includes('node_modules/supabase')) {
+            return 'supabase-vendor';
+          }
+          if (id.includes('node_modules/@tanstack/')) {
+            return 'query-vendor';
           }
 
           // Bibliotecas utilizadas apenas em rotas (PDF, gráficos, ícones,

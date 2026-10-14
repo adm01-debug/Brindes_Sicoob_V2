@@ -90,6 +90,41 @@ export const QUOTE_STATUS_CONFIG: Record<string, QuoteStatusConfig> = {
   },
 };
 
+const EDITABLE_QUOTE_STATUSES = new Set([
+  "draft",
+  "revision",
+  "rejected",
+  "rejected_singular",
+]);
+
+const QUOTE_STATUSES_REQUIRING_DRAFT_RESET = new Set([
+  "revision",
+  "rejected",
+  "rejected_singular",
+]);
+
+/** Alinha a interface ao gate de imutabilidade comercial do banco. */
+export function isQuoteCommerciallyEditable(
+  status: string | null | undefined,
+  isLatestVersion = true,
+): boolean {
+  return isLatestVersion && typeof status === "string" && EDITABLE_QUOTE_STATUSES.has(status);
+}
+
+/** Exige registrar a reabertura antes de uma nova submissão. */
+export function quoteStatusRequiresDraftReset(status: string | null | undefined): boolean {
+  return typeof status === "string" && QUOTE_STATUSES_REQUIRING_DRAFT_RESET.has(status);
+}
+
+/** A ação em lote só é válida para versões vigentes que ainda estão em rascunho. */
+export function canBulkMarkQuotesPending(
+  quotes: Array<{ status: string | null | undefined; is_latest_version?: boolean }>,
+): boolean {
+  return quotes.length > 0 && quotes.every(
+    (quote) => quote.status === "draft" && quote.is_latest_version !== false,
+  );
+}
+
 /** Helper: get status label with fallback */
 export function getQuoteStatusLabel(status: string): string {
   return QUOTE_STATUS_CONFIG[status]?.label || status;

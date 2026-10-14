@@ -120,7 +120,7 @@ export function AdminUserSelector({
             value={selectedUserId || currentUserId || ''}
             onValueChange={(value) => onSelect(value === currentUserId ? null : value)}
           >
-            <SelectTrigger className="w-[500px] bg-background">
+            <SelectTrigger className="w-[500px] bg-background" aria-label="Usuário gerenciado">
               <SelectValue placeholder="Selecione um usuário" />
             </SelectTrigger>
             <SelectContent>

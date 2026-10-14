@@ -15,7 +15,13 @@ import type { Page, Request } from '@playwright/test';
 import { test, expect } from '../fixtures/test-base';
 import { loginAs } from '../helpers/auth';
 import { gotoAndSettle } from '../helpers/nav';
-import { basicA11yChecks, mockEdgeFn, setMobileViewport, waitRouteReady } from './_shared';
+import {
+  basicA11yChecks,
+  mockAuthenticatedBootstrap,
+  mockEdgeFn,
+  setMobileViewport,
+  waitRouteReady,
+} from './_shared';
 import { ALL_ROUTES } from './_catalog';
 
 export interface PublicTokenRouteSpec {
@@ -198,6 +204,7 @@ export function buildAuthedRouteSuite(spec: AuthedRouteSpec) {
   test.describe(spec.name, () => {
     test.beforeEach(async ({ page }, testInfo) => {
       if (testInfo.title.startsWith('auth guard:')) return;
+      await mockAuthenticatedBootstrap(page);
       if (catalogEntry?.requiresDev) await loginAs(page, 'dev');
       else if (catalogEntry?.requiresAdmin) await loginAs(page, 'admin');
     });

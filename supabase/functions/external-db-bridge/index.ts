@@ -689,7 +689,16 @@ async function handleBatch(body: any, req: Request, corsHeaders: Record<string, 
               return { success: false, error: retryError.message };
             }
 
-            const retryResult = { records: retryData || [], count: null };
+            const retryResult = {
+              records: retryData || [],
+              count: null,
+              meta: {
+                pagination_degraded: true,
+                requested_limit: qLimit,
+                effective_limit: retryLimit,
+                offset: qOffset,
+              },
+            };
             if (qCacheKey) setCache(qCacheKey, retryResult);
             console.log(`[batch] ♻️ Query ${idx} (${qTable}) retry OK in ${retryDuration}ms, ${retryData?.length ?? 0} records`);
             return { success: true, data: retryResult };
@@ -1174,7 +1183,16 @@ async function handleSelect(externalSupabase: any, table: string, opts: any) {
       if (aliasType === 'priceTable') records = records.map(mapPriceTableRowToLegacyShape);
       emitTelemetry({ operation: 'select', table, limit: 50, offset: safeOffset, countMode: 'none', durationMs: retryDuration, status: classifyDuration(retryDuration), recordCount: records.length });
       console.log(`[retry] Selected ${records.length} records from ${table} (offset=${safeOffset}, limit=50)`);
-      return { records, count: null };
+      return {
+        records,
+        count: null,
+        meta: {
+          pagination_degraded: true,
+          requested_limit: safeLimit,
+          effective_limit: 50,
+          offset: safeOffset,
+        },
+      };
     }
 
     // Fallback: orderBy column missing or invalid (e.g. price_updated_at not yet provisioned)

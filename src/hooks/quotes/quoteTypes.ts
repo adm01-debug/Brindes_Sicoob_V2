@@ -101,6 +101,7 @@ export interface Quote {
   updated_at?: string;
   row_version?: number;
   version?: number;
+  is_latest_version?: boolean;
   items?: QuoteItem[];
   singular_id?: string;
   rejection_notes?: string;

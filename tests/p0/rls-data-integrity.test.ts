@@ -12,6 +12,39 @@ import { readFileSync } from "node:fs";
 const source = (path: string) => readFileSync(path, "utf8");
 
 describe("P0 — RLS e integridade", () => {
+  it("quotes: timestamps de criação externos são definidos pelo servidor", () => {
+    const migration = source(
+      "supabase/migrations/20261014124500_canonicalize_quote_insert_timestamps.sql",
+    );
+    expect(migration).toContain("SECURITY INVOKER");
+    expect(migration).toContain("NEW.created_at := statement_timestamp()");
+    expect(migration).toContain("NEW.updated_at := NEW.created_at");
+    expect(migration.indexOf("NEW.created_at := statement_timestamp()")).toBeLessThan(
+      migration.indexOf("RETURN NEW"),
+    );
+  });
+
+  it("PostgREST: separa o timeout do cache do limite por requisição", () => {
+    const initialMigration = source(
+      "supabase/migrations/20261014113000_raise_postgrest_schema_cache_timeout.sql",
+    );
+    const finalMigration = source(
+      "supabase/migrations/20261014121500_separate_postgrest_cache_and_request_timeouts.sql",
+    );
+
+    expect(initialMigration).toContain("ALTER ROLE authenticator SET statement_timeout = '30s'");
+    expect(finalMigration).toContain("ALTER ROLE authenticator SET statement_timeout = '2min'");
+    expect(finalMigration).toContain("set_config('statement_timeout', '8s', true)");
+    expect(finalMigration).toContain(
+      "ALTER ROLE authenticator SET pgrst.db_pre_request = 'public.set_postgrest_request_timeout'",
+    );
+    expect(finalMigration).toContain("NOTIFY pgrst, 'reload config'");
+    expect(finalMigration).toContain("NOTIFY pgrst, 'reload schema'");
+    expect(finalMigration.indexOf("reload config")).toBeLessThan(
+      finalMigration.indexOf("reload schema"),
+    );
+  });
+
   // ─── user_roles (privilege escalation) ────────────────────────────────
   it("user_roles: mantém gate executável contra autoelevação", () => {
     const gate = source("tests/rls/critical-tables-rls.test.ts");
@@ -89,6 +122,32 @@ describe("P0 — RLS e integridade", () => {
     expect(revocation).toContain("'*/15 * * * *'");
     expect(validation).toContain("'grantor_lost_dev_at_use'");
     expect(validation).toContain("'grantor_lost_dev'::text");
+  });
+
+  it("mcp_keys: rejeição anônima não aguarda a telemetria do banco", () => {
+    for (const name of ["issue", "revoke", "rotate", "update"]) {
+      const worker = source(`supabase/functions/mcp-keys-${name}/index.ts`);
+      const missingJwtPath = worker.slice(
+        worker.indexOf("if (!jwt)"),
+        worker.indexOf("const userClient", worker.indexOf("if (!jwt)")),
+      );
+
+      expect(worker).toContain('import { deferBackgroundTask } from "../_shared/background-task.ts"');
+      expect(missingJwtPath).toContain("deferBackgroundTask(");
+      expect(missingJwtPath).not.toContain("await auditFailure");
+      expect(missingJwtPath).toContain("401");
+    }
+  });
+
+  it("edges técnicas rejeitam antes de depender de telemetria persistida", () => {
+    const secrets = source("supabase/functions/secrets-manager/index.ts");
+    const inspect = source("supabase/functions/external-db-inspect/index.ts");
+
+    expect(secrets).toContain("deferBackgroundTask(");
+    expect(secrets).toContain('"secrets-manager:missing-token"');
+    expect(inspect.indexOf("await authorize(req")).toBeLessThan(
+      inspect.indexOf("await runBotProtection(req"),
+    );
   });
 
   // ─── workspace_notifications ──────────────────────────────────────────

@@ -253,7 +253,12 @@ export async function loginAs(page: Page, role: Role = 'user'): Promise<void> {
   // Reaproveita a sessão somente quando ela pertence exatamente à conta
   // solicitada. Isso impede que uma matriz multi-papel valide todos os casos
   // com o usuário carregado pelo storageState global.
-  if (!/^https?:/i.test(page.url())) await gotoAndSettle(page, '/');
+  // Esta navegação serve apenas para disponibilizar o localStorage da origin.
+  // Aguardar o conteúdo completo aqui duplicava o settle feito pelo próprio
+  // cenário e transformava componentes secundários lentos em falha de login.
+  if (!/^https?:/i.test(page.url())) {
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 20_000 });
+  }
   const currentEmail = await getStoredSessionEmail(page);
   if (currentEmail?.toLowerCase() === email!.toLowerCase() && !LOGIN_URL_RE.test(page.url())) {
     if (role === 'admin' || role === 'dev') await ensurePrivilegedAal2(page, role);

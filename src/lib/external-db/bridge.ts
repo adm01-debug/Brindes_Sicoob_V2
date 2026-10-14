@@ -28,7 +28,17 @@ export interface BatchQuery {
 
 export interface BatchResult {
   success: boolean;
-  data?: { records: unknown[]; count: number | null };
+  data?: {
+    records: unknown[];
+    count: number | null;
+    meta?: {
+      pagination_degraded?: boolean;
+      requested_limit?: number;
+      effective_limit?: number;
+      offset?: number;
+      [key: string]: unknown;
+    };
+  };
   error?: string;
   fromCache?: boolean;
 }

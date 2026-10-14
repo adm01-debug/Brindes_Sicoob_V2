@@ -77,14 +77,14 @@ export async function setCatalogFavorite(
 
   await favorite.click();
   if (desired) {
-    const noVariant = page.locator(Sel.variant.noVariant).first();
-    await noVariant
-      .waitFor({ state: 'visible', timeout: 1_500 })
-      .then(() => noVariant.click())
-      .catch(() => {
-        // Produtos sem variantes externas concluem a ação automaticamente.
-        // O poll do storage abaixo continua sendo a prova do resultado.
-      });
+    const completedWithoutPicker = (await readFavoritesStorage(page))
+      .some((item) => item.productId === productId);
+    if (!completedWithoutPicker) {
+      const noVariant = page.locator(Sel.variant.noVariant).first();
+      await expect(noVariant, 'seletor de variante deveria concluir a ação de favorito')
+        .toBeVisible({ timeout: 10_000 });
+      await noVariant.click();
+    }
   }
 
   await expect

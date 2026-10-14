@@ -18,7 +18,12 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
-    // Anti-scraping: bot UA check + rate limit por IP (camada externa antes do auth)
+    // A edge é exclusiva para dev. Rejeitar primeiro evita que chamadas sem
+    // identidade dependam do rate limiter persistido no banco para obter 401.
+    const actor = await authorize(req, { requireRole: "dev" });
+    if (!actor.ok) return actor.response;
+
+    // Anti-scraping: bot UA check + rate limit por IP para atores autenticados.
     const protection = await runBotProtection(req, {
       endpoint: 'external-db-inspect',
       maxRequests: 30,
@@ -26,9 +31,6 @@ Deno.serve(async (req) => {
       blockSeconds: 1800,
     }, corsHeaders);
     if (!protection.allowed) return protection.blockResponse!;
-
-    const actor = await authorize(req, { requireRole: "dev" });
-    if (!actor.ok) return actor.response;
 
     // Validate body
     let rawBody: unknown = {};

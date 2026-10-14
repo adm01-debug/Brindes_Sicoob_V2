@@ -115,6 +115,7 @@ export default function AdminVideoVariantsPage() {
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
+              aria-label="Filtrar vínculos por produto ou variante"
               placeholder="Filtrar por produto ou variante..."
               value={productFilter}
               onChange={(e) => setProductFilter(e.target.value)}

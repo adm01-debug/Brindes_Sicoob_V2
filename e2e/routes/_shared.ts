@@ -5,12 +5,84 @@
  * `page.route()` e utilitários de a11y/mobile que padronizam os 8 casos por
  * rota: render, happy, auth-fail, payload-invalido, timeout, 5xx, a11y, mobile.
  */
-import type { Page, Route } from '@playwright/test';
+import type { Page, Request, Route } from '@playwright/test';
 import { expect } from '@playwright/test';
 
 const SUPABASE_HOST_RE = /supabase\.(co|in)/;
 const FN_RE = /\/functions\/v1\//;
 const AUTH_RE = /\/auth\/v1\//;
+
+type BootstrapRole = 'dev' | 'admin' | 'gestor_compras' | 'vendedor';
+
+function decodeRequestEmail(request: Request): string {
+  const authorization = request.headers().authorization ?? '';
+  const token = authorization.replace(/^Bearer\s+/i, '');
+  const payload = token.split('.')[1];
+  if (!payload) return '';
+
+  try {
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const decoded = Buffer.from(normalized, 'base64').toString('utf8');
+    const email = (JSON.parse(decoded) as { email?: unknown }).email;
+    return typeof email === 'string' ? email.toLowerCase() : '';
+  } catch {
+    return '';
+  }
+}
+
+function bootstrapRoleFor(request: Request): BootstrapRole {
+  const email = decodeRequestEmail(request);
+  if (email && email === process.env.E2E_DEV_EMAIL?.toLowerCase()) return 'dev';
+  if (email && email === process.env.E2E_ADMIN_EMAIL?.toLowerCase()) return 'admin';
+  if (email && email === process.env.E2E_MANAGER_EMAIL?.toLowerCase()) return 'gestor_compras';
+  return 'vendedor';
+}
+
+/**
+ * Isola as suítes estruturais por rota das consultas de bootstrap da sessão.
+ * Autenticação, RLS e revogação continuam cobertas pelos gates remotos e pelas
+ * jornadas dedicadas. Repetir essas consultas ao vivo em centenas de casos de
+ * layout saturava o endpoint e deixava o guard preso em permissões.
+ */
+export async function mockAuthenticatedBootstrap(page: Page) {
+  await page.route(/\/rest\/v1\/rpc\/get_sicoob_access_state(?:\?|$)/, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([{ active: true, reason: 'active' }]),
+    }),
+  );
+
+  await page.route(/\/rest\/v1\/user_roles(?:\?|$)/, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([{ role: bootstrapRoleFor(route.request()) }]),
+    }),
+  );
+
+  await page.route(/\/rest\/v1\/profiles(?:\?|$)/, (route) => {
+    if (route.request().method() !== 'GET') {
+      return route.fulfill({ status: 204, body: '' });
+    }
+    const profile = {
+      id: 'e2e-profile',
+      user_id: 'e2e-user',
+      full_name: 'Usuário E2E',
+      email: 'e2e@example.test',
+      role: bootstrapRoleFor(route.request()),
+    };
+    const expectsObject = route
+      .request()
+      .headers()
+      .accept?.includes('application/vnd.pgrst.object+json');
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(expectsObject ? profile : [profile]),
+    });
+  });
+}
 
 /* ============================================================
  * Mocks de falha
@@ -142,7 +214,7 @@ export function spySupabaseRequests(page: Page) {
   });
   page.on('response', (res) => {
     const i = calls.findIndex((c) => c.url === res.url() && c.status === undefined);
-    if (i >= 0) calls[i].status = res.status();
+    if (i >= 0) calls[i]!.status = res.status();
   });
   return {
     get all() {
@@ -173,6 +245,7 @@ export async function basicA11yChecks(page: Page) {
     );
     return inputs
       .filter((el) => {
+        if (el.getAttribute('aria-hidden') === 'true') return false;
         const visible = (el as HTMLElement).offsetParent !== null;
         if (!visible) return false;
         const id = el.getAttribute('id');
@@ -192,7 +265,7 @@ export async function basicA11yChecks(page: Page) {
     0,
   );
 
-  // 3. Botões devem ter texto ou aria-label
+  // 3. Botões devem ter nome acessível (texto, ARIA, title ou label associado)
   const orphanButtons = await page.evaluate(() => {
     const btns = Array.from(document.querySelectorAll('button:not([disabled])'));
     return btns
@@ -200,21 +273,33 @@ export async function basicA11yChecks(page: Page) {
         const visible = (b as HTMLElement).offsetParent !== null;
         if (!visible) return false;
         const text = (b.textContent ?? '').trim();
+        const ariaLabel = b.getAttribute('aria-label')?.trim();
+        const title = b.getAttribute('title')?.trim();
         const labelledBy = b.getAttribute('aria-labelledby')?.trim();
         const hasAriaLabelledBy = labelledBy?.split(/\s+/).some((labelId) => {
           const label = document.getElementById(labelId);
           return !!(label?.textContent?.trim() || label?.getAttribute('aria-label')?.trim());
         });
-        const hasAria = !!b.getAttribute('aria-label')?.trim() || !!hasAriaLabelledBy;
         const id = b.getAttribute('id');
         const hasLabelFor = id ? !!document.querySelector(`label[for="${id}"]`) : false;
-        return !text && !hasAria && !hasLabelFor;
+        const wrappedLabel = b.closest('label');
+        const hasWrappedLabel = !!(
+          wrappedLabel?.textContent?.trim() || wrappedLabel?.getAttribute('aria-label')?.trim()
+        );
+        return (
+          !text &&
+          !ariaLabel &&
+          !title &&
+          !hasAriaLabelledBy &&
+          !hasLabelFor &&
+          !hasWrappedLabel
+        );
       })
       .map((button) => button.outerHTML.slice(0, 240));
   });
   expect(
     orphanButtons,
-    'botões sem texto/aria-label: ' + JSON.stringify(orphanButtons),
+    'botões sem nome acessível: ' + JSON.stringify(orphanButtons),
   ).toHaveLength(0);
 }
 

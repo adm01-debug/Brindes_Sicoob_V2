@@ -66,7 +66,7 @@ export function ScheduledReportsManager() {
               <div className="space-y-4 mt-2">
                 <div className="space-y-2">
                   <Label>Tipo de Relatório</Label>
-                  <Select value={form.report_type} onValueChange={(v: ReportType) => updateFormName(v, form.frequency)}>
+                  <Select value={form.report_type} onValueChange={(value) => updateFormName(value as ReportType, form.frequency)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {(Object.entries(REPORT_TYPE_LABELS) as [ReportType, string][]).map(([k, v]) => (
@@ -78,7 +78,7 @@ export function ScheduledReportsManager() {
 
                 <div className="space-y-2">
                   <Label>Frequência</Label>
-                  <Select value={form.frequency} onValueChange={(v: ReportFrequency) => updateFormName(form.report_type, v)}>
+                  <Select value={form.frequency} onValueChange={(value) => updateFormName(form.report_type, value as ReportFrequency)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {(Object.entries(FREQUENCY_LABELS) as [ReportFrequency, string][]).map(([k, v]) => (

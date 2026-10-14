@@ -19,9 +19,11 @@ function company(id: string, name: string): CrmCompany {
 }
 
 describe('opções de empresa do carrinho', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-  it('preserva IDs do CRM e percorre todas as páginas de clientes', async () => {
+  it('preserva os IDs do CRM e percorre todas as páginas de clientes', async () => {
     const firstPage = Array.from({ length: 500 }, (_, index) =>
       company(`crm-${String(index + 1).padStart(3, '0')}`, `Cooperativa Z ${index + 1}`),
     );

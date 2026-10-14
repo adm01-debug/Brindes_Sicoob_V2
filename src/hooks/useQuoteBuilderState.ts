@@ -14,7 +14,6 @@ import { validateQuoteForm, QUOTE_FIELD_LABELS } from "@/lib/validations";
 import { useQuotes, type Quote, type QuoteItem, type QuoteItemPersonalization } from "@/hooks/quotes/useQuotes";
 import { useQuoteTemplates, type QuoteTemplate, type QuoteTemplateItem } from "@/hooks/useQuoteTemplates";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRBAC } from "@/hooks/useRBAC";
 import { supabase } from "@/integrations/supabase/client";
 import { getPriceFreshness } from "@/utils/price-freshness";
 import type { SelectedCompanyInfo, SelectedContactInfo } from "@/components/quotes/CompanyContactSelector";
@@ -25,6 +24,7 @@ import { calculateQuoteTotals, formatCurrency, calculateItemTotal, calculateItem
 import type { Product, DiscountType, DeliveryMode } from "@/types/quote-builder";
 import { useQuoteProductSearch } from "@/hooks/quote/useQuoteProductSearch";
 import { useQuoteInitialization } from "@/hooks/quote/useQuoteInitialization";
+import { isQuoteCommerciallyEditable, quoteStatusRequiresDraftReset } from "@/lib/quote-status-config";
 
 export function validateBudgetForSubmission<T>(
   budget: T | null,
@@ -298,6 +298,12 @@ interface TransitionQuoteParams {
 async function applyQuoteTransition(params: TransitionQuoteParams): Promise<boolean> {
   const quoteId = params.quote.id;
   if (!quoteId) return false;
+  let effectiveStatus = params.persistedStatus;
+  if (quoteStatusRequiresDraftReset(effectiveStatus)) {
+    const reopened = await params.updateQuoteStatus(quoteId, "draft");
+    if (!reopened) return false;
+    effectiveStatus = "draft";
+  }
   if (params.finalStatus === "pending_approval" && params.maxDiscountPercent !== null && params.maxDiscountPercent !== undefined) {
     return params.requestApproval(
       quoteId,
@@ -306,7 +312,7 @@ async function applyQuoteTransition(params: TransitionQuoteParams): Promise<bool
       params.sellerNotes,
     );
   }
-  if (params.finalStatus !== params.persistedStatus) {
+  if (params.finalStatus !== effectiveStatus) {
     return params.updateQuoteStatus(quoteId, params.finalStatus);
   }
   return true;
@@ -356,7 +362,6 @@ export function useQuoteBuilderState() {
   const isEditMode = Boolean(quoteId);
 
   const { user, profile, roles: userRoles, isGerentePa } = useAuth();
-  const { isSupervisorOrAbove } = useRBAC();
   const { createQuote, updateQuote, updateQuoteStatus, fetchQuote, isLoading: quotesLoading } = useQuotes();
   const { templates } = useQuoteTemplates();
   const { myLimit: maxDiscountPercent } = useSellerDiscountLimits();
@@ -378,6 +383,7 @@ export function useQuoteBuilderState() {
   const [tags, setTags] = useState<string[]>([]);
   const [quoteNumber, setQuoteNumber] = useState("");
   const [currentStatus, setCurrentStatus] = useState("draft");
+  const [isLatestVersion, setIsLatestVersion] = useState(true);
   const [expectedRowVersion, setExpectedRowVersion] = useState<number | null>(null);
   const [paymentTerms, setPaymentTerms] = useState("");
   const [deliveryTime, setDeliveryTime] = useState("");
@@ -397,7 +403,7 @@ export function useQuoteBuilderState() {
   const search = useQuoteProductSearch();
   const initializationSetters = useMemo(() => ({
     setClientId, setContactId, setValidUntil, setNotes, setInternalNotes,
-    setQuoteNumber, setCurrentStatus, setExpectedRowVersion, setContactInfo, setCompanyInfo,
+    setQuoteNumber, setCurrentStatus, setIsLatestVersion, setExpectedRowVersion, setContactInfo, setCompanyInfo,
     setDiscountType, setDiscountValue, setNegotiationMarkup, setPaymentTerms,
     setShippingType, setShippingCost, setDeliveryMode, setDeliveryDate,
     setDeliveryTime, setItems, setTags, setLoadingQuote, setActiveItemIndex, setExpandedItems,
@@ -445,10 +451,8 @@ export function useQuoteBuilderState() {
 
   const canEdit = useMemo(() => {
     if (!isEditMode) return true;
-    if (isSupervisorOrAbove) return true;
-    // Agentes só editam rascunhos ou pendentes (não enviados/aprovados)
-    return ["draft", "pending"].includes(currentStatus);
-  }, [isEditMode, isSupervisorOrAbove, currentStatus]);
+    return isQuoteCommerciallyEditable(currentStatus, isLatestVersion);
+  }, [isEditMode, currentStatus, isLatestVersion]);
 
   const defaultTemplate = useMemo(() => templates.find(t => t.is_default), [templates]);
 
@@ -580,6 +584,10 @@ export function useQuoteBuilderState() {
   }, []);
 
   const handleSaveQuote = useCallback(async (status: SaveStatus = "draft", sellerNotes?: string) => {
+    if (!canEdit) {
+      toast.error("Este orçamento está disponível somente para leitura.");
+      return;
+    }
     if (!validateSaveForm(status, isDraftValid, isFormValid, validationErrors)) return;
     if (!validateFreshPrices(status, items)) return;
     const isPaUser = isPaPurchaser(isGerentePa, userRoles);
@@ -610,7 +618,7 @@ export function useQuoteBuilderState() {
       result, isEditMode, expectedRowVersion, finalStatus, transitionApplied,
       setExpectedRowVersion, navigate,
     });
-  }, [isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, tags, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, updateQuoteStatus, currentStatus, expectedRowVersion, maxDiscountPercent, requestApproval, isGerentePa, userRoles, profile?.pa_id]);
+  }, [canEdit, isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, tags, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, updateQuoteStatus, currentStatus, expectedRowVersion, maxDiscountPercent, requestApproval, isGerentePa, userRoles, profile?.pa_id]);
 
   return {
     navigate, quoteId, isEditMode, loadingQuote, hasUnsavedData, user,

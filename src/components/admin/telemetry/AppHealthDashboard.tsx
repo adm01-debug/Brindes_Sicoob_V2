@@ -283,7 +283,7 @@ function RequestLookupCard({ query, setQuery, loading, result, onLookup }: Reque
       </CardTitle></CardHeader>
       <CardContent className="space-y-3">
         <div className="flex flex-col sm:flex-row gap-2">
-          <Input placeholder="Cole o request-id (ex: 2c5b…-uuid)" value={query}
+          <Input aria-label="Request ID para consulta" placeholder="Cole o request-id (ex: 2c5b…-uuid)" value={query}
             onChange={(event) => setQuery(event.target.value)}
             onKeyDown={(event) => { if (event.key === 'Enter') void onLookup(); }}
             data-testid="app-health-request-id-input" className="font-mono text-xs" />

@@ -72,16 +72,25 @@ jobs:
 
       - name: Verificar tipos das Edge Functions (cobertura total)
         run: |
-          deno test supabase/functions/_shared/internal-service-auth.test.ts
+          # Isola as Edge Functions do package.json do frontend. Sem isso, o Deno
+          # tenta resolver toda a árvore npm novamente e pode divergir do npm ci.
+          deno test --no-config supabase/functions/_shared/internal-service-auth.test.ts
           # Verificar shared utilities
           find supabase/functions/_shared -name '*.ts' -not -name '*.test.ts' -print0 | \
-            xargs -0 deno check
-          # Verificar todos os entry points das funções
-          find supabase/functions -mindepth 2 -maxdepth 2 -name 'index.ts' -print0 | \
-            sort -z | xargs -0 deno check
+            xargs -0 deno check --no-config
+          # Verificar entry points com imports explícitos.
+          find supabase/functions -mindepth 2 -maxdepth 2 -name 'index.ts' \
+            ! -path '*/mcp-server/index.ts' -print0 | \
+            sort -z | xargs -0 deno check --no-config
+          # O servidor MCP usa os aliases fixados no próprio deno.json.
+          deno check --config supabase/functions/mcp-server/deno.json \
+            supabase/functions/mcp-server/index.ts
 
       - name: Simular atomicidade da verba em PostgreSQL descartável
         run: python3 scripts/qa/simular-verba-atomica.py
+
+      - name: Simular autoridade e isolamento das verbas Sicoob
+        run: python3 scripts/qa/simular-autoridade-verbas-sicoob.py
 
       - name: Simular controles de auditoria e permissões em PostgreSQL descartável
         run: python3 scripts/qa/simular-controles-auditoria.py
@@ -118,6 +127,9 @@ jobs:
 
       - name: Simular retry idempotente e notificação atômica de status
         run: bash scripts/qa/simular-governanca-orcamento.sh
+
+      - name: Simular escopo ativo de orçamentos
+        run: python3 scripts/qa/simular-escopo-orcamento-ativo.py
 
       - name: Compilar artefato de produção
         env:

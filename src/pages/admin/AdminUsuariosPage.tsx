@@ -366,6 +366,7 @@ export default function AdminUsuariosPage() {
                 <div className="relative max-w-sm">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
+                    aria-label="Buscar usuários por nome ou email"
                     placeholder="Buscar por nome ou email..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}

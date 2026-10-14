@@ -396,6 +396,7 @@ export default function RlsDenialsAdminPage() {
             <div>
               <label className="text-xs text-muted-foreground">Email do usuário</label>
               <Input
+                aria-label="Filtrar acessos negados por email"
                 placeholder="filtrar por email..."
                 value={emailFilter}
                 onChange={(e) => setEmailFilter(e.target.value)}

@@ -18,11 +18,24 @@ CREATE TABLE public.quotes (
   client_name text, total numeric, valid_until timestamptz, status text DEFAULT 'sent',
   client_response text, client_response_at timestamptz, client_response_notes text,
   is_latest_version boolean NOT NULL DEFAULT true, deleted_at timestamptz,
+  is_active boolean NOT NULL DEFAULT true, sent_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(),
   internal_notes text DEFAULT 'anotação interna', total_cost numeric DEFAULT 15,
-  version integer DEFAULT 1, row_version bigint DEFAULT 1, rejection_notes text
+  version integer DEFAULT 1, row_version bigint DEFAULT 1, rejection_notes text,
+  approved_by uuid, approved_at timestamptz, approved_pdf_url text,
+  organization_id uuid, pa_id uuid, singular_id uuid, parent_quote_id uuid,
+  consolidation_id uuid,
+  reorder_source_order_id uuid, reorder_source_quote_id uuid,
+  catalog_revalidated_at timestamptz, catalog_valid_until timestamptz,
+  catalog_stock_is_reserved boolean NOT NULL DEFAULT false,
+  reorder_price_changed_items integer NOT NULL DEFAULT 0,
+  synced_to_bitrix boolean NOT NULL DEFAULT false,
+  synced_at timestamptz,
+  bitrix_deal_id text,
+  bitrix_quote_id text
 );
 CREATE TABLE public.quote_items (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), quote_id uuid NOT NULL REFERENCES public.quotes(id),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), quote_id uuid NOT NULL REFERENCES public.quotes(id) ON DELETE CASCADE,
   product_id text, product_name text NOT NULL, product_sku text, product_image_url text,
   quantity integer NOT NULL DEFAULT 1, unit_price numeric NOT NULL DEFAULT 0,
   subtotal numeric GENERATED ALWAYS AS (quantity * unit_price) STORED,
@@ -30,7 +43,7 @@ CREATE TABLE public.quote_items (
   created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now()
 );
 CREATE TABLE public.quote_item_personalizations (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), quote_item_id uuid NOT NULL REFERENCES public.quote_items(id),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), quote_item_id uuid NOT NULL REFERENCES public.quote_items(id) ON DELETE CASCADE,
   technique_id uuid, colors_count integer DEFAULT 1, positions_count integer DEFAULT 1,
   area_cm2 numeric, setup_cost numeric DEFAULT 0, unit_cost numeric DEFAULT 0,
   total_cost numeric DEFAULT 0, notes text, created_at timestamptz DEFAULT now()
@@ -51,9 +64,37 @@ CREATE TABLE public.quote_history (
 );
 ALTER TABLE public.quotes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.quote_approval_tokens ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.quote_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.quote_item_personalizations ENABLE ROW LEVEL SECURITY;
 CREATE POLICY quotes_own ON public.quotes TO authenticated USING (seller_id = auth.uid());
 CREATE POLICY tokens_own ON public.quote_approval_tokens TO authenticated USING (seller_id = auth.uid());
+CREATE POLICY quote_items_own ON public.quote_items TO authenticated
+  USING (EXISTS (
+    SELECT 1 FROM public.quotes q
+    WHERE q.id = quote_items.quote_id AND q.seller_id = auth.uid()
+  ))
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM public.quotes q
+    WHERE q.id = quote_items.quote_id AND q.seller_id = auth.uid()
+  ));
+CREATE POLICY quote_item_personalizations_own ON public.quote_item_personalizations TO authenticated
+  USING (EXISTS (
+    SELECT 1
+    FROM public.quote_items qi
+    JOIN public.quotes q ON q.id = qi.quote_id
+    WHERE qi.id = quote_item_personalizations.quote_item_id
+      AND q.seller_id = auth.uid()
+  ))
+  WITH CHECK (EXISTS (
+    SELECT 1
+    FROM public.quote_items qi
+    JOIN public.quotes q ON q.id = qi.quote_id
+    WHERE qi.id = quote_item_personalizations.quote_item_id
+      AND q.seller_id = auth.uid()
+  ));
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.quotes, public.quote_approval_tokens TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.quote_items,
+  public.quote_item_personalizations TO authenticated;
 GRANT SELECT ON public.quotes, public.quote_approval_tokens TO anon;
 CREATE FUNCTION public.validate_status_fields() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN

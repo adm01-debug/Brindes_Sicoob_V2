@@ -50,18 +50,4 @@ export const sicoobBudgetService = {
     if (error) throw error;
     return data;
   },
-
-  async updateBudget(paId: string, usedAmount: number, period: BudgetPeriod = currentBudgetPeriod()) {
-    const budget = await this.getBudgetByPa(paId, period);
-    if (!budget) return;
-
-    const { error } = await supabase
-      .from("pa_budgets")
-      .update({ verba_consumida: usedAmount, updated_at: new Date().toISOString() })
-      .eq("pa_id", paId)
-      .eq("ano", period.year)
-      .eq("mes", period.month);
-
-    if (error) throw error;
-  }
 };

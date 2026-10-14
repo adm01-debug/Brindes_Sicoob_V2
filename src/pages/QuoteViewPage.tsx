@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { QuoteStatusTimeline } from "@/components/quotes/QuoteStatusTimeline";
 import { QuoteValidityBanner } from "@/components/quotes/QuoteValidityBanner";
 import { ReorderCatalogValidityBanner } from "@/components/quotes/ReorderCatalogValidityBanner";
+import { ReopenExpiredQuoteButton } from "@/components/quotes/ReopenExpiredQuoteButton";
 import { QuoteConvertToOrder } from "@/components/quotes/QuoteConvertToOrder";
 import { QuoteSingularApprovalActions } from "@/components/quotes/QuoteSingularApprovalActions";
 import { QuoteMobileActionBar } from "@/components/quotes/QuoteMobileActionBar";
@@ -33,7 +34,7 @@ import { QuoteClientInfo } from "@/components/quotes/QuoteClientInfo";
 import { QuoteItemsTable } from "@/components/quotes/QuoteItemsTable";
 import { QuoteTotalsSummary } from "@/components/quotes/QuoteTotalsSummary";
 import { PdfGenerationDialog } from "@/components/quotes/PdfGenerationDialog";
-import { QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
+import { isQuoteCommerciallyEditable, QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
 import { useQuoteViewData } from "./quote-view/useQuoteViewData";
 import { useDiscountApproval, type DiscountApprovalRequest } from "@/hooks/useDiscountApproval";
 import { updateQuoteStatusAtomically } from "@/services/quoteStatusTransition";
@@ -75,7 +76,8 @@ async function duplicateQuote(state: QuoteViewState, quoteId: string, navigate: 
 
 function QuoteMoreActions({ state, quote, quoteId, navigate }: { state: QuoteViewState; quote: Quote; quoteId: string; navigate: NavigateFunction }) {
   const canCancelSync = quote.status === "sent" || state.isSyncing;
-  return <DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline" size="icon" aria-label="Mais opções"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end">{canCancelSync && <DropdownMenuItem onClick={() => cancelSync(state, quote)} className="text-destructive focus:text-destructive"><Undo2 className="h-4 w-4 mr-2" /> Cancelar Sincronização</DropdownMenuItem>}<DropdownMenuItem onClick={() => navigate(`/orcamentos/${quoteId}/editar`)}><Edit2 className="h-4 w-4 mr-2" /> Editar</DropdownMenuItem><DropdownMenuItem onClick={() => duplicateQuote(state, quoteId, navigate)}><Copy className="h-4 w-4 mr-2" /> Duplicar</DropdownMenuItem><DropdownMenuItem onClick={() => state.setShowPresentation(true)}><Monitor className="h-4 w-4 mr-2" /> Modo Apresentação</DropdownMenuItem><QuoteAuditSheet quote={quote} quoteId={quoteId} /></DropdownMenuContent></DropdownMenu>;
+  const editable = isQuoteCommerciallyEditable(quote.status, quote.is_latest_version);
+  return <DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline" size="icon" aria-label="Mais opções"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end">{canCancelSync && <DropdownMenuItem onClick={() => cancelSync(state, quote)} className="text-destructive focus:text-destructive"><Undo2 className="h-4 w-4 mr-2" /> Cancelar Sincronização</DropdownMenuItem>}<DropdownMenuItem disabled={!editable} onClick={() => editable && navigate(`/orcamentos/${quoteId}/editar`)}><Edit2 className="h-4 w-4 mr-2" /> Editar</DropdownMenuItem><DropdownMenuItem onClick={() => duplicateQuote(state, quoteId, navigate)}><Copy className="h-4 w-4 mr-2" /> Duplicar</DropdownMenuItem><DropdownMenuItem onClick={() => state.setShowPresentation(true)}><Monitor className="h-4 w-4 mr-2" /> Modo Apresentação</DropdownMenuItem><QuoteAuditSheet quote={quote} quoteId={quoteId} /></DropdownMenuContent></DropdownMenu>;
 }
 
 function refreshQuote(state: QuoteViewState, quoteId: string) {
@@ -94,12 +96,12 @@ function QuotePrimaryActions({ state, quote, quoteId }: { state: QuoteViewState;
 function QuoteHeader({ state, quote, quoteId, navigate }: { state: QuoteViewState; quote: Quote; quoteId: string; navigate: NavigateFunction }) {
   const status = statusConfig[quote.status] ?? { label: quote.status, variant: "outline" as const };
   const createdAt = quote.created_at ? format(new Date(quote.created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : "-";
-  return <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden"><div className="flex items-center gap-4"><Button variant="ghost" size="icon" aria-label="Voltar" onClick={() => navigate("/orcamentos")}><ArrowLeft className="h-5 w-5" /></Button><div><div className="flex items-center gap-3"><h1 className="font-display text-2xl font-bold">Orçamento {quote.quote_number}</h1><Badge variant={status.variant}>{status.label}</Badge></div><p className="text-muted-foreground">Criado em {createdAt}</p></div></div><div className="flex items-center gap-2"><Button variant="outline" className="hidden md:flex gap-2" onClick={() => window.print()}><Printer className="h-4 w-4" />Imprimir</Button><QuotePrimaryActions state={state} quote={quote} quoteId={quoteId} /><QuoteMoreActions state={state} quote={quote} quoteId={quoteId} navigate={navigate} /></div></div>;
+  return <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden"><div className="flex items-center gap-4"><Button variant="ghost" size="icon" aria-label="Voltar" onClick={() => navigate("/orcamentos")}><ArrowLeft className="h-5 w-5" /></Button><div><div className="flex items-center gap-3"><h1 className="font-display text-2xl font-bold">Orçamento {quote.quote_number}</h1><Badge variant={status.variant}>{status.label}</Badge></div><p className="text-muted-foreground">Criado em {createdAt}</p></div></div><div className="flex items-center gap-2"><Button variant="outline" className="hidden md:flex gap-2" onClick={() => window.print()}><Printer className="h-4 w-4" />Imprimir</Button><ReopenExpiredQuoteButton quoteId={quoteId} status={quote.status} isLatestVersion={quote.is_latest_version} onReopened={() => state.setQuote((current) => current ? { ...current, status: "draft" } : current)} /><QuotePrimaryActions state={state} quote={quote} quoteId={quoteId} /><QuoteMoreActions state={state} quote={quote} quoteId={quoteId} navigate={navigate} /></div></div>;
 }
 
 function QuoteStatusSection({ state, quote, quoteId }: { state: QuoteViewState; quote: Quote; quoteId: string }) {
   const revalidate = async () => state.setQuote(await state.fetchQuote(quoteId));
-  return <><div className="flex flex-col md:flex-row gap-4 items-start print:hidden"><div className="flex-1 bg-card border rounded-lg p-4"><QuoteStatusTimeline status={quote.status} createdAt={quote.created_at} updatedAt={quote.updated_at} clientResponseAt={quote.client_response_at} isSyncing={state.isSyncing} /></div><QuoteValidityBanner validUntil={quote.valid_until} status={quote.status} pdfUrl={quote.approved_pdf_url} onDownloadPdf={state.handleDownloadPDF} /></div><div className="print:hidden"><ReorderCatalogValidityBanner quoteId={quoteId} onRevalidated={revalidate} /></div></>;
+  return <><div className="flex flex-col md:flex-row gap-4 items-start print:hidden"><div className="flex-1 bg-card border rounded-lg p-4"><QuoteStatusTimeline status={quote.status} createdAt={quote.created_at} updatedAt={quote.updated_at} clientResponseAt={quote.client_response_at} isSyncing={state.isSyncing} /></div><QuoteValidityBanner validUntil={quote.valid_until} status={quote.status} pdfUrl={quote.approved_pdf_url} onDownloadPdf={state.handleDownloadPDF} /></div><div className="print:hidden"><ReorderCatalogValidityBanner quoteId={quoteId} canRevalidate={isQuoteCommerciallyEditable(quote.status, quote.is_latest_version)} onRevalidated={revalidate} /></div></>;
 }
 
 function runNextAction(state: QuoteViewState, action: string) {

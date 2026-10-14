@@ -2,6 +2,7 @@
  * SecurityDashboard — painel de segurança da conta.
  */
 import { useEffect, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -23,7 +24,7 @@ function useAdminProfiles(isAdmin: boolean): UserProfile[] {
       .eq('is_active', true)
       .order('full_name')
       .then(({ data }) => {
-        if (data) setUsers(data);
+        setUsers(Array.isArray(data) ? data : []);
       });
   }, [isAdmin]);
   return users;
@@ -44,6 +45,20 @@ export function SecurityDashboard() {
     security.allowedIPs.length,
     security.metrics.failedLoginAttempts,
   );
+
+  if (security.isLoading) {
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+        className="flex min-h-40 items-center justify-center gap-2 rounded-xl border bg-card text-sm text-muted-foreground"
+      >
+        <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+        Carregando dados de segurança...
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

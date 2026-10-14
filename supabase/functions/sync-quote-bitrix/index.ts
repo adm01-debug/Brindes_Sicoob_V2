@@ -65,6 +65,32 @@ type StoredPersonalization = {
 
 type BitrixCompany = { bitrix_company_id: string | number | null };
 type BitrixProductVariant = { id: string; bitrix_product_id: string | number | null };
+type BitrixResult = {
+  quote_id?: string | number | null;
+  bitrix_quote_id?: string | number | null;
+  deal_id?: string | number | null;
+  bitrix_deal_id?: string | number | null;
+  message?: string;
+};
+
+function externalId(value: string | number | null | undefined): string | null {
+  if (value === null || value === undefined) return null;
+  const normalized = String(value).trim();
+  return normalized || null;
+}
+
+async function recordSuccessfulSync(
+  admin: { rpc: (name: string, params: Record<string, unknown>) => PromiseLike<{ error: { message?: string } | null }> },
+  quoteId: string,
+  result: BitrixResult | undefined,
+) {
+  const { error } = await admin.rpc("record_quote_bitrix_sync", {
+    p_quote_id: quoteId,
+    p_bitrix_quote_id: externalId(result?.bitrix_quote_id ?? result?.quote_id),
+    p_bitrix_deal_id: externalId(result?.bitrix_deal_id ?? result?.deal_id),
+  });
+  if (error) throw new Error(error.message || "Falha ao registrar a sincronização com Bitrix.");
+}
 
 /**
  * Resolve os IDs externos a partir dos vínculos persistidos no orçamento.
@@ -445,6 +471,8 @@ Deno.serve(async (req) => {
       log.error("n8n_failed", { error: errMsg, status: response.status });
       throw new Error(errMsg);
     }
+
+    await recordSuccessfulSync(auth.supabaseAdmin, quote.id, result as BitrixResult | undefined);
 
     return log.respond(new Response(JSON.stringify({ success: true, result }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

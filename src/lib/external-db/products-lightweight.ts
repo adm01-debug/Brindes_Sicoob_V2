@@ -3,7 +3,7 @@
  * Used for selectors and catalog listing.
  */
 import { logger } from '@/lib/logger';
-import { invokeExternalDb, invokeBatchBridge, type InvokeResult } from './bridge';
+import { invokeExternalDb, invokeBatchBridge, type BatchResult, type InvokeResult } from './bridge';
 
 const PRODUCT_SELECT_LIGHTWEIGHT = 'id, name, sku, supplier_reference, sale_price, cost_price, primary_image_url, supplier_id, category_id, main_category_id, brand, is_active, stock_quantity, min_quantity, is_kit, gender';
 const LIGHTWEIGHT_PAGE_SIZE = 500;          // antes 100 — reduz round-trips em 5x
@@ -67,6 +67,33 @@ async function fetchPage(params: {
   });
 }
 
+function isPaginationDegraded(page: InvokeResult<LightweightProduct>): boolean {
+  return Boolean(
+    page.meta
+    && typeof page.meta === 'object'
+    && (page.meta as { pagination_degraded?: boolean }).pagination_degraded === true,
+  );
+}
+
+async function completeDegradedPage(
+  params: Parameters<typeof fetchPage>[0],
+  page: InvokeResult<LightweightProduct>,
+): Promise<InvokeResult<LightweightProduct>> {
+  const records = page.records ?? [];
+  if (!isPaginationDegraded(page) || records.length === 0 || records.length >= params.limit) return page;
+
+  const remainder = await fetchPageResilient({
+    ...params,
+    limit: params.limit - records.length,
+    offset: params.offset + records.length,
+    countMode: 'none',
+  });
+  return {
+    records: [...records, ...(remainder.records ?? [])],
+    count: page.count ?? remainder.count ?? null,
+  };
+}
+
 async function fetchPageResilient(params: {
   filters: Record<string, unknown>;
   orderBy: { column: string; ascending?: boolean };
@@ -75,7 +102,8 @@ async function fetchPageResilient(params: {
   countMode?: 'exact' | 'planned' | 'estimated' | 'none';
 }): Promise<InvokeResult<LightweightProduct>> {
   try {
-    return await fetchPage(params);
+    const page = await fetchPage(params);
+    return completeDegradedPage(params, page);
   } catch (error) {
     if (!isTimeoutError(error) || params.limit <= LIGHTWEIGHT_MIN_SPLIT_PAGE_SIZE) throw error;
     const firstHalf = Math.ceil(params.limit / 2);
@@ -111,16 +139,37 @@ function initialBurstQueries(context: LightweightContext) {
 }
 
 async function fetchInitialBurst(context: LightweightContext): Promise<{ products: LightweightProduct[]; lastPageSize: number }> {
-  const batchResults = await invokeBatchBridge(initialBurstQueries(context));
+  const queries = initialBurstQueries(context);
+  const batchResults = await invokeBatchBridge(queries);
+  const pages = await Promise.all(queries.map(async (query, index) => {
+    const result = batchResults[index];
+    const params = {
+      filters: context.filters,
+      orderBy: context.orderBy,
+      limit: query.limit,
+      offset: query.offset,
+      countMode: 'none' as const,
+    };
+
+    if (!result?.success || !result.data?.records) return fetchPageResilient(params);
+    return completeDegradedPage(params, batchResultAsPage(result));
+  }));
   const products: LightweightProduct[] = [];
   let lastPageSize = LIGHTWEIGHT_PAGE_SIZE;
-  for (const result of batchResults) {
-    if (!result.success || !result.data?.records) continue;
-    const records = result.data.records as LightweightProduct[];
+  for (const page of pages) {
+    const records = page.records ?? [];
     products.push(...records);
     lastPageSize = records.length;
   }
   return { products, lastPageSize };
+}
+
+function batchResultAsPage(result: BatchResult): InvokeResult<LightweightProduct> {
+  return {
+    records: (result.data?.records ?? []) as LightweightProduct[],
+    count: result.data?.count ?? null,
+    meta: result.data?.meta,
+  };
 }
 
 async function fetchRemainingPages(context: LightweightContext, initial: LightweightProduct[], maxTotal: number): Promise<LightweightProduct[]> {

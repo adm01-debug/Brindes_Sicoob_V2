@@ -3,7 +3,6 @@
  */
 import type { ProposalTemplateData } from '@/components/pdf/ProposalHtmlTemplate';
 import type { Quote } from '@/hooks/quotes/useQuotes';
-import type { TablesUpdate } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { updateQuoteStatusAtomically } from '@/services/quoteStatusTransition';
@@ -78,14 +77,6 @@ function parseBitrixQuoteId(result: BitrixResult | undefined) {
   return parsed && !Number.isNaN(parsed) ? parsed : null;
 }
 
-async function persistBitrixQuoteId(quoteId: string, bitrixQuoteId: number | null) {
-  if (bitrixQuoteId === null) return;
-  const updates: TablesUpdate<'quotes'> = { bitrix_quote_id: String(bitrixQuoteId) };
-  // rls-allow: atualização por UUID após Edge autenticada; a RLS valida ownership/escopo.
-  const { error } = await supabase.from('quotes').update(updates).eq('id', quoteId);
-  if (error) throw error;
-}
-
 async function markQuoteAsSent(quote: Quote, quoteId: string) {
   if (quote.status === 'sent') return;
   await updateQuoteStatusAtomically(quoteId, 'sent', 'Sincronização com Bitrix24 concluída');
@@ -120,7 +111,6 @@ export async function syncQuoteToBitrix({
   const pdfPath = await uploadProposal(quote, quoteId, proposalData);
   const result = await invokeBitrix(quoteId, pdfPath, logQuoteHistory);
   const bitrixQuoteId = parseBitrixQuoteId(result);
-  await persistBitrixQuoteId(quoteId, bitrixQuoteId);
   await markQuoteAsSent(quote, quoteId);
   await logSuccessfulSync(quoteId, bitrixQuoteId, logQuoteHistory);
   toast.success(result?.message || 'Orçamento sincronizado com Bitrix24!');

@@ -47,6 +47,7 @@ jobs:
       - name: Executar PostgreSQL isolado e casos concorrentes
         run: |
           python3 scripts/qa/simular-verba-atomica.py
+          python3 scripts/qa/simular-autoridade-verbas-sicoob.py
           python3 scripts/qa/simular-eventos-status-sicoob.py
           python3 scripts/qa/simular-politica-aprovacao-sicoob.py
           python3 scripts/qa/simular-delegacao-aprovacao-sicoob.py

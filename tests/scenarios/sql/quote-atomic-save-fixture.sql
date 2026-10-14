@@ -1,6 +1,7 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE ROLE authenticated NOLOGIN;
 CREATE ROLE anon NOLOGIN;
+CREATE ROLE service_role NOLOGIN BYPASSRLS;
 
 CREATE SCHEMA auth;
 CREATE FUNCTION auth.uid() RETURNS uuid
@@ -32,7 +33,32 @@ CREATE TABLE public.quotes (
   internal_notes text,
   valid_until timestamptz,
   is_latest_version boolean NOT NULL DEFAULT true,
+  is_active boolean NOT NULL DEFAULT true,
+  version integer NOT NULL DEFAULT 1,
   row_version integer NOT NULL DEFAULT 1,
+  parent_quote_id uuid,
+  approved_by uuid,
+  approved_at timestamptz,
+  approved_pdf_url text,
+  rejection_notes text,
+  client_response text,
+  client_response_at timestamptz,
+  client_response_notes text,
+  sent_at timestamptz,
+  deleted_at timestamptz,
+  pa_id uuid,
+  singular_id uuid,
+  consolidation_id uuid,
+  reorder_source_order_id uuid,
+  reorder_source_quote_id uuid,
+  catalog_revalidated_at timestamptz,
+  catalog_valid_until timestamptz,
+  catalog_stock_is_reserved boolean NOT NULL DEFAULT false,
+  reorder_price_changed_items integer NOT NULL DEFAULT 0,
+  synced_to_bitrix boolean NOT NULL DEFAULT false,
+  synced_at timestamptz,
+  bitrix_deal_id text,
+  bitrix_quote_id text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );

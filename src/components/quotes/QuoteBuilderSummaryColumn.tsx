@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { QuoteSummary } from "@/components/quotes/QuoteSummary";
 
 interface Props {
+  readOnly?: boolean;
   items: QuoteItem[];
   activeItemIndex: number | null;
   setActiveItemIndex: (i: number | null) => void;
@@ -84,15 +85,23 @@ function useSummaryModel(props: Props) {
   useEffect(() => { if (onlyStale && stale.size === 0) setOnlyStale(false); }, [onlyStale, stale]);
   const visible = useMemo(() => props.items.map((item, index) => ({ item, index }))
     .filter(({ index }) => !onlyStale || stale.has(index)), [props.items, onlyStale, stale]);
+  useEffect(() => {
+    if (!props.readOnly) return;
+    setApprovalOpen(false);
+    setConfirmOpen(false);
+  }, [props.readOnly]);
   const remove = (index: number) => {
+    if (props.readOnly) return;
     props.removeItem(index);
     if (props.activeItemIndex === index) props.setActiveItemIndex(null);
     else if (props.activeItemIndex !== null && props.activeItemIndex > index) props.setActiveItemIndex(props.activeItemIndex - 1);
   };
   const requestApproval = () => {
+    if (props.readOnly) return;
     props.onSave("pending_approval", notes); setApprovalOpen(false); setNotes("");
   };
   const confirmAll = () => {
+    if (props.readOnly) return;
     props.confirmAllStalePrices?.(); setConfirmOpen(false); setOnlyStale(false);
     toast.success(`${priceCountLabel(stale.size)} confirmado${stale.size === 1 ? "" : "s"} com fornecedor`);
   };
@@ -114,7 +123,7 @@ function SummaryGroup({ model, item, index }: { model: SummaryModel; item: Quote
   const groupId = item.kit_group_id;
   return <div className="flex items-center justify-between px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg mb-2 mt-1">
     <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-700 uppercase"><Layers className="h-3 w-3" /> Kit: {item.kit_name}</span>
-    <Button variant="ghost" size="sm" className="h-5 text-[9px] text-emerald-700" onClick={() => model.props.onUngroup?.(groupId)}>Desfazer</Button>
+    <Button disabled={model.props.readOnly} variant="ghost" size="sm" className="h-5 text-[9px] text-emerald-700" onClick={() => model.props.onUngroup?.(groupId)}>Desfazer</Button>
   </div>;
 }
 
@@ -129,7 +138,7 @@ function SummaryStock({ item, format }: { item: QuoteItem; format: (value: numbe
 
 function SummaryFreshness({ model, item, index }: { model: SummaryModel; item: QuoteItem; index: number }) {
   if (!item.price_updated_at && !item.price_confirmed_at) return null;
-  const confirm = model.props.confirmItemPrice ? () => {
+  const confirm = !model.props.readOnly && model.props.confirmItemPrice ? () => {
     model.props.confirmItemPrice?.(index);
     toast.success("Preço confirmado com fornecedor", { description: item.product_name });
   } : undefined;
@@ -150,18 +159,19 @@ function SummaryPersonalizations({ model, item }: { model: SummaryModel; item: Q
 function SummaryItemCard({ model, item, index }: { model: SummaryModel; item: QuoteItem; index: number }) {
   const active = model.props.activeItemIndex === index;
   const selected = model.props.selectedIndexes?.has(index) ?? false;
-  return <Fragment><SummaryGroup model={model} item={item} index={index} /><div onClick={() => model.props.setActiveItemIndex(index)}
-    className={cn("rounded-xl border cursor-pointer relative", active ? "border-primary/50 bg-primary/5 ring-1" : "bg-muted/30",
+  return <Fragment><SummaryGroup model={model} item={item} index={index} /><div
+    className={cn("rounded-xl border relative", active ? "border-primary/50 bg-primary/5 ring-1" : "bg-muted/30",
       model.stale.has(index) && "border-warning/40", selected && "ring-2 ring-primary/40")}>
-    {model.props.onToggleSelection && <div className="absolute top-2 left-2 z-10" onClick={(event) => {
-      event.stopPropagation(); model.props.onToggleSelection?.(index);
-    }}><Checkbox checked={selected} /></div>}
+    {model.props.onToggleSelection && <div className="absolute top-2 left-2 z-10"><Checkbox disabled={model.props.readOnly} checked={selected}
+      onClick={(event) => event.stopPropagation()}
+      onCheckedChange={() => { if (!model.props.readOnly) model.props.onToggleSelection?.(index); }} /></div>}
     <div className={cn("p-3 space-y-2", model.props.onToggleSelection && "pl-8")}><div className="flex items-start gap-3">
       <SummaryImage item={item} /><div className="flex-1 min-w-0"><p className="text-sm font-medium truncate">{item.product_name}</p>
         <Badge variant="secondary" className="text-[10px] font-mono">{item.product_sku}</Badge>
         {item.color_name && <span className="ml-2 text-[10px] text-muted-foreground">{item.color_name}</span>}</div>
-      <Button variant="ghost" size="icon" aria-label="Editar" className="h-6 w-6"><Edit className="h-3.5 w-3.5" /></Button>
-      <Button variant="ghost" size="icon" aria-label="Excluir" className="h-6 w-6 text-destructive" onClick={(event) => {
+      <Button disabled={model.props.readOnly} variant="ghost" size="icon" aria-label="Editar" className="h-6 w-6"
+        onClick={() => model.props.setActiveItemIndex(index)}><Edit className="h-3.5 w-3.5" /></Button>
+      <Button disabled={model.props.readOnly} variant="ghost" size="icon" aria-label="Excluir" className="h-6 w-6 text-destructive" onClick={(event) => {
         event.stopPropagation(); model.remove(index);
       }}><Trash2 className="h-3.5 w-3.5" /></Button></div>
       <SummaryStock item={item} format={model.props.formatCurrency} /><SummaryFreshness model={model} item={item} index={index} />
@@ -170,11 +180,11 @@ function SummaryItemCard({ model, item, index }: { model: SummaryModel; item: Qu
 
 function StaleBar({ model }: { model: SummaryModel }) {
   if (model.stale.size === 0) return null;
-  return <div className="px-4 pb-3 flex gap-2"><Button size="sm" variant="outline"
+  return <div className="px-4 pb-3 flex gap-2"><Button disabled={model.props.readOnly} size="sm" variant="outline"
     aria-label={`${model.stale.size} preço a confirmar`} aria-pressed={model.onlyStale}
     onClick={() => model.setOnlyStale((value) => !value)}>
     <AlertTriangle className="h-3.5 w-3.5 mr-1" />Preços a confirmar <Badge className="ml-1">{model.stale.size}</Badge></Button>
-    {model.props.confirmAllStalePrices && <Button size="sm" variant="outline" onClick={() => model.setConfirmOpen(true)}>
+    {model.props.confirmAllStalePrices && <Button disabled={model.props.readOnly} size="sm" variant="outline" onClick={() => model.setConfirmOpen(true)}>
       <CheckCircle2 className="h-3.5 w-3.5 mr-1" />Confirmar todos</Button>}</div>;
 }
 
@@ -182,16 +192,16 @@ function SelectionBar({ model }: { model: SummaryModel }) {
   const selected = model.props.selectedIndexes ?? new Set<number>();
   return <AnimatePresence>{selected.size > 0 && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
     className="px-4 pb-3"><div className="flex items-center justify-between p-2.5 bg-primary text-primary-foreground rounded-xl">
-    <span className="text-xs font-bold">{selected.size} selecionados</span><div><Button size="sm" variant="ghost" className="text-white" onClick={() => {
+    <span className="text-xs font-bold">{selected.size} selecionados</span><div><Button disabled={model.props.readOnly} size="sm" variant="ghost" className="text-white" onClick={() => {
       const name = prompt("Nome do Kit:"); if (name) model.props.onGroupItems?.(Array.from(selected), name);
-    }}><Layers className="h-3.5 w-3.5 mr-1" />Criar Kit</Button><Button size="icon" variant="ghost" onClick={model.props.onClearSelection}>
+    }}><Layers className="h-3.5 w-3.5 mr-1" />Criar Kit</Button><Button disabled={model.props.readOnly} size="icon" variant="ghost" onClick={model.props.onClearSelection}>
       <X className="h-3.5 w-3.5" /></Button></div></div></motion.div>}</AnimatePresence>;
 }
 
 function SummaryItems({ model }: { model: SummaryModel }) {
   if (!model.props.items.length) return <div className="px-4 pb-4 text-center text-xs text-muted-foreground">Nenhum item adicionado</div>;
   if (!model.visible.length) return <div className="px-4 pb-4 text-center text-xs text-warning">
-    Todos os preços estão confirmados. <button className="underline" onClick={() => model.setOnlyStale(false)}>Mostrar todos</button></div>;
+    Todos os preços estão confirmados. <button disabled={model.props.readOnly} className="underline" onClick={() => model.setOnlyStale(false)}>Mostrar todos</button></div>;
   return <div className="px-4 overflow-y-auto max-h-[50vh]"><div className="space-y-3">
     {model.visible.map(({ item, index }) => <SummaryItemCard key={index} model={model} item={item} index={index} />)}</div></div>;
 }
@@ -213,7 +223,7 @@ function DiscountHints({ props }: { props: Props }) {
 
 function NegotiationMarkup({ props }: { props: Props }) {
   if (!props.setNegotiationMarkup) return null;
-  return <div className="px-4 pt-3"><NegotiationMarkupCard value={props.negotiationMarkup || 0}
+  return <div className="px-4 pt-3"><NegotiationMarkupCard disabled={props.readOnly} value={props.negotiationMarkup || 0}
     onChange={props.setNegotiationMarkup} realSubtotal={props.realSubtotal || 0} apparentDiscountPercent={apparentDiscount(props)}
     realDiscountPercent={props.realDiscountPercent || 0} maxDiscountPercent={props.maxDiscountPercent ?? null} /></div>;
 }
@@ -222,10 +232,10 @@ function SummaryDiscount({ model }: { model: SummaryModel }) {
   const p = model.props;
   if (!p.items.length) return null;
   return <><div className="px-4 pt-3 space-y-2"><DiscountHints props={p} /><div className="flex gap-2">
-    <Select value={p.discountType} onValueChange={(value) => p.setDiscountType(value as "percent" | "amount")}>
+    <Select disabled={p.readOnly} value={p.discountType} onValueChange={(value) => p.setDiscountType(value as "percent" | "amount")}>
       <SelectTrigger className="w-16 h-8"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="percent">%</SelectItem>
         <SelectItem value="amount">R$</SelectItem></SelectContent></Select>
-    <Input type="number" min={0} value={p.discountValue || ""} onChange={(event) => p.setDiscountValue(parseFloat(event.target.value) || 0)} className="h-8" /></div>
+    <Input disabled={p.readOnly} type="number" min={0} value={p.discountValue || ""} onChange={(event) => p.setDiscountValue(Number.parseFloat(event.target.value) || 0)} className="h-8" /></div>
     </div><NegotiationMarkup props={p} /></>;
 }
 
@@ -242,20 +252,20 @@ function SummaryActions({ model, manager }: { model: SummaryModel; manager: bool
     discountValue={p.discountValue} discountType={p.discountType} shippingCost={0} total={p.total}
     profit={p.profit} marginPercent={p.marginPercent} isInternal className="border-none bg-transparent shadow-none p-0" />
     {!p.isFormValid && <p className="text-xs text-destructive">Campos pendentes: {p.validationErrors.join(", ")}</p>}
-    <Button size="lg" className="w-full" onClick={primary.click} disabled={p.quotesLoading || !p.isFormValid}>
+    <Button size="lg" className="w-full" onClick={primary.click} disabled={p.readOnly || p.quotesLoading || !p.isFormValid}>
       {p.quotesLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}{primary.label}</Button>
-    <Button variant="outline" className="w-full" onClick={() => p.onSave("draft")} disabled={p.quotesLoading || !p.isDraftValid}>
+    <Button variant="outline" className="w-full" onClick={() => p.onSave("draft")} disabled={p.readOnly || p.quotesLoading || !p.isDraftValid}>
       <Save className="h-4 w-4 mr-2" />{p.isEditMode ? "Salvar Alterações" : "Salvar Rascunho"}</Button></div>;
 }
 
 function SummaryModals({ model }: { model: SummaryModel }) {
   const count = model.stale.size;
-  return <><Dialog open={model.approvalOpen} onOpenChange={model.setApprovalOpen}><DialogContent><DialogHeader>
+  return <><Dialog open={!model.props.readOnly && model.approvalOpen} onOpenChange={model.setApprovalOpen}><DialogContent><DialogHeader>
     <DialogTitle>Solicitar Aprovação de Desconto</DialogTitle><DialogDescription>O desconto excede o limite autorizado.</DialogDescription>
-  </DialogHeader><Label>Justificativa</Label><Textarea value={model.notes} onChange={(event) => model.setNotes(event.target.value)} />
-    <DialogFooter><Button variant="outline" onClick={() => model.setApprovalOpen(false)}>Cancelar</Button>
-      <Button onClick={model.requestApproval}>Enviar para Aprovação</Button></DialogFooter></DialogContent></Dialog>
-    <ConfirmDialog open={model.confirmOpen} onOpenChange={model.setConfirmOpen} variant="warning"
+  </DialogHeader><Label>Justificativa</Label><Textarea disabled={model.props.readOnly} value={model.notes} onChange={(event) => model.setNotes(event.target.value)} />
+    <DialogFooter><Button disabled={model.props.readOnly} variant="outline" onClick={() => model.setApprovalOpen(false)}>Cancelar</Button>
+      <Button disabled={model.props.readOnly} onClick={model.requestApproval}>Enviar para Aprovação</Button></DialogFooter></DialogContent></Dialog>
+    <ConfirmDialog open={!model.props.readOnly && model.confirmOpen} onOpenChange={model.setConfirmOpen} variant="warning"
       title="Confirmar preços com o fornecedor?" description={`Você validou ${priceCountLabel(count)} com o fornecedor?`}
       confirmLabel={`Confirmar ${priceCountLabel(count)}`} cancelLabel="Cancelar" onConfirm={model.confirmAll} /></>;
 }
@@ -263,7 +273,7 @@ function SummaryModals({ model }: { model: SummaryModel }) {
 export function QuoteBuilderSummaryColumn(props: Props) {
   const { isGerentePa } = useAuth();
   const model = useSummaryModel(props);
-  return <div className="lg:col-span-4"><div className="sticky top-24"><div
+  return <div className={cn("lg:col-span-4", props.readOnly && "grayscale-[0.3] opacity-80")} aria-disabled={props.readOnly || undefined}><div className="sticky top-24"><div
     className="flex flex-col rounded-2xl border border-border/50 bg-card shadow-xl overflow-hidden">
     <div className="flex items-center gap-2 p-4 pb-3"><ShoppingCart className="h-4 w-4 text-primary" />
       <h3 className="font-display font-semibold text-base">Resumo</h3></div>
