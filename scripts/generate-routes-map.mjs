@@ -27,5 +27,5 @@ files.forEach(file => {
   markdown += '\n';
 });
 
-fs.writeFileSync(OUTPUT_FILE, markdown);
+fs.writeFileSync(OUTPUT_FILE, `${markdown.trimEnd()}\n`);
 console.log(`Mapa de rotas gerado em ${OUTPUT_FILE}`);

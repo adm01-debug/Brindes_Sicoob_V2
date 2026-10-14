@@ -36,10 +36,18 @@ export function useSellerCartsPage() {
   const allProducts = productsCtx?.products || [];
 
   const [showNewCart, setShowNewCart] = useState(false);
+  const invalidRouteCartRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (location.pathname === "/carrinhos/novo") setShowNewCart(true);
   }, [location.pathname]);
+
+  const handleNewCartOpenChange = useCallback((open: boolean) => {
+    setShowNewCart(open);
+    if (!open && location.pathname === "/carrinhos/novo") {
+      navigate("/carrinhos", { replace: true });
+    }
+  }, [location.pathname, navigate]);
 
   const [cartNotesOpen, setCartNotesOpen] = useState(false);
   const [localCartNotes, setLocalCartNotes] = useState("");
@@ -71,11 +79,20 @@ export function useSellerCartsPage() {
   }, [activeCart, allProducts]);
 
   useEffect(() => {
-    if (routeCartId && carts.length > 0) {
-      const found = carts.find(c => c.id === routeCartId);
-      if (found) setActiveCartId(routeCartId);
+    if (!routeCartId || isLoading) return;
+
+    const found = carts.find(c => c.id === routeCartId);
+    if (found) {
+      invalidRouteCartRef.current = null;
+      setActiveCartId(routeCartId);
+      return;
     }
-  }, [routeCartId, carts, setActiveCartId]);
+
+    if (invalidRouteCartRef.current === routeCartId) return;
+    invalidRouteCartRef.current = routeCartId;
+    toast.error("Carrinho não encontrado ou sem acesso");
+    navigate("/carrinhos", { replace: true });
+  }, [routeCartId, carts, isLoading, navigate, setActiveCartId]);
 
   useEffect(() => {
     setLocalCartNotes(activeCart?.notes || "");
@@ -216,7 +233,7 @@ export function useSellerCartsPage() {
   return {
     navigate, carts, activeCart, activeCartId, isLoading, totalItems, canCreateCart,
     setActiveCartId, deleteCart, removeItem, updateItemNotes, updateCartStatus, duplicateCart,
-    templates, deleteTemplate, allProducts, showNewCart, setShowNewCart,
+    templates, deleteTemplate, allProducts, showNewCart, setShowNewCart, handleNewCartOpenChange,
     cartNotesOpen, setCartNotesOpen, localCartNotes, handleCartNotesChange,
     stockMap, weightVolume, sensors, handleDragEnd, handleRemoveItem, handleUpdateQuantity,
     handleMoveItem, handleDuplicateItem, handleSaveTemplate, handleLoadTemplate,

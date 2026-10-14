@@ -1,13 +1,13 @@
 # Auditoria de cobertura — Smoke E2E
 
-> **Gerado automaticamente** por `scripts/e2e-smoke-coverage-doc.mjs` em 2026-10-13.
+> **Gerado automaticamente** por `scripts/e2e-smoke-coverage-doc.mjs` em 2026-10-14.
 > **Não edite à mão** — a fonte de verdade é `e2e/routes/_catalog.ts` + `SMOKE_COVERAGE` em `e2e/flows/20-all-features-smoke.spec.ts`.
 
 ## Resumo
 
 | Métrica | Valor |
 |---|---|
-| Rotas no catálogo | **66** |
+| Rotas no catálogo | **67** |
 | Rotas `smoke: true` | **33** |
 | Features autenticadas cobertas | **31** |
 | Smoke público (sem auth) | **2** |

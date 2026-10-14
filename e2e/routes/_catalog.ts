@@ -68,6 +68,8 @@ export const APP_ROUTES: RouteEntry[] = [
   { path: "/reposicao", area: "app", feature: "restock", smoke: true, description: "Reposição" },
   { path: "/favoritos", area: "app", titleSlug: "favoritos", feature: "favorites", smoke: true, description: "Favoritos" },
   { path: "/carrinhos", area: "app", titleSlug: "carrinhos", feature: "carts", smoke: true, description: "Carrinhos do vendedor" },
+  { path: "/carrinhos/novo", area: "app", titleSlug: "carrinhos", feature: "cart-new", description: "Criação de carrinho" },
+  { path: `/carrinhos/${SAMPLE_ID}`, area: "app", titleSlug: "carrinhos", feature: "cart-detail", description: "Detalhe de carrinho" },
   { path: "/comparar", area: "app", titleSlug: "comparador", feature: "comparison", smoke: true, description: "Comparador de produtos" },
   { path: "/colecoes", area: "app", titleSlug: "colecoes", feature: "collections", smoke: true, description: "Coleções" },
   { path: `/colecoes/${SAMPLE_ID}`, area: "app", feature: "collection-detail" },
