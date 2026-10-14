@@ -57,11 +57,11 @@ test.describe('Enterprise Audit Validation Suite', () => {
     // explícita de cadastro, evitando que o teste valide uma interface antiga.
     await page.getByRole('button', { name: 'Novo Produto' }).click();
     await expect(page).toHaveURL(/\/admin\/cadastros\/produto\/novo$/);
-    await expect(page.getByRole('textbox', { name: 'Nome do Produto *' })).toBeVisible();
-    await expect(page.getByRole('textbox', { name: 'SKU Interno *' })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: /^Nome do Produto\s*\*$/ })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: /^SKU Interno\s*\*$/ })).toBeVisible();
 
     await page.getByRole('tab', { name: /^Financeiro e Fiscal:/ }).click();
-    await expect(page.getByRole('textbox', { name: 'Preço Venda (R$) *' })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: /^Preço Venda \(R\$\)\s*\*$/ })).toBeVisible();
   });
 
   test('Endpoint de recomendações de IA responde com fallback ou cota explícita', async ({
