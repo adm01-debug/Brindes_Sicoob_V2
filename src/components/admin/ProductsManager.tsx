@@ -1,21 +1,21 @@
 /**
- * Gerenciador de Produtos - CRUD completo com Auditoria e Paginação
+ * Consulta paginada do catálogo mestre, com modo somente leitura.
  * Refatorado: lógica extraída para useProductsManager hook.
  */
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, Loader2, Search, Package, ImageIcon, RefreshCw, ChevronLeft, ChevronRight, FileSpreadsheet, X, Power, PowerOff, Boxes } from "lucide-react";
-import { BulkImportDialog } from "./products/BulkImportDialog";
+import { Loader2, Search, Package, ImageIcon, RefreshCw, ChevronLeft, ChevronRight, X, Boxes, Tags } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { ProductFiltersBar } from "./products/ProductFiltersBar";
 import { useProductsManager } from "./products/useProductsManager";
+import { ProductMarketingSection } from "./products/ProductMarketingSection";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const PRIMARY_ICON_BACKGROUND = 'bg-primary/10';
 
@@ -50,11 +50,10 @@ function ProductFlags({ product }: { product: ManagedProduct }) {
   );
 }
 
-function ProductRow({ product, state }: { product: ManagedProduct; state: ProductsState }) {
+function ProductRow({ product, onCurate }: { product: ManagedProduct; onCurate: () => void }) {
   const stock = product.stock ?? 0;
   return (
-    <TableRow key={product.id} className={cn("cursor-pointer group hover:bg-muted/40 transition-colors border-border/30", state.selectedIds.has(product.id) && "bg-primary/5")} onClick={() => state.openEditForm(product)}>
-      <TableCell className="pl-4" onClick={event => event.stopPropagation()}><Checkbox checked={state.selectedIds.has(product.id)} onCheckedChange={() => state.toggleSelect(product.id)} /></TableCell>
+    <TableRow key={product.id} className="group hover:bg-muted/40 transition-colors border-border/30">
       <TableCell><ProductThumbnail product={product} /></TableCell>
       <TableCell><span className="font-mono text-xs text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">{product.sku}</span></TableCell>
       <TableCell>
@@ -68,11 +67,10 @@ function ProductRow({ product, state }: { product: ManagedProduct; state: Produc
       <TableCell className="text-center">
         {product.is_active ? <Badge className="text-[10px] bg-primary/10 text-primary border border-primary/20 hover:bg-primary/15">Ativo</Badge> : <Badge variant="secondary" className="text-[10px] opacity-60">Inativo</Badge>}
       </TableCell>
-      <TableCell className="text-right pr-4">
-        <div className="flex justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={event => event.stopPropagation()}>
-          <Button variant="ghost" size="icon" aria-label="Editar" className="h-8 w-8 hover:bg-primary/10 hover:text-primary" onClick={() => state.openEditForm(product)}><Pencil className="h-3.5 w-3.5" /></Button>
-          <Button variant="ghost" size="icon" aria-label="Excluir" className="h-8 w-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive" onClick={() => state.openDeleteDialog(product)}><Trash2 className="h-3.5 w-3.5" /></Button>
-        </div>
+      <TableCell className="text-right">
+        <Button type="button" variant="outline" size="sm" className="gap-1.5" aria-label={`Classificar marketing de ${product.name}`} onClick={onCurate}>
+          <Tags className="h-3.5 w-3.5" />Classificar
+        </Button>
       </TableCell>
     </TableRow>
   );
@@ -87,7 +85,7 @@ function visiblePages(currentPage: number, totalPages: number): number[] {
   });
 }
 
-function ProductTableContent({ state }: { state: ProductsState }) {
+function ProductTableContent({ state, onCurate }: { state: ProductsState; onCurate: (product: ManagedProduct) => void }) {
   if (state.isLoading) {
     return <div className="flex items-center justify-center py-16"><div className="flex flex-col items-center gap-3"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="text-sm text-muted-foreground">Carregando produtos...</p></div></div>;
   }
@@ -99,15 +97,31 @@ function ProductTableContent({ state }: { state: ProductsState }) {
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent border-border/50">
-            <TableHead className="w-10 pl-4"><Checkbox checked={state.selectedIds.size > 0 && state.selectedIds.size === state.products.length} onCheckedChange={state.toggleSelectAll} /></TableHead>
             <TableHead className="w-14">Foto</TableHead><TableHead className="w-28">SKU</TableHead><TableHead>Produto</TableHead>
             <TableHead className="w-28 text-right">Preço</TableHead><TableHead className="w-24 text-center">Estoque</TableHead>
-            <TableHead className="w-24 text-center">Status</TableHead><TableHead className="w-20 text-right pr-4">Ações</TableHead>
+            <TableHead className="w-24 text-center">Status</TableHead>
+            <TableHead className="w-36 text-right">Curadoria local</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>{state.products.map((product) => <ProductRow key={product.id} product={product} state={state} />)}</TableBody>
+        <TableBody>{state.products.map((product) => <ProductRow key={product.id} product={product} onCurate={() => onCurate(product)} />)}</TableBody>
       </Table>
     </div>
+  );
+}
+
+function ProductCurationDialog({ product, onOpenChange }: { product: ManagedProduct | null; onOpenChange: (open: boolean) => void }) {
+  return (
+    <Dialog open={Boolean(product)} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Curadoria de marketing</DialogTitle>
+          <DialogDescription>
+            {product ? `${product.name} · ${product.sku}. As classificações são salvas no portal e não alteram o catálogo mestre.` : 'Classifique o produto no portal sem alterar o catálogo mestre.'}
+          </DialogDescription>
+        </DialogHeader>
+        {product && <ProductMarketingSection productId={product.id} />}
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -133,31 +147,9 @@ function ProductPagination({ state }: { state: ProductsState }) {
   );
 }
 
-function BulkActions({ state }: { state: ProductsState }) {
-  if (state.selectedIds.size === 0) return null;
-  return (
-    <Card className="border-primary/30 bg-primary/5">
-      <CardContent className="p-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Checkbox checked={state.selectedIds.size === state.products.length} onCheckedChange={state.toggleSelectAll} />
-          <span className="text-sm font-medium">{state.selectedIds.size} produto(s) selecionado(s)</span>
-          <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => state.setSelectedIds(new Set())}>Limpar seleção</Button>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-1.5 text-primary border-primary/30 hover:bg-primary/10" disabled={state.isBulkUpdating} onClick={() => state.handleBulkToggleActive(true)}>
-            {state.isBulkUpdating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Power className="h-3.5 w-3.5" />}Ativar
-          </Button>
-          <Button variant="outline" size="sm" className="gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10" disabled={state.isBulkUpdating} onClick={() => state.handleBulkToggleActive(false)}>
-            {state.isBulkUpdating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <PowerOff className="h-3.5 w-3.5" />}Desativar
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 export function ProductsManager() {
   const s = useProductsManager();
+  const [curationProduct, setCurationProduct] = useState<ManagedProduct | null>(null);
 
   return (
     <div className="space-y-4">
@@ -166,19 +158,14 @@ export function ProductsManager() {
         <div>
           <h2 className="font-display text-2xl font-bold tracking-tight flex items-center gap-2.5">
             <div className="p-2 rounded-lg bg-primary/10"><Package className="h-5 w-5 text-primary" /></div>
-            Gerenciador de Produtos
+            Consulta de Produtos
           </h2>
-          <p className="text-sm text-muted-foreground mt-1">Cadastre, edite e gerencie os produtos do catálogo</p>
+          <p className="text-sm text-muted-foreground mt-1">Dados sincronizados do catálogo mestre em modo somente leitura</p>
+          <p className="text-xs text-muted-foreground mt-1">A ação Classificar grava somente a taxonomia editorial local do portal.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => s.fetchProducts()} className="gap-2">
             <RefreshCw className="h-3.5 w-3.5" /><span className="hidden sm:inline">Atualizar</span>
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => s.setIsImportOpen(true)} className="gap-2">
-            <FileSpreadsheet className="h-3.5 w-3.5" /><span className="hidden sm:inline">Importar</span>
-          </Button>
-          <Button size="sm" onClick={s.openCreateForm} className="gap-2 bg-primary hover:bg-primary/90 shadow-sm">
-            <Plus className="h-4 w-4" />Novo Produto
           </Button>
         </div>
       </div>
@@ -225,33 +212,16 @@ export function ProductsManager() {
         </CardContent>
       </Card>)}
 
-      {/* Bulk Actions */}
-      <BulkActions state={s} />
-
       {/* Table */}
       {(<Card className="border-border/40">
         <CardContent className="p-0">
-          <ProductTableContent state={s} />
+          <ProductTableContent state={s} onCurate={setCurationProduct} />
           <ProductPagination state={s} />
         </CardContent>
       </Card>)}
 
-      {/* Delete Dialog */}
-      {(<AlertDialog open={s.isDeleteOpen} onOpenChange={s.setIsDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir Produto?</AlertDialogTitle>
-            <AlertDialogDescription>Tem certeza que deseja excluir o produto "{s.selectedProduct?.name}" ({s.selectedProduct?.sku})? Esta ação não pode ser desfeita.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={s.handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>)}
+      <ProductCurationDialog product={curationProduct} onOpenChange={(open) => { if (!open) setCurationProduct(null); }} />
 
-      {/* Import Dialog */}
-      <BulkImportDialog open={s.isImportOpen} onOpenChange={s.setIsImportOpen} onComplete={() => s.fetchProducts()} />
     </div>
   );
 }

@@ -23,6 +23,7 @@ export const DEV_ONLY_ROUTE_PREFIXES = [
   "/admin/login-attempts",
   "/admin/status",
   "/admin/rbac-rotas",
+  "/admin/qa",
 ] as const;
 
 /** Prefixos `/admin/*` administrativos (não técnicos) — exigem `admin` ou `dev`. */
@@ -32,6 +33,9 @@ export const ADMIN_ONLY_ROUTE_PREFIXES = [
   "/admin/sicoob",
 ] as const;
 
+/** Rotas sob `/admin` que guardam preferências pessoais e aceitam qualquer autenticado. */
+const AUTHENTICATED_ADMIN_PATHS = ["/admin/temas"] as const;
+
 export function isDevOnlyPath(pathname: string): boolean {
   return DEV_ONLY_ROUTE_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`)
@@ -39,6 +43,9 @@ export function isDevOnlyPath(pathname: string): boolean {
 }
 
 export function isAdminOnlyPath(pathname: string): boolean {
+  if (AUTHENTICATED_ADMIN_PATHS.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`)
+  )) return false;
   if (isDevOnlyPath(pathname)) return true;
   if (pathname === "/admin" || pathname.startsWith("/admin/")) return true;
   return ADMIN_ONLY_ROUTE_PREFIXES.some(

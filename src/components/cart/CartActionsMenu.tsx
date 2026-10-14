@@ -41,7 +41,7 @@ export function CartActionsMenu({
           <Plus className="mr-2 h-3.5 w-3.5" />Adicionar produtos
         </DropdownMenuItem>
         <DropdownMenuItem onClick={onShare}>
-          <Share2 className="mr-2 h-3.5 w-3.5" />Compartilhar link
+          <Share2 className="mr-2 h-3.5 w-3.5" />Copiar link pessoal
         </DropdownMenuItem>
         <DropdownMenuItem onClick={onDuplicate} disabled={!canDuplicate}>
           <Copy className="mr-2 h-3.5 w-3.5" />Duplicar carrinho

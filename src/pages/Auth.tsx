@@ -570,7 +570,9 @@ export default function Auth() {
         void import('@/lib/diagnostics').then(({ diagnostics }) => {
           diagnostics.log('error', 'Auth', `Erro no signIn: ${error.message}`);
         });
-        await logLoginAttempt(data.email, null, false, error.message);
+        // Telemetria não pode manter o formulário bloqueado quando o serviço
+        // de IP/auditoria estiver lento ou indisponível.
+        void logLoginAttempt(data.email, null, false, error.message);
         toast({
           variant: 'destructive',
           title: 'Erro ao entrar',

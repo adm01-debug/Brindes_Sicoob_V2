@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import { describe, expect, it, vi } from 'vitest';
 
-import { gotoAndSettle } from '../e2e/helpers/nav';
+import { gotoAndSettle, waitForRouteIdle } from '../e2e/helpers/nav';
 
 function createPage(goto: Page['goto']): Page {
   const waitFor = vi.fn().mockResolvedValue(undefined);
@@ -37,5 +37,23 @@ describe('gotoAndSettle', () => {
 
     await expect(gotoAndSettle(createPage(goto), '/admin/usuarios')).rejects.toBe(error);
     expect(goto).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('waitForRouteIdle', () => {
+  it('não espera permissões durante um desafio MFA', async () => {
+    const page = createPage(vi.fn<Page['goto']>());
+
+    await waitForRouteIdle(page, { waitForPermissions: false });
+
+    expect(page.locator).toHaveBeenCalledWith('[data-route-pending="lazy"]');
+  });
+
+  it('aguarda todos os marcadores nas jornadas sem MFA', async () => {
+    const page = createPage(vi.fn<Page['goto']>());
+
+    await waitForRouteIdle(page);
+
+    expect(page.locator).toHaveBeenCalledWith('[data-route-pending]');
   });
 });

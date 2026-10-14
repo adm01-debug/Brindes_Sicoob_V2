@@ -1,4 +1,4 @@
-import { createReadOnlyCatalogFetch } from "../_shared/external-read-only.ts";
+import { createExternalCatalogClient } from "../_shared/catalog-client.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
@@ -34,14 +34,9 @@ Deno.serve(async (req) => {
   // Check external DB connectivity
   try {
     const extStart = Date.now();
-    const extUrl = Deno.env.get("EXTERNAL_SUPABASE_URL");
-    const extKey = Deno.env.get("EXTERNAL_SUPABASE_SERVICE_KEY");
-    
-    // Ignore placeholder values
-    const isPlaceholder = (val?: string) => !val || val.includes("PLACEHOLDER") || val === "undefined";
+    const extClient = await createExternalCatalogClient();
 
-    if (extUrl && extKey && !isPlaceholder(extUrl) && !isPlaceholder(extKey)) {
-      const extClient = createClient(extUrl, extKey, { global: { fetch: createReadOnlyCatalogFetch() } });
+    if (extClient) {
       const { error } = await extClient.from("products").select("id").limit(1);
       checks.external_db = {
         status: error ? "degraded" : "healthy",

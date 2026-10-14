@@ -60,6 +60,7 @@ export interface Product {
   packingType?: string | null;
   packingClassification?: string | null;
   hasCommercialPackaging?: boolean | null;
+  allowsPersonalization?: boolean | null;
   repackingType?: string | null;
   packagingContext?: 'always' | 'with_customization' | 'without_customization' | null;
   boxImage?: string | null;

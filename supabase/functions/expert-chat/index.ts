@@ -1,4 +1,4 @@
-import { createReadOnlyCatalogFetch } from "../_shared/external-read-only.ts";
+import { createExternalCatalogClient } from "../_shared/catalog-client.ts";
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from '../_shared/cors.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { authenticateRequest, authErrorResponse } from '../_shared/auth.ts';
@@ -829,13 +829,11 @@ ${topProducts.length > 0
     let productsContext = "";
     let semanticResults: any[] = [];
 
-    const EXT_URL = Deno.env.get("EXTERNAL_SUPABASE_URL");
-    const EXT_KEY = Deno.env.get("EXTERNAL_SUPABASE_SERVICE_KEY");
+    const extClient = await createExternalCatalogClient();
 
-    if (!EXT_URL || !EXT_KEY) {
+    if (!extClient) {
       console.error("External DB env vars not set — cannot fetch products");
     } else if (expansion.intent === "product_search" || expansion.intent === "proposal" || expansion.searchTerms.length > 0 || fallbackTerms.length > 0) {
-      const extClient = createClient(EXT_URL, EXT_KEY, { global: { fetch: createReadOnlyCatalogFetch() } });
       const PRODUCT_COLS = "id, name, sku, sale_price, primary_image_url, category_id, supplier_id, description, brand, gender, is_kit, stock_quantity, min_quantity, tags, is_active";
 
       // ── Resolve category IDs from names (DB-level join) ──
@@ -1089,25 +1087,20 @@ ${generalPool.map(p => buildProductDescription(p)).join("\n\n")}
       }
     } else {
       // Non-product intent — still load some general products
-      const EXT_URL2 = Deno.env.get("EXTERNAL_SUPABASE_URL");
-      const EXT_KEY2 = Deno.env.get("EXTERNAL_SUPABASE_SERVICE_KEY");
-      if (EXT_URL2 && EXT_KEY2) {
-        const extClient = createClient(EXT_URL2, EXT_KEY2, { global: { fetch: createReadOnlyCatalogFetch() } });
-        let q = extClient
-          .from("products")
-          .select("id, name, sku, sale_price, primary_image_url, category_id, description, brand, stock_quantity")
-          .eq("is_active", true);
+      let q = extClient
+        .from("products")
+        .select("id, name, sku, sale_price, primary_image_url, category_id, description, brand, stock_quantity")
+        .eq("is_active", true);
 
-        if (priceMin !== null && priceMin !== undefined) q = q.gte("sale_price", priceMin);
-        if (priceMax !== null && priceMax !== undefined) q = q.lte("sale_price", priceMax);
+      if (priceMin !== null && priceMin !== undefined) q = q.gte("sale_price", priceMin);
+      if (priceMax !== null && priceMax !== undefined) q = q.lte("sale_price", priceMax);
 
-        const { data: bgProducts } = await q.limit(30);
-        if (bgProducts?.length) {
-          productsContext = `
+      const { data: bgProducts } = await q.limit(30);
+      if (bgProducts?.length) {
+        productsContext = `
 PRODUTOS DO CATÁLOGO (amostra geral):
 ${bgProducts.map((p: any) => `ID: ${p.id} | Nome: ${p.name} | SKU: ${p.sku} | Preço: R$ ${Number(p.sale_price || 0).toFixed(2)} | ${p.primary_image_url ? `Imagem: ${p.primary_image_url}` : ""}`).join("\n")}
 `;
-        }
       }
     }
 

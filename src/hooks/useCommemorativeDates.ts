@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 const COMMEMORATIVE_DATES_KEY = "commemorative-dates";
+const FILTER_VARIANT_LIMIT = 10_001;
 
 // Tipos baseados nas respostas das RPCs
 export interface CommemorativeDate {
@@ -73,6 +74,45 @@ async function callCommemorativeDatesAPI<T>(
   }
 
   return data.data as T;
+}
+
+export async function fetchProductsByCommemorativeDates(slugs: string[]): Promise<string[]> {
+  const selected = [...new Set(slugs.map((slug) => slug.trim()).filter(Boolean))]
+    .sort((left, right) => left.localeCompare(right, 'pt-BR'));
+  if (!selected.length) return [];
+  const results = await Promise.all(selected.map((slug) =>
+    callCommemorativeDatesAPI<CommemorativeDateVariant[]>('get_products_by_date', {
+      slug,
+      limit: FILTER_VARIANT_LIMIT,
+      include_all_colors: false,
+    })
+  ));
+  if (results.some((records) => records.length >= FILTER_VARIANT_LIMIT)) {
+    throw new Error('A data comemorativa excedeu o limite seguro de variantes; refine a associação no catálogo.');
+  }
+  return [...new Set(results.flatMap((records) => records.map((record) => record.product_id).filter(Boolean)))];
+}
+
+export function useProductsByCommemorativeDates(slugs: string[]) {
+  const valuesKey = [...new Set(slugs.map((slug) => slug.trim()).filter(Boolean))]
+    .sort((left, right) => left.localeCompare(right, 'pt-BR'))
+    .join(',');
+  const selected = valuesKey ? valuesKey.split(',') : [];
+  const query = useQuery({
+    queryKey: [COMMEMORATIVE_DATES_KEY, 'products-filter', valuesKey],
+    queryFn: () => fetchProductsByCommemorativeDates(selected),
+    enabled: selected.length > 0,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    retry: 1,
+  });
+  return {
+    productIds: new Set(query.data ?? []),
+    hasFilter: selected.length > 0,
+    hasData: query.data !== undefined,
+    isLoading: selected.length > 0 && query.isPending,
+    error: query.error instanceof Error ? query.error : null,
+  };
 }
 
 /**

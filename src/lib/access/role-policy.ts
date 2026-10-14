@@ -30,6 +30,7 @@ export const SICOOB_ROUTE_ACCESS: Record<string, readonly AppRole[]> = {
   '/pa/verba': PA_ROLES,
   '/dashboard-pa': PA_ROLES,
   '/gestor': MANAGERS,
+  '/gestor/orcamentos': MANAGERS,
   '/gestor/compras': MANAGERS,
   '/gestor/agregados': PA_ROLES,
   '/gestor/convites': MANAGERS,
@@ -44,3 +45,22 @@ export const SICOOB_ROUTE_ACCESS: Record<string, readonly AppRole[]> = {
   '/sicoob/logistica': MANAGERS,
   '/sicoob/vendas': ['dev', 'supervisor', 'vendedor'],
 };
+
+function matchesRoutePattern(pattern: string, pathname: string): boolean {
+  const expected = pattern.toLocaleLowerCase('pt-BR').split('/').filter(Boolean);
+  const actual = pathname.split('?')[0]?.toLocaleLowerCase('pt-BR').split('/').filter(Boolean) ?? [];
+  return expected.length === actual.length && expected.every((part, index) => (
+    part.startsWith(':') || part === actual[index]
+  ));
+}
+
+export function rolesForSicoobPath(pathname: string): readonly AppRole[] {
+  return Object.entries(SICOOB_ROUTE_ACCESS)
+    .find(([pattern]) => matchesRoutePattern(pattern, pathname))?.[1] ?? [];
+}
+
+export function canAccessSicoobPath(pathname: string, roles: readonly string[]): boolean {
+  const requiredRoles = rolesForSicoobPath(pathname);
+  if (requiredRoles.length === 0) return true;
+  return normalizeAssignedRoles(roles).some((role) => requiredRoles.includes(role));
+}

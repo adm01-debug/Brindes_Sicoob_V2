@@ -61,7 +61,6 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import type { DateRange } from "react-day-picker";
 import { useAuth } from "@/contexts/AuthContext";
-import { useGlobalShortcuts } from "@/hooks/useGlobalShortcuts";
 import { OrderStatusBadge } from "@/components/sicoob/orders/OrderStatusBadge";
 import { type OrderStatus, ORDER_STATUS_OPTIONS, type SicoobOrder } from "@/types/sicoob/orders";
 import { sicoobOrderService } from "@/services/sicoob/orderService";
@@ -229,7 +228,6 @@ function useOrdersController() {
   const data = useOrdersData(filters);
   const exports = useOrderExports(data.orders);
   const selection = useOrderSelection(navigate);
-  useGlobalShortcuts({ onSearchFocus: () => document.querySelector<HTMLInputElement>('input[placeholder*="Buscar"]')?.focus() });
   return { navigate, canCreateOrder: isVendedor || isAdmin, filters, data, exports, selection };
 }
 
@@ -253,7 +251,7 @@ function ExportMenu({ controller }: { controller: OrdersController["exports"] })
 }
 
 function PageHeader({ controller }: { controller: OrdersController }) {
-  return <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-border/40"><div><h1 data-testid="page-title-sicoob-pedidos" className="text-2xl font-display font-bold text-sicoob-green-dark">Gestão de Pedidos</h1><p className="text-xs text-muted-foreground">Acompanhamento centralizado e inteligência de dados para o fluxo SICOOB.</p></div><div className="flex items-center gap-2"><ExportMenu controller={controller.exports} /><Button variant="outline" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50" onClick={() => controller.navigate("/gestor/auditoria")}><History className="h-4 w-4 mr-2" />Auditoria</Button><Button variant="outline" onClick={() => controller.navigate("/sicoob/pedidos/kanban")}><LayoutGrid className="h-4 w-4 mr-2" />Kanban</Button>{controller.canCreateOrder && <Button onClick={() => controller.navigate("/catalogo")}><Plus className="h-4 w-4 mr-2" />Novo Pedido</Button>}</div></motion.div>;
+  return <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-border/40"><div><h1 data-testid="page-title-sicoob-pedidos" className="text-2xl font-display font-bold text-sicoob-green-dark">Gestão de Pedidos</h1><p className="text-xs text-muted-foreground">Acompanhamento centralizado e inteligência de dados para o fluxo SICOOB.</p></div><div className="flex items-center gap-2"><ExportMenu controller={controller.exports} /><Button variant="outline" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50" onClick={() => controller.navigate("/gestor/auditoria")}><History className="h-4 w-4 mr-2" />Auditoria</Button><Button variant="outline" onClick={() => controller.navigate("/sicoob/pedidos/kanban")}><LayoutGrid className="h-4 w-4 mr-2" />Kanban</Button>{controller.canCreateOrder && <Button onClick={() => controller.navigate("/filtros")}><Plus className="h-4 w-4 mr-2" />Novo Pedido</Button>}</div></motion.div>;
 }
 
 function BulkActions({ selection }: { selection: OrdersController["selection"] }) {

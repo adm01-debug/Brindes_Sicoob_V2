@@ -51,7 +51,7 @@ function NewCommentComposer({ onSubmit }: { onSubmit: AddComment }) {
     setContent("");
     setSubmitting(false);
   };
-  return <><Textarea placeholder="Escreva um comentário..." value={content}
+  return <><Textarea aria-label="Novo comentário" placeholder="Escreva um comentário..." value={content}
     onChange={(event) => setContent(event.target.value)}
     className="min-h-[80px] resize-none bg-input border-border focus:border-primary"
     onKeyDown={(event) => {
@@ -110,7 +110,7 @@ function CommentThread({
 function CommentEditor({ content, setContent, submitting, onCancel, onSave }: {
   content: string; setContent: (value: string) => void; submitting: boolean; onCancel: () => void; onSave: () => void;
 }) {
-  return <div className="mt-2 space-y-2"><Textarea value={content} onChange={(event) => setContent(event.target.value)}
+  return <div className="mt-2 space-y-2"><Textarea aria-label="Editar comentário" value={content} onChange={(event) => setContent(event.target.value)}
     className="min-h-[60px] resize-none text-sm bg-input" /><div className="flex gap-2">
       <Button size="sm" variant="ghost" onClick={onCancel}>Cancelar</Button><Button size="sm" onClick={onSave} disabled={submitting}>
         {submitting ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Salvar'}</Button></div>
@@ -132,7 +132,7 @@ function ReplyEditor({ content, setContent, submitting, onCancel, onReply }: {
   content: string; setContent: (value: string) => void; submitting: boolean; onCancel: () => void; onReply: () => void;
 }) {
   return <div className="mt-3 space-y-2"><div className="flex items-start gap-2"><CornerDownRight className="h-4 w-4 text-muted-foreground mt-2 shrink-0" />
-    <Textarea placeholder="Escreva uma resposta..." value={content} onChange={(event) => setContent(event.target.value)}
+    <Textarea aria-label="Responder comentário" placeholder="Escreva uma resposta..." value={content} onChange={(event) => setContent(event.target.value)}
       className="min-h-[60px] resize-none text-sm bg-input" autoFocus /></div><div className="flex gap-2 ml-6">
       <Button size="sm" variant="ghost" onClick={onCancel}>Cancelar</Button><Button size="sm" onClick={onReply} disabled={!content.trim() || submitting}>
         {submitting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}<span className="ml-1">Responder</span></Button>

@@ -5,6 +5,8 @@ import { useMaterialFilter } from "@/hooks/useMaterialFilter";
 import { useSuppliers } from "@/hooks/useSuppliers";
 import { useRamoAtividadeFilter } from "@/hooks/useRamoAtividadeFilter";
 import { useAdvancedFilters, SORT_OPTIONS } from "@/hooks/useAdvancedFilters";
+import { useAvailableCatalogSizes } from "@/hooks/useCatalogRelationFilters";
+import { useCatalogMarketingOptions, type CatalogMarketingCategory, type CatalogMarketingOption } from "@/hooks/useCatalogMarketing";
 import type { FilterState, FilterPanelProps } from "./types";
 
 type Products = FilterPanelProps["products"];
@@ -34,12 +36,6 @@ function usePanelSearchState(filters: FilterState, onFilterChange: FilterPanelPr
 
 type SearchState = ReturnType<typeof usePanelSearchState>;
 
-function sortedTags(products: Products, key: "publicoAlvo" | "endomarketing") {
-  const values = new Set<string>();
-  for (const product of products ?? []) for (const value of product.tags?.[key] ?? []) values.add(value);
-  return [...values].sort((first, second) => first.localeCompare(second));
-}
-
 function incrementCount(counts: Map<string, number>, value: string) {
   const key = value.toLowerCase();
   counts.set(key, (counts.get(key) ?? 0) + 1);
@@ -56,10 +52,8 @@ function countRamos(products: Products) {
 }
 
 function useProductOptions(products: Products) {
-  const publicoAlvoOptions = useMemo(() => sortedTags(products, "publicoAlvo"), [products]);
-  const endomarketingOptions = useMemo(() => sortedTags(products, "endomarketing"), [products]);
   const productCountsByRamo = useMemo(() => countRamos(products), [products]);
-  return { publicoAlvoOptions, endomarketingOptions, productCountsByRamo };
+  return { productCountsByRamo };
 }
 
 function selectedMaterialSections(groups: string[], types: string[], materials: MaterialState["materials"]) {
@@ -122,12 +116,73 @@ function useFilterActions(filters: FilterState, onFilterChange: FilterPanelProps
   return { toggleArrayFilter, toggleBooleanFilter };
 }
 
+function normalizeMarketingValue(value: string): string {
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLocaleLowerCase('pt-BR');
+}
+
+function canonicalMarketingSelection(values: string[], options: CatalogMarketingOption[]): string[] {
+  if (!options.length) return values;
+  const canonicalByAlias = new Map<string, string>();
+  for (const option of options) {
+    canonicalByAlias.set(normalizeMarketingValue(option.slug), option.slug);
+    canonicalByAlias.set(normalizeMarketingValue(option.name), option.slug);
+  }
+  return [...new Set(values.map((value) => canonicalByAlias.get(normalizeMarketingValue(value)) ?? value))];
+}
+
+function optionsWithSelected(
+  options: CatalogMarketingOption[],
+  selected: string[],
+  category: CatalogMarketingCategory,
+): CatalogMarketingOption[] {
+  const known = new Set(options.flatMap((option) => [
+    normalizeMarketingValue(option.slug),
+    normalizeMarketingValue(option.name),
+  ]));
+  const retained = selected
+    .filter((value) => !known.has(normalizeMarketingValue(value)))
+    .map((value) => ({
+      id: `retido-${category}-${normalizeMarketingValue(value)}`,
+      category,
+      slug: value,
+      name: value,
+      description: 'Seleção salva anteriormente; remova para atualizar o filtro.',
+      productCount: 0,
+    }));
+  return [...options, ...retained];
+}
+
+function useCanonicalMarketingSelections(
+  filters: FilterState,
+  onFilterChange: FilterPanelProps['onFilterChange'],
+  publico: CatalogMarketingOption[],
+  endomarketing: CatalogMarketingOption[],
+  temas: CatalogMarketingOption[],
+) {
+  useEffect(() => {
+    const nextPublico = canonicalMarketingSelection(filters.publicoAlvo, publico);
+    const nextEndomarketing = canonicalMarketingSelection(filters.endomarketing, endomarketing);
+    const nextThemes = canonicalMarketingSelection(filters.sicoobThemes, temas);
+    if (
+      sameValues(nextPublico, filters.publicoAlvo)
+      && sameValues(nextEndomarketing, filters.endomarketing)
+      && sameValues(nextThemes, filters.sicoobThemes)
+    ) return;
+    onFilterChange({
+      ...filters,
+      publicoAlvo: nextPublico,
+      endomarketing: nextEndomarketing,
+      sicoobThemes: nextThemes,
+    });
+  }, [endomarketing, filters, onFilterChange, publico, temas]);
+}
+
 function length(values: unknown[] | undefined) { return values?.length ?? 0; }
 function activePrice(filters: FilterState) { return filters.priceRange[0] > 0 || filters.priceRange[1] < 9999; }
 function priceUpperLabel(value: number) { return value >= 9999 ? '∞' : value; }
 
 function buildSectionCounts(filters: FilterState, material: MaterialState) {
-  const quick = [filters.isKit, filters.featured, filters.isNew, filters.hasPersonalization, filters.inStock, filters.hasCommercialPackaging].filter(Boolean).length;
+  const quick = [filters.isKit, filters.featured, filters.isNew, filters.hasPersonalization, filters.inStock].filter(Boolean).length;
   return { temas: length(filters.sicoobThemes), "tiragem-minima": Number(Boolean(filters.minQuantity && filters.minQuantity > 0)),
     cores: length(filters.colorGroups) + length(filters.colorVariations) + length(filters.colorNuances), categorias: length(filters.categories),
     estoque: Number(filters.minStock > 0), preco: Number(activePrice(filters)), fornecedores: length(filters.suppliers), publico: length(filters.publicoAlvo),
@@ -158,11 +213,23 @@ function useSectionInfo(filters: FilterState, material: MaterialState, search: S
   return { sectionCounts, sectionSummaries, sectionMatchesSearch };
 }
 
+function queryError(error: unknown): Error | null {
+  return error instanceof Error ? error : null;
+}
+
 export function useFilterPanelState(filters: FilterState, onFilterChange: FilterPanelProps["onFilterChange"], products: Products = []) {
   const search = usePanelSearchState(filters, onFilterChange);
   const productOptions = useProductOptions(products);
+  const publicoAlvo = useCatalogMarketingOptions('publico_alvo');
+  const endomarketing = useCatalogMarketingOptions('endomarketing');
+  const temasSicoob = useCatalogMarketingOptions('tema_sicoob');
+  const publicoOptions = publicoAlvo.data ?? [];
+  const endomarketingOptions = endomarketing.data ?? [];
+  const temaOptions = temasSicoob.data ?? [];
+  useCanonicalMarketingSelections(filters, onFilterChange, publicoOptions, endomarketingOptions, temaOptions);
   const { data: categoryIcons = [] } = useCategoryIcons();
   const advanced = useAdvancedFilters();
+  const availableSizes = useAvailableCatalogSizes();
   const suppliers = useSuppliers();
   const material = useMaterialFilter();
   const ramo = useRamoAtividadeFilter();
@@ -170,7 +237,23 @@ export function useFilterPanelState(filters: FilterState, onFilterChange: Filter
   useMaterialBridge(filters, onFilterChange, material);
   const actions = useFilterActions(filters, onFilterChange);
   const sectionInfo = useSectionInfo(filters, material, search);
-  return { ...sections, ...search, categoryIcons, ...productOptions, techniqueOptions: advanced.techniqueOptions, tagOptions: advanced.tagOptions,
+  return { ...sections, ...search, categoryIcons, ...productOptions,
+    publicoAlvoOptions: optionsWithSelected(publicoOptions, filters.publicoAlvo, 'publico_alvo'),
+    endomarketingOptions: optionsWithSelected(endomarketingOptions, filters.endomarketing, 'endomarketing'),
+    temaSicoobOptions: optionsWithSelected(temaOptions, filters.sicoobThemes, 'tema_sicoob'),
+    marketingOptionsLoading: publicoAlvo.isPending || endomarketing.isPending || temasSicoob.isPending,
+    publicoAlvoOptionsLoading: publicoAlvo.isPending,
+    publicoAlvoOptionsError: queryError(publicoAlvo.error),
+    retryPublicoAlvoOptions: () => { void publicoAlvo.refetch(); },
+    endomarketingOptionsLoading: endomarketing.isPending,
+    endomarketingOptionsError: queryError(endomarketing.error),
+    retryEndomarketingOptions: () => { void endomarketing.refetch(); },
+    temaSicoobOptionsLoading: temasSicoob.isPending,
+    temaSicoobOptionsError: queryError(temasSicoob.error),
+    retryTemaSicoobOptions: () => { void temasSicoob.refetch(); },
+    techniqueOptions: advanced.techniqueOptions, tagOptions: advanced.tagOptions,
+    availableSizes: availableSizes.sizes, availableSizesLoading: availableSizes.isLoading,
+    availableSizesError: availableSizes.error, retryAvailableSizes: availableSizes.retry,
     supplierOptions: suppliers.suppliers, suppliersLoading: suppliers.isLoading, materialGroups: material.groups, allMaterials: material.materials,
     materialsLoading: material.isLoading, materialFilterState: material.filterState, toggleMaterialGroup: material.toggleGroup,
     toggleMaterialType: material.toggleType, isMaterialGroupSelected: material.isGroupSelected, getTypesForGroup: material.getTypesForGroup,

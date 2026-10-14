@@ -2,7 +2,7 @@
  * Global keyboard shortcuts for power users.
  * 
  * Registry (complementa os atalhos Alt+* da sidebar):
- * Ctrl/Cmd + K → Focus search (busca inteligente)
+ * Ctrl/Cmd + K → reservado à barra global de comandos
  * Ctrl/Cmd + J → Open Flow (assistente IA)
  * Ctrl/Cmd + Shift + N → New quote
  * Ctrl/Cmd + Shift + C → Open cart
@@ -17,7 +17,6 @@ import { useNavigate } from "react-router-dom";
 import { useOracleVoiceBridge } from "@/stores/oracleVoiceBridge";
 
 interface ShortcutHandlers {
-  onSearchFocus?: () => void;
   onToggleCart?: () => void;
 }
 
@@ -61,16 +60,6 @@ function handleKitChord(event: KeyboardEvent, isModified: boolean, isInput: bool
   return true;
 }
 
-function handleSearchShortcut(event: KeyboardEvent, handlers?: ShortcutHandlers): boolean {
-  if (event.key !== "k") return false;
-  event.preventDefault();
-  const searchInput = document.querySelector<HTMLInputElement>('input[type="search"], input[aria-label="Campo de busca"]');
-  searchInput?.focus();
-  searchInput?.select();
-  handlers?.onSearchFocus?.();
-  return true;
-}
-
 function handleOracleShortcut(event: KeyboardEvent, isInput: boolean, openOracle: () => void): boolean {
   if (event.key !== "j" || isInput) return false;
   event.preventDefault();
@@ -104,7 +93,6 @@ export function useGlobalShortcuts(handlers?: ShortcutHandlers) {
       if (handleAltNavigation(e, isInput, navigate)) return;
       if (handleKitChord(e, isMod, isInput, navigate)) return;
       if (!isMod) return;
-      if (handleSearchShortcut(e, handlers)) return;
       if (handleOracleShortcut(e, isInput, openOracle)) return;
       if (handleNewQuoteShortcut(e, isInput, navigate)) return;
       handleCartShortcut(e, isInput, handlers);

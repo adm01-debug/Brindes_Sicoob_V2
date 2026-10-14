@@ -405,7 +405,7 @@ export default function OrdersKanbanPage() {
                   variant="outline"
                   size="sm"
                   className="h-9 rounded-xl border-border/40 bg-sicoob-green text-white hover:bg-sicoob-green-dark"
-                  onClick={() => navigate('/catalogo')}
+                  onClick={() => navigate('/filtros')}
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   Novo Pedido

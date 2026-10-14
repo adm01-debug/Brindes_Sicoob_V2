@@ -44,7 +44,8 @@ describe("P0 — Edge Functions críticas", () => {
 
     expectInOrder(bridge, [
       "const isSensitive = SENSITIVE_TABLES.has(table)",
-      "if (isSensitive && !['dev', 'supervisor'].includes",
+      "const safeTechniqueOptions = isReadOperation && aliasType === 'techniqueOptions'",
+      "if (isSensitive && !safeTechniqueOptions && !['dev', 'supervisor'].includes",
       "const userId = actor?.user.id",
       "if (!userId) return jsonResponse({ error: 'Autenticação necessária' }, 401",
     ]);

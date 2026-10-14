@@ -386,6 +386,8 @@ export function useSellerCarts() {
   return {
     carts,
     isLoading: cartsQuery.isLoading,
+    isFetching: cartsQuery.isFetching,
+    error: cartsQuery.error instanceof Error ? cartsQuery.error : null,
     totalItems,
     canCreateCart,
     createCart,

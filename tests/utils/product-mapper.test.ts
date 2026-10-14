@@ -86,6 +86,15 @@ describe("product-mapper", () => {
       expect(result.featured).toBe(true);
     });
 
+    it("não confunde mais vendido com destaque", () => {
+      const result = mapPromobrindToProduct({
+        ...baseProduct,
+        is_featured: false,
+        is_bestseller: true,
+      } as any);
+      expect(result.featured).toBe(false);
+    });
+
     it("parses materials from string", () => {
       const result = mapPromobrindToProduct(baseProduct as any);
       expect(result.materials).toEqual(["Metal", "Plástico"]);

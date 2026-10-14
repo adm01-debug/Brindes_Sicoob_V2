@@ -131,8 +131,8 @@ function SellerCartsContent() {
       <SellerCartsHeader state={s} aggregateTotal={computed.aggregateTotal} />
       <CartCompanyPickerDialog
         open={s.showNewCart}
-        onOpenChange={s.setShowNewCart}
-        onCreated={() => s.setShowNewCart(false)}
+        onOpenChange={s.handleNewCartOpenChange}
+        onCreated={() => s.handleNewCartOpenChange(false)}
       />
       <SellerCartTabs state={s} />
       <SellerCartBody

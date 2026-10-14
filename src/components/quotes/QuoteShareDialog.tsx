@@ -1,87 +1,166 @@
 /**
- * QuoteShareDialog — modal para gerar e copiar link público de aprovação do orçamento.
+ * QuoteShareDialog — gera e compartilha exclusivamente o link público da proposta.
  */
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useEffect, useState } from "react";
+import { Copy, Link2, Loader2, MessageCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
-import { Copy, Link2, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { useQuoteApproval, type ApprovalToken } from "@/hooks/useQuoteApproval";
+import { normalizePhoneForWhatsApp } from "@/components/products/share/whatsapp";
 
 interface QuoteShareDialogProps {
   quoteId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  defaultClientEmail?: string;
-  defaultClientName?: string;
+  defaultClientEmail?: string | null;
+  defaultClientName?: string | null;
+  quoteNumber?: string | null;
+  total?: number | null;
+  clientPhone?: string | null;
 }
 
-function useApprovalLink(quoteId: string, clientName: string, clientEmail: string) {
-  const [token, setToken] = useState<string | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const link = token ? `${window.location.origin}/orcamento/aprovar/${token}` : null;
+function publicProposalLink(token: string) {
+  return `${window.location.origin}/proposta/${token}`;
+}
+
+export function buildQuoteWhatsappUrl({ link, quoteNumber, total, clientPhone }: {
+  link: string;
+  quoteNumber?: string | null;
+  total?: number | null;
+  clientPhone?: string | null;
+}) {
+  const amount = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(total ?? 0);
+  const text = encodeURIComponent(
+    `Olá! Segue a proposta comercial *#${quoteNumber || "-"}* no valor de *${amount}*.\n\nVisualize e responda aqui: ${link}`,
+  );
+  const countryPhone = normalizePhoneForWhatsApp(clientPhone);
+  return `https://wa.me/${countryPhone}?text=${text}`;
+}
+
+function useShareController(quoteId: string, open: boolean, clientName: string, clientEmail: string) {
+  const { generateApprovalLink, getApprovalStatus, copyToClipboard, isLoading, isGenerating } = useQuoteApproval();
+  const [token, setToken] = useState<ApprovalToken | null>(null);
+  const [link, setLink] = useState("");
+
+  useEffect(() => {
+    if (!open) return;
+    let active = true;
+    void getApprovalStatus(quoteId).then((current) => {
+      if (!active) return;
+      const expiresAt = current?.expires_at ? new Date(current.expires_at).getTime() : Number.POSITIVE_INFINITY;
+      const available = current?.status === "active" && expiresAt > Date.now() ? current : null;
+      setToken(available);
+      setLink(available ? publicProposalLink(available.token) : "");
+    });
+    return () => { active = false; };
+  }, [getApprovalStatus, open, quoteId]);
+
   const generate = async () => {
-    setIsGenerating(true);
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error("Não autenticado");
-      const { data, error } = await supabase.from("quote_approval_tokens").insert({
-        quote_id: quoteId, seller_id: userData.user.id, client_name: clientName || null, client_email: clientEmail || null,
-      }).select("token").single();
-      if (error) throw error;
-      setToken(data.token);
-      toast.success("Link gerado!");
-    } catch (error) { toast.error(error instanceof Error ? error.message : "Erro ao gerar link"); }
-    finally { setIsGenerating(false); }
+    const result = await generateApprovalLink(quoteId, clientName || undefined, clientEmail || undefined);
+    if (!result) return;
+    setToken(result.token);
+    setLink(result.link);
   };
-  const copy = async () => {
-    if (!link) return;
-    await navigator.clipboard.writeText(link);
-    toast.success("Link copiado");
+
+  return {
+    token,
+    link,
+    loading: isLoading,
+    generating: isGenerating,
+    generate,
+    copy: () => copyToClipboard(link),
   };
-  return { link, isGenerating, generate, copy };
 }
 
-export function QuoteShareDialog({ quoteId, open, onOpenChange, defaultClientEmail, defaultClientName }: QuoteShareDialogProps) {
+function ClientFields({ quoteId, clientName, clientEmail, onNameChange, onEmailChange }: {
+  quoteId: string;
+  clientName: string;
+  clientEmail: string;
+  onNameChange: (value: string) => void;
+  onEmailChange: (value: string) => void;
+}) {
+  return <>
+    <div className="space-y-1">
+      <Label htmlFor={`share-client-name-${quoteId}`}>Nome do cliente</Label>
+      <Input id={`share-client-name-${quoteId}`} value={clientName} onChange={(event) => onNameChange(event.target.value)} />
+    </div>
+    <div className="space-y-1">
+      <Label htmlFor={`share-client-email-${quoteId}`}>E-mail do cliente</Label>
+      <Input id={`share-client-email-${quoteId}`} type="email" value={clientEmail}
+        onChange={(event) => onEmailChange(event.target.value)} />
+    </div>
+  </>;
+}
+
+function ShareStatus({ quoteId, controller, onWhatsapp }: {
+  quoteId: string;
+  controller: ReturnType<typeof useShareController>;
+  onWhatsapp: () => void;
+}) {
+  if (controller.loading && !controller.token) {
+    return <div className="flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground">
+      <Loader2 className="h-4 w-4 animate-spin" /> Buscando link atual...
+    </div>;
+  }
+  if (!controller.link) {
+    return <Button type="button" onClick={controller.generate} disabled={controller.generating} className="w-full">
+      {controller.generating
+        ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        : <Link2 className="mr-2 h-4 w-4" />}
+      Gerar link público
+    </Button>;
+  }
+  return <div className="space-y-2">
+    <Label htmlFor={`share-link-${quoteId}`}>Link público de aprovação</Label>
+    <Input id={`share-link-${quoteId}`} value={controller.link} readOnly className="font-mono text-xs" />
+    <div className="grid gap-2 sm:grid-cols-2">
+      <Button type="button" variant="outline" className="gap-2" onClick={controller.copy}>
+        <Copy className="h-4 w-4" /> Copiar link
+      </Button>
+      <Button type="button" className="gap-2" onClick={onWhatsapp}>
+        <MessageCircle className="h-4 w-4" /> Enviar por WhatsApp
+      </Button>
+    </div>
+  </div>;
+}
+
+export function QuoteShareDialog({
+  quoteId,
+  open,
+  onOpenChange,
+  defaultClientEmail,
+  defaultClientName,
+  quoteNumber,
+  total,
+  clientPhone,
+}: QuoteShareDialogProps) {
   const [clientName, setClientName] = useState(defaultClientName ?? "");
   const [clientEmail, setClientEmail] = useState(defaultClientEmail ?? "");
-  const { link, isGenerating, generate, copy } = useApprovalLink(quoteId, clientName, clientEmail);
+  const controller = useShareController(quoteId, open, clientName, clientEmail);
+  const shareByWhatsapp = () => {
+    if (!controller.link) return;
+    window.open(
+      buildQuoteWhatsappUrl({ link: controller.link, quoteNumber, total, clientPhone }),
+      "_blank",
+      "noopener,noreferrer",
+    );
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent onClick={(event) => event.stopPropagation()}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Link2 className="h-4 w-4" /> Compartilhar orçamento
+            <Link2 className="h-4 w-4" /> Compartilhar proposta
           </DialogTitle>
+          <DialogDescription>Gere um link público para o cliente visualizar e responder sem fazer login.</DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
-          <div className="space-y-1">
-            <Label>Nome do cliente</Label>
-            <Input value={clientName} onChange={(e) => setClientName(e.target.value)} />
-          </div>
-          <div className="space-y-1">
-            <Label>E-mail do cliente</Label>
-            <Input type="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} />
-          </div>
-          {link ? (
-            <div className="space-y-1">
-              <Label>Link de aprovação</Label>
-              <div className="flex gap-2">
-                <Input value={link} readOnly className="font-mono text-xs" />
-                <Button onClick={copy} size="icon" variant="outline">
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <Button onClick={generate} disabled={isGenerating} className="w-full">
-              {isGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Link2 className="h-4 w-4 mr-2" />}
-              Gerar link
-            </Button>
-          )}
+        <div className="space-y-4">
+          <ClientFields quoteId={quoteId} clientName={clientName} clientEmail={clientEmail}
+            onNameChange={setClientName} onEmailChange={setClientEmail} />
+          <ShareStatus quoteId={quoteId} controller={controller} onWhatsapp={shareByWhatsapp} />
         </div>
       </DialogContent>
     </Dialog>

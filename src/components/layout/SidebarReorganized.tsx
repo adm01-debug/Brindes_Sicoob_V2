@@ -60,6 +60,7 @@ import { SidebarFooterHealth } from './sidebar/SidebarFooterHealth';
 import { RestrictedRouteNotice } from './sidebar/RestrictedRouteNotice';
 
 import { isDevOnlyPath, isAdminOnlyPath } from '@/lib/navigation/restricted-routes';
+import { canAccessSicoobPath } from '@/lib/access/role-policy';
 import { isNavItemActive } from '@/lib/navigation/active-match';
 import type { AppRole } from '@/types/users';
 
@@ -70,14 +71,19 @@ interface SidebarProps {
 
 const OVERFLOW_VISIBLE_CLASS = 'overflow-visible';
 
-const navGroups: NavGroup[] = [
+export const navGroups: NavGroup[] = [
   {
     id: 'sicoob-portal',
     label: 'Portal SICOOB',
     icon: Landmark,
     defaultOpen: true,
     items: [
-      { icon: Gauge, label: 'Painel Gestor', href: '/gestor', adminOnly: true },
+      {
+        icon: Gauge,
+        label: 'Painel Gestor',
+        href: '/gestor',
+        allowedRoles: ['dev', 'supervisor', 'gestor_compras', 'comprador_singular'],
+      },
       {
         icon: Mail,
         label: 'Convites institucionais',
@@ -131,7 +137,20 @@ const navGroups: NavGroup[] = [
         icon: ClipboardCheck,
         label: 'Gestão Singular',
         href: '/gestor/orcamentos',
-        adminOnly: true,
+        allowedRoles: ['dev', 'supervisor', 'gestor_compras', 'comprador_singular'],
+      },
+      {
+        icon: ClipboardCheck,
+        label: 'Aprovações',
+        href: '/gestor/aprovacoes',
+        allowedRoles: [
+          'dev',
+          'supervisor',
+          'gestor_compras',
+          'comprador_singular',
+          'gerente_pa',
+          'comprador_pac',
+        ],
       },
       { icon: ShoppingCart, label: 'Carrinhos', href: '/carrinhos', shortcut: 'Alt+R' },
     ],
@@ -187,7 +206,26 @@ const navGroups: NavGroup[] = [
     adminOnly: true,
     defaultOpen: false,
     items: [
-      { icon: Users, label: 'Usuários', href: '/admin/usuarios', adminOnly: true },
+      {
+        icon: Users,
+        label: 'Usuários',
+        href: '/admin/usuarios',
+        adminOnly: true,
+        children: [
+          {
+            icon: Users,
+            label: 'Lista de usuários',
+            href: '/admin/usuarios',
+            adminOnly: true,
+          },
+          {
+            icon: ClipboardCheck,
+            label: 'Aprovações de desconto',
+            href: '/admin/usuarios?tab=discounts',
+            adminOnly: true,
+          },
+        ],
+      },
       { icon: Landmark, label: 'Gestão SICOOB', href: '/admin/sicoob', adminOnly: true },
       {
         icon: Bell,
@@ -266,10 +304,15 @@ function hasDeclaredAccess(
   return !item.allowedRoles || roles.some((role) => item.allowedRoles?.includes(role));
 }
 
-function hasRouteAccess(href: string, isDev: boolean, isSupervisor: boolean): boolean {
+function hasRouteAccess(
+  href: string,
+  isDev: boolean,
+  isSupervisor: boolean,
+  roles: AppRole[],
+): boolean {
   if (href && isDevOnlyPath(href) && !isDev) return false;
   if (href && isAdminOnlyPath(href) && !isSupervisor) return false;
-  return true;
+  return !href || canAccessSicoobPath(href, roles);
 }
 
 function SidebarOverlay({ visible, onClose }: { visible: boolean; onClose: () => void }) {
@@ -526,11 +569,16 @@ function usePendingSidebarBadges() {
   return { auth, approvals: approvals.data, pacRequests: pacRequests.data };
 }
 
-function withItemBadge(group: NavGroup, href: string, badge?: number): NavGroup {
+export function withItemBadge(group: NavGroup, href: string, badge?: number): NavGroup {
   if (!badge) return group;
+  const addBadge = (item: NavGroup['items'][number]): NavGroup['items'][number] => ({
+    ...item,
+    ...(item.href === href ? { badge } : {}),
+    children: item.children?.map(addBadge),
+  });
   return {
     ...group,
-    items: group.items.map((item) => (item.href === href ? { ...item, badge } : item)),
+    items: group.items.map(addBadge),
   };
 }
 
@@ -545,7 +593,7 @@ function enrichNavigationGroups(
     }
     const canApprovePac = auth.isGestorCompras || auth.isCompradorSingular || auth.isDev;
     if (group.id === 'quotes' && canApprovePac) {
-      return withItemBadge(group, '/orcamentos', pacRequests);
+      return withItemBadge(group, '/gestor/orcamentos', pacRequests);
     }
     return group;
   });
@@ -560,7 +608,7 @@ function useVisibleSidebarGroups() {
   const isVisible = useCallback(
     (item: NavGroup['items'][number]) =>
       hasDeclaredAccess(item, auth.isDev, auth.isSupervisorOrAbove, auth.roles) &&
-      hasRouteAccess(item.href ?? '', auth.isDev, auth.isSupervisorOrAbove),
+      hasRouteAccess(item.href ?? '', auth.isDev, auth.isSupervisorOrAbove, auth.roles),
     [auth.isDev, auth.isSupervisorOrAbove, auth.roles],
   );
   return useMemo(

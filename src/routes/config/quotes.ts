@@ -36,7 +36,7 @@ export const quoteRoutes = [
   }),
   defineRoute({ 
     path: "/orcamentos/:id", 
-    component: lazyWithRetry(() => import("@/pages/QuoteDetailPage")) 
+    component: lazyWithRetry(() => import("@/pages/QuoteViewPage"))
   }),
   defineRoute({
     path: "/orcamentos/:id/editar",
@@ -48,11 +48,15 @@ export const quoteRoutes = [
   }),
 
   defineRoute({ 
-    path: "/gestor/orcamentos", 
-    component: lazyWithRetry(() => import("@/pages/GestorOrcamentos")) 
-  }),
-  defineRoute({ 
     path: "/carrinhos", 
     component: lazyWithRetry(() => import("@/pages/SellerCartsPage")) 
+  }),
+  defineRoute({
+    path: "/carrinhos/novo",
+    component: lazyWithRetry(() => import("@/pages/SellerCartsPage"))
+  }),
+  defineRoute({
+    path: "/carrinhos/:cartId",
+    component: lazyWithRetry(() => import("@/pages/SellerCartsPage"))
   }),
 ] as const;

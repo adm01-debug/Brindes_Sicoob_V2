@@ -39,12 +39,14 @@ test.describe('Enterprise Audit Validation Suite', () => {
     }
   });
 
-  test('Performance e contrato do cadastro administrativo de produtos', async ({ page }) => {
+  test('Performance e contrato somente leitura do catálogo administrativo', async ({ page }) => {
     await loginAs(page, 'admin');
     const startTime = Date.now();
     await gotoAndSettle(page, '/admin/cadastros');
 
-    await expect(page.getByRole('heading', { name: 'Cadastro de Produtos' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Cadastros', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Consulta de Produtos' })).toBeVisible();
+    await expect(page.getByText(/catálogo mestre em modo somente leitura/i)).toBeVisible();
 
     const loadTime = Date.now() - startTime;
     console.log(`Tempo de carregamento do cadastro: ${loadTime}ms`);
@@ -52,10 +54,15 @@ test.describe('Enterprise Audit Validation Suite', () => {
     // Limite de regressão inclui rede e carregamento lazy do módulo administrativo.
     expect(loadTime).toBeLessThan(10_000);
 
-    // O formulário principal precisa estar integralmente operável após o carregamento.
-    await expect(page.getByRole('textbox', { name: 'Nome do Produto *' })).toBeVisible();
-    await expect(page.getByRole('textbox', { name: 'SKU *' })).toBeVisible();
-    await expect(page.getByRole('spinbutton', { name: 'Preço (R$) *' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /novo produto/i })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /importar/i })).toHaveCount(0);
+
+    const curationButton = page.getByRole('button', { name: /classificar marketing de/i }).first();
+    if ((await curationButton.count()) > 0) {
+      await curationButton.click();
+      await expect(page.getByRole('dialog', { name: 'Curadoria de marketing' })).toBeVisible();
+      await expect(page.getByText(/não alteram o catálogo mestre/i)).toBeVisible();
+    }
   });
 
   test('Endpoint de recomendações de IA responde com fallback ou cota explícita', async ({

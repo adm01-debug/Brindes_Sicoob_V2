@@ -74,15 +74,15 @@ async function assertHeaderSticky(
   await waitForTestIdVisible(page, 'app-header');
   const header = page.locator(Sel.app.layout.header);
 
-  const initialBox = await header.boundingBox();
-  expect(
-    initialBox,
-    `header sem boundingBox inicial em ${routePath} [${viewportLabel}]`,
-  ).not.toBeNull();
-  expect(
-    initialBox!.y,
-    `Header não inicia no topo em ${routePath} [${viewportLabel}] (y=${initialBox!.y})`,
-  ).toBeLessThanOrEqual(Y_TOLERANCE_PX);
+  // O diagnóstico de saúde pode exibir um banner transitório enquanto o
+  // backend aquece. Aguarde a posição final do shell em vez de medir o frame
+  // intermediário; um banner persistente continua falhando pelo timeout.
+  await expect
+    .poll(async () => (await header.boundingBox())?.y ?? Number.POSITIVE_INFINITY, {
+      message: `Header não estabilizou no topo em ${routePath} [${viewportLabel}]`,
+      timeout: 10_000,
+    })
+    .toBeLessThanOrEqual(Y_TOLERANCE_PX);
 
   await page.evaluate(() => {
     if (document.body.scrollHeight < window.innerHeight + 2000) {

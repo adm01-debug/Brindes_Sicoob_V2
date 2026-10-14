@@ -21,11 +21,14 @@ files.forEach(file => {
   for (const match of matches) {
     const routePath = match[1];
     const componentPath = match[2];
-    markdown += `| \`${routePath}\` | \`${componentPath}\` |\n`;
+    const condition = file === 'public.ts' && ['/loja-demo', '/demonstracao'].includes(routePath)
+      ? ' (somente dev ou `VITE_ENABLE_DEMO_PAGES=true`)'
+      : '';
+    markdown += `| \`${routePath}\` | \`${componentPath}\`${condition} |\n`;
   }
   
   markdown += '\n';
 });
 
-fs.writeFileSync(OUTPUT_FILE, markdown);
+fs.writeFileSync(OUTPUT_FILE, `${markdown.trimEnd()}\n`);
 console.log(`Mapa de rotas gerado em ${OUTPUT_FILE}`);

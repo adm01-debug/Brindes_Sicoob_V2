@@ -42,11 +42,10 @@ export const PERMISSION_MATRIX: Record<Role, PermissionRoute[]> = {
     { path: "/produtos", expectedBehavior: "allow" },
     { path: "/admin/usuarios", expectedBehavior: "allow" },
     { path: "/admin/cadastros", expectedBehavior: "allow" },
-    { path: "/admin/cadastros/produto/:id", params: { id: "test-prod-123" }, expectedBehavior: "allow" },
     { path: "/admin/telemetria", expectedBehavior: "deny_403" },
   ],
   dev: [
     { path: "/admin/telemetria", expectedBehavior: "allow" },
-    { path: "/admin/cadastros/produto/:id", params: { id: "test-prod-123" }, expectedBehavior: "allow" },
+    { path: "/admin/cadastros", expectedBehavior: "allow" },
   ],
 };

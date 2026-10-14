@@ -91,6 +91,7 @@ export const PRODUCT_TABLES = [
 export const BRIDGE_ALIASES = [
   'tecnica_gravacao',              // → tabela_preco_gravacao_oficial
   'personalization_techniques',    // → tecnicas_gravacao (via bridge alias)
+  'personalization_technique_options', // projeção segura para filtros do catálogo
   'customization_price_tables',    // → tabela_preco_fornecedores_gravacao (via bridge alias)
   'customization_price_tiers',     // → tabela_preco_gravacao_oficial_faixa
 ] as const;

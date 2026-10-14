@@ -20,6 +20,27 @@ interface CatalogFilteringOptions {
   hasCategoryFilter: boolean;
   categoryFilteredProductIds: Set<string>;
   isLoadingCategoryFilter: boolean;
+  hasColorFilter: boolean;
+  colorFilteredProductIds: Set<string>;
+  isLoadingColorFilter: boolean;
+  hasTagFilter: boolean;
+  tagFilteredProductIds: Set<string>;
+  isLoadingTagFilter: boolean;
+  hasTechniqueFilter: boolean;
+  techniqueFilteredProductIds: Set<string>;
+  isLoadingTechniqueFilter: boolean;
+  hasSizeFilter: boolean;
+  sizeFilteredProductIds: Set<string>;
+  isLoadingSizeFilter: boolean;
+  hasActivityFilter: boolean;
+  activityFilteredProductIds: Set<string>;
+  isLoadingActivityFilter: boolean;
+  hasMarketingFilter: boolean;
+  marketingFilteredProductIds: Set<string>;
+  isLoadingMarketingFilter: boolean;
+  hasCommemorativeDateFilter: boolean;
+  commemorativeDateProductIds: Set<string>;
+  isLoadingCommemorativeDateFilter: boolean;
   promoSalesMap?: Map<string, number>;
   supplierSalesMap?: Map<string, SupplierSalesEntry>;
 }
@@ -38,18 +59,41 @@ interface CatalogFilterContext {
   hasCategoryFilter: boolean;
   categoryFilteredProductIds: Set<string>;
   isLoadingCategoryFilter: boolean;
+  hasColorFilter: boolean;
+  colorFilteredProductIds: Set<string>;
+  isLoadingColorFilter: boolean;
+  hasTagFilter: boolean;
+  tagFilteredProductIds: Set<string>;
+  isLoadingTagFilter: boolean;
+  hasTechniqueFilter: boolean;
+  techniqueFilteredProductIds: Set<string>;
+  isLoadingTechniqueFilter: boolean;
+  hasSizeFilter: boolean;
+  sizeFilteredProductIds: Set<string>;
+  isLoadingSizeFilter: boolean;
+  hasActivityFilter: boolean;
+  activityFilteredProductIds: Set<string>;
+  isLoadingActivityFilter: boolean;
+  hasMarketingFilter: boolean;
+  marketingFilteredProductIds: Set<string>;
+  isLoadingMarketingFilter: boolean;
+  hasCommemorativeDateFilter: boolean;
+  commemorativeDateProductIds: Set<string>;
+  isLoadingCommemorativeDateFilter: boolean;
+}
+
+function relationalIdFilter(products: Product[], active: boolean, ids: Set<string>, loading: boolean): Product[] {
+  if (!active) return products;
+  if (loading) return products;
+  if (ids.size > 0) return products.filter(product => ids.has(product.id));
+  return [];
 }
 
 function relationalCategoryFilter(products: Product[], context: CatalogFilterContext): Product[] {
   if (!context.hasCategoryFilter) return products;
+  if (context.isLoadingCategoryFilter) return products;
   if (context.categoryFilteredProductIds.size > 0) return products.filter(product => context.categoryFilteredProductIds.has(product.id));
-  return context.isLoadingCategoryFilter ? products : [];
-}
-
-function themeFilter(products: Product[], filters: FilterState): Product[] {
-  if (!filters.sicoobThemes?.length) return products;
-  const selected = new Set(filters.sicoobThemes.map(theme => theme.toLowerCase()));
-  return products.filter(product => (product.tags?.temas || []).some(theme => selected.has(theme.toLowerCase())));
+  return [];
 }
 
 function minimumQuantityFilter(products: Product[], minimum?: number): Product[] {
@@ -91,12 +135,18 @@ function supplierFilter(products: Product[], suppliers: Set<string>): Product[] 
 }
 
 function priceFilter(products: Product[], range: FilterState['priceRange']): Product[] {
-  if (range[0] <= 0 && range[1] >= 500) return products;
+  if (range[0] <= 0 && range[1] >= 9999) return products;
   return products.filter(product => product.price >= range[0] && product.price <= range[1]);
 }
 
-function stockFilter(products: Product[], inStock: boolean): Product[] {
-  return inStock ? products.filter(product => (product.stock ?? 0) > 0) : products;
+function stockFilter(products: Product[], filters: FilterState): Product[] {
+  let result = filters.inStock ? products.filter(product => (product.stock ?? 0) > 0) : products;
+  if (filters.minStock > 0) {
+    result = result.filter(product => product.variations?.length
+      ? product.variations.some(variation => variation.stock >= filters.minStock)
+      : product.stock >= filters.minStock);
+  }
+  return result;
 }
 
 function genderFilter(products: Product[], genders: Set<string>): Product[] {
@@ -120,26 +170,51 @@ function materialTextFilter(products: Product[], context: CatalogFilterContext):
   });
 }
 
+function quickOptionsFilter(products: Product[], filters: FilterState): Product[] {
+  let result = products;
+  if (filters.isKit) result = result.filter(product => product.isKit);
+  if (filters.featured) result = result.filter(product => product.featured);
+  if (filters.isNew) result = result.filter(product => product.newArrival);
+  if (filters.hasPersonalization) result = result.filter(product => product.allowsPersonalization === true);
+  return result;
+}
+
 function applyCatalogFilters(products: Product[], context: CatalogFilterContext): Product[] {
   let result = relationalCategoryFilter(products, context);
-  result = themeFilter(result, context.filters);
+  result = relationalIdFilter(result, context.hasColorFilter, context.colorFilteredProductIds, context.isLoadingColorFilter);
+  result = relationalIdFilter(result, context.hasTagFilter, context.tagFilteredProductIds, context.isLoadingTagFilter);
+  result = relationalIdFilter(result, context.hasTechniqueFilter, context.techniqueFilteredProductIds, context.isLoadingTechniqueFilter);
+  result = relationalIdFilter(result, context.hasSizeFilter, context.sizeFilteredProductIds, context.isLoadingSizeFilter);
+  result = relationalIdFilter(result, context.hasActivityFilter, context.activityFilteredProductIds, context.isLoadingActivityFilter);
+  result = relationalIdFilter(result, context.hasMarketingFilter, context.marketingFilteredProductIds, context.isLoadingMarketingFilter);
+  result = relationalIdFilter(result, context.hasCommemorativeDateFilter, context.commemorativeDateProductIds, context.isLoadingCommemorativeDateFilter);
   result = minimumQuantityFilter(result, context.filters.minQuantity);
-  result = directColorFilter(result, context.colorFilterSet);
-  result = colorGroupFilter(result, context.colorGroupSet);
-  result = colorVariationFilter(result, context.colorVariationSet);
+  if (!context.hasColorFilter) {
+    result = directColorFilter(result, context.colorFilterSet);
+    result = colorGroupFilter(result, context.colorGroupSet);
+    result = colorVariationFilter(result, context.colorVariationSet);
+  }
   result = directCategoryFilter(result, context.categoryFilterSet);
   result = supplierFilter(result, context.supplierFilterSet);
   result = priceFilter(result, context.filters.priceRange);
-  result = stockFilter(result, context.filters.inStock);
+  result = stockFilter(result, context.filters);
   result = genderFilter(result, context.genderFilterSet);
   result = relationalMaterialFilter(result, context);
-  return materialTextFilter(result, context);
+  result = materialTextFilter(result, context);
+  return quickOptionsFilter(result, context.filters);
 }
 
 export function useCatalogFiltering({
   realProducts, filters, sortBy, hasFuzzySearch, fuzzySearchResults,
   hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter,
   hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter,
+  hasColorFilter, colorFilteredProductIds, isLoadingColorFilter,
+  hasTagFilter, tagFilteredProductIds, isLoadingTagFilter,
+  hasTechniqueFilter, techniqueFilteredProductIds, isLoadingTechniqueFilter,
+  hasSizeFilter, sizeFilteredProductIds, isLoadingSizeFilter,
+  hasActivityFilter, activityFilteredProductIds, isLoadingActivityFilter,
+  hasMarketingFilter, marketingFilteredProductIds, isLoadingMarketingFilter,
+  hasCommemorativeDateFilter, commemorativeDateProductIds, isLoadingCommemorativeDateFilter,
   promoSalesMap, supplierSalesMap,
 }: CatalogFilteringOptions): Product[] {
   // Otimização: Memoizamos conjuntos de filtros para lookup O(1)
@@ -156,6 +231,13 @@ export function useCatalogFiltering({
       filters, colorFilterSet, colorGroupSet, colorVariationSet, categoryFilterSet, supplierFilterSet, genderFilterSet,
       hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter,
       hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter,
+      hasColorFilter, colorFilteredProductIds, isLoadingColorFilter,
+      hasTagFilter, tagFilteredProductIds, isLoadingTagFilter,
+      hasTechniqueFilter, techniqueFilteredProductIds, isLoadingTechniqueFilter,
+      hasSizeFilter, sizeFilteredProductIds, isLoadingSizeFilter,
+      hasActivityFilter, activityFilteredProductIds, isLoadingActivityFilter,
+      hasMarketingFilter, marketingFilteredProductIds, isLoadingMarketingFilter,
+      hasCommemorativeDateFilter, commemorativeDateProductIds, isLoadingCommemorativeDateFilter,
     };
     const result = applyCatalogFilters(initial, context);
 
@@ -168,6 +250,13 @@ export function useCatalogFiltering({
     filters, sortBy, hasFuzzySearch, fuzzySearchResults, realProducts, 
     hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter, 
     hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter, 
+    hasColorFilter, colorFilteredProductIds, isLoadingColorFilter,
+    hasTagFilter, tagFilteredProductIds, isLoadingTagFilter,
+    hasTechniqueFilter, techniqueFilteredProductIds, isLoadingTechniqueFilter,
+    hasSizeFilter, sizeFilteredProductIds, isLoadingSizeFilter,
+    hasActivityFilter, activityFilteredProductIds, isLoadingActivityFilter,
+    hasMarketingFilter, marketingFilteredProductIds, isLoadingMarketingFilter,
+    hasCommemorativeDateFilter, commemorativeDateProductIds, isLoadingCommemorativeDateFilter,
     promoSalesMap, supplierSalesMap, colorFilterSet, colorGroupSet, colorVariationSet, 
     categoryFilterSet, supplierFilterSet, genderFilterSet
   ]);

@@ -561,12 +561,17 @@ async function handleBatch(body: any, req: Request, corsHeaders: Record<string, 
   // O lote recebe a mesma autorização da consulta individual, antes do cache.
   const actor = requestCtx.getStore()?.actor;
   for (const query of queries) {
+    if (query.operation !== undefined && query.operation !== 'select') {
+      return jsonResponse({ error: 'Lotes aceitam exclusivamente operações de leitura.' }, 403, corsHeaders);
+    }
     const alias = resolveTableAlias(String(query.table), query.filters as Record<string, unknown> | undefined, query.orderBy as { column: string; ascending?: boolean } | undefined, query.select as string | undefined);
     query.table = alias.table;
     query.filters = alias.filters;
     query.orderBy = alias.orderBy;
     query.select = alias.select;
-    if (SENSITIVE_TABLES.has(alias.table) && !['dev', 'supervisor'].includes(actor?.role ?? '')) {
+    query.aliasType = alias.aliasType;
+    const safeTechniqueOptions = alias.aliasType === 'techniqueOptions';
+    if (SENSITIVE_TABLES.has(alias.table) && !safeTechniqueOptions && !['dev', 'supervisor'].includes(actor?.role ?? '')) {
       return jsonResponse({ error: 'Acesso restrito a dados internos do catálogo.' }, 403, corsHeaders);
     }
   }
@@ -689,8 +694,16 @@ async function handleBatch(body: any, req: Request, corsHeaders: Record<string, 
               return { success: false, error: retryError.message };
             }
 
+            const retryRecords = Array.isArray(retryData)
+              ? (retryData as unknown[]).filter(
+                (record): record is Record<string, unknown> =>
+                  record !== null && typeof record === 'object' && !Array.isArray(record),
+              )
+              : [];
             const retryResult = {
-              records: retryData || [],
+              records: q.aliasType === 'techniqueOptions'
+                ? retryRecords.map(mapTechniqueRowToLegacyShape)
+                : retryRecords,
               count: null,
               meta: {
                 pagination_degraded: true,
@@ -708,7 +721,11 @@ async function handleBatch(body: any, req: Request, corsHeaders: Record<string, 
           return { success: false, error: selectError.message };
         }
 
-        const result = { records: selectData || [], count };
+        const rawRecords = (selectData || []) as Record<string, unknown>[];
+        const records = q.aliasType === 'techniqueOptions'
+          ? rawRecords.map(mapTechniqueRowToLegacyShape)
+          : rawRecords;
+        const result = { records, count };
         if (qCacheKey) setCache(qCacheKey, result);
 
         const icon = duration >= VERY_SLOW_QUERY_THRESHOLD_MS ? '🔴' : duration >= SLOW_QUERY_THRESHOLD_MS ? '🟡' : '✅';
@@ -824,11 +841,12 @@ async function handleCrud(body: any, req: Request, corsHeaders: Record<string, s
   const isReadOperation = operation === 'select';
   const isPublicTable = PRODUCT_TABLES.includes(table as ProductTable) || PRODUCT_VIEWS.includes(table as ProductView);
   const isSensitive = SENSITIVE_TABLES.has(table);
+  const safeTechniqueOptions = isReadOperation && aliasType === 'techniqueOptions';
   const actor = requestCtx.getStore()?.actor;
-  if (isSensitive && !['dev', 'supervisor'].includes(actor?.role ?? '')) {
+  if (isSensitive && !safeTechniqueOptions && !['dev', 'supervisor'].includes(actor?.role ?? '')) {
     return jsonResponse({ error: 'Acesso restrito a dados internos do catálogo.' }, 403, corsHeaders);
   }
-  const allowPublicAccess = isReadOperation && isPublicTable && !isSensitive;
+  const allowPublicAccess = isReadOperation && isPublicTable && (!isSensitive || safeTechniqueOptions);
 
   const userId = actor?.user.id;
   if (!userId) return jsonResponse({ error: 'Autenticação necessária' }, 401, corsHeaders);
@@ -1179,7 +1197,7 @@ async function handleSelect(externalSupabase: any, table: string, opts: any) {
       }
 
       let records = retryData || [];
-      if (aliasType === 'technique') records = records.map(mapTechniqueRowToLegacyShape);
+      if (aliasType === 'technique' || aliasType === 'techniqueOptions') records = records.map(mapTechniqueRowToLegacyShape);
       if (aliasType === 'priceTable') records = records.map(mapPriceTableRowToLegacyShape);
       emitTelemetry({ operation: 'select', table, limit: 50, offset: safeOffset, countMode: 'none', durationMs: retryDuration, status: classifyDuration(retryDuration), recordCount: records.length });
       console.log(`[retry] Selected ${records.length} records from ${table} (offset=${safeOffset}, limit=50)`);
@@ -1232,7 +1250,7 @@ async function handleSelect(externalSupabase: any, table: string, opts: any) {
       }
 
       let records = retryData || [];
-      if (aliasType === 'technique') records = records.map(mapTechniqueRowToLegacyShape);
+      if (aliasType === 'technique' || aliasType === 'techniqueOptions') records = records.map(mapTechniqueRowToLegacyShape);
       if (aliasType === 'priceTable') records = records.map(mapPriceTableRowToLegacyShape);
 
       emitTelemetry({
@@ -1262,7 +1280,7 @@ async function handleSelect(externalSupabase: any, table: string, opts: any) {
 
   // Apply legacy row transforms for aliased tables
   const rowsAsRecords = () => records as Record<string, unknown>[];
-  if (aliasType === 'technique') records = rowsAsRecords().map(mapTechniqueRowToLegacyShape);
+  if (aliasType === 'technique' || aliasType === 'techniqueOptions') records = rowsAsRecords().map(mapTechniqueRowToLegacyShape);
   if (aliasType === 'priceTable') records = rowsAsRecords().map(mapPriceTableRowToLegacyShape);
 
   emitTelemetry({ operation: 'select', table, limit: safeLimit, offset: safeOffset, countMode, durationMs: selectDuration, status: classifyDuration(selectDuration), recordCount: records.length });

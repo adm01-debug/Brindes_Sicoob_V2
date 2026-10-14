@@ -253,7 +253,7 @@ function OrdersEmptyState({ search }: { search?: string }) {
             : 'Inicie suas compras explorando nosso catálogo completo de produtos.'}
         </p>
         {!search && (
-          <Button onClick={() => navigate('/catalogo')} className="gap-2">
+          <Button onClick={() => navigate('/filtros')} className="gap-2">
             <ShoppingBag className="h-4 w-4" />
             Explorar Catálogo
           </Button>

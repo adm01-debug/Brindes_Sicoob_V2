@@ -17,11 +17,17 @@ interface SupplierListHeaderProps {
   showFilteredBadge: boolean;
   onRefresh: () => void;
   onNew: () => void;
+  readOnly?: boolean;
+}
+
+function NewSupplierButton({ readOnly, onNew }: Pick<SupplierListHeaderProps, 'readOnly' | 'onNew'>) {
+  if (readOnly) return null;
+  return <Button size="sm" onClick={onNew} className="gap-1.5"><Plus className="h-3.5 w-3.5" />Novo Fornecedor</Button>;
 }
 
 export function SupplierListHeader({
   search, setSearch, filterType, setFilterType, filterStatus, setFilterStatus,
-  loading, totalCount, filteredCount, showFilteredBadge, onRefresh, onNew,
+  loading, totalCount, filteredCount, showFilteredBadge, onRefresh, onNew, readOnly = false,
 }: SupplierListHeaderProps) {
   return (
     <>
@@ -34,7 +40,7 @@ export function SupplierListHeader({
           <Button variant="outline" size="sm" onClick={onRefresh} disabled={loading} className="gap-1.5">
             <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />Atualizar
           </Button>
-          <Button size="sm" onClick={onNew} className="gap-1.5"><Plus className="h-3.5 w-3.5" />Novo Fornecedor</Button>
+          <NewSupplierButton readOnly={readOnly} onNew={onNew} />
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-3">

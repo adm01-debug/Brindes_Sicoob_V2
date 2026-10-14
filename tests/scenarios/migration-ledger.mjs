@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -7,6 +8,7 @@ import {
   collectLocalMigrations,
   compareLedger,
   comparePendingBaseline,
+  normalizedSql,
 } from '../../scripts/db/check-migration-ledger-drift.mjs';
 test('compara oito dígitos, conteúdo e ausência nas duas direções', () => {
   const root = mkdtempSync(join(tmpdir(), 'sicoob-ledger-'));
@@ -41,6 +43,32 @@ test('uma versão ativa duplicada bloqueia mesmo sem aplicação', () => {
       (r) => r.status === 'versao_ativa_duplicada',
     ),
   );
+});
+
+test('aceita marcador criptográfico do executor allowlisted', () => {
+  const sql = 'select 1;';
+  const sha256 = createHash('sha256').update(sql).digest('hex');
+  const files = [
+    {
+      version: '001',
+      name: 'teste',
+      path: 'supabase/migrations/001_teste.sql',
+      archived: false,
+      sha256,
+      normalized_sha256: createHash('sha256').update(normalizedSql(sql)).digest('hex'),
+    },
+  ];
+  const ledger = [
+    {
+      version: '001',
+      name: 'teste',
+      statements: [`sha256:${sha256}; executor:allowlisted-management-api`],
+    },
+  ];
+
+  assert.equal(compareLedger(files, ledger)[0].status, 'alinhada');
+  ledger[0].statements = [`sha256:${'0'.repeat(64)}; executor:allowlisted-management-api`];
+  assert.equal(compareLedger(files, ledger)[0].status, 'conteudo_divergente');
 });
 
 test('baseline aceita passivo idêntico e bloqueia deriva ou remoção sem reconciliação', () => {
