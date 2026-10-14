@@ -8,6 +8,8 @@ import { useProductsByMaterial } from "@/hooks/useProductsByMaterial";
 import { useProductsByCategory } from "@/hooks/useProductsByCategory";
 import { useProductsByColor } from "@/hooks/useProductsByColor";
 import { useProductsByActivity, useProductsBySize, useProductsByTag, useProductsByTechnique } from "@/hooks/useCatalogRelationFilters";
+import { useCatalogMarketingProductFilter } from '@/hooks/useCatalogMarketing';
+import { useProductsByCommemorativeDates } from '@/hooks/useCommemorativeDates';
 import { useProductFuzzySearch } from "@/hooks/useProductFuzzySearch";
 import { useColorEnrichment } from "@/hooks/useColorEnrichment";
 import { usePromoSalesRanking } from "@/hooks/usePromoSalesRanking";
@@ -64,6 +66,17 @@ export function useFiltersPageState() {
   const { productIds: techniqueFilteredProductIds, hasFilter: hasTechniqueFilter, isLoading: isLoadingTechniqueFilter } = useProductsByTechnique(filters.techniques);
   const { productIds: sizeFilteredProductIds, hasFilter: hasSizeFilter, isLoading: isLoadingSizeFilter } = useProductsBySize(filters.sizes);
   const { productIds: activityFilteredProductIds, hasFilter: hasActivityFilter, isLoading: isLoadingActivityFilter } = useProductsByActivity(filters.ramosAtividade, filters.segmentosAtividade);
+  const { productIds: marketingFilteredProductIds, hasFilter: hasMarketingFilter, isLoading: isLoadingMarketingFilter, error: marketingFilterError } = useCatalogMarketingProductFilter({
+    publicoAlvo: filters.publicoAlvo,
+    endomarketing: filters.endomarketing,
+    temas: filters.sicoobThemes,
+  });
+  const { productIds: commemorativeDateProductIds, hasFilter: hasCommemorativeDateFilter, isLoading: isLoadingCommemorativeDateFilter, error: commemorativeDateFilterError } = useProductsByCommemorativeDates(filters.datasComemorativas);
+
+  useEffect(() => {
+    const error = marketingFilterError ?? commemorativeDateFilterError;
+    if (error) toast.error('Não foi possível aplicar um filtro', { description: error.message });
+  }, [commemorativeDateFilterError, marketingFilterError]);
 
   const [activePresetId, setActivePresetId] = useState<string | undefined>();
   const [viewMode, setViewMode] = useState<"grid" | "list" | "table">("grid");
@@ -132,12 +145,18 @@ export function useFiltersPageState() {
       loadingTechnique: isLoadingTechniqueFilter,
       loadingSize: isLoadingSizeFilter,
       loadingActivity: isLoadingActivityFilter,
+      marketingIds: marketingFilteredProductIds,
+      commemorativeDateIds: commemorativeDateProductIds,
+      hasMarketingFilter,
+      hasCommemorativeDateFilter,
+      loadingMarketing: isLoadingMarketingFilter,
+      loadingCommemorativeDate: isLoadingCommemorativeDateFilter,
       sortBy,
       promoSalesMap,
       supplierSalesMap,
       skipSort: hasFuzzySearch && sortBy === 'name',
     });
-  }, [filters, sortBy, hasFuzzySearch, fuzzySearchResults, realProducts, hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter, hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter, hasColorFilter, colorFilteredProductIds, isLoadingColorFilter, tagFilteredProductIds, hasTagFilter, isLoadingTagFilter, techniqueFilteredProductIds, hasTechniqueFilter, isLoadingTechniqueFilter, sizeFilteredProductIds, hasSizeFilter, isLoadingSizeFilter, activityFilteredProductIds, hasActivityFilter, isLoadingActivityFilter, promoSalesMap, supplierSalesMap]);
+  }, [filters, sortBy, hasFuzzySearch, fuzzySearchResults, realProducts, hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter, hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter, hasColorFilter, colorFilteredProductIds, isLoadingColorFilter, tagFilteredProductIds, hasTagFilter, isLoadingTagFilter, techniqueFilteredProductIds, hasTechniqueFilter, isLoadingTechniqueFilter, sizeFilteredProductIds, hasSizeFilter, isLoadingSizeFilter, activityFilteredProductIds, hasActivityFilter, isLoadingActivityFilter, marketingFilteredProductIds, hasMarketingFilter, isLoadingMarketingFilter, commemorativeDateProductIds, hasCommemorativeDateFilter, isLoadingCommemorativeDateFilter, promoSalesMap, supplierSalesMap]);
 
   // Color enrichment: fetch variant images/stock for filtered products when color filter is active
   const filteredProductIds = useMemo(() => filteredProducts.map(p => p.id), [filteredProducts]);
@@ -179,6 +198,7 @@ export function useFiltersPageState() {
     isLoadingMaterialFilter, isLoadingCategoryFilter, isLoadingColorFilter,
     isLoadingTagFilter, isLoadingTechniqueFilter, isLoadingSizeFilter,
     isLoadingActivityFilter,
+    isLoadingMarketingFilter, isLoadingCommemorativeDateFilter,
     activePresetId, viewMode, setViewMode, gridColumns, setGridColumns,
     selectionMode, setSelectionMode,
     voiceOverlayOpen, setVoiceOverlayOpen, commandAction, setCommandAction,

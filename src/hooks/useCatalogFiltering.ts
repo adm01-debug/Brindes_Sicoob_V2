@@ -35,6 +35,12 @@ interface CatalogFilteringOptions {
   hasActivityFilter: boolean;
   activityFilteredProductIds: Set<string>;
   isLoadingActivityFilter: boolean;
+  hasMarketingFilter: boolean;
+  marketingFilteredProductIds: Set<string>;
+  isLoadingMarketingFilter: boolean;
+  hasCommemorativeDateFilter: boolean;
+  commemorativeDateProductIds: Set<string>;
+  isLoadingCommemorativeDateFilter: boolean;
   promoSalesMap?: Map<string, number>;
   supplierSalesMap?: Map<string, SupplierSalesEntry>;
 }
@@ -68,6 +74,12 @@ interface CatalogFilterContext {
   hasActivityFilter: boolean;
   activityFilteredProductIds: Set<string>;
   isLoadingActivityFilter: boolean;
+  hasMarketingFilter: boolean;
+  marketingFilteredProductIds: Set<string>;
+  isLoadingMarketingFilter: boolean;
+  hasCommemorativeDateFilter: boolean;
+  commemorativeDateProductIds: Set<string>;
+  isLoadingCommemorativeDateFilter: boolean;
 }
 
 function relationalIdFilter(products: Product[], active: boolean, ids: Set<string>, loading: boolean): Product[] {
@@ -80,12 +92,6 @@ function relationalCategoryFilter(products: Product[], context: CatalogFilterCon
   if (!context.hasCategoryFilter) return products;
   if (context.categoryFilteredProductIds.size > 0) return products.filter(product => context.categoryFilteredProductIds.has(product.id));
   return context.isLoadingCategoryFilter ? products : [];
-}
-
-function themeFilter(products: Product[], filters: FilterState): Product[] {
-  if (!filters.sicoobThemes?.length) return products;
-  const selected = new Set(filters.sicoobThemes.map(theme => theme.toLowerCase()));
-  return products.filter(product => (product.tags?.temas || []).some(theme => selected.has(theme.toLowerCase())));
 }
 
 function minimumQuantityFilter(products: Product[], minimum?: number): Product[] {
@@ -179,7 +185,8 @@ function applyCatalogFilters(products: Product[], context: CatalogFilterContext)
   result = relationalIdFilter(result, context.hasTechniqueFilter, context.techniqueFilteredProductIds, context.isLoadingTechniqueFilter);
   result = relationalIdFilter(result, context.hasSizeFilter, context.sizeFilteredProductIds, context.isLoadingSizeFilter);
   result = relationalIdFilter(result, context.hasActivityFilter, context.activityFilteredProductIds, context.isLoadingActivityFilter);
-  result = themeFilter(result, context.filters);
+  result = relationalIdFilter(result, context.hasMarketingFilter, context.marketingFilteredProductIds, context.isLoadingMarketingFilter);
+  result = relationalIdFilter(result, context.hasCommemorativeDateFilter, context.commemorativeDateProductIds, context.isLoadingCommemorativeDateFilter);
   result = minimumQuantityFilter(result, context.filters.minQuantity);
   if (!context.hasColorFilter) {
     result = directColorFilter(result, context.colorFilterSet);
@@ -205,6 +212,8 @@ export function useCatalogFiltering({
   hasTechniqueFilter, techniqueFilteredProductIds, isLoadingTechniqueFilter,
   hasSizeFilter, sizeFilteredProductIds, isLoadingSizeFilter,
   hasActivityFilter, activityFilteredProductIds, isLoadingActivityFilter,
+  hasMarketingFilter, marketingFilteredProductIds, isLoadingMarketingFilter,
+  hasCommemorativeDateFilter, commemorativeDateProductIds, isLoadingCommemorativeDateFilter,
   promoSalesMap, supplierSalesMap,
 }: CatalogFilteringOptions): Product[] {
   // Otimização: Memoizamos conjuntos de filtros para lookup O(1)
@@ -226,6 +235,8 @@ export function useCatalogFiltering({
       hasTechniqueFilter, techniqueFilteredProductIds, isLoadingTechniqueFilter,
       hasSizeFilter, sizeFilteredProductIds, isLoadingSizeFilter,
       hasActivityFilter, activityFilteredProductIds, isLoadingActivityFilter,
+      hasMarketingFilter, marketingFilteredProductIds, isLoadingMarketingFilter,
+      hasCommemorativeDateFilter, commemorativeDateProductIds, isLoadingCommemorativeDateFilter,
     };
     const result = applyCatalogFilters(initial, context);
 
@@ -243,6 +254,8 @@ export function useCatalogFiltering({
     hasTechniqueFilter, techniqueFilteredProductIds, isLoadingTechniqueFilter,
     hasSizeFilter, sizeFilteredProductIds, isLoadingSizeFilter,
     hasActivityFilter, activityFilteredProductIds, isLoadingActivityFilter,
+    hasMarketingFilter, marketingFilteredProductIds, isLoadingMarketingFilter,
+    hasCommemorativeDateFilter, commemorativeDateProductIds, isLoadingCommemorativeDateFilter,
     promoSalesMap, supplierSalesMap, colorFilterSet, colorGroupSet, colorVariationSet, 
     categoryFilterSet, supplierFilterSet, genderFilterSet
   ]);

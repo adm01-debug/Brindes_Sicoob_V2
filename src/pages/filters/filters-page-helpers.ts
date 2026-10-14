@@ -187,26 +187,6 @@ function filterBySuppliers(products: Product[], suppliers: string[]): Product[] 
   });
 }
 
-type TagKey = 'publicoAlvo' | 'datasComemorativas' | 'endomarketing';
-
-function filterByTag(
-  products: Product[],
-  selected: string[],
-  key: TagKey,
-  partial: boolean,
-): Product[] {
-  if (!selected.length) return products;
-  return products.filter((product) =>
-    selected.some((value) =>
-      (product.tags?.[key] || []).some((tag) =>
-        partial
-          ? tag.toLowerCase().includes(value.toLowerCase())
-          : tag.toLowerCase() === value.toLowerCase(),
-      ),
-    ),
-  );
-}
-
 function filterByMaterials(products: Product[], active: boolean, selected: string[]): Product[] {
   if (active || !selected.length) return products;
   return products.filter((product) => {
@@ -277,6 +257,12 @@ export interface ProductFilterContext {
   loadingTechnique: boolean;
   loadingSize: boolean;
   loadingActivity: boolean;
+  marketingIds: Set<string>;
+  commemorativeDateIds: Set<string>;
+  hasMarketingFilter: boolean;
+  hasCommemorativeDateFilter: boolean;
+  loadingMarketing: boolean;
+  loadingCommemorativeDate: boolean;
   sortBy: string;
   promoSalesMap?: Map<string, number>;
   supplierSalesMap?: Map<string, SupplierSalesEntry>;
@@ -293,9 +279,8 @@ export function applyProductFilters(context: ProductFilterContext): Product[] {
     context.loadingCategory,
   );
   result = filterBySuppliers(result, context.filters.suppliers);
-  result = filterByTag(result, context.filters.publicoAlvo, 'publicoAlvo', false);
-  result = filterByTag(result, context.filters.datasComemorativas, 'datasComemorativas', true);
-  result = filterByTag(result, context.filters.endomarketing, 'endomarketing', false);
+  result = filterByIdSet(result, context.hasMarketingFilter, context.marketingIds, context.loadingMarketing);
+  result = filterByIdSet(result, context.hasCommemorativeDateFilter, context.commemorativeDateIds, context.loadingCommemorativeDate);
   result = filterByIdSet(
     result,
     context.hasMaterialFilter,

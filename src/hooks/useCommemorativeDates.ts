@@ -75,6 +75,38 @@ async function callCommemorativeDatesAPI<T>(
   return data.data as T;
 }
 
+export async function fetchProductsByCommemorativeDates(slugs: string[]): Promise<string[]> {
+  const selected = [...new Set(slugs.map((slug) => slug.trim()).filter(Boolean))].sort();
+  if (!selected.length) return [];
+  const results = await Promise.all(selected.map((slug) =>
+    callCommemorativeDatesAPI<CommemorativeDateVariant[]>('get_products_by_date', {
+      slug,
+      limit: 500,
+      include_all_colors: false,
+    })
+  ));
+  return [...new Set(results.flatMap((records) => records.map((record) => record.product_id).filter(Boolean)))];
+}
+
+export function useProductsByCommemorativeDates(slugs: string[]) {
+  const valuesKey = [...new Set(slugs.map((slug) => slug.trim()).filter(Boolean))].sort().join(',');
+  const selected = valuesKey ? valuesKey.split(',') : [];
+  const query = useQuery({
+    queryKey: [COMMEMORATIVE_DATES_KEY, 'products-filter', valuesKey],
+    queryFn: () => fetchProductsByCommemorativeDates(selected),
+    enabled: selected.length > 0,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    retry: 1,
+  });
+  return {
+    productIds: new Set(query.data ?? []),
+    hasFilter: selected.length > 0,
+    isLoading: query.isPending || query.isFetching,
+    error: query.error instanceof Error ? query.error : null,
+  };
+}
+
 /**
  * Hook para buscar datas comemorativas ATIVAS (no período de campanha)
  * Use este hook para o filtro no catálogo - só mostra datas próximas

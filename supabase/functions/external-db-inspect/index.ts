@@ -4,6 +4,7 @@ import { getCorsHeaders } from '../_shared/cors.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { runBotProtection } from '../_shared/bot-protection.ts';
+import { resolveCredential } from '../_shared/credentials.ts';
 
 const BodySchema = z.object({
   mode: z.enum(['tables', 'columns']).default('tables'),
@@ -43,10 +44,12 @@ Deno.serve(async (req) => {
     console.log(`[INSPECT] Mode: ${mode}, Table: ${tableName || 'all'}`);
 
     // External DB connection
-    const externalUrl = Deno.env.get('EXTERNAL_SUPABASE_URL');
-    const externalKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_KEY');
+    const [{ value: externalUrl }, { value: externalKey }] = await Promise.all([
+      resolveCredential('EXTERNAL_PROMOBRIND_URL'),
+      resolveCredential('EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY'),
+    ]);
     if (!externalUrl || !externalKey) {
-      console.warn('[external-db-inspect] EXTERNAL_SUPABASE_URL/KEY not configured — returning empty payload');
+      console.warn('[external-db-inspect] credenciais do catálogo externo indisponíveis');
       return jsonResponse({ error: 'CATALOG_NOT_CONFIGURED', message: 'Catálogo indisponível' }, 503);
     }
 

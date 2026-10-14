@@ -2,6 +2,7 @@ import { createReadOnlyCatalogFetch } from "../_shared/external-read-only.ts";
 import { getCorsHeaders } from '../_shared/cors.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from '../_shared/zod-validate.ts';
+import { resolveCredential } from '../_shared/credentials.ts';
 
 const MaterialsRequestSchema = z.object({
   action: z.enum(['groups', 'types', 'types_by_group', 'product_materials', 'products_by_materials', 'stats', 'search', 'complete']),
@@ -55,21 +56,16 @@ Deno.serve(async (req) => {
     const { action, groupId, materialId, productId, materialTypeIds, materialGroupSlugs, limit } = parsed.data;
 
     // Conectar ao banco externo
-    const externalUrl = Deno.env.get('EXTERNAL_SUPABASE_URL');
-    const externalKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_KEY');
+    const [{ value: externalUrl }, { value: externalKey }] = await Promise.all([
+      resolveCredential('EXTERNAL_PROMOBRIND_URL'),
+      resolveCredential('EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY'),
+    ]);
 
-    const isPlaceholder = (v?: string | null) =>
-      !v || /PLACEHOLDER_VALUE_TO_BE_REPLACED|placeholder|your-project|example\.com/i.test(v);
-    const isValidHttpsUrl = (v?: string | null) => {
-      if (!v) return false;
-      try { const u = new URL(v); return u.protocol === 'https:'; } catch { return false; }
-    };
-
-    if (!externalUrl || !externalKey || isPlaceholder(externalUrl) || isPlaceholder(externalKey) || !isValidHttpsUrl(externalUrl)) {
-      console.warn('[materials-api] EXTERNAL_SUPABASE_URL/KEY not configured or placeholder — returning empty payload');
+    if (!externalUrl || !externalKey) {
+      console.warn('[materials-api] credenciais do catálogo externo indisponíveis');
       return new Response(
-        JSON.stringify({ data: [], records: [], count: 0, _unconfigured: true, _message: 'Banco externo não configurado' }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'CATALOG_NOT_CONFIGURED', _unconfigured: true, _message: 'Banco externo não configurado' }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 

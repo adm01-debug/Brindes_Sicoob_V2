@@ -29,6 +29,21 @@ import {
 } from "./filter-panel/sections/SimpleFilters";
 import { SizeFilter } from "./filter-panel/sections/SizeFilter";
 
+function sectionHasAvailableOptions(
+  sectionId: string,
+  state: ReturnType<typeof useFilterPanelState>,
+  filters: FilterPanelProps['filters'],
+): boolean {
+  const availability: Record<string, boolean> = {
+    tecnicas: state.techniqueOptions.length > 0,
+    tags: state.tagOptions.length > 0,
+    publico: state.publicoAlvoOptions.length > 0 || filters.publicoAlvo.length > 0,
+    endomarketing: state.endomarketingOptions.length > 0 || filters.endomarketing.length > 0,
+    temas: state.temaSicoobOptions.length > 0 || filters.sicoobThemes.length > 0,
+  };
+  return availability[sectionId] ?? true;
+}
+
 export function FilterPanel({ filters, onFilterChange, onReset, activeFiltersCount, products = [] }: FilterPanelProps) {
   const state = useFilterPanelState(filters, onFilterChange, products);
 
@@ -193,19 +208,21 @@ export function FilterPanel({ filters, onFilterChange, onReset, activeFiltersCou
     ),
     temas: () => (
       <div className="flex flex-wrap gap-1.5 px-1">
-        {['Agro', 'Sul', 'Praia', 'Corporativo'].map((tema) => {
-          const isSelected = (filters.sicoobThemes || []).includes(tema);
+        {state.temaSicoobOptions.map((tema) => {
+          const isSelected = (filters.sicoobThemes || []).includes(tema.slug);
           return (
             <button
-              key={tema}
-              onClick={() => state.toggleArrayFilter("sicoobThemes", tema)}
+              key={tema.id}
+              type="button"
+              aria-pressed={isSelected}
+              onClick={() => state.toggleArrayFilter("sicoobThemes", tema.slug)}
               className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-all ${
                 isSelected
                   ? "bg-sicoob-green text-white border-sicoob-green shadow-sm"
                   : "bg-card border-border text-foreground hover:border-sicoob-green/40 hover:bg-accent"
               }`}
             >
-              {tema}
+              {tema.name} <span className="opacity-70">({tema.productCount})</span>
             </button>
           );
         })}
@@ -276,9 +293,7 @@ export function FilterPanel({ filters, onFilterChange, onReset, activeFiltersCou
             const config = SECTION_CONFIG[sId];
             if (!config) return false;
             if (!state.sectionMatchesSearch(sId, config.title)) return false;
-            if (sId === 'tecnicas' && state.techniqueOptions.length === 0) return false;
-            if (sId === 'tags' && state.tagOptions.length === 0) return false;
-            return true;
+            return sectionHasAvailableOptions(sId, state, filters);
           });
           if (visibleSections.length === 0) return null;
           return (

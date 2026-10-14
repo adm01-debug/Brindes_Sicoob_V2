@@ -16,6 +16,8 @@ import { useProductFuzzySearch } from "@/hooks/useProductFuzzySearch";
 import { useProductsByCategory } from "@/hooks/useProductsByCategory";
 import { useProductsByColor } from "@/hooks/useProductsByColor";
 import { useProductsByActivity, useProductsBySize, useProductsByTag, useProductsByTechnique } from "@/hooks/useCatalogRelationFilters";
+import { useCatalogMarketingProductFilter } from '@/hooks/useCatalogMarketing';
+import { useProductsByCommemorativeDates } from '@/hooks/useCommemorativeDates';
 import { useDebounce } from "@/hooks/useDebounce";
 import { useCatalogRealStats } from "@/hooks/useCatalogRealStats";
 import { useToast } from "@/hooks/use-toast";
@@ -216,6 +218,12 @@ export function useCatalogState() {
   const { productIds: techniqueFilteredProductIds, hasFilter: hasTechniqueFilter, isLoading: isLoadingTechniqueFilter } = useProductsByTechnique(filterState.filters.techniques);
   const { productIds: sizeFilteredProductIds, hasFilter: hasSizeFilter, isLoading: isLoadingSizeFilter } = useProductsBySize(filterState.filters.sizes);
   const { productIds: activityFilteredProductIds, hasFilter: hasActivityFilter, isLoading: isLoadingActivityFilter } = useProductsByActivity(filterState.filters.ramosAtividade, filterState.filters.segmentosAtividade);
+  const { productIds: marketingFilteredProductIds, hasFilter: hasMarketingFilter, isLoading: isLoadingMarketingFilter, error: marketingFilterError } = useCatalogMarketingProductFilter({
+    publicoAlvo: filterState.filters.publicoAlvo,
+    endomarketing: filterState.filters.endomarketing,
+    temas: filterState.filters.sicoobThemes,
+  });
+  const { productIds: commemorativeDateProductIds, hasFilter: hasCommemorativeDateFilter, isLoading: isLoadingCommemorativeDateFilter, error: commemorativeDateFilterError } = useProductsByCommemorativeDates(filterState.filters.datasComemorativas);
   const isLoadingRelations = [
     isLoadingMaterialFilter,
     isLoadingColorFilter,
@@ -223,7 +231,19 @@ export function useCatalogState() {
     isLoadingTechniqueFilter,
     isLoadingSizeFilter,
     isLoadingActivityFilter,
+    isLoadingMarketingFilter,
+    isLoadingCommemorativeDateFilter,
   ].some(Boolean);
+
+  useEffect(() => {
+    const error = marketingFilterError ?? commemorativeDateFilterError;
+    if (!error) return;
+    toast({
+      title: 'Não foi possível aplicar um filtro',
+      description: error.message,
+      variant: 'destructive',
+    });
+  }, [commemorativeDateFilterError, marketingFilterError, toast]);
 
   const { data: realStats } = useCatalogRealStats();
   const { isLoading, isInitial: isInitialCatalogLoad } = catalogLoadingState(
@@ -247,6 +267,8 @@ export function useCatalogState() {
     hasTechniqueFilter, techniqueFilteredProductIds, isLoadingTechniqueFilter,
     hasSizeFilter, sizeFilteredProductIds, isLoadingSizeFilter,
     hasActivityFilter, activityFilteredProductIds, isLoadingActivityFilter,
+    hasMarketingFilter, marketingFilteredProductIds, isLoadingMarketingFilter,
+    hasCommemorativeDateFilter, commemorativeDateProductIds, isLoadingCommemorativeDateFilter,
     promoSalesMap, supplierSalesMap,
   });
 
