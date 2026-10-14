@@ -1,8 +1,8 @@
 import { PermissionsError } from "./PermissionsError";
 import React from "react";
-import { Navigate, Outlet, useLocation, matchPath } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { normalizeAssignedRoles, SICOOB_ROUTE_ACCESS } from "@/lib/access/role-policy";
+import { normalizeAssignedRoles, rolesForSicoobPath } from "@/lib/access/role-policy";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface SicoobRouteProps {
@@ -12,7 +12,7 @@ interface SicoobRouteProps {
 
 function routeRolesFor(pathname: string, explicitRoles?: readonly string[]): readonly string[] {
   if (explicitRoles) return explicitRoles;
-  return Object.entries(SICOOB_ROUTE_ACCESS).find(([path]) => matchPath({ path, end: true }, pathname))?.[1] ?? [];
+  return rolesForSicoobPath(pathname);
 }
 
 function isRoleResolutionPending(isLoading: boolean, hasUser: boolean, rolesLoaded: boolean): boolean {

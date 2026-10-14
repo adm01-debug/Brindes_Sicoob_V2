@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRBAC } from '@/hooks/useRBAC';
 import { isNavItemActive } from '@/lib/navigation/active-match';
 import { isAdminOnlyPath, isDevOnlyPath } from '@/lib/navigation/restricted-routes';
+import { canAccessSicoobPath } from '@/lib/access/role-policy';
 import { getPrefetchHandlers } from '@/lib/routePrefetch';
 import { cn } from '@/lib/utils';
 import type { AppRole } from '@/types/users';
@@ -84,7 +85,7 @@ function hasDeclaredAccess(item: NavItem, access: NavAccess): boolean {
 function hasRouteAccess(item: NavItem, access: NavAccess): boolean {
   if (item.href && isDevOnlyPath(item.href) && !access.isDev) return false;
   if (item.href && isAdminOnlyPath(item.href) && !access.isAdmin) return false;
-  return true;
+  return !item.href || canAccessSicoobPath(item.href, access.roles);
 }
 
 function canRenderItem(item: NavItem, access: NavAccess): boolean {
