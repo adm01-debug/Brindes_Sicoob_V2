@@ -159,19 +159,18 @@ function SummaryPersonalizations({ model, item }: { model: SummaryModel; item: Q
 function SummaryItemCard({ model, item, index }: { model: SummaryModel; item: QuoteItem; index: number }) {
   const active = model.props.activeItemIndex === index;
   const selected = model.props.selectedIndexes?.has(index) ?? false;
-  return <Fragment><SummaryGroup model={model} item={item} index={index} /><div onClick={() => {
-    if (!model.props.readOnly) model.props.setActiveItemIndex(index);
-  }}
-    className={cn("rounded-xl border relative", !model.props.readOnly && "cursor-pointer", active ? "border-primary/50 bg-primary/5 ring-1" : "bg-muted/30",
+  return <Fragment><SummaryGroup model={model} item={item} index={index} /><div
+    className={cn("rounded-xl border relative", active ? "border-primary/50 bg-primary/5 ring-1" : "bg-muted/30",
       model.stale.has(index) && "border-warning/40", selected && "ring-2 ring-primary/40")}>
-    {model.props.onToggleSelection && <div className="absolute top-2 left-2 z-10" onClick={(event) => {
-      event.stopPropagation(); if (!model.props.readOnly) model.props.onToggleSelection?.(index);
-    }}><Checkbox disabled={model.props.readOnly} checked={selected} /></div>}
+    {model.props.onToggleSelection && <div className="absolute top-2 left-2 z-10"><Checkbox disabled={model.props.readOnly} checked={selected}
+      onClick={(event) => event.stopPropagation()}
+      onCheckedChange={() => { if (!model.props.readOnly) model.props.onToggleSelection?.(index); }} /></div>}
     <div className={cn("p-3 space-y-2", model.props.onToggleSelection && "pl-8")}><div className="flex items-start gap-3">
       <SummaryImage item={item} /><div className="flex-1 min-w-0"><p className="text-sm font-medium truncate">{item.product_name}</p>
         <Badge variant="secondary" className="text-[10px] font-mono">{item.product_sku}</Badge>
         {item.color_name && <span className="ml-2 text-[10px] text-muted-foreground">{item.color_name}</span>}</div>
-      <Button disabled={model.props.readOnly} variant="ghost" size="icon" aria-label="Editar" className="h-6 w-6"><Edit className="h-3.5 w-3.5" /></Button>
+      <Button disabled={model.props.readOnly} variant="ghost" size="icon" aria-label="Editar" className="h-6 w-6"
+        onClick={() => model.props.setActiveItemIndex(index)}><Edit className="h-3.5 w-3.5" /></Button>
       <Button disabled={model.props.readOnly} variant="ghost" size="icon" aria-label="Excluir" className="h-6 w-6 text-destructive" onClick={(event) => {
         event.stopPropagation(); model.remove(index);
       }}><Trash2 className="h-3.5 w-3.5" /></Button></div>
@@ -236,7 +235,7 @@ function SummaryDiscount({ model }: { model: SummaryModel }) {
     <Select disabled={p.readOnly} value={p.discountType} onValueChange={(value) => p.setDiscountType(value as "percent" | "amount")}>
       <SelectTrigger className="w-16 h-8"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="percent">%</SelectItem>
         <SelectItem value="amount">R$</SelectItem></SelectContent></Select>
-    <Input disabled={p.readOnly} type="number" min={0} value={p.discountValue || ""} onChange={(event) => p.setDiscountValue(parseFloat(event.target.value) || 0)} className="h-8" /></div>
+    <Input disabled={p.readOnly} type="number" min={0} value={p.discountValue || ""} onChange={(event) => p.setDiscountValue(Number.parseFloat(event.target.value) || 0)} className="h-8" /></div>
     </div><NegotiationMarkup props={p} /></>;
 }
 
