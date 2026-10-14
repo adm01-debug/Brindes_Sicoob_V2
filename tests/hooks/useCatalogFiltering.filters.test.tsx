@@ -60,6 +60,12 @@ function options(
     hasActivityFilter: false,
     activityFilteredProductIds: new Set<string>(),
     isLoadingActivityFilter: false,
+    hasMarketingFilter: false,
+    marketingFilteredProductIds: new Set<string>(),
+    isLoadingMarketingFilter: false,
+    hasCommemorativeDateFilter: false,
+    commemorativeDateProductIds: new Set<string>(),
+    isLoadingCommemorativeDateFilter: false,
     ...overrides,
   };
 }
@@ -76,6 +82,16 @@ describe('filtros da vitrine principal', () => {
     const { result } = renderHook(() => useCatalogFiltering(options({
       hasTagFilter: true,
       tagFilteredProductIds: new Set(['B']),
+    })));
+    expect(result.current.map((item) => item.id)).toEqual(['B']);
+  });
+
+  it('combina curadoria editorial e data comemorativa com interseção', () => {
+    const { result } = renderHook(() => useCatalogFiltering(options({
+      hasMarketingFilter: true,
+      marketingFilteredProductIds: new Set(['A', 'B']),
+      hasCommemorativeDateFilter: true,
+      commemorativeDateProductIds: new Set(['B']),
     })));
     expect(result.current.map((item) => item.id)).toEqual(['B']);
   });

@@ -829,8 +829,10 @@ ${topProducts.length > 0
     let productsContext = "";
     let semanticResults: any[] = [];
 
-    const EXT_URL = Deno.env.get("EXTERNAL_SUPABASE_URL");
-    const EXT_KEY = Deno.env.get("EXTERNAL_SUPABASE_SERVICE_KEY");
+    const [{ value: EXT_URL }, { value: EXT_KEY }] = await Promise.all([
+      resolveCredential('EXTERNAL_PROMOBRIND_URL'),
+      resolveCredential('EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY'),
+    ]);
 
     if (!EXT_URL || !EXT_KEY) {
       console.error("External DB env vars not set — cannot fetch products");
@@ -1089,10 +1091,8 @@ ${generalPool.map(p => buildProductDescription(p)).join("\n\n")}
       }
     } else {
       // Non-product intent — still load some general products
-      const EXT_URL2 = Deno.env.get("EXTERNAL_SUPABASE_URL");
-      const EXT_KEY2 = Deno.env.get("EXTERNAL_SUPABASE_SERVICE_KEY");
-      if (EXT_URL2 && EXT_KEY2) {
-        const extClient = createClient(EXT_URL2, EXT_KEY2, { global: { fetch: createReadOnlyCatalogFetch() } });
+      if (EXT_URL && EXT_KEY) {
+        const extClient = createClient(EXT_URL, EXT_KEY, { global: { fetch: createReadOnlyCatalogFetch() } });
         let q = extClient
           .from("products")
           .select("id, name, sku, sale_price, primary_image_url, category_id, description, brand, stock_quantity")

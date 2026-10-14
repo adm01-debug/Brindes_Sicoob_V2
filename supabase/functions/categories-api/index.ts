@@ -3,6 +3,7 @@ import { getCorsHeaders } from '../_shared/cors.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from '../_shared/zod-validate.ts';
 import { runBotProtection } from '../_shared/bot-protection.ts';
+import { resolveCredential } from '../_shared/credentials.ts';
 
 const CategoriesRequestSchema = z.object({
   action: z.enum(['tree', 'all', 'descendants', 'products_by_categories']),
@@ -28,11 +29,15 @@ Deno.serve(async (req) => {
     }, corsHeaders);
     if (!protection.allowed) return protection.blockResponse!;
 
-    const externalUrl = Deno.env.get('EXTERNAL_SUPABASE_URL');
-    const externalKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_KEY');
+    const [{ value: externalUrl }, { value: externalKey }] = await Promise.all([
+      resolveCredential('EXTERNAL_PROMOBRIND_URL'),
+      resolveCredential('EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY'),
+    ]);
 
     if (!externalUrl || !externalKey) {
-      throw new Error('Missing external database configuration');
+      return new Response(JSON.stringify({ error: 'CATALOG_NOT_CONFIGURED', message: 'Catálogo indisponível' }), {
+        status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const externalClient = createClient(externalUrl, externalKey, { global: { fetch: createReadOnlyCatalogFetch() } });

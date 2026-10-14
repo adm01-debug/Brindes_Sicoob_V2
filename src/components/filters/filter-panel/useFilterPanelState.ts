@@ -6,6 +6,7 @@ import { useSuppliers } from "@/hooks/useSuppliers";
 import { useRamoAtividadeFilter } from "@/hooks/useRamoAtividadeFilter";
 import { useAdvancedFilters, SORT_OPTIONS } from "@/hooks/useAdvancedFilters";
 import { useAvailableCatalogSizes } from "@/hooks/useCatalogRelationFilters";
+import { useCatalogMarketingOptions } from "@/hooks/useCatalogMarketing";
 import type { FilterState, FilterPanelProps } from "./types";
 
 type Products = FilterPanelProps["products"];
@@ -35,12 +36,6 @@ function usePanelSearchState(filters: FilterState, onFilterChange: FilterPanelPr
 
 type SearchState = ReturnType<typeof usePanelSearchState>;
 
-function sortedTags(products: Products, key: "publicoAlvo" | "endomarketing") {
-  const values = new Set<string>();
-  for (const product of products ?? []) for (const value of product.tags?.[key] ?? []) values.add(value);
-  return [...values].sort((first, second) => first.localeCompare(second));
-}
-
 function incrementCount(counts: Map<string, number>, value: string) {
   const key = value.toLowerCase();
   counts.set(key, (counts.get(key) ?? 0) + 1);
@@ -57,10 +52,8 @@ function countRamos(products: Products) {
 }
 
 function useProductOptions(products: Products) {
-  const publicoAlvoOptions = useMemo(() => sortedTags(products, "publicoAlvo"), [products]);
-  const endomarketingOptions = useMemo(() => sortedTags(products, "endomarketing"), [products]);
   const productCountsByRamo = useMemo(() => countRamos(products), [products]);
-  return { publicoAlvoOptions, endomarketingOptions, productCountsByRamo };
+  return { productCountsByRamo };
 }
 
 function selectedMaterialSections(groups: string[], types: string[], materials: MaterialState["materials"]) {
@@ -162,6 +155,9 @@ function useSectionInfo(filters: FilterState, material: MaterialState, search: S
 export function useFilterPanelState(filters: FilterState, onFilterChange: FilterPanelProps["onFilterChange"], products: Products = []) {
   const search = usePanelSearchState(filters, onFilterChange);
   const productOptions = useProductOptions(products);
+  const publicoAlvo = useCatalogMarketingOptions('publico_alvo');
+  const endomarketing = useCatalogMarketingOptions('endomarketing');
+  const temasSicoob = useCatalogMarketingOptions('tema_sicoob');
   const { data: categoryIcons = [] } = useCategoryIcons();
   const advanced = useAdvancedFilters();
   const availableSizes = useAvailableCatalogSizes();
@@ -172,7 +168,10 @@ export function useFilterPanelState(filters: FilterState, onFilterChange: Filter
   useMaterialBridge(filters, onFilterChange, material);
   const actions = useFilterActions(filters, onFilterChange);
   const sectionInfo = useSectionInfo(filters, material, search);
-  return { ...sections, ...search, categoryIcons, ...productOptions, techniqueOptions: advanced.techniqueOptions, tagOptions: advanced.tagOptions,
+  return { ...sections, ...search, categoryIcons, ...productOptions,
+    publicoAlvoOptions: publicoAlvo.data ?? [], endomarketingOptions: endomarketing.data ?? [], temaSicoobOptions: temasSicoob.data ?? [],
+    marketingOptionsLoading: publicoAlvo.isPending || endomarketing.isPending || temasSicoob.isPending,
+    techniqueOptions: advanced.techniqueOptions, tagOptions: advanced.tagOptions,
     availableSizes: availableSizes.sizes, availableSizesLoading: availableSizes.isLoading,
     supplierOptions: suppliers.suppliers, suppliersLoading: suppliers.isLoading, materialGroups: material.groups, allMaterials: material.materials,
     materialsLoading: material.isLoading, materialFilterState: material.filterState, toggleMaterialGroup: material.toggleGroup,

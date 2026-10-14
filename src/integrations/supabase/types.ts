@@ -1784,6 +1784,77 @@ export type Database = {
         }
         Relationships: []
       }
+      catalog_marketing_terms: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      catalog_product_marketing: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          product_id: string
+          term_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          product_id: string
+          term_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          product_id?: string
+          term_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_product_marketing_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_marketing_terms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaigns: {
         Row: {
           budget: number | null
@@ -11372,6 +11443,18 @@ export type Database = {
       }
     }
     Views: {
+      catalog_marketing_term_usage: {
+        Row: {
+          category: string | null
+          description: string | null
+          id: string | null
+          name: string | null
+          product_count: number | null
+          slug: string | null
+          sort_order: number | null
+        }
+        Relationships: []
+      }
       sicoob_budget_audit: {
         Row: {
           ano: number | null

@@ -37,6 +37,8 @@ function apply(products: Product[], filters = defaultFilters, relations: Partial
     techniqueIds: new Set(),
     sizeIds: new Set(),
     activityIds: new Set(),
+    marketingIds: new Set(),
+    commemorativeDateIds: new Set(),
     hasMaterialFilter: false,
     hasCategoryFilter: false,
     hasColorFilter: false,
@@ -44,6 +46,8 @@ function apply(products: Product[], filters = defaultFilters, relations: Partial
     hasTechniqueFilter: false,
     hasSizeFilter: false,
     hasActivityFilter: false,
+    hasMarketingFilter: false,
+    hasCommemorativeDateFilter: false,
     loadingMaterial: false,
     loadingCategory: false,
     loadingColor: false,
@@ -51,6 +55,8 @@ function apply(products: Product[], filters = defaultFilters, relations: Partial
     loadingTechnique: false,
     loadingSize: false,
     loadingActivity: false,
+    loadingMarketing: false,
+    loadingCommemorativeDate: false,
     sortBy: 'name',
     skipSort: false,
     ...relations,
@@ -95,6 +101,8 @@ describe('aplicação dos filtros do catálogo', () => {
     ['técnica', 'a', { hasTechniqueFilter: true, techniqueIds: new Set(['a']) }],
     ['tamanho', 'b', { hasSizeFilter: true, sizeIds: new Set(['b']) }],
     ['ramo de atividade', 'a', { hasActivityFilter: true, activityIds: new Set(['a']) }],
+    ['marketing editorial', 'b', { hasMarketingFilter: true, marketingIds: new Set(['b']) }],
+    ['data comemorativa', 'a', { hasCommemorativeDateFilter: true, commemorativeDateIds: new Set(['a']) }],
   ] as const)('aplica o conjunto relacional de %s', (_label, expectedId, relations) => {
     expect(apply(products, defaultFilters, relations).map((item) => item.id)).toEqual([expectedId]);
   });

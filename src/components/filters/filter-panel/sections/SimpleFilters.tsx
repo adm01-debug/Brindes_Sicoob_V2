@@ -4,8 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { toTitleCase } from "@/lib/textUtils";
 import type { FilterState } from "../types";
+import type { CatalogMarketingOption } from "@/hooks/useCatalogMarketing";
 
 // ============================================
 // Searchable Checkbox List (shared pattern)
@@ -65,16 +65,16 @@ export function PublicoFilter({
   filters, publicoAlvoOptions, publicoSearch, setPublicoSearch, toggleArrayFilter,
 }: {
   filters: FilterState;
-  publicoAlvoOptions: string[];
+  publicoAlvoOptions: CatalogMarketingOption[];
   publicoSearch: string;
   setPublicoSearch: (v: string) => void;
   toggleArrayFilter: (key: keyof FilterState, value: string) => void;
 }) {
-  if (publicoAlvoOptions.length === 0) return <p className="text-xs text-muted-foreground">Carregando opções dos produtos...</p>;
+  if (publicoAlvoOptions.length === 0) return null;
   return (
     <SearchableCheckboxList
-      items={publicoAlvoOptions.map(p => ({ id: `pub-${p}`, label: toTitleCase(p) }))}
-      selected={publicoAlvoOptions.filter(p => filters.publicoAlvo.includes(p)).map(p => `pub-${p}`)}
+      items={publicoAlvoOptions.map(option => ({ id: `pub-${option.slug}`, label: option.name, extra: <span className="text-xs text-muted-foreground">{option.productCount}</span> }))}
+      selected={publicoAlvoOptions.filter(option => filters.publicoAlvo.includes(option.slug)).map(option => `pub-${option.slug}`)}
       onToggle={(id) => toggleArrayFilter('publicoAlvo', id.replace('pub-', ''))}
       search={publicoSearch}
       setSearch={setPublicoSearch}
@@ -92,16 +92,16 @@ export function EndomarketingFilter({
   filters, endomarketingOptions, endoSearch, setEndoSearch, toggleArrayFilter,
 }: {
   filters: FilterState;
-  endomarketingOptions: string[];
+  endomarketingOptions: CatalogMarketingOption[];
   endoSearch: string;
   setEndoSearch: (v: string) => void;
   toggleArrayFilter: (key: keyof FilterState, value: string) => void;
 }) {
-  if (endomarketingOptions.length === 0) return <p className="text-xs text-muted-foreground">Carregando opções dos produtos...</p>;
+  if (endomarketingOptions.length === 0) return null;
   return (
     <SearchableCheckboxList
-      items={endomarketingOptions.map(e => ({ id: `endo-${e}`, label: toTitleCase(e) }))}
-      selected={endomarketingOptions.filter(e => filters.endomarketing.includes(e)).map(e => `endo-${e}`)}
+      items={endomarketingOptions.map(option => ({ id: `endo-${option.slug}`, label: option.name, extra: <span className="text-xs text-muted-foreground">{option.productCount}</span> }))}
+      selected={endomarketingOptions.filter(option => filters.endomarketing.includes(option.slug)).map(option => `endo-${option.slug}`)}
       onToggle={(id) => toggleArrayFilter('endomarketing', id.replace('endo-', ''))}
       search={endoSearch}
       setSearch={setEndoSearch}

@@ -3,6 +3,7 @@ import { getCorsHeaders } from '../_shared/cors.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { parseBodyWithSchema } from "../_shared/zod-validate.ts";
+import { resolveCredential } from '../_shared/credentials.ts';
 
 const ActionSchema = z.object({
   action: z.enum(['get_active_dates', 'get_upcoming_dates', 'get_products_by_date', 'get_dates_with_colors']),
@@ -51,14 +52,16 @@ Deno.serve(async (req) => {
     const { action, params } = parsed.data;
 
     // External DB client
-    const externalUrl = Deno.env.get('EXTERNAL_SUPABASE_URL');
-    const externalKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_KEY');
+    const [{ value: externalUrl }, { value: externalKey }] = await Promise.all([
+      resolveCredential('EXTERNAL_PROMOBRIND_URL'),
+      resolveCredential('EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY'),
+    ]);
 
     if (!externalUrl || !externalKey) {
-      console.warn('[commemorative-dates] EXTERNAL_SUPABASE_URL/KEY not configured — returning empty payload');
+      console.warn('[commemorative-dates] credenciais do catálogo externo indisponíveis');
       return new Response(
-        JSON.stringify({ data: [], records: [], count: 0, _unconfigured: true, _message: 'Banco externo não configurado' }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'CATALOG_NOT_CONFIGURED', _unconfigured: true, _message: 'Banco externo não configurado' }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
