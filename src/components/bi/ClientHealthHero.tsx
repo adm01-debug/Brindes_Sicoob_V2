@@ -72,16 +72,16 @@ const TIER_STYLES = {
     scoreText: 'text-muted-foreground',
     progressBar: '',
     icon: Info,
-    label: 'Calculando',
+    label: 'Dados insuficientes',
   },
 };
 
 export function ClientHealthHero({ clientId, ramoAtividade, clientName }: Props) {
   const health = useClientHealthScore(clientId, ramoAtividade);
   const affinity = useClientAffinity(clientId);
-  const trends = useIndustryTrends(ramoAtividade);
+  const trends = useIndustryTrends(ramoAtividade, clientId);
   const clientCats = useClientCategoryAffinity(clientId);
-  const industryCats = useIndustryCategoryTrends(ramoAtividade);
+  const industryCats = useIndustryCategoryTrends(ramoAtividade, clientId);
   const [open, setOpen] = useState(false);
 
   // Categoria favorita do cliente (top 1 por receita)

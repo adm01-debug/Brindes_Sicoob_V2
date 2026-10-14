@@ -3,11 +3,12 @@
  * Estratégia:
  * 1) Busca IDs de companies (CRM externo) com mesmo ramo_atividade
  * 2) Chama RPC get_industry_top_products(_company_ids, _days)
- * 3) Se RPC vazia → fallback mock determinístico
+ * 3) Se a amostra estiver vazia, retorna estado vazio explícito
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { selectCrm } from "@/lib/crm-db";
+import { isDemoClient } from "@/lib/bi/demoClient";
 import { getMockIndustryTrends, type MockIndustryTrend } from "@/lib/bi/mockData";
 
 export interface IndustryTopProduct {
@@ -50,24 +51,32 @@ function deriveCategory(name: string): string {
   return "Outros";
 }
 
-function mockToItem(m: MockIndustryTrend): IndustryTrendItem {
+function mockToItem(item: MockIndustryTrend): IndustryTrendItem {
   return {
-    productName: m.productName,
-    category: m.category,
-    unitsSold: m.unitsSold,
-    ordersCount: m.ordersCount,
-    avgPrice: m.avgPrice,
-    trend: m.trend,
+    productName: item.productName,
+    category: item.category,
+    unitsSold: item.unitsSold,
+    ordersCount: item.ordersCount,
+    avgPrice: item.avgPrice,
+    trend: item.trend,
   };
 }
 
-export function useIndustryTrends(ramoAtividade?: string | null) {
+export function useIndustryTrends(ramoAtividade?: string | null, clientId?: string | null) {
+  const demo = isDemoClient(clientId);
   return useQuery<IndustryTrendsResult>({
-    queryKey: ["bi-industry-trends-v2", ramoAtividade],
-    enabled: !!ramoAtividade,
+    queryKey: ["bi-industry-trends-v2", ramoAtividade, demo],
+    enabled: !!ramoAtividade || demo,
     queryFn: async () => {
+      if (demo) {
+        return {
+          isMock: true,
+          companiesInRamo: 24,
+          trends: getMockIndustryTrends(ramoAtividade).map(mockToItem),
+        };
+      }
       if (!ramoAtividade) {
-        return { isMock: true, companiesInRamo: 0, trends: getMockIndustryTrends(null).map(mockToItem) };
+        return { isMock: false, companiesInRamo: 0, trends: [] };
       }
 
       // 1) Buscar empresas do mesmo ramo no CRM
@@ -110,11 +119,10 @@ export function useIndustryTrends(ramoAtividade?: string | null) {
         }
       }
 
-      // 3) Fallback mock
       return {
-        isMock: true,
+        isMock: false,
         companiesInRamo: companyIds.length,
-        trends: getMockIndustryTrends(ramoAtividade).map(mockToItem),
+        trends: [],
       };
     },
     staleTime: 10 * 60 * 1000,

@@ -113,6 +113,7 @@ export function useClientVsIndustry(
   clientId: string | null | undefined,
   ramoAtividade: string | null | undefined,
 ): ClientVsIndustryResult {
+  const demo = isDemoClient(clientId);
   const clientBI = useClientBI(clientId ?? undefined);
 
   const benchmarkQuery = useQuery({
@@ -166,7 +167,7 @@ export function useClientVsIndustry(
   if (!benchmark || !hasEnoughSample) {
     return {
       isLoading,
-      isMock: true,
+      isMock: demo,
       hasEnoughSample: false,
       sampleSize,
       daysWindow: DAYS_WINDOW,
@@ -187,7 +188,7 @@ export function useClientVsIndustry(
 
   return {
     isLoading,
-    isMock: clientBI.isMock,
+    isMock: demo,
     hasEnoughSample: true,
     sampleSize,
     daysWindow: DAYS_WINDOW,

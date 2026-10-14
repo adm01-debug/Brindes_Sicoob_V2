@@ -136,7 +136,7 @@ function ShareOfWalletCard({ clientLtv, industryAvgLtv }: { clientLtv: number; i
 }
 
 export function ClientVsIndustryComparison({ clientId, ramoAtividade }: Props) {
-  const { isLoading, hasEnoughSample, sampleSize, daysWindow, metrics, insight } =
+  const { isLoading, isMock, hasEnoughSample, sampleSize, daysWindow, metrics, insight } =
     useClientVsIndustry(clientId, ramoAtividade);
 
   if (!ramoAtividade) return null;
@@ -181,7 +181,7 @@ export function ClientVsIndustryComparison({ clientId, ramoAtividade }: Props) {
             </div>
           </div>
           <Badge variant="outline" className="bg-success/10 text-success border-0 text-[10px]">
-            Dados reais
+            {isMock ? "Dados simulados" : "Dados reais"}
           </Badge>
         </div>
       </CardHeader>

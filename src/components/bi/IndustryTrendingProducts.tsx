@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
-  TrendingUp, Sparkles, ArrowUp, ArrowDown, Minus, CheckCircle2, Package,
+  TrendingUp, ArrowUp, ArrowDown, Minus, CheckCircle2, Package, Info,
   Target, Check, X,
 } from "lucide-react";
 import { useIndustryTrends, type IndustryTrendItem, type IndustryTrendsResult } from "@/hooks/bi/useIndustryTrends";
@@ -62,14 +62,20 @@ function IndustryHeader(props: IndustryHeaderProps) {
         <div>
           <h2 className="font-display font-semibold">Tendência do setor{props.ramoAtividade && <span className="text-muted-foreground font-normal"> · {props.ramoAtividade}</span>}</h2>
           <p className="text-xs text-muted-foreground">
-            {props.data?.isMock ? "Top produtos dos últimos 90 dias · setor" : `Agregado de ${props.data?.companiesInRamo} empresas do mesmo ramo · 90 dias`}
+            {props.totalCount > 0
+              ? `Agregado de ${props.data?.companiesInRamo} empresas do mesmo ramo · 90 dias`
+              : "Sem amostra setorial suficiente nos últimos 90 dias"}
             {props.totalCount > 0 && <> · <span className="text-success font-medium">{props.opportunityCount} oportunidade{props.opportunityCount !== 1 && "s"}</span></>}
           </p>
         </div>
       </div>
       <div className="flex items-center gap-3">
         {props.totalCount > 0 && <label className="flex items-center gap-2 cursor-pointer text-xs"><Switch checked={props.onlyOpportunities} onCheckedChange={props.onOnlyOpportunitiesChange} aria-label="Mostrar apenas oportunidades" /><span className="font-medium text-foreground">Só oportunidades</span></label>}
-        {props.data && (props.data.isMock ? <Badge variant="secondary" className="gap-1 text-[10px]"><Sparkles className="h-3 w-3" /> Simulado</Badge> : <Badge variant="outline" className="gap-1 border-success/50 text-success text-[10px]"><CheckCircle2 className="h-3 w-3" /> Dados reais</Badge>)}
+        {props.data && (props.data.isMock
+          ? <Badge variant="secondary" className="gap-1 text-[10px]"><Info className="h-3 w-3" /> Dados simulados</Badge>
+          : props.totalCount > 0
+          ? <Badge variant="outline" className="gap-1 border-success/50 text-success text-[10px]"><CheckCircle2 className="h-3 w-3" /> Dados reais</Badge>
+          : <Badge variant="secondary" className="gap-1 text-[10px]"><Info className="h-3 w-3" /> Sem amostra</Badge>)}
       </div>
     </div>
   );
@@ -125,7 +131,7 @@ function TrendRows({ trends, onlyOpportunities }: { readonly trends: readonly En
 }
 
 export function IndustryTrendingProducts({ ramoAtividade, clientId }: Props) {
-  const { data, isLoading } = useIndustryTrends(ramoAtividade);
+  const { data, isLoading } = useIndustryTrends(ramoAtividade, clientId);
   const { data: affinity } = useClientAffinity(clientId);
   const { focusedSlug, focusedLabel } = useBICategoryFocus();
   const [onlyOpportunities, setOnlyOpportunities] = useState(false);

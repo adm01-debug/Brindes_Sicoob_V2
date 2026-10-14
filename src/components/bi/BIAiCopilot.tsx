@@ -64,7 +64,7 @@ export function BIAiCopilot({ open, onOpenChange, clientId, clientName, ramoAtiv
   const health = useClientHealthScore(clientId, ramoAtividade);
   const bi = useClientBI(clientId);
   const affinity = useClientAffinity(clientId);
-  const trends = useIndustryTrends(ramoAtividade);
+  const trends = useIndustryTrends(ramoAtividade, clientId);
   const seas = useClientSeasonality(clientId, ramoAtividade);
   const vs = useClientVsIndustry(clientId, ramoAtividade);
 

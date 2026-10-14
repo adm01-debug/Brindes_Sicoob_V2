@@ -38,14 +38,14 @@ function useExecutiveData({ clientId, clientName, ramoAtividade }: Props) {
   return {
     clientName, ramoAtividade,
     health: useClientHealthScore(clientId, ramoAtividade), bi: useClientBI(clientId),
-    affinity: useClientAffinity(clientId), trends: useIndustryTrends(ramoAtividade),
+    affinity: useClientAffinity(clientId), trends: useIndustryTrends(ramoAtividade, clientId),
     seas: useClientSeasonality(clientId, ramoAtividade), vs: useClientVsIndustry(clientId, ramoAtividade),
-    catAffinity: useClientCategoryAffinity(clientId), catIndustry: useIndustryCategoryTrends(ramoAtividade),
+    catAffinity: useClientCategoryAffinity(clientId), catIndustry: useIndustryCategoryTrends(ramoAtividade, clientId),
   };
 }
 
 type ExecutiveData = ReturnType<typeof useExecutiveData>;
-const HEALTH_LABELS: Record<string, string> = { healthy: "saudável", attention: "em atenção" };
+const HEALTH_LABELS: Record<string, string> = { healthy: "saudável", attention: "em atenção", risk: "em risco", unknown: "sem dados suficientes" };
 
 function ramoSuffix(ramo: string | null): string { return ramo ? ` (${ramo})` : ""; }
 function lastOrderSuffix(days: number | null | undefined): string { return typeof days === "number" ? ` · última compra há ${days} dias` : ""; }
@@ -54,7 +54,7 @@ function topTrend(data: { trends?: Array<{ productName?: string | null }> } | nu
 
 function buildSummary(data: ExecutiveData): string {
   const { health, bi, affinity, trends, seas, clientName, ramoAtividade } = data;
-  const tier = HEALTH_LABELS[health.tier] ?? "em risco";
+  const tier = HEALTH_LABELS[health.tier] ?? "sem classificação";
   const lastOrder = lastOrderSuffix(bi.daysSinceLastOrder);
   return [
     `📊 Resumo executivo — ${clientName}${ramoSuffix(ramoAtividade)}`, "",

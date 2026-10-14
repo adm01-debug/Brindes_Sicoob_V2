@@ -8,10 +8,86 @@ import { OrderConsolidationPanel } from "@/components/orders/OrderConsolidationP
 import { SmartAlertsPanel } from "@/components/orders/SmartAlertsPanel";
 import { OrdersPage } from "./OrdersPage";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrdersList } from "@/hooks/orders/useOrders";
+import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/utils/quote-calculations";
+import type { OrderRow } from "@/types/orders";
+
+const APPROVED_STATUSES = new Set<OrderRow["status"]>([
+  "aprovado_gestor",
+  "enviado_vendedor",
+  "em_producao",
+  "em_separacao",
+  "em_transporte",
+  "entregue",
+  "concluido",
+]);
+
+type OrderListResult = { data: OrderRow[]; count: number | null } | undefined;
+
+export interface PurchasingMetrics {
+  pendingCount: number | null;
+  slaPercent: number | null;
+  monthlyTotal: number | null;
+  approvedTotal: number | null;
+}
+
+function resultCount(result: OrderListResult): number | null {
+  if (!result) return null;
+  return result.count ?? result.data.length;
+}
+
+function hasCompleteResult(result: OrderListResult, count: number | null): result is NonNullable<OrderListResult> {
+  return Boolean(result && count !== null && count === result.data.length);
+}
+
+function calculatePendingSla(result: OrderListResult, count: number | null, now: Date): number | null {
+  if (!hasCompleteResult(result, count) || result.data.length === 0) return null;
+  const yesterday = now.getTime() - 24 * 60 * 60 * 1000;
+  const withinSla = result.data.filter((order) => new Date(order.created_at).getTime() >= yesterday).length;
+  return (withinSla / result.data.length) * 100;
+}
+
+function sumCompleteOrders(
+  result: OrderListResult,
+  count: number | null,
+  predicate: (order: OrderRow) => boolean,
+): number | null {
+  if (!hasCompleteResult(result, count)) return null;
+  return result.data
+    .filter(predicate)
+    .reduce((total, order) => total + (order.total ?? 0), 0);
+}
+
+export function calculatePurchasingMetrics(
+  pendingResult: OrderListResult,
+  monthlyResult: OrderListResult,
+  now = new Date(),
+): PurchasingMetrics {
+  const pendingCount = resultCount(pendingResult);
+  const monthlyCount = resultCount(monthlyResult);
+
+  return {
+    pendingCount,
+    slaPercent: calculatePendingSla(pendingResult, pendingCount, now),
+    monthlyTotal: sumCompleteOrders(monthlyResult, monthlyCount, (order) => order.status !== "cancelado"),
+    approvedTotal: sumCompleteOrders(monthlyResult, monthlyCount, (order) => APPROVED_STATUSES.has(order.status)),
+  };
+}
+
+function metricLabel(value: number | null, formatter: (value: number) => string): string {
+  return value === null ? "—" : formatter(value);
+}
 
 export default function GestorCompras() {
   const [activeTab, setActiveTab] = useState("alerts");
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+  const pendingQuery = useOrdersList(user?.id, "all", { status: "enviado_gestor", pageSize: 1_000 });
+  const monthlyQuery = useOrdersList(user?.id, "all", { startDate: monthStart.toISOString(), pageSize: 1_000 });
+  const metrics = calculatePurchasingMetrics(pendingQuery.data, monthlyQuery.data);
 
   return (
     <>
@@ -51,11 +127,11 @@ export default function GestorCompras() {
                 <SmartAlertsPanel />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                    <div className="p-6 rounded-2xl bg-card border border-border/50 text-center space-y-2">
-                     <p className="text-3xl font-bold">12</p>
+                     <p className="text-3xl font-bold">{metricLabel(metrics.pendingCount, String)}</p>
                      <p className="text-xs text-muted-foreground">Pedidos pendentes hoje</p>
                    </div>
                    <div className="p-6 rounded-2xl bg-card border border-border/50 text-center space-y-2">
-                     <p className="text-3xl font-bold text-success">85%</p>
+                     <p className="text-3xl font-bold text-success">{metricLabel(metrics.slaPercent, value => `${Math.round(value)}%`)}</p>
                      <p className="text-xs text-muted-foreground">SLA de aprovação (24h)</p>
                    </div>
                 </div>
@@ -80,25 +156,32 @@ export default function GestorCompras() {
               <h3 className="font-bold flex items-center gap-2">
                 <ClipboardCheck className="h-4 w-4 text-primary" /> Atalho Rápido
               </h3>
-              <p className="text-xs text-muted-foreground">Aprove todas as solicitações com valor abaixo do threshold de alçada (R$ 5.000,00).</p>
-              <button className="w-full py-2 bg-primary text-primary-foreground rounded-lg text-sm font-bold hover:opacity-90 transition-opacity">
-                Aprovação em Lote (SLA Rápido)
-              </button>
+              <p className="text-xs text-muted-foreground">Revise cada solicitação com sua alçada, verba e histórico antes de decidir.</p>
+              <Button className="w-full" onClick={() => setActiveTab("kanban")}>
+                Analisar {metrics.pendingCount ?? 0} pendência{metrics.pendingCount === 1 ? "" : "s"}
+              </Button>
             </div>
             
             <div className="p-6 rounded-2xl bg-card border border-border/50 space-y-4">
               <h3 className="font-bold text-sm">Resumo da Cooperativa</h3>
               <div className="space-y-3">
                  <div className="flex justify-between text-xs">
-                   <span className="text-muted-foreground">Orçado no mês</span>
-                   <span className="font-bold">R$ 450.000,00</span>
+                   <span className="text-muted-foreground">Pedidos no mês</span>
+                   <span className="font-bold">{metricLabel(metrics.monthlyTotal, formatCurrency)}</span>
                  </div>
                  <div className="flex justify-between text-xs">
                    <span className="text-muted-foreground">Aprovado</span>
-                   <span className="font-bold text-success">R$ 380.000,00</span>
+                   <span className="font-bold text-success">{metricLabel(metrics.approvedTotal, formatCurrency)}</span>
                  </div>
                  <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
-                    <div className="bg-success h-full w-[84%]" />
+                    <div
+                      className="bg-success h-full"
+                      style={{
+                        width: metrics.monthlyTotal && metrics.approvedTotal !== null
+                          ? `${Math.min((metrics.approvedTotal / metrics.monthlyTotal) * 100, 100)}%`
+                          : "0%",
+                      }}
+                    />
                  </div>
               </div>
             </div>

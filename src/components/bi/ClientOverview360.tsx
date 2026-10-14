@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
-  TrendingUp, DollarSign, Calendar, Sparkles,
+  TrendingUp, DollarSign, Calendar, AlertCircle, Database,
   ArrowUpRight, ArrowDownRight,
 } from "lucide-react";
 import { useClientBI } from "@/hooks/bi/useClientBI";
@@ -46,7 +46,14 @@ function getRecency(days: number | null | undefined) {
 }
 
 function OverviewControls({ bi, comparePeriod, setComparePeriod }: { bi: ClientBI; comparePeriod: boolean; setComparePeriod: (value: boolean) => void }) {
-  return <div className="flex items-center justify-between gap-3 flex-wrap">{bi.isMock ? <Badge variant="secondary" className="gap-1 text-[10px]"><Sparkles className="h-3 w-3" /> Dados simulados · em breve dados reais</Badge> : <span />}<label className="flex items-center gap-2 cursor-pointer text-xs"><Switch checked={comparePeriod} onCheckedChange={setComparePeriod} aria-label="Comparar período" /><span className="font-medium text-foreground">{comparePeriod ? "90d atual vs 90d anteriores" : "Histórico total"}</span></label></div>;
+  const sourceBadge = bi.isMock
+    ? <Badge variant="secondary" className="gap-1 text-[10px]"><Database className="h-3 w-3" /> Dados simulados</Badge>
+    : bi.isUnavailable
+    ? <Badge variant="destructive" className="gap-1 text-[10px]"><AlertCircle className="h-3 w-3" /> Histórico indisponível</Badge>
+    : !bi.hasData
+      ? <Badge variant="secondary" className="gap-1 text-[10px]"><Database className="h-3 w-3" /> Sem pedidos no histórico</Badge>
+      : <Badge variant="outline" className="gap-1 border-success/50 text-[10px] text-success"><Database className="h-3 w-3" /> Dados dos pedidos</Badge>;
+  return <div className="flex items-center justify-between gap-3 flex-wrap">{sourceBadge}<label className="flex items-center gap-2 cursor-pointer text-xs"><Switch checked={comparePeriod} onCheckedChange={setComparePeriod} aria-label="Comparar período" disabled={!bi.hasData} /><span className="font-medium text-foreground">{comparePeriod ? "90d atual vs 90d anteriores" : "Histórico total"}</span></label></div>;
 }
 
 function RevenueCard({ bi, comparePeriod }: { bi: ClientBI; comparePeriod: boolean }) {

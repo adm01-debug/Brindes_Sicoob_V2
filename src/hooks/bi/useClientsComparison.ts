@@ -84,7 +84,7 @@ export function useSingleClientComparisonRow(clientId: string): ClientComparison
   const seas = useClientSeasonality(clientId, ramo);
   const affinity = useClientAffinity(clientId);
   const catAffinity = useClientCategoryAffinity(clientId);
-  const catIndustry = useIndustryCategoryTrends(ramo);
+  const catIndustry = useIndustryCategoryTrends(ramo, clientId);
 
   const topCategory = resolveTopCategory(catAffinity, affinity, bi);
   const favorite = resolveFavoriteCategory(catAffinity);

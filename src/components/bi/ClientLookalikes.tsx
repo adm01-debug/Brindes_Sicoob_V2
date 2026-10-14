@@ -109,7 +109,7 @@ export function ClientLookalikes({ clientId, ramoAtividade }: Props) {
   const bi = useClientBI(clientId);
   const affinity = useClientAffinity(clientId);
   const clientCats = useClientCategoryAffinity(clientId);
-  const industryCats = useIndustryCategoryTrends(ramoAtividade);
+  const industryCats = useIndustryCategoryTrends(ramoAtividade, clientId);
 
   const ownProductIds = new Set(
     (affinity.data?.topProducts ?? [])

@@ -30,9 +30,9 @@ export function useBIDossierExport(clientId: string | null): UseBIDossierExport 
   const clientBI = useClientBI(clientId ?? undefined);
   const vsIndustry = useClientVsIndustry(clientId, ramo);
   const affinityQ = useClientAffinity(clientId ?? undefined);
-  const trendsQ = useIndustryTrends(ramo);
+  const trendsQ = useIndustryTrends(ramo, clientId);
   const catAffinity = useClientCategoryAffinity(clientId ?? undefined);
-  const catIndustry = useIndustryCategoryTrends(ramo);
+  const catIndustry = useIndustryCategoryTrends(ramo, clientId);
 
   const [isExporting, setIsExporting] = useState(false);
 
@@ -72,13 +72,13 @@ export function useBIDossierExport(clientId: string | null): UseBIDossierExport 
         clientBI,
         vsIndustry,
         affinity: affinityQ.data ?? {
-          isMock: true,
+          isMock: false,
           realProductsCount: 0,
           categories: [],
           topProducts: [],
         },
         industryTrends: trendsQ.data ?? {
-          isMock: true,
+          isMock: false,
           companiesInRamo: 0,
           trends: [],
         },

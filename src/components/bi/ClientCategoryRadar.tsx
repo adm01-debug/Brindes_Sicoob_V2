@@ -25,7 +25,6 @@ import {
   TrendingDown,
   Minus,
   Target,
-  Sparkles,
   CheckCircle2,
   ChevronDown,
   ArrowRight,
@@ -33,6 +32,7 @@ import {
   Users,
   HelpCircle,
   Focus,
+  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -155,8 +155,8 @@ function RadarLoading() {
   );
 }
 
-function RadarHelp({ isMock }: { isMock: boolean }) {
-  const source = isMock ? "dados simulados (cliente sem histórico)" : "100% baseado em pedidos reais";
+function RadarHelp({ hasData, isMock }: { hasData: boolean; isMock: boolean }) {
+  const source = isMock ? "cenário fictício do modo de demonstração" : hasData ? "100% baseado em pedidos reais" : "amostra real ainda insuficiente";
   return (
     <TooltipProvider delayDuration={150}>
       <Tooltip>
@@ -179,19 +179,22 @@ function RadarHelp({ isMock }: { isMock: boolean }) {
 interface RadarHeaderProps {
   clientName?: string;
   ramoAtividade: string | null;
+  hasData: boolean;
   isMock: boolean;
   opportunities: number;
   superIndex: number;
 }
 
-function RadarBadges({ isMock, opportunities, superIndex }: Pick<RadarHeaderProps, "isMock" | "opportunities" | "superIndex">) {
+function RadarBadges({ hasData, isMock, opportunities, superIndex }: Pick<RadarHeaderProps, "hasData" | "isMock" | "opportunities" | "superIndex">) {
   return (
     <div className="flex flex-wrap items-center gap-1.5 shrink-0">
       {opportunities > 0 && <Badge className="gap-1 bg-violet-500 text-white text-[10px] hover:bg-violet-600"><Target className="h-3 w-3" />{opportunities} GAP</Badge>}
       {superIndex > 0 && <Badge variant="outline" className="gap-1 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 text-[10px]"><TrendingUp className="h-3 w-3" />{superIndex} super-índex</Badge>}
       {isMock
-        ? <Badge variant="outline" className="gap-1 border-amber-500/50 text-amber-700 dark:text-amber-300 text-[10px]"><Sparkles className="h-3 w-3" /> Simulado</Badge>
-        : <Badge variant="outline" className="gap-1 border-emerald-500/50 text-emerald-700 dark:text-emerald-300 text-[10px]"><CheckCircle2 className="h-3 w-3" /> Dados reais</Badge>}
+        ? <Badge variant="secondary" className="gap-1 text-[10px]"><Info className="h-3 w-3" /> Dados simulados</Badge>
+        : hasData
+        ? <Badge variant="outline" className="gap-1 border-emerald-500/50 text-emerald-700 dark:text-emerald-300 text-[10px]"><CheckCircle2 className="h-3 w-3" /> Dados reais</Badge>
+        : <Badge variant="outline" className="gap-1 text-[10px]"><Info className="h-3 w-3" /> Sem amostra</Badge>}
     </div>
   );
 }
@@ -204,7 +207,7 @@ function RadarHeader(props: RadarHeaderProps) {
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
             <h2 className="font-display font-bold text-base sm:text-lg leading-tight">Mapa de Categorias — {props.clientName || "este cliente"}</h2>
-            <RadarHelp isMock={props.isMock} />
+            <RadarHelp hasData={props.hasData} isMock={props.isMock} />
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
             Comparação direta: o que o cliente compra × o que o setor {props.ramoAtividade && <span className="font-medium">({props.ramoAtividade}) </span>}
@@ -350,11 +353,11 @@ function CategoryList(props: CategoryListProps) {
 export function ClientCategoryRadar({ clientId, ramoAtividade, clientName }: Props) {
   const navigate = useNavigate();
   const client = useClientCategoryAffinity(clientId);
-  const industry = useIndustryCategoryTrends(ramoAtividade);
+  const industry = useIndustryCategoryTrends(ramoAtividade, clientId);
   const [expanded, setExpanded] = useState<string | null>(null);
   const { focusedSlug, setFocus } = useBICategoryFocus();
   const rows = useMemo(() => mergeCategories(client.categories, industry.categories), [client.categories, industry.categories]);
-  const isMock = client.isMock || industry.isMock;
+  const hasData = rows.length > 0;
   const handleDrillDown = (row: MergedRow) => {
     const params = new URLSearchParams();
     if (clientId) params.set("clientId", clientId);
@@ -363,7 +366,7 @@ export function ClientCategoryRadar({ clientId, ramoAtividade, clientName }: Pro
   };
   if (client.isLoading || industry.isLoading) return <RadarLoading />;
   const header = {
-    clientName, ramoAtividade, isMock,
+    clientName, ramoAtividade, hasData, isMock: client.isMock || industry.isMock,
     opportunities: rows.filter((row) => row.status === "gap").length,
     superIndex: rows.filter((row) => row.status === "super").length,
   };

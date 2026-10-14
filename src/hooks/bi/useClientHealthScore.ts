@@ -73,9 +73,8 @@ type IndustryComparison = ReturnType<typeof useClientVsIndustry>;
 type ClientSeasonality = ReturnType<typeof useClientSeasonality>;
 type ComparisonMetric = IndustryComparison["metrics"][number];
 
-function comparisonScore(metric: ComparisonMetric | undefined, fallbackClient: number, fallbackIndustry: number) {
-  if (metric) return ratioScore(metric.clientValue, metric.industryAvg);
-  return ratioScore(fallbackClient, fallbackIndustry);
+function comparisonScore(metric: ComparisonMetric | undefined) {
+  return metric ? ratioScore(metric.clientValue, metric.industryAvg) : 0;
 }
 
 function growthMetrics(seasonality: ClientSeasonality) {
@@ -91,7 +90,7 @@ function growthMetrics(seasonality: ClientSeasonality) {
 }
 
 function shareMetrics(ticketMetric: ComparisonMetric | undefined, bi: ClientBiData) {
-  const industryPotential = ticketMetric ? ticketMetric.industryAvg * 12 : bi.avgTicket * 12 || 30000;
+  const industryPotential = ticketMetric ? ticketMetric.industryAvg * 12 : 0;
   const clientActual = bi.ltv > 0 ? bi.ltv : bi.avgTicket * bi.ordersCount;
   const sharePct = industryPotential > 0
     ? Math.min(100, (clientActual / industryPotential) * 100)
@@ -101,6 +100,40 @@ function shareMetrics(ticketMetric: ComparisonMetric | undefined, bi: ClientBiDa
     score: Math.min(100, sharePct * 1.5),
     potentialUntapped: Math.max(0, industryPotential - clientActual),
   };
+}
+
+function unavailableHealthResult(isLoading: boolean): ClientHealthScoreResult {
+  const unavailable = { score: 0, weight: 0, label: "Dados insuficientes" };
+  return {
+    isLoading,
+    score: 0,
+    tier: "unknown",
+    breakdown: {
+      recency: unavailable,
+      frequency: unavailable,
+      ticket: unavailable,
+      growth: unavailable,
+      shareOfWallet: unavailable,
+    },
+    shareOfWalletPct: 0,
+    potentialUntappedBRL: 0,
+    growthPct: 0,
+    nextActionLabel: "Dados insuficientes",
+    nextActionDetail: "Registre histórico real e uma amostra setorial válida antes de gerar recomendações.",
+    scriptHint: "",
+    windowLabel: "Sem janela sazonal comprovada",
+    crossZoneInsight: "Não há dados suficientes para calcular a saúde deste cliente.",
+    ctaLabel: "Criar orçamento",
+    ctaUrgent: false,
+  };
+}
+
+function inputsAreReliable(
+  bi: ClientBiData,
+  vs: IndustryComparison,
+  seasonality: ClientSeasonality,
+): boolean {
+  return bi.hasData && !bi.isUnavailable && vs.hasEnoughSample && seasonality.hasEnoughData;
 }
 
 function nextAction(
@@ -179,17 +212,18 @@ function growthNote(growthPct: number) {
   return ".";
 }
 
-function buildHealthResult(
+export function buildHealthResult(
   bi: ClientBiData,
   vs: IndustryComparison,
   seasonality: ClientSeasonality,
 ): ClientHealthScoreResult {
   const isLoading = bi.isLoading || vs.isLoading || seasonality.isLoading;
+  if (isLoading || !inputsAreReliable(bi, vs, seasonality)) return unavailableHealthResult(isLoading);
   const recency = recencyScore(bi.daysSinceLastOrder);
   const frequencyMetric = vs.metrics.find((metric) => metric.label === "Frequência (pedidos)");
   const ticketMetric = vs.metrics.find((metric) => metric.label === "Ticket médio");
-  const frequency = comparisonScore(frequencyMetric, bi.ordersCount, 10);
-  const ticket = comparisonScore(ticketMetric, bi.avgTicket, 2500);
+  const frequency = comparisonScore(frequencyMetric);
+  const ticket = comparisonScore(ticketMetric);
   const growth = growthMetrics(seasonality);
   const share = shareMetrics(ticketMetric, bi);
   const score = Math.round(recency * 0.30 + frequency * 0.25 + ticket * 0.20 + growth.score * 0.15 + share.score * 0.10);
@@ -197,8 +231,8 @@ function buildHealthResult(
   const hasUpcomingPeak = seasonality.daysToNextPeak !== null && seasonality.daysToNextPeak <= 30;
   return {
     isLoading,
-    score: isLoading ? 0 : score,
-    tier: isLoading ? "unknown" : tierFromScore(score),
+    score,
+    tier: tierFromScore(score),
     breakdown: {
       recency: { score: recency, weight: 30, label: "Recência" },
       frequency: { score: frequency, weight: 25, label: "Frequência" },

@@ -52,9 +52,9 @@ export function BIBriefingMode({ open, onOpenChange, clientId, clientName, ramoA
   const health = useClientHealthScore(clientId, ramoAtividade);
   const bi = useClientBI(clientId);
   const affinity = useClientAffinity(clientId);
-  const trends = useIndustryTrends(ramoAtividade);
+  const trends = useIndustryTrends(ramoAtividade, clientId);
   const catAffinity = useClientCategoryAffinity(clientId);
-  const catIndustry = useIndustryCategoryTrends(ramoAtividade);
+  const catIndustry = useIndustryCategoryTrends(ramoAtividade, clientId);
 
   // Top 2 categorias favoritas + 1 oportunidade GAP (setor compra muito, cliente nada)
   const categoryHighlights = useMemo(() => {
