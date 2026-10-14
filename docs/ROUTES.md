@@ -113,6 +113,8 @@
 | `/orcamentos/:id/visualizar` | `@/pages/QuoteViewPage` |
 | `/gestor/orcamentos` | `@/pages/GestorOrcamentos` |
 | `/carrinhos` | `@/pages/SellerCartsPage` |
+| `/carrinhos/novo` | `@/pages/SellerCartsPage` |
+| `/carrinhos/:cartId` | `@/pages/SellerCartsPage` |
 
 ## 📂 Seção: SICOOB-RBAC
 | Rota | Componente |

@@ -61,6 +61,8 @@ export const RBAC_ROUTES: RbacRouteEntry[] = [
   { path: "/produtos", label: "Produtos", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "catalog" },
   { path: "/orcamentos", label: "Orçamentos", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "user" },
   { path: "/carrinhos", label: "Carrinhos", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "user" },
+  { path: "/carrinhos/novo", label: "Novo carrinho", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "user" },
+  { path: "/carrinhos/:cartId", label: "Detalhe do carrinho", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "user" },
   { path: "/favoritos", label: "Favoritos", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "user" },
   { path: "/comparar", label: "Comparador", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "user" },
   { path: "/colecoes", label: "Coleções", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "user" },
