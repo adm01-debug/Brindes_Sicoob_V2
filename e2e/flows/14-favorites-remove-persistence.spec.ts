@@ -245,6 +245,13 @@ test.describe('Fluxo: remover favorito persiste após reload', () => {
   }) => {
     // 0. Snapshot inicial
     await gotoAndSettle(page, '/favoritos');
+    // A lista padrão é garantida remotamente depois do primeiro render. Sem
+    // esta barreira o snapshot pode capturar "0 itens" e, após hidratar,
+    // tornar-se "0 itens • 1 lista", criando uma comparação temporal falsa.
+    await page.locator(Sel.favorites.countLists).first().waitFor({
+      state: 'visible',
+      timeout: 15_000,
+    });
     const baselineSnapshot = await readFavoritesSnapshot(page);
     expect(baselineSnapshot.title).toBe('Meus Produtos Favoritos');
     const original = await readStorage(page);

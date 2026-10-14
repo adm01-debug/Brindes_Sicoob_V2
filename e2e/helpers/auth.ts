@@ -219,7 +219,10 @@ export async function loginViaUI(page: Page, creds: LoginCreds): Promise<boolean
   await expect(page, 'esperado redirect para fora de /login').not.toHaveURL(LOGIN_URL_RE, {
     timeout,
   });
-  await waitForRouteIdle(page);
+  // O carregamento de permissões pode consumir a maior parte da janela do
+  // redirect em runners frios. Preserve o mesmo orçamento do login para não
+  // transformar uma sessão válida em flake de 10 segundos.
+  await waitForRouteIdle(page, { timeout });
   return true;
 }
 
