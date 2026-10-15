@@ -38,6 +38,16 @@ export interface CrmQuery {
 export interface CrmResponse<T> {
   data: T;
   count?: number;
+  unavailable?: boolean;
+}
+
+export class CrmUnavailableError extends Error {
+  readonly code = "CRM_UNAVAILABLE";
+
+  constructor() {
+    super("CRM indisponível ou sem credenciais válidas");
+    this.name = "CrmUnavailableError";
+  }
 }
 
 export interface CrmSelectOptions {
@@ -256,7 +266,7 @@ export async function invokeCrmDb<T>(query: CrmQuery): Promise<CrmResponse<T>> {
     if (isUnconfiguredMessage(msg) && isReadOperation(query)) {
       logger.warn(`[CRM-DB] CRM not configured — returning empty payload [req_id=${requestId}]`);
       record(false, null, msg);
-      return { data: (query.id ? null : []) as unknown as T };
+      return { data: (query.id ? null : []) as unknown as T, unavailable: true };
     }
 
     if (attempt < MAX_RETRIES && isRetryableCrmError(msg)) {
@@ -287,6 +297,20 @@ export async function selectCrm<T>(
     operation: "select",
     ...options,
   });
+  return result.data || [];
+}
+
+/** SELECT que preserva vazio legítimo, mas rejeita o soft-degrade do bridge. */
+export async function selectCrmStrict<T>(
+  table: string,
+  options?: CrmSelectOptions,
+): Promise<T[]> {
+  const result = await invokeCrmDb<T[]>({
+    table,
+    operation: "select",
+    ...options,
+  });
+  if (result.unavailable) throw new CrmUnavailableError();
   return result.data || [];
 }
 

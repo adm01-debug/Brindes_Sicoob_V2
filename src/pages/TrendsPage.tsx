@@ -4,7 +4,9 @@ import { useQuery } from '@tanstack/react-query';
 import {
   loadProductViewActivity,
   loadSearchActivity,
+  loadTrendsCapabilities,
   loadTrendsActivity,
+  resolveTrendsDataAccess,
 } from './trends/trends-queries';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -190,15 +192,54 @@ async function loadTopProducts(input: ProductTrendQueryInput): Promise<Aggregate
   return rankProductTrends(aggregateProductViews(data, input), input.days);
 }
 
+function isTrendsAccessVisible(
+  demo: boolean,
+  isFetching: boolean,
+  isError: boolean,
+  mode: ReturnType<typeof resolveTrendsDataAccess>['mode'],
+) {
+  if (demo) return true;
+  return !isFetching && !isError && mode !== 'unavailable';
+}
+
+function useTrendsAccess(userId: string | null, demo: boolean) {
+  const capabilities = useQuery({
+    queryKey: ['trends-capabilities', userId],
+    enabled: !demo && Boolean(userId),
+    queryFn: () => {
+      if (!userId) throw new Error('Sessão ausente ao validar acesso às tendências.');
+      return loadTrendsCapabilities(userId);
+    },
+  });
+  const dataAccess = resolveTrendsDataAccess(userId, capabilities.data);
+  return {
+    sellerScope: dataAccess.sellerScope,
+    dataAccessMode: dataAccess.mode,
+    hasAnalyticsAccess: isTrendsAccessVisible(
+      demo,
+      capabilities.isFetching,
+      capabilities.isError,
+      dataAccess.mode,
+    ),
+    accessLoading: !demo && Boolean(userId) && capabilities.isFetching,
+    accessError: !demo && capabilities.isError,
+    refetchAccess: capabilities.refetch,
+    scopeKey: dataAccess.mode === 'all' ? 'all' : (userId ?? 'unavailable'),
+    queryEnabled:
+      !demo && Boolean(userId) && !capabilities.isError && dataAccess.mode !== 'unavailable',
+  };
+}
+
 function useTrendsControls() {
-  const { user, canManage } = useAuth();
+  const { user } = useAuth();
   const [dateRange, setDateRange] = useUrlState<DateRange>('range', '30d');
   const [activeTab, setActiveTab] = useUrlState<string>('tab', 'products');
   const [showCompare, setShowCompare] = useUrlBoolean('cmp', false);
   const [showForecast, setShowForecast] = useUrlBoolean('fc', false);
   const days = RANGE_TO_DAYS[dateRange] ?? 30;
-  const sellerScope = canManage ? null : (user?.id ?? null);
   const demo = isDemoMode();
+  const userId = user?.id ?? null;
+  const access = useTrendsAccess(userId, demo);
   const dates = useMemo(() => {
     const now = new Date();
     return {
@@ -208,7 +249,6 @@ function useTrendsControls() {
     };
   }, [days]);
   return {
-    canManage,
     dateRange,
     setDateRange,
     activeTab,
@@ -218,10 +258,8 @@ function useTrendsControls() {
     showForecast,
     setShowForecast,
     days,
-    sellerScope,
     demo,
-    scopeKey: sellerScope ?? 'all',
-    queryEnabled: !demo && Boolean(user),
+    ...access,
     ...dates,
   };
 }
@@ -479,6 +517,7 @@ type TrendQueries = ReturnType<typeof useTrendQueries>;
 
 function useTrendRefresh(controls: TrendsControls, queries: TrendQueries) {
   return () => {
+    if (!controls.demo) void controls.refetchAccess();
     if (!controls.queryEnabled) return;
     void queries.products.refetch();
     void queries.searches.refetch();
@@ -547,10 +586,18 @@ function DemoBadge() {
   );
 }
 
+function getTrendsSubtitle(model: TrendsPageModel): string {
+  if (model.accessLoading) return 'Validando acesso aos indicadores';
+  if (model.accessError) return 'Não foi possível validar o acesso aos indicadores';
+  if (model.dataAccessMode === 'all') {
+    return 'Crescimento, conversão e demanda reprimida em tempo real';
+  }
+  if (model.hasAnalyticsAccess) return 'Suas vendas, suas buscas, sua atividade';
+  return 'Indicadores disponíveis conforme as permissões do seu perfil';
+}
+
 function TrendsHeader({ model }: { model: TrendsPageModel }) {
-  const subtitle = model.canManage
-    ? 'Crescimento, conversão e demanda reprimida em tempo real'
-    : 'Suas vendas, suas buscas, sua atividade';
+  const subtitle = getTrendsSubtitle(model);
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div>
@@ -562,7 +609,9 @@ function TrendsHeader({ model }: { model: TrendsPageModel }) {
             <TrendingUp className="h-7 w-7 text-primary" />
             Análise de Tendências
           </h1>
-          <RealtimeBadge />
+          {model.hasAnalyticsAccess && (model.demo || model.dataAccessMode === 'all') && (
+            <RealtimeBadge />
+          )}
           {model.demo && <DemoBadge />}
         </div>
         <p className="mt-1 text-muted-foreground">{subtitle}</p>
@@ -594,9 +643,10 @@ function TrendsHeader({ model }: { model: TrendsPageModel }) {
 function TrendsDecisionSupport({ model }: { model: TrendsPageModel }) {
   const isKpiLoading = model.demo ? model.loadingMock : model.loadingKpi;
   const isKpiError = model.demo ? model.mockError : model.kpiError;
+  const showGlobalAnalysis = model.demo || model.dataAccessMode === 'all';
   return (
     <>
-      {model.canManage && <TrendsInsightsCard days={model.days} />}
+      {showGlobalAnalysis && <TrendsInsightsCard days={model.days} />}
       {model.hasQueryError && (
         <p
           role="alert"
@@ -612,16 +662,42 @@ function TrendsDecisionSupport({ model }: { model: TrendsPageModel }) {
         isError={isKpiError}
         isDemo={model.demo}
       />
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <ConversionFunnel days={model.days} />
-        <UnmetDemandCard days={model.days} />
-      </div>
-      <HotSearchesCard days={model.days} />
+      {showGlobalAnalysis && (
+        <>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <ConversionFunnel days={model.days} />
+            <UnmetDemandCard days={model.days} />
+          </div>
+          <HotSearchesCard days={model.days} />
+        </>
+      )}
     </>
   );
 }
 
+function TrendsAccessNotice({ model }: { model: TrendsPageModel }) {
+  if (model.accessLoading) {
+    return <p role="status" className="rounded-lg border p-4 text-sm">Validando acesso às tendências…</p>;
+  }
+  if (model.accessError) {
+    return (
+      <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
+        <p>Não foi possível validar seu acesso aos indicadores.</p>
+        <Button variant="outline" size="sm" onClick={() => void model.refetchAccess()}>
+          Tentar novamente
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <p role="status" className="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
+      Seu perfil não possui acesso às fontes necessárias para consolidar estes indicadores.
+    </p>
+  );
+}
+
 function TrendsVisualAnalysis({ model }: { model: TrendsPageModel }) {
+  const showGlobalAnalysis = model.demo || model.dataAccessMode === 'all';
   return (
     <>
       <TrendsForecastChart
@@ -633,10 +709,12 @@ function TrendsVisualAnalysis({ model }: { model: TrendsPageModel }) {
         showCompare={model.showCompare}
         onToggleCompare={model.setShowCompare}
       />
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <TrendsHeatmap days={model.days} />
-        <TopCategoriesCard days={model.days} />
-      </div>
+      {showGlobalAnalysis && (
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <TrendsHeatmap days={model.days} />
+          <TopCategoriesCard days={model.days} />
+        </div>
+      )}
     </>
   );
 }
@@ -690,11 +768,17 @@ export default function TrendsPage() {
       />
       <div className="mx-auto w-full max-w-[1920px] animate-fade-in space-y-3 px-3 py-3 pb-24 sm:space-y-4 sm:px-4 sm:py-4 md:pb-6 lg:px-6 xl:px-8">
         <TrendsHeader model={model} />
-        <TrendsDecisionSupport model={model} />
-        <TrendsVisualAnalysis model={model} />
-        <TrendsRankingTabs model={model} />
+        {model.hasAnalyticsAccess ? (
+          <>
+            <TrendsDecisionSupport model={model} />
+            <TrendsVisualAnalysis model={model} />
+            <TrendsRankingTabs model={model} />
+          </>
+        ) : <TrendsAccessNotice model={model} />}
       </div>
-      <TrendsTour />
+      {model.hasAnalyticsAccess && (model.demo || model.dataAccessMode === 'all') && (
+        <TrendsTour />
+      )}
     </>
   );
 }

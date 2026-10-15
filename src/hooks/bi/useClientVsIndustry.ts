@@ -6,7 +6,7 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { selectCrm } from "@/lib/crm-db";
+import { selectCrmStrict } from "@/lib/crm-db";
 import { useClientBI } from "@/hooks/bi/useClientBI";
 import { isDemoClient } from "@/lib/bi/demoClient";
 import type { CrmCompany } from "@/types/crm";
@@ -133,7 +133,7 @@ async function fetchIndustryBenchmark(
     return { rows: [demoRow], sampleSize: 24 };
   }
 
-  const companies = await selectCrm<Pick<CrmCompany, "id">>("companies", {
+  const companies = await selectCrmStrict<Pick<CrmCompany, "id">>("companies", {
     select: "id",
     filters: { ramo_atividade: ramoAtividade, deleted_at: null },
     limit: 500,

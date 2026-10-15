@@ -21,7 +21,7 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 import {
-  invokeCrmDb, selectCrm, selectCrmById, searchCrm,
+  CrmUnavailableError, invokeCrmDb, selectCrm, selectCrmById, selectCrmStrict, searchCrm,
   insertCrm, updateCrm, deleteCrm, invokeCrmBatch,
 } from '@/lib/crm-db';
 
@@ -67,6 +67,30 @@ describe('selectCrm', () => {
     mockInvoke.mockResolvedValueOnce({ data: { data: null }, error: null });
     const result = await selectCrm('companies');
     expect(result).toEqual([]);
+  });
+
+  it('preserva o soft-degrade como coleção vazia no contrato padrão', async () => {
+    mockInvoke.mockResolvedValueOnce({
+      data: { error: 'CRM connection is not configured correctly' },
+      error: null,
+    });
+
+    await expect(selectCrm('companies')).resolves.toEqual([]);
+  });
+
+  it('distingue soft-degrade de coleção vazia no contrato estrito', async () => {
+    mockInvoke.mockResolvedValueOnce({
+      data: { error: 'CRM connection is not configured correctly' },
+      error: null,
+    });
+
+    await expect(selectCrmStrict('companies')).rejects.toBeInstanceOf(CrmUnavailableError);
+  });
+
+  it('aceita coleção legitimamente vazia no contrato estrito', async () => {
+    mockInvoke.mockResolvedValueOnce({ data: { data: [] }, error: null });
+
+    await expect(selectCrmStrict('companies')).resolves.toEqual([]);
   });
 });
 

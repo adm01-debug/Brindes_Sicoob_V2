@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { from } = vi.hoisted(() => ({ from: vi.fn() }));
-vi.mock('@/integrations/supabase/client', () => ({ supabase: { from } }));
+const { from, rpc } = vi.hoisted(() => ({ from: vi.fn(), rpc: vi.fn() }));
+vi.mock('@/integrations/supabase/client', () => ({ supabase: { from, rpc } }));
 import {
   loadProductViewActivity,
+  loadTrendsCapabilities,
   loadTrendsActivity,
+  resolveTrendsDataAccess,
 } from '../../src/pages/trends/trends-queries';
 
 function query(data: unknown[], error: unknown = null) {
@@ -42,6 +44,33 @@ function searchRow(index: number, createdAt = '2026-09-22T12:00:00.000Z') {
 
 describe('consultas de tendências', () => {
   beforeEach(() => vi.clearAllMocks());
+
+  it.each([
+    ['admin', true, true, 'all', null],
+    ['manager', false, true, 'self', 'usuario-1'],
+    ['dev', false, false, 'unavailable', 'usuario-1'],
+    ['supervisor', false, false, 'unavailable', 'usuario-1'],
+    ['gestor_compras', false, false, 'unavailable', 'usuario-1'],
+    ['comprador_singular', false, false, 'unavailable', 'usuario-1'],
+  ])(
+    'alinha o papel %s às capacidades comprovadas pela RLS',
+    async (_role, isAdmin, isManagerOrAdmin, mode, sellerScope) => {
+      rpc.mockImplementation((name: string) => Promise.resolve({
+        data: name === 'has_role' ? isAdmin : isManagerOrAdmin,
+        error: null,
+      }));
+
+      const capabilities = await loadTrendsCapabilities('usuario-1');
+      const access = resolveTrendsDataAccess('usuario-1', capabilities);
+
+      expect(access).toEqual({ mode, sellerScope });
+      expect(rpc).toHaveBeenCalledWith('has_role', {
+        _user_id: 'usuario-1',
+        _role: 'admin',
+      });
+      expect(rpc).toHaveBeenCalledWith('is_manager_or_admin');
+    },
+  );
 
   it('filtra cada evento pela coluna de autoria observada no banco', async () => {
     const views = query([productRow(1)]);

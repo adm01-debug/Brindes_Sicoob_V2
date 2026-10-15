@@ -5,13 +5,15 @@ const mocks = vi.hoisted(() => ({
   clientBI: vi.fn(),
   query: vi.fn(),
   isDemoClient: vi.fn(),
+  selectCrmStrict: vi.fn(),
+  rpc: vi.fn(),
 }));
 
 vi.mock('@/hooks/bi/useClientBI', () => ({ useClientBI: mocks.clientBI }));
 vi.mock('@tanstack/react-query', () => ({ useQuery: mocks.query }));
 vi.mock('@/lib/bi/demoClient', () => ({ isDemoClient: mocks.isDemoClient }));
-vi.mock('@/integrations/supabase/client', () => ({ supabase: { rpc: vi.fn() } }));
-vi.mock('@/lib/crm-db', () => ({ selectCrm: vi.fn() }));
+vi.mock('@/integrations/supabase/client', () => ({ supabase: { rpc: mocks.rpc } }));
+vi.mock('@/lib/crm-db', () => ({ selectCrmStrict: mocks.selectCrmStrict }));
 
 import { useClientVsIndustry } from '@/hooks/bi/useClientVsIndustry';
 
@@ -41,6 +43,8 @@ function clientBI(overrides: Record<string, unknown> = {}) {
     previous90d: { ltv: 0, avgTicket: 0, ordersCount: 0 },
     delta: { ltvDeltaPct: 0, avgTicketDeltaPct: 0, ordersCountDeltaPct: 0, hasPreviousData: false },
     isLoading: false,
+    error: null,
+    refetch: vi.fn(async () => undefined),
     ...overrides,
   };
 }
@@ -49,9 +53,14 @@ describe('useClientVsIndustry — dados confiáveis', () => {
   beforeEach(() => {
     mocks.isDemoClient.mockReset().mockReturnValue(false);
     mocks.clientBI.mockReset().mockReturnValue(clientBI());
+    mocks.selectCrmStrict.mockReset().mockResolvedValue([]);
+    mocks.rpc.mockReset();
     mocks.query.mockReset().mockReturnValue({
       data: { rows: [benchmark], sampleSize: 5 },
       isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(async () => undefined),
     });
   });
 
@@ -91,5 +100,74 @@ describe('useClientVsIndustry — dados confiáveis', () => {
     expect(result.current.hasClientData).toBe(true);
     expect(result.current.metrics).toHaveLength(4);
     expect(result.current.metrics[0]).toMatchObject({ label: 'LTV', classification: 'above' });
+  });
+
+  it('faz o queryFn rejeitar quando a leitura estrita informa indisponibilidade do CRM', async () => {
+    const sourceError = new Error('CRM indisponível ou sem credenciais válidas');
+    let queryFn: (() => Promise<unknown>) | undefined;
+    mocks.selectCrmStrict.mockRejectedValueOnce(sourceError);
+    mocks.query.mockImplementationOnce((options: { queryFn: () => Promise<unknown> }) => {
+      queryFn = options.queryFn;
+      return {
+        data: undefined,
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: vi.fn(async () => undefined),
+      };
+    });
+
+    renderHook(() => useClientVsIndustry('cliente-real', 'Cooperativa'));
+
+    expect(queryFn).toBeDefined();
+    await expect(queryFn?.()).rejects.toBe(sourceError);
+    expect(mocks.selectCrmStrict).toHaveBeenCalledWith('companies', expect.objectContaining({
+      filters: { ramo_atividade: 'Cooperativa', deleted_at: null },
+    }));
+  });
+
+  it('mantém coleção CRM legitimamente vazia como amostra zero', async () => {
+    let queryFn: (() => Promise<unknown>) | undefined;
+    mocks.selectCrmStrict.mockResolvedValueOnce([]);
+    mocks.query.mockImplementationOnce((options: { queryFn: () => Promise<unknown> }) => {
+      queryFn = options.queryFn;
+      return {
+        data: undefined,
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: vi.fn(async () => undefined),
+      };
+    });
+
+    renderHook(() => useClientVsIndustry('cliente-real', 'Cooperativa'));
+
+    await expect(queryFn?.()).resolves.toEqual({ rows: [], sampleSize: 0 });
+  });
+
+  it('propaga erro do benchmark e refaz histórico e CRM no retry', async () => {
+    const sourceError = new Error('CRM indisponível');
+    const refetchHistory = vi.fn(async () => undefined);
+    const refetchBenchmark = vi.fn(async () => undefined);
+    mocks.clientBI.mockReturnValue(clientBI({ refetch: refetchHistory }));
+    mocks.query.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error: sourceError,
+      refetch: refetchBenchmark,
+    });
+
+    const { result } = renderHook(() => useClientVsIndustry('cliente-real', 'Cooperativa'));
+
+    expect(result.current).toMatchObject({
+      isError: true,
+      error: sourceError,
+      hasEnoughSample: false,
+      sampleSize: 0,
+    });
+    await result.current.refetch();
+    expect(refetchHistory).toHaveBeenCalledOnce();
+    expect(refetchBenchmark).toHaveBeenCalledOnce();
   });
 });

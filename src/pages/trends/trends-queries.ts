@@ -21,9 +21,42 @@ export interface SearchActivity extends ActivityCursor {
   user_id: string | null;
 }
 
+export interface TrendsCapabilities {
+  canReadAllProductViews: boolean;
+  canReadSearchAnalytics: boolean;
+}
+
+export interface TrendsDataAccess {
+  mode: 'all' | 'self' | 'unavailable';
+  sellerScope: string | null;
+}
+
 interface ActivityPage<Row> {
   data: Row[] | null;
   error: unknown;
+}
+
+export async function loadTrendsCapabilities(userId: string): Promise<TrendsCapabilities> {
+  const [productViews, searches] = await Promise.all([
+    supabase.rpc('has_role', { _user_id: userId, _role: 'admin' }),
+    supabase.rpc('is_manager_or_admin'),
+  ]);
+  if (productViews.error || searches.error) throw productViews.error || searches.error;
+  return {
+    canReadAllProductViews: productViews.data === true,
+    canReadSearchAnalytics: searches.data === true,
+  };
+}
+
+export function resolveTrendsDataAccess(
+  userId: string | null | undefined,
+  capabilities: TrendsCapabilities | undefined,
+): TrendsDataAccess {
+  if (!userId || !capabilities?.canReadSearchAnalytics) {
+    return { mode: 'unavailable', sellerScope: userId ?? null };
+  }
+  if (capabilities.canReadAllProductViews) return { mode: 'all', sellerScope: null };
+  return { mode: 'self', sellerScope: userId };
 }
 
 function appendUniqueRows<Row extends ActivityCursor>(
