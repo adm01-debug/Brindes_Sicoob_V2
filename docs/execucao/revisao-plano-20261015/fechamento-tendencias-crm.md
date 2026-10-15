@@ -37,7 +37,7 @@ O advisor de performance deixou de apontar `search_analytics` após a consolida�
 
 ## Evidências executadas
 
-- Suíte Vitest integral: **508 arquivos aprovados**, 4 ignorados; **6.080 testes aprovados**, 68 ignorados.
+- Suíte Vitest integral: **508 arquivos aprovados**, 4 ignorados; **6.083 testes aprovados**, 68 ignorados.
 - Testes focados de banco, segurança, paginação, tendências e UX: aprovados.
 - Teste E2E do guard de `/tendencias`: aprovado sem sessão autenticada.
 - TypeScript: zero diagnósticos.
@@ -46,6 +46,10 @@ O advisor de performance deixou de apontar `search_analytics` após a consolida�
 - `deno check` das Edge Functions alteradas: aprovado.
 - Validação de hashes da allowlist: aprovada.
 - `git diff --check`: aprovado.
+
+## Edge Functions publicadas
+
+O deploy individual evitou o limite do endpoint em lote sem criar funções novas. O ambiente remoto confirmou `ACTIVE` para `crm-db-bridge` v10, `expert-chat` v11 e `trends-insights` v8. O smoke test retornou HTTP 200 no ping agregado do CRM e HTTP 401 nas chamadas sem autenticação ao assistente e aos insights.
 
 ## Condições externas
 
