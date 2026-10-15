@@ -8,6 +8,7 @@ import type { SelectedCompanyInfo, SelectedContactInfo } from "@/components/quot
 interface InitParams {
   isEditMode: boolean;
   quoteId?: string;
+  reloadKey?: number;
   fetchQuote: (id: string) => Promise<Quote | null>;
   locationState: unknown;
   searchParams: URLSearchParams;
@@ -35,6 +36,7 @@ interface InitParams {
     setItems: (v: QuoteItem[]) => void;
     setTags: (v: string[]) => void;
     setLoadingQuote: (v: boolean) => void;
+    setQuoteLoadError: (v: string | null) => void;
     setActiveItemIndex: (v: number | null) => void;
     setExpandedItems: (v: Set<number>) => void;
   };
@@ -95,7 +97,9 @@ function validRowVersion(value: number | null | undefined): number | null {
 
 function applyQuoteIdentity(quote: Quote, setters: QuoteSetters): void {
   setters.setClientId(fallback(quote.client_id, ""));
-  setters.setContactId(fallback(quote.client_id, ""));
+  // O modelo legado não persiste contact_id. O client_id identifica a empresa
+  // e nunca pode ser usado para satisfazer artificialmente a seleção do contato.
+  setters.setContactId("");
   setters.setValidUntil(fallback(quote.valid_until, format(addDays(new Date(), 30), "yyyy-MM-dd")));
   setters.setNotes(fallback(quote.notes, ""));
   setters.setInternalNotes(fallback(quote.internal_notes, ""));
@@ -205,16 +209,34 @@ function mapTemplateItem(item: TemplateImportItem): QuoteItem {
   };
 }
 
-export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locationState, searchParams, setters }: InitParams) {
+export function useQuoteInitialization({ isEditMode, quoteId, reloadKey = 0, fetchQuote, locationState, searchParams, setters }: InitParams) {
   // 1. Load existing quote
   useEffect(() => {
     if (!isEditMode || !quoteId) return;
+    let cancelled = false;
     setters.setLoadingQuote(true);
-    fetchQuote(quoteId).then((quote) => {
-      if (quote) applyExistingQuote(quote, setters);
-      setters.setLoadingQuote(false);
-    });
-  }, [fetchQuote, isEditMode, quoteId, setters]);
+    setters.setQuoteLoadError(null);
+    void fetchQuote(quoteId)
+      .then((quote) => {
+        if (cancelled) return;
+        if (!quote) {
+          setters.setQuoteLoadError("Orçamento não encontrado.");
+          return;
+        }
+        applyExistingQuote(quote, setters);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setters.setQuoteLoadError("Não foi possível carregar o orçamento.");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setters.setLoadingQuote(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchQuote, isEditMode, quoteId, reloadKey, setters]);
 
   // 2. Pre-fill from simulator
   useEffect(() => {

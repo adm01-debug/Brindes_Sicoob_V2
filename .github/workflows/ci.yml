@@ -100,6 +100,9 @@ jobs:
       - name: Simular ACL padrão, sobrecargas e herança de papéis
         run: python3 scripts/qa/simular-acl-efetiva.py
 
+      - name: Simular compatibilidade e autoria da telemetria de busca
+        run: python3 scripts/qa/simular-search-analytics-legado.py
+
       - name: Verificar adoção de logging nas Edge Functions
         run: node scripts/check-edge-structured-logging.mjs
 

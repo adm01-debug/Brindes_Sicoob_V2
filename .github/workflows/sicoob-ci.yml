@@ -60,6 +60,7 @@ jobs:
           python3 scripts/qa/simular-logistica-canonica.py
           python3 scripts/qa/simular-consolidacao-sicoob.py
           python3 scripts/qa/simular-rls-cruzada-sicoob.py
+          python3 scripts/qa/simular-search-analytics-legado.py
 
   experiencia:
     name: Entrada e demonstração responsivas

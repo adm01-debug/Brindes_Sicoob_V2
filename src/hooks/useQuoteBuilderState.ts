@@ -394,6 +394,8 @@ export function useQuoteBuilderState() {
   const [selectedProductForColor, setSelectedProductForColor] = useState<Product | null>(null);
   const [templateApplied, setTemplateApplied] = useState<string | null>(null);
   const [loadingQuote, setLoadingQuote] = useState(isEditMode);
+  const [quoteLoadError, setQuoteLoadError] = useState<string | null>(null);
+  const [quoteReloadKey, setQuoteReloadKey] = useState(0);
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [selectedItemIndexes, setSelectedItemIndexes] = useState<Set<number>>(new Set());
@@ -406,11 +408,12 @@ export function useQuoteBuilderState() {
     setQuoteNumber, setCurrentStatus, setIsLatestVersion, setExpectedRowVersion, setContactInfo, setCompanyInfo,
     setDiscountType, setDiscountValue, setNegotiationMarkup, setPaymentTerms,
     setShippingType, setShippingCost, setDeliveryMode, setDeliveryDate,
-    setDeliveryTime, setItems, setTags, setLoadingQuote, setActiveItemIndex, setExpandedItems,
+    setDeliveryTime, setItems, setTags, setLoadingQuote, setQuoteLoadError,
+    setActiveItemIndex, setExpandedItems,
   }), []);
   
   useQuoteInitialization({
-    isEditMode, quoteId, fetchQuote, 
+    isEditMode, quoteId, reloadKey: quoteReloadKey, fetchQuote,
     locationState: location.state, 
     searchParams,
     setters: initializationSetters,
@@ -475,10 +478,10 @@ export function useQuoteBuilderState() {
   };
   const initialSnapshotRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!loadingQuote && initialSnapshotRef.current === null) {
+    if (!loadingQuote && !quoteLoadError && initialSnapshotRef.current === null) {
       initialSnapshotRef.current = JSON.stringify(formSnapshotRef.current);
     }
-  }, [loadingQuote]);
+  }, [loadingQuote, quoteLoadError]);
 
   const hasUnsavedData = useMemo(() => {
     if (initialSnapshotRef.current === null) return false;
@@ -621,7 +624,9 @@ export function useQuoteBuilderState() {
   }, [canEdit, isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, tags, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, updateQuoteStatus, currentStatus, expectedRowVersion, maxDiscountPercent, requestApproval, isGerentePa, userRoles, profile?.pa_id]);
 
   return {
-    navigate, quoteId, isEditMode, loadingQuote, hasUnsavedData, user,
+    navigate, quoteId, isEditMode, loadingQuote, quoteLoadError,
+    retryQuoteLoad: () => setQuoteReloadKey((current) => current + 1),
+    hasUnsavedData, user,
     clientId, setClientId, contactId, setContactId,
     companyInfo, setCompanyInfo, contactInfo, setContactInfo,
     validityDays, setValidityDays, validUntil, setValidUntil,

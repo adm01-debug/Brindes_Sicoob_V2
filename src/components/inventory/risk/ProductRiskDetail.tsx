@@ -69,6 +69,10 @@ function RiskError({ onRetry }: { onRetry: () => void }) {
   return <div className="flex flex-col items-center justify-center py-8 gap-2 text-center"><AlertCircle className="h-6 w-6 text-destructive" /><p className="text-sm font-medium text-destructive">Erro ao carregar dados</p><p className="text-xs text-muted-foreground max-w-[250px]">Não foi possível buscar o histórico deste produto. Tente novamente em alguns instantes.</p><Button variant="outline" size="sm" onClick={onRetry} className="gap-1.5 mt-1"><RefreshCw className="h-3.5 w-3.5" />Tentar novamente</Button></div>;
 }
 
+function RiskPartialError({ onRetry }: { onRetry: () => void }) {
+  return <div role="alert" className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3"><p className="text-xs text-muted-foreground"><span className="font-medium text-destructive">Dados parciais.</span> Uma ou mais fontes de risco estão indisponíveis.</p><Button variant="outline" size="sm" onClick={onRetry} className="h-7 gap-1.5"><RefreshCw className="h-3.5 w-3.5" />Tentar novamente</Button></div>;
+}
+
 function RiskEmpty({ productName }: { productName?: string }) {
   return <div className="flex flex-col items-center justify-center py-8 gap-2 text-center"><BarChart3 className="h-6 w-6 text-muted-foreground" /><p className="text-sm font-medium">Sem histórico operacional{productName ? ` para ${productName}` : ''}</p><p className="text-xs text-muted-foreground max-w-[280px]">As métricas de risco aparecerão quando houver movimentos reais de estoque para este produto.</p></div>;
 }
@@ -179,7 +183,7 @@ export function ProductRiskDetail({ productId, productName }: ProductRiskDetailP
   const priceChanges = safePriceChanges(bestVelocity);
   const metrics = buildRiskMetrics(bestVelocity, intelligence);
   const partial = hasError && hasData;
-  return <div className="space-y-3"><RiskHeader name={productName} productId={productId} partial={partial} classification={intelligence?.abc_classification} onNavigate={() => navigate(`/produto/${productId}`)} /><RiskFlags flags={flags} /><RiskMetrics {...metrics} /><ChartControls period={period} expanded={chartExpanded} onPeriodChange={setPeriod} onToggle={() => setChartExpanded(previous => !previous)} /><RiskChart data={chartData} expanded={chartExpanded} /><PriceChangesNotice count={priceChanges} /></div>;
+  return <div className="space-y-3"><RiskHeader name={productName} productId={productId} partial={partial} classification={intelligence?.abc_classification} onNavigate={() => navigate(`/produto/${productId}`)} />{partial && <RiskPartialError onRetry={handleRetry} />}<RiskFlags flags={flags} /><RiskMetrics {...metrics} /><ChartControls period={period} expanded={chartExpanded} onPeriodChange={setPeriod} onToggle={() => setChartExpanded(previous => !previous)} /><RiskChart data={chartData} expanded={chartExpanded} /><PriceChangesNotice count={priceChanges} /></div>;
 }
 
 export function shouldShowProductRiskLoading(sourcesLoading: boolean[]): boolean {

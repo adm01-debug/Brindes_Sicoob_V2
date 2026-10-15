@@ -23,6 +23,7 @@ vi.mock('@/lib/logger', () => ({
 import {
   CrmUnavailableError, invokeCrmDb, selectCrm, selectCrmById, selectCrmByIdStrict, selectCrmStrict, searchCrm,
   insertCrm, updateCrm, deleteCrm, invokeCrmBatch,
+  listQuoteDirectoryCompanies, listQuoteDirectoryContacts,
 } from '@/lib/crm-db';
 
 beforeEach(() => {
@@ -174,6 +175,68 @@ describe('searchCrm', () => {
         search: { column: 'nome_fantasia', term: 'Acme' },
       }),
     }));
+  });
+});
+
+describe('diretório dedicado de orçamento', () => {
+  it('busca empresas sem permitir tabela, projeção ou filtros enviados pelo cliente', async () => {
+    mockInvoke.mockResolvedValueOnce({
+      data: { data: [{ id: '1', name: 'Cooperativa Centro' }] },
+      error: null,
+    });
+
+    await expect(
+      listQuoteDirectoryCompanies({ term: 'Centro', limit: 25 }),
+    ).resolves.toEqual([{ id: '1', name: 'Cooperativa Centro' }]);
+    expect(mockInvoke).toHaveBeenCalledWith(
+      'crm-db-bridge',
+      expect.objectContaining({
+        body: {
+          operation: 'quote_directory',
+          action: 'companies',
+          term: 'Centro',
+          companyId: undefined,
+          limit: 25,
+          offset: undefined,
+        },
+      }),
+    );
+  });
+
+  it('obtém contatos já enriquecidos em uma única invocação', async () => {
+    mockInvoke.mockResolvedValueOnce({
+      data: { data: [{ id: '2', name: 'Maria', email: 'maria@example.com', phone: null }] },
+      error: null,
+    });
+
+    await listQuoteDirectoryContacts('00000000-0000-4000-8000-000000000001');
+    expect(mockInvoke).toHaveBeenCalledTimes(1);
+    expect(mockInvoke).toHaveBeenCalledWith(
+      'crm-db-bridge',
+      expect.objectContaining({
+        body: {
+          operation: 'quote_directory',
+          action: 'contacts',
+          companyId: '00000000-0000-4000-8000-000000000001',
+          limit: 50,
+        },
+      }),
+    );
+  });
+
+  it.each([
+    ['empresas', () => listQuoteDirectoryCompanies()],
+    [
+      'contatos',
+      () => listQuoteDirectoryContacts('00000000-0000-4000-8000-000000000001'),
+    ],
+  ])('não confunde indisponibilidade com diretório vazio em %s', async (_label, call) => {
+    mockInvoke.mockResolvedValueOnce({
+      data: { error: 'CRM connection is not configured correctly' },
+      error: null,
+    });
+
+    await expect(call()).rejects.toBeInstanceOf(CrmUnavailableError);
   });
 });
 

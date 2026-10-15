@@ -132,6 +132,14 @@ const TARGETS = [
     file: "supabase/migrations/20261015235000_consolidate_search_analytics_select_policy.sql",
     sha256: "69848af7469db6e9fd360afea19db08ecf2dfdf45e83c3be10402c04502a5757",
   },
+  {
+    file: "supabase/migrations/20261015235500_search_analytics_legacy_insert_compatibility.sql",
+    sha256: "715570bc8424a073e6fb8d78bf7e4f364bb89c46f354241d2ef359fa91e5b3a4",
+  },
+  {
+    file: "supabase/migrations/20261016000000_assert_search_analytics_contract.sql",
+    sha256: "1fe51b07889b172928733519a16c773f7e999ed079e4c389dc82168fbcb4f3bb",
+  },
 ];
 
 function sha256(value) {
@@ -717,7 +725,139 @@ async function validateContract(client, targets) {
             = 'UNIQUE NULLS NOT DISTINCT (list_id, product_id, variant_id)'
       ) AS favorite_items_upsert_constraint_safe,
       to_regclass('public.idx_favorite_items_unique') IS NULL
-        AS favorite_items_legacy_index_removed
+        AS favorite_items_legacy_index_removed,
+      to_regclass('public.search_analytics') IS NOT NULL
+        AND COALESCE((SELECT c.relrowsecurity
+          FROM pg_class AS c
+          WHERE c.oid = to_regclass('public.search_analytics')), false)
+        AS search_analytics_table_safe,
+      (SELECT p.prosrc
+        FROM pg_proc AS p
+        WHERE p.oid = to_regprocedure('public.normalize_search_analytics_insert()'))
+        AS search_normalizer_source,
+      COALESCE((SELECT
+          NOT p.prosecdef
+          AND p.prorettype = 'pg_catalog.trigger'::regtype
+          AND p.proconfig = ARRAY['search_path=pg_catalog, public']::text[]
+          AND l.lanname = 'plpgsql'
+        FROM pg_proc AS p
+        JOIN pg_language AS l ON l.oid = p.prolang
+        WHERE p.oid = to_regprocedure(
+          'public.normalize_search_analytics_insert()'
+        )), false) AS search_normalizer_security_safe,
+      COALESCE(NOT has_function_privilege(
+        'anon', to_regprocedure('public.normalize_search_analytics_insert()'), 'EXECUTE'
+      ), false)
+        AND COALESCE(NOT has_function_privilege(
+          'authenticated', to_regprocedure('public.normalize_search_analytics_insert()'), 'EXECUTE'
+        ), false)
+        AND NOT EXISTS (
+          SELECT 1
+          FROM pg_proc AS p,
+            LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) AS acl
+          WHERE p.oid = to_regprocedure('public.normalize_search_analytics_insert()')
+            AND acl.grantee = 0
+            AND acl.privilege_type = 'EXECUTE'
+        ) AS search_normalizer_execute_safe,
+      EXISTS (
+        SELECT 1
+        FROM pg_trigger AS t
+        WHERE t.tgrelid = to_regclass('public.search_analytics')
+          AND t.tgname = 'trg_normalize_search_analytics_insert'
+          AND NOT t.tgisinternal
+          AND t.tgenabled = 'O'
+          AND t.tgtype = 7
+          AND t.tgfoid = to_regprocedure('public.normalize_search_analytics_insert()')
+      ) AS search_normalizer_trigger_safe,
+      (SELECT count(*)
+        FROM pg_policies
+        WHERE schemaname = 'public' AND tablename = 'search_analytics')
+        AS search_policy_count,
+      EXISTS (
+        SELECT 1
+        FROM pg_policies
+        WHERE schemaname = 'public'
+          AND tablename = 'search_analytics'
+          AND policyname = 'Users insert own search analytics'
+          AND permissive = 'PERMISSIVE'
+          AND roles = ARRAY['authenticated']::name[]
+          AND cmd = 'INSERT'
+          AND qual IS NULL
+          AND regexp_replace(
+            replace(with_check, 'auth.', ''), '[[:space:]]+', '', 'g'
+          ) = '(((SELECTuid()ASuid)ISNOTNULL)AND((SELECTuid()ASuid)=user_id))'
+      ) AS search_insert_policy_safe,
+      EXISTS (
+        SELECT 1
+        FROM pg_policies
+        WHERE schemaname = 'public'
+          AND tablename = 'search_analytics'
+          AND policyname = 'Authorized users read search analytics'
+          AND permissive = 'PERMISSIVE'
+          AND roles = ARRAY['authenticated']::name[]
+          AND cmd = 'SELECT'
+          AND regexp_replace(
+            replace(replace(qual, 'auth.', ''), 'public.', ''),
+            '[[:space:]]+', '', 'g'
+          ) = '(((SELECTuid()ASuid)ISNOTNULL)AND(((SELECTuid()ASuid)=user_id)OR(SELECTis_manager_or_admin()ASis_manager_or_admin)))'
+          AND with_check IS NULL
+      ) AS search_select_policy_safe,
+      (SELECT count(*) = 3
+        FROM pg_policy AS p
+        JOIN pg_depend AS d
+          ON d.classid = 'pg_policy'::regclass
+         AND d.objid = p.oid
+         AND d.refclassid = 'pg_proc'::regclass
+        WHERE p.polrelid = to_regclass('public.search_analytics')
+          AND (
+            (p.polname = 'Users insert own search analytics'
+              AND d.refobjid = to_regprocedure('auth.uid()'))
+            OR (p.polname = 'Authorized users read search analytics'
+              AND d.refobjid IN (
+                to_regprocedure('auth.uid()'),
+                to_regprocedure('public.is_manager_or_admin()')
+              ))
+          )) AS search_policy_dependencies_safe,
+      has_table_privilege('authenticated', 'public.search_analytics', 'SELECT')
+        AND has_table_privilege('authenticated', 'public.search_analytics', 'INSERT')
+        AND NOT has_table_privilege('authenticated', 'public.search_analytics', 'UPDATE')
+        AND NOT has_table_privilege('authenticated', 'public.search_analytics', 'DELETE')
+        AND NOT has_table_privilege('authenticated', 'public.search_analytics', 'TRUNCATE')
+        AND NOT has_table_privilege('authenticated', 'public.search_analytics', 'REFERENCES')
+        AND NOT has_table_privilege('authenticated', 'public.search_analytics', 'TRIGGER')
+        AND NOT has_table_privilege('authenticated', 'public.search_analytics', 'MAINTAIN')
+        AND NOT has_table_privilege(
+          'anon', 'public.search_analytics',
+          'SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER'
+        ) AS search_effective_grants_safe,
+      (SELECT COALESCE(
+          array_agg(acl.privilege_type::text ORDER BY acl.privilege_type::text),
+          ARRAY[]::text[]
+        ) = ARRAY['INSERT', 'SELECT']::text[]
+        FROM pg_class AS c,
+          LATERAL aclexplode(COALESCE(c.relacl, acldefault('r', c.relowner))) AS acl
+        WHERE c.oid = to_regclass('public.search_analytics')
+          AND acl.grantee = (SELECT oid FROM pg_roles WHERE rolname = 'authenticated'))
+        AND (SELECT COALESCE(
+          array_agg(acl.privilege_type::text ORDER BY acl.privilege_type::text),
+          ARRAY[]::text[]
+        ) = ARRAY[
+          'DELETE', 'INSERT', 'MAINTAIN', 'REFERENCES', 'SELECT', 'TRIGGER', 'TRUNCATE', 'UPDATE'
+        ]::text[]
+        FROM pg_class AS c,
+          LATERAL aclexplode(COALESCE(c.relacl, acldefault('r', c.relowner))) AS acl
+        WHERE c.oid = to_regclass('public.search_analytics')
+          AND acl.grantee = (SELECT oid FROM pg_roles WHERE rolname = 'service_role'))
+        AND NOT EXISTS (
+          SELECT 1
+          FROM pg_class AS c,
+            LATERAL aclexplode(COALESCE(c.relacl, acldefault('r', c.relowner))) AS acl
+          WHERE c.oid = to_regclass('public.search_analytics')
+            AND acl.grantee IN (
+              0,
+              (SELECT oid FROM pg_roles WHERE rolname = 'anon')
+            )
+        ) AS search_direct_acl_safe
   `);
   const result = rows[0];
   const idempotencyMigration = latestDefiner(targets, "save_quote_atomic_idempotent");
@@ -726,8 +866,9 @@ async function validateContract(client, targets) {
   const identityMigration = latestDefiner(targets, "save_quote_atomic");
   const transitionMigration = latestDefiner(targets, "assert_quote_transition");
   const quoteScopeMigration = latestDefiner(targets, "can_manage_quote_scope");
+  const searchNormalizerMigration = latestDefiner(targets, "normalize_search_analytics_insert");
   if (!idempotencyMigration || !statusMigration || !notificationMigration || !identityMigration
-      || !transitionMigration || !quoteScopeMigration) {
+      || !transitionMigration || !quoteScopeMigration || !searchNormalizerMigration) {
     throw new Error("Allowlist incompleta para validar os corpos das funções críticas.");
   }
   const sourceHashesValid = typeof result?.idempotency_source === "string"
@@ -736,6 +877,7 @@ async function validateContract(client, targets) {
     && typeof result.save_atomic_source === "string"
     && typeof result.transition_assert_source === "string"
     && typeof result.quote_scope_source === "string"
+    && typeof result.search_normalizer_source === "string"
     && sha256(result.idempotency_source.trim()) === sha256(
       extractFunctionBody(idempotencyMigration.sql, "save_quote_atomic_idempotent"),
     )
@@ -753,6 +895,9 @@ async function validateContract(client, targets) {
     )
     && sha256(result.quote_scope_source.trim()) === sha256(
       extractFunctionBody(quoteScopeMigration.sql, "can_manage_quote_scope"),
+    )
+    && sha256(result.search_normalizer_source.trim()) === sha256(
+      extractFunctionBody(searchNormalizerMigration.sql, "normalize_search_analytics_insert"),
     );
   const normalizeExpression = (value) => typeof value === "string"
     ? value.replace(/\s+/g, " ").trim()
@@ -823,14 +968,25 @@ async function validateContract(client, targets) {
     && result.semantic_search_contract_safe
     && result.pa_budgets_restrictive_policy_safe
     && result.favorite_items_upsert_constraint_safe
-    && result.favorite_items_legacy_index_removed;
+    && result.favorite_items_legacy_index_removed
+    && result.search_analytics_table_safe
+    && result.search_normalizer_security_safe
+    && result.search_normalizer_execute_safe
+    && result.search_normalizer_trigger_safe
+    && Number(result.search_policy_count) === 2
+    && result.search_insert_policy_safe
+    && result.search_select_policy_safe
+    && result.search_policy_dependencies_safe
+    && result.search_effective_grants_safe
+    && result.search_direct_acl_safe;
   if (!valid) {
     const diagnostic = { ...(result ?? {}) };
     delete diagnostic.idempotency_source;
     delete diagnostic.status_source;
     delete diagnostic.notification_source;
     delete diagnostic.save_atomic_source;
-    throw new Error(`Contrato remoto de idempotência inválido: ${JSON.stringify({
+    delete diagnostic.search_normalizer_source;
+    throw new Error(`Contrato remoto crítico inválido: ${JSON.stringify({
       ...diagnostic,
       source_hashes_valid: sourceHashesValid,
       policies_exact: policiesExact,
@@ -864,8 +1020,9 @@ VALUES (
   const identityMigration = latestDefiner(targets, "save_quote_atomic");
   const transitionMigration = latestDefiner(targets, "assert_quote_transition");
   const quoteScopeMigration = latestDefiner(targets, "can_manage_quote_scope");
+  const searchNormalizerMigration = latestDefiner(targets, "normalize_search_analytics_insert");
   if (!idempotencyMigration || !statusMigration || !notificationMigration || !identityMigration
-      || !transitionMigration || !quoteScopeMigration) {
+      || !transitionMigration || !quoteScopeMigration || !searchNormalizerMigration) {
     throw new Error("Allowlist incompleta para montar a validação transacional.");
   }
   const idempotencyBody = dollarQuote(
@@ -891,6 +1048,10 @@ VALUES (
   const quoteScopeBody = dollarQuote(
     extractFunctionBody(quoteScopeMigration.sql, "can_manage_quote_scope"),
     "quote_scope_body",
+  );
+  const searchNormalizerBody = dollarQuote(
+    extractFunctionBody(searchNormalizerMigration.sql, "normalize_search_analytics_insert"),
+    "search_normalizer_body",
   );
 
   return `BEGIN;
@@ -931,6 +1092,119 @@ BEGIN
         IS DISTINCT FROM ${transitionBody}
      OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.can_manage_quote_scope(uuid,uuid)'))
         IS DISTINCT FROM ${quoteScopeBody}
+     OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.normalize_search_analytics_insert()'))
+        IS DISTINCT FROM ${searchNormalizerBody}
+     OR to_regclass('public.search_analytics') IS NULL
+     OR COALESCE((SELECT NOT relrowsecurity
+       FROM pg_class WHERE oid = to_regclass('public.search_analytics')), true)
+     OR COALESCE((SELECT
+       prosecdef
+       OR prorettype <> 'pg_catalog.trigger'::regtype
+       OR proconfig IS DISTINCT FROM ARRAY['search_path=pg_catalog, public']::text[]
+       FROM pg_proc
+       WHERE oid = to_regprocedure('public.normalize_search_analytics_insert()')), true)
+     OR has_function_privilege('anon', 'public.normalize_search_analytics_insert()', 'EXECUTE')
+     OR has_function_privilege('authenticated', 'public.normalize_search_analytics_insert()', 'EXECUTE')
+     OR EXISTS (
+       SELECT 1
+       FROM pg_proc AS p,
+         LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) AS acl
+       WHERE p.oid = to_regprocedure('public.normalize_search_analytics_insert()')
+         AND acl.grantee = 0
+         AND acl.privilege_type = 'EXECUTE'
+     )
+     OR NOT EXISTS (
+       SELECT 1
+       FROM pg_trigger
+       WHERE tgrelid = to_regclass('public.search_analytics')
+         AND tgname = 'trg_normalize_search_analytics_insert'
+         AND NOT tgisinternal
+         AND tgenabled = 'O'
+         AND tgtype = 7
+         AND tgfoid = to_regprocedure('public.normalize_search_analytics_insert()')
+     )
+     OR (SELECT count(*) FROM pg_policies
+       WHERE schemaname = 'public' AND tablename = 'search_analytics') <> 2
+     OR NOT EXISTS (
+       SELECT 1
+       FROM pg_policies
+       WHERE schemaname = 'public'
+         AND tablename = 'search_analytics'
+         AND policyname = 'Users insert own search analytics'
+         AND permissive = 'PERMISSIVE'
+         AND roles = ARRAY['authenticated']::name[]
+         AND cmd = 'INSERT'
+         AND qual IS NULL
+         AND regexp_replace(
+           replace(with_check, 'auth.', ''), '[[:space:]]+', '', 'g'
+         ) = '(((SELECTuid()ASuid)ISNOTNULL)AND((SELECTuid()ASuid)=user_id))'
+     )
+     OR NOT EXISTS (
+       SELECT 1
+       FROM pg_policies
+       WHERE schemaname = 'public'
+         AND tablename = 'search_analytics'
+         AND policyname = 'Authorized users read search analytics'
+         AND permissive = 'PERMISSIVE'
+         AND roles = ARRAY['authenticated']::name[]
+         AND cmd = 'SELECT'
+         AND regexp_replace(
+           replace(replace(qual, 'auth.', ''), 'public.', ''),
+           '[[:space:]]+', '', 'g'
+         ) = '(((SELECTuid()ASuid)ISNOTNULL)AND(((SELECTuid()ASuid)=user_id)OR(SELECTis_manager_or_admin()ASis_manager_or_admin)))'
+         AND with_check IS NULL
+     )
+     OR (SELECT count(*)
+       FROM pg_policy AS p
+       JOIN pg_depend AS d
+         ON d.classid = 'pg_policy'::regclass
+        AND d.objid = p.oid
+        AND d.refclassid = 'pg_proc'::regclass
+       WHERE p.polrelid = to_regclass('public.search_analytics')
+         AND (
+           (p.polname = 'Users insert own search analytics'
+             AND d.refobjid = to_regprocedure('auth.uid()'))
+           OR (p.polname = 'Authorized users read search analytics'
+             AND d.refobjid IN (
+               to_regprocedure('auth.uid()'),
+               to_regprocedure('public.is_manager_or_admin()')
+             ))
+         )) <> 3
+     OR NOT has_table_privilege('authenticated', 'public.search_analytics', 'SELECT')
+     OR NOT has_table_privilege('authenticated', 'public.search_analytics', 'INSERT')
+     OR has_table_privilege(
+       'authenticated', 'public.search_analytics',
+       'UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER, MAINTAIN'
+     )
+     OR has_table_privilege(
+       'anon', 'public.search_analytics',
+       'SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER'
+     )
+     OR (SELECT COALESCE(
+       array_agg(acl.privilege_type::text ORDER BY acl.privilege_type::text),
+       ARRAY[]::text[]
+       ) FROM pg_class AS c,
+         LATERAL aclexplode(COALESCE(c.relacl, acldefault('r', c.relowner))) AS acl
+       WHERE c.oid = to_regclass('public.search_analytics')
+         AND acl.grantee = (SELECT oid FROM pg_roles WHERE rolname = 'authenticated'))
+       IS DISTINCT FROM ARRAY['INSERT', 'SELECT']::text[]
+     OR (SELECT COALESCE(
+       array_agg(acl.privilege_type::text ORDER BY acl.privilege_type::text),
+       ARRAY[]::text[]
+       ) FROM pg_class AS c,
+         LATERAL aclexplode(COALESCE(c.relacl, acldefault('r', c.relowner))) AS acl
+       WHERE c.oid = to_regclass('public.search_analytics')
+         AND acl.grantee = (SELECT oid FROM pg_roles WHERE rolname = 'service_role'))
+       IS DISTINCT FROM ARRAY[
+         'DELETE', 'INSERT', 'MAINTAIN', 'REFERENCES', 'SELECT', 'TRIGGER', 'TRUNCATE', 'UPDATE'
+       ]::text[]
+     OR EXISTS (
+       SELECT 1
+       FROM pg_class AS c,
+         LATERAL aclexplode(COALESCE(c.relacl, acldefault('r', c.relowner))) AS acl
+       WHERE c.oid = to_regclass('public.search_analytics')
+         AND acl.grantee IN (0, (SELECT oid FROM pg_roles WHERE rolname = 'anon'))
+     )
      OR COALESCE((SELECT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
         FROM pg_proc WHERE oid = to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)')), true)
      OR COALESCE((SELECT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])

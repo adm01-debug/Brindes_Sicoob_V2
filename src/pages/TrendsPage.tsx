@@ -64,14 +64,37 @@ interface TrendsMockModule {
 const EMPTY_KPI = { totalViews: 0, totalSearches: 0, uniqueProducts: 0, uniqueSearches: 0 };
 const NO_EXPORT_MESSAGE = 'Nada para exportar ainda.';
 
-function isTrendsAccessVisible(
+export function isTrendsAccessVisible(
   demo: boolean,
-  isFetching: boolean,
-  isError: boolean,
+  hasCapabilityData: boolean,
   mode: ReturnType<typeof resolveTrendsDataAccess>['mode'],
 ) {
   if (demo) return true;
-  return !isFetching && !isError && mode !== 'unavailable';
+  return hasCapabilityData && mode !== 'unavailable';
+}
+
+interface TrendsAccessUiState {
+  visible: boolean;
+  loading: boolean;
+  error: boolean;
+  queryEnabled: boolean;
+}
+
+export function resolveTrendsAccessUiState(input: {
+  demo: boolean;
+  hasUser: boolean;
+  hasCapabilityData: boolean;
+  isPending: boolean;
+  isError: boolean;
+  mode: ReturnType<typeof resolveTrendsDataAccess>['mode'];
+}): TrendsAccessUiState {
+  if (input.demo) return { visible: true, loading: false, error: false, queryEnabled: false };
+  if (!input.hasUser) return { visible: false, loading: false, error: false, queryEnabled: false };
+  if (!input.hasCapabilityData) {
+    return { visible: false, loading: input.isPending, error: input.isError, queryEnabled: false };
+  }
+  const visible = input.mode !== 'unavailable';
+  return { visible, loading: false, error: false, queryEnabled: visible };
 }
 
 function useTrendsAccess(userId: string | null, demo: boolean) {
@@ -84,21 +107,24 @@ function useTrendsAccess(userId: string | null, demo: boolean) {
     },
   });
   const dataAccess = resolveTrendsDataAccess(userId, capabilities.data);
+  const hasCapabilityData = capabilities.data !== undefined;
+  const uiState = resolveTrendsAccessUiState({
+    demo,
+    hasUser: Boolean(userId),
+    hasCapabilityData,
+    isPending: capabilities.isPending,
+    isError: capabilities.isError,
+    mode: dataAccess.mode,
+  });
   return {
     sellerScope: dataAccess.sellerScope,
     dataAccessMode: dataAccess.mode,
-    hasAnalyticsAccess: isTrendsAccessVisible(
-      demo,
-      capabilities.isFetching,
-      capabilities.isError,
-      dataAccess.mode,
-    ),
-    accessLoading: !demo && Boolean(userId) && capabilities.isFetching,
-    accessError: !demo && capabilities.isError,
+    hasAnalyticsAccess: uiState.visible,
+    accessLoading: uiState.loading,
+    accessError: uiState.error,
     refetchAccess: capabilities.refetch,
     scopeKey: dataAccess.mode === 'all' ? 'all' : (userId ?? 'unavailable'),
-    queryEnabled:
-      !demo && Boolean(userId) && !capabilities.isError && dataAccess.mode !== 'unavailable',
+    queryEnabled: uiState.queryEnabled,
   };
 }
 
@@ -390,6 +416,7 @@ function useTrendsPageModel() {
     kpiPrevious: kpis.previous,
     loadingMock: queries.mock.isLoading,
     loadingKpi: queries.activity.isLoading,
+    hasKpiData: queries.activity.data !== undefined,
     mockError: queries.mock.isError,
     kpiError: queries.activity.isError,
     hasQueryError,
@@ -491,6 +518,7 @@ function TrendsDecisionSupport({ model }: { model: TrendsPageModel }) {
         isLoading={isKpiLoading}
         isError={isKpiError}
         isDemo={model.demo}
+        hasData={model.demo ? Boolean(model.kpiCurrent) : model.hasKpiData}
       />
       {showGlobalAnalysis && (
         <>

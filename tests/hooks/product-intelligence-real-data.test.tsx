@@ -1,4 +1,4 @@
-import { render, renderHook, screen } from '@testing-library/react';
+import { fireEvent, render, renderHook, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -125,5 +125,35 @@ describe('inteligência de produto baseada em dados reais', () => {
     expect(screen.getByText('10')).toBeTruthy();
     expect(screen.getByText('Classe A')).toBeTruthy();
     expect(screen.queryByText(/Sem histórico operacional/)).toBeNull();
+  });
+
+  it('explica dados parciais e permite tentar novamente todas as fontes', () => {
+    const retryDaily = vi.fn();
+    const retryVelocity = vi.fn();
+    const retryIntelligence = vi.fn();
+    mocks.daily.mockReturnValue({ ...emptyQuery(), data: [], refetch: retryDaily });
+    mocks.velocity.mockReturnValue({
+      ...emptyQuery(),
+      data: [{ avg_daily_depletion_7d: 2, current_stock: 10, days_to_stockout: 5, velocity_trend: 1.2 }],
+      refetch: retryVelocity,
+    });
+    mocks.intelligence.mockReturnValue({
+      ...emptyQuery(),
+      isError: true,
+      error: new Error('indisponível'),
+      refetch: retryIntelligence,
+    });
+
+    render(
+      <MemoryRouter>
+        <ProductRiskDetail productId="produto-real" productName="Garrafa Sicoob" />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Dados parciais');
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }));
+    expect(retryDaily).toHaveBeenCalledOnce();
+    expect(retryVelocity).toHaveBeenCalledOnce();
+    expect(retryIntelligence).toHaveBeenCalledOnce();
   });
 });
