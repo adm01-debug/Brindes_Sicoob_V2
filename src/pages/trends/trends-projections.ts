@@ -100,9 +100,9 @@ function buildTopProducts(data: ProductViewActivity[], input: ProjectionInput) {
     if (!key) return;
     const product = productMap.get(key) ?? createProductAggregate(view, key);
     if (view.created_at >= input.sinceCurrent) {
-      recordCurrentProductView(product, view, view.created_at >= input.recentCutoff);
-    } else {
-      product.baselineViews += 1;
+      const isRecent = view.created_at >= input.recentCutoff;
+      recordCurrentProductView(product, view, isRecent);
+      if (!isRecent) product.baselineViews += 1;
     }
     productMap.set(key, product);
   });

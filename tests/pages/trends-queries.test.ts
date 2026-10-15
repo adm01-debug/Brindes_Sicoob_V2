@@ -162,6 +162,39 @@ describe('consultas de tendências', () => {
     });
   });
 
+  it('calcula a base do ranking dentro do período atual sem misturar o período anterior', () => {
+    const currentRecent = {
+      ...productRow(1, '2026-09-25T12:00:00.000Z'),
+      product_id: 'produto-unico',
+    };
+    const currentBaseline = {
+      ...productRow(2, '2026-09-10T12:00:00.000Z'),
+      product_id: 'produto-unico',
+    };
+    const previousPeriod = {
+      ...productRow(3, '2026-08-25T12:00:00.000Z'),
+      product_id: 'produto-unico',
+    };
+
+    const snapshot = buildTrendsSnapshot(
+      { views: [currentRecent, currentBaseline, previousPeriod], searches: [] },
+      {
+        sinceCurrent: '2026-09-01T00:00:00.000Z',
+        recentCutoff: '2026-09-20T00:00:00.000Z',
+        days: 30,
+        referenceDate: new Date('2026-09-30T12:00:00.000Z'),
+      },
+    );
+
+    expect(snapshot.products[0]).toMatchObject({
+      id: 'produto-unico',
+      views: 2,
+      recentViews: 1,
+      baselineViews: 1,
+      classification: 'rising',
+    });
+  });
+
   it('usa o último par created_at/id como cursor da página seguinte', async () => {
     const firstPage = Array.from({ length: 1000 }, (_, index) => productRow(index));
     const firstQuery = query(firstPage);
