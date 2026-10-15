@@ -44,10 +44,18 @@ export function AIMockupAssistant({ productName, techniqueName, className }: AIM
         </motion.div>
       )}
       <motion.div hidden={!isOpen} initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} className={cn("fixed z-50 shadow-2xl rounded-2xl border bg-background overflow-hidden bottom-24 right-4 md:bottom-6", isMinimized ? "w-72 h-14" : "w-80 sm:w-96 h-[500px] max-h-[70vh]", className)}>
-        <div className="flex items-center gap-3 p-3 border-b bg-primary/15 cursor-pointer" onClick={() => setIsMinimized((value) => !value)}>
-          <div className="p-2 rounded-lg bg-primary/25"><Bot className="h-4 w-4 text-primary" /></div>
-          <div className="flex-1 min-w-0"><h3 className="font-display font-semibold text-sm">Assistente de Layouts</h3>{!isMinimized && <p className="text-xs text-muted-foreground truncate">Respostas geradas pela IA do portal</p>}</div>
-          <Badge variant="secondary" className="text-[10px]">Beta</Badge>
+        <div className="flex items-center gap-3 border-b bg-primary/15 p-3">
+          <button
+            type="button"
+            className="flex min-w-0 flex-1 items-center gap-3 text-left"
+            aria-expanded={!isMinimized}
+            aria-label={isMinimized ? "Expandir assistente de layouts" : "Minimizar assistente de layouts"}
+            onClick={() => setIsMinimized((value) => !value)}
+          >
+            <span className="rounded-lg bg-primary/25 p-2"><Bot className="h-4 w-4 text-primary" /></span>
+            <span className="min-w-0 flex-1"><span className="block font-display text-sm font-semibold">Assistente de Layouts</span>{!isMinimized && <span className="block truncate text-xs text-muted-foreground">Respostas geradas pela IA do portal</span>}</span>
+            <Badge variant="secondary" className="text-[10px]">Beta</Badge>
+          </button>
           <Button variant="ghost" size="icon" aria-label="Fechar" className="h-7 w-7" onClick={(event) => { event.stopPropagation(); setIsOpen(false); }}><X className="h-4 w-4" /></Button>
         </div>
         <AIChat

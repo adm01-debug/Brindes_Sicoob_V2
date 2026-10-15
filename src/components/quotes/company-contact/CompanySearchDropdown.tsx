@@ -59,7 +59,7 @@ function CompanyDetails({
   const showRazao = Boolean(company.razao_social && company.razao_social !== company.name);
   return (
     <div className="flex min-w-0 flex-1 flex-col">
-      <span className={cn('truncate font-medium', compact ? 'text-sm' : 'text-sm')}>
+      <span className={cn('truncate font-medium', compact ? 'text-xs' : 'text-sm')}>
         {company.name}
       </span>
       <div className="flex items-center gap-1.5">

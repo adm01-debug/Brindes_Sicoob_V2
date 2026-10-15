@@ -800,7 +800,7 @@ async function handleSelect(crm: SupabaseClient, body: CrmQuery): Promise<Respon
   
   console.log(
     `[SELECT] table=${table}, fields=${selectFields.split(",").length}, ` +
-      `filter_keys=${filters ? Object.keys(filters).sort().join(",") : "none"}, limit=${limit ?? "default"}`,
+      `filter_keys=${filters ? Object.keys(filters).sort((left, right) => left.localeCompare(right, "pt-BR")).join(",") : "none"}, limit=${limit ?? "default"}`,
   );
   
   let query = crm.from(table).select(selectFields, {

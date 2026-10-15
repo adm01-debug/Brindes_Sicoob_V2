@@ -60,7 +60,7 @@ O advisor de performance deixou de apontar `search_analytics` após a consolida�
 
 ## Edge Functions publicadas
 
-O deploy individual evitou o limite do endpoint em lote sem criar funções novas. O ambiente remoto confirmou `ACTIVE` para `crm-db-bridge` v12, `expert-chat` v11 e `trends-insights` v8. O smoke test retornou HTTP 200 no ping agregado do CRM. A nova operação `quote_directory` recusou uma chamada sem sessão com HTTP 403, sem expor dados.
+O deploy individual evitou o limite do endpoint em lote sem criar funções novas. O ambiente remoto confirmou `ACTIVE` para `crm-db-bridge` v13, `expert-chat` v11 e `trends-insights` v8. O smoke test retornou HTTP 200 no ping agregado do CRM. A nova operação `quote_directory` recusou uma chamada sem sessão com HTTP 403, sem expor dados.
 
 ## Condições externas
 
