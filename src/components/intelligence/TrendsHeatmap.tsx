@@ -7,6 +7,7 @@ import { isDemoMode } from "@/pages/trends/is-demo-mode";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Activity } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { untypedFrom } from "@/lib/supabase-untyped";
 import { subDays } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -21,17 +22,24 @@ export function TrendsHeatmap({ days }: TrendsHeatmapProps) {
   const since = subDays(new Date(), days).toISOString();
   const demo = isDemoMode();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: ["trends-heatmap", days, demo],
     queryFn: async () => {
       if (demo) {
         const { buildMockHeatmap } = await import("@/pages/trends/trends-mock");
         return buildMockHeatmap();
       }
-      const [{ data: views }, { data: searches }] = await Promise.all([
+      const [viewsResult, searchesResult] = await Promise.all([
         untypedFrom<{ created_at: string }>("product_views").select("created_at").gte("created_at", since),
         untypedFrom<{ created_at: string }>("search_analytics").select("created_at").gte("created_at", since),
       ]);
+      const failedSources = [
+        viewsResult.error && "visualizações",
+        searchesResult.error && "buscas",
+      ].filter(Boolean);
+      if (failedSources.length > 0) {
+        throw new Error(`Falha ao consultar ${failedSources.join(" e ")}.`);
+      }
       // matriz [day][hour]
       const matrix: number[][] = Array.from({ length: 7 }, () => Array(24).fill(0));
       const fill = (rows: Array<{ created_at: string }> | null) => {
@@ -42,10 +50,10 @@ export function TrendsHeatmap({ days }: TrendsHeatmapProps) {
           if (row) row[hour] = (row[hour] ?? 0) + 1;
         });
       };
-      fill(views);
-      fill(searches);
+      fill(viewsResult.data);
+      fill(searchesResult.data);
       const flat = matrix.flat();
-      const max = Math.max(...flat, 1);
+      const max = Math.max(...flat);
       return { matrix, max };
     },
   });
@@ -62,9 +70,21 @@ export function TrendsHeatmap({ days }: TrendsHeatmapProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {isError && (
+          <div role="alert" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
+            <span>
+              {data
+                ? "Não foi possível atualizar o mapa. Os dados anteriores continuam exibidos."
+                : "Não foi possível carregar os dados do mapa de calor."}
+            </span>
+            <Button variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
+              {isFetching ? "Tentando…" : "Tentar novamente"}
+            </Button>
+          </div>
+        )}
         {isLoading ? (
           <Skeleton className="h-[260px] w-full" />
-        ) : !data || data.max === 0 ? (
+        ) : isError && !data ? null : !data || data.max === 0 ? (
           <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm">
             Sem dados suficientes para o mapa de calor
           </div>

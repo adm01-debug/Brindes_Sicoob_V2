@@ -32,6 +32,11 @@ export interface Product {
   colors?: ProductColor[];
 }
 
+/** Preço zero ou negativo indica cadastro inválido para cotação do catálogo. */
+export function hasValidSalePrice(price: unknown): price is number {
+  return typeof price === "number" && Number.isFinite(price) && price > 0;
+}
+
 // ============================================
 // TÉCNICA DO PRODUTO
 // ============================================

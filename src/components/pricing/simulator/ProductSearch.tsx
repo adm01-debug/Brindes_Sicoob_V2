@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Search, Package, X } from 'lucide-react';
 import { formatCurrency } from './utils';
-import type { Product } from './types';
+import { hasValidSalePrice, type Product } from './types';
 
 interface ProductSearchProps {
   onSelect: (product: Product | null) => void;
@@ -100,8 +100,8 @@ export function ProductSearch({ onSelect, selectedProduct }: ProductSearchProps)
       id: p.id,
       name: p.name,
       sku: p.sku,
-      price: typeof p.sale_price === 'number' && Number.isFinite(p.sale_price) ? p.sale_price : 0,
-      priceAvailable: typeof p.sale_price === 'number' && Number.isFinite(p.sale_price),
+      price: hasValidSalePrice(p.sale_price) ? p.sale_price : 0,
+      priceAvailable: hasValidSalePrice(p.sale_price),
       images: p.images || (p.primary_image_url ? [p.primary_image_url] : []),
       category_name: null,
       supplier_reference: p.supplier_reference,
