@@ -71,12 +71,19 @@ function getExecutiveAvailability(data: ExecutiveData) {
   const failedPptxSources: UnavailableSource[] = pptxSources
     .filter((source) => source.failed)
     .map(({ name, retry }) => ({ name, retry: async () => { await retry?.(); } }));
+  if (data.health.isError && failedCommonSources.length === 0) {
+    failedCommonSources.push({
+      name: "score de saúde",
+      retry: async () => { await data.health.refetch?.(); },
+    });
+  }
 
   return {
     loadingCopy: commonSources.some((source) => source.loading) || data.health.isLoading,
     loadingPptx: commonSources.some((source) => source.loading) || pptxSources.some((source) => source.loading) || data.health.isLoading,
     failedCopy: failedCommonSources,
     failedPptx: [...failedCommonSources, ...failedPptxSources],
+    healthUnavailable: data.health.tier === "unknown",
   };
 }
 
@@ -89,11 +96,14 @@ function buildSummary(data: ExecutiveData): string {
   const { health, bi, affinity, trends, seas, clientName, ramoAtividade } = data;
   const tier = HEALTH_LABELS[health.tier] ?? "sem classificação";
   const lastOrder = lastOrderSuffix(bi.daysSinceLastOrder);
+  const opportunity = health.tier === "unknown"
+    ? "▸ Oportunidade: indisponível até haver dados suficientes para uma estimativa confiável."
+    : `▸ Oportunidade: share-of-wallet estimado em ${health.shareOfWalletPct}% (potencial não capturado: ${fmtBRL(health.potentialUntappedBRL)}). ${health.windowLabel}. Próxima ação: ${health.nextActionLabel} — ${health.nextActionDetail}`;
   return [
     `📊 Resumo executivo — ${clientName}${ramoSuffix(ramoAtividade)}`, "",
     `▸ Saúde: cliente ${tier}${health.tier === "unknown" ? " (pontuação indisponível)" : ` (Health Score ${health.score}/100)`}. ${health.crossZoneInsight}`, "",
     `▸ Histórico: LTV ${fmtBRL(bi.ltv)} em ${bi.ordersCount} pedidos · ticket médio ${fmtBRL(bi.avgTicket)}${lastOrder}. Categoria forte: ${topCategory(affinity.data)}.`, "",
-    `▸ Oportunidade: share-of-wallet estimado em ${health.shareOfWalletPct}% (potencial não capturado: ${fmtBRL(health.potentialUntappedBRL)}). ${health.windowLabel}. Próxima ação: ${health.nextActionLabel} — ${health.nextActionDetail}`, "",
+    opportunity, "",
     `▸ Setor: top tendência atual é "${topTrend(trends.data)}". ${seas.insight ?? ""}`, "", `📞 Script: "${health.scriptHint}"`,
   ].join("\n");
 }
@@ -146,6 +156,9 @@ function getAvailabilityMessage(availability: ReturnType<typeof getExecutiveAvai
   if (pptxOnlyFailures.length > 0) {
     return `PPTX indisponível: falha em ${pptxOnlyFailures.map((source) => source.name).join(", ")}. O resumo para copiar continua disponível.`;
   }
+  if (availability.healthUnavailable) {
+    return "Resumo indisponível: dados insuficientes para calcular o Health Score, o share-of-wallet e o potencial não capturado.";
+  }
   return null;
 }
 
@@ -163,13 +176,14 @@ function SummaryTriggerContent({ busy, loading, statusMessage }: {
   return <>{icon}{label}</>;
 }
 
-function SummaryAvailabilityNotice({ statusMessage, busy, onRetry }: {
+function SummaryAvailabilityNotice({ statusMessage, busy, onRetry, canRetry }: {
   statusMessage: string | null;
   busy: "copy" | "pptx" | "retry" | null;
   onRetry: () => void;
+  canRetry: boolean;
 }) {
   if (!statusMessage) return null;
-  return <><div role="alert" className="px-2 py-2 text-xs text-destructive">{statusMessage}</div><DropdownMenuItem onClick={onRetry} disabled={busy !== null} className="gap-2"><RotateCcw className="h-4 w-4" /><span>{busy === "retry" ? "Atualizando fontes…" : "Tentar novamente"}</span></DropdownMenuItem><DropdownMenuSeparator /></>;
+  return <><div role="alert" className="px-2 py-2 text-xs text-destructive">{statusMessage}</div>{canRetry && <DropdownMenuItem onClick={onRetry} disabled={busy !== null} className="gap-2"><RotateCcw className="h-4 w-4" /><span>{busy === "retry" ? "Atualizando fontes…" : "Tentar novamente"}</span></DropdownMenuItem>}<DropdownMenuSeparator /></>;
 }
 
 function SummaryMenu({
@@ -183,13 +197,14 @@ function SummaryMenu({
 }) {
   const loading = availability.loadingCopy;
   const statusMessage = getAvailabilityMessage(availability);
+  const canRetry = availability.failedCopy.length > 0 || availability.failedPptx.length > 0;
 
   return (
     <DropdownMenu><DropdownMenuTrigger asChild><Button size="sm" variant="outline" className="gap-1.5" disabled={busy !== null || loading}><SummaryTriggerContent busy={busy} loading={loading} statusMessage={statusMessage} /></Button></DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56"><DropdownMenuLabel className="text-xs">Resumo executivo</DropdownMenuLabel><DropdownMenuSeparator />
-        <SummaryAvailabilityNotice statusMessage={statusMessage} busy={busy} onRetry={onRetry} />
-        <DropdownMenuItem onClick={onCopy} disabled={busy !== null || availability.loadingCopy || availability.failedCopy.length > 0} className="gap-2"><Copy className="h-4 w-4" /><div className="flex flex-col"><span className="text-sm">Copiar para WhatsApp</span><span className="text-[10px] text-muted-foreground">3 parágrafos prontos</span></div></DropdownMenuItem>
-        <DropdownMenuItem onClick={onPptx} disabled={busy !== null || availability.loadingPptx || availability.failedPptx.length > 0} className="gap-2"><Presentation className="h-4 w-4" /><div className="flex flex-col"><span className="text-sm">Exportar PPTX (5 slides)</span><span className="text-[10px] text-muted-foreground">Para reunião comercial</span></div></DropdownMenuItem>
+        <SummaryAvailabilityNotice statusMessage={statusMessage} busy={busy} onRetry={onRetry} canRetry={canRetry} />
+        <DropdownMenuItem onClick={onCopy} disabled={busy !== null || availability.loadingCopy || availability.failedCopy.length > 0 || availability.healthUnavailable} className="gap-2"><Copy className="h-4 w-4" /><div className="flex flex-col"><span className="text-sm">Copiar para WhatsApp</span><span className="text-[10px] text-muted-foreground">3 parágrafos prontos</span></div></DropdownMenuItem>
+        <DropdownMenuItem onClick={onPptx} disabled={busy !== null || availability.loadingPptx || availability.failedPptx.length > 0 || availability.healthUnavailable} className="gap-2"><Presentation className="h-4 w-4" /><div className="flex flex-col"><span className="text-sm">Exportar PPTX (5 slides)</span><span className="text-[10px] text-muted-foreground">Para reunião comercial</span></div></DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -27,6 +27,10 @@ export interface HealthScoreBreakdown {
 
 export interface ClientHealthScoreResult {
   isLoading: boolean;
+  isError: boolean;
+  error: unknown;
+  refetch: () => Promise<unknown>;
+  unavailableReason: "source-error" | "insufficient-data" | null;
   score: number; // 0-100
   tier: HealthTier;
   breakdown: HealthScoreBreakdown;
@@ -109,10 +113,31 @@ function shareMetrics(ticketMetric: ComparisonMetric | undefined, bi: ClientBiDa
   };
 }
 
-function unavailableHealthResult(isLoading: boolean): ClientHealthScoreResult {
+function healthRefetch(
+  bi: ClientBiData,
+  vs: IndustryComparison,
+  seasonality: ClientSeasonality,
+): () => Promise<unknown> {
+  return async () => Promise.allSettled([
+    bi.refetch?.(),
+    vs.refetch?.(),
+    seasonality.refetch?.(),
+  ]);
+}
+
+function unavailableHealthResult(
+  isLoading: boolean,
+  sources: [ClientBiData, IndustryComparison, ClientSeasonality],
+  sourceError: unknown = null,
+): ClientHealthScoreResult {
   const unavailable = { score: 0, weight: 0, label: "Dados insuficientes" };
+  const isError = sourceError !== null && sourceError !== undefined;
   return {
     isLoading,
+    isError,
+    error: sourceError,
+    refetch: healthRefetch(...sources),
+    unavailableReason: isLoading ? null : isError ? "source-error" : "insufficient-data",
     score: 0,
     tier: "unknown",
     breakdown: {
@@ -137,6 +162,17 @@ function unavailableHealthResult(isLoading: boolean): ClientHealthScoreResult {
 
 function isHealthScoreSourceUnavailable(bi: ClientBiData, vs: IndustryComparison): boolean {
   return bi.isUnavailable || vs.isError || !vs.hasEnoughSample;
+}
+
+function healthSourceError(
+  bi: ClientBiData,
+  vs: IndustryComparison,
+  seasonality: ClientSeasonality,
+): unknown {
+  if (bi.isUnavailable) return bi.error ?? new Error("Histórico do cliente indisponível");
+  if (vs.isError) return vs.error ?? new Error("Benchmark do setor indisponível");
+  if (seasonality.isError) return seasonality.error ?? new Error("Sazonalidade indisponível");
+  return null;
 }
 
 function nextAction(
@@ -266,20 +302,27 @@ export function buildHealthResult(
   vs: IndustryComparison,
   seasonality: ClientSeasonality,
 ): ClientHealthScoreResult {
+  const sources: [ClientBiData, IndustryComparison, ClientSeasonality] = [bi, vs, seasonality];
   const isLoading = bi.isLoading || vs.isLoading || seasonality.isLoading;
-  if (isLoading) return unavailableHealthResult(true);
+  if (isLoading) return unavailableHealthResult(true, sources);
+  const sourceError = healthSourceError(bi, vs, seasonality);
+  if (sourceError) return unavailableHealthResult(false, sources, sourceError);
   // A falha do histórico não pode ser interpretada como zero compras/risco.
   // Sem benchmark não é possível validar o score global: recência e sazonalidade
   // podem ser reais, mas não substituem a comparação setorial que o score promete.
-  if (isHealthScoreSourceUnavailable(bi, vs)) return unavailableHealthResult(false);
+  if (isHealthScoreSourceUnavailable(bi, vs)) return unavailableHealthResult(false, sources);
   const { components, recency, frequency, ticket, growth, share, ticketMetric, availableWeight } = getScoreComponents(bi, vs, seasonality);
-  if (availableWeight === 0) return unavailableHealthResult(false);
+  if (availableWeight === 0) return unavailableHealthResult(false, sources);
   const score = weightedScore(components, availableWeight);
   const [recencyWeight, frequencyWeight, ticketWeight, growthWeight, shareWeight] = normalizedWeights(components, availableWeight);
   const action = nextAction(recency, ticket, growth.growthPct, share.sharePct, share.potentialUntapped, bi, seasonality);
   const hasUpcomingPeak = seasonality.daysToNextPeak !== null && seasonality.daysToNextPeak <= 30;
   return {
     isLoading,
+    isError: false,
+    error: null,
+    refetch: healthRefetch(...sources),
+    unavailableReason: null,
     score,
     tier: tierFromScore(score),
     breakdown: {

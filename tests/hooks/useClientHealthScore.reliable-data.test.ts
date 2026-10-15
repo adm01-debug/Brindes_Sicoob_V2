@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { buildHealthResult, getAvailableHealthScore } from '@/hooks/bi/useClientHealthScore';
 
@@ -29,6 +29,8 @@ describe('score de saúde com fonte comprovada', () => {
     );
 
     expect(result).toMatchObject({
+      isError: false,
+      unavailableReason: 'insufficient-data',
       score: 0,
       tier: 'unknown',
       shareOfWalletPct: 0,
@@ -125,15 +127,27 @@ describe('score de saúde com fonte comprovada', () => {
     expect(result.breakdown.frequency.weight).toBeGreaterThan(0);
   });
 
-  it('não gera classificação de risco quando o histórico do cliente falha', () => {
+  it('propaga falha e refetch das fontes sem gerar classificação de risco', async () => {
+    const refetchHistory = vi.fn(async () => undefined);
+    const refetchBenchmark = vi.fn(async () => undefined);
+    const refetchSeasonality = vi.fn(async () => undefined);
+    const sourceError = new Error('histórico indisponível');
     const result = buildHealthResult(
-      { hasData: false, isUnavailable: true, isLoading: false } as never,
-      { hasEnoughSample: true, isLoading: false, metrics: [] } as never,
-      { hasEnoughData: false, isLoading: false, client: [] } as never,
+      { hasData: false, isUnavailable: true, isLoading: false, error: sourceError, refetch: refetchHistory } as never,
+      { hasEnoughSample: true, isLoading: false, isError: false, metrics: [], refetch: refetchBenchmark } as never,
+      { hasEnoughData: false, isLoading: false, isError: false, client: [], refetch: refetchSeasonality } as never,
     );
 
     expect(result.tier).toBe('unknown');
+    expect(result.isError).toBe(true);
+    expect(result.error).toBe(sourceError);
+    expect(result.unavailableReason).toBe('source-error');
     expect(getAvailableHealthScore(result)).toBeNull();
+
+    await result.refetch();
+    expect(refetchHistory).toHaveBeenCalledOnce();
+    expect(refetchBenchmark).toHaveBeenCalledOnce();
+    expect(refetchSeasonality).toHaveBeenCalledOnce();
   });
 
   it('não publica score global quando a consulta do benchmark falha, mesmo com recência e sazonalidade reais', () => {

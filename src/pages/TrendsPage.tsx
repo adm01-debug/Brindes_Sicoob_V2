@@ -1,8 +1,11 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 // import { MainLayout } from "@/components/layout/MainLayout";
-import { supabase } from '@/integrations/supabase/client';
-import { loadTrendsActivity } from './trends/trends-queries';
+import {
+  loadProductViewActivity,
+  loadSearchActivity,
+  loadTrendsActivity,
+} from './trends/trends-queries';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
@@ -183,15 +186,8 @@ function rankProductTrends(productMap: Map<string, AggregatedProduct>, days: num
 }
 
 async function loadTopProducts(input: ProductTrendQueryInput): Promise<AggregatedProduct[]> {
-  let query = supabase
-    .from('product_views')
-    .select('product_id, product_name, product_sku, view_type, created_at, seller_id')
-    .gte('created_at', input.sincePrevious)
-    .order('created_at', { ascending: false });
-  if (input.sellerScope) query = query.eq('seller_id', input.sellerScope);
-  const { data, error } = await query;
-  if (error) throw error;
-  return rankProductTrends(aggregateProductViews(data ?? [], input), input.days);
+  const data = await loadProductViewActivity(input.sincePrevious, input.sellerScope);
+  return rankProductTrends(aggregateProductViews(data, input), input.days);
 }
 
 function useTrendsControls() {
@@ -283,14 +279,7 @@ function resolveLoading(input: TrendLoadingInput) {
 type TrendsControls = ReturnType<typeof useTrendsControls>;
 
 async function loadTopSearches(controls: TrendsControls) {
-  let query = supabase
-    .from('search_analytics')
-    .select('search_term, results_count, created_at, user_id')
-    .gte('created_at', controls.sincePrevious)
-    .order('created_at', { ascending: false });
-  if (controls.sellerScope) query = query.eq('user_id', controls.sellerScope);
-  const { data, error } = await query;
-  if (error) throw error;
+  const data = await loadSearchActivity(controls.sincePrevious, controls.sellerScope);
   const current = new Map<string, { count: number; totalResults: number }>();
   (data ?? []).forEach((row: SearchRow) => {
     const term = (row.search_term ?? '').toLowerCase().trim();

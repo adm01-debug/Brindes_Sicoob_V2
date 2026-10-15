@@ -73,4 +73,27 @@ describe("disponibilidade do resumo executivo", () => {
     expect(screen.getByRole("menuitem", { name: /Copiar para WhatsApp/i })).not.toHaveAttribute("data-disabled");
     expect(screen.getByRole("menuitem", { name: /Exportar PPTX/i })).toHaveAttribute("data-disabled");
   });
+
+  it("não publica zeros sentinela quando o Health Score não possui amostra suficiente", async () => {
+    makeHooks({
+      health: {
+        tier: "unknown",
+        score: 0,
+        shareOfWalletPct: 0,
+        potentialUntappedBRL: 0,
+        isError: false,
+        unavailableReason: "insufficient-data",
+      },
+    });
+    renderWithProviders(<ExecutiveSummaryButton clientId="cliente-1" clientName="Cooperativa" ramoAtividade="Crédito" />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /Resumo indisponível/i }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(/dados insuficientes/i);
+    expect(screen.getByRole("menuitem", { name: /Copiar para WhatsApp/i })).toHaveAttribute("data-disabled");
+    expect(screen.getByRole("menuitem", { name: /Exportar PPTX/i })).toHaveAttribute("data-disabled");
+    expect(screen.queryByRole("menuitem", { name: /Tentar novamente/i })).toBeNull();
+    expect(mocks.generateBIPptx).not.toHaveBeenCalled();
+  });
 });

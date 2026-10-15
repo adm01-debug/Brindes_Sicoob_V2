@@ -3,14 +3,15 @@ import { useQuery } from "@tanstack/react-query";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClipboardCheck, LayoutGrid, Layers, Bell, Package } from "lucide-react";
-import { ApprovalKanbanBoard } from "@/components/orders/ApprovalKanbanBoard";
+import { AlertCircle, Bell, ClipboardCheck, LayoutGrid, Layers, Package, RefreshCw } from "lucide-react";
 import { OrderConsolidationPanel } from "@/components/orders/OrderConsolidationPanel";
 import { SmartAlertsPanel } from "@/components/orders/SmartAlertsPanel";
-import { OrdersPage } from "./OrdersPage";
+import SicoobOrdersKanbanPage from "./sicoob/orders/OrdersKanbanPage";
+import SicoobOrdersPage from "./sicoob/orders/OrdersPage";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { formatCurrency } from "@/utils/quote-calculations";
 import { mapLatestManagerSubmissionTimes } from "@/lib/orders/purchasing-sla";
 import type { OrderStatus } from "@/types/sicoob/orders";
@@ -156,7 +157,55 @@ function usePurchasingDashboardMetrics(userId?: string) {
     pendingSlaEventsQuery.data ?? undefined,
   );
 
-  return { metrics, slaEventsQuery: pendingSlaEventsQuery };
+  return { metrics, pendingQuery, monthlyQuery, slaEventsQuery: pendingSlaEventsQuery };
+}
+
+type MetricsQueryState = {
+  isError: boolean;
+  error: unknown;
+  isFetching: boolean;
+  refetch: () => Promise<unknown>;
+};
+
+function MetricsQueryError({
+  pendingQuery,
+  monthlyQuery,
+  historyQuery,
+}: {
+  pendingQuery: MetricsQueryState;
+  monthlyQuery: MetricsQueryState;
+  historyQuery: MetricsQueryState;
+}) {
+  const failedQueries = [
+    { label: "fila de pendências", query: pendingQuery },
+    { label: "resumo mensal", query: monthlyQuery },
+    { label: "histórico de aprovação", query: historyQuery },
+  ].filter(({ query }) => query.isError || Boolean(query.error));
+
+  if (failedQueries.length === 0) return null;
+
+  const isRetrying = failedQueries.some(({ query }) => query.isFetching);
+  const failedLabels = failedQueries.map(({ label }) => label).join(", ");
+
+  return (
+    <Alert variant="destructive" role="alert" data-testid="purchasing-metrics-error">
+      <AlertCircle className="h-4 w-4" />
+      <AlertTitle>Não foi possível atualizar os indicadores de compras</AlertTitle>
+      <AlertDescription className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <span>Consultas indisponíveis: {failedLabels}. Os valores afetados permanecem como indisponíveis.</span>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={isRetrying}
+          onClick={() => void Promise.all(failedQueries.map(({ query }) => query.refetch()))}
+        >
+          <RefreshCw className={`mr-2 h-4 w-4 ${isRetrying ? "animate-spin" : ""}`} />
+          {isRetrying ? "Tentando novamente…" : "Tentar novamente"}
+        </Button>
+      </AlertDescription>
+    </Alert>
+  );
 }
 
 function ApprovalSlaCard({ metrics, isLoading, hasError }: {
@@ -211,7 +260,7 @@ export default function GestorCompras() {
   const { profile, user } = useAuth();
   // A página de compras usa o domínio canônico. As políticas RLS de
   // sicoob_orders e sicoob_order_history limitam as linhas ao escopo do ator.
-  const { metrics, slaEventsQuery } = usePurchasingDashboardMetrics(user?.id);
+  const { metrics, pendingQuery, monthlyQuery, slaEventsQuery } = usePurchasingDashboardMetrics(user?.id);
 
   return (
     <>
@@ -224,6 +273,12 @@ export default function GestorCompras() {
             <p className="text-muted-foreground text-sm">Aprovação, consolidação e monitoramento de pedidos.</p>
           </div>
         </div>
+
+        <MetricsQueryError
+          pendingQuery={pendingQuery}
+          monthlyQuery={monthlyQuery}
+          historyQuery={slaEventsQuery}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
@@ -259,11 +314,11 @@ export default function GestorCompras() {
               </TabsContent>
 
               <TabsContent value="kanban" className="mt-6 border border-border/50 rounded-2xl bg-card/30 p-4">
-                 <ApprovalKanbanBoard />
+                 <SicoobOrdersKanbanPage />
               </TabsContent>
 
               <TabsContent value="orders" className="mt-6">
-                 <OrdersPage />
+                 <SicoobOrdersPage />
               </TabsContent>
 
               <TabsContent value="consolidation" className="mt-6">
