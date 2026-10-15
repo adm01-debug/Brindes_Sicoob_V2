@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutGrid, TrendingUp, Store, BarChart3, PieChart as PieChartIcon } from "lucide-react";
+import { AlertCircle, LayoutGrid, TrendingUp, Store, BarChart3, PieChart as PieChartIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,6 +25,25 @@ interface CategoryPieDatum {
 interface CategoryTooltipProps {
   active?: boolean;
   payload?: Array<{ payload: CategoryPieDatum }>;
+  pieData: CategoryPieDatum[];
+  formatCurrency: (value: number) => string;
+  formatNumber: (value: number) => string;
+}
+
+function CategoryTooltipContent({ active, payload, pieData, formatCurrency, formatNumber }: CategoryTooltipProps) {
+  if (!active || !payload?.length) return null;
+  const datum = payload[0]?.payload;
+  if (!datum) return null;
+  const total = pieData.reduce((sum, item) => sum + item.value, 0);
+  const percent = total > 0 ? ((datum.value / total) * 100).toFixed(1) : '0';
+  return (
+    <div className="bg-popover border border-border rounded-lg px-3 py-2 shadow-lg text-xs space-y-1">
+      <p className="font-semibold text-foreground">{datum.fullName}</p>
+      <div className="flex items-center gap-1.5"><TrendingUp className="h-3 w-3 text-success" /><span>Interno: {formatCurrency(datum.internalRevenue)}</span></div>
+      <div className="flex items-center gap-1.5"><Store className="h-3 w-3 text-primary" /><span>Mercado: {formatNumber(datum.marketDepleted)} un.</span></div>
+      <p className="text-muted-foreground">{percent}% do total</p>
+    </div>
+  );
 }
 
 const PIE_COLORS = [
@@ -40,6 +59,12 @@ const PIE_COLORS = [
   "hsl(340, 82%, 52%)",
 ];
 
+const MODE_LABELS: Record<SortMode, string> = {
+  combined: "Combinado",
+  internal: "Receita Interna",
+  market: "Volume Mercado",
+};
+
 interface CategoryRankingProps {
   days?: number;
   categoryId?: string | null;
@@ -48,10 +73,102 @@ interface CategoryRankingProps {
   categoryName?: string | null;
 }
 
+function CategoryRankingError({
+  isError,
+  hasData,
+  isFetching,
+  onRetry,
+}: {
+  isError: boolean;
+  hasData: boolean;
+  isFetching: boolean;
+  onRetry: () => void;
+}) {
+  if (!isError) return null;
+  return (
+    <div role="alert" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
+      <div className="flex items-start gap-2 text-destructive">
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+        <p>{hasData ? "Falha ao atualizar o ranking. Os últimos dados carregados permanecem visíveis." : "Não foi possível carregar o ranking combinado de categorias."}</p>
+      </div>
+      <Button size="sm" variant="outline" disabled={isFetching} onClick={onRetry}>
+        {isFetching ? "Tentando…" : "Tentar novamente"}
+      </Button>
+    </div>
+  );
+}
+
+function CategoryRankingHeader({
+  days,
+  categoryName,
+  sortMode,
+  viewMode,
+  onSortModeChange,
+  onToggleView,
+}: {
+  days: number;
+  categoryName?: string | null;
+  sortMode: SortMode;
+  viewMode: ViewMode;
+  onSortModeChange: (mode: SortMode) => void;
+  onToggleView: () => void;
+}) {
+  return (
+    <CardHeader className="pb-3">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <CardTitle className="text-base flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg skin-icon flex items-center justify-center"><LayoutGrid className="h-3.5 w-3.5" /></div>
+            🏆 Ranking de Categorias
+          </CardTitle>
+          <CardDescription className="text-xs mt-0.5">
+            {categoryName ? `Sub-categorias de "${categoryName}"` : 'Categorias mais vendidas'} · {MODE_LABELS[sortMode].toLowerCase()} · {days} dias
+          </CardDescription>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" aria-label="PieChartIcon" className="h-7 w-7" onClick={onToggleView} title={viewMode === "list" ? "Ver gráfico" : "Ver lista"}>
+            {viewMode === "list" ? <PieChartIcon className="h-3.5 w-3.5" /> : <BarChart3 className="h-3.5 w-3.5" />}
+          </Button>
+          <ToggleGroup
+            type="single"
+            value={sortMode}
+            onValueChange={(value) => value && onSortModeChange(value as SortMode)}
+            className="bg-muted/50 rounded-lg p-0.5"
+          >
+            <ToggleGroupItem value="combined" className="text-[10px] px-2 py-1 h-6 data-[state=on]:bg-background data-[state=on]:shadow-sm">Combinado</ToggleGroupItem>
+            <ToggleGroupItem value="internal" className="text-[10px] px-2 py-1 h-6 data-[state=on]:bg-background data-[state=on]:shadow-sm gap-1"><TrendingUp className="h-2.5 w-2.5" />Interno</ToggleGroupItem>
+            <ToggleGroupItem value="market" className="text-[10px] px-2 py-1 h-6 data-[state=on]:bg-background data-[state=on]:shadow-sm gap-1"><Store className="h-2.5 w-2.5" />Mercado</ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+      </div>
+    </CardHeader>
+  );
+}
+
+function CategoryRankingUnavailable({
+  categoryName,
+  isFetching,
+  onRetry,
+}: {
+  categoryName?: string | null;
+  isFetching: boolean;
+  onRetry: () => void;
+}) {
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2"><LayoutGrid className="h-4 w-4 text-primary" />Ranking de Categorias</CardTitle>
+        <CardDescription>{categoryName ? `Sub-categorias de "${categoryName}"` : "Dados de vendas e mercado necessários para calcular o score combinado."}</CardDescription>
+      </CardHeader>
+      <CardContent><CategoryRankingError isError hasData={false} isFetching={isFetching} onRetry={onRetry} /></CardContent>
+    </Card>
+  );
+}
+
 export function CategoryRanking({ days = 30, categoryId, supplierId, productId, categoryName }: CategoryRankingProps) {
   const [sortMode, setSortMode] = useState<SortMode>("combined");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
-  const { data: categories, isLoading } = useCategoryRanking(days, categoryId, supplierId, productId);
+  const { data: categories, isLoading, isError, isFetching, refetch } = useCategoryRanking(days, categoryId, supplierId, productId);
 
   const formatCurrency = (v: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(v);
@@ -127,6 +244,9 @@ export function CategoryRanking({ days = 30, categoryId, supplierId, productId, 
       </Card>
     );
   }
+  if (isError && !categories) {
+    return <CategoryRankingUnavailable categoryName={categoryName} isFetching={isFetching} onRetry={() => void refetch()} />;
+  }
 
   const hasData = sortedCategories.length > 0;
   const maxVal = hasData ? Math.max(...sortedCategories.map(getBarValue)) : 0;
@@ -136,81 +256,11 @@ export function CategoryRanking({ days = 30, categoryId, supplierId, productId, 
 
   const medalEmojis = ['🥇', '🥈', '🥉'];
 
-  const modeLabels: Record<SortMode, string> = {
-    combined: "Combinado",
-    internal: "Receita Interna",
-    market: "Volume Mercado",
-  };
-
-  const CustomTooltipContent = ({ active, payload }: CategoryTooltipProps) => {
-    if (!active || !payload?.length) return null;
-    const d = payload[0]?.payload;
-    if (!d) return null;
-    const total = pieData.reduce((s, p) => s + p.value, 0);
-    const pct = total > 0 ? ((d.value / total) * 100).toFixed(1) : '0';
-    return (
-      <div className="bg-popover border border-border rounded-lg px-3 py-2 shadow-lg text-xs space-y-1">
-        <p className="font-semibold text-foreground">{d.fullName}</p>
-        <div className="flex items-center gap-1.5">
-           <TrendingUp className="h-3 w-3 text-success" />
-          <span>Interno: {formatCurrency(d.internalRevenue)}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-           <Store className="h-3 w-3 text-primary" />
-          <span>Mercado: {formatNumber(d.marketDepleted)} un.</span>
-        </div>
-        <p className="text-muted-foreground">{pct}% do total</p>
-      </div>
-    );
-  };
-
   return (
     <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div>
-            <CardTitle className="text-base flex items-center gap-2">
-               <div className="w-7 h-7 rounded-lg skin-icon flex items-center justify-center">
-                 <LayoutGrid className="h-3.5 w-3.5" />
-               </div>
-              🏆 Ranking de Categorias
-            </CardTitle>
-            <CardDescription className="text-xs mt-0.5">
-              {categoryName ? `Sub-categorias de "${categoryName}"` : 'Categorias mais vendidas'} · {modeLabels[sortMode].toLowerCase()} · {days} dias
-            </CardDescription>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon" aria-label="PieChartIcon"
-              className="h-7 w-7"
-              onClick={() => setViewMode(v => v === "list" ? "chart" : "list")}
-              title={viewMode === "list" ? "Ver gráfico" : "Ver lista"}
-            >
-              {viewMode === "list" ? <PieChartIcon className="h-3.5 w-3.5" /> : <BarChart3 className="h-3.5 w-3.5" />}
-            </Button>
-            <ToggleGroup
-              type="single"
-              value={sortMode}
-              onValueChange={(v) => v && setSortMode(v as SortMode)}
-              className="bg-muted/50 rounded-lg p-0.5"
-            >
-              <ToggleGroupItem value="combined" className="text-[10px] px-2 py-1 h-6 data-[state=on]:bg-background data-[state=on]:shadow-sm">
-                Combinado
-              </ToggleGroupItem>
-              <ToggleGroupItem value="internal" className="text-[10px] px-2 py-1 h-6 data-[state=on]:bg-background data-[state=on]:shadow-sm gap-1">
-                <TrendingUp className="h-2.5 w-2.5" />
-                Interno
-              </ToggleGroupItem>
-              <ToggleGroupItem value="market" className="text-[10px] px-2 py-1 h-6 data-[state=on]:bg-background data-[state=on]:shadow-sm gap-1">
-                <Store className="h-2.5 w-2.5" />
-                Mercado
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </div>
-        </div>
-      </CardHeader>
+      <CategoryRankingHeader days={days} categoryName={categoryName} sortMode={sortMode} viewMode={viewMode} onSortModeChange={setSortMode} onToggleView={() => setViewMode((view) => view === "list" ? "chart" : "list")} />
       <CardContent>
+        <CategoryRankingError isError={isError} hasData={Boolean(categories)} isFetching={isFetching} onRetry={() => void refetch()} />
         {!hasData ? (
           <IntelligenceEmptyState
             title="Nenhuma categoria com vendas"
@@ -244,7 +294,7 @@ export function CategoryRanking({ days = 30, categoryId, supplierId, productId, 
                         <Cell key={i} fill={entry.fill} />
                       ))}
                     </Pie>
-                    <RechartsTooltip content={<CustomTooltipContent />} />
+                    <RechartsTooltip content={<CategoryTooltipContent pieData={pieData} formatCurrency={formatCurrency} formatNumber={formatNumber} />} />
                     <Legend
                       verticalAlign="bottom"
                       height={36}

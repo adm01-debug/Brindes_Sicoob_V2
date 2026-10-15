@@ -24,10 +24,12 @@ export interface CrmQuery {
   id?: string;
   filters?: Record<string, unknown>;
   select?: string;
-  orderBy?: string | { column: string; ascending?: boolean };
+  orderBy?: string | { column: string; ascending?: boolean } | Array<string | { column: string; ascending?: boolean }>;
   limit?: number;
   offset?: number;
-  search?: { column: string; term: string };
+  search?: { column?: string; columns?: string[]; term: string };
+  count?: "exact";
+  head?: boolean;
   relations?: string;
   data?: Record<string, unknown> | Record<string, unknown>[];
   returning?: string;
@@ -36,6 +38,18 @@ export interface CrmQuery {
 export interface CrmResponse<T> {
   data: T;
   count?: number;
+}
+
+export interface CrmSelectOptions {
+  filters?: Record<string, unknown>;
+  select?: string;
+  orderBy?: CrmQuery["orderBy"];
+  limit?: number;
+  offset?: number;
+  relations?: string;
+  search?: CrmQuery["search"];
+  count?: "exact";
+  head?: boolean;
 }
 
 // ============================================
@@ -266,14 +280,7 @@ export async function invokeCrmDb<T>(query: CrmQuery): Promise<CrmResponse<T>> {
  */
 export async function selectCrm<T>(
   table: string,
-  options?: {
-    filters?: Record<string, unknown>;
-    select?: string;
-    orderBy?: string | { column: string; ascending?: boolean };
-    limit?: number;
-    offset?: number;
-    relations?: string;
-  }
+  options?: CrmSelectOptions
 ): Promise<T[]> {
   const result = await invokeCrmDb<T[]>({
     table,
@@ -281,6 +288,20 @@ export async function selectCrm<T>(
     ...options,
   });
   return result.data || [];
+}
+
+/** SELECT paginado que devolve a contagem exata do conjunto filtrado no CRM. */
+export async function selectCrmPage<T>(
+  table: string,
+  options: CrmSelectOptions,
+): Promise<{ data: T[]; count: number | null }> {
+  const result = await invokeCrmDb<T[]>({
+    table,
+    operation: "select",
+    ...options,
+    count: options.count ?? "exact",
+  });
+  return { data: result.data || [], count: typeof result.count === "number" ? result.count : null };
 }
 
 /**

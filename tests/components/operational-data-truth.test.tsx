@@ -26,7 +26,7 @@ vi.mock('@/hooks/useExternalCategoriesQuery', () => ({
   useCategoriesByIds: mocks.categoriesByIds,
 }));
 vi.mock('@/components/seo/PageSEO', () => ({ PageSEO: () => null }));
-vi.mock('@/hooks/useCrmCompanies', () => ({ useCrmCompanies: mocks.clients, useAllCrmCompanies: mocks.clients }));
+vi.mock('@/hooks/useCrmCompanies', () => ({ useCrmCompanies: mocks.clients, useAllCrmCompanies: mocks.clients, useCrmClientsPage: mocks.clients }));
 vi.mock('@/components/clients/ClientCard', () => ({
   ClientCard: ({ client }: { client: { razao_social: string } }) => <div>{client.razao_social}</div>,
 }));
@@ -58,7 +58,7 @@ describe('integridade de dados nas ferramentas comerciais', () => {
     mocks.products.mockReset();
     mocks.productMatch.mockReset().mockReturnValue({ matches: [] });
     mocks.categoriesByIds.mockReset().mockReturnValue([]);
-    mocks.clients.mockReset().mockReturnValue({ data: [], isLoading: false, isError: false, refetch: vi.fn() });
+    mocks.clients.mockReset().mockReturnValue({ data: { clients: [], filteredCount: 0, totalPages: 1, pageIndex: 0, kpis: { totalCount: 0, newThisMonth: 0, withLocation: 0, withCnpj: 0 } }, isLoading: false, isError: false, refetch: vi.fn() });
   });
 
   it('mostra ausência de movimentações sem gerar inteligência de mercado fictícia', () => {
@@ -145,10 +145,10 @@ describe('integridade de dados nas ferramentas comerciais', () => {
   it('calcula os indicadores de clientes apenas com registros reais do CRM', () => {
     const now = new Date().toISOString();
     mocks.clients.mockReturnValue({
-      data: [
+      data: { clients: [
         { id: '1', razao_social: 'Cooperativa Alpha', nome_fantasia: null, title: null, cnpj: '00.000.000/0001-00', cidade: 'Brasília', estado: 'DF', created_at: now },
         { id: '2', razao_social: 'Cooperativa Beta', nome_fantasia: null, title: null, cnpj: null, cidade: null, estado: null, created_at: '2024-01-01T00:00:00.000Z' },
-      ],
+      ], filteredCount: 2, totalPages: 1, pageIndex: 0, kpis: { totalCount: 2, newThisMonth: 1, withLocation: 1, withCnpj: 1 } },
       isLoading: false,
       isError: false,
       refetch: vi.fn(),
@@ -165,7 +165,7 @@ describe('integridade de dados nas ferramentas comerciais', () => {
   });
 
   it('oculta indicadores incompletos quando o CRM está indisponível', () => {
-    mocks.clients.mockReturnValue({ data: [], isLoading: false, isError: true, refetch: vi.fn() });
+    mocks.clients.mockReturnValue({ data: undefined, isLoading: false, isError: true, refetch: vi.fn() });
 
     render(<MemoryRouter><ClientsPage /></MemoryRouter>);
 

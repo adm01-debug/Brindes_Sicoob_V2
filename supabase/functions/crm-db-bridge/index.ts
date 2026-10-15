@@ -6,6 +6,7 @@ import { getBreaker, circuitOpenResponse, getAllBreakerStatuses } from '../_shar
 import { AsyncLocalStorage } from "node:async_hooks";
 import { getOrCreateRequestId, REQUEST_ID_HEADER } from "../_shared/request-id.ts";
 import { resolveCredential, buildCredentialsHealth } from "../_shared/credentials.ts";
+import { buildCompanySearchOr } from "./search-query.ts";
 
 const breaker = getBreaker("crm-db");
 
@@ -404,10 +405,12 @@ interface CrmQuery {
   id?: string;
   filters?: Record<string, unknown>;
   select?: string;
-  orderBy?: string | { column: string; ascending?: boolean };
+  orderBy?: string | { column: string; ascending?: boolean } | Array<string | { column: string; ascending?: boolean }>;
   limit?: number;
   offset?: number;
-  search?: { column: string; term: string };
+  search?: { column?: string; columns?: string[]; term: string };
+  count?: "exact";
+  head?: boolean;
   relations?: string;
   data?: Record<string, unknown> | Record<string, unknown>[];
   returning?: string;
@@ -421,7 +424,7 @@ interface BatchQuery {
   orderBy?: string | { column: string; ascending?: boolean };
   limit?: number;
   offset?: number;
-  search?: { column: string; term: string };
+  search?: { column?: string; columns?: string[]; term: string };
 }
 
 interface AuthResult {
@@ -494,11 +497,21 @@ function applyFilters(query: any, filters: Record<string, unknown>): any {
   return query;
 }
 
-function applyOrdering(query: any, orderBy: string | { column: string; ascending?: boolean }): any {
-  if (typeof orderBy === "string") {
-    return query.order(orderBy);
+function applyOrdering(query: any, orderBy: CrmQuery["orderBy"]): any {
+  const orderings = Array.isArray(orderBy) ? orderBy : orderBy ? [orderBy] : [];
+  return orderings.reduce((currentQuery, ordering) => {
+    if (typeof ordering === "string") return currentQuery.order(ordering);
+    return currentQuery.order(ordering.column, { ascending: ordering.ascending ?? true });
+  }, query);
+}
+
+function applySearch(query: any, search: NonNullable<CrmQuery["search"]>): any {
+  if (!search.term) return query;
+  if (search.columns?.length) {
+    return query.or(buildCompanySearchOr(search.columns, search.term));
   }
-  return query.order(orderBy.column, { ascending: orderBy.ascending ?? true });
+  if (search.column) return query.ilike(search.column, `%${search.term}%`);
+  throw new Error("Search requires a column or a non-empty columns list");
 }
 
 // ============================================
@@ -592,8 +605,8 @@ async function handleBatch(crm: SupabaseClient, queries: BatchQuery[]): Promise<
         let query = crm.from(q.table).select(q.select || "*");
 
         if (q.filters) query = applyFilters(query, q.filters);
-        if (q.search?.column && q.search?.term) {
-          query = query.ilike(q.search.column, `%${q.search.term}%`);
+        if ((q.search?.column || q.search?.columns?.length) && q.search?.term) {
+          query = applySearch(query, q.search);
         }
         if (q.orderBy) query = applyOrdering(query, q.orderBy);
         if (q.limit) query = query.limit(q.limit);
@@ -728,12 +741,15 @@ async function handleDelete(crm: SupabaseClient, body: CrmQuery): Promise<Respon
 }
 
 async function handleSelect(crm: SupabaseClient, body: CrmQuery): Promise<Response> {
-  const { table, id, filters, select, orderBy, limit, offset, search, relations } = body;
+  const { table, id, filters, select, orderBy, limit, offset, search, relations, count: countMode, head } = body;
   const selectFields = select || (relations ? `${select || "*"}, ${relations}` : "*");
   
   console.log(`[SELECT] table=${table}, selectFields=${selectFields}, filters=${JSON.stringify(filters)}, limit=${limit}`);
   
-  let query = crm.from(table).select(selectFields);
+  let query = crm.from(table).select(selectFields, {
+    ...(countMode ? { count: countMode } : {}),
+    ...(head ? { head } : {}),
+  });
 
   if (id) {
     const { data, error } = await query.eq("id", id).single();
@@ -751,13 +767,13 @@ async function handleSelect(crm: SupabaseClient, body: CrmQuery): Promise<Respon
   }
 
   if (filters) query = applyFilters(query, filters);
-  if (search) query = query.ilike(search.column, `%${search.term}%`);
+  if (search) query = applySearch(query, search);
   if (orderBy) query = applyOrdering(query, orderBy);
   if (limit) query = query.limit(limit);
   if (offset) query = query.range(offset, offset + (limit || 50) - 1);
 
-  const { data, error, count, status, statusText } = await query;
-  console.log(`[SELECT] result: status=${status}, statusText=${statusText}, dataLength=${(data || []).length}, error=${error ? JSON.stringify(error) : 'none'}, count=${count}`);
+  const { data, error, count: resultCount, status, statusText } = await query;
+  console.log(`[SELECT] result: status=${status}, statusText=${statusText}, dataLength=${(data || []).length}, error=${error ? JSON.stringify(error) : 'none'}, count=${resultCount}`);
   
   if (error) {
     if (isOptionalQuoteTable(table) && isMissingTableError(error, table)) {
@@ -766,7 +782,7 @@ async function handleSelect(crm: SupabaseClient, body: CrmQuery): Promise<Respon
     console.error("CRM select error:", error);
     return jsonResponse({ error: "select_failed" }, 500);
   }
-  return jsonResponse({ data: data || [], count });
+  return jsonResponse({ data: data || [], count: resultCount });
 }
 
 async function handleSearch(crm: SupabaseClient, body: CrmQuery): Promise<Response> {
@@ -944,10 +960,20 @@ Deno.serve((req) => {
       id: z.string().uuid().optional(),
       filters: z.record(z.unknown()).optional(),
       select: z.string().max(2000).optional(),
-      orderBy: z.union([z.string(), z.object({ column: z.string(), ascending: z.boolean().optional() })]).optional(),
+      orderBy: z.union([
+        z.string(),
+        z.object({ column: z.string(), ascending: z.boolean().optional() }),
+        z.array(z.union([z.string(), z.object({ column: z.string(), ascending: z.boolean().optional() })])).min(1).max(3),
+      ]).optional(),
       limit: z.number().int().min(1).max(1000).optional(),
       offset: z.number().int().min(0).optional(),
-      search: z.object({ column: z.string(), term: z.string() }).optional(),
+      search: z.object({
+        column: z.string().optional(),
+        columns: z.array(z.enum(["title", "nome_fantasia", "razao_social", "cnpj", "cidade"])).max(5).optional(),
+        term: z.string().max(200),
+      }).refine((search) => Boolean(search.column || search.columns?.length)).optional(),
+      count: z.enum(["exact"]).optional(),
+      head: z.boolean().optional(),
       relations: z.string().max(2000).optional(),
       data: z.union([z.record(z.unknown()), z.array(z.record(z.unknown()))]).optional(),
       returning: z.string().max(2000).optional(),

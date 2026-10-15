@@ -4,7 +4,7 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
-import { selectCrm, selectCrmById, searchCrm } from "@/lib/crm-db";
+import { selectCrm, selectCrmById, selectCrmPage, searchCrm } from "@/lib/crm-db";
 import { type CrmCompany, type CrmCompanyFilters, type CrmCustomer, toLegacyClient, getCompanyDisplayName } from "@/types/crm";
 import {  DEMO_COMPANY, isDemoClient } from "@/lib/bi/demoClient";
 
@@ -84,6 +84,100 @@ export function useAllCrmCompanies(filters: Omit<CrmCompanyFilters, "search">) {
     queryKey: ["crm-companies-all", filters],
     queryFn: () => fetchAllCrmCompanies(filters),
     staleTime: 10 * 60 * 1000,
+  });
+}
+
+export type CrmClientsSortMode = "name" | "created" | "city";
+
+export interface CrmClientsPageResult {
+  clients: CrmCompany[];
+  filteredCount: number;
+  totalPages: number;
+  pageIndex: number;
+  kpis: { totalCount: number; newThisMonth: number; withLocation: number; withCnpj: number };
+}
+
+const CRM_CLIENT_PAGE_SIZE = 100;
+const CRM_CLIENT_SEARCH_COLUMNS = ["title", "nome_fantasia", "razao_social", "cnpj", "cidade"];
+const CRM_CLIENT_PAGE_SELECT = "id,razao_social,nome_fantasia,title,cnpj,cidade,estado,logo_url,is_customer,created_at";
+
+interface CrmClientPageOptions {
+  pageIndex: number;
+  search: string;
+  sortMode: CrmClientsSortMode;
+}
+
+function clientOrder(sortMode: CrmClientsSortMode) {
+  if (sortMode === "created") return [{ column: "created_at", ascending: false }, { column: "id", ascending: true }];
+  if (sortMode === "city") return [{ column: "cidade", ascending: true }, { column: "id", ascending: true }];
+  return [{ column: "razao_social", ascending: true }, { column: "id", ascending: true }];
+}
+
+function crmClientMonthStart(): string {
+  const start = new Date();
+  start.setDate(1);
+  start.setHours(0, 0, 0, 0);
+  return start.toISOString();
+}
+
+async function exactCompanyCount(filters: Record<string, unknown>): Promise<number> {
+  const result = await selectCrmPage<CrmCompany>("companies", {
+    select: "id", filters, count: "exact", head: true, limit: 1,
+  });
+  if (result.count === null) throw new Error("O CRM não retornou uma contagem exata.");
+  return result.count;
+}
+
+async function fetchClientKpis(baseFilters: Record<string, unknown>, hasSearch: boolean): Promise<CrmClientsPageResult["kpis"]> {
+  const [totalCount, newThisMonth, withLocation, withCnpj] = await Promise.all([
+    hasSearch ? exactCompanyCount(baseFilters) : Promise.resolve(null),
+    exactCompanyCount({ ...baseFilters, created_at: { gte: crmClientMonthStart() } }),
+    exactCompanyCount({
+      ...baseFilters,
+      cidade: { not_null: true, neq: "" },
+      estado: { not_null: true, neq: "" },
+    }),
+    exactCompanyCount({ ...baseFilters, cnpj: { not_null: true, neq: "" } }),
+  ]);
+  return { totalCount: totalCount ?? 0, newThisMonth, withLocation, withCnpj };
+}
+
+async function loadCrmClientsPage({ pageIndex, search, sortMode }: CrmClientPageOptions): Promise<CrmClientsPageResult> {
+  const baseFilters = buildCompanyFilters({ is_customer: true });
+  const normalizedSearch = search.trim();
+  const [page, kpis] = await Promise.all([
+    selectCrmPage<CrmCompany>("companies", {
+      select: CRM_CLIENT_PAGE_SELECT,
+      filters: baseFilters,
+      search: normalizedSearch ? { columns: CRM_CLIENT_SEARCH_COLUMNS, term: normalizedSearch } : undefined,
+      orderBy: clientOrder(sortMode),
+      count: "exact",
+      limit: CRM_CLIENT_PAGE_SIZE,
+      offset: pageIndex * CRM_CLIENT_PAGE_SIZE,
+    }),
+    fetchClientKpis(baseFilters, Boolean(normalizedSearch)),
+  ]);
+
+  if (page.count === null) {
+    throw new Error("O CRM não retornou a contagem exata; os indicadores foram ocultados para evitar totais incorretos.");
+  }
+  const totalCount = normalizedSearch ? kpis.totalCount : page.count;
+  return {
+    clients: page.data,
+    filteredCount: page.count,
+    totalPages: Math.max(1, Math.ceil(page.count / CRM_CLIENT_PAGE_SIZE)),
+    pageIndex,
+    kpis: { ...kpis, totalCount },
+  };
+}
+
+/** Busca uma página do CRM e indicadores por contagem exata no banco de origem. */
+export function useCrmClientsPage(options: CrmClientPageOptions) {
+  const { pageIndex, search, sortMode } = options;
+  return useQuery<CrmClientsPageResult>({
+    queryKey: ["crm-clients-page", pageIndex, search, sortMode],
+    queryFn: () => loadCrmClientsPage(options),
+    staleTime: 60_000,
   });
 }
 

@@ -32,6 +32,18 @@ export function QuantityComparisonTable({ product, selectedConfigs, quantities }
     return { unitPrice, customizationTotal, productTotal, grandTotal, unitTotal: grandTotal / quantity, slaDays: calc.slaDays };
   }, [calculatePrice, getTiers, product.price]);
 
+  const calculateCombined = useCallback((quantity: number) => {
+    const results = selectedConfigs.map((config) => calculateForConfig(config, quantity));
+    // O total combinado deve ser integral: não exibe subtotal parcial se alguma
+    // técnica estiver sem preço ou fora da faixa mínima cadastrada.
+    if (results.some((result) => result === null)) return null;
+
+    const productTotal = product.price * quantity;
+    const customizationTotal = results.reduce((sum, result) => sum + (result?.customizationTotal ?? 0), 0);
+    const grandTotal = productTotal + customizationTotal;
+    return { productTotal, customizationTotal, grandTotal, unitTotal: grandTotal / quantity };
+  }, [calculateForConfig, product.price, selectedConfigs]);
+
   const bestPricePerConfig = useMemo(() => {
     const map = new Map<string, number>();
     selectedConfigs.forEach(config => {
@@ -77,6 +89,21 @@ export function QuantityComparisonTable({ product, selectedConfigs, quantities }
                 })}
               </TableRow>
             ))}
+            {selectedConfigs.length > 1 && (
+              <TableRow className="bg-primary/5 font-semibold" data-testid="combined-techniques-row">
+                <TableCell><div><p className="font-medium text-sm">Todas as técnicas</p><p className="text-xs text-muted-foreground">Produto + personalizações selecionadas</p></div></TableCell>
+                {quantities.map(qty => {
+                  const result = calculateCombined(qty);
+                  return (
+                    <TableCell key={qty} className="text-center" data-testid="combined-techniques-total">
+                      {result
+                        ? <div className="space-y-1"><p className="font-bold text-sm">{formatCurrency(result.unitTotal)}/un</p><p className="text-xs text-muted-foreground">Total: {formatCurrency(result.grandTotal)}</p></div>
+                        : <span className="text-xs text-muted-foreground">N/D</span>}
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            )}
             <TableRow className="bg-muted/30">
               <TableCell><div><p className="font-medium text-sm">Apenas Produto</p><p className="text-xs text-muted-foreground">Sem gravação</p></div></TableCell>
               {quantities.map(qty => <TableCell key={qty} className="text-center"><div className="space-y-1"><p className="font-bold text-sm">{formatCurrency(product.price)}</p><p className="text-xs text-muted-foreground">Total: {formatCurrency(product.price * qty)}</p></div></TableCell>)}
