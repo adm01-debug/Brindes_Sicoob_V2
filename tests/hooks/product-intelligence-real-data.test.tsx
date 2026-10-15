@@ -20,7 +20,7 @@ import { ProductRiskDetail } from '@/components/inventory/risk/ProductRiskDetail
 import { useProductIntelligenceBadges } from '@/hooks/useProductIntelligenceBadges';
 
 function emptyQuery() {
-  return { data: undefined, isLoading: false, error: null, refetch: vi.fn() };
+  return { data: undefined, isLoading: false, isFetching: false, isError: false, error: null, refetch: vi.fn() };
 }
 
 describe('inteligência de produto baseada em dados reais', () => {
@@ -38,7 +38,37 @@ describe('inteligência de produto baseada em dados reais', () => {
     expect(result.current.badges.map((badge) => badge.type)).toEqual(['featured']);
     expect(result.current.turnoverScore).toBeNull();
     expect(result.current.demandLevel).toBeNull();
+    expect(result.current.isEmpty).toBe(true);
+    expect(result.current.isError).toBe(false);
     expect(result.current).not.toHaveProperty('isDemo');
+  });
+
+  it('propaga falhas, conserva indicadores em cache e tenta novamente ambas as fontes', async () => {
+    const retryIntel = vi.fn().mockResolvedValue({});
+    const retryVelocity = vi.fn().mockResolvedValue({});
+    mocks.intelligence.mockReturnValue({
+      ...emptyQuery(),
+      data: { abc_classification: 'A', turnover_score: 72, avg_velocity_7d: 4 },
+      isError: true,
+      error: new Error('indisponível'),
+      refetch: retryIntel,
+    });
+    mocks.velocity.mockReturnValue({
+      ...emptyQuery(),
+      isError: true,
+      error: new Error('indisponível'),
+      refetch: retryVelocity,
+    });
+
+    const { result } = renderHook(() => useProductIntelligenceBadges('produto-real'));
+
+    expect(result.current.isError).toBe(true);
+    expect(result.current.hasMarketData).toBe(true);
+    expect(result.current.isEmpty).toBe(false);
+    expect(result.current.badges.some((badge) => badge.type === 'best-seller')).toBe(true);
+    await result.current.retry();
+    expect(retryIntel).toHaveBeenCalledOnce();
+    expect(retryVelocity).toHaveBeenCalledOnce();
   });
 
   it('exibe estado vazio no risco sem fabricar estoque, saída ou fornecedor', () => {

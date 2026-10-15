@@ -4,7 +4,7 @@
  * An empty materialized view produces no market badge.
  * Also incorporates catalog flags (featured, newArrival, onSale) from product data.
  */
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useProductIntelligenceData, useStockVelocity } from '@/hooks/useStockHistory';
 
 export type IntelligenceBadgeType =
@@ -38,6 +38,11 @@ export interface ProductIntelligenceBadgesResult {
   turnoverScore: number | null;
   demandLevel: 'muito-alta' | 'alta' | 'moderada' | 'baixa' | null;
   isLoading: boolean;
+  isError: boolean;
+  isFetching: boolean;
+  isEmpty: boolean;
+  hasMarketData: boolean;
+  retry: () => Promise<void>;
 }
 
 function catalogBadges(flags: CatalogFlags | undefined) {
@@ -95,7 +100,7 @@ function buildBadgeResult(
   intelligence: IntelligenceData | null | undefined,
   velocity: VelocityData | undefined,
   ...state: [catalogFlags: CatalogFlags | undefined, isLoading: boolean]
-): ProductIntelligenceBadgesResult {
+): Omit<ProductIntelligenceBadgesResult, 'isError' | 'isFetching' | 'isEmpty' | 'hasMarketData' | 'retry'> {
   const [catalogFlags, isLoading] = state;
   const badges = catalogBadges(catalogFlags);
   if (!intelligence) {
@@ -113,11 +118,29 @@ function buildBadgeResult(
 }
 
 export function useProductIntelligenceBadges(productId?: string, catalogFlags?: CatalogFlags): ProductIntelligenceBadgesResult {
-  const { data: intelligence, isLoading: loadingIntel } = useProductIntelligenceData(productId);
-  const { data: velocity, isLoading: loadingVel } = useStockVelocity(productId);
+  const intelligenceQuery = useProductIntelligenceData(productId);
+  const velocityQuery = useStockVelocity(productId);
+  const { data: intelligence, isLoading: loadingIntel } = intelligenceQuery;
+  const { data: velocity, isLoading: loadingVel } = velocityQuery;
+  const isError = intelligenceQuery.isError || velocityQuery.isError;
+  const isFetching = intelligenceQuery.isFetching || velocityQuery.isFetching;
+  const hasMarketData = Boolean(intelligence);
+  const isEmpty = Boolean(productId) && !loadingIntel && !loadingVel && !isError && !intelligence && !velocity?.length;
+  const refetchIntel = intelligenceQuery.refetch;
+  const refetchVelocity = velocityQuery.refetch;
+  const retry = useCallback(async () => {
+    await Promise.all([refetchIntel(), refetchVelocity()]);
+  }, [refetchIntel, refetchVelocity]);
 
   return useMemo(
-    () => buildBadgeResult(intelligence, velocity, catalogFlags, loadingIntel || loadingVel),
-    [intelligence, velocity, loadingIntel, loadingVel, catalogFlags],
+    () => ({
+      ...buildBadgeResult(intelligence, velocity, catalogFlags, loadingIntel || loadingVel),
+      isError,
+      isFetching,
+      isEmpty,
+      hasMarketData,
+      retry,
+    }),
+    [intelligence, velocity, loadingIntel, loadingVel, catalogFlags, isError, isFetching, isEmpty, hasMarketData, retry],
   );
 }
