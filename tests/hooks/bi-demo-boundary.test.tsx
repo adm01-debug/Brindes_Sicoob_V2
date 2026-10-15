@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const dependencies = vi.hoisted(() => ({
   rpc: vi.fn(),
   selectCrm: vi.fn(),
+  selectCrmStrict: vi.fn(),
 }));
 
 vi.mock('@/integrations/supabase/client', () => ({
@@ -14,6 +15,7 @@ vi.mock('@/integrations/supabase/client', () => ({
 
 vi.mock('@/lib/crm-db', () => ({
   selectCrm: dependencies.selectCrm,
+  selectCrmStrict: dependencies.selectCrmStrict,
 }));
 
 import { useClientAffinity } from '@/hooks/bi/useClientAffinity';
@@ -43,6 +45,7 @@ describe('fronteira entre dados reais e modo de demonstração do BI', () => {
   beforeEach(() => {
     dependencies.rpc.mockReset().mockResolvedValue({ data: [], error: null });
     dependencies.selectCrm.mockReset().mockResolvedValue([]);
+    dependencies.selectCrmStrict.mockReset().mockResolvedValue([]);
   });
 
   it('entrega todas as zonas simuladas sem acessar banco para o cliente demo', async () => {
@@ -63,6 +66,7 @@ describe('fronteira entre dados reais e modo de demonstração do BI', () => {
     expect(result.current.industryCategories.categories.length).toBeGreaterThan(0);
     expect(dependencies.rpc).not.toHaveBeenCalled();
     expect(dependencies.selectCrm).not.toHaveBeenCalled();
+    expect(dependencies.selectCrmStrict).not.toHaveBeenCalled();
   });
 
   it('não converte respostas vazias do banco em números fictícios para cliente real', async () => {
@@ -81,5 +85,6 @@ describe('fronteira entre dados reais e modo de demonstração do BI', () => {
     expect(result.current.industryCategories).toMatchObject({ isMock: false, categories: [] });
     expect(dependencies.rpc).toHaveBeenCalled();
     expect(dependencies.selectCrm).toHaveBeenCalled();
+    expect(dependencies.selectCrmStrict).toHaveBeenCalled();
   });
 });

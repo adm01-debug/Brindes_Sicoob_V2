@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Users, Search, TrendingUp, MapPin, BadgeCheck, AlertTriangle } from "lucide-react";
@@ -124,6 +124,11 @@ function sortLabelFor(mode: CrmClientsSortMode): string {
   return labels[mode];
 }
 
+function correctedPageIndex(data: CrmClientsPageResult | undefined, pageIndex: number): number | null {
+  if (!data || data.pageIndex !== pageIndex || pageIndex < data.totalPages) return null;
+  return Math.max(0, data.totalPages - 1);
+}
+
 function ClientSearchAndSort({
   search,
   sortMode,
@@ -167,6 +172,14 @@ export default function ClientsPage() {
   const debouncedSearch = useDebounce(search, 350);
   const { data, isLoading, isError, refetch } = useCrmClientsPage({ pageIndex, search: debouncedSearch, sortMode });
   const clients = data?.clients ?? [];
+  const validPageIndex = correctedPageIndex(data, pageIndex);
+  const isPageOutOfRange = validPageIndex !== null;
+
+  useEffect(() => {
+    if (validPageIndex === null) return;
+    setPageIndex(validPageIndex);
+  }, [validPageIndex]);
+
   return (
     <>
       <PageSEO
@@ -222,7 +235,7 @@ export default function ClientsPage() {
             filteredCount={data?.filteredCount ?? 0}
             pageIndex={pageIndex}
             totalPages={data?.totalPages ?? 1}
-            isLoading={isLoading}
+            isLoading={isLoading || isPageOutOfRange}
             isError={isError}
             onRetry={() => void refetch()}
             onClientClick={(id) => navigate(`/clientes/${id}`)}

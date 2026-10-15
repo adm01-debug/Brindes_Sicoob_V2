@@ -8,7 +8,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { selectCrm } from "@/lib/crm-db";
+import { selectCrmStrict } from "@/lib/crm-db";
 import { resolveBICategory, type BICategorySlug } from "@/lib/bi/categoryResolver";
 import { isDemoClient } from "@/lib/bi/demoClient";
 import { getMockIndustryTrends } from "@/lib/bi/mockData";
@@ -65,7 +65,7 @@ function buildDemoResult(ramoAtividade?: string | null): IndustryCategoryTrendsR
 }
 
 async function fetchCompanyIds(ramoAtividade: string) {
-  const companies = await selectCrm<{ id: string }>("companies", {
+  const companies = await selectCrmStrict<{ id: string }>("companies", {
     select: "id",
     filters: { ramo_atividade: ramoAtividade, deleted_at: null },
     limit: 500,

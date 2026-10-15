@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   row: vi.fn(),
+  rowRefetch: vi.fn(),
   comparison: vi.fn(),
 }));
 
@@ -14,9 +15,12 @@ import { ClientVsIndustryComparison } from '@/components/bi/ClientVsIndustryComp
 
 describe('estados de indisponibilidade em comparativos de BI', () => {
   beforeEach(() => {
+    mocks.rowRefetch.mockReset().mockResolvedValue(undefined);
     mocks.row.mockReset().mockReturnValue({
       clientId: 'cliente-1', clientName: 'Cooperativa Alpha', ramoAtividade: 'Cooperativa',
       isLoading: false, isUnavailable: true, score: 84, tier: 'healthy', ltv: 12_000, avgTicket: 2_000,
+      error: new Error('histórico indisponível'), failedSources: ['histórico do cliente'], refetch: mocks.rowRefetch,
+      unavailable: { health: true, history: true, topCategory: false, favoriteCategory: false, opportunityCategory: false, seasonality: false },
       ordersCount: 6, daysSinceLastOrder: 12, topCategory: 'Canecas',
       favoriteCategoryLabel: 'Canecas', favoriteCategorySharePct: 55,
       opportunityCategoryLabel: 'Mochilas', opportunityCategorySharePct: 24,
@@ -25,16 +29,47 @@ describe('estados de indisponibilidade em comparativos de BI', () => {
     mocks.comparison.mockReset();
   });
 
-  it('oculta todas as métricas do cliente quando o histórico do comparador falha', () => {
+  it('oculta métricas dependentes do histórico e preserva categorias e sazonalidade confiáveis', () => {
     render(<ClientComparator clientIds={['cliente-1']} onRemove={vi.fn()} />);
 
-    expect(screen.getByRole('status')).toHaveTextContent(/Histórico indisponível/);
+    expect(screen.getByRole('status')).toHaveTextContent(/histórico do cliente/i);
     expect(screen.getByText('Score').previousElementSibling).toHaveTextContent('—');
     expect(screen.queryByText('R$ 12.000')).toBeNull();
     expect(screen.queryByText('R$ 2.000')).toBeNull();
-    expect(screen.queryByText('Canecas')).toBeNull();
-    expect(screen.queryByText('Mochilas')).toBeNull();
+    expect(screen.getAllByText('Canecas')).toHaveLength(2);
+    expect(screen.getByText('Mochilas')).toBeTruthy();
+    expect(screen.getByText('30d')).toBeTruthy();
     expect(screen.queryByText('42%')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /Tentar novamente/i }));
+    expect(mocks.rowRefetch).toHaveBeenCalledOnce();
+  });
+
+  it('não apresenta categorias nem pico em cache após falha das respectivas fontes', () => {
+    mocks.row.mockReturnValue({
+      ...mocks.row(),
+      error: new Error('fontes indisponíveis'),
+      failedSources: ['categorias do cliente', 'categorias do setor', 'sazonalidade'],
+      unavailable: {
+        health: false,
+        history: false,
+        topCategory: false,
+        favoriteCategory: true,
+        opportunityCategory: true,
+        seasonality: true,
+      },
+      topCategory: 'Canetas confiáveis',
+      favoriteCategoryLabel: 'Canecas em cache',
+      opportunityCategoryLabel: 'Mochilas em cache',
+      nextPeakLabel: '30d em cache',
+    });
+
+    render(<ClientComparator clientIds={['cliente-1']} onRemove={vi.fn()} />);
+
+    expect(screen.getByText('Canetas confiáveis')).toBeTruthy();
+    expect(screen.queryByText('Canecas em cache')).toBeNull();
+    expect(screen.queryByText('Mochilas em cache')).toBeNull();
+    expect(screen.queryByText('30d em cache')).toBeNull();
+    expect(screen.getByText('R$ 12.000')).toBeTruthy();
   });
 
   it('mostra erro consultável com retry antes de classificar a amostra como insuficiente', () => {

@@ -21,7 +21,7 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 import {
-  CrmUnavailableError, invokeCrmDb, selectCrm, selectCrmById, selectCrmStrict, searchCrm,
+  CrmUnavailableError, invokeCrmDb, selectCrm, selectCrmById, selectCrmByIdStrict, selectCrmStrict, searchCrm,
   insertCrm, updateCrm, deleteCrm, invokeCrmBatch,
 } from '@/lib/crm-db';
 
@@ -105,6 +105,23 @@ describe('selectCrmById', () => {
     mockInvoke.mockResolvedValue({ data: null, error: new Error('404 not found') });
     const result = await selectCrmById('companies', 'nonexistent');
     expect(result).toBeNull();
+  });
+
+  it('distingue CRM indisponível de registro inexistente no contrato estrito', async () => {
+    mockInvoke.mockResolvedValueOnce({
+      data: { error: 'CRM connection is not configured correctly' },
+      error: null,
+    });
+
+    await expect(selectCrmByIdStrict('companies', '00000000-0000-4000-8000-000000000001'))
+      .rejects.toBeInstanceOf(CrmUnavailableError);
+  });
+
+  it('preserva ausência legítima por ID no contrato estrito', async () => {
+    mockInvoke.mockResolvedValueOnce({ data: { data: null }, error: null });
+
+    await expect(selectCrmByIdStrict('companies', '00000000-0000-4000-8000-000000000001'))
+      .resolves.toBeNull();
   });
 });
 

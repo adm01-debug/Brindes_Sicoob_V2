@@ -6,6 +6,7 @@ vi.mock("@tanstack/react-query", () => ({ useQuery: mocks.useQuery }));
 vi.mock("@/lib/crm-db", () => ({
   selectCrm: mocks.selectCrm,
   selectCrmById: vi.fn(),
+  selectCrmByIdStrict: vi.fn(),
   searchCrm: vi.fn(),
 }));
 

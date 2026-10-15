@@ -7,6 +7,7 @@ vi.mock("@/lib/crm-db", () => ({
   selectCrmPage: mocks.selectCrmPage,
   selectCrm: vi.fn(),
   selectCrmById: vi.fn(),
+  selectCrmByIdStrict: vi.fn(),
   searchCrm: vi.fn(),
 }));
 

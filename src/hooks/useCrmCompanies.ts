@@ -4,7 +4,7 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
-import { selectCrm, selectCrmById, selectCrmPage, searchCrm } from "@/lib/crm-db";
+import { selectCrm, selectCrmById, selectCrmByIdStrict, selectCrmPage, searchCrm } from "@/lib/crm-db";
 import { type CrmCompany, type CrmCompanyFilters, type CrmCustomer, toLegacyClient, getCompanyDisplayName } from "@/types/crm";
 import {  DEMO_COMPANY, isDemoClient } from "@/lib/bi/demoClient";
 
@@ -191,6 +191,20 @@ export function useCrmCompany(id: string | null | undefined) {
       if (!id) return null;
       if (isDemoClient(id)) return DEMO_COMPANY as unknown as CrmCompany;
       return selectCrmById<CrmCompany>("companies", id);
+    },
+    enabled: !!id,
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
+/** Variante para métricas: diferencia empresa inexistente de CRM indisponível. */
+export function useCrmCompanyStrict(id: string | null | undefined) {
+  return useQuery<CrmCompany | null>({
+    queryKey: ["crm-company-strict", id],
+    queryFn: async () => {
+      if (!id) return null;
+      if (isDemoClient(id)) return DEMO_COMPANY as unknown as CrmCompany;
+      return selectCrmByIdStrict<CrmCompany>("companies", id);
     },
     enabled: !!id,
     staleTime: 10 * 60 * 1000,

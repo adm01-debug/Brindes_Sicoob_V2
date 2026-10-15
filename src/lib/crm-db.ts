@@ -350,6 +350,23 @@ export async function selectCrmById<T>(
   }
 }
 
+/** SELECT por ID que rejeita indisponibilidade, mas preserva 404 como ausência legítima. */
+export async function selectCrmByIdStrict<T>(
+  table: string,
+  id: string,
+  select?: string,
+): Promise<T | null> {
+  try {
+    const result = await invokeCrmDb<T>({ table, operation: "select", id, select });
+    if (result.unavailable) throw new CrmUnavailableError();
+    return result.data || null;
+  } catch (error) {
+    if (error instanceof CrmUnavailableError) throw error;
+    if (String(error).includes("404")) return null;
+    throw error;
+  }
+}
+
 /**
  * Busca textual no CRM
  */
