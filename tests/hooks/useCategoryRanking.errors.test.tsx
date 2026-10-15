@@ -58,12 +58,20 @@ describe("useCategoryRanking — integridade do score combinado", () => {
     expect(mocks.invokeExternalDb).not.toHaveBeenCalled();
   });
 
-  it("bloqueia o score combinado quando a consulta externa de mercado informa erro", async () => {
+  it("preserva o ranking interno quando a consulta externa de mercado informa erro", async () => {
+    mocks.from.mockReturnValue(orderItemsQuery({
+      data: [{ product_id: "product-1", quantity: 4, unit_price: 25 }],
+      error: null,
+    }));
     mocks.invokeExternalDb.mockResolvedValue({ records: [], success: false, error: "market indisponível" });
     const { result } = renderHook(() => useCategoryRanking(), { wrapper: createWrapper() });
 
-    await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.data).toBeUndefined();
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toMatchObject({
+      marketAvailable: false,
+      marketError: "market indisponível",
+      items: [{ categoryId: "category-1", internalRevenue: 100, internalQty: 4, marketDepleted: 0 }],
+    });
     expect(mocks.invokeExternalDb).toHaveBeenCalledWith(expect.objectContaining({ table: "stock_daily_summary" }));
   });
 
@@ -71,6 +79,6 @@ describe("useCategoryRanking — integridade do score combinado", () => {
     const { result } = renderHook(() => useCategoryRanking(), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual([]);
+    expect(result.current.data).toEqual({ items: [], marketAvailable: true, marketError: null });
   });
 });

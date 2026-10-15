@@ -39,6 +39,12 @@ export interface CategoryRankingItem {
   internalOrders: number; marketDepleted: number; totalScore: number;
 }
 
+export interface CategoryRankingData {
+  items: CategoryRankingItem[];
+  marketAvailable: boolean;
+  marketError: string | null;
+}
+
 interface ProductCategory {
   catId: string;
   catName: string;
@@ -526,15 +532,29 @@ export function useCategoryRanking(days = 30, categoryId?: string | null, suppli
 
   return useQuery({
     queryKey: ['commercial-category-ranking', user?.id, days, categoryId, supplierId, productId],
-    queryFn: async (): Promise<CategoryRankingItem[]> => {
+    queryFn: async (): Promise<CategoryRankingData> => {
       const pids = productIds ? Array.from(productIds).slice(0, 200) : undefined;
       const orderItems = await fetchCategoryOrderItems(since, pids);
       const { fetchPromobrindProducts } = await import('@/lib/external-db');
-      const [products, marketSnapshots] = await Promise.all([
+      const [productsResult, marketResult] = await Promise.allSettled([
         fetchPromobrindProducts({ limit: 5000 }),
         fetchCategoryMarketSnapshots(since),
       ]);
-      return buildCategoryRanking(orderItems, products, marketSnapshots);
+      if (productsResult.status === 'rejected') throw productsResult.reason;
+
+      const marketAvailable = marketResult.status === 'fulfilled';
+      const marketSnapshots = marketAvailable ? marketResult.value : [];
+      const marketError = marketAvailable
+        ? null
+        : marketResult.reason instanceof Error
+          ? marketResult.reason.message
+          : 'Dados de mercado indisponíveis';
+
+      return {
+        items: buildCategoryRanking(orderItems, productsResult.value, marketSnapshots),
+        marketAvailable,
+        marketError,
+      };
     },
     staleTime: 1000 * 60 * 5,
     enabled: !!user && (!hasFilter || productIds !== undefined),

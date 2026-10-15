@@ -28,9 +28,10 @@ interface CategoryTooltipProps {
   pieData: CategoryPieDatum[];
   formatCurrency: (value: number) => string;
   formatNumber: (value: number) => string;
+  marketAvailable: boolean;
 }
 
-function CategoryTooltipContent({ active, payload, pieData, formatCurrency, formatNumber }: CategoryTooltipProps) {
+function CategoryTooltipContent({ active, payload, pieData, formatCurrency, formatNumber, marketAvailable }: CategoryTooltipProps) {
   if (!active || !payload?.length) return null;
   const datum = payload[0]?.payload;
   if (!datum) return null;
@@ -40,10 +41,67 @@ function CategoryTooltipContent({ active, payload, pieData, formatCurrency, form
     <div className="bg-popover border border-border rounded-lg px-3 py-2 shadow-lg text-xs space-y-1">
       <p className="font-semibold text-foreground">{datum.fullName}</p>
       <div className="flex items-center gap-1.5"><TrendingUp className="h-3 w-3 text-success" /><span>Interno: {formatCurrency(datum.internalRevenue)}</span></div>
-      <div className="flex items-center gap-1.5"><Store className="h-3 w-3 text-primary" /><span>Mercado: {formatNumber(datum.marketDepleted)} un.</span></div>
+      <CategoryMarketTooltipMetric marketAvailable={marketAvailable} marketDepleted={datum.marketDepleted} formatNumber={formatNumber} />
       <p className="text-muted-foreground">{percent}% do total</p>
     </div>
   );
+}
+
+function CategoryMarketTooltipMetric({
+  marketAvailable,
+  marketDepleted,
+  formatNumber,
+}: {
+  marketAvailable: boolean;
+  marketDepleted: number;
+  formatNumber: (value: number) => string;
+}) {
+  if (!marketAvailable) return <p className="text-muted-foreground">Mercado: indisponível</p>;
+  return <div className="flex items-center gap-1.5"><Store className="h-3 w-3 text-primary" /><span>Mercado: {formatNumber(marketDepleted)} un.</span></div>;
+}
+
+function CategoryMarketStatus({
+  marketAvailable,
+  isFetching,
+  onRetry,
+}: {
+  marketAvailable: boolean;
+  isFetching: boolean;
+  onRetry: () => void;
+}) {
+  if (marketAvailable) return null;
+  return (
+    <div role="status" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-warning/30 bg-warning/5 p-3 text-sm">
+      <div className="flex items-start gap-2 text-foreground">
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
+        <p>Dados de mercado indisponíveis. O ranking exibe somente a receita interna.</p>
+      </div>
+      <Button size="sm" variant="outline" disabled={isFetching} onClick={onRetry}>
+        {isFetching ? "Tentando…" : "Tentar novamente"}
+      </Button>
+    </div>
+  );
+}
+
+function CategoryMarketDetails({ marketAvailable, category, formatNumber }: {
+  marketAvailable: boolean;
+  category: CategoryRankingItem;
+  formatNumber: (value: number) => string;
+}) {
+  if (!marketAvailable) return <p className="text-muted-foreground">Dados de mercado indisponíveis</p>;
+  return (
+    <>
+      <div className="flex items-center gap-1.5">
+        <Store className="h-3 w-3 text-primary" />
+        <span>Mercado (saídas): {formatNumber(category.marketDepleted)} un.</span>
+      </div>
+      <p className="text-muted-foreground">Score: {category.totalScore.toFixed(1)}</p>
+    </>
+  );
+}
+
+function resolveCategorySortMode(marketAvailable: boolean, requestedMode: SortMode): SortMode {
+  return marketAvailable ? requestedMode : "internal";
 }
 
 const PIE_COLORS = [
@@ -105,6 +163,7 @@ function CategoryRankingHeader({
   viewMode,
   onSortModeChange,
   onToggleView,
+  marketAvailable,
 }: {
   days: number;
   categoryName?: string | null;
@@ -112,6 +171,7 @@ function CategoryRankingHeader({
   viewMode: ViewMode;
   onSortModeChange: (mode: SortMode) => void;
   onToggleView: () => void;
+  marketAvailable: boolean;
 }) {
   return (
     <CardHeader className="pb-3">
@@ -135,9 +195,9 @@ function CategoryRankingHeader({
             onValueChange={(value) => value && onSortModeChange(value as SortMode)}
             className="bg-muted/50 rounded-lg p-0.5"
           >
-            <ToggleGroupItem value="combined" className="text-[10px] px-2 py-1 h-6 data-[state=on]:bg-background data-[state=on]:shadow-sm">Combinado</ToggleGroupItem>
+            <ToggleGroupItem value="combined" disabled={!marketAvailable} className="text-[10px] px-2 py-1 h-6 data-[state=on]:bg-background data-[state=on]:shadow-sm">Combinado</ToggleGroupItem>
             <ToggleGroupItem value="internal" className="text-[10px] px-2 py-1 h-6 data-[state=on]:bg-background data-[state=on]:shadow-sm gap-1"><TrendingUp className="h-2.5 w-2.5" />Interno</ToggleGroupItem>
-            <ToggleGroupItem value="market" className="text-[10px] px-2 py-1 h-6 data-[state=on]:bg-background data-[state=on]:shadow-sm gap-1"><Store className="h-2.5 w-2.5" />Mercado</ToggleGroupItem>
+            <ToggleGroupItem value="market" disabled={!marketAvailable} className="text-[10px] px-2 py-1 h-6 data-[state=on]:bg-background data-[state=on]:shadow-sm gap-1"><Store className="h-2.5 w-2.5" />Mercado</ToggleGroupItem>
           </ToggleGroup>
         </div>
       </div>
@@ -165,10 +225,44 @@ function CategoryRankingUnavailable({
   );
 }
 
+function getCategoryRankingBlockingState({
+  isLoading,
+  isError,
+  hasRanking,
+  categoryName,
+  isFetching,
+  onRetry,
+}: {
+  isLoading: boolean;
+  isError: boolean;
+  hasRanking: boolean;
+  categoryName?: string | null;
+  isFetching: boolean;
+  onRetry: () => void;
+}) {
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader className="pb-3"><Skeleton className="h-5 w-56" /></CardHeader>
+        <CardContent className="space-y-2">
+          {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-12 rounded" />)}
+        </CardContent>
+      </Card>
+    );
+  }
+  if (isError && !hasRanking) {
+    return <CategoryRankingUnavailable categoryName={categoryName} isFetching={isFetching} onRetry={onRetry} />;
+  }
+  return null;
+}
+
 export function CategoryRanking({ days = 30, categoryId, supplierId, productId, categoryName }: CategoryRankingProps) {
   const [sortMode, setSortMode] = useState<SortMode>("combined");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
-  const { data: categories, isLoading, isError, isFetching, refetch } = useCategoryRanking(days, categoryId, supplierId, productId);
+  const { data: ranking, isLoading, isError, isFetching, refetch } = useCategoryRanking(days, categoryId, supplierId, productId);
+  const categories = ranking?.items;
+  const marketAvailable = ranking?.marketAvailable ?? true;
+  const effectiveSortMode = resolveCategorySortMode(marketAvailable, sortMode);
 
   const formatCurrency = (v: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(v);
@@ -179,7 +273,7 @@ export function CategoryRanking({ days = 30, categoryId, supplierId, productId, 
   const sortedCategories = useMemo(() => {
     if (!categories?.length) return [];
     const sorted = [...categories];
-    switch (sortMode) {
+    switch (effectiveSortMode) {
       case "internal":
         return sorted.sort((a, b) => b.internalRevenue - a.internalRevenue);
       case "market":
@@ -187,18 +281,18 @@ export function CategoryRanking({ days = 30, categoryId, supplierId, productId, 
       default:
         return sorted.sort((a, b) => b.totalScore - a.totalScore);
     }
-  }, [categories, sortMode]);
+  }, [categories, effectiveSortMode]);
 
   const getBarValue = useCallback((cat: CategoryRankingItem): number => {
-    switch (sortMode) {
+    switch (effectiveSortMode) {
       case "internal": return cat.internalRevenue;
       case "market": return cat.marketDepleted;
       default: return cat.totalScore;
     }
-  }, [sortMode]);
+  }, [effectiveSortMode]);
 
   const getDisplayValue = (cat: CategoryRankingItem): string => {
-    switch (sortMode) {
+    switch (effectiveSortMode) {
       case "internal": return formatCurrency(cat.internalRevenue);
       case "market": return `${formatNumber(cat.marketDepleted)} un.`;
       default: return formatCurrency(cat.internalRevenue);
@@ -234,19 +328,15 @@ export function CategoryRanking({ days = 30, categoryId, supplierId, productId, 
     return items;
   }, [getBarValue, sortedCategories]);
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader className="pb-3"><Skeleton className="h-5 w-56" /></CardHeader>
-        <CardContent className="space-y-2">
-          {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-12 rounded" />)}
-        </CardContent>
-      </Card>
-    );
-  }
-  if (isError && !categories) {
-    return <CategoryRankingUnavailable categoryName={categoryName} isFetching={isFetching} onRetry={() => void refetch()} />;
-  }
+  const blockingState = getCategoryRankingBlockingState({
+    isLoading,
+    isError,
+    hasRanking: Boolean(ranking),
+    categoryName,
+    isFetching,
+    onRetry: () => void refetch(),
+  });
+  if (blockingState) return blockingState;
 
   const hasData = sortedCategories.length > 0;
   const maxVal = hasData ? Math.max(...sortedCategories.map(getBarValue)) : 0;
@@ -258,9 +348,10 @@ export function CategoryRanking({ days = 30, categoryId, supplierId, productId, 
 
   return (
     <Card>
-      <CategoryRankingHeader days={days} categoryName={categoryName} sortMode={sortMode} viewMode={viewMode} onSortModeChange={setSortMode} onToggleView={() => setViewMode((view) => view === "list" ? "chart" : "list")} />
+      <CategoryRankingHeader days={days} categoryName={categoryName} sortMode={effectiveSortMode} viewMode={viewMode} onSortModeChange={setSortMode} onToggleView={() => setViewMode((view) => view === "list" ? "chart" : "list")} marketAvailable={marketAvailable} />
       <CardContent>
-        <CategoryRankingError isError={isError} hasData={Boolean(categories)} isFetching={isFetching} onRetry={() => void refetch()} />
+        <CategoryRankingError isError={isError} hasData={Boolean(ranking)} isFetching={isFetching} onRetry={() => void refetch()} />
+        <CategoryMarketStatus marketAvailable={marketAvailable} isFetching={isFetching} onRetry={() => void refetch()} />
         {!hasData ? (
           <IntelligenceEmptyState
             title="Nenhuma categoria com vendas"
@@ -294,7 +385,7 @@ export function CategoryRanking({ days = 30, categoryId, supplierId, productId, 
                         <Cell key={i} fill={entry.fill} />
                       ))}
                     </Pie>
-                    <RechartsTooltip content={<CategoryTooltipContent pieData={pieData} formatCurrency={formatCurrency} formatNumber={formatNumber} />} />
+                    <RechartsTooltip content={<CategoryTooltipContent pieData={pieData} formatCurrency={formatCurrency} formatNumber={formatNumber} marketAvailable={marketAvailable} />} />
                     <Legend
                       verticalAlign="bottom"
                       height={36}
@@ -335,7 +426,7 @@ export function CategoryRanking({ days = 30, categoryId, supplierId, productId, 
                                 <span className="font-medium truncate text-xs">{cat.categoryName}</span>
                               </div>
                               <div className="text-right shrink-0 flex items-center gap-2">
-                                {sortMode !== "market" && cat.marketDepleted > 0 && (
+                                {effectiveSortMode !== "market" && cat.marketDepleted > 0 && (
                                   <Badge variant="outline" className="text-[9px] px-1 py-0 gap-0.5">
                                     <Store className="h-2.5 w-2.5" />
                                     {formatNumber(cat.marketDepleted)}
@@ -366,11 +457,7 @@ export function CategoryRanking({ days = 30, categoryId, supplierId, productId, 
                             <TrendingUp className="h-3 w-3 text-success" />
                             <span>Interno: {formatCurrency(cat.internalRevenue)} ({formatNumber(cat.internalQty)} un.)</span>
                           </div>
-                          <div className="flex items-center gap-1.5">
-                            <Store className="h-3 w-3 text-primary" />
-                            <span>Mercado (saídas): {formatNumber(cat.marketDepleted)} un.</span>
-                          </div>
-                          <p className="text-muted-foreground">Score: {cat.totalScore.toFixed(1)}</p>
+                          <CategoryMarketDetails marketAvailable={marketAvailable} category={cat} formatNumber={formatNumber} />
                         </TooltipContent>
                       </Tooltip>
                     );
