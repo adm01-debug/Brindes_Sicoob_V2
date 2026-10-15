@@ -133,6 +133,34 @@ describe("useMockupGenerator (smoke)", () => {
     await waitFor(() => expect(result.current.productSelection?.product.id).toBe(productId));
     expect(window.location.search).toBe("");
   });
+
+  it("mostra erro após falha do fetch e permite tentar novamente a pré-seleção da URL", async () => {
+    const { waitFor } = await import("@testing-library/react");
+    const { renderHookWithProviders } = await import("./_helpers/render-hook-providers");
+    const { useMockupGenerator } = await import("@/hooks/useMockupGenerator");
+    const productId = "produto-com-falha";
+    window.history.replaceState({}, "", `/mockup-generator?product_id=${productId}`);
+
+    const { result, rerender } = renderHookWithProviders(() => useMockupGenerator(), {
+      route: `/mockup-generator?product_id=${productId}`,
+    });
+
+    await waitFor(() => expect(productContextMock.getProductById).toHaveBeenCalledTimes(1));
+    expect(result.current.urlProductLoadError).toBe(false);
+
+    // O provider iniciou a busca, mas concluiu sem colocar o produto no cache.
+    productContextMock.isLoading = true;
+    rerender();
+    productContextMock.isLoading = false;
+    rerender();
+    await waitFor(() => expect(result.current.urlProductLoadError).toBe(true));
+    expect(window.location.search).toContain(`product_id=${productId}`);
+
+    result.current.retryUrlProduct();
+    await waitFor(() => expect(productContextMock.getProductById).toHaveBeenCalledTimes(2));
+    expect(result.current.urlProductLoadError).toBe(false);
+    expect(window.location.search).toContain(`product_id=${productId}`);
+  });
 });
 
 describe("GeneratedMockup data shape", () => {

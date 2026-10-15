@@ -2,7 +2,7 @@
  * useBIDossierExport — orquestra todos os hooks do BI e gera o PDF do dossiê.
  * Aguarda todos resolverem antes de exportar (nada de PDF parcial).
  */
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCrmCompany } from "@/hooks/useCrmCompanies";
 import { useClientBI } from "@/hooks/bi/useClientBI";
@@ -15,16 +15,67 @@ import { resolveIndustryRecommendation } from "@/lib/bi/industryRecommendations"
 import { generateBIDossierPDF, buildDossierFileName } from "@/lib/bi/dossierPdfGenerator";
 import { buildCategorySection } from "@/lib/bi/executive-summary";
 import { getCompanyDisplayName } from "@/types/crm";
+import { isDemoClient } from "@/lib/bi/demoClient";
 
 interface UseBIDossierExport {
   isReady: boolean;
+  isError: boolean;
+  errorMessage: string | null;
+  failedSources: string[];
   isExporting: boolean;
   exportPDF: () => Promise<void>;
+  retry: () => Promise<void>;
+}
+
+interface DossierSourceErrors {
+  company: boolean;
+  clientHistory: boolean;
+  industryComparison: boolean;
+  clientProducts: boolean;
+  industryTrends: boolean;
+  clientCategories: boolean;
+  industryCategories: boolean;
+}
+
+function listFailedDossierSources(errors: DossierSourceErrors): string[] {
+  return [
+    [errors.company, "cadastro do cliente"],
+    [errors.clientHistory, "histórico de pedidos do cliente"],
+    [errors.industryComparison, "comparação com o setor"],
+    [errors.clientProducts, "produtos já cotados pelo cliente"],
+    [errors.industryTrends, "tendências do setor"],
+    [errors.clientCategories, "categorias do cliente"],
+    [errors.industryCategories, "categorias do setor"],
+  ].flatMap(([failed, source]) => failed ? [source as string] : []);
+}
+
+function evaluateDossierReadiness(input: {
+  clientId: string | null;
+  hasCompany: boolean;
+  loadingStates: boolean[];
+  errors: DossierSourceErrors;
+}): Pick<UseBIDossierExport, "isReady" | "isError" | "errorMessage" | "failedSources"> {
+  const failedSources = listFailedDossierSources(input.errors);
+  const isError = failedSources.length > 0;
+  return {
+    isReady: Boolean(input.clientId && input.hasCompany && !isError && !input.loadingStates.some(Boolean)),
+    isError,
+    failedSources,
+    errorMessage: isError
+      ? `Não foi possível carregar todos os dados necessários para o dossiê (${failedSources.join(", ")}). Tente novamente antes de exportar.`
+      : null,
+  };
+}
+
+function requiresIndustryData(ramo: string | null, clientId: string | null): boolean {
+  return Boolean(ramo) || isDemoClient(clientId);
 }
 
 export function useBIDossierExport(clientId: string | null): UseBIDossierExport {
   const { user, profile } = useAuth();
-  const { data: company, isLoading: companyLoading } = useCrmCompany(clientId);
+  const companyQuery = useCrmCompany(clientId);
+  const company = companyQuery.data;
+  const companyLoading = companyQuery.isLoading;
   const ramo = company?.ramo_atividade ?? null;
 
   const clientBI = useClientBI(clientId ?? undefined);
@@ -35,26 +86,43 @@ export function useBIDossierExport(clientId: string | null): UseBIDossierExport 
   const catIndustry = useIndustryCategoryTrends(ramo, clientId);
 
   const [isExporting, setIsExporting] = useState(false);
-
-  const isReady = useMemo(() => {
-    if (!clientId) return false;
-    if (companyLoading) return false;
-    if (clientBI.isLoading || vsIndustry.isLoading) return false;
-    if (affinityQ.isLoading) return false;
-    if (catAffinity.isLoading) return false;
-    if (ramo && (trendsQ.isLoading || catIndustry.isLoading)) return false;
-    return true;
-  }, [
+  const industryRequired = requiresIndustryData(ramo, clientId);
+  const readiness = evaluateDossierReadiness({
     clientId,
-    companyLoading,
-    clientBI.isLoading,
-    vsIndustry.isLoading,
-    affinityQ.isLoading,
-    trendsQ.isLoading,
-    catAffinity.isLoading,
-    catIndustry.isLoading,
-    ramo,
-  ]);
+    hasCompany: Boolean(company),
+    loadingStates: [
+      companyLoading,
+      clientBI.isLoading,
+      vsIndustry.isLoading,
+      affinityQ.isLoading,
+      catAffinity.isLoading,
+      industryRequired && trendsQ.isLoading,
+      industryRequired && catIndustry.isLoading,
+    ],
+    errors: {
+    company: companyQuery.isError,
+    clientHistory: clientBI.isUnavailable,
+    industryComparison: vsIndustry.isError,
+    clientProducts: affinityQ.isError,
+    industryTrends: industryRequired && trendsQ.isError,
+    clientCategories: catAffinity.isError,
+    industryCategories: industryRequired && catIndustry.isError,
+    },
+  });
+  const { isReady, isError, errorMessage, failedSources } = readiness;
+
+  const retry = useCallback(async () => {
+    const retries: Array<Promise<unknown>> = [
+      companyQuery.refetch(),
+      clientBI.refetch(),
+      vsIndustry.refetch(),
+      affinityQ.refetch(),
+      catAffinity.refetch(),
+      catIndustry.refetch(),
+    ];
+    if (industryRequired) retries.push(trendsQ.refetch());
+    await Promise.allSettled(retries);
+  }, [companyQuery, clientBI, vsIndustry, affinityQ, catAffinity, catIndustry, industryRequired, trendsQ]);
 
   const exportPDF = useCallback(async () => {
     if (!clientId || !company || !isReady) return;
@@ -112,5 +180,5 @@ export function useBIDossierExport(clientId: string | null): UseBIDossierExport 
     ramo,
   ]);
 
-  return { isReady, isExporting, exportPDF };
+  return { isReady, isError, errorMessage, failedSources, isExporting, exportPDF, retry };
 }

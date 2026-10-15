@@ -35,7 +35,7 @@ vi.mock('@/hooks/useCategoryIcons', () => ({
   getCategoryIcon: () => '📦',
 }));
 vi.mock('@/components/ai/AIChat', () => ({
-  AIChat: ({ assistantMode, assistantContext }: { assistantMode: string; assistantContext: string }) => <div data-testid="chat-real">{assistantMode} {assistantContext}</div>,
+  AIChat: ({ assistantMode, assistantContext, className }: { assistantMode: string; assistantContext: string; className?: string }) => <div data-testid="chat-real" className={className}>{assistantMode} {assistantContext}</div>,
 }));
 
 import { AIMockupAssistant } from '@/components/ai/AIMockupAssistant';
@@ -124,6 +124,22 @@ describe('integridade de dados nas ferramentas comerciais', () => {
     expect(screen.getByTestId('chat-real').textContent).toContain('Produto: Caneca Sicoob');
     expect(screen.getByTestId('chat-real').textContent).toContain('Técnica: Laser');
     expect(screen.queryByText(/Simulate AI response/i)).toBeNull();
+  });
+
+  it('preserva a conversa ao minimizar e reabrir o assistente', () => {
+    render(<AIMockupAssistant productName="Caneca Sicoob" techniqueName="Laser" />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir assistente de layouts' }));
+    const chat = screen.getByTestId('chat-real');
+    fireEvent.click(screen.getByText('Assistente de Layouts'));
+
+    expect(screen.getByTestId('chat-real')).toBe(chat);
+    expect(chat.className).toContain('hidden');
+
+    fireEvent.click(screen.getByText('Assistente de Layouts'));
+
+    expect(screen.getByTestId('chat-real')).toBe(chat);
+    expect(chat.className).not.toContain('hidden');
   });
 
   it('calcula os indicadores de clientes apenas com registros reais do CRM', () => {

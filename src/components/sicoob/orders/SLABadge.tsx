@@ -107,7 +107,7 @@ export const SLABadge = ({ status, deadline, startedAt, className, showCountdown
           <Icon className="h-3 w-3" />
           <span>{current.label}</span>
         </Badge>
-        {displayDetails && (
+        {displayDetails && startedAt && (
           <span className={cn(
             "text-[8px] font-bold",
             status === 'critical' ? "text-destructive" : "text-muted-foreground"

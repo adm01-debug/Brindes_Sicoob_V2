@@ -17,7 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Sparkles, Send, Bot, User as UserIcon, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { useClientHealthScore } from "@/hooks/bi/useClientHealthScore";
+import { getAvailableHealthScore, useClientHealthScore } from "@/hooks/bi/useClientHealthScore";
 import { useClientBI } from "@/hooks/bi/useClientBI";
 import { useClientAffinity } from "@/hooks/bi/useClientAffinity";
 import { useIndustryTrends } from "@/hooks/bi/useIndustryTrends";
@@ -85,7 +85,7 @@ export function BIAiCopilot({ open, onOpenChange, clientId, clientName, ramoAtiv
       const context = {
         clientName,
         ramoAtividade,
-        score: health.score,
+        score: getAvailableHealthScore(health),
         tier: health.tier,
         crossZoneInsight: health.crossZoneInsight,
         nextAction: health.nextActionLabel,

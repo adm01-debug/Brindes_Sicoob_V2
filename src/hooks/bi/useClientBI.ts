@@ -42,6 +42,8 @@ export interface ClientBI {
   /** Variação percentual current vs previous */
   delta: PeriodDelta;
   isLoading: boolean;
+  error: unknown;
+  refetch: () => Promise<unknown>;
 }
 
 const DAY_MS = 86400000;
@@ -53,7 +55,7 @@ function pctDelta(current: number, previous: number): number {
 
 export function useClientBI(clientId?: string): ClientBI {
   const demo = isDemoClient(clientId);
-  const { data, isLoading, isError } = useClientOrdersHistory(demo ? undefined : clientId);
+  const { data, isLoading, isError, error, refetch } = useClientOrdersHistory(demo ? undefined : clientId);
 
   return useMemo(() => {
     if (demo) {
@@ -84,6 +86,8 @@ export function useClientBI(clientId?: string): ClientBI {
           hasPreviousData: true,
         },
         isLoading: false,
+        error: null,
+        refetch: async () => undefined,
       };
     }
 
@@ -108,6 +112,8 @@ export function useClientBI(clientId?: string): ClientBI {
           hasPreviousData: false,
         },
         isLoading,
+        error,
+        refetch,
       };
     }
 
@@ -145,7 +151,7 @@ export function useClientBI(clientId?: string): ClientBI {
     return {
       isMock: false,
       hasData: true,
-      isUnavailable: false,
+      isUnavailable: isError,
       ltv: data.totalLtv,
       avgTicket: data.avgTicket,
       ordersCount: data.ordersCount,
@@ -184,6 +190,8 @@ export function useClientBI(clientId?: string): ClientBI {
         hasPreviousData: inPrevious.length > 0,
       },
       isLoading,
+      error,
+      refetch,
     };
-  }, [data, demo, isError, isLoading]);
+  }, [data, demo, error, isError, isLoading, refetch]);
 }

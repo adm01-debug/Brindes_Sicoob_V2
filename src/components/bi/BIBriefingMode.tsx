@@ -29,7 +29,7 @@ import {
   Target,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useClientHealthScore } from "@/hooks/bi/useClientHealthScore";
+import { getAvailableHealthScore, useClientHealthScore } from "@/hooks/bi/useClientHealthScore";
 import { useClientBI } from "@/hooks/bi/useClientBI";
 import { useClientAffinity } from "@/hooks/bi/useClientAffinity";
 import { useIndustryTrends } from "@/hooks/bi/useIndustryTrends";
@@ -50,6 +50,7 @@ const fmtBRL = (v: number) =>
 
 export function BIBriefingMode({ open, onOpenChange, clientId, clientName, ramoAtividade }: Props) {
   const health = useClientHealthScore(clientId, ramoAtividade);
+  const availableHealthScore = getAvailableHealthScore(health);
   const bi = useClientBI(clientId);
   const affinity = useClientAffinity(clientId);
   const trends = useIndustryTrends(ramoAtividade, clientId);
@@ -150,7 +151,7 @@ export function BIBriefingMode({ open, onOpenChange, clientId, clientName, ramoA
 
     return [
       `📋 BRIEFING — ${clientName}`,
-      `Score de saúde: ${health.score}/100 (${tierStyles.label})`,
+      `Score de saúde: ${availableHealthScore === null ? "não calculado (dados insuficientes)" : `${availableHealthScore}/100 (${tierStyles.label})`}`,
       ``,
       `Diagnóstico: ${health.crossZoneInsight}`,
       ``,
@@ -165,7 +166,7 @@ export function BIBriefingMode({ open, onOpenChange, clientId, clientName, ramoA
       `🎯 Produtos para apresentar:`,
       ...products.map((p, i) => `  ${i + 1}. ${p.name} (${p.source})`),
     ].join("\n");
-  }, [clientName, health, products, tierStyles.label, categoryHighlights]);
+  }, [clientName, health, products, tierStyles.label, categoryHighlights, availableHealthScore]);
 
   const handleCopy = async () => {
     try {
@@ -195,7 +196,7 @@ export function BIBriefingMode({ open, onOpenChange, clientId, clientName, ramoA
             <div className={cn("rounded-2xl p-4 flex items-center gap-4", tierStyles.bg)}>
               <div className="h-20 w-20 rounded-2xl bg-background/80 border-[1.5px] flex flex-col items-center justify-center shadow-sm shrink-0">
                 <span className={cn("font-display font-bold text-3xl leading-none", tierStyles.color)}>
-                  {health.score}
+                  {availableHealthScore ?? "—"}
                 </span>
                 <span className="text-[9px] text-muted-foreground uppercase tracking-wider mt-0.5">
                   Score

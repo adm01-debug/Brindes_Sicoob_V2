@@ -42,6 +42,13 @@ export interface ClientHealthScoreResult {
   ctaUrgent: boolean;
 }
 
+/** Retorna null quando o score é apenas o valor sentinela de dados insuficientes. */
+export function getAvailableHealthScore(
+  health: Pick<ClientHealthScoreResult, "score" | "tier">,
+): number | null {
+  return health.tier === "unknown" ? null : health.score;
+}
+
 function recencyScore(days: number | null): number {
   if (days === null || days === undefined) return 0;
   if (days <= 30) return 100;
@@ -257,6 +264,9 @@ export function buildHealthResult(
 ): ClientHealthScoreResult {
   const isLoading = bi.isLoading || vs.isLoading || seasonality.isLoading;
   if (isLoading) return unavailableHealthResult(true);
+  // Sem benchmark não é possível validar o score global: recência e sazonalidade
+  // podem ser reais, mas não substituem a comparação setorial que o score promete.
+  if (vs.isError) return unavailableHealthResult(false);
   const { components, recency, frequency, ticket, growth, share, ticketMetric, availableWeight } = getScoreComponents(bi, vs, seasonality);
   if (availableWeight === 0) return unavailableHealthResult(false);
   const score = weightedScore(components, availableWeight);

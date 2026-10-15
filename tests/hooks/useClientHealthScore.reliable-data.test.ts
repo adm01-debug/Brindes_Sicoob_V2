@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildHealthResult } from '@/hooks/bi/useClientHealthScore';
+import { buildHealthResult, getAvailableHealthScore } from '@/hooks/bi/useClientHealthScore';
 
 describe('score de saúde com fonte comprovada', () => {
+  it('não trata o score sentinela desconhecido como um zero real', () => {
+    expect(getAvailableHealthScore({ score: 0, tier: 'unknown' })).toBeNull();
+    expect(getAvailableHealthScore({ score: 0, tier: 'risk' })).toBe(0);
+    expect(getAvailableHealthScore({ score: 82, tier: 'healthy' })).toBe(82);
+  });
+
   it('não fabrica score, potencial ou recomendação quando a amostra é insuficiente', () => {
     const result = buildHealthResult(
       {
@@ -89,5 +95,34 @@ describe('score de saúde com fonte comprovada', () => {
     expect(result.breakdown.growth).toMatchObject({ score: 100, weight: 33 });
     expect(result.breakdown.frequency.weight).toBe(0);
     expect(result.breakdown.ticket.weight).toBe(0);
+  });
+
+  it('não publica score global quando a consulta do benchmark falha, mesmo com recência e sazonalidade reais', () => {
+    const result = buildHealthResult(
+      {
+        hasData: true,
+        isUnavailable: false,
+        isLoading: false,
+        daysSinceLastOrder: 20,
+        ltv: 12_000,
+        avgTicket: 2_000,
+        ordersCount: 6,
+        recentOrders: [],
+      } as never,
+      { hasEnoughSample: false, isLoading: false, isError: true, metrics: [] } as never,
+      {
+        hasEnoughData: true,
+        isLoading: false,
+        client: [{ month: new Date().getMonth() + 1, quotesCount: 3 }],
+      } as never,
+    );
+
+    expect(result).toMatchObject({
+      score: 0,
+      tier: 'unknown',
+      nextActionLabel: 'Dados insuficientes',
+      ctaUrgent: false,
+    });
+    expect(getAvailableHealthScore(result)).toBeNull();
   });
 });

@@ -55,6 +55,7 @@ export const usePaBudget = (paId?: string) => {
   };
 
   return {
+    targetPaId,
     budget,
     isLoading,
     error,

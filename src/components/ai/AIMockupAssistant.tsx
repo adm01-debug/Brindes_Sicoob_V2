@@ -52,17 +52,15 @@ export function AIMockupAssistant({ productName, techniqueName, className }: AIM
         <Badge variant="secondary" className="text-[10px]">Beta</Badge>
         <Button variant="ghost" size="icon" aria-label="Fechar" className="h-7 w-7" onClick={(event) => { event.stopPropagation(); setIsOpen(false); }}><X className="h-4 w-4" /></Button>
       </div>
-      {!isMinimized && (
-        <AIChat
-          className="h-[calc(100%-57px)] rounded-none border-0"
-          maxHeight="310px"
-          contextId={productName}
-          assistantMode="layout"
-          assistantContext={[productName && `Produto: ${productName}`, techniqueName && `Técnica: ${techniqueName}`].filter(Boolean).join("; ")}
-          greeting="Olá! Posso revisar posição, contraste e viabilidade visual do seu mockup com base nos dados selecionados."
-          placeholder="Pergunte sobre o mockup…"
-        />
-      )}
+      <AIChat
+        className={cn("h-[calc(100%-57px)] rounded-none border-0", isMinimized && "hidden")}
+        maxHeight="310px"
+        contextId={productName}
+        assistantMode="layout"
+        assistantContext={[productName && `Produto: ${productName}`, techniqueName && `Técnica: ${techniqueName}`].filter(Boolean).join("; ")}
+        greeting="Olá! Posso revisar posição, contraste e viabilidade visual do seu mockup com base nos dados selecionados."
+        placeholder="Pergunte sobre o mockup…"
+      />
     </motion.div>
   );
 }

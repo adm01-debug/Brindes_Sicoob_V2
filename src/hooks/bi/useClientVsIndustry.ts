@@ -24,6 +24,9 @@ export interface MetricComparison {
 
 export interface ClientVsIndustryResult {
   isLoading: boolean;
+  isError: boolean;
+  error: unknown;
+  refetch: () => Promise<unknown>;
   isMock: boolean;
   hasClientData: boolean;
   isClientDataUnavailable: boolean;
@@ -152,6 +155,9 @@ function emptyComparison(
 ): ClientVsIndustryResult {
   return {
     ...input,
+    isError: false,
+    error: null,
+    refetch: async () => undefined,
     hasClientData: clientBI.hasData,
     isClientDataUnavailable: clientBI.isUnavailable,
     daysWindow: DAYS_WINDOW,
@@ -186,6 +192,9 @@ function resolveComparison(context: ComparisonContext): ClientVsIndustryResult {
   ];
   return {
     isLoading,
+    isError: false,
+    error: null,
+    refetch: async () => undefined,
     isMock: demo,
     hasClientData: true,
     isClientDataUnavailable: false,
@@ -214,5 +223,10 @@ export function useClientVsIndustry(
   const isLoading = clientBI.isLoading || benchmarkQuery.isLoading;
   const benchmark = benchmarkQuery.data?.rows?.[0];
   const sampleSize = Number(benchmark?.total_clients_sampled ?? 0);
-  return resolveComparison({ clientBI, benchmark, sampleSize, isLoading, demo });
+  return {
+    ...resolveComparison({ clientBI, benchmark, sampleSize, isLoading, demo }),
+    isError: clientBI.isUnavailable || benchmarkQuery.isError,
+    error: benchmarkQuery.error ?? clientBI.error,
+    refetch: async () => Promise.all([clientBI.refetch(), benchmarkQuery.refetch()]),
+  };
 }
