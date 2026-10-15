@@ -5,19 +5,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { isDemoMode } from "@/pages/trends/is-demo-mode";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, AlertTriangle, Search, Plus } from "lucide-react";
 import { subDays } from "date-fns";
-
-interface UnmetDemandItem {
-  term: string;
-  searchCount: number;
-  lastSearchedAt: string;
-}
+import { loadUnmetDemand, type UnmetDemandItem, type UnmetDemandResult } from "./unmet-demand-query";
 
 interface UnmetDemandCardProps {
   days: number;
@@ -102,42 +96,23 @@ export function UnmetDemandCard({ days }: UnmetDemandCardProps) {
 
   const { data, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: ["unmet-demand", days, demo],
-    queryFn: async (): Promise<UnmetDemandItem[]> => {
+    queryFn: async (): Promise<UnmetDemandResult> => {
       if (demo) {
         const { MOCK_UNMET_DEMAND } = await import("@/pages/trends/trends-mock");
         const now = new Date().toISOString();
-        return MOCK_UNMET_DEMAND.map(d => ({
-          term: d.term, searchCount: d.count, lastSearchedAt: now,
-        }));
+        return {
+          items: MOCK_UNMET_DEMAND.map(d => ({
+            term: d.term, searchCount: d.count, lastSearchedAt: now,
+          })),
+          totalLostSearches: MOCK_UNMET_DEMAND.reduce((total, item) => total + item.count, 0),
+        };
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: rows, error } = await (supabase.from as any)("search_analytics")
-        .select("search_term, created_at")
-        .eq("results_count", 0)
-        .gte("created_at", since)
-        .order("created_at", { ascending: false })
-        .limit(500);
-      if (error) throw error;
-
-      const map = new Map<string, { count: number; last: string }>();
-      (rows ?? []).forEach((r: { search_term: string; created_at: string }) => {
-        const key = r.search_term.trim().toLowerCase();
-        if (!key) return;
-        const existing = map.get(key) ?? { count: 0, last: r.created_at };
-        existing.count += 1;
-        if (r.created_at > existing.last) existing.last = r.created_at;
-        map.set(key, existing);
-      });
-
-      return Array.from(map.entries())
-        .map(([term, v]) => ({ term, searchCount: v.count, lastSearchedAt: v.last }))
-        .sort((a, b) => b.searchCount - a.searchCount)
-        .slice(0, 10);
+      return loadUnmetDemand(since);
     },
     staleTime: 1000 * 60 * 5,
   });
 
-  const totalLostSearches = data?.reduce((s, item) => s + item.searchCount, 0) ?? 0;
+  const totalLostSearches = data?.totalLostSearches ?? 0;
 
   return (
     <Card className="overflow-hidden border-warning/30">
@@ -163,7 +138,7 @@ export function UnmetDemandCard({ days }: UnmetDemandCardProps) {
       </CardHeader>
       <CardContent className="p-0">
         {isError && <QueryErrorNotice hasData={Boolean(data)} isFetching={isFetching} onRetry={() => void refetch()} />}
-        <UnmetDemandResults data={data} isLoading={isLoading} isError={isError} navigate={navigate} />
+        <UnmetDemandResults data={data?.items} isLoading={isLoading} isError={isError} navigate={navigate} />
       </CardContent>
     </Card>
   );

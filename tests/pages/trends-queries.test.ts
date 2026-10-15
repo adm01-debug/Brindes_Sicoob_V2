@@ -162,6 +162,64 @@ describe('consultas de tendências', () => {
     });
   });
 
+  it('deriva sinais de mercado da carga completa sem o antigo corte de duas mil linhas', () => {
+    const currentViews = Array.from({ length: 2501 }, (_, index) => ({
+      ...productRow(index),
+      product_name: 'Caneca Premium',
+    }));
+    const currentSearches = Array.from({ length: 2501 }, (_, index) => ({
+      ...searchRow(index),
+      search_term: 'Caneca Sicoob',
+      results_count: 5,
+    }));
+    const previousSearches = Array.from({ length: 500 }, (_, index) => ({
+      ...searchRow(index + 3000, '2026-09-10T12:00:00.000Z'),
+      search_term: 'Caneca Sicoob',
+      results_count: 5,
+    }));
+
+    const snapshot = buildTrendsSnapshot(
+      { views: currentViews, searches: [...currentSearches, ...previousSearches] },
+      {
+        sinceCurrent: '2026-09-15T00:00:00.000Z',
+        recentCutoff: '2026-09-20T00:00:00.000Z',
+        days: 7,
+        referenceDate: new Date('2026-09-22T12:00:00.000Z'),
+      },
+    );
+
+    expect(snapshot.hotSearches.items[0]).toMatchObject({
+      term: 'caneca sicoob',
+      searchCount: 2501,
+      previousCount: 500,
+      delta: 400,
+    });
+    expect(snapshot.hotSearches.totalSearches).toBe(2501);
+    expect(snapshot.topCategories[0]).toMatchObject({ category: 'Caneca', views: 2501 });
+    expect(snapshot.heatmap.max).toBe(5002);
+  });
+
+  it('mantém no selo o total global quando há mais termos que o top 10', () => {
+    const searches = Array.from({ length: 12 }, (_, index) => ({
+      ...searchRow(index),
+      search_term: `termo ${index}`,
+      results_count: 1,
+    }));
+
+    const snapshot = buildTrendsSnapshot(
+      { views: [], searches },
+      {
+        sinceCurrent: '2026-09-15T00:00:00.000Z',
+        recentCutoff: '2026-09-20T00:00:00.000Z',
+        days: 7,
+        referenceDate: new Date('2026-09-22T12:00:00.000Z'),
+      },
+    );
+
+    expect(snapshot.hotSearches.items).toHaveLength(10);
+    expect(snapshot.hotSearches.totalSearches).toBe(12);
+  });
+
   it('calcula a base do ranking dentro do período atual sem misturar o período anterior', () => {
     const currentRecent = {
       ...productRow(1, '2026-09-25T12:00:00.000Z'),

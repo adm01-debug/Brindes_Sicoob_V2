@@ -101,10 +101,17 @@ describe('selectCrmById', () => {
     expect(result).toEqual({ id: '1', name: 'Test' });
   });
 
-  it('returns null on 404', async () => {
-    mockInvoke.mockResolvedValue({ data: null, error: new Error('404 not found') });
-    const result = await selectCrmById('companies', 'nonexistent');
-    expect(result).toBeNull();
+  it('preserva record_not_found como ausência legítima no contrato padrão', async () => {
+    mockInvoke.mockResolvedValueOnce({ data: { error: 'record_not_found' }, error: null });
+
+    await expect(selectCrmById('companies', 'nonexistent')).resolves.toBeNull();
+  });
+
+  it('não converte um 404 de infraestrutura em ausência no contrato padrão', async () => {
+    mockInvoke.mockResolvedValueOnce({ data: null, error: new Error('404 na rota do bridge') });
+
+    await expect(selectCrmById('companies', 'empresa-1'))
+      .rejects.toThrow('CRM DB error: 404 na rota do bridge');
   });
 
   it('distingue CRM indisponível de registro inexistente no contrato estrito', async () => {
@@ -122,6 +129,38 @@ describe('selectCrmById', () => {
 
     await expect(selectCrmByIdStrict('companies', '00000000-0000-4000-8000-000000000001'))
       .resolves.toBeNull();
+  });
+
+  it('reconhece o record_not_found emitido pelo 404 do bridge como ausência legítima', async () => {
+    mockInvoke.mockResolvedValueOnce({ data: { error: 'record_not_found' }, error: null });
+
+    await expect(selectCrmByIdStrict('companies', 'empresa-removida')).resolves.toBeNull();
+  });
+
+  it.each([
+    ['padrão', selectCrmById],
+    ['estrito', selectCrmByIdStrict],
+  ])('extrai record_not_found do Response 404 no contrato %s', async (_contract, selectById) => {
+    const bridgeError = new Error('Edge Function returned a non-2xx status code') as Error & {
+      context: Response;
+    };
+    bridgeError.context = new Response(JSON.stringify({ error: 'record_not_found' }), {
+      status: 404,
+      headers: { 'content-type': 'application/json' },
+    });
+    mockInvoke.mockResolvedValueOnce({ data: null, error: bridgeError });
+
+    await expect(selectById('companies', 'empresa-removida')).resolves.toBeNull();
+  });
+
+  it('não converte um 404 sem record_not_found em registro ausente', async () => {
+    mockInvoke.mockResolvedValueOnce({
+      data: null,
+      error: new Error('404 na rota do bridge'),
+    });
+
+    await expect(selectCrmByIdStrict('companies', 'empresa-1'))
+      .rejects.toThrow('CRM DB error: 404 na rota do bridge');
   });
 });
 

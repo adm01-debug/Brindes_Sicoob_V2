@@ -46,11 +46,36 @@ export interface KpiSnapshot {
   };
 }
 
+export interface HotSearchItem {
+  term: string;
+  searchCount: number;
+  previousCount: number;
+  delta: number;
+}
+
+export interface CategoryTrend {
+  category: string;
+  views: number;
+  recentViews: number;
+  baselineViews: number;
+  trendingScore: number;
+  classification: 'rising' | 'stable' | 'falling' | 'new';
+  growthPercent: number;
+}
+
+export interface TrendsHeatmapData {
+  matrix: number[][];
+  max: number;
+}
+
 export interface TrendsSnapshot {
   products: AggregatedProduct[];
   searches: { current: AggregatedSearch[] };
   daily: DailyTrendData;
   kpi: KpiSnapshot;
+  hotSearches: { items: HotSearchItem[]; totalSearches: number };
+  topCategories: CategoryTrend[];
+  heatmap: TrendsHeatmapData;
 }
 
 interface ProjectionInput {
@@ -248,6 +273,96 @@ function buildKpiSnapshot(activity: TrendsActivity, sinceCurrent: string): KpiSn
   };
 }
 
+function buildHotSearches(
+  data: SearchActivity[],
+  sinceCurrent: string,
+): { items: HotSearchItem[]; totalSearches: number } {
+  const current = new Map<string, number>();
+  const previous = new Map<string, number>();
+  let totalSearches = 0;
+  data.forEach((row) => {
+    const term = (row.search_term ?? '').trim().toLowerCase();
+    if (!term || (row.results_count ?? 0) <= 0) return;
+    const target = row.created_at >= sinceCurrent ? current : previous;
+    target.set(term, (target.get(term) ?? 0) + 1);
+    if (target === current) totalSearches += 1;
+  });
+
+  const items = Array.from(current.entries())
+    .map(([term, searchCount]) => {
+      const previousCount = previous.get(term) ?? 0;
+      const delta =
+        previousCount === 0 ? 100 : ((searchCount - previousCount) / previousCount) * 100;
+      return { term, searchCount, previousCount, delta: Math.round(delta) };
+    })
+    .sort((left, right) => right.searchCount - left.searchCount)
+    .slice(0, 10);
+  return { items, totalSearches };
+}
+
+function extractCategory(name: string | null | undefined): string {
+  return name?.trim().split(/\s+/)[0] || 'Outros';
+}
+
+function buildTopCategories(data: ProductViewActivity[], input: ProjectionInput): CategoryTrend[] {
+  const recentDays = Math.max(Math.floor(input.days / 3), 1);
+  const baselineDays = input.days - recentDays;
+  const categories = new Map<string, { views: number; recent: number }>();
+
+  data.forEach((view) => {
+    if (view.created_at < input.sinceCurrent) return;
+    const category = extractCategory(view.product_name);
+    const aggregate = categories.get(category) ?? { views: 0, recent: 0 };
+    aggregate.views += 1;
+    if (view.created_at >= input.recentCutoff) aggregate.recent += 1;
+    categories.set(category, aggregate);
+  });
+
+  return Array.from(categories.entries())
+    .map(([category, aggregate]) => {
+      const baselineViews = aggregate.views - aggregate.recent;
+      const score = calculateTrendingScore({
+        recentCount: aggregate.recent,
+        baselineCount: baselineViews,
+        recentDays,
+        baselineDays,
+        totalVolume: aggregate.views,
+      });
+      return {
+        category,
+        views: aggregate.views,
+        recentViews: aggregate.recent,
+        baselineViews,
+        trendingScore: score.score,
+        classification: score.classification,
+        growthPercent: score.growthPercent,
+      };
+    })
+    .filter((category) => category.views >= 2)
+    .sort(
+      (left, right) =>
+        right.trendingScore * Math.log(right.views + 1) -
+        left.trendingScore * Math.log(left.views + 1),
+    )
+    .slice(0, 8);
+}
+
+function buildHeatmap(activity: TrendsActivity, sinceCurrent: string): TrendsHeatmapData {
+  const matrix: number[][] = Array.from({ length: 7 }, () => Array(24).fill(0));
+  const record = (rows: Array<{ created_at: string }>) => {
+    rows.forEach((row) => {
+      if (row.created_at < sinceCurrent) return;
+      const timestamp = new Date(row.created_at);
+      const day = matrix[timestamp.getDay()];
+      const hour = timestamp.getHours();
+      if (day) day[hour] = (day[hour] ?? 0) + 1;
+    });
+  };
+  record(activity.views);
+  record(activity.searches);
+  return { matrix, max: Math.max(...matrix.flat()) };
+}
+
 export function buildTrendsSnapshot(
   activity: TrendsActivity,
   input: ProjectionInput,
@@ -257,5 +372,8 @@ export function buildTrendsSnapshot(
     searches: buildTopSearches(activity.searches, input.sinceCurrent),
     daily: buildDailyTrends(activity, input),
     kpi: buildKpiSnapshot(activity, input.sinceCurrent),
+    hotSearches: buildHotSearches(activity.searches, input.sinceCurrent),
+    topCategories: buildTopCategories(activity.views, input),
+    heatmap: buildHeatmap(activity, input.sinceCurrent),
   };
 }

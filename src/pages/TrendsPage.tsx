@@ -10,8 +10,11 @@ import {
   buildTrendsSnapshot,
   type AggregatedProduct,
   type AggregatedSearch,
+  type CategoryTrend,
   type DailyTrendData,
+  type HotSearchItem,
   type KpiSnapshot,
+  type TrendsHeatmapData,
 } from './trends/trends-projections';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -52,7 +55,10 @@ interface TrendsMockModule {
   MOCK_KPI_PREVIOUS: KpiSnapshot['previous'];
   MOCK_PRODUCTS: AggregatedProduct[];
   MOCK_SEARCHES: AggregatedSearch[];
+  MOCK_HOT_SEARCHES: Array<{ term: string; count: number; growth: number }>;
+  MOCK_TOP_CATEGORIES: Array<{ category: string; views: number }>;
   buildMockDaily: (days: number) => DailyTrendData;
+  buildMockHeatmap: () => TrendsHeatmapData;
 }
 
 const EMPTY_KPI = { totalViews: 0, totalSearches: 0, uniqueProducts: 0, uniqueSearches: 0 };
@@ -265,9 +271,86 @@ function useTrendsSnapshot(controls: TrendsControls, queries: TrendQueries) {
 
 function useTrendRefresh(controls: TrendsControls, queries: TrendQueries) {
   return () => {
-    if (!controls.demo) void controls.refetchAccess();
+    if (controls.demo) {
+      void queries.mock.refetch();
+      return;
+    }
+    void controls.refetchAccess();
     if (!controls.queryEnabled) return;
     void queries.activity.refetch();
+  };
+}
+
+function buildMockHotSearches(mock: TrendsMockModule | undefined): HotSearchItem[] | undefined {
+  return mock?.MOCK_HOT_SEARCHES.map((search) => ({
+    term: search.term,
+    searchCount: search.count,
+    previousCount: Math.max(1, Math.round(search.count / (1 + search.growth / 100))),
+    delta: search.growth,
+  }));
+}
+
+function buildMockTopCategories(mock: TrendsMockModule | undefined): CategoryTrend[] | undefined {
+  return mock?.MOCK_TOP_CATEGORIES.map((category, index) => ({
+    category: category.category,
+    views: category.views,
+    recentViews: Math.round(category.views * 0.42),
+    baselineViews: Math.round(category.views * 0.58),
+    trendingScore: 2 + (mock.MOCK_TOP_CATEGORIES.length - index) * 0.3,
+    classification:
+      index < 3 ? 'rising' : index === mock.MOCK_TOP_CATEGORIES.length - 1 ? 'new' : 'stable',
+    growthPercent: [142, 98, 67, 32, 18, 0][index] ?? 0,
+  }));
+}
+
+function resolveHotSearchSignals(
+  demo: boolean,
+  mock: TrendsMockModule | undefined,
+  snapshot: ReturnType<typeof useTrendsSnapshot>,
+) {
+  const items = demo ? buildMockHotSearches(mock) : snapshot?.hotSearches.items;
+  const totalSearches = demo
+    ? (items?.reduce((total, item) => total + item.searchCount, 0) ?? 0)
+    : (snapshot?.hotSearches.totalSearches ?? 0);
+  return { items, totalSearches };
+}
+
+function resolveTopCategories(
+  demo: boolean,
+  mock: TrendsMockModule | undefined,
+  snapshot: ReturnType<typeof useTrendsSnapshot>,
+) {
+  return demo ? buildMockTopCategories(mock) : snapshot?.topCategories;
+}
+
+function resolveHeatmap(
+  demo: boolean,
+  mock: TrendsMockModule | undefined,
+  snapshot: ReturnType<typeof useTrendsSnapshot>,
+) {
+  return demo ? mock?.buildMockHeatmap() : snapshot?.heatmap;
+}
+
+function useMarketSignals(
+  controls: TrendsControls,
+  queries: TrendQueries,
+  snapshot: ReturnType<typeof useTrendsSnapshot>,
+) {
+  const hotSearches = resolveHotSearchSignals(controls.demo, queries.mock.data, snapshot);
+  const displayTopCategories = resolveTopCategories(controls.demo, queries.mock.data, snapshot);
+  const displayHeatmap = useMemo(
+    () => resolveHeatmap(controls.demo, queries.mock.data, snapshot),
+    [controls.demo, queries.mock.data, snapshot?.heatmap],
+  );
+  const signalState = controls.demo ? queries.mock : queries.activity;
+  return {
+    displayHotSearches: hotSearches.items,
+    displayHotSearchesTotal: hotSearches.totalSearches,
+    displayTopCategories,
+    displayHeatmap,
+    signalLoading: signalState.isLoading,
+    signalError: signalState.isError,
+    signalFetching: signalState.isFetching,
   };
 }
 
@@ -294,6 +377,7 @@ function useTrendsPageModel() {
   const exports = useTrendsExports(display);
   const handleRefresh = useTrendRefresh(controls, queries);
   const hasQueryError = !controls.demo && queries.activity.isError;
+  const signals = useMarketSignals(controls, queries, snapshot);
   return {
     ...controls,
     kpiCurrent: kpis.current,
@@ -309,6 +393,7 @@ function useTrendsPageModel() {
     displayLoadingProducts: displayLoading.products,
     displayLoadingSearches: displayLoading.searches,
     displayLoadingDaily: displayLoading.daily,
+    ...signals,
     handleRefresh,
     ...exports,
   };
@@ -407,7 +492,15 @@ function TrendsDecisionSupport({ model }: { model: TrendsPageModel }) {
             <ConversionFunnel days={model.days} />
             <UnmetDemandCard days={model.days} />
           </div>
-          <HotSearchesCard days={model.days} />
+          <HotSearchesCard
+            days={model.days}
+            data={model.displayHotSearches}
+            totalSearches={model.displayHotSearchesTotal}
+            isLoading={model.signalLoading}
+            isError={model.signalError}
+            isFetching={model.signalFetching}
+            onRetry={model.handleRefresh}
+          />
         </>
       )}
     </>
@@ -457,8 +550,22 @@ function TrendsVisualAnalysis({ model }: { model: TrendsPageModel }) {
       />
       {showGlobalAnalysis && (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <TrendsHeatmap days={model.days} />
-          <TopCategoriesCard days={model.days} />
+          <TrendsHeatmap
+            days={model.days}
+            data={model.displayHeatmap}
+            isLoading={model.signalLoading}
+            isError={model.signalError}
+            isFetching={model.signalFetching}
+            onRetry={model.handleRefresh}
+          />
+          <TopCategoriesCard
+            days={model.days}
+            data={model.displayTopCategories}
+            isLoading={model.signalLoading}
+            isError={model.signalError}
+            isFetching={model.signalFetching}
+            onRetry={model.handleRefresh}
+          />
         </div>
       )}
     </>

@@ -345,12 +345,16 @@ export async function selectCrmById<T>(
     });
     return result.data || null;
   } catch (err) {
-    if (String(err).includes("404")) return null;
+    if (isCrmRecordNotFound(err)) return null;
     throw err;
   }
 }
 
-/** SELECT por ID que rejeita indisponibilidade, mas preserva 404 como ausência legítima. */
+function isCrmRecordNotFound(error: unknown): boolean {
+  return /\brecord_not_found\b/i.test(error instanceof Error ? error.message : String(error));
+}
+
+/** SELECT por ID que rejeita indisponibilidade, mas preserva ausência legítima. */
 export async function selectCrmByIdStrict<T>(
   table: string,
   id: string,
@@ -362,7 +366,7 @@ export async function selectCrmByIdStrict<T>(
     return result.data || null;
   } catch (error) {
     if (error instanceof CrmUnavailableError) throw error;
-    if (String(error).includes("404")) return null;
+    if (isCrmRecordNotFound(error)) return null;
     throw error;
   }
 }

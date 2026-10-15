@@ -32,6 +32,7 @@ function createQuery(table: string) {
     gte: vi.fn(() => query),
     order: vi.fn(() => query),
     limit: vi.fn(() => query),
+    or: vi.fn(() => query),
     then: (resolve: (value: unknown) => unknown, reject: (reason: unknown) => unknown) =>
       Promise.resolve(mocks.results[table]).then(resolve, reject),
   };
@@ -71,6 +72,22 @@ describe("estados de consulta da inteligência comercial", () => {
 
     expect(await screen.findByText(/Nenhuma busca sem resultado registrada/)).toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    queryClient.clear();
+  });
+
+  it("exibe no selo o total global, mantendo somente dez termos no ranking", async () => {
+    mocks.results.search_analytics = {
+      data: Array.from({ length: 12 }, (_, index) => ({
+        id: `busca-${index}`,
+        search_term: `Termo ${index}`,
+        created_at: "2026-10-10T12:00:00.000Z",
+      })),
+      error: null,
+    };
+    const { queryClient } = renderWithQueryClient(<UnmetDemandCard days={30} />);
+
+    expect(await screen.findByText("12 buscas perdidas")).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /Pesquisar termo/ })).toHaveLength(10);
     queryClient.clear();
   });
 
