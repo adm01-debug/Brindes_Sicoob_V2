@@ -109,11 +109,13 @@ describe('integridade dos indicadores comerciais', () => {
         remainingBudget={800}
         allocatedBudget={1_000}
         paName="PA Centro"
+        competenceLabel="09/2026"
         orderStatus="confirmed"
       />,
     );
 
     expect(screen.getByText('Pedido já contabilizado')).toBeTruthy();
+    expect(screen.getByText('Competência financeira: 09/2026')).toBeTruthy();
     expect(screen.getByText(/não será descontado novamente/i)).toBeTruthy();
     expect(screen.getByText('20.0%')).toBeTruthy();
     expect(screen.getByText('R$ 800')).toBeTruthy();

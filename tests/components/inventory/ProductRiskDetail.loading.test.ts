@@ -3,14 +3,14 @@ import { shouldShowProductRiskLoading } from '@/components/inventory/risk/Produc
 
 describe('estado de carregamento dos dados de risco', () => {
   it('mantém o skeleton enquanto alguma fonte ainda carrega e nenhuma retornou dados', () => {
-    expect(shouldShowProductRiskLoading(false, [false, true, true])).toBe(true);
+    expect(shouldShowProductRiskLoading([true, true, true])).toBe(true);
   });
 
-  it('não substitui dados já carregados por skeleton de outra fonte', () => {
-    expect(shouldShowProductRiskLoading(true, [false, true, true])).toBe(false);
+  it('não apresenta métricas finais enquanto outra fonte ainda está pendente', () => {
+    expect(shouldShowProductRiskLoading([false, true, true])).toBe(true);
   });
 
   it('mostra estado vazio apenas após todas as fontes terminarem sem dados', () => {
-    expect(shouldShowProductRiskLoading(false, [false, false, false])).toBe(false);
+    expect(shouldShowProductRiskLoading([false, false, false])).toBe(false);
   });
 });

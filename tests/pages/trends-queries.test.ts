@@ -209,8 +209,28 @@ describe('consultas de tendências', () => {
       delta: 400,
     });
     expect(snapshot.hotSearches.totalSearches).toBe(2501);
-    expect(snapshot.topCategories[0]).toMatchObject({ category: 'Caneca', views: 2501 });
+    expect(snapshot.topProductFamilies[0]).toMatchObject({ family: 'Caneca', views: 2501 });
     expect(snapshot.heatmap.max).toBe(5002);
+  });
+
+  it('expõe o ranking como família aproximada pelo primeiro termo do produto', () => {
+    const views = [
+      { ...productRow(1), product_name: 'Caneca Premium' },
+      { ...productRow(2), product_name: 'Caneca Térmica' },
+    ];
+
+    const snapshot = buildTrendsSnapshot(
+      { views, searches: [] },
+      {
+        sinceCurrent: '2026-09-15T00:00:00.000Z',
+        recentCutoff: '2026-09-20T00:00:00.000Z',
+        days: 7,
+        referenceDate: new Date('2026-09-22T12:00:00.000Z'),
+      },
+    );
+
+    expect(snapshot.topProductFamilies[0]).toMatchObject({ family: 'Caneca', views: 2 });
+    expect(snapshot.topProductFamilies[0]).not.toHaveProperty('category');
   });
 
   it('mantém no selo o total global quando há mais termos que o top 10', () => {

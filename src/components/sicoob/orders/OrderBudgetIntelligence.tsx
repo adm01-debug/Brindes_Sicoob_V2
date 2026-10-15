@@ -14,6 +14,7 @@ interface OrderBudgetIntelligenceProps {
   remainingBudget: number;
   allocatedBudget: number | null;
   paName: string;
+  competenceLabel?: string;
   isLoading?: boolean;
   hasError?: boolean;
   hasPaId?: boolean;
@@ -100,8 +101,9 @@ function BudgetAvailabilityCard({
   availability,
   hasPaId,
   paName,
+  competenceLabel,
   onRetry,
-}: Pick<OrderBudgetIntelligenceProps, "hasPaId" | "paName" | "onRetry"> & { availability: "loading" | "unavailable" }) {
+}: Pick<OrderBudgetIntelligenceProps, "hasPaId" | "paName" | "competenceLabel" | "onRetry"> & { availability: "loading" | "unavailable" }) {
   const failed = availability === "unavailable";
   const title = availabilityTitle(availability, hasPaId);
   const message = availabilityMessage(availability, hasPaId);
@@ -113,6 +115,7 @@ function BudgetAvailabilityCard({
           <BarChart3 className="h-4 w-4 text-sicoob-green" />
           Inteligência Orçamentária - {paName}
         </CardTitle>
+        {competenceLabel && <p className="text-[10px] font-medium text-muted-foreground">Competência financeira: {competenceLabel}</p>}
       </CardHeader>
       <CardContent className="flex flex-col items-start gap-2 pt-4" role={failed ? "alert" : "status"}>
         {failed ? <AlertCircle className="h-5 w-5 text-destructive" /> : <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
@@ -166,7 +169,7 @@ function BudgetNumbers({ allocatedBudget, remainingBudget, orderTotal, state, or
       </div>
       <div className="space-y-2">
         <div className="flex justify-between items-center text-[10px] font-bold">
-          <span className="flex items-center gap-1"><Wallet className="h-3 w-3" /> Uso da Verba Trimestral</span>
+          <span className="flex items-center gap-1"><Wallet className="h-3 w-3" /> Uso da Verba da Competência</span>
           <span>{percentageLabel}</span>
         </div>
         <Progress value={percentageAfterOrder} className="h-1.5" indicatorClassName={state === "over" ? "bg-destructive" : "bg-sicoob-green"} />
@@ -188,6 +191,7 @@ export function OrderBudgetIntelligence({
   remainingBudget,
   allocatedBudget,
   paName,
+  competenceLabel,
   isLoading = false,
   hasError = false,
   hasPaId = true,
@@ -202,17 +206,20 @@ export function OrderBudgetIntelligence({
   const status = BUDGET_STATUS[state];
 
   if (availability === "loading" || availability === "unavailable") {
-    return <BudgetAvailabilityCard availability={availability} hasPaId={hasPaId} paName={paName} onRetry={onRetry} />;
+    return <BudgetAvailabilityCard availability={availability} hasPaId={hasPaId} paName={paName} competenceLabel={competenceLabel} onRetry={onRetry} />;
   }
 
   return (
     <Card className="border-border/40 overflow-hidden bg-gradient-to-br from-background to-muted/20">
       <CardHeader className="pb-2 border-b border-border/20 bg-muted/30">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-bold flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 text-sicoob-green" />
-            Inteligência Orçamentária - {paName}
-          </CardTitle>
+          <div>
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-sicoob-green" />
+              Inteligência Orçamentária - {paName}
+            </CardTitle>
+            {competenceLabel && <p className="mt-1 text-[10px] font-medium text-muted-foreground">Competência financeira: {competenceLabel}</p>}
+          </div>
           <Badge variant={state === "over" ? "destructive" : "outline"} className="text-[10px] uppercase font-bold tracking-tighter">
             {status.badge}
           </Badge>

@@ -52,8 +52,8 @@ export interface HotSearchItem {
   delta: number;
 }
 
-export interface CategoryTrend {
-  category: string;
+export interface ProductFamilyTrend {
+  family: string;
   views: number;
   recentViews: number;
   baselineViews: number;
@@ -73,7 +73,7 @@ export interface TrendsSnapshot {
   daily: DailyTrendData;
   kpi: KpiSnapshot;
   hotSearches: { items: HotSearchItem[]; totalSearches: number };
-  topCategories: CategoryTrend[];
+  topProductFamilies: ProductFamilyTrend[];
   heatmap: TrendsHeatmapData;
 }
 
@@ -331,22 +331,25 @@ function extractProductFamily(name: string | null | undefined): string {
   return name?.trim().split(/\s+/)[0] || 'Outros';
 }
 
-function buildTopCategories(data: ProductViewActivity[], input: ProjectionInput): CategoryTrend[] {
+function buildTopProductFamilies(
+  data: ProductViewActivity[],
+  input: ProjectionInput,
+): ProductFamilyTrend[] {
   const recentDays = Math.max(Math.floor(input.days / 3), 1);
   const baselineDays = input.days - recentDays;
-  const categories = new Map<string, { views: number; recent: number }>();
+  const families = new Map<string, { views: number; recent: number }>();
 
   data.forEach((view) => {
     if (view.created_at < input.sinceCurrent) return;
-    const category = extractProductFamily(view.product_name);
-    const aggregate = categories.get(category) ?? { views: 0, recent: 0 };
+    const family = extractProductFamily(view.product_name);
+    const aggregate = families.get(family) ?? { views: 0, recent: 0 };
     aggregate.views += 1;
     if (view.created_at >= input.recentCutoff) aggregate.recent += 1;
-    categories.set(category, aggregate);
+    families.set(family, aggregate);
   });
 
-  return Array.from(categories.entries())
-    .map(([category, aggregate]) => {
+  return Array.from(families.entries())
+    .map(([family, aggregate]) => {
       const baselineViews = aggregate.views - aggregate.recent;
       const score = calculateTrendingScore({
         recentCount: aggregate.recent,
@@ -356,7 +359,7 @@ function buildTopCategories(data: ProductViewActivity[], input: ProjectionInput)
         totalVolume: aggregate.views,
       });
       return {
-        category,
+        family,
         views: aggregate.views,
         recentViews: aggregate.recent,
         baselineViews,
@@ -365,7 +368,7 @@ function buildTopCategories(data: ProductViewActivity[], input: ProjectionInput)
         growthPercent: score.growthPercent,
       };
     })
-    .filter((category) => category.views >= 2)
+    .filter((family) => family.views >= 2)
     .sort(
       (left, right) =>
         right.trendingScore * Math.log(right.views + 1) -
@@ -400,7 +403,7 @@ export function buildTrendsSnapshot(
     daily: buildDailyTrends(activity, input),
     kpi: buildKpiSnapshot(activity, input.sinceCurrent),
     hotSearches: buildHotSearches(activity.searches, input.sinceCurrent),
-    topCategories: buildTopCategories(activity.views, input),
+    topProductFamilies: buildTopProductFamilies(activity.views, input),
     heatmap: buildHeatmap(activity, input.sinceCurrent),
   };
 }

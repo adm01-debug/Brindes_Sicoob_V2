@@ -11,7 +11,7 @@ import {
   buildCivilTrendWindow,
   type AggregatedProduct,
   type AggregatedSearch,
-  type CategoryTrend,
+  type ProductFamilyTrend,
   type DailyTrendData,
   type HotSearchItem,
   type KpiSnapshot,
@@ -34,7 +34,7 @@ import { UnmetDemandCard } from '@/components/intelligence/UnmetDemandCard';
 import { HotSearchesCard } from '@/components/intelligence/HotSearchesCard';
 import { ConversionFunnel } from '@/components/intelligence/ConversionFunnel';
 import { TrendsHeatmap } from '@/components/intelligence/TrendsHeatmap';
-import { TopCategoriesCard } from '@/components/intelligence/TopCategoriesCard';
+import { TopProductFamiliesCard } from '@/components/intelligence/TopProductFamiliesCard';
 import { TrendsInsightsCard } from '@/components/intelligence/TrendsInsightsCard';
 import { TrendsForecastChart } from '@/components/intelligence/TrendsForecastChart';
 import { SavedViewsManager } from '@/components/intelligence/SavedViewsManager';
@@ -56,7 +56,7 @@ interface TrendsMockModule {
   MOCK_PRODUCTS: AggregatedProduct[];
   MOCK_SEARCHES: AggregatedSearch[];
   MOCK_HOT_SEARCHES: Array<{ term: string; count: number; growth: number }>;
-  MOCK_TOP_CATEGORIES: Array<{ category: string; views: number }>;
+  MOCK_TOP_PRODUCT_FAMILIES: Array<{ family: string; views: number }>;
   buildMockDaily: (days: number) => DailyTrendData;
   buildMockHeatmap: () => TrendsHeatmapData;
 }
@@ -192,12 +192,7 @@ type TrendsControls = ReturnType<typeof useTrendsControls>;
 
 function useTrendQueries(controls: TrendsControls) {
   const activity = useQuery({
-    queryKey: [
-      'trends-activity',
-      controls.dateRange,
-      controls.scopeKey,
-      controls.refreshRevision,
-    ],
+    queryKey: ['trends-activity', controls.dateRange, controls.scopeKey, controls.refreshRevision],
     enabled: controls.queryEnabled,
     queryFn: () => loadTrendsActivity(controls.sincePrevious, controls.sellerScope),
   });
@@ -295,15 +290,17 @@ function buildMockHotSearches(mock: TrendsMockModule | undefined): HotSearchItem
   }));
 }
 
-function buildMockTopCategories(mock: TrendsMockModule | undefined): CategoryTrend[] | undefined {
-  return mock?.MOCK_TOP_CATEGORIES.map((category, index) => ({
-    category: category.category,
-    views: category.views,
-    recentViews: Math.round(category.views * 0.42),
-    baselineViews: Math.round(category.views * 0.58),
-    trendingScore: 2 + (mock.MOCK_TOP_CATEGORIES.length - index) * 0.3,
+function buildMockTopProductFamilies(
+  mock: TrendsMockModule | undefined,
+): ProductFamilyTrend[] | undefined {
+  return mock?.MOCK_TOP_PRODUCT_FAMILIES.map((family, index) => ({
+    family: family.family,
+    views: family.views,
+    recentViews: Math.round(family.views * 0.42),
+    baselineViews: Math.round(family.views * 0.58),
+    trendingScore: 2 + (mock.MOCK_TOP_PRODUCT_FAMILIES.length - index) * 0.3,
     classification:
-      index < 3 ? 'rising' : index === mock.MOCK_TOP_CATEGORIES.length - 1 ? 'new' : 'stable',
+      index < 3 ? 'rising' : index === mock.MOCK_TOP_PRODUCT_FAMILIES.length - 1 ? 'new' : 'stable',
     growthPercent: [142, 98, 67, 32, 18, 0][index] ?? 0,
   }));
 }
@@ -320,12 +317,12 @@ function resolveHotSearchSignals(
   return { items, totalSearches };
 }
 
-function resolveTopCategories(
+function resolveTopProductFamilies(
   demo: boolean,
   mock: TrendsMockModule | undefined,
   snapshot: ReturnType<typeof useTrendsSnapshot>,
 ) {
-  return demo ? buildMockTopCategories(mock) : snapshot?.topCategories;
+  return demo ? buildMockTopProductFamilies(mock) : snapshot?.topProductFamilies;
 }
 
 function resolveHeatmap(
@@ -342,7 +339,11 @@ function useMarketSignals(
   snapshot: ReturnType<typeof useTrendsSnapshot>,
 ) {
   const hotSearches = resolveHotSearchSignals(controls.demo, queries.mock.data, snapshot);
-  const displayTopCategories = resolveTopCategories(controls.demo, queries.mock.data, snapshot);
+  const displayTopProductFamilies = resolveTopProductFamilies(
+    controls.demo,
+    queries.mock.data,
+    snapshot,
+  );
   const displayHeatmap = useMemo(
     () => resolveHeatmap(controls.demo, queries.mock.data, snapshot),
     [controls.demo, queries.mock.data, snapshot],
@@ -351,7 +352,7 @@ function useMarketSignals(
   return {
     displayHotSearches: hotSearches.items,
     displayHotSearchesTotal: hotSearches.totalSearches,
-    displayTopCategories,
+    displayTopProductFamilies,
     displayHeatmap,
     signalLoading: signalState.isLoading,
     signalError: signalState.isError,
@@ -566,9 +567,9 @@ function TrendsVisualAnalysis({ model }: { model: TrendsPageModel }) {
             isFetching={model.signalFetching}
             onRetry={model.handleRefresh}
           />
-          <TopCategoriesCard
+          <TopProductFamiliesCard
             days={model.days}
-            data={model.displayTopCategories}
+            data={model.displayTopProductFamilies}
             isLoading={model.signalLoading}
             isError={model.signalError}
             isFetching={model.signalFetching}

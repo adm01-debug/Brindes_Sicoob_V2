@@ -4,12 +4,12 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
 import { HotSearchesCard } from '@/components/intelligence/HotSearchesCard';
-import { TopCategoriesCard } from '@/components/intelligence/TopCategoriesCard';
+import { TopProductFamiliesCard } from '@/components/intelligence/TopProductFamiliesCard';
 
 const hotSearches = [{ term: 'caneca', searchCount: 12, previousCount: 6, delta: 100 }];
-const categories = [
+const productFamilies = [
   {
-    category: 'Caneca',
+    family: 'Caneca',
     views: 12,
     recentViews: 8,
     baselineViews: 4,
@@ -36,7 +36,7 @@ describe('cartões de sinais de mercado — estado centralizado', () => {
     expect(retry).toHaveBeenCalledOnce();
     first.unmount();
 
-    render(<TopCategoriesCard days={30} isError onRetry={retry} />);
+    render(<TopProductFamiliesCard days={30} isError onRetry={retry} />);
     expect(screen.getByRole('alert')).toHaveTextContent('Não foi possível carregar o ranking');
     expect(screen.queryByText(/Ainda não há dados suficientes/)).not.toBeInTheDocument();
   });
@@ -58,9 +58,10 @@ describe('cartões de sinais de mercado — estado centralizado', () => {
     expect(screen.getByText('42 buscas')).toBeInTheDocument();
     first.unmount();
 
-    render(<TopCategoriesCard days={30} data={categories} isError onRetry={vi.fn()} />);
+    render(<TopProductFamiliesCard days={30} data={productFamilies} isError onRetry={vi.fn()} />);
     expect(screen.getByRole('alert')).toHaveTextContent('dados anteriores continuam exibidos');
     expect(screen.getByText('Caneca')).toBeInTheDocument();
+    expect(screen.getByText(/primeiro termo do nome/)).toBeInTheDocument();
   });
 
   it('só declara ausência depois de receber um snapshot vazio', () => {
@@ -72,7 +73,7 @@ describe('cartões de sinais de mercado — estado centralizado', () => {
     expect(screen.getByText('Sem dados de busca no período')).toBeInTheDocument();
     first.unmount();
 
-    render(<TopCategoriesCard days={30} data={[]} />);
+    render(<TopProductFamiliesCard days={30} data={[]} />);
     expect(screen.getByText(/Ainda não há dados suficientes/)).toHaveTextContent(
       'ranquear famílias de produtos',
     );

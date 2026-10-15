@@ -168,7 +168,7 @@ export function ProductRiskDetail({ productId, productName }: ProductRiskDetailP
   const { data: intelligence, isLoading: loadingIntelligence, error: intelligenceError, refetch: refetchIntelligence } = useProductIntelligenceData(productId);
   const hasData = [summaries?.length, velocity?.length, intelligence].some(Boolean);
   const hasError = [summaryError, velocityError, intelligenceError].some(Boolean);
-  const isLoading = shouldShowProductRiskLoading(hasData, [loadingSummary, loadingVelocity, loadingIntelligence]);
+  const isLoading = shouldShowProductRiskLoading([loadingSummary, loadingVelocity, loadingIntelligence]);
   const chartData = useMemo(() => buildRiskChartData(summaries, days), [summaries, days]);
   const bestVelocity = selectBestVelocity(velocity);
   const flags = useMemo(() => deriveFlags(intelligence), [intelligence]);
@@ -182,6 +182,6 @@ export function ProductRiskDetail({ productId, productName }: ProductRiskDetailP
   return <div className="space-y-3"><RiskHeader name={productName} productId={productId} partial={partial} classification={intelligence?.abc_classification} onNavigate={() => navigate(`/produto/${productId}`)} /><RiskFlags flags={flags} /><RiskMetrics {...metrics} /><ChartControls period={period} expanded={chartExpanded} onPeriodChange={setPeriod} onToggle={() => setChartExpanded(previous => !previous)} /><RiskChart data={chartData} expanded={chartExpanded} /><PriceChangesNotice count={priceChanges} /></div>;
 }
 
-export function shouldShowProductRiskLoading(hasData: boolean, sourcesLoading: boolean[]): boolean {
-  return !hasData && sourcesLoading.some(Boolean);
+export function shouldShowProductRiskLoading(sourcesLoading: boolean[]): boolean {
+  return sourcesLoading.some(Boolean);
 }
