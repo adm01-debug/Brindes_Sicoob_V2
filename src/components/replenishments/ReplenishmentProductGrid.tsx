@@ -195,6 +195,7 @@ export function ReplenishmentProductGrid() {
         totalCount={products.length}
         filteredCount={filteredProducts.length}
         isLoading={isLoading}
+        isFetching={isFetching}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         selectedSupplier={selectedSupplier}

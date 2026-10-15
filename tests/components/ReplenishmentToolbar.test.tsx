@@ -12,6 +12,7 @@ const baseProps = {
   totalCount: 200,
   filteredCount: 150,
   isLoading: false,
+  isFetching: false,
   searchQuery: "",
   onSearchChange: vi.fn(),
   selectedSupplier: "all",
@@ -61,7 +62,7 @@ describe("ReplenishmentToolbar", () => {
 
   it("shows an indeterminate status while refreshing existing products", () => {
     renderWithProviders(
-      <ReplenishmentToolbar {...baseProps} isLoading />
+      <ReplenishmentToolbar {...baseProps} isFetching />
     );
     expect(screen.getByRole("status", { name: "Atualizando produtos" })).toBeInTheDocument();
     expect(screen.queryByText(/%/)).not.toBeInTheDocument();

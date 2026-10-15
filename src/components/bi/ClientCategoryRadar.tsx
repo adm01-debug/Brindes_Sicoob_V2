@@ -374,7 +374,14 @@ export function ClientCategoryRadar({ clientId, ramoAtividade, clientName }: Pro
     <Card className="border-[1.5px] ring-1 ring-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-violet-500/5 overflow-hidden">
       <CardContent className="p-5 sm:p-6 space-y-5">
         <RadarHeader {...header} />
-        <CategoryList rows={rows} expanded={expanded} focusedSlug={focusedSlug} setExpanded={setExpanded} setFocus={setFocus} onDrillDown={handleDrillDown} />
+        {client.isError ? (
+          <div className="flex flex-col items-center gap-3 py-8 text-center" role="alert">
+            <p className="text-sm text-muted-foreground">Não foi possível carregar o histórico real do cliente. As lacunas de categoria estão ocultas até a consulta ser concluída.</p>
+            <Button variant="outline" size="sm" onClick={() => void client.refetch()}>Tentar novamente</Button>
+          </div>
+        ) : (
+          <CategoryList rows={rows} expanded={expanded} focusedSlug={focusedSlug} setExpanded={setExpanded} setFocus={setFocus} onDrillDown={handleDrillDown} />
+        )}
       </CardContent>
     </Card>
   );

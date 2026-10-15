@@ -25,6 +25,7 @@ interface ReplenishmentToolbarProps {
   totalCount: number;
   filteredCount: number;
   isLoading: boolean;
+  isFetching: boolean;
   // Search
   searchQuery: string;
   onSearchChange: (q: string) => void;
@@ -53,7 +54,7 @@ function ReplenishmentHeader({ props }: { props: ReplenishmentToolbarProps }) {
   const count = props.isLoading && props.totalCount === 0
     ? <span className="flex items-center gap-1"><Loader2 className="h-2.5 w-2.5 animate-spin" aria-hidden="true" />carregando…</span>
     : <>{props.filteredCount}{props.hasActiveFilters ? <span className="text-muted-foreground">/{props.totalCount}</span> : null}</>;
-  return <div className="flex items-center gap-2 flex-wrap"><div className="flex items-center gap-2 flex-1 min-w-0"><RefreshCw className="h-4 w-4 text-info shrink-0" aria-hidden="true" /><h2 className="text-base sm:text-lg font-semibold whitespace-nowrap">Reposição</h2><Badge variant="secondary" className="text-[10px] tabular-nums px-1.5 shrink-0">{count}</Badge>{props.isLoading && props.totalCount > 0 ? <span role="status" aria-label="Atualizando produtos"><Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" aria-hidden="true" /></span> : null}
+  return <div className="flex items-center gap-2 flex-wrap"><div className="flex items-center gap-2 flex-1 min-w-0"><RefreshCw className="h-4 w-4 text-info shrink-0" aria-hidden="true" /><h2 className="text-base sm:text-lg font-semibold whitespace-nowrap">Reposição</h2><Badge variant="secondary" className="text-[10px] tabular-nums px-1.5 shrink-0">{count}</Badge>{props.isFetching && props.totalCount > 0 ? <span role="status" aria-label="Atualizando produtos"><Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" aria-hidden="true" /></span> : null}
     <div className="hidden sm:block w-80 lg:w-[25rem]"><SearchInput value={props.searchQuery} onChange={props.onSearchChange} placeholder="Buscar reposições…  /" /></div></div>
     <Button variant={props.selectionMode ? "default" : "outline"} size="sm" className={cn("h-8 text-xs gap-1.5 shrink-0 transition-all", props.selectionMode && "bg-primary text-primary-foreground shadow-[0_0_12px_hsl(var(--primary)/0.3)]")} onClick={props.onToggleSelectionMode} aria-pressed={props.selectionMode}><CheckSquare className="h-3.5 w-3.5" aria-hidden="true" /><span className="hidden sm:inline">{props.selectionMode ? "Cancelar" : "Selecionar"}</span></Button>
     <LayoutPopover viewMode={props.viewMode} setViewMode={props.setViewMode} gridColumns={props.gridColumns} setGridColumns={props.setGridColumns} />

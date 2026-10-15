@@ -184,7 +184,7 @@ export function useClientCategoryAffinity(clientId?: string) {
         _client_id: clientId,
         _limit: 50,
       });
-      if (error) return [];
+      if (error) throw error;
       return (Array.isArray(data) ? data : []) as ClientTopProductRow[];
     },
   });
@@ -206,5 +206,11 @@ export function useClientCategoryAffinity(clientId?: string) {
     };
   }, [demo, query.data]);
 
-  return { ...result, isLoading: query.isLoading };
+  return {
+    ...result,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    refetch: query.refetch,
+  };
 }
