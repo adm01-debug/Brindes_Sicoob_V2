@@ -93,7 +93,9 @@ jobs:
         run: python3 scripts/qa/simular-autoridade-verbas-sicoob.py
 
       - name: Simular controles de auditoria e permissões em PostgreSQL descartável
-        run: python3 scripts/qa/simular-controles-auditoria.py
+        run: |
+          python3 -m unittest scripts/qa/test_supabase_postgres_container.py
+          python3 scripts/qa/simular-controles-auditoria.py
 
       - name: Simular ACL padrão, sobrecargas e herança de papéis
         run: python3 scripts/qa/simular-acl-efetiva.py
