@@ -74,6 +74,28 @@ describe("disponibilidade do resumo executivo", () => {
     expect(screen.getByRole("menuitem", { name: /Exportar PPTX/i })).toHaveAttribute("data-disabled");
   });
 
+  it("bloqueia exportações quando tendências setoriais falham com cache presente", async () => {
+    const retryTrends = vi.fn(async () => undefined);
+    makeHooks({
+      trends: {
+        isError: true,
+        data: { trends: [{ productName: "Produto setorial em cache" }] },
+        refetch: retryTrends,
+      },
+    });
+    renderWithProviders(<ExecutiveSummaryButton clientId="cliente-1" clientName="Cooperativa" ramoAtividade="Crédito" />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /Resumo indisponível/i }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("tendências do setor");
+    expect(screen.getByRole("menuitem", { name: /Copiar para WhatsApp/i })).toHaveAttribute("data-disabled");
+    expect(screen.getByRole("menuitem", { name: /Exportar PPTX/i })).toHaveAttribute("data-disabled");
+    await user.click(screen.getByRole("menuitem", { name: /Tentar novamente/i }));
+    await waitFor(() => expect(retryTrends).toHaveBeenCalledOnce());
+    expect(mocks.generateBIPptx).not.toHaveBeenCalled();
+  });
+
   it("não publica zeros sentinela quando o Health Score não possui amostra suficiente", async () => {
     makeHooks({
       health: {

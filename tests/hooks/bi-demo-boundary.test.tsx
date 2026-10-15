@@ -84,7 +84,7 @@ describe('fronteira entre dados reais e modo de demonstração do BI', () => {
     expect(result.current.trends.data).toMatchObject({ isMock: false, trends: [] });
     expect(result.current.industryCategories).toMatchObject({ isMock: false, categories: [] });
     expect(dependencies.rpc).toHaveBeenCalled();
-    expect(dependencies.selectCrm).toHaveBeenCalled();
+    expect(dependencies.selectCrm).not.toHaveBeenCalled();
     expect(dependencies.selectCrmStrict).toHaveBeenCalled();
   });
 });

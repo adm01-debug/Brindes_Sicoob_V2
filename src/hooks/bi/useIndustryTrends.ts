@@ -7,7 +7,7 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { selectCrm } from "@/lib/crm-db";
+import { selectCrmStrict } from "@/lib/crm-db";
 import { isDemoClient } from "@/lib/bi/demoClient";
 import { getMockIndustryTrends, type MockIndustryTrend } from "@/lib/bi/mockData";
 
@@ -80,7 +80,7 @@ export function useIndustryTrends(ramoAtividade?: string | null, clientId?: stri
       }
 
       // 1) Buscar empresas do mesmo ramo no CRM
-      const companies = await selectCrm<{ id: string }>("companies", {
+      const companies = await selectCrmStrict<{ id: string }>("companies", {
         select: "id",
         filters: { ramo_atividade: ramoAtividade, deleted_at: null },
         limit: 500,

@@ -7,7 +7,7 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { selectCrm } from "@/lib/crm-db";
+import { selectCrmStrict } from "@/lib/crm-db";
 import { isDemoClient } from "@/lib/bi/demoClient";
 import { getMockSeasonality } from "@/lib/bi/mockData";
 
@@ -316,7 +316,7 @@ export function useClientSeasonality(
       let industryError: unknown;
       if (ramoAtividade) {
         try {
-          const companies = await selectCrm<{ id: string }>("companies", {
+          const companies = await selectCrmStrict<{ id: string }>("companies", {
             select: "id",
             filters: { ramo_atividade: ramoAtividade, deleted_at: null },
             limit: 500,

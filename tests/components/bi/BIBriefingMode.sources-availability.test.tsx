@@ -48,4 +48,24 @@ describe("BIBriefingMode — disponibilidade de fontes", () => {
     fireEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
     await waitFor(() => expect(mocks.retryCategoryAffinity).toHaveBeenCalledTimes(1));
   });
+
+  it("bloqueia briefing com tendência setorial em cache após falha do CRM", async () => {
+    const retryTrends = vi.fn(async () => undefined);
+    mocks.hooks.trends = {
+      isLoading: false,
+      isFetching: false,
+      isError: true,
+      data: { trends: [{ productName: "Produto setorial em cache" }] },
+      refetch: retryTrends,
+    };
+    mocks.hooks.catAffinity = { ...mocks.hooks.catAffinity as object, isError: false };
+
+    renderWithProviders(<BIBriefingMode open onOpenChange={vi.fn()} clientId="cliente-1" clientName="Cooperativa" ramoAtividade="Crédito" />);
+
+    expect(screen.getByRole("alert")).toHaveTextContent("tendências do setor");
+    expect(screen.queryByText("Produto setorial em cache")).toBeNull();
+    expect((screen.getByRole("button", { name: "Briefing indisponível" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
+    await waitFor(() => expect(retryTrends).toHaveBeenCalledOnce());
+  });
 });

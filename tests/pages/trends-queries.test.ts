@@ -8,6 +8,7 @@ import {
   loadTrendsActivity,
   resolveTrendsDataAccess,
 } from '../../src/pages/trends/trends-queries';
+import { buildTrendsSnapshot } from '../../src/pages/trends/trends-projections';
 
 function query(data: unknown[], error: unknown = null) {
   return Object.assign(Promise.resolve({ data, error }), {
@@ -55,10 +56,12 @@ describe('consultas de tendências', () => {
   ])(
     'alinha o papel %s às capacidades comprovadas pela RLS',
     async (_role, isAdmin, isManagerOrAdmin, mode, sellerScope) => {
-      rpc.mockImplementation((name: string) => Promise.resolve({
-        data: name === 'has_role' ? isAdmin : isManagerOrAdmin,
-        error: null,
-      }));
+      rpc.mockImplementation((name: string) =>
+        Promise.resolve({
+          data: name === 'has_role' ? isAdmin : isManagerOrAdmin,
+          error: null,
+        }),
+      );
 
       const capabilities = await loadTrendsCapabilities('usuario-1');
       const access = resolveTrendsDataAccess('usuario-1', capabilities);
@@ -75,7 +78,7 @@ describe('consultas de tendências', () => {
   it('filtra cada evento pela coluna de autoria observada no banco', async () => {
     const views = query([productRow(1)]);
     const searches = query([searchRow(1)]);
-    from.mockImplementation((table) => table === 'product_views' ? views : searches);
+    from.mockImplementation((table) => (table === 'product_views' ? views : searches));
     const result = await loadTrendsActivity('2026-09-01', 'vendedor');
     expect(views.eq).toHaveBeenCalledWith('seller_id', 'vendedor');
     expect(searches.eq).toHaveBeenCalledWith('user_id', 'vendedor');
@@ -96,10 +99,7 @@ describe('consultas de tendências', () => {
     const firstSearches = Array.from({ length: 1000 }, (_, index) => searchRow(index));
     const viewQueries = [
       query(firstViews),
-      query([
-        firstViews[firstViews.length - 1]!,
-        productRow(1000, '2026-09-21T12:00:00.000Z'),
-      ]),
+      query([firstViews[firstViews.length - 1]!, productRow(1000, '2026-09-21T12:00:00.000Z')]),
     ];
     const searchQueries = [
       query(firstSearches),
@@ -123,6 +123,45 @@ describe('consultas de tendências', () => {
     expect(searchQueries).toHaveLength(0);
   });
 
+  it('deriva rankings, série e KPIs da mesma carga completa acima de mil eventos', async () => {
+    const views = Array.from({ length: 1001 }, (_, index) => ({
+      ...productRow(index),
+      product_id: 'produto-unico',
+      product_name: 'Produto único',
+    }));
+    const searches = Array.from({ length: 1001 }, (_, index) => ({
+      ...searchRow(index),
+      search_term: 'Busca única',
+    }));
+    const viewQueries = [query(views.slice(0, 1000)), query(views.slice(1000))];
+    const searchQueries = [query(searches.slice(0, 1000)), query(searches.slice(1000))];
+    from.mockImplementation((table) =>
+      table === 'product_views' ? viewQueries.shift() : searchQueries.shift(),
+    );
+
+    const activity = await loadTrendsActivity('2026-09-01', null);
+    const snapshot = buildTrendsSnapshot(activity, {
+      sinceCurrent: '2026-09-15T00:00:00.000Z',
+      recentCutoff: '2026-09-20T00:00:00.000Z',
+      days: 7,
+      referenceDate: new Date('2026-09-22T12:00:00.000Z'),
+    });
+
+    expect(from).toHaveBeenCalledTimes(4);
+    expect(snapshot.products[0]).toMatchObject({ id: 'produto-unico', views: 1001 });
+    expect(snapshot.searches.current[0]).toMatchObject({ term: 'busca única', count: 1001 });
+    expect(snapshot.daily.current.find((row) => row.date === '2026-09-22')).toMatchObject({
+      views: 1001,
+      searches: 1001,
+    });
+    expect(snapshot.kpi.current).toEqual({
+      totalViews: 1001,
+      totalSearches: 1001,
+      uniqueProducts: 1,
+      uniqueSearches: 1,
+    });
+  });
+
   it('usa o último par created_at/id como cursor da página seguinte', async () => {
     const firstPage = Array.from({ length: 1000 }, (_, index) => productRow(index));
     const firstQuery = query(firstPage);
@@ -132,8 +171,8 @@ describe('consultas de tendências', () => {
     await loadProductViewActivity('2026-09-01', null);
 
     expect(secondQuery.or).toHaveBeenCalledWith(
-      'created_at.lt.2026-09-22T12:00:00.000Z,'
-        + 'and(created_at.eq.2026-09-22T12:00:00.000Z,id.lt.produto-0999)',
+      'created_at.lt.2026-09-22T12:00:00.000Z,' +
+        'and(created_at.eq.2026-09-22T12:00:00.000Z,id.lt.produto-0999)',
     );
   });
 
@@ -150,7 +189,7 @@ describe('consultas de tendências', () => {
     const views = query([]);
     const error = { code: '42501' };
     const searches = query([], error);
-    from.mockImplementation((table) => table === 'product_views' ? views : searches);
+    from.mockImplementation((table) => (table === 'product_views' ? views : searches));
     await expect(loadTrendsActivity('2026-09-01', null)).rejects.toEqual(error);
     expect(views.eq).not.toHaveBeenCalled();
     expect(searches.eq).not.toHaveBeenCalled();

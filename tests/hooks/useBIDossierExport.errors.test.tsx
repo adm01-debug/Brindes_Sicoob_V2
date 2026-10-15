@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   useAuth: vi.fn(),
-  useCrmCompany: vi.fn(),
+  useCrmCompanyStrict: vi.fn(),
   useClientBI: vi.fn(),
   useClientVsIndustry: vi.fn(),
   useClientAffinity: vi.fn(),
@@ -20,7 +20,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: mocks.useAuth }));
-vi.mock("@/hooks/useCrmCompanies", () => ({ useCrmCompany: mocks.useCrmCompany }));
+vi.mock("@/hooks/useCrmCompanies", () => ({ useCrmCompanyStrict: mocks.useCrmCompanyStrict }));
 vi.mock("@/hooks/bi/useClientBI", () => ({ useClientBI: mocks.useClientBI }));
 vi.mock("@/hooks/bi/useClientVsIndustry", () => ({ useClientVsIndustry: mocks.useClientVsIndustry }));
 vi.mock("@/hooks/bi/useClientAffinity", () => ({ useClientAffinity: mocks.useClientAffinity }));
@@ -50,7 +50,7 @@ describe("useBIDossierExport — falhas das fontes obrigatórias", () => {
       industryCategories: { isLoading: false, isError: false, refetch: vi.fn() },
     };
     mocks.useAuth.mockReturnValue({ user: { email: "vendedor@sicoob.com.br" }, profile: { full_name: "Vendedor" } });
-    mocks.useCrmCompany.mockImplementation(() => mocks.queries.company);
+    mocks.useCrmCompanyStrict.mockImplementation(() => mocks.queries.company);
     mocks.useClientBI.mockImplementation(() => mocks.queries.clientBI);
     mocks.useClientVsIndustry.mockImplementation(() => mocks.queries.vsIndustry);
     mocks.useClientAffinity.mockImplementation(() => mocks.queries.affinity);

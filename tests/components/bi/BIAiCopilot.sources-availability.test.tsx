@@ -44,4 +44,24 @@ describe("BIAiCopilot — disponibilidade de fontes", () => {
     await waitFor(() => expect(mocks.refetchAffinity).toHaveBeenCalledTimes(1));
     expect(mocks.invoke).not.toHaveBeenCalled();
   });
+
+  it("não envia tendência setorial em cache quando a fonte falha", async () => {
+    const retryTrends = vi.fn(async () => undefined);
+    mocks.hooks.affinity = { ...mocks.hooks.affinity as object, isError: false, data: { categories: [] } };
+    mocks.hooks.trends = {
+      isLoading: false,
+      isFetching: false,
+      isError: true,
+      data: { trends: [{ productName: "Produto setorial em cache" }] },
+      refetch: retryTrends,
+    };
+
+    renderWithProviders(<BIAiCopilot open onOpenChange={vi.fn()} clientId="cliente-1" clientName="Cooperativa" ramoAtividade="Crédito" />);
+
+    expect(screen.getByRole("alert")).toHaveTextContent("tendências do setor");
+    expect((screen.getByPlaceholderText("Pergunte algo sobre este cliente...") as HTMLInputElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
+    await waitFor(() => expect(retryTrends).toHaveBeenCalledOnce());
+    expect(mocks.invoke).not.toHaveBeenCalled();
+  });
 });

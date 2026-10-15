@@ -4,7 +4,7 @@
  */
 import { useCallback, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useCrmCompany } from "@/hooks/useCrmCompanies";
+import { useCrmCompanyStrict } from "@/hooks/useCrmCompanies";
 import { useClientBI } from "@/hooks/bi/useClientBI";
 import { useClientVsIndustry } from "@/hooks/bi/useClientVsIndustry";
 import { useClientAffinity } from "@/hooks/bi/useClientAffinity";
@@ -73,7 +73,7 @@ function requiresIndustryData(ramo: string | null, clientId: string | null): boo
 
 export function useBIDossierExport(clientId: string | null): UseBIDossierExport {
   const { user, profile } = useAuth();
-  const companyQuery = useCrmCompany(clientId);
+  const companyQuery = useCrmCompanyStrict(clientId);
   const company = companyQuery.data;
   const companyLoading = companyQuery.isLoading;
   const ramo = company?.ramo_atividade ?? null;

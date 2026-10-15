@@ -2,12 +2,17 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 // import { MainLayout } from "@/components/layout/MainLayout";
 import {
-  loadProductViewActivity,
-  loadSearchActivity,
   loadTrendsCapabilities,
   loadTrendsActivity,
   resolveTrendsDataAccess,
 } from './trends/trends-queries';
+import {
+  buildTrendsSnapshot,
+  type AggregatedProduct,
+  type AggregatedSearch,
+  type DailyTrendData,
+  type KpiSnapshot,
+} from './trends/trends-projections';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
@@ -18,8 +23,7 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, Search, Package, Calendar, RefreshCw, Download } from 'lucide-react';
-import { format, subDays } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { subDays } from 'date-fns';
 import { PageSEO } from '@/components/seo/PageSEO';
 import { ProductsTabContent, SearchesTabContent } from './trends/TrendsCharts';
 import { TrendsKpiCards } from './trends/TrendsKpiCards';
@@ -33,7 +37,6 @@ import { TrendsForecastChart } from '@/components/intelligence/TrendsForecastCha
 import { SavedViewsManager } from '@/components/intelligence/SavedViewsManager';
 import { RealtimeBadge } from '@/components/intelligence/RealtimeBadge';
 import { TrendsTour } from '@/components/intelligence/TrendsTour';
-import { calculateTrendingScore } from '@/lib/trending-score';
 import { useUrlState, useUrlBoolean } from '@/hooks/useUrlState';
 import { exportTrendsCsv } from '@/lib/trends-export';
 import { useAuth } from '@/contexts/AuthContext';
@@ -44,63 +47,6 @@ import { Badge } from '@/components/ui/badge';
 type DateRange = '7d' | '30d' | '90d';
 
 const RANGE_TO_DAYS: Record<DateRange, number> = { '7d': 7, '30d': 30, '90d': 90 };
-const ISO_DAY_FORMAT = 'yyyy-MM-dd';
-
-interface ProductView {
-  product_id: string | null;
-  product_name: string | null;
-  product_sku: string | null;
-  view_type: string | null;
-  created_at: string;
-}
-
-interface SearchRow {
-  search_term: string;
-  results_count: number;
-  created_at: string;
-}
-
-interface AggregatedProduct {
-  id: string;
-  name: string;
-  sku?: string;
-  views: number;
-  details: number;
-  compares: number;
-  favorites: number;
-  recentViews: number;
-  baselineViews: number;
-  trendingScore: number;
-  classification: 'rising' | 'stable' | 'falling' | 'new';
-}
-
-interface AggregatedSearch {
-  term: string;
-  count: number;
-  totalResults: number;
-  avgResults: number;
-}
-
-interface DailyTrendData {
-  current: Array<{ date: string; dateLabel: string; views: number; searches: number }>;
-  previous: Array<{ date: string; views: number; searches: number }>;
-}
-
-interface KpiSnapshot {
-  current: {
-    totalViews: number;
-    totalSearches: number;
-    uniqueProducts: number;
-    uniqueSearches: number;
-  };
-  previous: {
-    totalViews: number;
-    totalSearches: number;
-    uniqueProducts: number;
-    uniqueSearches: number;
-  };
-}
-
 interface TrendsMockModule {
   MOCK_KPI_CURRENT: KpiSnapshot['current'];
   MOCK_KPI_PREVIOUS: KpiSnapshot['previous'];
@@ -111,86 +57,6 @@ interface TrendsMockModule {
 
 const EMPTY_KPI = { totalViews: 0, totalSearches: 0, uniqueProducts: 0, uniqueSearches: 0 };
 const NO_EXPORT_MESSAGE = 'Nada para exportar ainda.';
-
-interface ProductTrendQueryInput {
-  sellerScope: string | null;
-  sincePrevious: string;
-  sinceCurrent: string;
-  recentCutoff: string;
-  days: number;
-}
-
-function createProductAggregate(view: ProductView, key: string): AggregatedProduct {
-  return {
-    id: key,
-    name: view.product_name ?? 'Produto',
-    sku: view.product_sku ?? undefined,
-    views: 0,
-    details: 0,
-    compares: 0,
-    favorites: 0,
-    recentViews: 0,
-    baselineViews: 0,
-    trendingScore: 0,
-    classification: 'stable',
-  };
-}
-
-function recordCurrentProductView(
-  product: AggregatedProduct,
-  view: ProductView,
-  isRecent: boolean,
-) {
-  product.views += 1;
-  if (view.view_type === 'detail') product.details += 1;
-  if (view.view_type === 'compare') product.compares += 1;
-  if (view.view_type === 'favorite') product.favorites += 1;
-  if (isRecent) product.recentViews += 1;
-}
-
-function aggregateProductViews(data: ProductView[], input: ProductTrendQueryInput) {
-  const productMap = new Map<string, AggregatedProduct>();
-  data.forEach((view) => {
-    const key = view.product_id || view.product_name;
-    if (!key) return;
-    const product = productMap.get(key) ?? createProductAggregate(view, key);
-    if (view.created_at >= input.sinceCurrent) {
-      recordCurrentProductView(product, view, view.created_at >= input.recentCutoff);
-    } else {
-      product.baselineViews += 1;
-    }
-    productMap.set(key, product);
-  });
-  return productMap;
-}
-
-function rankProductTrends(productMap: Map<string, AggregatedProduct>, days: number) {
-  const recentDays = Math.max(Math.floor(days / 3), 1);
-  const baselineDays = days - recentDays;
-  return Array.from(productMap.values())
-    .map((product) => {
-      const score = calculateTrendingScore({
-        recentCount: product.recentViews,
-        baselineCount: product.baselineViews,
-        recentDays,
-        baselineDays,
-        totalVolume: product.views,
-      });
-      return { ...product, trendingScore: score.score, classification: score.classification };
-    })
-    .filter((product) => product.views > 0)
-    .sort(
-      (left, right) =>
-        right.trendingScore * Math.log(right.views + 1) -
-        left.trendingScore * Math.log(left.views + 1),
-    )
-    .slice(0, 10);
-}
-
-async function loadTopProducts(input: ProductTrendQueryInput): Promise<AggregatedProduct[]> {
-  const data = await loadProductViewActivity(input.sincePrevious, input.sellerScope);
-  return rankProductTrends(aggregateProductViews(data, input), input.days);
-}
 
 function isTrendsAccessVisible(
   demo: boolean,
@@ -243,6 +109,7 @@ function useTrendsControls() {
   const dates = useMemo(() => {
     const now = new Date();
     return {
+      referenceDate: now,
       sinceCurrent: subDays(now, days).toISOString(),
       sincePrevious: subDays(now, days * 2).toISOString(),
       recentCutoff: subDays(now, Math.max(Math.floor(days / 3), 1)).toISOString(),
@@ -316,151 +183,11 @@ function resolveLoading(input: TrendLoadingInput) {
 
 type TrendsControls = ReturnType<typeof useTrendsControls>;
 
-async function loadTopSearches(controls: TrendsControls) {
-  const data = await loadSearchActivity(controls.sincePrevious, controls.sellerScope);
-  const current = new Map<string, { count: number; totalResults: number }>();
-  (data ?? []).forEach((row: SearchRow) => {
-    const term = (row.search_term ?? '').toLowerCase().trim();
-    if (!term || row.created_at < controls.sinceCurrent) return;
-    const aggregate = current.get(term) ?? { count: 0, totalResults: 0 };
-    aggregate.count += 1;
-    aggregate.totalResults += row.results_count ?? 0;
-    current.set(term, aggregate);
-  });
-  const currentRows: AggregatedSearch[] = Array.from(current.entries())
-    .map(([term, aggregate]) => ({
-      term,
-      count: aggregate.count,
-      totalResults: aggregate.totalResults,
-      avgResults: aggregate.count > 0 ? Math.round(aggregate.totalResults / aggregate.count) : 0,
-    }))
-    .sort((left, right) => right.count - left.count)
-    .slice(0, 10);
-  return { current: currentRows };
-}
-
-function createActivityBuckets(days: number) {
-  const current = new Map<string, { date: string; views: number; searches: number }>();
-  const previous = new Map<string, { views: number; searches: number }>();
-  for (let index = days - 1; index >= 0; index -= 1) {
-    const date = format(subDays(new Date(), index), ISO_DAY_FORMAT);
-    current.set(date, { date, views: 0, searches: 0 });
-  }
-  for (let index = days - 1; index >= 0; index -= 1) {
-    const date = format(subDays(new Date(), days + index), ISO_DAY_FORMAT);
-    previous.set(date, { views: 0, searches: 0 });
-  }
-  return { current, previous };
-}
-
-function recordDailyActivity(
-  rows: Array<{ created_at: string }>,
-  field: 'views' | 'searches',
-  buckets: ReturnType<typeof createActivityBuckets>,
-) {
-  rows.forEach((row) => {
-    const date = format(new Date(row.created_at), ISO_DAY_FORMAT);
-    const current = buckets.current.get(date);
-    if (current) {
-      current[field] += 1;
-      return;
-    }
-    const previous = buckets.previous.get(date);
-    if (previous) previous[field] += 1;
-  });
-}
-
-async function loadDailyTrends(controls: TrendsControls): Promise<DailyTrendData> {
-  const activity = await loadTrendsActivity(controls.sincePrevious, controls.sellerScope);
-  const buckets = createActivityBuckets(controls.days);
-  recordDailyActivity(activity.views ?? [], 'views', buckets);
-  recordDailyActivity(activity.searches ?? [], 'searches', buckets);
-  return {
-    current: Array.from(buckets.current.values()).map((row) => ({
-      ...row,
-      dateLabel: format(new Date(row.date), 'dd/MM', { locale: ptBR }),
-    })),
-    previous: Array.from(buckets.previous.values()).map((row) => ({ date: '', ...row })),
-  };
-}
-
-function splitActivityRows<Row extends { created_at: string }>(
-  rows: Row[],
-  sinceCurrent: string,
-  key: (row: Row) => string | null,
-) {
-  let currentTotal = 0;
-  let previousTotal = 0;
-  const currentUnique = new Set<string>();
-  const previousUnique = new Set<string>();
-  rows.forEach((row) => {
-    const value = key(row);
-    if (row.created_at >= sinceCurrent) {
-      currentTotal += 1;
-      if (value) currentUnique.add(value);
-    } else {
-      previousTotal += 1;
-      if (value) previousUnique.add(value);
-    }
-  });
-  return {
-    currentTotal,
-    previousTotal,
-    currentUnique: currentUnique.size,
-    previousUnique: previousUnique.size,
-  };
-}
-
-async function loadKpiSnapshot(controls: TrendsControls): Promise<KpiSnapshot> {
-  const { views, searches } = await loadTrendsActivity(
-    controls.sincePrevious,
-    controls.sellerScope,
-  );
-  const viewStats = splitActivityRows(
-    views ?? [],
-    controls.sinceCurrent,
-    (row) => row.product_id || row.product_name,
-  );
-  const searchStats = splitActivityRows(searches ?? [], controls.sinceCurrent, (row) =>
-    (row.search_term ?? '').toLowerCase(),
-  );
-  return {
-    current: {
-      totalViews: viewStats.currentTotal,
-      totalSearches: searchStats.currentTotal,
-      uniqueProducts: viewStats.currentUnique,
-      uniqueSearches: searchStats.currentUnique,
-    },
-    previous: {
-      totalViews: viewStats.previousTotal,
-      totalSearches: searchStats.previousTotal,
-      uniqueProducts: viewStats.previousUnique,
-      uniqueSearches: searchStats.previousUnique,
-    },
-  };
-}
-
 function useTrendQueries(controls: TrendsControls) {
-  const common = { dateRange: controls.dateRange, scopeKey: controls.scopeKey, demo: controls.demo };
-  const products = useQuery({
-    queryKey: ['trends-products', common.dateRange, common.scopeKey, common.demo],
+  const activity = useQuery({
+    queryKey: ['trends-activity', controls.dateRange, controls.scopeKey],
     enabled: controls.queryEnabled,
-    queryFn: () => loadTopProducts(controls),
-  });
-  const searches = useQuery({
-    queryKey: ['trends-searches', common.dateRange, common.scopeKey, common.demo],
-    enabled: controls.queryEnabled,
-    queryFn: () => loadTopSearches(controls),
-  });
-  const daily = useQuery({
-    queryKey: ['trends-daily', common.dateRange, common.scopeKey, common.demo],
-    enabled: controls.queryEnabled,
-    queryFn: () => loadDailyTrends(controls),
-  });
-  const kpi = useQuery({
-    queryKey: ['trends-kpi-snapshot', common.dateRange, common.scopeKey, common.demo],
-    enabled: controls.queryEnabled,
-    queryFn: () => loadKpiSnapshot(controls),
+    queryFn: () => loadTrendsActivity(controls.sincePrevious, controls.sellerScope),
   });
   const mock = useQuery({
     queryKey: ['trends-mock'],
@@ -468,7 +195,7 @@ function useTrendQueries(controls: TrendsControls) {
     staleTime: Infinity,
     queryFn: () => import('./trends/trends-mock'),
   });
-  return { products, searches, daily, kpi, mock };
+  return { activity, mock };
 }
 
 type TrendDisplay = ReturnType<typeof resolveTrendData>;
@@ -515,54 +242,66 @@ function useTrendsExports(display: TrendDisplay) {
 
 type TrendQueries = ReturnType<typeof useTrendQueries>;
 
+function useTrendsSnapshot(controls: TrendsControls, queries: TrendQueries) {
+  return useMemo(
+    () =>
+      queries.activity.data
+        ? buildTrendsSnapshot(queries.activity.data, {
+            sinceCurrent: controls.sinceCurrent,
+            recentCutoff: controls.recentCutoff,
+            days: controls.days,
+            referenceDate: controls.referenceDate,
+          })
+        : undefined,
+    [
+      queries.activity.data,
+      controls.sinceCurrent,
+      controls.recentCutoff,
+      controls.days,
+      controls.referenceDate,
+    ],
+  );
+}
+
 function useTrendRefresh(controls: TrendsControls, queries: TrendQueries) {
   return () => {
     if (!controls.demo) void controls.refetchAccess();
     if (!controls.queryEnabled) return;
-    void queries.products.refetch();
-    void queries.searches.refetch();
-    void queries.daily.refetch();
-    void queries.kpi.refetch();
+    void queries.activity.refetch();
   };
 }
 
 function useTrendsPageModel() {
   const controls = useTrendsControls();
   const queries = useTrendQueries(controls);
-  const kpis = resolveKpiDisplay(controls.demo, queries.mock.data, queries.kpi.data);
+  const snapshot = useTrendsSnapshot(controls, queries);
+  const kpis = resolveKpiDisplay(controls.demo, queries.mock.data, snapshot?.kpi);
   const display = resolveTrendData({
     demo: controls.demo,
     mock: queries.mock.data,
     days: controls.days,
-    products: queries.products.data,
-    searches: queries.searches.data,
-    daily: queries.daily.data,
+    products: snapshot?.products,
+    searches: snapshot?.searches,
+    daily: snapshot?.daily,
   });
   const displayLoading = resolveLoading({
     demo: controls.demo,
     mock: queries.mock.isLoading,
-    products: queries.products.isLoading,
-    searches: queries.searches.isLoading,
-    daily: queries.daily.isLoading,
+    products: queries.activity.isLoading,
+    searches: queries.activity.isLoading,
+    daily: queries.activity.isLoading,
   });
   const exports = useTrendsExports(display);
   const handleRefresh = useTrendRefresh(controls, queries);
-  const hasQueryError =
-    !controls.demo &&
-    [
-      queries.products.isError,
-      queries.searches.isError,
-      queries.daily.isError,
-      queries.kpi.isError,
-    ].some(Boolean);
+  const hasQueryError = !controls.demo && queries.activity.isError;
   return {
     ...controls,
     kpiCurrent: kpis.current,
     kpiPrevious: kpis.previous,
     loadingMock: queries.mock.isLoading,
-    loadingKpi: queries.kpi.isLoading,
+    loadingKpi: queries.activity.isLoading,
     mockError: queries.mock.isError,
-    kpiError: queries.kpi.isError,
+    kpiError: queries.activity.isError,
     hasQueryError,
     displayProducts: display.products,
     displaySearches: display.searches,
@@ -677,11 +416,18 @@ function TrendsDecisionSupport({ model }: { model: TrendsPageModel }) {
 
 function TrendsAccessNotice({ model }: { model: TrendsPageModel }) {
   if (model.accessLoading) {
-    return <p role="status" className="rounded-lg border p-4 text-sm">Validando acesso às tendências…</p>;
+    return (
+      <p role="status" className="rounded-lg border p-4 text-sm">
+        Validando acesso às tendências…
+      </p>
+    );
   }
   if (model.accessError) {
     return (
-      <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
+      <div
+        role="alert"
+        className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm"
+      >
         <p>Não foi possível validar seu acesso aos indicadores.</p>
         <Button variant="outline" size="sm" onClick={() => void model.refetchAccess()}>
           Tentar novamente
@@ -774,11 +520,11 @@ export default function TrendsPage() {
             <TrendsVisualAnalysis model={model} />
             <TrendsRankingTabs model={model} />
           </>
-        ) : <TrendsAccessNotice model={model} />}
+        ) : (
+          <TrendsAccessNotice model={model} />
+        )}
       </div>
-      {model.hasAnalyticsAccess && (model.demo || model.dataAccessMode === 'all') && (
-        <TrendsTour />
-      )}
+      {model.hasAnalyticsAccess && (model.demo || model.dataAccessMode === 'all') && <TrendsTour />}
     </>
   );
 }
