@@ -34,4 +34,10 @@ describe('estados centralizados do mapa de calor de tendências', () => {
     render(<TrendsHeatmap days={30} data={heatmapWith(0)} />);
     expect(screen.getByText('Sem dados suficientes para o mapa de calor')).toBeInTheDocument();
   });
+
+  it('expõe um resumo textual equivalente ao mapa visual', () => {
+    render(<TrendsHeatmap days={30} data={heatmapWith(3)} />);
+
+    expect(screen.getByRole('img', { name: /Pico de 3 eventos em Seg, às 10 horas/ })).toBeInTheDocument();
+  });
 });

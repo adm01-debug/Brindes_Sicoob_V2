@@ -186,7 +186,7 @@ function CategoryRankingHeader({
           </CardDescription>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" aria-label="PieChartIcon" className="h-7 w-7" onClick={onToggleView} title={viewMode === "list" ? "Ver gráfico" : "Ver lista"}>
+          <Button variant="ghost" size="icon" aria-label={viewMode === "list" ? "Exibir ranking em gráfico" : "Exibir ranking em lista"} className="h-7 w-7" onClick={onToggleView} title={viewMode === "list" ? "Ver gráfico" : "Ver lista"}>
             {viewMode === "list" ? <PieChartIcon className="h-3.5 w-3.5" /> : <BarChart3 className="h-3.5 w-3.5" />}
           </Button>
           <ToggleGroup

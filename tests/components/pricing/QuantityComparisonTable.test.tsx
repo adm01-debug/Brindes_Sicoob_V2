@@ -50,7 +50,7 @@ describe("QuantityComparisonTable: total combinado", () => {
   it("soma o produto uma vez e inclui personalização, setup e manuseio de cada técnica", () => {
     renderWithProviders(<QuantityComparisonTable
       product={product}
-      selectedConfigs={[technique("laser", "LASER", "Laser"), technique("silk", "SILK", "Silk")]} 
+      selectedConfigs={[technique("laser", "LASER", "Laser"), technique("silk", "SILK", "Silk")]}
       quantities={[100]}
     />);
 

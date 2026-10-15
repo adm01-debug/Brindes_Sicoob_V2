@@ -73,6 +73,7 @@ describe("CategoryRanking — falha versus lista vazia", () => {
     expect(screen.getByRole("radio", { name: "Combinado" })).toBeDisabled();
     expect(screen.getByRole("radio", { name: /Mercado/ })).toBeDisabled();
     expect(screen.getByRole("radio", { name: /Interno/ })).toHaveAttribute("data-state", "on");
+    expect(screen.getByRole("button", { name: "Exibir ranking em gráfico" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
     expect(refetch).toHaveBeenCalledOnce();
   });

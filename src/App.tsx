@@ -122,6 +122,8 @@ const App = () => {
                               
                               <Route path="/admin/design-system/colors" element={<RouteSuspense><ColorDocumentationPage /></RouteSuspense>} />
                               <Route path="/admin/saude-testes" element={<RouteSuspense><TestDashboard /></RouteSuspense>} />
+                              <Route path="/clientes" element={<RouteSuspense><ClientsPage /></RouteSuspense>} />
+                              <Route path="/clientes/:id" element={<RouteSuspense><ClientDetailPage /></RouteSuspense>} />
                             </Route>
 
                             <Route element={<SicoobRoute />}>
@@ -140,8 +142,6 @@ const App = () => {
                             {/* Shared App Routes */}
                             <Route path="/pedidos" element={<RouteSuspense><OrdersPage /></RouteSuspense>} />
                             <Route path="/pedidos/:id" element={<RouteSuspense><OrderDetailPage /></RouteSuspense>} />
-                            <Route path="/clientes" element={<RouteSuspense><ClientsPage /></RouteSuspense>} />
-                            <Route path="/clientes/:id" element={<RouteSuspense><ClientDetailPage /></RouteSuspense>} />
                             <Route path="/notificacoes" element={<RouteSuspense><NotificationsPage /></RouteSuspense>} />
                             <Route path="/pedidos/:id/auditoria" element={<RouteSuspense><OrderAuditPage /></RouteSuspense>} />
 

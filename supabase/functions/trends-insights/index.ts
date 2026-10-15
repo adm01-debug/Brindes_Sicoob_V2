@@ -2,6 +2,11 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 // Edge function: trends-insights
 // Agrega métricas de Tendências e gera narrativa via Lovable AI Gateway.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import {
+  loadAllTrendActivity,
+  TRENDS_INSIGHTS_PAGE_SIZE,
+  trendCursorFilter,
+} from "./pagination.ts";
 
 interface Body {
   days?: number;
@@ -51,16 +56,31 @@ Deno.serve(async (req) => {
     const sinceCurrent = new Date(Date.now() - days * 86400000).toISOString();
     const sincePrevious = new Date(Date.now() - days * 2 * 86400000).toISOString();
 
-    // Buscar dados — ambas tabelas têm RLS, mas admin/manager têm acesso amplo
-    const [{ data: views }, { data: searches }] = await Promise.all([
-      supabase
-        .from("product_views")
-        .select("product_id, product_name, view_type, created_at")
-        .gte("created_at", sincePrevious),
-      supabase
-        .from("search_analytics")
-        .select("search_term, results_count, created_at")
-        .gte("created_at", sincePrevious),
+    // Carrega o período completo com cursor estável. Qualquer falha interrompe a
+    // geração para que a IA nunca apresente uma amostra parcial como total real.
+    const [views, searches] = await Promise.all([
+      loadAllTrendActivity("visualizações de produtos", (cursor) => {
+        let query = supabase
+          .from("product_views")
+          .select("id, product_id, product_name, view_type, created_at")
+          .gte("created_at", sincePrevious)
+          .order("created_at", { ascending: false })
+          .order("id", { ascending: false })
+          .limit(TRENDS_INSIGHTS_PAGE_SIZE);
+        if (cursor) query = query.or(trendCursorFilter(cursor));
+        return query;
+      }),
+      loadAllTrendActivity("buscas", (cursor) => {
+        let query = supabase
+          .from("search_analytics")
+          .select("id, search_term, results_count, created_at")
+          .gte("created_at", sincePrevious)
+          .order("created_at", { ascending: false })
+          .order("id", { ascending: false })
+          .limit(TRENDS_INSIGHTS_PAGE_SIZE);
+        if (cursor) query = query.or(trendCursorFilter(cursor));
+        return query;
+      }),
     ]);
 
     const split = <T extends { created_at: string }>(rows: T[] | null) => {
@@ -68,8 +88,8 @@ Deno.serve(async (req) => {
       (rows ?? []).forEach(r => (r.created_at >= sinceCurrent ? cur : prev).push(r));
       return { cur, prev };
     };
-    const v = split(views as Array<{ created_at: string; product_name: string | null }> | null);
-    const s = split(searches as Array<{ created_at: string; search_term: string | null; results_count: number | null }> | null);
+    const v = split(views as Array<{ created_at: string; product_name: string | null }>);
+    const s = split(searches as Array<{ created_at: string; search_term: string | null; results_count: number | null }>);
 
     // Top 5 produtos
     const productCount = new Map<string, number>();

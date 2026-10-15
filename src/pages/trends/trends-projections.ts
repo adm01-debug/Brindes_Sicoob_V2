@@ -1,5 +1,4 @@
-import { format, subDays } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { format, startOfDay, subDays } from 'date-fns';
 import { calculateTrendingScore } from '@/lib/trending-score';
 import type { ProductViewActivity, SearchActivity } from './trends-queries';
 
@@ -83,6 +82,34 @@ interface ProjectionInput {
   recentCutoff: string;
   days: number;
   referenceDate: Date;
+}
+
+export interface CivilTrendWindow {
+  referenceDate: Date;
+  sinceCurrent: string;
+  sincePrevious: string;
+  recentCutoff: string;
+}
+
+/**
+ * Mantém KPIs, séries e rankings na mesma janela de dias civis do portal.
+ * O dia atual conta como o primeiro dia da seleção.
+ */
+export function buildCivilTrendWindow(referenceDate: Date, days: number): CivilTrendWindow {
+  const safeDays = Math.max(Math.trunc(days), 1);
+  const recentDays = Math.max(Math.floor(safeDays / 3), 1);
+  return {
+    referenceDate,
+    sinceCurrent: startOfDay(subDays(referenceDate, safeDays - 1)).toISOString(),
+    sincePrevious: startOfDay(subDays(referenceDate, safeDays * 2 - 1)).toISOString(),
+    recentCutoff: startOfDay(subDays(referenceDate, recentDays - 1)).toISOString(),
+  };
+}
+
+export function formatDateKey(date: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+  if (match) return `${match[3]}/${match[2]}`;
+  return format(new Date(date), 'dd/MM');
 }
 
 interface TrendsActivity {
@@ -215,7 +242,7 @@ function buildDailyTrends(activity: TrendsActivity, input: ProjectionInput): Dai
   return {
     current: Array.from(buckets.current.values()).map((row) => ({
       ...row,
-      dateLabel: format(new Date(row.date), 'dd/MM', { locale: ptBR }),
+      dateLabel: formatDateKey(row.date),
     })),
     previous: Array.from(buckets.previous.values()).map((row) => ({ date: '', ...row })),
   };
@@ -255,7 +282,7 @@ function buildKpiSnapshot(activity: TrendsActivity, sinceCurrent: string): KpiSn
     (row) => row.product_id || row.product_name,
   );
   const searchStats = splitActivityRows(activity.searches, sinceCurrent, (row) =>
-    (row.search_term ?? '').toLowerCase(),
+    (row.search_term ?? '').trim().toLowerCase(),
   );
   return {
     current: {
@@ -300,7 +327,7 @@ function buildHotSearches(
   return { items, totalSearches };
 }
 
-function extractCategory(name: string | null | undefined): string {
+function extractProductFamily(name: string | null | undefined): string {
   return name?.trim().split(/\s+/)[0] || 'Outros';
 }
 
@@ -311,7 +338,7 @@ function buildTopCategories(data: ProductViewActivity[], input: ProjectionInput)
 
   data.forEach((view) => {
     if (view.created_at < input.sinceCurrent) return;
-    const category = extractCategory(view.product_name);
+    const category = extractProductFamily(view.product_name);
     const aggregate = categories.get(category) ?? { views: 0, recent: 0 };
     aggregate.views += 1;
     if (view.created_at >= input.recentCutoff) aggregate.recent += 1;

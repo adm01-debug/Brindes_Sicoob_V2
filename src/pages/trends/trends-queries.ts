@@ -37,14 +37,13 @@ interface ActivityPage<Row> {
 }
 
 export async function loadTrendsCapabilities(userId: string): Promise<TrendsCapabilities> {
-  const [productViews, searches] = await Promise.all([
-    supabase.rpc('has_role', { _user_id: userId, _role: 'admin' }),
-    supabase.rpc('is_manager_or_admin'),
-  ]);
-  if (productViews.error || searches.error) throw productViews.error || searches.error;
+  const productViews = await supabase.rpc('has_role', { _user_id: userId, _role: 'admin' });
+  if (productViews.error) throw productViews.error;
   return {
     canReadAllProductViews: productViews.data === true,
-    canReadSearchAnalytics: searches.data === true,
+    // A policy canônica garante SELECT das próprias buscas a todo usuário
+    // autenticado e amplia a mesma regra para a leitura gerencial global.
+    canReadSearchAnalytics: true,
   };
 }
 

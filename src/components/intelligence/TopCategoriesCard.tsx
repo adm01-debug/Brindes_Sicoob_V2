@@ -1,6 +1,6 @@
 /**
- * TopCategoriesCard — categorias em alta extraídas da tabela `product_views`
- * via prefixo de SKU/nome. Aplica trending score.
+ * TopCategoriesCard — famílias de produtos em alta extraídas de `product_views`.
+ * A família é uma aproximação pelo primeiro termo do nome do produto.
  */
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +25,7 @@ function CategoriesError({ hasData, isFetching, onRetry }: {
 }) {
   return (
     <div role="alert" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-muted-foreground">
-      <span>{hasData ? "Não foi possível atualizar o ranking. Os dados anteriores continuam exibidos." : "Não foi possível carregar o ranking de categorias."}</span>
+      <span>{hasData ? "Não foi possível atualizar o ranking. Os dados anteriores continuam exibidos." : "Não foi possível carregar o ranking de famílias de produtos."}</span>
       {onRetry && <Button size="sm" variant="outline" onClick={onRetry} disabled={isFetching}>{isFetching ? "Tentando…" : "Tentar novamente"}</Button>}
     </div>
   );
@@ -51,7 +51,7 @@ function CategoryTrendRow({ row, index }: { row: CategoryTrend; index: number })
 function CategoriesBody({ data, isLoading, isUnavailable }: { data?: CategoryTrend[]; isLoading: boolean; isUnavailable: boolean }) {
   if (isLoading) return <div className="space-y-2">{[...Array(6)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>;
   if (isUnavailable) return <div className="h-[160px] flex items-center justify-center text-muted-foreground"><AlertTriangle className="h-8 w-8 text-destructive/70" /></div>;
-  if (!data?.length) return <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm">Ainda não há dados suficientes para ranquear categorias</div>;
+  if (!data?.length) return <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm">Ainda não há dados suficientes para ranquear famílias de produtos</div>;
   return <div className="space-y-2">{data.map((row, index) => <CategoryTrendRow key={row.category} row={row} index={index} />)}</div>;
 }
 
@@ -61,10 +61,10 @@ export function TopCategoriesCard({ days, data, isLoading = false, isError = fal
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Layers className="h-5 w-5 text-chart-4" />
-          Categorias em Alta
+          Famílias de Produtos em Alta
         </CardTitle>
         <CardDescription>
-          Ranqueado por crescimento (não só volume) nos últimos {days} dias
+          Agrupamento aproximado pelo início do nome · crescimento nos últimos {days} dias
         </CardDescription>
       </CardHeader>
       <CardContent>

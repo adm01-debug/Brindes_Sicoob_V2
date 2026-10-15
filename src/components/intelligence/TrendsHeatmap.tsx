@@ -34,8 +34,22 @@ function HeatmapError({ hasData, isFetching, onRetry }: {
 }
 
 function HeatmapGrid({ data }: { data: TrendsHeatmapData }) {
+  let peakDay = 0;
+  let peakHour = 0;
+  let peakCount = 0;
+  const dailyTotals = data.matrix.map((row, day) => {
+    row.forEach((count, hour) => {
+      if (count > peakCount) {
+        peakDay = day;
+        peakHour = hour;
+        peakCount = count;
+      }
+    });
+    return row.reduce((total, count) => total + count, 0);
+  });
+  const accessibleSummary = `Mapa de calor de atividade. Pico de ${peakCount} eventos em ${DAYS_PT[peakDay]}, às ${peakHour} horas. Totais por dia: ${dailyTotals.map((total, day) => `${DAYS_PT[day]} ${total}`).join(', ')}.`;
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto" role="img" aria-label={accessibleSummary}>
       <div className="inline-block min-w-full">
         <div className="flex gap-px text-[9px] text-muted-foreground pl-9">
           {Array.from({ length: 24 }).map((_, hour) => <div key={hour} className="w-5 text-center">{hour % 3 === 0 ? hour : ""}</div>)}
@@ -49,6 +63,7 @@ function HeatmapGrid({ data }: { data: TrendsHeatmapData }) {
                 className={cn("w-5 h-5 rounded-sm transition-transform hover:scale-125 cursor-help", count === 0 && "bg-muted/40")}
                 style={count > 0 ? { backgroundColor: `hsl(var(--primary) / ${0.15 + (count / data.max) * 0.85})` } : undefined}
                 title={`${DAYS_PT[day]} ${hour}h — ${count} eventos`}
+                aria-hidden="true"
               />
             ))}
           </div>

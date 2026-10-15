@@ -7,6 +7,11 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { getOrCreateRequestId, REQUEST_ID_HEADER } from "../_shared/request-id.ts";
 import { resolveCredential, buildCredentialsHealth } from "../_shared/credentials.ts";
 import { buildCompanySearchOr } from "./search-query.ts";
+import {
+  canReadCrm,
+  canWriteCrm,
+  hasActivePortalMembership,
+} from "../_shared/portal-access-policy.ts";
 
 const breaker = getBreaker("crm-db");
 
@@ -244,8 +249,6 @@ const ALLOWED_TABLES = [
   "contact_emails", "contact_phones", "customers", "suppliers", "carriers",
 ];
 
-const VENDOR_WRITE_TABLES: string[] = [];
-
 const OPTIONAL_QUOTE_TABLES = new Set<string>();
 
 // ============================================
@@ -429,7 +432,7 @@ interface BatchQuery {
 
 interface AuthResult {
   userId: string | null;
-  userRole: string;
+  userRoles: string[];
   error?: Response;
 }
 
@@ -445,12 +448,16 @@ interface PostgrestLikeError {
 async function authenticateRequest(req: Request): Promise<AuthResult> {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
-    return { userId: null, userRole: "public", error: jsonResponse({ error: "Autenticação necessária" }, 401) };
+    return { userId: null, userRoles: [], error: jsonResponse({ error: "Autenticação necessária" }, 401) };
   }
 
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
+    console.error("[crm-auth] Configuração local de autenticação incompleta");
+    return { userId: null, userRoles: [], error: jsonResponse({ error: "Serviço de autenticação indisponível" }, 503) };
+  }
 
   const userClient = createClient(supabaseUrl, supabaseAnonKey, {
     global: { headers: { Authorization: authHeader } },
@@ -459,16 +466,31 @@ async function authenticateRequest(req: Request): Promise<AuthResult> {
   const { data: { user }, error: userError } = await userClient.auth.getUser();
   if (!user || userError) {
     console.error("CRM auth failed:", userError?.message);
-    return { userId: null, userRole: "public", error: jsonResponse({ error: "Token inválido ou expirado" }, 401) };
+    return { userId: null, userRoles: [], error: jsonResponse({ error: "Token inválido ou expirado" }, 401) };
   }
 
   const adminClient = createClient(supabaseUrl, supabaseServiceKey);
-  const { data: roleData } = await adminClient
-    .from("user_roles").select("role").eq("user_id", user.id).single();
+  const [rolesResult, profileResult] = await Promise.all([
+    adminClient.from("user_roles").select("role").eq("user_id", user.id),
+    adminClient.from("profiles").select("is_active, deleted_at").eq("user_id", user.id).maybeSingle(),
+  ]);
 
-  const userRole = roleData?.role || "vendedor";
-  console.log(`Request from user: ${user.id}, role: ${userRole}`);
-  return { userId: user.id, userRole };
+  if (rolesResult.error || profileResult.error) {
+    console.error("[crm-auth] Falha ao validar vínculo/papéis:", rolesResult.error?.message ?? profileResult.error?.message);
+    return { userId: null, userRoles: [], error: jsonResponse({ error: "Não foi possível validar o acesso" }, 503) };
+  }
+
+  const userRoles = [...new Set((rolesResult.data ?? [])
+    .map((row: { role?: unknown }) => row.role)
+    .filter((role): role is string => typeof role === "string" && role.length > 0))];
+
+  if (!hasActivePortalMembership(profileResult.data, userRoles)) {
+    console.warn(`[crm-auth] Acesso negado para ${user.id}: vínculo inativo, excluído ou sem papel`);
+    return { userId: null, userRoles: [], error: jsonResponse({ error: "Acesso não autorizado" }, 403) };
+  }
+
+  console.log(`[crm-auth] Usuário autenticado: ${user.id}, papéis=${userRoles.length}`);
+  return { userId: user.id, userRoles };
 }
 
 // ============================================
@@ -822,10 +844,10 @@ Deno.serve((req) => {
     }
 
   // ─────────────────────────────────────────────────────────────────
-  // PING / DIAG — endpoints de diagnóstico SEMPRE disponíveis.
-  // BYPASS deliberado de circuit-breaker, JWT, bot-protection e CRM externo.
+  // PING público expõe somente saúde agregada. Diagnósticos detalhados exigem
+  // autenticação e papel dev, antes de revelar estado interno ou credenciais.
   //
-  //   GET  ?op=ping  | POST { operation:"ping" }  → { ok, ts, warm }
+  //   GET  ?op=ping  | POST { operation:"ping" }  → { ok, status }
   //   GET  ?op=diag  | POST { operation:"diag" }  → snapshot completo de
   //     métricas de cold vs warm path do isolate atual:
   //       boot.client_build_ms    — tempo p/ instanciar o SupabaseClient
@@ -837,7 +859,14 @@ Deno.serve((req) => {
   // ─────────────────────────────────────────────────────────────────
   const diagOp = await detectDiagOp(req);
   if (diagOp === "ping") {
-    return jsonResponse({ ok: true, ts: Date.now(), warm: crmWarmupCompleted });
+    return jsonResponse({ ok: true, status: crmWarmupCompleted ? "ready" : "starting" });
+  }
+  if (diagOp) {
+    const diagnosticAuth = await authenticateRequest(req);
+    if (diagnosticAuth.error) return diagnosticAuth.error;
+    if (!diagnosticAuth.userRoles.includes("dev")) {
+      return jsonResponse({ error: "Diagnóstico restrito a desenvolvedores" }, 403);
+    }
   }
   if (diagOp === "diag") {
     return jsonResponse(buildDiagSnapshot());
@@ -888,6 +917,9 @@ Deno.serve((req) => {
 
     const auth = await authenticateRequest(req);
     if (auth.error) return auth.error;
+    if (!canReadCrm(auth.userRoles)) {
+      return jsonResponse({ error: "Permissão insuficiente para consultar o CRM" }, 403);
+    }
 
     // SSOT: DB-first via integration_credentials, env fallback via aliases.
     // Antes lia Deno.env.get() direto e ignorava credenciais salvas pela UI
@@ -929,11 +961,7 @@ Deno.serve((req) => {
         url_prefix: urlPrefix,
         using,
         key_source: keySource,
-        key_len: CRM_KEY.length,
-        anon_len: CRM_ANON.length,
         keys_match: CRM_SERVICE_KEY === CRM_ANON,
-        svc_last4: CRM_KEY.slice(-4),
-        anon_last4: CRM_ANON.slice(-4),
       }));
     }
 
@@ -988,11 +1016,9 @@ Deno.serve((req) => {
     const body = parsed.data as CrmQuery;
     const { operation, table } = body;
 
-    // Write permission check for vendedores
-    if (["insert", "update", "delete"].includes(operation) && auth.userRole === "vendedor") {
-      if (!VENDOR_WRITE_TABLES.includes(table)) {
-        return jsonResponse({ error: "Permissão insuficiente para modificar esta tabela" }, 403);
-      }
+    // Matriz explícita: leitura para gestão; escrita apenas para dev/admin.
+    if (["insert", "update", "delete"].includes(operation) && !canWriteCrm(auth.userRoles)) {
+      return jsonResponse({ error: "Permissão insuficiente para modificar o CRM" }, 403);
     }
 
     // Batch handler (no table validation needed — done per-query inside)

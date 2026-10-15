@@ -57,6 +57,14 @@ interface CategoryProduct {
   category_name?: string | null;
 }
 
+interface CategoryOrderItem {
+  id: string;
+  order_id: string | null;
+  product_id: string | null;
+  quantity: number | null;
+  unit_price: number | null;
+}
+
 interface MarketStockSnapshot extends Record<string, unknown> {
   product_id?: string | null;
   units_depleted?: number | null;
@@ -66,6 +74,9 @@ type SalesScope = ReturnType<typeof useSalesScope>;
 const ORDER_ITEMS_TABLE = 'order_items';
 const PRODUCT_ID_COLUMN = 'product_id';
 const ORDER_VALUE_FIELDS = 'order_id, quantity, unit_price';
+const CATEGORY_PAGE_SIZE = 1000;
+const CATEGORY_FILTER_CHUNK_SIZE = 100;
+const CATEGORY_MAX_EXTERNAL_ROWS = 100000;
 
 function emptyCommercialKpi(): IntelligenceKPI {
   return { totalQuotes: 0, totalOrders: 0, conversionRate: 0, totalRevenue: 0, averageTicket: 0, quotesThisMonth: 0, ordersThisMonth: 0, revenueThisMonth: 0 };
@@ -143,27 +154,96 @@ function trendingProductKey(item: TrendingOrderRow): string {
   return item.product_sku || item.product_id || item.product_name || '';
 }
 
-async function fetchCategoryOrderItems(since: string, productIds?: string[]) {
-  const baseQuery = supabase.from('order_items').select('product_id, quantity, unit_price').gte('created_at', since);
-  const query = productIds ? baseQuery.in('product_id', productIds) : baseQuery;
-  const { data, error } = await query;
-  if (error) throw error;
-  return data ?? [];
+function chunkCategoryProductIds(productIds: string[]): string[][] {
+  const chunks: string[][] = [];
+  for (let index = 0; index < productIds.length; index += CATEGORY_FILTER_CHUNK_SIZE) {
+    chunks.push(productIds.slice(index, index + CATEGORY_FILTER_CHUNK_SIZE));
+  }
+  return chunks;
+}
+
+async function fetchCategoryOrderItemChunk(since: string, productIds?: string[]): Promise<CategoryOrderItem[]> {
+  const rows: CategoryOrderItem[] = [];
+  const seenIds = new Set<string>();
+  for (let offset = 0; ; offset += CATEGORY_PAGE_SIZE) {
+    let query = supabase
+      .from('order_items')
+      .select('id, order_id, product_id, quantity, unit_price')
+      .gte('created_at', since);
+    if (productIds) query = query.in('product_id', productIds);
+    const { data, error } = await query
+      .order('id', { ascending: true })
+      .range(offset, offset + CATEGORY_PAGE_SIZE - 1);
+    if (error) throw error;
+    const page = data ?? [];
+    let added = 0;
+    page.forEach((row) => {
+      if (seenIds.has(row.id)) return;
+      seenIds.add(row.id);
+      rows.push(row);
+      added += 1;
+    });
+    if (page.length < CATEGORY_PAGE_SIZE) return rows;
+    if (added === 0) throw new Error('A paginação de itens de pedido não avançou.');
+  }
+}
+
+async function fetchCategoryOrderItems(since: string, productIds?: string[]): Promise<CategoryOrderItem[]> {
+  if (productIds?.length === 0) return [];
+  const chunks = productIds ? chunkCategoryProductIds(productIds) : [undefined];
+  const rows = new Map<string, CategoryOrderItem>();
+  for (const chunk of chunks) {
+    const page = await fetchCategoryOrderItemChunk(since, chunk);
+    page.forEach((row) => rows.set(row.id, row));
+  }
+  return Array.from(rows.values());
+}
+
+async function fetchAllExternalRows<Row extends object>(
+  requestPage: (offset: number) => Promise<{ records?: Row[]; error?: unknown; success?: boolean }>,
+  sourceName: string,
+): Promise<Row[]> {
+  const rows: Row[] = [];
+  for (let offset = 0; offset < CATEGORY_MAX_EXTERNAL_ROWS; offset += CATEGORY_PAGE_SIZE) {
+    const result = await requestPage(offset);
+    if (!Array.isArray(result?.records) || result.error || result.success === false) {
+      const message = typeof result?.error === 'string' ? result.error : `Consulta de ${sourceName} incompleta`;
+      throw new Error(message);
+    }
+    rows.push(...result.records);
+    if (result.records.length < CATEGORY_PAGE_SIZE) return rows;
+  }
+  throw new Error(`Consulta de ${sourceName} excedeu o limite de segurança.`);
+}
+
+async function fetchCategoryProducts(): Promise<CategoryProduct[]> {
+  const { invokeExternalDb } = await import('@/lib/external-db');
+  return fetchAllExternalRows<CategoryProduct>(
+    (offset) => invokeExternalDb<CategoryProduct>({
+      table: 'products',
+      operation: 'select',
+      select: 'id,category_id,main_category_id,category_name',
+      orderBy: { column: 'id', ascending: true },
+      limit: CATEGORY_PAGE_SIZE,
+      offset,
+    }),
+    'categorias do catálogo',
+  );
 }
 
 async function fetchCategoryMarketSnapshots(since: string): Promise<MarketStockSnapshot[]> {
   const { invokeExternalDb } = await import('@/lib/external-db');
-  const result = await invokeExternalDb<MarketStockSnapshot>({
-    table: 'stock_daily_summary',
-    operation: 'select',
-    select: 'product_id,units_depleted',
-    filters: { summary_date: `gte.${since.split('T')[0]}` },
-    limit: 5000,
-  });
-  if (!Array.isArray(result?.records) || result.error || result.success === false) {
-    throw new Error(typeof result.error === 'string' ? result.error : 'Consulta de dados de mercado incompleta');
-  }
-  return result.records;
+  return fetchAllExternalRows<MarketStockSnapshot>(
+    (offset) => invokeExternalDb<MarketStockSnapshot>({
+      table: 'stock_daily_summary',
+      operation: 'select',
+      select: 'product_id,units_depleted',
+      filters: { summary_date: `gte.${since.split('T')[0]}` },
+      limit: CATEGORY_PAGE_SIZE,
+      offset,
+    }),
+    'dados de mercado',
+  );
 }
 
 function getOrCreateCategory(
@@ -198,13 +278,19 @@ function buildCategoryRanking(
   });
 
   const categories = new Map<string, CategoryRankingItem>();
+  const categoryOrderIds = new Map<string, Set<string>>();
   orderItems.forEach((item) => {
     const category = productCategories.get(item.product_id || '');
     if (!category) return;
     const entry = getOrCreateCategory(categories, category);
     entry.internalRevenue += (item.quantity ?? 0) * (item.unit_price ?? 0);
     entry.internalQty += item.quantity ?? 0;
-    entry.internalOrders += 1;
+    if (item.order_id) {
+      const orderIds = categoryOrderIds.get(category.catId) ?? new Set<string>();
+      orderIds.add(item.order_id);
+      categoryOrderIds.set(category.catId, orderIds);
+      entry.internalOrders = orderIds.size;
+    }
   });
   marketSnapshots.forEach((snapshot) => {
     const category = productCategories.get(snapshot.product_id || '');
@@ -533,11 +619,10 @@ export function useCategoryRanking(days = 30, categoryId?: string | null, suppli
   return useQuery({
     queryKey: ['commercial-category-ranking', user?.id, days, categoryId, supplierId, productId],
     queryFn: async (): Promise<CategoryRankingData> => {
-      const pids = productIds ? Array.from(productIds).slice(0, 200) : undefined;
+      const pids = productIds ? Array.from(productIds) : undefined;
       const orderItems = await fetchCategoryOrderItems(since, pids);
-      const { fetchPromobrindProducts } = await import('@/lib/external-db');
       const [productsResult, marketResult] = await Promise.allSettled([
-        fetchPromobrindProducts({ limit: 5000 }),
+        fetchCategoryProducts(),
         fetchCategoryMarketSnapshots(since),
       ]);
       if (productsResult.status === 'rejected') throw productsResult.reason;

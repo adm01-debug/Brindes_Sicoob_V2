@@ -120,6 +120,18 @@ const TARGETS = [
     file: "supabase/migrations/20261014151000_harden_catalog_marketing_authorship.sql",
     sha256: "f34673b492a9d222c955bed53d396121473fdbd1a32dba2e3fde3f3041f96803",
   },
+  {
+    file: "supabase/migrations/20261015230500_reconcile_search_analytics_telemetry.sql",
+    sha256: "df24ac086477a0672a305a7eca6a08603e1594faf870053a25c6ba5271d31f75",
+  },
+  {
+    file: "supabase/migrations/20261015233500_restrict_search_analytics_grants.sql",
+    sha256: "f2f495fca56a53597fa5d9f0aa63c0f47a7ecb05679453b7093abf2ffba99f04",
+  },
+  {
+    file: "supabase/migrations/20261015235000_consolidate_search_analytics_select_policy.sql",
+    sha256: "69848af7469db6e9fd360afea19db08ecf2dfdf45e83c3be10402c04502a5757",
+  },
 ];
 
 function sha256(value) {

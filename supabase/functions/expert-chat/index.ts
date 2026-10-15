@@ -9,6 +9,10 @@ import { runBotProtection } from '../_shared/bot-protection.ts';
 import { resolveCredential } from '../_shared/credentials.ts';
 import { normalizeAssistantContext } from '../_shared/assistant-context.ts';
 import { EXPERT_CHAT_CLIENT_MESSAGE_ROLES } from '../_shared/expert-chat-contract.ts';
+import {
+  canUseClientContext,
+  hasActivePortalMembership,
+} from '../_shared/portal-access-policy.ts';
 
 // ============================================
 // SCHEMAS
@@ -570,6 +574,19 @@ Deno.serve(async (req) => {
   try {
     const auth = await authenticateRequest(req);
     const userId = auth.userId;
+    const { data: membershipProfile, error: membershipError } = await auth.localServiceClient
+      .from("profiles")
+      .select("full_name, is_active, deleted_at")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (membershipError) {
+      console.error("[expert-chat] Falha ao validar vínculo do usuário:", membershipError.message);
+      throw { status: 403, message: "Não foi possível validar seu vínculo de acesso" };
+    }
+    if (!membershipProfile || !hasActivePortalMembership(membershipProfile, auth.userRoles)) {
+      throw { status: 403, message: "Usuário sem vínculo ativo ou papel autorizado" };
+    }
 
     // Anti-scraping/abuse protection
     const protection = await runBotProtection(req, {
@@ -607,6 +624,12 @@ Deno.serve(async (req) => {
       publicoFilter, dataComemorativaFilter, endomarketingFilter, nichoFilter, tagFilter,
       onlyInStock, onlyNew, onlyKit, onlyBestseller, onlyFeatured, hasPersonalization,
     } = parsed.data;
+
+    // O CRM externo não possui hoje um vínculo canônico vendedor↔company_id.
+    // Até existir escopo verificável, clientId fica restrito à supervisão.
+    if (clientId && !canUseClientContext(auth.userRoles)) {
+      throw { status: 403, message: "Sem permissão para acessar o contexto deste cliente" };
+    }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY não está configurada");
@@ -655,13 +678,8 @@ Deno.serve(async (req) => {
 
     // ── Seller profile ──
     let sellerFirstName = "";
-    const { data: sellerProfile } = await supabase
-      .from("profiles")
-      .select("full_name")
-      .eq("user_id", userId)
-      .single();
-    if (sellerProfile?.full_name) {
-      sellerFirstName = sellerProfile.full_name.split(" ")[0];
+    if (membershipProfile.full_name) {
+      sellerFirstName = membershipProfile.full_name.split(" ")[0];
     }
 
     // ── AI Query Expansion (runs in parallel with client data fetch) ──

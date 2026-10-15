@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 // import { MainLayout } from "@/components/layout/MainLayout";
 import {
@@ -8,6 +8,7 @@ import {
 } from './trends/trends-queries';
 import {
   buildTrendsSnapshot,
+  buildCivilTrendWindow,
   type AggregatedProduct,
   type AggregatedSearch,
   type CategoryTrend,
@@ -26,7 +27,6 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, Search, Package, Calendar, RefreshCw, Download } from 'lucide-react';
-import { subDays } from 'date-fns';
 import { PageSEO } from '@/components/seo/PageSEO';
 import { ProductsTabContent, SearchesTabContent } from './trends/TrendsCharts';
 import { TrendsKpiCards } from './trends/TrendsKpiCards';
@@ -108,19 +108,18 @@ function useTrendsControls() {
   const [activeTab, setActiveTab] = useUrlState<string>('tab', 'products');
   const [showCompare, setShowCompare] = useUrlBoolean('cmp', false);
   const [showForecast, setShowForecast] = useUrlBoolean('fc', false);
+  const [clock, setClock] = useState(() => ({ referenceDate: new Date(), revision: 0 }));
   const days = RANGE_TO_DAYS[dateRange] ?? 30;
   const demo = isDemoMode();
   const userId = user?.id ?? null;
   const access = useTrendsAccess(userId, demo);
-  const dates = useMemo(() => {
-    const now = new Date();
-    return {
-      referenceDate: now,
-      sinceCurrent: subDays(now, days).toISOString(),
-      sincePrevious: subDays(now, days * 2).toISOString(),
-      recentCutoff: subDays(now, Math.max(Math.floor(days / 3), 1)).toISOString(),
-    };
-  }, [days]);
+  const dates = useMemo(
+    () => buildCivilTrendWindow(clock.referenceDate, days),
+    [clock.referenceDate, days],
+  );
+  const renewDateWindow = useCallback(() => {
+    setClock((current) => ({ referenceDate: new Date(), revision: current.revision + 1 }));
+  }, []);
   return {
     dateRange,
     setDateRange,
@@ -132,6 +131,8 @@ function useTrendsControls() {
     setShowForecast,
     days,
     demo,
+    refreshRevision: clock.revision,
+    renewDateWindow,
     ...access,
     ...dates,
   };
@@ -191,7 +192,12 @@ type TrendsControls = ReturnType<typeof useTrendsControls>;
 
 function useTrendQueries(controls: TrendsControls) {
   const activity = useQuery({
-    queryKey: ['trends-activity', controls.dateRange, controls.scopeKey],
+    queryKey: [
+      'trends-activity',
+      controls.dateRange,
+      controls.scopeKey,
+      controls.refreshRevision,
+    ],
     enabled: controls.queryEnabled,
     queryFn: () => loadTrendsActivity(controls.sincePrevious, controls.sellerScope),
   });
@@ -275,9 +281,8 @@ function useTrendRefresh(controls: TrendsControls, queries: TrendQueries) {
       void queries.mock.refetch();
       return;
     }
+    controls.renewDateWindow();
     void controls.refetchAccess();
-    if (!controls.queryEnabled) return;
-    void queries.activity.refetch();
   };
 }
 
@@ -340,7 +345,7 @@ function useMarketSignals(
   const displayTopCategories = resolveTopCategories(controls.demo, queries.mock.data, snapshot);
   const displayHeatmap = useMemo(
     () => resolveHeatmap(controls.demo, queries.mock.data, snapshot),
-    [controls.demo, queries.mock.data, snapshot?.heatmap],
+    [controls.demo, queries.mock.data, snapshot],
   );
   const signalState = controls.demo ? queries.mock : queries.activity;
   return {
@@ -543,6 +548,9 @@ function TrendsVisualAnalysis({ model }: { model: TrendsPageModel }) {
         dailyTrends={model.displayDaily?.current}
         previousTrends={model.displayDaily?.previous}
         isLoading={model.displayLoadingDaily}
+        isError={model.signalError}
+        isFetching={model.signalFetching}
+        onRetry={model.handleRefresh}
         showForecast={model.showForecast}
         onToggleForecast={model.setShowForecast}
         showCompare={model.showCompare}
@@ -597,12 +605,18 @@ function TrendsRankingTabs({ model }: { model: TrendsPageModel }) {
         <ProductsTabContent
           topProducts={model.displayProducts}
           isLoading={model.displayLoadingProducts}
+          isError={model.signalError}
+          isFetching={model.signalFetching}
+          onRetry={model.handleRefresh}
         />
       </TabsContent>
       <TabsContent value="searches" className="space-y-4">
         <SearchesTabContent
           topSearches={model.displaySearches}
           isLoading={model.displayLoadingSearches}
+          isError={model.signalError}
+          isFetching={model.signalFetching}
+          onRetry={model.handleRefresh}
         />
       </TabsContent>
     </Tabs>

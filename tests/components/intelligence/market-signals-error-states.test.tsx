@@ -73,6 +73,8 @@ describe('cartões de sinais de mercado — estado centralizado', () => {
     first.unmount();
 
     render(<TopCategoriesCard days={30} data={[]} />);
-    expect(screen.getByText(/Ainda não há dados suficientes/)).toBeInTheDocument();
+    expect(screen.getByText(/Ainda não há dados suficientes/)).toHaveTextContent(
+      'ranquear famílias de produtos',
+    );
   });
 });

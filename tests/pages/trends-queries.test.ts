@@ -8,7 +8,11 @@ import {
   loadTrendsActivity,
   resolveTrendsDataAccess,
 } from '../../src/pages/trends/trends-queries';
-import { buildTrendsSnapshot } from '../../src/pages/trends/trends-projections';
+import {
+  buildCivilTrendWindow,
+  buildTrendsSnapshot,
+  formatDateKey,
+} from '../../src/pages/trends/trends-projections';
 
 function query(data: unknown[], error: unknown = null) {
   return Object.assign(Promise.resolve({ data, error }), {
@@ -46,32 +50,42 @@ function searchRow(index: number, createdAt = '2026-09-22T12:00:00.000Z') {
 describe('consultas de tendências', () => {
   beforeEach(() => vi.clearAllMocks());
 
+  it('alinha as janelas aos dias civis, incluindo o dia atual', () => {
+    const window = buildCivilTrendWindow(new Date(2026, 9, 15, 15, 30), 7);
+    const localParts = (value: string) => {
+      const date = new Date(value);
+      return [date.getFullYear(), date.getMonth() + 1, date.getDate(), date.getHours()];
+    };
+
+    expect(localParts(window.sinceCurrent)).toEqual([2026, 10, 9, 0]);
+    expect(localParts(window.sincePrevious)).toEqual([2026, 10, 2, 0]);
+    expect(localParts(window.recentCutoff)).toEqual([2026, 10, 14, 0]);
+    expect(formatDateKey('2026-10-15')).toBe('15/10');
+  });
+
   it.each([
     ['admin', true, true, 'all', null],
     ['manager', false, true, 'self', 'usuario-1'],
-    ['dev', false, false, 'unavailable', 'usuario-1'],
-    ['supervisor', false, false, 'unavailable', 'usuario-1'],
-    ['gestor_compras', false, false, 'unavailable', 'usuario-1'],
-    ['comprador_singular', false, false, 'unavailable', 'usuario-1'],
+    ['vendedor', false, true, 'self', 'usuario-1'],
+    ['dev', false, true, 'self', 'usuario-1'],
+    ['supervisor', false, true, 'self', 'usuario-1'],
+    ['gestor_compras', false, true, 'self', 'usuario-1'],
+    ['comprador_singular', false, true, 'self', 'usuario-1'],
   ])(
     'alinha o papel %s às capacidades comprovadas pela RLS',
-    async (_role, isAdmin, isManagerOrAdmin, mode, sellerScope) => {
-      rpc.mockImplementation((name: string) =>
-        Promise.resolve({
-          data: name === 'has_role' ? isAdmin : isManagerOrAdmin,
-          error: null,
-        }),
-      );
+    async (_role, isAdmin, canReadSearchAnalytics, mode, sellerScope) => {
+      rpc.mockResolvedValue({ data: isAdmin, error: null });
 
       const capabilities = await loadTrendsCapabilities('usuario-1');
       const access = resolveTrendsDataAccess('usuario-1', capabilities);
 
       expect(access).toEqual({ mode, sellerScope });
+      expect(capabilities.canReadSearchAnalytics).toBe(canReadSearchAnalytics);
       expect(rpc).toHaveBeenCalledWith('has_role', {
         _user_id: 'usuario-1',
         _role: 'admin',
       });
-      expect(rpc).toHaveBeenCalledWith('is_manager_or_admin');
+      expect(rpc).toHaveBeenCalledTimes(1);
     },
   );
 
@@ -218,6 +232,25 @@ describe('consultas de tendências', () => {
 
     expect(snapshot.hotSearches.items).toHaveLength(10);
     expect(snapshot.hotSearches.totalSearches).toBe(12);
+  });
+
+  it('normaliza espaços e caixa ao calcular buscas únicas dos KPIs', () => {
+    const searches = [
+      { ...searchRow(1), search_term: ' Caneca Sicoob ' },
+      { ...searchRow(2), search_term: 'caneca sicoob' },
+    ];
+
+    const snapshot = buildTrendsSnapshot(
+      { views: [], searches },
+      {
+        sinceCurrent: '2026-09-15T00:00:00.000Z',
+        recentCutoff: '2026-09-20T00:00:00.000Z',
+        days: 7,
+        referenceDate: new Date('2026-09-22T12:00:00.000Z'),
+      },
+    );
+
+    expect(snapshot.kpi.current.uniqueSearches).toBe(1);
   });
 
   it('calcula a base do ranking dentro do período atual sem misturar o período anterior', () => {
