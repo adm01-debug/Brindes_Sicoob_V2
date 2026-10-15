@@ -414,24 +414,24 @@ async function loadKpiSnapshot(controls: TrendsControls): Promise<KpiSnapshot> {
 }
 
 function useTrendQueries(controls: TrendsControls) {
-  const common = { dateRange: controls.dateRange, scopeKey: controls.scopeKey };
+  const common = { dateRange: controls.dateRange, scopeKey: controls.scopeKey, demo: controls.demo };
   const products = useQuery({
-    queryKey: ['trends-products', common.dateRange, common.scopeKey],
+    queryKey: ['trends-products', common.dateRange, common.scopeKey, common.demo],
     enabled: controls.queryEnabled,
     queryFn: () => loadTopProducts(controls),
   });
   const searches = useQuery({
-    queryKey: ['trends-searches', common.dateRange, common.scopeKey],
+    queryKey: ['trends-searches', common.dateRange, common.scopeKey, common.demo],
     enabled: controls.queryEnabled,
     queryFn: () => loadTopSearches(controls),
   });
   const daily = useQuery({
-    queryKey: ['trends-daily', common.dateRange, common.scopeKey],
+    queryKey: ['trends-daily', common.dateRange, common.scopeKey, common.demo],
     enabled: controls.queryEnabled,
     queryFn: () => loadDailyTrends(controls),
   });
   const kpi = useQuery({
-    queryKey: ['trends-kpi-snapshot', common.dateRange, common.scopeKey],
+    queryKey: ['trends-kpi-snapshot', common.dateRange, common.scopeKey, common.demo],
     enabled: controls.queryEnabled,
     queryFn: () => loadKpiSnapshot(controls),
   });

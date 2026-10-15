@@ -3,6 +3,7 @@
  * Top termos buscados que retornaram 0 resultados = oportunidades perdidas.
  */
 import { useQuery } from "@tanstack/react-query";
+import { isDemoMode } from "@/pages/trends/is-demo-mode";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,12 +26,12 @@ interface UnmetDemandCardProps {
 export function UnmetDemandCard({ days }: UnmetDemandCardProps) {
   const navigate = useNavigate();
   const since = subDays(new Date(), days).toISOString();
+  const demo = isDemoMode();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["unmet-demand", days],
+    queryKey: ["unmet-demand", days, demo],
     queryFn: async (): Promise<UnmetDemandItem[]> => {
-      const { isDemoMode } = await import("@/pages/trends/is-demo-mode");
-      if (isDemoMode()) {
+      if (demo) {
         const { MOCK_UNMET_DEMAND } = await import("@/pages/trends/trends-mock");
         const now = new Date().toISOString();
         return MOCK_UNMET_DEMAND.map(d => ({

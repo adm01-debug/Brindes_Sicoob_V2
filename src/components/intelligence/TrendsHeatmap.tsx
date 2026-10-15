@@ -3,6 +3,7 @@
  * Mostra quando os clientes mais buscam/visualizam.
  */
 import { useQuery } from "@tanstack/react-query";
+import { isDemoMode } from "@/pages/trends/is-demo-mode";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Activity } from "lucide-react";
@@ -18,12 +19,12 @@ interface TrendsHeatmapProps {
 
 export function TrendsHeatmap({ days }: TrendsHeatmapProps) {
   const since = subDays(new Date(), days).toISOString();
+  const demo = isDemoMode();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["trends-heatmap", days],
+    queryKey: ["trends-heatmap", days, demo],
     queryFn: async () => {
-      const { isDemoMode } = await import("@/pages/trends/is-demo-mode");
-      if (isDemoMode()) {
+      if (demo) {
         const { buildMockHeatmap } = await import("@/pages/trends/trends-mock");
         return buildMockHeatmap();
       }

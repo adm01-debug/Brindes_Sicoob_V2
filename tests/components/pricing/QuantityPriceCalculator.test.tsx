@@ -6,18 +6,21 @@ import { renderWithProviders } from "../render-helpers";
 const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
   calculatePrice: vi.fn(),
+  getTiers: vi.fn(),
+  toastError: vi.fn(),
 }));
 
 vi.mock("react-router-dom", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-router-dom")>();
   return { ...actual, useNavigate: () => mocks.navigate };
 });
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: mocks.toastError } }));
 vi.mock("@/hooks/useTecnicasUnificadas", () => ({
   useCustomizationPricing: () => ({
     isLoading: false,
     techniques: [{ code: "LASER", priceByColor: true }],
     calculatePrice: mocks.calculatePrice,
+    getTiers: mocks.getTiers,
   }),
 }));
 vi.mock("@/components/pricing/simulator/ProductSearch", () => ({
@@ -42,7 +45,8 @@ import { QuantityPriceCalculator } from "@/components/pricing/QuantityPriceCalcu
 describe("QuantityPriceCalculator", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.calculatePrice.mockReturnValue({ unitPrice: 2, setupPrice: 10 });
+    mocks.calculatePrice.mockReturnValue({ unitPrice: 2, setupPrice: 10, handlingPrice: 35 });
+    mocks.getTiers.mockReturnValue([{ minQuantity: 1 }]);
   });
 
   it("inicia exigindo a seleção de um produto real", () => {
@@ -75,10 +79,22 @@ describe("QuantityPriceCalculator", () => {
           personalizations: [{
             technique: { id: "tecnica-1", name: "Laser" },
             specs: { colors: 1 },
-            pricing: { setupPrice: 10, unitPrice: 2, totalPrice: 1010 },
+            pricing: { setupPrice: 10, unitPrice: 2, totalPrice: 1045 },
           }],
         },
       },
     });
+  });
+
+  it("bloqueia orçamento abaixo da quantidade mínima cadastrada", () => {
+    mocks.getTiers.mockReturnValue([{ minQuantity: 500 }]);
+    renderWithProviders(<QuantityPriceCalculator />);
+    fireEvent.click(screen.getByRole("button", { name: "Selecionar produto de teste" }));
+    fireEvent.click(screen.getByRole("button", { name: "Selecionar técnica de teste" }));
+    fireEvent.click(screen.getByRole("button", { name: "Criar Orçamento a partir desta Simulação" }));
+
+    expect(mocks.navigate).not.toHaveBeenCalled();
+    expect(mocks.getTiers).toHaveBeenCalledWith("LASER");
+    expect(mocks.calculatePrice).not.toHaveBeenCalled();
   });
 });

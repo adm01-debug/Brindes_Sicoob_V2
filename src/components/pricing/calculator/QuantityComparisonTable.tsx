@@ -6,7 +6,7 @@ import { useCustomizationPricing } from '@/hooks/useTecnicasUnificadas';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Calculator, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { type CalcProduct, type SelectedTechniqueConfig, availableSizes, formatCurrency, formatNumber, isPriceConfigurationSupported } from './types';
+import { type CalcProduct, type SelectedTechniqueConfig, availableSizes, calculateCustomizationTotal, formatCurrency, formatNumber, isPriceConfigurationSupported, minimumSupportedQuantity } from './types';
 
 interface Props {
   product: CalcProduct;
@@ -15,20 +15,22 @@ interface Props {
 }
 
 export function QuantityComparisonTable({ product, selectedConfigs, quantities }: Props) {
-  const { calculatePrice } = useCustomizationPricing();
+  const { calculatePrice, getTiers } = useCustomizationPricing();
 
   const calculateForConfig = useCallback((config: SelectedTechniqueConfig, quantity: number) => {
     if (!isPriceConfigurationSupported(config)) return null;
     const { technique } = config;
+    const minimum = minimumSupportedQuantity(getTiers(technique.techniqueCode));
+    if (minimum !== null && quantity < minimum) return null;
     const calc = calculatePrice(technique.techniqueCode, quantity);
     if (!calc) return null;
 
     const unitPrice = calc.unitPrice;
-    const customizationTotal = calc.unitPrice * quantity + calc.setupPrice + (calc.handlingPrice ?? 0);
+    const customizationTotal = calculateCustomizationTotal(calc, quantity);
     const productTotal = product.price * quantity;
     const grandTotal = productTotal + customizationTotal;
     return { unitPrice, customizationTotal, productTotal, grandTotal, unitTotal: grandTotal / quantity, slaDays: calc.slaDays };
-  }, [calculatePrice, product.price]);
+  }, [calculatePrice, getTiers, product.price]);
 
   const bestPricePerConfig = useMemo(() => {
     const map = new Map<string, number>();
@@ -63,8 +65,9 @@ export function QuantityComparisonTable({ product, selectedConfigs, quantities }
                 </TableCell>
                 {quantities.map(qty => {
                   const result = calculateForConfig(config, qty);
+                  const minimum = minimumSupportedQuantity(getTiers(config.technique.techniqueCode));
                   const isBest = bestPricePerConfig.get(config.technique.id) === qty;
-                  if (!result) return <TableCell key={qty} className="text-center text-xs text-muted-foreground">N/D</TableCell>;
+                  if (!result) return <TableCell key={qty} className="text-center text-xs text-muted-foreground">{minimum !== null && qty < minimum ? `Mín. ${formatNumber(minimum)}` : "N/D"}</TableCell>;
                   return (
                     <TableCell key={qty} className={cn("text-center relative", isBest && "bg-success/10 border border-success/30 rounded-lg")}>
                       {isBest && <Trophy className="w-3 h-3 text-success absolute top-1 right-1" />}
@@ -83,7 +86,7 @@ export function QuantityComparisonTable({ product, selectedConfigs, quantities }
       </div>
       <div className="text-xs text-muted-foreground p-3 bg-muted/50 rounded-lg">
         <p className="font-medium mb-1">Valores incluem:</p>
-        <ul className="list-disc list-inside space-y-0.5"><li>Preço do produto ({formatCurrency(product.price)}/un)</li><li>Custo de gravação por unidade</li><li>Custo de setup (quando aplicável)</li></ul>
+        <ul className="list-disc list-inside space-y-0.5"><li>Preço do produto ({formatCurrency(product.price)}/un)</li><li>Custo de gravação por unidade</li><li>Setup e manuseio (quando aplicáveis)</li></ul>
       </div>
     </div>
   );

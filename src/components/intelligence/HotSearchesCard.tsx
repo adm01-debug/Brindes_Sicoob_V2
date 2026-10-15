@@ -3,6 +3,7 @@
  * Top termos buscados (com resultados) no período. Proxy de interesse real do mercado.
  */
 import { useQuery } from "@tanstack/react-query";
+import { isDemoMode } from "@/pages/trends/is-demo-mode";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,12 +28,12 @@ export function HotSearchesCard({ days }: HotSearchesCardProps) {
   const navigate = useNavigate();
   const since = subDays(new Date(), days).toISOString();
   const previousSince = subDays(new Date(), days * 2).toISOString();
+  const demo = isDemoMode();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["hot-searches", days],
+    queryKey: ["hot-searches", days, demo],
     queryFn: async (): Promise<HotSearchItem[]> => {
-      const { isDemoMode } = await import("@/pages/trends/is-demo-mode");
-      if (isDemoMode()) {
+      if (demo) {
         const { MOCK_HOT_SEARCHES } = await import("@/pages/trends/trends-mock");
         return MOCK_HOT_SEARCHES.map(s => ({
           term: s.term,

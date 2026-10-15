@@ -58,16 +58,20 @@ async function fetchAllCrmCompanies(filters: Omit<CrmCompanyFilters, "search">):
   const companies: CrmCompany[] = [];
 
   for (let offset = 0; offset <= CLIENTS_MAX_RECORDS; offset += CLIENTS_PAGE_SIZE) {
+    const limit = offset === CLIENTS_MAX_RECORDS ? 1 : CLIENTS_PAGE_SIZE;
     const page = await selectCrm<CrmCompany>("companies", {
       filters: queryFilters,
       orderBy: { column: "id", ascending: true },
-      limit: CLIENTS_PAGE_SIZE,
+      limit,
       offset,
     });
-    if (page.length < CLIENTS_PAGE_SIZE) return [...companies, ...page];
     if (offset === CLIENTS_MAX_RECORDS) {
-      throw new Error("A base de clientes excede 10.000 registros; a consulta foi interrompida para não exibir totais parciais.");
+      if (page.length > 0) {
+        throw new Error("A base de clientes excede 10.000 registros; a consulta foi interrompida para não exibir totais parciais.");
+      }
+      return companies;
     }
+    if (page.length < CLIENTS_PAGE_SIZE) return [...companies, ...page];
     companies.push(...page);
   }
 

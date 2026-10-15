@@ -38,9 +38,33 @@ describe("useAllCrmCompanies", () => {
   });
 
   it("falha explicitamente se a base exceder o limite seguro, sem retornar total parcial", async () => {
-    mocks.selectCrm.mockImplementation(async () => Array.from({ length: 1000 }, (_, index) => ({ id: `cliente-${index}` })));
+    mocks.selectCrm.mockImplementation(async (_table, options: { offset: number; limit: number }) =>
+      options.offset < 10_000
+        ? Array.from({ length: 1000 }, (_, index) => ({ id: `cliente-${options.offset + index}` }))
+        : [{ id: "cliente-10000" }],
+    );
 
     await expect(runQuery()).rejects.toThrow("excede 10.000 registros");
     expect(mocks.selectCrm).toHaveBeenCalledTimes(11);
+    expect(mocks.selectCrm.mock.calls[10][1]).toMatchObject({ offset: 10_000, limit: 1 });
+  });
+
+  it.each([9_999, 10_000])("aceita exatamente %i registros sem ultrapassar o limite", async (count) => {
+    mocks.selectCrm.mockImplementation(async (_table, options: { offset: number; limit: number }) => {
+      const remaining = count - options.offset;
+      return Array.from({ length: Math.max(0, Math.min(options.limit, remaining)) }, (_, index) => ({ id: `cliente-${options.offset + index}` }));
+    });
+
+    await expect(runQuery()).resolves.toHaveLength(count);
+  });
+
+  it.each([10_001, 10_999, 11_000])("rejeita %i registros ao detectar o 10.001º", async (count) => {
+    mocks.selectCrm.mockImplementation(async (_table, options: { offset: number; limit: number }) => {
+      const remaining = count - options.offset;
+      return Array.from({ length: Math.max(0, Math.min(options.limit, remaining)) }, (_, index) => ({ id: `cliente-${options.offset + index}` }));
+    });
+
+    await expect(runQuery()).rejects.toThrow("excede 10.000 registros");
+    expect(mocks.selectCrm.mock.calls.at(-1)?.[1]).toMatchObject({ offset: 10_000, limit: 1 });
   });
 });

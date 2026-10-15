@@ -41,6 +41,10 @@ export interface IndustryMonthCell {
 
 export interface SeasonalityResult {
   isLoading: boolean;
+  isError?: boolean;
+  error?: unknown;
+  refetch?: () => Promise<unknown>;
+  industryError?: unknown;
   isMock: boolean;
   hasEnoughData: boolean;
   monthsCovered: number;
@@ -184,7 +188,7 @@ function peakResult(
 }
 
 export function resolveSeasonalityResult(
-  data: { clientRows: ClientRow[]; industryRows: IndustryRow[]; companiesCount: number } | undefined,
+  data: { clientRows: ClientRow[]; industryRows: IndustryRow[]; companiesCount: number; industryError?: unknown } | undefined,
   isLoading: boolean,
   useDemoData = false,
 ) {
@@ -201,7 +205,7 @@ export function resolveSeasonalityResult(
 
   const { cells: client, monthsCovered } = buildClientCells(data?.clientRows ?? []);
   const realIndustry = buildIndustryCells(data?.industryRows ?? []);
-  const base = { isLoading, monthsCovered, windowMonths: WINDOW_MONTHS };
+  const base = { isLoading, monthsCovered, windowMonths: WINDOW_MONTHS, industryError: data?.industryError };
   if (monthsCovered < 3) {
     return {
       ...base,
@@ -293,7 +297,7 @@ export function useClientSeasonality(
 ): SeasonalityResult {
   const demo = isDemoClient(clientId);
   const query = useQuery({
-    queryKey: ["bi", "seasonality", clientId, ramoAtividade],
+    queryKey: ["bi", "seasonality", clientId, ramoAtividade, demo],
     enabled: !!clientId && !demo,
     staleTime: 10 * 60 * 1000,
     queryFn: async () => {
@@ -309,6 +313,7 @@ export function useClientSeasonality(
       // 2) Sazonalidade do setor (se houver ramo)
       let industryRows: IndustryRow[] = [];
       let companiesCount = 0;
+      let industryError: unknown;
       if (ramoAtividade) {
         try {
           const companies = await selectCrm<{ id: string }>("companies", {
@@ -323,18 +328,24 @@ export function useClientSeasonality(
               "get_industry_seasonality",
               { _company_ids: ids, _months: WINDOW_MONTHS },
             );
-            if (!indErr) industryRows = (indData ?? []) as IndustryRow[];
+            if (indErr) throw indErr;
+            industryRows = (indData ?? []) as IndustryRow[];
           }
-        } catch {
-          industryRows = [];
+        } catch (error) {
+          industryError = error;
         }
       }
 
-      return { clientRows, industryRows, companiesCount };
+      return { clientRows, industryRows, companiesCount, industryError };
     },
   });
 
-  return resolveSeasonalityResult(query.data, query.isLoading, demo);
+  return {
+    ...resolveSeasonalityResult(query.data, query.isLoading, demo),
+    isError: query.isError,
+    error: query.error,
+    refetch: query.refetch,
+  };
 }
 
 export const SEASONALITY_MONTH_LABELS = MONTH_LABELS;

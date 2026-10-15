@@ -40,6 +40,17 @@ export function isPriceConfigurationSupported(config: SelectedTechniqueConfig): 
   return config.colors === 1 && config.sizeOption === 'standard';
 }
 
+export function minimumSupportedQuantity(tiers: readonly { minQuantity: number }[]): number | null {
+  return tiers.length > 0 ? Math.min(...tiers.map((tier) => tier.minQuantity)) : null;
+}
+
+export function calculateCustomizationTotal(
+  calculation: { unitPrice: number; setupPrice: number; handlingPrice?: number | null },
+  quantity: number,
+): number {
+  return calculation.unitPrice * quantity + calculation.setupPrice + (calculation.handlingPrice ?? 0);
+}
+
 export const availableSizes = [
   { label: 'Pequeno (até 5cm²)', value: 'small', modifier: 0.8 },
   { label: 'Padrão (até 20cm²)', value: 'standard', modifier: 1 },

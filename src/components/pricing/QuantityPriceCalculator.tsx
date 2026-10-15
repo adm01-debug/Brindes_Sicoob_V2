@@ -16,7 +16,7 @@ import { ProductSearch as UnifiedProductSearch } from './simulator/ProductSearch
 import { TechniqueMultiSelector } from './calculator/TechniqueMultiSelector';
 import { TechniqueConfigCard } from './calculator/TechniqueConfigCard';
 import { QuantityComparisonTable } from './calculator/QuantityComparisonTable';
-import { type CalcProduct, type ProductTechnique, type SelectedTechniqueConfig, formatNumber, isPriceConfigurationSupported } from './calculator/types';
+import { type CalcProduct, type ProductTechnique, type SelectedTechniqueConfig, calculateCustomizationTotal, formatNumber, isPriceConfigurationSupported, minimumSupportedQuantity } from './calculator/types';
 import type { Product as SearchProduct } from './simulator/types';
 import { toast } from 'sonner';
 
@@ -26,7 +26,7 @@ interface QuantityPriceCalculatorProps {
 
 export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorProps) {
   const navigate = useNavigate();
-  const { isLoading: pricingLoading, calculatePrice } = useCustomizationPricing();
+  const { isLoading: pricingLoading, calculatePrice, getTiers } = useCustomizationPricing();
 
   const [selectedProduct, setSelectedProduct] = useState<CalcProduct | null>(null);
   const [selectedConfigs, setSelectedConfigs] = useState<SelectedTechniqueConfig[]>([]);
@@ -72,6 +72,15 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
       toast.error('O preço cadastrado só cobre uma cor e tamanho padrão. Ajuste as opções antes de importar para o orçamento.');
       return;
     }
+    const belowMinimum = selectedConfigs.find((config) => {
+      const minimum = minimumSupportedQuantity(getTiers(config.technique.techniqueCode));
+      return minimum !== null && quoteQuantity < minimum;
+    });
+    if (belowMinimum) {
+      const minimum = minimumSupportedQuantity(getTiers(belowMinimum.technique.techniqueCode));
+      toast.error(`A quantidade mínima para ${belowMinimum.technique.techniqueName} é ${formatNumber(minimum ?? 1)} unidades.`);
+      return;
+    }
     const personalizations = selectedConfigs.flatMap((config) => {
       const calculation = calculatePrice(config.technique.techniqueCode, quoteQuantity);
       if (!calculation) return [];
@@ -85,7 +94,7 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
         pricing: {
           setupPrice: calculation.setupPrice,
           unitPrice,
-          totalPrice: unitPrice * quoteQuantity + calculation.setupPrice + (calculation.handlingPrice ?? 0),
+          totalPrice: calculateCustomizationTotal(calculation, quoteQuantity),
         },
       }];
     });
@@ -110,7 +119,7 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
       },
     });
     toast.success('Simulação adicionada ao novo orçamento.');
-  }, [calculatePrice, navigate, quoteQuantity, selectedConfigs, selectedProduct]);
+  }, [calculatePrice, getTiers, navigate, quoteQuantity, selectedConfigs, selectedProduct]);
 
   if (pricingLoading) return (
     <Card className={className}><CardHeader><Skeleton className="h-6 w-48" /><Skeleton className="h-4 w-64 mt-2" /></CardHeader><CardContent className="space-y-4"><Skeleton className="h-16 w-full" /><Skeleton className="h-64 w-full" /></CardContent></Card>

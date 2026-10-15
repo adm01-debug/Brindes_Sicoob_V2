@@ -3,6 +3,7 @@
  * via prefixo de SKU/nome. Aplica trending score.
  */
 import { useQuery } from "@tanstack/react-query";
+import { isDemoMode } from "@/pages/trends/is-demo-mode";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -40,12 +41,12 @@ export function TopCategoriesCard({ days }: TopCategoriesCardProps) {
   const baselineDays = days - recentDays;
   const sinceCurrent = subDays(new Date(), days).toISOString();
   const recentCutoff = subDays(new Date(), recentDays).toISOString();
+  const demo = isDemoMode();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["trends-top-categories", days],
+    queryKey: ["trends-top-categories", days, demo],
     queryFn: async (): Promise<CategoryRow[]> => {
-      const { isDemoMode } = await import("@/pages/trends/is-demo-mode");
-      if (isDemoMode()) {
+      if (demo) {
         const { MOCK_TOP_CATEGORIES } = await import("@/pages/trends/trends-mock");
         return MOCK_TOP_CATEGORIES.map((c, idx) => ({
           category: c.category,

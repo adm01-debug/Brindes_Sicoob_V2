@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Calendar, Sparkles, TrendingUp, Info, Target } from "lucide-react";
+import { Calendar, Sparkles, TrendingUp, Info, Target, AlertCircle } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip as RTooltip, ReferenceLine,
@@ -145,6 +145,7 @@ export function ClientSeasonalityHeatmap({ clientId, ramoAtividade }: Props) {
   const currentMonth = new Date().getMonth() + 1;
   const forecastSeries = useMemo(() => buildForecast(seasonality.client, currentMonth, seasonality.hasEnoughData), [seasonality.client, seasonality.hasEnoughData, currentMonth]);
   if (seasonality.isLoading) return <HeatmapSkeleton />;
+  if (seasonality.isError) return <Card className="border-[1.5px]"><CardContent className="flex flex-col items-center gap-2 py-10 text-center" role="alert"><AlertCircle className="h-6 w-6 text-destructive" /><p className="text-sm text-destructive">Não foi possível consultar o histórico sazonal.</p><Button variant="outline" size="sm" onClick={() => void seasonality.refetch?.()}>Tentar novamente</Button></CardContent></Card>;
   const peakName = seasonality.nextPeakMonth ? SEASONALITY_MONTH_LABELS_FULL[seasonality.nextPeakMonth - 1] ?? null : null;
-  return <Card className="border-[1.5px]"><HeatmapHeader data={seasonality} /><CardContent className="space-y-4"><HeatmapGrid data={seasonality} currentMonth={currentMonth} /><ForecastChart series={forecastSeries} /><PeakCards data={seasonality} peakName={peakName} /><Insight text={seasonality.insight} /><TopMonths data={seasonality} /></CardContent></Card>;
+  return <Card className="border-[1.5px]"><HeatmapHeader data={seasonality} /><CardContent className="space-y-4">{Boolean(seasonality.industryError) && <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-warning/40 bg-warning/5 px-3 py-2 text-xs text-muted-foreground" role="status"><span>Histórico do setor indisponível; os dados do cliente continuam exibidos.</span><Button variant="outline" size="sm" onClick={() => void seasonality.refetch?.()}>Tentar novamente</Button></div>}<HeatmapGrid data={seasonality} currentMonth={currentMonth} /><ForecastChart series={forecastSeries} /><PeakCards data={seasonality} peakName={peakName} /><Insight text={seasonality.insight} /><TopMonths data={seasonality} /></CardContent></Card>;
 }

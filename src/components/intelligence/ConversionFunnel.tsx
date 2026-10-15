@@ -3,6 +3,7 @@
  * Mostra drop-off entre cada estágio.
  */
 import { useQuery } from "@tanstack/react-query";
+import { isDemoMode } from "@/pages/trends/is-demo-mode";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -63,7 +64,6 @@ interface AnalyticsClient {
 }
 
 async function fetchFunnel(since: string, scope: SalesScope, userId: string | null | undefined) {
-  const { isDemoMode } = await import("@/pages/trends/is-demo-mode");
   if (isDemoMode()) {
     const { MOCK_FUNNEL } = await import("@/pages/trends/trends-mock");
     return { searches: 3_421, views: MOCK_FUNNEL.views, quotes: MOCK_FUNNEL.quotes, orders: MOCK_FUNNEL.orders };
@@ -85,8 +85,9 @@ function useConversionData(days: number) {
   const { user } = useAuth();
   const scope = useSalesScope();
   const since = subDays(new Date(), days).toISOString();
+  const demo = isDemoMode();
   return useQuery({
-    queryKey: ["conversion-funnel", days, scope, user?.id],
+    queryKey: ["conversion-funnel", days, scope, user?.id, demo],
     queryFn: () => fetchFunnel(since, scope, user?.id),
     staleTime: 1000 * 60 * 5,
   });
