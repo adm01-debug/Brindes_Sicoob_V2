@@ -121,6 +121,10 @@ const TARGETS = [
     sha256: "f34673b492a9d222c955bed53d396121473fdbd1a32dba2e3fde3f3041f96803",
   },
   {
+    file: "supabase/migrations/20261015102000_fix_pg_net_recycled_request_ids.sql",
+    sha256: "ef148dedbf709e27899d16c2e1bf3a1f67803d314f582d84bc332b2d001b668b",
+  },
+  {
     file: "supabase/migrations/20261015230500_reconcile_search_analytics_telemetry.sql",
     sha256: "df24ac086477a0672a305a7eca6a08603e1594faf870053a25c6ba5271d31f75",
   },
@@ -165,6 +169,42 @@ const TARGETS = [
     sha256: "ae37ac710e0e67d8f4d358fa1209d19afb4204fe157bba685228a843f32d11f1",
   },
 ];
+
+const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
+  NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conrelid = 'public.sicoob_approval_worker_dispatches'::regclass
+      AND conname = 'sicoob_approval_worker_dispatches_request_id_key'
+      AND contype = 'u'
+  )
+  AND EXISTS (
+    SELECT 1
+    FROM pg_index i
+    JOIN pg_class idx ON idx.oid = i.indexrelid
+    WHERE i.indrelid = 'public.sicoob_approval_worker_dispatches'::regclass
+      AND idx.relname = 'idx_sicoob_approval_worker_queued_request'
+      AND i.indisvalid
+      AND i.indpred IS NOT NULL
+      AND pg_get_expr(i.indpred, i.indrelid) = '(state = ''queued''::text)'
+      AND pg_get_indexdef(i.indexrelid) LIKE '%(request_id, requested_at DESC)%'
+  )
+)`;
+
+const APPROVAL_WORKER_MONITOR_SAFE_SQL = `COALESCE((
+  SELECT p.prosecdef
+    AND p.proconfig @> ARRAY['search_path=pg_catalog, public, net']::text[]
+    AND NOT has_function_privilege('anon', p.oid, 'EXECUTE')
+    AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE')
+    AND has_function_privilege('service_role', p.oid, 'EXECUTE')
+    AND p.prosrc LIKE '%DISTINCT ON (r.id)%'
+    AND p.prosrc LIKE '%r.created>=d.requested_at%'
+    AND p.prosrc LIKE '%r.created ASC%'
+    AND p.prosrc LIKE '%pending_status%'
+    AND p.prosrc LIKE '%has_newer_result%'
+    AND p.prosrc LIKE '%ID reciclado; resposta correlacionada ao disparo mais recente%'
+  FROM pg_proc p
+  WHERE p.oid = to_regprocedure('public.monitor_sicoob_approval_worker()')
+), false)`;
 
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
@@ -881,7 +921,9 @@ async function validateContract(client, targets) {
               0,
               (SELECT oid FROM pg_roles WHERE rolname = 'anon')
             )
-        ) AS search_direct_acl_safe
+        ) AS search_direct_acl_safe,
+      ${APPROVAL_WORKER_STRUCTURE_SAFE_SQL} AS approval_worker_structure_safe,
+      ${APPROVAL_WORKER_MONITOR_SAFE_SQL} AS approval_worker_monitor_safe
   `);
   const result = rows[0];
   const idempotencyMigration = latestDefiner(targets, "save_quote_atomic_idempotent");
@@ -1002,7 +1044,9 @@ async function validateContract(client, targets) {
     && result.search_select_policy_safe
     && result.search_policy_dependencies_safe
     && result.search_effective_grants_safe
-    && result.search_direct_acl_safe;
+    && result.search_direct_acl_safe
+    && result.approval_worker_structure_safe
+    && result.approval_worker_monitor_safe;
   if (!valid) {
     const diagnostic = { ...(result ?? {}) };
     delete diagnostic.idempotency_source;
@@ -1016,6 +1060,7 @@ async function validateContract(client, targets) {
       policies_exact: policiesExact,
       constraints_exact: constraintsExact,
       trigger_definition_exact: triggerDefinitionExact,
+      approval_worker_monitor_safe: result?.approval_worker_monitor_safe,
     })}`);
   }
 }
@@ -1229,6 +1274,8 @@ BEGIN
        WHERE c.oid = to_regclass('public.search_analytics')
          AND acl.grantee IN (0, (SELECT oid FROM pg_roles WHERE rolname = 'anon'))
      )
+     OR NOT ${APPROVAL_WORKER_STRUCTURE_SAFE_SQL}
+     OR NOT ${APPROVAL_WORKER_MONITOR_SAFE_SQL}
      OR COALESCE((SELECT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
         FROM pg_proc WHERE oid = to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)')), true)
      OR COALESCE((SELECT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
