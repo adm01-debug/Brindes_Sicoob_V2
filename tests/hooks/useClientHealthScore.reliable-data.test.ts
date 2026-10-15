@@ -58,4 +58,36 @@ describe('score de saúde com fonte comprovada', () => {
     expect(result.breakdown.shareOfWallet.weight).toBe(0);
     expect(result.crossZoneInsight).toContain('não tem janela sazonal comprovada');
   });
+
+  it('preserva recência e crescimento reais quando só o benchmark setorial é insuficiente', () => {
+    const currentMonth = new Date().getMonth() + 1;
+    const previousMonth = ((currentMonth + 10) % 12) + 1;
+    const result = buildHealthResult(
+      {
+        hasData: true,
+        isUnavailable: false,
+        isLoading: false,
+        daysSinceLastOrder: 20,
+        ltv: 12_000,
+        avgTicket: 2_000,
+        ordersCount: 6,
+        recentOrders: [],
+      } as never,
+      { hasEnoughSample: false, isLoading: false, metrics: [] } as never,
+      {
+        hasEnoughData: true,
+        isLoading: false,
+        client: [
+          { month: currentMonth, quotesCount: 3 },
+          { month: previousMonth, quotesCount: 1 },
+        ],
+      } as never,
+    );
+
+    expect(result.score).toBe(100);
+    expect(result.breakdown.recency).toMatchObject({ score: 100, weight: 67 });
+    expect(result.breakdown.growth).toMatchObject({ score: 100, weight: 33 });
+    expect(result.breakdown.frequency.weight).toBe(0);
+    expect(result.breakdown.ticket.weight).toBe(0);
+  });
 });
