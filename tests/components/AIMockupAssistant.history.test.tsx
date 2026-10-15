@@ -62,4 +62,27 @@ describe("AIMockupAssistant", () => {
     expect(assistantMessage).toBeVisible();
     expect(screen.getByRole("textbox", { name: "Mensagem para o assistente" })).toHaveValue("");
   });
+
+  it("reinicia a conversa quando o produto ou a técnica muda", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <AIMockupAssistant productName="Caneca Sicoob" techniqueName="Laser" />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Abrir assistente de layouts" }));
+    await user.type(
+      screen.getByRole("textbox", { name: "Mensagem para o assistente" }),
+      "Como posicionar a marca?",
+    );
+    await user.click(screen.getByRole("button", { name: "Enviar mensagem" }));
+    await screen.findByText("Recomendo centralizar a marca.");
+    await user.click(screen.getByRole("button", { name: "Fechar" }));
+
+    rerender(<AIMockupAssistant productName="Garrafa Sicoob" techniqueName="Silk" />);
+    await user.click(screen.getByRole("button", { name: "Abrir assistente de layouts" }));
+
+    expect(screen.queryByText("Como posicionar a marca?")).toBeNull();
+    expect(screen.queryByText("Recomendo centralizar a marca.")).toBeNull();
+    expect(screen.getByText(/Posso revisar posição, contraste e viabilidade visual/)).toBeVisible();
+  });
 });

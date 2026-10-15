@@ -51,6 +51,7 @@ export function AIMockupAssistant({ productName, techniqueName, className }: AIM
           <Button variant="ghost" size="icon" aria-label="Fechar" className="h-7 w-7" onClick={(event) => { event.stopPropagation(); setIsOpen(false); }}><X className="h-4 w-4" /></Button>
         </div>
         <AIChat
+          key={JSON.stringify([productName, techniqueName])}
           className={cn("h-[calc(100%-57px)] rounded-none border-0", isMinimized && "hidden")}
           maxHeight="310px"
           contextId={productName}
