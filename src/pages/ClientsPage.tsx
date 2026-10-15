@@ -15,7 +15,7 @@ import {
   DropdownMenuLabel
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
-import { useCrmCompanies } from "@/hooks/useCrmCompanies";
+import { useAllCrmCompanies } from "@/hooks/useCrmCompanies";
 import { ClientCard } from "@/components/clients/ClientCard";
 import { getCompanyDisplayName, type CrmCompany } from "@/types/crm";
 import { 
@@ -105,7 +105,7 @@ export default function ClientsPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [sortMode, setSortMode] = useState<ClientSortMode>("name");
-  const { data: clients = [], isLoading, isError, refetch } = useCrmCompanies({ is_customer: true });
+  const { data: clients = [], isLoading, isError, refetch } = useAllCrmCompanies({ is_customer: true });
 
   const filtered = useMemo(
     () => filterAndSortClients(clients, search, sortMode),

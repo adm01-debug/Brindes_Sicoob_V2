@@ -26,7 +26,7 @@ vi.mock('@/hooks/useExternalCategoriesQuery', () => ({
   useCategoriesByIds: mocks.categoriesByIds,
 }));
 vi.mock('@/components/seo/PageSEO', () => ({ PageSEO: () => null }));
-vi.mock('@/hooks/useCrmCompanies', () => ({ useCrmCompanies: mocks.clients }));
+vi.mock('@/hooks/useCrmCompanies', () => ({ useCrmCompanies: mocks.clients, useAllCrmCompanies: mocks.clients }));
 vi.mock('@/components/clients/ClientCard', () => ({
   ClientCard: ({ client }: { client: { razao_social: string } }) => <div>{client.razao_social}</div>,
 }));

@@ -50,6 +50,39 @@ export function useCrmCompanies(filters?: CrmCompanyFilters) {
   });
 }
 
+const CLIENTS_PAGE_SIZE = 1000;
+const CLIENTS_MAX_RECORDS = 10_000;
+
+async function fetchAllCrmCompanies(filters: Omit<CrmCompanyFilters, "search">): Promise<CrmCompany[]> {
+  const queryFilters = buildCompanyFilters(filters);
+  const companies: CrmCompany[] = [];
+
+  for (let offset = 0; offset <= CLIENTS_MAX_RECORDS; offset += CLIENTS_PAGE_SIZE) {
+    const page = await selectCrm<CrmCompany>("companies", {
+      filters: queryFilters,
+      orderBy: { column: "id", ascending: true },
+      limit: CLIENTS_PAGE_SIZE,
+      offset,
+    });
+    if (page.length < CLIENTS_PAGE_SIZE) return [...companies, ...page];
+    if (offset === CLIENTS_MAX_RECORDS) {
+      throw new Error("A base de clientes excede 10.000 registros; a consulta foi interrompida para não exibir totais parciais.");
+    }
+    companies.push(...page);
+  }
+
+  return companies;
+}
+
+/** Lista completa e estável para telas que apresentam totais da base. */
+export function useAllCrmCompanies(filters: Omit<CrmCompanyFilters, "search">) {
+  return useQuery<CrmCompany[]>({
+    queryKey: ["crm-companies-all", filters],
+    queryFn: () => fetchAllCrmCompanies(filters),
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
 /**
  * Busca empresa individual do CRM por ID
  */
