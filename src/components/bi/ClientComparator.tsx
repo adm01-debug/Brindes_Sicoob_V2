@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCircle2, AlertTriangle, X, Trophy, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSingleClientComparisonRow, type ClientComparisonRow } from "@/hooks/bi/useClientsComparison";
+import type { ReactNode } from "react";
 
 interface Props {
   clientIds: string[]; // 1-3
@@ -50,9 +51,27 @@ function CategoryMetric({ label, share, variant }: { label: string | null; share
   );
 }
 
+function MetricValue({ unavailable, children }: { unavailable: boolean; children: ReactNode }) {
+  return unavailable ? <>—</> : <>{children}</>;
+}
+
+function comparisonScore(row: ClientComparisonRow, historyUnavailable: boolean): string | number {
+  return historyUnavailable || row.tier === "unknown" ? "—" : row.score;
+}
+
+function comparisonTier(row: ClientComparisonRow, historyUnavailable: boolean): ClientComparisonRow["tier"] {
+  return historyUnavailable ? "unknown" : row.tier;
+}
+
+function metricTitle(value: string | null, unavailable: boolean): string {
+  return unavailable ? "—" : value ?? "—";
+}
+
 function ClientColumn({ clientId, onRemove }: { clientId: string; onRemove: () => void }) {
   const row = useSingleClientComparisonRow(clientId);
-  const tier = tierBadge(row.tier);
+  const historyUnavailable = row.isUnavailable;
+  const displayTier = comparisonTier(row, historyUnavailable);
+  const tier = tierBadge(displayTier);
   const TierIcon = tier.icon;
 
   if (row.isLoading) {
@@ -85,7 +104,7 @@ function ClientColumn({ clientId, onRemove }: { clientId: string; onRemove: () =
       <div className={cn("rounded-xl p-3 flex items-center gap-3", tier.color.split(" ").slice(-1)[0])}>
         <div className="h-14 w-14 rounded-xl bg-background/80 border-[1.5px] flex flex-col items-center justify-center">
           <span className={cn("font-display font-bold text-2xl leading-none", tier.color.split(" ")[0], tier.color.split(" ")[1])}>
-            {row.tier === "unknown" ? "—" : row.score}
+            {comparisonScore(row, historyUnavailable)}
           </span>
           <span className="text-[8px] text-muted-foreground uppercase tracking-wider mt-0.5">Score</span>
         </div>
@@ -94,50 +113,51 @@ function ClientColumn({ clientId, onRemove }: { clientId: string; onRemove: () =
           {tier.label}
         </Badge>
       </div>
+      {historyUnavailable && <p role="status" className="text-xs text-destructive">Histórico indisponível; métricas do cliente não podem ser comparadas.</p>}
       <dl className="space-y-2 text-xs">
         <div className="flex justify-between gap-2">
           <dt className="text-muted-foreground">LTV</dt>
-          <dd className="font-medium tabular-nums">{fmtBRL(row.ltv)}</dd>
+          <dd className="font-medium tabular-nums"><MetricValue unavailable={historyUnavailable}>{fmtBRL(row.ltv)}</MetricValue></dd>
         </div>
         <div className="flex justify-between gap-2">
           <dt className="text-muted-foreground">Ticket médio</dt>
-          <dd className="font-medium tabular-nums">{fmtBRL(row.avgTicket)}</dd>
+          <dd className="font-medium tabular-nums"><MetricValue unavailable={historyUnavailable}>{fmtBRL(row.avgTicket)}</MetricValue></dd>
         </div>
         <div className="flex justify-between gap-2">
           <dt className="text-muted-foreground">Pedidos</dt>
-          <dd className="font-medium tabular-nums">{row.ordersCount}</dd>
+          <dd className="font-medium tabular-nums"><MetricValue unavailable={historyUnavailable}>{row.ordersCount}</MetricValue></dd>
         </div>
         <div className="flex justify-between gap-2">
           <dt className="text-muted-foreground">Última compra</dt>
           <dd className="font-medium tabular-nums">
-            {formatDaysSinceOrder(row.daysSinceLastOrder)}
+            <MetricValue unavailable={historyUnavailable}>{formatDaysSinceOrder(row.daysSinceLastOrder)}</MetricValue>
           </dd>
         </div>
         <div className="flex justify-between gap-2">
           <dt className="text-muted-foreground">Top categoria</dt>
-          <dd className="font-medium truncate max-w-[120px]" title={row.topCategory ?? "—"}>
-            {row.topCategory ?? "—"}
+          <dd className="font-medium truncate max-w-[120px]" title={metricTitle(row.topCategory, historyUnavailable)}>
+            <MetricValue unavailable={historyUnavailable}>{row.topCategory ?? "—"}</MetricValue>
           </dd>
         </div>
         <div className="flex justify-between gap-2 items-center">
           <dt className="text-muted-foreground">Categoria favorita</dt>
-          <dd className="font-medium truncate max-w-[140px] flex items-center gap-1.5" title={row.favoriteCategoryLabel ?? "—"}>
-            <CategoryMetric label={row.favoriteCategoryLabel} share={row.favoriteCategorySharePct} variant="favorite" />
+          <dd className="font-medium truncate max-w-[140px] flex items-center gap-1.5" title={metricTitle(row.favoriteCategoryLabel, historyUnavailable)}>
+            <MetricValue unavailable={historyUnavailable}><CategoryMetric label={row.favoriteCategoryLabel} share={row.favoriteCategorySharePct} variant="favorite" /></MetricValue>
           </dd>
         </div>
         <div className="flex justify-between gap-2 items-center">
           <dt className="text-muted-foreground">Categoria oportunidade</dt>
-          <dd className="font-medium truncate max-w-[140px] flex items-center gap-1.5" title={row.opportunityCategoryLabel ?? "—"}>
-            <CategoryMetric label={row.opportunityCategoryLabel} share={row.opportunityCategorySharePct} variant="opportunity" />
+          <dd className="font-medium truncate max-w-[140px] flex items-center gap-1.5" title={metricTitle(row.opportunityCategoryLabel, historyUnavailable)}>
+            <MetricValue unavailable={historyUnavailable}><CategoryMetric label={row.opportunityCategoryLabel} share={row.opportunityCategorySharePct} variant="opportunity" /></MetricValue>
           </dd>
         </div>
         <div className="flex justify-between gap-2">
           <dt className="text-muted-foreground">Próximo pico</dt>
-          <dd className="font-medium">{row.nextPeakLabel}</dd>
+          <dd className="font-medium"><MetricValue unavailable={historyUnavailable}>{row.nextPeakLabel}</MetricValue></dd>
         </div>
         <div className="flex justify-between gap-2">
           <dt className="text-muted-foreground">Share-of-wallet</dt>
-          <dd className="font-medium tabular-nums">{row.shareOfWalletPct}%</dd>
+          <dd className="font-medium tabular-nums"><MetricValue unavailable={historyUnavailable}>{row.shareOfWalletPct}%</MetricValue></dd>
         </div>
       </dl>
     </div>

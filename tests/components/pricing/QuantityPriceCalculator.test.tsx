@@ -80,7 +80,7 @@ describe("QuantityPriceCalculator", () => {
           personalizations: [{
             technique: { id: "tecnica-1", name: "Laser" },
             specs: { colors: 1, locationName: "Frente", locationCode: "FRT", composedCode: "CAN-FRT-LASER", techniqueCode: "LASER" },
-            pricing: { setupPrice: 10, unitPrice: 2, totalPrice: 1045 },
+            pricing: { setupPrice: 10, handlingPrice: 35, unitPrice: 2, totalPrice: 1045 },
           }],
         },
       },
@@ -104,7 +104,7 @@ describe("QuantityPriceCalculator", () => {
     fireEvent.click(screen.getByRole("button", { name: "Selecionar produto sem preço" }));
     fireEvent.click(screen.getByRole("button", { name: "Selecionar técnica de teste" }));
 
-    expect(screen.getAllByRole("alert")[0].textContent).toContain("não informou o preço de venda");
+    expect(screen.getAllByRole("alert")[0]?.textContent ?? "").toContain("não informou o preço de venda");
     expect(screen.getByRole("button", { name: "Criar Orçamento a partir desta Simulação" }).hasAttribute("disabled")).toBe(true);
     expect(mocks.navigate).not.toHaveBeenCalled();
   });

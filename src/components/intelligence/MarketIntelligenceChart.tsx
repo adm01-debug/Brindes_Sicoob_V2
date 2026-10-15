@@ -30,6 +30,7 @@ import {
   Package,
   Loader2,
   AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { KpiCard } from "@/components/ui/KpiCard";
@@ -92,7 +93,7 @@ function useMarketChartModel(defaultDays: number, supplierId?: string | null) {
   const { data: supplierNamesMap } = useSupplierNames(hasRealData ? effectiveData.supplierIds : []);
   const supplierOptions = useMemo(() => buildSupplierOptions(effectiveData, supplierNamesMap), [effectiveData, supplierNamesMap]);
   const chartData = useMemo(() => buildChartData(effectiveData.daily), [effectiveData.daily]);
-  return { period, setPeriod, selectedSupplier, setSelectedSupplier, days, isLoading, error, hasRealData,
+  return { period, setPeriod, selectedSupplier, setSelectedSupplier, days, isLoading, error, hasRealData, isStale: Boolean(error && hasRealData),
     effectiveData, supplierNamesMap, supplierOptions, chartData, refetch };
 }
 
@@ -104,6 +105,16 @@ function LoadingCard() {
 
 function ErrorCard({ model }: { model: MarketChartModel }) {
   return <Card><MarketHeader days={model.days} trendRatio={1} /><CardContent className="space-y-4"><ChartControls model={model} /><div className="flex flex-col items-center justify-center py-8 gap-2 text-center"><AlertCircle className="h-6 w-6 text-destructive" /><p className="text-sm text-destructive">Erro ao carregar dados de mercado</p><p className="text-xs text-muted-foreground">Verifique a conexão e tente novamente</p><Button variant="outline" size="sm" onClick={() => void model.refetch()}>Tentar novamente</Button></div></CardContent></Card>;
+}
+
+function StaleDataNotice({ model }: { model: MarketChartModel }) {
+  if (!model.isStale) return null;
+  return <div role="status" className="flex items-center justify-between gap-2 rounded-md border border-warning/30 bg-warning/10 p-2 text-xs">
+    <span>A atualização falhou. Exibindo o último gráfico disponível; os dados podem estar desatualizados.</span>
+    <Button variant="outline" size="sm" onClick={() => void model.refetch()} className="h-7 shrink-0 gap-1">
+      <RefreshCw className="h-3 w-3" />Tentar novamente
+    </Button>
+  </div>;
 }
 
 function EmptyCard({ model }: { model: MarketChartModel }) {
@@ -187,6 +198,7 @@ function MarketInsight({ kpis }: { kpis: MacroMarketKpis }) {
 function MarketChartReady({ model }: { model: MarketChartModel }) {
   const trend = trendMetrics(model.effectiveData.kpis, model.days);
   return <Card><MarketHeader days={model.days} trendRatio={trend.ratio} /><CardContent className="space-y-4">
+    <StaleDataNotice model={model} />
     <MarketKpis kpis={model.effectiveData.kpis} days={model.days} /><ChartControls model={model} /><MarketChartPlot data={model.chartData} />
     {model.effectiveData.suppliers.length > 1 && model.supplierNamesMap && <MacroSupplierComparison suppliers={model.effectiveData.suppliers} supplierNames={model.supplierNamesMap} />}
     <MarketInsight kpis={model.effectiveData.kpis} />

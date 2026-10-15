@@ -104,6 +104,7 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
         },
         pricing: {
           setupPrice: calculation.setupPrice,
+          handlingPrice: calculation.handlingPrice,
           unitPrice,
           totalPrice: calculateCustomizationTotal(calculation, quoteQuantity),
         },

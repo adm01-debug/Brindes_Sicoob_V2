@@ -43,7 +43,7 @@ interface InitParams {
 export interface SimulatorPersonalization {
   technique?: { id?: string; name?: string };
   specs?: { colors?: number; width?: number; height?: number; locationName?: string; locationCode?: string; composedCode?: string; techniqueCode?: string };
-  pricing?: { setupPrice?: number; unitPrice?: number; totalPrice?: number };
+  pricing?: { setupPrice?: number; handlingPrice?: number; unitPrice?: number; totalPrice?: number };
   notes?: string;
 }
 
@@ -182,7 +182,9 @@ export function mapSimulatorPersonalization(item: SimulatorPersonalization): Quo
     width_cm: fallback(specs.width, undefined),
     height_cm: fallback(specs.height, undefined),
     area_cm2: width * height,
-    setup_cost: fallback(pricing.setupPrice, 0),
+    // O esquema de personalização não tem coluna própria para manuseio;
+    // mantenha o custo fixo completo no campo existente, usado pelos cálculos e RPCs.
+    setup_cost: fallback(pricing.setupPrice, 0) + fallback(pricing.handlingPrice, 0),
     unit_cost: fallback(pricing.unitPrice, 0),
     total_cost: fallback(pricing.totalPrice, 0),
     notes: [item.notes, location, code].filter(Boolean).join(' · ') || undefined,

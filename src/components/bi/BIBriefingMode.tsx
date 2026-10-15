@@ -27,6 +27,8 @@ import {
   Package,
   Layers,
   Target,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getAvailableHealthScore, useClientHealthScore } from "@/hooks/bi/useClientHealthScore";
@@ -35,6 +37,8 @@ import { useClientAffinity } from "@/hooks/bi/useClientAffinity";
 import { useIndustryTrends } from "@/hooks/bi/useIndustryTrends";
 import { useClientCategoryAffinity } from "@/hooks/bi/useClientCategoryAffinity";
 import { useIndustryCategoryTrends } from "@/hooks/bi/useIndustryCategoryTrends";
+import { useClientSeasonality } from "@/hooks/bi/useClientSeasonality";
+import { useClientVsIndustry } from "@/hooks/bi/useClientVsIndustry";
 import { toast } from "sonner";
 
 interface Props {
@@ -54,6 +58,39 @@ export function buildBriefingHistoryDetail(bi: ReturnType<typeof useClientBI>): 
   return `LTV ${fmtBRL(history.ltv)} em ${history.ordersCount} pedidos · ticket médio ${fmtBRL(history.avgTicket)}.`;
 }
 
+interface BriefingContextSource {
+  label: string;
+  isLoading: boolean;
+  isError: boolean;
+  refetch: () => Promise<unknown>;
+}
+
+function resolveBriefingContext(sources: BriefingContextSource[], healthLoading: boolean) {
+  const failedSources = sources.filter((source) => source.isError);
+  const loading = healthLoading || sources.some((source) => source.isLoading);
+  return { failedSources, loading, ready: !loading && failedSources.length === 0 };
+}
+
+function BriefingSourcesStatus({ loading, failedSources, onRetry }: {
+  readonly loading: boolean;
+  readonly failedSources: BriefingContextSource[];
+  readonly onRetry: () => void;
+}) {
+  if (loading) return <p role="status" className="text-sm text-muted-foreground">Carregando dados do BI para preparar o briefing…</p>;
+  if (failedSources.length === 0) return null;
+  return (
+    <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 space-y-2">
+      <div className="flex items-start gap-2 text-sm text-destructive">
+        <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+        <p>Briefing indisponível: falha ao carregar {failedSources.map((source) => source.label).join(", ")}.</p>
+      </div>
+      <Button type="button" variant="outline" size="sm" onClick={onRetry}>
+        <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Tentar novamente
+      </Button>
+    </div>
+  );
+}
+
 export function BIBriefingMode({ open, onOpenChange, clientId, clientName, ramoAtividade }: Props) {
   const health = useClientHealthScore(clientId, ramoAtividade);
   const availableHealthScore = getAvailableHealthScore(health);
@@ -62,6 +99,24 @@ export function BIBriefingMode({ open, onOpenChange, clientId, clientName, ramoA
   const trends = useIndustryTrends(ramoAtividade, clientId);
   const catAffinity = useClientCategoryAffinity(clientId);
   const catIndustry = useIndustryCategoryTrends(ramoAtividade, clientId);
+  // O score e os textos do briefing também derivam dessas duas fontes.
+  // Consultá-las aqui expõe loading/erro que o agregado de saúde não retorna.
+  const seasonality = useClientSeasonality(clientId, ramoAtividade);
+  const comparison = useClientVsIndustry(clientId, ramoAtividade);
+  const contextSources: BriefingContextSource[] = [
+    { label: "histórico do cliente", isLoading: bi.isLoading, isError: bi.isUnavailable, refetch: bi.refetch },
+    { label: "afinidade de produtos", isLoading: affinity.isFetching || affinity.isLoading, isError: affinity.isError, refetch: affinity.refetch },
+    { label: "tendências do setor", isLoading: trends.isFetching || trends.isLoading, isError: trends.isError, refetch: trends.refetch },
+    { label: "categorias do cliente", isLoading: catAffinity.isLoading, isError: catAffinity.isError, refetch: catAffinity.refetch },
+    { label: "categorias do setor", isLoading: catIndustry.isLoading, isError: catIndustry.isError, refetch: catIndustry.refetch },
+    { label: "sazonalidade", isLoading: seasonality.isLoading, isError: seasonality.isError || Boolean(seasonality.industryError), refetch: () => seasonality.refetch?.() ?? Promise.resolve() },
+    { label: "comparativo com o setor", isLoading: comparison.isLoading, isError: comparison.isError, refetch: comparison.refetch },
+  ];
+  const context = resolveBriefingContext(contextSources, health.isLoading);
+
+  const retryFailedContextSources = async () => {
+    await Promise.all(context.failedSources.map((source) => source.refetch()));
+  };
 
   // Top 2 categorias favoritas + 1 oportunidade GAP (setor compra muito, cliente nada)
   const categoryHighlights = useMemo(() => {
@@ -175,6 +230,7 @@ export function BIBriefingMode({ open, onOpenChange, clientId, clientName, ramoA
   }, [clientName, health, products, tierStyles.label, categoryHighlights, availableHealthScore]);
 
   const handleCopy = async () => {
+    if (!context.ready) return;
     try {
       await navigator.clipboard.writeText(summaryText);
       toast.success("Briefing copiado! Cole no WhatsApp ou e-mail.");
@@ -198,6 +254,8 @@ export function BIBriefingMode({ open, onOpenChange, clientId, clientName, ramoA
 
         <ScrollArea className="flex-1">
           <div className="p-5 space-y-5">
+            <BriefingSourcesStatus loading={context.loading} failedSources={context.failedSources} onRetry={() => void retryFailedContextSources()} />
+            {context.ready && <>
             {/* Score hero */}
             <div className={cn("rounded-2xl p-4 flex items-center gap-4", tierStyles.bg)}>
               <div className="h-20 w-20 rounded-2xl bg-background/80 border-[1.5px] flex flex-col items-center justify-center shadow-sm shrink-0">
@@ -348,13 +406,14 @@ export function BIBriefingMode({ open, onOpenChange, clientId, clientName, ramoA
                 ))}
               </div>
             </div>
+            </>}
           </div>
         </ScrollArea>
 
         <div className="p-4 border-t bg-card">
-          <Button onClick={handleCopy} className="w-full gap-2">
+          <Button onClick={handleCopy} className="w-full gap-2" disabled={!context.ready}>
             <Copy className="h-4 w-4" />
-            Copiar briefing para WhatsApp
+            {context.ready ? "Copiar briefing para WhatsApp" : "Briefing indisponível"}
           </Button>
         </div>
       </SheetContent>

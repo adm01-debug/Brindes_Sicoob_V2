@@ -5,11 +5,12 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Scale, TrendingUp, TrendingDown, Minus, Lightbulb, Info, Wallet } from "lucide-react";
-import { useClientVsIndustry, type MetricComparison } from "@/hooks/bi/useClientVsIndustry";
+import { Scale, TrendingUp, TrendingDown, Minus, Lightbulb, Info, Wallet, AlertCircle, RefreshCw } from "lucide-react";
+import { useClientVsIndustry, type ClientVsIndustryResult, type MetricComparison } from "@/hooks/bi/useClientVsIndustry";
 import { ComparisonSkeleton } from "@/components/bi/BISkeletons";
 import { formatCurrencyCompact, formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   clientId: string;
@@ -84,6 +85,60 @@ function MetricRow({ metric }: { metric: MetricComparison }) {
   );
 }
 
+function ComparisonError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <Card className="border-destructive/30 border-dashed">
+      <CardContent className="p-6 flex items-start gap-3">
+        <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+        <div className="space-y-2">
+          <div>
+            <h3 className="font-display font-semibold text-sm">Comparativo indisponível</h3>
+            <p className="text-xs text-muted-foreground">Não foi possível consultar o histórico ou o benchmark. Os valores não serão tratados como amostra insuficiente.</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={onRetry} className="gap-1.5">
+            <RefreshCw className="h-3.5 w-3.5" />Tentar novamente
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ComparisonStaleNotice({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div role="status" className="flex items-center justify-between gap-2 rounded-md border border-warning/30 bg-warning/10 p-2 text-xs">
+      <span>Falha ao atualizar. Exibindo o último comparativo disponível.</span>
+      <Button variant="outline" size="sm" onClick={onRetry} className="h-7 shrink-0 gap-1">
+        <RefreshCw className="h-3 w-3" />Tentar novamente
+      </Button>
+    </div>
+  );
+}
+
+function NoClientDataCard({ ramoAtividade, unavailable }: { ramoAtividade: string; unavailable: boolean }) {
+  const message = unavailable
+    ? "O histórico deste cliente não pôde ser consultado agora. Tente novamente antes de usar o comparativo."
+    : "Este cliente ainda não possui pedidos concluídos para comparação com o setor.";
+  return <Card className="border-[1.5px] border-dashed"><CardContent className="p-6 flex items-start gap-3"><div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0"><Info className="h-4 w-4 text-muted-foreground" /></div><div className="space-y-1"><h3 className="font-display font-semibold text-sm">Comparativo Cliente × Setor</h3><p className="text-xs text-muted-foreground">{message} <span className="font-medium">Ramo: {ramoAtividade}.</span></p></div></CardContent></Card>;
+}
+
+function InsufficientSampleCard({ ramoAtividade, daysWindow }: { ramoAtividade: string; daysWindow: number }) {
+  return <Card className="border-[1.5px] border-dashed"><CardContent className="p-6 flex items-start gap-3"><div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0"><Info className="h-4 w-4 text-muted-foreground" /></div><div className="space-y-1"><h3 className="font-display font-semibold text-sm">Comparativo Cliente × Setor</h3><p className="text-xs text-muted-foreground">Amostra do ramo <span className="font-medium">{ramoAtividade}</span> ainda insuficiente para gerar benchmarking. Mínimo de 3 empresas com orçamentos nos últimos {daysWindow} dias.</p></div></CardContent></Card>;
+}
+
+function ReadyComparison({ comparison, ramoAtividade }: { comparison: ClientVsIndustryResult; ramoAtividade: string }) {
+  const { isError, refetch, isMock, sampleSize, daysWindow, metrics, insight } = comparison;
+  const ltvMetric = metrics.find((metric) => metric.label === "LTV");
+  const sourceLabel = isError ? "Último cache · atualização falhou" : isMock ? "Dados simulados" : "Dados reais";
+  const sourceStyle = isError ? "bg-warning/10 text-warning" : "bg-success/10 text-success";
+
+  return <Card className="border-[1.5px]"><CardHeader className="pb-3"><div className="flex items-start justify-between gap-3 flex-wrap"><div className="flex items-center gap-2.5"><div className="h-9 w-9 rounded-xl bg-gradient-to-br from-success to-success/70 flex items-center justify-center shadow-md shadow-success/20"><Scale className="h-4 w-4 text-success-foreground" /></div><div><CardTitle className="font-display text-base">Cliente × Setor</CardTitle><p className="text-xs text-muted-foreground mt-0.5">Benchmark contra {sampleSize} empresa{sampleSize !== 1 ? "s" : ""} de <span className="font-medium">{ramoAtividade}</span> · últimos {daysWindow} dias</p></div></div><Badge variant="outline" className={cn("border-0 text-[10px]", sourceStyle)}>{sourceLabel}</Badge></div></CardHeader><CardContent className="space-y-3">
+    {isError && <ComparisonStaleNotice onRetry={() => { void refetch(); }} />}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">{metrics.map((metric) => <MetricRow key={metric.label} metric={metric} />)}{ltvMetric && <ShareOfWalletCard clientLtv={ltvMetric.clientValue} industryAvgLtv={ltvMetric.industryAvg} />}</div>
+    {insight && <div className="flex items-start gap-2.5 p-3 rounded-lg bg-primary/5 border border-primary/10"><Lightbulb className="h-4 w-4 text-primary mt-0.5 shrink-0" /><p className="text-xs text-foreground leading-relaxed">{insight}</p></div>}
+  </CardContent></Card>;
+}
+
 /** Card especial: Share-of-Wallet com gauge e gap em R$. */
 function ShareOfWalletCard({ clientLtv, industryAvgLtv }: { clientLtv: number; industryAvgLtv: number }) {
   const [open, setOpen] = useState(false);
@@ -137,96 +192,10 @@ function ShareOfWalletCard({ clientLtv, industryAvgLtv }: { clientLtv: number; i
 
 export function ClientVsIndustryComparison({ clientId, ramoAtividade }: Props) {
   const comparison = useClientVsIndustry(clientId, ramoAtividade);
-  const {
-    isLoading, isMock, hasClientData, isClientDataUnavailable,
-    hasEnoughSample, sampleSize, daysWindow, metrics, insight,
-  } = comparison;
-
   if (!ramoAtividade) return null;
-  if (isLoading) return <ComparisonSkeleton />;
-
-  if (!hasClientData) {
-    const message = isClientDataUnavailable
-      ? "O histórico deste cliente não pôde ser consultado agora. Tente novamente antes de usar o comparativo."
-      : "Este cliente ainda não possui pedidos concluídos para comparação com o setor.";
-    return (
-      <Card className="border-[1.5px] border-dashed">
-        <CardContent className="p-6 flex items-start gap-3">
-          <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
-            <Info className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="font-display font-semibold text-sm">Comparativo Cliente × Setor</h3>
-            <p className="text-xs text-muted-foreground">{message}</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!hasEnoughSample) {
-    return (
-      <Card className="border-[1.5px] border-dashed">
-        <CardContent className="p-6 flex items-start gap-3">
-          <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
-            <Info className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="font-display font-semibold text-sm">Comparativo Cliente × Setor</h3>
-            <p className="text-xs text-muted-foreground">
-              Amostra do ramo <span className="font-medium">{ramoAtividade}</span> ainda
-              insuficiente para gerar benchmarking. Mínimo de 3 empresas com orçamentos
-              nos últimos {daysWindow} dias.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const ltvMetric = metrics.find((m) => m.label === "LTV");
-
-  return (
-    <Card className="border-[1.5px]">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-success to-success/70 flex items-center justify-center shadow-md shadow-success/20">
-              <Scale className="h-4 w-4 text-success-foreground" />
-            </div>
-            <div>
-              <CardTitle className="font-display text-base">Cliente × Setor</CardTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Benchmark contra {sampleSize} empresa{sampleSize !== 1 ? "s" : ""} de{" "}
-                <span className="font-medium">{ramoAtividade}</span> · últimos {daysWindow} dias
-              </p>
-            </div>
-          </div>
-          <Badge variant="outline" className="bg-success/10 text-success border-0 text-[10px]">
-            {isMock ? "Dados simulados" : "Dados reais"}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {metrics.map((m) => (
-            <MetricRow key={m.label} metric={m} />
-          ))}
-          {ltvMetric && (
-            <ShareOfWalletCard
-              clientLtv={ltvMetric.clientValue}
-              industryAvgLtv={ltvMetric.industryAvg}
-            />
-          )}
-        </div>
-
-        {insight && (
-          <div className="flex items-start gap-2.5 p-3 rounded-lg bg-primary/5 border border-primary/10">
-            <Lightbulb className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-            <p className="text-xs text-foreground leading-relaxed">{insight}</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
+  if (comparison.isLoading) return <ComparisonSkeleton />;
+  if (comparison.isError && comparison.metrics.length === 0) return <ComparisonError onRetry={() => { void comparison.refetch(); }} />;
+  if (!comparison.hasClientData) return <NoClientDataCard ramoAtividade={ramoAtividade} unavailable={comparison.isClientDataUnavailable} />;
+  if (!comparison.hasEnoughSample) return <InsufficientSampleCard ramoAtividade={ramoAtividade} daysWindow={comparison.daysWindow} />;
+  return <ReadyComparison comparison={comparison} ramoAtividade={ramoAtividade} />;
 }

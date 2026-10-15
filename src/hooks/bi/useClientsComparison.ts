@@ -16,6 +16,7 @@ export interface ClientComparisonRow {
   clientName: string;
   ramoAtividade: string | null;
   isLoading: boolean;
+  isUnavailable: boolean;
   score: number;
   tier: "healthy" | "attention" | "risk" | "unknown";
   ltv: number;
@@ -96,6 +97,7 @@ export function useSingleClientComparisonRow(clientId: string): ClientComparison
     clientName: company ? getCompanyDisplayName(company) : "Cliente",
     ramoAtividade: ramo,
     isLoading: health.isLoading || bi.isLoading || seas.isLoading || catAffinity.isLoading || catIndustry.isLoading,
+    isUnavailable: bi.isUnavailable,
     score: health.score,
     tier: health.tier,
     ltv: bi.ltv,

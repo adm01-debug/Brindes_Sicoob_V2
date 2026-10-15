@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
   TrendingUp, ArrowUp, ArrowDown, Minus, CheckCircle2, Package, Info,
-  Target, Check, X, AlertCircle,
+  Target, Check, X, AlertCircle, RefreshCw,
 } from "lucide-react";
 import { useIndustryTrends, type IndustryTrendItem, type IndustryTrendsResult } from "@/hooks/bi/useIndustryTrends";
 import { useClientAffinity } from "@/hooks/bi/useClientAffinity";
@@ -41,6 +41,13 @@ function normalize(s: string): string {
     .replace(/[^a-z0-9 ]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function industryAvailabilityMessage(sourceLabels: string[], affinityUnavailable: boolean): string {
+  const detail = affinityUnavailable
+    ? "Oportunidades não serão classificadas sem afinidade confirmada."
+    : "Atualize a consulta para visualizar os produtos do setor.";
+  return `Não foi possível carregar ${sourceLabels.join(" e ")}. ${detail}`;
 }
 
 type EnrichedTrend = IndustryTrendItem & { alreadyBuys: boolean; resolvedCategory: string; resolvedSlug: string };
@@ -136,12 +143,22 @@ function TrendRows({ trends, onlyOpportunities }: { readonly trends: readonly En
 }
 
 export function IndustryTrendingProducts({ ramoAtividade, clientId }: Props) {
-  const { data, isLoading, isError, refetch } = useIndustryTrends(ramoAtividade, clientId);
-  const { data: affinity } = useClientAffinity(clientId);
+  const { data, isLoading, isFetching: trendsFetching, isError, refetch } = useIndustryTrends(ramoAtividade, clientId);
+  const affinityQuery = useClientAffinity(clientId);
+  const { data: affinity } = affinityQuery;
   const { focusedSlug, focusedLabel } = useBICategoryFocus();
   const [onlyOpportunities, setOnlyOpportunities] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const effectiveCategory = focusedLabel ?? activeCategory;
+  const affinityLoading = affinityQuery.isFetching || affinityQuery.isLoading;
+  const contextLoading = trendsFetching || isLoading || affinityLoading;
+  const failedSources = [
+    ...(isError ? [{ label: "tendências do setor", refetch }] : []),
+    ...(affinityQuery.isError ? [{ label: "afinidade de produtos do cliente", refetch: affinityQuery.refetch }] : []),
+  ];
+  const retryFailedSources = async () => {
+    await Promise.all(failedSources.map((source) => source.refetch()));
+  };
 
   // Set de assinaturas dos produtos que o cliente já compra (por id e por nome normalizado)
   const clientBuys = useMemo(() => {
@@ -188,9 +205,9 @@ export function IndustryTrendingProducts({ ramoAtividade, clientId }: Props) {
   const opportunityCount = opportunities.length;
   const totalCount = enriched.items.length;
 
-  if (isLoading) return <ProductGridSkeleton rows={5} />;
+  if (contextLoading) return <ProductGridSkeleton rows={5} />;
 
-  if (isError) return <Card className="border-[1.5px]"><CardContent className="flex flex-col items-center gap-2 py-8 text-center" role="alert"><AlertCircle className="h-6 w-6 text-destructive" /><p className="text-sm text-destructive">Não foi possível consultar as tendências reais do setor.</p><Button variant="outline" size="sm" onClick={() => void refetch()}>Tentar novamente</Button></CardContent></Card>;
+  if (failedSources.length > 0) return <Card className="border-[1.5px]"><CardContent className="flex flex-col items-center gap-2 py-8 text-center" role="alert"><AlertCircle className="h-6 w-6 text-destructive" /><p className="text-sm text-destructive">{industryAvailabilityMessage(failedSources.map((source) => source.label), Boolean(affinityQuery.isError))}</p><Button variant="outline" size="sm" onClick={() => void retryFailedSources()}><RefreshCw className="h-3.5 w-3.5 mr-1.5" />Tentar novamente</Button></CardContent></Card>;
 
   return (
     <Card className="border-[1.5px]">

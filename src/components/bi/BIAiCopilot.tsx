@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Sparkles, Send, Bot, User as UserIcon, Lightbulb } from "lucide-react";
+import { Sparkles, Send, Bot, User as UserIcon, Lightbulb, AlertCircle, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { getAvailableHealthScore, useClientHealthScore, type ClientHealthScoreResult } from "@/hooks/bi/useClientHealthScore";
@@ -45,8 +45,8 @@ const SUGGESTED_QUESTIONS = [
   "Qual o melhor pitch para hoje?",
 ];
 
-function canSendQuestion(question: string, loading: boolean) {
-  return question.length > 0 && !loading;
+export function canSendQuestion(question: string, loading: boolean, contextReady = true) {
+  return question.length > 0 && !loading && contextReady;
 }
 
 async function requestCopilot(question: string, context: object, history: Message[]) {
@@ -79,6 +79,36 @@ export function buildCopilotHistoryContext(bi: ClientBI) {
   };
 }
 
+interface ContextSource {
+  label: string;
+  isLoading: boolean;
+  isError: boolean;
+  refetch: () => Promise<unknown>;
+}
+
+function CopilotSourcesStatus({ loading, failedSources, onRetry }: {
+  readonly loading: boolean;
+  readonly failedSources: ContextSource[];
+  readonly onRetry: () => void;
+}) {
+  return (
+    <>
+      {loading && <p role="status" className="text-xs text-muted-foreground">Carregando dados do BI para preparar o contexto…</p>}
+      {failedSources.length > 0 && (
+        <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 space-y-2">
+          <div className="flex items-start gap-2 text-sm text-destructive">
+            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+            <p>Não foi possível carregar {failedSources.map((source) => source.label).join(", ")}. O copiloto ficará indisponível até os dados serem atualizados.</p>
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={onRetry} disabled={loading}>
+            <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Tentar novamente
+          </Button>
+        </div>
+      )}
+    </>
+  );
+}
+
 export function BIAiCopilot({ open, onOpenChange, clientId, clientName, ramoAtividade }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -91,6 +121,20 @@ export function BIAiCopilot({ open, onOpenChange, clientId, clientName, ramoAtiv
   const trends = useIndustryTrends(ramoAtividade, clientId);
   const seas = useClientSeasonality(clientId, ramoAtividade);
   const vs = useClientVsIndustry(clientId, ramoAtividade);
+  const contextSources = [
+    { label: "histórico do cliente", isLoading: bi.isLoading, isError: bi.isUnavailable, refetch: bi.refetch },
+    { label: "afinidade de produtos", isLoading: affinity.isFetching || affinity.isLoading, isError: affinity.isError, refetch: affinity.refetch },
+    { label: "tendências do setor", isLoading: trends.isFetching || trends.isLoading, isError: trends.isError, refetch: trends.refetch },
+    { label: "sazonalidade", isLoading: seas.isLoading, isError: seas.isError || Boolean(seas.industryError), refetch: () => seas.refetch?.() ?? Promise.resolve() },
+    { label: "comparativo com o setor", isLoading: vs.isLoading, isError: vs.isError, refetch: vs.refetch },
+  ];
+  const contextLoading = health.isLoading || contextSources.some((source) => source.isLoading);
+  const failedContextSources = contextSources.filter((source) => source.isError);
+  const contextReady = !contextLoading && failedContextSources.length === 0;
+
+  const retryFailedContextSources = async () => {
+    await Promise.all(failedContextSources.map((source) => source.refetch()));
+  };
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -100,7 +144,7 @@ export function BIAiCopilot({ open, onOpenChange, clientId, clientName, ramoAtiv
 
   const handleSend = async (text?: string) => {
     const question = (text ?? input).trim();
-    if (!canSendQuestion(question, loading)) return;
+    if (!canSendQuestion(question, loading, contextReady)) return;
     setInput("");
     setMessages((prev) => [...prev, { role: "user", content: question }]);
     setLoading(true);
@@ -162,6 +206,7 @@ export function BIAiCopilot({ open, onOpenChange, clientId, clientName, ramoAtiv
 
         <ScrollArea className="flex-1" ref={scrollRef as RefObject<HTMLDivElement>}>
           <div className="p-4 space-y-3">
+            <CopilotSourcesStatus loading={contextLoading} failedSources={failedContextSources} onRetry={() => void retryFailedContextSources()} />
             {messages.length === 0 && (
               <div className="space-y-3">
                 <div className="rounded-lg border border-dashed p-4 text-center space-y-2">
@@ -178,6 +223,7 @@ export function BIAiCopilot({ open, onOpenChange, clientId, clientName, ramoAtiv
                     <button
                       key={q}
                       onClick={() => handleSend(q)}
+                      disabled={!contextReady || loading}
                       className="w-full text-left text-xs p-2.5 rounded-lg border bg-card hover:bg-muted/60 hover:border-primary/30 transition-colors"
                     >
                       {q}
@@ -241,10 +287,10 @@ export function BIAiCopilot({ open, onOpenChange, clientId, clientName, ramoAtiv
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Pergunte algo sobre este cliente..."
-            disabled={loading}
+            disabled={loading || !contextReady}
             className="flex-1"
           />
-          <Button type="submit" size="icon" disabled={loading || !input.trim()}>
+          <Button type="submit" size="icon" disabled={!canSendQuestion(input.trim(), loading, contextReady)}>
             <Send className="h-4 w-4" />
           </Button>
         </form>
