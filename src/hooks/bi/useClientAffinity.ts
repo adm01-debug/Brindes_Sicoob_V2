@@ -105,7 +105,8 @@ export function useClientAffinity(clientId?: string) {
         _limit: 15,
       });
 
-      const realProducts = (!error && Array.isArray(rpcData) ? rpcData : []) as ClientTopProduct[];
+      if (error) throw error;
+      const realProducts = (Array.isArray(rpcData) ? rpcData : []) as ClientTopProduct[];
 
       if (realProducts.length > 0) {
         // Agrupa por categoria derivada

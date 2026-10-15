@@ -279,7 +279,7 @@ function LoadingProducts() {
   return (
     <div className="flex flex-col items-center justify-center py-16 gap-4">
       <div className="flex items-center gap-3"><div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" /><span className="text-sm text-muted-foreground">Carregando produtos...</span></div>
-      <div className="w-64 h-1.5 bg-muted/50 rounded-full overflow-hidden" role="progressbar" aria-valuetext="Carregamento em andamento"><motion.div className="h-full w-1/3 bg-gradient-to-r from-primary/30 to-primary rounded-full" animate={{ x: [0, 170, 0] }} transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }} /></div>
+      <div className="w-64 h-1.5 bg-muted/50 rounded-full overflow-hidden" role="progressbar" aria-label="Carregamento de novidades" aria-valuetext="Carregamento em andamento"><motion.div className="h-full w-1/3 bg-gradient-to-r from-primary/30 to-primary rounded-full" animate={{ x: [0, 170, 0] }} transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }} /></div>
     </div>
   );
 }

@@ -58,7 +58,7 @@ function buildSummary(data: ExecutiveData): string {
   const lastOrder = lastOrderSuffix(bi.daysSinceLastOrder);
   return [
     `📊 Resumo executivo — ${clientName}${ramoSuffix(ramoAtividade)}`, "",
-    `▸ Saúde: cliente ${tier} (Health Score ${health.score}/100). ${health.crossZoneInsight}`, "",
+    `▸ Saúde: cliente ${tier}${health.tier === "unknown" ? " (pontuação indisponível)" : ` (Health Score ${health.score}/100)`}. ${health.crossZoneInsight}`, "",
     `▸ Histórico: LTV ${fmtBRL(bi.ltv)} em ${bi.ordersCount} pedidos · ticket médio ${fmtBRL(bi.avgTicket)}${lastOrder}. Categoria forte: ${topCategory(affinity.data)}.`, "",
     `▸ Oportunidade: share-of-wallet estimado em ${health.shareOfWalletPct}% (potencial não capturado: ${fmtBRL(health.potentialUntappedBRL)}). ${health.windowLabel}. Próxima ação: ${health.nextActionLabel} — ${health.nextActionDetail}`, "",
     `▸ Setor: top tendência atual é "${topTrend(trends.data)}". ${seas.insight ?? ""}`, "", `📞 Script: "${health.scriptHint}"`,

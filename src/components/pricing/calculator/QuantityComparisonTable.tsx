@@ -6,7 +6,7 @@ import { useCustomizationPricing } from '@/hooks/useTecnicasUnificadas';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Calculator, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { type CalcProduct, type SelectedTechniqueConfig, availableSizes, formatCurrency, formatNumber } from './types';
+import { type CalcProduct, type SelectedTechniqueConfig, availableSizes, formatCurrency, formatNumber, isPriceConfigurationSupported } from './types';
 
 interface Props {
   product: CalcProduct;
@@ -15,24 +15,20 @@ interface Props {
 }
 
 export function QuantityComparisonTable({ product, selectedConfigs, quantities }: Props) {
-  const { techniques, calculatePrice } = useCustomizationPricing();
+  const { calculatePrice } = useCustomizationPricing();
 
   const calculateForConfig = useCallback((config: SelectedTechniqueConfig, quantity: number) => {
-    const { technique, colors, sizeModifier } = config;
+    if (!isPriceConfigurationSupported(config)) return null;
+    const { technique } = config;
     const calc = calculatePrice(technique.techniqueCode, quantity);
     if (!calc) return null;
 
-    const techMeta = techniques.find(t => t.code === technique.techniqueCode);
-
-    let modifiedUnitPrice = calc.unitPrice;
-    if (colors > 1 && techMeta?.priceByColor) modifiedUnitPrice *= (1 + (colors - 1) * 0.1);
-    modifiedUnitPrice *= sizeModifier;
-
-    const customizationTotal = modifiedUnitPrice * quantity + calc.setupPrice;
+    const unitPrice = calc.unitPrice;
+    const customizationTotal = calc.unitPrice * quantity + calc.setupPrice + (calc.handlingPrice ?? 0);
     const productTotal = product.price * quantity;
     const grandTotal = productTotal + customizationTotal;
-    return { unitPrice: modifiedUnitPrice, customizationTotal, productTotal, grandTotal, unitTotal: grandTotal / quantity, slaDays: calc.slaDays };
-  }, [techniques, calculatePrice, product.price]);
+    return { unitPrice, customizationTotal, productTotal, grandTotal, unitTotal: grandTotal / quantity, slaDays: calc.slaDays };
+  }, [calculatePrice, product.price]);
 
   const bestPricePerConfig = useMemo(() => {
     const map = new Map<string, number>();

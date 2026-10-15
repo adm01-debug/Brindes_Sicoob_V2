@@ -34,6 +34,12 @@ export interface SelectedTechniqueConfig {
   sizeModifier: number;
 }
 
+export function isPriceConfigurationSupported(config: SelectedTechniqueConfig): boolean {
+  // A tabela do banco calcula preço por técnica e tiragem; cores adicionais e
+  // área variável ainda não fazem parte desse contrato de preço.
+  return config.colors === 1 && config.sizeOption === 'standard';
+}
+
 export const availableSizes = [
   { label: 'Pequeno (até 5cm²)', value: 'small', modifier: 0.8 },
   { label: 'Padrão (até 20cm²)', value: 'standard', modifier: 1 },

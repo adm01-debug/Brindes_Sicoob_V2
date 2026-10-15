@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Users, Search, TrendingUp, MapPin, BadgeCheck, AlertTriangle } from "lucide-react";
@@ -52,9 +52,11 @@ interface ClientResultsProps {
   isError: boolean;
   onRetry: () => void;
   onClientClick: (id: string) => void;
+  hasMore: boolean;
+  onLoadMore: () => void;
 }
 
-function ClientResults({ clients, search, isLoading, isError, onRetry, onClientClick }: ClientResultsProps) {
+function ClientResults({ clients, search, isLoading, isError, onRetry, onClientClick, hasMore, onLoadMore }: ClientResultsProps) {
   if (isLoading) {
     return (
       <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -95,8 +97,12 @@ function ClientResults({ clients, search, isLoading, isError, onRetry, onClientC
     );
   }
   return (
-    <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-      {clients.map((client) => <ClientCard key={client.id} client={client} onClick={() => onClientClick(client.id)} />)}
+    <div className="space-y-4">
+      <p className="text-xs text-muted-foreground">Exibindo {clients.length} cliente{clients.length === 1 ? "" : "s"}{hasMore ? " desta lista" : ""}.</p>
+      <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        {clients.map((client) => <ClientCard key={client.id} client={client} onClick={() => onClientClick(client.id)} />)}
+      </div>
+      {hasMore && <div className="flex justify-center"><Button variant="outline" onClick={onLoadMore}>Carregar mais clientes</Button></div>}
     </div>
   );
 }
@@ -105,12 +111,15 @@ export default function ClientsPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [sortMode, setSortMode] = useState<ClientSortMode>("name");
+  const [visibleCount, setVisibleCount] = useState(100);
   const { data: clients = [], isLoading, isError, refetch } = useAllCrmCompanies({ is_customer: true });
 
   const filtered = useMemo(
     () => filterAndSortClients(clients, search, sortMode),
     [clients, search, sortMode],
   );
+  useEffect(() => setVisibleCount(100), [search, sortMode]);
+  const visibleClients = filtered.slice(0, visibleCount);
 
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
@@ -212,12 +221,14 @@ export default function ClientsPage() {
           </div>
 
           <ClientResults
-            clients={filtered}
+            clients={visibleClients}
             search={search}
             isLoading={isLoading}
             isError={isError}
             onRetry={() => void refetch()}
             onClientClick={(id) => navigate(`/clientes/${id}`)}
+            hasMore={visibleCount < filtered.length}
+            onLoadMore={() => setVisibleCount((count) => Math.min(count + 100, filtered.length))}
           />
         </div>
       </div>

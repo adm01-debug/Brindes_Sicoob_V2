@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Target,
@@ -85,14 +86,14 @@ function useMarketChartModel(defaultDays: number, supplierId?: string | null) {
   const [period, setPeriod] = useState<string>(String(defaultDays));
   const [selectedSupplier, setSelectedSupplier] = useState<string>('all');
   const days = Number(period);
-  const { data: realData, isLoading, error } = useMarketIntelligenceMacro(days, supplierId);
+  const { data: realData, isLoading, error, refetch } = useMarketIntelligenceMacro(days, supplierId);
   const hasRealData = Boolean(realData?.daily?.length);
   const effectiveData = realData ?? EMPTY_MARKET_DATA;
   const { data: supplierNamesMap } = useSupplierNames(hasRealData ? effectiveData.supplierIds : []);
   const supplierOptions = useMemo(() => buildSupplierOptions(effectiveData, supplierNamesMap), [effectiveData, supplierNamesMap]);
   const chartData = useMemo(() => buildChartData(effectiveData.daily), [effectiveData.daily]);
   return { period, setPeriod, selectedSupplier, setSelectedSupplier, days, isLoading, error, hasRealData,
-    effectiveData, supplierNamesMap, supplierOptions, chartData };
+    effectiveData, supplierNamesMap, supplierOptions, chartData, refetch };
 }
 
 type MarketChartModel = ReturnType<typeof useMarketChartModel>;
@@ -101,12 +102,12 @@ function LoadingCard() {
   return <Card><CardContent className="flex items-center justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></CardContent></Card>;
 }
 
-function ErrorCard() {
-  return <Card><CardContent className="flex flex-col items-center justify-center py-8 gap-2 text-center"><AlertCircle className="h-6 w-6 text-destructive" /><p className="text-sm text-destructive">Erro ao carregar dados de mercado</p><p className="text-xs text-muted-foreground">Verifique a conexão e tente novamente</p></CardContent></Card>;
+function ErrorCard({ model }: { model: MarketChartModel }) {
+  return <Card><MarketHeader days={model.days} trendRatio={1} /><CardContent className="space-y-4"><ChartControls model={model} /><div className="flex flex-col items-center justify-center py-8 gap-2 text-center"><AlertCircle className="h-6 w-6 text-destructive" /><p className="text-sm text-destructive">Erro ao carregar dados de mercado</p><p className="text-xs text-muted-foreground">Verifique a conexão e tente novamente</p><Button variant="outline" size="sm" onClick={() => void model.refetch()}>Tentar novamente</Button></div></CardContent></Card>;
 }
 
-function EmptyCard() {
-  return <Card><CardContent className="flex flex-col items-center justify-center py-8 gap-2 text-center"><BarChart3 className="h-6 w-6 text-muted-foreground" /><p className="text-sm font-medium">Sem movimentações de mercado no período</p><p className="text-xs text-muted-foreground">Os indicadores aparecerão quando o catálogo registrar estoque e saídas reais.</p></CardContent></Card>;
+function EmptyCard({ model }: { model: MarketChartModel }) {
+  return <Card><MarketHeader days={model.days} trendRatio={1} /><CardContent className="space-y-4"><ChartControls model={model} /><div className="flex flex-col items-center justify-center py-8 gap-2 text-center"><BarChart3 className="h-6 w-6 text-muted-foreground" /><p className="text-sm font-medium">Sem movimentações de mercado no período</p><p className="text-xs text-muted-foreground">Os indicadores aparecerão quando o catálogo registrar estoque e saídas reais.</p></div></CardContent></Card>;
 }
 
 function demandMetrics(average: number) {
@@ -196,8 +197,8 @@ export function MarketIntelligenceChart({ days: defaultDays = 30, supplierId }: 
   const model = useMarketChartModel(defaultDays, supplierId);
 
   if (model.isLoading) return <LoadingCard />;
-  if (model.error && !model.hasRealData) return <ErrorCard />;
-  if (!model.hasRealData) return <EmptyCard />;
+  if (model.error && !model.hasRealData) return <ErrorCard model={model} />;
+  if (!model.hasRealData) return <EmptyCard model={model} />;
   return <MarketChartReady model={model} />;
 }
 

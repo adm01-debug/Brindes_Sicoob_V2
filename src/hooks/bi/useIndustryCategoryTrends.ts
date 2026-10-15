@@ -65,16 +65,12 @@ function buildDemoResult(ramoAtividade?: string | null): IndustryCategoryTrendsR
 }
 
 async function fetchCompanyIds(ramoAtividade: string) {
-  try {
-    const companies = await selectCrm<{ id: string }>("companies", {
-      select: "id",
-      filters: { ramo_atividade: ramoAtividade, deleted_at: null },
-      limit: 500,
-    });
-    return companies.map((company) => company.id).filter(Boolean);
-  } catch {
-    return [];
-  }
+  const companies = await selectCrm<{ id: string }>("companies", {
+    select: "id",
+    filters: { ramo_atividade: ramoAtividade, deleted_at: null },
+    limit: 500,
+  });
+  return companies.map((company) => company.id).filter(Boolean);
 }
 
 async function fetchIndustryRows(companyIds: string[]) {
@@ -83,7 +79,8 @@ async function fetchIndustryRows(companyIds: string[]) {
     _days: 90,
     _limit: 50,
   });
-  if (error || !Array.isArray(data)) return [];
+  if (error) throw error;
+  if (!Array.isArray(data)) throw new Error("A consulta de tendências retornou um formato inválido");
   return data as unknown as IndustryRow[];
 }
 
@@ -150,5 +147,5 @@ export function useIndustryCategoryTrends(ramoAtividade?: string | null, clientI
     () => query.data ?? (demo ? buildDemoResult(ramoAtividade) : emptyIndustryResult()),
     [demo, query.data, ramoAtividade],
   );
-  return { ...result, isLoading: query.isLoading };
+  return { ...result, isLoading: query.isLoading, isError: query.isError, error: query.error, refetch: query.refetch };
 }

@@ -12,18 +12,6 @@ interface AIMockupAssistantProps {
   className?: string;
 }
 
-function assistantPrompt(productName?: string, techniqueName?: string) {
-  const product = productName ? `Produto selecionado: ${productName}.` : "Nenhum produto foi selecionado.";
-  const technique = techniqueName ? `Técnica selecionada: ${techniqueName}.` : "Nenhuma técnica foi selecionada.";
-  return [
-    "Você é um especialista em layouts para brindes corporativos do Sicoob.",
-    "Oriente sobre posição, dimensões, contraste e limitações da técnica, sem inventar medidas ou capacidades do fornecedor.",
-    "Quando faltarem dados técnicos, peça confirmação da área de gravação e da ficha do fornecedor.",
-    product,
-    technique,
-  ].join(" ");
-}
-
 export function AIMockupAssistant({ productName, techniqueName, className }: AIMockupAssistantProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -69,7 +57,8 @@ export function AIMockupAssistant({ productName, techniqueName, className }: AIM
           className="h-[calc(100%-57px)] rounded-none border-0"
           maxHeight="310px"
           contextId={productName}
-          systemPrompt={assistantPrompt(productName, techniqueName)}
+          assistantMode="layout"
+          assistantContext={[productName && `Produto: ${productName}`, techniqueName && `Técnica: ${techniqueName}`].filter(Boolean).join("; ")}
           greeting="Olá! Posso revisar posição, contraste e viabilidade visual do seu mockup com base nos dados selecionados."
           placeholder="Pergunte sobre o mockup…"
         />

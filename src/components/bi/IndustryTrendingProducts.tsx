@@ -5,11 +5,12 @@
  */
 import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
   TrendingUp, ArrowUp, ArrowDown, Minus, CheckCircle2, Package, Info,
-  Target, Check, X,
+  Target, Check, X, AlertCircle,
 } from "lucide-react";
 import { useIndustryTrends, type IndustryTrendItem, type IndustryTrendsResult } from "@/hooks/bi/useIndustryTrends";
 import { useClientAffinity } from "@/hooks/bi/useClientAffinity";
@@ -54,6 +55,12 @@ interface IndustryHeaderProps {
   readonly onOnlyOpportunitiesChange: (value: boolean) => void;
 }
 
+function industrySampleDescription(props: IndustryHeaderProps): string {
+  if (!props.ramoAtividade) return "Ramo de atividade não informado no cadastro do cliente";
+  if (props.totalCount === 0) return "Sem amostra setorial suficiente nos últimos 90 dias";
+  return `Agregado de ${props.data?.companiesInRamo} empresas do mesmo ramo · 90 dias`;
+}
+
 function IndustryHeader(props: IndustryHeaderProps) {
   return (
     <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -62,9 +69,7 @@ function IndustryHeader(props: IndustryHeaderProps) {
         <div>
           <h2 className="font-display font-semibold">Tendência do setor{props.ramoAtividade && <span className="text-muted-foreground font-normal"> · {props.ramoAtividade}</span>}</h2>
           <p className="text-xs text-muted-foreground">
-            {props.totalCount > 0
-              ? `Agregado de ${props.data?.companiesInRamo} empresas do mesmo ramo · 90 dias`
-              : "Sem amostra setorial suficiente nos últimos 90 dias"}
+            {industrySampleDescription(props)}
             {props.totalCount > 0 && <> · <span className="text-success font-medium">{props.opportunityCount} oportunidade{props.opportunityCount !== 1 && "s"}</span></>}
           </p>
         </div>
@@ -131,7 +136,7 @@ function TrendRows({ trends, onlyOpportunities }: { readonly trends: readonly En
 }
 
 export function IndustryTrendingProducts({ ramoAtividade, clientId }: Props) {
-  const { data, isLoading } = useIndustryTrends(ramoAtividade, clientId);
+  const { data, isLoading, isError, refetch } = useIndustryTrends(ramoAtividade, clientId);
   const { data: affinity } = useClientAffinity(clientId);
   const { focusedSlug, focusedLabel } = useBICategoryFocus();
   const [onlyOpportunities, setOnlyOpportunities] = useState(false);
@@ -184,6 +189,8 @@ export function IndustryTrendingProducts({ ramoAtividade, clientId }: Props) {
   const totalCount = enriched.items.length;
 
   if (isLoading) return <ProductGridSkeleton rows={5} />;
+
+  if (isError) return <Card className="border-[1.5px]"><CardContent className="flex flex-col items-center gap-2 py-8 text-center" role="alert"><AlertCircle className="h-6 w-6 text-destructive" /><p className="text-sm text-destructive">Não foi possível consultar as tendências reais do setor.</p><Button variant="outline" size="sm" onClick={() => void refetch()}>Tentar novamente</Button></CardContent></Card>;
 
   return (
     <Card className="border-[1.5px]">

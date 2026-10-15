@@ -80,17 +80,12 @@ export function useIndustryTrends(ramoAtividade?: string | null, clientId?: stri
       }
 
       // 1) Buscar empresas do mesmo ramo no CRM
-      let companyIds: string[] = [];
-      try {
-        const companies = await selectCrm<{ id: string }>("companies", {
-          select: "id",
-          filters: { ramo_atividade: ramoAtividade, deleted_at: null },
-          limit: 500,
-        });
-        companyIds = companies.map((c) => c.id).filter(Boolean);
-      } catch {
-        companyIds = [];
-      }
+      const companies = await selectCrm<{ id: string }>("companies", {
+        select: "id",
+        filters: { ramo_atividade: ramoAtividade, deleted_at: null },
+        limit: 500,
+      });
+      const companyIds = companies.map((company) => company.id).filter(Boolean);
 
       // 2) Se temos IDs, tenta RPC
       if (companyIds.length > 0) {
@@ -100,7 +95,8 @@ export function useIndustryTrends(ramoAtividade?: string | null, clientId?: stri
           _limit: 10,
         });
 
-        const real = (!error && Array.isArray(data) ? data : []) as IndustryTopProduct[];
+        if (error) throw error;
+        const real = (Array.isArray(data) ? data : []) as IndustryTopProduct[];
         if (real.length > 0) {
           return {
             isMock: false,

@@ -28,4 +28,21 @@ describe('sazonalidade sem dados artificiais', () => {
     expect(result.topClientMonths).toHaveLength(3);
     expect(result.client.some((cell) => cell.quotesCount > 0)).toBe(true);
   });
+
+  it('não transforma um ou dois meses observados em previsão de pico', () => {
+    const result = resolveSeasonalityResult({
+      clientRows: [
+        { year: 2026, month: 2, quotes_count: 4, total_revenue: 800, avg_ticket: 200 },
+        { year: 2026, month: 8, quotes_count: 2, total_revenue: 300, avg_ticket: 150 },
+      ],
+      industryRows: [],
+      companiesCount: 0,
+    }, false);
+
+    expect(result.hasEnoughData).toBe(false);
+    expect(result.topClientMonths).toEqual([]);
+    expect(result.nextPeakMonth).toBeNull();
+    expect(result.daysToNextPeak).toBeNull();
+    expect(result.insight).toBeNull();
+  });
 });

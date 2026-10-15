@@ -204,7 +204,7 @@ export function CompareTableView({
               <HighlightedNumberRow label="Quantidade mínima" products={products} valueFn={(p) => p.minQuantity} renderFn={(v) => `${v} un.`} mode="lower-is-better" />
               <HighlightedNumberRow label="Custo total (qtd. mín.)" products={products} valueFn={(p) => Number(p.price ?? 0) * Number(p.minQuantity ?? 1)} renderFn={(v) => formatCurrency(v)} mode="lower-is-better" subtitle="TCO" />
               <HighlightedNumberRow label="Estoque" products={products} valueFn={(p) => p.stock ?? 0} renderFn={(v) => `${v.toLocaleString("pt-BR")} un.`} mode="higher-is-better" />
-              <SimpleRow label="Prazo de entrega" products={products} render={() => <span className="text-muted-foreground">Sob consulta</span>} />
+              <SimpleRow label="Prazo de entrega" products={products} render={(product) => product.leadTimeDays ? <span>{product.leadTimeDays} dias úteis</span> : <span className="text-muted-foreground">Sob consulta</span>} />
               <HighlightedNumberRow label="Variedade de cores" products={products} valueFn={(p) => (p.colors?.length ?? 0)} renderFn={(v) => `${v} cores`} mode="higher-is-better" />
 
               <MaybeRow visible={showRow("sku")}><SimpleRow label="SKU" products={products} render={(p) => <span className="font-mono text-sm">{p.sku}</span>} /></MaybeRow>

@@ -48,6 +48,10 @@ export interface AIChatProps {
   className?: string;
   /** Identificador do contexto (ex: cliente, orçamento) — usado para metadata. */
   contextId?: string;
+  /** Modo de resposta com instruções confiáveis definidas no backend. */
+  assistantMode?: "sales" | "layout";
+  /** Dados de catálogo tratados como contexto, nunca como instruções. */
+  assistantContext?: string;
 }
 
 // ============================================
@@ -78,12 +82,55 @@ async function responseError(response: Response) {
   return new Error(`Erro ${response.status}: ${text || "falha ao consultar IA"}`);
 }
 
-async function fetchAssistantContent(
-  messages: ChatMessage[],
-  systemPrompt: string | undefined,
-  contextId: string | undefined,
-  signal: AbortSignal,
-) {
+type StreamEvent = { choices?: Array<{ delta?: { content?: unknown }; message?: { content?: unknown } }>; content?: unknown; delta?: unknown };
+
+// O parser precisa cobrir os formatos OpenAI e Responses sem descartar deltas válidos.
+// eslint-disable-next-line complexity
+function streamEventContent(parsed: StreamEvent): string {
+  const content = parsed.choices?.[0]?.delta?.content ?? parsed.choices?.[0]?.message?.content ?? parsed.delta ?? parsed.content;
+  if (typeof content === "string") return content;
+  if (!Array.isArray(content)) return "";
+  return content.map((part) => typeof part === "object" && part && "text" in part ? String(part.text) : "").join("");
+}
+
+function contentFromStreamEvent(event: string): string {
+  const data = event.split(/\r?\n/).filter((line) => line.startsWith("data:")).map((line) => line.slice(5).trim()).join("\n");
+  if (!data || data === "[DONE]") return "";
+  try {
+    return streamEventContent(JSON.parse(data) as StreamEvent);
+  } catch {
+    return "";
+  }
+}
+
+export async function readAssistantSse(response: Response): Promise<string> {
+  if (!response.body) throw new Error("A resposta da IA não contém fluxo de dados");
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let content = "";
+  while (true) {
+    const { value, done } = await reader.read();
+    buffer += decoder.decode(value, { stream: !done });
+    const events = buffer.split(/\r?\n\r?\n/);
+    buffer = events.pop() ?? "";
+    for (const event of events) content += contentFromStreamEvent(event);
+    if (done) break;
+  }
+  content += contentFromStreamEvent(buffer);
+  if (!content.trim()) throw new Error("Resposta vazia do assistente");
+  return content;
+}
+
+interface AssistantRequest {
+  messages: ChatMessage[];
+  systemPrompt?: string;
+  contextId?: string;
+  assistantMode?: AIChatProps["assistantMode"];
+  assistantContext?: string;
+}
+
+async function fetchAssistantContent(request: AssistantRequest, signal: AbortSignal) {
   const { data: sessionData } = await supabase.auth.getSession();
   const token = sessionData?.session?.access_token;
   if (!token) throw new Error("Usuário não autenticado");
@@ -95,13 +142,20 @@ async function fetchAssistantContent(
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
-      messages: messages.map(message => ({ role: message.role, content: message.content })),
-      systemPrompt,
-      contextId,
+      messages: request.messages.map(message => ({ role: message.role, content: message.content })),
+      systemPrompt: request.systemPrompt,
+      contextId: request.contextId,
+      assistantMode: request.assistantMode,
+      assistantContext: request.assistantContext,
     }),
     signal,
   });
+  return parseAssistantResponse(response);
+}
+
+async function parseAssistantResponse(response: Response): Promise<string> {
   if (!response.ok) throw await responseError(response);
+  if (response.headers.get("content-type")?.includes("text/event-stream")) return readAssistantSse(response);
   const data = await response.json() as { message?: { content?: string }; content?: string; reply?: string };
   const content = data.message?.content ?? data.content ?? data.reply ?? "";
   if (!content) throw new Error("Resposta vazia do assistente");
@@ -188,6 +242,8 @@ export function AIChat({
   onProductMention,
   className,
   contextId,
+  assistantMode,
+  assistantContext,
 }: AIChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(() =>
     greeting
@@ -234,7 +290,7 @@ export function AIChat({
     abortRef.current = controller;
 
     try {
-      const assistantContent = await fetchAssistantContent(nextMessages, systemPrompt, contextId, controller.signal);
+      const assistantContent = await fetchAssistantContent({ messages: nextMessages, systemPrompt, contextId, assistantMode, assistantContext }, controller.signal);
       const assistantMsg: ChatMessage = {
         id: makeId(),
         role: "assistant",
@@ -251,7 +307,7 @@ export function AIChat({
     } finally {
       if (!controller.signal.aborted) setIsLoading(false);
     }
-  }, [input, isLoading, messages, systemPrompt, contextId, onProductMention]);
+  }, [input, isLoading, messages, systemPrompt, contextId, assistantMode, assistantContext, onProductMention]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {

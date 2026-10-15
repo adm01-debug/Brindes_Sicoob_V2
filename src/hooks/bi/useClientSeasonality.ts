@@ -203,11 +203,18 @@ export function resolveSeasonalityResult(
   const realIndustry = buildIndustryCells(data?.industryRows ?? []);
   const base = { isLoading, monthsCovered, windowMonths: WINDOW_MONTHS };
   if (monthsCovered < 3) {
-    return peakResult(client, realIndustry, {
+    return {
       ...base,
       isMock: false,
       hasEnoughData: false,
-    });
+      client,
+      industry: realIndustry,
+      topClientMonths: [],
+      topIndustryMonths: [],
+      nextPeakMonth: null,
+      daysToNextPeak: null,
+      insight: null,
+    };
   }
   return peakResult(client, realIndustry, { ...base, isMock: false, hasEnoughData: true });
 }

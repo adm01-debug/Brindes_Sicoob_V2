@@ -1,7 +1,7 @@
 /**
  * ClientOverview360 — KPIs (LTV, ticket médio, última compra) com toggle "Trimestre atual vs anterior".
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -78,7 +78,10 @@ function OrdersCard({ bi, comparePeriod }: { bi: ClientBI; comparePeriod: boolea
 
 export function ClientOverview360({ clientId }: Props) {
   const bi = useClientBI(clientId);
-  const [comparePeriod, setComparePeriod] = useState(false);
+  const [comparison, setComparison] = useState({ clientId, enabled: false });
+  useEffect(() => setComparison({ clientId, enabled: false }), [clientId]);
+  const comparePeriod = comparison.clientId === clientId && comparison.enabled && bi.hasData;
+  const setComparePeriod = (enabled: boolean) => setComparison({ clientId, enabled });
 
   if (bi.isLoading) return <KPIsSkeleton />;
   return (

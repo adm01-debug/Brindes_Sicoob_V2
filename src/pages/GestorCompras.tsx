@@ -128,11 +128,11 @@ export default function GestorCompras() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                    <div className="p-6 rounded-2xl bg-card border border-border/50 text-center space-y-2">
                      <p className="text-3xl font-bold">{metricLabel(metrics.pendingCount, String)}</p>
-                     <p className="text-xs text-muted-foreground">Pedidos pendentes hoje</p>
+                     <p className="text-xs text-muted-foreground">Pedidos pendentes</p>
                    </div>
                    <div className="p-6 rounded-2xl bg-card border border-border/50 text-center space-y-2">
                      <p className="text-3xl font-bold text-success">{metricLabel(metrics.slaPercent, value => `${Math.round(value)}%`)}</p>
-                     <p className="text-xs text-muted-foreground">SLA de aprovação (24h)</p>
+                     <p className="text-xs text-muted-foreground">Pendências atuais com menos de 24h</p>
                    </div>
                 </div>
               </TabsContent>
@@ -158,7 +158,7 @@ export default function GestorCompras() {
               </h3>
               <p className="text-xs text-muted-foreground">Revise cada solicitação com sua alçada, verba e histórico antes de decidir.</p>
               <Button className="w-full" onClick={() => setActiveTab("kanban")}>
-                Analisar {metrics.pendingCount ?? 0} pendência{metrics.pendingCount === 1 ? "" : "s"}
+                {metrics.pendingCount === null ? "Analisar pendências" : `Analisar ${metrics.pendingCount} pendência${metrics.pendingCount === 1 ? "" : "s"}`}
               </Button>
             </div>
             

@@ -16,7 +16,7 @@ import { ProductSearch as UnifiedProductSearch } from './simulator/ProductSearch
 import { TechniqueMultiSelector } from './calculator/TechniqueMultiSelector';
 import { TechniqueConfigCard } from './calculator/TechniqueConfigCard';
 import { QuantityComparisonTable } from './calculator/QuantityComparisonTable';
-import { type CalcProduct, type ProductTechnique, type SelectedTechniqueConfig, formatNumber } from './calculator/types';
+import { type CalcProduct, type ProductTechnique, type SelectedTechniqueConfig, formatNumber, isPriceConfigurationSupported } from './calculator/types';
 import type { Product as SearchProduct } from './simulator/types';
 import { toast } from 'sonner';
 
@@ -26,7 +26,7 @@ interface QuantityPriceCalculatorProps {
 
 export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorProps) {
   const navigate = useNavigate();
-  const { isLoading: pricingLoading, calculatePrice, techniques } = useCustomizationPricing();
+  const { isLoading: pricingLoading, calculatePrice } = useCustomizationPricing();
 
   const [selectedProduct, setSelectedProduct] = useState<CalcProduct | null>(null);
   const [selectedConfigs, setSelectedConfigs] = useState<SelectedTechniqueConfig[]>([]);
@@ -68,14 +68,14 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
 
   const handleCreateQuote = useCallback(() => {
     if (!selectedProduct) return;
+    if (selectedConfigs.some((config) => !isPriceConfigurationSupported(config))) {
+      toast.error('O preço cadastrado só cobre uma cor e tamanho padrão. Ajuste as opções antes de importar para o orçamento.');
+      return;
+    }
     const personalizations = selectedConfigs.flatMap((config) => {
       const calculation = calculatePrice(config.technique.techniqueCode, quoteQuantity);
       if (!calculation) return [];
-      const techniqueMetadata = techniques.find((item) => item.code === config.technique.techniqueCode);
-      const colorModifier = config.colors > 1 && techniqueMetadata?.priceByColor
-        ? 1 + (config.colors - 1) * 0.1
-        : 1;
-      const unitPrice = calculation.unitPrice * colorModifier * config.sizeModifier;
+      const unitPrice = calculation.unitPrice;
       return [{
         technique: {
           id: config.technique.techniqueId || config.technique.id,
@@ -85,7 +85,7 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
         pricing: {
           setupPrice: calculation.setupPrice,
           unitPrice,
-          totalPrice: unitPrice * quoteQuantity + calculation.setupPrice,
+          totalPrice: unitPrice * quoteQuantity + calculation.setupPrice + (calculation.handlingPrice ?? 0),
         },
       }];
     });
@@ -110,7 +110,7 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
       },
     });
     toast.success('Simulação adicionada ao novo orçamento.');
-  }, [calculatePrice, navigate, quoteQuantity, selectedConfigs, selectedProduct, techniques]);
+  }, [calculatePrice, navigate, quoteQuantity, selectedConfigs, selectedProduct]);
 
   if (pricingLoading) return (
     <Card className={className}><CardHeader><Skeleton className="h-6 w-48" /><Skeleton className="h-4 w-64 mt-2" /></CardHeader><CardContent className="space-y-4"><Skeleton className="h-16 w-full" /><Skeleton className="h-64 w-full" /></CardContent></Card>

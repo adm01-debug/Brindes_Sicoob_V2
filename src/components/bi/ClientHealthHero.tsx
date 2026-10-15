@@ -182,7 +182,7 @@ export function ClientHealthHero({ clientId, ramoAtividade, clientName }: Props)
                     styles.scoreText,
                   )}
                 >
-                  {health.score}
+                  {health.tier === "unknown" ? "—" : health.score}
                 </span>
                 <span className="mt-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                   Health Score

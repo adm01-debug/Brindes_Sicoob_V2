@@ -35,7 +35,7 @@ vi.mock('@/hooks/useCategoryIcons', () => ({
   getCategoryIcon: () => '📦',
 }));
 vi.mock('@/components/ai/AIChat', () => ({
-  AIChat: ({ systemPrompt }: { systemPrompt: string }) => <div data-testid="chat-real">{systemPrompt}</div>,
+  AIChat: ({ assistantMode, assistantContext }: { assistantMode: string; assistantContext: string }) => <div data-testid="chat-real">{assistantMode} {assistantContext}</div>,
 }));
 
 import { AIMockupAssistant } from '@/components/ai/AIMockupAssistant';
@@ -120,8 +120,9 @@ describe('integridade de dados nas ferramentas comerciais', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Abrir assistente de layouts' }));
 
-    expect(screen.getByTestId('chat-real').textContent).toContain('Produto selecionado: Caneca Sicoob');
-    expect(screen.getByTestId('chat-real').textContent).toContain('Técnica selecionada: Laser');
+    expect(screen.getByTestId('chat-real').textContent).toContain('layout');
+    expect(screen.getByTestId('chat-real').textContent).toContain('Produto: Caneca Sicoob');
+    expect(screen.getByTestId('chat-real').textContent).toContain('Técnica: Laser');
     expect(screen.queryByText(/Simulate AI response/i)).toBeNull();
   });
 

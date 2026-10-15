@@ -4,6 +4,7 @@
  */
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, Info, CheckCircle2 } from "lucide-react";
 import { useClientAffinity } from "@/hooks/bi/useClientAffinity";
@@ -16,8 +17,37 @@ interface Props {
   clientId: string;
 }
 
+function AffinityErrorState({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="py-8 text-center" role="alert">
+      <p className="text-sm text-muted-foreground">Não foi possível consultar o histórico real deste cliente.</p>
+      <Button variant="outline" size="sm" className="mt-3" onClick={onRetry}>Tentar novamente</Button>
+    </div>
+  );
+}
+
+function AffinityBody({ clientId, isLoading, isError, categories, onRetry }: {
+  clientId: string;
+  isLoading: boolean;
+  isError: boolean;
+  categories: NonNullable<ReturnType<typeof useClientAffinity>["data"]>["categories"];
+  onRetry: () => void;
+}) {
+  if (isLoading) return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-44 rounded-xl" />)}</div>;
+  if (isError) return <AffinityErrorState onRetry={onRetry} />;
+  if (categories.length === 0) return <p className="py-8 text-center text-sm text-muted-foreground">As sugestões aparecerão após o primeiro orçamento real deste cliente.</p>;
+  return <div className="space-y-5">{categories.map((cat) => (
+    <div key={cat.category}>
+      <div className="flex items-center justify-between mb-2"><h3 className="font-medium text-sm">{cat.category} <span className="text-muted-foreground font-normal text-xs">· {cat.count} compras</span></h3></div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">{cat.suggestions.map((suggestion) => (
+        <BIProductCard key={suggestion.name} name={suggestion.name} category={cat.category} priceFrom={suggestion.priceFrom} priceTo={suggestion.priceTo} reason={suggestion.reason} variant="affinity" clientId={clientId} imageUrl={suggestion.imageUrl} productId={suggestion.productId} />
+      ))}</div>
+    </div>
+  ))}</div>;
+}
+
 export function ClientAffinityProducts({ clientId }: Props) {
-  const { data, isLoading } = useClientAffinity(clientId);
+  const { data, isLoading, isError, refetch } = useClientAffinity(clientId);
   const { focusedSlug } = useBICategoryFocus();
 
   const visibleCategories = useMemo(() => {
@@ -38,7 +68,9 @@ export function ClientAffinityProducts({ clientId }: Props) {
             <div>
               <h2 className="font-display font-semibold">Produtos das categorias favoritas</h2>
               <p className="text-xs text-muted-foreground">
-                {data?.isMock
+                {isError
+                  ? "Não foi possível confirmar o histórico deste cliente"
+                  : data?.isMock
                   ? "Cenário fictício do cliente de demonstração"
                   : data?.realProductsCount
                   ? `Baseado em ${data.realProductsCount} produtos já orçados · agrupados por categoria`
@@ -46,7 +78,7 @@ export function ClientAffinityProducts({ clientId }: Props) {
               </p>
             </div>
           </div>
-          {data &&
+          {isError ? <Badge variant="destructive" className="gap-1 text-[10px]"><Info className="h-3 w-3" /> Consulta indisponível</Badge> : data &&
             (data.isMock ? (
               <Badge variant="secondary" className="gap-1 text-[10px]">
                 <Info className="h-3 w-3" /> Dados simulados
@@ -62,43 +94,7 @@ export function ClientAffinityProducts({ clientId }: Props) {
             ))}
         </div>
 
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-44 rounded-xl" />)}
-          </div>
-        ) : (
-          <div className="space-y-5">
-            {visibleCategories.length === 0 && <p className="py-8 text-center text-sm text-muted-foreground">As sugestões aparecerão após o primeiro orçamento real deste cliente.</p>}
-            {visibleCategories.map((cat) => (
-              <div key={cat.category}>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-medium text-sm">
-                    {cat.category}{" "}
-                    <span className="text-muted-foreground font-normal text-xs">
-                      · {cat.count} compras
-                    </span>
-                  </h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {cat.suggestions.map((s) => (
-                    <BIProductCard
-                      key={s.name}
-                      name={s.name}
-                      category={cat.category}
-                      priceFrom={s.priceFrom}
-                      priceTo={s.priceTo}
-                      reason={s.reason}
-                      variant="affinity"
-                      clientId={clientId}
-                      imageUrl={s.imageUrl}
-                      productId={s.productId}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <AffinityBody clientId={clientId} isLoading={isLoading} isError={isError} categories={visibleCategories} onRetry={() => void refetch()} />
       </CardContent>
     </Card>
   );
