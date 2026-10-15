@@ -13,6 +13,7 @@
  * Política: SSOT em e2e/fixtures/selectors.ts — somente data-testid.
  */
 import { test, expect, requireAuth } from '../fixtures/test-base';
+import { installCatalogFixture } from '../helpers/catalog-fixture';
 import { gotoAndSettle, waitForRouteIdle } from '../helpers/nav';
 import {
   installFavoritesCleanup,
@@ -144,7 +145,10 @@ async function assertFavoritesHeader(
 }
 
 test.describe('Fluxo: Favoritos', () => {
-  test.beforeEach(() => requireAuth());
+  test.beforeEach(async ({ page }) => {
+    requireAuth();
+    await installCatalogFixture(page);
+  });
   installFavoritesCleanup(test);
 
   test('lista de favoritos carrega', async ({ page }) => {

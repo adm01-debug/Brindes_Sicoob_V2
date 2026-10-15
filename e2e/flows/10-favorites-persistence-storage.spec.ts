@@ -14,6 +14,7 @@
 import { test, expect, requireAuth } from "../fixtures/test-base";
 import { gotoAndSettle } from "../helpers/nav";
 import { installFavoritesCleanup, setCatalogFavorite } from "../helpers/favorites";
+import { installCatalogFixture } from "../helpers/catalog-fixture";
 import { Sel } from "../fixtures/selectors";
 import type { Page } from "@playwright/test";
 
@@ -91,7 +92,10 @@ async function firstCardProductId(page: Page): Promise<string> {
 }
 
 test.describe("Persistência de favoritos via localStorage", () => {
-  test.beforeEach(() => requireAuth());
+  test.beforeEach(async ({ page }) => {
+    requireAuth();
+    await installCatalogFixture(page);
+  });
   installFavoritesCleanup(test);
 
   test("favoritar pela UI grava no localStorage e persiste após reload", async ({ page }) => {

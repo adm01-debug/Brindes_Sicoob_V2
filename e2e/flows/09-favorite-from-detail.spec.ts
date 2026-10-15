@@ -13,6 +13,7 @@
 import { test, expect, requireAuth } from "../fixtures/test-base";
 import { gotoAndSettle } from "../helpers/nav";
 import { installFavoritesCleanup } from "../helpers/favorites";
+import { installCatalogFixture } from "../helpers/catalog-fixture";
 import { Sel } from "../fixtures/selectors";
 import type { Locator, Page } from "@playwright/test";
 
@@ -65,7 +66,10 @@ async function firstCardProductId(page: Page): Promise<{ id: string; href: strin
 }
 
 test.describe("Fluxo: Favoritar a partir da página de detalhe", () => {
-  test.beforeEach(() => requireAuth());
+  test.beforeEach(async ({ page }) => {
+    requireAuth();
+    await installCatalogFixture(page);
+  });
   installFavoritesCleanup(test);
 
   test("favorita no detalhe, recarrega /favoritos e o produto aparece na lista", async ({

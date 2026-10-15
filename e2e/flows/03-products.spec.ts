@@ -4,12 +4,16 @@
  */
 import { test, expect, requireAuth } from '../fixtures/test-base';
 import { gotoAndSettle, settleAfterAction } from '../helpers/nav';
+import { installCatalogFixture } from '../helpers/catalog-fixture';
 import { Sel } from '../fixtures/selectors';
 
 const SEARCH_TERM = 'caneta';
 
 test.describe('Fluxo: Produtos', () => {
-  test.beforeEach(() => requireAuth());
+  test.beforeEach(async ({ page }) => {
+    requireAuth();
+    await installCatalogFixture(page);
+  });
 
   test('lista produtos no catálogo', async ({ page }) => {
     await gotoAndSettle(page, '/produtos');
