@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Flame, Search, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { AlertTriangle, Flame, Search, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { subDays } from "date-fns";
 
 interface HotSearchItem {
@@ -30,7 +30,7 @@ export function HotSearchesCard({ days }: HotSearchesCardProps) {
   const previousSince = subDays(new Date(), days * 2).toISOString();
   const demo = isDemoMode();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: ["hot-searches", days, demo],
     queryFn: async (): Promise<HotSearchItem[]> => {
       if (demo) {
@@ -103,6 +103,14 @@ export function HotSearchesCard({ days }: HotSearchesCardProps) {
         {isLoading ? (
           <div className="p-3 space-y-2">
             {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 rounded-lg" />)}
+          </div>
+        ) : isError ? (
+          <div role="alert" className="flex flex-col items-center gap-3 px-4 py-10 text-center text-muted-foreground">
+            <AlertTriangle className="h-8 w-8 text-destructive/70" />
+            <p className="text-xs">Não foi possível carregar as buscas quentes.</p>
+            <Button size="sm" variant="outline" onClick={() => void refetch()} disabled={isFetching}>
+              {isFetching ? "Tentando…" : "Tentar novamente"}
+            </Button>
           </div>
         ) : !data?.length ? (
           <div className="flex flex-col items-center py-10 text-muted-foreground">

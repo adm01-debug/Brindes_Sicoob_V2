@@ -8,13 +8,14 @@ import { rateLimiters, applyRateLimit } from '../_shared/rate-limiter.ts';
 import { runBotProtection } from '../_shared/bot-protection.ts';
 import { resolveCredential } from '../_shared/credentials.ts';
 import { normalizeAssistantContext } from '../_shared/assistant-context.ts';
+import { EXPERT_CHAT_CLIENT_MESSAGE_ROLES } from '../_shared/expert-chat-contract.ts';
 
 // ============================================
 // SCHEMAS
 // ============================================
 
 const MessageSchema = z.object({
-  role: z.enum(["user", "assistant", "system"]),
+  role: z.enum(EXPERT_CHAT_CLIENT_MESSAGE_ROLES),
   content: z.string().min(1).max(10000),
 });
 

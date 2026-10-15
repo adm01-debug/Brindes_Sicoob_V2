@@ -85,7 +85,7 @@ function ClientColumn({ clientId, onRemove }: { clientId: string; onRemove: () =
       <div className={cn("rounded-xl p-3 flex items-center gap-3", tier.color.split(" ").slice(-1)[0])}>
         <div className="h-14 w-14 rounded-xl bg-background/80 border-[1.5px] flex flex-col items-center justify-center">
           <span className={cn("font-display font-bold text-2xl leading-none", tier.color.split(" ")[0], tier.color.split(" ")[1])}>
-            {row.score}
+            {row.tier === "unknown" ? "—" : row.score}
           </span>
           <span className="text-[8px] text-muted-foreground uppercase tracking-wider mt-0.5">Score</span>
         </div>

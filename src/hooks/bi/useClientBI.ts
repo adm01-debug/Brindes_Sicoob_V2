@@ -46,6 +46,26 @@ export interface ClientBI {
   refetch: () => Promise<unknown>;
 }
 
+export interface AvailableClientHistory {
+  ltv: number;
+  avgTicket: number;
+  ordersCount: number;
+  daysSinceLastOrder: number | null;
+}
+
+/** Falha de consulta nunca deve ser serializada como um cliente sem compras. */
+export function getAvailableClientHistory(
+  bi: Pick<ClientBI, "isUnavailable" | "ltv" | "avgTicket" | "ordersCount" | "daysSinceLastOrder">,
+): AvailableClientHistory | null {
+  if (bi.isUnavailable) return null;
+  return {
+    ltv: bi.ltv,
+    avgTicket: bi.avgTicket,
+    ordersCount: bi.ordersCount,
+    daysSinceLastOrder: bi.daysSinceLastOrder,
+  };
+}
+
 const DAY_MS = 86400000;
 
 function pctDelta(current: number, previous: number): number {

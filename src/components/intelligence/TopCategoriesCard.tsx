@@ -7,7 +7,8 @@ import { isDemoMode } from "@/pages/trends/is-demo-mode";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Layers, TrendingUp, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, Layers, TrendingUp, Sparkles } from "lucide-react";
 import { untypedFrom } from "@/lib/supabase-untyped";
 import { subDays } from "date-fns";
 import { calculateTrendingScore } from "@/lib/trending-score";
@@ -43,7 +44,7 @@ export function TopCategoriesCard({ days }: TopCategoriesCardProps) {
   const recentCutoff = subDays(new Date(), recentDays).toISOString();
   const demo = isDemoMode();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: ["trends-top-categories", days, demo],
     queryFn: async (): Promise<CategoryRow[]> => {
       if (demo) {
@@ -114,6 +115,14 @@ export function TopCategoriesCard({ days }: TopCategoriesCardProps) {
         {isLoading ? (
           <div className="space-y-2">
             {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+          </div>
+        ) : isError ? (
+          <div role="alert" className="h-[200px] flex flex-col items-center justify-center gap-3 text-center text-muted-foreground">
+            <AlertTriangle className="h-8 w-8 text-destructive/70" />
+            <p className="text-sm">Não foi possível carregar o ranking de categorias.</p>
+            <Button size="sm" variant="outline" onClick={() => void refetch()} disabled={isFetching}>
+              {isFetching ? "Tentando…" : "Tentar novamente"}
+            </Button>
           </div>
         ) : !data || data.length === 0 ? (
           <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm">

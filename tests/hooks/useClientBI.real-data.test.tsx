@@ -30,7 +30,7 @@ vi.mock('@/hooks/useClientOrdersHistory', () => ({
   },
 }));
 
-import { useClientBI } from '@/hooks/bi/useClientBI';
+import { getAvailableClientHistory, useClientBI } from '@/hooks/bi/useClientBI';
 
 describe('useClientBI com dados confiáveis', () => {
   beforeEach(() => {
@@ -72,6 +72,26 @@ describe('useClientBI com dados confiáveis', () => {
     expect(result.current.isUnavailable).toBe(true);
     expect(result.current.hasData).toBe(false);
     expect(result.current.ltv).toBe(0);
+    expect(getAvailableClientHistory(result.current)).toBeNull();
+  });
+
+  it('mantém zeros como dados válidos apenas quando a consulta confirmou ausência de pedidos', () => {
+    history.result.data = {
+      orders: [],
+      ordersCount: 0,
+      totalLtv: 0,
+      avgTicket: 0,
+      lastOrderAt: null,
+    };
+
+    const { result } = renderHook(() => useClientBI('client-1'));
+
+    expect(getAvailableClientHistory(result.current)).toEqual({
+      ltv: 0,
+      avgTicket: 0,
+      ordersCount: 0,
+      daysSinceLastOrder: null,
+    });
   });
 
   it('mantém dados fictícios somente no cliente de demonstração e não consulta histórico remoto', () => {

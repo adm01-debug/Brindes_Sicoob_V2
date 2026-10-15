@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getAvailableHealthScore, useClientHealthScore } from "@/hooks/bi/useClientHealthScore";
-import { useClientBI } from "@/hooks/bi/useClientBI";
+import { getAvailableClientHistory, useClientBI } from "@/hooks/bi/useClientBI";
 import { useClientAffinity } from "@/hooks/bi/useClientAffinity";
 import { useIndustryTrends } from "@/hooks/bi/useIndustryTrends";
 import { useClientCategoryAffinity } from "@/hooks/bi/useClientCategoryAffinity";
@@ -47,6 +47,12 @@ interface Props {
 
 const fmtBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+
+export function buildBriefingHistoryDetail(bi: ReturnType<typeof useClientBI>): string {
+  const history = getAvailableClientHistory(bi);
+  if (!history) return "Histórico indisponível; não é possível confirmar compras ou valores.";
+  return `LTV ${fmtBRL(history.ltv)} em ${history.ordersCount} pedidos · ticket médio ${fmtBRL(history.avgTicket)}.`;
+}
 
 export function BIBriefingMode({ open, onOpenChange, clientId, clientName, ramoAtividade }: Props) {
   const health = useClientHealthScore(clientId, ramoAtividade);
@@ -107,7 +113,7 @@ export function BIBriefingMode({ open, onOpenChange, clientId, clientName, ramoA
       pts.push({
         icon: TrendingUp,
         label: "Histórico",
-        detail: `LTV ${fmtBRL(bi.ltv)} em ${bi.ordersCount} pedidos · ticket médio ${fmtBRL(bi.avgTicket)}.`,
+        detail: buildBriefingHistoryDetail(bi),
       });
     }
     return pts.slice(0, 3);

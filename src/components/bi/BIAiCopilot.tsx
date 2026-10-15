@@ -17,8 +17,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Sparkles, Send, Bot, User as UserIcon, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { getAvailableHealthScore, useClientHealthScore } from "@/hooks/bi/useClientHealthScore";
-import { useClientBI } from "@/hooks/bi/useClientBI";
+import { getAvailableHealthScore, useClientHealthScore, type ClientHealthScoreResult } from "@/hooks/bi/useClientHealthScore";
+import { getAvailableClientHistory, useClientBI, type ClientBI } from "@/hooks/bi/useClientBI";
 import { useClientAffinity } from "@/hooks/bi/useClientAffinity";
 import { useIndustryTrends } from "@/hooks/bi/useIndustryTrends";
 import { useClientSeasonality } from "@/hooks/bi/useClientSeasonality";
@@ -55,6 +55,30 @@ async function requestCopilot(question: string, context: object, history: Messag
   return (data as { answer?: string })?.answer ?? "Não consegui processar agora.";
 }
 
+export function buildCopilotHealthContext(health: ClientHealthScoreResult) {
+  const isAvailable = health.tier !== "unknown";
+  return {
+    score: getAvailableHealthScore(health),
+    tier: health.tier,
+    crossZoneInsight: health.crossZoneInsight,
+    nextAction: health.nextActionLabel,
+    windowLabel: health.windowLabel,
+    shareOfWalletPct: isAvailable ? health.shareOfWalletPct : null,
+    potentialUntappedBRL: isAvailable ? health.potentialUntappedBRL : null,
+  };
+}
+
+export function buildCopilotHistoryContext(bi: ClientBI) {
+  const history = getAvailableClientHistory(bi);
+  return {
+    historyAvailable: history !== null,
+    ltv: history?.ltv ?? null,
+    avgTicket: history?.avgTicket ?? null,
+    ordersCount: history?.ordersCount ?? null,
+    daysSinceLastOrder: history?.daysSinceLastOrder ?? null,
+  };
+}
+
 export function BIAiCopilot({ open, onOpenChange, clientId, clientName, ramoAtividade }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -85,17 +109,8 @@ export function BIAiCopilot({ open, onOpenChange, clientId, clientName, ramoAtiv
       const context = {
         clientName,
         ramoAtividade,
-        score: getAvailableHealthScore(health),
-        tier: health.tier,
-        crossZoneInsight: health.crossZoneInsight,
-        nextAction: health.nextActionLabel,
-        windowLabel: health.windowLabel,
-        shareOfWalletPct: health.shareOfWalletPct,
-        potentialUntappedBRL: health.potentialUntappedBRL,
-        ltv: bi.ltv,
-        avgTicket: bi.avgTicket,
-        ordersCount: bi.ordersCount,
-        daysSinceLastOrder: bi.daysSinceLastOrder,
+        ...buildCopilotHealthContext(health),
+        ...buildCopilotHistoryContext(bi),
         topCategories: affinity.data?.categories?.slice(0, 3).map((c) => ({
           category: c.category,
           count: c.count,

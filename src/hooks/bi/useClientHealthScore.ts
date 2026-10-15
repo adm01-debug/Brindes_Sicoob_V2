@@ -135,6 +135,10 @@ function unavailableHealthResult(isLoading: boolean): ClientHealthScoreResult {
   };
 }
 
+function isHealthScoreSourceUnavailable(bi: ClientBiData, vs: IndustryComparison): boolean {
+  return bi.isUnavailable || vs.isError || !vs.hasEnoughSample;
+}
+
 function nextAction(
   recency: number,
   ticket: number,
@@ -264,9 +268,10 @@ export function buildHealthResult(
 ): ClientHealthScoreResult {
   const isLoading = bi.isLoading || vs.isLoading || seasonality.isLoading;
   if (isLoading) return unavailableHealthResult(true);
+  // A falha do histórico não pode ser interpretada como zero compras/risco.
   // Sem benchmark não é possível validar o score global: recência e sazonalidade
   // podem ser reais, mas não substituem a comparação setorial que o score promete.
-  if (vs.isError) return unavailableHealthResult(false);
+  if (isHealthScoreSourceUnavailable(bi, vs)) return unavailableHealthResult(false);
   const { components, recency, frequency, ticket, growth, share, ticketMetric, availableWeight } = getScoreComponents(bi, vs, seasonality);
   if (availableWeight === 0) return unavailableHealthResult(false);
   const score = weightedScore(components, availableWeight);

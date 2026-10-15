@@ -281,7 +281,7 @@ function ProductionCard({ controller }: { controller: DetailController }) {
 function IntelligenceSidebar({ controller }: { controller: DetailController }) {
   const order = controller.order;
   if (!order) return null;
-  return <div className="space-y-6"><OrderBudgetIntelligence orderTotal={controller.orderTotal} remainingBudget={controller.resources.budget.remainingBudget} allocatedBudget={controller.resources.budget.budget?.verba_total ?? null} paName={order.pa?.nome || "PA Sicoob"} isLoading={controller.resources.budget.isLoading} hasError={Boolean(controller.resources.budget.error)} hasPaId={Boolean(controller.resources.budget.targetPaId)} onRetry={() => void controller.resources.budget.refetch()} /><LogisticsCommandCenter orderId={controller.orderId} trackingCode={order.tracking_code} status={order.status} /></div>;
+  return <div className="space-y-6"><OrderBudgetIntelligence orderTotal={controller.orderTotal} remainingBudget={controller.resources.budget.remainingBudget} allocatedBudget={controller.resources.budget.budget?.verba_total ?? null} paName={order.pa?.nome || "PA Sicoob"} isLoading={controller.resources.budget.isLoading} hasError={Boolean(controller.resources.budget.error)} hasPaId={Boolean(controller.resources.budget.targetPaId)} onRetry={() => void controller.resources.budget.refetch()} orderStatus={order.status} /><LogisticsCommandCenter orderId={controller.orderId} trackingCode={order.tracking_code} status={order.status} /></div>;
 }
 
 export default function OrderDetailPage() {

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { AlertCircle, CheckCircle2, Wallet, BarChart3, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { resolvePaBudgetState } from "@/lib/sicoob/paBudgetState";
+import { projectOrderAgainstBudget } from "@/lib/sicoob/orderBudgetProjection";
+import type { OrderStatus } from "@/types/sicoob/orders";
 
 interface OrderBudgetIntelligenceProps {
   orderTotal: number;
@@ -16,17 +18,20 @@ interface OrderBudgetIntelligenceProps {
   hasError?: boolean;
   hasPaId?: boolean;
   onRetry?: () => void;
+  orderStatus?: OrderStatus | null;
 }
 
-type BudgetState = "unconfigured" | "over" | "available";
+type BudgetState = "unconfigured" | "over" | "available" | "consumed" | "inactive";
+const POSITIVE_BUDGET_CLASS = "text-sicoob-green";
+const MUTED_BUDGET_CLASS = "text-muted-foreground";
 
 const BUDGET_STATUS = {
   unconfigured: {
     badge: "Verba não configurada",
-    amountClass: "text-muted-foreground",
+    amountClass: MUTED_BUDGET_CLASS,
     panelClass: "bg-muted/30 border-border/50",
     Icon: AlertCircle,
-    iconClass: "text-muted-foreground",
+    iconClass: MUTED_BUDGET_CLASS,
     title: "Análise indisponível",
     message: "A verba desta competência ainda não foi cadastrada. O sistema não presume um limite financeiro.",
   },
@@ -41,32 +46,47 @@ const BUDGET_STATUS = {
   },
   available: {
     badge: "Dados da competência",
-    amountClass: "text-sicoob-green",
+    amountClass: POSITIVE_BUDGET_CLASS,
     panelClass: "bg-sicoob-green/5 border-sicoob-green/20",
     Icon: CheckCircle2,
-    iconClass: "text-sicoob-green",
+    iconClass: POSITIVE_BUDGET_CLASS,
     title: "Viabilidade Confirmada",
     message: "Pedido dentro das diretrizes financeiras estabelecidas para este Ponto de Atendimento.",
   },
+  consumed: {
+    badge: "Consumo registrado",
+    amountClass: POSITIVE_BUDGET_CLASS,
+    panelClass: "bg-sicoob-green/5 border-sicoob-green/20",
+    Icon: CheckCircle2,
+    iconClass: POSITIVE_BUDGET_CLASS,
+    title: "Pedido já contabilizado",
+    message: "O consumo deste pedido já está refletido no saldo; ele não será descontado novamente.",
+  },
+  inactive: {
+    badge: "Pedido encerrado",
+    amountClass: MUTED_BUDGET_CLASS,
+    panelClass: "bg-muted/30 border-border/50",
+    Icon: AlertCircle,
+    iconClass: MUTED_BUDGET_CLASS,
+    title: "Pedido sem consumo previsto",
+    message: "Pedidos rejeitados ou cancelados não reservam verba para este período.",
+  },
 } as const;
 
-function resolveBudgetState(allocatedBudget: number | null, orderTotal: number, remainingBudget: number): BudgetState {
+function resolveBudgetState(allocatedBudget: number | null, isOverBudget: boolean, alreadyConsumed: boolean, hasNoBudgetImpact: boolean): BudgetState {
   if (allocatedBudget === null) return "unconfigured";
-  if (orderTotal > remainingBudget) return "over";
+  if (alreadyConsumed) return "consumed";
+  if (hasNoBudgetImpact) return "inactive";
+  if (isOverBudget) return "over";
   return "available";
 }
 
-function getBudgetMetrics(configuredBudget: number | null, remainingBudget: number, orderTotal: number) {
-  const hasPositiveBudget = configuredBudget !== null && configuredBudget > 0;
-  const percentageAfterOrder = hasPositiveBudget
-    ? Math.min(((configuredBudget - remainingBudget + orderTotal) / configuredBudget) * 100, 100)
-    : configuredBudget === 0 && orderTotal > 0 ? 100 : 0;
-  const impact = hasPositiveBudget ? (orderTotal / configuredBudget) * 100 : null;
-
-  return { percentageAfterOrder, impact };
+function getBudgetMetrics(configuredBudget: number | null, remainingBudget: number, orderTotal: number, orderStatus?: OrderStatus | null) {
+  return projectOrderAgainstBudget({ allocatedBudget: configuredBudget, remainingBudget, orderTotal, orderStatus });
 }
 
-function getBudgetImpactLabel(configuredBudget: number | null, impact: number | null) {
+function getBudgetImpactLabel(configuredBudget: number | null, impact: number | null, hasNoBudgetImpact: boolean) {
+  if (hasNoBudgetImpact) return "Este pedido encerrado não projeta consumo sobre o saldo.";
   if (impact !== null) {
     return <>* Este pedido representa <strong>{impact.toFixed(1)}%</strong> da verba total do período.</>;
   }
@@ -116,19 +136,20 @@ function availabilityMessage(state: "loading" | "unavailable", hasPaId?: boolean
     : "Aguarde enquanto consultamos a verba desta competência.";
 }
 
-function BudgetNumbers({ allocatedBudget, remainingBudget, orderTotal, state }: {
+function BudgetNumbers({ allocatedBudget, remainingBudget, orderTotal, state, orderStatus }: {
   allocatedBudget: number | null;
   remainingBudget: number;
   orderTotal: number;
   state: BudgetState;
+  orderStatus?: OrderStatus | null;
 }) {
   const status = BUDGET_STATUS[state];
   const configuredBudget = state === "unconfigured" ? null : allocatedBudget;
-  const { percentageAfterOrder, impact } = getBudgetMetrics(configuredBudget, remainingBudget, orderTotal);
+  const { percentageAfterOrder, impact } = getBudgetMetrics(configuredBudget, remainingBudget, orderTotal, orderStatus);
   const allocatedLabel = configuredBudget === null ? "—" : `R$ ${configuredBudget.toLocaleString('pt-BR')}`;
   const remainingLabel = configuredBudget !== null ? `R$ ${remainingBudget.toLocaleString('pt-BR')}` : "—";
   const percentageLabel = configuredBudget !== null ? `${percentageAfterOrder.toFixed(1)}%` : "—";
-  const impactLabel = getBudgetImpactLabel(configuredBudget, impact);
+  const impactLabel = getBudgetImpactLabel(configuredBudget, impact, orderStatus === "cancelled" || orderStatus === "rejected");
   const StatusIcon = status.Icon;
 
   return (
@@ -171,10 +192,12 @@ export function OrderBudgetIntelligence({
   hasError = false,
   hasPaId = true,
   onRetry,
+  orderStatus,
 }: OrderBudgetIntelligenceProps) {
   const availability = resolvePaBudgetState({ isLoading, hasError, hasPaId, hasBudget: allocatedBudget !== null });
+  const projection = projectOrderAgainstBudget({ allocatedBudget, remainingBudget, orderTotal, orderStatus });
   const state = availability === "configured"
-    ? resolveBudgetState(allocatedBudget, orderTotal, remainingBudget)
+    ? resolveBudgetState(allocatedBudget, projection.isOverBudget, projection.alreadyConsumed, projection.hasNoBudgetImpact)
     : "unconfigured";
   const status = BUDGET_STATUS[state];
 
@@ -196,7 +219,7 @@ export function OrderBudgetIntelligence({
         </div>
       </CardHeader>
       <CardContent className="pt-4 space-y-4">
-        <BudgetNumbers allocatedBudget={allocatedBudget} remainingBudget={remainingBudget} orderTotal={orderTotal} state={state} />
+        <BudgetNumbers allocatedBudget={allocatedBudget} remainingBudget={remainingBudget} orderTotal={orderTotal} state={state} orderStatus={orderStatus} />
       </CardContent>
     </Card>
   );

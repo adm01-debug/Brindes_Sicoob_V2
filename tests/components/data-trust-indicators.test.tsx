@@ -102,6 +102,39 @@ describe('integridade dos indicadores comerciais', () => {
     expect(screen.getByText(/impacto percentual não pode ser calculado/i)).toBeTruthy();
   });
 
+  it('não reaplica ao saldo o pedido confirmado já contabilizado na migration', () => {
+    render(
+      <OrderBudgetIntelligence
+        orderTotal={250}
+        remainingBudget={800}
+        allocatedBudget={1_000}
+        paName="PA Centro"
+        orderStatus="confirmed"
+      />,
+    );
+
+    expect(screen.getByText('Pedido já contabilizado')).toBeTruthy();
+    expect(screen.getByText(/não será descontado novamente/i)).toBeTruthy();
+    expect(screen.getByText('20.0%')).toBeTruthy();
+    expect(screen.getByText('R$ 800')).toBeTruthy();
+  });
+
+  it('projeta o consumo para pedido aguardando aprovação', () => {
+    render(
+      <OrderBudgetIntelligence
+        orderTotal={250}
+        remainingBudget={800}
+        allocatedBudget={1_000}
+        paName="PA Centro"
+        orderStatus="waiting_approval"
+      />,
+    );
+
+    expect(screen.getByText('Viabilidade Confirmada')).toBeTruthy();
+    expect(screen.getByText('45.0%')).toBeTruthy();
+    expect(screen.getByText('R$ 800')).toBeTruthy();
+  });
+
   it('mostra carregamento sem exibir saldo ou decisão financeira', () => {
     render(
       <OrderBudgetIntelligence
