@@ -53,4 +53,28 @@ describe('inteligência de produto baseada em dados reais', () => {
     expect(screen.queryByText(/demo/i)).toBeNull();
     expect(screen.queryByText('Spot Promo')).toBeNull();
   });
+
+  it('mantém métricas reais de velocity/intelligence e mostra estado vazio no gráfico sem série diária', () => {
+    mocks.daily.mockReturnValue({ ...emptyQuery(), data: [] });
+    mocks.velocity.mockReturnValue({
+      ...emptyQuery(),
+      data: [{ avg_daily_depletion_7d: 2, current_stock: 10, days_to_stockout: 5, velocity_trend: 1.2 }],
+    });
+    mocks.intelligence.mockReturnValue({
+      ...emptyQuery(),
+      data: { total_current_stock: 10, supplier_count: 1, abc_classification: 'A' },
+    });
+
+    render(
+      <MemoryRouter>
+        <ProductRiskDetail productId="produto-real" productName="Garrafa Sicoob" />
+      </MemoryRouter>,
+    );
+
+    const emptyChartMessage = screen.getByText('Sem histórico de estoque para este período.');
+    expect(emptyChartMessage.closest('[role="status"]')).toBeTruthy();
+    expect(screen.getByText('10')).toBeTruthy();
+    expect(screen.getByText('Classe A')).toBeTruthy();
+    expect(screen.queryByText(/Sem histórico operacional/)).toBeNull();
+  });
 });

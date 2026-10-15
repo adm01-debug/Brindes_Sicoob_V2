@@ -38,7 +38,7 @@ import { cn } from "@/lib/utils";
 import { sicoobApprovalService } from "@/services/sicoob/approvalService";
 import { canManageSicoobOrderFulfillment } from "@/lib/sicoob/order-permissions";
 import { getSlaCycleStartedAt } from "@/lib/sicoob/sla-cycle";
-import { isOrderOverPaBudget, resolvePaBudgetState } from "@/lib/sicoob/paBudgetState";
+import { hasConfiguredPaBudget, isOrderOverPaBudget, resolvePaBudgetState } from "@/lib/sicoob/paBudgetState";
 import { type OrderStatus, type SicoobOrder, type SicoobOrderItem, canEditSicoobOrderItems, canSicoobTransitionTo, ORDER_STATUS_CONFIG } from "@/types/sicoob/orders";
 
 const formatOrderCurrency = (value?: number | null) => Number(value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -166,7 +166,7 @@ function useOrderDetailController() {
     isLoading: resources.budget.isLoading,
     hasError: Boolean(resources.budget.error),
     hasPaId: Boolean(resources.budget.targetPaId),
-    hasBudget: Boolean(resources.budget.budget && resources.budget.budget.verba_total > 0),
+    hasBudget: hasConfiguredPaBudget(resources.budget.budget),
   });
   const isOverBudget = isOrderOverPaBudget(budgetState, orderTotal, resources.budget.remainingBudget);
   const canManageFulfillment = canManageSicoobOrderFulfillment(order, resources.auth.profile, resources.auth.roles);
@@ -266,7 +266,7 @@ function BudgetProgress({ controller }: { controller: DetailController }) {
     isLoading: budget.isLoading,
     hasError: Boolean(budget.error),
     hasPaId: Boolean(budget.targetPaId),
-    hasBudget: Boolean(budget.budget && budget.budget.verba_total > 0),
+    hasBudget: hasConfiguredPaBudget(budget.budget),
   });
   if (state === "configured") return <ConfiguredBudgetProgress controller={controller} />;
   return <BudgetProgressNotice state={state} budget={budget} />;

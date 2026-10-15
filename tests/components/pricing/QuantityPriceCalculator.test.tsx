@@ -25,14 +25,15 @@ vi.mock("@/hooks/useTecnicasUnificadas", () => ({
 }));
 vi.mock("@/components/pricing/simulator/ProductSearch", () => ({
   ProductSearch: ({ onSelect }: { onSelect: (product: unknown) => void }) => (
-    <button type="button" onClick={() => onSelect({ id: "produto-1", name: "Caneta Sicoob", sku: "CAN-1", price: 25.5, images: ["https://img.test/caneta.png"] })}>
-      Selecionar produto de teste
-    </button>
+    <>
+      <button type="button" onClick={() => onSelect({ id: "produto-1", name: "Caneta Sicoob", sku: "CAN-1", price: 25.5, images: ["https://img.test/caneta.png"] })}>Selecionar produto de teste</button>
+      <button type="button" onClick={() => onSelect({ id: "produto-sem-preco", name: "Caneca sem preço", sku: "CAN-0", price: 0, priceAvailable: false, images: [] })}>Selecionar produto sem preço</button>
+    </>
   ),
 }));
 vi.mock("@/components/pricing/calculator/TechniqueMultiSelector", () => ({
   TechniqueMultiSelector: ({ onToggleTechnique }: { onToggleTechnique: (technique: unknown, add: boolean) => void }) => (
-    <button type="button" onClick={() => onToggleTechnique({ id: "vinculo-1", techniqueId: "tecnica-1", techniqueName: "Laser", techniqueCode: "LASER" }, true)}>
+      <button type="button" onClick={() => onToggleTechnique({ id: "vinculo-1", techniqueId: "tecnica-1", techniqueName: "Laser", techniqueCode: "LASER", locationName: "Frente", locationCode: "FRT", composedCode: "CAN-FRT-LASER" }, true)}>
       Selecionar técnica de teste
     </button>
   ),
@@ -78,7 +79,7 @@ describe("QuantityPriceCalculator", () => {
           quantity: 500,
           personalizations: [{
             technique: { id: "tecnica-1", name: "Laser" },
-            specs: { colors: 1 },
+            specs: { colors: 1, locationName: "Frente", locationCode: "FRT", composedCode: "CAN-FRT-LASER", techniqueCode: "LASER" },
             pricing: { setupPrice: 10, unitPrice: 2, totalPrice: 1045 },
           }],
         },
@@ -96,5 +97,15 @@ describe("QuantityPriceCalculator", () => {
     expect(mocks.navigate).not.toHaveBeenCalled();
     expect(mocks.getTiers).toHaveBeenCalledWith("LASER");
     expect(mocks.calculatePrice).not.toHaveBeenCalled();
+  });
+
+  it("não presume preço zero quando o produto não tem preço de venda cadastrado", () => {
+    renderWithProviders(<QuantityPriceCalculator />);
+    fireEvent.click(screen.getByRole("button", { name: "Selecionar produto sem preço" }));
+    fireEvent.click(screen.getByRole("button", { name: "Selecionar técnica de teste" }));
+
+    expect(screen.getAllByRole("alert")[0].textContent).toContain("não informou o preço de venda");
+    expect(screen.getByRole("button", { name: "Criar Orçamento a partir desta Simulação" }).hasAttribute("disabled")).toBe(true);
+    expect(mocks.navigate).not.toHaveBeenCalled();
   });
 });

@@ -179,9 +179,9 @@ function validateTransactionLimit(total: number, limit: number): boolean {
   return false;
 }
 
-function validateMonthlyBudget(total: number, budget: { verba_total: number; verba_consumida: number | null }): boolean {
+export function validateMonthlyBudget(total: number, budget: { verba_total: number; verba_consumida: number | null }): boolean {
   const remaining = budget.verba_total - (budget.verba_consumida || 0);
-  if (budget.verba_total <= 0 || total <= remaining) return true;
+  if (total <= remaining) return true;
   toast.error("Verba insuficiente!", {
     description: `Você possui apenas R$ ${remaining.toLocaleString()} de verba disponível este mês.`,
   });

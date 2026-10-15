@@ -1,5 +1,9 @@
 export type PaBudgetState = "loading" | "unavailable" | "unconfigured" | "configured";
 
+export function hasConfiguredPaBudget(budget: { verba_total: number } | null | undefined): boolean {
+  return budget !== null && budget !== undefined;
+}
+
 export function resolvePaBudgetState(input: {
   isLoading: boolean;
   hasError: boolean;

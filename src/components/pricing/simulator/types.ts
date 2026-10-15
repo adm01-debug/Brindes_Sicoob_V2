@@ -23,6 +23,8 @@ export interface Product {
   name: string;
   sku: string;
   price: number;
+  /** `false` quando o catálogo não informou sale_price; não tratar null como produto grátis. */
+  priceAvailable?: boolean;
   images: string[];
   category_name: string | null;
   supplier_reference?: string | null;

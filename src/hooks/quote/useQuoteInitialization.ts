@@ -40,10 +40,11 @@ interface InitParams {
   };
 }
 
-interface SimulatorPersonalization {
+export interface SimulatorPersonalization {
   technique?: { id?: string; name?: string };
-  specs?: { colors?: number; width?: number; height?: number };
+  specs?: { colors?: number; width?: number; height?: number; locationName?: string; locationCode?: string; composedCode?: string; techniqueCode?: string };
   pricing?: { setupPrice?: number; unitPrice?: number; totalPrice?: number };
+  notes?: string;
 }
 
 interface SimulatorImportData {
@@ -163,10 +164,16 @@ function applyExistingQuote(quote: Quote, setters: QuoteSetters): void {
   applyQuoteDelivery(quote, setters);
 }
 
-function mapSimulatorPersonalization(item: SimulatorPersonalization): QuoteItemPersonalization {
+export function mapSimulatorPersonalization(item: SimulatorPersonalization): QuoteItemPersonalization {
   const { technique = {}, specs = {}, pricing = {} } = item;
   const width = fallback(specs.width, 0);
   const height = fallback(specs.height, 0);
+  const location = specs.locationName
+    ? `Local: ${specs.locationName}${specs.locationCode ? ` (${specs.locationCode})` : ''}`
+    : undefined;
+  const code = specs.composedCode || specs.techniqueCode
+    ? `Código: ${specs.composedCode || specs.techniqueCode}`
+    : undefined;
   return {
     technique_id: fallback(technique.id, ""),
     technique_name: fallback(technique.name, ""),
@@ -178,6 +185,7 @@ function mapSimulatorPersonalization(item: SimulatorPersonalization): QuoteItemP
     setup_cost: fallback(pricing.setupPrice, 0),
     unit_cost: fallback(pricing.unitPrice, 0),
     total_cost: fallback(pricing.totalPrice, 0),
+    notes: [item.notes, location, code].filter(Boolean).join(' · ') || undefined,
   };
 }
 

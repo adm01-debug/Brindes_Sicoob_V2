@@ -34,7 +34,7 @@ function SelectedProduct({ product, onClear }: { product: Product; onClear: () =
             <p className="font-medium">{product.name}</p>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>SKU: {product.sku}</span><span>•</span>
-              <span className="text-primary font-medium">{formatCurrency(product.price)}</span>
+              <span className="text-primary font-medium">{product.priceAvailable === false ? 'Preço indisponível' : formatCurrency(product.price)}</span>
             </div>
           </div>
         </div>
@@ -54,7 +54,7 @@ function ProductResults({ products, onSelect }: { products: Product[]; onSelect:
             <ProductThumbnail product={product} size="sm" />
             <div className="flex-1 min-w-0">
               <p className="font-medium truncate">{product.name}</p>
-              <p className="text-xs text-muted-foreground">{product.sku} • {formatCurrency(product.price)}</p>
+              <p className="text-xs text-muted-foreground">{product.sku} • {product.priceAvailable === false ? 'Preço indisponível' : formatCurrency(product.price)}</p>
             </div>
           </button>
         ))}
@@ -100,7 +100,8 @@ export function ProductSearch({ onSelect, selectedProduct }: ProductSearchProps)
       id: p.id,
       name: p.name,
       sku: p.sku,
-      price: p.sale_price ?? 0,
+      price: typeof p.sale_price === 'number' && Number.isFinite(p.sale_price) ? p.sale_price : 0,
+      priceAvailable: typeof p.sale_price === 'number' && Number.isFinite(p.sale_price),
       images: p.images || (p.primary_image_url ? [p.primary_image_url] : []),
       category_name: null,
       supplier_reference: p.supplier_reference,

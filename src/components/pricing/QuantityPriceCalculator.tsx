@@ -19,6 +19,7 @@ import { QuantityComparisonTable } from './calculator/QuantityComparisonTable';
 import { type CalcProduct, type ProductTechnique, type SelectedTechniqueConfig, calculateCustomizationTotal, formatNumber, isPriceConfigurationSupported, minimumSupportedQuantity } from './calculator/types';
 import type { Product as SearchProduct } from './simulator/types';
 import { toast } from 'sonner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface QuantityPriceCalculatorProps {
   className?: string;
@@ -40,7 +41,7 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
 
   const handleProductSelect = useCallback((product: SearchProduct | null) => {
     if (!product) { setSelectedProduct(null); setSelectedConfigs([]); return; }
-    setSelectedProduct({ id: product.id, name: product.name, sku: product.sku, price: product.price, images: product.images, category_name: null });
+    setSelectedProduct({ id: product.id, name: product.name, sku: product.sku, price: product.price, priceAvailable: product.priceAvailable !== false, images: product.images, category_name: null });
     setSelectedConfigs([]);
   }, []);
 
@@ -68,6 +69,10 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
 
   const handleCreateQuote = useCallback(() => {
     if (!selectedProduct) return;
+    if (selectedProduct.priceAvailable === false) {
+      toast.error('Este produto não tem preço de venda cadastrado. Atualize o catálogo antes de criar o orçamento.');
+      return;
+    }
     if (selectedConfigs.some((config) => !isPriceConfigurationSupported(config))) {
       toast.error('O preço cadastrado só cobre uma cor e tamanho padrão. Ajuste as opções antes de importar para o orçamento.');
       return;
@@ -90,7 +95,13 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
           id: config.technique.techniqueId || config.technique.id,
           name: config.technique.techniqueName,
         },
-        specs: { colors: config.colors },
+        specs: {
+          colors: config.colors,
+          locationName: config.technique.locationName,
+          locationCode: config.technique.locationCode,
+          composedCode: config.technique.composedCode,
+          techniqueCode: config.technique.techniqueCode,
+        },
         pricing: {
           setupPrice: calculation.setupPrice,
           unitPrice,
@@ -154,6 +165,7 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
         <Card className="animate-fade-in">
           <CardHeader><div className="flex items-center gap-2"><Calculator className="w-5 h-5 text-primary" /><CardTitle className="text-lg font-display">4. Compare Preços por Tiragem</CardTitle></div><CardDescription>Veja como o preço por unidade muda conforme a quantidade. <Trophy className="inline w-3 h-3 text-success" /> = melhor preço.</CardDescription></CardHeader>
           <CardContent className="space-y-4">
+            {selectedProduct.priceAvailable === false && <Alert role="alert"><AlertDescription>O catálogo não informou o preço de venda deste produto. A comparação completa e a importação para orçamento ficam indisponíveis até o preço ser cadastrado.</AlertDescription></Alert>}
             <div className="space-y-3">
               <label className="text-sm font-medium">Tiragens para comparar:</label>
               <div className="flex flex-wrap gap-2">
@@ -169,7 +181,9 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
                 </div>
               </div>
             </div>
-            <QuantityComparisonTable product={selectedProduct} selectedConfigs={selectedConfigs} quantities={customQuantities} />
+            {selectedProduct.priceAvailable === false
+              ? <Alert><AlertDescription>Não é possível calcular o total sem o preço do produto.</AlertDescription></Alert>
+              : <QuantityComparisonTable product={selectedProduct} selectedConfigs={selectedConfigs} quantities={customQuantities} />}
             <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-end">
               <label htmlFor="quote-quantity" className="text-sm font-medium">Quantidade para o orçamento</label>
               <select
@@ -181,7 +195,7 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
                 {customQuantities.map((quantity) => <option key={quantity} value={quantity}>{formatNumber(quantity)} unidades</option>)}
               </select>
             </div>
-            <Button size="lg" className="w-full gap-2 font-display font-semibold" onClick={handleCreateQuote}><FileText className="w-5 h-5" />Criar Orçamento a partir desta Simulação</Button>
+            <Button size="lg" className="w-full gap-2 font-display font-semibold" onClick={handleCreateQuote} disabled={selectedProduct.priceAvailable === false}><FileText className="w-5 h-5" />Criar Orçamento a partir desta Simulação</Button>
           </CardContent>
         </Card>
       )}

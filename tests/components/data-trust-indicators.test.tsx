@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FinancialPanel } from '@/components/orders/FinancialPanel';
 import { OrderBudgetIntelligence } from '@/components/sicoob/orders/OrderBudgetIntelligence';
 import { isDemoMode } from '@/pages/trends/is-demo-mode';
-import { isOrderOverPaBudget, resolvePaBudgetState } from '@/lib/sicoob/paBudgetState';
+import { hasConfiguredPaBudget, isOrderOverPaBudget, resolvePaBudgetState } from '@/lib/sicoob/paBudgetState';
 import type { OrderRow } from '@/types/orders';
 
 const order: OrderRow = {
@@ -80,6 +80,26 @@ describe('integridade dos indicadores comerciais', () => {
     expect(isOrderOverPaBudget(loadingState, 12_000, 0)).toBeNull();
     expect(isOrderOverPaBudget(errorState, 12_000, 0)).toBeNull();
     expect(isOrderOverPaBudget(missingPaState, 12_000, 0)).toBeNull();
+  });
+
+  it('trata verba cadastrada em zero como limite esgotado, não como ausência de cadastro', () => {
+    const configuredZero = resolvePaBudgetState({ isLoading: false, hasError: false, hasPaId: true, hasBudget: hasConfiguredPaBudget({ verba_total: 0 }) });
+
+    expect(configuredZero).toBe('configured');
+    expect(isOrderOverPaBudget(configuredZero, 12_000, 0)).toBe(true);
+
+    render(
+      <OrderBudgetIntelligence
+        orderTotal={12_000}
+        remainingBudget={0}
+        allocatedBudget={0}
+        paName="PA Centro"
+      />,
+    );
+
+    expect(screen.getByText('Alerta de Limite Excedido')).toBeTruthy();
+    expect(screen.queryByText('Verba não configurada')).toBeNull();
+    expect(screen.getByText(/impacto percentual não pode ser calculado/i)).toBeTruthy();
   });
 
   it('mostra carregamento sem exibir saldo ou decisão financeira', () => {

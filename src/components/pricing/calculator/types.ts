@@ -7,6 +7,8 @@ export interface CalcProduct {
   name: string;
   sku: string;
   price: number;
+  /** `false` quando o catálogo não informou sale_price; impede importar preço zero presumido. */
+  priceAvailable?: boolean;
   images: string[];
   category_name: string | null;
 }

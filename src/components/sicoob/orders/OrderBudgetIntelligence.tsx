@@ -51,9 +51,29 @@ const BUDGET_STATUS = {
 } as const;
 
 function resolveBudgetState(allocatedBudget: number | null, orderTotal: number, remainingBudget: number): BudgetState {
-  if (allocatedBudget === null || allocatedBudget <= 0) return "unconfigured";
+  if (allocatedBudget === null) return "unconfigured";
   if (orderTotal > remainingBudget) return "over";
   return "available";
+}
+
+function getBudgetMetrics(configuredBudget: number | null, remainingBudget: number, orderTotal: number) {
+  const hasPositiveBudget = configuredBudget !== null && configuredBudget > 0;
+  const percentageAfterOrder = hasPositiveBudget
+    ? Math.min(((configuredBudget - remainingBudget + orderTotal) / configuredBudget) * 100, 100)
+    : configuredBudget === 0 && orderTotal > 0 ? 100 : 0;
+  const impact = hasPositiveBudget ? (orderTotal / configuredBudget) * 100 : null;
+
+  return { percentageAfterOrder, impact };
+}
+
+function getBudgetImpactLabel(configuredBudget: number | null, impact: number | null) {
+  if (impact !== null) {
+    return <>* Este pedido representa <strong>{impact.toFixed(1)}%</strong> da verba total do período.</>;
+  }
+  if (configuredBudget === 0) {
+    return "A verba está cadastrada com valor zero; o impacto percentual não pode ser calculado.";
+  }
+  return "Configure a verba da competência para calcular o impacto deste pedido.";
 }
 
 function BudgetAvailabilityCard({
@@ -104,16 +124,11 @@ function BudgetNumbers({ allocatedBudget, remainingBudget, orderTotal, state }: 
 }) {
   const status = BUDGET_STATUS[state];
   const configuredBudget = state === "unconfigured" ? null : allocatedBudget;
-  const percentageAfterOrder = configuredBudget
-    ? Math.min(((configuredBudget - remainingBudget + orderTotal) / configuredBudget) * 100, 100)
-    : 0;
-  const impact = configuredBudget === null ? null : (orderTotal / configuredBudget) * 100;
+  const { percentageAfterOrder, impact } = getBudgetMetrics(configuredBudget, remainingBudget, orderTotal);
   const allocatedLabel = configuredBudget === null ? "—" : `R$ ${configuredBudget.toLocaleString('pt-BR')}`;
   const remainingLabel = configuredBudget !== null ? `R$ ${remainingBudget.toLocaleString('pt-BR')}` : "—";
   const percentageLabel = configuredBudget !== null ? `${percentageAfterOrder.toFixed(1)}%` : "—";
-  const impactLabel = impact === null
-    ? "Configure a verba da competência para calcular o impacto deste pedido."
-    : <>* Este pedido representa <strong>{impact.toFixed(1)}%</strong> da verba total do período.</>;
+  const impactLabel = getBudgetImpactLabel(configuredBudget, impact);
   const StatusIcon = status.Icon;
 
   return (
@@ -157,7 +172,7 @@ export function OrderBudgetIntelligence({
   hasPaId = true,
   onRetry,
 }: OrderBudgetIntelligenceProps) {
-  const availability = resolvePaBudgetState({ isLoading, hasError, hasPaId, hasBudget: allocatedBudget !== null && allocatedBudget > 0 });
+  const availability = resolvePaBudgetState({ isLoading, hasError, hasPaId, hasBudget: allocatedBudget !== null });
   const state = availability === "configured"
     ? resolveBudgetState(allocatedBudget, orderTotal, remainingBudget)
     : "unconfigured";

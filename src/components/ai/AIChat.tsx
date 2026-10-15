@@ -54,6 +54,32 @@ export interface AIChatProps {
   assistantContext?: string;
 }
 
+export const AI_CHAT_MAX_MESSAGES = 50;
+
+function createGreetingMessages(greeting?: string): ChatMessage[] {
+  if (!greeting) return [];
+  return [{ id: makeId(), role: "assistant", content: greeting, createdAt: Date.now() }];
+}
+
+/** Limita o payload ao contrato da Edge Function sem remover a saudação da conversa. */
+export function selectAssistantRequestMessages(
+  messages: ChatMessage[],
+  greetingMessageId?: string | null,
+): ChatMessage[] {
+  if (messages.length <= AI_CHAT_MAX_MESSAGES) return messages;
+
+  const greeting = greetingMessageId
+    ? messages.find((message) => message.id === greetingMessageId)
+    : undefined;
+  const recentMessages = messages.filter((message) => message.id !== greeting?.id);
+  const recentLimit = AI_CHAT_MAX_MESSAGES - (greeting ? 1 : 0);
+  const recentWindow = recentMessages.slice(-recentLimit);
+  const firstUserMessage = recentWindow.findIndex((message) => message.role === "user");
+  const selected = firstUserMessage > 0 ? recentWindow.slice(firstUserMessage) : recentWindow;
+
+  return greeting ? [greeting, ...selected] : selected;
+}
+
 // ============================================
 // HELPERS
 // ============================================
@@ -230,6 +256,23 @@ function TypingIndicator() {
   );
 }
 
+function EmptyConversationState() {
+  return <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground"><Bot className="h-10 w-10 mb-3 opacity-40" aria-hidden="true" /><p className="font-display text-sm">Inicie uma conversa com o assistente</p></div>;
+}
+
+function ChatError({ message }: { message: string }) {
+  return <div role="alert" className="flex items-start gap-2 border-t-[1.5px] border-destructive/30 bg-destructive/5 px-4 py-2 text-sm text-destructive"><AlertCircle className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" /><span className="font-display">{message}</span></div>;
+}
+
+function SendButtonIcon({ isLoading }: { isLoading: boolean }) {
+  return isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />;
+}
+
+function ResetConversationButton({ visible, onReset }: { visible: boolean; onReset: () => void }) {
+  if (!visible) return null;
+  return <Button type="button" variant="ghost" size="sm" onClick={onReset} className="h-7 gap-1.5 text-xs" aria-label="Reiniciar conversa"><RotateCcw className="h-3 w-3" />Reiniciar</Button>;
+}
+
 // ============================================
 // COMPONENTE PRINCIPAL
 // ============================================
@@ -245,11 +288,8 @@ export function AIChat({
   assistantMode,
   assistantContext,
 }: AIChatProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>(() =>
-    greeting
-      ? [{ id: makeId(), role: "assistant", content: greeting, createdAt: Date.now() }]
-      : []
-  );
+  const [messages, setMessages] = useState<ChatMessage[]>(() => createGreetingMessages(greeting));
+  const greetingMessageIdRef = useRef<string | null>(messages[0]?.id ?? null);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -290,7 +330,8 @@ export function AIChat({
     abortRef.current = controller;
 
     try {
-      const assistantContent = await fetchAssistantContent({ messages: nextMessages, systemPrompt, contextId, assistantMode, assistantContext }, controller.signal);
+      const requestMessages = selectAssistantRequestMessages(nextMessages, greetingMessageIdRef.current);
+      const assistantContent = await fetchAssistantContent({ messages: requestMessages, systemPrompt, contextId, assistantMode, assistantContext }, controller.signal);
       const assistantMsg: ChatMessage = {
         id: makeId(),
         role: "assistant",
@@ -321,11 +362,11 @@ export function AIChat({
 
   const handleReset = useCallback(() => {
     abortRef.current?.abort();
-    setMessages(
-      greeting
-        ? [{ id: makeId(), role: "assistant", content: greeting, createdAt: Date.now() }]
-        : []
-    );
+    const greetingMessage = greeting
+      ? { id: makeId(), role: "assistant" as const, content: greeting, createdAt: Date.now() }
+      : null;
+    greetingMessageIdRef.current = greetingMessage?.id ?? null;
+    setMessages(greetingMessage ? [greetingMessage] : []);
     setError(null);
     setIsLoading(false);
     textareaRef.current?.focus();
@@ -344,19 +385,7 @@ export function AIChat({
           <Bot className="h-4 w-4 text-primary" aria-hidden="true" />
           <span className="font-display text-sm font-semibold text-foreground">Assistente IA</span>
         </div>
-        {messages.length > 0 && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleReset}
-            className="h-7 gap-1.5 text-xs"
-            aria-label="Reiniciar conversa"
-          >
-            <RotateCcw className="h-3 w-3" />
-            Reiniciar
-          </Button>
-        )}
+        <ResetConversationButton visible={messages.length > 0} onReset={handleReset} />
       </div>
 
       {/* Mensagens */}
@@ -368,12 +397,7 @@ export function AIChat({
         aria-live="polite"
         aria-atomic="false"
       >
-        {messages.length === 0 && !isLoading && (
-          <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
-            <Bot className="h-10 w-10 mb-3 opacity-40" aria-hidden="true" />
-            <p className="font-display text-sm">Inicie uma conversa com o assistente</p>
-          </div>
-        )}
+        {messages.length === 0 && !isLoading && <EmptyConversationState />}
         {messages.map((m) => (
           <MessageBubble key={m.id} message={m} />
         ))}
@@ -381,15 +405,7 @@ export function AIChat({
       </div>
 
       {/* Erro */}
-      {error && (
-        <div
-          role="alert"
-          className="flex items-start gap-2 border-t-[1.5px] border-destructive/30 bg-destructive/5 px-4 py-2 text-sm text-destructive"
-        >
-          <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
-          <span className="font-display">{error}</span>
-        </div>
-      )}
+      {error && <ChatError message={error} />}
 
       {/* Input */}
       <div className="border-t-[1.5px] border-border bg-muted/20 p-3">
@@ -421,11 +437,7 @@ export function AIChat({
             aria-label="Enviar mensagem"
             className="h-10 w-10 shrink-0 rounded-xl"
           >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
+            <SendButtonIcon isLoading={isLoading} />
           </Button>
         </div>
         <p className="mt-1.5 text-[11px] text-muted-foreground/70 font-display">
