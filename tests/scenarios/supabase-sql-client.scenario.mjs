@@ -4,6 +4,7 @@ import { createHash, randomUUID } from "node:crypto";
 import test from "node:test";
 import { createManagementSqlClient } from "../../scripts/db/supabase-sql-client.mjs";
 import {
+  APPROVAL_WORKER_MONITOR_SAFE_SQL,
   buildManagementApiBatch,
   loadAuthorizedTargets,
   validateLedger,
@@ -85,6 +86,15 @@ test("monta lote atômico somente com migrations allowlisted e guarda do ledger"
     /OR has_function_privilege\('service_role', 'public\.assert_quote_transition/,
   );
   assert.match(batch, /COMMIT;$/);
+});
+
+test("valida a correlação do monitor pelo disparo mais recente", () => {
+  assert.match(APPROVAL_WORKER_MONITOR_SAFE_SQL, /DISTINCT ON \(r\.id\)/);
+  assert.match(
+    APPROVAL_WORKER_MONITOR_SAFE_SQL,
+    /ORDER BY r\.id, d\.requested_at DESC, r\.created ASC/,
+  );
+  assert.match(APPROVAL_WORKER_MONITOR_SAFE_SQL, /WHERE d\.id=r\.dispatch_id/);
 });
 
 test("valida marcador criptográfico registrado pelo executor administrativo", () => {
