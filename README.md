@@ -32,6 +32,8 @@
 O sistema está em construção e passa por auditorias de segurança, banco,
 contratos e experiência. O relatório consolidado mais recente é:
 
+- 📄 **[Execução integrada do plano — 16/10/2026](./docs/execucao/execucao-integrada-plano-2026-10-16.md)** — consolidação dos cinco fluxos especializados, certificação do candidato, estado do GitHub e paridade com o Supabase canônico.
+
 - 📄 **[Execução e preflight do banco canônico — 01/10/2026](./docs/execucao/execucao-plano-2026-10-01.md)** — correções consolidadas, testes do candidato e consulta administrativa atual do Supabase.
 
 - 📄 **[Revisão das 150 etapas e dos workflows — 01/10/2026](./docs/execucao/revisao-do-plano-2026-10-01.md)** — implementação atual, falha de autorização reproduzida e limites de validação do banco.
