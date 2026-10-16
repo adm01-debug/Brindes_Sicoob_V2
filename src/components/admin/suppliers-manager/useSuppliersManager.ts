@@ -10,6 +10,7 @@ import { fetchCnpjData, type CnpjData } from '@/utils/cnpj-lookup';
 import { logger } from "@/lib/logger";
 import { type Supplier, type SupplierContact, type PixKey, EMPTY_SUPPLIER, ORGANIZATION_ID, createEmptyContact, createEmptyPixKey } from "./types";
 import { askConfirm } from '@/stores/useConfirmDialogStore';
+import { createPrivateStorageReference } from '@/lib/private-storage';
 
 type SupplierFilterType = 'all' | 'product' | 'engraving';
 type SupplierFilterStatus = 'all' | 'active' | 'inactive';
@@ -317,7 +318,7 @@ async function uploadSupplierLogo(file: File, supplierId: string): Promise<strin
   const filePath = `suppliers/${supplierId}.${extension}`;
   const { error } = await supabase.storage.from('supplier-logos').upload(filePath, file, { upsert: true });
   if (error) throw error;
-  return supabase.storage.from('supplier-logos').getPublicUrl(filePath).data.publicUrl;
+  return createPrivateStorageReference('supplier-logos', filePath);
 }
 
 type SupplierFieldUpdater = (field: string, value: unknown) => void;

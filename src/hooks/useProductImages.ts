@@ -16,6 +16,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { invokeExternalDb } from '@/lib/external-db';
 import { logger } from "@/lib/logger";
+import { resolvePrivateStorageUrl } from '@/lib/private-storage';
+
+const PRODUCT_IMAGE_BUCKET = 'personalization-images';
 
 // ============================================
 // TIPOS
@@ -47,6 +50,14 @@ export interface ProductImageForDisplay {
   isPrimary: boolean;
 }
 
+async function resolveProductImageRows(rows: ProductImage[]): Promise<ProductImage[]> {
+  return Promise.all(rows.map(async (image) => ({
+    ...image,
+    url_cdn: await resolvePrivateStorageUrl(image.url_cdn, PRODUCT_IMAGE_BUCKET) ?? image.url_cdn,
+    url_original: await resolvePrivateStorageUrl(image.url_original, PRODUCT_IMAGE_BUCKET),
+  })));
+}
+
 // ============================================
 // FUNÇÕES AUXILIARES
 // ============================================
@@ -68,7 +79,7 @@ export async function fetchProductImages(productId: string): Promise<ProductImag
       limit: 100,
     });
 
-    return result.records ?? [];
+    return resolveProductImageRows(result.records ?? []);
   } catch (err) {
     logger.warn('Erro ao buscar imagens do produto:', productId, err);
     return [];
@@ -97,7 +108,8 @@ export async function fetchProductImagesBatch(productIds: string[]): Promise<Map
     const imagesByProduct = new Map<string, ProductImage[]>();
     const productIdSet = new Set(productIds);
 
-    (result.records ?? []).forEach(image => {
+    const resolvedRows = await resolveProductImageRows(result.records ?? []);
+    resolvedRows.forEach(image => {
       if (!productIdSet.has(image.product_id)) return;
       
       const productImages = imagesByProduct.get(image.product_id) ?? [];
@@ -129,7 +141,7 @@ export async function fetchPrimaryImage(productId: string): Promise<string | nul
       limit: 1,
     });
 
-    return result.records?.[0]?.url_cdn || null;
+    return resolvePrivateStorageUrl(result.records?.[0]?.url_cdn, PRODUCT_IMAGE_BUCKET);
   } catch (err) {
     logger.warn('Erro ao buscar imagem principal:', productId, err);
     return null;

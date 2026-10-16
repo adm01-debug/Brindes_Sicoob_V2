@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import EnhancedErrorBoundary from "@/components/errors/EnhancedErrorBoundary";
 import AuthEntry from "./AuthEntry";
+import { bootstrapErrorReporter } from "@/lib/error-reporter-bootstrap";
 import { injectRequestId } from "@/lib/request-id-injection";
 import "./index.css";
 
@@ -49,11 +50,13 @@ if (import.meta.env.PROD) {
 // Os imports dinâmicos preservam a proteção sem onerar a primeira tela pública.
 globalThis.setTimeout(() => {
   void import("@/lib/sentry").then(({ initSentry }) => initSentry());
-  void import("@/lib/error-reporter").then(({ installGlobalErrorHandlers, reportError }) => {
-    window.removeEventListener("error", onEarlyError);
-    window.removeEventListener("unhandledrejection", onEarlyRejection);
-    installGlobalErrorHandlers();
-    earlyRuntimeErrors.splice(0).forEach(({ error, metadata }) => reportError(error, metadata));
+  void bootstrapErrorReporter({
+    load: () => import("@/lib/error-reporter"),
+    queuedErrors: earlyRuntimeErrors,
+    removeEarlyListeners: () => {
+      window.removeEventListener("error", onEarlyError);
+      window.removeEventListener("unhandledrejection", onEarlyRejection);
+    },
   });
   void import("@/lib/preview-auto-reload").then(({ setupPreviewAutoReload }) => setupPreviewAutoReload());
   void import("@/lib/diagnostics");

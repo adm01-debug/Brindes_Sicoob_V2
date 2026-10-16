@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { lazyWithRetry } from '@/lib/lazyWithRetry';
 import { PageSEO } from "@/components/seo/PageSEO";
+import { canonicalPrivateStorageValue } from '@/lib/private-storage';
 
 // Lazy load heavy sub-components
 const ProductFormFullscreen = lazyWithRetry(() => import('@/components/admin/products/ProductFormFullscreen').then(m => ({ default: m.ProductFormFullscreen })));
@@ -105,6 +106,9 @@ function keywordList(value: string | null | undefined): string[] | null {
 }
 
 function buildProductData(data: ProductFormData, images: string[]): Record<string, unknown> {
+  const durableImages = images.map((image) => (
+    canonicalPrivateStorageValue(image, 'personalization-images') ?? image
+  ));
   const productData: Record<string, unknown> = {
     sku: data.sku, name: data.name, description: nullableText(data.description),
     short_description: nullableText(data.short_description), meta_description: nullableText(data.meta_description),
@@ -141,9 +145,9 @@ function buildProductData(data: ProductFormData, images: string[]): Record<strin
     videos: data.video_url ? [data.video_url] : [], key_benefits: nullableText(data.key_benefits),
     use_cases: nullableText(data.use_cases), updated_at: new Date().toISOString(),
   };
-  if (images.length > 0) {
-    productData.images = images;
-    productData.primary_image_url = images[0];
+  if (durableImages.length > 0) {
+    productData.images = durableImages;
+    productData.primary_image_url = durableImages[0];
   }
   return productData;
 }
@@ -221,6 +225,12 @@ function productImages(product: EditableProduct): string[] {
     return [imageUrl, ...additional];
   }
   return Array.isArray(product.images) ? product.images : [];
+}
+
+function durableProductImages(product: EditableProduct): string[] {
+  return productImages(product).map((image) => (
+    canonicalPrivateStorageValue(image, 'personalization-images') ?? image
+  ));
 }
 
 async function exportProduct(product: EditableProduct): Promise<void> {
@@ -301,7 +311,7 @@ function ProductPageContent(props: ProductPageContentProps) {
   return (
     <ProductFormFullscreen
       initialData={source ? mapProductToFormData(source) : undefined}
-      productImages={source ? productImages(source) : []}
+      productImages={source ? durableProductImages(source) : []}
       productId={props.isEdit ? props.id : undefined}
       onSubmit={props.onSubmit}
       onCancel={() => props.navigate('/admin/cadastros')}

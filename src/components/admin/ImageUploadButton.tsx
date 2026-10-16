@@ -9,6 +9,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { validateFile } from "@/lib/security/file-validation";
+import { PrivateStorageImage } from '@/components/common/PrivateStorageImage';
+import { privateStoragePathFromUrl } from '@/lib/private-storage';
 
 interface ImageUploadButtonProps {
   currentImageUrl: string | null;
@@ -46,7 +48,7 @@ async function uploadWithRetry(formData: FormData, attempt = 1): Promise<string>
 }
 
 async function removeStoredImage(currentImageUrl: string) {
-  const filePath = currentImageUrl.split("/personalization-images/")[1];
+  const filePath = privateStoragePathFromUrl('personalization-images', currentImageUrl);
   if (filePath) await supabase.storage.from("personalization-images").remove([filePath]);
 }
 
@@ -134,8 +136,9 @@ export function ImageUploadButton({
               </Button>
             </TooltipTrigger>
             <TooltipContent side="top" className="p-0">
-              <img
-                src={currentImageUrl}
+              <PrivateStorageImage
+                value={currentImageUrl}
+                bucket="personalization-images"
                 alt="Área de gravação"
                 className="max-w-64 max-h-48 rounded" loading="lazy" />
             </TooltipContent>

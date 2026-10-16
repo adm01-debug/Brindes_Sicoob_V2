@@ -212,7 +212,6 @@ function usePublicFavoriteListData(token?: string) {
     queryKey: ['public-favorite-list', token],
     queryFn: () => fetchPublicFavoriteBundle(token),
     enabled: Boolean(token),
-    retry: false,
   });
   const list = bundleQuery.data?.list;
   const expired = isFavoriteListExpired(list);
