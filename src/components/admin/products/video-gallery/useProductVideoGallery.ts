@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { createPrivateStorageReference, resolvePrivateStorageUrl } from '@/lib/private-storage';
 import { type ExternalVideo, type VariantLink, type VideoVariant, ACCEPTED_VIDEO_TYPES, MAX_FILE_SIZE, extractThumbnailFromVideo, parseYouTubeId } from "./types";
 
 const VIDEO_STORAGE_BUCKET = 'product-videos';
@@ -29,7 +30,7 @@ async function createVideoThumbnail(file: File, productId: string | undefined, b
       contentType: 'image/jpeg', cacheControl: '86400', upsert: false,
     });
     if (error || !data) return null;
-    return supabase.storage.from(VIDEO_STORAGE_BUCKET).getPublicUrl(data.path).data.publicUrl;
+    return createPrivateStorageReference(VIDEO_STORAGE_BUCKET, data.path);
   } catch (error) {
     logger.warn('Thumbnail generation failed:', error);
     return null;
@@ -101,7 +102,7 @@ async function regenerateVideoThumbnail(videoUrl: string, productId: string): Pr
     contentType: 'image/jpeg', cacheControl: '86400', upsert: false,
   });
   if (error || !data) throw new Error('Erro ao salvar thumbnail');
-  return supabase.storage.from(VIDEO_STORAGE_BUCKET).getPublicUrl(data.path).data.publicUrl;
+  return createPrivateStorageReference(VIDEO_STORAGE_BUCKET, data.path);
 }
 
 export function useProductVideoGallery(productId?: string) {
@@ -134,7 +135,13 @@ export function useProductVideoGallery(productId?: string) {
         body: { table: 'product_videos', operation: 'select', filters: { product_id: productId, is_active: true }, orderBy: { column: 'display_order', ascending: true }, limit: 50 },
       });
       if (error) return [];
-      return data?.data?.records || [];
+      const records = (data?.data?.records || []) as ExternalVideo[];
+      return Promise.all(records.map(async (video) => ({
+        ...video,
+        url_original: await resolvePrivateStorageUrl(video.url_original, VIDEO_STORAGE_BUCKET),
+        url_stream: await resolvePrivateStorageUrl(video.url_stream, VIDEO_STORAGE_BUCKET),
+        url_thumbnail: await resolvePrivateStorageUrl(video.url_thumbnail, VIDEO_STORAGE_BUCKET),
+      })));
     },
     enabled: !!productId,
     staleTime: 5 * 60 * 1000,
@@ -252,9 +259,9 @@ export function useProductVideoGallery(productId?: string) {
     const videoPath = `videos/${productId || 'new'}/${baseName}.${fileExt}`;
     const { data, error } = await supabase.storage.from(VIDEO_STORAGE_BUCKET).upload(videoPath, file, { cacheControl: '3600', upsert: false });
     if (error) { toast.error(`Erro no upload de "${file.name}"`); return null; }
-    const { data: urlData } = supabase.storage.from(VIDEO_STORAGE_BUCKET).getPublicUrl(data.path);
+    const storageReference = createPrivateStorageReference(VIDEO_STORAGE_BUCKET, data.path);
     const thumbnailUrl = await createVideoThumbnail(file, productId, baseName);
-    return { url: urlData.publicUrl, size: file.size, thumbnailUrl };
+    return { url: storageReference, size: file.size, thumbnailUrl };
   }, [productId]);
 
   const createExternalVideoRecord = useCallback(async ({ url, size, name, thumbnail, youtubeId }: VideoRecordInput): Promise<string | null> => {

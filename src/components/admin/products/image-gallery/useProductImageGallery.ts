@@ -10,6 +10,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { createPrivateStorageReference, privateStoragePathFromUrl } from '@/lib/private-storage';
 import { type ExternalImage, type FilterMode, type VariantInfo, type GalleryStats, IMAGE_TYPES } from "./types";
 
 const EXTERNAL_IMAGES_QUERY_KEY = 'product-images-ext';
@@ -285,16 +286,13 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
     const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
     const { data, error } = await supabase.storage.from(IMAGE_STORAGE_BUCKET).upload(fileName, file, { cacheControl: '3600', upsert: false });
     if (error) { toast.error(`Erro ao enviar "${file.name}"`); return null; }
-    const { data: urlData } = supabase.storage.from(IMAGE_STORAGE_BUCKET).getPublicUrl(data.path);
-    return urlData.publicUrl;
+    return createPrivateStorageReference(IMAGE_STORAGE_BUCKET, data.path);
   }, [folder]);
 
   const removeStorageFileByUrl = useCallback(async (url: string) => {
-    const parts = url.split('/personalization-images/');
-    if (parts.length < 2) return;
-    const storagePath = parts[1];
+    const storagePath = privateStoragePathFromUrl(IMAGE_STORAGE_BUCKET, url);
     if (!storagePath) return;
-    await supabase.storage.from(IMAGE_STORAGE_BUCKET).remove([decodeURIComponent(storagePath)]);
+    await supabase.storage.from(IMAGE_STORAGE_BUCKET).remove([storagePath]);
   }, []);
 
   const createExternalImageRecord = useCallback(async (url: string, variantCode: string, imageType: string, shouldBePrimary: boolean): Promise<ImageRecordResult> => {

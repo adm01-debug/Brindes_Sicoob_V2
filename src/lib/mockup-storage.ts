@@ -6,6 +6,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { createPrivateStorageReference } from '@/lib/private-storage';
 
 function valueOr<T>(value: T | null | undefined | false | "", fallback: T): T {
   return value ? value as T : fallback;
@@ -23,7 +24,7 @@ function decodeBase64Image(base64Data: string): { blob: Blob; extension: string;
 
 /**
  * Upload a base64 image to the mockup-art-files bucket.
- * Returns the public URL of the uploaded file.
+ * Retorna uma referência estável; a interface assina o objeto na leitura.
  */
 export async function uploadLogoToStorage(
   userId: string,
@@ -51,11 +52,7 @@ export async function uploadLogoToStorage(
       return null;
     }
 
-    const { data: urlData } = supabase.storage
-      .from("mockup-art-files")
-      .getPublicUrl(filePath);
-
-    return valueOr(urlData?.publicUrl, null);
+    return createPrivateStorageReference("mockup-art-files", filePath);
   } catch (err) {
     console.error("[mockup-storage] Exception during upload:", err);
     return null;

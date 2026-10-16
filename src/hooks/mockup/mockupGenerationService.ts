@@ -6,6 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { uploadLogoToStorage, downloadImageAsPdfFromUrl } from "@/lib/mockup-storage";
 import { toast } from "sonner";
 import type { PersonalizationArea } from "@/components/mockup/MultiAreaManager";
+import { canonicalPrivateStorageValue, resolvePrivateStorageUrl } from '@/lib/private-storage';
+
+const MOCKUP_ART_BUCKET = 'mockup-art-files';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -73,18 +76,19 @@ export async function fetchMockupHistory(userId?: string): Promise<GeneratedMock
   if (userId) query = query.eq("seller_id", userId);
   const { data, error } = await query;
   if (error) throw error;
-  return (data || []).map((row) => ({
+  return Promise.all((data || []).map(async (row) => ({
     ...row,
     product_sku: row.product_sku ?? null,
     technique_id: row.technique_id ?? null,
     technique_name: row.technique_name ?? "",
-    layout_url: row.layout_url ?? null,
+    logo_url: await resolvePrivateStorageUrl(row.logo_url, MOCKUP_ART_BUCKET) ?? '',
+    layout_url: await resolvePrivateStorageUrl(row.layout_url, MOCKUP_ART_BUCKET),
     location_name: row.location_name ?? null,
     colors_count: row.colors_count ?? null,
     client_id: row.client_id ?? null,
     client_name: row.client_name ?? null,
     annotations: (row.annotations as Array<Record<string, unknown>> | null) ?? null,
-  })) as GeneratedMockup[];
+  }))) as Promise<GeneratedMockup[]>;
 }
 
 // ─── Save to history ─────────────────────────────────────────────────
@@ -106,7 +110,9 @@ function valueOr<T>(value: T | null | undefined | false | "" | 0, fallback: T): 
 
 async function storedLogoUrl(params: SaveMockupParams): Promise<string> {
   const preview = valueOr(params.area.logoPreview, "");
-  if (!preview.startsWith("data:")) return preview;
+  if (!preview.startsWith("data:")) {
+    return canonicalPrivateStorageValue(preview, MOCKUP_ART_BUCKET) ?? preview;
+  }
   const uploaded = await uploadLogoToStorage(
     params.userId,
     preview,
@@ -145,7 +151,9 @@ export async function saveMockupToDb(params: SaveMockupParams): Promise<string |
       technique_name: technique.name,
       logo_url: logoUrl,
       mockup_url: mockupUrl,
-      layout_url: valueOr(extra?.layoutUrl, null),
+      layout_url: extra?.layoutUrl
+        ? canonicalPrivateStorageValue(extra.layoutUrl, MOCKUP_ART_BUCKET)
+        : null,
       position_x: area.positionX,
       position_y: area.positionY,
       logo_width_cm: area.logoWidth,
