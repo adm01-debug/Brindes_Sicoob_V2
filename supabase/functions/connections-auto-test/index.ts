@@ -1,7 +1,7 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { requireInternalService } from "../_shared/internal-service-auth.ts";
-// connections-auto-test: cron-driven (every 30min). Re-tests every active
-// connection in `external_connections` and updates last_test_* fields +
+// connections-auto-test: cron-driven. Re-tests every enabled connection that
+// can operate or recover (`active`, `degraded` and `error`) and updates last_test_* fields +
 // inserts a row in `connection_test_history` with triggered_by='cron'.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { runConnectionTest, type ConnectionType, isTransientFailure } from "../_shared/connection-test-runner.ts";
@@ -27,6 +27,7 @@ export function assertServiceClient(client: unknown): asserts client is ServiceC
 }
 
 const BATCH_SIZE = 5;
+export const AUTO_TESTABLE_CONNECTION_STATUSES = ["active", "degraded", "error"] as const;
 // Backoff schedule between attempts. Length defines max attempts (3 = 1 try + 2 retries).
 // Index N is the delay BEFORE attempt N+1 (so RETRY_BACKOFF_MS[0] is wait before retry #1).
 const RETRY_BACKOFF_MS = [500, 1500, 3000] as const;
@@ -145,7 +146,7 @@ Deno.serve(async (req) => {
     const { data: active, error } = await service
       .from("external_connections")
       .select("id, type, name, env_key, config, created_by")
-      .eq("status", "active")
+      .in("status", [...AUTO_TESTABLE_CONNECTION_STATUSES])
       .eq("auto_test_enabled", true);
     if (error) throw error;
 
