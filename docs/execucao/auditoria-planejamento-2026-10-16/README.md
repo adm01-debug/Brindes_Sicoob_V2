@@ -1,9 +1,13 @@
 # Curadoria vigente da auditoria e do plano
 
-**Base funcional:** `495f33da1759a7c6e479259419186c5f7076ca5a`  
-**Complemento do worker:** `0e1fc9ebad2d638a4198de354a3604d278ce6ec8`  
-**Banco canônico:** `cfmzkthhgliqelozlmwu` (consultas somente leitura)  
-**Data de corte:** 2026-10-16  
+**Base funcional:** `495f33da1759a7c6e479259419186c5f7076ca5a`
+
+**Complemento do worker:** `0e1fc9ebad2d638a4198de354a3604d278ce6ec8`
+
+**Banco canônico:** `cfmzkthhgliqelozlmwu` (consultas somente leitura)
+
+**Data de corte:** 2026-10-16
+
 **Ambiente:** construção; nenhum item é declarado pronto em produção.
 
 Este pacote substitui a publicação integral da PR #105. Ele contém somente cinco artefatos revisáveis, sem snapshots de banco/GitHub, dumps, caches, scripts de reprodução, caminhos pessoais ou valores de segredo:

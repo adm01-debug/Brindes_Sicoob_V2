@@ -97,4 +97,3 @@ BEGIN
   END IF;
 END
 $assert$;
-
