@@ -12,6 +12,8 @@ import { useRecentlyViewedStore } from "@/stores/useRecentlyViewedStore";
 import { useFavoritesStore } from "@/stores/useFavoritesStore";
 import { useNavigationStore } from "@/stores/useNavigationStore";
 import { useNavigationGuardStore } from "@/stores/useNavigationGuardStore";
+import { resetUxMetrics } from "@/lib/uxMetrics";
+import { resetScrollRestoration } from "@/hooks/useScrollRestoration";
 
 
 import { type AppRole, type Profile } from "@/types/users";
@@ -194,6 +196,8 @@ function handleAnonymousState(deps: AuthStateDependencies): void {
   useRecentlyViewedStore.getState().reset();
   useNavigationStore.getState().clear();
   useNavigationGuardStore.getState().clearAll();
+  resetUxMetrics();
+  resetScrollRestoration();
   clearSensitiveBrowserData();
 }
 
@@ -456,6 +460,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       useRecentlyViewedStore.getState().reset();
       useNavigationStore.getState().clear();
       useNavigationGuardStore.getState().clearAll();
+      resetUxMetrics();
+      resetScrollRestoration();
       // Permite prewarm no próximo login (mesma aba)
       import('@/lib/external-db-prewarm').then(m => m.resetPrewarmSession()).catch(() => {});
       log.info('ok');

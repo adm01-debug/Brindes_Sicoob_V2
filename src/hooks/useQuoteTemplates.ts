@@ -84,7 +84,7 @@ export function useQuoteTemplates() {
         .insert({
           ...template,
           // items_data é QuoteTemplateItem[] no app, Json no banco — mesmo
-          // padrão de serialização usado em useKitVariants.ts/useTemplateSnapshot.ts.
+          // padrão de serialização usado em useKitVariants.ts e kit-builder/persistence.ts.
           items_data: template.items_data ? JSON.parse(JSON.stringify(template.items_data)) : template.items_data,
           created_by: user.id,
           seller_id: user.id

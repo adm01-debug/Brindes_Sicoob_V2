@@ -1,3 +1,5 @@
+import { trackUx } from '@/lib/uxMetrics';
+
 const EXPLICIT_BLOCKING_OVERLAY = '[data-navigation-overlay="blocking"]';
 const RADIX_OPEN_OVERLAY = [
   '[role="dialog"][data-state="open"]',
@@ -21,8 +23,8 @@ function isBlockingPopper(wrapper: Element): boolean {
 
 /** Detecta overlays que precisam ser fechados antes de navegar. */
 export function hasBlockingNavigationOverlay(): boolean {
-  const explicit = document.querySelector(EXPLICIT_BLOCKING_OVERLAY);
-  if (explicit && isVisible(explicit)) return true;
+  const explicit = Array.from(document.querySelectorAll(EXPLICIT_BLOCKING_OVERLAY));
+  if (explicit.some(isVisible)) return true;
   if (document.querySelector(RADIX_OPEN_OVERLAY)) return true;
   return Array.from(document.querySelectorAll(POPPER_WRAPPER)).some(isBlockingPopper);
 }
@@ -30,6 +32,7 @@ export function hasBlockingNavigationOverlay(): boolean {
 /** Fecha somente o overlay superior por meio do contrato comum de Escape. */
 export function dismissBlockingNavigationOverlay(): boolean {
   if (!hasBlockingNavigationOverlay()) return false;
+  trackUx('nav.overlay-dismiss');
   document.dispatchEvent(new KeyboardEvent('keydown', {
     key: 'Escape',
     bubbles: true,

@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { canRestoreNavigationItem, useNavigationStore } from '@/stores/useNavigationStore';
 import { cn } from '@/lib/utils';
+import { trackUx } from '@/lib/uxMetrics';
 
 export function NavigationHistoryMenu({ className }: { className?: string }) {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ export function NavigationHistoryMenu({ className }: { className?: string }) {
         <DropdownMenuLabel>Páginas recentes</DropdownMenuLabel>
         {entries.map((item) => (
           <DropdownMenuItem key={item.key} className="cursor-pointer" onSelect={() => {
+            trackUx('nav.history-jump');
             setDirection('backward');
             navigate(`${item.pathname}${item.search}`, { state: item.state });
           }}>
