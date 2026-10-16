@@ -1,4 +1,4 @@
-import { forwardRef, type ForwardedRef } from "react";
+import { forwardRef, useRef, type ForwardedRef, type PointerEvent } from "react";
 import { useLocation } from "react-router-dom";
 import { ArrowLeft, ChevronLeft } from "lucide-react";
 import { motion } from "framer-motion";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useSmartNavigation } from "@/hooks/useSmartNavigation";
+import { dismissBlockingNavigationOverlay } from '@/lib/navigation/overlay-registry';
 
 const routeLabels: Record<string, string> = {
   "/": "Início",
@@ -84,12 +85,24 @@ interface BackButtonViewProps extends Required<Pick<BackButtonProps, "variant" |
 }
 
 function BackButtonView({ buttonRef, className, variant, size, showLabel, useChevron, ariaLabel, parentLabel, criticalPath, onBack }: BackButtonViewProps) {
+  const dismissedOnPointerDown = useRef(false);
+  const handlePointerDownCapture = (event: PointerEvent<HTMLButtonElement>) => {
+    if (event.button !== 0) return;
+    dismissedOnPointerDown.current = dismissBlockingNavigationOverlay();
+  };
+  const handleClick = () => {
+    if (dismissedOnPointerDown.current) {
+      dismissedOnPointerDown.current = false;
+      return;
+    }
+    if (!dismissBlockingNavigationOverlay()) onBack();
+  };
   const variantClass = variant === "ghost" && "text-muted-foreground hover:text-foreground hover:bg-muted/50";
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={entranceAnimation(criticalPath)} whileTap={{ scale: 0.97 }} transition={{ duration: 0.1 }}>
-          <Button ref={buttonRef} variant={variant} size={size} onClick={onBack} aria-label={ariaLabel} className={cn("gap-1.5 transition-all group shrink-0", variantClass, className)}>
+          <Button ref={buttonRef} variant={variant} size={size} onPointerDownCapture={handlePointerDownCapture} onClick={handleClick} aria-label={ariaLabel} className={cn("gap-1.5 transition-all group shrink-0", variantClass, className)}>
             <BackButtonContent useChevron={useChevron} showLabel={showLabel} parentLabel={parentLabel} />
           </Button>
         </motion.div>
