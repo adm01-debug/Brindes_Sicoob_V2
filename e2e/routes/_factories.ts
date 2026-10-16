@@ -227,12 +227,7 @@ export function buildAuthedRouteSuite(spec: AuthedRouteSpec) {
       } else if (catalogEntry?.titleSlug) {
         await expect(page.getByTestId(`page-title-${catalogEntry.titleSlug}`)).toBeVisible();
       } else {
-        const heading = await page
-          .locator('h1, h2, h3')
-          .first()
-          .isVisible()
-          .catch(() => false);
-        expect(heading).toBe(true);
+        await expect(page.locator('h1, h2, h3').first()).toBeVisible({ timeout: 15_000 });
       }
     });
 
