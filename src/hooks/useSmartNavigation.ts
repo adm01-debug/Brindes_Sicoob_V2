@@ -2,6 +2,10 @@ import { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useNavigationStore } from '@/stores/useNavigationStore';
 import { Haptics } from '@/utils/haptics';
+import { dismissBlockingNavigationOverlay } from '@/lib/navigation/overlay-registry';
+
+const goBackStack: Array<() => void> = [];
+const dispatchSmartBack = () => goBackStack[goBackStack.length - 1]?.();
 
 export function useSmartNavigation() {
   const location = useLocation();
@@ -25,6 +29,7 @@ export function useSmartNavigation() {
   }, [location.pathname, location.search, push]);
 
   const goBack = useCallback((fallbackPath?: string) => {
+    if (dismissBlockingNavigationOverlay()) return;
     Haptics.impactLight();
     setDirection('backward');
 
@@ -50,9 +55,13 @@ export function useSmartNavigation() {
   }, [navigate, setDirection]);
 
   useEffect(() => {
-    const handleSmartBack = () => goBack();
-    window.addEventListener('smart-back', handleSmartBack);
-    return () => window.removeEventListener('smart-back', handleSmartBack);
+    goBackStack.push(goBack);
+    if (goBackStack.length === 1) window.addEventListener('smart-back', dispatchSmartBack);
+    return () => {
+      const index = goBackStack.lastIndexOf(goBack);
+      if (index >= 0) goBackStack.splice(index, 1);
+      if (goBackStack.length === 0) window.removeEventListener('smart-back', dispatchSmartBack);
+    };
   }, [goBack]);
 
   return { goBack, goForward, previousItem: getPrevious(), history, direction };
