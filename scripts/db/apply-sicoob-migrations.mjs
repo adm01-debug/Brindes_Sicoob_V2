@@ -172,6 +172,10 @@ const TARGETS = [
     file: "supabase/migrations/20261016180000_harden_storage_and_public_favorites_acl.sql",
     sha256: "0bf03cf22c461eb9364da0e440eff1efdf4edf42865cce91b012ba8e644999a7",
   },
+  {
+    file: "supabase/migrations/20261016190000_enable_scoped_business_realtime.sql",
+    sha256: "eb88eae2f11006f31151221a8300c7001f6a29c5723b4bbc2ecbb17f3ecf2afd",
+  },
 ];
 
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
@@ -1061,7 +1065,51 @@ async function validateContract(client, targets) {
       ) = 1
       ELSE NOT EXISTS (
         SELECT 1 FROM cron.job WHERE jobname = 'connections-health-check'
-      ) END AS connections_health_cron_safe
+      ) END AS connections_health_cron_safe,
+      NOT COALESCE((
+        SELECT puballtables
+        FROM pg_publication
+        WHERE pubname = 'supabase_realtime'
+      ), true)
+        AND (
+          SELECT count(*)
+          FROM pg_publication_tables
+          WHERE pubname = 'supabase_realtime'
+            AND schemaname = 'public'
+            AND tablename = ANY (ARRAY[
+              'custom_kits',
+              'device_login_notifications',
+              'discount_approval_requests',
+              'integration_credentials',
+              'kit_comments',
+              'login_attempts',
+              'notifications',
+              'orders',
+              'product_views',
+              'quotes',
+              'search_analytics',
+              'sicoob_orders'
+            ])
+        ) = 12 AS realtime_publication_safe,
+      EXISTS (
+        SELECT 1
+        FROM pg_policies
+        WHERE schemaname = 'public'
+          AND tablename = 'login_attempts'
+          AND policyname = 'user_read_own_login_attempts'
+          AND roles = ARRAY['authenticated']::name[]
+          AND cmd = 'SELECT'
+          AND strpos(qual, 'user_id') > 0
+          AND strpos(qual, 'uid()') > 0
+      ) AS login_attempts_realtime_scope_safe,
+      COALESCE((
+        SELECT p.prosecdef
+          AND p.proconfig = ARRAY['search_path=pg_catalog, public']::text[]
+          AND p.prosrc LIKE '%table_class.relrowsecurity%'
+          AND p.prosrc LIKE '%Tabelas realtime sem isolamento%'
+        FROM pg_proc p
+        WHERE p.oid = to_regprocedure('public.notify_hardening_regression()')
+      ), false) AS realtime_monitor_safe
   `);
   const result = rows[0];
   const idempotencyMigration = latestDefiner(targets, "save_quote_atomic_idempotent");
@@ -1190,7 +1238,10 @@ async function validateContract(client, targets) {
     && result.quarantine_storage_acl_safe
     && result.connections_health_dispatch_safe
     && result.connections_operational_evidence_safe
-    && result.connections_health_cron_safe;
+    && result.connections_health_cron_safe
+    && result.realtime_publication_safe
+    && result.login_attempts_realtime_scope_safe
+    && result.realtime_monitor_safe;
   if (!valid) {
     const diagnostic = { ...(result ?? {}) };
     delete diagnostic.idempotency_source;
@@ -1844,6 +1895,50 @@ BEGIN
      ELSE EXISTS (
        SELECT 1 FROM cron.job WHERE jobname = 'connections-health-check'
      ) END
+     OR COALESCE((
+       SELECT puballtables
+       FROM pg_publication
+       WHERE pubname = 'supabase_realtime'
+     ), true)
+     OR (
+       SELECT count(*)
+       FROM pg_publication_tables
+       WHERE pubname = 'supabase_realtime'
+         AND schemaname = 'public'
+         AND tablename = ANY (ARRAY[
+           'custom_kits',
+           'device_login_notifications',
+           'discount_approval_requests',
+           'integration_credentials',
+           'kit_comments',
+           'login_attempts',
+           'notifications',
+           'orders',
+           'product_views',
+           'quotes',
+           'search_analytics',
+           'sicoob_orders'
+         ])
+     ) <> 12
+     OR NOT EXISTS (
+       SELECT 1
+       FROM pg_policies
+       WHERE schemaname = 'public'
+         AND tablename = 'login_attempts'
+         AND policyname = 'user_read_own_login_attempts'
+         AND roles = ARRAY['authenticated']::name[]
+         AND cmd = 'SELECT'
+         AND strpos(qual, 'user_id') > 0
+         AND strpos(qual, 'uid()') > 0
+     )
+     OR NOT COALESCE((
+       SELECT p.prosecdef
+         AND p.proconfig = ARRAY['search_path=pg_catalog, public']::text[]
+         AND p.prosrc LIKE '%table_class.relrowsecurity%'
+         AND p.prosrc LIKE '%Tabelas realtime sem isolamento%'
+       FROM pg_proc p
+       WHERE p.oid = to_regprocedure('public.notify_hardening_regression()')
+     ), false)
      OR NOT EXISTS (
        SELECT 1
        FROM pg_constraint
