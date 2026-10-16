@@ -54,6 +54,10 @@ function MissingQuote({ navigate }: { navigate: NavigateFunction }) {
   return <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in"><div className="text-center py-12"><FileText className="h-16 w-16 mx-auto text-muted-foreground mb-4" /><h2 className="font-display text-xl font-semibold">Orçamento não encontrado</h2><p className="text-muted-foreground mt-2">O orçamento solicitado não existe ou foi removido.</p><Button variant="outline" className="mt-4" onClick={() => navigate("/orcamentos")}><ArrowLeft className="h-4 w-4 mr-2" /> Voltar para Orçamentos</Button></div></div>;
 }
 
+function QuoteLoadFailure({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return <div className="flex min-h-[60vh] items-center justify-center px-4"><div role="alert" className="flex max-w-md flex-col items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center"><FileText className="h-8 w-8 text-destructive" /><div><h2 className="font-display text-xl font-semibold">Falha ao abrir o orçamento</h2><p className="mt-1 text-sm text-muted-foreground">{message}</p></div><Button variant="outline" onClick={onRetry}><RefreshCw className="mr-2 h-4 w-4" />Tentar novamente</Button></div></div>;
+}
+
 async function cancelSync(state: QuoteViewState, quote: Quote) {
   if (!quote.id) return;
   try {
@@ -167,6 +171,9 @@ export default function QuoteViewPage() {
     if (id && state.quote?.status === "pending_approval") getApprovalStatus(id).then(setApprovalRequest);
   }, [id, state.quote?.status, getApprovalStatus]);
   if (state.isLoadingQuote) return <LoadingQuote />;
+  if (state.quoteLoadError) {
+    return <QuoteLoadFailure message={state.quoteLoadError} onRetry={state.retryQuoteLoad} />;
+  }
   if (!state.quote) return <MissingQuote navigate={navigate} />;
   const quoteId = id || state.quote.id;
   if (!quoteId) return <MissingQuote navigate={navigate} />;

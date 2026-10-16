@@ -148,33 +148,68 @@ function getWhatsAppUrl(phone: string | undefined, message: string) {
 type QuoteFetcher = ReturnType<typeof useQuotes>['fetchQuote'];
 type HistoryLogger = ReturnType<typeof useQuotes>['logQuoteHistory'];
 
-function useLoadedQuote(id: string | undefined, fetchQuote: QuoteFetcher) {
+async function loadQuoteClientMetadata(
+  quote: Quote | null,
+  setClientCnpj: (value: string) => void,
+  setBitrixCompanyId: (value: string) => void,
+): Promise<void> {
+  if (!quote?.client_id) return;
+  try {
+    const company = await selectCrmById<Pick<CrmCompany, 'cnpj' | 'bitrix_company_id'>>(
+      'companies',
+      quote.client_id,
+    );
+    if (company?.cnpj) setClientCnpj(formatCNPJ(company.cnpj));
+    if (company?.bitrix_company_id) setBitrixCompanyId(String(company.bitrix_company_id));
+  } catch {
+    // O detalhe do orçamento continua válido mesmo se o enriquecimento do CRM falhar.
+  }
+}
+
+function quoteLoadErrorMessage(error: unknown): string {
+  return error instanceof Error && error.message
+    ? error.message
+    : 'Não foi possível carregar o orçamento.';
+}
+
+export function useLoadedQuote(id: string | undefined, fetchQuote: QuoteFetcher) {
   const [quote, setQuote] = useState<Quote | null>(null);
   const [isLoadingQuote, setIsLoadingQuote] = useState(true);
+  const [quoteLoadError, setQuoteLoadError] = useState<string | null>(null);
   const [clientCnpj, setClientCnpj] = useState<string | undefined>(undefined);
   const [bitrixCompanyId, setBitrixCompanyId] = useState<string | null>(null);
   const loadQuote = useCallback(async () => {
-    if (!id) return;
+    if (!id) {
+      setQuote(null);
+      setQuoteLoadError(null);
+      setIsLoadingQuote(false);
+      return;
+    }
     setIsLoadingQuote(true);
-    const data = await fetchQuote(id);
-    setQuote(data);
-    setIsLoadingQuote(false);
-    if (!data?.client_id) return;
     try {
-      const company = await selectCrmById<Pick<CrmCompany, 'cnpj' | 'bitrix_company_id'>>(
-        'companies',
-        data.client_id,
-      );
-      if (company?.cnpj) setClientCnpj(formatCNPJ(company.cnpj));
-      if (company?.bitrix_company_id) setBitrixCompanyId(String(company.bitrix_company_id));
-    } catch {
-      // Empresa não encontrada no CRM.
+      setQuoteLoadError(null);
+      const data = await fetchQuote(id);
+      setQuote(data);
+      await loadQuoteClientMetadata(data, setClientCnpj, setBitrixCompanyId);
+    } catch (error) {
+      setQuote(null);
+      setQuoteLoadError(quoteLoadErrorMessage(error));
+    } finally {
+      setIsLoadingQuote(false);
     }
   }, [fetchQuote, id]);
   useEffect(() => {
-    if (id) void loadQuote();
-  }, [id, loadQuote]);
-  return { quote, setQuote, isLoadingQuote, clientCnpj, bitrixCompanyId };
+    void loadQuote();
+  }, [loadQuote]);
+  return {
+    quote,
+    setQuote,
+    isLoadingQuote,
+    quoteLoadError,
+    retryQuoteLoad: loadQuote,
+    clientCnpj,
+    bitrixCompanyId,
+  };
 }
 
 function useProposalData(quote: Quote | null, clientCnpj: string | undefined) {
