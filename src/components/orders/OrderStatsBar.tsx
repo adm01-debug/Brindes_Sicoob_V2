@@ -4,6 +4,7 @@ import { Package, CheckCircle2, Clock, FileText } from 'lucide-react';
 import { useOrdersList } from '@/hooks/orders/useOrders';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSalesScope } from '@/lib/auth/visibility-scope';
+import { ORDER_IN_PROGRESS_STATUSES } from '@/constants/orders';
 
 function StatCard(props: {
   label: string;
@@ -32,7 +33,7 @@ export function OrderStatsBar() {
   const stats = {
     total: orders.length,
     drafts: orders.filter(o => o.status === 'rascunho').length,
-    pending: orders.filter(o => ['enviado_gestor', 'aprovado_gestor'].includes(o.status)).length,
+    pending: orders.filter(o => ORDER_IN_PROGRESS_STATUSES.has(o.status)).length,
     completed: orders.filter(o => o.status === 'concluido').length,
   };
 

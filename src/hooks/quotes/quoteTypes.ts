@@ -60,6 +60,8 @@ export interface QuoteItem {
   personalizations?: QuoteItemPersonalization[];
 }
 
+export type QuoteStatus = "draft" | "pending" | "sent" | "approved" | "rejected" | "expired" | "revision" | "viewed" | "converted" | "pending_approval" | "pending_singular_approval" | "approved_singular" | "rejected_singular";
+
 export interface Quote {
   id?: string;
   quote_number?: string;
@@ -70,7 +72,7 @@ export interface Quote {
   client_company?: string;
   client_cnpj?: string;
   seller_id?: string;
-  status: "draft" | "pending" | "sent" | "approved" | "rejected" | "expired" | "revision" | "viewed" | "converted" | "pending_approval" | "pending_singular_approval" | "approved_singular" | "rejected_singular";
+  status: QuoteStatus;
   subtotal: number;
   discount_percent: number;
   discount_amount: number;

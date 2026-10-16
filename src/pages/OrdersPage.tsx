@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from '@/components/seo/PageSEO';
 import { useAuth } from '@/contexts/AuthContext';
 import { Package, Download, FileSpreadsheet, FileText, ShoppingBag } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useOrdersList, ORDER_STATUS_LABELS } from '@/hooks/orders/useOrders';
 import { OrderCard } from '@/components/orders/OrderCard';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -25,6 +25,7 @@ import { OrderStatsBar } from '@/components/orders/OrderStatsBar';
 import { PersistentBreadcrumbs } from '@/components/common/PersistentBreadcrumbs';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { useQueryClient } from '@tanstack/react-query';
+import { parseOrderQuery, toApiDateRange, writeOrderQuery } from '@/lib/navigation/filter-query';
 
 type OrdersResponse = NonNullable<ReturnType<typeof useOrdersList>['data']>;
 type Order = OrdersResponse['data'][number];
@@ -79,7 +80,7 @@ function OrdersToolbar({
 }) {
   return (
     <div className="space-y-4 rounded-xl border bg-card p-4 shadow-sm">
-      <OrderFilters onFiltersChange={onFiltersChange} />
+      <OrderFilters values={filters} onFiltersChange={onFiltersChange} />
       <div className="flex items-center justify-between gap-2 border-t pt-4">
         <p className="text-sm text-muted-foreground">
           Mostrando <span className="font-medium text-foreground">{orders.length}</span> pedidos
@@ -174,30 +175,42 @@ function useOrdersPageState() {
   const { user } = useAuth();
   const scope = useSalesScope();
   const queryClient = useQueryClient();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   useRealtimeSync('orders', {
     onDataChange: () => {
       void queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });
-  const [filters, setFilters] = useState<OrdersFilterState>({
-    search: '',
-    status: 'all',
-    clientCompany: '',
-    page: 1,
-  });
+  const filters = useMemo<OrdersFilterState>(() => parseOrderQuery(searchParams), [searchParams]);
+  const apiDateRange = toApiDateRange(filters.dateRange);
+  const updateFilters = useCallback((updates: Partial<OrdersFilterState>, replace = true) => {
+    setSearchParams((current) => writeOrderQuery(current, { ...parseOrderQuery(current), ...updates }), {
+      replace, state: location.state,
+    });
+  }, [location.state, setSearchParams]);
+  useEffect(() => {
+    const canonical = writeOrderQuery(searchParams, filters);
+    if (canonical.toString() !== searchParams.toString()) {
+      setSearchParams(canonical, { replace: true, state: location.state });
+    }
+  }, [filters, location.state, searchParams, setSearchParams]);
   const { data: response, isLoading } = useOrdersList(user?.id, scope, {
-    search: filters.search,
+    search: filters.search.trim(),
     status: filters.status,
-    clientCompany: filters.clientCompany,
-    startDate: filters.dateRange?.from?.toISOString(),
-    endDate: filters.dateRange?.to?.toISOString(),
+    clientCompany: filters.clientCompany.trim(),
+    startDate: apiDateRange.startDate,
+    endDateExclusive: apiDateRange.endDateExclusive,
     page: filters.page,
     pageSize: 15,
   });
   const orders = response?.data || [];
   const totalPages = Math.ceil((response?.count || 0) / 15);
-  const applyFilters = (values: OrderFilterValues) => setFilters({ ...values, page: 1 });
-  const setPage = (page: number) => setFilters((current) => ({ ...current, page }));
+  const applyFilters = (values: OrderFilterValues) => updateFilters({ ...values, page: 1 });
+  const setPage = useCallback((page: number) => updateFilters({ page }, false), [updateFilters]);
+  useEffect(() => {
+    if (!isLoading && filters.page > Math.max(1, totalPages)) updateFilters({ page: Math.max(1, totalPages) });
+  }, [filters.page, isLoading, totalPages, updateFilters]);
   return { filters, orders, totalPages, isLoading, applyFilters, setPage };
 }
 

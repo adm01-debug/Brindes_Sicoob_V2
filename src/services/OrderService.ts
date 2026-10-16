@@ -36,8 +36,14 @@ function applyOrderFieldFilters(query: OrderListQuery, filters?: OrderFilters): 
   let filtered = query;
   if (filters?.status && filters.status !== "all") filtered = filtered.eq("status", filters.status);
   if (filters?.clientCompany) filtered = filtered.ilike("client_company", `%${filters.clientCompany}%`);
+  return filtered;
+}
+
+function applyOrderPeriod(query: OrderListQuery, filters?: OrderFilters): OrderListQuery {
+  let filtered = query;
   if (filters?.startDate) filtered = filtered.gte("created_at", filters.startDate);
-  if (filters?.endDate) filtered = filtered.lte("created_at", filters.endDate);
+  if (filters?.endDateExclusive) filtered = filtered.lt("created_at", filters.endDateExclusive);
+  else if (filters?.endDate) filtered = filtered.lte("created_at", filters.endDate);
   return filtered;
 }
 
@@ -58,6 +64,7 @@ function applyOrderListFilters(
 ): OrderListQuery {
   let filtered = applyOrderScope(query, sellerId, scope);
   filtered = applyOrderFieldFilters(filtered, filters);
+  filtered = applyOrderPeriod(filtered, filters);
   return applyOrderSearch(filtered, filters?.search);
 }
 

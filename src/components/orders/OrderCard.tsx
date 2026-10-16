@@ -6,17 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Package, Calendar, User, ArrowRight, TrendingUp } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ORDER_STATUS_LABELS, type OrderRow } from "@/hooks";
+import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS, type OrderRow } from "@/hooks";
 import { cn } from "@/lib/utils";
-
-const statusColors: Record<string, string> = {
-  rascunho: "bg-slate-100 text-slate-600 border-slate-200",
-  enviado_gestor: "bg-amber-100 text-amber-700 border-amber-200",
-  aprovado_gestor: "bg-blue-100 text-blue-700 border-blue-200",
-  em_producao: "bg-indigo-100 text-indigo-700 border-indigo-200",
-  concluido: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  cancelado: "bg-destructive/10 text-destructive border-destructive/20",
-};
 
 interface OrderCardProps {
   order: OrderRow;
@@ -25,7 +16,7 @@ interface OrderCardProps {
 
 export function OrderCard({ order, onClick }: OrderCardProps) {
   const statusLabel = ORDER_STATUS_LABELS[order.status] || order.status.replace('_', ' ');
-  const statusColorClass = statusColors[order.status] || "bg-muted text-muted-foreground border-border";
+  const statusColorClass = ORDER_STATUS_COLORS[order.status] || "bg-muted text-muted-foreground border-border";
 
   return (
     <Card
