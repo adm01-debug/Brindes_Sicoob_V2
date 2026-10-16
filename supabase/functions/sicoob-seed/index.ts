@@ -16,12 +16,15 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 // fallback previsível permitiria redefinir contas conhecidas após um deploy.
 const TEST_PASSWORD = Deno.env.get("SICOOB_TEST_USER_PASSWORD");
 
+// Papéis do enum app_role (hierarquia: dev > gestor_compras > comprador_singular >
+// gerente_pa > comprador_pac). Não existe papel de nível Central: a Central é só
+// organização (sicoob_centrais) acima da Singular.
 const TEST_USERS_CONFIG = [
   {
     id: "00000000-0000-0000-0000-000000000004",
     email: Deno.env.get("SICOOB_TEST_EMAIL_PA") || "pa@teste.com",
     full_name: "Usuário PA Teste",
-    role: "sicoob_pa",
+    role: "gerente_pa",
     cooperativa_id: "00000000-0000-0000-0000-000000000002",
     pa_id: "00000000-0000-0000-0000-000000000003"
   },
@@ -29,7 +32,7 @@ const TEST_USERS_CONFIG = [
     id: "00000000-0000-0000-0000-000000000005",
     email: Deno.env.get("SICOOB_TEST_EMAIL_SINGULAR") || "singular@teste.com",
     full_name: "Usuário Singular Teste",
-    role: "sicoob_singular",
+    role: "comprador_singular",
     cooperativa_id: "00000000-0000-0000-0000-000000000002",
     pa_id: null
   },
@@ -37,15 +40,15 @@ const TEST_USERS_CONFIG = [
     id: "00000000-0000-0000-0000-000000000006",
     email: Deno.env.get("SICOOB_TEST_EMAIL_CENTRAL") || "central@teste.com",
     full_name: "Usuário Central Teste",
-    role: "sicoob_central",
-    cooperativa_id: "00000000-0000-0000-0000-000000000001",
+    role: "gestor_compras",
+    cooperativa_id: "00000000-0000-0000-0000-000000000002",
     pa_id: null
   },
   {
     id: "00000000-0000-0000-0000-000000000007",
     email: Deno.env.get("SICOOB_TEST_EMAIL_GESTOR") || "gestor@teste.com",
     full_name: "Usuário Gestor Teste",
-    role: "sicoob_gestor",
+    role: "supervisor",
     cooperativa_id: null,
     pa_id: null
   }
@@ -140,13 +143,20 @@ Deno.serve(async (req) => {
     const cleanupReport = await cleanupOrphans(log);
     stats.orphans_removed = cleanupReport.removed;
 
-    // 1. Criar/Atualizar Cooperativas
+    // 1. Criar/Atualizar Central e Singular (a Central vive em sicoob_centrais)
+    const { error: errorCentral } = await supabase
+      .from("sicoob_centrais")
+      .upsert({ id: "00000000-0000-0000-0000-000000000001", name: "CENTRAL TESTE", code: "0001" });
+    if (errorCentral) throw errorCentral;
+
     const { error: errorCoop } = await supabase
       .from("cooperativas")
-      .upsert([
-        { id: "00000000-0000-0000-0000-000000000001", nome: "CENTRAL TESTE", codigo: "0001" },
-        { id: "00000000-0000-0000-0000-000000000002", nome: "SINGULAR TESTE", codigo: "0002" },
-      ]);
+      .upsert({
+        id: "00000000-0000-0000-0000-000000000002",
+        nome: "SINGULAR TESTE",
+        codigo: "0002",
+        central_id: "00000000-0000-0000-0000-000000000001",
+      });
     if (errorCoop) throw errorCoop;
 
     // 2. Criar/Atualizar PA
@@ -173,10 +183,19 @@ Deno.serve(async (req) => {
           full_name: user.full_name,
           role: user.role,
           cooperativa_id: user.cooperativa_id,
-          pa_id: user.pa_id
+          pa_id: user.pa_id,
+          is_active: true
         }, { onConflict: 'user_id' });
 
       if (profileError) throw profileError;
+
+      // user_roles é a fonte de verdade de papel (o gatilho de novo usuário grava 'vendedor')
+      const { error: roleDeleteError } = await supabase.from("user_roles").delete().eq("user_id", user.id);
+      if (roleDeleteError) throw roleDeleteError;
+      const { error: roleError } = await supabase
+        .from("user_roles")
+        .upsert({ user_id: user.id, role: user.role }, { onConflict: "user_id,role" });
+      if (roleError) throw roleError;
     }
 
     // 4. Garantir Orçamento Mensal para PA de Teste
