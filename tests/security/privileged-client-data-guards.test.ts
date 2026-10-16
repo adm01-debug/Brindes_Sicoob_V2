@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 const crmBridge = readFileSync('supabase/functions/crm-db-bridge/index.ts', 'utf8');
 const expertChat = readFileSync('supabase/functions/expert-chat/index.ts', 'utf8');
-const appRoutes = readFileSync('src/App.tsx', 'utf8');
+const appRoutes = readFileSync('src/routes/app-router.tsx', 'utf8');
 const quoteRoutes = readFileSync('src/routes/config/quotes.ts', 'utf8');
 const sellerDashboard = readFileSync('src/pages/sicoob/vendedor/SellerDashboardPage.tsx', 'utf8');
 const companySearch = readFileSync(
@@ -64,8 +64,8 @@ describe('barreiras estáticas para dados privilegiados de clientes', () => {
   });
 
   it('mantém as rotas de clientes dentro do bloco AdminRoute', () => {
-    const adminStart = appRoutes.indexOf('<Route element={<AdminRoute />}>');
-    const adminEnd = appRoutes.indexOf('<Route element={<SicoobRoute />}>', adminStart);
+    const adminStart = appRoutes.indexOf('<Route id="admin" element={<AdminRoute />}>');
+    const adminEnd = appRoutes.indexOf('<Route id="sicoob" element={<SicoobRoute />}>', adminStart);
     const clientsRoute = appRoutes.indexOf('path="/clientes"');
     const clientDetailRoute = appRoutes.indexOf('path="/clientes/:id"');
 
@@ -77,7 +77,7 @@ describe('barreiras estáticas para dados privilegiados de clientes', () => {
 
   it('mantém a criação de orçamento na área autenticada compartilhada', () => {
     const quoteRoutesMount = appRoutes.indexOf('{quoteRoutes.map');
-    const adminStart = appRoutes.indexOf('<Route element={<AdminRoute />}>');
+    const adminStart = appRoutes.indexOf('<Route id="admin" element={<AdminRoute />}>');
 
     expect(quoteRoutes).toContain('path: "/orcamentos/novo"');
     expect(quoteRoutesMount).toBeGreaterThan(-1);

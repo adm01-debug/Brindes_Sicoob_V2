@@ -6,8 +6,10 @@ import { defineRoute } from "@/lib/router-utils";
  * Rotas Públicas - Portal Sicoob
  * Refatoradas para excelência técnica 10/10
  */
+const enableDemoPages = typeof __ENABLE_DEMO_PAGES__ !== 'undefined' && __ENABLE_DEMO_PAGES__;
+
 export const publicRoutes = [
-  ...(__ENABLE_DEMO_PAGES__ ? [
+  ...(enableDemoPages ? [
     defineRoute({
       path: "/loja-demo",
       component: lazyWithRetry(() => import("@/pages/sicoob/StorefrontDemoPage")),
