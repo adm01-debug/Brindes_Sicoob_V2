@@ -71,7 +71,7 @@ describe("P0 — Edge Functions críticas", () => {
       "const BATCH_SIZE = 5",
       "return Promise.all(batch.map(async (conn) =>",
       "skipPersistence: true",
-      "const final = await runConnectionTest",
+      "const final = await persistResult(",
       "for (let i = 0; i < conns.length; i += BATCH_SIZE)",
     ]);
   });
