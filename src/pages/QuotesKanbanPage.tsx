@@ -138,6 +138,8 @@ function QuotesKanbanHeader({
           />
           {search && (
             <button
+              type="button"
+              aria-label="Limpar busca"
               onClick={() => onSearchChange('')}
               className="absolute right-3 top-1/2 -translate-y-1/2"
             >

@@ -19,7 +19,6 @@ const PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
  * ficam sempre `undefined` em produção hoje (ver Nota de risco funcional na doc de correções).
  */
 type PromobrindProductRow = PromobrindProduct & {
-  active?: boolean | null;
   is_imported?: boolean | null; is_textil?: boolean | null; is_thermal?: boolean | null;
   allows_personalization?: boolean | null;
   has_gift_box?: boolean | null; has_optional_packaging?: boolean | null;
@@ -115,7 +114,6 @@ function buildServerFilters(filters: ProductFilters): Record<string, unknown> {
   if (filters.is_kit) result.is_kit = true;
   if (filters.is_active !== undefined && filters.is_active !== 'all') {
     result.is_active = filters.is_active;
-    result.active = filters.is_active;
   }
   return result;
 }
@@ -150,7 +148,7 @@ function formatAdminProduct(
     category_id: firstDefined([product.category_id, product.main_category_id], null),
     supplier_id: valueOrNull(product.supplier_id),
     supplier_reference: valueOrNull(product.supplier_reference),
-    is_active: firstDefined([product.is_active, product.active], true),
+    is_active: valueOrDefault(product.is_active, true),
     images: formatProductImages(imageUrl, product.images),
     colors: formatProductColors(product.colors),
     materials: parseMaterials(product.materials),
@@ -345,7 +343,7 @@ export function useProductsManager() {
     setIsBulkUpdating(true);
     try {
       await Promise.all(Array.from(selectedIds).map(id =>
-        invokeExternalDbSingle({ table: 'products', operation: 'update', id, data: { is_active: activate, active: activate, updated_at: new Date().toISOString() } })
+        invokeExternalDbSingle({ table: 'products', operation: 'update', id, data: { is_active: activate, updated_at: new Date().toISOString() } })
       ));
       toast.success(`${selectedIds.size} produto(s) ${activate ? 'ativado(s)' : 'desativado(s)'}`);
       setSelectedIds(new Set());
