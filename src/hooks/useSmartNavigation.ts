@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { useNavigationStore } from '@/stores/useNavigationStore';
 import { Haptics } from '@/utils/haptics';
 import { dismissBlockingNavigationOverlay } from '@/lib/navigation/overlay-registry';
@@ -10,7 +10,8 @@ const dispatchSmartBack = () => goBackStack[goBackStack.length - 1]?.();
 export function useSmartNavigation() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { push, getPrevious, history, direction, setDirection } = useNavigationStore();
+  const navigationType = useNavigationType();
+  const { record, getPrevious, history, direction, setDirection } = useNavigationStore();
 
   // Rastrear navegação
   useEffect(() => {
@@ -20,13 +21,15 @@ export function useSmartNavigation() {
     // Pegar labels de breadcrumbs para títulos mais precisos se possível
     // Aqui poderíamos injetar um resolver de títulos baseado no path
     
-    push({
+    record({
+      key: location.key,
       pathname: location.pathname,
       search: location.search,
       title,
       timestamp: Date.now(),
-    });
-  }, [location.pathname, location.search, push]);
+      state: location.state,
+    }, navigationType);
+  }, [location.key, location.pathname, location.search, location.state, navigationType, record]);
 
   const goBack = useCallback((fallbackPath?: string) => {
     if (dismissBlockingNavigationOverlay()) return;
