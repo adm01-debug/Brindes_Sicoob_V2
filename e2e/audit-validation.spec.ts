@@ -26,16 +26,20 @@ test.describe('Enterprise Audit Validation Suite', () => {
     await loginAs(page, 'admin');
     await gotoAndSettle(page, '/admin/verbas');
 
-    await expect(page.getByRole('heading', { name: 'Gestão de Verbas (Orçamentos)' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Gestão de Verbas (Orçamentos)' }),
+    ).toBeVisible();
     const panel = page.getByRole('tabpanel', { name: 'Limites por PA' });
     await expect(panel).toBeVisible();
     await expect(panel.getByRole('table')).toBeVisible();
     const progressBars = panel.getByRole('progressbar', { name: /Consumo de verba/ });
-    if ((await progressBars.count()) > 0) {
+    const emptyState = panel.getByRole('cell', { name: 'Nenhuma verba encontrada' });
+    await expect(progressBars.first().or(emptyState)).toBeVisible({ timeout: 30_000 });
+    if (await progressBars.first().isVisible()) {
       await expect(progressBars.first()).toBeVisible();
       await expect(panel.locator('button[aria-label^="Editar verba"]').first()).toBeVisible();
     } else {
-      await expect(panel.getByRole('cell', { name: 'Nenhuma verba encontrada' })).toBeVisible();
+      await expect(emptyState).toBeVisible();
     }
   });
 
