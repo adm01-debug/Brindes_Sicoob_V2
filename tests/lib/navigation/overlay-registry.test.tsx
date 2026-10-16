@@ -52,4 +52,12 @@ describe('registro de overlays de navegação', () => {
     expect(dismissBlockingNavigationOverlay()).toBe(true);
     await waitFor(() => expect(screen.queryByText('Overlay próprio')).toBeNull());
   });
+
+  it('detecta um overlay explícito aberto depois de outro fechado', () => {
+    render(<>
+      <div data-navigation-overlay="blocking" aria-hidden="true">Fechado</div>
+      <div data-navigation-overlay="blocking">Aberto</div>
+    </>);
+    expect(hasBlockingNavigationOverlay()).toBe(true);
+  });
 });

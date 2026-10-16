@@ -12,6 +12,7 @@ import { Toaster as Sonner } from '@/components/ui/sonner';
 import { RouteAnnouncer } from '@/components/a11y';
 import { RouteScrollReset } from '@/components/common/RouteScrollReset';
 import { NavigationBlockerBridge } from '@/components/navigation/NavigationBlockerBridge';
+import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { AdminRoute } from '@/components/layout/AdminRoute';
@@ -37,6 +38,7 @@ function RouteSuspense({ children }: { children: ReactNode }) {
 }
 
 function AppRouterRuntime() {
+  useScrollRestoration();
   return (
     <AuthProvider>
       <Toaster />

@@ -1,9 +1,10 @@
-import { useEffect, useState, useCallback, forwardRef } from "react";
+import { useEffect, useState, useCallback, forwardRef, useId, useRef, type RefObject } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight, SkipForward, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useOnboardingContext } from "@/contexts/OnboardingContext";
 import { useNavigate, useLocation } from "react-router-dom";
+import { hasBlockingNavigationOverlay } from '@/lib/navigation/overlay-registry';
 
 interface TooltipPosition { top?: number; left?: number; right?: number; bottom?: number }
 type TourContext = ReturnType<typeof useOnboardingContext>;
@@ -91,7 +92,7 @@ function TargetHighlight({ rect }: { rect: DOMRect | null }) {
 
 function TourHeader({ tour }: { tour: TourContext }) {
   return <div className="bg-gradient-to-r from-primary/10 to-primary/5 px-4 py-3 flex items-center justify-between"><div className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" /><span className="text-xs font-medium text-muted-foreground">Passo {tour.currentStep + 1} de {tour.totalSteps}</span></div>
-    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={tour.skipTour} aria-label="Fechar"><X className="h-4 w-4" /></Button>
+    <Button data-tour-initial-focus variant="ghost" size="icon" className="h-6 w-6" onClick={tour.skipTour} aria-label="Fechar"><X className="h-4 w-4" /></Button>
   </div>;
 }
 
@@ -103,23 +104,77 @@ function TourActions({ tour }: { tour: TourContext }) {
     </div></div>;
 }
 
-function TourTooltip({ tour, position }: { tour: TourContext; position: TooltipPosition }) {
+interface TourTooltipProps {
+  tour: TourContext;
+  position: TooltipPosition;
+  dialogRef: RefObject<HTMLDivElement>;
+  titleId: string;
+  descriptionId: string;
+}
+
+function TourTooltip({ tour, position, dialogRef, titleId, descriptionId }: TourTooltipProps) {
   if (!tour.currentStepData) return null;
   const progress = `${((tour.currentStep + 1) / tour.totalSteps) * 100}%`;
-  return <motion.div key={tour.currentStep} initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -10, scale: 0.95 }} transition={{ duration: 0.2 }} className="absolute w-80 pointer-events-auto" style={{ top: position.top, left: position.left }}>
+  return <motion.div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId}
+    tabIndex={-1} key={tour.currentStep} initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -10, scale: 0.95 }} transition={{ duration: 0.2 }} className="absolute w-80 pointer-events-auto" style={{ top: position.top, left: position.left }}>
     <div className="bg-card border border-border rounded-xl shadow-2xl overflow-hidden"><TourHeader tour={tour} />
-      <div className="p-4"><h3 className="font-display text-lg font-semibold text-foreground mb-2">{tour.currentStepData.title}</h3><p className="text-sm text-muted-foreground leading-relaxed">{tour.currentStepData.description}</p></div>
+      <div className="p-4"><h3 id={titleId} className="font-display text-lg font-semibold text-foreground mb-2">{tour.currentStepData.title}</h3><p id={descriptionId} className="text-sm text-muted-foreground leading-relaxed">{tour.currentStepData.description}</p></div>
       <div className="px-4 pb-2"><div className="h-1 bg-muted rounded-full overflow-hidden"><motion.div className="h-full bg-primary" initial={{ width: 0 }} animate={{ width: progress }} transition={{ duration: 0.3 }} /></div></div>
       <TourActions tour={tour} />
     </div>
   </motion.div>;
 }
 
+function useTourDialogFocus(showTour: boolean) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!showTour) return;
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const dialog = dialogRef.current;
+    const initialFocus = dialog?.querySelector<HTMLElement>('[data-tour-initial-focus]') ?? dialog;
+    initialFocus?.focus();
+
+    const trapFocus = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab' || !dialogRef.current) return;
+      const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ));
+      if (focusable.length === 0) { event.preventDefault(); dialogRef.current.focus(); return; }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', trapFocus);
+    return () => {
+      document.removeEventListener('keydown', trapFocus);
+      if (previousFocus?.isConnected) previousFocus.focus();
+    };
+  }, [showTour]);
+  return dialogRef;
+}
+
 export const OnboardingTour = forwardRef<HTMLDivElement, unknown>(function OnboardingTour(_props, ref) {
   const tour = useOnboardingContext();
+  const { showTour, skipTour } = tour;
+  const dialogRef = useTourDialogFocus(showTour);
+  const titleId = useId();
+  const descriptionId = useId();
   useTourRoute(tour);
+  useEffect(() => {
+    if (!showTour) return;
+    const skipWithEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || hasBlockingNavigationOverlay()) return;
+      event.stopPropagation();
+      void skipTour();
+    };
+    window.addEventListener('keydown', skipWithEscape, { capture: true });
+    return () => window.removeEventListener('keydown', skipWithEscape, { capture: true });
+  }, [showTour, skipTour]);
   const position = useTourPosition(tour);
   return <div ref={ref}><AnimatePresence>{tour.showTour && tour.currentStepData && <div data-testid="onboarding-tour" className="fixed inset-0 z-[100] pointer-events-none">
-    <TourOverlay rect={position.highlightRect} /><TargetHighlight rect={position.highlightRect} /><TourTooltip tour={tour} position={position.tooltipPosition} />
+    <TourOverlay rect={position.highlightRect} /><TargetHighlight rect={position.highlightRect} /><TourTooltip tour={tour} position={position.tooltipPosition}
+      dialogRef={dialogRef} titleId={titleId} descriptionId={descriptionId} />
   </div>}</AnimatePresence></div>;
 });

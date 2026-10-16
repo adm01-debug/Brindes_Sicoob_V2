@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { useNavigationStore } from '@/stores/useNavigationStore';
 import { Haptics } from '@/utils/haptics';
 import { dismissBlockingNavigationOverlay } from '@/lib/navigation/overlay-registry';
+import { trackUx } from '@/lib/uxMetrics';
 
 const goBackStack: Array<() => void> = [];
 const dispatchSmartBack = () => goBackStack[goBackStack.length - 1]?.();
@@ -33,6 +34,7 @@ export function useSmartNavigation() {
 
   const goBack = useCallback((fallbackPath?: string) => {
     if (dismissBlockingNavigationOverlay()) return;
+    trackUx('nav.back');
     Haptics.impactLight();
     setDirection('backward');
 
@@ -53,6 +55,7 @@ export function useSmartNavigation() {
   }, [location.pathname, navigate, setDirection]);
 
   const goForward = useCallback((path: string) => {
+    trackUx('nav.forward');
     setDirection('forward');
     navigate(path);
   }, [navigate, setDirection]);

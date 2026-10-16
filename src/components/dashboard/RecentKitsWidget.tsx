@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/kit-builder';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { CUSTOM_KIT_STATUS, CUSTOM_KIT_STATUS_LABELS } from '@/lib/kit-builder/status';
 
 export function RecentKitsWidget() {
   const { user } = useAuth();
@@ -36,13 +37,6 @@ export function RecentKitsWidget() {
   });
 
   if (recentKits.length === 0) return null;
-
-  const STATUS_LABELS: Record<string, string> = {
-    draft: 'Rascunho',
-    saved: 'Salvo',
-    complete: 'Completo',
-    quoted: 'Orçado',
-  };
 
   return (
     <Card>
@@ -70,8 +64,8 @@ export function RecentKitsWidget() {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{kit.name}</p>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Badge variant={kit.status === 'draft' ? 'secondary' : 'outline'} className="text-[10px] px-1.5 py-0">
-                  {STATUS_LABELS[kit.status] || kit.status}
+                <Badge variant={kit.status === CUSTOM_KIT_STATUS.DRAFT ? 'secondary' : 'outline'} className="text-[10px] px-1.5 py-0">
+                  {CUSTOM_KIT_STATUS_LABELS[kit.status] || kit.status}
                 </Badge>
                 <span className="flex items-center gap-0.5">
                   <Clock className="h-2.5 w-2.5" />

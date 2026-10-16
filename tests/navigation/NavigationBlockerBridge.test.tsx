@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Link, Outlet, RouterProvider, createMemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -41,6 +41,21 @@ describe('NavigationBlockerBridge', () => {
     render(<RouterProvider router={router} />);
     await userEvent.click(screen.getByRole('link', { name: 'Ir para B' }));
     expect(router.state.location.pathname).toBe('/b');
+    expect(useNavigationGuardStore.getState().request).toBeNull();
+  });
+
+  it('prossegue quando o salvamento limpa a sujeira durante o bloqueio', async () => {
+    const router = createRouter();
+    render(<RouterProvider router={router} />);
+    act(() => useNavigationGuardStore.getState().setDirty('kit-builder', true));
+
+    await userEvent.click(screen.getByRole('link', { name: 'Ir para B' }));
+    expect(router.state.location.pathname).toBe('/a');
+    expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
+
+    act(() => useNavigationGuardStore.getState().setDirty('kit-builder', false));
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/b'));
     expect(useNavigationGuardStore.getState().request).toBeNull();
   });
 });

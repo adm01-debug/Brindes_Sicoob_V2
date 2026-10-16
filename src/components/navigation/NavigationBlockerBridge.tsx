@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useBlocker } from 'react-router-dom';
 import { UnsavedChangesDialog } from '@/components/common/UnsavedChangesDialog';
 import { useNavigationGuardStore } from '@/stores/useNavigationGuardStore';
+import { trackUx } from '@/lib/uxMetrics';
 
 interface BlockerAttempt {
   currentLocation: { pathname: string; search: string; hash: string };
@@ -45,11 +46,14 @@ export function NavigationBlockerBridge() {
       nextPath: routeIdentity(blocker.location),
       historyAction: attempt?.historyAction ?? 'UNKNOWN',
     });
+    trackUx('guard.shown');
   }, [beginRequest, blocker]);
 
   useEffect(() => {
-    if (!hasDirty) clearRequest();
-  }, [clearRequest, hasDirty]);
+    if (hasDirty) return;
+    clearRequest();
+    if (blocker.state === 'blocked') blocker.proceed();
+  }, [blocker, clearRequest, hasDirty]);
 
   useEffect(() => {
     if (!hasDirty) return;
@@ -67,12 +71,14 @@ export function NavigationBlockerBridge() {
     if (!request || blocker.state !== 'blocked') return;
     if (useNavigationGuardStore.getState().request?.id !== request.id) return;
     clearRequest(request.id);
+    trackUx('guard.confirm');
     blocker.proceed();
   };
   const cancel = () => {
     if (!request || blocker.state !== 'blocked') return;
     if (useNavigationGuardStore.getState().request?.id !== request.id) return;
     clearRequest(request.id);
+    trackUx('guard.cancel');
     blocker.reset();
   };
 
