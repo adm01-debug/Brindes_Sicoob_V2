@@ -26,6 +26,18 @@ verify_jwt = true
 [functions.sicoob-reorder]
 verify_jwt = true
 
+[functions.sicoob-approval-reconciliation]
+verify_jwt = true
+
+[functions.sicoob-artwork-register]
+verify_jwt = true
+
+[functions.sicoob-document-ingest]
+verify_jwt = true
+
+[functions.external-connections-sync]
+verify_jwt = true
+
 [functions.migrate-helper]
 verify_jwt = false
 

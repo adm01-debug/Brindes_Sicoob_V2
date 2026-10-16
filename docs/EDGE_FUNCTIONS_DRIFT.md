@@ -12,6 +12,21 @@ Atualizado em 16/10/2026 no projeto Supabase `cfmzkthhgliqelozlmwu`.
 - Funções remotas sem fonte local: **0**.
 - `_shared`, `tests` e `graphify-out` são suporte e não contam como funções.
 
+## Contrato e publicação
+
+O manifesto de autorização passou a declarar também o destino de runtime. O
+script `scripts/deploy-edge-functions.mjs` deriva dele as 100 funções
+publicáveis, preserva as seis fontes desativadas fora do Supabase e valida o
+modo `verify_jwt` das 100 entradas. A publicação manual da branch `main` deixa
+de manter uma lista parcial: publica o inventário inteiro, exige avanço de
+versão e grava um relatório recuperável em
+`artifacts/edge-deployment-report.json`.
+
+O inventário remoto e os modos de gateway correspondem ao contrato versionado.
+Isso não elimina, sozinho, a divergência de conteúdo: as fontes corrigidas só
+se tornam canônicas no runtime depois do merge com CI aprovada e da execução do
+workflow de publicação.
+
 ## Publicações deste lote
 
 | Função | Versão remota | `verify_jwt` | Validação |
