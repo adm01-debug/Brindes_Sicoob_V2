@@ -200,7 +200,7 @@ function AdvancedFiltersPopover(props: FilterUiProps) {
               {activeFiltersCount > 0 && <span className="text-xs text-muted-foreground font-normal">({filteredCount} de {totalProducts})</span>}
             </h4>
             <div className="flex items-center gap-1.5">
-              <Button variant="ghost" size="sm" onClick={handleReset} disabled={activeFiltersCount === 0} className="h-7 text-xs gap-1 text-muted-foreground hover:text-foreground px-2"><RotateCcw className="h-3 w-3" />Reset</Button>
+              <Button aria-label="Redefinir filtros" variant="ghost" size="sm" onClick={handleReset} disabled={activeFiltersCount === 0} className="h-7 text-xs gap-1 text-muted-foreground hover:text-foreground px-2"><RotateCcw className="h-3 w-3" />Reset</Button>
               <PopoverClose asChild><Button variant="outline" size="sm" className="h-7 text-xs px-2.5">Fechar</Button></PopoverClose>
             </div>
           </div>
@@ -228,7 +228,7 @@ function FilterInputs({ localSearch, setLocalSearch, quantityInput, setQuantityI
       <div className="relative flex-1 max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input aria-label="Buscar produto, SKU ou cor" placeholder="Buscar produto, SKU ou cor..." value={localSearch} onChange={(event) => setLocalSearch(event.target.value)} className="pl-9 pr-8" />
-        {localSearch && <button onClick={() => setLocalSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>}
+        {localSearch && <button type="button" aria-label="Limpar busca" onClick={() => setLocalSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>}
       </div>
       <TooltipProvider>
         <Tooltip>

@@ -80,8 +80,12 @@ function TourOverlay({ rect }: { rect: DOMRect | null }) {
 
 function TargetHighlight({ rect }: { rect: DOMRect | null }) {
   if (!rect) return null;
+  const left = Math.max(0, rect.left - 4);
+  const top = Math.max(0, rect.top - 4);
+  const right = Math.min(window.innerWidth, rect.right + 4);
+  const bottom = Math.min(window.innerHeight, rect.bottom + 4);
   return <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="absolute border-2 border-primary rounded-lg pointer-events-none"
-    style={{ top: rect.top - 4, left: rect.left - 4, width: rect.width + 8, height: rect.height + 8,
+    style={{ top, left, width: Math.max(0, right - left), height: Math.max(0, bottom - top),
       boxShadow: "0 0 0 4px rgba(var(--primary), 0.2), 0 0 20px rgba(var(--primary), 0.4)" }} />;
 }
 
