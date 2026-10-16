@@ -1,0 +1,2222 @@
+[
+  {
+    "etapa": "T001",
+    "titulo": "Fixar a referência e os ambientes",
+    "fase": 1,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G51"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Manifesto versionado identifica cada ambiente e nenhuma evidência depende apenas do nome da branch.",
+    "evidencias_atuais": [
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json",
+      "docs/execucao/fechamento-tecnico-2026-10-08.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T002",
+    "titulo": "Preservar e reconciliar trabalhos locais",
+    "fase": 1,
+    "prioridade": "P2",
+    "estado_atual": "BLOQUEADA_EXTERNA",
+    "frentes": [
+      "G52"
+    ],
+    "o_que_falta": "Resolver a dependência externa indicada pelas frentes e registrar evidência de homologação.",
+    "criterio_de_aceite": "Toda diferença tem destino verificável e nenhum checkout alheio foi sobrescrito.",
+    "evidencias_atuais": [
+      "docs/execucao/auditoria-validacao-2026-10-16.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T003",
+    "titulo": "Consolidar a rastreabilidade integral",
+    "fase": 1,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G51",
+      "G53"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Nenhuma origem fica sem responsável e etapa de fechamento; mapeamento não conta como implementação.",
+    "evidencias_atuais": [
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json",
+      "docs/execucao/fechamento-tecnico-2026-10-08.md",
+      "README.md",
+      "docs/README.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T004",
+    "titulo": "Atribuir responsáveis e resolver decisões",
+    "fase": 1,
+    "prioridade": "P1",
+    "estado_atual": "NAO_INICIADA",
+    "frentes": [
+      "G50",
+      "G51"
+    ],
+    "o_que_falta": "Implementar o resultado da etapa e demonstrar o critério de aceite com evidência atual.",
+    "criterio_de_aceite": "Todas as decisões bloqueantes têm dono, prazo e registro; responsáveis nominais substituem campos vazios.",
+    "evidencias_atuais": [
+      "docs/SCOPE_ALIGNMENT.md",
+      "docs/AUTH_PASSKEYS.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json",
+      "docs/execucao/fechamento-tecnico-2026-10-08.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T005",
+    "titulo": "Segregar homologação e preparar personas",
+    "fase": 1,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G28",
+      "G41"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Configuração reproduzível documenta ambiente, dados, contas e limpeza segura sem valores secretos.",
+    "evidencias_atuais": [
+      "docs/adr/0004-closed-platform-policy.md",
+      ".github/workflows/e2e.yml"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T006",
+    "titulo": "Restabelecer acesso administrativo verificável",
+    "fase": 1,
+    "prioridade": "P2",
+    "estado_atual": "PARCIAL",
+    "frentes": [],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Acesso administrativo reproduzível e limitado ao projeto correto; falha não aparece como sucesso vazio.",
+    "evidencias_atuais": [],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T007",
+    "titulo": "Organizar credenciais e configuração pública",
+    "fase": 1,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G28",
+      "G47"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Runbook e docs/secrets.md completos; chaves públicas duplicadas têm contrato único e exceções justificadas.",
+    "evidencias_atuais": [
+      "docs/adr/0004-closed-platform-policy.md",
+      "supabase/functions/_shared/assistant-context.ts",
+      "supabase/functions/_shared/pii-redaction.test.ts"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T008",
+    "titulo": "Ensaiar backup e recuperação",
+    "fase": 1,
+    "prioridade": "P1",
+    "estado_atual": "NAO_INICIADA",
+    "frentes": [
+      "G46"
+    ],
+    "o_que_falta": "Implementar o resultado da etapa e demonstrar o critério de aceite com evidência atual.",
+    "criterio_de_aceite": "Relatório registra medidas reais, recursos recuperados e limitações; backup existente sem restore não basta.",
+    "evidencias_atuais": [
+      "docs/DR.md",
+      "docs/RUNBOOK.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T009",
+    "titulo": "Corrigir proveniência e validade das evidências",
+    "fase": 1,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G51",
+      "G53"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Nenhuma rotina promove resultado antigo a prova atual; cobertura informa arquivos realmente medidos.",
+    "evidencias_atuais": [
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json",
+      "docs/execucao/fechamento-tecnico-2026-10-08.md",
+      "README.md",
+      "docs/README.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T010",
+    "titulo": "Preparar reconciliação dos PRs pendentes",
+    "fase": 1,
+    "prioridade": "P2",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G52"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Candidato conciliado está revisável; sua integração depende das correções e gates das etapas posteriores.",
+    "evidencias_atuais": [
+      "docs/execucao/auditoria-validacao-2026-10-16.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T011",
+    "titulo": "Estabilizar runners, cotas e artefatos",
+    "fase": 2,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G41"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Pipeline tem capacidade medida e política de retenção; premissa antiga de falta geral de minutos é encerrada por decisão.",
+    "evidencias_atuais": [
+      ".github/workflows/e2e.yml"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T012",
+    "titulo": "Tornar os gates honestos e obrigatórios",
+    "fase": 2,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G39",
+      "G40"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Nenhuma falha obrigatória vira verde; skips opcionais identificam motivo e não certificam o requisito.",
+    "evidencias_atuais": [
+      "scripts/check-critical-test-skip-budget.mjs",
+      "docs/execucao/auditoria-validacao-2026-10-16.md",
+      ".github/workflows/branch-protection-sentinel.yml"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T013",
+    "titulo": "Eliminar regressões e reduzir dívida técnica",
+    "fase": 2,
+    "prioridade": "P2",
+    "estado_atual": "IMPLEMENTADO_EM_CONSTRUCAO",
+    "frentes": [
+      "G55"
+    ],
+    "o_que_falta": "Homologar a jornada conectada e obter aceite operacional; implementação e migration não equivalem a tráfego real.",
+    "criterio_de_aceite": "Zero regressões e zero erros nos caminhos críticos; cada dívida residual tem destino e aceite técnico, sem nota fictícia.",
+    "evidencias_atuais": [
+      "package.json",
+      "docs/execucao/auditoria-validacao-2026-10-16.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T014",
+    "titulo": "Revisar testes ignorados e cobertura",
+    "fase": 2,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G39",
+      "G55"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Nenhum teste crítico necessário permanece silenciosamente ignorado; limites e exclusões residuais são aprovados individualmente.",
+    "evidencias_atuais": [
+      "scripts/check-critical-test-skip-budget.mjs",
+      "docs/execucao/auditoria-validacao-2026-10-16.md",
+      "package.json"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T015",
+    "titulo": "Reorganizar execução e custo do CI",
+    "fase": 2,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G41",
+      "G42"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Matriz de gatilhos comprovada; meta proposta de até 30 minutos de runner por PR é medida e aprovada ou formalmente revisada.",
+    "evidencias_atuais": [
+      ".github/workflows/e2e.yml",
+      ".github/workflows",
+      "docs/execucao/fechamento-tecnico-2026-10-08.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T016",
+    "titulo": "Publicar e testar um artefato reproduzível",
+    "fase": 2,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G42",
+      "G43"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Origem e configuração do artefato são inequívocas; baseline relativo de bundle e orçamento absoluto passam.",
+    "evidencias_atuais": [
+      ".github/workflows",
+      "docs/execucao/fechamento-tecnico-2026-10-08.md",
+      "vercel.json",
+      "public/reports/AUDIT_REPORT_20a6b98b1.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T017",
+    "titulo": "Fortalecer Actions e dependências",
+    "fase": 2,
+    "prioridade": "P2",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G42",
+      "G55"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Supply chain auditável; CodeQL/SARIF e Gitleaks geram resultados consumíveis e redigidos sem contratação implícita.",
+    "evidencias_atuais": [
+      ".github/workflows",
+      "docs/execucao/fechamento-tecnico-2026-10-08.md",
+      "package.json",
+      "docs/execucao/auditoria-validacao-2026-10-16.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T018",
+    "titulo": "Homologar E2E, visual e desempenho",
+    "fase": 2,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G39",
+      "G41"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Relatórios privados preservam rastros e resultados; testes de demo não substituem jornada conectada.",
+    "evidencias_atuais": [
+      "scripts/check-critical-test-skip-budget.mjs",
+      "docs/execucao/auditoria-validacao-2026-10-16.md",
+      ".github/workflows/e2e.yml"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T019",
+    "titulo": "Proteger revisão, merge e publicação",
+    "fase": 2,
+    "prioridade": "P1",
+    "estado_atual": "NAO_INICIADA",
+    "frentes": [
+      "G40"
+    ],
+    "o_que_falta": "Implementar o resultado da etapa e demonstrar o critério de aceite com evidência atual.",
+    "criterio_de_aceite": "Proteções testadas por comportamento; plano da conta suporta regras ou existe alternativa formal equivalente.",
+    "evidencias_atuais": [
+      ".github/workflows/branch-protection-sentinel.yml"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T020",
+    "titulo": "Criar operação observável do CI",
+    "fase": 2,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G42",
+      "G45",
+      "G55"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Equipe consegue identificar falha, reexecutar seletivamente ou reverter; ações históricas superadas têm decisão registrada.",
+    "evidencias_atuais": [
+      ".github/workflows",
+      "docs/execucao/fechamento-tecnico-2026-10-08.md",
+      "docs/OBSERVABILITY.md",
+      "docs/SLO.md",
+      "package.json",
+      "docs/execucao/auditoria-validacao-2026-10-16.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T021",
+    "titulo": "Inventariar schema e capacidades atuais",
+    "fase": 3,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G38",
+      "G53",
+      "G54"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Inventário completo do escopo publicado está vinculado ao projeto e distingue ausência de erro de permissão.",
+    "evidencias_atuais": [
+      "scripts/db/check-migration-ledger-drift.mjs",
+      "scripts/db/migration-ledger-baseline.json",
+      "README.md",
+      "docs/README.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/08-banco-migrations.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T022",
+    "titulo": "Reconciliar migrations e preparar baseline",
+    "fase": 3,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G38"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Cada divergence tem ação, prova e contingência; nada é marcado aplicado só porque o arquivo existe.",
+    "evidencias_atuais": [
+      "scripts/db/check-migration-ledger-drift.mjs",
+      "scripts/db/migration-ledger-baseline.json"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T023",
+    "titulo": "Alinhar tipos, APIs e inventário de runtime",
+    "fase": 3,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G38",
+      "G53",
+      "G54"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Referências bloqueantes resolvidas contra fonte atual; tipos e snapshot têm hash e origem.",
+    "evidencias_atuais": [
+      "scripts/db/check-migration-ledger-drift.mjs",
+      "scripts/db/migration-ledger-baseline.json",
+      "README.md",
+      "docs/README.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/08-banco-migrations.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T024",
+    "titulo": "Validar RLS por papel e unidade",
+    "fase": 3,
+    "prioridade": "P0",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G01",
+      "G04",
+      "G27",
+      "G39"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Matriz por tabela/ação demonstra positivos e negativos; tabelas internas negadas não recebem policy permissiva para deixar CI verde.",
+    "evidencias_atuais": [
+      "supabase/migrations/20261013115605_harden_sicoob_budget_authority.sql",
+      "scripts/qa/simular-autoridade-verbas-sicoob.py",
+      "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
+      "supabase/migrations/20261013123000_preserve_atomic_quote_save_under_governance.sql",
+      "src/routes/config/admin.ts",
+      "src/pages/admin/sicoob/SicoobManagementPage.tsx",
+      "scripts/check-critical-test-skip-budget.mjs",
+      "docs/execucao/auditoria-validacao-2026-10-16.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T025",
+    "titulo": "Auditar funções privilegiadas e views",
+    "fase": 3,
+    "prioridade": "P0",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G05",
+      "G37"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Inventário de privilégios e testes de bypass fecham rotas alternativas; advisors tratados por achado.",
+    "evidencias_atuais": [
+      "supabase/functions/verify-email/index.ts",
+      "supabase/config.toml",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/07-edge-functions-integracoes.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T026",
+    "titulo": "Reconciliar integridade e performance",
+    "fase": 3,
+    "prioridade": "P2",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G54"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Nenhum vínculo crítico órfão; mudanças de índices/constraints têm medida antes/depois e plano de aplicação.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/08-banco-migrations.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T027",
+    "titulo": "Construir o aplicador seguro de migrations",
+    "fase": 3,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G38",
+      "G42"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Aplicador recusa alvo/SQL indevidos e não confirma contrato apenas por marcador textual.",
+    "evidencias_atuais": [
+      "scripts/db/check-migration-ledger-drift.mjs",
+      "scripts/db/migration-ledger-baseline.json",
+      ".github/workflows",
+      "docs/execucao/fechamento-tecnico-2026-10-08.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T028",
+    "titulo": "Ensaiar evolução e compatibilidade do banco",
+    "fase": 3,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G38",
+      "G46",
+      "G54"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Plano de ordem de publicação define expandir, migrar e retirar contrato sem janela insegura.",
+    "evidencias_atuais": [
+      "scripts/db/check-migration-ledger-drift.mjs",
+      "scripts/db/migration-ledger-baseline.json",
+      "docs/DR.md",
+      "docs/RUNBOOK.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/08-banco-migrations.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T029",
+    "titulo": "Aplicar o lote estrutural validado em construção",
+    "fase": 3,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G38"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Lote estrutural comprovadamente aplicado e reconciliado; mudanças de status/orçamento aguardam seu próprio lote na etapa39.",
+    "evidencias_atuais": [
+      "scripts/db/check-migration-ledger-drift.mjs",
+      "scripts/db/migration-ledger-baseline.json"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T030",
+    "titulo": "Certificar a base do banco e recursos Edge",
+    "fase": 3,
+    "prioridade": "P0",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G05",
+      "G07",
+      "G15",
+      "G37",
+      "G38",
+      "G42"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Banco e Edge do lote têm relatório único com execução remota datada; HTTP 401 isolado não certifica negócio.",
+    "evidencias_atuais": [
+      "supabase/functions/verify-email/index.ts",
+      "supabase/config.toml",
+      "src/hooks/useCustomKitsRealtime.ts",
+      "src/services/sicoob/commonService.ts",
+      "supabase/functions/expert-chat/index.ts",
+      "supabase/functions/trends-insights/index.ts",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/07-edge-functions-integracoes.md",
+      "scripts/db/check-migration-ledger-drift.mjs",
+      "scripts/db/migration-ledger-baseline.json",
+      ".github/workflows",
+      "docs/execucao/fechamento-tecnico-2026-10-08.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T031",
+    "titulo": "Fechar a falha de autorização de status",
+    "fase": 4,
+    "prioridade": "P2",
+    "estado_atual": "PARCIAL",
+    "frentes": [],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "A reprodução da auditoria passa a demonstrar negação; nenhuma saída antecipada contorna autorização.",
+    "evidencias_atuais": [],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T032",
+    "titulo": "Unificar status, enum e escritores",
+    "fase": 4,
+    "prioridade": "P0",
+    "estado_atual": "IMPLEMENTADO_EM_CONSTRUCAO",
+    "frentes": [
+      "G02",
+      "G03"
+    ],
+    "o_que_falta": "Homologar a jornada conectada e obter aceite operacional; implementação e migration não equivalem a tráfego real.",
+    "criterio_de_aceite": "Todos os escritores foram inventariados e não há caminho de menor privilégio contornando o contrato.",
+    "evidencias_atuais": [
+      "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
+      "scripts/qa/simular-conversao-pedido-sicoob.py",
+      "scripts/qa/simular-aprovacao-publica.py"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T033",
+    "titulo": "Preservar concorrência de edição e transição",
+    "fase": 4,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G19"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Versão, UI e servidor concordam; nenhum retry disfarça edição baseada em estado antigo.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/01-plano-encerramento.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T034",
+    "titulo": "Proteger lotes e histórico único",
+    "fase": 4,
+    "prioridade": "P2",
+    "estado_atual": "PARCIAL",
+    "frentes": [],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Nenhuma alteração parcial ou deadlock não tratado; histórico identifica ator e intenção de forma verificável.",
+    "evidencias_atuais": [],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T035",
+    "titulo": "Endurecer criação idempotente de orçamento",
+    "fase": 4,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G19"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Criação única demonstrada no SQL e no editor, com ACL/RLS e retenção compatíveis.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/01-plano-encerramento.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T036",
+    "titulo": "Preservar identidade dos itens e vínculos",
+    "fase": 4,
+    "prioridade": "P0",
+    "estado_atual": "IMPLEMENTADO_EM_CONSTRUCAO",
+    "frentes": [
+      "G04"
+    ],
+    "o_que_falta": "Homologar a jornada conectada e obter aceite operacional; implementação e migration não equivalem a tráfego real.",
+    "criterio_de_aceite": "A identidade comercial sobrevive à edição e toda quebra de vínculo exige decisão explícita.",
+    "evidencias_atuais": [
+      "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
+      "supabase/migrations/20261013123000_preserve_atomic_quote_save_under_governance.sql"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T037",
+    "titulo": "Recalcular e validar o contrato comercial",
+    "fase": 4,
+    "prioridade": "P0",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G04",
+      "G18"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Contrato monetário documentado e exemplos calculados independentemente fecham diferenças de centavos e permissões.",
+    "evidencias_atuais": [
+      "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
+      "supabase/migrations/20261013123000_preserve_atomic_quote_save_under_governance.sql",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/02-plano-original-benchmark.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/05-frontend-nucleo.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T038",
+    "titulo": "Integrar editor e conversão transacional",
+    "fase": 4,
+    "prioridade": "P0",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G02",
+      "G10",
+      "G12"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Editor, RPC e conversão demonstram atomicidade e idempotência com erros compreensíveis ao usuário.",
+    "evidencias_atuais": [
+      "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
+      "scripts/qa/simular-conversao-pedido-sicoob.py",
+      "src/routes/config/quotes.ts",
+      "src/pages/QuoteDetailPage.tsx",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/05-frontend-nucleo.md",
+      "src/components/bi/ConfirmQuoteSuggestionsModal.tsx"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T039",
+    "titulo": "Publicar o lote de orçamentos corrigido",
+    "fase": 4,
+    "prioridade": "P0",
+    "estado_atual": "IMPLEMENTADO_EM_CONSTRUCAO",
+    "frentes": [
+      "G02"
+    ],
+    "o_que_falta": "Homologar a jornada conectada e obter aceite operacional; implementação e migration não equivalem a tráfego real.",
+    "criterio_de_aceite": "SQL publicado, frontend e Edge correspondem ao mesmo candidato e às provas da etapa 31.",
+    "evidencias_atuais": [
+      "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
+      "scripts/qa/simular-conversao-pedido-sicoob.py"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T040",
+    "titulo": "Homologar a jornada de orçamento",
+    "fase": 4,
+    "prioridade": "P0",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G02",
+      "G03",
+      "G10"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Aceite funcional do módulo com evidência positiva/negativa e pendências de negócio resolvidas.",
+    "evidencias_atuais": [
+      "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
+      "scripts/qa/simular-conversao-pedido-sicoob.py",
+      "scripts/qa/simular-aprovacao-publica.py",
+      "src/routes/config/quotes.ts",
+      "src/pages/QuoteDetailPage.tsx"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T041",
+    "titulo": "Consolidar identidade e recuperação de rascunhos",
+    "fase": 5,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G19"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Identidade recuperável documenta comportamento em recarga, nova aba e nova sessão.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/01-plano-encerramento.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T042",
+    "titulo": "Controlar formato, retenção e concorrência local",
+    "fase": 5,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G19"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Formato, TTL e disputa entre abas cobertos; avisos não afirmam salvamento que falhou.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/01-plano-encerramento.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T043",
+    "titulo": "Fechar ciclo de sessão e troca de unidade",
+    "fase": 5,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G19",
+      "G27",
+      "G28",
+      "G32"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Nenhuma gravação tardia cruza sessão/unidade; testes incluem mesmo navegador com personas diferentes.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/01-plano-encerramento.md",
+      "src/routes/config/admin.ts",
+      "src/pages/admin/sicoob/SicoobManagementPage.tsx",
+      "docs/adr/0004-closed-platform-policy.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/05-frontend-nucleo.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T044",
+    "titulo": "Conectar autosave à intenção confirmada",
+    "fase": 5,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G19"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Usuário entende onde o conteúdo está salvo; a recuperação não produz documentos duplicados.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/01-plano-encerramento.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T045",
+    "titulo": "Homologar edição resiliente",
+    "fase": 5,
+    "prioridade": "P1",
+    "estado_atual": "NAO_INICIADA",
+    "frentes": [
+      "G19",
+      "G44"
+    ],
+    "o_que_falta": "Implementar o resultado da etapa e demonstrar o critério de aceite com evidência atual.",
+    "criterio_de_aceite": "Módulo de rascunhos tem aceite conectado e não depende apenas de mocks de storage.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/01-plano-encerramento.md",
+      "src/components/layout/Header.tsx",
+      "public/sw.js"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T046",
+    "titulo": "Definir eventos e outbox de notificações",
+    "fase": 5,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G09"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Contrato de eventos elimina escrita crítica posterior e não verificada do navegador.",
+    "evidencias_atuais": [
+      "supabase/functions/send-transactional-email/index.ts",
+      "supabase/functions/_shared/approval-delivery.ts"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T047",
+    "titulo": "Implementar processamento deduplicado e seguro",
+    "fase": 5,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G07",
+      "G08",
+      "G35"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Estados incertos são reconciliáveis; retries têm limite e não fingem confirmação do provedor.",
+    "evidencias_atuais": [
+      "src/hooks/useCustomKitsRealtime.ts",
+      "src/services/sicoob/commonService.ts",
+      "supabase/migrations/20260922224500_convert_quote_to_sicoob_order.sql",
+      "scripts/db/apply-sicoob-migrations.mjs",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/07-edge-functions-integracoes.md",
+      "docs/OBSERVABILITY.md",
+      "supabase/migrations/20261015102000_fix_pg_net_recycled_request_ids.sql",
+      "docs/execucao/correcao-worker-aprovacoes-pgnet-2026-10-15.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T048",
+    "titulo": "Homologar provedores, templates e cron",
+    "fase": 5,
+    "prioridade": "P1",
+    "estado_atual": "BLOQUEADA_EXTERNA",
+    "frentes": [
+      "G08",
+      "G09",
+      "G36",
+      "G44"
+    ],
+    "o_que_falta": "Resolver a dependência externa indicada pelas frentes e registrar evidência de homologação.",
+    "criterio_de_aceite": "Configuração operacional por ambiente tem evidência; teste não envia mensagem a contatos reais não autorizados.",
+    "evidencias_atuais": [
+      "supabase/migrations/20260922224500_convert_quote_to_sicoob_order.sql",
+      "scripts/db/apply-sicoob-migrations.mjs",
+      "supabase/functions/send-transactional-email/index.ts",
+      "supabase/functions/_shared/approval-delivery.ts",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/07-edge-functions-integracoes.md",
+      "src/components/layout/Header.tsx",
+      "public/sw.js",
+      "supabase/migrations/20261015102000_fix_pg_net_recycled_request_ids.sql",
+      "docs/execucao/correcao-worker-aprovacoes-pgnet-2026-10-15.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T049",
+    "titulo": "Reconciliar falhas de entrega e alertas",
+    "fase": 5,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G08",
+      "G35",
+      "G36",
+      "G45"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Falhas ficam visíveis e solucionáveis com trilha; alertas têm destinatário/canal previamente aprovado.",
+    "evidencias_atuais": [
+      "supabase/migrations/20260922224500_convert_quote_to_sicoob_order.sql",
+      "scripts/db/apply-sicoob-migrations.mjs",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/07-edge-functions-integracoes.md",
+      "docs/OBSERVABILITY.md",
+      "docs/SLO.md",
+      "supabase/migrations/20261015102000_fix_pg_net_recycled_request_ids.sql",
+      "docs/execucao/correcao-worker-aprovacoes-pgnet-2026-10-15.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T050",
+    "titulo": "Homologar notificações ponta a ponta",
+    "fase": 5,
+    "prioridade": "P1",
+    "estado_atual": "NAO_INICIADA",
+    "frentes": [
+      "G08",
+      "G09"
+    ],
+    "o_que_falta": "Implementar o resultado da etapa e demonstrar o critério de aceite com evidência atual.",
+    "criterio_de_aceite": "Aceite por evento/canal com diferenças documentadas; notificação de pedido não certifica orçamento automaticamente.",
+    "evidencias_atuais": [
+      "supabase/migrations/20260922224500_convert_quote_to_sicoob_order.sql",
+      "scripts/db/apply-sicoob-migrations.mjs",
+      "supabase/functions/send-transactional-email/index.ts",
+      "supabase/functions/_shared/approval-delivery.ts",
+      "supabase/migrations/20261015102000_fix_pg_net_recycled_request_ids.sql",
+      "docs/execucao/correcao-worker-aprovacoes-pgnet-2026-10-15.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T051",
+    "titulo": "Concluir convites institucionais",
+    "fase": 6,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G09",
+      "G27",
+      "G28",
+      "G50"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Convite funcional no ambiente publicado e matriz de negativas registrada.",
+    "evidencias_atuais": [
+      "supabase/functions/send-transactional-email/index.ts",
+      "supabase/functions/_shared/approval-delivery.ts",
+      "src/routes/config/admin.ts",
+      "src/pages/admin/sicoob/SicoobManagementPage.tsx",
+      "docs/adr/0004-closed-platform-policy.md",
+      "docs/SCOPE_ALIGNMENT.md",
+      "docs/AUTH_PASSKEYS.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T052",
+    "titulo": "Versionar políticas e alçadas",
+    "fase": 6,
+    "prioridade": "P0",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G04",
+      "G16"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Decisão é reproduzível pela política histórica e pelas permissões do ator no servidor.",
+    "evidencias_atuais": [
+      "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
+      "supabase/migrations/20261013123000_preserve_atomic_quote_save_under_governance.sql",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T053",
+    "titulo": "Fechar fila de aprovação e delegação",
+    "fase": 6,
+    "prioridade": "P0",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G03",
+      "G16",
+      "G31"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Aprovação única e correta por política; nenhuma permissão depende só da interface.",
+    "evidencias_atuais": [
+      "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
+      "scripts/qa/simular-aprovacao-publica.py",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json",
+      "src/routes/config/admin.ts",
+      "src/routes/config/dev.ts"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T054",
+    "titulo": "Cadastrar propostas institucionais comparáveis",
+    "fase": 6,
+    "prioridade": "P1",
+    "estado_atual": "NAO_INICIADA",
+    "frentes": [
+      "G16"
+    ],
+    "o_que_falta": "Implementar o resultado da etapa e demonstrar o critério de aceite com evidência atual.",
+    "criterio_de_aceite": "Comparação utilizável e auditável com documentos liberados; metadados sem tela não encerram entrega.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T055",
+    "titulo": "Formalizar escolha e fornecedor único",
+    "fase": 6,
+    "prioridade": "P1",
+    "estado_atual": "NAO_INICIADA",
+    "frentes": [
+      "G16"
+    ],
+    "o_que_falta": "Implementar o resultado da etapa e demonstrar o critério de aceite com evidência atual.",
+    "criterio_de_aceite": "Decisão comercial possui justificativa, versão, responsável e trilha institucional.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T056",
+    "titulo": "Validar disponibilidade de verba na aprovação",
+    "fase": 6,
+    "prioridade": "P0",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G01",
+      "G17"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Regra de saldo vale no servidor; exceção tem alçada e não resulta de fallback silencioso.",
+    "evidencias_atuais": [
+      "supabase/migrations/20261013115605_harden_sicoob_budget_authority.sql",
+      "scripts/qa/simular-autoridade-verbas-sicoob.py",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T057",
+    "titulo": "Homologar governança entre cooperativas",
+    "fase": 6,
+    "prioridade": "P0",
+    "estado_atual": "NAO_INICIADA",
+    "frentes": [
+      "G01",
+      "G16",
+      "G27"
+    ],
+    "o_que_falta": "Implementar o resultado da etapa e demonstrar o critério de aceite com evidência atual.",
+    "criterio_de_aceite": "Responsável de negócio aprova a governança completa, inclusive exceções e autorizações negativas.",
+    "evidencias_atuais": [
+      "supabase/migrations/20261013115605_harden_sicoob_budget_authority.sql",
+      "scripts/qa/simular-autoridade-verbas-sicoob.py",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json",
+      "src/routes/config/admin.ts",
+      "src/pages/admin/sicoob/SicoobManagementPage.tsx"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T058",
+    "titulo": "Certificar catálogo mestre somente leitura",
+    "fase": 6,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G29"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Nenhuma credencial permite fluxo de escrita a partir do portal; logs mostram apenas consultas autorizadas.",
+    "evidencias_atuais": [
+      "supabase/functions/external-db-bridge/index.ts",
+      "supabase/functions/_shared/external-read-only.ts"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T059",
+    "titulo": "Normalizar produto, preço, estoque e validade",
+    "fase": 6,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G11",
+      "G18",
+      "G29",
+      "G30"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Mesma semântica comercial em card, detalhe, kit, orçamento e recompra.",
+    "evidencias_atuais": [
+      "src/pages/filters/filters-page-helpers.ts",
+      "src/hooks/useCatalogFiltering.ts",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/02-plano-original-benchmark.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/05-frontend-nucleo.md",
+      "supabase/functions/external-db-bridge/index.ts",
+      "supabase/functions/_shared/external-read-only.ts"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T060",
+    "titulo": "Homologar descoberta e seleção na loja",
+    "fase": 6,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G10",
+      "G11",
+      "G12",
+      "G29",
+      "G30",
+      "G32"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Jornadas de descoberta aprovadas em desktop/mobile com dados reais de homologação.",
+    "evidencias_atuais": [
+      "src/routes/config/quotes.ts",
+      "src/pages/QuoteDetailPage.tsx",
+      "src/pages/filters/filters-page-helpers.ts",
+      "src/hooks/useCatalogFiltering.ts",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/05-frontend-nucleo.md",
+      "src/components/bi/ConfirmQuoteSuggestionsModal.tsx",
+      "supabase/functions/external-db-bridge/index.ts",
+      "supabase/functions/_shared/external-read-only.ts"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T061",
+    "titulo": "Concluir templates, favoritos e coleções",
+    "fase": 7,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G12",
+      "G30",
+      "G31",
+      "G33"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Coleções reutilizáveis funcionam com erros/vazios e origem comercial verificável.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/05-frontend-nucleo.md",
+      "src/components/bi/ConfirmQuoteSuggestionsModal.tsx",
+      "src/routes/config/admin.ts",
+      "src/routes/config/dev.ts",
+      "src/hooks/bi/useClientBI.ts",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/06-frontend-admin-bi-ia.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T062",
+    "titulo": "Validar cálculo e demanda dos kits",
+    "fase": 7,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G20"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Cálculo independente confirma totais, mínimos e saldo de toda composição.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/02-plano-original-benchmark.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T063",
+    "titulo": "Modelar embalagem e capacidade física",
+    "fase": 7,
+    "prioridade": "P1",
+    "estado_atual": "NAO_INICIADA",
+    "frentes": [
+      "G20"
+    ],
+    "o_que_falta": "Implementar o resultado da etapa e demonstrar o critério de aceite com evidência atual.",
+    "criterio_de_aceite": "Modelo físico documentado e dados suficientes; medidas de gravação não substituem dimensões do objeto.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/02-plano-original-benchmark.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T064",
+    "titulo": "Validar embalagem no servidor",
+    "fase": 7,
+    "prioridade": "P1",
+    "estado_atual": "NAO_INICIADA",
+    "frentes": [
+      "G20"
+    ],
+    "o_que_falta": "Implementar o resultado da etapa e demonstrar o critério de aceite com evidência atual.",
+    "criterio_de_aceite": "Cliente não consegue contornar validação física; decisão técnica tem dono e validade.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/02-plano-original-benchmark.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T065",
+    "titulo": "Concluir previsão e prazo de reposição",
+    "fase": 7,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G18",
+      "G20",
+      "G36"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Prazo é rastreável às entradas e distingue estimativa de compromisso aprovado.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/02-plano-original-benchmark.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/05-frontend-nucleo.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/07-edge-functions-integracoes.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T066",
+    "titulo": "Fortalecer cotação e publicação de kit",
+    "fase": 7,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G13",
+      "G18",
+      "G20"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Cotação publicada comprovada com dados autorizados e negativas; hash Edge registrado.",
+    "evidencias_atuais": [
+      "src/hooks/useCustomKitPersistence.ts",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/02-plano-original-benchmark.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/05-frontend-nucleo.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T067",
+    "titulo": "Concluir persistência e compartilhamento de kits",
+    "fase": 7,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G07",
+      "G13"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Kit salvo, compartilhado e exportado mantém identidade e permissões; prévia pública não permite ação privilegiada.",
+    "evidencias_atuais": [
+      "src/hooks/useCustomKitsRealtime.ts",
+      "src/services/sicoob/commonService.ts",
+      "src/hooks/useCustomKitPersistence.ts"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T068",
+    "titulo": "Estabilizar intenção de recompra",
+    "fase": 7,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G21"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Recompra única por intenção demonstrada no serviço e na Edge, sem depender de randomUUID por chamada.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T069",
+    "titulo": "Homologar diferenças comerciais da recompra",
+    "fase": 7,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G12",
+      "G21"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Resumo, orçamento e pedido refletem a versão comercial aceita com trilha das diferenças.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/05-frontend-nucleo.md",
+      "src/components/bi/ConfirmQuoteSuggestionsModal.tsx",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T070",
+    "titulo": "Homologar catálogo, kits e recompra conectados",
+    "fase": 7,
+    "prioridade": "P1",
+    "estado_atual": "NAO_INICIADA",
+    "frentes": [
+      "G13",
+      "G20",
+      "G21"
+    ],
+    "o_que_falta": "Implementar o resultado da etapa e demonstrar o critério de aceite com evidência atual.",
+    "criterio_de_aceite": "Aceite integrado dos três caminhos com evidências SQL, Edge e UI do mesmo lote.",
+    "evidencias_atuais": [
+      "src/hooks/useCustomKitPersistence.ts",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/02-plano-original-benchmark.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T071",
+    "titulo": "Consolidar marca e ativos institucionais",
+    "fase": 8,
+    "prioridade": "P1",
+    "estado_atual": "BLOQUEADA_EXTERNA",
+    "frentes": [
+      "G22",
+      "G56"
+    ],
+    "o_que_falta": "Resolver a dependência externa indicada pelas frentes e registrar evidência de homologação.",
+    "criterio_de_aceite": "Responsável de marca valida usos e versões; pesquisa na internet não substitui licença/aceite institucional.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json",
+      "docs/pesquisa/2026-09-11/dossie.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T072",
+    "titulo": "Vincular arte à identidade e versão do item",
+    "fase": 8,
+    "prioridade": "P0",
+    "estado_atual": "BLOQUEADA_P0",
+    "frentes": [
+      "G04",
+      "G06",
+      "G21",
+      "G22"
+    ],
+    "o_que_falta": "Provisionar e homologar o scanner antimalware real; nenhum upload de documento ou arte pode ser aceito sem veredito vinculado ao hash.",
+    "criterio_de_aceite": "Nenhum vínculo órfão ou aprovação transferida silenciosamente; regras dialogam com a etapa 36.",
+    "evidencias_atuais": [
+      "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
+      "supabase/migrations/20261013123000_preserve_atomic_quote_save_under_governance.sql",
+      "supabase/functions/sicoob-document-ingest/index.ts",
+      "supabase/functions/sicoob-document-ingest/scanner.ts",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T073",
+    "titulo": "Completar prova técnica e decisão de arte",
+    "fase": 8,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G15",
+      "G22"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Fluxo técnico encerra com arquivo/hash/versão e responsável reproduzíveis.",
+    "evidencias_atuais": [
+      "supabase/functions/expert-chat/index.ts",
+      "supabase/functions/trends-insights/index.ts",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T074",
+    "titulo": "Fortalecer ingestão e quarentena documental",
+    "fase": 8,
+    "prioridade": "P0",
+    "estado_atual": "BLOQUEADA_P0",
+    "frentes": [
+      "G06",
+      "G23"
+    ],
+    "o_que_falta": "Provisionar e homologar o scanner antimalware real; nenhum upload de documento ou arte pode ser aceito sem veredito vinculado ao hash.",
+    "criterio_de_aceite": "Nenhum documento pode pular inspeção ou vincular-se a pedido fora do escopo.",
+    "evidencias_atuais": [
+      "supabase/functions/sicoob-document-ingest/index.ts",
+      "supabase/functions/sicoob-document-ingest/scanner.ts",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/07-edge-functions-integracoes.md",
+      "docs/adr/0001-nomes-de-buckets-storage.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T075",
+    "titulo": "Configurar e homologar scanner real",
+    "fase": 8,
+    "prioridade": "P0",
+    "estado_atual": "BLOQUEADA_P0",
+    "frentes": [
+      "G06"
+    ],
+    "o_que_falta": "Provisionar e homologar o scanner antimalware real; nenhum upload de documento ou arte pode ser aceito sem veredito vinculado ao hash.",
+    "criterio_de_aceite": "Scanner demonstrado em ambiente autorizado; publicação da Edge isoladamente não basta.",
+    "evidencias_atuais": [
+      "supabase/functions/sicoob-document-ingest/index.ts",
+      "supabase/functions/sicoob-document-ingest/scanner.ts"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T076",
+    "titulo": "Fechar retenção, revogação e recuperação de anexos",
+    "fase": 8,
+    "prioridade": "P1",
+    "estado_atual": "NAO_INICIADA",
+    "frentes": [
+      "G23",
+      "G47"
+    ],
+    "o_que_falta": "Implementar o resultado da etapa e demonstrar o critério de aceite com evidência atual.",
+    "criterio_de_aceite": "Storage, metadados e acesso têm testes independentes; exclusão exige regra e responsável.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/07-edge-functions-integracoes.md",
+      "docs/adr/0001-nomes-de-buckets-storage.md",
+      "supabase/functions/_shared/assistant-context.ts",
+      "supabase/functions/_shared/pii-redaction.test.ts"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T077",
+    "titulo": "Reconciliar arte, exportações e dossiê",
+    "fase": 8,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G22",
+      "G23",
+      "G33"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Dossiê verificável por amostra e sem arquivos de outra organização.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/07-edge-functions-integracoes.md",
+      "docs/adr/0001-nomes-de-buckets-storage.md",
+      "src/hooks/bi/useClientBI.ts",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/06-frontend-admin-bi-ia.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T078",
+    "titulo": "Completar colaboração Magic Up",
+    "fase": 8,
+    "prioridade": "P2",
+    "estado_atual": "NAO_INICIADA",
+    "frentes": [
+      "G34",
+      "G50"
+    ],
+    "o_que_falta": "Implementar o resultado da etapa e demonstrar o critério de aceite com evidência atual.",
+    "criterio_de_aceite": "Fluxo completo disponível; eventual retirada requer decisão explícita e tratamento de todos os requisitos herdados.",
+    "evidencias_atuais": [
+      "docs/execucao/decisoes_pendentes.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/06-frontend-admin-bi-ia.md",
+      "docs/SCOPE_ALIGNMENT.md",
+      "docs/AUTH_PASSKEYS.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T079",
+    "titulo": "Homologar webhooks, Bitrix e serviços externos",
+    "fase": 8,
+    "prioridade": "P1",
+    "estado_atual": "BLOQUEADA_EXTERNA",
+    "frentes": [
+      "G15",
+      "G34",
+      "G35",
+      "G49",
+      "G50"
+    ],
+    "o_que_falta": "Resolver a dependência externa indicada pelas frentes e registrar evidência de homologação.",
+    "criterio_de_aceite": "Integrações têm recibos e reconciliação; credencial ausente produz estado de indisponibilidade explícito.",
+    "evidencias_atuais": [
+      "supabase/functions/expert-chat/index.ts",
+      "supabase/functions/trends-insights/index.ts",
+      "docs/execucao/decisoes_pendentes.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/06-frontend-admin-bi-ia.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/07-edge-functions-integracoes.md",
+      "docs/OBSERVABILITY.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/02-plano-original-benchmark.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/03-planos-melhorias-correcoes.md",
+      "docs/SCOPE_ALIGNMENT.md",
+      "docs/AUTH_PASSKEYS.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T080",
+    "titulo": "Homologar arte e documentos no canônico",
+    "fase": 8,
+    "prioridade": "P0",
+    "estado_atual": "BLOQUEADA_P0",
+    "frentes": [
+      "G06",
+      "G22",
+      "G23"
+    ],
+    "o_que_falta": "Provisionar e homologar o scanner antimalware real; nenhum upload de documento ou arte pode ser aceito sem veredito vinculado ao hash.",
+    "criterio_de_aceite": "Aceite remoto datado dos módulos e evidência de provedor; mocks continuam identificados como mocks.",
+    "evidencias_atuais": [
+      "supabase/functions/sicoob-document-ingest/index.ts",
+      "supabase/functions/sicoob-document-ingest/scanner.ts",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/07-edge-functions-integracoes.md",
+      "docs/adr/0001-nomes-de-buckets-storage.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T081",
+    "titulo": "Fechar paginação e distribuição logística",
+    "fase": 9,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G24"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Totais por item/destino conferem com SQL; contexto de cooperativa é preservado em todas as páginas.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T082",
+    "titulo": "Implementar importação assistida de destinos",
+    "fase": 9,
+    "prioridade": "P1",
+    "estado_atual": "NAO_INICIADA",
+    "frentes": [
+      "G24"
+    ],
+    "o_que_falta": "Implementar o resultado da etapa e demonstrar o critério de aceite com evidência atual.",
+    "criterio_de_aceite": "Importação tem prévia e resumo auditável; parte válida não é aplicada silenciosamente se o contrato exigir atomicidade.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T083",
+    "titulo": "Reconfirmar estoque e registrar expedição",
+    "fase": 9,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G24"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Só itens elegíveis são expedidos; estoque consultado na fonte externa permanece somente leitura.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T084",
+    "titulo": "Integrar rastreio e recebimento",
+    "fase": 9,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G07",
+      "G25"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Rastreio e recebimento têm origem verificável e distinção entre previsão e confirmação.",
+    "evidencias_atuais": [
+      "src/hooks/useCustomKitsRealtime.ts",
+      "src/services/sicoob/commonService.ts",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+      "docs/order-workflow.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T085",
+    "titulo": "Concluir avarias, devoluções e cancelamentos",
+    "fase": 9,
+    "prioridade": "P1",
+    "estado_atual": "NAO_INICIADA",
+    "frentes": [
+      "G25",
+      "G49"
+    ],
+    "o_que_falta": "Implementar o resultado da etapa e demonstrar o critério de aceite com evidência atual.",
+    "criterio_de_aceite": "Ciclo de ocorrência encerra com resolução verificável e totais reconciliados.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+      "docs/order-workflow.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/02-plano-original-benchmark.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/03-planos-melhorias-correcoes.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T086",
+    "titulo": "Estruturar campanha e cronograma regressivo",
+    "fase": 9,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G26"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Campanha liga briefing a orçamento/pedido e exige decisão explícita sobre desvios de prazo.",
+    "evidencias_atuais": [
+      "src/pages/admin/AdminCampanhasPage.tsx",
+      "src/routes/config/admin.ts"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T087",
+    "titulo": "Completar ciclo financeiro da verba",
+    "fase": 9,
+    "prioridade": "P0",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G01",
+      "G17"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Livro de eventos explica cada valor; saldos agregados coincidem com consulta independente.",
+    "evidencias_atuais": [
+      "supabase/migrations/20261013115605_harden_sicoob_budget_authority.sql",
+      "scripts/qa/simular-autoridade-verbas-sicoob.py",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T088",
+    "titulo": "Fechar competências e conciliação financeira",
+    "fase": 9,
+    "prioridade": "P1",
+    "estado_atual": "NAO_INICIADA",
+    "frentes": [
+      "G17",
+      "G49"
+    ],
+    "o_que_falta": "Implementar o resultado da etapa e demonstrar o critério de aceite com evidência atual.",
+    "criterio_de_aceite": "Nenhuma competência passada é reescrita silenciosamente; reconciliação identifica cada diferença e decisão.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/02-plano-original-benchmark.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/03-planos-melhorias-correcoes.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T089",
+    "titulo": "Ligar auditoria, indicadores e suporte",
+    "fase": 9,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G14",
+      "G31",
+      "G33",
+      "G36",
+      "G45",
+      "G53",
+      "G54"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Painel operacional explica números reais e incidentes têm dono, prazo e roteiro de recuperação.",
+    "evidencias_atuais": [
+      "src/pages/GestorCompras.tsx",
+      "src/pages/trends/is-demo-mode.ts",
+      "src/routes/config/admin.ts",
+      "src/routes/config/dev.ts",
+      "src/hooks/bi/useClientBI.ts",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/06-frontend-admin-bi-ia.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/07-edge-functions-integracoes.md",
+      "docs/OBSERVABILITY.md",
+      "docs/SLO.md",
+      "README.md",
+      "docs/README.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/08-banco-migrations.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T090",
+    "titulo": "Homologar fechamento de campanha distribuída",
+    "fase": 9,
+    "prioridade": "P1",
+    "estado_atual": "NAO_INICIADA",
+    "frentes": [
+      "G17",
+      "G24",
+      "G25",
+      "G26",
+      "G49"
+    ],
+    "o_que_falta": "Implementar o resultado da etapa e demonstrar o critério de aceite com evidência atual.",
+    "criterio_de_aceite": "Aceite funcional conjunto de compras, logística e financeiro com cenário reproduzível.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/09-fluxos-sicoob.md",
+      "docs/order-workflow.md",
+      "src/pages/admin/AdminCampanhasPage.tsx",
+      "src/routes/config/admin.ts",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/02-plano-original-benchmark.md",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/03-planos-melhorias-correcoes.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T091",
+    "titulo": "Pesquisar jornadas com compradores e marketing",
+    "fase": 10,
+    "prioridade": "P2",
+    "estado_atual": "BLOQUEADA_EXTERNA",
+    "frentes": [
+      "G32",
+      "G48",
+      "G56"
+    ],
+    "o_que_falta": "Resolver a dependência externa indicada pelas frentes e registrar evidência de homologação.",
+    "criterio_de_aceite": "Problemas são priorizados e vinculados às etapas responsáveis; pesquisa pública não substitui observação de uso.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/05-frontend-nucleo.md",
+      "docs/execucao/evidencias/visual",
+      "docs/execucao/fechamento-tecnico-2026-10-08.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json",
+      "docs/pesquisa/2026-09-11/dossie.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T092",
+    "titulo": "Concluir experiência de loja e identidade visual",
+    "fase": 10,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G14",
+      "G27",
+      "G30",
+      "G31",
+      "G32",
+      "G44",
+      "G48"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Responsáveis de marca e produto aprovam telas/documentos; todas as barreiras críticas observadas têm destino resolvido.",
+    "evidencias_atuais": [
+      "src/pages/GestorCompras.tsx",
+      "src/pages/trends/is-demo-mode.ts",
+      "src/routes/config/admin.ts",
+      "src/pages/admin/sicoob/SicoobManagementPage.tsx",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/05-frontend-nucleo.md",
+      "src/routes/config/dev.ts",
+      "src/components/layout/Header.tsx",
+      "public/sw.js",
+      "docs/execucao/evidencias/visual",
+      "docs/execucao/fechamento-tecnico-2026-10-08.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T093",
+    "titulo": "Validar acessibilidade e dispositivos",
+    "fase": 10,
+    "prioridade": "P2",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G32",
+      "G44",
+      "G48"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Critérios WCAG 2.2 AA aplicáveis têm evidência; falha manual não é anulada por ferramenta automática verde.",
+    "evidencias_atuais": [
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/05-frontend-nucleo.md",
+      "src/components/layout/Header.tsx",
+      "public/sw.js",
+      "docs/execucao/evidencias/visual",
+      "docs/execucao/fechamento-tecnico-2026-10-08.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T094",
+    "titulo": "Medir e fechar desempenho por jornada",
+    "fase": 10,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G45",
+      "G48"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Como proposta, LCP≤2,5s, INP≤200ms e CLS≤0,1 no percentil75; metas devem ser ratificadas e medidas sem prometer campo inexistente.",
+    "evidencias_atuais": [
+      "docs/OBSERVABILITY.md",
+      "docs/SLO.md",
+      "docs/execucao/evidencias/visual",
+      "docs/execucao/fechamento-tecnico-2026-10-08.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T095",
+    "titulo": "Executar segurança e privacidade integradas",
+    "fase": 10,
+    "prioridade": "P0",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G01",
+      "G03",
+      "G05",
+      "G23",
+      "G28",
+      "G37",
+      "G43",
+      "G45",
+      "G47"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Nenhum achado crítico/alto sem correção; residual tem dono/justificativa e não contraria requisito obrigatório.",
+    "evidencias_atuais": [
+      "supabase/migrations/20261013115605_harden_sicoob_budget_authority.sql",
+      "scripts/qa/simular-autoridade-verbas-sicoob.py",
+      "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
+      "scripts/qa/simular-aprovacao-publica.py",
+      "supabase/functions/verify-email/index.ts",
+      "supabase/config.toml",
+      "docs/execucao/lacunas-funcionalidades-2026-10-11/07-edge-functions-integracoes.md",
+      "docs/adr/0001-nomes-de-buckets-storage.md",
+      "docs/adr/0004-closed-platform-policy.md",
+      "vercel.json",
+      "public/reports/AUDIT_REPORT_20a6b98b1.md",
+      "docs/OBSERVABILITY.md",
+      "docs/SLO.md",
+      "supabase/functions/_shared/assistant-context.ts",
+      "supabase/functions/_shared/pii-redaction.test.ts"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T096",
+    "titulo": "Executar regressão e compra sintética integral",
+    "fase": 10,
+    "prioridade": "P1",
+    "estado_atual": "NAO_INICIADA",
+    "frentes": [
+      "G39",
+      "G41",
+      "G56"
+    ],
+    "o_que_falta": "Implementar o resultado da etapa e demonstrar o critério de aceite com evidência atual.",
+    "criterio_de_aceite": "Todos os requisitos obrigatórios têm prova atual; skips e exceções não podem substituir homologação crítica.",
+    "evidencias_atuais": [
+      "scripts/check-critical-test-skip-budget.mjs",
+      "docs/execucao/auditoria-validacao-2026-10-16.md",
+      ".github/workflows/e2e.yml",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json",
+      "docs/pesquisa/2026-09-11/dossie.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T097",
+    "titulo": "Reconciliar e publicar candidato de release",
+    "fase": 10,
+    "prioridade": "P1",
+    "estado_atual": "PARCIAL",
+    "frentes": [
+      "G40",
+      "G43",
+      "G52"
+    ],
+    "o_que_falta": "Revalidar o comportamento no SHA de referência, concluir as lacunas das frentes vinculadas e anexar evidência conectada.",
+    "criterio_de_aceite": "Candidato de construção/homologação está reconciliado e pronto para decisão de lançamento; código no GitHub sozinho não encerra etapa.",
+    "evidencias_atuais": [
+      ".github/workflows/branch-protection-sentinel.yml",
+      "vercel.json",
+      "public/reports/AUDIT_REPORT_20a6b98b1.md",
+      "docs/execucao/auditoria-validacao-2026-10-16.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T098",
+    "titulo": "Preparar operação e autorizar piloto",
+    "fase": 10,
+    "prioridade": "P1",
+    "estado_atual": "BLOQUEADA_EXTERNA",
+    "frentes": [
+      "G45",
+      "G46",
+      "G47",
+      "G56"
+    ],
+    "o_que_falta": "Resolver a dependência externa indicada pelas frentes e registrar evidência de homologação.",
+    "criterio_de_aceite": "Decisão de piloto registrada com responsáveis e limites; planejamento não autoriza automaticamente produção ou compra real.",
+    "evidencias_atuais": [
+      "docs/OBSERVABILITY.md",
+      "docs/SLO.md",
+      "docs/DR.md",
+      "docs/RUNBOOK.md",
+      "supabase/functions/_shared/assistant-context.ts",
+      "supabase/functions/_shared/pii-redaction.test.ts",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json",
+      "docs/pesquisa/2026-09-11/dossie.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T099",
+    "titulo": "Executar piloto e comprovar operação real",
+    "fase": 10,
+    "prioridade": "P2",
+    "estado_atual": "BLOQUEADA_EXTERNA",
+    "frentes": [
+      "G56"
+    ],
+    "o_que_falta": "Resolver a dependência externa indicada pelas frentes e registrar evidência de homologação.",
+    "criterio_de_aceite": "Evidências reais sustentam aceites P147–P149 e janela de estabilidade W100; tempo não decorrido permanece pendente.",
+    "evidencias_atuais": [
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json",
+      "docs/pesquisa/2026-09-11/dossie.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  },
+  {
+    "etapa": "T100",
+    "titulo": "Encerrar requisitos e instituir evolução",
+    "fase": 10,
+    "prioridade": "P1",
+    "estado_atual": "BLOQUEADA_EXTERNA",
+    "frentes": [
+      "G50",
+      "G51",
+      "G53",
+      "G56"
+    ],
+    "o_que_falta": "Resolver a dependência externa indicada pelas frentes e registrar evidência de homologação.",
+    "criterio_de_aceite": "Tudo obrigatório implementado, publicado onde aplicável e aceito; sem declarar 100% com função ausente ou parcial.",
+    "evidencias_atuais": [
+      "docs/SCOPE_ALIGNMENT.md",
+      "docs/AUTH_PASSKEYS.md",
+      "docs/plano-implementacao/plano-encerramento-100-etapas-20261001/plano.json",
+      "docs/execucao/fechamento-tecnico-2026-10-08.md",
+      "README.md",
+      "docs/README.md",
+      "docs/pesquisa/2026-09-11/dossie.md"
+    ],
+    "aceite_integral": false,
+    "base_codigo": "495f33da1759a7c6e479259419186c5f7076ca5a",
+    "ultima_validacao": "2026-10-16"
+  }
+]
