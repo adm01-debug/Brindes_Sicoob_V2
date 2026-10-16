@@ -61,6 +61,7 @@ jobs:
           python3 scripts/qa/simular-consolidacao-sicoob.py
           python3 scripts/qa/simular-rls-cruzada-sicoob.py
           python3 scripts/qa/simular-search-analytics-legado.py
+          python3 scripts/qa/simular-storage-acl-hardening.py
 
   experiencia:
     name: Entrada e demonstração responsivas

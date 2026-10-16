@@ -1,9 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { requireInternalService } from "../_shared/internal-service-auth.ts";
+import { deliverScheduledReport } from "./report-delivery.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 Deno.serve(async (req: Request) => {
@@ -12,7 +14,8 @@ Deno.serve(async (req: Request) => {
   }
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "metodo_nao_permitido" }), {
-      status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
   const denied = await requireInternalService(req);
@@ -35,39 +38,43 @@ Deno.serve(async (req: Request) => {
 
     if (fetchErr) throw fetchErr;
     if (!dueReports || dueReports.length === 0) {
-      return new Response(JSON.stringify({ message: "No reports due", processed: 0 }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ message: "No reports due", processed: 0 }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     const results: Array<{ id: string; status: string; error?: string }> = [];
 
     for (const report of dueReports) {
       try {
-        // Generate report data
-        const reportData = await generateReportData(supabase, report);
-
-        // Send email via Resend (if key available) or log
-        if (resendKey) {
-          await sendEmailViaResend(resendKey, report.email_to, report.report_name, reportData);
-        } else {
-          console.log(`[send-scheduled-reports] Would send "${report.report_name}" to ${report.email_to}`);
-        }
-
-        // Calculate next run
-        const nextRun = calculateNextRun(report.frequency);
-
-        // Update report
-        await supabase
-          .from("scheduled_reports")
-          .update({
-            last_sent_at: now,
-            next_run_at: nextRun.toISOString(),
-            updated_at: now,
-          })
-          .eq("id", report.id);
-
-        results.push({ id: report.id, status: "sent" });
+        const emailProvider = resendKey
+          ? (html: string) =>
+            sendEmailViaResend(
+              resendKey,
+              report.email_to,
+              report.report_name,
+              html,
+            )
+          : null;
+        const result = await deliverScheduledReport(report, emailProvider, {
+          generateData: () => generateReportData(supabase, report),
+          persistSent: async () => {
+            const nextRun = calculateNextRun(report.frequency);
+            const { error } = await supabase
+              .from("scheduled_reports")
+              .update({
+                last_sent_at: now,
+                next_run_at: nextRun.toISOString(),
+                updated_at: now,
+              })
+              .eq("id", report.id);
+            if (error) throw error;
+          },
+        });
+        results.push(result);
       } catch (err) {
         console.error(`Error processing report ${report.id}:`, err);
         console.error("send-scheduled-reports report error:", err);
@@ -75,9 +82,16 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    return new Response(JSON.stringify({ processed: results.length, results }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    const blocked = results.filter((result) =>
+      result.status === "blocked"
+    ).length;
+    return new Response(
+      JSON.stringify({ processed: results.length, results }),
+      {
+        status: blocked > 0 ? 503 : 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   } catch (err) {
     console.error("send-scheduled-reports error:", err);
     return new Response(JSON.stringify({ error: "erro_interno" }), {
@@ -89,20 +103,26 @@ Deno.serve(async (req: Request) => {
 
 async function generateReportData(supabase: any, report: any): Promise<string> {
   const { report_type, user_id } = report;
-  let html = `<h2>${report.report_name}</h2><p>Gerado em ${new Date().toLocaleDateString("pt-BR")}</p>`;
+  let html = `<h2>${report.report_name}</h2><p>Gerado em ${
+    new Date().toLocaleDateString("pt-BR")
+  }</p>`;
 
   switch (report_type) {
     case "quotes": {
       const { data, count } = await supabase
         .from("quotes")
-        .select("id, quote_number, client_name, status, total, created_at", { count: "exact" })
+        .select("id, quote_number, client_name, status, total, created_at", {
+          count: "exact",
+        })
         .eq("seller_id", user_id)
         .order("created_at", { ascending: false })
         .limit(20);
 
       html += `<p><strong>Total de orçamentos:</strong> ${count || 0}</p>`;
-      html += "<table border='1' cellpadding='8' cellspacing='0' style='border-collapse:collapse;width:100%'>";
-      html += "<tr><th>Nº</th><th>Cliente</th><th>Status</th><th>Total</th><th>Data</th></tr>";
+      html +=
+        "<table border='1' cellpadding='8' cellspacing='0' style='border-collapse:collapse;width:100%'>";
+      html +=
+        "<tr><th>Nº</th><th>Cliente</th><th>Status</th><th>Total</th><th>Data</th></tr>";
       for (const q of data || []) {
         html += `<tr>
           <td>${q.quote_number}</td>
@@ -118,14 +138,18 @@ async function generateReportData(supabase: any, report: any): Promise<string> {
     case "orders": {
       const { data, count } = await supabase
         .from("orders")
-        .select("id, order_number, client_name, status, total, created_at", { count: "exact" })
+        .select("id, order_number, client_name, status, total, created_at", {
+          count: "exact",
+        })
         .eq("seller_id", user_id)
         .order("created_at", { ascending: false })
         .limit(20);
 
       html += `<p><strong>Total de pedidos:</strong> ${count || 0}</p>`;
-      html += "<table border='1' cellpadding='8' cellspacing='0' style='border-collapse:collapse;width:100%'>";
-      html += "<tr><th>Nº</th><th>Cliente</th><th>Status</th><th>Total</th><th>Data</th></tr>";
+      html +=
+        "<table border='1' cellpadding='8' cellspacing='0' style='border-collapse:collapse;width:100%'>";
+      html +=
+        "<tr><th>Nº</th><th>Cliente</th><th>Status</th><th>Total</th><th>Data</th></tr>";
       for (const o of data || []) {
         html += `<tr>
           <td>${o.order_number}</td>
@@ -141,8 +165,14 @@ async function generateReportData(supabase: any, report: any): Promise<string> {
     default: {
       // Generic summary
       const [quotesRes, ordersRes] = await Promise.all([
-        supabase.from("quotes").select("id", { count: "exact", head: true }).eq("seller_id", user_id),
-        supabase.from("orders").select("id", { count: "exact", head: true }).eq("seller_id", user_id),
+        supabase.from("quotes").select("id", { count: "exact", head: true }).eq(
+          "seller_id",
+          user_id,
+        ),
+        supabase.from("orders").select("id", { count: "exact", head: true }).eq(
+          "seller_id",
+          user_id,
+        ),
       ]);
 
       html += `<ul>
@@ -152,11 +182,17 @@ async function generateReportData(supabase: any, report: any): Promise<string> {
     }
   }
 
-  html += `<hr/><p style='font-size:12px;color:#888'>Relatório automático — Promo Gifts</p>`;
+  html +=
+    `<hr/><p style='font-size:12px;color:#888'>Relatório automático — Promo Gifts</p>`;
   return html;
 }
 
-async function sendEmailViaResend(apiKey: string, to: string, subject: string, html: string) {
+async function sendEmailViaResend(
+  apiKey: string,
+  to: string,
+  subject: string,
+  html: string,
+) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
