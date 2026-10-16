@@ -2,18 +2,19 @@
 
 Rede de segurança global que falha o CI se qualquer teste disparar o
 warning canônico do React **"Function components cannot be given refs"**
-(ou seu acompanhamento _"Attempts to access this ref will fail"_), mesmo
+mesmo
 que o teste em questão não use `installReactWarningGuard` localmente.
 
 ## Componentes
 
-| Arquivo | Função |
-|---|---|
-| `tests/setup-ref-warning-capture.ts` | Setup global do Vitest. Intercepta `console.error/warn` de todos os testes, grava em snapshot e (se `STRICT_REF_WARNINGS=1`) eleva `process.exitCode = 1` em `afterAll` se houver ref warnings. |
-| `scripts/consolidate-console-snapshot.mjs` | Funde os snapshots por-worker (`coverage/console-snapshot.<id>.json`) em um único `coverage/console-snapshot.json` para upload como artifact e auditoria humana. |
-| `npm run test:strict-ref` | Roda a suite com a flag estrita + consolida snapshots. |
-| `.github/workflows/ci.yml` step **"Strict ref-warning gate"** | Executa o script no CI. |
-| `.github/workflows/ci.yml` step **"Upload console snapshot"** | Anexa o snapshot consolidado como artifact (`console-snapshot-<run_id>`), retido por 14 dias. |
+| Arquivo                                                                               | Função                                                                                                                                                                     |
+| ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `vitest.config.ts`                                                                    | Carrega o setup funcional e o capturador global em toda suíte Vitest.                                                                                                      |
+| `tests/setup-ref-warning-capture.ts`                                                  | Intercepta `console.error/warn`, grava um snapshot isolado por arquivo e, com `STRICT_REF_WARNINGS=1`, lança uma falha de suíte no `afterAll` se houver ref warnings.      |
+| `scripts/consolidate-console-snapshot.mjs`                                            | Funde os snapshots por arquivo de teste (`coverage/console-snapshot.<id>.json`) em um único `coverage/console-snapshot.json` para upload como artifact e auditoria humana. |
+| `npm run test:strict-ref`                                                             | Roda a suite com a flag estrita + consolida snapshots.                                                                                                                     |
+| `.github/workflows/ci.yml` step **"Executar a suíte completa com gate de cobertura"** | Executa a suíte com `STRICT_REF_WARNINGS=1`.                                                                                                                               |
+| `.github/workflows/ci.yml` steps de consolidação e publicação                         | Anexam o snapshot consolidado como artifact (`console-snapshot-<run_id>`), retido por 14 dias.                                                                             |
 
 ## Como funciona a coexistência com `installReactWarningGuard`
 
@@ -34,9 +35,7 @@ O JSON consolidado tem o formato:
   "totalEntries": 142,
   "refWarnings": 0,
   "byLevel": { "error": 3, "warn": 139 },
-  "entries": [
-    { "level": "error", "message": "...", "timestamp": "...", "isRefWarning": false }
-  ]
+  "entries": [{ "level": "error", "message": "...", "timestamp": "...", "isRefWarning": false }]
 }
 ```
 

@@ -1,6 +1,6 @@
 # 📚 Documentação do Gifts Store
 
-> **Estado atual do Sicoob (08/10/2026):** [fechamento técnico do candidato de construção](execucao/fechamento-tecnico-2026-10-08.md), complementado pela [execução e preflight do banco canônico](execucao/execucao-plano-2026-10-01.md) e pela [revisão das 150 etapas, workflows e pendências](execucao/revisao-do-plano-2026-10-01.md). O índice legado abaixo não certifica o estado atual; há referências históricas indisponíveis.
+> **Estado atual do Sicoob (16/10/2026):** [validação de CI, skips críticos e observabilidade](execucao/validacao-ci-observabilidade-2026-10-16.md), complementada pelo [fechamento técnico do candidato de construção](execucao/fechamento-tecnico-2026-10-08.md), pela [execução e preflight do banco canônico](execucao/execucao-plano-2026-10-01.md) e pela [revisão das 150 etapas, workflows e pendências](execucao/revisao-do-plano-2026-10-01.md). O índice legado abaixo não certifica o estado atual; há referências históricas indisponíveis.
 
 > Sistema de Catálogo de Brindes Promocionais  
 > **Idioma:** Português do Brasil 🇧🇷  
@@ -13,7 +13,7 @@
 ### 🎯 **Documentação Essencial**
 
 1. **[POLITICA_IDIOMA_PT_BR.md](./POLITICA_IDIOMA_PT_BR.md)** 🔴  
-   **Política definitiva de idioma** - LEITURA OBRIGATÓRIA  
+   **Política definitiva de idioma** - LEITURA OBRIGATÓRIA
    - Sistema é **exclusivamente pt-BR**
    - Proibições absolutas (i18n, multi-idioma)
    - Regras obrigatórias de desenvolvimento
@@ -91,14 +91,14 @@
 
 ## 📊 Estatísticas da Documentação
 
-| Documento | Tamanho | Seções | Última Atualização |
-|-----------|---------|--------|---------------------|
-| POLITICA_IDIOMA_PT_BR.md | 5.6 KB | 9 | 27/12/2025 |
-| ANALISE_EXAUSTIVA_GIFTS_STORE.md | 67 KB | 15 | 27/12/2025 |
-| MELHORIAS_PENDENTES_PLANO_IMPLEMENTACAO.md | 15 KB | 5 | 27/12/2025 |
-| DIAGRAMAS_PROCESSOS_GIFTS_STORE.md | 36 KB | 8 | 27/12/2025 |
-| CONFIGURACAO_LOCALE_PT_BR.md | 14 KB | 7 | 27/12/2025 |
-| **TOTAL** | **138 KB** | **44 seções** | - |
+| Documento                                  | Tamanho    | Seções        | Última Atualização |
+| ------------------------------------------ | ---------- | ------------- | ------------------ |
+| POLITICA_IDIOMA_PT_BR.md                   | 5.6 KB     | 9             | 27/12/2025         |
+| ANALISE_EXAUSTIVA_GIFTS_STORE.md           | 67 KB      | 15            | 27/12/2025         |
+| MELHORIAS_PENDENTES_PLANO_IMPLEMENTACAO.md | 15 KB      | 5             | 27/12/2025         |
+| DIAGRAMAS_PROCESSOS_GIFTS_STORE.md         | 36 KB      | 8             | 27/12/2025         |
+| CONFIGURACAO_LOCALE_PT_BR.md               | 14 KB      | 7             | 27/12/2025         |
+| **TOTAL**                                  | **138 KB** | **44 seções** | -                  |
 
 ---
 

@@ -26,14 +26,15 @@
  * Ative no CI com:
  *   STRICT_REF_WARNINGS=1 npm test
  */
-import { afterAll } from "vitest";
-import { mkdirSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { afterAll } from 'vitest';
+import { randomUUID } from 'node:crypto';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 
-const STRICT = process.env.STRICT_REF_WARNINGS === "1";
+const STRICT = process.env.STRICT_REF_WARNINGS === '1';
 const SNAPSHOT_PATH = resolve(
   process.cwd(),
-  process.env.CONSOLE_SNAPSHOT_PATH ?? "coverage/console-snapshot.json",
+  process.env.CONSOLE_SNAPSHOT_PATH ?? 'coverage/console-snapshot.json',
 );
 
 /**
@@ -43,33 +44,35 @@ const SNAPSHOT_PATH = resolve(
  * NÃO é trigger isolado (era falso positivo em testes que logam contexto
  * sem reproduzir o aviso real).
  */
-const REF_PATTERNS = [
-  /Function components cannot be given refs/i,
-];
+const REF_PATTERNS = [/Function components cannot be given refs/i];
 
 interface CapturedEntry {
-  level: "error" | "warn";
+  level: 'error' | 'warn';
   message: string;
   timestamp: string;
   isRefWarning: boolean;
 }
 
 const captured: CapturedEntry[] = [];
+const snapshotInstance = [process.env.VITEST_POOL_ID ?? 'pool', process.pid, randomUUID()].join(
+  '-',
+);
 
 function formatArgs(args: unknown[]): string {
   return args
     .map((a) => {
-      if (typeof a === "string") return a;
+      if (typeof a === 'string') return a;
       if (a instanceof Error) return a.message;
-      try { return JSON.stringify(a); } catch { return String(a); }
+      try {
+        return JSON.stringify(a);
+      } catch {
+        return String(a);
+      }
     })
-    .join(" ");
+    .join(' ');
 }
 
-function makeWrapper(
-  level: "error" | "warn",
-  original: (...args: unknown[]) => void,
-) {
+function makeWrapper(level: 'error' | 'warn', original: (...args: unknown[]) => void) {
   return (...args: unknown[]) => {
     const message = formatArgs(args);
     const isRef = REF_PATTERNS.some((re) => re.test(message));
@@ -84,27 +87,27 @@ function makeWrapper(
   };
 }
 
-// Instala wrappers UMA vez por processo de worker. Vitest usa workers
-// independentes; cada um produz seu próprio snapshot — eles serão
+// Cada contexto isolado do Vitest produz seu próprio snapshot; eles serão
 // fundidos pelo step de CI antes da auditoria.
 const origError = console.error.bind(console);
 const origWarn = console.warn.bind(console);
-console.error = makeWrapper("error", origError) as typeof console.error;
-console.warn = makeWrapper("warn", origWarn) as typeof console.warn;
+console.error = makeWrapper('error', origError) as typeof console.error;
+console.warn = makeWrapper('warn', origWarn) as typeof console.warn;
 
 afterAll(() => {
   // Persistência do snapshot (sempre — útil mesmo fora do modo estrito).
   try {
     mkdirSync(dirname(SNAPSHOT_PATH), { recursive: true });
-    // Cada worker grava em arquivo único para evitar race; o CI consolida.
-    const workerSuffix = process.env.VITEST_POOL_ID ?? process.pid;
-    const path = SNAPSHOT_PATH.replace(/\.json$/, `.${workerSuffix}.json`);
+    // O setup roda uma vez por arquivo de teste. O UUID impede que arquivos do
+    // mesmo worker se sobrescrevam antes da consolidação no CI.
+    const path = SNAPSHOT_PATH.replace(/\.json$/, `.${snapshotInstance}.json`);
     writeFileSync(
       path,
       JSON.stringify(
         {
           generatedAt: new Date().toISOString(),
-          worker: workerSuffix,
+          worker: process.env.VITEST_POOL_ID ?? process.pid,
+          snapshotInstance,
           strict: STRICT,
           totalEntries: captured.length,
           refWarnings: captured.filter((c) => c.isRefWarning).length,
@@ -115,7 +118,7 @@ afterAll(() => {
       ),
     );
   } catch (err) {
-    origError("[ref-warning-capture] falha ao gravar snapshot:", err);
+    origError('[ref-warning-capture] falha ao gravar snapshot:', err);
   }
 
   if (STRICT) {
@@ -127,13 +130,14 @@ afterAll(() => {
         refs
           .slice(0, 10)
           .map((r, i) => `  [${i + 1}] (${r.level}) ${r.message.slice(0, 280)}`)
-          .join("\n") +
-        (refs.length > 10 ? `\n  ...e mais ${refs.length - 10}.` : "") +
+          .join('\n') +
+        (refs.length > 10 ? `\n  ...e mais ${refs.length - 10}.` : '') +
         `\n\nSnapshot completo: ${SNAPSHOT_PATH}\n`;
       origError(summary);
-      // Vitest não tem hook "fail-on-after-all", então usamos exit code.
-      // Postergamos via setImmediate para garantir flush dos reporters.
-      process.exitCode = 1;
+      // Lançar no hook faz o Vitest registrar falha de suíte e preservar o
+      // exit code diferente de zero. Alterar apenas `process.exitCode` era
+      // revertido pelo runner depois que todos os testes passavam.
+      throw new Error(summary);
     }
   }
 });

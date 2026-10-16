@@ -14,7 +14,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: './src/test/setup.ts',
+    setupFiles: ['./src/test/setup.ts', './tests/setup-ref-warning-capture.ts'],
     // Alguns ambientes locais mantêm dependências em um armazenamento virtual.
     // Transformar o React Query pelo Vite garante que ele reutilize a mesma
     // instância de React dos componentes e evita falhas espúrias de hooks.
@@ -48,13 +48,11 @@ export default defineConfig({
         'supabase/functions/sicoob-document-ingest/scanner.ts',
       ],
       thresholds: {
-          statements: 80,
-          branches: 80,
-          functions: 80,
-          lines: 80,
-      }
-
-    }
-
-  }
+        statements: 80,
+        branches: 80,
+        functions: 80,
+        lines: 80,
+      },
+    },
+  },
 });
