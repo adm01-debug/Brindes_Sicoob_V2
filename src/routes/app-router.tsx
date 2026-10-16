@@ -1,4 +1,4 @@
-import { lazy, Suspense, type ReactNode } from 'react';
+import { Suspense, type ReactNode } from 'react';
 import {
   Navigate,
   Outlet,
@@ -62,8 +62,8 @@ const ColorDocumentationPage = lazyWithRetry(() => import('@/pages/admin/ColorDo
 const ForbiddenPage = lazyWithRetry(() => import('@/pages/ForbiddenPage'));
 const OrderAuditPage = lazyWithRetry(() => import('@/pages/OrderAuditPage'));
 const TestDashboard = lazyWithRetry(() => import('@/pages/TestDashboard'));
-const AuthenticatedShell = lazy(() => import('@/components/layout/AuthenticatedShell').then((module) => ({ default: module.AuthenticatedShell })));
-const MainLayout = lazy(() => import('@/components/layout/MainLayout').then((module) => ({ default: module.MainLayout })));
+const AuthenticatedShell = lazyWithRetry(() => import('@/components/layout/AuthenticatedShell').then((module) => ({ default: module.AuthenticatedShell })));
+const MainLayout = lazyWithRetry(() => import('@/components/layout/MainLayout').then((module) => ({ default: module.MainLayout })));
 
 export function buildAppRoutes() {
   return createRoutesFromElements(
