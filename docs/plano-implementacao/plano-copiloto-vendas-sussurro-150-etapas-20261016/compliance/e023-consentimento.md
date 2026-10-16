@@ -83,7 +83,18 @@ async function processIncomingMessage(message: Message): Promise<void> {
   const contact = await getContact(message.from);
   
   if (contact?.copilot_opted_out) {
-    // HARD BLOCK: não processa, não envia ao LLM, não gera sugestão
+    // Checar re-opt-in ANTES do hard block: se a saída imediata vier
+    // primeiro (como numa versão anterior deste bloco), a mensagem de
+    // reativação ("ATIVAR"/"QUERO"/"SIM"/"REATIVAR" — E027 §6) nunca
+    // chega ao detector e o painel nunca recebe o pedido, deixando o
+    // contato permanentemente opted-out mesmo pedindo para reativar.
+    // isOptInRequest() só detecta — não reverte nada aqui; a reversão
+    // em copilot_contacts só ocorre após confirmação do vendedor (E027 §6).
+    if (isOptInRequest(message.content)) {
+      await notifySellerOptInRequested(message.conversation_id, contact.id);
+    }
+    // HARD BLOCK: continua sem processar, sem LLM, sem sugestão até a
+    // confirmação do vendedor reverter copilot_opted_out.
     await logEvent({
       type: 'message_skipped_opted_out',
       contact_id: contact.id,

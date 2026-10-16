@@ -93,11 +93,15 @@ export function isOptOutRequest(text: string): boolean {
 ## 4. Registro Auditável em `copilot_events`
 
 ```sql
--- Evento de detecção automática
+-- Evento de detecção automática. Este evento tem retenção de 5 anos
+-- (nota de E024) — por isso event_data guarda só a palavra-chave
+-- detectada, nunca a mensagem inteira: "pare de analisar, meu CPF é..."
+-- manteria um CPF (ou outro dado sensível) retido muito além dos 90 dias
+-- definidos para o conteúdo bruto das mensagens.
 INSERT INTO copilot_events (
   contact_id, conversation_id,
   event_type,   -- 'opt_out_detected'
-  event_data,   -- {"trigger_message": "PARAR", "detected_keyword": "parar"}
+  event_data,   -- {"detected_keyword": "parar"} — NUNCA trigger_message
   channel, created_at
 ) VALUES (...);
 

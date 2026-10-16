@@ -19,7 +19,7 @@
 | `copilot_conversations` | Metadados (sem conteúdo) | **365 dias** | Relatórios de desempenho do vendedor | Anonimizar (remover `contact_id`, manter agregados) |
 | `copilot_contacts` | Nome, telefone, opt-out status | **5 anos após último contato** | Histórico de relacionamento | Anonimizar |
 
-> **Nota importante:** Eventos de opt-out em `copilot_events` têm retenção de **5 anos** para fins de evidência em fiscalização da ANPD. Eles devem ser excluídos do job normal de limpeza de 90 dias via cláusula `WHERE event_type != 'opt_out_registered'`.
+> **Nota importante:** Eventos de opt-out em `copilot_events` têm retenção de **5 anos** para fins de evidência em fiscalização da ANPD. `cross_seller_access` (E029, acesso privilegiado de gestor a conversa de outro vendedor) tem retenção de **2 anos**; `data_export_requested`/`data_deletion_requested` (solicitações do titular) têm **5 anos**. Nenhum desses tipos pode cair no `DELETE` genérico de 90 dias — ver a cláusula `event_type NOT IN (...)` no job abaixo.
 
 ---
 
@@ -58,7 +58,11 @@ SELECT cron.schedule(
 
     DELETE FROM copilot_events
     WHERE created_at < NOW() - INTERVAL '90 days'
-      AND event_type NOT IN ('opt_out_registered', 'opt_in_restored');
+      AND event_type NOT IN (
+        'opt_out_registered', 'opt_in_restored',   -- 5 anos (evidência ANPD)
+        'cross_seller_access',                      -- 2 anos (E029)
+        'data_export_requested', 'data_deletion_requested'  -- 5 anos (titular)
+      );
     GET DIAGNOSTICS v_deleted_events = ROW_COUNT;
 
     UPDATE copilot_insights
@@ -71,9 +75,13 @@ SELECT cron.schedule(
     WHERE created_at < NOW() - INTERVAL '2 years' AND anonymized_at IS NULL;
     GET DIAGNOSTICS v_anonymized_feedback = ROW_COUNT;
 
+    -- updated_at (não created_at) para não anonimizar uma conversa em
+    -- atendimento ativo só porque foi criada há mais de 365 dias; o
+    -- trigger de updated_at da própria tabela (já usado nas migrations
+    -- do motor) garante que ela avança a cada mensagem nova.
     UPDATE copilot_conversations
     SET contact_id = NULL, anonymized_at = NOW()
-    WHERE created_at < NOW() - INTERVAL '365 days' AND anonymized_at IS NULL;
+    WHERE updated_at < NOW() - INTERVAL '365 days' AND anonymized_at IS NULL;
     GET DIAGNOSTICS v_anonymized_convs = ROW_COUNT;
 
     INSERT INTO copilot_events (event_type, event_data, created_at)

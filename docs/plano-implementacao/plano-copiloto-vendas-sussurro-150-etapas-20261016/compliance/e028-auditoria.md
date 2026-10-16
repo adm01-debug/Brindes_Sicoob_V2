@@ -106,9 +106,14 @@ export async function logLLMCall(params: {
 ## 5. Relatório de Auditoria para a ANPD
 
 ```sql
--- Histórico completo de um cooperado
+-- Histórico completo de um cooperado. O relatório é para a ANPD e para o
+-- próprio titular (art. 18 LGPD): mascarar aqui NÃO é o mesmo mascaramento
+-- que entra no prompt do LLM, mas o nome da coluna não pode prometer
+-- anonimização que não faz — "contato_anonimizado" devolvendo o
+-- whatsapp_number inteiro faria quem consome o relatório tratá-lo como
+-- seguro para compartilhar.
 SELECT ce.event_type, ce.event_data, ce.channel, ce.created_at,
-       cc.whatsapp_number AS contato_anonimizado, au.email AS ator
+       '***' || RIGHT(cc.whatsapp_number, 4) AS contato_mascarado, au.email AS ator
 FROM copilot_events ce
 LEFT JOIN copilot_contacts cc ON cc.id = ce.contact_id
 LEFT JOIN auth.users au ON au.id = ce.actor_id

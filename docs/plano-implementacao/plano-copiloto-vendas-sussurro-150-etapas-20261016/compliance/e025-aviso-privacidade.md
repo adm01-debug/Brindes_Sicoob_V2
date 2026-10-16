@@ -38,7 +38,7 @@ Quando você conversa com nosso time pelo WhatsApp, seu nome, telefone e o conte
 
 **Quem pode ver seus dados**
 
-Apenas o vendedor responsável pelo seu atendimento e a equipe de TI da Promo Brindes. As mensagens passam por um serviço de IA externo (Anthropic), **sem CPF, dados financeiros ou informações sensíveis** — usamos apenas o texto da conversa, com seu nome substituído por "COOPERADO".
+O vendedor responsável pelo seu atendimento, a gestão/supervisão da sua cooperativa e a equipe de TI da Promo Brindes. As mensagens passam por um serviço de IA externo (Anthropic), **sem CPF, dados financeiros ou informações sensíveis** — usamos apenas o texto da conversa, com seu nome substituído por "COOPERADO".
 
 **Seus direitos pela LGPD**
 
@@ -52,7 +52,10 @@ Você pode, a qualquer momento:
 **Como exercer seus direitos**
 
 Envie e-mail para: **dpo@promobrindes.com.br** (campo a preencher pelo DPO)  
-Respondemos em até 15 dias úteis.
+Confirmação de que temos (ou não) seus dados e acesso simples: imediato.
+Para os demais pedidos (correção, exclusão, portabilidade): em até 15 dias
+corridos (não dias úteis — a LGPD/ANPD contam em dias corridos, e "úteis"
+pode passar do prazo legal).
 
 **Encarregado de Dados (DPO)**
 

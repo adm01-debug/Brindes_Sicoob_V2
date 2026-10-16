@@ -107,17 +107,25 @@ CREATE POLICY "gestor_ve_sugestoes_da_organizacao" ON copilot_suggestions
     )
   );
 
--- copilot_feedback é a avaliação que o PRÓPRIO vendedor dá à sugestão
--- (não dado do cooperado): escopo direto por quem avaliou, sem depender
--- da conversa já ter sido anonimizada por E024.
+-- copilot_feedback é a avaliação que o PRÓPRIO vendedor dá à sugestão.
+-- Escopar o gestor por "seller_id está na minha organização" (em vez da
+-- conversation_id de origem) repete o vazamento multi-org já corrigido em
+-- copilot_conversations: um vendedor em duas orgs exporia à gestão de A o
+-- feedback que deu enquanto atuava pela org B. copilot_feedback precisa de
+-- conversation_id (FK para a conversa que originou a sugestão avaliada)
+-- para escopar pela organização em que o feedback de fato aconteceu.
+ALTER TABLE copilot_feedback ADD COLUMN conversation_id UUID NOT NULL
+  REFERENCES copilot_conversations(id);
+
 CREATE POLICY "vendedor_ve_proprio_feedback" ON copilot_feedback
   FOR SELECT USING (seller_id = auth.uid());
 CREATE POLICY "gestor_ve_feedback_da_organizacao" ON copilot_feedback
   FOR SELECT USING (
-    EXISTS (SELECT 1 FROM user_roles WHERE user_id = auth.uid() AND role IN ('manager', 'admin', 'supervisor'))
-    AND seller_id IN (
-      SELECT om.user_id FROM organization_members om
-      WHERE om.organization_id IN (SELECT public.get_user_org_ids(auth.uid()))
+    EXISTS (
+      SELECT 1 FROM copilot_conversations c
+      WHERE c.id = copilot_feedback.conversation_id
+        AND EXISTS (SELECT 1 FROM user_roles WHERE user_id = auth.uid() AND role IN ('manager', 'admin', 'supervisor'))
+        AND c.organization_id IN (SELECT public.get_user_org_ids(auth.uid()))
     )
   );
 
@@ -146,12 +154,15 @@ const CONTACT_PLACEHOLDER = 'COOPERADO';
 const SELLER_PLACEHOLDER = 'VENDEDOR';
 
 // Nome vazio geraria uma regex vazia (casa em toda posição, inserindo o
-// placeholder entre cada caractere) e substituição sem \b troca "Ana" dentro
-// de "semana". nameRegex() cobre os dois casos.
+// placeholder entre cada caractere) e substituição sem limite de palavra
+// troca "Ana" dentro de "semana". `\b` do JS é ASCII-only — não reconhece
+// letra acentuada como limite, então em "Álvaro"/"José" o `\b` cai DENTRO
+// do nome e ele nunca bate; lookaround com \p{L}/\p{N} (flag "u") cobre
+// Unicode e resolve os dois casos.
 function nameRegex(name: string): RegExp | null {
   const trimmed = name.trim();
   if (!trimmed) return null;
-  return new RegExp(`\\b${escapeRegex(trimmed)}\\b`, 'gi');
+  return new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegex(trimmed)}(?![\\p{L}\\p{N}])`, 'giu');
 }
 
 export function pseudonymizeConversation(
@@ -288,13 +299,28 @@ BEGIN
     RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'Acesso negado a esta conversa.';
   END IF;
 
+  -- Acesso do próprio vendedor é uso normal; acesso de gestor/supervisor a
+  -- conversa de outro vendedor é acesso privilegiado e E028 exige o tipo
+  -- canônico cross_seller_access (com viewer/owner) e retenção de 2 anos —
+  -- 'messages_accessed' genérico seria apagado em 90 dias pelo job de E024
+  -- e não apareceria em nenhum relatório de acesso cruzado.
   INSERT INTO copilot_events (actor_id, conversation_id, event_type, event_data, created_at)
-  VALUES (v_user_id, p_conversation_id, 'messages_accessed',
-          jsonb_build_object('accessed_by', v_user_id), NOW());
+  SELECT v_user_id, p_conversation_id,
+    CASE WHEN c.seller_id = v_user_id THEN 'messages_accessed' ELSE 'cross_seller_access' END,
+    jsonb_build_object('viewer_id', v_user_id, 'owner_id', c.seller_id),
+    NOW()
+  FROM copilot_conversations c WHERE c.id = p_conversation_id;
   RETURN QUERY SELECT * FROM copilot_messages
     WHERE conversation_id = p_conversation_id ORDER BY created_at ASC;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER
+-- Dono da função pode ter privilégios amplos; sem search_path fixo, um
+-- authenticated que altere seu próprio search_path (ou crie objeto
+-- temporário com o mesmo nome) pode sombrear `copilot_conversations` /
+-- `copilot_messages` e fazer a função ler da tabela errada com privilégio
+-- de dono. EXECUTE é concedido a todo authenticated, então essa superfície
+-- existe. Fixar o search_path neutraliza o sequestro.
+SET search_path = public, pg_temp;
 REVOKE EXECUTE ON FUNCTION get_messages_with_audit(UUID) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION get_messages_with_audit(UUID) TO authenticated;
 ```
