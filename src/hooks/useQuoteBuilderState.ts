@@ -8,6 +8,7 @@ import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
 import { useSellerDiscountLimits } from "@/hooks/useSellerDiscountLimits";
 import { useDiscountApproval } from "@/hooks/useDiscountApproval";
+import { buildQuoteDraftScope } from "@/lib/quotes/quote-draft-scope";
 import { format, addDays } from "date-fns";
 import { toast } from "sonner";
 import { validateQuoteForm, QUOTE_FIELD_LABELS } from "@/lib/validations";
@@ -457,6 +458,11 @@ export function useQuoteBuilderState() {
     return isQuoteCommerciallyEditable(currentStatus, isLatestVersion);
   }, [isEditMode, currentStatus, isLatestVersion]);
 
+  const draftScopeId = useMemo(
+    () => buildQuoteDraftScope(user?.id, profile?.cooperativa_id, profile?.pa_id),
+    [profile?.cooperativa_id, profile?.pa_id, user?.id],
+  );
+
   const defaultTemplate = useMemo(() => templates.find(t => t.is_default), [templates]);
 
   // Guarda de "alterações não salvas" (useUnsavedChangesGuard): compara o
@@ -626,7 +632,7 @@ export function useQuoteBuilderState() {
   return {
     navigate, quoteId, isEditMode, loadingQuote, quoteLoadError,
     retryQuoteLoad: () => setQuoteReloadKey((current) => current + 1),
-    hasUnsavedData, user,
+    hasUnsavedData, user, draftScopeId,
     clientId, setClientId, contactId, setContactId,
     companyInfo, setCompanyInfo, contactInfo, setContactInfo,
     validityDays, setValidityDays, validUntil, setValidUntil,

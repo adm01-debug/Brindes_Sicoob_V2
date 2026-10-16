@@ -130,6 +130,10 @@ function clearSensitiveBrowserData(): void {
       "navigation-history",
       "duplicate_product",
     ].forEach(key => localStorage.removeItem(key));
+    for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+      const key = localStorage.key(index);
+      if (key?.startsWith("autosave_")) localStorage.removeItem(key);
+    }
   } catch (error) {
     console.warn("Falha ao limpar armazenamento local no logout", error);
   }

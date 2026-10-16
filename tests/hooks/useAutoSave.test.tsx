@@ -7,6 +7,7 @@ vi.mock('@/lib/telemetry/structuredLogger', () => ({
 
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { getQuoteDraftIdForScope } from '@/components/quotes/QuoteAutoSave';
+import { buildQuoteDraftScope } from '@/lib/quotes/quote-draft-scope';
 
 describe('useAutoSave', () => {
   beforeEach(() => {
@@ -107,5 +108,35 @@ describe('useAutoSave', () => {
 
     expect(getQuoteDraftIdForScope('usuario-1')).toBe(firstUserDraft);
     expect(getQuoteDraftIdForScope('usuario-2')).not.toBe(firstUserDraft);
+  });
+
+  it('separa o rascunho por usuário, cooperativa e PA', () => {
+    expect(buildQuoteDraftScope('usuario-1', 'coop-1', 'pa-1')).toBe('usuario-1:coop-1:pa-1');
+    expect(buildQuoteDraftScope('usuario-1', 'coop-1', 'pa-2')).not.toBe(
+      buildQuoteDraftScope('usuario-1', 'coop-1', 'pa-1'),
+    );
+    expect(buildQuoteDraftScope(null, 'coop-1', 'pa-1')).toBeNull();
+  });
+
+  it('detecta alteração concorrente do mesmo rascunho em outra aba', () => {
+    const { result } = renderHook(() => useAutoSave({ key: 'concorrente', data: { title: 'Local' } }));
+    const envelope = JSON.stringify({
+      version: 1,
+      savedAt: '2026-10-16T12:00:00.000Z',
+      data: { title: 'Outra aba' },
+    });
+
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'autosave_concorrente',
+        newValue: envelope,
+        storageArea: localStorage,
+      }));
+    });
+
+    expect(result.current.externalChange).toEqual({
+      data: { title: 'Outra aba' },
+      savedAt: '2026-10-16T12:00:00.000Z',
+    });
   });
 });

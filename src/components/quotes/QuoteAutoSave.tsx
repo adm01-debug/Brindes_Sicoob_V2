@@ -17,11 +17,11 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useAutoSave } from "@/hooks/useAutoSave";
 
-type SaveStatus = "idle" | "saving" | "saved" | "error" | "offline";
+type SaveStatus = "idle" | "saving" | "saved" | "error" | "offline" | "conflict";
 
 interface QuoteAutoSaveProps {
   quoteId?: string;
-  /** Identificador do usuário autenticado; impede restauração entre contas. */
+  /** Escopo institucional (usuário, cooperativa e PA); impede restauração cruzada. */
   scopeId?: string | null;
   /** Desliga persistência e restauração em propostas imutáveis. */
   enabled?: boolean;
@@ -51,6 +51,7 @@ function statusIcon(status: SaveStatus) {
   if (status === "saving") return <Loader2 className="h-4 w-4 animate-spin" />;
   if (status === "saved") return <Check className="h-4 w-4 text-success" />;
   if (status === "error") return <AlertCircle className="h-4 w-4 text-destructive" />;
+  if (status === "conflict") return <AlertCircle className="h-4 w-4 text-warning" />;
   if (status === "offline") return <CloudOff className="h-4 w-4 text-warning" />;
   return <Cloud className="h-4 w-4" />;
 }
@@ -59,6 +60,7 @@ function statusText(status: SaveStatus, hasChanges: boolean, lastSaved: Date | n
   if (status === "saving") return "Salvando...";
   if (status === "saved") return "Salvo agora";
   if (status === "error") return "Erro ao salvar";
+  if (status === "conflict") return "Rascunho alterado em outra aba";
   if (status === "offline") return "Offline";
   if (hasChanges) return "Alterações não salvas";
   return lastSaved ? `Salvo às ${format(lastSaved, "HH:mm", { locale: ptBR })}` : "Salvo neste dispositivo";
@@ -72,7 +74,9 @@ function AutoSaveIndicator({ status, lastSaved, hasChanges, className }: {
     <AnimatePresence mode="wait"><motion.div key={status} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0.8, opacity: 0 }} transition={{ duration: 0.15 }}>{statusIcon(status)}</motion.div></AnimatePresence>
     <span className="text-xs text-muted-foreground hidden sm:inline">{label}</span>
-    {hasChanges && status !== "saving" && <Badge variant="outline" className="text-[10px] h-5">Não salvo</Badge>}
+    {status === "conflict"
+      ? <Badge variant="outline" className="text-[10px] h-5">Recarregue para conciliar</Badge>
+      : hasChanges && status !== "saving" && <Badge variant="outline" className="text-[10px] h-5">Não salvo</Badge>}
   </div></TooltipTrigger><TooltipContent><div className="text-xs space-y-1"><p className="font-medium">{label}</p>
     {lastSaved && <p className="text-muted-foreground">Último salvamento: {format(lastSaved, "HH:mm:ss", { locale: ptBR })}</p>}
   </div></TooltipContent></Tooltip>;
@@ -140,7 +144,7 @@ export function QuoteAutoSave({
   const draftId = useMemo(() => enabled && scopeId ? getQuoteDraftIdForScope(scopeId) : null, [enabled, scopeId]);
   const storageKey = enabled && scopeId ? (quoteId ? `quote:${scopeId}:${quoteId}` : `draft:${scopeId}:${draftId}`) : "";
 
-  const { restore, lastError } = useAutoSave({
+  const { restore, lastError, externalChange } = useAutoSave({
     key: storageKey,
     data,
     enabled: enabled && Boolean(storageKey),
@@ -156,6 +160,9 @@ export function QuoteAutoSave({
   useEffect(() => () => {
     if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
   }, []);
+  useEffect(() => {
+    if (enabled && externalChange) setStatus("conflict");
+  }, [enabled, externalChange]);
   const hasUnsavedChanges = useDraftLifecycle({
     data,
     storageKey,
