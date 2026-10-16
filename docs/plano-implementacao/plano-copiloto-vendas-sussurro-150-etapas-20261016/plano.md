@@ -441,9 +441,9 @@ Uma etapa só está **concluída** quando o critério de aceite foi verificado c
 
 #### E033 · Função de entrada `copilot-ingest`
 
-`Edge` · depende de: E032
+`Edge` · depende de: E032, E026
 
-- **O quê:** Antes de criar a função, confirmar vaga disponível no limite de 100 Edge Functions publicadas (hoje no limite, com deploy anterior retornando HTTP 402) e liberar espaço despublicando ou removendo uma função atualmente publicada e em desuso (publicar `error-monitor` não ajuda: ele já é `source-only` e não ocupa uma das 100 vagas, então publicá-lo consumiria outra em vez de liberar). Só então: receber o webhook, validar segredo e origem (VPS), aplicar limite de tamanho, descartar repetidos pelo ID da mensagem e registrar o evento, no mesmo padrão de `webhook-inbound` (HMAC, `inbound_webhook_events`, limite de 1 MB).
+- **O quê:** Antes de criar a função, confirmar vaga disponível no limite de 100 Edge Functions publicadas (hoje no limite, com deploy anterior retornando HTTP 402) e liberar espaço despublicando ou removendo uma função atualmente publicada e em desuso (publicar `error-monitor` não ajuda: ele já é `source-only` e não ocupa uma das 100 vagas, então publicá-lo consumiria outra em vez de liberar). A função só é ativada contra tráfego real depois de E026 (retenção e descarte) existir — o próprio webhook já grava o payload completo em `inbound_webhook_events`, então ligá-la antes cria uma cópia de conversas reais sem controle de retenção. Só então: receber o webhook, validar segredo e origem (VPS), aplicar limite de tamanho, descartar repetidos pelo ID da mensagem e registrar o evento, no mesmo padrão de `webhook-inbound` (HMAC, `inbound_webhook_events`, limite de 1 MB).
 - **Aceite:** Função publicada com sucesso no projeto remoto (não só local) e confirmada via `supabase_functions_list`; reenvio do mesmo evento não duplica; segredo inválido recebe 401; nada é perdido em teste de 1.000 eventos.
 
 #### E034 · Modelo de dados no banco do portal
@@ -531,8 +531,8 @@ Uma etapa só está **concluída** quando o critério de aceite foi verificado c
 
 `Front` · depende de: E035
 
-- **O quê:** Cooperativa, PA, último pedido, saúde do cliente (`useClientHealthScore`), verba disponível e orçamentos abertos.
-- **Aceite:** Dados batem com as telas de origem em dez clientes de teste.
+- **O quê:** Cooperativa, PA, último pedido, saúde do cliente (`useClientHealthScore`), verba disponível e orçamentos abertos. `useClientHealthScore`/`useClientBI` caem em `MOCK_CLIENT_STATS` quando a consulta falha ou o cliente tem zero pedidos — o cartão não pode exibir esses números fictícios como reais; cliente novo ou falha de dados mostra um estado explícito de "sem dados", nunca o mock.
+- **Aceite:** Dados batem com as telas de origem em dez clientes de teste; teste específico com cliente novo e com falha simulada de consulta confirma que o mock nunca aparece como dado real.
 
 #### E046 · Atribuir e transferir conversa
 
@@ -705,10 +705,10 @@ Uma etapa só está **concluída** quando o critério de aceite foi verificado c
 
 #### E069 · Sugestão em fluxo contínuo
 
-`Edge` · depende de: E061
+`Edge` · depende de: E061, E117
 
-- **O quê:** A sugestão aparece palavra por palavra e é cancelada se o cliente mandar mensagem nova no meio.
-- **Aceite:** Sugestão velha nunca aparece como se fosse atual.
+- **O quê:** A sugestão aparece palavra por palavra e é cancelada se o cliente mandar mensagem nova no meio. Produto, preço e prazo citados só entram no fluxo depois de passar pela checagem pós-geração (E117); o restante do texto pode ser transmitido token a token, mas nenhum número não verificado chega à tela antes de ser aprovado.
+- **Aceite:** Sugestão velha nunca aparece como se fosse atual; teste com número inventado na saída do modelo confirma que ele nunca chega à tela antes da checagem pós-geração aprová-lo.
 
 #### E070 · Registro de versões de prompt
 
@@ -1001,10 +1001,10 @@ Uma etapa só está **concluída** quando o critério de aceite foi verificado c
 
 #### E109 · Jogadas da semana
 
-`Vendas` · depende de: E105
+`Vendas` · depende de: E105, E018
 
-- **O quê:** Curadoria semanal dos melhores trechos para todo o time.
-- **Aceite:** Publicação semanal durante todo o piloto.
+- **O quê:** Curadoria semanal dos melhores trechos para todo o time, anonimizados no mesmo padrão de E018 (sem nome, telefone, verba ou dado da cooperativa) — a conversa original só é visível ao vendedor dono (E036); o que é publicado ao time nunca identifica o cliente.
+- **Aceite:** Publicação semanal durante todo o piloto; teste de aceite confere, em uma amostra de trechos publicados, que nenhum dado pessoal identificável aparece.
 
 #### E110 · Relatório mensal ao Joaquim
 
@@ -1255,9 +1255,9 @@ Uma etapa só está **concluída** quando o critério de aceite foi verificado c
 
 #### E143 · Portão G2 e Piloto 1: só Radar
 
-`Negócio` · depende de: E120, E141, E081, E084, E085, E021
+`Negócio` · depende de: E120, E141, E081, E084, E085, E021, E142
 
-- **O quê:** Com o relatório do modo sombra aprovado, ligar só Radar e COOPERA por duas semanas, sem sugestão de texto. Exige o pop-up (E081), a linha do tempo do Radar (E084) e o checklist COOPERA (E085) já prontos — senão o piloto liga para vendedores reais sem as duas interfaces que deveria avaliar.
+- **O quê:** Com o relatório do modo sombra aprovado, ligar só Radar e COOPERA por duas semanas, sem sugestão de texto. Exige o pop-up (E081), a linha do tempo do Radar (E084) e o checklist COOPERA (E085) já prontos — senão o piloto liga para vendedores reais sem as duas interfaces que deveria avaliar. Exige também o treino do piloto (E142) já concluído: o Piloto 1 é tráfego real, não só o Piloto 2.
 - **Aceite:** Relatório do Piloto 1 com uso, utilidade e problemas.
 
 #### E144 · Piloto 2: sugestões e ações
@@ -1290,9 +1290,9 @@ Uma etapa só está **concluída** quando o critério de aceite foi verificado c
 
 #### E148 · Ligar para todo o time em etapas
 
-`Ops` · depende de: E147, E149, E128, E021
+`Ops` · depende de: E147, E149, E128, E021, E129
 
-- **O quê:** 25%, depois 50%, depois 100% dos vendedores. Só começa com o dono e a rotina de operação (E149) e o teste de carga de 50 vendedores simultâneos (E128) já concluídos — senão o rollout acontece sem responsável definido e a primeira validação de capacidade vira o próprio tráfego real.
+- **O quê:** 25%, depois 50%, depois 100% dos vendedores. Só começa com o dono e a rotina de operação (E149), o teste de carga de 50 vendedores simultâneos (E128) e a resiliência a queda do provedor — disjuntor, novas tentativas e fila (E129) — já concluídos: o teste de carga não cobre indisponibilidade do provedor, e sem E129 uma queda derruba a entrada de mensagens já com todo o tráfego real.
 - **Aceite:** Nenhuma métrica de proteção piora em cada etapa.
 
 #### E149 · Dono e rotina de operação
