@@ -383,7 +383,7 @@
 > "Isso é sério e entendo por que é uma preocupação. Me conta: foi atraso na produção ou na transportadora? Dependendo do ponto, a gente trabalha de forma diferente para evitar."
 
 **Resposta 2 (evidência/prova social):**
-> "Temos monitoramento de pedido em tempo real — você acompanha status de produção e rastreamento de entrega. Posso mostrar como funciona?"
+> "Você recebe um código de rastreio assim que o pedido sai e acompanha o status de produção e entrega pelo site da transportadora. Posso mostrar como funciona?"
 
 **Resposta 3 (ancoragem no risco):**
 > "Coloco uma folga de 3 dias úteis no cronograma de produção justamente pra absorver imprevistos. Se o evento é dia X, o prazo final que dou é dia X-3 como margem de segurança."

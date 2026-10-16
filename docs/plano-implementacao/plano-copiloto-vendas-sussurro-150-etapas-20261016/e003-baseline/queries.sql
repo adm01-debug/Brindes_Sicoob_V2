@@ -173,7 +173,13 @@ GROUP BY s.auth_user_id, s.name;
 -- Q9: Query consolidada (todas as métricas em uma linha por vendedor)
 -- ────────────────────────────────────────────────────────────
 WITH d90_criados AS (
-  SELECT d.user_id, COUNT(*) AS criados
+  SELECT
+    d.user_id,
+    COUNT(*) AS criados,
+    -- Mesma coorte usada na taxa de conversão da Q3: criado no período E
+    -- hoje "ganho", não importa quando fechou. COUNT(*) FILTER nunca é NULL
+    -- (vira 0 quando nenhuma linha bate), diferente de somar uma CTE à parte.
+    COUNT(*) FILTER (WHERE d.status = 'ganho') AS criados_e_ganhos
   FROM deals d
   WHERE d.created_at >= '2026-07-18' AND d.created_at < '2026-10-17'
   GROUP BY d.user_id
@@ -211,8 +217,11 @@ SELECT
   s.name                                                       AS vendedor,
   COALESCE(d90c.criados, 0)                                   AS deals_criados,
   COALESCE(d90g.ganhos, 0)                                    AS deals_ganhos,
+  -- Numerador na MESMA coorte do denominador (criados_e_ganhos, não
+  -- d90g.ganhos que é filtrado por closed_at): evita taxa > 100% quando um
+  -- deal antigo fecha dentro da janela, e fica consistente com a Q3.
   ROUND(CASE WHEN COALESCE(d90c.criados,0) > 0
-    THEN d90g.ganhos::numeric / d90c.criados * 100 ELSE 0 END,1) AS taxa_conversao_pct,
+    THEN COALESCE(d90c.criados_e_ganhos,0)::numeric / d90c.criados * 100 ELSE 0 END,1) AS taxa_conversao_pct,
   ROUND(COALESCE(d90g.ticket_medio, 0)::numeric, 2)           AS ticket_medio_r,
   ROUND(COALESCE(d90g.ciclo_dias, 0)::numeric, 1)             AS ciclo_medio_dias,
   COALESCE(p90.total_prop, 0)                                 AS proposals_geradas,

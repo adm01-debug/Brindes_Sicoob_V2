@@ -10,7 +10,7 @@
 
 O COOPERA é uma estrutura de qualificação de oportunidades adaptada ao contexto de **compra cooperativista de brindes e materiais promocionais**. Diferentemente do BANT tradicional, leva em conta as particularidades do Sicoob: orçamentos aprovados em assembleias, compras centralizadas vs. distribuídas por PA, prazos de eventos sazonais e a necessidade de aprovação da marca.
 
-Cada letra representa uma dimensão de qualificação. Uma oportunidade só avança para proposta formal quando todas as letras estiverem no mínimo em status **parcial**.
+Cada letra representa uma dimensão de qualificação. Existem dois gates (critérios exatos em Regras de Uso, item 4-5): a oportunidade entra em **"proposta em elaboração"** com C, O (ambos) e E em pelo menos **parcial** e P **completo** — R pode ficar pendente e ser resolvido durante a negociação. Só é **enviada ao cliente como proposta formal** quando todas as letras, R incluído, estiverem no mínimo **parcial**.
 
 ---
 
