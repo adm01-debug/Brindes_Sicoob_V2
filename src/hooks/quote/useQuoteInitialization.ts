@@ -4,6 +4,8 @@ import { format, addDays } from "date-fns";
 import { toast } from "sonner";
 import type { Quote, QuoteItem, QuoteItemPersonalization } from "@/hooks/quotes/quoteTypes";
 import type { SelectedCompanyInfo, SelectedContactInfo } from "@/components/quotes/CompanyContactSelector";
+import type { Product } from "@/types/quote-builder";
+import { loadQuoteProductsByIds } from "@/hooks/quote/useQuoteProductSearch";
 
 interface InitParams {
   isEditMode: boolean;
@@ -86,6 +88,49 @@ interface TemplateImportItem {
 }
 
 type QuoteSetters = InitParams["setters"];
+
+const MAX_SUGGESTED_PRODUCTS = 20;
+
+export interface QuoteSuggestionParams {
+  clientId: string | null;
+  productIds: string[];
+}
+
+function safeIdentifier(value: string | null): string | null {
+  const normalized = value?.trim();
+  const hasControlCharacter = normalized
+    ? Array.from(normalized).some((character) => character.charCodeAt(0) < 32)
+    : false;
+  if (!normalized || normalized.length > 128 || hasControlCharacter) return null;
+  return normalized;
+}
+
+export function parseQuoteSuggestionParams(searchParams: URLSearchParams): QuoteSuggestionParams | null {
+  if (searchParams.get("source") !== "bi-suggestions") return null;
+  const productIds = [...new Set(
+    (searchParams.get("productIds") ?? "")
+      .split(",")
+      .map((id) => safeIdentifier(id))
+      .filter((id): id is string => Boolean(id)),
+  )].slice(0, MAX_SUGGESTED_PRODUCTS);
+  return { clientId: safeIdentifier(searchParams.get("clientId")), productIds };
+}
+
+export function mapSuggestedProduct(product: Product): QuoteItem {
+  return {
+    product_id: product.id,
+    product_name: product.name,
+    product_sku: product.sku,
+    product_image_url: product.images?.[0],
+    quantity: 1,
+    unit_price: product.price,
+    unit_cost: product.costPrice ?? 0,
+    price_updated_at: product.priceUpdatedAt ?? null,
+    price_freshness_threshold_days: product.priceFreshnessThresholdDays ?? null,
+    stock_available: product.totalStock ?? null,
+    personalizations: [],
+  };
+}
 
 function fallback<T>(value: T | null | undefined | false | "" | 0, defaultValue: T): T {
   return value ? value as T : defaultValue;
@@ -308,7 +353,43 @@ export function useQuoteInitialization({ isEditMode, quoteId, reloadKey = 0, fet
     }
   }, [isEditMode, searchParams, setters]);
 
-  // 5. Pre-fill from template (passed via state)
+  // 5. Preserva a seleção vinda das sugestões comerciais do BI.
+  useEffect(() => {
+    if (isEditMode) return;
+    const suggestion = parseQuoteSuggestionParams(searchParams);
+    if (!suggestion) return;
+    let cancelled = false;
+    if (suggestion.clientId) setters.setClientId(suggestion.clientId);
+    if (suggestion.productIds.length === 0) {
+      toast.error("Nenhum produto válido foi recebido das sugestões do BI.");
+      return;
+    }
+    void loadQuoteProductsByIds(suggestion.productIds)
+      .then((products) => {
+        if (cancelled) return;
+        const items = products.map(mapSuggestedProduct);
+        if (items.length === 0) {
+          toast.error("Os produtos sugeridos não estão mais disponíveis no catálogo.");
+          return;
+        }
+        setters.setItems(items);
+        setters.setActiveItemIndex(0);
+        toast.success(`${items.length} produto(s) sugerido(s) adicionado(s) ao orçamento`);
+        const missing = suggestion.productIds.length - items.length;
+        if (missing > 0) {
+          toast.warning(`${missing} produto(s) não estão mais disponíveis e foram ignorados.`);
+        }
+        window.history.replaceState({}, document.title, window.location.pathname);
+      })
+      .catch(() => {
+        if (!cancelled) toast.error("Não foi possível carregar os produtos sugeridos.");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isEditMode, searchParams, setters]);
+
+  // 6. Pre-fill from template (passed via state)
   useEffect(() => {
     const state = locationState as { templateItems?: TemplateImportItem[] } | null;
     if (!state?.templateItems?.length) return;
