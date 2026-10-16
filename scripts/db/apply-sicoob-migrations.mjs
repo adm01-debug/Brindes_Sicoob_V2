@@ -146,7 +146,7 @@ const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
   )
 )`;
 
-const APPROVAL_WORKER_MONITOR_SAFE_SQL = `COALESCE((
+export const APPROVAL_WORKER_MONITOR_SAFE_SQL = `COALESCE((
   SELECT p.prosecdef
     AND p.proconfig @> ARRAY['search_path=pg_catalog, public, net']::text[]
     AND NOT has_function_privilege('anon', p.oid, 'EXECUTE')
@@ -154,6 +154,8 @@ const APPROVAL_WORKER_MONITOR_SAFE_SQL = `COALESCE((
     AND has_function_privilege('service_role', p.oid, 'EXECUTE')
     AND p.prosrc LIKE '%DISTINCT ON (r.id)%'
     AND p.prosrc LIKE '%r.created>=d.requested_at%'
+    AND p.prosrc LIKE '%ORDER BY r.id, d.requested_at DESC, r.created ASC%'
+    AND p.prosrc LIKE '%WHERE d.id=r.dispatch_id%'
     AND p.prosrc LIKE '%r.created ASC%'
     AND p.prosrc LIKE '%pending_status%'
     AND p.prosrc LIKE '%has_newer_result%'
