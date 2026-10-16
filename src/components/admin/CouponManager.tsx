@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Database } from "@/integrations/supabase/types";
+import { askConfirm } from '@/stores/useConfirmDialogStore';
 
 type Coupon = Database["public"]["Tables"]["coupons"]["Row"];
 type CouponDraft = Database["public"]["Tables"]["coupons"]["Insert"] & { id?: string };
@@ -153,7 +154,7 @@ export function CouponManager() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir este cupom?")) return;
+    if (!(await askConfirm({ title: 'Excluir cupom?', description: 'Esta ação não pode ser desfeita.', variant: 'destructive', confirmLabel: 'Excluir' }))) return;
     try {
       const { error } = await supabase.from('coupons').delete().eq('id', id);
       if (error) throw error;

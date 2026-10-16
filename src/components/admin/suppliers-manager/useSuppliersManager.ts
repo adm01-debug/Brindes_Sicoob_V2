@@ -9,6 +9,7 @@ import { fetchAddressByCep } from '@/utils/viacep';
 import { fetchCnpjData, type CnpjData } from '@/utils/cnpj-lookup';
 import { logger } from "@/lib/logger";
 import { type Supplier, type SupplierContact, type PixKey, EMPTY_SUPPLIER, ORGANIZATION_ID, createEmptyContact, createEmptyPixKey } from "./types";
+import { askConfirm } from '@/stores/useConfirmDialogStore';
 
 type SupplierFilterType = 'all' | 'product' | 'engraving';
 type SupplierFilterStatus = 'all' | 'active' | 'inactive';
@@ -511,7 +512,7 @@ export function useSuppliersManager() {
   };
 
   const handleDelete = async (supplier: Supplier) => {
-    if (!confirm(`Deseja realmente excluir o fornecedor "${supplier.name}"?`)) return;
+    if (!(await askConfirm({ title: 'Excluir fornecedor?', description: `Você está prestes a excluir "${supplier.name}". Esta ação não pode ser desfeita.`, variant: 'destructive', confirmLabel: 'Excluir' }))) return;
     setDeleting(supplier.id);
     try {
       await invokeExternalDbDelete('suppliers', supplier.id);

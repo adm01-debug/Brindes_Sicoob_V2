@@ -40,6 +40,7 @@ import { canManageSicoobOrderFulfillment } from "@/lib/sicoob/order-permissions"
 import { getSlaCycleStartedAt } from "@/lib/sicoob/sla-cycle";
 import { hasConfiguredPaBudget, isOrderOverPaBudget, resolvePaBudgetState } from "@/lib/sicoob/paBudgetState";
 import { type OrderStatus, type SicoobOrder, type SicoobOrderItem, canEditSicoobOrderItems, canSicoobTransitionTo, ORDER_STATUS_CONFIG } from "@/types/sicoob/orders";
+import { askConfirm } from '@/stores/useConfirmDialogStore';
 
 const formatOrderCurrency = (value?: number | null) => Number(value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const canTransitionTo = (current: OrderStatus, next: OrderStatus) => canSicoobTransitionTo(current, next);
@@ -132,10 +133,10 @@ function escalateAction(context: ActionContext) {
 }
 
 function statusUpdateAction(context: ActionContext) {
-  return (status: OrderStatus) => {
+  return async (status: OrderStatus) => {
     if (!context.order || !context.orderId) return;
     const label = ORDER_STATUS_CONFIG[status].label;
-    if (!confirm(`Deseja realmente alterar o status do pedido para "${label}"?`)) return;
+    if (!(await askConfirm({ title: 'Alterar status do pedido?', description: `O status será alterado para "${label}".`, variant: 'warning', confirmLabel: 'Alterar' }))) return;
     context.resources.statusMutation.mutate({ orderId: context.orderId, status, currentStatus: context.order.status, observations: `Alteração manual de status para ${label}` });
   };
 }
@@ -210,7 +211,7 @@ function DetailHeader({ controller }: { controller: DetailController }) {
 
 function OrderItemRow({ item, controller }: { item: SicoobOrderItem; controller: DetailController }) {
   const pending = controller.resources.items.removeItem.isPending;
-  const remove = () => { if (confirm("Deseja realmente remover este item?")) controller.resources.items.removeItem.mutate(item.id); };
+  const remove = async () => { if (await askConfirm({ title: 'Remover item?', description: 'Remover este item do pedido?', variant: 'destructive', confirmLabel: 'Remover' })) controller.resources.items.removeItem.mutate(item.id); };
   return <div className="flex items-center justify-between py-3 border-b last:border-0"><div className="flex gap-4"><div className={cn("w-12 h-12 bg-muted rounded flex items-center justify-center transition-opacity", pending && PENDING_OPACITY_CLASS)}><Package className="h-6 w-6 text-muted-foreground" /></div><div className={cn("transition-opacity", pending && PENDING_OPACITY_CLASS)}><p className="font-medium">{item.product_name || "Produto Sicoob"}</p><p className="text-xs text-muted-foreground">Qtd: {item.quantity}</p></div></div><div className="text-right flex items-center gap-4"><div className={cn("transition-opacity", pending && PENDING_OPACITY_CLASS)}><p className="font-bold">{formatOrderCurrency(item.line_total_amount ?? item.unit_price * item.quantity)}</p><p className="text-xs text-muted-foreground">Un: R$ {Number(item.unit_price).toLocaleString("pt-BR")}</p>{Number(item.personalization_amount || 0) > 0 && <p className="text-xs text-muted-foreground">Personalização: {formatOrderCurrency(item.personalization_amount)}</p>}</div>{controller.canEditItems && <Button variant="ghost" size="icon" aria-label="Remover item" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={remove} disabled={pending}><Trash2 className={cn("h-4 w-4", pending && "animate-pulse")} /></Button>}</div></div>;
 }
 
