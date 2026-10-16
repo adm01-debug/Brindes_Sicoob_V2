@@ -176,6 +176,10 @@ const TARGETS = [
     file: "supabase/migrations/20261016190000_enable_scoped_business_realtime.sql",
     sha256: "eb88eae2f11006f31151221a8300c7001f6a29c5723b4bbc2ecbb17f3ecf2afd",
   },
+  {
+    file: "supabase/migrations/20261016193000_pin_custom_kit_atomically.sql",
+    sha256: "0d3ec1b8a6f3bb6fa36045fb8ba630df08f924d05bfe7b4e331b152fbd143080",
+  },
 ];
 
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(

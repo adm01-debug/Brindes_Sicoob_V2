@@ -148,11 +148,12 @@ export function useCustomKitPersistence() {
   const bumpLastUsed = useCallback(async (kitId: string) => {
     if (!user?.id) return;
     try {
-      await supabase
+      const { error } = await supabase
         .from('custom_kits')
         .update({ last_used_at: new Date().toISOString() } as never)
         .eq('id', kitId)
         .eq('user_id', user.id);
+      if (error) throw error;
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     } catch {
       /* best-effort */
@@ -163,19 +164,11 @@ export function useCustomKitPersistence() {
   const togglePinned = useCallback(async (kitId: string, value: boolean) => {
     if (!user?.id) return;
     try {
-      if (value) {
-        // Desfixa qualquer outro kit fixado primeiro
-        await supabase
-          .from('custom_kits')
-          .update({ is_pinned: false } as never)
-          .eq('user_id', user.id)
-          .eq('is_pinned', true);
-      }
-      await supabase
-        .from('custom_kits')
-        .update({ is_pinned: value } as never)
-        .eq('id', kitId)
-        .eq('user_id', user.id);
+      const { error } = await supabase.rpc('set_custom_kit_pinned', {
+        p_kit_id: kitId,
+        p_pinned: value,
+      });
+      if (error) throw error;
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success(value ? 'Kit fixado em destaque' : 'Kit desafixado');
     } catch {

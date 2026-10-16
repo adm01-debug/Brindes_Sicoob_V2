@@ -12976,6 +12976,10 @@ export type Database = {
         Args: { minutes: number }
         Returns: number
       }
+      set_custom_kit_pinned: {
+        Args: { p_kit_id: string; p_pinned: boolean }
+        Returns: boolean
+      }
       set_postgrest_request_timeout: { Args: never; Returns: undefined }
       sicoob_actor_can_approve: {
         Args: { p_actor_id: string; p_board_only?: boolean; p_order_id: string }
