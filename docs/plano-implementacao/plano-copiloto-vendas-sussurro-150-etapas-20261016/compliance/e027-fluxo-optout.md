@@ -24,10 +24,17 @@ sequenceDiagram
     B->>P: Emite evento WebSocket: OPT_OUT_DETECTED
     P->>P: Exibe modal de confirmação ao vendedor
     Note over P: Solicitacao de Opt-Out - [Confirmar] [Ignorar]
-    P->>B: Vendedor clica [Confirmar]
-    B->>DB: INSERT INTO copilot_events (opt_out_confirmed_by_seller, ...)
-    P->>P: Exibe badge permanente "Opt-out ativo"
-    Note over B,DB: A partir daqui: toda mensagem desse contato e ignorada
+    alt Vendedor clica [Confirmar]
+        P->>B: Confirmar
+        B->>DB: INSERT INTO copilot_events (opt_out_confirmed_by_seller, ...)
+        P->>P: Exibe badge permanente "Opt-out ativo"
+        Note over B,DB: A partir daqui: toda mensagem desse contato e ignorada
+    else Vendedor clica [Ignorar] (falso positivo)
+        P->>B: Ignorar
+        B->>DB: UPDATE copilot_contacts SET copilot_opted_out=false, opted_out_at=NULL
+        B->>DB: INSERT INTO copilot_events (opt_out_ignored_by_seller, ...)
+        P->>P: Fecha modal, Sussurro continua ativo para o contato
+    end
 ```
 
 ---
@@ -43,10 +50,17 @@ Cooperado          Evolution API    Backend Sussurro    Supabase         Painel 
     |                   |                  |-- INSERT ------>|                  |
     |                   |                  |-- WebSocket -------------------------------->
     |                   |                  |                |   [Modal confirmacao]       |
+    |                   |                  |                |   [Confirmar] [Ignorar]     |
+    |                   |                  |                |                             |
     |                   |                  |<-- confirmar -----------------------------------
     |                   |                  |-- INSERT ------>|                  |
     |                   |                  |                |   [Badge opt-out ativo]     |
     |   (mensagens futuras serao ignoradas pelo Sussurro)                       |
+    |                   |                  |                |                             |
+    |                   |                  |<-- ignorar (falso positivo) ---------------------
+    |                   |                  |-- UPDATE copilot_opted_out=false ->|            |
+    |                   |                  |-- INSERT opt_out_ignored ------>|               |
+    |                   |                  |                |   [Modal fecha, Sussurro segue ativo]
 ```
 
 ---
@@ -92,6 +106,14 @@ INSERT INTO copilot_events (
   contact_id, conversation_id, actor_id,
   event_type,   -- 'opt_out_confirmed'
   event_data,   -- {"confirmed_by_seller_id": "uuid"}
+  channel, created_at
+) VALUES (...);
+
+-- Evento de falso positivo descartado pelo vendedor (reverte copilot_opted_out)
+INSERT INTO copilot_events (
+  contact_id, conversation_id, actor_id,
+  event_type,   -- 'opt_out_ignored'
+  event_data,   -- {"ignored_by_seller_id": "uuid", "original_trigger_message": "..."}
   channel, created_at
 ) VALUES (...);
 ```
