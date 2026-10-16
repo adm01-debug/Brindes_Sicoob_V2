@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Search, Filter, Calendar, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
+import { ORDER_STATUS_FLOW, ORDER_STATUS_LABELS } from '@/constants/orders';
 
 export interface OrderFilterValues {
   search: string;
@@ -31,24 +32,13 @@ export interface OrderFilterValues {
 }
 
 interface OrderFiltersProps {
+  values: OrderFilterValues;
   onFiltersChange: (filters: OrderFilterValues) => void;
 }
 
-export function OrderFilters({ onFiltersChange }: OrderFiltersProps) {
-  const [filters, setFilters] = useState<OrderFilterValues>({
-    search: '',
-    status: 'all',
-    clientCompany: '',
-    dateRange: {
-      from: undefined,
-      to: undefined
-    }
-  });
-
+export function OrderFilters({ values: filters, onFiltersChange }: OrderFiltersProps) {
   const updateFilters = (updates: Partial<OrderFilterValues>) => {
-    const newFilters = { ...filters, ...updates };
-    setFilters(newFilters);
-    onFiltersChange(newFilters);
+    onFiltersChange({ ...filters, ...updates });
   };
 
   const clearFilters = () => {
@@ -58,7 +48,6 @@ export function OrderFilters({ onFiltersChange }: OrderFiltersProps) {
       clientCompany: '',
       dateRange: { from: undefined, to: undefined }
     };
-    setFilters(reset);
     onFiltersChange(reset);
   };
 
@@ -102,11 +91,9 @@ export function OrderFilters({ onFiltersChange }: OrderFiltersProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os Status</SelectItem>
-              <SelectItem value="rascunho">Rascunho</SelectItem>
-              <SelectItem value="enviado_gestor">Pendente Aprovação</SelectItem>
-              <SelectItem value="aprovado_gestor">Aprovado</SelectItem>
-              <SelectItem value="em_producao">Em Produção</SelectItem>
-              <SelectItem value="concluido">Concluído</SelectItem>
+              {ORDER_STATUS_FLOW.map((status) => (
+                <SelectItem key={status} value={status}>{ORDER_STATUS_LABELS[status]}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -183,15 +170,14 @@ export function OrderFilters({ onFiltersChange }: OrderFiltersProps) {
                 />
               </div>
               
-              <div className="flex gap-2">
+              <div>
                 <Button 
                   variant="outline" 
-                  className="flex-1" 
+                  className="w-full"
                   onClick={clearFilters}
                 >
                   Limpar
                 </Button>
-                <Button className="flex-1">Aplicar</Button>
               </div>
             </div>
           </PopoverContent>

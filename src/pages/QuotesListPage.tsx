@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useState, useMemo } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,8 +27,10 @@ import { useQuoteViewedMap } from "@/hooks/useQuoteViewedMap";
 import { exportToExcel, exportToPDF } from "@/utils/orderExportUtils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { parseQuoteQuery, writeQuoteQuery, type QuoteSortOption } from "@/lib/navigation/filter-query";
+import { QUOTE_PENDING_STATUSES } from "@/lib/quote-status-config";
 
-type SortOption = "newest" | "oldest" | "highest" | "lowest" | "expiring";
+type SortOption = QuoteSortOption;
 const DATE_FORMAT = "dd/MM/yyyy";
 const sortOptions: { value: SortOption; label: string }[] = [
   { value: "newest", label: "Mais recentes" }, { value: "oldest", label: "Mais antigos" },
@@ -52,7 +54,8 @@ const QUOTE_COMPARATORS: Record<SortOption, (left: Quote, right: Quote) => numbe
 
 interface QuoteFilterOptions { searchTerm: string; statusFilter: string; quoteFuse: Fuse<Quote>; sortBy: SortOption }
 function filterAndSortQuotes(quotes: Quote[], options: QuoteFilterOptions) {
-  let results = options.searchTerm.length >= 2 ? options.quoteFuse.search(options.searchTerm).map((result) => result.item) : quotes;
+  const query = options.searchTerm.trim();
+  let results = query.length >= 2 ? options.quoteFuse.search(query).map((result) => result.item) : quotes;
   if (options.statusFilter !== "all") results = results.filter((quote) => quote.status === options.statusFilter);
   return [...results].sort(QUOTE_COMPARATORS[options.sortBy]);
 }
@@ -63,7 +66,7 @@ function calculateKpis(quotes: Quote[]) {
   const approved = approvedQuotes.length;
   return {
     total, approved,
-    pending: quotes.filter((quote) => ["pending", "sent", "pending_singular_approval"].includes(quote.status)).length,
+    pending: quotes.filter((quote) => QUOTE_PENDING_STATUSES.has(quote.status)).length,
     pendingSingular: quotes.filter((quote) => quote.status === "pending_singular_approval").length,
     totalValue: quotes.reduce((sum, quote) => sum + quoteTotal(quote), 0),
     approvedValue: approvedQuotes.reduce((sum, quote) => sum + quoteTotal(quote), 0),
@@ -77,12 +80,27 @@ function buildExportRows(quotes: Quote[]) {
 
 function useQuotesListState() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { isGestorCompras, isDev } = useAuth();
   const { isSupervisorOrAbove } = useRBAC();
   const quotesApi = useQuotes();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [sortBy, setSortBy] = useState<SortOption>("newest");
+  const queryFilters = useMemo(() => parseQuoteQuery(searchParams), [searchParams]);
+  const replaceQueryFilters = useCallback((updates: Partial<typeof queryFilters>) => {
+    setSearchParams((current) => writeQuoteQuery(current, { ...parseQuoteQuery(current), ...updates }), {
+      replace: true, state: location.state,
+    });
+  }, [location.state, setSearchParams]);
+  useEffect(() => {
+    const canonical = writeQuoteQuery(searchParams, queryFilters);
+    if (canonical.toString() !== searchParams.toString()) {
+      setSearchParams(canonical, { replace: true, state: location.state });
+    }
+  }, [location.state, queryFilters, searchParams, setSearchParams]);
+  const { searchTerm, statusFilter, sortBy } = queryFilters;
+  const setSearchTerm = useCallback((value: string) => replaceQueryFilters({ searchTerm: value }), [replaceQueryFilters]);
+  const setStatusFilter = useCallback((value: string) => replaceQueryFilters({ statusFilter: value }), [replaceQueryFilters]);
+  const setSortBy = useCallback((value: SortOption) => replaceQueryFilters({ sortBy: value }), [replaceQueryFilters]);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [bulkDeleteIds, setBulkDeleteIds] = useState<string[]>([]);
   const kpis = useMemo(() => calculateKpis(quotesApi.quotes), [quotesApi.quotes]);
@@ -93,7 +111,7 @@ function useQuotesListState() {
   const filteredQuotes = useMemo(() => filterAndSortQuotes(quotesApi.quotes, { searchTerm, statusFilter, quoteFuse, sortBy }), [quotesApi.quotes, searchTerm, statusFilter, quoteFuse, sortBy]);
   const handleDelete = async () => { if (deleteConfirmId) await quotesApi.deleteQuote(deleteConfirmId); setDeleteConfirmId(null); };
   const handleBulkDelete = async () => { for (const id of bulkDeleteIds) await quotesApi.deleteQuote(id); setBulkDeleteIds([]); };
-  const clearFilters = () => { setSearchTerm(""); setStatusFilter("all"); setSortBy("newest"); };
+  const clearFilters = () => replaceQueryFilters({ searchTerm: "", statusFilter: "all", sortBy: "newest" });
   return { navigate, isGestorCompras, isDev, isSupervisorOrAbove, ...quotesApi, searchTerm, setSearchTerm, statusFilter, setStatusFilter, sortBy, setSortBy, deleteConfirmId, setDeleteConfirmId, bulkDeleteIds, setBulkDeleteIds, kpis, funnelData, filteredQuotes, handleDelete, handleBulkDelete, clearFilters };
 }
 
@@ -138,7 +156,7 @@ function exportSelectedQuotes(state: QuotesState, ids: string[]) {
 }
 
 function QuotesResults({ state }: { state: QuotesState }) {
-  const hasActiveFilters = Boolean(state.searchTerm) || state.statusFilter !== "all";
+  const hasActiveFilters = Boolean(state.searchTerm.trim()) || state.statusFilter !== "all";
   if (state.filteredQuotes.length === 0) return <ScrollArea className="h-[calc(100vh-360px)] min-h-[400px]"><EmptyState variant="quotes" title={hasActiveFilters ? "Nenhum resultado para esses filtros" : "Nenhum orçamento encontrado"} description={hasActiveFilters ? "Ajuste a busca ou os chips de status, ou limpe todos os filtros." : "Crie seu primeiro orçamento e comece a vender."} action={hasActiveFilters ? { label: "Limpar filtros", onClick: state.clearFilters } : { label: "Criar Orçamento", onClick: () => state.navigate("/orcamentos/novo") }} /></ScrollArea>;
   return <ScrollArea className="h-[calc(100vh-360px)] min-h-[400px]"><QuotesConfigurableList quotes={state.filteredQuotes} isSupervisor={state.isSupervisorOrAbove} onDelete={state.setDeleteConfirmId} onBulkDelete={state.setBulkDeleteIds} onBulkStatusChange={(ids, status) => updateBulkStatus(state, ids, status)} onBulkExport={(ids) => exportSelectedQuotes(state, ids)} onDuplicate={state.reorderQuote} onMarkApproved={async (id) => { toast.info("Gere e assine o PDF no detalhe do orçamento para concluir a aprovação."); state.navigate(`/orcamentos/${id}`); }} /></ScrollArea>;
 }
