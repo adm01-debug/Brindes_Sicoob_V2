@@ -36,7 +36,7 @@ const adminPaths = [
 
 const sicoobPaths = [
   '/pa/verba', '/dashboard-pa', '/gestor/compras', '/gestor', '/gestor/agregados',
-  '/gestor/convites', '/gestor/aprovacoes', '/gestor/auditoria', '/vendedor/dashboard',
+  '/gestor/convites', '/gestor/aprovacoes', '/gestor/delegacoes', '/gestor/auditoria', '/vendedor/dashboard',
   '/relatorios/sicoob', '/kpis/sicoob', '/gestor/orcamentos', '/sicoob/pedidos',
   '/sicoob/pedidos/kanban', '/sicoob/pedidos/:id', '/sicoob/logistica', '/sicoob/vendas',
 ];
@@ -71,7 +71,7 @@ function expected(paths: string[], gates: string[]): RouteLeaf[] {
 }
 
 describe('paridade da árvore principal de rotas', () => {
-  it('preserva todas as 131 folhas e seus gates de acesso', () => {
+  it('preserva todas as 132 folhas e seus gates de acesso', () => {
     const leaves = flatten(buildAppRoutes());
     const demoPaths = leaves.filter(({ path }) => path === '/loja-demo' || path === '/demonstracao');
     const coreLeaves = leaves.filter(({ path }) => path !== '/loja-demo' && path !== '/demonstracao');
@@ -83,7 +83,7 @@ describe('paridade da árvore principal de rotas', () => {
       ...expected(devPaths, ['root', 'protected', 'authenticated-shell', 'main-layout', 'dev']),
     ];
 
-    expect(coreLeaves).toHaveLength(131);
+    expect(coreLeaves).toHaveLength(132);
     expect(coreLeaves).toEqual(expect.arrayContaining(expectedLeaves));
     expect(expectedLeaves).toEqual(expect.arrayContaining(coreLeaves));
     expect(demoPaths).toHaveLength([0, 2].includes(demoPaths.length) ? demoPaths.length : -1);
