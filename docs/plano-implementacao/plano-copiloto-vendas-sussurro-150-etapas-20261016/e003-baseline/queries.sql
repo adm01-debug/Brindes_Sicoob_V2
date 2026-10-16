@@ -30,7 +30,7 @@ LEFT JOIN deals d
   AND d.created_at >= '2026-07-18'
   AND d.created_at <  '2026-10-17'
 WHERE s.is_active = true
-GROUP BY s.name
+GROUP BY s.auth_user_id, s.name
 ORDER BY deals_criados DESC;
 
 -- ────────────────────────────────────────────────────────────
@@ -43,10 +43,12 @@ SELECT
 FROM salespeople s
 LEFT JOIN deals d
   ON d.user_id = s.auth_user_id
-  AND d.created_at >= '2026-07-18'
-  AND d.created_at <  '2026-10-17'
+  AND d.status = 'ganho'
+  -- "ganhos no período" é sobre quando o deal fechou, não quando nasceu
+  AND d.closed_at >= '2026-07-18'
+  AND d.closed_at <  '2026-10-17'
 WHERE s.is_active = true
-GROUP BY s.name
+GROUP BY s.auth_user_id, s.name
 ORDER BY deals_ganhos DESC;
 
 -- ────────────────────────────────────────────────────────────
@@ -68,7 +70,7 @@ LEFT JOIN deals d
   AND d.created_at >= '2026-07-18'
   AND d.created_at <  '2026-10-17'
 WHERE s.is_active = true
-GROUP BY s.name;
+GROUP BY s.auth_user_id, s.name;
 
 -- ────────────────────────────────────────────────────────────
 -- Q4: Ticket médio (avg valor dos deals ganhos no período)
@@ -79,10 +81,11 @@ SELECT
 FROM salespeople s
 LEFT JOIN deals d
   ON d.user_id = s.auth_user_id
-  AND d.created_at >= '2026-07-18'
-  AND d.created_at <  '2026-10-17'
+  AND d.status = 'ganho'
+  AND d.closed_at >= '2026-07-18'
+  AND d.closed_at <  '2026-10-17'
 WHERE s.is_active = true
-GROUP BY s.name;
+GROUP BY s.auth_user_id, s.name;
 
 -- ────────────────────────────────────────────────────────────
 -- Q5: Ciclo médio de venda em dias (created_at → closed_at nos ganhos)
@@ -98,10 +101,11 @@ SELECT
 FROM salespeople s
 LEFT JOIN deals d
   ON d.user_id = s.auth_user_id
-  AND d.created_at >= '2026-07-18'
-  AND d.created_at <  '2026-10-17'
+  AND d.status = 'ganho'
+  AND d.closed_at >= '2026-07-18'
+  AND d.closed_at <  '2026-10-17'
 WHERE s.is_active = true
-GROUP BY s.name;
+GROUP BY s.auth_user_id, s.name;
 
 -- ────────────────────────────────────────────────────────────
 -- Q6: Total de proposals geradas no período por vendedor
@@ -115,7 +119,7 @@ LEFT JOIN proposals p
   AND p.created_at >= '2026-07-18'
   AND p.created_at <  '2026-10-17'
 WHERE s.is_active = true
-GROUP BY s.name
+GROUP BY s.auth_user_id, s.name
 ORDER BY proposals_geradas DESC;
 
 -- ────────────────────────────────────────────────────────────
@@ -148,7 +152,7 @@ LEFT JOIN proposals p
   AND p.created_at >= '2026-07-18'
   AND p.created_at <  '2026-10-17'
 WHERE s.is_active = true
-GROUP BY s.name;
+GROUP BY s.auth_user_id, s.name;
 
 -- ────────────────────────────────────────────────────────────
 -- Q8: Tempo médio de primeira resposta WhatsApp
@@ -163,21 +167,27 @@ LEFT JOIN seller_daily_metrics sdm
   AND sdm.metric_date >= '2026-07-18'
   AND sdm.metric_date <= '2026-10-16'
 WHERE s.is_active = true
-GROUP BY s.name;
+GROUP BY s.auth_user_id, s.name;
 
 -- ────────────────────────────────────────────────────────────
 -- Q9: Query consolidada (todas as métricas em uma linha por vendedor)
 -- ────────────────────────────────────────────────────────────
-WITH d90 AS (
-  SELECT
-    d.user_id,
-    COUNT(*) AS criados,
-    COUNT(*) FILTER (WHERE d.status = 'ganho') AS ganhos,
-    AVG(d.valor) FILTER (WHERE d.status = 'ganho') AS ticket_medio,
-    AVG(EXTRACT(EPOCH FROM (d.closed_at - d.created_at)) / 86400)
-      FILTER (WHERE d.status = 'ganho' AND d.closed_at IS NOT NULL) AS ciclo_dias
+WITH d90_criados AS (
+  SELECT d.user_id, COUNT(*) AS criados
   FROM deals d
   WHERE d.created_at >= '2026-07-18' AND d.created_at < '2026-10-17'
+  GROUP BY d.user_id
+),
+d90_ganhos AS (
+  -- Coorte separada: "ganhos" é sobre fechamento (closed_at), não criação.
+  SELECT
+    d.user_id,
+    COUNT(*) AS ganhos,
+    AVG(d.valor) AS ticket_medio,
+    AVG(EXTRACT(EPOCH FROM (d.closed_at - d.created_at)) / 86400) AS ciclo_dias
+  FROM deals d
+  WHERE d.status = 'ganho'
+    AND d.closed_at >= '2026-07-18' AND d.closed_at < '2026-10-17'
   GROUP BY d.user_id
 ),
 p90 AS (
@@ -199,18 +209,19 @@ sdm90 AS (
 )
 SELECT
   s.name                                                       AS vendedor,
-  COALESCE(d90.criados, 0)                                    AS deals_criados,
-  COALESCE(d90.ganhos, 0)                                     AS deals_ganhos,
-  ROUND(CASE WHEN COALESCE(d90.criados,0) > 0
-    THEN d90.ganhos::numeric / d90.criados * 100 ELSE 0 END,1) AS taxa_conversao_pct,
-  ROUND(COALESCE(d90.ticket_medio, 0)::numeric, 2)            AS ticket_medio_r,
-  ROUND(COALESCE(d90.ciclo_dias, 0)::numeric, 1)              AS ciclo_medio_dias,
+  COALESCE(d90c.criados, 0)                                   AS deals_criados,
+  COALESCE(d90g.ganhos, 0)                                    AS deals_ganhos,
+  ROUND(CASE WHEN COALESCE(d90c.criados,0) > 0
+    THEN d90g.ganhos::numeric / d90c.criados * 100 ELSE 0 END,1) AS taxa_conversao_pct,
+  ROUND(COALESCE(d90g.ticket_medio, 0)::numeric, 2)           AS ticket_medio_r,
+  ROUND(COALESCE(d90g.ciclo_dias, 0)::numeric, 1)             AS ciclo_medio_dias,
   COALESCE(p90.total_prop, 0)                                 AS proposals_geradas,
   ROUND(CASE WHEN COALESCE(p90.total_prop,0) > 0
     THEN p90.prop_ganhas::numeric / p90.total_prop * 100 ELSE 0 END,1) AS taxa_prop_ganho_pct,
   COALESCE(sdm90.avg_resp_min, 0)                             AS avg_resp_wpp_min
 FROM salespeople s
-LEFT JOIN d90  ON d90.user_id  = s.auth_user_id
+LEFT JOIN d90_criados d90c ON d90c.user_id = s.auth_user_id
+LEFT JOIN d90_ganhos  d90g ON d90g.user_id = s.auth_user_id
 LEFT JOIN p90  ON p90.user_id  = s.auth_user_id
 LEFT JOIN sdm90 ON sdm90.user_id = s.auth_user_id
 WHERE s.is_active = true
