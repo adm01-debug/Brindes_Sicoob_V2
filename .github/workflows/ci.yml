@@ -103,6 +103,9 @@ jobs:
       - name: Simular compatibilidade e autoria da telemetria de busca
         run: python3 scripts/qa/simular-search-analytics-legado.py
 
+      - name: Simular hardening de Storage e ACL pública
+        run: python3 scripts/qa/simular-storage-acl-hardening.py
+
       - name: Verificar adoção de logging nas Edge Functions
         run: node scripts/check-edge-structured-logging.mjs
 

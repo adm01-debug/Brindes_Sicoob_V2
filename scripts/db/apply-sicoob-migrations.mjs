@@ -168,6 +168,10 @@ const TARGETS = [
     file: "supabase/migrations/20261016173000_remove_redundant_pa_budget_select_policy.sql",
     sha256: "ae37ac710e0e67d8f4d358fa1209d19afb4204fe157bba685228a843f32d11f1",
   },
+  {
+    file: "supabase/migrations/20261016180000_harden_storage_and_public_favorites_acl.sql",
+    sha256: "0bf03cf22c461eb9364da0e440eff1efdf4edf42865cce91b012ba8e644999a7",
+  },
 ];
 
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
@@ -924,7 +928,140 @@ async function validateContract(client, targets) {
               0,
               (SELECT oid FROM pg_roles WHERE rolname = 'anon')
             )
-        ) AS search_direct_acl_safe
+        ) AS search_direct_acl_safe,
+      NOT EXISTS (SELECT 1 FROM public.audit_security_definer_acl())
+        AND has_function_privilege(
+          'anon', 'public.get_public_favorite_list(text)', 'EXECUTE'
+        )
+        AND has_function_privilege(
+          'anon', 'public.get_public_favorite_reactions(text,text)', 'EXECUTE'
+        ) AS public_favorites_acl_safe,
+      COALESCE((SELECT NOT public FROM storage.buckets WHERE id = 'proposals'), false)
+        AND NOT EXISTS (
+          SELECT 1
+          FROM pg_policies
+          WHERE schemaname = 'storage'
+            AND tablename = 'objects'
+            AND policyname = ANY (ARRAY[
+              'Public Access to Proposals',
+              'Authenticated users can upload proposals',
+              'Authenticated users can delete proposals',
+              'proposals_select_owner_or_admin'
+            ])
+        )
+        AND EXISTS (
+          SELECT 1
+          FROM pg_policies
+          WHERE schemaname = 'storage'
+            AND tablename = 'objects'
+            AND policyname = 'proposals_quote_scope_delete'
+            AND roles = ARRAY['authenticated']::name[]
+            AND cmd = 'DELETE'
+            AND qual IS NOT NULL
+            AND qual IS NOT DISTINCT FROM (
+              SELECT select_policy.qual
+              FROM pg_policies AS select_policy
+              WHERE select_policy.schemaname = 'storage'
+                AND select_policy.tablename = 'objects'
+                AND select_policy.policyname = 'proposals_quote_scope_select'
+                AND select_policy.roles = ARRAY['authenticated']::name[]
+                AND select_policy.cmd = 'SELECT'
+            )
+        ) AS proposals_storage_acl_safe,
+      COALESCE((SELECT NOT public FROM storage.buckets WHERE id = 'quarantine'), false)
+        AND EXISTS (
+          SELECT 1
+          FROM pg_policies
+          WHERE schemaname = 'storage'
+            AND tablename = 'objects'
+            AND policyname = 'Supervisores podem visualizar quarentena'
+            AND roles = ARRAY['authenticated']::name[]
+            AND cmd = 'SELECT'
+            AND qual LIKE '%is_supervisor_or_above%'
+            AND qual NOT LIKE '%email%'
+            AND qual NOT LIKE '%jwt%'
+        )
+        AND NOT EXISTS (
+          SELECT 1
+          FROM pg_policies
+          WHERE schemaname = 'storage'
+            AND tablename = 'objects'
+            AND roles && ARRAY['public', 'anon']::name[]
+            AND COALESCE(qual, '') LIKE '%quarantine%'
+        ) AS quarantine_storage_acl_safe,
+      COALESCE((
+        SELECT p.prosecdef
+          AND p.proconfig = ARRAY['search_path=pg_catalog, public, vault, net']::text[]
+          AND has_function_privilege('service_role', p.oid, 'EXECUTE')
+          AND NOT has_function_privilege('anon', p.oid, 'EXECUTE')
+          AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE')
+          AND p.prosrc LIKE '%sicoob_project_url%'
+          AND p.prosrc LIKE '%sicoob_internal_function_secret%'
+          AND p.prosrc LIKE '%/functions/v1/connections-health-check%'
+          AND p.prosrc LIKE '%net.http_post%'
+          AND NOT EXISTS (
+            SELECT 1
+            FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) acl
+            WHERE acl.grantee = 0
+              AND acl.privilege_type = 'EXECUTE'
+          )
+        FROM pg_proc p
+        WHERE p.oid = to_regprocedure(
+          'public.dispatch_sicoob_connections_health_check()'
+        )
+      ), false) AS connections_health_dispatch_safe,
+      COALESCE((
+        SELECT p.prosecdef
+          AND p.proconfig = ARRAY['search_path=pg_catalog, public, cron']::text[]
+          AND has_function_privilege('service_role', p.oid, 'EXECUTE')
+          AND NOT has_function_privilege('anon', p.oid, 'EXECUTE')
+          AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE')
+          AND p.prosrc LIKE '%webhook-retry-failed%'
+          AND p.prosrc LIKE '%webhook-logs-cleanup-daily%'
+          AND p.prosrc LIKE '%trg_dispatch_webhook_quotes%'
+          AND p.prosrc LIKE '%trg_dispatch_webhook_orders%'
+          AND p.prosrc LIKE '%trg_dispatch_webhook_discount%'
+          AND p.prosrc LIKE '%trg_dispatch_webhook_kit_share%'
+          AND NOT EXISTS (
+            SELECT 1
+            FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) acl
+            WHERE acl.grantee = 0
+              AND acl.privilege_type = 'EXECUTE'
+          )
+        FROM pg_proc p
+        WHERE p.oid = to_regprocedure(
+          'public.get_connections_hub_operational_evidence()'
+        )
+      ), false) AS connections_operational_evidence_safe,
+      CASE WHEN
+        COALESCE((
+          SELECT rtrim(decrypted_secret, '/')
+            ~ '^https://[a-z0-9-]+[.]supabase[.]co$'
+          FROM vault.decrypted_secrets
+          WHERE name = 'sicoob_project_url'
+          ORDER BY updated_at DESC
+          LIMIT 1
+        ), false)
+        AND COALESCE((
+          SELECT length(decrypted_secret) BETWEEN 32 AND 512
+          FROM vault.decrypted_secrets
+          WHERE name = 'sicoob_internal_function_secret'
+          ORDER BY updated_at DESC
+          LIMIT 1
+        ), false)
+      THEN EXISTS (
+        SELECT 1
+        FROM cron.job
+        WHERE jobname = 'connections-health-check'
+          AND active
+          AND schedule = '7,22,37,52 * * * *'
+          AND command = 'SELECT public.dispatch_sicoob_connections_health_check();'
+      ) AND (
+        SELECT count(*) FROM cron.job WHERE jobname = 'connections-health-check'
+      ) = 1
+      ELSE NOT EXISTS (
+        SELECT 1 FROM cron.job WHERE jobname = 'connections-health-check'
+      ) END AS connections_health_cron_safe
   `);
   const result = rows[0];
   const idempotencyMigration = latestDefiner(targets, "save_quote_atomic_idempotent");
@@ -1047,7 +1184,13 @@ async function validateContract(client, targets) {
     && result.search_select_policy_safe
     && result.search_policy_dependencies_safe
     && result.search_effective_grants_safe
-    && result.search_direct_acl_safe;
+    && result.search_direct_acl_safe
+    && result.public_favorites_acl_safe
+    && result.proposals_storage_acl_safe
+    && result.quarantine_storage_acl_safe
+    && result.connections_health_dispatch_safe
+    && result.connections_operational_evidence_safe
+    && result.connections_health_cron_safe;
   if (!valid) {
     const diagnostic = { ...(result ?? {}) };
     delete diagnostic.idempotency_source;
@@ -1566,6 +1709,141 @@ BEGIN
          AND qual = 'false'
          AND with_check = 'false'
      )
+     OR EXISTS (SELECT 1 FROM public.audit_security_definer_acl())
+     OR NOT has_function_privilege(
+       'anon', 'public.get_public_favorite_list(text)', 'EXECUTE'
+     )
+     OR NOT has_function_privilege(
+       'anon', 'public.get_public_favorite_reactions(text,text)', 'EXECUTE'
+     )
+     OR COALESCE((SELECT public FROM storage.buckets WHERE id = 'proposals'), true)
+     OR EXISTS (
+       SELECT 1
+       FROM pg_policies
+       WHERE schemaname = 'storage'
+         AND tablename = 'objects'
+         AND policyname = ANY (ARRAY[
+           'Public Access to Proposals',
+           'Authenticated users can upload proposals',
+           'Authenticated users can delete proposals',
+           'proposals_select_owner_or_admin'
+         ])
+     )
+     OR NOT EXISTS (
+       SELECT 1
+       FROM pg_policies
+       WHERE schemaname = 'storage'
+         AND tablename = 'objects'
+         AND policyname = 'proposals_quote_scope_delete'
+         AND roles = ARRAY['authenticated']::name[]
+         AND cmd = 'DELETE'
+         AND qual IS NOT NULL
+         AND qual IS NOT DISTINCT FROM (
+           SELECT select_policy.qual
+           FROM pg_policies AS select_policy
+           WHERE select_policy.schemaname = 'storage'
+             AND select_policy.tablename = 'objects'
+             AND select_policy.policyname = 'proposals_quote_scope_select'
+             AND select_policy.roles = ARRAY['authenticated']::name[]
+             AND select_policy.cmd = 'SELECT'
+         )
+     )
+     OR COALESCE((SELECT public FROM storage.buckets WHERE id = 'quarantine'), true)
+     OR NOT EXISTS (
+       SELECT 1
+       FROM pg_policies
+       WHERE schemaname = 'storage'
+         AND tablename = 'objects'
+         AND policyname = 'Supervisores podem visualizar quarentena'
+         AND roles = ARRAY['authenticated']::name[]
+         AND cmd = 'SELECT'
+         AND qual LIKE '%is_supervisor_or_above%'
+         AND qual NOT LIKE '%email%'
+         AND qual NOT LIKE '%jwt%'
+     )
+     OR EXISTS (
+       SELECT 1
+       FROM pg_policies
+       WHERE schemaname = 'storage'
+         AND tablename = 'objects'
+         AND roles && ARRAY['public', 'anon']::name[]
+         AND COALESCE(qual, '') LIKE '%quarantine%'
+     )
+     OR NOT COALESCE((
+       SELECT p.prosecdef
+         AND p.proconfig = ARRAY['search_path=pg_catalog, public, vault, net']::text[]
+         AND has_function_privilege('service_role', p.oid, 'EXECUTE')
+         AND NOT has_function_privilege('anon', p.oid, 'EXECUTE')
+         AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE')
+         AND p.prosrc LIKE '%sicoob_project_url%'
+         AND p.prosrc LIKE '%sicoob_internal_function_secret%'
+         AND p.prosrc LIKE '%/functions/v1/connections-health-check%'
+         AND p.prosrc LIKE '%net.http_post%'
+         AND NOT EXISTS (
+           SELECT 1
+           FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) acl
+           WHERE acl.grantee = 0
+             AND acl.privilege_type = 'EXECUTE'
+         )
+       FROM pg_proc p
+       WHERE p.oid = to_regprocedure(
+         'public.dispatch_sicoob_connections_health_check()'
+       )
+     ), false)
+     OR NOT COALESCE((
+       SELECT p.prosecdef
+         AND p.proconfig = ARRAY['search_path=pg_catalog, public, cron']::text[]
+         AND has_function_privilege('service_role', p.oid, 'EXECUTE')
+         AND NOT has_function_privilege('anon', p.oid, 'EXECUTE')
+         AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE')
+         AND p.prosrc LIKE '%webhook-retry-failed%'
+         AND p.prosrc LIKE '%webhook-logs-cleanup-daily%'
+         AND p.prosrc LIKE '%trg_dispatch_webhook_quotes%'
+         AND p.prosrc LIKE '%trg_dispatch_webhook_orders%'
+         AND p.prosrc LIKE '%trg_dispatch_webhook_discount%'
+         AND p.prosrc LIKE '%trg_dispatch_webhook_kit_share%'
+         AND NOT EXISTS (
+           SELECT 1
+           FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) acl
+           WHERE acl.grantee = 0
+             AND acl.privilege_type = 'EXECUTE'
+         )
+       FROM pg_proc p
+       WHERE p.oid = to_regprocedure(
+         'public.get_connections_hub_operational_evidence()'
+       )
+     ), false)
+     OR CASE WHEN
+       COALESCE((
+         SELECT rtrim(decrypted_secret, '/')
+           ~ '^https://[a-z0-9-]+[.]supabase[.]co$'
+         FROM vault.decrypted_secrets
+         WHERE name = 'sicoob_project_url'
+         ORDER BY updated_at DESC
+         LIMIT 1
+       ), false)
+       AND COALESCE((
+         SELECT length(decrypted_secret) BETWEEN 32 AND 512
+         FROM vault.decrypted_secrets
+         WHERE name = 'sicoob_internal_function_secret'
+         ORDER BY updated_at DESC
+         LIMIT 1
+       ), false)
+     THEN NOT (
+       EXISTS (
+         SELECT 1
+         FROM cron.job
+         WHERE jobname = 'connections-health-check'
+           AND active
+           AND schedule = '7,22,37,52 * * * *'
+           AND command = 'SELECT public.dispatch_sicoob_connections_health_check();'
+       ) AND (
+         SELECT count(*) FROM cron.job WHERE jobname = 'connections-health-check'
+       ) = 1
+     )
+     ELSE EXISTS (
+       SELECT 1 FROM cron.job WHERE jobname = 'connections-health-check'
+     ) END
      OR NOT EXISTS (
        SELECT 1
        FROM pg_constraint

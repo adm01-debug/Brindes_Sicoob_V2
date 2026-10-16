@@ -2,9 +2,16 @@
 // Auditoria automatizada do Connections Hub — admin-only
 // Verifica: tabelas, edge functions, cron jobs, triggers e calcula score 0-10.
 
-import { getCorsHeaders, handleCorsPreflightIfNeeded } from "../_shared/cors.ts";
+import {
+  getCorsHeaders,
+  handleCorsPreflightIfNeeded,
+} from "../_shared/cors.ts";
 import { authorize } from "../_shared/authorize.ts";
-import { getOrCreateRequestId, REQUEST_ID_HEADER } from "../_shared/request-id.ts";
+import {
+  getOrCreateRequestId,
+  REQUEST_ID_HEADER,
+} from "../_shared/request-id.ts";
+import { isCronEvidenceHealthy, probeEdgeFunction } from "./audit-core.ts";
 
 interface CheckResult {
   name: string;
@@ -45,13 +52,32 @@ const REQUIRED_FUNCTIONS = [
   "mcp-server",
 ];
 
-const REQUIRED_CRONS = [
-  "webhook-retry-failed",
-  "webhook-logs-cleanup-daily",
-];
+const REQUIRED_CRONS: Record<string, number> = {
+  "webhook-retry-failed": 20,
+  "webhook-logs-cleanup-daily": 36 * 60,
+};
 
-const TRIGGER_TABLES = ["quotes", "orders", "discount_approval_requests", "kit_share_tokens"];
-const TRIGGER_NAME_PATTERN = "dispatch_quote_webhook_event";
+const REQUIRED_TRIGGERS: Record<string, string> = {
+  quotes: "trg_dispatch_webhook_quotes",
+  orders: "trg_dispatch_webhook_orders",
+  discount_approval_requests: "trg_dispatch_webhook_discount",
+  kit_share_tokens: "trg_dispatch_webhook_kit_share",
+};
+
+interface OperationalEvidence {
+  cron_jobs?: Array<{
+    name: string;
+    active: boolean;
+    last_status: string | null;
+    last_run_at: string | null;
+  }>;
+  triggers?: Array<{
+    table_name: string;
+    trigger_name: string;
+    enabled: boolean;
+    function_name: string;
+  }>;
+}
 
 Deno.serve(async (req: Request) => {
   const preflight = handleCorsPreflightIfNeeded(req);
@@ -59,13 +85,22 @@ Deno.serve(async (req: Request) => {
 
   const requestId = getOrCreateRequestId(req);
   // X-Request-Id propagado em TODA resposta via spread de corsHeaders.
-  const corsHeaders = { ...getCorsHeaders(req), [REQUEST_ID_HEADER]: requestId };
+  const corsHeaders = {
+    ...getCorsHeaders(req),
+    [REQUEST_ID_HEADER]: requestId,
+  };
   try {
-    const auth = await authorize(req, { requireRole: "dev", enforceServerSide: true });
+    const auth = await authorize(req, {
+      requireRole: "dev",
+      enforceServerSide: true,
+    });
     if (!auth.ok) {
       const headers = new Headers(auth.response.headers);
       headers.set(REQUEST_ID_HEADER, requestId);
-      return new Response(auth.response.body, { status: auth.response.status, headers });
+      return new Response(auth.response.body, {
+        status: auth.response.status,
+        headers,
+      });
     }
 
     const tableChecks: CheckResult[] = [];
@@ -81,56 +116,68 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Cron jobs — verifica indiretamente via última execução de cleanup_webhook_logs
-    // (que registra em webhook_deliveries via DELETE) e existência de retries recentes.
-    // Como cron.job não é exposto via PostgREST, assumimos ativos se as funções existem
-    // (validado por chamada RPC controlada).
-    const cronChecks: CheckResult[] = [];
-    for (const cronName of REQUIRED_CRONS) {
-      // Heurística: se a função SQL associada existe e é executável, assumimos cron ativo.
-      // Em caso de regressão real, o admin verá no dashboard de cron.
-      const fnName = cronName === "webhook-retry-failed"
-        ? "retry_failed_webhook_deliveries"
-        : "cleanup_webhook_logs";
-      const { error } = await auth.supabaseAdmin.rpc(fnName as never);
-      cronChecks.push({
-        name: cronName,
-        ok: !error || (error.message?.includes("permission") ?? false) === false,
-        detail: error ? `fn ${fnName}: ${error.message}` : `fn ${fnName} executable`,
-      });
-    }
+    // Funções: OPTIONS comprova que o endpoint está implantado sem executar sua
+    // operação principal. 401/403/405 ainda são evidência de endpoint existente.
+    const projectUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const fnChecks: CheckResult[] = await Promise.all(
+      REQUIRED_FUNCTIONS.map(async (name) => ({
+        name,
+        ...(projectUrl && serviceKey
+          ? await probeEdgeFunction(projectUrl, serviceKey, name)
+          : { ok: false, detail: "ambiente sem URL/chave para probe" }),
+      })),
+    );
 
-    // Edge functions — best-effort (assume deployed if file exists is server-side; we mark ok=true and rely on registry)
-    const fnChecks: CheckResult[] = REQUIRED_FUNCTIONS.map((name) => ({
-      name,
-      ok: true,
-      detail: "registered",
-    }));
+    // Cron e triggers exigem catálogo do PostgreSQL. A RPC é somente leitura e
+    // restrita a service_role. Se ela não existir/falhar, os checks ficam
+    // explicitamente vermelhos, em vez de aprovar por presunção.
+    const { data: evidenceData, error: evidenceError } = await auth
+      .supabaseAdmin
+      .rpc("get_connections_hub_operational_evidence" as never);
+    const evidence = evidenceError
+      ? null
+      : evidenceData as unknown as OperationalEvidence;
+    const evidenceUnavailable = evidenceError
+      ? `evidência operacional indisponível: ${evidenceError.message}`
+      : "evidência operacional ausente";
 
-    // Triggers — verify by attempting a metadata read of recent webhook_deliveries linked to these tables
-    const triggerChecks: CheckResult[] = [];
-    // Mapeia tabela → prefixo de evento emitido pelo trigger dispatch_quote_webhook_event
-    const TABLE_TO_EVENT_PREFIX: Record<string, string> = {
-      quotes: "quote.",
-      orders: "order.",
-      discount_approval_requests: "discount.",
-      kit_share_tokens: "kit.",
-    };
-    for (const tbl of TRIGGER_TABLES) {
-      const prefix = TABLE_TO_EVENT_PREFIX[tbl] ?? `${tbl}.`;
-      const { data, error } = await auth.supabaseAdmin
-        .from("webhook_deliveries" as never)
-        .select("id")
-        .ilike("event", `${prefix}%`)
-        .limit(1);
-      // Trigger considerado OK se a query rodou (schema correto) — entregas ainda podem não existir
-      // em ambiente novo, mas isso não é falha do trigger em si.
-      triggerChecks.push({
-        name: `${TRIGGER_NAME_PATTERN}@${tbl}`,
-        ok: !error,
-        detail: error?.message ?? (data && data.length ? "fired-recently" : "schema-ok-no-events-yet"),
-      });
-    }
+    const cronChecks: CheckResult[] = Object.entries(REQUIRED_CRONS).map(
+      ([name, maxAgeMinutes]) => {
+        const job = evidence?.cron_jobs?.find((item) => item.name === name);
+        const ok = isCronEvidenceHealthy(job, maxAgeMinutes);
+        return {
+          name,
+          ok,
+          detail: job
+            ? `active=${job.active}; last_status=${
+              job.last_status ?? "sem execução"
+            }; last_run_at=${
+              job.last_run_at ?? "nunca"
+            }; max_age_min=${maxAgeMinutes}`
+            : evidenceUnavailable,
+        };
+      },
+    );
+
+    const triggerChecks: CheckResult[] = Object.entries(REQUIRED_TRIGGERS).map(
+      ([tableName, triggerName]) => {
+        const trigger = evidence?.triggers?.find((item) =>
+          item.table_name === tableName && item.trigger_name === triggerName
+        );
+        const ok = Boolean(
+          trigger?.enabled &&
+            trigger.function_name === "dispatch_quote_webhook_event",
+        );
+        return {
+          name: `${triggerName}@${tableName}`,
+          ok,
+          detail: trigger
+            ? `enabled=${trigger.enabled}; function=${trigger.function_name}`
+            : evidenceUnavailable,
+        };
+      },
+    );
 
     const all = [...tableChecks, ...fnChecks, ...cronChecks, ...triggerChecks];
     const passed = all.filter((c) => c.ok).length;
