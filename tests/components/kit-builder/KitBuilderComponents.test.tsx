@@ -174,13 +174,16 @@ describe("FreightEstimator", () => {
   it("renders with default values", async () => {
     const { FreightEstimator } = await import("@/components/kit-builder/FreightEstimator");
     renderWithProviders(<FreightEstimator totalWeightGrams={450} kitQuantity={10} />);
-    expect(screen.getByText(/Estimativa de Frete/)).toBeInTheDocument();
+    expect(screen.getByText(/Planejamento de frete/)).toBeInTheDocument();
+    expect(screen.getByText(/Cotação pendente/)).toBeInTheDocument();
+    expect(screen.queryByText(/SEDEX|PAC|Transportadora/)).not.toBeInTheDocument();
   });
 
-  it("calculates freight for different weight ranges", async () => {
+  it("calcula somente o peso e não inventa preço de transporte", async () => {
     const { FreightEstimator } = await import("@/components/kit-builder/FreightEstimator");
     renderWithProviders(<FreightEstimator totalWeightGrams={5000} kitQuantity={5} />);
-    expect(document.body).toBeTruthy();
+    expect(screen.getByText('25.00 kg')).toBeInTheDocument();
+    expect(screen.getByText(/Nenhum valor estimado é somado/)).toBeInTheDocument();
   });
 
   it("handles zero weight gracefully", async () => {
