@@ -38,7 +38,7 @@ CREATE EXTENSION IF NOT EXISTS pg_cron;
 SELECT cron.schedule(
   'copilot-data-retention-cleanup',
   '0 5 * * *',
-  $$
+  $cron$
   DO $$
   DECLARE
     v_deleted_messages   INTEGER;
@@ -92,7 +92,7 @@ SELECT cron.schedule(
     );
   END;
   $$;
-  $$
+  $cron$
 );
 ```
 

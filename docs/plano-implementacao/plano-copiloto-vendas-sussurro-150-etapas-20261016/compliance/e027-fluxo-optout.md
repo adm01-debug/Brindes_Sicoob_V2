@@ -66,8 +66,11 @@ export function isOptOutRequest(text: string): boolean {
     .trim()
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '');
-  
-  return OPT_OUT_KEYWORDS.some(keyword => normalized.includes(keyword));
+
+  // \b evita casar "pare" dentro de "compare", "parecer" etc.
+  return OPT_OUT_KEYWORDS.some(keyword =>
+    new RegExp(`\\b${keyword}\\b`).test(normalized),
+  );
 }
 ```
 

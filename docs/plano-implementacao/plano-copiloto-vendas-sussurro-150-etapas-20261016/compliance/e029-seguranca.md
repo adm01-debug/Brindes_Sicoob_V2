@@ -40,19 +40,35 @@ CREATE POLICY "vendedor_ve_proprias_mensagens" ON copilot_messages
     )
   );
 
-CREATE POLICY "gestor_ve_tudo_conversas" ON copilot_conversations
+-- "gestor vê tudo" na prática só pode ser dentro da própria organização:
+-- usa public.get_user_org_ids (já existente no portal) para não dar acesso
+-- global pelo papel, só porque dois clientes de cooperativas diferentes
+-- compartilham um "manager".
+CREATE POLICY "gestor_ve_conversas_da_organizacao" ON copilot_conversations
   FOR SELECT USING (
     EXISTS (
       SELECT 1 FROM user_roles
       WHERE user_id = auth.uid() AND role IN ('manager', 'admin')
     )
+    AND seller_id IN (
+      SELECT om.user_id FROM organization_members om
+      WHERE om.organization_id IN (SELECT public.get_user_org_ids(auth.uid()))
+    )
   );
 
-CREATE POLICY "gestor_ve_tudo_mensagens" ON copilot_messages
+CREATE POLICY "gestor_ve_mensagens_da_organizacao" ON copilot_messages
   FOR SELECT USING (
     EXISTS (
-      SELECT 1 FROM user_roles
-      WHERE user_id = auth.uid() AND role IN ('manager', 'admin')
+      SELECT 1 FROM copilot_conversations c
+      WHERE c.id = copilot_messages.conversation_id
+        AND EXISTS (
+          SELECT 1 FROM user_roles
+          WHERE user_id = auth.uid() AND role IN ('manager', 'admin')
+        )
+        AND c.seller_id IN (
+          SELECT om.user_id FROM organization_members om
+          WHERE om.organization_id IN (SELECT public.get_user_org_ids(auth.uid()))
+        )
     )
   );
 ```
@@ -145,8 +161,17 @@ const MAX_LLM_CALLS_PER_MINUTE = 10;
 
 export async function checkRateLimit(conversationId: string): Promise<boolean> {
   const key = `llm:ratelimit:${conversationId}`;
-  const count = await redis.incr(key);
-  if (count === 1) await redis.expire(key, 60);
+  // INCR + EXPIRE em dois passos deixa uma janela sem TTL se o processo
+  // cair entre as duas chamadas: a partir da 11ª chamada a chave fica
+  // bloqueada para sempre. Script Lua garante que os dois passos sejam
+  // atômicos.
+  const count = await redis.eval(
+    `local c = redis.call('INCR', KEYS[1])
+     if c == 1 then redis.call('EXPIRE', KEYS[1], 60) end
+     return c`,
+    1,
+    key,
+  );
   return count <= MAX_LLM_CALLS_PER_MINUTE;
 }
 ```
@@ -160,6 +185,24 @@ CREATE OR REPLACE FUNCTION get_messages_with_audit(p_conversation_id UUID)
 RETURNS SETOF copilot_messages AS $$
 DECLARE v_user_id UUID := auth.uid();
 BEGIN
+  -- SECURITY DEFINER ignora a RLS da tabela por padrão: a função precisa
+  -- repetir aqui a mesma regra de dono/gestor que as policies de
+  -- copilot_conversations já aplicam, senão qualquer vendedor lê qualquer
+  -- conversa alheia passando o UUID.
+  IF NOT EXISTS (
+    SELECT 1 FROM copilot_conversations c
+    WHERE c.id = p_conversation_id
+      AND (
+        c.seller_id = v_user_id
+        OR EXISTS (
+          SELECT 1 FROM user_roles
+          WHERE user_id = v_user_id AND role IN ('manager', 'admin')
+        )
+      )
+  ) THEN
+    RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'Acesso negado a esta conversa.';
+  END IF;
+
   INSERT INTO copilot_events (actor_id, conversation_id, event_type, event_data, created_at)
   VALUES (v_user_id, p_conversation_id, 'messages_accessed',
           jsonb_build_object('accessed_by', v_user_id), NOW());
@@ -167,6 +210,8 @@ BEGIN
     WHERE conversation_id = p_conversation_id ORDER BY created_at ASC;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+REVOKE EXECUTE ON FUNCTION get_messages_with_audit(UUID) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION get_messages_with_audit(UUID) TO authenticated;
 ```
 
 ---
