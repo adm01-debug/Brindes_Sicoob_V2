@@ -20,8 +20,6 @@ const ALLOWED_ORIGIN_PATTERNS = [
   // Previews gerados pelo projeto Brindes Sicoob na Vercel. O prefixo
   // específico impede que qualquer outro projeto *.vercel.app seja aceito.
   /^https:\/\/brindes-sicoob-v2(?:-[a-z0-9-]+)?\.vercel\.app$/i,
-  /^https:\/\/[a-z0-9-]+\.lovable\.app$/i,
-  /^https:\/\/[a-z0-9-]+\.lovableproject\.com$/i,
   /^http:\/\/localhost(?::\d+)?$/i,
   /^http:\/\/127\.0\.0\.1(?::\d+)?$/i,
 ];

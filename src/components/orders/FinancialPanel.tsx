@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, PieChart, ArrowUpRight } from "lucide-react";
+import { DollarSign, PieChart } from "lucide-react";
 import { type OrderRow } from "@/hooks/orders/useOrders";
 import { formatCurrency } from "@/utils/quote-calculations";
 
@@ -37,8 +37,7 @@ export function FinancialPanel({ order }: FinancialPanelProps) {
 
         <div className="flex items-center gap-2 text-[10px] text-muted-foreground bg-muted/30 p-2 rounded">
           <PieChart className="h-3 w-3" />
-          Margem estimada: <span className="font-bold text-foreground">32%</span>
-          <ArrowUpRight className="h-3 w-3 text-success" />
+          Margem: <span className="font-bold text-foreground">não calculada neste pedido</span>
         </div>
       </CardContent>
     </Card>

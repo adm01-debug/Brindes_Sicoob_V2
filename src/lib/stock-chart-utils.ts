@@ -4,7 +4,7 @@
  */
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import type { IntelligenceFlag, ProductIntelligenceData } from '@/hooks/useStockHistory';
+import type { IntelligenceFlag } from '@/hooks/useStockHistory';
 import {
   Flame,
   AlertTriangle,
@@ -20,24 +20,6 @@ import {
 const DESTRUCTIVE_FLAG_COLORS = 'bg-destructive/15 text-destructive border-destructive/30';
 const ACCENT_FLAG_COLORS = 'bg-accent/15 text-accent-foreground border-accent/30';
 
-// ---------- Deterministic random ----------
-
-export function seededRandom(seed: number): number {
-  const x = Math.sin(seed + 1) * 10000;
-  return x - Math.floor(x);
-}
-
-export function hashCode(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash) + str.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash);
-}
-
-// ---------- Safe velocity helpers ----------
-
 export function safeVelocityTrend(trend: number | null | undefined): number | null {
   if (trend === null || trend === undefined || !Number.isFinite(trend)) return null;
   return trend;
@@ -46,197 +28,6 @@ export function safeVelocityTrend(trend: number | null | undefined): number | nu
 export function safeNumber(value: number | null | undefined): number | null {
   if (value === null || value === undefined || !Number.isFinite(value)) return null;
   return value;
-}
-
-// ---------- Mock data generation ----------
-
-export interface MockChartPoint {
-  date: string;
-  stockClose: number;
-  depleted: number;
-  restocked: number;
-  restockDetected: boolean;
-  costPriceClose: number;
-  dateFormatted: string;
-  fullDate: string;
-}
-
-export function generateMockStockData(productId: string, days: number): MockChartPoint[] {
-  const baseSeed = hashCode(productId);
-  const data: MockChartPoint[] = [];
-  const now = new Date();
-  let stock = 850 + Math.floor(seededRandom(baseSeed) * 200);
-
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    const dayIdx = days - 1 - i;
-    const depleted = Math.floor(seededRandom(baseSeed + dayIdx * 3) * 25) + 3;
-    const isRestock = seededRandom(baseSeed + dayIdx * 3 + 1) < 0.08;
-    const restocked = isRestock ? Math.floor(seededRandom(baseSeed + dayIdx * 3 + 2) * 200) + 100 : 0;
-    stock = Math.max(50, stock - depleted + restocked);
-    data.push({
-      date: format(d, 'yyyy-MM-dd'),
-      stockClose: stock,
-      depleted,
-      restocked,
-      restockDetected: isRestock,
-      costPriceClose: 4.5 + seededRandom(baseSeed + dayIdx * 5) * 0.3,
-      dateFormatted: format(d, 'dd/MM', { locale: ptBR }),
-      fullDate: format(d, 'dd/MM/yyyy', { locale: ptBR }),
-    });
-  }
-  return data;
-}
-
-// ---------- Mock intelligence (consistent with chart data) ----------
-
-const MOCK_SUPPLIER_NAMES = ['Spot Promo', 'Asia Import', 'Brasil Brindes', 'Premium Gifts', 'Master Promo'];
-
-export interface MockVelocityData {
-  variant_supplier_source_id: string;
-  supplier_id: string;
-  product_id: string;
-  variant_id: string;
-  current_stock: number;
-  avg_daily_depletion_7d: number;
-  avg_daily_depletion_30d: number;
-  avg_daily_depletion_90d: number;
-  velocity_trend: number;
-  days_to_stockout: number | null;
-  total_depleted_7d: number;
-  total_depleted_30d: number;
-  total_depleted_90d: number;
-  total_restocked_30d: number;
-  restock_events_30d: number;
-  avg_days_between_restocks: number | null;
-  price_changes_30d: number;
-  active_days_7d: number;
-  active_days_30d: number;
-  active_days_90d: number;
-}
-
-export function generateMockVelocity(productId: string): MockVelocityData {
-  const velocities = generateMockVelocities(productId);
-  const first = velocities[0];
-  if (!first) {
-    throw new Error('generateMockVelocities returned empty array');
-  }
-  return first;
-}
-
-/**
- * Generates mock velocity data for multiple suppliers (2-4).
- */
-export function generateMockVelocities(productId: string): MockVelocityData[] {
-  const baseSeed = hashCode(productId);
-  const supplierCount = 2 + Math.floor(seededRandom(baseSeed + 300) * 3); // 2-4 suppliers
-  const velocities: MockVelocityData[] = [];
-
-  for (let i = 0; i < supplierCount; i++) {
-    const seed = baseSeed + 100 + i * 50;
-    // First supplier has highest velocity, others progressively less
-    const velocityFactor = 1 - (i * 0.25);
-    const depletion7d = (8 + seededRandom(seed) * 12) * velocityFactor;
-    const depletion30d = (6 + seededRandom(seed + 1) * 10) * velocityFactor;
-    const currentStock = Math.floor((200 + seededRandom(seed + 2) * 400) * (1 + seededRandom(seed + 3) * 0.5));
-    const daysToStockout = depletion7d > 0.5 ? Math.round(currentStock / depletion7d) : null;
-
-    velocities.push({
-      variant_supplier_source_id: `mock-vss-${productId.slice(0, 8)}-${i}`,
-      supplier_id: `mock-supplier-${i}`,
-      product_id: productId,
-      variant_id: `mock-variant-${productId.slice(0, 8)}`,
-      current_stock: currentStock,
-      avg_daily_depletion_7d: Math.round(depletion7d * 10) / 10,
-      avg_daily_depletion_30d: Math.round(depletion30d * 10) / 10,
-      avg_daily_depletion_90d: Math.round(depletion30d * 0.9 * 10) / 10,
-      velocity_trend: 0.7 + seededRandom(seed + 4) * 0.8,
-      days_to_stockout: daysToStockout,
-      total_depleted_7d: Math.round(depletion7d * 7),
-      total_depleted_30d: Math.round(depletion30d * 30),
-      total_depleted_90d: Math.round(depletion30d * 90 * 0.9),
-      total_restocked_30d: Math.round(depletion30d * 30 * 1.1),
-      restock_events_30d: Math.floor(seededRandom(seed + 5) * 4),
-      avg_days_between_restocks: 7 + Math.floor(seededRandom(seed + 6) * 14),
-      price_changes_30d: Math.floor(seededRandom(seed + 7) * 3),
-      active_days_7d: 5 + Math.floor(seededRandom(seed + 8) * 2),
-      active_days_30d: 20 + Math.floor(seededRandom(seed + 9) * 10),
-      active_days_90d: 60 + Math.floor(seededRandom(seed + 10) * 30),
-    });
-  }
-
-  return velocities;
-}
-
-/**
- * Returns mock supplier names map for demo mode.
- */
-export function generateMockSupplierNames(productId: string): Map<string, string> {
-  const baseSeed = hashCode(productId);
-  const count = 2 + Math.floor(seededRandom(baseSeed + 300) * 3);
-  const map = new Map<string, string>();
-  for (let i = 0; i < count; i++) {
-    const nameIdx = (Math.floor(seededRandom(baseSeed + 400 + i) * MOCK_SUPPLIER_NAMES.length)) % MOCK_SUPPLIER_NAMES.length;
-    map.set(`mock-supplier-${i}`, MOCK_SUPPLIER_NAMES[nameIdx] ?? MOCK_SUPPLIER_NAMES[0] ?? 'Fornecedor');
-  }
-  return map;
-}
-
-export interface MockIntelligenceData {
-  _isMock: true;
-  product_id: string;
-  supplier_count: number;
-  total_current_stock: number;
-  total_depleted_7d: number;
-  total_depleted_30d: number;
-  total_depleted_90d: number;
-  total_restocked_30d: number;
-  avg_velocity_7d: number;
-  avg_velocity_30d: number;
-  max_velocity_trend: number;
-  min_days_to_stockout: number | null;
-  turnover_score: number;
-  abc_classification: 'A' | 'B' | 'C';
-  is_hot_product: boolean;
-  is_stockout_risk: boolean;
-  is_stagnant: boolean;
-  is_negotiation_opportunity: boolean;
-  has_frequent_restock: boolean;
-}
-
-export function generateMockIntelligence(productId: string): MockIntelligenceData {
-  const baseSeed = hashCode(productId);
-  const vels = generateMockVelocities(productId);
-  const vel = vels[0]; // best velocity
-  if (!vel) {
-    throw new Error('generateMockVelocities returned empty array');
-  }
-  const abcRoll = seededRandom(baseSeed + 200);
-  const abc: 'A' | 'B' | 'C' = abcRoll < 0.2 ? 'A' : abcRoll < 0.5 ? 'B' : 'C';
-  const totalStock = vels.reduce((sum, v) => sum + v.current_stock, 0);
-
-  return {
-    _isMock: true as const,
-    product_id: productId,
-    supplier_count: vels.length,
-    total_current_stock: totalStock,
-    total_depleted_7d: vels.reduce((sum, v) => sum + v.total_depleted_7d, 0),
-    total_depleted_30d: vels.reduce((sum, v) => sum + v.total_depleted_30d, 0),
-    total_depleted_90d: vels.reduce((sum, v) => sum + v.total_depleted_90d, 0),
-    total_restocked_30d: vels.reduce((sum, v) => sum + v.total_restocked_30d, 0),
-    avg_velocity_7d: vel.avg_daily_depletion_7d,
-    avg_velocity_30d: vel.avg_daily_depletion_30d,
-    max_velocity_trend: vel.velocity_trend,
-    min_days_to_stockout: vel.days_to_stockout,
-    turnover_score: Math.round(seededRandom(baseSeed + 202) * 100),
-    abc_classification: abc,
-    is_hot_product: abc === 'A' && vel.velocity_trend > 1.1,
-    is_stockout_risk: vel.days_to_stockout !== null && vel.days_to_stockout !== undefined && vel.days_to_stockout < 14,
-    is_stagnant: vel.avg_daily_depletion_7d < 2,
-    is_negotiation_opportunity: vel.avg_daily_depletion_7d < 3 && vel.current_stock > 500,
-    has_frequent_restock: seededRandom(baseSeed + 203) > 0.6,
-  };
 }
 
 // ---------- Flag configs ----------
@@ -380,19 +171,4 @@ export function safePriceChanges(velocityData: unknown): number {
   const val = record.price_changes_30d;
   if (typeof val === 'number' && Number.isFinite(val)) return val;
   return 0;
-}
-
-// ---------- Intelligence type guard ----------
-
-export function isRealIntelligence(data: unknown): data is ProductIntelligenceData {
-  return (
-    data !== null && data !== undefined &&
-    typeof data === 'object' &&
-    'product_id' in data &&
-    'abc_classification' in data &&
-    'is_hot_product' in data &&
-    // Discriminate from MockIntelligenceData: real data comes from DB and has these numeric aggregation fields
-    'turnover_score' in data &&
-    !('_isMock' in data)
-  );
 }

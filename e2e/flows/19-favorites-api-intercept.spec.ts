@@ -22,6 +22,7 @@
 import { test, expect, requireAuth } from '../fixtures/test-base';
 import { gotoAndSettle } from '../helpers/nav';
 import { installFavoritesCleanup, setCatalogFavorite } from '../helpers/favorites';
+import { installCatalogFixture } from '../helpers/catalog-fixture';
 import { Sel } from '../fixtures/selectors';
 import type { Page, Request, Route } from '@playwright/test';
 
@@ -135,7 +136,10 @@ function filterByMethod(captured: CapturedRequest[], method: string): CapturedRe
 }
 
 test.describe('Fluxo: interceptação API favorite_items + validação pós-reload', () => {
-  test.beforeEach(() => requireAuth());
+  test.beforeEach(async ({ page }) => {
+    requireAuth();
+    await installCatalogFixture(page);
+  });
   installFavoritesCleanup(test);
 
   test('intercepta add/remove/reload de favoritos e valida echo dos dados', async ({ page }) => {

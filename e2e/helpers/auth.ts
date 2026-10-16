@@ -207,7 +207,24 @@ export async function loginViaUI(page: Page, creds: LoginCreds): Promise<boolean
   await emailLoc.fill(creds.email);
   await passLoc.fill(creds.password);
 
+  const authResponsePromise = page
+    .waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        response.url().includes('/auth/v1/token') &&
+        response.url().includes('grant_type=password'),
+      { timeout },
+    )
+    .catch(() => null);
   await clickTestId(page, 'login-submit');
+  const authResponse = await authResponsePromise;
+
+  // Nunca deixe a senha no DOM quando o provedor rejeitar o login. Além de
+  // reduzir exposição visual, isso mantém screenshots e error-contexts de CI
+  // livres da credencial usada pela conta técnica.
+  if (authResponse && !authResponse.ok()) {
+    await passLoc.fill('').catch(() => {});
+  }
 
   if (creds.expectFail) {
     // Continua em /login OU mostra mensagem de erro — auto-retry expect.
@@ -215,6 +232,10 @@ export async function loginViaUI(page: Page, creds: LoginCreds): Promise<boolean
       timeout: 8_000,
     });
     return false;
+  }
+
+  if (authResponse && !authResponse.ok()) {
+    throw new Error(`Supabase rejeitou o login E2E (HTTP ${authResponse.status()}).`);
   }
 
   await expect(page, 'esperado redirect para fora de /login').not.toHaveURL(LOGIN_URL_RE, {

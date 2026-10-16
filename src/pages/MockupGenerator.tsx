@@ -238,8 +238,19 @@ function GenerationError({ mg }: { mg: MockupState }) {
   </Alert>;
 }
 
+function UrlProductLoadError({ mg }: { mg: MockupState }) {
+  if (!mg.urlProductLoadError) return null;
+  return <Alert variant="destructive" role="alert"><AlertCircle className="h-4 w-4" />
+    <AlertTitle>Não foi possível carregar o produto</AlertTitle>
+    <AlertDescription className="flex items-center justify-between gap-3">
+      <span>O produto solicitado pelo link não foi carregado. Tente novamente.</span>
+      <Button variant="outline" size="sm" onClick={mg.retryUrlProduct}>Tentar novamente</Button>
+    </AlertDescription>
+  </Alert>;
+}
+
 function MockupNotices({ mg }: { mg: MockupState }) {
-  return <>{mg.showDraftRestoredNotice && <DraftRestoredNotice />}<GenerationError mg={mg} /></>;
+  return <>{mg.showDraftRestoredNotice && <DraftRestoredNotice />}<UrlProductLoadError mg={mg} /><GenerationError mg={mg} /></>;
 }
 
 function restorePosition(direction: 'undo' | 'redo', mg: MockupState): void {

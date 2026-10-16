@@ -48,6 +48,36 @@ export interface AIChatProps {
   className?: string;
   /** Identificador do contexto (ex: cliente, orçamento) — usado para metadata. */
   contextId?: string;
+  /** Modo de resposta com instruções confiáveis definidas no backend. */
+  assistantMode?: "sales" | "layout";
+  /** Dados de catálogo tratados como contexto, nunca como instruções. */
+  assistantContext?: string;
+}
+
+export const AI_CHAT_MAX_MESSAGES = 50;
+
+function createGreetingMessages(greeting?: string): ChatMessage[] {
+  if (!greeting) return [];
+  return [{ id: makeId(), role: "assistant", content: greeting, createdAt: Date.now() }];
+}
+
+/** Limita o payload ao contrato da Edge Function sem remover a saudação da conversa. */
+export function selectAssistantRequestMessages(
+  messages: ChatMessage[],
+  greetingMessageId?: string | null,
+): ChatMessage[] {
+  if (messages.length <= AI_CHAT_MAX_MESSAGES) return messages;
+
+  const greeting = greetingMessageId
+    ? messages.find((message) => message.id === greetingMessageId)
+    : undefined;
+  const recentMessages = messages.filter((message) => message.id !== greeting?.id);
+  const recentLimit = AI_CHAT_MAX_MESSAGES - (greeting ? 1 : 0);
+  const recentWindow = recentMessages.slice(-recentLimit);
+  const firstUserMessage = recentWindow.findIndex((message) => message.role === "user");
+  const selected = firstUserMessage > 0 ? recentWindow.slice(firstUserMessage) : recentWindow;
+
+  return greeting ? [greeting, ...selected] : selected;
 }
 
 // ============================================
@@ -78,12 +108,55 @@ async function responseError(response: Response) {
   return new Error(`Erro ${response.status}: ${text || "falha ao consultar IA"}`);
 }
 
-async function fetchAssistantContent(
-  messages: ChatMessage[],
-  systemPrompt: string | undefined,
-  contextId: string | undefined,
-  signal: AbortSignal,
-) {
+type StreamEvent = { choices?: Array<{ delta?: { content?: unknown }; message?: { content?: unknown } }>; content?: unknown; delta?: unknown };
+
+// O parser precisa cobrir os formatos OpenAI e Responses sem descartar deltas válidos.
+// eslint-disable-next-line complexity
+function streamEventContent(parsed: StreamEvent): string {
+  const content = parsed.choices?.[0]?.delta?.content ?? parsed.choices?.[0]?.message?.content ?? parsed.delta ?? parsed.content;
+  if (typeof content === "string") return content;
+  if (!Array.isArray(content)) return "";
+  return content.map((part) => typeof part === "object" && part && "text" in part ? String(part.text) : "").join("");
+}
+
+function contentFromStreamEvent(event: string): string {
+  const data = event.split(/\r?\n/).filter((line) => line.startsWith("data:")).map((line) => line.slice(5).trim()).join("\n");
+  if (!data || data === "[DONE]") return "";
+  try {
+    return streamEventContent(JSON.parse(data) as StreamEvent);
+  } catch {
+    return "";
+  }
+}
+
+export async function readAssistantSse(response: Response): Promise<string> {
+  if (!response.body) throw new Error("A resposta da IA não contém fluxo de dados");
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let content = "";
+  while (true) {
+    const { value, done } = await reader.read();
+    buffer += decoder.decode(value, { stream: !done });
+    const events = buffer.split(/\r?\n\r?\n/);
+    buffer = events.pop() ?? "";
+    for (const event of events) content += contentFromStreamEvent(event);
+    if (done) break;
+  }
+  content += contentFromStreamEvent(buffer);
+  if (!content.trim()) throw new Error("Resposta vazia do assistente");
+  return content;
+}
+
+interface AssistantRequest {
+  messages: ChatMessage[];
+  systemPrompt?: string;
+  contextId?: string;
+  assistantMode?: AIChatProps["assistantMode"];
+  assistantContext?: string;
+}
+
+async function fetchAssistantContent(request: AssistantRequest, signal: AbortSignal) {
   const { data: sessionData } = await supabase.auth.getSession();
   const token = sessionData?.session?.access_token;
   if (!token) throw new Error("Usuário não autenticado");
@@ -95,13 +168,20 @@ async function fetchAssistantContent(
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
-      messages: messages.map(message => ({ role: message.role, content: message.content })),
-      systemPrompt,
-      contextId,
+      messages: request.messages.map(message => ({ role: message.role, content: message.content })),
+      systemPrompt: request.systemPrompt,
+      contextId: request.contextId,
+      assistantMode: request.assistantMode,
+      assistantContext: request.assistantContext,
     }),
     signal,
   });
+  return parseAssistantResponse(response);
+}
+
+async function parseAssistantResponse(response: Response): Promise<string> {
   if (!response.ok) throw await responseError(response);
+  if (response.headers.get("content-type")?.includes("text/event-stream")) return readAssistantSse(response);
   const data = await response.json() as { message?: { content?: string }; content?: string; reply?: string };
   const content = data.message?.content ?? data.content ?? data.reply ?? "";
   if (!content) throw new Error("Resposta vazia do assistente");
@@ -176,6 +256,23 @@ function TypingIndicator() {
   );
 }
 
+function EmptyConversationState() {
+  return <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground"><Bot className="h-10 w-10 mb-3 opacity-40" aria-hidden="true" /><p className="font-display text-sm">Inicie uma conversa com o assistente</p></div>;
+}
+
+function ChatError({ message }: { message: string }) {
+  return <div role="alert" className="flex items-start gap-2 border-t-[1.5px] border-destructive/30 bg-destructive/5 px-4 py-2 text-sm text-destructive"><AlertCircle className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" /><span className="font-display">{message}</span></div>;
+}
+
+function SendButtonIcon({ isLoading }: { isLoading: boolean }) {
+  return isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />;
+}
+
+function ResetConversationButton({ visible, onReset }: { visible: boolean; onReset: () => void }) {
+  if (!visible) return null;
+  return <Button type="button" variant="ghost" size="sm" onClick={onReset} className="h-7 gap-1.5 text-xs" aria-label="Reiniciar conversa"><RotateCcw className="h-3 w-3" />Reiniciar</Button>;
+}
+
 // ============================================
 // COMPONENTE PRINCIPAL
 // ============================================
@@ -188,12 +285,11 @@ export function AIChat({
   onProductMention,
   className,
   contextId,
+  assistantMode,
+  assistantContext,
 }: AIChatProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>(() =>
-    greeting
-      ? [{ id: makeId(), role: "assistant", content: greeting, createdAt: Date.now() }]
-      : []
-  );
+  const [messages, setMessages] = useState<ChatMessage[]>(() => createGreetingMessages(greeting));
+  const greetingMessageIdRef = useRef<string | null>(messages[0]?.id ?? null);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -234,7 +330,8 @@ export function AIChat({
     abortRef.current = controller;
 
     try {
-      const assistantContent = await fetchAssistantContent(nextMessages, systemPrompt, contextId, controller.signal);
+      const requestMessages = selectAssistantRequestMessages(nextMessages, greetingMessageIdRef.current);
+      const assistantContent = await fetchAssistantContent({ messages: requestMessages, systemPrompt, contextId, assistantMode, assistantContext }, controller.signal);
       const assistantMsg: ChatMessage = {
         id: makeId(),
         role: "assistant",
@@ -251,7 +348,7 @@ export function AIChat({
     } finally {
       if (!controller.signal.aborted) setIsLoading(false);
     }
-  }, [input, isLoading, messages, systemPrompt, contextId, onProductMention]);
+  }, [input, isLoading, messages, systemPrompt, contextId, assistantMode, assistantContext, onProductMention]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -265,11 +362,11 @@ export function AIChat({
 
   const handleReset = useCallback(() => {
     abortRef.current?.abort();
-    setMessages(
-      greeting
-        ? [{ id: makeId(), role: "assistant", content: greeting, createdAt: Date.now() }]
-        : []
-    );
+    const greetingMessage = greeting
+      ? { id: makeId(), role: "assistant" as const, content: greeting, createdAt: Date.now() }
+      : null;
+    greetingMessageIdRef.current = greetingMessage?.id ?? null;
+    setMessages(greetingMessage ? [greetingMessage] : []);
     setError(null);
     setIsLoading(false);
     textareaRef.current?.focus();
@@ -288,19 +385,7 @@ export function AIChat({
           <Bot className="h-4 w-4 text-primary" aria-hidden="true" />
           <span className="font-display text-sm font-semibold text-foreground">Assistente IA</span>
         </div>
-        {messages.length > 0 && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleReset}
-            className="h-7 gap-1.5 text-xs"
-            aria-label="Reiniciar conversa"
-          >
-            <RotateCcw className="h-3 w-3" />
-            Reiniciar
-          </Button>
-        )}
+        <ResetConversationButton visible={messages.length > 0} onReset={handleReset} />
       </div>
 
       {/* Mensagens */}
@@ -312,12 +397,7 @@ export function AIChat({
         aria-live="polite"
         aria-atomic="false"
       >
-        {messages.length === 0 && !isLoading && (
-          <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
-            <Bot className="h-10 w-10 mb-3 opacity-40" aria-hidden="true" />
-            <p className="font-display text-sm">Inicie uma conversa com o assistente</p>
-          </div>
-        )}
+        {messages.length === 0 && !isLoading && <EmptyConversationState />}
         {messages.map((m) => (
           <MessageBubble key={m.id} message={m} />
         ))}
@@ -325,15 +405,7 @@ export function AIChat({
       </div>
 
       {/* Erro */}
-      {error && (
-        <div
-          role="alert"
-          className="flex items-start gap-2 border-t-[1.5px] border-destructive/30 bg-destructive/5 px-4 py-2 text-sm text-destructive"
-        >
-          <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
-          <span className="font-display">{error}</span>
-        </div>
-      )}
+      {error && <ChatError message={error} />}
 
       {/* Input */}
       <div className="border-t-[1.5px] border-border bg-muted/20 p-3">
@@ -365,11 +437,7 @@ export function AIChat({
             aria-label="Enviar mensagem"
             className="h-10 w-10 shrink-0 rounded-xl"
           >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
+            <SendButtonIcon isLoading={isLoading} />
           </Button>
         </div>
         <p className="mt-1.5 text-[11px] text-muted-foreground/70 font-display">

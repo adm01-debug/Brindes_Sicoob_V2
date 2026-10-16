@@ -14,7 +14,7 @@ export interface EnrichedFavoriteItem {
 
 /** Cruza favorite_items remotos + ProductsContext + price diff calculado. */
 export function useEnrichedFavoriteItems(listId: string | null) {
-  const { items, isLoading, addItem, updateItem, removeItem, moveItem, refetch } =
+  const { items, isLoading, error, addItem, updateItem, removeItem, moveItem, refetch } =
     useFavoriteListItems(listId);
   const { getProductsByIds, products: _signal } = useProductsContext();
 
@@ -47,6 +47,7 @@ export function useEnrichedFavoriteItems(listId: string | null) {
     enriched,
     rawItems: items,
     isLoading,
+    error,
     addItem,
     updateItem,
     removeItem,

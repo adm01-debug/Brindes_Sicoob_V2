@@ -48,10 +48,13 @@ export function useAutoSave<T>({
   enabled = true,
 }: AutoSaveOptions<T>) {
   const lastSavedData = useRef<string>(JSON.stringify(data));
+  const activeKey = useRef(key);
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveOnUnmount = useRef<() => Promise<void>>(async () => {});
   const [lastError, setLastError] = useState<Error | null>(null);
 
   const save = useCallback(async () => {
+    if (!enabled || !key) return;
     const currentDataStr = JSON.stringify(data);
     
     // Só salva se houver mudança e houver dados relevantes (ex: clientId no orçamento)
@@ -80,7 +83,15 @@ export function useAutoSave<T>({
       onError?.(saveError);
       log.error("save_failed", { key, error: saveError });
     }
-  }, [key, data, onError, onSave]);
+  }, [key, data, enabled, onError, onSave]);
+  saveOnUnmount.current = save;
+
+  useEffect(() => {
+    if (activeKey.current === key) return;
+    activeKey.current = key;
+    lastSavedData.current = JSON.stringify(data);
+    setLastError(null);
+  }, [data, key]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -96,6 +107,10 @@ export function useAutoSave<T>({
       if (saveTimeout.current) clearTimeout(saveTimeout.current);
     };
   }, [data, enabled, interval, save]);
+
+  useEffect(() => () => {
+    void saveOnUnmount.current();
+  }, []);
 
   // Função para restaurar dados
   const restore = useCallback((): T | null => {

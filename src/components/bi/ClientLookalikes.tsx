@@ -5,11 +5,12 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { selectCrm } from "@/lib/crm-db";
+import { selectCrmStrict } from "@/lib/crm-db";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, Package, Sparkles, Tag } from "lucide-react";
+import { AlertCircle, RefreshCw, Users, Package, Sparkles, Tag } from "lucide-react";
 import { useClientBI } from "@/hooks/bi/useClientBI";
 import { useClientAffinity } from "@/hooks/bi/useClientAffinity";
 import { useClientCategoryAffinity } from "@/hooks/bi/useClientCategoryAffinity";
@@ -53,11 +54,11 @@ function useLookalikeProducts({ clientId, ramoAtividade, avgTicket, affinityLoad
     staleTime: 10 * 60 * 1000,
     queryFn: async (): Promise<LookalikeData> => {
       if (!ramoAtividade) return { products: [], lookalikeCount: 0 };
-      const companies = await selectCrm<{ id: string }>("companies", { select: "id", filters: { ramo_atividade: ramoAtividade, deleted_at: null }, limit: 500 });
+      const companies = await selectCrmStrict<{ id: string }>("companies", { select: "id", filters: { ramo_atividade: ramoAtividade, deleted_at: null }, limit: 500 });
       const ids = companies.map((company) => company.id).filter((id) => id && id !== clientId);
       if (ids.length === 0) return { products: [], lookalikeCount: 0 };
       const { data, error } = await supabase.rpc("get_industry_top_products", { _company_ids: ids, _days: 90, _limit: 30 });
-      if (error) return { products: [], lookalikeCount: ids.length };
+      if (error) throw error;
       const rows = (data ?? []) as IndustryProductRow[];
       const products = rows.filter((row) => {
         if (row.product_id && ownProductIds.has(row.product_id)) return false;
@@ -105,11 +106,30 @@ function LookalikesSkeleton() {
   return <Card className="border-[1.5px]"><CardContent className="p-5 space-y-3"><Skeleton className="h-5 w-72" /><div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">{[1, 2, 3, 4, 5, 6].map((value) => <Skeleton key={value} className="h-36 rounded-xl" />)}</div></CardContent></Card>;
 }
 
+function LookalikesUnavailable({ onRetry }: { onRetry: () => void }) {
+  return <Card className="border-[1.5px]"><CardContent className="flex flex-col items-center gap-2 py-8 text-center" role="alert"><AlertCircle className="h-6 w-6 text-destructive" /><p className="text-sm text-destructive">Não foi possível consultar clientes semelhantes do setor.</p><Button variant="outline" size="sm" onClick={onRetry}><RefreshCw className="mr-1.5 h-3.5 w-3.5" />Tentar novamente</Button></CardContent></Card>;
+}
+
+function LookalikesResult({ ramoAtividade, data, loading, unavailable, sharedCategories, onRetry }: {
+  ramoAtividade: string | null;
+  data: LookalikeData | undefined;
+  loading: boolean;
+  unavailable: boolean;
+  sharedCategories: string[];
+  onRetry: () => void;
+}) {
+  if (!ramoAtividade) return null;
+  if (loading) return <LookalikesSkeleton />;
+  if (unavailable) return <LookalikesUnavailable onRetry={onRetry} />;
+  if (!data || data.products.length === 0) return null;
+  return <LookalikesCard data={data} ramoAtividade={ramoAtividade} sharedCategories={sharedCategories} />;
+}
+
 export function ClientLookalikes({ clientId, ramoAtividade }: Props) {
   const bi = useClientBI(clientId);
   const affinity = useClientAffinity(clientId);
   const clientCats = useClientCategoryAffinity(clientId);
-  const industryCats = useIndustryCategoryTrends(ramoAtividade);
+  const industryCats = useIndustryCategoryTrends(ramoAtividade, clientId);
 
   const ownProductIds = new Set(
     (affinity.data?.topProducts ?? [])
@@ -120,14 +140,17 @@ export function ClientLookalikes({ clientId, ramoAtividade }: Props) {
     (affinity.data?.topProducts ?? []).map((p) => p.product_name.toLowerCase()),
   );
 
-  const sectorSlugs = new Set(industryCats.categories.map((category) => category.slug));
-  const sharedCategories = clientCats.categories.filter((category) => sectorSlugs.has(category.slug)).slice(0, 4).map((category) => category.label);
-  const { data, isLoading } = useLookalikeProducts({ clientId, ramoAtividade, avgTicket: bi.avgTicket, affinityLoading: affinity.isLoading, ownProductIds, ownProductNames });
+  const sectorSlugs = new Set(
+    industryCats.isError ? [] : industryCats.categories.map((category) => category.slug),
+  );
+  const sharedCategories = clientCats.isError
+    ? []
+    : clientCats.categories
+        .filter((category) => sectorSlugs.has(category.slug))
+        .slice(0, 4)
+        .map((category) => category.label);
+  const { data, isLoading, isError, refetch } = useLookalikeProducts({ clientId, ramoAtividade, avgTicket: bi.avgTicket, affinityLoading: affinity.isLoading, ownProductIds, ownProductNames });
+  const retry = () => Promise.allSettled([refetch(), affinity.refetch()]);
 
-  if (!ramoAtividade) return null;
-
-  if (isLoading || affinity.isLoading) return <LookalikesSkeleton />;
-
-  if (!data || data.products.length === 0) return null;
-  return <LookalikesCard data={data} ramoAtividade={ramoAtividade} sharedCategories={sharedCategories} />;
+  return <LookalikesResult ramoAtividade={ramoAtividade} data={data} loading={isLoading || affinity.isLoading} unavailable={isError || affinity.isError} sharedCategories={sharedCategories} onRetry={() => { void retry(); }} />;
 }

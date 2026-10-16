@@ -8,7 +8,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCurrentOrgId } from '@/hooks/useCurrentOrgId';
 import { useSalesScope } from '@/lib/auth/visibility-scope';
 import { applySellerScope } from '@/lib/auth/apply-seller-scope';
-import { logger } from '@/lib/logger';
 import { getSinceDate, aggregateSegments, aggregateClients } from './intelligence/intelligenceHelpers';
 
 // Re-export types
@@ -40,10 +39,44 @@ export interface CategoryRankingItem {
   internalOrders: number; marketDepleted: number; totalScore: number;
 }
 
+export interface CategoryRankingData {
+  items: CategoryRankingItem[];
+  marketAvailable: boolean;
+  marketError: string | null;
+}
+
+interface ProductCategory {
+  catId: string;
+  catName: string;
+}
+
+interface CategoryProduct {
+  id: string;
+  category_id?: string | null;
+  main_category_id?: string | null;
+  category_name?: string | null;
+}
+
+interface CategoryOrderItem {
+  id: string;
+  order_id: string | null;
+  product_id: string | null;
+  quantity: number | null;
+  unit_price: number | null;
+}
+
+interface MarketStockSnapshot extends Record<string, unknown> {
+  product_id?: string | null;
+  units_depleted?: number | null;
+}
+
 type SalesScope = ReturnType<typeof useSalesScope>;
 const ORDER_ITEMS_TABLE = 'order_items';
 const PRODUCT_ID_COLUMN = 'product_id';
 const ORDER_VALUE_FIELDS = 'order_id, quantity, unit_price';
+const CATEGORY_PAGE_SIZE = 1000;
+const CATEGORY_FILTER_CHUNK_SIZE = 100;
+const CATEGORY_MAX_EXTERNAL_ROWS = 100000;
 
 function emptyCommercialKpi(): IntelligenceKPI {
   return { totalQuotes: 0, totalOrders: 0, conversionRate: 0, totalRevenue: 0, averageTicket: 0, quotesThisMonth: 0, ordersThisMonth: 0, revenueThisMonth: 0 };
@@ -119,6 +152,158 @@ function matchesProductSearch(item: TrendingOrderRow, searchTerm?: string | null
 
 function trendingProductKey(item: TrendingOrderRow): string {
   return item.product_sku || item.product_id || item.product_name || '';
+}
+
+function chunkCategoryProductIds(productIds: string[]): string[][] {
+  const chunks: string[][] = [];
+  for (let index = 0; index < productIds.length; index += CATEGORY_FILTER_CHUNK_SIZE) {
+    chunks.push(productIds.slice(index, index + CATEGORY_FILTER_CHUNK_SIZE));
+  }
+  return chunks;
+}
+
+async function fetchCategoryOrderItemChunk(since: string, productIds?: string[]): Promise<CategoryOrderItem[]> {
+  const rows: CategoryOrderItem[] = [];
+  const seenIds = new Set<string>();
+  for (let offset = 0; ; offset += CATEGORY_PAGE_SIZE) {
+    let query = supabase
+      .from('order_items')
+      .select('id, order_id, product_id, quantity, unit_price')
+      .gte('created_at', since);
+    if (productIds) query = query.in('product_id', productIds);
+    const { data, error } = await query
+      .order('id', { ascending: true })
+      .range(offset, offset + CATEGORY_PAGE_SIZE - 1);
+    if (error) throw error;
+    const page = data ?? [];
+    let added = 0;
+    page.forEach((row) => {
+      if (seenIds.has(row.id)) return;
+      seenIds.add(row.id);
+      rows.push(row);
+      added += 1;
+    });
+    if (page.length < CATEGORY_PAGE_SIZE) return rows;
+    if (added === 0) throw new Error('A paginação de itens de pedido não avançou.');
+  }
+}
+
+async function fetchCategoryOrderItems(since: string, productIds?: string[]): Promise<CategoryOrderItem[]> {
+  if (productIds?.length === 0) return [];
+  const chunks = productIds ? chunkCategoryProductIds(productIds) : [undefined];
+  const rows = new Map<string, CategoryOrderItem>();
+  for (const chunk of chunks) {
+    const page = await fetchCategoryOrderItemChunk(since, chunk);
+    page.forEach((row) => rows.set(row.id, row));
+  }
+  return Array.from(rows.values());
+}
+
+async function fetchAllExternalRows<Row extends object>(
+  requestPage: (offset: number) => Promise<{ records?: Row[]; error?: unknown; success?: boolean }>,
+  sourceName: string,
+): Promise<Row[]> {
+  const rows: Row[] = [];
+  for (let offset = 0; offset < CATEGORY_MAX_EXTERNAL_ROWS; offset += CATEGORY_PAGE_SIZE) {
+    const result = await requestPage(offset);
+    if (!Array.isArray(result?.records) || result.error || result.success === false) {
+      const message = typeof result?.error === 'string' ? result.error : `Consulta de ${sourceName} incompleta`;
+      throw new Error(message);
+    }
+    rows.push(...result.records);
+    if (result.records.length < CATEGORY_PAGE_SIZE) return rows;
+  }
+  throw new Error(`Consulta de ${sourceName} excedeu o limite de segurança.`);
+}
+
+async function fetchCategoryProducts(): Promise<CategoryProduct[]> {
+  const { invokeExternalDb } = await import('@/lib/external-db');
+  return fetchAllExternalRows<CategoryProduct>(
+    (offset) => invokeExternalDb<CategoryProduct>({
+      table: 'products',
+      operation: 'select',
+      select: 'id,category_id,main_category_id,category_name',
+      orderBy: { column: 'id', ascending: true },
+      limit: CATEGORY_PAGE_SIZE,
+      offset,
+    }),
+    'categorias do catálogo',
+  );
+}
+
+async function fetchCategoryMarketSnapshots(since: string): Promise<MarketStockSnapshot[]> {
+  const { invokeExternalDb } = await import('@/lib/external-db');
+  return fetchAllExternalRows<MarketStockSnapshot>(
+    (offset) => invokeExternalDb<MarketStockSnapshot>({
+      table: 'stock_daily_summary',
+      operation: 'select',
+      select: 'product_id,units_depleted',
+      filters: { summary_date: `gte.${since.split('T')[0]}` },
+      limit: CATEGORY_PAGE_SIZE,
+      offset,
+    }),
+    'dados de mercado',
+  );
+}
+
+function getOrCreateCategory(
+  categories: Map<string, CategoryRankingItem>,
+  category: ProductCategory,
+): CategoryRankingItem {
+  const existing = categories.get(category.catId);
+  if (existing) return existing;
+  const created: CategoryRankingItem = {
+    categoryId: category.catId,
+    categoryName: category.catName,
+    internalRevenue: 0,
+    internalQty: 0,
+    internalOrders: 0,
+    marketDepleted: 0,
+    totalScore: 0,
+  };
+  categories.set(category.catId, created);
+  return created;
+}
+
+function buildCategoryRanking(
+  orderItems: Awaited<ReturnType<typeof fetchCategoryOrderItems>>,
+  products: CategoryProduct[],
+  marketSnapshots: MarketStockSnapshot[],
+): CategoryRankingItem[] {
+  const productCategories = new Map<string, ProductCategory>();
+  products.forEach((product) => {
+    const catId = product.category_id || product.main_category_id || '';
+    const catName = product.category_name || catId || 'Sem categoria';
+    if (catId) productCategories.set(product.id, { catId, catName });
+  });
+
+  const categories = new Map<string, CategoryRankingItem>();
+  const categoryOrderIds = new Map<string, Set<string>>();
+  orderItems.forEach((item) => {
+    const category = productCategories.get(item.product_id || '');
+    if (!category) return;
+    const entry = getOrCreateCategory(categories, category);
+    entry.internalRevenue += (item.quantity ?? 0) * (item.unit_price ?? 0);
+    entry.internalQty += item.quantity ?? 0;
+    if (item.order_id) {
+      const orderIds = categoryOrderIds.get(category.catId) ?? new Set<string>();
+      orderIds.add(item.order_id);
+      categoryOrderIds.set(category.catId, orderIds);
+      entry.internalOrders = orderIds.size;
+    }
+  });
+  marketSnapshots.forEach((snapshot) => {
+    const category = productCategories.get(snapshot.product_id || '');
+    if (!category) return;
+    const entry = getOrCreateCategory(categories, category);
+    entry.marketDepleted += snapshot.units_depleted ?? 0;
+  });
+
+  const items = Array.from(categories.values());
+  const maxRevenue = Math.max(1, ...items.map((item) => item.internalRevenue));
+  const maxDepleted = Math.max(1, ...items.map((item) => item.marketDepleted));
+  items.forEach((item) => { item.totalScore = (item.internalRevenue / maxRevenue) * 60 + (item.marketDepleted / maxDepleted) * 40; });
+  return items.sort((a, b) => b.totalScore - a.totalScore).slice(0, 15);
 }
 
 function createTrendingProduct(item: TrendingOrderRow): TrendingProduct {
@@ -433,41 +618,28 @@ export function useCategoryRanking(days = 30, categoryId?: string | null, suppli
 
   return useQuery({
     queryKey: ['commercial-category-ranking', user?.id, days, categoryId, supplierId, productId],
-    queryFn: async (): Promise<CategoryRankingItem[]> => {
-      const pids = productIds ? Array.from(productIds).slice(0, 200) : undefined;
-      const { data: orderItems } = pids
-        ? await supabase.from('order_items').select('product_id, quantity, unit_price').gte('created_at', since).in('product_id', pids)
-        : await supabase.from('order_items').select('product_id, quantity, unit_price').gte('created_at', since);
+    queryFn: async (): Promise<CategoryRankingData> => {
+      const pids = productIds ? Array.from(productIds) : undefined;
+      const orderItems = await fetchCategoryOrderItems(since, pids);
+      const [productsResult, marketResult] = await Promise.allSettled([
+        fetchCategoryProducts(),
+        fetchCategoryMarketSnapshots(since),
+      ]);
+      if (productsResult.status === 'rejected') throw productsResult.reason;
 
-      const { fetchPromobrindProducts } = await import('@/lib/external-db');
-      const products = await fetchPromobrindProducts({ limit: 5000 });
-      const productCategoryMap = new Map<string, { catId: string; catName: string }>();
-      products.forEach(p => { const catId = p.category_id || p.main_category_id || ''; const catName = p.category_name || catId || 'Sem categoria'; if (catId) productCategoryMap.set(p.id, { catId, catName }); });
+      const marketAvailable = marketResult.status === 'fulfilled';
+      const marketSnapshots = marketAvailable ? marketResult.value : [];
+      const marketError = marketAvailable
+        ? null
+        : marketResult.reason instanceof Error
+          ? marketResult.reason.message
+          : 'Dados de mercado indisponíveis';
 
-      const categoryMap = new Map<string, CategoryRankingItem>();
-      (orderItems || []).forEach(item => {
-        const cat = productCategoryMap.get(item.product_id || ''); if (!cat) return;
-        const e = categoryMap.get(cat.catId) || { categoryId: cat.catId, categoryName: cat.catName, internalRevenue: 0, internalQty: 0, internalOrders: 0, marketDepleted: 0, totalScore: 0 };
-        e.internalRevenue += (item.quantity ?? 0) * (item.unit_price ?? 0); e.internalQty += (item.quantity ?? 0); e.internalOrders += 1;
-        categoryMap.set(cat.catId, e);
-      });
-
-      try {
-        const { invokeExternalDb } = await import('@/lib/external-db');
-        const sinceDate = since.split('T')[0];
-        const result = await invokeExternalDb<Record<string, unknown>>({ table: 'stock_daily_summary', operation: 'select', select: 'product_id,units_depleted', filters: { 'summary_date': `gte.${sinceDate}` }, limit: 5000 });
-        (result?.records || []).forEach((snap: Record<string, unknown>) => {
-          const cat = productCategoryMap.get(snap.product_id as string); if (!cat) return;
-          const e = categoryMap.get(cat.catId) || { categoryId: cat.catId, categoryName: cat.catName, internalRevenue: 0, internalQty: 0, internalOrders: 0, marketDepleted: 0, totalScore: 0 };
-          e.marketDepleted += ((snap.units_depleted as number) ?? 0); categoryMap.set(cat.catId, e);
-        });
-      } catch (e) { logger.warn('Market data unavailable for category ranking:', e); }
-
-      const items = Array.from(categoryMap.values());
-      const maxR = Math.max(1, ...items.map(i => i.internalRevenue));
-      const maxD = Math.max(1, ...items.map(i => i.marketDepleted));
-      items.forEach(i => { i.totalScore = (i.internalRevenue / maxR) * 60 + (i.marketDepleted / maxD) * 40; });
-      return items.sort((a, b) => b.totalScore - a.totalScore).slice(0, 15);
+      return {
+        items: buildCategoryRanking(orderItems, productsResult.value, marketSnapshots),
+        marketAvailable,
+        marketError,
+      };
     },
     staleTime: 1000 * 60 * 5,
     enabled: !!user && (!hasFilter || productIds !== undefined),

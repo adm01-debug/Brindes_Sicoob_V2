@@ -28,11 +28,25 @@ describe('useAutoSave', () => {
 
     rerender({ key: 'draft-a', data: { title: 'Rascunho A' } });
     await act(async () => { await vi.advanceTimersByTimeAsync(2_000); });
+    rerender({ key: 'draft-b', data: { title: 'Inicial B' } });
     rerender({ key: 'draft-b', data: { title: 'Rascunho B' } });
     await act(async () => { await vi.advanceTimersByTimeAsync(2_000); });
 
     expect(JSON.parse(localStorage.getItem('autosave_draft-a')!)).toMatchObject({ version: 1, data: { title: 'Rascunho A' } });
     expect(JSON.parse(localStorage.getItem('autosave_draft-b')!)).toMatchObject({ version: 1, data: { title: 'Rascunho B' } });
+  });
+
+  it('reinicia a comparação ao trocar de rascunho e não cruza payload idêntico', async () => {
+    const { rerender } = renderHook(
+      ({ key, data }) => useAutoSave({ key, data }),
+      { initialProps: { key: 'quote-a', data: { title: 'Mesmo conteúdo' } } },
+    );
+
+    rerender({ key: 'quote-b', data: { title: 'Mesmo conteúdo' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(2_000); });
+
+    expect(localStorage.getItem('autosave_quote-a')).toBeNull();
+    expect(localStorage.getItem('autosave_quote-b')).toBeNull();
   });
 
   it('expõe falha de persistência para a interface e permite nova tentativa', async () => {
@@ -71,6 +85,21 @@ describe('useAutoSave', () => {
 
     expect(legacy.result.current.restore()).toEqual({ title: 'compatível' });
     expect(expired.result.current.restore()).toBeNull();
+  });
+
+  it('grava a última alteração ao desmontar antes do debounce', () => {
+    const { rerender, unmount } = renderHook(
+      ({ data }) => useAutoSave({ key: 'draft-unmount', data, interval: 2_000 }),
+      { initialProps: { data: { title: 'Inicial' } } },
+    );
+
+    rerender({ data: { title: 'Última edição' } });
+    unmount();
+
+    expect(JSON.parse(localStorage.getItem('autosave_draft-unmount')!)).toMatchObject({
+      version: 1,
+      data: { title: 'Última edição' },
+    });
   });
 
   it('mantém o mesmo rascunho novo por sessão e o separa por usuário', () => {

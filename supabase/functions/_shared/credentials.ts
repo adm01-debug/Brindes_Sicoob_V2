@@ -41,6 +41,24 @@ const ALIASES: Record<string, string[]> = {
   EXTERNAL_CRM_ANON_KEY: ["CRM_SUPABASE_ANON_KEY"],
 };
 
+const EXTERNAL_SUPABASE_KEY_NAMES = new Set([
+  "EXTERNAL_PROMOBRIND_SERVICE_ROLE_KEY",
+  "EXTERNAL_PROMOBRIND_ANON_KEY",
+  "EXTERNAL_CRM_SERVICE_ROLE_KEY",
+  "EXTERNAL_CRM_ANON_KEY",
+]);
+
+function isValidExternalSupabaseKey(value: string): boolean {
+  // Chaves atuais do Supabase (publishable/secret).
+  if (/^sb_(?:publishable|secret)_[A-Za-z0-9_-]{20,}$/.test(value)) return true;
+
+  // Chaves legadas anon/service_role são JWTs. Validamos apenas a estrutura,
+  // pois a assinatura só pode ser confirmada pelo projeto remoto.
+  const jwtParts = value.split(".");
+  return value.length >= 80 && jwtParts.length === 3 &&
+    jwtParts.every((part) => /^[A-Za-z0-9_-]+$/.test(part));
+}
+
 function sanitizeResolvedCredential(name: string, value: string | null): string | null {
   if (!value) return null;
 
@@ -50,8 +68,15 @@ function sanitizeResolvedCredential(name: string, value: string | null): string 
   const upper = trimmed.toUpperCase();
   if (
     upper === "PLACEHOLDER_VALUE_TO_BE_REPLACED" ||
-    upper.includes("PLACEHOLDER_VALUE_TO_BE_REPLACED")
+    upper.includes("PLACEHOLDER_VALUE_TO_BE_REPLACED") ||
+    /^(?:CHANGEME|CHANGE_ME|TODO|PREENCHER|REPLACE_ME|YOUR[_ -].*)$/i.test(trimmed) ||
+    trimmed.includes("...") ||
+    /^<[^>]+>$/.test(trimmed)
   ) {
+    return null;
+  }
+
+  if (EXTERNAL_SUPABASE_KEY_NAMES.has(name) && !isValidExternalSupabaseKey(trimmed)) {
     return null;
   }
 

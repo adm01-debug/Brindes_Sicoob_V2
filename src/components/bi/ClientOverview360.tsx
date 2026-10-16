@@ -1,12 +1,12 @@
 /**
  * ClientOverview360 — KPIs (LTV, ticket médio, última compra) com toggle "Trimestre atual vs anterior".
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
-  TrendingUp, DollarSign, Calendar, Sparkles,
+  TrendingUp, DollarSign, Calendar, AlertCircle, Database,
   ArrowUpRight, ArrowDownRight,
 } from "lucide-react";
 import { useClientBI } from "@/hooks/bi/useClientBI";
@@ -46,32 +46,42 @@ function getRecency(days: number | null | undefined) {
 }
 
 function OverviewControls({ bi, comparePeriod, setComparePeriod }: { bi: ClientBI; comparePeriod: boolean; setComparePeriod: (value: boolean) => void }) {
-  return <div className="flex items-center justify-between gap-3 flex-wrap">{bi.isMock ? <Badge variant="secondary" className="gap-1 text-[10px]"><Sparkles className="h-3 w-3" /> Dados simulados · em breve dados reais</Badge> : <span />}<label className="flex items-center gap-2 cursor-pointer text-xs"><Switch checked={comparePeriod} onCheckedChange={setComparePeriod} aria-label="Comparar período" /><span className="font-medium text-foreground">{comparePeriod ? "90d atual vs 90d anteriores" : "Histórico total"}</span></label></div>;
+  const sourceBadge = bi.isMock
+    ? <Badge variant="secondary" className="gap-1 text-[10px]"><Database className="h-3 w-3" /> Dados simulados</Badge>
+    : bi.isUnavailable
+    ? <Badge variant="destructive" className="gap-1 text-[10px]"><AlertCircle className="h-3 w-3" /> Histórico indisponível</Badge>
+    : !bi.hasData
+      ? <Badge variant="secondary" className="gap-1 text-[10px]"><Database className="h-3 w-3" /> Sem pedidos no histórico</Badge>
+      : <Badge variant="outline" className="gap-1 border-success/50 text-[10px] text-success"><Database className="h-3 w-3" /> Dados dos pedidos</Badge>;
+  return <div className="flex items-center justify-between gap-3 flex-wrap">{sourceBadge}<label className="flex items-center gap-2 cursor-pointer text-xs"><Switch checked={comparePeriod} onCheckedChange={setComparePeriod} aria-label="Comparar período" disabled={!bi.hasData || bi.isUnavailable} /><span className="font-medium text-foreground">{comparePeriod ? "90d atual vs 90d anteriores" : "Histórico total"}</span></label></div>;
 }
 
 function RevenueCard({ bi, comparePeriod }: { bi: ClientBI; comparePeriod: boolean }) {
   const value = comparePeriod ? bi.current90d.ltv : bi.ltv;
   const showDelta = comparePeriod && bi.delta.hasPreviousData;
   const detail = comparePeriod ? `vs ${fmtBRL(bi.previous90d.ltv)} no período anterior` : `${bi.ordersCount} pedido${bi.ordersCount !== 1 ? "s" : ""} no histórico`;
-  return <Card className="border-[1.5px] hover:shadow-md transition-shadow"><CardContent className="p-5"><div className="flex items-center justify-between mb-2"><span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{comparePeriod ? "Receita 90d" : "LTV Total"}</span><DollarSign className="h-4 w-4 text-primary" /></div><div className="flex items-baseline gap-2"><div className="font-display text-3xl font-bold">{fmtBRL(value)}</div>{showDelta && <DeltaPill pct={bi.delta.ltvDeltaPct} />}</div><div className="text-xs text-muted-foreground mt-1">{detail}</div></CardContent></Card>;
+  return <Card className="border-[1.5px] hover:shadow-md transition-shadow"><CardContent className="p-5"><div className="flex items-center justify-between mb-2"><span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{comparePeriod ? "Receita 90d" : "LTV Total"}</span><DollarSign className="h-4 w-4 text-primary" /></div><div className="flex items-baseline gap-2"><div className="font-display text-3xl font-bold">{bi.isUnavailable ? "—" : fmtBRL(value)}</div>{!bi.isUnavailable && showDelta && <DeltaPill pct={bi.delta.ltvDeltaPct} />}</div><div className="text-xs text-muted-foreground mt-1">{bi.isUnavailable ? "Histórico indisponível" : detail}</div></CardContent></Card>;
 }
 
 function TicketCard({ bi, comparePeriod }: { bi: ClientBI; comparePeriod: boolean }) {
   const value = comparePeriod ? bi.current90d.avgTicket : bi.avgTicket;
   const showDelta = comparePeriod && bi.delta.hasPreviousData;
   const detail = comparePeriod ? `vs ${fmtBRL(bi.previous90d.avgTicket)} antes` : "por pedido fechado";
-  return <Card className="border-[1.5px] hover:shadow-md transition-shadow"><CardContent className="p-5"><div className="flex items-center justify-between mb-2"><span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Ticket Médio{comparePeriod && " · 90d"}</span><TrendingUp className="h-4 w-4 text-primary" /></div><div className="flex items-baseline gap-2"><div className="font-display text-3xl font-bold">{fmtBRL(value)}</div>{showDelta && <DeltaPill pct={bi.delta.avgTicketDeltaPct} />}</div><div className="text-xs text-muted-foreground mt-1">{detail}</div></CardContent></Card>;
+  return <Card className="border-[1.5px] hover:shadow-md transition-shadow"><CardContent className="p-5"><div className="flex items-center justify-between mb-2"><span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Ticket Médio{comparePeriod && " · 90d"}</span><TrendingUp className="h-4 w-4 text-primary" /></div><div className="flex items-baseline gap-2"><div className="font-display text-3xl font-bold">{bi.isUnavailable ? "—" : fmtBRL(value)}</div>{!bi.isUnavailable && showDelta && <DeltaPill pct={bi.delta.avgTicketDeltaPct} />}</div><div className="text-xs text-muted-foreground mt-1">{bi.isUnavailable ? "Histórico indisponível" : detail}</div></CardContent></Card>;
 }
 
 function OrdersCard({ bi, comparePeriod }: { bi: ClientBI; comparePeriod: boolean }) {
   const recency = getRecency(bi.daysSinceLastOrder);
   const showDelta = comparePeriod && bi.delta.hasPreviousData;
-  return <Card className="border-[1.5px] hover:shadow-md transition-shadow"><CardContent className="p-5"><div className="flex items-center justify-between mb-2"><span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{comparePeriod ? "Pedidos 90d" : "Última Compra"}</span><Calendar className="h-4 w-4 text-primary" /></div>{comparePeriod ? <><div className="flex items-baseline gap-2"><div className="font-display text-3xl font-bold">{bi.current90d.ordersCount}</div>{showDelta && <DeltaPill pct={bi.delta.ordersCountDeltaPct} />}</div><div className="text-xs text-muted-foreground mt-1">vs {bi.previous90d.ordersCount} no período anterior</div></> : <><div className="font-display text-2xl font-bold">{bi.lastOrderDate ? fmtDate(bi.lastOrderDate) : "—"}</div><Badge variant={recency.tone} className="mt-2">{recency.label}</Badge></>}</CardContent></Card>;
+  return <Card className="border-[1.5px] hover:shadow-md transition-shadow"><CardContent className="p-5"><div className="flex items-center justify-between mb-2"><span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{comparePeriod ? "Pedidos 90d" : "Última Compra"}</span><Calendar className="h-4 w-4 text-primary" /></div>{bi.isUnavailable ? <><div className="font-display text-2xl font-bold">—</div><div className="text-xs text-muted-foreground mt-2">Histórico indisponível</div></> : comparePeriod ? <><div className="flex items-baseline gap-2"><div className="font-display text-3xl font-bold">{bi.current90d.ordersCount}</div>{showDelta && <DeltaPill pct={bi.delta.ordersCountDeltaPct} />}</div><div className="text-xs text-muted-foreground mt-1">vs {bi.previous90d.ordersCount} no período anterior</div></> : <><div className="font-display text-2xl font-bold">{bi.lastOrderDate ? fmtDate(bi.lastOrderDate) : "—"}</div><Badge variant={recency.tone} className="mt-2">{recency.label}</Badge></>}</CardContent></Card>;
 }
 
 export function ClientOverview360({ clientId }: Props) {
   const bi = useClientBI(clientId);
-  const [comparePeriod, setComparePeriod] = useState(false);
+  const [comparison, setComparison] = useState({ clientId, enabled: false });
+  useEffect(() => setComparison({ clientId, enabled: false }), [clientId]);
+  const comparePeriod = comparison.clientId === clientId && comparison.enabled && bi.hasData && !bi.isUnavailable;
+  const setComparePeriod = (enabled: boolean) => setComparison({ clientId, enabled });
 
   if (bi.isLoading) return <KPIsSkeleton />;
   return (

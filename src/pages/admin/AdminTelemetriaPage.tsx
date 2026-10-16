@@ -33,6 +33,7 @@ import {
   formatDuration,
   formatTime,
   type SeverityFilter,
+  type TelemetryRow,
   type TimeFilter,
 } from './telemetry/useTelemetryData';
 import { useErrorCounters } from './telemetry/useErrorCounters';
@@ -197,13 +198,15 @@ function ErrorCounterCard({
   label,
   sub,
   isLoading,
+  isError,
 }: {
-  value: number;
+  value: number | null;
   label: string;
   sub: string;
   isLoading: boolean;
+  isError: boolean;
 }) {
-  const tone = getErrorCounterTone(value);
+  const tone = value === null ? 'muted' : getErrorCounterTone(value);
   return (
     <Card className={cn('border-[1.5px] transition-colors', ERROR_COUNTER_CARD_CLASS[tone])}>
       <CardContent className="flex items-center gap-3 p-4">
@@ -218,7 +221,7 @@ function ErrorCounterCard({
               ERROR_COUNTER_VALUE_CLASS[tone],
             )}
           >
-            {isLoading ? '—' : value}
+            {isLoading ? '—' : isError ? 'Falha' : value}
           </p>
           <p className="mt-0.5 text-[10px] text-muted-foreground">{sub}</p>
         </div>
@@ -227,10 +230,94 @@ function ErrorCounterCard({
   );
 }
 
+function TelemetryFailureBanner({
+  telemetryError,
+  counterError,
+  onRetry,
+}: {
+  telemetryError: boolean;
+  counterError: boolean;
+  onRetry: () => void;
+}) {
+  if (!telemetryError && !counterError) return null;
+  return (
+    <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm">
+      <span className="flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-destructive" />Os indicadores estão indisponíveis; nenhum valor foi interpretado como zero.</span>
+      <Button variant="outline" size="sm" onClick={onRetry}>
+        <RefreshCw className="mr-2 h-4 w-4" />Tentar novamente
+      </Button>
+    </div>
+  );
+}
+
+function TelemetryTable({
+  rows,
+  isLoading,
+  isError,
+  error,
+  onRetry,
+}: {
+  rows: TelemetryRow[];
+  isLoading: boolean;
+  isError: boolean;
+  error: unknown;
+  onRetry: () => void;
+}) {
+  if (isLoading) {
+    return <div className="space-y-3 p-4">{Array.from({ length: 8 }).map((_, index) => <Skeleton key={index} className="h-12 w-full" />)}</div>;
+  }
+  if (isError) {
+    return (
+      <div role="alert" className="flex flex-col items-center gap-3 py-16 text-center text-muted-foreground">
+        <AlertTriangle className="h-12 w-12 text-destructive/70" />
+        <div><p className="font-medium text-foreground">Falha ao consultar a telemetria</p>
+          <p className="mt-1 text-sm">{error instanceof Error ? error.message : 'Tente novamente em instantes.'}</p></div>
+        <Button variant="outline" size="sm" onClick={onRetry}><RefreshCw className="mr-2 h-4 w-4" />Tentar novamente</Button>
+      </div>
+    );
+  }
+  if (rows.length === 0) {
+    return (
+      <div className="py-16 text-center text-muted-foreground">
+        <Activity className="mx-auto mb-3 h-12 w-12 opacity-30" />
+        <p className="font-medium">Nenhuma query lenta registrada</p>
+        <p className="mt-1 text-sm">Isso é bom! O sistema está performando bem.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead><tr className="border-b bg-muted/30">
+          <th className="p-3 text-left font-medium text-muted-foreground">Quando</th><th className="p-3 text-left font-medium text-muted-foreground">Operação</th>
+          <th className="p-3 text-left font-medium text-muted-foreground">Tabela/RPC</th><th className="p-3 text-right font-medium text-muted-foreground">Duração</th>
+          <th className="p-3 text-right font-medium text-muted-foreground">Records</th><th className="p-3 text-right font-medium text-muted-foreground">Limit</th>
+          <th className="p-3 text-right font-medium text-muted-foreground">Offset</th><th className="p-3 text-left font-medium text-muted-foreground">Count</th>
+          <th className="p-3 text-left font-medium text-muted-foreground">Severidade</th>
+        </tr></thead>
+        <tbody>{rows.map((row) => (
+          <tr key={row.id} className="border-b border-border/30 transition-colors hover:bg-muted/20">
+            <td className="whitespace-nowrap p-3 font-mono text-xs text-muted-foreground">{formatTime(row.created_at)}</td>
+            <td className="p-3"><Badge variant="outline" className="font-mono text-[10px]">{row.operation}</Badge></td>
+            <td className="p-3 font-mono text-xs font-medium">{row.rpc_name || row.table_name || '-'}</td>
+            <td className="p-3 text-right font-mono font-bold tabular-nums"><span className={row.duration_ms >= 8000 ? 'text-destructive' : row.duration_ms >= 3000 ? 'text-warning' : ''}>{formatDuration(row.duration_ms)}</span></td>
+            <td className="p-3 text-right font-mono text-xs tabular-nums">{row.record_count ?? '-'}</td>
+            <td className="p-3 text-right font-mono text-xs tabular-nums text-muted-foreground">{row.query_limit ?? '-'}</td>
+            <td className="p-3 text-right font-mono text-xs tabular-nums text-muted-foreground">{row.query_offset ?? '-'}</td>
+            <td className="p-3 text-xs text-muted-foreground">{row.count_mode || '-'}</td><td className="p-3">{getSeverityBadge(row.severity)}</td>
+          </tr>
+        ))}</tbody>
+      </table>
+    </div>
+  );
+}
+
 export default function AdminTelemetriaPage() {
   const {
     rows,
     isLoading,
+    isError,
+    error,
     isRefetching,
     refetch,
     handleCleanup,
@@ -245,7 +332,13 @@ export default function AdminTelemetriaPage() {
     stats,
     topOffenders,
   } = useTelemetryData();
-  const { errors1h, errors24h, isLoading: errorsLoading } = useErrorCounters();
+  const {
+    errors1h,
+    errors24h,
+    isLoading: errorsLoading,
+    isError: errorsError,
+    refetch: refetchErrors,
+  } = useErrorCounters();
 
   return (
     <>
@@ -256,7 +349,7 @@ export default function AdminTelemetriaPage() {
       />
       <div className="mx-auto w-full max-w-[1920px] animate-fade-in space-y-3 px-3 py-3 pb-24 sm:space-y-4 sm:px-4 sm:py-4 md:pb-6 lg:px-6 xl:px-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <Activity className="h-7 w-7 text-primary" />
             <div>
@@ -266,7 +359,7 @@ export default function AdminTelemetriaPage() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <InstrumentationToggleButton />
             <Button
               variant="outline"
@@ -312,7 +405,10 @@ export default function AdminTelemetriaPage() {
           <OptimizationQueuePanel />
         </Suspense>
 
-        <div className="grid grid-cols-2 gap-4">
+        <TelemetryFailureBanner telemetryError={isError} counterError={errorsError}
+          onRetry={() => { void refetch(); void refetchErrors(); }} />
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {[
             {
               value: errors1h,
@@ -331,6 +427,7 @@ export default function AdminTelemetriaPage() {
               label={label}
               sub={sub}
               isLoading={errorsLoading}
+              isError={errorsError}
             />
           ))}
         </div>
@@ -470,7 +567,7 @@ export default function AdminTelemetriaPage() {
         </Suspense>
 
         {/* Filters */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Select
             value={severityFilter}
             onValueChange={(v) => setSeverityFilter(v as SeverityFilter)}
@@ -498,7 +595,7 @@ export default function AdminTelemetriaPage() {
             </SelectContent>
           </Select>
           {timeFilter === 'custom' && (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -555,94 +652,15 @@ export default function AdminTelemetriaPage() {
             </div>
           )}
           <span className="ml-auto text-xs text-muted-foreground">
-            {rows.length} registros · auto-refresh 30s
+            {rows.length} de até 500 registros · auto-refresh 30s
           </span>
         </div>
 
         {/* Table */}
         <Card>
           <CardContent className="p-0">
-            {isLoading ? (
-              <div className="space-y-3 p-4">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
-              </div>
-            ) : rows.length === 0 ? (
-              <div className="py-16 text-center text-muted-foreground">
-                <Activity className="mx-auto mb-3 h-12 w-12 opacity-30" />
-                <p className="font-medium">Nenhuma query lenta registrada</p>
-                <p className="mt-1 text-sm">Isso é bom! O sistema está performando bem.</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b bg-muted/30">
-                      <th className="p-3 text-left font-medium text-muted-foreground">Quando</th>
-                      <th className="p-3 text-left font-medium text-muted-foreground">Operação</th>
-                      <th className="p-3 text-left font-medium text-muted-foreground">
-                        Tabela/RPC
-                      </th>
-                      <th className="p-3 text-right font-medium text-muted-foreground">Duração</th>
-                      <th className="p-3 text-right font-medium text-muted-foreground">Records</th>
-                      <th className="p-3 text-right font-medium text-muted-foreground">Limit</th>
-                      <th className="p-3 text-right font-medium text-muted-foreground">Offset</th>
-                      <th className="p-3 text-left font-medium text-muted-foreground">Count</th>
-                      <th className="p-3 text-left font-medium text-muted-foreground">
-                        Severidade
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((row) => (
-                      <tr
-                        key={row.id}
-                        className="border-b border-border/30 transition-colors hover:bg-muted/20"
-                      >
-                        <td className="whitespace-nowrap p-3 font-mono text-xs text-muted-foreground">
-                          {formatTime(row.created_at)}
-                        </td>
-                        <td className="p-3">
-                          <Badge variant="outline" className="font-mono text-[10px]">
-                            {row.operation}
-                          </Badge>
-                        </td>
-                        <td className="p-3 font-mono text-xs font-medium">
-                          {row.rpc_name || row.table_name || '-'}
-                        </td>
-                        <td className="p-3 text-right font-mono font-bold tabular-nums">
-                          <span
-                            className={
-                              row.duration_ms >= 8000
-                                ? 'text-destructive'
-                                : row.duration_ms >= 3000
-                                  ? 'text-warning'
-                                  : ''
-                            }
-                          >
-                            {formatDuration(row.duration_ms)}
-                          </span>
-                        </td>
-                        <td className="p-3 text-right font-mono text-xs tabular-nums">
-                          {row.record_count ?? '-'}
-                        </td>
-                        <td className="p-3 text-right font-mono text-xs tabular-nums text-muted-foreground">
-                          {row.query_limit ?? '-'}
-                        </td>
-                        <td className="p-3 text-right font-mono text-xs tabular-nums text-muted-foreground">
-                          {row.query_offset ?? '-'}
-                        </td>
-                        <td className="p-3 text-xs text-muted-foreground">
-                          {row.count_mode || '-'}
-                        </td>
-                        <td className="p-3">{getSeverityBadge(row.severity)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            <TelemetryTable rows={rows} isLoading={isLoading} isError={isError} error={error}
+              onRetry={() => void refetch()} />
           </CardContent>
         </Card>
       </div>

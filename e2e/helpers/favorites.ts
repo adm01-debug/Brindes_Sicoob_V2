@@ -43,6 +43,49 @@ export async function writeFavoritesStorage(page: Page, items: FavoriteItem[]): 
   );
 }
 
+async function storageContainsFavorite(page: Page, productId: string): Promise<boolean> {
+  return (await readFavoritesStorage(page)).some((item) => item.productId === productId);
+}
+
+/**
+ * Conclui a etapa opcional de variante ao favoritar.
+ *
+ * Produtos sem variantes são confirmados automaticamente pelo componente no
+ * próximo frame. Produtos com variantes mantêm o botão "Sem cor específica"
+ * visível. Aguarde um dos dois resultados para não disputar com o fechamento
+ * automático do diálogo.
+ */
+export async function completeFavoriteVariantStep(page: Page, productId: string): Promise<void> {
+  const noVariant = page.locator(Sel.variant.noVariant).first();
+
+  await expect
+    .poll(async () => {
+      if (await storageContainsFavorite(page, productId)) return 'stored';
+      if (await noVariant.isVisible().catch(() => false)) return 'picker';
+      return 'pending';
+    }, {
+      message: 'favorito deveria ser concluído automaticamente ou pelo seletor de variante',
+      timeout: 10_000,
+    })
+    .not.toBe('pending');
+
+  if (
+    !(await storageContainsFavorite(page, productId))
+    && (await noVariant.isVisible().catch(() => false))
+  ) {
+    // Se o estoque vazio for resolvido entre isVisible e click, o diálogo pode
+    // desmontar neste intervalo; o poll final diferencia esse caso de falha real.
+    await noVariant.click().catch(() => {});
+  }
+
+  await expect
+    .poll(() => storageContainsFavorite(page, productId), {
+      message: 'localStorage deveria refletir a conclusão da etapa de variante',
+      timeout: 10_000,
+    })
+    .toBe(true);
+}
+
 /**
  * Abre as ações rápidas do card e devolve o toggle de favorito acionável.
  * No desktop os botões expandidos existem no DOM, mas ficam sem eventos até
@@ -76,16 +119,7 @@ export async function setCatalogFavorite(
   if (!productId) throw new Error('Card do catálogo sem data-product-id');
 
   await favorite.click();
-  if (desired) {
-    const completedWithoutPicker = (await readFavoritesStorage(page))
-      .some((item) => item.productId === productId);
-    if (!completedWithoutPicker) {
-      const noVariant = page.locator(Sel.variant.noVariant).first();
-      await expect(noVariant, 'seletor de variante deveria concluir a ação de favorito')
-        .toBeVisible({ timeout: 10_000 });
-      await noVariant.click();
-    }
-  }
+  if (desired) await completeFavoriteVariantStep(page, productId);
 
   await expect
     .poll(

@@ -10,6 +10,12 @@ verify_jwt = true
 [functions.expert-chat]
 verify_jwt = false
 
+[functions.crm-db-bridge]
+verify_jwt = false
+
+[functions.trends-insights]
+verify_jwt = false
+
 [functions.external-db-bridge]
 verify_jwt = false
 

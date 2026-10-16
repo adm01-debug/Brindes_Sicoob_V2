@@ -9,15 +9,37 @@ import { useNavigate } from 'react-router-dom';
 import { PageSEO } from '@/components/seo/PageSEO';
 import { useProducts, type Product } from '@/hooks/useProducts';
 import { useProductMatch, type MatchFilters, type MatchResult } from '@/hooks/useProductMatch';
-import { MOCK_MATCH_PRODUCTS } from '@/data/mock-match-products';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MatchFiltersPanel } from './product-match/MatchFiltersPanel';
 import { ProductSearchPanel } from './product-match/ProductSearchPanel';
 import { SelectedProductCard, MatchCard, MATCH_TYPE_CONFIG } from './product-match/MatchCards';
 import { cn } from '@/lib/utils';
-import { Search, Target, Package, Zap, Sparkles } from 'lucide-react';
+import { AlertCircle, Loader2, RefreshCw, Search, Target, Package, Zap, Sparkles } from 'lucide-react';
+
+interface CatalogSearchStateProps {
+  products: Product[];
+  isLoading: boolean;
+  isError: boolean;
+  selectedId?: string;
+  onSelect: (product: Product) => void;
+  onRetry: () => void;
+}
+
+function CatalogSearchState(props: CatalogSearchStateProps) {
+  if (props.isLoading) {
+    return <Card className="border-dashed"><CardContent className="p-8 flex items-center justify-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Carregando catálogo oficial…</CardContent></Card>;
+  }
+  if (props.isError) {
+    return <Card className="border-destructive/30"><CardContent className="p-6 flex flex-col items-center text-center gap-3"><AlertCircle className="h-6 w-6 text-destructive" /><div><p className="text-sm font-semibold">Catálogo indisponível</p><p className="text-xs text-muted-foreground mt-1">Não exibimos produtos fictícios quando a consulta falha.</p></div><Button size="sm" variant="outline" onClick={props.onRetry}><RefreshCw className="h-3.5 w-3.5 mr-1.5" />Tentar novamente</Button></CardContent></Card>;
+  }
+  if (props.products.length === 0) {
+    return <Card className="border-dashed"><CardContent className="p-8 flex flex-col items-center text-center gap-2"><Package className="h-6 w-6 text-muted-foreground" /><p className="text-sm font-semibold">Nenhum produto disponível</p><p className="text-xs text-muted-foreground">O Match será habilitado quando o catálogo oficial tiver produtos ativos.</p></CardContent></Card>;
+  }
+  return <ProductSearchPanel products={props.products} onSelect={props.onSelect} selectedId={props.selectedId} />;
+}
 
 export default function ProductMatchPage() {
   const navigate = useNavigate();
@@ -28,20 +50,24 @@ export default function ProductMatchPage() {
     onlyInStock: false,
   });
 
-  const { data: dbProducts = [] } = useProducts({ limit: 500 });
-  const allProducts = dbProducts.length > 0 ? dbProducts : MOCK_MATCH_PRODUCTS;
+  const {
+    data: allProducts = [],
+    isLoading: isCatalogLoading,
+    isError: isCatalogError,
+    refetch: refetchCatalog,
+  } = useProducts({ limit: 500 });
   const { matches } = useProductMatch(selectedProduct, allProducts, filters);
 
   const categories = useMemo(() => {
     const cats = new Set<string>();
     allProducts.forEach(p => p.category?.name && cats.add(p.category.name));
-    return [...cats].sort();
+    return [...cats].sort((first, second) => first.localeCompare(second, 'pt-BR'));
   }, [allProducts]);
 
   const suppliers = useMemo(() => {
     const sups = new Set<string>();
     allProducts.forEach(p => p.supplier?.name && sups.add(p.supplier.name));
-    return [...sups].sort();
+    return [...sups].sort((first, second) => first.localeCompare(second, 'pt-BR'));
   }, [allProducts]);
 
   const stats = useMemo(() => {
@@ -118,10 +144,13 @@ export default function ProductMatchPage() {
               <Search className="h-3.5 w-3.5" />
               Buscar Produto
             </div>
-            <ProductSearchPanel
+            <CatalogSearchState
               products={allProducts}
-              onSelect={setSelectedProduct}
+              isLoading={isCatalogLoading}
+              isError={isCatalogError}
               selectedId={selectedProduct?.id}
+              onSelect={setSelectedProduct}
+              onRetry={() => void refetchCatalog()}
             />
           </div>
 

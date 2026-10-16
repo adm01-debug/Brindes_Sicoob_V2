@@ -7,8 +7,14 @@
  * Mantém a cobertura: shape de dados (smoke) + smoke de render do hook
  * (verifica que monta sem crashar com providers padrão).
  */
-import { describe, it, expect, vi } from "vitest";
+import { beforeEach, describe, it, expect, vi } from "vitest";
 import "../components/render-helpers"; // Supabase + Auth + sonner globais
+
+const productContextMock = vi.hoisted(() => ({
+  getProductById: vi.fn(() => undefined),
+  products: [] as Array<{ id: string; images: string[] }>,
+  isLoading: false,
+}));
 
 // --- Mocks de dependências pesadas (evita carregar o grafo real) ---
 vi.mock("@/lib/image-converter", () => ({
@@ -26,7 +32,7 @@ vi.mock("@/lib/external-db/invoke", () => ({
 }));
 
 vi.mock("@/contexts/ProductsContext", () => ({
-  useProductsContext: () => ({ getProductById: vi.fn(() => null), products: [] }),
+  useProductsContext: () => productContextMock,
   ProductsProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
@@ -85,6 +91,13 @@ vi.mock("@/hooks/mockup/mockupGenerationService", () => ({
 }));
 
 describe("useMockupGenerator (smoke)", () => {
+  beforeEach(() => {
+    productContextMock.getProductById.mockReset().mockReturnValue(undefined);
+    productContextMock.products = [];
+    productContextMock.isLoading = false;
+    window.history.replaceState({}, "", "/");
+  });
+
   it("exporta o hook como função", async () => {
     const mod = await import("@/hooks/useMockupGenerator");
     expect(typeof mod.useMockupGenerator).toBe("function");
@@ -96,6 +109,57 @@ describe("useMockupGenerator (smoke)", () => {
     const { result, unmount } = renderHookWithProviders(() => useMockupGenerator());
     expect(typeof result.current).toBe("object");
     unmount();
+  });
+
+  it("mantém a pré-seleção da URL até o produto lazy-loaded entrar no cache", async () => {
+    const { waitFor } = await import("@testing-library/react");
+    const { renderHookWithProviders } = await import("./_helpers/render-hook-providers");
+    const { useMockupGenerator } = await import("@/hooks/useMockupGenerator");
+    const productId = "produto-da-url";
+    window.history.replaceState({}, "", `/mockup-generator?product_id=${productId}`);
+
+    const { result, rerender } = renderHookWithProviders(() => useMockupGenerator(), {
+      route: `/mockup-generator?product_id=${productId}`,
+    });
+
+    await waitFor(() => expect(productContextMock.getProductById).toHaveBeenCalledWith(productId));
+    expect(result.current.productSelection).toBeNull();
+    expect(window.location.search).toContain(`product_id=${productId}`);
+
+    const product = { id: productId, name: "Produto real", images: ["/produto.png"] };
+    productContextMock.products = [product];
+    rerender();
+
+    await waitFor(() => expect(result.current.productSelection?.product.id).toBe(productId));
+    expect(window.location.search).toBe("");
+  });
+
+  it("mostra erro após falha do fetch e permite tentar novamente a pré-seleção da URL", async () => {
+    const { waitFor } = await import("@testing-library/react");
+    const { renderHookWithProviders } = await import("./_helpers/render-hook-providers");
+    const { useMockupGenerator } = await import("@/hooks/useMockupGenerator");
+    const productId = "produto-com-falha";
+    window.history.replaceState({}, "", `/mockup-generator?product_id=${productId}`);
+
+    const { result, rerender } = renderHookWithProviders(() => useMockupGenerator(), {
+      route: `/mockup-generator?product_id=${productId}`,
+    });
+
+    await waitFor(() => expect(productContextMock.getProductById).toHaveBeenCalledTimes(1));
+    expect(result.current.urlProductLoadError).toBe(false);
+
+    // O provider iniciou a busca, mas concluiu sem colocar o produto no cache.
+    productContextMock.isLoading = true;
+    rerender();
+    productContextMock.isLoading = false;
+    rerender();
+    await waitFor(() => expect(result.current.urlProductLoadError).toBe(true));
+    expect(window.location.search).toContain(`product_id=${productId}`);
+
+    result.current.retryUrlProduct();
+    await waitFor(() => expect(productContextMock.getProductById).toHaveBeenCalledTimes(2));
+    expect(result.current.urlProductLoadError).toBe(false);
+    expect(window.location.search).toContain(`product_id=${productId}`);
   });
 });
 

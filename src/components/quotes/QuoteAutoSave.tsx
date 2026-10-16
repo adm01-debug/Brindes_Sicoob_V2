@@ -80,10 +80,11 @@ function AutoSaveIndicator({ status, lastSaved, hasChanges, className }: {
 
 function useDraftLifecycle(args: {
   data: unknown; storageKey: string; lastError: unknown; restore: () => unknown;
+  savedSnapshot: { storageKey: string; value: string } | null;
   onChange?: (hasUnsavedChanges: boolean) => void; onRestore?: (data: Record<string, unknown>) => void;
   setStatus: (status: SaveStatus) => void; enabled: boolean;
 }): boolean {
-  const { data, storageKey, lastError, restore, onChange, onRestore, setStatus, enabled } = args;
+  const { data, storageKey, lastError, restore, savedSnapshot, onChange, onRestore, setStatus, enabled } = args;
   const [hasChanges, setHasChanges] = useState(false);
   const initialDataRef = useRef<string | null>(null);
   const currentDataRef = useRef(data);
@@ -94,6 +95,13 @@ function useDraftLifecycle(args: {
     initialDataRef.current = enabled ? JSON.stringify(currentDataRef.current) : null;
   }, [enabled, storageKey]);
   useEffect(() => { if (enabled && lastError) setStatus("error"); }, [enabled, lastError, setStatus]);
+  useEffect(() => {
+    if (!enabled || savedSnapshot?.storageKey !== storageKey) return;
+    initialDataRef.current = savedSnapshot.value;
+    const changed = JSON.stringify(currentDataRef.current) !== savedSnapshot.value;
+    setHasChanges(changed);
+    onChange?.(changed);
+  }, [enabled, onChange, savedSnapshot, storageKey]);
   useEffect(() => {
     if (!enabled) {
       setHasChanges(false);
@@ -127,6 +135,8 @@ export function QuoteAutoSave({
 }: QuoteAutoSaveProps) {
   const [status, setStatus] = useState<SaveStatus>("idle");
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [savedSnapshot, setSavedSnapshot] = useState<{ storageKey: string; value: string } | null>(null);
+  const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const draftId = useMemo(() => enabled && scopeId ? getQuoteDraftIdForScope(scopeId) : null, [enabled, scopeId]);
   const storageKey = enabled && scopeId ? (quoteId ? `quote:${scopeId}:${quoteId}` : `draft:${scopeId}:${draftId}`) : "";
 
@@ -134,14 +144,29 @@ export function QuoteAutoSave({
     key: storageKey,
     data,
     enabled: enabled && Boolean(storageKey),
-    onSave: () => {
+    onSave: (savedData) => {
       setLastSaved(new Date());
+      setSavedSnapshot({ storageKey, value: JSON.stringify(savedData) });
       setStatus("saved");
-      setTimeout(() => setStatus("idle"), 2000);
+      if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+      statusTimerRef.current = setTimeout(() => setStatus("idle"), 2000);
     },
     onError: () => setStatus("error"),
   });
-  const hasUnsavedChanges = useDraftLifecycle({ data, storageKey, lastError, restore, onChange, onRestore, setStatus, enabled });
+  useEffect(() => () => {
+    if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+  }, []);
+  const hasUnsavedChanges = useDraftLifecycle({
+    data,
+    storageKey,
+    lastError,
+    restore,
+    savedSnapshot,
+    onChange,
+    onRestore,
+    setStatus,
+    enabled,
+  });
 
   if (!enabled) return null;
   return <AutoSaveIndicator status={status} lastSaved={lastSaved} hasChanges={hasUnsavedChanges} className={className} />;

@@ -11,10 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   FileText, Plus, Package, Loader2, BookTemplate, ArrowLeft,
-  Edit, AlertTriangle, Lock, Sparkles, ExternalLink
+  Edit, AlertTriangle, Lock, Sparkles, ExternalLink, AlertCircle, RefreshCw
 } from "lucide-react";
 import { toast } from "sonner";
 import { format, addDays } from "date-fns";
+import type { ReactNode } from "react";
 
 import { QuoteTemplateSelector } from "@/components/quotes/QuoteTemplateSelector";
 import { SaveAsTemplateButton } from "@/components/quotes/SaveAsTemplateButton";
@@ -42,16 +43,69 @@ function isSelectedInfo(value: unknown): value is SelectedCompanyInfo & Selected
 
 type QuoteBuilderState = ReturnType<typeof useQuoteBuilderState>;
 
-function restoreQuoteDraft(state: QuoteBuilderState, data: Record<string, unknown>) {
-  state.setClientId(typeof data.clientId === "string" ? data.clientId : "");
-  state.setValidUntil(typeof data.validUntil === "string" ? data.validUntil : format(addDays(new Date(), 30), "yyyy-MM-dd"));
+function validDraftDate(value: unknown): Date | undefined {
+  if (typeof value !== "string") return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
+function draftString(value: unknown, fallbackValue = ""): string {
+  return typeof value === "string" ? value : fallbackValue;
+}
+
+function draftNumber(value: unknown): number {
+  return typeof value === "number" ? value : 0;
+}
+
+function draftTags(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((tag): tag is string => typeof tag === "string") : [];
+}
+
+export function restoreQuoteDraft(state: QuoteBuilderState, data: Record<string, unknown>) {
+  state.setClientId(draftString(data.clientId));
+  state.setContactId(draftString(data.contactId));
+  state.setCompanyInfo(isSelectedInfo(data.companyInfo) ? data.companyInfo : null);
+  state.setContactInfo(isSelectedInfo(data.contactInfo) ? data.contactInfo : null);
+  state.setValidityDays(draftString(data.validityDays, "7"));
+  state.setValidUntil(draftString(data.validUntil, format(addDays(new Date(), 30), "yyyy-MM-dd")));
   state.setDiscountType(data.discountType === "amount" ? "amount" : "percent");
-  state.setDiscountValue(typeof data.discountValue === "number" ? data.discountValue : 0);
-  state.setNotes(typeof data.notes === "string" ? data.notes : "");
-  state.setInternalNotes(typeof data.internalNotes === "string" ? data.internalNotes : "");
+  state.setDiscountValue(draftNumber(data.discountValue));
+  state.setNegotiationMarkup(draftNumber(data.negotiationMarkup));
+  state.setPaymentTerms(draftString(data.paymentTerms));
+  state.setDeliveryTime(draftString(data.deliveryTime));
+  state.setDeliveryMode(data.deliveryMode === "data" ? "data" : "prazo");
+  state.setDeliveryDate(validDraftDate(data.deliveryDate));
+  state.setShippingType(draftString(data.shippingType));
+  state.setShippingCost(draftNumber(data.shippingCost));
+  state.setNotes(draftString(data.notes));
+  state.setInternalNotes(draftString(data.internalNotes));
   state.setItems(Array.isArray(data.items) ? data.items as QuoteBuilderState["items"] : []);
-  state.setTags(Array.isArray(data.tags) ? data.tags.filter((tag): tag is string => typeof tag === "string") : []);
+  state.setTags(draftTags(data.tags));
   toast.success("Rascunho restaurado!");
+}
+
+export function buildQuoteDraftData(state: QuoteBuilderState) {
+  return {
+    clientId: state.clientId,
+    contactId: state.contactId,
+    companyInfo: state.companyInfo,
+    contactInfo: state.contactInfo,
+    validityDays: state.validityDays,
+    validUntil: state.validUntil,
+    discountType: state.discountType,
+    discountValue: state.discountValue,
+    negotiationMarkup: state.negotiationMarkup,
+    paymentTerms: state.paymentTerms,
+    deliveryTime: state.deliveryTime,
+    deliveryMode: state.deliveryMode,
+    deliveryDate: state.deliveryDate?.toISOString() ?? null,
+    shippingType: state.shippingType,
+    shippingCost: state.shippingCost,
+    notes: state.notes,
+    internalNotes: state.internalNotes,
+    items: state.items,
+    tags: state.tags,
+  };
 }
 
 function QuoteBuilderHeader({ state, onBack }: { state: QuoteBuilderState; onBack: () => void }) {
@@ -90,9 +144,18 @@ function ClientAnalyticsLink({ state }: { state: QuoteBuilderState }) {
   return <a href={`/ferramentas/bi?clientId=${state.companyInfo.id}`} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-3 rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-3 hover:bg-primary/10 hover:border-primary/50 transition-colors"><div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><Sparkles className="h-4 w-4 text-primary" /></div><div className="flex-1 min-w-0"><p className="font-display font-semibold text-sm leading-tight">Inteligência completa deste cliente</p><p className="text-[11px] text-muted-foreground leading-tight mt-0.5">Histórico, afinidade, sazonalidade e tendência do setor</p></div><ExternalLink className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" /></a>;
 }
 
+export function QuoteEditableSection({ canEdit, label, className, children }: {
+  canEdit: boolean;
+  label: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  return <fieldset disabled={!canEdit} aria-label={label} className={cn("min-w-0 border-0 p-0", !canEdit && "grayscale-[0.3] opacity-80", className)}>{children}</fieldset>;
+}
+
 function QuoteClientColumn({ state }: { state: QuoteBuilderState }) {
   const hasClientError = state.validationErrors.includes("empresa") || state.validationErrors.includes("contato");
-  return <div className={cn("lg:col-span-3", !state.canEdit && "pointer-events-none grayscale-[0.3] opacity-80")}><div className="sticky top-24 space-y-3 overflow-y-auto max-h-[calc(100vh-7rem)] pr-1"><div className={cn("rounded-2xl border bg-card p-4 space-y-4", hasClientError ? "border-destructive/50" : "border-border/50")}><QuoteClientSelector clientId={state.clientId} contactId={state.contactId} onClientChange={state.setClientId} onContactChange={state.setContactId} onClientInfoChange={(info) => state.setCompanyInfo(isSelectedInfo(info) ? info : null)} onContactInfoChange={(info) => state.setContactInfo(isSelectedInfo(info) ? info : null)} /><QuoteClientValidation state={state} /></div><ValidityPicker validityDays={state.validityDays} setValidityDays={state.setValidityDays} setValidUntil={state.setValidUntil} /><CommercialConditions paymentTerms={state.paymentTerms} setPaymentTerms={state.setPaymentTerms} deliveryMode={state.deliveryMode} setDeliveryMode={state.setDeliveryMode} deliveryTime={state.deliveryTime} setDeliveryTime={state.setDeliveryTime} deliveryDate={state.deliveryDate} setDeliveryDate={state.setDeliveryDate} shippingType={state.shippingType} setShippingType={state.setShippingType} shippingCost={state.shippingCost} setShippingCost={state.setShippingCost} validationErrors={state.validationErrors} /><div className="rounded-2xl border border-border/50 bg-card p-4 space-y-3"><h3 className="font-display font-semibold text-sm flex items-center gap-2"><span className="text-primary">🏷️</span>Etiquetas</h3><TagManager tags={state.tags} onChange={state.setTags} /><p className="text-[10px] text-muted-foreground">Etiquetas ajudam a organizar e filtrar orçamentos depois.</p></div><ClientAnalyticsLink state={state} /></div></div>;
+  return <QuoteEditableSection canEdit={state.canEdit} label="Cliente e condições comerciais" className="lg:col-span-3"><div className="sticky top-24 space-y-3 overflow-y-auto max-h-[calc(100vh-7rem)] pr-1"><div className={cn("rounded-2xl border bg-card p-4 space-y-4", hasClientError ? "border-destructive/50" : "border-border/50")}><QuoteClientSelector clientId={state.clientId} contactId={state.contactId} onClientChange={state.setClientId} onContactChange={state.setContactId} onClientInfoChange={(info) => state.setCompanyInfo(isSelectedInfo(info) ? info : null)} onContactInfoChange={(info) => state.setContactInfo(isSelectedInfo(info) ? info : null)} /><QuoteClientValidation state={state} /></div><ValidityPicker validityDays={state.validityDays} setValidityDays={state.setValidityDays} setValidUntil={state.setValidUntil} /><CommercialConditions paymentTerms={state.paymentTerms} setPaymentTerms={state.setPaymentTerms} deliveryMode={state.deliveryMode} setDeliveryMode={state.setDeliveryMode} deliveryTime={state.deliveryTime} setDeliveryTime={state.setDeliveryTime} deliveryDate={state.deliveryDate} setDeliveryDate={state.setDeliveryDate} shippingType={state.shippingType} setShippingType={state.setShippingType} shippingCost={state.shippingCost} setShippingCost={state.setShippingCost} validationErrors={state.validationErrors} /><div className="rounded-2xl border border-border/50 bg-card p-4 space-y-3"><h3 className="font-display font-semibold text-sm flex items-center gap-2"><span className="text-primary">🏷️</span>Etiquetas</h3><TagManager tags={state.tags} onChange={state.setTags} /><p className="text-[10px] text-muted-foreground">Etiquetas ajudam a organizar e filtrar orçamentos depois.</p></div><ClientAnalyticsLink state={state} /></div></QuoteEditableSection>;
 }
 
 function EmptyItems() {
@@ -117,7 +180,7 @@ function QuoteItemsContent({ state }: { state: QuoteBuilderState }) {
 }
 
 function QuoteItemsColumn({ state }: { state: QuoteBuilderState }) {
-  return <div className={cn("lg:col-span-5", !state.canEdit && "pointer-events-none grayscale-[0.3] opacity-80")}><div className="sticky top-24 flex flex-col max-h-[calc(100vh-7rem)]"><div className="rounded-2xl border border-border/50 bg-card overflow-hidden flex flex-col flex-1 min-h-0"><div className="flex items-center justify-between p-4 pb-3 shrink-0"><div><h3 className="font-display font-semibold text-sm">Itens do Orçamento</h3><p className="text-xs text-muted-foreground mt-0.5">{state.items.length} item(ns) adicionado(s)</p></div><Button size="sm" onClick={() => state.setProductSearchOpen(true)}><Plus className="h-3.5 w-3.5 mr-1.5" />Produto</Button></div><div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4"><QuoteItemsContent state={state} /></div></div></div></div>;
+  return <QuoteEditableSection canEdit={state.canEdit} label="Itens do orçamento" className="lg:col-span-5"><div className="sticky top-24 flex flex-col max-h-[calc(100vh-7rem)]"><div className="rounded-2xl border border-border/50 bg-card overflow-hidden flex flex-col flex-1 min-h-0"><div className="flex items-center justify-between p-4 pb-3 shrink-0"><div><h3 className="font-display font-semibold text-sm">Itens do Orçamento</h3><p className="text-xs text-muted-foreground mt-0.5">{state.items.length} item(ns) adicionado(s)</p></div><Button size="sm" onClick={() => state.setProductSearchOpen(true)}><Plus className="h-3.5 w-3.5 mr-1.5" />Produto</Button></div><div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4"><QuoteItemsContent state={state} /></div></div></div></QuoteEditableSection>;
 }
 
 function QuoteSummaryColumn({ state }: { state: QuoteBuilderState }) {
@@ -128,9 +191,14 @@ function QuoteBuilderDialogs({ state }: { state: QuoteBuilderState }) {
   return <QuoteProductSelector open={state.productSearchOpen} onOpenChange={state.setProductSearchOpen} productSearch={state.productSearch} setProductSearch={state.setProductSearch} filteredProducts={state.filteredProducts} selectedProductForColor={state.selectedProductForColor} setSelectedProductForColor={state.setSelectedProductForColor} onProductClick={state.handleProductClick} onAddWithColor={state.addProductWithColor} formatCurrency={state.formatCurrency} />;
 }
 
+function QuoteLoadFailure({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return <div className="flex min-h-[60vh] items-center justify-center px-4"><div role="alert" className="flex max-w-md flex-col items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center"><AlertCircle className="h-7 w-7 text-destructive" /><div><p className="font-semibold">Falha ao abrir o orçamento</p><p className="mt-1 text-sm text-muted-foreground">{message}</p></div><Button variant="outline" onClick={onRetry}><RefreshCw className="mr-2 h-4 w-4" />Tentar novamente</Button></div></div>;
+}
+
 export default function QuoteBuilderPage() {
   const state = useQuoteBuilderState();
   const unsaved = useUnsavedChangesGuard({ hasUnsavedChanges: state.hasUnsavedData });
   if (state.loadingQuote) return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
-  return <><PageSEO title={state.quoteId ? "Editar Orçamento" : "Novo Orçamento"} description="Crie e edite orçamentos com seleção de produtos e personalização." path="/orcamentos/novo" noIndex /><QuoteAutoSave enabled={state.canEdit} quoteId={state.quoteId} scopeId={state.user?.id} data={{ clientId: state.clientId, validUntil: state.validUntil, discountType: state.discountType, discountValue: state.discountValue, notes: state.notes, internalNotes: state.internalNotes, items: state.items, tags: state.tags }} onRestore={(data) => restoreQuoteDraft(state, data)} className="fixed top-20 right-4 z-40" /><div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in"><QuoteBuilderHeader state={state} onBack={() => unsaved.guardNavigation(() => state.navigate(-1))} /><QuoteBuilderStepper completedSteps={state.completedSteps} /><ReorderCatalogValidityBanner quoteId={state.quoteId} hasUnsavedChanges={state.hasUnsavedData} canRevalidate={state.canEdit} onRevalidated={() => window.location.reload()} /><QuoteTemplateNotices state={state} /><div className="grid gap-4 lg:grid-cols-12"><QuoteClientColumn state={state} /><QuoteItemsColumn state={state} /><QuoteSummaryColumn state={state} /></div></div><QuoteBuilderDialogs state={state} /><UnsavedChangesDialog open={unsaved.showDialog} onConfirm={unsaved.confirmLeave} onCancel={unsaved.cancelLeave} message={unsaved.message} /></>;
+  if (state.quoteLoadError) return <QuoteLoadFailure message={state.quoteLoadError} onRetry={state.retryQuoteLoad} />;
+  return <><PageSEO title={state.quoteId ? "Editar Orçamento" : "Novo Orçamento"} description="Crie e edite orçamentos com seleção de produtos e personalização." path="/orcamentos/novo" noIndex /><QuoteAutoSave enabled={state.canEdit} quoteId={state.quoteId} scopeId={state.user?.id} data={buildQuoteDraftData(state)} onRestore={(data) => restoreQuoteDraft(state, data)} className="fixed top-20 right-4 z-40" /><div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in"><QuoteBuilderHeader state={state} onBack={() => unsaved.guardNavigation(() => state.navigate(-1))} /><QuoteBuilderStepper completedSteps={state.completedSteps} /><ReorderCatalogValidityBanner quoteId={state.quoteId} hasUnsavedChanges={state.hasUnsavedData} canRevalidate={state.canEdit} onRevalidated={() => window.location.reload()} /><QuoteTemplateNotices state={state} /><div className="grid gap-4 lg:grid-cols-12"><QuoteClientColumn state={state} /><QuoteItemsColumn state={state} /><QuoteSummaryColumn state={state} /></div></div><QuoteBuilderDialogs state={state} /><UnsavedChangesDialog open={unsaved.showDialog} onConfirm={unsaved.confirmLeave} onCancel={unsaved.cancelLeave} message={unsaved.message} /></>;
 }

@@ -7,6 +7,8 @@ export interface CalcProduct {
   name: string;
   sku: string;
   price: number;
+  /** `false` quando o catálogo não informou sale_price; impede importar preço zero presumido. */
+  priceAvailable?: boolean;
   images: string[];
   category_name: string | null;
 }
@@ -32,6 +34,23 @@ export interface SelectedTechniqueConfig {
   colors: number;
   sizeOption: string;
   sizeModifier: number;
+}
+
+export function isPriceConfigurationSupported(config: SelectedTechniqueConfig): boolean {
+  // A tabela do banco calcula preço por técnica e tiragem; cores adicionais e
+  // área variável ainda não fazem parte desse contrato de preço.
+  return config.colors === 1 && config.sizeOption === 'standard';
+}
+
+export function minimumSupportedQuantity(tiers: readonly { minQuantity: number }[]): number | null {
+  return tiers.length > 0 ? Math.min(...tiers.map((tier) => tier.minQuantity)) : null;
+}
+
+export function calculateCustomizationTotal(
+  calculation: { unitPrice: number; setupPrice: number; handlingPrice?: number | null },
+  quantity: number,
+): number {
+  return calculation.unitPrice * quantity + calculation.setupPrice + (calculation.handlingPrice ?? 0);
 }
 
 export const availableSizes = [
