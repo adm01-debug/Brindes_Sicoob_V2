@@ -10,6 +10,8 @@ import { useUserProfile } from "@/hooks/auth/useUserProfile";
 import { useAuthAAL } from "@/hooks/auth/useAuthAAL";
 import { useRecentlyViewedStore } from "@/stores/useRecentlyViewedStore";
 import { useFavoritesStore } from "@/stores/useFavoritesStore";
+import { useNavigationStore } from "@/stores/useNavigationStore";
+import { useNavigationGuardStore } from "@/stores/useNavigationGuardStore";
 
 
 import { type AppRole, type Profile } from "@/types/users";
@@ -123,6 +125,7 @@ function clearSensitiveBrowserData(): void {
       ACTIVE_USER_STORAGE_KEY,
       "product-comparison",
       "recently-viewed-products",
+      "navigation-history",
       "duplicate_product",
     ].forEach(key => localStorage.removeItem(key));
   } catch (error) {
@@ -189,6 +192,8 @@ function handleAnonymousState(deps: AuthStateDependencies): void {
   deps.clearAAL();
   deps.setIsLoading(false);
   useRecentlyViewedStore.getState().reset();
+  useNavigationStore.getState().clear();
+  useNavigationGuardStore.getState().clearAll();
   clearSensitiveBrowserData();
 }
 
@@ -449,6 +454,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       clearRoles();
       clearAAL();
       useRecentlyViewedStore.getState().reset();
+      useNavigationStore.getState().clear();
+      useNavigationGuardStore.getState().clearAll();
       // Permite prewarm no próximo login (mesma aba)
       import('@/lib/external-db-prewarm').then(m => m.resetPrewarmSession()).catch(() => {});
       log.info('ok');

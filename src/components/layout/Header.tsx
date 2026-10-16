@@ -34,6 +34,8 @@ import { useCurrentSection } from "@/hooks/useCurrentSection";
 import { cn, lazyWithRetry } from "@/lib";
 import { RoleBadge } from "@/components/ui/RoleBadge";
 import { BackButton } from "@/components/common/BackButton";
+import { askConfirm } from '@/stores/useConfirmDialogStore';
+import { useNavigationGuardStore } from '@/stores/useNavigationGuardStore';
 
 
 // Lazy load non-critical Header sub-components
@@ -78,6 +80,17 @@ function useHeaderModel() {
     toggleTheme();
   };
   const handleSignOut = async () => {
+    const navigationGuard = useNavigationGuardStore.getState();
+    if (navigationGuard.hasDirty()) {
+      const confirmed = await askConfirm({
+        title: 'Sair sem salvar?',
+        description: navigationGuard.getMessage(),
+        variant: 'warning',
+        confirmLabel: 'Sair',
+      });
+      if (!confirmed) return;
+      navigationGuard.clearAll();
+    }
     try {
       await signOut();
       toast({ title: "Até logo!", description: "Você saiu da sua conta" });

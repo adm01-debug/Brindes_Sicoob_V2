@@ -6,11 +6,7 @@ import { Haptics } from '@/utils/haptics';
 export function useSmartNavigation() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { push, getPrevious, pop, history, direction, setDirection } = useNavigationStore();
-
-  const isCriticalPath = location.pathname.includes('/simulador') || 
-                         location.pathname.includes('/orcamentos/novo') ||
-                         location.pathname.includes('/mockup-generator');
+  const { push, getPrevious, history, direction, setDirection } = useNavigationStore();
 
   // Rastrear navegação
   useEffect(() => {
@@ -28,19 +24,11 @@ export function useSmartNavigation() {
     });
   }, [location.pathname, location.search, push]);
 
-  const goBack = useCallback((fallbackPath?: string, force = false) => {
-    if (!force && isCriticalPath) {
-      const confirmed = window.confirm("Você tem alterações não salvas. Deseja realmente sair?");
-      if (!confirmed) return;
-    }
-
+  const goBack = useCallback((fallbackPath?: string) => {
     Haptics.impactLight();
-    
     setDirection('backward');
-    const previous = getPrevious();
-    
-    if (previous) {
-      pop(); // Remove o atual
+
+    if (Number(window.history.state?.idx) > 0) {
       navigate(-1);
     } else if (fallbackPath) {
       navigate(fallbackPath);
@@ -54,7 +42,7 @@ export function useSmartNavigation() {
         navigate('/' + pathParts.slice(0, -1).join('/'));
       }
     }
-  }, [location.pathname, getPrevious, isCriticalPath, pop, navigate, setDirection]);
+  }, [location.pathname, navigate, setDirection]);
 
   const goForward = useCallback((path: string) => {
     setDirection('forward');
