@@ -246,6 +246,10 @@ export function QuickOptionsFilter({
         <Label htmlFor="filter-hasPersonalization" className="text-sm cursor-pointer">Com Personalização</Label>
       </div>
       <div className="flex items-center gap-2">
+        <Checkbox id="filter-hasCommercialPackaging" checked={filters.hasCommercialPackaging} onCheckedChange={() => toggleBooleanFilter('hasCommercialPackaging')} />
+        <Label htmlFor="filter-hasCommercialPackaging" className="text-sm cursor-pointer">Com Embalagem Comercial</Label>
+      </div>
+      <div className="flex items-center gap-2">
         <Checkbox id="filter-inStock" checked={filters.inStock} onCheckedChange={() => toggleBooleanFilter('inStock')} />
         <Label htmlFor="filter-inStock" className="text-sm cursor-pointer">Em Estoque</Label>
       </div>

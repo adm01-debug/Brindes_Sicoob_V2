@@ -182,7 +182,7 @@ function activePrice(filters: FilterState) { return filters.priceRange[0] > 0 ||
 function priceUpperLabel(value: number) { return value >= 9999 ? '∞' : value; }
 
 function buildSectionCounts(filters: FilterState, material: MaterialState) {
-  const quick = [filters.isKit, filters.featured, filters.isNew, filters.hasPersonalization, filters.inStock].filter(Boolean).length;
+  const quick = [filters.isKit, filters.featured, filters.isNew, filters.hasPersonalization, filters.hasCommercialPackaging, filters.inStock].filter(Boolean).length;
   return { temas: length(filters.sicoobThemes), "tiragem-minima": Number(Boolean(filters.minQuantity && filters.minQuantity > 0)),
     cores: length(filters.colorGroups) + length(filters.colorVariations) + length(filters.colorNuances), categorias: length(filters.categories),
     estoque: Number(filters.minStock > 0), preco: Number(activePrice(filters)), fornecedores: length(filters.suppliers), publico: length(filters.publicoAlvo),

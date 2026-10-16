@@ -26,4 +26,12 @@ describe('contagem dos filtros da vitrine principal', () => {
       priceRange: [10, 900],
     })).toBe(3);
   });
+
+  it('contabiliza tiragem mínima e embalagem comercial', () => {
+    expect(countActiveFilters({
+      ...defaultFilters,
+      minQuantity: 100,
+      hasCommercialPackaging: true,
+    })).toBe(2);
+  });
 });

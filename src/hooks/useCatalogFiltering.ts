@@ -131,7 +131,16 @@ function directCategoryFilter(products: Product[], categories: Set<string>): Pro
 
 function supplierFilter(products: Product[], suppliers: Set<string>): Product[] {
   if (suppliers.size === 0) return products;
-  return products.filter(product => suppliers.has(product.brand || '') || suppliers.has(product.supplier_reference || ''));
+  const normalized = new Set([...suppliers].map((supplier) => supplier.toLowerCase().trim()));
+  return products.filter((product) => {
+    const candidates = [
+      product.supplier?.id,
+      product.supplier?.name,
+      product.brand,
+      product.supplier_reference,
+    ].filter((value): value is string => Boolean(value));
+    return candidates.some((candidate) => normalized.has(candidate.toLowerCase().trim()));
+  });
 }
 
 function priceFilter(products: Product[], range: FilterState['priceRange']): Product[] {
@@ -176,6 +185,7 @@ function quickOptionsFilter(products: Product[], filters: FilterState): Product[
   if (filters.featured) result = result.filter(product => product.featured);
   if (filters.isNew) result = result.filter(product => product.newArrival);
   if (filters.hasPersonalization) result = result.filter(product => product.allowsPersonalization === true);
+  if (filters.hasCommercialPackaging) result = result.filter(product => product.hasCommercialPackaging === true);
   return result;
 }
 
