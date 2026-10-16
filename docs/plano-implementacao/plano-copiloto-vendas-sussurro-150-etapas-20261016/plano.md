@@ -149,7 +149,7 @@ Os três portões ficam fora do código. Sem decisão registrada, as etapas que 
 | Decisão | Opções | Recomendação |
 |---|---|---|
 | Canal do WhatsApp | **A)** Evolution `wpp2`, que já opera: sem custo por mensagem, mas não é oficial e o número pode ser bloqueado. **B)** API oficial da Meta em coexistência (o mesmo número no app Business e na API): é oficial e cobra por mensagem conforme a tabela vigente da Meta. | Começar com **A**, só lendo mensagens e enviando por clique humano, com o adaptador da E032 pronto para migrar para **B** se houver bloqueio ou quando o volume crescer. |
-| Teto mensal de custo de IA | Valor em R$ | Definir depois do teste da E122. Ao bater o teto, o sistema mostra só o Radar e para de gerar texto (E125). |
+| Teto mensal de custo de IA | Valor em R$ | Definir um teto provisório agora, com base em benchmarks de mercado (não no teste da E122, que depende transitivamente deste próprio G1). Recalibrar com os preços reais de E126 assim que o teste de modelos terminar. Ao bater o teto, o sistema mostra só o Radar e para de gerar texto (E125). |
 | Vendedores do piloto | Quem participa | Um top, um mediano e um novo, para medir o ganho em perfis diferentes. |
 | Guarda das conversas | Meses | 12 meses de mensagens e 24 meses de indicadores sem texto, sujeito ao RIPD (E022). |
 
@@ -443,7 +443,7 @@ Uma etapa só está **concluída** quando o critério de aceite foi verificado c
 
 `Edge` · depende de: E032
 
-- **O quê:** Antes de criar a função, confirmar vaga disponível no limite de 100 Edge Functions publicadas (hoje no limite, com deploy anterior retornando HTTP 402) e decidir o que libera espaço (ex.: publicar `error-monitor`, hoje `source-only`, ou remover função obsoleta). Só então: receber o webhook, validar segredo e origem (VPS), aplicar limite de tamanho, descartar repetidos pelo ID da mensagem e registrar o evento, no mesmo padrão de `webhook-inbound` (HMAC, `inbound_webhook_events`, limite de 1 MB).
+- **O quê:** Antes de criar a função, confirmar vaga disponível no limite de 100 Edge Functions publicadas (hoje no limite, com deploy anterior retornando HTTP 402) e liberar espaço despublicando ou removendo uma função atualmente publicada e em desuso (publicar `error-monitor` não ajuda: ele já é `source-only` e não ocupa uma das 100 vagas, então publicá-lo consumiria outra em vez de liberar). Só então: receber o webhook, validar segredo e origem (VPS), aplicar limite de tamanho, descartar repetidos pelo ID da mensagem e registrar o evento, no mesmo padrão de `webhook-inbound` (HMAC, `inbound_webhook_events`, limite de 1 MB).
 - **Aceite:** Função publicada com sucesso no projeto remoto (não só local) e confirmada via `supabase_functions_list`; reenvio do mesmo evento não duplica; segredo inválido recebe 401; nada é perdido em teste de 1.000 eventos.
 
 #### E034 · Modelo de dados no banco do portal
@@ -451,7 +451,7 @@ Uma etapa só está **concluída** quando o critério de aceite foi verificado c
 `Banco` · depende de: E022, E031
 
 - **O quê:** Criar no banco `cfmzkthhgliqelozlmwu`: `copilot_contacts`, `copilot_conversations`, `copilot_messages`, `copilot_insights`, `copilot_suggestions`, `copilot_feedback` e `copilot_events`, com índices para a lista de conversas.
-- **Aceite:** Migration revisada em PR aberta para aprovação do Joaquim (DDL em produção não tem merge automático).
+- **Aceite:** Migration aplicada no projeto remoto `cfmzkthhgliqelozlmwu` (não só revisada em PR) e schema das 7 tabelas confirmado via `supabase_db_list_tables`; aprovação do Joaquim registrada antes do apply (DDL em produção não tem merge automático).
 
 #### E035 · Ligar telefone a cliente e cooperativa
 
@@ -469,9 +469,9 @@ Uma etapa só está **concluída** quando o critério de aceite foi verificado c
 
 #### E037 · Importar o histórico recente
 
-`Dados` · depende de: E034, E022
+`Dados` · depende de: E034, E022, E026
 
-- **O quê:** Trazer os últimos meses de conversas do `wpp2` para dar contexto à IA e alimentar o conjunto de avaliação, dentro da base legal definida.
+- **O quê:** Trazer os últimos meses de conversas do `wpp2` para dar contexto à IA e alimentar o conjunto de avaliação, dentro da base legal definida. Só depois de E026 (prazo de retenção e rotina de descarte) existir — senão a importação cria uma cópia nova de dados pessoais sem controle de retenção.
 - **Aceite:** Importação que pode rodar duas vezes sem duplicar, com contagem conferida contra a origem.
 
 #### E038 · Guardar mídias com segurança
@@ -603,9 +603,9 @@ Uma etapa só está **concluída** quando o critério de aceite foi verificado c
 
 #### E055 · Termômetro do negócio
 
-`IA` · depende de: E054
+`IA` · depende de: E054, E035
 
-- **O quê:** Nota de 0 a 100 que combina intenção, quanto do COOPERA já se sabe, recência e histórico do cliente no BI, sempre explicando de onde veio cada ponto.
+- **O quê:** Nota de 0 a 100 que combina intenção, quanto do COOPERA já se sabe, recência e histórico do cliente no BI, sempre explicando de onde veio cada ponto. Depende do telefone já vinculado ao cliente e à cooperativa (E035) — sem isso não se sabe qual histórico consultar.
 - **Aceite:** Teste sobre o histórico mostra que nota alta antecipa orçamento aprovado; a correlação medida fica registrada.
 
 #### E056 · Detector de conversa esfriando
@@ -638,9 +638,9 @@ Uma etapa só está **concluída** quando o critério de aceite foi verificado c
 
 #### E060 · Estado único da conversa
 
-`Edge` · depende de: E054, E055
+`Edge` · depende de: E054, E055, E058
 
-- **O quê:** Gravar a leitura consolidada em `copilot_insights` com versão e publicar a mudança por Realtime para o pop-up.
+- **O quê:** Gravar a leitura consolidada em `copilot_insights` com versão e publicar a mudança por Realtime para o pop-up. Depende do resumo vivo (E058) já existir — `copilot_insights` guarda esse resumo, e sem ele o estado "consolidado" fica incompleto.
 - **Aceite:** Pop-up recebe a leitura nova em até 4 segundos no percentil 95 após a mensagem do cliente.
 
 ### F07 · Gerador de respostas e próxima melhor ação (E061–E070)
@@ -1082,9 +1082,9 @@ Uma etapa só está **concluída** quando o critério de aceite foi verificado c
 
 #### E120 · Marco M1: modo sombra
 
-`IA` · depende de: E061, E111, E024, E025, E026
+`IA` · depende de: E061, E111, E024, E025, E026, E125, E021
 
-- **O quê:** Por duas semanas a IA gera sugestões sem mostrar e compara com o que o vendedor mandou e com o resultado. Só começa com mascaramento de dados pessoais (E024), contrato de tratamento com o provedor (E025) e rotina de retenção e descarte (E026) já concluídos — conversa real não pode ir ao provedor sem esses três.
+- **O quê:** Por duas semanas a IA gera sugestões sem mostrar e compara com o que o vendedor mandou e com o resultado. Só começa com mascaramento de dados pessoais (E024), contrato de tratamento com o provedor (E025), rotina de retenção e descarte (E026) e o teto de gasto já reservado por chamada (E125) concluídos — conversa real não pode ir ao provedor sem esses quatro, nem sem o bloqueio de envio automático (E021) já comprovado.
 - **Aceite:** Relatório do modo sombra apresentado no portão G2.
 
 ### F13 · Velocidade, custo e observabilidade (E121–E130)
@@ -1255,14 +1255,14 @@ Uma etapa só está **concluída** quando o critério de aceite foi verificado c
 
 #### E143 · Portão G2 e Piloto 1: só Radar
 
-`Negócio` · depende de: E120, E141
+`Negócio` · depende de: E120, E141, E081, E084, E085, E021
 
-- **O quê:** Com o relatório do modo sombra aprovado, ligar só Radar e COOPERA por duas semanas, sem sugestão de texto.
+- **O quê:** Com o relatório do modo sombra aprovado, ligar só Radar e COOPERA por duas semanas, sem sugestão de texto. Exige o pop-up (E081), a linha do tempo do Radar (E084) e o checklist COOPERA (E085) já prontos — senão o piloto liga para vendedores reais sem as duas interfaces que deveria avaliar.
 - **Aceite:** Relatório do Piloto 1 com uso, utilidade e problemas.
 
 #### E144 · Piloto 2: sugestões e ações
 
-`Negócio` · depende de: E143, E113, E142
+`Negócio` · depende de: E143, E113, E142, E021
 
 - **O quê:** Ligar sugestões, ações e superpoderes por quatro semanas, só para os vendedores do piloto já treinados (E142) e só com as peças (classificador, extrator, gerador) que atingiram a meta de E113; cada ação ou superpoder específico só entra se a etapa que o implementa já está concluída. Antes de ligar, protocolo e grupo de controle (ou o desenho antes/depois) já estão definidos e instrumentados — pré-registrados, não escolhidos depois de ver o resultado.
 - **Aceite:** Métricas comparadas com a linha de base da E003.
@@ -1290,16 +1290,16 @@ Uma etapa só está **concluída** quando o critério de aceite foi verificado c
 
 #### E148 · Ligar para todo o time em etapas
 
-`Ops` · depende de: E147
+`Ops` · depende de: E147, E149, E128, E021
 
-- **O quê:** 25%, depois 50%, depois 100% dos vendedores.
+- **O quê:** 25%, depois 50%, depois 100% dos vendedores. Só começa com o dono e a rotina de operação (E149) e o teste de carga de 50 vendedores simultâneos (E128) já concluídos — senão o rollout acontece sem responsável definido e a primeira validação de capacidade vira o próprio tráfego real.
 - **Aceite:** Nenhuma métrica de proteção piora em cada etapa.
 
 #### E149 · Dono e rotina de operação
 
-`Ops` · depende de: E148
+`Ops` · depende de: E147
 
-- **O quê:** Dono do produto, revisão semanal de qualidade e prazo para corrigir problema.
+- **O quê:** Dono do produto, revisão semanal de qualidade e prazo para corrigir problema. Definido antes do rollout (E148) começar, não depois.
 - **Aceite:** Matriz de responsabilidades publicada.
 
 #### E150 · Revisão de 90 dias e versão 2
