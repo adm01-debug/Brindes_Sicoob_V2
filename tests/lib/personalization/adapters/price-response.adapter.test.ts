@@ -23,12 +23,54 @@ beforeEach(() => {
 const NESTED_V59 = {
   success: true,
   codigo_orcamento: 'LASER-100',
-  area: { id: 'area-1', code: 'FRENTE', name: 'Frente', is_curved: false, max_width: 5, max_height: 5, max_colors: 1 },
-  tabela: { id: 'tab-1', codigo_tabela: 'LASER-3x12', nome: 'Fiber Laser', grupo_tecnica: 'LASER', cobra_por_cor: false, max_cores: 1 },
-  faixa: { ordem: 2, quantidade_minima: 100, quantidade_maxima: 499, preco_unitario_tabela: 3.5, prazo_dias: 7, largura_min: null, largura_max: null, altura_min: null, altura_max: null },
+  area: {
+    id: 'area-1',
+    code: 'FRENTE',
+    name: 'Frente',
+    is_curved: false,
+    max_width: 5,
+    max_height: 5,
+    max_colors: 1,
+  },
+  tabela: {
+    id: 'tab-1',
+    codigo_tabela: 'LASER-3x12',
+    nome: 'Fiber Laser',
+    grupo_tecnica: 'LASER',
+    cobra_por_cor: false,
+    max_cores: 1,
+  },
+  faixa: {
+    ordem: 2,
+    quantidade_minima: 100,
+    quantidade_maxima: 499,
+    preco_unitario_tabela: 3.5,
+    prazo_dias: 7,
+    largura_min: null,
+    largura_max: null,
+    altura_min: null,
+    altura_max: null,
+  },
   parametros: { quantidade: 200, num_cores: 1, largura_cm: 3, altura_cm: 12 },
-  custos: { custo_base_unitario: 1.2, custo_primeira_cor: 1.2, custo_cores_adicionais: 0, custo_unitario_total: 1.2, custo_setup_base: 50, custo_manuseio: 0, custo_aplicacao: 0, custo_termo_transferencia: 0, custo_queima_forno: 0 },
-  precos: { markup_percent: 120, preco_unitario_final: 3.5, subtotal_pecas: 700, faturamento_minimo_gravacao: 150, aplica_minimo: false, total_final: 700 },
+  custos: {
+    custo_base_unitario: 1.2,
+    custo_primeira_cor: 1.2,
+    custo_cores_adicionais: 0,
+    custo_unitario_total: 1.2,
+    custo_setup_base: 50,
+    custo_manuseio: 0,
+    custo_aplicacao: 0,
+    custo_termo_transferencia: 0,
+    custo_queima_forno: 0,
+  },
+  precos: {
+    markup_percent: 120,
+    preco_unitario_final: 3.5,
+    subtotal_pecas: 700,
+    faturamento_minimo_gravacao: 150,
+    aplica_minimo: false,
+    total_final: 700,
+  },
 };
 
 const FLAT_V6 = {
@@ -157,9 +199,7 @@ describe('adaptPriceResponse — flat v6.x', () => {
     expect(flat.unit_price).toBe(1.25);
   });
 
-  // TODO: ativar quando defaults explícitos para markup ausente forem
-  // implementados (passo 4 do plano de fallback).
-  it.skip('garante markup default quando ausente no payload', () => {
+  it('garante markup default quando ausente no payload', () => {
     const flat = adaptPriceResponse({
       success: true,
       tabela: 'NO-MK',

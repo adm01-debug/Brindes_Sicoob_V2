@@ -18,6 +18,7 @@ import { gotoAndSettle } from '../../helpers/nav';
  * (teste 95) — vide `mem://testing/e2e-smoke-tag-isolation.md`.
  */
 import { test, expect } from '../../fixtures/test-base';
+import { Sel } from '../../fixtures/selectors';
 import { waitRouteReady } from '../../routes/_shared';
 
 const STRONG_PASSWORD = 'NovaSenha@2025!Forte';
@@ -25,7 +26,7 @@ const WEAK_PASSWORD = '123';
 const CONFIRMATION_PASSWORD = 'SenhaForte@2025!';
 const DIFFERENT_PASSWORD = 'Diferente@2025!';
 const RECOVERY_PASSWORD = 'SenhaForte@2025!Recovery';
-const UNKNOWN_EMAIL = 'usuario-totalmente-inexistente-e2e@example.com';
+const UNKNOWN_EMAIL = 'pessoa-e2e-847263@example.com';
 
 test.describe('P0 — Password recovery', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
@@ -147,13 +148,21 @@ test.describe('P0 — Password recovery', () => {
   test('negativo: solicitação de reset para email inexistente NÃO confirma existência (anti-enumeration)', async ({
     page,
   }) => {
+    await page.route(/\/rest\/v1\/password_reset_requests(?:\?|$)/, async (route) => {
+      const method = route.request().method();
+      await route.fulfill({
+        status: method === 'POST' ? 201 : 200,
+        contentType: 'application/json',
+        body: method === 'POST' ? '[{}]' : '[]',
+        headers: method === 'POST' ? { 'Content-Range': '0-0/1' } : undefined,
+      });
+    });
+
     await gotoAndSettle(page, '/login');
-    // Tenta acessar fluxo de "esqueceu a senha" — se o link existir.
-    const forgot = page.locator('[data-testid="login-forgot-link"]').first();
-    if (!(await forgot.isVisible().catch(() => false))) {
-      test.skip(true, 'link de esqueceu-senha não exposto na UI');
-    }
+    const forgot = page.locator(Sel.login.forgot).first();
+    await expect(forgot).toBeVisible();
     await forgot.click();
+    await expect(page.locator(Sel.login.forgotScreen)).toBeVisible();
 
     const emailInput = page.locator('input[type="email"]').first();
     await emailInput.fill(UNKNOWN_EMAIL);
@@ -162,6 +171,8 @@ test.describe('P0 — Password recovery', () => {
       .first()
       .click()
       .catch(() => {});
+
+    await expect(page.getByText(/solicitação enviada/i).first()).toBeVisible();
 
     // Resposta NÃO pode revelar "email não encontrado" — deve ser genérica.
     const leakedMsg = await page

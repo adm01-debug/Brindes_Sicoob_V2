@@ -14,14 +14,27 @@ function executarCompiler(codigo, args = []) {
       mkdirSync(path.join(dir, 'node_modules/typescript/bin'), { recursive: true });
       writeFileSync(path.join(dir, 'node_modules/typescript/bin/tsc'), codigo);
     }
-    const result = spawnSync(process.execPath, [path.join(raiz, 'scripts/check-typecheck-baseline.mjs'), ...args], { cwd: dir, encoding: 'utf8' });
-    return { ...result, baseline, depois: readFileSync(path.join(dir, '.typecheck-baseline.json'), 'utf8') };
-  } finally { rmSync(dir, { recursive: true, force: true }); }
+    const result = spawnSync(
+      process.execPath,
+      [path.join(raiz, 'scripts/check-typecheck-baseline.mjs'), ...args],
+      { cwd: dir, encoding: 'utf8' },
+    );
+    return {
+      ...result,
+      baseline,
+      depois: readFileSync(path.join(dir, '.typecheck-baseline.json'), 'utf8'),
+    };
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 }
 for (const [nome, codigo] of [
   ['compilador ausente', null],
   ['processo interrompido sem diagnóstico', 'console.error("Falha de execução"); process.exit(1)'],
-  ['erro global de configuração', 'console.error("error TS18003: Nenhum arquivo de entrada"); process.exit(2)'],
+  [
+    'erro global de configuração',
+    'console.error("error TS18003: Nenhum arquivo de entrada"); process.exit(2)',
+  ],
 ]) {
   test(`${nome} bloqueia verificação e atualização do baseline`, () => {
     const result = executarCompiler(codigo, ['--update']);
@@ -30,18 +43,45 @@ for (const [nome, codigo] of [
   });
 }
 test('diagnóstico conhecido é contado e não piora o baseline', () => {
-  const result = executarCompiler('console.log("src/exemplo.ts(1,1): error TS2322: tipo incompatível"); process.exit(2)');
+  const result = executarCompiler(
+    'console.log("src/exemplo.ts(1,1): error TS2322: tipo incompatível"); process.exit(2)',
+  );
   assert.equal(result.status, 0);
   assert.match(result.stdout, /Total atual:\s+1/);
 });
 test('erro em arquivo novo é regressão e bloqueia o gate', () => {
-  assert.equal(executarCompiler('console.log("src/novo.ts(1,1): error TS2322: tipo incompatível"); process.exit(2)').status, 1);
+  assert.equal(
+    executarCompiler(
+      'console.log("src/novo.ts(1,1): error TS2322: tipo incompatível"); process.exit(2)',
+    ).status,
+    1,
+  );
 });
 test('auditoria indisponível não vira aprovação', () => {
   const dir = mkdtempSync(path.join(tmpdir(), 'sicoob-audit-'));
   try {
-    writeFileSync(path.join(dir, 'npm'), '#!/bin/sh\nprintf "resposta indisponível"\nexit 1\n', { mode: 0o755 });
-    const result = spawnSync(process.execPath, [path.join(raiz, 'scripts/check-npm-audit.mjs')], { cwd: raiz, encoding: 'utf8', env: { ...process.env, PATH: `${dir}:${process.env.PATH}` } });
+    writeFileSync(path.join(dir, 'npm'), '#!/bin/sh\nprintf "resposta indisponível"\nexit 1\n', {
+      mode: 0o755,
+    });
+    const result = spawnSync(process.execPath, [path.join(raiz, 'scripts/check-npm-audit.mjs')], {
+      cwd: raiz,
+      encoding: 'utf8',
+      env: { ...process.env, PATH: `${dir}:${process.env.PATH}` },
+    });
     assert.equal(result.status, 2);
-  } finally { rmSync(dir, { recursive: true, force: true }); }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('CI executa os gates de observabilidade e preserva evidência auditável', () => {
+  const workflow = readFileSync(path.join(raiz, '.github/workflows/ci.yml'), 'utf8');
+  const vitestConfig = readFileSync(path.join(raiz, 'vitest.config.ts'), 'utf8');
+  assert.match(workflow, /STRICT_REF_WARNINGS:\s*['"]1['"]/);
+  assert.match(workflow, /node scripts\/consolidate-console-snapshot\.mjs/);
+  assert.match(workflow, /coverage\/console-snapshot\*\.json/);
+  assert.match(workflow, /node scripts\/check-edge-structured-logging\.mjs/);
+  assert.match(workflow, /node scripts\/check-edge-request-id-propagation\.mjs/);
+  assert.match(workflow, /node scripts\/validate-docs-consistency\.mjs/);
+  assert.match(vitestConfig, /tests\/setup-ref-warning-capture\.ts/);
 });
