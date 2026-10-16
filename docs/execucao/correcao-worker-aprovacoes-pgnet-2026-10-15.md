@@ -19,3 +19,11 @@ A migration `20261015102000_fix_pg_net_recycled_request_ids.sql` remove a unicid
 - Uma segunda execução do monitor não reutiliza a mesma resposta para concluir um disparo antigo.
 - Disparos sem resposta são marcados como `timed_out` após dois minutos.
 - Respostas 2xx, respostas HTTP de erro e timeouts continuam mapeados para os estados correspondentes.
+
+## Aplicação canônica — 16/10/2026
+
+A migration foi aplicada pelo executor allowlisted no projeto
+`cfmzkthhgliqelozlmwu`. O pós-check confirmou o ledger sem pendências, a
+remoção da constraint global, o índice parcial válido e o corpo do monitor com
+ordenação por `d.requested_at DESC` e atualização pelo `dispatch_id`. O mesmo
+gate reconciliou os demais 37 artefatos autorizados por nome e SHA-256.
