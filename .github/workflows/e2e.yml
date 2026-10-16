@@ -46,8 +46,6 @@ jobs:
       PWTEST_FORBID_ONLY: '1'
       E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
       E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
-      E2E_VIEWER_EMAIL: ${{ secrets.E2E_VIEWER_EMAIL }}
-      E2E_VIEWER_PASSWORD: ${{ secrets.E2E_VIEWER_PASSWORD }}
       E2E_MANAGER_EMAIL: ${{ secrets.E2E_MANAGER_EMAIL }}
       E2E_MANAGER_PASSWORD: ${{ secrets.E2E_MANAGER_PASSWORD }}
       E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
@@ -76,7 +74,7 @@ jobs:
       - name: Verificar credenciais da jornada autenticada
         shell: bash
         run: |
-          if [[ -z "$E2E_USER_EMAIL" || -z "$E2E_USER_PASSWORD" || -z "$E2E_VIEWER_EMAIL" || -z "$E2E_VIEWER_PASSWORD" || -z "$E2E_MANAGER_EMAIL" || -z "$E2E_MANAGER_PASSWORD" || -z "$E2E_ADMIN_EMAIL" || -z "$E2E_ADMIN_PASSWORD" || -z "$E2E_ADMIN_TOTP_SECRET" || -z "$E2E_DEV_EMAIL" || -z "$E2E_DEV_PASSWORD" || -z "$E2E_DEV_TOTP_SECRET" ]]; then
+          if [[ -z "$E2E_USER_EMAIL" || -z "$E2E_USER_PASSWORD" || -z "$E2E_MANAGER_EMAIL" || -z "$E2E_MANAGER_PASSWORD" || -z "$E2E_ADMIN_EMAIL" || -z "$E2E_ADMIN_PASSWORD" || -z "$E2E_ADMIN_TOTP_SECRET" || -z "$E2E_DEV_EMAIL" || -z "$E2E_DEV_PASSWORD" || -z "$E2E_DEV_TOTP_SECRET" ]]; then
             echo "::error title=Credenciais E2E ausentes::Configure as contas de vendedor, gestor, administrador e desenvolvedor, incluindo os segredos TOTP privilegiados. O gate autenticado não pode concluir por skip."
             exit 1
           fi
@@ -227,8 +225,6 @@ jobs:
       PWTEST_FORBID_ONLY: '1'
       E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
       E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
-      E2E_VIEWER_EMAIL: ${{ secrets.E2E_VIEWER_EMAIL }}
-      E2E_VIEWER_PASSWORD: ${{ secrets.E2E_VIEWER_PASSWORD }}
       E2E_MANAGER_EMAIL: ${{ secrets.E2E_MANAGER_EMAIL }}
       E2E_MANAGER_PASSWORD: ${{ secrets.E2E_MANAGER_PASSWORD }}
       E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
