@@ -23,6 +23,16 @@
 ## 2. C1 — RLS: Row Level Security
 
 ```sql
+-- organization_id é gravado em copilot_conversations na criação (org do
+-- vendedor NAQUELE momento) e nunca mais alterado. Vendedor pertencer a
+-- múltiplas organizações não pode fazer a conversa "seguir" o vendedor:
+-- sem essa coluna, um gestor da organização B veria conversas que o
+-- mesmo vendedor teve enquanto atuava pela organização A, só porque os
+-- dois compartilham o mesmo seller_id. organization_id trava a conversa
+-- na org em que ela de fato aconteceu.
+ALTER TABLE copilot_conversations ADD COLUMN organization_id UUID NOT NULL
+  REFERENCES organizations(id);
+
 ALTER TABLE copilot_messages      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE copilot_conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE copilot_insights      ENABLE ROW LEVEL SECURITY;
@@ -40,20 +50,17 @@ CREATE POLICY "vendedor_ve_proprias_mensagens" ON copilot_messages
     )
   );
 
--- "gestor vê tudo" na prática só pode ser dentro da própria organização:
--- usa public.get_user_org_ids (já existente no portal) para não dar acesso
--- global pelo papel, só porque dois clientes de cooperativas diferentes
--- compartilham um "manager".
+-- "gestor vê tudo" na prática só pode ser dentro da própria organização.
+-- Escopo pela organization_id GRAVADA NA CONVERSA (não pelas orgs atuais
+-- do vendedor): evita que um vendedor multi-org vaze conversas de uma
+-- organização para o gestor de outra.
 CREATE POLICY "gestor_ve_conversas_da_organizacao" ON copilot_conversations
   FOR SELECT USING (
     EXISTS (
       SELECT 1 FROM user_roles
-      WHERE user_id = auth.uid() AND role IN ('manager', 'admin')
+      WHERE user_id = auth.uid() AND role IN ('manager', 'admin', 'supervisor')
     )
-    AND seller_id IN (
-      SELECT om.user_id FROM organization_members om
-      WHERE om.organization_id IN (SELECT public.get_user_org_ids(auth.uid()))
-    )
+    AND organization_id IN (SELECT public.get_user_org_ids(auth.uid()))
   );
 
 CREATE POLICY "gestor_ve_mensagens_da_organizacao" ON copilot_messages
@@ -63,12 +70,68 @@ CREATE POLICY "gestor_ve_mensagens_da_organizacao" ON copilot_messages
       WHERE c.id = copilot_messages.conversation_id
         AND EXISTS (
           SELECT 1 FROM user_roles
-          WHERE user_id = auth.uid() AND role IN ('manager', 'admin')
+          WHERE user_id = auth.uid() AND role IN ('manager', 'admin', 'supervisor')
         )
-        AND c.seller_id IN (
-          SELECT om.user_id FROM organization_members om
-          WHERE om.organization_id IN (SELECT public.get_user_org_ids(auth.uid()))
-        )
+        AND c.organization_id IN (SELECT public.get_user_org_ids(auth.uid()))
+    )
+  );
+
+-- Mesma regra (dono OU gestor/supervisor da organização da conversa) para
+-- as demais tabelas copilot_*, que a v1 deste documento deixou sem policy
+-- — RLS habilitada sem nenhuma policy nega todo acesso, não só o indevido.
+CREATE POLICY "vendedor_ve_proprios_insights" ON copilot_insights
+  FOR SELECT USING (
+    conversation_id IN (SELECT id FROM copilot_conversations WHERE seller_id = auth.uid())
+  );
+CREATE POLICY "gestor_ve_insights_da_organizacao" ON copilot_insights
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM copilot_conversations c
+      WHERE c.id = copilot_insights.conversation_id
+        AND EXISTS (SELECT 1 FROM user_roles WHERE user_id = auth.uid() AND role IN ('manager', 'admin', 'supervisor'))
+        AND c.organization_id IN (SELECT public.get_user_org_ids(auth.uid()))
+    )
+  );
+
+CREATE POLICY "vendedor_ve_proprias_sugestoes" ON copilot_suggestions
+  FOR SELECT USING (
+    conversation_id IN (SELECT id FROM copilot_conversations WHERE seller_id = auth.uid())
+  );
+CREATE POLICY "gestor_ve_sugestoes_da_organizacao" ON copilot_suggestions
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM copilot_conversations c
+      WHERE c.id = copilot_suggestions.conversation_id
+        AND EXISTS (SELECT 1 FROM user_roles WHERE user_id = auth.uid() AND role IN ('manager', 'admin', 'supervisor'))
+        AND c.organization_id IN (SELECT public.get_user_org_ids(auth.uid()))
+    )
+  );
+
+-- copilot_feedback é a avaliação que o PRÓPRIO vendedor dá à sugestão
+-- (não dado do cooperado): escopo direto por quem avaliou, sem depender
+-- da conversa já ter sido anonimizada por E024.
+CREATE POLICY "vendedor_ve_proprio_feedback" ON copilot_feedback
+  FOR SELECT USING (seller_id = auth.uid());
+CREATE POLICY "gestor_ve_feedback_da_organizacao" ON copilot_feedback
+  FOR SELECT USING (
+    EXISTS (SELECT 1 FROM user_roles WHERE user_id = auth.uid() AND role IN ('manager', 'admin', 'supervisor'))
+    AND seller_id IN (
+      SELECT om.user_id FROM organization_members om
+      WHERE om.organization_id IN (SELECT public.get_user_org_ids(auth.uid()))
+    )
+  );
+
+CREATE POLICY "vendedor_ve_proprios_contatos" ON copilot_contacts
+  FOR SELECT USING (
+    id IN (SELECT contact_id FROM copilot_conversations WHERE seller_id = auth.uid())
+  );
+CREATE POLICY "gestor_ve_contatos_da_organizacao" ON copilot_contacts
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM copilot_conversations c
+      WHERE c.contact_id = copilot_contacts.id
+        AND EXISTS (SELECT 1 FROM user_roles WHERE user_id = auth.uid() AND role IN ('manager', 'admin', 'supervisor'))
+        AND c.organization_id IN (SELECT public.get_user_org_ids(auth.uid()))
     )
   );
 ```
@@ -203,17 +266,22 @@ RETURNS SETOF copilot_messages AS $$
 DECLARE v_user_id UUID := auth.uid();
 BEGIN
   -- SECURITY DEFINER ignora a RLS da tabela por padrão: a função precisa
-  -- repetir aqui a mesma regra de dono/gestor que as policies de
-  -- copilot_conversations já aplicam, senão qualquer vendedor lê qualquer
-  -- conversa alheia passando o UUID.
+  -- repetir aqui a MESMA regra das policies de copilot_conversations
+  -- (dono OU gestor/supervisor da organização em que a conversa
+  -- aconteceu), senão (a) qualquer vendedor lê qualquer conversa alheia
+  -- passando o UUID, ou (b) um gestor da organização B lê conversas da
+  -- organização A só porque checava o papel sem checar a organização.
   IF NOT EXISTS (
     SELECT 1 FROM copilot_conversations c
     WHERE c.id = p_conversation_id
       AND (
         c.seller_id = v_user_id
-        OR EXISTS (
-          SELECT 1 FROM user_roles
-          WHERE user_id = v_user_id AND role IN ('manager', 'admin')
+        OR (
+          EXISTS (
+            SELECT 1 FROM user_roles
+            WHERE user_id = v_user_id AND role IN ('manager', 'admin', 'supervisor')
+          )
+          AND c.organization_id IN (SELECT public.get_user_org_ids(v_user_id))
         )
       )
   ) THEN
