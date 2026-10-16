@@ -101,6 +101,9 @@ function useTrendsAccess(userId: string | null, demo: boolean) {
   const capabilities = useQuery({
     queryKey: ['trends-capabilities', userId],
     enabled: !demo && Boolean(userId),
+    // O cliente Supabase já repete falhas transitórias. Uma segunda camada de
+    // retry aqui atrasaria por dezenas de segundos o aviso e o botão manual.
+    retry: false,
     queryFn: () => {
       if (!userId) throw new Error('Sessão ausente ao validar acesso às tendências.');
       return loadTrendsCapabilities(userId);
@@ -220,6 +223,9 @@ function useTrendQueries(controls: TrendsControls) {
   const activity = useQuery({
     queryKey: ['trends-activity', controls.dateRange, controls.scopeKey, controls.refreshRevision],
     enabled: controls.queryEnabled,
+    // A consulta reúne duas fontes e a tela oferece uma nova tentativa
+    // explícita. Evita multiplicar os retries internos de cada chamada REST.
+    retry: false,
     queryFn: () => loadTrendsActivity(controls.sincePrevious, controls.sellerScope),
   });
   const mock = useQuery({

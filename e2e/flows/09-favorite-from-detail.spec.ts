@@ -12,7 +12,7 @@
  */
 import { test, expect, requireAuth } from "../fixtures/test-base";
 import { gotoAndSettle } from "../helpers/nav";
-import { installFavoritesCleanup } from "../helpers/favorites";
+import { completeFavoriteVariantStep, installFavoritesCleanup } from "../helpers/favorites";
 import { installCatalogFixture } from "../helpers/catalog-fixture";
 import { Sel } from "../fixtures/selectors";
 import type { Locator, Page } from "@playwright/test";
@@ -106,9 +106,7 @@ test.describe("Fluxo: Favoritar a partir da página de detalhe", () => {
     // 4. Favorita — pode abrir VariantPickerDialog
     await favBtn.click();
 
-    const noVariant = page.locator(Sel.variant.noVariant).first();
-    await expect(noVariant).toBeVisible({ timeout: 10_000 });
-    await noVariant.click();
+    await completeFavoriteVariantStep(page, productId);
 
     await expect
       .poll(() => isFavoritedDetail(favBtn), {

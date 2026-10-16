@@ -46,11 +46,11 @@ O advisor de performance deixou de apontar `search_analytics` após a consolida�
 
 ## Evidências executadas
 
-- Suíte Vitest integral: **512 arquivos aprovados**, 4 ignorados; **6.116 testes aprovados**, 68 ignorados.
+- Suíte Vitest integral: **512 arquivos aprovados**, 4 ignorados; **6.117 testes aprovados**, 68 ignorados.
 - Testes focados de banco, segurança, paginação, tendências e UX: **76 aprovados**.
 - Testes Deno unitários alterados: **14 aprovados**; `deno check` das Edge Functions alteradas: aprovado.
 - Simulação descartável em PostgreSQL 17: **13 invariantes aprovadas**, incluindo detecção de drift de trigger, função, policies e ACL.
-- Teste E2E do guard de `/tendencias`: aprovado sem sessão autenticada.
+- E2E: smoke e matriz de cabeçalho por rota/viewport aprovados. Em navegador local autenticado com conta descartável, **12 cenários funcionais** passaram: seis de Tendências (sucesso, falha 503, falha de capacidade, sessão ausente, acessibilidade e mobile) e seis de Favoritos (lista, persistência, consistência do cabeçalho, idempotência, detalhe e interceptação da API). Duas autenticações de preparação também passaram, e as contas temporárias foram removidas.
 - TypeScript: zero diagnósticos.
 - ESLint por baseline: zero erros e nenhuma regressão.
 - Build de produção: aprovado.
@@ -64,4 +64,4 @@ O deploy individual evitou o limite do endpoint em lote sem criar funções nova
 
 ## Condições externas
 
-O merge continua sujeito à aprovação humana obrigatória definida na proteção da branch `main`. Não havia usuário de teste autenticado no ambiente local para um smoke remoto completo do `quote_directory`; o contrato autenticado foi validado por testes automatizados e a barreira anônima foi confirmada no ambiente remoto. A disponibilidade de dados do CRM continua dependendo das credenciais do serviço externo configuradas no ambiente Supabase.
+O merge continua sujeito à aprovação humana obrigatória definida na proteção da branch `main`. Um smoke remoto autenticado com vendedor descartável confirmou a barreira de sessão e chegou à resolução das credenciais do `quote_directory`, mas a consulta respondeu HTTP 500 porque o ambiente possui somente `EXTERNAL_CRM_URL`: `EXTERNAL_CRM_SERVICE_ROLE_KEY` e `EXTERNAL_CRM_ANON_KEY` continuam com os placeholders históricos inválidos de 10 caracteres e são corretamente descartadas pelo resolvedor. A credencial real do CRM externo não existe no repositório, no ambiente local nem no banco canônico; sem ela não é possível certificar a leitura de empresas e contatos reais. A conta descartável foi excluída e uma varredura confirmou zero resíduos.

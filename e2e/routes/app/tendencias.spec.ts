@@ -68,12 +68,11 @@ test.describe('/tendencias', () => {
     await mockAuthenticatedBootstrap(page);
   });
 
-  test('happy: consolida as fontes realmente usadas sem consultar o catálogo externo', async ({ page }) => {
-    const externalBridgeRequests: string[] = [];
+  test('happy: consolida visualizações e buscas das fontes canônicas', async ({ page }) => {
+    const activityRequests = new Set<string>();
     page.on('request', (request) => {
-      if (request.url().includes('/functions/v1/external-db-bridge')) {
-        externalBridgeRequests.push(request.url());
-      }
+      if (request.url().includes('/rest/v1/product_views')) activityRequests.add('product_views');
+      if (request.url().includes('/rest/v1/search_analytics')) activityRequests.add('search_analytics');
     });
     await mockTrendsApi(page);
 
@@ -82,7 +81,7 @@ test.describe('/tendencias', () => {
 
     await expect(page.getByTestId('page-title-tendencias')).toBeVisible();
     await expect(page.getByText('Caneca Sicoob').first()).toBeVisible();
-    expect(externalBridgeRequests).toEqual([]);
+    expect([...activityRequests].sort()).toEqual(['product_views', 'search_analytics']);
   });
 
   test('falha real: não apresenta ausência de atividade quando uma fonte retorna 503', async ({ page }) => {
@@ -91,7 +90,9 @@ test.describe('/tendencias', () => {
     await gotoAndSettle(page, PATH);
     await waitRouteReady(page);
 
-    await expect(page.getByRole('alert').filter({ hasText: /Não foi possível carregar/ }).first()).toBeVisible();
+    await expect(
+      page.getByText('Não foi possível carregar parte das tendências.', { exact: false }),
+    ).toBeVisible();
     await expect(page.getByText('Nenhum produto visualizado ainda')).toHaveCount(0);
     await page.getByRole('tab', { name: 'Termos mais buscados' }).click();
     await expect(page.getByText('Nenhuma busca registrada ainda')).toHaveCount(0);
@@ -104,7 +105,9 @@ test.describe('/tendencias', () => {
     await gotoAndSettle(page, PATH);
     await waitRouteReady(page);
 
-    await expect(page.getByRole('alert')).toContainText('Não foi possível validar seu acesso');
+    await expect(
+      page.getByText('Não foi possível validar seu acesso aos indicadores.', { exact: true }),
+    ).toBeVisible();
     await expect(page.getByRole('button', { name: 'Tentar novamente' })).toBeVisible();
     await expect(page.getByText('Nenhum produto visualizado ainda')).toHaveCount(0);
   });
