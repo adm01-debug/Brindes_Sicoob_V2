@@ -151,6 +151,27 @@ export async function mockPublicRestResource(
   return mockRestTable(page, table, result.status, result.body, { delayMs: result.delayMs });
 }
 
+export async function mockPublicRpcResource(
+  page: Page,
+  functionName: string,
+  scenario: PublicResourceScenario,
+  successBody: unknown,
+) {
+  const result: { status: number; body: unknown; delayMs?: number } =
+    scenario === 'success'
+      ? { status: 200, body: successBody }
+      : scenario === 'notFound' || scenario === 'expired'
+        ? { status: 200, body: null }
+        : scenario === 'invalidPayload'
+          ? { status: 400, body: { message: 'Requisição inválida' } }
+          : scenario === 'timeout'
+            ? { status: 504, body: {}, delayMs: 6000 }
+            : { status: 503, body: { message: 'Serviço indisponível' } };
+  return mockRestTable(page, `rpc/${functionName}`, result.status, result.body, {
+    delayMs: result.delayMs,
+  });
+}
+
 export async function mockTimeoutOnFn(page: Page, fnName: string, hangMs = 30_000) {
   await page.route(new RegExp(`/functions/v1/${fnName}(\\?|$|/)`), async (route) => {
     await new Promise((r) => setTimeout(r, hangMs));

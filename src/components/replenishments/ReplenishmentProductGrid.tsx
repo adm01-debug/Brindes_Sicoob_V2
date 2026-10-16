@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Package, AlertTriangle } from "lucide-react";
@@ -24,31 +24,6 @@ function hasReplenishmentFilters(supplier: string, category: string, query: stri
   return supplier !== "all" || category !== "all" || query.trim() !== "";
 }
 
-function useLoadingProgress(isLoading: boolean): number {
-  const [progress, setProgress] = useState(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    if (isLoading) {
-      setProgress(0);
-      intervalRef.current = setInterval(() => {
-        setProgress(prev => {
-          if (prev >= 90) { if (intervalRef.current) clearInterval(intervalRef.current); return prev; }
-          return prev + Math.random() * 12 + 3;
-        });
-      }, 300);
-    } else {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      setProgress(100);
-      const t = setTimeout(() => setProgress(0), 800);
-      return () => clearTimeout(t);
-    }
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [isLoading]);
-
-  return progress;
-}
-
 export function ReplenishmentProductGrid() {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -61,7 +36,6 @@ export function ReplenishmentProductGrid() {
 
   const { data: replenishments, isLoading, isFetching, error } = useReplenishmentsWithDetails({ limit: 200 });
   const products = useMemo(() => replenishments ?? [], [replenishments]);
-  const loadingProgress = useLoadingProgress(isLoading);
 
   const { suppliers, categories } = useMemo(() => {
     const supMap = new Map<string, { id: string; name: string; count: number }>();
@@ -130,10 +104,10 @@ export function ReplenishmentProductGrid() {
         <div className="space-y-4" role="status" aria-label="Carregando produtos">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm text-muted-foreground">Carregando {Math.round(loadingProgress)}% dos produtos…</span>
+            <span className="text-sm text-muted-foreground">Carregando produtos…</span>
           </div>
-          <div className="w-64 h-1.5 bg-muted/50 rounded-full overflow-hidden mb-4" role="progressbar" aria-valuenow={Math.round(loadingProgress)} aria-valuemin={0} aria-valuemax={100}>
-            <div className="h-full bg-gradient-to-r from-primary/60 to-primary rounded-full transition-all duration-300" style={{ width: `${loadingProgress}%` }} />
+          <div className="w-64 h-1.5 bg-muted/50 rounded-full overflow-hidden mb-4" role="progressbar" aria-valuetext="Carregamento em andamento">
+            <div className="h-full w-1/3 bg-gradient-to-r from-primary/30 to-primary rounded-full animate-pulse" />
           </div>
           <div className={`grid ${getGridColsClass(gridColumns)} ${getGridGapClass(gridColumns)}`}>
             {Array.from({ length: 10 }).map((_, i) => (
@@ -221,7 +195,7 @@ export function ReplenishmentProductGrid() {
         totalCount={products.length}
         filteredCount={filteredProducts.length}
         isLoading={isLoading}
-        loadingProgress={loadingProgress}
+        isFetching={isFetching}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         selectedSupplier={selectedSupplier}

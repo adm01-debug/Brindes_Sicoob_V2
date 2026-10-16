@@ -118,11 +118,6 @@ vi.mock("@/components/common/ContextualTooltips", () => ({
   InfoTooltip: () => null,
 }));
 
-vi.mock("@/data/mockData", () => ({
-  CATEGORIES: [],
-  SUPPLIERS: [],
-}));
-
 vi.mock("@/hooks/useCatalogState", () => ({
   useCatalogState: vi.fn().mockReturnValue({
     products: [],

@@ -1,10 +1,8 @@
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
-  Users,
   ShoppingBag,
   TrendingUp,
-  ArrowRight,
   Briefcase,
   Loader2,
   AlertCircle,
@@ -28,11 +26,6 @@ function SellerHeader() {
         </p>
       </div>
       <div className="flex gap-2">
-        <Button variant="outline" asChild>
-          <Link to="/clientes" className="gap-2">
-            <Users className="h-4 w-4" /> Ver Clientes
-          </Link>
-        </Button>
         <Button asChild>
           <Link to="/orcamentos/novo" className="gap-2">
             <ShoppingBag className="h-4 w-4" /> Novo Orçamento
@@ -131,11 +124,6 @@ function TopClients({ stats, isLoading }: { stats: SellerStats | null | undefine
                 </div>
               </div>
             </div>
-            <Button variant="ghost" size="icon" asChild>
-              <Link to="/clientes">
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
           </div>
         ))}
       </>

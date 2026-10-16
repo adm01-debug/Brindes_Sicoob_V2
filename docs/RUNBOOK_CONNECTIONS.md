@@ -26,6 +26,12 @@ SELECT secret_name, secret_source, is_active
 -- Filtrar por evt='credential_resolved' e source='none'
 ```
 
+O resolvedor descarta URLs inválidas, valores placeholder e chaves externas do
+Supabase que não tenham o formato atual (`sb_secret_*`/`sb_publishable_*`) nem
+a estrutura JWT legada. O endpoint `creds_health` deve indicar `degraded` quando
+a URL existe, mas as chaves armazenadas são inválidas; a mera existência da
+linha em `integration_credentials` não comprova uma conexão utilizável.
+
 **Ação:**
 
 1. Cadastrar credenciais via `/admin/conexoes` ou diretamente:
@@ -123,6 +129,11 @@ Exemplo de `creds_health` em estado saudável:
 | `healthy` | URL + 1 key presentes | nenhuma |
 | `degraded` | só URL ou só key | cadastrar a parte faltante |
 | `missing` | sem URL | bridge fora do ar — cadastrar credenciais |
+
+Em 15/10/2026, a verificação do ambiente de construção encontrou a URL do CRM,
+mas as duas chaves do CRM continham valores placeholder curtos. O estado correto
+é `degraded` até a rotação por credenciais reais do projeto CRM. Nenhum valor de
+segredo deve ser copiado para este runbook.
 
 ---
 

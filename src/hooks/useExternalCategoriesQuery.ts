@@ -61,10 +61,11 @@ async function fetchExternalCategories(): Promise<ExternalCategory[]> {
 /**
  * Hook principal - usa React Query para cache persistente
  */
-export function useExternalCategoriesQuery() {
+export function useExternalCategoriesQuery(enabled = true) {
   return useQuery({
     queryKey: EXTERNAL_CATEGORIES_QUERY_KEY,
     queryFn: fetchExternalCategories,
+    enabled,
     staleTime: CACHE_TIMES.STABLE, // 10 minutos - categorias raramente mudam
     gcTime: GC_TIMES.TECNICAS, // 30 minutos no garbage collector
     refetchOnWindowFocus: false,
@@ -86,7 +87,7 @@ export function useCategoryById(categoryId: string | undefined) {
  * Hook auxiliar para buscar categorias por IDs
  */
 export function useCategoriesByIds(categoryIds: string[]) {
-  const { data: categories = [] } = useExternalCategoriesQuery();
+  const { data: categories = [] } = useExternalCategoriesQuery(categoryIds.length > 0);
   
   if (!categoryIds.length) return [];
   return categories.filter(cat => categoryIds.includes(cat.id));

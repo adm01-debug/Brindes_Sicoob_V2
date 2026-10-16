@@ -1,41 +1,70 @@
 /**
  * CRM Database Access Layer
- * 
+ *
  * Acessa o banco externo CRM (pgxfvjmuubtbowutlide) via Edge Function crm-db-bridge.
  * Substitui completamente o acesso a bitrix_clients.
  */
 
-import { supabase } from "@/integrations/supabase/client";
-import { logger } from "@/lib/logger";
-import { recordBridgeCall, estimatePayloadBytes } from "@/lib/telemetry/bridgeCallMetrics";
-import { newRequestId, REQUEST_ID_HEADER } from "@/lib/telemetry/requestId";
-import { getCircuitBreaker } from "@/lib/circuit-breaker";
+import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
+import { recordBridgeCall, estimatePayloadBytes } from '@/lib/telemetry/bridgeCallMetrics';
+import { newRequestId, REQUEST_ID_HEADER } from '@/lib/telemetry/requestId';
+import { getCircuitBreaker } from '@/lib/circuit-breaker';
 
-const CRM_DB_BRIDGE_FUNCTION = "crm-db-bridge";
+const CRM_DB_BRIDGE_FUNCTION = 'crm-db-bridge';
 const crmBreaker = getCircuitBreaker(CRM_DB_BRIDGE_FUNCTION, {
   failureThreshold: 8,
   resetTimeout: 60000, // 60s
 });
 
-
 export interface CrmQuery {
-  table: string;
-  operation: "select" | "search" | "insert" | "update" | "delete";
+  table?: string;
+  operation: 'select' | 'search' | 'insert' | 'update' | 'delete' | 'quote_directory';
   id?: string;
   filters?: Record<string, unknown>;
   select?: string;
-  orderBy?: string | { column: string; ascending?: boolean };
+  orderBy?:
+    | string
+    | { column: string; ascending?: boolean }
+    | Array<string | { column: string; ascending?: boolean }>;
   limit?: number;
   offset?: number;
-  search?: { column: string; term: string };
+  search?: { column?: string; columns?: string[]; term: string };
+  count?: 'exact';
+  head?: boolean;
   relations?: string;
   data?: Record<string, unknown> | Record<string, unknown>[];
   returning?: string;
+  action?: 'companies' | 'contacts';
+  companyId?: string;
+  term?: string;
 }
 
 export interface CrmResponse<T> {
   data: T;
   count?: number;
+  unavailable?: boolean;
+}
+
+export class CrmUnavailableError extends Error {
+  readonly code = 'CRM_UNAVAILABLE';
+
+  constructor() {
+    super('CRM indisponível ou sem credenciais válidas');
+    this.name = 'CrmUnavailableError';
+  }
+}
+
+export interface CrmSelectOptions {
+  filters?: Record<string, unknown>;
+  select?: string;
+  orderBy?: CrmQuery['orderBy'];
+  limit?: number;
+  offset?: number;
+  relations?: string;
+  search?: CrmQuery['search'];
+  count?: 'exact';
+  head?: boolean;
 }
 
 // ============================================
@@ -68,7 +97,7 @@ interface CrmBridgePayload {
 }
 
 function bridgePayload(data: unknown): CrmBridgePayload {
-  return data && typeof data === "object" ? data as CrmBridgePayload : {};
+  return data && typeof data === 'object' ? (data as CrmBridgePayload) : {};
 }
 
 function serverRequestId(data: unknown): string | undefined {
@@ -76,7 +105,10 @@ function serverRequestId(data: unknown): string | undefined {
   return id === undefined || id === null ? undefined : String(id);
 }
 
-function batchErrorMessage(data: unknown, invokeError?: { message?: string } | null): string | undefined {
+function batchErrorMessage(
+  data: unknown,
+  invokeError?: { message?: string } | null,
+): string | undefined {
   if (invokeError?.message) return invokeError.message;
   const payload = bridgePayload(data);
   return payload.success ? undefined : payload.error;
@@ -87,24 +119,23 @@ function batchErrorMessage(data: unknown, invokeError?: { message?: string } | n
  */
 export async function invokeCrmBatch(queries: CrmBatchQuery[]): Promise<CrmBatchResult[]> {
   const startedAt = performance.now();
-  const body = { operation: "batch", queries };
+  const body = { operation: 'batch', queries };
   const reqBytes = estimatePayloadBytes(body);
   const requestId = newRequestId();
-  const { data, error } = await crmBreaker.execute(() => 
+  const { data, error } = await crmBreaker.execute(() =>
     supabase.functions.invoke(CRM_DB_BRIDGE_FUNCTION, {
       body,
       headers: { [REQUEST_ID_HEADER]: requestId },
-    })
+    }),
   );
-
 
   const responseRequestId = serverRequestId(data);
   const payload = bridgePayload(data);
 
   recordBridgeCall({
     bridge: CRM_DB_BRIDGE_FUNCTION,
-    op: "batch",
-    target: queries.map(q => q.table).join(","),
+    op: 'batch',
+    target: queries.map((q) => q.table).join(','),
     durationMs: performance.now() - startedAt,
     reqBytes,
     respBytes: error ? 0 : estimatePayloadBytes(data),
@@ -120,7 +151,7 @@ export async function invokeCrmBatch(queries: CrmBatchQuery[]): Promise<CrmBatch
   }
 
   if (!payload.success) {
-    throw new Error(payload.error || "CRM batch unknown error");
+    throw new Error(payload.error || 'CRM batch unknown error');
   }
 
   return payload.results || [];
@@ -133,19 +164,30 @@ export async function invokeCrmBatch(queries: CrmBatchQuery[]): Promise<CrmBatch
 const MAX_RETRIES = 2;
 const INITIAL_BACKOFF_MS = 600;
 const RETRYABLE_PATTERNS = [
-  "statement timeout", "57014", "502", "503", "504",
-  "bad gateway", "FunctionsHttpError", "non-2xx",
-  "network", "fetch", "ECONNRESET", "socket hang up",
-  "AbortError", "Failed to fetch", "boot",
+  'statement timeout',
+  '57014',
+  '502',
+  '503',
+  '504',
+  'bad gateway',
+  'FunctionsHttpError',
+  'non-2xx',
+  'network',
+  'fetch',
+  'ECONNRESET',
+  'socket hang up',
+  'AbortError',
+  'Failed to fetch',
+  'boot',
 ];
 
 function isRetryableCrmError(msg: string): boolean {
   const lower = msg.toLowerCase();
-  return RETRYABLE_PATTERNS.some(p => lower.includes(p.toLowerCase()));
+  return RETRYABLE_PATTERNS.some((p) => lower.includes(p.toLowerCase()));
 }
 
 async function extractCrmErrorMessage(error: unknown): Promise<string> {
-  if (!(error instanceof Error)) return "Erro ao acessar CRM";
+  if (!(error instanceof Error)) return 'Erro ao acessar CRM';
   const context = (error as Error & { context?: Response }).context;
   if (!(context instanceof Response)) return error.message;
   return extractResponseError(context, error.message);
@@ -154,7 +196,7 @@ async function extractCrmErrorMessage(error: unknown): Promise<string> {
 function parseResponseError(raw: string, fallback: string): string {
   try {
     const parsed = JSON.parse(raw) as { error?: string; details?: string };
-    return [parsed.error, parsed.details].filter(Boolean).join(" | ") || fallback;
+    return [parsed.error, parsed.details].filter(Boolean).join(' | ') || fallback;
   } catch {
     return `${fallback} | ${raw}`;
   }
@@ -170,23 +212,31 @@ async function extractResponseError(response: Response, fallback: string): Promi
 }
 
 function isReadOperation(query: CrmQuery): boolean {
-  return query.operation === "select" || query.operation === "search";
+  return (
+    query.operation === 'select' ||
+    query.operation === 'search' ||
+    query.operation === 'quote_directory'
+  );
 }
 
 function isUnconfiguredMessage(message: string): boolean {
-  return /CRM connection is not configured correctly|Invalid URL|PLACEHOLDER_VALUE_TO_BE_REPLACED/i.test(message);
+  return /CRM connection is not configured correctly|Invalid URL|PLACEHOLDER_VALUE_TO_BE_REPLACED/i.test(
+    message,
+  );
 }
 
 async function invokeCrmAttempt(query: CrmQuery, requestId: string) {
-  return crmBreaker.execute(() => supabase.functions.invoke(CRM_DB_BRIDGE_FUNCTION, {
-    body: query,
-    headers: { [REQUEST_ID_HEADER]: requestId },
-  }));
+  return crmBreaker.execute(() =>
+    supabase.functions.invoke(CRM_DB_BRIDGE_FUNCTION, {
+      body: query,
+      headers: { [REQUEST_ID_HEADER]: requestId },
+    }),
+  );
 }
 
 async function crmAttemptMessage(data: unknown, error: unknown): Promise<string> {
   if (error) return extractCrmErrorMessage(error);
-  return bridgePayload(data).error || "Unknown CRM error";
+  return bridgePayload(data).error || 'Unknown CRM error';
 }
 
 function throwFinalCrmError(error: unknown, message: string, requestId: string): never {
@@ -208,14 +258,14 @@ function throwFinalCrmError(error: unknown, message: string, requestId: string):
 export async function invokeCrmDb<T>(query: CrmQuery): Promise<CrmResponse<T>> {
   const startedAt = performance.now();
   const reqBytes = estimatePayloadBytes(query);
-  const opLabel = query.operation || "invoke";
+  const opLabel = query.operation || 'invoke';
   const requestId = newRequestId();
 
   const record = (ok: boolean, data: unknown, errMsg?: string) => {
     recordBridgeCall({
       bridge: CRM_DB_BRIDGE_FUNCTION,
       op: opLabel,
-      target: query.table,
+      target: query.table ?? `quote_directory:${query.action ?? 'unknown'}`,
       durationMs: performance.now() - startedAt,
       reqBytes,
       respBytes: ok ? estimatePayloadBytes(data) : 0,
@@ -242,13 +292,15 @@ export async function invokeCrmDb<T>(query: CrmQuery): Promise<CrmResponse<T>> {
     if (isUnconfiguredMessage(msg) && isReadOperation(query)) {
       logger.warn(`[CRM-DB] CRM not configured — returning empty payload [req_id=${requestId}]`);
       record(false, null, msg);
-      return { data: (query.id ? null : []) as unknown as T };
+      return { data: (query.id ? null : []) as unknown as T, unavailable: true };
     }
 
     if (attempt < MAX_RETRIES && isRetryableCrmError(msg)) {
       const delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
-      logger.warn(`[CRM-DB] Retry ${attempt + 1}/${MAX_RETRIES} after ${delay}ms [req_id=${requestId}]: ${msg}`);
-      await new Promise(r => setTimeout(r, delay));
+      logger.warn(
+        `[CRM-DB] Retry ${attempt + 1}/${MAX_RETRIES} after ${delay}ms [req_id=${requestId}]: ${msg}`,
+      );
+      await new Promise((r) => setTimeout(r, delay));
       continue;
     }
 
@@ -257,30 +309,45 @@ export async function invokeCrmDb<T>(query: CrmQuery): Promise<CrmResponse<T>> {
     throwFinalCrmError(error, msg, requestId);
   }
 
-  record(false, null, "max retries exceeded");
-  throw new Error("CRM DB: max retries exceeded");
+  record(false, null, 'max retries exceeded');
+  throw new Error('CRM DB: max retries exceeded');
 }
 
 /**
  * SELECT de tabela do CRM
  */
-export async function selectCrm<T>(
-  table: string,
-  options?: {
-    filters?: Record<string, unknown>;
-    select?: string;
-    orderBy?: string | { column: string; ascending?: boolean };
-    limit?: number;
-    offset?: number;
-    relations?: string;
-  }
-): Promise<T[]> {
+export async function selectCrm<T>(table: string, options?: CrmSelectOptions): Promise<T[]> {
   const result = await invokeCrmDb<T[]>({
     table,
-    operation: "select",
+    operation: 'select',
     ...options,
   });
   return result.data || [];
+}
+
+/** SELECT que preserva vazio legítimo, mas rejeita o soft-degrade do bridge. */
+export async function selectCrmStrict<T>(table: string, options?: CrmSelectOptions): Promise<T[]> {
+  const result = await invokeCrmDb<T[]>({
+    table,
+    operation: 'select',
+    ...options,
+  });
+  if (result.unavailable) throw new CrmUnavailableError();
+  return result.data || [];
+}
+
+/** SELECT paginado que devolve a contagem exata do conjunto filtrado no CRM. */
+export async function selectCrmPage<T>(
+  table: string,
+  options: CrmSelectOptions,
+): Promise<{ data: T[]; count: number | null }> {
+  const result = await invokeCrmDb<T[]>({
+    table,
+    operation: 'select',
+    ...options,
+    count: options.count ?? 'exact',
+  });
+  return { data: result.data || [], count: typeof result.count === 'number' ? result.count : null };
 }
 
 /**
@@ -289,19 +356,40 @@ export async function selectCrm<T>(
 export async function selectCrmById<T>(
   table: string,
   id: string,
-  select?: string
+  select?: string,
 ): Promise<T | null> {
   try {
     const result = await invokeCrmDb<T>({
       table,
-      operation: "select",
+      operation: 'select',
       id,
       select,
     });
     return result.data || null;
   } catch (err) {
-    if (String(err).includes("404")) return null;
+    if (isCrmRecordNotFound(err)) return null;
     throw err;
+  }
+}
+
+function isCrmRecordNotFound(error: unknown): boolean {
+  return /\brecord_not_found\b/i.test(error instanceof Error ? error.message : String(error));
+}
+
+/** SELECT por ID que rejeita indisponibilidade, mas preserva ausência legítima. */
+export async function selectCrmByIdStrict<T>(
+  table: string,
+  id: string,
+  select?: string,
+): Promise<T | null> {
+  try {
+    const result = await invokeCrmDb<T>({ table, operation: 'select', id, select });
+    if (result.unavailable) throw new CrmUnavailableError();
+    return result.data || null;
+  } catch (error) {
+    if (error instanceof CrmUnavailableError) throw error;
+    if (isCrmRecordNotFound(error)) return null;
+    throw error;
   }
 }
 
@@ -314,16 +402,69 @@ export async function searchCrm<T>(
   term: string,
   options?: {
     select?: string;
+    filters?: Record<string, unknown>;
     orderBy?: string | { column: string; ascending?: boolean };
     limit?: number;
-  }
+  },
 ): Promise<T[]> {
   const result = await invokeCrmDb<T[]>({
     table,
-    operation: "search",
+    operation: 'search',
     search: { column, term },
     ...options,
   });
+  return result.data || [];
+}
+
+export interface QuoteDirectoryCompany {
+  id: string;
+  name: string;
+  razao_social: string;
+  nome_fantasia: string | null;
+  ramo_atividade: string | null;
+  cnpj: string | null;
+  logo_url: string | null;
+}
+
+export interface QuoteDirectoryContact {
+  id: string;
+  name: string;
+  cargo: string | null;
+  email: string | null;
+  phone: string | null;
+}
+
+/** Diretório mínimo e filtrado no servidor para vincular clientes ao orçamento. */
+export async function listQuoteDirectoryCompanies(options?: {
+  term?: string;
+  companyId?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<QuoteDirectoryCompany[]> {
+  const result = await invokeCrmDb<QuoteDirectoryCompany[]>({
+    operation: 'quote_directory',
+    action: 'companies',
+    term: options?.term,
+    companyId: options?.companyId,
+    limit: options?.limit ?? 100,
+    offset: options?.offset,
+  });
+  if (result.unavailable) throw new CrmUnavailableError();
+  return result.data || [];
+}
+
+/** Contatos do cliente validado, já enriquecidos em lote pelo Edge Function. */
+export async function listQuoteDirectoryContacts(
+  companyId: string,
+  limit = 50,
+): Promise<QuoteDirectoryContact[]> {
+  const result = await invokeCrmDb<QuoteDirectoryContact[]>({
+    operation: 'quote_directory',
+    action: 'contacts',
+    companyId,
+    limit,
+  });
+  if (result.unavailable) throw new CrmUnavailableError();
   return result.data || [];
 }
 
@@ -333,11 +474,11 @@ export async function searchCrm<T>(
 export async function insertCrm<T>(
   table: string,
   data: Record<string, unknown> | Record<string, unknown>[],
-  returning?: string
+  returning?: string,
 ): Promise<T[]> {
   const result = await invokeCrmDb<T[]>({
     table,
-    operation: "insert",
+    operation: 'insert',
     data,
     returning,
   });
@@ -351,11 +492,11 @@ export async function updateCrm<T>(
   table: string,
   id: string,
   data: Record<string, unknown>,
-  returning?: string
+  returning?: string,
 ): Promise<T[]> {
   const result = await invokeCrmDb<T[]>({
     table,
-    operation: "update",
+    operation: 'update',
     id,
     data,
     returning,
@@ -370,11 +511,11 @@ export async function updateCrmByFilter<T>(
   table: string,
   filters: Record<string, unknown>,
   data: Record<string, unknown>,
-  returning?: string
+  returning?: string,
 ): Promise<T[]> {
   const result = await invokeCrmDb<T[]>({
     table,
-    operation: "update",
+    operation: 'update',
     filters,
     data,
     returning,
@@ -385,13 +526,10 @@ export async function updateCrmByFilter<T>(
 /**
  * DELETE no CRM
  */
-export async function deleteCrm(
-  table: string,
-  id: string
-): Promise<void> {
+export async function deleteCrm(table: string, id: string): Promise<void> {
   await invokeCrmDb({
     table,
-    operation: "delete",
+    operation: 'delete',
     id,
   });
 }
@@ -401,11 +539,11 @@ export async function deleteCrm(
  */
 export async function deleteCrmByFilter(
   table: string,
-  filters: Record<string, unknown>
+  filters: Record<string, unknown>,
 ): Promise<void> {
   await invokeCrmDb({
     table,
-    operation: "delete",
+    operation: 'delete',
     filters,
   });
 }

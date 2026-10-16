@@ -163,6 +163,11 @@ export default defineConfig({
       testMatch: /fixtures\/auth\.setup\.ts/,
       fullyParallel: false,
       workers: 1,
+      // O setup manipula senhas e TOTP reais das contas técnicas. Trace e
+      // vídeo serializam ações de preenchimento; mantê-los desligados impede
+      // que segredos sejam publicados como artifacts em uma falha de login.
+      // A captura final continua ativa e o helper limpa a senha antes de errar.
+      use: { trace: "off", video: "off", screenshot: "only-on-failure" },
     },
     {
       name: "chromium-public",

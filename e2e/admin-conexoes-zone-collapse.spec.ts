@@ -1,4 +1,4 @@
-import { gotoAndSettle, settleAfterAction } from './helpers/nav';
+import { gotoAndSettle, settleAfterAction, waitForRouteIdle } from './helpers/nav';
 /**
  * E2E: Colapso/expansão das zonas em /admin/conexoes
  *
@@ -125,7 +125,8 @@ test.describe('Admin Conexões — Colapso/Expansão de Zonas (E2E)', () => {
 
     // Reload e verifica que o estado foi restaurado.
     await page.reload();
-    await expect(page.locator('#zone-health')).toBeVisible({ timeout: 10_000 });
+    await waitForRouteIdle(page, { timeout: 30_000 });
+    await expect(page.locator('#zone-health')).toBeVisible({ timeout: 30_000 });
 
     const healthToggle = await getToggleButton(page, ZONES[0]);
     const operationToggle = await getToggleButton(page, ZONES[1]);

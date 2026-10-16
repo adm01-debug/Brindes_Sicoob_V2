@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -56,34 +56,6 @@ function getGridGapClass(cols: ColumnCount): string {
   if (cols >= 8) return "gap-x-4 gap-y-8";
   if (cols >= 6) return "gap-x-6 gap-y-8";
   return "gap-x-8 gap-y-8";
-}
-
-function useLoadingProgress(isLoading: boolean) {
-  const [loadingProgress, setLoadingProgress] = useState(0);
-  const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    if (!isLoading) {
-      if (progressRef.current) clearInterval(progressRef.current);
-      setLoadingProgress(100);
-      const timeout = setTimeout(() => setLoadingProgress(0), 800);
-      return () => clearTimeout(timeout);
-    }
-
-    setLoadingProgress(0);
-    progressRef.current = setInterval(() => {
-      setLoadingProgress(previous => {
-        if (previous < 90) return previous + Math.random() * 12 + 3;
-        if (progressRef.current) clearInterval(progressRef.current);
-        return previous;
-      });
-    }, 300);
-    return () => {
-      if (progressRef.current) clearInterval(progressRef.current);
-    };
-  }, [isLoading]);
-
-  return loadingProgress;
 }
 
 function matchesSearch(product: Novelty, query: string) {
@@ -171,19 +143,16 @@ function NoveltySearch({ query, onChange, mobile = false }: NoveltySearchProps) 
 
 interface LoadingIndicatorProps {
   readonly isLoading: boolean;
-  readonly progress: number;
 }
 
-function LoadingIndicator({ isLoading, progress }: LoadingIndicatorProps) {
-  const visible = isLoading && progress > 0 && progress < 100;
+function LoadingIndicator({ isLoading }: LoadingIndicatorProps) {
   return (
     <AnimatePresence>
-      {visible && (
+      {isLoading && (
         <motion.span initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: 48 }} exit={{ opacity: 0, width: 0 }} className="inline-flex items-center gap-1 ml-1">
           <span className="h-1 w-12 bg-muted/50 rounded-full overflow-hidden inline-block align-middle">
-            <motion.span className="block h-full bg-primary/60 rounded-full" initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 0.4, ease: "easeOut" }} />
+            <motion.span className="block h-full w-1/3 bg-primary/60 rounded-full" animate={{ x: [0, 32, 0] }} transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }} />
           </span>
-          <span className="text-[10px] tabular-nums text-muted-foreground/60">{Math.round(progress)}%</span>
         </motion.span>
       )}
     </AnimatePresence>
@@ -253,7 +222,6 @@ interface NoveltyToolbarProps extends ActiveFilterBadgesProps {
   readonly filteredCount: number;
   readonly productCount: number;
   readonly isLoading: boolean;
-  readonly loadingProgress: number;
   readonly selectionMode: boolean;
   readonly viewMode: ViewMode;
   readonly gridColumns: ColumnCount;
@@ -277,7 +245,7 @@ function NoveltyToolbar(props: NoveltyToolbarProps) {
           <Badge variant="secondary" className="text-[10px] tabular-nums px-1.5 shrink-0">
             {loadingFirstPage ? <span className="flex items-center gap-1"><Loader2 className="h-2.5 w-2.5 animate-spin" />carregando...</span> : <>{props.filteredCount}{props.hasActiveFilters && <span className="text-muted-foreground">/{props.productCount}</span>}</>}
           </Badge>
-          <LoadingIndicator isLoading={props.isLoading} progress={props.loadingProgress} />
+          <LoadingIndicator isLoading={props.isLoading} />
           <div className="hidden sm:block w-80 lg:w-[25rem]">
             <NoveltySearch query={props.query} onChange={props.onQueryChange} />
           </div>
@@ -307,11 +275,11 @@ function NoveltyToolbar(props: NoveltyToolbarProps) {
   );
 }
 
-function LoadingProducts({ progress }: { readonly progress: number }) {
+function LoadingProducts() {
   return (
     <div className="flex flex-col items-center justify-center py-16 gap-4">
-      <div className="flex items-center gap-3"><div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" /><span className="text-sm text-muted-foreground">Carregando {Math.round(progress)}% dos produtos...</span></div>
-      <div className="w-64 h-1.5 bg-muted/50 rounded-full overflow-hidden"><motion.div className="h-full bg-gradient-to-r from-primary/60 to-primary rounded-full" initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 0.4, ease: "easeOut" }} /></div>
+      <div className="flex items-center gap-3"><div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" /><span className="text-sm text-muted-foreground">Carregando produtos...</span></div>
+      <div className="w-64 h-1.5 bg-muted/50 rounded-full overflow-hidden" role="progressbar" aria-label="Carregamento de novidades" aria-valuetext="Carregamento em andamento"><motion.div className="h-full w-1/3 bg-gradient-to-r from-primary/30 to-primary rounded-full" animate={{ x: [0, 170, 0] }} transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }} /></div>
     </div>
   );
 }
@@ -392,7 +360,6 @@ function NoveltyGrid(props: NoveltyGridProps) {
 
 interface NoveltyResultsProps extends NoveltyListProps {
   readonly isLoading: boolean;
-  readonly loadingProgress: number;
   readonly hasActiveFilters: boolean;
   readonly viewMode: ViewMode;
   readonly gridColumns: ColumnCount;
@@ -400,7 +367,7 @@ interface NoveltyResultsProps extends NoveltyListProps {
 }
 
 function NoveltyResults(props: NoveltyResultsProps) {
-  if (props.isLoading && props.products.length === 0) return <LoadingProducts progress={props.loadingProgress} />;
+  if (props.isLoading && props.products.length === 0) return <LoadingProducts />;
   if (props.products.length === 0) return <EmptyProducts filtered={props.hasActiveFilters} onClearFilters={props.onClearFilters} />;
   if (props.viewMode === "table") {
     return <NoveltyTableView products={[...props.products]} onProductClick={props.onProductClick} selectionMode={props.selectionMode} selectedIds={props.selection.selectedIds} onToggleSelect={props.selection.toggleSelect} />;
@@ -461,7 +428,6 @@ export function NoveltyProductGrid() {
 
   const { data: novelties, isLoading, isFetching, error } = useNoveltiesWithDetails({ limit: 200 });
   const products = novelties ?? EMPTY_NOVELTIES;
-  const loadingProgress = useLoadingProgress(isLoading);
   const { suppliers, categories } = useMemo(() => buildFilterOptions(products), [products]);
   const filteredProducts = useMemo(
     () => filterNovelties(products, { searchQuery, selectedSupplier, selectedCategory, sortMode }),
@@ -510,7 +476,6 @@ export function NoveltyProductGrid() {
         filteredCount={filteredProducts.length}
         productCount={products.length}
         isLoading={isLoading}
-        loadingProgress={loadingProgress}
         selectionMode={selectionMode}
         viewMode={viewMode}
         gridColumns={gridColumns}
@@ -534,7 +499,6 @@ export function NoveltyProductGrid() {
           selection={sel}
           selectionMode={selectionMode}
           isLoading={isLoading}
-          loadingProgress={loadingProgress}
           hasActiveFilters={hasActiveFilters}
           viewMode={viewMode}
           gridColumns={gridColumns}

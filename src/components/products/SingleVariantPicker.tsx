@@ -98,16 +98,24 @@ function VariantButton({
   );
 }
 
-function VariantLoading({ className }: { className?: string }) {
-  return <div className={cn('space-y-2', className)}><p className="text-xs font-medium text-muted-foreground">Carregando variações...</p><div className="grid grid-cols-2 gap-1.5">{Array.from({ length: 4 }).map((_, index) => <Skeleton key={index} className="h-12 rounded-lg" />)}</div></div>;
-}
-
 function SkipVariantButton({ onSelect }: Pick<SingleVariantPickerProps, 'onSelect'>) {
   const skip = (event: MouseEvent) => { event.preventDefault(); event.stopPropagation(); onSelect(null); };
   return (
     <button type="button" data-testid="variant-picker-no-variant" onClick={skip} className="w-full flex items-center gap-2 p-2 rounded-lg border border-dashed border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-all text-left text-xs text-muted-foreground group">
       <div className="w-6 h-6 rounded-full bg-gradient-to-br from-destructive/70 via-success/70 to-info/70 border border-border/50 shrink-0 group-hover:scale-110 transition-transform" /><span className="flex-1">Sem cor específica</span><SkipForward className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
     </button>
+  );
+}
+
+function VariantLoading({ className, onSelect }: Pick<SingleVariantPickerProps, 'className' | 'onSelect'>) {
+  return (
+    <div className={cn('space-y-2', className)}>
+      <p className="text-xs font-medium text-muted-foreground">Carregando variações...</p>
+      <SkipVariantButton onSelect={onSelect} />
+      <div className="grid grid-cols-2 gap-1.5">
+        {Array.from({ length: 4 }).map((_, index) => <Skeleton key={index} className="h-12 rounded-lg" />)}
+      </div>
+    </div>
   );
 }
 
@@ -133,7 +141,7 @@ export function SingleVariantPicker({ productId, onSelect, compact, className }:
     }
   }, [isLoading, onSelect, sortedVariants.length, variants]);
 
-  if (isLoading) return <VariantLoading className={className} />;
+  if (isLoading) return <VariantLoading className={className} onSelect={onSelect} />;
 
   if (!sortedVariants.length) return null;
 

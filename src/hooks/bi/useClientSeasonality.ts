@@ -2,11 +2,13 @@
  * useClientSeasonality — sazonalidade Cliente × Setor (12 meses).
  * Combina RPC do cliente + RPC do setor (empresas mesmo ramo).
  * Calcula: distribuição mensal, top 3 picos, próximo pico, insight textual.
- * Fallback mock determinístico se < 3 meses com dados.
+ * Amostra insuficiente permanece vazia e identificada; não há fallback
+ * fictício em telas operacionais.
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { selectCrm } from "@/lib/crm-db";
+import { selectCrmStrict } from "@/lib/crm-db";
+import { isDemoClient } from "@/lib/bi/demoClient";
 import { getMockSeasonality } from "@/lib/bi/mockData";
 
 const MONTH_LABELS = [
@@ -39,6 +41,10 @@ export interface IndustryMonthCell {
 
 export interface SeasonalityResult {
   isLoading: boolean;
+  isError?: boolean;
+  error?: unknown;
+  refetch?: () => Promise<unknown>;
+  industryError?: unknown;
   isMock: boolean;
   hasEnoughData: boolean;
   monthsCovered: number;
@@ -181,25 +187,40 @@ function peakResult(
   };
 }
 
-function seasonalityResult(
-  data: { clientRows: ClientRow[]; industryRows: IndustryRow[]; companiesCount: number } | undefined,
+export function resolveSeasonalityResult(
+  data: { clientRows: ClientRow[]; industryRows: IndustryRow[]; companiesCount: number; industryError?: unknown } | undefined,
   isLoading: boolean,
+  useDemoData = false,
 ) {
-  const { cells: client, monthsCovered } = buildClientCells(data?.clientRows ?? []);
-  const realIndustry = buildIndustryCells(data?.industryRows ?? []);
-  const base = { isLoading, monthsCovered, windowMonths: WINDOW_MONTHS };
-  if (monthsCovered < 3) {
-    const mock = getMockSeasonality();
-    return peakResult(mock.client, mock.industry, {
-      ...base,
+  if (useDemoData) {
+    const demo = getMockSeasonality();
+    return peakResult(demo.client, demo.industry, {
+      isLoading: false,
       isMock: true,
-      hasEnoughData: false,
+      hasEnoughData: true,
+      monthsCovered: WINDOW_MONTHS,
+      windowMonths: WINDOW_MONTHS,
     });
   }
-  const industry = realIndustry.some((cell) => cell.avgQuotesPerCompany > 0)
-    ? realIndustry
-    : getMockSeasonality().industry;
-  return peakResult(client, industry, { ...base, isMock: false, hasEnoughData: true });
+
+  const { cells: client, monthsCovered } = buildClientCells(data?.clientRows ?? []);
+  const realIndustry = buildIndustryCells(data?.industryRows ?? []);
+  const base = { isLoading, monthsCovered, windowMonths: WINDOW_MONTHS, industryError: data?.industryError };
+  if (monthsCovered < 3) {
+    return {
+      ...base,
+      isMock: false,
+      hasEnoughData: false,
+      client,
+      industry: realIndustry,
+      topClientMonths: [],
+      topIndustryMonths: [],
+      nextPeakMonth: null,
+      daysToNextPeak: null,
+      insight: null,
+    };
+  }
+  return peakResult(client, realIndustry, { ...base, isMock: false, hasEnoughData: true });
 }
 
 function pickTop<T extends { quotesCount?: number; avgQuotesPerCompany?: number }>(
@@ -274,9 +295,10 @@ export function useClientSeasonality(
   clientId: string | null | undefined,
   ramoAtividade: string | null | undefined,
 ): SeasonalityResult {
+  const demo = isDemoClient(clientId);
   const query = useQuery({
-    queryKey: ["bi", "seasonality", clientId, ramoAtividade],
-    enabled: !!clientId,
+    queryKey: ["bi", "seasonality", clientId, ramoAtividade, demo],
+    enabled: !!clientId && !demo,
     staleTime: 10 * 60 * 1000,
     queryFn: async () => {
       if (!clientId) throw new Error("Cliente não identificado");
@@ -291,9 +313,10 @@ export function useClientSeasonality(
       // 2) Sazonalidade do setor (se houver ramo)
       let industryRows: IndustryRow[] = [];
       let companiesCount = 0;
+      let industryError: unknown;
       if (ramoAtividade) {
         try {
-          const companies = await selectCrm<{ id: string }>("companies", {
+          const companies = await selectCrmStrict<{ id: string }>("companies", {
             select: "id",
             filters: { ramo_atividade: ramoAtividade, deleted_at: null },
             limit: 500,
@@ -305,18 +328,24 @@ export function useClientSeasonality(
               "get_industry_seasonality",
               { _company_ids: ids, _months: WINDOW_MONTHS },
             );
-            if (!indErr) industryRows = (indData ?? []) as IndustryRow[];
+            if (indErr) throw indErr;
+            industryRows = (indData ?? []) as IndustryRow[];
           }
-        } catch {
-          industryRows = [];
+        } catch (error) {
+          industryError = error;
         }
       }
 
-      return { clientRows, industryRows, companiesCount };
+      return { clientRows, industryRows, companiesCount, industryError };
     },
   });
 
-  return seasonalityResult(query.data, query.isLoading);
+  return {
+    ...resolveSeasonalityResult(query.data, query.isLoading, demo),
+    isError: query.isError,
+    error: query.error,
+    refetch: query.refetch,
+  };
 }
 
 export const SEASONALITY_MONTH_LABELS = MONTH_LABELS;

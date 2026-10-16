@@ -2,7 +2,7 @@
  * MarketIntelligenceChart — Visão MACRO de mercado
  * Replica o layout do StockHistoryChart (página de produto)
  * mas com dados agregados de todos os produtos.
- * Inclui mock data quando não há dados reais.
+ * Ausência de movimentação é apresentada como estado vazio explícito.
  */
 import { useMemo, useState } from "react";
 import {
@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Target,
@@ -29,6 +30,7 @@ import {
   Package,
   Loader2,
   AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { KpiCard } from "@/components/ui/KpiCard";
@@ -53,59 +55,20 @@ interface MarketMacroTooltipProps {
   payload?: Array<{ payload: MarketMacroChartDatum }>;
 }
 
-// ---------- Mock data generator ----------
-function buildMockKpis(daily: MacroMarketPoint[], stock: number): MacroMarketKpis {
-  const recent = daily.slice(-7);
-  const totalDepleted7d = recent.reduce((sum, point) => sum + point.depleted, 0);
-  const totalDepleted30d = daily.reduce((sum, point) => sum + point.depleted, 0);
-  const totalRestocked30d = daily.reduce((sum, point) => sum + point.restocked, 0);
-  const activeDays = daily.filter(point => point.depleted > 0).length;
-  const first = daily[0];
-  const topDay = first ? daily.reduce((best, point) => point.depleted > best.depleted ? point : best, first) : null;
-  return { totalDepleted7d, totalDepleted30d, totalRestocked30d, totalCurrentStock: stock,
-    avgDailyDepletion: activeDays > 0 ? totalDepleted30d / activeDays : 0, supplierCount: 4,
-    topDepletionDay: topDay ? { date: topDay.date, value: topDay.depleted } : null };
-}
-
-function generateMockMarketData(days: number) {
-  const daily: MacroMarketPoint[] = [];
-  const now = new Date();
-  let stock = 3200 + Math.floor(Math.random() * 800);
-
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    const dateStr = d.toISOString().split('T')[0] ?? "";
-
-    const dayOfWeek = d.getDay();
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    const baseDepleted = isWeekend ? 15 : 45;
-    const depleted = Math.max(0, Math.round(baseDepleted + (Math.random() - 0.4) * 30));
-    const restocked = Math.random() > 0.85 ? Math.round(200 + Math.random() * 400) : 0;
-
-    stock = Math.max(100, stock - depleted + restocked);
-
-    daily.push({ date: dateStr, stockClose: stock, depleted, restocked });
-  }
-
-  const mockSuppliers: MacroSupplierMetrics[] = [
-    { supplierId: 'mock-supplier-1', avgDailyDepletion7d: 10.2, currentStock: 659, totalDepleted: 420, totalRestocked: 200, velocityTrend: 1.26, daysToStockout: 64 },
-    { supplierId: 'mock-supplier-2', avgDailyDepletion7d: 9.1, currentStock: 413, totalDepleted: 350, totalRestocked: 150, velocityTrend: 1.15, daysToStockout: 45 },
-    { supplierId: 'mock-supplier-3', avgDailyDepletion7d: 8.7, currentStock: 362, totalDepleted: 310, totalRestocked: 100, velocityTrend: 0.52, daysToStockout: 41 },
-    { supplierId: 'mock-supplier-4', avgDailyDepletion7d: 3.5, currentStock: 424, totalDepleted: 140, totalRestocked: 80, velocityTrend: 0.95, daysToStockout: 121 },
-  ];
-
-  const kpis = buildMockKpis(daily, stock);
-
-  const mockSupplierNames = new Map<string, string>([
-    ['mock-supplier-1', 'Brasil Brindes'],
-    ['mock-supplier-2', 'Master Promo'],
-    ['mock-supplier-3', 'Premium Gifts'],
-    ['mock-supplier-4', 'Master Promo'],
-  ]);
-
-  return { daily, kpis, suppliers: mockSuppliers, supplierIds: mockSuppliers.map(s => s.supplierId), supplierNames: mockSupplierNames };
-}
+const EMPTY_MARKET_DATA: MacroMarketData = {
+  daily: [],
+  suppliers: [],
+  supplierIds: [],
+  kpis: {
+    totalDepleted7d: 0,
+    totalDepleted30d: 0,
+    totalRestocked30d: 0,
+    totalCurrentStock: 0,
+    avgDailyDepletion: 0,
+    supplierCount: 0,
+    topDepletionDay: null,
+  },
+};
 
 function buildChartData(daily: MacroMarketPoint[]): MarketMacroChartDatum[] {
   return daily.reduce<MarketMacroChartDatum[]>((result, point) => {
@@ -120,29 +83,18 @@ function buildSupplierOptions(data: MacroMarketData, names?: Map<string, string>
   return data.supplierIds.map(id => ({ id, name: names?.get(id) ?? `Fornecedor ${id.slice(0, 6)}` }));
 }
 
-function supplierIdsForQuery(hasRealData: boolean, realData?: MacroMarketData) {
-  return hasRealData ? realData?.supplierIds ?? [] : [];
-}
-
-function chooseSupplierNames(hasRealData: boolean, realNames: Map<string, string> | undefined, mockNames: Map<string, string>) {
-  return hasRealData ? realNames : mockNames;
-}
-
 function useMarketChartModel(defaultDays: number, supplierId?: string | null) {
   const [period, setPeriod] = useState<string>(String(defaultDays));
   const [selectedSupplier, setSelectedSupplier] = useState<string>('all');
   const days = Number(period);
-  const { data: realData, isLoading, error } = useMarketIntelligenceMacro(days, supplierId);
-  const mock = useMemo(() => generateMockMarketData(days), [days]);
+  const { data: realData, isLoading, error, refetch } = useMarketIntelligenceMacro(days, supplierId);
   const hasRealData = Boolean(realData?.daily?.length);
-  const isDemo = !hasRealData && !error;
-  const effectiveData: MacroMarketData = hasRealData && realData ? realData : mock;
-  const { data: realSupplierNamesMap } = useSupplierNames(supplierIdsForQuery(hasRealData, realData));
-  const supplierNamesMap = chooseSupplierNames(hasRealData, realSupplierNamesMap, mock.supplierNames);
+  const effectiveData = realData ?? EMPTY_MARKET_DATA;
+  const { data: supplierNamesMap } = useSupplierNames(hasRealData ? effectiveData.supplierIds : []);
   const supplierOptions = useMemo(() => buildSupplierOptions(effectiveData, supplierNamesMap), [effectiveData, supplierNamesMap]);
   const chartData = useMemo(() => buildChartData(effectiveData.daily), [effectiveData.daily]);
-  return { period, setPeriod, selectedSupplier, setSelectedSupplier, days, isLoading, error, hasRealData, isDemo,
-    effectiveData, supplierNamesMap, supplierOptions, chartData };
+  return { period, setPeriod, selectedSupplier, setSelectedSupplier, days, isLoading, error, hasRealData, isStale: Boolean(error && hasRealData),
+    effectiveData, supplierNamesMap, supplierOptions, chartData, refetch };
 }
 
 type MarketChartModel = ReturnType<typeof useMarketChartModel>;
@@ -151,8 +103,22 @@ function LoadingCard() {
   return <Card><CardContent className="flex items-center justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></CardContent></Card>;
 }
 
-function ErrorCard() {
-  return <Card><CardContent className="flex flex-col items-center justify-center py-8 gap-2 text-center"><AlertCircle className="h-6 w-6 text-destructive" /><p className="text-sm text-destructive">Erro ao carregar dados de mercado</p><p className="text-xs text-muted-foreground">Verifique a conexão e tente novamente</p></CardContent></Card>;
+function ErrorCard({ model }: { model: MarketChartModel }) {
+  return <Card><MarketHeader days={model.days} trendRatio={1} /><CardContent className="space-y-4"><ChartControls model={model} /><div className="flex flex-col items-center justify-center py-8 gap-2 text-center"><AlertCircle className="h-6 w-6 text-destructive" /><p className="text-sm text-destructive">Erro ao carregar dados de mercado</p><p className="text-xs text-muted-foreground">Verifique a conexão e tente novamente</p><Button variant="outline" size="sm" onClick={() => void model.refetch()}>Tentar novamente</Button></div></CardContent></Card>;
+}
+
+function StaleDataNotice({ model }: { model: MarketChartModel }) {
+  if (!model.isStale) return null;
+  return <div role="status" className="flex items-center justify-between gap-2 rounded-md border border-warning/30 bg-warning/10 p-2 text-xs">
+    <span>A atualização falhou. Exibindo o último gráfico disponível; os dados podem estar desatualizados.</span>
+    <Button variant="outline" size="sm" onClick={() => void model.refetch()} className="h-7 shrink-0 gap-1">
+      <RefreshCw className="h-3 w-3" />Tentar novamente
+    </Button>
+  </div>;
+}
+
+function EmptyCard({ model }: { model: MarketChartModel }) {
+  return <Card><MarketHeader days={model.days} trendRatio={1} /><CardContent className="space-y-4"><ChartControls model={model} /><div className="flex flex-col items-center justify-center py-8 gap-2 text-center"><BarChart3 className="h-6 w-6 text-muted-foreground" /><p className="text-sm font-medium">Sem movimentações de mercado no período</p><p className="text-xs text-muted-foreground">Os indicadores aparecerão quando o catálogo registrar estoque e saídas reais.</p></div></CardContent></Card>;
 }
 
 function demandMetrics(average: number) {
@@ -171,9 +137,9 @@ function trendMetrics(kpis: MacroMarketKpis, days: number) {
   return { ratio, percent, label };
 }
 
-function MarketHeader({ days, isDemo, trendRatio }: { days: number; isDemo: boolean; trendRatio: number }) {
+function MarketHeader({ days, trendRatio }: { days: number; trendRatio: number }) {
   return <CardHeader className="pb-3"><div className="flex items-center justify-between flex-wrap gap-2"><div><CardTitle className="text-base flex items-center gap-2"><Target className="h-4 w-4" aria-hidden="true" />Inteligência de Mercado</CardTitle>
-    <CardDescription className="mt-1">Como o mercado está comprando · visão macro · {days} dias{isDemo && <Badge variant="outline" className="ml-2 text-[10px] px-1.5 py-0">dados ilustrativos</Badge>}</CardDescription></div>
+    <CardDescription className="mt-1">Como o mercado está comprando · visão macro · {days} dias</CardDescription></div>
     <div className="flex items-center gap-2">{trendRatio > 1.3 && <Badge variant="outline" className="bg-primary/15 text-primary border-primary/30 text-xs font-bold">🚀 Mercado Aquecido</Badge>}</div>
   </div></CardHeader>;
 }
@@ -223,18 +189,19 @@ function MarketChartPlot({ data }: { data: MarketMacroChartDatum[] }) {
   </ComposedChart></ResponsiveContainer></div>;
 }
 
-function MarketInsight({ kpis, isDemo }: { kpis: MacroMarketKpis; isDemo: boolean }) {
+function MarketInsight({ kpis }: { kpis: MacroMarketKpis }) {
   if (!kpis.topDepletionDay) return null;
   const date = new Date(`${kpis.topDepletionDay.date}T00:00:00`).toLocaleDateString(PT_BR, { day: '2-digit', month: '2-digit' });
-  return <p className="text-xs text-muted-foreground">📊 Pico de saídas: <span className="font-medium text-foreground">{kpis.topDepletionDay.value.toLocaleString(PT_BR)} un</span> em {date}{isDemo && ' (demo)'}</p>;
+  return <p className="text-xs text-muted-foreground">📊 Pico de saídas: <span className="font-medium text-foreground">{kpis.topDepletionDay.value.toLocaleString(PT_BR)} un</span> em {date}</p>;
 }
 
 function MarketChartReady({ model }: { model: MarketChartModel }) {
   const trend = trendMetrics(model.effectiveData.kpis, model.days);
-  return <Card><MarketHeader days={model.days} isDemo={model.isDemo} trendRatio={trend.ratio} /><CardContent className="space-y-4">
+  return <Card><MarketHeader days={model.days} trendRatio={trend.ratio} /><CardContent className="space-y-4">
+    <StaleDataNotice model={model} />
     <MarketKpis kpis={model.effectiveData.kpis} days={model.days} /><ChartControls model={model} /><MarketChartPlot data={model.chartData} />
     {model.effectiveData.suppliers.length > 1 && model.supplierNamesMap && <MacroSupplierComparison suppliers={model.effectiveData.suppliers} supplierNames={model.supplierNamesMap} />}
-    <MarketInsight kpis={model.effectiveData.kpis} isDemo={model.isDemo} />
+    <MarketInsight kpis={model.effectiveData.kpis} />
   </CardContent></Card>;
 }
 
@@ -242,7 +209,8 @@ export function MarketIntelligenceChart({ days: defaultDays = 30, supplierId }: 
   const model = useMarketChartModel(defaultDays, supplierId);
 
   if (model.isLoading) return <LoadingCard />;
-  if (model.error && !model.hasRealData) return <ErrorCard />;
+  if (model.error && !model.hasRealData) return <ErrorCard model={model} />;
+  if (!model.hasRealData) return <EmptyCard model={model} />;
   return <MarketChartReady model={model} />;
 }
 

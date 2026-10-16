@@ -6,7 +6,7 @@ import { useCustomizationPricing } from '@/hooks/useTecnicasUnificadas';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Calculator, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { type CalcProduct, type SelectedTechniqueConfig, availableSizes, formatCurrency, formatNumber } from './types';
+import { type CalcProduct, type SelectedTechniqueConfig, availableSizes, calculateCustomizationTotal, formatCurrency, formatNumber, isPriceConfigurationSupported, minimumSupportedQuantity } from './types';
 
 interface Props {
   product: CalcProduct;
@@ -15,24 +15,34 @@ interface Props {
 }
 
 export function QuantityComparisonTable({ product, selectedConfigs, quantities }: Props) {
-  const { techniques, calculatePrice } = useCustomizationPricing();
+  const { calculatePrice, getTiers } = useCustomizationPricing();
 
   const calculateForConfig = useCallback((config: SelectedTechniqueConfig, quantity: number) => {
-    const { technique, colors, sizeModifier } = config;
+    if (!isPriceConfigurationSupported(config)) return null;
+    const { technique } = config;
+    const minimum = minimumSupportedQuantity(getTiers(technique.techniqueCode));
+    if (minimum !== null && quantity < minimum) return null;
     const calc = calculatePrice(technique.techniqueCode, quantity);
     if (!calc) return null;
 
-    const techMeta = techniques.find(t => t.code === technique.techniqueCode);
-
-    let modifiedUnitPrice = calc.unitPrice;
-    if (colors > 1 && techMeta?.priceByColor) modifiedUnitPrice *= (1 + (colors - 1) * 0.1);
-    modifiedUnitPrice *= sizeModifier;
-
-    const customizationTotal = modifiedUnitPrice * quantity + calc.setupPrice;
+    const unitPrice = calc.unitPrice;
+    const customizationTotal = calculateCustomizationTotal(calc, quantity);
     const productTotal = product.price * quantity;
     const grandTotal = productTotal + customizationTotal;
-    return { unitPrice: modifiedUnitPrice, customizationTotal, productTotal, grandTotal, unitTotal: grandTotal / quantity, slaDays: calc.slaDays };
-  }, [techniques, calculatePrice, product.price]);
+    return { unitPrice, customizationTotal, productTotal, grandTotal, unitTotal: grandTotal / quantity, slaDays: calc.slaDays };
+  }, [calculatePrice, getTiers, product.price]);
+
+  const calculateCombined = useCallback((quantity: number) => {
+    const results = selectedConfigs.map((config) => calculateForConfig(config, quantity));
+    // O total combinado deve ser integral: não exibe subtotal parcial se alguma
+    // técnica estiver sem preço ou fora da faixa mínima cadastrada.
+    if (results.some((result) => result === null)) return null;
+
+    const productTotal = product.price * quantity;
+    const customizationTotal = results.reduce((sum, result) => sum + (result?.customizationTotal ?? 0), 0);
+    const grandTotal = productTotal + customizationTotal;
+    return { productTotal, customizationTotal, grandTotal, unitTotal: grandTotal / quantity };
+  }, [calculateForConfig, product.price, selectedConfigs]);
 
   const bestPricePerConfig = useMemo(() => {
     const map = new Map<string, number>();
@@ -67,8 +77,9 @@ export function QuantityComparisonTable({ product, selectedConfigs, quantities }
                 </TableCell>
                 {quantities.map(qty => {
                   const result = calculateForConfig(config, qty);
+                  const minimum = minimumSupportedQuantity(getTiers(config.technique.techniqueCode));
                   const isBest = bestPricePerConfig.get(config.technique.id) === qty;
-                  if (!result) return <TableCell key={qty} className="text-center text-xs text-muted-foreground">N/D</TableCell>;
+                  if (!result) return <TableCell key={qty} className="text-center text-xs text-muted-foreground">{minimum !== null && qty < minimum ? `Mín. ${formatNumber(minimum)}` : "N/D"}</TableCell>;
                   return (
                     <TableCell key={qty} className={cn("text-center relative", isBest && "bg-success/10 border border-success/30 rounded-lg")}>
                       {isBest && <Trophy className="w-3 h-3 text-success absolute top-1 right-1" />}
@@ -78,6 +89,21 @@ export function QuantityComparisonTable({ product, selectedConfigs, quantities }
                 })}
               </TableRow>
             ))}
+            {selectedConfigs.length > 1 && (
+              <TableRow className="bg-primary/5 font-semibold" data-testid="combined-techniques-row">
+                <TableCell><div><p className="font-medium text-sm">Todas as técnicas</p><p className="text-xs text-muted-foreground">Produto + personalizações selecionadas</p></div></TableCell>
+                {quantities.map(qty => {
+                  const result = calculateCombined(qty);
+                  return (
+                    <TableCell key={qty} className="text-center" data-testid="combined-techniques-total">
+                      {result
+                        ? <div className="space-y-1"><p className="font-bold text-sm">{formatCurrency(result.unitTotal)}/un</p><p className="text-xs text-muted-foreground">Total: {formatCurrency(result.grandTotal)}</p></div>
+                        : <span className="text-xs text-muted-foreground">N/D</span>}
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            )}
             <TableRow className="bg-muted/30">
               <TableCell><div><p className="font-medium text-sm">Apenas Produto</p><p className="text-xs text-muted-foreground">Sem gravação</p></div></TableCell>
               {quantities.map(qty => <TableCell key={qty} className="text-center"><div className="space-y-1"><p className="font-bold text-sm">{formatCurrency(product.price)}</p><p className="text-xs text-muted-foreground">Total: {formatCurrency(product.price * qty)}</p></div></TableCell>)}
@@ -87,7 +113,7 @@ export function QuantityComparisonTable({ product, selectedConfigs, quantities }
       </div>
       <div className="text-xs text-muted-foreground p-3 bg-muted/50 rounded-lg">
         <p className="font-medium mb-1">Valores incluem:</p>
-        <ul className="list-disc list-inside space-y-0.5"><li>Preço do produto ({formatCurrency(product.price)}/un)</li><li>Custo de gravação por unidade</li><li>Custo de setup (quando aplicável)</li></ul>
+        <ul className="list-disc list-inside space-y-0.5"><li>Preço do produto ({formatCurrency(product.price)}/un)</li><li>Custo de gravação por unidade</li><li>Setup e manuseio (quando aplicáveis)</li></ul>
       </div>
     </div>
   );

@@ -40,9 +40,12 @@ export function useErrorCounters() {
   });
 
   return {
-    errors1h: query.data?.errors1h ?? 0,
-    errors24h: query.data?.errors24h ?? 0,
+    errors1h: query.data?.errors1h ?? null,
+    errors24h: query.data?.errors24h ?? null,
     isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
     isRefetching: query.isRefetching,
+    refetch: query.refetch,
   };
 }

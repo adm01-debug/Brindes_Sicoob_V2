@@ -114,7 +114,11 @@ export function mapTechniqueFiltersToExternal(filters: Record<string, unknown> |
   if ('name' in out) { out.nome = out.name; delete out.name; }
   if ('description' in out) { out.descricao = out.description; delete out.description; }
   if ('max_colors' in out) { out.max_cores = out.max_colors; delete out.max_colors; }
-  if ('estimated_days' in out) { out.tempo_producao_dias = out.estimated_days; delete out.estimated_days; }
+  // A tabela externa não possui coluna de prazo. O formato legado continua
+  // expondo `estimated_days: null`, mas o filtro não pode ser enviado ao
+  // PostgREST porque tornaria toda a consulta inválida.
+  if ('estimated_days' in out) delete out.estimated_days;
+  if ('tempo_producao_dias' in out) delete out.tempo_producao_dias;
   return out;
 }
 
@@ -122,14 +126,14 @@ export function mapTechniqueOrderByToExternal(orderBy: { column: string; ascendi
   if (!orderBy) return { column: 'nome', ascending: true };
   const columnMap: Record<string, string> = {
     name: 'nome', nome: 'nome', code: 'codigo', codigo: 'codigo',
-    is_active: 'ativo', ativo: 'ativo', estimated_days: 'tempo_producao_dias',
-    tempo_producao_dias: 'tempo_producao_dias', ordem_exibicao: 'nome', display_order: 'nome',
+    is_active: 'ativo', ativo: 'ativo',
+    ordem_exibicao: 'nome', display_order: 'nome',
   };
   return { ...orderBy, column: columnMap[orderBy.column] ?? orderBy.column };
 }
 
 const TECHNIQUE_OPTIONS_PUBLIC_COLUMNS = new Set([
-  'id', 'nome', 'codigo', 'tempo_producao_dias', 'ativo',
+  'id', 'nome', 'codigo', 'ativo',
 ]);
 
 function filterBaseColumn(key: string): string {
@@ -214,7 +218,7 @@ export function resolveTableAlias(
       table: 'tabela_preco_gravacao_oficial',
       filters: publicTechniqueOptionFilters(mappedFilters),
       orderBy: publicTechniqueOptionOrder(orderBy),
-      select: 'id,nome,codigo,tempo_producao_dias,ativo',
+      select: 'id,nome,codigo,ativo',
       aliasType: 'techniqueOptions',
     };
   }

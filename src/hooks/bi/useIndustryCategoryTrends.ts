@@ -2,14 +2,15 @@
  * useIndustryCategoryTrends — agrega top produtos do setor por CATEGORIA.
  *
  * Reaproveita o RPC `get_industry_top_products` (já usado em useIndustryTrends)
- * e dobra o resultado por categoria. Quando vazio, cai para mock derivado
- * de getMockIndustryTrends.
+ * e dobra o resultado por categoria. Quando vazio, preserva a ausência de
+ * amostra sem produzir categorias fictícias.
  */
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { selectCrm } from "@/lib/crm-db";
+import { selectCrmStrict } from "@/lib/crm-db";
 import { resolveBICategory, type BICategorySlug } from "@/lib/bi/categoryResolver";
+import { isDemoClient } from "@/lib/bi/demoClient";
 import { getMockIndustryTrends } from "@/lib/bi/mockData";
 
 export interface IndustryCategoryAggregate {
@@ -46,56 +47,30 @@ interface IndustryRow {
   avg_unit_price: number;
 }
 
-function buildMockResult(ramo?: string | null): IndustryCategoryTrendsResult {
-  const trends = getMockIndustryTrends(ramo);
-  const byCat = new Map<string, IndustryCategoryAggregate>();
-  for (const t of trends) {
-    const meta = resolveBICategory(t.productName, t.category);
-    const key = meta.slug;
-    const cur = byCat.get(key) ?? {
-      slug: meta.slug,
-      label: meta.label,
-      totalQuantity: 0,
-      uniqueClients: 0,
-      totalRevenue: 0,
-      revenueSharePct: 0,
-      topProducts: [],
-    };
-    cur.totalQuantity += t.unitsSold;
-    cur.uniqueClients += t.ordersCount;
-    cur.totalRevenue += t.unitsSold * t.avgPrice;
-    cur.topProducts.push({
-      productId: null,
-      productName: t.productName,
-      imageUrl: null,
-      quantity: t.unitsSold,
-      revenue: t.unitsSold * t.avgPrice,
-      avgPrice: t.avgPrice,
-    });
-    byCat.set(key, cur);
-  }
-  const totalRev = Array.from(byCat.values()).reduce((s, c) => s + c.totalRevenue, 0) || 1;
-  const categories = Array.from(byCat.values())
-    .map((c) => ({
-      ...c,
-      revenueSharePct: (c.totalRevenue / totalRev) * 100,
-      topProducts: c.topProducts.sort((a, b) => b.revenue - a.revenue).slice(0, 5),
-    }))
-    .sort((a, b) => b.totalRevenue - a.totalRevenue);
-  return { isMock: true, companiesInRamo: 0, categories };
+function emptyIndustryResult(companiesInRamo = 0): IndustryCategoryTrendsResult {
+  return { isMock: false, companiesInRamo, categories: [] };
+}
+
+function buildDemoResult(ramoAtividade?: string | null): IndustryCategoryTrendsResult {
+  const rows: IndustryRow[] = getMockIndustryTrends(ramoAtividade).map((trend) => ({
+    product_id: null,
+    product_name: trend.productName,
+    product_image_url: null,
+    total_quantity: trend.unitsSold,
+    unique_clients: trend.ordersCount,
+    total_revenue: trend.unitsSold * trend.avgPrice,
+    avg_unit_price: trend.avgPrice,
+  }));
+  return { isMock: true, companiesInRamo: 24, categories: aggregateIndustryRows(rows) };
 }
 
 async function fetchCompanyIds(ramoAtividade: string) {
-  try {
-    const companies = await selectCrm<{ id: string }>("companies", {
-      select: "id",
-      filters: { ramo_atividade: ramoAtividade, deleted_at: null },
-      limit: 500,
-    });
-    return companies.map((company) => company.id).filter(Boolean);
-  } catch {
-    return [];
-  }
+  const companies = await selectCrmStrict<{ id: string }>("companies", {
+    select: "id",
+    filters: { ramo_atividade: ramoAtividade, deleted_at: null },
+    limit: 500,
+  });
+  return companies.map((company) => company.id).filter(Boolean);
 }
 
 async function fetchIndustryRows(companyIds: string[]) {
@@ -104,7 +79,8 @@ async function fetchIndustryRows(companyIds: string[]) {
     _days: 90,
     _limit: 50,
   });
-  if (error || !Array.isArray(data)) return [];
+  if (error) throw error;
+  if (!Array.isArray(data)) throw new Error("A consulta de tendências retornou um formato inválido");
   return data as unknown as IndustryRow[];
 }
 
@@ -146,13 +122,11 @@ function aggregateIndustryRows(rows: IndustryRow[]) {
 }
 
 async function fetchIndustryCategoryTrends(ramoAtividade: string | null | undefined) {
-  if (!ramoAtividade) return buildMockResult(null);
+  if (!ramoAtividade) return emptyIndustryResult();
   const companyIds = await fetchCompanyIds(ramoAtividade);
-  if (companyIds.length === 0) return buildMockResult(ramoAtividade);
+  if (companyIds.length === 0) return emptyIndustryResult();
   const rows = await fetchIndustryRows(companyIds);
-  if (rows.length === 0) {
-    return { ...buildMockResult(ramoAtividade), companiesInRamo: companyIds.length };
-  }
+  if (rows.length === 0) return emptyIndustryResult(companyIds.length);
   return {
     isMock: false,
     companiesInRamo: companyIds.length,
@@ -160,23 +134,18 @@ async function fetchIndustryCategoryTrends(ramoAtividade: string | null | undefi
   };
 }
 
-export function useIndustryCategoryTrends(ramoAtividade?: string | null) {
+export function useIndustryCategoryTrends(ramoAtividade?: string | null, clientId?: string | null) {
+  const demo = isDemoClient(clientId);
   const query = useQuery<IndustryCategoryTrendsResult>({
-    queryKey: ["bi-industry-category-trends", ramoAtividade],
-    enabled: !!ramoAtividade,
+    queryKey: ["bi-industry-category-trends", ramoAtividade, demo],
+    enabled: !!ramoAtividade || demo,
     staleTime: 10 * 60 * 1000,
-    queryFn: () => fetchIndustryCategoryTrends(ramoAtividade),
+    queryFn: () => demo ? buildDemoResult(ramoAtividade) : fetchIndustryCategoryTrends(ramoAtividade),
   });
 
-  return useMemo(
-    () =>
-      query.data ?? {
-        isMock: true,
-        companiesInRamo: 0,
-        categories: [] as IndustryCategoryAggregate[],
-      },
-    [query.data],
-  ).categories.length === 0
-    ? { ...(query.data ?? buildMockResult(ramoAtividade)), isLoading: query.isLoading }
-    : { ...(query.data as IndustryCategoryTrendsResult), isLoading: query.isLoading };
+  const result = useMemo(
+    () => query.data ?? (demo ? buildDemoResult(ramoAtividade) : emptyIndustryResult()),
+    [demo, query.data, ramoAtividade],
+  );
+  return { ...result, isLoading: query.isLoading, isError: query.isError, error: query.error, refetch: query.refetch };
 }

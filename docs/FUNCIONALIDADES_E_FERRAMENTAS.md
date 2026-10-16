@@ -107,7 +107,6 @@
 | Edge Function | `supabase/functions/ai-recommendations/index.ts` | Deno, Lovable AI Gateway |
 | Smart Recommendations | `src/components/products/SmartRecommendations.tsx` | React |
 | Product Intelligence | `src/components/products/ProductIntelligence.tsx` | React |
-| Technique Recommendations | `src/hooks/useTechniqueRecommendations.ts` | React |
 
 ### 2.3 Busca Semântica
 | Funcionalidade | Arquivo Principal | Ferramentas/Bibliotecas |
@@ -871,11 +870,9 @@
 ### 21.1 Busca Global
 | Funcionalidade | Arquivo Principal | Ferramentas/Bibliotecas |
 |----------------|-------------------|-------------------------|
-| Global Search | `src/components/search/GlobalSearch.tsx` | React |
-| Search Palette | `src/components/search/GlobalSearchPalette.tsx` | React, cmdk |
+| Busca global canônica | `src/components/search/GlobalSearchPalette.tsx` | React, cmdk |
 | Smart Search Input | `src/components/search/SmartSearchInput.tsx` | React |
 | Search with Suggestions | `src/components/search/SearchWithSuggestions.tsx` | React |
-| Smart Suggestions | `src/components/search/SmartSuggestions.tsx` | React |
 | Advanced Search | `src/components/search/AdvancedSearch.tsx` | React |
 | Global Command Bar | `src/components/command/GlobalCommandBar.tsx` | React, cmdk |
 | Hook Search | `src/hooks/useSearch.ts` | React |
@@ -966,7 +963,6 @@
 | Scenario Comparison | `src/components/simulator/ScenarioComparison.tsx` | React |
 | Smart Product Search | `src/components/simulator/SmartProductSearch.tsx` | React |
 | Stock Alert | `src/components/simulator/StockAlert.tsx` | React |
-| Technique Card | `src/components/simulator/TechniqueCard.tsx` | React |
 | Technique Selection Card | `src/components/simulator/TechniqueSelectionCard.tsx` | React |
 | Upsell++ | `src/components/simulator/UpsellPlusPlus.tsx` | React |
 | Export Actions | `src/components/simulator/ExportActions.tsx` | React |

@@ -47,10 +47,7 @@ export default function PriceSimulatorPage() {
           </TabsContent>
 
           <TabsContent value="by-quantity" className="mt-6 animate-fade-in">
-            <QuantityPriceCalculator 
-              productBasePrice={0}
-              onSelectTechnique={() => {}}
-            />
+            <QuantityPriceCalculator />
           </TabsContent>
         </Tabs>
       </div>

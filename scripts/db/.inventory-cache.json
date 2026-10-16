@@ -1,10 +1,10 @@
 {
   "_comment": "Snapshot do contrato exposto pela Data API administrativa e da listagem de Storage. Não é inventário completo do PostgreSQL. Presença na API não comprova autorização de cada usuário. Atualizar após migrations; não adicionar objetos apenas porque existem no SQL local.",
-  "generated_at": "2026-10-14T16:15:06Z",
+  "generated_at": "2026-10-16T12:16:35.140Z",
   "project_ref": "cfmzkthhgliqelozlmwu",
   "source": "OpenAPI administrativo + Storage; data de coleta informada pelo operador",
   "source_sha256": {
-    "rest_contract": "3d29a6f0145c458fa190b7341bef537ce39637938444b936b13e3bab9f2a91f2",
+    "rest_contract": "6fc8cd83b5d631f07a91a26e693fec76efc6597dd8fd0cb7fbb3aef1da93fa3c",
     "storage_contract": "5f21127345c3ad738d2f58aba45f375a44cba3cbd911c550d4633c9a8f00be8e"
   },
   "contract_sha256": {
@@ -175,7 +175,7 @@
       "scheduled_exports": "3afcd8731d448d3f89f3abc03efda2f3007a2dec53e6cd87dba516e1b30140fc",
       "scheduled_notifications": "8e88b804c17e46888770c3d2ca4f33d171e74e3f8b7bab36afb805fd8e6f4260",
       "scheduled_reports": "65804d2cdfe0d59247b5c32e66eff29cede5df5e52eab585da04343973e8f615",
-      "search_analytics": "d13cb942b6790b5e68f19a78e22052e3756b468b64c8b7d132cb4ad91b999303",
+      "search_analytics": "dcff5b9fc0118a0807e50c874ceca47c0433b098f380b075cc7a3a5bfd9a8396",
       "secret_rotation_log": "4b2cb4dcabec68048a555b2594b8b189719ee39a926e8114af1f6bb0d196afb4",
       "seller_cart_items": "7a11dcfc83ec4e2076e42752d72b0c0184cf726da0dec03a225942c8d1033ada",
       "seller_carts": "b75c363e7d30bbeb5ed5f4c2528925ed863aaa36d12eccb2a773ce34e509c884",
@@ -346,6 +346,8 @@
       "get_industry_seasonality": "39ca6fdf2765f9236c3da6c503a02489b364af06da50b6da8b7180fdccfb7268",
       "get_industry_top_products": "1728d38cf105800c7bf5a24af656094874d301f975945e20fcd2069bbc50684e",
       "get_platform_failure_metrics": "33d7f2fcdda7bd987bceb0de16c2ac6838d1d71e76de2783820827fd3de4ccab",
+      "get_public_favorite_list": "87348c030996c378b2fb1338abde4a22c1f9fc2b5d12a0367c0c953c1c0d4d20",
+      "get_public_favorite_reactions": "be6c9f0fa0f2817ec9e231f9f5cb78c3f367f8a225d90b60c8137d03bcacf9fa",
       "get_public_quote_approval": "081823fff11f8d1761ada1c4abef3e3aedfe69f953b5be730514731df051bdfd",
       "get_query_telemetry_p95": "42cb9023413a51522826a5240721e6d1a60bfe97f417820474264ab37811042a",
       "get_quote_token_by_value": "0c2f6ec251a308b0bd7a35a786a413209981ea55cac63a20fcf08aa788c66096",
@@ -839,6 +841,8 @@
     "get_industry_seasonality",
     "get_industry_top_products",
     "get_platform_failure_metrics",
+    "get_public_favorite_list",
+    "get_public_favorite_reactions",
     "get_public_quote_approval",
     "get_query_telemetry_p95",
     "get_quote_token_by_value",

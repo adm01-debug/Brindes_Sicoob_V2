@@ -23,11 +23,18 @@ export interface Product {
   name: string;
   sku: string;
   price: number;
+  /** `false` quando o catálogo não informou sale_price; não tratar null como produto grátis. */
+  priceAvailable?: boolean;
   images: string[];
   category_name: string | null;
   supplier_reference?: string | null;
   brand?: string | null;
   colors?: ProductColor[];
+}
+
+/** Preço zero ou negativo indica cadastro inválido para cotação do catálogo. */
+export function hasValidSalePrice(price: unknown): price is number {
+  return typeof price === "number" && Number.isFinite(price) && price > 0;
 }
 
 // ============================================
