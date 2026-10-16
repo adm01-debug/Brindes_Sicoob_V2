@@ -45,20 +45,24 @@ export interface FavoriteListItem {
   updated_at: string;
 }
 
-const LISTS_KEY = ["favorite-lists"];
+export const favoriteListsQueryKey = (userId?: string) =>
+  ["favorite-lists", userId ?? "anonymous"] as const;
 const FAVORITE_ITEMS_KEY = "favorite-items";
 const FAVORITE_TRASH_KEY = "favorite-trash";
 const NOT_AUTHENTICATED_ERROR = "not-authenticated";
-const ITEMS_KEY = (listId: string) => [FAVORITE_ITEMS_KEY, listId];
+export const favoriteItemsQueryKey = (userId: string | undefined, listId: string) =>
+  [FAVORITE_ITEMS_KEY, userId ?? "anonymous", listId] as const;
+const TRASH_KEY = (userId?: string) => [FAVORITE_TRASH_KEY, userId ?? "anonymous"];
 
 /** Hook principal — gerencia listas do usuário autenticado (sync com Supabase). */
 export function useFavoriteLists() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const listsKey = favoriteListsQueryKey(user?.id);
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
 
   const listsQuery = useQuery({
-    queryKey: LISTS_KEY,
+    queryKey: listsKey,
     queryFn: async (): Promise<FavoriteList[]> => {
       if (!user) return [];
       // Garante lista padrão
@@ -116,7 +120,7 @@ export function useFavoriteLists() {
       return data as FavoriteList;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: LISTS_KEY });
+      qc.invalidateQueries({ queryKey: listsKey });
       toast.success("Lista criada");
     },
     onError: (e: Error) => toast.error(`Erro ao criar lista: ${e.message}`),
@@ -134,7 +138,7 @@ export function useFavoriteLists() {
       if (error) throw error;
       return data as FavoriteList;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: LISTS_KEY }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: listsKey }),
     onError: (e: Error) => toast.error(`Erro ao atualizar lista: ${e.message}`),
   });
 
@@ -147,7 +151,7 @@ export function useFavoriteLists() {
       return id;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: LISTS_KEY });
+      qc.invalidateQueries({ queryKey: listsKey });
       toast.success("Lista excluída");
     },
     onError: (e: Error) => toast.error(e.message),
@@ -170,7 +174,7 @@ export function useFavoriteLists() {
       return data as FavoriteList;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: LISTS_KEY });
+      qc.invalidateQueries({ queryKey: listsKey });
       toast.success("Link de compartilhamento gerado");
     },
   });
@@ -184,7 +188,7 @@ export function useFavoriteLists() {
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: LISTS_KEY });
+      qc.invalidateQueries({ queryKey: listsKey });
       toast.success("Link revogado");
     },
   });
@@ -213,9 +217,11 @@ export function useFavoriteLists() {
 export function useFavoriteListItems(listId: string | null) {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const listsKey = favoriteListsQueryKey(user?.id);
+  const itemsKey = favoriteItemsQueryKey(user?.id, listId ?? "none");
 
   const itemsQuery = useQuery({
-    queryKey: ITEMS_KEY(listId ?? "none"),
+    queryKey: itemsKey,
     queryFn: async (): Promise<FavoriteListItem[]> => {
       if (!listId) return [];
       const { data, error } = await supabase
@@ -261,8 +267,8 @@ export function useFavoriteListItems(listId: string | null) {
       return data as unknown as FavoriteListItem;
     },
     onSuccess: (_d, vars) => {
-      qc.invalidateQueries({ queryKey: ITEMS_KEY(vars.listId) });
-      qc.invalidateQueries({ queryKey: LISTS_KEY });
+      qc.invalidateQueries({ queryKey: favoriteItemsQueryKey(user?.id, vars.listId) });
+      qc.invalidateQueries({ queryKey: listsKey });
     },
     onError: (e: Error) => toast.error(`Erro ao salvar: ${e.message}`),
   });
@@ -279,7 +285,7 @@ export function useFavoriteListItems(listId: string | null) {
       return data as unknown as FavoriteListItem;
     },
     onSuccess: (data) => {
-      qc.invalidateQueries({ queryKey: ITEMS_KEY(data.list_id) });
+      qc.invalidateQueries({ queryKey: favoriteItemsQueryKey(user?.id, data.list_id) });
     },
   });
 
@@ -290,9 +296,9 @@ export function useFavoriteListItems(listId: string | null) {
       return id;
     },
     onSuccess: (_id, _vars, ctx) => {
-      qc.invalidateQueries({ queryKey: ITEMS_KEY(listId ?? "none") });
-      qc.invalidateQueries({ queryKey: LISTS_KEY });
-      qc.invalidateQueries({ queryKey: [FAVORITE_TRASH_KEY] });
+      qc.invalidateQueries({ queryKey: itemsKey });
+      qc.invalidateQueries({ queryKey: listsKey });
+      qc.invalidateQueries({ queryKey: TRASH_KEY(user?.id) });
       // Toast com undo: restaura o último item da lixeira (que acabou de ser movido pelo trigger)
       if (!user) return;
       const productName = (ctx as { productName?: string } | undefined)?.productName ?? "Item";
@@ -323,9 +329,9 @@ export function useFavoriteListItems(listId: string | null) {
               price_at_save: trashed.price_at_save,
             } as never);
             await supabase.from("favorite_items_trash").delete().eq("id", trashed.id);
-            qc.invalidateQueries({ queryKey: ITEMS_KEY(listId ?? "none") });
-            qc.invalidateQueries({ queryKey: LISTS_KEY });
-            qc.invalidateQueries({ queryKey: [FAVORITE_TRASH_KEY] });
+            qc.invalidateQueries({ queryKey: itemsKey });
+            qc.invalidateQueries({ queryKey: listsKey });
+            qc.invalidateQueries({ queryKey: TRASH_KEY(user.id) });
             toast.success("Item restaurado");
           },
         },
@@ -344,7 +350,7 @@ export function useFavoriteListItems(listId: string | null) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [FAVORITE_ITEMS_KEY] });
-      qc.invalidateQueries({ queryKey: LISTS_KEY });
+      qc.invalidateQueries({ queryKey: listsKey });
       toast.success("Item movido");
     },
     onError: (e: Error) => toast.error(`Erro ao mover: ${e.message}`),
@@ -353,6 +359,7 @@ export function useFavoriteListItems(listId: string | null) {
   return {
     items: itemsQuery.data ?? [],
     isLoading: itemsQuery.isLoading,
+    error: itemsQuery.error,
     addItem,
     updateItem,
     removeItem,
@@ -365,10 +372,11 @@ export function useFavoriteListItems(listId: string | null) {
 export function useFavoriteTrash() {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const KEY = [FAVORITE_TRASH_KEY];
+  const key = TRASH_KEY(user?.id);
+  const listsKey = favoriteListsQueryKey(user?.id);
 
   const trashQuery = useQuery({
-    queryKey: KEY,
+    queryKey: key,
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase
@@ -407,8 +415,8 @@ export function useFavoriteTrash() {
       if (delErr) throw delErr;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: KEY });
-      qc.invalidateQueries({ queryKey: LISTS_KEY });
+      qc.invalidateQueries({ queryKey: key });
+      qc.invalidateQueries({ queryKey: listsKey });
       qc.invalidateQueries({ queryKey: [FAVORITE_ITEMS_KEY] });
       toast.success("Item restaurado");
     },
@@ -420,7 +428,7 @@ export function useFavoriteTrash() {
       const { error } = await supabase.from("favorite_items_trash").delete().eq("id", trashId);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: key }),
   });
 
   const purgeAll = useMutation({
@@ -433,7 +441,7 @@ export function useFavoriteTrash() {
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: KEY });
+      qc.invalidateQueries({ queryKey: key });
       toast.success("Lixeira esvaziada");
     },
   });

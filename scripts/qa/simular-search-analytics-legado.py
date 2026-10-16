@@ -17,8 +17,10 @@ MIGRATIONS = (
     "20261015235000_consolidate_search_analytics_select_policy.sql",
     "20261015235500_search_analytics_legacy_insert_compatibility.sql",
     "20261016000000_assert_search_analytics_contract.sql",
+    "20261016160000_validate_search_analytics_payload.sql",
 )
 FIXTURE = ROOT / "tests/scenarios/sql/search-analytics-legacy-compatibility-fixture.sql"
+CONTRACT = ROOT / "supabase/migrations/20261016000000_assert_search_analytics_contract.sql"
 
 
 def command(args, *, stdin=None, check=True):
@@ -70,7 +72,7 @@ try:
         sql((ROOT / "supabase/migrations" / filename).read_text())
 
     # A migration de certificação não produz estado e deve ser reentrante.
-    contract_sql = (ROOT / "supabase/migrations" / MIGRATIONS[-1]).read_text()
+    contract_sql = CONTRACT.read_text()
     sql(contract_sql)
     checks["certificacao_reentrante"] = True
 
@@ -132,6 +134,32 @@ try:
             AND NOT has_table_privilege('anon', 'public.search_analytics', 'SELECT, INSERT');
         """).stdout.strip() == "t"
     )
+
+    def invalid_payload_rejected(values):
+        statement = f"""
+          BEGIN;
+          SET LOCAL ROLE authenticated;
+          SELECT set_config('request.jwt.claim.sub', '11111111-1111-4111-8111-111111111111', true);
+          INSERT INTO public.search_analytics (search_term, results_count, search_context)
+          VALUES ({values});
+          ROLLBACK;
+        """
+        return sql(statement, check=False).returncode != 0
+
+    checks["rejeita_termo_vazio"] = invalid_payload_rejected("'   ', 1, '{}'::text")
+    checks["rejeita_resultado_negativo"] = invalid_payload_rejected("'válido', -1, '{}'::text")
+    checks["rejeita_contexto_nao_json"] = invalid_payload_rejected("'válido', 1, 'not-json'")
+
+    normalized = sql("""
+      BEGIN;
+      SET LOCAL ROLE authenticated;
+      SELECT set_config('request.jwt.claim.sub', '11111111-1111-4111-8111-111111111111', true);
+      INSERT INTO public.search_analytics (search_term, results_count, search_context)
+      VALUES ('  Termo normalizado  ', 2, '{"origem":"fixture"}')
+      RETURNING search_term;
+      ROLLBACK;
+    """).stdout.splitlines()
+    checks["normaliza_espacos_do_termo"] = "Termo normalizado" in normalized
 
     failed = [name for name, passed in checks.items() if not passed]
     print(json.dumps({

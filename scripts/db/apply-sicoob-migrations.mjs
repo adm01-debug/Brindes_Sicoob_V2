@@ -140,6 +140,30 @@ const TARGETS = [
     file: "supabase/migrations/20261016000000_assert_search_analytics_contract.sql",
     sha256: "1fe51b07889b172928733519a16c773f7e999ed079e4c389dc82168fbcb4f3bb",
   },
+  {
+    file: "supabase/migrations/20261016160000_validate_search_analytics_payload.sql",
+    sha256: "0639403595cecd401567fcf6085d8d0189f3dbf8f689b71e5b4d1a6ac2d2411f",
+  },
+  {
+    file: "supabase/migrations/20261016163000_harden_ai_usage_quotas.sql",
+    sha256: "260d73e61838ad51396d575a63ca831a9f15cafea2ed0a2d3e3f2cbc1a37bcb8",
+  },
+  {
+    file: "supabase/migrations/20261016170000_restore_public_favorite_shares.sql",
+    sha256: "e25bc419658cf591823453e31bc9934c88b91b566e389e2da65ecf9d8fe15cba",
+  },
+  {
+    file: "supabase/migrations/20261016171500_secure_public_favorite_share_rpc.sql",
+    sha256: "451fa0638a1b268e30f1964d062dd848c5e261879049d70b5b6ed27f4f743199",
+  },
+  {
+    file: "supabase/migrations/20261016172000_minimize_public_favorite_share_payload.sql",
+    sha256: "08fc596029513f8114eb470d00f05267423e26243f80c9619a833fa64b64b449",
+  },
+  {
+    file: "supabase/migrations/20261016173000_remove_redundant_pa_budget_select_policy.sql",
+    sha256: "ae37ac710e0e67d8f4d358fa1209d19afb4204fe157bba685228a843f32d11f1",
+  },
 ];
 
 function sha256(value) {

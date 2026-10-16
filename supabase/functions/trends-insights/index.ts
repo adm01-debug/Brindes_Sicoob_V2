@@ -2,14 +2,36 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 // Edge function: trends-insights
 // Agrega métricas de Tendências e gera narrativa via Lovable AI Gateway.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
+import { authenticateRequest } from "../_shared/auth.ts";
+import { callAiWithTracking, QuotaExceededError } from "../_shared/ai-usage.ts";
+import { runBotProtection } from "../_shared/bot-protection.ts";
+import { hasActivePortalMembership } from "../_shared/portal-access-policy.ts";
+import { applyRateLimit, rateLimiters } from "../_shared/rate-limiter.ts";
+import { redactPotentialPii } from "../_shared/pii-redaction.ts";
 import {
   loadAllTrendActivity,
   TRENDS_INSIGHTS_PAGE_SIZE,
   trendCursorFilter,
 } from "./pagination.ts";
 
-interface Body {
-  days?: number;
+const BodySchema = z.object({
+  days: z.number().int().min(1).max(365).optional().default(30),
+}).strict();
+
+const MODEL = "google/gemini-2.5-flash";
+const InsightResponseSchema = z.object({
+  summary: z.string().min(1).max(1200),
+  what_changed: z.string().min(1).max(2000),
+  why: z.string().min(1).max(2000),
+  next_action: z.string().min(1).max(2000),
+}).strict();
+
+function jsonResponse(body: Record<string, unknown>, status: number, headers: Record<string, string>) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...headers, "Content-Type": "application/json" },
+  });
 }
 
 Deno.serve(async (req) => {
@@ -20,38 +42,47 @@ Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing authorization" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const auth = await authenticateRequest(req);
+    const { data: membershipProfile, error: membershipError } = await auth.localServiceClient
+      .from("profiles")
+      .select("is_active, deleted_at")
+      .eq("user_id", auth.userId)
+      .maybeSingle();
+    if (membershipError || !hasActivePortalMembership(membershipProfile, auth.userRoles)) {
+      return jsonResponse({ error: "Usuário sem vínculo ativo ou papel autorizado" }, 403, corsHeaders);
+    }
+
+    const protection = await runBotProtection(req, {
+      endpoint: "trends-insights",
+      maxRequests: 20,
+      windowSeconds: 60,
+      blockSeconds: 1800,
+      customIdentifier: `user:${auth.userId}`,
+    }, corsHeaders);
+    if (!protection.allowed) return protection.blockResponse!;
+
+    const rateLimited = await applyRateLimit(req, rateLimiters.ai, () => auth.userId);
+    if (rateLimited) {
+      const headers = new Headers(rateLimited.headers);
+      Object.entries(corsHeaders).forEach(([key, value]) => headers.set(key, value));
+      return new Response(rateLimited.body, { status: rateLimited.status, headers });
     }
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
-      return new Response(JSON.stringify({ error: "AI not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResponse({ error: "Serviço de IA indisponível" }, 503, corsHeaders);
     }
 
+    const authHeader = req.headers.get("Authorization")!;
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: { headers: { Authorization: authHeader } },
     });
 
-    const { data: userData, error: userErr } = await supabase.auth.getUser();
-    if (userErr || !userData.user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const body = (await req.json().catch(() => ({}))) as Body;
-    const days = Math.max(1, Math.min(body.days ?? 30, 365));
+    const parsedBody = BodySchema.safeParse(await req.json().catch(() => ({})));
+    if (!parsedBody.success) return jsonResponse({ error: "Dados inválidos" }, 400, corsHeaders);
+    const { days } = parsedBody.data;
 
     const sinceCurrent = new Date(Date.now() - days * 86400000).toISOString();
     const sincePrevious = new Date(Date.now() - days * 2 * 86400000).toISOString();
@@ -113,11 +144,11 @@ Deno.serve(async (req) => {
     });
     const topSearches = Array.from(searchCount.entries())
       .sort((a, b) => b[1].count - a[1].count).slice(0, 5)
-      .map(([term, d]) => ({ term, count: d.count, zero: d.zero }));
+      .map(([term, d]) => ({ term: redactPotentialPii(term), count: d.count, zero: d.zero }));
     const unmet = Array.from(searchCount.entries())
       .filter(([, d]) => d.zero >= 2)
       .sort((a, b) => b[1].zero - a[1].zero).slice(0, 5)
-      .map(([term, d]) => ({ term, zero: d.zero }));
+      .map(([term, d]) => ({ term: redactPotentialPii(term), zero: d.zero }));
 
     const totalViewsCur = v.cur.length;
     const totalViewsPrev = v.prev.length;
@@ -143,14 +174,12 @@ ${JSON.stringify(summary, null, 2)}
 
 Retorne via tool call.`;
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+    const aiResp = await callAiWithTracking({
+      userId: auth.userId,
+      functionName: "trends-insights",
+      model: MODEL,
+      apiKey: LOVABLE_API_KEY,
+      requestBody: {
         messages: [
           { role: "system", content: "Você gera insights comerciais concisos e acionáveis em português brasileiro." },
           { role: "user", content: prompt },
@@ -174,7 +203,8 @@ Retorne via tool call.`;
           },
         }],
         tool_choice: { type: "function", function: { name: "report_insights" } },
-      }),
+        max_completion_tokens: 1200,
+      },
     });
 
     if (!aiResp.ok) {
@@ -188,8 +218,7 @@ Retorne via tool call.`;
           status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const errText = await aiResp.text();
-      console.error("AI error:", aiResp.status, errText);
+      console.error("[trends-insights] AI gateway failure", { status: aiResp.status });
       return new Response(JSON.stringify({ error: "AI gateway error" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -205,15 +234,24 @@ Retorne via tool call.`;
         next_action: "Continue acompanhando — em breve haverá padrões claros.",
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    const parsed = JSON.parse(toolCall.function.arguments);
+    const parsed = InsightResponseSchema.safeParse(JSON.parse(toolCall.function.arguments));
+    if (!parsed.success) {
+      console.error("[trends-insights] Invalid structured AI response");
+      return jsonResponse({ error: "Resposta de IA inválida" }, 502, corsHeaders);
+    }
 
-    return new Response(JSON.stringify(parsed), {
+    return new Response(JSON.stringify(parsed.data), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
-    console.error("trends-insights error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    const status = typeof e === "object" && e !== null && "status" in e
+      ? Number((e as { status?: number }).status) || 500
+      : e instanceof QuotaExceededError ? 429 : 500;
+    if (status >= 500) console.error("[trends-insights] Internal failure", { status });
+    const message = status === 401 ? "Não autorizado"
+      : status === 403 ? "Acesso negado"
+      : status === 429 ? "Limite de uso da IA atingido"
+      : "Não foi possível gerar os insights";
+    return jsonResponse({ error: message }, status, corsHeaders);
   }
 });

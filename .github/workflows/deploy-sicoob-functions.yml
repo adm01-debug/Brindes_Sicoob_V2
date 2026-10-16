@@ -40,13 +40,15 @@ jobs:
           set -euo pipefail
           supabase functions list --project-ref "$SUPABASE_PROJECT_ID" --output-format json > /tmp/functions-before.json
           for function_name in \
+            crm-db-bridge \
             expert-chat \
             external-db-bridge \
             sicoob-approval-reconciliation \
             sicoob-artwork-register \
             sicoob-document-ingest \
             sicoob-kit-quote \
-            sicoob-reorder
+            sicoob-reorder \
+            trends-insights
           do
             supabase functions deploy "$function_name" --project-ref "$SUPABASE_PROJECT_ID"
           done
@@ -56,13 +58,15 @@ jobs:
           set -euo pipefail
           published_functions="$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" --output-format json)"
           for function_name in \
+            crm-db-bridge \
             expert-chat \
             external-db-bridge \
             sicoob-approval-reconciliation \
             sicoob-artwork-register \
             sicoob-document-ingest \
             sicoob-kit-quote \
-            sicoob-reorder
+            sicoob-reorder \
+            trends-insights
           do
             previous_version="$(jq -r --arg function_name "$function_name" '[(.functions // .)[] | select(.slug == $function_name) | .version] | first // 0' /tmp/functions-before.json)"
             current_version="$(echo "$published_functions" | jq -r --arg function_name "$function_name" '[(.functions // .)[] | select(.slug == $function_name) | .version] | first // 0')"

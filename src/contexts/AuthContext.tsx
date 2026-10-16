@@ -9,9 +9,12 @@ import { useUserRoles } from "@/hooks/auth/useUserRoles";
 import { useUserProfile } from "@/hooks/auth/useUserProfile";
 import { useAuthAAL } from "@/hooks/auth/useAuthAAL";
 import { useRecentlyViewedStore } from "@/stores/useRecentlyViewedStore";
+import { useFavoritesStore } from "@/stores/useFavoritesStore";
 
 
 import { type AppRole, type Profile } from "@/types/users";
+
+const ACTIVE_USER_STORAGE_KEY = "sicoob-active-user-id";
 
 export type { AppRole, Profile };
 
@@ -117,12 +120,26 @@ function clearSensitiveBrowserData(): void {
     sessionStorage.clear();
     [
       "product-favorites",
+      ACTIVE_USER_STORAGE_KEY,
       "product-comparison",
       "recently-viewed-products",
       "duplicate_product",
     ].forEach(key => localStorage.removeItem(key));
   } catch (error) {
     console.warn("Falha ao limpar armazenamento local no logout", error);
+  }
+}
+
+function isolateSensitiveBrowserData(userId: string): void {
+  try {
+    const previousUserId = localStorage.getItem(ACTIVE_USER_STORAGE_KEY);
+    if (previousUserId && previousUserId !== userId) {
+      localStorage.removeItem("product-favorites");
+      useFavoritesStore.setState({ favorites: [], favoriteCount: 0, isLoaded: true });
+    }
+    localStorage.setItem(ACTIVE_USER_STORAGE_KEY, userId);
+  } catch (error) {
+    console.warn("Falha ao isolar dados locais por usuário", error);
   }
 }
 
@@ -151,6 +168,7 @@ interface AuthStateDependencies {
 }
 
 function handleAuthenticatedState(event: AuthChangeEvent, session: Session, deps: AuthStateDependencies): void {
+  isolateSensitiveBrowserData(session.user.id);
   useRecentlyViewedStore.getState().setScope(`user:${session.user.id}`);
   if (event === 'SIGNED_IN') notifySignedInUser(session.user);
   setTimeout(() => {

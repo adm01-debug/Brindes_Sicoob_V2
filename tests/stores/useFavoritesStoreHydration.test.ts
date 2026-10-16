@@ -53,4 +53,17 @@ describe('useFavoritesStore — hidratação defensiva', () => {
     expect(useFavoritesStore.getState().favorites).toEqual([valid]);
     expect(useFavoritesStore.getState().favoriteCount).toBe(1);
   });
+
+  it('sincroniza uma alteração válida recebida de outra aba', async () => {
+    const { useFavoritesStore } = await import('@/stores/useFavoritesStore');
+    const favorites = [{ productId: 'produto-remoto', addedAt: '2026-10-16T12:00:00.000Z' }];
+
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: STORAGE_KEY,
+      newValue: JSON.stringify(favorites),
+    }));
+
+    expect(useFavoritesStore.getState().favorites).toEqual(favorites);
+    expect(useFavoritesStore.getState().favoriteCount).toBe(1);
+  });
 });

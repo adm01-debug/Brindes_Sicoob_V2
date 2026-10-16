@@ -110,22 +110,22 @@ function applyQuoteIdentity(quote: Quote, setters: QuoteSetters): void {
 }
 
 function applyQuoteClient(quote: Quote, setters: QuoteSetters): void {
-  if (quote.client_name) {
-    setters.setContactInfo({
+  setters.setContactInfo(
+    quote.client_name ? {
       id: "",
       name: quote.client_name,
       email: quote.client_email || undefined,
       phone: quote.client_phone || undefined,
-    });
-  }
-  if (quote.client_company) {
-    setters.setCompanyInfo({
+    } : null,
+  );
+  setters.setCompanyInfo(
+    quote.client_company ? {
       id: quote.client_id || "",
       name: quote.client_company,
       cnpj: quote.client_cnpj || undefined,
       ramo_atividade: undefined,
-    });
-  }
+    } : null,
+  );
 }
 
 function applyQuoteDiscount(quote: Quote, setters: QuoteSetters): void {
@@ -137,30 +137,41 @@ function applyQuoteDiscount(quote: Quote, setters: QuoteSetters): void {
   if (quote.discount_amount && quote.discount_amount > 0) {
     setters.setDiscountType("amount");
     setters.setDiscountValue(quote.discount_amount);
+    return;
   }
+  setters.setDiscountType("percent");
+  setters.setDiscountValue(0);
 }
 
 function applyQuoteConditions(quote: Quote, setters: QuoteSetters): void {
-  if (typeof quote.negotiation_markup_percent === "number") setters.setNegotiationMarkup(quote.negotiation_markup_percent);
-  if (quote.payment_terms) setters.setPaymentTerms(quote.payment_terms);
-  if (quote.shipping_type) setters.setShippingType(quote.shipping_type);
-  if (quote.shipping_cost) setters.setShippingCost(quote.shipping_cost);
-  if (quote.items) setters.setItems(quote.items);
-  if (quote.tags) setters.setTags(quote.tags);
+  setters.setNegotiationMarkup(
+    typeof quote.negotiation_markup_percent === "number" ? quote.negotiation_markup_percent : 0,
+  );
+  setters.setPaymentTerms(quote.payment_terms ?? "");
+  setters.setShippingType(quote.shipping_type ?? "");
+  setters.setShippingCost(typeof quote.shipping_cost === "number" ? quote.shipping_cost : 0);
+  setters.setItems(quote.items ?? []);
+  setters.setTags(quote.tags ?? []);
 }
 
 function applyQuoteDelivery(quote: Quote, setters: QuoteSetters): void {
-  if (!quote.delivery_time) return;
+  if (!quote.delivery_time) {
+    setters.setDeliveryMode("prazo");
+    setters.setDeliveryDate(undefined);
+    setters.setDeliveryTime("");
+    return;
+  }
   if (quote.delivery_time.startsWith("date:")) {
     setters.setDeliveryMode("data");
     setters.setDeliveryDate(new Date(`${quote.delivery_time.slice(5)}T12:00:00`));
   } else {
     setters.setDeliveryMode("prazo");
+    setters.setDeliveryDate(undefined);
   }
   setters.setDeliveryTime(quote.delivery_time);
 }
 
-function applyExistingQuote(quote: Quote, setters: QuoteSetters): void {
+export function applyExistingQuote(quote: Quote, setters: QuoteSetters): void {
   applyQuoteIdentity(quote, setters);
   applyQuoteClient(quote, setters);
   applyQuoteDiscount(quote, setters);

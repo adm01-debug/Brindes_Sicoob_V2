@@ -354,9 +354,12 @@ export function CompanySearchDropdown({
         : null,
     [companies],
   );
+  const currentServerResults = debouncedSearch.trim() === searchTerm.trim()
+    ? serverResults
+    : undefined;
   const filteredCompanies = useMemo(
-    () => mergeCompanyResults(companies, serverResults, fuse, searchTerm),
-    [companies, serverResults, fuse, searchTerm],
+    () => mergeCompanyResults(companies, currentServerResults, fuse, searchTerm),
+    [companies, currentServerResults, fuse, searchTerm],
   );
   useEffect(() => {
     const handler = (event: MouseEvent) => {

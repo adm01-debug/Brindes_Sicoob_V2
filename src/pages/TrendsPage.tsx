@@ -422,6 +422,7 @@ function useTrendsPageModel() {
     kpiPrevious: kpis.previous,
     loadingMock: queries.mock.isLoading,
     loadingKpi: queries.activity.isLoading,
+    refreshBusy: controls.demo ? queries.mock.isFetching : queries.activity.isFetching,
     hasKpiData: queries.activity.data !== undefined,
     mockError: queries.mock.isError,
     kpiError: queries.activity.isError,
@@ -495,8 +496,9 @@ function TrendsHeader({ model }: { model: TrendsPageModel }) {
             <SelectItem value="90d">Últimos 90 dias</SelectItem>
           </SelectContent>
         </Select>
-        <Button variant="outline" size="icon" onClick={model.handleRefresh} aria-label="Atualizar">
-          <RefreshCw className="h-4 w-4" />
+        <Button variant="outline" size="icon" onClick={model.handleRefresh} aria-label="Atualizar"
+          disabled={model.refreshBusy} aria-busy={model.refreshBusy}>
+          <RefreshCw className={`h-4 w-4 ${model.refreshBusy ? "animate-spin" : ""}`} />
         </Button>
       </div>
     </div>
