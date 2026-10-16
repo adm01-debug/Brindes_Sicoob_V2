@@ -8,11 +8,12 @@
 
 ## Resumo
 
-**Contagem por status (43 itens; atualização em 15/10/2026):**
+**Contagem por status (43 itens; atualização em 16/10/2026):**
 
 | Status | Qtde | IDs |
 |---|---:|---|
-| PARCIAL | 18 | DB-01, DB-04, DB-08, DB-10, DB-12, DB-13, DB-16, DB-19, DB-22, DB-25, DB-27, DB-29, DB-31, DB-35, DB-38, DB-40, DB-41, DB-43 |
+| CONCLUIDA | 1 | DB-43 |
+| PARCIAL | 17 | DB-01, DB-04, DB-08, DB-10, DB-12, DB-13, DB-16, DB-19, DB-22, DB-25, DB-27, DB-29, DB-31, DB-35, DB-38, DB-40, DB-41 |
 | NAO_INICIADA | 10 | DB-03, DB-07, DB-11, DB-15, DB-17, DB-23, DB-26, DB-36, DB-37, DB-39 |
 | ORFA | 7 | DB-05, DB-06, DB-09, DB-14, DB-18, DB-21, DB-24 |
 | STUB/MOCK | 7 | DB-02, DB-20, DB-28, DB-30, DB-32, DB-33, DB-34 |
@@ -477,8 +478,8 @@ Jobs removidos: `archive-old-admin-audit-logs` e `trim-connection-test-history` 
 - Prioridade: P3
 
 ### DB-43  IDs reciclados do `pg_net` colidem com a constraint global da outbox
-- Status: PARCIAL — migration criada em 15/10/2026; depende de merge, aplicação e validação no banco canônico.
-- Evidência em runtime: a consulta administrativa ao banco canônico em 15/10 confirmou execuções do cron `sicoob-approval-outbox-worker` falhando com `duplicate key value violates unique constraint "sicoob_approval_worker_dispatches_request_id_key"`. A tabela continha 19.933 disparos, com `UNIQUE(request_id)` global, embora o `pg_net` tenha reutilizado IDs.
+- Status: CONCLUIDA — migration aplicada e validada no banco canônico em 15/10/2026; este merge incorpora ao repositório a correção já ativa.
+- Evidência em runtime: a consulta administrativa ao banco canônico em 15/10 confirmou execuções do cron `sicoob-approval-outbox-worker` falhando com `duplicate key value violates unique constraint "sicoob_approval_worker_dispatches_request_id_key"`. A tabela continha 19.933 disparos, com `UNIQUE(request_id)` global, embora o `pg_net` tenha reutilizado IDs. Após a correção, 38/38 migrations allowlisted constam no ledger, o índice parcial é usado pelo plano e as 12 execuções mais recentes de worker/monitor terminaram com sucesso, sem disparos pendentes há mais de três minutos.
 - Causa: IDs de transporte não são identificadores históricos estáveis. Ao reutilizar um ID, o `INSERT` do worker falha; remover a constraint sem mudar a associação do monitor também poderia ligar a resposta ao disparo histórico errado.
 - Correção preparada: `supabase/migrations/20261015102000_fix_pg_net_recycled_request_ids.sql` remove a unicidade global e correlaciona a primeira resposta com o disparo pendente mais recente cujo horário antecede a resposta. Depois, marca disparos pendentes mais antigos com o mesmo ID como `timed_out`, para a resposta já consumida não ser reutilizada em outro ciclo; os demais sem resposta mantêm o timeout de dois minutos.
 - Limite observado: `job startup timeout` também apareceu em outros crons no mesmo intervalo e é tratado como falha separada do scheduler, não como efeito desta constraint.
