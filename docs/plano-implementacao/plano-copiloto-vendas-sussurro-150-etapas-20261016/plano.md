@@ -443,8 +443,8 @@ Uma etapa só está **concluída** quando o critério de aceite foi verificado c
 
 `Edge` · depende de: E032
 
-- **O quê:** Receber o webhook, validar segredo e origem (VPS), aplicar limite de tamanho, descartar repetidos pelo ID da mensagem e registrar o evento, no mesmo padrão de `webhook-inbound` (HMAC, `inbound_webhook_events`, limite de 1 MB).
-- **Aceite:** Reenvio do mesmo evento não duplica; segredo inválido recebe 401; nada é perdido em teste de 1.000 eventos.
+- **O quê:** Antes de criar a função, confirmar vaga disponível no limite de 100 Edge Functions publicadas (hoje no limite, com deploy anterior retornando HTTP 402) e decidir o que libera espaço (ex.: publicar `error-monitor`, hoje `source-only`, ou remover função obsoleta). Só então: receber o webhook, validar segredo e origem (VPS), aplicar limite de tamanho, descartar repetidos pelo ID da mensagem e registrar o evento, no mesmo padrão de `webhook-inbound` (HMAC, `inbound_webhook_events`, limite de 1 MB).
+- **Aceite:** Função publicada com sucesso no projeto remoto (não só local) e confirmada via `supabase_functions_list`; reenvio do mesmo evento não duplica; segredo inválido recebe 401; nada é perdido em teste de 1.000 eventos.
 
 #### E034 · Modelo de dados no banco do portal
 
@@ -908,8 +908,8 @@ Uma etapa só está **concluída** quando o critério de aceite foi verificado c
 
 `IA` · depende de: E053
 
-- **O quê:** Quando surge "vou levar à diretoria" ou "ao conselho", gerar uma página com proposta, justificativa, prazos e mockups para o comprador encaminhar (`bi-share-dossier` e `PublicDossierPage`).
-- **Aceite:** Link público com validade e registro de abertura.
+- **O quê:** Quando surge "vou levar à diretoria" ou "ao conselho", gerar uma página com proposta, justificativa, prazos e mockups para o comprador encaminhar (`bi-share-dossier` e `PublicDossierPage`). O acesso anônimo usa uma API ou snapshot do dossiê limitado pelo próprio token (não as consultas autenticadas de `orders` e RPCs concedidas só a `authenticated`), para o comprador externo nunca cair no fallback `MOCK_CLIENT_STATS`.
+- **Aceite:** Link público com validade e registro de abertura; teste de aceite confere, com sessão anônima real, que o conteúdo exibido é o dossiê verdadeiro da proposta (não o mock), não apenas que o token é válido.
 
 #### E097 · Contagem regressiva honesta
 
@@ -1082,9 +1082,9 @@ Uma etapa só está **concluída** quando o critério de aceite foi verificado c
 
 #### E120 · Marco M1: modo sombra
 
-`IA` · depende de: E061, E111
+`IA` · depende de: E061, E111, E024, E025, E026
 
-- **O quê:** Por duas semanas a IA gera sugestões sem mostrar e compara com o que o vendedor mandou e com o resultado.
+- **O quê:** Por duas semanas a IA gera sugestões sem mostrar e compara com o que o vendedor mandou e com o resultado. Só começa com mascaramento de dados pessoais (E024), contrato de tratamento com o provedor (E025) e rotina de retenção e descarte (E026) já concluídos — conversa real não pode ir ao provedor sem esses três.
 - **Aceite:** Relatório do modo sombra apresentado no portão G2.
 
 ### F13 · Velocidade, custo e observabilidade (E121–E130)
@@ -1121,10 +1121,10 @@ Uma etapa só está **concluída** quando o critério de aceite foi verificado c
 
 #### E125 · Cotas e teto de gasto
 
-`Edge` · depende de: E009
+`Edge` · depende de: E009, E126
 
-- **O quê:** Usar `acquire_ai_quota` e `check_ai_quota` com cota própria do copiloto e alerta em 80% do teto mensal.
-- **Aceite:** Ao estourar o teto, o sistema passa a mostrar só o Radar, sem gerar texto.
+- **O quê:** Criar reserva atômica de cota própria do Sussurro baseada em custo estimado (não em contagem de chamadas, que é como `acquire_ai_quota`/`check_ai_quota` funcionam hoje): usar os preços de E126 para calcular `estimated_cost_usd` por chamada, debitar de um teto em R$ dedicado ao copiloto — separado de outros módulos que usam a mesma cota — e alertar em 80% do teto mensal.
+- **Aceite:** Ao estourar o teto em R$ do Sussurro (não o número de chamadas), o sistema passa a mostrar só o Radar, sem gerar texto; chamadas de outros módulos não consomem essa cota e poucas chamadas caras também disparam o corte.
 
 #### E126 · Tabela de preço dos modelos atualizada
 
@@ -1262,17 +1262,17 @@ Uma etapa só está **concluída** quando o critério de aceite foi verificado c
 
 #### E144 · Piloto 2: sugestões e ações
 
-`Negócio` · depende de: E143
+`Negócio` · depende de: E143, E113, E142
 
-- **O quê:** Ligar sugestões, ações e superpoderes por quatro semanas.
+- **O quê:** Ligar sugestões, ações e superpoderes por quatro semanas, só para os vendedores do piloto já treinados (E142) e só com as peças (classificador, extrator, gerador) que atingiram a meta de E113; cada ação ou superpoder específico só entra se a etapa que o implementa já está concluída. Antes de ligar, protocolo e grupo de controle (ou o desenho antes/depois) já estão definidos e instrumentados — pré-registrados, não escolhidos depois de ver o resultado.
 - **Aceite:** Métricas comparadas com a linha de base da E003.
 
 #### E145 · Experimento com grupo de controle
 
 `Dados` · depende de: E144
 
-- **O quê:** Comparar vendedores com e sem Sussurro no mesmo período, ou antes e depois com controle.
-- **Aceite:** Análise com intervalo de confiança; resultado sem significância é reportado como tal.
+- **O quê:** Executar a análise pré-registrada do experimento (grupo de controle ou antes/depois, já definido e instrumentado em E144) comparando vendedores com e sem Sussurro no mesmo período.
+- **Aceite:** Análise pré-registrada com intervalo de confiança; resultado sem significância é reportado como tal; nenhuma definição de grupo ou protocolo é feita depois de ver os resultados.
 
 #### E146 · Ouvir vendedores e clientes
 
