@@ -42,6 +42,7 @@ const routeLabels: Record<string, string> = {
   "/carrinhos": "Carrinhos",
   "/gestor/compras": "Gestor de Compras",
   "/gestor/aprovacoes": "Aprovações",
+  "/gestor/delegacoes": "Delegações de aprovação",
   "/gestor/convites": "Convites institucionais",
 };
 

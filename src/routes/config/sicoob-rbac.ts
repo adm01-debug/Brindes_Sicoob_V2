@@ -16,6 +16,7 @@ export const sicoobRbacRoutes = [
   defineRoute({ path: "/gestor/agregados", component: lazyWithRetry(() => import("@/pages/sicoob/GestorConsolidatedOrdersPage")) }),
   defineRoute({ path: "/gestor/convites", component: lazyWithRetry(() => import("@/pages/sicoob/SicoobInvitationsPage")) }),
   defineRoute({ path: "/gestor/aprovacoes", component: lazyWithRetry(() => import("@/pages/sicoob/GestorApprovalsPage")) }),
+  defineRoute({ path: "/gestor/delegacoes", component: lazyWithRetry(() => import("@/pages/sicoob/GestorDelegationsPage")) }),
   defineRoute({ path: "/gestor/auditoria", component: lazyWithRetry(() => import("@/pages/sicoob/GestorAuditPage")) }),
   
   // Módulo Vendedor (Carteira)
