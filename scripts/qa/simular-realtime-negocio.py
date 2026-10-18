@@ -86,9 +86,21 @@ try:
             "'kit_comments','orders','quotes','sicoob_orders']);"
         ).stdout.strip() == "t",
         "monitor_hardening_aprovado": sql(
-            "SELECT (public.notify_hardening_regression()->>'score')::int=5;"
+            "SELECT public.notify_hardening_regression()->>'ok'='true' "
+            "AND (public.notify_hardening_regression()->>'score')::int=5;"
         ).stdout.strip() == "t",
     }
+
+    sql("ALTER TABLE public.custom_kits DISABLE ROW LEVEL SECURITY;")
+    degraded_monitor = json.loads(
+        sql("SELECT public.notify_hardening_regression()::text;").stdout.strip()
+    )
+    checks["monitor_detecta_regressao_em_qualquer_tabela"] = (
+        degraded_monitor.get("ok") is False
+        and degraded_monitor.get("score") == 4
+        and degraded_monitor.get("failures") == ["Tabelas realtime sem isolamento: 1"]
+    )
+    sql("ALTER TABLE public.custom_kits ENABLE ROW LEVEL SECURITY;")
     if not all(checks.values()):
         raise RuntimeError("Falha nas asserções: " + json.dumps(checks, ensure_ascii=False))
 

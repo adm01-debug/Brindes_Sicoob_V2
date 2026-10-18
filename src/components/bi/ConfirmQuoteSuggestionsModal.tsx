@@ -39,11 +39,11 @@ interface Props {
   suggestions: SuggestionItem[];
 }
 
-const fmtBRL = (v: number) =>
-  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+const fmtBRL = (value: number) =>
+  value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
 export function quoteSuggestionKey(suggestion: SuggestionItem, index: number): string {
-  return suggestion.productId ?? `sem-produto-${index}`;
+  return `${suggestion.productId ?? "sem-produto"}-${index}`;
 }
 
 export function ConfirmQuoteSuggestionsModal({
@@ -89,7 +89,7 @@ export function ConfirmQuoteSuggestionsModal({
       toast.error(`${unavailable.length} sugestão(ões) ainda não possuem produto vinculado ao catálogo.`);
       return;
     }
-    const productIds = selectedItems.map((s) => s.productId).filter(Boolean) as string[];
+    const productIds = [...new Set(selectedItems.map((s) => s.productId).filter(Boolean) as string[])];
 
     const params = new URLSearchParams();
     params.set("clientId", clientId);
@@ -101,13 +101,6 @@ export function ConfirmQuoteSuggestionsModal({
     onOpenChange(false);
     navigate(`/orcamentos/novo?${params.toString()}`);
   };
-
-  const totalEstimateMin = suggestions
-    .filter((s, index) => selected.has(quoteSuggestionKey(s, index)))
-    .reduce((acc, s) => acc + s.priceFrom * 50, 0); // estimativa volume mínimo
-  const totalEstimateMax = suggestions
-    .filter((s, index) => selected.has(quoteSuggestionKey(s, index)))
-    .reduce((acc, s) => acc + s.priceTo * 100, 0);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -196,11 +189,6 @@ export function ConfirmQuoteSuggestionsModal({
           <span>
             {selected.size} de {suggestions.length} selecionados
           </span>
-          {selected.size > 0 && (
-            <span className="font-medium text-foreground">
-              Estimativa: {fmtBRL(totalEstimateMin)} – {fmtBRL(totalEstimateMax)}
-            </span>
-          )}
         </div>
 
         <DialogFooter>

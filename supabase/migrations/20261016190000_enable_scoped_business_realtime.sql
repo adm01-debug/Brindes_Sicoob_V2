@@ -109,6 +109,20 @@ DECLARE
   admin_record record;
   notified integer := 0;
   message_text text;
+  realtime_tables constant text[] := ARRAY[
+    'custom_kits',
+    'device_login_notifications',
+    'discount_approval_requests',
+    'integration_credentials',
+    'kit_comments',
+    'login_attempts',
+    'notifications',
+    'orders',
+    'product_views',
+    'quotes',
+    'search_analytics',
+    'sicoob_orders'
+  ];
 BEGIN
   SELECT count(*) INTO private_buckets
   FROM storage.buckets
@@ -121,21 +135,20 @@ BEGIN
   END IF;
 
   SELECT count(*) INTO unsafe_realtime
-  FROM pg_catalog.pg_publication_tables publication_table
-  JOIN pg_catalog.pg_class table_class
-    ON table_class.oid = format(
-      '%I.%I',
-      publication_table.schemaname,
-      publication_table.tablename
-    )::regclass
-  WHERE publication_table.pubname = 'supabase_realtime'
-    AND publication_table.schemaname = 'public'
-    AND publication_table.tablename IN (
-      'discount_approval_requests',
-      'kit_variants',
-      'kit_comments'
-    )
-    AND (
+  FROM unnest(realtime_tables) AS target_table(tablename)
+  LEFT JOIN pg_catalog.pg_publication_tables publication_table
+    ON publication_table.pubname = 'supabase_realtime'
+   AND publication_table.schemaname = 'public'
+   AND publication_table.tablename = target_table.tablename
+  LEFT JOIN pg_catalog.pg_namespace table_namespace
+    ON table_namespace.nspname = 'public'
+  LEFT JOIN pg_catalog.pg_class table_class
+    ON table_class.relnamespace = table_namespace.oid
+   AND table_class.relname = target_table.tablename
+   AND table_class.relkind IN ('r', 'p')
+  WHERE publication_table.tablename IS NULL
+    OR table_class.oid IS NULL
+    OR (
       NOT table_class.relrowsecurity
       OR NOT EXISTS (
         SELECT 1
@@ -232,7 +245,7 @@ BEGIN
   END LOOP;
 
   RETURN jsonb_build_object(
-    'ok', true,
+    'ok', false,
     'score', score,
     'max', max_score,
     'failures', failures,
@@ -297,6 +310,9 @@ BEGIN
     SELECT prosecdef
       AND proconfig = ARRAY['search_path=pg_catalog, public']::text[]
       AND prosrc LIKE '%table_class.relrowsecurity%'
+      AND prosrc LIKE '%realtime_tables%'
+      AND prosrc LIKE '%custom_kits%'
+      AND prosrc NOT LIKE '%kit_variants%'
       AND prosrc LIKE '%Tabelas realtime sem isolamento%'
     FROM pg_catalog.pg_proc
     WHERE oid = 'public.notify_hardening_regression()'::regprocedure

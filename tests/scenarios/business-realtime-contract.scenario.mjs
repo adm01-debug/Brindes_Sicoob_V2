@@ -30,6 +30,19 @@ test('Realtime publica somente o inventário assinado após validar RLS', () => 
   assert.match(migration, /NOT puballtables/);
 });
 
+test('monitor de hardening audita as mesmas 12 tabelas publicadas', () => {
+  const monitorStart = migration.indexOf(
+    'CREATE OR REPLACE FUNCTION public.notify_hardening_regression()',
+  );
+  const monitorEnd = migration.indexOf('DO $assert$', monitorStart);
+  const monitor = migration.slice(monitorStart, monitorEnd);
+
+  for (const table of expectedTables) assert.match(monitor, new RegExp(`'${table}'`));
+  assert.doesNotMatch(monitor, /'kit_variants'/);
+  assert.match(monitor, /publication_table\.tablename IS NULL/);
+  assert.match(monitor, /'ok', false/);
+});
+
 test('tentativas de login ficam visíveis somente ao próprio usuário', () => {
   assert.match(migration, /CREATE POLICY user_read_own_login_attempts/);
   assert.match(migration, /USING \(user_id = \(SELECT auth\.uid\(\)\)\)/);

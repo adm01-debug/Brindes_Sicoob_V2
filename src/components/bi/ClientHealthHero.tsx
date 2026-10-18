@@ -208,11 +208,13 @@ export function ClientHealthHero({ clientId, ramoAtividade, clientName }: Props)
       source: 'industry' as const,
     }));
 
-    const seen = new Set(list.map((i) => i.name.toLowerCase()));
+    const suggestionIdentity = (item: SuggestionItem) =>
+      item.productId ? `produto:${item.productId}` : `nome:${item.name.toLowerCase()}`;
+    const seen = new Set(list.map(suggestionIdentity));
     for (const t of trendList) {
-      if (!seen.has(t.name.toLowerCase())) {
+      if (!seen.has(suggestionIdentity(t))) {
         list.push(t);
-        seen.add(t.name.toLowerCase());
+        seen.add(suggestionIdentity(t));
       }
       if (list.length >= 5) break;
     }

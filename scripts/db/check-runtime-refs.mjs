@@ -40,6 +40,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import ts from 'typescript';
+import { loadAuthorizedTargets, stripNonCode } from './apply-sicoob-migrations.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..', '..');
@@ -55,6 +56,9 @@ const EXTERNAL_NAME_HINT_RE = /external|extclient|crmclient|crm_db/i;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const FUTURE_TOLERANCE_MS = 5 * 60 * 1000;
 const DEFAULT_MAX_CACHE_AGE_DAYS = 30;
+
+const PUBLIC_DDL_RE =
+  /\b(CREATE(?:\s+OR\s+REPLACE)?|DROP)\s+(MATERIALIZED\s+VIEW|TABLE|VIEW|FUNCTION)\s+(?:IF\s+(?:NOT\s+)?EXISTS\s+)?public\.([a-z_][a-z0-9_]*)/gi;
 
 // Aceita quebra de linha/espaço entre o método e o argumento — o gap que
 // escondeu o bucket `personalization` quebrado em 2 linhas na auditoria original.
@@ -296,6 +300,52 @@ export function analyzeSource(text, filePath) {
   return findings;
 }
 
+/**
+ * Projeta o contrato final do banco aplicando, em ordem, somente DDL de
+ * migrations cujo caminho e SHA-256 foram validados por loadAuthorizedTargets.
+ * Assim o CI pode validar código + migration no mesmo PR sem aceitar uma RPC
+ * arbitrária em allowlist. DROP posterior prevalece sobre CREATE anterior.
+ */
+export function projectAuthorizedRuntimeObjects(inventory, targets) {
+  const relations = new Set(inventory.relations || []);
+  const functions = new Set(inventory.functions || []);
+  const liveRelations = new Set(relations);
+  const liveFunctions = new Set(functions);
+  const provenance = new Map();
+
+  for (const target of targets) {
+    const code = stripNonCode(target.sql);
+    const ddlRe = new RegExp(PUBLIC_DDL_RE.source, PUBLIC_DDL_RE.flags);
+    for (const match of code.matchAll(ddlRe)) {
+      const action = match[1].toUpperCase().startsWith('CREATE') ? 'create' : 'drop';
+      const objectType = match[2].toUpperCase();
+      const name = match[3];
+      const kind = objectType === 'FUNCTION' ? 'function' : 'relation';
+      const collection = kind === 'function' ? functions : relations;
+      const key = `${kind}:${name}`;
+
+      if (action === 'create') {
+        collection.add(name);
+        provenance.set(key, {
+          kind,
+          name,
+          migration: target.file,
+          version: target.version,
+        });
+      } else {
+        collection.delete(name);
+        provenance.delete(key);
+      }
+    }
+  }
+
+  const projected = [...provenance.values()].filter(({ kind, name }) =>
+    kind === 'function' ? !liveFunctions.has(name) : !liveRelations.has(name),
+  );
+
+  return { relations, functions, projected };
+}
+
 function main() {
   const jsonOutput = process.argv.includes('--json');
 
@@ -320,9 +370,31 @@ function main() {
 
   const tables = new Set(cache.tables || []);
   const views = new Set(cache.views || []);
-  const functions = new Set(cache.functions || []);
+  let functions = new Set(cache.functions || []);
   const buckets = new Set(cache.buckets || []);
-  const tableLike = new Set(cache.relations ?? [...tables, ...views]);
+  let tableLike = new Set(cache.relations ?? [...tables, ...views]);
+  let projected = [];
+  try {
+    if (!Array.isArray(cache.applied_authorized_versions)) {
+      throw new Error('snapshot sem applied_authorized_versions do ledger remoto');
+    }
+    const appliedVersions = new Set(cache.applied_authorized_versions.map(String));
+    const pendingTargets = loadAuthorizedTargets().filter(
+      (target) => !appliedVersions.has(target.version),
+    );
+    const projection = projectAuthorizedRuntimeObjects(
+      { relations: tableLike, functions },
+      pendingTargets,
+    );
+    tableLike = projection.relations;
+    functions = projection.functions;
+    projected = projection.projected;
+  } catch (error) {
+    console.error(
+      `[check-runtime-refs] migrations autorizadas inválidas; projeção recusada: ${error.message}`,
+    );
+    process.exit(2);
+  }
 
   const files = SCAN_DIRS.flatMap((d) => walk(d));
   const allFindings = files.flatMap((file) => analyzeSource(readFileSync(file, 'utf8'), file));
@@ -346,8 +418,10 @@ function main() {
         {
           cache_generated_at: cache.generated_at,
           cache_age_days: Number(inventoryFreshness.ageDays.toFixed(3)),
+          applied_authorized_versions: cache.applied_authorized_versions.length,
           files_scanned: files.length,
           references_scanned: allFindings.length,
+          authorized_projection: projected,
           broken,
           blocking,
           allowed,
@@ -360,6 +434,14 @@ function main() {
     console.log(
       `[check-runtime-refs] cache de ${cache.generated_at} (${inventoryFreshness.ageDays.toFixed(1)} dia(s)) · ${files.length} arquivos varridos · ${allFindings.length} referências ao client interno encontradas`,
     );
+    if (projected.length) {
+      console.log(
+        `\n${projected.length} objeto(s) ausente(s) no snapshot, mas criado(s) pelo conjunto de migrations com SHA autorizado:`,
+      );
+      for (const item of projected) {
+        console.log(`  ${item.kind}('${item.name}')  ${item.migration}`);
+      }
+    }
     if (allowed.length) {
       console.log(
         `\n${allowed.length} referência(s) quebrada(s) mas na allowlist (ver .check-runtime-refs-allowlist.json):`,

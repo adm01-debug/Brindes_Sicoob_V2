@@ -174,11 +174,15 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261016190000_enable_scoped_business_realtime.sql",
-    sha256: "eb88eae2f11006f31151221a8300c7001f6a29c5723b4bbc2ecbb17f3ecf2afd",
+    sha256: "7b63c6b49fd68b5aebc84bd36f4c71f8cf7570d3d3fdc64aaee551668a4bbfd5",
   },
   {
     file: "supabase/migrations/20261016193000_pin_custom_kit_atomically.sql",
     sha256: "0d3ec1b8a6f3bb6fa36045fb8ba630df08f924d05bfe7b4e331b152fbd143080",
+  },
+  {
+    file: "supabase/migrations/20261016201500_restore_view_invoker_and_notification_scope.sql",
+    sha256: "92520f0039c465ec961907500a43e3477a8a18ebb5bf4b3d8ed3741b75660e2e",
   },
 ];
 
@@ -228,7 +232,7 @@ function sha256(value) {
 // transação, então qualquer controle transacional na migration (incluindo as
 // formas estendidas END, ABORT, START TRANSACTION e COMMIT WORK/AND CHAIN ou o
 // comando no meio de uma linha) quebraria a promessa de aplicação atômica.
-function stripNonCode(sql) {
+export function stripNonCode(sql) {
   let result = "";
   let index = 0;
   while (index < sql.length) {

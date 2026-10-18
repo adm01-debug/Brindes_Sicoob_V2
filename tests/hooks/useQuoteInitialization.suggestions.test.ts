@@ -69,6 +69,6 @@ describe('transferência de sugestões do BI para o orçamento', () => {
       source: 'affinity',
     };
     expect(quoteSuggestionKey(suggestion, 0)).not.toBe(quoteSuggestionKey(suggestion, 1));
-    expect(quoteSuggestionKey({ ...suggestion, productId: 'produto-1' }, 0)).toBe('produto-1');
+    expect(quoteSuggestionKey({ ...suggestion, productId: 'produto-1' }, 0)).toBe('produto-1-0');
   });
 });
