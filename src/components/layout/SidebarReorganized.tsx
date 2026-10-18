@@ -90,6 +90,12 @@ export const navGroups: NavGroup[] = [
         href: '/gestor/convites',
         allowedRoles: ['dev', 'supervisor', 'gestor_compras', 'comprador_singular'],
       },
+      {
+        icon: ShieldCheck,
+        label: 'Delegações de aprovação',
+        href: '/gestor/delegacoes',
+        allowedRoles: ['dev', 'supervisor', 'gestor_compras', 'comprador_singular'],
+      },
       { icon: Building, label: 'Painel PA', href: '/dashboard-pa' },
       { icon: Users, label: 'Minha Carteira', href: '/vendedor/dashboard' },
     ],

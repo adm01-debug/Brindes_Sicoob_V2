@@ -35,6 +35,11 @@ interface AutoSaveOptions<T> {
   enabled?: boolean;
 }
 
+export interface ExternalAutoSaveChange<T> {
+  data: T;
+  savedAt: string;
+}
+
 /**
  * useAutoSave — Hook para persistência automática de rascunhos.
  * Salva no localStorage por padrão e opcionalmente dispara um callback (ex: salvar no DB).
@@ -48,10 +53,16 @@ export function useAutoSave<T>({
   enabled = true,
 }: AutoSaveOptions<T>) {
   const lastSavedData = useRef<string>(JSON.stringify(data));
+  const activeKey = useRef(key);
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveOnUnmount = useRef<() => Promise<void>>(async () => {});
+  const currentData = useRef(data);
   const [lastError, setLastError] = useState<Error | null>(null);
+  const [externalChange, setExternalChange] = useState<ExternalAutoSaveChange<T> | null>(null);
+  currentData.current = data;
 
   const save = useCallback(async () => {
+    if (!enabled || !key) return;
     const currentDataStr = JSON.stringify(data);
     
     // Só salva se houver mudança e houver dados relevantes (ex: clientId no orçamento)
@@ -80,7 +91,34 @@ export function useAutoSave<T>({
       onError?.(saveError);
       log.error("save_failed", { key, error: saveError });
     }
-  }, [key, data, onError, onSave]);
+  }, [key, data, enabled, onError, onSave]);
+  saveOnUnmount.current = save;
+
+  useEffect(() => {
+    if (activeKey.current === key) return;
+    activeKey.current = key;
+    lastSavedData.current = JSON.stringify(data);
+    setLastError(null);
+    setExternalChange(null);
+  }, [data, key]);
+
+  useEffect(() => {
+    if (!enabled || !key) return;
+    const storageKey = `autosave_${key}`;
+    const handleStorage = (event: StorageEvent) => {
+      if (event.storageArea !== localStorage || event.key !== storageKey || !event.newValue) return;
+      try {
+        const parsed = JSON.parse(event.newValue) as Partial<StoredAutoSave<T>>;
+        if (parsed.version !== AUTO_SAVE_VERSION || typeof parsed.savedAt !== "string" || !("data" in parsed)) return;
+        if (JSON.stringify(parsed.data) === JSON.stringify(currentData.current)) return;
+        setExternalChange({ data: parsed.data as T, savedAt: parsed.savedAt });
+      } catch {
+        // Eventos inválidos ou de outra versão não alteram o rascunho aberto.
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, [enabled, key]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -96,6 +134,10 @@ export function useAutoSave<T>({
       if (saveTimeout.current) clearTimeout(saveTimeout.current);
     };
   }, [data, enabled, interval, save]);
+
+  useEffect(() => () => {
+    void saveOnUnmount.current();
+  }, []);
 
   // Função para restaurar dados
   const restore = useCallback((): T | null => {
@@ -113,5 +155,5 @@ export function useAutoSave<T>({
     localStorage.removeItem(`autosave_${key}`);
   }, [key]);
 
-  return { restore, clear, lastSaved: lastSavedData.current, lastError };
+  return { restore, clear, lastSaved: lastSavedData.current, lastError, externalChange };
 }

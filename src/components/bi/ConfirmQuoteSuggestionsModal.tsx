@@ -39,8 +39,12 @@ interface Props {
   suggestions: SuggestionItem[];
 }
 
-const fmtBRL = (v: number) =>
-  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+const fmtBRL = (value: number) =>
+  value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+
+export function quoteSuggestionKey(suggestion: SuggestionItem, index: number): string {
+  return `${suggestion.productId ?? "sem-produto"}-${index}`;
+}
 
 export function ConfirmQuoteSuggestionsModal({
   open,
@@ -54,15 +58,15 @@ export function ConfirmQuoteSuggestionsModal({
 
   useEffect(() => {
     if (open) {
-      setSelected(new Set(suggestions.map((s) => s.name)));
+      setSelected(new Set(suggestions.map(quoteSuggestionKey)));
     }
   }, [open, suggestions]);
 
-  const toggle = (name: string) => {
+  const toggle = (key: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(name)) next.delete(name);
-      else next.add(name);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   };
@@ -79,8 +83,13 @@ export function ConfirmQuoteSuggestionsModal({
       return;
     }
 
-    const selectedItems = suggestions.filter((s) => selected.has(s.name));
-    const productIds = selectedItems.map((s) => s.productId).filter(Boolean) as string[];
+    const selectedItems = suggestions.filter((s, index) => selected.has(quoteSuggestionKey(s, index)));
+    const unavailable = selectedItems.filter((s) => !s.productId);
+    if (unavailable.length > 0) {
+      toast.error(`${unavailable.length} sugestão(ões) ainda não possuem produto vinculado ao catálogo.`);
+      return;
+    }
+    const productIds = [...new Set(selectedItems.map((s) => s.productId).filter(Boolean) as string[])];
 
     const params = new URLSearchParams();
     params.set("clientId", clientId);
@@ -92,13 +101,6 @@ export function ConfirmQuoteSuggestionsModal({
     onOpenChange(false);
     navigate(`/orcamentos/novo?${params.toString()}`);
   };
-
-  const totalEstimateMin = suggestions
-    .filter((s) => selected.has(s.name))
-    .reduce((acc, s) => acc + s.priceFrom * 50, 0); // estimativa volume mínimo
-  const totalEstimateMax = suggestions
-    .filter((s) => selected.has(s.name))
-    .reduce((acc, s) => acc + s.priceTo * 100, 0);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -116,13 +118,14 @@ export function ConfirmQuoteSuggestionsModal({
 
         <ScrollArea className="flex-1 -mx-6 px-6">
           <div className="space-y-2 py-2">
-            {suggestions.map((s) => {
-              const isSelected = selected.has(s.name);
+            {suggestions.map((s, index) => {
+              const suggestionKey = quoteSuggestionKey(s, index);
+              const isSelected = selected.has(suggestionKey);
               const SourceIcon = s.source === "affinity" ? Heart : TrendingUp;
               return (
                 <label
-                  key={s.name}
-                  htmlFor={`sug-${s.name}`}
+                  key={suggestionKey}
+                  htmlFor={`sug-${suggestionKey}`}
                   className={cn(
                     "flex items-center gap-3 p-3 rounded-lg border-[1.5px] cursor-pointer transition-all",
                     isSelected
@@ -131,9 +134,9 @@ export function ConfirmQuoteSuggestionsModal({
                   )}
                 >
                   <Checkbox
-                    id={`sug-${s.name}`}
+                    id={`sug-${suggestionKey}`}
                     checked={isSelected}
-                    onCheckedChange={() => toggle(s.name)}
+                    onCheckedChange={() => toggle(suggestionKey)}
                   />
                   {s.imageUrl ? (
                     <div className="h-12 w-12 rounded-md overflow-hidden bg-muted shrink-0 border">
@@ -186,11 +189,6 @@ export function ConfirmQuoteSuggestionsModal({
           <span>
             {selected.size} de {suggestions.length} selecionados
           </span>
-          {selected.size > 0 && (
-            <span className="font-medium text-foreground">
-              Estimativa: {fmtBRL(totalEstimateMin)} – {fmtBRL(totalEstimateMax)}
-            </span>
-          )}
         </div>
 
         <DialogFooter>

@@ -6,6 +6,11 @@ import { getBreaker, circuitOpenResponse, getAllBreakerStatuses } from '../_shar
 import { AsyncLocalStorage } from "node:async_hooks";
 import { getOrCreateRequestId, REQUEST_ID_HEADER } from "../_shared/request-id.ts";
 import { resolveCredential, buildCredentialsHealth } from "../_shared/credentials.ts";
+import { buildCompanySearchOr } from "./search-query.ts";
+import {
+  canAccessCrmRequest,
+  hasActivePortalMembership,
+} from "../_shared/portal-access-policy.ts";
 
 const breaker = getBreaker("crm-db");
 
@@ -243,8 +248,6 @@ const ALLOWED_TABLES = [
   "contact_emails", "contact_phones", "customers", "suppliers", "carriers",
 ];
 
-const VENDOR_WRITE_TABLES: string[] = [];
-
 const OPTIONAL_QUOTE_TABLES = new Set<string>();
 
 // ============================================
@@ -383,15 +386,14 @@ export function logInsertResultIfAnomalous(
     returning: context.returning ?? "*",
     shape: diagnostic.shape,
     rowCount: diagnostic.rowCount,
-    errorMessage: diagnostic.errorMessage,
-    preview: diagnostic.preview,
+    errorKind: diagnostic.errorMessage ? "database_error" : undefined,
+    preview: "[redacted]",
   };
 
   const icon = diagnostic.shape === "generic-string-error" ? "🚨" : "⚠️";
   console.error(
     `[crm-db-bridge] ${icon} result-shape-anomaly op=${context.operation} table=${context.table} ` +
       `shape=${diagnostic.shape}` +
-      (diagnostic.errorMessage ? ` message="${diagnostic.errorMessage}"` : "") +
       ` → ${JSON.stringify(payload)}`,
   );
   return true;
@@ -400,18 +402,23 @@ export function logInsertResultIfAnomalous(
 
 interface CrmQuery {
   table: string;
-  operation: "select" | "search" | "insert" | "update" | "delete" | "batch";
+  operation: "select" | "search" | "insert" | "update" | "delete" | "batch" | "quote_directory";
   id?: string;
   filters?: Record<string, unknown>;
   select?: string;
-  orderBy?: string | { column: string; ascending?: boolean };
+  orderBy?: string | { column: string; ascending?: boolean } | Array<string | { column: string; ascending?: boolean }>;
   limit?: number;
   offset?: number;
-  search?: { column: string; term: string };
+  search?: { column?: string; columns?: string[]; term: string };
+  count?: "exact";
+  head?: boolean;
   relations?: string;
   data?: Record<string, unknown> | Record<string, unknown>[];
   returning?: string;
   queries?: BatchQuery[];
+  action?: "companies" | "contacts";
+  companyId?: string;
+  term?: string;
 }
 
 interface BatchQuery {
@@ -421,12 +428,12 @@ interface BatchQuery {
   orderBy?: string | { column: string; ascending?: boolean };
   limit?: number;
   offset?: number;
-  search?: { column: string; term: string };
+  search?: { column?: string; columns?: string[]; term: string };
 }
 
 interface AuthResult {
   userId: string | null;
-  userRole: string;
+  userRoles: string[];
   error?: Response;
 }
 
@@ -435,6 +442,35 @@ interface PostgrestLikeError {
   message?: string;
 }
 
+const CrmRequestSchema = z.object({
+  operation: z.enum(["select", "search", "insert", "update", "delete", "batch", "quote_directory"]),
+  table: z.string().trim().min(1).max(100).regex(/^[a-z_][a-z0-9_]*$/i).optional(),
+  id: z.string().uuid().optional(),
+  filters: z.record(z.unknown()).optional(),
+  select: z.string().max(2000).optional(),
+  orderBy: z.union([
+    z.string(),
+    z.object({ column: z.string(), ascending: z.boolean().optional() }),
+    z.array(z.union([z.string(), z.object({ column: z.string(), ascending: z.boolean().optional() })])).min(1).max(3),
+  ]).optional(),
+  limit: z.number().int().min(1).max(1000).optional(),
+  offset: z.number().int().min(0).optional(),
+  search: z.object({
+    column: z.string().optional(),
+    columns: z.array(z.enum(["title", "nome_fantasia", "razao_social", "cnpj", "cidade"])).max(5).optional(),
+    term: z.string().max(200),
+  }).refine((search) => Boolean(search.column || search.columns?.length)).optional(),
+  count: z.enum(["exact"]).optional(),
+  head: z.boolean().optional(),
+  relations: z.string().max(2000).optional(),
+  data: z.union([z.record(z.unknown()), z.array(z.record(z.unknown()))]).optional(),
+  returning: z.string().max(2000).optional(),
+  queries: z.array(z.record(z.unknown())).max(10).optional(),
+  action: z.enum(["companies", "contacts"]).optional(),
+  companyId: z.string().uuid().optional(),
+  term: z.string().trim().min(2).max(100).optional(),
+});
+
 // ============================================
 // AUTH
 // ============================================
@@ -442,12 +478,16 @@ interface PostgrestLikeError {
 async function authenticateRequest(req: Request): Promise<AuthResult> {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
-    return { userId: null, userRole: "public", error: jsonResponse({ error: "Autenticação necessária" }, 401) };
+    return { userId: null, userRoles: [], error: jsonResponse({ error: "Autenticação necessária" }, 401) };
   }
 
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
+    console.error("[crm-auth] Configuração local de autenticação incompleta");
+    return { userId: null, userRoles: [], error: jsonResponse({ error: "Serviço de autenticação indisponível" }, 503) };
+  }
 
   const userClient = createClient(supabaseUrl, supabaseAnonKey, {
     global: { headers: { Authorization: authHeader } },
@@ -456,16 +496,31 @@ async function authenticateRequest(req: Request): Promise<AuthResult> {
   const { data: { user }, error: userError } = await userClient.auth.getUser();
   if (!user || userError) {
     console.error("CRM auth failed:", userError?.message);
-    return { userId: null, userRole: "public", error: jsonResponse({ error: "Token inválido ou expirado" }, 401) };
+    return { userId: null, userRoles: [], error: jsonResponse({ error: "Token inválido ou expirado" }, 401) };
   }
 
   const adminClient = createClient(supabaseUrl, supabaseServiceKey);
-  const { data: roleData } = await adminClient
-    .from("user_roles").select("role").eq("user_id", user.id).single();
+  const [rolesResult, profileResult] = await Promise.all([
+    adminClient.from("user_roles").select("role").eq("user_id", user.id),
+    adminClient.from("profiles").select("is_active, deleted_at").eq("user_id", user.id).maybeSingle(),
+  ]);
 
-  const userRole = roleData?.role || "vendedor";
-  console.log(`Request from user: ${user.id}, role: ${userRole}`);
-  return { userId: user.id, userRole };
+  if (rolesResult.error || profileResult.error) {
+    console.error("[crm-auth] Falha ao validar vínculo/papéis:", rolesResult.error?.message ?? profileResult.error?.message);
+    return { userId: null, userRoles: [], error: jsonResponse({ error: "Não foi possível validar o acesso" }, 503) };
+  }
+
+  const userRoles = [...new Set((rolesResult.data ?? [])
+    .map((row: { role?: unknown }) => row.role)
+    .filter((role): role is string => typeof role === "string" && role.length > 0))];
+
+  if (!hasActivePortalMembership(profileResult.data, userRoles)) {
+    console.warn(`[crm-auth] Acesso negado para ${user.id}: vínculo inativo, excluído ou sem papel`);
+    return { userId: null, userRoles: [], error: jsonResponse({ error: "Acesso não autorizado" }, 403) };
+  }
+
+  console.log(`[crm-auth] Usuário autenticado: ${user.id}, papéis=${userRoles.length}`);
+  return { userId: user.id, userRoles };
 }
 
 // ============================================
@@ -494,11 +549,21 @@ function applyFilters(query: any, filters: Record<string, unknown>): any {
   return query;
 }
 
-function applyOrdering(query: any, orderBy: string | { column: string; ascending?: boolean }): any {
-  if (typeof orderBy === "string") {
-    return query.order(orderBy);
+function applyOrdering(query: any, orderBy: CrmQuery["orderBy"]): any {
+  const orderings = Array.isArray(orderBy) ? orderBy : orderBy ? [orderBy] : [];
+  return orderings.reduce((currentQuery, ordering) => {
+    if (typeof ordering === "string") return currentQuery.order(ordering);
+    return currentQuery.order(ordering.column, { ascending: ordering.ascending ?? true });
+  }, query);
+}
+
+function applySearch(query: any, search: NonNullable<CrmQuery["search"]>): any {
+  if (!search.term) return query;
+  if (search.columns?.length) {
+    return query.or(buildCompanySearchOr(search.columns, search.term));
   }
-  return query.order(orderBy.column, { ascending: orderBy.ascending ?? true });
+  if (search.column) return query.ilike(search.column, `%${search.term}%`);
+  throw new Error("Search requires a column or a non-empty columns list");
 }
 
 // ============================================
@@ -592,8 +657,8 @@ async function handleBatch(crm: SupabaseClient, queries: BatchQuery[]): Promise<
         let query = crm.from(q.table).select(q.select || "*");
 
         if (q.filters) query = applyFilters(query, q.filters);
-        if (q.search?.column && q.search?.term) {
-          query = query.ilike(q.search.column, `%${q.search.term}%`);
+        if ((q.search?.column || q.search?.columns?.length) && q.search?.term) {
+          query = applySearch(query, q.search);
         }
         if (q.orderBy) query = applyOrdering(query, q.orderBy);
         if (q.limit) query = query.limit(q.limit);
@@ -614,13 +679,15 @@ async function handleBatch(crm: SupabaseClient, queries: BatchQuery[]): Promise<
             };
           }
 
-          console.error(`[batch] Query ${idx} (${q.table}) error: ${error.message}`);
+          console.error(`[batch] Query ${idx} (${q.table}) error code=${error.code ?? "unknown"}`);
           return { success: false, error: "query_failed" };
         }
         console.log(`[batch] Query ${idx} (${q.table}) ${duration}ms, ${(data || []).length} records`);
         return { success: true, data: { records: data || [], count: (data || []).length } };
       } catch (err: unknown) {
-        console.error(`[batch] Query ${idx} (${q.table}) failed:`, err);
+        console.error(
+          `[batch] Query ${idx} (${q.table}) failed kind=${err instanceof Error ? err.name : "unknown"}`,
+        );
         return { success: false, error: "query_failed" };
       }
     })
@@ -668,7 +735,7 @@ async function handleInsert(crm: SupabaseClient, body: CrmQuery): Promise<Respon
     if (isOptionalQuoteTable(table) && isMissingTableError(error, table)) {
       return createOptionalWriteError(table);
     }
-    console.error("CRM insert error:", error);
+    console.error(`CRM insert error code=${error.code ?? "unknown"}`);
     return jsonResponse({ error: "insert_failed" }, 500);
   }
   return jsonResponse({ data: result, count: result?.length || 0 });
@@ -698,7 +765,7 @@ async function handleUpdate(crm: SupabaseClient, body: CrmQuery): Promise<Respon
     if (isOptionalQuoteTable(table) && isMissingTableError(error, table)) {
       return createOptionalWriteError(table);
     }
-    console.error("CRM update error:", error);
+    console.error(`CRM update error code=${error.code ?? "unknown"}`);
     return jsonResponse({ error: "update_failed" }, 500);
   }
   return jsonResponse({ data: result, count: result?.length || 0 });
@@ -721,24 +788,30 @@ async function handleDelete(crm: SupabaseClient, body: CrmQuery): Promise<Respon
     if (isOptionalQuoteTable(table) && isMissingTableError(error, table)) {
       return createOptionalWriteError(table);
     }
-    console.error("CRM delete error:", error);
+    console.error(`CRM delete error code=${error.code ?? "unknown"}`);
     return jsonResponse({ error: "delete_failed" }, 500);
   }
   return jsonResponse({ data: null, success: true });
 }
 
 async function handleSelect(crm: SupabaseClient, body: CrmQuery): Promise<Response> {
-  const { table, id, filters, select, orderBy, limit, offset, search, relations } = body;
+  const { table, id, filters, select, orderBy, limit, offset, search, relations, count: countMode, head } = body;
   const selectFields = select || (relations ? `${select || "*"}, ${relations}` : "*");
   
-  console.log(`[SELECT] table=${table}, selectFields=${selectFields}, filters=${JSON.stringify(filters)}, limit=${limit}`);
+  console.log(
+    `[SELECT] table=${table}, fields=${selectFields.split(",").length}, ` +
+      `filter_keys=${filters ? Object.keys(filters).sort((left, right) => left.localeCompare(right, "pt-BR")).join(",") : "none"}, limit=${limit ?? "default"}`,
+  );
   
-  let query = crm.from(table).select(selectFields);
+  let query = crm.from(table).select(selectFields, {
+    ...(countMode ? { count: countMode } : {}),
+    ...(head ? { head } : {}),
+  });
 
   if (id) {
     const { data, error } = await query.eq("id", id).single();
     if (error) {
-      console.error(`[SELECT] single error: code=${error.code}, message=${error.message}, details=${JSON.stringify(error)}`);
+      console.error(`[SELECT] single error code=${error.code ?? "unknown"}`);
       if (isOptionalQuoteTable(table) && isMissingTableError(error, table)) {
         return createOptionalSelectFallback(table, true);
       }
@@ -751,31 +824,35 @@ async function handleSelect(crm: SupabaseClient, body: CrmQuery): Promise<Respon
   }
 
   if (filters) query = applyFilters(query, filters);
-  if (search) query = query.ilike(search.column, `%${search.term}%`);
+  if (search) query = applySearch(query, search);
   if (orderBy) query = applyOrdering(query, orderBy);
   if (limit) query = query.limit(limit);
   if (offset) query = query.range(offset, offset + (limit || 50) - 1);
 
-  const { data, error, count, status, statusText } = await query;
-  console.log(`[SELECT] result: status=${status}, statusText=${statusText}, dataLength=${(data || []).length}, error=${error ? JSON.stringify(error) : 'none'}, count=${count}`);
+  const { data, error, count: resultCount, status, statusText } = await query;
+  console.log(
+    `[SELECT] result status=${status} statusText=${statusText} dataLength=${(data || []).length} ` +
+      `errorCode=${error?.code ?? "none"} count=${resultCount ?? "unknown"}`,
+  );
   
   if (error) {
     if (isOptionalQuoteTable(table) && isMissingTableError(error, table)) {
       return createOptionalSelectFallback(table, false);
     }
-    console.error("CRM select error:", error);
+    console.error(`CRM select error code=${error.code ?? "unknown"}`);
     return jsonResponse({ error: "select_failed" }, 500);
   }
-  return jsonResponse({ data: data || [], count });
+  return jsonResponse({ data: data || [], count: resultCount });
 }
 
 async function handleSearch(crm: SupabaseClient, body: CrmQuery): Promise<Response> {
-  const { table, search, select, orderBy, limit } = body;
+  const { table, search, select, filters, orderBy, limit } = body;
   if (!search?.column || !search?.term) {
     return jsonResponse({ error: "Search requires 'column' and 'term'" }, 400);
   }
 
   let query = crm.from(table).select(select || "*").ilike(search.column, `%${search.term}%`);
+  if (filters) query = applyFilters(query, filters);
   if (orderBy) query = applyOrdering(query, orderBy);
   query = query.limit(limit || 50);
 
@@ -784,10 +861,165 @@ async function handleSearch(crm: SupabaseClient, body: CrmQuery): Promise<Respon
     if (isOptionalQuoteTable(table) && isMissingTableError(error, table)) {
       return createOptionalSelectFallback(table, false);
     }
-    console.error("CRM search error:", error);
+    console.error(`CRM search error code=${error.code ?? "unknown"}`);
     return jsonResponse({ error: "search_failed" }, 500);
   }
   return jsonResponse({ data: data || [], count: data?.length || 0 });
+}
+
+const QUOTE_COMPANY_SELECT =
+  "id, title, razao_social, nome_fantasia, ramo_atividade, cnpj, logo_url";
+const QUOTE_CONTACT_SELECT = "id, first_name, last_name, full_name, cargo";
+
+interface QuoteDirectoryContactRow {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  full_name: string | null;
+  cargo: string | null;
+}
+
+interface QuoteDirectoryChannelRow {
+  contact_id: string;
+  is_primary: boolean | null;
+  created_at: string | null;
+  email?: string | null;
+  numero?: string | null;
+}
+
+function displayCompanyName(company: Record<string, unknown>): string {
+  return String(company.title || company.nome_fantasia || company.razao_social || "");
+}
+
+function firstChannelByContact(
+  rows: QuoteDirectoryChannelRow[] | null,
+  field: "email" | "numero",
+): Map<string, string> {
+  const result = new Map<string, string>();
+  for (const row of rows ?? []) {
+    const value = row[field];
+    if (!result.has(row.contact_id) && typeof value === "string" && value.trim()) {
+      result.set(row.contact_id, value);
+    }
+  }
+  return result;
+}
+
+async function handleQuoteCompanies(crm: SupabaseClient, body: CrmQuery): Promise<Response> {
+  const limit = body.limit ?? 100;
+  const offset = body.offset ?? 0;
+  let query = crm
+    .from("companies")
+    .select(QUOTE_COMPANY_SELECT)
+    .eq("is_customer", true)
+    .is("deleted_at", null)
+    .order("razao_social", { ascending: true });
+
+  if (body.companyId) query = query.eq("id", body.companyId);
+  if (body.term) {
+    query = query.or(
+      buildCompanySearchOr(["razao_social", "nome_fantasia", "cnpj", "ramo_atividade"], body.term),
+    );
+  }
+  query = query.range(offset, offset + limit - 1);
+
+  const { data, error } = await query;
+  if (error) {
+    console.error(`[quote-directory] companies query_failed code=${error.code ?? "unknown"}`);
+    return jsonResponse({ error: "quote_directory_failed" }, 500);
+  }
+
+  const companies = (data ?? []).map((row: Record<string, unknown>) => ({
+    id: String(row.id),
+    name: displayCompanyName(row),
+    razao_social: String(row.razao_social ?? ""),
+    nome_fantasia: row.nome_fantasia == null ? null : String(row.nome_fantasia),
+    ramo_atividade: row.ramo_atividade == null ? null : String(row.ramo_atividade),
+    cnpj: row.cnpj == null ? null : String(row.cnpj),
+    logo_url: row.logo_url == null ? null : String(row.logo_url),
+  }));
+  return jsonResponse({ data: companies, count: companies.length });
+}
+
+async function handleQuoteContacts(crm: SupabaseClient, body: CrmQuery): Promise<Response> {
+  const companyId = body.companyId!;
+  const companyResult = await crm
+    .from("companies")
+    .select("id")
+    .eq("id", companyId)
+    .eq("is_customer", true)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (companyResult.error) {
+    console.error(
+      `[quote-directory] company validation_failed code=${companyResult.error.code ?? "unknown"}`,
+    );
+    return jsonResponse({ error: "quote_directory_failed" }, 500);
+  }
+  if (!companyResult.data) return jsonResponse({ error: "customer_not_found" }, 404);
+
+  const contactsResult = await crm
+    .from("contacts")
+    .select(QUOTE_CONTACT_SELECT)
+    .eq("company_id", companyId)
+    .is("deleted_at", null)
+    .order("first_name", { ascending: true })
+    .limit(body.limit ?? 50);
+  if (contactsResult.error) {
+    console.error(
+      `[quote-directory] contacts query_failed code=${contactsResult.error.code ?? "unknown"}`,
+    );
+    return jsonResponse({ error: "quote_directory_failed" }, 500);
+  }
+
+  const contactRows = (contactsResult.data ?? []) as QuoteDirectoryContactRow[];
+  const contactIds = contactRows.map((contact) => contact.id);
+  if (contactIds.length === 0) return jsonResponse({ data: [], count: 0 });
+
+  const [emailsResult, phonesResult] = await Promise.all([
+    crm
+      .from("contact_emails")
+      .select("contact_id, email, is_primary, created_at")
+      .in("contact_id", contactIds)
+      .order("is_primary", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: true }),
+    crm
+      .from("contact_phones")
+      .select("contact_id, numero, is_primary, created_at")
+      .in("contact_id", contactIds)
+      .order("is_primary", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: true }),
+  ]);
+  if (emailsResult.error || phonesResult.error) {
+    const code = emailsResult.error?.code ?? phonesResult.error?.code ?? "unknown";
+    console.error(`[quote-directory] channels query_failed code=${code}`);
+    return jsonResponse({ error: "quote_directory_failed" }, 500);
+  }
+
+  const emails = firstChannelByContact(
+    emailsResult.data as QuoteDirectoryChannelRow[] | null,
+    "email",
+  );
+  const phones = firstChannelByContact(
+    phonesResult.data as QuoteDirectoryChannelRow[] | null,
+    "numero",
+  );
+  const contacts = contactRows.map((contact) => ({
+    id: contact.id,
+    name:
+      contact.full_name ||
+      [contact.first_name, contact.last_name].filter(Boolean).join(" "),
+    cargo: contact.cargo,
+    email: emails.get(contact.id) ?? null,
+    phone: phones.get(contact.id) ?? null,
+  }));
+  return jsonResponse({ data: contacts, count: contacts.length });
+}
+
+async function handleQuoteDirectory(crm: SupabaseClient, body: CrmQuery): Promise<Response> {
+  if (body.action === "companies") return handleQuoteCompanies(crm, body);
+  if (body.action === "contacts") return handleQuoteContacts(crm, body);
+  return jsonResponse({ error: "quote_directory_action_invalid" }, 400);
 }
 
 // ============================================
@@ -806,10 +1038,10 @@ Deno.serve((req) => {
     }
 
   // ─────────────────────────────────────────────────────────────────
-  // PING / DIAG — endpoints de diagnóstico SEMPRE disponíveis.
-  // BYPASS deliberado de circuit-breaker, JWT, bot-protection e CRM externo.
+  // PING público expõe somente saúde agregada. Diagnósticos detalhados exigem
+  // autenticação e papel dev, antes de revelar estado interno ou credenciais.
   //
-  //   GET  ?op=ping  | POST { operation:"ping" }  → { ok, ts, warm }
+  //   GET  ?op=ping  | POST { operation:"ping" }  → { ok, status }
   //   GET  ?op=diag  | POST { operation:"diag" }  → snapshot completo de
   //     métricas de cold vs warm path do isolate atual:
   //       boot.client_build_ms    — tempo p/ instanciar o SupabaseClient
@@ -821,7 +1053,14 @@ Deno.serve((req) => {
   // ─────────────────────────────────────────────────────────────────
   const diagOp = await detectDiagOp(req);
   if (diagOp === "ping") {
-    return jsonResponse({ ok: true, ts: Date.now(), warm: crmWarmupCompleted });
+    return jsonResponse({ ok: true, status: crmWarmupCompleted ? "ready" : "starting" });
+  }
+  if (diagOp) {
+    const diagnosticAuth = await authenticateRequest(req);
+    if (diagnosticAuth.error) return diagnosticAuth.error;
+    if (!diagnosticAuth.userRoles.includes("dev")) {
+      return jsonResponse({ error: "Diagnóstico restrito a desenvolvedores" }, 403);
+    }
   }
   if (diagOp === "diag") {
     return jsonResponse(buildDiagSnapshot());
@@ -873,6 +1112,21 @@ Deno.serve((req) => {
     const auth = await authenticateRequest(req);
     if (auth.error) return auth.error;
 
+    // Autoriza o shape completo antes de resolver qualquer credencial externa.
+    let rawBody: unknown;
+    try { rawBody = await req.json(); } catch {
+      return jsonResponse({ error: "Invalid JSON in request body" }, 400);
+    }
+    const parsed = CrmRequestSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return jsonResponse({ error: "Validation failed", details: parsed.error.flatten().fieldErrors }, 400);
+    }
+    const body = parsed.data as CrmQuery;
+    const { operation, table } = body;
+    if (!canAccessCrmRequest(auth.userRoles, body)) {
+      return jsonResponse({ error: "Permissão insuficiente para esta operação no CRM" }, 403);
+    }
+
     // SSOT: DB-first via integration_credentials, env fallback via aliases.
     // Antes lia Deno.env.get() direto e ignorava credenciais salvas pela UI
     // (/admin/conexoes), causando 500 mesmo após o usuário cadastrar a CRM.
@@ -913,11 +1167,7 @@ Deno.serve((req) => {
         url_prefix: urlPrefix,
         using,
         key_source: keySource,
-        key_len: CRM_KEY.length,
-        anon_len: CRM_ANON.length,
         keys_match: CRM_SERVICE_KEY === CRM_ANON,
-        svc_last4: CRM_KEY.slice(-4),
-        anon_last4: CRM_ANON.slice(-4),
       }));
     }
 
@@ -932,46 +1182,15 @@ Deno.serve((req) => {
       }, 500);
     }
 
-    // Validate body with Zod schema
-    let rawBody: unknown;
-    try { rawBody = await req.json(); } catch {
-      return jsonResponse({ error: "Invalid JSON in request body" }, 400);
-    }
-
-    const CrmRequestSchema = z.object({
-      operation: z.enum(["select", "search", "insert", "update", "delete", "batch"]),
-      table: z.string().trim().min(1).max(100).regex(/^[a-z_][a-z0-9_]*$/i).optional(),
-      id: z.string().uuid().optional(),
-      filters: z.record(z.unknown()).optional(),
-      select: z.string().max(2000).optional(),
-      orderBy: z.union([z.string(), z.object({ column: z.string(), ascending: z.boolean().optional() })]).optional(),
-      limit: z.number().int().min(1).max(1000).optional(),
-      offset: z.number().int().min(0).optional(),
-      search: z.object({ column: z.string(), term: z.string() }).optional(),
-      relations: z.string().max(2000).optional(),
-      data: z.union([z.record(z.unknown()), z.array(z.record(z.unknown()))]).optional(),
-      returning: z.string().max(2000).optional(),
-      queries: z.array(z.record(z.unknown())).max(10).optional(),
-    });
-
-    const parsed = CrmRequestSchema.safeParse(rawBody);
-    if (!parsed.success) {
-      return jsonResponse({ error: "Validation failed", details: parsed.error.flatten().fieldErrors }, 400);
-    }
-
-    const body = parsed.data as CrmQuery;
-    const { operation, table } = body;
-
-    // Write permission check for vendedores
-    if (["insert", "update", "delete"].includes(operation) && auth.userRole === "vendedor") {
-      if (!VENDOR_WRITE_TABLES.includes(table)) {
-        return jsonResponse({ error: "Permissão insuficiente para modificar esta tabela" }, 403);
-      }
-    }
-
     // Batch handler (no table validation needed — done per-query inside)
     if (operation === "batch") {
       return handleBatch(crm, body.queries || []);
+    }
+
+    if (operation === "quote_directory") {
+      const response = await handleQuoteDirectory(crm, body);
+      if (response.status >= 500) breaker.recordFailure(); else breaker.recordSuccess();
+      return response;
     }
 
     // Table whitelist
@@ -1014,7 +1233,7 @@ Deno.serve((req) => {
     const elapsed = Math.round(performance.now() - reqStartedAt);
     console.error(
       `[crm-runtime] [req_id=${requestId}] error_ms=${elapsed} was_cold=${wasCold} ` +
-        `${error instanceof Error ? error.message : String(error)}`,
+        `kind=${error instanceof Error ? error.name : "unknown"}`,
     );
     return jsonResponse({ error: "internal_error" }, 500);
   }

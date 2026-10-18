@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Sparkles, RefreshCw, AlertTriangle, TrendingUp, Lightbulb } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { isDemoMode } from "@/pages/trends/is-demo-mode";
 import { useToast } from "@/hooks/use-toast";
 
 interface TrendsInsightsCardProps {
@@ -25,12 +26,12 @@ interface InsightResponse {
 export function TrendsInsightsCard({ days }: TrendsInsightsCardProps) {
   const { toast } = useToast();
   const [version, setVersion] = useState(0);
+  const demo = isDemoMode();
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
-    queryKey: ["trends-insights", days, version],
+    queryKey: ["trends-insights", days, version, demo],
     queryFn: async (): Promise<InsightResponse | null> => {
-      const { isDemoMode } = await import("@/pages/trends/is-demo-mode");
-      if (isDemoMode()) {
+      if (demo) {
         const { MOCK_INSIGHTS } = await import("@/pages/trends/trends-mock");
         // Simula latência leve para sensação real
         await new Promise(r => setTimeout(r, 400));

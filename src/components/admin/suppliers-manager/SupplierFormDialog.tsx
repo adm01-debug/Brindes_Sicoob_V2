@@ -11,6 +11,7 @@ import { maskCnpj, maskPhone, ESTADOS_BR } from '@/utils/masks';
 import { applyPixMask, pixPlaceholder, validatePixKey } from '@/utils/pixMask';
 import { type Supplier, type SupplierContact, type PixKey, CONTACT_ROLES } from "./types";
 import React from 'react';
+import { PrivateStorageImage } from '@/components/common/PrivateStorageImage';
 
 interface SupplierFormDialogProps {
   editingSupplier: Partial<Supplier> | null;
@@ -145,7 +146,7 @@ export function SupplierFormDialog({
                 {editingSupplier.logo_url ? (
                   <div className="relative w-20 h-20 rounded-lg border border-border overflow-hidden bg-muted">
                     
-<img src={editingSupplier.logo_url} alt="Logo" className="w-full h-full object-contain"  loading="lazy" />
+<PrivateStorageImage value={editingSupplier.logo_url} bucket="supplier-logos" alt="Logo" className="w-full h-full object-contain" loading="lazy" />
                     <button type="button" onClick={() => updateField('logo_url', null)} className="absolute -top-1 -right-1 rounded-full bg-destructive text-destructive-foreground p-0.5"><X className="h-3 w-3" /></button>
                   </div>
                 ) : (

@@ -1,73 +1,24 @@
-import { createExternalCatalogClient } from "../_shared/catalog-client.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Cache-Control": "no-store",
 };
 
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+function json(body: Record<string, string>, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+Deno.serve((req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    return json({ error: "metodo_nao_permitido" }, 405);
   }
 
-  const start = Date.now();
-  const checks: Record<string, { status: string; latency_ms?: number; error?: string }> = {};
-
-  // Check database connectivity
-  try {
-    const dbStart = Date.now();
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") || "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""
-    );
-    const { error } = await supabase.from("profiles").select("id").limit(1);
-    checks.database = {
-      status: error ? "degraded" : "healthy",
-      latency_ms: Date.now() - dbStart,
-      ...(error && { error: error.message }),
-    };
-  } catch (e) {
-    checks.database = { status: "unhealthy", error: (e as Error).message };
-  }
-
-  // Check external DB connectivity
-  try {
-    const extStart = Date.now();
-    const extClient = await createExternalCatalogClient();
-
-    if (extClient) {
-      const { error } = await extClient.from("products").select("id").limit(1);
-      checks.external_db = {
-        status: error ? "degraded" : "healthy",
-        latency_ms: Date.now() - extStart,
-        ...(error && { error: error.message }),
-      };
-    } else {
-      checks.external_db = { status: "skipped", error: "No credentials" };
-    }
-  } catch (e) {
-    checks.external_db = { status: "unhealthy", error: (e as Error).message };
-  }
-
-  // Overall status
-  const allStatuses = Object.values(checks).map(c => c.status);
-  const overall = allStatuses.every(s => s === "healthy")
-    ? "healthy"
-    : allStatuses.some(s => s === "unhealthy")
-      ? "unhealthy"
-      : "degraded";
-
-  return new Response(
-    JSON.stringify({
-      status: overall,
-      timestamp: new Date().toISOString(),
-      total_latency_ms: Date.now() - start,
-      checks,
-    }),
-    {
-      status: overall === "unhealthy" ? 503 : 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    }
-  );
+  // Endpoint anônimo de liveness: não consulta serviços internos nem revela
+  // latência, nomes de dependências, configuração ou mensagens de erro.
+  return req.method === "HEAD" ? new Response(null, { headers: corsHeaders }) : json({ status: "ok" });
 });

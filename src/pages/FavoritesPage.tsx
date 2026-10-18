@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Heart, Trash2, Search, Package, Layers, TrendingDown, TrendingUp,
-  CheckSquare, X, FolderOpen,
+  CheckSquare, X, FolderOpen, AlertCircle, Loader2, RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -147,6 +147,9 @@ export default function FavoritesPage() {
   // Listas remotas + lixeira
   const {
     lists,
+    isLoading: listsLoading,
+    error: listsError,
+    refetch: refetchLists,
     createList,
     updateList,
     deleteList,
@@ -181,8 +184,21 @@ export default function FavoritesPage() {
   }, [selectedListId]);
 
   // Items enriquecidos da lista remota selecionada
-  const { enriched, rawItems, removeItem, updateItem } = useEnrichedFavoriteItems(selectedListId);
+  const {
+    enriched,
+    rawItems,
+    isLoading: itemsLoading,
+    error: itemsError,
+    refetch: refetchItems,
+    removeItem,
+    updateItem,
+  } = useEnrichedFavoriteItems(selectedListId);
   const isRemoteListView = !!selectedListId && !showTrash;
+
+  useEffect(() => {
+    if (listsLoading || listsError || !selectedListId) return;
+    if (!lists.some((list) => list.id === selectedListId)) setSelectedListId(null);
+  }, [lists, listsError, listsLoading, selectedListId]);
 
   const { getProductsByIds, products: _cacheSignal } = useProductsContext();
   const [searchQuery, setSearchQuery] = useState("");
@@ -587,7 +603,27 @@ export default function FavoritesPage() {
   function MainView() {
     if (showTrash) return <><div className="flex items-center gap-2 px-1"><Trash2 className="h-5 w-5 text-muted-foreground" />
       <h2 className="text-lg font-display font-semibold text-foreground">Lixeira</h2></div><FavoritesTrashView /></>;
+    if (isRemoteListView && itemsLoading) return <div role="status" className="flex min-h-48 items-center justify-center gap-2 rounded-xl border bg-card text-sm text-muted-foreground">
+      <Loader2 className="h-4 w-4 animate-spin" />Carregando itens da lista…
+    </div>;
+    if (isRemoteListView && itemsError) return <div role="alert" className="flex min-h-48 flex-col items-center justify-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center">
+      <AlertCircle className="h-8 w-8 text-destructive" />
+      <div><p className="font-medium text-foreground">Não foi possível carregar esta lista</p>
+        <p className="text-sm text-muted-foreground">Seus favoritos continuam salvos. Tente consultar novamente.</p></div>
+      <Button variant="outline" size="sm" onClick={() => void refetchItems()}><RefreshCw className="mr-2 h-4 w-4" />Tentar novamente</Button>
+    </div>;
     return <ActiveFavorites />;
+  }
+
+  function ListsStatus() {
+    if (listsLoading) return <div role="status" className="mb-3 flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+      <Loader2 className="h-4 w-4 animate-spin" />Carregando suas listas de favoritos…
+    </div>;
+    if (!listsError) return null;
+    return <div role="alert" className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm">
+      <span className="flex items-center gap-2"><AlertCircle className="h-4 w-4 text-destructive" />Não foi possível atualizar suas listas remotas.</span>
+      <Button variant="outline" size="sm" onClick={() => void refetchLists()}><RefreshCw className="mr-2 h-4 w-4" />Tentar novamente</Button>
+    </div>;
   }
 
   function Presentation() {
@@ -604,6 +640,7 @@ export default function FavoritesPage() {
         <PageSEO title="Favoritos" description="Suas listas de produtos favoritos com organização, anotações e compartilhamento." path="/favoritos" />
         <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 pb-24 md:pb-6 animate-fade-in">
           <FavoritesHeader />
+          <ListsStatus />
           <div className="flex gap-4 lg:gap-6">
             <div className="hidden lg:block">{sidebarNode}</div>
             <div className="flex-1 min-w-0 space-y-4"><MainView /></div>

@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import type { Tables } from "@/integrations/supabase/types";
+import { askConfirm } from '@/stores/useConfirmDialogStore';
 
 type Central = Tables<"sicoob_centrais">;
 interface CentralFormData {
@@ -82,7 +83,7 @@ export default function AdminCentraisPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir esta Central? Isso pode desvincular Singulares.")) return;
+    if (!(await askConfirm({ title: 'Excluir Central?', description: 'Isso pode desvincular Singulares. Esta ação não pode ser desfeita.', variant: 'destructive', confirmLabel: 'Excluir' }))) return;
     try {
       const { error } = await supabase.from('sicoob_centrais').delete().eq('id', id);
       if (error) throw error;

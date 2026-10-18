@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { untypedFrom } from "@/lib/supabase-untyped";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -13,6 +14,28 @@ interface TrackSearchParams {
   searchTerm: string;
   resultsCount: number;
   filtersUsed?: Record<string, unknown>;
+}
+
+export function serializeSearchContext(filtersUsed: Record<string, unknown>): string {
+  try {
+    return JSON.stringify(filtersUsed, (_key, value) =>
+      typeof value === "bigint" ? value.toString() : value
+    ) ?? "{}";
+  } catch {
+    return "{}";
+  }
+}
+
+export function buildSearchAnalyticsInsert(
+  userId: string,
+  { searchTerm, resultsCount, filtersUsed = {} }: TrackSearchParams,
+) {
+  return {
+    search_term: searchTerm.toLowerCase().trim(),
+    results_count: resultsCount,
+    user_id: userId,
+    search_context: serializeSearchContext(filtersUsed),
+  };
 }
 
 export function useProductAnalytics() {
@@ -47,12 +70,11 @@ export function useProductAnalytics() {
 
       try {
         // Silently insert - all errors are ignored for analytics to not affect UX
-        await untypedFrom("search_analytics").insert({
-          search_term: searchTerm.toLowerCase().trim(),
-          results_count: resultsCount,
-          seller_id: user.id,
-          filters_used: filtersUsed,
-        });
+        await supabase.from("search_analytics").insert(buildSearchAnalyticsInsert(user.id, {
+          searchTerm,
+          resultsCount,
+          filtersUsed,
+        }));
         // Note: We intentionally ignore ALL errors for analytics
       } catch {
         // Silently ignore all tracking errors

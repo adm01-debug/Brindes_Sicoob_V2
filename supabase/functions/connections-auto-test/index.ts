@@ -1,16 +1,23 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { requireInternalService } from "../_shared/internal-service-auth.ts";
-// connections-auto-test: cron-driven (every 30min). Re-tests every active
-// connection in `external_connections` and updates last_test_* fields +
+// connections-auto-test: cron-driven. Re-tests every enabled connection that
+// can operate or recover (`active`, `degraded` and `error`) and updates last_test_* fields +
 // inserts a row in `connection_test_history` with triggered_by='cron'.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { runConnectionTest, type ConnectionType, isTransientFailure } from "../_shared/connection-test-runner.ts";
+import {
+  ConnectionTestPersistenceError,
+  type ConnectionType,
+  isTransientFailure,
+  persistConnectionTestResult,
+  runConnectionTest,
+  type RunResult,
+} from "../_shared/connection-test-runner.ts";
 import { resolveTimeout } from "../_shared/connection-timeouts.ts";
 import {
-  type CompatibleSupabaseClient,
-  type ServiceClient,
   assertServiceClient as sharedAssertServiceClient,
   castSupabaseClient,
+  type CompatibleSupabaseClient,
+  type ServiceClient,
 } from "../_shared/supabase-client-adapter.ts";
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -22,15 +29,22 @@ import {
 // internos continuam importando `ServiceClient` / `CompatibleSupabaseClient` /
 // `assertServiceClient` deste módulo).
 export type { CompatibleSupabaseClient, ServiceClient };
-export function assertServiceClient(client: unknown): asserts client is ServiceClient {
+export function assertServiceClient(
+  client: unknown,
+): asserts client is ServiceClient {
   sharedAssertServiceClient(client, "connections-auto-test");
 }
 
 const BATCH_SIZE = 5;
-// Backoff schedule between attempts. Length defines max attempts (3 = 1 try + 2 retries).
-// Index N is the delay BEFORE attempt N+1 (so RETRY_BACKOFF_MS[0] is wait before retry #1).
-const RETRY_BACKOFF_MS = [500, 1500, 3000] as const;
-const MAX_ATTEMPTS = RETRY_BACKOFF_MS.length;
+export const AUTO_TESTABLE_CONNECTION_STATUSES = [
+  "active",
+  "degraded",
+  "error",
+] as const;
+// Backoff entre tentativas: dois atrasos representam uma tentativa inicial e
+// duas retentativas. O índice N é o atraso antes da tentativa N+2.
+const RETRY_BACKOFF_MS = [500, 1500] as const;
+const MAX_ATTEMPTS = RETRY_BACKOFF_MS.length + 1;
 
 export interface ActiveConnection {
   id: string;
@@ -41,7 +55,24 @@ export interface ActiveConnection {
   created_by: string;
 }
 
-export async function processBatch<
+export interface BatchTestResult {
+  id: string;
+  ok: boolean;
+  probe_ok: boolean;
+  persisted: boolean;
+  latency_ms: number | null;
+  attempts: number;
+  persistence_error?: boolean;
+  error?: string;
+}
+
+export interface ProcessBatchDependencies {
+  runTest?: typeof runConnectionTest;
+  persistResult?: typeof persistConnectionTestResult;
+  sleep?: (delayMs: number) => Promise<void>;
+}
+
+export function processBatch<
   // deno-lint-ignore no-explicit-any
   Database = any,
   SchemaName extends string & keyof Database = "public" extends keyof Database
@@ -50,20 +81,29 @@ export async function processBatch<
 >(
   service: CompatibleSupabaseClient<Database, SchemaName>,
   batch: ActiveConnection[],
-) {
+  dependencies: ProcessBatchDependencies = {},
+): Promise<BatchTestResult[]> {
   // runConnectionTest exige `SupabaseClient` com schema 'public' (default).
   // O adapter compartilhado faz o narrow estruturalmente seguro uma única vez.
   const serviceForRunner = castSupabaseClient(service);
+  const runTest = dependencies.runTest ?? runConnectionTest;
+  const persistResult = dependencies.persistResult ??
+    persistConnectionTestResult;
+  const sleep = dependencies.sleep ??
+    ((delayMs: number) =>
+      new Promise<void>((resolve) => setTimeout(resolve, delayMs)));
 
   return Promise.all(batch.map(async (conn) => {
     const t0 = Date.now();
+    let probe: RunResult | undefined;
+    let attempt = 1;
     try {
       const cfg = (conn.config && typeof conn.config === "object")
         ? Object.fromEntries(
-            Object.entries(conn.config as Record<string, unknown>)
-              .filter(([, v]) => typeof v === "string")
-              .map(([k, v]) => [k, v as string]),
-          )
+          Object.entries(conn.config as Record<string, unknown>)
+            .filter(([, v]) => typeof v === "string")
+            .map(([k, v]) => [k, v as string]),
+        )
         : {};
       const connType = conn.type as ConnectionType;
       const perTypeTimeout = resolveTimeout(connType);
@@ -78,20 +118,30 @@ export async function processBatch<
         timeoutMs: perTypeTimeout,
       };
 
-
       // Probe up to MAX_ATTEMPTS times. Each attempt skips persistence so we
       // don't write intermediate "failed" rows in connection_test_history;
       // only the final outcome is persisted with the correct attempts count.
-      let attempt = 1;
-      let probe = await runConnectionTest({ ...baseArgs, attempts: 1, skipPersistence: true });
+      probe = await runTest({
+        ...baseArgs,
+        attempts: 1,
+        skipPersistence: true,
+      });
       while (!probe.ok && isTransientFailure(probe) && attempt < MAX_ATTEMPTS) {
-        await new Promise((r) => setTimeout(r, RETRY_BACKOFF_MS[attempt - 1] ?? 1000));
+        await sleep(RETRY_BACKOFF_MS[attempt - 1] ?? 1000);
         attempt += 1;
-        probe = await runConnectionTest({ ...baseArgs, attempts: attempt, skipPersistence: true });
+        probe = await runTest({
+          ...baseArgs,
+          attempts: attempt,
+          skipPersistence: true,
+        });
       }
 
-      // Persist the final outcome (one row, with the real attempts count).
-      const final = await runConnectionTest({ ...baseArgs, attempts: attempt });
+      // Persiste exatamente o resultado do último probe. Isso evita uma chamada
+      // adicional ao serviço externo que poderia divergir do resultado registrado.
+      const final = await persistResult(
+        { ...baseArgs, attempts: attempt },
+        probe,
+      );
 
       console.log(JSON.stringify({
         evt: "auto-test",
@@ -107,18 +157,45 @@ export async function processBatch<
         error: final.error,
         error_kind: final.error_kind,
       }));
-      return { id: conn.id, ok: final.ok, latency_ms: final.latency_ms ?? null, attempts: attempt };
+      return {
+        id: conn.id,
+        ok: final.ok,
+        probe_ok: final.ok,
+        persisted: true,
+        latency_ms: final.latency_ms ?? null,
+        attempts: attempt,
+      };
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Erro";
-      console.error(JSON.stringify({ evt: "auto-test-error", id: conn.id, type: conn.type, error: msg }));
-      return { id: conn.id, ok: false, latency_ms: null, attempts: 1, error: msg };
+      const persistenceError = err instanceof ConnectionTestPersistenceError;
+      const errorCode = persistenceError
+        ? "falha_ao_persistir_resultado"
+        : "falha_interna_auto_teste";
+      console.error(JSON.stringify({
+        evt: "auto-test-error",
+        id: conn.id,
+        type: conn.type,
+        error: errorCode,
+        persistence_stage: persistenceError ? err.stage : undefined,
+      }));
+      return {
+        id: conn.id,
+        ok: false,
+        probe_ok: probe?.ok ?? false,
+        persisted: false,
+        latency_ms: probe?.latency_ms ?? null,
+        attempts: attempt,
+        persistence_error: persistenceError,
+        error: errorCode,
+      };
     }
   }));
 }
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
-  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: getCorsHeaders(req) });
+  }
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "metodo_nao_permitido" }), {
       status: 405,
@@ -145,18 +222,27 @@ Deno.serve(async (req) => {
     const { data: active, error } = await service
       .from("external_connections")
       .select("id, type, name, env_key, config, created_by")
-      .eq("status", "active")
+      .in("status", [...AUTO_TESTABLE_CONNECTION_STATUSES])
       .eq("auto_test_enabled", true);
     if (error) throw error;
 
     const conns = (active ?? []) as ActiveConnection[];
     if (conns.length === 0) {
-      return new Response(JSON.stringify({ ok: true, tested: 0, skipped: 0, ok_count: 0, failed: 0 }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          tested: 0,
+          skipped: 0,
+          ok_count: 0,
+          failed: 0,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
-    const results: Array<{ id: string; ok: boolean; latency_ms: number | null; attempts: number; error?: string }> = [];
+    const results: BatchTestResult[] = [];
     for (let i = 0; i < conns.length; i += BATCH_SIZE) {
       const batch = conns.slice(i, i + BATCH_SIZE);
       const r = await processBatch(service, batch);
@@ -164,14 +250,22 @@ Deno.serve(async (req) => {
     }
 
     const ok_count = results.filter((r) => r.ok).length;
-    const failed = results.length - ok_count;
+    const failed = results.filter((r) => r.persisted && !r.probe_ok).length;
+    const persistence_failed = results.filter((r) =>
+      r.persistence_error
+    ).length;
+    const internal_errors = results.filter((r) =>
+      !r.persisted && !r.persistence_error
+    ).length;
     const retried = results.filter((r) => r.attempts > 1).length;
     const recovered = results.filter((r) => r.ok && r.attempts > 1).length;
     const summary = {
-      ok: true,
+      ok: persistence_failed === 0 && internal_errors === 0,
       tested: results.length,
       ok_count,
       failed,
+      persistence_failed,
+      internal_errors,
       retried,
       recovered,
       duration_ms: Date.now() - startedAt,
@@ -179,6 +273,7 @@ Deno.serve(async (req) => {
     console.log(JSON.stringify({ evt: "auto-test-summary", ...summary }));
 
     return new Response(JSON.stringify(summary), {
+      status: summary.ok ? 200 : 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {

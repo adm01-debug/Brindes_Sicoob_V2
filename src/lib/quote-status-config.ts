@@ -2,7 +2,7 @@
  * Configuração centralizada de status de orçamentos
  * Fonte única de verdade para labels, cores e estilos de cada status.
  */
-
+import type { QuoteStatus } from "@/hooks/quotes/quoteTypes";
 
 export interface QuoteStatusConfig {
   label: string;
@@ -18,7 +18,7 @@ export interface QuoteStatusConfig {
 
 const MUTED_FOREGROUND_COLOR = "hsl(var(--muted-foreground))";
 
-export const QUOTE_STATUS_CONFIG: Record<string, QuoteStatusConfig> = {
+export const QUOTE_STATUS_CONFIG: Record<string, QuoteStatusConfig> & Record<QuoteStatus, QuoteStatusConfig> = {
   draft: {
     label: "Rascunho",
     color: MUTED_FOREGROUND_COLOR,
@@ -37,6 +37,18 @@ export const QUOTE_STATUS_CONFIG: Record<string, QuoteStatusConfig> = {
     color: "hsl(var(--info))",
     badgeVariant: "default",
     badgeClassName: "bg-primary/15 text-primary border-primary/30",
+  },
+  viewed: {
+    label: "Visualizado",
+    color: "hsl(var(--info))",
+    badgeVariant: "outline",
+    badgeClassName: "bg-info/10 text-info border-info/30",
+  },
+  revision: {
+    label: "Em revisão",
+    color: "hsl(var(--warning))",
+    badgeVariant: "outline",
+    badgeClassName: "bg-warning/10 text-warning border-warning/30 border-dashed",
   },
   approved: {
     label: "Aprovado",
@@ -90,6 +102,15 @@ export const QUOTE_STATUS_CONFIG: Record<string, QuoteStatusConfig> = {
   },
 };
 
+export const QUOTE_STATUS_FILTER_ORDER: readonly (QuoteStatus | "all")[] = [
+  "all", "draft", "pending_singular_approval", "pending_approval", "pending", "sent", "viewed",
+  "revision", "approved_singular", "approved", "converted", "rejected_singular", "rejected", "expired",
+] as const;
+
+export const QUOTE_PENDING_STATUSES = new Set<QuoteStatus>([
+  "pending", "sent", "viewed", "pending_approval", "pending_singular_approval",
+]);
+
 const EDITABLE_QUOTE_STATUSES = new Set([
   "draft",
   "revision",
@@ -127,10 +148,10 @@ export function canBulkMarkQuotesPending(
 
 /** Helper: get status label with fallback */
 export function getQuoteStatusLabel(status: string): string {
-  return QUOTE_STATUS_CONFIG[status]?.label || status;
+  return QUOTE_STATUS_CONFIG[status as QuoteStatus]?.label || status;
 }
 
 /** Helper: get status color for charts */
 export function getQuoteStatusColor(status: string): string {
-  return QUOTE_STATUS_CONFIG[status]?.color || MUTED_FOREGROUND_COLOR;
+  return QUOTE_STATUS_CONFIG[status as QuoteStatus]?.color || MUTED_FOREGROUND_COLOR;
 }

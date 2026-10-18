@@ -12,6 +12,7 @@ import { MockupApprovalTemplate } from "./MockupApprovalTemplate";
 import { supabase } from "@/integrations/supabase/client";
 import type { MockupApprovalData } from "@/types/mockup-approval";
 import { logger } from "@/lib/logger";
+import { createPrivateStorageReference } from "@/lib/private-storage";
 
 export interface LayoutCaptureRequest {
   data: MockupApprovalData;
@@ -61,7 +62,7 @@ async function uploadLayout(dataUrl: string, userId: string) {
     .from("mockup-art-files")
     .upload(storagePath, blob, { contentType: "image/jpeg", upsert: true });
   if (error) throw error;
-  return supabase.storage.from("mockup-art-files").getPublicUrl(storagePath).data.publicUrl;
+  return createPrivateStorageReference("mockup-art-files", storagePath);
 }
 
 async function saveLayoutUrl(recordId: string, layoutUrl: string) {

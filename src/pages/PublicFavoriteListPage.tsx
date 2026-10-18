@@ -19,7 +19,6 @@ interface PublicList {
   description: string | null;
   color: string;
   shared_expires_at: string | null;
-  user_id: string;
 }
 
 interface PublicItem {
@@ -164,32 +163,21 @@ function FavoriteProductCard({
   );
 }
 
-async function fetchPublicFavoriteList(token?: string) {
+interface PublicFavoriteBundle {
+  list: PublicList;
+  items: PublicItem[];
+}
+
+async function fetchPublicFavoriteBundle(token?: string): Promise<PublicFavoriteBundle | null> {
   if (!token) return null;
-  const { data, error } = await supabase
-    .from('favorite_lists')
-    .select('id, name, description, color, shared_expires_at, user_id')
-    .eq('shared_token', token)
-    .maybeSingle();
+  const { data, error } = await supabase.rpc('get_public_favorite_list', { _token: token });
   if (error) throw error;
-  return data as PublicList | null;
+  return data as unknown as PublicFavoriteBundle | null;
 }
 
 function isFavoriteListExpired(list: PublicList | null | undefined) {
   if (!list?.shared_expires_at) return false;
   return new Date(list.shared_expires_at) < new Date();
-}
-
-async function fetchPublicFavoriteItems(listId?: string) {
-  if (!listId) return [];
-  const { data, error } = await supabase
-    .from('favorite_items')
-    .select('id, product_id, variant_info, note, added_at')
-    .eq('list_id', listId)
-    .order('position', { ascending: true })
-    .order('added_at', { ascending: false });
-  if (error) throw error;
-  return (data ?? []) as PublicItem[];
 }
 
 async function fetchPublicFavoriteProducts(items: PublicItem[]) {
@@ -220,21 +208,15 @@ function buildFavoriteReactionMap(
 }
 
 function usePublicFavoriteListData(token?: string) {
-  const listQuery = useQuery({
+  const bundleQuery = useQuery({
     queryKey: ['public-favorite-list', token],
-    queryFn: () => fetchPublicFavoriteList(token),
+    queryFn: () => fetchPublicFavoriteBundle(token),
     enabled: Boolean(token),
-    retry: false,
   });
-  const list = listQuery.data;
+  const list = bundleQuery.data?.list;
   const expired = isFavoriteListExpired(list);
   const listId = list?.id;
-  const itemsQuery = useQuery({
-    queryKey: ['public-favorite-items', listId],
-    queryFn: () => fetchPublicFavoriteItems(listId),
-    enabled: Boolean(listId) && !expired,
-  });
-  const items = itemsQuery.data ?? [];
+  const items = expired ? [] : (bundleQuery.data?.items ?? []);
   const productIds = items.map((item) => item.product_id).join(',');
   const productsQuery = useQuery({
     queryKey: ['public-favorite-products', productIds],
@@ -249,9 +231,9 @@ function usePublicFavoriteListData(token?: string) {
   );
   return {
     list,
-    loadingList: listQuery.isLoading,
-    listError: listQuery.error,
-    refetchList: listQuery.refetch,
+    loadingList: bundleQuery.isLoading,
+    listError: bundleQuery.error,
+    refetchList: bundleQuery.refetch,
     expired,
     items,
     productMap: new Map(products.map((product) => [product.id, product])),

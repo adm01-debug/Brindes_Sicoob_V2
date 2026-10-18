@@ -17,11 +17,11 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useAutoSave } from "@/hooks/useAutoSave";
 
-type SaveStatus = "idle" | "saving" | "saved" | "error" | "offline";
+type SaveStatus = "idle" | "saving" | "saved" | "error" | "offline" | "conflict";
 
 interface QuoteAutoSaveProps {
   quoteId?: string;
-  /** Identificador do usuário autenticado; impede restauração entre contas. */
+  /** Escopo institucional (usuário, cooperativa e PA); impede restauração cruzada. */
   scopeId?: string | null;
   /** Desliga persistência e restauração em propostas imutáveis. */
   enabled?: boolean;
@@ -51,6 +51,7 @@ function statusIcon(status: SaveStatus) {
   if (status === "saving") return <Loader2 className="h-4 w-4 animate-spin" />;
   if (status === "saved") return <Check className="h-4 w-4 text-success" />;
   if (status === "error") return <AlertCircle className="h-4 w-4 text-destructive" />;
+  if (status === "conflict") return <AlertCircle className="h-4 w-4 text-warning" />;
   if (status === "offline") return <CloudOff className="h-4 w-4 text-warning" />;
   return <Cloud className="h-4 w-4" />;
 }
@@ -59,6 +60,7 @@ function statusText(status: SaveStatus, hasChanges: boolean, lastSaved: Date | n
   if (status === "saving") return "Salvando...";
   if (status === "saved") return "Salvo agora";
   if (status === "error") return "Erro ao salvar";
+  if (status === "conflict") return "Rascunho alterado em outra aba";
   if (status === "offline") return "Offline";
   if (hasChanges) return "Alterações não salvas";
   return lastSaved ? `Salvo às ${format(lastSaved, "HH:mm", { locale: ptBR })}` : "Salvo neste dispositivo";
@@ -72,7 +74,9 @@ function AutoSaveIndicator({ status, lastSaved, hasChanges, className }: {
     <AnimatePresence mode="wait"><motion.div key={status} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0.8, opacity: 0 }} transition={{ duration: 0.15 }}>{statusIcon(status)}</motion.div></AnimatePresence>
     <span className="text-xs text-muted-foreground hidden sm:inline">{label}</span>
-    {hasChanges && status !== "saving" && <Badge variant="outline" className="text-[10px] h-5">Não salvo</Badge>}
+    {status === "conflict"
+      ? <Badge variant="outline" className="text-[10px] h-5">Recarregue para conciliar</Badge>
+      : hasChanges && status !== "saving" && <Badge variant="outline" className="text-[10px] h-5">Não salvo</Badge>}
   </div></TooltipTrigger><TooltipContent><div className="text-xs space-y-1"><p className="font-medium">{label}</p>
     {lastSaved && <p className="text-muted-foreground">Último salvamento: {format(lastSaved, "HH:mm:ss", { locale: ptBR })}</p>}
   </div></TooltipContent></Tooltip>;
@@ -80,10 +84,11 @@ function AutoSaveIndicator({ status, lastSaved, hasChanges, className }: {
 
 function useDraftLifecycle(args: {
   data: unknown; storageKey: string; lastError: unknown; restore: () => unknown;
+  savedSnapshot: { storageKey: string; value: string } | null;
   onChange?: (hasUnsavedChanges: boolean) => void; onRestore?: (data: Record<string, unknown>) => void;
   setStatus: (status: SaveStatus) => void; enabled: boolean;
 }): boolean {
-  const { data, storageKey, lastError, restore, onChange, onRestore, setStatus, enabled } = args;
+  const { data, storageKey, lastError, restore, savedSnapshot, onChange, onRestore, setStatus, enabled } = args;
   const [hasChanges, setHasChanges] = useState(false);
   const initialDataRef = useRef<string | null>(null);
   const currentDataRef = useRef(data);
@@ -94,6 +99,13 @@ function useDraftLifecycle(args: {
     initialDataRef.current = enabled ? JSON.stringify(currentDataRef.current) : null;
   }, [enabled, storageKey]);
   useEffect(() => { if (enabled && lastError) setStatus("error"); }, [enabled, lastError, setStatus]);
+  useEffect(() => {
+    if (!enabled || savedSnapshot?.storageKey !== storageKey) return;
+    initialDataRef.current = savedSnapshot.value;
+    const changed = JSON.stringify(currentDataRef.current) !== savedSnapshot.value;
+    setHasChanges(changed);
+    onChange?.(changed);
+  }, [enabled, onChange, savedSnapshot, storageKey]);
   useEffect(() => {
     if (!enabled) {
       setHasChanges(false);
@@ -127,21 +139,41 @@ export function QuoteAutoSave({
 }: QuoteAutoSaveProps) {
   const [status, setStatus] = useState<SaveStatus>("idle");
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [savedSnapshot, setSavedSnapshot] = useState<{ storageKey: string; value: string } | null>(null);
+  const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const draftId = useMemo(() => enabled && scopeId ? getQuoteDraftIdForScope(scopeId) : null, [enabled, scopeId]);
   const storageKey = enabled && scopeId ? (quoteId ? `quote:${scopeId}:${quoteId}` : `draft:${scopeId}:${draftId}`) : "";
 
-  const { restore, lastError } = useAutoSave({
+  const { restore, lastError, externalChange } = useAutoSave({
     key: storageKey,
     data,
     enabled: enabled && Boolean(storageKey),
-    onSave: () => {
+    onSave: (savedData) => {
       setLastSaved(new Date());
+      setSavedSnapshot({ storageKey, value: JSON.stringify(savedData) });
       setStatus("saved");
-      setTimeout(() => setStatus("idle"), 2000);
+      if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+      statusTimerRef.current = setTimeout(() => setStatus("idle"), 2000);
     },
     onError: () => setStatus("error"),
   });
-  const hasUnsavedChanges = useDraftLifecycle({ data, storageKey, lastError, restore, onChange, onRestore, setStatus, enabled });
+  useEffect(() => () => {
+    if (statusTimerRef.current) clearTimeout(statusTimerRef.current);
+  }, []);
+  useEffect(() => {
+    if (enabled && externalChange) setStatus("conflict");
+  }, [enabled, externalChange]);
+  const hasUnsavedChanges = useDraftLifecycle({
+    data,
+    storageKey,
+    lastError,
+    restore,
+    savedSnapshot,
+    onChange,
+    onRestore,
+    setStatus,
+    enabled,
+  });
 
   if (!enabled) return null;
   return <AutoSaveIndicator status={status} lastSaved={lastSaved} hasChanges={hasUnsavedChanges} className={className} />;

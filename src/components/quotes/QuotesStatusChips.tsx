@@ -4,7 +4,7 @@
  */
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
+import { QUOTE_STATUS_CONFIG, QUOTE_STATUS_FILTER_ORDER } from "@/lib/quote-status-config";
 import type { Quote } from "@/hooks/quotes/useQuotes";
 
 interface QuotesStatusChipsProps {
@@ -12,8 +12,6 @@ interface QuotesStatusChipsProps {
   value: string;
   onChange: (status: string) => void;
 }
-
-const ORDER = ["all", "draft", "pending_singular_approval", "pending", "sent", "approved", "rejected", "expired"] as const;
 
 export function QuotesStatusChips({ quotes, value, onChange }: QuotesStatusChipsProps) {
   const counts = useMemo(() => {
@@ -27,7 +25,7 @@ export function QuotesStatusChips({ quotes, value, onChange }: QuotesStatusChips
   return (
     <div className="sticky top-[calc(var(--header-h,56px)+var(--breadcrumb-h,0px))] z-20 -mx-1 px-1 py-2 bg-background/85 backdrop-blur-md border-b border-border/40">
       <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-thin">
-        {ORDER.map((key) => {
+        {QUOTE_STATUS_FILTER_ORDER.map((key) => {
           const isActive = value === key;
           const label = key === "all" ? "Todos" : QUOTE_STATUS_CONFIG[key]?.label ?? key;
           const count = counts[key] || 0;

@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.15"
   }
   public: {
     Tables: {
@@ -1784,77 +1784,6 @@ export type Database = {
         }
         Relationships: []
       }
-      catalog_marketing_terms: {
-        Row: {
-          category: string
-          created_at: string
-          created_by: string | null
-          description: string | null
-          id: string
-          is_active: boolean
-          name: string
-          slug: string
-          sort_order: number
-          updated_at: string
-          updated_by: string | null
-        }
-        Insert: {
-          category: string
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean
-          name: string
-          slug: string
-          sort_order?: number
-          updated_at?: string
-          updated_by?: string | null
-        }
-        Update: {
-          category?: string
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean
-          name?: string
-          slug?: string
-          sort_order?: number
-          updated_at?: string
-          updated_by?: string | null
-        }
-        Relationships: []
-      }
-      catalog_product_marketing: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          product_id: string
-          term_id: string
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          product_id: string
-          term_id: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          product_id?: string
-          term_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "catalog_product_marketing_term_id_fkey"
-            columns: ["term_id"]
-            isOneToOne: false
-            referencedRelation: "catalog_marketing_terms"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       campaigns: {
         Row: {
           budget: number | null
@@ -1965,6 +1894,84 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      catalog_marketing_terms: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      catalog_product_marketing: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          product_id: string
+          term_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          product_id: string
+          term_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          product_id?: string
+          term_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_product_marketing_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_marketing_term_usage"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_product_marketing_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_marketing_terms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       category_icons: {
         Row: {
@@ -8878,26 +8885,32 @@ export type Database = {
       search_analytics: {
         Row: {
           created_at: string
+          filters_used: Json | null
           id: string
           results_count: number
           search_context: string | null
           search_term: string
+          seller_id: string | null
           user_id: string | null
         }
         Insert: {
           created_at?: string
+          filters_used?: Json | null
           id?: string
           results_count?: number
           search_context?: string | null
           search_term: string
+          seller_id?: string | null
           user_id?: string | null
         }
         Update: {
           created_at?: string
+          filters_used?: Json | null
           id?: string
           results_count?: number
           search_context?: string | null
           search_term?: string
+          seller_id?: string | null
           user_id?: string | null
         }
         Relationships: []
@@ -11612,7 +11625,34 @@ export type Database = {
         }
         Returns: boolean
       }
+      apply_local_quote_approval_response_core_20261013: {
+        Args: {
+          _response: string
+          _response_notes: string
+          _signature_data_url: string
+          _signer_document: string
+          _signer_ip: string
+          _signer_name: string
+          _signer_user_agent: string
+          _token: string
+        }
+        Returns: boolean
+      }
       approve_quote_with_pdf_atomic: {
+        Args: {
+          p_approved_pdf_url: string
+          p_expected_quote_row_version: number
+          p_notes?: string
+          p_quote_id: string
+        }
+        Returns: {
+          approved_pdf_url: string
+          id: string
+          row_version: number
+          status: string
+        }[]
+      }
+      approve_quote_with_pdf_atomic_core_20261013: {
         Args: {
           p_approved_pdf_url: string
           p_expected_quote_row_version: number
@@ -11635,6 +11675,10 @@ export type Database = {
         Returns: number
       }
       assert_database_auditor: { Args: never; Returns: undefined }
+      assert_quote_content_editable: {
+        Args: { p_quote_id: string }
+        Returns: undefined
+      }
       assert_quote_transition: {
         Args: {
           p_actor_id: string
@@ -11686,6 +11730,19 @@ export type Database = {
         }[]
       }
       bulk_update_quote_status_atomic: {
+        Args: {
+          p_expected_row_versions: number[]
+          p_notes?: string
+          p_quote_ids: string[]
+          p_status: string
+        }
+        Returns: {
+          id: string
+          row_version: number
+          status: string
+        }[]
+      }
+      bulk_update_quote_status_atomic_core_20261013: {
         Args: {
           p_expected_row_versions: number[]
           p_notes?: string
@@ -11918,6 +11975,15 @@ export type Database = {
           total_amount: number
         }[]
       }
+      convert_quote_to_sicoob_order_core_20261013: {
+        Args: { p_quote_id: string }
+        Returns: {
+          id: string
+          order_number: string
+          status: string
+          total_amount: number
+        }[]
+      }
       copy_group_personalization_to_product: {
         Args: { p_membership_id: string }
         Returns: number
@@ -11927,6 +11993,10 @@ export type Database = {
         Returns: string
       }
       create_quote_version_atomic: {
+        Args: { p_source_quote_id: string }
+        Returns: string
+      }
+      create_quote_version_atomic_core_20261013: {
         Args: { p_source_quote_id: string }
         Returns: string
       }
@@ -12181,6 +12251,15 @@ export type Database = {
       get_platform_failure_metrics: {
         Args: { window_minutes?: number }
         Returns: Json
+      }
+      get_public_favorite_list: { Args: { _token: string }; Returns: Json }
+      get_public_favorite_reactions: {
+        Args: { _anon_id: string; _token: string }
+        Returns: {
+          anon_id: string
+          emoji: string
+          item_id: string
+        }[]
       }
       get_public_quote_approval: { Args: { _token: string }; Returns: Json }
       get_query_telemetry_p95: {
@@ -12587,6 +12666,19 @@ export type Database = {
         }
         Returns: undefined
       }
+      record_quote_bitrix_sync: {
+        Args: {
+          p_bitrix_deal_id?: string
+          p_bitrix_quote_id?: string
+          p_quote_id: string
+        }
+        Returns: {
+          bitrix_deal_id: string
+          bitrix_quote_id: string
+          quote_id: string
+          synced_at: string
+        }[]
+      }
       record_sicoob_delivery_receipt: {
         Args: {
           p_allocation_id: string
@@ -12714,6 +12806,24 @@ export type Database = {
           seller_id: string
         }[]
       }
+      request_discount_approval_atomic_core_20261013: {
+        Args: {
+          p_expected_quote_row_version: number
+          p_quote_id: string
+          p_requested_discount_percent: number
+          p_seller_notes?: string
+        }
+        Returns: {
+          max_allowed_percent: number
+          negotiation_markup_percent: number
+          quote_id: string
+          quote_row_version: number
+          real_discount_percent: number
+          request_id: string
+          requested_discount_percent: number
+          seller_id: string
+        }[]
+      }
       request_sicoob_order_approval: {
         Args: {
           p_expected_status: string
@@ -12755,6 +12865,23 @@ export type Database = {
         }[]
       }
       respond_discount_approval_atomic: {
+        Args: {
+          p_admin_notes?: string
+          p_approved: boolean
+          p_expected_quote_row_version: number
+          p_request_id: string
+        }
+        Returns: {
+          max_allowed_percent: number
+          quote_id: string
+          quote_row_version: number
+          request_id: string
+          request_status: string
+          requested_discount_percent: number
+          seller_id: string
+        }[]
+      }
+      respond_discount_approval_atomic_core_20261013: {
         Args: {
           p_admin_notes?: string
           p_approved: boolean
@@ -12849,6 +12976,11 @@ export type Database = {
         Args: { minutes: number }
         Returns: number
       }
+      set_custom_kit_pinned: {
+        Args: { p_kit_id: string; p_pinned: boolean }
+        Returns: boolean
+      }
+      set_postgrest_request_timeout: { Args: never; Returns: undefined }
       sicoob_actor_can_approve: {
         Args: { p_actor_id: string; p_board_only?: boolean; p_order_id: string }
         Returns: boolean

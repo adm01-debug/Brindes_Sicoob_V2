@@ -46,13 +46,17 @@ export interface AuthzEntry {
   skipAuthBypassTest?: boolean;
   /** Presença esperada no runtime canônico; o padrão é deployed. */
   runtime?: "deployed" | "source-only";
-  /** Contrato explícito do gateway quando a função foge do padrão true. */
+  /**
+   * Contrato explícito do gateway. Quando omitido, o publicador canônico usa
+   * `false`, preservando o runtime atual; a autorização continua obrigatória
+   * no handler conforme a categoria declarada acima.
+   */
   gatewayVerifyJwt?: boolean;
 }
 
 export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   // ---------------- Públicas por design ----------------
-  "migrate-helper": { category: "public", rationale: "Função desativada: retorna somente HTTP 410, sem acesso a ambiente ou banco" },
+  "migrate-helper": { category: "public", rationale: "Função desativada: retorna somente HTTP 410, sem acesso a ambiente ou banco", runtime: "source-only" },
   "kit-public-view": { category: "public", rationale: "Visualização de kit por token público" },
   "quote-public-view": { category: "public", rationale: "Endpoint legado inerte: retorna 410 sem acessar dados, credenciais ou rede" },
   "favorites-public-react": { category: "public", rationale: "Reactions anônimas em lista pública" },
@@ -60,7 +64,7 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   "collections-public-react": { category: "public", rationale: "Reactions em coleção pública" },
   "image-proxy": { category: "public", rationale: "Proxy de imagens (anti-hotlink CDN externos)" },
   "cnpj-lookup": { category: "public", rationale: "Lookup CNPJ via API pública" },
-  "health-check": { category: "public", rationale: "Health endpoint para uptime monitors" },
+  "health-check": { category: "public", rationale: "Liveness sem dependências internas para uptime monitors", gatewayVerifyJwt: false },
   "system-healthcheck": { category: "dev", rationale: "Diagnóstico global revela topologia e latência internas" },
   "migration-health-check": { category: "dev", rationale: "Metadados administrativos restritos a desenvolvedor" },
   "get-visitor-info": { category: "public", rationale: "Geo/IP do visitante para anti-fraude" },
@@ -143,26 +147,30 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
     category: "authenticated",
     rationale: "Revalida usuário, pedido e catálogo antes de chamar a RPC interna de recompra",
     enforcedBy: "custom",
+    gatewayVerifyJwt: true,
   },
   "sicoob-kit-quote": {
     category: "authenticated",
     rationale: "Revalida usuário, composição, estoque, preço e personalização antes de chamar a RPC interna de orçamento do kit",
     enforcedBy: "custom",
+    gatewayVerifyJwt: true,
   },
   "sicoob-artwork-register": {
     category: "authenticated",
     rationale: "Baixa a arte privada sob RLS, calcula sua identidade criptográfica e chama a RPC interna exclusiva de serviço",
     enforcedBy: "custom",
+    gatewayVerifyJwt: true,
   },
   "sicoob-document-ingest": {
     category: "authenticated",
     rationale: "Valida JWT e escopo do pedido antes de inspecionar, escanear e promover documentos privados",
     enforcedBy: "custom",
+    gatewayVerifyJwt: true,
   },
   "generate-ad-image": { category: "authenticated", rationale: "Magic Up Ads do user" },
   "generate-ad-prompt": { category: "authenticated", rationale: "Magic Up Ads do user" },
   "generate-mockup": { category: "authenticated", rationale: "Mockup IA do user" },
-  "generate-mockup-nanobanana": { category: "authenticated", rationale: "Mockup IA do user" },
+  "generate-mockup-nanobanana": { category: "authenticated", rationale: "Stub 410 legado consolidado em generate-mockup; preservado apenas como fonte histórica", runtime: "source-only" },
   "generate-product-seo": { category: "authenticated", rationale: "SEO de produto do user" },
   "kit-ai-builder": { category: "authenticated", rationale: "Kit IA do user" },
   "kit-identity-suggest": { category: "authenticated", rationale: "Sugestão visual do user" },
@@ -185,9 +193,9 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   "manage-users": { category: "supervisor", rationale: "Gestão de usuários via has_role inline", enforcedBy: "custom" },
   "block-ip-temporarily": { category: "supervisor", rationale: "Bloqueio de IP — has_role inline", enforcedBy: "custom" },
   "ownership-repair": { category: "supervisor", rationale: "Reparo de órfãos com autorização central e validação adicional na RPC", enforcedBy: "shared-authorize" },
-  "sicoob-approval-reconciliation": { category: "supervisor", rationale: "Reconciliação auditada de notificações incertas ou falhas", enforcedBy: "shared-authorize" },
+  "sicoob-approval-reconciliation": { category: "supervisor", rationale: "Reconciliação auditada de notificações incertas ou falhas", enforcedBy: "shared-authorize", gatewayVerifyJwt: true },
   "error-monitor": { category: "supervisor", rationale: "Monitoramento de erros e alertas de sistema; fonte preservada para futura republicação", enforcedBy: "shared-authorize", runtime: "source-only" },
-  "external-connections-sync": { category: "supervisor", rationale: "Sincroniza credenciais externas por uma fronteira administrativa autenticada", enforcedBy: "shared-authorize" },
+  "external-connections-sync": { category: "supervisor", rationale: "Sincroniza credenciais externas por uma fronteira administrativa autenticada", enforcedBy: "shared-authorize", gatewayVerifyJwt: true },
 
   // ---------------- Dev-only ----------------
   "secrets-manager": { category: "dev", rationale: "is_dev() inline check", enforcedBy: "custom" },

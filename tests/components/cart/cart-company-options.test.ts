@@ -1,21 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { selectCrm } from '@/lib/crm-db';
-import { fetchCartCompanyOptions } from '@/components/cart/cart-company-options';
-import type { CrmCompany } from '@/types/crm';
+import { listQuoteDirectoryCompanies } from '@/lib/crm-db';
+import { buildCartCompanyAccessScope, fetchCartCompanyOptions } from '@/components/cart/cart-company-options';
+import type { QuoteDirectoryCompany } from '@/lib/crm-db';
 
 vi.mock('@/lib/crm-db', () => ({
-  selectCrm: vi.fn(),
+  listQuoteDirectoryCompanies: vi.fn(),
 }));
 
-function company(id: string, name: string): CrmCompany {
+function company(id: string, name: string): QuoteDirectoryCompany {
   return {
     id,
-    title: name,
+    name,
     razao_social: `${name} LTDA`,
     nome_fantasia: null,
     logo_url: null,
     ramo_atividade: null,
-  } as CrmCompany;
+    cnpj: null,
+  };
 }
 
 describe('opções de empresa do carrinho', () => {
@@ -23,30 +24,44 @@ describe('opções de empresa do carrinho', () => {
     vi.clearAllMocks();
   });
 
-  it('preserva os IDs do CRM e percorre todas as páginas de clientes', async () => {
-    const firstPage = Array.from({ length: 500 }, (_, index) =>
+  it('usa o diretório restrito, preserva os IDs e limita a resposta inicial', async () => {
+    const initialCompanies = Array.from({ length: 100 }, (_, index) =>
       company(`crm-${String(index + 1).padStart(3, '0')}`, `Cooperativa Z ${index + 1}`),
     );
-    const lastCompany = company('crm-501', 'Cooperativa A');
-    vi.mocked(selectCrm).mockResolvedValueOnce(firstPage).mockResolvedValueOnce([lastCompany]);
+    vi.mocked(listQuoteDirectoryCompanies).mockResolvedValueOnce(initialCompanies);
 
     const result = await fetchCartCompanyOptions();
 
-    expect(selectCrm).toHaveBeenNthCalledWith(
-      1,
-      'companies',
-      expect.objectContaining({
-        filters: { deleted_at: null, is_customer: true },
-        limit: 500,
-        offset: 0,
-      }),
+    expect(listQuoteDirectoryCompanies).toHaveBeenCalledExactlyOnceWith({ limit: 100 });
+    expect(result).toHaveLength(100);
+    expect(result[0]).toEqual(expect.objectContaining({ id: 'crm-001', name: 'Cooperativa Z 1' }));
+  });
+
+  it('consulta o servidor por termo para alcançar empresas fora da primeira página', async () => {
+    const remoteCompany = {
+      ...company('crm-long-tail', 'Cooperativa Long Tail'),
+      cnpj: '12.345.678/0001-90',
+      ramo_atividade: 'Crédito cooperativo',
+    };
+    vi.mocked(listQuoteDirectoryCompanies).mockResolvedValueOnce([remoteCompany]);
+
+    const result = await fetchCartCompanyOptions('  long tail  ');
+
+    expect(listQuoteDirectoryCompanies).toHaveBeenCalledExactlyOnceWith({ term: 'long tail', limit: 100 });
+    expect(result[0]).toEqual(expect.objectContaining({
+      id: 'crm-long-tail',
+      name: 'Cooperativa Long Tail',
+      cnpj: '12.345.678/0001-90',
+      ramo: 'Crédito cooperativo',
+    }));
+  });
+
+  it('particiona o cache por usuário e papéis', () => {
+    expect(buildCartCompanyAccessScope('user-1', ['vendedor'])).not.toBe(
+      buildCartCompanyAccessScope('user-2', ['vendedor']),
     );
-    expect(selectCrm).toHaveBeenNthCalledWith(
-      2,
-      'companies',
-      expect.objectContaining({ limit: 500, offset: 500 }),
+    expect(buildCartCompanyAccessScope('user-1', ['comprador_pac'])).not.toBe(
+      buildCartCompanyAccessScope('user-1', ['vendedor']),
     );
-    expect(result).toHaveLength(501);
-    expect(result[0]).toEqual(expect.objectContaining({ id: 'crm-501', name: 'Cooperativa A' }));
   });
 });

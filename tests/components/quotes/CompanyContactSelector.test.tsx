@@ -1,52 +1,132 @@
-/**
- * Render tests for CompanyContactSelector (679 lines)
- */
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderWithProviders } from "../render-helpers";
-import React from "react";
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { renderWithProviders } from '../render-helpers';
 
-vi.mock("@/lib/crm-db", () => ({
-  selectCrm: vi.fn().mockResolvedValue([]),
-  searchCrm: vi.fn().mockResolvedValue([]),
+const mocks = vi.hoisted(() => ({
+  listQuoteDirectoryCompanies: vi.fn(),
+  listQuoteDirectoryContacts: vi.fn(),
 }));
 
-vi.mock("@/types/crm", () => ({
-  getCompanyDisplayName: vi.fn((c: any) => c?.nome_fantasia || c?.razao_social || ""),
+vi.mock('@/lib/crm-db', () => ({
+  listQuoteDirectoryCompanies: mocks.listQuoteDirectoryCompanies,
+  listQuoteDirectoryContacts: mocks.listQuoteDirectoryContacts,
 }));
 
-describe("CompanyContactSelector", () => {
+import { CompanyContactSelector } from '@/components/quotes/CompanyContactSelector';
+
+const company = {
+  id: '00000000-0000-4000-8000-000000000001',
+  name: 'Cooperativa Centro',
+  nome_fantasia: 'Cooperativa Centro',
+  razao_social: 'Cooperativa Centro Ltda.',
+  cnpj: '12345678000190',
+  ramo_atividade: 'Cooperativa de crédito',
+  logo_url: null,
+};
+
+describe('CompanyContactSelector', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.listQuoteDirectoryCompanies.mockResolvedValue([company]);
+    mocks.listQuoteDirectoryContacts.mockResolvedValue([]);
   });
 
-  it("renders without crashing", async () => {
-    const { CompanyContactSelector } = await import("@/components/quotes/CompanyContactSelector");
+  it('inicia sem empresa e orienta a escolha do contato', () => {
     renderWithProviders(
-      <CompanyContactSelector
-        selectedCompany={null}
-        selectedContact={null}
-        onCompanySelect={vi.fn()}
-        onContactSelect={vi.fn()}
-      />
+      <CompanyContactSelector companyId="" onCompanyChange={vi.fn()} />,
     );
-    expect(document.body).toBeTruthy();
+
+    expect(screen.getByLabelText('Buscar empresa por nome ou CNPJ')).toBeInTheDocument();
+    expect(screen.getByText('Selecione uma empresa primeiro')).toBeInTheDocument();
   });
 
-  it("renders with selected company", async () => {
-    const { CompanyContactSelector } = await import("@/components/quotes/CompanyContactSelector");
+  it('propaga imediatamente os dados completos da empresa escolhida', async () => {
+    const onCompanyChange = vi.fn();
+    const onCompanyInfoChange = vi.fn();
+
     renderWithProviders(
       <CompanyContactSelector
-        selectedCompany={{
-          id: "c1",
-          name: "Empresa Teste",
-          razao_social: "Empresa Teste LTDA",
-          cnpj: "12345678000190",
-        } as any}
-        selectedContact={null}
-        onCompanySelect={vi.fn()}
-        onContactSelect={vi.fn()}
-      />
+        companyId=""
+        onCompanyChange={onCompanyChange}
+        onCompanyInfoChange={onCompanyInfoChange}
+      />,
     );
-    expect(document.body).toBeTruthy();
+
+    fireEvent.focus(screen.getByLabelText('Buscar empresa por nome ou CNPJ'));
+    fireEvent.click(await screen.findByText('Cooperativa Centro'));
+
+    expect(onCompanyChange).toHaveBeenCalledWith(company.id);
+    expect(onCompanyInfoChange).toHaveBeenCalledWith({
+      id: company.id,
+      name: 'Cooperativa Centro',
+      cnpj: company.cnpj,
+      ramo_atividade: company.ramo_atividade,
+    });
+  });
+
+  it('hidrata os dados da empresa já selecionada por uma origem externa', async () => {
+    const onCompanyInfoChange = vi.fn();
+    renderWithProviders(
+      <CompanyContactSelector
+        companyId={company.id}
+        onCompanyChange={vi.fn()}
+        onCompanyInfoChange={onCompanyInfoChange}
+      />,
+    );
+
+    await waitFor(() => expect(onCompanyInfoChange).toHaveBeenCalledWith({
+      id: company.id,
+      name: 'Cooperativa Centro',
+      cnpj: company.cnpj,
+      ramo_atividade: company.ramo_atividade,
+    }));
+    expect(onCompanyInfoChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('diferencia indisponibilidade do CRM de uma lista realmente vazia', async () => {
+    mocks.listQuoteDirectoryCompanies.mockRejectedValueOnce(new Error('CRM indisponível'));
+
+    renderWithProviders(
+      <CompanyContactSelector companyId="" onCompanyChange={vi.fn()} />,
+    );
+
+    fireEvent.focus(screen.getByLabelText('Buscar empresa por nome ou CNPJ'));
+
+    expect(await screen.findByText('Não foi possível carregar empresas')).toBeInTheDocument();
+    expect(screen.queryByText('Nenhuma empresa encontrada')).not.toBeInTheDocument();
+    await waitFor(() => expect(mocks.listQuoteDirectoryCompanies).toHaveBeenCalledTimes(1));
+  });
+
+  it('mantém resultados locais e oferece retry quando a busca remota falha', async () => {
+    mocks.listQuoteDirectoryCompanies.mockImplementation(
+      (options?: { term?: string }) =>
+        options?.term ? Promise.reject(new Error('Busca indisponível')) : Promise.resolve([company]),
+    );
+
+    renderWithProviders(<CompanyContactSelector companyId="" onCompanyChange={vi.fn()} />);
+    const input = screen.getByLabelText('Buscar empresa por nome ou CNPJ');
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: 'Centro' } });
+
+    expect(await screen.findByText('Resultados locais exibidos; a atualização falhou.')).toBeInTheDocument();
+    expect(screen.getByText('Cooperativa Centro')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Tentar novamente' })).toBeInTheDocument();
+  });
+
+  it('expõe falha de contatos com retry e mantém seleção acessível por teclado', async () => {
+    mocks.listQuoteDirectoryContacts.mockRejectedValue(new Error('Contatos indisponíveis'));
+
+    renderWithProviders(
+      <CompanyContactSelector companyId={company.id} onCompanyChange={vi.fn()} />,
+    );
+
+    expect(
+      await screen.findByRole('button', {
+        name: `Alterar empresa selecionada: ${company.name}`,
+      }),
+    ).toBeInTheDocument();
+    expect(await screen.findByText('Não foi possível carregar os contatos.')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }));
+    await waitFor(() => expect(mocks.listQuoteDirectoryContacts).toHaveBeenCalledTimes(2));
   });
 });

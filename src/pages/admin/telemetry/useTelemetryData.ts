@@ -49,7 +49,14 @@ export function useTelemetryData() {
     return { from: new Date(now.getTime() - ms).toISOString(), to: now.toISOString() };
   };
 
-  const { data: rows = [], isLoading, refetch, isRefetching } = useQuery<TelemetryRow[]>({
+  const {
+    data: rows = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isRefetching,
+  } = useQuery<TelemetryRow[]>({
     queryKey: ['query-telemetry', severityFilter, timeFilter, customDateFrom?.toISOString(), customDateTo?.toISOString()],
     queryFn: async () => {
       const { from, to } = getTimeThreshold();
@@ -95,7 +102,7 @@ export function useTelemetryData() {
     .map(([name, stats]) => ({ name, ...stats }));
 
   return {
-    rows, isLoading, isRefetching, refetch, handleCleanup,
+    rows, isLoading, isError, error, isRefetching, refetch, handleCleanup,
     severityFilter, setSeverityFilter, timeFilter, setTimeFilter,
     customDateFrom, setCustomDateFrom, customDateTo, setCustomDateTo,
     stats: { verySlow, slow, errors, avgDuration },

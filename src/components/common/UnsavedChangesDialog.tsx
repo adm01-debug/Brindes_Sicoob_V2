@@ -14,6 +14,7 @@ interface UnsavedChangesDialogProps {
   onConfirm: () => void;
   onCancel: () => void;
   message?: string;
+  contentClassName?: string;
 }
 
 export function UnsavedChangesDialog({
@@ -21,10 +22,11 @@ export function UnsavedChangesDialog({
   onConfirm,
   onCancel,
   message = "Você tem alterações não salvas. Deseja realmente sair?",
+  contentClassName,
 }: UnsavedChangesDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
-      <AlertDialogContent>
+      <AlertDialogContent className={contentClassName}>
         <AlertDialogHeader>
           <AlertDialogTitle>Alterações não salvas</AlertDialogTitle>
           <AlertDialogDescription>{message}</AlertDialogDescription>

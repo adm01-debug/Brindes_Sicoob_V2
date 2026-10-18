@@ -34,6 +34,8 @@ import { useCurrentSection } from "@/hooks/useCurrentSection";
 import { cn, lazyWithRetry } from "@/lib";
 import { RoleBadge } from "@/components/ui/RoleBadge";
 import { BackButton } from "@/components/common/BackButton";
+import { askConfirm } from '@/stores/useConfirmDialogStore';
+import { useNavigationGuardStore } from '@/stores/useNavigationGuardStore';
 
 
 // Lazy load non-critical Header sub-components
@@ -78,6 +80,17 @@ function useHeaderModel() {
     toggleTheme();
   };
   const handleSignOut = async () => {
+    const navigationGuard = useNavigationGuardStore.getState();
+    if (navigationGuard.hasDirty()) {
+      const confirmed = await askConfirm({
+        title: 'Sair sem salvar?',
+        description: navigationGuard.getMessage(),
+        variant: 'warning',
+        confirmLabel: 'Sair',
+      });
+      if (!confirmed) return;
+      navigationGuard.clearAll();
+    }
     try {
       await signOut();
       toast({ title: "Até logo!", description: "Você saiu da sua conta" });
@@ -96,7 +109,7 @@ type HeaderModel = ReturnType<typeof useHeaderModel>;
 
 function HeaderLeft({ currentSection, onMenuToggle }: { currentSection: string; onMenuToggle: () => void }) {
   const onSubpage = location.pathname !== "/" && location.pathname !== "/dashboard";
-  return <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink-0"><div className="lg:hidden flex items-center">{onSubpage ? <BackButton variant="ghost" size="icon" showLabel={false} className="h-9 w-9 rounded-full" /> : <div className="ml-1 mr-1 flex h-9 items-center rounded-lg bg-[#003641] px-2.5"><img src="/brand/sicoob-logo.png" alt="Sicoob" className="h-5 w-auto object-contain" /></div>}</div><Button variant="ghost" size="icon" className={cn("hover:bg-brand/10 hover:text-brand h-8 w-8 sm:h-9 sm:w-9 transition-all", onSubpage ? "hidden lg:flex" : "flex lg:hidden")} onClick={onMenuToggle} aria-label="Menu"><Menu className="h-5 w-5" /></Button><div className="hidden lg:flex items-center gap-2 max-w-[200px]"><span className="font-display text-sm font-semibold text-foreground tracking-tight truncate">{currentSection}</span></div></div>;
+  return <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink-0"><div className="lg:hidden flex items-center">{onSubpage ? <BackButton variant="ghost" size="icon" showLabel={false} className="h-9 w-9 rounded-full" /> : <div className="ml-1 mr-1 hidden h-9 items-center rounded-lg bg-[#003641] px-2.5 min-[400px]:flex"><img src="/brand/sicoob-logo.png" alt="Sicoob" className="h-5 w-auto object-contain" /></div>}</div><Button variant="ghost" size="icon" className={cn("hover:bg-brand/10 hover:text-brand h-8 w-8 sm:h-9 sm:w-9 transition-all", onSubpage ? "hidden lg:flex" : "flex lg:hidden")} onClick={onMenuToggle} aria-label="Menu"><Menu className="h-5 w-5" /></Button><div className="hidden lg:flex items-center gap-2 max-w-[200px]"><span className="font-display text-sm font-semibold text-foreground tracking-tight truncate">{currentSection}</span></div></div>;
 }
 
 function TransactionCluster() {

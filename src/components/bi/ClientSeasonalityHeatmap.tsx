@@ -3,25 +3,18 @@
  * Sprint 3: linha de forecast (regressão linear simples sobre 12 meses)
  * + card "Próxima janela ideal de campanha" com CTA.
  */
-import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Calendar, Sparkles, TrendingUp, Info, Target } from "lucide-react";
-import {
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip as RTooltip, ReferenceLine,
-} from "recharts";
+import { Calendar, Sparkles, TrendingUp, Info, Target, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
 import { HeatmapSkeleton } from "@/components/bi/BISkeletons";
 import {
   useClientSeasonality,
-  SEASONALITY_MONTH_LABELS,
   SEASONALITY_MONTH_LABELS_FULL,
 } from "@/hooks/bi/useClientSeasonality";
-import { linearRegression } from "@/lib/forecast";
 
 interface Props {
   clientId: string;
@@ -43,25 +36,13 @@ function intensityToText(intensity: number): string {
 }
 
 type SeasonalityData = ReturnType<typeof useClientSeasonality>;
-type ForecastPoint = { key: string; label: string; historical: number | null; forecast: number | null; isCurrent: boolean };
-
-function buildForecast(client: SeasonalityData["client"], currentMonth: number): ForecastPoint[] {
-  if (client.length < 6) return [];
-  const values = client.map((month) => month.quotesCount);
-  const { slope, intercept } = linearRegression(values);
-  const today = new Date();
-  const series: ForecastPoint[] = client.map((month) => ({ key: `h-${month.month}`, label: month.monthLabel, historical: month.quotesCount, forecast: null, isCurrent: month.month === currentMonth }));
-  for (let index = 1; index <= 6; index++) {
-    const next = new Date(today.getFullYear(), today.getMonth() + index, 1);
-    const prediction = Math.max(0, slope * (values.length + index - 1) + intercept);
-    series.push({ key: `f-${index}`, label: SEASONALITY_MONTH_LABELS[next.getMonth()] ?? "Mês", historical: null, forecast: Math.round(prediction * 10) / 10, isCurrent: false });
-  }
-  return series;
-}
-
 function HeatmapHeader({ data }: { data: SeasonalityData }) {
-  const badge = data.isMock ? "Dados simulados" : `Dados reais · ${data.monthsCovered} mês${data.monthsCovered === 1 ? "" : "es"}`;
-  return <CardHeader className="pb-3"><div className="flex items-start justify-between gap-3 flex-wrap"><div className="flex items-center gap-2.5"><div className="w-9 h-9 rounded-lg bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center"><Calendar className="h-4 w-4 text-violet-600 dark:text-violet-300" /></div><div><CardTitle className="text-base font-display">Sazonalidade Cliente × Setor</CardTitle><p className="text-xs text-muted-foreground mt-0.5">Quando o cliente compra ao longo do ano · janela de {data.windowMonths} meses</p></div></div><Badge variant={data.isMock ? "secondary" : "outline"} className={cn("text-[10px]", !data.isMock && "border-success/50 text-success")}>{badge}</Badge></div></CardHeader>;
+  const badge = data.isMock
+    ? "Dados simulados · modo demonstração"
+    : data.hasEnoughData
+    ? `Dados reais · ${data.monthsCovered} mês${data.monthsCovered === 1 ? "" : "es"}`
+    : `Amostra insuficiente · ${data.monthsCovered} mês${data.monthsCovered === 1 ? "" : "es"}`;
+  return <CardHeader className="pb-3"><div className="flex items-start justify-between gap-3 flex-wrap"><div className="flex items-center gap-2.5"><div className="w-9 h-9 rounded-lg bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center"><Calendar className="h-4 w-4 text-violet-600 dark:text-violet-300" /></div><div><CardTitle className="text-base font-display">Sazonalidade Cliente × Setor</CardTitle><p className="text-xs text-muted-foreground mt-0.5">Quando o cliente compra ao longo do ano · janela de {data.windowMonths} meses</p></div></div><Badge variant="outline" className={cn("text-[10px]", data.hasEnoughData && !data.isMock && "border-success/50 text-success")}>{badge}</Badge></div></CardHeader>;
 }
 
 function ClientMonthCell({ month, currentMonth }: { month: SeasonalityData["client"][number]; currentMonth: number }) {
@@ -80,10 +61,8 @@ function HeatmapLegend() {
   return <div className="flex items-center gap-2 pt-2 text-[10px] text-muted-foreground"><span>Menos</span><div className="flex gap-0.5">{[0.05, 0.2, 0.4, 0.55, 0.7, 0.85, 1].map((intensity) => <div key={intensity} className={cn("w-4 h-3 rounded-sm", intensityToBg(intensity))} />)}</div><span>Mais</span><span className="ml-3 inline-flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm ring-2 ring-violet-600 ring-offset-1 ring-offset-background" />Hoje</span></div>;
 }
 
-function ForecastChart({ series }: { series: ForecastPoint[] }) {
-  if (series.length === 0) return null;
-  const stroke = "hsl(262 83% 58%)";
-  return <div className="rounded-lg border bg-card p-3"><div className="flex items-center gap-2 mb-2"><TrendingUp className="h-4 w-4 text-violet-600 dark:text-violet-300" /><span className="text-xs font-semibold uppercase tracking-wide text-foreground">Projeção próximos 6 meses</span><span className="text-[10px] text-muted-foreground">· regressão linear</span></div><div className="h-40 w-full"><ResponsiveContainer width="100%" height="100%"><LineChart data={series} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}><CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} /><XAxis dataKey="label" tick={{ fontSize: 10 }} className="text-muted-foreground" /><YAxis tick={{ fontSize: 10 }} className="text-muted-foreground" allowDecimals={false} /><RTooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} /><ReferenceLine x={series[11]?.label} stroke="hsl(var(--muted-foreground))" strokeDasharray="2 2" label={{ value: "agora", fontSize: 9, fill: "hsl(var(--muted-foreground))" }} /><Line type="monotone" dataKey="historical" stroke={stroke} strokeWidth={2} dot={{ r: 3 }} name="Histórico" connectNulls={false} /><Line type="monotone" dataKey="forecast" stroke={stroke} strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3, strokeDasharray: "" }} name="Projeção" connectNulls={false} /></LineChart></ResponsiveContainer></div></div>;
+function ForecastUnavailable() {
+  return <div role="status" className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground"><span className="font-medium text-foreground">Projeção temporal indisponível.</span> O gráfico sazonal agrega os mesmos meses de anos diferentes; uma projeção exige os registros ordenados por mês e ano.</div>;
 }
 
 function downloadFollowUp(month: number, monthName: string) {
@@ -139,8 +118,8 @@ function TopMonths({ data }: { data: SeasonalityData }) {
 export function ClientSeasonalityHeatmap({ clientId, ramoAtividade }: Props) {
   const seasonality = useClientSeasonality(clientId, ramoAtividade);
   const currentMonth = new Date().getMonth() + 1;
-  const forecastSeries = useMemo(() => buildForecast(seasonality.client, currentMonth), [seasonality.client, currentMonth]);
   if (seasonality.isLoading) return <HeatmapSkeleton />;
+  if (seasonality.isError) return <Card className="border-[1.5px]"><CardContent className="flex flex-col items-center gap-2 py-10 text-center" role="alert"><AlertCircle className="h-6 w-6 text-destructive" /><p className="text-sm text-destructive">Não foi possível consultar o histórico sazonal.</p><Button variant="outline" size="sm" onClick={() => void seasonality.refetch?.()}>Tentar novamente</Button></CardContent></Card>;
   const peakName = seasonality.nextPeakMonth ? SEASONALITY_MONTH_LABELS_FULL[seasonality.nextPeakMonth - 1] ?? null : null;
-  return <Card className="border-[1.5px]"><HeatmapHeader data={seasonality} /><CardContent className="space-y-4"><HeatmapGrid data={seasonality} currentMonth={currentMonth} /><ForecastChart series={forecastSeries} /><PeakCards data={seasonality} peakName={peakName} /><Insight text={seasonality.insight} /><TopMonths data={seasonality} /></CardContent></Card>;
+  return <Card className="border-[1.5px]"><HeatmapHeader data={seasonality} /><CardContent className="space-y-4">{Boolean(seasonality.industryError) && <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-warning/40 bg-warning/5 px-3 py-2 text-xs text-muted-foreground" role="status"><span>Histórico do setor indisponível; os dados do cliente continuam exibidos.</span><Button variant="outline" size="sm" onClick={() => void seasonality.refetch?.()}>Tentar novamente</Button></div>}<HeatmapGrid data={seasonality} currentMonth={currentMonth} /><ForecastUnavailable /><PeakCards data={seasonality} peakName={peakName} /><Insight text={seasonality.insight} /><TopMonths data={seasonality} /></CardContent></Card>;
 }

@@ -10,7 +10,7 @@ import { mockExternalDbOffline } from './_mocks';
 test.describe('P0 — Catálogo degradado', () => {
   test.skip('external-db-bridge 503: catálogo serve cache e mostra banner', async ({ page }) => {
     await mockExternalDbOffline(page);
-    await gotoAndSettle(page, '/catalogo');
+    await gotoAndSettle(page, '/produtos');
     await expect(page.locator(Sel.app.errorBanner).first()).toBeVisible();
     const hasProducts = page.locator(Sel.product.card).first();
     await expect(hasProducts.or(page.locator(Sel.app.errorBanner))).toBeVisible({
@@ -20,7 +20,7 @@ test.describe('P0 — Catálogo degradado', () => {
 
   test.skip('ações de escrita ficam desabilitadas em modo degradado', async ({ page }) => {
     await mockExternalDbOffline(page);
-    await gotoAndSettle(page, '/catalogo');
+    await gotoAndSettle(page, '/produtos');
     const addToCart = page.locator(Sel.product.cardAddToCart).first();
     if (await addToCart.isVisible().catch(() => false)) {
       await expect(addToCart).toBeDisabled();

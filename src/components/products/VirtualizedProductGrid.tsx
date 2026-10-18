@@ -182,6 +182,7 @@ export function VirtualizedProductGrid(props: VirtualizedProductGridProps) {
     <div className="relative h-full">
       <div
         ref={parentRef}
+        data-scroll-restore="product-grid"
         className="h-[calc(100vh-200px)] min-h-[600px] overflow-y-auto rounded-xl border border-border/40 
           bg-gradient-to-b from-background/80 to-background/40 backdrop-blur-sm
           scrollbar-products shadow-inner"

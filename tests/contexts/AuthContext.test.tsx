@@ -149,6 +149,63 @@ describe('AuthContext', () => {
     });
   });
 
+  it('carrega perfil e papéis em paralelo com a validação sem liberar acesso antes do RPC', async () => {
+    const mockUser = { id: 'user-parallel', email: 'admin@test.com' };
+    const mockSession = { user: mockUser };
+    let resolveAccess!: (result: unknown) => void;
+
+    vi.mocked(supabase.from).mockImplementation((table: string) => {
+      if (table === 'profiles') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({ data: { user_id: mockUser.id }, error: null }),
+          update: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) }),
+        } as any;
+      }
+      if (table === 'user_roles') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockResolvedValue({ data: [{ role: 'admin' }], error: null }),
+        } as any;
+      }
+      return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: null, error: null }) } as any;
+    });
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: mockSession } } as any);
+    vi.mocked(supabase.rpc).mockImplementation(() => new Promise(resolve => { resolveAccess = resolve; }) as any);
+
+    await act(async () => {
+      render(<AuthProvider><AuthConsumer /></AuthProvider>);
+    });
+
+    await waitFor(() => {
+      expect(supabase.from).toHaveBeenCalledWith('profiles');
+      expect(supabase.from).toHaveBeenCalledWith('user_roles');
+    });
+    expect(screen.getByTestId('loading').textContent).toBe('true');
+    expect(screen.getByTestId('authenticated').textContent).toBe('true');
+
+    await act(async () => {
+      resolveAccess({ data: [{ active: true, reason: 'active' }], error: null });
+    });
+    await waitFor(() => expect(screen.getByTestId('loading').textContent).toBe('false'));
+    expect(screen.getByTestId('isAdmin').textContent).toBe('true');
+  });
+
+  it('encerra a sessão se o banco não conseguir validar o acesso', async () => {
+    const mockSession = { user: { id: 'user-no-validation', email: 'admin@test.com' } };
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({ data: { session: mockSession } } as any);
+    vi.mocked(supabase.rpc).mockRejectedValueOnce(new Error('indisponível'));
+
+    await act(async () => {
+      render(<AuthProvider><AuthConsumer /></AuthProvider>);
+    });
+
+    await waitFor(() => expect(supabase.auth.signOut).toHaveBeenCalledWith({ scope: 'local' }));
+    expect(screen.getByTestId('authenticated').textContent).toBe('false');
+    expect(screen.getByTestId('role').textContent).toBe('none');
+  });
+
   it('falha de forma fechada quando a consulta de papéis falha', async () => {
     const mockUser = { id: 'user-2', email: 'seller@test.com' };
     const mockSession = { user: mockUser };
@@ -213,6 +270,7 @@ describe('AuthContext', () => {
     await waitFor(() => {
       expect(supabase.auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
     });
-    expect(supabase.from).not.toHaveBeenCalledWith('user_roles');
+    expect(screen.getByTestId('authenticated').textContent).toBe('false');
+    expect(screen.getByTestId('role').textContent).toBe('none');
   });
 });

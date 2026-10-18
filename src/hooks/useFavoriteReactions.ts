@@ -22,11 +22,9 @@ function getAnonId(): string {
 }
 
 export interface ReactionRow {
-  id: string;
   item_id: string;
   emoji: string;
   anon_id: string;
-  created_at: string;
 }
 
 /** Para a página pública: lê + envia reactions. */
@@ -35,17 +33,17 @@ export function useFavoriteReactions(listId: string | null, listToken: string | 
   const [anonId] = useState<string>(() => getAnonId());
 
   const reactionsQuery = useQuery({
-    queryKey: ["fav-reactions", listId],
+    queryKey: ["fav-reactions", listId, anonId],
     queryFn: async (): Promise<ReactionRow[]> => {
-      if (!listId) return [];
-      const { data, error } = await supabase
-        .from("favorite_item_reactions")
-        .select("id, item_id, emoji, anon_id, created_at")
-        .eq("list_id", listId);
+      if (!listId || !listToken) return [];
+      const { data, error } = await supabase.rpc("get_public_favorite_reactions", {
+        _token: listToken,
+        _anon_id: anonId,
+      });
       if (error) throw error;
       return (data ?? []) as ReactionRow[];
     },
-    enabled: !!listId,
+    enabled: !!listId && !!listToken,
     staleTime: 10_000,
   });
 
@@ -65,7 +63,7 @@ export function useFavoriteReactions(listId: string | null, listToken: string | 
       return res.json();
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["fav-reactions", listId] });
+      qc.invalidateQueries({ queryKey: ["fav-reactions", listId, anonId] });
     },
   });
 

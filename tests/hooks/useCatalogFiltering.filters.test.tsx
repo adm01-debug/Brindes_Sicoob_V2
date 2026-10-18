@@ -78,6 +78,24 @@ describe('filtros da vitrine principal', () => {
     expect(result.current.map((item) => item.id)).toEqual(['A']);
   });
 
+  it('aplica embalagem comercial e fornecedor por identificador ou nome', () => {
+    const { result } = renderHook(() => useCatalogFiltering(options({
+      realProducts: [
+        product('A', { supplier: { id: 'fornecedor-a', name: 'Fornecedor A' } }),
+        product('B', {
+          hasCommercialPackaging: true,
+          supplier: { id: 'fornecedor-b', name: 'Fornecedor B' },
+        }),
+      ],
+      filters: {
+        ...defaultFilters,
+        suppliers: ['fornecedor-b'],
+        hasCommercialPackaging: true,
+      },
+    })));
+    expect(result.current.map((item) => item.id)).toEqual(['B']);
+  });
+
   it('usa o conjunto relacional em filtros sem atributos embutidos', () => {
     const { result } = renderHook(() => useCatalogFiltering(options({
       hasTagFilter: true,
@@ -103,5 +121,17 @@ describe('filtros da vitrine principal', () => {
     })));
 
     expect(result.current.map((item) => item.id)).toEqual(['A']);
+  });
+
+  it('preserva a vitrine e não mostra vazio quando consultas de categoria ou material falham', () => {
+    const { result } = renderHook(() => useCatalogFiltering(options({
+      filters: { ...defaultFilters, categories: ['categoria-indisponivel'], materialGroups: ['tecidos'] },
+      hasCategoryFilter: true,
+      categoryFilterError: 'consulta de categorias indisponível',
+      hasMaterialFilter: true,
+      materialFilterError: new Error('consulta de materiais indisponível'),
+    })));
+
+    expect(result.current.map((item) => item.id)).toEqual(['A', 'B']);
   });
 });

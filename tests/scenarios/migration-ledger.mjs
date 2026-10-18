@@ -33,6 +33,12 @@ test('compara oito dígitos, conteúdo e ausência nas duas direções', () => {
     assert.equal(compareLedger(files, ledger)[0].status, 'conteudo_divergente');
     delete ledger[0].statements;
     assert.equal(compareLedger(files, ledger)[0].status, 'conteudo_nao_verificado');
+    for (const statements of [[], [''], [' \n '], [null], ['SELECT 1', null]]) {
+      ledger[0].statements = statements;
+      const result = compareLedger(files, ledger)[0];
+      assert.equal(result.status, 'conteudo_nao_verificado');
+      assert.equal(result.remote_normalized_sha256, null);
+    }
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

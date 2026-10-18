@@ -1,16 +1,18 @@
 import { useCallback, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { useNavigationStore } from '@/stores/useNavigationStore';
 import { Haptics } from '@/utils/haptics';
+import { dismissBlockingNavigationOverlay } from '@/lib/navigation/overlay-registry';
+import { trackUx } from '@/lib/uxMetrics';
+
+const goBackStack: Array<() => void> = [];
+const dispatchSmartBack = () => goBackStack[goBackStack.length - 1]?.();
 
 export function useSmartNavigation() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { push, getPrevious, pop, history, direction, setDirection } = useNavigationStore();
-
-  const isCriticalPath = location.pathname.includes('/simulador') || 
-                         location.pathname.includes('/orcamentos/novo') ||
-                         location.pathname.includes('/mockup-generator');
+  const navigationType = useNavigationType();
+  const { record, getPrevious, history, direction, setDirection } = useNavigationStore();
 
   // Rastrear navegação
   useEffect(() => {
@@ -20,27 +22,23 @@ export function useSmartNavigation() {
     // Pegar labels de breadcrumbs para títulos mais precisos se possível
     // Aqui poderíamos injetar um resolver de títulos baseado no path
     
-    push({
+    record({
+      key: location.key,
       pathname: location.pathname,
       search: location.search,
       title,
       timestamp: Date.now(),
-    });
-  }, [location.pathname, location.search, push]);
+      state: location.state,
+    }, navigationType);
+  }, [location.key, location.pathname, location.search, location.state, navigationType, record]);
 
-  const goBack = useCallback((fallbackPath?: string, force = false) => {
-    if (!force && isCriticalPath) {
-      const confirmed = window.confirm("Você tem alterações não salvas. Deseja realmente sair?");
-      if (!confirmed) return;
-    }
-
+  const goBack = useCallback((fallbackPath?: string) => {
+    if (dismissBlockingNavigationOverlay()) return;
+    trackUx('nav.back');
     Haptics.impactLight();
-    
     setDirection('backward');
-    const previous = getPrevious();
-    
-    if (previous) {
-      pop(); // Remove o atual
+
+    if (Number(window.history.state?.idx) > 0) {
       navigate(-1);
     } else if (fallbackPath) {
       navigate(fallbackPath);
@@ -54,17 +52,22 @@ export function useSmartNavigation() {
         navigate('/' + pathParts.slice(0, -1).join('/'));
       }
     }
-  }, [location.pathname, getPrevious, isCriticalPath, pop, navigate, setDirection]);
+  }, [location.pathname, navigate, setDirection]);
 
   const goForward = useCallback((path: string) => {
+    trackUx('nav.forward');
     setDirection('forward');
     navigate(path);
   }, [navigate, setDirection]);
 
   useEffect(() => {
-    const handleSmartBack = () => goBack();
-    window.addEventListener('smart-back', handleSmartBack);
-    return () => window.removeEventListener('smart-back', handleSmartBack);
+    goBackStack.push(goBack);
+    if (goBackStack.length === 1) window.addEventListener('smart-back', dispatchSmartBack);
+    return () => {
+      const index = goBackStack.lastIndexOf(goBack);
+      if (index >= 0) goBackStack.splice(index, 1);
+      if (goBackStack.length === 0) window.removeEventListener('smart-back', dispatchSmartBack);
+    };
   }, [goBack]);
 
   return { goBack, goForward, previousItem: getPrevious(), history, direction };

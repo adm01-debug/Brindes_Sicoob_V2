@@ -31,6 +31,7 @@ const BOOLEAN_FILTER_KEYS = [
   'featured',
   'isNew',
   'hasPersonalization',
+  'hasCommercialPackaging',
 ] as const;
 
 type ArrayFilterKey = (typeof ARRAY_FILTER_KEYS)[number];
@@ -71,12 +72,18 @@ function applyArrayParams(filters: FilterState, params: URLSearchParams): void {
   }
 }
 
+function applyQuantityParams(filters: FilterState, params: URLSearchParams): void {
+  const minStock = params.get('minStock');
+  const minQuantity = params.get('minQuantity');
+  if (minStock) filters.minStock = parseInt(minStock);
+  if (minQuantity) filters.minQuantity = parseInt(minQuantity);
+}
+
 function applyScalarParams(filters: FilterState, params: URLSearchParams): void {
   const search = params.get('search');
   const singleSupplier = params.get('supplier');
   const priceMin = params.get('priceMin');
   const priceMax = params.get('priceMax');
-  const minStock = params.get('minStock');
   const sortBy = params.get('sortBy');
   if (search) filters.search = search;
   if (singleSupplier && !filters.suppliers.includes(singleSupplier)) {
@@ -84,8 +91,8 @@ function applyScalarParams(filters: FilterState, params: URLSearchParams): void 
   }
   if (priceMin || priceMax)
     filters.priceRange = [priceMin ? parseInt(priceMin) : 0, priceMax ? parseInt(priceMax) : 9999];
-  if (minStock) filters.minStock = parseInt(minStock);
   if (sortBy) filters.sortBy = sortBy;
+  applyQuantityParams(filters, params);
 }
 
 function applyBooleanParams(filters: FilterState, params: URLSearchParams): void {
@@ -116,6 +123,7 @@ export function serializeFilters(filters: FilterState): URLSearchParams {
   if (filters.priceRange[0] > 0) params.set('priceMin', String(filters.priceRange[0]));
   if (filters.priceRange[1] < 9999) params.set('priceMax', String(filters.priceRange[1]));
   if (filters.minStock > 0) params.set('minStock', String(filters.minStock));
+  if ((filters.minQuantity ?? 0) > 0) params.set('minQuantity', String(filters.minQuantity));
   if (filters.sortBy !== 'name') params.set('sortBy', filters.sortBy);
   return params;
 }
@@ -147,6 +155,7 @@ export function countActiveFilters(filters: FilterState): number {
     ...individualArrays.map((values) => (values?.length ?? 0) > 0),
     filters.priceRange[0] > 0 || filters.priceRange[1] < 9999,
     filters.minStock > 0,
+    (filters.minQuantity ?? 0) > 0,
     ...BOOLEAN_FILTER_KEYS.map((key) => filters[key]),
     Boolean(filters.search),
   ];
@@ -189,7 +198,8 @@ function filterBySuppliers(products: Product[], suppliers: string[]): Product[] 
   });
 }
 
-function filterByMaterials(products: Product[], active: boolean, selected: string[]): Product[] {
+function filterByMaterials(products: Product[], active: boolean, selected: string[], hasError: boolean): Product[] {
+  if (hasError) return products;
   if (active || !selected.length) return products;
   return products.filter((product) => {
     const materials = product.materials.join(' ').toLowerCase();
@@ -224,6 +234,8 @@ function filterByFlags(products: Product[], filters: FilterState): Product[] {
   if (filters.isNew) result = result.filter((product) => product.newArrival === true);
   if (filters.hasPersonalization)
     result = result.filter((product) => product.allowsPersonalization === true);
+  if (filters.hasCommercialPackaging)
+    result = result.filter((product) => product.hasCommercialPackaging === true);
   return result;
 }
 
@@ -240,7 +252,9 @@ export interface ProductFilterContext {
   categoryIds: Set<string>;
   colorIds: Set<string>;
   hasMaterialFilter: boolean;
+  materialFilterError?: Error | null;
   hasCategoryFilter: boolean;
+  categoryFilterError?: string | null;
   hasColorFilter: boolean;
   loadingMaterial: boolean;
   loadingCategory: boolean;
@@ -272,22 +286,24 @@ export interface ProductFilterContext {
 export function applyProductFilters(context: ProductFilterContext): Product[] {
   let result = filterBySearch(context.products, context.filters.search);
   result = filterByIdSet(result, context.hasColorFilter, context.colorIds, context.loadingColor);
-  result = filterByIdSet(
-    result,
-    context.hasCategoryFilter,
-    context.categoryIds,
-    context.loadingCategory,
-  );
+  if (!context.categoryFilterError) {
+    result = filterByIdSet(
+      result,
+      context.hasCategoryFilter,
+      context.categoryIds,
+      context.loadingCategory,
+    );
+  }
   result = filterBySuppliers(result, context.filters.suppliers);
   result = filterByIdSet(result, context.hasMarketingFilter, context.marketingIds, context.loadingMarketing);
   result = filterByIdSet(result, context.hasCommemorativeDateFilter, context.commemorativeDateIds, context.loadingCommemorativeDate);
   result = filterByIdSet(
     result,
-    context.hasMaterialFilter,
+    context.hasMaterialFilter && !context.materialFilterError,
     context.materialIds,
     context.loadingMaterial,
   );
-  result = filterByMaterials(result, context.hasMaterialFilter, context.filters.materiais);
+  result = filterByMaterials(result, context.hasMaterialFilter, context.filters.materiais, Boolean(context.materialFilterError));
   result = filterByPrice(result, context.filters.priceRange);
   result = filterByStock(result, context.filters);
   result = filterByFlags(result, context.filters);

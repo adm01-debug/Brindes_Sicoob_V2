@@ -54,8 +54,10 @@ describe('ReopenExpiredQuoteButton', () => {
         expect.stringMatching(/reaberto para revisão/i),
       ),
     );
-    expect(onReopened).toHaveBeenCalledTimes(1);
-    expect(screen.getByTestId('location')).toHaveTextContent('/orcamentos/quote-1/editar');
+    await waitFor(() => {
+      expect(onReopened).toHaveBeenCalledTimes(1);
+      expect(screen.getByTestId('location')).toHaveTextContent('/orcamentos/quote-1/editar');
+    });
   });
 
   it('não oferece reabertura para uma versão histórica', () => {

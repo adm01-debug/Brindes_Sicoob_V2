@@ -1,6 +1,7 @@
 /**
  * Forecast & anomaly utilities — regressão linear simples + detecção de outliers (z-score).
  */
+import { addDays, format, parseISO } from 'date-fns';
 
 export interface ForecastPoint {
   date: string;
@@ -67,15 +68,14 @@ export function projectForecast(
 
   const lastPoint = series[series.length - 1];
   if (!lastPoint) return result;
-  const lastDate = new Date(lastPoint.date);
+  const lastDate = parseISO(lastPoint.date);
   for (let i = 1; i <= forecastDays; i++) {
     const idx = values.length + i - 1;
     const pred = Math.max(0, slope * idx + intercept);
     const ci = 1.96 * residualStd;
-    const next = new Date(lastDate);
-    next.setDate(next.getDate() + i);
+    const next = addDays(lastDate, i);
     result.push({
-      date: next.toISOString().slice(0, 10),
+      date: format(next, 'yyyy-MM-dd'),
       value: Math.round(pred),
       isForecast: true,
       lower: Math.max(0, Math.round(pred - ci)),

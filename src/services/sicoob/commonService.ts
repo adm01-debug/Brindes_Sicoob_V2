@@ -14,8 +14,9 @@ export const sicoobCommonService = {
   },
 
   subscribeToOrders(callback: () => void) {
+    const channelName = `sicoob-orders-realtime:${crypto.randomUUID()}`;
     const channel = supabase
-      .channel('sicoob-orders-realtime')
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'sicoob_orders' },

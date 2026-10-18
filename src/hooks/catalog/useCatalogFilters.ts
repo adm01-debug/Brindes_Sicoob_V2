@@ -11,7 +11,8 @@ export function countActiveFilters(filters: FilterState): number {
   ].reduce((total, values) => total + (values?.length ?? 0), 0);
   const priceRangeActive = filters.priceRange[0] > 0 || filters.priceRange[1] < 9999;
   const flags = [priceRangeActive, filters.minStock > 0, filters.inStock, filters.isKit,
-    filters.featured, filters.isNew, filters.hasPersonalization, Boolean(filters.search)];
+    (filters.minQuantity ?? 0) > 0, filters.featured, filters.isNew, filters.hasPersonalization,
+    filters.hasCommercialPackaging, Boolean(filters.search)];
   return listCount + flags.filter(Boolean).length;
 }
 

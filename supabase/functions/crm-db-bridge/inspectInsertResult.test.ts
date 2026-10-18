@@ -80,7 +80,8 @@ Deno.test("logInsertResultIfAnomalous: emits structured log for GenericStringErr
     assert(line.includes("op=insert"), "should include op");
     assert(line.includes("table=quotes"), "should include table");
     assert(line.includes("shape=generic-string-error"), "should include shape");
-    assert(line.includes('message="boom"'), "should include error message");
+    assert(!line.includes('boom'), "should redact database error message");
+    assert(line.includes('"preview":"[redacted]"'), "should redact payload preview");
     assert(line.includes('"event":"result-shape-anomaly"'), "should include JSON payload");
   } finally {
     console.error = orig;

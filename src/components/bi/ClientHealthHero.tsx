@@ -20,6 +20,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Info,
+  RefreshCw,
   Star,
   Target as TargetIcon,
 } from 'lucide-react';
@@ -72,16 +73,97 @@ const TIER_STYLES = {
     scoreText: 'text-muted-foreground',
     progressBar: '',
     icon: Info,
-    label: 'Calculando',
+    label: 'Dados insuficientes',
   },
 };
+
+function HealthUnavailableCard({
+  clientName,
+  isError,
+  onRetry,
+}: {
+  clientName: string;
+  isError: boolean;
+  onRetry: () => void;
+}) {
+  return (
+    <Card className={cn('border-[1.5px] border-dashed', isError && 'border-destructive/30')}>
+      <CardContent className="flex items-start gap-3 p-6" role={isError ? 'alert' : 'status'}>
+        {isError ? (
+          <AlertTriangle className="h-5 w-5 shrink-0 text-destructive" />
+        ) : (
+          <Info className="h-5 w-5 shrink-0 text-muted-foreground" />
+        )}
+        <div className="space-y-2">
+          <div>
+            <h2 className="font-display text-sm font-semibold">
+              {isError ? 'Diagnóstico indisponível' : 'Dados insuficientes para o diagnóstico'}
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              {isError
+                ? `Não foi possível consultar todas as fontes de ${clientName}. Nenhum score ou conteúdo derivado será exibido até a atualização.`
+                : `Ainda não há histórico e amostra setorial suficientes para calcular a saúde de ${clientName}.`}
+            </p>
+          </div>
+          {isError && (
+            <Button variant="outline" size="sm" onClick={onRetry} className="gap-1.5">
+              <RefreshCw className="h-3.5 w-3.5" />
+              Tentar novamente
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function renderHealthState(
+  health: ReturnType<typeof useClientHealthScore>,
+  clientName: string,
+) {
+  if (health.isLoading) {
+    return (
+      <Card className="border-[1.5px]">
+        <CardContent className="space-y-4 p-6">
+          <div className="flex gap-4">
+            <Skeleton className="h-28 w-28 rounded-2xl" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-6 w-2/3" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+  if (health.isError) {
+    return (
+      <HealthUnavailableCard
+        clientName={clientName}
+        isError
+        onRetry={() => { void health.refetch(); }}
+      />
+    );
+  }
+  if (health.tier === 'unknown') {
+    return (
+      <HealthUnavailableCard
+        clientName={clientName}
+        isError={false}
+        onRetry={() => undefined}
+      />
+    );
+  }
+  return null;
+}
 
 export function ClientHealthHero({ clientId, ramoAtividade, clientName }: Props) {
   const health = useClientHealthScore(clientId, ramoAtividade);
   const affinity = useClientAffinity(clientId);
-  const trends = useIndustryTrends(ramoAtividade);
+  const trends = useIndustryTrends(ramoAtividade, clientId);
   const clientCats = useClientCategoryAffinity(clientId);
-  const industryCats = useIndustryCategoryTrends(ramoAtividade);
+  const industryCats = useIndustryCategoryTrends(ramoAtividade, clientId);
   const [open, setOpen] = useState(false);
 
   // Categoria favorita do cliente (top 1 por receita)
@@ -126,33 +208,21 @@ export function ClientHealthHero({ clientId, ramoAtividade, clientName }: Props)
       source: 'industry' as const,
     }));
 
-    const seen = new Set(list.map((i) => i.name.toLowerCase()));
+    const suggestionIdentity = (item: SuggestionItem) =>
+      item.productId ? `produto:${item.productId}` : `nome:${item.name.toLowerCase()}`;
+    const seen = new Set(list.map(suggestionIdentity));
     for (const t of trendList) {
-      if (!seen.has(t.name.toLowerCase())) {
+      if (!seen.has(suggestionIdentity(t))) {
         list.push(t);
-        seen.add(t.name.toLowerCase());
+        seen.add(suggestionIdentity(t));
       }
       if (list.length >= 5) break;
     }
     return list.slice(0, 5);
   }, [affinity.data, trends.data]);
 
-  if (health.isLoading) {
-    return (
-      <Card className="border-[1.5px]">
-        <CardContent className="space-y-4 p-6">
-          <div className="flex gap-4">
-            <Skeleton className="h-28 w-28 rounded-2xl" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-6 w-2/3" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-5/6" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const healthState = renderHealthState(health, clientName);
+  if (healthState) return healthState;
 
   const breakdownEntries = Object.values(health.breakdown);
 

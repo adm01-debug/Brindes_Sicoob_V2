@@ -17,7 +17,7 @@ dois gates de CI ficam vermelhos. Ninguém tinha essa lista consolidada antes.
 | `SUPABASE_ANON_KEY` | várias | Supabase (automático) |
 | `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` / `VITE_SUPABASE_PROJECT_ID` | build do frontend | segredo/configuração do provedor de hospedagem; usar `.env.production.example` somente como modelo local |
 | `EXTERNAL_SUPABASE_URL` / `EXTERNAL_SUPABASE_SERVICE_KEY` | `categories-api`, `external-db-inspect` (catálogo externo) | **preencher** |
-| `CRM_SUPABASE_URL` / `CRM_SUPABASE_ANON_KEY` / `CRM_SUPABASE_SERVICE_KEY` | `crm-db-bridge` | **preencher** |
+| `CRM_SUPABASE_URL` / `CRM_SUPABASE_ANON_KEY` / `CRM_SUPABASE_SERVICE_KEY` | `crm-db-bridge` | **URL presente; chaves placeholder detectadas em 15/10/2026 — rotacionar** |
 | `BITRIX24_WEBHOOK_URL` | `bitrix-sync` | **preencher** |
 | `CNPJA_API_KEY` | `cnpj-lookup` | **preencher** |
 | `DROPBOX_ACCESS_TOKEN` | `dropbox-list` | **preencher** |
@@ -97,3 +97,8 @@ assinaturas que as referenciem, pois são necessárias para verificar o históri
    pode comparar este arquivo contra o `grep` acima e falhar o CI se aparecer uma
    variável nova sem documentação — fecha o ciclo para isso não precisar ser
    redescoberto lendo log de CI de novo.
+
+O resolvedor compartilhado rejeita placeholders e valida o formato das chaves
+Supabase externas antes de classificá-las como presentes. A validação aceita as
+chaves atuais `sb_secret_*`/`sb_publishable_*` e JWTs legados; o valor nunca deve
+ser registrado em documentação, logs ou artefatos de CI.

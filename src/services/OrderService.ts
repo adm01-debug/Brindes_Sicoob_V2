@@ -4,6 +4,9 @@ import type { OrderRow, OrderFilters, OrderItem, OrderStatus, OrderLogistics, Or
 import { ORDER_STATUS_LABELS } from "@/constants/orders";
 import { logger } from "@/lib/logger";
 import { invokeEdgeFunction } from "@/lib/edge-function-client";
+import { createPrivateStorageReference, resolvePrivateStorageUrl } from "@/lib/private-storage";
+
+const PILOT_IMAGE_BUCKET = 'personalization-images';
 
 export interface ConvertQuoteToOrderParams {
   quoteId: string;
@@ -36,8 +39,14 @@ function applyOrderFieldFilters(query: OrderListQuery, filters?: OrderFilters): 
   let filtered = query;
   if (filters?.status && filters.status !== "all") filtered = filtered.eq("status", filters.status);
   if (filters?.clientCompany) filtered = filtered.ilike("client_company", `%${filters.clientCompany}%`);
+  return filtered;
+}
+
+function applyOrderPeriod(query: OrderListQuery, filters?: OrderFilters): OrderListQuery {
+  let filtered = query;
   if (filters?.startDate) filtered = filtered.gte("created_at", filters.startDate);
-  if (filters?.endDate) filtered = filtered.lte("created_at", filters.endDate);
+  if (filters?.endDateExclusive) filtered = filtered.lt("created_at", filters.endDateExclusive);
+  else if (filters?.endDate) filtered = filtered.lte("created_at", filters.endDate);
   return filtered;
 }
 
@@ -58,6 +67,7 @@ function applyOrderListFilters(
 ): OrderListQuery {
   let filtered = applyOrderScope(query, sellerId, scope);
   filtered = applyOrderFieldFilters(filtered, filters);
+  filtered = applyOrderPeriod(filtered, filters);
   return applyOrderSearch(filtered, filters?.search);
 }
 
@@ -289,7 +299,11 @@ export class OrderService {
       .order("created_at", { ascending: false });
     
     if (error) throw error;
-    return data;
+    return Promise.all((data ?? []).map(async (approval) => ({
+      ...approval,
+      mockup_url: await resolvePrivateStorageUrl(approval.mockup_url, PILOT_IMAGE_BUCKET) ?? approval.mockup_url,
+      mockup_thumbnail_url: await resolvePrivateStorageUrl(approval.mockup_thumbnail_url, PILOT_IMAGE_BUCKET),
+    })));
   }
 
   static async createPilotApproval(payload: TablesInsert<"order_pilot_approvals">) {
@@ -318,16 +332,12 @@ export class OrderService {
     const filePath = `pilots/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
-      .from('personalization-images')
+      .from(PILOT_IMAGE_BUCKET)
       .upload(filePath, file);
 
     if (uploadError) throw uploadError;
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('personalization-images')
-      .getPublicUrl(filePath);
-      
-    return publicUrl;
+    return createPrivateStorageReference(PILOT_IMAGE_BUCKET, filePath);
   }
 
   // Order Templates Methods

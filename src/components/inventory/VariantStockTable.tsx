@@ -28,7 +28,7 @@ interface VariantStockTableProps {
 }
 
 function StockSearch({ value, onChange }: { value: string; onChange: (value: string) => void }) {
-  return <div className="relative max-w-md"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input aria-label="Filtrar estoque por nome, SKU ou cor" placeholder="Filtrar por nome, SKU ou cor..." className="pl-9 pr-9" value={value} onChange={(event) => onChange(event.target.value)} />{value && <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => onChange("")}><X className="h-4 w-4" /></Button>}</div>;
+  return <div className="relative max-w-md"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input aria-label="Filtrar estoque por nome, SKU ou cor" placeholder="Filtrar por nome, SKU ou cor..." className="pl-9 pr-9" value={value} onChange={(event) => onChange(event.target.value)} />{value && <Button aria-label="Limpar filtro da tabela" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => onChange("")}><X className="h-4 w-4" /></Button>}</div>;
 }
 
 function StockRows({ products, expanded, toggle }: { products: ProductStockSummary[]; expanded: Set<string>; toggle: (id: string) => void }) {

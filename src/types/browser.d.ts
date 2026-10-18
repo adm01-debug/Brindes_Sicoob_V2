@@ -21,6 +21,8 @@ declare global {
     };
     /** Exposto em dev/prod pra inspeção manual no console (src/lib/diagnostics.ts). */
     __DIAGNOSTICS__?: DiagnosticsManager;
+    /** Contadores agregados de navegação e guarda da sessão atual. */
+    __UX_METRICS__?: () => Record<string, number>;
   }
 
   interface Navigator {

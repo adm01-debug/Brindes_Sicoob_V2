@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import type { KitState } from '@/lib/kit-builder';
+import { buildCustomKitPayload, createKitPersistenceSnapshot } from '@/lib/kit-builder/persistence';
 
 // ============================================
 // TYPES
@@ -41,56 +42,44 @@ export interface CustomKitRow {
 
 const QUERY_KEY = ['custom-kits'] as const;
 
-function kitIdentityLabels(identity: KitState['identity']) {
-  return {
-    color: identity?.color ?? '#3B82F6',
-    icon: identity?.icon ?? 'Package',
-    tag: identity?.tag ?? null,
-  };
-}
-
-function kitIdentityDetails(identity: KitState['identity']) {
-  return {
-    description: identity?.description ?? null,
-    is_favorite: identity?.isFavorite ?? false,
-  };
+export class CustomKitConflictError extends Error {
+  constructor() {
+    super('Este kit foi alterado em outra aba. Atualize a lista antes de salvar novamente.');
+    this.name = 'CustomKitConflictError';
+  }
 }
 
 function buildKitPayload(userId: string, kitState: KitState, kitQuantity: number) {
-  return {
-    user_id: userId,
-    name: kitState.name || 'Kit sem nome',
-    status: kitState.isValid ? 'complete' : 'draft',
-    kit_type: kitState.kitType || 'montado',
-    box_data: kitState.box ? JSON.parse(JSON.stringify(kitState.box)) : null,
-    items_data: JSON.parse(JSON.stringify(kitState.items)),
-    personalization_data: JSON.parse(JSON.stringify(kitState.personalization)),
-    kit_quantity: kitQuantity,
-    box_price: kitState.boxPrice,
-    items_price: kitState.itemsPrice,
-    personalization_price: kitState.personalizationPrice,
-    total_price: kitState.totalPrice,
-    volume_usage_percent: kitState.volumeUsagePercent,
-    ...kitIdentityLabels(kitState.identity),
-    ...kitIdentityDetails(kitState.identity),
-    updated_at: new Date().toISOString(),
-  };
+  return buildCustomKitPayload(userId, createKitPersistenceSnapshot(kitState, kitQuantity));
 }
 
 async function persistCustomKit(
   userId: string,
   kitId: string | undefined,
+  expectedUpdatedAt: string | undefined,
   payload: ReturnType<typeof buildKitPayload>,
 ) {
   if (kitId) {
+    if (!expectedUpdatedAt) {
+      throw new CustomKitConflictError();
+    }
+
+    // Garante que a gravação produza uma versão diferente, mesmo em duas
+    // gravações iniciadas no mesmo milissegundo.
+    const nextUpdatedAt = new Date().toISOString();
+    payload.updated_at = nextUpdatedAt <= expectedUpdatedAt
+      ? new Date(new Date(expectedUpdatedAt).getTime() + 1).toISOString()
+      : nextUpdatedAt;
     const { data, error } = await supabase
       .from('custom_kits')
       .update(payload)
       .eq('id', kitId)
       .eq('user_id', userId)
+      .eq('updated_at', expectedUpdatedAt)
       .select()
-      .single();
+      .maybeSingle();
     if (error) throw error;
+    if (!data) throw new CustomKitConflictError();
     return data;
   }
   const { data, error } = await supabase.from('custom_kits').insert(payload).select().single();
@@ -126,20 +115,32 @@ export function useCustomKitPersistence() {
 
   // Salvar kit (insert ou update)
   const saveMutation = useMutation({
-    mutationFn: async ({ kitId, kitState, kitQuantity }: {
+    mutationFn: async ({ kitId, expectedUpdatedAt, kitState, kitQuantity }: {
       kitId?: string;
+      expectedUpdatedAt?: string;
       kitState: KitState;
       kitQuantity: number;
     }) => {
       if (!user?.id) throw new Error('Usuário não autenticado');
 
-      return persistCustomKit(user.id, kitId, buildKitPayload(user.id, kitState, kitQuantity));
+      const cachedKit = kitId
+        ? queryClient.getQueryData<CustomKitRow[]>(QUERY_KEY)?.find((kit) => kit.id === kitId)
+        : undefined;
+      return persistCustomKit(
+        user.id,
+        kitId,
+        expectedUpdatedAt ?? cachedKit?.updated_at,
+        buildKitPayload(user.id, kitState, kitQuantity),
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success('Kit salvo com sucesso!');
     },
     onError: (err: Error) => {
+      if (err instanceof CustomKitConflictError) {
+        void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      }
       toast.error(`Erro ao salvar kit: ${err.message}`);
     },
   });
@@ -165,8 +166,8 @@ export function useCustomKitPersistence() {
   });
 
   const saveKit = useCallback(
-    (kitState: KitState, kitQuantity: number, kitId?: string) =>
-      saveMutation.mutateAsync({ kitId, kitState, kitQuantity }),
+    (kitState: KitState, kitQuantity: number, kitId?: string, expectedUpdatedAt?: string) =>
+      saveMutation.mutateAsync({ kitId, expectedUpdatedAt, kitState, kitQuantity }),
     [saveMutation]
   );
 
@@ -179,11 +180,12 @@ export function useCustomKitPersistence() {
   const bumpLastUsed = useCallback(async (kitId: string) => {
     if (!user?.id) return;
     try {
-      await supabase
+      const { error } = await supabase
         .from('custom_kits')
         .update({ last_used_at: new Date().toISOString() } as never)
         .eq('id', kitId)
         .eq('user_id', user.id);
+      if (error) throw error;
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     } catch {
       /* best-effort */
@@ -194,19 +196,11 @@ export function useCustomKitPersistence() {
   const togglePinned = useCallback(async (kitId: string, value: boolean) => {
     if (!user?.id) return;
     try {
-      if (value) {
-        // Desfixa qualquer outro kit fixado primeiro
-        await supabase
-          .from('custom_kits')
-          .update({ is_pinned: false } as never)
-          .eq('user_id', user.id)
-          .eq('is_pinned', true);
-      }
-      await supabase
-        .from('custom_kits')
-        .update({ is_pinned: value } as never)
-        .eq('id', kitId)
-        .eq('user_id', user.id);
+      const { error } = await supabase.rpc('set_custom_kit_pinned', {
+        p_kit_id: kitId,
+        p_pinned: value,
+      });
+      if (error) throw error;
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success(value ? 'Kit fixado em destaque' : 'Kit desafixado');
     } catch {

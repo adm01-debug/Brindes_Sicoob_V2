@@ -397,7 +397,7 @@ describe('AdminTelemetriaPage - Table Display', () => {
     setupSupabaseMock(rows);
     render(<AdminTelemetriaPage />);
     await waitFor(() => {
-      expect(screen.getByText('500 registros · auto-refresh 30s')).toBeInTheDocument();
+      expect(screen.getByText('500 de até 500 registros · auto-refresh 30s')).toBeInTheDocument();
     });
   });
 });
@@ -569,7 +569,7 @@ describe('AdminTelemetriaPage - Record Count', () => {
     setupSupabaseMock(rows);
     render(<AdminTelemetriaPage />);
     await waitFor(() => {
-      expect(screen.getByText('42 registros · auto-refresh 30s')).toBeInTheDocument();
+      expect(screen.getByText('42 de até 500 registros · auto-refresh 30s')).toBeInTheDocument();
     });
   });
 
@@ -577,7 +577,7 @@ describe('AdminTelemetriaPage - Record Count', () => {
     setupSupabaseMock([]);
     render(<AdminTelemetriaPage />);
     await waitFor(() => {
-      expect(screen.getByText('0 registros · auto-refresh 30s')).toBeInTheDocument();
+      expect(screen.getByText('0 de até 500 registros · auto-refresh 30s')).toBeInTheDocument();
     });
   });
 
@@ -586,7 +586,7 @@ describe('AdminTelemetriaPage - Record Count', () => {
     setupSupabaseMock(rows);
     render(<AdminTelemetriaPage />);
     await waitFor(() => {
-      expect(screen.getByText('1 registros · auto-refresh 30s')).toBeInTheDocument();
+      expect(screen.getByText('1 de até 500 registros · auto-refresh 30s')).toBeInTheDocument();
     });
   });
 });

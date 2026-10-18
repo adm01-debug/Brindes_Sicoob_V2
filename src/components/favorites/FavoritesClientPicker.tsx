@@ -10,8 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { selectCrm, searchCrm } from "@/lib/crm-db";
-import { getCompanyDisplayName, type CrmCompany } from "@/types/crm";
+import { listQuoteDirectoryCompanies } from "@/lib/crm-db";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface CompanyItem {
   id: string;
@@ -26,7 +26,17 @@ interface Props {
   onSelect: (client: { id: string; name: string } | null) => void;
 }
 
+function buildFavoritesAccessScope(userId: string | undefined, roles: readonly string[] | undefined): string {
+  return `${userId ?? "anon"}:${[...(roles ?? [])].sort().join(",")}`;
+}
+
+function useFavoritesAccessScope(): string {
+  const { user, roles } = useAuth();
+  return buildFavoritesAccessScope(user?.id, roles);
+}
+
 export function FavoritesClientPicker({ selectedClientId, selectedClientName, onSelect }: Props) {
+  const accessScope = useFavoritesAccessScope();
   const [searchTerm, setSearchTerm] = useState("");
   const [debounced, setDebounced] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -37,17 +47,14 @@ export function FavoritesClientPicker({ selectedClientId, selectedClientName, on
   }, [searchTerm]);
 
   const { data: localCompanies = [], isLoading: loadingLocal } = useQuery({
-    queryKey: ["fav-client-picker-local"],
+    queryKey: ["fav-client-picker-local", accessScope],
     queryFn: async () => {
-      const companies = await selectCrm<CrmCompany>("companies", {
-        select: "id, razao_social, nome_fantasia, logo_url, ramo_atividade",
-        filters: { deleted_at: null, is_customer: true },
-        orderBy: { column: "razao_social", ascending: true },
+      const companies = await listQuoteDirectoryCompanies({
         limit: 100,
       });
       return companies.map((c): CompanyItem => ({
         id: c.id,
-        name: getCompanyDisplayName(c),
+        name: c.name,
         ramo: c.ramo_atividade || null,
         logo_url: c.logo_url || null,
       }));
@@ -56,16 +63,16 @@ export function FavoritesClientPicker({ selectedClientId, selectedClientName, on
   });
 
   const { data: serverResults = [], isLoading: loadingServer } = useQuery({
-    queryKey: ["fav-client-picker-search", debounced],
+    queryKey: ["fav-client-picker-search", accessScope, debounced],
     queryFn: async () => {
       if (debounced.length < 3) return [];
-      const results = await searchCrm<CrmCompany>("companies", "razao_social", debounced, {
-        orderBy: { column: "razao_social", ascending: true },
+      const results = await listQuoteDirectoryCompanies({
+        term: debounced,
         limit: 20,
       });
       return results.map((c): CompanyItem => ({
         id: c.id,
-        name: getCompanyDisplayName(c),
+        name: c.name,
         ramo: c.ramo_atividade || null,
         logo_url: c.logo_url || null,
       }));

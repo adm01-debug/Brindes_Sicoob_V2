@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Upload, FileText, Trash2, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { createPrivateStorageReference } from '@/lib/private-storage';
 
 const ACCEPTED_EXTENSIONS = [".ai", ".eps", ".pdf", ".svg", ".cdr"];
 const ACCEPTED_MIME = [
@@ -82,8 +83,8 @@ async function uploadArtFile(file: File, { userId, mockupId, quoteId }: Pick<Art
     toast.error(`Falha ao enviar ${file.name}`);
     return null;
   }
-  const { data: signed } = await supabase.storage.from(ART_FILES_BUCKET).createSignedUrl(path, 60 * 60 * 24 * 7);
-  const { data: row, error: insertError } = await supabase.from("art_file_attachments").insert({ user_id: userId, mockup_id: mockupId ?? null, quote_id: quoteId ?? null, file_url: signed?.signedUrl ?? "", file_path: path, original_name: file.name, mime_type: file.type.length > 0 ? file.type : null, file_size_bytes: file.size, file_extension: extension }).select().single();
+  const storageReference = createPrivateStorageReference(ART_FILES_BUCKET, path);
+  const { data: row, error: insertError } = await supabase.from("art_file_attachments").insert({ user_id: userId, mockup_id: mockupId ?? null, quote_id: quoteId ?? null, file_url: storageReference, file_path: path, original_name: file.name, mime_type: file.type.length > 0 ? file.type : null, file_size_bytes: file.size, file_extension: extension }).select().single();
   if (insertFailed(row, insertError)) {
     console.error("[ArtFileUpload] db insert error", insertError);
     toast.error(`Falha ao registrar ${file.name}`);

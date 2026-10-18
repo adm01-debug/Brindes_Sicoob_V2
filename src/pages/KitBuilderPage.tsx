@@ -6,23 +6,22 @@
  * - Subtle noise BG + motion transitions
  */
 
-import { useState, useEffect, useRef, lazy, Suspense, type MutableRefObject } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import confetti from 'canvas-confetti';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { downloadKitPDF } from '@/utils/kitPdfGenerator';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { formatCurrency, calculateTotalKitPrice, type ExternalProductForKit } from '@/lib/kit-builder';
+import { formatCurrency, calculateTotalKitPrice } from '@/lib/kit-builder';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useKitBuilder } from '@/hooks/useKitBuilder';
 import { useCustomKitPersistence } from '@/hooks/useCustomKitPersistence';
-import { useKitAutoSave } from '@/hooks/useKitAutoSave';
+import { useKitPersistenceCoordinator } from '@/hooks/useKitPersistenceCoordinator';
 import { useKitUndoRedo } from '@/hooks/useKitUndoRedo';
 import { supabase } from '@/integrations/supabase/client';
-import { invokeExternalDb } from '@/lib/external-db';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   WizardSteps, BoxSelector, ItemSelector, VolumeIndicator,
@@ -33,13 +32,10 @@ import { FreightEstimator } from '@/components/kit-builder/FreightEstimator';
 import { KitTemplates, type KitTemplate } from '@/components/kit-builder/KitTemplates';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { transformToKitItem } from '@/hooks/useKitBuilderTransformers';
 import { PageSEO } from "@/components/seo/PageSEO";
 // import { MainLayout } from "@/components/layout/MainLayout";
-import { logger } from '@/lib/logger';
 import { useKitBuilderQuote } from './kit-builder/useKitBuilderQuote';
 import { useKitWizardShortcuts } from '@/hooks/useKitWizardShortcuts';
-import { useTemplateSnapshot } from '@/hooks/useTemplateSnapshot';
 import { useCustomKitsRealtime } from '@/hooks/useCustomKitsRealtime';
 import { KitMobileSummaryBar } from '@/components/kit-builder/KitMobileSummaryBar';
 import { KitHealthCard } from '@/components/kit-builder/KitHealthCard';
@@ -54,7 +50,9 @@ import { KitShortcutsDialog } from '@/components/kit-builder/KitShortcutsDialog'
 import { SimilarKitsWidget } from '@/components/kit-builder/SimilarKitsWidget';
 import { IdentitySuggestionButton } from '@/components/kit-builder/IdentitySuggestionButton';
 import { useDuplicateKitDetector } from '@/hooks/useDuplicateKitDetector';
+import { useDirtyGuard } from '@/hooks/useDirtyGuard';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { useKitProductParam } from './kit-builder/useKitProductParam';
 
 const KitIsometricPreview = lazy(() => import('@/components/kit-builder/KitIsometricPreview').then(m => ({ default: m.KitIsometricPreview })));
 const KitPersonalizationPreview = lazy(() => import('@/components/kit-builder/KitPersonalizationPreview').then(m => ({ default: m.KitPersonalizationPreview })));
@@ -62,10 +60,6 @@ const KitPersonalizationPreview = lazy(() => import('@/components/kit-builder/Ki
 type KitBuilderState = ReturnType<typeof useKitBuilder>;
 type LoadKitPayload = Parameters<KitBuilderState['loadKit']>[0];
 type KitState = KitBuilderState['kitState'];
-
-function resolveKitId(currentKitId: string | undefined, autoSavedKitId: string | null | undefined): string | undefined {
-  return currentKitId || autoSavedKitId || undefined;
-}
 
 function kitWeightMetrics(kitState: KitState) {
   const itemsWeight = kitState.items.reduce((sum, item) => sum + ((item.weight || 0) * item.quantity), 0);
@@ -111,46 +105,21 @@ function templatePayload(row: Record<string, unknown>): LoadKitPayload {
       tag: recordString(row, 'tag'), description: recordString(row, 'description'), isFavorite: false } };
 }
 
-interface LoadCustomKitOptions {
-  id: string;
-  loadKit: KitBuilderState['loadKit'];
-  bumpLastUsed: (id: string) => void;
-  hasBumpedRef: MutableRefObject<boolean>;
-}
-
-async function loadCustomKit(options: LoadCustomKitOptions): Promise<void> {
-  try {
-    const { data, error } = await supabase.from('custom_kits').select('*').eq('id', options.id).maybeSingle();
-    if (error || !data) { toast.error('Kit não encontrado'); return; }
-    options.loadKit(customKitPayload(data as Record<string, unknown>));
-    toast.success('Kit carregado para edição');
-    if (options.hasBumpedRef.current) return;
-    options.hasBumpedRef.current = true;
-    options.bumpLastUsed(options.id);
-  } catch { toast.error('Erro ao carregar kit'); }
-}
-
-async function loadKitTemplate(id: string, loadKit: KitBuilderState['loadKit']): Promise<void> {
-  try {
-    const { data, error } = await supabase.from('kit_templates').select('*').eq('id', id).maybeSingle();
-    if (error || !data) { toast.error('Template não encontrado'); return; }
-    loadKit(templatePayload(data as Record<string, unknown>));
-    toast.success('Template carregado para edição', { description: 'Ao salvar, atualizará o template do sistema.' });
-  } catch { toast.error('Erro ao carregar template'); }
-}
-
 export default function KitBuilderPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const kitIdParam = searchParams.get('kit');
   const productIdParam = searchParams.get('product');
   const templateIdParam = searchParams.get('template');
-  const [currentKitId, setCurrentKitId] = useState<string | undefined>(kitIdParam || undefined);
+  const requestedResourceKey = kitIdParam
+    ? `custom:${kitIdParam}`
+    : templateIdParam ? `template:${templateIdParam}` : null;
+  const [persistenceSession, setPersistenceSession] = useState(0);
+  const [loadedResourceKey, setLoadedResourceKey] = useState<string | null>(null);
+  const [loadedKitUpdatedAt, setLoadedKitUpdatedAt] = useState<string | undefined>();
   const [occasion, setOccasion] = useState<Occasion | null>(null);
-  const hasLoadedRef = useRef(false);
-  const hasLoadedProductRef = useRef(false);
-  const hasLoadedTemplateRef = useRef(false);
-  const hasBumpedRef = useRef(false);
+  const loadGenerationRef = useRef(0);
+  const lastBumpedKitIdRef = useRef<string | null>(null);
 
   const {
     kitState, setKitType, wizardState, kitQuantity, availableBoxes, availableItems,
@@ -161,14 +130,22 @@ export default function KitBuilderPage() {
     setKitQuantity, setIdentity, goToStep, nextStep, prevStep, resetKit, loadKit,
   } = useKitBuilder();
 
-  const { saveKit, isSaving, bumpLastUsed } = useCustomKitPersistence();
-  const { saveAsTemplate } = useTemplateSnapshot();
+  const { bumpLastUsed } = useCustomKitPersistence();
   const { handleAddToQuote, isCreatingQuote } = useKitBuilderQuote();
   useCustomKitsRealtime();
 
-  const { lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, retry: retryAutoSave } = useKitAutoSave(
-    kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id),
-  );
+  const persistenceReady = !requestedResourceKey || loadedResourceKey === requestedResourceKey;
+  const persistence = useKitPersistenceCoordinator({
+    kitState,
+    kitQuantity,
+    enabled: persistenceReady,
+    mode: {
+      kind: 'custom',
+      kitId: kitIdParam || undefined,
+      expectedUpdatedAt: loadedKitUpdatedAt,
+      sessionKey: `${persistenceSession}:${templateIdParam ?? productIdParam ?? 'blank'}`,
+    },
+  });
 
   const { pushSnapshot, undo, redo, canUndo, canRedo } = useKitUndoRedo();
 
@@ -216,33 +193,48 @@ export default function KitBuilderPage() {
   }, [kitState.isValid, kitState.items.length]);
 
   useEffect(() => {
-    if (!kitIdParam || hasLoadedRef.current) return;
-    hasLoadedRef.current = true;
-    void loadCustomKit({ id: kitIdParam, loadKit, bumpLastUsed, hasBumpedRef });
-  }, [kitIdParam, loadKit, bumpLastUsed]);
+    const generation = ++loadGenerationRef.current;
+    if (kitIdParam) {
+      setLoadedResourceKey(null);
+      void (async () => {
+        try {
+          const { data, error } = await supabase.from('custom_kits').select('*').eq('id', kitIdParam).maybeSingle();
+          if (generation !== loadGenerationRef.current) return;
+          if (error || !data) { toast.error('Kit não encontrado'); return; }
+          loadKit(customKitPayload(data as Record<string, unknown>));
+          setLoadedKitUpdatedAt(typeof data.updated_at === 'string' ? data.updated_at : undefined);
+          setLoadedResourceKey(`custom:${kitIdParam}`);
+          toast.success('Kit carregado para edição');
+          if (lastBumpedKitIdRef.current !== kitIdParam) {
+            lastBumpedKitIdRef.current = kitIdParam;
+            void bumpLastUsed(kitIdParam);
+          }
+        } catch {
+          if (generation === loadGenerationRef.current) toast.error('Erro ao carregar kit');
+        }
+      })();
+      return () => { loadGenerationRef.current += 1; };
+    }
 
-  // Template mode: load a kit_templates row for admin editing
-  useEffect(() => {
-    if (!templateIdParam || hasLoadedTemplateRef.current || kitIdParam) return;
-    hasLoadedTemplateRef.current = true;
-    void loadKitTemplate(templateIdParam, loadKit);
-  }, [templateIdParam, kitIdParam, loadKit]);
+    if (templateIdParam) {
+      setLoadedResourceKey(null);
+      void (async () => {
+        try {
+          const { data, error } = await supabase.from('kit_templates').select('*').eq('id', templateIdParam).maybeSingle();
+          if (generation !== loadGenerationRef.current) return;
+          if (error || !data) { toast.error('Template não encontrado'); return; }
+          loadKit(templatePayload(data as Record<string, unknown>));
+          setLoadedResourceKey(`template:${templateIdParam}`);
+          toast.success('Template aplicado ao kit', { description: 'Personalize e salve uma cópia nos seus kits.' });
+        } catch {
+          if (generation === loadGenerationRef.current) toast.error('Erro ao carregar template');
+        }
+      })();
+    }
+    return () => { loadGenerationRef.current += 1; };
+  }, [kitIdParam, templateIdParam, loadKit, bumpLastUsed, persistence.staleWriteRevision]);
 
-  useEffect(() => {
-    if (!productIdParam || hasLoadedProductRef.current || kitIdParam) return;
-    hasLoadedProductRef.current = true;
-    (async () => {
-      try {
-        const result = await invokeExternalDb<ExternalProductForKit>({ table: 'products', operation: 'select', filters: { id: productIdParam }, select: 'id, name, sku, sale_price, primary_image_url, weight_g, width_mm, height_mm, length_mm, width_cm, height_cm, length_cm, materials, is_kit, category_id', limit: 1 });
-        const product = result.records?.[0];
-        if (product) {
-          addItem(transformToKitItem(product));
-          setKitName(product.name || '');
-          toast.success(`"${product.name}" adicionado ao kit!`, { description: 'Selecione uma caixa e continue montando.' });
-        } else toast.error('Produto não encontrado no catálogo');
-      } catch (err) { logger.warn('[kit-builder] Failed to load product:', err); toast.error('Erro ao carregar produto'); }
-    })();
-  }, [productIdParam, kitIdParam, addItem, setKitName]);
+  useKitProductParam({ productIdParam, kitIdParam, templateIdParam, addItem, setKitName });
 
   const { findDuplicate } = useDuplicateKitDetector();
 
@@ -264,14 +256,10 @@ export default function KitBuilderPage() {
 
   const handleSaveKit = async () => {
     try {
-      if (templateIdParam) {
-        await saveAsTemplate({ kitState, templateId: templateIdParam });
-        return;
-      }
-      const editingId = currentKitId || autoSavedKitId || undefined;
+      if (!persistenceReady) { toast.info('Aguarde o carregamento do kit antes de salvar.'); return; }
+      const editingId = persistence.resolvedKitId || undefined;
       if (!await confirmNewKitSave(editingId)) return;
-      const result = await saveKit(kitState, kitQuantity, editingId);
-      if (result && 'id' in result) setCurrentKitId((result as { id: string }).id);
+      await persistence.saveNow();
     } catch { /* handled by hook */ }
   };
 
@@ -280,7 +268,11 @@ export default function KitBuilderPage() {
     catch (error) { console.error('Erro ao exportar PDF:', error); toast.error('Erro ao gerar PDF do kit'); }
   };
 
-  const handleResetKit = () => { resetKit(); setCurrentKitId(undefined); };
+  const handleResetKit = () => {
+    resetKit();
+    setPersistenceSession((value) => value + 1);
+    navigate('/montar-kit', { replace: true });
+  };
 
   // Item 3 — contextual toasts with Desfazer (uses undo from useKitUndoRedo)
   const handleSelectBox = (box: typeof availableBoxes[number]) => {
@@ -322,10 +314,15 @@ export default function KitBuilderPage() {
 
   const { itemsWeight, weightExceeded, weightPercent } = kitWeightMetrics(kitState);
   const hasContent = kitHasContent(kitState);
-  const isExistingKit = Boolean(resolveKitId(currentKitId, autoSavedKitId));
+  useDirtyGuard(
+    'kit-builder',
+    persistenceReady && persistence.isDirty,
+    'O kit possui alterações que ainda não foram salvas.',
+  );
+  const isExistingKit = Boolean(persistence.resolvedKitId);
   const pricing = calculateTotalKitPrice(kitState.box, kitState.items, kitState.personalization, kitQuantity);
 
-  const resolvedKitId = resolveKitId(currentKitId, autoSavedKitId);
+  const resolvedKitId = persistence.resolvedKitId || undefined;
 
   function applyAISuggestion(suggestion: { kit_type: 'montado' | 'original' | 'simples'; box_keywords: string[] }) {
     setKitType(suggestion.kit_type);
@@ -335,11 +332,12 @@ export default function KitBuilderPage() {
 
   function BuilderHeader() {
     return <><KitBuilderHeader kitName={kitState.name} onKitNameChange={setKitName} isValid={kitState.isValid}
-      isSaving={isSaving} isAutoSaving={isAutoSaving} lastSavedAt={lastSavedAt} autoSaveError={lastSaveError}
-      onRetryAutoSave={retryAutoSave} hasContent={hasContent} isExistingKit={isExistingKit} canUndo={canUndo}
+      isSaving={persistence.isSaving} isAutoSaving={persistence.isAutoSaving} lastSavedAt={persistence.lastSavedAt} autoSaveError={persistence.lastSaveError}
+      onRetryAutoSave={persistence.retry} hasContent={hasContent && persistenceReady} isExistingKit={isExistingKit} canUndo={canUndo}
       canRedo={canRedo} identity={kitState.identity} onIdentityChange={setIdentity} onSave={handleSaveKit}
-      onUndo={() => undo()} onRedo={() => redo()} onReset={handleResetKit} kitState={kitState}
-      templateId={templateIdParam || undefined} currentKitId={resolvedKitId} onAIApply={applyAISuggestion} />
+      onSaveTemplate={() => { void persistence.saveAsTemplate().catch(() => undefined); }}
+      onUndo={() => undo()} onRedo={() => redo()} onReset={handleResetKit}
+      currentKitId={resolvedKitId} onAIApply={applyAISuggestion} />
       <div className="border-b bg-card/40 backdrop-blur-sm"><div className="container py-4">
         <WizardSteps currentStep={wizardState.currentStep} completedSteps={wizardState.completedSteps}
           onStepClick={goToStep} kitState={kitState} />

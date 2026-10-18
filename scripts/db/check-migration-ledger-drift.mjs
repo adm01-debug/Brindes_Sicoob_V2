@@ -72,11 +72,17 @@ export function compareLedger(local, ledger) {
       continue;
     }
     const file = active[0] ?? candidates[0];
-    const sql = Array.isArray(row.statements)
-      ? row.statements.map((s) => s.trim().replace(/;\s*$/, '')).join(';\n')
+    const statements =
+      Array.isArray(row.statements) &&
+      row.statements.length > 0 &&
+      row.statements.every((statement) => typeof statement === 'string' && statement.trim().length > 0)
+        ? row.statements
+        : null;
+    const sql = statements
+      ? statements.map((s) => s.trim().replace(/;\s*$/, '')).join(';\n')
       : null;
     const hashMarker =
-      row.statements?.length === 1 ? LEDGER_HASH_MARKER.exec(row.statements[0]?.trim()) : null;
+      statements?.length === 1 ? LEDGER_HASH_MARKER.exec(statements[0].trim()) : null;
     const remoteHash = hashMarker?.[1] ?? (sql === null ? null : hash(normalizedSql(sql)));
     const hashesMatch = hashMarker
       ? remoteHash === file.sha256

@@ -9,6 +9,7 @@ import {
   PRODUCT_SELECT_FIELDS_LEGACY,
   shouldFallbackSelect,
 } from './product-types';
+import { resolvePrivateStorageUrl } from '@/lib/private-storage';
 
 interface FetchPromobrindProductsOptions<ReturnCount extends boolean | undefined = undefined> {
   search?: string;
@@ -334,6 +335,14 @@ function collectRecords<T>(results: BatchResult[], indexes: number[]): T[] {
   return records;
 }
 
+async function resolveImageRecords(records: ImageRecord[]): Promise<ImageRecord[]> {
+  return Promise.all(records.map(async (image) => ({
+    ...image,
+    url_cdn: await resolvePrivateStorageUrl(image.url_cdn, 'personalization-images') ?? image.url_cdn,
+    url_original: await resolvePrivateStorageUrl(image.url_original, 'personalization-images'),
+  })));
+}
+
 async function populateSupplierCache(suppliers: SupplierRecord[]): Promise<void> {
   try {
     const { putInCacheSafe } = await import('./immutableCache');
@@ -491,7 +500,7 @@ async function enrichProducts(products: PromobrindProduct[], options?: { limit?:
   if (!results) return;
 
   const variants = collectRecords<VariantRecord>(results, map.variants);
-  const images = collectRecords<ImageRecord>(results, map.images);
+  const images = await resolveImageRecords(collectRecords<ImageRecord>(results, map.images));
   const supplierRecords = collectRecords<SupplierRecord>(results, map.suppliers);
   const colorVariations = collectRecords<ColorVariationRecord>(results, map.colorVariations);
   const colorGroups = collectRecords<ColorGroupRecord>(results, map.colorGroups);

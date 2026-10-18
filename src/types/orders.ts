@@ -98,6 +98,7 @@ export interface OrderFilters {
   status?: string;
   startDate?: string;
   endDate?: string;
+  endDateExclusive?: string;
   clientCompany?: string;
 }
 import type { Json } from "@/integrations/supabase/types";

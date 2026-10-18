@@ -2,9 +2,9 @@
  * QuantityPriceCalculator — Main orchestrator.
  * Sub-components extracted to calculator/ folder.
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCustomizationPricing, type PriceCalculation } from '@/hooks/useTecnicasUnificadas';
+import { useCustomizationPricing } from '@/hooks/useTecnicasUnificadas';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -16,28 +16,32 @@ import { ProductSearch as UnifiedProductSearch } from './simulator/ProductSearch
 import { TechniqueMultiSelector } from './calculator/TechniqueMultiSelector';
 import { TechniqueConfigCard } from './calculator/TechniqueConfigCard';
 import { QuantityComparisonTable } from './calculator/QuantityComparisonTable';
-import { type CalcProduct, type ProductTechnique, type SelectedTechniqueConfig, formatNumber } from './calculator/types';
+import { type CalcProduct, type ProductTechnique, type SelectedTechniqueConfig, calculateCustomizationTotal, formatNumber, isPriceConfigurationSupported, minimumSupportedQuantity } from './calculator/types';
 import type { Product as SearchProduct } from './simulator/types';
+import { toast } from 'sonner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface QuantityPriceCalculatorProps {
-  productBasePrice?: number;
-  productName?: string;
-  onSelectTechnique?: (techniqueCode: string, calculation: PriceCalculation) => void;
   className?: string;
 }
 
 export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorProps) {
   const navigate = useNavigate();
-  const { isLoading: pricingLoading } = useCustomizationPricing();
+  const { isLoading: pricingLoading, calculatePrice, getTiers } = useCustomizationPricing();
 
   const [selectedProduct, setSelectedProduct] = useState<CalcProduct | null>(null);
   const [selectedConfigs, setSelectedConfigs] = useState<SelectedTechniqueConfig[]>([]);
   const [customQuantities, setCustomQuantities] = useState<number[]>([250, 500, 1000, 2500, 5000]);
   const [newQuantity, setNewQuantity] = useState('');
+  const [quoteQuantity, setQuoteQuantity] = useState(250);
+
+  useEffect(() => {
+    if (!customQuantities.includes(quoteQuantity)) setQuoteQuantity(customQuantities[0] ?? 1);
+  }, [customQuantities, quoteQuantity]);
 
   const handleProductSelect = useCallback((product: SearchProduct | null) => {
     if (!product) { setSelectedProduct(null); setSelectedConfigs([]); return; }
-    setSelectedProduct({ id: product.id, name: product.name, sku: product.sku, price: product.price, images: product.images, category_name: null });
+    setSelectedProduct({ id: product.id, name: product.name, sku: product.sku, price: product.price, priceAvailable: product.priceAvailable !== false, images: product.images, category_name: null });
     setSelectedConfigs([]);
   }, []);
 
@@ -64,8 +68,70 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
   }, [customQuantities.length]);
 
   const handleCreateQuote = useCallback(() => {
-    navigate('/orcamentos', { state: { fromSimulator: true, product: selectedProduct, techniques: selectedConfigs, quantities: customQuantities } });
-  }, [navigate, selectedProduct, selectedConfigs, customQuantities]);
+    if (!selectedProduct) return;
+    if (selectedProduct.priceAvailable === false) {
+      toast.error('Este produto não tem preço de venda cadastrado. Atualize o catálogo antes de criar o orçamento.');
+      return;
+    }
+    if (selectedConfigs.some((config) => !isPriceConfigurationSupported(config))) {
+      toast.error('O preço cadastrado só cobre uma cor e tamanho padrão. Ajuste as opções antes de importar para o orçamento.');
+      return;
+    }
+    const belowMinimum = selectedConfigs.find((config) => {
+      const minimum = minimumSupportedQuantity(getTiers(config.technique.techniqueCode));
+      return minimum !== null && quoteQuantity < minimum;
+    });
+    if (belowMinimum) {
+      const minimum = minimumSupportedQuantity(getTiers(belowMinimum.technique.techniqueCode));
+      toast.error(`A quantidade mínima para ${belowMinimum.technique.techniqueName} é ${formatNumber(minimum ?? 1)} unidades.`);
+      return;
+    }
+    const personalizations = selectedConfigs.flatMap((config) => {
+      const calculation = calculatePrice(config.technique.techniqueCode, quoteQuantity);
+      if (!calculation) return [];
+      const unitPrice = calculation.unitPrice;
+      return [{
+        technique: {
+          id: config.technique.techniqueId || config.technique.id,
+          name: config.technique.techniqueName,
+        },
+        specs: {
+          colors: config.colors,
+          locationName: config.technique.locationName,
+          locationCode: config.technique.locationCode,
+          composedCode: config.technique.composedCode,
+          techniqueCode: config.technique.techniqueCode,
+        },
+        pricing: {
+          setupPrice: calculation.setupPrice,
+          handlingPrice: calculation.handlingPrice,
+          unitPrice,
+          totalPrice: calculateCustomizationTotal(calculation, quoteQuantity),
+        },
+      }];
+    });
+    if (personalizations.length !== selectedConfigs.length) {
+      toast.error('Não foi possível calcular todas as técnicas para a quantidade escolhida.');
+      return;
+    }
+    navigate('/orcamentos/novo', {
+      state: {
+        fromSimulator: true,
+        simulationData: {
+          product: {
+            id: selectedProduct.id,
+            name: selectedProduct.name,
+            sku: selectedProduct.sku,
+            imageUrl: selectedProduct.images[0],
+            price: selectedProduct.price,
+          },
+          quantity: quoteQuantity,
+          personalizations,
+        },
+      },
+    });
+    toast.success('Simulação adicionada ao novo orçamento.');
+  }, [calculatePrice, getTiers, navigate, quoteQuantity, selectedConfigs, selectedProduct]);
 
   if (pricingLoading) return (
     <Card className={className}><CardHeader><Skeleton className="h-6 w-48" /><Skeleton className="h-4 w-64 mt-2" /></CardHeader><CardContent className="space-y-4"><Skeleton className="h-16 w-full" /><Skeleton className="h-64 w-full" /></CardContent></Card>
@@ -100,6 +166,7 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
         <Card className="animate-fade-in">
           <CardHeader><div className="flex items-center gap-2"><Calculator className="w-5 h-5 text-primary" /><CardTitle className="text-lg font-display">4. Compare Preços por Tiragem</CardTitle></div><CardDescription>Veja como o preço por unidade muda conforme a quantidade. <Trophy className="inline w-3 h-3 text-success" /> = melhor preço.</CardDescription></CardHeader>
           <CardContent className="space-y-4">
+            {selectedProduct.priceAvailable === false && <Alert role="alert"><AlertDescription>O catálogo não informou o preço de venda deste produto. A comparação completa e a importação para orçamento ficam indisponíveis até o preço ser cadastrado.</AlertDescription></Alert>}
             <div className="space-y-3">
               <label className="text-sm font-medium">Tiragens para comparar:</label>
               <div className="flex flex-wrap gap-2">
@@ -115,8 +182,21 @@ export function QuantityPriceCalculator({ className }: QuantityPriceCalculatorPr
                 </div>
               </div>
             </div>
-            <QuantityComparisonTable product={selectedProduct} selectedConfigs={selectedConfigs} quantities={customQuantities} />
-            <Button size="lg" className="w-full gap-2 font-display font-semibold" onClick={handleCreateQuote}><FileText className="w-5 h-5" />Criar Orçamento a partir desta Simulação</Button>
+            {selectedProduct.priceAvailable === false
+              ? <Alert><AlertDescription>Não é possível calcular o total sem o preço do produto.</AlertDescription></Alert>
+              : <QuantityComparisonTable product={selectedProduct} selectedConfigs={selectedConfigs} quantities={customQuantities} />}
+            <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-end">
+              <label htmlFor="quote-quantity" className="text-sm font-medium">Quantidade para o orçamento</label>
+              <select
+                id="quote-quantity"
+                value={quoteQuantity}
+                onChange={(event) => setQuoteQuantity(Number(event.target.value))}
+                className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+              >
+                {customQuantities.map((quantity) => <option key={quantity} value={quantity}>{formatNumber(quantity)} unidades</option>)}
+              </select>
+            </div>
+            <Button size="lg" className="w-full gap-2 font-display font-semibold" onClick={handleCreateQuote} disabled={selectedProduct.priceAvailable === false}><FileText className="w-5 h-5" />Criar Orçamento a partir desta Simulação</Button>
           </CardContent>
         </Card>
       )}

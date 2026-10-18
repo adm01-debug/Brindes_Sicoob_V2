@@ -1,36 +1,56 @@
-# Observabilidade — Promo Gifts
+# Observabilidade — Brindes Sicoob V2
 
 > **SSOT** para logs estruturados, correlação por `request_id` e dashboards/alertas.
-> Última atualização: 2026-04-27 (Onda Observability).
+> Última atualização: 2026-10-16.
 
 ## 1. Correlação ponta-a-ponta (`request_id`)
 
 Cada chamada do client → edge function → DB carrega um único `request_id` (UUIDv4):
 
-| Camada       | Origem                                               | Header                | Helper                                              |
-|--------------|------------------------------------------------------|-----------------------|-----------------------------------------------------|
-| Client       | `newRequestId()` em `src/lib/telemetry/requestId.ts` | `X-Request-Id`        | `createClientLogger(scope)`                         |
-| Edge Fn      | `getOrCreateRequestId(req)` (`_shared/request-id.ts`)| `X-Request-Id` (echo) | `createStructuredLogger({ fn, requestId, req })`    |
-| DB           | gravado em colunas `request_id` (auditoria/metrics)  | n/a                   | passar via parâmetro RPC ou body de insert         |
-| Sentry       | tag `request_id` em `captureException`               | n/a                   | `createClientLogger(...).error(...)` faz forwarding |
+| Camada  | Origem                                                | Header                | Helper                                              |
+| ------- | ----------------------------------------------------- | --------------------- | --------------------------------------------------- |
+| Client  | `newRequestId()` em `src/lib/telemetry/requestId.ts`  | `X-Request-Id`        | `createClientLogger(scope)`                         |
+| Edge Fn | `getOrCreateRequestId(req)` (`_shared/request-id.ts`) | `X-Request-Id` (echo) | `createStructuredLogger({ fn, requestId, req })`    |
+| DB      | gravado em colunas `request_id` (auditoria/metrics)   | n/a                   | passar via parâmetro RPC ou body de insert          |
+| Sentry  | tag `request_id` em `captureException`                | n/a                   | `createClientLogger(...).error(...)` faz forwarding |
 
 **Regra:** toda nova edge function DEVE usar `createStructuredLogger`. Toda chamada `supabase.functions.invoke` em rota crítica DEVE enviar `headers: log.headers()`.
 
 ## 2. Logger estruturado (formato JSON)
 
 Edge:
+
 ```json
-{"ts":"2026-04-27T12:00:00Z","level":"info","fn":"quote-sync","request_id":"…","event":"request_end","method":"POST","path":"/quote-sync","status":200,"duration_ms":124}
+{
+  "ts": "2026-04-27T12:00:00Z",
+  "level": "info",
+  "fn": "quote-sync",
+  "request_id": "…",
+  "event": "request_end",
+  "method": "POST",
+  "path": "/quote-sync",
+  "status": 200,
+  "duration_ms": 124
+}
 ```
 
 Client (em PROD):
+
 ```json
-{"ts":"…","level":"warn","scope":"auth.signIn","request_id":"…","event":"signin_failed","reason":"invalid_credentials"}
+{
+  "ts": "…",
+  "level": "warn",
+  "scope": "auth.signIn",
+  "request_id": "…",
+  "event": "signin_failed",
+  "reason": "invalid_credentials"
+}
 ```
 
 Severidades:
-- `info`  → fluxo normal (não dispara alerta).
-- `warn`  → 4xx, validação, rate-limit. Sentry `captureMessage`.
+
+- `info` → fluxo normal (não dispara alerta).
+- `warn` → 4xx, validação, rate-limit. Sentry `captureMessage`.
 - `error` → 5xx, exceção não tratada, integração quebrada. Sentry `captureException`.
 
 ## 3. Webhooks — métricas e dashboard
@@ -38,6 +58,7 @@ Severidades:
 Tabela: `public.webhook_delivery_metrics` (append-only, escrita por `service_role`).
 
 Funções consumidoras já instrumentadas (escrevem 1 linha por entrega):
+
 - `webhook-inbound`, `webhook-dispatcher`, `product-webhook`, `sync-quote-bitrix`, `quote-sync`, `bitrix-sync`.
 
 Dashboard (admin → `/admin/observabilidade`):
@@ -47,18 +68,19 @@ SELECT * FROM public.get_webhook_delivery_summary(60);  -- últimos 60 min
 ```
 
 Retorna por `source` × `direction` × `status_class` (2xx/3xx/4xx/5xx):
+
 - `total`, `failures`, `p95_ms`, `last_failure_at`.
 
 ## 4. Alertas Sentry
 
-| Alerta                       | Condição                                                | Severidade | Canal       |
-|------------------------------|---------------------------------------------------------|------------|-------------|
-| 5xx burst (edge)             | `event.tags.scope:edge.* level:error` ≥ 5 em 5 min      | P1         | Slack #ops  |
-| 4xx anômalo (auth)           | `scope:auth.*` `event:*_failed` ≥ 20 em 10 min          | P2         | Slack #ops  |
-| Webhook outbound failing     | `scope:webhook.outbound level:error` ≥ 3 em 5 min       | P1         | PagerDuty   |
-| Webhook inbound 4xx          | `scope:webhook.inbound event:reject_*` ≥ 10 em 10 min   | P2         | Slack #int  |
-| Step-up MFA bypass attempt   | `scope:auth.stepUp event:bypass_attempt`                | P0         | PagerDuty   |
-| AI gateway saturation        | `scope:ai.gateway event:rate_limited` ≥ 50 em 5 min     | P2         | Slack #ai   |
+| Alerta                     | Condição                                              | Severidade | Canal      |
+| -------------------------- | ----------------------------------------------------- | ---------- | ---------- |
+| 5xx burst (edge)           | `event.tags.scope:edge.* level:error` ≥ 5 em 5 min    | P1         | Slack #ops |
+| 4xx anômalo (auth)         | `scope:auth.*` `event:*_failed` ≥ 20 em 10 min        | P2         | Slack #ops |
+| Webhook outbound failing   | `scope:webhook.outbound level:error` ≥ 3 em 5 min     | P1         | PagerDuty  |
+| Webhook inbound 4xx        | `scope:webhook.inbound event:reject_*` ≥ 10 em 10 min | P2         | Slack #int |
+| Step-up MFA bypass attempt | `scope:auth.stepUp event:bypass_attempt`              | P0         | PagerDuty  |
+| AI gateway saturation      | `scope:ai.gateway event:rate_limited` ≥ 50 em 5 min   | P2         | Slack #ai  |
 
 Configurar via Sentry → Alerts → Create Alert Rule, filtrando pelas tags
 `scope`, `event` e `request_id` emitidas pelos loggers.
@@ -66,11 +88,13 @@ Configurar via Sentry → Alerts → Create Alert Rule, filtrando pelas tags
 ### Métrica complementar: webhook 5xx via DB
 
 Cron Sentry/cronjob externo pode rodar:
+
 ```sql
 SELECT source, failures, p95_ms, last_failure_at
 FROM public.get_webhook_delivery_summary(15)
 WHERE status_class = '5xx' AND failures >= 3;
 ```
+
 e disparar webhook se retornar linhas.
 
 ## 5. Rotas críticas instrumentadas (client)
@@ -83,15 +107,19 @@ e disparar webhook se retornar linhas.
 - `connections.testCredentials`
 
 Padrão:
+
 ```ts
 const log = createClientLogger('quote.create');
 log.info('start', { items: cart.length });
 try {
   const { data, error } = await supabase.functions.invoke('quote-sync', {
     body: payload,
-    headers: log.headers(),       // propaga X-Request-Id
+    headers: log.headers(), // propaga X-Request-Id
   });
-  if (error) { log.error('failed', { err: error }); throw error; }
+  if (error) {
+    log.error('failed', { err: error });
+    throw error;
+  }
   log.info('ok', { quoteId: data.id });
 } catch (err) {
   log.error('exception', { err });
@@ -109,6 +137,7 @@ try {
 ## 7. App Health Dashboard (`/admin/telemetria`)
 
 O dashboard administrativo centraliza a visão de saúde da aplicação:
+
 - **Saúde Global:** Latência média, taxa de erro (%), disponibilidade de serviços (External DB, CRM, Cloudflare).
 - **Consumo de IA:** Quotas por usuário/singular e latência de inferência.
 - **Auditoria de Chaves:** Eventos de emissão/rotação de chaves MCP.
@@ -116,12 +145,16 @@ O dashboard administrativo centraliza a visão de saúde da aplicação:
 
 ## 8. Gates de CI (Prevenção de Regressão)
 
-A plataforma utiliza gates rigorosos para manter a qualidade da observabilidade:
+A CI valida automaticamente os contratos abaixo:
+
 - **Edge Structured-Logging Gate:** `scripts/check-edge-structured-logging.mjs` bloqueia PRs se novas Edge Functions não usarem o logger estruturado.
-- **Edge Request-Id Propagation Gate:** Garante que o `X-Request-Id` seja propagado para serviços externos.
-- **Client Logging Gate:** Força o uso de `createClientLogger` em rotas críticas (Checkout, Auth, Admin).
+- **Edge Request-Id Propagation Gate:** `scripts/check-edge-request-id-propagation.mjs` valida logger, resposta e chamadas internas nas Edge Functions críticas inventariadas.
+- **Ref Warning Gate:** a suíte roda com `STRICT_REF_WARNINGS=1`, consolida `coverage/console-snapshot.json` e publica o arquivo como artifact por 14 dias.
 - **ESLint Baseline Gate:** `.eslint-baseline.json` bloqueia a introdução de novos warnings de lint que prejudiquem a observabilidade (ex: console.logs puros).
-- **Webhook Alerts → Sentry:** Monitoramento contínuo de webhooks inbound/outbound via cron job.
+
+O repositório define condições recomendadas para alertas Sentry, mas a ativação
+das regras e dos canais externos precisa ser comprovada no provedor antes de ser
+tratada como monitoramento operacional ativo.
 
 ## 9. Onboarding Prático: Do Frontend ao Sentry
 
@@ -129,15 +162,16 @@ Para capturar e rastrear uma falha em tempo real, siga este fluxo:
 
 1. **No Frontend (Captura):**
    Ao implementar uma nova ação, use o logger para gerar o `request_id`.
+
    ```ts
    // src/pages/MyNewPage.tsx
    const log = createClientLogger('my-feature.action');
-   
+
    const handleAction = async () => {
      log.info('iniciando_acao', { userId: user.id });
      try {
        const { data, error } = await supabase.functions.invoke('my-function', {
-         headers: log.headers() // ESSENCIAL: Propaga o X-Request-Id
+         headers: log.headers(), // ESSENCIAL: Propaga o X-Request-Id
        });
        if (error) throw error;
      } catch (err) {
@@ -161,15 +195,7 @@ Para capturar e rastrear uma falha em tempo real, siga este fluxo:
    - No painel da Lovable Cloud → **Edge Function Logs**, cole o `request_id` na busca.
    - Você verá o ciclo de vida completo da requisição, desde o `request_start` até o `request_end` (ou erro).
 
----
-
-## 10. Gates de CI (Prevenção de Regressão)
-... keep existing code
-
-
-
-
-## 11. Retornos antecipados nas Edge Functions
+## 10. Retornos antecipados nas Edge Functions
 
 `withStructuredLogging(nome, handler)` instrumenta início, resposta e exceções,
 acrescentando `X-Request-Id` inclusive em 401, 403, 405 e 429. O wrapper preserva

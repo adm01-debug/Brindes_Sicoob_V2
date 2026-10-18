@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, ImagePlus, X, Search } from 'lucide-react';
 import { maskCnpj, maskPhone, ESTADOS_BR } from '@/utils/masks';
 import type { NewSupplierFormState } from '../useNewSupplierForm';
+import { PrivateStorageImage } from '@/components/common/PrivateStorageImage';
 
 const fieldClass = "mt-1.5 h-9";
 
@@ -15,7 +16,7 @@ interface BasicDataTabProps {
 }
 
 function SupplierLogo({ form }: BasicDataTabProps) {
-  return <div className="relative shrink-0">{form.logoUrl ? <div className="relative w-20 h-20 rounded-lg border border-border overflow-hidden bg-muted"><img src={form.logoUrl} alt="Logo" className="w-full h-full object-contain" loading="lazy" /><button type="button" onClick={() => form.setLogoUrl('')} className="absolute -top-1 -right-1 rounded-full bg-destructive text-destructive-foreground p-0.5"><X className="h-3 w-3" /></button></div> : <button type="button" onClick={() => form.logoInputRef.current?.click()} disabled={form.uploadingLogo} className="w-20 h-20 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors">{form.uploadingLogo ? <Loader2 className="h-5 w-5 animate-spin" /> : <><ImagePlus className="h-5 w-5" /><span className="text-[10px]">Logo</span></>}</button>}<input ref={form.logoInputRef} type="file" accept="image/*" className="hidden" onChange={form.handleLogoUpload} /></div>;
+  return <div className="relative shrink-0">{form.logoUrl ? <div className="relative w-20 h-20 rounded-lg border border-border overflow-hidden bg-muted"><PrivateStorageImage value={form.logoUrl} bucket="supplier-logos" alt="Logo" className="w-full h-full object-contain" loading="lazy" /><button type="button" onClick={() => form.setLogoUrl('')} className="absolute -top-1 -right-1 rounded-full bg-destructive text-destructive-foreground p-0.5"><X className="h-3 w-3" /></button></div> : <button type="button" onClick={() => form.logoInputRef.current?.click()} disabled={form.uploadingLogo} className="w-20 h-20 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors">{form.uploadingLogo ? <Loader2 className="h-5 w-5 animate-spin" /> : <><ImagePlus className="h-5 w-5" /><span className="text-[10px]">Logo</span></>}</button>}<input ref={form.logoInputRef} type="file" accept="image/*" className="hidden" onChange={form.handleLogoUpload} /></div>;
 }
 
 function SupplierIdentityFields({ form }: BasicDataTabProps) {

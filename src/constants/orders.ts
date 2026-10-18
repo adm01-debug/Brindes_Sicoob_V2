@@ -26,6 +26,11 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   cancelado: "Cancelado",
 };
 
+export const ORDER_IN_PROGRESS_STATUSES = new Set<OrderStatus>([
+  "enviado_gestor", "aprovado_gestor", "enviado_vendedor", "em_producao",
+  "em_separacao", "em_transporte", "entregue",
+]);
+
 export const ORDER_STATUS_COLORS: Record<OrderStatus, string> = {
   rascunho: "bg-muted text-muted-foreground border-muted-foreground/30",
   enviado_gestor: "bg-warning/20 text-warning border-warning/30",

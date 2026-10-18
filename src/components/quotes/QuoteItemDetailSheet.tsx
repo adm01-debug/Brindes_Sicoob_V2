@@ -166,7 +166,7 @@ function PersonalizationDetail({ personalization, quantity }: { personalization:
     <div className="flex items-center gap-2"><Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/10">✦ {personalization.technique_name || 'Gravação'}</Badge></div>
     <PersonalizationMetadata personalization={personalization} /><Separator className="my-1" /><div className="grid grid-cols-3 gap-2 text-xs">
       <div><span className="text-muted-foreground block">Unitário</span><span className="font-semibold text-foreground">{fmt(unit)}</span></div>
-      <div><span className="text-muted-foreground block">Setup</span><span className="font-semibold text-foreground">{fmt(personalization.setup_cost || 0)}</span></div>
+      <div><span className="text-muted-foreground block">Custo fixo</span><span className="font-semibold text-foreground">{fmt(personalization.setup_cost || 0)}</span></div>
       <div><span className="text-muted-foreground block">Total</span><span className="font-semibold text-primary">{fmt(total)}</span></div>
     </div></div><NextTierHint currentQty={quantity} /></div>;
 }

@@ -1,5 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { canBulkMarkQuotesPending, isQuoteCommerciallyEditable, quoteStatusRequiresDraftReset } from "@/lib/quote-status-config";
+import { canBulkMarkQuotesPending, isQuoteCommerciallyEditable, QUOTE_STATUS_CONFIG, QUOTE_STATUS_FILTER_ORDER, quoteStatusRequiresDraftReset } from "@/lib/quote-status-config";
+
+const ALL_QUOTE_STATUSES = [
+  "draft", "pending", "sent", "approved", "rejected", "expired", "revision", "viewed", "converted",
+  "pending_approval", "pending_singular_approval", "approved_singular", "rejected_singular",
+];
+
+describe("fonte única dos status", () => {
+  it("cobre cada status exatamente uma vez na configuração e nos filtros", () => {
+    expect(new Set(Object.keys(QUOTE_STATUS_CONFIG))).toEqual(new Set(ALL_QUOTE_STATUSES));
+    expect(new Set(QUOTE_STATUS_FILTER_ORDER)).toEqual(new Set(["all", ...ALL_QUOTE_STATUSES]));
+    expect(QUOTE_STATUS_FILTER_ORDER).toHaveLength(new Set(QUOTE_STATUS_FILTER_ORDER).size);
+  });
+});
 
 describe("isQuoteCommerciallyEditable", () => {
   it.each(["draft", "revision", "rejected", "rejected_singular"])(

@@ -11,7 +11,9 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useSellerCartContext, type CreateCartInput } from "@/contexts/SellerCartContext";
-import { fetchCartCompanyOptions, type CartCompanyOption as CompanyItem } from "./cart-company-options";
+import { useAuth } from "@/contexts/AuthContext";
+import { buildCartCompanyAccessScope, fetchCartCompanyOptions, type CartCompanyOption as CompanyItem } from "./cart-company-options";
+import { CartCompanyDirectoryResults } from "./CartCompanyDirectoryResults";
 
 interface CartCompanyPickerProps {
   onCreated?: () => void;
@@ -20,34 +22,42 @@ interface CartCompanyPickerProps {
 
 export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const { createCart, canCreateCart } = useSellerCartContext();
+  const { user, roles } = useAuth();
+  const accessScope = buildCartCompanyAccessScope(user?.id, roles);
 
   // Focus input on mount
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 100);
   }, []);
 
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   // Local companies cache
-  const { data: localCompanies = [], isLoading: loadingLocal } = useQuery<CompanyItem[]>({
-    queryKey: ["cart-sicoob-company-options"],
-    queryFn: fetchCartCompanyOptions,
+  const { data: localCompanies = [], isLoading: loadingLocal, isError: directoryError, refetch } = useQuery<CompanyItem[]>({
+    queryKey: ["cart-sicoob-company-options", accessScope, debouncedSearchTerm],
+    queryFn: () => fetchCartCompanyOptions(debouncedSearchTerm),
     staleTime: 15 * 60 * 1000,
   });
 
   // Fuse.js for local fuzzy search
   const fuse = useMemo(() => {
     return new Fuse(localCompanies, {
-      keys: ["name", "razao_social", "nome_fantasia"],
+      keys: ["name", "razao_social", "nome_fantasia", "cnpj", "ramo"],
       threshold: 0.4,
     });
   }, [localCompanies]);
 
   const filteredCompanies = useMemo(() => {
     if (!searchTerm) return localCompanies.slice(0, 20);
-
+    if (debouncedSearchTerm.length >= 2 && debouncedSearchTerm === searchTerm.trim()) return localCompanies.slice(0, 40);
     return fuse.search(searchTerm).map(result => result.item).slice(0, 30);
-  }, [searchTerm, fuse, localCompanies]);
+  }, [searchTerm, debouncedSearchTerm, fuse, localCompanies]);
 
   const handleSelect = useCallback(async (company: CompanyItem) => {
     const input: CreateCartInput = {
@@ -89,7 +99,14 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
 
       <ScrollArea className="h-[200px]">
         <div className="space-y-0.5">
-          {filteredCompanies.map((company) => (
+          <CartCompanyDirectoryResults
+            error={directoryError}
+            empty={filteredCompanies.length === 0}
+            loading={isLoading}
+            emptyMessage="Nenhuma cooperativa ou unidade encontrada"
+            onRetry={() => void refetch()}
+          >
+            {filteredCompanies.map((company) => (
             <button
               key={company.id}
               type="button"
@@ -121,12 +138,8 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
                 )}
               </div>
             </button>
-          ))}
-          {filteredCompanies.length === 0 && !isLoading && (
-            <p className="text-xs text-muted-foreground text-center py-4">
-              Nenhuma cooperativa ou unidade encontrada
-            </p>
-          )}
+            ))}
+          </CartCompanyDirectoryResults>
         </div>
       </ScrollArea>
     </div>

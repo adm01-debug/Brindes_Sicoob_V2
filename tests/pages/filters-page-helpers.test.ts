@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { defaultFilters } from '@/components/filters/FilterPanel';
-import { applyProductFilters, deserializeFilters } from '@/pages/filters/filters-page-helpers';
+import {
+  applyProductFilters,
+  deserializeFilters,
+  serializeFilters,
+} from '@/pages/filters/filters-page-helpers';
 import type { Product } from '@/types/product-catalog';
 
 function product(id: string, overrides: Partial<Product> = {}): Product {
@@ -72,18 +76,31 @@ describe('desserialização dos filtros do catálogo', () => {
     expect(result.suppliers).toEqual(['fornecedor-original', 'fornecedor-novo']);
     expect(defaults.suppliers).toEqual(['fornecedor-original']);
   });
+
+  it('preserva embalagem comercial e tiragem mínima no endereço compartilhável', () => {
+    const filters = {
+      ...defaultFilters,
+      hasCommercialPackaging: true,
+      minQuantity: 250,
+    };
+    const serialized = serializeFilters(filters);
+    expect(serialized.get('hasCommercialPackaging')).toBe('1');
+    expect(serialized.get('minQuantity')).toBe('250');
+    expect(deserializeFilters(serialized, defaultFilters)).toMatchObject(filters);
+  });
 });
 
 describe('aplicação dos filtros do catálogo', () => {
   const products = [
     product('a', { featured: true, newArrival: true, allowsPersonalization: true, gender: 'Unissex' }),
-    product('b', { isKit: true, gender: 'Masculino' }),
+    product('b', { isKit: true, hasCommercialPackaging: true, gender: 'Masculino' }),
   ];
 
   it.each([
     ['featured', 'a'],
     ['isNew', 'a'],
     ['hasPersonalization', 'a'],
+    ['hasCommercialPackaging', 'b'],
     ['isKit', 'b'],
   ] as const)('aplica a opção rápida %s', (key, expectedId) => {
     const filters = { ...defaultFilters, [key]: true };

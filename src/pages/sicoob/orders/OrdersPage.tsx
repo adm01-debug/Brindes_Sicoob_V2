@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, type MouseEvent, type ReactNode } from "react";
+import { useCallback, useState, useMemo, useEffect, type MouseEvent, type ReactNode } from "react";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
@@ -55,7 +55,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -68,6 +68,7 @@ import { isCommittedSicoobOrder, sumCommittedSicoobOrders } from "@/utils/sicoob
 import { sicoobCommonService } from "@/services/sicoob/commonService";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
+import { parseSicoobOrderQuery, reconcileSicoobReferences, toApiDateRange, writeSicoobOrderQuery, type SicoobOrderQueryFilters } from "@/lib/navigation/filter-query";
 
 function escapeCsvCell(value: unknown): string {
   const normalized = value === null || value === undefined ? "" : String(value);
@@ -80,34 +81,28 @@ const EXPORT_ERROR_PREFIX = "Erro na exportação: ";
 const EXPORT_DATE_FORMAT = "yyyy-MM-dd";
 const PAGE_SIZE = 9;
 
-function initialRange(searchParams: URLSearchParams): DateRange | undefined {
-  const from = searchParams.get("from");
-  if (!from) return undefined;
-  const to = searchParams.get("to");
-  return { from: new Date(from), to: to ? new Date(to) : undefined };
-}
-
 function useOrderFilters(searchParams: URLSearchParams, setSearchParams: ReturnType<typeof useSearchParams>[1]) {
-  const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
-  const [statusFilter, setStatusFilter] = useState(searchParams.get("status") || ALL_FILTER);
-  const [paFilter, setPaFilter] = useState(searchParams.get("pa") || ALL_FILTER);
-  const [singularFilter, setSingularFilter] = useState(searchParams.get("singular") || ALL_FILTER);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => initialRange(searchParams));
-  const [page, setPage] = useState(1);
+  const location = useLocation();
+  const filters = useMemo(() => parseSicoobOrderQuery(searchParams), [searchParams]);
+  const replace = useCallback((updates: Partial<SicoobOrderQueryFilters>, replaceNavigation = true) => {
+    setSearchParams((current) => writeSicoobOrderQuery(current, { ...parseSicoobOrderQuery(current), ...updates }), {
+      replace: replaceNavigation, state: location.state,
+    });
+  }, [location.state, setSearchParams]);
   useEffect(() => {
-    const params = new URLSearchParams();
-    if (searchTerm) params.set("search", searchTerm);
-    if (statusFilter !== ALL_FILTER) params.set("status", statusFilter);
-    if (paFilter !== ALL_FILTER) params.set("pa", paFilter);
-    if (singularFilter !== ALL_FILTER) params.set("singular", singularFilter);
-    if (dateRange?.from) params.set("from", dateRange.from.toISOString());
-    if (dateRange?.to) params.set("to", dateRange.to.toISOString());
-    setSearchParams(params, { replace: true });
-    setPage(1);
-  }, [searchTerm, statusFilter, paFilter, singularFilter, dateRange, setSearchParams]);
-  const clear = () => { setStatusFilter(ALL_FILTER); setPaFilter(ALL_FILTER); setSingularFilter(ALL_FILTER); setDateRange(undefined); };
-  const activeCount = Number(statusFilter !== ALL_FILTER) + Number(paFilter !== ALL_FILTER) + Number(singularFilter !== ALL_FILTER) + Number(Boolean(dateRange?.from));
-  return { searchTerm, setSearchTerm, statusFilter, setStatusFilter, paFilter, setPaFilter, singularFilter, setSingularFilter, dateRange, setDateRange, page, setPage, clear, activeCount };
+    const canonical = writeSicoobOrderQuery(searchParams, filters);
+    if (canonical.toString() !== searchParams.toString()) setSearchParams(canonical, { replace: true, state: location.state });
+  }, [filters, location.state, searchParams, setSearchParams]);
+  const update = useCallback(<Key extends keyof SicoobOrderQueryFilters>(key: Key, value: SicoobOrderQueryFilters[Key], replaceNavigation = true) => {
+    replace({ [key]: value, page: key === "page" ? Number(value) : 1 } as Partial<SicoobOrderQueryFilters>, replaceNavigation);
+  }, [replace]);
+  const clear = () => replace({ statusFilter: ALL_FILTER, paFilter: ALL_FILTER, singularFilter: ALL_FILTER, dateRange: undefined, page: 1 });
+  const activeCount = Number(filters.statusFilter !== ALL_FILTER) + Number(filters.paFilter !== ALL_FILTER) + Number(filters.singularFilter !== ALL_FILTER) + Number(Boolean(filters.dateRange?.from));
+  const reconcileReferences = useCallback((paIds?: Set<string>, cooperativeIds?: Set<string>) => {
+    const reconciled = reconcileSicoobReferences(filters, paIds, cooperativeIds);
+    if (reconciled !== filters) replace(reconciled);
+  }, [filters, replace]);
+  return { ...filters, setSearchTerm: (value: string) => update("searchTerm", value), setStatusFilter: (value: string) => update("statusFilter", value), setPaFilter: (value: string) => update("paFilter", value), setSingularFilter: (value: string) => update("singularFilter", value), setDateRange: (value: DateRange | undefined) => update("dateRange", value), setPage: (value: number, options?: { replace?: boolean }) => update("page", value, options?.replace ?? false), reconcileReferences, clear, activeCount };
 }
 
 type FilterController = ReturnType<typeof useOrderFilters>;
@@ -121,7 +116,8 @@ function calculateStats(orders: SicoobOrder[]): OrderStats {
 }
 
 function listRequest(filters: FilterController) {
-  return { search: filters.searchTerm, status: filters.statusFilter, pa_id: filters.paFilter, cooperative_id: filters.singularFilter, from: filters.dateRange?.from?.toISOString(), to: filters.dateRange?.to?.toISOString(), page: filters.page, pageSize: PAGE_SIZE };
+  const range = toApiDateRange(filters.dateRange);
+  return { search: filters.searchTerm.trim(), status: filters.statusFilter, pa_id: filters.paFilter, cooperative_id: filters.singularFilter, from: range.startDate, toExclusive: range.endDateExclusive, page: filters.page, pageSize: PAGE_SIZE };
 }
 
 function normalizeOrderPage(data: { orders: SicoobOrder[]; total: number } | undefined) {
@@ -141,9 +137,9 @@ function useOrdersData(filters: FilterController) {
   }), [queryClient]);
   const allOrders = useQuery({ queryKey: ["sicoob_orders_all_stats"], queryFn: async () => (await sicoobOrderService.listOrders()).orders });
   const stats = useMemo(() => allOrders.data ? calculateStats(allOrders.data) : null, [allOrders.data]);
-  const pas = useQuery({ queryKey: ["postos_atendimento"], queryFn: () => sicoobCommonService.listPostosAtendimento() }).data ?? [];
-  const cooperatives = useQuery({ queryKey: ["cooperativas"], queryFn: () => sicoobCommonService.listCooperativas() }).data ?? [];
-  return { ...normalizeOrderPage(data), isLoading, stats, pas, cooperatives };
+  const pasQuery = useQuery({ queryKey: ["postos_atendimento"], queryFn: () => sicoobCommonService.listPostosAtendimento() });
+  const cooperativesQuery = useQuery({ queryKey: ["cooperativas"], queryFn: () => sicoobCommonService.listCooperativas() });
+  return { ...normalizeOrderPage(data), isLoading, stats, pas: pasQuery.data ?? [], cooperatives: cooperativesQuery.data ?? [], pasReady: pasQuery.isSuccess, cooperativesReady: cooperativesQuery.isSuccess };
 }
 
 type OrdersData = ReturnType<typeof useOrdersData>;
@@ -226,6 +222,12 @@ function useOrdersController() {
   const { isVendedor, isAdmin } = useAuth();
   const filters = useOrderFilters(searchParams, setSearchParams);
   const data = useOrdersData(filters);
+  const paIds = useMemo(() => data.pasReady ? new Set(data.pas.map(pa => pa.id)) : undefined, [data.pas, data.pasReady]);
+  const cooperativeIds = useMemo(() => data.cooperativesReady ? new Set(data.cooperatives.map(cooperative => cooperative.id)) : undefined, [data.cooperatives, data.cooperativesReady]);
+  useEffect(() => filters.reconcileReferences(paIds, cooperativeIds), [cooperativeIds, filters, paIds]);
+  useEffect(() => {
+    if (!data.isLoading && filters.page > Math.max(1, data.totalPages)) filters.setPage(Math.max(1, data.totalPages), { replace: true });
+  }, [data.isLoading, data.totalPages, filters]);
   const exports = useOrderExports(data.orders);
   const selection = useOrderSelection(navigate);
   return { navigate, canCreateOrder: isVendedor || isAdmin, filters, data, exports, selection };
@@ -303,7 +305,7 @@ function OrdersGrid({ controller }: { controller: OrdersController }) {
 
 function Pagination({ filters, totalPages }: { filters: FilterController; totalPages: number }) {
   if (totalPages <= 1) return null;
-  return <div className="flex items-center justify-center gap-2 mt-8"><Button variant="outline" size="sm" onClick={() => filters.setPage(page => Math.max(1, page - 1))} disabled={filters.page === 1}><ChevronLeft className="h-4 w-4 mr-2" />Anterior</Button><span className="text-sm font-medium">Página {filters.page} de {totalPages}</span><Button variant="outline" size="sm" onClick={() => filters.setPage(page => Math.min(totalPages, page + 1))} disabled={filters.page === totalPages}>Próxima<ChevronRight className="h-4 w-4 ml-2" /></Button></div>;
+  return <div className="flex items-center justify-center gap-2 mt-8"><Button variant="outline" size="sm" onClick={() => filters.setPage(Math.max(1, filters.page - 1))} disabled={filters.page === 1}><ChevronLeft className="h-4 w-4 mr-2" />Anterior</Button><span className="text-sm font-medium">Página {filters.page} de {totalPages}</span><Button variant="outline" size="sm" onClick={() => filters.setPage(Math.min(totalPages, filters.page + 1))} disabled={filters.page === totalPages}>Próxima<ChevronRight className="h-4 w-4 ml-2" /></Button></div>;
 }
 
 export default function OrdersPage() {

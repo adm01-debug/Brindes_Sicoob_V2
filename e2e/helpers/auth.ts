@@ -40,6 +40,21 @@ export interface LoginCreds {
 
 export type Role = 'user' | 'admin' | 'dev' | 'editor';
 
+export function credentialsForRole(
+  role: Role,
+  env: Record<string, string | undefined> = process.env,
+): { email: string | undefined; password: string | undefined } {
+  if (role === 'dev') return { email: env.E2E_DEV_EMAIL, password: env.E2E_DEV_PASSWORD };
+  if (role === 'admin') return { email: env.E2E_ADMIN_EMAIL, password: env.E2E_ADMIN_PASSWORD };
+  if (role === 'editor') {
+    return {
+      email: env.E2E_MANAGER_EMAIL || env.E2E_ADMIN_EMAIL,
+      password: env.E2E_MANAGER_PASSWORD || env.E2E_ADMIN_PASSWORD,
+    };
+  }
+  return { email: env.E2E_USER_EMAIL, password: env.E2E_USER_PASSWORD };
+}
+
 const LOGIN_URL_RE = /\/login(\?|#|$)/;
 const AUTH_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../.auth');
 const TOTP_PERIOD_MS = 30_000;
@@ -136,6 +151,22 @@ interface StoredBrowserState {
   }>;
 }
 
+export function storedSessionEmail(
+  entries: Array<{ name: string; value: string }>,
+): string | null {
+  for (const { name, value } of entries) {
+    if (!/sb-.*-auth-token/.test(name)) continue;
+    try {
+      const session = JSON.parse(value);
+      const candidate = session?.user?.email ?? session?.currentSession?.user?.email;
+      if (typeof candidate === 'string') return candidate;
+    } catch {
+      // Um item inválido não deve impedir a tentativa de outro token da origin.
+    }
+  }
+  return null;
+}
+
 function roleStoragePath(role: Role): string {
   const filenames: Record<Role, string> = {
     user: 'storageState.json',
@@ -160,6 +191,8 @@ async function restoreRoleStorage(page: Page, role: Role, email: string): Promis
   const currentOrigin = new URL(page.url()).origin;
   const originState = state.origins?.find(({ origin }) => origin === currentOrigin);
   if (!originState?.localStorage.length) return false;
+  const storedEmail = storedSessionEmail(originState.localStorage);
+  if (storedEmail?.toLowerCase() !== email.toLowerCase()) return false;
 
   await page.context().clearCookies();
   await page.evaluate((entries) => {
@@ -207,7 +240,24 @@ export async function loginViaUI(page: Page, creds: LoginCreds): Promise<boolean
   await emailLoc.fill(creds.email);
   await passLoc.fill(creds.password);
 
+  const authResponsePromise = page
+    .waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        response.url().includes('/auth/v1/token') &&
+        response.url().includes('grant_type=password'),
+      { timeout },
+    )
+    .catch(() => null);
   await clickTestId(page, 'login-submit');
+  const authResponse = await authResponsePromise;
+
+  // Nunca deixe a senha no DOM quando o provedor rejeitar o login. Além de
+  // reduzir exposição visual, isso mantém screenshots e error-contexts de CI
+  // livres da credencial usada pela conta técnica.
+  if (authResponse && !authResponse.ok()) {
+    await passLoc.fill('').catch(() => {});
+  }
 
   if (creds.expectFail) {
     // Continua em /login OU mostra mensagem de erro — auto-retry expect.
@@ -215,6 +265,10 @@ export async function loginViaUI(page: Page, creds: LoginCreds): Promise<boolean
       timeout: 8_000,
     });
     return false;
+  }
+
+  if (authResponse && !authResponse.ok()) {
+    throw new Error(`Supabase rejeitou o login E2E (HTTP ${authResponse.status()}).`);
   }
 
   await expect(page, 'esperado redirect para fora de /login').not.toHaveURL(LOGIN_URL_RE, {
@@ -236,22 +290,7 @@ export async function loginViaUI(page: Page, creds: LoginCreds): Promise<boolean
  * variáveis de ambiente não estiverem configuradas.
  */
 export async function loginAs(page: Page, role: Role = 'user'): Promise<void> {
-  const email =
-    role === 'dev'
-      ? process.env.E2E_DEV_EMAIL
-      : role === 'admin'
-        ? process.env.E2E_ADMIN_EMAIL
-        : role === 'editor'
-          ? process.env.E2E_MANAGER_EMAIL || process.env.E2E_ADMIN_EMAIL
-          : process.env.E2E_VIEWER_EMAIL || process.env.E2E_USER_EMAIL;
-  const password =
-    role === 'dev'
-      ? process.env.E2E_DEV_PASSWORD
-      : role === 'admin'
-        ? process.env.E2E_ADMIN_PASSWORD
-        : role === 'editor'
-          ? process.env.E2E_MANAGER_PASSWORD || process.env.E2E_ADMIN_PASSWORD
-          : process.env.E2E_VIEWER_PASSWORD || process.env.E2E_USER_PASSWORD;
+  const { email, password } = credentialsForRole(role);
 
   if (!email || !password) {
     test.skip(true, `Credenciais E2E_${role.toUpperCase()}_EMAIL/PASSWORD ausentes`);

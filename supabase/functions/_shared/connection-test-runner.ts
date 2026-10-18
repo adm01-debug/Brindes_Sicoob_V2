@@ -3,7 +3,7 @@
 // `connections-auto-test` (cron, service-role).
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { getCredential } from "./credentials.ts";
-import { resolveTimeout, type ConnectionType } from "./connection-timeouts.ts";
+import { type ConnectionType, resolveTimeout } from "./connection-timeouts.ts";
 
 export type { ConnectionType };
 export type TriggeredBy = "manual" | "cron" | "webhook";
@@ -35,13 +35,21 @@ export interface RunOptions {
 }
 
 /** Transient error kinds that are safe to retry once (no side effects expected). */
-export const TRANSIENT_ERROR_KINDS: ReadonlySet<ErrorKind> = new Set(["timeout", "network", "dns"]);
+export const TRANSIENT_ERROR_KINDS: ReadonlySet<ErrorKind> = new Set([
+  "timeout",
+  "network",
+  "dns",
+]);
 
 /** True if a RunResult-like object represents a transient failure worth retrying. */
-export function isTransientFailure(r: { ok: boolean; error_kind?: ErrorKind; status?: number }): boolean {
+export function isTransientFailure(
+  r: { ok: boolean; error_kind?: ErrorKind; status?: number },
+): boolean {
   if (r.ok) return false;
   if (r.error_kind && TRANSIENT_ERROR_KINDS.has(r.error_kind)) return true;
-  if (typeof r.status === "number" && r.status >= 500 && r.status <= 599) return true;
+  if (typeof r.status === "number" && r.status >= 500 && r.status <= 599) {
+    return true;
+  }
   return false;
 }
 
@@ -58,9 +66,28 @@ export interface RunResult {
   connection_id?: string;
 }
 
+export class ConnectionTestPersistenceError extends Error {
+  constructor(
+    public readonly stage: "connection" | "history",
+    cause?: unknown,
+  ) {
+    super(`Falha ao persistir teste de conexão (${stage})`, { cause });
+    this.name = "ConnectionTestPersistenceError";
+  }
+}
+
 /** Stable display name when auto-registering a connection from the first test. */
-function defaultConnectionName(type: ConnectionType, env_key?: "promobrind" | "crm"): string {
-  if (type === "supabase") return env_key === "crm" ? "Catálogo CRM" : env_key === "promobrind" ? "Catálogo Promobrind" : "Supabase";
+function defaultConnectionName(
+  type: ConnectionType,
+  env_key?: "promobrind" | "crm",
+): string {
+  if (type === "supabase") {
+    return env_key === "crm"
+      ? "Catálogo CRM"
+      : env_key === "promobrind"
+      ? "Catálogo Promobrind"
+      : "Supabase";
+  }
   if (type === "bitrix24") return "Bitrix24";
   if (type === "n8n") return "n8n";
   if (type === "mcp") return "MCP Server";
@@ -84,13 +111,24 @@ function classifyError(
   timeoutMs: number,
 ): { kind: ErrorKind; message: string } {
   if (err instanceof Error && err.name === "AbortError") {
-    return { kind: "timeout", message: `timeout após ${timeoutMs}ms — o serviço não respondeu` };
+    return {
+      kind: "timeout",
+      message: `timeout após ${timeoutMs}ms — o serviço não respondeu`,
+    };
   }
-  const raw = err instanceof Error ? err.message : (err != null ? String(err) : "");
+  const raw = err instanceof Error
+    ? err.message
+    : (err != null ? String(err) : "");
   const lower = raw.toLowerCase();
 
-  if (lower.includes("dns") || lower.includes("getaddrinfo") || lower.includes("enotfound")) {
-    return { kind: "dns", message: "DNS não resolvido — verifique a URL configurada" };
+  if (
+    lower.includes("dns") || lower.includes("getaddrinfo") ||
+    lower.includes("enotfound")
+  ) {
+    return {
+      kind: "dns",
+      message: "DNS não resolvido — verifique a URL configurada",
+    };
   }
   if (
     lower.includes("econnrefused") ||
@@ -99,7 +137,10 @@ function classifyError(
     lower.includes("connection reset") ||
     lower.includes("socket")
   ) {
-    return { kind: "network", message: "Falha de rede — serviço inalcançável (offline ou bloqueado)" };
+    return {
+      kind: "network",
+      message: "Falha de rede — serviço inalcançável (offline ou bloqueado)",
+    };
   }
   if (status === 401 || status === 403) {
     return { kind: "auth", message: `Credenciais rejeitadas (HTTP ${status})` };
@@ -107,7 +148,10 @@ function classifyError(
   if (status && status >= 400) {
     return { kind: "http", message: `Serviço retornou HTTP ${status}` };
   }
-  if (lower.includes("ausente") || lower.includes("missing") || lower.includes("not configured")) {
+  if (
+    lower.includes("ausente") || lower.includes("missing") ||
+    lower.includes("not configured")
+  ) {
     return { kind: "config", message: raw || "Configuração incompleta" };
   }
   return { kind: "unknown", message: raw || "Erro desconhecido" };
@@ -123,7 +167,9 @@ async function pingSupabase(url: string, key: string, timeoutMs: number) {
     });
     await res.text();
     return { ok: res.ok, status: res.status, latency_ms: Date.now() - start };
-  } finally { cancel(); }
+  } finally {
+    cancel();
+  }
 }
 
 async function pingBitrix(webhookUrl: string, timeoutMs: number) {
@@ -134,17 +180,25 @@ async function pingBitrix(webhookUrl: string, timeoutMs: number) {
     const res = await fetch(url, { signal });
     const body = await res.text();
     let parsed: unknown = null;
-    try { parsed = JSON.parse(body); } catch { /* ignore */ }
+    try {
+      parsed = JSON.parse(body);
+    } catch { /* ignore */ }
     return {
       ok: res.ok && !!parsed && !(parsed as Record<string, unknown>).error,
       status: res.status,
       latency_ms: Date.now() - start,
       error: (parsed as { error?: string })?.error,
     };
-  } finally { cancel(); }
+  } finally {
+    cancel();
+  }
 }
 
-async function pingN8n(baseUrl: string, apiKey: string | undefined, timeoutMs: number) {
+async function pingN8n(
+  baseUrl: string,
+  apiKey: string | undefined,
+  timeoutMs: number,
+) {
   const start = Date.now();
   const { signal, cancel } = withTimeout(timeoutMs);
   try {
@@ -154,7 +208,9 @@ async function pingN8n(baseUrl: string, apiKey: string | undefined, timeoutMs: n
     const res = await fetch(url, { headers, signal });
     await res.text();
     return { ok: res.ok, status: res.status, latency_ms: Date.now() - start };
-  } finally { cancel(); }
+  } finally {
+    cancel();
+  }
 }
 
 async function pingWebhook(url: string, timeoutMs: number) {
@@ -164,110 +220,68 @@ async function pingWebhook(url: string, timeoutMs: number) {
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Connection-Test": "1" },
-      body: JSON.stringify({ event: "connection.test", timestamp: new Date().toISOString() }),
+      body: JSON.stringify({
+        event: "connection.test",
+        timestamp: new Date().toISOString(),
+      }),
       signal,
     });
     await res.text();
     return { ok: res.ok, status: res.status, latency_ms: Date.now() - start };
-  } finally { cancel(); }
+  } finally {
+    cancel();
+  }
 }
 
-export async function runConnectionTest(opts: RunOptions): Promise<RunResult> {
-  const { type, config = {}, env_key, service, created_by } = opts;
+export async function persistConnectionTestResult(
+  opts: RunOptions,
+  result: RunResult,
+): Promise<RunResult> {
+  const { type, env_key, service, created_by } = opts;
   const triggered_by: TriggeredBy = opts.triggered_by ?? "manual";
-  const timeoutMs = resolveTimeout(type, opts.timeoutMs);
   const attempts = Math.max(1, Math.min(opts.attempts ?? 1, 9));
-  let connection_id = opts.connection_id;
-
-  let result: {
-    ok: boolean;
-    status?: number;
-    latency_ms?: number;
-    error?: string;
-    error_kind?: ErrorKind;
-    message?: string;
-  };
-  try {
-    if (type === "supabase") {
-      const prefix = env_key === "crm" ? "EXTERNAL_CRM" : "EXTERNAL_PROMOBRIND";
-      const url = config.url || (await getCredential(`${prefix}_URL`, service)) || "";
-      const key = config.key || (await getCredential(`${prefix}_SERVICE_ROLE_KEY`, service)) || "";
-      if (!url || !key) throw new Error("URL/key ausente — configure as credenciais primeiro");
-      result = await pingSupabase(url, key, timeoutMs);
-    } else if (type === "bitrix24") {
-      const url = config.webhook_url || (await getCredential("BITRIX24_WEBHOOK_URL", service)) || "";
-      if (!url) throw new Error("Webhook URL ausente");
-      result = await pingBitrix(url, timeoutMs);
-    } else if (type === "n8n") {
-      const base = config.base_url || (await getCredential("N8N_BASE_URL", service)) || "";
-      const key = config.api_key || (await getCredential("N8N_API_KEY", service)) || undefined;
-      if (!base) throw new Error("Base URL ausente");
-      result = await pingN8n(base, key ?? undefined, timeoutMs);
-    } else if (type === "webhook_outbound") {
-      const url = config.url || "";
-      if (!url) throw new Error("URL ausente");
-      result = await pingWebhook(url, timeoutMs);
-    } else if (type === "mcp") {
-      const { count } = await service
-        .from("mcp_api_keys")
-        .select("*", { count: "exact", head: true })
-        .is("revoked_at", null);
-      result = { ok: true, status: 200, message: `${count ?? 0} chave(s) MCP ativa(s)` };
-    } else {
-      result = { ok: false, error: "Tipo não suportado", error_kind: "unknown" };
-    }
-
-    // Promote non-OK HTTP responses to a categorized error message.
-    if (!result.ok && !result.error_kind) {
-      const synthetic = result.error
-        ? new Error(result.error)
-        : new Error(`HTTP ${result.status ?? "?"}`);
-      const classified = classifyError(synthetic, result.status, timeoutMs);
-      result.error_kind = classified.kind;
-      result.error = classified.message;
-    }
-  } catch (err) {
-    const classified = classifyError(err, undefined, timeoutMs);
-    result = { ok: false, error: classified.message, error_kind: classified.kind };
-  }
-
-  const tested_at = new Date().toISOString();
-  const message = result.error ?? result.message ?? `HTTP ${result.status ?? "?"}`;
-
-  if (opts.skipPersistence) {
-    return { ...result, timeout_ms: timeoutMs, tested_at, connection_id };
-  }
+  let connection_id = opts.connection_id ?? result.connection_id;
+  const message = result.error ?? result.message ??
+    `HTTP ${result.status ?? "?"}`;
 
   if (connection_id) {
-    await service.from("external_connections").update({
-      last_test_at: tested_at,
-      last_test_ok: result.ok,
-      last_test_message: message,
-      last_latency_ms: result.latency_ms ?? null,
-      status: result.ok ? "active" : "error",
-    }).eq("id", connection_id);
+    const { error: updateError } = await service.from("external_connections")
+      .update({
+        last_test_at: result.tested_at,
+        last_test_ok: result.ok,
+        last_test_message: message,
+        last_latency_ms: result.latency_ms ?? null,
+        status: result.ok ? "active" : "error",
+      }).eq("id", connection_id);
+    if (updateError) {
+      throw new ConnectionTestPersistenceError("connection", updateError);
+    }
 
-    await service.from("connection_test_history").insert({
+    const { error: historyError } = await service.from(
+      "connection_test_history",
+    ).insert({
       connection_id,
-      tested_at,
+      tested_at: result.tested_at,
       success: result.ok,
       latency_ms: result.latency_ms ?? null,
       status_code: result.status ?? null,
-      error_message: result.ok ? null : (result.error ?? message)?.slice(0, 500),
+      error_message: result.ok
+        ? null
+        : (result.error ?? message)?.slice(0, 500),
       error_kind: result.ok ? null : (result.error_kind ?? null),
       triggered_by,
       attempts,
-    }).then(() => undefined, (e) => console.error("history insert failed", e));
+    });
+    if (historyError) {
+      throw new ConnectionTestPersistenceError("history", historyError);
+    }
   } else if (created_by) {
     // Auto-register the connection on the first test (success OR fail).
-    // Covers all types — not just supabase/env_key — so bitrix24, n8n, mcp and
-    // webhook_outbound also get a row + active status after the first
-    // "Testar conexão" instead of staying invisible to cron / health-check.
     const upsertPayload: Record<string, unknown> = {
       type,
       name: defaultConnectionName(type, env_key),
       status: result.ok ? "active" : "error",
-      last_test_at: tested_at,
+      last_test_at: result.tested_at,
       last_test_ok: result.ok,
       last_test_message: message,
       last_latency_ms: result.latency_ms ?? null,
@@ -284,23 +298,119 @@ export async function runConnectionTest(opts: RunOptions): Promise<RunResult> {
       .upsert(upsertPayload, { onConflict: conflictKey })
       .select("id")
       .maybeSingle();
-    if (upErr) {
-      console.error("auto-upsert failed", upErr.message);
-    } else if (upserted?.id) {
-      connection_id = upserted.id;
-      await service.from("connection_test_history").insert({
-        connection_id: upserted.id,
-        tested_at,
-        success: result.ok,
-        latency_ms: result.latency_ms ?? null,
-        status_code: result.status ?? null,
-        error_message: result.ok ? null : (result.error ?? message)?.slice(0, 500),
-        error_kind: result.ok ? null : (result.error_kind ?? null),
-        triggered_by,
-        attempts,
-      }).then(() => undefined, (e) => console.error("history insert failed (auto)", e));
+    if (upErr || !upserted?.id) {
+      throw new ConnectionTestPersistenceError("connection", upErr);
+    }
+
+    connection_id = upserted.id;
+    const { error: historyError } = await service.from(
+      "connection_test_history",
+    ).insert({
+      connection_id,
+      tested_at: result.tested_at,
+      success: result.ok,
+      latency_ms: result.latency_ms ?? null,
+      status_code: result.status ?? null,
+      error_message: result.ok
+        ? null
+        : (result.error ?? message)?.slice(0, 500),
+      error_kind: result.ok ? null : (result.error_kind ?? null),
+      triggered_by,
+      attempts,
+    });
+    if (historyError) {
+      throw new ConnectionTestPersistenceError("history", historyError);
     }
   }
 
-  return { ...result, timeout_ms: timeoutMs, tested_at, connection_id };
+  return { ...result, connection_id };
+}
+
+export async function runConnectionTest(opts: RunOptions): Promise<RunResult> {
+  const { type, config = {}, env_key, service } = opts;
+  const timeoutMs = resolveTimeout(type, opts.timeoutMs);
+  const connection_id = opts.connection_id;
+
+  let result: {
+    ok: boolean;
+    status?: number;
+    latency_ms?: number;
+    error?: string;
+    error_kind?: ErrorKind;
+    message?: string;
+  };
+  try {
+    if (type === "supabase") {
+      const prefix = env_key === "crm" ? "EXTERNAL_CRM" : "EXTERNAL_PROMOBRIND";
+      const url = config.url ||
+        (await getCredential(`${prefix}_URL`, service)) || "";
+      const key = config.key ||
+        (await getCredential(`${prefix}_SERVICE_ROLE_KEY`, service)) || "";
+      if (!url || !key) {
+        throw new Error("URL/key ausente — configure as credenciais primeiro");
+      }
+      result = await pingSupabase(url, key, timeoutMs);
+    } else if (type === "bitrix24") {
+      const url = config.webhook_url ||
+        (await getCredential("BITRIX24_WEBHOOK_URL", service)) || "";
+      if (!url) throw new Error("Webhook URL ausente");
+      result = await pingBitrix(url, timeoutMs);
+    } else if (type === "n8n") {
+      const base = config.base_url ||
+        (await getCredential("N8N_BASE_URL", service)) || "";
+      const key = config.api_key ||
+        (await getCredential("N8N_API_KEY", service)) || undefined;
+      if (!base) throw new Error("Base URL ausente");
+      result = await pingN8n(base, key ?? undefined, timeoutMs);
+    } else if (type === "webhook_outbound") {
+      const url = config.url || "";
+      if (!url) throw new Error("URL ausente");
+      result = await pingWebhook(url, timeoutMs);
+    } else if (type === "mcp") {
+      const { count } = await service
+        .from("mcp_api_keys")
+        .select("*", { count: "exact", head: true })
+        .is("revoked_at", null);
+      result = {
+        ok: true,
+        status: 200,
+        message: `${count ?? 0} chave(s) MCP ativa(s)`,
+      };
+    } else {
+      result = {
+        ok: false,
+        error: "Tipo não suportado",
+        error_kind: "unknown",
+      };
+    }
+
+    // Promote non-OK HTTP responses to a categorized error message.
+    if (!result.ok && !result.error_kind) {
+      const synthetic = result.error
+        ? new Error(result.error)
+        : new Error(`HTTP ${result.status ?? "?"}`);
+      const classified = classifyError(synthetic, result.status, timeoutMs);
+      result.error_kind = classified.kind;
+      result.error = classified.message;
+    }
+  } catch (err) {
+    const classified = classifyError(err, undefined, timeoutMs);
+    result = {
+      ok: false,
+      error: classified.message,
+      error_kind: classified.kind,
+    };
+  }
+
+  const tested_at = new Date().toISOString();
+
+  if (opts.skipPersistence) {
+    return { ...result, timeout_ms: timeoutMs, tested_at, connection_id };
+  }
+  return persistConnectionTestResult(opts, {
+    ...result,
+    timeout_ms: timeoutMs,
+    tested_at,
+    connection_id,
+  });
 }

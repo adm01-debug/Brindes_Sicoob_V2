@@ -32,6 +32,8 @@
 O sistema está em construção e passa por auditorias de segurança, banco,
 contratos e experiência. O relatório consolidado mais recente é:
 
+- 📄 **[Execução integrada do plano — 16/10/2026](./docs/execucao/execucao-integrada-plano-2026-10-16.md)** — consolidação dos cinco fluxos especializados, certificação do candidato, estado do GitHub e paridade com o Supabase canônico.
+
 - 📄 **[Execução e preflight do banco canônico — 01/10/2026](./docs/execucao/execucao-plano-2026-10-01.md)** — correções consolidadas, testes do candidato e consulta administrativa atual do Supabase.
 
 - 📄 **[Revisão das 150 etapas e dos workflows — 01/10/2026](./docs/execucao/revisao-do-plano-2026-10-01.md)** — implementação atual, falha de autorização reproduzida e limites de validação do banco.
@@ -175,7 +177,7 @@ supabase/
 │   ├── expert-chat/  # Assistente IA
 │   ├── external-db-bridge/ # Bridge para banco externo
 │   └── ...
-└── migrations/       # 534 migrations SQL versionadas
+└── migrations/       # 590 migrations SQL versionadas
 ```
 
 ---
@@ -249,7 +251,7 @@ supabase/
 
 ### Supabase (Interno)
 - 35+ tabelas com RLS completo
-- 534 migrations versionadas; o ledger remoto deve ser confrontado antes de qualquer deploy
+- 590 migrations versionadas; o ledger remoto deve ser confrontado antes de qualquer deploy
 - Tipos gerados automaticamente (`supabase gen types`)
 - Connection pooling via Supabase pooler
 

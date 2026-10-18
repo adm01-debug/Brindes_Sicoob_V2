@@ -4,6 +4,7 @@ import json
 import subprocess
 import uuid
 from postgres_ready import wait_for_postgres
+from supabase_postgres_container import start_supabase_postgres
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTAINER = 'sicoob-acl-' + uuid.uuid4().hex[:10]
@@ -19,7 +20,7 @@ def count(where):
     return int(sql('SELECT count(*) FROM public.audit_security_definer_acl() WHERE ' + where).stdout.strip())
 
 try:
-    command(['docker', 'run', '--rm', '-d', '--name', CONTAINER, '--network', 'none', '-e', 'POSTGRES_HOST_AUTH_METHOD=trust', 'public.ecr.aws/supabase/postgres:17.6.1.063', 'postgres', '-D', '/var/lib/postgresql/data'])
+    start_supabase_postgres(command, CONTAINER)
     wait_for_postgres(command, CONTAINER)
     command(['docker', 'exec', CONTAINER, 'createdb', '-U', 'supabase_admin', '--template=template0', 'sicoob_simulation'])
     sql("CREATE TYPE public.app_role AS ENUM ('dev'); CREATE ROLE acl_fixture_owner; CREATE ROLE acl_fixture_group; GRANT USAGE, CREATE ON SCHEMA public TO acl_fixture_owner;")

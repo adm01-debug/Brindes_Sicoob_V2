@@ -4,16 +4,20 @@ import { format, addDays } from "date-fns";
 import { toast } from "sonner";
 import type { Quote, QuoteItem, QuoteItemPersonalization } from "@/hooks/quotes/quoteTypes";
 import type { SelectedCompanyInfo, SelectedContactInfo } from "@/components/quotes/CompanyContactSelector";
+import type { Product } from "@/types/quote-builder";
+import { loadQuoteProductsByIds } from "@/hooks/quote/useQuoteProductSearch";
 
 interface InitParams {
   isEditMode: boolean;
   quoteId?: string;
+  reloadKey?: number;
   fetchQuote: (id: string) => Promise<Quote | null>;
   locationState: unknown;
   searchParams: URLSearchParams;
   setters: {
     setClientId: (v: string) => void;
     setContactId: (v: string) => void;
+    setClientIdIfEmpty?: (v: string) => void;
     setValidUntil: (v: string) => void;
     setNotes: (v: string) => void;
     setInternalNotes: (v: string) => void;
@@ -33,17 +37,21 @@ interface InitParams {
     setDeliveryDate: (v: Date | undefined) => void;
     setDeliveryTime: (v: string) => void;
     setItems: (v: QuoteItem[]) => void;
+    setItemsIfEmpty?: (v: QuoteItem[]) => void;
+    setActiveItemIndexIfUnset?: (v: number) => void;
     setTags: (v: string[]) => void;
     setLoadingQuote: (v: boolean) => void;
+    setQuoteLoadError: (v: string | null) => void;
     setActiveItemIndex: (v: number | null) => void;
     setExpandedItems: (v: Set<number>) => void;
   };
 }
 
-interface SimulatorPersonalization {
+export interface SimulatorPersonalization {
   technique?: { id?: string; name?: string };
-  specs?: { colors?: number; width?: number; height?: number };
-  pricing?: { setupPrice?: number; unitPrice?: number; totalPrice?: number };
+  specs?: { colors?: number; width?: number; height?: number; locationName?: string; locationCode?: string; composedCode?: string; techniqueCode?: string };
+  pricing?: { setupPrice?: number; handlingPrice?: number; unitPrice?: number; totalPrice?: number };
+  notes?: string;
 }
 
 interface SimulatorImportData {
@@ -84,6 +92,49 @@ interface TemplateImportItem {
 
 type QuoteSetters = InitParams["setters"];
 
+const MAX_SUGGESTED_PRODUCTS = 20;
+
+export interface QuoteSuggestionParams {
+  clientId: string | null;
+  productIds: string[];
+}
+
+function safeIdentifier(value: string | null): string | null {
+  const normalized = value?.trim();
+  const hasControlCharacter = normalized
+    ? Array.from(normalized).some((character) => character.charCodeAt(0) < 32)
+    : false;
+  if (!normalized || normalized.length > 128 || hasControlCharacter) return null;
+  return normalized;
+}
+
+export function parseQuoteSuggestionParams(searchParams: URLSearchParams): QuoteSuggestionParams | null {
+  if (searchParams.get("source") !== "bi-suggestions") return null;
+  const productIds = [...new Set(
+    (searchParams.get("productIds") ?? "")
+      .split(",")
+      .map((id) => safeIdentifier(id))
+      .filter((id): id is string => Boolean(id)),
+  )].slice(0, MAX_SUGGESTED_PRODUCTS);
+  return { clientId: safeIdentifier(searchParams.get("clientId")), productIds };
+}
+
+export function mapSuggestedProduct(product: Product): QuoteItem {
+  return {
+    product_id: product.id,
+    product_name: product.name,
+    product_sku: product.sku,
+    product_image_url: product.images?.[0],
+    quantity: 1,
+    unit_price: product.price,
+    unit_cost: product.costPrice ?? 0,
+    price_updated_at: product.priceUpdatedAt ?? null,
+    price_freshness_threshold_days: product.priceFreshnessThresholdDays ?? null,
+    stock_available: product.totalStock ?? null,
+    personalizations: [],
+  };
+}
+
 function fallback<T>(value: T | null | undefined | false | "" | 0, defaultValue: T): T {
   return value ? value as T : defaultValue;
 }
@@ -94,7 +145,9 @@ function validRowVersion(value: number | null | undefined): number | null {
 
 function applyQuoteIdentity(quote: Quote, setters: QuoteSetters): void {
   setters.setClientId(fallback(quote.client_id, ""));
-  setters.setContactId(fallback(quote.client_id, ""));
+  // O modelo legado não persiste contact_id. O client_id identifica a empresa
+  // e nunca pode ser usado para satisfazer artificialmente a seleção do contato.
+  setters.setContactId("");
   setters.setValidUntil(fallback(quote.valid_until, format(addDays(new Date(), 30), "yyyy-MM-dd")));
   setters.setNotes(fallback(quote.notes, ""));
   setters.setInternalNotes(fallback(quote.internal_notes, ""));
@@ -105,22 +158,22 @@ function applyQuoteIdentity(quote: Quote, setters: QuoteSetters): void {
 }
 
 function applyQuoteClient(quote: Quote, setters: QuoteSetters): void {
-  if (quote.client_name) {
-    setters.setContactInfo({
+  setters.setContactInfo(
+    quote.client_name ? {
       id: "",
       name: quote.client_name,
       email: quote.client_email || undefined,
       phone: quote.client_phone || undefined,
-    });
-  }
-  if (quote.client_company) {
-    setters.setCompanyInfo({
+    } : null,
+  );
+  setters.setCompanyInfo(
+    quote.client_company ? {
       id: quote.client_id || "",
       name: quote.client_company,
       cnpj: quote.client_cnpj || undefined,
       ramo_atividade: undefined,
-    });
-  }
+    } : null,
+  );
 }
 
 function applyQuoteDiscount(quote: Quote, setters: QuoteSetters): void {
@@ -132,30 +185,41 @@ function applyQuoteDiscount(quote: Quote, setters: QuoteSetters): void {
   if (quote.discount_amount && quote.discount_amount > 0) {
     setters.setDiscountType("amount");
     setters.setDiscountValue(quote.discount_amount);
+    return;
   }
+  setters.setDiscountType("percent");
+  setters.setDiscountValue(0);
 }
 
 function applyQuoteConditions(quote: Quote, setters: QuoteSetters): void {
-  if (typeof quote.negotiation_markup_percent === "number") setters.setNegotiationMarkup(quote.negotiation_markup_percent);
-  if (quote.payment_terms) setters.setPaymentTerms(quote.payment_terms);
-  if (quote.shipping_type) setters.setShippingType(quote.shipping_type);
-  if (quote.shipping_cost) setters.setShippingCost(quote.shipping_cost);
-  if (quote.items) setters.setItems(quote.items);
-  if (quote.tags) setters.setTags(quote.tags);
+  setters.setNegotiationMarkup(
+    typeof quote.negotiation_markup_percent === "number" ? quote.negotiation_markup_percent : 0,
+  );
+  setters.setPaymentTerms(quote.payment_terms ?? "");
+  setters.setShippingType(quote.shipping_type ?? "");
+  setters.setShippingCost(typeof quote.shipping_cost === "number" ? quote.shipping_cost : 0);
+  setters.setItems(quote.items ?? []);
+  setters.setTags(quote.tags ?? []);
 }
 
 function applyQuoteDelivery(quote: Quote, setters: QuoteSetters): void {
-  if (!quote.delivery_time) return;
+  if (!quote.delivery_time) {
+    setters.setDeliveryMode("prazo");
+    setters.setDeliveryDate(undefined);
+    setters.setDeliveryTime("");
+    return;
+  }
   if (quote.delivery_time.startsWith("date:")) {
     setters.setDeliveryMode("data");
     setters.setDeliveryDate(new Date(`${quote.delivery_time.slice(5)}T12:00:00`));
   } else {
     setters.setDeliveryMode("prazo");
+    setters.setDeliveryDate(undefined);
   }
   setters.setDeliveryTime(quote.delivery_time);
 }
 
-function applyExistingQuote(quote: Quote, setters: QuoteSetters): void {
+export function applyExistingQuote(quote: Quote, setters: QuoteSetters): void {
   applyQuoteIdentity(quote, setters);
   applyQuoteClient(quote, setters);
   applyQuoteDiscount(quote, setters);
@@ -163,10 +227,16 @@ function applyExistingQuote(quote: Quote, setters: QuoteSetters): void {
   applyQuoteDelivery(quote, setters);
 }
 
-function mapSimulatorPersonalization(item: SimulatorPersonalization): QuoteItemPersonalization {
+export function mapSimulatorPersonalization(item: SimulatorPersonalization): QuoteItemPersonalization {
   const { technique = {}, specs = {}, pricing = {} } = item;
   const width = fallback(specs.width, 0);
   const height = fallback(specs.height, 0);
+  const location = specs.locationName
+    ? `Local: ${specs.locationName}${specs.locationCode ? ` (${specs.locationCode})` : ''}`
+    : undefined;
+  const code = specs.composedCode || specs.techniqueCode
+    ? `Código: ${specs.composedCode || specs.techniqueCode}`
+    : undefined;
   return {
     technique_id: fallback(technique.id, ""),
     technique_name: fallback(technique.name, ""),
@@ -175,9 +245,12 @@ function mapSimulatorPersonalization(item: SimulatorPersonalization): QuoteItemP
     width_cm: fallback(specs.width, undefined),
     height_cm: fallback(specs.height, undefined),
     area_cm2: width * height,
-    setup_cost: fallback(pricing.setupPrice, 0),
+    // O esquema de personalização não tem coluna própria para manuseio;
+    // mantenha o custo fixo completo no campo existente, usado pelos cálculos e RPCs.
+    setup_cost: fallback(pricing.setupPrice, 0) + fallback(pricing.handlingPrice, 0),
     unit_cost: fallback(pricing.unitPrice, 0),
     total_cost: fallback(pricing.totalPrice, 0),
+    notes: [item.notes, location, code].filter(Boolean).join(' · ') || undefined,
   };
 }
 
@@ -195,16 +268,34 @@ function mapTemplateItem(item: TemplateImportItem): QuoteItem {
   };
 }
 
-export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locationState, searchParams, setters }: InitParams) {
+export function useQuoteInitialization({ isEditMode, quoteId, reloadKey = 0, fetchQuote, locationState, searchParams, setters }: InitParams) {
   // 1. Load existing quote
   useEffect(() => {
     if (!isEditMode || !quoteId) return;
+    let cancelled = false;
     setters.setLoadingQuote(true);
-    fetchQuote(quoteId).then((quote) => {
-      if (quote) applyExistingQuote(quote, setters);
-      setters.setLoadingQuote(false);
-    });
-  }, [fetchQuote, isEditMode, quoteId, setters]);
+    setters.setQuoteLoadError(null);
+    void fetchQuote(quoteId)
+      .then((quote) => {
+        if (cancelled) return;
+        if (!quote) {
+          setters.setQuoteLoadError("Orçamento não encontrado.");
+          return;
+        }
+        applyExistingQuote(quote, setters);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setters.setQuoteLoadError("Não foi possível carregar o orçamento.");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setters.setLoadingQuote(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchQuote, isEditMode, quoteId, reloadKey, setters]);
 
   // 2. Pre-fill from simulator
   useEffect(() => {
@@ -265,7 +356,45 @@ export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locati
     }
   }, [isEditMode, searchParams, setters]);
 
-  // 5. Pre-fill from template (passed via state)
+  // 5. Preserva a seleção vinda das sugestões comerciais do BI.
+  useEffect(() => {
+    if (isEditMode) return;
+    const suggestion = parseQuoteSuggestionParams(searchParams);
+    if (!suggestion) return;
+    let cancelled = false;
+    if (suggestion.clientId) {
+      (setters.setClientIdIfEmpty ?? setters.setClientId)(suggestion.clientId);
+    }
+    if (suggestion.productIds.length === 0) {
+      toast.error("Nenhum produto válido foi recebido das sugestões do BI.");
+      return;
+    }
+    void loadQuoteProductsByIds(suggestion.productIds)
+      .then((products) => {
+        if (cancelled) return;
+        const items = products.map(mapSuggestedProduct);
+        if (items.length === 0) {
+          toast.error("Os produtos sugeridos não estão mais disponíveis no catálogo.");
+          return;
+        }
+        (setters.setItemsIfEmpty ?? setters.setItems)(items);
+        (setters.setActiveItemIndexIfUnset ?? setters.setActiveItemIndex)(0);
+        toast.success(`${items.length} produto(s) sugerido(s) adicionado(s) ao orçamento`);
+        const missing = suggestion.productIds.length - items.length;
+        if (missing > 0) {
+          toast.warning(`${missing} produto(s) não estão mais disponíveis e foram ignorados.`);
+        }
+        window.history.replaceState({}, document.title, window.location.pathname);
+      })
+      .catch(() => {
+        if (!cancelled) toast.error("Não foi possível carregar os produtos sugeridos.");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isEditMode, searchParams, setters]);
+
+  // 6. Pre-fill from template (passed via state)
   useEffect(() => {
     const state = locationState as { templateItems?: TemplateImportItem[] } | null;
     if (!state?.templateItems?.length) return;

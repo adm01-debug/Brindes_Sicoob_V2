@@ -8,6 +8,7 @@ import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
 import { useSellerDiscountLimits } from "@/hooks/useSellerDiscountLimits";
 import { useDiscountApproval } from "@/hooks/useDiscountApproval";
+import { buildQuoteDraftScope } from "@/lib/quotes/quote-draft-scope";
 import { format, addDays } from "date-fns";
 import { toast } from "sonner";
 import { validateQuoteForm, QUOTE_FIELD_LABELS } from "@/lib/validations";
@@ -25,6 +26,7 @@ import type { Product, DiscountType, DeliveryMode } from "@/types/quote-builder"
 import { useQuoteProductSearch } from "@/hooks/quote/useQuoteProductSearch";
 import { useQuoteInitialization } from "@/hooks/quote/useQuoteInitialization";
 import { isQuoteCommerciallyEditable, quoteStatusRequiresDraftReset } from "@/lib/quote-status-config";
+import { useNavigationGuardStore } from "@/stores/useNavigationGuardStore";
 
 export function validateBudgetForSubmission<T>(
   budget: T | null,
@@ -179,9 +181,9 @@ function validateTransactionLimit(total: number, limit: number): boolean {
   return false;
 }
 
-function validateMonthlyBudget(total: number, budget: { verba_total: number; verba_consumida: number | null }): boolean {
+export function validateMonthlyBudget(total: number, budget: { verba_total: number; verba_consumida: number | null }): boolean {
   const remaining = budget.verba_total - (budget.verba_consumida || 0);
-  if (budget.verba_total <= 0 || total <= remaining) return true;
+  if (total <= remaining) return true;
   toast.error("Verba insuficiente!", {
     description: `Você possui apenas R$ ${remaining.toLocaleString()} de verba disponível este mês.`,
   });
@@ -328,6 +330,24 @@ function canPersistQuoteVersion(isEditMode: boolean, expectedRowVersion: number 
   return false;
 }
 
+export function quoteBuilderCanEdit(options: {
+  saving: boolean;
+  isEditMode: boolean;
+  currentStatus: string;
+  isLatestVersion: boolean;
+}): boolean {
+  if (options.saving) return false;
+  return !options.isEditMode || isQuoteCommerciallyEditable(options.currentStatus, options.isLatestVersion);
+}
+
+export function quoteBuilderCanPersistDraft(options: {
+  isEditMode: boolean;
+  currentStatus: string;
+  isLatestVersion: boolean;
+}): boolean {
+  return quoteBuilderCanEdit({ ...options, saving: false });
+}
+
 interface CompleteSaveParams {
   result: Quote;
   isEditMode: boolean;
@@ -335,11 +355,13 @@ interface CompleteSaveParams {
   finalStatus: SaveStatus;
   transitionApplied: boolean;
   setExpectedRowVersion: (version: number | null) => void;
+  markSaved: () => void;
   navigate: (path: string) => void;
 }
 
-function completeQuoteSave(params: CompleteSaveParams): void {
+export function completeQuoteSave(params: CompleteSaveParams): void {
   const { result, finalStatus, transitionApplied } = params;
+  params.markSaved();
   if (params.isEditMode) {
     params.setExpectedRowVersion(result.row_version ?? params.expectedRowVersion);
   }
@@ -394,23 +416,38 @@ export function useQuoteBuilderState() {
   const [selectedProductForColor, setSelectedProductForColor] = useState<Product | null>(null);
   const [templateApplied, setTemplateApplied] = useState<string | null>(null);
   const [loadingQuote, setLoadingQuote] = useState(isEditMode);
+  const [quoteLoadError, setQuoteLoadError] = useState<string | null>(null);
+  const [quoteReloadKey, setQuoteReloadKey] = useState(0);
+  const [isSavingQuote, setIsSavingQuote] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [selectedItemIndexes, setSelectedItemIndexes] = useState<Set<number>>(new Set());
   const createIdempotencyKeyRef = useRef<string | null>(null);
+  const isSavingQuoteRef = useRef(false);
+  const setClientIdIfEmpty = useCallback((suggestedClientId: string) => {
+    setClientId((current) => current.trim() ? current : suggestedClientId);
+  }, []);
+  const setItemsIfEmpty = useCallback((suggestedItems: QuoteItem[]) => {
+    setItems((current) => current.length > 0 ? current : suggestedItems);
+  }, []);
+  const setActiveItemIndexIfUnset = useCallback((index: number) => {
+    setActiveItemIndex((current) => current === null ? index : current);
+  }, []);
 
   // ── Modular Hooks ──
   const search = useQuoteProductSearch();
+  const { setProductSearch, setProductSearchOpen } = search;
   const initializationSetters = useMemo(() => ({
-    setClientId, setContactId, setValidUntil, setNotes, setInternalNotes,
+    setClientId, setClientIdIfEmpty, setContactId, setValidUntil, setNotes, setInternalNotes,
     setQuoteNumber, setCurrentStatus, setIsLatestVersion, setExpectedRowVersion, setContactInfo, setCompanyInfo,
     setDiscountType, setDiscountValue, setNegotiationMarkup, setPaymentTerms,
     setShippingType, setShippingCost, setDeliveryMode, setDeliveryDate,
-    setDeliveryTime, setItems, setTags, setLoadingQuote, setActiveItemIndex, setExpandedItems,
-  }), []);
+    setDeliveryTime, setItems, setItemsIfEmpty, setActiveItemIndexIfUnset, setTags, setLoadingQuote, setQuoteLoadError,
+    setActiveItemIndex, setExpandedItems,
+  }), [setClientIdIfEmpty, setItemsIfEmpty, setActiveItemIndexIfUnset]);
   
   useQuoteInitialization({
-    isEditMode, quoteId, fetchQuote, 
+    isEditMode, quoteId, reloadKey: quoteReloadKey, fetchQuote,
     locationState: location.state, 
     searchParams,
     setters: initializationSetters,
@@ -450,9 +487,30 @@ export function useQuoteBuilderState() {
   }, [maxDiscountPercent, discountType, discountValue, totals.subtotal]);
 
   const canEdit = useMemo(() => {
-    if (!isEditMode) return true;
-    return isQuoteCommerciallyEditable(currentStatus, isLatestVersion);
-  }, [isEditMode, currentStatus, isLatestVersion]);
+    return quoteBuilderCanEdit({
+      saving: isSavingQuote,
+      isEditMode,
+      currentStatus,
+      isLatestVersion,
+    });
+  }, [isEditMode, currentStatus, isLatestVersion, isSavingQuote]);
+  const canPersistDraft = useMemo(() => quoteBuilderCanPersistDraft({
+    isEditMode,
+    currentStatus,
+    isLatestVersion,
+  }), [isEditMode, currentStatus, isLatestVersion]);
+
+  useEffect(() => {
+    if (canEdit) return;
+    setProductSearchOpen(false);
+    setProductSearch("");
+    setSelectedProductForColor(null);
+  }, [canEdit, setProductSearch, setProductSearchOpen]);
+
+  const draftScopeId = useMemo(
+    () => buildQuoteDraftScope(user?.id, profile?.cooperativa_id, profile?.pa_id),
+    [profile?.cooperativa_id, profile?.pa_id, user?.id],
+  );
 
   const defaultTemplate = useMemo(() => templates.find(t => t.is_default), [templates]);
 
@@ -475,10 +533,10 @@ export function useQuoteBuilderState() {
   };
   const initialSnapshotRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!loadingQuote && initialSnapshotRef.current === null) {
+    if (!loadingQuote && !quoteLoadError && initialSnapshotRef.current === null) {
       initialSnapshotRef.current = JSON.stringify(formSnapshotRef.current);
     }
-  }, [loadingQuote]);
+  }, [loadingQuote, quoteLoadError]);
 
   const hasUnsavedData = useMemo(() => {
     if (initialSnapshotRef.current === null) return false;
@@ -489,6 +547,11 @@ export function useQuoteBuilderState() {
     });
     return current !== initialSnapshotRef.current;
   }, [clientId, contactId, items, notes, internalNotes, tags, validUntil, paymentTerms, deliveryTime, deliveryMode, deliveryDate, shippingType, shippingCost, discountType, discountValue, negotiationMarkup]);
+
+  const markSaved = useCallback(() => {
+    initialSnapshotRef.current = JSON.stringify(formSnapshotRef.current);
+    useNavigationGuardStore.getState().setDirty('quote-builder', false);
+  }, []);
 
   // ── Actions ──
   const toggleExpanded = useCallback((index: number) => {
@@ -505,6 +568,9 @@ export function useQuoteBuilderState() {
   }, []);
 
   const addProductWithColor = useCallback((product: Product, variant: ExternalVariantStock | null) => {
+    // O diálogo fica fora dos fieldsets do formulário; bloqueia também o callback
+    // caso uma seleção já iniciada concorra com o snapshot do salvamento.
+    if (isSavingQuoteRef.current) return;
     const newItem = buildQuoteItem(product, variant);
     const { color_name: colorName, size_code: sizeCode } = newItem;
     
@@ -584,44 +650,53 @@ export function useQuoteBuilderState() {
   }, []);
 
   const handleSaveQuote = useCallback(async (status: SaveStatus = "draft", sellerNotes?: string) => {
-    if (!canEdit) {
+    if (!canEdit || isSavingQuoteRef.current) {
       toast.error("Este orçamento está disponível somente para leitura.");
       return;
     }
     if (!validateSaveForm(status, isDraftValid, isFormValid, validationErrors)) return;
     if (!validateFreshPrices(status, items)) return;
     const isPaUser = isPaPurchaser(isGerentePa, userRoles);
-    const validBudget = await validatePaBudget({ status, isPaUser, paId: profile?.pa_id, total: totals.total });
-    if (!validBudget) return;
     const finalStatus = finalQuoteStatus(status, isPaUser);
     if (!canPersistQuoteVersion(isEditMode, expectedRowVersion)) return;
+    isSavingQuoteRef.current = true;
+    setIsSavingQuote(true);
+    try {
+      const validBudget = await validatePaBudget({ status, isPaUser, paId: profile?.pa_id, total: totals.total });
+      if (!validBudget) return;
 
-    const persistedStatus = persistedQuoteStatus(isEditMode, currentStatus);
-    const quoteData = buildQuoteData({
-      isEditMode, currentStatus, clientId, contactInfo, companyInfo, tags,
-      discountType, discountValue, markup: totals.markup, notes, internalNotes,
-      validUntil, paymentTerms, deliveryTime, shippingType, shippingCost,
-    });
-    const result = await persistQuote({
-      isEditMode, quoteId, expectedRowVersion, quoteData, items,
-      idempotencyKeyRef: createIdempotencyKeyRef, createQuote, updateQuote,
-    });
-    if (!result) return;
+      const persistedStatus = persistedQuoteStatus(isEditMode, currentStatus);
+      const quoteData = buildQuoteData({
+        isEditMode, currentStatus, clientId, contactInfo, companyInfo, tags,
+        discountType, discountValue, markup: totals.markup, notes, internalNotes,
+        validUntil, paymentTerms, deliveryTime, shippingType, shippingCost,
+      });
+      const result = await persistQuote({
+        isEditMode, quoteId, expectedRowVersion, quoteData, items,
+        idempotencyKeyRef: createIdempotencyKeyRef, createQuote, updateQuote,
+      });
+      if (!result) return;
 
-    createIdempotencyKeyRef.current = null;
-    const transitionApplied = await applyQuoteTransition({
-      quote: result, finalStatus, persistedStatus, maxDiscountPercent,
-      realDiscountPercent: totals.realDiscountPercent, sellerNotes,
-      requestApproval, updateQuoteStatus,
-    });
-    completeQuoteSave({
-      result, isEditMode, expectedRowVersion, finalStatus, transitionApplied,
-      setExpectedRowVersion, navigate,
-    });
-  }, [canEdit, isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, tags, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, updateQuoteStatus, currentStatus, expectedRowVersion, maxDiscountPercent, requestApproval, isGerentePa, userRoles, profile?.pa_id]);
+      createIdempotencyKeyRef.current = null;
+      const transitionApplied = await applyQuoteTransition({
+        quote: result, finalStatus, persistedStatus, maxDiscountPercent,
+        realDiscountPercent: totals.realDiscountPercent, sellerNotes,
+        requestApproval, updateQuoteStatus,
+      });
+      completeQuoteSave({
+        result, isEditMode, expectedRowVersion, finalStatus, transitionApplied,
+        setExpectedRowVersion, markSaved, navigate,
+      });
+    } finally {
+      isSavingQuoteRef.current = false;
+      setIsSavingQuote(false);
+    }
+  }, [canEdit, isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, tags, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, updateQuoteStatus, currentStatus, expectedRowVersion, maxDiscountPercent, requestApproval, isGerentePa, userRoles, profile?.pa_id, markSaved]);
 
   return {
-    navigate, quoteId, isEditMode, loadingQuote, hasUnsavedData, user,
+    navigate, quoteId, isEditMode, loadingQuote, quoteLoadError,
+    retryQuoteLoad: () => setQuoteReloadKey((current) => current + 1),
+    hasUnsavedData, user, draftScopeId,
     clientId, setClientId, contactId, setContactId,
     companyInfo, setCompanyInfo, contactInfo, setContactInfo,
     validityDays, setValidityDays, validUntil, setValidUntil,
@@ -658,7 +733,7 @@ export function useQuoteBuilderState() {
         return freshness.shouldWarn ? { ...item, price_confirmed_at: ts } : item;
       }));
     },
-    applyTemplate, handleSaveQuote, canEdit, getTemplateItems: () => items.map(i => ({
+    applyTemplate, handleSaveQuote, canEdit, canPersistDraft, getTemplateItems: () => items.map(i => ({
       productId: i.product_id,
       productName: i.product_name,
       productSku: i.product_sku || "",

@@ -10,6 +10,16 @@ verify_jwt = true
 [functions.expert-chat]
 verify_jwt = false
 
+# Liveness público, sem dependências internas; o gateway não exige JWT.
+[functions.health-check]
+verify_jwt = false
+
+[functions.crm-db-bridge]
+verify_jwt = false
+
+[functions.trends-insights]
+verify_jwt = false
+
 [functions.external-db-bridge]
 verify_jwt = false
 
@@ -18,6 +28,18 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.sicoob-reorder]
+verify_jwt = true
+
+[functions.sicoob-approval-reconciliation]
+verify_jwt = true
+
+[functions.sicoob-artwork-register]
+verify_jwt = true
+
+[functions.sicoob-document-ingest]
+verify_jwt = true
+
+[functions.external-connections-sync]
 verify_jwt = true
 
 [functions.migrate-helper]

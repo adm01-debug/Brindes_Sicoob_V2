@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Consolida snapshots por-worker (`coverage/console-snapshot.<id>.json`)
+ * Consolida snapshots por arquivo de teste (`coverage/console-snapshot.<id>.json`)
  * em um único `coverage/console-snapshot.json` para upload como artifact
  * de CI e para auditoria humana.
  *

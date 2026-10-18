@@ -36,22 +36,18 @@ npm run build
 
 6. Publicar o frontend pelo provedor configurado.
 
-7. Aplicar somente as migrations novas e revisadas em ordem de versão no ambiente
-   de construção. **Não executar `supabase db push --linked`** enquanto o ledger
-   histórico estiver divergente: ele tentaria reaplicar centenas de arquivos que
-   não representam o baseline remoto. Neste lote, aplicar
-   `20260923110000_harden_internal_operations.sql`,
-   `20260923111000_schedule_secure_export_worker.sql`,
-   `20260923112000_fix_connection_sync_and_favorites.sql`,
-   `20260923130000_secure_sicoob_documents_and_exports.sql` e
-   `20260923140000_secure_legacy_connection_crons.sql`, registrando cada uma
-   no ledger na mesma transação de aplicação.
+7. Aplicar somente as migrations autorizadas pelo arquivo
+   `scripts/db/apply-sicoob-migrations.mjs`. **Não executar
+   `supabase db push --linked`** enquanto o ledger histórico estiver divergente:
+   ele tentaria reaplicar centenas de arquivos que não representam o baseline
+   remoto. O aplicador contém 37 versões com hash SHA-256 fixo, valida o destino,
+   aplica o lote numa transação e grava o mesmo hash no ledger.
 
-8. Verificar após a aplicação: as cinco versões aparecem no ledger, as chamadas
-   anônimas às funções internas retornam `401` ou `503`, a sincronização externa
-   exige sessão de supervisor e os crons `process-export-queue`,
-   `connections-auto-test` e `external-db-bridge-keepalive` existem somente
-   quando os segredos necessários do Vault foram configurados.
+8. Verificar após a aplicação com o próprio aplicador e com os contratos de QA.
+   O lote de 16/10/2026 inclui validação de `search_analytics`, quotas de IA,
+   compartilhamento público seguro de favoritos e remoção da policy redundante
+   de `pa_budgets`. As seis versões `20261016160000` a `20261016173000` estão no
+   ledger canônico com seus hashes autorizados.
 
 9. Para o lote de idempotência de 28/09/2026, usar exclusivamente o workflow
    manual `Aplicar migrations Sicoob` a partir da branch protegida `main`. Ele
@@ -63,9 +59,10 @@ npm run build
    backlog histórico fora do ledger continua existindo e não é uma fila de
    migrations autorizadas.
 
-## Production Checklist
-- [ ] Environment variables configured
-- [ ] Database migrated
-- [ ] SSL certificates installed
-- [ ] CDN configured
-- [ ] Monitoring enabled
+## Checklist para produção
+
+- [ ] Segredos externos homologados, incluindo `LOVABLE_API_KEY`
+- [x] Migrations autorizadas aplicadas no banco de construção
+- [x] Edge Functions alteradas publicadas no banco de construção
+- [ ] Frontend publicado pelo provedor após merge e CI verde
+- [ ] Monitoramento e alertas homologados com tráfego real

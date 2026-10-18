@@ -7,6 +7,7 @@ vi.mock('@/lib/telemetry/structuredLogger', () => ({
 
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { getQuoteDraftIdForScope } from '@/components/quotes/QuoteAutoSave';
+import { buildQuoteDraftScope } from '@/lib/quotes/quote-draft-scope';
 
 describe('useAutoSave', () => {
   beforeEach(() => {
@@ -28,11 +29,25 @@ describe('useAutoSave', () => {
 
     rerender({ key: 'draft-a', data: { title: 'Rascunho A' } });
     await act(async () => { await vi.advanceTimersByTimeAsync(2_000); });
+    rerender({ key: 'draft-b', data: { title: 'Inicial B' } });
     rerender({ key: 'draft-b', data: { title: 'Rascunho B' } });
     await act(async () => { await vi.advanceTimersByTimeAsync(2_000); });
 
     expect(JSON.parse(localStorage.getItem('autosave_draft-a')!)).toMatchObject({ version: 1, data: { title: 'Rascunho A' } });
     expect(JSON.parse(localStorage.getItem('autosave_draft-b')!)).toMatchObject({ version: 1, data: { title: 'Rascunho B' } });
+  });
+
+  it('reinicia a comparação ao trocar de rascunho e não cruza payload idêntico', async () => {
+    const { rerender } = renderHook(
+      ({ key, data }) => useAutoSave({ key, data }),
+      { initialProps: { key: 'quote-a', data: { title: 'Mesmo conteúdo' } } },
+    );
+
+    rerender({ key: 'quote-b', data: { title: 'Mesmo conteúdo' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(2_000); });
+
+    expect(localStorage.getItem('autosave_quote-a')).toBeNull();
+    expect(localStorage.getItem('autosave_quote-b')).toBeNull();
   });
 
   it('expõe falha de persistência para a interface e permite nova tentativa', async () => {
@@ -73,10 +88,55 @@ describe('useAutoSave', () => {
     expect(expired.result.current.restore()).toBeNull();
   });
 
+  it('grava a última alteração ao desmontar antes do debounce', () => {
+    const { rerender, unmount } = renderHook(
+      ({ data }) => useAutoSave({ key: 'draft-unmount', data, interval: 2_000 }),
+      { initialProps: { data: { title: 'Inicial' } } },
+    );
+
+    rerender({ data: { title: 'Última edição' } });
+    unmount();
+
+    expect(JSON.parse(localStorage.getItem('autosave_draft-unmount')!)).toMatchObject({
+      version: 1,
+      data: { title: 'Última edição' },
+    });
+  });
+
   it('mantém o mesmo rascunho novo por sessão e o separa por usuário', () => {
     const firstUserDraft = getQuoteDraftIdForScope('usuario-1');
 
     expect(getQuoteDraftIdForScope('usuario-1')).toBe(firstUserDraft);
     expect(getQuoteDraftIdForScope('usuario-2')).not.toBe(firstUserDraft);
+  });
+
+  it('separa o rascunho por usuário, cooperativa e PA', () => {
+    expect(buildQuoteDraftScope('usuario-1', 'coop-1', 'pa-1')).toBe('usuario-1:coop-1:pa-1');
+    expect(buildQuoteDraftScope('usuario-1', 'coop-1', 'pa-2')).not.toBe(
+      buildQuoteDraftScope('usuario-1', 'coop-1', 'pa-1'),
+    );
+    expect(buildQuoteDraftScope(null, 'coop-1', 'pa-1')).toBeNull();
+  });
+
+  it('detecta alteração concorrente do mesmo rascunho em outra aba', () => {
+    const { result } = renderHook(() => useAutoSave({ key: 'concorrente', data: { title: 'Local' } }));
+    const envelope = JSON.stringify({
+      version: 1,
+      savedAt: '2026-10-16T12:00:00.000Z',
+      data: { title: 'Outra aba' },
+    });
+
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'autosave_concorrente',
+        newValue: envelope,
+        storageArea: localStorage,
+      }));
+    });
+
+    expect(result.current.externalChange).toEqual({
+      data: { title: 'Outra aba' },
+      savedAt: '2026-10-16T12:00:00.000Z',
+    });
   });
 });

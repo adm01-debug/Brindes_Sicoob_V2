@@ -40,7 +40,7 @@ describe("StockFilterToolbar", () => {
 
   it("renders search input", () => {
     render(<StockFilterToolbar {...defaultProps} />);
-    expect(screen.getByPlaceholderText("Buscar produto, SKU ou cor...")).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Buscar produto, SKU ou cor" })).toBeInTheDocument();
   });
 
   it("renders quantity input", () => {
@@ -121,8 +121,7 @@ describe("StockFilterToolbar", () => {
     };
     render(<StockFilterToolbar {...defaultProps} filters={activeFilters} />);
     // Clear search via the X button inside the search input
-    const clearButton = screen.getByPlaceholderText("Buscar produto, SKU ou cor...").parentElement?.querySelector("button");
-    if (clearButton) fireEvent.click(clearButton);
-    // search should be cleared locally
+    fireEvent.click(screen.getByRole("button", { name: "Limpar busca" }));
+    expect(screen.getByRole("textbox", { name: "Buscar produto, SKU ou cor" })).toHaveValue("");
   });
 });

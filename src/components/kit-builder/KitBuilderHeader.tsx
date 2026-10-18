@@ -18,8 +18,7 @@ import { KitAIPromptDialog } from '@/components/kit-builder/KitAIPromptDialog';
 import { KitIdentityPicker } from '@/components/kit-builder/KitIdentityPicker';
 import { KitShareLinkDialog } from '@/components/kit-builder/KitShareLinkDialog';
 import { useRBAC } from '@/hooks/useRBAC';
-import { useTemplateSnapshot } from '@/hooks/useTemplateSnapshot';
-import type { KitIdentity, KitState } from '@/lib/kit-builder';
+import type { KitIdentity } from '@/lib/kit-builder';
 import { cn } from '@/lib/utils';
 
 interface KitBuilderHeaderProps {
@@ -38,12 +37,11 @@ interface KitBuilderHeaderProps {
   identity?: KitIdentity;
   onIdentityChange: (next: KitIdentity) => void;
   onSave: () => void;
+  onSaveTemplate?: () => void;
   onUndo: () => void;
   onRedo: () => void;
   onReset: () => void;
   onAIApply: (s: { kit_type: 'montado' | 'original' | 'simples'; box_keywords: string[] }) => void;
-  /** Full kit state — used by admin "Save as system template" snapshot. */
-  kitState?: KitState;
   /** When set, header indicates we are editing a system template (admin mode). */
   templateId?: string;
   /** Saved kit ID — enables share link dialog. */
@@ -72,12 +70,8 @@ function HistoryActions({ props }: { props: KitBuilderHeaderProps }) {
 
 function TemplateAction({ props }: { props: KitBuilderHeaderProps }) {
   const { isAdmin } = useRBAC();
-  const { saveAsTemplate, isSavingTemplate } = useTemplateSnapshot();
-  const kitState = props.kitState;
-  if (!isAdmin || !kitState || !props.hasContent) return null;
-  const label = props.templateId ? "Atualizar template" : "Salvar como template";
-  const tooltip = props.templateId ? "Atualizar template do sistema" : "Salvar este kit como template do sistema (admin)";
-  return <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="outline" size="sm" onClick={() => saveAsTemplate({ kitState, templateId: props.templateId })} disabled={isSavingTemplate} className="gap-2 border-primary/40 text-primary hover:bg-primary/10" aria-label="Salvar como template do sistema">{isSavingTemplate ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}<span className="hidden md:inline">{label}</span></Button></TooltipTrigger><TooltipContent>{tooltip}</TooltipContent></Tooltip></TooltipProvider>;
+  if (!isAdmin || props.templateId || !props.onSaveTemplate || !props.hasContent) return null;
+  return <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="outline" size="sm" onClick={props.onSaveTemplate} disabled={props.isSaving} className="gap-2 border-primary/40 text-primary hover:bg-primary/10" aria-label="Salvar como template do sistema">{props.isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}<span className="hidden md:inline">Salvar como template</span></Button></TooltipTrigger><TooltipContent>Salvar este kit como template do sistema</TooltipContent></Tooltip></TooltipProvider>;
 }
 
 function KitActions({ props }: { props: KitBuilderHeaderProps }) {
@@ -85,7 +79,7 @@ function KitActions({ props }: { props: KitBuilderHeaderProps }) {
   const SaveIcon = props.isSaving ? Loader2 : props.lastSavedAt && !props.isAutoSaving ? Check : Save;
   return <div className="flex items-center gap-2 shrink-0"><HistoryActions props={props} /><KitIdentityPicker identity={props.identity} onChange={props.onIdentityChange} /><KitShareLinkDialog kitId={props.currentKitId} kitName={props.kitName} />
     <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="outline" size="sm" onClick={() => navigate("/meus-kits")} className="gap-2" aria-label="Abrir biblioteca de kits"><Library className="h-4 w-4" /><span className="hidden md:inline">Biblioteca</span></Button></TooltipTrigger><TooltipContent>Abrir biblioteca de kits</TooltipContent></Tooltip></TooltipProvider>
-    <TemplateAction props={props} /><Button variant={props.isValid && props.hasContent ? "default" : "outline"} onClick={props.onSave} disabled={props.isSaving || !props.hasContent} className="font-medium"><SaveIcon className={cn("h-4 w-4 mr-2", props.isSaving && "animate-spin")} />{props.isExistingKit ? "Atualizar" : "Salvar"}</Button><Button variant="outline" onClick={props.onReset} className="font-medium text-destructive hover:text-destructive"><RotateCcw className="h-4 w-4 mr-2" /> Novo kit</Button><div className="hidden lg:block"><KitAIPromptDialog onApply={props.onAIApply} /></div>
+    <TemplateAction props={props} /><Button variant={props.isValid && props.hasContent ? "default" : "outline"} onClick={props.onSave} disabled={props.isSaving || !props.hasContent} className="font-medium"><SaveIcon className={cn("h-4 w-4 mr-2", props.isSaving && "animate-spin")} />{props.templateId ? "Atualizar template" : props.isExistingKit ? "Atualizar" : "Salvar"}</Button><Button variant="outline" onClick={props.onReset} className="font-medium text-destructive hover:text-destructive"><RotateCcw className="h-4 w-4 mr-2" /> Novo kit</Button><div className="hidden lg:block"><KitAIPromptDialog onApply={props.onAIApply} /></div>
   </div>;
 }
 

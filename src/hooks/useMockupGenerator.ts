@@ -153,24 +153,57 @@ function restoredHistoryArea(mockup: GeneratedMockup): PersonalizationArea {
 
 function resolveUrlPreselection(
   params: URLSearchParams,
-  getProductById: (id: string) => Product | null | undefined,
+  product: Product | undefined,
   techniques: Technique[],
 ): { productSelection: MockupProductSelection | null; technique: Technique | undefined } | null {
   const productId = params.get('product_id');
-  if (!productId) return null;
+  if (!productId || !product) return null;
   const techniqueName = params.get('technique');
   return {
-    productSelection: historyProductSelection(getProductById(productId) || undefined),
+    productSelection: historyProductSelection(product),
     technique: techniqueName
       ? techniques.find(item => item.name.toLowerCase() === techniqueName.toLowerCase())
       : undefined,
   };
 }
 
+type UrlProductResolution = { status: 'missing-id' | 'loading' | 'requested' | 'failed' } | { status: 'ready'; product: Product };
+
+function resolveUrlProduct({
+  productId,
+  products,
+  isLoadingProducts,
+  requestedProductId,
+  fetchStarted,
+  getProductById,
+}: {
+  productId: string | null;
+  products: Product[];
+  isLoadingProducts: boolean;
+  requestedProductId: { current: string | null };
+  fetchStarted: { current: boolean };
+  getProductById: (id: string) => Product | undefined;
+}): UrlProductResolution {
+  if (!productId) return { status: 'missing-id' };
+  const product = products.find(item => item.id === productId);
+  if (product) return { status: 'ready', product };
+  if (isLoadingProducts) {
+    if (requestedProductId.current === productId) fetchStarted.current = true;
+    return { status: 'loading' };
+  }
+  if (requestedProductId.current === productId) {
+    return { status: fetchStarted.current ? 'failed' : 'loading' };
+  }
+  requestedProductId.current = productId;
+  fetchStarted.current = false;
+  getProductById(productId);
+  return { status: 'requested' };
+}
+
 export function useMockupGenerator() {
   const { user } = useAuth();
   const { saveDraft, loadDraft, clearDraft, isSaving: isDraftSaving, lastSaved, error: draftError } = useMockupDraft();
-  const { getProductById } = useProductsContext();
+  const { getProductById, products, isLoading: isLoadingProducts } = useProductsContext();
 
   // Data state
   const [techniques, setTechniques] = useState<Technique[]>([]);
@@ -208,6 +241,8 @@ export function useMockupGenerator() {
   // Draft
   const [hasDraftRestored, setHasDraftRestored] = useState(false);
   const [showDraftRestoredNotice, setShowDraftRestoredNotice] = useState(false);
+  const [urlProductLoadError, setUrlProductLoadError] = useState(false);
+  const [urlProductRetryCount, setUrlProductRetryCount] = useState(0);
   const isRestoringDraft = useRef(false);
 
   // Tab & positioning
@@ -345,15 +380,43 @@ export function useMockupGenerator() {
 
   // URL param pre-selection
   const urlParamsApplied = useRef(false);
+  const requestedUrlProductId = useRef<string | null>(null);
+  const urlProductFetchStarted = useRef(false);
   useEffect(() => {
     if (urlParamsApplied.current || isLoadingData || !hasDraftRestored) return;
-    const selection = resolveUrlPreselection(new URLSearchParams(window.location.search), getProductById, techniques);
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get('product_id');
+    const resolution = resolveUrlProduct({
+      productId,
+      products,
+      isLoadingProducts,
+      requestedProductId: requestedUrlProductId,
+      fetchStarted: urlProductFetchStarted,
+      getProductById,
+    });
+    if (resolution.status === 'failed') {
+      // Só declare falha depois de observar o ciclo real de loading do provider.
+      // Isso evita confundir a janela de debounce do fetch em lote (50 ms) com erro.
+      setUrlProductLoadError(true);
+      return;
+    }
+    if (resolution.status !== 'ready') return;
+
+    const selection = resolveUrlPreselection(params, resolution.product, techniques);
     if (!selection) return;
     urlParamsApplied.current = true;
+    setUrlProductLoadError(false);
     if (selection.productSelection) setProductSelection(selection.productSelection);
     if (selection.technique) setSelectedTechnique(selection.technique);
     window.history.replaceState({}, '', window.location.pathname);
-  }, [isLoadingData, hasDraftRestored, techniques, getProductById]);
+  }, [isLoadingData, hasDraftRestored, techniques, getProductById, products, isLoadingProducts, urlProductRetryCount]);
+
+  const retryUrlProduct = useCallback(() => {
+    requestedUrlProductId.current = null;
+    urlProductFetchStarted.current = false;
+    setUrlProductLoadError(false);
+    setUrlProductRetryCount(count => count + 1);
+  }, []);
 
   // Auto-save
   useEffect(() => {
@@ -592,6 +655,7 @@ export function useMockupGenerator() {
     lastSavedRecordId, setLastSavedRecordId, lastSavedMockupUrl, setLastSavedMockupUrl,
     lastSavedLayoutMode, setLastSavedLayoutMode,
     isDraftSaving, lastSaved, draftError, showDraftRestoredNotice,
+    urlProductLoadError, retryUrlProduct,
     activeTab, setActiveTab, wizardStep, hasLogo, hasUserInteractedPosition,
     positionHistory, logoColorAnalysis, techniqueColorConfig, setTechniqueColorConfig,
     filteredTechniques, getProductImage, resetForm, saveMockupToHistory, fetchHistory,

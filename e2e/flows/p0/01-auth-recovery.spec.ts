@@ -30,7 +30,7 @@ test.describe('P0 — Auth recovery', () => {
   test.skip('sessão expirada durante navegação redireciona para /login com returnTo', async ({
     page,
   }) => {
-    await gotoAndSettle(page, '/catalogo');
+    await gotoAndSettle(page, '/produtos');
     await mockSessionExpired(page);
     await page.reload();
     await expect(page).toHaveURL(/\/login\?.*returnTo=.*catalogo/);
@@ -38,7 +38,7 @@ test.describe('P0 — Auth recovery', () => {
 
   test.skip('force-global-logout encerra todas as abas em < 5s', async ({ context }) => {
     const second = await context.newPage();
-    await gotoAndSettle(second, '/catalogo');
+    await gotoAndSettle(second, '/produtos');
     await expect(second).toHaveURL(/\/login/, { timeout: 5000 });
   });
 });

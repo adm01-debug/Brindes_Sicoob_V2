@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Building2, Pencil, Trash2, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import type { Supplier } from './types';
+import { PrivateStorageImage } from '@/components/common/PrivateStorageImage';
 
 interface SupplierTableProps {
   suppliers: Supplier[];
@@ -18,7 +19,7 @@ interface SupplierTableProps {
 }
 
 function SupplierIdentity({ supplier }: { supplier: Supplier }) {
-  return <div className="flex items-center gap-2.5">{supplier.logo_url ? <img src={supplier.logo_url} alt="Logo do fornecedor" className="w-8 h-8 rounded object-contain border border-border bg-muted shrink-0" loading="lazy" /> : <div className="w-8 h-8 rounded border border-border bg-muted flex items-center justify-center shrink-0"><Building2 className="h-4 w-4 text-muted-foreground" /></div>}<div><p className="font-medium text-sm">{supplier.name}</p>{supplier.trading_name && <p className="text-xs text-muted-foreground">{supplier.trading_name}</p>}</div></div>;
+  return <div className="flex items-center gap-2.5">{supplier.logo_url ? <PrivateStorageImage value={supplier.logo_url} bucket="supplier-logos" alt="Logo do fornecedor" className="w-8 h-8 rounded object-contain border border-border bg-muted shrink-0" loading="lazy" /> : <div className="w-8 h-8 rounded border border-border bg-muted flex items-center justify-center shrink-0"><Building2 className="h-4 w-4 text-muted-foreground" /></div>}<div><p className="font-medium text-sm">{supplier.name}</p>{supplier.trading_name && <p className="text-xs text-muted-foreground">{supplier.trading_name}</p>}</div></div>;
 }
 
 function SupplierContact({ supplier }: { supplier: Supplier }) {

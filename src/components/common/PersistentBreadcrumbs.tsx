@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { canNavigateTo, isDevOnlyPath } from "@/lib/navigation/restricted-routes";
 import { BackButton } from "./BackButton";
+import { NavigationHistoryMenu } from './NavigationHistoryMenu';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +42,7 @@ const routeLabels: Record<string, string> = {
   "/carrinhos": "Carrinhos",
   "/gestor/compras": "Gestor de Compras",
   "/gestor/aprovacoes": "Aprovações",
+  "/gestor/delegacoes": "Delegações de aprovação",
   "/gestor/convites": "Convites institucionais",
 };
 
@@ -122,13 +124,14 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
       )}
     >
       {showBackButton && isNotHome && (
-        <div className="flex-shrink-0 border-r border-border/30 pr-3 mr-1">
+        <div className="flex flex-shrink-0 items-center gap-1 border-r border-border/30 pr-3 mr-1">
           <BackButton 
             useChevron 
             showLabel={false} 
             className="h-8 w-8 rounded-full bg-muted/20 hover:bg-muted/40 text-muted-foreground hover:text-foreground transition-all duration-200 border-none shadow-none" 
             variant="ghost" 
           />
+          <NavigationHistoryMenu />
         </div>
       )}
       
@@ -142,7 +145,7 @@ export const PersistentBreadcrumbs = forwardRef<HTMLElement, PersistentBreadcrum
             {/* Dropdown for middle items */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button aria-label="Mostrar itens intermediários" className="h-6 w-8 flex items-center justify-center hover:bg-muted/50 rounded-md transition-colors">
+                <button type="button" aria-label="Mostrar itens intermediários" className="h-6 w-8 flex items-center justify-center hover:bg-muted/50 rounded-md transition-colors">
                   <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
                 </button>
               </DropdownMenuTrigger>

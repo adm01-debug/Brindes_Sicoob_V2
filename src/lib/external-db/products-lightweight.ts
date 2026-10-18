@@ -5,7 +5,7 @@
 import { logger } from '@/lib/logger';
 import { invokeExternalDb, invokeBatchBridge, type BatchResult, type InvokeResult } from './bridge';
 
-const PRODUCT_SELECT_LIGHTWEIGHT = 'id, name, sku, supplier_reference, sale_price, primary_image_url, supplier_id, category_id, main_category_id, brand, is_active, stock_quantity, min_quantity, is_featured, is_bestseller, is_new, is_on_sale, is_kit, allows_personalization, gender, price_updated_at';
+const PRODUCT_SELECT_LIGHTWEIGHT = 'id, name, sku, supplier_reference, sale_price, primary_image_url, supplier_id, category_id, main_category_id, brand, is_active, stock_quantity, min_quantity, is_featured, is_bestseller, is_new, is_on_sale, is_kit, has_commercial_packaging, allows_personalization, gender, price_updated_at';
 const LIGHTWEIGHT_PAGE_SIZE = 500;          // antes 100 — reduz round-trips em 5x
 const LIGHTWEIGHT_MAX_CONCURRENCY = 3;       // antes 2 — bridge tem singleton + warmup
 const LIGHTWEIGHT_MIN_SPLIT_PAGE_SIZE = 125;

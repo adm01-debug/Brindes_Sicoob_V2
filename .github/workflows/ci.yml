@@ -28,7 +28,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: npm
@@ -62,9 +62,25 @@ jobs:
         run: |
           npm run check:critical-test-skips
           npm run test:scenarios
+          node scripts/validate-docs-consistency.mjs
 
       - name: Executar a suíte completa com gate de cobertura
+        env:
+          STRICT_REF_WARNINGS: '1'
         run: npm run test:coverage:ci
+
+      - name: Consolidar avisos de console da suíte
+        if: always()
+        run: node scripts/consolidate-console-snapshot.mjs
+
+      - name: Publicar snapshot de avisos de console
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: console-snapshot-${{ github.run_id }}
+          path: coverage/console-snapshot*.json
+          retention-days: 14
+          if-no-files-found: ignore
 
       - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
         with:
@@ -93,13 +109,23 @@ jobs:
         run: python3 scripts/qa/simular-autoridade-verbas-sicoob.py
 
       - name: Simular controles de auditoria e permissões em PostgreSQL descartável
-        run: python3 scripts/qa/simular-controles-auditoria.py
+        run: |
+          python3 -m unittest scripts/qa/test_supabase_postgres_container.py
+          python3 scripts/qa/simular-controles-auditoria.py
 
       - name: Simular ACL padrão, sobrecargas e herança de papéis
         run: python3 scripts/qa/simular-acl-efetiva.py
 
-      - name: Verificar adoção de logging nas Edge Functions
-        run: node scripts/check-edge-structured-logging.mjs
+      - name: Simular compatibilidade e autoria da telemetria de busca
+        run: python3 scripts/qa/simular-search-analytics-legado.py
+
+      - name: Simular hardening de Storage e ACL pública
+        run: python3 scripts/qa/simular-storage-acl-hardening.py
+
+      - name: Verificar logging e correlação nas Edge Functions
+        run: |
+          node scripts/check-edge-structured-logging.mjs
+          node scripts/check-edge-request-id-propagation.mjs
 
       - name: Simular aprovação pública, RLS e respostas concorrentes
         run: python3 scripts/qa/simular-aprovacao-publica.py

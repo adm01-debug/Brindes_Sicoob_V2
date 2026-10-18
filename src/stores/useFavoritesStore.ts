@@ -78,6 +78,15 @@ function saveToStorage(items: FavoriteItem[]) {
   }
 }
 
+function readLatestFavorites(fallback: FavoriteItem[]): FavoriteItem[] {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? parseStoredFavorites(stored) : [];
+  } catch {
+    return fallback;
+  }
+}
+
 export const useFavoritesStore = create<FavoritesStore>((set, get) => {
   const initial = loadFromStorage();
   return {
@@ -86,7 +95,7 @@ export const useFavoritesStore = create<FavoritesStore>((set, get) => {
     isLoaded: true,
 
     addFavorite: (productId: string, variant?: FavoriteVariantInfo) => {
-      const { favorites } = get();
+      const favorites = readLatestFavorites(get().favorites);
       if (favorites.some((f) => f.productId === productId)) return;
       const next = [...favorites, { productId, addedAt: new Date().toISOString(), variant }];
       saveToStorage(next);
@@ -95,14 +104,14 @@ export const useFavoritesStore = create<FavoritesStore>((set, get) => {
     },
 
     removeFavorite: (productId: string) => {
-      const next = get().favorites.filter((f) => f.productId !== productId);
+      const next = readLatestFavorites(get().favorites).filter((f) => f.productId !== productId);
       saveToStorage(next);
       set({ favorites: next, favoriteCount: next.length });
       Haptics.impactLight();
     },
 
     toggleFavorite: (productId: string, variant?: FavoriteVariantInfo) => {
-      const { favorites } = get();
+      const favorites = readLatestFavorites(get().favorites);
       const exists = favorites.some((f) => f.productId === productId);
       const next = exists
         ? favorites.filter((f) => f.productId !== productId)
@@ -130,3 +139,15 @@ export const useFavoritesStore = create<FavoritesStore>((set, get) => {
     },
   };
 });
+
+if (typeof window !== "undefined") {
+  window.addEventListener("storage", (event) => {
+    if (event.key !== STORAGE_KEY) return;
+    try {
+      const favorites = event.newValue ? parseStoredFavorites(event.newValue) : [];
+      useFavoritesStore.setState({ favorites, favoriteCount: favorites.length, isLoaded: true });
+    } catch (error) {
+      logger.warn("Alteração inválida de favoritos recebida de outra aba", error);
+    }
+  });
+}

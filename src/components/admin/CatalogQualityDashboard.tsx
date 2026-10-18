@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, CheckCircle2, ImageOff, FolderX, Tag, ListFilter, Activity, RefreshCw } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchPromobrindProducts } from "@/lib/external-db";
+import { fetchPromobrindProducts, invokeExternalDb } from "@/lib/external-db";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -24,7 +24,7 @@ interface QualityMetrics {
   catalogSize: number;
   missingImages: number;
   missingCategories: number;
-  duplicatedSkus: number;
+  duplicatedSkus: number | null;
 }
 
 function healthBarClass(score: number): string {
@@ -50,20 +50,43 @@ export function CatalogQualityDashboard() {
   const { data: metrics, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ["catalog-quality-metrics"],
     queryFn: async (): Promise<QualityMetrics> => {
-      const [syncLogsResult, productCountResult] = await Promise.all([
+      const [syncLogsResult, productCountResult, missingImagesResult, missingCategoriesResult] = await Promise.all([
         supabase
           .from("product_sync_logs")
           .select("status, records_processed, records_failed, created_at")
           .order("created_at", { ascending: false })
           .limit(100),
-        fetchPromobrindProducts({ limit: 1, returnCount: true })
+        fetchPromobrindProducts({ limit: 1, returnCount: true }),
+        invokeExternalDb({
+          table: "v_products_missing_primary_image",
+          operation: "select",
+          select: "*",
+          limit: 1,
+          countMode: "exact",
+        }),
+        invokeExternalDb({
+          table: "products",
+          operation: "select",
+          select: "id",
+          filters: { is_active: true, main_category_id_isnull: true },
+          limit: 1,
+          countMode: "exact",
+        }),
       ]);
 
-      const rows = syncLogsResult.data || [];
-      const catalogSize = productCountResult.count || 0;
+      if (syncLogsResult.error) throw syncLogsResult.error;
+      const catalogSize = productCountResult.count;
+      const missingImages = missingImagesResult.count;
+      const missingCategories = missingCategoriesResult.count;
+      if (
+        typeof catalogSize !== "number"
+        || typeof missingImages !== "number"
+        || typeof missingCategories !== "number"
+      ) {
+        throw new Error("O banco mestre não retornou contagens exatas de qualidade do catálogo.");
+      }
 
-      // In a real enterprise scenario, these would be separate count queries in the bridge
-      // For now we simulate with heuristic or placeholders to keep it performant
+      const rows = syncLogsResult.data ?? [];
       return {
         totalSyncRuns: rows.length,
         failedRuns: rows.filter((r) => r.status === "failed").length,
@@ -71,9 +94,9 @@ export function CatalogQualityDashboard() {
         totalRecordsProcessed: rows.reduce((sum, r) => sum + (r.records_processed || 0), 0),
         totalRecordsFailed: rows.reduce((sum, r) => sum + (r.records_failed || 0), 0),
         catalogSize,
-        missingImages: Math.round(catalogSize * 0.02), // Heuristic: 2%
-        missingCategories: Math.round(catalogSize * 0.01), // Heuristic: 1%
-        duplicatedSkus: 0, // Hardened: Duplicates blocked at bridge level
+        missingImages,
+        missingCategories,
+        duplicatedSkus: null,
       };
     },
     staleTime: 1000 * 60 * 5, // 5 minutes cache
@@ -207,7 +230,7 @@ export function CatalogQualityDashboard() {
               </Badge>
             </div>
             <div className="pt-2 border-t text-xs text-muted-foreground italic">
-              * O sistema realiza sincronizações automáticas a cada 6 horas.
+              * Exibe o histórico persistido das integrações registradas pelo sistema.
             </div>
           </CardContent>
         </Card>
@@ -248,7 +271,11 @@ export function CatalogQualityDashboard() {
 
             <div className="flex items-center gap-2 mt-4 text-[10px] text-muted-foreground p-2 bg-muted/50 rounded">
               <Tag className="h-3 w-3" />
-              <span>SKUs duplicados: 0 (Validação via chave primária garantida)</span>
+              <span>
+                SKUs duplicados: {metrics.duplicatedSkus === null
+                  ? "não aferido pelo contrato atual do banco mestre"
+                  : metrics.duplicatedSkus.toLocaleString("pt-BR")}
+              </span>
             </div>
           </CardContent>
         </Card>

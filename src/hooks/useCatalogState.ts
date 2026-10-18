@@ -200,12 +200,12 @@ export function useCatalogState() {
   const search = useCatalogSearchState(realProducts, searchQueryFromUrl, searchHistoryScope);
 
   // Material & Category filters
-  const { productIds: materialFilteredProductIds, hasFilter: hasMaterialFilter, isLoading: isLoadingMaterialFilter } = useProductsByMaterial({
+  const { productIds: materialFilteredProductIds, hasFilter: hasMaterialFilter, isLoading: isLoadingMaterialFilter, error: materialFilterError, hasData: hasMaterialFilterData } = useProductsByMaterial({
     materialGroupSlugs: listOrEmpty(filterState.filters.materialGroups),
     materialTypeSlugs: listOrEmpty(filterState.filters.materialTypes),
   });
 
-  const { productIds: categoryFilteredProductIds, hasFilter: hasCategoryFilter, isLoading: isLoadingCategoryFilter } = useProductsByCategory({
+  const { productIds: categoryFilteredProductIds, hasFilter: hasCategoryFilter, isLoading: isLoadingCategoryFilter, error: categoryFilterError, hasData: hasCategoryFilterData } = useProductsByCategory({
     categoryIds: listOrEmpty(filterState.filters.categories?.map(String)),
     includeDescendants: true,
   });
@@ -237,7 +237,8 @@ export function useCatalogState() {
   ].some(Boolean);
 
   useEffect(() => {
-    const error = [colorFilterError, tagFilterError, techniqueFilterError, sizeFilterError,
+    const error = [categoryFilterError ? new Error(categoryFilterError) : null,
+      materialFilterError, colorFilterError, tagFilterError, techniqueFilterError, sizeFilterError,
       activityFilterError, marketingFilterError, commemorativeDateFilterError]
       .find((candidate): candidate is Error => Boolean(candidate));
     if (!error) return;
@@ -246,7 +247,7 @@ export function useCatalogState() {
       description: error.message,
       variant: 'destructive',
     });
-  }, [activityFilterError, colorFilterError, commemorativeDateFilterError, marketingFilterError, sizeFilterError, tagFilterError, techniqueFilterError, toast]);
+  }, [activityFilterError, categoryFilterError, colorFilterError, commemorativeDateFilterError, marketingFilterError, materialFilterError, sizeFilterError, tagFilterError, techniqueFilterError, toast]);
 
   const { data: realStats } = useCatalogRealStats();
   const { isLoading, isInitial: isInitialCatalogLoad } = catalogLoadingState(
@@ -264,7 +265,9 @@ export function useCatalogState() {
   const filteredProducts = useCatalogFiltering({
     realProducts, filters: filterState.filters, sortBy: display.sortBy, hasFuzzySearch, fuzzySearchResults,
     hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter,
+    materialFilterError: materialFilterError && !hasMaterialFilterData ? materialFilterError : null,
     hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter,
+    categoryFilterError: categoryFilterError && !hasCategoryFilterData ? categoryFilterError : null,
     hasColorFilter: canApplyCatalogFilter(hasColorFilter, colorFilterError, hasColorFilterData), colorFilteredProductIds, isLoadingColorFilter,
     hasTagFilter: canApplyCatalogFilter(hasTagFilter, tagFilterError, hasTagFilterData), tagFilteredProductIds, isLoadingTagFilter,
     hasTechniqueFilter: canApplyCatalogFilter(hasTechniqueFilter, techniqueFilterError, hasTechniqueFilterData), techniqueFilteredProductIds, isLoadingTechniqueFilter,

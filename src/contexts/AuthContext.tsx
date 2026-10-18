@@ -9,9 +9,16 @@ import { useUserRoles } from "@/hooks/auth/useUserRoles";
 import { useUserProfile } from "@/hooks/auth/useUserProfile";
 import { useAuthAAL } from "@/hooks/auth/useAuthAAL";
 import { useRecentlyViewedStore } from "@/stores/useRecentlyViewedStore";
+import { useFavoritesStore } from "@/stores/useFavoritesStore";
+import { useNavigationStore } from "@/stores/useNavigationStore";
+import { useNavigationGuardStore } from "@/stores/useNavigationGuardStore";
+import { resetUxMetrics } from "@/lib/uxMetrics";
+import { resetScrollRestoration } from "@/hooks/useScrollRestoration";
 
 
 import { type AppRole, type Profile } from "@/types/users";
+
+const ACTIVE_USER_STORAGE_KEY = "sicoob-active-user-id";
 
 export type { AppRole, Profile };
 
@@ -66,11 +73,23 @@ interface SicoobAccessState {
   reason: string;
 }
 
-async function getSicoobAccessState(): Promise<SicoobAccessState> {
-  const { data, error } = await supabase.rpc("get_sicoob_access_state" as never);
-  if (error) throw error;
-  const state = (data as unknown as SicoobAccessState[] | null)?.[0];
-  return state ?? { active: false, reason: "missing_access_state" };
+const pendingAccessStates = new Map<string, Promise<SicoobAccessState>>();
+
+async function getSicoobAccessState(userId: string): Promise<SicoobAccessState> {
+  const pending = pendingAccessStates.get(userId);
+  if (pending) return pending;
+  const request = (async () => {
+    const { data, error } = await supabase.rpc("get_sicoob_access_state" as never);
+    if (error) throw error;
+    const state = (data as unknown as SicoobAccessState[] | null)?.[0];
+    return state ?? { active: false, reason: "missing_access_state" };
+  })();
+  pendingAccessStates.set(userId, request);
+  void request.then(
+    () => { if (pendingAccessStates.get(userId) === request) pendingAccessStates.delete(userId); },
+    () => { if (pendingAccessStates.get(userId) === request) pendingAccessStates.delete(userId); },
+  );
+  return request;
 }
 
 async function closeRevokedLocalSession(reason: string): Promise<void> {
@@ -81,7 +100,10 @@ async function closeRevokedLocalSession(reason: string): Promise<void> {
   }
   await supabase.auth.signOut({ scope: "local" });
   void import("sonner").then(({ toast }) => {
-    toast.error("Seu vínculo de acesso não está mais ativo. Entre novamente ou fale com o gestor.");
+    const message = reason === "access_state_unavailable"
+      ? "Não foi possível confirmar seu acesso. Entre novamente ou tente mais tarde."
+      : "Seu vínculo de acesso não está mais ativo. Entre novamente ou fale com o gestor.";
+    toast.error(message);
   });
 }
 
@@ -102,12 +124,31 @@ function clearSensitiveBrowserData(): void {
     sessionStorage.clear();
     [
       "product-favorites",
+      ACTIVE_USER_STORAGE_KEY,
       "product-comparison",
       "recently-viewed-products",
+      "navigation-history",
       "duplicate_product",
     ].forEach(key => localStorage.removeItem(key));
+    for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+      const key = localStorage.key(index);
+      if (key?.startsWith("autosave_")) localStorage.removeItem(key);
+    }
   } catch (error) {
     console.warn("Falha ao limpar armazenamento local no logout", error);
+  }
+}
+
+function isolateSensitiveBrowserData(userId: string): void {
+  try {
+    const previousUserId = localStorage.getItem(ACTIVE_USER_STORAGE_KEY);
+    if (previousUserId && previousUserId !== userId) {
+      localStorage.removeItem("product-favorites");
+      useFavoritesStore.setState({ favorites: [], favoriteCount: 0, isLoaded: true });
+    }
+    localStorage.setItem(ACTIVE_USER_STORAGE_KEY, userId);
+  } catch (error) {
+    console.warn("Falha ao isolar dados locais por usuário", error);
   }
 }
 
@@ -136,10 +177,16 @@ interface AuthStateDependencies {
 }
 
 function handleAuthenticatedState(event: AuthChangeEvent, session: Session, deps: AuthStateDependencies): void {
+  isolateSensitiveBrowserData(session.user.id);
   useRecentlyViewedStore.getState().setScope(`user:${session.user.id}`);
   if (event === 'SIGNED_IN') notifySignedInUser(session.user);
   setTimeout(() => {
-    void deps.fetchUserData(session.user.id);
+    // INITIAL_SESSION também é resolvido pelo getSession() no efeito de montagem.
+    // Evita disparar duas cargas simultâneas para o mesmo usuário no bootstrap.
+    if (event !== 'INITIAL_SESSION') {
+      if (event === 'SIGNED_IN') deps.setIsLoading(true);
+      void deps.fetchUserData(session.user.id);
+    }
     void import('@/lib/external-db-prewarm').then(module => module.prewarmExternalDb({ oncePerSession: true }));
   }, 0);
 }
@@ -151,6 +198,10 @@ function handleAnonymousState(deps: AuthStateDependencies): void {
   deps.clearAAL();
   deps.setIsLoading(false);
   useRecentlyViewedStore.getState().reset();
+  useNavigationStore.getState().clear();
+  useNavigationGuardStore.getState().clearAll();
+  resetUxMetrics();
+  resetScrollRestoration();
   clearSensitiveBrowserData();
 }
 
@@ -205,6 +256,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUserData = useCallback(async (userId: string) => {
     authDebug(FETCH_USER_DATA_LOG_CONTEXT, "start", { userId });
+    const endSessionForInvalidAccess = async (reason: string) => {
+      setUser(null);
+      setSession(null);
+      clearProfile();
+      clearRoles();
+      clearAAL();
+      await closeRevokedLocalSession(reason);
+    };
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const sess = sessionData?.session ?? null;
@@ -214,24 +273,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      const accessState = await getSicoobAccessState();
-      if (!accessState.active) {
-        authDebug(FETCH_USER_DATA_LOG_CONTEXT, "access revoked", { reason: accessState.reason });
-        await closeRevokedLocalSession(accessState.reason);
-        return;
-      }
-
-      await Promise.all([
+      const userDataPromise = Promise.all([
         fetchProfile(userId),
         fetchRoles(userId),
-        fetchAAL()
-      ]);
+        fetchAAL(),
+      ]).then(() => null, error => error);
+      let accessState: SicoobAccessState;
+      try {
+        accessState = await getSicoobAccessState(userId);
+      } catch (error) {
+        await userDataPromise;
+        authDebugError(FETCH_USER_DATA_LOG_CONTEXT, "access validation failed; closing session", error);
+        await endSessionForInvalidAccess("access_state_unavailable");
+        return;
+      }
+      const userDataError = await userDataPromise;
+      if (userDataError) throw userDataError;
+      if (!accessState.active) {
+        authDebug(FETCH_USER_DATA_LOG_CONTEXT, "access revoked", { reason: accessState.reason });
+        await endSessionForInvalidAccess(accessState.reason);
+        return;
+      }
     } catch (error) {
       authDebugError(FETCH_USER_DATA_LOG_CONTEXT, "unexpected exception", error);
     } finally {
       if (mountedRef.current) setIsLoading(false);
     }
-  }, [fetchProfile, fetchRoles, fetchAAL]);
+  }, [fetchProfile, fetchRoles, fetchAAL, clearProfile, clearRoles, clearAAL]);
 
   // O JWT pode continuar criptograficamente válido por alguns minutos depois
   // de o vínculo ser removido. O banco já bloqueia o papel imediatamente; esta
@@ -241,10 +309,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!user?.id) return;
     let validating = false;
     const validateAccess = async () => {
-      if (validating) return;
+      if (isLoading || validating) return;
       validating = true;
       try {
-        const state = await getSicoobAccessState();
+        const state = await getSicoobAccessState(user.id);
         if (!state.active) await closeRevokedLocalSession(state.reason);
       } catch (error) {
         authDebugError("AuthContext.validateAccess", "revalidation failed", error);
@@ -263,7 +331,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       globalThis.removeEventListener("focus", validateAccess);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [user?.id]);
+  }, [user?.id, isLoading]);
 
 
 // Removed large monolithic fetchUserData in favor of modular hooks above
@@ -294,6 +362,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (session?.user) {
         useRecentlyViewedStore.getState().setScope(`user:${session.user.id}`);
+        setIsLoading(true);
         fetchUserData(session.user.id);
       } else {
         useRecentlyViewedStore.getState().reset();
@@ -393,6 +462,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       clearRoles();
       clearAAL();
       useRecentlyViewedStore.getState().reset();
+      useNavigationStore.getState().clear();
+      useNavigationGuardStore.getState().clearAll();
+      resetUxMetrics();
+      resetScrollRestoration();
       // Permite prewarm no próximo login (mesma aba)
       import('@/lib/external-db-prewarm').then(m => m.resetPrewarmSession()).catch(() => {});
       log.info('ok');
