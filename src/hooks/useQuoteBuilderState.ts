@@ -340,6 +340,14 @@ export function quoteBuilderCanEdit(options: {
   return !options.isEditMode || isQuoteCommerciallyEditable(options.currentStatus, options.isLatestVersion);
 }
 
+export function quoteBuilderCanPersistDraft(options: {
+  isEditMode: boolean;
+  currentStatus: string;
+  isLatestVersion: boolean;
+}): boolean {
+  return quoteBuilderCanEdit({ ...options, saving: false });
+}
+
 interface CompleteSaveParams {
   result: Quote;
   isEditMode: boolean;
@@ -486,6 +494,11 @@ export function useQuoteBuilderState() {
       isLatestVersion,
     });
   }, [isEditMode, currentStatus, isLatestVersion, isSavingQuote]);
+  const canPersistDraft = useMemo(() => quoteBuilderCanPersistDraft({
+    isEditMode,
+    currentStatus,
+    isLatestVersion,
+  }), [isEditMode, currentStatus, isLatestVersion]);
 
   useEffect(() => {
     if (canEdit) return;
@@ -720,7 +733,7 @@ export function useQuoteBuilderState() {
         return freshness.shouldWarn ? { ...item, price_confirmed_at: ts } : item;
       }));
     },
-    applyTemplate, handleSaveQuote, canEdit, getTemplateItems: () => items.map(i => ({
+    applyTemplate, handleSaveQuote, canEdit, canPersistDraft, getTemplateItems: () => items.map(i => ({
       productId: i.product_id,
       productName: i.product_name,
       productSku: i.product_sku || "",

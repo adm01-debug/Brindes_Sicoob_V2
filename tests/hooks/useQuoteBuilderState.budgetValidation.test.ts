@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { completeQuoteSave, quoteBuilderCanEdit, validateBudgetForSubmission, validateMonthlyBudget } from "@/hooks/useQuoteBuilderState";
+import { completeQuoteSave, quoteBuilderCanEdit, quoteBuilderCanPersistDraft, validateBudgetForSubmission, validateMonthlyBudget } from "@/hooks/useQuoteBuilderState";
 
 describe("validação de verba antes de enviar orçamento", () => {
   it("falha fechado quando a consulta da competência retorna erro", () => {
@@ -37,6 +37,23 @@ describe("navegação após persistir orçamento", () => {
   it("bloqueia edição enquanto o salvamento está em andamento", () => {
     expect(quoteBuilderCanEdit({ saving: true, isEditMode: false, currentStatus: "draft", isLatestVersion: true })).toBe(false);
     expect(quoteBuilderCanEdit({ saving: false, isEditMode: false, currentStatus: "draft", isLatestVersion: true })).toBe(true);
+  });
+
+  it("mantém o rascunho habilitado durante a pausa temporária dos controles", () => {
+    const savingQuote = {
+      isEditMode: false,
+      currentStatus: "draft",
+      isLatestVersion: true,
+    };
+    expect(quoteBuilderCanEdit({ ...savingQuote, saving: true })).toBe(false);
+    expect(quoteBuilderCanPersistDraft({
+      ...savingQuote,
+    })).toBe(true);
+    expect(quoteBuilderCanPersistDraft({
+      isEditMode: true,
+      currentStatus: "approved",
+      isLatestVersion: true,
+    })).toBe(false);
   });
 
   it("limpa alterações pendentes antes de navegar após salvar", () => {

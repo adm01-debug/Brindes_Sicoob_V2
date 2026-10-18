@@ -35,7 +35,7 @@ O primeiro workflow do GitHub expôs que o Vite emitia a imagem fictícia como a
 
 ## Correções de revisão pendentes de CI — 18/10/2026
 
-A revisão automática da PR #119 apontou sete problemas de comportamento. As correções estão preparadas nesta continuação local da mesma PR; ainda não equivalem a aprovação humana nem a checks verdes do SHA que as incluirá.
+A revisão automática da PR #119 apontou oito problemas de comportamento. As correções foram implementadas em commits anteriores desta continuação; elas ainda não equivalem a aprovação humana nem a checks verdes do SHA que as inclui.
 
 | Achado | Correção | Evidência local |
 |---|---|---|
@@ -47,23 +47,27 @@ A revisão automática da PR #119 apontou sete problemas de comportamento. As co
 | Sugestão do BI preenchia `client_id`, mas não os dados comerciais da empresa. | O seletor hidrata `companyInfo` pelo diretório restrito quando a consulta por ID confirma a empresa selecionada. | Teste de hidratação assíncrona sem seleção manual. |
 | Salvamento bem-sucedido do orçamento era interceptado pelo guarda de alterações não salvas e aceitava mudanças concorrentes durante `await`. | O estado é marcado limpo antes da navegação; campos e ações ficam bloqueados desde o início da verificação de verba até o salvamento terminar. | Testes da ordem entre limpeza e navegação e da regra de edição durante salvamento. |
 | CLI de preflight ainda usava POST e esperava `healthy`, contrato removido do health-check público. | O script usa GET, espera `status: ok`, falha fechado, aplica timeout, aceita `SUPABASE_*` e `VITE_SUPABASE_*` e trata chave como opcional (`apikey`, sem bearer); manifest e `config.toml` declaram `verify_jwt=false`. A Edge declara CORS para GET/HEAD/OPTIONS. | 9 casos de contrato e smoke subprocesso contra servidor HTTP local: `.env`, GET, chamada sem chave, resposta válida, timeout e exit 0. A função confirma liveness pública, não prontidão de banco/autenticação. |
+| O autosave da cotação era desativado enquanto a operação de salvar bloqueava os controles. Em falha, reativar o componente podia restaurar um rascunho local antigo sobre os dados atuais. | O componente usa `canPersistDraft`, que continua ligado durante o bloqueio transitório do save, mas respeita status comercial e versão vigente; os controles continuam usando `canEdit`. | Teste cobre que durante `saving` a edição fica bloqueada e a persistência permanece ativa; teste existente mantém a regra de não persistir cotações somente leitura. |
+| Cancelamento ou erro de leitura do stream de IA não executava `TransformStream.flush`, deixando a reserva de cota em `pending`. | O wrapper finaliza o log uma só vez em EOF, erro, cancelamento e resposta sem corpo; preserva uso parcial, inicia cancelamento upstream junto à gravação e remove cabeçalhos de transporte incompatíveis com o corpo encapsulado. | 7 testes Deno cobrem extração, EOF, uso parcial no cancelamento, falha upstream, leitura pendente cancelada, resposta sem corpo e finalização única. |
 
 O comparador do ledger também foi corrigido: arrays `statements` nulos/vazios/inválidos agora significam `conteudo_nao_verificado`, em vez de calcular o hash do SQL vazio e indicar divergência falsa. O cenário inclui regressões para arrays vazios, strings em branco, valores inválidos e SQL/marcador válidos.
 
-Validação focada desta continuação: **96 testes aprovados em 12 arquivos**, incluindo regressões para o seletor de clientes em favoritos e para o seletor de produtos durante salvamento; cenários Node **7/7**, gate de autorização Edge **106/106** e lint focado sem erros (avisos de complexidade existentes). A ação de adicionar também consulta uma trava síncrona, cobrindo callbacks já iniciados antes do rerender. O gate completo será repetido pelo hook de pre-push.
+Validação focada anterior: **96 testes aprovados em 12 arquivos**, incluindo regressões para o seletor de clientes em favoritos e para o seletor de produtos durante salvamento; cenários Node **7/7**, gate de autorização Edge **106/106** e lint focado sem erros (avisos de complexidade existentes). A ação de adicionar também consulta uma trava síncrona, cobrindo callbacks já iniciados antes do rerender. Esta continuação acrescentou as duas regressões P2 da tabela e passou a bateria focada abaixo.
 
-Na última consulta, os checks do SHA `0a6ae826…` estavam verdes exceto o E2E ainda em execução. A PR continuava aberta, sem revisão `APPROVED` e com sete threads de revisão não resolvidas. É necessário revalidar os checks e a revisão na nova cabeça; não aplicar as cinco migrations até integração aprovada.
+Na última consulta, os checks do SHA `0a6ae826…` estavam verdes exceto o E2E ainda em execução. A PR continuava aberta, sem revisão `APPROVED`. Uma consulta posterior encontrou 10 threads abertas (9 atuais e 1 obsoleta): correções aguardam confirmação do CI; o P1 de escopo do diretório permanece intencionalmente aberto. Revalidar checks e revisão na cabeça mais recente; não aplicar as cinco migrations até integração aprovada.
 
 ### Revalidação integrada desta continuação
 
-- Vitest completo anterior à migração do seletor de clientes: **6.289 testes aprovados, 67 ignorados; 546 arquivos aprovados e 4 ignorados**. A bateria focada após essa migração passou **96/96 em 12 arquivos**; o pre-push repetirá a suíte completa com o novo teste.
-- `npm run typecheck`, build Vite, `git diff --check`, cenários Node (**7/7**) e gate de autorização Edge (**106/106**) passaram.
-- O build foi concluído com as variáveis `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` ausentes no ambiente local e avisos existentes de chunk grande/divisão; isso não valida configuração de deploy.
-- Lint focado não apresentou erros. O gate global de baseline reportou **0 erros globais** e nenhuma regressão nos **229 arquivos de aplicação alterados/analisados**; a regra `max-lines-per-function` ainda mostra avisos preexistentes.
-- Revisão paralela não encontrou bloqueador P0/P1 neste lote. Permanecem dois gaps de evidência P2: não há teste que dispare callback antigo de adicionar produto durante um `await` real de salvamento, embora a trava síncrona impeça a mutação; e falta um teste dedicado para evento de imagem `load` atrasado (o handler tem a mesma guarda de origem do evento `error`).
+- Vitest completo no código desta continuação: **6.291 aprovados e 67 ignorados; 547 arquivos aprovados e 4 ignorados**.
+- Vitest focado para estado da cotação e `QuoteAutoSave`: **9/9**; testes de stream de IA em Deno: **7/7**.
+- `npm run typecheck`, `npm run lint:baseline` (0 erros globais e nenhuma regressão em 231 arquivos de aplicação analisados), `git diff --check` e build Vite passaram.
+- O build foi concluído com as variáveis `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` ausentes no ambiente local e avisos existentes de chunk grande/divisão; isso não valida configuração de deploy. `deno fmt --check` passou no novo teste; no módulo preexistente `ai-usage.ts`, o Deno formatter aponta formatação histórica fora do padrão e sua aplicação integral causaria churn não relacionado.
+- Revisão paralela confirmou o P1 de escopo do diretório de clientes e os dois novos P2 tratados acima. Permanecem gaps menores de evidência: não há teste que dispare callback antigo de adicionar produto durante um `await` real de salvamento, embora a trava síncrona impeça a mutação; falta um teste dedicado para evento de imagem `load` atrasado (o handler tem a mesma guarda de origem do evento `error`); e a falha de save ainda não é simulada por teste integrado do `QuoteAutoSave` com fake timers.
 - A consulta pública ao endpoint segue sem resposta nesta sessão e não existe credencial E2E autenticada local. Não foi executado deploy nem aplicada migration canônica nesta continuação.
 
 A chamada HTTP pública ao health-check canônico não respondeu dentro de 10 segundos nesta sessão; portanto não há evidência de reachability remota nem do estado implantado do gateway. O contrato local está coerente, mas a configuração precisa ser confirmada pelo CI/deploy antes de usar o endpoint como sinal operacional.
+
+O código desta continuação ainda precisa ser commitado e enviado para produzir um novo SHA de CI. Na cabeça remota consultada antes deste lote, o PR #119 continuava aberto, bloqueado por checks em andamento, sem aprovação humana e com 10 threads abertas (9 atuais e 1 obsoleta). O P1 do diretório com dados de contato permanece aberto por decisão de segurança; não aplicar migrations nem fazer merge até obter escopo adequado, revisão e checks exigidos.
 
 ## Coordenação
 

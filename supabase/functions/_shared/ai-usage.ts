@@ -151,56 +151,118 @@ export function extractUsageFromSseLine(line: string): { input: number; output: 
   }
 }
 
-function trackStreamingResponse(
+interface AiLogUpdateParams {
+  inputTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
+  estimatedCostUsd?: number;
+  durationMs?: number;
+  status?: string;
+  errorMessage?: string;
+  metadata?: Record<string, unknown>;
+}
+
+function streamErrorMessage(reason: unknown): string {
+  if (reason instanceof Error) return `Stream interrupted: ${reason.name}`;
+  if (typeof reason === "string" && reason.trim()) return `Stream interrupted: ${reason.slice(0, 120)}`;
+  return "Stream interrupted by consumer";
+}
+
+export async function trackStreamingResponse(
   response: Response,
-  logId: string | undefined,
   model: string,
   startedAt: number,
-): Response {
-  if (!response.body) return response;
+  updateLog: (params: AiLogUpdateParams) => Promise<void>,
+): Promise<Response> {
+  if (!response.body) {
+    await updateLog({
+      durationMs: Date.now() - startedAt,
+      status: "error",
+      errorMessage: "Successful stream response had no body",
+      metadata: { stream: true, usageReported: false, interrupted: true },
+    });
+    return response;
+  }
 
   const decoder = new TextDecoder();
   let buffered = "";
   let latestUsage = { input: 0, output: 0 };
+  let finalized = false;
+  let cancelled = false;
   const processCompleteLines = (final = false) => {
     const lines = buffered.split(/\r?\n/);
-    buffered = final ? "" : (lines.pop() ?? "");
+    const trailingLine = lines.pop() ?? "";
+    buffered = final ? "" : trailingLine;
     for (const line of lines) {
       const usage = extractUsageFromSseLine(line);
       if (usage) latestUsage = usage;
     }
-    if (final && buffered) {
-      const usage = extractUsageFromSseLine(buffered);
+    if (final && trailingLine) {
+      const usage = extractUsageFromSseLine(trailingLine);
       if (usage) latestUsage = usage;
-      buffered = "";
     }
   };
-
-  const tracked = response.body.pipeThrough(new TransformStream<Uint8Array, Uint8Array>({
-    transform(chunk, controller) {
-      buffered += decoder.decode(chunk, { stream: true });
-      processCompleteLines();
-      controller.enqueue(chunk);
-    },
-    async flush() {
+  const finalize = async (status: "success" | "error", reason?: unknown) => {
+    if (finalized) return;
+    if (status === "error") {
       buffered += decoder.decode();
       processCompleteLines(true);
-      await updateAiLog(logId, {
-        inputTokens: latestUsage.input,
-        outputTokens: latestUsage.output,
-        totalTokens: latestUsage.input + latestUsage.output,
-        estimatedCostUsd: estimateCost(model, latestUsage.input, latestUsage.output),
-        durationMs: Date.now() - startedAt,
-        status: "success",
-        metadata: { stream: true, usageReported: latestUsage.input > 0 || latestUsage.output > 0 },
-      });
+    }
+    finalized = true;
+    await updateLog({
+      inputTokens: latestUsage.input,
+      outputTokens: latestUsage.output,
+      totalTokens: latestUsage.input + latestUsage.output,
+      estimatedCostUsd: estimateCost(model, latestUsage.input, latestUsage.output),
+      durationMs: Date.now() - startedAt,
+      status,
+      errorMessage: status === "error" ? streamErrorMessage(reason) : undefined,
+      metadata: {
+        stream: true,
+        usageReported: latestUsage.input > 0 || latestUsage.output > 0,
+        interrupted: status === "error",
+      },
+    });
+  };
+  const reader = response.body.getReader();
+  const tracked = new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      try {
+        const { done, value } = await reader.read();
+        if (cancelled) return;
+        if (done) {
+          buffered += decoder.decode();
+          processCompleteLines(true);
+          await finalize("success");
+          controller.close();
+          return;
+        }
+        buffered += decoder.decode(value, { stream: true });
+        processCompleteLines();
+        controller.enqueue(value);
+      } catch (error) {
+        if (cancelled) return;
+        await finalize("error", error);
+        controller.error(error);
+      }
     },
-  }));
+    async cancel(reason) {
+      cancelled = true;
+      await Promise.all([
+        reader.cancel(reason),
+        finalize("error", reason),
+      ]);
+    },
+  });
 
+  const headers = new Headers(response.headers);
+  headers.delete("content-length");
+  headers.delete("content-encoding");
+  headers.delete("transfer-encoding");
   return new Response(tracked, {
     status: response.status,
     statusText: response.statusText,
-    headers: response.headers,
+    headers,
   });
 }
 
@@ -259,7 +321,12 @@ export async function callAiWithTracking(options: {
 
   // 3. Update the reserved log with actual results
   if (stream) {
-    if (response.ok) return trackStreamingResponse(response, logId, model, startMs);
+    if (response.ok) return await trackStreamingResponse(
+      response,
+      model,
+      startMs,
+      (params) => updateAiLog(logId, params),
+    );
     await updateAiLog(logId, {
       durationMs,
       status: "error",
@@ -338,16 +405,7 @@ export async function callAiWithFallback(options: {
 /**
  * Update an existing AI usage log entry with actual results.
  */
-async function updateAiLog(logId: string | undefined, params: {
-  inputTokens?: number;
-  outputTokens?: number;
-  totalTokens?: number;
-  estimatedCostUsd?: number;
-  durationMs?: number;
-  status?: string;
-  errorMessage?: string;
-  metadata?: Record<string, unknown>;
-}): Promise<void> {
+async function updateAiLog(logId: string | undefined, params: AiLogUpdateParams): Promise<void> {
   if (!logId) {
     // Fallback: no log_id from atomic acquire, create new log
     console.warn("[ai-usage] No log_id, skipping update");
