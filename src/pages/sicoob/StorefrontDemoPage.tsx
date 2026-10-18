@@ -25,7 +25,6 @@ import { PageSEO } from "@/components/seo/PageSEO";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import demoProductsImage from "@/assets/demo/produtos-grid-v1.webp";
 
 type Product = {
   id: string;
@@ -126,7 +125,7 @@ function ProductImage({ product }: { product: Product }) {
       aria-label={`Foto ilustrativa de ${product.name}`}
       className="aspect-square w-full bg-[#F6F4EE] bg-[length:200%_200%] bg-no-repeat transition-transform duration-500 group-hover:scale-[1.025]"
       style={{
-        backgroundImage: `url('${demoProductsImage}')`,
+        backgroundImage: "url('/__demo-assets/produtos-grid-v1.webp')",
         backgroundPosition: product.position,
       }}
     />

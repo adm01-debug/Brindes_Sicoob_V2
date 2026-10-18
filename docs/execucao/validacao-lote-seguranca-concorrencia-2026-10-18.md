@@ -25,9 +25,13 @@ O lote não conclui o plano integral de 100 etapas. A ingestão de documentos ai
 - Contratos Node: **32/32 aprovados**.
 - Imutabilidade das migrations: aprovada.
 - `check-runtime-refs`: 0 referências quebradas fora da allowlist; três objetos previstos continuam ausentes do snapshot remoto por dependerem das migrations pendentes já autorizadas.
-- Build Vite concluiu duas vezes após transformar 6.233 módulos; o segundo build carregou a configuração local e não acusou variáveis Vite ausentes. Permaneceram avisos de divisão de chunks já existentes.
+- Build Vite concluiu após transformar 6.233 módulos. No build padrão, a verificação equivalente ao workflow confirmou que nem a rota textual nem a imagem demonstrativa entram em `dist`; no build QA com `VITE_ENABLE_DEMO_PAGES=true`, a imagem foi emitida em `demo-assets/produtos-grid-v1.webp`. Typecheck e ESLint dos arquivos desse ajuste passaram; permanecem avisos preexistentes de divisão de chunks e tamanho de função.
 - `apply-sicoob-migrations.mjs --check` não executou nesta worktree porque `SUPABASE_DB_URL` não está no ambiente. A leitura anterior do banco canônico indicava quatro migrations autorizadas pendentes; com esta migration nova, são cinco pendências esperadas, sujeitas a rechecagem após integração. Nenhuma migration foi aplicada remotamente.
 - A jornada E2E autenticada continua sem certificação: faltam credenciais de persona de teste nesta execução.
+
+## Follow-up do CI
+
+O primeiro workflow do GitHub expôs que o Vite emitia a imagem fictícia como ativo órfão mesmo removendo a rota de demonstração do JavaScript. O `vite.config.ts` agora serve/emite esse arquivo apenas em desenvolvimento ou quando `VITE_ENABLE_DEMO_PAGES=true`; a página de demonstração usa a rota dedicada servida pelo plugin. A verificação local do artefato padrão passou e a variante de QA manteve a imagem. A PR precisa de nova execução dos workflows para confirmar o resultado no runner.
 
 ## Coordenação
 

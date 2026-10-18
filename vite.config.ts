@@ -1,8 +1,32 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react-swc'
+import fs from 'node:fs'
 import path from 'path'
 import { componentTagger } from "lovable-tagger";
 import { visualizer } from "rollup-plugin-visualizer";
+
+const demoImagePath = path.resolve(__dirname, 'src/assets/demo/produtos-grid-v1.webp')
+
+function demoAssetsPlugin(enabled: boolean): Plugin {
+  return {
+    name: 'sicoob-demo-assets',
+    configureServer(server) {
+      if (!enabled) return
+      server.middlewares.use('/__demo-assets/produtos-grid-v1.webp', (_req, res) => {
+        res.setHeader('Content-Type', 'image/webp')
+        res.end(fs.readFileSync(demoImagePath))
+      })
+    },
+    generateBundle() {
+      if (!enabled) return
+      this.emitFile({
+        type: 'asset',
+        fileName: 'demo-assets/produtos-grid-v1.webp',
+        source: fs.readFileSync(demoImagePath),
+      })
+    },
+  }
+}
 
 /**
  * Vite Configuration - Production Ready
@@ -11,6 +35,7 @@ import { visualizer } from "rollup-plugin-visualizer";
  */
 export default defineConfig(({ mode }) => ({
   plugins: [
+    demoAssetsPlugin(mode === 'development' || process.env.VITE_ENABLE_DEMO_PAGES === 'true'),
     react(),
     mode === 'development' && componentTagger(),
     mode === 'production' && visualizer({
