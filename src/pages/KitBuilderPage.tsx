@@ -13,7 +13,7 @@ import { downloadKitPDF } from '@/utils/kitPdfGenerator';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { formatCurrency, calculateTotalKitPrice, type ExternalProductForKit } from '@/lib/kit-builder';
+import { formatCurrency, calculateTotalKitPrice } from '@/lib/kit-builder';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -22,7 +22,6 @@ import { useCustomKitPersistence } from '@/hooks/useCustomKitPersistence';
 import { useKitPersistenceCoordinator } from '@/hooks/useKitPersistenceCoordinator';
 import { useKitUndoRedo } from '@/hooks/useKitUndoRedo';
 import { supabase } from '@/integrations/supabase/client';
-import { invokeExternalDb } from '@/lib/external-db';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   WizardSteps, BoxSelector, ItemSelector, VolumeIndicator,
@@ -33,10 +32,8 @@ import { FreightEstimator } from '@/components/kit-builder/FreightEstimator';
 import { KitTemplates, type KitTemplate } from '@/components/kit-builder/KitTemplates';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { transformToKitItem } from '@/hooks/useKitBuilderTransformers';
 import { PageSEO } from "@/components/seo/PageSEO";
 // import { MainLayout } from "@/components/layout/MainLayout";
-import { logger } from '@/lib/logger';
 import { useKitBuilderQuote } from './kit-builder/useKitBuilderQuote';
 import { useKitWizardShortcuts } from '@/hooks/useKitWizardShortcuts';
 import { useCustomKitsRealtime } from '@/hooks/useCustomKitsRealtime';
@@ -55,6 +52,7 @@ import { IdentitySuggestionButton } from '@/components/kit-builder/IdentitySugge
 import { useDuplicateKitDetector } from '@/hooks/useDuplicateKitDetector';
 import { useDirtyGuard } from '@/hooks/useDirtyGuard';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { useKitProductParam } from './kit-builder/useKitProductParam';
 
 const KitIsometricPreview = lazy(() => import('@/components/kit-builder/KitIsometricPreview').then(m => ({ default: m.KitIsometricPreview })));
 const KitPersonalizationPreview = lazy(() => import('@/components/kit-builder/KitPersonalizationPreview').then(m => ({ default: m.KitPersonalizationPreview })));
@@ -121,7 +119,6 @@ export default function KitBuilderPage() {
   const [loadedKitUpdatedAt, setLoadedKitUpdatedAt] = useState<string | undefined>();
   const [occasion, setOccasion] = useState<Occasion | null>(null);
   const loadGenerationRef = useRef(0);
-  const productLoadGenerationRef = useRef(0);
   const lastBumpedKitIdRef = useRef<string | null>(null);
 
   const {
@@ -237,27 +234,7 @@ export default function KitBuilderPage() {
     return () => { loadGenerationRef.current += 1; };
   }, [kitIdParam, templateIdParam, loadKit, bumpLastUsed, persistence.staleWriteRevision]);
 
-  useEffect(() => {
-    if (!productIdParam || kitIdParam || templateIdParam) return;
-    const generation = ++productLoadGenerationRef.current;
-    (async () => {
-      try {
-        const result = await invokeExternalDb<ExternalProductForKit>({ table: 'products', operation: 'select', filters: { id: productIdParam }, select: 'id, name, sku, sale_price, primary_image_url, weight_g, width_mm, height_mm, length_mm, width_cm, height_cm, length_cm, materials, is_kit, category_id', limit: 1 });
-        if (generation !== productLoadGenerationRef.current) return;
-        const product = result.records?.[0];
-        if (product) {
-          addItem(transformToKitItem(product));
-          setKitName(product.name || '');
-          toast.success(`"${product.name}" adicionado ao kit!`, { description: 'Selecione uma caixa e continue montando.' });
-        } else toast.error('Produto não encontrado no catálogo');
-      } catch (err) {
-        if (generation !== productLoadGenerationRef.current) return;
-        logger.warn('[kit-builder] Failed to load product:', err);
-        toast.error('Erro ao carregar produto');
-      }
-    })();
-    return () => { productLoadGenerationRef.current += 1; };
-  }, [productIdParam, kitIdParam, templateIdParam, addItem, setKitName]);
+  useKitProductParam({ productIdParam, kitIdParam, templateIdParam, addItem, setKitName });
 
   const { findDuplicate } = useDuplicateKitDetector();
 
