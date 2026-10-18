@@ -35,7 +35,7 @@ O primeiro workflow do GitHub expôs que o Vite emitia a imagem fictícia como a
 
 ## Correções de revisão pendentes de CI — 18/10/2026
 
-A revisão automática da PR #119 apontou oito problemas de comportamento. As correções foram implementadas em commits anteriores desta continuação; elas ainda não equivalem a aprovação humana nem a checks verdes do SHA que as inclui.
+A revisão automática da PR #119 apontou oito problemas de comportamento iniciais. Em revisões posteriores surgiram dois P2 de ciclo de vida e um P1 nos seletores do carrinho; as três correções locais seguem para CI no próximo SHA. Nenhuma dessas mudanças equivale a aprovação humana ou checks verdes.
 
 | Achado | Correção | Evidência local |
 |---|---|---|
@@ -49,6 +49,7 @@ A revisão automática da PR #119 apontou oito problemas de comportamento. As co
 | CLI de preflight ainda usava POST e esperava `healthy`, contrato removido do health-check público. | O script usa GET, espera `status: ok`, falha fechado, aplica timeout, aceita `SUPABASE_*` e `VITE_SUPABASE_*` e trata chave como opcional (`apikey`, sem bearer); manifest e `config.toml` declaram `verify_jwt=false`. A Edge declara CORS para GET/HEAD/OPTIONS. | 9 casos de contrato e smoke subprocesso contra servidor HTTP local: `.env`, GET, chamada sem chave, resposta válida, timeout e exit 0. A função confirma liveness pública, não prontidão de banco/autenticação. |
 | O autosave da cotação era desativado enquanto a operação de salvar bloqueava os controles. Em falha, reativar o componente podia restaurar um rascunho local antigo sobre os dados atuais. | O componente usa `canPersistDraft`, que continua ligado durante o bloqueio transitório do save, mas respeita status comercial e versão vigente; os controles continuam usando `canEdit`. | Teste cobre que durante `saving` a edição fica bloqueada e a persistência permanece ativa; teste existente mantém a regra de não persistir cotações somente leitura. |
 | Cancelamento ou erro de leitura do stream de IA não executava `TransformStream.flush`, deixando a reserva de cota em `pending`. | O wrapper finaliza o log uma só vez em EOF, erro, cancelamento e resposta sem corpo; preserva uso parcial, inicia cancelamento upstream junto à gravação e remove cabeçalhos de transporte incompatíveis com o corpo encapsulado. | 7 testes Deno cobrem extração, EOF, uso parcial no cancelamento, falha upstream, leitura pendente cancelada, resposta sem corpo e finalização única. |
+| Seletor do carrinho ainda consultava CRM genérico, bloqueado para vendedores, impedindo criar o primeiro carrinho em `/carrinhos` e nos fluxos de inclusão rápida. | Ambos os pickers consultam `quote_directory` em páginas limitadas pelo contrato do bridge; cache React Query e listas locais de recentes/favoritas são particionados por usuário e papéis. | Teste verifica paginação e IDs preservados pelo DTO restrito; teste de segurança confirma escopo de identidade em cache e storage e ausência de `selectCrm`/`searchCrm`. |
 
 O comparador do ledger também foi corrigido: arrays `statements` nulos/vazios/inválidos agora significam `conteudo_nao_verificado`, em vez de calcular o hash do SQL vazio e indicar divergência falsa. O cenário inclui regressões para arrays vazios, strings em branco, valores inválidos e SQL/marcador válidos.
 
@@ -67,7 +68,7 @@ Na última consulta, os checks do SHA `0a6ae826…` estavam verdes exceto o E2E 
 
 A chamada HTTP pública ao health-check canônico não respondeu dentro de 10 segundos nesta sessão; portanto não há evidência de reachability remota nem do estado implantado do gateway. O contrato local está coerente, mas a configuração precisa ser confirmada pelo CI/deploy antes de usar o endpoint como sinal operacional.
 
-O código desta continuação ainda precisa ser commitado e enviado para produzir um novo SHA de CI. Na cabeça remota consultada antes deste lote, o PR #119 continuava aberto, bloqueado por checks em andamento, sem aprovação humana e com 10 threads abertas (9 atuais e 1 obsoleta). O P1 do diretório com dados de contato permanece aberto por decisão de segurança; não aplicar migrations nem fazer merge até obter escopo adequado, revisão e checks exigidos.
+O código desta continuação ainda precisa ser commitado e enviado para produzir um novo SHA de CI. Na cabeça remota consultada antes do fix do carrinho, o PR #119 continuava aberto, bloqueado por checks em andamento, sem aprovação humana e com 11 threads abertas (9 atuais e 2 obsoletas). O P1 dos compradores no diretório com dados de contato permanece aberto por decisão de segurança; não aplicar migrations nem fazer merge até obter escopo adequado, revisão e checks exigidos.
 
 ## Coordenação
 

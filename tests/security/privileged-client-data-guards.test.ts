@@ -14,6 +14,9 @@ const companyContactSelector = readFileSync(
   'src/components/quotes/CompanyContactSelector.tsx',
   'utf8',
 );
+const cartCompanyOptions = readFileSync('src/components/cart/cart-company-options.ts', 'utf8');
+const cartCompanyPicker = readFileSync('src/components/cart/CartCompanyPicker.tsx', 'utf8');
+const cartCompanyPickerDialog = readFileSync('src/components/cart/CartCompanyPickerDialog.tsx', 'utf8');
 
 describe('barreiras estáticas para dados privilegiados de clientes', () => {
   it('carrega todos os papéis e falha fechado para vínculo inválido', () => {
@@ -99,5 +102,20 @@ describe('barreiras estáticas para dados privilegiados de clientes', () => {
     expect(crmBridge).toContain('.eq("is_customer", true)');
     expect(crmBridge).toContain('.is("deleted_at", null)');
     expect(crmBridge).toContain('.in("contact_id", contactIds)');
+  });
+
+  it('seletores de carrinho usam o diretório restrito e particionam cache por identidade', () => {
+    expect(cartCompanyOptions).toContain('listQuoteDirectoryCompanies');
+    expect(cartCompanyOptions).not.toContain('selectCrm');
+    expect(cartCompanyOptions).not.toContain('searchCrm');
+    for (const picker of [cartCompanyPicker, cartCompanyPickerDialog]) {
+      expect(picker).toContain('fetchCartCompanyOptions');
+      expect(picker).toContain('buildCartCompanyAccessScope(user?.id, roles)');
+      expect(picker).toContain('"cart-sicoob-company-options", accessScope');
+      expect(picker).not.toContain('selectCrm');
+      expect(picker).not.toContain('searchCrm');
+    }
+    expect(cartCompanyPickerDialog).toContain('`${RECENT_KEY}:${accessScope}`');
+    expect(cartCompanyPickerDialog).toContain('`${FAV_KEY}:${accessScope}`');
   });
 });

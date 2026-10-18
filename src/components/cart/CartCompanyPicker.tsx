@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useSellerCartContext, type CreateCartInput } from "@/contexts/SellerCartContext";
-import { fetchCartCompanyOptions, type CartCompanyOption as CompanyItem } from "./cart-company-options";
+import { useAuth } from "@/contexts/AuthContext";
+import { buildCartCompanyAccessScope, fetchCartCompanyOptions, type CartCompanyOption as CompanyItem } from "./cart-company-options";
 
 interface CartCompanyPickerProps {
   onCreated?: () => void;
@@ -22,6 +23,8 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
   const [searchTerm, setSearchTerm] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const { createCart, canCreateCart } = useSellerCartContext();
+  const { user, roles } = useAuth();
+  const accessScope = buildCartCompanyAccessScope(user?.id, roles);
 
   // Focus input on mount
   useEffect(() => {
@@ -30,7 +33,7 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
 
   // Local companies cache
   const { data: localCompanies = [], isLoading: loadingLocal } = useQuery<CompanyItem[]>({
-    queryKey: ["cart-sicoob-company-options"],
+    queryKey: ["cart-sicoob-company-options", accessScope],
     queryFn: fetchCartCompanyOptions,
     staleTime: 15 * 60 * 1000,
   });

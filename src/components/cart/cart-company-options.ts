@@ -1,5 +1,4 @@
-import { selectCrm } from '@/lib/crm-db';
-import { getCompanyDisplayName, type CrmCompany } from '@/types/crm';
+import { listQuoteDirectoryCompanies, type QuoteDirectoryCompany } from '@/lib/crm-db';
 
 export interface CartCompanyOption {
   id: string;
@@ -10,21 +9,19 @@ export interface CartCompanyOption {
   logo_url: string | null;
 }
 
-const PAGE_SIZE = 500;
+const PAGE_SIZE = 100;
 
-async function fetchCrmCustomers(): Promise<CrmCompany[]> {
-  const rows: CrmCompany[] = [];
+async function fetchQuoteDirectoryCustomers(): Promise<QuoteDirectoryCompany[]> {
+  const rows: QuoteDirectoryCompany[] = [];
   for (let offset = 0; ; offset += PAGE_SIZE) {
-    const page = await selectCrm<CrmCompany>('companies', {
-      select: 'id, title, razao_social, nome_fantasia, logo_url, ramo_atividade',
-      filters: { deleted_at: null, is_customer: true },
-      orderBy: { column: 'id', ascending: true },
-      limit: PAGE_SIZE,
-      offset,
-    });
+    const page = await listQuoteDirectoryCompanies({ limit: PAGE_SIZE, offset });
     rows.push(...page);
-    if (page.length < PAGE_SIZE) return rows;
+    if (page.length < PAGE_SIZE || offset >= 10_000) return rows;
   }
+}
+
+export function buildCartCompanyAccessScope(userId: string | undefined, roles: readonly string[] | undefined): string {
+  return `${userId ?? "anon"}:${[...(roles ?? [])].sort().join(",")}`;
 }
 
 /**
@@ -33,11 +30,11 @@ async function fetchCrmCustomers(): Promise<CrmCompany[]> {
  * proposta. A paginação evita ocultar clientes além do primeiro lote.
  */
 export async function fetchCartCompanyOptions(): Promise<CartCompanyOption[]> {
-  const companies = await fetchCrmCustomers();
+  const companies = await fetchQuoteDirectoryCustomers();
   return companies
     .map((company) => ({
       id: company.id,
-      name: getCompanyDisplayName(company),
+      name: company.name,
       razao_social: company.razao_social,
       nome_fantasia: company.nome_fantasia || null,
       ramo: company.ramo_atividade || null,

@@ -13,7 +13,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useSellerCartContext, type CreateCartInput } from "@/contexts/SellerCartContext";
-import { fetchCartCompanyOptions, type CartCompanyOption as CompanyItem } from "./cart-company-options";
+import { useAuth } from "@/contexts/AuthContext";
+import { buildCartCompanyAccessScope, fetchCartCompanyOptions, type CartCompanyOption as CompanyItem } from "./cart-company-options";
 
 const RECENT_KEY = "cart-companies-recent";
 const FAV_KEY = "cart-companies-favorites";
@@ -39,11 +40,15 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
   const [favorites, setFavorites] = useState<CompanyItem[]>(() => readList(FAV_KEY));
   const inputRef = useRef<HTMLInputElement>(null);
   const { createCart, canCreateCart } = useSellerCartContext();
+  const { user, roles } = useAuth();
+  const accessScope = buildCartCompanyAccessScope(user?.id, roles);
+  const recentStorageKey = `${RECENT_KEY}:${accessScope}`;
+  const favoriteStorageKey = `${FAV_KEY}:${accessScope}`;
 
   useEffect(() => {
     if (!open) return;
-    setRecents(readList(RECENT_KEY));
-    setFavorites(readList(FAV_KEY));
+    setRecents(readList(recentStorageKey));
+    setFavorites(readList(favoriteStorageKey));
     // Sempre abre na aba "Todas" (busca) para o usuário poder digitar imediatamente.
     setTab("search");
     // Aguarda a aba "search" montar para garantir que inputRef.current exista.
@@ -52,10 +57,10 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
       inputRef.current?.select();
     }, 120);
     return () => clearTimeout(t);
-  }, [open]);
+  }, [open, recentStorageKey, favoriteStorageKey]);
 
   const { data: localCompanies = [], isLoading: loadingLocal } = useQuery<CompanyItem[]>({
-    queryKey: ["cart-sicoob-company-options"],
+    queryKey: ["cart-sicoob-company-options", accessScope],
     queryFn: fetchCartCompanyOptions,
     staleTime: 15 * 60 * 1000,
     enabled: open,
@@ -78,10 +83,10 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
       const next = prev.some(f => f.id === company.id)
         ? prev.filter(f => f.id !== company.id)
         : [company, ...prev].slice(0, 20);
-      writeList(FAV_KEY, next);
+      writeList(favoriteStorageKey, next);
       return next;
     });
-  }, []);
+  }, [favoriteStorageKey]);
 
   const handleSelect = useCallback(async (company: CompanyItem) => {
     const input: CreateCartInput = {
@@ -93,12 +98,12 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
     const result = await createCart(input);
     if (result) {
       const nextRecents = [company, ...recents.filter(r => r.id !== company.id)].slice(0, MAX_RECENT);
-      writeList(RECENT_KEY, nextRecents);
+      writeList(recentStorageKey, nextRecents);
       setRecents(nextRecents);
       onCreated?.();
       onOpenChange(false);
     }
-  }, [createCart, onCreated, onOpenChange, recents]);
+  }, [createCart, onCreated, onOpenChange, recents, recentStorageKey]);
 
   const isLoading = loadingLocal;
 
