@@ -9,6 +9,7 @@ import { getSupabaseFunctionUrl, supabase } from "@/integrations/supabase/client
 import { invokeExternalDb } from "@/lib/external-db";
 import { useExpertChatTts } from "./useExpertChatTts";
 import { useExpertConversations, type ExpertConversation } from "@/hooks/useExpertConversations";
+import { selectExpertChatMessages } from "@/lib/assistant-message-window";
 import {
   type FlowFilterState,
   type FlowFilterOptions,
@@ -147,9 +148,9 @@ function enabled(value: boolean) {
   return value || undefined;
 }
 
-function buildExpertRequestBody(messages: Message[], userMessage: string, clientId: string | undefined, filters: FlowFilterState) {
+export function buildExpertRequestBody(messages: Message[], userMessage: string, clientId: string | undefined, filters: FlowFilterState) {
   return {
-    messages: [...messages, { role: "user" as const, content: userMessage }]
+    messages: selectExpertChatMessages([...messages, { role: "user" as const, content: userMessage }])
       .map(message => ({ role: message.role, content: message.content }))
       .filter(message => Boolean(message.content?.length)),
     clientId: clientId || undefined,

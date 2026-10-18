@@ -84,6 +84,13 @@ export function getCdnUrl(urlCdn: string, variant: CdnVariant = 'public'): strin
  */
 export function getSrcSet(urlCdn: string): string {
   if (!urlCdn) return '';
+  try {
+    const parsed = new URL(urlCdn);
+    const pathSegments = parsed.pathname.split('/').filter(Boolean);
+    if (parsed.protocol !== 'https:' || parsed.hostname !== 'imagedelivery.net' || pathSegments.length < 3) return '';
+  } catch {
+    return '';
+  }
   const base = urlCdn.replace(/\/[^/]+$/, '');
   return [
     `${base}/thumbnail 150w`,

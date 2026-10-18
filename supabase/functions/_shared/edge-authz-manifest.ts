@@ -64,7 +64,7 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
   "collections-public-react": { category: "public", rationale: "Reactions em coleção pública" },
   "image-proxy": { category: "public", rationale: "Proxy de imagens (anti-hotlink CDN externos)" },
   "cnpj-lookup": { category: "public", rationale: "Lookup CNPJ via API pública" },
-  "health-check": { category: "public", rationale: "Health endpoint para uptime monitors" },
+  "health-check": { category: "public", rationale: "Liveness sem dependências internas para uptime monitors", gatewayVerifyJwt: false },
   "system-healthcheck": { category: "dev", rationale: "Diagnóstico global revela topologia e latência internas" },
   "migration-health-check": { category: "dev", rationale: "Metadados administrativos restritos a desenvolvedor" },
   "get-visitor-info": { category: "public", rationale: "Geo/IP do visitante para anti-fraude" },

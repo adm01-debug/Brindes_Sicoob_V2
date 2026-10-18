@@ -2,7 +2,7 @@
  * CompanyContactSelector — Orchestrator (refactored)
  * Sub-components in ./company-contact/
  */
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Building2, User, Loader2 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
@@ -177,19 +177,36 @@ export function CompanyContactSelector({
     useCompanyContactData(companyId);
 
   const selectedCompany = useMemo(() => fetchedCompany || null, [fetchedCompany]);
+  const lastCompanyInfoRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!companyId) {
+      lastCompanyInfoRef.current = null;
+      return;
+    }
+    if (!selectedCompany || selectedCompany.id !== companyId) return;
+    const info = selectedCompanyInfo(selectedCompany);
+    const signature = JSON.stringify(info);
+    if (lastCompanyInfoRef.current === signature) return;
+    lastCompanyInfoRef.current = signature;
+    onCompanyInfoChange?.(info);
+  }, [companyId, onCompanyInfoChange, selectedCompany]);
 
   const handleSelectCompany = (company: CompanyOption | null) => {
     const id = company?.id ?? '';
     onCompanyChange(id);
     onContactChange?.('');
     onContactInfoChange?.(null);
-    onCompanyInfoChange?.(company ? selectedCompanyInfo(company) : null);
+    const info = company ? selectedCompanyInfo(company) : null;
+    lastCompanyInfoRef.current = info ? JSON.stringify(info) : null;
+    onCompanyInfoChange?.(info);
   };
 
   const handleClearCompany = () => {
     onCompanyChange('');
     onContactChange?.('');
     onCompanyInfoChange?.(null);
+    lastCompanyInfoRef.current = null;
     onContactInfoChange?.(null);
   };
 

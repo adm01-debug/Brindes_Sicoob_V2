@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import { CATALOG_BATCH_PAGES, CATALOG_INITIAL_PAGE_SIZE, CATALOG_PAGE_SIZE, PRODUCT_SELECT_LIGHTWEIGHT, useProductsCatalog } from '@/hooks/useProductsLightweight';
+import { CATALOG_BATCH_PAGES, CATALOG_INITIAL_PAGE_SIZE, CATALOG_PAGE_SIZE, mapLightweightToProduct, PRODUCT_SELECT_LIGHTWEIGHT, useProductsCatalog } from '@/hooks/useProductsLightweight';
 import { fetchPromobrindProductsLightweight, invokeBatchBridge } from '@/lib/external-db';
 
 vi.mock('@/lib/external-db', () => ({
@@ -20,10 +20,20 @@ function createWrapper() {
 describe('catálogo externo paginado', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('consulta somente campos existentes no contrato externo', () => {
-    expect(PRODUCT_SELECT_LIGHTWEIGHT).not.toContain('has_commercial_packaging');
+  it('consulta os campos leves necessários aos filtros do catálogo', () => {
+    expect(PRODUCT_SELECT_LIGHTWEIGHT).toContain('has_commercial_packaging');
     expect(PRODUCT_SELECT_LIGHTWEIGHT).toContain('is_featured');
     expect(PRODUCT_SELECT_LIGHTWEIGHT).toContain('is_bestseller');
+  });
+
+  it('mapeia a indicação de embalagem comercial para os filtros', () => {
+    const product = mapLightweightToProduct({
+      id: 'produto-embalado', name: 'Caneca', sku: 'C-1',
+      primary_image_url: null, supplier_id: null, category_id: null,
+      main_category_id: null, brand: null, is_active: true,
+      has_commercial_packaging: true,
+    });
+    expect(product.hasCommercialPackaging).toBe(true);
   });
 
   it('limita o lote inicial para liberar a primeira tela sem esperar o catálogo inteiro', async () => {

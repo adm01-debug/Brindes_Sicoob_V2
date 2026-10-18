@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, supabaseUrl } from '@/integrations/supabase/client';
 
 export type PrivateStorageBucket =
   | 'personalization-images'
@@ -48,19 +48,28 @@ export function parsePrivateStorageReference(value: string): PrivateStorageLocat
 
 function locationFromStorageUrl(value: string): PrivateStorageLocation | null {
   try {
-    const pathname = new URL(value).pathname;
-    if (!pathname.includes('/storage/v1/object/')) return null;
+    const parsed = new URL(value);
+    if (parsed.origin !== new URL(supabaseUrl).origin) return null;
+    const pathname = parsed.pathname;
+    if (!/^\/storage\/v1\/object\/(?:sign|public|authenticated)\//.test(pathname)) return null;
     for (const bucket of PRIVATE_STORAGE_BUCKETS) {
-      const marker = `/${bucket}/`;
-      const markerIndex = pathname.indexOf(marker);
-      if (markerIndex < 0) continue;
-      const encodedPath = pathname.slice(markerIndex + marker.length);
+      const marker = new RegExp(`^/storage/v1/object/(?:sign|public|authenticated)/${bucket}/`);
+      const match = pathname.match(marker);
+      if (!match) continue;
+      const encodedPath = pathname.slice(match[0].length);
       if (encodedPath) return { bucket, path: decodeURIComponent(encodedPath) };
     }
   } catch {
     // Valores externos e caminhos inválidos permanecem sob responsabilidade do chamador.
   }
   return null;
+}
+
+export function isPrivateStorageUrl(value: string, expectedBucket: PrivateStorageBucket): boolean {
+  const reference = parsePrivateStorageReference(value);
+  if (reference) return reference.bucket === expectedBucket;
+  const location = locationFromStorageUrl(value);
+  return location?.bucket === expectedBucket;
 }
 
 export async function createPrivateStorageUrl(

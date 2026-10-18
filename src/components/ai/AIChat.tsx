@@ -15,6 +15,12 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getSupabaseFunctionUrl, supabase, supabasePublishableKey } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  EXPERT_CHAT_MAX_CONTENT_LENGTH,
+  EXPERT_CHAT_MAX_MESSAGE_LENGTH,
+  EXPERT_CHAT_MAX_MESSAGES,
+  selectExpertChatMessages,
+} from "@/lib/assistant-message-window";
 
 // ============================================
 // TIPOS
@@ -54,30 +60,21 @@ export interface AIChatProps {
   assistantContext?: string;
 }
 
-export const AI_CHAT_MAX_MESSAGES = 50;
+export const AI_CHAT_MAX_MESSAGES = EXPERT_CHAT_MAX_MESSAGES;
+export const AI_CHAT_MAX_CONTENT_LENGTH = EXPERT_CHAT_MAX_CONTENT_LENGTH;
+export const AI_CHAT_MAX_MESSAGE_LENGTH = EXPERT_CHAT_MAX_MESSAGE_LENGTH;
 
 function createGreetingMessages(greeting?: string): ChatMessage[] {
   if (!greeting) return [];
   return [{ id: makeId(), role: "assistant", content: greeting, createdAt: Date.now() }];
 }
 
-/** Limita o payload ao contrato da Edge Function sem remover a saudação da conversa. */
+/** Mantém a janela mais recente dentro dos limites de quantidade e tamanho da Edge. */
 export function selectAssistantRequestMessages(
   messages: ChatMessage[],
   greetingMessageId?: string | null,
 ): ChatMessage[] {
-  if (messages.length <= AI_CHAT_MAX_MESSAGES) return messages;
-
-  const greeting = greetingMessageId
-    ? messages.find((message) => message.id === greetingMessageId)
-    : undefined;
-  const recentMessages = messages.filter((message) => message.id !== greeting?.id);
-  const recentLimit = AI_CHAT_MAX_MESSAGES - (greeting ? 1 : 0);
-  const recentWindow = recentMessages.slice(-recentLimit);
-  const firstUserMessage = recentWindow.findIndex((message) => message.role === "user");
-  const selected = firstUserMessage > 0 ? recentWindow.slice(firstUserMessage) : recentWindow;
-
-  return greeting ? [greeting, ...selected] : selected;
+  return selectExpertChatMessages(messages, greetingMessageId);
 }
 
 // ============================================

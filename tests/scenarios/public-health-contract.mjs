@@ -7,6 +7,7 @@ const dossier = readFileSync('supabase/functions/bi-share-dossier/index.ts', 'ut
 
 test('health-check público expõe somente liveness, sem consultar serviços internos', () => {
   assert.match(health, /req\.method !== "GET" && req\.method !== "HEAD"/);
+  assert.match(health, /Access-Control-Allow-Methods.*GET, HEAD, OPTIONS/);
   assert.match(health, /json\(\{ status: "ok" \}\)/);
   assert.doesNotMatch(health, /createClient|createExternalCatalogClient|SUPABASE_SERVICE_ROLE_KEY|latency_ms|external_db|error\.message/);
 });

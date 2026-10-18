@@ -84,6 +84,13 @@ describe('política de acesso privilegiado do portal', () => {
 
     expect(canAccessCrmRequest(['vendedor'], contactsRequest)).toBe(true);
     expect(canAccessCrmRequest(['agente'], contactsRequest)).toBe(true);
+    for (const role of ['gerente_pa', 'comprador_pac']) {
+      expect(canAccessCrmRequest([role], quoteCompanyRequest)).toBe(false);
+      expect(canAccessCrmRequest([role], contactsRequest)).toBe(false);
+      expect(canAccessCrmRequest([role], {
+        operation: 'select', table: 'companies', select: 'id,razao_social', limit: 50,
+      })).toBe(false);
+    }
     expect(canAccessCrmRequest(['vendedor'], { ...contactsRequest, companyId: 'invalido' })).toBe(
       false,
     );

@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: { storage: { from: mocks.from } },
+  supabaseUrl: 'https://cfmzkthhgliqelozlmwu.supabase.co',
 }));
 
 import {
@@ -15,6 +16,7 @@ import {
   canonicalPrivateStorageValue,
   parsePrivateStorageReference,
   PRIVATE_STORAGE_URL_TTL_SECONDS,
+  isPrivateStorageUrl,
   privateStoragePathFromUrl,
   resolvePrivateStorageUrl,
 } from '@/lib/private-storage';
@@ -59,7 +61,7 @@ describe('createPrivateStorageUrl', () => {
 
 describe('privateStoragePathFromUrl', () => {
   it('recupera o caminho sem incorporar o token da URL assinada', () => {
-    const url = 'https://storage.test/storage/v1/object/sign/personalization-images/produtos/pasta%20segura/foto.png?token=secreto';
+    const url = 'https://cfmzkthhgliqelozlmwu.supabase.co/storage/v1/object/sign/personalization-images/produtos/pasta%20segura/foto.png?token=secreto';
     expect(privateStoragePathFromUrl('personalization-images', url))
       .toBe('produtos/pasta segura/foto.png');
   });
@@ -67,7 +69,7 @@ describe('privateStoragePathFromUrl', () => {
   it('recusa URL de outro bucket', () => {
     expect(privateStoragePathFromUrl(
       'supplier-logos',
-      'https://storage.test/storage/v1/object/sign/product-videos/videos/1.mp4?token=x',
+      'https://cfmzkthhgliqelozlmwu.supabase.co/storage/v1/object/sign/product-videos/videos/1.mp4?token=x',
     )).toBeNull();
   });
 });
@@ -114,7 +116,7 @@ describe('referência durável e renovação', () => {
       data: { signedUrl: 'https://storage.test/renovada' },
       error: null,
     });
-    const legacy = 'https://storage.test/storage/v1/object/sign/supplier-logos/suppliers/1.png?token=expirado';
+    const legacy = 'https://cfmzkthhgliqelozlmwu.supabase.co/storage/v1/object/sign/supplier-logos/suppliers/1.png?token=expirado';
 
     await expect(resolvePrivateStorageUrl(legacy, 'supplier-logos'))
       .resolves.toBe('https://storage.test/renovada');
@@ -124,15 +126,28 @@ describe('referência durável e renovação', () => {
   });
 
   it('não interpreta caminho semelhante em domínio externo como objeto interno', async () => {
-    const external = 'https://cdn.externo.test/catalogo/supplier-logos/suppliers/1.png';
+    const external = 'https://cdn.externo.test/storage/v1/object/sign/supplier-logos/suppliers/1.png?token=externo';
 
     await expect(resolvePrivateStorageUrl(external, 'supplier-logos')).resolves.toBe(external);
+    expect(isPrivateStorageUrl(external, 'supplier-logos')).toBe(false);
     expect(canonicalPrivateStorageValue(external, 'supplier-logos')).toBe(external);
     expect(mocks.createSignedUrl).not.toHaveBeenCalled();
   });
 
+  it('reconhece somente a rota do bucket privado no domínio canônico', () => {
+    expect(isPrivateStorageUrl(
+      'https://cfmzkthhgliqelozlmwu.supabase.co/storage/v1/object/sign/personalization-images/produto.png?token=x',
+      'personalization-images',
+    )).toBe(true);
+    expect(isPrivateStorageUrl('supabase-storage://personalization-images/produto.png', 'personalization-images')).toBe(true);
+    expect(isPrivateStorageUrl(
+      'https://cdn.externo.test/storage/v1/object/sign/personalization-images/produto.png?token=x',
+      'personalization-images',
+    )).toBe(false);
+  });
+
   it('converte assinatura legada para referência estável antes de persistir', () => {
-    const legacy = 'https://storage.test/storage/v1/object/sign/mockup-art-files/user/layout.jpg?token=temporario';
+    const legacy = 'https://cfmzkthhgliqelozlmwu.supabase.co/storage/v1/object/sign/mockup-art-files/user/layout.jpg?token=temporario';
 
     expect(canonicalPrivateStorageValue(legacy, 'mockup-art-files'))
       .toBe('supabase-storage://mockup-art-files/user/layout.jpg');

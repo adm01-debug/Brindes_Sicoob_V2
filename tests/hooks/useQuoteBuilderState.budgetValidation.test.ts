@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { validateBudgetForSubmission, validateMonthlyBudget } from "@/hooks/useQuoteBuilderState";
+import { completeQuoteSave, quoteBuilderCanEdit, validateBudgetForSubmission, validateMonthlyBudget } from "@/hooks/useQuoteBuilderState";
 
 describe("validação de verba antes de enviar orçamento", () => {
   it("falha fechado quando a consulta da competência retorna erro", () => {
@@ -30,5 +30,30 @@ describe("validação de verba antes de enviar orçamento", () => {
     const budget = { verba_total: 10_000, verba_consumida: 2_000 };
     expect(validateMonthlyBudget(8_000, budget)).toBe(true);
     expect(validateMonthlyBudget(8_001, budget)).toBe(false);
+  });
+});
+
+describe("navegação após persistir orçamento", () => {
+  it("bloqueia edição enquanto o salvamento está em andamento", () => {
+    expect(quoteBuilderCanEdit({ saving: true, isEditMode: false, currentStatus: "draft", isLatestVersion: true })).toBe(false);
+    expect(quoteBuilderCanEdit({ saving: false, isEditMode: false, currentStatus: "draft", isLatestVersion: true })).toBe(true);
+  });
+
+  it("limpa alterações pendentes antes de navegar após salvar", () => {
+    const markSaved = vi.fn();
+    const navigate = vi.fn();
+    completeQuoteSave({
+      result: { id: "quote-1" } as never,
+      isEditMode: false,
+      expectedRowVersion: null,
+      finalStatus: "draft" as never,
+      transitionApplied: true,
+      setExpectedRowVersion: vi.fn(),
+      markSaved,
+      navigate,
+    });
+    expect(markSaved).toHaveBeenCalledOnce();
+    expect(markSaved.mock.invocationCallOrder[0]).toBeLessThan(navigate.mock.invocationCallOrder[0]);
+    expect(navigate).toHaveBeenCalledWith("/orcamentos/quote-1");
   });
 });

@@ -13,6 +13,7 @@ interface Product {
 }
 
 interface QuoteProductSelectorProps {
+  canEdit: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   productSearch: string;

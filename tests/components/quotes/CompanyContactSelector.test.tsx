@@ -64,6 +64,25 @@ describe('CompanyContactSelector', () => {
     });
   });
 
+  it('hidrata os dados da empresa já selecionada por uma origem externa', async () => {
+    const onCompanyInfoChange = vi.fn();
+    renderWithProviders(
+      <CompanyContactSelector
+        companyId={company.id}
+        onCompanyChange={vi.fn()}
+        onCompanyInfoChange={onCompanyInfoChange}
+      />,
+    );
+
+    await waitFor(() => expect(onCompanyInfoChange).toHaveBeenCalledWith({
+      id: company.id,
+      name: 'Cooperativa Centro',
+      cnpj: company.cnpj,
+      ramo_atividade: company.ramo_atividade,
+    }));
+    expect(onCompanyInfoChange).toHaveBeenCalledTimes(1);
+  });
+
   it('diferencia indisponibilidade do CRM de uma lista realmente vazia', async () => {
     mocks.listQuoteDirectoryCompanies.mockRejectedValueOnce(new Error('CRM indisponível'));
 

@@ -23,6 +23,7 @@ interface Product {
 }
 
 interface Props {
+  canEdit: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   productSearch: string;
@@ -107,10 +108,10 @@ function ProductSearchHeader({ selectingColor }: { selectingColor: boolean }) {
 }
 
 export function QuoteBuilderProductSearch(props: Props) {
-  const { open, onOpenChange, productSearch, setProductSearch, filteredProducts, selectedProductForColor,
+  const { canEdit, open, onOpenChange, productSearch, setProductSearch, filteredProducts, selectedProductForColor,
     setSelectedProductForColor, onProductClick, onAddWithColor, formatCurrency } = props;
   return (
-    <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) { setSelectedProductForColor(null); setProductSearch(""); } }}>
+    <Dialog open={open && canEdit} onOpenChange={(o) => { if (o && !canEdit) return; onOpenChange(o); if (!o) { setSelectedProductForColor(null); setProductSearch(""); } }}>
       <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col gap-4">
         <ProductSearchHeader selectingColor={Boolean(selectedProductForColor)} />
         <div className="flex flex-col flex-1 min-h-0 gap-3">
@@ -124,7 +125,7 @@ export function QuoteBuilderProductSearch(props: Props) {
             <>
               <div className="relative shrink-0">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Buscar por nome ou SKU..." value={productSearch} onChange={(e) => setProductSearch(e.target.value)} className="pl-10 h-11 text-sm border-primary/30 focus-visible:ring-primary/20" autoFocus />
+                <Input placeholder="Buscar por nome ou SKU..." value={productSearch} disabled={!canEdit} onChange={(e) => setProductSearch(e.target.value)} className="pl-10 h-11 text-sm border-primary/30 focus-visible:ring-primary/20" autoFocus />
                 {productSearch && (
                   <button onClick={() => setProductSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                     <X className="h-4 w-4" />

@@ -78,6 +78,11 @@ describe('image-utils', () => {
       expect(srcSet).toContain('medium 720w');
       expect(srcSet).toContain('large 1000w');
     });
+
+    it('não inventa variantes para CDNs que não oferecem esse contrato', () => {
+      expect(getSrcSet('https://cdn.example.test/caneca.webp')).toBe('');
+      expect(getSrcSet('https://imagedelivery.net/account/id')).toBe('');
+    });
   });
 
   describe('getImageSizes', () => {
