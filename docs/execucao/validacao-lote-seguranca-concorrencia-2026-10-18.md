@@ -40,6 +40,7 @@ A revisão automática da PR #119 apontou sete problemas de comportamento. As co
 | Achado | Correção | Evidência local |
 |---|---|---|
 | Compradores `gerente_pa` e `comprador_pac` recebiam 403 no diretório necessário ao orçamento. | O acesso segue negado até existir vínculo verificável por PA/cooperativa: o CRM bridge hoje pode listar qualquer empresa cliente e seus contatos/canais pessoais. Só `vendedor`/`agente` mantêm o DTO fechado; consulta genérica segue negada. | Testes negativos para os dois papéis compradores, testes positivos do contrato fechado para vendedor/agente e inspeção das queries do bridge. |
+| Seletor de cliente em favoritos/coleções/comparação ainda usava `selectCrm` e `searchCrm`, bloqueados para vendedor. | O componente agora usa o diretório fechado `quote_directory` para listagem e busca, preservando o bloqueio das consultas genéricas, sem solicitar dados de contato e particionando cache por usuário/papéis. | Teste do seletor verifica a chamada de diretório e garante que as operações genéricas não são usadas. |
 | Filtro de embalagem comercial sempre retornava vazio. | Incluído `has_commercial_packaging` nas duas projeções lightweight. | Confirmação read-only da coluna booleana em `public.products` no projeto de catálogo `doufsxqlfjyuvxuezpln`; teste do seletor e mapper. |
 | Imagens privadas do catálogo eram enviadas ao navegador como esquema não suportado. | O card assina referências duráveis ou URLs legadas apenas do host canônico; não cria `srcSet` para CDN sem variantes, ignora eventos obsoletos e não faz prefetch de referências privadas. | Testes do card cobrem URL assinada, CDN externa, host hostil, falha, assinatura concorrente, erro obsoleto e prefetch. |
 | As duas interfaces de chat podiam exceder o contrato de `expert-chat` (30 mensagens, 30 mil caracteres totais e 5 mil por mensagem). | Um utilitário puro compartilhado poda `AIChat` e `useExpertChat`, preservando a pergunta mais recente dentro do limite. | Testes de limites exatos, UTF-16/emoji, janela longa, total e pergunta atual. |
@@ -49,13 +50,13 @@ A revisão automática da PR #119 apontou sete problemas de comportamento. As co
 
 O comparador do ledger também foi corrigido: arrays `statements` nulos/vazios/inválidos agora significam `conteudo_nao_verificado`, em vez de calcular o hash do SQL vazio e indicar divergência falsa. O cenário inclui regressões para arrays vazios, strings em branco, valores inválidos e SQL/marcador válidos.
 
-Validação focada desta continuação: **95 testes aprovados em 11 arquivos**, incluindo um teste em que o seletor de produtos está aberto quando a edição é bloqueada; cenários Node **7/7**, gate de autorização Edge **106/106** e lint focado sem erros (avisos de complexidade existentes). A ação de adicionar também consulta uma trava síncrona, cobrindo callbacks já iniciados antes do rerender. O gate completo será repetido pelo hook de pre-push.
+Validação focada desta continuação: **96 testes aprovados em 12 arquivos**, incluindo regressões para o seletor de clientes em favoritos e para o seletor de produtos durante salvamento; cenários Node **7/7**, gate de autorização Edge **106/106** e lint focado sem erros (avisos de complexidade existentes). A ação de adicionar também consulta uma trava síncrona, cobrindo callbacks já iniciados antes do rerender. O gate completo será repetido pelo hook de pre-push.
 
 Na última consulta, os checks do SHA `0a6ae826…` estavam verdes exceto o E2E ainda em execução. A PR continuava aberta, sem revisão `APPROVED` e com sete threads de revisão não resolvidas. É necessário revalidar os checks e a revisão na nova cabeça; não aplicar as cinco migrations até integração aprovada.
 
 ### Revalidação integrada desta continuação
 
-- Vitest completo: **6.289 testes aprovados, 67 ignorados; 546 arquivos aprovados e 4 ignorados**. A bateria focada da continuação passou **95/95 em 11 arquivos**.
+- Vitest completo anterior à migração do seletor de clientes: **6.289 testes aprovados, 67 ignorados; 546 arquivos aprovados e 4 ignorados**. A bateria focada após essa migração passou **96/96 em 12 arquivos**; o pre-push repetirá a suíte completa com o novo teste.
 - `npm run typecheck`, build Vite, `git diff --check`, cenários Node (**7/7**) e gate de autorização Edge (**106/106**) passaram.
 - O build foi concluído com as variáveis `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` ausentes no ambiente local e avisos existentes de chunk grande/divisão; isso não valida configuração de deploy.
 - Lint focado não apresentou erros. O gate global de baseline reportou **0 erros globais** e nenhuma regressão nos **229 arquivos de aplicação alterados/analisados**; a regra `max-lines-per-function` ainda mostra avisos preexistentes.
