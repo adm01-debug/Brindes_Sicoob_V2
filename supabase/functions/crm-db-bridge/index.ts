@@ -918,7 +918,7 @@ async function handleQuoteCompanies(crm: SupabaseClient, body: CrmQuery): Promis
   if (body.companyId) query = query.eq("id", body.companyId);
   if (body.term) {
     query = query.or(
-      buildCompanySearchOr(["razao_social", "nome_fantasia", "cnpj"], body.term),
+      buildCompanySearchOr(["razao_social", "nome_fantasia", "cnpj", "ramo_atividade"], body.term),
     );
   }
   query = query.range(offset, offset + limit - 1);

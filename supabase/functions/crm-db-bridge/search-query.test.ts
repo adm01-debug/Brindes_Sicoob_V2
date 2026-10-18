@@ -8,6 +8,13 @@ Deno.test("buildCompanySearchOr: monta busca por nome, CNPJ e cidade", () => {
   );
 });
 
+Deno.test("buildCompanySearchOr: admite segmento da empresa na busca restrita", () => {
+  assertEquals(
+    buildCompanySearchOr(["razao_social", "ramo_atividade"], "Crédito"),
+    'razao_social.ilike."%Crédito%",ramo_atividade.ilike."%Crédito%"',
+  );
+});
+
 Deno.test("buildCompanySearchOr: escapa caracteres do filtro em vez de aceitar cláusulas PostgREST", () => {
   assertEquals(
     buildCompanySearchOr(["razao_social"], 'A%_,"),cnpj.eq.*'),

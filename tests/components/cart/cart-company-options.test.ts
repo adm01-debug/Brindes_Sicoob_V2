@@ -38,13 +38,22 @@ describe('opções de empresa do carrinho', () => {
   });
 
   it('consulta o servidor por termo para alcançar empresas fora da primeira página', async () => {
-    const remoteCompany = company('crm-long-tail', 'Cooperativa Long Tail');
+    const remoteCompany = {
+      ...company('crm-long-tail', 'Cooperativa Long Tail'),
+      cnpj: '12.345.678/0001-90',
+      ramo_atividade: 'Crédito cooperativo',
+    };
     vi.mocked(listQuoteDirectoryCompanies).mockResolvedValueOnce([remoteCompany]);
 
     const result = await fetchCartCompanyOptions('  long tail  ');
 
     expect(listQuoteDirectoryCompanies).toHaveBeenCalledExactlyOnceWith({ term: 'long tail', limit: 100 });
-    expect(result[0]).toEqual(expect.objectContaining({ id: 'crm-long-tail', name: 'Cooperativa Long Tail' }));
+    expect(result[0]).toEqual(expect.objectContaining({
+      id: 'crm-long-tail',
+      name: 'Cooperativa Long Tail',
+      cnpj: '12.345.678/0001-90',
+      ramo: 'Crédito cooperativo',
+    }));
   });
 
   it('particiona o cache por usuário e papéis', () => {

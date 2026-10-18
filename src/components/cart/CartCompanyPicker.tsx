@@ -34,7 +34,7 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 300);
+    const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm.trim()), 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
@@ -48,16 +48,16 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
   // Fuse.js for local fuzzy search
   const fuse = useMemo(() => {
     return new Fuse(localCompanies, {
-      keys: ["name", "razao_social", "nome_fantasia"],
+      keys: ["name", "razao_social", "nome_fantasia", "cnpj", "ramo"],
       threshold: 0.4,
     });
   }, [localCompanies]);
 
   const filteredCompanies = useMemo(() => {
     if (!searchTerm) return localCompanies.slice(0, 20);
-
+    if (debouncedSearchTerm.length >= 2 && debouncedSearchTerm === searchTerm.trim()) return localCompanies.slice(0, 40);
     return fuse.search(searchTerm).map(result => result.item).slice(0, 30);
-  }, [searchTerm, fuse, localCompanies]);
+  }, [searchTerm, debouncedSearchTerm, fuse, localCompanies]);
 
   const handleSelect = useCallback(async (company: CompanyItem) => {
     const input: CreateCartInput = {

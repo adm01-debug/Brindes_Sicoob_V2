@@ -4,6 +4,7 @@ const SEARCHABLE_COMPANY_COLUMNS = new Set([
   "razao_social",
   "cnpj",
   "cidade",
+  "ramo_atividade",
 ]);
 
 function escapePostgrestValue(value: string): string {

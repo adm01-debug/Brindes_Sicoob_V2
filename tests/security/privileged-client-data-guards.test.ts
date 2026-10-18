@@ -109,6 +109,8 @@ describe('barreiras estáticas para dados privilegiados de clientes', () => {
     expect(cartCompanyOptions).toContain('listQuoteDirectoryCompanies');
     expect(cartCompanyOptions).not.toContain('selectCrm');
     expect(cartCompanyOptions).not.toContain('searchCrm');
+    expect(cartCompanyOptions).toContain('cnpj: company.cnpj');
+    expect(crmBridge).toContain('"cnpj", "ramo_atividade"');
     for (const picker of [cartCompanyPicker, cartCompanyPickerDialog]) {
       expect(picker).toContain('fetchCartCompanyOptions');
       expect(picker).toContain('buildCartCompanyAccessScope(user?.id, roles)');

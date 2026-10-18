@@ -68,7 +68,7 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
   }, [open, accessScope, recentStorageKey, favoriteStorageKey]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 300);
+    const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm.trim()), 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
@@ -80,13 +80,14 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
   });
 
   const fuse = useMemo(() =>
-    new Fuse(localCompanies, { keys: ["name", "razao_social", "nome_fantasia"], threshold: 0.4 })
+    new Fuse(localCompanies, { keys: ["name", "razao_social", "nome_fantasia", "cnpj", "ramo"], threshold: 0.4 })
   , [localCompanies]);
 
   const filteredCompanies = useMemo(() => {
     if (!searchTerm) return localCompanies.slice(0, 30);
+    if (debouncedSearchTerm.length >= 2 && debouncedSearchTerm === searchTerm.trim()) return localCompanies.slice(0, 40);
     return fuse.search(searchTerm).map(result => result.item).slice(0, 40);
-  }, [searchTerm, fuse, localCompanies]);
+  }, [searchTerm, debouncedSearchTerm, fuse, localCompanies]);
 
   const isFavorite = useCallback((id: string) => scopedFavorites.some(f => f.id === id), [scopedFavorites]);
 

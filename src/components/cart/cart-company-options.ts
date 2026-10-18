@@ -5,6 +5,7 @@ export interface CartCompanyOption {
   name: string;
   razao_social: string;
   nome_fantasia: string | null;
+  cnpj: string | null;
   ramo: string | null;
   logo_url: string | null;
 }
@@ -29,6 +30,7 @@ export async function fetchCartCompanyOptions(term?: string): Promise<CartCompan
       name: company.name,
       razao_social: company.razao_social,
       nome_fantasia: company.nome_fantasia || null,
+      cnpj: company.cnpj || null,
       ramo: company.ramo_atividade || null,
       logo_url: company.logo_url || null,
     }))
