@@ -20,6 +20,7 @@ export interface UseProductsByMaterialReturn {
   isLoading: boolean;
   /** Erro, se houver */
   error: Error | null;
+  hasData: boolean;
   /** Se há filtro de material ativo */
   hasFilter: boolean;
   /** Refetch manual */
@@ -63,6 +64,7 @@ export function useProductsByMaterial(options: UseProductsByMaterialOptions = {}
     productIdsArray,
     isLoading: shouldFetch ? isLoading : false,
     error: error as Error | null,
+    hasData: data !== undefined,
     hasFilter,
     refetch,
   };

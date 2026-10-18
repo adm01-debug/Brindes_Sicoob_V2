@@ -12,6 +12,7 @@ interface UseProductsByCategoryResult {
   hasFilter: boolean;
   isLoading: boolean;
   error: string | null;
+  hasData: boolean;
   categoriesCount: number;
   source: string | null;
   refetch: () => Promise<void>;
@@ -115,7 +116,6 @@ export function useProductsByCategory({
       const message = categoryFetchErrorMessage(err);
       console.error('Erro ao buscar produtos por categoria:', err);
       setError(message);
-      setProductIds(new Set());
     } finally {
       if (requestId === requestSequence.current) setIsLoading(false);
     }
@@ -137,6 +137,7 @@ export function useProductsByCategory({
     hasFilter,
     isLoading,
     error,
+    hasData: lastFetchedKey.current === requestKey,
     categoriesCount,
     source,
     refetch: () => fetchProductIds(true),

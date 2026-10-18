@@ -118,6 +118,7 @@ export default function KitBuilderPage() {
     : templateIdParam ? `template:${templateIdParam}` : null;
   const [persistenceSession, setPersistenceSession] = useState(0);
   const [loadedResourceKey, setLoadedResourceKey] = useState<string | null>(null);
+  const [loadedKitUpdatedAt, setLoadedKitUpdatedAt] = useState<string | undefined>();
   const [occasion, setOccasion] = useState<Occasion | null>(null);
   const loadGenerationRef = useRef(0);
   const productLoadGenerationRef = useRef(0);
@@ -144,6 +145,7 @@ export default function KitBuilderPage() {
     mode: {
       kind: 'custom',
       kitId: kitIdParam || undefined,
+      expectedUpdatedAt: loadedKitUpdatedAt,
       sessionKey: `${persistenceSession}:${templateIdParam ?? productIdParam ?? 'blank'}`,
     },
   });
@@ -203,6 +205,7 @@ export default function KitBuilderPage() {
           if (generation !== loadGenerationRef.current) return;
           if (error || !data) { toast.error('Kit não encontrado'); return; }
           loadKit(customKitPayload(data as Record<string, unknown>));
+          setLoadedKitUpdatedAt(typeof data.updated_at === 'string' ? data.updated_at : undefined);
           setLoadedResourceKey(`custom:${kitIdParam}`);
           toast.success('Kit carregado para edição');
           if (lastBumpedKitIdRef.current !== kitIdParam) {

@@ -2,6 +2,7 @@ export type KitPersistenceIntent = 'automatic' | 'manual';
 
 export interface KitPersistenceExecutionResult {
   targetId?: string | null;
+  updatedAt?: string;
 }
 
 export interface KitPersistenceResult extends KitPersistenceExecutionResult {

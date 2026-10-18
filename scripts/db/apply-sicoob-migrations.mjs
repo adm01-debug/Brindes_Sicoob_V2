@@ -184,6 +184,10 @@ const TARGETS = [
     file: "supabase/migrations/20261016201500_restore_view_invoker_and_notification_scope.sql",
     sha256: "92520f0039c465ec961907500a43e3477a8a18ebb5bf4b3d8ed3741b75660e2e",
   },
+  {
+    file: "supabase/migrations/20261018131850_harden_access_blocked_log_and_marketing_view_acl.sql",
+    sha256: "6d4418bbfd0623fa6bcd3cff17555f2690d704da855ba08eb83768ddc71a5389",
+  },
 ];
 
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(

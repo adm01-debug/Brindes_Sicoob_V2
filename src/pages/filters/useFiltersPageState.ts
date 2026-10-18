@@ -60,8 +60,8 @@ export function useFiltersPageState() {
     setSearchParams(serializeFilters(filters), { replace: true });
   }, [filters, setSearchParams]);
 
-  const { productIds: materialFilteredProductIds, hasFilter: hasMaterialFilter, isLoading: isLoadingMaterialFilter } = useProductsByMaterial({ materialGroupSlugs: filters.materialGroups, materialTypeSlugs: filters.materialTypes });
-  const { productIds: categoryFilteredProductIds, hasFilter: hasCategoryFilter, isLoading: isLoadingCategoryFilter } = useProductsByCategory({ categoryIds: filters.categories, includeDescendants: true });
+  const { productIds: materialFilteredProductIds, hasFilter: hasMaterialFilter, isLoading: isLoadingMaterialFilter, error: materialFilterError, hasData: hasMaterialFilterData } = useProductsByMaterial({ materialGroupSlugs: filters.materialGroups, materialTypeSlugs: filters.materialTypes });
+  const { productIds: categoryFilteredProductIds, hasFilter: hasCategoryFilter, isLoading: isLoadingCategoryFilter, error: categoryFilterError, hasData: hasCategoryFilterData } = useProductsByCategory({ categoryIds: filters.categories, includeDescendants: true });
   const { productIds: colorFilteredProductIds, hasFilter: hasColorFilter, hasData: hasColorFilterData, isLoading: isLoadingColorFilter, error: colorFilterError } = useProductsByColor({ colorGroups: filters.colorGroups, colorVariations: filters.colorVariations, colorNuances: filters.colorNuances, colors: filters.colors });
   const { productIds: tagFilteredProductIds, hasFilter: hasTagFilter, hasData: hasTagFilterData, isLoading: isLoadingTagFilter, error: tagFilterError } = useProductsByTag(filters.tags);
   const { productIds: techniqueFilteredProductIds, hasFilter: hasTechniqueFilter, hasData: hasTechniqueFilterData, isLoading: isLoadingTechniqueFilter, error: techniqueFilterError } = useProductsByTechnique(filters.techniques);
@@ -75,10 +75,11 @@ export function useFiltersPageState() {
   const { productIds: commemorativeDateProductIds, hasFilter: hasCommemorativeDateFilter, hasData: hasCommemorativeDateFilterData, isLoading: isLoadingCommemorativeDateFilter, error: commemorativeDateFilterError } = useProductsByCommemorativeDates(filters.datasComemorativas);
 
   useEffect(() => {
-    const error = colorFilterError ?? tagFilterError ?? techniqueFilterError ?? sizeFilterError ?? activityFilterError
-      ?? marketingFilterError ?? commemorativeDateFilterError;
+    const error = [categoryFilterError ? new Error(categoryFilterError) : null, materialFilterError,
+      colorFilterError, tagFilterError, techniqueFilterError, sizeFilterError, activityFilterError,
+      marketingFilterError, commemorativeDateFilterError].find(Boolean);
     if (error) toast.error('Não foi possível aplicar um filtro', { description: error.message });
-  }, [activityFilterError, colorFilterError, commemorativeDateFilterError, marketingFilterError, sizeFilterError, tagFilterError, techniqueFilterError]);
+  }, [activityFilterError, categoryFilterError, colorFilterError, commemorativeDateFilterError, marketingFilterError, materialFilterError, sizeFilterError, tagFilterError, techniqueFilterError]);
 
   const [activePresetId, setActivePresetId] = useState<string | undefined>();
   const [viewMode, setViewMode] = useState<"grid" | "list" | "table">("grid");
@@ -130,7 +131,9 @@ export function useFiltersPageState() {
       categoryIds: categoryFilteredProductIds,
       colorIds: colorFilteredProductIds,
       hasMaterialFilter,
+      materialFilterError: materialFilterError && !hasMaterialFilterData ? materialFilterError : null,
       hasCategoryFilter,
+      categoryFilterError: categoryFilterError && !hasCategoryFilterData ? categoryFilterError : null,
       hasColorFilter: canApplyCatalogFilter(hasColorFilter, colorFilterError, hasColorFilterData),
       loadingMaterial: isLoadingMaterialFilter,
       loadingCategory: isLoadingCategoryFilter,
@@ -158,7 +161,7 @@ export function useFiltersPageState() {
       supplierSalesMap,
       skipSort: hasFuzzySearch && sortBy === 'name',
     });
-  }, [filters, sortBy, hasFuzzySearch, fuzzySearchResults, realProducts, hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter, hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter, hasColorFilter, hasColorFilterData, colorFilteredProductIds, isLoadingColorFilter, colorFilterError, tagFilteredProductIds, hasTagFilter, hasTagFilterData, isLoadingTagFilter, tagFilterError, techniqueFilteredProductIds, hasTechniqueFilter, hasTechniqueFilterData, isLoadingTechniqueFilter, techniqueFilterError, sizeFilteredProductIds, hasSizeFilter, hasSizeFilterData, isLoadingSizeFilter, sizeFilterError, activityFilteredProductIds, hasActivityFilter, hasActivityFilterData, isLoadingActivityFilter, activityFilterError, marketingFilteredProductIds, hasMarketingFilter, hasMarketingFilterData, isLoadingMarketingFilter, marketingFilterError, commemorativeDateProductIds, hasCommemorativeDateFilter, hasCommemorativeDateFilterData, isLoadingCommemorativeDateFilter, commemorativeDateFilterError, promoSalesMap, supplierSalesMap]);
+  }, [filters, sortBy, hasFuzzySearch, fuzzySearchResults, realProducts, hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter, materialFilterError, hasMaterialFilterData, hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter, categoryFilterError, hasCategoryFilterData, hasColorFilter, hasColorFilterData, colorFilteredProductIds, isLoadingColorFilter, colorFilterError, tagFilteredProductIds, hasTagFilter, hasTagFilterData, isLoadingTagFilter, tagFilterError, techniqueFilteredProductIds, hasTechniqueFilter, hasTechniqueFilterData, isLoadingTechniqueFilter, techniqueFilterError, sizeFilteredProductIds, hasSizeFilter, hasSizeFilterData, isLoadingSizeFilter, sizeFilterError, activityFilteredProductIds, hasActivityFilter, hasActivityFilterData, isLoadingActivityFilter, activityFilterError, marketingFilteredProductIds, hasMarketingFilter, hasMarketingFilterData, isLoadingMarketingFilter, marketingFilterError, commemorativeDateProductIds, hasCommemorativeDateFilter, hasCommemorativeDateFilterData, isLoadingCommemorativeDateFilter, commemorativeDateFilterError, promoSalesMap, supplierSalesMap]);
 
   // Color enrichment: fetch variant images/stock for filtered products when color filter is active
   const filteredProductIds = useMemo(() => filteredProducts.map(p => p.id), [filteredProducts]);

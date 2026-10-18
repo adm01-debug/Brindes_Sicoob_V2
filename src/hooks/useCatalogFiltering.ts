@@ -17,9 +17,11 @@ interface CatalogFilteringOptions {
   hasMaterialFilter: boolean;
   materialFilteredProductIds: Set<string>;
   isLoadingMaterialFilter: boolean;
+  materialFilterError?: Error | null;
   hasCategoryFilter: boolean;
   categoryFilteredProductIds: Set<string>;
   isLoadingCategoryFilter: boolean;
+  categoryFilterError?: string | null;
   hasColorFilter: boolean;
   colorFilteredProductIds: Set<string>;
   isLoadingColorFilter: boolean;
@@ -56,9 +58,11 @@ interface CatalogFilterContext {
   hasMaterialFilter: boolean;
   materialFilteredProductIds: Set<string>;
   isLoadingMaterialFilter: boolean;
+  materialFilterError?: Error | null;
   hasCategoryFilter: boolean;
   categoryFilteredProductIds: Set<string>;
   isLoadingCategoryFilter: boolean;
+  categoryFilterError?: string | null;
   hasColorFilter: boolean;
   colorFilteredProductIds: Set<string>;
   isLoadingColorFilter: boolean;
@@ -91,6 +95,7 @@ function relationalIdFilter(products: Product[], active: boolean, ids: Set<strin
 
 function relationalCategoryFilter(products: Product[], context: CatalogFilterContext): Product[] {
   if (!context.hasCategoryFilter) return products;
+  if (context.categoryFilterError) return products;
   if (context.isLoadingCategoryFilter) return products;
   if (context.categoryFilteredProductIds.size > 0) return products.filter(product => context.categoryFilteredProductIds.has(product.id));
   return [];
@@ -165,11 +170,13 @@ function genderFilter(products: Product[], genders: Set<string>): Product[] {
 
 function relationalMaterialFilter(products: Product[], context: CatalogFilterContext): Product[] {
   if (!context.hasMaterialFilter) return products;
+  if (context.materialFilterError) return products;
   if (context.materialFilteredProductIds.size > 0) return products.filter(product => context.materialFilteredProductIds.has(product.id));
   return context.isLoadingMaterialFilter ? products : [];
 }
 
 function materialTextFilter(products: Product[], context: CatalogFilterContext): Product[] {
+  if (context.materialFilterError) return products;
   if (context.hasMaterialFilter || context.filters.materiais.length === 0) return products;
   const selected = context.filters.materiais.map(material => material.toLowerCase());
   return products.filter(product => {
@@ -204,7 +211,7 @@ function applyCatalogFilters(products: Product[], context: CatalogFilterContext)
     result = colorGroupFilter(result, context.colorGroupSet);
     result = colorVariationFilter(result, context.colorVariationSet);
   }
-  result = directCategoryFilter(result, context.categoryFilterSet);
+  if (!context.categoryFilterError) result = directCategoryFilter(result, context.categoryFilterSet);
   result = supplierFilter(result, context.supplierFilterSet);
   result = priceFilter(result, context.filters.priceRange);
   result = stockFilter(result, context.filters);
@@ -216,8 +223,8 @@ function applyCatalogFilters(products: Product[], context: CatalogFilterContext)
 
 export function useCatalogFiltering({
   realProducts, filters, sortBy, hasFuzzySearch, fuzzySearchResults,
-  hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter,
-  hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter,
+  hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter, materialFilterError,
+  hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter, categoryFilterError,
   hasColorFilter, colorFilteredProductIds, isLoadingColorFilter,
   hasTagFilter, tagFilteredProductIds, isLoadingTagFilter,
   hasTechniqueFilter, techniqueFilteredProductIds, isLoadingTechniqueFilter,
@@ -240,7 +247,9 @@ export function useCatalogFiltering({
     const context: CatalogFilterContext = {
       filters, colorFilterSet, colorGroupSet, colorVariationSet, categoryFilterSet, supplierFilterSet, genderFilterSet,
       hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter,
+      materialFilterError,
       hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter,
+      categoryFilterError,
       hasColorFilter, colorFilteredProductIds, isLoadingColorFilter,
       hasTagFilter, tagFilteredProductIds, isLoadingTagFilter,
       hasTechniqueFilter, techniqueFilteredProductIds, isLoadingTechniqueFilter,
@@ -258,8 +267,8 @@ export function useCatalogFiltering({
     return result;
   }, [
     filters, sortBy, hasFuzzySearch, fuzzySearchResults, realProducts, 
-    hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter, 
-    hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter, 
+    hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter, materialFilterError,
+    hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter, categoryFilterError,
     hasColorFilter, colorFilteredProductIds, isLoadingColorFilter,
     hasTagFilter, tagFilteredProductIds, isLoadingTagFilter,
     hasTechniqueFilter, techniqueFilteredProductIds, isLoadingTechniqueFilter,

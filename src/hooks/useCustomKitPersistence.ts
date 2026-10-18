@@ -42,6 +42,13 @@ export interface CustomKitRow {
 
 const QUERY_KEY = ['custom-kits'] as const;
 
+export class CustomKitConflictError extends Error {
+  constructor() {
+    super('Este kit foi alterado em outra aba. Atualize a lista antes de salvar novamente.');
+    this.name = 'CustomKitConflictError';
+  }
+}
+
 function buildKitPayload(userId: string, kitState: KitState, kitQuantity: number) {
   return buildCustomKitPayload(userId, createKitPersistenceSnapshot(kitState, kitQuantity));
 }
@@ -49,17 +56,30 @@ function buildKitPayload(userId: string, kitState: KitState, kitQuantity: number
 async function persistCustomKit(
   userId: string,
   kitId: string | undefined,
+  expectedUpdatedAt: string | undefined,
   payload: ReturnType<typeof buildKitPayload>,
 ) {
   if (kitId) {
+    if (!expectedUpdatedAt) {
+      throw new CustomKitConflictError();
+    }
+
+    // Garante que a gravação produza uma versão diferente, mesmo em duas
+    // gravações iniciadas no mesmo milissegundo.
+    const nextUpdatedAt = new Date().toISOString();
+    payload.updated_at = nextUpdatedAt <= expectedUpdatedAt
+      ? new Date(new Date(expectedUpdatedAt).getTime() + 1).toISOString()
+      : nextUpdatedAt;
     const { data, error } = await supabase
       .from('custom_kits')
       .update(payload)
       .eq('id', kitId)
       .eq('user_id', userId)
+      .eq('updated_at', expectedUpdatedAt)
       .select()
-      .single();
+      .maybeSingle();
     if (error) throw error;
+    if (!data) throw new CustomKitConflictError();
     return data;
   }
   const { data, error } = await supabase.from('custom_kits').insert(payload).select().single();
@@ -95,20 +115,32 @@ export function useCustomKitPersistence() {
 
   // Salvar kit (insert ou update)
   const saveMutation = useMutation({
-    mutationFn: async ({ kitId, kitState, kitQuantity }: {
+    mutationFn: async ({ kitId, expectedUpdatedAt, kitState, kitQuantity }: {
       kitId?: string;
+      expectedUpdatedAt?: string;
       kitState: KitState;
       kitQuantity: number;
     }) => {
       if (!user?.id) throw new Error('Usuário não autenticado');
 
-      return persistCustomKit(user.id, kitId, buildKitPayload(user.id, kitState, kitQuantity));
+      const cachedKit = kitId
+        ? queryClient.getQueryData<CustomKitRow[]>(QUERY_KEY)?.find((kit) => kit.id === kitId)
+        : undefined;
+      return persistCustomKit(
+        user.id,
+        kitId,
+        expectedUpdatedAt ?? cachedKit?.updated_at,
+        buildKitPayload(user.id, kitState, kitQuantity),
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success('Kit salvo com sucesso!');
     },
     onError: (err: Error) => {
+      if (err instanceof CustomKitConflictError) {
+        void queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      }
       toast.error(`Erro ao salvar kit: ${err.message}`);
     },
   });
@@ -134,8 +166,8 @@ export function useCustomKitPersistence() {
   });
 
   const saveKit = useCallback(
-    (kitState: KitState, kitQuantity: number, kitId?: string) =>
-      saveMutation.mutateAsync({ kitId, kitState, kitQuantity }),
+    (kitState: KitState, kitQuantity: number, kitId?: string, expectedUpdatedAt?: string) =>
+      saveMutation.mutateAsync({ kitId, expectedUpdatedAt, kitState, kitQuantity }),
     [saveMutation]
   );
 

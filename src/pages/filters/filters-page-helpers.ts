@@ -198,7 +198,8 @@ function filterBySuppliers(products: Product[], suppliers: string[]): Product[] 
   });
 }
 
-function filterByMaterials(products: Product[], active: boolean, selected: string[]): Product[] {
+function filterByMaterials(products: Product[], active: boolean, selected: string[], hasError: boolean): Product[] {
+  if (hasError) return products;
   if (active || !selected.length) return products;
   return products.filter((product) => {
     const materials = product.materials.join(' ').toLowerCase();
@@ -251,7 +252,9 @@ export interface ProductFilterContext {
   categoryIds: Set<string>;
   colorIds: Set<string>;
   hasMaterialFilter: boolean;
+  materialFilterError?: Error | null;
   hasCategoryFilter: boolean;
+  categoryFilterError?: string | null;
   hasColorFilter: boolean;
   loadingMaterial: boolean;
   loadingCategory: boolean;
@@ -283,22 +286,24 @@ export interface ProductFilterContext {
 export function applyProductFilters(context: ProductFilterContext): Product[] {
   let result = filterBySearch(context.products, context.filters.search);
   result = filterByIdSet(result, context.hasColorFilter, context.colorIds, context.loadingColor);
-  result = filterByIdSet(
-    result,
-    context.hasCategoryFilter,
-    context.categoryIds,
-    context.loadingCategory,
-  );
+  if (!context.categoryFilterError) {
+    result = filterByIdSet(
+      result,
+      context.hasCategoryFilter,
+      context.categoryIds,
+      context.loadingCategory,
+    );
+  }
   result = filterBySuppliers(result, context.filters.suppliers);
   result = filterByIdSet(result, context.hasMarketingFilter, context.marketingIds, context.loadingMarketing);
   result = filterByIdSet(result, context.hasCommemorativeDateFilter, context.commemorativeDateIds, context.loadingCommemorativeDate);
   result = filterByIdSet(
     result,
-    context.hasMaterialFilter,
+    context.hasMaterialFilter && !context.materialFilterError,
     context.materialIds,
     context.loadingMaterial,
   );
-  result = filterByMaterials(result, context.hasMaterialFilter, context.filters.materiais);
+  result = filterByMaterials(result, context.hasMaterialFilter, context.filters.materiais, Boolean(context.materialFilterError));
   result = filterByPrice(result, context.filters.priceRange);
   result = filterByStock(result, context.filters);
   result = filterByFlags(result, context.filters);

@@ -17,6 +17,7 @@ interface InitParams {
   setters: {
     setClientId: (v: string) => void;
     setContactId: (v: string) => void;
+    setClientIdIfEmpty?: (v: string) => void;
     setValidUntil: (v: string) => void;
     setNotes: (v: string) => void;
     setInternalNotes: (v: string) => void;
@@ -36,6 +37,8 @@ interface InitParams {
     setDeliveryDate: (v: Date | undefined) => void;
     setDeliveryTime: (v: string) => void;
     setItems: (v: QuoteItem[]) => void;
+    setItemsIfEmpty?: (v: QuoteItem[]) => void;
+    setActiveItemIndexIfUnset?: (v: number) => void;
     setTags: (v: string[]) => void;
     setLoadingQuote: (v: boolean) => void;
     setQuoteLoadError: (v: string | null) => void;
@@ -359,7 +362,9 @@ export function useQuoteInitialization({ isEditMode, quoteId, reloadKey = 0, fet
     const suggestion = parseQuoteSuggestionParams(searchParams);
     if (!suggestion) return;
     let cancelled = false;
-    if (suggestion.clientId) setters.setClientId(suggestion.clientId);
+    if (suggestion.clientId) {
+      (setters.setClientIdIfEmpty ?? setters.setClientId)(suggestion.clientId);
+    }
     if (suggestion.productIds.length === 0) {
       toast.error("Nenhum produto válido foi recebido das sugestões do BI.");
       return;
@@ -372,8 +377,8 @@ export function useQuoteInitialization({ isEditMode, quoteId, reloadKey = 0, fet
           toast.error("Os produtos sugeridos não estão mais disponíveis no catálogo.");
           return;
         }
-        setters.setItems(items);
-        setters.setActiveItemIndex(0);
+        (setters.setItemsIfEmpty ?? setters.setItems)(items);
+        (setters.setActiveItemIndexIfUnset ?? setters.setActiveItemIndex)(0);
         toast.success(`${items.length} produto(s) sugerido(s) adicionado(s) ao orçamento`);
         const missing = suggestion.productIds.length - items.length;
         if (missing > 0) {

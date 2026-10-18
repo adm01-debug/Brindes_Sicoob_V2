@@ -131,6 +131,9 @@ export function useWorkspaceNotifications() {
   const hydratedRef = useRef<string | null>(null);
   const mountAtRef = useRef<number>(typeof performance !== "undefined" ? performance.now() : Date.now());
   const badgeSourceRef = useRef<"pending" | "cache" | "network">("pending");
+  // Leituras só transitam de não lida para lida. Guardar os IDs confirmados
+  // evita que uma resposta de consulta iniciada antes da mutação reabra o badge.
+  const readIdsRef = useRef<Set<string>>(new Set());
   // In-flight guards: prevent duplicate fetchNotifications when the user
   // double-clicks markAllAsRead/clearAll before the first call resolves.
   const markAllInFlightRef = useRef(false);
@@ -142,6 +145,7 @@ export function useWorkspaceNotifications() {
       setNotifications([]);
       setUnreadCount(0);
       hydratedRef.current = null;
+      readIdsRef.current.clear();
       badgeSourceRef.current = "pending";
       return;
     }
@@ -176,6 +180,33 @@ export function useWorkspaceNotifications() {
     }
   }, [user]);
 
+  // Espelha confirmações entre abas. A atualização no banco continua sendo a
+  // fonte de verdade; o canal só mantém a interface das outras abas coerente.
+  useEffect(() => {
+    if (!user || typeof BroadcastChannel === "undefined") return;
+    const channel = new BroadcastChannel(`workspace-notifications:${user.id}`);
+    channel.onmessage = (event: MessageEvent<{ type?: string; ids?: string[] }>) => {
+      const ids = Array.isArray(event.data?.ids) ? event.data.ids.filter((id) => typeof id === "string") : [];
+      if (event.data?.type !== "read" || ids.length === 0) return;
+      const newlyReadIds = ids.filter((id) => !readIdsRef.current.has(id));
+      const unreadInCurrentTab = notifications.filter((notification) =>
+        newlyReadIds.includes(notification.id) && !notification.is_read,
+      ).length;
+      newlyReadIds.forEach((id) => readIdsRef.current.add(id));
+      setNotifications((prev) => {
+        const next = prev.map((notification) => ids.includes(notification.id)
+          ? { ...notification, is_read: true }
+          : notification);
+        writeCache(user.id, next);
+        return next;
+      });
+      if (unreadInCurrentTab > 0) {
+        setUnreadCount((prev) => Math.max(0, prev - unreadInCurrentTab));
+      }
+    };
+    return () => channel.close();
+  }, [notifications, user]);
+
   const fetchNotifications = useCallback(
     async (opts: { silent?: boolean; source?: FetchSource } = {}) => {
       if (!user) return;
@@ -203,7 +234,10 @@ export function useWorkspaceNotifications() {
           throw error;
         }
         
-        const items = (data || []) as WorkspaceNotification[];
+        const fetchedItems = (data || []) as WorkspaceNotification[];
+        const items = fetchedItems.map((item) => readIdsRef.current.has(item.id)
+          ? { ...item, is_read: true }
+          : item);
         
         // Only update if data actually changed to prevent shallow-equal re-renders
         const changed = notificationsChanged(items, notifications);
@@ -265,20 +299,30 @@ export function useWorkspaceNotifications() {
   const markAsRead = useCallback(
     async (id: string) => {
       if (!user) return;
+      const wasUnread = !readIdsRef.current.has(id)
+        && notifications.some((notification) => notification.id === id && !notification.is_read);
       const { error } = await supabase
         .from("workspace_notifications")
         .update({ is_read: true })
-        .eq("id", id);
+        .eq("id", id)
+        .eq("user_id", user.id)
+        .eq("is_read", false);
 
       if (error) return;
+      readIdsRef.current.add(id);
+      if (typeof BroadcastChannel !== "undefined") {
+        const channel = new BroadcastChannel(`workspace-notifications:${user.id}`);
+        channel.postMessage({ type: "read", ids: [id] });
+        channel.close();
+      }
       setNotifications((prev) => {
         const next = prev.map((n) => (n.id === id ? { ...n, is_read: true } : n));
         writeCache(user.id, next);
         return next;
       });
-      setUnreadCount((prev) => Math.max(0, prev - 1));
+      if (wasUnread) setUnreadCount((prev) => Math.max(0, prev - 1));
     },
-    [user]
+    [notifications, user]
   );
 
   const markAllAsRead = useCallback(async () => {
@@ -294,6 +338,13 @@ export function useWorkspaceNotifications() {
         .eq("is_read", false);
 
       if (error) return;
+      const readIds = notifications.filter((notification) => !notification.is_read).map((notification) => notification.id);
+      readIds.forEach((id) => readIdsRef.current.add(id));
+      if (readIds.length > 0 && typeof BroadcastChannel !== "undefined") {
+        const channel = new BroadcastChannel(`workspace-notifications:${user.id}`);
+        channel.postMessage({ type: "read", ids: readIds });
+        channel.close();
+      }
       // Optimistic local update
       setNotifications((prev) => {
         const next = prev.map((n) => ({ ...n, is_read: true }));
@@ -312,7 +363,7 @@ export function useWorkspaceNotifications() {
       markAllInFlightRef.current = false;
       setIsMutationRehydrating(false);
     }
-  }, [user, fetchNotifications]);
+  }, [user, fetchNotifications, notifications]);
 
   const clearAll = useCallback(async () => {
     if (!user) return;

@@ -81,7 +81,7 @@ describe('useKitPersistenceCoordinator', () => {
   });
 
   it('executa o autosave após o debounce no modo customizado', async () => {
-    const single = vi.fn().mockResolvedValue({ data: { id: 'kit-criado' }, error: null });
+    const single = vi.fn().mockResolvedValue({ data: { id: 'kit-criado', updated_at: '2026-10-18T12:00:00.000Z' }, error: null });
     const insert = vi.fn(() => ({ select: () => ({ single }) }));
     mocks.from.mockImplementation((table: string) => {
       expect(table).toBe('custom_kits');
@@ -111,7 +111,7 @@ describe('useKitPersistenceCoordinator', () => {
       ({ state, enabled }) => useKitPersistenceCoordinator({
         kitState: state,
         kitQuantity: 20,
-        mode: { kind: 'custom', kitId: 'kit-a', sessionKey: 0 },
+        mode: { kind: 'custom', kitId: 'kit-a', expectedUpdatedAt: '2026-10-18T11:00:00.000Z', sessionKey: 0 },
         enabled,
       }),
       {
@@ -154,6 +154,46 @@ describe('useKitPersistenceCoordinator', () => {
 
     await act(async () => { await vi.advanceTimersByTimeAsync(10_000); });
     expect(mocks.from).not.toHaveBeenCalled();
+  });
+
+  it('aplica CAS por updated_at ao salvar um kit existente', async () => {
+    const expectedUpdatedAt = '2026-10-18T11:00:00.000Z';
+    const filters: Array<[string, unknown]> = [];
+    const maybeSingle = vi.fn().mockResolvedValue({
+      data: { id: 'kit-a', updated_at: '2026-10-18T12:00:00.000Z' },
+      error: null,
+    });
+    const update = vi.fn(() => ({
+      eq: (column: string, value: unknown) => {
+        filters.push([column, value]);
+        return { eq: (nextColumn: string, nextValue: unknown) => {
+          filters.push([nextColumn, nextValue]);
+          return { eq: (lastColumn: string, lastValue: unknown) => {
+            filters.push([lastColumn, lastValue]);
+            return { select: () => ({ maybeSingle }) };
+          } };
+        } };
+      },
+    }));
+    mocks.from.mockImplementation(() => ({ update }));
+
+    const { result, rerender } = renderHook(
+      ({ state }) => useKitPersistenceCoordinator({
+        kitState: state,
+        kitQuantity: 20,
+        mode: { kind: 'custom', kitId: 'kit-a', expectedUpdatedAt, sessionKey: 0 },
+      }),
+      { initialProps: { state: kitState('Kit salvo') }, wrapper: wrapper() },
+    );
+    rerender({ state: kitState('Kit alterado') });
+    await act(async () => { await result.current.saveNow(); });
+
+    expect(filters).toEqual([
+      ['id', 'kit-a'],
+      ['user_id', 'usuario-1'],
+      ['updated_at', expectedUpdatedAt],
+    ]);
+    expect(result.current.lastSaveError).toBeNull();
   });
 
   it('não grava custom_kits no modo template e salva apenas sob ação manual', async () => {
@@ -214,9 +254,9 @@ describe('useKitPersistenceCoordinator', () => {
   it('mantém erro visível e permite repetir uma atualização rejeitada', async () => {
     const maybeSingle = vi.fn()
       .mockResolvedValueOnce({ data: null, error: new Error('banco indisponível') })
-      .mockResolvedValueOnce({ data: { id: 'kit-a' }, error: null });
+      .mockResolvedValueOnce({ data: { id: 'kit-a', updated_at: '2026-10-18T12:00:00.000Z' }, error: null });
     const update = vi.fn((payload: unknown) => ({
-      eq: () => ({ eq: () => ({ select: () => ({ maybeSingle }) }) }),
+      eq: () => ({ eq: () => ({ eq: () => ({ select: () => ({ maybeSingle }) }) }) }),
       payload,
     }));
     mocks.from.mockImplementation(() => ({ update }));
@@ -225,7 +265,7 @@ describe('useKitPersistenceCoordinator', () => {
       ({ state }) => useKitPersistenceCoordinator({
         kitState: state,
         kitQuantity: 20,
-        mode: { kind: 'custom', kitId: 'kit-a', sessionKey: 0 },
+        mode: { kind: 'custom', kitId: 'kit-a', expectedUpdatedAt: '2026-10-18T11:00:00.000Z', sessionKey: 0 },
       }),
       { initialProps: { state: kitState('Kit salvo') }, wrapper: wrapper() },
     );
@@ -246,7 +286,7 @@ describe('useKitPersistenceCoordinator', () => {
   it('trata uma atualização sem linha retornada como falha', async () => {
     const maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
     const update = vi.fn(() => ({
-      eq: () => ({ eq: () => ({ select: () => ({ maybeSingle }) }) }),
+      eq: () => ({ eq: () => ({ eq: () => ({ select: () => ({ maybeSingle }) }) }) }),
     }));
     mocks.from.mockImplementation(() => ({ update }));
 
@@ -254,23 +294,23 @@ describe('useKitPersistenceCoordinator', () => {
       ({ state }) => useKitPersistenceCoordinator({
         kitState: state,
         kitQuantity: 20,
-        mode: { kind: 'custom', kitId: 'kit-a', sessionKey: 0 },
+        mode: { kind: 'custom', kitId: 'kit-a', expectedUpdatedAt: '2026-10-18T11:00:00.000Z', sessionKey: 0 },
       }),
       { initialProps: { state: kitState('Kit salvo') }, wrapper: wrapper() },
     );
     rerender({ state: kitState('Alteração não persistida') });
     await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
-    expect(result.current.lastSaveError).toContain('não foi encontrado');
+    expect(result.current.lastSaveError).toContain('alterado em outra aba');
     expect(result.current.lastSavedAt).toBeNull();
   });
 
   it('serializa uma edição feita enquanto o primeiro salvamento está em andamento', async () => {
-    let resolveFirst: ((value: { data: { id: string }; error: null }) => void) | undefined;
+    let resolveFirst: ((value: { data: { id: string; updated_at: string }; error: null }) => void) | undefined;
     const maybeSingle = vi.fn()
       .mockImplementationOnce(() => new Promise((resolve) => { resolveFirst = resolve; }))
-      .mockResolvedValueOnce({ data: { id: 'kit-a' }, error: null });
+      .mockResolvedValueOnce({ data: { id: 'kit-a', updated_at: '2026-10-18T12:00:00.000Z' }, error: null });
     const update = vi.fn((payload: unknown) => ({
-      eq: () => ({ eq: () => ({ select: () => ({ maybeSingle }) }) }),
+      eq: () => ({ eq: () => ({ eq: () => ({ select: () => ({ maybeSingle }) }) }) }),
       payload,
     }));
     mocks.from.mockImplementation(() => ({ update }));
@@ -279,7 +319,7 @@ describe('useKitPersistenceCoordinator', () => {
       ({ state }) => useKitPersistenceCoordinator({
         kitState: state,
         kitQuantity: 20,
-        mode: { kind: 'custom', kitId: 'kit-a', sessionKey: 0 },
+        mode: { kind: 'custom', kitId: 'kit-a', expectedUpdatedAt: '2026-10-18T11:00:00.000Z', sessionKey: 0 },
       }),
       { initialProps: { state: kitState('Kit salvo') }, wrapper: wrapper() },
     );
@@ -292,7 +332,7 @@ describe('useKitPersistenceCoordinator', () => {
     expect(update).toHaveBeenCalledTimes(1);
 
     await act(async () => {
-      resolveFirst?.({ data: { id: 'kit-a' }, error: null });
+      resolveFirst?.({ data: { id: 'kit-a', updated_at: '2026-10-18T11:30:00.000Z' }, error: null });
       await Promise.resolve();
       await Promise.resolve();
     });
@@ -302,14 +342,14 @@ describe('useKitPersistenceCoordinator', () => {
   });
 
   it('adota o ID criado antes de persistir uma edição já enfileirada', async () => {
-    let resolveCreation: ((value: { data: { id: string }; error: null }) => void) | undefined;
+    let resolveCreation: ((value: { data: { id: string; updated_at: string }; error: null }) => void) | undefined;
     const single = vi.fn().mockImplementationOnce(
       () => new Promise((resolve) => { resolveCreation = resolve; }),
     );
-    const maybeSingle = vi.fn().mockResolvedValue({ data: { id: 'kit-criado' }, error: null });
+    const maybeSingle = vi.fn().mockResolvedValue({ data: { id: 'kit-criado', updated_at: '2026-10-18T12:00:00.000Z' }, error: null });
     const insert = vi.fn(() => ({ select: () => ({ single }) }));
     const update = vi.fn((payload: unknown) => ({
-      eq: () => ({ eq: () => ({ select: () => ({ maybeSingle }) }) }),
+      eq: () => ({ eq: () => ({ eq: () => ({ select: () => ({ maybeSingle }) }) }) }),
       payload,
     }));
     mocks.from.mockImplementation(() => ({ insert, update }));
@@ -331,7 +371,7 @@ describe('useKitPersistenceCoordinator', () => {
     expect(update).not.toHaveBeenCalled();
 
     await act(async () => {
-      resolveCreation?.({ data: { id: 'kit-criado' }, error: null });
+      resolveCreation?.({ data: { id: 'kit-criado', updated_at: '2026-10-18T11:30:00.000Z' }, error: null });
       await Promise.resolve();
       await Promise.resolve();
     });

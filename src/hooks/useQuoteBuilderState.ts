@@ -401,17 +401,26 @@ export function useQuoteBuilderState() {
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [selectedItemIndexes, setSelectedItemIndexes] = useState<Set<number>>(new Set());
   const createIdempotencyKeyRef = useRef<string | null>(null);
+  const setClientIdIfEmpty = useCallback((suggestedClientId: string) => {
+    setClientId((current) => current.trim() ? current : suggestedClientId);
+  }, []);
+  const setItemsIfEmpty = useCallback((suggestedItems: QuoteItem[]) => {
+    setItems((current) => current.length > 0 ? current : suggestedItems);
+  }, []);
+  const setActiveItemIndexIfUnset = useCallback((index: number) => {
+    setActiveItemIndex((current) => current === null ? index : current);
+  }, []);
 
   // ── Modular Hooks ──
   const search = useQuoteProductSearch();
   const initializationSetters = useMemo(() => ({
-    setClientId, setContactId, setValidUntil, setNotes, setInternalNotes,
+    setClientId, setClientIdIfEmpty, setContactId, setValidUntil, setNotes, setInternalNotes,
     setQuoteNumber, setCurrentStatus, setIsLatestVersion, setExpectedRowVersion, setContactInfo, setCompanyInfo,
     setDiscountType, setDiscountValue, setNegotiationMarkup, setPaymentTerms,
     setShippingType, setShippingCost, setDeliveryMode, setDeliveryDate,
-    setDeliveryTime, setItems, setTags, setLoadingQuote, setQuoteLoadError,
+    setDeliveryTime, setItems, setItemsIfEmpty, setActiveItemIndexIfUnset, setTags, setLoadingQuote, setQuoteLoadError,
     setActiveItemIndex, setExpandedItems,
-  }), []);
+  }), [setClientIdIfEmpty, setItemsIfEmpty, setActiveItemIndexIfUnset]);
   
   useQuoteInitialization({
     isEditMode, quoteId, reloadKey: quoteReloadKey, fetchQuote,

@@ -12,9 +12,13 @@ import { renderHook, act, waitFor } from "@testing-library/react";
  */
 
 const limitMock = vi.fn();
-const updateEqEqMock = vi.fn().mockResolvedValue({ error: null });
-const updateEqMock = vi.fn(() => ({ eq: updateEqEqMock }));
-const updateMock = vi.fn(() => ({ eq: updateEqMock }));
+const updateEqMock = vi.fn();
+const updateQuery: { eq: typeof updateEqMock; then: (resolve: (value: { error: null }) => unknown, reject?: (reason: unknown) => unknown) => Promise<unknown> } = {
+  eq: updateEqMock,
+  then: (resolve, reject) => Promise.resolve({ error: null }).then(resolve, reject),
+};
+updateEqMock.mockReturnValue(updateQuery);
+const updateMock = vi.fn(() => updateQuery);
 const deleteEqMock = vi.fn().mockResolvedValue({ error: null });
 const deleteMock = vi.fn(() => ({ eq: deleteEqMock }));
 
@@ -72,8 +76,7 @@ beforeEach(() => {
   limitMock.mockReset();
   updateMock.mockClear();
   updateEqMock.mockClear();
-  updateEqEqMock.mockClear();
-  updateEqEqMock.mockResolvedValue({ error: null });
+  updateEqMock.mockReturnValue(updateQuery);
   deleteMock.mockClear();
   deleteEqMock.mockClear();
   deleteEqMock.mockResolvedValue({ error: null });
@@ -83,6 +86,7 @@ beforeEach(() => {
 
 afterEach(() => {
   sessionStorage.clear();
+  vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
 
@@ -93,6 +97,45 @@ async function loadHook() {
 }
 
 describe("useWorkspaceNotifications — cache invalidation after mutations", () => {
+  it("marca uma notificação com CAS monotônico e escopo do usuário", async () => {
+    const useWorkspaceNotifications = await loadHook();
+    const { result } = renderHook(() => useWorkspaceNotifications());
+    await waitFor(() => expect(result.current.unreadCount).toBe(2));
+
+    await act(async () => result.current.markAsRead("n1"));
+
+    expect(updateEqMock.mock.calls).toEqual([
+      ["id", "n1"],
+      ["user_id", STABLE_USER.id],
+      ["is_read", false],
+    ]);
+    expect(result.current.notifications.find((notification) => notification.id === "n1")?.is_read).toBe(true);
+    expect(result.current.unreadCount).toBe(1);
+  });
+
+  it("propaga respostas de leitura para as outras abas e preserva o estado local", async () => {
+    const channels: Array<{ onmessage: ((event: MessageEvent) => void) | null; close: ReturnType<typeof vi.fn> }> = [];
+    class FakeBroadcastChannel {
+      onmessage: ((event: MessageEvent) => void) | null = null;
+      close = vi.fn();
+      postMessage = vi.fn();
+      constructor() { channels.push(this); }
+    }
+    vi.stubGlobal("BroadcastChannel", FakeBroadcastChannel);
+
+    const useWorkspaceNotifications = await loadHook();
+    const { result } = renderHook(() => useWorkspaceNotifications());
+    await waitFor(() => expect(result.current.unreadCount).toBe(2));
+
+    await act(async () => {
+      channels.at(-1)?.onmessage?.({ data: { type: "read", ids: ["n1"] } } as MessageEvent);
+    });
+
+    expect(result.current.notifications.find((notification) => notification.id === "n1")?.is_read).toBe(true);
+    expect(result.current.unreadCount).toBe(1);
+    expect(JSON.parse(sessionStorage.getItem(CACHE_KEY)!).notifications[0].is_read).toBe(true);
+  });
+
   it("markAllAsRead removes the sessionStorage cache entry and triggers a silent re-fetch", async () => {
     const useWorkspaceNotifications = await loadHook();
     const { result } = renderHook(() => useWorkspaceNotifications());

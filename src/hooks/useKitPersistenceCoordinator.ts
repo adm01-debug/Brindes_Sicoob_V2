@@ -22,7 +22,7 @@ import { logger } from '@/lib/logger';
 const AUTO_SAVE_DELAY_MS = 5_000;
 
 type PersistenceMode =
-  | { kind: 'custom'; kitId?: string; sessionKey: string | number }
+  | { kind: 'custom'; kitId?: string; expectedUpdatedAt?: string; sessionKey: string | number }
   | { kind: 'template'; templateId: string };
 
 interface UseKitPersistenceCoordinatorInput {
@@ -43,6 +43,7 @@ interface ResolvedMode {
   kind: ModeKind;
   id?: string;
   initialTargetId: string | null;
+  initialExpectedUpdatedAt?: string;
   scopeKey: string;
 }
 
@@ -51,6 +52,8 @@ interface ExecutePersistenceInput {
   modeId?: string;
   userId: string;
   targetId: string | null;
+  expectedUpdatedAt?: string;
+  onCustomKitPersisted?: (updatedAt: string) => void;
   snapshot: KitPersistenceSnapshot;
 }
 
@@ -70,22 +73,37 @@ function requiredId(
 async function persistCustomKit(
   userId: string,
   targetId: string | null,
+  expectedUpdatedAt: string | undefined,
   snapshot: KitPersistenceSnapshot,
-): Promise<string> {
+): Promise<{ id: string; updatedAt: string }> {
   const payload = buildCustomKitPayload(userId, snapshot);
   if (targetId) {
+    if (!expectedUpdatedAt) {
+      throw new Error('Versão do kit ausente. Recarregue o kit antes de salvar.');
+    }
+    const nextUpdatedAt = new Date().toISOString();
+    payload.updated_at = nextUpdatedAt <= expectedUpdatedAt
+      ? new Date(new Date(expectedUpdatedAt).getTime() + 1).toISOString()
+      : nextUpdatedAt;
     const result = await supabase
       .from('custom_kits')
       .update(payload)
       .eq('id', targetId)
       .eq('user_id', userId)
-      .select('id')
+      .eq('updated_at', expectedUpdatedAt)
+      .select('id, updated_at')
       .maybeSingle();
-    return requiredId(result, 'O kit não foi encontrado ou você não tem permissão para atualizá-lo.');
+    const id = requiredId(result, 'Este kit foi alterado em outra aba ou não está mais disponível. Recarregue-o antes de salvar.');
+    const updatedAt = (result.data as { updated_at?: string } | null)?.updated_at;
+    if (!updatedAt) throw new Error('O banco não retornou a nova versão do kit. Recarregue antes de continuar.');
+    return { id, updatedAt };
   }
 
-  const result = await supabase.from('custom_kits').insert(payload).select('id').single();
-  return requiredId(result, 'O kit não retornou um identificador após o salvamento.');
+  const result = await supabase.from('custom_kits').insert(payload).select('id, updated_at').single();
+  const id = requiredId(result, 'O kit não retornou um identificador após o salvamento.');
+  const updatedAt = (result.data as { updated_at?: string } | null)?.updated_at;
+  if (!updatedAt) throw new Error('O banco não retornou a versão do kit recém-criado.');
+  return { id, updatedAt };
 }
 
 async function persistTemplate(
@@ -124,13 +142,16 @@ function resolveMode(mode: PersistenceMode, userId?: string): ResolvedMode {
     kind: mode.kind,
     id: mode.kitId,
     initialTargetId: mode.kitId ?? null,
+    initialExpectedUpdatedAt: mode.expectedUpdatedAt,
     scopeKey: `${owner}:custom:${mode.kitId ?? 'new'}:${mode.sessionKey}`,
   };
 }
 
 async function executePersistence(input: ExecutePersistenceInput): Promise<string> {
   if (input.modeKind === 'custom') {
-    return persistCustomKit(input.userId, input.targetId, input.snapshot);
+    const persisted = await persistCustomKit(input.userId, input.targetId, input.expectedUpdatedAt, input.snapshot);
+    input.onCustomKitPersisted?.(persisted.updatedAt);
+    return persisted.id;
   }
   if (!input.modeId) throw new Error('Template não identificado');
   return persistTemplate(input.modeId, input.snapshot);
@@ -214,7 +235,7 @@ export function useKitPersistenceCoordinator({
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const resolvedMode = resolveMode(mode, user?.id);
-  const { kind: modeKind, id: modeId, initialTargetId, scopeKey } = resolvedMode;
+  const { kind: modeKind, id: modeId, initialTargetId, initialExpectedUpdatedAt, scopeKey } = resolvedMode;
   const coordinatorRef = useRef(new KitPersistenceCoordinator());
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
   const pendingRef = useRef<PendingCounts>({ automatic: 0, manual: 0 });
@@ -228,6 +249,7 @@ export function useKitPersistenceCoordinator({
 
   const scopeKeyRef = useRef(scopeKey);
   scopeKeyRef.current = scopeKey;
+  const expectedUpdatedAtRef = useRef(initialExpectedUpdatedAt);
 
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [lastSaveError, setLastSaveError] = useState<string | null>(null);
@@ -241,6 +263,7 @@ export function useKitPersistenceCoordinator({
     const coordinator = coordinatorRef.current;
     const previousGeneration = coordinator.getGeneration();
     const nextGeneration = coordinator.activateScope(scopeKey, initialTargetId, latestSerializedRef.current);
+    expectedUpdatedAtRef.current = initialExpectedUpdatedAt;
     if (previousGeneration === nextGeneration) return;
 
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -251,7 +274,7 @@ export function useKitPersistenceCoordinator({
     setIsAutoSaving(false);
     setIsSaving(false);
     setBaselineRevision((revision) => revision + 1);
-  }, [initialTargetId, scopeKey]);
+  }, [initialExpectedUpdatedAt, initialTargetId, scopeKey]);
 
   useLayoutEffect(() => {
     const becameReady = enabled && !wasEnabledRef.current;
@@ -279,7 +302,15 @@ export function useKitPersistenceCoordinator({
         snapshot: operationSerialized,
         execute: async (targetId) => {
           const persistedId = await executePersistence({
-            modeKind, modeId, userId, targetId, snapshot: operationSnapshot,
+            modeKind,
+            modeId,
+            userId,
+            targetId,
+            expectedUpdatedAt: expectedUpdatedAtRef.current,
+            onCustomKitPersisted: (updatedAt) => {
+              if (operationScope === scopeKeyRef.current) expectedUpdatedAtRef.current = updatedAt;
+            },
+            snapshot: operationSnapshot,
           });
           return { targetId: persistedId };
         },
