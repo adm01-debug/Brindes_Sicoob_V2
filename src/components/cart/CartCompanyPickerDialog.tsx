@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { useSellerCartContext, type CreateCartInput } from "@/contexts/SellerCartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { buildCartCompanyAccessScope, fetchCartCompanyOptions, type CartCompanyOption as CompanyItem } from "./cart-company-options";
+import { CartCompanyDirectoryResults } from "./CartCompanyDirectoryResults";
 
 const RECENT_KEY = "cart-companies-recent";
 const FAV_KEY = "cart-companies-favorites";
@@ -36,19 +37,26 @@ interface CartCompanyPickerDialogProps {
 export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartCompanyPickerDialogProps) {
   const [tab, setTab] = useState<"recent" | "favorites" | "search">("recent");
   const [searchTerm, setSearchTerm] = useState("");
-  const [recents, setRecents] = useState<CompanyItem[]>(() => readList(RECENT_KEY));
-  const [favorites, setFavorites] = useState<CompanyItem[]>(() => readList(FAV_KEY));
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [recents, setRecents] = useState<CompanyItem[]>([]);
+  const [favorites, setFavorites] = useState<CompanyItem[]>([]);
+  const [loadedScope, setLoadedScope] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { createCart, canCreateCart } = useSellerCartContext();
   const { user, roles } = useAuth();
   const accessScope = buildCartCompanyAccessScope(user?.id, roles);
   const recentStorageKey = `${RECENT_KEY}:${accessScope}`;
   const favoriteStorageKey = `${FAV_KEY}:${accessScope}`;
+  const hasLoadedCurrentScope = loadedScope === accessScope;
+  const scopedRecents = useMemo(() => hasLoadedCurrentScope ? recents : [], [hasLoadedCurrentScope, recents]);
+  const scopedFavorites = useMemo(() => hasLoadedCurrentScope ? favorites : [], [hasLoadedCurrentScope, favorites]);
 
   useEffect(() => {
     if (!open) return;
+    setLoadedScope(null);
     setRecents(readList(recentStorageKey));
     setFavorites(readList(favoriteStorageKey));
+    setLoadedScope(accessScope);
     // Sempre abre na aba "Todas" (busca) para o usuário poder digitar imediatamente.
     setTab("search");
     // Aguarda a aba "search" montar para garantir que inputRef.current exista.
@@ -57,11 +65,16 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
       inputRef.current?.select();
     }, 120);
     return () => clearTimeout(t);
-  }, [open, recentStorageKey, favoriteStorageKey]);
+  }, [open, accessScope, recentStorageKey, favoriteStorageKey]);
 
-  const { data: localCompanies = [], isLoading: loadingLocal } = useQuery<CompanyItem[]>({
-    queryKey: ["cart-sicoob-company-options", accessScope],
-    queryFn: fetchCartCompanyOptions,
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const { data: localCompanies = [], isLoading: loadingLocal, isError: directoryError, refetch } = useQuery<CompanyItem[]>({
+    queryKey: ["cart-sicoob-company-options", accessScope, debouncedSearchTerm],
+    queryFn: () => fetchCartCompanyOptions(debouncedSearchTerm),
     staleTime: 15 * 60 * 1000,
     enabled: open,
   });
@@ -75,10 +88,11 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
     return fuse.search(searchTerm).map(result => result.item).slice(0, 40);
   }, [searchTerm, fuse, localCompanies]);
 
-  const isFavorite = useCallback((id: string) => favorites.some(f => f.id === id), [favorites]);
+  const isFavorite = useCallback((id: string) => scopedFavorites.some(f => f.id === id), [scopedFavorites]);
 
   const toggleFavorite = useCallback((company: CompanyItem, e: MouseEvent) => {
     e.stopPropagation();
+    if (!hasLoadedCurrentScope) return;
     setFavorites(prev => {
       const next = prev.some(f => f.id === company.id)
         ? prev.filter(f => f.id !== company.id)
@@ -86,7 +100,7 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
       writeList(favoriteStorageKey, next);
       return next;
     });
-  }, [favoriteStorageKey]);
+  }, [favoriteStorageKey, hasLoadedCurrentScope]);
 
   const handleSelect = useCallback(async (company: CompanyItem) => {
     const input: CreateCartInput = {
@@ -97,13 +111,13 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
     };
     const result = await createCart(input);
     if (result) {
-      const nextRecents = [company, ...recents.filter(r => r.id !== company.id)].slice(0, MAX_RECENT);
+      const nextRecents = [company, ...scopedRecents.filter(r => r.id !== company.id)].slice(0, MAX_RECENT);
       writeList(recentStorageKey, nextRecents);
       setRecents(nextRecents);
       onCreated?.();
       onOpenChange(false);
     }
-  }, [createCart, onCreated, onOpenChange, recents, recentStorageKey]);
+  }, [createCart, onCreated, onOpenChange, scopedRecents, recentStorageKey]);
 
   const isLoading = loadingLocal;
 
@@ -115,7 +129,7 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
         data-company-id={company.id}
         className="flex min-w-0 flex-1 items-center gap-3 rounded-lg px-3 py-2.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         onClick={() => handleSelect(company)}
-        disabled={!canCreateCart}
+        disabled={!canCreateCart || !hasLoadedCurrentScope}
       >
         {company.logo_url ? (
           <img src={company.logo_url} alt="" className="w-9 h-9 rounded-lg object-contain bg-background border border-border/40 flex-shrink-0" loading="lazy" />
@@ -132,6 +146,7 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
       <button
         type="button"
         onClick={(e) => toggleFavorite(company, e)}
+        disabled={!hasLoadedCurrentScope}
         className={cn(
           "mr-2 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           isFavorite(company.id)
@@ -164,8 +179,8 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
 
           <TabsContent value="recent" className="m-0 px-3 pt-3 pb-4">
             <ScrollArea className="h-[340px] pr-2">
-              {recents.length > 0 ? (
-                <div className="space-y-0.5">{recents.map(renderRow)}</div>
+              {scopedRecents.length > 0 ? (
+                <div className="space-y-0.5">{scopedRecents.map(renderRow)}</div>
               ) : (
                 <p className="text-xs text-muted-foreground text-center py-12">Nenhuma cooperativa ou unidade recente.</p>
               )}
@@ -174,8 +189,8 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
 
           <TabsContent value="favorites" className="m-0 px-3 pt-3 pb-4">
             <ScrollArea className="h-[340px] pr-2">
-              {favorites.length > 0 ? (
-                <div className="space-y-0.5">{favorites.map(renderRow)}</div>
+              {scopedFavorites.length > 0 ? (
+                <div className="space-y-0.5">{scopedFavorites.map(renderRow)}</div>
               ) : (
                 <p className="text-xs text-muted-foreground text-center py-12">Marque cooperativas ou unidades como favoritas usando a estrela.</p>
               )}
@@ -195,11 +210,16 @@ export function CartCompanyPickerDialog({ open, onOpenChange, onCreated }: CartC
               {isLoading && <Loader2 className="absolute right-4.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-muted-foreground" />}
             </div>
             <ScrollArea className="h-[290px] pr-2">
-              {filteredCompanies.length > 0 ? (
+              <CartCompanyDirectoryResults
+                error={directoryError}
+                empty={filteredCompanies.length === 0}
+                loading={isLoading}
+                emptyMessage="Nenhuma cooperativa ou unidade encontrada."
+                emptyClassName="py-12"
+                onRetry={() => void refetch()}
+              >
                 <div className="space-y-0.5">{filteredCompanies.map(renderRow)}</div>
-              ) : !isLoading ? (
-                <p className="text-xs text-muted-foreground text-center py-12">Nenhuma cooperativa ou unidade encontrada.</p>
-              ) : null}
+              </CartCompanyDirectoryResults>
             </ScrollArea>
           </TabsContent>
         </Tabs>

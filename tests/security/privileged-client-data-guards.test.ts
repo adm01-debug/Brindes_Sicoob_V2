@@ -17,6 +17,7 @@ const companyContactSelector = readFileSync(
 const cartCompanyOptions = readFileSync('src/components/cart/cart-company-options.ts', 'utf8');
 const cartCompanyPicker = readFileSync('src/components/cart/CartCompanyPicker.tsx', 'utf8');
 const cartCompanyPickerDialog = readFileSync('src/components/cart/CartCompanyPickerDialog.tsx', 'utf8');
+const cartDirectoryResults = readFileSync('src/components/cart/CartCompanyDirectoryResults.tsx', 'utf8');
 
 describe('barreiras estáticas para dados privilegiados de clientes', () => {
   it('carrega todos os papéis e falha fechado para vínculo inválido', () => {
@@ -117,5 +118,8 @@ describe('barreiras estáticas para dados privilegiados de clientes', () => {
     }
     expect(cartCompanyPickerDialog).toContain('`${RECENT_KEY}:${accessScope}`');
     expect(cartCompanyPickerDialog).toContain('`${FAV_KEY}:${accessScope}`');
+    expect(cartCompanyPickerDialog).toContain('loadedScope === accessScope');
+    expect(cartDirectoryResults).toContain('role="alert"');
+    expect(cartDirectoryResults).toContain('Tentar novamente');
   });
 });

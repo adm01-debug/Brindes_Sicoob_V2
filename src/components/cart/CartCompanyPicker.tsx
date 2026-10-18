@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { useSellerCartContext, type CreateCartInput } from "@/contexts/SellerCartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { buildCartCompanyAccessScope, fetchCartCompanyOptions, type CartCompanyOption as CompanyItem } from "./cart-company-options";
+import { CartCompanyDirectoryResults } from "./CartCompanyDirectoryResults";
 
 interface CartCompanyPickerProps {
   onCreated?: () => void;
@@ -21,6 +22,7 @@ interface CartCompanyPickerProps {
 
 export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const { createCart, canCreateCart } = useSellerCartContext();
   const { user, roles } = useAuth();
@@ -31,10 +33,15 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
     setTimeout(() => inputRef.current?.focus(), 100);
   }, []);
 
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   // Local companies cache
-  const { data: localCompanies = [], isLoading: loadingLocal } = useQuery<CompanyItem[]>({
-    queryKey: ["cart-sicoob-company-options", accessScope],
-    queryFn: fetchCartCompanyOptions,
+  const { data: localCompanies = [], isLoading: loadingLocal, isError: directoryError, refetch } = useQuery<CompanyItem[]>({
+    queryKey: ["cart-sicoob-company-options", accessScope, debouncedSearchTerm],
+    queryFn: () => fetchCartCompanyOptions(debouncedSearchTerm),
     staleTime: 15 * 60 * 1000,
   });
 
@@ -92,7 +99,14 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
 
       <ScrollArea className="h-[200px]">
         <div className="space-y-0.5">
-          {filteredCompanies.map((company) => (
+          <CartCompanyDirectoryResults
+            error={directoryError}
+            empty={filteredCompanies.length === 0}
+            loading={isLoading}
+            emptyMessage="Nenhuma cooperativa ou unidade encontrada"
+            onRetry={() => void refetch()}
+          >
+            {filteredCompanies.map((company) => (
             <button
               key={company.id}
               type="button"
@@ -124,12 +138,8 @@ export function CartCompanyPicker({ onCreated, onCancel }: CartCompanyPickerProp
                 )}
               </div>
             </button>
-          ))}
-          {filteredCompanies.length === 0 && !isLoading && (
-            <p className="text-xs text-muted-foreground text-center py-4">
-              Nenhuma cooperativa ou unidade encontrada
-            </p>
-          )}
+            ))}
+          </CartCompanyDirectoryResults>
         </div>
       </ScrollArea>
     </div>

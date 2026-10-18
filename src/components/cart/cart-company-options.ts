@@ -1,4 +1,4 @@
-import { listQuoteDirectoryCompanies, type QuoteDirectoryCompany } from '@/lib/crm-db';
+import { listQuoteDirectoryCompanies } from '@/lib/crm-db';
 
 export interface CartCompanyOption {
   id: string;
@@ -7,17 +7,6 @@ export interface CartCompanyOption {
   nome_fantasia: string | null;
   ramo: string | null;
   logo_url: string | null;
-}
-
-const PAGE_SIZE = 100;
-
-async function fetchQuoteDirectoryCustomers(): Promise<QuoteDirectoryCompany[]> {
-  const rows: QuoteDirectoryCompany[] = [];
-  for (let offset = 0; ; offset += PAGE_SIZE) {
-    const page = await listQuoteDirectoryCompanies({ limit: PAGE_SIZE, offset });
-    rows.push(...page);
-    if (page.length < PAGE_SIZE || offset >= 10_000) return rows;
-  }
 }
 
 export function buildCartCompanyAccessScope(userId: string | undefined, roles: readonly string[] | undefined): string {
@@ -29,8 +18,11 @@ export function buildCartCompanyAccessScope(userId: string | undefined, roles: r
  * mesmo identificador para que empresa e contatos sejam resolvidos ao gerar a
  * proposta. A paginação evita ocultar clientes além do primeiro lote.
  */
-export async function fetchCartCompanyOptions(): Promise<CartCompanyOption[]> {
-  const companies = await fetchQuoteDirectoryCustomers();
+export async function fetchCartCompanyOptions(term?: string): Promise<CartCompanyOption[]> {
+  const companies = await listQuoteDirectoryCompanies({
+    limit: 100,
+    ...(term && term.trim().length >= 2 ? { term: term.trim() } : {}),
+  });
   return companies
     .map((company) => ({
       id: company.id,
