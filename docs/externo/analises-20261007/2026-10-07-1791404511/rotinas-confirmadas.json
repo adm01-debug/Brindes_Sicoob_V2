@@ -1,0 +1,1 @@
+[{"audit": {"dispatch_states": [{"count": 1437, "state": "succeeded", "status_code": 200}, {"count": 1, "state": "queued", "status_code": null}, {"count": 1, "state": "timed_out", "status_code": null}, {"count": 1, "state": "failed", "status_code": 503}], "history_max_per_connection": 132, "history_triggers": [{"enabled": "O", "name": "trg_trim_connection_test_history"}]}}]
