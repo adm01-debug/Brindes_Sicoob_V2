@@ -16,13 +16,13 @@ Cada lote de texto precisa respeitar o teto de revisão (90 mil caracteres
 adicionados por entrega). Estimativas de texto (binários de imagem/PDF já
 descontados):
 
-| Fonte | Arquivos | Texto aprox. | Destino proposto |
-|---|---|---|---|
-| `~/projetos/Brindes Sicoob V2 - Analise` (dossiê, backlog, atas, zips) | 39 | 4,1 MB | `docs/externo/analise-20260911/` (fatiar em ~45 entregas ou pedir via de exceção ao integrador; zips são duplicatas do conteúdo expandido — não importar) |
-| `~/projetos/Brindes Sicoob V2 - Plano de Implementacao` (plano 100 etapas) | 22 | 2,7 MB | `docs/externo/plano-20260911/` (fatiar; zip é duplicata — não importar) |
-| `~/auditorias/sicoob-2026-10-13` (auditoria completa + reproduções) | 584 | 50,6 MB | `docs/externo/auditoria-20261013/` (fatiar em vários lotes) |
-| `~/projetos/analises/Brindes_Sicoob_V2` (logs/jsons 07/10) | 26 | 155 KB | `docs/externo/analises-20261007/` (2 lotes) |
-| `~/projetos/Brindes_Sicoob_V2-graphify-docs-20261005/SHA256SUMS` | 1 | 106 KB | `docs/externo/graphify-sha-20261005/` (1 lote próprio, acima do teto sozinho — fatiar ou exceção) |
+| Fonte                                                                      | Arquivos | Texto aprox. | Destino proposto                                                                                                                                          |
+| -------------------------------------------------------------------------- | -------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `~/projetos/Brindes Sicoob V2 - Analise` (dossiê, backlog, atas, zips)     | 39       | 4,1 MB       | `docs/externo/analise-20260911/` (fatiar em ~45 entregas ou pedir via de exceção ao integrador; zips são duplicatas do conteúdo expandido — não importar) |
+| `~/projetos/Brindes Sicoob V2 - Plano de Implementacao` (plano 100 etapas) | 22       | 2,7 MB       | `docs/externo/plano-20260911/` (fatiar; zip é duplicata — não importar)                                                                                   |
+| `~/auditorias/sicoob-2026-10-13` (auditoria completa + reproduções)        | 584      | 50,6 MB      | `docs/externo/auditoria-20261013/` (fatiar em vários lotes)                                                                                               |
+| `~/projetos/analises/Brindes_Sicoob_V2` (logs/jsons 07/10)                 | 26       | 155 KB       | `docs/externo/analises-20261007/` (2 lotes)                                                                                                               |
+| `~/projetos/Brindes_Sicoob_V2-graphify-docs-20261005/SHA256SUMS`           | 1        | 106 KB       | `docs/externo/graphify-sha-20261005/` (1 lote próprio, acima do teto sozinho — fatiar ou exceção)                                                         |
 
 ## Excluídos com motivo (não são do projeto ou são intocáveis)
 
