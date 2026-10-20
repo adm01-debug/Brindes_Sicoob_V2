@@ -3,7 +3,10 @@
 Importação de `~/projetos/analises/Brindes_Sicoob_V2/2026-10-07-1791404511/` para
 `docs/externo/analises-20261007/`, em 20/10/2026. São os artefatos da rodada de
 análise e verificações de 07/10 (achados, decisões, contratos, logs, evidências
-visuais). Estrutura de subpastas (`visual/`) preservada.
+visuais). Estrutura de subpastas (`visual/`) preservada. Nomes de arquivo
+originais mantidos — inclusive os 4 `.log`, adicionados com `git add -f`
+exceção consciente: o `.gitignore` do repo ignora `*.log` (logs de build),
+mas aqui são documentos externos arquivados, não artefatos gerados.
 
 `secret-names.json` contém **só nomes** de variáveis (sem valores) — verificado
 na importação. Pré-scan de segredos nos 20 arquivos de texto: 0 ocorrências
