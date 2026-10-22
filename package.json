@@ -130,7 +130,7 @@
     "@types/jszip": "^3.4.1",
     "@typescript-eslint/eslint-plugin": "^8.71.0",
     "@typescript-eslint/parser": "^8.18.0",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/coverage-v8": "^4.1.12",
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
@@ -182,7 +182,7 @@
     "use-local-storage-state": "^19.5.0",
     "uuid": "^14.0.2",
     "vaul": "^0.9.0",
-    "vitest": "^4.1.11",
+    "vitest": "^4.1.12",
     "web-vitals": "^5.2.0",
     "zod": "^3.22.4",
     "zustand": "^4.5.0"
