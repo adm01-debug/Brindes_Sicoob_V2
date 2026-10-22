@@ -62,22 +62,30 @@ const SENSITIVE = Object.entries(EDGE_AUTHZ_MANIFEST).filter(
 
 d('Edge authz bypass — supervisor/dev sem auth retorna 401', () => {
   for (const [name] of SENSITIVE) {
-    it(`${name}: anon sem Authorization → 401`, async () => {
+    it(`${name}: anon sem Authorization → 401`, async (ctx) => {
       const res = await invokeSensitiveEdge(name);
       await res.text(); // drena o corpo
+      // 402 (Payment Required): quota Supabase esgotada — endpoint bloqueado por
+      // infraestrutura, não por lógica de auth. Não conta como validação de authz;
+      // sinaliza infraestrutura indisponível.
+      if (res.status === 402) {
+        ctx.skip();
+        return;
+      }
       // Edge runtime do Supabase aplica verify_jwt=true por padrão →
       // sem header Authorization retorna 401. Aceitamos também 403
       // para edges que validem por has_role inline antes do parse.
-      // 402 (Payment Required): Supabase retorna este código quando o projeto
-      // excede a quota de invocações de Edge Functions; o endpoint não processa
-      // a requisição, portanto a segurança está garantida.
-      expect([401, 402, 403]).toContain(res.status);
+      expect([401, 403]).toContain(res.status);
     }, TEST_TIMEOUT_MS);
 
-    it(`${name}: Bearer inválido → 401`, async () => {
+    it(`${name}: Bearer inválido → 401`, async (ctx) => {
       const res = await invokeSensitiveEdge(name, 'Bearer invalid.jwt.token');
       await res.text();
-      expect([401, 402, 403]).toContain(res.status);
+      if (res.status === 402) {
+        ctx.skip();
+        return;
+      }
+      expect([401, 403]).toContain(res.status);
     }, TEST_TIMEOUT_MS);
   }
 });
