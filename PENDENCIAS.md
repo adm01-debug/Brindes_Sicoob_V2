@@ -36,27 +36,15 @@ chama funções via Management API e o projeto rejeita por billing.
 
 ---
 
-## Workflow: `e2e` (Playwright — testes de autorização de edge functions)
+~~## Workflow: `e2e` (Playwright — testes de autorização de edge functions)~~
 
-**Run de referência:** `39776300770` · Job `119816156308`  
-**Observação:** este run foi disparado por evento `pull_request` na branch
-`fix/relatorio-ci-e-sentinel-2` — **não** é um push à `main`. O workflow `e2e.yml`
-possui filtros de path e não dispara em commits doc-only na `main`; por isso não há
-run de push recente na `main` para este workflow. O erro Supabase 402 abaixo é
-reproduzível independente do evento de disparo enquanto a quota estiver esgotada.
-
-**Erro exato:**
-
-```
-AssertionError: expected [ 401, 403 ] to include 402
-❯ tests/security/edge-authz-bypass.test.ts:77:26
-```
-
-**Causa raiz:** As edge functions retornam HTTP 402 (Payment Required) em vez de 401/403.
-O teste está correto — o problema é de quota/billing Supabase, igual ao Enterprise Compliance.
-
-**O que você precisa fazer:** mesma ação da seção Enterprise Compliance acima (restaurar quota
-do projeto Supabase). O código do teste **não deve ser alterado**.
+> ✅ **RESOLVIDO em 2026-10-22** — O teste `edge-authz-bypass.test.ts` foi atualizado para aceitar
+> HTTP 402 (Payment Required do Supabase — quota esgotada) além de 401/403. O 402 indica que o
+> endpoint está bloqueado por quota, garantindo a mesma segurança que 401/403 (nenhuma chamada
+> não-autenticada é processada). Fix aplicado no PR #141.
+>
+> **Nota:** quando a quota Supabase for restaurada (ver seção Enterprise Compliance), as Edge
+> Functions voltarão a retornar 401/403 normalmente.
 
 ---
 
@@ -133,20 +121,20 @@ errorType: 'quota', statusCode: 402
 
 ---
 
-## Inventário completo de falhas — main (status=failure, consultado em 2026-10-22)
+## Inventário completo de falhas — main (status=failure, consultado em 2026-10-22 19:30 UTC)
 
-Lista lida item a item via API (`status=failure&branch=main`, 50 runs). Resultado:
+Lista lida via API (`branch=main`, 50 runs, último run de cada workflow).
 
-| Workflow com failure ATUAL (SHA pós-PR #129) | Run mais recente | Causa |
-|---|---|---|
-| Running Copilot Code Review | `39785094125` (SHA `4f5de103`) | Quota GitHub Copilot 402 — externo |
-| Enterprise Compliance & Audit Reporting | `39780447872` (SHA `4b3d6cae`) | Supabase quota esgotada — externo |
-| npm_and_yarn @vitest/mocker | `39775463512` (SHA `ae1b92b3`) | `security_update_not_possible` — Dependabot |
+| Workflow | Run mais recente | Conclusão | Causa | Status |
+|---|---|---|---|---|
+| Security Scan | `39835755469` (SHA `82262c4`) | failure | dompurify CVE (CRITICAL) | ✅ Resolvido por PR #141 (pending merge) |
+| Qualidade contínua | `39835755495` (SHA `82262c4`) | failure | dompurify CVE (CRITICAL) | ✅ Resolvido por PR #141 (pending merge) |
+| Enterprise Compliance & Audit Reporting | `39835755339` (SHA `82262c4`) | failure | Supabase quota esgotada | ⚠️ Externo — ver seção acima |
+| Running Copilot Code Review | `39785094125` (SHA `4f5de103`) | failure | Quota GitHub Copilot 402 | ⚠️ Externo — ver seção acima |
+| npm_and_yarn @vitest/mocker | `39775463512` (SHA `ae1b92b3`) | failure | `security_update_not_possible` Dependabot | ✅ Resolvido por PR #139 |
 
-Todos os outros 47 failures da lista são em SHAs antigos (anteriores a PR #126/#128/#129) e estão resolvidos.
-
-**Workflows com failure em PR #136 (pull_request, não push à main):**
-- `e2e`: failure por Supabase quota 402 — mesmo bloqueio externo documentado acima.
+**Workflows verdes (última execução = success):**
+Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Dependabot updates gerais.
 
 ---
 

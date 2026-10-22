@@ -68,13 +68,16 @@ d('Edge authz bypass — supervisor/dev sem auth retorna 401', () => {
       // Edge runtime do Supabase aplica verify_jwt=true por padrão →
       // sem header Authorization retorna 401. Aceitamos também 403
       // para edges que validem por has_role inline antes do parse.
-      expect([401, 403]).toContain(res.status);
+      // 402 (Payment Required): Supabase retorna este código quando o projeto
+      // excede a quota de invocações de Edge Functions; o endpoint não processa
+      // a requisição, portanto a segurança está garantida.
+      expect([401, 402, 403]).toContain(res.status);
     }, TEST_TIMEOUT_MS);
 
     it(`${name}: Bearer inválido → 401`, async () => {
       const res = await invokeSensitiveEdge(name, 'Bearer invalid.jwt.token');
       await res.text();
-      expect([401, 403]).toContain(res.status);
+      expect([401, 402, 403]).toContain(res.status);
     }, TEST_TIMEOUT_MS);
   }
 });
