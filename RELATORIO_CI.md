@@ -58,7 +58,7 @@ O que se sabe sem install:
 | Security Scan | **success** ✅ | `39780447928` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447928 |
 | Migration Ledger Drift | **success** ✅ | `39780884679` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780884679 |
 | Enterprise Compliance & Audit Reporting | **failure** ❌ (externo) | `39780447872` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447872 |
-| Qualidade contínua (`ci.yml`) | **in_progress** | `39780447863` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447863 |
+| Qualidade contínua (`ci.yml`) | **success** ✅ | `39780447863` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447863 |
 | CodeQL | **in_progress** | `39780447790` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447790 |
 | Portal Sicoob, E2E, Copilot, npm_and_yarn | *não rodaram neste SHA ainda* | — | — |
 
@@ -123,7 +123,6 @@ Estes workflows falham por motivo externo ao código e estão documentados indiv
 
 | Workflow | Causa | Ação necessária |
 |---|---|---|
-| Qualidade contínua (`ci.yml`) | ECR Public rate limit — `toomanyrequests: Data limit exceeded` | Autenticar runner com `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` ou migrar imagem para GHCR |
 | Enterprise Compliance & Audit Reporting | Supabase quota esgotada (`exceed_edge_functions_invocations_quota, exceed_egress_quota`) | Remover spend caps ou recarregar quota no painel Supabase |
 | E2E (Playwright) | Supabase 402 — edge functions retornam 402 em vez de 401/403 | Idem (mesma quota) |
 | Copilot | GitHub Copilot quota 402 | Verificar billing em github.com/settings/billing |
@@ -138,7 +137,7 @@ Estes workflows falham por motivo externo ao código e estão documentados indiv
 | Security Scan | `a82d92b4` | success | `4b3d6cae` | **success** ✅ | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447928 |
 | Migration Ledger Drift | `6242a043` | **failure** | `4b3d6cae` | **success** ✅ | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780884679 |
 | Enterprise Compliance (Security Definer ACL) | `a82d92b4` | **failure** | — | **corrigido no DB** ✅ (bloqueio externo atual: quota Supabase) | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447872 |
-| Qualidade contínua (`ci.yml`) | `a82d92b4` | **failure** | — | **failure** ❌ (externo — ECR) | PENDENCIAS.md |
+| Qualidade contínua (`ci.yml`) | `a82d92b4` | **failure** | `4b3d6cae` | **success** ✅ (ECR rate limit dissipado) | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447863 |
 | E2E (Playwright) | `a82d92b4` | **failure** | — | **failure** ❌ (externo — Supabase quota) | PENDENCIAS.md |
 | Copilot | `a82d92b4` | **failure** | — | **failure** ❌ (externo — Copilot quota) | PENDENCIAS.md |
 
@@ -155,13 +154,13 @@ Estes workflows falham por motivo externo ao código e estão documentados indiv
 
 ## 7. Resumo final
 
-**3 workflows corrigidos por código** (PRs #126, #128, #129):
+**4 workflows corrigidos** (PRs #126, #128, #129 + ECR rate limit dissipado):
 - Branch Protection Sentinel: failure → success ✅
 - Migration Ledger Drift: failure → success ✅ (run `39780884679`)
 - Enterprise Compliance (Security Definer ACL): corrigido no banco via migration ✅
+- Qualidade contínua (`ci.yml`): failure → success ✅ (run `39780447863`, ECR rate limit dissipado)
 
-**4 workflows bloqueados por causas externas** (sem alteração de código possível):
-- Qualidade contínua (`ci.yml`): ECR Public rate limit → ver PENDENCIAS.md
+**3 workflows bloqueados por causas externas** (sem alteração de código possível):
 - Enterprise Compliance (RLS), E2E: Supabase quota esgotada → ver PENDENCIAS.md
 - Copilot: GitHub Copilot quota → ver PENDENCIAS.md
 
