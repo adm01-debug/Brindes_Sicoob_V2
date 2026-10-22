@@ -7,53 +7,6 @@ O erro exato foi extraído do run mais recente disponível em main.
 
 ---
 
-## Workflow: Qualidade contínua (`ci.yml`)
-
-**Run atual:** `39775422345` · Job `119813012334`  
-**Step:** "Simular controles de auditoria e permissões em PostgreSQL descartável"  
-**Erro exato:**
-
-```
-RuntimeError: docker run falhou após 3 tentativas: Unable to find image
-'public.ecr.aws/supabase/postgres:17.6.1.063' locally
-docker: Error response from daemon: toomanyrequests: Data limit exceeded
-```
-
-**Causa raiz:** Rate limit do Amazon ECR Public por IP do runner do GitHub Actions.  
-**Arquivos afetados no mesmo job:**
-- `scripts/qa/simular-controles-auditoria.py`, linha 32, função `start_container()` (step "Simular controles de auditoria e permissões em PostgreSQL descartável")
-- `scripts/qa/simular-acl-efetiva.py` (step "Simular ACL padrão, sobrecargas e herança de papéis") — mesma imagem ECR, mesmo erro
-
-**O que você precisa fazer:**
-
-- **Opção A (recomendada):** Adicionar os secrets `AWS_ACCESS_KEY_ID` e `AWS_SECRET_ACCESS_KEY`
-  (conta AWS com permissão `ecr-public:GetAuthorizationToken`) e atualizar o workflow para rodar
-  `aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws`
-  antes do step Docker.
-- **Opção B:** Migrar a imagem `public.ecr.aws/supabase/postgres:17.6.1.063` para Docker Hub
-  ou GHCR, que não impõe rate limit para pulls autenticados.
-
----
-
-## Workflow: Qualidade contínua — job "Segurança, contratos e build" (`ci.yml`)
-
-**Run de referência:** Job `119807381249` (2026-10-22)  
-**Erro exato:**
-
-```
-RuntimeError: docker run falhou após 3 tentativas: Unable to find image
-'public.ecr.aws/supabase/postgres:17.6.1.063' locally
-docker: Error response from daemon: toomanyrequests: Data limit exceeded
-```
-
-**Causa raiz:** Mesma imagem ECR Public `public.ecr.aws/supabase/postgres:17.6.1.063` no
-job "Segurança, contratos e build" dentro do mesmo `ci.yml` — mesmo rate limit de IP.
-A solução é idêntica à seção anterior.
-
-**O que você precisa fazer:** mesma ação da seção anterior (`ci.yml`).
-
----
-
 ## Workflow: Enterprise Compliance & Audit Reporting
 
 **Run atual:** `39775422349` · Job `119813012556`  
@@ -124,3 +77,4 @@ errorType: 'quota', statusCode: 402
 | Enterprise Compliance — Security Definer ACL | `audit_security_definer_acl()` sem `get_public_favorite_list` e `get_public_favorite_reactions` | Migration `20261022120000_add_public_favorites_to_security_definer_allowlist.sql` | #126 |
 | Migration Ledger Drift | Fingerprint de `20261022120000` calculado com `local_sha256` incorreto; novo digest correto: `e2815b0...` | Corrigido fingerprint no `migration-ledger-baseline.json` | #129 |
 | 5 CVEs high (vite ≤6.4.3) | GHSA-698v, GHSA-r825, GHSA-587h, GHSA-9jrq, GHSA-rq7h | `vite` 6.4.3 → 6.4.5 | #126 |
+| Qualidade contínua (`ci.yml`) — ECR rate limit | `toomanyrequests: Data limit exceeded` ao puxar `public.ecr.aws/supabase/postgres:17.6.1.063` em dois steps (scripts `simular-controles-auditoria.py` e `simular-acl-efetiva.py`) | Rate limit do ECR Public se dissipou naturalmente; run `39780447863` → **success** | automático |
