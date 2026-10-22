@@ -6,15 +6,37 @@ Gerado em: 2026-10-22 · Atualizado após merge dos PRs #126, #128 e #129 · Mig
 
 ## 1. Baseline local
 
-`npm ci` não pôde ser executado no container cloud por dois motivos simultâneos:
+### 1.1 Ambiente
 
-1. **Node incompatível**: container usa Node v22; `package.json` exige `>=24 <25`.
-2. **Rede restrita**: o proxy do container bloqueia registry.npmjs.org (conexão recusada).
+```
+$ node --version
+v22.22.0
 
-Por isso o baseline de install, build, lint, typecheck e testes não foi coletado localmente.
-O que se sabe sem install:
-- `vite` consta como `6.4.5` em `package.json` e `package-lock.json` — sem CVEs ativos.
-- Os testes unitários/integração não foram rodados localmente nesta sessão.
+$ npm --version
+10.9.4
+
+$ node -e "const p=require('./package.json'); console.log('engines:', JSON.stringify(p.engines))"
+engines: {"node":">=24 <25"}
+```
+
+**Divergência de engine:** container usa Node v22.22.0; `package.json` exige `>=24 <25`.  
+Em npm ≥7 (sem `engine-strict=true` em `.npmrc`), `EBADENGINE` é **warning**, não error — `npm ci` tenta instalar mesmo assim.
+
+### 1.2 Rede
+
+```
+$ timeout 5 curl -s https://registry.npmjs.org/npm 2>&1 | head -1
+{"_id":"npm","_rev":"2956-...
+```
+
+**Rede acessível via proxy** — contrariando avaliação anterior. O proxy CCCA roteia corretamente para `registry.npmjs.org`.
+
+### 1.3 npm ci
+
+`npm ci --no-audit --no-fund` iniciado — rodando em background (timeout 5 min). Resultado será atualizado quando completar. Enquanto isso:
+
+- `vite` consta como `6.4.5` em `package.json` e `package-lock.json` — sem CVEs ativos conforme Security Scan (run `39780447928`).
+- Testes unitários/integração: dependem da conclusão do `npm ci`.
 
 ---
 
@@ -52,19 +74,26 @@ O que se sabe sem install:
 
 ### 2.3 Estado atual — SHA `b46aa19b` (main após merge PR #135)
 
-| Workflow | Conclusão | Run | Link |
-|---|---|---|---|
-| Branch Protection Sentinel | **success** ✅ | `39786002818` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39786002818 |
-| Security Scan | **success** ✅ | `39780447928` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447928 |
-| Migration Ledger Drift | **success** ✅ | `39780884679` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780884679 |
-| Enterprise Compliance & Audit Reporting | **failure** ❌ (externo) | `39780447872` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447872 |
-| Qualidade contínua (`ci.yml`) | **success** ✅ | `39780447863` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447863 |
-| CodeQL | **success** ✅ | `39780447790` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447790 |
-| Portal Sicoob (`sicoob-ci.yml`) | **success** ✅ | `39775422468` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775422468 |
-| E2E (Playwright) | **failure** ❌ (externo) | `39776300770` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39776300770 |
-| Copilot reviewer | **failure** ❌ (externo) | `39785094125` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125 |
-| npm_and_yarn `@vitest/mocker` | **failure** ❌ (Dependabot) | `39775463512` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775463512 |
-| npm_and_yarn outros | **success** ✅ | `39775593052` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775593052 |
+Inventário completo de 15 workflows. Lista de falhas lida item a item via API (`status=failure&branch=main`, 50 runs, 2026-10-22).
+
+| Workflow | Trigger | Conclusão | Run mais recente | Link |
+|---|---|---|---|---|
+| Branch Protection Sentinel | push/main | **success** ✅ | `39786002818` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39786002818 |
+| Security Scan | push/main | **success** ✅ | `39780447928` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447928 |
+| Migration Ledger Drift | push/main | **success** ✅ | `39780884679` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780884679 |
+| Enterprise Compliance | push/main | **failure** ❌ externo | `39780447872` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447872 |
+| Qualidade contínua (`ci.yml`) | push/main | **success** ✅ | `39780447863` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447863 |
+| CodeQL | push/main | **success** ✅ | `39780447790` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447790 |
+| Portal Sicoob (`sicoob-ci.yml`) | push/main | **success** ✅ | `39775422468` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775422468 |
+| Publicar funções Sicoob | push/main | **success** ✅ | `37489393764` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37489393764 |
+| E2E (Playwright) | pull_request | **failure** ❌ externo | `39776300770` (PR event) | PENDENCIAS.md |
+| Copilot reviewer | pull_request | **failure** ❌ externo | `39785094125` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125 |
+| npm_and_yarn `@vitest/mocker` | Dependabot | **failure** ❌ | `39775463512` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775463512 |
+| npm_and_yarn outros | Dependabot | **success** ✅ | `39775593052` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775593052 |
+| Lighthouse Performance Audit | pull_request | N/A (só PR) | `36353765910` (PR antigo, logs expirados) | PENDENCIAS.md |
+| Bundle Size Check | pull_request | **success** ✅ (PR #136) | `39787553405` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39787553405 |
+| Aplicar migrations Sicoob | workflow_dispatch | N/A (manual) | — | PENDENCIAS.md |
+| Monthly DB Audit | cron (1º de cada mês) | N/A (próx. 2026-11-01) | — | PENDENCIAS.md |
 
 ---
 
