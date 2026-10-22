@@ -70,11 +70,13 @@ Três causas-raiz identificadas; duas resolvidas por código, uma bloqueada por 
 
 | CVE | Pacote | Severidade | Status |
 |---|---|---|---|
-| GHSA-qxg6-89mg-rqv8 | @vitest/mocker 4.1.11 | High | ✅ PR #139 merged |
-| GHSA-xp26-3454-mjgp | @vitest/mocker 4.1.11 | High | ✅ PR #139 merged |
-| GHSA-cg2g-xh64-v4q7 | dompurify ≤3.4.16 | Critical | ✅ PR #141 merged |
-| GHSA-mrv2-3pqr-j5jr | dompurify ≤3.4.16 | High | ✅ PR #141 merged |
-| GHSA-c6gr-qvv4-5v3f | dompurify ≤3.4.16 | Low | ✅ PR #141 merged |
+| GHSA-qxg6-89mg-rqv8 | @vitest/mocker 4.1.11 | Medium (Dependabot) / High (npm) | ✅ PR #139 merged — main tem 4.1.12 |
+| GHSA-xp26-3454-mjgp | @vitest/mocker 4.1.11 | Medium (Dependabot) / High (npm) | ✅ PR #139 merged — main tem 4.1.12 |
+| GHSA-cg2g-xh64-v4q7 | dompurify ≤3.4.16 | Critical | ⏳ PR #141 aguarda aprovação humana |
+| GHSA-mrv2-3pqr-j5jr | dompurify ≤3.4.16 | High | ⏳ PR #141 aguarda aprovação humana |
+| GHSA-c6gr-qvv4-5v3f | dompurify ≤3.4.16 | Low | ⏳ PR #141 aguarda aprovação humana |
+
+**Nota Dependabot:** Os 2 alertas abertos (GHSA-qxg6-89mg-rqv8, GHSA-xp26-3454-mjgp) são **stale** — a main já tem `@vitest/mocker@4.1.12` desde PR #139. O Dependabot fechará automaticamente no próximo scan.
 
 ---
 
