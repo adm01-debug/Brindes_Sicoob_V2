@@ -50,17 +50,21 @@ O que se sabe sem install:
 | CodeQL | **success** | Manteve ✓ | — |
 | npm_and_yarn | **success** | Manteve ✓ | — |
 
-### 2.3 Estado atual — SHA `4b3d6cae` (main após merge PR #128 + #129)
+### 2.3 Estado atual — SHA `1f56ccb1` (main após merge PR #133)
 
 | Workflow | Conclusão | Run | Link |
 |---|---|---|---|
-| Branch Protection Sentinel | **success** ✅ | `39780447806` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447806 |
+| Branch Protection Sentinel | **success** ✅ | `39784261842` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39784261842 |
 | Security Scan | **success** ✅ | `39780447928` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447928 |
 | Migration Ledger Drift | **success** ✅ | `39780884679` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780884679 |
 | Enterprise Compliance & Audit Reporting | **failure** ❌ (externo) | `39780447872` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447872 |
 | Qualidade contínua (`ci.yml`) | **success** ✅ | `39780447863` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447863 |
-| CodeQL | **in_progress** | `39780447790` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447790 |
-| Portal Sicoob, E2E, Copilot, npm_and_yarn | *não rodaram neste SHA ainda* | — | — |
+| CodeQL | **success** ✅ | `39780447790` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447790 |
+| Portal Sicoob (`sicoob-ci.yml`) | **success** ✅ | `39775422468` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775422468 |
+| E2E (Playwright) | **failure** ❌ (externo) | `39776300770` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39776300770 |
+| Copilot reviewer | **failure** ❌ (externo) | `39784266358` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39784266358 |
+| npm_and_yarn `@vitest/mocker` | **failure** ❌ (Dependabot) | `39775463512` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775463512 |
+| npm_and_yarn outros | **success** ✅ | `39775593052` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775593052 |
 
 ---
 
@@ -145,10 +149,12 @@ Estes workflows falham por motivo externo ao código e estão documentados indiv
 
 | Workflow | SHA antes | SHA depois | Evidência |
 |---|---|---|---|
-| Security Scan | `a82d92b4` success | `4b3d6cae` success | Run `39780447928` |
-| CodeQL | `a82d92b4` success | `4b3d6cae` in_progress | Run `39780447790` |
-| Portal Sicoob | `a82d92b4` success | *não rodou neste SHA* | Sem regressão — código desta área não foi alterado |
-| npm_and_yarn | `a82d92b4` success | *não rodou neste SHA* | Triggered por Dependabot, não por push |
+| Security Scan | `a82d92b4` success | `1f56ccb1` success | Run `39780447928` |
+| CodeQL | `a82d92b4` success | `1f56ccb1` success | Run `39780447790` |
+| Portal Sicoob | `a82d92b4` success | `ae1b92b3` success | Run `39775422468` — não reexecutado em SHA mais novo (sem mudança nessa área) |
+| npm_and_yarn (outros) | `a82d92b4` success | `ae1b92b3` success | Run `39775593052` — triggered por Dependabot |
+
+> **npm_and_yarn `@vitest/mocker` (run `39775463512`):** falha por `security_update_not_possible` — Dependabot não consegue criar PR automático para atualizar `@vitest/mocker@4.1.11` → 4.1.12. Duas CVEs moderadas (GHSA-qxg6-89mg-rqv8, GHSA-xp26-3454-mjgp) documentadas em PENDENCIAS.md. Afetam apenas ambiente de desenvolvimento; ação manual necessária pelo dono do repositório.
 
 ---
 
