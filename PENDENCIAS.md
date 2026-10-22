@@ -91,7 +91,7 @@ do projeto Supabase). O código do teste **não deve ser alterado**.
 
 ## Workflow: `copilot-pull-request-reviewer`
 
-**Run atual:** `39776314308` · Job `119816047330`  
+**Run atual:** `39785094125` · SHA `4f5de103`  
 **Erro exato:**
 
 ```

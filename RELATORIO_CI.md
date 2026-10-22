@@ -50,11 +50,11 @@ O que se sabe sem install:
 | CodeQL | **success** | Manteve ✓ | — |
 | npm_and_yarn | **success** | Manteve ✓ | — |
 
-### 2.3 Estado atual — SHA `1f56ccb1` (main após merge PR #133)
+### 2.3 Estado atual — SHA `4f5de103` (main após merge PR #134)
 
 | Workflow | Conclusão | Run | Link |
 |---|---|---|---|
-| Branch Protection Sentinel | **success** ✅ | `39784261842` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39784261842 |
+| Branch Protection Sentinel | **success** ✅ | `39785092106` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785092106 |
 | Security Scan | **success** ✅ | `39780447928` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447928 |
 | Migration Ledger Drift | **success** ✅ | `39780884679` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780884679 |
 | Enterprise Compliance & Audit Reporting | **failure** ❌ (externo) | `39780447872` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447872 |
@@ -62,7 +62,7 @@ O que se sabe sem install:
 | CodeQL | **success** ✅ | `39780447790` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447790 |
 | Portal Sicoob (`sicoob-ci.yml`) | **success** ✅ | `39775422468` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775422468 |
 | E2E (Playwright) | **failure** ❌ (externo) | `39776300770` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39776300770 |
-| Copilot reviewer | **failure** ❌ (externo) | `39784266358` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39784266358 |
+| Copilot reviewer | **failure** ❌ (externo) | `39785094125` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125 |
 | npm_and_yarn `@vitest/mocker` | **failure** ❌ (Dependabot) | `39775463512` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775463512 |
 | npm_and_yarn outros | **success** ✅ | `39775593052` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775593052 |
 
