@@ -7,6 +7,47 @@ O erro exato foi extraído do run mais recente disponível em main.
 
 ---
 
+## Workflow: `npm_and_yarn` — Dependabot `@vitest/mocker` Update
+
+**Run atual:** `39775463512` · Job `119813160239` · SHA `ae1b92b337e1`  
+**Erro exato:**
+
+```
+security_update_not_possible
+dependency-name: @vitest/mocker
+latest-resolvable-version: 4.1.11
+lowest-non-vulnerable-version: 4.1.12
+explanation: A patched version exists for @vitest/mocker, but the available
+             update path still resolves it to 4.1.11
+```
+
+**Causa raiz:** Dois alertas Dependabot abertos (`#1` e `#2`) — CVEs moderadas em `@vitest/mocker` 4.1.11:
+
+| Alerta | GHSA | CVE | Resumo | Gravidade |
+|---|---|---|---|---|
+| #1 | GHSA-xp26-3454-mjgp | CVE-2026-112950 | Windows backslash traversal ignora allowlist do fix do GHSA-82fw | medium (CVSS 5.9) |
+| #2 | GHSA-qxg6-89mg-rqv8 | CVE-2026-112949 | Code injection via manual mock registration não autenticado | medium (CVSS 4.7) |
+
+**Versão afetada:** `@vitest/mocker` >= 2.1.0-beta.7, < 4.1.12  
+**Fix:** `@vitest/mocker` 4.1.12 (patch de segurança; retrocompatível com vitest 4.x)  
+**Impacto:** Apenas ambiente de **desenvolvimento local** — o servidor Vite não sobe em produção. Não afeta código em produção.  
+**Por que o Dependabot não corrige automaticamente:** O `package-lock.json` pina `@vitest/mocker@4.1.11` via `vitest@4.1.11`; o Dependabot não encontrou caminho de resolução automática para 4.1.12.
+
+**O que você precisa fazer:**
+
+```bash
+# Na sua máquina com Node >= 24 e acesso à internet
+cd <pasta do projeto>
+npm install @vitest/mocker@4.1.12 --save-dev --package-lock-only
+# ou atualize vitest diretamente:
+npm update @vitest/mocker
+git add package-lock.json
+git commit -m "fix(deps): atualiza @vitest/mocker para 4.1.12 (GHSA-qxg6-89mg-rqv8, GHSA-xp26-3454-mjgp)"
+git push
+```
+
+---
+
 ## Workflow: Enterprise Compliance & Audit Reporting
 
 **Run atual:** `39775422349` · Job `119813012556`  
