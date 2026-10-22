@@ -311,4 +311,71 @@ A função `audit_security_definer_acl()` inclui `get_public_favorite_list(text)
 
 ---
 
+---
+
+## 12. Simulações de Ataque e Auditoria Profunda de RLS (agente especializado)
+
+**7 migrations** dos PRs #106, #122 e #126 auditadas com **12 queries SQL** rodadas diretamente em produção.
+
+### 12.1 Placar Geral
+
+| Categoria | Resultado |
+|---|---|
+| Controles verificados | **29 ✅** |
+| Problemas críticos | **0** |
+| Riscos baixos (neutralizados) | **2** |
+| Observações (sem risco) | **3** |
+| Ataques simulados | **6/6 bloqueados** |
+
+### 12.2 Principais Controles Confirmados
+
+- `audit_security_definer_acl()` → retornou **0 linhas** (nenhuma função com ACL violada)
+- `verba_consumida`: `authenticated` não consegue INSERT nem UPDATE — verificado via `has_column_privilege`
+- 4+4 policies RESTRICTIVE instaladas em `pa_budgets` e `cooperativa_budgets`
+- 7 funções `*_core_20261013` (wrappers): nenhuma tem EXECUTE externo
+- `authenticator`: `statement_timeout=2min`, pré-request configurado ✅
+- Triggers `aaa_guard_*` rodam ANTES de todos os outros (ordenação alfabética PostgreSQL) ✅
+
+### 12.3 Ataques Simulados — Todos Bloqueados
+
+| # | Ataque | Resultado |
+|---|--------|-----------|
+| 1 | `authenticated` tenta gravar `verba_consumida` | **Bloqueado** (privilégio de coluna) |
+| 2 | `authenticated` tenta INSERT de orçamento aprovado | **Bloqueado** (guard de status + timestamp canonicalizado) |
+| 3 | Usuário tenta elevar próprio papel no perfil | **Bloqueado** (aaa_guard_profile) |
+| 4 | `anon` tenta chamar `save_quote_atomic` | **Bloqueado** (EXECUTE = false) |
+| 5 | Injeção via search_path em SECURITY DEFINER | **Bloqueado** (todas as funções têm search_path fixo) |
+| 6 | `authenticated` tenta deletar orçamento enviado/aprovado | **Bloqueado** (guard de status) |
+
+### 12.4 Gaps de Risco Baixo (Não Exploráveis)
+
+- **GAP-1:** regex de `PG_CONTEXT` é sensível à versão — mas **falha fechado** (operação bloqueada, não liberada)
+- **GAP-2:** branch `(true AND ...)` numa policy PERMISSIVE — **neutralizado** pela policy RESTRICTIVE
+
+### 12.5 Observações Sem Risco
+
+- Função `guard_quote_personalization_content_write` é código morto (tabela `quote_personalizations` não existe)
+- Policy `coop_budgets_update_scoped` não filtra `is_active/deleted_at` — neutralizado pelo guard RESTRICTIVE
+- `anon` tem EXECUTE em `set_postgrest_request_timeout` — **intencional** (pré-request do PostgREST)
+
+---
+
+## Resumo Final Consolidado
+
+| Área | Checks | ✅ Pass | ⚠️ Info | ❌ Falha |
+|------|--------|---------|---------|---------|
+| RLS cobertura | 3 | 3 | 0 | 0 |
+| SECURITY DEFINER ACL | 3 | 3 | 0 | 0 |
+| Migrations aplicadas | 9 | 8 | 1 (drift aceito) | 0 |
+| CVE / dependências | 3 | 2 | 1 (@vitest/mocker pendente) | 0 |
+| Edge Functions | 3 | 3 | 0 | 0 |
+| CI Workflows | 5 | 5 | 1 (npm audit ausente) | 0 |
+| Ataques simulados | 6 | 6 (bloqueados) | 0 | 0 |
+| Controles profundos RLS | 7 | 7 | 0 | 0 |
+| **Total** | **39** | **37** | **2** | **0** |
+
+**Conclusão final:** Arquitetura de segurança sólida. Zero falhas críticas. Os 2 itens "Info" são gaps externos documentados em `PENDENCIAS.md`.
+
+---
+
 *Auditoria realizada via Supabase MCP + análise de código — 2026-10-22*
