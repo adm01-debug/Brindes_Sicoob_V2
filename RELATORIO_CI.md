@@ -124,7 +124,6 @@ Estes workflows falham por motivo externo ao código e estão documentados indiv
 | Workflow | Causa | Ação necessária |
 |---|---|---|
 | Qualidade contínua (`ci.yml`) | ECR Public rate limit — `toomanyrequests: Data limit exceeded` | Autenticar runner com `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` ou migrar imagem para GHCR |
-| Portal Sicoob (`sicoob-ci.yml`) | Mesmo ECR rate limit | Idem |
 | Enterprise Compliance & Audit Reporting | Supabase quota esgotada (`exceed_edge_functions_invocations_quota, exceed_egress_quota`) | Remover spend caps ou recarregar quota no painel Supabase |
 | E2E (Playwright) | Supabase 402 — edge functions retornam 402 em vez de 401/403 | Idem (mesma quota) |
 | Copilot | GitHub Copilot quota 402 | Verificar billing em github.com/settings/billing |
@@ -161,9 +160,11 @@ Estes workflows falham por motivo externo ao código e estão documentados indiv
 - Migration Ledger Drift: failure → success ✅ (run `39780884679`)
 - Enterprise Compliance (Security Definer ACL): corrigido no banco via migration ✅
 
-**5 workflows bloqueados por causas externas** (sem alteração de código possível):
-- Qualidade contínua, Portal Sicoob: ECR Public rate limit → ver PENDENCIAS.md
+**4 workflows bloqueados por causas externas** (sem alteração de código possível):
+- Qualidade contínua (`ci.yml`): ECR Public rate limit → ver PENDENCIAS.md
 - Enterprise Compliance (RLS), E2E: Supabase quota esgotada → ver PENDENCIAS.md
 - Copilot: GitHub Copilot quota → ver PENDENCIAS.md
+
+> Portal Sicoob (`sicoob-ci.yml`) era **success** no baseline e não usa imagem ECR — não é bloqueio externo.
 
 **0 regressões introduzidas** nos workflows que eram verdes antes das correções.
