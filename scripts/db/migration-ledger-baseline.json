@@ -1,15 +1,16 @@
 {
   "schema_version": 1,
   "project_ref": "cfmzkthhgliqelozlmwu",
-  "captured_at": "2026-10-07",
-  "ledger_count": 110,
-  "local_count": 592,
-  "finding_count": 491,
+  "captured_at": "2026-10-22",
+  "ledger_count": 135,
+  "local_count": 606,
+  "finding_count": 504,
   "status_counts": {
     "nome_divergente": 9,
     "conteudo_nao_verificado": 19,
     "conteudo_divergente": 1,
-    "local_sem_ledger": 462
+    "local_sem_ledger": 463,
+    "remota_sem_arquivo": 12
   },
   "policy": "Fotografia revisada do passivo histórico; não autoriza replay nem reparo artificial do ledger.",
   "fingerprints": {
@@ -503,6 +504,19 @@
     "20260522141706": "d2aa6d91532aa87dcb48661173d41f5c166ae0731b8b03e143034f369b3d9283",
     "20260522200433": "00a3ef09d6428bd7238284b227a42a6f6c0aad103a0d5d06b1e81b97a67e0782",
     "20260529192614": "bf55729823cc4d0da5edae7cde4e5d7af35fe252d22ea40a9787290aaedb6fc0",
-    "20260529193319": "1c367628191587da0c848cf16e98faadfcbe354e6ac64dc93279d01e4290dcce"
+    "20260529193319": "1c367628191587da0c848cf16e98faadfcbe354e6ac64dc93279d01e4290dcce",
+    "20261015102000": "af5617159fddf38d69ab8020edc7b6ccd5dee78a407764cf6714da32391e509b",
+    "20261015230500": "50e654a0f250f8d832ea418236a8d1db02fa92c37eb04f889a078470b1f21014",
+    "20261015233500": "e30eb6675d6000d8d52e87f36cfcd889c3a84e4728f70ac4907d9f0a7078bea3",
+    "20261015235000": "f6de0ad435bded1dbcf04606c3386c4076358d5be253d602bc4cea98f70d72eb",
+    "20261015235500": "95c298494d927b4769047b50abdad2b1d4a33a5b8a688522910a5f993ffee769",
+    "20261016000000": "a0fbc782cd80aa6625e8114adeb70583b05042a66079861cebc9a6f8a7459fb8",
+    "20261016160000": "693e49e3a21b74b14fcb2889cfab68f708e9aa5eabc1c76c9b97949a6816889b",
+    "20261016163000": "8b5dddb18372929ff9ae4a00e51d0b18d2657ef23f8ec592f974b4b9375f00b5",
+    "20261016170000": "6d38e49d916d112b04d5be98cbbde7cb3e7754c9f15b986c091db3634bfea24f",
+    "20261016171500": "5cfcd8b209b8adbb97d5349c3105e6513cb40763ff1fa1e1ca71c4caa3c04570",
+    "20261016172000": "f884d1947a50cb07e35d0039b8dc09a197f249189f1a4fbb2e68a5ae5bc69138",
+    "20261016173000": "597f3e01a56be453696267f95980d6d1e66cfa6372778a2f44758bc07d000b41",
+    "20261022120000": "8e15bdecd8f33251d874ee79d2b1b8d69eb6d0c3c9d50d87d897eecc8f27f988"
   }
 }
