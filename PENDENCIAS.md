@@ -167,7 +167,7 @@ docker: Error response from daemon: toomanyrequests: Data limit exceeded
 
 ### Gap 1 — CRÍTICO: Migration `20261022120000` ausente de `supabase_migrations.schema_migrations`
 
-**Status:** ✅ RESOLVIDO — migration de reparo aplicada no commit `$(será atualizado após push)`.
+**Status:** ✅ RESOLVIDO — migration de reparo aplicada no commit `48ee07f`.
 
 A migration `20261022120000_add_public_favorites_to_security_definer_allowlist.sql` foi aplicada ao banco fora do Supabase CLI (via Management API), portanto nunca foi registrada em `supabase_migrations.schema_migrations`. O schema estava correto, mas o ledger do Supabase ficou dessincronizado. Inserção de reparo realizada no commit acima.
 
