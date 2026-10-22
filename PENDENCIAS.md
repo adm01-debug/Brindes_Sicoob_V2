@@ -185,6 +185,29 @@ Todos os outros 47 failures da lista são em SHAs antigos (anteriores a PR #126/
 
 ---
 
+## Gap de Segurança: Ausência de `npm audit` no CI
+
+**Descoberto em:** Auditoria exaustiva 2026-10-22
+
+**Situação:** Nenhum dos 13 workflows faz `npm audit` ou varredura equivalente de vulnerabilidades em dependências JS. O workflow `security.yml` cobre apenas Gitleaks (secrets). CVEs em dependências do `package.json` só são detectadas via Dependabot e por revisão manual.
+
+**Risco:** Médio — dependências com CVE podem ser mergeadas sem alerta no CI. Atualmente mitigado pelo Dependabot ativo, mas sem gate automático no PR.
+
+**Correção recomendada:** Adicionar step no `security.yml` ou `ci.yml`:
+```yaml
+- name: Auditoria de dependências
+  run: npm audit --audit-level=high
+```
+
+**Por que não foi corrigido agora:** `npm ci` é estruturalmente impossível neste container (registry privado `europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache`). A adição do step deve ser feita pelo owner localmente e testada antes de mergear.
+
+**O que o owner precisa fazer:**
+1. Executar `npm audit` localmente para ver o estado atual
+2. Adicionar o step ao workflow em branch de feature
+3. Testar se o step passa antes de mergear
+
+---
+
 ## Workflows corrigidos (resolvidos em PRs anteriores)
 
 | Workflow | Causa | Correção | PR |
