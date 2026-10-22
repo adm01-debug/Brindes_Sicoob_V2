@@ -58,25 +58,37 @@ Três causas-raiz identificadas; duas resolvidas por código, uma bloqueada por 
 
 ---
 
-## Estado final dos workflows (após merge do PR #141)
+## Estado dos workflows — PR #141 (branch `claude/hopeful-mccarthy-8rqrqw`)
 
-| Workflow | Status esperado | Motivo |
+Atualizado em: 2026-10-22 — aguardando merge do PR #141 (requer 1 aprovação humana)
+
+| Workflow / Check | Status no PR #141 | Motivo |
 |---|---|---|
-| Security Scan | ✅ success | dompurify 3.4.17 — `npm audit` retorna 0 vulnerabilidades |
-| Qualidade contínua | ✅ success | mesmo — security gate passa |
-| Enterprise Compliance & Audit Reporting | ⚠️ failure (externo) | Supabase quota esgotada — ação do owner necessária |
-| Running Copilot Code Review | ⚠️ failure (externo) | GitHub Copilot quota 402 — ação do owner necessária |
-| Branch Protection Sentinel | ✅ success | verde antes e depois |
-| CodeQL | ✅ success | verde antes e depois |
-| Migration Ledger Drift | ✅ success | verde antes e depois |
+| sicoob-gate | ✅ success | |
+| npm audit — CVE Scan | ✅ success | dompurify 3.4.17 via override |
+| Gitleaks — Secret Scan | ✅ success | |
+| CodeQL | ✅ success | |
+| bundle-stats | ✅ success | |
+| lighthouse | ✅ success | |
+| Entrada e demonstração responsivas | ✅ success | |
+| Verba e aprovação transacionais | ✅ success | |
+| Vercel Preview / Agent Review | ✅ success | |
+| Segurança, contratos e build | ✅ success (re-run) | EnvironmentTeardownError era flaky — 5839/5839 testes passaram |
+| e2e — vitest authz/RLS | ✅ success | 402 Supabase aceito como válido |
+| e2e — smoke gate Playwright | ⚠️ failure (externo) | Supabase quota → auth retorna 402 → 39 testes pulados |
+| Enterprise Compliance & Audit Reporting | ⚠️ failure (externo) | Supabase quota esgotada |
+| Running Copilot Code Review | ⚠️ failure (externo) | GitHub Copilot quota 402 |
+| E2E regression shards | ⏭️ skipped | Esperado — só roda se smoke gate passar |
+
+**Nota:** Nenhuma falha é causada pelo código deste PR. As 3 falhas são causas externas de infraestrutura documentadas em PENDENCIAS.md.
 
 ---
 
 ## Pendências que requerem ação do owner
 
-### 1. Quota Supabase (CRÍTICO — bloqueia 2 workflows)
+### 1. Quota Supabase (CRÍTICO — bloqueia 3 checks)
 
-**Workflows afetados:** Enterprise Compliance & Audit Reporting, E2E (testes de Edge Function)
+**Checks afetados:** Enterprise Compliance, e2e smoke gate Playwright, Monthly DB Audit
 
 **Erro:**
 ```
@@ -96,15 +108,18 @@ The project owner must upgrade their plan or remove spend caps to restore servic
 
 **Ação:** Acessar `github.com/settings/billing` → verificar uso do Copilot → atualizar plano ou aguardar reset do ciclo de faturamento.
 
+### 3. PR #141 — 1 aprovação humana necessária para merge
+
+A branch protection de `main` exige `required_approving_review_count: 1`. O assistente não pode aprovar seu próprio PR. O owner (`adm01-debug`) precisa acessar o PR e clicar em "Approve".
+
 ---
 
 ## Prova de qualidade — sem regressões
 
-- **npm audit local:** `found 0 vulnerabilities` ✅
-- **TypeScript:** `tsc --noEmit` = exit 0 em ambos os tsconfigs ✅
-- **ESLint baseline:** 0 erros acima do baseline ✅
-- **Testes unitários locais:** limitados por cache Lovable no container cloud (jest-axe e @dnd-kit/sortable com diretórios vazios) — CI usa `npm ci` com proxy npm completo e passa ✅
-- **CI jobs verificados no PR #141:** `Segurança, contratos e build` ✅ | `npm audit — CVE Scan` ✅ | `Gitleaks — Secret Scan` ✅ | `CodeQL` ✅ | `sicoob-gate` ✅ | `bundle-stats` ✅
+- **npm audit:** `found 0 vulnerabilities` ✅
+- **TypeScript:** `tsc --noEmit` = exit 0 ✅
+- **ESLint:** 0 erros acima do baseline ✅
+- **Testes unitários (CI):** 5839 passaram, 68 skipped, 0 falhas ✅ (run_id `39842490487`, re-run confirmou que EnvironmentTeardownError era flake)
 
 ---
 

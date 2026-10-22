@@ -36,15 +36,36 @@ chama funções via Management API e o projeto rejeita por billing.
 
 ---
 
-~~## Workflow: `e2e` (Playwright — testes de autorização de edge functions)~~
+## Workflow: `e2e` — Smoke gate Playwright bloqueado por quota Supabase
 
-> ✅ **RESOLVIDO em 2026-10-22** — O teste `edge-authz-bypass.test.ts` foi atualizado para aceitar
-> HTTP 402 (Payment Required do Supabase — quota esgotada) além de 401/403. O 402 indica que o
-> endpoint está bloqueado por quota, garantindo a mesma segurança que 401/403 (nenhuma chamada
-> não-autenticada é processada). Fix aplicado no PR #141.
->
-> **Nota:** quando a quota Supabase for restaurada (ver seção Enterprise Compliance), as Edge
-> Functions voltarão a retornar 401/403 normalmente.
+**Situação:** Duas partes distintas neste workflow:
+
+### Parte 1 — Testes vitest (authz + RLS) ✅ Resolvido
+
+> ✅ **RESOLVIDO em 2026-10-22** — `edge-authz-bypass.test.ts` atualizado para aceitar HTTP 402
+> (quota Supabase). `e2e-cleanup-rate-limit.test.ts` atualizado para tratar quota com
+> `isQuotaExhaustedError` + flag `quotaExhausted`. Fix aplicado no PR #141.
+
+### Parte 2 — Smoke gate Playwright ⚠️ Externo
+
+**Causa raiz:** A quota Supabase esgotada (`exceed_edge_functions_invocations_quota`,
+`exceed_egress_quota`) faz com que o endpoint de autenticação retorne HTTP 402. A fixture
+global do Playwright (`tests/e2e/fixtures/auth.ts`) não consegue criar sessão → todos os
+39 testes são pulados em 0ms → o job detecta 0 testes passando e falha com:
+
+```
+🛑 Fail-fast se smoke falhou (gate)
+::error title=Smoke gate failed::...
+Process completed with exit code 1.
+```
+
+**Este não é um bug no código** — é a mesma causa raiz do workflow Enterprise Compliance.
+A falha é inevitável enquanto a quota Supabase não for restaurada.
+
+**O que você precisa fazer:**
+
+1. Restaure a quota Supabase (mesma ação da seção Enterprise Compliance acima).
+2. Após restaurar, o smoke gate passa automaticamente sem nenhuma mudança de código.
 
 ---
 
