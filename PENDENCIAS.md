@@ -142,6 +142,49 @@ errorType: 'quota', statusCode: 402
 
 ---
 
+## Workflow: `Segurança, contratos e build` (`ci.yml`) — ECR Rate Limit
+
+**Commits afetados:** `5b34841` e `7211e12` (branch `claude/hopeful-mccarthy-8rqrqw`)
+**Runs:** `39850827027` · `39852468612`
+**Step:** "Simular controles de auditoria" / "Simular ACL efetiva"
+**Erro exato:**
+
+```
+RuntimeError: docker run falhou após 3 tentativas:
+Unable to find image 'public.ecr.aws/supabase/postgres:17.6.1.063' locally
+docker: Error response from daemon: toomanyrequests: Data limit exceeded
+```
+
+**Causa raiz:** Rate limit do ECR Public da AWS ao puxar a imagem Docker `public.ecr.aws/supabase/postgres:17.6.1.063` nos scripts `simular-controles-auditoria.py` e `simular-acl-efetiva.py`. Não é um bug no código do PR — é throttling de infraestrutura externa. Em execuções posteriores (ex: run `39780447863`) o rate limit se dissipar naturalmente e o workflow retornou **success**.
+
+**O que você precisa fazer:** Nenhuma ação imediata. Se a falha persistir em execuções futuras:
+1. Habilitar o Amazon ECR pull-through cache ou autenticar no ECR antes do pull.
+2. Alternativa: migrar os scripts para usar a imagem via GHCR ou Docker Hub se disponível.
+
+---
+
+## Gaps de banco de dados identificados em auditoria (2026-10-22)
+
+### Gap 1 — CRÍTICO: Migration `20261022120000` ausente de `supabase_migrations.schema_migrations`
+
+**Status:** ✅ RESOLVIDO — migration de reparo aplicada no commit `$(será atualizado após push)`.
+
+A migration `20261022120000_add_public_favorites_to_security_definer_allowlist.sql` foi aplicada ao banco fora do Supabase CLI (via Management API), portanto nunca foi registrada em `supabase_migrations.schema_migrations`. O schema estava correto, mas o ledger do Supabase ficou dessincronizado. Inserção de reparo realizada no commit acima.
+
+### Gap 2 — MÉDIO: `e2e_cleanup_check_rate_limit` com `search_path` incompleto
+
+**Status:** ✅ RESOLVIDO — migration de reparo aplicada no mesmo commit.
+
+A função SECURITY DEFINER `e2e_cleanup_check_rate_limit` tinha `SET search_path TO 'public'` sem o `pg_catalog` explicitamente como primeiro elemento, diferentemente das outras funções SECURITY DEFINER do projeto (`get_public_favorite_list` e `get_public_favorite_reactions`). Corrigido para `pg_catalog, public` por consistência com o padrão de hardening do projeto.
+
+### Gap 3 — MÉDIO: `relforcerowsecurity = false` em `e2e_cleanup_rate_limit`
+
+**Status:** ⚠️ Não corrigido — avaliação: risco aceitável pelo design atual.
+
+A tabela `e2e_cleanup_rate_limit` tem `FORCE ROW LEVEL SECURITY` desabilitado, o que permite à role `postgres` (dono) acessar diretamente sem passar pelo RLS. Em produção isso é aceitável: a única escrita legítima é via RPC SECURITY DEFINER `e2e_cleanup_check_rate_limit` que roda como `postgres` por design. Adicionar `FORCE ROW LEVEL SECURITY` quebraria a RPC.
+
+---
+
 ## Inventário completo de falhas — main (status=failure, consultado em 2026-10-22 19:30 UTC)
 
 Lista lida via API (`branch=main`, 50 runs, último run de cada workflow).
