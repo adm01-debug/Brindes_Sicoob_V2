@@ -20,7 +20,9 @@ docker: Error response from daemon: toomanyrequests: Data limit exceeded
 ```
 
 **Causa raiz:** Rate limit do Amazon ECR Public por IP do runner do GitHub Actions.  
-**Arquivo:** `scripts/qa/simular-controles-auditoria.py`, linha 32, função `start_container()`
+**Arquivos afetados no mesmo job:**
+- `scripts/qa/simular-controles-auditoria.py`, linha 32, função `start_container()` (step "Simular controles de auditoria e permissões em PostgreSQL descartável")
+- `scripts/qa/simular-acl-efetiva.py` (step "Simular ACL padrão, sobrecargas e herança de papéis") — mesma imagem ECR, mesmo erro
 
 **O que você precisa fazer:**
 
