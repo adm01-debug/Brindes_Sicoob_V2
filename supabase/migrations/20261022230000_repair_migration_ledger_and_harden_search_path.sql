@@ -1,12 +1,23 @@
 -- Repair: registrar migration 20261022120000 no ledger do Supabase CLI
 -- A migration foi aplicada ao banco via Management API (fora do CLI), portanto
 -- nunca foi registrada em supabase_migrations.schema_migrations, causando drift.
-INSERT INTO supabase_migrations.schema_migrations (version, name)
-SELECT '20261022120000', 'add_public_favorites_to_security_definer_allowlist'
+-- statements contém o SHA-256 do conteúdo do arquivo local (hash raw, sem normalização),
+-- no formato aceito pelo LEDGER_HASH_MARKER do check-migration-ledger-drift.mjs,
+-- permitindo que o validador classifique o entry como 'alinhada' em vez de 'conteudo_nao_verificado'.
+INSERT INTO supabase_migrations.schema_migrations (version, name, statements)
+SELECT
+  '20261022120000',
+  'add_public_favorites_to_security_definer_allowlist',
+  ARRAY['sha256:87bf1a8d5bb689f202a4ff77968c6f8820cfbfe5fffdff5d9c16c439a611bf54; executor:allowlisted-management-api']
 WHERE NOT EXISTS (
   SELECT 1 FROM supabase_migrations.schema_migrations
   WHERE version = '20261022120000'
 );
+
+-- Idempotência: corrigir rows inseridas anteriormente sem statements
+UPDATE supabase_migrations.schema_migrations
+SET statements = ARRAY['sha256:87bf1a8d5bb689f202a4ff77968c6f8820cfbfe5fffdff5d9c16c439a611bf54; executor:allowlisted-management-api']
+WHERE version = '20261022120000' AND statements IS NULL;
 
 -- Hardening: adicionar pg_catalog ao search_path de e2e_cleanup_check_rate_limit
 -- Inconsistência com get_public_favorite_list e get_public_favorite_reactions que
