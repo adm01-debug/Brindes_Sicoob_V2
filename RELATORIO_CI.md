@@ -50,11 +50,11 @@ O que se sabe sem install:
 | CodeQL | **success** | Manteve ✓ | — |
 | npm_and_yarn | **success** | Manteve ✓ | — |
 
-### 2.3 Estado atual — SHA `4f5de103` (main após merge PR #134)
+### 2.3 Estado atual — SHA `b46aa19b` (main após merge PR #135)
 
 | Workflow | Conclusão | Run | Link |
 |---|---|---|---|
-| Branch Protection Sentinel | **success** ✅ | `39785092106` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785092106 |
+| Branch Protection Sentinel | **success** ✅ | `39786002818` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39786002818 |
 | Security Scan | **success** ✅ | `39780447928` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447928 |
 | Migration Ledger Drift | **success** ✅ | `39780884679` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780884679 |
 | Enterprise Compliance & Audit Reporting | **failure** ❌ (externo) | `39780447872` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447872 |

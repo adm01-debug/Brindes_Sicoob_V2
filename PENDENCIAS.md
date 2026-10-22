@@ -50,7 +50,7 @@ git push
 
 ## Workflow: Enterprise Compliance & Audit Reporting
 
-**Run atual:** `39775422349` · Job `119813012556`  
+**Run atual:** `39780447872` · Job `119830039718`  
 **Step:** "Database RLS Scan"  
 **Erro exato:**
 
@@ -73,7 +73,13 @@ chama funções via Management API e o projeto rejeita por billing.
 
 ## Workflow: `e2e` (Playwright — testes de autorização de edge functions)
 
-**Run atual:** `39776300770` · Job `119816156308`  
+**Run de referência:** `39776300770` · Job `119816156308`  
+**Observação:** este run foi disparado por evento `pull_request` na branch
+`fix/relatorio-ci-e-sentinel-2` — **não** é um push à `main`. O workflow `e2e.yml`
+possui filtros de path e não dispara em commits doc-only na `main`; por isso não há
+run de push recente na `main` para este workflow. O erro Supabase 402 abaixo é
+reproduzível independente do evento de disparo enquanto a quota estiver esgotada.
+
 **Erro exato:**
 
 ```
