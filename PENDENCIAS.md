@@ -1,70 +1,123 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
-Registrado em: 2026-10-22
+Atualizado em: 2026-10-22
+
+Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
+O erro exato foi extraído do run mais recente disponível em main.
 
 ---
 
 ## Workflow: Qualidade contínua (`ci.yml`)
 
-**Última falha:** 2026-10-20  
-**Causa raiz:** Rate limit do Amazon ECR Public (`toomanyrequests: Data limit exceeded`)
+**Run atual:** `39775422345` · Job `119813012334`  
+**Step:** "Executar simulação de controles de auditoria"  
+**Erro exato:**
 
-O workflow tenta baixar a imagem `public.ecr.aws/supabase/postgres:17.6.1.063` para executar
-os testes de auditoria de controles. O ECR Public impõe um limite de transferência de dados por
-conta de IP de origem; o runner do GitHub Actions esgotou essa cota.
+```
+RuntimeError: docker run falhou após 3 tentativas: Unable to find image
+'public.ecr.aws/supabase/postgres:17.6.1.063' locally
+docker: Error response from daemon: toomanyrequests: Data limit exceeded
+```
 
-**Bloqueio externo — requer ação sua:**
+**Causa raiz:** Rate limit do Amazon ECR Public por IP do runner do GitHub Actions.  
+**Arquivo:** `scripts/qa/simular-controles-auditoria.py`, linha 32, função `start_container()`
 
-1. **Opção A (recomendada):** Autenticar o runner no ECR antes do pull. Adicione o secret
-   `AWS_ACCESS_KEY_ID` e `AWS_SECRET_ACCESS_KEY` (conta AWS com permissão
-   `ecr-public:GetAuthorizationToken`) e atualize o workflow para rodar
-   `aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws`
-   antes do step que usa Docker.
+**O que você precisa fazer:**
 
-2. **Opção B:** Migrar a imagem para o Docker Hub ou GitHub Container Registry (GHCR) para
-   evitar os limites do ECR Public.
-
-3. **Opção C (paliativo):** Aumentar o cache da imagem Docker no GitHub Actions para reduzir
-   a frequência de pulls.
-
-**O que NÃO precisa ser feito:** o código do script `scripts/qa/simular-controles-auditoria.py`
-está correto; o problema é exclusivamente de infraestrutura de rede/autenticação.
+- **Opção A (recomendada):** Adicionar os secrets `AWS_ACCESS_KEY_ID` e `AWS_SECRET_ACCESS_KEY`
+  (conta AWS com permissão `ecr-public:GetAuthorizationToken`) e atualizar o workflow para rodar
+  `aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws`
+  antes do step Docker.
+- **Opção B:** Migrar a imagem `public.ecr.aws/supabase/postgres:17.6.1.063` para Docker Hub
+  ou GHCR, que não impõe rate limit para pulls autenticados.
 
 ---
 
-## Workflow: `e2e` (testes de autorização de edge functions)
+## Workflow: Segurança, contratos e build (`sicoob-ci.yml`)
 
-**Última falha:** 2026-10-22 (pré-existente — falha em TODOS os 5 runs mais recentes, em branches distintas)  
-**Causa raiz:** Edge functions do Supabase retornam HTTP 402 (Payment Required) em vez de 401/403.  
-**Erro:** `AssertionError: expected [ 401, 403 ] to include 402` em `tests/security/edge-authz-bypass.test.ts`
+**Run de referência:** Job `119807381249` (2026-10-22)  
+**Erro exato:**
 
-O teste `edge-authz-bypass.test.ts` chama funções marcadas como `category: supervisor` ou `category: dev` no manifesto e espera `401` ou `403`. As funções estão retornando `402`, indicando um problema de billing/quota no projeto Supabase (não é um bug de código — o teste está correto).
+```
+RuntimeError: docker run falhou após 3 tentativas: Unable to find image
+'public.ecr.aws/supabase/postgres:17.6.1.063' locally
+docker: Error response from daemon: toomanyrequests: Data limit exceeded
+```
 
-**Bloqueio externo — requer ação sua:**
+**Causa raiz:** Mesma imagem ECR Public `public.ecr.aws/supabase/postgres:17.6.1.063` —
+mesmo rate limit de IP que o `ci.yml`. A solução é idêntica.
 
-1. Verifique o status de billing/quota do projeto Supabase em uso pelos testes.
-2. Se a conta estiver com quota esgotada, adicione créditos ou mude para um plano adequado.
-3. O código do teste NÃO deve ser alterado — o comportamento esperado (401/403) está correto.
+**O que você precisa fazer:** mesma ação da seção anterior (`ci.yml`).
+
+---
+
+## Workflow: Enterprise Compliance & Audit Reporting
+
+**Run atual:** `39775422349` · Job `119813012556`  
+**Step:** "Database RLS Scan"  
+**Erro exato:**
+
+```
+check_tables_rls falhou: Service for this project is restricted due to the following violations:
+exceed_edge_functions_invocations_quota, exceed_egress_quota.
+The project owner must upgrade their plan or remove spend caps to restore service.
+```
+
+**Causa raiz:** Quota de edge functions e egress do projeto Supabase esgotada — o workflow
+chama funções via Management API e o projeto rejeita por billing.
+
+**O que você precisa fazer:**
+
+1. Acesse o painel do Supabase do projeto em uso pelos testes.
+2. Verifique se há spend caps ativos e remova-os, ou adicione créditos ao plano.
+3. Após restaurar a quota, o workflow deve passar sem nenhuma mudança de código.
+
+---
+
+## Workflow: `e2e` (Playwright — testes de autorização de edge functions)
+
+**Run atual:** `39776300770` · Job `119816156308`  
+**Erro exato:**
+
+```
+AssertionError: expected [ 401, 403 ] to include 402
+❯ tests/security/edge-authz-bypass.test.ts:77:26
+```
+
+**Causa raiz:** As edge functions retornam HTTP 402 (Payment Required) em vez de 401/403.
+O teste está correto — o problema é de quota/billing Supabase, igual ao Enterprise Compliance.
+
+**O que você precisa fazer:** mesma ação da seção Enterprise Compliance acima (restaurar quota
+do projeto Supabase). O código do teste **não deve ser alterado**.
 
 ---
 
 ## Workflow: `copilot-pull-request-reviewer`
 
-**Última falha:** 2026-10-22  
-**Causa raiz:** Quota do GitHub Copilot esgotada para o plano atual.  
-**Erro:** `SessionModelError: You've reached your additional usage limit for your plan` (statusCode: 402)
+**Run atual:** `39776314308` · Job `119816047330`  
+**Erro exato:**
 
-**Bloqueio externo — requer ação sua:**
+```
+SessionModelError: You've reached your additional usage limit for your plan.
+Go to https://github.com/settings/copilot/features for more details.
+(Request ID: E01C:2B4931:27FA876:2E0CFAE:6AD9FDF4)
+errorType: 'quota', statusCode: 402
+```
 
-1. Verifique o uso do GitHub Copilot em `github.com/settings/billing`.
+**Causa raiz:** Quota mensal do GitHub Copilot esgotada.
+
+**O que você precisa fazer:**
+
+1. Acesse `github.com/settings/billing` e verifique o uso do Copilot.
 2. Atualize o plano ou aguarde o reset do ciclo de faturamento.
 
 ---
 
-## Workflows já corrigidos neste PR
+## Workflows corrigidos (resolvidos em PRs anteriores)
 
-| Workflow | Causa da falha | Correção |
-|---|---|---|
-| Enterprise Compliance & Audit Reporting | `get_public_favorite_list` e `get_public_favorite_reactions` ausentes da allowlist do `audit_security_definer_acl()` | Nova migration `20261022120000_add_public_favorites_to_security_definer_allowlist.sql` |
-| Migration ledger drift | 12 migrations aplicadas remotamente (Oct 15-16) sem arquivo local; baseline desatualizado | Atualizado `scripts/db/migration-ledger-baseline.json` com fingerprints das 12 entradas `remota_sem_arquivo` |
-| Segurança, contratos e build | 5 CVEs `high` no vite ≤6.4.3 (GHSA-698v, GHSA-r825, GHSA-587h, GHSA-9jrq, GHSA-rq7h) | Atualizado `vite` 6.4.3 → 6.4.5 em `package.json` e `package-lock.json` |
+| Workflow | Causa | Correção | PR |
+|---|---|---|---|
+| Branch Protection Sentinel | Squash merge com mensagem customizada sem `(#NNN)` | PR mergeado sem `commit_message` custom (GitHub gera título com `(#NNN)`) | #128 |
+| Enterprise Compliance — Security Definer ACL | `audit_security_definer_acl()` sem `get_public_favorite_list` e `get_public_favorite_reactions` | Migration `20261022120000_add_public_favorites_to_security_definer_allowlist.sql` | #126 |
+| Migration Ledger Drift | Fingerprint de `20261022120000` calculado com `local_sha256` incorreto; novo digest correto: `e2815b0...` | Corrigido fingerprint no `migration-ledger-baseline.json` | #129 |
+| 5 CVEs high (vite ≤6.4.3) | GHSA-698v, GHSA-r825, GHSA-587h, GHSA-9jrq, GHSA-rq7h | `vite` 6.4.3 → 6.4.5 | #126 |
