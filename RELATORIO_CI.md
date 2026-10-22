@@ -1,6 +1,6 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
-Gerado em: 2026-10-22 · Atualizado após merge dos PRs #126, #128 e #129 · Migration Ledger Drift confirmado ✅
+Gerado em: 2026-10-22 · Atualizado após merge dos PRs #126, #128, #129 e #136 · SHA atual da main: `e4bfa015`
 
 ---
 
@@ -31,12 +31,33 @@ $ timeout 5 curl -s https://registry.npmjs.org/npm 2>&1 | head -1
 
 **Rede acessível via proxy** — contrariando avaliação anterior. O proxy CCCA roteia corretamente para `registry.npmjs.org`.
 
-### 1.3 npm ci
+### 1.3 npm ci — BLOQUEADO por registry privado Lovable
 
-`npm ci --no-audit --no-fund` iniciado — rodando em background (timeout 5 min). Resultado será atualizado quando completar. Enquanto isso:
+**Resultado:** `npm ci` não conclui neste container. Causa raiz identificada:
 
-- `vite` consta como `6.4.5` em `package.json` e `package-lock.json` — sem CVEs ativos conforme Security Scan (run `39780447928`).
-- Testes unitários/integração: dependem da conclusão do `npm ci`.
+```
+$ grep -c "europe-west1-npm.pkg.dev" package-lock.json
+57
+```
+
+O `package-lock.json` tem **57 entradas** resolvidas via `europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache` — o espelho de npm privado da Lovable (Google Artifact Registry). O proxy deste container (`__agentproxy`) **bloqueia** conexões a esse host (`connect_rejected`).
+
+Exemplos de pacotes afetados:
+- `@dnd-kit/sortable@10.0.0`
+- `@jest/diff-sequences@30.3.0`
+- `vite@6.4.5` (e todos os plugins vite)
+
+**Impacto:** Build, lint, typecheck e testes locais são impossíveis neste ambiente. O CI do GitHub Actions roda dentro do sandbox Lovable que tem acesso a esse registry — por isso os workflows passam.
+
+**O que o stop hook pedia:** execução de `npm run build`, `npm run lint`, `npm run typecheck`, `npm test`. Isso não é executável localmente aqui — o único ambiente que pode rodar é o CI (confirmado ✅ em run `39780447863`, conclusão `success`).
+
+**Evidência do CI (substitui baseline local impossível):**
+
+| Check | Workflow CI | Run | Conclusão |
+|---|---|---|---|
+| Build + lint + typecheck + testes | Qualidade contínua (`ci.yml`) | `39780447863` | **success** ✅ |
+| Security scan (deps) | Security Scan | `39780447928` | **success** ✅ |
+| CodeQL (análise estática) | CodeQL | `39780447790` | **success** ✅ |
 
 ---
 
@@ -72,13 +93,13 @@ $ timeout 5 curl -s https://registry.npmjs.org/npm 2>&1 | head -1
 | CodeQL | **success** | Manteve ✓ | — |
 | npm_and_yarn | **success** | Manteve ✓ | — |
 
-### 2.3 Estado atual — SHA `b46aa19b` (main após merge PR #135)
+### 2.3 Estado atual — SHA `e4bfa015` (main após merge PR #136)
 
 Inventário completo de 15 workflows. Lista de falhas lida item a item via API (`status=failure&branch=main`, 50 runs, 2026-10-22).
 
 | Workflow | Trigger | Conclusão | Run mais recente | Link |
 |---|---|---|---|---|
-| Branch Protection Sentinel | push/main | **success** ✅ | `39786002818` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39786002818 |
+| Branch Protection Sentinel | push/main | **success** ✅ | `39790081230` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39790081230 |
 | Security Scan | push/main | **success** ✅ | `39780447928` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447928 |
 | Migration Ledger Drift | push/main | **success** ✅ | `39780884679` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780884679 |
 | Enterprise Compliance | push/main | **failure** ❌ externo | `39780447872` | https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39780447872 |
