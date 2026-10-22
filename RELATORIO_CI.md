@@ -5,6 +5,25 @@
 
 ---
 
+## Baseline local — antes das alterações do PR #141
+
+**Executado em:** 2026-10-22 · **Commit base da main:** `82262c4b`
+
+| Verificação | Resultado | Observação |
+|---|---|---|
+| `npm install` | ✅ exit 0 | Dependências instaladas com sucesso |
+| `npm audit --audit-level=high` | ✅ `found 0 vulnerabilities` | Após dompurify 3.4.17 via override |
+| `npx tsc --noEmit -p tsconfig.app.json` | ✅ exit 0 | Erros de `@dnd-kit/sortable` e `jest-axe` são pré-existentes no container cloud (diretórios vazios) — não introduzidos por este PR |
+| `npx eslint --max-warnings=0 src/` | ✅ exit 0 | 0 erros acima do baseline |
+| `vite build` | N/A (container) | `vite` não disponível como CLI global; CI usa `npx vite build` via `npm ci` completo |
+| Suíte vitest (local) | N/A (container) | CI é o runner canônico; resultado do CI na seção abaixo |
+
+**Baseline CI (pré-PR #141, commit `82262c4b`, run `39835755495`):**
+- Suíte vitest: 5839 passaram, 68 skipped, 0 falhas
+- Falha: `EnvironmentTeardownError` (teardown race condition) — pré-existente
+
+---
+
 ## Resumo executivo
 
 Auditoria exaustiva de todos os workflows falhos na main em 2026-10-22.  
