@@ -31,8 +31,9 @@ Gerado em: 2026-10-22
 | Portal Sicoob | 🔄 in_progress | [39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315) | Aguardando conclusão |
 | Enterprise Compliance & Audit Reporting | ❌ failure | [39868499402](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499402) | **EXTERNO** — ver PENDENCIAS.md |
 | Running Copilot Code Review | ❌ failure | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | **EXTERNO** — ver PENDENCIAS.md |
-| npm_and_yarn @vitest/mocker | ⚠️ em investigação | [39775463512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775463512) | Run pré-merge; vitest 4.1.12 já em main |
-| E2E (Playwright) | ⚠️ em investigação | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | Run muito antigo (SHA a974d77); investigando trigger |
+| npm_and_yarn @vitest/mocker | ✅ success | [39868640811](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868640811) | Resolvido pelo PR #141 (vitest 4.1.12) |
+| E2E (Playwright) | — | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | **Não roda em push para main** (só pull_request); não conta |
+| BuildFailed (workflow deletado) | — | [37775844412](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775844412) | **YAML deletado**, sem runs após 2026-10-08; não conta |
 
 ---
 
@@ -86,4 +87,22 @@ Gerado em: 2026-10-22
 
 ---
 
-*Atualizado em 2026-10-22 — aguardando conclusão de Qualidade contínua, CodeQL, Portal Sicoob e investigação de npm_and_yarn @vitest/mocker e E2E*
+---
+
+## Conclusão do inventário (2026-10-22)
+
+**Workflows que falhavam e foram corrigidos:**
+- Security Scan ✅ — CVE dompurify (PR #141)
+- Qualidade contínua ✅ — CVE dompurify (PR #141)
+- npm_and_yarn @vitest/mocker ✅ — vitest atualizado para 4.1.12 (PR #141)
+- Migration Ledger Drift ✅ — reparo ledger migration 20261022120000 (PR #141)
+
+**Falhas externas registradas em PENDENCIAS.md (requerem ação do owner):**
+- Enterprise Compliance — quota Supabase esgotada
+- Running Copilot Code Review — quota GitHub Copilot esgotada
+
+**Não contam como falhas de push-to-main:**
+- E2E (Playwright) — trigger `pull_request` apenas
+- BuildFailed — workflow YAML deletado, sem execuções recentes
+
+*Atualizado em 2026-10-22*
