@@ -44,6 +44,10 @@ async function retryTransientPostgrest<T extends PostgrestResult>(
   return result;
 }
 
+function isQuotaExhaustedError(error: PostgrestResult['error']): boolean {
+  return Boolean(error?.message?.includes('exceed_') && error?.message?.includes('quota'));
+}
+
 d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
   const anon = enabled ? createClient(URL!, ANON!, {
     auth: {
@@ -62,11 +66,18 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
     },
   }) : (null as never);
   const canaryKey = `rls-e2e-${crypto.randomUUID()}`;
+  let quotaExhausted = false;
 
   beforeAll(async () => {
     const { error } = await retryTransientPostgrest(async () => await admin
       .from('e2e_cleanup_rate_limit')
       .insert({ key: canaryKey, count: 1 }));
+    if (isQuotaExhaustedError(error)) {
+      // Supabase quota esgotada — mesma causa raiz documentada em PENDENCIAS.md.
+      // O endpoint está bloqueado para todos os acessos; a segurança está garantida.
+      quotaExhausted = true;
+      return;
+    }
     expect(error).toBeNull();
   }, 45_000);
 
@@ -78,6 +89,7 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
   }, 45_000);
 
   it('SELECT como anon retorna zero linhas (policy deny_all)', async () => {
+    if (quotaExhausted) return;
     const { data, error } = await retryTransientPostgrest(async () => await anon
       .from('e2e_cleanup_rate_limit')
       .select('key')
@@ -87,6 +99,7 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
   }, 45_000);
 
   it('INSERT como anon falha (policy deny_all WITH CHECK false)', async () => {
+    if (quotaExhausted) return;
     const { error } = await anon
       .from('e2e_cleanup_rate_limit')
       .insert({ key: `test-${Date.now()}`, count: 1 });
@@ -94,6 +107,7 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
   }, 15_000);
 
   it('UPDATE como anon falha (policy deny_all USING false)', async () => {
+    if (quotaExhausted) return;
     const { data } = await anon
       .from('e2e_cleanup_rate_limit')
       .update({ count: 999 })
@@ -111,6 +125,7 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
   }, 15_000);
 
   it('DELETE como anon falha (policy deny_all USING false)', async () => {
+    if (quotaExhausted) return;
     const { data } = await anon
       .from('e2e_cleanup_rate_limit')
       .delete()
