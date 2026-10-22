@@ -120,6 +120,10 @@ const TARGETS = [
     file: "supabase/migrations/20261014151000_harden_catalog_marketing_authorship.sql",
     sha256: "f34673b492a9d222c955bed53d396121473fdbd1a32dba2e3fde3f3041f96803",
   },
+  {
+    file: "supabase/migrations/20261022120000_add_public_favorites_to_security_definer_allowlist.sql",
+    sha256: "87bf1a8d5bb689f202a4ff77968c6f8820cfbfe5fffdff5d9c16c439a611bf54",
+  },
 ];
 
 function sha256(value) {

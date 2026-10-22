@@ -1,7 +1,11 @@
 -- Adiciona as funções de favoritos públicos à lista revisada de ACL do
 -- audit_security_definer_acl(). Estas funções recebem EXECUTE para anon
--- intencionalmente (acesso via token público) mas nunca foram incluídas
+-- intencionalmente (acesso via token público) mas não estavam incluídas
 -- na allowlist revisada, causando alertas falsos no CI de compliance.
+--
+-- Ponto de partida: migration 20261007220500_revoke_anon_security_helper_execute.sql
+-- que deixou a lista com apenas get_sicoob_invitation(text).
+-- Acrescentamos SOMENTE as duas assinaturas de favoritos públicos revisadas.
 
 CREATE OR REPLACE FUNCTION public.audit_security_definer_acl()
 RETURNS TABLE(function_name text, arguments text, problem text, granted_to text)
@@ -12,23 +16,9 @@ AS $function$
   WITH reviewed AS (
     SELECT to_regprocedure(signature)::oid AS oid
     FROM unnest(ARRAY[
-      'public.can_manage(uuid)',
-      'public.can_view_all_sales(uuid)',
-      'public.current_user_cooperativa_id()',
-      'public.current_user_pa_id()',
+      'public.get_sicoob_invitation(text)',
       'public.get_public_favorite_list(text)',
-      'public.get_public_favorite_reactions(text,text)',
-      'public.get_quote_token_by_value(text)',
-      'public.get_user_cooperative_id()',
-      'public.get_user_org_ids(uuid)',
-      'public.get_user_pa_id()',
-      'public.has_role(uuid,public.app_role)',
-      'public.is_admin(uuid)',
-      'public.is_dev(uuid)',
-      'public.is_kit_collaborator(uuid,uuid)',
-      'public.is_kit_owner(uuid,uuid)',
-      'public.is_supervisor_or_above(uuid)',
-      'public.submit_quote_response(text,text,text)'
+      'public.get_public_favorite_reactions(text,text)'
     ]) AS signatures(signature)
   ), defs AS (
     SELECT p.oid, p.proname::text AS name,
@@ -56,4 +46,4 @@ $function$;
 REVOKE EXECUTE ON FUNCTION public.audit_security_definer_acl() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.audit_security_definer_acl() TO authenticated, service_role;
 COMMENT ON FUNCTION public.audit_security_definer_acl() IS
-'Audita EXECUTE efetivo em SECURITY DEFINER, incluindo ACL padrão e herança; exceções anônimas por assinatura completa.';
+'Audita EXECUTE efetivo em SECURITY DEFINER; exceções anônimas revisadas: get_sicoob_invitation, get_public_favorite_list, get_public_favorite_reactions.';
