@@ -50,7 +50,7 @@ git push
 
 ## Workflow: Enterprise Compliance & Audit Reporting
 
-**Run atual:** `39775422349` · Job `119813012556`  
+**Run atual:** `39780447872` · Job `119830039718`  
 **Step:** "Database RLS Scan"  
 **Erro exato:**
 
@@ -73,7 +73,13 @@ chama funções via Management API e o projeto rejeita por billing.
 
 ## Workflow: `e2e` (Playwright — testes de autorização de edge functions)
 
-**Run atual:** `39776300770` · Job `119816156308`  
+**Run de referência:** `39776300770` · Job `119816156308`  
+**Observação:** este run foi disparado por evento `pull_request` na branch
+`fix/relatorio-ci-e-sentinel-2` — **não** é um push à `main`. O workflow `e2e.yml`
+possui filtros de path e não dispara em commits doc-only na `main`; por isso não há
+run de push recente na `main` para este workflow. O erro Supabase 402 abaixo é
+reproduzível independente do evento de disparo enquanto a quota estiver esgotada.
+
 **Erro exato:**
 
 ```
@@ -107,6 +113,75 @@ errorType: 'quota', statusCode: 402
 
 1. Acesse `github.com/settings/billing` e verifique o uso do Copilot.
 2. Atualize o plano ou aguarde o reset do ciclo de faturamento.
+
+---
+
+## Workflow: `lighthouse` (Lighthouse Performance Audit)
+
+**Trigger:** `on: pull_request` com `paths-ignore: ['docs/**', '*.md', '.github/CODEOWNERS']` — **não dispara em push à main**.  
+**Run mais recente disponível:** `36353765910` · Job `108717316857` · SHA `99dd8778` · 2026-09-27  
+**Log:** expirado (HTTP 404 — run de 25 dias; steps retornados vazios pela API).  
+**Estado em PR #136:** SKIPPED corretamente (mudanças apenas em `*.md`).
+
+**Causa provável da falha de Set/27:** O workflow executa `npx @lhci/cli@0.13.0 autorun` e usa o secret `LHCI_GITHUB_APP_TOKEN` para integração com GitHub Checks. Sem o token configurado (ou com token expirado), o LHCI retorna erro de autenticação mas ainda gera relatório; a falha pode ser de orçamento de performance ou de token. Logs indisponíveis para confirmar.
+
+**Impacto:** Zero em push à main — workflow só corre em PRs. Em PRs com mudanças de código, pode falhar por:
+1. `LHCI_GITHUB_APP_TOKEN` ausente/expirado no repositório.
+2. Orçamento de performance configurado em `.lighthouserc.*` não sendo atingido.
+
+**O que você precisa fazer:**
+1. Verifique se o secret `LHCI_GITHUB_APP_TOKEN` está configurado em Settings → Secrets and variables → Actions.
+2. Na próxima abertura de PR com mudanças de código, observe o log do job `lighthouse` para confirmar a causa raiz.
+3. Sem ação imediata necessária — não bloqueia push à main.
+
+---
+
+## Workflow: `bundle-stats` (Bundle Size Check)
+
+**Trigger:** `on: pull_request` — **não dispara em push à main**.  
+**Run mais recente disponível em main:** `36353765911` · Job `108717316864` · SHA `99dd8778` · 2026-09-27  
+**Log:** expirado (HTTP 404).  
+**Estado em PR #136:** **success** ✅ · Run `39787553405` · Job `119854596437`.
+
+**Causa da falha de Set/27:** Logs indisponíveis. Possível causa: script `scripts/qa/check-bundle-budget.mjs` com limite de orçamento ultrapassado no código daquele PR.  
+**Estado atual:** Não é um bloqueio — no código atual (PR #136) o check PASSOU.
+
+---
+
+## Workflow: `Aplicar migrations Sicoob` (`apply-sicoob-migrations.yml`)
+
+**Trigger:** `workflow_dispatch` apenas (manual) — requer input `confirmar: "APLICAR"` e branch `main`.  
+**Não há runs automáticos.** Workflow só executa quando o owner aciona manualmente via GitHub UI ou API.  
+**Último run:** não disponível (nenhum run automático indexado em `branch=main`).  
+**Ação necessária:** Nenhuma no momento — workflow é utilitário para aplicar migrations ao banco de construção sob demanda.
+
+---
+
+## Workflow: `Monthly DB Audit` (`db-performance-audit.yml`)
+
+**Trigger:** Cron `0 0 1 * *` (dia 1 de cada mês às 00:00 UTC) + `workflow_dispatch`.  
+**Próxima execução automática:** 2026-11-01 00:00 UTC.  
+**Estado:** Não avaliável até 2026-11-01. O workflow requer secrets `VITE_SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` — se ausentes, o job falha com `::error::Secrets ausentes`.  
+**O que verificar em Nov/01:**
+1. Se o run falhar por secrets ausentes: configure `VITE_SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` em Settings → Secrets and variables → Actions.
+2. Se falhar por Supabase quota: mesma ação da seção Enterprise Compliance.
+
+---
+
+## Inventário completo de falhas — main (status=failure, consultado em 2026-10-22)
+
+Lista lida item a item via API (`status=failure&branch=main`, 50 runs). Resultado:
+
+| Workflow com failure ATUAL (SHA pós-PR #129) | Run mais recente | Causa |
+|---|---|---|
+| Running Copilot Code Review | `39785094125` (SHA `4f5de103`) | Quota GitHub Copilot 402 — externo |
+| Enterprise Compliance & Audit Reporting | `39780447872` (SHA `4b3d6cae`) | Supabase quota esgotada — externo |
+| npm_and_yarn @vitest/mocker | `39775463512` (SHA `ae1b92b3`) | `security_update_not_possible` — Dependabot |
+
+Todos os outros 47 failures da lista são em SHAs antigos (anteriores a PR #126/#128/#129) e estão resolvidos.
+
+**Workflows com failure em PR #136 (pull_request, não push à main):**
+- `e2e`: failure por Supabase quota 402 — mesmo bloqueio externo documentado acima.
 
 ---
 
