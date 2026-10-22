@@ -77,7 +77,7 @@
 - `idempotency_key` (text)
 - `rollback` (ARRAY)
 
-**Nota:** A tabela não possui coluna `hash`. O fingerprint do ledger é rastreado por `version` (nome do arquivo). O sistema de Branch Protection Sentinel valida por nome/timestamp, não por hash de conteúdo SQL.
+**Nota:** A tabela não possui coluna `hash` dedicada, mas armazena as instruções SQL na coluna `statements`. O script `check-migration-ledger-drift.mjs` calcula o hash SHA-256 do SQL local e compara com o conteúdo registrado no ledger — a validação é por **conteúdo SQL**, não apenas por nome/timestamp. O Branch Protection Sentinel valida a consistência do fingerprint usando esse mecanismo.
 
 ---
 
