@@ -134,4 +134,30 @@ Ver `PENDENCIAS.md` para lista completa com passos de ação para cada bloqueio 
 
 ---
 
+## 9. CI/CD — Auditoria Detalhada dos Workflows (agente especializado)
+
+**Fingerprint da migration `20261022120000` — validado matematicamente:**
+
+SHA256 de `{"version":"20261022120000","status":"local_sem_ledger",...,"local_sha256":null,...}` = `e2815b0275479b6f91b3859f14b72e708b9521cf98a616a00b335679afccf20c` ✅
+
+O comportamento `local_sha256: null` é **intencional** — a migration existe localmente mas não no ledger remoto; imutabilidade verificada separadamente pelo `check-migration-immutability.mjs`.
+
+| Workflow | Estado |
+|---------|--------|
+| Branch Protection Sentinel | ✅ Verde |
+| Security Scan (gitleaks) | ✅ Verde |
+| Migration Ledger Drift | ✅ Verde |
+| Qualidade Contínua (ci.yml) | ✅ Verde |
+| CodeQL | ✅ Verde |
+| Portal Sicoob (sicoob-ci.yml) | ✅ Verde |
+| Enterprise Compliance | ❌ Bloqueio externo: cota Supabase |
+| E2E | ❌ Bloqueio externo: cota Supabase |
+| Copilot Reviewer | ❌ Bloqueio externo: billing GitHub |
+
+**Achado BAIXO:** `branch-protection-sentinel.yml` linhas 48-53 — apenas 5 bots na whitelist; novo bot externo sem padrão de mensagem definido seria rejeitado. Sem impacto operacional atual.
+
+**Nenhum achado CRÍTICO ou ALTO nos 13 workflows.**
+
+---
+
 *Auditoria realizada via Supabase MCP + análise de código — 2026-10-22*
