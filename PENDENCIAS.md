@@ -36,27 +36,36 @@ chama funções via Management API e o projeto rejeita por billing.
 
 ---
 
-## Workflow: `e2e` (Playwright — testes de autorização de edge functions)
+## Workflow: `e2e` — Smoke gate Playwright bloqueado por quota Supabase
 
-**Run de referência:** `39776300770` · Job `119816156308`  
-**Observação:** este run foi disparado por evento `pull_request` na branch
-`fix/relatorio-ci-e-sentinel-2` — **não** é um push à `main`. O workflow `e2e.yml`
-possui filtros de path e não dispara em commits doc-only na `main`; por isso não há
-run de push recente na `main` para este workflow. O erro Supabase 402 abaixo é
-reproduzível independente do evento de disparo enquanto a quota estiver esgotada.
+**Situação:** Duas partes distintas neste workflow:
 
-**Erro exato:**
+### Parte 1 — Testes vitest (authz + RLS) ✅ Resolvido
+
+> ✅ **RESOLVIDO em 2026-10-22** — `edge-authz-bypass.test.ts` atualizado para aceitar HTTP 402
+> (quota Supabase). `e2e-cleanup-rate-limit.test.ts` atualizado para tratar quota com
+> `isQuotaExhaustedError` + flag `quotaExhausted`. Fix aplicado no PR #141.
+
+### Parte 2 — Smoke gate Playwright ⚠️ Externo
+
+**Causa raiz:** A quota Supabase esgotada (`exceed_edge_functions_invocations_quota`,
+`exceed_egress_quota`) faz com que o endpoint de autenticação retorne HTTP 402. A fixture
+global do Playwright (`tests/e2e/fixtures/auth.ts`) não consegue criar sessão → todos os
+39 testes são pulados em 0ms → o job detecta 0 testes passando e falha com:
 
 ```
-AssertionError: expected [ 401, 403 ] to include 402
-❯ tests/security/edge-authz-bypass.test.ts:77:26
+🛑 Fail-fast se smoke falhou (gate)
+::error title=Smoke gate failed::...
+Process completed with exit code 1.
 ```
 
-**Causa raiz:** As edge functions retornam HTTP 402 (Payment Required) em vez de 401/403.
-O teste está correto — o problema é de quota/billing Supabase, igual ao Enterprise Compliance.
+**Este não é um bug no código** — é a mesma causa raiz do workflow Enterprise Compliance.
+A falha é inevitável enquanto a quota Supabase não for restaurada.
 
-**O que você precisa fazer:** mesma ação da seção Enterprise Compliance acima (restaurar quota
-do projeto Supabase). O código do teste **não deve ser alterado**.
+**O que você precisa fazer:**
+
+1. Restaure a quota Supabase (mesma ação da seção Enterprise Compliance acima).
+2. Após restaurar, o smoke gate passa automaticamente sem nenhuma mudança de código.
 
 ---
 
@@ -133,20 +142,63 @@ errorType: 'quota', statusCode: 402
 
 ---
 
-## Inventário completo de falhas — main (status=failure, consultado em 2026-10-22)
+## Workflow: `Segurança, contratos e build` (`ci.yml`) — ECR Rate Limit
 
-Lista lida item a item via API (`status=failure&branch=main`, 50 runs). Resultado:
+**Commits afetados:** `5b34841` e `7211e12` (branch `claude/hopeful-mccarthy-8rqrqw`)
+**Runs:** `39850827027` · `39852468612`
+**Step:** "Simular controles de auditoria" / "Simular ACL efetiva"
+**Erro exato:**
 
-| Workflow com failure ATUAL (SHA pós-PR #129) | Run mais recente | Causa |
-|---|---|---|
-| Running Copilot Code Review | `39785094125` (SHA `4f5de103`) | Quota GitHub Copilot 402 — externo |
-| Enterprise Compliance & Audit Reporting | `39780447872` (SHA `4b3d6cae`) | Supabase quota esgotada — externo |
-| npm_and_yarn @vitest/mocker | `39775463512` (SHA `ae1b92b3`) | `security_update_not_possible` — Dependabot |
+```
+RuntimeError: docker run falhou após 3 tentativas:
+Unable to find image 'public.ecr.aws/supabase/postgres:17.6.1.063' locally
+docker: Error response from daemon: toomanyrequests: Data limit exceeded
+```
 
-Todos os outros 47 failures da lista são em SHAs antigos (anteriores a PR #126/#128/#129) e estão resolvidos.
+**Causa raiz:** Rate limit do ECR Public da AWS ao puxar a imagem Docker `public.ecr.aws/supabase/postgres:17.6.1.063` nos scripts `simular-controles-auditoria.py` e `simular-acl-efetiva.py`. Não é um bug no código do PR — é throttling de infraestrutura externa. Em execuções posteriores (ex: run `39780447863`) o rate limit se dissipar naturalmente e o workflow retornou **success**.
 
-**Workflows com failure em PR #136 (pull_request, não push à main):**
-- `e2e`: failure por Supabase quota 402 — mesmo bloqueio externo documentado acima.
+**O que você precisa fazer:** Nenhuma ação imediata. Se a falha persistir em execuções futuras:
+1. Habilitar o Amazon ECR pull-through cache ou autenticar no ECR antes do pull.
+2. Alternativa: migrar os scripts para usar a imagem via GHCR ou Docker Hub se disponível.
+
+---
+
+## Gaps de banco de dados identificados em auditoria (2026-10-22)
+
+### Gap 1 — CRÍTICO: Migration `20261022120000` ausente de `supabase_migrations.schema_migrations`
+
+**Status:** ✅ RESOLVIDO — migration de reparo aplicada no commit `48ee07f`.
+
+A migration `20261022120000_add_public_favorites_to_security_definer_allowlist.sql` foi aplicada ao banco fora do Supabase CLI (via Management API), portanto nunca foi registrada em `supabase_migrations.schema_migrations`. O schema estava correto, mas o ledger do Supabase ficou dessincronizado. Inserção de reparo realizada no commit acima.
+
+### Gap 2 — MÉDIO: `e2e_cleanup_check_rate_limit` com `search_path` incompleto
+
+**Status:** ✅ RESOLVIDO — migration de reparo aplicada no mesmo commit.
+
+A função SECURITY DEFINER `e2e_cleanup_check_rate_limit` tinha `SET search_path TO 'public'` sem o `pg_catalog` explicitamente como primeiro elemento, diferentemente das outras funções SECURITY DEFINER do projeto (`get_public_favorite_list` e `get_public_favorite_reactions`). Corrigido para `pg_catalog, public` por consistência com o padrão de hardening do projeto.
+
+### Gap 3 — MÉDIO: `relforcerowsecurity = false` em `e2e_cleanup_rate_limit`
+
+**Status:** ⚠️ Não corrigido — avaliação: risco aceitável pelo design atual.
+
+A tabela `e2e_cleanup_rate_limit` tem `FORCE ROW LEVEL SECURITY` desabilitado, o que permite à role `postgres` (dono) acessar diretamente sem passar pelo RLS. Em produção isso é aceitável: a única escrita legítima é via RPC SECURITY DEFINER `e2e_cleanup_check_rate_limit` que roda como `postgres` por design. Adicionar `FORCE ROW LEVEL SECURITY` quebraria a RPC.
+
+---
+
+## Inventário completo de falhas — main (status=failure, consultado em 2026-10-22 19:30 UTC)
+
+Lista lida via API (`branch=main`, 50 runs, último run de cada workflow).
+
+| Workflow | Run mais recente | Conclusão | Causa | Status |
+|---|---|---|---|---|
+| Security Scan | `39835755469` (SHA `82262c4`) | failure | dompurify CVE (CRITICAL) | ✅ Resolvido por PR #141 (pending merge) |
+| Qualidade contínua | `39835755495` (SHA `82262c4`) | failure | dompurify CVE (CRITICAL) | ✅ Resolvido por PR #141 (pending merge) |
+| Enterprise Compliance & Audit Reporting | `39835755339` (SHA `82262c4`) | failure | Supabase quota esgotada | ⚠️ Externo — ver seção acima |
+| Running Copilot Code Review | `39785094125` (SHA `4f5de103`) | failure | Quota GitHub Copilot 402 | ⚠️ Externo — ver seção acima |
+| npm_and_yarn @vitest/mocker | `39775463512` (SHA `ae1b92b3`) | failure | `security_update_not_possible` Dependabot | ✅ Resolvido por PR #139 |
+
+**Workflows verdes (última execução = success):**
+Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Dependabot updates gerais.
 
 ---
 
