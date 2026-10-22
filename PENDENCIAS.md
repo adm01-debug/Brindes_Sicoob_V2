@@ -10,7 +10,7 @@ O erro exato foi extraído do run mais recente disponível em main.
 ## Workflow: Qualidade contínua (`ci.yml`)
 
 **Run atual:** `39775422345` · Job `119813012334`  
-**Step:** "Executar simulação de controles de auditoria"  
+**Step:** "Simular controles de auditoria e permissões em PostgreSQL descartável"  
 **Erro exato:**
 
 ```
@@ -33,7 +33,7 @@ docker: Error response from daemon: toomanyrequests: Data limit exceeded
 
 ---
 
-## Workflow: Segurança, contratos e build (`sicoob-ci.yml`)
+## Workflow: Qualidade contínua — job "Segurança, contratos e build" (`ci.yml`)
 
 **Run de referência:** Job `119807381249` (2026-10-22)  
 **Erro exato:**
@@ -44,8 +44,9 @@ RuntimeError: docker run falhou após 3 tentativas: Unable to find image
 docker: Error response from daemon: toomanyrequests: Data limit exceeded
 ```
 
-**Causa raiz:** Mesma imagem ECR Public `public.ecr.aws/supabase/postgres:17.6.1.063` —
-mesmo rate limit de IP que o `ci.yml`. A solução é idêntica.
+**Causa raiz:** Mesma imagem ECR Public `public.ecr.aws/supabase/postgres:17.6.1.063` no
+job "Segurança, contratos e build" dentro do mesmo `ci.yml` — mesmo rate limit de IP.
+A solução é idêntica à seção anterior.
 
 **O que você precisa fazer:** mesma ação da seção anterior (`ci.yml`).
 
