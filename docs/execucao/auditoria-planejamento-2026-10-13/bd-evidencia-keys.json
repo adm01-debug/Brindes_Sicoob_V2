@@ -1,0 +1,172 @@
+[
+  {
+    "table_name": "integration_credentials",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_name": "integration_credentials",
+    "column_name": "secret_name",
+    "data_type": "text"
+  },
+  {
+    "table_name": "integration_credentials",
+    "column_name": "secret_value",
+    "data_type": "text"
+  },
+  {
+    "table_name": "integration_credentials",
+    "column_name": "masked_suffix",
+    "data_type": "text"
+  },
+  {
+    "table_name": "integration_credentials",
+    "column_name": "length",
+    "data_type": "integer"
+  },
+  {
+    "table_name": "integration_credentials",
+    "column_name": "notes",
+    "data_type": "text"
+  },
+  {
+    "table_name": "integration_credentials",
+    "column_name": "updated_by",
+    "data_type": "uuid"
+  },
+  {
+    "table_name": "integration_credentials",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_name": "integration_credentials",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_name": "sicoob_approval_deliveries",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_name": "sicoob_approval_deliveries",
+    "column_name": "request_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_name": "sicoob_approval_deliveries",
+    "column_name": "setting_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_name": "sicoob_approval_deliveries",
+    "column_name": "channel",
+    "data_type": "text"
+  },
+  {
+    "table_name": "sicoob_approval_deliveries",
+    "column_name": "destination",
+    "data_type": "text"
+  },
+  {
+    "table_name": "sicoob_approval_deliveries",
+    "column_name": "payload",
+    "data_type": "jsonb"
+  },
+  {
+    "table_name": "sicoob_approval_deliveries",
+    "column_name": "state",
+    "data_type": "text"
+  },
+  {
+    "table_name": "sicoob_approval_deliveries",
+    "column_name": "attempts",
+    "data_type": "integer"
+  },
+  {
+    "table_name": "sicoob_approval_deliveries",
+    "column_name": "available_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_name": "sicoob_approval_deliveries",
+    "column_name": "lease_token",
+    "data_type": "uuid"
+  },
+  {
+    "table_name": "sicoob_approval_deliveries",
+    "column_name": "lease_expires_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_name": "sicoob_approval_deliveries",
+    "column_name": "last_error_code",
+    "data_type": "text"
+  },
+  {
+    "table_name": "sicoob_approval_deliveries",
+    "column_name": "provider_id",
+    "data_type": "text"
+  },
+  {
+    "table_name": "sicoob_approval_deliveries",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_name": "sicoob_approval_deliveries",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_name": "sicoob_approval_deliveries",
+    "column_name": "delivered_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_name": "sicoob_approval_deliveries",
+    "column_name": "event_kind",
+    "data_type": "text"
+  },
+  {
+    "table_name": "sicoob_approval_deliveries",
+    "column_name": "generation",
+    "data_type": "integer"
+  },
+  {
+    "table_name": "sicoob_approval_deliveries",
+    "column_name": "supersedes_delivery_id",
+    "data_type": "uuid"
+  },
+  {
+    "table_name": "sicoob_approval_deliveries",
+    "column_name": "reconciliation",
+    "data_type": "jsonb"
+  },
+  {
+    "table_name": "quote_approval_evidence_keys",
+    "column_name": "id",
+    "data_type": "uuid"
+  },
+  {
+    "table_name": "quote_approval_evidence_keys",
+    "column_name": "vault_secret_name",
+    "data_type": "text"
+  },
+  {
+    "table_name": "quote_approval_evidence_keys",
+    "column_name": "is_active",
+    "data_type": "boolean"
+  },
+  {
+    "table_name": "quote_approval_evidence_keys",
+    "column_name": "activated_at",
+    "data_type": "timestamp with time zone"
+  },
+  {
+    "table_name": "quote_approval_evidence_keys",
+    "column_name": "retired_at",
+    "data_type": "timestamp with time zone"
+  }
+]

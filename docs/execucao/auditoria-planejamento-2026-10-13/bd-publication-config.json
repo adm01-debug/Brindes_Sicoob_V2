@@ -1,0 +1,16 @@
+[
+  {
+    "pubname": "supabase_realtime",
+    "puballtables": false,
+    "pubinsert": true,
+    "pubupdate": true,
+    "pubdelete": true
+  },
+  {
+    "pubname": "supabase_realtime_messages_publication",
+    "puballtables": false,
+    "pubinsert": true,
+    "pubupdate": true,
+    "pubdelete": true
+  }
+]

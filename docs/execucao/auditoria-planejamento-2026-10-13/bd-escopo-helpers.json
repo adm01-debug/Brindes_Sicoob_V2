@@ -1,0 +1,22 @@
+[
+  {
+    "proname": "current_user_cooperativa_id",
+    "definition": "CREATE OR REPLACE FUNCTION public.current_user_cooperativa_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT cooperativa_id FROM public.profiles WHERE user_id = auth.uid() LIMIT 1;\n$function$\n"
+  },
+  {
+    "proname": "current_user_pa_id",
+    "definition": "CREATE OR REPLACE FUNCTION public.current_user_pa_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT pa_id FROM public.profiles WHERE user_id = auth.uid() LIMIT 1;\n$function$\n"
+  },
+  {
+    "proname": "has_role",
+    "definition": "CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _role app_role)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n  SELECT public.sicoob_actor_is_active(_user_id)\n    AND EXISTS (\n      SELECT 1\n        FROM public.user_roles ur\n       WHERE ur.user_id = _user_id\n         AND ur.role = _role\n    );\n$function$\n"
+  },
+  {
+    "proname": "is_gerente_pa",
+    "definition": "CREATE OR REPLACE FUNCTION public.is_gerente_pa(_user_id uuid DEFAULT auth.uid())\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = _user_id AND role = 'gerente_pa');\n$function$\n"
+  },
+  {
+    "proname": "is_gestor_compras",
+    "definition": "CREATE OR REPLACE FUNCTION public.is_gestor_compras(_user_id uuid DEFAULT auth.uid())\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = _user_id AND role = 'gestor_compras');\n$function$\n"
+  }
+]

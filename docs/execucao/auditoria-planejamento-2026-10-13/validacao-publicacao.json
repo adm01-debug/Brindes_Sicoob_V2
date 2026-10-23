@@ -1,0 +1,33 @@
+{
+  "data_utc": "2026-10-13T11:42:22.271661+00:00",
+  "escopo": "Publicação documental da auditoria e estratégia; não certifica correções do portal.",
+  "originais_preservados_no_indice_git": 82,
+  "hashes_manifesto_entrega": "conferidos",
+  "matrizes": {
+    "frentes": 56,
+    "registros": 682,
+    "etapas": 100,
+    "subetapas": 1000,
+    "documentos": 511,
+    "arquivos": 4038
+  },
+  "estrategia_cobre_frentes": 56,
+  "links_locais_do_pacote": "conferidos",
+  "json": "todos analisados",
+  "python": "sintaxe conferida sem execução de consultas remotas",
+  "gitleaks": {
+    "escopo": "diretório completo do pacote",
+    "achados": 0
+  },
+  "diff_check": "aprovado; espaçamento original de capturas preservado por atributos locais",
+  "consulta_chromium": {
+    "inicial": "56 resultados · 40 exibidos",
+    "p0": "6 resultados · 6 exibidos",
+    "registros": "682 resultados · 40 exibidos",
+    "pagina": "682 resultados · 80 exibidos",
+    "busca": "2 resultados · 2 exibidos",
+    "achado_localizado": true,
+    "erros": []
+  },
+  "testes_do_portal_reexecutados": false
+}

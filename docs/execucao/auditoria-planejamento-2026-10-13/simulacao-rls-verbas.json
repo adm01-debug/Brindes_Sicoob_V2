@@ -1,0 +1,20 @@
+{
+  "ambiente": "PostgreSQL 16 descartável sem rede; tabelas mínimas sintéticas; policies e helpers exatos do canônico",
+  "gestor_le_budgets_duas_cooperativas": [
+    "2"
+  ],
+  "gestor_altera_budget_outra_cooperativa": [
+    "9000",
+    "UPDATE 1"
+  ],
+  "gerente_aumenta_proprio_limite": [
+    "99999",
+    "UPDATE 1"
+  ],
+  "gestor_inativo_ainda_le_duas_cooperativas": [
+    "2"
+  ],
+  "has_role_inativo_rejeita_mas_helper_permite": [
+    "f|t"
+  ]
+}

@@ -1,0 +1,23 @@
+[
+  {
+    "relname": "pa_budgets",
+    "leitura": true,
+    "atualizacao": true,
+    "insercao": true,
+    "exclusao": true
+  },
+  {
+    "relname": "quote_items",
+    "leitura": true,
+    "atualizacao": true,
+    "insercao": true,
+    "exclusao": true
+  },
+  {
+    "relname": "quotes",
+    "leitura": true,
+    "atualizacao": true,
+    "insercao": true,
+    "exclusao": true
+  }
+]

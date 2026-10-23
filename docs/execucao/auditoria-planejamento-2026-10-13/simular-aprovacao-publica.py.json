@@ -1,0 +1,8 @@
+{
+  "cenario": "simular-aprovacao-publica.py",
+  "ambiente": "PostgreSQL 16 descartável sem rede",
+  "fixture": "fixture versionada + trigger coletado do canônico em 13/10",
+  "falhou_com_guard": true,
+  "erro": "ERROR:  Campos de governança do orçamento só podem ser alterados por fluxo autorizado.\nCONTEXT:  PL/pgSQL function guard_quote_governance_write() line 29 at RAISE\nSQL statement \"UPDATE public.quotes SET status = _response, client_response = _response,\n    client_response_at = v_now, client_response_notes = _response_notes\n    WHERE id = v_quote.id\"\nPL/pgSQL function apply_local_quote_approval_response(text,text,text,text,text,text,text,text) line 46 at SQL statement\nPL/pgSQL function submit_signed_quote_response(text,text,text,text,text,text,text) line 10 at RETURN",
+  "efeitos_persistidos": "0"
+}

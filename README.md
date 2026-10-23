@@ -32,6 +32,8 @@
 O sistema está em construção e passa por auditorias de segurança, banco,
 contratos e experiência. O relatório consolidado mais recente é:
 
+- 📄 **[Auditoria de funcionalidades planejadas — 13/10/2026](./docs/execucao/auditoria-planejamento-2026-10-13/RELATORIO.md)** — 56 frentes, 682 registros rastreados, evidências atuais e [estratégia de implementação](./docs/execucao/auditoria-planejamento-2026-10-13/ESTRATEGIA_IMPLEMENTACAO.md).
+
 - 📄 **[Execução e preflight do banco canônico — 01/10/2026](./docs/execucao/execucao-plano-2026-10-01.md)** — correções consolidadas, testes do candidato e consulta administrativa atual do Supabase.
 
 - 📄 **[Revisão das 150 etapas e dos workflows — 01/10/2026](./docs/execucao/revisao-do-plano-2026-10-01.md)** — implementação atual, falha de autorização reproduzida e limites de validação do banco.

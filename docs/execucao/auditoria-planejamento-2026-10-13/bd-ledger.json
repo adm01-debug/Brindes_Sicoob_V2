@@ -1,0 +1,692 @@
+[
+  {
+    "version": "001",
+    "name": "notification_system",
+    "hash_sql": "2d0d8124ce897dcb686d7ac6de2d53a6",
+    "statements": 18
+  },
+  {
+    "version": "002",
+    "name": "notification_preferences",
+    "hash_sql": "af4fd781c7c45df3bbed33ea0f6a2e31",
+    "statements": 7
+  },
+  {
+    "version": "003",
+    "name": "notification_templates",
+    "hash_sql": "4d2df2b85c70feee4614d838d4d314e2",
+    "statements": 4
+  },
+  {
+    "version": "20251220181321",
+    "name": null,
+    "hash_sql": "f16cf47383201c7dcf5bceac203cc894",
+    "statements": 1
+  },
+  {
+    "version": "20260911143000",
+    "name": "sicoob_order_budget_atomicity",
+    "hash_sql": null,
+    "statements": null
+  },
+  {
+    "version": "20260912090000",
+    "name": "sicoob_fulfillment",
+    "hash_sql": null,
+    "statements": null
+  },
+  {
+    "version": "20260912100000",
+    "name": null,
+    "hash_sql": "1c98e05cb10436827855624a1be84047",
+    "statements": 1
+  },
+  {
+    "version": "20260912110000",
+    "name": "sicoob_order_status_events",
+    "hash_sql": null,
+    "statements": null
+  },
+  {
+    "version": "20260912120000",
+    "name": "sicoob_approval_policy_guards",
+    "hash_sql": null,
+    "statements": null
+  },
+  {
+    "version": "20260912130000",
+    "name": null,
+    "hash_sql": "bc462d9234ceea7ffc44f2c958ca86ba",
+    "statements": 1
+  },
+  {
+    "version": "20260912140000",
+    "name": "sicoob_approval_confirmation_followup",
+    "hash_sql": null,
+    "statements": null
+  },
+  {
+    "version": "20260912150000",
+    "name": null,
+    "hash_sql": "17e752f8863203722abd83e131a17d0c",
+    "statements": 1
+  },
+  {
+    "version": "20260912160000",
+    "name": "sicoob_approval_policy_snapshot",
+    "hash_sql": null,
+    "statements": null
+  },
+  {
+    "version": "20260912170000",
+    "name": "sicoob_reorder_atomic",
+    "hash_sql": null,
+    "statements": null
+  },
+  {
+    "version": "20260912180000",
+    "name": "sicoob_finance_artwork",
+    "hash_sql": null,
+    "statements": null
+  },
+  {
+    "version": "20260912190000",
+    "name": "sicoob_consolidation_distribution",
+    "hash_sql": null,
+    "statements": null
+  },
+  {
+    "version": "20260912200000",
+    "name": "sicoob_kit_quote_atomic",
+    "hash_sql": null,
+    "statements": null
+  },
+  {
+    "version": "20260913120001",
+    "name": null,
+    "hash_sql": "da8cb436f715753a5a4338b5c529e0f4",
+    "statements": 1
+  },
+  {
+    "version": "20260913120002",
+    "name": "sicoob_reorder_atomic_followup",
+    "hash_sql": null,
+    "statements": null
+  },
+  {
+    "version": "20260913120003",
+    "name": "sicoob_finance_artwork_followup",
+    "hash_sql": null,
+    "statements": null
+  },
+  {
+    "version": "20260913120004",
+    "name": "sicoob_consolidation_distribution_followup",
+    "hash_sql": null,
+    "statements": null
+  },
+  {
+    "version": "20260913120005",
+    "name": "sicoob_kit_quote_atomic_followup",
+    "hash_sql": null,
+    "statements": null
+  },
+  {
+    "version": "20260915143442",
+    "name": "sicoob_reconciliation_baseline",
+    "hash_sql": "643b81c477e0d29d434fc5b4765c21d7",
+    "statements": 1
+  },
+  {
+    "version": "20260916100000",
+    "name": "security_hardening",
+    "hash_sql": null,
+    "statements": null
+  },
+  {
+    "version": "20260916110000",
+    "name": "fix_new_user_profile_trigger",
+    "hash_sql": null,
+    "statements": null
+  },
+  {
+    "version": "20260916120000",
+    "name": "admin_audit_log_operations",
+    "hash_sql": null,
+    "statements": null
+  },
+  {
+    "version": "20260916130000",
+    "name": "add_missing_fk_indexes",
+    "hash_sql": null,
+    "statements": null
+  },
+  {
+    "version": "20260916140000",
+    "name": "sicoob_history_and_view_hardening",
+    "hash_sql": "fcd08c159232aabb5b4dc7216c1b5484",
+    "statements": 1
+  },
+  {
+    "version": "20260916150000",
+    "name": "storage_bucket_reconciliation",
+    "hash_sql": "371447e6368cf0ea010280d88922cb97",
+    "statements": 1
+  },
+  {
+    "version": "20260916160000",
+    "name": "revoke_truncate_schema_wide",
+    "hash_sql": "0d04b09a8b4df014a9d8c99fadbb82ee",
+    "statements": 1
+  },
+  {
+    "version": "20260916170000",
+    "name": "fix_ensure_admin_audit_log_partitions_rls",
+    "hash_sql": "bf3dfdf02d97201ac8e567df5821f8ad",
+    "statements": 1
+  },
+  {
+    "version": "20260916180000",
+    "name": "create_password_reset_requests",
+    "hash_sql": "f0f102fec0385bad433c5ddd33c65c20",
+    "statements": 1
+  },
+  {
+    "version": "20260916190000",
+    "name": "create_audit_log",
+    "hash_sql": "818fdf721602f775902c098bc8cee423",
+    "statements": 1
+  },
+  {
+    "version": "20260922150000",
+    "name": "reconcile_audit_controls",
+    "hash_sql": "edf7d1c5d84fd9320666f7009ddbb18d",
+    "statements": 1
+  },
+  {
+    "version": "20260922151000",
+    "name": "migration_health_contract",
+    "hash_sql": "ca3f63e462dfa5aba4be1c5b5dfd44b4",
+    "statements": 1
+  },
+  {
+    "version": "20260922152000",
+    "name": "group_personalization_templates",
+    "hash_sql": "153c3c3715369765050dc6833e708231",
+    "statements": 1
+  },
+  {
+    "version": "20260922153000",
+    "name": null,
+    "hash_sql": "2b0251fc8ae025c107f79619d1b8bb36",
+    "statements": 1
+  },
+  {
+    "version": "20260922154000",
+    "name": null,
+    "hash_sql": "4656402644c0fc3c8749d079e0d605e4",
+    "statements": 1
+  },
+  {
+    "version": "20260922155000",
+    "name": null,
+    "hash_sql": "e41e7becf4d81a44baae5e181350cb66",
+    "statements": 1
+  },
+  {
+    "version": "20260922160000",
+    "name": null,
+    "hash_sql": "5f37644c8b91841f086b8410dcdc263c",
+    "statements": 1
+  },
+  {
+    "version": "20260922161000",
+    "name": "repair_sicoob_approval_policy_snapshot",
+    "hash_sql": "df94a5ab5978a91b5e673028adf1f0c6",
+    "statements": 1
+  },
+  {
+    "version": "20260922162000",
+    "name": "sicoob_workflow_function_acl",
+    "hash_sql": "14f1ebb683e165d84da747be5a0eef5a",
+    "statements": 1
+  },
+  {
+    "version": "20260922163000",
+    "name": "revoke_trigger_function_rpc_access",
+    "hash_sql": "f0a16d493e4a56e7878d6524bb2656de",
+    "statements": 1
+  },
+  {
+    "version": "20260922164000",
+    "name": "restrict_anonymous_security_definer_rpcs",
+    "hash_sql": "89286c4c82dc5d3879b432a1c0c6948f",
+    "statements": 1
+  },
+  {
+    "version": "20260922165000",
+    "name": "scope_public_role_helpers_to_actor",
+    "hash_sql": "4329da94c3ea89820f7fef07b1169a4e",
+    "statements": 1
+  },
+  {
+    "version": "20260922166000",
+    "name": "tighten_anonymous_security_definer_allowlist",
+    "hash_sql": "2dd3c7db219ccf7d856163ee4edeb090",
+    "statements": 1
+  },
+  {
+    "version": "20260922167000",
+    "name": "align_security_definer_acl_gate",
+    "hash_sql": "889620e3687cd7bd0d9d07e745c31731",
+    "statements": 1
+  },
+  {
+    "version": "20260922190000",
+    "name": "audit_effective_function_acl",
+    "hash_sql": "bcf2d065edb94f34ead38385f68dde43",
+    "statements": 1
+  },
+  {
+    "version": "20260922200000",
+    "name": "public_quote_approval_contract",
+    "hash_sql": "21f568c169c915399903b0e91f8b9870",
+    "statements": 1
+  },
+  {
+    "version": "20260922210000",
+    "name": "sicoob_approval_notification_outbox",
+    "hash_sql": "f502aff1da831f824c8f8d7b53383a32",
+    "statements": 1
+  },
+  {
+    "version": "20260922223000",
+    "name": "sicoob_approval_outbox_followup",
+    "hash_sql": "5429a15e6e34a741a8c3af60bdeab1e1",
+    "statements": 1
+  },
+  {
+    "version": "20260922224000",
+    "name": "sicoob_policy_helper_wrappers",
+    "hash_sql": "eaa6ff3cdc298cc7531e31583acf5f7c",
+    "statements": 1
+  },
+  {
+    "version": "20260922224100",
+    "name": "sicoob_storage_policy_wrapper",
+    "hash_sql": "7731c01a2e54dc3a4b38873ff5745e96",
+    "statements": 1
+  },
+  {
+    "version": "20260922224200",
+    "name": "sicoob_policy_helper_grants",
+    "hash_sql": "d4067b65e05b8d66138841d4568c6634",
+    "statements": 1
+  },
+  {
+    "version": "20260922224300",
+    "name": "schedule_sicoob_approval_worker",
+    "hash_sql": "dc8accbbe14bcfee2376fbeefc39d4f7",
+    "statements": 1
+  },
+  {
+    "version": "20260922224400",
+    "name": "audit_empty_rls_policies",
+    "hash_sql": "6726c2cc50de312d1136ff2939189c54",
+    "statements": 1
+  },
+  {
+    "version": "20260922224500",
+    "name": "convert_quote_to_sicoob_order",
+    "hash_sql": "9e175bacb090999819517d59e630dddd",
+    "statements": 1
+  },
+  {
+    "version": "20260922224600",
+    "name": "mutate_sicoob_order_items_atomic",
+    "hash_sql": "ba8d9f5311774742493cfe4a06f6b439",
+    "statements": 1
+  },
+  {
+    "version": "20260922224700",
+    "name": "validate_sicoob_order_documents",
+    "hash_sql": "d0f0ae9343ae73c247e542956f41e58a",
+    "statements": 1
+  },
+  {
+    "version": "20260922224800",
+    "name": "consolidate_quotes_atomic",
+    "hash_sql": "5bd81c75302005f09c3bddc0fa0b2f12",
+    "statements": 1
+  },
+  {
+    "version": "20260922224900",
+    "name": "consolidation_referential_integrity",
+    "hash_sql": "d9e99aee0396e388ac3a8e38e1cffd63",
+    "statements": 1
+  },
+  {
+    "version": "20260922225000",
+    "name": "secure_public_quote_approval",
+    "hash_sql": "8f6477dd651b18211198042968e3317a",
+    "statements": 1
+  },
+  {
+    "version": "20260922225100",
+    "name": "sicoob_canonical_fulfillment",
+    "hash_sql": "45e7e7c2f883cc2cd5c5ef50fcdc1781",
+    "statements": 1
+  },
+  {
+    "version": "20260922225200",
+    "name": "materialize_overdue_sicoob_payments",
+    "hash_sql": "d093a34cbfc6102880cc7a44c6ca25b7",
+    "statements": 1
+  },
+  {
+    "version": "20260922225300",
+    "name": "sicoob_approval_outbox_reconciliation",
+    "hash_sql": "075cc0345c2b735caeb99f1fe0118333",
+    "statements": 1
+  },
+  {
+    "version": "20260922225400",
+    "name": "sicoob_operational_integrity",
+    "hash_sql": "5e8f23a6f9d6df5cd07642ede32aedd9",
+    "statements": 1
+  },
+  {
+    "version": "20260922225500",
+    "name": "monitor_sicoob_approval_worker",
+    "hash_sql": "a10bffec34a48f667cd8813dc5fdcb97",
+    "statements": 1
+  },
+  {
+    "version": "20260922225600",
+    "name": "sicoob_document_quarantine_gate",
+    "hash_sql": "0af0bf702d99251e96f6ba44b7cb7903",
+    "statements": 1
+  },
+  {
+    "version": "20260923100000",
+    "name": "validate_sicoob_historical_constraints",
+    "hash_sql": "2f9fd400f0c553c6ea0a1c81b95bf6b1",
+    "statements": 1
+  },
+  {
+    "version": "20260923110000",
+    "name": "harden_internal_operations",
+    "hash_sql": "0646b4377cbca8d4fb8e02f764eb5dd0",
+    "statements": 1
+  },
+  {
+    "version": "20260923111000",
+    "name": "schedule_secure_export_worker",
+    "hash_sql": "b77a696c70fb0c0f39b2d95a3621a8f4",
+    "statements": 1
+  },
+  {
+    "version": "20260923112000",
+    "name": "fix_connection_sync_and_favorites",
+    "hash_sql": "79b2602e68aa575f45768aee4c331772",
+    "statements": 1
+  },
+  {
+    "version": "20260923130000",
+    "name": "secure_sicoob_documents_and_exports",
+    "hash_sql": "ed8ce0a939a178e6ab1716af43dce23c",
+    "statements": 1
+  },
+  {
+    "version": "20260923140000",
+    "name": "secure_legacy_connection_crons",
+    "hash_sql": "c82b49e5f1850397a78fd0ee625901c9",
+    "statements": 1
+  },
+  {
+    "version": "20260927100000",
+    "name": "quote_history_immutable",
+    "hash_sql": "12d92c97832b8d43ed0fd046cbd425fe",
+    "statements": 6
+  },
+  {
+    "version": "20260927109950",
+    "name": "quote_status_enum_preflight",
+    "hash_sql": "817db01d0bb16ef14e0087cbe1a545a1",
+    "statements": 1
+  },
+  {
+    "version": "20260927110000",
+    "name": "bulk_quote_status_atomic",
+    "hash_sql": "1c16317c1f79bee765857828004a7a60",
+    "statements": 5
+  },
+  {
+    "version": "20260927110050",
+    "name": "quote_status_enum_compatibility",
+    "hash_sql": "e8eab3217b8339921930c5e62c03c180",
+    "statements": 1
+  },
+  {
+    "version": "20260927110100",
+    "name": "quote_status_workflow_enum",
+    "hash_sql": "a0fe62f61afb9077fd4d8adc72fba3e2",
+    "statements": 4
+  },
+  {
+    "version": "20260927110200",
+    "name": "quote_status_workflow_validation",
+    "hash_sql": "2867df939037ed4c12b963409328ed56",
+    "statements": 1
+  },
+  {
+    "version": "20260927162240",
+    "name": "discount_approval_atomic",
+    "hash_sql": "38263bb4b18d9ce5b8f02dbfb18742d8",
+    "statements": 8
+  },
+  {
+    "version": "20260927163021",
+    "name": "quote_pdf_approval_atomic",
+    "hash_sql": "0b427f5f1ade2d6ed3ed3bb86ad71887",
+    "statements": 4
+  },
+  {
+    "version": "20260927171216",
+    "name": "quote_approval_security_hardening",
+    "hash_sql": "d41d8cd98f00b204e9800998ecf8427e",
+    "statements": 0
+  },
+  {
+    "version": "20260927190000",
+    "name": "atomic_quote_save",
+    "hash_sql": null,
+    "statements": null
+  },
+  {
+    "version": "20260927193000",
+    "name": "sicoob_cross_cooperative_rls",
+    "hash_sql": "aa38e877370d96b1acb57966563a6b55",
+    "statements": 1
+  },
+  {
+    "version": "20260927194036",
+    "name": "restore_notification_preferences",
+    "hash_sql": "a8687c6dd6f2d72c98443d3ee34499a5",
+    "statements": 1
+  },
+  {
+    "version": "20260927200207",
+    "name": "duplicate_order_atomic",
+    "hash_sql": "a81cf0dd8769a1a3ceb03165a1bef716",
+    "statements": 1
+  },
+  {
+    "version": "20260927200500",
+    "name": "atomic_order_webhook_guard",
+    "hash_sql": "3f64981b67f5d9b9993e2a1b38b2e051",
+    "statements": 1
+  },
+  {
+    "version": "20260927201017",
+    "name": "order_duplicate_fk_indexes",
+    "hash_sql": "cfe3e4d154ca35ae161999c75814cc1d",
+    "statements": 1
+  },
+  {
+    "version": "20260927203000",
+    "name": "sicoob_approval_delegations",
+    "hash_sql": "612aeb8042258379b785bd69825311cf",
+    "statements": 1
+  },
+  {
+    "version": "20260927204500",
+    "name": "sicoob_delegated_authority_indicator",
+    "hash_sql": "34297a69e43ecd99f35bc5b536fc69e5",
+    "statements": 1
+  },
+  {
+    "version": "20260927210000",
+    "name": "sicoob_reorder_catalog_validity",
+    "hash_sql": "3b3759cbd216fa7a6522febfc1644dd8",
+    "statements": 1
+  },
+  {
+    "version": "20260927213000",
+    "name": "sicoob_consolidation_concurrency",
+    "hash_sql": "26a05fc5c958fc46037b59e8f2c07ecc",
+    "statements": 1
+  },
+  {
+    "version": "20260927220000",
+    "name": "sicoob_institutional_invitations",
+    "hash_sql": "aa2d47e210882fa190cbc603f2698266",
+    "statements": 1
+  },
+  {
+    "version": "20260927220500",
+    "name": "sicoob_invitation_acl_gate",
+    "hash_sql": "eb5627909371b36531d0f55ad31a8c9a",
+    "statements": 1
+  },
+  {
+    "version": "20260927221000",
+    "name": "sicoob_role_helper_target_validation",
+    "hash_sql": "c7d1255b4a23741d6d336d97bde8cc87",
+    "statements": 1
+  },
+  {
+    "version": "20260927221500",
+    "name": "sicoob_invitation_existing_account",
+    "hash_sql": "5ead6168b57a9f2c40159f1709fc6915",
+    "statements": 1
+  },
+  {
+    "version": "20260928140600",
+    "name": "rls_deny_all_internal_tables",
+    "hash_sql": "de9cf27e4d5115c44ed464b5cc003b98",
+    "statements": 1
+  },
+  {
+    "version": "20260928162048",
+    "name": "quote_save_idempotency",
+    "hash_sql": "befb3c14a34b16e5fe9a6e9ff35a5099",
+    "statements": 1
+  },
+  {
+    "version": "20260928173500",
+    "name": "harden_quote_save_idempotency",
+    "hash_sql": "cb12ab92279d2cc7155ae81c16304095",
+    "statements": 1
+  },
+  {
+    "version": "20260928182000",
+    "name": "idempotent_quote_status_notifications",
+    "hash_sql": "e1c8a0fab4c1bac198ab8db2f8c35ba5",
+    "statements": 1
+  },
+  {
+    "version": "20261002120000",
+    "name": "quote_items_identity_preservation",
+    "hash_sql": "9cc0ba7fa9dace77724ae2838f41686d",
+    "statements": 1
+  },
+  {
+    "version": "20261002160000",
+    "name": "quote_items_id_format_validation",
+    "hash_sql": "293c5d1cf43a8f02a9288f7485232254",
+    "statements": 1
+  },
+  {
+    "version": "20261007212428",
+    "name": "remove_obsolete_admin_audit_crons",
+    "hash_sql": "79792a11f402268872746c3e9298956a",
+    "statements": 1
+  },
+  {
+    "version": "20261007214000",
+    "name": "harden_remaining_function_search_paths",
+    "hash_sql": "cb049b07a1535e34ed7b9fbc1a7962ad",
+    "statements": 1
+  },
+  {
+    "version": "20261007220500",
+    "name": "revoke_anon_security_helper_execute",
+    "hash_sql": "e5a4619ccfb9eb4b6d75e0181ec68039",
+    "statements": 1
+  },
+  {
+    "version": "20261007223000",
+    "name": "consolidate_mcp_api_key_audit_triggers",
+    "hash_sql": "c9a0ed757d08b7515a0fd18e7fbb3385",
+    "statements": 1
+  },
+  {
+    "version": "20261007230000",
+    "name": "optimize_foreign_keys_and_duplicate_indexes",
+    "hash_sql": "83109f4fba76e8fa951dccc47a996084",
+    "statements": 1
+  },
+  {
+    "version": "20261007231500",
+    "name": "optimize_rls_auth_initplans",
+    "hash_sql": "1486f4f994dd3c02d1719dd10b4f2f09",
+    "statements": 1
+  },
+  {
+    "version": "20261007233000",
+    "name": "consolidate_permissive_rls_policies",
+    "hash_sql": "c91fdf1f9c7323d963b1fd9b634137d7",
+    "statements": 1
+  },
+  {
+    "version": "20261008010000",
+    "name": "fix_plpgsql_lint_failures",
+    "hash_sql": "f8ab9e846819279ee0c550243df4cc79",
+    "statements": 1
+  },
+  {
+    "version": "20261008023000",
+    "name": "fix_profiles_update_rls_recursion",
+    "hash_sql": "0d606d9bde6ca3860390392f610479ab",
+    "statements": 1
+  },
+  {
+    "version": "20261008030000",
+    "name": "fix_sicoob_admin_audit_system_actor",
+    "hash_sql": "a71f840a04605223ea9939fe22ba0382",
+    "statements": 1
+  },
+  {
+    "version": "20261008043000",
+    "name": "fix_anon_rls_and_semantic_ranking",
+    "hash_sql": "ff48b4f38fc0b46a3e7915a36e8e4b8f",
+    "statements": 1
+  },
+  {
+    "version": "20261008123000",
+    "name": "fix_favorite_items_upsert_conflict",
+    "hash_sql": "567a530c21f7c194ab8e4953b9be18ab",
+    "statements": 1
+  }
+]

@@ -1,5 +1,7 @@
 # 📚 Documentação do Gifts Store
 
+> **Auditoria atual (13/10/2026):** [relatório completo](execucao/auditoria-planejamento-2026-10-13/RELATORIO.md), [matrizes e evidências](execucao/auditoria-planejamento-2026-10-13/README.md) e [estratégia de implementação](execucao/auditoria-planejamento-2026-10-13/ESTRATEGIA_IMPLEMENTACAO.md). O levantamento distingue falhas reproduzidas, implementação parcial e aceites ainda pendentes.
+
 > **Estado atual do Sicoob (08/10/2026):** [fechamento técnico do candidato de construção](execucao/fechamento-tecnico-2026-10-08.md), complementado pela [execução e preflight do banco canônico](execucao/execucao-plano-2026-10-01.md) e pela [revisão das 150 etapas, workflows e pendências](execucao/revisao-do-plano-2026-10-01.md). O índice legado abaixo não certifica o estado atual; há referências históricas indisponíveis.
 
 > Sistema de Catálogo de Brindes Promocionais  

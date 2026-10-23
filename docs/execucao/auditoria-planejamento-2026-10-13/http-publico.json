@@ -1,0 +1,90 @@
+[
+  {
+    "url": "https://brindes-sicoob-v2.vercel.app/",
+    "status": 200,
+    "url_final": "https://brindes-sicoob-v2.vercel.app/",
+    "content_type": "text/html; charset=utf-8",
+    "csp": false,
+    "nosniff": null,
+    "bytes": 5837,
+    "html": true,
+    "trecho_auditoria": null
+  },
+  {
+    "url": "https://brindes-sicoob-v2.vercel.app/login",
+    "status": 200,
+    "url_final": "https://brindes-sicoob-v2.vercel.app/login",
+    "content_type": "text/html; charset=utf-8",
+    "csp": true,
+    "nosniff": "nosniff",
+    "bytes": 5837,
+    "html": true,
+    "trecho_auditoria": null
+  },
+  {
+    "url": "https://brindes-sicoob-v2.vercel.app/manifest.webmanifest",
+    "status": 200,
+    "url_final": "https://brindes-sicoob-v2.vercel.app/manifest.webmanifest",
+    "content_type": "text/html; charset=utf-8",
+    "csp": true,
+    "nosniff": "nosniff",
+    "bytes": 5837,
+    "html": true,
+    "trecho_auditoria": null
+  },
+  {
+    "url": "https://brindes-sicoob-v2.vercel.app/reports/AUDIT_REPORT_20a6b98b1.md",
+    "status": 200,
+    "url_final": "https://brindes-sicoob-v2.vercel.app/reports/AUDIT_REPORT_20a6b98b1.md",
+    "content_type": "text/markdown; charset=utf-8",
+    "csp": true,
+    "nosniff": "nosniff",
+    "bytes": 69294,
+    "html": false,
+    "trecho_auditoria": "\n# 🛡️ DOSSIÊ DE AUDITORIA ENTERPRISE - PROMAGIFTS SICOOB [PROD]\n**ID da Auditoria:** `AUDIT-20a6b98b1-1778330157830`\n**Ref de Versão:** [20a6b98b1](https://github.com/promo-gifts/app/commit/20a6b98b1)\n**Ambiente:*"
+  },
+  {
+    "url": "https://brindes-sicoob-v2-juca1.vercel.app/",
+    "status": 200,
+    "url_final": "https://vercel.com/login?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Fbrindes-sicoob-v2-juca1.vercel.app%252F%26nonce%3D42800aeaadeb3260b7fa1403494b2953f58066b4f3eb780a7e5edd46dfc8703a",
+    "content_type": "text/html; charset=utf-8",
+    "csp": true,
+    "nosniff": "nosniff",
+    "bytes": 333973,
+    "html": false,
+    "trecho_auditoria": null
+  },
+  {
+    "url": "https://brindes-sicoob-v2-juca1.vercel.app/login",
+    "status": 200,
+    "url_final": "https://vercel.com/login?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Fbrindes-sicoob-v2-juca1.vercel.app%252Flogin%26nonce%3Da15a39291a3377537244a7cfb2b20553645c5010e98485efe25219567c6fa30c",
+    "content_type": "text/html; charset=utf-8",
+    "csp": true,
+    "nosniff": "nosniff",
+    "bytes": 333993,
+    "html": false,
+    "trecho_auditoria": null
+  },
+  {
+    "url": "https://brindes-sicoob-v2-juca1.vercel.app/manifest.webmanifest",
+    "status": 200,
+    "url_final": "https://vercel.com/login?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Fbrindes-sicoob-v2-juca1.vercel.app%252Fmanifest.webmanifest%26nonce%3Df2ab6166e6b069b57d0e237bbd18164378144f1ae12605dbfe165dc7e29cd5a3",
+    "content_type": "text/html; charset=utf-8",
+    "csp": true,
+    "nosniff": "nosniff",
+    "bytes": 334068,
+    "html": false,
+    "trecho_auditoria": null
+  },
+  {
+    "url": "https://brindes-sicoob-v2-juca1.vercel.app/reports/AUDIT_REPORT_20a6b98b1.md",
+    "status": 200,
+    "url_final": "https://vercel.com/login?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Fbrindes-sicoob-v2-juca1.vercel.app%252Freports%252FAUDIT_REPORT_20a6b98b1.md%26nonce%3D6131e9016cc177b5ed840a15b60504f92f9720f5d90f4040c989915df7323d1c",
+    "content_type": "text/html; charset=utf-8",
+    "csp": true,
+    "nosniff": "nosniff",
+    "bytes": 334136,
+    "html": false,
+    "trecho_auditoria": "<!DOCTYPE html><html data-dpl-id=\"dpl_AHcRWL4tuxBhpYxXNNbZjJ6ajFm6\" class=\"VEU71W_className fW1cEW_className VEU71W_variable fW1cEW_variable dash\" lang=\"en-US\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\""
+  }
+]

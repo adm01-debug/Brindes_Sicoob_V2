@@ -1,0 +1,922 @@
+[
+  {
+    "relname": "admin_settings",
+    "tgname": "update_admin_settings_updated_at",
+    "definition": "CREATE TRIGGER update_admin_settings_updated_at BEFORE UPDATE ON public.admin_settings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "ai_insights_cache",
+    "tgname": "trg_owner__ai_insights_cache__user_id",
+    "definition": "CREATE TRIGGER trg_owner__ai_insights_cache__user_id BEFORE INSERT ON public.ai_insights_cache FOR EACH ROW EXECUTE FUNCTION enforce_user_id_owner()"
+  },
+  {
+    "relname": "art_file_attachments",
+    "tgname": "trg_owner__art_file_attachments__user_id",
+    "definition": "CREATE TRIGGER trg_owner__art_file_attachments__user_id BEFORE INSERT ON public.art_file_attachments FOR EACH ROW EXECUTE FUNCTION enforce_user_id_owner()"
+  },
+  {
+    "relname": "art_file_attachments",
+    "tgname": "update_art_files_updated_at",
+    "definition": "CREATE TRIGGER update_art_files_updated_at BEFORE UPDATE ON public.art_file_attachments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "bitrix_clients",
+    "tgname": "update_bitrix_clients_updated_at",
+    "definition": "CREATE TRIGGER update_bitrix_clients_updated_at BEFORE UPDATE ON public.bitrix_clients FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "blog_posts",
+    "tgname": "update_blog_posts_updated_at",
+    "definition": "CREATE TRIGGER update_blog_posts_updated_at BEFORE UPDATE ON public.blog_posts FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "campaigns",
+    "tgname": "set_updated_at_campaigns",
+    "definition": "CREATE TRIGGER set_updated_at_campaigns BEFORE UPDATE ON public.campaigns FOR EACH ROW EXECUTE FUNCTION handle_updated_at()"
+  },
+  {
+    "relname": "cart_items",
+    "tgname": "update_cart_items_updated_at",
+    "definition": "CREATE TRIGGER update_cart_items_updated_at BEFORE UPDATE ON public.cart_items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "cart_templates",
+    "tgname": "trg_owner__cart_templates__user_id",
+    "definition": "CREATE TRIGGER trg_owner__cart_templates__user_id BEFORE INSERT ON public.cart_templates FOR EACH ROW EXECUTE FUNCTION enforce_user_id_owner()"
+  },
+  {
+    "relname": "cms_banners",
+    "tgname": "set_updated_at_banners",
+    "definition": "CREATE TRIGGER set_updated_at_banners BEFORE UPDATE ON public.cms_banners FOR EACH ROW EXECUTE FUNCTION handle_updated_at()"
+  },
+  {
+    "relname": "cms_config",
+    "tgname": "update_cms_config_updated_at",
+    "definition": "CREATE TRIGGER update_cms_config_updated_at BEFORE UPDATE ON public.cms_config FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "cms_sections",
+    "tgname": "set_updated_at_sections",
+    "definition": "CREATE TRIGGER set_updated_at_sections BEFORE UPDATE ON public.cms_sections FOR EACH ROW EXECUTE FUNCTION handle_updated_at()"
+  },
+  {
+    "relname": "collection_items",
+    "tgname": "trg_move_collection_item_to_trash",
+    "definition": "CREATE TRIGGER trg_move_collection_item_to_trash BEFORE DELETE ON public.collection_items FOR EACH ROW EXECUTE FUNCTION move_collection_item_to_trash()"
+  },
+  {
+    "relname": "collections",
+    "tgname": "trg_owner__collections__user_id",
+    "definition": "CREATE TRIGGER trg_owner__collections__user_id BEFORE INSERT ON public.collections FOR EACH ROW EXECUTE FUNCTION enforce_user_id_owner()"
+  },
+  {
+    "relname": "collections",
+    "tgname": "update_collections_updated_at",
+    "definition": "CREATE TRIGGER update_collections_updated_at BEFORE UPDATE ON public.collections FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "connection_test_history",
+    "tgname": "trg_trim_connection_test_history",
+    "definition": "CREATE TRIGGER trg_trim_connection_test_history AFTER INSERT ON public.connection_test_history FOR EACH ROW EXECUTE FUNCTION trim_connection_test_history()"
+  },
+  {
+    "relname": "cooperativa_budgets",
+    "tgname": "trg_coop_budgets_updated",
+    "definition": "CREATE TRIGGER trg_coop_budgets_updated BEFORE UPDATE ON public.cooperativa_budgets FOR EACH ROW EXECUTE FUNCTION tg_set_updated_at()"
+  },
+  {
+    "relname": "cooperativas",
+    "tgname": "tr_audit_cooperativas",
+    "definition": "CREATE TRIGGER tr_audit_cooperativas AFTER INSERT OR DELETE OR UPDATE ON public.cooperativas FOR EACH ROW EXECUTE FUNCTION log_sicoob_admin_action()"
+  },
+  {
+    "relname": "cooperativas",
+    "tgname": "trg_cooperativas_updated",
+    "definition": "CREATE TRIGGER trg_cooperativas_updated BEFORE UPDATE ON public.cooperativas FOR EACH ROW EXECUTE FUNCTION tg_set_updated_at()"
+  },
+  {
+    "relname": "cooperativas_parceiras",
+    "tgname": "set_updated_at_cooperativas",
+    "definition": "CREATE TRIGGER set_updated_at_cooperativas BEFORE UPDATE ON public.cooperativas_parceiras FOR EACH ROW EXECUTE FUNCTION handle_updated_at()"
+  },
+  {
+    "relname": "coupons",
+    "tgname": "set_updated_at_coupons",
+    "definition": "CREATE TRIGGER set_updated_at_coupons BEFORE UPDATE ON public.coupons FOR EACH ROW EXECUTE FUNCTION handle_updated_at()"
+  },
+  {
+    "relname": "custom_kits",
+    "tgname": "trg_owner__custom_kits__user_id",
+    "definition": "CREATE TRIGGER trg_owner__custom_kits__user_id BEFORE INSERT ON public.custom_kits FOR EACH ROW EXECUTE FUNCTION enforce_user_id_owner()"
+  },
+  {
+    "relname": "custom_kits",
+    "tgname": "trg_validate_kit_status",
+    "definition": "CREATE TRIGGER trg_validate_kit_status BEFORE INSERT OR UPDATE ON public.custom_kits FOR EACH ROW EXECUTE FUNCTION validate_status_fields()"
+  },
+  {
+    "relname": "discount_approval_requests",
+    "tgname": "notify_discount_approval_trigger",
+    "definition": "CREATE TRIGGER notify_discount_approval_trigger AFTER INSERT OR UPDATE ON public.discount_approval_requests FOR EACH ROW EXECUTE FUNCTION notify_discount_approval_request()"
+  },
+  {
+    "relname": "discount_approval_requests",
+    "tgname": "trg_dispatch_webhook_discount",
+    "definition": "CREATE TRIGGER trg_dispatch_webhook_discount AFTER INSERT OR UPDATE ON public.discount_approval_requests FOR EACH ROW EXECUTE FUNCTION dispatch_quote_webhook_event()"
+  },
+  {
+    "relname": "discount_approval_requests",
+    "tgname": "trg_owner__discount_approval_requests__seller_id",
+    "definition": "CREATE TRIGGER trg_owner__discount_approval_requests__seller_id BEFORE INSERT ON public.discount_approval_requests FOR EACH ROW EXECUTE FUNCTION enforce_seller_id_owner()"
+  },
+  {
+    "relname": "discount_approval_requests",
+    "tgname": "update_discount_approval_requests_updated_at",
+    "definition": "CREATE TRIGGER update_discount_approval_requests_updated_at BEFORE UPDATE ON public.discount_approval_requests FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "discount_approval_requests",
+    "tgname": "validate_discount_approval_status_trigger",
+    "definition": "CREATE TRIGGER validate_discount_approval_status_trigger BEFORE INSERT OR UPDATE ON public.discount_approval_requests FOR EACH ROW EXECUTE FUNCTION validate_discount_approval_status()"
+  },
+  {
+    "relname": "expert_conversations",
+    "tgname": "trg_owner__expert_conversations__seller_id",
+    "definition": "CREATE TRIGGER trg_owner__expert_conversations__seller_id BEFORE INSERT ON public.expert_conversations FOR EACH ROW EXECUTE FUNCTION enforce_seller_id_owner()"
+  },
+  {
+    "relname": "external_connections",
+    "tgname": "trg_external_connections_updated_at",
+    "definition": "CREATE TRIGGER trg_external_connections_updated_at BEFORE UPDATE ON public.external_connections FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "external_connections",
+    "tgname": "trg_owner__external_connections__created_by",
+    "definition": "CREATE TRIGGER trg_owner__external_connections__created_by BEFORE INSERT ON public.external_connections FOR EACH ROW EXECUTE FUNCTION enforce_created_by_owner()"
+  },
+  {
+    "relname": "favorite_items",
+    "tgname": "set_favorite_items_updated_at",
+    "definition": "CREATE TRIGGER set_favorite_items_updated_at BEFORE UPDATE ON public.favorite_items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "favorite_items",
+    "tgname": "trg_favorite_items_to_trash",
+    "definition": "CREATE TRIGGER trg_favorite_items_to_trash BEFORE DELETE ON public.favorite_items FOR EACH ROW EXECUTE FUNCTION move_favorite_to_trash()"
+  },
+  {
+    "relname": "favorite_items",
+    "tgname": "trg_owner__favorite_items__user_id",
+    "definition": "CREATE TRIGGER trg_owner__favorite_items__user_id BEFORE INSERT ON public.favorite_items FOR EACH ROW EXECUTE FUNCTION enforce_user_id_owner()"
+  },
+  {
+    "relname": "favorite_lists",
+    "tgname": "set_favorite_lists_updated_at",
+    "definition": "CREATE TRIGGER set_favorite_lists_updated_at BEFORE UPDATE ON public.favorite_lists FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "favorite_lists",
+    "tgname": "trg_owner__favorite_lists__user_id",
+    "definition": "CREATE TRIGGER trg_owner__favorite_lists__user_id BEFORE INSERT ON public.favorite_lists FOR EACH ROW EXECUTE FUNCTION enforce_user_id_owner()"
+  },
+  {
+    "relname": "follow_up_reminders",
+    "tgname": "trg_owner__follow_up_reminders__seller_id",
+    "definition": "CREATE TRIGGER trg_owner__follow_up_reminders__seller_id BEFORE INSERT ON public.follow_up_reminders FOR EACH ROW EXECUTE FUNCTION enforce_seller_id_owner()"
+  },
+  {
+    "relname": "generated_mockups",
+    "tgname": "trg_owner__generated_mockups__seller_id",
+    "definition": "CREATE TRIGGER trg_owner__generated_mockups__seller_id BEFORE INSERT ON public.generated_mockups FOR EACH ROW EXECUTE FUNCTION enforce_seller_id_owner()"
+  },
+  {
+    "relname": "inbound_webhook_endpoints",
+    "tgname": "trg_inbound_endpoints_updated_at",
+    "definition": "CREATE TRIGGER trg_inbound_endpoints_updated_at BEFORE UPDATE ON public.inbound_webhook_endpoints FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "inbound_webhook_endpoints",
+    "tgname": "trg_owner__inbound_webhook_endpoints__created_by",
+    "definition": "CREATE TRIGGER trg_owner__inbound_webhook_endpoints__created_by BEFORE INSERT ON public.inbound_webhook_endpoints FOR EACH ROW EXECUTE FUNCTION enforce_created_by_owner()"
+  },
+  {
+    "relname": "integration_credentials",
+    "tgname": "sync_external_connections_on_credential_change",
+    "definition": "CREATE TRIGGER sync_external_connections_on_credential_change AFTER INSERT OR DELETE OR UPDATE ON public.integration_credentials FOR EACH ROW EXECUTE FUNCTION trg_sync_external_connections()"
+  },
+  {
+    "relname": "integration_credentials",
+    "tgname": "trg_fill_integration_credential_metadata",
+    "definition": "CREATE TRIGGER trg_fill_integration_credential_metadata BEFORE INSERT OR UPDATE ON public.integration_credentials FOR EACH ROW EXECUTE FUNCTION fill_integration_credential_metadata()"
+  },
+  {
+    "relname": "ip_access_control",
+    "tgname": "trg_ip_access_control_updated_at",
+    "definition": "CREATE TRIGGER trg_ip_access_control_updated_at BEFORE UPDATE ON public.ip_access_control FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "ip_access_control",
+    "tgname": "trg_validate_ip_access_control",
+    "definition": "CREATE TRIGGER trg_validate_ip_access_control BEFORE INSERT OR UPDATE ON public.ip_access_control FOR EACH ROW EXECUTE FUNCTION validate_ip_access_control()"
+  },
+  {
+    "relname": "kit_collaborators",
+    "tgname": "update_kit_collab_updated_at",
+    "definition": "CREATE TRIGGER update_kit_collab_updated_at BEFORE UPDATE ON public.kit_collaborators FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "kit_comments",
+    "tgname": "update_kit_comments_updated_at",
+    "definition": "CREATE TRIGGER update_kit_comments_updated_at BEFORE UPDATE ON public.kit_comments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "kit_share_tokens",
+    "tgname": "trg_dispatch_webhook_kit_share",
+    "definition": "CREATE TRIGGER trg_dispatch_webhook_kit_share AFTER INSERT ON public.kit_share_tokens FOR EACH ROW EXECUTE FUNCTION dispatch_quote_webhook_event()"
+  },
+  {
+    "relname": "kit_share_tokens",
+    "tgname": "trg_owner__kit_share_tokens__seller_id",
+    "definition": "CREATE TRIGGER trg_owner__kit_share_tokens__seller_id BEFORE INSERT ON public.kit_share_tokens FOR EACH ROW EXECUTE FUNCTION enforce_seller_id_owner()"
+  },
+  {
+    "relname": "kit_share_tokens",
+    "tgname": "trg_validate_kit_share_token_status",
+    "definition": "CREATE TRIGGER trg_validate_kit_share_token_status BEFORE INSERT OR UPDATE ON public.kit_share_tokens FOR EACH ROW EXECUTE FUNCTION validate_status_fields()"
+  },
+  {
+    "relname": "kit_templates",
+    "tgname": "trg_kit_templates_updated_at",
+    "definition": "CREATE TRIGGER trg_kit_templates_updated_at BEFORE UPDATE ON public.kit_templates FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "kit_variants",
+    "tgname": "update_kit_variants_updated_at",
+    "definition": "CREATE TRIGGER update_kit_variants_updated_at BEFORE UPDATE ON public.kit_variants FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "magic_up_brand_kits",
+    "tgname": "set_magic_up_brand_kits_updated_at",
+    "definition": "CREATE TRIGGER set_magic_up_brand_kits_updated_at BEFORE UPDATE ON public.magic_up_brand_kits FOR EACH ROW EXECUTE FUNCTION set_magic_up_updated_at()"
+  },
+  {
+    "relname": "magic_up_brand_kits",
+    "tgname": "trg_owner__magic_up_brand_kits__user_id",
+    "definition": "CREATE TRIGGER trg_owner__magic_up_brand_kits__user_id BEFORE INSERT ON public.magic_up_brand_kits FOR EACH ROW EXECUTE FUNCTION enforce_user_id_owner()"
+  },
+  {
+    "relname": "magic_up_campaigns",
+    "tgname": "set_magic_up_campaigns_updated_at",
+    "definition": "CREATE TRIGGER set_magic_up_campaigns_updated_at BEFORE UPDATE ON public.magic_up_campaigns FOR EACH ROW EXECUTE FUNCTION set_magic_up_updated_at()"
+  },
+  {
+    "relname": "magic_up_campaigns",
+    "tgname": "trg_owner__magic_up_campaigns__user_id",
+    "definition": "CREATE TRIGGER trg_owner__magic_up_campaigns__user_id BEFORE INSERT ON public.magic_up_campaigns FOR EACH ROW EXECUTE FUNCTION enforce_user_id_owner()"
+  },
+  {
+    "relname": "magic_up_comments",
+    "tgname": "trg_owner__magic_up_comments__user_id",
+    "definition": "CREATE TRIGGER trg_owner__magic_up_comments__user_id BEFORE INSERT ON public.magic_up_comments FOR EACH ROW EXECUTE FUNCTION enforce_user_id_owner()"
+  },
+  {
+    "relname": "magic_up_generations",
+    "tgname": "trg_owner__magic_up_generations__user_id",
+    "definition": "CREATE TRIGGER trg_owner__magic_up_generations__user_id BEFORE INSERT ON public.magic_up_generations FOR EACH ROW EXECUTE FUNCTION enforce_user_id_owner()"
+  },
+  {
+    "relname": "magic_up_public_shares",
+    "tgname": "set_magic_up_public_shares_updated_at",
+    "definition": "CREATE TRIGGER set_magic_up_public_shares_updated_at BEFORE UPDATE ON public.magic_up_public_shares FOR EACH ROW EXECUTE FUNCTION set_magic_up_updated_at()"
+  },
+  {
+    "relname": "magic_up_public_shares",
+    "tgname": "trg_owner__magic_up_public_shares__user_id",
+    "definition": "CREATE TRIGGER trg_owner__magic_up_public_shares__user_id BEFORE INSERT ON public.magic_up_public_shares FOR EACH ROW EXECUTE FUNCTION enforce_user_id_owner()"
+  },
+  {
+    "relname": "magic_up_reactions",
+    "tgname": "trg_owner__magic_up_reactions__user_id",
+    "definition": "CREATE TRIGGER trg_owner__magic_up_reactions__user_id BEFORE INSERT ON public.magic_up_reactions FOR EACH ROW EXECUTE FUNCTION enforce_user_id_owner()"
+  },
+  {
+    "relname": "mcp_api_keys",
+    "tgname": "trg_audit_mcp_api_keys",
+    "definition": "CREATE TRIGGER trg_audit_mcp_api_keys AFTER INSERT OR DELETE OR UPDATE ON public.mcp_api_keys FOR EACH ROW EXECUTE FUNCTION audit_mcp_api_keys_changes()"
+  },
+  {
+    "relname": "mcp_api_keys",
+    "tgname": "trg_guard_mcp_api_keys",
+    "definition": "CREATE TRIGGER trg_guard_mcp_api_keys BEFORE INSERT OR DELETE OR UPDATE ON public.mcp_api_keys FOR EACH ROW EXECUTE FUNCTION guard_mcp_api_keys_writes()"
+  },
+  {
+    "relname": "mcp_api_keys",
+    "tgname": "trg_mcp_api_keys_updated_at",
+    "definition": "CREATE TRIGGER trg_mcp_api_keys_updated_at BEFORE UPDATE ON public.mcp_api_keys FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "mcp_api_keys",
+    "tgname": "trg_owner__mcp_api_keys__created_by",
+    "definition": "CREATE TRIGGER trg_owner__mcp_api_keys__created_by BEFORE INSERT ON public.mcp_api_keys FOR EACH ROW EXECUTE FUNCTION enforce_created_by_owner()"
+  },
+  {
+    "relname": "mockup_drafts",
+    "tgname": "trg_owner__mockup_drafts__user_id",
+    "definition": "CREATE TRIGGER trg_owner__mockup_drafts__user_id BEFORE INSERT ON public.mockup_drafts FOR EACH ROW EXECUTE FUNCTION enforce_user_id_owner()"
+  },
+  {
+    "relname": "mockup_prompt_configs",
+    "tgname": "trg_log_mockup_prompt_change",
+    "definition": "CREATE TRIGGER trg_log_mockup_prompt_change BEFORE UPDATE ON public.mockup_prompt_configs FOR EACH ROW EXECUTE FUNCTION log_mockup_prompt_change()"
+  },
+  {
+    "relname": "mockup_prompt_configs",
+    "tgname": "update_mockup_prompt_configs_updated_at",
+    "definition": "CREATE TRIGGER update_mockup_prompt_configs_updated_at BEFORE UPDATE ON public.mockup_prompt_configs FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "mockup_templates",
+    "tgname": "trg_owner__mockup_templates__user_id",
+    "definition": "CREATE TRIGGER trg_owner__mockup_templates__user_id BEFORE INSERT ON public.mockup_templates FOR EACH ROW EXECUTE FUNCTION enforce_user_id_owner()"
+  },
+  {
+    "relname": "mockup_templates",
+    "tgname": "update_mockup_templates_updated_at",
+    "definition": "CREATE TRIGGER update_mockup_templates_updated_at BEFORE UPDATE ON public.mockup_templates FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "newsletter_subscribers",
+    "tgname": "set_updated_at_newsletter",
+    "definition": "CREATE TRIGGER set_updated_at_newsletter BEFORE UPDATE ON public.newsletter_subscribers FOR EACH ROW EXECUTE FUNCTION handle_updated_at()"
+  },
+  {
+    "relname": "notifications",
+    "tgname": "trigger_update_notification_updated_at",
+    "definition": "CREATE TRIGGER trigger_update_notification_updated_at BEFORE UPDATE ON public.notifications FOR EACH ROW EXECUTE FUNCTION update_notification_updated_at()"
+  },
+  {
+    "relname": "optimization_queue",
+    "tgname": "trg_optimization_queue_updated_at",
+    "definition": "CREATE TRIGGER trg_optimization_queue_updated_at BEFORE UPDATE ON public.optimization_queue FOR EACH ROW EXECUTE FUNCTION set_optimization_queue_updated_at()"
+  },
+  {
+    "relname": "order_comments",
+    "tgname": "trg_order_comments_updated_at",
+    "definition": "CREATE TRIGGER trg_order_comments_updated_at BEFORE UPDATE ON public.order_comments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "order_consolidation_orders",
+    "tgname": "tr_protect_consolidation_orders",
+    "definition": "CREATE TRIGGER tr_protect_consolidation_orders BEFORE INSERT OR DELETE OR UPDATE ON public.order_consolidation_orders FOR EACH ROW EXECUTE FUNCTION protect_sicoob_consolidation_records()"
+  },
+  {
+    "relname": "order_consolidations",
+    "tgname": "tr_protect_order_consolidations",
+    "definition": "CREATE TRIGGER tr_protect_order_consolidations BEFORE INSERT OR DELETE OR UPDATE ON public.order_consolidations FOR EACH ROW EXECUTE FUNCTION protect_sicoob_consolidation_records()"
+  },
+  {
+    "relname": "order_invoices",
+    "tgname": "trg_order_invoices_updated_at",
+    "definition": "CREATE TRIGGER trg_order_invoices_updated_at BEFORE UPDATE ON public.order_invoices FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "order_items",
+    "tgname": "update_order_items_updated_at",
+    "definition": "CREATE TRIGGER update_order_items_updated_at BEFORE UPDATE ON public.order_items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "order_logistics_tracking",
+    "tgname": "trg_order_logistics_tracking_updated_at",
+    "definition": "CREATE TRIGGER trg_order_logistics_tracking_updated_at BEFORE UPDATE ON public.order_logistics_tracking FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "order_payments",
+    "tgname": "trg_order_payments_updated_at",
+    "definition": "CREATE TRIGGER trg_order_payments_updated_at BEFORE UPDATE ON public.order_payments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "order_pilot_approvals",
+    "tgname": "trg_order_pilot_approvals_updated_at",
+    "definition": "CREATE TRIGGER trg_order_pilot_approvals_updated_at BEFORE UPDATE ON public.order_pilot_approvals FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "order_templates",
+    "tgname": "trg_order_templates_updated_at",
+    "definition": "CREATE TRIGGER trg_order_templates_updated_at BEFORE UPDATE ON public.order_templates FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "orders",
+    "tgname": "set_order_number",
+    "definition": "CREATE TRIGGER set_order_number BEFORE INSERT ON public.orders FOR EACH ROW EXECUTE FUNCTION generate_order_number()"
+  },
+  {
+    "relname": "orders",
+    "tgname": "tr_validate_main_order_status",
+    "definition": "CREATE TRIGGER tr_validate_main_order_status BEFORE UPDATE OF status ON public.orders FOR EACH ROW EXECUTE FUNCTION validate_main_order_status_transition()"
+  },
+  {
+    "relname": "orders",
+    "tgname": "tr_validate_order_fulfillment",
+    "definition": "CREATE TRIGGER tr_validate_order_fulfillment BEFORE UPDATE OF fulfillment_status ON public.orders FOR EACH ROW EXECUTE FUNCTION validate_order_fulfillment_transition()"
+  },
+  {
+    "relname": "orders",
+    "tgname": "trg_dispatch_webhook_orders",
+    "definition": "CREATE TRIGGER trg_dispatch_webhook_orders AFTER INSERT ON public.orders FOR EACH ROW EXECUTE FUNCTION dispatch_quote_webhook_event()"
+  },
+  {
+    "relname": "orders",
+    "tgname": "trg_log_order_status_change",
+    "definition": "CREATE TRIGGER trg_log_order_status_change AFTER UPDATE ON public.orders FOR EACH ROW EXECUTE FUNCTION log_order_status_change()"
+  },
+  {
+    "relname": "orders",
+    "tgname": "trg_notify_new_order",
+    "definition": "CREATE TRIGGER trg_notify_new_order AFTER INSERT ON public.orders FOR EACH ROW EXECUTE FUNCTION notify_new_order()"
+  },
+  {
+    "relname": "orders",
+    "tgname": "trg_orders_increment_version",
+    "definition": "CREATE TRIGGER trg_orders_increment_version BEFORE UPDATE ON public.orders FOR EACH ROW EXECUTE FUNCTION increment_row_version()"
+  },
+  {
+    "relname": "orders",
+    "tgname": "trg_owner__orders__seller_id",
+    "definition": "CREATE TRIGGER trg_owner__orders__seller_id BEFORE INSERT ON public.orders FOR EACH ROW EXECUTE FUNCTION enforce_seller_id_owner()"
+  },
+  {
+    "relname": "orders",
+    "tgname": "trg_validate_order_status",
+    "definition": "CREATE TRIGGER trg_validate_order_status BEFORE INSERT OR UPDATE ON public.orders FOR EACH ROW EXECUTE FUNCTION validate_status_fields()"
+  },
+  {
+    "relname": "orders",
+    "tgname": "trig_prevent_order_deletion",
+    "definition": "CREATE TRIGGER trig_prevent_order_deletion BEFORE DELETE ON public.orders FOR EACH ROW EXECUTE FUNCTION prevent_critical_deletion()"
+  },
+  {
+    "relname": "orders",
+    "tgname": "update_orders_updated_at",
+    "definition": "CREATE TRIGGER update_orders_updated_at BEFORE UPDATE ON public.orders FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "organizations",
+    "tgname": "update_organizations_updated_at",
+    "definition": "CREATE TRIGGER update_organizations_updated_at BEFORE UPDATE ON public.organizations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "outbound_webhooks",
+    "tgname": "trg_outbound_webhooks_updated_at",
+    "definition": "CREATE TRIGGER trg_outbound_webhooks_updated_at BEFORE UPDATE ON public.outbound_webhooks FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "outbound_webhooks",
+    "tgname": "trg_owner__outbound_webhooks__created_by",
+    "definition": "CREATE TRIGGER trg_owner__outbound_webhooks__created_by BEFORE INSERT ON public.outbound_webhooks FOR EACH ROW EXECUTE FUNCTION enforce_created_by_owner()"
+  },
+  {
+    "relname": "pa_budgets",
+    "tgname": "trg_pa_budgets_updated",
+    "definition": "CREATE TRIGGER trg_pa_budgets_updated BEFORE UPDATE ON public.pa_budgets FOR EACH ROW EXECUTE FUNCTION tg_set_updated_at()"
+  },
+  {
+    "relname": "pa_budgets",
+    "tgname": "update_pa_budgets_updated_at",
+    "definition": "CREATE TRIGGER update_pa_budgets_updated_at BEFORE UPDATE ON public.pa_budgets FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "personalization_simulations",
+    "tgname": "update_personalization_simulations_updated_at",
+    "definition": "CREATE TRIGGER update_personalization_simulations_updated_at BEFORE UPDATE ON public.personalization_simulations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "portfolio_items",
+    "tgname": "update_portfolio_items_updated_at",
+    "definition": "CREATE TRIGGER update_portfolio_items_updated_at BEFORE UPDATE ON public.portfolio_items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "postos_atendimento",
+    "tgname": "tr_audit_pas",
+    "definition": "CREATE TRIGGER tr_audit_pas AFTER INSERT OR DELETE OR UPDATE ON public.postos_atendimento FOR EACH ROW EXECUTE FUNCTION log_sicoob_admin_action()"
+  },
+  {
+    "relname": "postos_atendimento",
+    "tgname": "trg_pas_updated",
+    "definition": "CREATE TRIGGER trg_pas_updated BEFORE UPDATE ON public.postos_atendimento FOR EACH ROW EXECUTE FUNCTION tg_set_updated_at()"
+  },
+  {
+    "relname": "product_categories",
+    "tgname": "set_updated_at_categories",
+    "definition": "CREATE TRIGGER set_updated_at_categories BEFORE UPDATE ON public.product_categories FOR EACH ROW EXECUTE FUNCTION handle_updated_at()"
+  },
+  {
+    "relname": "product_component_locations",
+    "tgname": "update_product_comp_loc_updated_at",
+    "definition": "CREATE TRIGGER update_product_comp_loc_updated_at BEFORE UPDATE ON public.product_component_locations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "product_groups",
+    "tgname": "sync_groups_is_active",
+    "definition": "CREATE TRIGGER sync_groups_is_active BEFORE UPDATE ON public.product_groups FOR EACH ROW WHEN ((new.deleted_at IS DISTINCT FROM old.deleted_at)) EXECUTE FUNCTION sync_is_active_with_deleted_at()"
+  },
+  {
+    "relname": "product_groups",
+    "tgname": "update_product_groups_updated_at",
+    "definition": "CREATE TRIGGER update_product_groups_updated_at BEFORE UPDATE ON public.product_groups FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "product_price_freshness_overrides",
+    "tgname": "trg_pfo_set_updated_at",
+    "definition": "CREATE TRIGGER trg_pfo_set_updated_at BEFORE UPDATE ON public.product_price_freshness_overrides FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "profiles",
+    "tgname": "prevent_profile_role_change_trigger",
+    "definition": "CREATE TRIGGER prevent_profile_role_change_trigger BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION prevent_profile_role_change()"
+  },
+  {
+    "relname": "profiles",
+    "tgname": "trg_prevent_role_self_update",
+    "definition": "CREATE TRIGGER trg_prevent_role_self_update BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION prevent_role_self_update()"
+  },
+  {
+    "relname": "profiles",
+    "tgname": "update_profiles_updated_at",
+    "definition": "CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "quote_approval_tokens",
+    "tgname": "trg_generate_secure_approval_token",
+    "definition": "CREATE TRIGGER trg_generate_secure_approval_token BEFORE INSERT ON public.quote_approval_tokens FOR EACH ROW EXECUTE FUNCTION generate_secure_token()"
+  },
+  {
+    "relname": "quote_approval_tokens",
+    "tgname": "trg_invalidate_used_approval_token",
+    "definition": "CREATE TRIGGER trg_invalidate_used_approval_token BEFORE UPDATE ON public.quote_approval_tokens FOR EACH ROW EXECUTE FUNCTION invalidate_used_approval_token()"
+  },
+  {
+    "relname": "quote_approval_tokens",
+    "tgname": "trg_notify_quote_client_response",
+    "definition": "CREATE TRIGGER trg_notify_quote_client_response AFTER UPDATE ON public.quote_approval_tokens FOR EACH ROW EXECUTE FUNCTION notify_quote_client_response()"
+  },
+  {
+    "relname": "quote_approval_tokens",
+    "tgname": "trg_owner__quote_approval_tokens__seller_id",
+    "definition": "CREATE TRIGGER trg_owner__quote_approval_tokens__seller_id BEFORE INSERT ON public.quote_approval_tokens FOR EACH ROW EXECUTE FUNCTION enforce_seller_id_owner()"
+  },
+  {
+    "relname": "quote_approval_tokens",
+    "tgname": "trg_validate_approval_token_status",
+    "definition": "CREATE TRIGGER trg_validate_approval_token_status BEFORE INSERT OR UPDATE ON public.quote_approval_tokens FOR EACH ROW EXECUTE FUNCTION guard_local_quote_approval_token()"
+  },
+  {
+    "relname": "quote_comments",
+    "tgname": "trg_owner__quote_comments__user_id",
+    "definition": "CREATE TRIGGER trg_owner__quote_comments__user_id BEFORE INSERT ON public.quote_comments FOR EACH ROW EXECUTE FUNCTION enforce_user_id_owner()"
+  },
+  {
+    "relname": "quote_consolidations",
+    "tgname": "tr_quote_consolidations_updated_at",
+    "definition": "CREATE TRIGGER tr_quote_consolidations_updated_at BEFORE UPDATE ON public.quote_consolidations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "quote_items",
+    "tgname": "update_quote_items_updated_at",
+    "definition": "CREATE TRIGGER update_quote_items_updated_at BEFORE UPDATE ON public.quote_items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "quote_templates",
+    "tgname": "trg_owner__quote_templates__seller_id",
+    "definition": "CREATE TRIGGER trg_owner__quote_templates__seller_id BEFORE INSERT ON public.quote_templates FOR EACH ROW EXECUTE FUNCTION enforce_seller_id_owner()"
+  },
+  {
+    "relname": "quote_templates",
+    "tgname": "update_quote_templates_updated_at",
+    "definition": "CREATE TRIGGER update_quote_templates_updated_at BEFORE UPDATE ON public.quote_templates FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "quotes",
+    "tgname": "aaa_guard_quote_governance_write",
+    "definition": "CREATE TRIGGER aaa_guard_quote_governance_write BEFORE INSERT OR UPDATE ON public.quotes FOR EACH ROW EXECUTE FUNCTION guard_quote_governance_write()"
+  },
+  {
+    "relname": "quotes",
+    "tgname": "sync_quotes_is_active",
+    "definition": "CREATE TRIGGER sync_quotes_is_active BEFORE UPDATE ON public.quotes FOR EACH ROW WHEN ((new.deleted_at IS DISTINCT FROM old.deleted_at)) EXECUTE FUNCTION sync_is_active_with_deleted_at()"
+  },
+  {
+    "relname": "quotes",
+    "tgname": "tr_guard_sicoob_reorder_catalog_validity",
+    "definition": "CREATE TRIGGER tr_guard_sicoob_reorder_catalog_validity BEFORE UPDATE OF status ON public.quotes FOR EACH ROW EXECUTE FUNCTION sicoob_guard_reorder_catalog_validity()"
+  },
+  {
+    "relname": "quotes",
+    "tgname": "tr_normalize_quote_parent_root",
+    "definition": "CREATE TRIGGER tr_normalize_quote_parent_root BEFORE INSERT OR UPDATE OF parent_quote_id ON public.quotes FOR EACH ROW EXECUTE FUNCTION normalize_quote_parent_root()"
+  },
+  {
+    "relname": "quotes",
+    "tgname": "tr_protect_latest_quote_version_deletion",
+    "definition": "CREATE TRIGGER tr_protect_latest_quote_version_deletion BEFORE DELETE OR UPDATE OF deleted_at ON public.quotes FOR EACH ROW EXECUTE FUNCTION protect_latest_quote_version_deletion()"
+  },
+  {
+    "relname": "quotes",
+    "tgname": "tr_set_quote_hierarchy",
+    "definition": "CREATE TRIGGER tr_set_quote_hierarchy BEFORE INSERT ON public.quotes FOR EACH ROW EXECUTE FUNCTION set_quote_hierarchy()"
+  },
+  {
+    "relname": "quotes",
+    "tgname": "trg_dispatch_webhook_quotes",
+    "definition": "CREATE TRIGGER trg_dispatch_webhook_quotes AFTER INSERT OR UPDATE ON public.quotes FOR EACH ROW EXECUTE FUNCTION dispatch_quote_webhook_event()"
+  },
+  {
+    "relname": "quotes",
+    "tgname": "trg_notify_quote_status_change",
+    "definition": "CREATE TRIGGER trg_notify_quote_status_change AFTER UPDATE ON public.quotes FOR EACH ROW EXECUTE FUNCTION notify_quote_status_change()"
+  },
+  {
+    "relname": "quotes",
+    "tgname": "trg_notify_singular_quote_submission",
+    "definition": "CREATE TRIGGER trg_notify_singular_quote_submission AFTER UPDATE OF status ON public.quotes FOR EACH ROW EXECUTE FUNCTION notify_singular_quote_submission()"
+  },
+  {
+    "relname": "quotes",
+    "tgname": "trg_owner__quotes__seller_id",
+    "definition": "CREATE TRIGGER trg_owner__quotes__seller_id BEFORE INSERT ON public.quotes FOR EACH ROW EXECUTE FUNCTION enforce_seller_id_owner()"
+  },
+  {
+    "relname": "quotes",
+    "tgname": "trg_quotes_row_version",
+    "definition": "CREATE TRIGGER trg_quotes_row_version BEFORE UPDATE ON public.quotes FOR EACH ROW EXECUTE FUNCTION handle_row_version()"
+  },
+  {
+    "relname": "quotes",
+    "tgname": "trg_validate_quote_real_discount",
+    "definition": "CREATE TRIGGER trg_validate_quote_real_discount BEFORE INSERT OR UPDATE OF subtotal, discount_percent, negotiation_markup_percent, status ON public.quotes FOR EACH ROW EXECUTE FUNCTION validate_quote_real_discount()"
+  },
+  {
+    "relname": "quotes",
+    "tgname": "trg_validate_quote_status",
+    "definition": "CREATE TRIGGER trg_validate_quote_status BEFORE INSERT OR UPDATE ON public.quotes FOR EACH ROW EXECUTE FUNCTION validate_status_fields()"
+  },
+  {
+    "relname": "quotes",
+    "tgname": "trig_prevent_quote_deletion",
+    "definition": "CREATE TRIGGER trig_prevent_quote_deletion BEFORE DELETE ON public.quotes FOR EACH ROW EXECUTE FUNCTION prevent_critical_deletion()"
+  },
+  {
+    "relname": "quotes",
+    "tgname": "trigger_generate_quote_number",
+    "definition": "CREATE TRIGGER trigger_generate_quote_number BEFORE INSERT ON public.quotes FOR EACH ROW EXECUTE FUNCTION generate_quote_number()"
+  },
+  {
+    "relname": "quotes",
+    "tgname": "update_quotes_updated_at",
+    "definition": "CREATE TRIGGER update_quotes_updated_at BEFORE UPDATE ON public.quotes FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "sales_goals",
+    "tgname": "update_sales_goals_updated_at",
+    "definition": "CREATE TRIGGER update_sales_goals_updated_at BEFORE UPDATE ON public.sales_goals FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "saved_filters",
+    "tgname": "trg_owner__saved_filters__user_id",
+    "definition": "CREATE TRIGGER trg_owner__saved_filters__user_id BEFORE INSERT ON public.saved_filters FOR EACH ROW EXECUTE FUNCTION enforce_user_id_owner()"
+  },
+  {
+    "relname": "saved_trends_views",
+    "tgname": "trg_owner__saved_trends_views__user_id",
+    "definition": "CREATE TRIGGER trg_owner__saved_trends_views__user_id BEFORE INSERT ON public.saved_trends_views FOR EACH ROW EXECUTE FUNCTION enforce_user_id_owner()"
+  },
+  {
+    "relname": "saved_trends_views",
+    "tgname": "update_saved_trends_views_updated_at",
+    "definition": "CREATE TRIGGER update_saved_trends_views_updated_at BEFORE UPDATE ON public.saved_trends_views FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "scheduled_reports",
+    "tgname": "trg_owner__scheduled_reports__user_id",
+    "definition": "CREATE TRIGGER trg_owner__scheduled_reports__user_id BEFORE INSERT ON public.scheduled_reports FOR EACH ROW EXECUTE FUNCTION enforce_user_id_owner()"
+  },
+  {
+    "relname": "scheduled_reports",
+    "tgname": "trg_validate_report_email",
+    "definition": "CREATE TRIGGER trg_validate_report_email BEFORE INSERT OR UPDATE ON public.scheduled_reports FOR EACH ROW EXECUTE FUNCTION validate_scheduled_report_email()"
+  },
+  {
+    "relname": "secret_rotation_log",
+    "tgname": "trg_validate_secret_rotation_action_type",
+    "definition": "CREATE TRIGGER trg_validate_secret_rotation_action_type BEFORE INSERT OR UPDATE ON public.secret_rotation_log FOR EACH ROW EXECUTE FUNCTION validate_secret_rotation_action_type()"
+  },
+  {
+    "relname": "seller_carts",
+    "tgname": "trg_owner__seller_carts__seller_id",
+    "definition": "CREATE TRIGGER trg_owner__seller_carts__seller_id BEFORE INSERT ON public.seller_carts FOR EACH ROW EXECUTE FUNCTION enforce_seller_id_owner()"
+  },
+  {
+    "relname": "seller_carts",
+    "tgname": "update_seller_carts_updated_at",
+    "definition": "CREATE TRIGGER update_seller_carts_updated_at BEFORE UPDATE ON public.seller_carts FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "seller_discount_limits",
+    "tgname": "update_seller_discount_limits_updated_at",
+    "definition": "CREATE TRIGGER update_seller_discount_limits_updated_at BEFORE UPDATE ON public.seller_discount_limits FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "sicoob_approval_delegations",
+    "tgname": "tr_protect_sicoob_approval_delegation",
+    "definition": "CREATE TRIGGER tr_protect_sicoob_approval_delegation BEFORE DELETE OR UPDATE ON public.sicoob_approval_delegations FOR EACH ROW EXECUTE FUNCTION protect_sicoob_approval_delegation()"
+  },
+  {
+    "relname": "sicoob_approval_delegations",
+    "tgname": "tr_validate_sicoob_approval_delegate_role",
+    "definition": "CREATE TRIGGER tr_validate_sicoob_approval_delegate_role BEFORE INSERT ON public.sicoob_approval_delegations FOR EACH ROW EXECUTE FUNCTION validate_sicoob_approval_delegate_role()"
+  },
+  {
+    "relname": "sicoob_approval_policies",
+    "tgname": "tr_protect_sicoob_approval_policy_version",
+    "definition": "CREATE TRIGGER tr_protect_sicoob_approval_policy_version BEFORE DELETE OR UPDATE ON public.sicoob_approval_policies FOR EACH ROW EXECUTE FUNCTION protect_sicoob_approval_policy_version()"
+  },
+  {
+    "relname": "sicoob_approval_requests",
+    "tgname": "tr_guard_sicoob_approval_request_insert",
+    "definition": "CREATE TRIGGER tr_guard_sicoob_approval_request_insert BEFORE INSERT ON public.sicoob_approval_requests FOR EACH ROW EXECUTE FUNCTION guard_sicoob_approval_request_insert()"
+  },
+  {
+    "relname": "sicoob_approval_requests",
+    "tgname": "tr_protect_sicoob_approval_request",
+    "definition": "CREATE TRIGGER tr_protect_sicoob_approval_request BEFORE UPDATE ON public.sicoob_approval_requests FOR EACH ROW EXECUTE FUNCTION protect_sicoob_approval_request()"
+  },
+  {
+    "relname": "sicoob_approval_requests",
+    "tgname": "tr_queue_sicoob_approval_escalation",
+    "definition": "CREATE TRIGGER tr_queue_sicoob_approval_escalation AFTER UPDATE OF metadata ON public.sicoob_approval_requests FOR EACH ROW EXECUTE FUNCTION queue_sicoob_approval_escalation()"
+  },
+  {
+    "relname": "sicoob_approval_requests",
+    "tgname": "tr_queue_sicoob_approval_notifications",
+    "definition": "CREATE TRIGGER tr_queue_sicoob_approval_notifications AFTER INSERT ON public.sicoob_approval_requests FOR EACH ROW EXECUTE FUNCTION queue_sicoob_approval_notifications()"
+  },
+  {
+    "relname": "sicoob_approval_requests",
+    "tgname": "update_sicoob_approval_requests_updated_at",
+    "definition": "CREATE TRIGGER update_sicoob_approval_requests_updated_at BEFORE UPDATE ON public.sicoob_approval_requests FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "sicoob_centrais",
+    "tgname": "tr_sicoob_centrais_updated_at",
+    "definition": "CREATE TRIGGER tr_sicoob_centrais_updated_at BEFORE UPDATE ON public.sicoob_centrais FOR EACH ROW EXECUTE FUNCTION handle_updated_at()"
+  },
+  {
+    "relname": "sicoob_delivery_allocations",
+    "tgname": "tr_protect_delivery_allocations",
+    "definition": "CREATE TRIGGER tr_protect_delivery_allocations BEFORE INSERT OR DELETE OR UPDATE ON public.sicoob_delivery_allocations FOR EACH ROW EXECUTE FUNCTION protect_sicoob_consolidation_records()"
+  },
+  {
+    "relname": "sicoob_delivery_destinations",
+    "tgname": "tr_protect_delivery_destinations",
+    "definition": "CREATE TRIGGER tr_protect_delivery_destinations BEFORE INSERT OR DELETE OR UPDATE ON public.sicoob_delivery_destinations FOR EACH ROW EXECUTE FUNCTION protect_sicoob_consolidation_records()"
+  },
+  {
+    "relname": "sicoob_delivery_receipt_events",
+    "tgname": "tr_protect_delivery_receipts",
+    "definition": "CREATE TRIGGER tr_protect_delivery_receipts BEFORE INSERT OR DELETE OR UPDATE ON public.sicoob_delivery_receipt_events FOR EACH ROW EXECUTE FUNCTION protect_sicoob_consolidation_records()"
+  },
+  {
+    "relname": "sicoob_invitation_events",
+    "tgname": "tr_sicoob_invitation_events_immutable",
+    "definition": "CREATE TRIGGER tr_sicoob_invitation_events_immutable BEFORE DELETE OR UPDATE ON public.sicoob_invitation_events FOR EACH ROW EXECUTE FUNCTION reject_sicoob_invitation_event_mutation()"
+  },
+  {
+    "relname": "sicoob_invitations",
+    "tgname": "tr_sicoob_invitation_existing_account",
+    "definition": "CREATE TRIGGER tr_sicoob_invitation_existing_account BEFORE INSERT ON public.sicoob_invitations FOR EACH ROW EXECUTE FUNCTION require_sicoob_invitation_account()"
+  },
+  {
+    "relname": "sicoob_order_artwork_versions",
+    "tgname": "tr_protect_sicoob_order_artwork_version",
+    "definition": "CREATE TRIGGER tr_protect_sicoob_order_artwork_version BEFORE DELETE OR UPDATE ON public.sicoob_order_artwork_versions FOR EACH ROW EXECUTE FUNCTION protect_sicoob_order_artwork_version()"
+  },
+  {
+    "relname": "sicoob_order_invoices",
+    "tgname": "tr_validate_sicoob_invoice_document",
+    "definition": "CREATE TRIGGER tr_validate_sicoob_invoice_document BEFORE INSERT OR UPDATE OF file_path, file_type, created_by, document_id ON public.sicoob_order_invoices FOR EACH ROW EXECUTE FUNCTION validate_sicoob_order_document()"
+  },
+  {
+    "relname": "sicoob_order_items",
+    "tgname": "tr_freeze_sicoob_order_items_pending_approval",
+    "definition": "CREATE TRIGGER tr_freeze_sicoob_order_items_pending_approval BEFORE INSERT OR DELETE OR UPDATE ON public.sicoob_order_items FOR EACH ROW EXECUTE FUNCTION freeze_sicoob_order_while_approval_pending()"
+  },
+  {
+    "relname": "sicoob_order_items",
+    "tgname": "trg_audit_sicoob_order_items",
+    "definition": "CREATE TRIGGER trg_audit_sicoob_order_items AFTER INSERT OR DELETE OR UPDATE ON public.sicoob_order_items FOR EACH ROW EXECUTE FUNCTION audit_sicoob_order_item_changes()"
+  },
+  {
+    "relname": "sicoob_order_payments",
+    "tgname": "tr_protect_sicoob_order_payment",
+    "definition": "CREATE TRIGGER tr_protect_sicoob_order_payment BEFORE INSERT OR DELETE OR UPDATE ON public.sicoob_order_payments FOR EACH ROW EXECUTE FUNCTION protect_sicoob_order_payment()"
+  },
+  {
+    "relname": "sicoob_order_shipments",
+    "tgname": "tr_validate_sicoob_delivery_document",
+    "definition": "CREATE TRIGGER tr_validate_sicoob_delivery_document BEFORE INSERT OR UPDATE OF delivery_photo_path, delivery_photo_uploaded_by, created_by, delivery_document_id ON public.sicoob_order_shipments FOR EACH ROW EXECUTE FUNCTION validate_sicoob_order_document()"
+  },
+  {
+    "relname": "sicoob_orders",
+    "tgname": "tr_capture_sicoob_order_approval_policy",
+    "definition": "CREATE TRIGGER tr_capture_sicoob_order_approval_policy BEFORE INSERT OR UPDATE ON public.sicoob_orders FOR EACH ROW EXECUTE FUNCTION capture_sicoob_order_approval_policy()"
+  },
+  {
+    "relname": "sicoob_orders",
+    "tgname": "tr_freeze_sicoob_order_scope_pending_approval",
+    "definition": "CREATE TRIGGER tr_freeze_sicoob_order_scope_pending_approval BEFORE UPDATE OF total_amount, pa_id, cooperative_id, created_at ON public.sicoob_orders FOR EACH ROW EXECUTE FUNCTION freeze_sicoob_order_while_approval_pending()"
+  },
+  {
+    "relname": "sicoob_orders",
+    "tgname": "tr_guard_sicoob_approval_status_transition",
+    "definition": "CREATE TRIGGER tr_guard_sicoob_approval_status_transition BEFORE UPDATE OF status ON public.sicoob_orders FOR EACH ROW EXECUTE FUNCTION guard_sicoob_approval_status_transition()"
+  },
+  {
+    "relname": "sicoob_orders",
+    "tgname": "tr_preserve_sicoob_artwork_requirement",
+    "definition": "CREATE TRIGGER tr_preserve_sicoob_artwork_requirement BEFORE UPDATE OF requires_artwork ON public.sicoob_orders FOR EACH ROW EXECUTE FUNCTION preserve_sicoob_artwork_requirement()"
+  },
+  {
+    "relname": "sicoob_orders",
+    "tgname": "tr_protect_sicoob_order_consolidation_link",
+    "definition": "CREATE TRIGGER tr_protect_sicoob_order_consolidation_link BEFORE UPDATE OF consolidation_id ON public.sicoob_orders FOR EACH ROW EXECUTE FUNCTION protect_sicoob_order_consolidation_link()"
+  },
+  {
+    "relname": "sicoob_orders",
+    "tgname": "tr_record_sicoob_order_status_event",
+    "definition": "CREATE TRIGGER tr_record_sicoob_order_status_event AFTER UPDATE OF status, sla_status ON public.sicoob_orders FOR EACH ROW EXECUTE FUNCTION record_sicoob_order_status_event()"
+  },
+  {
+    "relname": "sicoob_orders",
+    "tgname": "tr_require_sicoob_artwork_before_production",
+    "definition": "CREATE TRIGGER tr_require_sicoob_artwork_before_production BEFORE UPDATE OF status ON public.sicoob_orders FOR EACH ROW EXECUTE FUNCTION require_sicoob_artwork_before_production()"
+  },
+  {
+    "relname": "sicoob_orders",
+    "tgname": "tr_validate_sicoob_order_status",
+    "definition": "CREATE TRIGGER tr_validate_sicoob_order_status BEFORE UPDATE OF status ON public.sicoob_orders FOR EACH ROW EXECUTE FUNCTION validate_order_status_transition()"
+  },
+  {
+    "relname": "sicoob_orders",
+    "tgname": "trg_validate_sicoob_order_budget",
+    "definition": "CREATE TRIGGER trg_validate_sicoob_order_budget BEFORE UPDATE OF status, pa_id, total_amount, created_at ON public.sicoob_orders FOR EACH ROW EXECUTE FUNCTION validate_sicoob_order_budget()"
+  },
+  {
+    "relname": "sicoob_orders",
+    "tgname": "trigger_check_order_sla",
+    "definition": "CREATE TRIGGER trigger_check_order_sla BEFORE INSERT OR UPDATE ON public.sicoob_orders FOR EACH ROW EXECUTE FUNCTION check_order_sla()"
+  },
+  {
+    "relname": "sicoob_orders",
+    "tgname": "update_sicoob_orders_updated_at",
+    "definition": "CREATE TRIGGER update_sicoob_orders_updated_at BEFORE UPDATE ON public.sicoob_orders FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "singulares",
+    "tgname": "set_updated_at_singulares",
+    "definition": "CREATE TRIGGER set_updated_at_singulares BEFORE UPDATE ON public.singulares FOR EACH ROW EXECUTE FUNCTION handle_updated_at()"
+  },
+  {
+    "relname": "user_comparisons",
+    "tgname": "trg_user_comparisons_updated_at",
+    "definition": "CREATE TRIGGER trg_user_comparisons_updated_at BEFORE UPDATE ON public.user_comparisons FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "user_preferences",
+    "tgname": "update_user_preferences_updated_at",
+    "definition": "CREATE TRIGGER update_user_preferences_updated_at BEFORE UPDATE ON public.user_preferences FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+  },
+  {
+    "relname": "user_roles",
+    "tgname": "trg_user_roles_audit_del",
+    "definition": "CREATE TRIGGER trg_user_roles_audit_del AFTER DELETE ON public.user_roles FOR EACH ROW EXECUTE FUNCTION audit_user_role_changes()"
+  },
+  {
+    "relname": "user_roles",
+    "tgname": "trg_user_roles_audit_ins",
+    "definition": "CREATE TRIGGER trg_user_roles_audit_ins AFTER INSERT ON public.user_roles FOR EACH ROW EXECUTE FUNCTION audit_user_role_changes()"
+  },
+  {
+    "relname": "user_roles",
+    "tgname": "trg_user_roles_audit_upd",
+    "definition": "CREATE TRIGGER trg_user_roles_audit_upd AFTER UPDATE ON public.user_roles FOR EACH ROW EXECUTE FUNCTION audit_user_role_changes()"
+  },
+  {
+    "relname": "user_roles",
+    "tgname": "trg_user_roles_auto_revoke_mcp",
+    "definition": "CREATE TRIGGER trg_user_roles_auto_revoke_mcp AFTER DELETE ON public.user_roles FOR EACH ROW EXECUTE FUNCTION trg_auto_revoke_mcp_on_role_loss()"
+  },
+  {
+    "relname": "user_roles",
+    "tgname": "trig_audit_user_roles",
+    "definition": "CREATE TRIGGER trig_audit_user_roles AFTER INSERT OR DELETE OR UPDATE ON public.user_roles FOR EACH ROW EXECUTE FUNCTION fn_audit_config_change()"
+  }
+]

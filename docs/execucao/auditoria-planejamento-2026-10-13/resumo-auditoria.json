@@ -1,0 +1,19 @@
+{
+  "data": "2026-10-13",
+  "sha": "fff0b4cb60b23715661d5782cdf747df4ef0027d",
+  "arquivos_versionados": 4038,
+  "arquivos_em_docs": 463,
+  "documentos_ampliados": 511,
+  "frentes_consolidadas": 56,
+  "registros_historicos_preservados": 682,
+  "registros_com_atualizacao_explicita": 43,
+  "registros_com_grupo_atual": 682,
+  "secoes_historicas_nao_localizadas": [],
+  "referencias_extraidas": 1072,
+  "referencias_nao_resolvidas": 41,
+  "etapas": 100,
+  "subetapas": 1000,
+  "leitura_db": "Management API com read_only=true",
+  "alteracao_remota": false,
+  "suite_completa_reexecutada": false
+}
