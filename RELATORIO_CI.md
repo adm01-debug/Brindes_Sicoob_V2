@@ -1,48 +1,57 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
-## Auditoria atual — 2026-10-27 16:35 UTC
+## Auditoria atual — 2026-10-27 16:56 UTC
 
-**Base:** `main` em `2df1b01ad87b8836d70149f1357dc38c33aeb24f`. **Branch/PR:** `fix/hermes-h097437-ci-workflows`, [PR #145](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/145), head `228dadfb5b7051dd04a2396a18203f7df8d8d0fd`. PR aberto; nenhum merge ou deploy de produção executado.
+**Base:** `main` em `2df1b01ad87b8836d70149f1357dc38c33aeb24f`. **PR:** [#145](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/145), branch `fix/hermes-h097437-ci-workflows`, head atual `28e57114c75029b8eae30b9489b2d7510de216a4` (somente documentação). O código da aplicação e os fixes foram validados em `228dadfb5b7051dd04a2396a18203f7df8d8d0fd`. PR aberta; sem merge, deploy ou escrita no Supabase.
 
-### Inventário: última execução de cada workflow na `main`
+### Inventário de todos os workflows — última execução na branch `main`
 
-| Workflow | Última execução na `main` | Conclusão | Causa/estado |
+A listagem foi cruzada workflow por workflow; execuções de PR não foram usadas para substituir o estado de `main`.
+
+| Workflow | Última execução em `main` | Estado | Causa / observação |
 |---|---|---|---|
-| Migration ledger drift | [40460912297](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40460912297) | ❌ failure | Log: `Ledger: 136; arquivos: 607; pendências: 504`; nova pendência `20261022230000: local_sem_ledger`. A correção de classificação/allowlist está na PR, ainda não em `main`. |
-| Security Scan | [40283890444](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40283890444) | ❌ failure | `npm audit`: três advisories High em Undici e uma High em Zod. O SHA da PR contém correção; o check remoto do novo head ainda está sendo validado. |
-| Enterprise Compliance & Audit Reporting | [40146142639](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40146142639) | ❌ failure | API do Supabase bloqueada por `exceed_edge_functions_invocations_quota` e `exceed_egress_quota`; requer ação do owner. |
-| Running Copilot Code Review | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | ❌ failure | HTTP 402 por limite de uso do plano Copilot; novo run do PR repetiu HTTP 402 e relatou bloqueio de `api.github.com`. |
-| Dependabot Updates | [40423019666](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40423019666) | ✅ success | Última execução dinâmica na `main` passou. Falha histórica isolada do update `@vitest/mocker` já é obsoleta no lock atual (`4.1.12`). |
-| CodeQL | [40299812684](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40299812684) | ✅ success | Última execução agendada passou. |
-| Qualidade contínua | [39868499453](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499453) | ✅ success | Último push à `main` passou. |
-| Branch Protection Sentinel | [39868499260](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499260) | ✅ success | Último push à `main` passou. |
-| Portal Sicoob | [39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315) | ✅ success | Último push à `main` passou. |
+| Aplicar migrations Sicoob | [37029743784](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37029743784) | cancelled | Disparo manual cancelado; não é falha concluída. |
+| Branch Protection Sentinel | [39868499260](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499260) | success | Verde. |
+| Bundle Size Check | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) | failure | Job sem steps/logs recuperáveis; GitHub retornou HTTP 404 para logs. A causa não pode ser afirmada. O workflow atual em `main` não aceita `workflow_dispatch` (tentativa retornou 422). Na PR, o check passou em `228dadfb` ([40542070433](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40542070433)) e no head documental ([40543369029](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40543369029)). |
+| Qualidade contínua | [39868499453](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499453) | success | Verde. |
+| CodeQL | [40299812684](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40299812684) | success | Verde. |
+| Monthly DB Audit | [36794161452](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36794161452) | success | Verde; última execução agendada em 01/10. |
+| Publicar funções Sicoob | [37489393764](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37489393764) | success | Verde. |
+| E2E (Playwright) | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | startup_failure | Zero jobs e zero artefatos; logs retornam 404. Não há evidência que permita atribuir causa. |
+| Lighthouse Performance Audit | [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910) | failure | Job sem steps/logs recuperáveis; GitHub retornou HTTP 404/BlobNotFound. Causa específica indisponível. O workflow atual em `main` não aceita `workflow_dispatch` (422). Na PR, passou no SHA de código ([40542070386](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40542070386)). |
+| Migration ledger drift | [40545453684](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40545453684) (dispatch; [40460912297](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40460912297) foi o schedule anterior) | failure | Log: `Ledger: 136; arquivos: 607; pendências: 504`; delta `20261022230000: local_sem_ledger`. A etapa de auditoria RLS posterior não encontrou tabelas ausentes, RLS desativado ou policies permissivas irrestritas. |
+| Enterprise Compliance & Audit Reporting | [40146142639](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40146142639) | failure | Database RLS Scan rejeitado pelo Supabase: `exceed_edge_functions_invocations_quota`, `exceed_egress_quota`; depende do owner restaurar quota/spend cap. |
+| Security Scan | [40283890444](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40283890444) | failure | `npm audit --audit-level=high`: três advisories High de Undici e uma High de Zod. A correção de dependências está na PR; Security Scan passou nos SHAs `228dadfb` ([40542070418](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40542070418)) e `28e57114` ([40543370036](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40543370036)). |
+| Portal Sicoob | [39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315) | success | Verde. |
+| Running Copilot Code Review | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | failure | HTTP 402 `SessionModelError`: cota adicional do plano Copilot esgotada. A repetição na PR também falhou por 402 e firewall bloqueando `api.github.com`. |
 
-Os workflows disparados somente por PR (E2E, Bundle, Lighthouse) não têm execução nova na `main`; os resultados do PR são tratados separadamente abaixo, sem misturar eventos.
+**Resumo na `main`:** 7 workflows com falha/startup failure na última execução concluída, 7 verdes e 1 cancelado. Bundle, Lighthouse e E2E têm evidência histórica insuficiente para explicar a causa; os resultados da PR são registrados separadamente. Migration ledger foi revalidado por dispatch read-only e repetiu a falha de ledger.
 
-### Execuções disparadas pelo novo head da PR
+### Checks recentes da PR #145
 
-O push de `228dadfb` acabou de disparar os checks. A consulta ao GitHub às 16:34 UTC encontrou nove checks de Actions em `queued` (bundle-stats, origem confiável, gate transacional, CodeQL, responsividade, Lighthouse, npm audit, CI e Gitleaks), além de `Vercel Preview Comments=success` e `Vercel Agent Review=neutral`. Ainda não há conclusão para declarar esses checks verdes. A última execução E2E concluída, no SHA anterior `724e296`, foi [40529315558](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40529315558): smoke/header passaram; shard 1 teve uma falha no nome do cartão de favorito degradado, shard 2 uma falha de nome acessível no switch de quota, shard 3 passou (820 pass, 2 fail, 21 skipped no total). Ambas as causas foram corrigidas no novo head; aguardamos o novo E2E.
-
-A última Qualidade contínua da PR, [40529315581](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40529315581), falhou antes da simulação SQL: Docker/ECR respondeu `toomanyrequests: Data limit exceeded` ao baixar `public.ecr.aws/supabase/postgres:17.6.1.063`. Não houve resultado funcional da simulação.
-
-### Validação local e anti-regressão
-
-| Verificação | Baseline documentada | Estado final do head `228dadfb` |
+| Check / workflow | Execução | Estado observado |
 |---|---|---|
-| Instalação/dependências | `npm install` exit 0 no baseline documentado | `npm ci` exit 0; `npm audit --audit-level=high`: 0 vulnerabilidades (validação local anterior ao push). |
-| Build | Build do baseline documentado passou em ambiente completo | `npm run build` exit 0; avisos existentes de variáveis locais/chunks. |
-| Lint | 0 erros, 873 avisos no baseline | 0 erros; 873 avisos; hook confirmou nenhuma regressão nos arquivos alterados. |
-| TypeScript | 0 erros no baseline local/CI | 0 erros; hook confirmou nenhuma regressão. |
-| Testes completos | 5.839 passaram, 68 ignorados, 0 falhas | 5.841 passaram, 68 ignorados, 0 falhas (453 arquivos passaram, 4 ignorados; dois testes a mais). Repetido antes do push e pelo hook. |
-| YAML e migration artifacts | `actionlint` e hashes verificados no estado anterior | `actionlint` passou nos quatro workflows alterados; `--verify-files` passou com `mutation: false`. |
+| E2E (Playwright), SHA de código `228dadfb` | [40542070645](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40542070645), tentativa 2 | Smoke gate passou; gate header-sticky ainda executava às 16:56 UTC. A conclusão E2E permanece pendente. |
+| Portal Sicoob, SHA de código `228dadfb` | [40542070381](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40542070381), tentativa 2 | success; os jobs transacional e responsivo passaram (WCAG, responsividade e fallback offline da PWA). |
+| Qualidade contínua, SHA de código `228dadfb` | [40542070385](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40542070385), tentativa 2 | Falhou antes da simulação seguinte: ECR respondeu `toomanyrequests: Data limit exceeded` ao baixar `public.ecr.aws/supabase/postgres:17.6.1.063`. |
+| Lighthouse | [40542070386](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40542070386) | success. |
+| Bundle, Security Scan e CodeQL no head documental `28e57114` | [Bundle](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40543369029), [Security](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40543370036), [CodeQL](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40543373306) | success. |
+| Copilot no head documental `28e57114` | [40543391409](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40543391409) | failure por HTTP 402 de limite adicional do Copilot; firewall do runner também bloqueou `api.github.com`. |
+| E2E, Portal e Lighthouse no head documental | [E2E](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40543369066), [Portal](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40543369317), [Lighthouse](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40543369040) | cancelled após sincronização da PR; o head atual só acrescenta documentação. |
 
-O hook de pré-push executou typecheck-baseline, lint-baseline e a suíte inteira e permitiu o push. O erro assíncrono de `EventTarget` observado em tentativa anterior não se reproduziu nas duas execuções completas seguintes; não houve afrouxamento de testes. O estado atual e os bloqueios externos estão em [PENDENCIAS.md](PENDENCIAS.md).
+### Baseline e validação local — comparação sem regressão
 
----
+| Verificação | Baseline conhecido | Código `228dadfb` |
+|---|---|---|
+| Instalação | `npm install` exit 0 no registro histórico | `npm ci` exit 0. |
+| Build | **Não disponível**: no baseline histórico, o binário Vite estava ausente no container; não há prova de build baseline. | `npm run build` exit 0; avisos existentes de variáveis/chunks. |
+| TypeScript | Apenas `npx tsc --noEmit -p tsconfig.app.json` exit 0 no registro histórico. | `npm run typecheck` exit 0. |
+| Lint | 0 erros reportados no baseline; 873 avisos existentes. | 0 erros e 873 avisos; hook comparou baseline sem regressões. |
+| Testes | 5.839 passaram, 68 ignorados, 0 falhas no baseline CI. | 5.841 passaram, 68 ignorados, 0 falhas (453 arquivos passaram; 4 ignorados). |
+| Auditoria de dependências | Estado pré-fix continha 3 advisories High de Undici e 1 High de Zod. | `npm audit --audit-level=high`: 0 vulnerabilidades no estado local validado. |
+| YAML/migrations | N/A no baseline | `actionlint` nos quatro workflows alterados e verificação do allowlist/hash passaram antes do push; a verificação confirmou `mutation: false`. |
 
-**Gerado em:** 2026-10-27
-**Execução:** auditoria automatizada do PR #145 em worktree isolado.
+Os dois simuladores SQL da etapa bloqueada passaram localmente com a imagem Postgres já presente em cache; isso valida a lógica dos scripts, não o pull remoto do GitHub Actions. Não foi reduzido ou removido teste/assertion. O status do PR permanece aberto e não será mesclado enquanto a mudança de aplicação puder acionar produção, além dos gates externos documentados. Nenhuma migration foi aplicada pela sessão; nenhum dado do Supabase foi alterado.
 
 ---
 
