@@ -1,5 +1,59 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
+## Estado atual — auditoria de 2026-10-27 (prioridade sobre histórico abaixo)
+
+Base consultada: `main` em `2df1b01ad87b8836d70149f1357dc38c33aeb24f`. Esta seção contém as falhas atuais identificadas pela última execução de cada workflow na `main`. As seções anteriores são histórico; não devem ser usadas como estado atual sem nova consulta.
+
+### Workflow: Enterprise Compliance & Audit Reporting
+
+**Run:** [40146142639](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40146142639) · Job `compliance-audit` · Step `Database RLS Scan`.
+
+**Erro exato:** `Service for this project is restricted due to the following violations: exceed_edge_functions_invocations_quota, exceed_egress_quota. The project owner must upgrade their plan or remove spend caps to restore service.`
+
+**Bloqueio:** quota/spend cap no projeto Supabase impede a chamada do scan. O relatório do run não indicou missing tables, RLS desativado ou policies permissivas irrestritas; o processo, porém, falhou antes de concluir toda a auditoria.
+
+**Ação necessária do proprietário:** restaurar quota do projeto ou revisar plano/spend caps; então despachar novamente o workflow. Não há alteração segura de código que contorne o bloqueio sem enfraquecer o scan.
+
+### Workflow: Copilot — revisão dinâmica
+
+**Run:** [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) · Step `Processing Request (Linux)`.
+
+**Erro exato:** `errorType: quota`, HTTP `402`: `You've reached your additional usage limit for your plan.` O log também relata bloqueio de firewall para `api.github.com`.
+
+**Bloqueio:** quota do GitHub Copilot esgotada; o runner dinâmico do GitHub não dispõe de YAML versionado no repositório para correção local.
+
+**Ação necessária do proprietário:** restaurar/ampliar a quota do Copilot e, se a execução ainda falhar, revisar a allowlist de rede para o endpoint indicado. Não remover nem desativar o workflow.
+
+### Workflows: Bundle Size Check e Lighthouse Performance Audit
+
+**Runs:** [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) e [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910), respectivamente.
+
+**Bloqueio de diagnóstico:** a API do GitHub retorna HTTP 404 para os logs antigos, e não há artifacts para esses runs. Portanto, a causa original não pode ser afirmada. Os checks precisam de nova execução em um PR atual antes de serem marcados como resolvidos; se uma nova execução falhar, registrar a causa observada.
+
+### Workflow: E2E (Playwright)
+
+**Run:** [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358).
+
+**Bloqueio de diagnóstico:** conclusão `startup_failure`, zero jobs criados e nenhum log. O YAML no SHA antigo usava `self-hosted`; o YAML atual usa `ubuntu-latest`. Indisponibilidade do runner é hipótese provável, não causa comprovada. A execução atual de PR deve validar a correção.
+
+### Workflow: Security Scan
+
+**Run:** [40283890444](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40283890444) · step `npm audit (high+critical)`.
+
+**Situação da branch atual:** `undici` foi fixado em `8.12.2` via override não-major; `npm ls` confirma a resolução e o `npm audit` deixou de reportar suas três advisories. Esta correção ainda requer CI remoto.
+
+**Bloqueio restante:** uma vulnerabilidade High: `GHSA-mrhx-c7xc-m3w5` em `zod <4.6.6`. A versão v3 mais recente publicada continua vulnerável; o único fix oferecido pelo npm é `zod@4.6.7`, major. Não usar `npm audit fix --force` nem reduzir o nível do gate. Necessário avaliar migração compatível/testada e seguir a regra de não mesclar mudança da aplicação que dispare deploy de produção.
+
+**Próximo passo técnico:** avaliar migração compatível de Zod v4 em branch isolada e rodar verificações completas. Como mexe em dependência de runtime, se o merge publicar a aplicação, o PR deve ficar pronto mas sem merge, conforme a regra de deploy desta tarefa.
+
+### Workflow: Migration ledger drift
+
+**Run:** [40460912297](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40460912297) · step `Comparar ledger remoto contra arquivos locais`.
+
+**Causa:** existe uma nova migration versionada (`20261022230000_repair_migration_ledger_and_harden_search_path.sql`) não registrada no ledger. O inventário remoto registra 136 entradas; o scan encontrou uma migration local nova, além de 504 pendências históricas previamente baselineadas. O script de aplicação manual ainda não inclui essa migration entre os destinos autorizados.
+
+**Próximo passo:** verificar conteúdo/hash e guardas do script; adicionar destino explícito e teste antes de qualquer aplicação. Aplicar apenas a migration versionada após a correção passar por PR e pelo fluxo permitido; nunca editar o ledger diretamente nem contornar a allowlist.
+
 Atualizado em: 2026-10-22
 
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.

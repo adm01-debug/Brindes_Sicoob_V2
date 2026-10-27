@@ -1,5 +1,58 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
+## Auditoria atual — 2026-10-27 (fonte de verdade desta execução)
+
+**Base:** `main` / `2df1b01ad87b8836d70149f1357dc38c33aeb24f`. O baseline foi rodado em worktree limpo antes de qualquer patch. A árvore local original estava 83 commits atrás e continha alterações do usuário; foi preservada sem edição. As seções históricas abaixo descrevem auditorias anteriores e não substituem este inventário.
+
+### Inventário: última execução de cada workflow na `main`
+
+| Workflow | Último status | Causa provável / evidência |
+|---|---|---|
+| Aplicar migrations Sicoob | cancelled | Última execução manual cancelada; não classificada como falha. |
+| Branch Protection Sentinel | success | Verde. |
+| Bundle Size Check | failure | Run `36353765911`; logs expiraram/retornam HTTP 404. Sem causa comprovável; precisa validar execução nova. |
+| Qualidade contínua | success | Verde. |
+| CodeQL | success | Verde. |
+| Monthly DB Audit | success | Verde. |
+| Publicar funções Sicoob | success | Verde. |
+| E2E (Playwright) | startup_failure | Run `37775702358`, zero jobs e nenhum log; a execução antiga usava runner `self-hosted`; YAML atual usa `ubuntu-latest`. Hipótese corrigível, precisa de execução nova para provar. |
+| Lighthouse Performance Audit | failure | Run `36353765910`; logs expiraram/retornam HTTP 404. Sem causa comprovável; precisa validar execução nova. |
+| Migration ledger drift | failure | Run `40460912297`; 136 entradas no ledger, 607 arquivos, 504 pendências históricas; uma migration nova não aplicada: `20261022230000`. |
+| Enterprise Compliance & Audit Reporting | failure | Run `40146142639`; Supabase bloqueou serviço por `exceed_edge_functions_invocations_quota` e `exceed_egress_quota`. Ação do owner é necessária. |
+| Security Scan | failure | Run `40283890444`; `npm audit --audit-level=high` encontra `undici` transitivo e `zod` direto vulneráveis. A correção de `zod` atualmente exige major para v4. |
+| Copilot | failure | Run `39785094125`; API retornou HTTP 402 por limite de uso adicional Copilot; firewall também bloqueou `api.github.com`. Ação externa necessária. |
+| Dependabot Updates | success | Verde. |
+| Portal Sicoob | success | Verde. |
+
+### Baseline local antes de patches
+
+**Executado em:** 2026-10-27 · **Node:** 24 · **npm:** lockfile reproduzível · **Commit:** `2df1b01a`.
+
+| Verificação | Resultado | Observação |
+|---|---|---|
+| `npm ci` | ✅ exit 0 | Instalou 980 pacotes; `npm audit` informou 2 vulnerabilidades High. |
+| `npm run build` | ✅ exit 0 | Build de produção completou; avisos de env ausente no ambiente local e chunks grandes, sem falha. |
+| `npm run lint` | ✅ exit 0 | 0 erros, 873 avisos preexistentes. |
+| `npm run typecheck` | ✅ exit 0 | App e config Node tipados sem erros. |
+| `npm test` | ✅ exit 0 | 452 arquivos passaram, 4 ignorados; 5.839 testes passaram, 68 ignorados. |
+
+### Causas agrupadas e próxima ação
+
+1. **Dependências:** investigar/pinar `undici` de forma compatível; avaliar migração de `zod` v3 para v4 sem afrouxar auditoria ou contrato. A versão v3 publicada mais recente continua dentro da faixa vulnerável.
+2. **Supabase/migrations:** revisar e autorizar explicitamente a migration versionada `20261022230000`, incluí-la na allowlist somente após validar hash e guardas; não aplicar banco até correção versionada e fluxo autorizado.
+3. **Limites externos:** Compliance/RLS e Copilot não podem ser reparados por código local; registrar motivo e ação exigida ao proprietário em `PENDENCIAS.md`.
+4. **E2E, bundle e Lighthouse:** obter execução atual em PR para substituir evidência histórica sem logs; não atribuir causa sem esse resultado.
+
+**Diagnóstico adicional do bundle:** `node scripts/qa/check-bundle-budget.mjs` passou na base atual com 664 chunks, 10.713.232 bytes brutos e 3.248.969 bytes gzip; houve dois avisos de chunks grandes, abaixo do limite fatal de 800 KiB. Isso confirma que a falha antiga não se reproduz nesse passo local, mas não substitui o workflow remoto.
+
+**CVE audit após o primeiro fix:** override `undici@8.12.2` atualizado em `package.json`/lockfile; `npm ls` confirma a versão. As três advisories do Undici deixaram de aparecer; `npm audit --audit-level=high` agora reporta somente `GHSA-mrhx-c7xc-m3w5` (`zod <4.6.6`). A migração Zod 4 segue em análise separada por ser major.
+
+### Workflows que já estavam verdes
+
+Branch Protection Sentinel, Qualidade contínua, CodeQL, Monthly DB Audit, Publicar funções Sicoob, Dependabot Updates e Portal Sicoob. Comparação final e confirmação de que continuam verdes serão acrescentadas após as alterações e execução remota.
+
+---
+
 **Gerado em:** 2026-10-22  
 **Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
 
