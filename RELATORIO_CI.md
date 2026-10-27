@@ -1,52 +1,43 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
-## Auditoria atual — 2026-10-27 (estado consultado após os fixes locais)
+## Auditoria atual — 2026-10-27 16:35 UTC
 
-**Base:** `main` / `2df1b01ad87b8836d70149f1357dc38c33aeb24f`. **Branch/PR:** `fix/hermes-h097437-ci-workflows`, [PR #145](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/145), SHA `724e296eb049f83c1014f30a352c96d36e6dba75` no momento desta atualização. A árvore de trabalho original do usuário permaneceu intocada; todo o trabalho foi feito em worktree isolado.
+**Base:** `main` em `2df1b01ad87b8836d70149f1357dc38c33aeb24f`. **Branch/PR:** `fix/hermes-h097437-ci-workflows`, [PR #145](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/145), head `228dadfb5b7051dd04a2396a18203f7df8d8d0fd`. PR aberto; nenhum merge ou deploy de produção executado.
 
-### Estado dos workflows falhos na main
+### Inventário: última execução de cada workflow na `main`
 
-| Workflow | Última evidência em `main` | Estado/limite |
+| Workflow | Última execução na `main` | Conclusão | Causa/estado |
+|---|---|---|---|
+| Migration ledger drift | [40460912297](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40460912297) | ❌ failure | Log: `Ledger: 136; arquivos: 607; pendências: 504`; nova pendência `20261022230000: local_sem_ledger`. A correção de classificação/allowlist está na PR, ainda não em `main`. |
+| Security Scan | [40283890444](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40283890444) | ❌ failure | `npm audit`: três advisories High em Undici e uma High em Zod. O SHA da PR contém correção; o check remoto do novo head ainda está sendo validado. |
+| Enterprise Compliance & Audit Reporting | [40146142639](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40146142639) | ❌ failure | API do Supabase bloqueada por `exceed_edge_functions_invocations_quota` e `exceed_egress_quota`; requer ação do owner. |
+| Running Copilot Code Review | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | ❌ failure | HTTP 402 por limite de uso do plano Copilot; novo run do PR repetiu HTTP 402 e relatou bloqueio de `api.github.com`. |
+| Dependabot Updates | [40423019666](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40423019666) | ✅ success | Última execução dinâmica na `main` passou. Falha histórica isolada do update `@vitest/mocker` já é obsoleta no lock atual (`4.1.12`). |
+| CodeQL | [40299812684](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40299812684) | ✅ success | Última execução agendada passou. |
+| Qualidade contínua | [39868499453](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499453) | ✅ success | Último push à `main` passou. |
+| Branch Protection Sentinel | [39868499260](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499260) | ✅ success | Último push à `main` passou. |
+| Portal Sicoob | [39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315) | ✅ success | Último push à `main` passou. |
+
+Os workflows disparados somente por PR (E2E, Bundle, Lighthouse) não têm execução nova na `main`; os resultados do PR são tratados separadamente abaixo, sem misturar eventos.
+
+### Execuções disparadas pelo novo head da PR
+
+O push de `228dadfb` acabou de disparar os checks. A consulta ao GitHub às 16:34 UTC encontrou nove checks de Actions em `queued` (bundle-stats, origem confiável, gate transacional, CodeQL, responsividade, Lighthouse, npm audit, CI e Gitleaks), além de `Vercel Preview Comments=success` e `Vercel Agent Review=neutral`. Ainda não há conclusão para declarar esses checks verdes. A última execução E2E concluída, no SHA anterior `724e296`, foi [40529315558](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40529315558): smoke/header passaram; shard 1 teve uma falha no nome do cartão de favorito degradado, shard 2 uma falha de nome acessível no switch de quota, shard 3 passou (820 pass, 2 fail, 21 skipped no total). Ambas as causas foram corrigidas no novo head; aguardamos o novo E2E.
+
+A última Qualidade contínua da PR, [40529315581](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40529315581), falhou antes da simulação SQL: Docker/ECR respondeu `toomanyrequests: Data limit exceeded` ao baixar `public.ecr.aws/supabase/postgres:17.6.1.063`. Não houve resultado funcional da simulação.
+
+### Validação local e anti-regressão
+
+| Verificação | Baseline documentada | Estado final do head `228dadfb` |
 |---|---|---|
-| Migration ledger drift | [40460912297](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40460912297) | Falha: migration `20261022230000` fora do ledger; 504 itens de backlog histórico baselineados. Hash autorizado na branch; nenhuma escrita no banco. |
-| Security Scan | [40283890444](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40283890444) | Falha por advisories de `undici`/`zod`; branch atual tem correções e audit local zerado; CI do novo SHA ainda em execução. |
-| Enterprise Compliance & Audit Reporting | [40146142639](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40146142639) | Bloqueio Supabase: `exceed_edge_functions_invocations_quota`, `exceed_egress_quota`; precisa ação do proprietário. |
-| Copilot (runner dinâmico) | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | HTTP 402 por limite de uso. Código do runner não versionado neste repositório. |
-| E2E (Playwright) | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | Falha histórica `startup_failure`, sem jobs/logs. A imagem Playwright versionada remove a instalação `apt`; run novo aguardando validação. |
-| Bundle Size Check / Lighthouse | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911), [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910) | Falhas antigas sem logs recuperáveis. Runs anteriores do PR passaram; runs para SHA `724e296e` foram iniciados. |
+| Instalação/dependências | `npm install` exit 0 no baseline documentado | `npm ci` exit 0; `npm audit --audit-level=high`: 0 vulnerabilidades (validação local anterior ao push). |
+| Build | Build do baseline documentado passou em ambiente completo | `npm run build` exit 0; avisos existentes de variáveis locais/chunks. |
+| Lint | 0 erros, 873 avisos no baseline | 0 erros; 873 avisos; hook confirmou nenhuma regressão nos arquivos alterados. |
+| TypeScript | 0 erros no baseline local/CI | 0 erros; hook confirmou nenhuma regressão. |
+| Testes completos | 5.839 passaram, 68 ignorados, 0 falhas | 5.841 passaram, 68 ignorados, 0 falhas (453 arquivos passaram, 4 ignorados; dois testes a mais). Repetido antes do push e pelo hook. |
+| YAML e migration artifacts | `actionlint` e hashes verificados no estado anterior | `actionlint` passou nos quatro workflows alterados; `--verify-files` passou com `mutation: false`. |
 
-No SHA atual, já passaram Gitleaks, origem confiável, gate transacional, Bundle Size Check e `npm audit` (runs [40529315729](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40529315729), [40529315558](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40529315558), [40529315630](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40529315630) e [40529315625](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40529315625)). Lighthouse, CodeQL, Qualidade contínua, Portal Sicoob e E2E ainda estavam em execução. O Copilot também falhou no novo run [40529332546](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40529332546) com HTTP 402/quota e bloqueio de `api.github.com`. O run [40529315581](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40529315581) falhou apenas na simulação PostgreSQL porque o registry público ECR respondeu `toomanyrequests: Data limit exceeded`; o script de auditoria não chegou a executar. CodeQL, responsividade, Lighthouse, Bundle, npm audit, Gitleaks, gate transacional e origem confiável passaram no head atual. Os outros workflows versionados consultados que estavam verdes na main incluem Dependabot Updates, CodeQL, Qualidade contínua e Portal Sicoob.
-
-### Validação local do SHA `724e296e`
-
-| Verificação | Resultado |
-|---|---|
-| `npm run build` | ✅ Exit 0; avisos existentes de variáveis de ambiente locais, chunks e anotações de dependência. |
-| `npm run lint` | ✅ Exit 0; 0 erros e 873 avisos, sem regressão em arquivos alterados. |
-| `npm run typecheck` | ✅ Exit 0; 0 erros. |
-| `npm test -- --run` | ✅ 453 arquivos passaram, 4 ignorados; 5.841 testes passaram, 68 ignorados. |
-| `npm audit --audit-level=high` | ✅ `found 0 vulnerabilities`. |
-| Bundle budget | ✅ 664 chunks; 10.750.092 bytes brutos, 3.262.160 bytes gzip; dois avisos abaixo do limite fatal. |
-| `actionlint` nos quatro workflows alterados | ✅ Exit 0; sem erro nem aviso. |
-| `--verify-files` de migrations | ✅ Hashes e targets conferidos; `mutation: false`. Nenhuma migration executada. |
-
-O hook de pré-push repetiu baseline de typecheck e lint e a suíte completa; todos passaram. O envio para a branch do PR foi aceito.
-
-### Falhas E2E e correções aguardando confirmação remota
-
-No run anterior [40516142731](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40516142731), o gate smoke passou, mas os shards de regressão fecharam em 817 aprovados, 5 falhas e 21 ignorados (843 casos). Diagnóstico: dois testes de busca travavam quando a Edge Function sem chave `LOVABLE_API_KEY` retornava 500 e depois a ponte externa retornava 403; o hook ignorava `error` e deixava a paleta em “Analisando”. Um teste de favoritos exibia estado vazio enquanto detalhes do produto não carregavam apesar do ID persistido. Dois testes administrativos dependiam de nomes acessíveis ausentes.
-
-Correções enviadas no SHA `724e296e`: fallback lexical local e timeout na busca semântica; estado explícito e retry para favoritos cujos detalhes não carregam; rótulos acessíveis nos campos de pesquisa de produtos e limite de uso de IA. O workflow passou a propagar erros de testes e upload de evidências em vez de suprimi-los. Os shards revelaram fixes locais adicionais: preservar o rótulo “Produto salvo” no atributo de nome do fallback e encaminhá-lo ao toast de remoção; esperar dados reais antes de escolher entre estado vazio e linhas de verbas; nomear o switch de quota ilimitada por perfil. Build, typecheck, lint e suíte completa passaram após os fixes locais. Os fixes ainda precisam de commit e de um novo run hospedado. No run atual [40529315558](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40529315558), smoke e header sticky passaram. Resultados dos shards (843 casos): shard 1 = 259 aprovados, 1 falha, 21 ignorados; shard 2 = 280 aprovados, 1 falha, 0 ignorados; shard 3 = 281 aprovados, 0 falhas, 0 ignorados. As duas falhas são: ausência de `data-product-name` no fallback de favorito indisponível e falta de nome acessível no switch de quota ilimitada. Testes de navegação e acessibilidade de verbas falharam na primeira tentativa por estado temporário de backend/dados, mas passaram no retry.
-
-### Bloqueio da simulação PostgreSQL no CI
-
-No run [40529315581](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40529315581), `scripts/qa/simular-controles-auditoria.py` não executou porque o download de `public.ecr.aws/supabase/postgres:17.6.1.063` foi recusado com `toomanyrequests: Data limit exceeded` após três tentativas. É limite do registry, não resultado funcional da simulação. Não substituir por imagem/mirror sem validação de origem.
-
-### Banco, migrations e produção
-
-A migration `20261022230000` foi autorizada por allowlist com hash fixo e verificada localmente. `node scripts/db/apply-sicoob-migrations.mjs --verify-files` usa `mutation: false`; nenhum SQL foi enviado ao Supabase nesta execução. Ainda é necessário executar o fluxo versionado após aprovação do PR e validar o ledger. O PR altera código de runtime (inclui Zod 4); permanece aberto e não deve ser mesclado sem avaliação do efeito de deploy e os checks/reviews obrigatórios.
-
-**Pendências externas:** quota/limite do projeto Supabase para Compliance e quota Copilot HTTP 402. Veja [PENDENCIAS.md](PENDENCIAS.md) para a ação que cabe ao proprietário.
+O hook de pré-push executou typecheck-baseline, lint-baseline e a suíte inteira e permitiu o push. O erro assíncrono de `EventTarget` observado em tentativa anterior não se reproduziu nas duas execuções completas seguintes; não houve afrouxamento de testes. O estado atual e os bloqueios externos estão em [PENDENCIAS.md](PENDENCIAS.md).
 
 ---
 
@@ -54,6 +45,10 @@ A migration `20261022230000` foi autorizada por allowlist com hash fixo e verifi
 **Execução:** auditoria automatizada do PR #145 em worktree isolado.
 
 ---
+
+### Registro histórico
+
+As seções seguintes preservam evidências de auditorias anteriores (outubro de 2026); seus estados de workflow não substituem o inventário atual no início deste arquivo.
 
 ## Baseline local — antes das alterações do PR #141
 
