@@ -1,8 +1,8 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
-## Auditoria atual — 2026-10-27 20:58 UTC
+## Auditoria atual — 2026-10-27 21:12 UTC
 
-**Base:** `main` em `2df1b01ad87b8836d70149f1357dc38c33aeb24f`. **PR:** [#145](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/145), branch `fix/hermes-h097437-ci-workflows`, head atual `d4c4f5edfc2157ef54050d2150d7fddff1a28a9b`. A PR continua aberta, sem merge, deploy ou escrita no Supabase. O último commit altera somente o teste E2E de visualização de orçamento; a PR também contém atualizações de dependências previamente feitas.
+**Base:** `main` em `2df1b01ad87b8836d70149f1357dc38c33aeb24f`. **PR:** [#145](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/145), branch `fix/hermes-h097437-ci-workflows`, head documental observado `3c92ad51327e4ffe205659f3781ef79627c5982f`; o código validado está em `d4c4f5e` e `3c92ad5` só atualiza documentação. A PR continua aberta, sem merge ou deploy. O workflow E2E desta validação executou probes remotos de Edge Functions e uma canary de RLS em `e2e_cleanup_rate_limit`; falhou no preflight e não chegou aos shards Playwright. Nenhuma migration foi aplicada manualmente.
 
 ### Inventário de todos os workflows — última execução na branch `main`
 
@@ -28,18 +28,18 @@ A listagem foi cruzada workflow por workflow; execuções de PR não foram usada
 
 **Resumo na `main`:** 7 workflows com falha/startup failure na última execução concluída, 7 verdes e 1 cancelado. Bundle, Lighthouse e E2E têm evidência histórica insuficiente para explicar a causa; os resultados da PR são registrados separadamente. Migration ledger foi revalidado por dispatch read-only e repetiu a falha de ledger.
 
-### Checks recentes da PR #145
+### Checks recentes da PR #145 — head documental `3c92ad5`
 
 | Check / workflow | Execução | Estado observado |
 |---|---|---|
-| E2E (Playwright), head `d4c4f5e` | [40570556823](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40570556823) | Conclusion `cancelled`: smoke passou 39/39 e header-sticky passou; shard 1/3 foi cancelado exatamente ao atingir `timeout-minutes: 40`, com falhas esperando `[data-route-pending="permissions"]` desaparecer e teardown que excedeu 45s. Shards 2/3 e 3/3 concluíram `failure`, cada um com 55 testes aprovados, 225 ignorados e 1 falha. Nos dois shards a fixture `authenticate-canonical-role-states-setup` falhou porque a URL permaneceu em `/login` ao aguardar o redirect autenticado. A causa da falha de autenticação (conta/role/sessão/serviço) não foi provada. No shard 3, os testes autenticados de `routes/quotes/view.spec.ts`, inclusive `happy: dados principais renderizam`, ficaram `skipped` por falha da fixture; o fix de isolamento de `quote_items` **não foi validado** por essa execução. |
-| Portal Sicoob, head `d4c4f5e` | [40570556802](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40570556802) | success; gates transacional e responsivo passaram. |
-| Qualidade contínua, head `d4c4f5e` | [40570556971](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40570556971) | failure no pull da imagem `public.ecr.aws/supabase/postgres:17.6.1.063`: `toomanyrequests: Data limit exceeded`. Bloqueio de quota/limite de dados do registry; não é falha funcional reproduzida localmente. |
-| Lighthouse | [40570556968](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40570556968) | success. |
-| Bundle Size Check | [40570556542](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40570556542) | success. |
-| Security Scan | [40570556486](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40570556486) | success; as dependências corrigidas passaram o gate. |
-| CodeQL | [40570556870](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40570556870) | success. |
-| Copilot Code Review | [40559834609](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40559834609), último run disponível | failure HTTP 402 `errorCode: quota`: limite adicional de uso do Copilot esgotado. Log também registra bloqueio de firewall para `api.github.com`. |
+| E2E (Playwright), head documental `3c92ad5` | [40583830419](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40583830419) | `failure` no preflight remoto, antes do Playwright: 4 testes de Bearer inválido expiraram após duas tentativas de 15 s (`system-healthcheck`, `migration-health-check`, `auth-integrity-check`, `manage-users`); 48 passaram e 4 foram ignorados. O `beforeAll` da canary RLS `e2e_cleanup_rate_limit` também excedeu 45 s na inserção com chave de serviço. A matriz de regressão foi `skipped`; portanto o spec de orçamento permanece sem validação E2E. A evidência aponta indisponibilidade/latência do Supabase remoto no preflight; os erros de quota (`exceed_edge_functions_invocations_quota`, `exceed_egress_quota`) já registrados no run de Compliance [40146142639](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40146142639) são consistentes, mas não provam por si sós a causa destes timeouts. |
+| Portal Sicoob, head documental `3c92ad5` | [40583830466](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40583830466) | success; gates transacional e responsivo passaram. |
+| Qualidade contínua, head documental `3c92ad5` | [40583830311](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40583830311) | failure ao baixar `public.ecr.aws/supabase/postgres:17.6.1.063`: `toomanyrequests: Data limit exceeded`. Causa externa: limite de dados do registry ECR; o simulador passou localmente com a imagem em cache. |
+| Lighthouse | [40583830340](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40583830340) | success. |
+| Bundle Size Check | [40583830274](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40583830274) | success. |
+| Security Scan | [40583830275](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40583830275) | success; as dependências corrigidas passaram o gate. |
+| CodeQL | [40583830480](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40583830480) | success. |
+| Copilot Code Review | [40583848418](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40583848418), head `3c92ad5` | failure HTTP 402 `errorType: quota`: limite adicional de uso do plano esgotado. O log também registra bloqueio do firewall para `api.github.com`; ambos dependem de ajuste do owner. |
 
 ### Baseline e validação local — comparação sem regressão
 
