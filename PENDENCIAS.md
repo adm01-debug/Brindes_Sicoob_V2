@@ -40,11 +40,13 @@ Base consultada: `main` em `2df1b01ad87b8836d70149f1357dc38c33aeb24f`. Esta seç
 
 **Run:** [40283890444](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40283890444) · step `npm audit (high+critical)`.
 
-**Situação da branch atual:** `undici` foi fixado em `8.12.2` via override não-major; `npm ls` confirma a resolução e o `npm audit` deixou de reportar suas três advisories. Esta correção ainda requer CI remoto.
+**Correções implementadas na branch isolada:** `undici` foi fixado em `8.12.2`; `zod` foi atualizado para `4.6.7` porque a versão v3 mais recente continua vulnerável e o advisory `GHSA-mrhx-c7xc-m3w5` só é corrigido a partir de `4.6.6`. A migração também ajustou duas incompatibilidades de API/typecheck do Zod 4. `npm audit --audit-level=high` retorna `found 0 vulnerabilities` localmente.
 
-**Bloqueio restante:** uma vulnerabilidade High: `GHSA-mrhx-c7xc-m3w5` em `zod <4.6.6`. A versão v3 mais recente publicada continua vulnerável; o único fix oferecido pelo npm é `zod@4.6.7`, major. Não usar `npm audit fix --force` nem reduzir o nível do gate. Necessário avaliar migração compatível/testada e seguir a regra de não mesclar mudança da aplicação que dispare deploy de produção.
+**Validação pendente:** o resultado remoto do workflow `Security Scan` no PR ainda é necessário. A alteração de Zod é dependência de runtime; se merge disparar deploy de produção, o PR não deve ser mesclado nesta tarefa.
 
-**Próximo passo técnico:** avaliar migração compatível de Zod v4 em branch isolada e rodar verificações completas. Como mexe em dependência de runtime, se o merge publicar a aplicação, o PR deve ficar pronto mas sem merge, conforme a regra de deploy desta tarefa.
+### Estado de validação da branch desta auditoria
+
+Branch `fix/hermes-h097437-ci-workflows`, baseada em `main` `2df1b01ad87b8836d70149f1357dc38c33aeb24f`. As correções de Undici, ledger e dispatch manual dos checks de bundle/Lighthouse foram commitadas. A migração de Zod 4 está em validação local; atualizarei este relatório com os resultados finais e com os checks remotos do PR. O banco não foi alterado nesta auditoria.
 
 ### Workflow: Migration ledger drift
 

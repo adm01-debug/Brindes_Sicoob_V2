@@ -36,20 +36,35 @@
 | `npm run typecheck` | ✅ exit 0 | App e config Node tipados sem erros. |
 | `npm test` | ✅ exit 0 | 452 arquivos passaram, 4 ignorados; 5.839 testes passaram, 68 ignorados. |
 
+### Estado corrigido na branch isolada (antes dos checks remotos)
+
+Branch `fix/hermes-h097437-ci-workflows`, sem alteração na árvore local original. Correções commitadas até aqui: override do Undici vulnerável, autorização hash-pinned da migration `20261022230000` e dispatch manual seguro de Bundle/Lighthouse. A migração de Zod 4.6.7 está em validação como causa-raiz independente.
+
+| Verificação da branch | Resultado observado |
+|---|---|
+| `npm ci` | ✅ Exit 0; 980 pacotes instalados; `npm audit` informou 0 vulnerabilidades. |
+| `npm audit --audit-level=high` | ✅ `found 0 vulnerabilities` após Zod 4.6.7 + override do Undici 8.12.2. |
+| `npm run build` | ✅ Exit 0; avisos ambientais/chunks existentes e avisos de comentários PURE do pacote Zod, sem falha. |
+| `npm run lint` | ✅ Exit 0; 0 erros e 873 avisos (baseline igual). |
+| `npm run typecheck` | ✅ Exit 0 após ajustar `required_error` para `error` e `ZodError.errors` para `issues`. |
+| `npm test` | ✅ 452 arquivos passaram, 4 ignorados; 5.839 testes passaram, 68 ignorados após atualizar a dependência. Repetição final após commit ainda pendente. |
+
 ### Causas agrupadas e próxima ação
 
-1. **Dependências:** investigar/pinar `undici` de forma compatível; avaliar migração de `zod` v3 para v4 sem afrouxar auditoria ou contrato. A versão v3 publicada mais recente continua dentro da faixa vulnerável.
+1. **Dependências:** correções locais implementadas para `undici` 8.12.2 e `zod` 4.6.7; audit local está zerado. Falta CI remoto do PR para validar na branch hospedada.
 2. **Supabase/migrations:** migration `20261022230000` agora está explicitamente autorizada pela allowlist com SHA-256 conferido; `--verify-files` e cenário transacional passaram sem tocar o banco. A aplicação remota permanece pendente do fluxo versionado pós-PR.
 3. **Limites externos:** Compliance/RLS e Copilot não podem ser reparados por código local; registrar motivo e ação exigida ao proprietário em `PENDENCIAS.md`.
 4. **E2E, bundle e Lighthouse:** obter execução atual em PR para substituir evidência histórica sem logs; não atribuir causa sem esse resultado.
 
 **Diagnóstico adicional do bundle:** `node scripts/qa/check-bundle-budget.mjs` passou na base atual com 664 chunks, 10.713.232 bytes brutos e 3.248.969 bytes gzip; houve dois avisos de chunks grandes, abaixo do limite fatal de 800 KiB. Isso confirma que a falha antiga não se reproduz nesse passo local, mas não substitui o workflow remoto.
 
-**CVE audit após o primeiro fix:** override `undici@8.12.2` atualizado em `package.json`/lockfile; `npm ls` confirma a versão. As três advisories do Undici deixaram de aparecer; `npm audit --audit-level=high` agora reporta somente `GHSA-mrhx-c7xc-m3w5` (`zod <4.6.6`). A migração Zod 4 segue em análise separada por ser major.
+**CVE audit após o override do Undici:** as três advisories do Undici deixaram de aparecer; restava `GHSA-mrhx-c7xc-m3w5` (`zod <4.6.6`). A correção separada da causa Zod atualizou para `4.6.7`; o audit local agora reporta zero vulnerabilidades.
 
 **Pós-commit `4787896b0` (undici):** `npm ci --ignore-scripts --no-audit --no-fund`, `npm run build`, `npm run lint`, `npm run typecheck` e `npm test` passaram. Comparação com baseline: Vitest 5.839 aprovados / 68 ignorados nos dois; ESLint 0 erros / 873 avisos nos dois; nenhum erro TypeScript; build sem falha.
 
 **Pós-commit `c5625b91a` (allowlist de migration):** build, lint, typecheck e suíte completa passaram; Vitest permaneceu em 5.839 aprovados / 68 ignorados e ESLint em 0 erros / 873 avisos. O cenário de migração passou 5/5 e a verificação de allowlist terminou `mutation: false`. O banco continua sem alterações nesta sessão.
+
+**Pós-commit `0d81144d4` (dispatch manual dos gates de performance):** build, lint, typecheck e suíte completa passaram novamente; `actionlint` também passou nos dois workflows editados.
 
 ### Workflows que já estavam verdes
 
