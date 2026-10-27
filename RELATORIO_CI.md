@@ -1,6 +1,6 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
-## Auditoria atual — 2026-10-27 16:56 UTC
+## Auditoria atual — 2026-10-27 18:18 UTC
 
 **Base:** `main` em `2df1b01ad87b8836d70149f1357dc38c33aeb24f`. **PR:** [#145](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/145), branch `fix/hermes-h097437-ci-workflows`, head atual `28e57114c75029b8eae30b9489b2d7510de216a4` (somente documentação). O código da aplicação e os fixes foram validados em `228dadfb5b7051dd04a2396a18203f7df8d8d0fd`. PR aberta; sem merge, deploy ou escrita no Supabase.
 
@@ -31,7 +31,7 @@ A listagem foi cruzada workflow por workflow; execuções de PR não foram usada
 
 | Check / workflow | Execução | Estado observado |
 |---|---|---|
-| E2E (Playwright), SHA de código `228dadfb` | [40542070645](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40542070645), tentativa 2 | Job principal success; smoke passou e header-sticky terminou com 156 aprovados/42 skipped. A regressão 1/3 falhou: 256 passaram, 21 skipped, 3 flaky e 1 falha em `09-favorite-from-detail` (Timeout 15s). Shard 2/3 executa e 3/3 aguarda runner. A tentativa falhou com estados divergentes de catálogo/variações; ver pendência. Teardown também registrou 403 `email_not_in_allow_list`, com 0 linhas apagadas para esse alvo. |
+| E2E (Playwright), SHA de código `228dadfb` | [40542070645](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40542070645), tentativa 3 | Job principal e header-sticky passaram (156 aprovados/42 skipped); shards 2/3 e 3/3 passaram. Shard 1/3 falhou: 258 passaram, 21 skipped, 2 falhas e 8 flaky. Falhas: `24-rbac-navigation` permaneceu em `/login` ao restaurar sessão admin (`auth.ts:201`); `18-favorites-clear-reload-cycle` não encontrou `[data-testid=product-card]` em 15s, com catálogo indicando 200/7.835 produtos (3%) ainda carregando. Artefatos/trace confirmam chamadas pendentes e alguns 403 de funções auxiliares, mas não provam causa raiz. Teardown: 403 `email_not_in_allow_list`, 0 linhas apagadas. Ver pendência. |
 | Portal Sicoob, SHA de código `228dadfb` | [40542070381](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40542070381), tentativa 2 | success; os jobs transacional e responsivo passaram (WCAG, responsividade e fallback offline da PWA). |
 | Qualidade contínua, SHA de código `228dadfb` | [40542070385](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40542070385), tentativa 2 | Falhou antes da simulação seguinte: ECR respondeu `toomanyrequests: Data limit exceeded` ao baixar `public.ecr.aws/supabase/postgres:17.6.1.063`. O digest oficial correspondente no Docker Hub foi confirmado como idêntico; a consulta GHCR retornou `toomanyrequests`. Trocar de registry não está validado como solução; ver pendência. |
 | Lighthouse | [40542070386](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40542070386) | success. |
