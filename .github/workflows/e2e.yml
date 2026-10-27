@@ -211,6 +211,11 @@ jobs:
     needs: e2e
     if: needs.e2e.result == 'success'
     runs-on: ubuntu-latest
+    # A imagem já inclui browsers e dependências do SO. Fixe a tag na mesma
+    # versão de @playwright/test do lockfile para evitar apt instalar deps.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --init --ipc=host --user 1001
     # Três shards mantêm cada lote abaixo do limite hospedado de 40 minutos.
     # A serialização permanece necessária porque as contas são canônicas.
     timeout-minutes: 40
@@ -253,16 +258,6 @@ jobs:
 
       - name: Install deps
         run: npm ci --no-audit --no-fund
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: playwright-${{ runner.os }}-
-
-      - name: Install Playwright (chromium + webkit)
-        run: npx playwright install --with-deps chromium webkit
 
       # SEM --max-failures: cada shard registra todas as falhas de sua parte.
       # O gate anterior já validou o smoke e a ausência de test.only.

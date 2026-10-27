@@ -38,7 +38,7 @@
 
 ### Estado corrigido na branch isolada (checks locais pós-commit)
 
-Branch `fix/hermes-h097437-ci-workflows`, sem alteração na árvore local original, com commits até `cd7792375`. Correções: override do Undici vulnerável, autorização hash-pinned da migration `20261022230000`, dispatch manual seguro de Bundle/Lighthouse e migração de Zod 4.6.7 para eliminar o alerta High.
+Branch `fix/hermes-h097437-ci-workflows`, sem alteração na árvore local original, com commits até `34a2d163d` e uma correção de bootstrap E2E em preparação. Correções: override do Undici vulnerável, autorização hash-pinned da migration `20261022230000`, dispatch manual seguro de Bundle/Lighthouse, atualização de Zod 4.6.7 para eliminar o alerta High e validação de identidade ao restaurar storage state no E2E.
 
 | Verificação da branch | Resultado observado |
 |---|---|
@@ -57,7 +57,7 @@ Branch `fix/hermes-h097437-ci-workflows`, sem alteração na árvore local origi
 1. **Dependências:** correções locais implementadas para `undici` 8.12.2 e `zod` 4.6.7; audit local está zerado. Falta CI remoto do PR para validar na branch hospedada.
 2. **Supabase/migrations:** migration `20261022230000` agora está explicitamente autorizada pela allowlist com SHA-256 conferido; `--verify-files` e cenário transacional passaram sem tocar o banco. A aplicação remota permanece pendente do fluxo versionado pós-PR.
 3. **Limites externos:** Compliance/RLS e Copilot não podem ser reparados por código local; registrar motivo e ação exigida ao proprietário em `PENDENCIAS.md`.
-4. **E2E, bundle e Lighthouse:** obter execução atual em PR para substituir evidência histórica sem logs; não atribuir causa sem esse resultado.
+4. **E2E, bundle e Lighthouse:** Bundle, Lighthouse e o gate E2E principal passaram na execução hospedada atual do PR. A regressão shard 1 passou; shard 2 foi encerrado no limite de 40 minutos durante instalação `apt` de dependências WebKit/Chromium. A causa de bootstrap foi identificada e a correção com imagem oficial Playwright versionada está em preparação para nova validação. Os dados históricos de Bundle/Lighthouse continuam sem logs e não permitem determinar a causa daquelas execuções antigas.
 
 **Diagnóstico adicional do bundle:** `node scripts/qa/check-bundle-budget.mjs` passou na base atual com 664 chunks, 10.713.232 bytes brutos e 3.248.969 bytes gzip; houve dois avisos de chunks grandes, abaixo do limite fatal de 800 KiB. Isso confirma que a falha antiga não se reproduz nesse passo local, mas não substitui o workflow remoto.
 
@@ -71,7 +71,9 @@ Branch `fix/hermes-h097437-ci-workflows`, sem alteração na árvore local origi
 
 **Pós-commit `cd7792375` (Zod 4.6.7):** build, lint, typecheck e suíte completa passaram novamente; `npm audit` encontrou zero vulnerabilidades. Bundle budget passou e a validação das migrations confirmou `mutation: false`. CI remoto ainda pendente.
 
-**Checks remotos do PR #145** (head `b496bfbf7b111a45cf09e911bc665121bd28171b`): `npm audit`, CodeQL, Gitleaks, bundle, Lighthouse, responsividade/PWA, gate transacional, Sicoob gate e E2E principal passaram. O job de qualidade falhou ao buscar a imagem `public.ecr.aws/supabase/postgres:17.6.1.063` por `toomanyrequests: Data limit exceeded`; a simulação de auditoria nem iniciou. O Copilot reviewer falhou com HTTP 402 por limite adicional de uso. O shard 1/3 da regressão Playwright reportou 281 specs, 238 aprovadas, 24 falhas e 19 ignoradas. A maioria das falhas veio da fixture que tenta restaurar storage state de `E2E_USER` ao autenticar `E2E_VIEWER`; ajuste local está em andamento. Dois casos dependem de dados remotos (bridge preso em `Carregando…` e expectativa de tabela vazia divergente). Os shards 2/3 e 3/3 ainda estão ativos.
+**Checks remotos do PR #145** (head `34a2d163db9e0772eb8111571ef6427dc93b0f0c`): Segurança/contratos/build, Portal Sicoob, npm audit, CodeQL, Gitleaks, bundle, Lighthouse, responsividade/PWA, gate transacional, origem confiável e E2E principal passaram. A simulação PostgreSQL que antes falhou por limite de download ECR passou nesta execução. O Copilot reviewer voltou a falhar com `SessionModelError`, `statusCode: 402`, `errorCode: quota`: `You've reached your additional usage limit for your plan.`
+
+O artifact `e2e-feature-summary-shard-1` no run [40502884202](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40502884202) reporta 281 specs, 260 aprovadas, 0 falhas e 21 ignoradas. O gate principal passou. O shard 2/3 foi cancelado aos 39m40s, no limite de 40 minutos, durante `npx playwright install --with-deps chromium webkit`; o log confirma início de `apt` em `Installing dependencies...` e encerramento `The operation was canceled`, sem execução dos testes. Para remover a instalação de dependências do caminho crítico, o workflow está sendo alterado para usar `mcr.microsoft.com/playwright:v1.63.0-noble`, alinhada ao `@playwright/test` do lockfile, com browsers e dependências de sistema preinstalados. A nova execução remota ainda é necessária.
 
 ### Workflows que já estavam verdes
 

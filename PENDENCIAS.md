@@ -28,13 +28,15 @@ Base consultada: `main` em `2df1b01ad87b8836d70149f1357dc38c33aeb24f`. Esta seç
 
 **Runs:** [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) e [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910), respectivamente.
 
-**Bloqueio de diagnóstico:** a API do GitHub retorna HTTP 404 para os logs antigos, e não há artifacts para esses runs. Portanto, a causa original não pode ser afirmada. Os checks precisam de nova execução em um PR atual antes de serem marcados como resolvidos; se uma nova execução falhar, registrar a causa observada.
+**Bloqueio de diagnóstico:** a API do GitHub retorna HTTP 404 para os logs antigos, e não há artifacts para esses runs. Portanto, a causa original não pode ser afirmada. Na validação da branch atual, Bundle Size passou no run [40502884208](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40502884208) e Lighthouse passou no run [40502884177](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40502884177). Isso valida o estado da branch; `main` continua com as falhas históricas até a correção segura ser integrada.
 
 ### Workflow: E2E (Playwright)
 
 **Run:** [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358).
 
-**Bloqueio de diagnóstico:** conclusão `startup_failure`, zero jobs criados e nenhum log. O YAML no SHA antigo usava `self-hosted`; o YAML atual usa `ubuntu-latest`. Indisponibilidade do runner é hipótese provável, não causa comprovada. A execução atual de PR deve validar a correção.
+**Evidência atual da branch:** no run [40502884202](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40502884202), o gate E2E principal passou (`e2e = success`), incluindo smoke autenticado e header sticky. O artifact do shard 1 reportou 281 specs, 260 aprovadas, 0 falhas e 21 ignoradas. No shard 2, `npx playwright install --with-deps chromium webkit` ficou preso em `Installing dependencies...` durante a instalação `apt` e o job foi cancelado aos 39m40s, no limite configurado de 40 minutos; não chegou a executar specs. O shard 3 iniciou após o cancelamento.
+
+**Correção na branch:** o bootstrap dos shards foi alterado para usar a imagem oficial `mcr.microsoft.com/playwright:v1.63.0-noble`, que corresponde à versão de `@playwright/test` do lockfile e já contém browsers e dependências do sistema. A nova execução remota deve validar essa alteração. A execução antiga em `main` permanece `startup_failure` até integração.
 
 ### Workflow: Security Scan
 
@@ -42,19 +44,19 @@ Base consultada: `main` em `2df1b01ad87b8836d70149f1357dc38c33aeb24f`. Esta seç
 
 **Correções implementadas na branch isolada:** `undici` foi fixado em `8.12.2`; `zod` foi atualizado para `4.6.7` porque a versão v3 mais recente continua vulnerável e o advisory `GHSA-mrhx-c7xc-m3w5` só é corrigido a partir de `4.6.6`. A migração também ajustou duas incompatibilidades de API/typecheck do Zod 4. `npm audit --audit-level=high` retorna `found 0 vulnerabilities` localmente.
 
-**Validação pendente:** o resultado remoto do workflow `Security Scan` no PR ainda é necessário. A alteração de Zod é dependência de runtime; se merge disparar deploy de produção, o PR não deve ser mesclado nesta tarefa.
+**Validação na branch:** `Security Scan` passou no run [40502884169](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40502884169), além do audit local zerado. O último run da `main` continua falhando até integração. A alteração de Zod é dependência de runtime; se merge disparar deploy de produção, o PR não deve ser mesclado nesta tarefa.
 
 ### Estado de validação da branch desta auditoria
 
-Branch `fix/hermes-h097437-ci-workflows`, baseada em `main` `2df1b01ad87b8836d70149f1357dc38c33aeb24f`; commits até `cd7792375`. Gates locais pós-commit passaram: build, lint (0 erros/873 avisos), typecheck, suíte completa (5.839 aprovados/68 ignorados), bundle budget, `npm audit` (0 vulnerabilidades) e validação dos hashes de migration (`mutation: false`). `actionlint` também passou nos workflows de performance editados. Faltam os checks hospedados do PR e a confirmação de comportamento/deploy. O banco não foi alterado nesta auditoria.
+Branch `fix/hermes-h097437-ci-workflows`, baseada em `main` `2df1b01ad87b8836d70149f1357dc38c33aeb24f`; commits até `34a2d163d` no último SHA remoto. Os gates locais pós-commit passaram: build, lint (0 erros/873 avisos), typecheck, suíte completa (5.839 aprovados/68 ignorados), bundle budget, `npm audit` (0 vulnerabilidades) e validação dos hashes de migration (`mutation: false`). `actionlint` passou nos workflows de performance. Na execução hospedada, Segurança, contratos e build, Portal Sicoob, Bundle, Lighthouse, CodeQL, Gitleaks, npm audit, gate transacional e E2E principal passaram. O Copilot segue falhando por quota HTTP 402. O banco não foi alterado nesta auditoria.
 
 ### Falhas observadas no PR #145 — CI hospedado
 
 **Qualidade contínua — run [40493788497](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40493788497), job `Segurança, contratos e build`:** a simulação `Simular controles de auditoria e permissões em PostgreSQL descartável` falhou após três tentativas porque o Docker recebeu `toomanyrequests: Data limit exceeded` ao buscar `public.ecr.aws/supabase/postgres:17.6.1.063`. O código de simulação não executou; depende da cota/disponibilidade do registry público. Ação: restaurar cota ou disponibilidade no ECR e reexecutar. Não trocar a imagem por um mirror não verificado.
 
-**E2E regressão — shard 1/3, run [40493787899](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40493787899):** artifact `e2e-feature-summary-shard-1` reportou 281 specs, 238 aprovadas, 24 falhas e 19 ignoradas. A maior causa é a fixture `loginAs('user')` comparar `E2E_VIEWER_EMAIL` com o storage state produzido usando `E2E_USER_EMAIL`; quando são contas diferentes, `restoreRoleStorage` lança em vez de autenticar pela UI. A correção está sendo feita na branch para validar a identidade do storage antes de restaurá-lo e cair no login da conta solicitada. Também houve falhas observadas em dados remotos: contador de produtos do `external-db-bridge` permaneceu em `Carregando…` por 25 s e uma expectativa de tabela vazia não correspondeu ao estado encontrado. A causa dessas duas falhas requer os shards restantes/artifacts; nenhuma foi mascarada.
+**E2E regressão — run anterior [40493787899](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40493787899):** shard 1 reportou 281 specs, 238 aprovadas, 24 falhas e 19 ignoradas. A causa dominante foi `loginAs('user')` tentar restaurar storage state da conta `E2E_USER` ao autenticar `E2E_VIEWER`. O commit `34a2d163d` agora valida o e-mail do storage antes da restauração. No novo run [40502884202](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40502884202), shard 1 passou com 281 specs, 260 aprovadas, 0 falhas e 21 ignoradas; o gate principal também passou. O shard 2 foi cancelado ao atingir 40 minutos enquanto `apt` instalava dependências para Chromium/WebKit, sem chegar aos testes. A causa foi confirmada no log como `The operation was canceled` após `Installing dependencies...` ficar sem avanço. A correção do bootstrap por imagem Playwright versionada está nesta branch e aguarda nova validação remota.
 
-Os shards 2/3 e 3/3 ainda estão sendo executados em série. O gate E2E principal (smoke autenticado e header sticky), bundle, Lighthouse, npm audit, CodeQL, Gitleaks, responsividade/PWA e simulação transacional passaram neste PR. O check dinâmico do Copilot permanece bloqueado pela quota HTTP 402 descrita acima.
+Também houve, no run anterior, falhas observadas em dados remotos: contador de produtos do `external-db-bridge` permaneceu em `Carregando…` por 25 s e uma expectativa de tabela vazia não correspondeu ao estado encontrado. O shard 1 atual não reproduziu falhas; a nova execução dos demais shards ainda precisa confirmar esses cenários. O check dinâmico do Copilot permanece bloqueado por HTTP 402 por limite adicional de uso do plano.
 
 ### Workflow: Migration ledger drift
 
