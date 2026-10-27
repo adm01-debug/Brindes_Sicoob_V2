@@ -31,9 +31,9 @@ A listagem foi cruzada workflow por workflow; execuções de PR não foram usada
 
 | Check / workflow | Execução | Estado observado |
 |---|---|---|
-| E2E (Playwright), SHA de código `228dadfb` | [40542070645](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40542070645), tentativa 2 | Smoke gate passou; gate header-sticky ainda executava às 16:56 UTC. A conclusão E2E permanece pendente. |
+| E2E (Playwright), SHA de código `228dadfb` | [40542070645](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40542070645), tentativa 2 | Smoke gate passou; gate header-sticky permanecia em execução às 17:04 UTC. A conclusão E2E permanece pendente. |
 | Portal Sicoob, SHA de código `228dadfb` | [40542070381](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40542070381), tentativa 2 | success; os jobs transacional e responsivo passaram (WCAG, responsividade e fallback offline da PWA). |
-| Qualidade contínua, SHA de código `228dadfb` | [40542070385](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40542070385), tentativa 2 | Falhou antes da simulação seguinte: ECR respondeu `toomanyrequests: Data limit exceeded` ao baixar `public.ecr.aws/supabase/postgres:17.6.1.063`. |
+| Qualidade contínua, SHA de código `228dadfb` | [40542070385](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40542070385), tentativa 2 | Falhou antes da simulação seguinte: ECR respondeu `toomanyrequests: Data limit exceeded` ao baixar `public.ecr.aws/supabase/postgres:17.6.1.063`. O digest oficial correspondente no Docker Hub foi confirmado como idêntico, mas a troca anônima não elimina quota; ver pendência. |
 | Lighthouse | [40542070386](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40542070386) | success. |
 | Bundle, Security Scan e CodeQL no head documental `28e57114` | [Bundle](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40543369029), [Security](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40543370036), [CodeQL](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40543373306) | success. |
 | Copilot no head documental `28e57114` | [40543391409](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40543391409) | failure por HTTP 402 de limite adicional do Copilot; firewall do runner também bloqueou `api.github.com`. |
