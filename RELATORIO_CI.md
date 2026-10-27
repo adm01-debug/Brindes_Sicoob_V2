@@ -71,6 +71,8 @@ Branch `fix/hermes-h097437-ci-workflows`, sem alteração na árvore local origi
 
 **Pós-commit `cd7792375` (Zod 4.6.7):** build, lint, typecheck e suíte completa passaram novamente; `npm audit` encontrou zero vulnerabilidades. Bundle budget passou e a validação das migrations confirmou `mutation: false`. CI remoto ainda pendente.
 
+**Checks remotos do PR #145** (head `b496bfbf7b111a45cf09e911bc665121bd28171b`): `npm audit`, CodeQL, Gitleaks, bundle, Lighthouse, responsividade/PWA, gate transacional, Sicoob gate e E2E principal passaram. O job de qualidade falhou ao buscar a imagem `public.ecr.aws/supabase/postgres:17.6.1.063` por `toomanyrequests: Data limit exceeded`; a simulação de auditoria nem iniciou. O Copilot reviewer falhou com HTTP 402 por limite adicional de uso. O shard 1/3 da regressão Playwright reportou 281 specs, 238 aprovadas, 24 falhas e 19 ignoradas. A maioria das falhas veio da fixture que tenta restaurar storage state de `E2E_USER` ao autenticar `E2E_VIEWER`; ajuste local está em andamento. Dois casos dependem de dados remotos (bridge preso em `Carregando…` e expectativa de tabela vazia divergente). Os shards 2/3 e 3/3 ainda estão ativos.
+
 ### Workflows que já estavam verdes
 
 Branch Protection Sentinel, Qualidade contínua, CodeQL, Monthly DB Audit, Publicar funções Sicoob, Dependabot Updates e Portal Sicoob. Comparação final e confirmação de que continuam verdes serão acrescentadas após as alterações e execução remota.

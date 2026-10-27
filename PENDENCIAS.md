@@ -48,6 +48,14 @@ Base consultada: `main` em `2df1b01ad87b8836d70149f1357dc38c33aeb24f`. Esta seç
 
 Branch `fix/hermes-h097437-ci-workflows`, baseada em `main` `2df1b01ad87b8836d70149f1357dc38c33aeb24f`; commits até `cd7792375`. Gates locais pós-commit passaram: build, lint (0 erros/873 avisos), typecheck, suíte completa (5.839 aprovados/68 ignorados), bundle budget, `npm audit` (0 vulnerabilidades) e validação dos hashes de migration (`mutation: false`). `actionlint` também passou nos workflows de performance editados. Faltam os checks hospedados do PR e a confirmação de comportamento/deploy. O banco não foi alterado nesta auditoria.
 
+### Falhas observadas no PR #145 — CI hospedado
+
+**Qualidade contínua — run [40493788497](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40493788497), job `Segurança, contratos e build`:** a simulação `Simular controles de auditoria e permissões em PostgreSQL descartável` falhou após três tentativas porque o Docker recebeu `toomanyrequests: Data limit exceeded` ao buscar `public.ecr.aws/supabase/postgres:17.6.1.063`. O código de simulação não executou; depende da cota/disponibilidade do registry público. Ação: restaurar cota ou disponibilidade no ECR e reexecutar. Não trocar a imagem por um mirror não verificado.
+
+**E2E regressão — shard 1/3, run [40493787899](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40493787899):** artifact `e2e-feature-summary-shard-1` reportou 281 specs, 238 aprovadas, 24 falhas e 19 ignoradas. A maior causa é a fixture `loginAs('user')` comparar `E2E_VIEWER_EMAIL` com o storage state produzido usando `E2E_USER_EMAIL`; quando são contas diferentes, `restoreRoleStorage` lança em vez de autenticar pela UI. A correção está sendo feita na branch para validar a identidade do storage antes de restaurá-lo e cair no login da conta solicitada. Também houve falhas observadas em dados remotos: contador de produtos do `external-db-bridge` permaneceu em `Carregando…` por 25 s e uma expectativa de tabela vazia não correspondeu ao estado encontrado. A causa dessas duas falhas requer os shards restantes/artifacts; nenhuma foi mascarada.
+
+Os shards 2/3 e 3/3 ainda estão sendo executados em série. O gate E2E principal (smoke autenticado e header sticky), bundle, Lighthouse, npm audit, CodeQL, Gitleaks, responsividade/PWA e simulação transacional passaram neste PR. O check dinâmico do Copilot permanece bloqueado pela quota HTTP 402 descrita acima.
+
 ### Workflow: Migration ledger drift
 
 **Run:** [40460912297](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40460912297) · step `Comparar ledger remoto contra arquivos locais`.
