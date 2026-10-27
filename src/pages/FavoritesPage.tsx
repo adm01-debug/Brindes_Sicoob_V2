@@ -54,6 +54,49 @@ const PRICE_DROP_FILTER_KEY = "favorites-only-drops";
 type FavoritePriceMeta = { priceDiffPct: number | null; priceAtSave: number | null; savedAt: string };
 type FavoriteNoteMeta = { itemId: string; note: string | null };
 
+function UnavailableFavoriteCard({
+  productId,
+  onRetry,
+  onRemove,
+}: {
+  productId: string;
+  onRetry: () => void;
+  onRemove: () => void;
+}) {
+  return (
+    <article
+      data-testid="favorite-item"
+      data-product-id={productId}
+      className="flex min-h-44 flex-col justify-between rounded-xl border border-dashed border-border bg-card p-4"
+      aria-label="Favorito salvo; detalhes do produto indisponíveis"
+    >
+      <div>
+        <Package className="mb-3 h-6 w-6 text-muted-foreground" aria-hidden="true" />
+        <h3 className="font-semibold text-foreground">Produto salvo</h3>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Não foi possível carregar os detalhes agora.
+        </p>
+        <p className="mt-1 break-all text-xs text-muted-foreground">ID: {productId}</p>
+      </div>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button type="button" variant="outline" size="sm" onClick={onRetry}>
+          Tentar novamente
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          data-testid="favorite-remove"
+          aria-label="Remover favorito indisponível"
+          onClick={onRemove}
+        >
+          Remover
+        </Button>
+      </div>
+    </article>
+  );
+}
+
 function matchesFavoriteSearch(product: Product, searchQuery: string): boolean {
   const query = searchQuery.toLowerCase();
   return product.name.toLowerCase().includes(query)
@@ -279,6 +322,14 @@ export default function FavoritesPage() {
           return product;
         });
   }, [enriched, legacyFavoriteProducts, variantMap, isRemoteListView]);
+
+  const resolvedProductIds = useMemo(
+    () => new Set(productsWithVariant.map((product) => product.id)),
+    [productsWithVariant],
+  );
+  const unavailableFavoriteIds = isRemoteListView
+    ? rawItems.filter((item) => !resolvedProductIds.has(item.product_id)).map((item) => item.product_id)
+    : favorites.filter((favorite) => !resolvedProductIds.has(favorite.productId)).map((favorite) => favorite.productId);
 
   const filteredProducts = useMemo(() => filterFavoriteProducts(productsWithVariant, {
     searchQuery,
@@ -562,14 +613,28 @@ export default function FavoritesPage() {
   }
 
   function FavoriteProducts() {
-    if (filteredProducts.length === 0) return <EmptyFavoriteResults />;
-    if (viewMode === 'table') return <ProductTableView products={filteredProducts}
-      onProductClick={(productId) => navigate(`/produto/${productId}`)} isFavorite={isFavorite}
-      onToggleFavorite={handleToggleFavorite} selectionMode={selectionMode} selectedIds={selectedIds} onToggleSelect={sel.toggleSelect} />;
+    if (filteredProducts.length === 0 && unavailableFavoriteIds.length === 0) return <EmptyFavoriteResults />;
+    const unavailableCards = unavailableFavoriteIds.map((productId) => (
+      <UnavailableFavoriteCard
+        key={`unavailable-${productId}`}
+        productId={productId}
+        onRetry={() => getProductsByIds([productId])}
+        onRemove={() => handleRemoveFavorite(productId, 'Produto indisponível')}
+      />
+    ));
+    if (viewMode === 'table') return <>
+      {filteredProducts.length > 0 && <ProductTableView products={filteredProducts}
+        onProductClick={(productId) => navigate(`/produto/${productId}`)} isFavorite={isFavorite}
+        onToggleFavorite={handleToggleFavorite} selectionMode={selectionMode} selectedIds={selectedIds} onToggleSelect={sel.toggleSelect} />}
+      {unavailableCards.length > 0 && <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{unavailableCards}</div>}
+    </>;
     if (viewMode === 'list') return <div className="space-y-1.5">
-      {filteredProducts.map((product) => <FavoriteListRow key={product.id} product={product} />)}</div>;
+      {filteredProducts.map((product) => <FavoriteListRow key={product.id} product={product} />)}
+      {unavailableCards}
+    </div>;
     return <div data-testid="favorites-list" className={`grid ${getGridColsClass(gridColumns)} ${getGridGapClass(gridColumns)}`}>
       {filteredProducts.map((product, index) => <FavoriteGridItem key={product.id} product={product} index={index} />)}
+      {unavailableCards}
     </div>;
   }
 
