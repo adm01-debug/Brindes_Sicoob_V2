@@ -49,7 +49,7 @@ export function AiQuotaManager() {
                     <p className="text-xs text-muted-foreground">{unlimited ? "Uso ilimitado" : `${limit} req/mês`}</p>
                   </div>
                   <div className="flex items-center gap-2"><label className="text-xs text-muted-foreground">Ilimitado</label><Switch checked={unlimited} onCheckedChange={checked => setEditing(prev => ({ ...prev, [q.id]: { limit, unlimited: checked } }))} /></div>
-                  {!unlimited && <Input type="number" className="w-24 h-8 text-sm" value={limit} min={0} onChange={e => setEditing(prev => ({ ...prev, [q.id]: { limit: parseInt(e.target.value) || 0, unlimited: false } }))} />}
+                  {!unlimited && <Input type="number" aria-label={`Limite mensal de solicitações para ${ROLE_LABELS[q.role] || q.role}`} className="w-24 h-8 text-sm" value={limit} min={0} onChange={e => setEditing(prev => ({ ...prev, [q.id]: { limit: parseInt(e.target.value) || 0, unlimited: false } }))} />}
                   {isEditing && <Button size="sm" className="h-8 gap-1" onClick={() => handleSave(q.id, q.role)} disabled={updateQuota.isPending}><Save className="h-3 w-3" /> Salvar</Button>}
                 </div>
               );
