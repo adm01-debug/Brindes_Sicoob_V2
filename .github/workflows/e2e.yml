@@ -132,14 +132,13 @@ jobs:
             --reporter=github,list,json
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-report/results.json
-        continue-on-error: true
 
       # Resumo dedicado do smoke: 1 linha por funcionalidade no log do step,
       # `::error file=...::` por falha (anotação inline no PR), `::group::`
       # colapsável para diagnóstico, e bloco "FINAL SUMMARY" sem ANSI no fim.
       - name: 📋 Generate SMOKE summary (sempre — log final + annotations)
         if: always()
-        run: node scripts/e2e-smoke-summary.mjs || true
+        run: node scripts/e2e-smoke-summary.mjs
 
       - name: 📤 Append SMOKE summary to GitHub UI
         if: always() && hashFiles('playwright-report/smoke-summary.md') != ''
@@ -151,7 +150,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: 🛑 Fail-fast se smoke falhou (gate)
-        if: env.SKIP_E2E != 'true' && steps.e2e_smoke.outcome != 'success'
+        if: always() && env.SKIP_E2E != 'true' && steps.e2e_smoke.outcome != 'success'
         run: |
           echo "::error title=Smoke gate failed::Smoke parou na 1ª falha — veja '🚦 E2E Smoke Summary' acima e o artifact 'playwright-report' (screenshots+vídeos+trace)."
           exit 1
@@ -166,10 +165,9 @@ jobs:
             --workers=2 \
             --max-failures=1 \
             --reporter=github,list
-        continue-on-error: true
 
       - name: 🛑 Fail-fast se header sticky falhou
-        if: env.SKIP_E2E != 'true' && steps.e2e_header_sticky.outcome == 'failure'
+        if: always() && env.SKIP_E2E != 'true' && steps.e2e_header_sticky.outcome == 'failure'
         run: |
           echo "::error title=Header sticky regression::O Header global deixou de ser sticky em alguma rota/viewport. Spec: e2e/flows/22-header-sticky.spec.ts. Causa raiz típica: 'overflow' / 'transform' / 'filter' em ancestral do <header> em src/components/layout/MainLayout.tsx criando scroll container ou stacking context indevido. Veja o artifact 'playwright-report' (screenshot + vídeo + trace) para a rota específica."
           exit 1
@@ -177,7 +175,6 @@ jobs:
       - name: Upload Playwright report do gate
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
         with:
           name: playwright-report-smoke-gate
           path: playwright-report
@@ -186,7 +183,6 @@ jobs:
       - name: Upload smoke summary (markdown + json)
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
         with:
           name: e2e-smoke-summary
           path: |
@@ -198,7 +194,6 @@ jobs:
       - name: Upload evidências do gate
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
         with:
           name: e2e-evidence-smoke-gate
           path: |
@@ -272,12 +267,11 @@ jobs:
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-report/results.json
           PLAYWRIGHT_JUNIT_OUTPUT_NAME: playwright-report/results.xml
-        continue-on-error: true
         id: e2e_run
 
       - name: 📋 Generate feature summary (regression)
         if: always()
-        run: node scripts/e2e-feature-summary.mjs || true
+        run: node scripts/e2e-feature-summary.mjs
 
       - name: 📤 Append feature summary to GitHub UI
         if: always() && hashFiles('playwright-report/feature-summary.md') != ''
@@ -291,7 +285,6 @@ jobs:
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
         with:
           name: playwright-report-shard-${{ matrix.shard }}
           path: playwright-report
@@ -300,7 +293,6 @@ jobs:
       - name: Upload feature summary (markdown)
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
         with:
           name: e2e-feature-summary-shard-${{ matrix.shard }}
           path: playwright-report/feature-summary.md
@@ -310,7 +302,6 @@ jobs:
       - name: Upload evidence artifacts
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
         with:
           name: e2e-evidence-shard-${{ matrix.shard }}
           path: |
@@ -319,7 +310,7 @@ jobs:
           retention-days: 7
 
       - name: 🛑 Fail job se regression registrou falhas
-        if: steps.e2e_run.outcome == 'failure'
+        if: always() && steps.e2e_run.outcome == 'failure'
         run: |
           echo "::error title=Regression failed::Algumas specs do shard ${{ matrix.shard }}/3 falharam — veja o resumo acima e os artifacts do shard (HTML, screenshots, vídeos e trace)."
           exit 1

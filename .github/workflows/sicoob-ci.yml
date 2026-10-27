@@ -91,7 +91,7 @@ jobs:
       - name: Iniciar servidor de preview
         run: |
           npx vite preview --host 127.0.0.1 --port 4178 > /tmp/portal-sicoob-vite.log 2>&1 &
-          for i in $(seq 1 30); do
+          for _ in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:4178/ > /dev/null; then
               exit 0
             fi
@@ -110,7 +110,6 @@ jobs:
         run: npm run test:e2e:pwa
       - name: Publicar evidências em caso de falha
         if: failure()
-        continue-on-error: true
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: evidencias-visuais-sicoob
