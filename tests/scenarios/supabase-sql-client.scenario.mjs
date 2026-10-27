@@ -59,7 +59,11 @@ test("retorna erro sanitizado quando a API recusa a consulta", async () => {
 
 test("monta lote atômico somente com migrations allowlisted e guarda do ledger", () => {
   const batch = buildManagementApiBatch(loadAuthorizedTargets(), new Map());
+  const ledgerRepair = loadAuthorizedTargets().find((target) => target.version === "20261022230000");
 
+  assert.ok(ledgerRepair, "migration versionada de reparo do ledger deve estar autorizada");
+  assert.equal(ledgerRepair.sha256, "b7b603513980448ddce917e00aa962519f392773cd1e7498782ef3f63e19f7a8");
+  assert.match(batch, /CREATE OR REPLACE FUNCTION public\.e2e_cleanup_check_rate_limit/);
   assert.match(batch, /^BEGIN;/);
   assert.match(batch, /pg_advisory_xact_lock/);
   assert.match(batch, /O ledger mudou depois do preflight/);

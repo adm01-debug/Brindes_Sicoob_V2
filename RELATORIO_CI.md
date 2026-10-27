@@ -39,13 +39,15 @@
 ### Causas agrupadas e próxima ação
 
 1. **Dependências:** investigar/pinar `undici` de forma compatível; avaliar migração de `zod` v3 para v4 sem afrouxar auditoria ou contrato. A versão v3 publicada mais recente continua dentro da faixa vulnerável.
-2. **Supabase/migrations:** revisar e autorizar explicitamente a migration versionada `20261022230000`, incluí-la na allowlist somente após validar hash e guardas; não aplicar banco até correção versionada e fluxo autorizado.
+2. **Supabase/migrations:** migration `20261022230000` agora está explicitamente autorizada pela allowlist com SHA-256 conferido; `--verify-files` e cenário transacional passaram sem tocar o banco. A aplicação remota permanece pendente do fluxo versionado pós-PR.
 3. **Limites externos:** Compliance/RLS e Copilot não podem ser reparados por código local; registrar motivo e ação exigida ao proprietário em `PENDENCIAS.md`.
 4. **E2E, bundle e Lighthouse:** obter execução atual em PR para substituir evidência histórica sem logs; não atribuir causa sem esse resultado.
 
 **Diagnóstico adicional do bundle:** `node scripts/qa/check-bundle-budget.mjs` passou na base atual com 664 chunks, 10.713.232 bytes brutos e 3.248.969 bytes gzip; houve dois avisos de chunks grandes, abaixo do limite fatal de 800 KiB. Isso confirma que a falha antiga não se reproduz nesse passo local, mas não substitui o workflow remoto.
 
 **CVE audit após o primeiro fix:** override `undici@8.12.2` atualizado em `package.json`/lockfile; `npm ls` confirma a versão. As três advisories do Undici deixaram de aparecer; `npm audit --audit-level=high` agora reporta somente `GHSA-mrhx-c7xc-m3w5` (`zod <4.6.6`). A migração Zod 4 segue em análise separada por ser major.
+
+**Pós-commit `4787896b0` (undici):** `npm ci --ignore-scripts --no-audit --no-fund`, `npm run build`, `npm run lint`, `npm run typecheck` e `npm test` passaram. Comparação com baseline: Vitest 5.839 aprovados / 68 ignorados nos dois; ESLint 0 erros / 873 avisos nos dois; nenhum erro TypeScript; build sem falha.
 
 ### Workflows que já estavam verdes
 

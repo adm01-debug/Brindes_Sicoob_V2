@@ -124,6 +124,10 @@ const TARGETS = [
     file: "supabase/migrations/20261022120000_add_public_favorites_to_security_definer_allowlist.sql",
     sha256: "87bf1a8d5bb689f202a4ff77968c6f8820cfbfe5fffdff5d9c16c439a611bf54",
   },
+  {
+    file: "supabase/migrations/20261022230000_repair_migration_ledger_and_harden_search_path.sql",
+    sha256: "b7b603513980448ddce917e00aa962519f392773cd1e7498782ef3f63e19f7a8",
+  },
 ];
 
 function sha256(value) {

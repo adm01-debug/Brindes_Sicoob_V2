@@ -52,7 +52,9 @@ Base consultada: `main` em `2df1b01ad87b8836d70149f1357dc38c33aeb24f`. Esta seç
 
 **Causa:** existe uma nova migration versionada (`20261022230000_repair_migration_ledger_and_harden_search_path.sql`) não registrada no ledger. O inventário remoto registra 136 entradas; o scan encontrou uma migration local nova, além de 504 pendências históricas previamente baselineadas. O script de aplicação manual ainda não inclui essa migration entre os destinos autorizados.
 
-**Próximo passo:** verificar conteúdo/hash e guardas do script; adicionar destino explícito e teste antes de qualquer aplicação. Aplicar apenas a migration versionada após a correção passar por PR e pelo fluxo permitido; nunca editar o ledger diretamente nem contornar a allowlist.
+**Correção na branch atual:** o destino `20261022230000` foi incluído na allowlist usando o SHA-256 do arquivo versionado. O teste `tests/scenarios/supabase-sql-client.scenario.mjs` passou (5/5), validando a inclusão no lote atômico e o hash; `--verify-files` passou com `mutation: false`. O banco não foi alterado.
+
+**Pendente:** após PR aprovado/mergeado, rodar `Aplicar migrations Sicoob` na `main` com confirmação `APLICAR`, verificar o preflight e o ledger remoto, e então despachar `Migration ledger drift`. Não usar SQL manual nem aplicar arquivo fora do repositório.
 
 Atualizado em: 2026-10-22
 
