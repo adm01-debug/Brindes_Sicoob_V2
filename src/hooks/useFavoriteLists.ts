@@ -284,19 +284,19 @@ export function useFavoriteListItems(listId: string | null) {
   });
 
   const removeItem = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id }: { id: string; productName?: string }) => {
       const { error } = await supabase.from("favorite_items").delete().eq("id", id);
       if (error) throw error;
       return id;
     },
-    onSuccess: (_id, _vars, ctx) => {
+    onSuccess: (_id, variables) => {
       qc.invalidateQueries({ queryKey: ITEMS_KEY(listId ?? "none") });
       qc.invalidateQueries({ queryKey: LISTS_KEY });
       qc.invalidateQueries({ queryKey: [FAVORITE_TRASH_KEY] });
       // Toast com undo: restaura o último item da lixeira (que acabou de ser movido pelo trigger)
       if (!user) return;
-      const productName = (ctx as { productName?: string } | undefined)?.productName ?? "Item";
-      toast.success(`${productName} removido`, {
+      const productName = variables.productName?.trim() || "Item";
+      toast.success(`${productName} removido dos favoritos`, {
         description: "Você tem 30 dias para restaurar pela Lixeira.",
         action: {
           label: "Desfazer",

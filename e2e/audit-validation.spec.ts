@@ -31,11 +31,17 @@ test.describe('Enterprise Audit Validation Suite', () => {
     await expect(panel).toBeVisible();
     await expect(panel.getByRole('table')).toBeVisible();
     const progressBars = panel.getByRole('progressbar', { name: /Consumo de verba/ });
-    if ((await progressBars.count()) > 0) {
-      await expect(progressBars.first()).toBeVisible();
-      await expect(panel.locator('button[aria-label^="Editar verba"]').first()).toBeVisible();
+    const editButtons = panel.locator('button[aria-label^="Editar verba"]');
+    const emptyMessage = panel.getByRole('cell', { name: 'Nenhuma verba encontrada' });
+    await expect
+      .poll(async () => (await progressBars.count()) > 0 || (await editButtons.count()) > 0 || (await emptyMessage.count()) > 0)
+      .toBe(true);
+
+    if ((await progressBars.count()) > 0 || (await editButtons.count()) > 0) {
+      if ((await progressBars.count()) > 0) await expect(progressBars.first()).toBeVisible();
+      await expect(editButtons.first()).toBeVisible();
     } else {
-      await expect(panel.getByRole('cell', { name: 'Nenhuma verba encontrada' })).toBeVisible();
+      await expect(emptyMessage).toBeVisible();
     }
   });
 

@@ -50,6 +50,7 @@ const GRID_COLS_KEY = "favorites-grid-cols";
 const SELECTED_LIST_KEY = "favorites-selected-list-id";
 const SORT_KEY = "favorites-sort";
 const PRICE_DROP_FILTER_KEY = "favorites-only-drops";
+const UNAVAILABLE_FAVORITE_NAME = "Produto salvo";
 
 type FavoritePriceMeta = { priceDiffPct: number | null; priceAtSave: number | null; savedAt: string };
 type FavoriteNoteMeta = { itemId: string; note: string | null };
@@ -67,12 +68,13 @@ function UnavailableFavoriteCard({
     <article
       data-testid="favorite-item"
       data-product-id={productId}
+      data-product-name={UNAVAILABLE_FAVORITE_NAME}
       className="flex min-h-44 flex-col justify-between rounded-xl border border-dashed border-border bg-card p-4"
       aria-label="Favorito salvo; detalhes do produto indisponíveis"
     >
       <div>
         <Package className="mb-3 h-6 w-6 text-muted-foreground" aria-hidden="true" />
-        <h3 className="font-semibold text-foreground">Produto salvo</h3>
+        <h3 className="font-semibold text-foreground">{UNAVAILABLE_FAVORITE_NAME}</h3>
         <p className="mt-1 text-sm text-muted-foreground">
           Não foi possível carregar os detalhes agora.
         </p>
@@ -383,7 +385,10 @@ export default function FavoritesPage() {
     if (isRemoteListView) {
       ids.forEach((pid) => {
         const meta = noteMap.get(pid);
-        if (meta) removeItem.mutate(meta.itemId);
+        if (meta) {
+          const productName = productsWithVariant.find((product) => product.id === pid)?.name ?? UNAVAILABLE_FAVORITE_NAME;
+          removeItem.mutate({ id: meta.itemId, productName });
+        }
       });
     } else {
       ids.forEach((id) => toggleFavorite(id));
@@ -396,7 +401,7 @@ export default function FavoritesPage() {
   const handleRemoveFavorite = (productId: string, productName: string) => {
     if (isRemoteListView) {
       const meta = noteMap.get(productId);
-      if (meta) removeItem.mutate(meta.itemId);
+      if (meta) removeItem.mutate({ id: meta.itemId, productName });
     } else {
       toggleFavorite(productId);
       toast.success(`"${productName}" removido dos favoritos`);
@@ -408,7 +413,7 @@ export default function FavoritesPage() {
     const product = (isRemoteListView ? productsWithVariant : legacyFavoriteProducts).find((p) => p.id === productId);
     if (isRemoteListView) {
       const meta = noteMap.get(productId);
-      if (meta) removeItem.mutate(meta.itemId);
+      if (meta) removeItem.mutate({ id: meta.itemId, productName: product?.name ?? UNAVAILABLE_FAVORITE_NAME });
     } else {
       toggleFavorite(productId);
       if (product) toast.success(`"${product.name}" removido dos favoritos`);
@@ -619,7 +624,7 @@ export default function FavoritesPage() {
         key={`unavailable-${productId}`}
         productId={productId}
         onRetry={() => getProductsByIds([productId])}
-        onRemove={() => handleRemoveFavorite(productId, 'Produto indisponível')}
+        onRemove={() => handleRemoveFavorite(productId, UNAVAILABLE_FAVORITE_NAME)}
       />
     ));
     if (viewMode === 'table') return <>
