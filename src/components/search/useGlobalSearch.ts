@@ -22,7 +22,11 @@ import { useVoiceSearchAction } from '@/hooks/search/useVoiceSearchAction';
 import Fuse from 'fuse.js';
 import { createProductFuseOptions, rankProductSearchResults } from '@/utils/product-search';
 import type { PromobrindProduct } from '@/lib/external-db';
+import type { Product } from '@/types/product-catalog';
+import { useProductsContextSafe } from '@/contexts/ProductsContextDef';
 import type { CrmCompany } from '@/types/crm';
+
+const SEMANTIC_SEARCH_TIMEOUT_MS = 8_000;
 
 export type SearchResultType =
   | 'product'
@@ -94,13 +98,112 @@ async function searchByIntent(intent: SearchIntent, searchQuery: string) {
 }
 
 async function requestSemanticSearch(searchQuery: string, signal: AbortSignal) {
-  const { data } = await supabase.functions.invoke('semantic-search', {
+  const { data, error } = await supabase.functions.invoke('semantic-search', {
     body: { query: searchQuery },
     signal,
   });
+  if (error) throw error;
   if (signal.aborted) return null;
   const intent = resolveSearchIntent(data, searchQuery);
   return { intent, results: await searchByIntent(intent, searchQuery) };
+}
+
+function searchLoadedProducts(products: Product[], searchQuery: string): SearchResult[] {
+  const query = searchQuery.trim();
+  if (query.length < 2 || products.length === 0) return [];
+
+  const fuse = new Fuse(products, createProductFuseOptions<Product>());
+  return rankProductSearchResults(products, query, fuse).slice(0, 8).map((product) => ({
+    id: product.id,
+    title: product.name,
+    subtitle: `SKU: ${product.sku} • ${product.category_name || 'Catálogo'}`,
+    type: 'product',
+    href: `/produto/${product.id}`,
+  }));
+}
+
+function createLocalFallback(searchQuery: string, products: Product[]) {
+  return {
+    intent: createDefaultIntent(searchQuery),
+    results: searchLoadedProducts(products, searchQuery),
+  };
+}
+
+async function resolveSearchWithFallback(
+  searchQuery: string,
+  signal: AbortSignal,
+  loadedProducts: Product[],
+) {
+  try {
+    const response = await requestSemanticSearch(searchQuery, signal);
+    if (signal.aborted || !response) return createLocalFallback(searchQuery, loadedProducts);
+
+    const hasProductResults = response.results.some((result) => result.type === 'product');
+    if (hasProductResults) return response;
+
+    const localFallback = searchLoadedProducts(loadedProducts, searchQuery);
+    const results = [...response.results, ...localFallback.filter(
+      (fallback) => !response.results.some((result) => result.id === fallback.id),
+    )];
+    return { intent: response.intent, results };
+  } catch (error: unknown) {
+    console.error('Search error:', error);
+    return createLocalFallback(searchQuery, loadedProducts);
+  }
+}
+
+function groupSearchResults(results: SearchResult[]) {
+  const groups: Record<string, SearchResult[]> = {};
+  results.forEach((result) => (groups[result.type] ||= []).push(result));
+  return groups;
+}
+
+interface SemanticSearchState {
+  setResults: Dispatch<SetStateAction<SearchResult[]>>;
+  setIsSearching: Dispatch<SetStateAction<boolean>>;
+  setIsAIProcessing: Dispatch<SetStateAction<boolean>>;
+  setSearchIntent: Dispatch<SetStateAction<SearchIntent | null>>;
+}
+
+async function executeSemanticSearch({
+  searchQuery,
+  loadedProducts,
+  controller,
+  isCurrent,
+  state,
+}: {
+  searchQuery: string;
+  loadedProducts: Product[];
+  controller: AbortController;
+  isCurrent: () => boolean;
+  state: SemanticSearchState;
+}) {
+  state.setIsSearching(true);
+  state.setIsAIProcessing(true);
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutFallback = new Promise<ReturnType<typeof createLocalFallback>>((resolve) => {
+    timeoutId = setTimeout(() => {
+      controller.abort();
+      resolve(createLocalFallback(searchQuery, loadedProducts));
+    }, SEMANTIC_SEARCH_TIMEOUT_MS);
+  });
+
+  try {
+    const response = await Promise.race([
+      resolveSearchWithFallback(searchQuery, controller.signal, loadedProducts),
+      timeoutFallback,
+    ]);
+    if (!isCurrent()) return;
+    state.setSearchIntent(response.intent);
+    state.setResults(response.results);
+    searchCache.set(searchQuery, response.results);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+    if (isCurrent()) {
+      state.setIsSearching(false);
+      state.setIsAIProcessing(false);
+    }
+  }
 }
 
 type QuickSuggestion = { label: string };
@@ -142,22 +245,26 @@ function useTypingSuggestions(
   return suggestions;
 }
 
-function useSemanticSearch(query: string) {
+function useSemanticSearch(query: string, loadedProducts: Product[]) {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isAIProcessing, setIsAIProcessing] = useState(false);
   const [searchIntent, setSearchIntent] = useState<SearchIntent | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const debouncedQuery = useDebounce(query, 500);
-  const performSearch = useCallback(async (searchQuery: string) => {
-    if (!searchQuery.trim() || searchQuery.length < 3) {
+  useEffect(() => {
+    const searchQuery = debouncedQuery.trim();
+    if (searchQuery.length < 3) {
       setResults([]);
       setSearchIntent(null);
+      setIsSearching(false);
+      setIsAIProcessing(false);
       return;
     }
     const cached = searchCache.get(searchQuery);
     if (cached) {
       setResults(cached);
+      setSearchIntent(createDefaultIntent(searchQuery));
       setIsSearching(false);
       setIsAIProcessing(false);
       return;
@@ -165,31 +272,19 @@ function useSemanticSearch(query: string) {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
-    setIsSearching(true);
-    setIsAIProcessing(true);
-    try {
-      const response = await requestSemanticSearch(searchQuery, controller.signal);
-      if (!response) return;
-      setIsAIProcessing(false);
-      setSearchIntent(response.intent);
-      setResults(response.results);
-      searchCache.set(searchQuery, response.results);
-    } catch (error: unknown) {
-      if (!(error instanceof Error && error.name === 'AbortError')) {
-        console.error('Search error:', error);
-      }
-    } finally {
-      setIsSearching(false);
-    }
-  }, []);
-  useEffect(() => {
-    if (debouncedQuery) performSearch(debouncedQuery);
-  }, [debouncedQuery, performSearch]);
-  const groupedResults = useMemo(() => {
-    const groups: Record<string, SearchResult[]> = {};
-    results.forEach((result) => (groups[result.type] ||= []).push(result));
-    return groups;
-  }, [results]);
+    void executeSemanticSearch({
+      searchQuery,
+      loadedProducts,
+      controller,
+      isCurrent: () => abortRef.current === controller,
+      state: { setResults, setIsSearching, setIsAIProcessing, setSearchIntent },
+    });
+    return () => {
+      controller.abort();
+      if (abortRef.current === controller) abortRef.current = null;
+    };
+  }, [debouncedQuery, loadedProducts]);
+  const groupedResults = useMemo(() => groupSearchResults(results), [results]);
   return { results, setResults, groupedResults, isSearching, isAIProcessing, searchIntent };
 }
 
@@ -245,7 +340,8 @@ export function useGlobalSearch() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [voiceOverlayOpen, setVoiceOverlayOpen] = useState(false);
-  const search = useSemanticSearch(query);
+  const productsContext = useProductsContextSafe();
+  const search = useSemanticSearch(query, productsContext?.products ?? []);
   const { history, quickSuggestions, addToHistory, removeFromHistory } = useSearch();
   const { suggestions: contextualSuggestions, routeContext } = useContextualSuggestions({
     searchQuery: query,
