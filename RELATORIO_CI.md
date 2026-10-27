@@ -49,6 +49,8 @@
 
 **Pós-commit `4787896b0` (undici):** `npm ci --ignore-scripts --no-audit --no-fund`, `npm run build`, `npm run lint`, `npm run typecheck` e `npm test` passaram. Comparação com baseline: Vitest 5.839 aprovados / 68 ignorados nos dois; ESLint 0 erros / 873 avisos nos dois; nenhum erro TypeScript; build sem falha.
 
+**Pós-commit `c5625b91a` (allowlist de migration):** build, lint, typecheck e suíte completa passaram; Vitest permaneceu em 5.839 aprovados / 68 ignorados e ESLint em 0 erros / 873 avisos. O cenário de migração passou 5/5 e a verificação de allowlist terminou `mutation: false`. O banco continua sem alterações nesta sessão.
+
 ### Workflows que já estavam verdes
 
 Branch Protection Sentinel, Qualidade contínua, CodeQL, Monthly DB Audit, Publicar funções Sicoob, Dependabot Updates e Portal Sicoob. Comparação final e confirmação de que continuam verdes serão acrescentadas após as alterações e execução remota.
