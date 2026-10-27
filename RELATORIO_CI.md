@@ -36,9 +36,9 @@
 | `npm run typecheck` | ✅ exit 0 | App e config Node tipados sem erros. |
 | `npm test` | ✅ exit 0 | 452 arquivos passaram, 4 ignorados; 5.839 testes passaram, 68 ignorados. |
 
-### Estado corrigido na branch isolada (antes dos checks remotos)
+### Estado corrigido na branch isolada (checks locais pós-commit)
 
-Branch `fix/hermes-h097437-ci-workflows`, sem alteração na árvore local original. Correções commitadas até aqui: override do Undici vulnerável, autorização hash-pinned da migration `20261022230000` e dispatch manual seguro de Bundle/Lighthouse. A migração de Zod 4.6.7 está em validação como causa-raiz independente.
+Branch `fix/hermes-h097437-ci-workflows`, sem alteração na árvore local original, com commits até `cd7792375`. Correções: override do Undici vulnerável, autorização hash-pinned da migration `20261022230000`, dispatch manual seguro de Bundle/Lighthouse e migração de Zod 4.6.7 para eliminar o alerta High.
 
 | Verificação da branch | Resultado observado |
 |---|---|
@@ -47,7 +47,10 @@ Branch `fix/hermes-h097437-ci-workflows`, sem alteração na árvore local origi
 | `npm run build` | ✅ Exit 0; avisos ambientais/chunks existentes e avisos de comentários PURE do pacote Zod, sem falha. |
 | `npm run lint` | ✅ Exit 0; 0 erros e 873 avisos (baseline igual). |
 | `npm run typecheck` | ✅ Exit 0 após ajustar `required_error` para `error` e `ZodError.errors` para `issues`. |
-| `npm test` | ✅ 452 arquivos passaram, 4 ignorados; 5.839 testes passaram, 68 ignorados após atualizar a dependência. Repetição final após commit ainda pendente. |
+| `npm test` | ✅ Pós-commit: 452 arquivos passaram, 4 ignorados; 5.839 testes passaram, 68 ignorados. |
+| `node scripts/qa/check-bundle-budget.mjs` | ✅ 664 chunks; 10.747.382 bytes brutos; 3.261.329 bytes gzip; dois avisos de chunks abaixo do limite fatal. |
+| `node scripts/db/apply-sicoob-migrations.mjs --verify-files` | ✅ Targets e SHA-256 conferidos; `mutation: false`; nenhuma escrita no banco. |
+| `actionlint .github/workflows/bundle-check.yml .github/workflows/lighthouse.yml` | ✅ Exit 0. |
 
 ### Causas agrupadas e próxima ação
 
@@ -65,6 +68,8 @@ Branch `fix/hermes-h097437-ci-workflows`, sem alteração na árvore local origi
 **Pós-commit `c5625b91a` (allowlist de migration):** build, lint, typecheck e suíte completa passaram; Vitest permaneceu em 5.839 aprovados / 68 ignorados e ESLint em 0 erros / 873 avisos. O cenário de migração passou 5/5 e a verificação de allowlist terminou `mutation: false`. O banco continua sem alterações nesta sessão.
 
 **Pós-commit `0d81144d4` (dispatch manual dos gates de performance):** build, lint, typecheck e suíte completa passaram novamente; `actionlint` também passou nos dois workflows editados.
+
+**Pós-commit `cd7792375` (Zod 4.6.7):** build, lint, typecheck e suíte completa passaram novamente; `npm audit` encontrou zero vulnerabilidades. Bundle budget passou e a validação das migrations confirmou `mutation: false`. CI remoto ainda pendente.
 
 ### Workflows que já estavam verdes
 

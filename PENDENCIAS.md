@@ -46,7 +46,7 @@ Base consultada: `main` em `2df1b01ad87b8836d70149f1357dc38c33aeb24f`. Esta seç
 
 ### Estado de validação da branch desta auditoria
 
-Branch `fix/hermes-h097437-ci-workflows`, baseada em `main` `2df1b01ad87b8836d70149f1357dc38c33aeb24f`. As correções de Undici, ledger e dispatch manual dos checks de bundle/Lighthouse foram commitadas. A migração de Zod 4 está em validação local; atualizarei este relatório com os resultados finais e com os checks remotos do PR. O banco não foi alterado nesta auditoria.
+Branch `fix/hermes-h097437-ci-workflows`, baseada em `main` `2df1b01ad87b8836d70149f1357dc38c33aeb24f`; commits até `cd7792375`. Gates locais pós-commit passaram: build, lint (0 erros/873 avisos), typecheck, suíte completa (5.839 aprovados/68 ignorados), bundle budget, `npm audit` (0 vulnerabilidades) e validação dos hashes de migration (`mutation: false`). `actionlint` também passou nos workflows de performance editados. Faltam os checks hospedados do PR e a confirmação de comportamento/deploy. O banco não foi alterado nesta auditoria.
 
 ### Workflow: Migration ledger drift
 
