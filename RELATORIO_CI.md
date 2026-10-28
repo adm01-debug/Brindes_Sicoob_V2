@@ -2,6 +2,26 @@
 
 ---
 
+## Atualização pós-commits do PR #148 — 2026-10-28
+
+**Branch:** `fix/hermes-docs-all-20261028` · **SHA:** `12b9c14ef59e4506b599a39afe250b147c082c13` · **PR:** [#148](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/148).
+
+### Correções e prova local
+
+- `c84487d36`: setup de autenticação e `loginAs('user')` agora selecionam o mesmo par de credenciais; adicionados dois testes de precedência/fallback.
+- `12b9c14ef`: a tentativa anônima de INSERT em RLS usa o retry transient já adotado nos demais casos e timeout de 45 s; a asserção de bloqueio foi mantida.
+- Baseline antes das mudanças: 5.839 testes aprovados / 68 ignorados. Após os commits: **5.841 aprovados / 68 ignorados**, 453 arquivos passaram e 4 foram ignorados.
+- `npm ci --no-audit --no-fund`, `npm run build`, `npm run lint` e `npm run typecheck`: ✅. Lint: 0 erros e 873 avisos existentes. Os hooks de push repetiram typecheck/lint baseline e a suíte completa após cada commit.
+- Teste remoto no GitHub após o segundo commit: 56/56 cenários de autorização/RLS passaram, incluindo o INSERT anônimo.
+
+### Estado remoto e bloqueios
+
+- No SHA `12b9c14ef`, `npm audit`, CodeQL, Gitleaks, `sicoob-gate`, verba/aprovação, responsividade, Lighthouse e bundle-stats passaram.
+- E2E [run 40782475340](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40782475340) falhou no login de setup com `E2E_VIEWER_*`: a página permaneceu em `/login`; o smoke e os shards não executaram. As 56 verificações remotas anteriores nesse mesmo job passaram. Os valores dos secrets não são expostos; manter o PR aberto até o mantenedor validar a conta viewer e atualizar os secrets no GitHub.
+- Segurança/contratos/build [run 40782475530](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40782475530) falhou ao iniciar PostgreSQL descartável: `toomanyrequests: Data limit exceeded` no pull de `public.ecr.aws/supabase/postgres:17.6.1.063`, após três tentativas.
+- Copilot review [run 40782488592](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40782488592) falhou com HTTP 402 / `quota`; depende da cota/plano do mantenedor.
+- Nenhum merge foi feito. `main` permanece em `e9d5902`; banco canônico permaneceu somente leitura, com 137 migrations até `20261022230000`.
+
 ## Atualização de auditoria — 2026-10-28
 
 **Base reproduzida:** `main` remota `e9d59026793b84fabeaeec9da890a068f64d49c3`.

@@ -7,6 +7,19 @@ O erro exato foi extraído do run mais recente disponível em main.
 
 ---
 
+## Atualização após os commits do PR #148 — 2026-10-28
+
+**SHA da branch:** `12b9c14ef59e4506b599a39afe250b147c082c13`; **main:** `e9d59026793b84fabeaeec9da890a068f64d49c3`.
+
+- [E2E, run 40782475340](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40782475340): as 56 verificações remotas de autorização/RLS passaram. O setup autenticado falhou porque a conta selecionada por `E2E_VIEWER_EMAIL/PASSWORD` permaneceu em `/login` após 20 s. Os nomes dos secrets existem, mas seus valores não são legíveis pela API; não foi possível distinguir senha inválida, conta inativa ou bloqueio de autenticação. **Ação necessária:** validar uma conta viewer ativa no Auth do Supabase e atualizar os dois secrets correspondentes no GitHub, sem compartilhar os valores. Os shards de regressão foram pulados porque o smoke/setup não concluiu.
+- [Segurança, contratos e build, run 40782475530](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40782475530): falha externa ao código ao iniciar o PostgreSQL descartável: `docker: Error response from daemon: toomanyrequests: Data limit exceeded` ao buscar `public.ecr.aws/supabase/postgres:17.6.1.063`, mesmo após três tentativas. Reexecutar quando a cota do ECR permitir ou usar uma imagem espelhada aprovada; não contornar o teste.
+- [Copilot review, run 40782488592](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40782488592): HTTP 402, código `quota` — limite de uso adicional do Copilot atingido. **Ação necessária:** o mantenedor deve restaurar a cota/plano do Copilot para permitir nova revisão.
+- Passaram neste SHA: `npm audit`, CodeQL, Gitleaks, `sicoob-gate`, verba/aprovação, responsividade, Lighthouse e bundle-stats. O PR permanece aberto; não mesclar com os bloqueios acima.
+
+As correções de seleção de sessão e resiliência de RLS estão no PR #148, commits `c84487d36` e `12b9c14ef`. O banco canônico não foi alterado.
+
+---
+
 ## Atualização 2026-10-28 — auditoria de sincronização e CI
 
 **SHA remoto auditado:** `e9d59026793b84fabeaeec9da890a068f64d49c3` (`main`).
