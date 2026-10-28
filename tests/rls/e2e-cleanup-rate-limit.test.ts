@@ -109,11 +109,11 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
 
   it('UPDATE como anon falha (policy deny_all USING false)', async (ctx) => {
     if (quotaExhausted) { ctx.skip(); return; }
-    const { data } = await anon
+    const { data } = await retryTransientPostgrest(async () => await anon
       .from('e2e_cleanup_rate_limit')
       .update({ count: 999 })
       .eq('key', canaryKey)
-      .select('key,count');
+      .select('key,count'));
     expect(data ?? []).toHaveLength(0);
 
     const { data: canary, error: verifyError } = await retryTransientPostgrest(async () => await admin
@@ -123,15 +123,15 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
       .single());
     expect(verifyError).toBeNull();
     expect(canary?.count).toBe(1);
-  }, 15_000);
+  }, 45_000);
 
   it('DELETE como anon falha (policy deny_all USING false)', async (ctx) => {
     if (quotaExhausted) { ctx.skip(); return; }
-    const { data } = await anon
+    const { data } = await retryTransientPostgrest(async () => await anon
       .from('e2e_cleanup_rate_limit')
       .delete()
       .eq('key', canaryKey)
-      .select('key');
+      .select('key'));
     expect(data ?? []).toHaveLength(0);
 
     const { count, error: verifyError } = await retryTransientPostgrest(async () => await admin
@@ -140,5 +140,5 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
       .eq('key', canaryKey));
     expect(verifyError).toBeNull();
     expect(count).toBe(1);
-  }, 15_000);
+  }, 45_000);
 });
