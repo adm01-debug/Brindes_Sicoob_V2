@@ -100,11 +100,12 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
 
   it('INSERT como anon falha (policy deny_all WITH CHECK false)', async (ctx) => {
     if (quotaExhausted) { ctx.skip(); return; }
-    const { error } = await anon
+    const probeKey = `test-${Date.now()}`;
+    const { error } = await retryTransientPostgrest(async () => await anon
       .from('e2e_cleanup_rate_limit')
-      .insert({ key: `test-${Date.now()}`, count: 1 });
+      .insert({ key: probeKey, count: 1 }));
     expect(error).toBeTruthy();
-  }, 15_000);
+  }, 45_000);
 
   it('UPDATE como anon falha (policy deny_all USING false)', async (ctx) => {
     if (quotaExhausted) { ctx.skip(); return; }
