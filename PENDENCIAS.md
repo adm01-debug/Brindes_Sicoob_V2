@@ -2,8 +2,14 @@
 
 Atualizado em: 2026-10-28
 
-Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
-O erro exato foi extraído do run mais recente disponível em main.
+Cada seção abaixo registra o bloqueio ou a causa-raiz do workflow; falhas externas são identificadas como tais.
+Os erros exatos são extraídos da execução mais recente disponível na main.
+
+## Atualização da auditoria — 2026-10-28 23:20 UTC
+
+- **Publicar funções Sicoob**, run [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102), main `e9d59026793b84fabeaeec9da890a068f64d49c3`: os sete comandos `supabase functions deploy` terminaram com sucesso. A verificação posterior falhou porque `sicoob-approval-reconciliation` continuou na versão 5, igual à anterior. A causa é uma condição excessivamente estrita no verificador: exige incremento mesmo quando o deploy bem-sucedido não publica uma nova versão. A branch deste PR passa a validar que cada função existe, tem versão numérica positiva e não regrediu; nenhum novo deploy foi disparado nesta correção. Validar o ajuste por CI antes de novo dispatch.
+- **PR #148**, SHA `15718d30f39fff6e08d468ea85465e9741db759c`: os checks de npm audit, CodeQL, Gitleaks, build/qualidade, sicoob-gate, orçamento/aprovação, responsividade, Lighthouse e bundle passaram. O E2E completou autorização/RLS e smoke; o gate header-sticky ainda estava em execução às 23:19 UTC. Copilot review falhou com HTTP 402 / `quota`, bloqueado pelo limite de uso do plano. O PR segue sem merge.
+- **Banco canônico** `cfmzkthhgliqelozlmwu`: consulta somente leitura encontrou 137 linhas no ledger, até `20261022230000`. A última execução do comparador na main, [40670784182](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40670784182), passou sem divergências novas e registrou uma resolução histórica. Isso não significa paridade histórica absoluta: a baseline versionada mantém divergências antigas classificadas; não se deve reaplicar migrations antigas em lote. O PR #148 não contém migrations e nenhuma escrita foi feita no banco.
 
 ---
 

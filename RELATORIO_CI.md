@@ -1,5 +1,11 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
+## Atualização da auditoria — 2026-10-28 23:20 UTC
+
+- Run mais recente da main `Publicar funções Sicoob`: [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102), SHA `e9d59026793b84fabeaeec9da890a068f64d49c3`, falhou apenas na confirmação pós-deploy. Os sete comandos de publicação terminaram sem erro; `sicoob-approval-reconciliation` permaneceu na versão 5 (anterior 5), e o script tratava igualdade como falha. Correção no PR #148: aceitar versão igual quando positiva, rejeitar função ausente, versão inválida ou regressão. A correção ainda depende de CI; não foi feito novo dispatch/deploy.
+- Estado do PR #148 no SHA `15718d30f39fff6e08d468ea85465e9741db759c`: npm audit, CodeQL, Gitleaks, qualidade/build, gates Sicoob, responsividade, Lighthouse e bundle passaram; E2E ainda executava o gate header-sticky às 23:19 UTC. O review do Copilot falhou por HTTP 402/quota. Sem merge.
+- Banco canônico consultado em modo somente leitura: 137 linhas no ledger até `20261022230000`. A execução remota de `Migration ledger drift` na main passou sem novas divergências e identificou uma resolução histórica, conforme baseline. A baseline ainda representa passivo histórico conhecido; isso não equivale a igualdade integral entre arquivos e ledger. Nenhuma migration ou escrita foi executada.
+
 ---
 
 ## Atualização pós-commits do PR #148 — 2026-10-28
