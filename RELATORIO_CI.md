@@ -5,6 +5,17 @@
 
 ---
 
+## Reconciliação do deploy Sicoob — 2026-10-28
+
+- A lista do Supabase CLI retornou 100 funções ativas; o repositório contém 106 diretórios de função, dos quais seis não estão publicados. Nenhuma função publicada está sem diretório local.
+- A comparação de fonte remota baixada com `origin/main` encontrou 80 funções idênticas e 20 com diferença de fonte. Seis diretórios locais não publicados foram identificados; os utilitários e endpoints previstos como inativos não foram enviados.
+- O workflow controlado de publicação falhou inicialmente no runner por uma dependência transitiva não permitida. Após liberar o SHA exato e imutável de `oven-sh/setup-bun`, o deploy avançou: `expert-chat` 12→13, `external-db-bridge` 11→12, `sicoob-kit-quote` 5→6 e `sicoob-reorder` 5→6.
+- A confirmação do workflow falhou porque esperava incremento de versão para todas as sete funções. O CLI mantém a versão quando o código empacotado já é idêntico; três funções Sicoob sem mudanças permaneceram ativas em v5. A condição foi ajustada em uma branch isolada para aceitar no-op ativo e bloquear ausência, inatividade ou regressão.
+- Nenhuma migration, DDL ou alteração de dados foi necessária. A presença e os nomes das 27 migrations explicitamente autorizadas foram confirmados no ledger; o ledger total tem 137 entradas até `20261022230000`.
+- Validação local da alteração: `actionlint` passou; simulações aceitam bundle igual ativo e versão nova, e rejeitam versão regressiva, função ausente e função inativa.
+
+---
+
 ## Baseline local — antes das alterações do PR #141
 
 **Executado em:** 2026-10-22 · **Commit base da main:** `82262c4b`

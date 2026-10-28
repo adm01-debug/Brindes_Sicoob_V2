@@ -1,11 +1,19 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
-Atualizado em: 2026-10-22
+Atualizado em: 2026-10-28
 
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
 O erro exato foi extraído do run mais recente disponível em main.
 
 ---
+
+## Publicação das funções Sicoob — reconciliação em andamento
+
+- Workflow [run 40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102), branch `main`, SHA `e9d59026793b84fabeaeec9da890a068f64d49c3`.
+- A primeira tentativa foi bloqueada antes do deploy porque a política de Actions não permitia a dependência transitiva `oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6` usada pela versão fixada de `supabase/setup-cli`. A lista selecionada agora permite somente esse SHA imutável, mantendo os demais padrões restritos.
+- Na segunda tentativa, a etapa de publicação terminou; a validação final falhou porque exigia incremento de versão até para funções cujo bundle não mudou. Evidência somente leitura após a tentativa: `expert-chat` 12→13, `external-db-bridge` 11→12, `sicoob-kit-quote` 5→6 e `sicoob-reorder` 5→6. `sicoob-approval-reconciliation`, `sicoob-artwork-register` e `sicoob-document-ingest` permanecem ativas na versão 5, sem atualização de bundle.
+- Correção em revisão: aceitar versão igual somente quando a função continua `ACTIVE` e a versão não regrediu; versões ausentes, inativas ou menores continuam falhando. O deploy será repetido após a correção chegar à `main`.
+- Nenhuma migration, DDL ou escrita de dados foi executada.
 
 ~~## Workflow: `npm_and_yarn` — Dependabot `@vitest/mocker` Update~~
 
