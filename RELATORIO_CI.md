@@ -1,5 +1,80 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
+## Baseline local antes das correções — 2026-10-28
+
+**Base:** `main` em `e9d59026793b84fabeaeec9da890a068f64d49c3`. Worktree isolado
+`fix/ci-workflows`; a árvore principal do usuário permaneceu intacta.
+
+| Verificação | Resultado baseline | Evidência |
+|---|---|---|
+| `npm ci` | ✅ exit 0; 980 pacotes instalados | npm reportou 2 vulnerabilidades altas e avisos de dependências deprecadas/scripts pendentes. |
+| `npm run build` | ✅ exit 0 | 6.214 módulos transformados. Avisos de variáveis Vite ausentes, PostCSS e chunks acima de 600 kB. |
+| `npm run lint` | ✅ exit 0 | 0 erros; 873 avisos preexistentes. |
+| `npm run typecheck` | ✅ exit 0 | `tsconfig.app.json` e `tsconfig.node.json`. |
+| `npm test` | ✅ exit 0 | 452 arquivos passaram, 4 ignorados; 5.839 testes passaram, 68 ignorados. |
+
+Estes números são o limite mínimo para comparar o estado final. Nenhuma alteração
+de código foi feita antes desta captura; até aqui só foram consultados GitHub e
+logs e executada a instalação/validação baseline no worktree.
+
+## Auditoria de workflows e validação das correções — 2026-10-28
+
+### Inventário de runs na `main`
+
+| Workflow | Run mais recente considerado | Resultado | Causa observada / situação |
+|---|---|---|---|
+| Qualidade contínua (CI) | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | `failure` | Gate de dependências: `undici` e `zod` com vulnerabilidades altas. |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `failure` | `npm audit`: vulnerabilidades altas em `undici` e `zod`. |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `failure` | Componentes da Action em versões diferentes: config carregada por v4.39.1, execução em v4.38.2. |
+| Running Copilot Code Review | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | `failure` (`main`, evento `dynamic`) | `SessionModelError`, HTTP 402 / `errorType: quota`: limite adicional do plano Copilot atingido. Ação do owner: ajustar plano/limite ou aguardar reset do ciclo. |
+| E2E | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | `startup_failure` | Nenhum job iniciado; API não disponibiliza logs (HTTP 404), então a causa exata não é verificável. Não reexecutado por risco documentado de escrita no Supabase canônico. |
+| Bundle Size Check | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) | `failure` | Logs expirados (HTTP 404); causa do step não verificável. |
+| Lighthouse | [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910) | `failure` | Logs expirados (HTTP 404); causa do step não verificável. |
+
+Runs verdes observados durante o inventário: Enterprise Compliance [40602982958],
+Migration ledger drift [40670784182], Branch Protection Sentinel [40602983038],
+Portal Sicoob [39868499315], deploy Edge Functions [37489393764] e Monthly DB
+Audit [36794161452].
+
+### Correções locais e comparação por commit
+
+Commit `6bb00f182` — atualização de `zod` para `4.6.7` (major necessário para
+resolver o advisory reportado pelo registry), override de `undici` para `8.12.3`
+e três compatibilizações de API Zod 4 em dois arquivos. `npm audit
+--audit-level=high` retornou `found 0 vulnerabilities`.
+
+| Verificação | Baseline | Após `6bb00f182` | Após `53cc966e6` |
+|---|---:|---:|---:|
+| `npm run build` | exit 0; 6.214 módulos | exit 0; build concluído | exit 0; build concluído |
+| `npm run lint` | 0 erros / 873 avisos | 0 erros / 873 avisos | 0 erros / 873 avisos |
+| `npm run typecheck` | exit 0 | exit 0 | exit 0 |
+| `npm test` | 5.839 passaram / 68 skipped; 452 arquivos passaram / 4 skipped | 5.839 passaram / 68 skipped; 452 arquivos passaram / 4 skipped | 5.839 passaram / 68 skipped; 452 arquivos passaram / 4 skipped |
+| `npm audit --audit-level=high` | 2 vulnerabilidades altas | 0 vulnerabilidades | 0 vulnerabilidades |
+
+Commit `53cc966e6` alinha `init`, `autobuild` e `analyze` do CodeQL ao mesmo SHA
+oficial v4.39.1. `actionlint .github/workflows/codeql.yml` e `git diff --check`
+passaram. Esta correção ainda não tem validação no runner GitHub.
+
+### Risco que impede abrir PR neste momento
+
+O workflow `.github/workflows/e2e.yml` é acionado em `pull_request`, injeta
+`SUPABASE_SERVICE_ROLE_KEY` e executa `tests/rls/e2e-cleanup-rate-limit.test.ts`.
+O teste insere uma linha de canário em `e2e_cleanup_rate_limit`, tenta
+`UPDATE`/`DELETE` e remove o canário no `afterAll`. Abrir PR executaria essas
+escritas contra o Supabase atualmente configurado. Como esta tarefa determina
+que nada seja alterado no banco canônico, o branch permanece local e nenhum PR
+foi aberto. Ação necessária: fornecer secrets de staging descartável e permitir
+configurar o E2E para esse ambiente antes da publicação.
+
+O run de CI do PR #145 [40589404961] também revelou limite externo do ECR:
+`toomanyrequests: Data limit exceeded` ao puxar
+`public.ecr.aws/supabase/postgres:17.6.1.063` após três tentativas. O workaround
+seguro depende de pull-through cache ou autenticação ECR; não se substituiu a
+imagem oficial nem se enfraqueceram testes.
+
+O estado completo das pendências e as causas não comprováveis por logs expirados
+estão em `PENDENCIAS.md`.
+
 **Gerado em:** 2026-10-22  
 **Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
 

@@ -1,9 +1,47 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
-Atualizado em: 2026-10-22
+Atualizado em: 2026-10-28
 
-Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
-O erro exato foi extraído do run mais recente disponível em main.
+## Estado atual verificado na `main` — 2026-10-28
+
+Este inventário substitui afirmações históricas abaixo quando elas divergirem
+do estado observado nos runs listados. “Último run” considera apenas execuções
+com `head_branch=main`; eventos dinâmicos cujo branch seja `main` também entram.
+
+| Workflow | Último run na `main` | Estado / causa ou pendência |
+|---|---|---|
+| Qualidade contínua (CI) | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | `failure`: gate de segurança encontrou duas vulnerabilidades altas, `undici` e `zod`. Correção local preparada e validada; aguarda PR sem disparar E2E contra o banco canônico. |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `failure`: `npm audit` reportou `undici` e `zod` vulneráveis. Correção local preparada e audit local retorna 0 vulnerabilidades; validação GitHub aguarda ambiente E2E seguro. |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `failure`: `init` usa CodeQL Action v4.39.1, mas `autobuild`/`analyze` ainda apontavam para v4.38.2 (`Loaded a configuration file for version '4.39.1', but running version '4.38.2'`). Alinhamento local para o mesmo SHA v4.39.1 validado com `actionlint`; aguarda execução GitHub. |
+| Running Copilot Code Review | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | `failure` (branch `main`, evento `dynamic`): `SessionModelError`, `statusCode: 402`, `errorType: quota`, “You've reached your additional usage limit for your plan.” **Bloqueio externo:** owner precisa aguardar renovação do ciclo ou ajustar plano/limite do GitHub Copilot; não é corrigível no código. |
+| E2E | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | `startup_failure`, zero jobs; API sem logs (HTTP 404). Causa específica não comprovável. Não foi rerunado: o workflow injeta `SUPABASE_SERVICE_ROLE_KEY` e testes remotos inserem/alteram/apagam uma linha em `e2e_cleanup_rate_limit` no Supabase configurado. A instrução desta tarefa proíbe qualquer alteração no banco. **Bloqueio:** owner deve fornecer secrets de um projeto Supabase de staging descartável e autorizar a configuração do workflow para esse staging; então executar E2E. Não usar o projeto canônico enquanto vigorar a regra somente leitura. |
+| Bundle Size Check | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) | `failure`; logs expirados e API responde HTTP 404. Não há trecho que permita afirmar causa raiz. Precisa de nova execução reproduzível em PR/dispatch depois de resolver o bloqueio seguro do E2E. |
+| Lighthouse | [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910) | `failure`; logs expirados e API responde HTTP 404. Não há trecho que permita afirmar causa raiz. Precisa de nova execução reproduzível em PR/dispatch depois de resolver o bloqueio seguro do E2E. |
+| ECR usado pelas simulações de CI | [40589404961](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40589404961) (PR #145; não é o último run da `main`) | Em validação de PR: `toomanyrequests: Data limit exceeded` ao puxar `public.ecr.aws/supabase/postgres:17.6.1.063`, após 3 tentativas. Falha externa de quota/rate limit; não trocar a imagem Supabase nem reduzir os testes. Infra deve fornecer pull-through cache ou autenticação ECR. |
+
+### Runs verdes observados
+
+- Enterprise Compliance & Audit Reporting: [40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958) — `success`.
+- Migration ledger drift: [40670784182](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40670784182) — `success` (workflow_dispatch em `main`).
+- Branch Protection Sentinel: [40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038) — `success`.
+- Portal Sicoob: [39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315) — `success`.
+- deploy Edge Functions: [37489393764](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37489393764) — `success`.
+- Monthly DB Audit: [36794161452](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36794161452) — `success`.
+
+### Dependência para publicar as correções locais
+
+Os commits locais `6bb00f182` (atualização de Zod/Undici com adaptação de API) e
+`53cc966e6` (alinhamento CodeQL) passam as verificações locais descritas em
+`RELATORIO_CI.md`. Ainda não foram enviados nem abertos como PR porque a execução
+de `pull_request` dispara E2E com credenciais administrativas do Supabase e há
+escritas remotas comprovadas. Para preservar a regra “nunca altere o banco”, é
+necessário substituir os secrets do E2E por credenciais de staging não canônico
+antes de abrir PR. Também falta uma execução que reproduza Bundle Size Check e
+Lighthouse, pois os logs originais expiraram.
+
+As seções abaixo preservam o histórico das auditorias anteriores. Para o estado
+vigente, use a tabela atual acima; runs e causas antigas podem ter sido resolvidos
+ou substituídos por execuções mais recentes.
 
 ---
 
