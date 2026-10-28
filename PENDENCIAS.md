@@ -225,3 +225,41 @@ Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Depen
 | Migration Ledger Drift | Fingerprint de `20261022120000` calculado com `local_sha256` incorreto; novo digest correto: `e2815b0...` | Corrigido fingerprint no `migration-ledger-baseline.json` | #129 |
 | 5 CVEs high (vite ≤6.4.3) | GHSA-698v, GHSA-r825, GHSA-587h, GHSA-9jrq, GHSA-rq7h | `vite` 6.4.3 → 6.4.5 | #126 |
 | Qualidade contínua (`ci.yml`) — ECR rate limit | `toomanyrequests: Data limit exceeded` ao puxar `public.ecr.aws/supabase/postgres:17.6.1.063` em dois steps (scripts `simular-controles-auditoria.py` e `simular-acl-efetiva.py`) | Rate limit do ECR Public se dissipou naturalmente; run `39780447863` → **success** | automático |
+
+## Auditoria de paridade e bloqueios atuais (2026-10-28)
+
+### PR #149 — correção do verificador de deploy
+
+**PR:** https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/149
+**Commit auditado:** `1c7fb0baab75119af58b9368156026551aac7d56`
+**Estado:** aberto; não fazer merge enquanto os checks requeridos estiverem vermelhos.
+
+| Check | Evidência | Causa confirmada / próximo passo |
+|---|---|---|
+| CodeQL | [run 40773041263](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40773041263) | `codeql-action/init` resolveu para 4.39.1, enquanto `autobuild` executou 4.38.2. O autobuild falhou por incompatibilidade de versões e, como efeito secundário, não houve SARIF. Uniformizar as referências do workflow. |
+| npm audit | [run 40773041243](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40773041243) | Dois alertas altos na base `main`: `undici` e `zod`. A dependência direta da base é `zod ^3.22.4`; a correção indicada pelo advisory exige a versão 4.6.7. A atualização está em PR #148, ainda sem conclusão dos checks; não contornar nem enfraquecer o gate. |
+| Segurança, contratos e build | [run 40773041031](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40773041031) | O gate falhou pelos mesmos dois alertas altos de `undici` e `zod`. |
+| Revisão Copilot | [run 40773061761](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40773061761) | Falha externa por quota do serviço de revisão; aguardar restauração da quota e reexecutar. |
+| E2E | [run 40773041195](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40773041195) | Não foi concluído na auditoria; conferir a conclusão antes de considerar o PR pronto. |
+
+### PR #148 — atualização de dependências e CodeQL
+
+**PR:** https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/148
+Os checks de segurança, CodeQL, bundle, Lighthouse e Portal Sicoob passaram. O check de qualidade falhou ao baixar `public.ecr.aws/supabase/postgres:17.6.1.063` (`toomanyrequests: Data limit exceeded`); o E2E ainda estava em execução. Não integrar até que os checks requeridos estejam concluídos e verdes.
+
+### Publicação controlada das Edge Functions
+
+- Run [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) terminou em `failure` por uma validação pós-deploy que exigia aumento de versão para funções cujo bundle não mudou. Na segunda tentativa, o workflow publicou quatro bundles: `expert-chat` 12→13, `external-db-bridge` 11→12, `sicoob-kit-quote` 5→6 e `sicoob-reorder` 5→6.
+- Consulta posterior ao projeto canônico confirmou essas quatro funções em `ACTIVE`; `sicoob-approval-reconciliation`, `sicoob-artwork-register` e `sicoob-document-ingest` também estão `ACTIVE` em v5.
+- Download somente leitura das 100 funções remotas e comparação com `origin/main`: as quatro funções publicadas estão alinhadas no código executável. A única diferença de arquivos em `external-db-bridge` consiste em testes locais `.test.ts`, que não fazem parte do bundle implantado.
+- A correção do falso negativo foi enviada no PR #149. A nova publicação pelo workflow permanece pendente da correção ser integrada após checks verdes.
+
+### Supabase canônico
+
+- Projeto auditado: `cfmzkthhgliqelozlmwu`.
+- Consulta somente leitura ao ledger confirmou a versão mais recente `20261022230000` (`repair_migration_ledger_and_harden_search_path`). A conferência prévia do allowlist encontrou as 27 migrations versionadas auditadas no ledger, com nome correspondente; as três migrations P0 também constam aplicadas.
+- Esta alteração de CI não contém migration, DDL nem escrita de dados. Não foi feita alteração no schema ou nos dados do banco.
+
+### Arquivos locais fora do GitHub
+
+O checkout de trabalho `main` continua com alterações/untracked locais listados em `git status`, entre eles arquivos temporários do Supabase, alterações nas Edge Functions `health-check` e `bi-share-dossier` e documentação local. Eles não foram importados nesta auditoria: há mudanças de contrato/segredo ainda não validadas, além de arquivos temporários. O checkout estava em `6b71bdc` e `origin/main` em `e9d5902`; o checkout local também está atrás do GitHub. Preservar o estado local até revisão individual, sem sobrescrever nem misturar com o PR #149.

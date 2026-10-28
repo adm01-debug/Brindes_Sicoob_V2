@@ -176,3 +176,32 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 ---
 
 *Relatório gerado automaticamente pela sessão Claude Code.*
+
+---
+
+## Auditoria de paridade GitHub × Supabase — 2026-10-28
+
+### Repositório
+
+- Correção do verificador pós-deploy enviada em [PR #149](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/149), commit `1c7fb0baab75119af58b9368156026551aac7d56`.
+- O PR está aberto e não está pronto para merge. O CodeQL falhou por incompatibilidade entre `init` 4.39.1 e `autobuild` 4.38.2; `npm audit` e o gate de qualidade encontraram alertas altos em `undici` e `zod`; a revisão Copilot falhou por quota. O E2E estava pendente na última consulta. Detalhes e links estão em `PENDENCIAS.md`.
+- PR #148 já contém a atualização de dependências e do CodeQL. Security Scan, CodeQL, bundle, Lighthouse e Portal Sicoob passaram; Qualidade contínua falhou por limite de download do ECR e E2E não havia concluído. Não considerar as alterações integradas.
+- A `main` remota continua em `e9d59026793b84fabeaeec9da890a068f64d49c3`. O checkout de trabalho local está em `6b71bdc09a454d8f8160166d45c9a670aa8b66e5`, atrás da `main`, e contém alterações locais não importadas. Não foram sobrescritas.
+
+### Supabase canônico
+
+- O ledger remoto permanece com última versão `20261022230000`; as 27 migrations incluídas na auditoria do allowlist foram conferidas, inclusive as três P0. Não há migration nova neste PR.
+- A listagem remota contém 100 Edge Functions. A publicação controlada (run [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102)) atualizou quatro versões: `expert-chat` 12→13, `external-db-bridge` 11→12, `sicoob-kit-quote` 5→6 e `sicoob-reorder` 5→6. Todas estão ativas; as demais três funções Sicoob do workflow também estão ativas em v5.
+- Comparação somente leitura do código remoto com `origin/main`: os quatro bundles publicados estão alinhados. A diferença em `external-db-bridge` é somente em arquivos de testes `.test.ts`, não incluídos no bundle.
+- Resultado do workflow de publicação segue `failure` por falso negativo na checagem de versão inalterada. PR #149 corrige o gate, mas precisa de checks verdes antes de ser integrado e reexecutado.
+- Nenhuma escrita de dados, migration ou alteração de schema foi executada.
+
+### Resultado da paridade
+
+| Área | Estado | Evidência |
+|---|---|---|
+| Código da correção de CI no GitHub | Presente em PR aberto; ausente da `main` | PR #149 |
+| Migrations no Supabase | Alinhadas para o allowlist auditado | Ledger até `20261022230000`; 27 versões conferidas |
+| Bundles permitidos pelo workflow | Publicados e ativos | Versões remotas e comparação de fontes |
+| Workflow de publicação | Ainda vermelho | Run `40772348102`; gate corrigido aguarda PR #149 |
+| Alterações locais não commitadas | Não reconciliadas | Checkout local atrás da `main`; ver `PENDENCIAS.md` |
