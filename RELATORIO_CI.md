@@ -1,5 +1,64 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
+---
+
+## Atualização de auditoria — 2026-10-28
+
+**Base reproduzida:** `main` remota `e9d59026793b84fabeaeec9da890a068f64d49c3`.
+
+**Local:** worktree isolado, branch `fix/hermes-docs-all-20261028`.
+
+**Estado da cópia principal do usuário:** `6b71bdc`, 84 commits atrás; alterações rastreadas e não rastreadas preservadas sem sobrescrita.
+
+### Baseline local antes dos novos commits
+
+| Verificação | Resultado |
+|---|---|
+| `npm ci --no-audit --no-fund` | ✅ exit 0; 980 pacotes adicionados |
+| `npm run build` | ✅ exit 0; avisos existentes de variáveis de ambiente ausentes, PostCSS, chunk e import misto |
+| `npm run lint` | ✅ exit 0; 0 erros e 873 avisos `max-lines-per-function` |
+| `npm run typecheck` | ✅ exit 0 |
+| `npm test -- --reporter=dot` | ✅ 452 arquivos passaram, 4 ignorados; 5.839 testes passaram, 68 ignorados |
+| `node scripts/check-edge-authorization.mjs` | ✅ 106/106 funções declaradas |
+| `npm run check:npm-audit` | ❌ 2 vulnerabilidades altas: `undici` e `zod` |
+
+### Inventário remoto antes das correções
+
+| Workflow | Run na `main` | Conclusão | Causa |
+|---|---|---|---|
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | failure | `npm audit`: `undici` e `zod` em versões afetadas |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | failure | O mesmo gate `check:npm-audit` interrompe a etapa de dependências |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | failure | Versões diferentes do CodeQL Action entre `init` (4.39.1) e `autobuild`/`analyze` (4.38.2); SARIF ausente como consequência |
+| Migration ledger drift | [40670784182](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40670784182) | success | Comparação somente leitura aprovada |
+| Branch Protection Sentinel | [40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038) | success | — |
+| Enterprise Compliance & Audit Reporting | [40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958) | success | — |
+
+### Correções locais e validação após cada commit
+
+**Commit `e3e97e78b` — dependências vulneráveis:** atualizados `undici` para `8.12.3` e `zod` para `4.6.7`. Para manter a API Zod v3 usada pelos schemas existentes, os imports compatíveis foram movidos para `zod/v3`; os quatro formulários integrados ao resolver permanecem na API Zod 4.
+
+- `npm run check:npm-audit`: ✅ 0 vulnerabilidades.
+- `npm run build`: ✅ exit 0.
+- `npm run lint`: ✅ exit 0; 873 avisos existentes, 0 erros.
+- `npm run typecheck`: ✅ exit 0.
+- Suíte completa: ✅ 5.839 passaram, 68 ignorados, 0 falhas.
+
+**Commit `bbd1047a2` — CodeQL:** alinhadas as etapas `autobuild` e `analyze` ao mesmo SHA oficial de `v4.39.1` usado em `init`.
+
+- `npm run build`: ✅ exit 0.
+- `npm run lint`: ✅ exit 0; 873 avisos existentes, 0 erros.
+- `npm run typecheck`: ✅ exit 0.
+- Suíte completa: ✅ 5.839 passaram, 68 ignorados, 0 falhas.
+- Execução remota do PR: pendente de push/abertura do PR.
+
+### Banco canônico
+
+O ledger remoto consultado em modo somente leitura tinha 137 entradas, até `20261022230000`. A última execução de drift na main registrou **0 achados novos, 1 achado histórico resolvido, 0 resoluções inválidas**. Nenhuma migration foi criada, aplicada ou reparada durante esta auditoria.
+
+### Decisão de integração
+
+As correções de CI estão em branch isolada e precisam passar pelos checks remotos. Não houve merge: o repositório tem URL Vercel pública associada e o commit de dependências altera o código/bundle da aplicação. A mudança local de `bi-share-dossier` segue pendente de confirmar o secret `BI_SHARE_SECRET` e a compatibilidade com tokens já emitidos; a mudança local de `health-check` não foi importada porque contraria os consumidores que ainda enviam POST.
+
 **Gerado em:** 2026-10-22  
 **Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
 

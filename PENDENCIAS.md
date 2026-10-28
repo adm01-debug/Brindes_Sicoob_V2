@@ -7,6 +7,46 @@ O erro exato foi extraído do run mais recente disponível em main.
 
 ---
 
+## Atualização 2026-10-28 — auditoria de sincronização e CI
+
+**SHA remoto auditado:** `e9d59026793b84fabeaeec9da890a068f64d49c3` (`main`).
+
+**Banco canônico:** `cfmzkthhgliqelozlmwu`, consulta somente leitura.
+
+**Cópia local original:** `main` em `6b71bdc`, 84 commits atrás, com alterações locais não commitadas preservadas.
+
+### Workflows que estavam vermelhos na última execução da main
+
+| Workflow | Última execução | Causa reproduzida | Correção preparada |
+|---|---|---|---|
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `npm audit --audit-level=high`: `undici` e `zod` altos. | Commit local da branch `e3e97e78b`: `undici@8.12.3`, Zod `4.6.7` com imports compatíveis `zod/v3`; `npm run check:npm-audit` passa. |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | A etapa de dependências/autorização executa `check:npm-audit`, que reproduz a mesma falha de `undici` e `zod`. | Mesmo commit `e3e97e78b`; `check-edge-authorization.mjs` e `check:seller-scope` não apresentaram falha local. |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `init` carregava `4.39.1`, enquanto `autobuild`/`analyze` ainda estavam em `4.38.2`; o Autobuild abortou e, como consequência, não produziu SARIF para upload de artefato. | Commit local da branch `bbd1047a2`: alinhar as três ações no SHA oficial de `v4.39.1`. |
+
+Essas correções ainda não estão em `main`: aguardam publicação da branch/PR e checks remotos. **Não fazer merge automático**: o repositório publica o portal em `https://brindes-sicoob-v2.vercel.app`, e as mudanças de dependência alteram o bundle da aplicação. A decisão de implantação deve ocorrer após os checks do PR e a revisão do efeito no ambiente.
+
+### Estado do banco e migrations
+
+- Consulta somente leitura ao ledger: **137 registros**, mais recente `20261022230000` (`repair_migration_ledger_and_harden_search_path`).
+- A execução remota de [Migration ledger drift #50](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40670784182), no mesmo SHA `e9d5902`, passou nas comparações de ledger e auditoria RLS.
+- Resultado explícito da baseline: **0 divergências novas, 1 divergência histórica resolvida, 0 resoluções inválidas**.
+- Não aplicar migration nesta auditoria: não foi identificado delta versionado pendente de aplicação.
+
+### Alterações somente locais que não foram copiadas para a branch
+
+- `secretNormalizers.ts`: a proteção do grupo de captura (`m[1] ?? s`) já consta no código remoto; nenhuma importação necessária.
+- `health-check`: o rascunho local responde somente a GET e `{status:"ok"}`, mas `scripts/healthcheck.mjs` e `scripts/load-test.mjs` ainda chamam POST; importar como está quebraria consumidores existentes.
+- `bi-share-dossier`: a alteração local exige `BI_SHARE_SECRET` próprio e remove a chave de serviço como fallback. A presença do secret e a existência de tokens antigos não puderam ser verificadas via MCP disponível; não publicar nem mesclar até confirmar provisionamento e estratégia de compatibilidade.
+- `ChurnRiskBanner`, arquivos `supabase/.temp`, contratos/testes locais, `AUDITORIA.md`, `PLANO_100.md` e histórico Graphify: não foram importados; incluem refatoração não necessária, artefatos locais ou documentos que precisam de revisão de atualidade e fonte antes de se tornarem documentação canônica.
+
+### Situação
+
+- Banco: alinhado com a baseline aprovada; nenhuma escrita ou migration executada.
+- Código e workflows: correções de CI preparadas em branch isolada; ainda precisam de push, PR e validação remota.
+- BI/health-check: itens locais acima permanecem fora do PR até resolverem os bloqueios de contrato/secret descritos.
+
+---
+
 ~~## Workflow: `npm_and_yarn` — Dependabot `@vitest/mocker` Update~~
 
 > ✅ **RESOLVIDO em 2026-10-22** — `vitest` e todos `@vitest/*` atualizados para 4.1.12 no commit `b32e5e4`. CVEs GHSA-qxg6-89mg-rqv8 e GHSA-xp26-3454-mjgp corrigidas.
