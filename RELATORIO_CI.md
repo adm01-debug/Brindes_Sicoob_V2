@@ -193,6 +193,7 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 - O ledger remoto permanece com última versão `20261022230000`; as 27 migrations incluídas na auditoria do allowlist foram conferidas, inclusive as três P0. Não há migration nova neste PR.
 - A listagem remota contém 100 Edge Functions. A publicação controlada (run [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102)) atualizou quatro versões: `expert-chat` 12→13, `external-db-bridge` 11→12, `sicoob-kit-quote` 5→6 e `sicoob-reorder` 5→6. Todas estão ativas; as demais três funções Sicoob do workflow também estão ativas em v5.
 - Comparação somente leitura do código remoto com `origin/main`: os quatro bundles publicados estão alinhados. A diferença em `external-db-bridge` é somente em arquivos de testes `.test.ts`, não incluídos no bundle.
+- A reconciliação global encontrou 16 funções com divergência de fonte executável e seis funções locais ausentes do remoto; nenhuma função remota está sem diretório local. Não foram implantadas nesta auditoria porque estão fora da allowlist do workflow. A relação completa e os arquivos locais ainda não conciliados estão em `PENDENCIAS.md`.
 - Resultado do workflow de publicação segue `failure` por falso negativo na checagem de versão inalterada. PR #149 corrige o gate, mas precisa de checks verdes antes de ser integrado e reexecutado.
 - Nenhuma escrita de dados, migration ou alteração de schema foi executada.
 
