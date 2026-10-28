@@ -1,5 +1,25 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
+## Estado consolidado — 2026-10-28 13:39 UTC
+
+Esta atualização prevalece sobre os estados históricos abaixo.
+
+### Correções e workflows
+
+- As correções de Zod 4, Undici 8.12.3 e CodeQL Action v4.39.1 estão no PR #145, branch `fix/hermes-h097437-ci-workflows`, head `cda098c69e1b8e66016086b1bd887084535d6147`. O PR está aberto, não mesclado e bloqueado.
+- Na `main`, continuam falhando os últimos runs conhecidos de Qualidade contínua [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964), Security Scan [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) e CodeQL [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073). Os fixes foram validados no PR, mas ainda não chegaram à `main`.
+- Checks verdes no head atual do PR: Qualidade contínua [40697049425](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40697049425), Security Scan [40697048688](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40697048688), CodeQL [40697048691](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40697048691), Bundle Size [40697048764](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40697048764), Lighthouse [40697049044](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40697049044) e Portal Sicoob [40697049027](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40697049027).
+- **PENDENTE — E2E autenticado:** a execução [40697048789](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40697048789) foi cancelada para impedir testes com escrita no Supabase canônico. Usar um projeto Supabase de staging descartável com secrets próprios e, então, reexecutar.
+- **PENDENTE — Copilot reviewer:** run [40697081383](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40697081383) falhou com limite de uso HTTP 402; depende da quota do plano/owner.
+- Nenhuma alteração foi feita na `main`, nenhum deploy foi iniciado e nenhuma migration foi aplicada por esta sessão.
+
+### Banco canônico (somente leitura)
+
+Conexão/health check OK. Ledger: 137 versões, mais recente `20261022230000`. A tabela `e2e_cleanup_rate_limit` mantém duas linhas antigas, última janela em `2026-10-27 21:34:56 UTC`; a consulta não encontrou nova linha-canário do E2E cancelado. Nenhuma query de escrita foi executada por esta sessão.
+
+As 12 versões `20261015102000`, `20261015230500`, `20261015233500`, `20261015235000`, `20261015235500`, `20261016000000`, `20261016160000`, `20261016163000`, `20261016170000`, `20261016171500`, `20261016172000` e `20261016173000` estão no ledger do banco e os arquivos correspondentes estão no PR #119, ainda aberto com conflitos (`mergeable_state=dirty`). Não aplicar/reparar ledger manualmente; resolver o PR e validar os arquivos antes de qualquer reconciliação.
+
+
 ## Estado atual — auditoria de 2026-10-27 21:42 UTC
 
 Base verificada: `main` em `2df1b01ad87b8836d70149f1357dc38c33aeb24f`. PR #145 aberta em [https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/145](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/145), head consultado `3c942310ef7b8d043d4a480167e7e044c2b4b93c`. Não houve merge, deploy ou migration manual no Supabase. O E2E falhou no preflight remoto Auth/RLS por timeouts; Playwright não iniciou e a causa raiz não está comprovada. O gate de qualidade passou por typecheck, lint, verificações, Vitest, Deno e duas simulações, mas parou em uma terceira simulação por limite de dados do ECR (`toomanyrequests`).
