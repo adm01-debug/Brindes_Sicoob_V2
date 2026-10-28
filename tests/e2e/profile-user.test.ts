@@ -3,7 +3,7 @@
  * Covers: Profile form, avatar, password change, 2FA, preferences
  */
 import { describe, it, expect } from 'vitest';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 
 // ============ Profile Schema ============
 const profileSchema = z.object({

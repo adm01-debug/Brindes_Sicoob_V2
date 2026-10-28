@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, type ReactNode } from "react";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { supabase } from "@/integrations/supabase/client";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";

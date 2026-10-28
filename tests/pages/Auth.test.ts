@@ -3,7 +3,7 @@
  * and tab switching without requiring real Supabase connection.
  */
 import { describe, it, expect } from 'vitest';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 
 // ============================================
 // Test the validation schemas (pure logic)

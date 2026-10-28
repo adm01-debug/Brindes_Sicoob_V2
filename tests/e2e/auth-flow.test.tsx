@@ -45,7 +45,7 @@ vi.mock('@/hooks/useIPValidation', () => ({
 }));
 
 // ============ Validation Schema Tests ============
-import { z } from 'zod';
+import { z } from 'zod/v3';
 
 const loginSchema = z.object({
   email: z.string().min(1, "Email é obrigatório").email("Email inválido"),

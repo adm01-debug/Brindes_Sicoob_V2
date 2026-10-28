@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 
 const REQUIRED_EMAIL_MESSAGE = "Email é obrigatório";
 const INVALID_EMAIL_MESSAGE = "Email inválido";
