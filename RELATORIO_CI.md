@@ -184,7 +184,7 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 ### Repositório
 
 - Correção do verificador pós-deploy enviada em [PR #149](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/149), commit `1c7fb0baab75119af58b9368156026551aac7d56`.
-- O PR está aberto e não está pronto para merge. O CodeQL falhou por incompatibilidade entre `init` 4.39.1 e `autobuild` 4.38.2; `npm audit` e o gate de qualidade encontraram alertas altos em `undici` e `zod`; a revisão Copilot falhou por quota. O E2E estava pendente na última consulta. Detalhes e links estão em `PENDENCIAS.md`.
+- O PR está aberto e não está pronto para merge. A incompatibilidade de CodeQL entre `init` 4.39.1 e `autobuild` 4.38.2 foi corrigida no branch alinhando `init`, `autobuild` e `analyze` ao mesmo SHA fixo; falta o CI validar o novo commit. `npm audit` e o gate de qualidade continuam encontrando alertas altos em `undici` e `zod`; a revisão Copilot falhou por quota. Detalhes e links estão em `PENDENCIAS.md`.
 - PR #148 já contém a atualização de dependências e do CodeQL. Security Scan, CodeQL, bundle, Lighthouse e Portal Sicoob passaram; Qualidade contínua falhou por limite de download do ECR e E2E não havia concluído. Não considerar as alterações integradas.
 - A `main` remota continua em `e9d59026793b84fabeaeec9da890a068f64d49c3`. O checkout de trabalho local está em `6b71bdc09a454d8f8160166d45c9a670aa8b66e5`, atrás da `main`, e contém alterações locais não importadas. Não foram sobrescritas.
 

@@ -242,6 +242,8 @@ Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Depen
 | Revisão Copilot | [run 40773061761](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40773061761) | Falha externa por quota do serviço de revisão; aguardar restauração da quota e reexecutar. |
 | E2E | [run 40773041195](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40773041195) | Não foi concluído na auditoria; conferir a conclusão antes de considerar o PR pronto. |
 
+**Atualização após esta auditoria:** a divergência CodeQL foi corrigida no branch do PR #149, alinhando `init`, `autobuild` e `analyze` ao SHA imutável `9b3254085494b55a0f7c4c2b3d2d52cc712ce370` (v4.39.1), já validado no PR #148. A execução após o novo commit ainda precisa confirmar success.
+
 ### PR #148 — atualização de dependências e CodeQL
 
 **PR:** https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/148
