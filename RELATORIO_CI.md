@@ -49,7 +49,7 @@
 - `npm run lint`: ✅ exit 0; 873 avisos existentes, 0 erros.
 - `npm run typecheck`: ✅ exit 0.
 - Suíte completa: ✅ 5.839 passaram, 68 ignorados, 0 falhas.
-- Execução remota do PR: pendente de push/abertura do PR.
+- Execução remota do PR: branch publicada e PR #148 aberto; ver atualização de checks abaixo.
 
 ### Banco canônico
 
@@ -57,9 +57,18 @@ O ledger remoto consultado em modo somente leitura tinha 137 entradas, até `202
 
 ### Decisão de integração
 
-As correções de CI estão em branch isolada e precisam passar pelos checks remotos. Não houve merge: o repositório tem URL Vercel pública associada e o commit de dependências altera o código/bundle da aplicação. A mudança local de `bi-share-dossier` segue pendente de confirmar o secret `BI_SHARE_SECRET` e a compatibilidade com tokens já emitidos; a mudança local de `health-check` não foi importada porque contraria os consumidores que ainda enviam POST.
+As correções de CI estão na branch isolada e no PR #148. Não houve merge: ainda há checks pendentes/bloqueados, e o commit de dependências altera o código/bundle da aplicação associado ao Vercel. A mudança local de `bi-share-dossier` segue pendente de confirmar o secret `BI_SHARE_SECRET` e a compatibilidade com tokens já emitidos; a mudança local de `health-check` não foi importada porque contraria os consumidores que ainda enviam POST.
 
-**Gerado em:** 2026-10-22  
+### Checks remotos do PR #148
+
+- PR: https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/148 · HEAD `fc44efd92aa14d454b5491c91913736cbb4fc214`.
+- `npm audit — CVE Scan` e `Analyze (javascript-typescript)` (CodeQL): ✅ success; Gitleaks, verba/aprovação, Lighthouse, responsividade, origem confiável, bundle-stats e sicoob-gate também estavam verdes na consulta.
+- E2E [run 40764336913](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40764336913): smoke Playwright autenticado ✅; job ainda em execução no gate de cabeçalho fixo na última consulta. Não há conclusão final certificada.
+- Qualidade contínua [run 40764336935](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40764336935), tentativa 2: falhou somente na etapa `Simular controles de auditoria e permissões em PostgreSQL descartável`. O ECR Public repetiu `toomanyrequests: Data limit exceeded` após 3 tentativas de baixar `public.ecr.aws/supabase/postgres:17.6.1.063`; build, lint, tipagem, testes, gates de autorização e simulações anteriores passaram. Não será feito outro rerun nesta auditoria.
+- `copilot-pull-request-reviewer` [run 40764354990](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40764354990): ❌ HTTP 402 `SessionModelError` por cota adicional de uso do Copilot. Bloqueio requer ação de billing/plano ou renovação da cota antes de nova execução.
+- Não mesclar enquanto esses bloqueios/checks persistirem. Nenhuma alteração foi aplicada à `main` ou ao banco canônico.
+
+**Gerado em:** 2026-10-28
 **Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
 
 ---

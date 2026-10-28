@@ -1,6 +1,6 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
-Atualizado em: 2026-10-22
+Atualizado em: 2026-10-28
 
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
 O erro exato foi extraído do run mais recente disponível em main.
@@ -39,11 +39,15 @@ Essas correções ainda não estão em `main`: aguardam publicação da branch/P
 - `bi-share-dossier`: a alteração local exige `BI_SHARE_SECRET` próprio e remove a chave de serviço como fallback. A presença do secret e a existência de tokens antigos não puderam ser verificadas via MCP disponível; não publicar nem mesclar até confirmar provisionamento e estratégia de compatibilidade.
 - `ChurnRiskBanner`, arquivos `supabase/.temp`, contratos/testes locais, `AUDITORIA.md`, `PLANO_100.md` e histórico Graphify: não foram importados; incluem refatoração não necessária, artefatos locais ou documentos que precisam de revisão de atualidade e fonte antes de se tornarem documentação canônica.
 
-### Situação
+### Situação do PR #148 e bloqueios externos
 
+- PR aberto: [#148](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/148), branch `fix/hermes-docs-all-20261028`, HEAD `fc44efd92aa14d454b5491c91913736cbb4fc214`.
+- Security Scan e CodeQL estão verdes no PR; o E2E `40764336913` passou no smoke autenticado e ainda estava no gate de cabeçalho fixo na última consulta.
+- A repetição do job de Qualidade contínua (`40764336935`, tentativa 2) passou pela instalação, tipagem, lint, suíte completa e simulações anteriores; falhou novamente na simulação PostgreSQL porque o ECR Public respondeu `toomanyrequests: Data limit exceeded` após três tentativas de baixar `public.ecr.aws/supabase/postgres:17.6.1.063`. É bloqueio externo reproduzido, não falha de aplicação. Não fazer rerun adicional nesta auditoria.
+- O check `copilot-pull-request-reviewer` falhou no run [40764354990](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40764354990) com `SessionModelError`, HTTP 402 e mensagem de limite adicional de uso do Copilot. Ação necessária: verificar cota/plano em [GitHub Copilot Features](https://github.com/settings/copilot/features) ou aguardar a renovação da cota; depois solicitar nova execução do check.
+- Não houve merge: os checks do PR não estão todos verdes e a atualização de dependências afeta o bundle da aplicação ligado ao Vercel. Não promover para `main` até resolver os bloqueios e cumprir o fluxo de CI/deploy.
 - Banco: alinhado com a baseline aprovada; nenhuma escrita ou migration executada.
-- Código e workflows: correções de CI preparadas em branch isolada; ainda precisam de push, PR e validação remota.
-- BI/health-check: itens locais acima permanecem fora do PR até resolverem os bloqueios de contrato/secret descritos.
+- BI/health-check e demais alterações apenas locais permanecem fora do PR conforme os riscos de contrato e secret descritos acima.
 
 ---
 
