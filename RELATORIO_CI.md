@@ -53,7 +53,7 @@
 
 ### Banco canônico
 
-O ledger remoto consultado em modo somente leitura tinha 137 entradas, até `20261022230000`. A última execução de drift na main registrou **0 achados novos, 1 achado histórico resolvido, 0 resoluções inválidas**. Nenhuma migration foi criada, aplicada ou reparada durante esta auditoria.
+O ledger remoto consultado em modo somente leitura tinha 137 entradas, até `20261022230000`. A consulta comparou as 27 migrations da lista explícita em `scripts/db/apply-sicoob-migrations.mjs`: todas constam com o nome esperado. A execução de drift na main [run 40670784182](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40670784182) registrou **0 achados novos, 1 achado histórico resolvido, 0 resoluções inválidas**. O PR #148 não contém migrations. Nenhuma migration foi criada, aplicada ou reparada durante esta auditoria.
 
 ### Decisão de integração
 
@@ -61,11 +61,11 @@ As correções de CI estão na branch isolada e no PR #148. Não houve merge: ai
 
 ### Checks remotos do PR #148
 
-- PR: https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/148 · HEAD `fc44efd92aa14d454b5491c91913736cbb4fc214`.
-- `npm audit — CVE Scan` e `Analyze (javascript-typescript)` (CodeQL): ✅ success; Gitleaks, verba/aprovação, Lighthouse, responsividade, origem confiável, bundle-stats e sicoob-gate também estavam verdes na consulta.
-- E2E [run 40764336913](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40764336913): smoke Playwright autenticado ✅; job ainda em execução no gate de cabeçalho fixo na última consulta. Não há conclusão final certificada.
-- Qualidade contínua [run 40764336935](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40764336935), tentativa 2: falhou somente na etapa `Simular controles de auditoria e permissões em PostgreSQL descartável`. O ECR Public repetiu `toomanyrequests: Data limit exceeded` após 3 tentativas de baixar `public.ecr.aws/supabase/postgres:17.6.1.063`; build, lint, tipagem, testes, gates de autorização e simulações anteriores passaram. Não será feito outro rerun nesta auditoria.
-- `copilot-pull-request-reviewer` [run 40764354990](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40764354990): ❌ HTTP 402 `SessionModelError` por cota adicional de uso do Copilot. Bloqueio requer ação de billing/plano ou renovação da cota antes de nova execução.
+- PR: https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/148 · SHA auditado `33e185aa1973c5a0704877b3202727dd187aec34`.
+- `Qualidade contínua` [run 40767773135](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40767773135), Security Scan [run 40767774037](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40767774037), CodeQL [run 40767773643](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40767773643), Bundle Size [run 40767773213](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40767773213), Lighthouse [run 40767773356](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40767773356), Gitleaks, verba/aprovação, responsividade, origem confiável e sicoob-gate: ✅ success.
+- E2E [run 40767773387](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40767773387): smoke Playwright autenticado ✅; o gate de cabeçalho fixo seguia em execução às 21:15 UTC. Não há conclusão final certificada.
+- Execução anterior de Qualidade contínua [run 40764336935](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40764336935), tentativa 2: falhou na etapa de simulação PostgreSQL descartável por `toomanyrequests: Data limit exceeded` no ECR Public. A execução posterior [run 40767773135](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40767773135) passou, sem falha atual nesta causa.
+- `copilot-pull-request-reviewer` [run 40767789155](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40767789155): ❌ HTTP 402 por cota adicional de uso do Copilot. Bloqueio requer ação de billing/plano ou renovação da cota antes de nova execução.
 - Não mesclar enquanto esses bloqueios/checks persistirem. Nenhuma alteração foi aplicada à `main` ou ao banco canônico.
 
 **Gerado em:** 2026-10-28

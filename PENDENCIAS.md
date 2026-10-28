@@ -41,12 +41,13 @@ Essas correções ainda não estão em `main`: aguardam publicação da branch/P
 
 ### Situação do PR #148 e bloqueios externos
 
-- PR aberto: [#148](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/148), branch `fix/hermes-docs-all-20261028`, HEAD `fc44efd92aa14d454b5491c91913736cbb4fc214`.
-- Security Scan e CodeQL estão verdes no PR; o E2E `40764336913` passou no smoke autenticado e ainda estava no gate de cabeçalho fixo na última consulta.
-- A repetição do job de Qualidade contínua (`40764336935`, tentativa 2) passou pela instalação, tipagem, lint, suíte completa e simulações anteriores; falhou novamente na simulação PostgreSQL porque o ECR Public respondeu `toomanyrequests: Data limit exceeded` após três tentativas de baixar `public.ecr.aws/supabase/postgres:17.6.1.063`. É bloqueio externo reproduzido, não falha de aplicação. Não fazer rerun adicional nesta auditoria.
-- O check `copilot-pull-request-reviewer` falhou no run [40764354990](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40764354990) com `SessionModelError`, HTTP 402 e mensagem de limite adicional de uso do Copilot. Ação necessária: verificar cota/plano em [GitHub Copilot Features](https://github.com/settings/copilot/features) ou aguardar a renovação da cota; depois solicitar nova execução do check.
+- PR aberto: [#148](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/148), branch `fix/hermes-docs-all-20261028`; SHA auditado `33e185aa1973c5a0704877b3202727dd187aec34`.
+- Em 2026-10-28 21:15 UTC, o E2E [run 40767773387](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40767773387) passou no smoke autenticado e seguia executando o gate de cabeçalho fixo; ainda não há conclusão final.
+- Qualidade contínua [run 40767773135](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40767773135), Security Scan [run 40767774037](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40767774037), CodeQL [run 40767773643](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40767773643), Bundle Size [run 40767773213](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40767773213) e Lighthouse [run 40767773356](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40767773356) concluíram com sucesso.
+- A execução anterior do job de Qualidade contínua (`40764336935`, tentativa 2) falhou na simulação PostgreSQL porque o ECR Public respondeu `toomanyrequests: Data limit exceeded` ao baixar `public.ecr.aws/supabase/postgres:17.6.1.063`. A execução posterior `40767773135` passou; a causa foi transitória e não consta como pendência atual.
+- O check `copilot-pull-request-reviewer` falhou novamente no run [40767789155](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40767789155) com HTTP 402 por limite adicional de uso do Copilot. Ação necessária: verificar cota/plano em [GitHub Copilot Features](https://github.com/settings/copilot/features) ou aguardar a renovação da cota; depois solicitar nova execução do check.
 - Não houve merge: os checks do PR não estão todos verdes e a atualização de dependências afeta o bundle da aplicação ligado ao Vercel. Não promover para `main` até resolver os bloqueios e cumprir o fluxo de CI/deploy.
-- Banco: alinhado com a baseline aprovada; nenhuma escrita ou migration executada.
+- Banco: consulta somente leitura confirmou 137 entradas no ledger até `20261022230000` e presença/nome corretos das 27 migrations autorizadas pelo script `apply-sicoob-migrations.mjs`. O PR #148 não altera migrations. Nenhuma escrita ou migration foi executada nesta verificação.
 - BI/health-check e demais alterações apenas locais permanecem fora do PR conforme os riscos de contrato e secret descritos acima.
 
 ---
