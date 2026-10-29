@@ -7,11 +7,11 @@ export const salesGoalSchema = z.object({
   target_value: z.number()
     .positive("Meta deve ser um valor positivo")
     .max(999999999, "Valor máximo excedido"),
-  goal_type: z.enum(["revenue", "quotes", "orders", "conversion"], {
-    required_error: "Tipo de meta é obrigatório",
+  goal_type: z.enum(["revenue", "quotes", "orders", "conversion"] as const, {
+    error: "Tipo de meta é obrigatório",
   }),
-  period: z.enum(["daily", "weekly", "monthly", "quarterly", "yearly"], {
-    required_error: "Período é obrigatório",
+  period: z.enum(["daily", "weekly", "monthly", "quarterly", "yearly"] as const, {
+    error: "Período é obrigatório",
   }),
   start_date: z.string().min(1, "Data de início é obrigatória"),
   end_date: z.string().min(1, "Data de fim é obrigatória"),
