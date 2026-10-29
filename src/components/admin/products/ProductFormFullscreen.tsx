@@ -4,7 +4,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { productFormSchema, type ProductFormData, defaultFormValues } from './ProductFormSchema';
 import { ProductPreviewPanel } from './ProductPreviewPanel';
@@ -400,7 +400,8 @@ export function ProductFormFullscreen({
     register, handleSubmit, setValue, watch, trigger, getValues,
     formState: { errors },
   } = useForm<ProductFormData>({
-    resolver: zodResolver(productFormSchema),
+    // O formulário mantém valores normalizados pelos defaultValues; a coerção Zod é fronteira de validação.
+    resolver: zodResolver(productFormSchema) as unknown as Resolver<ProductFormData>,
     defaultValues: { ...defaultFormValues, ...initialData },
   });
 

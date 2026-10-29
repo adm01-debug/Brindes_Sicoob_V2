@@ -27,6 +27,10 @@ Falhas mais recentes dos workflows na `main` consultadas em 29/10/2026:
 
 Em `2026-10-29`, `vite-plugin-mkcert` resolveu `undici@8.10.2` para `8.12.3` via `npm update undici`, sem alteração do manifesto. A versão respeita a faixa `^8.3.0` declarada pelo pacote. O `npm audit --json` local passou a reportar somente `zod`; o gate completo continua pendente até a correção do segundo pacote.
 
+### Correção incremental 2 — zod
+
+Atualizados `zod` para `4.6.7` (versão corrigida do advisory) e `@hookform/resolvers` para `6.0.2`, compatível com Zod 4. As adaptações de código mantêm as mensagens obrigatórias no schema de metas e leem `ZodError.issues`; no formulário de produto, a saída normalizada é mantida e a fronteira RHF/resolver está tipada explicitamente. Typecheck e 276 testes focados passaram; `npm run check:npm-audit` agora passa com zero vulnerabilidades. Build, lint e suíte completa pós-commit ainda serão executados.
+
 **Gerado em:** 2026-10-22  
 **Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
 

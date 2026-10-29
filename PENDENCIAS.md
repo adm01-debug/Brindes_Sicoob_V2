@@ -18,8 +18,9 @@ Os itens de 22/10 abaixo são histórico e não representam o estado atual. Rech
 ### Atualização da correção de dependências
 
 - `undici` passou de `8.10.2` para `8.12.3`, dentro da faixa semver já declarada por `vite-plugin-mkcert`; o `npm audit` local deixou de reportar os oito advisories desse pacote.
-- O alerta alto de `zod` permanece. O audit só oferece correção em `4.6.7`, que requer migração major e revisão de compatibilidade; essa é a próxima causa em trabalho.
-- Como o audit ainda encontra `zod`, `Security Scan` e `Qualidade contínua` seguem pendentes nesta revisão.
+- `zod` passou para `4.6.7` e `@hookform/resolvers` para `6.0.2`; foram adaptados os dois usos legados incompatíveis e adicionados testes para mensagens obrigatórias do schema de metas.
+- O audit local agora passa sem vulnerabilidades. Typecheck e 276 testes focados também passaram; a suíte completa pós-commit está pendente.
+- A `main` remota continua vulnerável até esta branch ser enviada, passar os checks e ser integrada. Os workflows correspondentes ainda não foram reexecutados na `main`.
 
 Atualizado em: 2026-10-22
 
