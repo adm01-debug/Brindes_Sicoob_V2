@@ -55,25 +55,27 @@ function statusIcon(status: SaveStatus) {
   return <Cloud className="h-4 w-4" />;
 }
 
-function statusText(status: SaveStatus, hasChanges: boolean, lastSaved: Date | null): string {
+function statusText(status: SaveStatus, hasChanges: boolean, lastSaved: Date | null, error: Error | null): string {
   if (status === "saving") return "Salvando...";
   if (status === "saved") return "Salvo agora";
+  if (status === "error" && error?.message.includes("alterado em outra aba")) return "Conflito em outra aba";
   if (status === "error") return "Erro ao salvar";
   if (status === "offline") return "Offline";
   if (hasChanges) return "Alterações não salvas";
   return lastSaved ? `Salvo às ${format(lastSaved, "HH:mm", { locale: ptBR })}` : "Salvo neste dispositivo";
 }
 
-function AutoSaveIndicator({ status, lastSaved, hasChanges, className }: {
-  status: SaveStatus; lastSaved: Date | null; hasChanges: boolean; className?: string;
+function AutoSaveIndicator({ status, lastSaved, hasChanges, error, className }: {
+  status: SaveStatus; lastSaved: Date | null; hasChanges: boolean; error: Error | null; className?: string;
 }) {
-  const label = statusText(status, hasChanges, lastSaved);
+  const label = statusText(status, hasChanges, lastSaved, error);
   return <Tooltip><TooltipTrigger asChild><div className={cn("flex items-center gap-2", className)}>
     <AnimatePresence mode="wait"><motion.div key={status} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0.8, opacity: 0 }} transition={{ duration: 0.15 }}>{statusIcon(status)}</motion.div></AnimatePresence>
     <span className="text-xs text-muted-foreground hidden sm:inline">{label}</span>
     {hasChanges && status !== "saving" && <Badge variant="outline" className="text-[10px] h-5">Não salvo</Badge>}
   </div></TooltipTrigger><TooltipContent><div className="text-xs space-y-1"><p className="font-medium">{label}</p>
+    {error && <p className="text-muted-foreground">{error.message}</p>}
     {lastSaved && <p className="text-muted-foreground">Último salvamento: {format(lastSaved, "HH:mm:ss", { locale: ptBR })}</p>}
   </div></TooltipContent></Tooltip>;
 }
@@ -144,5 +146,5 @@ export function QuoteAutoSave({
   const hasUnsavedChanges = useDraftLifecycle({ data, storageKey, lastError, restore, onChange, onRestore, setStatus, enabled });
 
   if (!enabled) return null;
-  return <AutoSaveIndicator status={status} lastSaved={lastSaved} hasChanges={hasUnsavedChanges} className={className} />;
+  return <AutoSaveIndicator status={status} lastSaved={lastSaved} hasChanges={hasUnsavedChanges} error={lastError} className={className} />;
 }

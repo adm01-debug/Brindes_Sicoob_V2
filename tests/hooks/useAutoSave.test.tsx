@@ -58,6 +58,38 @@ describe('useAutoSave', () => {
     expect(JSON.parse(localStorage.getItem('autosave_draft-error')!)).toMatchObject({ version: 1, data: { title: 'Tentativa nova' } });
   });
 
+  it('detecta edição concorrente em outra aba e não sobrescreve o rascunho mais recente', async () => {
+    const onError = vi.fn();
+    const { result, rerender } = renderHook(
+      ({ data }) => useAutoSave({ key: 'draft-shared', data, onError }),
+      { initialProps: { data: { title: 'Versão carregada' } } },
+    );
+
+    rerender({ data: { title: 'Edição desta aba' } });
+
+    const externalDraft = JSON.stringify({
+      version: 1,
+      savedAt: new Date().toISOString(),
+      data: { title: 'Edição da outra aba' },
+    });
+    localStorage.setItem('autosave_draft-shared', externalDraft);
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'autosave_draft-shared',
+        newValue: externalDraft,
+        storageArea: localStorage,
+      }));
+    });
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(2_000); });
+
+    expect(result.current.lastError?.message).toContain('alterado em outra aba');
+    expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining('alterado em outra aba') }));
+    expect(JSON.parse(localStorage.getItem('autosave_draft-shared')!)).toMatchObject({
+      data: { title: 'Edição da outra aba' },
+    });
+  });
+
   it('restaura rascunho legado e descarta envelope vencido', () => {
     localStorage.setItem('autosave_legado', JSON.stringify({ title: 'compatível' }));
     localStorage.setItem('autosave_vencido', JSON.stringify({

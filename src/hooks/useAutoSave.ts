@@ -11,6 +11,36 @@ interface StoredAutoSave<T> {
   data: T;
 }
 
+const CONCURRENT_DRAFT_MESSAGE = "Este rascunho foi alterado em outra aba. Recarregue o orçamento antes de continuar.";
+
+function readStoredValue(key: string): string | null {
+  try {
+    return localStorage.getItem(`autosave_${key}`);
+  } catch {
+    return null;
+  }
+}
+
+function readStoredData(value: string | null): unknown {
+  if (!value) return null;
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (parsed && typeof parsed === "object" && "data" in parsed) {
+      return (parsed as { data: unknown }).data;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+async function withDraftWriteLock<T>(key: string, operation: () => Promise<T>): Promise<T> {
+  if (typeof navigator !== "undefined" && navigator.locks?.request) {
+    return navigator.locks.request(`sicoob-autosave:${key}`, operation);
+  }
+  return operation();
+}
+
 function parseStoredAutoSave<T>(value: string): T | null {
   const parsed: unknown = JSON.parse(value);
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return parsed as T;
@@ -49,27 +79,74 @@ export function useAutoSave<T>({
 }: AutoSaveOptions<T>) {
   const lastSavedData = useRef<string>(JSON.stringify(data));
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dataRef = useRef(data);
+  const storageSnapshot = useRef<string | null>(readStoredValue(key));
+  const conflictRef = useRef(false);
   const [lastError, setLastError] = useState<Error | null>(null);
+  dataRef.current = data;
+
+  useEffect(() => {
+    storageSnapshot.current = readStoredValue(key);
+    conflictRef.current = false;
+    setLastError(null);
+  }, [key]);
+
+  useEffect(() => {
+    const storageKey = `autosave_${key}`;
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== storageKey) return;
+      try {
+        if (event.storageArea && event.storageArea !== localStorage) return;
+      } catch {
+        return;
+      }
+      storageSnapshot.current = event.newValue;
+
+      if (JSON.stringify(readStoredData(event.newValue)) === JSON.stringify(dataRef.current)) return;
+
+      conflictRef.current = true;
+      const error = new Error(CONCURRENT_DRAFT_MESSAGE);
+      setLastError(error);
+      onError?.(error);
+    };
+
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, [key, onError]);
 
   const save = useCallback(async () => {
-    const currentDataStr = JSON.stringify(data);
+    const dataToSave = dataRef.current;
+    const currentDataStr = JSON.stringify(dataToSave);
     
     // Só salva se houver mudança e houver dados relevantes (ex: clientId no orçamento)
     if (currentDataStr === lastSavedData.current) return;
 
     try {
-      // Persistência local
-      const stored: StoredAutoSave<T> = {
-        version: AUTO_SAVE_VERSION,
-        savedAt: new Date().toISOString(),
-        data,
-      };
-      localStorage.setItem(`autosave_${key}`, JSON.stringify(stored));
-      
-      // Persistência remota opcional
-      if (onSave) {
-        await onSave(data);
-      }
+      await withDraftWriteLock(key, async () => {
+        if (conflictRef.current) throw new Error(CONCURRENT_DRAFT_MESSAGE);
+
+        const storageKey = `autosave_${key}`;
+        const currentStoredValue = localStorage.getItem(storageKey);
+        if (currentStoredValue !== storageSnapshot.current) {
+          const externalData = JSON.stringify(readStoredData(currentStoredValue));
+          if (externalData !== currentDataStr) {
+            conflictRef.current = true;
+            throw new Error(CONCURRENT_DRAFT_MESSAGE);
+          }
+        }
+
+        const stored: StoredAutoSave<T> = {
+          version: AUTO_SAVE_VERSION,
+          savedAt: new Date().toISOString(),
+          data: dataToSave,
+        };
+        const serialized = JSON.stringify(stored);
+        localStorage.setItem(storageKey, serialized);
+        storageSnapshot.current = serialized;
+
+        // Persistência remota opcional
+        if (onSave) await onSave(dataToSave);
+      });
       
       lastSavedData.current = currentDataStr;
       setLastError(null);
@@ -80,7 +157,7 @@ export function useAutoSave<T>({
       onError?.(saveError);
       log.error("save_failed", { key, error: saveError });
     }
-  }, [key, data, onError, onSave]);
+  }, [key, onError, onSave]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -99,7 +176,8 @@ export function useAutoSave<T>({
 
   // Função para restaurar dados
   const restore = useCallback((): T | null => {
-    const saved = localStorage.getItem(`autosave_${key}`);
+    const saved = readStoredValue(key);
+    storageSnapshot.current = saved;
     if (!saved) return null;
     try {
       return parseStoredAutoSave<T>(saved);
