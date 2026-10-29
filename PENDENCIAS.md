@@ -21,6 +21,13 @@ Esta atualização prevalece sobre estados históricos abaixo quando houver dive
 
 Restabelecer consulta read-only autorizada ao projeto canônico (ou vincular a CLI com acesso de leitura) para confirmar ledger e triggers de C-04. Até essa confirmação, não aplicar migrations, não escrever no banco e não mesclar a PR #157 enquanto E2E e Copilot Review permanecerem em falha.
 
+### Proteção do destino dos testes remotos — 29/10/2026
+
+- O workflow E2E passa a exigir a variável de Actions `E2E_SUPABASE_PROJECT_ID`, igual ao `VITE_SUPABASE_PROJECT_ID`, e confere que `VITE_SUPABASE_URL` pertence exatamente a esse projeto HTTPS.
+- O guard rejeita explicitamente o projeto canônico `cfmzkthhgliqelozlmwu`, o catálogo `doufsxqlfjyuvxuezpln`, refs malformadas e URLs divergentes **antes** do teste com chave administrativa.
+- Testes locais determinísticos do guard: 11 passaram; nenhum teste remoto foi executado nesta validação. Para habilitar o E2E, ainda é necessário provisionar homologação segregada e cadastrar a variável e os secrets correspondentes (URL, chave publicável, project ref e personas de teste). Até lá, o job falha de forma explícita e segura; não configurar o destino para os projetos protegidos.
+- A contagem de canários consultada no banco canônico permaneceu em 9 antes e depois da execução remota de 29/10. Origem e idade dessas linhas não foram determinadas; elas não foram apagadas.
+
 ## Estado atual — 29/10/2026
 
 Os itens de 22/10 abaixo são histórico e não representam o estado atual. Rechecagem dos últimos runs na `main`:

@@ -254,6 +254,12 @@ Os simuladores PostgreSQL agora usam `ghcr.io/supabase/postgres:17.6.1.063`. Ins
 
 O E2E remoto do último SHA `6ce1a6b52a991fd0db5e11f455c56f619c5ae4ab` falhou no hook `beforeAll` de `e2e-cleanup-rate-limit.test.ts`: inserção administrativa inicial expirou em 45 s. Sem as credenciais remotas de Actions, o cenário não pode ser reproduzido localmente sem pular o teste. O acesso SQL/health do MCP também voltou a expirar nesta retomada. Isso permanece pendência de disponibilidade/acesso do Supabase/PostgREST; não foi alterado o banco.
 
+### Guard de homologação dos testes E2E — 29/10/2026
+
+O workflow agora exige `vars.E2E_SUPABASE_PROJECT_ID` e valida que o ref autorizado, `VITE_SUPABASE_PROJECT_ID` e host de `VITE_SUPABASE_URL` coincidam. O guard bloqueia os refs dos projetos canônicos e do catálogo antes de qualquer chamada remota com service role. A bateria local focada passou em 11/11 cenários (homologação permitida, projetos protegidos, valores ausentes, formato inválido, ref divergente e URLs inseguras). Nenhum acesso remoto foi feito por esse teste local.
+
+**Dependência externa pendente:** criar/configurar projeto de homologação Supabase isolado, com schema e personas de teste, e definir `E2E_SUPABASE_PROJECT_ID` mais os secrets correspondentes nas Actions. Até essa configuração, o job deve falhar no preflight; isso não conta como jornada E2E validada. A contagem somente leitura de linhas `rls-e2e-%` no projeto canônico ficou em 9 nas consultas antes e depois do run de 29/10; a origem não está estabelecida e nada foi removido.
+
 ## Auditoria de publicação e paridade — 29/10/2026
 
 ### Código no GitHub
