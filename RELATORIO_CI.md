@@ -17,6 +17,20 @@ A correção está versionada como migration candidata, acompanhada por simulado
 
 O usuário confirmou que configurará o Supabase segregado para E2E. Até a criação e configuração efetiva de URL, project ref e contas de teste no GitHub Actions, o cenário autenticado de dois usuários permanece sem prova remota. O Copilot Review continua dependendo de restauração de quota (HTTP 402), independente do código.
 
+### Checks remotos do commit `786fb404` — PR #157
+
+| Workflow/check | Resultado e causa | Evidência |
+|---|---|---|
+| `Qualidade contínua` | ✅ `success`; suíte completa, cobertura, simulações PostgreSQL (incluindo retry por ator inativo) e build concluídos | [run 40858678038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40858678038) |
+| `Security Scan` / npm audit | ✅ `success` | [run 40858677961](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40858677961) |
+| `CodeQL` | ✅ `success` | [run 40858678051](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40858678051) |
+| `Lighthouse Performance Audit` | ✅ `success` | [run 40858677980](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40858677980) |
+| `Portal Sicoob` e `Bundle Size Check` | ✅ `success` | [Portal 40858677953](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40858677953), [bundle 40858677966](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40858677966) |
+| `E2E (Playwright)` | ❌ preflight parou antes do Supabase: `E2E_SUPABASE_PROJECT_ID` vazio; shards regressivos foram ignorados. A variável ainda não consta na lista atual de variáveis do repositório. | [run 40858678011](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40858678011) |
+| `Running Copilot Code Review` | ❌ serviço Copilot retornou HTTP 402 `quota`: limite adicional do plano atingido; não é falha de código | [run 40858699722](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40858699722) |
+
+Também passaram Gitleaks, origem confiável, verba/aprovação transacionais, gate Sicoob, responsividade e Preview Comments. Vercel Agent Review ficou `neutral` por billing desativado. A PR continua aberta, sem merge.
+
 ## Complemento P033 — recuperação após falha de transição — 29/10/2026
 
 O editor agora preserva o snapshot confirmado no servidor e, quando a transição de status falha, mantém aberto o orçamento em edição com a ação explícita “Revisar orçamento”. Em criação, navega ao detalhe já persistido para impedir que um novo clique crie duplicata. Foram adicionados testes das duas rotas.

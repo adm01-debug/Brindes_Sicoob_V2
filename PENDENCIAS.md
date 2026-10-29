@@ -9,6 +9,20 @@
 - **Pendente:** concluir validações locais e CI da PR, revisão e fluxo autorizado em `main` antes da aplicação controlada. A migration não está no ledger canônico.
 - E2E autenticado continua bloqueado até provisionar/configurar a homologação segregada que o usuário confirmou que fará. O check Copilot mantém bloqueio externo HTTP 402/quota já registrado.
 
+### Checks remotos do commit `786fb404` — PR #157
+
+| Workflow/check | Resultado e causa | Evidência |
+|---|---|---|
+| `Qualidade contínua` | ✅ `success`; suíte completa, cobertura, simulações PostgreSQL (incluindo retry por ator inativo) e build concluídos | [run 40858678038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40858678038) |
+| `Security Scan` / npm audit | ✅ `success` | [run 40858677961](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40858677961) |
+| `CodeQL` | ✅ `success` | [run 40858678051](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40858678051) |
+| `Lighthouse Performance Audit` | ✅ `success` | [run 40858677980](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40858677980) |
+| `Portal Sicoob` e `Bundle Size Check` | ✅ `success` | [Portal 40858677953](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40858677953), [bundle 40858677966](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40858677966) |
+| `E2E (Playwright)` | ❌ preflight parou antes do Supabase: `E2E_SUPABASE_PROJECT_ID` vazio; shards regressivos foram ignorados. A variável ainda não consta na lista atual de variáveis do repositório. | [run 40858678011](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40858678011) |
+| `Running Copilot Code Review` | ❌ serviço Copilot retornou HTTP 402 `quota`: limite adicional do plano atingido; não é falha de código | [run 40858699722](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40858699722) |
+
+Também passaram Gitleaks, origem confiável, verba/aprovação transacionais, gate Sicoob, responsividade e Preview Comments. Vercel Agent Review ficou `neutral` por billing desativado. A PR continua aberta, sem merge.
+
 ## Complemento de recuperação P033 — 29/10/2026
 
 - Ajuste local testado: quando uma transição de status falha após o salvamento, a edição existente continua aberta, preserva o snapshot confirmado e oferece “Revisar orçamento”; uma criação abre o detalhe do registro salvo para prevenir duplicação.
