@@ -4,9 +4,10 @@ Gerado em 2026-09-13 por `grep -rhoE "Deno\.env\.get\(...)" supabase/functions` 
 `grep -rhoE "secrets\.\w+" .github/workflows`. Etapa 47 do
 [plano de 50 etapas](./plano-melhorias-50-etapas.md).
 
-**Preencher a coluna "Configurado em" — hoje é a lacuna real**: os secrets de E2E
-(etapa 03) e de compliance (etapa 04) faltam no GitHub Actions, e é assim que os
-dois gates de CI ficam vermelhos. Ninguém tinha essa lista consolidada antes.
+**Inventário revisado em 2026-10-29 (somente nomes)**: as credenciais das personas
+E2E já aparecem no GitHub Actions, mas os quatro secrets do Supabase isolado de
+homologação ainda não aparecem. O workflow E2E agora usa exclusivamente esse conjunto
+dedicado. As personas específicas de RLS/compliance continuam pendentes.
 
 ## Lidos pelas edge functions (`Deno.env.get`)
 
@@ -77,15 +78,19 @@ assinaturas que as referenciem, pois são necessárias para verificar o históri
 
 | Variável | Workflow | Status |
 |---|---|---|
-| `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` | `e2e.yml` | ❌ **ausente — causa da falha do PR #6 (etapa 03)** |
-| `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` | `e2e.yml` | ❌ **ausente — idem** |
-| `SUPABASE_SERVICE_ROLE_KEY` | `security-compliance.yml` | ❌ **ausente — causa da falha do job agendado em `main` (etapa 04)** |
+| `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` | `e2e.yml` | ✅ nomes presentes no GitHub Actions (valor não lido) |
+| `E2E_VIEWER_EMAIL` / `E2E_VIEWER_PASSWORD`, `E2E_MANAGER_EMAIL` / `E2E_MANAGER_PASSWORD` | `e2e.yml` | ✅ nomes presentes no GitHub Actions (valor não lido) |
+| `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` / `E2E_ADMIN_TOTP_SECRET` | `e2e.yml` | ✅ nomes presentes no GitHub Actions (valor não lido) |
+| `E2E_DEV_EMAIL` / `E2E_DEV_PASSWORD` / `E2E_DEV_TOTP_SECRET` | `e2e.yml` | ✅ nomes presentes no GitHub Actions (valor não lido) |
+| `E2E_SUPABASE_URL` / `E2E_SUPABASE_PUBLISHABLE_KEY` / `E2E_SUPABASE_PROJECT_ID` / `E2E_SUPABASE_SERVICE_ROLE_KEY` | `e2e.yml` | ❌ **pendentes — projeto isolado de homologação; não reutilizar secrets do banco canônico** |
+| `E2E_CLEANUP_TOKEN` | `e2e.yml` | ✅ nome presente no GitHub Actions (valor não lido) |
+| `SUPABASE_SERVICE_ROLE_KEY` | `security-compliance.yml` | ✅ nome presente no GitHub Actions; valor não lido |
 | `SUPABASE_DB_URL` | `migration-ledger-drift.yml`, `apply-sicoob-migrations.yml` | ✅ configurado no repositório; uso de escrita restrito ao environment `construction` e à `main` protegida. O workflow de escrita exige banco `postgres`, porta `5432`, `sslmode=require` ou `verify-full` e host direto `db.cfmzkthhgliqelozlmwu.supabase.co` ou session pooler oficial com usuário `postgres.cfmzkthhgliqelozlmwu` |
 | `RLS_TEST_USER_A_EMAIL` / `_PASSWORD` | `security-compliance.yml` | ❌ **ausente — persona autenticada de uma organização isolada** |
 | `RLS_TEST_USER_B_EMAIL` / `_PASSWORD` | `security-compliance.yml` | ❌ **ausente — proprietário da fixture privada** |
 | `RLS_TEST_PRIVATE_QUOTE_B_ID` | `security-compliance.yml` | ❌ **ausente — orçamento privado determinístico da persona B** |
-| `VITE_SUPABASE_URL` | `ci.yml`, `security-compliance.yml` | verificar se está presente |
-| `LHCI_GITHUB_APP_TOKEN` | `lighthouse.yml` | verificar |
+| `VITE_SUPABASE_URL` | `ci.yml`, `security-compliance.yml` | ✅ nome presente no GitHub Actions; valor não lido |
+| `LHCI_GITHUB_APP_TOKEN` | `lighthouse.yml` | ❌ nome não aparece no inventário atual de secrets |
 | `GITHUB_TOKEN` | vários (automático do Actions) | automático, não precisa configurar |
 
 ## Como usar isto

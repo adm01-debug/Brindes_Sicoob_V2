@@ -1,9 +1,28 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
-Atualizado em: 2026-10-22
+Atualizado em: 2026-10-29
 
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
-O erro exato foi extraído do run mais recente disponível em main.
+O snapshot abaixo cobre a última execução por workflow encontrada na `main`; registros
+históricos mais antigos permanecem abaixo quando ainda ajudam a explicar a causa.
+
+## Snapshot dos bloqueios — última execução na main (2026-10-29)
+
+| Workflow | Último run | Estado e ação |
+|---|---|---|
+| `Publicar funções Sicoob` | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | `failure`: `sicoob-approval-reconciliation` permaneceu na versão 5 (anterior 5). PR #161 permite versão igual sem mudança; não reexecutar deploy remoto sem autorização, pois altera Edge Functions do projeto. |
+| `Security Scan` | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `failure`: CVEs altas em `undici` e `zod`; correções na PR #161 aguardam checks e decisão segura de merge. |
+| `Qualidade contínua` | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | `failure`: mesmo `npm audit` (`undici`, `zod`); correções na PR #161. |
+| `CodeQL` | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `failure`: versões SHA diferentes entre `init` e `analyze`; alinhamento na PR #161. |
+| `Bundle Size Check` | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) | `failure`; logs expiraram (HTTP 404), portanto causa não confirmável. `bundle-stats` equivalente na PR #161 passou. |
+| `E2E (Playwright)` | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | `startup_failure`, zero jobs criados pelo GitHub. A execução posterior na PR #161 falhou por timeout de 45 s no canário RLS; configurar projeto isolado e secrets E2E dedicadas listadas abaixo. |
+| `Running Copilot Code Review` | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | `failure`: HTTP 402, limite adicional do plano Copilot. Depende do owner/plano; o candidato atual também reportou quota esgotada. |
+| Dependabot `@vitest/mocker` | [39775463512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775463512) | Execução de update histórica falhou; pacote já atualizado em PR #139. Confirmar fechamento do alerta stale no Dependabot. |
+
+Verdes no mesmo snapshot: `Migration ledger drift` (40828393693), `Enterprise
+Compliance & Audit Reporting` (40602982958) e `Branch Protection Sentinel`
+(40602983038). `Portal Sicoob` (39868499315) e updates Dependabot de `undici` /
+`zod` (40603001428 / 40603001197) também tiveram última conclusão `success`.
 
 ---
 
@@ -74,14 +93,21 @@ A falha é inevitável enquanto a quota Supabase não for restaurada.
 O job `e2e` ficou bloqueado nos hooks `beforeAll` e `afterAll` do teste
 `tests/rls/e2e-cleanup-rate-limit.test.ts`: as chamadas de inserção e limpeza do canário
 em `e2e_cleanup_rate_limit` excederam `45000ms` (`Hook timed out in 45000ms`). A execução
-mostrou as variáveis de ambiente Supabase necessárias presentes, mas seus valores são
-mascarados; portanto, não foi possível confirmar se URL, chave administrativa, projeto,
-conectividade, quota e schema pertencem ao mesmo ambiente de homologação.
+anterior usava secrets genéricas `VITE_SUPABASE_*` e `SUPABASE_SERVICE_ROLE_KEY`; como
+seus valores são mascarados, não foi possível confirmar se URL, chave administrativa,
+projeto, conectividade, quota e schema pertenciam ao mesmo ambiente de homologação.
 
-**Ação do owner:** concluir a configuração do projeto Supabase de homologação para E2E,
-confirmar que `e2e_cleanup_rate_limit` e suas políticas estão aplicadas nesse projeto e
-que as credenciais configuradas no GitHub Actions correspondem a ele. Depois, reexecutar
-o E2E autenticado/RLS. Nenhum valor de secret deve ser enviado pela conversa.
+**Correção preparada na PR #161:** o workflow passa a exigir secrets E2E separadas
+(`E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_PROJECT_ID` e
+`E2E_SUPABASE_SERVICE_ROLE_KEY`), mapeia-as às variáveis esperadas pelo app/testes e
+valida que a URL HTTPS corresponde ao project ref configurado. Os secrets genéricos do
+projeto não são usados pelo job E2E.
+
+**Ação do owner:** criar/configurar no GitHub Actions os quatro secrets acima com URL,
+project ref, chave publicável e service role do mesmo projeto de homologação; também
+confirmar que `e2e_cleanup_rate_limit`, suas políticas e as contas E2E existem nesse
+projeto. Depois que os checks da PR atualizarem com o workflow corrigido, reexecutar o E2E
+autenticado/RLS. Nenhum valor de secret deve ser enviado pela conversa.
 
 ---
 

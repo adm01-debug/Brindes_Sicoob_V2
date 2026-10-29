@@ -1,5 +1,35 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
+## Atualização da auditoria — 2026-10-29
+
+Consulta de workflows na `main` via GitHub Actions API, usando a última execução
+de cada workflow encontrada nas três páginas mais recentes. O estado abaixo é o
+baseline remoto anterior à PR #161; detalhes antigos após esta seção são registros
+históricos de 22/10 e podem refletir código/execuções anteriores.
+
+| Workflow | Última execução na main | Diagnóstico / estado |
+|---|---|---|
+| `Publicar funções Sicoob` | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) — `failure` | A verificação falhou porque `sicoob-approval-reconciliation` continuou na versão 5 (anterior também 5). PR #161 ajusta validação de versão sem alteração; deploy remoto não foi repetido. |
+| `Security Scan` | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) — `failure` | CVEs altas em `undici` e `zod`; atualização preparada na PR #161, `npm audit` do candidato sem vulnerabilidades. |
+| `Qualidade contínua` | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) — `failure` | Mesmo `npm audit` alto (`undici`, `zod`); correção preparada na PR #161. |
+| `CodeQL` | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) — `failure` | SHA de versões diferentes para `github/codeql-action/init` e `analyze`; alinhamento preparado na PR #161. |
+| `Bundle Size Check` | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) — `failure` | Logs expiraram (HTTP 404), causa não confirmável. A checagem `bundle-stats` da PR #161 concluiu `success`. |
+| `E2E (Playwright)` | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) — `startup_failure` | GitHub reportou zero jobs; sem diagnóstico de aplicação recuperável. Na PR #161, o teste remoto mais recente falhou por timeout de 45 s no canário RLS; isolamento por secrets E2E dedicadas está preparado, aguardando secrets de homologação e nova execução. |
+| `Running Copilot Code Review` | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) — `failure` | Erro 402: limite adicional de uso do Copilot. Bloqueio externo registrado em `PENDENCIAS.md`. |
+| Dependabot `@vitest/mocker` | [39775463512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775463512) — `failure` | Execução histórica do Dependabot; atualizar a dependência já foi resolvido em PR anterior. É necessário confirmar que o alerta stale fechou, não é falha da suíte da `main` atual. |
+
+**Últimos verdes na main observados:** `Migration ledger drift` (run
+40828393693), `Enterprise Compliance & Audit Reporting` (40602982958), `Branch
+Protection Sentinel` (40602983038), `Portal Sicoob` (39868499315) e os updates
+Dependabot de `undici` e `zod` (40603001428 e 40603001197).
+
+**Estado do candidato:** PR #161 permanece aberta; nenhum merge foi feito. A nova
+configuração E2E usa secrets separadas `E2E_SUPABASE_*`, pois a auditoria mostrou
+que o workflow anterior passava secrets genéricas ao ambiente autenticado. Aguardar
+configuração do projeto isolado, validação do novo head e checks obrigatórios verdes.
+
+---
+
 **Gerado em:** 2026-10-22  
 **Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
 
