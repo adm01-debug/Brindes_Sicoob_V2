@@ -122,6 +122,34 @@ errorType: 'quota', statusCode: 402
 
 ---
 
+## Snapshot atual de blockers — reconciliação 29/10/2026 UTC
+
+Este snapshot substitui afirmações anteriores de que os workflows estavam resolvidos. Critério: última execução retornada para a branch `main`; conclusões de PR não contam como resultado da `main`.
+
+| Workflow | Última execução em `main` | Causa confirmada / bloqueio | Próxima ação |
+|---|---|---|---|
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | Gate falhou no audit de dependências: `undici` e `zod` altos | Integrar a correção de dependências após E2E e checks completos passarem |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `undici` < 8.12.2 e `zod` < 4.6.6 no lockfile; npm audit reportou 2 altas | Validar upgrades em PR sem downgrade de cobertura ou contrato |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | Arquivo de configuração 4.39.1 com action runtime 4.38.2; falhou autobuild e não produziu SARIF | Alinhar todas as actions CodeQL na mesma PR e rerodar |
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | Publicação concluiu, mas a checagem encontrou `sicoob-approval-reconciliation` na versão 5 (anterior: 5) | Validar o script da PR #149 e obter listagem autenticada das versões; não declarar deploy validado antes disso |
+| Copilot Code Review | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | GitHub retornou limite adicional de uso do plano; HTTP 402 | Owner verificar billing/uso do Copilot ou aguardar reset; continuar demais checks |
+| E2E (Playwright) | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | `startup_failure`, nenhum job retornado; motivo exato indisponível | Reexecutar após corrigir pré-requisitos do runner; registrar logs completos se persistir |
+| Bundle Size Check | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) | Run falhou; log expirado (HTTP 404), causa não confirmada | Rerun para obter evidência atual antes de alterar orçamento ou bundle |
+| Lighthouse Performance Audit | [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910) | Run falhou; log expirado (HTTP 404), causa não confirmada | Rerun e coletar log antes de atribuir causa a secret ou orçamento |
+| Run sem nome (`workflow_id` 378424992) | [37775844412](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775844412) | `startup_failure`, zero jobs; a API não retornou nome ou logs | Identificar o workflow pelo histórico de runs/check suite antes de qualquer alteração |
+
+### Reconciliação GitHub e Supabase
+
+- `main`: `e9d59026793b84fabeaeec9da890a068f64d49c3`. PRs relevantes continuam abertas. PR #151 inclui 12 arquivos de migrations já aplicadas, sem reaplicá-las; checks ainda falham, logo a divergência Git ↔ ledger continua aberta.
+- Banco canônico `cfmzkthhgliqelozlmwu`: consulta `SELECT` ao ledger retornou 137 versões, última `20261022230000`. Nenhuma escrita ou migration foi feita.
+- O MCP não autorizou `supabase_functions_list` sem token administrativo `sbp_...`; o workflow de deploy falhou na verificação de aumento de versão. A paridade das Edge Functions publicadas permanece **não certificada**.
+- A execução `Migration ledger drift` [40670784182](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40670784182) está verde. As 462 migrations sem entrada no ledger não foram classificadas em lote como pendentes e não devem ser aplicadas por suposição.
+- A worktree compartilhada local estava 84 commits atrás de `main` e com alterações locais. Nenhum arquivo foi copiado em lote; alterações locais redundantes/obsoletas não devem sobrescrever versões mais novas do GitHub.
+
+Baseline local isolada em `origin/main` foi registrada em [RELATORIO_CI.md](./RELATORIO_CI.md): build/typecheck aprovados, lint 0 erros/873 avisos, 5.839 testes aprovados e 68 ignorados. Essa suíte não substitui E2E autenticado remoto.
+
+---
+
 ## Workflow: `Aplicar migrations Sicoob` (`apply-sicoob-migrations.yml`)
 
 **Trigger:** `workflow_dispatch` apenas (manual) — requer input `confirmar: "APLICAR"` e branch `main`.  

@@ -165,3 +165,50 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 ---
 
 *Relatório gerado automaticamente pela sessão Claude Code.*
+
+---
+
+## Reconciliação GitHub ↔ Supabase — 29/10/2026 UTC
+
+### Baseline reproduzida localmente
+
+Executada em worktree isolada sobre `origin/main` (`e9d59026793b84fabeaeec9da890a068f64d49c3`), sem mudanças de aplicação:
+
+| Verificação | Resultado da baseline |
+|---|---|
+| `npm ci` | Concluído; 980 pacotes instalados; audit reportou 2 vulnerabilidades altas |
+| `npm run build` | Aprovado; avisos de variáveis Vite ausentes no ambiente e de chunks grandes |
+| `npm run lint` | Aprovado: 0 erros e 873 avisos |
+| `npm run typecheck` | Aprovado |
+| `npm run test -- --reporter=dot` | 452 arquivos aprovados, 4 ignorados; 5.839 testes aprovados, 68 ignorados |
+
+Os 68 testes ignorados são a baseline atual e não foram alterados. Essa suíte é Vitest; não comprova uma jornada E2E autenticada contra o projeto remoto.
+
+### Repositório e banco canônico
+
+- `origin/main` estava em `e9d59026793b84fabeaeec9da890a068f64d49c3`.
+- Consulta somente leitura ao ledger `supabase_migrations.schema_migrations`: 137 versões; mais recente `20261022230000` (`repair_migration_ledger_and_harden_search_path`). Nenhum SQL foi aplicado nesta auditoria.
+- Na comparação de versões, 12 migrations já registradas no banco não têm fonte em `main`: `20261015102000`, `20261015230500`, `20261015233500`, `20261015235000`, `20261015235500`, `20261016000000`, `20261016160000`, `20261016163000`, `20261016170000`, `20261016171500`, `20261016172000`, `20261016173000`. A PR [#151](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/151) repõe esses arquivos sem reaplicá-los; seus checks ainda falham, portanto a correção não chegou à `main`.
+- `main` contém 587 arquivos SQL; 462 não têm uma versão correspondente no ledger. Isso não prova que estejam pendentes de aplicação. O workflow [Migration ledger drift](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40670784182) passou; não se deve aplicar esses arquivos em lote.
+- A cópia de trabalho compartilhada estava 84 commits atrás da `main` e suja. As mudanças de `health-check` e `bi-share-dossier` estão na PR [#150](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/150); não devem ser importadas diretamente da cópia antiga. A correção de `secretNormalizers.ts` já está em `main`; a versão local do componente de churn e o relatório local de validação são versões antigas. Nenhuma alteração local foi copiada para `main`.
+- A listagem administrativa de Edge Functions não está autorizada pelo MCP conectado; a ferramenta pede token administrativo `sbp_...`. O run de publicação [#40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) concluiu o comando de publicação, mas falhou na verificação: `sicoob-approval-reconciliation` ficou na versão 5, igual à anterior. Não há evidência suficiente para certificar a versão publicada de todas as funções.
+
+### Última execução conhecida de cada workflow na `main`
+
+| Workflow | Run | Resultado | Evidência |
+|---|---:|---|---|
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | failure | Gate de dependências: `undici` e `zod` com vulnerabilidade alta |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | failure | Audit: `undici` vulnerável até 8.12.1; `zod` vulnerável abaixo de 4.6.6 |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | failure | Configuração 4.39.1 incompatível com runtime 4.38.2; SARIF não gerado |
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | failure | Verificação reportou versão 5 igual à anterior para `sicoob-approval-reconciliation` |
+| Copilot Code Review | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | failure | Limite adicional de uso do plano Copilot atingido (erro de serviço 402) |
+| E2E (Playwright) | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | startup_failure | Zero jobs; causa técnica não identificável nos dados/logs disponíveis |
+| Bundle Size Check | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) | failure | Log expirado (API 404); causa não confirmada |
+| Lighthouse Performance Audit | [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910) | failure | Log expirado (API 404); causa não confirmada |
+| Workflow sem nome retornado (`workflow_id` 378424992) | [37775844412](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775844412) | startup_failure | Zero jobs; workflow e causa não identificáveis pela resposta disponível |
+
+Últimas execuções verdes confirmadas: Branch Protection Sentinel (`40602983038`), Enterprise Compliance (`40602982958`), Migration ledger drift (`40670784182`), Portal Sicoob (`39868499315`) e Monthly DB Audit (`36794161452`).
+
+### Estado final desta reconciliação
+
+Baseline local concluída. O código e as fontes ausentes estão hospedados em PRs, mas não foram integrados à `main` porque checks requeridos ainda falham. O ledger canônico foi consultado sem escrita; nenhuma migration, dado, Edge Function ou configuração do Supabase foi alterada por esta auditoria. Não alegar sincronismo total enquanto a PR #151 não for integrada e a listagem autenticada das funções não estiver disponível.
