@@ -237,3 +237,22 @@ Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Depen
 As contas e senhas de teste já aparecem como nomes de secrets, mas é necessário garantir que as contas existam no projeto isolado de homologação. Não foi lido nem registrado nenhum valor secreto. Até esses cinco secrets estarem configurados e o gate verde, o job falhará antes de executar os testes remotos.
 
 **Ação do responsável:** criar/selecionar um projeto Supabase de homologação separado dos dois refs canônicos, criar nele as contas/personas E2E e cadastrar os cinco secrets acima em *Settings → Secrets and variables → Actions*. Não reutilizar `SUPABASE_SERVICE_ROLE_KEY` ou as credenciais de produção.
+
+**Atualização em 2026-10-29:** o responsável informou que vai provisionar e configurar o projeto. A configuração ainda não foi confirmada. No run [40925007226](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40925007226), o preflight [falhou antes de iniciar os shards](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40925007226/job/123628103758) e listou os cinco secrets ausentes acima; portanto, nenhuma jornada autenticada nem limpeza remota foi executada. Após a configuração, validar URL × project ref e executar novamente a suíte E2E completa.
+
+## Compartilhamento do dossiê BI — rotação HMAC ainda depende de configuração
+
+O PR #150 exige `BI_SHARE_SECRET` exclusivo, com no mínimo 32 bytes, e não usa
+a service role para assinar links novos. Para manter links emitidos antes da
+rotação, o handler aceita temporariamente `BI_SHARE_SECRET_PREVIOUS` apenas na
+validação; links novos sempre usam a chave atual. Não foi possível confirmar a
+presença de nenhum desses secrets sem ler seus valores. Antes de publicar,
+configurar a chave atual e, se existirem links legados ainda válidos, a chave
+anterior; removê-la depois de 30 dias da última emissão antiga.
+
+O recurso de ponta a ponta permanece incompleto: falta ligar o POST a um botão
+no BI e o servidor ainda precisa validar a autorização do usuário sobre o
+`clientId` antes de emitir um link público. Não liberar compartilhamento por
+link até ambos os itens terem contrato e teste próprios.
+
+**Evidência de autorização (2026-10-29):** a migration `20260108014732_22444765-aa2c-47b2-afb4-f942541d622d.sql` cria `companies.responsavel_id`, mas sua política de leitura permite `SELECT` para todo usuário autenticado (`USING (true)`). O `crm-db-bridge` consulta o CRM com credencial de serviço e não aplica escopo de leitura por responsável. Não foi localizada uma associação confiável usuário↔empresa aplicada server-side; por isso, `clientId` recebido no POST não pode ser tratado como autorizado apenas por estar autenticado. A emissão pública continua bloqueada até existir e ser testada uma regra de escopo verificável.

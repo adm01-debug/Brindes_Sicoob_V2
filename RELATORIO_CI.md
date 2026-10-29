@@ -200,3 +200,57 @@ Mudança E2E ainda em revisão local: `actionlint .github/workflows/e2e.yml` pas
 **Resultado de segurança:** `npm audit` confirmou advisories altas para undici e zod. O audit indica correção do undici sem major; para zod, aponta `4.6.7` como correção com mudança major. A migração de Zod exige análise de compatibilidade e suíte completa; não foi feita nesta correção de isolamento.
 
 **Pendências externas:** cadastrar os cinco secrets `E2E_SUPABASE_*` de homologação descritos em [PENDENCIAS.md](PENDENCIAS.md). O próximo push do workflow deve falhar imediatamente no preflight enquanto estiverem ausentes, sem acessar o projeto canônico. A última verificação da branch `main` também mantém pendentes o alinhamento dos SHAs do CodeQL e a mitigação do rate limit/publicação das Edge Functions.
+
+### Rotação do segredo HMAC do dossiê BI — PR #150
+
+Foi acrescentado suporte explícito a `BI_SHARE_SECRET_PREVIOUS`: o handler assina apenas com `BI_SHARE_SECRET` e, durante uma janela de rotação, também verifica links com a chave anterior. Ambas exigem pelo menos 32 bytes; a service role não é usada como fallback. A chave anterior deve ser removida depois de 30 dias da última emissão antiga, que é o prazo máximo aceito pelo handler. A configuração remota desses secrets não foi consultada nem confirmada, e nenhum deploy foi feito.
+
+| Verificação | Baseline antes da mudança | Resultado após a mudança |
+|---|---:|---:|
+| Build | aprovado | aprovado; avisos preexistentes de env, PostCSS, imports e chunks grandes |
+| ESLint baseline | 0 regressões | 0 regressões; os arquivos Edge são cobertos também pelo `deno check` |
+| Typecheck baseline | 0 regressões (0/0) | 0 regressões (0/0) |
+| Testes completos | 457 arquivos aprovados, 4 ignorados; 5.857 aprovados, 68 ignorados | 457 arquivos aprovados, 4 ignorados; 5.858 aprovados, 68 ignorados |
+| Testes direcionados HMAC/liveness | — | 2 arquivos, 6 testes aprovados |
+| `deno check` da função | — | aprovado; Deno reporta aviso preexistente de override npm local `file:vendor/braces` |
+| `npm audit --audit-level=high` | 2 vulnerabilidades altas já presentes | continua falhando para `undici` e `zod`, sem mudança dessas dependências |
+
+O teste completo intermediário detectou um teste legado usando o nome removido `resolveBiShareSecret`; o consumidor de teste foi atualizado para a interface atual/anterior e a execução integral seguinte passou sem outros testes abaixo do baseline. A feature de compartilhamento ainda não tem botão conectado ao POST nem autorização de escopo do `clientId` no servidor; isso segue pendente e impede considerar o recurso BI concluído. Nenhuma escrita no Supabase foi realizada.
+
+### Atualização de CI e segurança — 2026-10-29
+
+#### Última execução da `main` por workflow
+
+Inventário consultado no GitHub MCP em 2026-10-29; referência mais recente da `main`: `e9d59026793b84fabeaeec9da890a068f64d49c3`. Só os workflows cuja última execução na `main` está em `failure` contam como falha ativa.
+
+| Workflow | Último run na `main` | Status | Evidência / causa confirmada |
+|---|---:|---|---|
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | failure | `npm audit`: 2 vulnerabilidades altas — `undici` e `zod`; o upgrade corretivo de Zod detectado pelo audit é major. |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | failure | Gate do mesmo `npm audit` interrompe o step de dependências. |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | failure | Job encerrou com `JOB_STATUS_CONFIGURATION_ERROR`; o run registrou `CODEQL_ACTION_VERSION=4.38.2` apesar de `init` já usar 4.39.1. PR #165 propõe alinhar os SHAs. |
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | failure | O step de confirmação pós-publicação falhou; PR #165 propõe corrigir a validação quando a função já está na versão esperada. O workflow publica no Supabase canônico e não foi reexecutado. |
+
+As últimas execuções disponíveis de **Migration ledger drift** ([40828393693](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40828393693)), **Branch Protection Sentinel** ([40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038)) e **Enterprise Compliance & Audit Reporting** ([40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958)) estão verdes. O `Portal Sicoob` também permanece verde no run [39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315). A execução mais recente do workflow de revisão Copilot continua falhando por limitação/quota de serviço, sem correção de código identificada.
+
+#### PRs de correção existentes e bloqueios atuais
+
+- **PR #161** ([checks](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/161)): `npm audit`, build, CodeQL e demais checks de código consultados estão verdes; E2E não passa por falta do projeto/secrets de homologação e a revisão Copilot falha por serviço externo. O PR também migra Zod major e altera código da aplicação; não foi integrado.
+- **PR #164** ([checks](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164)): `npm audit` e CodeQL verdes, mas o build/contratos falhou; E2E e Copilot seguem bloqueados. Não foi integrado.
+- **PR #165** ([checks](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/165)): CodeQL e gates Sicoob verdes, porém `npm audit`, build/contratos e E2E falharam. A causa de E2E foi o preflight: ausência de `E2E_SUPABASE_URL`, `E2E_SUPABASE_PROJECT_ID`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_SERVICE_ROLE_KEY` e `E2E_SUPABASE_CLEANUP_TOKEN`. O responsável informou que vai configurar homologação; ainda não há confirmação no GitHub.
+- **PR #150**, commit `792e1b1b673e053db940867f14fb5af76939d0ee`: build, revisão responsiva e bundle estavam em execução na última consulta; aprovação transacional, bundle e origem confiável passaram. `npm audit` falhou pelas duas vulnerabilidades herdadas; E2E bloqueou no mesmo preflight; Copilot falhou por serviço externo. O PR permanece aberto.
+
+**Decisão de segurança:** nenhuma migration, alteração de dado, publicação de Edge Function ou deploy foi realizado nesta etapa. Os workflows de deploy ao projeto canônico não serão rerunados. PRs com mudanças de aplicação não foram integrados; cada integração deve aguardar todos os checks exigidos e confirmar que não dispara deploy de produção.
+
+#### Baseline × validação final do PR #150
+
+| Verificação | Baseline local/pré-correção | Commit atual #150 | Resultado |
+|---|---|---|---|
+| Build | aprovado | aprovado | sem regressão |
+| Lint baseline | 0 regressões | 0 regressões | sem regressão |
+| Typecheck baseline | 0 erros | 0 erros | sem regressão |
+| Testes completos | 457 arquivos aprovados, 4 ignorados; 5.857 testes aprovados, 68 ignorados | 457 arquivos aprovados, 4 ignorados; 5.858 testes aprovados, 68 ignorados | sem regressão; +1 teste |
+| `deno check` da Edge Function | — | aprovado | aprovado |
+| npm audit alto/crítico | 2 vulnerabilidades altas | mesmas 2 vulnerabilidades | pendente; não introduzidas pelo PR #150 |
+| E2E remoto autenticado | não executado contra homologação | preflight bloqueado antes dos shards | pendente de projeto/secrets de homologação |
+
+Os checks remotos são referências mutáveis; reconsultar os links dos runs antes de qualquer merge. Evidências de execução local e o bloqueio externo de homologação estão detalhados em [PENDENCIAS.md](PENDENCIAS.md).
