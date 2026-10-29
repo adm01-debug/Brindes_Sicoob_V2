@@ -44,13 +44,14 @@ function isPdfOptions(value: unknown): value is PdfOptions {
 interface PdfGenerationDialogProps {
   proposalData: ProposalTemplateData | null;
   quoteId?: string;
+  expectedRowVersion?: number;
   quoteNumber?: string;
   quoteStatus?: string;
   clientPhone?: string;
   approvalLink?: string | null;
   onWhatsApp?: () => void;
   onShareLink?: () => void;
-  onStatusUpdate?: (newStatus: string, pdfUrl: string) => void;
+  onStatusUpdate?: (newStatus: string, pdfUrl: string, rowVersion?: number) => void;
   trigger?: ReactNode;
 }
 
@@ -132,9 +133,9 @@ function usePdfDocument(data: ProposalTemplateData | null, options: PdfOptions, 
   return { stage, progress, progressLabel, blob, version, setVersion, generate, reset, print };
 }
 
-function usePdfFinalization({ blob, quoteId, quoteNumber, version, onStatusUpdate, close }: {
-  blob: Blob | null; quoteId?: string; quoteNumber?: string; version: number;
-  onStatusUpdate?: (status: string, url: string) => void; close: () => void;
+function usePdfFinalization({ blob, quoteId, expectedRowVersion, quoteNumber, version, onStatusUpdate, close }: {
+  blob: Blob | null; quoteId?: string; expectedRowVersion?: number; quoteNumber?: string; version: number;
+  onStatusUpdate?: (status: string, url: string, rowVersion?: number) => void; close: () => void;
 }) {
   const [finalizing, setFinalizing] = useState(false);
   const finalize = async () => {
@@ -144,9 +145,12 @@ function usePdfFinalization({ blob, quoteId, quoteNumber, version, onStatusUpdat
       const filePath = `quotes/${quoteId}/${quoteNumber || quoteId}_v${version}_signed.pdf`;
       const { error } = await supabase.storage.from("proposals").upload(filePath, blob, { upsert: true });
       if (error) throw error;
-      await approveQuoteWithPdfAtomically(quoteId, filePath);
-      toast.success("Orçamento aprovado e PDF assinado salvo!"); onStatusUpdate?.("approved", filePath); close();
-    } catch (error) { console.error("Error finalizing quote:", error); toast.error("Erro ao finalizar orçamento"); }
+      const approved = await approveQuoteWithPdfAtomically(quoteId, expectedRowVersion ?? 0, filePath);
+      toast.success("Orçamento aprovado e PDF assinado salvo!"); onStatusUpdate?.("approved", filePath, approved.row_version); close();
+    } catch (error) {
+      console.error("Error finalizing quote:", error);
+      toast.error("Erro ao finalizar orçamento", { description: error instanceof Error ? error.message : "Recarregue o orçamento e tente novamente." });
+    }
     finally { setFinalizing(false); }
   };
   return { finalizing, finalize };
@@ -212,7 +216,7 @@ function ReadyStage({ document, finalizing, finalize, download, canFinalize }: {
   </div></div>;
 }
 
-export function PdfGenerationDialog({ proposalData, quoteId, quoteNumber, quoteStatus, onStatusUpdate, trigger }: PdfGenerationDialogProps) {
+export function PdfGenerationDialog({ proposalData, quoteId, expectedRowVersion, quoteNumber, quoteStatus, onStatusUpdate, trigger }: PdfGenerationDialogProps) {
   const { profile } = useAuth();
   const { logPdfGenerated } = useQuoteHistory();
   const [open, setOpen] = useState(false);
@@ -225,7 +229,7 @@ export function PdfGenerationDialog({ proposalData, quoteId, quoteNumber, quoteS
     ...(quoteStatus ? { status: quoteStatus } : {}),
   } : null, [proposalData, quoteId, idHash, quoteStatus]);
   const document = usePdfDocument(effectiveData, preferences.options, quoteId, logPdfGenerated);
-  const finalization = usePdfFinalization({ blob: document.blob, quoteId, quoteNumber,
+  const finalization = usePdfFinalization({ blob: document.blob, quoteId, expectedRowVersion, quoteNumber,
     version: document.version, onStatusUpdate, close: () => setOpen(false) });
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);

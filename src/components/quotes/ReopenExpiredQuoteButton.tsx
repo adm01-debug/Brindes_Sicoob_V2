@@ -7,6 +7,7 @@ import { updateQuoteStatusAtomically } from '@/services/quoteStatusTransition';
 
 interface ReopenExpiredQuoteButtonProps {
   quoteId: string;
+  rowVersion?: number;
   status: string;
   isLatestVersion?: boolean;
   onReopened?: () => void;
@@ -14,6 +15,7 @@ interface ReopenExpiredQuoteButtonProps {
 
 export function ReopenExpiredQuoteButton({
   quoteId,
+  rowVersion,
   status,
   isLatestVersion = true,
   onReopened,
@@ -29,6 +31,7 @@ export function ReopenExpiredQuoteButton({
     try {
       await updateQuoteStatusAtomically(
         quoteId,
+        rowVersion ?? 0,
         'draft',
         'Orçamento expirado reaberto para revisão comercial',
       );

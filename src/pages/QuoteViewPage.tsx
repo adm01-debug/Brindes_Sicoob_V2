@@ -57,8 +57,8 @@ function MissingQuote({ navigate }: { navigate: NavigateFunction }) {
 async function cancelSync(state: QuoteViewState, quote: Quote) {
   if (!quote.id) return;
   try {
-    await updateQuoteStatusAtomically(quote.id, "pending", "Sincronização com Bitrix24 cancelada");
-    state.setQuote((current) => current ? { ...current, status: "pending" } : current);
+    const updated = await updateQuoteStatusAtomically(quote.id, quote.row_version ?? 0, "pending", "Sincronização com Bitrix24 cancelada");
+    state.setQuote((current) => current ? { ...current, status: "pending", row_version: updated.row_version } : current);
     toast.success("Sincronização cancelada");
   } catch (error: unknown) {
     toast.error("Erro ao cancelar", { description: error instanceof Error ? error.message : "Erro" });
@@ -86,17 +86,22 @@ function refreshQuote(state: QuoteViewState, quoteId: string) {
 
 function QuotePrimaryActions({ state, quote, quoteId }: { state: QuoteViewState; quote: Quote; quoteId: string }) {
   if (quote.status === "pending_approval") return null;
-  const updateStatus = (newStatus: string, pdfUrl?: string) => {
-    state.setQuote((current) => current ? { ...current, status: newStatus as Quote["status"], approved_pdf_url: pdfUrl } : current);
+  const updateStatus = (newStatus: string, pdfUrl?: string, rowVersion?: number) => {
+    state.setQuote((current) => current ? {
+      ...current,
+      status: newStatus as Quote["status"],
+      approved_pdf_url: pdfUrl,
+      row_version: rowVersion ?? current.row_version,
+    } : current);
     state.fetchQuote(quoteId);
   };
-  return <><div className="hidden md:flex items-center gap-2"><QuoteConvertToOrder quoteId={quoteId} status={quote.status} onConverted={() => refreshQuote(state, quoteId)} /><Button onClick={state.handleSyncBitrix} disabled={state.isSyncing} className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">{state.isSyncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}{state.isSyncing ? "Sincronizando..." : "Sincronizar"}</Button></div><PdfGenerationDialog proposalData={state.proposalData} quoteId={quoteId} quoteNumber={quote.quote_number} quoteStatus={quote.status} clientPhone={quote.client_phone} approvalLink={state.approvalLink} onWhatsApp={state.handleWhatsAppShare} onShareLink={state.handleShareLink} onStatusUpdate={updateStatus} trigger={<Button className="gap-2"><Eye className="h-4 w-4" /> Preview Proposta</Button>} /></>;
+  return <><div className="hidden md:flex items-center gap-2"><QuoteConvertToOrder quoteId={quoteId} status={quote.status} onConverted={() => refreshQuote(state, quoteId)} /><Button onClick={state.handleSyncBitrix} disabled={state.isSyncing} className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">{state.isSyncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}{state.isSyncing ? "Sincronizando..." : "Sincronizar"}</Button></div><PdfGenerationDialog proposalData={state.proposalData} quoteId={quoteId} expectedRowVersion={quote.row_version} quoteNumber={quote.quote_number} quoteStatus={quote.status} clientPhone={quote.client_phone} approvalLink={state.approvalLink} onWhatsApp={state.handleWhatsAppShare} onShareLink={state.handleShareLink} onStatusUpdate={updateStatus} trigger={<Button className="gap-2"><Eye className="h-4 w-4" /> Preview Proposta</Button>} /></>;
 }
 
 function QuoteHeader({ state, quote, quoteId, navigate }: { state: QuoteViewState; quote: Quote; quoteId: string; navigate: NavigateFunction }) {
   const status = statusConfig[quote.status] ?? { label: quote.status, variant: "outline" as const };
   const createdAt = quote.created_at ? format(new Date(quote.created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : "-";
-  return <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden"><div className="flex items-center gap-4"><Button variant="ghost" size="icon" aria-label="Voltar" onClick={() => navigate("/orcamentos")}><ArrowLeft className="h-5 w-5" /></Button><div><div className="flex items-center gap-3"><h1 className="font-display text-2xl font-bold">Orçamento {quote.quote_number}</h1><Badge variant={status.variant}>{status.label}</Badge></div><p className="text-muted-foreground">Criado em {createdAt}</p></div></div><div className="flex items-center gap-2"><Button variant="outline" className="hidden md:flex gap-2" onClick={() => window.print()}><Printer className="h-4 w-4" />Imprimir</Button><ReopenExpiredQuoteButton quoteId={quoteId} status={quote.status} isLatestVersion={quote.is_latest_version} onReopened={() => state.setQuote((current) => current ? { ...current, status: "draft" } : current)} /><QuotePrimaryActions state={state} quote={quote} quoteId={quoteId} /><QuoteMoreActions state={state} quote={quote} quoteId={quoteId} navigate={navigate} /></div></div>;
+  return <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden"><div className="flex items-center gap-4"><Button variant="ghost" size="icon" aria-label="Voltar" onClick={() => navigate("/orcamentos")}><ArrowLeft className="h-5 w-5" /></Button><div><div className="flex items-center gap-3"><h1 className="font-display text-2xl font-bold">Orçamento {quote.quote_number}</h1><Badge variant={status.variant}>{status.label}</Badge></div><p className="text-muted-foreground">Criado em {createdAt}</p></div></div><div className="flex items-center gap-2"><Button variant="outline" className="hidden md:flex gap-2" onClick={() => window.print()}><Printer className="h-4 w-4" />Imprimir</Button><ReopenExpiredQuoteButton quoteId={quoteId} rowVersion={quote.row_version} status={quote.status} isLatestVersion={quote.is_latest_version} onReopened={() => state.setQuote((current) => current ? { ...current, status: "draft" } : current)} /><QuotePrimaryActions state={state} quote={quote} quoteId={quoteId} /><QuoteMoreActions state={state} quote={quote} quoteId={quoteId} navigate={navigate} /></div></div>;
 }
 
 function QuoteStatusSection({ state, quote, quoteId }: { state: QuoteViewState; quote: Quote; quoteId: string }) {
@@ -116,7 +121,7 @@ function DiscountApprovalBanner({ quote, approval }: { quote: Quote; approval: D
 }
 
 function QuoteApprovalSection({ state, quote, quoteId, approval }: { state: QuoteViewState; quote: Quote; quoteId: string; approval: DiscountApprovalRequest | null }) {
-  return <><QuoteNextActionBanner quoteId={quoteId} status={quote.status} onAction={(action) => runNextAction(state, action)} /><QuoteApprovalNotes notes={quote.rejection_notes} status={quote.status} /><QuoteSingularApprovalActions quoteId={quoteId} status={quote.status} quoteNumber={quote.quote_number} onActionComplete={() => refreshQuote(state, quoteId)} /><DiscountApprovalBanner quote={quote} approval={approval} /></>;
+  return <><QuoteNextActionBanner quoteId={quoteId} status={quote.status} onAction={(action) => runNextAction(state, action)} /><QuoteApprovalNotes notes={quote.rejection_notes} status={quote.status} /><QuoteSingularApprovalActions quoteId={quoteId} rowVersion={quote.row_version} status={quote.status} quoteNumber={quote.quote_number} onActionComplete={() => refreshQuote(state, quoteId)} /><DiscountApprovalBanner quote={quote} approval={approval} /></>;
 }
 
 function CommercialTerm({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {

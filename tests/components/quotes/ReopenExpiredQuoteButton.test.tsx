@@ -25,7 +25,7 @@ function renderAction(props: Partial<ComponentProps<typeof ReopenExpiredQuoteBut
           path="*"
           element={
             <>
-              <ReopenExpiredQuoteButton quoteId="quote-1" status="expired" {...props} />
+              <ReopenExpiredQuoteButton quoteId="quote-1" rowVersion={7} status="expired" {...props} />
               <LocationProbe />
             </>
           }
@@ -50,6 +50,7 @@ describe('ReopenExpiredQuoteButton', () => {
     await waitFor(() =>
       expect(mocks.updateStatus).toHaveBeenCalledWith(
         'quote-1',
+        7,
         'draft',
         expect.stringMatching(/reaberto para revisão/i),
       ),

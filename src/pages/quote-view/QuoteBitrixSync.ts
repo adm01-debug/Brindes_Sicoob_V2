@@ -78,8 +78,9 @@ function parseBitrixQuoteId(result: BitrixResult | undefined) {
 }
 
 async function markQuoteAsSent(quote: Quote, quoteId: string) {
-  if (quote.status === 'sent') return;
-  await updateQuoteStatusAtomically(quoteId, 'sent', 'Sincronização com Bitrix24 concluída');
+  if (quote.status === 'sent') return quote.row_version;
+  const updated = await updateQuoteStatusAtomically(quoteId, quote.row_version ?? 0, 'sent', 'Sincronização com Bitrix24 concluída');
+  return updated.row_version;
 }
 
 async function logSuccessfulSync(
@@ -93,9 +94,12 @@ async function logSuccessfulSync(
   });
 }
 
-function updatedQuote(bitrixQuoteId: number | null): Partial<Quote> {
-  if (bitrixQuoteId === null) return { status: 'sent' };
-  return { status: 'sent', bitrix_quote_id: String(bitrixQuoteId) };
+function updatedQuote(bitrixQuoteId: number | null, rowVersion?: number): Partial<Quote> {
+  return {
+    status: 'sent',
+    ...(bitrixQuoteId === null ? {} : { bitrix_quote_id: String(bitrixQuoteId) }),
+    ...(rowVersion === undefined ? {} : { row_version: rowVersion }),
+  };
 }
 
 export async function syncQuoteToBitrix({
@@ -111,8 +115,8 @@ export async function syncQuoteToBitrix({
   const pdfPath = await uploadProposal(quote, quoteId, proposalData);
   const result = await invokeBitrix(quoteId, pdfPath, logQuoteHistory);
   const bitrixQuoteId = parseBitrixQuoteId(result);
-  await markQuoteAsSent(quote, quoteId);
+  const rowVersion = await markQuoteAsSent(quote, quoteId);
   await logSuccessfulSync(quoteId, bitrixQuoteId, logQuoteHistory);
   toast.success(result?.message || 'Orçamento sincronizado com Bitrix24!');
-  return { success: true, updatedQuote: updatedQuote(bitrixQuoteId) };
+  return { success: true, updatedQuote: updatedQuote(bitrixQuoteId, rowVersion) };
 }

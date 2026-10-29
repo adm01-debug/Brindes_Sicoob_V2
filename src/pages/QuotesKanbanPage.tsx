@@ -422,6 +422,7 @@ export default function QuotesKanbanPage() {
         {/* Bulk Actions Toolbar */}
         <QuoteBulkActionsToolbar
           selectedIds={selectedQuoteIds}
+          expectedRowVersions={selectedQuoteIds.map((id) => quotes.find((quote) => quote.id === id)?.row_version)}
           onClearSelection={() => setSelectedQuoteIds([])}
           onActionComplete={fetchQuotes}
         />

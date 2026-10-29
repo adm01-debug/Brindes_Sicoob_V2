@@ -1,5 +1,21 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
+## Revalidação local P033 — concorrência de orçamentos — 29/10/2026
+
+Alteração na branch `fix/hermes-h247355-ci-dependencies` para propagar a `row_version` observada na tela através de transições de status, aprovação com PDF, operação em lote, reabertura/edição e sincronização Bitrix. A versão agora é validada pela RPC no banco; o frontend não relê a versão antes da escrita, evitando ocultar concorrência. Versão ausente ou inválida encerra sem chamar a RPC.
+
+| Verificação | Baseline | Resultado local | Estado |
+|---|---:|---:|---|
+| `npm run build` | exit 0 | exit 0; avisos já conhecidos de env, PostCSS, Rollup e chunks | ✅ |
+| `npm run lint` | 0 erros, 873 avisos | 0 erros, 872 avisos | ✅ sem regressão |
+| `npm run typecheck` | exit 0 | exit 0 | ✅ |
+| Suíte Vitest completa | 5.871 passaram, 68 ignorados | 5.875 passaram, 68 ignorados; 459 arquivos passaram, 4 ignorados | ✅ +4 testes |
+| Testes direcionados de concorrência | — | 3 arquivos, 14 testes passaram | ✅ |
+
+O contrato foi revisado contra as migrations versionadas das RPCs `bulk_update_quote_status_atomic` e `approve_quote_with_pdf_atomic`, incluindo o wrapper de governança de 13/10. A consulta somente leitura ao MCP canônico `cfmzkthhgliqelozlmwu` expirou duas vezes com Management API 544/timeout; a conferência do estado vivo do Supabase ficou indisponível nesta rodada. O diff não contém mudanças em `supabase/migrations` nem `supabase/functions`; nenhuma gravação, migration ou deploy foi executado. A evidência anterior do ledger (137 migrations, mais recente `20261022230000`) permanece histórica, não foi reconfirmada agora.
+
+As alterações locais estão sendo publicadas pela PR #157; o SHA do novo commit e os checks remotos serão anexados após o push. A PR não será mesclada enquanto os checks externos de E2E/Copilot permanecerem bloqueados.
+
 ## Reconciliação publicada — 29/10/2026 09:02 UTC
 
 - Branch/PR: `fix/hermes-h247355-ci-dependencies`, PR [#157](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/157), HEAD `a8a98c1a026b035513cf25e7a9d7537456078892`; `main` `e9d59026793b84fabeaec9da890a068f64d49c3`. O HEAD remoto coincide com a revisão local; a PR está aberta e não foi mesclada.

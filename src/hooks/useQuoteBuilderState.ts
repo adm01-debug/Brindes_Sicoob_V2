@@ -25,6 +25,7 @@ import type { Product, DiscountType, DeliveryMode } from "@/types/quote-builder"
 import { useQuoteProductSearch } from "@/hooks/quote/useQuoteProductSearch";
 import { useQuoteInitialization } from "@/hooks/quote/useQuoteInitialization";
 import { isQuoteCommerciallyEditable, quoteStatusRequiresDraftReset } from "@/lib/quote-status-config";
+import type { QuoteStatusTransition } from "@/services/quoteStatusTransition";
 
 export function validateBudgetForSubmission<T>(
   budget: T | null,
@@ -292,16 +293,28 @@ interface TransitionQuoteParams {
   realDiscountPercent: number;
   sellerNotes?: string;
   requestApproval: (quoteId: string, requested: number, allowed: number, notes?: string) => Promise<boolean>;
-  updateQuoteStatus: (quoteId: string, status: Quote["status"]) => Promise<boolean>;
+  updateQuoteStatus: (
+    quoteId: string,
+    status: Quote["status"],
+    expectedRowVersion: number,
+  ) => Promise<QuoteStatusTransition | null>;
 }
 
-async function applyQuoteTransition(params: TransitionQuoteParams): Promise<boolean> {
+function isValidQuoteRowVersion(rowVersion: number | undefined): rowVersion is number {
+  return typeof rowVersion === "number" && Number.isInteger(rowVersion) && rowVersion >= 1;
+}
+
+export async function applyQuoteTransition(params: TransitionQuoteParams): Promise<boolean> {
   const quoteId = params.quote.id;
   if (!quoteId) return false;
   let effectiveStatus = params.persistedStatus;
+  const observedRowVersion = params.quote.row_version;
+  if (!isValidQuoteRowVersion(observedRowVersion)) return false;
+  let expectedRowVersion = observedRowVersion;
   if (quoteStatusRequiresDraftReset(effectiveStatus)) {
-    const reopened = await params.updateQuoteStatus(quoteId, "draft");
+    const reopened = await params.updateQuoteStatus(quoteId, "draft", expectedRowVersion);
     if (!reopened) return false;
+    expectedRowVersion = reopened.row_version;
     effectiveStatus = "draft";
   }
   if (params.finalStatus === "pending_approval" && params.maxDiscountPercent !== null && params.maxDiscountPercent !== undefined) {
@@ -313,7 +326,7 @@ async function applyQuoteTransition(params: TransitionQuoteParams): Promise<bool
     );
   }
   if (params.finalStatus !== effectiveStatus) {
-    return params.updateQuoteStatus(quoteId, params.finalStatus);
+    return Boolean(await params.updateQuoteStatus(quoteId, params.finalStatus, expectedRowVersion));
   }
   return true;
 }

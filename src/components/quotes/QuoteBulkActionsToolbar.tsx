@@ -10,18 +10,19 @@ import { useState } from "react";
 
 interface QuoteBulkActionsToolbarProps {
   selectedIds: string[];
+  expectedRowVersions: Array<number | undefined>;
   onClearSelection: () => void;
   onActionComplete: () => void;
 }
 
-function useBulkQuoteActions({ selectedIds, onClearSelection, onActionComplete }: QuoteBulkActionsToolbarProps) {
+function useBulkQuoteActions({ selectedIds, expectedRowVersions, onClearSelection, onActionComplete }: QuoteBulkActionsToolbarProps) {
   const { user } = useAuth();
   const { bulkUpdateStatus } = useQuotes();
   const [isExporting, setIsExporting] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const expire = async () => {
     setIsUpdating(true);
-    const ok = await bulkUpdateStatus(selectedIds, "expired");
+    const ok = await bulkUpdateStatus(selectedIds, "expired", expectedRowVersions);
     if (ok) { onClearSelection(); onActionComplete(); }
     setIsUpdating(false);
   };
@@ -47,11 +48,12 @@ function BulkButtons({ onExpire, onExport, isUpdating, isExporting }: {
 
 export function QuoteBulkActionsToolbar({
   selectedIds,
+  expectedRowVersions,
   onClearSelection,
   onActionComplete
 }: QuoteBulkActionsToolbarProps) {
   const { expire: handleBulkExpire, exportZip: handleBulkExport, isExporting, isUpdating } =
-    useBulkQuoteActions({ selectedIds, onClearSelection, onActionComplete });
+    useBulkQuoteActions({ selectedIds, expectedRowVersions, onClearSelection, onActionComplete });
 
   if (selectedIds.length === 0) return null;
 

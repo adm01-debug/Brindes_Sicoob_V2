@@ -9,7 +9,8 @@ import { useSalesScope } from "@/lib/auth/visibility-scope";
 import { createClientLogger } from "@/lib/telemetry/structuredLogger";
 import { toast } from "sonner";
 import { QuoteService } from "@/services/QuoteService";
-import { ensureQuoteMutationApplied, ensureQuotesAreAccessible } from "./quoteStatusMutationGuards";
+import { ensureQuoteMutationApplied } from "./quoteStatusMutationGuards";
+import { updateQuoteStatusAtomically, type QuoteStatusTransition } from "@/services/quoteStatusTransition";
 import type { Quote, QuoteItem, PersonalizationTechnique } from "./quoteTypes";
 // Re-export the canonical quote types so consumers can import them from this hook.
 export type { Quote, QuoteItem, QuoteItemPersonalization, PersonalizationTechnique } from "./quoteTypes";
@@ -34,6 +35,23 @@ function statusPermissionError(
     return "Apenas supervisores podem aprovar ou rejeitar orçamentos.";
   }
   return null;
+}
+
+function hasValidExpectedVersions(quoteIds: string[], versions: Array<number | undefined>): boolean {
+  return versions.length === quoteIds.length
+    && versions.every((version) => typeof version === "number" && Number.isInteger(version) && version > 0);
+}
+
+function requiresBulkApprovalPermission(status: Quote["status"]): boolean {
+  return ['approved', 'rejected', 'approved_singular', 'rejected_singular'].includes(status);
+}
+
+function uniqueQuoteIds(quoteIds: string[]): string[] {
+  const uniqueIds = [...new Set(quoteIds)];
+  if (uniqueIds.length !== quoteIds.length) {
+    throw new Error("A seleção contém orçamentos duplicados. Atualize a lista e tente novamente.");
+  }
+  return uniqueIds;
 }
 
 export function useQuotes() {
@@ -102,8 +120,13 @@ export function useQuotes() {
     }
   };
 
-  const updateQuoteStatus = async (quoteId: string, status: Quote["status"], notes?: string) => {
-    if (!user) return false;
+  const updateQuoteStatus = async (
+    quoteId: string,
+    status: Quote["status"],
+    expectedRowVersion: number,
+    notes?: string,
+  ): Promise<QuoteStatusTransition | null> => {
+    if (!user) return null;
     
     const permissionError = statusPermissionError(
       status,
@@ -112,73 +135,47 @@ export function useQuotes() {
     );
     if (permissionError) {
       toast.error(permissionError);
-      return false;
+      return null;
     }
 
     try {
-      // rls-allow: consulta a versão e dados de notificação; a RPC valida o escopo
-      // e aplica a transição sob lock, evitando a janela entre leitura e escrita.
-      const { data: quote, error: fetchErr } = await supabase
-        // rls-allow: lookup pré-RPC por UUID; a RLS valida o escopo e a RPC revalida sob lock.
-        .from("quotes")
-        .select("id, row_version")
-        .eq("id", quoteId)
-        .single();
-      if (fetchErr) throw fetchErr;
-
-      const { data: updatedRows, error } = await supabase.rpc("bulk_update_quote_status_atomic", {
-        p_quote_ids: [quoteId],
-        p_expected_row_versions: [quote.row_version],
-        p_status: status,
-        p_notes: notes ?? undefined,
-      });
-      
-      ensureQuoteMutationApplied(
-        updatedRows,
-        error,
-        1,
-        "Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.",
-      );
+      const updated = await updateQuoteStatusAtomically(quoteId, expectedRowVersion, status, notes);
 
       toast.success("Status atualizado");
       fetchQuotes();
-      return true;
-    } catch {
-      toast.error("Erro ao atualizar status");
-      return false;
+      return updated;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error("Erro ao atualizar status", { description: msg });
+      return null;
     }
   };
 
-  const bulkUpdateStatus = async (quoteIds: string[], status: Quote["status"], notes?: string) => {
+  const bulkUpdateStatus = async (
+    quoteIds: string[],
+    status: Quote["status"],
+    expectedRowVersions: Array<number | undefined>,
+    notes?: string,
+  ) => {
     if (!user) return false;
     if (quoteIds.length === 0) return true;
+    if (!hasValidExpectedVersions(quoteIds, expectedRowVersions)) {
+      toast.error("Não foi possível confirmar as versões selecionadas. Atualize a lista e tente novamente.");
+      return false;
+    }
 
     // Permission check
-    const isRestrictedTransition = ['approved', 'rejected', 'approved_singular', 'rejected_singular'].includes(status);
-    if (isRestrictedTransition && !isSupervisorOrAbove) {
+    if (requiresBulkApprovalPermission(status) && !isSupervisorOrAbove) {
       toast.error("Apenas supervisores podem aprovar ou rejeitar orçamentos em massa");
       return false;
     }
 
     setIsLoading(true);
     try {
-      const uniqueQuoteIds = [...new Set(quoteIds)];
-      const { data: accessibleQuotes, error: accessError } = await supabase
-        // rls-allow: lookup pré-RPC por UUIDs; a RLS filtra o escopo e a RPC revalida sob lock.
-        .from("quotes")
-        .select("id, row_version")
-        .in("id", uniqueQuoteIds);
-      if (accessError) throw accessError;
-      ensureQuotesAreAccessible(accessibleQuotes, uniqueQuoteIds.length);
-
-      const expectedVersions = uniqueQuoteIds.map((id) => {
-        const quote = accessibleQuotes.find((candidate) => candidate.id === id);
-        if (!quote) throw new Error("Um ou mais orçamentos não foram encontrados ou não estão no seu escopo.");
-        return quote.row_version;
-      });
+      const uniqueIds = uniqueQuoteIds(quoteIds);
       const { data: updatedRows, error } = await supabase.rpc("bulk_update_quote_status_atomic", {
-        p_quote_ids: uniqueQuoteIds,
-        p_expected_row_versions: expectedVersions,
+        p_quote_ids: uniqueIds,
+        p_expected_row_versions: expectedRowVersions as number[],
         p_status: status,
         p_notes: notes ?? undefined,
       });
@@ -186,11 +183,11 @@ export function useQuotes() {
       ensureQuoteMutationApplied(
         updatedRows,
         error,
-        uniqueQuoteIds.length,
+        uniqueIds.length,
         "Atualização concorrente detectada. Recarregue a lista antes de tentar novamente.",
       );
 
-      toast.success(`${uniqueQuoteIds.length} orçamentos atualizados!`);
+      toast.success(`${uniqueIds.length} orçamentos atualizados!`);
       fetchQuotes();
       return true;
     } catch (err) {

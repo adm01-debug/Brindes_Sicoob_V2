@@ -125,7 +125,10 @@ function QuotesFilters({ state }: { state: QuotesState }) {
 async function updateBulkStatus(state: QuotesState, ids: string[], status: string) {
   if (status === "approved") { toast.error("A aprovação final exige o PDF assinado no detalhe de cada orçamento."); return; }
   let successCount = 0;
-  for (const id of ids) if (await state.updateQuoteStatus(id, status as Quote["status"])) successCount++;
+  const selectedQuotes = ids.map((id) => state.quotes.find((quote) => quote.id === id));
+  for (const quote of selectedQuotes) {
+    if (quote?.id && await state.updateQuoteStatus(quote.id, status as Quote["status"], quote.row_version ?? 0)) successCount++;
+  }
   toast.success(`${successCount} orçamento(s) atualizado(s)`);
 }
 

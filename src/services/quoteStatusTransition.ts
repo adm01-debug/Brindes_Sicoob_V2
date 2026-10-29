@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Quote } from "@/hooks/quotes/quoteTypes";
 
-type QuoteStatusTransition = {
+export type QuoteStatusTransition = {
   id: string;
   row_version: number;
   status: string;
@@ -23,25 +23,22 @@ type ApproveWithPdfArgs = {
 
 /**
  * Executa uma transição individual pela mesma RPC usada em operações em lote.
- * A leitura da versão ocorre imediatamente antes da chamada; o banco continua
- * sendo a autoridade para escopo, transição e concorrência.
+ * A versão vem do estado observado pelo usuário; o banco valida escopo,
+ * transição e concorrência de forma autoritativa.
  */
 export async function updateQuoteStatusAtomically(
   quoteId: string,
+  expectedRowVersion: number,
   status: Quote["status"],
   notes?: string,
 ): Promise<QuoteStatusTransition> {
-  const { data: quote, error: quoteError } = await supabase
-    // rls-allow: lookup pré-RPC por UUID; a RLS filtra o escopo e a RPC revalida sob lock.
-    .from("quotes")
-    .select("id, row_version")
-    .eq("id", quoteId)
-    .single();
-  if (quoteError) throw quoteError;
+  if (!Number.isInteger(expectedRowVersion) || expectedRowVersion < 1) {
+    throw new Error("A versão observada do orçamento não está disponível. Recarregue antes de tentar novamente.");
+  }
 
   const rpcArgs = {
     p_quote_ids: [quoteId],
-    p_expected_row_versions: [quote.row_version],
+    p_expected_row_versions: [expectedRowVersion],
     p_status: status,
     p_notes: notes ?? null,
   };
@@ -63,20 +60,17 @@ export async function updateQuoteStatusAtomically(
 
 export async function approveQuoteWithPdfAtomically(
   quoteId: string,
+  expectedRowVersion: number,
   approvedPdfUrl: string,
   notes?: string,
 ): Promise<QuoteStatusTransition & { approved_pdf_url: string }> {
-  const { data: quote, error: quoteError } = await supabase
-    // rls-allow: lookup pré-RPC por UUID; a RLS filtra o escopo e a RPC revalida sob lock.
-    .from("quotes")
-    .select("id, row_version")
-    .eq("id", quoteId)
-    .single();
-  if (quoteError) throw quoteError;
+  if (!Number.isInteger(expectedRowVersion) || expectedRowVersion < 1) {
+    throw new Error("A versão observada do orçamento não está disponível. Recarregue antes de tentar novamente.");
+  }
 
   const rpcArgs = {
     p_quote_id: quoteId,
-    p_expected_quote_row_version: quote.row_version,
+    p_expected_quote_row_version: expectedRowVersion,
     p_approved_pdf_url: approvedPdfUrl,
     p_notes: notes ?? null,
   };

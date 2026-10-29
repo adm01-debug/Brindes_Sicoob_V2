@@ -188,7 +188,7 @@ function useKanbanDrag(quotes: Quote[], updateQuoteStatus: ReturnType<typeof use
     const quote = quotes.find((candidate) => candidate.id === quoteId);
     if (!quote || !nextStatus || quote.status === nextStatus) return;
     if (nextStatus === "approved") return void toast.error("A aprovação final exige o PDF assinado no detalhe do orçamento.");
-    await updateQuoteStatus(quoteId, nextStatus);
+    await updateQuoteStatus(quoteId, nextStatus, quote.row_version ?? 0);
   };
   return { activeId, activeQuote, sensors, handleDragStart, handleDragEnd };
 }

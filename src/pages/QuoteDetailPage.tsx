@@ -125,6 +125,7 @@ function QuoteDetails({ quote, onRefresh }: { quote: QuoteDetail; onRefresh: () 
         <QuoteApprovalNotes notes={quote.rejection_notes} status={quote.status} />
         <QuoteSingularApprovalActions
           quoteId={quote.id}
+          rowVersion={quote.row_version}
           status={quote.status}
           quoteNumber={quote.quote_number}
           onActionComplete={onRefresh}

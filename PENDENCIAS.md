@@ -1,5 +1,13 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
+## Revalidação de concorrência e reconciliação — 29/10/2026
+
+- Na branch `fix/hermes-h247355-ci-dependencies`, a correção P033 passa a enviar `row_version` observada na tela em transições individuais, aprovação com PDF, edição/reabertura, sincronização Bitrix e expiração em lote. Versões ausentes ou inválidas falham sem escrita; a RPC retorna a nova versão para o estado local.
+- O contrato foi conferido nas migrations versionadas `20260927110000_bulk_quote_status_atomic.sql`, `20260927163021_quote_pdf_approval_atomic.sql` e no wrapper de governança `20261013120512_fix_quote_governance_writers_and_freeze_content.sql`. Elas recebem os parâmetros de versão esperada e retornam `row_version`; este diff não altera migrations, funções Edge nem schema.
+- Validação local: `npm run build` e `npm run typecheck` passaram; `npm run lint` teve 0 erros e 872 avisos (baseline: 0/873); suíte completa: 459 arquivos passaram, 4 ignorados; 5.875 testes passaram e 68 foram ignorados (baseline: 5.871/68). Os 14 testes direcionados do fluxo também passaram.
+- A consulta de leitura ao MCP do projeto canônico `cfmzkthhgliqelozlmwu` expirou duas vezes (Management API 544/timeout). Assim, o estado vivo do ledger/funções não foi reconfirmado nesta rodada. O banco permanece intacto; não executar migration ou escrita para contornar o timeout.
+- Publicação em andamento nesta branch/PR #157. O SHA publicado antes desta alteração ainda era `73bb0d4e746ef195e09dd9ed3aa81413f4562913`; o novo commit e checks remotos serão registrados após o push. A PR continuará sem merge enquanto E2E autenticado e Copilot Review estiverem bloqueados pelas pendências externas descritas abaixo.
+
 ## Reconciliação verificada — 29/10/2026
 
 Esta atualização prevalece sobre estados históricos abaixo quando houver divergência.

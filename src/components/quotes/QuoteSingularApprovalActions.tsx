@@ -18,11 +18,12 @@ import { toast } from "sonner";
 interface Props {
   quoteId: string;
   status: string;
+  rowVersion?: number;
   quoteNumber?: string;
   onActionComplete?: () => void;
 }
 
-function useApprovalActions({ quoteId, onActionComplete }: Pick<Props, "quoteId" | "onActionComplete">) {
+function useApprovalActions({ quoteId, rowVersion, onActionComplete }: Pick<Props, "quoteId" | "rowVersion" | "onActionComplete">) {
   const { updateQuoteStatus } = useQuotes();
   const [isProcessing, setIsProcessing] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
@@ -33,7 +34,7 @@ function useApprovalActions({ quoteId, onActionComplete }: Pick<Props, "quoteId"
     successMessage: string, close?: () => void) => {
     setIsProcessing(true);
     try {
-      const ok = await updateQuoteStatus(quoteId, nextStatus, message);
+      const ok = await updateQuoteStatus(quoteId, nextStatus, rowVersion ?? 0, message);
       if (ok) { toast.success(successMessage); close?.(); onActionComplete?.(); }
     } finally { setIsProcessing(false); }
   };
@@ -103,9 +104,9 @@ function RejectionDialog({ actions }: { actions: ApprovalActions }) {
     </DialogFooter></DialogContent></Dialog>;
 }
 
-export function QuoteSingularApprovalActions({ quoteId, status, quoteNumber, onActionComplete }: Props) {
+export function QuoteSingularApprovalActions({ quoteId, status, rowVersion, quoteNumber, onActionComplete }: Props) {
   const { isGestorCompras, isDev } = useAuth();
-  const actions = useApprovalActions({ quoteId, onActionComplete });
+  const actions = useApprovalActions({ quoteId, rowVersion, onActionComplete });
   if (!(isGestorCompras || isDev) || status !== "pending_singular_approval") return null;
 
   return <><ApprovalToolbar actions={actions} quoteNumber={quoteNumber} />
