@@ -28,6 +28,23 @@ configuração E2E usa secrets separadas `E2E_SUPABASE_*`, pois a auditoria most
 que o workflow anterior passava secrets genéricas ao ambiente autenticado. Aguardar
 configuração do projeto isolado, validação do novo head e checks obrigatórios verdes.
 
+### Validação local do commit `ae6a80e`
+
+Executada após o commit, incluindo o workflow e a suíte completa:
+
+| Verificação | Resultado |
+|---|---|
+| `npm run build` | ✅ exit 0; avisos preexistentes de env local ausente, chunks e comentários Rollup/Zod |
+| `npm run lint` | ✅ 0 erros; 873 avisos existentes |
+| `npm run typecheck` | ✅ exit 0 |
+| `npm test -- --reporter=dot` | ✅ 452 arquivos passaram, 4 ignorados; 5.839 testes passaram, 68 ignorados |
+| `npm audit --audit-level=high` | ✅ zero vulnerabilidades |
+| `actionlint .github/workflows/e2e.yml` | ✅ exit 0 |
+| `git diff --check` | ✅ exit 0 |
+
+O workflow E2E não foi validado contra a homologação porque os quatro secrets
+dedicados ainda não estão presentes no GitHub; nenhum valor de secret foi lido.
+
 ---
 
 **Gerado em:** 2026-10-22  
