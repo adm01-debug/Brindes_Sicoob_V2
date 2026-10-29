@@ -19,7 +19,7 @@ def count(where):
     return int(sql('SELECT count(*) FROM public.audit_security_definer_acl() WHERE ' + where).stdout.strip())
 
 try:
-    command(['docker', 'run', '--rm', '-d', '--name', CONTAINER, '--network', 'none', '-e', 'POSTGRES_HOST_AUTH_METHOD=trust', 'public.ecr.aws/supabase/postgres:17.6.1.063', 'postgres', '-D', '/var/lib/postgresql/data'])
+    command(['docker', 'run', '--rm', '-d', '--name', CONTAINER, '--network', 'none', '-e', 'POSTGRES_HOST_AUTH_METHOD=trust', 'ghcr.io/supabase/postgres:17.6.1.063', 'postgres', '-D', '/var/lib/postgresql/data'])
     wait_for_postgres(command, CONTAINER)
     command(['docker', 'exec', CONTAINER, 'createdb', '-U', 'supabase_admin', '--template=template0', 'sicoob_simulation'])
     sql("CREATE TYPE public.app_role AS ENUM ('dev'); CREATE ROLE acl_fixture_owner; CREATE ROLE acl_fixture_group; GRANT USAGE, CREATE ON SCHEMA public TO acl_fixture_owner;")

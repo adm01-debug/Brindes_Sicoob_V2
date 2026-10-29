@@ -247,3 +247,9 @@ Checks remotos do SHA acima: `npm audit`, CodeQL, Gitleaks, origem confiável, L
 Consulta somente de leitura ao projeto `cfmzkthhgliqelozlmwu`: 137 migrations no ledger, última `20261022230000_repair_migration_ledger_and_harden_search_path`. A `main` ainda não contém as fontes de 12 versões aplicadas. No PR #151, a comparação do snapshot do branch com o ledger atual encontrou fontes para 137/137 versões; os 462 arquivos históricos sem entrada no ledger continuam classificados como passivo e **não** foram aplicados. O PR #151 permanece bloqueado por checks falhos, portanto a paridade entre ledger e `main` ainda não está fechada.
 
 O PR #157 não modifica migrations, schema, dados ou Edge Functions; nenhuma escrita ou publicação no Supabase foi executada. Ele permanece aberto: não integrar enquanto os checks obrigatórios estiverem falhando e enquanto a política de implantação exigir impedir deploy sem validação apropriada.
+
+### Mitigação do rate limit do ECR — validação local
+
+Os simuladores PostgreSQL agora usam `ghcr.io/supabase/postgres:17.6.1.063`. Inspecionei os manifests do ECR, Docker Hub oficial e GHCR oficial: as entradas por plataforma, inclusive o digest linux/amd64 `sha256:432d12926b09e10eb3317b0e2e9672c9ce8a6bccb359857a31ff9f90683161d`, são iguais. `simular-controles-auditoria.py` e `simular-acl-efetiva.py` passaram localmente usando GHCR. A confirmação nos runners do GitHub ainda depende da CI do próximo SHA.
+
+O E2E remoto do último SHA `6ce1a6b52a991fd0db5e11f455c56f619c5ae4ab` falhou no hook `beforeAll` de `e2e-cleanup-rate-limit.test.ts`: inserção administrativa inicial expirou em 45 s. Sem as credenciais remotas de Actions, o cenário não pode ser reproduzido localmente sem pular o teste. O acesso SQL/health do MCP também voltou a expirar nesta retomada. Isso permanece pendência de disponibilidade/acesso do Supabase/PostgREST; não foi alterado o banco.
