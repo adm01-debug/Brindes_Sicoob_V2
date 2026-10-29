@@ -29,7 +29,7 @@ Esta seção substitui o inventário datado de 22/10 para o estado atual de `mai
 | Enterprise Compliance & Audit Reporting | [40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958) — sucesso | Verde. |
 | Portal Sicoob | [39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315) — sucesso | Última execução encontrada na janela consultada; verde. |
 
-Os PRs #145–#151 ainda não estão integrados. O PR #155 adiciona um guard local para JWT estruturalmente malformado antes de chamar o Auth remoto, causa do timeout observado no E2E. No primeiro retrato do PR #155, o E2E e alguns jobs ainda estavam em execução; `npm audit` e CodeQL continuavam bloqueados pelos problemas já presentes na base. Isso não é prova de CI verde.
+Os PRs #145–#151 ainda não estão integrados. O PR #155 adiciona um guard local para JWT estruturalmente malformado antes de chamar o Auth remoto, causa do timeout observado no E2E. O E2E do PR #155 terminou falhando no run [40806405198](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40806405198): 51 testes passaram, 4 foram ignorados e 1 falhou; `system-healthcheck` expirou ao testar JWT inválido e dois hooks de RLS excederam 45 s. O problema de `system-healthcheck` é compatível com a função remota ainda não conter o patch; a causa dos timeouts RLS não foi confirmada. `npm audit`, CodeQL e a revisão Copilot também falham no PR, conforme registrado em `PENDENCIAS.md`. Não há CI verde integral no PR.
 
 ### Estado do banco Supabase canônico
 
