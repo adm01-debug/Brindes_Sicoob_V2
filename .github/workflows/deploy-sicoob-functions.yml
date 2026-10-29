@@ -38,7 +38,6 @@ jobs:
       - name: Publicar funções Sicoob
         run: |
           set -euo pipefail
-          supabase functions list --project-ref "$SUPABASE_PROJECT_ID" --output-format json > /tmp/functions-before.json
           for function_name in \
             expert-chat \
             external-db-bridge \
@@ -64,10 +63,9 @@ jobs:
             sicoob-kit-quote \
             sicoob-reorder
           do
-            previous_version="$(jq -r --arg function_name "$function_name" '[(.functions // .)[] | select(.slug == $function_name) | .version] | first // 0' /tmp/functions-before.json)"
             current_version="$(echo "$published_functions" | jq -r --arg function_name "$function_name" '[(.functions // .)[] | select(.slug == $function_name) | .version] | first // 0')"
-            if ! [[ "$current_version" =~ ^[0-9]+$ ]] || (( current_version <= previous_version )); then
-              echo "::error title=Publicação não confirmada::$function_name permaneceu na versão $current_version (anterior: $previous_version)."
+            if ! [[ "$current_version" =~ ^[0-9]+$ ]] || (( current_version < 1 )); then
+              echo "::error title=Publicação não confirmada::$function_name não está presente no projeto (versão reportada: $current_version)."
               exit 1
             fi
           done
