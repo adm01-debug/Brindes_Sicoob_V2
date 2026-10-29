@@ -15,8 +15,8 @@ históricos mais antigos permanecem abaixo quando ainda ajudam a explicar a caus
 | `Qualidade contínua` | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | `failure`: mesmo `npm audit` (`undici`, `zod`); correções na PR #161. |
 | `CodeQL` | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `failure`: versões SHA diferentes entre `init` e `analyze`; alinhamento na PR #161. |
 | `Bundle Size Check` | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) | `failure`; logs expiraram (HTTP 404), portanto causa não confirmável. `bundle-stats` equivalente na PR #161 passou. |
-| `E2E (Playwright)` | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | `startup_failure`, zero jobs criados pelo GitHub. A execução posterior na PR #161 falhou por timeout de 45 s no canário RLS; configurar projeto isolado e secrets E2E dedicadas listadas abaixo. |
-| `Running Copilot Code Review` | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | `failure`: HTTP 402, limite adicional do plano Copilot. Depende do owner/plano; o candidato atual também reportou quota esgotada. |
+| `E2E (Playwright)` | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | `startup_failure`, zero jobs criados pelo GitHub. No head da PR #161, [run 40878723270](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40878723270) falhou no step `Verificar credenciais da jornada autenticada`: os quatro secrets `E2E_SUPABASE_*` exigidos não estão configurados. O job de regressão foi corretamente ignorado porque depende do E2E. Configurar os quatro secrets abaixo e rerodar. |
+| `Running Copilot Code Review` | [40878743692](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40878743692) | `failure`: limite adicional do plano Copilot (HTTP 402, mesmo erro do run [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125)). Depende do owner/plano. |
 | Dependabot `@vitest/mocker` | [39775463512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775463512) | Execução de update histórica falhou; pacote já atualizado em PR #139. Confirmar fechamento do alerta stale no Dependabot. |
 
 Verdes no mesmo snapshot: `Migration ledger drift` (40828393693), `Enterprise
@@ -185,6 +185,8 @@ errorType: 'quota', statusCode: 402
 ---
 
 ## Workflow: `Segurança, contratos e build` (`ci.yml`) — ECR Rate Limit
+
+**Run recente da PR #161:** [40878723112](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40878723112) falhou no primeiro attempt ao baixar `public.ecr.aws/supabase/postgres:17.6.1.063` com `toomanyrequests: Data limit exceeded`. O attempt 2 do mesmo run concluiu `success`; rate limit transitório, sem mudança de código.
 
 **Commits afetados:** `5b34841` e `7211e12` (branch `claude/hopeful-mccarthy-8rqrqw`)
 **Runs:** `39850827027` · `39852468612`

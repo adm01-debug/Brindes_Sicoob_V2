@@ -28,6 +28,22 @@ configuração E2E usa secrets separadas `E2E_SUPABASE_*`, pois a auditoria most
 que o workflow anterior passava secrets genéricas ao ambiente autenticado. Aguardar
 configuração do projeto isolado, validação do novo head e checks obrigatórios verdes.
 
+### Checks do head da PR #161 — `182795510`
+
+| Check | Resultado | Evidência / motivo |
+|---|---|---|
+| Segurança, contratos e build | ✅ `success` (attempt 2) | [Run 40878723112](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40878723112); o primeiro attempt teve rate limit do ECR, o rerun passou sem alteração de código |
+| sicoob-gate | ✅ `success` | [Run 40878723188](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40878723188) |
+| Entrada e demonstração responsivas | ✅ `success` | [Run 40878723188](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40878723188) |
+| CodeQL, bundle-stats, npm audit, Lighthouse e Gitleaks | ✅ `success` | [CodeQL 40878723131](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40878723131), [bundle 40878723162](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40878723162), [security 40878723160](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40878723160), [Lighthouse 40878723235](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40878723235) |
+| E2E | ❌ `failure` | [Run 40878723270](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40878723270): preflight falhou porque os quatro secrets `E2E_SUPABASE_*` ainda não existem no GitHub; shards de regressão ficaram `skipped` por dependência |
+| Copilot PR review | ❌ `failure` | [Run 40878743692](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40878743692): cota Copilot HTTP 402, externo ao código |
+| Vercel | ✅ preview / `neutral` review | Checks de preview concluídos sem bloqueio |
+
+Logo, os checks de código e segurança foram aprovados no candidato; a PR segue
+bloqueada pelo E2E sem configuração de homologação e pela cota do Copilot. Não
+mesclar enquanto houver checks obrigatórios pendentes/falhos.
+
 ### Validação local do commit `ae6a80e`
 
 Executada após o commit, incluindo o workflow e a suíte completa:
