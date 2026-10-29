@@ -29,6 +29,24 @@ O run mais recente [40807299987](https://github.com/adm01-debug/Brindes_Sicoob_V
 
 No head atual do PR #155, CodeQL falhou (run [40807299921](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40807299921)), `npm audit` continua detectando severidades altas em `undici`/`zod` (run [40807299952](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40807299952)), e `copilot-pull-request-reviewer` falhou por limite de uso (run [40807307902](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40807307902)). CodeQL e dependências estão acompanhados nos PRs #148 e #146/#147; a falha do Copilot requer ajuste de billing pelo owner ou aguardar o reset. O PR #155 permanece aberto e bloqueado.
 
+### Revalidação dos checks e da paridade (2026-10-29, HEAD `07954e5165bc201f323daa11991a7232e082ec7b`)
+
+Os resultados abaixo substituem os runs antigos citados na seção anterior para o HEAD atual do PR #155:
+
+| Check | Run atual | Resultado observado | Próximo passo |
+|---|---|---|---|
+| E2E (Playwright) | [40808341558](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40808341558) | Falhou em “Validar autorização remota e RLS técnico”: 49 passaram, 3 falharam e 4 foram ignorados. Chamadas com JWT inválido para `system-healthcheck`, `migration-health-check` e `mcp-keys-update` expiraram em 30 s; os hooks `beforeAll`/`afterAll` de `e2e_cleanup_rate_limit` excederam 45 s. Os logs disponíveis não confirmam a causa dos timeouts. | Investigar disponibilidade e autorização remota; manter os asserts e tempos de espera atuais até identificar causa comprovada. |
+| Segurança, contratos e build | [40808341513](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40808341513) | O passo `check:npm-audit` bloqueou o restante do gate por duas vulnerabilidades altas: `undici` (8.0.0–8.12.1) e `zod` (<4.6.6). | Integrar e validar as correções de dependências nos PRs #146–#148. |
+| Security Scan / npm audit | [40808341472](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40808341472) | Confirma as mesmas duas vulnerabilidades altas em `undici` e `zod`. | Mesmo grupo de dependências. |
+| CodeQL | [40808341576](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40808341576) | `Autobuild` falhou com erro de configuração e o passo de preservação não encontrou SARIF. Os logs consultados não permitem atribuir uma causa mais específica. | Corrigir configuração e validar nova análise completa, inclusive a geração do SARIF. |
+| Revisão automática Copilot | [40808350810](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40808350810) | Falhou por limite de uso do serviço. | Aguardar renovação de cota ou regularizar o plano do Copilot. |
+
+O PR #155 continua aberto e não pode ser integrado com esses checks vermelhos. A correção nele altera autorização de Edge Function; não foi publicada no Supabase e não exige migration. Nenhuma escrita foi feita no banco canônico.
+
+Na reconciliação do checkout principal, `origin/main` está em `e9d59026793b84fabeaeec9da890a068f64d49c3`; o checkout local `main` está 84 commits atrás e contém 19 caminhos modificados ou não rastreados. Os diffs de `bi-share-dossier` e `health-check` pertencem ao escopo do PR #150, ainda aberto e bloqueado; o teste agregado local é adicional e duplica contratos cobertos por testes separados. Artefatos `supabase/.temp/*` e `graphify-out/*` são locais/gerados e não devem ser importados como código. Preservar essa árvore local; não sincronizar ou descartar seus arquivos automaticamente.
+
+No Supabase canônico, a leitura confirma 137 registros no ledger até `20261022230000` (134 timestampados e três legados). Doze versões timestampadas não têm arquivo em `origin/main`; o PR #151 restaura essas fontes, mas também está bloqueado pelos checks. Em sentido inverso, 459 dos 581 arquivos timestampados do repositório não têm versão no ledger (122 coincidem). Essa diferença não prova que 459 migrations devam ser executadas: não aplicar em lote; classificar cada origem e fingerprint primeiro. As três migrations de governança de 13/10 constam no ledger remoto.
+
 Atualização mais recente: 2026-10-29 (o conteúdo abaixo desta seção é histórico de 22/10)
 
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
