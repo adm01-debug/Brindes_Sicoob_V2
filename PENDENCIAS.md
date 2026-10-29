@@ -1,5 +1,16 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
+## Rechecagem do GitHub e banco canônico — 29/10/2026 09:43 UTC
+
+- A branch local/remota e o head da PR #157 coincidem em `2b8993d95cdb175956a667d61d249319072624d9`; `main` continua em `e9d59026793b84fabeaec9da890a068f64d49c3`. A PR está aberta, sem merge. O diff não altera migrations nem Edge Functions.
+- O MCP canônico voltou a responder em modo somente leitura: 137 entradas no ledger até `20261022230000`; as duas RPCs de transição P033 estão presentes. Esta leitura substitui a pendência histórica de timeout acima, sem apagar o registro do incidente.
+- A comparação de versão/nome encontrou 125 correspondências entre 587 arquivos locais e 137 linhas do ledger, 462 arquivos locais fora do ledger e 12 versões no ledger sem arquivo local/em `main`. As 12 fontes existem na branch da PR #151, ainda aberta e com checks falhos; não estão integradas à `main`.
+- Não considerar os 462 arquivos locais como pendentes de aplicação; não aplicar lote nem gravar entradas artificiais no ledger. Os fingerprints SQL de todas as 125 versões comuns não foram recalculados nesta rechecagem.
+- Nenhuma escrita, migration, deploy de função ou alteração no banco foi feita. P033 não requer migration adicional: seu diff só consome RPCs já existentes.
+- Checks da PR #157: gates locais/remotos de segurança, build, tipos, lint e testes verdes; E2E bloqueado pela variável `E2E_SUPABASE_PROJECT_ID` vazia; Copilot Review bloqueado por HTTP 402/quota; Vercel Agent Review neutral por billing desativado. Manter a PR sem merge até resolver os checks obrigatórios.
+
+Relatório detalhado: [`docs/execucao/auditoria-github-supabase-2026-10-29.md`](docs/execucao/auditoria-github-supabase-2026-10-29.md).
+
 ## Revalidação de concorrência e reconciliação — 29/10/2026
 
 - Na branch `fix/hermes-h247355-ci-dependencies`, a correção P033 passa a enviar `row_version` observada na tela em transições individuais, aprovação com PDF, edição/reabertura, sincronização Bitrix e expiração em lote. Versões ausentes ou inválidas falham sem escrita; a RPC retorna a nova versão para o estado local.
