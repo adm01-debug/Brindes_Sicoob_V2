@@ -219,11 +219,12 @@ function useQuoteAutoSaveState({
         ? `quote:${scopeId}:${quoteId}`
         : `draft:${scopeId}:${draftId}`
       : '';
+  const persistenceEnabled = enabled && Boolean(storageKey);
 
   const { restore, lastError } = useAutoSave({
     key: storageKey,
     data,
-    enabled: enabled && Boolean(storageKey),
+    enabled: persistenceEnabled,
     onSave: () => {
       setLastSaved(new Date());
       setStatus('saved');
@@ -239,7 +240,7 @@ function useQuoteAutoSaveState({
     onChange,
     onRestore,
     setStatus,
-    enabled,
+    enabled: persistenceEnabled,
   });
   return { status, lastSaved, hasUnsavedChanges, lastError, enabled };
 }
