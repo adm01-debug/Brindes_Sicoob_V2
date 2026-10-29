@@ -1,28 +1,40 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
-Atualizado em: 2026-10-29
+Atualizado em: 2026-10-29 (13:45 UTC)
 
-Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
-O snapshot abaixo cobre a última execução por workflow encontrada na `main`; registros
-históricos mais antigos permanecem abaixo quando ainda ajudam a explicar a causa.
+Cada seção abaixo registra uma falha ainda aberta, uma dependência externa ou uma causa
+que não pôde ser recuperada. O snapshot cobre a última execução por workflow encontrada
+na `main`; registros históricos mais antigos permanecem abaixo como contexto.
 
 ## Snapshot dos bloqueios — última execução na main (2026-10-29)
 
 | Workflow | Último run | Estado e ação |
 |---|---|---|
 | `Publicar funções Sicoob` | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | `failure`: `sicoob-approval-reconciliation` permaneceu na versão 5 (anterior 5). PR #161 permite versão igual sem mudança; não reexecutar deploy remoto sem autorização, pois altera Edge Functions do projeto. |
-| `Security Scan` | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `failure`: CVEs altas em `undici` e `zod`; correções na PR #161 aguardam checks e decisão segura de merge. |
+| `Security Scan` | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `failure`: `npm audit` encontrou duas vulnerabilidades altas em `undici` e `zod`; correções na PR #161. |
 | `Qualidade contínua` | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | `failure`: mesmo `npm audit` (`undici`, `zod`); correções na PR #161. |
 | `CodeQL` | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `failure`: versões SHA diferentes entre `init` e `analyze`; alinhamento na PR #161. |
-| `Bundle Size Check` | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) | `failure`; logs expiraram (HTTP 404), portanto causa não confirmável. `bundle-stats` equivalente na PR #161 passou. |
-| `E2E (Playwright)` | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | `startup_failure`, zero jobs criados pelo GitHub. No head da PR #161, [run 40878723270](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40878723270) falhou no step `Verificar credenciais da jornada autenticada`: os quatro secrets `E2E_SUPABASE_*` exigidos não estão configurados. O job de regressão foi corretamente ignorado porque depende do E2E. Configurar os quatro secrets abaixo e rerodar. |
-| `Running Copilot Code Review` | [40878743692](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40878743692) | `failure`: limite adicional do plano Copilot (HTTP 402, mesmo erro do run [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125)). Depende do owner/plano. |
+| `E2E (Playwright)` | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | `startup_failure`, sem jobs recuperáveis. Na PR #161, [run 40881949980](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40881949980) falhou no preflight porque os quatro secrets `E2E_SUPABASE_*` estão vazios; o owner informou que vai configurá-los. |
+| Run sem workflow identificável | [37775844412](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775844412) | `startup_failure`; a API retorna `name` vazio e `path=BuildFailed`, sem jobs/logs para determinar workflow ou causa. |
+| `Running Copilot Code Review` | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | `failure`: log confirma limite adicional do Copilot, HTTP 402. Depende do owner/plano. |
+| `Bundle Size Check` | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) | `failure`; logs expiraram e a causa não é recuperável. `bundle-stats` equivalente na PR #161 passou, mas não valida um rerun deste workflow. |
+| `Lighthouse Performance Audit` | [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910) | `failure`; logs expiraram e a causa não é recuperável. Lighthouse passou na PR #161. |
 | Dependabot `@vitest/mocker` | [39775463512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775463512) | Execução de update histórica falhou; pacote já atualizado em PR #139. Confirmar fechamento do alerta stale no Dependabot. |
 
 Verdes no mesmo snapshot: `Migration ledger drift` (40828393693), `Enterprise
 Compliance & Audit Reporting` (40602982958) e `Branch Protection Sentinel`
-(40602983038). `Portal Sicoob` (39868499315) e updates Dependabot de `undici` /
-`zod` (40603001428 / 40603001197) também tiveram última conclusão `success`.
+(40602983038). `Portal Sicoob` (39868499315), `Monthly DB Audit` (36794161452) e
+o update Dependabot de `undici` (40603001428) também tiveram última conclusão
+`success`. `Aplicar migrations Sicoob` ficou `cancelled`, portanto não é falha.
+
+## Atualização da PR #161 — head `f06dd5de` (2026-10-29)
+
+- [E2E run 40881949980](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40881949980): os quatro secrets `E2E_SUPABASE_*` não aparecem na listagem de secrets do repositório (nomes consultados, sem leitura de valores). O owner informou que vai configurá-los. Não usar credenciais do banco canônico para substituir a homologação.
+- [Build/contratos run 40881951013](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40881951013): attempts 1 e 2 falharam após três tentativas locais por execução, devido ao limite externo de dados do ECR (`toomanyrequests: Data limit exceeded`) ao baixar `public.ecr.aws/supabase/postgres:17.6.1.063`. Um run anterior passou no attempt 2; evitar reruns sem mudança de quota/cache.
+- [Copilot review run 40881966476](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40881966476): limite de uso Copilot HTTP 402; depende do plano/owner.
+- `sicoob-gate`, responsivo, CodeQL, bundle-stats, npm audit, Lighthouse, Gitleaks e Vercel Preview passaram no head atual.
+
+**Ação pendente do owner:** provisionar projeto Supabase isolado de homologação e configurar no GitHub Actions `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_PROJECT_ID` e `E2E_SUPABASE_SERVICE_ROLE_KEY`, todos do mesmo projeto. Também manter contas E2E válidas nesse projeto. Após concluir, avisar para verificarmos presença dos nomes e rerodarmos o E2E. Nunca enviar valores de secrets pela conversa.
 
 ---
 
