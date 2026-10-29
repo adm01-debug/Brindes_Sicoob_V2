@@ -1,6 +1,9 @@
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
-import { isHealthcheckSuccessful } from './health-check-contract.mjs';
+import {
+  createHealthcheckRequestOptions,
+  isHealthcheckSuccessful,
+} from './health-check-contract.mjs';
 
 dotenv.config();
 
@@ -17,10 +20,7 @@ async function runHealthcheck() {
   const url = `${supabaseUrl}/functions/v1/health-check`;
   
   try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: { 'User-Agent': 'brindes-sicoob-healthcheck/1.0' }
-    });
+    const response = await fetch(url, createHealthcheckRequestOptions());
     
     const data = await response.json();
     

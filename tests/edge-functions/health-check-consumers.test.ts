@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { isHealthcheckSuccessful } from '../../scripts/health-check-contract.mjs';
+import {
+  createHealthcheckRequestOptions,
+  isHealthcheckSuccessful,
+} from '../../scripts/health-check-contract.mjs';
 
 describe('consumidores do contrato de health-check', () => {
   it('aceita a resposta pública de liveness sem JWT', () => {
@@ -17,5 +20,12 @@ describe('consumidores do contrato de health-check', () => {
   it('rejeita status ausente ou degradado', () => {
     expect(isHealthcheckSuccessful(true, undefined)).toBe(false);
     expect(isHealthcheckSuccessful(true, 'degraded')).toBe(false);
+  });
+
+  it('consulta liveness sem enviar token ou segredo', () => {
+    const options = createHealthcheckRequestOptions();
+
+    expect(options.method).toBe('GET');
+    expect(options.headers).not.toHaveProperty('Authorization');
   });
 });
