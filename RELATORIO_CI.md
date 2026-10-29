@@ -19,18 +19,22 @@
 
 | Workflow | Último run em `main` | Falha observada | Tratamento atual |
 |---|---|---|---|
+| E2E (Playwright) | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | `startup_failure`; execução não criou jobs/logs acessíveis, então o motivo exato não pode ser provado. | PR #164 adiciona pré-validação e isolamento. O novo run do PR falhou com configuração E2E ausente; não confundir a evidência do PR com o erro histórico da `main`. |
+| Bundle Size Check | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) | Falha histórica no gate de tamanho; logs não foram recuperáveis pelo MCP (HTTP 404). | O check `bundle-stats` passou no PR #164 (`23fc59a`); ainda sem novo run em `main`. |
+| Lighthouse Performance Audit | [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910) | Falha histórica no audit de performance; logs não foram recuperáveis pelo MCP (HTTP 404). | Check Lighthouse passou no PR #164 (`23fc59a`); ainda sem novo run em `main`. |
 | Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | `sicoob-approval-reconciliation` permaneceu na versão 5 após `deploy`; a checagem exigia incremento estrito da versão | Causa corrigida candidata no [PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164), que verifica presença após o deploy. Ainda não mesclado nem validado em `main`. |
 | Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `npm audit`: 2 pacotes altos (`undici`, `zod`) | Correção candidata no [PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164); audit remoto passou nessa branch. |
 | Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | `SECURITY GATE FAILED: 2 critical/high vulnerabilities: undici (high), zod (high)` | Mesma causa do `Security Scan`; correção candidata no [PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164). |
 | CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `init` carregou configuração 4.39.1, mas `autobuild`/`analyze` executavam 4.38.2; SARIF não foi gerado | Versões alinhadas para 4.39.1 no [PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164); CodeQL passou nessa branch. |
 | Running Copilot Code Review | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | `SessionModelError`, limite adicional de uso do Copilot excedido (HTTP 402) | Bloqueio de quota da conta; requer restabelecimento/renovação do plano e novo run. |
-| Dependabot `@vitest/mocker` | [39775463512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775463512) | A execução antiga no SHA `ae1b92b3` resolve `@vitest/mocker` para 4.1.11 e não consegue atualizar | Registro obsoleto: o lockfile atual de `main` fixa 4.1.12. Não reexecutar o evento antigo; confirmar no próximo evento Dependabot atual. |
 
 ### Workflows verdes observados em `main`
 
 | Workflow | Último run observado | Estado |
 |---|---|---|
 | Migration ledger drift | [40828393693](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40828393693) | ✅ success |
+| Monthly DB Audit | [36794161452](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36794161452) | ✅ success |
+| Dependabot Updates | [40603001428](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40603001428) | ✅ success |
 | Branch Protection Sentinel | [40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038) | ✅ success |
 | Enterprise Compliance & Audit Reporting | [40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958) | ✅ success |
 | Portal Sicoob | [39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315) | ✅ success (último run disponível; não houve nova execução por push) |
