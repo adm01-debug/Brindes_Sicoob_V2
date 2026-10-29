@@ -28,6 +28,12 @@ Restabelecer consulta read-only autorizada ao projeto canônico (ou vincular a C
 - Testes locais determinísticos do guard: 11 passaram; nenhum teste remoto foi executado nesta validação. Para habilitar o E2E, ainda é necessário provisionar homologação segregada e cadastrar a variável e os secrets correspondentes (URL, chave publicável, project ref e personas de teste). Até lá, o job falha de forma explícita e segura; não configurar o destino para os projetos protegidos.
 - A contagem de canários consultada no banco canônico permaneceu em 9 antes e depois da execução remota de 29/10. Origem e idade dessas linhas não foram determinadas; elas não foram apagadas.
 
+### Resultado dos checks após o guard — SHA `c5db317`
+
+- E2E [run 40844345741](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40844345741): o step `Validar alvo Supabase segregado para E2E` falhou porque `E2E_SUPABASE_PROJECT_ID` estava vazio. O log mostra o preflight encerrando com “Configure URL, project ref e E2E_SUPABASE_PROJECT_ID de homologação.” O step de autorização/RLS não rodou e o shard regressivo foi pulado como consequência do gate; não classificar a jornada como aprovada. **Ação:** provisionar homologação, configurar a variável e alinhar URL, chave publicável, project ref e personas de teste ao mesmo projeto, depois reexecutar.
+- Copilot Review [run 40844360713](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40844360713): falhou em `Processing Request (Linux)` com HTTP 402 `quota`: o plano atingiu o limite de uso adicional. **Ação externa:** restaurar limite/uso do serviço Copilot e reexecutar o check; não há correção de código que elimine essa quota.
+- `npm audit`, CodeQL, Gitleaks, bundle, Lighthouse, responsividade, verba/aprovação, origem confiável, gate Sicoob, Vercel Preview Comments e `Segurança, contratos e build` concluíram com sucesso. Vercel Agent Review ficou `neutral` por billing desativado. Nenhum merge foi realizado.
+
 ## Estado atual — 29/10/2026
 
 Os itens de 22/10 abaixo são histórico e não representam o estado atual. Rechecagem dos últimos runs na `main`:

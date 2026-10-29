@@ -260,6 +260,8 @@ O workflow agora exige `vars.E2E_SUPABASE_PROJECT_ID` e valida que o ref autoriz
 
 **Dependência externa pendente:** criar/configurar projeto de homologação Supabase isolado, com schema e personas de teste, e definir `E2E_SUPABASE_PROJECT_ID` mais os secrets correspondentes nas Actions. Até essa configuração, o job deve falhar no preflight; isso não conta como jornada E2E validada. A contagem somente leitura de linhas `rls-e2e-%` no projeto canônico ficou em 9 nas consultas antes e depois do run de 29/10; a origem não está estabelecida e nada foi removido.
 
+No SHA `c5db317885211e359efcde7d012bb11b03ad3e03`, o [run E2E 40844345741](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40844345741) confirmou `E2E_SUPABASE_PROJECT_ID` vazio. O guard encerrou o job antes do teste remoto de autorização/RLS; a etapa de regressão ficou pulada em consequência da falha do gate, não por configuração de skip. No mesmo SHA, o [Copilot Review 40844360713](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40844360713) falhou por limite adicional de uso do serviço (HTTP 402/quota). `npm audit`, CodeQL, Gitleaks, bundle, Lighthouse, responsividade, verba/aprovação, origem confiável, Sicoob gate e Segurança/Contratos/Build passaram; Vercel Agent Review ficou neutral por billing desativado. Nenhum merge ocorreu.
+
 ## Auditoria de publicação e paridade — 29/10/2026
 
 ### Código no GitHub
