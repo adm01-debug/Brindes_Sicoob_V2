@@ -31,6 +31,9 @@ export function validateE2eSupabaseTarget(env = process.env) {
   if (
     target.protocol !== "https:" ||
     target.hostname !== `${projectId}.supabase.co` ||
+    target.username ||
+    target.password ||
+    target.port ||
     target.pathname !== "/" ||
     target.search ||
     target.hash
