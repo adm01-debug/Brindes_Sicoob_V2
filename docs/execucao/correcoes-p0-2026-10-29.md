@@ -12,10 +12,13 @@
 
 Em `/gestor/compras`, as contagens e verbas fixas foram substituídas pela mesma consulta de cooperativa usada no painel de governança. O carregamento compartilhado foi extraído para `managerStatsService` e o cache da query é compartilhado entre as duas telas. Falha de consulta e ausência de cooperativa/verba são apresentadas explicitamente, sem números substitutos. O SLA de 85% foi removido porque não há medição por eventos de aprovação que sustente esse percentual. O botão de aprovação em lote sem ação foi substituído por um link para a fila real.
 
+O painel financeiro do pedido deixou de exibir margem fixa de 32%. `OrderRow` não contém custo dos itens, portanto a interface informa que a margem não foi calculada; subtotal, desconto, frete e total continuam exibindo os valores do pedido.
+
 ## Validação
 
 - Teste direcionado de Tendências: 3 cenários aprovados — padrão real, opt-in demo e rejeição de valores não reconhecidos.
 - Testes de `/gestor/compras`: 3 cenários aprovados — indicadores retornados pelo serviço, falha sem fallback fictício e perfil sem cooperativa.
+- Teste do painel financeiro: confirma que o valor de margem inventado não aparece quando os custos dos itens estão ausentes.
 - `npm run lint`: 0 erros e 873 avisos, igual ao baseline do candidato.
 - TypeScript (`npm run typecheck`): aprovado.
 - Build de produção (`npm run build`): aprovado; avisos existentes de ambiente, PostCSS, divisão de chunks e tamanho de bundle permanecem.
@@ -25,4 +28,4 @@ Em `/gestor/compras`, as contagens e verbas fixas foram substituídas pela mesma
 
 ## Limite
 
-Esta rodada ainda não corrige os selos baseados em mock, indicadores BI que caem para dados sintéticos, prazo calculado por status de estoque, alerta sazonal simulado, margem de 32% ou limite fixo de 10% enumerados em C-07. Também não comprova consulta remota com sessão autenticada, dados suficientes no ambiente canônico ou jornada real de aprovação.
+Esta rodada ainda não corrige os selos baseados em mock, indicadores BI que caem para dados sintéticos, prazo calculado por status de estoque, alerta sazonal simulado ou limite fixo de 10% enumerados em C-07. Também não comprova consulta remota com sessão autenticada, dados suficientes no ambiente canônico ou jornada real de aprovação.
