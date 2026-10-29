@@ -875,7 +875,7 @@ Todos os 282 IDs históricos (250 etapas e 32 melhorias) possuem destino explíc
 
 ### P033 — Preservar versão esperada na transição
 
-**Prioridade:** P1 · **Responsável funcional:** Backend e banco de dados · **Estado:** Planejada.
+**Prioridade:** P1 · **Responsável funcional:** Backend e banco de dados · **Estado:** Parcial — controle de versão e recuperação local implementados e testados; jornada autenticada de dois usuários aguarda homologação segregada e E2E remoto.
 
 **Dependências:** P032 **Origem:** F05, E059, E085.
 
@@ -899,7 +899,7 @@ Todos os 282 IDs históricos (250 etapas e 32 melhorias) possuem destino explíc
 
 ### P034 — Completar autorização da RPC de status
 
-**Prioridade:** P1 · **Responsável funcional:** Backend e banco de dados · **Estado:** Planejada.
+**Prioridade:** P1 · **Responsável funcional:** Backend e banco de dados · **Estado:** Parcial — retry idempotente de ator inativo reproduzido e corrigido em migration candidata; aguarda aplicação controlada no banco canônico, CI e revisão independente.
 
 **Dependências:** P033 **Origem:** E012, E018, F02.
 

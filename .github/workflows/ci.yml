@@ -131,6 +131,9 @@ jobs:
       - name: Simular escopo ativo de orçamentos
         run: python3 scripts/qa/simular-escopo-orcamento-ativo.py
 
+      - name: Simular retry de status por ator inativo e lote sem sucesso parcial
+        run: python3 scripts/qa/simular-retry-status-inativo.py
+
       - name: Compilar artefato de produção
         env:
           VITE_SUPABASE_URL: http://127.0.0.1:59999

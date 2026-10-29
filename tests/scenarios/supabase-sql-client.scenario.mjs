@@ -65,6 +65,12 @@ test("monta lote atômico somente com migrations allowlisted e guarda do ledger"
   assert.match(batch, /O ledger mudou depois do preflight/);
   assert.match(batch, /CREATE TABLE public\.quote_save_idempotency/);
   assert.match(batch, /CREATE OR REPLACE FUNCTION public\.bulk_update_quote_status_atomic/);
+  assert.match(batch, /CREATE OR REPLACE FUNCTION public\.bulk_update_quote_status_atomic_core_20261013/);
+  assert.match(batch, /public\.sicoob_actor_is_active\(v_actor_id\) IS NOT TRUE/);
+  assert.match(
+    batch,
+    /has_function_privilege\('service_role', 'public\.bulk_update_quote_status_atomic_core_20261013\(uuid\[\],integer\[\],text,text\)', 'EXECUTE'\)/,
+  );
   assert.match(batch, /O contrato crítico não foi produzido/);
   assert.doesNotMatch(
     batch,

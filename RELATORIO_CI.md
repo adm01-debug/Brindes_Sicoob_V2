@@ -1,5 +1,22 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
+## Correção adicional P034 — retry de status por ator inativo — 29/10/2026
+
+A inspeção somente leitura das definições no banco canônico revelou que um vendedor desativado, ainda associado como `seller_id`, podia repetir o status atual e receber `id`, `status` e `row_version` antes da verificação de ator ativo. A operação era sem escrita, porém expunha metadados do orçamento e permitia chamada após desativação.
+
+| Cenário simulado em PostgreSQL descartável | Resultado esperado | Resultado |
+|---|---|---|
+| Ator inativo repetindo status já existente | Negar antes de consultar a quote | ✅ |
+| Identidade ausente | Negar | ✅ |
+| Retry após remoção da quote | Negar | ✅ |
+| Ator sem escopo / lote de escopos mistos | Negar lote integralmente, sem dados | ✅ |
+| Conflito de versão em lote autorizado | Abortar lote integralmente | ✅ |
+| Retry autorizado no status já atual | Preservar idempotência e não escrever | ✅ |
+
+A correção está versionada como migration candidata, acompanhada por simulador de regressão. O runner transacional de migrations foi reforçado para validar também o corpo exato e a segurança/ACL da função interna antes do commit. Validação desta revisão: build e typecheck passaram; lint 0 erros/872 avisos e gate sem regressão frente a `origin/main`; Vitest 5.877 passou/68 ignorados; cenários Node 226/226; npm audit sem vulnerabilidades; três simuladores PostgreSQL passaram; a allowlist passou em `--verify-files`. Estes artefatos ainda não foram publicados nesta rodada; a migration permanece **não aplicada** no banco canônico. Não executei escrita, migration ou deploy remoto. A validação local completa e a atualização de CI/PR vêm antes da via oficial de aplicação em `main`.
+
+O usuário confirmou que configurará o Supabase segregado para E2E. Até a criação e configuração efetiva de URL, project ref e contas de teste no GitHub Actions, o cenário autenticado de dois usuários permanece sem prova remota. O Copilot Review continua dependendo de restauração de quota (HTTP 402), independente do código.
+
 ## Complemento P033 — recuperação após falha de transição — 29/10/2026
 
 O editor agora preserva o snapshot confirmado no servidor e, quando a transição de status falha, mantém aberto o orçamento em edição com a ação explícita “Revisar orçamento”. Em criação, navega ao detalhe já persistido para impedir que um novo clique crie duplicata. Foram adicionados testes das duas rotas.

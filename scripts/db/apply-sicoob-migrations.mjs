@@ -124,6 +124,10 @@ const TARGETS = [
     file: "supabase/migrations/20261022120000_add_public_favorites_to_security_definer_allowlist.sql",
     sha256: "87bf1a8d5bb689f202a4ff77968c6f8820cfbfe5fffdff5d9c16c439a611bf54",
   },
+  {
+    file: "supabase/migrations/20261029102059_block_inactive_quote_status_retries.sql",
+    sha256: "a108c49665a312d04f2aa4e5bc5e4af6535c16243e1f7e746dcfa5eb0168a30b",
+  },
 ];
 
 function sha256(value) {
@@ -399,6 +403,8 @@ async function validateContract(client, targets) {
       (SELECT p.prosrc FROM pg_proc p
         WHERE p.oid = to_regprocedure('public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)')) AS status_source,
       (SELECT p.prosrc FROM pg_proc p
+        WHERE p.oid = to_regprocedure('public.bulk_update_quote_status_atomic_core_20261013(uuid[],integer[],text,text)')) AS status_core_source,
+      (SELECT p.prosrc FROM pg_proc p
         WHERE p.oid = to_regprocedure('public.assert_quote_transition(uuid,public.quotes,text)')) AS transition_assert_source,
       (SELECT p.prosrc FROM pg_proc p
         WHERE p.oid = to_regprocedure('public.can_manage_quote_scope(uuid,uuid)')) AS quote_scope_source,
@@ -407,12 +413,22 @@ async function validateContract(client, targets) {
       COALESCE((SELECT p.prosecdef AND p.proconfig @> ARRAY['search_path=pg_catalog, public']::text[]
         FROM pg_proc p
         WHERE p.oid = to_regprocedure('public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)')), false) AS status_security_safe,
+      COALESCE((SELECT p.prosecdef AND p.proconfig @> ARRAY['search_path=pg_catalog, public']::text[]
+        FROM pg_proc p
+        WHERE p.oid = to_regprocedure('public.bulk_update_quote_status_atomic_core_20261013(uuid[],integer[],text,text)')), false) AS status_core_security_safe,
       has_function_privilege('authenticated', 'public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)', 'EXECUTE') AS status_authenticated_execute,
       has_function_privilege('anon', 'public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)', 'EXECUTE') AS status_anon_execute,
       COALESCE((SELECT bool_or(a.grantee = 0 AND a.privilege_type = 'EXECUTE')
         FROM pg_proc p,
           LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
         WHERE p.oid = to_regprocedure('public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)')), false) AS status_public_execute,
+      has_function_privilege('authenticated', 'public.bulk_update_quote_status_atomic_core_20261013(uuid[],integer[],text,text)', 'EXECUTE') AS status_core_authenticated_execute,
+      has_function_privilege('anon', 'public.bulk_update_quote_status_atomic_core_20261013(uuid[],integer[],text,text)', 'EXECUTE') AS status_core_anon_execute,
+      has_function_privilege('service_role', 'public.bulk_update_quote_status_atomic_core_20261013(uuid[],integer[],text,text)', 'EXECUTE') AS status_core_service_execute,
+      COALESCE((SELECT bool_or(a.grantee = 0 AND a.privilege_type = 'EXECUTE')
+        FROM pg_proc p,
+          LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
+        WHERE p.oid = to_regprocedure('public.bulk_update_quote_status_atomic_core_20261013(uuid[],integer[],text,text)')), false) AS status_core_public_execute,
       has_function_privilege('authenticated', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE') AS transition_assert_authenticated_execute,
       has_function_privilege('anon', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE') AS transition_assert_anon_execute,
       has_function_privilege('service_role', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE') AS transition_assert_service_execute,
@@ -461,6 +477,7 @@ async function validateContract(client, targets) {
           SELECT to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)') AS oid
           UNION ALL SELECT to_regprocedure('public.save_quote_atomic_idempotent(jsonb,jsonb,uuid,jsonb)')
           UNION ALL SELECT to_regprocedure('public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)')
+         UNION ALL SELECT to_regprocedure('public.bulk_update_quote_status_atomic_core_20261013(uuid[],integer[],text,text)')
           UNION ALL SELECT to_regprocedure('public.assert_quote_transition(uuid,public.quotes,text)')
           UNION ALL SELECT to_regprocedure('public.notify_singular_quote_submission()')
         ) AS sig ON sig.oid = p.oid,
@@ -714,16 +731,18 @@ async function validateContract(client, targets) {
   const result = rows[0];
   const idempotencyMigration = latestDefiner(targets, "save_quote_atomic_idempotent");
   const statusMigration = latestDefiner(targets, "bulk_update_quote_status_atomic");
+  const statusCoreMigration = latestDefiner(targets, "bulk_update_quote_status_atomic_core_20261013");
   const notificationMigration = latestDefiner(targets, "notify_singular_quote_submission");
   const identityMigration = latestDefiner(targets, "save_quote_atomic");
   const transitionMigration = latestDefiner(targets, "assert_quote_transition");
   const quoteScopeMigration = latestDefiner(targets, "can_manage_quote_scope");
-  if (!idempotencyMigration || !statusMigration || !notificationMigration || !identityMigration
+  if (!idempotencyMigration || !statusMigration || !statusCoreMigration || !notificationMigration || !identityMigration
       || !transitionMigration || !quoteScopeMigration) {
     throw new Error("Allowlist incompleta para validar os corpos das funções críticas.");
   }
   const sourceHashesValid = typeof result?.idempotency_source === "string"
     && typeof result.status_source === "string"
+    && typeof result.status_core_source === "string"
     && typeof result.notification_source === "string"
     && typeof result.save_atomic_source === "string"
     && typeof result.transition_assert_source === "string"
@@ -733,6 +752,9 @@ async function validateContract(client, targets) {
     )
     && sha256(result.status_source.trim()) === sha256(
       extractFunctionBody(statusMigration.sql, "bulk_update_quote_status_atomic"),
+    )
+    && sha256(result.status_core_source.trim()) === sha256(
+      extractFunctionBody(statusCoreMigration.sql, "bulk_update_quote_status_atomic_core_20261013"),
     )
     && sha256(result.notification_source.trim()) === sha256(
       extractFunctionBody(notificationMigration.sql, "notify_singular_quote_submission"),
@@ -782,6 +804,8 @@ async function validateContract(client, targets) {
     && result.actor_fk_exists && result.quote_fk_exists && result.hash_constraint_exists && constraintsExact
     && result.status_security_safe && result.status_authenticated_execute
     && !result.status_anon_execute && !result.status_public_execute
+    && result.status_core_security_safe && !result.status_core_authenticated_execute
+    && !result.status_core_anon_execute && !result.status_core_service_execute && !result.status_core_public_execute
     && !result.transition_assert_authenticated_execute
     && !result.transition_assert_anon_execute && !result.transition_assert_service_execute
     && !result.transition_assert_public_execute
@@ -852,11 +876,12 @@ VALUES (
 );`).join("\n");
   const idempotencyMigration = latestDefiner(targets, "save_quote_atomic_idempotent");
   const statusMigration = latestDefiner(targets, "bulk_update_quote_status_atomic");
+  const statusCoreMigration = latestDefiner(targets, "bulk_update_quote_status_atomic_core_20261013");
   const notificationMigration = latestDefiner(targets, "notify_singular_quote_submission");
   const identityMigration = latestDefiner(targets, "save_quote_atomic");
   const transitionMigration = latestDefiner(targets, "assert_quote_transition");
   const quoteScopeMigration = latestDefiner(targets, "can_manage_quote_scope");
-  if (!idempotencyMigration || !statusMigration || !notificationMigration || !identityMigration
+  if (!idempotencyMigration || !statusMigration || !statusCoreMigration || !notificationMigration || !identityMigration
       || !transitionMigration || !quoteScopeMigration) {
     throw new Error("Allowlist incompleta para montar a validação transacional.");
   }
@@ -867,6 +892,10 @@ VALUES (
   const statusBody = dollarQuote(
     extractFunctionBody(statusMigration.sql, "bulk_update_quote_status_atomic"),
     "status_body",
+  );
+  const statusCoreBody = dollarQuote(
+    extractFunctionBody(statusCoreMigration.sql, "bulk_update_quote_status_atomic_core_20261013"),
+    "status_core_body",
   );
   const notificationBody = dollarQuote(
     extractFunctionBody(notificationMigration.sql, "notify_singular_quote_submission"),
@@ -915,6 +944,8 @@ BEGIN
         IS DISTINCT FROM ${idempotencyBody}
      OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)'))
         IS DISTINCT FROM ${statusBody}
+     OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.bulk_update_quote_status_atomic_core_20261013(uuid[],integer[],text,text)'))
+        IS DISTINCT FROM ${statusCoreBody}
      OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.notify_singular_quote_submission()'))
         IS DISTINCT FROM ${notificationBody}
      OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)'))
@@ -929,6 +960,8 @@ BEGIN
         FROM pg_proc WHERE oid = to_regprocedure('public.save_quote_atomic_idempotent(jsonb,jsonb,uuid,jsonb)')), true)
      OR COALESCE((SELECT NOT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
         FROM pg_proc WHERE oid = to_regprocedure('public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)')), true)
+     OR COALESCE((SELECT NOT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
+        FROM pg_proc WHERE oid = to_regprocedure('public.bulk_update_quote_status_atomic_core_20261013(uuid[],integer[],text,text)')), true)
      OR COALESCE((SELECT NOT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
         FROM pg_proc WHERE oid = to_regprocedure('public.notify_singular_quote_submission()')), true)
      OR COALESCE((SELECT NOT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
@@ -971,6 +1004,15 @@ BEGIN
        SELECT 1 FROM pg_proc p,
          LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
        WHERE p.oid = to_regprocedure('public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)')
+         AND a.grantee = 0 AND a.privilege_type = 'EXECUTE'
+     )
+     OR has_function_privilege('authenticated', 'public.bulk_update_quote_status_atomic_core_20261013(uuid[],integer[],text,text)', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.bulk_update_quote_status_atomic_core_20261013(uuid[],integer[],text,text)', 'EXECUTE')
+     OR has_function_privilege('service_role', 'public.bulk_update_quote_status_atomic_core_20261013(uuid[],integer[],text,text)', 'EXECUTE')
+     OR EXISTS (
+       SELECT 1 FROM pg_proc p,
+         LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
+       WHERE p.oid = to_regprocedure('public.bulk_update_quote_status_atomic_core_20261013(uuid[],integer[],text,text)')
          AND a.grantee = 0 AND a.privilege_type = 'EXECUTE'
      )
      OR has_function_privilege('authenticated', 'public.assert_quote_transition(uuid,public.quotes,text)', 'EXECUTE')

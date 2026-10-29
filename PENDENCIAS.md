@@ -1,5 +1,14 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
+## Correção adicional P034 — retry de status por ator inativo — 29/10/2026
+
+- A leitura somente de funções do banco canônico encontrou que a RPC podia retornar id/status/row_version quando um vendedor desativado repetia o status já atual do orçamento. A operação não gravava, mas revelava dados do orçamento e contornava a validação de ator ativo no caminho idempotente.
+- Reproduzido em PostgreSQL descartável; a nova migration candidata verifica ator ativo antes de consultar os IDs e revalida autorização/transição no retry. Cenários de ator inativo/ausente, quote removido, ator sem escopo, lote misto e conflito de versão passaram; retry autorizado mantém sem escrita nem incremento de versão.
+- O banco canônico continua sem alterações. Migration e simulador estão apenas na worktree; não aplicar pela CLI nesta branch. A verificação transacional do executor agora também compara fonte, `SECURITY DEFINER`, `search_path` e ACL da função interna antes de confirmar o lote.
+- Validação local completa: build e typecheck passaram; lint com 0 erros/872 avisos e gate sem regressão frente a `origin/main`; Vitest 5.877 passou/68 ignorados (baseline atual igual); `npm run test:scenarios` 226/226; `npm run check:npm-audit` sem vulnerabilidades; simuladores de governança, escopo e retry passaram; `--verify-files` confirmou o hash da allowlist.
+- **Pendente:** concluir validações locais e CI da PR, revisão e fluxo autorizado em `main` antes da aplicação controlada. A migration não está no ledger canônico.
+- E2E autenticado continua bloqueado até provisionar/configurar a homologação segregada que o usuário confirmou que fará. O check Copilot mantém bloqueio externo HTTP 402/quota já registrado.
+
 ## Complemento de recuperação P033 — 29/10/2026
 
 - Ajuste local testado: quando uma transição de status falha após o salvamento, a edição existente continua aberta, preserva o snapshot confirmado e oferece “Revisar orçamento”; uma criação abre o detalhe do registro salvo para prevenir duplicação.
