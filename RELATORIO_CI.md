@@ -210,6 +210,16 @@ A PR [#154](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/154) continua 
 
 As falhas remotas não foram corrigidas nesta alteração documental. O timeout E2E exige diagnóstico próprio; não há evidência para classificá-lo como falha de aplicação ou de infraestrutura. Não mesclar até que os checks requeridos fiquem verdes.
 
+### Atualização de CI e acesso remoto — 29/10/2026
+
+O run [E2E #40838620244](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40838620244), no SHA `f1998d7d2daebe33abb6a0e39499355944274f12` da PR #157, falhou no step `Validar autorização remota e RLS técnico`. O log resumido disponível mostra timeout de hook de 45 s no preparo do teste remoto de RLS; não fornece resposta PostgREST conclusiva. A causa raiz não está confirmada e a suíte autenticada não pode ser considerada validada.
+
+Consulta somente leitura ao Supabase canônico retornou 9 linhas em `public.e2e_cleanup_rate_limit` com chave `rls-e2e-%`. A consulta não permite atribuir a origem ou a idade dessas linhas, portanto não as classifica como órfãs. Nenhum dado foi alterado. O teste remoto usa chave administrativa para criar e remover uma linha-canário; antes de novo run, é necessário ter um projeto Supabase segregado de homologação e validar que o workflow aponta para ele. A verificação E2E não foi repetida contra o projeto canônico.
+
+No inventário de runs recentes da `main` (27–29/10), CodeQL falhou no `Autobuild` e na preservação do SARIF ([40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073)); `Qualidade contínua` e `Security Scan` falharam pelo `npm audit` devido a vulnerabilidades altas em `undici` e `zod` ([40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964), [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158)); e a publicação de funções Sicoob falhou na etapa de confirmação ([40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102)). Branch Protection Sentinel e Migration ledger drift concluíram com sucesso. As falhas não foram resolvidas por esta atualização documental.
+
+As PRs #150, #151, #154, #156 e #157 continuam abertas, sem merge na `main`. A reconciliação com o banco permanece parcial: 12 fontes de migrations aplicadas ainda estão ausentes de `main`, há divergências de Edge Functions e nenhuma escrita foi feita no Supabase canônico.
+
 ### Última execução conhecida de cada workflow na `main`
 
 | Workflow | Run | Resultado | Evidência |
