@@ -1262,3 +1262,11 @@ Método: `<scripts-da-auditoria>/unused-exports.mjs` monta um índice de tokens 
 - PWA e infraestrutura: `src/hooks/usePWAInstall.ts`, `src/pages/PWAInstallPage.tsx`, `src/lib/sw-register.ts`, `src/lib/feature-flags.ts`, `src/lib/sentry.ts`, `src/lib/system/dev-gate/providers.ts`, `src/services/encryption.ts`, `src/lib/access/request-dev-access.ts`, `src/hooks/useGeoBlocking.ts`, `src/hooks/useDropboxFiles.ts`, `src/pages/{DropboxBrowserPage,TestDashboard,QAPage}.tsx`.
 - Backend consultado só para confirmar consumo pelo frontend: `supabase/functions/{send-transactional-email,send-scheduled-reports,favorites-watcher,comparison-price-watcher,dropbox-list}/index.ts`, `supabase/config.toml`, `supabase/migrations/{20260412231951_…,20260927110200_quote_status_workflow_validation,20260927200207_duplicate_order_atomic}.sql` e a lista de `cron.schedule` em todas as migrations.
 - Scripts auxiliares (fora do repositório): `<scripts-da-auditoria>/{graph.mjs,slice.mjs,links.mjs,routerefs.mjs,deadbuttons.mjs,unused-exports.mjs}` e saídas `graph-out.json`, `links.txt`, `deadbuttons.txt`, `unused-exports.txt`.
+
+## Revalidação posterior — 29/10/2026
+
+O achado FE-011 descreve o estado observado em 11/10/2026. Na revisão do código da `main` (`e9d59026793b84fabeaeec9da890a068f64d49c3`), a incompatibilidade dos destinos já está corrigida: o contador administrativo é aplicado ao item filho `/admin/usuarios?tab=discounts`; `withItemBadge` percorre itens filhos; e o contador `pending_singular_approval` é aplicado ao item existente `/gestor/orcamentos` (página de gestão dos orçamentos da Singular). Portanto, a afirmação de que nenhum item possui esses destinos não representa mais o código atual.
+
+**Evidência de teste:** `npx vitest run tests/components/layout/SidebarReorganized.behavior.test.ts` — 1 arquivo e 2 testes aprovados. O teste verifica a aplicação do contador no item filho. Os arquivos de implementação e teste usados na execução (`SidebarReorganized.tsx` e `SidebarReorganized.behavior.test.ts`) são idênticos aos da `main` indicada acima.
+
+**Classificação atual:** FE-011 corrigido no código e coberto por teste unitário; a visualização do contador em uma sessão autenticada real ainda não foi verificada em homologação. Esta nota atualiza o estado do achado sem alterar o registro histórico da auditoria de 11/10.
