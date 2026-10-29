@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 # RelatÃ³rio CI â€” adm01-debug/Brindes_Sicoob_V2
+=======
+﻿# Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
 **Gerado em:** 2026-10-22  
 **SessÃ£o:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
@@ -446,6 +449,7 @@ Branch `fix/t031-active-quote-status-retry`, base `main` no SHA `e9d59026793b84f
 - Nenhuma consulta, migration ou escrita foi executada em Supabase remoto. A migration estÃ¡ versionada, mas nÃ£o aplicada; falta confirmar o ambiente isolado de construÃ§Ã£o e executar a validaÃ§Ã£o remota autorizada antes de fechar T031.
 - A migration nÃ£o foi incluÃ­da na allowlist do executor remoto: o alvo atualmente configurado nele nÃ£o foi confirmado como ambiente de construÃ§Ã£o independente do banco canÃ´nico.
 
+<<<<<<< HEAD
 **SituaÃ§Ã£o:** correÃ§Ã£o local comprovada; T031 permanece parcial atÃ© revisÃ£o independente, CI/PR e validaÃ§Ã£o no ambiente de construÃ§Ã£o.
 ## AtualizaÃ§Ã£o supersedente â€” auditoria coordenada de CI (31/10/2026)
 
@@ -592,3 +596,48 @@ O commit `30da52ae6f9e17c2e148adea72b57d579802b376` foi enviado à PR #180. Incl
 As novas execuções do SHA `30da52a` permaneciam em fila/pendentes na consulta: Security [41170822624](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170822624), CodeQL [41170822607](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170822607), Lighthouse [41170822609](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170822609), Portal [41170822636](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170822636), bundle [41170822618](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170822618), Qualidade [41170822641](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170822641) e E2E [41170822637](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170822637). Portanto a execução remota da proteção ainda não está certificada. O run antigo sem guard, [41170083965](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170083965), foi cancelado enquanto estava queued; a conclusão final registrada é `cancelled`.
 
 PR #180 segue aberta, draft e bloqueada. Nenhum merge, deploy, rerun manual, migration ou escrita manual no banco canônico foi executado.
+=======
+**Situação:** correção local comprovada; T031 permanece parcial até revisão independente, CI/PR e validação no ambiente de construção.
+
+## Revalidação em 2026-10-29
+
+### Inventário atualizado da `main`
+
+Fonte: GitHub Actions, branch `main`, SHA `e9d59026793b84fabeaeec9da890a068f64d49c3`. Conta-se a última execução encontrada de cada workflow; falhas antigas superadas por execução mais recente verde não são consideradas atuais.
+
+| Workflow | Run mais recente | Estado | Diagnóstico |
+|---|---:|---|---|
+| [Publicar funções Sicoob](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | `40772348102` | failure | A publicação terminou, mas o gate falha se a versão não aumentar mesmo quando a função já está atual (“No change found”; versão 5 antes e depois). |
+| [Security Scan](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `40602983158` | failure | Gate `npm audit` detectou `undici` e `zod` com severidade alta. |
+| [Qualidade contínua](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | `40602982964` | failure | Mesmo gate e mesma causa do Security Scan (`undici` e `zod`, alta). |
+| [CodeQL](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `40602983073` | failure | `init v4.39.1` incompatível com `autobuild/analyze v4.38.2`; análise não gera SARIF. Correção em validação na PR #164. |
+
+**Últimas execuções verdes observadas:** Migration ledger drift `40828393693`, Branch Protection Sentinel `40602983038`, Enterprise Compliance & Audit Reporting `40602982958`, Portal Sicoob `39868499315` e atualizações Dependabot visíveis no inventário consultado. Reconsultar após a resolução das falhas.
+
+### Baseline local pós-correção CodeQL — PR #164
+
+Branch `fix/ci-workflows-h290325`, commit `5712e8295ba9123f9f2a99655122e201dc819b9b`. A mudança alinha as três ações CodeQL a `v4.39.1` e não toca em código de aplicação, APIs, schema ou dados.
+
+| Verificação | Resultado | Comparação |
+|---|---|---|
+| `npm ci` | ✅ concluído; instalação encontrou 2 vulnerabilidades altas | Já presentes no lockfile da `main` e reproduzidas pelo Security Scan. |
+| `npm run build` | ✅ sucesso | Permanecem avisos de variáveis Vite locais ausentes, PostCSS, chunks e imports mistos. |
+| `npm run lint:baseline` | ✅ sucesso | 0 regressões; nenhum arquivo de aplicação mudou. |
+| `npm run typecheck:baseline` | ✅ sucesso | 0 erros atuais / 0 baseline. |
+| `npm test -- --reporter=dot` | ✅ 452 arquivos passaram, 4 ignorados; 5.839 testes passaram, 68 ignorados | Igual ao baseline conhecido; nenhuma regressão. |
+| `actionlint .github/workflows/codeql.yml` | ✅ sucesso | Sintaxe e estrutura local do workflow válidas. |
+
+O push repetiu typecheck, lint e suíte completa e passou. A [PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164) foi aberta; no último acompanhamento seus checks remotos ainda estavam em andamento. **Não registrar CodeQL como corrigido até o check remoto terminar em `success`.**
+
+### E2E de autenticação e RLS — PR #163
+
+Run [40911387860](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40911387860) terminou `failure` no step “Validar autorização remota e RLS técnico”. Os secrets obrigatórios estavam presentes e mascarados. Três chamadas com token de teste a `system-healthcheck`, `migration-health-check` e `auth-integrity-check` estouraram timeout de ~30,5 s; os hooks de `e2e_cleanup_rate_limit` estouraram o limite de 45 s. No gate: 49 passaram, 3 falharam e 4 foram ignorados. O log prova timeouts remotos, mas não permite concluir que a causa é secret inválido, quota, URL/project ref ou estado da conta.
+
+O owner informou que vai provisionar Supabase de homologação e atualizar os secrets do workflow. Após confirmação da configuração, reexecutar E2E com URL, chave publicável, project ref, service role e contas de teste todos do mesmo projeto; não coletar nem imprimir valores dos secrets. `E2E_SUPABASE_PROJECT_ID` não é consumida pelo workflow atual.
+
+### Próximas causas-raiz
+
+1. Resolver o gate de publicação que exige incremento da versão mesmo para Edge Function sem mudança; preservar a checagem de existência e confirmar o resultado retornado pelo CLI.
+2. Atualizar `undici` e `zod` pela menor correção não major comprovada e repetir os gates, sem afrouxar `npm audit`.
+3. Confirmar CodeQL remoto verde na PR #164.
+4. Reexecutar E2E após a homologação estar configurada; se persistir, inspecionar o trecho de falha da chamada remota e corrigir a causa comprovada.

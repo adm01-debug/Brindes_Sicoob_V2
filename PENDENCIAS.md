@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 # PendÃªncias de CI â€” adm01-debug/Brindes_Sicoob_V2
+=======
+﻿# Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
 Atualizado em: 2026-10-22
 
@@ -398,6 +401,7 @@ Este inventÃ¡rio substitui os snapshots antigos acima. Nenhuma migration, SQL,
 
 **PrÃ³xima aÃ§Ã£o necessÃ¡ria:** confirmar o ref e as credenciais do projeto Supabase de homologaÃ§Ã£o/construÃ§Ã£o; revisar o diff da PR e os checks; somente entÃ£o acrescentar a migration Ã  allowlist restrita ao ref aprovado e executar preflight, aplicaÃ§Ã£o e verificaÃ§Ã£o de ledger/definiÃ§Ã£o/ACL nesse projeto. NÃ£o usar o banco canÃ´nico nem o banco de produtos como fallback.
 
+<<<<<<< HEAD
 **Prova local:** PostgreSQL 17 descartÃ¡vel, rede desativada. O cenÃ¡rio reproduz o acesso indevido com o wrapper anterior e confirma que o novo wrapper nega com `42501` antes de chamar o nÃºcleo; o retry de vendedor ativo segue autorizado. Ver `RELATORIO_CI.md`, seÃ§Ã£o â€œBaseline e correÃ§Ã£o T031â€.
 ## PendÃªncias atuais â€” auditoria de 31/10/2026
 
@@ -542,3 +546,27 @@ Os testes locais registrados não caíram: #151 segue em 5.846 aprovados / 68 ig
 - No SHA `30da52a`, Security [41170822624](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170822624), CodeQL [41170822607](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170822607), Lighthouse [41170822609](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170822609), Portal [41170822636](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170822636), Bundle [41170822618](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170822618) e Qualidade [41170822641](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170822641) estavam queued/pending.
 - Gates locais pós-commit: build/typecheck passaram, lint 873 avisos e zero erros, Vitest 5.840 aprovados / 68 ignorados; `actionlint` e 4 testes específicos do guard passaram. Hook do push confirmou TS 0→0, sem regressão de lint nos arquivos de app alterados (nenhum) e 5.840/68.
 - PR #180 continua draft e bloqueada pelos checks pendentes/falhos herdados; sem merge/deploy. Permanecem abertas as vulnerabilidades, o catálogo remoto RPC, o timeout E2E da PR #151, as secrets de homologação ausentes e a possível linha sintética recente no banco canônico. Não limpar a linha sem confirmação do proprietário.
+=======
+**Prova local:** PostgreSQL 17 descartável, rede desativada. O cenário reproduz o acesso indevido com o wrapper anterior e confirma que o novo wrapper nega com `42501` antes de chamar o núcleo; o retry de vendedor ativo segue autorizado. Ver `RELATORIO_CI.md`, seção “Baseline e correção T031”.
+## Revalidação de workflows — 2026-10-29
+
+Inventário da `main` no SHA `e9d59026793b84fabeaeec9da890a068f64d49c3`, considerando somente a execução mais recente encontrada por workflow:
+
+| Workflow | Última execução | Conclusão | Causa comprovada / estado |
+|---|---:|---|---|
+| [Publicar funções Sicoob](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | `40772348102` | `failure` | As funções foram publicadas/confirmadas; a validação final falhou porque `sicoob-approval-reconciliation` continuou na versão 5, que já era a versão anterior. O log registra “No change found” nessa função. O gate exige incremento de versão mesmo quando não há mudança. |
+| [Security Scan](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `40602983158` | `failure` | `npm audit (high+critical)` bloqueou por vulnerabilidades altas em `undici` e `zod`. |
+| [Qualidade contínua](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | `40602982964` | `failure` | O mesmo gate `npm audit` bloqueou por `undici` e `zod` (alta). |
+| [CodeQL](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `40602983073` | `failure` | `init` carregou `v4.39.1`, mas `autobuild`/`analyze` rodaram `v4.38.2`; a análise terminou em erro de configuração e não produziu SARIF para upload. Correção proposta na [PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164), aguardando CI. |
+
+**Workflows verdes na última execução consultada:** Migration ledger drift (`40828393693`), Branch Protection Sentinel (`40602983038`), Enterprise Compliance & Audit Reporting (`40602982958`), Portal Sicoob (última execução disponível na `main`: `39868499315`) e atualizações Dependabot listadas no inventário. PRs não foram mescladas; portanto, esse estado é da `main` e deve ser reconsultado após as correções.
+
+### Bloqueio de E2E autenticado — PR #163
+
+Run [40911387860](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40911387860), commit `f3ef5d84c340badd3dfbe18d1a3e48483dd95192`, falhou no step **“Validar autorização remota e RLS técnico”**. O workflow confirmou que os secrets requeridos estão preenchidos (valores mascarados), mas as chamadas a `system-healthcheck`, `migration-health-check` e `auth-integrity-check` com token de teste expiraram em ~30,5 s; os hooks de `e2e_cleanup_rate_limit` também expiraram em 45 s durante `beforeAll`/`afterAll`. Resultado: 49 testes passaram, 3 falharam e 4 foram ignorados nesse gate. A evidência aponta timeout de serviços remotos, mas **não identifica por si só** se a causa é URL/project ref, chave, conta, quota, conectividade ou configuração do projeto.
+
+**Ação do owner em andamento:** provisionar projeto Supabase de homologação e alinhar nele as contas de teste. Após concluir, atualizar os secrets já usados pelo workflow (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`, `SUPABASE_SERVICE_ROLE_KEY`, `E2E_USER_*`, `E2E_VIEWER_*`, `E2E_MANAGER_*`, `E2E_ADMIN_*`, `E2E_DEV_*` e `E2E_CLEANUP_TOKEN`) para o mesmo projeto; não enviar valores pela conversa. A variável `E2E_SUPABASE_PROJECT_ID` não é lida pelo workflow atual. Reexecutar o gate e só então distinguir falha de credenciais de falha de serviço/RLS.
+
+### Correção CodeQL em validação
+
+A [PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164) alinha `init`, `autobuild` e `analyze` em `v4.39.1`. `actionlint`, `npm ci`, build, lint baseline, typecheck baseline e suíte Vitest passaram localmente; os checks remotos ainda estavam em execução/falha por outros gates no registro desta atualização. Não mesclar enquanto os checks requeridos não estiverem verdes.
