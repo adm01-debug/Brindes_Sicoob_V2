@@ -217,3 +217,74 @@ Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Depen
 | Migration Ledger Drift | Fingerprint de `20261022120000` calculado com `local_sha256` incorreto; novo digest correto: `e2815b0...` | Corrigido fingerprint no `migration-ledger-baseline.json` | #129 |
 | 5 CVEs high (vite ≤6.4.3) | GHSA-698v, GHSA-r825, GHSA-587h, GHSA-9jrq, GHSA-rq7h | `vite` 6.4.3 → 6.4.5 | #126 |
 | Qualidade contínua (`ci.yml`) — ECR rate limit | `toomanyrequests: Data limit exceeded` ao puxar `public.ecr.aws/supabase/postgres:17.6.1.063` em dois steps (scripts `simular-controles-auditoria.py` e `simular-acl-efetiva.py`) | Rate limit do ECR Public se dissipou naturalmente; run `39780447863` → **success** | automático |
+
+---
+
+## Revalidação de workflows — 2026-10-29
+
+Inventário da `main` no SHA `e9d59026793b84fabeaeec9da890a068f64d49c3`, considerando somente a execução mais recente encontrada por workflow:
+
+| Workflow | Última execução | Conclusão | Causa comprovada / estado |
+|---|---:|---|---|
+| [Publicar funções Sicoob](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | `40772348102` | `failure` | As funções foram publicadas/confirmadas; a validação final falhou porque `sicoob-approval-reconciliation` continuou na versão 5, que já era a versão anterior. O log registra “No change found” nessa função. O gate exige incremento de versão mesmo quando não há mudança. |
+| [Security Scan](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `40602983158` | `failure` | `npm audit (high+critical)` bloqueou por vulnerabilidades altas em `undici` e `zod`. |
+| [Qualidade contínua](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | `40602982964` | `failure` | O mesmo gate `npm audit` bloqueou por `undici` e `zod` (alta). |
+| [CodeQL](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `40602983073` | `failure` | `init` carregou `v4.39.1`, mas `autobuild`/`analyze` rodaram `v4.38.2`; a análise terminou em erro de configuração e não produziu SARIF para upload. Correção proposta na [PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164), aguardando CI. |
+
+**Workflows verdes na última execução consultada:** Migration ledger drift (`40828393693`), Branch Protection Sentinel (`40602983038`), Enterprise Compliance & Audit Reporting (`40602982958`), Portal Sicoob (última execução disponível na `main`: `39868499315`) e atualizações Dependabot listadas no inventário. PRs não foram mescladas; portanto, esse estado é da `main` e deve ser reconsultado após as correções.
+
+### Bloqueio de E2E autenticado — PR #163
+
+Run [40911387860](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40911387860), commit `f3ef5d84c340badd3dfbe18d1a3e48483dd95192`, falhou no step **“Validar autorização remota e RLS técnico”**. O workflow confirmou que os secrets requeridos estão preenchidos (valores mascarados), mas as chamadas a `system-healthcheck`, `migration-health-check` e `auth-integrity-check` com token de teste expiraram em ~30,5 s; os hooks de `e2e_cleanup_rate_limit` também expiraram em 45 s durante `beforeAll`/`afterAll`. Resultado: 49 testes passaram, 3 falharam e 4 foram ignorados nesse gate. A evidência aponta timeout de serviços remotos, mas **não identifica por si só** se a causa é URL/project ref, chave, conta, quota, conectividade ou configuração do projeto.
+
+**Ação do owner em andamento:** provisionar projeto Supabase de homologação e alinhar nele as contas de teste. Após concluir, atualizar os secrets já usados pelo workflow (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`, `SUPABASE_SERVICE_ROLE_KEY`, `E2E_USER_*`, `E2E_VIEWER_*`, `E2E_MANAGER_*`, `E2E_ADMIN_*`, `E2E_DEV_*` e `E2E_CLEANUP_TOKEN`) para o mesmo projeto; não enviar valores pela conversa. A variável `E2E_SUPABASE_PROJECT_ID` não é lida pelo workflow atual. Reexecutar o gate e só então distinguir falha de credenciais de falha de serviço/RLS.
+
+### Correção CodeQL em validação
+
+A [PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164) alinha `init`, `autobuild` e `analyze` em `v4.39.1`. `actionlint`, `npm ci`, build, lint baseline, typecheck baseline e suíte Vitest passaram localmente; os checks remotos ainda estavam em execução/falha por outros gates no registro desta atualização. Não mesclar enquanto os checks requeridos não estiverem verdes.
+
+## Atualização dos PRs e bloqueios — 2026-10-29
+
+### Estado da `main`
+
+O último SHA consultado continua sendo `e9d59026793b84fabeaeec9da890a068f64d49c3`; portanto, as quatro falhas abaixo ainda não foram corrigidas na `main`:
+
+| Workflow | Última execução em `main` | Correção preparada | Estado |
+|---|---:|---|---|
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | [PR #165](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/165): valida presença/versão válida e aceita versão inalterada se o CLI terminou sem erro | Aguardando checks; nenhum deploy executado |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | [PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164): atualiza `undici` e `zod` | `npm audit` local no PR #164: zero vulnerabilidades; PR não mesclada |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | Mesma correção de dependências da PR #164 | O check do PR #164 encontrou rate limit do ECR ao baixar PostgreSQL descartável; nova tentativa em execução |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | [PR #165](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/165): ações alinhadas em `v4.39.1` | Aguardar check do PR antes de considerar resolvido na `main` |
+
+### PR #164 — dependências e compatibilidade Zod
+
+Head atual `84b0509cc0fc96f1eae90e2feff04e3b138e63a6`. Alterações locais completas: `undici@8.12.3`; `zod@4.6.7` com adaptação de `required_error`/`.errors`; ajuste do gate de publicação Sicoob. `npm audit --audit-level=high` reportou zero vulnerabilidades; build, lint baseline, typecheck baseline e suíte passaram (452 arquivos / 5.839 testes aprovados; 4 arquivos / 68 testes ignorados).
+
+Checks remotos observados: audit, Gitleaks, CodeQL, Lighthouse, Bundle Size, Verba/Aprovação e origem confiável concluíram `success`; E2E concluiu `failure` e o check “Segurança, contratos e build” falhou no script de PostgreSQL. O run [40918030807](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40918030807) registrou `toomanyrequests: Data limit exceeded` ao baixar `public.ecr.aws/supabase/postgres:17.6.1.063`; a repetição do job está em andamento.
+
+O review automatizado da Vercel falhou por billing/uso não habilitado ([run](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40918051737)); não é falha do código.
+
+### PR #165 — somente workflows
+
+Head `3837fbd413e0bdf751d1929f73c41151cb8dfa02`; altera exclusivamente os dois workflows de CodeQL e publicação Sicoob. Validações locais: `actionlint`, simulação do verificador, `npm ci`, build, lint baseline, typecheck baseline e suíte completa aprovados (452 arquivos / 5.839 testes aprovados; 4 arquivos / 68 testes ignorados).
+
+No primeiro snapshot remoto, Gitleaks/origem confiável/aprovação transacional passaram. `npm audit` falhou porque essa branch parte da `main`, cujo lockfile ainda contém as duas vulnerabilidades altas que a PR #164 corrige. E2E e outros checks ainda estavam em execução. Não mesclar enquanto qualquer check requerido estiver falhando ou pendente.
+
+### E2E e ação do owner
+
+O E2E no SHA `84b0509cc` falhou antes dos testes Playwright, em **“Validar autorização remota e RLS técnico”**. O passo anterior confirmou apenas a presença dos secrets; três funções remotas e o cleanup atingiram timeout. Isso não prova qual credencial/projeto está errado.
+
+O owner respondeu que vai provisionar o Supabase de homologação e alinhar URL, project ref, chave publicável, service role e usuários de teste no mesmo projeto. Status: **aguardando confirmação de configuração**. Não compartilhar valores de secrets na conversa. Reexecutar E2E somente após confirmação.
+
+### Bloqueio de merge e banco
+
+O README informa deploy automático do Lovable Cloud no push da branch principal. A PR #164 altera dependências e código de aplicação, então não será mesclada sob a regra ativa do objetivo; fica aberta e registrada até existir caminho autorizado sem deploy de produção, além de todos os checks verdes. A PR #165 é somente CI/configuração, mas atualmente encontra `npm audit` vermelho por depender do baseline vulnerável da `main`.
+
+Nenhuma migration, Edge Function, tabela, dado ou configuração do Supabase foi alterada nesta etapa. Não executar publicação manual para “validar” o workflow.
+
+### Atualização de checks após o snapshot anterior — 2026-10-29
+
+- O rerun do job de PostgreSQL descartável no [run 40918030807](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40918030807) terminou novamente em `failure`: após três tentativas, `public.ecr.aws/supabase/postgres:17.6.1.063` respondeu `toomanyrequests: Data limit exceeded`. Causa externa reproduzida; não mudar os scripts nem enfraquecer o teste para contornar o rate limit.
+- O E2E do [run 40919240512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40919240512) no PR #165 terminou em `failure`, step “Validar autorização remota e RLS técnico”; os shards Playwright foram ignorados após o fail-fast. O owner ainda não confirmou que a homologação e os secrets foram atualizados; aguardar antes de nova execução.
+- No PR #165, `npm audit` permanece `failure` porque a branch CI-only herda as duas vulnerabilidades altas do lockfile da `main`. As correções estão no PR #164, sem integração enquanto o workflow de construção/publish do Lovable não estiver autorizado e todos os bloqueios de validação permanecerem.
+- O PR #164 segue aberto: audit, CodeQL e demais checks de aplicação concluídos como verdes, porém E2E e Qualidade contínua estão vermelhos pelos bloqueios acima. O review Vercel segue neutral/falha de billing, sem relação com o código.
