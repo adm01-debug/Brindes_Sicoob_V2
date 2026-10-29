@@ -75,6 +75,28 @@ test('crons de conexões usam Vault e não mantêm credenciais no agendamento', 
   assert.doesNotMatch(migration, /nmojwpihnslkssljowjh|apikey|service_role_key|eyJ[a-zA-Z0-9_-]{20}/);
 });
 
+test('chamadores do webhook-dispatcher leem segredo dedicado do Vault antes da chamada', () => {
+  const migration = read('supabase/migrations/20261029213000_secure_webhook_dispatcher_callers.sql');
+  const retryStart = migration.indexOf('CREATE OR REPLACE FUNCTION public.retry_failed_webhook_deliveries()');
+  const trigger = migration.slice(0, retryStart);
+  const retry = migration.slice(retryStart);
+
+  assert.ok(retryStart > 0, 'a migration deve substituir os dois chamadores protegidos');
+  for (const [name, source, call] of [
+    ['trigger', trigger, 'extensions.http_post('],
+    ['retry', retry, 'net.http_post('],
+  ]) {
+    assert.match(source, /name = 'sicoob_project_url'/, `${name} deve ler a URL do Vault`);
+    assert.match(source, /name = 'webhook_dispatcher_secret'/, `${name} deve ler o segredo dedicado do Vault`);
+    assert.match(source, /'x-sicoob-internal-secret', v_dispatcher_secret/, `${name} deve enviar o cabeçalho interno`);
+    assert.ok(source.indexOf('length(COALESCE(v_dispatcher_secret') < source.indexOf(call), `${name} deve validar configuração antes da chamada HTTP`);
+  }
+
+  assert.match(migration, /REVOKE ALL ON FUNCTION public\.retry_failed_webhook_deliveries\(\)[\s\S]*FROM PUBLIC, anon, authenticated/);
+  assert.match(migration, /REVOKE ALL ON FUNCTION public\.dispatch_quote_webhook_event\(\)[\s\S]*FROM PUBLIC, anon, authenticated/);
+  assert.doesNotMatch(migration, /Authorization|service_role_key|https:\/\/[a-z0-9-]+\.supabase\.co/i);
+});
+
 test('sync de conexões e favoritos respeitam a hierarquia e concorrência', () => {
   const fix = read('supabase/migrations/20260923112000_fix_connection_sync_and_favorites.sql');
   assert.match(fix, /role IN \('dev', 'supervisor', 'admin', 'manager'\)/);
