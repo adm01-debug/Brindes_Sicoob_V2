@@ -12,7 +12,7 @@
  * e estende com "connections:focus-module" para módulos internos com
  * âncora própria (ex: tabs do "Conexões").
  */
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Activity, Settings2, Network, Layers } from "lucide-react";
 import {
   CommandDialog,
