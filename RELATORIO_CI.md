@@ -242,3 +242,11 @@ O defeito do run [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/
 O projeto segue em construção e o README descreve deploy automático do Lovable Cloud no push da branch principal. A PR #164 altera dependências e código do aplicativo; não mesclar sem uma rota de deploy não produtiva autorizada e checks requeridos verdes. A PR #165 contém somente workflow/configuração, porém não pode ser aprovada enquanto audit estiver vermelho. Não houve escrita ou alteração no Supabase, migration ou publicação real de função.
 
 **Próximo passo:** aguardar o rerun do job bloqueado pelo rate limit do ECR e a confirmação do owner de que homologação e credenciais E2E foram configuradas. Em seguida, reconsultar checks de ambos os PRs, rerodar E2E sem expor secrets e decidir a separação/ordem de integração conforme o destino de deploy confirmado.
+
+### Resultado final dos reruns consultados — 2026-10-29
+
+O rerun de “Segurança, contratos e build” no [run 40918030807](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40918030807) terminou em falha repetida do ECR: após três tentativas, Docker retornou `toomanyrequests: Data limit exceeded` para `public.ecr.aws/supabase/postgres:17.6.1.063`. Manter o cenário íntegro; não contornar removendo a simulação de PostgreSQL.
+
+A execução E2E do PR #165 ([run 40919240512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40919240512)) terminou em falha no passo “Validar autorização remota e RLS técnico”; os shards Playwright foram ignorados pelo fail-fast. A atualização de Supabase de homologação/segredos segue aguardando confirmação do owner.
+
+Portanto, nenhum dos PRs está liberado para merge: PR #164 ainda tem E2E e Qualidade vermelhos e altera dependências/runtime; PR #165 é CI-only, mas herda `npm audit` vermelho do baseline `main`. O revisor Vercel continua indisponível por billing. Nenhuma ação foi executada no banco ou em deploy.
