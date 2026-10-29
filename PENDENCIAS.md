@@ -1,6 +1,6 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
-Atualizado em: 2026-10-22
+Atualizado em: 2026-10-28
 
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
 O erro exato foi extraído do run mais recente disponível em main.
@@ -131,7 +131,7 @@ Este snapshot substitui afirmações anteriores de que os workflows estavam reso
 | Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | Gate falhou no audit de dependências: `undici` e `zod` altos | Integrar a correção de dependências após E2E e checks completos passarem |
 | Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `undici` < 8.12.2 e `zod` < 4.6.6 no lockfile; npm audit reportou 2 altas | Validar upgrades em PR sem downgrade de cobertura ou contrato |
 | CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | Arquivo de configuração 4.39.1 com action runtime 4.38.2; falhou autobuild e não produziu SARIF | Alinhar todas as actions CodeQL na mesma PR e rerodar |
-| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | Publicação concluiu, mas a checagem encontrou `sicoob-approval-reconciliation` na versão 5 (anterior: 5) | Validar o script da PR #149 e obter listagem autenticada das versões; não declarar deploy validado antes disso |
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | Publicação concluiu, mas a checagem encontrou `sicoob-approval-reconciliation` na versão 5 (anterior: 5); CLI confirmou 12 diferenças de código | Corrigir/verificar o deploy no PR #149 e resolver as divergências documentadas antes de declarar paridade |
 | Copilot Code Review | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | GitHub retornou limite adicional de uso do plano; HTTP 402 | Owner verificar billing/uso do Copilot ou aguardar reset; continuar demais checks |
 | E2E (Playwright) | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | `startup_failure`, nenhum job retornado; motivo exato indisponível | Reexecutar após corrigir pré-requisitos do runner; registrar logs completos se persistir |
 | Bundle Size Check | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) | Run falhou; log expirado (HTTP 404), causa não confirmada | Rerun para obter evidência atual antes de alterar orçamento ou bundle |
@@ -147,6 +147,12 @@ Este snapshot substitui afirmações anteriores de que os workflows estavam reso
 - A worktree compartilhada local estava 84 commits atrás de `main` e com alterações locais. Nenhum arquivo foi copiado em lote; alterações locais redundantes/obsoletas não devem sobrescrever versões mais novas do GitHub.
 
 Baseline local isolada em `origin/main` foi registrada em [RELATORIO_CI.md](./RELATORIO_CI.md): build/typecheck aprovados, lint 0 erros/873 avisos, 5.839 testes aprovados e 68 ignorados. Essa suíte não substitui E2E autenticado remoto.
+
+### PR #154 — checks da execução 408018 (2026-10-28, horário de Brasília)
+
+A PR documental [#154](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/154) segue aberta e bloqueada; não foi mesclada. Security Scan (`40801820873`) falhou no `npm audit --audit-level=high`, com vulnerabilidades altas em `undici` (8.0.0–8.12.1) e `zod` (<4.6.6). “Segurança, contratos e build” (`40801820943`) falhou pelo mesmo gate. No E2E (`40801820967`), 55/56 testes passaram; o teste de `system-healthcheck` que espera HTTP 401 sem autenticação falhou com `TimeoutError: The operation was aborted due to timeout` (~30,5 s). Os shards de regressão foram pulados pelo gate. Gitleaks, bundle-stats, origem confiável, entrada responsiva, verba/aprovação, sicoob-gate e Preview Vercel passaram.
+
+Não enfraquecer esses gates nem mesclar enquanto os checks requeridos estiverem vermelhos. A falha E2E requer diagnóstico da latência/resposta de `system-healthcheck`; a causa não foi atribuída a código ou infraestrutura sem evidência adicional.
 
 ---
 

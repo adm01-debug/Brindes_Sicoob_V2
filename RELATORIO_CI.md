@@ -191,7 +191,24 @@ Os 68 testes ignorados são a baseline atual e não foram alterados. Essa suíte
 - Na comparação de versões, 12 migrations já registradas no banco não têm fonte em `main`: `20261015102000`, `20261015230500`, `20261015233500`, `20261015235000`, `20261015235500`, `20261016000000`, `20261016160000`, `20261016163000`, `20261016170000`, `20261016171500`, `20261016172000`, `20261016173000`. A PR [#151](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/151) repõe esses arquivos sem reaplicá-los; seus checks ainda falham, portanto a correção não chegou à `main`.
 - `main` contém 587 arquivos SQL; 462 não têm uma versão correspondente no ledger. Isso não prova que estejam pendentes de aplicação. O workflow [Migration ledger drift](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40670784182) passou; não se deve aplicar esses arquivos em lote.
 - A cópia de trabalho compartilhada estava 84 commits atrás da `main` e suja. As mudanças de `health-check` e `bi-share-dossier` estão na PR [#150](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/150); não devem ser importadas diretamente da cópia antiga. A correção de `secretNormalizers.ts` já está em `main`; a versão local do componente de churn e o relatório local de validação são versões antigas. Nenhuma alteração local foi copiada para `main`.
-- A listagem administrativa de Edge Functions não está autorizada pelo MCP conectado; a ferramenta pede token administrativo `sbp_...`. O run de publicação [#40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) concluiu o comando de publicação, mas falhou na verificação: `sicoob-approval-reconciliation` ficou na versão 5, igual à anterior. Não há evidência suficiente para certificar a versão publicada de todas as funções.
+- Embora o MCP conectado não autorizasse a listagem, a CLI Supabase local autenticada (`2.115.0`) permitiu `functions list` e `functions download --use-api` em modo de leitura. Foram confirmadas 100 funções ativas no projeto canônico `cfmzkthhgliqelozlmwu`.
+- A comparação SHA-256 de `index.ts` encontrou 88/100 funções iguais a `main` e 12 divergentes. Dez fontes em `main` diferem da versão publicada: `admin-audit-hook`, `bi-share-dossier`, `e2e-cleanup`, `get-app-logs`, `github-fix-config`, `quote-sync`, `rls-audit`, `sicoob-seed`, `sicoob-seed-qa` e `sync-quote-bitrix`. As fontes em `main` contêm correções de sanitização de erros; `sync-quote-bitrix` também registra auditoria de sincronização bem-sucedida. O run [#40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) concluiu a publicação, mas falhou na verificação ao encontrar `sicoob-approval-reconciliation` na versão 5, igual à anterior. O deploy não está validado.
+- Duas funções publicadas estão à frente de `main`: `crm-db-bridge` e `trends-insights`. Seus `index.ts` são byte a byte iguais às fontes da PR aberta [#112](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/112), que ainda tem checks obrigatórios falhos. Publicar a cópia de `main` antes de integrar/validar a PR #112 substituiria versões mais novas; manter bloqueado até consolidar a fonte desejada.
+- Seis diretórios de função em `main` não têm função publicada: `e2e-auth-test`, `error-monitor`, `generate-mockup-nanobanana`, `migrate-helper`, `qa-block-monitor` e `sicoob-seed-debug`. A documentação classifica algumas como debug, stub ou não publicáveis; confirmar a intenção individual antes de publicar.
+- Limite da verificação: somente `index.ts` foi comparado por SHA-256; arquivos importados/shared e comportamento de execução não foram certificados. Nenhuma Edge Function foi alterada nesta auditoria. Não há paridade completa GitHub ↔ Supabase.
+
+### Checks da PR #154 após esta revisão
+
+A PR [#154](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/154) continua aberta e bloqueada; nenhum merge foi feito. Na execução iniciada em 2026-10-28 no horário de Brasília:
+
+| Check | Resultado | Evidência |
+|---|---|---|
+| `npm audit — CVE Scan` | Falhou | Run [40801820873](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40801820873): vulnerabilidades altas em `undici` (8.0.0–8.12.1) e `zod` (<4.6.6) |
+| `Segurança, contratos e build` | Falhou | Run [40801820943](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40801820943): mesmo gate de dependências altas |
+| E2E | Falhou | Run [40801820967](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40801820967): 55/56 passaram; o teste `system-healthcheck` que espera HTTP 401 sem autenticação expirou por timeout (~30,5 s); shards seguintes foram pulados |
+| Gitleaks, bundle, origem confiável, entrada responsiva, verba/aprovação, sicoob-gate, Vercel | Aprovados | Status dos checks da PR #154 |
+
+As falhas remotas não foram corrigidas nesta alteração documental. O timeout E2E exige diagnóstico próprio; não há evidência para classificá-lo como falha de aplicação ou de infraestrutura. Não mesclar até que os checks requeridos fiquem verdes.
 
 ### Última execução conhecida de cada workflow na `main`
 
@@ -211,4 +228,4 @@ Os 68 testes ignorados são a baseline atual e não foram alterados. Essa suíte
 
 ### Estado final desta reconciliação
 
-Baseline local concluída. O código e as fontes ausentes estão hospedados em PRs, mas não foram integrados à `main` porque checks requeridos ainda falham. O ledger canônico foi consultado sem escrita; nenhuma migration, dado, Edge Function ou configuração do Supabase foi alterada por esta auditoria. Não alegar sincronismo total enquanto a PR #151 não for integrada e a listagem autenticada das funções não estiver disponível.
+Baseline local concluída. As fontes de migrations já registradas no ledger estão na PR #151 e ainda não chegaram à `main` porque seus checks falham. A listagem CLI autenticada confirmou 12 funções publicadas com `index.ts` diferente de `main`, além de seis fontes em `main` sem função publicada. Nenhuma migration, dado ou Edge Function foi alterada nesta auditoria. A paridade GitHub ↔ Supabase não está concluída; consulte as diferenças acima antes de qualquer deploy.
