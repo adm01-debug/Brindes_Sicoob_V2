@@ -281,3 +281,10 @@ O owner respondeu que vai provisionar o Supabase de homologação e alinhar URL,
 O README informa deploy automático do Lovable Cloud no push da branch principal. A PR #164 altera dependências e código de aplicação, então não será mesclada sob a regra ativa do objetivo; fica aberta e registrada até existir caminho autorizado sem deploy de produção, além de todos os checks verdes. A PR #165 é somente CI/configuração, mas atualmente encontra `npm audit` vermelho por depender do baseline vulnerável da `main`.
 
 Nenhuma migration, Edge Function, tabela, dado ou configuração do Supabase foi alterada nesta etapa. Não executar publicação manual para “validar” o workflow.
+
+### Atualização de checks após o snapshot anterior — 2026-10-29
+
+- O rerun do job de PostgreSQL descartável no [run 40918030807](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40918030807) terminou novamente em `failure`: após três tentativas, `public.ecr.aws/supabase/postgres:17.6.1.063` respondeu `toomanyrequests: Data limit exceeded`. Causa externa reproduzida; não mudar os scripts nem enfraquecer o teste para contornar o rate limit.
+- O E2E do [run 40919240512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40919240512) no PR #165 terminou em `failure`, step “Validar autorização remota e RLS técnico”; os shards Playwright foram ignorados após o fail-fast. O owner ainda não confirmou que a homologação e os secrets foram atualizados; aguardar antes de nova execução.
+- No PR #165, `npm audit` permanece `failure` porque a branch CI-only herda as duas vulnerabilidades altas do lockfile da `main`. As correções estão no PR #164, sem integração enquanto o workflow de construção/publish do Lovable não estiver autorizado e todos os bloqueios de validação permanecerem.
+- O PR #164 segue aberto: audit, CodeQL e demais checks de aplicação concluídos como verdes, porém E2E e Qualidade contínua estão vermelhos pelos bloqueios acima. O review Vercel segue neutral/falha de billing, sem relação com o código.
