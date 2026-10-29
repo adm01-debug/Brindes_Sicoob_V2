@@ -827,7 +827,7 @@ Todos os 282 IDs históricos (250 etapas e 32 melhorias) possuem destino explíc
 
 ### P031 — Definir contrato canônico dos status
 
-**Prioridade:** P1 · **Responsável funcional:** Backend e banco de dados · **Estado:** Planejada.
+**Prioridade:** P1 · **Responsável funcional:** Backend e banco de dados · **Estado:** Parcial — propagação da versão e recuperação no editor implementadas; aguarda simulação autenticada concorrente em homologação.
 
 **Dependências:** P024, P025, P026, P030 **Origem:** E018, E059, F03.
 

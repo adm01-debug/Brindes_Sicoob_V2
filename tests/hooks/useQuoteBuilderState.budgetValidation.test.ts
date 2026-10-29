@@ -1,6 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { applyQuoteTransition, validateBudgetForSubmission } from "@/hooks/useQuoteBuilderState";
+const toastMocks = vi.hoisted(() => ({
+  warning: vi.fn(),
+  success: vi.fn(),
+  error: vi.fn(),
+}));
+
+vi.mock("sonner", () => ({ toast: toastMocks }));
+
+import { applyQuoteTransition, completeQuoteSave, validateBudgetForSubmission } from "@/hooks/useQuoteBuilderState";
 
 describe("validação de verba antes de enviar orçamento", () => {
   it("falha fechado quando a consulta da competência retorna erro", () => {
@@ -41,6 +49,54 @@ describe("concorrência de transição no editor de orçamento", () => {
 
     expect(updateQuoteStatus).toHaveBeenNthCalledWith(1, "q-1", "draft", 2);
     expect(updateQuoteStatus).toHaveBeenNthCalledWith(2, "q-1", "pending", 3);
+  });
+
+  it("preserva o editor e oferece revisão explícita após falha na transição", () => {
+    const navigate = vi.fn();
+    const setExpectedRowVersion = vi.fn();
+    toastMocks.warning.mockClear();
+
+    completeQuoteSave({
+      result: { id: "q-1", row_version: 5 } as never,
+      isEditMode: true,
+      expectedRowVersion: 4,
+      finalStatus: "pending",
+      transitionApplied: false,
+      setExpectedRowVersion,
+      navigate,
+    });
+
+    expect(setExpectedRowVersion).toHaveBeenCalledWith(5);
+    expect(toastMocks.warning).toHaveBeenCalledWith(
+      "O orçamento foi salvo, mas não foi possível confirmar o status final.",
+      expect.objectContaining({
+        description: expect.stringMatching(/alterações estão preservadas/i),
+        action: expect.objectContaining({ label: "Revisar orçamento", onClick: expect.any(Function) }),
+      }),
+    );
+    expect(navigate).not.toHaveBeenCalled();
+
+    const options = toastMocks.warning.mock.calls[0]?.[1];
+    options?.action?.onClick();
+    expect(navigate).toHaveBeenCalledWith("/orcamentos/q-1");
+  });
+
+  it("abre o orçamento criado se a transição falhar para evitar duplicação", () => {
+    const navigate = vi.fn();
+    toastMocks.warning.mockClear();
+
+    completeQuoteSave({
+      result: { id: "q-new" } as never,
+      isEditMode: false,
+      expectedRowVersion: null,
+      finalStatus: "pending",
+      transitionApplied: false,
+      setExpectedRowVersion: vi.fn(),
+      navigate,
+    });
+
+    expect(navigate).toHaveBeenCalledExactlyOnceWith("/orcamentos/q-new");
+    expect(toastMocks.warning).toHaveBeenCalledOnce();
   });
 
   it("não tenta mudar status sem a versão que o editor observou", async () => {

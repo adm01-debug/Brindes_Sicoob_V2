@@ -351,14 +351,22 @@ interface CompleteSaveParams {
   navigate: (path: string) => void;
 }
 
-function completeQuoteSave(params: CompleteSaveParams): void {
+export function completeQuoteSave(params: CompleteSaveParams): void {
   const { result, finalStatus, transitionApplied } = params;
   if (params.isEditMode) {
     params.setExpectedRowVersion(result.row_version ?? params.expectedRowVersion);
   }
   if (!transitionApplied) {
-    toast.warning("O orçamento foi salvo, mas não foi possível confirmar o status final. Consulte a tela do orçamento antes de tentar novamente.");
-    params.navigate(`/orcamentos/${result.id}`);
+    toast.warning("O orçamento foi salvo, mas não foi possível confirmar o status final.", {
+      description: "Suas alterações estão preservadas. Confira a situação atual do orçamento antes de retomar o envio.",
+      action: {
+        label: "Revisar orçamento",
+        onClick: () => params.navigate(`/orcamentos/${result.id}`),
+      },
+    });
+    // Em uma criação, a URL ainda não identifica o registro persistido. Abrir
+    // o detalhe evita que um novo envio crie outro orçamento por engano.
+    if (!params.isEditMode) params.navigate(`/orcamentos/${result.id}`);
     return;
   }
   if (finalStatus === "pending_singular_approval") {
@@ -615,12 +623,20 @@ export function useQuoteBuilderState() {
       discountType, discountValue, markup: totals.markup, notes, internalNotes,
       validUntil, paymentTerms, deliveryTime, shippingType, shippingCost,
     });
+    const submittedFormSnapshot = JSON.stringify({
+      clientId, contactId, items, notes, internalNotes, tags, validUntil,
+      paymentTerms, deliveryTime, deliveryMode, deliveryDate, shippingType, shippingCost,
+      discountType, discountValue, negotiationMarkup,
+    });
     const result = await persistQuote({
       isEditMode, quoteId, expectedRowVersion, quoteData, items,
       idempotencyKeyRef: createIdempotencyKeyRef, createQuote, updateQuote,
     });
     if (!result) return;
 
+    // O salvamento foi confirmado no servidor. Atualiza a referência do guard
+    // com o snapshot enviado, sem marcar como salvo uma edição feita durante a chamada.
+    initialSnapshotRef.current = submittedFormSnapshot;
     createIdempotencyKeyRef.current = null;
     const transitionApplied = await applyQuoteTransition({
       quote: result, finalStatus, persistedStatus, maxDiscountPercent,
@@ -631,7 +647,7 @@ export function useQuoteBuilderState() {
       result, isEditMode, expectedRowVersion, finalStatus, transitionApplied,
       setExpectedRowVersion, navigate,
     });
-  }, [canEdit, isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, tags, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, updateQuoteStatus, currentStatus, expectedRowVersion, maxDiscountPercent, requestApproval, isGerentePa, userRoles, profile?.pa_id]);
+  }, [canEdit, isDraftValid, isFormValid, validationErrors, clientId, contactId, contactInfo, companyInfo, discountType, discountValue, negotiationMarkup, totals, notes, internalNotes, tags, validUntil, paymentTerms, deliveryTime, deliveryMode, deliveryDate, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, updateQuoteStatus, currentStatus, expectedRowVersion, maxDiscountPercent, requestApproval, isGerentePa, userRoles, profile?.pa_id]);
 
   return {
     navigate, quoteId, isEditMode, loadingQuote, hasUnsavedData, user,

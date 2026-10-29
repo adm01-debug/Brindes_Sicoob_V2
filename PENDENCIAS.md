@@ -1,5 +1,12 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
+## Complemento de recuperação P033 — 29/10/2026
+
+- Ajuste local testado: quando uma transição de status falha após o salvamento, a edição existente continua aberta, preserva o snapshot confirmado e oferece “Revisar orçamento”; uma criação abre o detalhe do registro salvo para prevenir duplicação.
+- Resultado local: build/typecheck passaram, lint sem erros (872 avisos) e suíte completa em 5.877 aprovados/68 ignorados. Teste focado passou 8/8. Detalhes em `RELATORIO_CI.md`.
+- Dependência externa confirmada pelo usuário: configurar homologação Supabase isolada e variáveis/credenciais de teste nas Actions. Até lá, o E2E de dois usuários não executa; P033 continua parcial e a PR #157 deve permanecer sem merge enquanto o check E2E obrigatório estiver bloqueado.
+- A aplicação canônica permanece intacta; não houve escrita, migration nem deploy de função.
+
 ## Rechecagem do GitHub e banco canônico — 29/10/2026 09:43 UTC
 
 - A branch local/remota e o head da PR #157 coincidem em `2b8993d95cdb175956a667d61d249319072624d9`; `main` continua em `e9d59026793b84fabeaec9da890a068f64d49c3`. A PR está aberta, sem merge. O diff não altera migrations nem Edge Functions.

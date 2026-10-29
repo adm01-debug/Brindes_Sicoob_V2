@@ -1,5 +1,19 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
+## Complemento P033 — recuperação após falha de transição — 29/10/2026
+
+O editor agora preserva o snapshot confirmado no servidor e, quando a transição de status falha, mantém aberto o orçamento em edição com a ação explícita “Revisar orçamento”. Em criação, navega ao detalhe já persistido para impedir que um novo clique crie duplicata. Foram adicionados testes das duas rotas.
+
+| Verificação após o ajuste | Resultado |
+|---|---|
+| `npm run build` | ✅ exit 0; avisos conhecidos de variáveis locais ausentes, PostCSS, Rollup e chunks |
+| `npm run lint` | ✅ 0 erros, 872 avisos (sem aumento em relação ao baseline atualizado) |
+| `npm run typecheck` | ✅ exit 0 |
+| Suíte Vitest completa | ✅ 5.877 passaram, 68 ignorados; 459 arquivos passaram, 4 ignorados |
+| Teste focado do editor | ✅ 8 passaram |
+
+O cenário de dois usuários autenticados ainda depende da homologação Supabase segregada. O usuário confirmou que vai configurar esse ambiente; até que `E2E_SUPABASE_PROJECT_ID`, a URL/ref e as credenciais de teste estejam definidos no GitHub Actions, não existe prova E2E remota nem aceite integral de P033. Nenhum banco foi alterado.
+
 ## Revalidação local P033 — concorrência de orçamentos — 29/10/2026
 
 Alteração na branch `fix/hermes-h247355-ci-dependencies` para propagar a `row_version` observada na tela através de transições de status, aprovação com PDF, operação em lote, reabertura/edição e sincronização Bitrix. A versão agora é validada pela RPC no banco; o frontend não relê a versão antes da escrita, evitando ocultar concorrência. Versão ausente ou inválida encerra sem chamar a RPC.

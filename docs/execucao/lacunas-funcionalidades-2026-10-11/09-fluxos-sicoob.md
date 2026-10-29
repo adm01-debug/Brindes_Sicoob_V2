@@ -429,11 +429,11 @@ Legenda: ✅ existe e está ligado · ⚠️ existe com lacuna · ❌ ausente.
 
 ### 6. Orçamento e versionamento
 
-### SIC-050  Autorização de status por escopo: corrigida no SQL, falta a versão da tela
-- Status: PARCIAL
+### SIC-050  Autorização de status por escopo e recuperação de conflito
+- Status: PARCIAL — versão observada e recuperação local implementadas; jornada autenticada concorrente ainda sem prova remota.
 - Origem: `revisao-do-plano-2026-10-01.md:38,52-56` (P034/P036/P037); matriz P033
-- Evidência no código: corrigido — `20260928182000:46-59` autoriza antes do `CONTINUE` idempotente, e `:141-142` revoga `assert_quote_transition`. Pendente — `src/services/quoteStatusTransition.ts:34-46` relê `row_version` imediatamente antes da RPC, o que anula o controle de concorrência da tela (P033). A reprodução negativa não está nos testes Vitest (`docs/execucao/revisao-plano-20261001/reproduzir-status-fora-escopo.py` é sonda).
-- O que falta: serviço e UI — transportar a versão observada pela tela; teste de regressão negativo no conjunto de CI.
+- Evidência no código: `src/services/quoteStatusTransition.ts` recebe a `row_version` observada no editor, sem relê-la antes da RPC. `src/hooks/useQuoteBuilderState.ts` mantém o editor aberto para orçamento já existente, preserva o snapshot salvo e oferece a ação “Revisar orçamento” se a transição falhar; numa criação, abre o registro persistido para evitar duplicação. Testes locais de contrato em `tests/hooks/useQuoteBuilderState.budgetValidation.test.ts` cobrem as duas rotas de recuperação. A jornada real de dois atores ainda não foi comprovada: o workflow E2E bloqueia no preflight por ausência de `E2E_SUPABASE_PROJECT_ID` e credenciais de homologação.
+- O que falta: provisionar Supabase isolado de homologação, configurar as credenciais/contas de teste no GitHub Actions e executar a regressão autenticada de concorrência antes do aceite integral de P033.
 - Impacto no negócio: duas pessoas mudando o status ao mesmo tempo podem sobrescrever a decisão uma da outra.
 - Esforço: P
 - Prioridade: P2
