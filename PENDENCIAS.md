@@ -67,6 +67,22 @@ A falha é inevitável enquanto a quota Supabase não for restaurada.
 1. Restaure a quota Supabase (mesma ação da seção Enterprise Compliance acima).
 2. Após restaurar, o smoke gate passa automaticamente sem nenhuma mudança de código.
 
+### Atualização de 2026-10-29 — execução autenticada/RLS na PR #161
+
+**Run:** `40875124915` · **Job:** `123451904072` · [execução no GitHub](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40875124915/job/123451904072)
+
+O job `e2e` ficou bloqueado nos hooks `beforeAll` e `afterAll` do teste
+`tests/rls/e2e-cleanup-rate-limit.test.ts`: as chamadas de inserção e limpeza do canário
+em `e2e_cleanup_rate_limit` excederam `45000ms` (`Hook timed out in 45000ms`). A execução
+mostrou as variáveis de ambiente Supabase necessárias presentes, mas seus valores são
+mascarados; portanto, não foi possível confirmar se URL, chave administrativa, projeto,
+conectividade, quota e schema pertencem ao mesmo ambiente de homologação.
+
+**Ação do owner:** concluir a configuração do projeto Supabase de homologação para E2E,
+confirmar que `e2e_cleanup_rate_limit` e suas políticas estão aplicadas nesse projeto e
+que as credenciais configuradas no GitHub Actions correspondem a ele. Depois, reexecutar
+o E2E autenticado/RLS. Nenhum valor de secret deve ser enviado pela conversa.
+
 ---
 
 ## Workflow: `copilot-pull-request-reviewer`
