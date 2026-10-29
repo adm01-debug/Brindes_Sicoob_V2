@@ -132,4 +132,16 @@ describe('useAutoSave', () => {
     expect(getQuoteDraftIdForScope('usuario-1')).toBe(firstUserDraft);
     expect(getQuoteDraftIdForScope('usuario-2')).not.toBe(firstUserDraft);
   });
+
+  it('continua sem quebrar quando o navegador bloqueia o acesso ao sessionStorage', () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new DOMException('Acesso ao armazenamento bloqueado', 'SecurityError');
+    });
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('Acesso ao armazenamento bloqueado', 'SecurityError');
+    });
+
+    expect(() => getQuoteDraftIdForScope('usuario-sem-storage')).not.toThrow();
+    expect(getQuoteDraftIdForScope('usuario-sem-storage')).toMatch(/^[0-9a-f-]{36}$|^\d+-[a-z0-9]+$/i);
+  });
 });
