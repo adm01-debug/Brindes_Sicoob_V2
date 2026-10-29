@@ -256,3 +256,21 @@ no BI e o servidor ainda precisa validar a autorização do usuário sobre o
 link até ambos os itens terem contrato e teste próprios.
 
 **Evidência de autorização (2026-10-29):** a migration `20260108014732_22444765-aa2c-47b2-afb4-f942541d622d.sql` cria `companies.responsavel_id`, mas sua política de leitura permite `SELECT` para todo usuário autenticado (`USING (true)`). O `crm-db-bridge` consulta o CRM com credencial de serviço e não aplica escopo de leitura por responsável. Não foi localizada uma associação confiável usuário↔empresa aplicada server-side; por isso, `clientId` recebido no POST não pode ser tratado como autorizado apenas por estar autenticado. A emissão pública continua bloqueada até existir e ser testada uma regra de escopo verificável.
+
+## Bloqueios CI revalidados em 2026-10-29
+
+### PR #150 — SHA `5ac9ad8`
+
+- **Gitleaks:** run [40928855700](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40928855700) reporta quatro ocorrências `generic-api-key` atribuídas ao commit antigo `792e1b1b673e053db940867f14fb5af76939d0ee`. O commit `5ac9ad8` removeu esses literais do estado atual, mas a ação analisa o histórico completo do PR. Não contornar com allowlist ou alteração da regra. A verificação local staged não certifica o intervalo de commits remoto; criar um PR com histórico limpo e diff revisado, sem force push, ou manter este PR bloqueado.
+- **Auditoria de dependências:** run [40928855700](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40928855700) e Qualidade contínua [40928855662](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40928855662) falham por advisories altas em `undici` e `zod`. A correção do audit para undici não exige major; a de Zod exige migração major e análise de compatibilidade, ainda não aplicada.
+- **E2E:** run [40928855749](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40928855749) parou no preflight, antes dos shards; os cinco secrets `E2E_SUPABASE_URL`, `E2E_SUPABASE_PROJECT_ID`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_SERVICE_ROLE_KEY` e `E2E_SUPABASE_CLEANUP_TOKEN` seguem ausentes. O responsável informou que vai configurar homologação; falta confirmar no GitHub Actions. Nenhum teste remoto autenticado ou limpeza foi executado.
+- **Outros checks do PR:** CodeQL, Lighthouse, bundle, responsividade, aprovação transacional e origem confiável passaram; revisão Copilot falhou no serviço externo. O PR permanece aberto e bloqueado; não integrar.
+
+### `main` e banco canônico
+
+- Security Scan [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) e Qualidade contínua [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964): `npm audit` falha para `undici`/`zod`.
+- CodeQL [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073): erro de configuração por versões/SHA inconsistentes das actions CodeQL; nenhum SARIF foi gerado.
+- Publicar funções Sicoob [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102): a confirmação pós-publicação falhou porque `sicoob-approval-reconciliation` permaneceu na versão 5. Não reexecutar sem janela/autorização para escrita no projeto canônico.
+- O diff do PR #150 não contém migration nem alteração SQL e nenhuma migration, gravação, publicação ou deploy foi realizado. A leitura remota somente leitura pelo MCP dedicado terminou em timeout 544; a conexão Supabase alternativa negou a consulta com `INVALID_ARGUMENT`. O estado do banco não pôde ser certificado pela sessão, embora este conjunto de alterações não contenha operação de banco.
+
+Os checks verdes mais recentes continuam verdes: Migration ledger drift [40828393693](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40828393693), Branch Protection Sentinel [40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038) e Enterprise Compliance & Audit Reporting [40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958). Nenhum merge foi feito.

@@ -6,27 +6,30 @@ import {
   verifyBiSharePayloadSignature,
 } from '../../supabase/functions/bi-share-dossier/contract';
 
+const testCurrentSecret = 'current-test-'.repeat(4);
+const testPreviousSecret = 'previous-test-'.repeat(3);
+
 describe('contrato seguro de bi-share-dossier', () => {
   it('exige segredo próprio e não reutiliza a service role', () => {
-    expect(resolveBiShareSecrets({ SUPABASE_SERVICE_ROLE_KEY: 'service-role-secret' })).toEqual({
+    expect(resolveBiShareSecrets({ SUPABASE_SERVICE_ROLE_KEY: 'service-role-'.repeat(4) })).toEqual({
       current: null,
       previous: null,
     });
     expect(
       resolveBiShareSecrets({
         BI_SHARE_SECRET: '   ',
-        SUPABASE_SERVICE_ROLE_KEY: 'service-role-secret',
+        SUPABASE_SERVICE_ROLE_KEY: 'service-role-'.repeat(4),
       }),
     ).toEqual({ current: null, previous: null });
     expect(
       resolveBiShareSecrets({
-        BI_SHARE_SECRET: ' dedicated-secret-123456789012345678 ',
-        BI_SHARE_SECRET_PREVIOUS: ' previous-secret-123456789012345678 ',
+        BI_SHARE_SECRET: ` ${testCurrentSecret} `,
+        BI_SHARE_SECRET_PREVIOUS: ` ${testPreviousSecret} `,
         SUPABASE_SERVICE_ROLE_KEY: 'other',
       }),
     ).toEqual({
-      current: 'dedicated-secret-123456789012345678',
-      previous: 'previous-secret-123456789012345678',
+      current: testCurrentSecret,
+      previous: testPreviousSecret,
     });
     expect(resolveBiShareSecrets({ BI_SHARE_SECRET: 'too-short' })).toEqual({
       current: null,
@@ -42,7 +45,7 @@ describe('contrato seguro de bi-share-dossier', () => {
 
   it('assina somente com a chave atual e valida a anterior apenas durante rotação', async () => {
     const payload = 'token-payload';
-    const previousKey = 'old-key-'.padEnd(32, 'x');
+    const previousKey = 'old-test-'.repeat(4);
     const currentKey = 'new-key-'.padEnd(32, 'y');
     const previousSignature = await signBiSharePayload(payload, previousKey);
     const currentSignature = await signBiSharePayload(payload, currentKey);
