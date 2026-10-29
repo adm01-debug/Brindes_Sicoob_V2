@@ -113,7 +113,7 @@ async function checkHealthFunction() {
     const body = await res.json().catch(() => ({}));
     const status = body.status ?? (res.ok ? "healthy" : "unhealthy");
 
-    if (status === "healthy") {
+    if (isHealthcheckSuccessful(res.ok, status)) {
       log("ok", "health-fn", `${status} em ${latency}ms`, { status, latency, body });
     } else if (status === "degraded") {
       log(
@@ -201,3 +201,4 @@ async function checkPublicRoutes() {
     process.exit(1);
   }
 })();
+import { isHealthcheckSuccessful } from './health-check-contract.mjs';

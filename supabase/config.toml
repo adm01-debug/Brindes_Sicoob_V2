@@ -5,6 +5,10 @@ project_id = "cfmzkthhgliqelozlmwu"
 [functions.verify-email]
 verify_jwt = true
 
+# Sonda pública de liveness: GET retorna apenas status estático, sem tocar em dados.
+[functions.health-check]
+verify_jwt = false
+
 # Estas duas funções validam o JWT dentro do handler. O gateway permanece sem
 # validação para aceitar tanto chaves JWT legadas quanto publishable keys.
 [functions.expert-chat]

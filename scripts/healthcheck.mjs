@@ -1,13 +1,13 @@
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
+import { isHealthcheckSuccessful } from './health-check-contract.mjs';
 
 dotenv.config();
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const anonKey = process.env.SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !anonKey) {
-  console.error('❌ Erro: SUPABASE_URL ou SUPABASE_ANON_KEY não configurados no .env');
+if (!supabaseUrl) {
+  console.error('❌ Erro: SUPABASE_URL não configurada no .env');
   process.exit(1);
 }
 
@@ -18,23 +18,17 @@ async function runHealthcheck() {
   
   try {
     const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${anonKey}`,
-        'Content-Type': 'application/json'
-      }
+      method: 'GET',
+      headers: { 'User-Agent': 'brindes-sicoob-healthcheck/1.0' }
     });
     
     const data = await response.json();
     
-    if (response.ok && data.status === 'healthy') {
-      console.log('✅ Sistema está SAUDÁVEL!');
-      console.log(`⏱️ Latência total: ${data.total_latency_ms}ms`);
-      console.table(data.checks);
+    if (isHealthcheckSuccessful(response.ok, data?.status)) {
+      console.log(`✅ Sonda de liveness ativa (${data.status}).`);
       process.exit(0);
     } else {
-      console.error('❌ Sistema em estado DEGRADADO ou UNHEALTHY!');
-      console.table(data.checks);
+      console.error(`❌ Sonda de liveness indisponível (HTTP ${response.status}; status=${data?.status ?? 'ausente'}).`);
       process.exit(1);
     }
   } catch (error) {
