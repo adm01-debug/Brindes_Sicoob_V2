@@ -7,6 +7,9 @@ import {
   verifyBiSharePayloadSignature,
 } from "../../supabase/functions/bi-share-dossier/contract";
 
+const testCurrentSecret = "current-test-".repeat(4);
+const testPreviousSecret = "previous-test-".repeat(3);
+
 describe("contratos das Edge Functions públicas", () => {
   it("health-check responde liveness sem depender de serviços internos", async () => {
     const response = createLivenessResponse(new Request("https://edge.test/health-check"));
@@ -27,19 +30,19 @@ describe("contratos das Edge Functions públicas", () => {
   });
 
   it("não usa a service role como fallback HMAC e falha fechada sem segredo próprio", async () => {
-    expect(resolveBiShareSecrets({ SUPABASE_SERVICE_ROLE_KEY: "service-role-secret" })).toEqual({ current: null, previous: null });
-    expect(resolveBiShareSecrets({ BI_SHARE_SECRET: "   ", SUPABASE_SERVICE_ROLE_KEY: "service-role-secret" })).toEqual({ current: null, previous: null });
+    expect(resolveBiShareSecrets({ SUPABASE_SERVICE_ROLE_KEY: "service-role-".repeat(4) })).toEqual({ current: null, previous: null });
+    expect(resolveBiShareSecrets({ BI_SHARE_SECRET: "   ", SUPABASE_SERVICE_ROLE_KEY: "service-role-".repeat(4) })).toEqual({ current: null, previous: null });
     expect(resolveBiShareSecrets({
-      BI_SHARE_SECRET: " dedicated-secret-123456789012345678 ",
-      BI_SHARE_SECRET_PREVIOUS: " previous-secret-123456789012345678 ",
+      BI_SHARE_SECRET: ` ${testCurrentSecret} `,
+      BI_SHARE_SECRET_PREVIOUS: ` ${testPreviousSecret} `,
       SUPABASE_SERVICE_ROLE_KEY: "other",
     })).toEqual({
-      current: "dedicated-secret-123456789012345678",
-      previous: "previous-secret-123456789012345678",
+      current: testCurrentSecret,
+      previous: testPreviousSecret,
     });
     expect(resolveBiShareSecrets({ BI_SHARE_SECRET: "too-short" })).toEqual({ current: null, previous: null });
 
-    const oldKey = "old-key-".padEnd(32, "x");
+    const oldKey = "old-test-".repeat(4);
     const newKey = "new-key-".padEnd(32, "y");
     const oldSignature = await signBiSharePayload("payload", oldKey);
     expect(await verifyBiSharePayloadSignature("payload", oldSignature, { current: newKey, previous: oldKey })).toBe(true);

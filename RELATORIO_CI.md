@@ -254,3 +254,7 @@ As últimas execuções disponíveis de **Migration ledger drift** ([40828393693
 | E2E remoto autenticado | não executado contra homologação | preflight bloqueado antes dos shards | pendente de projeto/secrets de homologação |
 
 Os checks remotos são referências mutáveis; reconsultar os links dos runs antes de qualquer merge. Evidências de execução local e o bloqueio externo de homologação estão detalhados em [PENDENCIAS.md](PENDENCIAS.md).
+
+**Correção da verificação Gitleaks no PR #150:** o run [40927489134](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40927489134) identificou quatro fixtures de teste com strings HMAC de exemplo classificadas como credenciais genéricas (`generic-api-key`). A correção substitui os valores literais por strings determinísticas construídas em runtime, mantendo os mesmos cenários de segredo curto/atual/anterior. Não foi criada exceção no scanner. `gitleaks protect --staged --redact` local: **sem vazamentos**; testes focados do contrato: **6/6 aprovados**; validação pós-commit: **build, lint, typecheck e suíte integral aprovados** (5.858 testes, 68 ignorados).
+
+**Observação de estabilidade do baseline:** uma execução do hook pre-push falhou em `tests/components/TelemetryCharts.test.tsx` porque o caso calcula registros relativos a `Date.now()` e pode atravessar uma fronteira horária; a repetição direcionada passou (38/38), e a repetição integral subsequente passou (5.858 aprovados, 68 ignorados). Nenhum arquivo de telemetria ou asserção foi alterado.
