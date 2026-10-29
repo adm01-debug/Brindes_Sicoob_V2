@@ -10,6 +10,10 @@ export const toolRoutes = [
     path: "/ajuda",
     component: lazyWithRetry(() => import("@/pages/HelpCenterPage")),
   }),
+  defineRoute({
+    path: "/instalar",
+    component: lazyWithRetry(() => import("@/pages/PWAInstallPage")),
+  }),
   defineRoute({ 
     path: "/mockup-generator", 
     component: lazyWithRetry(() => import("@/pages/MockupGenerator")) 

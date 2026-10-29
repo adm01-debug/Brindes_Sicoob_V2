@@ -1,4 +1,3 @@
-// import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,7 +95,7 @@ export default function PWAInstallPage() {
         <div className="grid grid-cols-2 gap-3">
           <div className="p-4 rounded-xl border border-border/40 bg-muted/20">
             <Zap className="h-5 w-5 text-amber-500 mb-2" />
-            <h4 className="text-xs font-bold uppercase tracking-tight">Performance</h4>
+            <h4 className="text-xs font-bold uppercase tracking-tight">Desempenho</h4>
             <p className="text-[10px] text-muted-foreground mt-1 leading-tight">Carregamento instantâneo mesmo com conexões lentas.</p>
           </div>
           <div className="p-4 rounded-xl border border-border/40 bg-muted/20">
