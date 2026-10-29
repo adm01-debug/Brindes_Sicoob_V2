@@ -2,6 +2,8 @@
 
 > **Estado atual do Sicoob (08/10/2026):** [fechamento técnico do candidato de construção](execucao/fechamento-tecnico-2026-10-08.md), complementado pela [execução e preflight do banco canônico](execucao/execucao-plano-2026-10-01.md) e pela [revisão das 150 etapas, workflows e pendências](execucao/revisao-do-plano-2026-10-01.md). O índice legado abaixo não certifica o estado atual; há referências históricas indisponíveis.
 
+> **Atualização incremental (29/10/2026):** [Tendências agora usa dados reais por padrão](execucao/correcoes-p0-2026-10-29.md); demonstração requer `?demo=1`.
+
 > Sistema de Catálogo de Brindes Promocionais  
 > **Idioma:** Português do Brasil 🇧🇷  
 > **Última atualização:** 27/12/2025
