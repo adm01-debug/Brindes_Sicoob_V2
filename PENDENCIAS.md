@@ -242,3 +242,42 @@ Run [40911387860](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/
 ### Correção CodeQL em validação
 
 A [PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164) alinha `init`, `autobuild` e `analyze` em `v4.39.1`. `actionlint`, `npm ci`, build, lint baseline, typecheck baseline e suíte Vitest passaram localmente; os checks remotos ainda estavam em execução/falha por outros gates no registro desta atualização. Não mesclar enquanto os checks requeridos não estiverem verdes.
+
+## Atualização dos PRs e bloqueios — 2026-10-29
+
+### Estado da `main`
+
+O último SHA consultado continua sendo `e9d59026793b84fabeaeec9da890a068f64d49c3`; portanto, as quatro falhas abaixo ainda não foram corrigidas na `main`:
+
+| Workflow | Última execução em `main` | Correção preparada | Estado |
+|---|---:|---|---|
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | [PR #165](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/165): valida presença/versão válida e aceita versão inalterada se o CLI terminou sem erro | Aguardando checks; nenhum deploy executado |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | [PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164): atualiza `undici` e `zod` | `npm audit` local no PR #164: zero vulnerabilidades; PR não mesclada |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | Mesma correção de dependências da PR #164 | O check do PR #164 encontrou rate limit do ECR ao baixar PostgreSQL descartável; nova tentativa em execução |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | [PR #165](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/165): ações alinhadas em `v4.39.1` | Aguardar check do PR antes de considerar resolvido na `main` |
+
+### PR #164 — dependências e compatibilidade Zod
+
+Head atual `84b0509cc0fc96f1eae90e2feff04e3b138e63a6`. Alterações locais completas: `undici@8.12.3`; `zod@4.6.7` com adaptação de `required_error`/`.errors`; ajuste do gate de publicação Sicoob. `npm audit --audit-level=high` reportou zero vulnerabilidades; build, lint baseline, typecheck baseline e suíte passaram (452 arquivos / 5.839 testes aprovados; 4 arquivos / 68 testes ignorados).
+
+Checks remotos observados: audit, Gitleaks, CodeQL, Lighthouse, Bundle Size, Verba/Aprovação e origem confiável concluíram `success`; E2E concluiu `failure` e o check “Segurança, contratos e build” falhou no script de PostgreSQL. O run [40918030807](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40918030807) registrou `toomanyrequests: Data limit exceeded` ao baixar `public.ecr.aws/supabase/postgres:17.6.1.063`; a repetição do job está em andamento.
+
+O review automatizado da Vercel falhou por billing/uso não habilitado ([run](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40918051737)); não é falha do código.
+
+### PR #165 — somente workflows
+
+Head `3837fbd413e0bdf751d1929f73c41151cb8dfa02`; altera exclusivamente os dois workflows de CodeQL e publicação Sicoob. Validações locais: `actionlint`, simulação do verificador, `npm ci`, build, lint baseline, typecheck baseline e suíte completa aprovados (452 arquivos / 5.839 testes aprovados; 4 arquivos / 68 testes ignorados).
+
+No primeiro snapshot remoto, Gitleaks/origem confiável/aprovação transacional passaram. `npm audit` falhou porque essa branch parte da `main`, cujo lockfile ainda contém as duas vulnerabilidades altas que a PR #164 corrige. E2E e outros checks ainda estavam em execução. Não mesclar enquanto qualquer check requerido estiver falhando ou pendente.
+
+### E2E e ação do owner
+
+O E2E no SHA `84b0509cc` falhou antes dos testes Playwright, em **“Validar autorização remota e RLS técnico”**. O passo anterior confirmou apenas a presença dos secrets; três funções remotas e o cleanup atingiram timeout. Isso não prova qual credencial/projeto está errado.
+
+O owner respondeu que vai provisionar o Supabase de homologação e alinhar URL, project ref, chave publicável, service role e usuários de teste no mesmo projeto. Status: **aguardando confirmação de configuração**. Não compartilhar valores de secrets na conversa. Reexecutar E2E somente após confirmação.
+
+### Bloqueio de merge e banco
+
+O README informa deploy automático do Lovable Cloud no push da branch principal. A PR #164 altera dependências e código de aplicação, então não será mesclada sob a regra ativa do objetivo; fica aberta e registrada até existir caminho autorizado sem deploy de produção, além de todos os checks verdes. A PR #165 é somente CI/configuração, mas atualmente encontra `npm audit` vermelho por depender do baseline vulnerável da `main`.
+
+Nenhuma migration, Edge Function, tabela, dado ou configuração do Supabase foi alterada nesta etapa. Não executar publicação manual para “validar” o workflow.
