@@ -40,7 +40,7 @@ import { HeaderSeveritySummary } from "@/components/admin/connections/HeaderSeve
 import { ZoneRefreshButton } from "@/components/admin/connections/ZoneRefreshButton";
 import {
   ZoneCommandPalette,
-  useZoneCommandPaletteShortcut,
+  useZoneCommandPalette,
 } from "@/components/admin/connections/ZoneCommandPalette";
 import { ZoneCommandTrigger } from "@/components/admin/connections/ZoneCommandTrigger";
 import { useFocusContext } from "@/components/admin/connections/useFocusContext";
@@ -62,7 +62,7 @@ export default function AdminConexoesPage() {
   const [refreshTick, setRefreshTick] = useState(0);
   const { visible, toggle, showAll, isolateZone, hiddenCount } = useZoneVisibility();
   const { collapsed, toggle: toggleCollapse, expand: expandZone } = useZoneCollapse();
-  const { open: paletteOpen, setOpen: setPaletteOpen } = useZoneCommandPaletteShortcut();
+  const { open: paletteOpen, setOpen: setPaletteOpen } = useZoneCommandPalette();
   const [highlightZone, setHighlightZone] = useState<string | null>(null);
   const { context: focusContext, setZone: persistZone, setIncident: persistIncident } = useFocusContext();
   useEffect(() => { list(); }, [list]);

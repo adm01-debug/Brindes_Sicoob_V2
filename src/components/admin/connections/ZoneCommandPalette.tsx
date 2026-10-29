@@ -1,7 +1,7 @@
 /**
  * ZoneCommandPalette — Onda 14
  *
- * Quick nav por busca (Cmd/Ctrl+K) que indexa as 3 zonas + módulos internos
+ * Quick nav por busca que indexa as 3 zonas + módulos internos
  * de /admin/conexoes. Ao escolher um item:
  *   1. Se a zona estiver oculta (Quick Nav visibility) → mostra novamente.
  *   2. Se a zona estiver colapsada → expande.
@@ -173,31 +173,8 @@ export function ZoneCommandPalette({
   );
 }
 
-/**
- * Hook utilitário: registra o atalho global Cmd/Ctrl+K para abrir o palette.
- * Ignora quando o foco está em <input>, <textarea> ou contentEditable.
- */
-function isZonePaletteShortcut(event: KeyboardEvent): boolean {
-  return (event.key === "k" || event.key === "K") && (event.metaKey || event.ctrlKey);
-}
-
-function isEditableEventTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
-  return target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
-}
-
-export function useZoneCommandPaletteShortcut() {
+/** Estado local: a palette desta página abre pelo botão próprio. */
+export function useZoneCommandPalette() {
   const [open, setOpen] = useState(false);
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (isZonePaletteShortcut(e)) {
-        if (isEditableEventTarget(e.target)) return;
-        e.preventDefault();
-        setOpen((v) => !v);
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, []);
   return { open, setOpen };
 }
