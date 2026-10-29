@@ -165,3 +165,43 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 ---
 
 *Relatório gerado automaticamente pela sessão Claude Code.*
+
+## Atualização da auditoria — 29/10/2026
+
+Esta seção substitui o inventário antigo acima para o estado observado na `main` `e9d59026793b84fabeaeec9da890a068f64d49c3`. Apenas a execução mais recente conhecida de cada workflow na `main` foi classificada.
+
+| Workflow | Estado | Causa / evidência |
+|---|---|---|
+| Publicar funções Sicoob | `failure` | Docker Hub retornou `toomanyrequests: Data limit exceeded`; a verificação final também encontrou `sicoob-approval-reconciliation` na versão 5. [Run 40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) |
+| Security Scan | `failure` | `npm audit` identificou 2 vulnerabilidades altas: `undici` e `zod`. [Run 40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) |
+| Qualidade contínua | `failure` | Gate de dependências/segurança reportou `undici (high)` e `zod (high)`. [Run 40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) |
+| CodeQL | `failure` | Autobuild carregou configuração `4.39.1`, mas executou `4.38.2`; não gerou SARIF. [Run 40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) |
+| Running Copilot Code Review | `failure` | `Processing Request (Linux)` terminou sem causa acionável disponível no resumo. [Run 39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) |
+| Dependabot `@vitest/mocker` | `failure` no último run observado | A execução de 22/10 terminou com `security_update_not_possible`; a dependência foi atualizada posteriormente para 4.1.12 no commit `b32e5e4`, mas não encontrei execução posterior desse mesmo workflow para confirmar `success`. [Run 39775463512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775463512) |
+
+**Verdes observados:** Migration ledger drift [40828393693](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40828393693), Branch Protection Sentinel [40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038), Enterprise Compliance [40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958), Portal Sicoob [39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315), e atualizações Dependabot de `undici`, `zod` e `actions/setup-node`.
+
+## Baseline local reproduzida antes do adendo
+
+Ambiente: Node `v24.19.0`, npm `11.17.0`; worktree limpa em `e9d59026793b84fabeaeec9da890a068f64d49c3`.
+
+| Comando | Resultado |
+|---|---|
+| `npm ci --no-audit --no-fund` | Aprovado; 980 pacotes instalados. Npm avisou sobre scripts de instalação ainda não aprovados. |
+| `npm run build` | Aprovado. Avisos: variáveis Vite ausentes no HTML, aviso de origem do PostCSS, divisão de bundle/importação e chunks acima de 600 kB. |
+| `npm run lint` | Aprovado; 0 erros e 873 avisos existentes. |
+| `npm run lint:baseline` | Aprovado; 0 erros globais, nenhum arquivo de aplicação alterado. |
+| `npm run typecheck` | Aprovado para `tsconfig.app.json` e `tsconfig.node.json`. |
+| `npm test -- --reporter=dot` | Aprovado; 452 arquivos passaram, 4 ignorados; 5.839 testes passaram, 68 ignorados. |
+
+Os logs integrais foram mantidos apenas em `/tmp/sicoob-baseline-*.log`, fora do repositório. A auditoria do workflow de E2E em PR é tratada em `PENDENCIAS.md`; a falta do projeto de homologação impede certificar a jornada autenticada.
+
+## Correções em análise
+
+- PR [#164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164) tem verdes os gates de segurança, CodeQL, CVE, build/contratos, verificações Sicoob, Lighthouse, bundle e Gitleaks. Permanece bloqueado pelo E2E e Copilot; não houve merge.
+- PR [#161](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/161) também tem os gates de dependências/CodeQL corrigidos, mas ainda sem aprovação de todos os checks.
+- PR [#151](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/151) restaura apenas arquivos-fonte de migrations já registradas no ledger; não aplicou SQL. E2E e outros checks seguem bloqueados/falhos.
+- PR [#170](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/170) tem auditoria npm falha contra a base anterior à correção de dependências; reavaliar depois que a correção de segurança for integrada.
+- PR [#171](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/171) estava com checks ainda executando na última consulta.
+
+Nenhum merge, deploy, alteração da `main` ou escrita no Supabase ocorreu nesta etapa. Após cada commit de código, repetir build, lint, typecheck e suíte completa e comparar com esta baseline.

@@ -217,3 +217,32 @@ Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Depen
 | Migration Ledger Drift | Fingerprint de `20261022120000` calculado com `local_sha256` incorreto; novo digest correto: `e2815b0...` | Corrigido fingerprint no `migration-ledger-baseline.json` | #129 |
 | 5 CVEs high (vite ≤6.4.3) | GHSA-698v, GHSA-r825, GHSA-587h, GHSA-9jrq, GHSA-rq7h | `vite` 6.4.3 → 6.4.5 | #126 |
 | Qualidade contínua (`ci.yml`) — ECR rate limit | `toomanyrequests: Data limit exceeded` ao puxar `public.ecr.aws/supabase/postgres:17.6.1.063` em dois steps (scripts `simular-controles-auditoria.py` e `simular-acl-efetiva.py`) | Rate limit do ECR Public se dissipou naturalmente; run `39780447863` → **success** | automático |
+
+## Estado atualizado — 29/10/2026
+
+A baseline reproduzida em Node 24/npm 11 está em `RELATORIO_CI.md`. O status abaixo complementa as pendências históricas acima e se refere à `main` `e9d59026793b84fabeaeec9da890a068f64d49c3` e aos PRs consultados em 29/10.
+
+### Projeto Supabase isolado para E2E — ação necessária do mantenedor
+
+- **Runs afetados:** [PR #164 — 40950721820](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40950721820) e [PR #161 — 40888831125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40888831125). O job falha antes de iniciar os testes, nas etapas `Validar projeto Supabase E2E isolado` ou `Verificar credenciais da jornada autenticada`.
+- **Bloqueio:** faltam a variável `E2E_SUPABASE_PROJECT_ID` e os secrets `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY` e `E2E_SUPABASE_SERVICE_ROLE_KEY` no repositório/ambiente `construction` consultado. As contas E2E por papel já aparecem como nomes de secrets, mas não há prova de que foram criadas no projeto isolado.
+- **Ação:** configurar esses nomes com dados de um Supabase de homologação descartável; criar/verificar nele usuários vendedor, viewer, gestor, admin e dev, incluindo TOTP para papéis privilegiados; conferir migrations/RLS e dados de teste; rerodar o E2E no PR #164 e exigir `success` com a jornada executada.
+- **Segurança:** não apontar esse gate para o projeto canônico/produtivo, não reutilizar credenciais do banco de produtos e não registrar valores de secrets. Nenhuma escrita/migration foi realizada no banco.
+
+O mantenedor respondeu que configuraria a homologação; na verificação de 29/10, os nomes requeridos ainda não estavam visíveis. A pendência só será encerrada depois da execução verde autenticada.
+
+### Publicação das Edge Functions Sicoob
+
+- [Run 40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) falhou com `toomanyrequests: Data limit exceeded` ao baixar imagem do Docker Hub. A etapa final informou que `sicoob-approval-reconciliation` permaneceu na versão 5.
+- Revisar a origem/limite de imagem, executar novamente a publicação e confirmar as versões remotas de todas as funções. Não declarar resolvido com base apenas em build/check de PR.
+
+### Segurança, CodeQL e checks externos
+
+- [Security Scan 40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) e [Qualidade contínua 40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964): duas vulnerabilidades altas (`undici`, `zod`). PR #164 tem checks correlatos verdes, mas ainda não foi integrado.
+- [CodeQL 40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073): Autobuild usou versão diferente da configuração carregada e não gerou SARIF. Check correspondente verde no PR #164; confirmar nova execução verde na `main` depois do merge aprovado.
+- [Copilot Code Review 39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125): `Processing Request (Linux)` falhou sem causa acionável. Repetir a revisão; se persistir, guardar evidência do provedor/limite de serviço. Não alterar regra/check para ocultar a falha.
+- `@vitest/mocker`: o último run observado ([39775463512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775463512)) falhou como `security_update_not_possible`, mas a dependência foi atualizada a 4.1.12 no commit `b32e5e4`; falta confirmar conclusão verde desse workflow específico.
+
+### Condição de merge
+
+Não fazer merge dos PRs #151, #161, #164, #170 ou #171 enquanto algum check obrigatório estiver vermelho/pendente. O PR #164 segue bloqueado pelo E2E sem projeto isolado configurado. Workflows que estavam verdes devem permanecer verdes; após cada commit de código, repetir build, lint, typecheck e suíte completa.
