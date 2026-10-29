@@ -19,10 +19,10 @@ Correção das lacunas P056 e P059 da [revisão do plano de 01/10/2026](revisao-
 
 - `npm ci --no-audit --no-fund`: concluído; os avisos de scripts de instalação pendentes permanecem os do lockfile.
 - `npm test -- tests/hooks/useAutoSave.test.tsx tests/components/quotes/QuoteAutoSave.readonly.test.tsx --reporter=dot`: 8/8 passaram após a mudança P059.
-- `npm run typecheck`: passou após a mudança final.
+- `npm run typecheck`: passou após a mudança P059.
 - `npm run lint:baseline`: passou; 0 erro global e 0 regressão nos dois arquivos de aplicação alterados.
 - `npm run build`: passou; avisos existentes de variáveis de ambiente ausentes, PostCSS, import dinâmico e chunks grandes.
-- `npm test -- --reporter=dot`: repetir após a mudança P059; a execução anterior à mudança teve 5.841 aprovados e 68 ignorados.
+- `npm test -- --reporter=dot`: 5.842 passaram e 68 foram ignorados; 452 arquivos passaram e 4 foram ignorados.
 - `npm run test:scenarios`: 226/226 passaram.
 
 ## Limites
