@@ -1,6 +1,50 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
-**Gerado em:** 2026-10-22  
+## Atualização de reconciliação — 2026-10-29
+
+Esta seção substitui o inventário datado de 22/10 para o estado atual de `main` e registra a validação da correção enviada no PR #155. O repositório remoto está em `e9d59026793b84fabeaeec9da890a068f64d49c3`; a branch local de trabalho é `fix/hermes-h239437-plan-convergence`, commit `9aa2f43f0cf0508e5a6a3f3677b5f30dbceb6f72`.
+
+### Baseline local após o commit
+
+| Verificação | Resultado | Observação |
+|---|---|---|
+| `npm ci` | ✅ | Instalação limpa concluída antes da correção; ainda reporta duas vulnerabilidades altas existentes em `undici` e `zod`. |
+| `npm run build` | ✅ | Build de produção concluído; permanecem avisos de variáveis de ambiente ausentes no ambiente local e chunks grandes. |
+| `npm run lint` | ✅ | 0 erros e 873 avisos preexistentes. |
+| `npm run typecheck` | ✅ | Sem erros. |
+| `npm run test -- --reporter=dot` | ✅ | 453 arquivos passaram, 4 foram ignorados; 5.843 testes passaram e 68 foram ignorados. |
+| `deno fmt --check`, `deno lint`, `deno test`, `deno check` | ✅ | Teste de autorização Deno: 1 aprovado; os demais gates focados passaram. |
+| Gates de pre-push | ✅ | Typecheck e lint sem regressões; suíte completa passou novamente. |
+
+### Inventário das últimas execuções de `main`
+
+| Workflow | Última execução na main considerada | Causa/estado |
+|---|---|---|
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) — falha | Publicou, mas o verificador exigia incremento de versão e encontrou `sicoob-approval-reconciliation` ainda na versão 5. PR #149 altera a confirmação para comparar o conteúdo publicado. |
+| Migration ledger drift | [40670784182](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40670784182) — sucesso | A execução seguinte ao schedule falho passou; portanto o último estado é verde. |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) — falha | Gate `npm audit` detectou vulnerabilidades altas em `undici` e `zod`; PRs #146/#147 e o lote #148 tratam dependências. |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) — falha | O gate de segurança detectou as mesmas vulnerabilidades `undici` e `zod`. |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) — falha | O workflow carregou configuração CodeQL 4.39.1 e executou ação 4.38.2; o autobuild falhou e, em seguida, não encontrou SARIF para armazenar. PR #148 inclui ajuste do workflow. |
+| Branch Protection Sentinel | [40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038) — sucesso | Verde. |
+| Enterprise Compliance & Audit Reporting | [40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958) — sucesso | Verde. |
+| Portal Sicoob | [39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315) — sucesso | Última execução encontrada na janela consultada; verde. |
+
+Os PRs #145–#151 ainda não estão integrados. O PR #155 adiciona um guard local para JWT estruturalmente malformado antes de chamar o Auth remoto, causa do timeout observado no E2E. No primeiro retrato do PR #155, o E2E e alguns jobs ainda estavam em execução; `npm audit` e CodeQL continuavam bloqueados pelos problemas já presentes na base. Isso não é prova de CI verde.
+
+### Estado do banco Supabase canônico
+
+Consulta somente leitura ao projeto `cfmzkthhgliqelozlmwu` confirmou PostgreSQL 17.6 saudável e 137 entradas em `supabase_migrations.schema_migrations`, até `20261022230000`. A versão máxima coincide com a migration mais recente em `origin/main`. A correção do PR #155 é exclusivamente código de Edge Function compartilhado: não adiciona schema nem modifica dados, logo nenhuma migration foi aplicada ou necessária nesta mudança.
+
+Paridade de arquivos e ledger ainda não fecha: a auditoria encontrou 15 versões registradas sem arquivo correspondente em `main` (12 migrations timestampadas, tratadas pelo PR #151, mais três entradas históricas `001`–`003`) e 459 arquivos de migration timestampados sem versão correspondente no ledger. Esses 459 não devem ser aplicados em lote; requerem classificação de linhagem, conteúdo e sobreposição. O ledger remoto não prova sozinho equivalência integral do schema.
+
+### Limites da prova
+
+- O PR #155 está aberto, não integrado e ainda depende dos checks do GitHub; a função publicada no Supabase não recebeu esta correção.
+- O checkout principal local permanece separado da branch de trabalho: `main` local está 84 commits atrás de `origin/main` e tem 14 mudanças modificadas/não rastreadas. Elas não foram descartadas nem importadas para esta branch sem proveniência e revisão.
+- A publicação e equivalência completa das 100 Edge Functions, incluindo imports compartilhados e configuração, não está demonstrada por este relatório.
+- Nenhuma migração, linha de dados, função publicada ou configuração remota do Supabase foi alterada nesta sessão.
+
+**Versão original:** 2026-10-22 · **Adendo de estado atual:** 2026-10-29
 **Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
 
 ---

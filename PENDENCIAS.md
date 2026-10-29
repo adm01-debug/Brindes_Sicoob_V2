@@ -1,6 +1,29 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
-Atualizado em: 2026-10-22
+## Atualização em 2026-10-29 — estado remoto atual
+
+O inventário abaixo, de 22/10, é histórico. A `main` atual é `e9d59026793b84fabeaeec9da890a068f64d49c3`. Permanecem estas falhas, conforme a última execução de cada workflow na `main`:
+
+| Workflow | Execução | Evidência da falha | Acompanhamento |
+|---|---|---|---|
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | Passo “Confirmar funções publicadas” esperava aumento da versão, mas `sicoob-approval-reconciliation` permaneceu em v5 após o deploy. | PR [#149](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/149) troca a verificação para conteúdo publicado. |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `npm audit` falha por duas vulnerabilidades altas: `undici` e `zod`. | PRs [#146](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/146), [#147](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/147) e [#148](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/148) estão abertos; checks deles também precisam passar. |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | O gate de autorização das Edge Functions é interrompido pelas mesmas vulnerabilidades altas em `undici` e `zod`. | Mesmo grupo de correção dos PRs #146–#148. |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | Configuração carregada na versão 4.39.1, mas ação executada na 4.38.2; autobuild falha e não gera SARIF, então o upload também falha. | PR [#148](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/148) altera workflow; requer nova execução verde. |
+
+O workflow “Migration ledger drift” tem como última execução [40670784182 — success](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40670784182), portanto não é uma falha atual, apesar do schedule anterior ter falhado.
+
+### Outros bloqueios de integração e paridade
+
+- O fix do timeout do token inválido está no PR [#155](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/155), commit `9aa2f43f0cf0508e5a6a3f3677b5f30dbceb6f72`. No último retrato, E2E e alguns gates ainda rodavam; `npm audit` e CodeQL continuavam falhando na base. Não fazer merge até todos os checks obrigatórios ficarem verdes. Como altera autorização usada por Edge Functions, publicar somente após CI/PR aprovados e validar a função no ambiente canônico.
+- O Supabase canônico está acessível em leitura e registra 137 migrations até `20261022230000`; esta correção não requer DDL nem alteração de dados.
+- Há 15 versões do ledger sem arquivo em `main`: 12 migrations timestampadas são o escopo do PR [#151](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/151), e três (`001`, `002`, `003`) são entradas históricas. A auditoria bruta encontrou também 459 arquivos timestampados sem versão no ledger. Não aplicar estes arquivos automaticamente; classificar por origem, conteúdo e sobreposição antes de qualquer execução.
+- O checkout principal local está em `main` no commit `6b71bdc09a454d8f8160166d45c9a670aa8b66e5`, 84 commits atrás de `origin/main`, e contém 14 arquivos alterados/não rastreados. Foram preservados e mantidos fora do PR #155; ainda precisam ser comparados com as branches/PRs correspondentes antes de qualquer importação.
+- A listagem/compare de 100 Edge Functions não foi repetida nesta atualização. Os pings anteriores não provam igualdade entre código, imports compartilhados e configuração publicados. Não declarar paridade integral de funções.
+
+Nenhum bloqueio desta atualização requer ação imediata do owner (secret, permissão ou billing) para os quatro workflows listados; as correções de código estão distribuídas nos PRs citados e precisam ser validadas/mergeadas segundo os checks.
+
+Atualização mais recente: 2026-10-29 (o conteúdo abaixo desta seção é histórico de 22/10)
 
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
 O erro exato foi extraído do run mais recente disponível em main.
