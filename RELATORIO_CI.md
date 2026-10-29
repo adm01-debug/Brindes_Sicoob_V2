@@ -165,3 +165,38 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 ---
 
 *Relatório gerado automaticamente pela sessão Claude Code.*
+
+---
+
+## Verificação contínua — 2026-10-29
+
+### Inventário da `main`
+
+Considerado somente o run mais recente por workflow na branch `main` (SHA `e9d59026793b84fabeaeec9da890a068f64d49c3`):
+
+| Workflow | Última execução | Status | Causa provável confirmada |
+|---|---:|---|---|
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | failure | Gate npm audit: `undici@8.10.2` (corrigível sem major) e `zod@3.25.76` (correção disponível pelo audit exige Zod 4). |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | failure | O step de dependências para no mesmo gate npm audit acima; `scripts/check-edge-authorization.mjs` passou localmente com 106/106 funções declaradas. |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | failure | `codeql-action/init` carregou configuração 4.39.1, mas `autobuild`/`analyze` estavam fixados em SHA da versão 4.38.2; nenhum SARIF foi gerado. |
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | failure | Pull do `edge-runtime` recebeu rate limit do ECR; confirmação também falhou porque `sicoob-approval-reconciliation` permaneceu na versão 5. Nenhum rerun foi solicitado por ser workflow que publica no projeto canônico. |
+| Migration ledger drift | [40828393693](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40828393693) | success | Verde atualmente; runs antigos falhos não contam como falha ativa. |
+| Branch Protection Sentinel | [40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038) | success | Verde atualmente. |
+| Enterprise Compliance & Audit Reporting | [40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958) | success | Verde atualmente. |
+
+### Baseline e validações desta correção
+
+Baseline local no commit `ade7ac161e33a3a63215b6ed286376269399eaab`, antes das mudanças de isolamento do workflow E2E:
+
+| Verificação | Resultado |
+|---|---|
+| Build | `npm run build` — exit 0; avisos existentes de configuração CSS/importação e chunks grandes. |
+| Lint | `npm run lint` — exit 0, 0 erros e 873 avisos. |
+| Typecheck | `npm run typecheck` — exit 0. |
+| Suíte completa | 456 arquivos passaram, 4 skipped; 5.851 testes passaram, 68 skipped; 0 falhas. |
+
+Mudança E2E ainda em revisão local: `actionlint .github/workflows/e2e.yml` passou; 14 testes focados (guard de destino + contratos da sonda) passaram; `git diff --check` passou. O smoke negativo do guard, sem secrets, falha fechado e lista somente os nomes ausentes. A execução E2E remota foi cancelada antes dos testes com escrita porque ainda havia apenas configuração genérica associada ao banco canônico.
+
+**Resultado de segurança:** `npm audit` confirmou advisories altas para undici e zod. O audit indica correção do undici sem major; para zod, aponta `4.6.7` como correção com mudança major. A migração de Zod exige análise de compatibilidade e suíte completa; não foi feita nesta correção de isolamento.
+
+**Pendências externas:** cadastrar os cinco secrets `E2E_SUPABASE_*` de homologação descritos em [PENDENCIAS.md](PENDENCIAS.md). O próximo push do workflow deve falhar imediatamente no preflight enquanto estiverem ausentes, sem acessar o projeto canônico. A última verificação da branch `main` também mantém pendentes o alinhamento dos SHAs do CodeQL e a mitigação do rate limit/publicação das Edge Functions.

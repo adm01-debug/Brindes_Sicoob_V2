@@ -217,3 +217,23 @@ Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Depen
 | Migration Ledger Drift | Fingerprint de `20261022120000` calculado com `local_sha256` incorreto; novo digest correto: `e2815b0...` | Corrigido fingerprint no `migration-ledger-baseline.json` | #129 |
 | 5 CVEs high (vite ≤6.4.3) | GHSA-698v, GHSA-r825, GHSA-587h, GHSA-9jrq, GHSA-rq7h | `vite` 6.4.3 → 6.4.5 | #126 |
 | Qualidade contínua (`ci.yml`) — ECR rate limit | `toomanyrequests: Data limit exceeded` ao puxar `public.ecr.aws/supabase/postgres:17.6.1.063` em dois steps (scripts `simular-controles-auditoria.py` e `simular-acl-efetiva.py`) | Rate limit do ECR Public se dissipou naturalmente; run `39780447863` → **success** | automático |
+
+---
+
+## E2E isolado em homologação — secrets ainda ausentes (2026-10-29)
+
+**Workflow:** `E2E (Playwright)` (`.github/workflows/e2e.yml`)
+**Risco identificado:** o workflow usava `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID` e `SUPABASE_SERVICE_ROLE_KEY` genéricos do repositório. Os documentos do projeto registram que esses secrets apontam para o Supabase canônico. A suíte inclui autorização/RLS e rotinas de limpeza, portanto não deve rodar contra esse destino.
+**Ação preventiva:** o run E2E `40901942731` no SHA `ade7ac161e33a3a63215b6ed286376269399eaab` foi cancelado antes de autorizar jornadas autenticadas ou shards com limpeza. O workflow passa a exigir secrets separados, validar a correspondência entre URL e project ref e bloquear os refs canônicos `cfmzkthhgliqelozlmwu` e `doufsxqlfjyuvxuezpln`.
+
+**Secrets ainda ausentes na consulta ao GitHub Actions (somente nomes foram consultados):**
+
+- `E2E_SUPABASE_URL`
+- `E2E_SUPABASE_PROJECT_ID`
+- `E2E_SUPABASE_PUBLISHABLE_KEY`
+- `E2E_SUPABASE_SERVICE_ROLE_KEY`
+- `E2E_SUPABASE_CLEANUP_TOKEN`
+
+As contas e senhas de teste já aparecem como nomes de secrets, mas é necessário garantir que as contas existam no projeto isolado de homologação. Não foi lido nem registrado nenhum valor secreto. Até esses cinco secrets estarem configurados e o gate verde, o job falhará antes de executar os testes remotos.
+
+**Ação do responsável:** criar/selecionar um projeto Supabase de homologação separado dos dois refs canônicos, criar nele as contas/personas E2E e cadastrar os cinco secrets acima em *Settings → Secrets and variables → Actions*. Não reutilizar `SUPABASE_SERVICE_ROLE_KEY` ou as credenciais de produção.
