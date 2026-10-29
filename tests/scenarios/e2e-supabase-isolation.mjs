@@ -36,17 +36,29 @@ test('os jobs E2E usam credenciais dedicadas e validam o isolamento antes de tes
 
   for (const jobName of ['e2e', 'e2e-regression']) {
     const job = workflow.jobs[jobName];
-    assert.equal(job.env.E2E_SUPABASE_PROJECT_ID, '${{ vars.E2E_SUPABASE_PROJECT_ID }}');
-    assert.equal(job.env.VITE_SUPABASE_URL, '${{ secrets.E2E_SUPABASE_URL }}');
-    assert.equal(job.env.VITE_SUPABASE_PUBLISHABLE_KEY, '${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}');
-    assert.equal(job.env.VITE_SUPABASE_PROJECT_ID, '${{ vars.E2E_SUPABASE_PROJECT_ID }}');
-    assert.ok(!JSON.stringify(job.env).includes('secrets.VITE_SUPABASE_'));
     const validatorIndex = job.steps.findIndex((step) => step.run === 'node scripts/qa/validate-e2e-supabase-target.mjs');
     const firstRemoteTestIndex = job.steps.findIndex((step) => /Validar autorização remota|Run E2E smoke|Run E2E regression/.test(step.name ?? ''));
     assert.ok(validatorIndex >= 0, `${jobName} deve validar o destino Supabase`);
     assert.ok(firstRemoteTestIndex > validatorIndex, `${jobName} deve validar o destino antes dos testes remotos`);
+    assert.ok(!JSON.stringify(job.env).includes('secrets.'), `${jobName} não deve expor segredos no ambiente global do job`);
+    assert.equal(job.steps[validatorIndex].env.E2E_SUPABASE_PROJECT_ID, '${{ vars.E2E_SUPABASE_PROJECT_ID }}');
+    assert.equal(job.steps[validatorIndex].env.VITE_SUPABASE_URL, '${{ secrets.E2E_SUPABASE_URL }}');
+    assert.equal(job.steps[validatorIndex].env.VITE_SUPABASE_PUBLISHABLE_KEY, '${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}');
+    assert.ok(!JSON.stringify(job.steps).includes('secrets.VITE_SUPABASE_'));
   }
 
   const authorizationStep = workflow.jobs.e2e.steps.find((step) => step.name === 'Validar autorização remota e RLS técnico');
   assert.equal(authorizationStep.env.SUPABASE_SERVICE_ROLE_KEY, '${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}');
+  for (const jobName of ['e2e', 'e2e-regression']) {
+    assert.ok(!JSON.stringify(workflow.jobs[jobName].steps.find((step) => step.name === 'Install deps')).includes('secrets.'), `${jobName}: npm ci não deve receber segredos`);
+  }
+  for (const [jobName, stepName] of [['e2e', 'Run E2E smoke (gate — para na 1ª falha)'], ['e2e-regression', 'Run E2E regression (shard ${{ matrix.shard }}/3)']]) {
+    const playwrightStep = workflow.jobs[jobName].steps.find((step) => step.name === stepName);
+    assert.equal(playwrightStep.env.E2E_USER_PASSWORD, '${{ secrets.E2E_USER_PASSWORD }}');
+    assert.equal(playwrightStep.env.E2E_CLEANUP_TOKEN, '${{ secrets.E2E_CLEANUP_TOKEN }}');
+    assert.equal(playwrightStep.env.VITE_SUPABASE_URL, '${{ secrets.E2E_SUPABASE_URL }}');
+    assert.equal(playwrightStep.env.VITE_SUPABASE_PUBLISHABLE_KEY, '${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}');
+  }
+  const stickyStep = workflow.jobs.e2e.steps.find((step) => step.name === '🧲 Run E2E header-sticky gate (fail-fast por rota/viewport)');
+  assert.equal(stickyStep.env.E2E_USER_PASSWORD, '${{ secrets.E2E_USER_PASSWORD }}');
 });
