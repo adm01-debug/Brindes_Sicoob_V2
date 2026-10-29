@@ -267,3 +267,28 @@ Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Depen
 | Migration Ledger Drift | Fingerprint de `20261022120000` calculado com `local_sha256` incorreto; novo digest correto: `e2815b0...` | Corrigido fingerprint no `migration-ledger-baseline.json` | #129 |
 | 5 CVEs high (vite ≤6.4.3) | GHSA-698v, GHSA-r825, GHSA-587h, GHSA-9jrq, GHSA-rq7h | `vite` 6.4.3 → 6.4.5 | #126 |
 | Qualidade contínua (`ci.yml`) — ECR rate limit | `toomanyrequests: Data limit exceeded` ao puxar `public.ecr.aws/supabase/postgres:17.6.1.063` em dois steps (scripts `simular-controles-auditoria.py` e `simular-acl-efetiva.py`) | Rate limit do ECR Public se dissipou naturalmente; run `39780447863` → **success** | automático |
+
+---
+
+## Rechecagem pós-commit `0003e00ed` — 29/10/2026
+
+### PR #157 — checks do SHA `0003e00ed361bd0d73527e670396a7def11a6c35`
+
+| Check | Estado | Motivo / evidência |
+|---|---|---|
+| `e2e` | ❌ failure | [Run 40821761584](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40821761584): `tests/rls/e2e-cleanup-rate-limit.test.ts`, cenário “UPDATE como anon falha”, excedeu 15 s. A chamada REST remota ficou sem resposta dentro do limite; não há evidência de que a asserção de RLS falhou. Reprodução remota local indisponível sem as credenciais de teste do GitHub Actions; sem `RUN_REMOTE_RLS_TESTS=1`, o teste pula e não exercita o Supabase. A repetição no PR #151 indica instabilidade persistente do teste remoto, não uma falha nova causada pelo commit documental. |
+| `Segurança, contratos e build` | ❌ failure | [Run 40821761554](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40821761554): `simular-controles-auditoria.py` não obteve a imagem `public.ecr.aws/supabase/postgres:17.6.1.063`; ECR respondeu `toomanyrequests: Data limit exceeded` após três tentativas. |
+| `npm audit — CVE Scan` | ✅ success | [Run 40821761612](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40821761612). |
+| `Analyze (javascript-typescript)` | ✅ success | [Run 40821761556](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40821761556). |
+| `Gitleaks — Secret Scan` | ✅ success | [Run 40821761612](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40821761612). |
+| `e2e` regressivo por shards | ⏭️ skipped | O gate E2E falhou no teste remoto anterior; os shards não rodaram. |
+| `copilot-pull-request-reviewer` | ❌ failure externo | [Run 40821772919](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40821772919): limite de uso adicional do Copilot (HTTP 402). Não é check obrigatório da proteção da branch. |
+| Vercel Agent Review | ⚪ neutral | Billing de revisão do time desativado; não é falha de build. |
+
+Os demais checks obrigatórios remotos concluíram com sucesso. O PR continua aberto e não pode ser mesclado enquanto `e2e` e `Segurança, contratos e build` estiverem vermelhos. As correções de npm audit/CodeQL estão demonstradas no PR, mas a `main` ainda conserva os workflows com falha até integração; nenhum deploy foi feito.
+
+### Ledger Supabase e repositório
+
+Leitura do ledger canônico retornou 137 entradas, com última versão `20261022230000`. A `main` carece das fontes de 12 migrations já aplicadas; o PR [#151](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/151) as restaura e, no snapshot de seu branch, as 137 versões remotas têm fonte correspondente. O PR #151 segue bloqueado pelos checks `e2e`, `npm audit`, CodeQL e `Segurança, contratos e build`; não marcar a reconciliação como concluída antes de o conteúdo chegar à `main` com checks verdes.
+
+Os 462 arquivos locais sem entrada no ledger são passivo histórico registrado na baseline. Não executar esses arquivos em lote, não fabricar linhas no ledger e não alterar o schema para “alinhar” contagens. O PR #157 não contém mudança de banco e nenhum comando de escrita/migration foi executado nesta sessão.

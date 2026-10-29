@@ -224,3 +224,26 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 ---
 
 *Relatório gerado automaticamente pela sessão Claude Code.*
+
+---
+
+## Revalidação da branch e do banco canônico — 29/10/2026
+
+Commit documental `0003e00ed361bd0d73527e670396a7def11a6c35`, no PR #157. A proteção remota de `main` foi configurada e lida de volta pela API: exige atualização estrita, 10 checks nomeados, uma aprovação humana após o último push, resolução de conversas, aplica-se também a administradores e bloqueia force-push e exclusão. O registro está em `docs/BRANCH_PROTECTION.md`.
+
+| Verificação após o commit | Resultado | Evidência |
+|---|---|---|
+| Build | ✅ exit 0 | `npm run build`; avisos conhecidos de variáveis locais ausentes, PostCSS e chunks grandes. |
+| Lint | ✅ exit 0 | `npm run lint`; 0 erros e 873 avisos, sem aumento sobre o baseline. |
+| Typecheck | ✅ exit 0 | `npm run typecheck`; baseline de erros permanece 0. |
+| Suíte completa | ✅ exit 0 | `npm test -- --reporter=dot` e hook pre-push: 5.846 passaram, 68 ignorados. |
+| npm audit local | ✅ exit 0 | Zero vulnerabilidades no lockfile candidato. |
+| Hook pre-push | ✅ concluído na segunda tentativa | A primeira tentativa reportou exceção não tratada em `WorkflowEditDialog.test.tsx`; o teste isolado passou (7/7) e a suíte completa repetida passou sem alteração no código. |
+
+Checks remotos do SHA acima: `npm audit`, CodeQL, Gitleaks, origem confiável, Lighthouse, bundle, verba/aprovação, entrada responsiva e gate Sicoob passaram. O check `e2e` falhou porque o teste remoto `e2e_cleanup_rate_limit` expirou após 15 s ao validar UPDATE como anon; `Segurança, contratos e build` falhou ao baixar `public.ecr.aws/supabase/postgres:17.6.1.063` (`toomanyrequests: Data limit exceeded`). O Copilot Reviewer retornou falha de limite (HTTP 402), e o Vercel Agent Review ficou neutral por billing desativado. Links e trechos estão em `PENDENCIAS.md`.
+
+### Paridade com o Supabase canônico
+
+Consulta somente de leitura ao projeto `cfmzkthhgliqelozlmwu`: 137 migrations no ledger, última `20261022230000_repair_migration_ledger_and_harden_search_path`. A `main` ainda não contém as fontes de 12 versões aplicadas. No PR #151, a comparação do snapshot do branch com o ledger atual encontrou fontes para 137/137 versões; os 462 arquivos históricos sem entrada no ledger continuam classificados como passivo e **não** foram aplicados. O PR #151 permanece bloqueado por checks falhos, portanto a paridade entre ledger e `main` ainda não está fechada.
+
+O PR #157 não modifica migrations, schema, dados ou Edge Functions; nenhuma escrita ou publicação no Supabase foi executada. Ele permanece aberto: não integrar enquanto os checks obrigatórios estiverem falhando e enquanto a política de implantação exigir impedir deploy sem validação apropriada.
