@@ -17,19 +17,19 @@ Os itens de 22/10 abaixo são histórico e não representam o estado atual. Rech
 
 ### PR #157 — correções de CI em validação
 
-PR: [#157](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/157), branch `fix/hermes-h247355-ci-dependencies`, commit `b4ce6a097e51c64bcc4f70fa7940dc93f3ffee28`.
+PR: [#157](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/157), branch `fix/hermes-h247355-ci-dependencies`, SHA consultado `e9285be0ebfd7c8b64a621c802d770581bd42d47`.
 
 | Check no PR | Resultado | Evidência / pendência |
 |---|---|---|
-| npm audit | ✅ success | [Run 40818618209](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40818618209); zero vulnerabilidades no candidato. |
-| CodeQL | ✅ success | [Run 40818618134](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40818618134); SHA único v4.39.1. |
-| Gitleaks, origem confiável, bundle, Lighthouse, verba/aprovação, entrada responsiva e Vercel Preview Comments | ✅ success | Checks do SHA do PR acima. |
-| `e2e` | ❌ failure | [Run 40818618235](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40818618235): login E2E ficou em `/login` após 20 s; `e2e-cleanup` respondeu `HTTP 403 email_not_in_allow_list` para os usuários de teste. Shards de regressão foram pulados porque o gate smoke falhou no setup. |
-| Segurança, contratos e build | ❌ failure após rerun | [Run 40818618224](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40818618224), tentativa 2: suíte completa passou (5.846/68), mas a simulação `simular-controles-auditoria.py` falhou ao baixar `public.ecr.aws/supabase/postgres:17.6.1.063` com `toomanyrequests: Data limit exceeded`. A tentativa 1 teve a mesma causa externa. |
-| Copilot PR reviewer | ❌ failure | [Run 40818631873](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40818631873): HTTP 402, limite de uso adicional do plano Copilot atingido. Requer aumentar o limite/uso adicional ou aguardar o reset em `github.com/settings/copilot/features`. |
+| npm audit | ✅ success | [Run 40831182622](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40831182622); zero vulnerabilidades. |
+| CodeQL | ✅ success | [Run 40831182640](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40831182640); SHA único v4.39.1. |
+| Segurança, contratos e build | ✅ success | [Run 40831182653](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40831182653); suíte, tipagem, simulações PostgreSQL e build concluídos. |
+| Gitleaks, origem confiável, bundle, Lighthouse, verba/aprovação, entrada responsiva, gate Sicoob e Vercel Preview Comments | ✅ success | Runs do SHA atual: [E2E/origem](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40831182569), [qualidade](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40831182653), [segurança](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40831182622), [Lighthouse](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40831182689) e [gate Sicoob](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40831182567). |
+| `e2e` | ❌ failure | [Run 40831182569](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40831182569): `tests/rls/e2e-cleanup-rate-limit.test.ts` excedeu 45 s no `beforeAll` ao consultar `e2e_cleanup_rate_limit`; 51 testes passaram, 4 foram ignorados e os shards foram pulados pelo gate smoke. Causa provável: latência/indisponibilidade do Supabase remoto; validar conectividade e resposta dessa tabela no projeto de construção. |
+| Copilot PR reviewer | ❌ failure | [Run 40831197720](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40831197720): HTTP 402 `quota`, limite de uso adicional do plano Copilot atingido. Requer aumentar o limite/uso adicional ou aguardar o reset em `github.com/settings/copilot/features`. |
 | Vercel Agent Review | ⚪ neutral | Billing do time desativado; revisão automatizada não executada. Não foi falha de código. |
 
-**Ação necessária para E2E:** no projeto Supabase de construção, configurar o secret da Edge Function `e2e-cleanup`, `E2E_CLEANUP_ALLOWED_EMAILS`, com os endereços exatos de todas as contas E2E configuradas no GitHub Actions, em CSV. O código normaliza espaços e caixa. Também confirmar no GitHub que as contas correspondem a usuários ativos e que as credenciais/TOTP estão atuais. Não enviar os valores de senha ou TOTP na conversa.
+**Ação necessária para E2E:** a execução atual ultrapassou o timeout de 45 s no `beforeAll` do teste de RLS, ao consultar a tabela `e2e_cleanup_rate_limit`. Verificar disponibilidade, policy RLS e latência da tabela no projeto Supabase de construção antes de novo rerun; a execução não comprovou sucesso do gate remoto.
 
 **Ação necessária para os checks externos:** o administrador do time deve resolver o limite do Copilot. Para o ECR Public, aguardar a cota se restabelecer; se persistir, migrar as simulações para um registry espelho aprovado. O rerun confirmou falha recorrente de infraestrutura, sem erro de teste/código.
 

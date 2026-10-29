@@ -41,7 +41,7 @@ A confirmação agora aceita versão inalterada apenas quando a saída do comand
 
 ## Validação final local e evidência do PR — 29/10/2026
 
-Branch `fix/hermes-h247355-ci-dependencies`, PR [#157](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/157), SHA testado pelos checks remotos `b4ce6a097e51c64bcc4f70fa7940dc93f3ffee28`.
+Branch `fix/hermes-h247355-ci-dependencies`, PR [#157](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/157), SHA dos checks remotos `e9285be0ebfd7c8b64a621c802d770581bd42d47`.
 
 | Validação | Baseline | Final local / remoto | Resultado |
 |---|---:|---:|---|
@@ -49,15 +49,15 @@ Branch `fix/hermes-h247355-ci-dependencies`, PR [#157](https://github.com/adm01-
 | Build | exit 0 | exit 0; avisos de chunks e comentário Rollup em Zod 4 | ✅ |
 | Lint | 0 erros, 873 avisos | 0 erros, 873 avisos | ✅ sem piora |
 | Typecheck | exit 0 | exit 0 | ✅ |
-| Vitest | 5.839 passaram, 68 ignorados | 5.846 passaram, 68 ignorados | ✅ +7 testes, sem regressão |
-| npm audit no PR | 2 dependências com advisories altos no candidato base | zero vulnerabilidades | ✅ [run](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40818618209) |
-| CodeQL no PR | init/action em versões diferentes | success, actions alinhadas em v4.39.1 | ✅ [run](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40818618134) |
-| Segurança/contratos no PR | ECR pode limitar pulls | cobertura passou; simulação Docker bloqueada pelo ECR Public | ⚠️ [run](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40818618224) |
-| E2E autenticado no PR | setup dependente de contas e allow-list | login permaneceu em `/login`; cleanup recebeu HTTP 403 `email_not_in_allow_list` | ⚠️ [run](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40818618235) |
+| Vitest | 5.839 passaram, 68 ignorados | 5.853 passaram, 68 ignorados | ✅ +14 testes, sem regressão |
+| npm audit no PR | 2 dependências com advisories altos no candidato base | zero vulnerabilidades | ✅ [run](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40831182622) |
+| CodeQL no PR | init/action em versões diferentes | success, actions alinhadas em v4.39.1 | ✅ [run](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40831182640) |
+| Segurança/contratos no PR | ECR pode limitar pulls | suíte, tipagem de Edge Functions, simulações PostgreSQL e build passaram | ✅ [run](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40831182653) |
+| E2E autenticado no PR | depende do Supabase remoto | `beforeAll` de `e2e_cleanup_rate_limit` excedeu 45 s; 51 testes passaram e 4 foram ignorados | ⚠️ [run](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40831182569) |
 
-Outros checks verdes no PR: Gitleaks, origem confiável, bundle, Lighthouse, gates de verba/aprovação, entrada responsiva e preview Vercel. O Copilot Reviewer falhou por HTTP 402 de limite do plano ([run](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40818631873)); o Vercel Agent Review foi neutral por billing desativado. Causas e ações estão detalhadas em `PENDENCIAS.md`.
+Outros checks verdes no PR: Gitleaks, origem confiável, bundle, Lighthouse, gates de verba/aprovação, gate Sicoob, entrada responsiva e preview Vercel. O Copilot Reviewer falhou por HTTP 402 `quota` ([run](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40831197720)); o Vercel Agent Review ficou neutral por billing desativado. Causas e ações estão detalhadas em `PENDENCIAS.md`.
 
-Na `main`, os últimos runs ainda refletem o código anterior: Security Scan `40602983158`, Qualidade contínua `40602982964`, CodeQL `40602983073` e Publicar funções `40772348102` permanecem em failure até integração. O PR não foi mesclado porque há checks pendentes e alterações de aplicação; nenhum deploy foi feito. O banco canônico foi consultado somente em leitura e não recebeu migrations nem alterações de dados.
+Na `main`, os últimos runs ainda refletem o código anterior: Security Scan `40602983158`, Qualidade contínua `40602982964`, CodeQL `40602983073` e Publicar funções `40772348102` permanecem em failure até integração. O PR não foi mesclado porque E2E/Copilot falharam e contém alterações de aplicação; nenhum deploy foi feito. O banco canônico foi consultado somente em leitura (137 migrations, mais recente `20261022230000`) e não recebeu migrations nem alterações de dados.
 
 **Gerado em:** 2026-10-22  
 **Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
