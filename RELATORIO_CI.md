@@ -1,5 +1,32 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
+## Baseline atualizado — 29/10/2026 (`e9d59026793b84fabeaeec9da890a068f64d49c3`)
+
+Executado em worktree limpa, antes de qualquer alteração desta rodada:
+
+| Verificação | Resultado | Observações |
+|---|---|---|
+| `npm ci` | ✅ exit 0 | 980 pacotes instalados; `npm audit` reportou 2 vulnerabilidades altas: `undici` e `zod`. |
+| `npm run build` | ✅ exit 0 | Avisos preexistentes de variáveis Supabase ausentes no ambiente local, plugin PostCSS e chunks grandes. |
+| `npm run lint` | ✅ exit 0 | 0 erros e 873 avisos. |
+| `npm run typecheck` | ✅ exit 0 | — |
+| `npm test -- --reporter=dot` | ✅ exit 0 | 5.839 passaram, 68 ignorados; 456 arquivos (452 passaram, 4 ignorados). |
+
+Falhas mais recentes dos workflows na `main` consultadas em 29/10/2026:
+
+| Workflow | Run | Causa reproduzida/confirmada |
+|---|---|---|
+| `Security Scan` | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `npm audit` bloqueia por `undici` e `zod` altos. |
+| `Qualidade contínua` | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | Gate `check:npm-audit` bloqueia pelas mesmas duas vulnerabilidades. |
+| `CodeQL` | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `init` 4.39.1 incompatível com `autobuild/analyze` 4.38.2. |
+| `Publicar funções Sicoob` | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | O deploy terminou, mas a confirmação falhou porque `sicoob-approval-reconciliation` permaneceu na versão 5; a CLI informou “No change found”. |
+
+`Migration ledger drift`: a execução mais recente na `main` foi `workflow_dispatch` e passou ([40670784182](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40670784182)); a execução agendada anterior falhou, mas não é a última execução do workflow.
+
+### Correção incremental 1 — undici
+
+Em `2026-10-29`, `vite-plugin-mkcert` resolveu `undici@8.10.2` para `8.12.3` via `npm update undici`, sem alteração do manifesto. A versão respeita a faixa `^8.3.0` declarada pelo pacote. O `npm audit --json` local passou a reportar somente `zod`; o gate completo continua pendente até a correção do segundo pacote.
+
 **Gerado em:** 2026-10-22  
 **Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
 

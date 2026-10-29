@@ -1,5 +1,26 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
+## Estado atual — 29/10/2026
+
+Os itens de 22/10 abaixo são histórico e não representam o estado atual. Rechecagem dos últimos runs na `main`:
+
+| Workflow | Run | Estado atual |
+|---|---|---|
+| `Security Scan` | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | Falha por vulnerabilidades altas em `undici` e `zod`; correção em andamento na branch de CI. |
+| `Qualidade contínua` | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | Mesmo bloqueio do gate `npm audit`. |
+| `CodeQL` | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | Falha por mistura de versões: `init` 4.39.1, `autobuild/analyze` 4.38.2. |
+| `Publicar funções Sicoob` | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | As publicações terminaram; a verificação final falhou pois `sicoob-approval-reconciliation` ficou na versão 5 (antes 5) após a CLI registrar “No change found”. Não houve evidência de falha de credencial. |
+
+**Workflows verdes na última execução consultada:** `Migration ledger drift` (dispatch manual), `Branch Protection Sentinel`, `Enterprise Compliance & Audit Reporting` e `Portal Sicoob`. A execução agendada anterior do ledger drift falhou, mas não é a mais recente.
+
+**PRs ainda afetados:** #150, #151 e #156 têm checks de dependências/CodeQL falhando. No #156, a validação remota de autorização/RLS também apresentou timeout. Nenhum desses PRs foi integrado à `main`.
+
+### Atualização da correção de dependências
+
+- `undici` passou de `8.10.2` para `8.12.3`, dentro da faixa semver já declarada por `vite-plugin-mkcert`; o `npm audit` local deixou de reportar os oito advisories desse pacote.
+- O alerta alto de `zod` permanece. O audit só oferece correção em `4.6.7`, que requer migração major e revisão de compatibilidade; essa é a próxima causa em trabalho.
+- Como o audit ainda encontra `zod`, `Security Scan` e `Qualidade contínua` seguem pendentes nesta revisão.
+
 Atualizado em: 2026-10-22
 
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
