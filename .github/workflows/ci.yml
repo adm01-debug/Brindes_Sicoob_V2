@@ -131,6 +131,9 @@ jobs:
       - name: Simular escopo ativo de orçamentos
         run: python3 scripts/qa/simular-escopo-orcamento-ativo.py
 
+      - name: Simular autenticação Vault dos chamadores de webhook
+        run: python3 scripts/qa/simular-webhook-internal-auth.py
+
       - name: Compilar artefato de produção
         env:
           VITE_SUPABASE_URL: http://127.0.0.1:59999
