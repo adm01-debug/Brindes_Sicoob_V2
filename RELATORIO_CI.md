@@ -210,3 +210,35 @@ O owner informou que vai provisionar Supabase de homologação e atualizar os se
 2. Atualizar `undici` e `zod` pela menor correção não major comprovada e repetir os gates, sem afrouxar `npm audit`.
 3. Confirmar CodeQL remoto verde na PR #164.
 4. Reexecutar E2E após a homologação estar configurada; se persistir, inspecionar o trecho de falha da chamada remota e corrigir a causa comprovada.
+
+## Atualização de verificação — 2026-10-29
+
+### Baseline e validação local
+
+Foram preparados dois PRs para separar correções exclusivas de CI das alterações que atualizam dependências de runtime:
+
+| Escopo | PR / commit | Build | Lint baseline | Typecheck baseline | Suíte completa | npm audit |
+|---|---|---|---|---|---|---|
+| CodeQL e gate de publicação das funções | [PR #165](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/165), `3837fbd41` | success | 0 regressões | 0/0 | 452 arquivos passaram, 4 ignorados; 5.839 passaram, 68 ignorados | 2 altas no baseline `main`; este PR não muda dependências |
+| `undici` e migração compatível para Zod 4 | [PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164), `84b0509cc` | success | 0 regressões | 0/0 | 452 arquivos passaram, 4 ignorados; 5.839 passaram, 68 ignorados | 0 vulnerabilidades (`npm audit --audit-level=high`) |
+
+Ambos os worktrees tiveram instalação limpa (`npm ci`), build, lint, typecheck e suíte executados após os commits. Os push hooks repetiram typecheck, lint e suíte e também passaram. O build mantém avisos conhecidos de configuração Vite local, PostCSS, imports mistos e tamanho de chunks; não houve falha.
+
+### Checks remotos relevantes
+
+- [Audit do PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40918031150): `success`.
+- [E2E do PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40918030748): `failure` antes do Playwright; timeouts em autorização remota/RLS e cleanup. Aguardando projeto de homologação configurado pelo owner.
+- [Build/contratos do PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40918030807): job falhou por `toomanyrequests: Data limit exceeded` do ECR público ao baixar PostgreSQL descartável; repetição está em execução.
+- [CodeQL no PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40918030854): `success` na revisão anterior do head.
+- [Audit do PR #165](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40919240163): `failure` por herdar da `main` as duas vulnerabilidades altas; não é regressão introduzida pelo PR CI-only.
+- Review automático Vercel: billing não habilitado; [run do PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40918051737) e [run do PR #165](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40919259577).
+
+### Gate de publicação Sicoob
+
+O defeito do run [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) foi reproduzido por inspeção da condição: o CLI informa “No change found”, conserva a versão 5 de uma função existente e o workflow tratava `versão atual <= versão anterior` como falha. No PR #165, o gate passa a exigir versão numérica válida maior ou igual a 1 após o comando de deploy; portanto, aceita idempotência e ainda falha se uma função esperada estiver ausente. `actionlint` e simulação de versão inalterada, função ausente e valor inválido passaram. O workflow não foi disparado no ambiente remoto.
+
+### Decisão operacional
+
+O projeto segue em construção e o README descreve deploy automático do Lovable Cloud no push da branch principal. A PR #164 altera dependências e código do aplicativo; não mesclar sem uma rota de deploy não produtiva autorizada e checks requeridos verdes. A PR #165 contém somente workflow/configuração, porém não pode ser aprovada enquanto audit estiver vermelho. Não houve escrita ou alteração no Supabase, migration ou publicação real de função.
+
+**Próximo passo:** aguardar o rerun do job bloqueado pelo rate limit do ECR e a confirmação do owner de que homologação e credenciais E2E foram configuradas. Em seguida, reconsultar checks de ambos os PRs, rerodar E2E sem expor secrets e decidir a separação/ordem de integração conforme o destino de deploy confirmado.
