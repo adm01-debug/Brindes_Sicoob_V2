@@ -20,97 +20,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { SicoobStatusBadge } from '@/components/sicoob/SicoobStatusBadge';
 import { HierarchyPath } from '@/components/sicoob/HierarchyPath';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-
-interface GestorOrderSummary {
-  id: string;
-  pa: string;
-  val: number;
-  status: string;
-}
-
-interface GestorStats {
-  totalPAs: number;
-  pendingApprovals: number;
-  totalSpentMonth: number;
-  monthlyBudget: number;
-  hasConfiguredBudget: boolean;
-  recentOrders: GestorOrderSummary[];
-}
-
-async function loadBudgetTotals(paIds: string[]) {
-  if (paIds.length === 0) {
-    return {
-      totalSpentMonth: 0,
-      monthlyBudget: 0,
-      hasConfiguredBudget: false,
-    };
-  }
-  const now = new Date();
-  const { data, error } = await supabase
-    .from('pa_budgets')
-    .select('verba_total, verba_consumida')
-    .in('pa_id', paIds)
-    .eq('ano', now.getFullYear())
-    .eq('mes', now.getMonth() + 1);
-  if (error) throw error;
-  const budgets = data ?? [];
-  return {
-    monthlyBudget: budgets.reduce((total, budget) => total + Number(budget.verba_total || 0), 0),
-    totalSpentMonth: budgets.reduce(
-      (total, budget) => total + Number(budget.verba_consumida || 0),
-      0,
-    ),
-    hasConfiguredBudget: budgets.length > 0,
-  };
-}
-
-async function loadRecentOrders(cooperativeId: string) {
-  const { data, error } = await supabase
-    .from('sicoob_orders')
-    .select('id, total_amount, status, postos_atendimento(nome)')
-    .eq('cooperative_id', cooperativeId)
-    .order('created_at', { ascending: false })
-    .limit(5);
-  if (error) throw error;
-  return (data ?? []).map((order) => ({
-    id: order.id,
-    pa: order.postos_atendimento?.nome || 'Desconhecido',
-    val: Number(order.total_amount),
-    status: order.status,
-  }));
-}
-
-async function loadGestorStats(cooperativeId?: string | null): Promise<GestorStats | null> {
-  if (!cooperativeId) return null;
-  const [pasResult, approvalsResult] = await Promise.all([
-    supabase
-      .from('postos_atendimento')
-      .select('id', { count: 'exact' })
-      .eq('cooperativa_id', cooperativeId),
-    supabase
-      .from('sicoob_approval_requests')
-      .select('id, sicoob_orders!inner(cooperative_id)', {
-        count: 'exact',
-        head: true,
-      })
-      .eq('status', 'pending')
-      .eq('sicoob_orders.cooperative_id', cooperativeId),
-  ]);
-  if (pasResult.error) throw pasResult.error;
-  if (approvalsResult.error) throw approvalsResult.error;
-
-  const paIds = (pasResult.data ?? []).map((pa) => pa.id);
-  const [budget, recentOrders] = await Promise.all([
-    loadBudgetTotals(paIds),
-    loadRecentOrders(cooperativeId),
-  ]);
-  return {
-    totalPAs: pasResult.count ?? 0,
-    pendingApprovals: approvalsResult.count ?? 0,
-    ...budget,
-    recentOrders,
-  };
-}
+import {
+  managerStatsService,
+  type GestorOrderSummary,
+  type GestorStats,
+} from '@/services/sicoob/managerStatsService';
 
 function GestorLoadError({ onRetry }: { onRetry: () => void }) {
   return (
@@ -289,7 +203,7 @@ export default function GestorDashboardPage() {
     refetch,
   } = useQuery({
     queryKey: ['sicoob-gestor-stats', cooperativeId],
-    queryFn: () => loadGestorStats(cooperativeId),
+    queryFn: () => managerStatsService.getCooperativeDashboardStats(cooperativeId),
     enabled: Boolean(cooperativeId),
   });
 
@@ -303,7 +217,10 @@ export default function GestorDashboardPage() {
         <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
           <div className="space-y-2">
             <HierarchyPath paId={profile?.pa_id ?? undefined} />
-            <h1 data-testid="page-title-gestor" className="flex items-center gap-2 font-display text-3xl font-bold tracking-tight text-sicoob-green-dark">
+            <h1
+              data-testid="page-title-gestor"
+              className="flex items-center gap-2 font-display text-3xl font-bold tracking-tight text-sicoob-green-dark"
+            >
               <ShieldCheck className="h-7 w-7 text-sicoob-green" />
               Gestão de Governança Singular
             </h1>
