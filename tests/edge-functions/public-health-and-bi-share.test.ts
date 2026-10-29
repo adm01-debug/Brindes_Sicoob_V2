@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { createLivenessResponse } from "../../supabase/functions/health-check/contract";
 import {
   createBiShareUnavailableResponse,
-  resolveBiShareSecret,
+  resolveBiShareSecrets,
+  signBiSharePayload,
+  verifyBiSharePayloadSignature,
 } from "../../supabase/functions/bi-share-dossier/contract";
 
 describe("contratos das Edge Functions públicas", () => {
@@ -25,9 +27,23 @@ describe("contratos das Edge Functions públicas", () => {
   });
 
   it("não usa a service role como fallback HMAC e falha fechada sem segredo próprio", async () => {
-    expect(resolveBiShareSecret({ SUPABASE_SERVICE_ROLE_KEY: "service-role-secret" })).toBeNull();
-    expect(resolveBiShareSecret({ BI_SHARE_SECRET: "   ", SUPABASE_SERVICE_ROLE_KEY: "service-role-secret" })).toBeNull();
-    expect(resolveBiShareSecret({ BI_SHARE_SECRET: " dedicated-secret ", SUPABASE_SERVICE_ROLE_KEY: "other" })).toBe("dedicated-secret");
+    expect(resolveBiShareSecrets({ SUPABASE_SERVICE_ROLE_KEY: "service-role-secret" })).toEqual({ current: null, previous: null });
+    expect(resolveBiShareSecrets({ BI_SHARE_SECRET: "   ", SUPABASE_SERVICE_ROLE_KEY: "service-role-secret" })).toEqual({ current: null, previous: null });
+    expect(resolveBiShareSecrets({
+      BI_SHARE_SECRET: " dedicated-secret-123456789012345678 ",
+      BI_SHARE_SECRET_PREVIOUS: " previous-secret-123456789012345678 ",
+      SUPABASE_SERVICE_ROLE_KEY: "other",
+    })).toEqual({
+      current: "dedicated-secret-123456789012345678",
+      previous: "previous-secret-123456789012345678",
+    });
+    expect(resolveBiShareSecrets({ BI_SHARE_SECRET: "too-short" })).toEqual({ current: null, previous: null });
+
+    const oldKey = "old-key-".padEnd(32, "x");
+    const newKey = "new-key-".padEnd(32, "y");
+    const oldSignature = await signBiSharePayload("payload", oldKey);
+    expect(await verifyBiSharePayloadSignature("payload", oldSignature, { current: newKey, previous: oldKey })).toBe(true);
+    expect(await verifyBiSharePayloadSignature("payload", oldSignature, { current: newKey, previous: null })).toBe(false);
 
     const response = createBiShareUnavailableResponse({ "Access-Control-Allow-Origin": "https://app.test" });
     expect(response.status).toBe(503);

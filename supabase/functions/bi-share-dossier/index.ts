@@ -1,5 +1,10 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
-import { createBiShareUnavailableResponse, resolveBiShareSecret } from "./contract.ts";
+import {
+  createBiShareUnavailableResponse,
+  resolveBiShareSecrets,
+  signBiSharePayload,
+  verifyBiSharePayloadSignature,
+} from "./contract.ts";
 /**
  * bi-share-dossier — gera token assinado HMAC para compartilhamento público
  * do dossiê BI (read-only, expira em 7 dias).
@@ -12,7 +17,10 @@ import { createBiShareUnavailableResponse, resolveBiShareSecret } from "./contra
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
 
-const SHARE_SECRET = resolveBiShareSecret({ BI_SHARE_SECRET: Deno.env.get("BI_SHARE_SECRET") ?? undefined });
+const SHARE_SECRETS = resolveBiShareSecrets({
+  BI_SHARE_SECRET: Deno.env.get("BI_SHARE_SECRET") ?? undefined,
+  BI_SHARE_SECRET_PREVIOUS: Deno.env.get("BI_SHARE_SECRET_PREVIOUS") ?? undefined,
+});
 
 function b64urlEncode(bytes: Uint8Array): string {
   let s = btoa(String.fromCharCode(...bytes));
@@ -34,30 +42,6 @@ function fromUtf8(b: Uint8Array): string {
   return new TextDecoder().decode(b);
 }
 
-// TS lib estrita do Deno trata `Uint8Array` como `Uint8Array<ArrayBufferLike>`,
-// que não satisfaz `BufferSource` (esperado `ArrayBufferView<ArrayBuffer>`).
-// Solução: copiar para um `ArrayBuffer` puro antes de passar à WebCrypto.
-function toArrayBuffer(u8: Uint8Array): ArrayBuffer {
-  const ab = new ArrayBuffer(u8.byteLength);
-  new Uint8Array(ab).set(u8);
-  return ab;
-}
-
-async function hmac(payloadB64: string): Promise<string> {
-  if (SHARE_SECRET === null) {
-    throw new Error("BI_SHARE_SECRET is not configured");
-  }
-  const key = await crypto.subtle.importKey(
-    "raw",
-    toArrayBuffer(utf8(SHARE_SECRET)),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign", "verify"],
-  );
-  const sig = await crypto.subtle.sign("HMAC", key, toArrayBuffer(utf8(payloadB64)));
-  return b64urlEncode(new Uint8Array(sig));
-}
-
 interface Payload {
   clientId: string;
   clientName: string;
@@ -70,7 +54,7 @@ interface Payload {
 async function signToken(payload: Payload): Promise<string> {
   const json = JSON.stringify(payload);
   const payloadB64 = b64urlEncode(utf8(json));
-  const sig = await hmac(payloadB64);
+  const sig = await signBiSharePayload(payloadB64, SHARE_SECRETS.current);
   return `${payloadB64}.${sig}`;
 }
 
@@ -78,8 +62,7 @@ async function verifyToken(token: string): Promise<Payload | null> {
   const parts = token.split(".");
   if (parts.length !== 2) return null;
   const [payloadB64, sig] = parts;
-  const expected = await hmac(payloadB64);
-  if (expected !== sig) return null;
+  if (!(await verifyBiSharePayloadSignature(payloadB64, sig, SHARE_SECRETS))) return null;
   try {
     const payload = JSON.parse(fromUtf8(b64urlDecode(payloadB64))) as Payload;
     if (payload.exp < Math.floor(Date.now() / 1000)) return null;
@@ -95,7 +78,7 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
-  if (SHARE_SECRET === null) {
+  if (SHARE_SECRETS.current === null) {
     return createBiShareUnavailableResponse(corsHeaders);
   }
 

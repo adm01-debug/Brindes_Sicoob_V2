@@ -32,7 +32,8 @@ dois gates de CI ficam vermelhos. Ninguém tinha essa lista consolidada antes.
 | `N8N_PRODUCT_WEBHOOK_SECRET` / `N8N_QUOTE_WEBHOOK_URL` | integração n8n | **preencher** |
 | `SALESPRO_WEBHOOK_URL` | integração SalesPro | **preencher** |
 | `QUOTE_SYNC_API_KEY` | sync de orçamento | **preencher** |
-| `BI_SHARE_SECRET` | `bi-share-dossier` | **preencher** |
+| `BI_SHARE_SECRET` | `bi-share-dossier` — chave HMAC atual, exclusiva e com pelo menos 32 bytes | **configurar antes de publicar** |
+| `BI_SHARE_SECRET_PREVIOUS` | `bi-share-dossier` — validação temporária de links emitidos antes da rotação; não assina links novos | **opcional durante rotação; remover após expirarem os links antigos** |
 | `WEBHOOK_HMAC_SECRET` | validação de assinatura de webhook | **preencher** (usado também em `ci.yml`) |
 | `E2E_CLEANUP_TOKEN` | `e2e-cleanup` | **GitHub secret — pendente (etapa 03)** |
 | `E2E_CLEANUP_ALLOWED_EMAILS` / `_RATE_LIMIT_MAX` / `_RATE_LIMIT_WINDOW_SECONDS` | `e2e-cleanup` (guarda-corpo) | **preencher** |
@@ -66,6 +67,15 @@ A evidência da assinatura pública exige o segredo
 aleatórios. A chave não deve ser colocada em variáveis `VITE_*` nem no
 repositório. Sem ela, respostas assinadas falham de forma fechada e a transação
 do orçamento é revertida.
+
+O `bi-share-dossier` usa `BI_SHARE_SECRET`, exclusivo para assinatura HMAC, com
+no mínimo 32 bytes. Ele não usa `SUPABASE_SERVICE_ROLE_KEY` como chave de
+assinatura. Para preservar links já emitidos na rotação, configure a nova chave
+em `BI_SHARE_SECRET` e a chave que assinava os links existentes em
+`BI_SHARE_SECRET_PREVIOUS`. Links novos são assinados somente pela chave atual;
+as duas são aceitas apenas para validação. Remova a anterior depois de pelo
+menos 30 dias da última emissão com a chave antiga (o prazo máximo aceito pelo
+handler é 30 dias). Não registre os valores em logs, commits ou na conversa.
 
 Para rotacionar, crie primeiro um segredo novo com nome versionado
 `quote_approval_evidence_hmac_vN` e pelo menos 32 caracteres, depois invoque

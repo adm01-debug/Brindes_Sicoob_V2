@@ -200,3 +200,19 @@ Mudança E2E ainda em revisão local: `actionlint .github/workflows/e2e.yml` pas
 **Resultado de segurança:** `npm audit` confirmou advisories altas para undici e zod. O audit indica correção do undici sem major; para zod, aponta `4.6.7` como correção com mudança major. A migração de Zod exige análise de compatibilidade e suíte completa; não foi feita nesta correção de isolamento.
 
 **Pendências externas:** cadastrar os cinco secrets `E2E_SUPABASE_*` de homologação descritos em [PENDENCIAS.md](PENDENCIAS.md). O próximo push do workflow deve falhar imediatamente no preflight enquanto estiverem ausentes, sem acessar o projeto canônico. A última verificação da branch `main` também mantém pendentes o alinhamento dos SHAs do CodeQL e a mitigação do rate limit/publicação das Edge Functions.
+
+### Rotação do segredo HMAC do dossiê BI — PR #150
+
+Foi acrescentado suporte explícito a `BI_SHARE_SECRET_PREVIOUS`: o handler assina apenas com `BI_SHARE_SECRET` e, durante uma janela de rotação, também verifica links com a chave anterior. Ambas exigem pelo menos 32 bytes; a service role não é usada como fallback. A chave anterior deve ser removida depois de 30 dias da última emissão antiga, que é o prazo máximo aceito pelo handler. A configuração remota desses secrets não foi consultada nem confirmada, e nenhum deploy foi feito.
+
+| Verificação | Baseline antes da mudança | Resultado após a mudança |
+|---|---:|---:|
+| Build | aprovado | aprovado; avisos preexistentes de env, PostCSS, imports e chunks grandes |
+| ESLint baseline | 0 regressões | 0 regressões; os arquivos Edge são cobertos também pelo `deno check` |
+| Typecheck baseline | 0 regressões (0/0) | 0 regressões (0/0) |
+| Testes completos | 457 arquivos aprovados, 4 ignorados; 5.857 aprovados, 68 ignorados | 457 arquivos aprovados, 4 ignorados; 5.858 aprovados, 68 ignorados |
+| Testes direcionados HMAC/liveness | — | 2 arquivos, 6 testes aprovados |
+| `deno check` da função | — | aprovado; Deno reporta aviso preexistente de override npm local `file:vendor/braces` |
+| `npm audit --audit-level=high` | 2 vulnerabilidades altas já presentes | continua falhando para `undici` e `zod`, sem mudança dessas dependências |
+
+O teste completo intermediário detectou um teste legado usando o nome removido `resolveBiShareSecret`; o consumidor de teste foi atualizado para a interface atual/anterior e a execução integral seguinte passou sem outros testes abaixo do baseline. A feature de compartilhamento ainda não tem botão conectado ao POST nem autorização de escopo do `clientId` no servidor; isso segue pendente e impede considerar o recurso BI concluído. Nenhuma escrita no Supabase foi realizada.
