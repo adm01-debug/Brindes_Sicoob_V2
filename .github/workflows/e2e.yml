@@ -57,9 +57,10 @@ jobs:
       E2E_DEV_PASSWORD: ${{ secrets.E2E_DEV_PASSWORD }}
       E2E_DEV_TOTP_SECRET: ${{ secrets.E2E_DEV_TOTP_SECRET }}
       E2E_CLEANUP_TOKEN: ${{ secrets.E2E_CLEANUP_TOKEN }}
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-      VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+      E2E_SUPABASE_PROJECT_ID: ${{ vars.E2E_SUPABASE_PROJECT_ID }}
+      VITE_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_PROJECT_ID: ${{ vars.E2E_SUPABASE_PROJECT_ID }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -73,6 +74,9 @@ jobs:
       - name: Install deps
         run: npm ci --no-audit --no-fund
 
+      - name: Validar projeto Supabase E2E isolado
+        run: node scripts/qa/validate-e2e-supabase-target.mjs
+
       - name: Verificar credenciais da jornada autenticada
         shell: bash
         run: |
@@ -85,7 +89,7 @@ jobs:
         env:
           RUN_REMOTE_AUTHZ_TESTS: '1'
           RUN_REMOTE_RLS_TESTS: '1'
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           npx vitest run \
             --no-file-parallelism \
@@ -238,9 +242,10 @@ jobs:
       E2E_DEV_PASSWORD: ${{ secrets.E2E_DEV_PASSWORD }}
       E2E_DEV_TOTP_SECRET: ${{ secrets.E2E_DEV_TOTP_SECRET }}
       E2E_CLEANUP_TOKEN: ${{ secrets.E2E_CLEANUP_TOKEN }}
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-      VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+      E2E_SUPABASE_PROJECT_ID: ${{ vars.E2E_SUPABASE_PROJECT_ID }}
+      VITE_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_PROJECT_ID: ${{ vars.E2E_SUPABASE_PROJECT_ID }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -253,6 +258,9 @@ jobs:
 
       - name: Install deps
         run: npm ci --no-audit --no-fund
+
+      - name: Validar projeto Supabase E2E isolado
+        run: node scripts/qa/validate-e2e-supabase-target.mjs
 
       - name: Cache Playwright browsers
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
