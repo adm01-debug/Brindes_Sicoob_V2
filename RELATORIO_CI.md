@@ -40,7 +40,7 @@ Paridade de arquivos e ledger ainda não fecha: a auditoria encontrou 15 versõe
 ### Limites da prova
 
 - O PR #155 está aberto, não integrado e ainda depende dos checks do GitHub; a função publicada no Supabase não recebeu esta correção.
-- O checkout principal local permanece separado da branch de trabalho: `main` local está 84 commits atrás de `origin/main` e tem 14 mudanças modificadas/não rastreadas. Elas não foram descartadas nem importadas para esta branch sem proveniência e revisão.
+- O checkout principal local permanece 84 commits atrás de `origin/main` e tem 14 entradas modificadas/não rastreadas. Revisão arquivo a arquivo confirmou que `secretNormalizers.ts` e sua correção já estão em `origin/main`; a diferença local de `ChurnRiskBanner.tsx` é somente uma linha em branco; `bi-share-dossier` e `health-check` correspondem ao PR #150; os helpers locais diferem apenas na formatação e o teste agregado local duplica os dois testes já presentes no PR #150. Os demais itens são estado temporário da CLI/Graphify. Nenhuma funcionalidade local adicional ficou fora do GitHub; o código Edge correspondente segue pendente de integração no PR #150.
 - A publicação e equivalência completa das 100 Edge Functions, incluindo imports compartilhados e configuração, não está demonstrada por este relatório.
 - Nenhuma migração, linha de dados, função publicada ou configuração remota do Supabase foi alterada nesta sessão.
 
