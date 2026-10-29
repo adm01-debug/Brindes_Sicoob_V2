@@ -15,6 +15,32 @@ Os itens de 22/10 abaixo são histórico e não representam o estado atual. Rech
 
 **PRs ainda afetados:** #150, #151 e #156 têm checks de dependências/CodeQL falhando. No #156, a validação remota de autorização/RLS também apresentou timeout. A correção do CodeQL usa o SHA oficial 4.39.1 uniforme e aguarda confirmação na CI do PR. Nenhum desses PRs foi integrado à `main`.
 
+### PR #157 — correções de CI em validação
+
+PR: [#157](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/157), branch `fix/hermes-h247355-ci-dependencies`, commit `b4ce6a097e51c64bcc4f70fa7940dc93f3ffee28`.
+
+| Check no PR | Resultado | Evidência / pendência |
+|---|---|---|
+| npm audit | ✅ success | [Run 40818618209](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40818618209); zero vulnerabilidades no candidato. |
+| CodeQL | ✅ success | [Run 40818618134](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40818618134); SHA único v4.39.1. |
+| Gitleaks, origem confiável, bundle, Lighthouse, verba/aprovação, entrada responsiva e Vercel Preview Comments | ✅ success | Checks do SHA do PR acima. |
+| `e2e` | ❌ failure | [Run 40818618235](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40818618235): login E2E ficou em `/login` após 20 s; `e2e-cleanup` respondeu `HTTP 403 email_not_in_allow_list` para os usuários de teste. Shards de regressão foram pulados porque o gate smoke falhou no setup. |
+| Segurança, contratos e build | ❌ failure após rerun | [Run 40818618224](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40818618224), tentativa 2: suíte completa passou (5.846/68), mas a simulação `simular-controles-auditoria.py` falhou ao baixar `public.ecr.aws/supabase/postgres:17.6.1.063` com `toomanyrequests: Data limit exceeded`. A tentativa 1 teve a mesma causa externa. |
+| Copilot PR reviewer | ❌ failure | [Run 40818631873](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40818631873): HTTP 402, limite de uso adicional do plano Copilot atingido. Requer aumentar o limite/uso adicional ou aguardar o reset em `github.com/settings/copilot/features`. |
+| Vercel Agent Review | ⚪ neutral | Billing do time desativado; revisão automatizada não executada. Não foi falha de código. |
+
+**Ação necessária para E2E:** no projeto Supabase de construção, configurar o secret da Edge Function `e2e-cleanup`, `E2E_CLEANUP_ALLOWED_EMAILS`, com os endereços exatos de todas as contas E2E configuradas no GitHub Actions, em CSV. O código normaliza espaços e caixa. Também confirmar no GitHub que as contas correspondem a usuários ativos e que as credenciais/TOTP estão atuais. Não enviar os valores de senha ou TOTP na conversa.
+
+**Ação necessária para os checks externos:** o administrador do time deve resolver o limite do Copilot. Para o ECR Public, aguardar a cota se restabelecer; se persistir, migrar as simulações para um registry espelho aprovado. O rerun confirmou falha recorrente de infraestrutura, sem erro de teste/código.
+
+O check do workflow manual `Publicar funções Sicoob` não roda em PR: ele exige `refs/heads/main` e input `PUBLICAR`. A correção foi reproduzida localmente em cinco testes positivos/negativos, mas a confirmação remota permanece pendente até a branch chegar à `main`; esta rodada não publicou funções.
+
+**Integração:** PR #157 inclui alteração de dependências e código da aplicação, e os checks obrigatórios do PR não estão todos verdes. Não foi mesclado nem publicado em produção. Nenhuma escrita, migration ou publicação foi feita no Supabase nesta rodada.
+
+### Reconciliação do banco canônico
+
+Leitura do MCP do projeto `cfmzkthhgliqelozlmwu`: 137 migrations registradas; a mais recente é `20261022230000_repair_migration_ledger_and_harden_search_path`. A verificação `Migration ledger drift` mais recente na `main` permanece verde ([run 40670784182](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40670784182)). A auditoria anterior identificou 12 entradas remotas sem arquivo-fonte na `main`; o PR [#151](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/151) restaura esses arquivos. Não reaplicar essas migrations: já constam no ledger remoto. O PR #157 não altera migrations nem schema.
+
 ### Atualização da correção de dependências
 
 - `undici` passou de `8.10.2` para `8.12.3`, dentro da faixa semver já declarada por `vite-plugin-mkcert`; o `npm audit` local deixou de reportar os oito advisories desse pacote.
