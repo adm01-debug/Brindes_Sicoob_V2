@@ -27,9 +27,9 @@ O componente de inteligência orçamentária não afirma atualização “em tem
 - `npm run lint`: 0 erros e 872 avisos; o total não aumentou em relação ao candidato.
 - TypeScript (`npm run typecheck`): aprovado.
 - Build de produção (`npm run build`): aprovado; avisos existentes de ambiente, PostCSS, divisão de chunks e tamanho de bundle permanecem.
-- Suíte completa no candidato: 5.869 testes aprovados, 68 ignorados; 462 arquivos aprovados e 4 ignorados.
+- Suíte completa no candidato atualizado: 5.888 testes aprovados, 68 ignorados; 463 arquivos aprovados e 4 ignorados.
 
-`npm ci` no candidato empilhado reportou zero vulnerabilidades. Esta branch depende do PR #157 (correções de dependências/CI) antes de poder ser integrada à `main`; aquele PR segue aberto e sujeito aos seus próprios gates.
+`npm ci` no candidato empilhado reportou zero vulnerabilidades. Esta correção foi validada sobre o head do PR #157 e será adicionada ao mesmo PR para evitar uma segunda sequência divergente. O PR #157 segue aberto, sujeito aos gates E2E e de quota Copilot; nenhuma alteração foi mesclada ou implantada.
 
 ## Limite
 
