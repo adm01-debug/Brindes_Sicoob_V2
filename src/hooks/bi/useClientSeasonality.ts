@@ -181,10 +181,10 @@ function peakResult(
   };
 }
 
-function seasonalityResult(
+export function buildSeasonalityResult(
   data: { clientRows: ClientRow[]; industryRows: IndustryRow[]; companiesCount: number } | undefined,
   isLoading: boolean,
-) {
+): SeasonalityResult {
   const { cells: client, monthsCovered } = buildClientCells(data?.clientRows ?? []);
   const industry = buildIndustryCells(data?.industryRows ?? []);
   const hasIndustryData = (data?.industryRows.length ?? 0) > 0;
@@ -319,7 +319,7 @@ export function useClientSeasonality(
     },
   });
 
-  return seasonalityResult(query.data, query.isLoading);
+  return buildSeasonalityResult(query.data, query.isLoading);
 }
 
 export const SEASONALITY_MONTH_LABELS = MONTH_LABELS;
