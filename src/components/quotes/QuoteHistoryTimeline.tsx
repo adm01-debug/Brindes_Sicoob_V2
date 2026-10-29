@@ -4,10 +4,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { History, User, Info } from "lucide-react";
+import { AlertCircle, History, Info, RefreshCw, User } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface QuoteHistoryTimelineProps {
   quoteId: string;
@@ -58,7 +59,7 @@ function TimelineEntry({ event }: { event: TimelineEvent }) {
 }
 
 export function QuoteHistoryTimeline({ quoteId }: QuoteHistoryTimelineProps) {
-  const { data, isLoading } = useQuery({
+  const { data, isError, isLoading, refetch } = useQuery({
     queryKey: ["quote-history", quoteId],
     queryFn: () => fetchTimeline(quoteId),
   });
@@ -67,6 +68,19 @@ export function QuoteHistoryTimeline({ quoteId }: QuoteHistoryTimelineProps) {
     return (
       <div className="space-y-3">
         {[0, 1, 2].map((i) => <Skeleton key={i} className="h-14" />)}
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div role="alert" className="flex flex-col items-center gap-3 py-6 text-center">
+        <AlertCircle className="h-5 w-5 text-destructive" aria-hidden="true" />
+        <p className="text-sm text-muted-foreground">Não foi possível carregar o histórico do orçamento.</p>
+        <Button variant="outline" size="sm" onClick={() => void refetch()}>
+          <RefreshCw className="mr-2 h-3.5 w-3.5" aria-hidden="true" />
+          Tentar novamente
+        </Button>
       </div>
     );
   }

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 const database = vi.hoisted(() => {
@@ -43,5 +43,16 @@ describe("QuoteHistoryTimeline", () => {
     expect(screen.getByText("Ana Gestora")).toBeInTheDocument();
     expect(database.historyQuery.select).toHaveBeenCalledWith("id, action, description, metadata, created_at, user_id");
     expect(database.profilesQuery.in).toHaveBeenCalledWith("user_id", ["usuario-1"]);
+  });
+
+  it("diferencia falha de histórico vazio e permite tentar novamente", async () => {
+    database.historyQuery.order.mockRejectedValueOnce(new Error("consulta indisponível"));
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(<QueryClientProvider client={queryClient}><QuoteHistoryTimeline quoteId="orcamento-com-falha" /></QueryClientProvider>);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Não foi possível carregar o histórico do orçamento.");
+    fireEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
+
+    expect(await screen.findByText("Orçamento aprovado")).toBeInTheDocument();
   });
 });
