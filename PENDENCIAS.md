@@ -240,7 +240,7 @@ O mantenedor respondeu que configuraria a homologação; na verificação de 29/
 
 - [Security Scan 40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) e [Qualidade contínua 40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964): duas vulnerabilidades altas (`undici`, `zod`). PR #164 tem checks correlatos verdes, mas ainda não foi integrado.
 - [CodeQL 40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073): Autobuild usou versão diferente da configuração carregada e não gerou SARIF. Check correspondente verde no PR #164; confirmar nova execução verde na `main` depois do merge aprovado.
-- [Copilot Code Review 39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125): `Processing Request (Linux)` falhou sem causa acionável. Repetir a revisão; se persistir, guardar evidência do provedor/limite de serviço. Não alterar regra/check para ocultar a falha.
+- [Copilot Code Review 39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125): `Processing Request (Linux)` retornou HTTP 402, código `quota`, informando que o limite adicional de uso do plano Copilot foi atingido. O mantenedor precisa revisar/elevar a cota ou aguardar o reset do ciclo em `github.com/settings/copilot/features`; depois, rerodar a revisão. Não alterar regra/check para ocultar a falha.
 - `@vitest/mocker`: o último run observado ([39775463512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775463512)) falhou como `security_update_not_possible`, mas a dependência foi atualizada a 4.1.12 no commit `b32e5e4`; falta confirmar conclusão verde desse workflow específico.
 
 ### Condição de merge
