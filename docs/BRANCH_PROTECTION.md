@@ -1,37 +1,76 @@
 # Proteção da branch `main`
 
-## Estado observado em 22/09/2026
+## Estado histórico observado em 22/09/2026
 
 A regra remota exige uma revisão, mas não possui status checks obrigatórios e
 permite bypass administrativo. PRs recentes foram mesclados com jobs em falha
 porque o orçamento do GitHub Actions impediu a inicialização. Portanto, a
 proteção atual não comprova qualidade nem segurança do conteúdo mesclado.
 
-## Configuração alvo
+## Estado remoto confirmado em 29/10/2026
 
-Em <https://github.com/adm01-debug/Brindes_Sicoob_V2/settings/branches>, a
-regra de `main` deve exigir:
+A regra de `main` foi atualizada e lida novamente pela API do GitHub. A branch
+agora exige os dez checks abaixo, com atualização estrita da branch, uma
+aprovação que é invalidada por novo commit, aprovação do último push, resolução
+de conversas e aplicação também a administradores. Histórico linear permanece
+obrigatório; force push e exclusão continuam desativados.
+
+| Check obrigatório | Origem |
+|---|---|
+| `Gitleaks — Secret Scan` | Security Scan |
+| `npm audit — CVE Scan` | Security Scan |
+| `Analyze (javascript-typescript)` | CodeQL |
+| `Segurança, contratos e build` | CI de segurança/contratos |
+| `e2e` | E2E (Playwright) |
+| `bundle-stats` | Bundle Size Check |
+| `lighthouse` | Lighthouse Performance Audit |
+| `Verba e aprovação transacionais` | Portal Sicoob |
+| `Entrada e demonstração responsivas` | Portal Sicoob |
+| `Validar origem confiável` | E2E (Playwright) |
+
+**Evidência:** API de branch protection consultada antes e depois da alteração;
+os dez contextos retornaram com `app_id=15368` (GitHub Actions), `strict=true`,
+`enforce_admins=true` e `required_conversation_resolution=true`. O PR #157
+permanece aberto e bloqueado, coerente com a regra nova; a `main` não foi
+alterada e não houve deploy.
+
+**Limite da validação:** a configuração foi comprovada pela API e o bloqueio
+atual de PR foi observado. Não foi tentado bypass administrativo, exclusão ou
+force push, pois esses testes seriam destrutivos. Os checks ainda falhos ou em
+execução não autorizam merge; ver `PENDENCIAS.md` e `RELATORIO_CI.md`.
+
+## Configuração ativa e lacunas
+
+Configuração ativa em
+<https://github.com/adm01-debug/Brindes_Sicoob_V2/settings/branches>:
 
 - pull request com pelo menos uma aprovação;
 - descarte de aprovação após novo commit;
 - resolução de todas as conversas;
 - branch atualizada antes do merge;
-- checks de qualidade, Sicoob, segurança, drift de migrations e E2E aplicáveis;
+- os dez checks listados acima para qualidade, Sicoob, segurança, E2E e UX;
 - aplicação da regra também a administradores;
 - force push e exclusão desativados.
 
-Os nomes exatos dos checks devem ser selecionados a partir de uma execução
-verde, pois o GitHub registra o nome do job, não apenas o arquivo do workflow.
-O `branch-protection-sentinel.yml` fornece auditoria complementar; ele não
-substitui a regra do GitHub.
+Os contextos foram conferidos nos `check_runs` reais dos PRs. Alguns checks
+continuam falhando ou aguardando execução; sua exigência impede o merge enquanto
+isso não for resolvido. O `branch-protection-sentinel.yml` fornece auditoria
+complementar; ele não substitui a regra do GitHub.
 
-## Validação após configurar
+`Migration ledger drift` não é um check de PR: o workflow roda por agenda ou
+despacho manual no environment `construction` e usa `SUPABASE_ACCESS_TOKEN`, uma
+credencial administrativa. Não é seguro expor esse token ao código ainda não
+revisado de um PR público. Antes de integrar alterações de migrations, um
+responsável deve executar o preflight do workflow contra o SHA candidato e
+registrar a execução bem-sucedida; essa lacuna de integração contínua permanece
+aberta.
 
-1. Abrir um PR sem aprovação e confirmar que o merge está bloqueado.
-2. Fazer um check obrigatório falhar e confirmar que uma aprovação não libera o merge.
-3. Tentar bypass com conta administrativa e confirmar a recusa.
-4. Confirmar que force push e exclusão de `main` são recusados.
-5. Registrar data, responsável e captura da configuração na evidência de release.
+## Testes de configuração ainda pendentes
+
+1. O PR #157 sem todos os checks aprovados está bloqueado; isso já confirma o gate de checks, mas não testa cada regra isoladamente.
+2. Ainda não foi feita uma tentativa de bypass administrativo.
+3. Não foram tentados force push ou exclusão da `main`, pois seriam ações destrutivas.
+4. Falta registrar executor/revisor nominal e evidência de release com a configuração capturada.
 
 Hotfixes seguem PR, revisão e checks. Exceções precisam de incidente registrado
 e revisão posterior; não devem permanecer como bypass permanente.
