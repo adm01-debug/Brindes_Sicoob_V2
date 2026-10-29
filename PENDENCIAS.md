@@ -1,6 +1,6 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
-Atualizado em: 2026-10-29 (13:45 UTC)
+Atualizado em: 2026-10-29
 
 Cada seção abaixo registra uma falha ainda aberta, uma dependência externa ou uma causa
 que não pôde ser recuperada. O snapshot cobre a última execução por workflow encontrada
@@ -35,6 +35,32 @@ o update Dependabot de `undici` (40603001428) também tiveram última conclusão
 - `sicoob-gate`, responsivo, CodeQL, bundle-stats, npm audit, Lighthouse, Gitleaks e Vercel Preview passaram no head atual.
 
 **Ação pendente do owner:** provisionar projeto Supabase isolado de homologação e configurar no GitHub Actions `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_PROJECT_ID` e `E2E_SUPABASE_SERVICE_ROLE_KEY`, todos do mesmo projeto. Também manter contas E2E válidas nesse projeto. Após concluir, avisar para verificarmos presença dos nomes e rerodarmos o E2E. Nunca enviar valores de secrets pela conversa.
+
+## Auditoria somente leitura do ledger Supabase — 2026-10-29
+
+Consulta ao MCP do projeto Brindes Sicoob: `supabase_migrations.schema_migrations`
+contém 137 versões, da `001` até `20261022230000`. Nove linhas antigas têm
+`name = NULL`, mas a fonte local correspondente existe pela versão; isso não foi
+contado como ausência.
+
+| Referência | Arquivos SQL | Fontes para versões do ledger | Arquivos sem registro no ledger |
+|---|---:|---:|---:|
+| `origin/main` (`e9d5902679`) | 587 | 125/137 — faltam 12 arquivos aplicados | 462 |
+| PR #151, `fix/hermes-ledger-sources-20261028` (`239a25cc`) | 599 | 137/137 | 462 |
+| Checkout principal local (`main`, `6b71bdc09`) | 530 presentes | 68/137 — faltam 69 fontes | 462 |
+
+A PR [#151](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/151) restaura
+as 12 fontes aplicadas que não existem em `main`, sem executar SQL. Ela continua
+aberta e bloqueada por checks; a reconciliação ainda não chegou à branch padrão.
+O checkout principal está 84 commits atrás de `origin/main`, com 57 arquivos de
+migration removidos localmente sem commit. Ele foi inspecionado sem alterações.
+As 462 migrations locais sem registro são passivo histórico já classificado em
+[`retomada-mcp-20260922.md`](docs/execucao/retomada-mcp-20260922.md); ausência no
+ledger não prova ausência de objetos no schema e não autoriza aplicação automática.
+
+Nenhuma migration foi aplicada ou reparada durante esta auditoria. A comparação
+validou somente a presença de fontes/versões; não comprova igualdade semântica de
+todo o schema nem substitui o CI da PR #151.
 
 ---
 
