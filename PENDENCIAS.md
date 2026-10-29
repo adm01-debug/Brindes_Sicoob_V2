@@ -4,10 +4,18 @@
 
 Esta atualização prevalece sobre estados históricos abaixo quando houver divergência.
 
+### Rechecagem da branch publicada — 29/10/2026 09:02 UTC
+
+- O HEAD da PR [#157](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/157) é `a8a98c1a026b035513cf25e7a9d7537456078892`, igual ao HEAD da worktree validada. A branch está publicada; a PR permanece aberta, sem merge. A `main` é `e9d59026793b84fabeaec9da890a068f64d49c3`.
+- No run [E2E 40845940456](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40845940456), o preflight falhou antes de acessar o Supabase porque `E2E_SUPABASE_PROJECT_ID` está vazio. A listagem de variáveis do repositório retornou zero variáveis. O shard dependente foi ignorado por consequência; isso não valida a jornada autenticada.
+- O Copilot Review [run 40845955624](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40845955624) falhou por HTTP 402 `quota` (limite de uso adicional do plano). O check `Qualidade contínua` [run 40845940524](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40845940524) ainda estava em execução na consulta de 09:02 UTC.
+- Concluídos com sucesso no SHA atual: gate Sicoob, npm audit, CodeQL, Gitleaks, bundle, Lighthouse, responsividade, origem confiável, verba/aprovação e preview Vercel. Vercel Agent Review ficou `neutral` por billing desativado.
+- O ledger do projeto canônico `cfmzkthhgliqelozlmwu` foi consultado em modo somente leitura: 137 migrations; mais recente `20261022230000_repair_migration_ledger_and_harden_search_path`. A PR não altera `supabase/migrations` nem `supabase/functions`; não há mudança a importar para o banco neste escopo. Nenhuma escrita, migration ou publicação de função foi feita.
+- Bloqueio externo: provisionar um projeto de homologação Supabase segregado e configurar `E2E_SUPABASE_PROJECT_ID` e credenciais correspondentes exclusivamente para esse projeto. Não apontar os testes aos projetos canônico ou de catálogo.
+
 ### Código no GitHub
 
-- PR [#157](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/157), SHA `2cb2e67d6933fbb93ff9b3a309e874966bbdddab`, está publicada e **aberta**, sem merge; `main` consultada em `e9d59026793b84fabeaec9da890a068f64d49c3`.
-- Checks do SHA: `sicoob-gate`, segurança/contratos/build, CodeQL, secret scan, Lighthouse, bundle, verba/aprovação transacionais e responsividade passaram. E2E falhou (run `40835463522`); Copilot Review falhou por HTTP 402/quota (run `40835479687`); Vercel Agent Review ficou neutral por billing desativado.
+- PR [#157](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/157), SHA atual `a8a98c1a026b035513cf25e7a9d7537456078892`, está publicada e **aberta**, sem merge; `main` consultada em `e9d59026793b84fabeaec9da890a068f64d49c3`. A situação dos checks está na rechecagem acima; os IDs `40835463522` e `40835479687` referem-se a runs históricos.
 - As rotas de orçamento e compartilhamento público de proposta já estão no `main`; testes focados em `QuoteShareDialog` e navegação passaram (93 testes). A simulação local de aprovação pública e o simulador de conversão também passaram em PostgreSQL descartável, sem rede.
 
 ### Banco canônico `cfmzkthhgliqelozlmwu`

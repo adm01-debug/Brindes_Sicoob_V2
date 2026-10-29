@@ -1,5 +1,13 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
+## Reconciliação publicada — 29/10/2026 09:02 UTC
+
+- Branch/PR: `fix/hermes-h247355-ci-dependencies`, PR [#157](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/157), HEAD `a8a98c1a026b035513cf25e7a9d7537456078892`; `main` `e9d59026793b84fabeaec9da890a068f64d49c3`. O HEAD remoto coincide com a revisão local; a PR está aberta e não foi mesclada.
+- Banco canônico `cfmzkthhgliqelozlmwu`: consulta somente leitura confirmou 137 migrations, última `20261022230000_repair_migration_ledger_and_harden_search_path`. O diff da PR contém zero arquivos em `supabase/migrations` e zero em `supabase/functions`; nenhuma atualização do banco é necessária neste escopo e nenhuma escrita foi executada.
+- E2E [run 40845940456](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40845940456) falhou no preflight antes do acesso remoto: `E2E_SUPABASE_PROJECT_ID` está vazio e não há variáveis de Actions cadastradas. O shard dependente foi ignorado; a jornada autenticada não está validada. O Copilot Review [run 40845955624](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40845955624) falhou por HTTP 402 `quota`. `Qualidade contínua` [run 40845940524](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40845940524) ainda estava em execução às 09:02 UTC.
+- Permaneciam verdes no HEAD: `sicoob-gate`, npm audit, CodeQL, Gitleaks, bundle, Lighthouse, responsividade, origem confiável, verba/aprovação e Vercel Preview Comments; Vercel Agent Review ficou neutral por billing desativado.
+- Próxima ação externa: provisionar homologação Supabase isolada e configurar a variável `E2E_SUPABASE_PROJECT_ID` e credenciais correspondentes. Não direcionar E2E aos projetos canônico ou de catálogo. A PR não será mesclada enquanto checks obrigatórios falharem; nenhuma publicação de produção foi feita.
+
 ## Baseline atualizado — 29/10/2026 (`e9d59026793b84fabeaeec9da890a068f64d49c3`)
 
 Executado em worktree limpa, antes de qualquer alteração desta rodada:
