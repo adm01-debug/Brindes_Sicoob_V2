@@ -1,6 +1,40 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
-Atualizado em: 2026-10-22
+Atualizado em: 2026-10-29
+
+> O inventário histórico abaixo é de 22/10. O estado vigente e os links dos últimos runs em `main` estão no início de [RELATORIO_CI.md](RELATORIO_CI.md). Esta seção registra apenas bloqueios ainda não comprovados como resolvidos em `main`.
+
+## Correções candidatas no PR #164 — aguardam integração e validação em `main`
+
+O [PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164) passou os checks de `npm audit`, CodeQL e build/contratos. Ele atualiza `undici` e migra `zod` para v4 (com ajustes em dois arquivos de aplicação), alinha as ações CodeQL e remove a exigência de incremento de versão em deploy sem alteração. O E2E e o Copilot Code Review continuam falhando nesse PR. Não considerar as correções concluídas em `main` até o merge autorizado e a confirmação de novos runs.
+
+## Workflow: E2E autenticado / RLS remoto — ambiente de homologação pendente
+
+**Evidência:** [run E2E do PR #168](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40945721264), step `Validar autorização remota e RLS técnico`.
+
+**Erro exato:** `Hook timed out in 45000ms.` em `tests/rls/e2e-cleanup-rate-limit.test.ts` durante o `beforeAll` que cria a canária remota. O teste de autorização passou; no teste RLS, 52 passaram e 4 foram ignorados antes do timeout.
+
+**Dependência externa:** confirmar e usar um projeto Supabase de homologação isolado. Configurar os secrets já consumidos pelo workflow para esse projeto e suas personas de teste; depois reexecutar E2E. O repositório não possui Actions Variables cadastradas e o identificador `E2E_SUPABASE_PROJECT_ID` não é usado pelo workflow atual. O contrato atual usa secrets `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`, `SUPABASE_SERVICE_ROLE_KEY`, `E2E_CLEANUP_TOKEN` e credenciais `E2E_*`. Não registrar valores desses secrets neste arquivo.
+
+Não aumentar o timeout nem marcar os testes como sucesso sem reproduzir a operação no projeto isolado. Nenhum banco canônico foi alterado nesta auditoria.
+
+## Workflow: Running Copilot Code Review — quota de conta
+
+**Evidência:** [run 39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) em `main`.
+
+**Erro:** limite adicional de uso do Copilot excedido, HTTP 402 / `SessionModelError`.
+
+**Ação externa:** restaurar a quota/plano Copilot e executar um novo run. Não há correção de código para este bloqueio.
+
+## Dependabot `@vitest/mocker` — execução antiga não representa o lockfile atual
+
+**Evidência:** [run 39775463512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775463512), no SHA `ae1b92b3`.
+
+O run falhou porque o caminho de atualização ainda resolvia `@vitest/mocker` para 4.1.11. O `package-lock.json` atual em `main` fixa 4.1.12; considerar o run histórico obsoleto, e confirmar a correção quando ocorrer nova execução Dependabot atual. Não reexecutar um run preso ao SHA antigo.
+
+## Risco de integração — merge de código da aplicação
+
+Os PRs #164, #168 e #169 continuam abertos. Os PRs #164 e #168 alteram código da aplicação; #169 contém migration de banco. Não mesclar nem aplicar migration remota com os checks E2E pendentes. Após homologação isolada, conferir todos os checks exigidos, a política de deploy do projeto e a versão remota antes de integrar.
 
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
 O erro exato foi extraído do run mais recente disponível em main.

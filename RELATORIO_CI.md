@@ -1,6 +1,55 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
-**Gerado em:** 2026-10-22  
+> **Atualização de 2026-10-29 — fonte atual:** `main` em `e9d59026793b84fabeaec9da890a068f64d49c3`. As seções posteriores a este bloco preservam o registro histórico de 22/10 e não representam o estado atual.
+
+## Estado atual da auditoria
+
+### Baseline local reproduzido antes das alterações desta rodada
+
+| Verificação | Resultado | Observação |
+|---|---|---|
+| `npm ci --no-audit --no-fund` | ✅ | Lockfile instalado; warnings de scripts/deprecações já existentes |
+| `npm run build` | ✅ | Build concluído; avisos existentes de chunks grandes e PostCSS |
+| `npm run lint:baseline` | ✅ | Sem regressões em relação ao baseline |
+| `npm run typecheck` | ✅ | TypeScript app e Node passaram |
+| `npm test -- --reporter=dot` | ✅ 5.839 passaram, 68 ignorados | 452 arquivos passaram; 4 ignorados |
+| `npm run test:scenarios` | ✅ 226/226 | Sem falhas |
+
+### Última execução de cada workflow em `main` com falha
+
+| Workflow | Último run em `main` | Falha observada | Tratamento atual |
+|---|---|---|---|
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | `sicoob-approval-reconciliation` permaneceu na versão 5 após `deploy`; a checagem exigia incremento estrito da versão | Causa corrigida candidata no [PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164), que verifica presença após o deploy. Ainda não mesclado nem validado em `main`. |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `npm audit`: 2 pacotes altos (`undici`, `zod`) | Correção candidata no [PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164); audit remoto passou nessa branch. |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | `SECURITY GATE FAILED: 2 critical/high vulnerabilities: undici (high), zod (high)` | Mesma causa do `Security Scan`; correção candidata no [PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164). |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `init` carregou configuração 4.39.1, mas `autobuild`/`analyze` executavam 4.38.2; SARIF não foi gerado | Versões alinhadas para 4.39.1 no [PR #164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164); CodeQL passou nessa branch. |
+| Running Copilot Code Review | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | `SessionModelError`, limite adicional de uso do Copilot excedido (HTTP 402) | Bloqueio de quota da conta; requer restabelecimento/renovação do plano e novo run. |
+| Dependabot `@vitest/mocker` | [39775463512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775463512) | A execução antiga no SHA `ae1b92b3` resolve `@vitest/mocker` para 4.1.11 e não consegue atualizar | Registro obsoleto: o lockfile atual de `main` fixa 4.1.12. Não reexecutar o evento antigo; confirmar no próximo evento Dependabot atual. |
+
+### Workflows verdes observados em `main`
+
+| Workflow | Último run observado | Estado |
+|---|---|---|
+| Migration ledger drift | [40828393693](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40828393693) | ✅ success |
+| Branch Protection Sentinel | [40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038) | ✅ success |
+| Enterprise Compliance & Audit Reporting | [40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958) | ✅ success |
+| Portal Sicoob | [39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315) | ✅ success (último run disponível; não houve nova execução por push) |
+
+Não houve merge nem alteração em `main` nesta rodada, portanto esses estados não sofreram regressão por nossas mudanças. Os PRs [#168](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/168) e [#169](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/169) estão em rascunho; suas validações locais passaram, mas permanecem sem merge enquanto os checks remotos herdados não estiverem verdes. O PR #169 contém migration versionada; nenhum Supabase remoto foi consultado ou alterado.
+
+### Bloqueios em PR / ação externa
+
+- O E2E remoto falha no hook `beforeAll` de `tests/rls/e2e-cleanup-rate-limit.test.ts`: `Hook timed out in 45000ms` ao preparar a canária no banco. Isso ocorreu nos PRs #164 e #168; 52 testes passaram e 4 foram corretamente ignorados antes do timeout. É necessária homologação em projeto Supabase isolado, seguida de configuração dos secrets existentes para esse projeto e novo run. Valores de secrets não foram lidos.
+- A variável Actions `E2E_SUPABASE_PROJECT_ID` não é referenciada no código/workflow atual e a lista de Actions Variables do repositório está vazia. O workflow usa `VITE_SUPABASE_PROJECT_ID` como secret; não configure uma variável sem primeiro alterar o contrato do workflow.
+- O Copilot Code Review também falhou no PR #164 por quota (HTTP 402), dependente da conta GitHub.
+
+### Alterações locais desta rodada — ainda sem merge
+
+- Busca global de clientes: rota normalizada para `/clientes/:id`; validação pós-commit no PR #168: build, lint baseline, typecheck, cenários 226/226 e Vitest 5.842/68 passaram.
+- Destinatários de aprovação Singular: migration aditiva no PR #169 usa `user_roles`, exige perfil ativo e não excluído e mantém o escopo da cooperativa; validação pós-commit: build, lint baseline, typecheck, cenários 226/226, Vitest 5.839/68 e simulação PostgreSQL 17 isolada passaram.
+- A suíte local, typecheck, lint e build não certificam a jornada autenticada remota; essa validação continua pendente do ambiente de homologação.
+
+**Gerado em:** 2026-10-29
 **Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
 
 ---
