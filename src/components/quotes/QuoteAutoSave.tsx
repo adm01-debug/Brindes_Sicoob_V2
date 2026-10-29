@@ -3,7 +3,7 @@
  * Salva rascunhos automaticamente no localStorage com indicador visual
  */
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Cloud, CloudOff, Check, Loader2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
@@ -36,11 +36,27 @@ export function createQuoteDraftId(): string {
 
 export function getQuoteDraftIdForScope(scopeId: string): string {
   const sessionKey = `quote-new-draft:${scopeId}`;
-  const current = sessionStorage.getItem(sessionKey);
-  if (current) return current;
-  const draftId = createQuoteDraftId();
-  sessionStorage.setItem(sessionKey, draftId);
-  return draftId;
+  try {
+    const current = sessionStorage.getItem(sessionKey);
+    if (current) return current;
+    const draftId = createQuoteDraftId();
+    sessionStorage.setItem(sessionKey, draftId);
+    return draftId;
+  } catch {
+    return createQuoteDraftId();
+  }
+}
+
+function useScopedQuoteDraftId(enabled: boolean, scopeId?: string | null, quoteId?: string) {
+  const [draft, setDraft] = useState<{ scopeId: string; id: string } | null>(null);
+  useEffect(() => {
+    if (!enabled || !scopeId || quoteId) {
+      setDraft(null);
+      return;
+    }
+    setDraft({ scopeId, id: getQuoteDraftIdForScope(scopeId) });
+  }, [enabled, scopeId, quoteId]);
+  return scopeId && draft?.scopeId === scopeId ? draft.id : null;
 }
 
 function statusIcon(status: SaveStatus) {
@@ -196,12 +212,9 @@ function useQuoteAutoSaveState({
 }: QuoteAutoSaveProps) {
   const [status, setStatus] = useState<SaveStatus>('idle');
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const draftId = useMemo(
-    () => (enabled && scopeId ? getQuoteDraftIdForScope(scopeId) : null),
-    [enabled, scopeId],
-  );
+  const draftId = useScopedQuoteDraftId(enabled, scopeId, quoteId);
   const storageKey =
-    enabled && scopeId
+    enabled && scopeId && (quoteId || draftId)
       ? quoteId
         ? `quote:${scopeId}:${quoteId}`
         : `draft:${scopeId}:${draftId}`

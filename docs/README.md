@@ -2,7 +2,7 @@
 
 > **Estado atual do Sicoob (08/10/2026):** [fechamento técnico do candidato de construção](execucao/fechamento-tecnico-2026-10-08.md), complementado pela [execução e preflight do banco canônico](execucao/execucao-plano-2026-10-01.md) e pela [revisão das 150 etapas, workflows e pendências](execucao/revisao-do-plano-2026-10-01.md). O índice legado abaixo não certifica o estado atual; há referências históricas indisponíveis.
 
-> **Atualização de 29/10/2026:** [controle de concorrência do autosave de orçamentos](execucao/controle-concorrencia-autosave-2026-10-29.md) revalida e protege a lacuna P056. A correção ainda depende de CI remoto e não encerra a etapa integralmente.
+> **Atualização de 29/10/2026:** [concorrência e resiliência do autosave de orçamentos](execucao/controle-concorrencia-autosave-2026-10-29.md) revalida as lacunas P056/P059. A correção ainda depende de CI remoto e não encerra as etapas integralmente.
 
 > Sistema de Catálogo de Brindes Promocionais  
 > **Idioma:** Português do Brasil 🇧🇷  
