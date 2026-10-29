@@ -1,5 +1,26 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
+## Reconciliação verificada — 29/10/2026
+
+Esta atualização prevalece sobre estados históricos abaixo quando houver divergência.
+
+### Código no GitHub
+
+- PR [#157](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/157), SHA `2cb2e67d6933fbb93ff9b3a309e874966bbdddab`, está publicada e **aberta**, sem merge; `main` consultada em `e9d59026793b84fabeaec9da890a068f64d49c3`.
+- Checks do SHA: `sicoob-gate`, segurança/contratos/build, CodeQL, secret scan, Lighthouse, bundle, verba/aprovação transacionais e responsividade passaram. E2E falhou (run `40835463522`); Copilot Review falhou por HTTP 402/quota (run `40835479687`); Vercel Agent Review ficou neutral por billing desativado.
+- As rotas de orçamento e compartilhamento público de proposta já estão no `main`; testes focados em `QuoteShareDialog` e navegação passaram (93 testes). A simulação local de aprovação pública e o simulador de conversão também passaram em PostgreSQL descartável, sem rede.
+
+### Banco canônico `cfmzkthhgliqelozlmwu`
+
+- Nenhuma escrita, migration ou publicação de função foi feita nesta verificação.
+- Evidência remota somente leitura já coletada: migration `20261013120512` (governança/congelamento de conteúdo) consta no catálogo; os quatro guardas restritivos de `pa_budgets` estavam ativos. O arquivo da migration `20261013115605` (isolamento de verbas) existe no `main` e na branch da PR, mas sua linha no ledger remoto não foi confirmada nesta rodada.
+- A consulta direta atual ao gateway do Supabase falhou duas vezes com Management API 544/timeout; o conector oficial Supabase negou permissão (`-32600`), e a CLI local não tem projeto vinculado (`LegacyProjectNotLinkedError`). Portanto, a ativação remota dos triggers de congelamento de C-04 **não foi reconfirmada nesta rodada**; não inferir sucesso a partir do arquivo SQL local.
+- C-04 está parcial: triggers locais impedem edição comercial/itens/personalizações após envio ou decisão e `save_quote_atomic` recalcula totais no servidor; a fonte autorizada do preço unitário e dos custos de personalização continua pendente da decisão comercial 2 em `docs/execucao/lacunas-funcionalidades-2026-10-11.md`.
+
+### Próxima ação bloqueada
+
+Restabelecer consulta read-only autorizada ao projeto canônico (ou vincular a CLI com acesso de leitura) para confirmar ledger e triggers de C-04. Até essa confirmação, não aplicar migrations, não escrever no banco e não mesclar a PR #157 enquanto E2E e Copilot Review permanecerem em falha.
+
 ## Estado atual — 29/10/2026
 
 Os itens de 22/10 abaixo são histórico e não representam o estado atual. Rechecagem dos últimos runs na `main`:
