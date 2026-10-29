@@ -28,6 +28,20 @@ test('RPCs de associação e preenchimento deixam de ser permitidas', () => {
   assert.equal(ALLOWED_RPCS.includes('fn_link_product_print_areas'), false);
   assert.equal(ALLOWED_RPCS.includes('fn_backfill_product_print_areas'), false);
 });
+test('bridge aplica a permissão antes de resolver o cliente externo', () => {
+  const bridge = readFileSync('supabase/functions/external-db-bridge/index.ts', 'utf8');
+  const crudStart = bridge.indexOf('async function handleCrud');
+  const permissionGate = bridge.indexOf('if (!PERMISSIONS[resourceGroup].includes(operation))', crudStart);
+  const externalClient = bridge.indexOf('await getExternalClient(corsHeaders)', crudStart);
+
+  assert.ok(crudStart >= 0, 'handler CRUD precisa existir');
+  assert.ok(permissionGate > crudStart, 'operação precisa ser validada dentro do handler');
+  assert.ok(externalClient > permissionGate, 'operação negada antes de resolver credenciais/clientes externos');
+});
+test('cliente do catálogo usa transporte de leitura restrito à origem e método permitidos', () => {
+  const bridge = readFileSync('supabase/functions/external-db-bridge/index.ts', 'utf8');
+  assert.match(bridge, /fetch:\s*createReadOnlyCatalogFetch\(\)/);
+});
 for (const method of ['POST','PUT','PATCH','DELETE']) {
   test(`transporte impede ${method} antes de enviar dados`, () => {
     let chamadas = 0;
