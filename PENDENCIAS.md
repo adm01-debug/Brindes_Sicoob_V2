@@ -13,7 +13,7 @@ Os itens de 22/10 abaixo são histórico e não representam o estado atual. Rech
 
 **Workflows verdes na última execução consultada:** `Migration ledger drift` (dispatch manual), `Branch Protection Sentinel`, `Enterprise Compliance & Audit Reporting` e `Portal Sicoob`. A execução agendada anterior do ledger drift falhou, mas não é a mais recente.
 
-**PRs ainda afetados:** #150, #151 e #156 têm checks de dependências/CodeQL falhando. No #156, a validação remota de autorização/RLS também apresentou timeout. Nenhum desses PRs foi integrado à `main`.
+**PRs ainda afetados:** #150, #151 e #156 têm checks de dependências/CodeQL falhando. No #156, a validação remota de autorização/RLS também apresentou timeout. A correção do CodeQL usa o SHA oficial 4.39.1 uniforme e aguarda confirmação na CI do PR. Nenhum desses PRs foi integrado à `main`.
 
 ### Atualização da correção de dependências
 
