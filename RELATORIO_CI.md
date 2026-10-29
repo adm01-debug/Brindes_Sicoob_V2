@@ -165,3 +165,42 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 ---
 
 *Relatório gerado automaticamente pela sessão Claude Code.*
+
+---
+
+## Atualização de auditoria — 29/10/2026
+
+**SHA de `main` consultado:** `e9d59026793b84fabeaeec9da890a068f64d49c3`. A seção histórica acima foi preservada. Este inventário considera a execução mais recente de cada workflow na branch `main`, excluindo PRs. Resumos e logs completos não foram baixados; causas sem trecho de erro estão identificadas como não confirmadas.
+
+| Workflow | Último run | Resultado | Evidência/categoria |
+|---|---:|---|---|
+| Migration ledger drift | [40828393693](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40828393693) | success | Executado em 29/10. |
+| Aplicar migrations Sicoob | [37029743784](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37029743784) | cancelled | Dispatch em 02/10; não contabilizado como falha. |
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | failure | `sicoob-approval-reconciliation` permaneceu na versão 5; a verificação não observou versão nova. |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | failure | `npm audit --audit-level=high`; resumo inclui advisory high de `undici`. |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | failure | Security gate reportou `undici` e `zod` como high/critical. |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | failure | Configuração aponta `github/codeql-action` 4.39.1 e a execução reporta 4.38.2; autobuild e geração SARIF falharam. |
+| Running Copilot Code Review | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | failure | O resumo aponta falha no processamento/cleanup do agente, sem causa atribuível ao código do repositório. |
+| Bundle Size Check | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) | failure | Download do log pelo MCP retornou HTTP 404; causa não confirmada. |
+| E2E (Playwright) | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | startup_failure | Sem jobs/log acessíveis. A configuração atual exige projeto Supabase de homologação e contas/segredos listados em `PENDENCIAS.md`. |
+| Lighthouse Performance Audit | [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910) | failure | Download do log pelo MCP retornou HTTP 404; causa não confirmada. |
+| Branch Protection Sentinel | [40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038) | success | Continua verde. |
+| Enterprise Compliance & Audit Reporting | [40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958) | success | Continua verde. |
+| Portal Sicoob | [39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315) | success | Continua verde. |
+| Monthly DB Audit | [36794161452](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36794161452) | success | Continua verde. |
+| Dependabot Updates | [40603001428](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40603001428) | success | Continua verde. |
+
+### Validação local do SHA remoto
+
+- `npm ci --no-audit --no-fund`: concluído com Node `v24.19.0` e npm `11.17.0`.
+- `npm test -- --reporter=dot`: **5.839 passaram, 68 ignorados, 0 falhas** (452 arquivos passaram, 4 ignorados).
+- `npm run typecheck`: passou; `npm run typecheck:baseline`: 0 diagnósticos atuais vs. 0 na baseline.
+- `npm run lint`: exit 0, 0 erros e 873 avisos. `npm run lint:baseline`: sem regressão.
+- `npm run build`: passou em 33,92 s; Vite alerta que há chunks acima de 600 kB.
+- E-006 já está no SHA remoto com previsão por variante e erro/retry: teste nativo `tests/hooks/useKitStockForecast.test.ts` 5/5, ESLint focal e typecheck focal passaram. Prettier focal apontou formatação divergente nesses arquivos; não foi feita alteração remota.
+
+### Banco canônico e limites da comparação
+
+Consulta somente leitura a `supabase_migrations.schema_migrations` no projeto `cfmzkthhgliqelozlmwu` retornou 137 linhas; a mais recente é `20261022230000_repair_migration_ledger_and_harden_search_path`. O GitHub tem 587 migrations SQL ativas e 21 arquivadas. Doze versões do ledger não têm arquivo correspondente na árvore atual: `20261015102000`, `20261015230500`, `20261015233500`, `20261015235000`, `20261015235500`, `20261016000000`, `20261016160000`, `20261016163000`, `20261016170000`, `20261016171500`, `20261016172000`, `20261016173000`. São diferenças históricas da baseline de drift; o workflow verde não atesta paridade integral nem hash dos corpos SQL.
+
+Nenhuma migration, Edge Function, tabela ou dado foi alterado no Supabase. A cópia local inicial usada nesta auditoria estava 84 commits atrás da `origin/main`; a `main` remota é ancestral da cópia, não o contrário. As alterações locais foram comparadas e não foram empurradas em massa. E-006 já existe no GitHub; changes locais de `health-check` e `bi-share-dossier` não foram portadas porque precisam compatibilizar consumidores e preparar a chave HMAC sem invalidar links existentes.
