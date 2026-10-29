@@ -140,7 +140,8 @@ function mapTechniqueFiltersToExternal(filters: Record<string, unknown> | undefi
   if ("name" in out) { out.nome = out.name; delete out.name; }
   if ("description" in out) { out.descricao = out.description; delete out.description; }
   if ("max_colors" in out) { out.max_cores = out.max_colors; delete out.max_colors; }
-  if ("estimated_days" in out) { out.tempo_producao_dias = out.estimated_days; delete out.estimated_days; }
+  delete out.estimated_days;
+  delete out.tempo_producao_dias;
   return out;
 }
 
@@ -498,9 +499,9 @@ describe("external-db-bridge — mapTechniqueFiltersToExternal", () => {
     expect(result).toEqual({ max_cores: 6 });
   });
 
-  it("maps estimated_days to tempo_producao_dias", () => {
+  it("drops unavailable production-day filters", () => {
     const result = mapTechniqueFiltersToExternal({ estimated_days: 5 });
-    expect(result).toEqual({ tempo_producao_dias: 5 });
+    expect(result).toEqual({});
   });
 
   it("maps multiple filters at once", () => {
