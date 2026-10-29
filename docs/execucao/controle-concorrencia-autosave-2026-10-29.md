@@ -14,15 +14,16 @@ Correção das lacunas P056 e P059 da [revisão do plano de 01/10/2026](revisao-
 - Testes cobrem conflito notificado pelo evento e a corrida detectada imediatamente antes da gravação.
 - A criação do identificador de rascunho ocorre em efeito, fora da renderização; quando o navegador bloqueia `sessionStorage`, a tela continua funcionando com um identificador em memória.
 - A leitura de rascunho local usa acesso protegido contra exceções do navegador; a cobertura inclui o cenário de armazenamento de sessão bloqueado.
+- A restauração aguarda a chave válida do rascunho; o primeiro render desabilitado não consulta a chave vazia `autosave_`.
 
 ## Validação
 
 - `npm ci --no-audit --no-fund`: concluído; os avisos de scripts de instalação pendentes permanecem os do lockfile.
-- `npm test -- tests/hooks/useAutoSave.test.tsx tests/components/quotes/QuoteAutoSave.readonly.test.tsx --reporter=dot`: 8/8 passaram após a mudança P059.
+- `npm test -- tests/hooks/useAutoSave.test.tsx tests/components/quotes/QuoteAutoSave.readonly.test.tsx --reporter=dot`: 9/9 passaram após a última correção P059.
 - `npm run typecheck`: passou após a mudança P059.
 - `npm run lint:baseline`: passou; 0 erro global e 0 regressão nos dois arquivos de aplicação alterados.
 - `npm run build`: passou; avisos existentes de variáveis de ambiente ausentes, PostCSS, import dinâmico e chunks grandes.
-- `npm test -- --reporter=dot`: 5.842 passaram e 68 foram ignorados; 452 arquivos passaram e 4 foram ignorados.
+- `npm test -- --reporter=dot`: 5.843 passaram e 68 foram ignorados; 452 arquivos passaram e 4 foram ignorados.
 - `npm run test:scenarios`: 226/226 passaram.
 
 ## Limites
