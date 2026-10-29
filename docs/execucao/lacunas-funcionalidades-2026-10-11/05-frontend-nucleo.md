@@ -1265,8 +1265,14 @@ Método: `<scripts-da-auditoria>/unused-exports.mjs` monta um índice de tokens 
 
 ## Revalidação posterior — 29/10/2026
 
-O achado FE-011 descreve o estado observado em 11/10/2026. Na revisão do código da `main` (`e9d59026793b84fabeaeec9da890a068f64d49c3`), a incompatibilidade dos destinos já está corrigida: o contador administrativo é aplicado ao item filho `/admin/usuarios?tab=discounts`; `withItemBadge` percorre itens filhos; e o contador `pending_singular_approval` é aplicado ao item existente `/gestor/orcamentos` (página de gestão dos orçamentos da Singular). Portanto, a afirmação de que nenhum item possui esses destinos não representa mais o código atual.
+Os achados abaixo descrevem o estado observado em 11/10/2026. A leitura atual foi feita na `main` (`e9d59026793b84fabeaeec9da890a068f64d49c3`); ela atualiza a situação dos itens listados sem reescrever o registro histórico.
 
-**Evidência de teste:** `npx vitest run tests/components/layout/SidebarReorganized.behavior.test.ts` — 1 arquivo e 2 testes aprovados. O teste verifica a aplicação do contador no item filho. Os arquivos de implementação e teste usados na execução (`SidebarReorganized.tsx` e `SidebarReorganized.behavior.test.ts`) são idênticos aos da `main` indicada acima.
+| Achado | Estado verificado na `main` | Evidência | Limite da validação |
+|---|---|---|---|
+| FE-001 — detalhe de orçamento sem PDF/link de aprovação | Rota `/orcamentos/:id` aponta para `QuoteViewPage`, que renderiza `PdfGenerationDialog` e `QuoteApprovalLinkCard`. | `src/routes/config/quotes.ts`; `src/pages/QuoteViewPage.tsx`; navegação da lista e do kanban continua para `/orcamentos/:id`. | Código confirma composição e destino; não foi localizado teste dedicado da rota autenticada completa. |
+| FE-002 — botão “Monte seu Kit” aponta para rota inexistente | Corrigido: o botão usa `/montar-kit?product=<id>`, rota registrada; a página lê `product` e busca o produto. | `src/components/products/ProductCategoryBadges.tsx`; `src/routes/config/tools.ts`; `src/pages/KitBuilderPage.tsx`. | Código confirma o contrato; não foi localizado teste dedicado do clique até a pré-carga autenticada do produto. |
+| FE-011 — contadores da sidebar não aparecem | Destinos atuais existem; a aplicação inclui filhos e o contador singular está ligado a `/gestor/orcamentos`. | `src/components/layout/SidebarReorganized.tsx`; `tests/components/layout/SidebarReorganized.behavior.test.ts`. | Teste unitário cobre o badge em item filho; sessão autenticada real continua sem verificação em homologação. |
 
-**Classificação atual:** FE-011 corrigido no código e coberto por teste unitário; a visualização do contador em uma sessão autenticada real ainda não foi verificada em homologação. Esta nota atualiza o estado do achado sem alterar o registro histórico da auditoria de 11/10.
+**Evidência executada:** `npx vitest run tests/components/layout/SidebarReorganized.behavior.test.ts` — 1 arquivo e 2 testes aprovados. Os arquivos de implementação e teste usados na execução (`SidebarReorganized.tsx` e `SidebarReorganized.behavior.test.ts`) são idênticos aos da `main` indicada acima.
+
+**Classificação atual:** FE-001 e FE-002 implementados no código, ainda sem teste dedicado da jornada completa; FE-011 implementado e coberto parcialmente por teste unitário. Nenhum dos três está comprovado por teste autenticado em homologação nesta revalidação.
