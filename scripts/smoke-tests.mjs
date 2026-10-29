@@ -20,6 +20,10 @@
 
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
+import {
+  createHealthcheckRequestOptions,
+  isHealthcheckSuccessful,
+} from "./health-check-contract.mjs";
 
 const TIMEOUT_MS = Number(process.env.SMOKE_TIMEOUT_MS ?? 5000);
 const BASE_URL = process.env.SMOKE_BASE_URL?.replace(/\/$/, "");
@@ -103,17 +107,17 @@ async function checkHealthFunction() {
     const res = await withTimeout(
       (signal) =>
         fetch(HEALTH_FN_URL, {
+          ...createHealthcheckRequestOptions(),
           signal,
-          headers: { "user-agent": "promogifts-ci-smoke/1.0" },
         }),
       TIMEOUT_MS,
       "health-fn",
     );
     const latency = Date.now() - start;
     const body = await res.json().catch(() => ({}));
-    const status = body.status ?? (res.ok ? "healthy" : "unhealthy");
+    const status = body.status ?? "unknown";
 
-    if (status === "healthy") {
+    if (isHealthcheckSuccessful(res.ok, status)) {
       log("ok", "health-fn", `${status} em ${latency}ms`, { status, latency, body });
     } else if (status === "degraded") {
       log(
