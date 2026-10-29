@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -18,15 +18,14 @@ export function OrderBudgetIntelligence({
   allocatedBudget,
   paName
 }: OrderBudgetIntelligenceProps) {
-  const percentageAfterOrder = useMemo(() => {
-    if (allocatedBudget === 0) return 0;
-    const used = allocatedBudget - remainingBudget;
-    const totalUsed = used + orderTotal;
-    return Math.min((totalUsed / allocatedBudget) * 100, 100);
-  }, [orderTotal, remainingBudget, allocatedBudget]);
-
-  const isOverBudget = orderTotal > remainingBudget;
-  const impact = (orderTotal / allocatedBudget) * 100;
+  const hasBudget = Number.isFinite(allocatedBudget) && allocatedBudget > 0;
+  const usedAfterOrder = allocatedBudget - remainingBudget + orderTotal;
+  const percentageAfterOrder = hasBudget
+    ? Math.min(Math.max((usedAfterOrder / allocatedBudget) * 100, 0), 100)
+    : 0;
+  const isOverBudget = hasBudget && orderTotal > remainingBudget;
+  const impact = hasBudget ? (orderTotal / allocatedBudget) * 100 : null;
+  const status = getBudgetStatus(hasBudget, isOverBudget);
 
   return (
     <Card className="border-border/40 overflow-hidden bg-gradient-to-br from-background to-muted/20">
@@ -37,7 +36,7 @@ export function OrderBudgetIntelligence({
             Inteligência Orçamentária - {paName}
           </CardTitle>
           <Badge variant={isOverBudget ? "destructive" : "outline"} className="text-[10px] uppercase font-bold tracking-tighter">
-            Análise em Tempo Real
+            {status.badge}
           </Badge>
         </div>
       </CardHeader>
@@ -45,50 +44,96 @@ export function OrderBudgetIntelligence({
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
             <p className="text-[10px] text-muted-foreground uppercase font-bold">Verba Total</p>
-            <p className="text-lg font-display font-bold">R$ {allocatedBudget.toLocaleString('pt-BR')}</p>
+            <p className="text-lg font-display font-bold">{formatBudget(allocatedBudget, hasBudget, "Não configurada")}</p>
           </div>
           <div className="space-y-1 text-right">
             <p className="text-[10px] text-muted-foreground uppercase font-bold">Saldo Disponível</p>
-            <p className={cn("text-lg font-display font-bold", isOverBudget ? "text-destructive" : "text-sicoob-green")}>
-              R$ {remainingBudget.toLocaleString('pt-BR')}
+            <p className={cn("text-lg font-display font-bold", status.remainingClass)}>
+              {formatBudget(remainingBudget, hasBudget, "Indisponível")}
             </p>
           </div>
         </div>
 
-        <div className="space-y-2">
-          <div className="flex justify-between items-center text-[10px] font-bold">
-            <span className="flex items-center gap-1">
-              <Wallet className="h-3 w-3" /> Uso da Verba Mensal
-            </span>
-            <span>{percentageAfterOrder.toFixed(1)}%</span>
-          </div>
-          <Progress value={percentageAfterOrder} className="h-1.5" indicatorClassName={isOverBudget ? "bg-destructive" : "bg-sicoob-green"} />
-          <p className="text-[9px] text-muted-foreground italic">
-            * Este pedido representa <strong>{impact.toFixed(1)}%</strong> da verba total do período.
-          </p>
-        </div>
+        <BudgetUsage hasBudget={hasBudget} percentage={percentageAfterOrder} impact={impact} isOverBudget={isOverBudget} />
 
         <div className={cn(
           "p-3 rounded-lg flex items-start gap-3 border",
-          isOverBudget ? "bg-destructive/5 border-destructive/20" : "bg-sicoob-green/5 border-sicoob-green/20"
+          status.containerClass
         )}>
-          {isOverBudget ? (
-            <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
-          ) : (
-            <CheckCircle2 className="h-4 w-4 text-sicoob-green mt-0.5 shrink-0" />
-          )}
+          <status.Icon className={cn("h-4 w-4 mt-0.5 shrink-0", status.iconClass)} />
           <div className="space-y-1">
-            <p className="text-xs font-bold leading-none">
-              {isOverBudget ? "Alerta de Limite Excedido" : "Viabilidade Confirmada"}
-            </p>
-            <p className="text-[10px] text-muted-foreground">
-              {isOverBudget 
-                ? "O valor do pedido excede o saldo atual. Será necessária aprovação da Singular ou remanejamento."
-                : "Pedido dentro das diretrizes financeiras estabelecidas para este Ponto de Atendimento."}
-            </p>
+            <p className="text-xs font-bold leading-none">{status.title}</p>
+            <p className="text-[10px] text-muted-foreground">{status.description}</p>
           </div>
         </div>
       </CardContent>
     </Card>
   );
+}
+
+function BudgetUsage({
+  hasBudget,
+  percentage,
+  impact,
+  isOverBudget,
+}: {
+  hasBudget: boolean;
+  percentage: number;
+  impact: number | null;
+  isOverBudget: boolean;
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between items-center text-[10px] font-bold">
+        <span className="flex items-center gap-1">
+          <Wallet className="h-3 w-3" /> Uso da Verba Mensal
+        </span>
+        <span>{hasBudget ? `${percentage.toFixed(1)}%` : "—"}</span>
+      </div>
+      {hasBudget ? <Progress value={percentage} className="h-1.5" indicatorClassName={isOverBudget ? "bg-destructive" : "bg-sicoob-green"} /> : <div className="h-1.5 rounded-full bg-muted" aria-hidden="true" />}
+      <p className="text-[9px] text-muted-foreground italic">
+        {impact === null ? "* O impacto do pedido não pode ser calculado sem verba mensal configurada." : <>* Este pedido representa <strong>{impact.toFixed(1)}%</strong> da verba total do período.</>}
+      </p>
+    </div>
+  );
+}
+
+function formatBudget(value: number, hasBudget: boolean, unavailableLabel: string) {
+  return hasBudget ? `R$ ${value.toLocaleString("pt-BR")}` : unavailableLabel;
+}
+
+function getBudgetStatus(hasBudget: boolean, isOverBudget: boolean) {
+  if (!hasBudget) {
+    return {
+      badge: "Verba indisponível",
+      title: "Análise indisponível",
+      description: "Cadastre a verba mensal da PA para avaliar o consumo deste pedido.",
+      Icon: AlertCircle,
+      iconClass: "text-muted-foreground",
+      containerClass: "bg-muted/30 border-border/40",
+      remainingClass: "text-muted-foreground",
+    };
+  }
+
+  if (isOverBudget) {
+    return {
+      badge: "Consumo acima do saldo",
+      title: "Alerta de Limite Excedido",
+      description: "O valor do pedido excede o saldo atual. Será necessária aprovação da Singular ou remanejamento.",
+      Icon: AlertCircle,
+      iconClass: "text-destructive",
+      containerClass: "bg-destructive/5 border-destructive/20",
+      remainingClass: "text-destructive",
+    };
+  }
+
+  return {
+    badge: "Consumo calculado",
+    title: "Consumo dentro do saldo",
+    description: "O valor do pedido está dentro do saldo mensal informado para este Ponto de Atendimento.",
+    Icon: CheckCircle2,
+    iconClass: "text-sicoob-green",
+    containerClass: "bg-sicoob-green/5 border-sicoob-green/20",
+    remainingClass: "text-sicoob-green",
+  };
 }

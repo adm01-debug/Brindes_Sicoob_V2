@@ -1,12 +1,9 @@
 /**
  * useClientHealthScore — score 0-100 de saúde do cliente.
  *
- * Pesos:
- *  - Recência       30% (≤30d=100, ≤60d=80, ≤90d=60, ≤180d=30, >180d=0)
- *  - Frequência     25% (vs média do setor)
- *  - Ticket vs setor 20%
- *  - Crescimento trim. 15% (compara últimos 3m vs 3m anteriores via sazonalidade)
- *  - Share-of-wallet 10% (estimativa)
+ * Dimensões usadas: recência, frequência e ticket vs. setor, e crescimento trimestral.
+ * Share-of-wallet não é calculado: o portal não tem uma fonte confiável para a carteira total.
+ * Dimensões sem benchmark/período comparável usam valor neutro e são identificadas no detalhamento.
  *
  * Tier: 🟢 Saudável >75 · 🟡 Atenção 50-75 · 🔴 Risco <50
  */
