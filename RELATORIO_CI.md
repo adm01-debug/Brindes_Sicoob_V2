@@ -253,3 +253,31 @@ O PR #157 não modifica migrations, schema, dados ou Edge Functions; nenhuma esc
 Os simuladores PostgreSQL agora usam `ghcr.io/supabase/postgres:17.6.1.063`. Inspecionei os manifests do ECR, Docker Hub oficial e GHCR oficial: as entradas por plataforma, inclusive o digest linux/amd64 `sha256:432d12926b09e10eb3317b0e2e9672c9ce8a6bccb359857a31ff9f90683161d`, são iguais. `simular-controles-auditoria.py` e `simular-acl-efetiva.py` passaram localmente usando GHCR. No [run 40823699675](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40823699675), a suíte de segurança, contratos e build concluiu com sucesso no CI; a falha de limite do ECR foi removida nesse branch. Ainda falta integrar o PR para confirmar o workflow correspondente na `main`.
 
 O E2E remoto do último SHA `6ce1a6b52a991fd0db5e11f455c56f619c5ae4ab` falhou no hook `beforeAll` de `e2e-cleanup-rate-limit.test.ts`: inserção administrativa inicial expirou em 45 s. Sem as credenciais remotas de Actions, o cenário não pode ser reproduzido localmente sem pular o teste. O acesso SQL/health do MCP também voltou a expirar nesta retomada. Isso permanece pendência de disponibilidade/acesso do Supabase/PostgREST; não foi alterado o banco.
+
+## Auditoria de publicação e paridade — 29/10/2026
+
+### Código no GitHub
+
+- A branch local `fix/hermes-h247355-ci-dependencies` está sincronizada com `origin` no SHA `a036bfdead2fd136120e545655a79222487ebe91`.
+- O SHA está publicado no [PR #157](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/157), aberto contra `main` (`e9d59026793b84fabeaec9da890a068f64d49c3`). As 15 mudanças desse PR abrangem workflows, dependências, validação de Edge Functions, testes e relatórios; não há migrations, SQL, alteração de schema, dados ou Edge Functions.
+- Portanto, as correções foram enviadas ao GitHub, mas ainda não estão na `main`. O PR permanece sem merge enquanto houver checks obrigatórios falhos ou em execução.
+
+### Banco canônico e arquivos de migration
+
+Consulta SQL somente de leitura a `supabase_migrations.schema_migrations` no projeto canônico `cfmzkthhgliqelozlmwu` retornou 137 versões, até `20261022230000`.
+
+| Referência do repositório | Arquivos SQL | Fontes correspondentes às 137 versões do ledger | Resultado |
+|---|---:|---:|---|
+| `origin/main` (`e9d5902`) | 587 | 125/137 | 12 fontes ausentes |
+| Branch do PR #151 (`239a25c`) | 599 | 137/137 | Paridade de fonte completa no branch |
+| Branch do PR #157 / `HEAD` (`a036bfd`) | 587 | 125/137 | Continua igual à `main` para migrations |
+
+As 12 versões sem fonte na `main` são `20261015102000`, `20261015230500`, `20261015233500`, `20261015235000`, `20261015235500`, `20261016000000`, `20261016160000`, `20261016163000`, `20261016170000`, `20261016171500`, `20261016172000` e `20261016173000`. O PR #151 as restaura. Os 462 arquivos adicionais sem entrada no ledger continuam classificados como histórico/passivo; não devem ser aplicados em lote nem registrados artificialmente.
+
+Nenhuma escrita, migration, alteração de schema/dados ou publicação de função foi executada no banco nesta auditoria. Não havia mudança de banco correspondente ao PR #157 para sincronizar.
+
+### CI do SHA `a036bfdead2fd136120e545655a79222487ebe91`
+
+No snapshot consultado, `npm audit`, CodeQL, Gitleaks, origem confiável, bundle, verba/aprovação, entrada responsiva e gate Sicoob estavam verdes. O E2E falhou no setup remoto, os shards foram pulados como consequência e o revisor Copilot falhou por HTTP 402. O Lighthouse excedeu o limite configurado de LCP por cerca de 10 ms (limite 2.600 ms; pior resultado observado 2.617 ms); uma repetição foi iniciada e ainda estava em execução na consulta final. `Segurança, contratos e build` também estava em execução nesse snapshot. Não declarar esses itens como sucesso até haver conclusão remota.
+
+Validações locais após o commit `a036bfdead2fd136120e545655a79222487ebe91`: build, lint (0 erros/873 avisos), typecheck (0 erros), Vitest (5.846 aprovados/68 ignorados), audit npm sem vulnerabilidades, dois simuladores PostgreSQL e hook pre-push concluíram com sucesso. Os checks locais não substituem os gates remotos pendentes.
