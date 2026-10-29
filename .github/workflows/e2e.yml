@@ -188,6 +188,12 @@ jobs:
             --workers=2 \
             --max-failures=1 \
             --reporter=github,list
+        env:
+          E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
+          E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+          VITE_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ vars.E2E_SUPABASE_PROJECT_ID }}
         continue-on-error: true
 
       - name: 🛑 Fail-fast se header sticky falhou
