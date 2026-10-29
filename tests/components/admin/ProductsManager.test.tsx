@@ -57,6 +57,7 @@ describe('consulta administrativa de produtos', () => {
 
     expect(screen.getByText('Consulta de Produtos')).toBeInTheDocument();
     expect(screen.getByText(/modo somente leitura/i)).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Buscar produtos por nome, SKU ou categoria' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /novo produto/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /importar/i })).not.toBeInTheDocument();
     expect(screen.queryByText('Ações')).not.toBeInTheDocument();
