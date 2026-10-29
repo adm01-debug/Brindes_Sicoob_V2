@@ -251,3 +251,48 @@ Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Depen
 | Migration Ledger Drift | Fingerprint de `20261022120000` calculado com `local_sha256` incorreto; novo digest correto: `e2815b0...` | Corrigido fingerprint no `migration-ledger-baseline.json` | #129 |
 | 5 CVEs high (vite ≤6.4.3) | GHSA-698v, GHSA-r825, GHSA-587h, GHSA-9jrq, GHSA-rq7h | `vite` 6.4.3 → 6.4.5 | #126 |
 | Qualidade contínua (`ci.yml`) — ECR rate limit | `toomanyrequests: Data limit exceeded` ao puxar `public.ecr.aws/supabase/postgres:17.6.1.063` em dois steps (scripts `simular-controles-auditoria.py` e `simular-acl-efetiva.py`) | Rate limit do ECR Public se dissipou naturalmente; run `39780447863` → **success** | automático |
+
+## Rechecagem de paridade — 29/10/2026
+
+### Código e migrations
+
+- `origin/main` permanece em `e9d59026793b84fabeaec9da890a068f64d49c3`. A worktree local principal está 84 commits atrás e contém alterações locais; ela não foi usada para atualizar o remoto.
+- O ledger do banco canônico foi consultado somente com `SELECT`: 137 entradas; versão mais recente `20261022230000`. A busca por migrations versionadas no `main` não encontrou arquivo com versão posterior, portanto não há migration nova de `main` a aplicar por esta comparação.
+- 12 entradas aplicadas em 15–16/10 não têm fonte correspondente no `main`: `20261015102000`, `20261015230500`, `20261015233500`, `20261015235000`, `20261015235500`, `20261016000000`, `20261016160000`, `20261016163000`, `20261016170000`, `20261016171500`, `20261016172000` e `20261016173000`. A PR [#151](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/151) repõe os 12 arquivos, mas não pode ser mesclada: CodeQL, E2E, auditoria npm, build e revisão Copilot falharam no SHA `239a25cc`.
+- Nenhum SQL, registro, migration ou função foi escrito no banco canônico durante esta rechecagem.
+
+### Edge Functions publicadas
+
+A CLI autenticada listou e baixou, em modo somente leitura, as 100 funções ativas de `cfmzkthhgliqelozlmwu`. Foram comparados os SHA-256 dos `index.ts` publicados com `origin/main`. 12/100 estão diferentes:
+
+| Função | Versão ativa | Cruzamento |
+|---|---:|---|
+| `crm-db-bridge` | 13 | Igual à fonte da PR #112, que está aberta e com checks falhos |
+| `trends-insights` | 9 | Igual à fonte da PR #112, que está aberta e com checks falhos |
+| `e2e-cleanup` | 7 | Divergente de `main` |
+| `get-app-logs` | 7 | Divergente de `main` |
+| `github-fix-config` | 7 | Divergente de `main` |
+| `quote-sync` | 7 | Divergente de `main` |
+| `sicoob-seed-qa` | 8 | Divergente de `main` |
+| `sicoob-seed` | 7 | Divergente de `main` |
+| `sync-quote-bitrix` | 7 | Divergente de `main` |
+| `admin-audit-hook` | 7 | Divergente de `main` |
+| `bi-share-dossier` | 7 | PR #150 propõe hardening; ainda não está integrada nem implantada |
+| `rls-audit` | 7 | Divergente de `main` |
+
+`health-check` agora coincide com `main`; a divergência registrada na verificação anterior foi resolvida desde então. Os seis diretórios de função sem publicação seguem: `e2e-auth-test`, `error-monitor`, `generate-mockup-nanobanana`, `migrate-helper`, `qa-block-monitor` e `sicoob-seed-debug`. A comparação cobre o arquivo de entrada; não certifica dependências importadas nem comportamento runtime.
+
+### PRs relacionadas e bloqueios atuais
+
+Checks consultados nos SHAs das PRs em 29/10:
+
+| PR | Conteúdo relacionado | Estado dos checks |
+|---|---|---|
+| [#112](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/112) | Fontes implantadas de `crm-db-bridge` e `trends-insights` | 9 falhas, 2 ignorados |
+| [#150](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/150) | Hardening de `bi-share-dossier` e `health-check` | 5 falhas, incluindo build, CodeQL, npm audit e E2E |
+| [#151](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/151) | Restauração das fontes de migrations já aplicadas | 5 falhas, incluindo build, CodeQL, npm audit e E2E |
+| [#154](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/154) | Esta reconciliação e registro de pendências | 4 falhas: Copilot, E2E, build e npm audit |
+| [#156](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/156) | Pré-carga de produtos no orçamento | 5 falhas, incluindo build, CodeQL, npm audit e E2E |
+| [#157](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/157) | Ajustes de tendências e rota de instalação PWA | 2 falhas, 1 check ainda em andamento |
+
+As correções estão em branches/PRs, porém não foram integradas em `main`; nenhuma dessas PRs pode ser declarada concluída enquanto os checks obrigatórios estiverem falhando ou pendentes. Não foi feito deploy de Edge Functions. A paridade GitHub ↔ Supabase continua parcial e as divergências acima precisam ser reconciliadas de forma controlada após desbloquear os checks, preservando as versões publicadas que estão à frente de `main`.
