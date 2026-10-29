@@ -82,4 +82,34 @@ describe('listSicoobLogisticsTracking', () => {
     expect(listOrders).toHaveBeenNthCalledWith(1, expect.objectContaining({ page: 1, pageSize: 200 }));
     expect(listOrders).toHaveBeenNthCalledWith(2, expect.objectContaining({ page: 2, pageSize: 200 }));
   });
+
+  it('particiona a consulta de remessas quando o volume excede 200 pedidos', async () => {
+    const orders = Array.from({ length: 401 }, (_, index) => ({
+      id: `order-${index}`,
+      status: 'in_transit',
+      order_number: `PED-${index}`,
+    }));
+    listOrders
+      .mockResolvedValueOnce({ orders: orders.slice(0, 200), total: orders.length })
+      .mockResolvedValueOnce({ orders: orders.slice(200, 400), total: orders.length })
+      .mockResolvedValueOnce({ orders: orders.slice(400), total: orders.length });
+    inFilter.mockImplementation(async (_column: string, orderIds: string[]) => ({
+      data: orderIds.map((orderId) => ({
+        id: `shipment-${orderId}`,
+        order_id: orderId,
+        carrier_name: null,
+        estimated_delivery: null,
+        status: 'pending',
+        delivery_photo_path: null,
+      })),
+      error: null,
+    }));
+
+    const tracking = await listSicoobLogisticsTracking();
+
+    expect(tracking).toHaveLength(401);
+    expect(inFilter.mock.calls.map(([, orderIds]) => orderIds.length)).toEqual([200, 200, 1]);
+    expect(inFilter.mock.calls[2][1]).toEqual(['order-400']);
+    expect(tracking[400]).toMatchObject({ orderId: 'order-400', id: 'shipment-order-400' });
+  });
 });
