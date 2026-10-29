@@ -143,6 +143,29 @@ Leitura do MCP do projeto `cfmzkthhgliqelozlmwu`: 137 migrations registradas; a 
 
 Atualizado em: 2026-10-29
 
+## Rechecagem final da branch principal e PR #157 — 29/10/2026
+
+Inventário baseado na última execução de cada workflow em `main` no momento da consulta. A `main` continua no SHA `e9d59026793b84fabeaec9da890a068f64d49c3`; a PR #157 permanece aberta no SHA `905b433100c70996fe13af0a3bc63fd6a32014c7`.
+
+| Workflow | Último run em `main` | Situação / causa provável | Situação no SHA da PR #157 |
+|---|---|---|---|
+| `Qualidade contínua` | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | `failure`: gate de dependências vulneráveis no código anterior. | ✅ [40860463113](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40860463113) |
+| `Security Scan` | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `failure`: advisories altos de dependências no código anterior. | ✅ [40860463149](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40860463149) |
+| `CodeQL` | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `failure`: versões divergentes das actions CodeQL. | ✅ [40860463102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40860463102) |
+| `Bundle Size Check` | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) | `failure` na última execução da `main`; correção validada apenas no PR. | ✅ [40860463104](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40860463104) |
+| `Lighthouse Performance Audit` | [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910) | `failure` na última execução da `main`; correção validada apenas no PR. | ✅ [40860463157](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40860463157) |
+| `E2E (Playwright)` | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | `startup_failure` na última execução da `main`. | ❌ [40860463163](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40860463163): preflight bloqueado porque `E2E_SUPABASE_PROJECT_ID` está vazia; nenhum teste autenticado foi validado neste run. |
+| `Publicar funções Sicoob` | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | `failure`: verificação final não confirmou incremento da versão de `sicoob-approval-reconciliation` após “No change found”. | Sem execução equivalente em PR: workflow manual restrito à `main`; reprodução unitária local não substitui a confirmação remota. |
+| `Running Copilot Code Review` | — | Não é workflow da aplicação na `main`; no PR atual falhou por HTTP 402 `quota`, limite adicional de uso do Copilot. | ❌ [40860478178](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40860478178) |
+
+**Workflows verdes na última execução consultada em `main`:** `Migration ledger drift` ([40828393693](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40828393693)), `Branch Protection Sentinel` ([40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038)), `Portal Sicoob` ([39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315)), `Monthly DB Audit` ([36794161452](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36794161452)) e `Enterprise Compliance & Audit Reporting` ([40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958)). `Aplicar migrations Sicoob` teve última execução cancelada; cancelamento não foi contado como falha.
+
+**Ação externa pendente, assumida pelo usuário:** provisionar Supabase de homologação segregado e configurar no GitHub Actions `E2E_SUPABASE_PROJECT_ID`, URL/ref/chave publicável e personas de teste desse mesmo projeto. A resposta foi “Sim, vou configurar”; até a rechecagem, a variável não constava entre as variáveis do repositório. Depois, reexecutar E2E e confirmar os shards/regressão. Não usar o banco canônico nem o banco de catálogo.
+
+**Outros bloqueios:** o Copilot requer restauração/aumento da cota ou nova execução após reset; `Publicar funções Sicoob` requer confirmação em execução manual autorizada na `main`. Essas falhas permanecem registradas e não foram mascaradas por reruns locais.
+
+**Banco canônico:** consulta somente leitura ao projeto `cfmzkthhgliqelozlmwu`; 137 migrations registradas, última `20261022230000_repair_migration_ledger_and_harden_search_path`. A candidata `20261029102059_block_inactive_quote_status_retries` ainda não consta no ledger. Nenhuma escrita ou migration foi executada. A PR não foi mesclada porque E2E e Copilot continuam sem sucesso e contém alteração de aplicação; portanto, as correções ainda não chegaram à `main`.
+
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
 O erro exato foi extraído do run mais recente disponível em main.
 
