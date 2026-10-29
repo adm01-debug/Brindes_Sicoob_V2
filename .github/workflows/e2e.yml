@@ -30,8 +30,25 @@ jobs:
             exit 1
           fi
 
-  e2e:
+  validate-e2e-target:
+    name: Validar projeto Supabase de homologação
     needs: validate-source
+    runs-on: ubuntu-latest
+    env:
+      E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      E2E_SUPABASE_PROJECT_ID: ${{ secrets.E2E_SUPABASE_PROJECT_ID }}
+      E2E_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
+      E2E_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
+      E2E_SUPABASE_CLEANUP_TOKEN: ${{ secrets.E2E_SUPABASE_CLEANUP_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+      - name: Exigir secrets exclusivos de homologação e bloquear projetos canônicos
+        run: node scripts/validate-e2e-supabase-target.mjs
+
+  e2e:
+    needs: validate-e2e-target
     runs-on: ubuntu-latest
     # O gate cobre 168 combinações de rota/viewport além do smoke. O limite
     # inclui instalação, servidor e upload das evidências no runner hospedado.
@@ -56,10 +73,10 @@ jobs:
       E2E_DEV_EMAIL: ${{ secrets.E2E_DEV_EMAIL }}
       E2E_DEV_PASSWORD: ${{ secrets.E2E_DEV_PASSWORD }}
       E2E_DEV_TOTP_SECRET: ${{ secrets.E2E_DEV_TOTP_SECRET }}
-      E2E_CLEANUP_TOKEN: ${{ secrets.E2E_CLEANUP_TOKEN }}
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-      VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+      E2E_CLEANUP_TOKEN: ${{ secrets.E2E_SUPABASE_CLEANUP_TOKEN }}
+      VITE_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_PROJECT_ID: ${{ secrets.E2E_SUPABASE_PROJECT_ID }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -85,7 +102,7 @@ jobs:
         env:
           RUN_REMOTE_AUTHZ_TESTS: '1'
           RUN_REMOTE_RLS_TESTS: '1'
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           npx vitest run \
             --no-file-parallelism \
@@ -212,11 +229,11 @@ jobs:
     if: needs.e2e.result == 'success'
     runs-on: ubuntu-latest
     # Três shards mantêm cada lote abaixo do limite hospedado de 40 minutos.
-    # A serialização permanece necessária porque as contas são canônicas.
+    # A serialização evita concorrência entre contas do projeto de homologação.
     timeout-minutes: 40
     strategy:
       fail-fast: false
-      # Os shards usam as mesmas contas canônicas e o mesmo fator TOTP. A
+      # Os shards usam as mesmas contas e fator TOTP de homologação. A
       # serialização evita desafios MFA concorrentes e limpezas cruzadas.
       max-parallel: 1
       matrix:
@@ -237,10 +254,10 @@ jobs:
       E2E_DEV_EMAIL: ${{ secrets.E2E_DEV_EMAIL }}
       E2E_DEV_PASSWORD: ${{ secrets.E2E_DEV_PASSWORD }}
       E2E_DEV_TOTP_SECRET: ${{ secrets.E2E_DEV_TOTP_SECRET }}
-      E2E_CLEANUP_TOKEN: ${{ secrets.E2E_CLEANUP_TOKEN }}
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-      VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+      E2E_CLEANUP_TOKEN: ${{ secrets.E2E_SUPABASE_CLEANUP_TOKEN }}
+      VITE_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_PROJECT_ID: ${{ secrets.E2E_SUPABASE_PROJECT_ID }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
