@@ -90,6 +90,27 @@ describe('useAutoSave', () => {
     });
   });
 
+  it('revalida a revisão armazenada antes de gravar quando o evento entre abas ainda não chegou', async () => {
+    const { result, rerender } = renderHook(
+      ({ data }) => useAutoSave({ key: 'draft-race', data }),
+      { initialProps: { data: { title: 'Versão carregada' } } },
+    );
+
+    rerender({ data: { title: 'Edição desta aba' } });
+    localStorage.setItem('autosave_draft-race', JSON.stringify({
+      version: 1,
+      savedAt: new Date().toISOString(),
+      data: { title: 'Edição gravada em paralelo' },
+    }));
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(2_000); });
+
+    expect(result.current.lastError?.message).toContain('alterado em outra aba');
+    expect(JSON.parse(localStorage.getItem('autosave_draft-race')!)).toMatchObject({
+      data: { title: 'Edição gravada em paralelo' },
+    });
+  });
+
   it('restaura rascunho legado e descarta envelope vencido', () => {
     localStorage.setItem('autosave_legado', JSON.stringify({ title: 'compatível' }));
     localStorage.setItem('autosave_vencido', JSON.stringify({
