@@ -26,6 +26,7 @@ dist
 !vendor/pptxgenjs-browser/dist/
 !vendor/pptxgenjs-browser/dist/pptxgen.es.js
 dist-ssr
+graphify-out/
 lerna-debug.log*
 logs
 node_modules
