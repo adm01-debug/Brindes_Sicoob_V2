@@ -1,13 +1,12 @@
 /**
  * useClientVsIndustry — compara métricas do cliente com a média do seu ramo.
  * Resolve company IDs do mesmo ramo (excluindo o próprio), chama RPC de benchmark,
- * calcula deltas e classificação. Fallback mock quando amostra insuficiente.
+ * calcula deltas e classificação. Sem amostra suficiente, não infere métricas do setor.
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { selectCrm } from "@/lib/crm-db";
 import { useClientBI } from "@/hooks/bi/useClientBI";
-import { isDemoClient } from "@/lib/bi/demoClient";
 import type { CrmCompany } from "@/types/crm";
 
 export type ComparisonClassification = "above" | "on_par" | "below" | "no_data";
@@ -23,7 +22,7 @@ export interface MetricComparison {
 
 export interface ClientVsIndustryResult {
   isLoading: boolean;
-  isMock: boolean;
+  hasError: boolean;
   hasEnoughSample: boolean;
   sampleSize: number;
   daysWindow: number;
@@ -121,20 +120,6 @@ export function useClientVsIndustry(
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       if (!ramoAtividade) return { rows: [] as BenchmarkRow[], sampleSize: 0 };
-      // Demo: retorna benchmark mockado plausível
-      if (isDemoClient(clientId)) {
-        const mockRow: BenchmarkRow = {
-          total_clients_sampled: 24,
-          avg_ltv: 38500,
-          avg_ticket: 2850,
-          avg_quotes_per_client: 11,
-          avg_items_per_quote: 2.4,
-          top_product_name: "Garrafa Térmica Inox 500ml",
-          total_revenue: 924000,
-        };
-        return { rows: [mockRow], sampleSize: 24 };
-      }
-
       // 1) Resolver IDs de empresas do mesmo ramo, excluindo o próprio cliente
       const companies = await selectCrm<Pick<CrmCompany, "id">>("companies", {
         select: "id",
@@ -166,7 +151,7 @@ export function useClientVsIndustry(
   if (!benchmark || !hasEnoughSample) {
     return {
       isLoading,
-      isMock: true,
+      hasError: benchmarkQuery.isError,
       hasEnoughSample: false,
       sampleSize,
       daysWindow: DAYS_WINDOW,
@@ -187,7 +172,7 @@ export function useClientVsIndustry(
 
   return {
     isLoading,
-    isMock: clientBI.isMock,
+    hasError: false,
     hasEnoughSample: true,
     sampleSize,
     daysWindow: DAYS_WINDOW,

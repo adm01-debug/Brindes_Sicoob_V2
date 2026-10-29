@@ -26,6 +26,21 @@ interface Args {
 const fmtBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
+function shareWalletCopy(health: ClientHealthScoreResult) {
+  if (health.hasShareOfWalletData) {
+    return {
+      value: `${health.shareOfWalletPct}%`,
+      detail: `Potencial: ${fmtBRL(health.potentialUntappedBRL)}`,
+      footer: `Share-of-wallet: ${health.shareOfWalletPct}%`,
+    };
+  }
+  return {
+    value: "Indisponível",
+    detail: "Sem dados de mercado total",
+    footer: "Share-of-wallet: indisponível",
+  };
+}
+
 // Paleta corporativa (violeta/fuchsia + neutros)
 const C = {
   primary: "6D28D9", // violet-700
@@ -181,16 +196,17 @@ export async function generateBIPptx({
     x: 0.5, y: 0.4, w: 12, h: 0.6,
     fontSize: 28, fontFace: "Calibri", color: C.text, bold: true,
   });
-  s2.addText("KPIs principais e share-of-wallet estimado", {
+  s2.addText("KPIs principais e indicadores disponíveis", {
     x: 0.5, y: 1.0, w: 12, h: 0.4,
     fontSize: 13, fontFace: "Calibri", color: C.muted,
   });
+  const walletCopy = shareWalletCopy(health);
 
   const kpis = [
     { label: "LTV TOTAL", value: fmtBRL(bi.ltv), sub: `${bi.ordersCount} pedidos`, color: C.primary },
     { label: "TICKET MÉDIO", value: fmtBRL(bi.avgTicket), sub: "por pedido", color: C.accent },
     { label: "ÚLT. COMPRA", value: bi.daysSinceLastOrder !== null && bi.daysSinceLastOrder !== undefined ? `${bi.daysSinceLastOrder}d` : "—", sub: "atrás", color: C.warn },
-    { label: "SHARE-OF-WALLET", value: `${health.shareOfWalletPct}%`, sub: `Potencial: ${fmtBRL(health.potentialUntappedBRL)}`, color: C.good },
+    { label: "SHARE-OF-WALLET", value: walletCopy.value, sub: walletCopy.detail, color: C.muted },
   ];
   kpis.forEach((k, i) => {
     const x = 0.5 + i * 3.15;
@@ -321,7 +337,7 @@ export async function generateBIPptx({
   });
 
   s5.addText(
-    `Janela ideal: ${health.windowLabel}  |  Share-of-wallet: ${health.shareOfWalletPct}%  |  Potencial: ${fmtBRL(health.potentialUntappedBRL)}`,
+    `Janela ideal: ${health.windowLabel}  |  ${walletCopy.footer}`,
     { x: 0.8, y: 6.4, w: 12, h: 0.5, fontSize: 12, color: C.bgLight, italic: true, align: "center" },
   );
 

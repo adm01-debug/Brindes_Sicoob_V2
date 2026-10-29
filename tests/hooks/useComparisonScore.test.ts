@@ -54,4 +54,18 @@ describe("useComparisonScore", () => {
     const ranks = result.current.map(s => s.rank).sort();
     expect(ranks).toEqual([1, 2, 3]);
   });
+
+  it("usa prazo real do fornecedor quando todos os produtos têm esse dado", () => {
+    const products = [mk({ id: "a", leadTimeDays: 12 }), mk({ id: "b", leadTimeDays: 4 })];
+    const { result } = renderHook(() => useComparisonScore(products));
+    expect(result.current.find((score) => score.productId === "b")?.breakdown.leadTime).toBe(10);
+    expect(result.current.find((score) => score.productId === "a")?.breakdown.leadTime).toBe(0);
+  });
+
+  it("não infere prazo a partir do estoque quando o fornecedor não informa o prazo", () => {
+    const products = [mk({ id: "a", stockStatus: "in-stock" }), mk({ id: "b", stockStatus: "out-of-stock" })];
+    const { result } = renderHook(() => useComparisonScore(products));
+    expect(result.current.every((score) => score.breakdown.leadTime === 0)).toBe(true);
+    expect(result.current[0]?.total).toBe(result.current[1]?.total);
+  });
 });

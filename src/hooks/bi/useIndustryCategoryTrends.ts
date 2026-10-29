@@ -2,15 +2,14 @@
  * useIndustryCategoryTrends — agrega top produtos do setor por CATEGORIA.
  *
  * Reaproveita o RPC `get_industry_top_products` (já usado em useIndustryTrends)
- * e dobra o resultado por categoria. Quando vazio, cai para mock derivado
- * de getMockIndustryTrends.
+ * e dobra o resultado por categoria. Sem empresas/dados suficientes, retorna
+ * categorias vazias e identifica a ausência de amostra.
  */
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { selectCrm } from "@/lib/crm-db";
 import { resolveBICategory, type BICategorySlug } from "@/lib/bi/categoryResolver";
-import { getMockIndustryTrends } from "@/lib/bi/mockData";
 
 export interface IndustryCategoryAggregate {
   slug: BICategorySlug | "outros";
@@ -32,6 +31,7 @@ export interface IndustryCategoryAggregate {
 
 export interface IndustryCategoryTrendsResult {
   isMock: boolean;
+  hasData: boolean;
   companiesInRamo: number;
   categories: IndustryCategoryAggregate[];
 }
@@ -46,56 +46,13 @@ interface IndustryRow {
   avg_unit_price: number;
 }
 
-function buildMockResult(ramo?: string | null): IndustryCategoryTrendsResult {
-  const trends = getMockIndustryTrends(ramo);
-  const byCat = new Map<string, IndustryCategoryAggregate>();
-  for (const t of trends) {
-    const meta = resolveBICategory(t.productName, t.category);
-    const key = meta.slug;
-    const cur = byCat.get(key) ?? {
-      slug: meta.slug,
-      label: meta.label,
-      totalQuantity: 0,
-      uniqueClients: 0,
-      totalRevenue: 0,
-      revenueSharePct: 0,
-      topProducts: [],
-    };
-    cur.totalQuantity += t.unitsSold;
-    cur.uniqueClients += t.ordersCount;
-    cur.totalRevenue += t.unitsSold * t.avgPrice;
-    cur.topProducts.push({
-      productId: null,
-      productName: t.productName,
-      imageUrl: null,
-      quantity: t.unitsSold,
-      revenue: t.unitsSold * t.avgPrice,
-      avgPrice: t.avgPrice,
-    });
-    byCat.set(key, cur);
-  }
-  const totalRev = Array.from(byCat.values()).reduce((s, c) => s + c.totalRevenue, 0) || 1;
-  const categories = Array.from(byCat.values())
-    .map((c) => ({
-      ...c,
-      revenueSharePct: (c.totalRevenue / totalRev) * 100,
-      topProducts: c.topProducts.sort((a, b) => b.revenue - a.revenue).slice(0, 5),
-    }))
-    .sort((a, b) => b.totalRevenue - a.totalRevenue);
-  return { isMock: true, companiesInRamo: 0, categories };
-}
-
 async function fetchCompanyIds(ramoAtividade: string) {
-  try {
-    const companies = await selectCrm<{ id: string }>("companies", {
-      select: "id",
-      filters: { ramo_atividade: ramoAtividade, deleted_at: null },
-      limit: 500,
-    });
-    return companies.map((company) => company.id).filter(Boolean);
-  } catch {
-    return [];
-  }
+  const companies = await selectCrm<{ id: string }>("companies", {
+    select: "id",
+    filters: { ramo_atividade: ramoAtividade, deleted_at: null },
+    limit: 500,
+  });
+  return companies.map((company) => company.id).filter(Boolean);
 }
 
 async function fetchIndustryRows(companyIds: string[]) {
@@ -104,7 +61,8 @@ async function fetchIndustryRows(companyIds: string[]) {
     _days: 90,
     _limit: 50,
   });
-  if (error || !Array.isArray(data)) return [];
+  if (error) throw error;
+  if (!Array.isArray(data)) return [];
   return data as unknown as IndustryRow[];
 }
 
@@ -146,15 +104,16 @@ function aggregateIndustryRows(rows: IndustryRow[]) {
 }
 
 async function fetchIndustryCategoryTrends(ramoAtividade: string | null | undefined) {
-  if (!ramoAtividade) return buildMockResult(null);
+  if (!ramoAtividade) return { isMock: false, hasData: false, companiesInRamo: 0, categories: [] };
   const companyIds = await fetchCompanyIds(ramoAtividade);
-  if (companyIds.length === 0) return buildMockResult(ramoAtividade);
+  if (companyIds.length === 0) return { isMock: false, hasData: false, companiesInRamo: 0, categories: [] };
   const rows = await fetchIndustryRows(companyIds);
   if (rows.length === 0) {
-    return { ...buildMockResult(ramoAtividade), companiesInRamo: companyIds.length };
+    return { isMock: false, hasData: false, companiesInRamo: companyIds.length, categories: [] };
   }
   return {
     isMock: false,
+    hasData: true,
     companiesInRamo: companyIds.length,
     categories: aggregateIndustryRows(rows),
   };
@@ -169,14 +128,11 @@ export function useIndustryCategoryTrends(ramoAtividade?: string | null) {
   });
 
   return useMemo(
-    () =>
-      query.data ?? {
-        isMock: true,
-        companiesInRamo: 0,
-        categories: [] as IndustryCategoryAggregate[],
-      },
-    [query.data],
-  ).categories.length === 0
-    ? { ...(query.data ?? buildMockResult(ramoAtividade)), isLoading: query.isLoading }
-    : { ...(query.data as IndustryCategoryTrendsResult), isLoading: query.isLoading };
+    () => ({
+      ...(query.data ?? { isMock: false, hasData: false, companiesInRamo: 0, categories: [] as IndustryCategoryAggregate[] }),
+      isLoading: query.isLoading,
+      isError: query.isError,
+    }),
+    [query.data, query.isLoading, query.isError],
+  );
 }

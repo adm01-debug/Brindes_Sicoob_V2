@@ -72,9 +72,14 @@ const TIER_STYLES = {
     scoreText: 'text-muted-foreground',
     progressBar: '',
     icon: Info,
-    label: 'Calculando',
+    label: 'Sem histórico',
   },
 };
+
+function getTierLabel(tier: keyof typeof TIER_STYLES, nextActionLabel: string) {
+  if (tier !== "unknown") return TIER_STYLES[tier].label;
+  return nextActionLabel === "Dados indisponíveis" ? "Dados indisponíveis" : "Sem histórico";
+}
 
 export function ClientHealthHero({ clientId, ramoAtividade, clientName }: Props) {
   const health = useClientHealthScore(clientId, ramoAtividade);
@@ -98,6 +103,7 @@ export function ClientHealthHero({ clientId, ramoAtividade, clientName }: Props)
 
   const styles = TIER_STYLES[health.tier];
   const Icon = styles.icon;
+  const tierLabel = getTierLabel(health.tier, health.nextActionLabel);
 
   // Monta sugestões: top 3 afinidade + top 2 tendência setor
   const suggestions = useMemo<SuggestionItem[]>(() => {
@@ -193,7 +199,7 @@ export function ClientHealthHero({ clientId, ramoAtividade, clientName }: Props)
                 className={cn('gap-1 border', styles.badgeBg, 'justify-center lg:w-full')}
               >
                 <Icon className="h-3 w-3" />
-                {styles.label}
+                {tierLabel}
               </Badge>
             </div>
 

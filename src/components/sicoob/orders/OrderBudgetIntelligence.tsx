@@ -58,7 +58,7 @@ export function OrderBudgetIntelligence({
         <div className="space-y-2">
           <div className="flex justify-between items-center text-[10px] font-bold">
             <span className="flex items-center gap-1">
-              <Wallet className="h-3 w-3" /> Uso da Verba Trimestral
+              <Wallet className="h-3 w-3" /> Uso da Verba Mensal
             </span>
             <span>{percentageAfterOrder.toFixed(1)}%</span>
           </div>

@@ -307,3 +307,11 @@ Para o ECR, os dois scripts `scripts/qa/simular-controles-auditoria.py` e `scrip
 - **Escopo do PR #157:** não altera migrations, schema, dados nem Edge Functions. Não existe operação de banco a executar para publicar as mudanças desse PR.
 - **CI mais recente observado:** E2E falhou durante setup remoto; Lighthouse falhou uma vez por LCP 2.610–2.617 ms contra limite 2.600 ms, com rerun ainda em andamento; `Segurança, contratos e build` ainda estava em execução; Copilot reviewer retornou HTTP 402. Os demais gates obrigatórios observados estavam verdes. Não integrar até a conclusão dos gates exigidos.
 - **Ação pendente:** resolver o setup/disponibilidade do Supabase remoto para o E2E, aguardar o rerun do Lighthouse e a conclusão do gate de segurança/build; depois repetir a prova de checks. O bloqueio do Copilot depende do serviço/limite externo e não é resolvido por alteração de aplicação.
+
+## Atualização C-07 — BI e métricas presumidas — 29/10/2026
+
+O lote do PR #157 removeu as principais métricas sintéticas catalogadas em C-07: fallback de BI por cliente, benchmark de demonstração, sazonalidade simulada, badges de mercado inventados, ETA inferido do status de estoque, verba presumida de R$ 50 mil, estimativa heurística de share-of-wallet e referência de limite de 10% no texto de reprovação. Falhas de consulta agora aparecem como indisponibilidade, separadas de amostra vazia.
+
+**Estado:** correções implementadas e validadas localmente no branch do PR; ainda não disponíveis na `main`. A integração continua pendente dos gates remotos do PR. O banco canônico segue somente leitura; este lote não precisa de migration nem escrita de dados.
+
+**Validação local:** build e typecheck passaram; lint sem erros e 872 avisos (baseline 873); suíte completa com 5.855 testes aprovados e 68 ignorados. Não houve regressão observada nos checks locais.

@@ -72,13 +72,15 @@ export function useBIDossierExport(clientId: string | null): UseBIDossierExport 
         clientBI,
         vsIndustry,
         affinity: affinityQ.data ?? {
-          isMock: true,
+          isMock: false,
+          hasData: false,
           realProductsCount: 0,
           categories: [],
           topProducts: [],
         },
         industryTrends: trendsQ.data ?? {
-          isMock: true,
+          isMock: false,
+          hasData: false,
           companiesInRamo: 0,
           trends: [],
         },

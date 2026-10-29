@@ -137,7 +137,7 @@ function ClientColumn({ clientId, onRemove }: { clientId: string; onRemove: () =
         </div>
         <div className="flex justify-between gap-2">
           <dt className="text-muted-foreground">Share-of-wallet</dt>
-          <dd className="font-medium tabular-nums">{row.shareOfWalletPct}%</dd>
+          <dd className="font-medium tabular-nums">{row.hasShareOfWalletData ? `${row.shareOfWalletPct}%` : "Não calculado"}</dd>
         </div>
       </dl>
     </div>

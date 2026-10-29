@@ -31,6 +31,7 @@ export interface ClientComparisonRow {
   opportunityCategorySharePct: number;
   nextPeakLabel: string;
   daysToNextPeak: number | null;
+  hasShareOfWalletData: boolean;
   shareOfWalletPct: number;
 }
 
@@ -109,6 +110,7 @@ export function useSingleClientComparisonRow(clientId: string): ClientComparison
     opportunityCategorySharePct: opportunity.sharePct,
     nextPeakLabel,
     daysToNextPeak: seas.daysToNextPeak,
+    hasShareOfWalletData: health.hasShareOfWalletData,
     shareOfWalletPct: health.shareOfWalletPct,
   };
 }

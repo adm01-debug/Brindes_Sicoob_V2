@@ -7,7 +7,7 @@
  *  - minQuantity (15) — quanto menor melhor
  *  - colorVariety (10) — quanto mais cores melhor
  *  - verifiedSupplier (10) — bônus se verificado
- *  - leadTime (10) — quanto menor melhor (proxy: stockStatus)
+ *  - leadTime (10) — quanto menor melhor (somente prazo real do fornecedor)
  *
  * Pesos podem ser sobrescritos pelo consumidor (popover de ajuste).
  */
@@ -44,16 +44,6 @@ export interface ProductScore {
   rank: number;
 }
 
-function leadTimeProxy(stockStatus: string | undefined): number {
-  // Lower is better → in-stock=1, low-stock=2, out-of-stock=4
-  switch (stockStatus) {
-    case "in-stock": return 1;
-    case "low-stock": return 2;
-    case "out-of-stock": return 4;
-    default: return 2;
-  }
-}
-
 function normalizeLowerBetter(value: number, min: number, max: number): number {
   if (max === min) return 1;
   return 1 - (value - min) / (max - min);
@@ -79,7 +69,10 @@ export function useComparisonScore(
     const stocks = products.map(p => Number(p.stock ?? 0));
     const mins = products.map(p => Number(p.minQuantity ?? 1));
     const colorCounts = products.map(p => (p.colors?.length ?? 0));
-    const leadTimes = products.map(p => leadTimeProxy(p.stockStatus));
+    const hasCompleteLeadTime = products.every(
+      (product) => typeof product.leadTimeDays === "number" && Number.isFinite(product.leadTimeDays),
+    );
+    const leadTimes = products.map(p => p.leadTimeDays ?? 0);
 
     const minPrice = Math.min(...prices);
     const maxPrice = Math.max(...prices);
@@ -92,17 +85,20 @@ export function useComparisonScore(
     const minLead = Math.min(...leadTimes);
     const maxLead = Math.max(...leadTimes);
 
-    const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0) || 1;
+    const effectiveWeights = hasCompleteLeadTime ? weights : { ...weights, leadTime: 0 };
+    const totalWeight = Object.values(effectiveWeights).reduce((a, b) => a + b, 0) || 1;
 
     const scores = products.map((p, i) => {
       const verified = Boolean(p.supplier?.verified ?? p.supplier?.isVerified ?? false);
       const breakdown: Record<keyof ComparisonScoreWeights, number> = {
-        price: normalizeLowerBetter(metricAt(prices, i, 0), minPrice, maxPrice) * weights.price,
-        stock: normalizeHigherBetter(metricAt(stocks, i, 0), minStock, maxStock) * weights.stock,
-        minQuantity: normalizeLowerBetter(metricAt(mins, i, 1), minMin, maxMin) * weights.minQuantity,
-        colorVariety: normalizeHigherBetter(colorCounts[i] ?? 0, minColors, maxColors) * weights.colorVariety,
-        verifiedSupplier: (verified ? 1 : 0.4) * weights.verifiedSupplier,
-        leadTime: normalizeLowerBetter(metricAt(leadTimes, i, 2), minLead, maxLead) * weights.leadTime,
+        price: normalizeLowerBetter(metricAt(prices, i, 0), minPrice, maxPrice) * effectiveWeights.price,
+        stock: normalizeHigherBetter(metricAt(stocks, i, 0), minStock, maxStock) * effectiveWeights.stock,
+        minQuantity: normalizeLowerBetter(metricAt(mins, i, 1), minMin, maxMin) * effectiveWeights.minQuantity,
+        colorVariety: normalizeHigherBetter(colorCounts[i] ?? 0, minColors, maxColors) * effectiveWeights.colorVariety,
+        verifiedSupplier: (verified ? 1 : 0.4) * effectiveWeights.verifiedSupplier,
+        leadTime: hasCompleteLeadTime
+          ? normalizeLowerBetter(metricAt(leadTimes, i, 0), minLead, maxLead) * effectiveWeights.leadTime
+          : 0,
       };
       const total = Object.values(breakdown).reduce((a, b) => a + b, 0);
       return {

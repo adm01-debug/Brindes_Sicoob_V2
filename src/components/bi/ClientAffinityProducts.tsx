@@ -1,11 +1,11 @@
 /**
  * ClientAffinityProducts — Zona 2: "O que esse cliente gosta"
- * Usa dados reais de quote_items quando existem; fallback mock caso contrário.
+ * Usa dados reais de quote_items e distingue falhas de carregamento da ausência de histórico.
  */
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Heart, Sparkles, CheckCircle2 } from "lucide-react";
+import { Heart, CheckCircle2 } from "lucide-react";
 import { useClientAffinity } from "@/hooks/bi/useClientAffinity";
 import { useBICategoryFocus } from "@/contexts/BICategoryFocusContext";
 import { resolveBICategory } from "@/lib/bi/categoryResolver";
@@ -17,7 +17,7 @@ interface Props {
 }
 
 export function ClientAffinityProducts({ clientId }: Props) {
-  const { data, isLoading } = useClientAffinity(clientId);
+  const { data, isLoading, isError } = useClientAffinity(clientId);
   const { focusedSlug } = useBICategoryFocus();
 
   const visibleCategories = useMemo(() => {
@@ -38,22 +38,19 @@ export function ClientAffinityProducts({ clientId }: Props) {
             <div>
               <h2 className="font-display font-semibold">Produtos das categorias favoritas</h2>
               <p className="text-xs text-muted-foreground">
-                {data?.isMock
-                  ? "Categorias preferidas + sugestões dentro de cada uma"
-                  : `Baseado em ${data?.realProductsCount} produtos já orçados · agrupados por categoria`}
+                {isError
+                  ? "Não foi possível carregar o histórico deste cliente."
+                  : data?.hasData
+                  ? `Baseado em ${data.realProductsCount} produtos já orçados · agrupados por categoria`
+                  : "Sem histórico de orçamento suficiente para identificar preferências."}
               </p>
             </div>
           </div>
-          {data &&
-            (data.isMock ? (
-              <Badge variant="outline" className="gap-1 border-amber-500/50 text-amber-700 dark:text-amber-300 text-[10px]">
-                <Sparkles className="h-3 w-3" /> Simulado
-              </Badge>
-            ) : (
+          {data?.hasData && (
               <Badge variant="outline" className="gap-1 border-emerald-500/50 text-emerald-700 dark:text-emerald-300 text-[10px]">
                 <CheckCircle2 className="h-3 w-3" /> Dados reais
               </Badge>
-            ))}
+            )}
         </div>
 
         {isLoading ? (
@@ -61,7 +58,15 @@ export function ClientAffinityProducts({ clientId }: Props) {
             {[1, 2, 3].map((i) => <Skeleton key={i} className="h-44 rounded-xl" />)}
           </div>
         ) : (
-          <div className="space-y-5">
+          isError ? (
+            <p role="alert" className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+              Falha ao consultar o histórico do cliente. Atualize o painel para tentar novamente.
+            </p>
+          ) : visibleCategories.length === 0 ? (
+            <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+              Quando houver orçamentos registrados para este cliente, as categorias aparecerão aqui.
+            </p>
+          ) : <div className="space-y-5">
             {visibleCategories.map((cat) => (
               <div key={cat.category}>
                 <div className="flex items-center justify-between mb-2">

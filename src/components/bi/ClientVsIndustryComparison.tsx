@@ -1,14 +1,13 @@
 /**
  * ClientVsIndustryComparison — Zona 5 do BI.
- * Sprint 2: 5ª métrica = Share-of-Wallet (estimativa heurística) com gap em R$.
+ * Mostra somente métricas comparáveis presentes nas fontes reais.
  */
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Scale, TrendingUp, TrendingDown, Minus, Lightbulb, Info, Wallet } from "lucide-react";
+import { Scale, TrendingUp, TrendingDown, Minus, Lightbulb, Info } from "lucide-react";
 import { useClientVsIndustry, type MetricComparison } from "@/hooks/bi/useClientVsIndustry";
 import { ComparisonSkeleton } from "@/components/bi/BISkeletons";
-import { formatCurrencyCompact, formatCurrency } from "@/lib/format";
+import { formatCurrencyCompact } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -84,63 +83,13 @@ function MetricRow({ metric }: { metric: MetricComparison }) {
   );
 }
 
-/** Card especial: Share-of-Wallet com gauge e gap em R$. */
-function ShareOfWalletCard({ clientLtv, industryAvgLtv }: { clientLtv: number; industryAvgLtv: number }) {
-  const [open, setOpen] = useState(false);
-  // Heurística: cliente / (cliente + 1.5 × média setor) — capped 5..95%
-  const denom = clientLtv + industryAvgLtv * 1.5;
-  const rawShare = denom > 0 ? clientLtv / denom : 0;
-  const share = Math.max(0.05, Math.min(0.95, rawShare));
-  const sharePct = Math.round(share * 100);
-  // Gap: receita potencial não capturada = 1.5 × setor (top tier) − cliente atual
-  const potentialCap = industryAvgLtv * 1.5;
-  const gap = Math.max(0, potentialCap - clientLtv);
-
-  const tone =
-    sharePct >= 50 ? { text: "text-success", bar: "bg-success", bg: "bg-success/10", label: "Carteira dominante" }
-    : sharePct >= 25 ? { text: "text-warning", bar: "bg-warning", bg: "bg-warning/10", label: "Espaço para crescer" }
-    : { text: "text-destructive", bar: "bg-destructive", bg: "bg-destructive/10", label: "Baixa penetração" };
-
-  return (
-    <button
-      type="button"
-      onClick={() => setOpen((o) => !o)}
-      className="text-left space-y-2 p-3 rounded-lg border bg-card/50 hover:border-primary/40 hover:shadow-sm transition-all"
-      aria-expanded={open}
-    >
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-          <Wallet className="h-3 w-3" /> Share of wallet
-        </span>
-        <Badge variant="outline" className={cn("text-[10px] gap-1 border-0", tone.bg, tone.text)}>
-          {sharePct}%
-        </Badge>
-      </div>
-      <div className={cn("font-display text-2xl font-bold tabular-nums", tone.text)}>{sharePct}%</div>
-      <div className="h-2 rounded-full bg-muted overflow-hidden">
-        <div className={cn("h-full rounded-full transition-all", tone.bar)} style={{ width: `${sharePct}%` }} />
-      </div>
-      <div className="flex items-center justify-between text-[11px]">
-        <span className="text-muted-foreground">Gap não capturado</span>
-        <span className="font-bold text-foreground">{formatCurrency(gap)}</span>
-      </div>
-      <p className={cn("text-[10px] font-medium", tone.text)}>{tone.label}</p>
-      {open && (
-        <p className="text-[10px] leading-relaxed text-muted-foreground pt-1 border-t">
-          Estimativa baseada no LTV do cliente vs LTV potencial do ramo (1.5× a média). Gap representa
-          quanto este cliente ainda pode crescer dentro do seu setor.
-        </p>
-      )}
-    </button>
-  );
-}
-
 export function ClientVsIndustryComparison({ clientId, ramoAtividade }: Props) {
-  const { isLoading, hasEnoughSample, sampleSize, daysWindow, metrics, insight } =
+  const { isLoading, hasError, hasEnoughSample, sampleSize, daysWindow, metrics, insight } =
     useClientVsIndustry(clientId, ramoAtividade);
 
   if (!ramoAtividade) return null;
   if (isLoading) return <ComparisonSkeleton />;
+  if (hasError) return <Card role="alert" className="border-[1.5px] border-dashed"><CardContent className="p-6 text-sm text-muted-foreground">Não foi possível consultar o benchmark deste ramo. Atualize o painel para tentar novamente.</CardContent></Card>;
 
   if (!hasEnoughSample) {
     return (
@@ -161,8 +110,6 @@ export function ClientVsIndustryComparison({ clientId, ramoAtividade }: Props) {
       </Card>
     );
   }
-
-  const ltvMetric = metrics.find((m) => m.label === "LTV");
 
   return (
     <Card className="border-[1.5px]">
@@ -190,12 +137,6 @@ export function ClientVsIndustryComparison({ clientId, ramoAtividade }: Props) {
           {metrics.map((m) => (
             <MetricRow key={m.label} metric={m} />
           ))}
-          {ltvMetric && (
-            <ShareOfWalletCard
-              clientLtv={ltvMetric.clientValue}
-              industryAvgLtv={ltvMetric.industryAvg}
-            />
-          )}
         </div>
 
         {insight && (

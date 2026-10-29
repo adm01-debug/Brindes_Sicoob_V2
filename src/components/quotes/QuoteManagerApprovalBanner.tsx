@@ -57,7 +57,7 @@ function RejectDialog({ open, setOpen, notes, setNotes, processing, onConfirm }:
     <DialogTitle className="flex items-center gap-2 text-destructive"><XCircle className="h-5 w-5" />Reprovar Desconto</DialogTitle>
     <DialogDescription>Explique ao vendedor por que o desconto não foi autorizado e o que ele deve ajustar.</DialogDescription>
   </DialogHeader><div className="py-4"><Label htmlFor="reject-reason" className="text-sm font-semibold mb-2 block">Motivo da Reprovação</Label>
-    <Textarea id="reject-reason" placeholder="Ex: Margem muito baixa para este cliente, tente reduzir o desconto para no máximo 10%..."
+    <Textarea id="reject-reason" placeholder="Ex: Margem muito baixa para este cliente, ajuste o desconto ao limite autorizado."
       value={notes} onChange={(event) => setNotes(event.target.value)} rows={4} className="resize-none" autoFocus />
   </div><DialogFooter className="gap-2 sm:gap-0"><Button variant="ghost" onClick={() => setOpen(false)} disabled={processing}>Cancelar</Button>
     <Button variant="destructive" className="gap-2" onClick={onConfirm} disabled={processing || !notes.trim()}>

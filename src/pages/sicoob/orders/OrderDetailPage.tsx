@@ -158,12 +158,13 @@ function useOrderDetailController() {
   const order = resources.orderQuery.data ?? undefined;
   const activeRequest = resources.approval.requests?.find(request => request.status === "pending");
   const orderTotal = order?.total_amount ?? 0;
+  const hasBudget = Boolean(resources.budget.budget && resources.budget.budget.verba_total > 0);
   const isOverThreshold = resources.threshold.needsApproval(orderTotal);
-  const isOverBudget = orderTotal > resources.budget.remainingBudget;
+  const isOverBudget = hasBudget && orderTotal > resources.budget.remainingBudget;
   const canManageFulfillment = canManageSicoobOrderFulfillment(order, resources.auth.profile, resources.auth.roles);
   const context = { orderId, order, dialogs, resources, activeRequest, orderTotal, isOverBudget };
   const exportDossier = () => { if (!order) return; exportOrderDossier({ orderData: order, orderItems: resources.details.items ?? [], orderHistory: resources.history.history ?? [], orderTotal }); toast.success("Dossiê exportado com sucesso"); };
-  return { orderId, navigate, dialogs, resources, order, activeRequest, orderTotal, isOverThreshold, isOverBudget, canManageFulfillment, canApprove: canApproveOrder(resources, order), canEditItems: Boolean(order && canManageFulfillment && canEditSicoobOrderItems(order.status)), allowedTabs: allowedOrderTabs(canManageFulfillment, resources.auth.isSupervisorOrAbove), actions: { requestApproval: requestApprovalAction(context), approve: approveAction(context), reject: rejectAction(context), escalate: escalateAction(context), updateStatus: statusUpdateAction(context), exportDossier } };
+  return { orderId, navigate, dialogs, resources, order, activeRequest, orderTotal, hasBudget, isOverThreshold, isOverBudget, canManageFulfillment, canApprove: canApproveOrder(resources, order), canEditItems: Boolean(order && canManageFulfillment && canEditSicoobOrderItems(order.status)), allowedTabs: allowedOrderTabs(canManageFulfillment, resources.auth.isSupervisorOrAbove), actions: { requestApproval: requestApprovalAction(context), approve: approveAction(context), reject: rejectAction(context), escalate: escalateAction(context), updateStatus: statusUpdateAction(context), exportDossier } };
 }
 
 type DetailController = ReturnType<typeof useOrderDetailController>;
@@ -234,6 +235,7 @@ function DetailTabs({ controller }: { controller: DetailController }) {
 }
 
 function BudgetProgress({ controller }: { controller: DetailController }) {
+  if (!controller.hasBudget) return <div className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">Verba desta PA não configurada para o mês. O saldo não pode ser calculado.</div>;
   const totalBudget = Math.max(controller.resources.budget.budget?.verba_total ?? 1, 1);
   const orderWidth = Math.min((controller.orderTotal / totalBudget) * 100, 100);
   const remainingLeft = Math.min(((controller.resources.budget.remainingBudget - controller.orderTotal) / totalBudget) * 100, 100);
@@ -243,13 +245,13 @@ function BudgetProgress({ controller }: { controller: DetailController }) {
 function ProductionCard({ controller }: { controller: DetailController }) {
   const order = controller.order;
   if (!order) return null;
-  return <Card><CardHeader><CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Produção e Logística</CardTitle></CardHeader><CardContent className="space-y-4">{controller.canManageFulfillment && <div className="space-y-2"><Label className="text-xs">Status do Workflow</Label><Select value={order.status} onValueChange={value => controller.actions.updateStatus(value as OrderStatus)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(ORDER_STATUS_CONFIG).map(([value, config]) => <SelectItem key={value} value={value} disabled={!canTransitionTo(order.status, value as OrderStatus)}>{config.label}</SelectItem>)}</SelectContent></Select></div>}<div className="flex items-center justify-between text-sm pt-2 border-t"><span className="text-muted-foreground flex items-center gap-2"><AlertCircle className="h-4 w-4" />Limite de Alçada</span><span className="font-bold">R$ {controller.resources.threshold.threshold.toLocaleString("pt-BR")}</span></div><BudgetProgress controller={controller} />{controller.isOverBudget ? <Alert variant="destructive" className="py-2 bg-destructive/10 border-destructive/20"><AlertCircle className="h-4 w-4" /><AlertDescription className="text-xs font-medium">Overbudget detectado.</AlertDescription></Alert> : <div className="p-3 bg-success/10 border border-success/20 rounded-lg"><p className="text-xs text-success font-medium flex items-center gap-1"><CheckCircle className="h-3 w-3" />Dentro da alçada e verba disponível.</p></div>}</CardContent></Card>;
+  return <Card><CardHeader><CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Produção e Logística</CardTitle></CardHeader><CardContent className="space-y-4">{controller.canManageFulfillment && <div className="space-y-2"><Label className="text-xs">Status do Workflow</Label><Select value={order.status} onValueChange={value => controller.actions.updateStatus(value as OrderStatus)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(ORDER_STATUS_CONFIG).map(([value, config]) => <SelectItem key={value} value={value} disabled={!canTransitionTo(order.status, value as OrderStatus)}>{config.label}</SelectItem>)}</SelectContent></Select></div>}<div className="flex items-center justify-between text-sm pt-2 border-t"><span className="text-muted-foreground flex items-center gap-2"><AlertCircle className="h-4 w-4" />Limite de Alçada</span><span className="font-bold">R$ {controller.resources.threshold.threshold.toLocaleString("pt-BR")}</span></div><BudgetProgress controller={controller} />{controller.hasBudget ? controller.isOverBudget ? <Alert variant="destructive" className="py-2 bg-destructive/10 border-destructive/20"><AlertCircle className="h-4 w-4" /><AlertDescription className="text-xs font-medium">Verba disponível insuficiente para este pedido.</AlertDescription></Alert> : <div className="p-3 bg-success/10 border border-success/20 rounded-lg"><p className="text-xs text-success font-medium flex items-center gap-1"><CheckCircle className="h-3 w-3" />Dentro da alçada e verba disponível.</p></div> : <div className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">Status orçamentário não validado: cadastre a verba mensal da PA.</div>}</CardContent></Card>;
 }
 
 function IntelligenceSidebar({ controller }: { controller: DetailController }) {
   const order = controller.order;
   if (!order) return null;
-  return <div className="space-y-6"><OrderBudgetIntelligence orderTotal={controller.orderTotal} remainingBudget={controller.resources.budget.remainingBudget} allocatedBudget={controller.resources.budget.budget?.verba_total || 50000} paName={order.pa?.nome || "PA Sicoob"} /><LogisticsCommandCenter orderId={controller.orderId} trackingCode={order.tracking_code} status={order.status} /></div>;
+  return <div className="space-y-6">{controller.hasBudget ? <OrderBudgetIntelligence orderTotal={controller.orderTotal} remainingBudget={controller.resources.budget.remainingBudget} allocatedBudget={controller.resources.budget.budget?.verba_total ?? 0} paName={order.pa?.nome || "PA Sicoob"} /> : <Card><CardContent className="p-4 text-sm text-muted-foreground">Sem verba mensal configurada para esta PA; a análise de consumo está indisponível.</CardContent></Card>}<LogisticsCommandCenter orderId={controller.orderId} trackingCode={order.tracking_code} status={order.status} /></div>;
 }
 
 export default function OrderDetailPage() {

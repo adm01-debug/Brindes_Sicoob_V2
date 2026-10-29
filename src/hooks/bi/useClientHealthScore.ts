@@ -30,7 +30,8 @@ export interface ClientHealthScoreResult {
   score: number; // 0-100
   tier: HealthTier;
   breakdown: HealthScoreBreakdown;
-  shareOfWalletPct: number; // estimativa
+  hasShareOfWalletData: boolean;
+  shareOfWalletPct: number;
   potentialUntappedBRL: number;
   growthPct: number; // % vs trimestre anterior
   nextActionLabel: string;
@@ -52,7 +53,7 @@ function recencyScore(days: number | null): number {
 }
 
 function ratioScore(client: number, industry: number): number {
-  if (!industry || industry <= 0) return client > 0 ? 60 : 0;
+  if (!industry || industry <= 0) return 50;
   const ratio = client / industry;
   if (ratio >= 1.3) return 100;
   if (ratio >= 1.1) return 90;
@@ -73,9 +74,9 @@ type IndustryComparison = ReturnType<typeof useClientVsIndustry>;
 type ClientSeasonality = ReturnType<typeof useClientSeasonality>;
 type ComparisonMetric = IndustryComparison["metrics"][number];
 
-function comparisonScore(metric: ComparisonMetric | undefined, fallbackClient: number, fallbackIndustry: number) {
-  if (metric) return ratioScore(metric.clientValue, metric.industryAvg);
-  return ratioScore(fallbackClient, fallbackIndustry);
+function comparisonScore(metric: ComparisonMetric | undefined) {
+  if (!metric) return 50;
+  return ratioScore(metric.clientValue, metric.industryAvg);
 }
 
 function growthMetrics(seasonality: ClientSeasonality) {
@@ -86,21 +87,9 @@ function growthMetrics(seasonality: ClientSeasonality) {
   }, 0);
   const recent = periodTotal([0, 1, 2]);
   const previous = periodTotal([3, 4, 5]);
-  const growthPct = previous > 0 ? ((recent - previous) / previous) * 100 : recent > 0 ? 50 : 0;
-  return { growthPct, score: Math.max(0, Math.min(100, 50 + growthPct)) };
-}
-
-function shareMetrics(ticketMetric: ComparisonMetric | undefined, bi: ClientBiData) {
-  const industryPotential = ticketMetric ? ticketMetric.industryAvg * 12 : bi.avgTicket * 12 || 30000;
-  const clientActual = bi.ltv > 0 ? bi.ltv : bi.avgTicket * bi.ordersCount;
-  const sharePct = industryPotential > 0
-    ? Math.min(100, (clientActual / industryPotential) * 100)
-    : 0;
-  return {
-    sharePct,
-    score: Math.min(100, sharePct * 1.5),
-    potentialUntapped: Math.max(0, industryPotential - clientActual),
-  };
+  const hasComparablePeriod = previous > 0;
+  const growthPct = hasComparablePeriod ? ((recent - previous) / previous) * 100 : 0;
+  return { growthPct, score: hasComparablePeriod ? Math.max(0, Math.min(100, 50 + growthPct)) : 50, hasComparablePeriod };
 }
 
 function nextAction(
@@ -164,7 +153,7 @@ function peakNote(seasonality: ClientSeasonality) {
   if (seasonality.daysToNextPeak !== null && seasonality.daysToNextPeak <= 30) {
     return `entra em pico em ${seasonality.daysToNextPeak} dias`;
   }
-  return "tem padrão sazonal definido";
+  return seasonality.nextPeakMonth === null ? "não há sazonalidade suficiente" : "tem padrão sazonal definido";
 }
 
 function ticketNote(metric: ComparisonMetric | undefined) {
@@ -179,35 +168,89 @@ function growthNote(growthPct: number) {
   return ".";
 }
 
-function buildHealthResult(
+function unknownHealthState(isLoading: boolean, hasError: boolean) {
+  if (isLoading) return "loading" as const;
+  return hasError ? "error" as const : "empty" as const;
+}
+
+function buildUnknownHealthResult(isLoading: boolean, hasError: boolean): ClientHealthScoreResult {
+  const state = unknownHealthState(isLoading, hasError);
+  const copy = {
+    loading: {
+      label: "carregando",
+      detail: "Carregando o histórico de pedidos deste cliente.",
+      action: "Carregando histórico",
+      window: "Carregando histórico",
+      insight: "Carregando o histórico de pedidos deste cliente.",
+    },
+    error: {
+      label: "indisponível",
+      detail: "Não foi possível carregar os pedidos. Tente atualizar o painel antes de tomar uma decisão.",
+      action: "Dados indisponíveis",
+      window: "Histórico indisponível",
+      insight: "Falha ao carregar o histórico; diagnóstico indisponível.",
+    },
+    empty: {
+      label: "sem histórico",
+      detail: "Ainda não há pedidos registrados para calcular a saúde deste cliente.",
+      action: "Aguardando histórico",
+      window: "Sem histórico de compras",
+      insight: "Sem histórico de pedidos para gerar um diagnóstico confiável.",
+    },
+  }[state];
+  return {
+    isLoading,
+    score: 0,
+    tier: "unknown",
+    breakdown: {
+      recency: { score: 0, weight: 30 / 0.9, label: `Recência · ${copy.label}` },
+      frequency: { score: 0, weight: 25 / 0.9, label: `Frequência · ${copy.label}` },
+      ticket: { score: 0, weight: 20 / 0.9, label: `Ticket · ${copy.label}` },
+      growth: { score: 0, weight: 15 / 0.9, label: `Crescimento · ${copy.label}` },
+      shareOfWallet: { score: 0, weight: 0, label: `Share-of-wallet · ${copy.label}` },
+    },
+    shareOfWalletPct: 0,
+    hasShareOfWalletData: false,
+    potentialUntappedBRL: 0,
+    growthPct: 0,
+    nextActionLabel: copy.action,
+    nextActionDetail: copy.detail,
+    scriptHint: "",
+    windowLabel: copy.window,
+    crossZoneInsight: copy.insight,
+    ctaLabel: "Consultar catálogo",
+    ctaUrgent: false,
+  };
+}
+
+function buildAvailableHealthResult(
   bi: ClientBiData,
   vs: IndustryComparison,
   seasonality: ClientSeasonality,
 ): ClientHealthScoreResult {
-  const isLoading = bi.isLoading || vs.isLoading || seasonality.isLoading;
   const recency = recencyScore(bi.daysSinceLastOrder);
   const frequencyMetric = vs.metrics.find((metric) => metric.label === "Frequência (pedidos)");
   const ticketMetric = vs.metrics.find((metric) => metric.label === "Ticket médio");
-  const frequency = comparisonScore(frequencyMetric, bi.ordersCount, 10);
-  const ticket = comparisonScore(ticketMetric, bi.avgTicket, 2500);
+  const frequency = comparisonScore(frequencyMetric);
+  const ticket = comparisonScore(ticketMetric);
   const growth = growthMetrics(seasonality);
-  const share = shareMetrics(ticketMetric, bi);
-  const score = Math.round(recency * 0.30 + frequency * 0.25 + ticket * 0.20 + growth.score * 0.15 + share.score * 0.10);
-  const action = nextAction(recency, ticket, growth.growthPct, share.sharePct, share.potentialUntapped, bi, seasonality);
+  const score = Math.round((recency * 0.30 + frequency * 0.25 + ticket * 0.20 + growth.score * 0.15) / 0.90);
+  const action = nextAction(recency, ticket, growth.growthPct, 0, 0, bi, seasonality);
   const hasUpcomingPeak = seasonality.daysToNextPeak !== null && seasonality.daysToNextPeak <= 30;
   return {
-    isLoading,
-    score: isLoading ? 0 : score,
-    tier: isLoading ? "unknown" : tierFromScore(score),
+    isLoading: false,
+    score,
+    tier: tierFromScore(score),
     breakdown: {
-      recency: { score: recency, weight: 30, label: "Recência" },
-      frequency: { score: frequency, weight: 25, label: "Frequência" },
-      ticket: { score: ticket, weight: 20, label: "Ticket vs setor" },
-      growth: { score: growth.score, weight: 15, label: "Crescimento" },
-      shareOfWallet: { score: share.score, weight: 10, label: "Share-of-wallet" },
+      recency: { score: recency, weight: 30 / 0.9, label: "Recência" },
+      frequency: { score: frequency, weight: 25 / 0.9, label: frequencyMetric ? "Frequência vs setor" : vs.hasError ? "Frequência · benchmark indisponível" : "Frequência · setor sem amostra" },
+      ticket: { score: ticket, weight: 20 / 0.9, label: ticketMetric ? "Ticket vs setor" : vs.hasError ? "Ticket · benchmark indisponível" : "Ticket · setor sem amostra" },
+      growth: { score: growth.score, weight: 15 / 0.9, label: growth.hasComparablePeriod ? "Crescimento" : "Crescimento · período sem base" },
+      shareOfWallet: { score: 0, weight: 0, label: "Indisponível · carteira total não informada" },
     },
-    shareOfWalletPct: Math.round(share.sharePct * 10) / 10,
-    potentialUntappedBRL: Math.round(share.potentialUntapped),
+    hasShareOfWalletData: false,
+    shareOfWalletPct: 0,
+    potentialUntappedBRL: 0,
     growthPct: Math.round(growth.growthPct),
     nextActionLabel: action.label,
     nextActionDetail: action.detail,
@@ -217,6 +260,16 @@ function buildHealthResult(
     ctaLabel: action.urgent && hasUpcomingPeak ? "Criar orçamento de oportunidade" : "Criar orçamento com sugestões",
     ctaUrgent: action.urgent,
   };
+}
+
+function buildHealthResult(
+  bi: ClientBiData,
+  vs: IndustryComparison,
+  seasonality: ClientSeasonality,
+): ClientHealthScoreResult {
+  const isLoading = bi.isLoading || vs.isLoading || seasonality.isLoading;
+  if (isLoading || !bi.hasData) return buildUnknownHealthResult(isLoading, bi.hasError);
+  return buildAvailableHealthResult(bi, vs, seasonality);
 }
 
 export function useClientHealthScore(

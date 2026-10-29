@@ -1,13 +1,12 @@
 /**
  * useClientSeasonality — sazonalidade Cliente × Setor (12 meses).
  * Combina RPC do cliente + RPC do setor (empresas mesmo ramo).
- * Calcula: distribuição mensal, top 3 picos, próximo pico, insight textual.
- * Fallback mock determinístico se < 3 meses com dados.
+ * Calcula distribuição mensal, top 3 picos, próximo pico e insight textual.
+ * Picos e projeções só são calculados com pelo menos 3 meses reais cobertos.
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { selectCrm } from "@/lib/crm-db";
-import { getMockSeasonality } from "@/lib/bi/mockData";
 
 const MONTH_LABELS = [
   "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
@@ -41,6 +40,7 @@ export interface SeasonalityResult {
   isLoading: boolean;
   isMock: boolean;
   hasEnoughData: boolean;
+  hasIndustryData: boolean;
   monthsCovered: number;
   windowMonths: number;
   client: ClientMonthCell[]; // sempre 12 posições, Jan→Dez
@@ -186,20 +186,23 @@ function seasonalityResult(
   isLoading: boolean,
 ) {
   const { cells: client, monthsCovered } = buildClientCells(data?.clientRows ?? []);
-  const realIndustry = buildIndustryCells(data?.industryRows ?? []);
-  const base = { isLoading, monthsCovered, windowMonths: WINDOW_MONTHS };
+  const industry = buildIndustryCells(data?.industryRows ?? []);
+  const hasIndustryData = (data?.industryRows.length ?? 0) > 0;
+  const base = { isLoading, monthsCovered, windowMonths: WINDOW_MONTHS, isMock: false, hasIndustryData };
   if (monthsCovered < 3) {
-    const mock = getMockSeasonality();
-    return peakResult(mock.client, mock.industry, {
+    return {
       ...base,
-      isMock: true,
       hasEnoughData: false,
-    });
+      client,
+      industry,
+      topClientMonths: [],
+      topIndustryMonths: pickTop(industry, "avgQuotesPerCompany", 3),
+      nextPeakMonth: null,
+      daysToNextPeak: null,
+      insight: null,
+    };
   }
-  const industry = realIndustry.some((cell) => cell.avgQuotesPerCompany > 0)
-    ? realIndustry
-    : getMockSeasonality().industry;
-  return peakResult(client, industry, { ...base, isMock: false, hasEnoughData: true });
+  return peakResult(client, industry, { ...base, hasEnoughData: true });
 }
 
 function pickTop<T extends { quotesCount?: number; avgQuotesPerCompany?: number }>(

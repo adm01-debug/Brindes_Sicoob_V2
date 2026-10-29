@@ -28,7 +28,7 @@ const ROWS: Array<{
   { key: "minQty", label: "Quantidade mínima", format: p => `${p.minQuantity ?? 0} un.`, raw: p => p.minQuantity ?? 0, better: "lower" },
   { key: "stock", label: "Estoque", format: p => `${p.stock ?? 0} un.`, raw: p => p.stock ?? 0, better: "higher" },
   { key: "colors", label: "Variedade de cores", format: p => `${p.colors?.length ?? 0} opções`, raw: p => p.colors?.length ?? 0, better: "higher" },
-  { key: "leadTime", label: "Lead time (dias)", format: p => p.leadTimeDays ? `${p.leadTimeDays}d` : "—", raw: p => p.leadTimeDays ?? 999, better: "lower" },
+  { key: "leadTime", label: "Prazo do fornecedor", format: p => p.leadTimeDays !== null && p.leadTimeDays !== undefined ? `${p.leadTimeDays} dias` : "Não informado", raw: p => p.leadTimeDays ?? 999, better: "lower" },
 ];
 
 export function ComparisonDuelView({ products, formatCurrency, onRemove, onProductClick }: Props) {

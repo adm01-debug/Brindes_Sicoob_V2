@@ -281,3 +281,19 @@ Nenhuma escrita, migration, alteração de schema/dados ou publicação de funç
 No snapshot consultado, `npm audit`, CodeQL, Gitleaks, origem confiável, bundle, verba/aprovação, entrada responsiva e gate Sicoob estavam verdes. O E2E falhou no setup remoto, os shards foram pulados como consequência e o revisor Copilot falhou por HTTP 402. O Lighthouse excedeu o limite configurado de LCP por cerca de 10 ms (limite 2.600 ms; pior resultado observado 2.617 ms); uma repetição foi iniciada e ainda estava em execução na consulta final. `Segurança, contratos e build` também estava em execução nesse snapshot. Não declarar esses itens como sucesso até haver conclusão remota.
 
 Validações locais após o commit `a036bfdead2fd136120e545655a79222487ebe91`: build, lint (0 erros/873 avisos), typecheck (0 erros), Vitest (5.846 aprovados/68 ignorados), audit npm sem vulnerabilidades, dois simuladores PostgreSQL e hook pre-push concluíram com sucesso. Os checks locais não substituem os gates remotos pendentes.
+
+## Correções de dados apresentados como reais — C-07 — 29/10/2026
+
+Implementadas no branch do PR #157:
+
+- BI do cliente não substitui histórico, categorias, afinidades ou sazonalidade por fixtures. Mostra estado vazio ou indisponibilidade de consulta; erros de RPC/CRM são propagados e não viram “sem histórico” silenciosamente.
+- O benchmarking removeu a linha demonstrativa fixa de 24 empresas e seus valores simulados.
+- “Share-of-wallet” e o potencial calculado por heurística `1,5×` foram retirados: sem dados de mercado total por cliente, esse indicador fica indisponível e não reduz artificialmente o score. O score redistribui os pesos apenas entre indicadores calculáveis.
+- Selos de best-seller/ruptura usam somente as materialized views reais; sem amostra, permanecem ausentes. Tendências por setor não preenchem lacunas com catálogo sintético.
+- Comparação de prazo usa `leadTimeDays` informado pelo fornecedor. Sem prazo completo, o comparador não infere ETA pelo estoque nem pontua essa dimensão.
+- A tela de pedido não presume R$ 50 mil de verba: sem verba mensal configurada, saldo, consumo e situação orçamentária são apresentados como não calculáveis. O painel informa o período mensal.
+- O placeholder de reprovação de desconto não sugere um teto fixo de 10%; encaminha ao limite efetivamente autorizado.
+
+Validação local desta revisão: `npm run build` passou (avisos conhecidos de env local/PostCSS/chunks), `npm run typecheck` passou, `npm run lint` passou sem erros e com 872 avisos (baseline registrado: 873), e a suíte completa passou com 5.855 testes e 68 ignorados em 457 arquivos aprovados e 4 ignorados. O teste específico de score comparativo passou em 7/7.
+
+O Supabase canônico foi consultado apenas em leitura: 137 entradas no ledger, última `20261022230000_repair_migration_ledger_and_harden_search_path`, idêntica ao último arquivo local. Este lote não altera migrations, schema, dados ou Edge Functions; nenhuma escrita foi feita. O código permanece no branch/PR e ainda não foi integrado à `main` nem publicado.

@@ -27,16 +27,6 @@ const COLORS = [
   "hsl(var(--destructive))",
 ];
 
-function leadTimeScore(status: string | undefined): number {
-  // Higher is better in radar (already inverted)
-  switch (status) {
-    case "in-stock": return 100;
-    case "low-stock": return 60;
-    case "out-of-stock": return 20;
-    default: return 50;
-  }
-}
-
 export function ComparisonRadarChart({ products, className }: ComparisonRadarChartProps) {
   const data = useMemo(() => {
     if (!products || products.length === 0) return [];
@@ -56,8 +46,15 @@ export function ComparisonRadarChart({ products, className }: ComparisonRadarCha
       { key: "Estoque", values: stocks.map(v => Math.round((v / maxStock) * 100)) },
       { key: "Cores", values: colorCounts.map(v => Math.round((v / maxColors) * 100)) },
       { key: "Qtd. mín", values: mins.map(v => Math.round((1 - (v - 1) / Math.max(1, maxMin - 1)) * 100)) },
-      { key: "Lead time", values: products.map(p => leadTimeScore(p.stockStatus)) },
     ];
+    const leadTimeValues = products.map(product => product.leadTimeDays);
+    if (leadTimeValues.every((value): value is number => typeof value === "number" && Number.isFinite(value))) {
+      const maximumLeadTime = Math.max(...leadTimeValues, 1);
+      axes.push({
+        key: "Prazo",
+        values: leadTimeValues.map(value => Math.round((1 - value / maximumLeadTime) * 100)),
+      });
+    }
 
     return axes.map(axis => {
       const row: Record<string, string | number> = { axis: axis.key };

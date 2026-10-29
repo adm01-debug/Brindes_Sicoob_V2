@@ -25,7 +25,6 @@ import {
   TrendingDown,
   Minus,
   Target,
-  Sparkles,
   CheckCircle2,
   ChevronDown,
   ArrowRight,
@@ -155,8 +154,8 @@ function RadarLoading() {
   );
 }
 
-function RadarHelp({ isMock }: { isMock: boolean }) {
-  const source = isMock ? "dados simulados (cliente sem histórico)" : "100% baseado em pedidos reais";
+function RadarHelp({ hasData }: { hasData: boolean }) {
+  const source = hasData ? "dados reais disponíveis; categorias sem amostra não são preenchidas" : "sem amostra suficiente para comparar cliente e setor";
   return (
     <TooltipProvider delayDuration={150}>
       <Tooltip>
@@ -179,19 +178,19 @@ function RadarHelp({ isMock }: { isMock: boolean }) {
 interface RadarHeaderProps {
   clientName?: string;
   ramoAtividade: string | null;
-  isMock: boolean;
+  hasData: boolean;
   opportunities: number;
   superIndex: number;
 }
 
-function RadarBadges({ isMock, opportunities, superIndex }: Pick<RadarHeaderProps, "isMock" | "opportunities" | "superIndex">) {
+function RadarBadges({ hasData, opportunities, superIndex }: Pick<RadarHeaderProps, "hasData" | "opportunities" | "superIndex">) {
   return (
     <div className="flex flex-wrap items-center gap-1.5 shrink-0">
       {opportunities > 0 && <Badge className="gap-1 bg-violet-500 text-white text-[10px] hover:bg-violet-600"><Target className="h-3 w-3" />{opportunities} GAP</Badge>}
       {superIndex > 0 && <Badge variant="outline" className="gap-1 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 text-[10px]"><TrendingUp className="h-3 w-3" />{superIndex} super-índex</Badge>}
-      {isMock
-        ? <Badge variant="outline" className="gap-1 border-amber-500/50 text-amber-700 dark:text-amber-300 text-[10px]"><Sparkles className="h-3 w-3" /> Simulado</Badge>
-        : <Badge variant="outline" className="gap-1 border-emerald-500/50 text-emerald-700 dark:text-emerald-300 text-[10px]"><CheckCircle2 className="h-3 w-3" /> Dados reais</Badge>}
+      {hasData
+        ? <Badge variant="outline" className="gap-1 border-emerald-500/50 text-emerald-700 dark:text-emerald-300 text-[10px]"><CheckCircle2 className="h-3 w-3" /> Dados reais</Badge>
+        : <Badge variant="secondary" className="text-[10px]">Sem amostra</Badge>}
     </div>
   );
 }
@@ -204,7 +203,7 @@ function RadarHeader(props: RadarHeaderProps) {
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
             <h2 className="font-display font-bold text-base sm:text-lg leading-tight">Mapa de Categorias — {props.clientName || "este cliente"}</h2>
-            <RadarHelp isMock={props.isMock} />
+            <RadarHelp hasData={props.hasData} />
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
             Comparação direta: o que o cliente compra × o que o setor {props.ramoAtividade && <span className="font-medium">({props.ramoAtividade}) </span>}
@@ -354,7 +353,7 @@ export function ClientCategoryRadar({ clientId, ramoAtividade, clientName }: Pro
   const [expanded, setExpanded] = useState<string | null>(null);
   const { focusedSlug, setFocus } = useBICategoryFocus();
   const rows = useMemo(() => mergeCategories(client.categories, industry.categories), [client.categories, industry.categories]);
-  const isMock = client.isMock || industry.isMock;
+  const hasData = client.hasData || industry.hasData;
   const handleDrillDown = (row: MergedRow) => {
     const params = new URLSearchParams();
     if (clientId) params.set("clientId", clientId);
@@ -362,8 +361,9 @@ export function ClientCategoryRadar({ clientId, ramoAtividade, clientName }: Pro
     navigate(`/orcamentos/novo?${params.toString()}`);
   };
   if (client.isLoading || industry.isLoading) return <RadarLoading />;
+  if (client.isError || industry.isError) return <Card role="alert"><CardContent className="p-6 text-sm text-muted-foreground">Não foi possível carregar os dados de categoria; o comparativo não será estimado.</CardContent></Card>;
   const header = {
-    clientName, ramoAtividade, isMock,
+    clientName, ramoAtividade, hasData,
     opportunities: rows.filter((row) => row.status === "gap").length,
     superIndex: rows.filter((row) => row.status === "super").length,
   };

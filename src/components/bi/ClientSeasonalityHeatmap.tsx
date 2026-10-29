@@ -60,8 +60,12 @@ function buildForecast(client: SeasonalityData["client"], currentMonth: number):
 }
 
 function HeatmapHeader({ data }: { data: SeasonalityData }) {
-  const badge = data.isMock ? "Dados simulados" : `Dados reais · ${data.monthsCovered} mês${data.monthsCovered === 1 ? "" : "es"}`;
-  return <CardHeader className="pb-3"><div className="flex items-start justify-between gap-3 flex-wrap"><div className="flex items-center gap-2.5"><div className="w-9 h-9 rounded-lg bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center"><Calendar className="h-4 w-4 text-violet-600 dark:text-violet-300" /></div><div><CardTitle className="text-base font-display">Sazonalidade Cliente × Setor</CardTitle><p className="text-xs text-muted-foreground mt-0.5">Quando o cliente compra ao longo do ano · janela de {data.windowMonths} meses</p></div></div><Badge variant={data.isMock ? "secondary" : "outline"} className={cn("text-[10px]", !data.isMock && "border-success/50 text-success")}>{badge}</Badge></div></CardHeader>;
+  const badge = !data.hasEnoughData
+    ? "Histórico insuficiente"
+    : data.hasIndustryData
+      ? `Dados reais · ${data.monthsCovered} meses`
+      : `Cliente · ${data.monthsCovered} meses · setor sem amostra`;
+  return <CardHeader className="pb-3"><div className="flex items-start justify-between gap-3 flex-wrap"><div className="flex items-center gap-2.5"><div className="w-9 h-9 rounded-lg bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center"><Calendar className="h-4 w-4 text-violet-600 dark:text-violet-300" /></div><div><CardTitle className="text-base font-display">Sazonalidade Cliente × Setor</CardTitle><p className="text-xs text-muted-foreground mt-0.5">Quando o cliente compra ao longo do ano · janela de {data.windowMonths} meses</p></div></div><Badge variant={data.hasEnoughData ? "outline" : "secondary"} className={cn("text-[10px]", data.hasEnoughData && "border-success/50 text-success")}>{badge}</Badge></div></CardHeader>;
 }
 
 function ClientMonthCell({ month, currentMonth }: { month: SeasonalityData["client"][number]; currentMonth: number }) {
@@ -139,7 +143,10 @@ function TopMonths({ data }: { data: SeasonalityData }) {
 export function ClientSeasonalityHeatmap({ clientId, ramoAtividade }: Props) {
   const seasonality = useClientSeasonality(clientId, ramoAtividade);
   const currentMonth = new Date().getMonth() + 1;
-  const forecastSeries = useMemo(() => buildForecast(seasonality.client, currentMonth), [seasonality.client, currentMonth]);
+  const forecastSeries = useMemo(
+    () => seasonality.hasEnoughData ? buildForecast(seasonality.client, currentMonth) : [],
+    [seasonality.client, seasonality.hasEnoughData, currentMonth],
+  );
   if (seasonality.isLoading) return <HeatmapSkeleton />;
   const peakName = seasonality.nextPeakMonth ? SEASONALITY_MONTH_LABELS_FULL[seasonality.nextPeakMonth - 1] ?? null : null;
   return <Card className="border-[1.5px]"><HeatmapHeader data={seasonality} /><CardContent className="space-y-4"><HeatmapGrid data={seasonality} currentMonth={currentMonth} /><ForecastChart series={forecastSeries} /><PeakCards data={seasonality} peakName={peakName} /><Insight text={seasonality.insight} /><TopMonths data={seasonality} /></CardContent></Card>;
