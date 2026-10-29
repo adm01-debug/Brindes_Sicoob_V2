@@ -19,10 +19,12 @@ Os itens de 22/10 abaixo são histórico e não representam o estado atual. Rech
 
 - `undici` passou de `8.10.2` para `8.12.3`, dentro da faixa semver já declarada por `vite-plugin-mkcert`; o `npm audit` local deixou de reportar os oito advisories desse pacote.
 - `zod` passou para `4.6.7` e `@hookform/resolvers` para `6.0.2`; foram adaptados os dois usos legados incompatíveis e adicionados testes para mensagens obrigatórias do schema de metas.
-- O audit local agora passa sem vulnerabilidades. Typecheck e 276 testes focados também passaram; a suíte completa pós-commit está pendente.
+- O audit local agora passa sem vulnerabilidades. Typecheck e 276 testes focados também passaram; a suíte completa pós-commit passou com 5.841 testes aprovados e 68 ignorados, sem regressão (baseline 5.839/68); build, lint e typecheck também passaram.
+- As três versões do CodeQL foram alinhadas ao mesmo SHA 4.39.1. A verificação do deploy de funções foi corrigida para aceitar versão igual apenas com confirmação “No change found” específica da função. Os cinco testes unitários direcionados passaram. Ambas as correções ainda aguardam CI no PR; a última execução da `main` continua refletindo o código anterior.
+- Não houve alterações no Supabase nesta rodada: não era necessário aplicar migration nem publicar funções para corrigir a lógica de confirmação.
 - A `main` remota continua vulnerável até esta branch ser enviada, passar os checks e ser integrada. Os workflows correspondentes ainda não foram reexecutados na `main`.
 
-Atualizado em: 2026-10-22
+Atualizado em: 2026-10-29
 
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
 O erro exato foi extraído do run mais recente disponível em main.

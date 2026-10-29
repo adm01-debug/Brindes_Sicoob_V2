@@ -27,13 +27,17 @@ Falhas mais recentes dos workflows na `main` consultadas em 29/10/2026:
 
 Em `2026-10-29`, `vite-plugin-mkcert` resolveu `undici@8.10.2` para `8.12.3` via `npm update undici`, sem alteração do manifesto. A versão respeita a faixa `^8.3.0` declarada pelo pacote. O `npm audit --json` local passou a reportar somente `zod`; o gate completo continua pendente até a correção do segundo pacote.
 
+### Correção incremental 2 — zod
+
+Atualizados `zod` para `4.6.7` (versão corrigida do advisory) e `@hookform/resolvers` para `6.0.2`, compatível com Zod 4. As adaptações de código mantêm as mensagens obrigatórias no schema de metas e leem `ZodError.issues`; no formulário de produto, a saída normalizada é mantida e a fronteira RHF/resolver está tipada explicitamente. Typecheck e 276 testes focados passaram; `npm run check:npm-audit` agora passa com zero vulnerabilidades. As validações completas pós-commits registraram 5.841 testes aprovados/68 ignorados, build e typecheck sem erros, além de lint com 0 erros e 873 avisos.
+
 ### Correção incremental 3 — CodeQL
 
 `init`, `autobuild` e `analyze` agora usam o mesmo SHA oficial da tag `v4.39.1` (`9b325408...`). A causa foi reproduzida nos logs: o workflow misturava `init` 4.39.1 com as demais ações em 4.38.2. O workflow corrigido ainda precisa passar na CI do PR e em nova execução da `main`.
 
-### Correção incremental 2 — zod
+### Correção incremental 4 — confirmação de publicação de Edge Functions
 
-Atualizados `zod` para `4.6.7` (versão corrigida do advisory) e `@hookform/resolvers` para `6.0.2`, compatível com Zod 4. As adaptações de código mantêm as mensagens obrigatórias no schema de metas e leem `ZodError.issues`; no formulário de produto, a saída normalizada é mantida e a fronteira RHF/resolver está tipada explicitamente. Typecheck e 276 testes focados passaram; `npm run check:npm-audit` agora passa com zero vulnerabilidades. Build, lint e suíte completa pós-commit ainda serão executados.
+A confirmação agora aceita versão inalterada apenas quando a saída do comando de deploy contém a mensagem exata da CLI para aquela função. Versão crescente continua aceita; regressão, função ausente, versão inválida e versão igual sem a evidência nominal continuam bloqueando o workflow. Cinco testes de unidade cobrem esses cenários. Nenhuma Edge Function foi publicada nesta correção; o banco canônico não foi alterado.
 
 **Gerado em:** 2026-10-22  
 **Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
