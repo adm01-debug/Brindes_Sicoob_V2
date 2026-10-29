@@ -46,26 +46,27 @@ Logo, os checks de segurança e a maioria dos checks de código passaram no cand
 a PR segue bloqueada por E2E sem homologação, cota do Copilot e rate limit do ECR.
 Não mesclar enquanto houver checks obrigatórios pendentes/falhos.
 
-### Validação local do commit `ae6a80e`
+### Validação local após o commit documental `8da13db04` — 2026-10-29
 
-Executada após o commit, incluindo o workflow e a suíte completa:
+Revalidação do candidato da PR após atualizar o inventário remoto:
 
 | Verificação | Resultado |
 |---|---|
-| `npm run build` | ✅ exit 0; avisos preexistentes de env local ausente, chunks e comentários Rollup/Zod |
-| `npm run lint` | ✅ 0 erros; 873 avisos existentes |
+| `npm install` | ✅ exit 0; 983 pacotes auditados |
+| `npm run build` | ✅ exit 0 em 41,82 s; avisos locais de env ausente, chunks e comentários Rollup/Zod |
+| `npm run lint` | ✅ exit 0; 0 erros e 873 avisos preexistentes |
 | `npm run typecheck` | ✅ exit 0 |
 | `npm test -- --reporter=dot` | ✅ 452 arquivos passaram, 4 ignorados; 5.839 testes passaram, 68 ignorados |
 | `npm audit --audit-level=high` | ✅ zero vulnerabilidades |
-| `actionlint .github/workflows/e2e.yml` | ✅ exit 0 |
-| `git diff --check` | ✅ exit 0 |
+| `actionlint .github/workflows/e2e.yml` | ✅ exit 0 na validação anterior do mesmo workflow/árvore de código |
+| `git diff --check` | ✅ exit 0 antes do commit documental |
 
 O workflow E2E não foi validado contra a homologação porque os quatro secrets
-dedicados ainda não estão presentes no GitHub; nenhum valor de secret foi lido.
+dedicados ainda não aparecem na lista do GitHub; nenhum valor de secret foi lido.
 
 ---
 
-**Gerado em:** 2026-10-22  
+**Gerado em:** 2026-10-29
 **Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
 
 ---
