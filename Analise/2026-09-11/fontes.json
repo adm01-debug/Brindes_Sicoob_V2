@@ -1,0 +1,382 @@
+[
+  {
+    "id": 1,
+    "titulo": "Sistema Sicoob",
+    "editor": "Sicoob",
+    "data": "Página institucional sem data editorial",
+    "url": "https://www.sicoob.com.br/web/sicoob/sistema-sicoob",
+    "consultado_em": "2026-09-11",
+    "uso": "Estrutura sistêmica e escala exibida na consulta",
+    "limite": "Contadores atuais não devem ser combinados com balanços de outros períodos."
+  },
+  {
+    "id": 2,
+    "titulo": "Regulamento interno de fornecedores — 2ª edição",
+    "editor": "Sicoob Coopemata",
+    "data": "2023-02-27",
+    "url": "https://www.sicoob.com.br/documents/2344927/157115247/regulamento-interno-de-fornecedores.pdf",
+    "consultado_em": "2026-09-11",
+    "uso": "Art. 13 cita BR Supply; regras locais de compras",
+    "limite": "Documento de uma cooperativa; vigência atual não confirmada."
+  },
+  {
+    "id": 3,
+    "titulo": "Política de compras",
+    "editor": "Sicoob Credesp",
+    "data": "2023-01-09",
+    "url": "https://www.sicoob.com.br/documents/16988371/72409350/Pol%C3%ADtica%2Bde%2BCompras%2B2023.01.09.pdf/a697d627-f3ef-b016-a893-8de60ba6b531?download=true&t=1753725009710",
+    "consultado_em": "2026-09-11",
+    "uso": "Art. 3 atribui brindes e divulgação a Marketing",
+    "limite": "Não é política única de todo o Sicoob."
+  },
+  {
+    "id": 4,
+    "titulo": "Política de gestão de compras e fornecedores",
+    "editor": "Sicoob União Centro-Oeste",
+    "data": "2021-06-23",
+    "url": "https://www.sicoob.com.br/documents/2442568/72810281/POL%C3%8DTICA%2BDE%2BGEST%C3%83O%2BDE%2BCOMPRAS%2BE%2BFORNECEDORES.pdf/20df1f05-7646-26c4-b86c-31b60391b737?download=true&t=1639579966390&version=1.0",
+    "consultado_em": "2026-09-11",
+    "uso": "Cotações, critérios e registros no SISBR",
+    "limite": "Histórica e local; não comprova API disponível."
+  },
+  {
+    "id": 5,
+    "titulo": "Manual do fornecedor",
+    "editor": "Sicoob Centro",
+    "data": "Metadados do PDF: 2021-08-12",
+    "url": "arquivo local: Manual-do-Fornecedor-SICOOB-Centro-1.pdf",
+    "consultado_em": "2026-09-11",
+    "uso": "Proposta completa e critérios de fornecedores",
+    "limite": "Fonte fornecida; regras locais, não sistêmicas."
+  },
+  {
+    "id": 6,
+    "titulo": "Portal Intra E-Commerce",
+    "editor": "BR Supply",
+    "data": "Página comercial sem data editorial",
+    "url": "https://www.brsupply.com.br/gestao-de-suprimentos/portal-intra-e-commerce",
+    "consultado_em": "2026-09-11",
+    "uso": "Funcionalidades anunciadas e condições comerciais",
+    "limite": "Declaração do fornecedor; sem teste autenticado ou contrato específico."
+  },
+  {
+    "id": 7,
+    "titulo": "Cases e clientes",
+    "editor": "BR Supply",
+    "data": "Página comercial sem data editorial",
+    "url": "https://www.brsupply.com.br/gestao-de-suprimentos/cases-e-clientes",
+    "consultado_em": "2026-09-11",
+    "uso": "Sicoob aparece entre clientes",
+    "limite": "Não comprova abrangência nacional nem exclusividade."
+  },
+  {
+    "id": 8,
+    "titulo": "Líder global em alimentação corporativa e facilities é case de sucesso",
+    "editor": "BR Supply",
+    "data": "Página sem data editorial",
+    "url": "https://www.brsupply.com.br/gestao-de-suprimentos/cases-e-clientes/lider-global-em-alimentacao-corporativa-e-facilities-e-case-de-sucesso-na-gestao-de-suprimentos-corporativos",
+    "consultado_em": "2026-09-11",
+    "uso": "Personalização de presentes no caso Sodexo",
+    "limite": "Não generalizar o contrato ou SLA desse cliente."
+  },
+  {
+    "id": 9,
+    "titulo": "Loja Sicoob",
+    "editor": "Pratic Brindes",
+    "data": "Página comercial sem data editorial",
+    "url": "https://sicoob.praticbrindes.com.br/",
+    "consultado_em": "2026-09-11",
+    "uso": "Oferta de brindes segmentada para Sicoob",
+    "limite": "Não comprova homologação institucional nem funções após login."
+  },
+  {
+    "id": 10,
+    "titulo": "Guia da marca Sicoob",
+    "editor": "Sicoob; cópia hospedada no Portal Credicope",
+    "data": "2023-03",
+    "url": "https://portalcredicope.com.br/uploads/DOCUMENTOS/GUIA_DA_MARCA_-SICOOB_marco_23.pdf",
+    "consultado_em": "2026-09-11",
+    "uso": "Páginas 49 e 50: paleta e tipografia",
+    "limite": "Versão vigente em 2026 não confirmada; RGB e HEX turquesa divergem na própria tabela."
+  },
+  {
+    "id": 11,
+    "titulo": "Pré-assembleia 2026",
+    "editor": "Sicoob Integrado",
+    "data": "2026-03-25",
+    "url": "https://www.sicoob.com.br/web/sicoobintegrado/pre-assembleia",
+    "consultado_em": "2026-09-11",
+    "uso": "Escolha de brinde e retirada em agência",
+    "limite": "Exemplo local; regras da campanha não devem virar padrão universal."
+  },
+  {
+    "id": 12,
+    "titulo": "Pré-assembleia digital: votação segue até 12 de abril",
+    "editor": "Sicoob Crediauc",
+    "data": "2026-04-08",
+    "url": "https://www.sicoob.com.br/web/sicoobcrediauc/noticias/-/asset_publisher/xAioIawpOI5S/content/sicoob-crediauc-realiza-pr%C3%A9-assembleia-digital-vota%C3%A7%C3%A3o-segue-aberta-at%C3%A9-dia-12-de-abril",
+    "consultado_em": "2026-09-11",
+    "uso": "Variedade de brindes e contexto regional",
+    "limite": "Não é pesquisa representativa de preferências."
+  },
+  {
+    "id": 13,
+    "titulo": "Integralizou, ganhou 2026",
+    "editor": "Sicoob Credimepi",
+    "data": "2026",
+    "url": "https://www.sicoob.com.br/web/sicoobcredimepi/noticias/-/asset_publisher/xAioIawpOI5S/content/integralizou-ganhou-2026",
+    "consultado_em": "2026-09-11",
+    "uso": "Campanha condicionada à disponibilidade de brindes",
+    "limite": "Não abrange regras de outras campanhas."
+  },
+  {
+    "id": 14,
+    "titulo": "Estágio em suprimentos",
+    "editor": "Sicoob / LinkedIn",
+    "data": "Data editorial não confirmada",
+    "url": "https://br.linkedin.com/jobs/view/est%C3%A1gio-em-suprimentos-at-sicoob-4382154873",
+    "consultado_em": "2026-09-11",
+    "uso": "Cotação, comparação, fornecedores e documentação",
+    "limite": "Anúncio indexado; acesso direto redirecionou para vaga expirada."
+  },
+  {
+    "id": 15,
+    "titulo": "Analista de marketing — designer",
+    "editor": "Sicoob UniCentro BR / LinkedIn",
+    "data": "Data editorial não confirmada",
+    "url": "https://br.linkedin.com/jobs/view/analista-de-marketing-designer-at-sicoob-unicentro-br-4438708243",
+    "consultado_em": "2026-09-11",
+    "uso": "Marca, criação, adaptação de peças e fornecedores",
+    "limite": "Anúncio público indexado, sem confirmação de vaga aberta."
+  },
+  {
+    "id": 16,
+    "titulo": "Oportunidade na sede administrativa — compras",
+    "editor": "Sicoob Credicitrus / LinkedIn",
+    "data": "Publicação histórica, aproximadamente 2023",
+    "url": "https://pt.linkedin.com/posts/sicoob-credicitrus_oportunidade-de-atua%C3%A7%C3%A3o-na-sede-administrativa-activity-7085215757034225664-ixfB",
+    "consultado_em": "2026-09-11",
+    "uso": "Alçada, compras e acompanhamento de faturamento",
+    "limite": "Usada para atribuições; não para contratação atual."
+  },
+  {
+    "id": 17,
+    "titulo": "Perfil e publicações públicas de Valdir Farias",
+    "editor": "LinkedIn / autor do perfil",
+    "data": "Conteúdo de períodos diversos",
+    "url": "https://br.linkedin.com/in/valdir-farias",
+    "consultado_em": "2026-09-11",
+    "uso": "Publicações próprias discutem custo total, risco, qualidade, prazo e relacionamento com fornecedores.",
+    "limite": "Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual."
+  },
+  {
+    "id": 18,
+    "titulo": "Perfil e publicações públicas de Flávio dos Santos",
+    "editor": "LinkedIn / autor do perfil",
+    "data": "Conteúdo de períodos diversos",
+    "url": "https://br.linkedin.com/in/flaviosantoss23",
+    "consultado_em": "2026-09-11",
+    "uso": "Projetos públicos descrevem implantação de SGE Compras no SISBR 2.0 entre junho/2024 e maio/2025.",
+    "limite": "Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual."
+  },
+  {
+    "id": 19,
+    "titulo": "Perfil e publicações públicas de Renato Alves da Silva",
+    "editor": "LinkedIn / autor do perfil",
+    "data": "Conteúdo de períodos diversos",
+    "url": "https://br.linkedin.com/in/renatoalvesdasilva",
+    "consultado_em": "2026-09-11",
+    "uso": "Apresentação pública declara coordenação de suprimentos no Sicoob Cooplivre.",
+    "limite": "Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual."
+  },
+  {
+    "id": 20,
+    "titulo": "Perfil e publicações públicas de Stephany Vieira",
+    "editor": "LinkedIn / autor do perfil",
+    "data": "Conteúdo de períodos diversos",
+    "url": "https://br.linkedin.com/in/stephany-vieira-3a329177",
+    "consultado_em": "2026-09-11",
+    "uso": "Apresentação profissional destaca compras, negociação e gestão, com experiência no Sicoob.",
+    "limite": "Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual."
+  },
+  {
+    "id": 21,
+    "titulo": "Perfil e publicações públicas de Rafael Buglioli",
+    "editor": "LinkedIn / autor do perfil",
+    "data": "Conteúdo de períodos diversos",
+    "url": "https://br.linkedin.com/in/rafael-buglioli-1a034335",
+    "consultado_em": "2026-09-11",
+    "uso": "Apresentação pública descreve trajetória em suprimentos; o índice associa experiência ao Sicoob Cocre.",
+    "limite": "Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual."
+  },
+  {
+    "id": 22,
+    "titulo": "Perfil e publicações públicas de Daniel Costa",
+    "editor": "LinkedIn / autor do perfil",
+    "data": "Conteúdo de períodos diversos",
+    "url": "https://br.linkedin.com/in/danielcosta98",
+    "consultado_em": "2026-09-11",
+    "uso": "Apresentação pública registra experiência em compras e suprimentos e vínculo profissional com Sicoob Crediverde.",
+    "limite": "Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual."
+  },
+  {
+    "id": 23,
+    "titulo": "Perfil e publicações públicas de Valternan Lopes",
+    "editor": "LinkedIn / autor do perfil",
+    "data": "Conteúdo de períodos diversos",
+    "url": "https://br.linkedin.com/in/valternan-lopes-067a7b90",
+    "consultado_em": "2026-09-11",
+    "uso": "Apresentação indexada descreve trajetória em logística e suprimentos, associada ao Sicoob.",
+    "limite": "Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual."
+  },
+  {
+    "id": 24,
+    "titulo": "Perfil e publicações públicas de Tassiana Sousa",
+    "editor": "LinkedIn / autor do perfil",
+    "data": "Conteúdo de períodos diversos",
+    "url": "https://br.linkedin.com/in/tassiana-sousa",
+    "consultado_em": "2026-09-11",
+    "uso": "Publicações próprias relatam campanhas, ações com PAs e inauguração de agência no contexto Sicoob 3 Colinas.",
+    "limite": "Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual."
+  },
+  {
+    "id": 25,
+    "titulo": "Perfil e publicações públicas de Michelle Maria",
+    "editor": "LinkedIn / autor do perfil",
+    "data": "Conteúdo de períodos diversos",
+    "url": "https://br.linkedin.com/in/michelle-maria-27362b146",
+    "consultado_em": "2026-09-11",
+    "uso": "Publicações próprias relatam criação, campanhas, eventos e inaugurações no Sicoob CrediRural.",
+    "limite": "Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual."
+  },
+  {
+    "id": 26,
+    "titulo": "Perfil e publicações públicas de Priscilla Rezende",
+    "editor": "LinkedIn / autor do perfil",
+    "data": "Conteúdo de períodos diversos",
+    "url": "https://br.linkedin.com/in/priscilla-rezende-38441260",
+    "consultado_em": "2026-09-11",
+    "uso": "Publicação própria descreve trajetória no Sicoob, comunicação e eventos institucionais.",
+    "limite": "Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual."
+  },
+  {
+    "id": 27,
+    "titulo": "Perfil e publicações públicas de Ilana Dutra",
+    "editor": "LinkedIn / autor do perfil",
+    "data": "Conteúdo de períodos diversos",
+    "url": "https://br.linkedin.com/in/ilanadutra",
+    "consultado_em": "2026-09-11",
+    "uso": "Conteúdo próprio menciona eventos em diferentes regiões; publicação de 21/08/2025 relata cinco eventos em menos de um mês.",
+    "limite": "Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual."
+  },
+  {
+    "id": 28,
+    "titulo": "Perfil e publicações públicas de Michael Nathan",
+    "editor": "LinkedIn / autor do perfil",
+    "data": "Conteúdo de períodos diversos",
+    "url": "https://br.linkedin.com/in/michaelnathann",
+    "consultado_em": "2026-09-11",
+    "uso": "Publicação própria faz retrospectiva de comunicação e eventos de 2024 no Sicoob Meridional, com planos para 2025.",
+    "limite": "Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual."
+  },
+  {
+    "id": 29,
+    "titulo": "Perfil e publicações públicas de Morgana G. Ramos",
+    "editor": "LinkedIn / autor do perfil",
+    "data": "Conteúdo de períodos diversos",
+    "url": "https://br.linkedin.com/in/morganaramos",
+    "consultado_em": "2026-09-11",
+    "uso": "Publicações próprias relacionam atuação a eventos e ações do Sicoob, incluindo premiação em 2024.",
+    "limite": "Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual."
+  },
+  {
+    "id": 30,
+    "titulo": "Perfil e publicações públicas de Patricia M.",
+    "editor": "LinkedIn / autor do perfil",
+    "data": "Conteúdo de períodos diversos",
+    "url": "https://br.linkedin.com/in/patriciamrxa",
+    "consultado_em": "2026-09-11",
+    "uso": "Apresentação pública descreve publicidade, comunicação, marketing e design, com experiência no Sicoob.",
+    "limite": "Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual."
+  },
+  {
+    "id": 31,
+    "titulo": "Perfil e publicações públicas de Danielle Rocha",
+    "editor": "LinkedIn / autor do perfil",
+    "data": "Conteúdo de períodos diversos",
+    "url": "https://br.linkedin.com/in/daniellecrocha",
+    "consultado_em": "2026-09-11",
+    "uso": "Publicação própria associa evento com a OAB em Montes Claros a relacionamento, formulário e brindes no contexto Credinor.",
+    "limite": "Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual."
+  },
+  {
+    "id": 32,
+    "titulo": "Understanding Success Criterion 1.4.3: Contrast (Minimum)",
+    "editor": "W3C WAI",
+    "data": "Documentação técnica corrente",
+    "url": "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum",
+    "consultado_em": "2026-09-11",
+    "uso": "Contraste mínimo de texto",
+    "limite": "Cálculo local não substitui auditoria integral de acessibilidade."
+  },
+  {
+    "id": 33,
+    "titulo": "Web Content Accessibility Guidelines 2.2",
+    "editor": "W3C",
+    "data": "Recomendação WCAG 2.2",
+    "url": "https://www.w3.org/TR/WCAG22/",
+    "consultado_em": "2026-09-11",
+    "uso": "Referência de aceite de acessibilidade",
+    "limite": "Conformidade requer verificar todos os critérios aplicáveis, não só contraste."
+  },
+  {
+    "id": 34,
+    "titulo": "Row Level Security",
+    "editor": "Supabase",
+    "data": "Documentação técnica corrente",
+    "url": "https://supabase.com/docs/guides/database/postgres/row-level-security",
+    "consultado_em": "2026-09-11",
+    "uso": "Isolamento de registros e privilégios",
+    "limite": "Não prova configuração dos projetos analisados."
+  },
+  {
+    "id": 35,
+    "titulo": "Database Functions",
+    "editor": "Supabase",
+    "data": "Documentação técnica corrente",
+    "url": "https://supabase.com/docs/guides/database/functions",
+    "consultado_em": "2026-09-11",
+    "uso": "Security definer, invoker e privilégios de execução",
+    "limite": "Não prova quais migrations foram aplicadas."
+  },
+  {
+    "id": 36,
+    "titulo": "Execução de CI 33192891133",
+    "editor": "GitHub / Brindes_Sicoob_V2",
+    "data": "Consultada em 2026-09-11",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/33192891133",
+    "consultado_em": "2026-09-11",
+    "uso": "Job bloqueado antes de iniciar por orçamento do Actions",
+    "limite": "Repositório privado; falha de orçamento não é teste de código."
+  },
+  {
+    "id": 37,
+    "titulo": "Código auditado",
+    "editor": "Brindes_Sicoob_V2",
+    "data": "Commit d75459d28da0c8164c26861cd6358b147930425a",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/tree/d75459d28da0c8164c26861cd6358b147930425a",
+    "consultado_em": "2026-09-11",
+    "uso": "Estado versionado e evidências por caminho nos anexos",
+    "limite": "Não equivale ao código efetivamente publicado."
+  },
+  {
+    "id": 38,
+    "titulo": "Acervo documental fornecido",
+    "editor": "Diversos; inventário no Anexo A",
+    "data": "Diversas, incluindo 2007, 2017, 2019 e 2021",
+    "url": "arquivo local: Brindes Sicoob V2 - Docs",
+    "consultado_em": "2026-09-11",
+    "uso": "13 arquivos; 12 PDFs com 298 páginas e uma planilha",
+    "limite": "Histórico; não importar preços, SLA, regras de outro cliente ou contatos como atuais."
+  }
+]

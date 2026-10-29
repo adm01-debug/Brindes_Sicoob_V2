@@ -1,0 +1,32 @@
+[
+  {
+    "arquivo": "dossie",
+    "titulo": "Portal de compras de brindes para cooperativas Sicoob",
+    "titulos": 1,
+    "tabelas": 10,
+    "imagensQuebradas": 0,
+    "ancorasQuebradas": 0,
+    "largura": 1440,
+    "erros": []
+  },
+  {
+    "arquivo": "anexos",
+    "titulo": "Anexos da análise do portal Sicoob",
+    "titulos": 1,
+    "tabelas": 14,
+    "imagensQuebradas": 0,
+    "ancorasQuebradas": 0,
+    "largura": 1440,
+    "erros": []
+  },
+  {
+    "arquivo": "backlog",
+    "titulo": "Backlog de evolução do portal",
+    "titulos": 1,
+    "tabelas": 3,
+    "imagensQuebradas": 0,
+    "ancorasQuebradas": 0,
+    "largura": 1440,
+    "erros": []
+  }
+]

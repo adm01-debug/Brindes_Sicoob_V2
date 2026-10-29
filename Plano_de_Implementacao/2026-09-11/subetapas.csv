@@ -1,0 +1,1001 @@
+﻿etapa,bloco,titulo_etapa,id,acao,estado,evidencia,responsavel_funcional
+E001,Diagnóstico e estratégia,Fixar o ponto de partida verificável,E001.01,Registrar o commit de referência e os links do diagnóstico anterior.,Pendente,,Liderança técnica e Produto
+E001,Diagnóstico e estratégia,Fixar o ponto de partida verificável,E001.02,"Identificar domínio produtivo, prévia e ambiente segregado de testes.",Pendente,,Liderança técnica e Produto
+E001,Diagnóstico e estratégia,Fixar o ponto de partida verificável,E001.03,Confirmar os identificadores dos dois bancos com metadados seguros.,Pendente,,Liderança técnica e Produto
+E001,Diagnóstico e estratégia,Fixar o ponto de partida verificável,E001.04,Relacionar funções publicadas com as funções presentes no repositório.,Pendente,,Liderança técnica e Produto
+E001,Diagnóstico e estratégia,Fixar o ponto de partida verificável,E001.05,"Classificar telas entre demonstradas, parcialmente funcionais e sem evidência.",Pendente,,Liderança técnica e Produto
+E001,Diagnóstico e estratégia,Fixar o ponto de partida verificável,E001.06,"Registrar os resultados reais de build, tipos e testes disponíveis.",Pendente,,Liderança técnica e Produto
+E001,Diagnóstico e estratégia,Fixar o ponto de partida verificável,E001.07,"Catalogar divergências entre documentação, configuração e comportamento observado.",Pendente,,Liderança técnica e Produto
+E001,Diagnóstico e estratégia,Fixar o ponto de partida verificável,E001.08,"Mapear responsáveis por produto, marca, compra, operação e infraestrutura.",Pendente,,Liderança técnica e Produto
+E001,Diagnóstico e estratégia,Fixar o ponto de partida verificável,E001.09,"Criar um registro de decisões com data, justificativa e impacto.",Pendente,,Liderança técnica e Produto
+E001,Diagnóstico e estratégia,Fixar o ponto de partida verificável,E001.10,Revisar o inventário e anexar evidências de cada afirmação operacional.,Pendente,,Liderança técnica e Produto
+E002,Diagnóstico e estratégia,Conter exposição de credenciais e ferramentas de teste,E002.01,Verificar por inventário seguro se migrate-helper está publicado.,Pendente,,Engenharia de segurança
+E002,Diagnóstico e estratégia,Conter exposição de credenciais e ferramentas de teste,E002.02,Inspecionar a configuração de autorização sem invocar retorno de segredos.,Pendente,,Engenharia de segurança
+E002,Diagnóstico e estratégia,Conter exposição de credenciais e ferramentas de teste,E002.03,Remover o comportamento de exportação de credenciais do código.,Pendente,,Engenharia de segurança
+E002,Diagnóstico e estratégia,Conter exposição de credenciais e ferramentas de teste,E002.04,Retirar a função publicada ou desativar sua capacidade indevida.,Pendente,,Engenharia de segurança
+E002,Diagnóstico e estratégia,Conter exposição de credenciais e ferramentas de teste,E002.05,Investigar registros disponíveis para delimitar eventual exposição anterior.,Pendente,,Engenharia de segurança
+E002,Diagnóstico e estratégia,Conter exposição de credenciais e ferramentas de teste,E002.06,Rotacionar credenciais afetadas conforme a exposição constatada e validar consumidores.,Pendente,,Engenharia de segurança
+E002,Diagnóstico e estratégia,Conter exposição de credenciais e ferramentas de teste,E002.07,Eliminar acesso rápido e reparação de usuários do build produtivo.,Pendente,,Engenharia de segurança
+E002,Diagnóstico e estratégia,Conter exposição de credenciais e ferramentas de teste,E002.08,Separar utilitários de diagnóstico dos privilégios do comprador comum.,Pendente,,Engenharia de segurança
+E002,Diagnóstico e estratégia,Conter exposição de credenciais e ferramentas de teste,E002.09,Executar o gate que identifica retorno de credenciais e manifesto incompleto.,Pendente,,Engenharia de segurança
+E002,Diagnóstico e estratégia,Conter exposição de credenciais e ferramentas de teste,E002.10,"Registrar código, estado publicado e evidência de contenção revisada.",Pendente,,Engenharia de segurança
+E003,Diagnóstico e estratégia,Garantir catálogo externo exclusivamente de consulta,E003.01,Definir doufsxqlfjyuvxuezpln como fonte mestre de produtos e disponibilidade.,Pendente,,Engenharia de dados e Backend
+E003,Diagnóstico e estratégia,Garantir catálogo externo exclusivamente de consulta,E003.02,Separar responsabilidades comerciais do portal das responsabilidades do catálogo.,Pendente,,Engenharia de dados e Backend
+E003,Diagnóstico e estratégia,Garantir catálogo externo exclusivamente de consulta,E003.03,"Listar tabelas, visões e colunas necessárias à experiência do comprador.",Pendente,,Engenharia de dados e Backend
+E003,Diagnóstico e estratégia,Garantir catálogo externo exclusivamente de consulta,E003.04,"Excluir escrita, exclusão, upsert e importação do contrato dessa integração.",Pendente,,Engenharia de dados e Backend
+E003,Diagnóstico e estratégia,Garantir catálogo externo exclusivamente de consulta,E003.05,Revisar efeitos de cada RPC antes de permiti-la como consulta.,Pendente,,Engenharia de dados e Backend
+E003,Diagnóstico e estratégia,Garantir catálogo externo exclusivamente de consulta,E003.06,Configurar identidade de origem com privilégios mínimos de leitura.,Pendente,,Engenharia de dados e Backend
+E003,Diagnóstico e estratégia,Garantir catálogo externo exclusivamente de consulta,E003.07,Impedir exposição de custo interno e referências restritas ao comprador.,Pendente,,Engenharia de dados e Backend
+E003,Diagnóstico e estratégia,Garantir catálogo externo exclusivamente de consulta,E003.08,"Distinguir integração indisponível, acesso negado e consulta sem resultados.",Pendente,,Engenharia de dados e Backend
+E003,Diagnóstico e estratégia,Garantir catálogo externo exclusivamente de consulta,E003.09,"Validar uma amostra mínima de produto, variante, preço e estoque.",Pendente,,Engenharia de dados e Backend
+E003,Diagnóstico e estratégia,Garantir catálogo externo exclusivamente de consulta,E003.10,"Comprovar restrições por configuração e testes segregados, sem gravar no mestre.",Pendente,,Engenharia de dados e Backend
+E004,Diagnóstico e estratégia,Planejar pesquisa com compradores e marketing,E004.01,"Selecionar perguntas sobre retrabalho, prazo, confiança e tomada de decisão.",Pendente,,Pesquisa UX e Produto
+E004,Diagnóstico e estratégia,Planejar pesquisa com compradores e marketing,E004.02,"Definir amostra inicial de compras, marketing, PAs, financeiro e operação.",Pendente,,Pesquisa UX e Produto
+E004,Diagnóstico e estratégia,Planejar pesquisa com compradores e marketing,E004.03,Incluir cooperativas com regras de compra diferentes na seleção.,Pendente,,Pesquisa UX e Produto
+E004,Diagnóstico e estratégia,Planejar pesquisa com compradores e marketing,E004.04,Obter autorização para convites e sessões com participantes reais.,Pendente,,Pesquisa UX e Produto
+E004,Diagnóstico e estratégia,Planejar pesquisa com compradores e marketing,E004.05,Preparar consentimento e uso mínimo dos registros de pesquisa.,Pendente,,Pesquisa UX e Produto
+E004,Diagnóstico e estratégia,Planejar pesquisa com compradores e marketing,E004.06,"Solicitar exemplos anonimizados de pedidos, propostas e artes anteriores.",Pendente,,Pesquisa UX e Produto
+E004,Diagnóstico e estratégia,Planejar pesquisa com compradores e marketing,E004.07,Preparar roteiro baseado no último pedido efetivamente realizado.,Pendente,,Pesquisa UX e Produto
+E004,Diagnóstico e estratégia,Planejar pesquisa com compradores e marketing,E004.08,Conduzir sessões sem transformar sugestões do entrevistador em respostas.,Pendente,,Pesquisa UX e Produto
+E004,Diagnóstico e estratégia,Planejar pesquisa com compradores e marketing,E004.09,"Registrar barreiras observadas, frequência na amostra e contexto de ocorrência.",Pendente,,Pesquisa UX e Produto
+E004,Diagnóstico e estratégia,Planejar pesquisa com compradores e marketing,E004.10,"Revisar a síntese com rastreabilidade, sem generalizar a amostra ao sistema inteiro.",Pendente,,Pesquisa UX e Produto
+E005,Diagnóstico e estratégia,Definir perfis funcionais e trabalhos a realizar,E005.01,Descrever o trabalho do solicitante de PA sem associá-lo a um cargo único.,Pendente,,Pesquisa UX e Estratégia
+E005,Diagnóstico e estratégia,Definir perfis funcionais e trabalhos a realizar,E005.02,Caracterizar a responsabilidade de compras sobre comparação e contratação.,Pendente,,Pesquisa UX e Estratégia
+E005,Diagnóstico e estratégia,Definir perfis funcionais e trabalhos a realizar,E005.03,Caracterizar a responsabilidade de marketing sobre campanha e marca.,Pendente,,Pesquisa UX e Estratégia
+E005,Diagnóstico e estratégia,Definir perfis funcionais e trabalhos a realizar,E005.04,Identificar quem autoriza despesa e quais informações fundamentam sua decisão.,Pendente,,Pesquisa UX e Estratégia
+E005,Diagnóstico e estratégia,Definir perfis funcionais e trabalhos a realizar,E005.05,Descrever como operação e financeiro acompanham recebimento e cobrança.,Pendente,,Pesquisa UX e Estratégia
+E005,Diagnóstico e estratégia,Definir perfis funcionais e trabalhos a realizar,E005.06,"Separar papel funcional de cooperativa, unidade e centro de custo.",Pendente,,Pesquisa UX e Estratégia
+E005,Diagnóstico e estratégia,Definir perfis funcionais e trabalhos a realizar,E005.07,"Mapear uso ocasional, recorrente, móvel e assistido para cada perfil.",Pendente,,Pesquisa UX e Estratégia
+E005,Diagnóstico e estratégia,Definir perfis funcionais e trabalhos a realizar,E005.08,"Registrar limitações de tempo, acessibilidade e conhecimento observadas.",Pendente,,Pesquisa UX e Estratégia
+E005,Diagnóstico e estratégia,Definir perfis funcionais e trabalhos a realizar,E005.09,"Priorizar tarefas por frequência, impacto e custo de erro.",Pendente,,Pesquisa UX e Estratégia
+E005,Diagnóstico e estratégia,Definir perfis funcionais e trabalhos a realizar,E005.10,Validar os perfis com evidências e registrar pontos ainda desconhecidos.,Pendente,,Pesquisa UX e Estratégia
+E006,Diagnóstico e estratégia,Mapear a jornada atual e a jornada pretendida,E006.01,"Descrever o gatilho de compra por campanha, reposição ou evento.",Pendente,,Estratégia de serviço e UX
+E006,Diagnóstico e estratégia,Mapear a jornada atual e a jornada pretendida,E006.02,Mapear como os produtos são descobertos e selecionados atualmente.,Pendente,,Estratégia de serviço e UX
+E006,Diagnóstico e estratégia,Mapear a jornada atual e a jornada pretendida,E006.03,"Registrar a obtenção de preço, personalização e prazo de entrega.",Pendente,,Estratégia de serviço e UX
+E006,Diagnóstico e estratégia,Mapear a jornada atual e a jornada pretendida,E006.04,Mapear a comparação de propostas e sua justificativa.,Pendente,,Estratégia de serviço e UX
+E006,Diagnóstico e estratégia,Mapear a jornada atual e a jornada pretendida,E006.05,Separar decisões sobre arte das decisões sobre verba.,Pendente,,Estratégia de serviço e UX
+E006,Diagnóstico e estratégia,Mapear a jornada atual e a jornada pretendida,E006.06,"Identificar transferências entre comprador, fornecedor, produção e transporte.",Pendente,,Estratégia de serviço e UX
+E006,Diagnóstico e estratégia,Mapear a jornada atual e a jornada pretendida,E006.07,"Mapear recebimento parcial, divergência e encerramento financeiro.",Pendente,,Estratégia de serviço e UX
+E006,Diagnóstico e estratégia,Mapear a jornada atual e a jornada pretendida,E006.08,Medir esperas e retrabalho quando houver dados confiáveis.,Pendente,,Estratégia de serviço e UX
+E006,Diagnóstico e estratégia,Mapear a jornada atual e a jornada pretendida,E006.09,Desenhar a jornada pretendida com recuperação para falhas relevantes.,Pendente,,Estratégia de serviço e UX
+E006,Diagnóstico e estratégia,Mapear a jornada atual e a jornada pretendida,E006.10,Validar o mapa com representantes dos papéis que executam cada passagem.,Pendente,,Estratégia de serviço e UX
+E007,Diagnóstico e estratégia,Desenhar o serviço por trás da interface,E007.01,Relacionar cada ação do comprador ao processo que a atende.,Pendente,,Estratégia de serviço e Operação
+E007,Diagnóstico e estratégia,Desenhar o serviço por trás da interface,E007.02,Identificar tarefas manuais que continuarão necessárias no piloto.,Pendente,,Estratégia de serviço e Operação
+E007,Diagnóstico e estratégia,Desenhar o serviço por trás da interface,E007.03,"Definir quem confirma personalização, disponibilidade e prazo contratado.",Pendente,,Estratégia de serviço e Operação
+E007,Diagnóstico e estratégia,Desenhar o serviço por trás da interface,E007.04,Descrever a passagem de proposta aprovada para produção.,Pendente,,Estratégia de serviço e Operação
+E007,Diagnóstico e estratégia,Desenhar o serviço por trás da interface,E007.05,Definir quem informa rastreio e quem corrige informação incorreta.,Pendente,,Estratégia de serviço e Operação
+E007,Diagnóstico e estratégia,Desenhar o serviço por trás da interface,E007.06,"Mapear o atendimento de avaria, falta, troca e atraso.",Pendente,,Estratégia de serviço e Operação
+E007,Diagnóstico e estratégia,Desenhar o serviço por trás da interface,E007.07,Determinar fontes de dados para cada estado mostrado na interface.,Pendente,,Estratégia de serviço e Operação
+E007,Diagnóstico e estratégia,Desenhar o serviço por trás da interface,E007.08,Estabelecer responsáveis e escalonamento para pendências sem resposta.,Pendente,,Estratégia de serviço e Operação
+E007,Diagnóstico e estratégia,Desenhar o serviço por trás da interface,E007.09,Registrar dependências externas que podem limitar a promessa comercial.,Pendente,,Estratégia de serviço e Operação
+E007,Diagnóstico e estratégia,Desenhar o serviço por trás da interface,E007.10,Simular um pedido completo e revisar as passagens sem responsável definido.,Pendente,,Estratégia de serviço e Operação
+E008,Diagnóstico e estratégia,Configurar governança por cooperativa,E008.01,Obter a política vigente de cada cooperativa candidata ao piloto.,Pendente,,Produto e responsáveis de compras
+E008,Diagnóstico e estratégia,Configurar governança por cooperativa,E008.02,Registrar a entidade emissora e a validade de cada documento.,Pendente,,Produto e responsáveis de compras
+E008,Diagnóstico e estratégia,Configurar governança por cooperativa,E008.03,Mapear categorias que exigem participação de compras ou marketing.,Pendente,,Produto e responsáveis de compras
+E008,Diagnóstico e estratégia,Configurar governança por cooperativa,E008.04,Identificar exigência de cotações e suas exceções justificáveis.,Pendente,,Produto e responsáveis de compras
+E008,Diagnóstico e estratégia,Configurar governança por cooperativa,E008.05,"Definir alçadas, impedimentos e tratamento de autoaprovação.",Pendente,,Produto e responsáveis de compras
+E008,Diagnóstico e estratégia,Configurar governança por cooperativa,E008.06,"Mapear calendário, janelas de compra e condições especiais por unidade.",Pendente,,Produto e responsáveis de compras
+E008,Diagnóstico e estratégia,Configurar governança por cooperativa,E008.07,Registrar critérios aplicáveis a fornecedores e documentação comercial.,Pendente,,Produto e responsáveis de compras
+E008,Diagnóstico e estratégia,Configurar governança por cooperativa,E008.08,Definir como mudanças de política afetam solicitações em andamento.,Pendente,,Produto e responsáveis de compras
+E008,Diagnóstico e estratégia,Configurar governança por cooperativa,E008.09,Preservar a versão da política usada em cada decisão de compra.,Pendente,,Produto e responsáveis de compras
+E008,Diagnóstico e estratégia,Configurar governança por cooperativa,E008.10,"Validar a matriz com responsáveis locais, sem copiar regras históricas automaticamente.",Pendente,,Produto e responsáveis de compras
+E009,Diagnóstico e estratégia,Definir resultados e instrumentos de medição,E009.01,Definir sucesso da solicitação como envio completo e válido.,Pendente,,Produto e Dados
+E009,Diagnóstico e estratégia,Definir resultados e instrumentos de medição,E009.02,Separar tempo de aprovação da arte do tempo de aprovação financeira.,Pendente,,Produto e Dados
+E009,Diagnóstico e estratégia,Definir resultados e instrumentos de medição,E009.03,Definir categorias observáveis de retrabalho e devolução.,Pendente,,Produto e Dados
+E009,Diagnóstico e estratégia,Definir resultados e instrumentos de medição,E009.04,"Distinguir prazo desejado, contratado e data efetiva de entrega.",Pendente,,Produto e Dados
+E009,Diagnóstico e estratégia,Definir resultados e instrumentos de medição,E009.05,Definir medição de divergências por pedido e por destino.,Pendente,,Produto e Dados
+E009,Diagnóstico e estratégia,Definir resultados e instrumentos de medição,E009.06,Especificar eventos de busca sem resultado e abandono recuperável.,Pendente,,Produto e Dados
+E009,Diagnóstico e estratégia,Definir resultados e instrumentos de medição,E009.07,Registrar o denominador e a janela temporal de cada indicador.,Pendente,,Produto e Dados
+E009,Diagnóstico e estratégia,Definir resultados e instrumentos de medição,E009.08,Identificar quais dados podem ser obtidos antes do primeiro piloto.,Pendente,,Produto e Dados
+E009,Diagnóstico e estratégia,Definir resultados e instrumentos de medição,E009.09,"Propor metas iniciais como hipóteses, com responsável por revisá-las.",Pendente,,Produto e Dados
+E009,Diagnóstico e estratégia,Definir resultados e instrumentos de medição,E009.10,Aprovar o dicionário e impedir percentuais calculados com dados fictícios.,Pendente,,Produto e Dados
+E010,Diagnóstico e estratégia,Definir escopo e ordem das entregas,E010.01,Relacionar funcionalidades existentes às tarefas prioritárias do comprador.,Pendente,,"Produto, UX e Liderança técnica"
+E010,Diagnóstico e estratégia,Definir escopo e ordem das entregas,E010.02,Identificar componentes que podem ser aproveitados com alteração pequena.,Pendente,,"Produto, UX e Liderança técnica"
+E010,Diagnóstico e estratégia,Definir escopo e ordem das entregas,E010.03,Separar bloqueadores de segurança de melhorias de conveniência.,Pendente,,"Produto, UX e Liderança técnica"
+E010,Diagnóstico e estratégia,Definir escopo e ordem das entregas,E010.04,Definir a primeira compra completa que o piloto precisa suportar.,Pendente,,"Produto, UX e Liderança técnica"
+E010,Diagnóstico e estratégia,Definir escopo e ordem das entregas,E010.05,"Escolher categorias, técnicas e destinos inicialmente atendidos pela operação.",Pendente,,"Produto, UX e Liderança técnica"
+E010,Diagnóstico e estratégia,Definir escopo e ordem das entregas,E010.06,"Adiar CRM legado, gamificação e previsões sem dados comprovados.",Pendente,,"Produto, UX e Liderança técnica"
+E010,Diagnóstico e estratégia,Definir escopo e ordem das entregas,E010.07,Estimar esforço por responsável após examinar os contratos de integração.,Pendente,,"Produto, UX e Liderança técnica"
+E010,Diagnóstico e estratégia,Definir escopo e ordem das entregas,E010.08,"Montar sequência por dependências, permitindo frentes independentes em paralelo.",Pendente,,"Produto, UX e Liderança técnica"
+E010,Diagnóstico e estratégia,Definir escopo e ordem das entregas,E010.09,Definir revisão de escopo quando uma hipótese comercial for invalidada.,Pendente,,"Produto, UX e Liderança técnica"
+E010,Diagnóstico e estratégia,Definir escopo e ordem das entregas,E010.10,Registrar critérios de saída e capacidade comprometida para a primeira release.,Pendente,,"Produto, UX e Liderança técnica"
+E011,Fundamentos e segurança,Consolidar o modelo de dados do portal,E011.01,Inspecionar o schema real do banco próprio por acesso administrativo seguro.,Pendente,,Backend e Arquitetura
+E011,Fundamentos e segurança,Consolidar o modelo de dados do portal,E011.02,Comparar tabelas implantadas com migrations e tipos versionados.,Pendente,,Backend e Arquitetura
+E011,Fundamentos e segurança,Consolidar o modelo de dados do portal,E011.03,"Resolver conceitualmente diferenças entre cooperativa, Singular e organização.",Pendente,,Backend e Arquitetura
+E011,Fundamentos e segurança,Consolidar o modelo de dados do portal,E011.04,Definir um identificador canônico de PA e seus vínculos válidos.,Pendente,,Backend e Arquitetura
+E011,Fundamentos e segurança,Consolidar o modelo de dados do portal,E011.05,"Modelar centro de custo, período de verba e distribuição por unidade.",Pendente,,Backend e Arquitetura
+E011,Fundamentos e segurança,Consolidar o modelo de dados do portal,E011.06,"Separar requisição, proposta, pedido, entrega e documento financeiro.",Pendente,,Backend e Arquitetura
+E011,Fundamentos e segurança,Consolidar o modelo de dados do portal,E011.07,Definir snapshots históricos sem duplicar o cadastro mestre de produto.,Pendente,,Backend e Arquitetura
+E011,Fundamentos e segurança,Consolidar o modelo de dados do portal,E011.08,Mapear dados existentes e regras de reconciliação antes de migrar.,Pendente,,Backend e Arquitetura
+E011,Fundamentos e segurança,Consolidar o modelo de dados do portal,E011.09,Gerar contratos tipados e validar exemplos consistentes de ponta a ponta.,Pendente,,Backend e Arquitetura
+E011,Fundamentos e segurança,Consolidar o modelo de dados do portal,E011.10,Revisar o modelo com operações e registrar plano reversível de migração.,Pendente,,Backend e Arquitetura
+E012,Fundamentos e segurança,Unificar permissões por ação e escopo,E012.01,"Listar ações de leitura, solicitação, edição, aprovação e cancelamento.",Pendente,,Segurança e Backend
+E012,Fundamentos e segurança,Unificar permissões por ação e escopo,E012.02,"Separar aprovação de arte, despesa, recebimento e administração.",Pendente,,Segurança e Backend
+E012,Fundamentos e segurança,Unificar permissões por ação e escopo,E012.03,Mapear cada papel funcional às ações necessárias no piloto.,Pendente,,Segurança e Backend
+E012,Fundamentos e segurança,Unificar permissões por ação e escopo,E012.04,"Restringir leitura conforme cooperativa, PA e centro de custo aplicáveis.",Pendente,,Segurança e Backend
+E012,Fundamentos e segurança,Unificar permissões por ação e escopo,E012.05,Definir como uma pessoa com múltiplos vínculos escolhe seu contexto.,Pendente,,Segurança e Backend
+E012,Fundamentos e segurança,Unificar permissões por ação e escopo,E012.06,Eliminar aliases de papéis que produzem interpretações contraditórias.,Pendente,,Segurança e Backend
+E012,Fundamentos e segurança,Unificar permissões por ação e escopo,E012.07,Definir precedência para permissões acumuladas e impedimentos explícitos.,Pendente,,Segurança e Backend
+E012,Fundamentos e segurança,Unificar permissões por ação e escopo,E012.08,Derivar identidade e vínculo de informações verificadas no servidor.,Pendente,,Segurança e Backend
+E012,Fundamentos e segurança,Unificar permissões por ação e escopo,E012.09,Registrar casos permitidos e negados para cada ação crítica.,Pendente,,Segurança e Backend
+E012,Fundamentos e segurança,Unificar permissões por ação e escopo,E012.10,Revisar a matriz com segurança e responsáveis das cooperativas piloto.,Pendente,,Segurança e Backend
+E013,Fundamentos e segurança,Implementar isolamento de dados e anexos,E013.01,Identificar tabelas expostas por API e seus vínculos organizacionais.,Pendente,,Segurança e Backend
+E013,Fundamentos e segurança,Implementar isolamento de dados e anexos,E013.02,Revisar políticas de leitura para usuários autenticados e anônimos.,Pendente,,Segurança e Backend
+E013,Fundamentos e segurança,Implementar isolamento de dados e anexos,E013.03,Revisar inserção e alteração para impedir troca arbitrária de cooperativa.,Pendente,,Segurança e Backend
+E013,Fundamentos e segurança,Implementar isolamento de dados e anexos,E013.04,Restringir buckets e objetos que contêm artes e documentos privados.,Pendente,,Segurança e Backend
+E013,Fundamentos e segurança,Implementar isolamento de dados e anexos,E013.05,"Verificar links compartilhados quanto a escopo, validade e revogação.",Pendente,,Segurança e Backend
+E013,Fundamentos e segurança,Implementar isolamento de dados e anexos,E013.06,Auditar funções privilegiadas que podem contornar políticas de linha.,Pendente,,Segurança e Backend
+E013,Fundamentos e segurança,Implementar isolamento de dados e anexos,E013.07,Preparar usuários e dados de teste de duas cooperativas segregadas.,Pendente,,Segurança e Backend
+E013,Fundamentos e segurança,Implementar isolamento de dados e anexos,E013.08,Testar acesso cruzado com papéis iguais em organizações diferentes.,Pendente,,Segurança e Backend
+E013,Fundamentos e segurança,Implementar isolamento de dados e anexos,E013.09,Confirmar que falha de rede não é interpretada como autorização negada bem-sucedida.,Pendente,,Segurança e Backend
+E013,Fundamentos e segurança,Implementar isolamento de dados e anexos,E013.10,Publicar evidências dos casos permitidos e negados vinculadas ao schema testado.,Pendente,,Segurança e Backend
+E014,Fundamentos e segurança,Corrigir rotas e contrato de autenticação,E014.01,Identificar todos os wrappers aplicados às rotas do portal.,Pendente,,Frontend e QA
+E014,Fundamentos e segurança,Corrigir rotas e contrato de autenticação,E014.02,Padronizar nomes e tipos das propriedades expostas por AuthContext.,Pendente,,Frontend e QA
+E014,Fundamentos e segurança,Corrigir rotas e contrato de autenticação,E014.03,Remover dependência de propriedades inexistentes nos guards Sicoob.,Pendente,,Frontend e QA
+E014,Fundamentos e segurança,Corrigir rotas e contrato de autenticação,E014.04,Alinhar a barreira administrativa com a matriz de ações autorizadas.,Pendente,,Frontend e QA
+E014,Fundamentos e segurança,Corrigir rotas e contrato de autenticação,E014.05,Resolver rotas duplicadas com páginas ou permissões divergentes.,Pendente,,Frontend e QA
+E014,Fundamentos e segurança,Corrigir rotas e contrato de autenticação,E014.06,"Separar carregamento de sessão, carregamento de permissões e acesso negado.",Pendente,,Frontend e QA
+E014,Fundamentos e segurança,Corrigir rotas e contrato de autenticação,E014.07,Preservar destino solicitado ao autenticar quando ele for autorizado.,Pendente,,Frontend e QA
+E014,Fundamentos e segurança,Corrigir rotas e contrato de autenticação,E014.08,Impedir loops de redirecionamento e telas vazias em sessão expirada.,Pendente,,Frontend e QA
+E014,Fundamentos e segurança,Corrigir rotas e contrato de autenticação,E014.09,Executar navegação real por perfil com verificações negativas.,Pendente,,Frontend e QA
+E014,Fundamentos e segurança,Corrigir rotas e contrato de autenticação,E014.10,Registrar a composição final das rotas e resultados do fluxo autenticado.,Pendente,,Frontend e QA
+E015,Fundamentos e segurança,Definir autenticação confiável e acessível,E015.01,Confirmar métodos de autenticação disponíveis no ambiente escolhido.,Pendente,,"Segurança, Frontend e UX"
+E015,Fundamentos e segurança,Definir autenticação confiável e acessível,E015.02,Definir requisito de proteção adicional para ações administrativas sensíveis.,Pendente,,"Segurança, Frontend e UX"
+E015,Fundamentos e segurança,Definir autenticação confiável e acessível,E015.03,Retirar passkey incompleta e botões de provedores desativados.,Pendente,,"Segurança, Frontend e UX"
+E015,Fundamentos e segurança,Definir autenticação confiável e acessível,E015.04,Validar entrada por email e recuperação de acesso com sessão real.,Pendente,,"Segurança, Frontend e UX"
+E015,Fundamentos e segurança,Definir autenticação confiável e acessível,E015.05,Permitir colagem e uso de gerenciador de senhas nos campos apropriados.,Pendente,,"Segurança, Frontend e UX"
+E015,Fundamentos e segurança,Definir autenticação confiável e acessível,E015.06,Tratar credencial inválida sem revelar existência de outra pessoa.,Pendente,,"Segurança, Frontend e UX"
+E015,Fundamentos e segurança,Definir autenticação confiável e acessível,E015.07,Preservar trabalho compatível durante expiração e renovação da sessão.,Pendente,,"Segurança, Frontend e UX"
+E015,Fundamentos e segurança,Definir autenticação confiável e acessível,E015.08,Definir retorno seguro após logout e troca de vínculo.,Pendente,,"Segurança, Frontend e UX"
+E015,Fundamentos e segurança,Definir autenticação confiável e acessível,E015.09,"Testar teclado, autofill, mensagens e estados de espera na autenticação.",Pendente,,"Segurança, Frontend e UX"
+E015,Fundamentos e segurança,Definir autenticação confiável e acessível,E015.10,"Comprovar sessão, encerramento e recuperação sem mensagens falsas de sucesso.",Pendente,,"Segurança, Frontend e UX"
+E016,Fundamentos e segurança,Implementar convites e vínculos organizacionais,E016.01,"Definir quem pode convidar solicitantes, marketing e aprovadores.",Pendente,,"Backend, UX e Administração"
+E016,Fundamentos e segurança,Implementar convites e vínculos organizacionais,E016.02,Vincular cada convite à cooperativa e ao papel permitido.,Pendente,,"Backend, UX e Administração"
+E016,Fundamentos e segurança,Implementar convites e vínculos organizacionais,E016.03,Restringir concessão de privilégios acima da autoridade do convidante.,Pendente,,"Backend, UX e Administração"
+E016,Fundamentos e segurança,Implementar convites e vínculos organizacionais,E016.04,"Definir validade, reenvio e revogação do convite.",Pendente,,"Backend, UX e Administração"
+E016,Fundamentos e segurança,Implementar convites e vínculos organizacionais,E016.05,Tratar usuário existente que recebe acesso a outra unidade.,Pendente,,"Backend, UX e Administração"
+E016,Fundamentos e segurança,Implementar convites e vínculos organizacionais,E016.06,Mostrar entidade e responsabilidades antes de aceitar o vínculo.,Pendente,,"Backend, UX e Administração"
+E016,Fundamentos e segurança,Implementar convites e vínculos organizacionais,E016.07,Evitar duplicação de perfil quando o convite é reenviado.,Pendente,,"Backend, UX e Administração"
+E016,Fundamentos e segurança,Implementar convites e vínculos organizacionais,E016.08,Registrar aceitação e concessão de acesso no histórico administrativo.,Pendente,,"Backend, UX e Administração"
+E016,Fundamentos e segurança,Implementar convites e vínculos organizacionais,E016.09,"Testar convite adulterado, expirado, revogado e já utilizado.",Pendente,,"Backend, UX e Administração"
+E016,Fundamentos e segurança,Implementar convites e vínculos organizacionais,E016.10,Homologar onboarding completo com usuário de teste e contexto correto.,Pendente,,"Backend, UX e Administração"
+E017,Fundamentos e segurança,Tornar verba e compromissos consistentes,E017.01,"Definir planejado, reservado, comprometido e consumido com financeiro.",Pendente,,Backend e Financeiro
+E017,Fundamentos e segurança,Tornar verba e compromissos consistentes,E017.02,Associar cada saldo a período e centro de custo explícitos.,Pendente,,Backend e Financeiro
+E017,Fundamentos e segurança,Tornar verba e compromissos consistentes,E017.03,Determinar composição do valor que compromete a verba.,Pendente,,Backend e Financeiro
+E017,Fundamentos e segurança,Tornar verba e compromissos consistentes,E017.04,Implementar reserva e liberação conforme a política aprovada.,Pendente,,Backend e Financeiro
+E017,Fundamentos e segurança,Tornar verba e compromissos consistentes,E017.05,Executar verificação de saldo e compromisso na mesma transação.,Pendente,,Backend e Financeiro
+E017,Fundamentos e segurança,Tornar verba e compromissos consistentes,E017.06,Controlar reenvio por chave de idempotência e versão da operação.,Pendente,,Backend e Financeiro
+E017,Fundamentos e segurança,Tornar verba e compromissos consistentes,E017.07,Implementar estorno e ajuste preservando trilha de eventos.,Pendente,,Backend e Financeiro
+E017,Fundamentos e segurança,Tornar verba e compromissos consistentes,E017.08,Definir tratamento de pedido parcial e mudança de período.,Pendente,,Backend e Financeiro
+E017,Fundamentos e segurança,Tornar verba e compromissos consistentes,E017.09,Testar duas aprovações simultâneas disputando o mesmo saldo.,Pendente,,Backend e Financeiro
+E017,Fundamentos e segurança,Tornar verba e compromissos consistentes,E017.10,Conciliar os movimentos de uma amostra com os saldos apresentados.,Pendente,,Backend e Financeiro
+E018,Fundamentos e segurança,Corrigir aprovação privilegiada no servidor,E018.01,Obter a definição e os privilégios das RPCs realmente implantadas.,Pendente,,Backend e Segurança
+E018,Fundamentos e segurança,Corrigir aprovação privilegiada no servidor,E018.02,Derivar o ator da sessão autenticada no servidor.,Pendente,,Backend e Segurança
+E018,Fundamentos e segurança,Corrigir aprovação privilegiada no servidor,E018.03,Carregar pedido e requisição por relacionamento verificado.,Pendente,,Backend e Segurança
+E018,Fundamentos e segurança,Corrigir aprovação privilegiada no servidor,E018.04,"Validar cooperativa, vínculo ativo e competência de aprovação.",Pendente,,Backend e Segurança
+E018,Fundamentos e segurança,Corrigir aprovação privilegiada no servidor,E018.05,Impedir autoaprovação quando a política local a proibir.,Pendente,,Backend e Segurança
+E018,Fundamentos e segurança,Corrigir aprovação privilegiada no servidor,E018.06,Validar estado anterior e versão da proposta a decidir.,Pendente,,Backend e Segurança
+E018,Fundamentos e segurança,Corrigir aprovação privilegiada no servidor,E018.07,"Persistir decisão, verba e auditoria na mesma transação aplicável.",Pendente,,Backend e Segurança
+E018,Fundamentos e segurança,Corrigir aprovação privilegiada no servidor,E018.08,Tratar repetição de chamada sem duplicar decisão ou consumo.,Pendente,,Backend e Segurança
+E018,Fundamentos e segurança,Corrigir aprovação privilegiada no servidor,E018.09,"Testar aprovador forjado, pedido cruzado e requisição incompatível.",Pendente,,Backend e Segurança
+E018,Fundamentos e segurança,Corrigir aprovação privilegiada no servidor,E018.10,Registrar testes de concorrência e concessões efetivas após a correção.,Pendente,,Backend e Segurança
+E019,Fundamentos e segurança,Restabelecer qualidade de build e testes,E019.01,Reproduzir os gates de autorização e dependências que falharam.,Pendente,,Liderança técnica e QA
+E019,Fundamentos e segurança,Restabelecer qualidade de build e testes,E019.02,Triar alertas por alcance e contexto de execução dos pacotes.,Pendente,,Liderança técnica e QA
+E019,Fundamentos e segurança,Restabelecer qualidade de build e testes,E019.03,"Atualizar dependências de forma compatível, revisando mudanças necessárias.",Pendente,,Liderança técnica e QA
+E019,Fundamentos e segurança,Restabelecer qualidade de build e testes,E019.04,"Corrigir tipos nos contratos críticos de acesso, catálogo, verba e pedido.",Pendente,,Liderança técnica e QA
+E019,Fundamentos e segurança,Restabelecer qualidade de build e testes,E019.05,Comparar dívida restante com o baseline sem mascarar novos erros.,Pendente,,Liderança técnica e QA
+E019,Fundamentos e segurança,Restabelecer qualidade de build e testes,E019.06,Corrigir caminhos inexistentes e identificadores duplicados dos workflows.,Pendente,,Liderança técnica e QA
+E019,Fundamentos e segurança,Restabelecer qualidade de build e testes,E019.07,Fazer configuração obrigatória ausente produzir falha explícita.,Pendente,,Liderança técnica e QA
+E019,Fundamentos e segurança,Restabelecer qualidade de build e testes,E019.08,Substituir mocks que impedem verificar a composição real das rotas.,Pendente,,Liderança técnica e QA
+E019,Fundamentos e segurança,Restabelecer qualidade de build e testes,E019.09,Executar testes significativos das transações e negações de acesso.,Pendente,,Liderança técnica e QA
+E019,Fundamentos e segurança,Restabelecer qualidade de build e testes,E019.10,"Vincular resultados, comando, ambiente e commit no relatório de qualidade.",Pendente,,Liderança técnica e QA
+E020,Fundamentos e segurança,Preparar ambiente de validação e observabilidade,E020.01,"Separar variáveis e permissões de desenvolvimento, homologação e produção.",Pendente,,Infraestrutura e Operação
+E020,Fundamentos e segurança,Preparar ambiente de validação e observabilidade,E020.02,"Validar domínio, TLS e redirecionamentos do ambiente de homologação.",Pendente,,Infraestrutura e Operação
+E020,Fundamentos e segurança,Preparar ambiente de validação e observabilidade,E020.03,"Definir correlação de eventos entre interface, API e transação.",Pendente,,Infraestrutura e Operação
+E020,Fundamentos e segurança,Preparar ambiente de validação e observabilidade,E020.04,Registrar falhas sem incluir segredos ou dados pessoais desnecessários.,Pendente,,Infraestrutura e Operação
+E020,Fundamentos e segurança,Preparar ambiente de validação e observabilidade,E020.05,"Monitorar consulta de catálogo, envio de solicitação e decisão de aprovação.",Pendente,,Infraestrutura e Operação
+E020,Fundamentos e segurança,Preparar ambiente de validação e observabilidade,E020.06,Definir responsáveis e canais operacionais para alertas aplicáveis.,Pendente,,Infraestrutura e Operação
+E020,Fundamentos e segurança,Preparar ambiente de validação e observabilidade,E020.07,Configurar backups e procedimentos compatíveis com o banco próprio.,Pendente,,Infraestrutura e Operação
+E020,Fundamentos e segurança,Preparar ambiente de validação e observabilidade,E020.08,Ensaiar recuperação em ambiente segregado com evidência de resultado.,Pendente,,Infraestrutura e Operação
+E020,Fundamentos e segurança,Preparar ambiente de validação e observabilidade,E020.09,Documentar rollback de aplicação e compatibilidade de schema.,Pendente,,Infraestrutura e Operação
+E020,Fundamentos e segurança,Preparar ambiente de validação e observabilidade,E020.10,"Executar incidente controlado e comprovar alerta, diagnóstico e recuperação.",Pendente,,Infraestrutura e Operação
+E021,Estrutura e conteúdo,Organizar a arquitetura de informação,E021.01,Inventariar destinos atuais e identificar duplicatas de navegação.,Pendente,,UX e Conteúdo
+E021,Estrutura e conteúdo,Organizar a arquitetura de informação,E021.02,Agrupar conteúdos por necessidade do comprador e do aprovador.,Pendente,,UX e Conteúdo
+E021,Estrutura e conteúdo,Organizar a arquitetura de informação,E021.03,"Propor rótulos para catálogo, campanhas, pedidos, verbas e suporte.",Pendente,,UX e Conteúdo
+E021,Estrutura e conteúdo,Organizar a arquitetura de informação,E021.04,Separar administração técnica da navegação diária das cooperativas.,Pendente,,UX e Conteúdo
+E021,Estrutura e conteúdo,Organizar a arquitetura de informação,E021.05,Definir destinos de início adequados a cada papel funcional.,Pendente,,UX e Conteúdo
+E021,Estrutura e conteúdo,Organizar a arquitetura de informação,E021.06,Desenhar hierarquia de páginas com localização reconhecível.,Pendente,,UX e Conteúdo
+E021,Estrutura e conteúdo,Organizar a arquitetura de informação,E021.07,Planejar atalhos úteis sem duplicar ações contraditórias.,Pendente,,UX e Conteúdo
+E021,Estrutura e conteúdo,Organizar a arquitetura de informação,E021.08,Testar encontrabilidade com tarefas e estrutura textual simples.,Pendente,,UX e Conteúdo
+E021,Estrutura e conteúdo,Organizar a arquitetura de informação,E021.09,Revisar rótulos que induzem interpretação comercial incorreta.,Pendente,,UX e Conteúdo
+E021,Estrutura e conteúdo,Organizar a arquitetura de informação,E021.10,Publicar o mapa validado com responsáveis por cada área de conteúdo.,Pendente,,UX e Conteúdo
+E022,Estrutura e conteúdo,Construir taxonomia útil para brindes,E022.01,Inspecionar categorias e atributos disponíveis na amostra do catálogo.,Pendente,,"UX, Comercial e Dados"
+E022,Estrutura e conteúdo,Construir taxonomia útil para brindes,E022.02,"Separar categoria de produto, finalidade, material e técnica de impressão.",Pendente,,"UX, Comercial e Dados"
+E022,Estrutura e conteúdo,Construir taxonomia útil para brindes,E022.03,Mapear sinônimos usados por compradores nas sessões de pesquisa.,Pendente,,"UX, Comercial e Dados"
+E022,Estrutura e conteúdo,Construir taxonomia útil para brindes,E022.04,Definir unidades e vocabulário consistentes para dimensões e capacidade.,Pendente,,"UX, Comercial e Dados"
+E022,Estrutura e conteúdo,Construir taxonomia útil para brindes,E022.05,Identificar atributos decisivos por família de produto.,Pendente,,"UX, Comercial e Dados"
+E022,Estrutura e conteúdo,Construir taxonomia útil para brindes,E022.06,"Tratar valores vazios, conflitantes e variantes sem classificação.",Pendente,,"UX, Comercial e Dados"
+E022,Estrutura e conteúdo,Construir taxonomia útil para brindes,E022.07,"Criar curadoria por assembleia, evento, relacionamento e uso interno.",Pendente,,"UX, Comercial e Dados"
+E022,Estrutura e conteúdo,Construir taxonomia útil para brindes,E022.08,Exigir evidência para selos ambientais ou afirmações de certificação.,Pendente,,"UX, Comercial e Dados"
+E022,Estrutura e conteúdo,Construir taxonomia útil para brindes,E022.09,Manter classificações editoriais do portal separadas do cadastro mestre.,Pendente,,"UX, Comercial e Dados"
+E022,Estrutura e conteúdo,Construir taxonomia útil para brindes,E022.10,Validar amostra de buscas e categorias com compras e marketing.,Pendente,,"UX, Comercial e Dados"
+E023,Estrutura e conteúdo,Projetar o comportamento da busca,E023.01,"Reunir consultas por código, produto, campanha e necessidade de uso.",Pendente,,UX e Engenharia de busca
+E023,Estrutura e conteúdo,Projetar o comportamento da busca,E023.02,Definir precedência de correspondência exata de códigos estáveis.,Pendente,,UX e Engenharia de busca
+E023,Estrutura e conteúdo,Projetar o comportamento da busca,E023.03,"Tratar acentos, variações de escrita e sinônimos relevantes.",Pendente,,UX e Engenharia de busca
+E023,Estrutura e conteúdo,Projetar o comportamento da busca,E023.04,Definir sugestões que não revelem histórico de outra cooperativa.,Pendente,,UX e Engenharia de busca
+E023,Estrutura e conteúdo,Projetar o comportamento da busca,E023.05,Separar resultado orgânico de curadoria comercial identificada.,Pendente,,UX e Engenharia de busca
+E023,Estrutura e conteúdo,Projetar o comportamento da busca,E023.06,Planejar tratamento de erro ortográfico sem substituir intenção silenciosamente.,Pendente,,UX e Engenharia de busca
+E023,Estrutura e conteúdo,Projetar o comportamento da busca,E023.07,"Definir estados de carregamento, nenhuma correspondência e serviço indisponível.",Pendente,,UX e Engenharia de busca
+E023,Estrutura e conteúdo,Projetar o comportamento da busca,E023.08,Especificar como resultados respeitam filtros e contexto ativo.,Pendente,,UX e Engenharia de busca
+E023,Estrutura e conteúdo,Projetar o comportamento da busca,E023.09,Criar conjunto de consultas de avaliação com resultado esperado justificável.,Pendente,,UX e Engenharia de busca
+E023,Estrutura e conteúdo,Projetar o comportamento da busca,E023.10,Revisar relevância e explicar limites antes de incluir busca semântica adicional.,Pendente,,UX e Engenharia de busca
+E024,Estrutura e conteúdo,Projetar filtros e ordenação,E024.01,Escolher filtros úteis por categoria com base em atributos reais.,Pendente,,UX e Comercial
+E024,Estrutura e conteúdo,Projetar filtros e ordenação,E024.02,Separar preço unitário de custo estimado entregue na linguagem do filtro.,Pendente,,UX e Comercial
+E024,Estrutura e conteúdo,Projetar filtros e ordenação,E024.03,"Modelar quantidade mínima, múltiplo e técnica de personalização.",Pendente,,UX e Comercial
+E024,Estrutura e conteúdo,Projetar filtros e ordenação,E024.04,Definir tratamento honesto da disponibilidade ainda não reconfirmada.,Pendente,,UX e Comercial
+E024,Estrutura e conteúdo,Projetar filtros e ordenação,E024.05,Projetar seleção de múltiplas opções e combinação entre grupos.,Pendente,,UX e Comercial
+E024,Estrutura e conteúdo,Projetar filtros e ordenação,E024.06,Mostrar contagens somente quando a consulta as sustentar.,Pendente,,UX e Comercial
+E024,Estrutura e conteúdo,Projetar filtros e ordenação,E024.07,Definir limpeza individual e completa dos filtros ativos.,Pendente,,UX e Comercial
+E024,Estrutura e conteúdo,Projetar filtros e ordenação,E024.08,Especificar ordenações com significado e desempate previsível.,Pendente,,UX e Comercial
+E024,Estrutura e conteúdo,Projetar filtros e ordenação,E024.09,Preservar critérios ao abrir produto e retornar à listagem.,Pendente,,UX e Comercial
+E024,Estrutura e conteúdo,Projetar filtros e ordenação,E024.10,Validar tarefas de refinamento incluindo combinações sem resultado.,Pendente,,UX e Comercial
+E025,Estrutura e conteúdo,Desenhar navegação entre cooperativas e unidades,E025.01,Definir onde cooperativa e unidade ativa aparecem persistentemente.,Pendente,,"UX, Segurança e Frontend"
+E025,Estrutura e conteúdo,Desenhar navegação entre cooperativas e unidades,E025.02,Listar apenas os vínculos válidos da pessoa autenticada.,Pendente,,"UX, Segurança e Frontend"
+E025,Estrutura e conteúdo,Desenhar navegação entre cooperativas e unidades,E025.03,Explicar diferença entre trocar unidade e trocar papel autorizado.,Pendente,,"UX, Segurança e Frontend"
+E025,Estrutura e conteúdo,Desenhar navegação entre cooperativas e unidades,E025.04,Definir destino inicial após selecionar outra cooperativa.,Pendente,,"UX, Segurança e Frontend"
+E025,Estrutura e conteúdo,Desenhar navegação entre cooperativas e unidades,E025.05,"Isolar cache, filtros privados e rascunhos por contexto.",Pendente,,"UX, Segurança e Frontend"
+E025,Estrutura e conteúdo,Desenhar navegação entre cooperativas e unidades,E025.06,Avisar sobre trabalho não salvo antes de uma troca incompatível.,Pendente,,"UX, Segurança e Frontend"
+E025,Estrutura e conteúdo,Desenhar navegação entre cooperativas e unidades,E025.07,Preservar informações seguras quando a pessoa retorna ao vínculo anterior.,Pendente,,"UX, Segurança e Frontend"
+E025,Estrutura e conteúdo,Desenhar navegação entre cooperativas e unidades,E025.08,Tratar vínculo revogado durante uma sessão aberta.,Pendente,,"UX, Segurança e Frontend"
+E025,Estrutura e conteúdo,Desenhar navegação entre cooperativas e unidades,E025.09,"Testar alternância por teclado, tela móvel e nomes extensos.",Pendente,,"UX, Segurança e Frontend"
+E025,Estrutura e conteúdo,Desenhar navegação entre cooperativas e unidades,E025.10,Comprovar que pedidos e saldos exibidos correspondem ao contexto visível.,Pendente,,"UX, Segurança e Frontend"
+E026,Estrutura e conteúdo,Estabelecer linguagem e conteúdo de interface,E026.01,"Definir tom profissional, direto e acolhedor em português brasileiro.",Pendente,,Conteúdo UX e Produto
+E026,Estrutura e conteúdo,Estabelecer linguagem e conteúdo de interface,E026.02,"Padronizar solicitação, proposta, pedido, verba e aprovação no glossário.",Pendente,,Conteúdo UX e Produto
+E026,Estrutura e conteúdo,Estabelecer linguagem e conteúdo de interface,E026.03,Substituir termos de vendedor que confundem o comprador institucional.,Pendente,,Conteúdo UX e Produto
+E026,Estrutura e conteúdo,Estabelecer linguagem e conteúdo de interface,E026.04,Definir rótulos de ação que indiquem o resultado esperado.,Pendente,,Conteúdo UX e Produto
+E026,Estrutura e conteúdo,Estabelecer linguagem e conteúdo de interface,E026.05,Escrever instruções curtas junto ao ponto em que são necessárias.,Pendente,,Conteúdo UX e Produto
+E026,Estrutura e conteúdo,Estabelecer linguagem e conteúdo de interface,E026.06,Separar conteúdo obrigatório de ajuda complementar consultável.,Pendente,,Conteúdo UX e Produto
+E026,Estrutura e conteúdo,Estabelecer linguagem e conteúdo de interface,E026.07,"Retirar números, selos e afirmações de oficialidade sem origem comprovada.",Pendente,,Conteúdo UX e Produto
+E026,Estrutura e conteúdo,Estabelecer linguagem e conteúdo de interface,E026.08,"Explicar limites de preço, disponibilidade e prazo em linguagem comercial.",Pendente,,Conteúdo UX e Produto
+E026,Estrutura e conteúdo,Estabelecer linguagem e conteúdo de interface,E026.09,Revisar compreensão com participantes sem apresentar explicações prévias.,Pendente,,Conteúdo UX e Produto
+E026,Estrutura e conteúdo,Estabelecer linguagem e conteúdo de interface,E026.10,"Publicar exemplos aprovados de títulos, mensagens e ações críticas.",Pendente,,Conteúdo UX e Produto
+E027,Estrutura e conteúdo,Padronizar formulários e entrada de dados,E027.01,"Inventariar dados exigidos em cadastro, campanha, proposta e entrega.",Pendente,,"UX, Conteúdo e Frontend"
+E027,Estrutura e conteúdo,Padronizar formulários e entrada de dados,E027.02,Justificar cada campo obrigatório por finalidade operacional concreta.,Pendente,,"UX, Conteúdo e Frontend"
+E027,Estrutura e conteúdo,Padronizar formulários e entrada de dados,E027.03,Organizar perguntas na ordem em que o comprador possui a informação.,Pendente,,"UX, Conteúdo e Frontend"
+E027,Estrutura e conteúdo,Padronizar formulários e entrada de dados,E027.04,Definir rótulos persistentes e exemplos compatíveis com o campo.,Pendente,,"UX, Conteúdo e Frontend"
+E027,Estrutura e conteúdo,Padronizar formulários e entrada de dados,E027.05,"Padronizar datas, reais, quantidades, CEP e unidades de medida.",Pendente,,"UX, Conteúdo e Frontend"
+E027,Estrutura e conteúdo,Padronizar formulários e entrada de dados,E027.06,"Permitir colagem, autofill e correção sem máscaras excessivamente restritivas.",Pendente,,"UX, Conteúdo e Frontend"
+E027,Estrutura e conteúdo,Padronizar formulários e entrada de dados,E027.07,Validar formato no cliente e regras de negócio no servidor.,Pendente,,"UX, Conteúdo e Frontend"
+E027,Estrutura e conteúdo,Padronizar formulários e entrada de dados,E027.08,Mostrar resumo de erros e vínculo com cada campo problemático.,Pendente,,"UX, Conteúdo e Frontend"
+E027,Estrutura e conteúdo,Padronizar formulários e entrada de dados,E027.09,"Preservar dados após falha, retorno entre etapas e sessão recuperável.",Pendente,,"UX, Conteúdo e Frontend"
+E027,Estrutura e conteúdo,Padronizar formulários e entrada de dados,E027.10,"Testar preenchimento válido, incompleto e incorreto por teclado e toque.",Pendente,,"UX, Conteúdo e Frontend"
+E028,Estrutura e conteúdo,"Definir estados vazios, falhas e recuperação",E028.01,"Listar estados possíveis de catálogo, orçamento, aprovação e entrega.",Pendente,,"UX, Frontend e Backend"
+E028,Estrutura e conteúdo,"Definir estados vazios, falhas e recuperação",E028.02,Separar primeira utilização de ausência de resultados após filtros.,Pendente,,"UX, Frontend e Backend"
+E028,Estrutura e conteúdo,"Definir estados vazios, falhas e recuperação",E028.03,"Diferenciar permissão negada, sessão expirada e serviço indisponível.",Pendente,,"UX, Frontend e Backend"
+E028,Estrutura e conteúdo,"Definir estados vazios, falhas e recuperação",E028.04,Definir carregamento inicial e atualização parcial sem apagar conteúdo útil.,Pendente,,"UX, Frontend e Backend"
+E028,Estrutura e conteúdo,"Definir estados vazios, falhas e recuperação",E028.05,Projetar nova tentativa somente para operações seguras ou idempotentes.,Pendente,,"UX, Frontend e Backend"
+E028,Estrutura e conteúdo,"Definir estados vazios, falhas e recuperação",E028.06,Explicar conflitos de versão quando outro usuário alterou o registro.,Pendente,,"UX, Frontend e Backend"
+E028,Estrutura e conteúdo,"Definir estados vazios, falhas e recuperação",E028.07,Exibir dados antigos com horário e restrições quando houver cache válido.,Pendente,,"UX, Frontend e Backend"
+E028,Estrutura e conteúdo,"Definir estados vazios, falhas e recuperação",E028.08,Remover sucesso otimista de ações financeiras ainda não confirmadas.,Pendente,,"UX, Frontend e Backend"
+E028,Estrutura e conteúdo,"Definir estados vazios, falhas e recuperação",E028.09,Definir canal de suporte com identificador de ocorrência não sensível.,Pendente,,"UX, Frontend e Backend"
+E028,Estrutura e conteúdo,"Definir estados vazios, falhas e recuperação",E028.10,"Simular cada estado e validar clareza, foco e preservação do trabalho.",Pendente,,"UX, Frontend e Backend"
+E029,Estrutura e conteúdo,Planejar avisos e notificações por evento,E029.01,Relacionar eventos que realmente exigem ação de uma pessoa.,Pendente,,"UX, Operação e Backend"
+E029,Estrutura e conteúdo,Planejar avisos e notificações por evento,E029.02,"Definir destinatário de arte, despesa, atraso e divergência de entrega.",Pendente,,"UX, Operação e Backend"
+E029,Estrutura e conteúdo,Planejar avisos e notificações por evento,E029.03,Separar mensagens informativas de pendências que bloqueiam a compra.,Pendente,,"UX, Operação e Backend"
+E029,Estrutura e conteúdo,Planejar avisos e notificações por evento,E029.04,Escolher canais suportados e comprovar suas integrações antes de anunciá-los.,Pendente,,"UX, Operação e Backend"
+E029,Estrutura e conteúdo,Planejar avisos e notificações por evento,E029.05,Definir agrupamento para evitar múltiplos avisos equivalentes.,Pendente,,"UX, Operação e Backend"
+E029,Estrutura e conteúdo,Planejar avisos e notificações por evento,E029.06,Estabelecer preferências permitidas sem suprimir comunicações essenciais.,Pendente,,"UX, Operação e Backend"
+E029,Estrutura e conteúdo,Planejar avisos e notificações por evento,E029.07,Respeitar fuso e calendário operacional quando houver agendamento.,Pendente,,"UX, Operação e Backend"
+E029,Estrutura e conteúdo,Planejar avisos e notificações por evento,E029.08,Criar links que validem sessão e escopo ao abrir a pendência.,Pendente,,"UX, Operação e Backend"
+E029,Estrutura e conteúdo,Planejar avisos e notificações por evento,E029.09,"Definir estados criado, enfileirado, enviado e falhou com significado preciso.",Pendente,,"UX, Operação e Backend"
+E029,Estrutura e conteúdo,Planejar avisos e notificações por evento,E029.10,"Validar a matriz com exemplos de compra, arte e entrega parcial.",Pendente,,"UX, Operação e Backend"
+E030,Estrutura e conteúdo,Validar fluxos em protótipos de baixa fidelidade,E030.01,Prototipar a entrada do comprador e a seleção de contexto.,Pendente,,UX e Pesquisa
+E030,Estrutura e conteúdo,Validar fluxos em protótipos de baixa fidelidade,E030.02,"Representar busca, filtro, detalhe e retorno ao catálogo.",Pendente,,UX e Pesquisa
+E030,Estrutura e conteúdo,Validar fluxos em protótipos de baixa fidelidade,E030.03,Simular montagem de campanha e definição de destinos.,Pendente,,UX e Pesquisa
+E030,Estrutura e conteúdo,Validar fluxos em protótipos de baixa fidelidade,E030.04,"Representar proposta com valores, validade e pendências.",Pendente,,UX e Pesquisa
+E030,Estrutura e conteúdo,Validar fluxos em protótipos de baixa fidelidade,E030.05,Separar a aprovação da arte da autorização da despesa.,Pendente,,UX e Pesquisa
+E030,Estrutura e conteúdo,Validar fluxos em protótipos de baixa fidelidade,E030.06,"Incluir rejeição, correção e retomada de trabalho no protótipo.",Pendente,,UX e Pesquisa
+E030,Estrutura e conteúdo,Validar fluxos em protótipos de baixa fidelidade,E030.07,Representar entrega parcial e abertura de ocorrência.,Pendente,,UX e Pesquisa
+E030,Estrutura e conteúdo,Validar fluxos em protótipos de baixa fidelidade,E030.08,Conduzir tarefas observadas sem orientar o caminho esperado.,Pendente,,UX e Pesquisa
+E030,Estrutura e conteúdo,Validar fluxos em protótipos de baixa fidelidade,E030.09,Priorizar falhas por impacto e revisar os fluxos correspondentes.,Pendente,,UX e Pesquisa
+E030,Estrutura e conteúdo,Validar fluxos em protótipos de baixa fidelidade,E030.10,Registrar evidências da segunda verificação dos problemas críticos encontrados.,Pendente,,UX e Pesquisa
+E031,Sistema visual,Definir direção visual com a marca Sicoob,E031.01,Confirmar o manual vigente e o responsável por validar seu uso.,Pendente,,Direção de design e responsável pela marca
+E031,Sistema visual,Definir direção visual com a marca Sicoob,E031.02,"Obter arquivos autorizados de logo, assinaturas e variações necessárias.",Pendente,,Direção de design e responsável pela marca
+E031,Sistema visual,Definir direção visual com a marca Sicoob,E031.03,"Documentar proporção, área de proteção e tamanho mínimo aplicáveis.",Pendente,,Direção de design e responsável pela marca
+E031,Sistema visual,Definir direção visual com a marca Sicoob,E031.04,Resolver a divergência de RGB e HEX identificada no guia consultado.,Pendente,,Direção de design e responsável pela marca
+E031,Sistema visual,Definir direção visual com a marca Sicoob,E031.05,Definir relação entre identidade Sicoob e identificação do fornecedor operador.,Pendente,,Direção de design e responsável pela marca
+E031,Sistema visual,Definir direção visual com a marca Sicoob,E031.06,"Escolher referências visuais por clareza, confiança e contexto institucional.",Pendente,,Direção de design e responsável pela marca
+E031,Sistema visual,Definir direção visual com a marca Sicoob,E031.07,"Criar alternativas aplicadas a catálogo, proposta e aprovação reais.",Pendente,,Direção de design e responsável pela marca
+E031,Sistema visual,Definir direção visual com a marca Sicoob,E031.08,Comparar alternativas por legibilidade e foco na tarefa de compra.,Pendente,,Direção de design e responsável pela marca
+E031,Sistema visual,Definir direção visual com a marca Sicoob,E031.09,Validar a direção com marketing e participantes do público prioritário.,Pendente,,Direção de design e responsável pela marca
+E031,Sistema visual,Definir direção visual com a marca Sicoob,E031.10,"Registrar ativos, restrições e decisão visual sem declarar homologação inexistente.",Pendente,,Direção de design e responsável pela marca
+E032,Sistema visual,"Estabelecer grade, espaçamento e densidade",E032.01,Definir contêineres e larguras máximas para conteúdo comercial e tabelas.,Pendente,,Design de interface e Frontend
+E032,Sistema visual,"Estabelecer grade, espaçamento e densidade",E032.02,Criar escala de espaçamento reutilizável para campos e agrupamentos.,Pendente,,Design de interface e Frontend
+E032,Sistema visual,"Estabelecer grade, espaçamento e densidade",E032.03,Definir margens e colunas por necessidade do conteúdo.,Pendente,,Design de interface e Frontend
+E032,Sistema visual,"Estabelecer grade, espaçamento e densidade",E032.04,"Estabelecer ritmo vertical entre título, instrução, dados e ação.",Pendente,,Design de interface e Frontend
+E032,Sistema visual,"Estabelecer grade, espaçamento e densidade",E032.05,Separar densidade de consulta frequente da densidade de preenchimento.,Pendente,,Design de interface e Frontend
+E032,Sistema visual,"Estabelecer grade, espaçamento e densidade",E032.06,Evitar que cabeçalhos fixos ocupem espaço excessivo em telas pequenas.,Pendente,,Design de interface e Frontend
+E032,Sistema visual,"Estabelecer grade, espaçamento e densidade",E032.07,Definir quebra de colunas sem alterar a ordem lógica da leitura.,Pendente,,Design de interface e Frontend
+E032,Sistema visual,"Estabelecer grade, espaçamento e densidade",E032.08,"Testar nomes longos de cooperativas, produtos e centros de custo.",Pendente,,Design de interface e Frontend
+E032,Sistema visual,"Estabelecer grade, espaçamento e densidade",E032.09,Mapear classes existentes para a escala e reduzir exceções locais.,Pendente,,Design de interface e Frontend
+E032,Sistema visual,"Estabelecer grade, espaçamento e densidade",E032.10,Validar três telas representativas em diferentes larguras e níveis de ampliação.,Pendente,,Design de interface e Frontend
+E033,Sistema visual,Definir tipografia e hierarquia de leitura,E033.01,Confirmar família institucional licenciada e fontes de substituição.,Pendente,,Design de interface e Conteúdo
+E033,Sistema visual,Definir tipografia e hierarquia de leitura,E033.02,"Definir estilos semânticos para títulos, corpo, legenda e dados.",Pendente,,Design de interface e Conteúdo
+E033,Sistema visual,Definir tipografia e hierarquia de leitura,E033.03,Dimensionar entrelinha e largura de texto para leitura confortável.,Pendente,,Design de interface e Conteúdo
+E033,Sistema visual,Definir tipografia e hierarquia de leitura,E033.04,"Usar pesos com função clara, evitando excesso de variações.",Pendente,,Design de interface e Conteúdo
+E033,Sistema visual,Definir tipografia e hierarquia de leitura,E033.05,"Padronizar alinhamento e dígitos de preços, quantidades e saldos.",Pendente,,Design de interface e Conteúdo
+E033,Sistema visual,Definir tipografia e hierarquia de leitura,E033.06,Preservar hierarquia de títulos na estrutura semântica da página.,Pendente,,Design de interface e Conteúdo
+E033,Sistema visual,Definir tipografia e hierarquia de leitura,E033.07,Evitar textos operacionais pequenos para acomodar mais conteúdo.,Pendente,,Design de interface e Conteúdo
+E033,Sistema visual,Definir tipografia e hierarquia de leitura,E033.08,Definir carregamento de fontes sem bloquear a apresentação inicial.,Pendente,,Design de interface e Conteúdo
+E033,Sistema visual,Definir tipografia e hierarquia de leitura,E033.09,Testar substituição de fonte e aumento de tamanho do texto.,Pendente,,Design de interface e Conteúdo
+E033,Sistema visual,Definir tipografia e hierarquia de leitura,E033.10,"Validar leitura de proposta, tabela de pedidos e formulário em telas reais.",Pendente,,Design de interface e Conteúdo
+E034,Sistema visual,Definir cores semânticas e contraste,E034.01,"Mapear cores institucionais para superfícies, texto, bordas e ações.",Pendente,,Design de interface e Acessibilidade
+E034,Sistema visual,Definir cores semânticas e contraste,E034.02,"Reservar cores de sucesso, aviso e erro para significados consistentes.",Pendente,,Design de interface e Acessibilidade
+E034,Sistema visual,Definir cores semânticas e contraste,E034.03,"Definir combinações aprovadas para estado normal, foco e seleção.",Pendente,,Design de interface e Acessibilidade
+E034,Sistema visual,Definir cores semânticas e contraste,E034.04,Evitar texto branco normal sobre o turquesa de contraste insuficiente.,Pendente,,Design de interface e Acessibilidade
+E034,Sistema visual,Definir cores semânticas e contraste,E034.05,"Calcular contraste mínimo de 4,5:1 para texto normal aplicável.",Pendente,,Design de interface e Acessibilidade
+E034,Sistema visual,Definir cores semânticas e contraste,E034.06,Verificar contraste de texto grande e informação essencial de controles.,Pendente,,Design de interface e Acessibilidade
+E034,Sistema visual,Definir cores semânticas e contraste,E034.07,Adicionar rótulo ou ícone com texto aos estados relevantes.,Pendente,,Design de interface e Acessibilidade
+E034,Sistema visual,Definir cores semânticas e contraste,E034.08,Testar visualização sem cor e em configurações de alto contraste.,Pendente,,Design de interface e Acessibilidade
+E034,Sistema visual,Definir cores semânticas e contraste,E034.09,Documentar combinações proibidas e alternativas para o mesmo uso.,Pendente,,Design de interface e Acessibilidade
+E034,Sistema visual,Definir cores semânticas e contraste,E034.10,"Validar a paleta nas telas de login, catálogo, verba e aprovação.",Pendente,,Design de interface e Acessibilidade
+E035,Sistema visual,"Padronizar imagens, ícones e representação de produto",E035.01,"Definir proporção, enquadramento e fundo para imagens de catálogo.",Pendente,,Design e Conteúdo de catálogo
+E035,Sistema visual,"Padronizar imagens, ícones e representação de produto",E035.02,"Preservar referência visual de escala, material e detalhes relevantes.",Pendente,,Design e Conteúdo de catálogo
+E035,Sistema visual,"Padronizar imagens, ícones e representação de produto",E035.03,Relacionar imagens corretamente à variante selecionada.,Pendente,,Design e Conteúdo de catálogo
+E035,Sistema visual,"Padronizar imagens, ícones e representação de produto",E035.04,Separar fotografia real de mockup ilustrativo com identificação visível.,Pendente,,Design e Conteúdo de catálogo
+E035,Sistema visual,"Padronizar imagens, ícones e representação de produto",E035.05,Definir imagens de apoio para técnica e área de personalização.,Pendente,,Design e Conteúdo de catálogo
+E035,Sistema visual,"Padronizar imagens, ícones e representação de produto",E035.06,Padronizar um conjunto de ícones compatível com a interface existente.,Pendente,,Design e Conteúdo de catálogo
+E035,Sistema visual,"Padronizar imagens, ícones e representação de produto",E035.07,Evitar depender de ícone sem rótulo em ações pouco familiares.,Pendente,,Design e Conteúdo de catálogo
+E035,Sistema visual,"Padronizar imagens, ícones e representação de produto",E035.08,Escrever textos alternativos adequados à função da imagem.,Pendente,,Design e Conteúdo de catálogo
+E035,Sistema visual,"Padronizar imagens, ícones e representação de produto",E035.09,Preparar fallback de mídia que não pareça produto disponível confirmado.,Pendente,,Design e Conteúdo de catálogo
+E035,Sistema visual,"Padronizar imagens, ícones e representação de produto",E035.10,Revisar amostra de categorias e comprovar carregamento dos ativos autorizados.,Pendente,,Design e Conteúdo de catálogo
+E036,Sistema visual,Implementar tokens de design,E036.01,"Inventariar cores, fontes, espaçamentos e elevações já existentes.",Pendente,,Frontend e Design de sistemas
+E036,Sistema visual,Implementar tokens de design,E036.02,Definir nomes semânticos para os tokens efetivamente necessários.,Pendente,,Frontend e Design de sistemas
+E036,Sistema visual,Implementar tokens de design,E036.03,Mapear valores institucionais para variáveis centralizadas.,Pendente,,Frontend e Design de sistemas
+E036,Sistema visual,Implementar tokens de design,E036.04,Separar token de marca de token de estado e interação.,Pendente,,Frontend e Design de sistemas
+E036,Sistema visual,Implementar tokens de design,E036.05,Unificar estilos repetidos nas páginas priorizadas sem refatoração ampla.,Pendente,,Frontend e Design de sistemas
+E036,Sistema visual,Implementar tokens de design,E036.06,"Documentar contratos de borda, raio e sombra com uso moderado.",Pendente,,Frontend e Design de sistemas
+E036,Sistema visual,Implementar tokens de design,E036.07,Definir tokens para foco e áreas de interação.,Pendente,,Frontend e Design de sistemas
+E036,Sistema visual,Implementar tokens de design,E036.08,Implementar exemplos que demonstrem alteração de tema com consistência.,Pendente,,Frontend e Design de sistemas
+E036,Sistema visual,Implementar tokens de design,E036.09,Verificar contrastes após aplicar tokens aos componentes reais.,Pendente,,Frontend e Design de sistemas
+E036,Sistema visual,Implementar tokens de design,E036.10,Revisar a correspondência entre especificação visual e estilos entregues.,Pendente,,Frontend e Design de sistemas
+E037,Sistema visual,Consolidar componentes de ação e formulário,E037.01,"Definir hierarquia de botão principal, secundário e ação destrutiva.",Pendente,,"Frontend, Design e Acessibilidade"
+E037,Sistema visual,Consolidar componentes de ação e formulário,E037.02,Implementar estados de espera sem permitir envio financeiro duplicado.,Pendente,,"Frontend, Design e Acessibilidade"
+E037,Sistema visual,Consolidar componentes de ação e formulário,E037.03,"Padronizar campo de texto, seleção, quantidade, data e valor monetário.",Pendente,,"Frontend, Design e Acessibilidade"
+E037,Sistema visual,Consolidar componentes de ação e formulário,E037.04,"Associar rótulos, instruções e erros aos campos correspondentes.",Pendente,,"Frontend, Design e Acessibilidade"
+E037,Sistema visual,Consolidar componentes de ação e formulário,E037.05,Usar elementos nativos quando eles atendem à necessidade de interação.,Pendente,,"Frontend, Design e Acessibilidade"
+E037,Sistema visual,Consolidar componentes de ação e formulário,E037.06,Definir área de toque preferencial de 44 pixels para ações principais.,Pendente,,"Frontend, Design e Acessibilidade"
+E037,Sistema visual,Consolidar componentes de ação e formulário,E037.07,Verificar mínimo normativo aplicável e exceções de alvos menores documentadas.,Pendente,,"Frontend, Design e Acessibilidade"
+E037,Sistema visual,Consolidar componentes de ação e formulário,E037.08,"Implementar diálogos com foco inicial, contenção e retorno ao acionador.",Pendente,,"Frontend, Design e Acessibilidade"
+E037,Sistema visual,Consolidar componentes de ação e formulário,E037.09,Oferecer alternativas a gestos de arrastar e ações exclusivamente por hover.,Pendente,,"Frontend, Design e Acessibilidade"
+E037,Sistema visual,Consolidar componentes de ação e formulário,E037.10,"Validar exemplos com teclado, toque e tecnologia assistiva nas telas do portal.",Pendente,,"Frontend, Design e Acessibilidade"
+E038,Sistema visual,"Consolidar tabelas, listas e visualização de estados",E038.01,"Definir quando usar tabela, lista ou card por tarefa do usuário.",Pendente,,Frontend e Design
+E038,Sistema visual,"Consolidar tabelas, listas e visualização de estados",E038.02,"Priorizar colunas de identificação, valor, prazo e pendência.",Pendente,,Frontend e Design
+E038,Sistema visual,"Consolidar tabelas, listas e visualização de estados",E038.03,Alinhar números e unidades sem misturar formatos incompatíveis.,Pendente,,Frontend e Design
+E038,Sistema visual,"Consolidar tabelas, listas e visualização de estados",E038.04,Implementar ordenação com indicação textual e estado acessível.,Pendente,,Frontend e Design
+E038,Sistema visual,"Consolidar tabelas, listas e visualização de estados",E038.05,Definir seleção de linha e seleção em lote sem ambiguidade de escopo.,Pendente,,Frontend e Design
+E038,Sistema visual,"Consolidar tabelas, listas e visualização de estados",E038.06,Preservar cabeçalhos e relação entre célula e coluna.,Pendente,,Frontend e Design
+E038,Sistema visual,"Consolidar tabelas, listas e visualização de estados",E038.07,Planejar comportamento móvel com detalhes progressivos ou rolagem localizada.,Pendente,,Frontend e Design
+E038,Sistema visual,"Consolidar tabelas, listas e visualização de estados",E038.08,"Mostrar total, página e intervalo sem contagens inventadas.",Pendente,,Frontend e Design
+E038,Sistema visual,"Consolidar tabelas, listas e visualização de estados",E038.09,"Representar estados com texto, data e ação pertinente.",Pendente,,Frontend e Design
+E038,Sistema visual,"Consolidar tabelas, listas e visualização de estados",E038.10,"Validar consulta, seleção e retorno ao item em volume representativo de dados.",Pendente,,Frontend e Design
+E039,Sistema visual,Projetar feedback e movimento com propósito,E039.01,Relacionar cada animação proposta à informação que ela comunica.,Pendente,,Design de interação e Frontend
+E039,Sistema visual,Projetar feedback e movimento com propósito,E039.02,Definir durações discretas para mudança de estado e transição.,Pendente,,Design de interação e Frontend
+E039,Sistema visual,Projetar feedback e movimento com propósito,E039.03,Evitar animações contínuas em conteúdo de trabalho e decisão.,Pendente,,Design de interação e Frontend
+E039,Sistema visual,Projetar feedback e movimento com propósito,E039.04,Respeitar preferência por redução de movimento do dispositivo.,Pendente,,Design de interação e Frontend
+E039,Sistema visual,Projetar feedback e movimento com propósito,E039.05,"Preservar foco durante abertura, fechamento e atualização de componentes.",Pendente,,Design de interação e Frontend
+E039,Sistema visual,Projetar feedback e movimento com propósito,E039.06,Usar feedback imediato de interação sem simular aprovação concluída.,Pendente,,Design de interação e Frontend
+E039,Sistema visual,Projetar feedback e movimento com propósito,E039.07,Reservar mensagens persistentes para resultados que exigem leitura posterior.,Pendente,,Design de interação e Frontend
+E039,Sistema visual,Projetar feedback e movimento com propósito,E039.08,Evitar deslocamentos de layout ao carregar imagens e valores.,Pendente,,Design de interação e Frontend
+E039,Sistema visual,Projetar feedback e movimento com propósito,E039.09,Testar percepção de carregamento em conexão lenta.,Pendente,,Design de interação e Frontend
+E039,Sistema visual,Projetar feedback e movimento com propósito,E039.10,Remover efeitos que dificultem leitura ou não tenham função demonstrável.,Pendente,,Design de interação e Frontend
+E040,Sistema visual,Governar o sistema de design,E040.01,Documentar cada componente com uso recomendado e limites.,Pendente,,Design de sistemas e Liderança técnica
+E040,Sistema visual,Governar o sistema de design,E040.02,"Publicar exemplos de estados preenchido, vazio, inválido e desabilitado.",Pendente,,Design de sistemas e Liderança técnica
+E040,Sistema visual,Governar o sistema de design,E040.03,Associar requisitos de acessibilidade ao contrato do componente.,Pendente,,Design de sistemas e Liderança técnica
+E040,Sistema visual,Governar o sistema de design,E040.04,Registrar correspondência entre especificação visual e implementação.,Pendente,,Design de sistemas e Liderança técnica
+E040,Sistema visual,Governar o sistema de design,E040.05,Definir revisão para inclusão de nova variante ou exceção.,Pendente,,Design de sistemas e Liderança técnica
+E040,Sistema visual,Governar o sistema de design,E040.06,Evitar duplicação de componentes com diferenças apenas cosméticas.,Pendente,,Design de sistemas e Liderança técnica
+E040,Sistema visual,Governar o sistema de design,E040.07,"Criar exemplos com nomes longos, dados extremos e múltiplos estados.",Pendente,,Design de sistemas e Liderança técnica
+E040,Sistema visual,Governar o sistema de design,E040.08,Definir versionamento e impacto de mudanças sobre consumidores existentes.,Pendente,,Design de sistemas e Liderança técnica
+E040,Sistema visual,Governar o sistema de design,E040.09,Validar alterações relevantes nas telas representativas do portal.,Pendente,,Design de sistemas e Liderança técnica
+E040,Sistema visual,Governar o sistema de design,E040.10,Formalizar responsáveis por manter consistência e corrigir regressões visuais.,Pendente,,Design de sistemas e Liderança técnica
+E041,Catálogo e decisão,Redesenhar a experiência de acesso,E041.01,Aplicar a identidade autorizada com logo carregada localmente.,Pendente,,"UX, Frontend e Conteúdo"
+E041,Catálogo e decisão,Redesenhar a experiência de acesso,E041.02,Explicar a finalidade do portal em texto curto e verificável.,Pendente,,"UX, Frontend e Conteúdo"
+E041,Catálogo e decisão,Redesenhar a experiência de acesso,E041.03,Destacar a ação principal de entrada e a recuperação de acesso.,Pendente,,"UX, Frontend e Conteúdo"
+E041,Catálogo e decisão,Redesenhar a experiência de acesso,E041.04,Apresentar apenas provedores configurados e aprovados para o ambiente.,Pendente,,"UX, Frontend e Conteúdo"
+E041,Catálogo e decisão,Redesenhar a experiência de acesso,E041.05,Explicar o acesso por convite quando não houver cadastro público.,Pendente,,"UX, Frontend e Conteúdo"
+E041,Catálogo e decisão,Redesenhar a experiência de acesso,E041.06,Preservar email preenchido em erros recuperáveis.,Pendente,,"UX, Frontend e Conteúdo"
+E041,Catálogo e decisão,Redesenhar a experiência de acesso,E041.07,Evitar distrações comerciais e métricas sem comprovação no login.,Pendente,,"UX, Frontend e Conteúdo"
+E041,Catálogo e decisão,Redesenhar a experiência de acesso,E041.08,Mostrar ajuda para convite expirado ou vínculo ausente.,Pendente,,"UX, Frontend e Conteúdo"
+E041,Catálogo e decisão,Redesenhar a experiência de acesso,E041.09,"Validar contraste, teclado, autofill e mensagens em largura móvel.",Pendente,,"UX, Frontend e Conteúdo"
+E041,Catálogo e decisão,Redesenhar a experiência de acesso,E041.10,Homologar entrada e retorno seguro ao destino autorizado solicitado.,Pendente,,"UX, Frontend e Conteúdo"
+E042,Catálogo e decisão,Criar início orientado às pendências,E042.01,"Priorizar pendências de arte, despesa, correção e recebimento.",Pendente,,"UX, Frontend e Produto"
+E042,Catálogo e decisão,Criar início orientado às pendências,E042.02,"Exibir cooperativa, unidade e período que contextualizam os dados.",Pendente,,"UX, Frontend e Produto"
+E042,Catálogo e decisão,Criar início orientado às pendências,E042.03,Apresentar saldo apenas quando o contrato de verba estiver consistente.,Pendente,,"UX, Frontend e Produto"
+E042,Catálogo e decisão,Criar início orientado às pendências,E042.04,Criar atalhos para nova solicitação e continuidade de rascunho.,Pendente,,"UX, Frontend e Produto"
+E042,Catálogo e decisão,Criar início orientado às pendências,E042.05,Separar alertas de prazo das mensagens meramente informativas.,Pendente,,"UX, Frontend e Produto"
+E042,Catálogo e decisão,Criar início orientado às pendências,E042.06,Mostrar pedidos recentes com estágio e próxima ação verificáveis.,Pendente,,"UX, Frontend e Produto"
+E042,Catálogo e decisão,Criar início orientado às pendências,E042.07,"Omitir previsões, probabilidades e contadores sem origem real.",Pendente,,"UX, Frontend e Produto"
+E042,Catálogo e decisão,Criar início orientado às pendências,E042.08,Projetar primeiro acesso sem dados com orientação acionável.,Pendente,,"UX, Frontend e Produto"
+E042,Catálogo e decisão,Criar início orientado às pendências,E042.09,Respeitar permissões ao consultar indicadores agregados.,Pendente,,"UX, Frontend e Produto"
+E042,Catálogo e decisão,Criar início orientado às pendências,E042.10,Validar que cada perfil identifica sua principal pendência sem ajuda.,Pendente,,"UX, Frontend e Produto"
+E043,Catálogo e decisão,Implementar listagem de catálogo útil,E043.01,Conectar a listagem ao adaptador de leitura autorizado.,Pendente,,"Frontend, UX e Catálogo"
+E043,Catálogo e decisão,Implementar listagem de catálogo útil,E043.02,"Exibir nome, imagem, variante e identificador de produto consistentes.",Pendente,,"Frontend, UX e Catálogo"
+E043,Catálogo e decisão,Implementar listagem de catálogo útil,E043.03,Informar preço como estimativa ou condição vigente conforme o contrato.,Pendente,,"Frontend, UX e Catálogo"
+E043,Catálogo e decisão,Implementar listagem de catálogo útil,E043.04,Mostrar mínimo e múltiplo de compra quando conhecidos.,Pendente,,"Frontend, UX e Catálogo"
+E043,Catálogo e decisão,Implementar listagem de catálogo útil,E043.05,Apresentar disponibilidade com horário e limite de confiabilidade.,Pendente,,"Frontend, UX e Catálogo"
+E043,Catálogo e decisão,Implementar listagem de catálogo útil,E043.06,Separar produto indisponível de falha de integração.,Pendente,,"Frontend, UX e Catálogo"
+E043,Catálogo e decisão,Implementar listagem de catálogo útil,E043.07,Permitir abrir detalhes sem perder posição na listagem.,Pendente,,"Frontend, UX e Catálogo"
+E043,Catálogo e decisão,Implementar listagem de catálogo útil,E043.08,Carregar imagens e próximas páginas conforme necessidade de uso.,Pendente,,"Frontend, UX e Catálogo"
+E043,Catálogo e decisão,Implementar listagem de catálogo útil,E043.09,Verificar navegação acessível quando houver virtualização de itens.,Pendente,,"Frontend, UX e Catálogo"
+E043,Catálogo e decisão,Implementar listagem de catálogo útil,E043.10,Validar uma amostra real sem alterações no cadastro mestre.,Pendente,,"Frontend, UX e Catálogo"
+E044,Catálogo e decisão,Implementar busca com recuperação de intenção,E044.01,Disponibilizar campo de busca em posição consistente do catálogo.,Pendente,,Frontend e Engenharia de busca
+E044,Catálogo e decisão,Implementar busca com recuperação de intenção,E044.02,Implementar consulta por nome e correspondência exata de código.,Pendente,,Frontend e Engenharia de busca
+E044,Catálogo e decisão,Implementar busca com recuperação de intenção,E044.03,Aplicar normalização e sinônimos aprovados ao mecanismo disponível.,Pendente,,Frontend e Engenharia de busca
+E044,Catálogo e decisão,Implementar busca com recuperação de intenção,E044.04,Oferecer sugestões navegáveis por teclado com significado explícito.,Pendente,,Frontend e Engenharia de busca
+E044,Catálogo e decisão,Implementar busca com recuperação de intenção,E044.05,Preservar a consulta ao abrir produto e voltar aos resultados.,Pendente,,Frontend e Engenharia de busca
+E044,Catálogo e decisão,Implementar busca com recuperação de intenção,E044.06,Apresentar correção sugerida sem apagar a busca original.,Pendente,,Frontend e Engenharia de busca
+E044,Catálogo e decisão,Implementar busca com recuperação de intenção,E044.07,Mostrar alternativas de refinamento quando não houver correspondência.,Pendente,,Frontend e Engenharia de busca
+E044,Catálogo e decisão,Implementar busca com recuperação de intenção,E044.08,Tratar latência e falha sem repetir consulta indefinidamente.,Pendente,,Frontend e Engenharia de busca
+E044,Catálogo e decisão,Implementar busca com recuperação de intenção,E044.09,Registrar eventos de busca sem conteúdo pessoal desnecessário.,Pendente,,Frontend e Engenharia de busca
+E044,Catálogo e decisão,Implementar busca com recuperação de intenção,E044.10,Executar o conjunto de avaliação e corrigir resultados críticos inadequados.,Pendente,,Frontend e Engenharia de busca
+E045,Catálogo e decisão,Implementar filtros acessíveis e persistentes,E045.01,Conectar grupos de filtros aos atributos autorizados do catálogo.,Pendente,,Frontend e UX
+E045,Catálogo e decisão,Implementar filtros acessíveis e persistentes,E045.02,Mostrar seleção ativa fora dos painéis recolhidos.,Pendente,,Frontend e UX
+E045,Catálogo e decisão,Implementar filtros acessíveis e persistentes,E045.03,Implementar remoção individual e limpeza completa dos critérios.,Pendente,,Frontend e UX
+E045,Catálogo e decisão,Implementar filtros acessíveis e persistentes,E045.04,Diferenciar opção sem resultado de informação indisponível.,Pendente,,Frontend e UX
+E045,Catálogo e decisão,Implementar filtros acessíveis e persistentes,E045.05,Manter ordenação e filtros no retorno da página de produto.,Pendente,,Frontend e UX
+E045,Catálogo e decisão,Implementar filtros acessíveis e persistentes,E045.06,Definir persistência segura por contexto e parâmetros compartilháveis permitidos.,Pendente,,Frontend e UX
+E045,Catálogo e decisão,Implementar filtros acessíveis e persistentes,E045.07,"Apresentar painel móvel com aplicar, limpar e fechar compreensíveis.",Pendente,,Frontend e UX
+E045,Catálogo e decisão,Implementar filtros acessíveis e persistentes,E045.08,Restaurar foco após fechar painel ou remover um filtro.,Pendente,,Frontend e UX
+E045,Catálogo e decisão,Implementar filtros acessíveis e persistentes,E045.09,Anunciar atualização dos resultados sem interromper a navegação.,Pendente,,Frontend e UX
+E045,Catálogo e decisão,Implementar filtros acessíveis e persistentes,E045.10,"Validar combinações extremas, retorno do navegador e uso apenas por teclado.",Pendente,,Frontend e UX
+E046,Catálogo e decisão,Construir página de produto para decisão,E046.01,"Organizar nome, código, variante e imagens no início da página.",Pendente,,"UX, Catálogo e Frontend"
+E046,Catálogo e decisão,Construir página de produto para decisão,E046.02,"Exibir materiais, dimensões, capacidade e embalagem conforme os dados disponíveis.",Pendente,,"UX, Catálogo e Frontend"
+E046,Catálogo e decisão,Construir página de produto para decisão,E046.03,Apresentar seletores de cor e tamanho com disponibilidade correspondente.,Pendente,,"UX, Catálogo e Frontend"
+E046,Catálogo e decisão,Construir página de produto para decisão,E046.04,"Mostrar mínimo, múltiplo e faixas comerciais aplicáveis.",Pendente,,"UX, Catálogo e Frontend"
+E046,Catálogo e decisão,Construir página de produto para decisão,E046.05,Explicar técnicas e áreas de personalização compatíveis.,Pendente,,"UX, Catálogo e Frontend"
+E046,Catálogo e decisão,Construir página de produto para decisão,E046.06,Identificar limitações relevantes antes de adicionar à proposta.,Pendente,,"UX, Catálogo e Frontend"
+E046,Catálogo e decisão,Construir página de produto para decisão,E046.07,Mostrar data da consulta de estoque e condição de reconfirmação.,Pendente,,"UX, Catálogo e Frontend"
+E046,Catálogo e decisão,Construir página de produto para decisão,E046.08,Oferecer ficha técnica e ajuda contextual quando disponíveis.,Pendente,,"UX, Catálogo e Frontend"
+E046,Catálogo e decisão,Construir página de produto para decisão,E046.09,Preservar seleção ao simular preço e retornar aos detalhes.,Pendente,,"UX, Catálogo e Frontend"
+E046,Catálogo e decisão,Construir página de produto para decisão,E046.10,Validar decisões com compradores usando produtos de categorias diferentes.,Pendente,,"UX, Catálogo e Frontend"
+E047,Catálogo e decisão,Especificar personalização sem ambiguidade,E047.01,Relacionar técnicas disponíveis à variante e ao material selecionados.,Pendente,,"UX, Produção e Frontend"
+E047,Catálogo e decisão,Especificar personalização sem ambiguidade,E047.02,Mostrar área útil e posição de aplicação com apoio visual.,Pendente,,"UX, Produção e Frontend"
+E047,Catálogo e decisão,Especificar personalização sem ambiguidade,E047.03,Informar limites de dimensões e número de cores por técnica.,Pendente,,"UX, Produção e Frontend"
+E047,Catálogo e decisão,Especificar personalização sem ambiguidade,E047.04,"Explicar preparação, matriz e custos adicionais quando aplicáveis.",Pendente,,"UX, Produção e Frontend"
+E047,Catálogo e decisão,Especificar personalização sem ambiguidade,E047.05,Impedir combinações tecnicamente incompatíveis antes de enviar a proposta.,Pendente,,"UX, Produção e Frontend"
+E047,Catálogo e decisão,Especificar personalização sem ambiguidade,E047.06,Oferecer análise manual quando a informação do catálogo for insuficiente.,Pendente,,"UX, Produção e Frontend"
+E047,Catálogo e decisão,Especificar personalização sem ambiguidade,E047.07,Identificar a prévia como simulação e separar aprovação de produção.,Pendente,,"UX, Produção e Frontend"
+E047,Catálogo e decisão,Especificar personalização sem ambiguidade,E047.08,Registrar observações relevantes sem substituir especificações estruturadas.,Pendente,,"UX, Produção e Frontend"
+E047,Catálogo e decisão,Especificar personalização sem ambiguidade,E047.09,Preservar configuração na proposta e na versão da arte.,Pendente,,"UX, Produção e Frontend"
+E047,Catálogo e decisão,Especificar personalização sem ambiguidade,E047.10,Validar configurações de amostra com produção e documentar as restrições aplicadas.,Pendente,,"UX, Produção e Frontend"
+E048,Catálogo e decisão,Implementar simulação transparente de custo e prazo,E048.01,Separar preço comercial de custo de aquisição interno.,Pendente,,"Comercial, UX e Backend"
+E048,Catálogo e decisão,Implementar simulação transparente de custo e prazo,E048.02,Calcular faixas por quantidade com mínimo e múltiplo válidos.,Pendente,,"Comercial, UX e Backend"
+E048,Catálogo e decisão,Implementar simulação transparente de custo e prazo,E048.03,"Discriminar personalização, preparação e embalagem aplicáveis.",Pendente,,"Comercial, UX e Backend"
+E048,Catálogo e decisão,Implementar simulação transparente de custo e prazo,E048.04,Integrar estimativa de frete por destino quando houver fonte confiável.,Pendente,,"Comercial, UX e Backend"
+E048,Catálogo e decisão,Implementar simulação transparente de custo e prazo,E048.05,Explicar tributos e condições incluídos ou ainda pendentes de cálculo.,Pendente,,"Comercial, UX e Backend"
+E048,Catálogo e decisão,Implementar simulação transparente de custo e prazo,E048.06,"Separar tempo de análise, produção e transporte.",Pendente,,"Comercial, UX e Backend"
+E048,Catálogo e decisão,Implementar simulação transparente de custo e prazo,E048.07,Indicar dependência de arte aprovada e pagamento quando contratual.,Pendente,,"Comercial, UX e Backend"
+E048,Catálogo e decisão,Implementar simulação transparente de custo e prazo,E048.08,"Recalcular valores quando variante, quantidade ou destino mudar.",Pendente,,"Comercial, UX e Backend"
+E048,Catálogo e decisão,Implementar simulação transparente de custo e prazo,E048.09,Bloquear confirmação quando faltar dado necessário à proposta firme.,Pendente,,"Comercial, UX e Backend"
+E048,Catálogo e decisão,Implementar simulação transparente de custo e prazo,E048.10,Conciliar exemplos do simulador com cálculos comerciais revisados.,Pendente,,"Comercial, UX e Backend"
+E049,Catálogo e decisão,Implementar comparação de alternativas,E049.01,Permitir selecionar um conjunto manejável de alternativas do catálogo.,Pendente,,"UX, Frontend e Compras"
+E049,Catálogo e decisão,Implementar comparação de alternativas,E049.02,"Priorizar preço entregue, mínimo, prazo e personalização na comparação.",Pendente,,"UX, Frontend e Compras"
+E049,Catálogo e decisão,Implementar comparação de alternativas,E049.03,Normalizar quantidade e unidade para evitar comparação enganosa.,Pendente,,"UX, Frontend e Compras"
+E049,Catálogo e decisão,Implementar comparação de alternativas,E049.04,"Evidenciar diferenças de material, embalagem e capacidade.",Pendente,,"UX, Frontend e Compras"
+E049,Catálogo e decisão,Implementar comparação de alternativas,E049.05,Marcar informação não disponível sem estimar um valor fictício.,Pendente,,"UX, Frontend e Compras"
+E049,Catálogo e decisão,Implementar comparação de alternativas,E049.06,Permitir retirar e substituir alternativas preservando o restante.,Pendente,,"UX, Frontend e Compras"
+E049,Catálogo e decisão,Implementar comparação de alternativas,E049.07,Adaptar comparação à tela móvel sem ocultar o nome do item.,Pendente,,"UX, Frontend e Compras"
+E049,Catálogo e decisão,Implementar comparação de alternativas,E049.08,Manter foco e cabeçalhos compreensíveis na leitura assistiva.,Pendente,,"UX, Frontend e Compras"
+E049,Catálogo e decisão,Implementar comparação de alternativas,E049.09,Permitir levar a alternativa escolhida para a proposta com sua configuração.,Pendente,,"UX, Frontend e Compras"
+E049,Catálogo e decisão,Implementar comparação de alternativas,E049.10,Validar uma decisão de compra e registrar dúvidas que ainda exigem atendimento.,Pendente,,"UX, Frontend e Compras"
+E050,Catálogo e decisão,Organizar favoritos e coleções compartilhadas,E050.01,Permitir salvar produto com variante e contexto de interesse.,Pendente,,"UX, Frontend e Segurança"
+E050,Catálogo e decisão,Organizar favoritos e coleções compartilhadas,E050.02,"Organizar listas por campanha, evento ou necessidade recorrente.",Pendente,,"UX, Frontend e Segurança"
+E050,Catálogo e decisão,Organizar favoritos e coleções compartilhadas,E050.03,"Definir proprietário, colaboradores e permissão de edição da coleção.",Pendente,,"UX, Frontend e Segurança"
+E050,Catálogo e decisão,Organizar favoritos e coleções compartilhadas,E050.04,Isolar listas entre cooperativas e contextos não compartilhados.,Pendente,,"UX, Frontend e Segurança"
+E050,Catálogo e decisão,Organizar favoritos e coleções compartilhadas,E050.05,Indicar produtos descontinuados ou condições comerciais alteradas.,Pendente,,"UX, Frontend e Segurança"
+E050,Catálogo e decisão,Organizar favoritos e coleções compartilhadas,E050.06,Definir comentários úteis à seleção sem simular aprovação formal.,Pendente,,"UX, Frontend e Segurança"
+E050,Catálogo e decisão,Organizar favoritos e coleções compartilhadas,E050.07,Restringir links externos aos campos e pessoas autorizados.,Pendente,,"UX, Frontend e Segurança"
+E050,Catálogo e decisão,Organizar favoritos e coleções compartilhadas,E050.08,Implementar validade e revogação dos compartilhamentos permitidos.,Pendente,,"UX, Frontend e Segurança"
+E050,Catálogo e decisão,Organizar favoritos e coleções compartilhadas,E050.09,Oferecer desfazer remoção quando a ação for reversível.,Pendente,,"UX, Frontend e Segurança"
+E050,Catálogo e decisão,Organizar favoritos e coleções compartilhadas,E050.10,"Validar colaboração, expiração e acesso negado com dois contextos distintos.",Pendente,,"UX, Frontend e Segurança"
+E051,Campanhas e propostas,Criar briefing de campanha e necessidade,E051.01,"Definir campanha, necessidade avulsa e reposição como contextos distintos.",Pendente,,"UX, Marketing e Produto"
+E051,Campanhas e propostas,Criar briefing de campanha e necessidade,E051.02,Solicitar objetivo da ação em linguagem compreensível para o PA.,Pendente,,"UX, Marketing e Produto"
+E051,Campanhas e propostas,Criar briefing de campanha e necessidade,E051.03,"Registrar público, quantidade estimada e responsável pela iniciativa.",Pendente,,"UX, Marketing e Produto"
+E051,Campanhas e propostas,Criar briefing de campanha e necessidade,E051.04,Diferenciar data do evento de data desejada de recebimento.,Pendente,,"UX, Marketing e Produto"
+E051,Campanhas e propostas,Criar briefing de campanha e necessidade,E051.05,"Associar cooperativa, unidades e centro de custo autorizados.",Pendente,,"UX, Marketing e Produto"
+E051,Campanhas e propostas,Criar briefing de campanha e necessidade,E051.06,Permitir anexar referências com indicação de uso e origem.,Pendente,,"UX, Marketing e Produto"
+E051,Campanhas e propostas,Criar briefing de campanha e necessidade,E051.07,Preencher dados conhecidos do contexto sem assumir escolhas comerciais.,Pendente,,"UX, Marketing e Produto"
+E051,Campanhas e propostas,Criar briefing de campanha e necessidade,E051.08,Salvar rascunho e permitir colaboração conforme as permissões.,Pendente,,"UX, Marketing e Produto"
+E051,Campanhas e propostas,Criar briefing de campanha e necessidade,E051.09,Mostrar informações pendentes antes de encaminhar para cotação.,Pendente,,"UX, Marketing e Produto"
+E051,Campanhas e propostas,Criar briefing de campanha e necessidade,E051.10,"Validar briefings reais anonimizados com compras, marketing e operação.",Pendente,,"UX, Marketing e Produto"
+E052,Campanhas e propostas,Planejar campanhas e marcos de prazo,E052.01,Relacionar campanhas à data do evento e aos destinos atendidos.,Pendente,,"Marketing, UX e Operação"
+E052,Campanhas e propostas,Planejar campanhas e marcos de prazo,E052.02,"Definir marcos de escolha, cotação, arte, autorização e produção.",Pendente,,"Marketing, UX e Operação"
+E052,Campanhas e propostas,Planejar campanhas e marcos de prazo,E052.03,Estimar datas regressivas a partir de condições comerciais verificáveis.,Pendente,,"Marketing, UX e Operação"
+E052,Campanhas e propostas,Planejar campanhas e marcos de prazo,E052.04,Sinalizar dependências sem prometer prazo ainda não confirmado.,Pendente,,"Marketing, UX e Operação"
+E052,Campanhas e propostas,Planejar campanhas e marcos de prazo,E052.05,Exibir responsável e próxima ação de cada marco pendente.,Pendente,,"Marketing, UX e Operação"
+E052,Campanhas e propostas,Planejar campanhas e marcos de prazo,E052.06,Permitir alteração justificada de data preservando o histórico.,Pendente,,"Marketing, UX e Operação"
+E052,Campanhas e propostas,Planejar campanhas e marcos de prazo,E052.07,Mostrar conflito entre prazo solicitado e prazo viável de entrega.,Pendente,,"Marketing, UX e Operação"
+E052,Campanhas e propostas,Planejar campanhas e marcos de prazo,E052.08,Oferecer alternativa de produto ou distribuição sujeita a nova validação.,Pendente,,"Marketing, UX e Operação"
+E052,Campanhas e propostas,Planejar campanhas e marcos de prazo,E052.09,Adaptar agenda para visualização em lista acessível.,Pendente,,"Marketing, UX e Operação"
+E052,Campanhas e propostas,Planejar campanhas e marcos de prazo,E052.10,Simular campanha com atraso de arte e revisar seus impactos de prazo.,Pendente,,"Marketing, UX e Operação"
+E053,Campanhas e propostas,Organizar biblioteca de marcas e arquivos,E053.01,"Definir tipos de arquivo aceitos para logos, referências e artes.",Pendente,,"Design, Marketing e Segurança"
+E053,Campanhas e propostas,Organizar biblioteca de marcas e arquivos,E053.02,Registrar propriedade e permissão de uso dos ativos enviados.,Pendente,,"Design, Marketing e Segurança"
+E053,Campanhas e propostas,Organizar biblioteca de marcas e arquivos,E053.03,Separar assinatura institucional de marca local e material de campanha.,Pendente,,"Design, Marketing e Segurança"
+E053,Campanhas e propostas,Organizar biblioteca de marcas e arquivos,E053.04,Armazenar arquivos em escopo privado com vínculo organizacional.,Pendente,,"Design, Marketing e Segurança"
+E053,Campanhas e propostas,Organizar biblioteca de marcas e arquivos,E053.05,"Validar extensão, conteúdo, tamanho e riscos de processamento do arquivo.",Pendente,,"Design, Marketing e Segurança"
+E053,Campanhas e propostas,Organizar biblioteca de marcas e arquivos,E053.06,Manter versões e identificar qual ativo está vigente para uso.,Pendente,,"Design, Marketing e Segurança"
+E053,Campanhas e propostas,Organizar biblioteca de marcas e arquivos,E053.07,Disponibilizar prévia segura e download apenas para pessoas autorizadas.,Pendente,,"Design, Marketing e Segurança"
+E053,Campanhas e propostas,Organizar biblioteca de marcas e arquivos,E053.08,Tratar substituição de ativo sem alterar pedidos históricos.,Pendente,,"Design, Marketing e Segurança"
+E053,Campanhas e propostas,Organizar biblioteca de marcas e arquivos,E053.09,Definir retenção e revogação conforme finalidade e responsabilidades aprovadas.,Pendente,,"Design, Marketing e Segurança"
+E053,Campanhas e propostas,Organizar biblioteca de marcas e arquivos,E053.10,"Testar isolamento, arquivo inválido e recuperação de versão anterior.",Pendente,,"Design, Marketing e Segurança"
+E054,Campanhas e propostas,Produzir prova técnica da personalização,E054.01,Vincular a prova ao item e à variante da proposta.,Pendente,,"Produção, Design e Frontend"
+E054,Campanhas e propostas,Produzir prova técnica da personalização,E054.02,"Identificar técnica, posição e dimensões efetivas de aplicação.",Pendente,,"Produção, Design e Frontend"
+E054,Campanhas e propostas,Produzir prova técnica da personalização,E054.03,Mostrar cores e limitações relevantes do processo de impressão.,Pendente,,"Produção, Design e Frontend"
+E054,Campanhas e propostas,Produzir prova técnica da personalização,E054.04,Anexar o arquivo de arte e sua versão imutável.,Pendente,,"Produção, Design e Frontend"
+E054,Campanhas e propostas,Produzir prova técnica da personalização,E054.05,Distinguir representação ilustrativa de prova técnica validada pela produção.,Pendente,,"Produção, Design e Frontend"
+E054,Campanhas e propostas,Produzir prova técnica da personalização,E054.06,Registrar embalagem e composição quando afetarem a personalização.,Pendente,,"Produção, Design e Frontend"
+E054,Campanhas e propostas,Produzir prova técnica da personalização,E054.07,Permitir comentários ancorados no item ou na área correspondente.,Pendente,,"Produção, Design e Frontend"
+E054,Campanhas e propostas,Produzir prova técnica da personalização,E054.08,Comparar revisões destacando o que mudou entre versões.,Pendente,,"Produção, Design e Frontend"
+E054,Campanhas e propostas,Produzir prova técnica da personalização,E054.09,Emitir documento legível para revisão em desktop e dispositivo móvel.,Pendente,,"Produção, Design e Frontend"
+E054,Campanhas e propostas,Produzir prova técnica da personalização,E054.10,Validar prova de amostra com produção antes de habilitar aprovação formal.,Pendente,,"Produção, Design e Frontend"
+E055,Campanhas e propostas,Construir kits com composição verificável,E055.01,Permitir adicionar produtos e variantes à composição do kit.,Pendente,,"UX, Comercial e Frontend"
+E055,Campanhas e propostas,Construir kits com composição verificável,E055.02,Definir quantidade de cada componente por unidade de kit.,Pendente,,"UX, Comercial e Frontend"
+E055,Campanhas e propostas,Construir kits com composição verificável,E055.03,Calcular demanda total a partir da quantidade de kits solicitada.,Pendente,,"UX, Comercial e Frontend"
+E055,Campanhas e propostas,Construir kits com composição verificável,E055.04,Validar mínimos e múltiplos de cada componente individualmente.,Pendente,,"UX, Comercial e Frontend"
+E055,Campanhas e propostas,Construir kits com composição verificável,E055.05,Exibir personalização e custos adicionais associados aos componentes.,Pendente,,"UX, Comercial e Frontend"
+E055,Campanhas e propostas,Construir kits com composição verificável,E055.06,Incluir embalagem e montagem quando fizerem parte do fornecimento.,Pendente,,"UX, Comercial e Frontend"
+E055,Campanhas e propostas,Construir kits com composição verificável,E055.07,Sinalizar componente indisponível e permitir substituição revisada.,Pendente,,"UX, Comercial e Frontend"
+E055,Campanhas e propostas,Construir kits com composição verificável,E055.08,Oferecer ordenação por botões além de arrastar e soltar.,Pendente,,"UX, Comercial e Frontend"
+E055,Campanhas e propostas,Construir kits com composição verificável,E055.09,Preservar composição e imagens como versão da proposta.,Pendente,,"UX, Comercial e Frontend"
+E055,Campanhas e propostas,Construir kits com composição verificável,E055.10,Conferir kit de exemplo com comercial e produção antes de liberar uso.,Pendente,,"UX, Comercial e Frontend"
+E056,Campanhas e propostas,Planejar distribuição por PA e destino,E056.01,Listar unidades e endereços autorizados no contexto da cooperativa.,Pendente,,"UX, Compras e Operação"
+E056,Campanhas e propostas,Planejar distribuição por PA e destino,E056.02,Permitir distribuir produtos ou kits por destino.,Pendente,,"UX, Compras e Operação"
+E056,Campanhas e propostas,Planejar distribuição por PA e destino,E056.03,Validar soma das quantidades e evidenciar saldo ainda não distribuído.,Pendente,,"UX, Compras e Operação"
+E056,Campanhas e propostas,Planejar distribuição por PA e destino,E056.04,Registrar contato operacional mínimo necessário ao recebimento.,Pendente,,"UX, Compras e Operação"
+E056,Campanhas e propostas,Planejar distribuição por PA e destino,E056.05,Definir data necessária e restrições de recebimento por unidade.,Pendente,,"UX, Compras e Operação"
+E056,Campanhas e propostas,Planejar distribuição por PA e destino,E056.06,Calcular ou solicitar frete correspondente a cada distribuição.,Pendente,,"UX, Compras e Operação"
+E056,Campanhas e propostas,Planejar distribuição por PA e destino,E056.07,Permitir importação assistida de distribuição com prévia e validação.,Pendente,,"UX, Compras e Operação"
+E056,Campanhas e propostas,Planejar distribuição por PA e destino,E056.08,"Tratar unidade inativa, endereço incompleto e duplicidade de destino.",Pendente,,"UX, Compras e Operação"
+E056,Campanhas e propostas,Planejar distribuição por PA e destino,E056.09,Mostrar impacto da redistribuição sobre custo e prazo.,Pendente,,"UX, Compras e Operação"
+E056,Campanhas e propostas,Planejar distribuição por PA e destino,E056.10,Validar uma campanha com pelo menos três destinos e quantidades diferentes.,Pendente,,"UX, Compras e Operação"
+E057,Campanhas e propostas,Criar carrinho de solicitação institucional,E057.01,Identificar claramente se a seleção cria solicitação ou pedido contratado.,Pendente,,UX e Frontend
+E057,Campanhas e propostas,Criar carrinho de solicitação institucional,E057.02,"Guardar variante, personalização e quantidade de cada item.",Pendente,,UX e Frontend
+E057,Campanhas e propostas,Criar carrinho de solicitação institucional,E057.03,Separar carrinhos e rascunhos por cooperativa e responsável.,Pendente,,UX e Frontend
+E057,Campanhas e propostas,Criar carrinho de solicitação institucional,E057.04,Mostrar inconsistências que impedem solicitar orçamento.,Pendente,,UX e Frontend
+E057,Campanhas e propostas,Criar carrinho de solicitação institucional,E057.05,Permitir editar item sem perder o restante da seleção.,Pendente,,UX e Frontend
+E057,Campanhas e propostas,Criar carrinho de solicitação institucional,E057.06,Oferecer remoção reversível quando ainda não houver compromisso comercial.,Pendente,,UX e Frontend
+E057,Campanhas e propostas,Criar carrinho de solicitação institucional,E057.07,Preservar distribuição e campanha ao retomar um rascunho.,Pendente,,UX e Frontend
+E057,Campanhas e propostas,Criar carrinho de solicitação institucional,E057.08,Revalidar dados antigos do catálogo antes de avançar.,Pendente,,UX e Frontend
+E057,Campanhas e propostas,Criar carrinho de solicitação institucional,E057.09,Apresentar total estimado e itens ainda dependentes de cotação.,Pendente,,UX e Frontend
+E057,Campanhas e propostas,Criar carrinho de solicitação institucional,E057.10,"Testar retomada, troca de contexto e alteração concorrente do rascunho.",Pendente,,UX e Frontend
+E058,Campanhas e propostas,Apresentar orçamento com custo total claro,E058.01,"Exibir produto, variante, quantidade e preço unitário por item.",Pendente,,"UX, Comercial e Frontend"
+E058,Campanhas e propostas,Apresentar orçamento com custo total claro,E058.02,Discriminar personalização e preparação de produção aplicáveis.,Pendente,,"UX, Comercial e Frontend"
+E058,Campanhas e propostas,Apresentar orçamento com custo total claro,E058.03,"Apresentar embalagem, montagem e frete por destino quando cobrados.",Pendente,,"UX, Comercial e Frontend"
+E058,Campanhas e propostas,Apresentar orçamento com custo total claro,E058.04,Indicar tributos e condições comerciais incluídos no valor.,Pendente,,"UX, Comercial e Frontend"
+E058,Campanhas e propostas,Apresentar orçamento com custo total claro,E058.05,Separar desconto autorizado de preço de origem e negociação pendente.,Pendente,,"UX, Comercial e Frontend"
+E058,Campanhas e propostas,Apresentar orçamento com custo total claro,E058.06,Mostrar total consolidado e distribuição relevante por centro de custo.,Pendente,,"UX, Comercial e Frontend"
+E058,Campanhas e propostas,Apresentar orçamento com custo total claro,E058.07,"Apresentar validade, condição de pagamento e prazo contratado ou estimado.",Pendente,,"UX, Comercial e Frontend"
+E058,Campanhas e propostas,Apresentar orçamento com custo total claro,E058.08,Evidenciar os dados ainda necessários para uma proposta firme.,Pendente,,"UX, Comercial e Frontend"
+E058,Campanhas e propostas,Apresentar orçamento com custo total claro,E058.09,Disponibilizar resumo legível antes de qualquer solicitação de aprovação.,Pendente,,"UX, Comercial e Frontend"
+E058,Campanhas e propostas,Apresentar orçamento com custo total claro,E058.10,Conferir arredondamento e compreensão do total com compras e financeiro.,Pendente,,"UX, Comercial e Frontend"
+E059,Campanhas e propostas,Versionar propostas e preservar decisões,E059.01,Definir identificador e número de versão da proposta.,Pendente,,"Backend, Comercial e UX"
+E059,Campanhas e propostas,Versionar propostas e preservar decisões,E059.02,"Guardar fotografia de itens, preços, condições e distribuição.",Pendente,,"Backend, Comercial e UX"
+E059,Campanhas e propostas,Versionar propostas e preservar decisões,E059.03,Associar as versões de arte exigidas por cada item.,Pendente,,"Backend, Comercial e UX"
+E059,Campanhas e propostas,Versionar propostas e preservar decisões,E059.04,Impedir edição silenciosa de proposta já enviada para decisão.,Pendente,,"Backend, Comercial e UX"
+E059,Campanhas e propostas,Versionar propostas e preservar decisões,E059.05,Destacar diferenças entre versão anterior e revisão comercial.,Pendente,,"Backend, Comercial e UX"
+E059,Campanhas e propostas,Versionar propostas e preservar decisões,E059.06,Definir quais mudanças invalidam aprovação de arte ou despesa.,Pendente,,"Backend, Comercial e UX"
+E059,Campanhas e propostas,Versionar propostas e preservar decisões,E059.07,Registrar validade e expiração da proposta independentemente do catálogo.,Pendente,,"Backend, Comercial e UX"
+E059,Campanhas e propostas,Versionar propostas e preservar decisões,E059.08,Gerar documento com identificação inequívoca da versão apresentada.,Pendente,,"Backend, Comercial e UX"
+E059,Campanhas e propostas,Versionar propostas e preservar decisões,E059.09,Preservar vínculo entre proposta aceita e pedido resultante.,Pendente,,"Backend, Comercial e UX"
+E059,Campanhas e propostas,Versionar propostas e preservar decisões,E059.10,Testar alteração de preço e arte sem modificar registros já aprovados.,Pendente,,"Backend, Comercial e UX"
+E060,Campanhas e propostas,Comparar cotações e justificar a escolha,E060.01,Identificar quantidade de cotações exigida pela política aplicável.,Pendente,,"Compras, UX e Backend"
+E060,Campanhas e propostas,Comparar cotações e justificar a escolha,E060.02,"Permitir anexar propostas externas com fornecedor, data e validade.",Pendente,,"Compras, UX e Backend"
+E060,Campanhas e propostas,Comparar cotações e justificar a escolha,E060.03,"Normalizar quantidade, personalização, embalagem e destinos comparados.",Pendente,,"Compras, UX e Backend"
+E060,Campanhas e propostas,Comparar cotações e justificar a escolha,E060.04,"Exibir diferenças de prazo, pagamento e custo entregue.",Pendente,,"Compras, UX e Backend"
+E060,Campanhas e propostas,Comparar cotações e justificar a escolha,E060.05,Registrar critérios relevantes além do menor preço unitário.,Pendente,,"Compras, UX e Backend"
+E060,Campanhas e propostas,Comparar cotações e justificar a escolha,E060.06,Sinalizar proposta incompleta ou vencida antes da decisão.,Pendente,,"Compras, UX e Backend"
+E060,Campanhas e propostas,Comparar cotações e justificar a escolha,E060.07,Permitir justificativa autorizada para fornecedor único quando aplicável.,Pendente,,"Compras, UX e Backend"
+E060,Campanhas e propostas,Comparar cotações e justificar a escolha,E060.08,Preservar anexos e responsáveis pela análise comercial.,Pendente,,"Compras, UX e Backend"
+E060,Campanhas e propostas,Comparar cotações e justificar a escolha,E060.09,Restringir dados de negociação às pessoas que podem consultá-los.,Pendente,,"Compras, UX e Backend"
+E060,Campanhas e propostas,Comparar cotações e justificar a escolha,E060.10,"Validar cenários de duas cotações, três cotações e exceção documentada.",Pendente,,"Compras, UX e Backend"
+E061,Governança e aprovações,Formalizar a solicitação de compra,E061.01,"Exibir resumo de campanha, itens, destinos e valor antes do envio.",Pendente,,"UX, Frontend e Backend"
+E061,Governança e aprovações,Formalizar a solicitação de compra,E061.02,"Identificar política, centro de custo e período de verba aplicáveis.",Pendente,,"UX, Frontend e Backend"
+E061,Governança e aprovações,Formalizar a solicitação de compra,E061.03,Solicitar justificativa apenas quando a regra ou o contexto exigirem.,Pendente,,"UX, Frontend e Backend"
+E061,Governança e aprovações,Formalizar a solicitação de compra,E061.04,Mostrar aprovações necessárias e quem receberá a solicitação.,Pendente,,"UX, Frontend e Backend"
+E061,Governança e aprovações,Formalizar a solicitação de compra,E061.05,"Validar campos, anexos e cotação obrigatórios no servidor.",Pendente,,"UX, Frontend e Backend"
+E061,Governança e aprovações,Formalizar a solicitação de compra,E061.06,Reconfirmar versão e validade da proposta no momento do envio.,Pendente,,"UX, Frontend e Backend"
+E061,Governança e aprovações,Formalizar a solicitação de compra,E061.07,Executar envio idempotente e informar o resultado confirmado.,Pendente,,"UX, Frontend e Backend"
+E061,Governança e aprovações,Formalizar a solicitação de compra,E061.08,Gerar protocolo e link para acompanhamento da solicitação.,Pendente,,"UX, Frontend e Backend"
+E061,Governança e aprovações,Formalizar a solicitação de compra,E061.09,Preservar rascunho e orientar correção quando houver rejeição de validação.,Pendente,,"UX, Frontend e Backend"
+E061,Governança e aprovações,Formalizar a solicitação de compra,E061.10,Comprovar envio único com tentativa repetida e sessão recuperada.,Pendente,,"UX, Frontend e Backend"
+E062,Governança e aprovações,Construir a experiência de verba e saldo,E062.01,"Mostrar cooperativa, unidade, centro de custo e competência selecionados.",Pendente,,"UX, Financeiro e Frontend"
+E062,Governança e aprovações,Construir a experiência de verba e saldo,E062.02,"Separar verba planejada, reservada, comprometida e consumida.",Pendente,,"UX, Financeiro e Frontend"
+E062,Governança e aprovações,Construir a experiência de verba e saldo,E062.03,Explicar o saldo disponível em linguagem de decisão de compra.,Pendente,,"UX, Financeiro e Frontend"
+E062,Governança e aprovações,Construir a experiência de verba e saldo,E062.04,Relacionar movimentos aos pedidos e eventos que os originaram.,Pendente,,"UX, Financeiro e Frontend"
+E062,Governança e aprovações,Construir a experiência de verba e saldo,E062.05,Permitir consulta de períodos históricos sem alterar saldos anteriores.,Pendente,,"UX, Financeiro e Frontend"
+E062,Governança e aprovações,Construir a experiência de verba e saldo,E062.06,Exibir data de atualização e tratar erro de consulta explicitamente.,Pendente,,"UX, Financeiro e Frontend"
+E062,Governança e aprovações,Construir a experiência de verba e saldo,E062.07,Sinalizar limite insuficiente antes de encaminhar solicitação incompatível.,Pendente,,"UX, Financeiro e Frontend"
+E062,Governança e aprovações,Construir a experiência de verba e saldo,E062.08,Mostrar exceções aprovadas sem ocultar seu efeito sobre o saldo.,Pendente,,"UX, Financeiro e Frontend"
+E062,Governança e aprovações,Construir a experiência de verba e saldo,E062.09,Restringir edição e remanejamento aos papéis autorizados.,Pendente,,"UX, Financeiro e Frontend"
+E062,Governança e aprovações,Construir a experiência de verba e saldo,E062.10,Conciliar a interface com lançamentos de exemplo e conferir arredondamentos.,Pendente,,"UX, Financeiro e Frontend"
+E063,Governança e aprovações,Criar fila de aprovações orientada a decisão,E063.01,"Separar pendências de despesa, arte e exceção conforme responsabilidade.",Pendente,,"UX, Compras e Frontend"
+E063,Governança e aprovações,Criar fila de aprovações orientada a decisão,E063.02,"Exibir solicitante, unidade, valor, prazo e idade da pendência.",Pendente,,"UX, Compras e Frontend"
+E063,Governança e aprovações,Criar fila de aprovações orientada a decisão,E063.03,"Oferecer filtros por campanha, cooperativa autorizada e situação.",Pendente,,"UX, Compras e Frontend"
+E063,Governança e aprovações,Criar fila de aprovações orientada a decisão,E063.04,Ordenar por prazo ou espera com critério explicitado.,Pendente,,"UX, Compras e Frontend"
+E063,Governança e aprovações,Criar fila de aprovações orientada a decisão,E063.05,Mostrar impedimento ou informação faltante antes de decidir.,Pendente,,"UX, Compras e Frontend"
+E063,Governança e aprovações,Criar fila de aprovações orientada a decisão,E063.06,Abrir detalhe preservando posição e filtros da fila.,Pendente,,"UX, Compras e Frontend"
+E063,Governança e aprovações,Criar fila de aprovações orientada a decisão,E063.07,Indicar solicitação alterada desde a última visualização.,Pendente,,"UX, Compras e Frontend"
+E063,Governança e aprovações,Criar fila de aprovações orientada a decisão,E063.08,Evitar seleção em lote para decisões que exigem análise individual distinta.,Pendente,,"UX, Compras e Frontend"
+E063,Governança e aprovações,Criar fila de aprovações orientada a decisão,E063.09,Permitir ação em lote somente com validação individual de autorização e resultado.,Pendente,,"UX, Compras e Frontend"
+E063,Governança e aprovações,Criar fila de aprovações orientada a decisão,E063.10,Validar triagem de uma fila mista e recuperação de item devolvido.,Pendente,,"UX, Compras e Frontend"
+E064,Governança e aprovações,Implementar decisão financeira compreensível,E064.01,"Apresentar valor completo, centro de custo e saldo pertinente.",Pendente,,"UX, Backend e Aprovadores"
+E064,Governança e aprovações,Implementar decisão financeira compreensível,E064.02,Exibir comparação comercial e justificativa exigidas pela política.,Pendente,,"UX, Backend e Aprovadores"
+E064,Governança e aprovações,Implementar decisão financeira compreensível,E064.03,"Mostrar versão da proposta, validade e condições de pagamento.",Pendente,,"UX, Backend e Aprovadores"
+E064,Governança e aprovações,Implementar decisão financeira compreensível,E064.04,Informar o efeito de aprovar sobre compromisso e saldo.,Pendente,,"UX, Backend e Aprovadores"
+E064,Governança e aprovações,Implementar decisão financeira compreensível,E064.05,"Disponibilizar aprovação, rejeição e devolução com finalidades distintas.",Pendente,,"UX, Backend e Aprovadores"
+E064,Governança e aprovações,Implementar decisão financeira compreensível,E064.06,Solicitar motivo de rejeição ou exceção quando aplicável.,Pendente,,"UX, Backend e Aprovadores"
+E064,Governança e aprovações,Implementar decisão financeira compreensível,E064.07,"Validar autoridade, impedimento e versão no servidor ao confirmar.",Pendente,,"UX, Backend e Aprovadores"
+E064,Governança e aprovações,Implementar decisão financeira compreensível,E064.08,Tratar decisão concorrente com mensagem e atualização do detalhe.,Pendente,,"UX, Backend e Aprovadores"
+E064,Governança e aprovações,Implementar decisão financeira compreensível,E064.09,Registrar resultado confirmado e notificar os responsáveis corretos.,Pendente,,"UX, Backend e Aprovadores"
+E064,Governança e aprovações,Implementar decisão financeira compreensível,E064.10,Testar negação por falta de alçada e aprovação idempotente com verba conciliada.,Pendente,,"UX, Backend e Aprovadores"
+E065,Governança e aprovações,Implementar aprovação formal da arte,E065.01,"Exibir produto, técnica, posição e dimensão junto à prova.",Pendente,,"Marketing, Produção e UX"
+E065,Governança e aprovações,Implementar aprovação formal da arte,E065.02,"Identificar versão, autor e data do arquivo em revisão.",Pendente,,"Marketing, Produção e UX"
+E065,Governança e aprovações,Implementar aprovação formal da arte,E065.03,Permitir inspeção ampliada sem substituir a descrição técnica acessível.,Pendente,,"Marketing, Produção e UX"
+E065,Governança e aprovações,Implementar aprovação formal da arte,E065.04,Separar comentário de pedido formal de revisão.,Pendente,,"Marketing, Produção e UX"
+E065,Governança e aprovações,Implementar aprovação formal da arte,E065.05,Mostrar diferenças quando uma nova arte substituir a anterior.,Pendente,,"Marketing, Produção e UX"
+E065,Governança e aprovações,Implementar aprovação formal da arte,E065.06,Exigir confirmação da especificação efetivamente aprovada para produção.,Pendente,,"Marketing, Produção e UX"
+E065,Governança e aprovações,Implementar aprovação formal da arte,E065.07,Validar poder de aprovação de marca no escopo da cooperativa.,Pendente,,"Marketing, Produção e UX"
+E065,Governança e aprovações,Implementar aprovação formal da arte,E065.08,"Registrar aceite ou rejeição com identidade, data e versão.",Pendente,,"Marketing, Produção e UX"
+E065,Governança e aprovações,Implementar aprovação formal da arte,E065.09,Impedir liberação de produção com arte alterada após o aceite.,Pendente,,"Marketing, Produção e UX"
+E065,Governança e aprovações,Implementar aprovação formal da arte,E065.10,"Validar revisão, nova prova e aprovação com equipe de marketing e produção.",Pendente,,"Marketing, Produção e UX"
+E066,Governança e aprovações,Tratar exceções sem perder governança,E066.01,"Classificar exceções de verba, prazo, quantidade e cotação previstas na política.",Pendente,,"Produto, Compras e UX"
+E066,Governança e aprovações,Tratar exceções sem perder governança,E066.02,Definir quem pode solicitar e quem pode decidir cada exceção.,Pendente,,"Produto, Compras e UX"
+E066,Governança e aprovações,Tratar exceções sem perder governança,E066.03,Exibir a regra original e o motivo da solicitação excepcional.,Pendente,,"Produto, Compras e UX"
+E066,Governança e aprovações,Tratar exceções sem perder governança,E066.04,Solicitar evidências comerciais necessárias à análise.,Pendente,,"Produto, Compras e UX"
+E066,Governança e aprovações,Tratar exceções sem perder governança,E066.05,Impedir que o solicitante aprove sua exceção quando houver impedimento.,Pendente,,"Produto, Compras e UX"
+E066,Governança e aprovações,Tratar exceções sem perder governança,E066.06,Registrar limites e validade da autorização excepcional.,Pendente,,"Produto, Compras e UX"
+E066,Governança e aprovações,Tratar exceções sem perder governança,E066.07,Recalcular aprovações quando a exceção alterar custo ou condições.,Pendente,,"Produto, Compras e UX"
+E066,Governança e aprovações,Tratar exceções sem perder governança,E066.08,Mostrar o resultado no histórico sem rotular regra descumprida como normal.,Pendente,,"Produto, Compras e UX"
+E066,Governança e aprovações,Tratar exceções sem perder governança,E066.09,Preservar controles de segurança independentemente de exceção comercial.,Pendente,,"Produto, Compras e UX"
+E066,Governança e aprovações,Tratar exceções sem perder governança,E066.10,"Testar autorização válida, rejeição e tentativa de usar exceção expirada.",Pendente,,"Produto, Compras e UX"
+E067,Governança e aprovações,Administrar substituições e delegações temporárias,E067.01,Identificar necessidades reais de substituição durante ausências.,Pendente,,"Segurança, Compras e UX"
+E067,Governança e aprovações,Administrar substituições e delegações temporárias,E067.02,Definir quais competências a política permite delegar.,Pendente,,"Segurança, Compras e UX"
+E067,Governança e aprovações,Administrar substituições e delegações temporárias,E067.03,Exigir autoridade para conceder a delegação proposta.,Pendente,,"Segurança, Compras e UX"
+E067,Governança e aprovações,Administrar substituições e delegações temporárias,E067.04,"Registrar substituto, unidade, competência, início e término.",Pendente,,"Segurança, Compras e UX"
+E067,Governança e aprovações,Administrar substituições e delegações temporárias,E067.05,Impedir concessão de poderes superiores aos permitidos ao delegante.,Pendente,,"Segurança, Compras e UX"
+E067,Governança e aprovações,Administrar substituições e delegações temporárias,E067.06,Tratar conflitos de interesse e autoaprovação no substituto.,Pendente,,"Segurança, Compras e UX"
+E067,Governança e aprovações,Administrar substituições e delegações temporárias,E067.07,Mostrar claramente quando uma ação usa poder delegado.,Pendente,,"Segurança, Compras e UX"
+E067,Governança e aprovações,Administrar substituições e delegações temporárias,E067.08,Expirar e revogar delegações sem depender de alteração manual de interface.,Pendente,,"Segurança, Compras e UX"
+E067,Governança e aprovações,Administrar substituições e delegações temporárias,E067.09,Registrar ator real e origem da competência na auditoria.,Pendente,,"Segurança, Compras e UX"
+E067,Governança e aprovações,Administrar substituições e delegações temporárias,E067.10,"Validar uso permitido, tentativa fora do escopo e expiração durante sessão ativa.",Pendente,,"Segurança, Compras e UX"
+E068,Governança e aprovações,Tornar o histórico de decisões auditável,E068.01,"Definir eventos obrigatórios de solicitação, versão, aprovação e estorno.",Pendente,,"Backend, UX e Auditoria"
+E068,Governança e aprovações,Tornar o histórico de decisões auditável,E068.02,"Persistir ator, contexto, data e versão no servidor.",Pendente,,"Backend, UX e Auditoria"
+E068,Governança e aprovações,Tornar o histórico de decisões auditável,E068.03,Registrar a política e eventual delegação usadas na decisão.,Pendente,,"Backend, UX e Auditoria"
+E068,Governança e aprovações,Tornar o histórico de decisões auditável,E068.04,Associar documentos sem replicar dados pessoais desnecessários no log.,Pendente,,"Backend, UX e Auditoria"
+E068,Governança e aprovações,Tornar o histórico de decisões auditável,E068.05,Impedir que compradores alterem ou apaguem decisões históricas.,Pendente,,"Backend, UX e Auditoria"
+E068,Governança e aprovações,Tornar o histórico de decisões auditável,E068.06,Mostrar linha do tempo com termos compreensíveis para a operação.,Pendente,,"Backend, UX e Auditoria"
+E068,Governança e aprovações,Tornar o histórico de decisões auditável,E068.07,Permitir filtrar histórico por tipo de evento e período autorizado.,Pendente,,"Backend, UX e Auditoria"
+E068,Governança e aprovações,Tornar o histórico de decisões auditável,E068.08,Oferecer exportação restrita com identificador do pedido e origem.,Pendente,,"Backend, UX e Auditoria"
+E068,Governança e aprovações,Tornar o histórico de decisões auditável,E068.09,Tratar falha de auditoria crítica sem concluir ação sem rastro.,Pendente,,"Backend, UX e Auditoria"
+E068,Governança e aprovações,Tornar o histórico de decisões auditável,E068.10,Reconstruir um pedido de exemplo a partir do histórico e seus documentos.,Pendente,,"Backend, UX e Auditoria"
+E069,Governança e aprovações,Controlar revisões e cancelamentos,E069.01,"Definir alterações permitidas em rascunho, aprovação e produção.",Pendente,,"UX, Backend e Operação"
+E069,Governança e aprovações,Controlar revisões e cancelamentos,E069.02,"Explicar consequências antes de alterar quantidade, arte ou destino.",Pendente,,"UX, Backend e Operação"
+E069,Governança e aprovações,Controlar revisões e cancelamentos,E069.03,Identificar quais aprovações deixam de valer após a alteração.,Pendente,,"UX, Backend e Operação"
+E069,Governança e aprovações,Controlar revisões e cancelamentos,E069.04,Registrar nova versão sem sobrescrever a decisão histórica.,Pendente,,"UX, Backend e Operação"
+E069,Governança e aprovações,Controlar revisões e cancelamentos,E069.05,Solicitar confirmação do fornecedor quando houver compromisso já assumido.,Pendente,,"UX, Backend e Operação"
+E069,Governança e aprovações,Controlar revisões e cancelamentos,E069.06,Aplicar estorno ou ajuste de verba conforme evento confirmado.,Pendente,,"UX, Backend e Operação"
+E069,Governança e aprovações,Controlar revisões e cancelamentos,E069.07,Tratar cancelamento parcial por item ou destino quando operacionalmente possível.,Pendente,,"UX, Backend e Operação"
+E069,Governança e aprovações,Controlar revisões e cancelamentos,E069.08,Mostrar cobrança ou condição pendente apenas com base contratual verificável.,Pendente,,"UX, Backend e Operação"
+E069,Governança e aprovações,Controlar revisões e cancelamentos,E069.09,Notificar responsáveis afetados pela revisão aprovada.,Pendente,,"UX, Backend e Operação"
+E069,Governança e aprovações,Controlar revisões e cancelamentos,E069.10,"Testar cancelamento repetido, mudança concorrente e revisão após início de produção.",Pendente,,"UX, Backend e Operação"
+E070,Governança e aprovações,Implementar acompanhamento do ciclo do pedido,E070.01,"Reconciliar estados de requisição, proposta, pedido e entrega no contrato canônico.",Pendente,,"UX, Backend e Frontend"
+E070,Governança e aprovações,Implementar acompanhamento do ciclo do pedido,E070.02,Definir transições válidas e responsáveis por executá-las.,Pendente,,"UX, Backend e Frontend"
+E070,Governança e aprovações,Implementar acompanhamento do ciclo do pedido,E070.03,Exibir estado atual sem misturar aprovação comercial e etapa logística.,Pendente,,"UX, Backend e Frontend"
+E070,Governança e aprovações,Implementar acompanhamento do ciclo do pedido,E070.04,Mostrar próxima ação e impedimento quando o pedido não puder avançar.,Pendente,,"UX, Backend e Frontend"
+E070,Governança e aprovações,Implementar acompanhamento do ciclo do pedido,E070.05,"Associar cada mudança a evento, ator e horário verificáveis.",Pendente,,"UX, Backend e Frontend"
+E070,Governança e aprovações,Implementar acompanhamento do ciclo do pedido,E070.06,Tratar pedido com itens em estágios diferentes sem simplificação enganosa.,Pendente,,"UX, Backend e Frontend"
+E070,Governança e aprovações,Implementar acompanhamento do ciclo do pedido,E070.07,"Bloquear transições inválidas no servidor, inclusive por chamadas diretas.",Pendente,,"UX, Backend e Frontend"
+E070,Governança e aprovações,Implementar acompanhamento do ciclo do pedido,E070.08,Atualizar a interface após eventos sem perder contexto do usuário.,Pendente,,"UX, Backend e Frontend"
+E070,Governança e aprovações,Implementar acompanhamento do ciclo do pedido,E070.09,Registrar notificações derivadas das transições realmente confirmadas.,Pendente,,"UX, Backend e Frontend"
+E070,Governança e aprovações,Implementar acompanhamento do ciclo do pedido,E070.10,"Percorrer o ciclo completo com rejeição, revisão e retomada em homologação.",Pendente,,"UX, Backend e Frontend"
+E071,Execução e pós-compra,Formalizar a passagem do pedido ao fornecedor,E071.01,Identificar a entidade fornecedora responsável por cada item contratado.,Pendente,,"Operação, Comercial e Backend"
+E071,Execução e pós-compra,Formalizar a passagem do pedido ao fornecedor,E071.02,"Reunir versão comercial, arte e especificações aprovadas em um pacote.",Pendente,,"Operação, Comercial e Backend"
+E071,Execução e pós-compra,Formalizar a passagem do pedido ao fornecedor,E071.03,"Incluir quantidades, embalagem, destinos e datas acordadas.",Pendente,,"Operação, Comercial e Backend"
+E071,Execução e pós-compra,Formalizar a passagem do pedido ao fornecedor,E071.04,Mostrar condições que ainda impedem iniciar produção.,Pendente,,"Operação, Comercial e Backend"
+E071,Execução e pós-compra,Formalizar a passagem do pedido ao fornecedor,E071.05,Definir canal e formato de recebimento da ordem pelo fornecedor.,Pendente,,"Operação, Comercial e Backend"
+E071,Execução e pós-compra,Formalizar a passagem do pedido ao fornecedor,E071.06,Registrar confirmação de recebimento e aceite das condições.,Pendente,,"Operação, Comercial e Backend"
+E071,Execução e pós-compra,Formalizar a passagem do pedido ao fornecedor,E071.07,Tratar divergência apontada pelo fornecedor antes de produzir.,Pendente,,"Operação, Comercial e Backend"
+E071,Execução e pós-compra,Formalizar a passagem do pedido ao fornecedor,E071.08,Impedir envio de versão substituída ou ainda não aprovada.,Pendente,,"Operação, Comercial e Backend"
+E071,Execução e pós-compra,Formalizar a passagem do pedido ao fornecedor,E071.09,Restringir o acesso do fornecedor aos dados necessários ao fornecimento.,Pendente,,"Operação, Comercial e Backend"
+E071,Execução e pós-compra,Formalizar a passagem do pedido ao fornecedor,E071.10,Validar uma ordem de exemplo com produção e logística responsáveis.,Pendente,,"Operação, Comercial e Backend"
+E072,Execução e pós-compra,Acompanhar produção e controle de qualidade,E072.01,Definir marcos operacionais que a equipe consegue informar com confiança.,Pendente,,"Operação, Produção e UX"
+E072,Execução e pós-compra,Acompanhar produção e controle de qualidade,E072.02,Vincular início de produção aos pré-requisitos comerciais e técnicos.,Pendente,,"Operação, Produção e UX"
+E072,Execução e pós-compra,Acompanhar produção e controle de qualidade,E072.03,Registrar confirmação de materiais e configuração de personalização.,Pendente,,"Operação, Produção e UX"
+E072,Execução e pós-compra,Acompanhar produção e controle de qualidade,E072.04,Definir necessidade de amostra física por técnica ou risco comercial.,Pendente,,"Operação, Produção e UX"
+E072,Execução e pós-compra,Acompanhar produção e controle de qualidade,E072.05,Relacionar inspeção de qualidade à especificação aprovada.,Pendente,,"Operação, Produção e UX"
+E072,Execução e pós-compra,Acompanhar produção e controle de qualidade,E072.06,"Registrar quantidade produzida, rejeitada e pendente quando disponível.",Pendente,,"Operação, Produção e UX"
+E072,Execução e pós-compra,Acompanhar produção e controle de qualidade,E072.07,Tratar atraso ou retrabalho com impacto explícito sobre a entrega.,Pendente,,"Operação, Produção e UX"
+E072,Execução e pós-compra,Acompanhar produção e controle de qualidade,E072.08,Impedir que uma simulação de mockup seja usada como inspeção física.,Pendente,,"Operação, Produção e UX"
+E072,Execução e pós-compra,Acompanhar produção e controle de qualidade,E072.09,Atualizar responsáveis do portal sobre mudanças confirmadas.,Pendente,,"Operação, Produção e UX"
+E072,Execução e pós-compra,Acompanhar produção e controle de qualidade,E072.10,"Validar rastreabilidade entre arte aprovada, lote produzido e inspeção realizada.",Pendente,,"Operação, Produção e UX"
+E073,Execução e pós-compra,Reconfirmar disponibilidade sem escrever no catálogo,E073.01,Definir em qual momento a disponibilidade precisa ser reconfirmada.,Pendente,,"Comercial, Operação e Backend"
+E073,Execução e pós-compra,Reconfirmar disponibilidade sem escrever no catálogo,E073.02,"Registrar produto, variante, quantidade e horário da nova consulta.",Pendente,,"Comercial, Operação e Backend"
+E073,Execução e pós-compra,Reconfirmar disponibilidade sem escrever no catálogo,E073.03,Separar estoque informado de compromisso assumido pelo fornecedor.,Pendente,,"Comercial, Operação e Backend"
+E073,Execução e pós-compra,Reconfirmar disponibilidade sem escrever no catálogo,E073.04,Definir processo operacional autorizado de confirmação fora do catálogo mestre.,Pendente,,"Comercial, Operação e Backend"
+E073,Execução e pós-compra,Reconfirmar disponibilidade sem escrever no catálogo,E073.05,Guardar no portal a evidência da confirmação comercial obtida.,Pendente,,"Comercial, Operação e Backend"
+E073,Execução e pós-compra,Reconfirmar disponibilidade sem escrever no catálogo,E073.06,Detectar mudança de oferta entre proposta e liberação de produção.,Pendente,,"Comercial, Operação e Backend"
+E073,Execução e pós-compra,Reconfirmar disponibilidade sem escrever no catálogo,E073.07,Oferecer alternativa sujeita a nova aprovação de preço e arte.,Pendente,,"Comercial, Operação e Backend"
+E073,Execução e pós-compra,Reconfirmar disponibilidade sem escrever no catálogo,E073.08,Comunicar indisponibilidade com ação e responsável claros.,Pendente,,"Comercial, Operação e Backend"
+E073,Execução e pós-compra,Reconfirmar disponibilidade sem escrever no catálogo,E073.09,Manter vedada qualquer baixa ou reserva no banco externo por esta integração.,Pendente,,"Comercial, Operação e Backend"
+E073,Execução e pós-compra,Reconfirmar disponibilidade sem escrever no catálogo,E073.10,Simular redução de disponibilidade e comprovar tratamento sem gravação no mestre.,Pendente,,"Comercial, Operação e Backend"
+E074,Execução e pós-compra,Preparar expedição e entregas por destino,E074.01,"Conferir destinos, responsáveis e restrições de recebimento aprovados.",Pendente,,"Logística, UX e Backend"
+E074,Execução e pós-compra,Preparar expedição e entregas por destino,E074.02,Relacionar itens e quantidades a cada expedição planejada.,Pendente,,"Logística, UX e Backend"
+E074,Execução e pós-compra,Preparar expedição e entregas por destino,E074.03,Separar remessas parciais sem perder saldo a expedir.,Pendente,,"Logística, UX e Backend"
+E074,Execução e pós-compra,Preparar expedição e entregas por destino,E074.04,Registrar transportadora ou modalidade de entrega confirmada.,Pendente,,"Logística, UX e Backend"
+E074,Execução e pós-compra,Preparar expedição e entregas por destino,E074.05,Validar endereço e contato operacional antes da emissão dos documentos.,Pendente,,"Logística, UX e Backend"
+E074,Execução e pós-compra,Preparar expedição e entregas por destino,E074.06,"Associar volumes, etiquetas e documentos necessários à remessa.",Pendente,,"Logística, UX e Backend"
+E074,Execução e pós-compra,Preparar expedição e entregas por destino,E074.07,Registrar data de saída e previsão efetiva informada pelo operador.,Pendente,,"Logística, UX e Backend"
+E074,Execução e pós-compra,Preparar expedição e entregas por destino,E074.08,Restringir alteração de destino após expedição conforme processo contratado.,Pendente,,"Logística, UX e Backend"
+E074,Execução e pós-compra,Preparar expedição e entregas por destino,E074.09,Tratar erro de endereço com responsável e histórico de correção.,Pendente,,"Logística, UX e Backend"
+E074,Execução e pós-compra,Preparar expedição e entregas por destino,E074.10,Conferir expedição de exemplo com múltiplos PAs e remessa parcial.,Pendente,,"Logística, UX e Backend"
+E075,Execução e pós-compra,Oferecer rastreio e previsão confiáveis,E075.01,"Apresentar cada destino com itens, quantidade e situação da entrega.",Pendente,,"UX, Logística e Frontend"
+E075,Execução e pós-compra,Oferecer rastreio e previsão confiáveis,E075.02,Vincular código de rastreio e fonte de informação da transportadora.,Pendente,,"UX, Logística e Frontend"
+E075,Execução e pós-compra,Oferecer rastreio e previsão confiáveis,E075.03,Mostrar data e horário da última atualização recebida.,Pendente,,"UX, Logística e Frontend"
+E075,Execução e pós-compra,Oferecer rastreio e previsão confiáveis,E075.04,Distinguir previsão da transportadora de data necessária para o evento.,Pendente,,"UX, Logística e Frontend"
+E075,Execução e pós-compra,Oferecer rastreio e previsão confiáveis,E075.05,"Registrar eventos de tentativa, atraso e problema de endereço.",Pendente,,"UX, Logística e Frontend"
+E075,Execução e pós-compra,Oferecer rastreio e previsão confiáveis,E075.06,Evitar inferir entrega apenas pela passagem do prazo estimado.,Pendente,,"UX, Logística e Frontend"
+E075,Execução e pós-compra,Oferecer rastreio e previsão confiáveis,E075.07,Oferecer acompanhamento alternativo quando a integração estiver indisponível.,Pendente,,"UX, Logística e Frontend"
+E075,Execução e pós-compra,Oferecer rastreio e previsão confiáveis,E075.08,Notificar somente alterações relevantes aos destinatários autorizados.,Pendente,,"UX, Logística e Frontend"
+E075,Execução e pós-compra,Oferecer rastreio e previsão confiáveis,E075.09,Manter pedido parcialmente entregue enquanto houver destinos pendentes.,Pendente,,"UX, Logística e Frontend"
+E075,Execução e pós-compra,Oferecer rastreio e previsão confiáveis,E075.10,"Validar rastreio normal, atualização atrasada e transportadora sem integração.",Pendente,,"UX, Logística e Frontend"
+E076,Execução e pós-compra,Registrar recebimento e conferência,E076.01,Definir quem pode confirmar recebimento em cada destino.,Pendente,,"Operação do PA, UX e Backend"
+E076,Execução e pós-compra,Registrar recebimento e conferência,E076.02,Apresentar itens e quantidades esperados na remessa.,Pendente,,"Operação do PA, UX e Backend"
+E076,Execução e pós-compra,Registrar recebimento e conferência,E076.03,Permitir informar quantidade recebida e quantidade pendente.,Pendente,,"Operação do PA, UX e Backend"
+E076,Execução e pós-compra,Registrar recebimento e conferência,E076.04,"Registrar data, responsável e documento de comprovação aplicável.",Pendente,,"Operação do PA, UX e Backend"
+E076,Execução e pós-compra,Registrar recebimento e conferência,E076.05,Separar recebimento físico de aceite de qualidade quando necessário.,Pendente,,"Operação do PA, UX e Backend"
+E076,Execução e pós-compra,Registrar recebimento e conferência,E076.06,Permitir evidência de avaria ou diferença sem expor dados desnecessários.,Pendente,,"Operação do PA, UX e Backend"
+E076,Execução e pós-compra,Registrar recebimento e conferência,E076.07,Tratar remessa não reconhecida ou destinatário incorreto.,Pendente,,"Operação do PA, UX e Backend"
+E076,Execução e pós-compra,Registrar recebimento e conferência,E076.08,Atualizar saldos entregues sem duplicar conferência reenviada.,Pendente,,"Operação do PA, UX e Backend"
+E076,Execução e pós-compra,Registrar recebimento e conferência,E076.09,Manter pendências visíveis até sua resolução operacional.,Pendente,,"Operação do PA, UX e Backend"
+E076,Execução e pós-compra,Registrar recebimento e conferência,E076.10,"Validar recebimento completo, parcial e confirmação repetida no mesmo destino.",Pendente,,"Operação do PA, UX e Backend"
+E077,Execução e pós-compra,"Resolver faltas, avarias e devoluções",E077.01,Definir categorias de ocorrência compreensíveis para o recebedor.,Pendente,,"Atendimento, Logística e UX"
+E077,Execução e pós-compra,"Resolver faltas, avarias e devoluções",E077.02,"Vincular reclamação ao item, quantidade e destino afetados.",Pendente,,"Atendimento, Logística e UX"
+E077,Execução e pós-compra,"Resolver faltas, avarias e devoluções",E077.03,Solicitar descrição e evidência proporcionais ao problema informado.,Pendente,,"Atendimento, Logística e UX"
+E077,Execução e pós-compra,"Resolver faltas, avarias e devoluções",E077.04,Gerar protocolo sem obrigar o comprador a repetir dados do pedido.,Pendente,,"Atendimento, Logística e UX"
+E077,Execução e pós-compra,"Resolver faltas, avarias e devoluções",E077.05,Definir responsável e prazo de retorno conforme o atendimento contratado.,Pendente,,"Atendimento, Logística e UX"
+E077,Execução e pós-compra,"Resolver faltas, avarias e devoluções",E077.06,"Registrar investigação, comunicação e proposta de solução.",Pendente,,"Atendimento, Logística e UX"
+E077,Execução e pós-compra,"Resolver faltas, avarias e devoluções",E077.07,"Tratar reposição, coleta, crédito ou ajuste conforme autorização comercial.",Pendente,,"Atendimento, Logística e UX"
+E077,Execução e pós-compra,"Resolver faltas, avarias e devoluções",E077.08,Atualizar pedido e verba apenas quando o evento correspondente for confirmado.,Pendente,,"Atendimento, Logística e UX"
+E077,Execução e pós-compra,"Resolver faltas, avarias e devoluções",E077.09,Permitir discordância ou reabertura justificada da solução proposta.,Pendente,,"Atendimento, Logística e UX"
+E077,Execução e pós-compra,"Resolver faltas, avarias e devoluções",E077.10,Validar uma avaria e uma falta parcial até sua resolução documentada.,Pendente,,"Atendimento, Logística e UX"
+E078,Execução e pós-compra,Conciliar documentos financeiros e entrega,E078.01,Definir documentos exigidos pela condição comercial de cada cooperativa.,Pendente,,"Financeiro, Compras e Backend"
+E078,Execução e pós-compra,Conciliar documentos financeiros e entrega,E078.02,"Relacionar nota fiscal, fornecedor, pedido e remessa correspondentes.",Pendente,,"Financeiro, Compras e Backend"
+E078,Execução e pós-compra,Conciliar documentos financeiros e entrega,E078.03,"Conferir quantidades, valores e dados de faturamento aprovados.",Pendente,,"Financeiro, Compras e Backend"
+E078,Execução e pós-compra,Conciliar documentos financeiros e entrega,E078.04,Separar condição de pagamento de situação efetiva de liquidação.,Pendente,,"Financeiro, Compras e Backend"
+E078,Execução e pós-compra,Conciliar documentos financeiros e entrega,E078.05,Registrar recebimento parcial sem pressupor quitação integral.,Pendente,,"Financeiro, Compras e Backend"
+E078,Execução e pós-compra,Conciliar documentos financeiros e entrega,E078.06,"Identificar divergências entre proposta, entrega e documento financeiro.",Pendente,,"Financeiro, Compras e Backend"
+E078,Execução e pós-compra,Conciliar documentos financeiros e entrega,E078.07,Encaminhar correção ao responsável mantendo os documentos anteriores rastreáveis.,Pendente,,"Financeiro, Compras e Backend"
+E078,Execução e pós-compra,Conciliar documentos financeiros e entrega,E078.08,Restringir acesso a anexos e informações financeiras por permissão.,Pendente,,"Financeiro, Compras e Backend"
+E078,Execução e pós-compra,Conciliar documentos financeiros e entrega,E078.09,Definir exportação ou processo manual até haver integração homologada.,Pendente,,"Financeiro, Compras e Backend"
+E078,Execução e pós-compra,Conciliar documentos financeiros e entrega,E078.10,Conciliar um pedido completo e um pedido com ajuste documentado.,Pendente,,"Financeiro, Compras e Backend"
+E079,Execução e pós-compra,Facilitar recompra com revalidação,E079.01,Permitir iniciar nova solicitação a partir de pedido anterior autorizado.,Pendente,,"UX, Comercial e Frontend"
+E079,Execução e pós-compra,Facilitar recompra com revalidação,E079.02,Copiar configuração e referências sem alterar o registro histórico.,Pendente,,"UX, Comercial e Frontend"
+E079,Execução e pós-compra,Facilitar recompra com revalidação,E079.03,Verificar existência e situação atual de produtos e variantes.,Pendente,,"UX, Comercial e Frontend"
+E079,Execução e pós-compra,Facilitar recompra com revalidação,E079.04,Reconsultar preço de origem e condições comerciais vigentes.,Pendente,,"UX, Comercial e Frontend"
+E079,Execução e pós-compra,Facilitar recompra com revalidação,E079.05,"Reconfirmar mínimo, múltiplo e disponibilidade da quantidade pretendida.",Pendente,,"UX, Comercial e Frontend"
+E079,Execução e pós-compra,Facilitar recompra com revalidação,E079.06,Indicar arte antiga que depende de nova validação de marca.,Pendente,,"UX, Comercial e Frontend"
+E079,Execução e pós-compra,Facilitar recompra com revalidação,E079.07,"Solicitar confirmação de destinos, campanha e período de verba.",Pendente,,"UX, Comercial e Frontend"
+E079,Execução e pós-compra,Facilitar recompra com revalidação,E079.08,Destacar diferenças em relação à compra anterior.,Pendente,,"UX, Comercial e Frontend"
+E079,Execução e pós-compra,Facilitar recompra com revalidação,E079.09,Encaminhar a nova versão ao fluxo normal de aprovação.,Pendente,,"UX, Comercial e Frontend"
+E079,Execução e pós-compra,Facilitar recompra com revalidação,E079.10,"Validar recompra com produto inativo, preço alterado e endereço diferente.",Pendente,,"UX, Comercial e Frontend"
+E080,Execução e pós-compra,Oferecer ajuda contextual e atendimento,E080.01,Mapear dúvidas recorrentes observadas na pesquisa e no teste das jornadas.,Pendente,,"Conteúdo UX, Atendimento e Frontend"
+E080,Execução e pós-compra,Oferecer ajuda contextual e atendimento,E080.02,"Escrever respostas curtas sobre quantidade, arte, verba e entrega.",Pendente,,"Conteúdo UX, Atendimento e Frontend"
+E080,Execução e pós-compra,Oferecer ajuda contextual e atendimento,E080.03,Disponibilizar ajuda junto ao campo ou decisão que gera a dúvida.,Pendente,,"Conteúdo UX, Atendimento e Frontend"
+E080,Execução e pós-compra,Oferecer ajuda contextual e atendimento,E080.04,Criar páginas de apoio acessíveis e pesquisáveis.,Pendente,,"Conteúdo UX, Atendimento e Frontend"
+E080,Execução e pós-compra,Oferecer ajuda contextual e atendimento,E080.05,Oferecer atendimento humano com horário e expectativa de retorno reais.,Pendente,,"Conteúdo UX, Atendimento e Frontend"
+E080,Execução e pós-compra,Oferecer ajuda contextual e atendimento,E080.06,Transmitir contexto permitido do pedido sem incluir segredos ou excesso de dados.,Pendente,,"Conteúdo UX, Atendimento e Frontend"
+E080,Execução e pós-compra,Oferecer ajuda contextual e atendimento,E080.07,Permitir acompanhar solicitações de suporte pelo protocolo.,Pendente,,"Conteúdo UX, Atendimento e Frontend"
+E080,Execução e pós-compra,Oferecer ajuda contextual e atendimento,E080.08,Separar recomendação automática de informação confirmada pela operação.,Pendente,,"Conteúdo UX, Atendimento e Frontend"
+E080,Execução e pós-compra,Oferecer ajuda contextual e atendimento,E080.09,Revisar conteúdo quando políticas ou condições de fornecimento mudarem.,Pendente,,"Conteúdo UX, Atendimento e Frontend"
+E080,Execução e pós-compra,Oferecer ajuda contextual e atendimento,E080.10,Testar obtenção de ajuda e continuidade da compra após uma dúvida resolvida.,Pendente,,"Conteúdo UX, Atendimento e Frontend"
+E081,Qualidade e validação,Auditar acessibilidade da jornada completa,E081.01,"Definir escopo de páginas, componentes e critérios WCAG aplicáveis.",Pendente,,Especialista em acessibilidade e QA
+E081,Qualidade e validação,Auditar acessibilidade da jornada completa,E081.02,"Verificar estrutura semântica, títulos, regiões e nomes acessíveis.",Pendente,,Especialista em acessibilidade e QA
+E081,Qualidade e validação,Auditar acessibilidade da jornada completa,E081.03,"Percorrer compra, aprovação e recebimento inteiramente por teclado.",Pendente,,Especialista em acessibilidade e QA
+E081,Qualidade e validação,Auditar acessibilidade da jornada completa,E081.04,Conferir foco visível e ausência de encobrimento por elementos fixos.,Pendente,,Especialista em acessibilidade e QA
+E081,Qualidade e validação,Auditar acessibilidade da jornada completa,E081.05,"Validar contraste de texto, estados e informação essencial dos controles.",Pendente,,Especialista em acessibilidade e QA
+E081,Qualidade e validação,Auditar acessibilidade da jornada completa,E081.06,"Testar rótulos, instruções, erros e mensagens dinâmicas com leitor de tela.",Pendente,,Especialista em acessibilidade e QA
+E081,Qualidade e validação,Auditar acessibilidade da jornada completa,E081.07,Verificar alvos de interação e alternativas a arrastar elementos.,Pendente,,Especialista em acessibilidade e QA
+E081,Qualidade e validação,Auditar acessibilidade da jornada completa,E081.08,"Testar ampliação, espaçamento de texto e redistribuição do conteúdo.",Pendente,,Especialista em acessibilidade e QA
+E081,Qualidade e validação,Auditar acessibilidade da jornada completa,E081.09,Corrigir achados e repetir os cenários que apresentaram falha.,Pendente,,Especialista em acessibilidade e QA
+E081,Qualidade e validação,Auditar acessibilidade da jornada completa,E081.10,"Publicar matriz de critérios, ambientes testados e limitações remanescentes.",Pendente,,Especialista em acessibilidade e QA
+E082,Qualidade e validação,Validar uso móvel em situações reais,E082.01,Selecionar aparelhos e navegadores usados pelos participantes do piloto.,Pendente,,"Pesquisa UX, Frontend e QA"
+E082,Qualidade e validação,Validar uso móvel em situações reais,E082.02,"Testar entrada, busca e seleção com teclado virtual aberto.",Pendente,,"Pesquisa UX, Frontend e QA"
+E082,Qualidade e validação,Validar uso móvel em situações reais,E082.03,"Verificar campos numéricos, datas e endereços no dispositivo móvel.",Pendente,,"Pesquisa UX, Frontend e QA"
+E082,Qualidade e validação,Validar uso móvel em situações reais,E082.04,Conferir área de toque e separação entre ações adjacentes.,Pendente,,"Pesquisa UX, Frontend e QA"
+E082,Qualidade e validação,Validar uso móvel em situações reais,E082.05,Testar leitura de proposta e arte sem perder acesso aos comandos.,Pendente,,"Pesquisa UX, Frontend e QA"
+E082,Qualidade e validação,Validar uso móvel em situações reais,E082.06,Validar envio de foto de ocorrência com tamanho e orientação variados.,Pendente,,"Pesquisa UX, Frontend e QA"
+E082,Qualidade e validação,Validar uso móvel em situações reais,E082.07,"Simular interrupção por ligação, bloqueio de tela e retorno ao navegador.",Pendente,,"Pesquisa UX, Frontend e QA"
+E082,Qualidade e validação,Validar uso móvel em situações reais,E082.08,Verificar conexões lentas e retomada de tarefas interrompidas.,Pendente,,"Pesquisa UX, Frontend e QA"
+E082,Qualidade e validação,Validar uso móvel em situações reais,E082.09,Corrigir problemas que impeçam concluir tarefas prioritárias no aparelho.,Pendente,,"Pesquisa UX, Frontend e QA"
+E082,Qualidade e validação,Validar uso móvel em situações reais,E082.10,"Registrar modelos, versões e resultados observados com suas limitações.",Pendente,,"Pesquisa UX, Frontend e QA"
+E083,Qualidade e validação,Testar responsividade e conteúdo extremo,E083.01,"Preparar nomes extensos de produtos, cooperativas e centros de custo.",Pendente,,"Design, Frontend e QA"
+E083,Qualidade e validação,Testar responsividade e conteúdo extremo,E083.02,"Testar valores altos, quantidades grandes e textos de justificativa longos.",Pendente,,"Design, Frontend e QA"
+E083,Qualidade e validação,Testar responsividade e conteúdo extremo,E083.03,Validar endereços com complementos extensos e destinos múltiplos.,Pendente,,"Design, Frontend e QA"
+E083,Qualidade e validação,Testar responsividade e conteúdo extremo,E083.04,"Verificar ausência, quebra e substituição de imagens e fontes.",Pendente,,"Design, Frontend e QA"
+E083,Qualidade e validação,Testar responsividade e conteúdo extremo,E083.05,"Conferir larguras pequenas, intermediárias e amplas definidas no layout.",Pendente,,"Design, Frontend e QA"
+E083,Qualidade e validação,Testar responsividade e conteúdo extremo,E083.06,Testar orientação paisagem e janelas redimensionadas durante a tarefa.,Pendente,,"Design, Frontend e QA"
+E083,Qualidade e validação,Testar responsividade e conteúdo extremo,E083.07,Restringir rolagem horizontal aos componentes que realmente a exigem.,Pendente,,"Design, Frontend e QA"
+E083,Qualidade e validação,Testar responsividade e conteúdo extremo,E083.08,Garantir acesso ao conteúdo completo quando houver truncamento visual.,Pendente,,"Design, Frontend e QA"
+E083,Qualidade e validação,Testar responsividade e conteúdo extremo,E083.09,Comparar telas implementadas com a especificação aprovada usando dados reais permitidos.,Pendente,,"Design, Frontend e QA"
+E083,Qualidade e validação,Testar responsividade e conteúdo extremo,E083.10,Resolver regressões visuais críticas e registrar a matriz validada.,Pendente,,"Design, Frontend e QA"
+E084,Qualidade e validação,Otimizar desempenho percebido e carregamento,E084.01,"Medir carregamento, interação e estabilidade nas páginas prioritárias.",Pendente,,"Frontend, Infraestrutura e UX"
+E084,Qualidade e validação,Otimizar desempenho percebido e carregamento,E084.02,Definir orçamento de JavaScript e imagens com base na conexão do piloto.,Pendente,,"Frontend, Infraestrutura e UX"
+E084,Qualidade e validação,Otimizar desempenho percebido e carregamento,E084.03,Separar recursos administrativos e pesados das rotas do comprador.,Pendente,,"Frontend, Infraestrutura e UX"
+E084,Qualidade e validação,Otimizar desempenho percebido e carregamento,E084.04,"Carregar PDF, voz e recursos opcionais somente quando necessários.",Pendente,,"Frontend, Infraestrutura e UX"
+E084,Qualidade e validação,Otimizar desempenho percebido e carregamento,E084.05,Dimensionar imagens e reservar seu espaço para evitar deslocamentos.,Pendente,,"Frontend, Infraestrutura e UX"
+E084,Qualidade e validação,Otimizar desempenho percebido e carregamento,E084.06,"Reduzir consultas repetidas respeitando escopo, validade e atualização dos dados.",Pendente,,"Frontend, Infraestrutura e UX"
+E084,Qualidade e validação,Otimizar desempenho percebido e carregamento,E084.07,Eliminar trabalho síncrono que atrase interação de busca e formulário.,Pendente,,"Frontend, Infraestrutura e UX"
+E084,Qualidade e validação,Otimizar desempenho percebido e carregamento,E084.08,"Adotar como referência de campo LCP até 2,5 segundos, INP até 200 ms e CLS até 0,1 no percentil 75.",Pendente,,"Frontend, Infraestrutura e UX"
+E084,Qualidade e validação,Otimizar desempenho percebido e carregamento,E084.09,Medir laboratório com cenário documentado e preparar coleta de campo após lançamento.,Pendente,,"Frontend, Infraestrutura e UX"
+E084,Qualidade e validação,Otimizar desempenho percebido e carregamento,E084.10,Repetir medições após otimização e registrar orçamento atendido e limitações de amostra.,Pendente,,"Frontend, Infraestrutura e UX"
+E085,Qualidade e validação,Validar resiliência e preservação do trabalho,E085.01,Simular catálogo fora do ar durante busca e montagem de proposta.,Pendente,,"Backend, Frontend e QA"
+E085,Qualidade e validação,Validar resiliência e preservação do trabalho,E085.02,Testar expiração de cache sem exibir disponibilidade antiga como confirmada.,Pendente,,"Backend, Frontend e QA"
+E085,Qualidade e validação,Validar resiliência e preservação do trabalho,E085.03,Interromper conexão antes e depois do envio de uma solicitação.,Pendente,,"Backend, Frontend e QA"
+E085,Qualidade e validação,Validar resiliência e preservação do trabalho,E085.04,Verificar repetição controlada de chamadas idempotentes.,Pendente,,"Backend, Frontend e QA"
+E085,Qualidade e validação,Validar resiliência e preservação do trabalho,E085.05,Simular sessão expirada durante preenchimento e decisão.,Pendente,,"Backend, Frontend e QA"
+E085,Qualidade e validação,Validar resiliência e preservação do trabalho,E085.06,Testar conflito de versão com dois usuários atuando no mesmo pedido.,Pendente,,"Backend, Frontend e QA"
+E085,Qualidade e validação,Validar resiliência e preservação do trabalho,E085.07,Validar retomada após atualização da aplicação e falha de carregamento de rota.,Pendente,,"Backend, Frontend e QA"
+E085,Qualidade e validação,Validar resiliência e preservação do trabalho,E085.08,Impedir aprovação financeira offline ou sem resposta confirmada do servidor.,Pendente,,"Backend, Frontend e QA"
+E085,Qualidade e validação,Validar resiliência e preservação do trabalho,E085.09,Garantir mensagem com próxima ação segura em cada falha observada.,Pendente,,"Backend, Frontend e QA"
+E085,Qualidade e validação,Validar resiliência e preservação do trabalho,E085.10,Registrar recuperação e conciliação dos dados após os cenários de interrupção.,Pendente,,"Backend, Frontend e QA"
+E086,Qualidade e validação,Verificar segurança das jornadas integradas,E086.01,Definir matriz de ataque com duas cooperativas e múltiplos papéis.,Pendente,,"Segurança, Backend e QA"
+E086,Qualidade e validação,Verificar segurança das jornadas integradas,E086.02,Testar leitura e alteração direta de IDs fora do escopo autorizado.,Pendente,,"Segurança, Backend e QA"
+E086,Qualidade e validação,Verificar segurança das jornadas integradas,E086.03,Tentar aprovar pedido com ator ou vínculo adulterado.,Pendente,,"Segurança, Backend e QA"
+E086,Qualidade e validação,Verificar segurança das jornadas integradas,E086.04,Verificar reaproveitamento de token expirado ou link revogado.,Pendente,,"Segurança, Backend e QA"
+E086,Qualidade e validação,Verificar segurança das jornadas integradas,E086.05,"Validar acesso a arte, nota fiscal e comprovante de outra organização.",Pendente,,"Segurança, Backend e QA"
+E086,Qualidade e validação,Verificar segurança das jornadas integradas,E086.06,"Inspecionar exposição de custos internos, segredos e diagnósticos no navegador.",Pendente,,"Segurança, Backend e QA"
+E086,Qualidade e validação,Verificar segurança das jornadas integradas,E086.07,Testar concessão indevida de papel e delegação fora da competência.,Pendente,,"Segurança, Backend e QA"
+E086,Qualidade e validação,Verificar segurança das jornadas integradas,E086.08,Verificar proteção contra repetição e corrida nas decisões financeiras.,Pendente,,"Segurança, Backend e QA"
+E086,Qualidade e validação,Verificar segurança das jornadas integradas,E086.09,Corrigir falhas e repetir os casos negativos que as demonstraram.,Pendente,,"Segurança, Backend e QA"
+E086,Qualidade e validação,Verificar segurança das jornadas integradas,E086.10,Publicar evidências revisadas sem divulgar segredos ou instruções operacionais de exploração.,Pendente,,"Segurança, Backend e QA"
+E087,Qualidade e validação,Validar privacidade e ciclo de vida dos dados,E087.01,Inventariar dados pessoais realmente tratados nas jornadas propostas.,Pendente,,"Responsável por privacidade, Produto e Segurança"
+E087,Qualidade e validação,Validar privacidade e ciclo de vida dos dados,E087.02,Relacionar cada dado à finalidade operacional e ao responsável pelo tratamento.,Pendente,,"Responsável por privacidade, Produto e Segurança"
+E087,Qualidade e validação,Validar privacidade e ciclo de vida dos dados,E087.03,Revisar necessidade de contatos pessoais e dados de destinatários individuais.,Pendente,,"Responsável por privacidade, Produto e Segurança"
+E087,Qualidade e validação,Validar privacidade e ciclo de vida dos dados,E087.04,Evitar importar cadastro de cooperados sem finalidade e escopo aprovados.,Pendente,,"Responsável por privacidade, Produto e Segurança"
+E087,Qualidade e validação,Validar privacidade e ciclo de vida dos dados,E087.05,Definir acesso a documentos e logs conforme a necessidade de trabalho.,Pendente,,"Responsável por privacidade, Produto e Segurança"
+E087,Qualidade e validação,Validar privacidade e ciclo de vida dos dados,E087.06,"Validar com o responsável competente bases, avisos e procedimentos aplicáveis.",Pendente,,"Responsável por privacidade, Produto e Segurança"
+E087,Qualidade e validação,Validar privacidade e ciclo de vida dos dados,E087.07,Estabelecer retenção e exclusão compatíveis com documentos e obrigações reais.,Pendente,,"Responsável por privacidade, Produto e Segurança"
+E087,Qualidade e validação,Validar privacidade e ciclo de vida dos dados,E087.08,"Minimizar dados coletados por métricas, suporte e ferramentas externas.",Pendente,,"Responsável por privacidade, Produto e Segurança"
+E087,Qualidade e validação,Validar privacidade e ciclo de vida dos dados,E087.09,Ensaiar atendimento de solicitação e revogação de acesso em ambiente segregado.,Pendente,,"Responsável por privacidade, Produto e Segurança"
+E087,Qualidade e validação,Validar privacidade e ciclo de vida dos dados,E087.10,Registrar aprovação das práticas e incorporar apenas avisos úteis ao usuário.,Pendente,,"Responsável por privacidade, Produto e Segurança"
+E088,Qualidade e validação,Conduzir testes de usabilidade com tarefas completas,E088.01,"Preparar tarefas realistas de campanha, cotação, aprovação e recebimento.",Pendente,,"Pesquisa UX, Compras e Marketing"
+E088,Qualidade e validação,Conduzir testes de usabilidade com tarefas completas,E088.02,Selecionar participantes dos papéis prioritários com consentimento adequado.,Pendente,,"Pesquisa UX, Compras e Marketing"
+E088,Qualidade e validação,Conduzir testes de usabilidade com tarefas completas,E088.03,"Definir sucesso da tarefa, erros e necessidade de ajuda antes das sessões.",Pendente,,"Pesquisa UX, Compras e Marketing"
+E088,Qualidade e validação,Conduzir testes de usabilidade com tarefas completas,E088.04,Observar execução sem ensinar a sequência de ações desejada.,Pendente,,"Pesquisa UX, Compras e Marketing"
+E088,Qualidade e validação,Conduzir testes de usabilidade com tarefas completas,E088.05,"Registrar dúvidas de custo, prazo, política e versão de arte.",Pendente,,"Pesquisa UX, Compras e Marketing"
+E088,Qualidade e validação,Conduzir testes de usabilidade com tarefas completas,E088.06,"Incluir cenário de devolução, saldo insuficiente e entrega parcial.",Pendente,,"Pesquisa UX, Compras e Marketing"
+E088,Qualidade e validação,Conduzir testes de usabilidade com tarefas completas,E088.07,Comparar problemas por severidade sem generalizar percentuais da amostra pequena.,Pendente,,"Pesquisa UX, Compras e Marketing"
+E088,Qualidade e validação,Conduzir testes de usabilidade com tarefas completas,E088.08,Priorizar correções que diminuem risco de compra errada ou retrabalho.,Pendente,,"Pesquisa UX, Compras e Marketing"
+E088,Qualidade e validação,Conduzir testes de usabilidade com tarefas completas,E088.09,Testar novamente os fluxos modificados com evidência de resultado.,Pendente,,"Pesquisa UX, Compras e Marketing"
+E088,Qualidade e validação,Conduzir testes de usabilidade com tarefas completas,E088.10,Publicar aprendizados e decisões de design rastreáveis às observações.,Pendente,,"Pesquisa UX, Compras e Marketing"
+E089,Qualidade e validação,Construir indicadores operacionais verdadeiros,E089.01,Implementar eventos e agregações previstos no dicionário de indicadores.,Pendente,,"Dados, Produto e UX"
+E089,Qualidade e validação,Construir indicadores operacionais verdadeiros,E089.02,Restringir métricas ao escopo de cada cooperativa e papel.,Pendente,,"Dados, Produto e UX"
+E089,Qualidade e validação,Construir indicadores operacionais verdadeiros,E089.03,"Mostrar período, atualização e tamanho da amostra relevante.",Pendente,,"Dados, Produto e UX"
+E089,Qualidade e validação,Construir indicadores operacionais verdadeiros,E089.04,Separar tempo em espera de tempo efetivo de processamento.,Pendente,,"Dados, Produto e UX"
+E089,Qualidade e validação,Construir indicadores operacionais verdadeiros,E089.05,Medir devoluções de arte e despesa por motivos registrados.,Pendente,,"Dados, Produto e UX"
+E089,Qualidade e validação,Construir indicadores operacionais verdadeiros,E089.06,Comparar entrega contratada e recebida por destino.,Pendente,,"Dados, Produto e UX"
+E089,Qualidade e validação,Construir indicadores operacionais verdadeiros,E089.07,Identificar pendências sem atribuir causalidade não demonstrada.,Pendente,,"Dados, Produto e UX"
+E089,Qualidade e validação,Construir indicadores operacionais verdadeiros,E089.08,Remover probabilidades fixas e percentuais de fallback do painel.,Pendente,,"Dados, Produto e UX"
+E089,Qualidade e validação,Construir indicadores operacionais verdadeiros,E089.09,Conciliar indicadores com uma seleção rastreável de pedidos.,Pendente,,"Dados, Produto e UX"
+E089,Qualidade e validação,Construir indicadores operacionais verdadeiros,E089.10,"Validar interpretação do painel com compras, marketing e operação.",Pendente,,"Dados, Produto e UX"
+E090,Qualidade e validação,Concluir homologação funcional e de conteúdo,E090.01,"Consolidar cenários de negócio, permissão, falha e concorrência do piloto.",Pendente,,"QA, Conteúdo, UX e Engenharia"
+E090,Qualidade e validação,Concluir homologação funcional e de conteúdo,E090.02,"Verificar formatos pt-BR de data, moeda, quantidade e documentos.",Pendente,,"QA, Conteúdo, UX e Engenharia"
+E090,Qualidade e validação,Concluir homologação funcional e de conteúdo,E090.03,"Conferir consistência entre textos, estados da API e transações reais.",Pendente,,"QA, Conteúdo, UX e Engenharia"
+E090,Qualidade e validação,Concluir homologação funcional e de conteúdo,E090.04,Validar exportações de proposta e relatórios com versões corretas.,Pendente,,"QA, Conteúdo, UX e Engenharia"
+E090,Qualidade e validação,Concluir homologação funcional e de conteúdo,E090.05,Executar a suíte pertinente sem considerar testes pulados como aprovados.,Pendente,,"QA, Conteúdo, UX e Engenharia"
+E090,Qualidade e validação,Concluir homologação funcional e de conteúdo,E090.06,Revisar acessibilidade dos fluxos alterados após as últimas correções.,Pendente,,"QA, Conteúdo, UX e Engenharia"
+E090,Qualidade e validação,Concluir homologação funcional e de conteúdo,E090.07,Conferir desempenho e preservação do trabalho no build candidato.,Pendente,,"QA, Conteúdo, UX e Engenharia"
+E090,Qualidade e validação,Concluir homologação funcional e de conteúdo,E090.08,"Registrar defeitos por severidade, responsável e condição de liberação.",Pendente,,"QA, Conteúdo, UX e Engenharia"
+E090,Qualidade e validação,Concluir homologação funcional e de conteúdo,E090.09,Corrigir e revalidar os defeitos que bloqueiam a compra segura.,Pendente,,"QA, Conteúdo, UX e Engenharia"
+E090,Qualidade e validação,Concluir homologação funcional e de conteúdo,E090.10,"Emitir relatório de homologação com ambiente, commit e evidências verificáveis.",Pendente,,"QA, Conteúdo, UX e Engenharia"
+E091,Produção e expansão,Ensaiar a compra integral antes do piloto,E091.01,Preparar campanha de teste com produtos reais consultados e dados segregados.,Pendente,,"Produto, Compras, Marketing e Operação"
+E091,Produção e expansão,Ensaiar a compra integral antes do piloto,E091.02,Montar proposta com personalização e distribuição por três destinos.,Pendente,,"Produto, Compras, Marketing e Operação"
+E091,Produção e expansão,Ensaiar a compra integral antes do piloto,E091.03,Executar comparação comercial conforme a política escolhida.,Pendente,,"Produto, Compras, Marketing e Operação"
+E091,Produção e expansão,Ensaiar a compra integral antes do piloto,E091.04,Solicitar revisão de arte e aprovar a versão corrigida.,Pendente,,"Produto, Compras, Marketing e Operação"
+E091,Produção e expansão,Ensaiar a compra integral antes do piloto,E091.05,Autorizar despesa dentro da alçada e conferir compromisso de verba.,Pendente,,"Produto, Compras, Marketing e Operação"
+E091,Produção e expansão,Ensaiar a compra integral antes do piloto,E091.06,Reconfirmar oferta e formalizar a passagem para o fornecedor de teste.,Pendente,,"Produto, Compras, Marketing e Operação"
+E091,Produção e expansão,Ensaiar a compra integral antes do piloto,E091.07,"Simular produção, expedição e recebimento parcial com responsáveis definidos.",Pendente,,"Produto, Compras, Marketing e Operação"
+E091,Produção e expansão,Ensaiar a compra integral antes do piloto,E091.08,Resolver uma divergência e conciliar os documentos correspondentes.,Pendente,,"Produto, Compras, Marketing e Operação"
+E091,Produção e expansão,Ensaiar a compra integral antes do piloto,E091.09,Reconstruir a jornada pelo histórico sem depender de explicação do desenvolvedor.,Pendente,,"Produto, Compras, Marketing e Operação"
+E091,Produção e expansão,Ensaiar a compra integral antes do piloto,E091.10,Obter aceite funcional dos representantes das áreas envolvidas no ensaio.,Pendente,,"Produto, Compras, Marketing e Operação"
+E092,Produção e expansão,Revisar a experiência final e a aplicação da marca,E092.01,Comparar telas implementadas com os padrões visuais aprovados.,Pendente,,"Direção de design, Marca e Produto"
+E092,Produção e expansão,Revisar a experiência final e a aplicação da marca,E092.02,"Conferir logos, assinatura da cooperativa e identificação do fornecedor.",Pendente,,"Direção de design, Marca e Produto"
+E092,Produção e expansão,Revisar a experiência final e a aplicação da marca,E092.03,"Verificar consistência de títulos, ações, estados e documentos exportados.",Pendente,,"Direção de design, Marca e Produto"
+E092,Produção e expansão,Revisar a experiência final e a aplicação da marca,E092.04,"Revisar foco visual em preço, prazo, versão e próxima ação.",Pendente,,"Direção de design, Marca e Produto"
+E092,Produção e expansão,Revisar a experiência final e a aplicação da marca,E092.05,Remover elementos decorativos ou legados que prejudiquem a tarefa.,Pendente,,"Direção de design, Marca e Produto"
+E092,Produção e expansão,Revisar a experiência final e a aplicação da marca,E092.06,Conferir contraste e legibilidade após ajustes finais de marca.,Pendente,,"Direção de design, Marca e Produto"
+E092,Produção e expansão,Revisar a experiência final e a aplicação da marca,E092.07,"Revisar mensagens de suporte, erro e notificação em português brasileiro.",Pendente,,"Direção de design, Marca e Produto"
+E092,Produção e expansão,Revisar a experiência final e a aplicação da marca,E092.08,Confirmar que limites comerciais e operacionais permanecem visíveis.,Pendente,,"Direção de design, Marca e Produto"
+E092,Produção e expansão,Revisar a experiência final e a aplicação da marca,E092.09,Obter revisão do responsável autorizado pela marca no escopo aplicável.,Pendente,,"Direção de design, Marca e Produto"
+E092,Produção e expansão,Revisar a experiência final e a aplicação da marca,E092.10,Registrar aceite da experiência e eventuais limitações que não bloqueiam o piloto.,Pendente,,"Direção de design, Marca e Produto"
+E093,Produção e expansão,Preparar a cooperativa piloto e seus dados,E093.01,"Confirmar cooperativa piloto, responsáveis e escopo de participação.",Pendente,,"Produto, Administração e Dados"
+E093,Produção e expansão,Preparar a cooperativa piloto e seus dados,E093.02,Validar política vigente e alçadas que serão aplicadas ao piloto.,Pendente,,"Produto, Administração e Dados"
+E093,Produção e expansão,Preparar a cooperativa piloto e seus dados,E093.03,"Cadastrar ou reconciliar PAs, centros de custo e endereços autorizados.",Pendente,,"Produto, Administração e Dados"
+E093,Produção e expansão,Preparar a cooperativa piloto e seus dados,E093.04,Conferir período e valores de verba com o responsável financeiro.,Pendente,,"Produto, Administração e Dados"
+E093,Produção e expansão,Preparar a cooperativa piloto e seus dados,E093.05,Preparar usuários e convites com mínimo privilégio necessário.,Pendente,,"Produto, Administração e Dados"
+E093,Produção e expansão,Preparar a cooperativa piloto e seus dados,E093.06,"Definir fornecedores, categorias e destinos efetivamente atendidos.",Pendente,,"Produto, Administração e Dados"
+E093,Produção e expansão,Preparar a cooperativa piloto e seus dados,E093.07,Validar ativos de marca e modelos de arte permitidos.,Pendente,,"Produto, Administração e Dados"
+E093,Produção e expansão,Preparar a cooperativa piloto e seus dados,E093.08,Preparar plano reversível para qualquer migração de dados próprios necessária.,Pendente,,"Produto, Administração e Dados"
+E093,Produção e expansão,Preparar a cooperativa piloto e seus dados,E093.09,Conferir amostra dos cadastros com os responsáveis de cada área.,Pendente,,"Produto, Administração e Dados"
+E093,Produção e expansão,Preparar a cooperativa piloto e seus dados,E093.10,Registrar prontidão dos dados sem importar informações desnecessárias do catálogo mestre.,Pendente,,"Produto, Administração e Dados"
+E094,Produção e expansão,"Preparar operação, suporte e treinamento",E094.01,"Definir responsáveis de compras, marketing, produção, logística e suporte.",Pendente,,"Operação, Atendimento e UX"
+E094,Produção e expansão,"Preparar operação, suporte e treinamento",E094.02,Preparar guias curtos por tarefa e papel funcional.,Pendente,,"Operação, Atendimento e UX"
+E094,Produção e expansão,"Preparar operação, suporte e treinamento",E094.03,"Demonstrar solicitação, revisão, aprovação e recebimento com dados de teste.",Pendente,,"Operação, Atendimento e UX"
+E094,Produção e expansão,"Preparar operação, suporte e treinamento",E094.04,Treinar identificação de proposta expirada e versão de arte incorreta.,Pendente,,"Operação, Atendimento e UX"
+E094,Produção e expansão,"Preparar operação, suporte e treinamento",E094.05,"Ensaiar atendimento de atraso, avaria e divergência de cobrança.",Pendente,,"Operação, Atendimento e UX"
+E094,Produção e expansão,"Preparar operação, suporte e treinamento",E094.06,Definir escalonamento quando uma integração ou etapa operacional falhar.,Pendente,,"Operação, Atendimento e UX"
+E094,Produção e expansão,"Preparar operação, suporte e treinamento",E094.07,Publicar horários e compromissos de atendimento realmente suportados.,Pendente,,"Operação, Atendimento e UX"
+E094,Produção e expansão,"Preparar operação, suporte e treinamento",E094.08,Garantir acesso aos documentos e sistemas necessários a cada responsável.,Pendente,,"Operação, Atendimento e UX"
+E094,Produção e expansão,"Preparar operação, suporte e treinamento",E094.09,Observar execução independente das tarefas após a orientação inicial.,Pendente,,"Operação, Atendimento e UX"
+E094,Produção e expansão,"Preparar operação, suporte e treinamento",E094.10,Registrar lacunas de treinamento corrigidas e responsáveis de plantão do piloto.,Pendente,,"Operação, Atendimento e UX"
+E095,Produção e expansão,Preparar release e decisão de lançamento,E095.01,Fixar commit candidato e mudanças incluídas na release.,Pendente,,"Liderança técnica, Produto e Operação"
+E095,Produção e expansão,Preparar release e decisão de lançamento,E095.02,Executar gates obrigatórios no artefato que será implantado.,Pendente,,"Liderança técnica, Produto e Operação"
+E095,Produção e expansão,Preparar release e decisão de lançamento,E095.03,"Conferir variáveis, domínios, provedores e destinos dos dois bancos.",Pendente,,"Liderança técnica, Produto e Operação"
+E095,Produção e expansão,Preparar release e decisão de lançamento,E095.04,Validar compatibilidade e reversibilidade de migrations próprias aplicáveis.,Pendente,,"Liderança técnica, Produto e Operação"
+E095,Produção e expansão,Preparar release e decisão de lançamento,E095.05,Confirmar ausência de utilitários de teste e segredos no build público.,Pendente,,"Liderança técnica, Produto e Operação"
+E095,Produção e expansão,Preparar release e decisão de lançamento,E095.06,Registrar limitações conhecidas e seu impacto sobre o escopo do piloto.,Pendente,,"Liderança técnica, Produto e Operação"
+E095,Produção e expansão,Preparar release e decisão de lançamento,E095.07,Preparar critérios objetivos de interrupção e rollback.,Pendente,,"Liderança técnica, Produto e Operação"
+E095,Produção e expansão,Preparar release e decisão de lançamento,E095.08,Confirmar responsáveis e meios de diagnóstico durante a abertura.,Pendente,,"Liderança técnica, Produto e Operação"
+E095,Produção e expansão,Preparar release e decisão de lançamento,E095.09,Obter decisão de lançamento conforme a governança e autorizações já estabelecidas.,Pendente,,"Liderança técnica, Produto e Operação"
+E095,Produção e expansão,Preparar release e decisão de lançamento,E095.10,Registrar aceite da release com evidências e sem desativar controles que falharam.,Pendente,,"Liderança técnica, Produto e Operação"
+E096,Produção e expansão,Publicar o piloto e verificar produção,E096.01,Implantar o artefato aprovado pelo procedimento documentado.,Pendente,,"Infraestrutura, Produto e Operação"
+E096,Produção e expansão,Publicar o piloto e verificar produção,E096.02,"Confirmar domínio, certificado e commit efetivamente publicados.",Pendente,,"Infraestrutura, Produto e Operação"
+E096,Produção e expansão,Publicar o piloto e verificar produção,E096.03,Verificar leitura real do catálogo com identidade de privilégio mínimo.,Pendente,,"Infraestrutura, Produto e Operação"
+E096,Produção e expansão,Publicar o piloto e verificar produção,E096.04,Confirmar que métodos de autenticação exibidos funcionam em produção.,Pendente,,"Infraestrutura, Produto e Operação"
+E096,Produção e expansão,Publicar o piloto e verificar produção,E096.05,Validar contexto e permissões dos usuários autorizados do piloto.,Pendente,,"Infraestrutura, Produto e Operação"
+E096,Produção e expansão,Publicar o piloto e verificar produção,E096.06,"Checar acesso a artes, documentos e arquivos privados necessários.",Pendente,,"Infraestrutura, Produto e Operação"
+E096,Produção e expansão,Publicar o piloto e verificar produção,E096.07,Confirmar alertas e correlação de eventos no ambiente produtivo.,Pendente,,"Infraestrutura, Produto e Operação"
+E096,Produção e expansão,Publicar o piloto e verificar produção,E096.08,Executar smoke test autorizado sem gerar compra ou cobrança acidental.,Pendente,,"Infraestrutura, Produto e Operação"
+E096,Produção e expansão,Publicar o piloto e verificar produção,E096.09,Aplicar critérios de interrupção se ocorrer bloqueador de segurança ou integridade.,Pendente,,"Infraestrutura, Produto e Operação"
+E096,Produção e expansão,Publicar o piloto e verificar produção,E096.10,Registrar evidências de produção e liberar uso ao grupo piloto autorizado.,Pendente,,"Infraestrutura, Produto e Operação"
+E097,Produção e expansão,Acompanhar a primeira compra real até o recebimento,E097.01,Selecionar uma necessidade real aprovada pela cooperativa participante.,Pendente,,"Produto, Cooperativa piloto e Operação"
+E097,Produção e expansão,Acompanhar a primeira compra real até o recebimento,E097.02,"Montar proposta vigente com itens, personalização, verba e destinos confirmados.",Pendente,,"Produto, Cooperativa piloto e Operação"
+E097,Produção e expansão,Acompanhar a primeira compra real até o recebimento,E097.03,Executar aprovações reais de arte e despesa pelas pessoas competentes.,Pendente,,"Produto, Cooperativa piloto e Operação"
+E097,Produção e expansão,Acompanhar a primeira compra real até o recebimento,E097.04,Conferir compromisso de verba e versão liberada ao fornecedor.,Pendente,,"Produto, Cooperativa piloto e Operação"
+E097,Produção e expansão,Acompanhar a primeira compra real até o recebimento,E097.05,Obter reconfirmação operacional de disponibilidade e prazo contratado.,Pendente,,"Produto, Cooperativa piloto e Operação"
+E097,Produção e expansão,Acompanhar a primeira compra real até o recebimento,E097.06,Acompanhar produção e eventuais alterações pelo fluxo autorizado.,Pendente,,"Produto, Cooperativa piloto e Operação"
+E097,Produção e expansão,Acompanhar a primeira compra real até o recebimento,E097.07,"Registrar expedição, rastreio e recebimento de cada destino.",Pendente,,"Produto, Cooperativa piloto e Operação"
+E097,Produção e expansão,Acompanhar a primeira compra real até o recebimento,E097.08,Resolver divergências da compra sem apagar seu histórico.,Pendente,,"Produto, Cooperativa piloto e Operação"
+E097,Produção e expansão,Acompanhar a primeira compra real até o recebimento,E097.09,"Conciliar documentação, quantidades, condições financeiras e saldo final.",Pendente,,"Produto, Cooperativa piloto e Operação"
+E097,Produção e expansão,Acompanhar a primeira compra real até o recebimento,E097.10,Obter confirmação dos responsáveis de que a compra foi concluída na operação real.,Pendente,,"Produto, Cooperativa piloto e Operação"
+E098,Produção e expansão,Medir o piloto e corrigir fricções comprovadas,E098.01,Fixar janela de avaliação e conjunto de pedidos considerados.,Pendente,,"Produto, Dados, UX e Operação"
+E098,Produção e expansão,Medir o piloto e corrigir fricções comprovadas,E098.02,"Medir tempos de solicitação, arte, despesa e entrega com seus denominadores.",Pendente,,"Produto, Dados, UX e Operação"
+E098,Produção e expansão,Medir o piloto e corrigir fricções comprovadas,E098.03,Registrar intervenções humanas necessárias para concluir a compra.,Pendente,,"Produto, Dados, UX e Operação"
+E098,Produção e expansão,Medir o piloto e corrigir fricções comprovadas,E098.04,"Coletar dúvidas e fricções de compradores, marketing e recebedores.",Pendente,,"Produto, Dados, UX e Operação"
+E098,Produção e expansão,Medir o piloto e corrigir fricções comprovadas,E098.05,Comparar previsão e entrega sem atribuir causas não investigadas.,Pendente,,"Produto, Dados, UX e Operação"
+E098,Produção e expansão,Medir o piloto e corrigir fricções comprovadas,E098.06,Medir desempenho de campo quando a amostra permitir interpretação.,Pendente,,"Produto, Dados, UX e Operação"
+E098,Produção e expansão,Medir o piloto e corrigir fricções comprovadas,E098.07,Priorizar correções por impacto observado e risco operacional.,Pendente,,"Produto, Dados, UX e Operação"
+E098,Produção e expansão,Medir o piloto e corrigir fricções comprovadas,E098.08,Implementar correções pequenas pelo fluxo normal de revisão e validação.,Pendente,,"Produto, Dados, UX e Operação"
+E098,Produção e expansão,Medir o piloto e corrigir fricções comprovadas,E098.09,Rever os cenários afetados e registrar o efeito das mudanças.,Pendente,,"Produto, Dados, UX e Operação"
+E098,Produção e expansão,Medir o piloto e corrigir fricções comprovadas,E098.10,Decidir expansão ou novo ciclo de ajuste com base nas evidências do piloto.,Pendente,,"Produto, Dados, UX e Operação"
+E099,Produção e expansão,Validar uma segunda cooperativa com regras diferentes,E099.01,Selecionar segunda cooperativa e confirmar autorização para participação.,Pendente,,"Produto, Compras e Engenharia"
+E099,Produção e expansão,Validar uma segunda cooperativa com regras diferentes,E099.02,"Documentar diferenças de alçada, cotação, categoria e calendário.",Pendente,,"Produto, Compras e Engenharia"
+E099,Produção e expansão,Validar uma segunda cooperativa com regras diferentes,E099.03,"Configurar vínculos, unidades e centros de custo correspondentes.",Pendente,,"Produto, Compras e Engenharia"
+E099,Produção e expansão,Validar uma segunda cooperativa com regras diferentes,E099.04,"Aplicar políticas por configuração, evitando cópias de código por cliente.",Pendente,,"Produto, Compras e Engenharia"
+E099,Produção e expansão,Validar uma segunda cooperativa com regras diferentes,E099.05,Validar identidade local e ativos autorizados dessa cooperativa.,Pendente,,"Produto, Compras e Engenharia"
+E099,Produção e expansão,Validar uma segunda cooperativa com regras diferentes,E099.06,Repetir testes de isolamento entre as duas organizações ativas.,Pendente,,"Produto, Compras e Engenharia"
+E099,Produção e expansão,Validar uma segunda cooperativa com regras diferentes,E099.07,Ensaiar aprovação e delegação com as regras diferentes.,Pendente,,"Produto, Compras e Engenharia"
+E099,Produção e expansão,Validar uma segunda cooperativa com regras diferentes,E099.08,Treinar responsáveis nas diferenças operacionais relevantes.,Pendente,,"Produto, Compras e Engenharia"
+E099,Produção e expansão,Validar uma segunda cooperativa com regras diferentes,E099.09,Acompanhar uma compra autorizada no segundo contexto até sua conciliação.,Pendente,,"Produto, Compras e Engenharia"
+E099,Produção e expansão,Validar uma segunda cooperativa com regras diferentes,E099.10,Registrar evidências de expansão e limitações que ainda exigem evolução do produto.,Pendente,,"Produto, Compras e Engenharia"
+E100,Produção e expansão,Encerrar a implantação e estabelecer evolução contínua,E100.01,Conferir as mil subetapas e investigar registros sem evidência suficiente.,Pendente,,"Produto, Design, Engenharia e Operação"
+E100,Produção e expansão,Encerrar a implantação e estabelecer evolução contínua,E100.02,Verificar critérios de aceite e revisores de todas as etapas anteriores.,Pendente,,"Produto, Design, Engenharia e Operação"
+E100,Produção e expansão,Encerrar a implantação e estabelecer evolução contínua,E100.03,Confirmar compras reais conciliadas e ambiente produtivo identificado.,Pendente,,"Produto, Design, Engenharia e Operação"
+E100,Produção e expansão,Encerrar a implantação e estabelecer evolução contínua,E100.04,"Reconciliar documentação, permissões e configuração com o estado publicado.",Pendente,,"Produto, Design, Engenharia e Operação"
+E100,Produção e expansão,Encerrar a implantação e estabelecer evolução contínua,E100.05,Consolidar indicadores observados e limitações de amostra do período.,Pendente,,"Produto, Design, Engenharia e Operação"
+E100,Produção e expansão,Encerrar a implantação e estabelecer evolução contínua,E100.06,Transferir manutenção do sistema visual e conteúdo aos responsáveis definidos.,Pendente,,"Produto, Design, Engenharia e Operação"
+E100,Produção e expansão,Encerrar a implantação e estabelecer evolução contínua,E100.07,"Formalizar operação, suporte, recuperação e gestão de acessos recorrentes.",Pendente,,"Produto, Design, Engenharia e Operação"
+E100,Produção e expansão,Encerrar a implantação e estabelecer evolução contínua,E100.08,Priorizar o próximo ciclo com base em problemas e oportunidades demonstrados.,Pendente,,"Produto, Design, Engenharia e Operação"
+E100,Produção e expansão,Encerrar a implantação e estabelecer evolução contínua,E100.09,"Definir calendário de revisão de usabilidade, acessibilidade, segurança e desempenho.",Pendente,,"Produto, Design, Engenharia e Operação"
+E100,Produção e expansão,Encerrar a implantação e estabelecer evolução contínua,E100.10,"Registrar o aceite final da implantação com responsáveis, data e evidências verificáveis.",Pendente,,"Produto, Design, Engenharia e Operação"

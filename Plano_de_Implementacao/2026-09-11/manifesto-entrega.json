@@ -1,0 +1,109 @@
+{
+  "data": "2026-09-11",
+  "repositorio": "adm01-debug/Brindes_Sicoob_V2",
+  "commit_documental": "f94a92241d00248b593f1ac9a2596bdd3085b213",
+  "pull_request": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/4",
+  "escopo": "Plano de implementação: 100 etapas, 1.000 subetapas; nenhuma atividade de implantação executada",
+  "arquivos": [
+    {
+      "caminho": "README.md",
+      "bytes": 3819,
+      "sha256": "3e8c8ef126a2d40b47f637f05c7763d9ba4b0beb1d20b29f81f4c2e5ebeb958d"
+    },
+    {
+      "caminho": "checklist.html",
+      "bytes": 218244,
+      "sha256": "b0ee74c2e05001327e503e090c6046c2f407b85ccedae5f1401594528b28b6c2"
+    },
+    {
+      "caminho": "etapas.csv",
+      "bytes": 34118,
+      "sha256": "e4040a37139282c5ef00883e1dc1aea6381959b4e8884ea726412d1ec19e78e9"
+    },
+    {
+      "caminho": "metadados.json",
+      "bytes": 1820,
+      "sha256": "02c8b82414bb4896285595c27709890445e419ed6bdc98f73c7437c4cca8b9dd"
+    },
+    {
+      "caminho": "plano-100-etapas.html",
+      "bytes": 303215,
+      "sha256": "a41485f420d1979f2eb8ff8266bff996cc2455ae2b197c976a19c7d7add1ef9c"
+    },
+    {
+      "caminho": "plano-100-etapas.md",
+      "bytes": 169810,
+      "sha256": "57e7959923464eacf39c6f86f490f86602dd0507bf6ae83501e7f2687aa3c26c"
+    },
+    {
+      "caminho": "plano-100-etapas.pdf",
+      "bytes": 449330,
+      "sha256": "9a0611864ce7b25d7b8e88cdc126c50d3ab331a99f6b3186cc04bf0eb68e2407"
+    },
+    {
+      "caminho": "plano-100-etapas.xlsx",
+      "bytes": 103969,
+      "sha256": "5428c454e17e8a4c7974ee4b8aed363eacb27480b2ea7225e3e17493a64ab791"
+    },
+    {
+      "caminho": "plano.json",
+      "bytes": 255523,
+      "sha256": "50c5d83d7af3d34bb560ddfc90a270b722cb24068463a4c94cac752f6387e9f6"
+    },
+    {
+      "caminho": "referencias.json",
+      "bytes": 3125,
+      "sha256": "6d35ac5fb6f4103654855e3787126521363abbeaab5b18ddcf3a165e0c67c403"
+    },
+    {
+      "caminho": "subetapas.csv",
+      "bytes": 190166,
+      "sha256": "625c9297b7181293ca0087f3c8ab6005b99357494aa1a68aa190a79267c494b8"
+    },
+    {
+      "caminho": "validacao.json",
+      "bytes": 986,
+      "sha256": "2a84d8a669c4e73fb947e4e69efb7cc87bacfe961cc09b5615f7ac30add38dcf"
+    },
+    {
+      "caminho": "validacao.md",
+      "bytes": 2026,
+      "sha256": "8138460993fd0704eedaa17b1b9bd8577bc1c3591be8f0ef1bc7aabc81cd0c27"
+    },
+    {
+      "caminho": "verificacao/checklist-desktop.png",
+      "bytes": 147504,
+      "sha256": "766ddf63283df9d7725dc8633ebbe08e98bf7a4cc065926d53d71d8ee4cbe18b"
+    },
+    {
+      "caminho": "verificacao/checklist-mobile.png",
+      "bytes": 78827,
+      "sha256": "7a8341a45ac5694ef88a6a8f95b27152024a172453e2735d34bc07aeded768d9"
+    },
+    {
+      "caminho": "verificacao/plano-pagina-1.png",
+      "bytes": 174173,
+      "sha256": "c0e38b58a986c2ae5e610e5fd8ec6e7e4505c137b54251234cb73d6b39b90b02"
+    },
+    {
+      "caminho": "verificacao/plano-pagina-107.png",
+      "bytes": 95979,
+      "sha256": "a87f0ee44a17abf423ab1fbdd7c098eb7001e907d97d9b2c79e029c80998ea56"
+    },
+    {
+      "caminho": "verificacao/plano-pagina-41.png",
+      "bytes": 89019,
+      "sha256": "a6663d8b2fa32b04bf4e9bc175ceaf5235abe9989be9b1bb591515d34e5cb887"
+    },
+    {
+      "caminho": "verificacao/plano-pagina-72.png",
+      "bytes": 90425,
+      "sha256": "7b24f8c01d99b002549c2bf8338a0eee851dbd6200b39855ca1c8d22fa9a86bf"
+    },
+    {
+      "caminho": "verificacao/validacao.json",
+      "bytes": 659,
+      "sha256": "958e2b04ce3b8e8092476765d2b12ce3fece7ffbee14e47b602aa74280914a47"
+    }
+  ]
+}

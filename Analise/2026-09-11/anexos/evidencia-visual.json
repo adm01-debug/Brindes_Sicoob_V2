@@ -1,0 +1,20 @@
+{
+  "imagens": [
+    {
+      "alt": "Sicoob",
+      "src": "/wikipedia/commons/thumb/c/ca/Sicoob_logo.svg/2560px-Sicoob_logo.svg.png",
+      "carregada": false
+    },
+    {
+      "alt": "Sicoob",
+      "src": "/wikipedia/commons/thumb/c/ca/Sicoob_logo.svg/2560px-Sicoob_logo.svg.png",
+      "carregada": false
+    }
+  ],
+  "botao": {
+    "cor": "rgb(255, 255, 255)",
+    "fundo": "rgb(0, 173, 159)",
+    "tamanho": "16px",
+    "peso": "650"
+  }
+}

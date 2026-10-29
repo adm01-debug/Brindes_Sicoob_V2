@@ -1,0 +1,472 @@
+<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Portal de compras de brindes para cooperativas Sicoob</title><style>@page{size:A4;margin:18mm 16mm 19mm}*{box-sizing:border-box}body{font:15px/1.6 Arial,sans-serif;color:#222;background:white;margin:0}main{max-width:1100px;margin:auto;padding:36px}h1{font-size:32px;line-height:1.2;font-weight:700;margin:0 0 24px}h2{font-size:23px;margin:36px 0 14px;line-height:1.25}h3{font-size:18px;line-height:1.3;margin:24px 0 10px}p{margin:10px 0 15px}table{border-collapse:collapse;width:100%;font-size:12px;line-height:1.45;margin:18px 0;table-layout:fixed}th,td{border:1px solid #d4d8d7;padding:8px;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:#edf0ef}tr{break-inside:avoid}thead{display:table-header-group}a{color:#174c56;overflow-wrap:anywhere}code{font:0.88em monospace;background:#f3f3f3;overflow-wrap:anywhere}pre{white-space:pre-wrap}img{max-width:100%}nav{border-bottom:1px solid #ccc;padding:14px 36px;font-size:14px}nav a{margin-right:20px}sup{line-height:0;font-size:0.7em}sup+sup:before{content:", "}h1,h2,h3{break-after:avoid}.fontes li{font-size:12px;margin:9px 0;break-inside:avoid}.anexo{break-before:page}.diagrama{font-size:13px;border-collapse:separate;border-spacing:4px}.diagrama td{padding:12px;text-align:center;background:#f3f5f4}.figcaption{font-size:12px;color:#555}@media print{body{font-size:10.5pt;line-height:1.5}main{max-width:none;padding:0}nav{display:none}h1{font-size:26pt}h2{font-size:17pt}h3{font-size:13pt}table{font-size:8pt}a{color:#222;text-decoration:none}p{orphans:3;widows:3}.noprint{display:none}}@media(max-width:700px){main{padding:20px}table{font-size:11px}th,td{padding:5px}nav{padding:14px 20px}h1{font-size:27px}}</style><nav><a href="dossie.html">Dossiê</a><a href="anexos.html">Anexos</a><a href="backlog.html">Backlog</a><a href="planejamento-sicoob.xlsx">Planilha</a><a href="graphify-out/graph.html">Mapa</a></nav><main><h1>Portal de compras de brindes para cooperativas Sicoob</h1>
+<p>O projeto tem uma base extensa e aproveitável, mas ainda não oferece evidência suficiente para operar compras reais com segurança, consistência de verba e cumprimento de prazo. A direção recomendada é preservar os componentes úteis e concentrar a evolução na jornada de quem solicita, compra e aprova brindes dentro de uma cooperativa. O principal diferencial a validar é ligar campanha, arte, orçamento e entrega por PA em uma experiência simples e rastreável.</p>
+<p>Esta análise considera o código no commit <code>d75459d28da0c8164c26861cd6358b147930425a</code>, consultas operacionais de 11 de setembro de 2026, o acervo de 13 documentos fornecidos e fontes públicas institucionais e profissionais. O banco <code>doufsxqlfjyuvxuezpln</code> é exclusivamente fonte de consulta de produtos, estoque e valores. O banco <code>cfmzkthhgliqelozlmwu</code> pertence ao portal e deve concentrar sua operação. Não houve gravação nos bancos nem implantação de código durante a análise.<sup><a href="#fonte-37">37</a></sup><sup><a href="#fonte-38">38</a></sup></p>
+<h2>1. Decisão recomendada</h2>
+<p><strong>Evoluir a base existente, com uma primeira entrega pequena e completa de compra institucional.</strong> A quantidade de telas e arquivos não corresponde à quantidade de capacidades prontas. O portal herdou conceitos de vendedor, CRM e administração de catálogo; sua evolução precisa reorganizar permissões, contratos de dados e linguagem antes de ampliar funcionalidades.</p>
+<p>Há quatro condições para considerar o portal pronto para operação: resolver os riscos de credenciais e aprovação; tornar tecnicamente impossível escrever no catálogo externo; demonstrar acesso e isolamento com usuários de cooperativas diferentes; e completar uma compra real controlada, com arte, aprovação, faturamento e recebimento. A liberação depende de evidência desses resultados, além de domínio e ambiente de produção identificados.</p>
+<p>As primeiras telas devem responder a perguntas concretas: o que posso comprar para esta campanha, quanto custará entregue, quem precisa aprovar, qual arte será produzida e se chegará antes do evento. Indicadores comerciais, sugestões automáticas e personalização visual só devem aparecer quando houver dados e regras que sustentem a promessa.</p>
+<h2>2. Estado atual do projeto</h2>
+<h3>2.1 Escala e possibilidade de reaproveitamento</h3>
+<p>O inventário local identificou 1.862 arquivos em <code>src</code>, 485 migrations SQL e 100 diretórios de funções com <code>index.ts</code>. A extração estrutural abrangeu o corpus de código detectado; a revisão semântica documental cobriu 162 entradas do repositório, com duplicatas identificadas. O acervo externo contém 12 PDFs, somando 298 páginas, e uma planilha. Essas contagens descrevem arquivos, não funções publicadas ou funcionalidades aprovadas.</p>
+<p>React, TypeScript, Vite, Supabase, componentes de interface e TanStack Query formam uma base que permite evolução incremental. Catálogo, filtros, kits, simulação, orçamentos, pedidos, aprovação de amostras/arte e trilhas operacionais oferecem pontos de partida. Cada módulo precisa passar pelo mesmo critério: contrato de dados consistente, autorização no servidor, comportamento demonstrado e comunicação verdadeira ao comprador.</p>
+<table>
+<thead>
+<tr>
+<th>Capacidade existente</th>
+<th>Aproveitamento recomendado</th>
+<th>Condição para liberar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Componentes de catálogo, busca e comparação</td>
+<td>Preservar apresentação e interação úteis</td>
+<td>Consultas reais, variantes e preços comerciais corretos</td>
+</tr>
+<tr>
+<td>Kits, simulação e orçamento</td>
+<td>Adaptar para campanha e compra institucional</td>
+<td>Total completo, validade e versão da proposta</td>
+</tr>
+<tr>
+<td>Telas Sicoob de pedidos e aprovações</td>
+<td>Preservar componentes, corrigir composição</td>
+<td>Papéis coerentes e transições atômicas autorizadas</td>
+</tr>
+<tr>
+<td>Aprovação de piloto/arte</td>
+<td>Evoluir para versão exata de produção</td>
+<td>Separação de aprovação financeira e da marca</td>
+</tr>
+<tr>
+<td>Cooperativas, PAs e verbas</td>
+<td>Reconciliar modelos existentes</td>
+<td>Um contrato canônico, escopo e período definidos</td>
+</tr>
+<tr>
+<td>Histórico, notificações e auditoria</td>
+<td>Aproveitar infraestrutura após validação</td>
+<td>Persistência e entrega comprovadas; erros visíveis</td>
+</tr>
+<tr>
+<td>CRM, gamificação e funções comerciais legadas</td>
+<td>Manter fora da navegação inicial do comprador</td>
+<td>Necessidade de negócio demonstrada antes de integrar</td>
+</tr>
+<tr>
+<td>Auditorias automáticas anteriores</td>
+<td>Preservar como histórico</td>
+<td>Substituir notas fixas por medições reproduzíveis</td>
+</tr>
+</tbody>
+</table>
+<p>O README ainda descreve uma plataforma de vendedores, enquanto documentos Sicoob e componentes usam vocabulários diferentes para as mesmas responsabilidades. Há referências a três bancos, domínios antigos e serviços que não correspondem ao contrato atual de dois bancos. A documentação deve ser corrigida junto com os módulos afetados, sem uma reescrita indiscriminada do repositório.<sup><a href="#fonte-37">37</a></sup></p>
+<h3>2.2 Evidências executadas</h3>
+<table>
+<thead>
+<tr>
+<th>Verificação</th>
+<th>Resultado observado</th>
+<th>Interpretação correta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>npm run build</code></td>
+<td>Falhou no gate de auditoria de dependências</td>
+<td>O build oficial não passou</td>
+</tr>
+<tr>
+<td><code>npm audit</code></td>
+<td>21 alertas: 10 altos, 10 moderados, um baixo; nenhum crítico</td>
+<td>Mistura dependências de desenvolvimento e execução; exige triagem</td>
+</tr>
+<tr>
+<td><code>npx vite build</code> diagnóstico</td>
+<td>Compilou em 32,43 segundos</td>
+<td>Confirma empacotamento; não substitui os gates</td>
+</tr>
+<tr>
+<td><code>npm run typecheck</code></td>
+<td>1.259 diagnósticos em 456 arquivos</td>
+<td>Dívida preexistente; baseline registra 1.261</td>
+</tr>
+<tr>
+<td>Recorte de cinco arquivos de testes</td>
+<td>12 testes passaram e cinco falharam</td>
+<td>Falhas concentradas no mock de permissões de <code>ProtectedRoute</code></td>
+</tr>
+<tr>
+<td>GitHub Actions</td>
+<td>Execução anterior bloqueada por orçamento; no PR #3, gate de autorização e builds falharam</td>
+<td>Evidências de momentos diferentes; detalhes no anexo de CI</td>
+</tr>
+<tr>
+<td>Último deployment GitHub consultado</td>
+<td>Tentativa Vercel de 05/09/2026 com estado de falha</td>
+<td>Produção efetiva e tráfego não comprovados</td>
+</tr>
+<tr>
+<td>Consulta de leitura à ponte externa</td>
+<td>HTTP 200 com <code>_unconfigured: true</code> e nenhuma linha</td>
+<td>A integração não está configurada efetivamente nesse caminho</td>
+</tr>
+<tr>
+<td>Consultas anônimas limitadas a quatro tabelas do portal</td>
+<td>HTTP 200, nenhuma linha visível</td>
+<td>Não prova ausência de dados nem isolamento entre cooperativas</td>
+</tr>
+</tbody>
+</table>
+<p>O typecheck não piorou por arquivo em relação ao baseline consultado, mas um baseline permite acompanhar dívida, não elimina os erros. O recorte de testes não representa a suíte completa. Alguns testes chamados de integração constroem uma matriz de permissões em memória e não acessam RLS real. A execução antiga bloqueada por orçamento e as falhas posteriores do PR são eventos distintos; o <a href="anexos/ci-posterior.md">anexo de CI</a> registra os logs que confirmaram o bloqueio de <code>migrate-helper</code> e dos builds.<sup><a href="#fonte-36">36</a></sup><sup><a href="#fonte-37">37</a></sup></p>
+<p>A inspeção local de uma compilação de produção mostrou acesso rápido de teste exposto no login, perfis com erro, botão de correção, logo externa sem carregar e botão Google embora o provedor esteja desativado na configuração consultada. O cadastro público também está desativado. A tela móvel de login não apresentou rolagem horizontal na largura de 390 px; isso não equivale a uma auditoria móvel de todas as jornadas.</p>
+<h3>2.3 Bloqueadores técnicos</h3>
+<table>
+<thead>
+<tr>
+<th>Prioridade</th>
+<th>Achado</th>
+<th>Base da evidência</th>
+<th>Ação necessária</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P0</td>
+<td><code>migrate-helper</code> pode devolver credenciais privilegiadas</td>
+<td>Código e configuração versionados; endpoint não invocado</td>
+<td>Verificar publicação e histórico; remover capacidade e tratar credenciais conforme exposição constatada</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>Bridge permite CRUD no catálogo externo</td>
+<td>Lista de operações e autorização no código</td>
+<td>Restringir serviço e identidade externa a leitura</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>RPCs de aprovação/rejeição não validam internamente ator, cooperativa e vínculo pedido/requisição</td>
+<td>Migrations com <code>SECURITY DEFINER</code> e concessão a <code>authenticated</code></td>
+<td>Corrigir autorização e atomicidade; verificar estado efetivamente aplicado</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>Guards de rotas usam contratos e papéis incompatíveis</td>
+<td><code>App</code>, <code>AdminRoute</code>, <code>SicoobRoute</code> e <code>AuthContext</code></td>
+<td>Unificar contrato e validar composição com sessões reais</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>Consulta do catálogo sem configuração efetiva</td>
+<td>Resposta observada do backend</td>
+<td>Configurar o destino correto com credencial de leitura e contrato validado</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>Verba e pedidos usam tabelas/campos e papéis divergentes</td>
+<td>Serviços, migrations, tipos e telas</td>
+<td>Consolidar modelo, saldo e transações concorrentes</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>Relatórios geram cobertura e conformidade sem medições correspondentes</td>
+<td>Scripts com percentuais e estados fixos</td>
+<td>Remover resultados artificiais e vincular evidência à execução</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>Passkey e push apresentam sucesso incompleto</td>
+<td>Fluxos no código</td>
+<td>Integrar autenticação/entrega reais ou retirar a opção até funcionar</td>
+</tr>
+</tbody>
+</table>
+<p>Os achados de segurança são defeitos ou riscos confirmados no código. A existência e exploração desses caminhos em produção não foram demonstradas. A correção precisa incluir inventário de funções publicadas, grants e policies reais, sem imprimir segredos e sem executar chamadas destinadas a extraí-los. RLS habilitada e <code>search_path</code> definido, isoladamente, não validam a autorização de uma função privilegiada.<sup><a href="#fonte-34">34</a></sup><sup><a href="#fonte-35">35</a></sup></p>
+<p>Os anexos técnicos registram caminhos, linhas, contradições e limites por achado. O login também contém alegações como “catálogo oficial”, estoque em tempo real e números de produtos/fornecedores sem comprovação nesta análise. Essas afirmações precisam de origem verificável antes de publicação.</p>
+<h2>3. Contexto Sicoob e implicações de compra</h2>
+<h3>3.1 Estrutura e autonomia</h3>
+<p>A página institucional consultada apresenta 10,2 milhões de cooperados, mais de 4,7 mil pontos de atendimento e 14 centrais. Distingue cooperativas singulares, centrais e Centro Cooperativo Sicoob. Essa estrutura dá escala potencial à distribuição, mas não permite tratar o sistema inteiro como um comprador único. Os contadores são uma fotografia da página, não estimativa de mercado de brindes ou orçamento de marketing.<sup><a href="#fonte-1">1</a></sup></p>
+<p>O desenho recomendado separa organização contratante, unidades de atendimento, centros de custo e papéis funcionais. Uma pessoa de marketing pode estar na Singular e aprovar a marca sem poder aprovar despesa. Uma Central só deve visualizar dados de Singulares quando houver vínculo e autorização explicitamente configurados. Hierarquia institucional não implica acesso irrestrito automático.</p>
+<h3>3.2 Políticas locais demonstram diferenças relevantes</h3>
+<table>
+<thead>
+<tr>
+<th>Fonte e período</th>
+<th>Evidência específica</th>
+<th>Consequência para configuração</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Coopemata, fevereiro/2023</td>
+<td>Cita portal BR Supply; normalmente prevê três cotações e fluxo administrativo</td>
+<td>Suportar anexos de comparação e exceções justificadas</td>
+</tr>
+<tr>
+<td>Credesp, janeiro/2023</td>
+<td>Atribui brindes e materiais de divulgação a Marketing; contempla autorização e janelas</td>
+<td>Configurar responsáveis por categoria e período de solicitação</td>
+</tr>
+<tr>
+<td>União Centro-Oeste, junho/2021</td>
+<td>Prevê duas cotações, critérios de seleção e registros no SISBR</td>
+<td>Quantidade de propostas e integração não podem ser fixas</td>
+</tr>
+<tr>
+<td>Sicoob Centro, manual fornecido</td>
+<td>Solicita proposta completa e considera fornecedores locais, cooperados e critérios socioambientais</td>
+<td>Cadastro e avaliação de fornecedor precisam de evidência e contexto local</td>
+</tr>
+</tbody>
+</table>
+<p>Essas fontes são políticas de entidades específicas, com datas diferentes; não constituem uma regra sistêmica vigente única. A publicação na internet não confirma que não houve revisão posterior. Preferências por fornecedores cooperados ou regionais devem ser parametrizadas e justificadas, sem substituir critérios técnicos e comerciais. Não há base para fixar uma alçada nacional, exigir sempre três propostas ou impor o mesmo calendário a todas as cooperativas.<sup><a href="#fonte-2">2</a></sup><sup><a href="#fonte-3">3</a></sup><sup><a href="#fonte-4">4</a></sup><sup><a href="#fonte-5">5</a></sup></p>
+<p>O portal deve registrar qual versão da política rege a solicitação. Alterar uma regra hoje não pode reescrever a justificativa de um pedido aprovado ontem. Exceções precisam indicar motivo, aprovador autorizado e anexos, com histórico que o comprador consiga consultar.</p>
+<h3>3.3 Campanhas e sazonalidade</h3>
+<p>Há exemplos públicos de pré-assembleias com escolha de brinde e retirada em agência, ações com produtos regionais e campanhas sujeitas à disponibilidade. No Integrado, a campanha de março/2026 oferece alternativas de brinde; no Crediauc aparecem itens como kits de chimarrão e caixas térmicas. Esses casos sustentam curadoria por contexto e logística por unidade, sem demonstrar preferência universal de todos os cooperados.<sup><a href="#fonte-11">11</a></sup><sup><a href="#fonte-12">12</a></sup><sup><a href="#fonte-13">13</a></sup></p>
+<p>A taxonomia inicial proposta é: assembleias e relacionamento; ações comerciais autorizadas; inaugurações e presença regional; eventos e feiras; endomarketing; datas comemorativas; e ações sociais ou educacionais. É uma organização de produto a validar, não calendário oficial nacional. Cada campanha deve ter objetivo, público, responsável, data limite, identidade aplicável e distribuição planejada.</p>
+<h2>4. Compradores e profissionais de marketing</h2>
+<p>O levantamento qualitativo reuniu 15 perfis públicos: sete de compras, suprimentos ou logística; sete de marketing, comunicação ou criação; e um de estratégia e negócios. A amostra é intencional, não representativa. Parte do LinkedIn só estava acessível por conteúdo indexado, e vínculos atuais e alçadas pessoais não foram verificados. O anexo apresenta cada referência e distingue evidência profissional de hipótese de uso.</p>
+<p>Compras aparece associada a comparação de propostas, custo total, negociação, fornecedores e acompanhamento documental. Marketing aparece ligada a marca, campanhas, adaptação de peças, eventos e coordenação com unidades. Anúncios institucionais corroboram essas atribuições, mas alguns são históricos ou expirados. Não houve entrevistas, acesso a áreas privadas nem contato com os profissionais.<sup><a href="#fonte-14">14</a></sup><sup><a href="#fonte-15">15</a></sup><sup><a href="#fonte-16">16</a></sup></p>
+<table>
+<thead>
+<tr>
+<th>Perfil funcional proposto</th>
+<th>Trabalho que precisa concluir</th>
+<th>Informação decisiva</th>
+<th>Critério inicial de sucesso</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Solicitante de PA</td>
+<td>Pedir material adequado dentro do prazo e da autorização</td>
+<td>Elegibilidade, quantidade, saldo e data de entrega</td>
+<td>Solicitação completa sem ajuda externa</td>
+</tr>
+<tr>
+<td>Compras da cooperativa</td>
+<td>Comparar e contratar com justificativa</td>
+<td>Total entregue, validade, fornecedor e condições</td>
+<td>Menos devoluções por orçamento incompleto</td>
+</tr>
+<tr>
+<td>Marketing</td>
+<td>Garantir adequação da campanha e aplicação da marca</td>
+<td>Arte, material, técnica, escala e público</td>
+<td>Produção usa exatamente a versão aprovada</td>
+</tr>
+<tr>
+<td>Aprovador de despesa</td>
+<td>Autorizar compromisso dentro da alçada</td>
+<td>Saldo, custo total, justificativa e exceções</td>
+<td>Decisão rastreável e sem aprovar o próprio pedido quando vedado</td>
+</tr>
+<tr>
+<td>Operação/financeiro</td>
+<td>Conciliar pedido, entregas, documentos e cobrança</td>
+<td>Quantidades recebidas, NF e pendências</td>
+<td>Divergências identificadas antes do encerramento</td>
+</tr>
+</tbody>
+</table>
+<p>A síntese profissional não autoriza prever personalidade ou comportamento individual. As oportunidades acima são hipóteses de produto a validar com responsáveis reais das cooperativas piloto. O roteiro de entrevistas e teste de tarefas está no anexo de perfis.</p>
+<h2>5. Concorrência e padrão mínimo de mercado</h2>
+<p>A BR Supply anuncia controles por centro de custo, orçamento, alçadas, destinos, acompanhamento, notificações e relatórios, além de mecanismos para pedidos recorrentes e integração. Isso estabelece um referencial funcional de compra corporativa. Condições comerciais divulgadas são vinculadas ao acordo de fornecimento; não significam gratuidade irrestrita nem preço contratado pelo Sicoob.<sup><a href="#fonte-6">6</a></sup></p>
+<p>A marca Sicoob aparece entre os clientes divulgados, e o regulamento da Coopemata cita a BR Supply. Isso comprova uma relação documentada, sem demonstrar exclusividade ou contrato uniforme para todo o sistema. Um caso publicado de Sodexo inclui presentes personalizados, portanto personalização, sozinha, não é uma diferenciação inédita.<sup><a href="#fonte-2">2</a></sup><sup><a href="#fonte-7">7</a></sup><sup><a href="#fonte-8">8</a></sup></p>
+<table>
+<thead>
+<tr>
+<th>Dimensão</th>
+<th>Evidência disponível</th>
+<th>Exigência para o portal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Governança de compra</td>
+<td>BR Supply anuncia verba, centro de custo e alçadas</td>
+<td>Paridade funcional antes de competir pela experiência</td>
+</tr>
+<tr>
+<td>Execução e acompanhamento</td>
+<td>Manuais fornecidos mostram entrega parcial, documentos e atendimento</td>
+<td>Pedido deve continuar útil depois da aprovação</td>
+</tr>
+<tr>
+<td>Personalização</td>
+<td>Caso público BR Supply inclui presentes personalizados</td>
+<td>Melhorar clareza, aprovação e previsibilidade; validar vantagem</td>
+</tr>
+<tr>
+<td>Catálogo segmentado</td>
+<td>Pratic Brindes mantém oferta voltada ao Sicoob</td>
+<td>Identidade visual e catálogo de brindes são ponto de partida</td>
+</tr>
+<tr>
+<td>Campanha e distribuição</td>
+<td>Exemplos Sicoob mostram contextos e destinos diversos</td>
+<td>Integrar campanha, arte, orçamento e unidades numa jornada</td>
+</tr>
+<tr>
+<td>Recompra</td>
+<td>Referencial permite repetição de pedidos</td>
+<td>Revalidar preço, disponibilidade, arte e prazo antes de confirmar</td>
+</tr>
+</tbody>
+</table>
+<p>A loja Pratic observada ajuda a comparar categorias e linguagem segmentada; páginas públicas não permitem concluir que faltem alçadas ou funções internas. O endereço Shopcoopera da planilha não pôde ser inspecionado com confiabilidade. Não foram realizados pedidos, login em portais de terceiros ou comparação contratual de SLA.<sup><a href="#fonte-9">9</a></sup><sup><a href="#fonte-38">38</a></sup></p>
+<p>Nos documentos fornecidos, UFMA, IFRO, IFSULDEMINAS, SAPORE e Magazine Luiza têm fluxos e calendários próprios. O manual do Almoxarifado Virtual Nacional exclui personalizados de seu escopo. São referências de operação, sem equivaler ao processo de brindes Sicoob. O catálogo de final de ano termina sua validade em outubro/2017 e apresenta conflito entre código e descrição; preços, estoque e identificadores não devem ser importados sem reconciliação.<sup><a href="#fonte-38">38</a></sup></p>
+<h2>6. Portal proposto</h2>
+<h3>6.1 Navegação e prioridades</h3>
+<p>A navegação inicial deve oferecer <strong>Início, Catálogo, Campanhas e artes, Solicitações, Aprovações, Pedidos e entregas, Verbas e relatórios</strong>. Cada pessoa vê apenas as entradas compatíveis com sua responsabilidade. Configuração de integrações e administração técnica ficam em área restrita aos operadores autorizados.</p>
+<p>No início, mostrar pendências acionáveis: arte aguardando revisão, pedido devolvido, orçamento perto do vencimento, entrega com divergência e saldo do período. Métricas sem origem devem ser omitidas. O nome da cooperativa e a unidade ativa precisam estar visíveis, especialmente para pessoas com múltiplos vínculos.</p>
+<p>No catálogo, priorizar busca por finalidade, faixa de valor entregue estimado, quantidade, data necessária, técnica de personalização e disponibilidade. Material, dimensões, cores, embalagem, mínimo, múltiplo e limitações de impressão precisam estar claros. Um selo ambiental requer documento e critério; não deve nascer apenas da palavra “ecológico” na descrição.</p>
+<h3>6.2 Jornada completa</h3><table class="diagrama" aria-label="Jornada proposta"><tr><td>Campanha<br>e necessidade</td><td>Proposta<br>versionada</td><td>Arte e despesa<br>aprovadas</td><td>Produção<br>e entregas</td><td>Recebimento<br>e conciliação</td></tr></table><p class="figcaption">Sequência proposta; a ordem das aprovações depende da política configurada.</p>
+<p><strong>Campanha ou necessidade → seleção e distribuição → proposta versionada → aprovação da arte e da despesa → liberação de produção → entregas por PA → recebimento e conciliação.</strong></p>
+<ol>
+<li><strong>Definir a necessidade.</strong> Informar campanha, objetivo, público, data do evento, quantidade, verba/centro de custo e destinos. Uma compra simples pode usar um formulário curto; uma campanha com várias unidades expande a distribuição.</li>
+<li><strong>Selecionar e simular.</strong> Mostrar preço base, personalização, preparação, embalagem, impostos aplicáveis e frete. Separar estimativa de proposta firme. Não prometer estoque reservado durante consulta.</li>
+<li><strong>Formalizar proposta.</strong> Guardar versão, validade, condições, itens e cronograma. Permitir anexar propostas externas quando a política local exigir comparação; registrar justificativa quando não houver alternativas.</li>
+<li><strong>Aprovar arte e despesa.</strong> Fluxos distintos, com responsável, data, versão e comentário. A ordem entre eles pode variar por política; produção só é liberada quando todos os pré-requisitos aplicáveis estiverem satisfeitos.</li>
+<li><strong>Executar e acompanhar.</strong> Mostrar etapas comprovadas, dependência de arte/pagamento quando contratual, transportadora e previsão por destino. Alterações relevantes reabrem a aprovação correspondente.</li>
+<li><strong>Receber e conciliar.</strong> Confirmar quantidade, qualidade, divergência, documentos e resolução. Um pedido com três entregas não pode parecer concluído quando apenas uma chegou.</li>
+<li><strong>Recomprar.</strong> Criar nova proposta a partir do histórico, mantendo referência à anterior e exigindo revalidação comercial e técnica.</li>
+</ol>
+<h3>6.3 Exemplo de cenário de aceite</h3>
+<p>Uma cooperativa planeja 600 kits para um evento, distribuídos em três PAs. O solicitante informa a data, a distribuição e a verba; compras compara propostas completas; marketing aprova a arte na versão 3; o aprovador autoriza o custo final. Se a quantidade ou a arte mudar, o sistema informa qual aceite perdeu validade.</p>
+<p>Quando duas entregas chegarem e a terceira estiver atrasada, o pedido permanece parcialmente recebido, com saldo de unidades e ocorrência visíveis. O histórico precisa permitir reconstruir quem aprovou, o que foi contratado e o que efetivamente foi recebido. Quantidades e papéis desse exemplo são dados fictícios de teste, não regra Sicoob.</p>
+<h2>7. Arquitetura e contrato dos dois bancos</h2>
+<h3>7.1 Responsabilidades</h3>
+<table>
+<thead>
+<tr>
+<th>Domínio</th>
+<th>Fonte de verdade recomendada</th>
+<th>Regra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Produto mestre, variante, estoque e valor de origem</td>
+<td>Banco de catálogo <code>doufsxqlfjyuvxuezpln</code></td>
+<td>Somente consulta, sem efeitos colaterais</td>
+</tr>
+<tr>
+<td>Identidade, vínculo e permissões do portal</td>
+<td>Banco próprio <code>cfmzkthhgliqelozlmwu</code></td>
+<td>Autenticação e autorização verificadas no servidor</td>
+</tr>
+<tr>
+<td>Cooperativa, PA, centro de custo e política</td>
+<td>Banco próprio</td>
+<td>Escopo explícito e configuração versionada</td>
+</tr>
+<tr>
+<td>Campanhas, artes e aprovação</td>
+<td>Banco próprio e armazenamento privado do portal</td>
+<td>Versões imutáveis quando aprovadas</td>
+</tr>
+<tr>
+<td>Proposta, pedido, verba e entrega</td>
+<td>Banco próprio</td>
+<td>Transações, idempotência e trilha de eventos</td>
+</tr>
+<tr>
+<td>Registro histórico do produto comprado</td>
+<td>Snapshot no banco próprio</td>
+<td>Preservar especificação e preço aceitos sem alterar o catálogo</td>
+</tr>
+</tbody>
+</table>
+<p>O navegador consulta um serviço do portal; esse serviço lê apenas tabelas/visões e campos autorizados no catálogo. O controle precisa existir tanto na API quanto na credencial do banco ou serviço de origem. Lista de RPCs também exige revisão: uma função chamada por <code>SELECT</code> pode gravar dados. Não basta ocultar botões de edição.<sup><a href="#fonte-35">35</a></sup></p>
+<p>A integração deve distinguir dado indisponível, falha de configuração, falta de permissão e catálogo vazio. Na resposta observada, <code>_unconfigured: true</code> não significa ausência de produtos no banco mestre. Cache deve informar horário e expiração; dado vencido pode permitir consulta identificada como tal, mas não confirmação automática de proposta.</p>
+<h3>7.2 Contrato comercial e qualidade de dados</h3>
+<p>O primeiro contrato precisa mapear identificador estável, variante, unidade, preço de origem, moeda, vigência, disponibilidade, mínimo, múltiplo, fornecedor e última atualização. Deve distinguir custo de aquisição de preço de venda; o campo “valor” não é suficiente para liberar checkout. Personalização, frete e tributos podem exigir regras próprias do portal, com validade e aprovação comercial.</p>
+<p>Estoque consultado não é reserva. Como o banco externo permanece somente leitura, o portal não pode prometer baixa ou bloqueio de estoque nele. A primeira operação deve tratar disponibilidade como informação sujeita a reconfirmação por processo autorizado; futura reserva dependerá de serviço e escopo explicitamente definidos, sem inserir escrita disfarçada nessa integração.</p>
+<p>Na proposta aprovada, gravar uma fotografia dos itens, descrições, variantes, valores e condições. Uma atualização posterior no catálogo não altera o pedido histórico. Produtos inativos, variantes ausentes ou mudança de preço devem produzir pendência explícita na recompra.</p>
+<h3>7.3 Autorização, verba e eventos</h3>
+<p>Definir permissões por ação e escopo: consultar, solicitar, editar, aprovar arte, aprovar despesa, cancelar, receber, administrar e auditar. Identidade e cooperativa do ator devem vir da sessão e dos vínculos persistidos, não de um <code>manager_id</code> ou <code>organization_id</code> arbitrário enviado pelo cliente. Testar negação entre cooperativas é tão necessário quanto testar a jornada permitida.<sup><a href="#fonte-34">34</a></sup></p>
+<p>Verba precisa separar planejado, reservado, comprometido e consumido, por período e centro de custo. A transição que aprova uma compra deve verificar saldo e registrar o compromisso na mesma transação. Duas aprovações simultâneas, reenvio da mesma solicitação e cancelamento devem produzir resultado consistente, sem duplicidade nem saldo negativo indevido.</p>
+<p>Cada evento relevante deve carregar identificador, ator, entidade, versão, data e resultado. Auditoria de decisões pertence ao fluxo transacional. Notificações são consequência desse evento; falha de envio precisa ser registrada e repetida com controle, sem desfazer silenciosamente uma aprovação nem anunciar entrega inexistente.</p>
+<h2>8. Identidade visual e experiência</h2>
+<p>O guia de março/2023 consultado apresenta turquesa <code>#00AE9D</code>, verde escuro <code>#003641</code> e branco como base; <code>#C9D200</code>, <code>#7DB61C</code> e <code>#49479D</code> como apoio. Indica Asap como família institucional e orientações de substituição. A própria tabela diverge entre RGB e HEX do turquesa: a especificação digital deve confirmar o padrão vigente com o responsável pela marca, sem conversão silenciosa.<sup><a href="#fonte-10">10</a></sup></p>
+<p>Para o portal, a proposta é usar fundo claro, texto predominantemente escuro, títulos objetivos, hierarquia de preço/prazo e fotografias consistentes. Cor deve apoiar ações e estados, sem substituir rótulos. A marca precisa de arquivo autorizado e hospedagem controlada, evitando uma logo externa quebrada no acesso.</p>
+<table>
+<thead>
+<tr>
+<th>Combinação digital calculada</th>
+<th style="text-align: right;">Contraste aproximado</th>
+<th>Uso proposto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Branco sobre <code>#00AE9D</code></td>
+<td style="text-align: right;">2,78:1</td>
+<td>Não usar em texto normal de botão</td>
+</tr>
+<tr>
+<td><code>#003641</code> sobre <code>#00AE9D</code></td>
+<td style="text-align: right;">4,70:1</td>
+<td>Texto normal pode atingir AA nessa combinação</td>
+</tr>
+<tr>
+<td>Branco sobre <code>#003641</code></td>
+<td style="text-align: right;">13,09:1</td>
+<td>Boa base para ações principais</td>
+</tr>
+<tr>
+<td><code>#003641</code> sobre <code>#C9D200</code></td>
+<td style="text-align: right;">7,92:1</td>
+<td>Apoio com texto escuro</td>
+</tr>
+</tbody>
+</table>
+<p>Os cálculos usam luminância relativa dos HEX indicados e não representam aprovação visual de toda a interface. WCAG exige ao menos 4,5:1 para texto normal e 3:1 para texto grande, com exceções específicas. O aceite deve incluir foco visível, teclado, mensagens de erro associadas ao campo, ampliação, leitores de tela e estados de carregamento. A tela de login observada usa texto branco de 16 px sobre um turquesa próximo e precisa de ajuste.<sup><a href="#fonte-32">32</a></sup><sup><a href="#fonte-33">33</a></sup></p>
+<h2>9. Plano de evolução e critérios de saída</h2>
+<p>O plano está organizado por dependências e evidências, sem estimativa de prazo contratual antes da validação de acesso, schema e capacidade da equipe. O backlog acompanha esta análise em formato editável, com prioridades e critérios de aceite. P0 significa bloqueador do piloto; P1, requisito da primeira compra completa; P2, evolução após aprendizado operacional.</p>
+<table>
+<thead>
+<tr>
+<th>Etapa</th>
+<th>Entrega concreta</th>
+<th>Critério para avançar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0. Conter riscos e identificar ambiente</td>
+<td>Funções, credenciais, bancos, domínio e deploy reconciliados</td>
+<td>Sem exposição conhecida pendente; destino e responsáveis confirmados</td>
+</tr>
+<tr>
+<td>1. Tornar a base confiável</td>
+<td>Leitura real do catálogo, autenticação, escopo e contratos</td>
+<td>Sessões por papel, isolamento entre cooperativas e gates executados</td>
+</tr>
+<tr>
+<td>2. Completar a jornada piloto</td>
+<td>Proposta, arte, despesa, pedido, distribuição e recebimento</td>
+<td>Cenário completo com exceção, cancelamento e concorrência validados</td>
+</tr>
+<tr>
+<td>3. Operar com uma cooperativa piloto</td>
+<td>Compra real acompanhada e suporte ativo</td>
+<td>Produção com tráfego real, documentação e recebimento conciliados</td>
+</tr>
+<tr>
+<td>4. Expandir com configuração</td>
+<td>Segunda cooperativa com política diferente</td>
+<td>Variação suportada sem copiar telas ou regras por cliente</td>
+</tr>
+</tbody>
+</table>
+<p>Correções devem ser pequenas e revisáveis. O baseline de TypeScript pode apoiar a redução gradual da dívida, mas os módulos críticos da jornada não devem depender de erros conhecidos. Atualizações de dependências precisam considerar versões, alcance e regressões; um comando automático com mudanças incompatíveis não é plano de correção.</p>
+<p>A validação mínima inclui: usuário de uma cooperativa tentando ler ou aprovar pedido de outra; aprovador forjado; alteração de arte depois do aceite; duas aprovações disputando saldo; catálogo indisponível; orçamento expirado; entrega parcial; duplicação de requisição; e recuperação de uma notificação que falhou. Testes com escrita devem usar ambiente e massa segregados, não o catálogo mestre.</p>
+<h2>10. Métricas e decisões ainda necessárias</h2>
+<p>Medir conversão da solicitação em proposta completa, tempo até aprovação de arte, tempo até aprovação de despesa, retrabalho por causa, cumprimento da data contratada, divergências de entrega e recompra concluída. Cada indicador precisa de evento de origem, denominador, período e responsável. Não existe baseline confiável nesta análise; metas numéricas devem ser definidas após a primeira operação observada.</p>
+<p>O tamanho do sistema Sicoob não permite calcular receita potencial de brindes sem gasto por cooperativa, frequência, participação de fornecedores e elegibilidade comercial. Tampouco as publicações de marketing demonstram causalidade entre brinde e resultado financeiro. O piloto deve produzir evidência de redução de trabalho e previsibilidade antes de sustentar projeções comerciais.</p>
+<p>As decisões de negócio pendentes são: cooperativas piloto e responsáveis; política vigente e alçadas de cada uma; autorização e ativos atuais de marca; quem vende, fatura e atende; origem do preço comercial e regras de personalização/frete; condição de pagamento e reconfirmação de estoque; operação de produção e transporte; e necessidade de exportação ou integração homologada com ERP/SISBR. A existência de uso do SISBR em uma política não comprova API pública ou autorização de integração.<sup><a href="#fonte-4">4</a></sup></p>
+<p>A análise não substitui auditoria contábil, teste de intrusão, homologação da marca ou aceite de produção. Não houve login com compradores reais, acesso administrativo seguro aos dois schemas nem confirmação de tráfego. Os anexos preservam essa distinção e fornecem evidências suficientes para iniciar as correções e o desenho do piloto sem descartar o investimento já realizado.</p>
+<h2>Fontes</h2>
+<p>As referências numeradas abaixo identificam a fonte exata e sua limitação. O inventário completo está em <code>fontes.csv</code> e <code>fontes.json</code>; os 15 perfis têm referências individuais no anexo profissional. Documentos locais são identificados por nome, página ou seção nos anexos, sem endereço público inventado.</p><ol class="fontes"><li id="fonte-1" value="1"><p>Sicoob. <a href="https://www.sicoob.com.br/web/sicoob/sistema-sicoob">Sistema Sicoob</a>. Página institucional sem data editorial. Consulta: 11/09/2026. Contadores atuais não devem ser combinados com balanços de outros períodos.</p></li><li id="fonte-2" value="2"><p>Sicoob Coopemata. <a href="https://www.sicoob.com.br/documents/2344927/157115247/regulamento-interno-de-fornecedores.pdf">Regulamento interno de fornecedores — 2ª edição</a>. 2023-02-27. Consulta: 11/09/2026. Documento de uma cooperativa; vigência atual não confirmada.</p></li><li id="fonte-3" value="3"><p>Sicoob Credesp. <a href="https://www.sicoob.com.br/documents/16988371/72409350/Pol%C3%ADtica%2Bde%2BCompras%2B2023.01.09.pdf/a697d627-f3ef-b016-a893-8de60ba6b531?download=true&amp;t=1753725009710">Política de compras</a>. 2023-01-09. Consulta: 11/09/2026. Não é política única de todo o Sicoob.</p></li><li id="fonte-4" value="4"><p>Sicoob União Centro-Oeste. <a href="https://www.sicoob.com.br/documents/2442568/72810281/POL%C3%8DTICA%2BDE%2BGEST%C3%83O%2BDE%2BCOMPRAS%2BE%2BFORNECEDORES.pdf/20df1f05-7646-26c4-b86c-31b60391b737?download=true&amp;t=1639579966390&amp;version=1.0">Política de gestão de compras e fornecedores</a>. 2021-06-23. Consulta: 11/09/2026. Histórica e local; não comprova API disponível.</p></li><li id="fonte-5" value="5"><p>Sicoob Centro. Manual do fornecedor — arquivo local: Manual-do-Fornecedor-SICOOB-Centro-1.pdf. Metadados do PDF: 2021-08-12. Consulta: 11/09/2026. Fonte fornecida; regras locais, não sistêmicas.</p></li><li id="fonte-6" value="6"><p>BR Supply. <a href="https://www.brsupply.com.br/gestao-de-suprimentos/portal-intra-e-commerce">Portal Intra E-Commerce</a>. Página comercial sem data editorial. Consulta: 11/09/2026. Declaração do fornecedor; sem teste autenticado ou contrato específico.</p></li><li id="fonte-7" value="7"><p>BR Supply. <a href="https://www.brsupply.com.br/gestao-de-suprimentos/cases-e-clientes">Cases e clientes</a>. Página comercial sem data editorial. Consulta: 11/09/2026. Não comprova abrangência nacional nem exclusividade.</p></li><li id="fonte-8" value="8"><p>BR Supply. <a href="https://www.brsupply.com.br/gestao-de-suprimentos/cases-e-clientes/lider-global-em-alimentacao-corporativa-e-facilities-e-case-de-sucesso-na-gestao-de-suprimentos-corporativos">Líder global em alimentação corporativa e facilities é case de sucesso</a>. Página sem data editorial. Consulta: 11/09/2026. Não generalizar o contrato ou SLA desse cliente.</p></li><li id="fonte-9" value="9"><p>Pratic Brindes. <a href="https://sicoob.praticbrindes.com.br/">Loja Sicoob</a>. Página comercial sem data editorial. Consulta: 11/09/2026. Não comprova homologação institucional nem funções após login.</p></li><li id="fonte-10" value="10"><p>Sicoob; cópia hospedada no Portal Credicope. <a href="https://portalcredicope.com.br/uploads/DOCUMENTOS/GUIA_DA_MARCA_-SICOOB_marco_23.pdf">Guia da marca Sicoob</a>. 2023-03. Consulta: 11/09/2026. Versão vigente em 2026 não confirmada; RGB e HEX turquesa divergem na própria tabela.</p></li><li id="fonte-11" value="11"><p>Sicoob Integrado. <a href="https://www.sicoob.com.br/web/sicoobintegrado/pre-assembleia">Pré-assembleia 2026</a>. 2026-03-25. Consulta: 11/09/2026. Exemplo local; regras da campanha não devem virar padrão universal.</p></li><li id="fonte-12" value="12"><p>Sicoob Crediauc. <a href="https://www.sicoob.com.br/web/sicoobcrediauc/noticias/-/asset_publisher/xAioIawpOI5S/content/sicoob-crediauc-realiza-pr%C3%A9-assembleia-digital-vota%C3%A7%C3%A3o-segue-aberta-at%C3%A9-dia-12-de-abril">Pré-assembleia digital: votação segue até 12 de abril</a>. 2026-04-08. Consulta: 11/09/2026. Não é pesquisa representativa de preferências.</p></li><li id="fonte-13" value="13"><p>Sicoob Credimepi. <a href="https://www.sicoob.com.br/web/sicoobcredimepi/noticias/-/asset_publisher/xAioIawpOI5S/content/integralizou-ganhou-2026">Integralizou, ganhou 2026</a>. 2026. Consulta: 11/09/2026. Não abrange regras de outras campanhas.</p></li><li id="fonte-14" value="14"><p>Sicoob / LinkedIn. <a href="https://br.linkedin.com/jobs/view/est%C3%A1gio-em-suprimentos-at-sicoob-4382154873">Estágio em suprimentos</a>. Data editorial não confirmada. Consulta: 11/09/2026. Anúncio indexado; acesso direto redirecionou para vaga expirada.</p></li><li id="fonte-15" value="15"><p>Sicoob UniCentro BR / LinkedIn. <a href="https://br.linkedin.com/jobs/view/analista-de-marketing-designer-at-sicoob-unicentro-br-4438708243">Analista de marketing — designer</a>. Data editorial não confirmada. Consulta: 11/09/2026. Anúncio público indexado, sem confirmação de vaga aberta.</p></li><li id="fonte-16" value="16"><p>Sicoob Credicitrus / LinkedIn. <a href="https://pt.linkedin.com/posts/sicoob-credicitrus_oportunidade-de-atua%C3%A7%C3%A3o-na-sede-administrativa-activity-7085215757034225664-ixfB">Oportunidade na sede administrativa — compras</a>. Publicação histórica, aproximadamente 2023. Consulta: 11/09/2026. Usada para atribuições; não para contratação atual.</p></li><li id="fonte-17" value="17"><p>LinkedIn / autor do perfil. <a href="https://br.linkedin.com/in/valdir-farias">Perfil e publicações públicas de Valdir Farias</a>. Conteúdo de períodos diversos. Consulta: 11/09/2026. Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual.</p></li><li id="fonte-18" value="18"><p>LinkedIn / autor do perfil. <a href="https://br.linkedin.com/in/flaviosantoss23">Perfil e publicações públicas de Flávio dos Santos</a>. Conteúdo de períodos diversos. Consulta: 11/09/2026. Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual.</p></li><li id="fonte-19" value="19"><p>LinkedIn / autor do perfil. <a href="https://br.linkedin.com/in/renatoalvesdasilva">Perfil e publicações públicas de Renato Alves da Silva</a>. Conteúdo de períodos diversos. Consulta: 11/09/2026. Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual.</p></li><li id="fonte-20" value="20"><p>LinkedIn / autor do perfil. <a href="https://br.linkedin.com/in/stephany-vieira-3a329177">Perfil e publicações públicas de Stephany Vieira</a>. Conteúdo de períodos diversos. Consulta: 11/09/2026. Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual.</p></li><li id="fonte-21" value="21"><p>LinkedIn / autor do perfil. <a href="https://br.linkedin.com/in/rafael-buglioli-1a034335">Perfil e publicações públicas de Rafael Buglioli</a>. Conteúdo de períodos diversos. Consulta: 11/09/2026. Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual.</p></li><li id="fonte-22" value="22"><p>LinkedIn / autor do perfil. <a href="https://br.linkedin.com/in/danielcosta98">Perfil e publicações públicas de Daniel Costa</a>. Conteúdo de períodos diversos. Consulta: 11/09/2026. Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual.</p></li><li id="fonte-23" value="23"><p>LinkedIn / autor do perfil. <a href="https://br.linkedin.com/in/valternan-lopes-067a7b90">Perfil e publicações públicas de Valternan Lopes</a>. Conteúdo de períodos diversos. Consulta: 11/09/2026. Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual.</p></li><li id="fonte-24" value="24"><p>LinkedIn / autor do perfil. <a href="https://br.linkedin.com/in/tassiana-sousa">Perfil e publicações públicas de Tassiana Sousa</a>. Conteúdo de períodos diversos. Consulta: 11/09/2026. Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual.</p></li><li id="fonte-25" value="25"><p>LinkedIn / autor do perfil. <a href="https://br.linkedin.com/in/michelle-maria-27362b146">Perfil e publicações públicas de Michelle Maria</a>. Conteúdo de períodos diversos. Consulta: 11/09/2026. Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual.</p></li><li id="fonte-26" value="26"><p>LinkedIn / autor do perfil. <a href="https://br.linkedin.com/in/priscilla-rezende-38441260">Perfil e publicações públicas de Priscilla Rezende</a>. Conteúdo de períodos diversos. Consulta: 11/09/2026. Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual.</p></li><li id="fonte-27" value="27"><p>LinkedIn / autor do perfil. <a href="https://br.linkedin.com/in/ilanadutra">Perfil e publicações públicas de Ilana Dutra</a>. Conteúdo de períodos diversos. Consulta: 11/09/2026. Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual.</p></li><li id="fonte-28" value="28"><p>LinkedIn / autor do perfil. <a href="https://br.linkedin.com/in/michaelnathann">Perfil e publicações públicas de Michael Nathan</a>. Conteúdo de períodos diversos. Consulta: 11/09/2026. Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual.</p></li><li id="fonte-29" value="29"><p>LinkedIn / autor do perfil. <a href="https://br.linkedin.com/in/morganaramos">Perfil e publicações públicas de Morgana G. Ramos</a>. Conteúdo de períodos diversos. Consulta: 11/09/2026. Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual.</p></li><li id="fonte-30" value="30"><p>LinkedIn / autor do perfil. <a href="https://br.linkedin.com/in/patriciamrxa">Perfil e publicações públicas de Patricia M.</a>. Conteúdo de períodos diversos. Consulta: 11/09/2026. Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual.</p></li><li id="fonte-31" value="31"><p>LinkedIn / autor do perfil. <a href="https://br.linkedin.com/in/daniellecrocha">Perfil e publicações públicas de Danielle Rocha</a>. Conteúdo de períodos diversos. Consulta: 11/09/2026. Amostra qualitativa pública indexada; sem entrevista, verificação de cargo atual ou alçada individual.</p></li><li id="fonte-32" value="32"><p>W3C WAI. <a href="https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum">Understanding Success Criterion 1.4.3: Contrast (Minimum)</a>. Documentação técnica corrente. Consulta: 11/09/2026. Cálculo local não substitui auditoria integral de acessibilidade.</p></li><li id="fonte-33" value="33"><p>W3C. <a href="https://www.w3.org/TR/WCAG22/">Web Content Accessibility Guidelines 2.2</a>. Recomendação WCAG 2.2. Consulta: 11/09/2026. Conformidade requer verificar todos os critérios aplicáveis, não só contraste.</p></li><li id="fonte-34" value="34"><p>Supabase. <a href="https://supabase.com/docs/guides/database/postgres/row-level-security">Row Level Security</a>. Documentação técnica corrente. Consulta: 11/09/2026. Não prova configuração dos projetos analisados.</p></li><li id="fonte-35" value="35"><p>Supabase. <a href="https://supabase.com/docs/guides/database/functions">Database Functions</a>. Documentação técnica corrente. Consulta: 11/09/2026. Não prova quais migrations foram aplicadas.</p></li><li id="fonte-36" value="36"><p>GitHub / Brindes_Sicoob_V2. <a href="https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/33192891133">Execução de CI 33192891133</a>. Consultada em 2026-09-11. Consulta: 11/09/2026. Repositório privado; falha de orçamento não é teste de código.</p></li><li id="fonte-37" value="37"><p>Brindes_Sicoob_V2. <a href="https://github.com/adm01-debug/Brindes_Sicoob_V2/tree/d75459d28da0c8164c26861cd6358b147930425a">Código auditado</a>. Commit d75459d28da0c8164c26861cd6358b147930425a. Consulta: 11/09/2026. Não equivale ao código efetivamente publicado.</p></li><li id="fonte-38" value="38"><p>Diversos; inventário no Anexo A. Acervo documental fornecido — arquivo local: Brindes Sicoob V2 - Docs. Diversas, incluindo 2007, 2017, 2019 e 2021. Consulta: 11/09/2026. Histórico; não importar preços, SLA, regras de outro cliente ou contatos como atuais.</p></li></ol></main></html>

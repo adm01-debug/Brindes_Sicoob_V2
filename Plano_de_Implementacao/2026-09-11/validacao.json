@@ -1,0 +1,33 @@
+{
+  "etapas": 100,
+  "subetapas": 1000,
+  "erros_javascript": [],
+  "validacoes": [
+    "estado inicial pendente",
+    "marcação sem evidência recusada",
+    "persistência após recarregar",
+    "fechamento exige dados e aceite",
+    "dependência revogada reabre etapa dependente",
+    "remoção de evidência desmarca item",
+    "busca e filtro de bloco",
+    "importação incompatível recusada",
+    "importação válida recalcula estados",
+    "exportação de progresso",
+    "sem overflow em desktop e 390 px",
+    "1000 itens no documento de leitura",
+    "âncoras internas válidas"
+  ],
+  "paginas_pdf": 108,
+  "ids_subetapas_no_pdf": 1000,
+  "acoes_distintas": 1000,
+  "dependencias_sem_ciclos": true,
+  "etapas_inteiras_em_paginas_proprias": 100,
+  "planilha": {
+    "abas": 5,
+    "etapas": 100,
+    "subetapas": 1000,
+    "formulas_e_validacoes_conferidas": true,
+    "recalculo_em_aplicativo_de_planilha_executado": false
+  },
+  "links_locais_resolvidos": true
+}

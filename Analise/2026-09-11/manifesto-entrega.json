@@ -1,0 +1,200 @@
+{
+  "criado_em": "2026-09-11T15:17:51.244939+00:00",
+  "codigo_analisado": "d75459d28da0c8164c26861cd6358b147930425a",
+  "commit_documental": "ec5cfaf5c2de844458c0105d8ad40c35f1eb9c14",
+  "pull_request": "https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/3",
+  "arquivos": {
+    "backlog.html": {
+      "bytes": 11286,
+      "sha256": "6dd1b5a17c02bcd18ee0f58080e6bf5e1721203458846300ed65d08f9d7dab9a"
+    },
+    "anexos.pdf": {
+      "bytes": 635668,
+      "sha256": "f7e73ff812bdd155f0629f721fc1a2d233c9478264b813f0e7247d935889e9b2"
+    },
+    "backlog.json": {
+      "bytes": 21847,
+      "sha256": "944fd05b0b55f2a12fab80bfb69fa6a13b56d2ed4ef0eb5bc6802ea5c87f58ba"
+    },
+    "backlog.md": {
+      "bytes": 7480,
+      "sha256": "ad14e915bf2de8a232565234c18288c9dfb4d7b55d7454e436ab70b6df10fece"
+    },
+    "dossie.md": {
+      "bytes": 47810,
+      "sha256": "90894cb36bbcbb7952ed1e66e0344a3fcdd7ffc18fc772ace12977a2048b5058"
+    },
+    "planejamento-sicoob.xlsx": {
+      "bytes": 24610,
+      "sha256": "12d52f3146c43a4604c2c25fbc5062e7a5c6bc0a8a3eabf3d7684d8823448d14"
+    },
+    "backlog.csv": {
+      "bytes": 13263,
+      "sha256": "c4c42a5a98f0539b8fc2e3c45cd9ae8acc0f6f1a0916d5d36d5a8d8552d00a13"
+    },
+    "backlog.pdf": {
+      "bytes": 38542,
+      "sha256": "d0a70c4af69a2df4570c3ef90d0d11d45fdb58b3dc68a514f743927b571f8787"
+    },
+    "dossie.pdf": {
+      "bytes": 106062,
+      "sha256": "fa230580d54c143c4a5f6b29a10747bee39b9e9b3e8a2954fe44b2dd7294cc64"
+    },
+    "fontes.json": {
+      "bytes": 17667,
+      "sha256": "7b0bad966c1b2c772665363d752e795142d12d1e2894806684a6b63f2a10574b"
+    },
+    "dossie.html": {
+      "bytes": 50296,
+      "sha256": "42e0ccabab0065f936474a03885227948748dc7631a72bdbd1a09e424edcb22e"
+    },
+    "README.md": {
+      "bytes": 1996,
+      "sha256": "4220fbd12487058c7df2f9b189111a1603b4cd2e90866e515fcf3968d2fa5595"
+    },
+    "verificacao-exportacao.json": {
+      "bytes": 661,
+      "sha256": "45a96992d3f018804f2f40c31b26d680da85d295894fd1a969b1e5450eae0f4a"
+    },
+    "anexos.html": {
+      "bytes": 187481,
+      "sha256": "0a527fcbf91b592ee13109e756323b899ef9486e2837c37d918b20ce3872e7ff"
+    },
+    "fontes.csv": {
+      "bytes": 12586,
+      "sha256": "b55f2e05b1fd56313b0c989192cdb3c386fa00de21298d906163ac67d4799919"
+    },
+    "evidencias-visuais/login-mobile-anonimizado.png": {
+      "bytes": 90093,
+      "sha256": "62b74efee49358d0d5b2e980257c49439549cb68f187bc7d1f6fad77e68c4c60"
+    },
+    "evidencias-visuais/pagina-dossie-10.png": {
+      "bytes": 142676,
+      "sha256": "fa5a3548af1ce2f543c69aea37ec6b976e155716f2b616b7c4e90553cbf46543"
+    },
+    "evidencias-visuais/dossie-renderizado.png": {
+      "bytes": 214876,
+      "sha256": "809195133d2c5e4717363ad46df05724bfc0aa7b38cddfde4fba1f0fc1e2a835"
+    },
+    "evidencias-visuais/pagina-dossie-1.png": {
+      "bytes": 158486,
+      "sha256": "9afe3bb8994610ee318c8ccac2e57c9b936d59f7bf54f8219ce2bf5cf38604d5"
+    },
+    "evidencias-visuais/login-desktop-anonimizado.png": {
+      "bytes": 351539,
+      "sha256": "eb868f4accea38982f062906ee678ff295aeb7cc5c6a8771ce5109414a2dad3f"
+    },
+    "evidencias-visuais/pagina-dossie-6.png": {
+      "bytes": 132120,
+      "sha256": "c0a7f1071532cae7776fc02b01706aa4b28b88f3d3ff00e351267cbfb118a20d"
+    },
+    "anexos/auditoria-tecnica-a.md": {
+      "bytes": 28244,
+      "sha256": "f56c33532dbc91ef62d6e16b27c5167cd6c896dc686840d7ab9228b449cd53c3"
+    },
+    "anexos/resumo-evidencias.json": {
+      "bytes": 1166,
+      "sha256": "09e7d4662e3b457ddecee8c656eda82a09d85f010fa9fd107d112e96180c3e8c"
+    },
+    "anexos/diagnostico-grafo.json": {
+      "bytes": 5368,
+      "sha256": "75bf79616dd8a5c2e493273f05460443c1ccb9d09270046c60369c7e03d14faf"
+    },
+    "anexos/documentos-fornecidos.md": {
+      "bytes": 55720,
+      "sha256": "5d099ea2e00092a0037419d7669b8236d4a4134adb3cb4038086d33dee307b92"
+    },
+    "anexos/cobertura-a.json": {
+      "bytes": 36316,
+      "sha256": "9dcc0e072620bee4dc1de8ec9ff8d6eac0912c02f8aa61b09f760183c6d75118"
+    },
+    "anexos/mapa-dependencias.md": {
+      "bytes": 10518,
+      "sha256": "af312a429063a221ccb8b55df57415a8908d390112c0dbc8449cba252438b5ee"
+    },
+    "anexos/consultas-seguras.json": {
+      "bytes": 706,
+      "sha256": "1fe36c794f398f624237d37dc43f081c7930a4961a1818ad492e638722f5e334"
+    },
+    "anexos/estado-http.json": {
+      "bytes": 2262,
+      "sha256": "3abb9a0a8e5ae91fc37f2fbe6ce3655c2d8e1a8a0b274c20a6e466afd545548b"
+    },
+    "anexos/evidencia-visual.json": {
+      "bytes": 447,
+      "sha256": "c6c75796670fc24fa1fc201419f9f0ff2e8cb39363389b3cfc161153c054e919"
+    },
+    "anexos/verificacao-operacional.md": {
+      "bytes": 6882,
+      "sha256": "098c086835ba1483eb16bb77605078b1efdfdff22407f1b702b9c6f2069c9700"
+    },
+    "anexos/validacao.json": {
+      "bytes": 542,
+      "sha256": "f4692b67461a19ac25e13d6e6e36a8e9ed37e089b61c9417915a5f5ac77ff4d1"
+    },
+    "anexos/ci-posterior.md": {
+      "bytes": 2283,
+      "sha256": "a707b062176f53d3e9f4436a07ecab614611ac799d1dbff125c72fc85cfb2ee7"
+    },
+    "anexos/perfis-profissionais.md": {
+      "bytes": 12177,
+      "sha256": "f2acb378ee2cc70d4bdf7e76179dcba385b954060e144109768aa064a93eca37"
+    },
+    "anexos/inventario-documentos.json": {
+      "bytes": 54724,
+      "sha256": "ba92583cbccf129269293ad56a93afbbae35a5cdedba1872cbe91371fd9b671b"
+    },
+    "anexos/cobertura-b.json": {
+      "bytes": 64409,
+      "sha256": "25892c4281ab5bd9e5caf751bb94da9fd0613fc5389bd7038897137e0106be36"
+    },
+    "anexos/auditoria-tecnica-b.md": {
+      "bytes": 45744,
+      "sha256": "6f751785963804cb41996261672f9965f2b6e685f5600390801999a09a21383d"
+    },
+    "graphify-out/graph.html": {
+      "bytes": 1400652,
+      "sha256": "ef08334d852ba60bcd5839b16e5c69991334946f4dfd6f94c3111efe4902e0f6"
+    },
+    "graphify-out/cost.json": {
+      "bytes": 228,
+      "sha256": "cc81f1f8d17af6440c1da03b0e2ef99d4219e3ca95de4ed7066d3c96850a1377"
+    },
+    "graphify-out/.graphify_python": {
+      "bytes": 64,
+      "sha256": "79e082c2b86350479e4204b52c9418fd09407068a8dac5693386e86366f3bc1b"
+    },
+    "graphify-out/GRAPH_REPORT.md": {
+      "bytes": 10518,
+      "sha256": "af312a429063a221ccb8b55df57415a8908d390112c0dbc8449cba252438b5ee"
+    },
+    "graphify-out/vis-network.min.js": {
+      "bytes": 702611,
+      "sha256": "576bb887733eb01bb52ee75b90ef46d818454de5fddb5b616fb8a298d307ca12"
+    },
+    "graphify-out/.graphify_root": {
+      "bytes": 48,
+      "sha256": "6a5b330f989fcb006e62100e971d57c68225d474b5de3f413d34715792e0dcee"
+    },
+    "graphify-out/diagnostico.json": {
+      "bytes": 5367,
+      "sha256": "ea2370d5367fa272e1f6dd1b0dad4aa6bef6d629e530ba48c68f6704bd1c1d86"
+    },
+    "graphify-out/graph.json": {
+      "bytes": 14743908,
+      "sha256": "e8f1f8bb93d9d05060b3e8830e2886341573cf7b463f94c7d4b727bb8226e677"
+    },
+    "graphify-out/.graphify_labels.json": {
+      "bytes": 92484,
+      "sha256": "0f60bb6a54789aba3f24766d9d3e2ad96003cfb630e69ae7a498fc95fb8fd5f4"
+    },
+    "graphify-out/cache/last_query_stamp": {
+      "bytes": 18,
+      "sha256": "7892a1605f0fc3a88efc4163f904b09d13893aee5a012709ebdd231a47d07040"
+    },
+    "graphify-out/manifest.json": {
+      "bytes": 768886,
+      "sha256": "e1a4994564bebf689ac758929e69a0ca54b529636c5636542304192fbc5e968d"
+    }
+  }
+}

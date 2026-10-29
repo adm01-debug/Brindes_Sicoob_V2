@@ -1,0 +1,293 @@
+<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Backlog de evolução do portal</title><style>@page{size:A4;margin:18mm 16mm 19mm}*{box-sizing:border-box}body{font:15px/1.6 Arial,sans-serif;color:#222;background:white;margin:0}main{max-width:1100px;margin:auto;padding:36px}h1{font-size:32px;line-height:1.2;font-weight:700;margin:0 0 24px}h2{font-size:23px;margin:36px 0 14px;line-height:1.25}h3{font-size:18px;line-height:1.3;margin:24px 0 10px}p{margin:10px 0 15px}table{border-collapse:collapse;width:100%;font-size:12px;line-height:1.45;margin:18px 0;table-layout:fixed}th,td{border:1px solid #d4d8d7;padding:8px;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:#edf0ef}tr{break-inside:avoid}thead{display:table-header-group}a{color:#174c56;overflow-wrap:anywhere}code{font:0.88em monospace;background:#f3f3f3;overflow-wrap:anywhere}pre{white-space:pre-wrap}img{max-width:100%}nav{border-bottom:1px solid #ccc;padding:14px 36px;font-size:14px}nav a{margin-right:20px}sup{line-height:0;font-size:0.7em}sup+sup:before{content:", "}h1,h2,h3{break-after:avoid}.fontes li{font-size:12px;margin:9px 0;break-inside:avoid}.anexo{break-before:page}.diagrama{font-size:13px;border-collapse:separate;border-spacing:4px}.diagrama td{padding:12px;text-align:center;background:#f3f5f4}.figcaption{font-size:12px;color:#555}@media print{body{font-size:10.5pt;line-height:1.5}main{max-width:none;padding:0}nav{display:none}h1{font-size:26pt}h2{font-size:17pt}h3{font-size:13pt}table{font-size:8pt}a{color:#222;text-decoration:none}p{orphans:3;widows:3}.noprint{display:none}}@media(max-width:700px){main{padding:20px}table{font-size:11px}th,td{padding:5px}nav{padding:14px 20px}h1{font-size:27px}}</style><nav><a href="dossie.html">Dossiê</a><a href="anexos.html">Anexos</a><a href="backlog.html">Backlog</a><a href="planejamento-sicoob.xlsx">Planilha</a><a href="graphify-out/graph.html">Mapa</a></nav><main><h1>Backlog de evolução do portal</h1>
+<p>Todos os 42 itens estão propostos, sem implementação nesta análise. P0 bloqueia o piloto; P1 compõe a primeira compra completa; P2 depende do aprendizado operacional. A ordem segue dependências, não a numeração. A e D referem-se aos anexos técnicos A e B; números isolados identificam fontes de pesquisa.</p>
+<h2>P0</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Entrega</th>
+<th>Critério de aceite</th>
+<th>Dependências</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B01</td>
+<td>Identificar produção e dois bancos</td>
+<td>Inventário bate com metadados de deploy e saúde; conectores de outro projeto são excluídos</td>
+<td>Nenhuma</td>
+</tr>
+<tr>
+<td>B02</td>
+<td>Conter resposta de credenciais do migrate-helper</td>
+<td>Código não devolve segredos; função publicada removida ou incapaz de expor; evidência de tratamento registrada</td>
+<td>B01</td>
+</tr>
+<tr>
+<td>B03</td>
+<td>Restringir API externa a leitura</td>
+<td>INSERT, UPDATE, DELETE, UPSERT e RPC mutante são negados pelo serviço; custo interno não é exposto indevidamente</td>
+<td>B01</td>
+</tr>
+<tr>
+<td>B04</td>
+<td>Usar credencial externa de privilégio mínimo</td>
+<td>ACL ou contrato do serviço confirma leitura; nenhum segredo chega ao navegador; sem escrita de teste no mestre</td>
+<td>B03</td>
+</tr>
+<tr>
+<td>B05</td>
+<td>Conectar a fonte correta e mapear campos</td>
+<td>Consulta real a dou retorna amostra mínima validada; portal distingue indisponibilidade de catálogo vazio</td>
+<td>B04</td>
+</tr>
+<tr>
+<td>B06</td>
+<td>Unificar papéis e escopos</td>
+<td>Matriz aprovada para piloto; não há aliases conflitantes no fluxo crítico; acesso deriva de vínculo ativo</td>
+<td>B01</td>
+</tr>
+<tr>
+<td>B07</td>
+<td>Corrigir composição de rotas</td>
+<td>Sessão real de cada papel acessa a jornada prevista; usuário sem permissão recebe estado claro</td>
+<td>B06</td>
+</tr>
+<tr>
+<td>B08</td>
+<td>Corrigir autorização das RPCs</td>
+<td>Tentativas de aprovador forjado, pedido de outra cooperativa e requisição incompatível são negadas</td>
+<td>B06</td>
+</tr>
+<tr>
+<td>B09</td>
+<td>Validar isolamento real</td>
+<td>Casos permitidos e negados passam com usuários autenticados distintos; resultados ligados ao schema e commit</td>
+<td>B07,B08</td>
+</tr>
+<tr>
+<td>B10</td>
+<td>Restabelecer execução dos gates</td>
+<td>CI executa checks aplicáveis e publica resultados reais; ausência de configuração obrigatória falha explicitamente</td>
+<td>B01</td>
+</tr>
+<tr>
+<td>B11</td>
+<td>Tratar dependências de risco do piloto</td>
+<td>Gate oficial passa conforme política do projeto; exceção exige justificativa, responsável e validade</td>
+<td>B10</td>
+</tr>
+<tr>
+<td>B12</td>
+<td>Reduzir erros no fluxo crítico</td>
+<td>Módulos críticos compilam com contratos corretos; dívida restante tem inventário, sem regressão por arquivo</td>
+<td>B05,B07,B08</td>
+</tr>
+</tbody>
+</table>
+<h2>P1</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Entrega</th>
+<th>Critério de aceite</th>
+<th>Dependências</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B13</td>
+<td>Limpar o acesso de produção</td>
+<td>Build de produção não mostra correção de usuário, métricas inventadas ou provedor desativado; login funcional</td>
+<td>B07</td>
+</tr>
+<tr>
+<td>B14</td>
+<td>Definir onboarding do piloto</td>
+<td>Pessoa convidada entra na cooperativa correta; convite expirado ou revogado é negado; cadastro fechado é explicado</td>
+<td>B06,B07</td>
+</tr>
+<tr>
+<td>B15</td>
+<td>Consolidar cooperativa, PA e competência</td>
+<td>Nenhum orçamento depende de tabela/campo inexistente; competência e unidade corretas na tela</td>
+<td>B01,B06</td>
+</tr>
+<tr>
+<td>B16</td>
+<td>Tornar compromisso e estorno atômicos</td>
+<td>Concorrência não excede limite indevidamente; reenvio não duplica consumo; cancelamento estorna conforme regra</td>
+<td>B08,B15</td>
+</tr>
+<tr>
+<td>B17</td>
+<td>Configurar regras por cooperativa</td>
+<td>Duas políticas distintas operam sem alteração de código; pedido preserva a versão usada</td>
+<td>B06,B15</td>
+</tr>
+<tr>
+<td>B18</td>
+<td>Curadoria por finalidade e restrições</td>
+<td>Comprador encontra opções viáveis; mínimo, múltiplo e restrições são visíveis antes da proposta</td>
+<td>B05</td>
+</tr>
+<tr>
+<td>B19</td>
+<td>Separar preço de custo e total entregue</td>
+<td>Total fecha com itens; campo ausente exige cotação; custos internos não vazam para comprador</td>
+<td>B05,B03</td>
+</tr>
+<tr>
+<td>B20</td>
+<td>Criar proposta versionada e válida</td>
+<td>Reabertura do histórico reproduz exatamente a proposta; edição cria nova versão e não altera pedido aprovado</td>
+<td>B19</td>
+</tr>
+<tr>
+<td>B21</td>
+<td>Criar campanha com briefing curto</td>
+<td>Solicitante conclui briefing mínimo; campanha reúne itens, artes e entregas sem duplicar cadastro mestre</td>
+<td>B18</td>
+</tr>
+<tr>
+<td>B22</td>
+<td>Aprovar arte exata para produção</td>
+<td>Produção recebe somente arte aprovada; alteração invalida aceite aplicável e mantém histórico</td>
+<td>B20,B21</td>
+</tr>
+<tr>
+<td>B23</td>
+<td>Separar arte e autorização de despesa</td>
+<td>Aprovação de marketing não compromete verba sem poder correspondente; liberação depende de todos os aceites</td>
+<td>B08,B16,B22</td>
+</tr>
+<tr>
+<td>B24</td>
+<td>Unificar estados e transições</td>
+<td>UI e backend usam mesmos estados; transição inválida ou versão desatualizada é negada</td>
+<td>B20,B23</td>
+</tr>
+<tr>
+<td>B25</td>
+<td>Distribuir por PA e destino</td>
+<td>Soma das distribuições bate com total; destino exige permissão; calendário distingue evento e entrega</td>
+<td>B21,B24</td>
+</tr>
+<tr>
+<td>B26</td>
+<td>Controlar entrega parcial e divergência</td>
+<td>Pedido parcial não aparece encerrado; falta, avaria e troca têm responsável e evidência</td>
+<td>B25</td>
+</tr>
+<tr>
+<td>B27</td>
+<td>Conciliar documentos e recebimento</td>
+<td>Documento tem acesso restrito e vínculo correto; divergência impede encerramento indevido</td>
+<td>B26</td>
+</tr>
+<tr>
+<td>B28</td>
+<td>Registrar decisões na transação</td>
+<td>Falha de auditoria crítica não resulta em decisão sem rastro; histórico não pode ser alterado pelo comprador</td>
+<td>B08,B16,B24</td>
+</tr>
+<tr>
+<td>B29</td>
+<td>Entregar avisos com estado verdadeiro</td>
+<td>Canal anunciado tem evidência de envio; repetição controlada não duplica mensagens; erro operacional é visível</td>
+<td>B28</td>
+</tr>
+<tr>
+<td>B30</td>
+<td>Aplicar identidade e ativos autorizados</td>
+<td>Ativos carregam sob controle do portal; combinações de texto atendem critérios aplicáveis e não alegam oficialidade sem base</td>
+<td>B13</td>
+</tr>
+<tr>
+<td>B31</td>
+<td>Validar jornadas críticas por teclado e móvel</td>
+<td>Solicitar, revisar e aprovar funcionam por teclado, ampliação e leitor de tela; evidências por cenário</td>
+<td>B23,B26,B30</td>
+</tr>
+<tr>
+<td>B32</td>
+<td>Estabelecer saúde e suporte</td>
+<td>Alerta dispara em falha simulada controlada; responsável e procedimento de recuperação testados</td>
+<td>B05,B28,B29</td>
+</tr>
+<tr>
+<td>B33</td>
+<td>Substituir promessas por evidências</td>
+<td>Nenhum percentual ou selo depende de fallback fixo; relatório identifica ambiente, data, commit e denominador</td>
+<td>B10,B28</td>
+</tr>
+<tr>
+<td>B34</td>
+<td>Executar primeiro pedido acompanhado</td>
+<td>Domínio produtivo, comprador real, aprovações, faturamento e recebimento comprovados; sem escrita no catálogo</td>
+<td>B09,B11,B12,B17,B27,B31,B32,B37,B41,B42</td>
+</tr>
+<tr>
+<td>B37</td>
+<td>Validar hipóteses com compradores e marketing</td>
+<td>Problemas observados, tempo e retrabalho registrados; prioridades revisadas com evidência</td>
+<td>B13,B21</td>
+</tr>
+<tr>
+<td>B41</td>
+<td>Controlar documentos e links compartilhados</td>
+<td>Anexo privado de outra cooperativa e link revogado são negados; diagnósticos internos não são assets públicos</td>
+<td>B06,B09</td>
+</tr>
+<tr>
+<td>B42</td>
+<td>Definir produção e promessa de prazo</td>
+<td>Prazo prometido usa condições atuais e confirmações; indisponibilidade gera alternativa ou revisão de proposta</td>
+<td>B19,B22,B25</td>
+</tr>
+</tbody>
+</table>
+<h2>P2</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Entrega</th>
+<th>Critério de aceite</th>
+<th>Dependências</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B35</td>
+<td>Repetir a partir do histórico</td>
+<td>Preço vencido, produto inativo e arte alterada são sinalizados; histórico anterior permanece imutável</td>
+<td>B20,B26,B34</td>
+</tr>
+<tr>
+<td>B36</td>
+<td>Validar exportação ERP/SISBR</td>
+<td>Arquivo aceito em processo homologado; nenhuma promessa de API sem especificação e autorização</td>
+<td>B27,B34</td>
+</tr>
+<tr>
+<td>B38</td>
+<td>Medir eficiência e prazo reais</td>
+<td>Dashboard reconcilia com amostra de pedidos; ausência de dados aparece como não medido</td>
+<td>B28,B34</td>
+</tr>
+<tr>
+<td>B39</td>
+<td>Onboardar segunda cooperativa</td>
+<td>Isolamento e jornada passam sem fork por cooperativa; diferenças documentadas</td>
+<td>B17,B34,B37</td>
+</tr>
+<tr>
+<td>B40</td>
+<td>Oferecer curadoria baseada em evidência</td>
+<td>Sugestão informa critério e não inventa probabilidade; resultado observado orienta evolução</td>
+<td>B18,B38</td>
+</tr>
+</tbody>
+</table></main></html>
