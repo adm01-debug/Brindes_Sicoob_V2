@@ -473,13 +473,13 @@ Números de apoio:
 
 ### Inteligência Comercial (`/inteligencia-comercial`) e Tendências (`/tendencias`)
 
-Fontes: a Inteligência Comercial usa dados reais do banco do portal (`quotes`, `orders`, `order_items`, `quote_items` em `src/hooks/useCommercialIntelligence.ts`) e o histórico de estoque do catálogo externo (`stock_daily_summary` via bridge, `useMarketIntelligenceMacro.ts:158`). Os insights de IA vêm de `market-intelligence-insights` e `trends-insights`, que tratam 402/429. As Tendências usam `search_analytics` e `product_views`, mas abrem em modo demo.
+Fontes: a Inteligência Comercial usa dados reais do banco do portal (`quotes`, `orders`, `order_items`, `quote_items` em `src/hooks/useCommercialIntelligence.ts`) e o histórico de estoque do catálogo externo (`stock_daily_summary` via bridge, `useMarketIntelligenceMacro.ts:158`). Os insights de IA vêm de `market-intelligence-insights` e `trends-insights`, que tratam 402/429. As Tendências usam `search_analytics` e `product_views`; o modo demo agora é opt-in e a validação autenticada continua pendente.
 
 ### ADM-43 — Tendências abre em modo demo para todos
-- Status: STUB/MOCK
-- Origem: `src/pages/trends/is-demo-mode.ts:1-12` ("Demo ligado por padrão (avaliação de viabilidade do módulo). Para desligar: `/tendencias?demo=0`").
-- Evidência no código: `isDemoMode()` é `true` salvo `?demo=0`. Com isso, `ConversionFunnel.tsx:67`, `HotSearchesCard.tsx:35`, `TopCategoriesCard.tsx:48`, `TrendsHeatmap.tsx:26`, `TrendsInsightsCard.tsx:33` e `UnmetDemandCard.tsx:33` usam `pages/trends/trends-mock.ts`, e `TrendsPage.tsx:228` desliga as queries reais. A página mostra `DemoBadge` (`:577`). O menu "Insights › Tendências" (`SidebarReorganized.tsx:178`) não passa `demo=0`.
-- O que falta: decidir o fim da avaliação e inverter o padrão (demo só por opt-in).
+- Status: PARCIAL
+- Origem atual: `src/pages/trends/is-demo-mode.ts` e `src/pages/TrendsPage.tsx:205,228`.
+- Evidência atual: o demo só ativa com `?demo=1`; `tests/pages/trends-demo-mode.test.ts` valida padrão real, opt-in e `demo=0`.
+- O que falta: validar a experiência autenticada com dados reais e documentar a origem/qualidade das métricas secundárias.
 - Impacto no negócio: buscas em alta, funil e demanda não atendida exibidos ao time são fictícios.
 - Esforço: P
 - Prioridade: P1

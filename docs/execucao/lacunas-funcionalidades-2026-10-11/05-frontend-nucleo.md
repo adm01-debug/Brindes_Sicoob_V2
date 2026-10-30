@@ -27,7 +27,7 @@ Números de apoio:
 1. **FE-001 (P0)**: `/orcamentos/:id` abre uma página reduzida, sem itens, PDF, link de aprovação, WhatsApp ou edição. A página completa (`QuoteViewPage`) só existe em `/orcamentos/:id/visualizar`, e nenhum link leva até ela. O Kanban e a lista mandam o usuário "gerar e assinar o PDF no detalhe", onde essa função não existe.
 2. **FE-020 (P1)**: os filtros Técnica de gravação, Destaques, Novidades, Com personalização, Tags e Tamanhos aparecem e são contados como ativos, mas não filtram nada em `/filtros`. Em `/` também são ignorados Público-alvo, Datas, Endomarketing, Ramo/Segmento e Kit.
 3. **FE-086 (P1)**: os e-mails transacionais não existem. A Edge Function responde 501 ("ainda não está implementado"). O aviso de mudança de status de pedido falha em silêncio, e os eventos de orçamento enviado/aprovado/recusado nunca são disparados.
-4. **FE-140 (P1)**: a página Tendências abre em "MODO DEMO" para todos os usuários, com dados fictícios. O modo só desliga com `?demo=0`.
+4. **FE-140 (P1, parcial)**: o modo demo agora exige `?demo=1`; falta validar a consulta real em ambiente autenticado.
 5. **FE-030 (P1)**: a página de produto mostra selos como "Best-Seller", "Emergente" e "Últimas Unidades" gerados por dados mock sempre que as materialized views não têm dados.
 6. **FE-130 (P1)**: o "assistente IA" do Gerador de Mockup ("Matheus") devolve frases aleatórias com `setTimeout`. O componente de chat real (`AIChat`, ligado ao `expert-chat`) está órfão.
 7. **FE-002 / FE-003 (P1)**: links visíveis caem em 404. O selo "Monte seu Kit", que aparece em todo card de produto, leva a `/kit-builder`. O botão "Explorar Catálogo" e a palette levam a `/catalogo`.
@@ -639,10 +639,10 @@ Merecem atenção logo em seguida: FE-095 e FE-100 (KPIs inventados nas telas Ge
 ### 14. Tendências, inteligência e BI
 
 #### FE-140  Tendências abre com dados fictícios para todos
-- Status: STUB/MOCK
-- Origem: `src/pages/trends/is-demo-mode.ts:1-12` ("Demo ligado por padrão… Para desligar: /tendencias?demo=0").
-- Evidência no código: `src/pages/TrendsPage.tsx:205` (`demo = isDemoMode()`), `:236-279` (KPIs, produtos, buscas e série diária vêm de `trends-mock.ts`), `:438-444` (carrega o módulo mock), `:556` (banner "MODO DEMO — dados fictícios"). As consultas reais (`queryEnabled: !demo`) ficam desligadas por padrão. O item "Tendências" está na sidebar (`SidebarReorganized.tsx:178`).
-- O que falta: inverter o padrão (dados reais, demo opcional) e validar as consultas reais.
+- Status: PARCIAL
+- Origem: `src/pages/trends/is-demo-mode.ts` e `src/pages/TrendsPage.tsx:205,228`.
+- Evidência atual: o modo demo só ativa com `?demo=1`; sem esse parâmetro, as consultas reais podem executar quando existe usuário autenticado. `tests/pages/trends-demo-mode.test.ts` cobre padrão real, opt-in demo e `demo=0`.
+- O que falta: validar a jornada autenticada e a carga de dados reais no ambiente de homologação; confirmar a origem/qualidade das consultas usadas pelos cards secundários.
 - Impacto no negócio: a área de "insights" mostra tendências inventadas a vendedores e gestores.
 - Esforço: P
 - Prioridade: P1
