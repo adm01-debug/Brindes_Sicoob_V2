@@ -50,3 +50,8 @@ fafc9a06cf9750330856f2d0366fd69e69ad5ff7:tmp/proposta_nova-1.html:generic-api-ke
 7d616832b116631523eb6f10ddc93d30fa4496da:tests/services/quoteReorder.test.ts:generic-api-key:60
 a1f3f00cdcb6e0238ca5efd250c94f659d59075f:tests/services/quoteReorder.test.ts:generic-api-key:56
 a1f3f00cdcb6e0238ca5efd250c94f659d59075f:tests/services/quoteReorder.test.ts:generic-api-key:60
+# UUID determinístico sintético em teste de idempotência do commit 6c45814; o código atual usa texto não credencial.
+6c45814c9b71aee1eb1d739350fb16ec7b90d7b7:tests/services/quoteReorder.test.ts:generic-api-key:82
+6c45814c9b71aee1eb1d739350fb16ec7b90d7b7:tests/services/quoteReorder.test.ts:generic-api-key:88
+6c45814c9b71aee1eb1d739350fb16ec7b90d7b7:tests/services/quoteReorder.test.ts:generic-api-key:105
+6c45814c9b71aee1eb1d739350fb16ec7b90d7b7:tests/services/quoteReorder.test.ts:generic-api-key:120

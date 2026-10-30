@@ -1,7 +1,8 @@
 name: E2E (Playwright)
 
 # Gate de release: exige as contas de homologação e executa jornadas públicas
-# e autenticadas. Artefatos (HTML, screenshots, vídeos e traces) são publicados.
+# e autenticadas somente em projeto de homologação isolado. Só resumos sem dados
+# de sessão são publicados; traces e evidências brutas não são enviados como artifacts.
 
 on:
   pull_request:
@@ -30,11 +31,36 @@ jobs:
             exit 1
           fi
 
+      - name: Exigir Supabase E2E isolado
+        env:
+          E2E_PROJECT_ID: ${{ vars.E2E_SUPABASE_PROJECT_ID }}
+          E2E_URL: ${{ secrets.E2E_SUPABASE_URL }}
+          E2E_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
+          E2E_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
+          E2E_CLEANUP_TOKEN: ${{ secrets.E2E_SUPABASE_CLEANUP_TOKEN }}
+          CANONICAL_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+        shell: bash
+        run: |
+          if [[ -z "$E2E_PROJECT_ID" || -z "$E2E_URL" || -z "$E2E_PUBLISHABLE_KEY" || -z "$E2E_SERVICE_ROLE_KEY" || -z "$E2E_CLEANUP_TOKEN" ]]; then
+            echo "::error title=Supabase E2E ausente::Configure E2E_SUPABASE_PROJECT_ID e os secrets E2E_SUPABASE_URL, E2E_SUPABASE_PUBLISHABLE_KEY, E2E_SUPABASE_SERVICE_ROLE_KEY e E2E_SUPABASE_CLEANUP_TOKEN. O job foi bloqueado antes de acessar qualquer projeto."
+            exit 1
+          fi
+          url_project_id="${E2E_URL#https://}"
+          url_project_id="${url_project_id%%.*}"
+          if [[ "$url_project_id" != "$E2E_PROJECT_ID" ]]; then
+            echo "::error title=Supabase E2E inconsistente::A URL e o project ref E2E não correspondem."
+            exit 1
+          fi
+          if [[ -n "$CANONICAL_PROJECT_ID" && "$E2E_PROJECT_ID" == "$CANONICAL_PROJECT_ID" ]]; then
+            echo "::error title=Supabase E2E inseguro::O projeto E2E não pode ser o projeto canônico configurado no app."
+            exit 1
+          fi
+
   e2e:
     needs: validate-source
     runs-on: ubuntu-latest
     # O gate cobre 168 combinações de rota/viewport além do smoke. O limite
-    # inclui instalação, servidor e upload das evidências no runner hospedado.
+    # inclui instalação, servidor e execução das suítes no runner hospedado.
     timeout-minutes: 35
     env:
       CI: 'true'
@@ -56,10 +82,10 @@ jobs:
       E2E_DEV_EMAIL: ${{ secrets.E2E_DEV_EMAIL }}
       E2E_DEV_PASSWORD: ${{ secrets.E2E_DEV_PASSWORD }}
       E2E_DEV_TOTP_SECRET: ${{ secrets.E2E_DEV_TOTP_SECRET }}
-      E2E_CLEANUP_TOKEN: ${{ secrets.E2E_CLEANUP_TOKEN }}
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-      VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+      E2E_CLEANUP_TOKEN: ${{ secrets.E2E_SUPABASE_CLEANUP_TOKEN }}
+      VITE_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_PROJECT_ID: ${{ vars.E2E_SUPABASE_PROJECT_ID }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -85,7 +111,7 @@ jobs:
         env:
           RUN_REMOTE_AUTHZ_TESTS: '1'
           RUN_REMOTE_RLS_TESTS: '1'
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           npx vitest run \
             --no-file-parallelism \
@@ -153,7 +179,7 @@ jobs:
       - name: 🛑 Fail-fast se smoke falhou (gate)
         if: env.SKIP_E2E != 'true' && steps.e2e_smoke.outcome != 'success'
         run: |
-          echo "::error title=Smoke gate failed::Smoke parou na 1ª falha — veja '🚦 E2E Smoke Summary' acima e o artifact 'playwright-report' (screenshots+vídeos+trace)."
+          echo "::error title=Smoke gate failed::Smoke parou na 1ª falha; veja o resumo E2E acima. Artefatos brutos de sessão não são publicados."
           exit 1
 
       # ─── HEADER STICKY GATE ─────────────────────────────────────────────
@@ -171,17 +197,8 @@ jobs:
       - name: 🛑 Fail-fast se header sticky falhou
         if: env.SKIP_E2E != 'true' && steps.e2e_header_sticky.outcome == 'failure'
         run: |
-          echo "::error title=Header sticky regression::O Header global deixou de ser sticky em alguma rota/viewport. Spec: e2e/flows/22-header-sticky.spec.ts. Causa raiz típica: 'overflow' / 'transform' / 'filter' em ancestral do <header> em src/components/layout/MainLayout.tsx criando scroll container ou stacking context indevido. Veja o artifact 'playwright-report' (screenshot + vídeo + trace) para a rota específica."
+          echo "::error title=Header sticky regression::O Header global deixou de ser sticky em alguma rota/viewport. Spec: e2e/flows/22-header-sticky.spec.ts. Artefatos brutos de sessão não são publicados."
           exit 1
-
-      - name: Upload Playwright report do gate
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
-        with:
-          name: playwright-report-smoke-gate
-          path: playwright-report
-          retention-days: 7
 
       - name: Upload smoke summary (markdown + json)
         if: always()
@@ -194,17 +211,6 @@ jobs:
             playwright-report/smoke-summary.json
           retention-days: 30
           if-no-files-found: ignore
-
-      - name: Upload evidências do gate
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
-        with:
-          name: e2e-evidence-smoke-gate
-          path: |
-            e2e-artifacts
-            test-results
-          retention-days: 7
 
   e2e-regression:
     name: E2E regression — shard ${{ matrix.shard }}/3
@@ -237,10 +243,10 @@ jobs:
       E2E_DEV_EMAIL: ${{ secrets.E2E_DEV_EMAIL }}
       E2E_DEV_PASSWORD: ${{ secrets.E2E_DEV_PASSWORD }}
       E2E_DEV_TOTP_SECRET: ${{ secrets.E2E_DEV_TOTP_SECRET }}
-      E2E_CLEANUP_TOKEN: ${{ secrets.E2E_CLEANUP_TOKEN }}
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-      VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+      E2E_CLEANUP_TOKEN: ${{ secrets.E2E_SUPABASE_CLEANUP_TOKEN }}
+      VITE_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_PROJECT_ID: ${{ vars.E2E_SUPABASE_PROJECT_ID }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -293,15 +299,6 @@ jobs:
             cat playwright-report/feature-summary.md
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload Playwright report
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
-        with:
-          name: playwright-report-shard-${{ matrix.shard }}
-          path: playwright-report
-          retention-days: 7
-
       - name: Upload feature summary (markdown)
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -312,19 +309,8 @@ jobs:
           retention-days: 30
           if-no-files-found: ignore
 
-      - name: Upload evidence artifacts
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
-        with:
-          name: e2e-evidence-shard-${{ matrix.shard }}
-          path: |
-            e2e-artifacts
-            test-results
-          retention-days: 7
-
       - name: 🛑 Fail job se regression registrou falhas
         if: steps.e2e_run.outcome == 'failure'
         run: |
-          echo "::error title=Regression failed::Algumas specs do shard ${{ matrix.shard }}/3 falharam — veja o resumo acima e os artifacts do shard (HTML, screenshots, vídeos e trace)."
+          echo "::error title=Regression failed::Algumas specs do shard ${{ matrix.shard }}/3 falharam — veja o resumo acima. Artefatos brutos de sessão não são publicados."
           exit 1

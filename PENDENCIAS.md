@@ -226,17 +226,18 @@ Falhas consideradas somente quando a execução mais recente da `main` está em
 `failure`. As correções estão publicadas na branch candidate
 `fix/quote-price-authority-311333` e submetidas ao PR draft #175; ainda não foram
 incorporadas à `main`. Os checks da primeira revisão do PR apontaram falso
-positivo de Gitleaks para UUIDs fixos de teste, corrigido nesta atualização.
+positivo de Gitleaks para UUIDs de teste em commit histórico; o valor foi trocado
+no arquivo atual e os fingerprints históricos foram allowlisted de forma pontual.
 
 | Workflow | Última execução | Causa provável confirmada | Estado da correção |
 |---|---|---|---|
 | Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | Verificador exigiu aumento de versão para função que continuou na versão 5 após deploy sem alteração | Corrigido na branch candidate; validação remota necessária, sem executar deploy |
-| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `npm audit` alto em `undici` e `zod` | Atualizados `undici`/`zod`; audit local zerado. Check inicial do PR pegou UUIDs fixos de teste com Gitleaks; identificador substituído nesta revisão |
-| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | Gate `check:npm-audit`, mesmos alertas altos | Candidate atualizado; audit local zerado, aguardando CI da nova revisão |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `npm audit` alto em `undici` e `zod` | Atualizados `undici`/`zod`; audit local zerado. Gitleaks flagou quatro UUIDs sintéticos no commit histórico; valor atual foi substituído e os fingerprints exatos estão allowlisted |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | Gate `check:npm-audit`, mesmos alertas altos | Audit local zerado. Candidate também corrigiu `check-runtime-refs`: quatro RPCs da migration P045 ainda não existem no inventário remoto, então receberam allowlist pontual até aplicar a migration e atualizar o inventário |
 | CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `init` em 4.39.1 e `autobuild/analyze` em 4.38.2; SARIF não gerado | Candidate alinhou as referências SHA; aguardando CI da nova revisão |
 | Bundle Size Check | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) | Job falhou; log expirou (HTTP 404), causa do run antigo não comprovável. Candidate reproduz o gate localmente com sucesso: 664 chunks, 10.748.443 bytes e avisos não bloqueantes | Candidate passa o orçamento local; PR precisa registrar execução remota atual |
 | Lighthouse Performance Audit | [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910) | Job falhou; log expirou (HTTP 404). `LHCI_GITHUB_APP_TOKEN` não consta entre os nomes de secrets atuais, causa provável de autenticação ainda não comprovada | Configurar o secret e reexecutar; confirmar a causa no novo log antes de alterar código/performance |
-| E2E (Playwright) | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | `startup_failure`, nenhum job criado; a API não fornece causa detalhada | Reexecutar após configurar o projeto E2E e validar evento/permissões; `E2E_SUPABASE_PROJECT_ID` ainda não consta nos nomes de secrets |
+| E2E (Playwright) | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | `startup_failure`, nenhum job criado; a API não fornece causa detalhada | Bloqueado até configurar um projeto de homologação isolado; execução da primeira revisão atingiu o projeto canônico e mostrou demora de 22,3 s em `get_sicoob_access_state`, mantendo a rota no loader de permissões |
 | Running Copilot Code Review | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | HTTP 402 `quota`, limite adicional de uso Copilot atingido | Bloqueio externo; proprietário deve renovar/aguardar reset do plano |
 
 Workflows verdes confirmados na consulta: Migration ledger drift
@@ -248,6 +249,13 @@ Monthly DB Audit também concluiu com sucesso em
 [36794161452](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36794161452).
 
 ---
+
+### Bloqueio e incidente de configuração do E2E
+
+- O run [41057184979](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41057184979) executou a jornada autenticada contra o projeto `cfmzkthhgliqelozlmwu`: os secrets `VITE_SUPABASE_*` eram usados como destino do E2E, sem exigir projeto exclusivo. O trace mostrou `PATCH /rest/v1/profiles` (204) e `POST /rest/v1/telemetry_events` (201); não foi feita tentativa de desfazer as alterações.
+- O screenshot mostrou a rota bloqueada em “Carregando permissões...”. Duas chamadas a `get_sicoob_access_state` levaram aproximadamente 22,3 s; `user_roles` respondeu 200. Isso excede o limite de 20 s do smoke. A evidência aponta atraso no bootstrap de autenticação/permissões, mas não prova causa server-side nem relação com o candidate.
+- O artefato de evidências e o relatório HTML do run foram excluídos do GitHub (IDs `12977402436` e `12978146122`) porque continham material de sessão no trace. Não registrei valores. O workflow candidate agora não publica traces, screenshots ou relatórios brutos e barra o job antes de acessar o Supabase se a configuração E2E isolada estiver ausente/inconsistente.
+- **Ação do responsável:** revisar os registros de perfil/telemetria da conta E2E no projeto citado e encerrar sessões/rotacionar as contas de teste. Configurar `vars.E2E_SUPABASE_PROJECT_ID` e os secrets `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_SERVICE_ROLE_KEY` e `E2E_SUPABASE_CLEANUP_TOKEN`, além de contas de teste provisionadas nesse mesmo projeto. Até então, o E2E deve falhar na validação inicial, sem executar os testes.
 
 ## P045 — Integridade de preços de orçamento (30/10/2026)
 

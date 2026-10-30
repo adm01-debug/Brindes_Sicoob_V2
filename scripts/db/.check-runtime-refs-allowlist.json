@@ -17,6 +17,10 @@
     "mockup-assets": "typo de bucket, correção mecânica pendente — plano de correções Etapa 16 (deveria ser mockup-art-files)",
     "personalization": "typo de bucket, correção mecânica pendente — plano de correções Etapa 16 (deveria ser personalization-images)",
     "set_config": "chamada a função pg_catalog nunca exposta via PostgREST, não é backlog de migration — plano de correções Etapa 17",
-    "sales_goals": "código morto confirmado (zero importadores de useSalesGoals.ts) — Etapa 26 do plano principal, sem ação necessária"
+    "sales_goals": "código morto confirmado (zero importadores de useSalesGoals.ts) — Etapa 26 do plano principal, sem ação necessária",
+    "get_quote_save_idempotent_replay": "migration 20261030120000_quote_price_attestation_gate.sql versionada no repositório, ainda não aplicada ao Supabase remoto; retirar após aplicar no ambiente de construção e atualizar o inventário",
+    "save_quote_atomic_idempotent_attested": "migration 20261030120000_quote_price_attestation_gate.sql versionada no repositório, ainda não aplicada ao Supabase remoto; retirar após aplicar no ambiente de construção e atualizar o inventário",
+    "save_quote_atomic_attested": "migration 20261030120000_quote_price_attestation_gate.sql versionada no repositório, ainda não aplicada ao Supabase remoto; retirar após aplicar no ambiente de construção e atualizar o inventário",
+    "register_quote_price_attestation": "migration 20261030120000_quote_price_attestation_gate.sql versionada no repositório, ainda não aplicada ao Supabase remoto; retirar após aplicar no ambiente de construção e atualizar o inventário"
   }
 }
