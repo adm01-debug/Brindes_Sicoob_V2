@@ -21,26 +21,26 @@ As seções históricas abaixo refletem o estado de 22/10 e não substituem este
 
 **Verdes confirmados:** Migration ledger drift (`41013281253`, 30/10), Branch Protection Sentinel (`40602983038`), Enterprise Compliance & Audit Reporting (`40602982958`), Portal Sicoob (`39868499315`), Monthly DB Audit (`36794161452`, 01/10) e Dependabot Updates (`40603001428`). O último run de Aplicar migrations Sicoob foi `cancelled` (`37029743784`, 02/10); cancelamento não é falha e nenhuma migration foi executada por esta auditoria.
 
-### PR #176 — último CI remoto, SHA `a9f4092`
+### PR #176 — último CI remoto, SHA `729c3e2`
 
-Os resultados abaixo correspondem ao SHA `a9f409230d900dad17b386fa2dfb5c5b5a7bc8c2`; o commit seguinte contém o ajuste do harness para o teste de migrations e precisa de novos checks.
+Os resultados abaixo correspondem ao SHA `729c3e247eb299b99447a5c63672b84d7f5fcfb2`.
 
 | Workflow | Run/conclusão | Evidência |
 |---|---|---|
-| Qualidade contínua | [41080534355](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41080534355) — falhou | 2 dos 5.851 testes falharam porque herdaram a guarda de PR do runner. O script de aplicação bloqueou a ref `refs/pull/...` corretamente; harness corrigido no commit seguinte, pendente novo run. |
-| Security Scan | [41080534389](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41080534389) — success | `npm audit` e Gitleaks passaram; Zod 4.6.7 removeu o alerta alto. |
-| E2E (Playwright) | [41080534349](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41080534349) — falhou | `E2E_SUPABASE_PROJECT_ID` chegou vazio. A verificação de credenciais parou antes dos testes. O projeto de homologação ainda não foi configurado; nenhum valor secreto foi lido. |
-| Copilot Code Review | [41080553533](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41080553533) — falhou | O firewall do agente bloqueou `api.github.com`; é bloqueio da infraestrutura/configuração do workflow gerenciado pelo Copilot. |
-| Bundle Size, Portal Sicoob, CodeQL, Lighthouse | [41080534428](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41080534428), [41080534472](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41080534472), [41080534423](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41080534423), [41080534534](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41080534534) — success | Passaram no SHA `a9f4092`; aguarda-se confirmação de que os resultados continuam verdes após o ajuste seguinte. |
+| Qualidade contínua | [41082523822](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082523822) — success | Suíte completa, autorização e simulações de CI passaram; o harness agora testa explicitamente que PR não pode aplicar migrations. |
+| Security Scan | [41082523772](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082523772) — success | `npm audit` e Gitleaks passaram; Zod 4.6.7 removeu o alerta alto. |
+| E2E (Playwright) | [41082523808](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082523808) — falhou | Log confirma `E2E_SUPABASE_PROJECT_ID` vazio. A verificação de credenciais parou antes dos testes autenticados. |
+| Copilot Code Review | [41082538270](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082538270) — falhou | O firewall do agente bloqueou `api.github.com`; é configuração da infraestrutura do workflow gerenciado pelo Copilot. |
+| Bundle Size, Portal Sicoob, CodeQL, Lighthouse | [41082523824](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082523824), [41082523892](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082523892), [41082523767](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082523767), [41082523980](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082523980) — success | Checks verdes no SHA `729c3e2`; o gate transacional de aprovação também passou no run do Portal Sicoob. |
 
 **Pendências que precisam de ação/decisão do owner:**
 
-1. Configurar e comprovar no environment `construction` um Supabase isolado: `E2E_SUPABASE_PROJECT_ID`, `VITE_SUPABASE_PROJECT_ID`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY` e contas de teste exigidas pelo workflow. A execução não pode usar o projeto canônico. Nenhum valor secreto foi lido.
-2. Confirmar no novo CI a migração de Zod 3 para Zod `4.6.7` e `@hookform/resolvers` `5.9.2`. Typecheck, suíte, build, lint e `npm audit` passaram localmente na branch; a `main` não foi alterada e o CI remoto ainda precisa validar o novo SHA.
-3. Restaurar/ajustar a cota do GitHub Copilot para remover o HTTP 402 do workflow de revisão.
-4. Após o PR validado, executar deploy/migrations somente contra `construction` confirmado. Não repetir publicação remota enquanto o alvo não puder ser demonstrado como isolado.
+1. Configurar no GitHub Actions o secret `E2E_SUPABASE_PROJECT_ID` com o project ref de um Supabase de homologação isolado e confirmar que `VITE_SUPABASE_PROJECT_ID` e `VITE_SUPABASE_URL` apontam ao mesmo projeto. O projeto canônico é recusado pelo workflow. Nenhum valor secreto foi lido.
+2. Ajustar a allowlist do firewall do Copilot Actions para liberar `api.github.com` (ou configurar os setup steps do agente antes da ativação do firewall, conforme a mensagem do run). O workflow Copilot é gerenciado pelo GitHub e não é um YAML versionado no repositório.
+3. Aguardar revisão obrigatória e resolver os dois bloqueios acima antes do merge da PR #176. Ela permanece aberta e sem merge.
+4. O run de deploy Sicoob na `main` permanece falho/sem alvo de homologação comprovado. Antes de qualquer execução futura, configurar `CONSTRUCTION_SUPABASE_PROJECT_REF` e credenciais somente do projeto `construction`; não aplicar migrations nem publicar funções no banco canônico.
 
-**Validação local da branch de correção:** suíte completa 5.851 passou, 68 skipped, 0 falhou; build, typecheck e lint passaram (0 erros, 874 avisos); `npm audit --audit-level=high` e `check:npm-audit` passaram com 0 vulnerabilidades. Os números refletem o worktree da PR; `main` permanece sem essas alterações. Nenhuma migration, Edge Function ou dado remoto foi alterado.
+**Validação local da branch de correção:** suíte completa 5.852 passou, 68 skipped, 0 falhou; build, typecheck e lint passaram (0 erros, 874 avisos); `npm audit --audit-level=high` e `check:npm-audit` passaram com 0 vulnerabilidades. Os números refletem o worktree da PR; `main` permanece sem essas alterações. Nenhuma migration, Edge Function ou dado remoto foi alterado.
 
 **Verificação de integridade do CI:** removidos do conjunto de workflows os usos de `continue-on-error` e `|| true`; etapas de resumo pós-falha seguem com `if: always()` e o job continua falhando quando o teste/report falha. `actionlint .github/workflows/*.yml` passou após corrigir quoting e escrita do step summary no Branch Protection Sentinel.
 

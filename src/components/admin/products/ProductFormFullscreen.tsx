@@ -4,9 +4,9 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useForm, type Resolver } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { productFormSchema, type ProductFormData, defaultFormValues } from './ProductFormSchema';
+import { productFormSchema, type ProductFormData, type ProductFormInput, defaultFormValues } from './ProductFormSchema';
 import { ProductPreviewPanel } from './ProductPreviewPanel';
 import { HorizontalStepper, type StepDef } from './HorizontalStepper';
 import { ProductFormStepContent } from './ProductFormStepContent';
@@ -399,10 +399,8 @@ export function ProductFormFullscreen({
   const {
     register, handleSubmit, setValue, watch, trigger, getValues,
     formState: { errors },
-  } = useForm<ProductFormData>({
-    // O RHF mantém o formato preenchido pelo formulário; o resolver aceita a
-    // entrada mais ampla (defaults opcionais e coercões) e entrega o output validado.
-    resolver: zodResolver(productFormSchema) as unknown as Resolver<ProductFormData>,
+  } = useForm<ProductFormInput, unknown, ProductFormData>({
+    resolver: zodResolver(productFormSchema),
     defaultValues: { ...defaultFormValues, ...initialData },
   });
 

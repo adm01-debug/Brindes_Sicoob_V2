@@ -12,13 +12,13 @@ Considerada apenas a execução mais recente na branch `main` para cada workflow
 | Workflow | Estado mais recente | Evidência / causa |
 |---|---|---|
 | Publicar funções Sicoob | Falha | Run [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102): `No change found` e a confirmação exigiu versão maior que a anterior. A branch aceita versão igual (deploy idempotente), sem aceitar ausência/regressão de versão. |
-| Security Scan | Falha na `main` | Run [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158): `undici@8.10.2` e `zod@3.25.76` altos. Na PR #176, `undici@8.12.2` e Zod `4.6.7` deixam `npm audit` local sem vulnerabilidades; aguardam-se novos checks remotos. |
-| Qualidade contínua | Falha na `main` | Run [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964): o passo de segurança falha pelo mesmo resultado de audit. A correção da PR aguarda novo run remoto. |
-| CodeQL | Falha | Run [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073): init v4.39.1 misturado com autobuild/analyze v4.38.2; falha impede geração de SARIF. Pins estão alinhados na branch. |
-| E2E (Playwright) | Startup failure | Run [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358): `startup_failure`, zero jobs; causa não aparece no resumo do GitHub. PR reexecutará com guarda de project ref de homologação. |
-| Bundle Size Check | Falha | Run [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911): logs expiraram (HTTP 404); causa ainda não confirmada. Check local do orçamento e execução de PR pendentes. |
-| Lighthouse Performance Audit | Falha | Run [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910): logs expiraram (HTTP 404); causa ainda não confirmada. Tentativa local falhou ao iniciar Chrome do Windows no WSL (`ECONNREFUSED 127.0.0.1`), portanto não equivale ao runner Ubuntu. PR requer `LHCI_GITHUB_APP_TOKEN` válido. |
-| Running Copilot Code Review | Falha | Run [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125): quota do plano Copilot, HTTP 402. |
+| Security Scan | Falha na `main` | Run [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158): `undici@8.10.2` e `zod@3.25.76` altos. Na PR #176, `undici@8.12.2` e Zod `4.6.7` foram validados por novo run de sucesso [41082523772](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082523772); a `main` segue sem a correção até merge. |
+| Qualidade contínua | Falha na `main` | Run [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964): o passo de segurança falha pelo mesmo resultado de audit. A PR corrigiu o audit e o harness de testes; run [41082523822](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082523822) passou no SHA `729c3e2`. |
+| CodeQL | Falha na `main` | Run [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073): init v4.39.1 misturado com autobuild/analyze v4.38.2; falha impedia SARIF. Pins alinhados e PR validada por [41082523767](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082523767) → success. |
+| E2E (Playwright) | Startup failure na `main`; PR bloqueada por configuração | Run [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358): `startup_failure`, zero jobs. PR [41082523808](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082523808) falha fechada porque `E2E_SUPABASE_PROJECT_ID` chegou vazio; não executa teste autenticado sem project ref isolado. |
+| Bundle Size Check | Falha antiga na `main` | Run [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911): logs expiraram (HTTP 404). Check local passou e PR [41082523824](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082523824) → success. |
+| Lighthouse Performance Audit | Falha antiga na `main` | Run [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910): logs expiraram (HTTP 404). PR no runner Ubuntu [41082523980](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082523980) → success; tentativa local WSL não foi usada como prova. |
+| Running Copilot Code Review | Falha na `main` e na PR | Run main [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125): quota 402. Na PR [41082538270](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082538270), o firewall do agente bloqueia `api.github.com`; depende de allowlist/configuração pelo owner. |
 
 Verdes confirmados: Migration ledger drift `41013281253` (30/10), Branch Protection Sentinel `40602983038`, Enterprise Compliance `40602982958`, Portal Sicoob `39868499315`, Monthly DB Audit `36794161452` (01/10) e Dependabot Updates `40603001428`. O workflow manual de migrations teve último resultado `cancelled` (`37029743784`, 02/10), não contado como falha.
 
@@ -26,21 +26,21 @@ Verdes confirmados: Migration ledger drift `41013281253` (30/10), Branch Protect
 
 | Verificação | Resultado | Observação |
 |---|---|---|
-| `npm ci --ignore-scripts --no-audit --no-fund` | ✅ exit 0 | 980 pacotes; lockfile reproduzível. |
+| `npm ci --no-audit --no-fund` | ✅ exit 0 | 983 pacotes; lockfile reproduzível. |
 | `npm run build` | ✅ exit 0 | Vite concluiu; permanecem avisos existentes de chunks grandes. |
 | `npm run typecheck` | ✅ exit 0 | TS app e node. |
 | `npm run typecheck:baseline` | ✅ exit 0 | 0 erros atuais e 0 no baseline. |
 | `npm run lint` | ✅ exit 0 | 0 erros, 874 avisos de estilo/complexidade. |
-| `npm run lint:baseline` | ✅ exit 0 | Nenhuma regressão nos 19 arquivos de aplicação alterados. |
-| `npm test` | ✅ exit 0 | 5.850 passaram, 68 skipped, 0 falhas (460 arquivos: 456 passaram, 4 skipped). |
+| `npm run lint:baseline` | ✅ exit 0 | Nenhuma regressão nos arquivos alterados (gate comparou 22 arquivos de aplicação no push). |
+| `npm test` | ✅ exit 0 | 5.852 passaram, 68 skipped, 0 falhas (460 arquivos: 456 passaram, 4 skipped). |
 | `npm audit --audit-level=high` | ✅ exit 0 | Branch: Zod `4.6.7` e `undici@8.12.2`; 0 vulnerabilidades. `main` ainda não recebeu a correção. |
 | `actionlint .github/workflows/*.yml` + `git diff --check` | ✅ exit 0 | Todos os workflows YAML validam localmente; nenhuma ocorrência de `continue-on-error` ou `|| true`. |
 
-O baseline anterior a esta rodada na branch tinha 5.844 testes aprovados e 68 skipped. A validação atual da PR registra 5.851 aprovados, 68 skipped e 0 falhas; inclui seis testes BI e um teste de coercão/defaults do formulário. Typecheck, build, lint e audit locais passaram. O último CI remoto disponível é do SHA anterior à migração Zod e ainda não prova a correção; os novos checks da PR são necessários.
+O baseline anterior a esta rodada na branch tinha 5.844 testes aprovados e 68 skipped. A validação final registra 5.852 aprovados, 68 skipped e 0 falhas. Typecheck, build, lint e audit locais passaram; também passaram os hooks pós-commit e as verificações de baseline.
 
-### Estado remoto da PR #176 — SHA `a9f4092`
+### Estado remoto final da PR #176 — SHA `729c3e2`
 
-No SHA `a9f409230d900dad17b386fa2dfb5c5b5a7bc8c2`, Security Scan, Bundle Size Check, Portal Sicoob, CodeQL e Lighthouse passaram. Qualidade contínua falhou em dois testes que herdaram do runner `GITHUB_ACTIONS=true` e `GITHUB_REF=refs/pull/...`; a proteção de migrations recusou corretamente a execução em PR, mas os testes esperavam as mensagens de validação seguintes. O harness agora isola essas variáveis nos casos locais e inclui um teste explícito da recusa em PR. E2E permanece bloqueado porque `E2E_SUPABASE_PROJECT_ID` chegou vazio. Copilot Code Review falhou porque o firewall do agente bloqueou `api.github.com`. A correção do harness precisa de novo CI remoto.
+Na PR, Qualidade contínua [41082523822](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082523822), Security Scan [41082523772](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082523772), Bundle Size Check [41082523824](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082523824), Portal Sicoob [41082523892](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082523892), CodeQL [41082523767](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082523767) e Lighthouse [41082523980](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082523980) passaram. E2E [41082523808](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082523808) permanece bloqueado por `E2E_SUPABASE_PROJECT_ID` vazio. Copilot [41082538270](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41082538270) permanece bloqueado pelo firewall que nega acesso a `api.github.com`.
 
 ### Segurança de Supabase
 
