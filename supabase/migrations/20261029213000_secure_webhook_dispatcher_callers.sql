@@ -2,6 +2,65 @@
 -- dedicado exigido pela Edge Function. Valores nunca ficam no cron ou SQL:
 -- URL e segredo são lidos do Vault em cada execução.
 
+-- Claims separados preservam as métricas e o histórico real de entregas.
+CREATE TABLE public.webhook_retry_claims (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  webhook_id uuid NOT NULL REFERENCES public.outbound_webhooks(id) ON DELETE CASCADE,
+  event text NOT NULL,
+  payload jsonb,
+  payload_hash text,
+  attempt integer NOT NULL CHECK (attempt > 0),
+  claimed_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE UNIQUE INDEX webhook_retry_claims_attempt_unique_idx
+  ON public.webhook_retry_claims (
+    webhook_id, event, (COALESCE(payload::text, '<sql-null>')), attempt
+  );
+CREATE INDEX webhook_retry_claims_claimed_at_idx
+  ON public.webhook_retry_claims (claimed_at DESC);
+
+ALTER TABLE public.webhook_retry_claims ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.webhook_retry_claims FROM PUBLIC, anon, authenticated, service_role;
+COMMENT ON TABLE public.webhook_retry_claims IS
+'Reserva durável de tentativas antes do enqueue assíncrono; não representa uma entrega nem participa das métricas de sucesso/falha.';
+
+CREATE OR REPLACE FUNCTION public.cleanup_webhook_logs()
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $function$
+DECLARE
+  v_deleted_outbound integer;
+  v_deleted_inbound integer;
+  v_deleted_retry_claims integer;
+BEGIN
+  DELETE FROM public.webhook_deliveries
+  WHERE delivered_at < now() - interval '90 days';
+  GET DIAGNOSTICS v_deleted_outbound = ROW_COUNT;
+
+  DELETE FROM public.inbound_webhook_events
+  WHERE received_at < now() - interval '90 days';
+  GET DIAGNOSTICS v_deleted_inbound = ROW_COUNT;
+
+  DELETE FROM public.webhook_retry_claims
+  WHERE claimed_at < now() - interval '90 days';
+  GET DIAGNOSTICS v_deleted_retry_claims = ROW_COUNT;
+
+  RETURN jsonb_build_object(
+    'ok', true,
+    'deleted_outbound', v_deleted_outbound,
+    'deleted_inbound', v_deleted_inbound,
+    'deleted_retry_claims', v_deleted_retry_claims,
+    'ran_at', now()
+  );
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.cleanup_webhook_logs() FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.cleanup_webhook_logs() TO postgres, service_role;
+
 CREATE OR REPLACE FUNCTION public.dispatch_quote_webhook_event()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -146,6 +205,7 @@ DECLARE
   rec record;
   v_max_attempts integer;
   v_lock_acquired boolean;
+  v_claim_id uuid;
 BEGIN
   -- O lock transacional impede que a cron e uma chamada manual reservem em
   -- paralelo a mesma tentativa de retry.
@@ -176,13 +236,27 @@ BEGIN
   END IF;
 
   FOR rec IN
-    WITH latest AS (
-      SELECT DISTINCT ON (d.webhook_id, d.event, d.payload)
+    WITH candidates AS (
+      SELECT
         d.id, d.webhook_id, d.event, d.payload, d.payload_hash,
-        d.attempt, d.success, d.error_message, d.delivered_at
+        d.attempt, d.success, d.error_message, d.delivered_at AS occurred_at,
+        'delivery'::text AS source
       FROM public.webhook_deliveries AS d
       WHERE d.delivered_at > now() - interval '1 hour'
-      ORDER BY d.webhook_id, d.event, d.payload, d.delivered_at DESC, d.attempt DESC, d.id DESC
+      UNION ALL
+      SELECT
+        c.id, c.webhook_id, c.event, c.payload, c.payload_hash,
+        c.attempt, false AS success, 'retry_enqueued'::text AS error_message,
+        c.claimed_at AS occurred_at, 'retry_claim'::text AS source
+      FROM public.webhook_retry_claims AS c
+      WHERE c.claimed_at > now() - interval '1 hour'
+    ), latest AS (
+      SELECT DISTINCT ON (d.webhook_id, d.event, d.payload)
+        d.id, d.webhook_id, d.event, d.payload, d.payload_hash,
+        d.attempt, d.success, d.error_message, d.occurred_at, d.source
+      FROM candidates AS d
+      ORDER BY d.webhook_id, d.event, d.payload, d.occurred_at DESC,
+        d.attempt DESC, (d.source = 'delivery') DESC, d.id DESC
     )
     SELECT l.*, w.active, w.retry_policy
     FROM latest AS l
@@ -193,8 +267,8 @@ BEGIN
 
     -- A chamada HTTP é assíncrona. Aguarda sua execução antes de consumir
     -- outra tentativa; após 15 minutos, uma reserva sem resultado pode avançar.
-    IF rec.error_message = 'retry_enqueued'
-       AND rec.delivered_at > now() - interval '15 minutes' THEN
+    IF rec.source = 'retry_claim'
+       AND rec.occurred_at > now() - interval '15 minutes' THEN
       v_skipped := v_skipped + 1;
       CONTINUE;
     END IF;
@@ -204,16 +278,18 @@ BEGIN
       CONTINUE;
     END IF;
 
-    -- Reserva a tentativa antes do enqueue. Se o dispatcher não iniciar ou
-    -- não gravar resultado, a próxima execução ainda vê o contador avançado.
-    INSERT INTO public.webhook_deliveries (
-      webhook_id, event, payload, payload_hash, attempt, success,
-      error_message, response_body_truncated
+    -- Reserva fora do histórico de deliveries para não contaminar métricas.
+    v_claim_id := NULL;
+    INSERT INTO public.webhook_retry_claims (
+      webhook_id, event, payload, payload_hash, attempt
     ) VALUES (
-      rec.webhook_id, rec.event, rec.payload, rec.payload_hash,
-      rec.attempt + 1, false, 'retry_enqueued',
-      'Retry enfileirado; aguardando resultado do dispatcher.'
-    );
+      rec.webhook_id, rec.event, rec.payload, rec.payload_hash, rec.attempt + 1
+    ) ON CONFLICT DO NOTHING
+    RETURNING id INTO v_claim_id;
+    IF v_claim_id IS NULL THEN
+      v_skipped := v_skipped + 1;
+      CONTINUE;
+    END IF;
 
     BEGIN
       PERFORM extensions.http_post(
@@ -233,7 +309,7 @@ BEGIN
       );
     EXCEPTION WHEN OTHERS THEN
       -- A reserva permanece para consumir esta tentativa mesmo se pg_net
-      -- rejeitar o enqueue. A transação comercial não é revertida.
+      -- rejeitar o enqueue.
       RAISE WARNING 'Falha ao enfileirar retry do webhook (SQLSTATE %)', SQLSTATE;
     END;
     v_retried := v_retried + 1;
@@ -257,4 +333,4 @@ REVOKE ALL ON FUNCTION public.dispatch_quote_webhook_event()
   FROM PUBLIC, anon, authenticated;
 
 COMMENT ON FUNCTION public.retry_failed_webhook_deliveries() IS
-'Reenfileira deliveries falhas com claim transacional e lease de 15 minutos, respeita max_attempts e autentica o dispatcher pelo segredo dedicado do Vault. O contador representa tentativas enfileiradas, não confirmações de entrega.';
+'Reenfileira deliveries falhas com claim transacional e lease de 15 minutos, respeita max_attempts e autentica o dispatcher pelo segredo dedicado do Vault. Claims não representam entregas nem entram nas métricas de delivery.';

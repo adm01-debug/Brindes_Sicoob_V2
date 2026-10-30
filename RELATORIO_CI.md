@@ -13,19 +13,25 @@
 
 **Banco canônico:** somente leitura; nenhuma migration aplicada remotamente.
 
-### Checks da PR #173 — observação em 2026-10-30, 11:04 UTC
+### Checks da PR #173 — observação em 2026-10-30, 11:10 UTC
 
 A PR [#173](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/173) está aberta,
-sem merge, no SHA `977994fb5de3d3c0c4617496f0347b29e2053bd8`. O CodeQL falhou no
-[run 41045149603](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149603):
-configuração 4.39.1, versão efetiva 4.38.2 e nenhum SARIF para upload. O ajuste
-correspondente do PR #164 não está incorporado neste candidato. Na última consulta,
-Bundle Size Check e Lighthouse estavam em andamento; Qualidade contínua, Security
-Scan, E2E, Portal Sicoob e revisão automática estavam enfileirados. Não se registra
-nenhum deles como sucesso ou falha até haver conclusão remota. Vercel Preview
-Comments passou; Devin Review retornou sucesso por review ignorado por falta de
-créditos, não por aprovação técnica. Portanto, os checks remotos da PR ainda não
-estão verdes e a PR não deve ser mergeada.
+sem merge, no SHA `977994fb5de3d3c0c4617496f0347b29e2053bd8`.
+
+| Workflow | Run | Resultado observado |
+|---|---:|---|
+| CodeQL | [41045149603](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149603) | Falha: configuração 4.39.1, execução 4.38.2, sem SARIF. |
+| Qualidade contínua | [41045149542](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149542) | Falha: `undici` e `zod` high no `npm audit`. |
+| Security Scan | [41045149525](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149525) | Falha pelo mesmo `npm audit`; Gitleaks passou. |
+| Running Copilot Code Review | [41045168591](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045168591) | Falha externa: HTTP 402 por limite adicional do Copilot. |
+| Bundle Size Check | [41045149500](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149500) | `success`. |
+| Lighthouse Performance Audit | [41045149507](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149507) | `success`. |
+| Portal Sicoob | [41045149586](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149586) | `success`. |
+| E2E (Playwright) | [41045149524](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149524) | Em execução às 11:10 UTC; conclusão ainda não observada. |
+
+Vercel Preview Comments passou; Devin Review foi sucesso por review ignorado por
+falta de créditos, não por aprovação técnica. Os checks remotos não estão verdes;
+a PR não deve ser mergeada.
 
 ### Inventário atual confirmado no GitHub MCP
 
@@ -66,9 +72,10 @@ O PR [#164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164) contém a
 
 A migration e o dispatcher compartilham autenticação dedicada; retry usa
 `extensions.http_post`, como definido na instalação histórica local de `pg_net`,
-aponta para um único `target_webhook_id`, grava um claim antes do enqueue,
-serializa as execuções e conserva o contador por uma lease de 15 minutos. A
-simulação cobre apenas o contrato SQL com HTTP stubado. Permanecem sem comprovação a configuração
+aponta para um único `target_webhook_id`, grava um claim numa tabela separada antes
+do enqueue, serializa as execuções e conserva o contador por uma lease de 15
+minutos; o job de limpeza existente remove claims após 90 dias. A simulação cobre
+apenas o contrato SQL com HTTP stubado. Permanecem sem comprovação a configuração
 do segredo no Vault/Edge de homologação, a entrega externa real, o ACK durável e a
 integração Bitrix; por isso P078 continua **Planejada** e a migration não foi
 aplicada.

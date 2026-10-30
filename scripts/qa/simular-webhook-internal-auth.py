@@ -103,6 +103,10 @@ try:
         error_message text,
         delivered_at timestamptz NOT NULL DEFAULT now()
       );
+      CREATE TABLE public.inbound_webhook_events(
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        received_at timestamptz NOT NULL DEFAULT now()
+      );
       CREATE TABLE public.quotes(
         id uuid PRIMARY KEY,
         quote_number text NOT NULL,
@@ -222,7 +226,7 @@ try:
     """)
     retry_ok = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
     assert retry_ok["ok"] is True and retry_ok["retried"] == 1, "retry deve reservar e enfileirar uma tentativa disponível"
-    assert scalar("SELECT count(*) FROM public.webhook_deliveries WHERE error_message = 'retry_enqueued' AND attempt = 2;") == "1", "a tentativa deve ser registrada antes do enqueue"
+    assert scalar("SELECT count(*) FROM public.webhook_retry_claims WHERE attempt = 2;") == "1", "a tentativa deve ser registrada antes do enqueue"
     retry_headers = json.loads(scalar("SELECT headers::text FROM public.webhook_dispatch_test_requests ORDER BY id DESC LIMIT 1;"))
     retry_body = json.loads(scalar("SELECT body::text FROM public.webhook_dispatch_test_requests ORDER BY id DESC LIMIT 1;"))
     assert retry_headers.get("x-sicoob-internal-secret") == SECRET, "retry deve enviar o segredo dedicado"
@@ -233,10 +237,15 @@ try:
     retry_lease = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
     assert retry_lease["ok"] is True and retry_lease["retried"] == 0 and retry_lease["skipped_max_attempts"] == 1
     assert scalar("SELECT count(*) FROM public.webhook_dispatch_test_requests;") == "7", "lease deve impedir novo enqueue enquanto aguarda o dispatcher"
-    sql("UPDATE public.webhook_deliveries SET delivered_at = now() - interval '16 minutes' WHERE webhook_id = '00000000-0000-4000-8000-000000000002' AND payload->>'quote_id' = 'qa' AND success = false;")
+    sql("""
+      UPDATE public.webhook_deliveries SET delivered_at = now() - interval '16 minutes'
+      WHERE webhook_id = '00000000-0000-4000-8000-000000000002' AND payload->>'quote_id' = 'qa' AND success = false;
+      UPDATE public.webhook_retry_claims SET claimed_at = now() - interval '16 minutes'
+      WHERE webhook_id = '00000000-0000-4000-8000-000000000002' AND payload->>'quote_id' = 'qa' AND attempt = 2;
+    """)
     retry_after_lease = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
     assert retry_after_lease["ok"] is True and retry_after_lease["retried"] == 1
-    assert scalar("SELECT count(*) FROM public.webhook_deliveries WHERE error_message = 'retry_enqueued' AND attempt = 3;") == "1", "após a lease, o contador deve avançar"
+    assert scalar("SELECT count(*) FROM public.webhook_retry_claims WHERE attempt = 3;") == "1", "após a lease, o contador deve avançar"
     retry_max = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
     assert retry_max["ok"] is True and retry_max["retried"] == 0 and retry_max["skipped_max_attempts"] == 1
     assert scalar("SELECT count(*) FROM public.webhook_dispatch_test_requests;") == "8", "retry no limite não pode disparar outra chamada"
@@ -255,7 +264,13 @@ try:
     """)
     retry_enqueue_failure = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
     assert retry_enqueue_failure["ok"] is True and retry_enqueue_failure["retried"] == 1, "erro do enqueue não deve abortar o retry"
-    assert scalar("SELECT count(*) FROM public.webhook_deliveries WHERE payload->>'quote_id' = 'enqueue-failure' AND error_message = 'retry_enqueued' AND attempt = 2;") == "1", "claim deve sobreviver a erro de enqueue"
+    assert scalar("SELECT count(*) FROM public.webhook_retry_claims WHERE payload->>'quote_id' = 'enqueue-failure' AND attempt = 2;") == "1", "claim deve sobreviver a erro de enqueue"
+    sql("""
+      INSERT INTO public.webhook_retry_claims(webhook_id,event,payload,payload_hash,attempt,claimed_at)
+      VALUES ('00000000-0000-4000-8000-000000000002','quote.created','{\"quote_id\":\"expired\"}','hash-expired',1,now() - interval '91 days');
+    """)
+    cleanup = json.loads(scalar("SELECT public.cleanup_webhook_logs()::text;"))
+    assert cleanup["ok"] is True and cleanup["deleted_retry_claims"] == 1, "limpeza deve remover claims com mais de 90 dias"
 
     result["resultado"] = "aprovado"
     result["escopo"] = "simulação de contrato SQL com extensão HTTP stubada; não comprova pg_net real ou entrega Edge ponta a ponta"
@@ -268,6 +283,7 @@ try:
         "retry grava claim antes do enqueue, preserva o contador, respeita lease e max_attempts",
         "retry identifica apenas o hook falho e um erro de enqueue não perde a tentativa reservada",
         "resultado de sucesso mais recente encerra novos retries",
+        "limpeza diária retém claims por 90 dias",
         "nenhum chamador envia Authorization/service_role",
         "ACL permite retry só a postgres/service_role e nega anon/authenticated",
     ]

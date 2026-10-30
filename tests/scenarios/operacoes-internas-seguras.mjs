@@ -110,8 +110,9 @@ test('chamadores do webhook-dispatcher leem segredo dedicado do Vault antes da c
   assert.match(retry, /'target_webhook_id', rec\.webhook_id/);
   assert.match(retry, /'retry_after_attempt', rec\.attempt/);
   assert.match(retry, /pg_try_advisory_xact_lock\(20261029, 213000\)/);
-  assert.match(retry, /error_message = 'retry_enqueued'/);
-  assert.ok(retry.indexOf("'retry_enqueued'") < retry.indexOf('PERFORM extensions.http_post'));
+  assert.match(retry, /source = 'retry_claim'/);
+  assert.ok(retry.indexOf('INSERT INTO public.webhook_retry_claims') < retry.indexOf('PERFORM extensions.http_post'));
+  assert.match(migration, /DELETE FROM public\.webhook_retry_claims[\s\S]*claimed_at < now\(\) - interval '90 days'/);
   assert.doesNotMatch(migration, /Authorization|service_role_key|https:\/\/[a-z0-9-]+\.supabase\.co/i);
 });
 
