@@ -232,11 +232,11 @@ no arquivo atual e os fingerprints históricos foram allowlisted de forma pontua
 | Workflow | Última execução | Causa provável confirmada | Estado da correção |
 |---|---|---|---|
 | Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | Verificador exigiu aumento de versão para função que continuou na versão 5 após deploy sem alteração | Corrigido na branch candidate; validação remota necessária, sem executar deploy |
-| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `npm audit` alto em `undici` e `zod` | Atualizados `undici`/`zod`; audit local zerado. Gitleaks flagou quatro UUIDs sintéticos no commit histórico; valor atual foi substituído e os fingerprints exatos estão allowlisted |
-| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | Gate `check:npm-audit`, mesmos alertas altos | Audit local zerado. Candidate também corrigiu `check-runtime-refs`: quatro RPCs da migration P045 ainda não existem no inventário remoto, então receberam allowlist pontual até aplicar a migration e atualizar o inventário |
-| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `init` em 4.39.1 e `autobuild/analyze` em 4.38.2; SARIF não gerado | Candidate alinhou as referências SHA; aguardando CI da nova revisão |
-| Bundle Size Check | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) | Job falhou; log expirou (HTTP 404), causa do run antigo não comprovável. Candidate reproduz o gate localmente com sucesso: 664 chunks, 10.748.443 bytes e avisos não bloqueantes | Candidate passa o orçamento local; PR precisa registrar execução remota atual |
-| Lighthouse Performance Audit | [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910) | Job falhou; log expirou (HTTP 404). `LHCI_GITHUB_APP_TOKEN` não consta entre os nomes de secrets atuais, causa provável de autenticação ainda não comprovada | Configurar o secret e reexecutar; confirmar a causa no novo log antes de alterar código/performance |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `npm audit` alto em `undici` e `zod` | Corrigido no candidate; audit local zerado e Security Scan passou no run [41064612611](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41064612611). Gitleaks passou após allowlist dos fingerprints históricos exatos |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | Gate `check:npm-audit`, mesmos alertas altos | Corrigido no candidate; Qualidade passou no run [41064612892](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41064612892). As quatro RPCs da migration P045 seguem com allowlist pontual até aplicar a migration e atualizar inventário remoto |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `init` em 4.39.1 e `autobuild/analyze` em 4.38.2; SARIF não gerado | Referências SHA alinhadas; CodeQL passou no run [41064612529](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41064612529) |
+| Bundle Size Check | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) | Job falhou; log expirou (HTTP 404), causa do run antigo não comprovável | Candidate passou no run [41064612555](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41064612555); medição local: 664 chunks, 10.748.443 bytes, avisos não bloqueantes |
+| Lighthouse Performance Audit | [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910) | Job falhou; log expirou (HTTP 404), causa do run antigo não comprovável | Candidate passou no run [41064612773](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41064612773); não foi necessário alterar secret |
 | E2E (Playwright) | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | `startup_failure`, nenhum job criado; a API não fornece causa detalhada | Bloqueado até configurar um projeto de homologação isolado; execução da primeira revisão atingiu o projeto canônico e mostrou demora de 22,3 s em `get_sicoob_access_state`, mantendo a rota no loader de permissões |
 | Running Copilot Code Review | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | HTTP 402 `quota`, limite adicional de uso Copilot atingido | Bloqueio externo; proprietário deve renovar/aguardar reset do plano |
 
@@ -259,20 +259,18 @@ Monthly DB Audit também concluiu com sucesso em
 
 ## P045 — Integridade de preços de orçamento (30/10/2026)
 
-**Status do candidate:** branch publicada e PR draft #175 aberto; validação
-descartável concluída. No SHA `c9aa802d`, Segurança, CodeQL, Bundle, Lighthouse
-e Portal Sicoob passaram; Qualidade contínua falhou porque o simulador de
-idempotência tentava criar novamente o schema `extensions` e a tabela
-`auth.users` já incluídos na fixture. A causa foi reproduzida localmente e a
-inicialização duplicada removida; o script agora passou em PostgreSQL 17
-descartável. No SHA `ac2baf62`, Qualidade falhou ao baixar do ECR público a
-imagem `public.ecr.aws/supabase/postgres:17.6.1.063` (`toomanyrequests: Data
-limit exceeded`). Os dois simuladores dependentes foram alinhados à imagem
-`postgres:17-alpine`, já usada com sucesso antes no mesmo job; schemas e papéis
-necessários são explicitamente provisionados nas fixtures. Os simuladores de
-auditoria e ACL passaram localmente. A nova revisão precisa confirmar no CI.
-O E2E foi bloqueado antes dos testes pela ausência da configuração isolada.
-Não aplicado nem publicado no Supabase remoto.
+**Status do candidate:** branch publicada e PR draft #175 aberto; SHA final
+validado localmente e no CI, sem aplicar migration ou publicar Edge Function
+remota. No SHA `8f858d72`, Qualidade contínua, CodeQL, Security Scan, Bundle,
+Lighthouse e Portal Sicoob passaram. E2E foi bloqueado antes dos testes porque
+faltam a variável e os secrets do projeto de homologação isolado; nenhum shard
+executou. O run E2E não acessou o banco.
+
+Falhas intermediárias foram reproduzidas e corrigidas antes da última revisão:
+o run `41059571119` revelou setup duplicado na simulação de idempotência; o
+run `41062432761` falhou no pull da imagem ECR por `Data limit exceeded`. O
+script idempotente e os dois simuladores PostgreSQL afetados passaram localmente
+após as correções, e a Qualidade passou no SHA final.
 
 - Migration versionada e allowlisted: `20261030120000_quote_price_attestation_gate.sql`.
 - Edge Function autenticada e registrada no manifesto, configuração e workflow
@@ -284,23 +282,38 @@ Não aplicado nem publicado no Supabase remoto.
 
 ### Pendências de fechamento
 
-1. Confirmar os checks remotos no SHA final após os ajustes de deduplicação de
-   variantes e dependências dos simuladores. Os erros de inicialização da
-   fixture e limite de dados do ECR foram corrigidos e reproduzidos localmente
-   em PostgreSQL 17 descartável. Localmente, `npm audit` passou após atualizar
-   `undici` para 8.12.3 e `zod` para 4.6.7.
+1. Executar E2E autenticado depois que o responsável configurar `vars.E2E_SUPABASE_PROJECT_ID`, os secrets `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_SERVICE_ROLE_KEY`, `E2E_SUPABASE_CLEANUP_TOKEN` e contas de teste no mesmo projeto isolado. O run final [41064612852](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41064612852) parou na validação antes dos testes.
 2. Não há prova de que a Edge Function foi publicada nem de que a migration foi
    aplicada ao Supabase de construção. O fluxo foi versionado; não executado.
-3. Falta jornada autenticada conectada com usuários de teste e catálogo externo
-   disponível. `E2E_SUPABASE_PROJECT_ID` e credenciais/contas do projeto de
-   homologação precisam estar configuradas no GitHub Actions; a resposta
-   anterior “vou configurar” ainda não tem evidência observável nesta sessão.
+3. Revisar as gravações de perfil/telemetria observadas no run anterior que
+   apontou ao projeto canônico, encerrar as sessões/rotacionar contas de teste
+   e registrar a revisão do responsável; não desfazer dados sem conhecer os
+   valores corretos.
 4. O SECURITY DEFINER ACL remoto não foi verificado porque faltam credenciais
    neste ambiente.
-5. A variável/secret `E2E_SUPABASE_PROJECT_ID` não aparece na lista de nomes
-   configurados no GitHub Actions, embora existam segredos de contas E2E.
-   Configurar o projeto de homologação e essa referência é necessário para
-   executar a jornada autenticada; nenhum valor secreto foi consultado.
+5. A configuração do projeto isolado de homologação segue ausente no GitHub
+   Actions: `vars.E2E_SUPABASE_PROJECT_ID` e os secrets
+   `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`,
+   `E2E_SUPABASE_SERVICE_ROLE_KEY` e `E2E_SUPABASE_CLEANUP_TOKEN`. O workflow
+   confirmou a ausência sem revelar valores; nenhum segredo foi consultado.
+
+### Checks finais do candidate — PR #175 / SHA `8f858d7272d09f95717154688f6b84967c1a1cc0`
+
+| Workflow | Execução | Estado |
+|---|---:|---|
+| Qualidade contínua | [41064612892](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41064612892) | `success` |
+| Security Scan | [41064612611](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41064612611) | `success` |
+| CodeQL | [41064612529](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41064612529) | `success` |
+| Bundle Size Check | [41064612555](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41064612555) | `success` |
+| Lighthouse Performance Audit | [41064612773](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41064612773) | `success` |
+| Portal Sicoob | [41064612737](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41064612737) | `success` |
+| E2E (Playwright) | [41064612852](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41064612852) | `failure` — bloqueado antes dos testes; shards ignorados, sem acesso ao banco |
+
+`Vercel Preview Comments` passou e `Vercel Agent Review` ficou `neutral` por
+indisponibilidade de créditos do serviço. A PR #175 segue draft e bloqueada;
+E2E autenticado e revisão do incidente histórico ainda dependem do responsável.
+O workflow de publicação não foi executado, e não houve migration nem deploy
+remoto.
 
 Não executar deploy/migration no banco canônico até concluir homologação, revisar
 checks da PR e confirmar explicitamente o alvo de construção.
