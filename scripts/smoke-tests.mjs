@@ -111,10 +111,11 @@ async function checkHealthFunction() {
     );
     const latency = Date.now() - start;
     const body = await res.json().catch(() => ({}));
-    const status = body.status ?? (res.ok ? "healthy" : "unhealthy");
+    // health-check é agora sonda de liveness: responde { status: "ok" } via GET
+    const status = body.status ?? (res.ok ? "ok" : "unhealthy");
 
-    if (status === "healthy") {
-      log("ok", "health-fn", `${status} em ${latency}ms`, { status, latency, body });
+    if (status === "ok" || status === "healthy") {
+      log("ok", "health-fn", `liveness ok em ${latency}ms`, { status, latency });
     } else if (status === "degraded") {
       log(
         FAIL_ON_DEGRADED ? "fail" : "warn",
