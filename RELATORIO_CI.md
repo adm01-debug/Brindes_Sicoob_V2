@@ -203,7 +203,9 @@ Workflows verdes observados na `main`: Migration ledger drift ([41013281253](htt
 O gate `node scripts/qa/check-bundle-budget.mjs` foi reproduzido localmente após o build do candidate e passou: 664 chunks, 10.748.443 bytes (3.261.814 gzip). Os dois maiores chunks geram warnings abaixo do limite bloqueante.
 
 O scan local de SECURITY DEFINER não foi executado porque este ambiente não
-tem URL/chave Supabase configuradas. O workflow remoto de CI precisa confirmar a revisão atual do PR #175. Na
+tem URL/chave Supabase configuradas. A Qualidade contínua passou no SHA final,
+mas isso não substitui a auditoria da ACL SECURITY DEFINER contra o banco
+remoto, que continua pendente por falta de credenciais. Na
 primeira revisão, Gitleaks classificou UUIDs sintéticos da chave de
 idempotência como `generic-api-key`. O valor atual foi trocado por texto não
 secreto; como o scanner percorre o commit original, apenas os quatro
