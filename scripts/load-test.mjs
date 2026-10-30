@@ -8,10 +8,15 @@ if (!process.env.VITE_SUPABASE_URL) {
   process.exit(2);
 }
 const TARGET_URL = process.env.VITE_SUPABASE_URL + '/functions/v1/health-check';
+const ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const CONCURRENCY = 50;
 const TOTAL_REQUESTS = 1000;
 
 async function runLoadTest() {
+  if (!TARGET_URL || !ANON_KEY) {
+    console.error('❌ VITE_SUPABASE_URL e SUPABASE_ANON_KEY são obrigatórios.');
+    process.exit(1);
+  }
   console.log(`🔥 Starting Load Test on ${TARGET_URL}`);
   console.log(`Concurrency: ${CONCURRENCY}, Total Requests: ${TOTAL_REQUESTS}`);
 
@@ -28,11 +33,15 @@ async function runLoadTest() {
       dispatched++; // reserva o slot de forma síncrona, antes do await
       const start = Date.now();
       try {
-        const res = await fetch(TARGET_URL);
+        // health-check é sonda de liveness GET — responde { status: "ok" }
+        const res = await fetch(TARGET_URL, {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${ANON_KEY}` },
+        });
         const latency = Date.now() - start;
         results.latencies.push(latency);
         if (res.ok) results.success++; else results.failed++;
-      } catch {
+      } catch (err) {
         results.failed++;
       }
     }
