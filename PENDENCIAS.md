@@ -64,6 +64,22 @@ Snapshot consultado após o lote documental. Status `in_progress`/`queued` não 
 
 A PR permanece aberta e sem merge. O E2E depende de projeto Supabase isolado e personas de teste configuradas como secrets acessíveis ao job. O canônico está bloqueado pelo workflow.
 
+### Snapshot consultado do SHA `3441b830ffedfbc12d78a8b82f3d32b1e88e1ac5` — 30/10/2026, 18:39 UTC
+
+| Check | Estado | Evidência / motivo |
+|---|---|---|
+| Sicoob Gate | success | [41107963136](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963136). |
+| Portal Sicoob | success | Jobs de aprovação transacional e entrada responsiva passaram em [41107963136](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963136). |
+| Lighthouse | success | [41107963568](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963568). |
+| CodeQL | success | [41107963621](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963621). |
+| Gitleaks e npm audit | success | [41107963302](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963302). |
+| Bundle | success | [41107963479](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963479). |
+| E2E | failure | [41107963427](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963427): secrets/valores `E2E_SUPABASE_PROJECT_ID`, `VITE_SUPABASE_PROJECT_ID` e `VITE_SUPABASE_URL` ausentes; nenhum shard autenticado rodou. |
+| Copilot Review | failure | [41107976457](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107976457): HTTP 402 por limite de uso e firewall bloqueando `api.github.com`; requer ação do owner/GitHub. |
+| Segurança, contratos e build | in_progress | [41107963268](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963268) ainda executava; não é aprovação até terminar. |
+
+A PR #176 continua aberta e sem merge. Não alterei o Supabase remoto.
+
 **Correções adicionais pós-auditoria:** mensagens de erro de enums Zod agora distinguem ausência de valor inválido, com testes para os dois casos; o resolver do formulário mantém um adaptador tipado porque a entrada genérica de `z.coerce.number` não representa os defaults e controles numéricos concretos da tela. O cliente SQL do Supabase aceita project refs alfanuméricos de 20 caracteres, alinhado ao guard de migrations, com cenário cobrindo dígitos. Os commits após `729c3e2` foram validados localmente e remotamente no SHA `90e12ae`; a `main` permanece sem merge.
 
 **Verificação de integridade do CI:** removidos do conjunto de workflows os usos de `continue-on-error` e `|| true`; etapas de resumo pós-falha seguem com `if: always()` e o job continua falhando quando o teste/report falha. `actionlint .github/workflows/*.yml` passou após corrigir quoting e escrita do step summary no Branch Protection Sentinel.
