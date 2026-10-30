@@ -161,7 +161,7 @@ docker: Error response from daemon: toomanyrequests: Data limit exceeded
 
 ## Atualização supersedente — PR #178, SHA `145773579` (30/10/2026)
 
-Esta seção substitui a pendência de confirmação do GHCR e atualiza o diagnóstico E2E registrada acima.
+Esta seção substitui a pendência de confirmação do GHCR e atualiza o diagnóstico E2E registrado acima.
 
 - **Qualidade contínua:** ✅ success no run [41139832598](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41139832598). O pull da imagem PostgreSQL GHCR fixada por digest e os dois simuladores passaram no runner do GitHub; a recorrência do ECR está corrigida para este SHA.
 - **E2E Playwright:** ❌ run [41139832427](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41139832427), tentativa 2. Setup autenticado e smoke (39/39) passaram; o job falhou no gate `header-sticky` antes de executar a medição de sticky em todas as rotas afetadas. O teste expirou em `e2e/helpers/nav.ts:171` aguardando `[data-route-pending]` desprender (`permissions`), inclusive em rotas que depois exibiram catálogo ou página de acesso negado. As chamadas observadas de sessão, `user_roles` e `profiles` responderam em aproximadamente 100–233 ms; não há evidência de quota ou secret ausente.
