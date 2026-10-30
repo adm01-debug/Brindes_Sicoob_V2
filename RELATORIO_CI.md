@@ -96,6 +96,21 @@ Consultado em 30/10/2026 às 18:39 UTC. O job combinado de segurança, contratos
 
 Validação local do mesmo código após o commit: 5.868 testes aprovados, 68 ignorados, 0 falhas; typecheck e build passaram; lint passou com 0 erros e 874 avisos existentes. Simulações PostgreSQL 16 descartáveis da aprovação pública e cadeia de documentos passaram. Nenhuma alteração remota no Supabase foi feita.
 
+### Snapshot remoto atualizado da PR #176 — SHA `2575f1ea7bc0bd05c91e25f31eddeca51fbc8f73` — 30/10/2026
+
+| Workflow | Resultado | Evidência / observação |
+|---|---|---|
+| Qualidade contínua | success — attempt 2 | [41109622961](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41109622961). A attempt 1 falhou porque o ECR respondeu `toomanyrequests: Data limit exceeded` ao baixar a imagem PostgreSQL para simulações descartáveis. A reexecução somente do job falho concluiu success. |
+| Security Scan | success | [41109623120](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41109623120). |
+| Bundle Size Check | success | [41109623142](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41109623142). |
+| Lighthouse Performance Audit | success | [41109623131](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41109623131). |
+| CodeQL | success | [41109623220](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41109623220). |
+| Portal Sicoob | success | [41109623171](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41109623171). |
+| E2E (Playwright) | failure no preflight | [41109623268](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41109623268): `E2E_SUPABASE_PROJECT_ID` vazio; shards ignorados; Playwright autenticado não executou. |
+| Running Copilot Code Review | failure | [41109639994](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41109639994): erro HTTP 402 por limite de uso do ambiente gerenciado. |
+
+Validação local no HEAD: 5.868 testes aprovados, 68 ignorados e 0 falhas; typecheck e build passaram; lint com 0 erros e 874 avisos existentes. O inventário de nomes de secrets confirma a ausência de `E2E_SUPABASE_PROJECT_ID`; nenhum valor secreto foi lido. A aprovação obrigatória de reviewer humano também continua pendente. A PR #176 permanece aberta e sem merge. Nenhuma migration, Edge Function ou dado foi alterado no Supabase remoto.
+
 ### Snapshot histórico da PR #176 — SHA `e540dfb`
 
 A PR #176 continua aberta e bloqueada, sem merge, com base `main` em `e9d59026793b84fabeaeec9da890a068f64d49c3`. No SHA `e540dfbd0e61c124dfeba314cb735a9733cdb48f`, Qualidade contínua [41096929659](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929659), Security Scan [41096929643](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929643), Bundle Size [41096929698](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929698), Portal Sicoob [41096929702](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929702), CodeQL [41096929662](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929662) e Lighthouse [41096929795](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929795) concluíram com success. O E2E [41096929852](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929852) falhou no preflight porque `E2E_SUPABASE_PROJECT_ID` chegou vazio; os shards foram skipped e nenhum teste Playwright autenticado rodou. O resumo secundário foi skipped corretamente sem `results.json`. O Copilot [41096943447](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096943447) falhou no processamento/limpeza do agente no ambiente gerenciado; o run anterior também registrou HTTP 402 e bloqueio de firewall a `api.github.com`. A PR não está apta para merge enquanto esses bloqueios persistirem.
