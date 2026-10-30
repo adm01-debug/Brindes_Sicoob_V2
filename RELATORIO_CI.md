@@ -168,11 +168,11 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 
 ## Atualização de validação local — PR #178 (30/10/2026)
 
-Execução na branch `fix/hermes-h393620-inteligencia-real`, após os commits `08014ca1d`, `b73110b08` e `f7c257c0b`:
+Execução na branch `fix/hermes-h393620-inteligencia-real`, após os commits `08014ca1d`, `b73110b08`, `f7c257c0b`, `d58c2b39a` e a alteração de escopo em revisão:
 
 | Verificação | Resultado | Observação |
 |---|---|---|
-| `npm test` | ✅ 5.848 passaram; 68 ignorados; 0 falhas | 455 arquivos passaram; 4 ignorados. Baseline anterior: 5.839 passaram, 68 ignorados. |
+| `npm test` | ✅ 5.850 passaram; 68 ignorados; 0 falhas | 456 arquivos passaram; 4 ignorados. Baseline anterior: 5.839 passaram, 68 ignorados. |
 | `npm run typecheck` | ✅ exit 0 | Sem regressão. |
 | `npm run lint` | ✅ exit 0 | 0 erros; 874 avisos existentes. |
 | `npm run build` | ✅ exit 0 | Avisos conhecidos: env Supabase local ausente, PostCSS e chunks grandes. |
@@ -180,4 +180,4 @@ Execução na branch `fix/hermes-h393620-inteligencia-real`, após os commits `0
 | `git diff --check` | ✅ exit 0 | Sem erros de whitespace. |
 | `npm run check:npm-audit` | ❌ exit 1 | O primeiro baseline apontou `undici` e `zod`; `undici` foi atualizado depois para `8.12.3`, faixa compatível, e o gate agora aponta somente `zod@3.25.76` (high; correção proposta exige major v4). Ver `PENDENCIAS.md`. |
 
-O lote atual corrige o avanço indevido de relatórios agendados sem confirmação do Resend, acrescenta teste de paridade das Edge Functions chamadas pelos dispatchers cron e alinha as versões das ações CodeQL após falha remota. A correção de CodeQL ainda precisa de execução remota verde no novo SHA. Nenhum deploy de Edge Function ou escrita remota no Supabase foi feito.
+O lote atual corrige o avanço indevido de relatórios agendados sem confirmação do Resend, acrescenta isolamento por vendedor, teste de paridade das Edge Functions chamadas pelos dispatchers cron e alinha as versões das ações CodeQL após falha remota. No SHA anterior `d58c2b39a093244ec75bfc7e2371bb5bbb27553c`, CodeQL (`41132174662`), Bundle Size (`41132174518`), Lighthouse (`41132174553`) e Portal Sicoob (`41132174565`) concluíram com sucesso; Security Scan (`41132174597`) e Qualidade contínua (`41132174582`) falharam no gate `zod`. O E2E (`41132174573`) ainda executava. Todos devem ser confirmados novamente no SHA com escopo por vendedor. Nenhum deploy de Edge Function ou escrita remota no Supabase foi feito.
