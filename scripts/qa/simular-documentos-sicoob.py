@@ -10,6 +10,7 @@ CONTAINER='sicoob-docs-'+uuid.uuid4().hex[:10]
 MIGRATION=ROOT/'supabase/migrations/20260922224700_validate_sicoob_order_documents.sql'
 INTEGRITY=ROOT/'supabase/migrations/20260922225400_sicoob_operational_integrity.sql'
 GATE=ROOT/'supabase/migrations/20260922225600_sicoob_document_quarantine_gate.sql'
+HASH_BINDING=ROOT/'supabase/migrations/20261030190000_bind_sicoob_scan_evidence_hash.sql'
 ACTOR='11111111-1111-4111-8111-111111111111'
 ORDER='22222222-2222-4222-8222-222222222222'
 
@@ -20,8 +21,12 @@ def sql(statement,check=True):
     return result
 def scalar(statement): return sql(statement).stdout.strip()
 def as_actor(statement,check=True): return sql(f"SET ROLE authenticated; SET request.jwt.claim.sub='{ACTOR}'; {statement}",check)
-def register(document_id,purpose,final_path,mime,size=1024,actor=ACTOR):
+def register(document_id,purpose,final_path,mime,size=1024,actor=ACTOR,evidence_sha256='a'*64):
     quarantine=f'{actor}/{ORDER}/{purpose}/{document_id}'
+    evidence={'clean':True,'engine':'scanner-sintetico'}
+    if evidence_sha256 is not None:
+        evidence['sha256']=evidence_sha256
+    evidence_json=json.dumps(evidence,separators=(',',':')).replace("'","''")
     return sql(f"""
       INSERT INTO storage.objects(bucket_id,name,owner,metadata) VALUES
         ('sicoob-document-quarantine','{quarantine}',NULL,'{{"mimetype":"{mime}","size":{size}}}'),
@@ -30,9 +35,25 @@ def register(document_id,purpose,final_path,mime,size=1024,actor=ACTOR):
       SET ROLE service_role; SET request.jwt.claim.role='service_role';
       SELECT public.register_sicoob_clean_document(
         '{document_id}','{actor}','{ORDER}','{purpose}','{quarantine}','{final_path}',
-        '{'a'*64}','{mime}',{size},'scanner-sintetico','1','{{"clean":true,"engine":"scanner-sintetico"}}'
+        '{'a'*64}','{mime}',{size},'scanner-sintetico','1','{evidence_json}'::jsonb
       );
       RESET ROLE;
+    """,False)
+
+def direct_registry(document_id,evidence_sha256):
+    evidence={'clean':True,'engine':'scanner-sintetico'}
+    if evidence_sha256 is not None:
+        evidence['sha256']=evidence_sha256
+    evidence_json=json.dumps(evidence,separators=(',',':')).replace("'","''")
+    return sql(f"""
+      INSERT INTO public.sicoob_document_registry(
+        id,order_id,purpose,quarantine_path,final_path,status,uploaded_by,sha256,
+        detected_mime,byte_size,scanner_name,scanner_version,scan_evidence
+      ) VALUES (
+        '{document_id}','{ORDER}','delivery_proof','{ACTOR}/{ORDER}/delivery/{document_id}',
+        '{ORDER}/delivery/{document_id}.webp','clean','{ACTOR}','{'a'*64}',
+        'image/webp',2048,'scanner-sintetico','1','{evidence_json}'::jsonb
+      );
     """,False)
 
 checks={}
@@ -62,8 +83,8 @@ try:
       CREATE TABLE public.sicoob_order_shipments(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),order_id uuid UNIQUE,delivery_photo_path text,created_by uuid);
       GRANT SELECT ON public.sicoob_order_invoices, public.sicoob_order_shipments TO authenticated;
     """)
-    migration=MIGRATION.read_text(); integrity=INTEGRITY.read_text(); gate=GATE.read_text()
-    sql('BEGIN;\n'+migration+'\n'+integrity+'\n'+gate+'\nROLLBACK;'); sql(migration); sql(integrity); sql(gate)
+    migration=MIGRATION.read_text(); integrity=INTEGRITY.read_text(); gate=GATE.read_text(); hash_binding=HASH_BINDING.read_text()
+    sql('BEGIN;\n'+migration+'\n'+integrity+'\n'+gate+'\n'+hash_binding+'\nROLLBACK;'); sql(migration); sql(integrity); sql(gate); sql(hash_binding)
     missing=sql(f"INSERT INTO public.sicoob_order_invoices(order_id,invoice_number,file_type,file_path,created_by) VALUES ('{ORDER}','1','pdf','{ORDER}/invoices/missing.pdf','{ACTOR}');",False)
     checks['nota_sem_objeto_bloqueada']=missing.returncode!=0
     doc_invoice='33333333-3333-4333-8333-333333333331'
@@ -80,7 +101,14 @@ try:
     checks['metadata_forjada_sem_registro_limpo_bloqueada']=forged.returncode!=0
     doc_delivery='33333333-3333-4333-8333-333333333332'; delivery_path=f'{ORDER}/delivery/{doc_delivery}.webp'
     sql(f"INSERT INTO storage.objects(bucket_id,name,owner,metadata) VALUES ('sicoob-order-documents','{delivery_path}',NULL,'{{\"mimetype\":\"image/webp\",\"size\":2048}}');")
-    checks['comprovante_registrado_por_scanner']=register(doc_delivery,'delivery_proof',delivery_path,'image/webp',2048).returncode==0
+    checks['sha256_ausente_bloqueado']=register('33333333-3333-4333-8333-333333333334','delivery_proof',f'{ORDER}/delivery/missing-hash.webp','image/webp',2048,evidence_sha256=None).returncode!=0
+    checks['sha256_ausente_nao_registrado']=scalar("SELECT count(*) FROM public.sicoob_document_registry WHERE id='33333333-3333-4333-8333-333333333334';")=='0'
+    checks['sha256_divergente_bloqueado']=register('33333333-3333-4333-8333-333333333335','delivery_proof',f'{ORDER}/delivery/mismatched-hash.webp','image/webp',2048,evidence_sha256='b'*64).returncode!=0
+    checks['sha256_divergente_nao_registrado']=scalar("SELECT count(*) FROM public.sicoob_document_registry WHERE id='33333333-3333-4333-8333-333333333335';")=='0'
+    checks['constraint_direta_sha256_ausente_bloqueada']=direct_registry('33333333-3333-4333-8333-333333333336',None).returncode!=0
+    checks['constraint_direta_sha256_divergente_bloqueada']=direct_registry('33333333-3333-4333-8333-333333333337','b'*64).returncode!=0
+    checks['constraint_direta_sha256_correspondente_aceita']=direct_registry('33333333-3333-4333-8333-333333333338','a'*64).returncode==0
+    checks['parecer_sintetico_com_sha256_correspondente_registrado']=register(doc_delivery,'delivery_proof',delivery_path,'image/webp',2048,evidence_sha256='a'*64).returncode==0
     sql(f"INSERT INTO public.sicoob_order_shipments(order_id,delivery_photo_path,created_by) VALUES ('{ORDER}','{delivery_path}','{ACTOR}');")
     checks['comprovante_valido_vinculado']=scalar('SELECT count(*) FROM public.sicoob_order_shipments;')=='1'
     checks['proprietario_do_comprovante_materializado']=scalar('SELECT delivery_photo_uploaded_by::text FROM public.sicoob_order_shipments;')==ACTOR
