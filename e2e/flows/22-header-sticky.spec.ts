@@ -62,7 +62,11 @@ async function assertHeaderSticky(
   routePath: string,
   viewportLabel: string,
 ): Promise<'ok' | 'redirected-to-login'> {
-  await gotoAndSettle(page, routePath);
+  // O gate valida o shell global, não a autorização do conteúdo de cada rota.
+  // Em rotas bloqueadas, aguardar o guard de permissões antes de observar o
+  // redirect pode expirar enquanto o React conclui a transição. O header só é
+  // medido depois de estar visível; uma rota ainda sem shell continua falhando.
+  await gotoAndSettle(page, routePath, { waitForPermissions: false });
 
   // Aguarda redirect client-side pós-hydration (AdminRoute → /403, ProtectedRoute → /login)
   await page.waitForURL(/\/(login|403)(\?|$)/, { timeout: 3000 }).catch(() => {});
