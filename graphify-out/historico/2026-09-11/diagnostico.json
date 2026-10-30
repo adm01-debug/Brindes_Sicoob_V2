@@ -1,0 +1,223 @@
+{
+  "node_count": 15771,
+  "unverified_node_count": 0,
+  "raw_edge_count": 32516,
+  "non_object_edges": 0,
+  "missing_endpoint_edges": 0,
+  "dangling_endpoint_edges": 11157,
+  "self_loop_edges": 8,
+  "valid_candidate_edges": 21359,
+  "exact_duplicate_edges": 29,
+  "directed_unique_endpoint_pairs": 20749,
+  "directed_same_endpoint_collapsed_edges": 610,
+  "undirected_unique_endpoint_pairs": 20728,
+  "undirected_same_endpoint_collapsed_edges": 631,
+  "same_endpoint_group_count": 540,
+  "relation_variant_groups": 392,
+  "source_file_variant_groups": 0,
+  "source_location_variant_groups": 148,
+  "context_variant_groups": 31,
+  "post_build_graph_type": "Graph",
+  "post_build_node_count": 15770,
+  "post_build_edge_count": 20727,
+  "post_build_error": "",
+  "producer_suppression": {
+    "path": "/home/joaquim_ataides/.local/share/uv/tools/graphifyy/lib/python3.11/site-packages/graphify/extract.py",
+    "total_sites": 12,
+    "sites": [
+      {
+        "line": 1154,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 1420,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 1422,
+        "name": "seen_doc_refs",
+        "tuple_arity": 0,
+        "sample": "seen_doc_refs: set[str] = set()"
+      },
+      {
+        "line": 1782,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 1929,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n.get(\"id\") for n in nodes}"
+      },
+      {
+        "line": 2460,
+        "name": "seen_keys",
+        "tuple_arity": 0,
+        "sample": "seen_keys: set[tuple] = set()"
+      },
+      {
+        "line": 2629,
+        "name": "seen_keys",
+        "tuple_arity": 0,
+        "sample": "seen_keys: set[tuple] = set()"
+      },
+      {
+        "line": 4035,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 4143,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 4222,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 4737,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 4738,
+        "name": "seen_edges",
+        "tuple_arity": 4,
+        "sample": "seen_edges: set[tuple[str, str, str, str | None]] = set()"
+      }
+    ],
+    "error": ""
+  },
+  "examples": [
+    {
+      "source": "tests_components_magic_up_onda5_test",
+      "target": "tests_components_magic_up_onda5_test_controlledwrapper",
+      "edge_count": 11,
+      "relations": [
+        "contains"
+      ],
+      "source_files": [
+        "tests/components/magic-up-onda5.test.tsx"
+      ],
+      "source_locations": [
+        "L1526",
+        "L1578",
+        "L1667",
+        "L1890",
+        "L2063",
+        "L2136",
+        "L3461",
+        "L4626",
+        "L4701",
+        "L4779",
+        "L4883"
+      ],
+      "contexts": [
+        ""
+      ]
+    },
+    {
+      "source": "tests_components_magic_up_result_panel_keyboard_test",
+      "target": "tests_components_magic_up_result_panel_keyboard_test_rerenderwithactive",
+      "edge_count": 7,
+      "relations": [
+        "contains"
+      ],
+      "source_files": [
+        "tests/components/magic-up-result-panel-keyboard.test.tsx"
+      ],
+      "source_locations": [
+        "L1248",
+        "L1525",
+        "L1897",
+        "L2046",
+        "L2443",
+        "L3011",
+        "L771"
+      ],
+      "contexts": [
+        ""
+      ]
+    },
+    {
+      "source": "src_components_mockup_techniquecolorconfigdialog",
+      "target": "src_components_mockup_techniquecolorutils",
+      "edge_count": 6,
+      "relations": [
+        "imports_from",
+        "re_exports"
+      ],
+      "source_files": [
+        "src/components/mockup/TechniqueColorConfigDialog.tsx"
+      ],
+      "source_locations": [
+        "L27",
+        "L30",
+        "L31",
+        "L33",
+        "L34"
+      ],
+      "contexts": [
+        "export",
+        "import",
+        "re-export"
+      ]
+    },
+    {
+      "source": "src_components_filters_filterpanel",
+      "target": "src_components_filters_filter_panel_types",
+      "edge_count": 5,
+      "relations": [
+        "imports_from",
+        "re_exports"
+      ],
+      "source_files": [
+        "src/components/filters/FilterPanel.tsx"
+      ],
+      "source_locations": [
+        "L11",
+        "L12",
+        "L14",
+        "L15"
+      ],
+      "contexts": [
+        "export",
+        "import",
+        "re-export"
+      ]
+    },
+    {
+      "source": "src_components_pricing_simulator_index",
+      "target": "src_components_pricing_simulator_upsell_index",
+      "edge_count": 4,
+      "relations": [
+        "imports_from",
+        "re_exports"
+      ],
+      "source_files": [
+        "src/components/pricing/simulator/index.ts"
+      ],
+      "source_locations": [
+        "L13",
+        "L14",
+        "L15"
+      ],
+      "contexts": [
+        "export",
+        "re-export"
+      ]
+    }
+  ]
+}
