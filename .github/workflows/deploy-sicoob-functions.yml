@@ -42,6 +42,7 @@ jobs:
           for function_name in \
             expert-chat \
             external-db-bridge \
+            quote-price-attestation \
             sicoob-approval-reconciliation \
             sicoob-artwork-register \
             sicoob-document-ingest \
@@ -58,6 +59,7 @@ jobs:
           for function_name in \
             expert-chat \
             external-db-bridge \
+            quote-price-attestation \
             sicoob-approval-reconciliation \
             sicoob-artwork-register \
             sicoob-document-ingest \
@@ -66,8 +68,12 @@ jobs:
           do
             previous_version="$(jq -r --arg function_name "$function_name" '[(.functions // .)[] | select(.slug == $function_name) | .version] | first // 0' /tmp/functions-before.json)"
             current_version="$(echo "$published_functions" | jq -r --arg function_name "$function_name" '[(.functions // .)[] | select(.slug == $function_name) | .version] | first // 0')"
-            if ! [[ "$current_version" =~ ^[0-9]+$ ]] || (( current_version <= previous_version )); then
-              echo "::error title=Publicação não confirmada::$function_name permaneceu na versão $current_version (anterior: $previous_version)."
+            # O Supabase não necessariamente cria nova versão quando a função
+            # já está atualizada; o comando deploy é a confirmação da publicação.
+            # Aqui garantimos que a função existe e que a versão não retrocedeu.
+            if ! [[ "$current_version" =~ ^[0-9]+$ && "$previous_version" =~ ^[0-9]+$ ]] \
+              || (( current_version == 0 || current_version < previous_version )); then
+              echo "::error title=Publicação não confirmada::$function_name ausente ou com versão retrocedida (atual: $current_version; anterior: $previous_version)."
               exit 1
             fi
           done

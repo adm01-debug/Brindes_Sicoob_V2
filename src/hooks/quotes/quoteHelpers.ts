@@ -8,7 +8,8 @@ const emptyToNull = (value: string | null | undefined): string | null => value |
 const numberOr = (value: number | null | undefined, fallback: number): number => value ?? fallback;
 const nullableNumber = (value: number | null | undefined): number | null => value ?? null;
 const arrayOrEmpty = <T>(value: T[] | null | undefined): T[] => value ?? [];
-const quoteItemUnitCost = (item: QuoteItem): number => item.unit_cost || item.unit_price * 0.7;
+const quoteItemUnitCost = (item: QuoteItem): number =>
+  item.unit_cost || Math.round(item.unit_price * 70) / 100;
 
 function personalizationTotal(item: QuoteItem): number {
   return arrayOrEmpty(item.personalizations).reduce((sum, personalization) => sum + numberOr(personalization.total_cost, 0), 0);

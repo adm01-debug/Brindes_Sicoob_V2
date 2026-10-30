@@ -68,7 +68,7 @@ AS $function$
 DECLARE
   v_id uuid;
 BEGIN
-  IF current_setting('request.jwt.claim.role', true) IS DISTINCT FROM 'service_role' THEN
+  IF COALESCE(auth.role(), '') IS DISTINCT FROM 'service_role' THEN
     RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'Somente o serviço de preços pode emitir atestados.';
   END IF;
   IF p_actor_id IS NULL
@@ -120,8 +120,8 @@ DECLARE
   v_claimed_id uuid;
 BEGIN
   GET DIAGNOSTICS v_call_context = PG_CONTEXT;
-  IF current_setting('request.jwt.claim.role', true) NOT IN ('authenticated', 'service_role')
-     OR (current_setting('request.jwt.claim.role', true) = 'authenticated'
+  IF COALESCE(auth.role(), '') NOT IN ('authenticated', 'service_role')
+     OR (auth.role() = 'authenticated'
          AND auth.uid() IS DISTINCT FROM p_actor_id)
      OR v_call_context !~ 'PL/pgSQL function (public\.)?save_quote_atomic(_idempotent)?_attested\(' THEN
     RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'O atestado só pode ser consumido pelo salvamento autenticado.';
@@ -158,7 +158,7 @@ AS $function$
 DECLARE
   v_quote_id uuid;
   v_attestation_id uuid;
-  v_role text := current_setting('request.jwt.claim.role', true);
+  v_role text := auth.role();
   v_actor_id uuid := auth.uid();
   v_call_context text;
   v_needs_attestation boolean := false;
@@ -178,6 +178,7 @@ BEGIN
         OR NEW.total_cost IS DISTINCT FROM OLD.total_cost
         OR NEW.negotiation_markup_percent IS DISTINCT FROM OLD.negotiation_markup_percent
         OR NEW.shipping_cost IS DISTINCT FROM OLD.shipping_cost
+        OR NEW.shipping_type IS DISTINCT FROM OLD.shipping_type
       )
     );
   ELSIF TG_TABLE_NAME = 'quote_items' THEN
@@ -212,6 +213,14 @@ BEGIN
 
   v_attestation_id := NULLIF(current_setting('app.quote_price_attestation_id', true), '')::uuid;
   GET DIAGNOSTICS v_call_context = PG_CONTEXT;
+  -- A criação de nova versão só copia o snapshot comercial de um orçamento
+  -- que a RPC original já autorizou para este ator; não aceita preço novo.
+  IF v_role = 'authenticated'
+     AND TG_OP = 'INSERT'
+     AND v_call_context ~ '(public\.)?create_quote_version_atomic_core_20261013\(' THEN
+    RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
+  END IF;
+
   IF v_role NOT IN ('authenticated', 'service_role')
      OR v_attestation_id IS NULL
      OR v_call_context !~ 'PL/pgSQL function (public\.)?save_quote_atomic\('
@@ -239,7 +248,14 @@ BEGIN
   END IF;
 
   IF TG_TABLE_NAME = 'quote_items' AND TG_OP IN ('INSERT', 'UPDATE') THEN
-    NEW.price_confirmed_at := clock_timestamp();
+    NEW.catalog_checked_at := clock_timestamp();
+    IF (TG_OP = 'INSERT' AND NEW.price_confirmed_at IS NOT NULL)
+       OR (TG_OP = 'UPDATE' AND NEW.price_confirmed_at IS DISTINCT FROM OLD.price_confirmed_at) THEN
+      NEW.price_confirmed_at := CASE
+        WHEN NEW.price_confirmed_at IS NULL THEN NULL
+        ELSE clock_timestamp()
+      END;
+    END IF;
   END IF;
 
   RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
@@ -333,6 +349,73 @@ GRANT EXECUTE ON FUNCTION public.save_quote_atomic_idempotent_attested(jsonb, js
 COMMENT ON TABLE private.quote_price_attestations IS
   'Atestados transitórios e privados de preços validados pela Edge contra o catálogo autoritativo.';
 
+-- Permite recuperar uma criação já concluída quando a resposta se perdeu, sem
+-- revalidar o catálogo nem executar qualquer escrita. O RPC de gravação mantém
+-- sua própria validação e lock para resolver corridas entre preflight e save.
+CREATE OR REPLACE FUNCTION public.get_quote_save_idempotent_replay(
+  p_idempotency_key uuid,
+  p_quote jsonb,
+  p_items jsonb,
+  p_history jsonb DEFAULT '[]'::jsonb
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = pg_catalog, public
+AS $function$
+DECLARE
+  v_actor_id uuid := auth.uid();
+  v_payload_hash text;
+  v_legacy_hash text;
+  v_existing public.quote_save_idempotency%ROWTYPE;
+  v_result jsonb;
+BEGIN
+  IF v_actor_id IS NULL OR p_idempotency_key IS NULL
+     OR jsonb_typeof(p_quote) IS DISTINCT FROM 'object'
+     OR jsonb_typeof(COALESCE(p_items, '[]'::jsonb)) IS DISTINCT FROM 'array'
+     OR jsonb_typeof(COALESCE(p_history, '[]'::jsonb)) IS DISTINCT FROM 'array' THEN
+    RAISE EXCEPTION USING ERRCODE = '22023', MESSAGE = 'A consulta de idempotência é inválida.';
+  END IF;
+
+  v_payload_hash := encode(
+    extensions.digest(
+      p_quote::text || E'\x1f' || COALESCE(p_items, '[]'::jsonb)::text
+        || E'\x1f' || COALESCE(p_history, '[]'::jsonb)::text,
+      'sha256'
+    ),
+    'hex'
+  );
+  v_legacy_hash := md5(p_quote::text || ':' || COALESCE(p_items, '[]'::jsonb)::text);
+
+  SELECT * INTO v_existing
+    FROM public.quote_save_idempotency
+   WHERE actor_id = v_actor_id
+     AND idempotency_key = p_idempotency_key;
+  IF NOT FOUND THEN
+    RETURN NULL;
+  END IF;
+
+  IF (length(v_existing.payload_hash) = 32 AND v_existing.payload_hash IS DISTINCT FROM v_legacy_hash)
+     OR (length(v_existing.payload_hash) = 64 AND v_existing.payload_hash IS DISTINCT FROM v_payload_hash) THEN
+    RAISE EXCEPTION USING ERRCODE = '22023', MESSAGE = 'A chave de idempotência já foi usada com conteúdo diferente.';
+  END IF;
+
+  SELECT to_jsonb(q) INTO v_result
+    FROM public.quotes AS q
+   WHERE q.id = v_existing.quote_id;
+  IF v_result IS NULL THEN
+    RAISE EXCEPTION USING ERRCODE = 'P0002', MESSAGE = 'O orçamento associado à chave de idempotência não está disponível.';
+  END IF;
+  RETURN v_result;
+END;
+$function$;
+REVOKE ALL ON FUNCTION public.get_quote_save_idempotent_replay(uuid, jsonb, jsonb, jsonb)
+  FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.get_quote_save_idempotent_replay(uuid, jsonb, jsonb, jsonb)
+  TO authenticated;
+COMMENT ON FUNCTION public.get_quote_save_idempotent_replay(uuid, jsonb, jsonb, jsonb) IS
+  'Recupera uma criação já persistida após perda de resposta, validando ator, chave e hash sem escrita.';
+
 DO $postflight$
 BEGIN
   IF has_function_privilege(
@@ -353,6 +436,11 @@ BEGIN
      OR NOT has_function_privilege(
        'authenticated',
        'public.save_quote_atomic_idempotent_attested(jsonb,jsonb,uuid,jsonb)',
+       'EXECUTE'
+     )
+     OR NOT has_function_privilege(
+       'authenticated',
+       'public.get_quote_save_idempotent_replay(uuid,jsonb,jsonb,jsonb)',
        'EXECUTE'
      ) THEN
     RAISE EXCEPTION 'O gate de atestado não preservou a separação de privilégios.';

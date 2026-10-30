@@ -149,6 +149,12 @@ export const EDGE_AUTHZ_MANIFEST: Record<string, AuthzEntry> = {
     rationale: "Revalida usuário, composição, estoque, preço e personalização antes de chamar a RPC interna de orçamento do kit",
     enforcedBy: "custom",
   },
+  "quote-price-attestation": {
+    category: "authenticated",
+    rationale: "Revalida usuário e preços do catálogo antes de liberar o salvamento atômico do orçamento",
+    enforcedBy: "custom",
+    gatewayVerifyJwt: true,
+  },
   "sicoob-artwork-register": {
     category: "authenticated",
     rationale: "Baixa a arte privada sob RLS, calcula sua identidade criptográfica e chama a RPC interna exclusiva de serviço",

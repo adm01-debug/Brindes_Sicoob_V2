@@ -164,4 +164,48 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 
 ---
 
-*Relatório gerado automaticamente pela sessão Claude Code.*
+## Atualização P045 — 30/10/2026
+
+Candidate publicado em `fix/quote-price-authority-311333`, PR draft #175,
+baseado no `main` em
+`e9d59026793b84fabeaeec9da890a068f64d49c3`. Nenhuma migration ou Edge Function
+foi aplicada/publicada no Supabase remoto. Evidência detalhada:
+`docs/execucao/p045-integridade-precos-20261030.md`.
+
+| Gate | Baseline da sessão | Candidate | Resultado |
+|---|---:|---:|---|
+| `npm ci` | sucesso | sucesso, 0 vulnerabilidades | lockfile reproduzido em instalação limpa |
+| Build | sucesso, avisos Vite/PostCSS/chunks | sucesso; avisos PostCSS/chunks e comentários internos do Zod 4 | sem falha; Rollup remove as anotações |
+| TypeScript | sucesso | sucesso | sem regressão |
+| ESLint | 0 erros, 873 avisos | 0 erros, 873 avisos | sem regressão |
+| Vitest com cobertura | 5.839 aprovados, 68 ignorados; 452 arquivos aprovados, 4 ignorados | 5.867 aprovados, 68 ignorados; 455 arquivos aprovados, 4 ignorados | 28 testes a mais; sem falhas |
+| Cobertura | 94% statements; 86,79% branches; 97,22% funções; 97,6% linhas | mesmos percentuais | sem piora |
+| Cenários Node | baseline não registrado nesta rodada | 226 aprovados, 0 falhas | aprovado |
+| Simulador PostgreSQL P045 | não aplicável ao baseline | aprovado em PostgreSQL 17 descartável, `--network none` | aprovado; não prova banco remoto |
+| Deno / autorização / logging Edge | baseline não registrado nesta rodada | Deno check e gates locais aprovados | aprovado |
+| `npm run check:npm-audit` | falha: `undici` high e `zod` high | passou, 0 vulnerabilidades; `undici` 8.12.3 e `zod` 4.6.7 | atualização major do Zod acompanhada de ajustes de API e testes |
+
+### Inventário da última execução na `main` — 30/10/2026
+
+| Workflow | Run mais recente em `main` | Conclusão | Causa/estado |
+|---|---|---|---|
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | failure | Verificação de aumento de versão em função que permaneceu na versão 5; candidate ajusta o gate, aguardando CI remoto |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | failure | Audit alto de `undici` e `zod`; resolvido localmente no candidate, aguardando CI remoto |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | failure | Mesmo gate de audit; resolvido localmente no candidate, aguardando CI remoto |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | failure | SHA de versões CodeQL divergentes; candidate alinhado, aguardando CI remoto |
+| Bundle Size Check | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) | failure | Log expirado (HTTP 404); sucesso posterior em PR #136 não substitui execução na `main`; reexecutar em nova PR |
+| Lighthouse Performance Audit | [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910) | failure | Log expirado; `LHCI_GITHUB_APP_TOKEN` ausente na lista de nomes de secrets, provável falha de autenticação |
+| E2E (Playwright) | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | startup_failure | Nenhum job criado; causa não exposta pela API. `E2E_SUPABASE_PROJECT_ID` continua ausente na lista de secrets |
+| Running Copilot Code Review | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | failure | HTTP 402 por quota adicional do Copilot; ação do proprietário necessária |
+
+Workflows verdes observados: Migration ledger drift ([41013281253](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41013281253)), Branch Protection Sentinel ([40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038)), Enterprise Compliance & Audit Reporting ([40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958)), Portal Sicoob ([39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315)) e Monthly DB Audit ([36794161452](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36794161452)). A confirmação final de que seguem verdes depende dos workflows disparados pela PR. A execução `Aplicar migrations Sicoob` mais recente está cancelada e não foi classificada como falha.
+
+O gate `node scripts/qa/check-bundle-budget.mjs` foi reproduzido localmente após o build do candidate e passou: 664 chunks, 10.748.443 bytes (3.261.814 gzip). Os dois maiores chunks geram warnings abaixo do limite bloqueante.
+
+O scan local de SECURITY DEFINER não foi executado porque este ambiente não
+tem URL/chave Supabase configuradas. O workflow remoto de CI precisa confirmar a revisão atual do PR #175. Na
+primeira revisão, Gitleaks classificou o UUID determinístico da chave de
+idempotência de teste como `generic-api-key`; o teste agora usa um identificador
+textual não secreto e os checks serão reexecutados. O run E2E do PR (41057184979) usou o projeto `cfmzkthhgliqelozlmwu` porque o workflow apontava os secrets `VITE_SUPABASE_*` ao destino do teste. A rede registrou `PATCH /profiles` (204) e `POST /telemetry_events` (201). O screenshot terminou em “Carregando permissões...”; duas chamadas `get_sicoob_access_state` demoraram aproximadamente 22,3 s e `user_roles` respondeu 200.
+
+Os artefatos públicos que continham traces foram removidos (IDs `12977402436` e `12978146122`), sem reproduzir qualquer valor de sessão. O workflow candidate exige projeto separado por `vars.E2E_SUPABASE_PROJECT_ID` e secrets `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_SERVICE_ROLE_KEY` e `E2E_SUPABASE_CLEANUP_TOKEN`; também deixa de publicar artefatos brutos. A configuração ainda não está presente no repositório. A ação pendente do responsável é revisar as gravações observadas, invalidar/rotacionar as contas E2E e provisionar essas credenciais de homologação. Nenhuma migration ou função Edge foi aplicada/publicada por esta execução.
