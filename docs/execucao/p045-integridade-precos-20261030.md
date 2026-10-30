@@ -112,7 +112,9 @@ caso de variante distinta e a mudança de snapshot têm testes unitários própr
 
 1. Confirmar todos os checks remotos no SHA final da PR. No snapshot anterior
    `c9aa802d`, Segurança, CodeQL, Bundle, Lighthouse e Portal Sicoob passaram;
-   Qualidade contínua ainda executava e o E2E foi bloqueado antes dos testes
+   Qualidade contínua falhou porque o script e a fixture inicializavam o mesmo
+   schema/tabela. Reproduzi e corrigi a duplicidade; os sete cenários passaram
+   localmente em PostgreSQL descartável. O E2E foi bloqueado antes dos testes
    pela ausência de um Supabase isolado.
 2. Publicar `quote-price-attestation` e aplicar a migration somente no projeto
    de construção autorizado. Ainda não foram executados.
