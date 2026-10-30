@@ -8,6 +8,7 @@ from postgres_ready import wait_for_postgres
 ROOT = Path(__file__).resolve().parents[2]
 GOVERNANCE_FIX = ROOT / 'supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql'
 TIMESTAMP_FIX = ROOT / 'supabase/migrations/20261014124500_canonicalize_quote_insert_timestamps.sql'
+PUBLIC_COST_REDACTION = ROOT / 'supabase/migrations/20261030174645_redact_public_quote_approval_costs.sql'
 CONTAINER = 'sicoob-aprovacao-publica-' + uuid.uuid4().hex[:10]
 SELLER = '11111111-1111-4111-8111-111111111111'
 OTHER = '22222222-2222-4222-8222-222222222222'
@@ -35,6 +36,14 @@ def issue(quote, token):
     return actor(f"INSERT INTO public.quote_approval_tokens(quote_id,token,seller_id) VALUES ('{quote}','{token}','{SELLER}');")
 def signed(token, response='approved'):
     return f"SELECT public.submit_signed_quote_response('{token}','{response}','Pessoa Teste','12345678901','{SIGNATURE}');"
+def json_keys(value):
+    if isinstance(value, dict):
+        yield from value.keys()
+        for child in value.values():
+            yield from json_keys(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from json_keys(child)
 def prepare_governance_prerequisites():
     # A migration de governança parte do schema canônico já migrado. A fixture
     # histórica deste cenário é propositalmente mínima; reproduzimos somente os
@@ -160,21 +169,56 @@ try:
     sql("INSERT INTO vault.decrypted_secrets(name,decrypted_secret) VALUES ('quote_approval_evidence_hmac','chave-sintetica-com-mais-de-trinta-e-dois-bytes-2026');")
     hardened = (ROOT/'supabase/migrations/20260922225000_secure_public_quote_approval.sql').read_text()
     sql(hardened)
+    sql(PUBLIC_COST_REDACTION.read_text())
     checks['historico_legado_preservado'] = sql("SELECT count(*)>=1 FROM public.quote_approval_tokens WHERE signature_data_url IS NOT NULL AND signature_evidence IS NULL;").stdout.strip() == 't'
     checks['anon_sem_acesso_direto'] = (
       actor("SELECT public.get_public_quote_approval('valido');",role='anon',check=False).returncode != 0
       and actor("SELECT public.submit_signed_quote_response('valido','approved','Pessoa','12345678901','"+SIGNATURE+"','127.0.0.1','teste');",role='anon',check=False).returncode != 0
     )
     viewed_quote = new_quote(); issue(viewed_quote, 'visualizado')
+    sql(f"""
+      INSERT INTO public.quote_item_personalizations
+        (quote_item_id, technique_id, colors_count, positions_count, setup_cost, unit_cost, total_cost, notes)
+      SELECT id, gen_random_uuid(), 2, 1, 42.28, 31.17, 53.39, 'Gravação frontal'
+      FROM public.quote_items WHERE quote_id='{viewed_quote}';
+    """)
     viewed_payload = json.loads(actor(
       "SELECT public.get_public_quote_approval('visualizado');", role='service_role'
     ).stdout)
+    public_item = viewed_payload['items'][0]
+    public_personalization = public_item['personalizations'][0]
+    allowed_root = {'quote_number', 'client_name', 'total', 'valid_until', 'status', 'response',
+                    'responded_at', 'payment_terms', 'delivery_time', 'shipping_cost', 'notes', 'items'}
+    allowed_item = {'product_name', 'product_sku', 'color_name', 'size_code', 'quantity',
+                    'unit_price', 'subtotal', 'personalizations'}
+    allowed_personalization = {'colors_count', 'positions_count', 'notes'}
+    checks['projecao_publica_tem_allowlist_minima'] = (
+      set(viewed_payload) == allowed_root
+      and set(public_item) == allowed_item
+      and set(public_personalization) == allowed_personalization
+      and public_item['product_name'] == 'Caneca térmica'
+      and public_item['unit_price'] == 10
+      and public_personalization['notes'] == 'Gravação frontal'
+    )
+    checks['projecao_publica_nao_expoe_custos_internos'] = not (
+      {'unit_cost', 'setup_cost', 'total_cost', 'internal_notes', 'signature_evidence',
+       'signature_hash', 'signer_document', 'signer_ip', 'signer_user_agent'}
+      & set(json_keys(viewed_payload))
+    )
     first_viewed_at = sql("SELECT viewed_at::text FROM public.quote_approval_tokens WHERE token='visualizado';").stdout.strip()
     actor("SELECT public.get_public_quote_approval('visualizado');", role='service_role')
     checks['consulta_publica_registra_visualizacao']=viewed_payload['quote_number']=='TESTE' and bool(first_viewed_at)
     checks['visualizacao_repetida_preserva_primeiro_instante']=sql(
       f"SELECT viewed_at::text='{first_viewed_at}' FROM public.quote_approval_tokens WHERE token='visualizado';"
     ).stdout.strip()=='t'
+    actor("SELECT public.submit_signed_quote_response('visualizado','approved','Pessoa Teste','12345678901','"+SIGNATURE+"','203.0.113.20','teste-projecao');",role='service_role')
+    checks['snapshot_hmac_preserva_custos_privados'] = sql("""
+      SELECT signature_evidence->'quote_snapshot'->'items'->0->'personalizations'->0->>'unit_cost'='31.17'
+        AND signature_evidence->'quote_snapshot'->'items'->0->'personalizations'->0->>'setup_cost'='42.28'
+        AND signature_evidence->'quote_snapshot'->'items'->0->'personalizations'->0->>'total_cost'='53.39'
+        AND public.verify_quote_approval_signature(id)
+      FROM public.quote_approval_tokens WHERE token='visualizado';
+    """).stdout.strip() == 't'
     quote = new_quote(); issue(quote,'hmac-valido')
     hardened_response = actor(
       "SELECT public.submit_signed_quote_response('hmac-valido','approved','Pessoa Teste','12345678901','"+SIGNATURE+"','203.0.113.10','navegador-teste');",
