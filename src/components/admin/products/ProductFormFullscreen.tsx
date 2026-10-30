@@ -99,6 +99,9 @@ const STEPS: StepDef[] = [
   { id: 'content', label: 'SEO', description: 'Meta tags e marketing', icon: Megaphone, requiredFields: [], fieldLabels: {} },
 ];
 
+const productFormResolver: Resolver<ProductFormData> = (values, context, options) =>
+  zodResolver(productFormSchema)(values, context, options);
+
 function emptyString(value: string | null | undefined): string {
   return value ?? '';
 }
@@ -400,7 +403,7 @@ export function ProductFormFullscreen({
     register, handleSubmit, setValue, watch, trigger, getValues,
     formState: { errors },
   } = useForm<ProductFormData>({
-    resolver: zodResolver(productFormSchema) as Resolver<ProductFormData>,
+    resolver: productFormResolver,
     defaultValues: { ...defaultFormValues, ...initialData },
   });
 
