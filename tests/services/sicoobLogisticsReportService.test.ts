@@ -81,5 +81,9 @@ describe('listSicoobLogisticsTracking', () => {
     expect(tracking).toHaveLength(201);
     expect(listOrders).toHaveBeenNthCalledWith(1, expect.objectContaining({ page: 1, pageSize: 200 }));
     expect(listOrders).toHaveBeenNthCalledWith(2, expect.objectContaining({ page: 2, pageSize: 200 }));
+    expect(inFilter).toHaveBeenCalledTimes(3);
+    expect(inFilter).toHaveBeenNthCalledWith(1, 'order_id', Array.from({ length: 100 }, (_, index) => `order-${index}`));
+    expect(inFilter).toHaveBeenNthCalledWith(2, 'order_id', Array.from({ length: 100 }, (_, index) => `order-${index + 100}`));
+    expect(inFilter).toHaveBeenNthCalledWith(3, 'order_id', ['order-200']);
   });
 });
