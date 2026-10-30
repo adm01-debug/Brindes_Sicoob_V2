@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import { useForm, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Lock, Loader2, Eye, EyeOff, CheckCircle, Sparkles } from 'lucide-react';

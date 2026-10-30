@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 
 export const quoteFormSchema = z.object({
   clientId: z.string().min(1, "Empresa é obrigatória"),

@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, ShieldCheck, ShieldAlert, ArrowRight } from "lucide-react";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { type UserWithRole } from "./types";

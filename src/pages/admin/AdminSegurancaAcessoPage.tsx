@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, type ReactNode } from "react";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { supabase } from "@/integrations/supabase/client";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
@@ -121,7 +121,7 @@ export default function AdminSegurancaAcessoPage() {
     if (!parsed.success) {
       toast({
         title: "Dados inválidos",
-        description: parsed.error.issues[0]?.message ?? "Revise os dados informados.",
+        description: parsed.error.errors[0]?.message ?? "Revise os dados informados.",
         variant: "destructive",
       });
       return;
