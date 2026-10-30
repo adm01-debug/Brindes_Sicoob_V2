@@ -11,6 +11,7 @@ import { getCorsHeaders, handleCorsPreflightIfNeeded } from "../_shared/cors.ts"
 import { authorize } from "../_shared/authorize.ts";
 import { requireInternalService } from "../_shared/internal-service-auth.ts";
 import { fetchExternal } from "../_shared/external-fetch.ts";
+import { validateWebhookDispatchModes } from "../_shared/webhook-dispatcher-contract.ts";
 
 const BodySchema = z.object({
   event: z.string().min(1),
@@ -71,8 +72,9 @@ Deno.serve(async (req) => {
       test_webhook_id,
     } = parsed.data;
 
-    if (retry_after_attempt !== undefined && !target_webhook_id) {
-      return new Response(JSON.stringify({ error: "target_webhook_id obrigatório para retry" }), {
+    const modeError = validateWebhookDispatchModes(parsed.data);
+    if (modeError) {
+      return new Response(JSON.stringify({ error: modeError }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

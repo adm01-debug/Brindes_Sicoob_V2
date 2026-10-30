@@ -13,6 +13,26 @@
 
 **Banco canônico:** somente leitura; nenhuma migration aplicada remotamente.
 
+### Checks da PR #173 — observação em 2026-10-30, 11:10 UTC
+
+A PR [#173](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/173) está aberta,
+sem merge, no SHA `977994fb5de3d3c0c4617496f0347b29e2053bd8`.
+
+| Workflow | Run | Resultado observado |
+|---|---:|---|
+| CodeQL | [41045149603](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149603) | Falha: configuração 4.39.1, execução 4.38.2, sem SARIF. |
+| Qualidade contínua | [41045149542](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149542) | Falha: `undici` e `zod` high no `npm audit`. |
+| Security Scan | [41045149525](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149525) | Falha pelo mesmo `npm audit`; Gitleaks passou. |
+| Running Copilot Code Review | [41045168591](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045168591) | Falha externa: HTTP 402 por limite adicional do Copilot. |
+| Bundle Size Check | [41045149500](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149500) | `success`. |
+| Lighthouse Performance Audit | [41045149507](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149507) | `success`. |
+| Portal Sicoob | [41045149586](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149586) | `success`. |
+| E2E (Playwright) | [41045149524](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149524) | Em execução às 11:10 UTC; conclusão ainda não observada. |
+
+Vercel Preview Comments passou; Devin Review foi sucesso por review ignorado por
+falta de créditos, não por aprovação técnica. Os checks remotos não estão verdes;
+a PR não deve ser mergeada.
+
 ### Inventário atual confirmado no GitHub MCP
 
 | Workflow | Último run de `main` considerado | Resultado |
@@ -37,10 +57,10 @@ O PR [#164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164) contém a
 | `npm run typecheck` | ✅ exit 0 | Aplicação e configuração Node sem diagnósticos. |
 | `npm run typecheck:baseline` | ✅ | 0 diagnósticos atuais, baseline 0. |
 | `npm run lint:baseline` | ✅ | 0 regressões; nenhum arquivo de aplicação foi alterado. |
-| `npm run test:coverage:ci` | ✅ | 452 arquivos aprovados, 4 skipped; 5.839 testes passaram, 68 skipped, 0 falhas; statements 94%, branches 86,79%, functions 97,22%, lines 97,6%. |
+| `npm run test:coverage:ci` | ✅ | 453 arquivos aprovados, 4 skipped; 5.848 testes passaram, 68 skipped, 0 falhas; statements 94%, branches 86,79%, functions 97,22%, lines 97,6%. |
 | `npm run test:scenarios` | ✅ | 227 passaram, 0 falhas. |
 | `deno check supabase/functions/webhook-dispatcher/index.ts` | ✅ | Edge Function verificou sem erro. |
-| `python3 scripts/qa/simular-webhook-internal-auth.py` | ✅ | PostgreSQL 17 descartável, `--network none`; eventos de quatro tabelas, Vault, ACL, schema `extensions` do `pg_net`, retry por hook e limite de tentativas cobertos. `banco_canonico_alterado=false`. |
+| `python3 scripts/qa/simular-webhook-internal-auth.py` | ✅ | Contrato SQL exercitado em PostgreSQL 17 descartável, `--network none`, com Vault e `extensions.http_post` simulados. Cobre claim/lease, limite de tentativas, falha de enqueue, ACL e headers. Não testa `pg_net` instalado, handler Edge real ou entrega assíncrona ponta a ponta. `banco_canonico_alterado=false`. |
 | `node scripts/check-migration-immutability.mjs` | ✅ | Nenhuma migration existente foi alterada/removida. |
 | `node scripts/db/apply-sicoob-migrations.mjs --verify-files` | ✅ | `mutation:false`; não aplicou migration. |
 | `npm run check:critical-test-skips` | ✅ | 4/4 contratos críticos declarados. |
@@ -51,9 +71,14 @@ O PR [#164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164) contém a
 ### Escopo e limites da correção de webhook
 
 A migration e o dispatcher compartilham autenticação dedicada; retry usa
-`extensions.http_post`, como definido na instalação local de `pg_net`, aponta para
-um único `target_webhook_id` e conserva o contador da tentativa. A simulação cobre
-o contrato em PostgreSQL descartável. Permanecem sem comprovação a configuração
+`extensions.http_post`, como definido na instalação histórica local de `pg_net`,
+aponta para um único `target_webhook_id`, grava um claim numa tabela separada antes
+do enqueue, serializa as execuções, distingue contadores de claim, enqueue,
+lease/conflito/limite e conserva o contador por uma lease de 15 minutos; o job de
+limpeza existente remove claims após 90 dias. A simulação cobre apenas o contrato
+SQL com HTTP stubado e duas sessões concorrentes. A lease não consulta o estado
+interno de `pg_net`; uma chamada ainda pendente após 15 minutos pode se sobrepor
+à próxima tentativa (semântica at-least-once). Permanecem sem comprovação a configuração
 do segredo no Vault/Edge de homologação, a entrega externa real, o ACK durável e a
 integração Bitrix; por isso P078 continua **Planejada** e a migration não foi
 aplicada.
