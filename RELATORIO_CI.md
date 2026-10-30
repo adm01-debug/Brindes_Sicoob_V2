@@ -41,17 +41,18 @@ PR. Não representam sucesso da CI remota nem acesso ao Supabase:
 | `npm run build` | ✅ exit 0 | Build concluído; avisos existentes de variáveis locais ausentes, imports mistos e chunks grandes. |
 | `npm run lint` | ✅ exit 0 | 0 erros e 874 avisos existentes. |
 | `npm run typecheck` | ✅ exit 0 | TS app e node. |
-| `npm test` | ✅ exit 0 | 5.872 passaram, 68 skipped, 0 falhas (463 arquivos; 459 passaram, 4 skipped). |
+| `npm test` | ✅ exit 0 | 5.884 passaram, 68 skipped, 0 falhas (464 arquivos; 460 passaram, 4 skipped). |
 | `npm run check:npm-audit` | ✅ exit 0 | SECURITY GATE PASSED. |
 | `actionlint .github/workflows/*.yml` | ✅ exit 0 | Todos os workflows versionados válidos. |
-| Testes focados de E2E cleanup, RLS e migrations | ✅ exit 0 | 38 passaram; 56 remotos skipped porque staging não está configurado localmente. |
+| Testes focados de preflight E2E, cleanup, RLS e migrations | ✅ exit 0 | 50 passaram; 56 remotos skipped porque staging não está configurado localmente. |
 | `git diff --check` | ✅ exit 0 | Sem erros de whitespace. |
 
 O patch local também serializa E2E entre refs, limpa as cinco personas, reprova
-cleanup ausente/parcial, usa prefixos literais `[E2E]` e `[E2E:` em passadas
-sequenciais para cobrir os nomes atuais e legados sem casar `[E2Evil]`, remove
-cleanup por teste porque o endpoint também apaga carrinhos por persona, falha de forma
-fechada em HTTP 402 nos testes remotos e bloqueia migrations/deploy nos dois refs protegidos. Nenhuma chamada ou
+cleanup ausente/parcial, usa prefixos literais configurado, `[E2E]` e `[E2E:` em
+passadas sequenciais para cobrir nomes atuais e legados sem casar `[E2Evil]`, limita
+prefixos customizados ao namespace E2E e remove cleanup por teste porque o endpoint
+também apaga carrinhos por persona. HTTP 402 já não valida authz/RLS, e migrations/deploy
+são bloqueados nos dois refs protegidos. Nenhuma chamada ou
 alteração Supabase foi feita. Ainda falta o owner configurar e proteger
 `e2e-staging`, confirmar a ref exata do projeto descartável, criar as contas sintéticas
 e restringir a allowlist de e-mails da Edge Function; veja
