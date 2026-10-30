@@ -36,3 +36,10 @@ falhar fechado; os testes locais explicitamente opcionais registram `skip`.
 Não há automação de Semantic Release, changelog ou rollback por migration
 reversa comprovada neste repositório. Rollback de banco segue estratégia
 forward-only com migration corretiva e o runbook de incidente.
+
+
+## Atualização de estado — 30/10/2026
+
+O cabeçalho acima é um retrato histórico de 22/09/2026; já não descreve a atividade atual do GitHub Actions. Há execuções posteriores da PR #178. No SHA `e7d770c28cbbc8824f0611e6c04bd434a2effeef`, Security Scan, CodeQL, Lighthouse, Bundle Size Check e Portal Sicoob concluíram com sucesso. O E2E ainda estava em execução e `Qualidade contínua` falhou duas vezes por `toomanyrequests: Data limit exceeded` ao acessar a imagem PostgreSQL do Supabase pelo ECR Public.
+
+A PR contém uma correção candidata para esse limite: os dois simuladores invocados por `ci.yml` usam o registry GHCR oficial da Supabase, com o tag `17.6.1.063` e digest OCI fixado. O índice e o manifest linux/amd64 foram comparados com a referência anterior, e as duas simulações passaram localmente. A correção ainda depende de um run verde de `Qualidade contínua` em um SHA posterior. A tabela de estado detalhada e o histórico de tentativas ficam em [`RELATORIO_CI.md`](../RELATORIO_CI.md) e [`PENDENCIAS.md`](../PENDENCIAS.md).
