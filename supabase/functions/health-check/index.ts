@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { createExternalCatalogClient } from "../_shared/catalog-client.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
@@ -71,3 +72,9 @@ Deno.serve(async (req) => {
     }
   );
 });
+=======
+import { createLivenessResponse } from "./contract.ts";
+
+// Esta rota é uma sonda de liveness: não acessa banco, secrets ou serviços externos.
+Deno.serve(createLivenessResponse);
+>>>>>>> f77082365 (refactor(edge): health-check vira sonda de liveness pura sem acesso a banco)
