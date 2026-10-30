@@ -19,15 +19,21 @@ export function quoteItemsShareVariantIdentity(
 }
 
 export function findMergeableQuoteItemIndex(
-  items: readonly Pick<QuoteItem, "product_id" | "color_name" | "size_code" | "source_variant_id" | "source_variant_sku" | "unit_price" | "unit_cost">[],
-  candidate: Pick<QuoteItem, "product_id" | "color_name" | "size_code" | "source_variant_id" | "source_variant_sku" | "unit_price" | "unit_cost">,
+  items: readonly Pick<
+    QuoteItem,
+    "product_id" | "color_name" | "size_code" | "source_variant_id" | "source_variant_sku" | "unit_price" | "unit_cost"
+  >[],
+  candidate: Pick<
+    QuoteItem,
+    "product_id" | "color_name" | "size_code" | "source_variant_id" | "source_variant_sku" | "unit_price" | "unit_cost"
+  >,
 ): number {
   return items.findIndex(item =>
     item.product_id === candidate.product_id
     && item.color_name === candidate.color_name
     && item.size_code === candidate.size_code
-    && quoteItemsShareVariantIdentity(item, candidate),
+    && quoteItemsShareVariantIdentity(item, candidate)
     && item.unit_price === candidate.unit_price
-    && item.unit_cost === candidate.unit_cost,
+    && (item.unit_cost ?? 0) === (candidate.unit_cost ?? 0),
   );
 }

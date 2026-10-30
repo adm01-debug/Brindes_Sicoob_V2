@@ -260,8 +260,10 @@ Monthly DB Audit também concluiu com sucesso em
 ## P045 — Integridade de preços de orçamento (30/10/2026)
 
 **Status do candidate:** branch publicada e PR draft #175 aberto; validação
-descartável concluída. CI remoto está em execução/revisão. Não aplicado nem
-publicado no Supabase remoto.
+descartável concluída. No SHA `c9aa802d`, Segurança, CodeQL, Bundle, Lighthouse
+e Portal Sicoob passaram; Qualidade contínua ainda executava. O E2E foi
+bloqueado antes dos testes pela ausência da configuração isolada. Não aplicado
+nem publicado no Supabase remoto.
 
 - Migration versionada e allowlisted: `20261030120000_quote_price_attestation_gate.sql`.
 - Edge Function autenticada e registrada no manifesto, configuração e workflow
@@ -273,9 +275,11 @@ publicado no Supabase remoto.
 
 ### Pendências de fechamento
 
-1. O CI do GitHub ainda não validou o candidate. Localmente, `npm audit` passou
-   após atualizar `undici` para 8.12.3 e `zod` para 4.6.7; o runner da PR ainda
-   precisa confirmar a correção e a ausência de regressões.
+1. Confirmar os checks remotos no SHA final após o ajuste da deduplicação de
+   variantes. No snapshot `c9aa802d`, os gates de Segurança, CodeQL, Bundle,
+   Lighthouse e Portal Sicoob passaram; Qualidade contínua ainda executava.
+   Localmente, `npm audit` passou após atualizar `undici` para 8.12.3 e `zod`
+   para 4.6.7.
 2. Não há prova de que a Edge Function foi publicada nem de que a migration foi
    aplicada ao Supabase de construção. O fluxo foi versionado; não executado.
 3. Falta jornada autenticada conectada com usuários de teste e catálogo externo

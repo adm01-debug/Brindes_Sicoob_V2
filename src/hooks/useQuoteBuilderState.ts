@@ -506,7 +506,6 @@ export function useQuoteBuilderState() {
 
   const addProductWithColor = useCallback((product: Product, variant: ExternalVariantStock | null) => {
     const newItem = buildQuoteItem(product, variant);
-    const { color_name: colorName, size_code: sizeCode } = newItem;
     
     const existingIndex = findMergeableQuoteItemIndex(items, newItem);
     
