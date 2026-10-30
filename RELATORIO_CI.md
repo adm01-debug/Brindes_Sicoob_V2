@@ -31,6 +31,31 @@ O run [41118082692](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/run
 
 A PR #176 passou a executar somente com ambiente dedicado `e2e-staging`. Os jobs exigem variável `E2E_SUPABASE_PROJECT_ID`, secrets `E2E_STAGING_*`, URL/ref coincidentes e rejeitam os projetos `cfmzkthhgliqelozlmwu` e `doufsxqlfjyuvxuezpln`. O teste RLS agora verifica que o canário foi realmente removido, e `cancel-in-progress` está desligado para não interromper o cleanup em uma execução nova. Ainda falta o owner provisionar esse ambiente/variáveis e contas sintéticas; sem elas o preflight para antes de acessar Supabase.
 
+### Validação local adicional — worktree antes do próximo commit
+
+Estas verificações cobrem mudanças locais ainda não presentes no último SHA remoto da
+PR. Não representam sucesso da CI remota nem acesso ao Supabase:
+
+| Verificação | Resultado | Evidência |
+|---|---|---|
+| `npm run build` | ✅ exit 0 | Build concluído; avisos existentes de variáveis locais ausentes, imports mistos e chunks grandes. |
+| `npm run lint` | ✅ exit 0 | 0 erros e 874 avisos existentes. |
+| `npm run typecheck` | ✅ exit 0 | TS app e node. |
+| `npm test` | ✅ exit 0 | 5.872 passaram, 68 skipped, 0 falhas (463 arquivos; 459 passaram, 4 skipped). |
+| `npm run check:npm-audit` | ✅ exit 0 | SECURITY GATE PASSED. |
+| `actionlint .github/workflows/*.yml` | ✅ exit 0 | Todos os workflows versionados válidos. |
+| Testes focados de E2E cleanup, RLS e migrations | ✅ exit 0 | 38 passaram; 56 remotos skipped porque staging não está configurado localmente. |
+| `git diff --check` | ✅ exit 0 | Sem erros de whitespace. |
+
+O patch local também serializa E2E entre refs, limpa as cinco personas, reprova
+cleanup ausente/parcial, usa `[E2E` para abranger nomes `[E2E]` e `[E2E:<id>]`,
+isola cleanup de falha por teste, falha de forma fechada em HTTP 402 nos testes
+remotos e bloqueia migrations/deploy nos dois refs protegidos. Nenhuma chamada ou
+alteração Supabase foi feita. Ainda falta o owner configurar e proteger
+`e2e-staging`, confirmar a ref exata do projeto descartável, criar as contas sintéticas
+e restringir a allowlist de e-mails da Edge Function; veja
+[`docs/secrets.md`](docs/secrets.md).
+
 ### Baseline histórico e snapshot local da primeira rodada nesta branch
 
 | Verificação | Resultado | Observação |

@@ -76,7 +76,7 @@ export function loadCleanupConfig(): CleanupConfig | null {
     ? null
     : explicitPrefix && explicitPrefix.length > 0
       ? explicitPrefix
-      : "[E2E]"; // fallback alinhado ao DEFAULT_PREFIX de test-user.ts
+      : "[E2E"; // abrange [E2E] e os escopos [E2E:<id>] das fixtures
 
   if (!baseUrl || !token) return null;
   if (!userEmail && !adminEmail) return null;
@@ -279,7 +279,7 @@ export async function purgeOne(
     console.warn(
       `${YELLOW}[e2e-cleanup] falha para ${email}: HTTP ${lastOutcome.status} ${json.error ?? ""}${RESET}`,
     );
-    return json;
+    return { ...json, ok: false };
   }
 
   // Sucesso

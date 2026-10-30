@@ -40,6 +40,9 @@ describe('limpeza E2E de homologação', () => {
       'manager@example.test',
       'dev@example.test',
     ]);
+    for (const [, init] of fetchMock.mock.calls) {
+      expect(JSON.parse(String(init?.body)).nameFilterPrefix).toBe('[E2E');
+    }
   });
 
   it('falha a purga se qualquer persona for recusada pelo cleanup', async () => {

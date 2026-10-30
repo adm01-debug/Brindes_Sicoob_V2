@@ -3,9 +3,9 @@
  *  - Captura automática de console/pageerror em toda página
  *  - afterEach que dispara coleta de evidências em qualquer falha
  *  - Helper `requireAuth()` que pula o teste se as credenciais não foram dadas
- *  - Fixture `e2eResources` com sub-prefixo POR SPEC e cleanup escopado
- *    em caso de falha — evita que um spec apague recursos vivos de outro
- *    spec rodando em paralelo no mesmo worker/CI.
+ *  - Fixture `e2eResources` com sub-prefixo POR TESTE e cleanup escopado
+ *    em caso de falha — evita que um teste apague recursos vivos de outro
+ *    teste em execução paralela.
  *
  * Uso:
  *   import { test, expect } from "../fixtures/test-base";
@@ -15,7 +15,7 @@
  *     // ...
  *   });
  */
-import path from "node:path";
+import { createHash } from "node:crypto";
 import { test as base, expect } from "@playwright/test";
 import { attachConsoleCapture, type EvidenceCollector } from "../helpers/evidence";
 import { loadCleanupConfig, purgeAll } from "../helpers/cleanup-client";
@@ -54,10 +54,6 @@ type Fixtures = {
   cleanupOnFailure: void;
 };
 
-function deriveSpecSlug(filePath: string): string {
-  return path.basename(filePath).replace(/\.spec\.tsx?$/, "");
-}
-
 export const test = base.extend<Fixtures>({
   evidence: async ({ page }, use, testInfo) => {
     const collector = attachConsoleCapture(page);
@@ -68,8 +64,8 @@ export const test = base.extend<Fixtures>({
   },
 
   resources: async ({ page }, use, testInfo) => {
-    const slug = deriveSpecSlug(testInfo.file);
-    const prefix = e2eScope(slug);
+    const testId = createHash("sha256").update(testInfo.testId).digest("hex").slice(0, 24);
+    const prefix = e2eScope(`t-${testId}`);
     const api: E2eResources = {
       prefix,
       createQuote: (o = {}) => createE2eQuote(page, { ...o, prefix }),

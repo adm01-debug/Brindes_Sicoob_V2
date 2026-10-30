@@ -44,6 +44,16 @@ projeto isolado; o workflow bloqueia `cfmzkthhgliqelozlmwu` e
 `doufsxqlfjyuvxuezpln`. Nenhum valor de secret foi lido. Também falta aprovação
 humana exigida pela proteção de `main`.
 
+No worktree desta PR, o contrato de cleanup foi endurecido: a configuração é
+obrigatória no CI, a limpeza de todas as cinco personas falha se ausente, parcial ou
+em dry-run, erros HTTP não são reinterpretados como sucesso, e o prefixo global
+`[E2E` abrange nomes `[E2E]` e `[E2E:<id>]`. Cleanup por falha usa prefixo exclusivo
+por teste; as execuções compartilham um único grupo de concorrência; HTTP 402 já não
+conta como validação authz/RLS. Essas mudanças ainda não têm novo run remoto. Antes de
+cadastrar secrets, configure reviewers e política de branches no Environment e
+confirme positivamente a ref descartável; negar dois refs conhecidos não prova, por si
+só, que uma terceira ref seja staging.
+
 ### E2E interrompido na PR #177 — risco de dados a verificar
 
 A PR [#177](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/177), SHA

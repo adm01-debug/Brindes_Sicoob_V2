@@ -33,9 +33,10 @@ isolado a Edge Function `e2e-cleanup` com `E2E_CLEANUP_TOKEN` igual ao secret
 sintéticas. A validação exige esse token, a chave publicável e a chave administrativa
 antes de chamadas remotas; setup, teardown e limpeza por falha reprovam o job se não
 confirmarem sucesso. Execuções E2E são serializadas globalmente para evitar disputa do
-staging entre PRs. A variável deve conter a ref exata do projeto descartável aprovado
-pelo owner; bloquear refs conhecidas não prova, por si só, que outra ref seja
-descartável.
+staging entre PRs; a limpeza global usa o prefixo `[E2E` para cobrir nomes `[E2E]` e
+`[E2E:<id>]`, e a limpeza por falha usa um prefixo exclusivo por teste. A variável
+deve conter a ref exata do projeto descartável aprovado pelo owner; bloquear refs
+conhecidas não prova, por si só, que outra ref seja descartável.
 
 Estado verificado em 30/10/2026: o environment `e2e-staging` não existe (GitHub
 API 404); também não há a variável `E2E_SUPABASE_PROJECT_ID` nem secrets dedicados
