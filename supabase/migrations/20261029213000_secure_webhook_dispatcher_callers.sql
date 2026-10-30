@@ -201,7 +201,11 @@ DECLARE
   v_project_url text;
   v_dispatcher_secret text;
   v_retried integer := 0;
-  v_skipped integer := 0;
+  v_claimed integer := 0;
+  v_skipped_active_lease integer := 0;
+  v_skipped_max_attempts integer := 0;
+  v_skipped_claim_conflicts integer := 0;
+  v_enqueue_errors integer := 0;
   rec record;
   v_max_attempts integer;
   v_lock_acquired boolean;
@@ -211,7 +215,12 @@ BEGIN
   -- paralelo a mesma tentativa de retry.
   v_lock_acquired := pg_try_advisory_xact_lock(20261029, 213000);
   IF NOT v_lock_acquired THEN
-    RETURN jsonb_build_object('ok', true, 'retried', 0, 'skipped_busy', true);
+    RETURN jsonb_build_object(
+      'ok', true, 'retried', 0, 'claimed', 0,
+      'skipped_active_lease', 0, 'skipped_max_attempts', 0,
+      'skipped_claim_conflicts', 0, 'enqueue_errors', 0,
+      'skipped_busy', true
+    );
   END IF;
 
   SELECT decrypted_secret INTO v_project_url
@@ -234,6 +243,19 @@ BEGIN
       'error', 'webhook_dispatcher_not_configured'
     );
   END IF;
+
+  -- O callback de uma entrega (inclusive um replay manual) inicia uma nova
+  -- fronteira operacional. Apague apenas claims anteriores já superados por
+  -- uma entrega materializada depois deles; claims pendentes são mantidos.
+  DELETE FROM public.webhook_retry_claims AS c
+  WHERE EXISTS (
+    SELECT 1
+    FROM public.webhook_deliveries AS d
+    WHERE d.webhook_id = c.webhook_id
+      AND d.event = c.event
+      AND d.payload IS NOT DISTINCT FROM c.payload
+      AND d.delivered_at > c.claimed_at
+  );
 
   FOR rec IN
     WITH candidates AS (
@@ -269,12 +291,12 @@ BEGIN
     -- outra tentativa; após 15 minutos, uma reserva sem resultado pode avançar.
     IF rec.source = 'retry_claim'
        AND rec.occurred_at > now() - interval '15 minutes' THEN
-      v_skipped := v_skipped + 1;
+      v_skipped_active_lease := v_skipped_active_lease + 1;
       CONTINUE;
     END IF;
 
     IF rec.attempt >= v_max_attempts THEN
-      v_skipped := v_skipped + 1;
+      v_skipped_max_attempts := v_skipped_max_attempts + 1;
       CONTINUE;
     END IF;
 
@@ -287,9 +309,10 @@ BEGIN
     ) ON CONFLICT DO NOTHING
     RETURNING id INTO v_claim_id;
     IF v_claim_id IS NULL THEN
-      v_skipped := v_skipped + 1;
+      v_skipped_claim_conflicts := v_skipped_claim_conflicts + 1;
       CONTINUE;
     END IF;
+    v_claimed := v_claimed + 1;
 
     BEGIN
       PERFORM extensions.http_post(
@@ -307,18 +330,23 @@ BEGIN
         ),
         timeout_milliseconds := 5000
       );
+      v_retried := v_retried + 1;
     EXCEPTION WHEN OTHERS THEN
       -- A reserva permanece para consumir esta tentativa mesmo se pg_net
       -- rejeitar o enqueue.
+      v_enqueue_errors := v_enqueue_errors + 1;
       RAISE WARNING 'Falha ao enfileirar retry do webhook (SQLSTATE %)', SQLSTATE;
     END;
-    v_retried := v_retried + 1;
   END LOOP;
 
   RETURN jsonb_build_object(
     'ok', true,
     'retried', v_retried,
-    'skipped_max_attempts', v_skipped,
+    'claimed', v_claimed,
+    'skipped_active_lease', v_skipped_active_lease,
+    'skipped_max_attempts', v_skipped_max_attempts,
+    'skipped_claim_conflicts', v_skipped_claim_conflicts,
+    'enqueue_errors', v_enqueue_errors,
     'ran_at', now()
   );
 END;
