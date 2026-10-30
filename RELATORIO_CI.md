@@ -204,8 +204,14 @@ O gate `node scripts/qa/check-bundle-budget.mjs` foi reproduzido localmente apó
 
 O scan local de SECURITY DEFINER não foi executado porque este ambiente não
 tem URL/chave Supabase configuradas. O workflow remoto de CI precisa confirmar a revisão atual do PR #175. Na
-primeira revisão, Gitleaks classificou o UUID determinístico da chave de
-idempotência de teste como `generic-api-key`; o teste agora usa um identificador
-textual não secreto e os checks serão reexecutados. O run E2E do PR (41057184979) usou o projeto `cfmzkthhgliqelozlmwu` porque o workflow apontava os secrets `VITE_SUPABASE_*` ao destino do teste. A rede registrou `PATCH /profiles` (204) e `POST /telemetry_events` (201). O screenshot terminou em “Carregando permissões...”; duas chamadas `get_sicoob_access_state` demoraram aproximadamente 22,3 s e `user_roles` respondeu 200.
+primeira revisão, Gitleaks classificou UUIDs sintéticos da chave de
+idempotência como `generic-api-key`. O valor atual foi trocado por texto não
+secreto; como o scanner percorre o commit original, apenas os quatro
+fingerprints históricos exatos foram allowlisted no `.gitleaksignore`. A revisão
+SHA `672502b2` também falhou em `check-runtime-refs` para quatro RPCs definidos
+pela migration P045, ausentes do inventário porque a migration ainda não foi
+aplicada. Os nomes receberam allowlist pontual ligada à migration, a remover
+após aplicar e atualizar o inventário. A segunda tentativa E2E foi cancelada
+antes de iniciar porque o destino isolado não está configurado. O run E2E do PR (41057184979) usou o projeto `cfmzkthhgliqelozlmwu` porque o workflow apontava os secrets `VITE_SUPABASE_*` ao destino do teste. A rede registrou `PATCH /profiles` (204) e `POST /telemetry_events` (201). O screenshot terminou em “Carregando permissões...”; duas chamadas `get_sicoob_access_state` demoraram aproximadamente 22,3 s e `user_roles` respondeu 200.
 
 Os artefatos públicos que continham traces foram removidos (IDs `12977402436` e `12978146122`), sem reproduzir qualquer valor de sessão. O workflow candidate exige projeto separado por `vars.E2E_SUPABASE_PROJECT_ID` e secrets `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_SERVICE_ROLE_KEY` e `E2E_SUPABASE_CLEANUP_TOKEN`; também deixa de publicar artefatos brutos. A configuração ainda não está presente no repositório. A ação pendente do responsável é revisar as gravações observadas, invalidar/rotacionar as contas E2E e provisionar essas credenciais de homologação. Nenhuma migration ou função Edge foi aplicada/publicada por esta execução.

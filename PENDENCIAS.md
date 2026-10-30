@@ -226,13 +226,14 @@ Falhas consideradas somente quando a execução mais recente da `main` está em
 `failure`. As correções estão publicadas na branch candidate
 `fix/quote-price-authority-311333` e submetidas ao PR draft #175; ainda não foram
 incorporadas à `main`. Os checks da primeira revisão do PR apontaram falso
-positivo de Gitleaks para UUIDs fixos de teste, corrigido nesta atualização.
+positivo de Gitleaks para UUIDs de teste em commit histórico; o valor foi trocado
+no arquivo atual e os fingerprints históricos foram allowlisted de forma pontual.
 
 | Workflow | Última execução | Causa provável confirmada | Estado da correção |
 |---|---|---|---|
 | Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | Verificador exigiu aumento de versão para função que continuou na versão 5 após deploy sem alteração | Corrigido na branch candidate; validação remota necessária, sem executar deploy |
-| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `npm audit` alto em `undici` e `zod` | Atualizados `undici`/`zod`; audit local zerado. Check inicial do PR pegou UUIDs fixos de teste com Gitleaks; identificador substituído nesta revisão |
-| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | Gate `check:npm-audit`, mesmos alertas altos | Candidate atualizado; audit local zerado, aguardando CI da nova revisão |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `npm audit` alto em `undici` e `zod` | Atualizados `undici`/`zod`; audit local zerado. Gitleaks flagou quatro UUIDs sintéticos no commit histórico; valor atual foi substituído e os fingerprints exatos estão allowlisted |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | Gate `check:npm-audit`, mesmos alertas altos | Audit local zerado. Candidate também corrigiu `check-runtime-refs`: quatro RPCs da migration P045 ainda não existem no inventário remoto, então receberam allowlist pontual até aplicar a migration e atualizar o inventário |
 | CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `init` em 4.39.1 e `autobuild/analyze` em 4.38.2; SARIF não gerado | Candidate alinhou as referências SHA; aguardando CI da nova revisão |
 | Bundle Size Check | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) | Job falhou; log expirou (HTTP 404), causa do run antigo não comprovável. Candidate reproduz o gate localmente com sucesso: 664 chunks, 10.748.443 bytes e avisos não bloqueantes | Candidate passa o orçamento local; PR precisa registrar execução remota atual |
 | Lighthouse Performance Audit | [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910) | Job falhou; log expirou (HTTP 404). `LHCI_GITHUB_APP_TOKEN` não consta entre os nomes de secrets atuais, causa provável de autenticação ainda não comprovada | Configurar o secret e reexecutar; confirmar a causa no novo log antes de alterar código/performance |
