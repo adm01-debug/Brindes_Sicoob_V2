@@ -165,3 +165,24 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 ---
 
 *Relatório gerado automaticamente pela sessão Claude Code.*
+
+---
+
+## Baseline e correção T031 — 30/10/2026
+
+Branch `fix/t031-active-quote-status-retry`, base `main` no SHA `e9d59026793b84fabeaeec9da890a068f64d49c3`. A auditoria identificou que `bulk_update_quote_status_atomic` aceitava o retry de mesmo status quando `seller_id = auth.uid()`, mesmo se o perfil do vendedor estivesse inativo. O wrapper público agora exige vínculo ativo antes de delegar ao núcleo privado.
+
+### Baseline anterior ao patch
+
+`npm ci`, `npm run typecheck`, `npm run lint`, `npm run build` e `npm test -- --reporter=dot` foram executados antes da alteração de código. Resultado: instalação concluída; typecheck e build com exit 0; lint com 0 erros e 873 avisos preexistentes; suíte com 5.839 testes aprovados, 68 ignorados, 0 falhas (452 arquivos aprovados e 4 ignorados). O resumo de `npm ci` reportou 2 vulnerabilidades altas. O `npm audit --audit-level=high --offline` retornou 0, mas a consulta online posterior confirmou as duas vulnerabilidades: `undici` (múltiplos avisos, correção não major disponível) e `zod` (<4.6.6; a correção indicada requer a major 4). O resultado offline não é confiável como prova de segurança. As dependências não foram alteradas nesta correção de autorização; abrir tratamento separado preserva o escopo e evita upgrade major não validado. Também houve avisos de depreciação/de scripts de instalação. Build reportou avisos existentes de variáveis Supabase ausentes, PostCSS e tamanho dos bundles.
+
+### Correção e evidência local
+
+- Migration aditiva: `supabase/migrations/20261030210000_require_active_actor_for_quote_status_retry.sql`.
+- Regressão: `scripts/qa/simular-escopo-orcamento-ativo.py` executa em PostgreSQL 17 descartável, sem rede. Primeiro reproduz o bypass na versão anterior do wrapper, comprova que o núcleo foi chamado, então executa o wrapper novo e confirma que o vendedor inativo recebe `42501` sem alcançar o núcleo. O vendedor ativo segue autorizado.
+- Resultado local da simulação: aprovada; cobre comprador/vendedor ativo e inativo, papel legado sem `user_roles`, helper interno sem `EXECUTE` e retry público.
+- Validação pós-patch: `npm run typecheck` exit 0; `npm run lint` exit 0 (0 erros, 873 avisos); `npm run build` exit 0; suíte completa 5.839 aprovados, 68 ignorados, 0 falhas (452 arquivos aprovados, 4 ignorados); audit online confirma as mesmas 2 vulnerabilidades altas do baseline; `git diff --check` e compilação Python da simulação aprovados.
+- Nenhuma consulta, migration ou escrita foi executada em Supabase remoto. A migration está versionada, mas não aplicada; falta confirmar o ambiente isolado de construção e executar a validação remota autorizada antes de fechar T031.
+- A migration não foi incluída na allowlist do executor remoto: o alvo atualmente configurado nele não foi confirmado como ambiente de construção independente do banco canônico.
+
+**Situação:** correção local comprovada; T031 permanece parcial até revisão independente, CI/PR e validação no ambiente de construção.
