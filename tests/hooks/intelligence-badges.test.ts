@@ -1,103 +1,92 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { buildBadgeResult } from '@/hooks/useProductIntelligenceBadges';
+import type { ProductIntelligenceData, StockVelocity } from '@/hooks/useStockHistory';
 
-// Test the badge derivation logic directly
-describe('useProductIntelligenceBadges logic', () => {
-  const deriveBadges = (
-    abc: 'A' | 'B' | 'C',
-    trend: number | null,
-    isStockoutRisk: boolean,
-    currentStock: number,
-    catalogFlags?: { featured?: boolean; newArrival?: boolean; onSale?: boolean }
-  ) => {
-    const badges: Array<{ type: string; label: string }> = [];
+const intelligence: ProductIntelligenceData = {
+  product_id: 'product-1',
+  supplier_count: 2,
+  total_current_stock: 30,
+  total_depleted_7d: 70,
+  total_depleted_30d: 210,
+  total_depleted_90d: 500,
+  total_restocked_30d: 100,
+  avg_velocity_7d: 10,
+  avg_velocity_30d: 7,
+  max_velocity_trend: 1,
+  min_days_to_stockout: 5,
+  turnover_score: 86,
+  abc_classification: 'A',
+  is_hot_product: true,
+  is_stockout_risk: true,
+  is_stagnant: false,
+  is_negotiation_opportunity: false,
+  has_frequent_restock: true,
+};
 
-    // Catalog flags first
-    if (catalogFlags?.featured) badges.push({ type: 'featured', label: 'Destaque' });
-    if (catalogFlags?.newArrival) badges.push({ type: 'new-arrival', label: 'Novidade' });
-    if (catalogFlags?.onSale) badges.push({ type: 'on-sale', label: 'Promoção' });
+const velocity: StockVelocity = {
+  variant_supplier_source_id: 'source-1',
+  supplier_id: 'supplier-1',
+  product_id: 'product-1',
+  variant_id: 'variant-1',
+  current_stock: 30,
+  avg_daily_depletion_7d: 12,
+  avg_daily_depletion_30d: 8,
+  avg_daily_depletion_90d: 6,
+  velocity_trend: 1.5,
+  days_to_stockout: 3,
+  total_depleted_7d: 84,
+  total_depleted_30d: 240,
+  total_depleted_90d: 540,
+  total_restocked_30d: 100,
+  restock_events_30d: 2,
+  avg_days_between_restocks: 15,
+  price_changes_30d: 1,
+  active_days_7d: 7,
+  active_days_30d: 30,
+  active_days_90d: 90,
+};
 
-    // ABC
-    if (abc === 'A') badges.push({ type: 'best-seller', label: 'Best-Seller' });
-    else if (abc === 'B') badges.push({ type: 'popular', label: 'Popular' });
-    else badges.push({ type: 'normal', label: 'Normal' });
+describe('buildBadgeResult', () => {
+  it('does not invent market badges or metrics when intelligence is absent', () => {
+    const result = buildBadgeResult(undefined, undefined, undefined, false);
 
-    if (trend != null && trend > 1.3) badges.push({ type: 'emergente', label: 'Emergente' });
-    if (isStockoutRisk && currentStock > 0) badges.push({ type: 'last-units', label: 'Últimas Unidades' });
-
-    return badges;
-  };
-
-  it('should show Best-Seller for ABC A', () => {
-    const badges = deriveBadges('A', 1.0, false, 500);
-    expect(badges[0].type).toBe('best-seller');
-    expect(badges).toHaveLength(1);
+    expect(result).toMatchObject({
+      badges: [],
+      turnoverScore: null,
+      demandLevel: null,
+      isDemo: false,
+    });
   });
 
-  it('should show Popular for ABC B', () => {
-    const badges = deriveBadges('B', 1.0, false, 500);
-    expect(badges[0].type).toBe('popular');
+  it('preserves catalog-controlled badges while omitting unavailable market intelligence', () => {
+    const result = buildBadgeResult(undefined, undefined, {
+      featured: true,
+      newArrival: true,
+      onSale: true,
+    }, false);
+
+    expect(result.badges.map(({ type }) => type)).toEqual(['featured', 'new-arrival', 'on-sale']);
+    expect(result.turnoverScore).toBeNull();
+    expect(result.demandLevel).toBeNull();
+    expect(result.isDemo).toBe(false);
   });
 
-  it('should show Normal for ABC C', () => {
-    const badges = deriveBadges('C', 0.8, false, 500);
-    expect(badges[0].type).toBe('normal');
-  });
+  it('derives market badges and metrics from real intelligence and velocity', () => {
+    const result = buildBadgeResult(intelligence, [velocity], { featured: true }, false);
 
-  it('should add Emergente when trend > 1.3', () => {
-    const badges = deriveBadges('B', 1.5, false, 500);
-    expect(badges).toHaveLength(2);
-    expect(badges[1].type).toBe('emergente');
-  });
-
-  it('should NOT add Emergente when trend <= 1.3', () => {
-    const badges = deriveBadges('A', 1.3, false, 500);
-    expect(badges).toHaveLength(1);
-  });
-
-  it('should add Últimas Unidades when stockout risk + stock > 0', () => {
-    const badges = deriveBadges('C', 0.9, true, 50);
-    expect(badges).toHaveLength(2);
-    expect(badges[1].type).toBe('last-units');
-  });
-
-  it('should NOT add Últimas Unidades when stock is 0', () => {
-    const badges = deriveBadges('C', 0.9, true, 0);
-    expect(badges).toHaveLength(1);
-  });
-
-  it('should combine all badges: Best-Seller + Emergente + Last Units', () => {
-    const badges = deriveBadges('A', 2.0, true, 30);
-    expect(badges).toHaveLength(3);
-    expect(badges.map(b => b.type)).toEqual(['best-seller', 'emergente', 'last-units']);
-  });
-
-  it('should handle null trend gracefully', () => {
-    const badges = deriveBadges('B', null, false, 500);
-    expect(badges).toHaveLength(1);
-    expect(badges[0].type).toBe('popular');
-  });
-
-  // === Catalog flags tests ===
-  it('should show Destaque when featured=true', () => {
-    const badges = deriveBadges('C', 0.8, false, 500, { featured: true });
-    expect(badges[0]).toEqual({ type: 'featured', label: 'Destaque' });
-    expect(badges[1]).toEqual({ type: 'normal', label: 'Normal' });
-  });
-
-  it('should show Novidade when newArrival=true', () => {
-    const badges = deriveBadges('C', 0.8, false, 500, { newArrival: true });
-    expect(badges[0]).toEqual({ type: 'new-arrival', label: 'Novidade' });
-  });
-
-  it('should show Promoção when onSale=true', () => {
-    const badges = deriveBadges('C', 0.8, false, 500, { onSale: true });
-    expect(badges[0]).toEqual({ type: 'on-sale', label: 'Promoção' });
-  });
-
-  it('should combine catalog flags + intelligence badges', () => {
-    const badges = deriveBadges('A', 1.5, true, 20, { featured: true, onSale: true });
-    expect(badges.map(b => b.type)).toEqual([
-      'featured', 'on-sale', 'best-seller', 'emergente', 'last-units'
+    expect(result.badges.map(({ type }) => type)).toEqual([
+      'featured', 'best-seller', 'emergente', 'last-units',
     ]);
+    expect(result.turnoverScore).toBe(86);
+    expect(result.demandLevel).toBe('alta');
+  });
+
+  it('keeps real intelligence badges when velocity data is unavailable', () => {
+    const result = buildBadgeResult(intelligence, [], undefined, true);
+
+    expect(result.badges.map(({ type }) => type)).toEqual(['best-seller', 'last-units']);
+    expect(result.turnoverScore).toBe(86);
+    expect(result.demandLevel).toBe('alta');
+    expect(result.isLoading).toBe(true);
   });
 });
