@@ -21,7 +21,7 @@ As seções históricas abaixo refletem o estado de 22/10 e não substituem este
 
 **Verdes confirmados:** Migration ledger drift (`41013281253`, 30/10), Branch Protection Sentinel (`40602983038`), Enterprise Compliance & Audit Reporting (`40602982958`), Portal Sicoob (`39868499315`), Monthly DB Audit (`36794161452`, 01/10) e Dependabot Updates (`40603001428`). O último run de Aplicar migrations Sicoob foi `cancelled` (`37029743784`, 02/10); cancelamento não é falha e nenhuma migration foi executada por esta auditoria.
 
-### PR #176 — estado remoto verificado, SHA `e540dfb`
+### PR #176 — snapshot histórico, SHA `e540dfb`
 
 A PR está aberta e bloqueada (`merged=false`), com head `e540dfbd0e61c124dfeba314cb735a9733cdb48f` e base `main` `e9d59026793b84fabeaeec9da890a068f64d49c3`.
 
@@ -45,7 +45,24 @@ A PR está aberta e bloqueada (`merged=false`), com head `e540dfbd0e61c124dfeba3
 5. A migration candidata `20261030190000_bind_sicoob_scan_evidence_hash.sql` está versionada e autorizada somente na allowlist de construção. Foi validada em PostgreSQL descartável; não foi aplicada a Supabase remoto. Antes de qualquer aplicação, confirmar o projeto `construction`, executar o preflight de ledger e auditar os registros anteriores: a constraint `NOT VALID` protege gravações novas, mas não declara consistência histórica.
 6. O scanner segue sem provedor homologado. Faltam configurar URL/token no ambiente de construção, testar EICAR e timeout contra esse provedor e verificar limpeza de objetos órfãos no Storage. Não usar o mock `scanner-sintetico` como prova de integração real.
 
-**Validação local da branch de correção:** suíte completa 5.854 passou, 68 skipped, 0 falhou; build e typecheck passaram; lint passou (0 erros, 874 avisos); `npm audit --audit-level=high` passou com 0 vulnerabilidades. Também passaram actionlint, autorização das 106 Edge Functions e orçamento de bundle. Os números refletem o worktree da PR; `main` permanece sem essas alterações. Nenhuma migration, Edge Function ou dado remoto foi alterado.
+**Validação local daquele snapshot:** suíte completa 5.854 passou, 68 skipped, 0 falhou; build e typecheck passaram; lint passou (0 erros, 874 avisos); `npm audit --audit-level=high` passou com 0 vulnerabilidades. A validação candidata posterior registra 5.856 aprovados em `RELATORIO_CI.md`. Os números acima refletem o snapshot antigo `e540dfb`; `main` permanece sem as alterações. Nenhuma migration, Edge Function ou dado remoto foi alterado.
+
+### PR #176 — snapshot consultado para o SHA `3096491e2c09711aee949628e39e41e98cc2c62b`
+
+Os runs abaixo foram consultados antes do lote documental desta branch. Status `in_progress`/`queued` não é falha e ainda não é aceite de CI.
+
+| Workflow | Status no último snapshot | Evidência / bloqueio | Run |
+|---|---|---|---|
+| Lighthouse Performance Audit | `success` | Auditoria concluída. | [41103728118](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41103728118) |
+| Portal Sicoob | `success` | Checks de portal passaram. | [41103726700](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41103726700) |
+| E2E (Playwright) | `failure` | Preflight falhou antes do Playwright: `E2E_SUPABASE_PROJECT_ID` vazio; jornadas autenticadas não rodaram. | [41103727637](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41103727637) |
+| Running Copilot Code Review | `failure` | Limite adicional de uso do Copilot (HTTP 402); também houve bloqueio de firewall para `api.github.com`. Depende do owner/GitHub. | [41103742008](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41103742008) |
+| Qualidade contínua | `in_progress` | Sem conclusão no momento da consulta. | [41103726857](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41103726857) |
+| Security Scan | `in_progress` | Sem conclusão no momento da consulta. | [41103726975](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41103726975) |
+| Bundle Size Check | `in_progress` | Sem conclusão no momento da consulta. | [41103727427](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41103727427) |
+| CodeQL | `queued` | Aguardando execução; sem causa de fila exposta. | [41103727897](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41103727897) |
+
+A PR permanece aberta e sem merge. O E2E depende de projeto Supabase isolado e personas de teste configuradas como secrets acessíveis ao job. O canônico está bloqueado pelo workflow.
 
 **Correções adicionais pós-auditoria:** mensagens de erro de enums Zod agora distinguem ausência de valor inválido, com testes para os dois casos; o resolver do formulário mantém um adaptador tipado porque a entrada genérica de `z.coerce.number` não representa os defaults e controles numéricos concretos da tela. O cliente SQL do Supabase aceita project refs alfanuméricos de 20 caracteres, alinhado ao guard de migrations, com cenário cobrindo dígitos. Os commits após `729c3e2` foram validados localmente e remotamente no SHA `90e12ae`; a `main` permanece sem merge.
 

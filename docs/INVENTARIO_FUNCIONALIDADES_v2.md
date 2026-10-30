@@ -1,7 +1,7 @@
 # Inventário Exaustivo de Funcionalidades v2 — Promo Gifts
 
-> Documento técnico-executivo atualizado em 2026-05-03.
-> Reflete o estado real da plataforma Promo Gifts (Catálogo B2B + Vertical Sicoob).
+> Baseline histórico de 03/05/2026. Não reflete necessariamente o código atual e não deve ser usado como fonte de verdade para disponibilidade ou aceite operacional.
+> Para o estado parcial de 30/10/2026, consulte [o progresso técnico](execucao/progresso-plano-2026-10-30.md) e confirme cada contrato no código e no ambiente.
 
 ## 1. Resumo Executivo
 A **Promo Gifts** é uma plataforma B2B dual-mode (Catálogo Geral + Especialização Sicoob) de alta performance. 
@@ -19,7 +19,7 @@ Plataforma multi-tenant com separação lógica e visual via **Skins Factory**.
 - **SSOT (Single Source of Truth):** Banco de dados externo para dados de produtos e estoque. O banco local (Supabase) atua como cache e persistência de dados de aplicação (pedidos, orçamentos, perfis).
 - **Arquitetura Multi-DB:** Conexão com Supabase Local, Catálogo Externo e CRM DB.
 - **Multimodal:** Suporte a áudio, IA generativa e assistentes conversacionais.
-- **Master Index:** Toda a arquitetura está mapeada no [Master Module Index (MODULES.md)](docs/MODULES.md).
+- **Master Index:** Mapa técnico disponível em [MODULES.md](MODULES.md); confirme a atualização do inventário antes de tratá-lo como estado atual.
 
 ## 3. Perfis de Usuário e Governança
 | Papel | Escopo | Rotas Chave |
@@ -59,7 +59,8 @@ A plataforma conta com uma vasta camada de lógica serverless, categorizada abai
 - `send-notification`, `send-digest`, `send-scheduled-reports`, `send-transactional-email`, `quote-followup-reminders`, `cleanup-notifications`, `cleanup-novelties`, `verify-email`.
 
 ### Watchers & Public Share
-- `collections-watcher`, `favorites-watcher`, `comparison-price-watcher`, `collections-public-react`, `comparisons-public-react`, `favorites-public-react`, `kit-public-view`, `quote-public-view`.
+- `collections-watcher`, `favorites-watcher`, `comparison-price-watcher`, `collections-public-react`, `comparisons-public-react`, `favorites-public-react`, `kit-public-view`.
+- `quote-public-view` é legado inerte e retorna HTTP 410; aprovação pública ativa passa pela rota `/public/orcamento/:token/aprovacao` e Edge Function `quote-approval`.
 
 ### Utilidades & Outros
 - `cnpj-lookup`, `image-proxy`, `categories-api`, `materials-api`, `commemorative-dates`, `expert-chat`, `get-visitor-info`, `magic-up-score`, `manage-users`, `market-intelligence-insights`, `sicoob-seed`, `sicoob-seed-debug`, `webhook-dispatcher`, `webhook-inbound`.
@@ -71,4 +72,4 @@ A plataforma conta com uma vasta camada de lógica serverless, categorizada abai
 - **Anti-Scraping:** Detecção de bots, rate limiting agressivo (`rate-limit-check`) e proteção contra hotlinking.
 
 ---
-*Este inventário é a fonte de verdade para a governança do projeto.*
+*Este inventário é histórico. Não é fonte de verdade para a governança atual; use os arquivos de progresso datados e valide implementação, configuração e runtime separadamente.*

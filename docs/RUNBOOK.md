@@ -1,7 +1,7 @@
 # 📘 Runbook Operacional — Promo Brindes
 
-> Guia de procedimentos para incidentes e operações de rotina  
-> **Última atualização:** 13/04/2026
+> Guia de referência. Instruções que dependem de provedor, credenciais ou configuração remota devem ser confirmadas no ambiente antes do uso.
+> **Última revisão:** 30/10/2026
 
 ---
 
@@ -37,26 +37,23 @@
 
 ### Deploy de Edge Functions
 
-```bash
-# Deploys são automáticos via Lovable Cloud.
-# Para deploy manual (emergência):
-npx supabase functions deploy <nome-da-funcao>
-```
+Use o fluxo documentado em [`DEPLOYMENT.md`](./DEPLOYMENT.md) e [`CI_CD.md`](./CI_CD.md). Este repositório não comprova publicação automática via Lovable Cloud. Não execute deploy manual fora do fluxo aprovado e do ambiente `construction`.
 
 ### Verificação de Saúde
 
 1. **Frontend:** Acessar a URL publicada e verificar carregamento
-2. **Backend:** Verificar status das Edge Functions no painel Lovable Cloud
+2. **Backend:** Verificar status e logs das Edge Functions no provedor configurado para o ambiente.
 3. **Banco:** Executar query de healthcheck:
    ```sql
    SELECT count(*) FROM profiles WHERE is_active = true;
    ```
-4. **Integrações:** Testar endpoint Bitrix24 via Edge Function `quote-sync`
+   Execute com credencial de operador autorizada e interprete a contagem considerando o RLS da role; uma contagem autenticada pode representar apenas linhas visíveis, não a saúde integral do banco.
+4. **Integrações:** testar Bitrix24 somente com fixture sintética, credenciais e destino de sandbox autorizados. `quote-sync` pode produzir escrita externa; não o use como healthcheck de produção.
 
-### Rotação de Secrets
+### Rotação de secrets
 
 1. Gerar nova chave no provedor (Bitrix24, Dropbox, etc.)
-2. Atualizar via `secrets--update_secret` no Lovable
+2. Atualizar no gerenciador de secrets do ambiente autorizado, seguindo [`secrets.md`](./secrets.md). Não registrar valores em logs, commits ou relatórios.
 3. Verificar Edge Functions afetadas
 4. Testar endpoints críticos
 
@@ -66,8 +63,8 @@ npx supabase functions deploy <nome-da-funcao>
 
 ### Backup e Restauração
 
-- **Backups automáticos:** Lovable Cloud mantém backups diários
-- **Point-in-Time Recovery:** Disponível via painel de administração
+- A frequência de backup, retenção, PITR e cobertura de Storage não foram confirmadas para os projetos conectados. Verifique a configuração efetiva e registre evidência antes de depender de restauração.
+- Faça qualquer ensaio de restauração somente em projeto isolado de construção/homologação, conforme [`DR.md`](./DR.md).
 - **Exportação manual:**
   ```sql
   -- Exportar orçamentos dos últimos 30 dias
@@ -100,19 +97,9 @@ ORDER BY created_at DESC
 LIMIT 20;
 ```
 
-### Manutenção
+### Manutenção — somente diagnóstico nesta referência
 
-```sql
--- Limpar logs antigos (> 90 dias)
-DELETE FROM admin_audit_log 
-WHERE created_at < now() - interval '90 days';
-
--- Limpar telemetria antiga (> 60 dias)
-DELETE FROM query_telemetry 
-WHERE created_at < now() - interval '60 days';
-
--- (Web Vitals removidos: rastreamento agora é feito por sistema externo.)
-```
+Esta documentação não autoriza exclusão de dados. Antes de retenção/expurgo, confirme política aprovada, escopo, backup, RLS e ambiente. Faça primeiro uma consulta somente leitura de contagem e faixa de datas em ambiente isolado. Não execute `DELETE`, `TRUNCATE` ou limpeza manual no banco canônico com base neste runbook.
 
 ---
 
@@ -141,16 +128,17 @@ ORDER BY created_at DESC LIMIT 50;
 ### Auditoria de RLS
 
 ```sql
--- Verificar tabelas sem RLS
-SELECT schemaname, tablename 
-FROM pg_tables 
-WHERE schemaname = 'public' 
-AND tablename NOT IN (
-  SELECT tablename FROM pg_tables t
-  JOIN pg_class c ON c.relname = t.tablename
-  WHERE c.relrowsecurity = true
-);
+-- Listar tabelas públicas comuns/particionadas sem RLS
+SELECT n.nspname AS schemaname, c.relname AS tablename
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE n.nspname = 'public'
+  AND c.relkind IN ('r', 'p')
+  AND c.relrowsecurity IS NOT TRUE
+ORDER BY c.relname;
 ```
+
+Execute em contexto administrativo do ambiente correto. A checagem de RLS não substitui a revisão das policies; avalie também `relforcerowsecurity` se a política operacional exigir FORCE RLS.
 
 ---
 
@@ -159,7 +147,7 @@ AND tablename NOT IN (
 ### Cenários e Procedimentos
 
 #### Cenário 1: Frontend Inacessível
-1. Verificar status do Lovable Cloud
+1. Verificar o status oficial do provedor configurado para o ambiente
 2. Checar DNS e certificado SSL
 3. Verificar se o build está válido (último deploy)
 4. Restaurar versão anterior se necessário
@@ -172,8 +160,8 @@ AND tablename NOT IN (
 
 #### Cenário 3: Banco de Dados Corrompido
 1. **NÃO tente corrigir manualmente**
-2. Contactar suporte Lovable Cloud
-3. Solicitar restauração de backup
+2. Contactar o suporte do provedor contratado
+3. Solicitar restauração conforme o plano de DR e apenas após confirmar ponto, escopo e destino isolado
 4. Validar integridade após restauração
 
 #### Cenário 4: Integração Bitrix24 Offline

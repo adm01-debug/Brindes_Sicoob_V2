@@ -1,6 +1,6 @@
-# 🎁 Brindes Sicoob V2 — Portal corporativo de brindes
+# 🎁 Brindes Sicoob V2 — Portal corporativo de brindes em construção
 
-> Sistema completo de catálogo, orçamentos, simulação de preços e inteligência comercial para vendedores de brindes promocionais.
+> Portal B2B em construção para catálogo e solicitações de brindes das cooperativas Sicoob. Código presente no repositório não comprova integração ativa, implantação, aceite comercial ou operação em produção.
 
 [![Stack](https://img.shields.io/badge/Stack-React%2018%20%2B%20TypeScript%205%20%2B%20Supabase-blue)]()
 [![Build](https://img.shields.io/badge/Build-Vite%205-purple)]()
@@ -30,9 +30,11 @@
 ## 🛡️ Relatório de Auditoria
 
 O sistema está em construção e passa por auditorias de segurança, banco,
-contratos e experiência. O relatório consolidado mais recente é:
+contratos e experiência. O progresso técnico local mais recente é de 30/10/2026:
 
-- 📄 **[Execução e preflight do banco canônico — 01/10/2026](./docs/execucao/execucao-plano-2026-10-01.md)** — correções consolidadas, testes do candidato e consulta administrativa atual do Supabase.
+- 📄 **[Progresso do plano — 30/10/2026](./docs/execucao/progresso-plano-2026-10-30.md)** — lote de correções e validações locais. Não fecha o plano nem prova implantação remota.
+
+- 📄 **[Execução e preflight do banco — 01/10/2026](./docs/execucao/execucao-plano-2026-10-01.md)** — registro histórico; não representa estado atual do banco remoto.
 
 - 📄 **[Revisão das 150 etapas e dos workflows — 01/10/2026](./docs/execucao/revisao-do-plano-2026-10-01.md)** — implementação atual, falha de autorização reproduzida e limites de validação do banco.
 
@@ -44,17 +46,16 @@ contratos e experiência. O relatório consolidado mais recente é:
 
 ## 🎯 Visão Geral
 
-**Brindes Sicoob V2** é um portal B2B para cooperativas, gestores e compradores
-do Sicoob que integra:
+**Brindes Sicoob V2** é um portal B2B em construção para cooperativas, marketing,
+aprovadores e compradores do Sicoob. Módulos presentes no código incluem:
 
-- **Catálogo** com 6.100+ produtos, filtros avançados e infinite scroll virtualizado
-- **Simulador de Preços** com cálculo de personalização (gravação, serigrafia, etc.)
-- **Criador de Orçamentos** com versionamento e aprovação do cliente
-- **Flow — Assistente IA** para recomendação de produtos e propostas comerciais
-- **Montador de Kits** com preview visual e exportação PDF
-- **Gerador de Mockups** com IA generativa
-- **Dashboard BI** com métricas de vendas e análise de tendências
-- **Agente de Voz** com reconhecimento por fala e TTS
+- **Catálogo** conectado ao banco externo de produtos para consulta; cobertura, disponibilidade e atualização dependem do ambiente.
+- **Simulação de preços** e **criação de orçamentos**, sujeitas à validação de contratos e jornadas autenticadas.
+- **Aprovação pública de orçamento** por token; a migration de redação de campos internos está versionada, mas ainda não aplicada em banco remoto.
+- **Montagem de kits** e ferramentas de mockup; o assistente `AIMockupAssistant` atualmente usa respostas simuladas, não IA generativa.
+- **Assistentes e integrações de IA** cuja disponibilidade depende de funções e credenciais configuradas.
+- **Tendências/BI** em modo demonstração por padrão; não tratar dados exibidos como métricas reais sem desativar o demo e validar a fonte.
+- **E-mail transacional** ainda não implementado: a Edge Function correspondente responde HTTP 501.
 
 ---
 
@@ -67,7 +68,7 @@ do Sicoob que integra:
 | **Estado** | TanStack Query (server state), Zustand (client state) |
 | **Backend** | Supabase (Auth, DB, Storage, Edge Functions) |
 | **Banco Externo** | PostgreSQL via Edge Function bridge (Promobrind) |
-| **IA** | Lovable AI Gateway (Gemini, GPT-5) |
+| **IA** | Integrações configuráveis; disponibilidade e modelo ativo dependem do ambiente |
 | **Integrações** | Bitrix24 CRM, n8n automações, ElevenLabs TTS |
 | **Testes** | Vitest, Testing Library |
 
@@ -173,9 +174,9 @@ supabase/
 ├── functions/        # 106 Edge Functions com entrypoint
 │   ├── _shared/      # Utilitários compartilhados (CORS, auth, validação)
 │   ├── expert-chat/  # Assistente IA
-│   ├── external-db-bridge/ # Bridge para banco externo
+│   ├── external-db-bridge/ # Bridge para consulta ao banco externo
 │   └── ...
-└── migrations/       # 534 migrations SQL versionadas
+└── migrations/       # 589 arquivos SQL no snapshot local de 30/10/2026; não equivale ao ledger remoto
 ```
 
 ---
@@ -183,40 +184,34 @@ supabase/
 ## 📦 Módulos Principais
 
 ### 1. Catálogo (`/` e `/filtros`)
-- Grid virtualizado com 20k+ itens renderizados eficientemente
-- 3 layouts: Grade, Lista, Tabela — com paridade funcional total
-- Filtros: categoria, material, cor, preço, fornecedor, técnica, público-alvo
-- Seleção em lote para comparação e orçamentos
-- Deep linking completo (gênero, tamanhos, cores, views)
+- Busca, filtros e apresentação em layouts disponíveis no código; a paridade completa entre layouts não está certificada.
+- Catálogo externo é fonte de consulta de produto/estoque; não deve ser alterado pelo portal.
+- Não há garantia documentada de renderização eficiente de 20 mil itens ou de cobertura completa do deep linking.
 
 ### 2. Simulador de Preços (`/simulador`)
 - Wizard de 4 etapas: Local → Grupo → Variação → Configuração
 - Cálculo de personalização com faixas de quantidade
 - Comparação visual entre técnicas e fornecedores
-- Persistência de rascunhos no banco
+- Persistência e recuperação de rascunhos precisam ser confirmadas na jornada autenticada do ambiente-alvo.
 
 ### 3. Criador de Orçamentos (`/orcamentos/novo`)
 - Stepper animado de 6 etapas com micro-interações
-- Versionamento de orçamentos com histórico completo
-- Aprovação do cliente via link público com token único
+- Versionamento e aprovação pública por token implementados no código; a aprovação e migrations pendentes ainda precisam de validação no projeto isolado.
 - Exportação PDF profissional
 
-### 4. Flow — Assistente IA
-- Chat com streaming (SSE) e Markdown renderizado
-- Filtros de produto integrados ao contexto da conversa
-- Modo CRM: análise de cliente, propostas personalizadas
-- TTS (Text-to-Speech) e entrada por voz
-- Histórico de conversas com busca e filtro por data
+### 4. Assistentes
+- O repositório contém assistentes e integrações distintas; disponibilidade depende de configuração e respostas verificadas da função correspondente.
+- `AIMockupAssistant` usa um conjunto local de respostas simuladas e não deve ser apresentado como IA generativa operacional.
 
 ### 5. Montador de Kits (`/montar-kit`)
 - Drag-and-drop de produtos
 - Preview visual do kit com cálculo de volume
-- Estimativa de frete (SEDEX/PAC)
+- Estimativas logísticas precisam de validação com transportadora e dados reais antes de uso comercial.
 - Compartilhamento via link público
 
 ### 6. Dashboard BI (`/bi`)
-- Métricas de vendas em tempo real (Recharts)
-- Análise de tendências e sazonalidade
+- Gráficos de BI e análise de tendências; o módulo de tendências usa dados de demonstração por padrão.
+- Nenhuma métrica deve ser interpretada como dado real sem validar a fonte e o modo do ambiente.
 - Top produtos, categorias e fornecedores
 - Exportação de relatórios
 
@@ -229,10 +224,10 @@ supabase/
 - Google OAuth como login social
 - Refresh automático de tokens via `AuthContext`
 - Sign-up desativado (plataforma fechada/convite)
-- Proteção HIBP e restrição por IP/Geolocalização
+- Controles de segurança devem ser verificados por workflow e configuração do ambiente; a lista de funcionalidades não comprova sua ativação.
 
 ### RBAC
-- 3 papéis: `admin`, `manager`, `vendedor`
+- Papéis e escopos devem ser consultados no schema e nas políticas vigentes; não assuma que esta lista resume todos os papéis do projeto.
 - Tabela `user_roles` com enum `app_role`
 - Função `has_role()` (SECURITY DEFINER) para queries sem recursão RLS
 - Tabela `role_permissions` para permissões granulares
@@ -241,15 +236,14 @@ supabase/
 ### RLS
 - RLS é auditada por gates estáticos e remotos; a comprovação do ambiente exige credenciais administrativas e execução verde do workflow de compliance
 - Policies baseadas em `auth.uid()` e `has_role()`
-- Multi-tenancy via `organization_id` com isolamento completo
+- O isolamento entre organizações exige validação de RLS no projeto de homologação; não é certificado apenas por esta documentação.
 
 ---
 
 ## 🗄 Banco de Dados
 
 ### Supabase (Interno)
-- 35+ tabelas com RLS completo
-- 534 migrations versionadas; o ledger remoto deve ser confrontado antes de qualquer deploy
+- Schema gerido por migrations; há 589 arquivos SQL no snapshot local deste README (30/10/2026). O ledger e schema remoto precisam de reconciliação antes de deploy.
 - Tipos gerados automaticamente (`supabase gen types`)
 - Connection pooling via Supabase pooler
 
@@ -263,7 +257,7 @@ supabase/
 
 ## ⚡ Edge Functions
 
-104 Edge Functions com entrypoint, classificadas no manifesto de autorização:
+106 Edge Functions com entrypoint no snapshot local de 30/10/2026, classificadas no manifesto de autorização; isso não informa quantas estão publicadas remotamente:
 
 | Categoria | Funções |
 |---|---|
@@ -288,7 +282,7 @@ supabase/
 | **Bitrix24** | CRM, contatos, deals | REST API + OAuth2 |
 | **n8n** | Automações (webhooks, emails) | Webhooks |
 | **ElevenLabs** | Text-to-Speech no Agente de Voz | WebSocket |
-| **Lovable AI** | Chat IA, geração de imagens | API Gateway |
+| **Serviços de IA** | Integrações presentes no código; configuração/funcionamento dependem de credenciais e do endpoint por recurso | HTTP/API |
 
 ---
 
@@ -312,18 +306,9 @@ supabase/
 
 ---
 
-## 🚢 Deploy
+## 🚢 Publicação
 
-O deploy é gerenciado automaticamente pelo **Lovable Cloud**:
-
-1. Push para a branch principal
-2. Build automático via Vite
-3. Edge Functions deployadas automaticamente
-4. Preview disponível em URL única
-
-### URLs
-- **Preview**: `https://id-preview--*.lovable.app`
-- **Produção**: `https://criar-together-now.lovable.app`
+O repositório não contém workflow de release do frontend. O procedimento de Edge Functions e migrations está descrito em [DEPLOYMENT.md](./docs/DEPLOYMENT.md). O workflow exige um project ref e bloqueia o ref canônico, mas não prova sozinho que qualquer outro projeto seja isolado; confirme manualmente que a referência configurada aponta ao projeto de construção antes do disparo.
 
 ---
 
@@ -343,13 +328,10 @@ O deploy é gerenciado automaticamente pelo **Lovable Cloud**:
 
 | Métrica | Valor |
 |---|---|
-| Arquivos TypeScript | ~907 |
-| Linhas de código | ~180.000 |
-| Edge Functions com entrypoint | 104 |
-| Migrations SQL | 529 |
-| RLS | gate automatizado; validação remota ainda depende de personas e credenciais |
-| Testes | 381 arquivos Vitest + cenários Node e simulações PostgreSQL |
-| TypeScript sem regressão | ✅ baseline controlado; dívida existente documentada |
+| Edge Functions com entrypoint no snapshot local de 30/10/2026 | 106 |
+| Arquivos SQL em `supabase/migrations` no snapshot local de 30/10/2026 | 589 (não equivale ao ledger remoto) |
+| Suíte local da revisão | 5.856 aprovados, 68 ignorados; ver SHA e limites em [RELATORIO_CI.md](./RELATORIO_CI.md) |
+| RLS | Há gates estáticos e workflow remoto; não certifica o banco sem execução e credenciais do projeto-alvo |
 
 ---
 
