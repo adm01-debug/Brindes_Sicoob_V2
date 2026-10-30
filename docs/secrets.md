@@ -1,12 +1,15 @@
 # Inventário de segredos e variáveis de ambiente
 
-Gerado em 2026-09-13 por `grep -rhoE "Deno\.env\.get\(...)" supabase/functions` e
-`grep -rhoE "secrets\.\w+" .github/workflows`. Etapa 47 do
-[plano de 50 etapas](./plano-melhorias-50-etapas.md).
+Gerado originalmente em 2026-09-13 por varredura dos acessos a variáveis e secrets.
+Este inventário é histórico e não deve ser tratado como retrato atual sem comparação
+com os workflows e a execução mais recente. Em 30/10/2026, a PR #176 confirmou
+variáveis do projeto E2E ausentes (run [41099125007](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41099125007)).
+Etapa 47 do [plano de 50 etapas](./plano-melhorias-50-etapas.md).
 
-**Preencher a coluna "Configurado em" — hoje é a lacuna real**: os secrets de E2E
-(etapa 03) e de compliance (etapa 04) faltam no GitHub Actions, e é assim que os
-dois gates de CI ficam vermelhos. Ninguém tinha essa lista consolidada antes.
+**Estado atual conhecido:** os identificadores/URL do projeto E2E estavam
+ausentes no run acima. As demais credenciais de E2E e compliance não foram
+verificadas nesta execução e não devem ser classificadas como ausentes sem
+evidência do painel ou de um gate que as valide.
 
 ## Lidos pelas edge functions (`Deno.env.get`)
 
@@ -77,23 +80,27 @@ assinaturas que as referenciem, pois são necessárias para verificar o históri
 
 | Variável | Workflow | Status |
 |---|---|---|
-| `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` | `e2e.yml` | ❌ **ausente — causa da falha do PR #6 (etapa 03)** |
-| `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` | `e2e.yml` | ❌ **ausente — idem** |
-| `SUPABASE_SERVICE_ROLE_KEY` | `security-compliance.yml` | ❌ **ausente — causa da falha do job agendado em `main` (etapa 04)** |
+| `E2E_SUPABASE_PROJECT_ID` | `e2e.yml` | ❌ **ausente no run 41099125007; configurar para o projeto isolado de homologação** |
+| `VITE_SUPABASE_PROJECT_ID` / `VITE_SUPABASE_URL` | `e2e.yml` | ❌ **ausente no run 41099125007; devem corresponder ao mesmo projeto isolado** |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | `e2e.yml` | ⚠️ Requerida; disponibilidade não verificada porque o preflight parou nos identificadores/URL |
+| `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` | `e2e.yml` | ⚠️ Requerida; estado não verificado no run atual |
+| `E2E_VIEWER_EMAIL` / `E2E_VIEWER_PASSWORD` | `e2e.yml` | ⚠️ Requerida; estado não verificado no run atual |
+| `E2E_MANAGER_EMAIL` / `E2E_MANAGER_PASSWORD` | `e2e.yml` | ⚠️ Requerida; estado não verificado no run atual |
+| `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` / `E2E_ADMIN_TOTP_SECRET` | `e2e.yml` | ⚠️ Requerida; estado não verificado no run atual |
+| `E2E_DEV_EMAIL` / `E2E_DEV_PASSWORD` / `E2E_DEV_TOTP_SECRET` | `e2e.yml` | ⚠️ Requerida; estado não verificado no run atual |
+| `E2E_CLEANUP_TOKEN` | `e2e.yml` | ⚠️ Requerida pelo workflow; estado não verificado no run atual |
+| `SUPABASE_SERVICE_ROLE_KEY` | `e2e.yml`, `security-compliance.yml` | ⚠️ Requerida para verificações remotas; estado atual não verificado |
 | `SUPABASE_DB_URL` | `migration-ledger-drift.yml`, `apply-sicoob-migrations.yml` | ✅ configurado no repositório; uso de escrita restrito ao environment `construction` e à `main` protegida. O workflow de escrita exige banco `postgres`, porta `5432`, `sslmode=require` ou `verify-full` e host direto `db.cfmzkthhgliqelozlmwu.supabase.co` ou session pooler oficial com usuário `postgres.cfmzkthhgliqelozlmwu` |
-| `RLS_TEST_USER_A_EMAIL` / `_PASSWORD` | `security-compliance.yml` | ❌ **ausente — persona autenticada de uma organização isolada** |
-| `RLS_TEST_USER_B_EMAIL` / `_PASSWORD` | `security-compliance.yml` | ❌ **ausente — proprietário da fixture privada** |
-| `RLS_TEST_PRIVATE_QUOTE_B_ID` | `security-compliance.yml` | ❌ **ausente — orçamento privado determinístico da persona B** |
-| `VITE_SUPABASE_URL` | `ci.yml`, `security-compliance.yml` | verificar se está presente |
-| `LHCI_GITHUB_APP_TOKEN` | `lighthouse.yml` | verificar |
+| `RLS_TEST_USER_A_EMAIL` / `_PASSWORD` | `security-compliance.yml` | estado atual não verificado |
+| `RLS_TEST_USER_B_EMAIL` / `_PASSWORD` | `security-compliance.yml` | estado atual não verificado |
+| `RLS_TEST_PRIVATE_QUOTE_B_ID` | `security-compliance.yml` | estado atual não verificado |
+| `LHCI_GITHUB_APP_TOKEN` | `lighthouse.yml` | estado atual não verificado |
 | `GITHUB_TOKEN` | vários (automático do Actions) | automático, não precisa configurar |
 
 ## Como usar isto
 
-1. As linhas marcadas ❌ são bloqueio confirmado — configurar antes de mesclar qualquer PR.
-2. As linhas "preencher" precisam que alguém com acesso ao Supabase Dashboard e às
-   integrações confirme se o secret já existe (nomes diferentes?) ou se está faltando.
-3. Depois de preenchido, um script (`scripts/check-secrets-inventory.mjs`, a criar)
-   pode comparar este arquivo contra o `grep` acima e falhar o CI se aparecer uma
-   variável nova sem documentação — fecha o ciclo para isso não precisar ser
-   redescoberto lendo log de CI de novo.
+1. Só classifique como ausente o secret cuja ausência tenha sido confirmada por
+   anotação de workflow, painel ou API que exponha apenas nomes, nunca valores.
+2. Atualize este inventário quando os workflows ou o estado do ambiente mudarem.
+3. Criar um verificador automatizado que compare acessos no código e YAML com
+   este inventário continua sendo uma melhoria pendente.

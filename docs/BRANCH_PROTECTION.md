@@ -1,16 +1,22 @@
 # Proteção da branch `main`
 
-## Estado observado em 22/09/2026
+## Estado observado em 30/10/2026
 
-A regra remota exige uma revisão, mas não possui status checks obrigatórios e
-permite bypass administrativo. PRs recentes foram mesclados com jobs em falha
-porque o orçamento do GitHub Actions impediu a inicialização. Portanto, a
-proteção atual não comprova qualidade nem segurança do conteúdo mesclado.
+Consulta read-only às configurações remotas de `main` confirmou: PR obrigatória,
+uma aprovação, descarte de aprovações antigas, aprovação após o último push,
+branch atualizada antes do merge, resolução de conversas, 10 checks obrigatórios,
+aplicação da regra a administradores, force push e exclusão desativados. Os nomes
+e o resultado por SHA devem ser conferidos no GitHub antes de cada merge; a lista
+de checks obrigatórios não prova que um workflow específico esteja verde.
+
+Os cenários negativos abaixo (bypass administrativo, force push e exclusão) não
+foram executados nesta revisão. A configuração observada é evidência de política,
+mas não substitui um teste controlado e autorizado desses bloqueios.
 
 ## Configuração alvo
 
 Em <https://github.com/adm01-debug/Brindes_Sicoob_V2/settings/branches>, a
-regra de `main` deve exigir:
+regra remota de `main` foi observada exigindo:
 
 - pull request com pelo menos uma aprovação;
 - descarte de aprovação após novo commit;

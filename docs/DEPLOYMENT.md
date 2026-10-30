@@ -1,71 +1,33 @@
-# Guia de deploy
+# Publicação e migrações
 
-## Pré-requisitos
-- Node.js 24+
-- Projeto Supabase vinculado ao ambiente de construção
-- Segredos configurados no painel/Vault do ambiente; nunca em `.env` versionado
+**Revisado em:** 30/10/2026. O projeto está em construção; este documento não certifica publicação em produção.
 
-## Etapas
+## Frontend
 
-1. Instalar dependências reproduzíveis:
-```bash
-npm ci
-```
+1. Instale dependências reproduzíveis com `npm ci`.
+2. Configure `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` e `VITE_SUPABASE_PROJECT_ID` no provedor de hospedagem do ambiente de destino. Não inclua chaves secretas em variáveis `VITE_*` nem versione `.env.production`.
+3. Execute `npm run typecheck`, `npm run lint`, `npm test` e `npm run build`.
+4. Publique somente o artefato do SHA aprovado pela PR e pelo fluxo de release do ambiente.
 
-2. Configurar `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` e
-   `VITE_SUPABASE_PROJECT_ID` no provedor de hospedagem. Use
-   `.env.production.example` apenas como referência local; o arquivo
-   `.env.production` nunca deve ser versionado.
+## Edge Functions Sicoob
 
-3. Antes das migrations de operações internas, configurar `INTERNAL_FUNCTION_SECRET`
-   nas Edge Functions e os segredos `sicoob_project_url` e
-   `sicoob_internal_function_secret` no Vault. Os dois segredos internos devem
-   ter o mesmo valor aleatório de pelo menos 32 caracteres.
+O deploy remoto é manual e restrito ao environment `construction`, à branch `main` e ao workflow **Publicar funções Sicoob**. Antes de publicar, confirme no GitHub que `CONSTRUCTION_SUPABASE_PROJECT_REF` aponta para um projeto isolado de construção. O workflow recusa o projeto canônico `cfmzkthhgliqelozlmwu`.
 
-4. Publicar primeiro as Edge Functions que substituem os caminhos privilegiados
-   legados. Isso garante que a revogação das RPCs no banco não deixa a aplicação
-   sem um caminho autenticado equivalente:
-```bash
-npx supabase functions deploy send-notification process-batch-export monthly-health-report connections-auto-test system-healthcheck external-connections-sync --project-ref cfmzkthhgliqelozlmwu
-```
+1. Abra **Actions → Publicar funções Sicoob → Run workflow** na branch `main`.
+2. Digite `PUBLICAR` no campo de confirmação.
+3. Verifique que o job passou pela validação do project ref e pela checagem das versões publicadas.
+4. Registre URL do run, SHA, projeto de construção e resultado em `RELATORIO_CI.md`.
 
-5. Compilar:
-```bash
-npm run build
-```
+Não substitua esse fluxo por `supabase functions deploy` manual nem por um project ref copiado de documentação antiga.
 
-6. Publicar o frontend pelo provedor configurado.
+## Migrations Sicoob
 
-7. Aplicar somente as migrations novas e revisadas em ordem de versão no ambiente
-   de construção. **Não executar `supabase db push --linked`** enquanto o ledger
-   histórico estiver divergente: ele tentaria reaplicar centenas de arquivos que
-   não representam o baseline remoto. Neste lote, aplicar
-   `20260923110000_harden_internal_operations.sql`,
-   `20260923111000_schedule_secure_export_worker.sql`,
-   `20260923112000_fix_connection_sync_and_favorites.sql`,
-   `20260923130000_secure_sicoob_documents_and_exports.sql` e
-   `20260923140000_secure_legacy_connection_crons.sql`, registrando cada uma
-   no ledger na mesma transação de aplicação.
+Use somente **Actions → Aplicar migrations Sicoob**, na branch protegida `main`, após revisão do SQL e confirmação do environment `construction`. O workflow executa preflight, aplica somente a allowlist versionada e valida o ledger e os contratos remotos.
 
-8. Verificar após a aplicação: as cinco versões aparecem no ledger, as chamadas
-   anônimas às funções internas retornam `401` ou `503`, a sincronização externa
-   exige sessão de supervisor e os crons `process-export-queue`,
-   `connections-auto-test` e `external-db-bridge-keepalive` existem somente
-   quando os segredos necessários do Vault foram configurados.
+Não execute `supabase db push --linked`, `--include-all`, SQL manual ou os lotes de setembro descritos em registros históricos. O ledger histórico ainda exige reconciliação; a existência de um arquivo local não comprova aplicação remota. A migration `20261030190000_bind_sicoob_scan_evidence_hash.sql` está versionada no candidato da PR #176 e validada em PostgreSQL descartável, mas não foi aplicada a nenhum Supabase remoto.
 
-9. Para o lote de idempotência de 28/09/2026, usar exclusivamente o workflow
-   manual `Aplicar migrations Sicoob` a partir da branch protegida `main`. Ele
-   autoriza pelos hashes SHA-256 somente as versões `20260928162048`,
-   `20260928173500` e `20260928182000`, faz preflight read-only e registra todo
-   o lote no ledger na mesma transação. O pós-check valida o corpo crítico das
-   RPCs, RLS, políticas, privilégios, constraints e o trigger de notificação
-   transacional. Não substituir esse fluxo por `db push --include-all`: o
-   backlog histórico fora do ledger continua existindo e não é uma fila de
-   migrations autorizadas.
+## Estado e limites
 
-## Production Checklist
-- [ ] Environment variables configured
-- [ ] Database migrated
-- [ ] SSL certificates installed
-- [ ] CDN configured
-- [ ] Monitoring enabled
+- A PR #176 permanece aberta e bloqueada por configuração ausente de E2E e falha do revisor Copilot gerenciado; consulte [PENDENCIAS.md](../PENDENCIAS.md) e [RELATORIO_CI.md](../RELATORIO_CI.md) para runs atuais.
+- Nenhum deploy de funções ou migration no Supabase remoto foi executado nesta rodada.
+- Piloto comercial, compra real, restore medido e estabilidade operacional exigem evidência e aceite próprios; build verde não os substitui.
