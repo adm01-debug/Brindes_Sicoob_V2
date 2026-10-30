@@ -145,7 +145,15 @@ DECLARE
   v_skipped integer := 0;
   rec record;
   v_max_attempts integer;
+  v_lock_acquired boolean;
 BEGIN
+  -- O lock transacional impede que a cron e uma chamada manual reservem em
+  -- paralelo a mesma tentativa de retry.
+  v_lock_acquired := pg_try_advisory_xact_lock(20261029, 213000);
+  IF NOT v_lock_acquired THEN
+    RETURN jsonb_build_object('ok', true, 'retried', 0, 'skipped_busy', true);
+  END IF;
+
   SELECT decrypted_secret INTO v_project_url
   FROM vault.decrypted_secrets
   WHERE name = 'sicoob_project_url'
@@ -170,7 +178,8 @@ BEGIN
   FOR rec IN
     WITH latest AS (
       SELECT DISTINCT ON (d.webhook_id, d.event, d.payload)
-        d.id, d.webhook_id, d.event, d.payload, d.attempt, d.success
+        d.id, d.webhook_id, d.event, d.payload, d.payload_hash,
+        d.attempt, d.success, d.error_message, d.delivered_at
       FROM public.webhook_deliveries AS d
       WHERE d.delivered_at > now() - interval '1 hour'
       ORDER BY d.webhook_id, d.event, d.payload, d.delivered_at DESC, d.attempt DESC, d.id DESC
@@ -182,26 +191,51 @@ BEGIN
   LOOP
     v_max_attempts := LEAST(5, GREATEST(1, COALESCE((rec.retry_policy->>'max_attempts')::integer, 3)));
 
+    -- A chamada HTTP é assíncrona. Aguarda sua execução antes de consumir
+    -- outra tentativa; após 15 minutos, uma reserva sem resultado pode avançar.
+    IF rec.error_message = 'retry_enqueued'
+       AND rec.delivered_at > now() - interval '15 minutes' THEN
+      v_skipped := v_skipped + 1;
+      CONTINUE;
+    END IF;
+
     IF rec.attempt >= v_max_attempts THEN
       v_skipped := v_skipped + 1;
       CONTINUE;
     END IF;
 
-    PERFORM extensions.http_post(
-      url := v_project_url || '/functions/v1/webhook-dispatcher',
-      body := jsonb_build_object(
-        'event', rec.event,
-        'payload', rec.payload,
-        'target_webhook_id', rec.webhook_id,
-        'retry_after_attempt', rec.attempt
-      ),
-      params := '{}'::jsonb,
-      headers := jsonb_build_object(
-        'Content-Type', 'application/json',
-        'x-sicoob-internal-secret', v_dispatcher_secret
-      ),
-      timeout_milliseconds := 5000
+    -- Reserva a tentativa antes do enqueue. Se o dispatcher não iniciar ou
+    -- não gravar resultado, a próxima execução ainda vê o contador avançado.
+    INSERT INTO public.webhook_deliveries (
+      webhook_id, event, payload, payload_hash, attempt, success,
+      error_message, response_body_truncated
+    ) VALUES (
+      rec.webhook_id, rec.event, rec.payload, rec.payload_hash,
+      rec.attempt + 1, false, 'retry_enqueued',
+      'Retry enfileirado; aguardando resultado do dispatcher.'
     );
+
+    BEGIN
+      PERFORM extensions.http_post(
+        url := v_project_url || '/functions/v1/webhook-dispatcher',
+        body := jsonb_build_object(
+          'event', rec.event,
+          'payload', rec.payload,
+          'target_webhook_id', rec.webhook_id,
+          'retry_after_attempt', rec.attempt
+        ),
+        params := '{}'::jsonb,
+        headers := jsonb_build_object(
+          'Content-Type', 'application/json',
+          'x-sicoob-internal-secret', v_dispatcher_secret
+        ),
+        timeout_milliseconds := 5000
+      );
+    EXCEPTION WHEN OTHERS THEN
+      -- A reserva permanece para consumir esta tentativa mesmo se pg_net
+      -- rejeitar o enqueue. A transação comercial não é revertida.
+      RAISE WARNING 'Falha ao enfileirar retry do webhook (SQLSTATE %)', SQLSTATE;
+    END;
     v_retried := v_retried + 1;
   END LOOP;
 
@@ -223,4 +257,4 @@ REVOKE ALL ON FUNCTION public.dispatch_quote_webhook_event()
   FROM PUBLIC, anon, authenticated;
 
 COMMENT ON FUNCTION public.retry_failed_webhook_deliveries() IS
-'Reprocessa entregas de webhook que falharam na última hora, respeitando max_attempts e autenticando o dispatcher pelo segredo dedicado do Vault.';
+'Reenfileira deliveries falhas com claim transacional e lease de 15 minutos, respeita max_attempts e autentica o dispatcher pelo segredo dedicado do Vault. O contador representa tentativas enfileiradas, não confirmações de entrega.';

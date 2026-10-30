@@ -86,6 +86,8 @@ test('chamadores do webhook-dispatcher leem segredo dedicado do Vault antes da c
   assert.match(dispatcher, /requireInternalService\(req, "WEBHOOK_DISPATCHER_SECRET"\)/);
   assert.match(dispatcher, /target_webhook_id: z\.string\(\)\.uuid\(\)\.optional\(\)/);
   assert.match(dispatcher, /retry_after_attempt: z\.number\(\)\.int\(\)\.min\(0\)\.max\(4\)\.optional\(\)/);
+  assert.match(dispatcher, /hasRetryTarget !== hasRetryAttempt/);
+  assert.match(dispatcher, /Retry, teste e replay são modos exclusivos/);
   assert.match(dispatcher, /hooksQuery = hooksQuery\.eq\("id", target_webhook_id\)\.eq\("active", true\)/);
   assert.match(dispatcher, /let attempt = retry_after_attempt \?\? 0/);
   assert.match(read('docs/secrets.md'), /`WEBHOOK_DISPATCHER_SECRET`[\s\S]*`webhook_dispatcher_secret`/);
@@ -105,6 +107,9 @@ test('chamadores do webhook-dispatcher leem segredo dedicado do Vault antes da c
   assert.doesNotMatch(retry, /net\.http_post\(/, 'retry não deve depender do schema net');
   assert.match(retry, /'target_webhook_id', rec\.webhook_id/);
   assert.match(retry, /'retry_after_attempt', rec\.attempt/);
+  assert.match(retry, /pg_try_advisory_xact_lock\(20261029, 213000\)/);
+  assert.match(retry, /error_message = 'retry_enqueued'/);
+  assert.ok(retry.indexOf("'retry_enqueued'") < retry.indexOf('PERFORM extensions.http_post'));
   assert.doesNotMatch(migration, /Authorization|service_role_key|https:\/\/[a-z0-9-]+\.supabase\.co/i);
 });
 

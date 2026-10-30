@@ -68,17 +68,25 @@ try:
         headers jsonb NOT NULL,
         body jsonb NOT NULL
       );
+      CREATE TABLE public.webhook_dispatch_test_config(
+        id integer PRIMARY KEY DEFAULT 1,
+        fail_http_post boolean NOT NULL DEFAULT false
+      );
+      INSERT INTO public.webhook_dispatch_test_config DEFAULT VALUES;
       CREATE FUNCTION extensions.http_post(url text, body jsonb, params jsonb, headers jsonb, timeout_milliseconds integer)
       RETURNS bigint LANGUAGE plpgsql AS $$
       DECLARE request_id bigint;
       BEGIN
+        IF (SELECT fail_http_post FROM public.webhook_dispatch_test_config WHERE id = 1) THEN
+          RAISE EXCEPTION 'simulated pg_net enqueue failure';
+        END IF;
         INSERT INTO public.webhook_dispatch_test_requests(target_url, headers, body)
         VALUES (url, headers, body) RETURNING id INTO request_id;
         RETURN request_id;
       END;
       $$;
       CREATE TABLE public.outbound_webhooks(
-        id uuid PRIMARY KEY,
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         active boolean NOT NULL,
         events text[] NOT NULL,
         retry_policy jsonb NOT NULL
@@ -89,8 +97,10 @@ try:
         event text NOT NULL,
         payload jsonb,
         payload_hash text NOT NULL,
+        response_body_truncated text,
         attempt integer NOT NULL,
         success boolean NOT NULL,
+        error_message text,
         delivered_at timestamptz NOT NULL
       );
       CREATE TABLE public.quotes(
@@ -205,16 +215,14 @@ try:
       VALUES ('00000000-0000-4000-8000-000000000004', true, ARRAY['quote.created'], '{{"max_attempts":3}}');
       INSERT INTO public.webhook_deliveries(id,webhook_id,event,payload,payload_hash,attempt,success,delivered_at)
       VALUES ('00000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000002',
-        'quote.created','{{"quote_id":"qa"}}','hash-old-qa',1,false,now() - interval '5 minutes');
-      INSERT INTO public.webhook_deliveries(id,webhook_id,event,payload,payload_hash,attempt,success,delivered_at)
-      VALUES ('00000000-0000-4000-8000-000000000006','00000000-0000-4000-8000-000000000002',
         'quote.created','{{"quote_id":"qa"}}','hash-qa',1,false,now());
       INSERT INTO public.webhook_deliveries(id,webhook_id,event,payload,payload_hash,attempt,success,delivered_at)
       VALUES ('00000000-0000-4000-8000-000000000005','00000000-0000-4000-8000-000000000004',
         'quote.created','{{"quote_id":"qa"}}','hash-qa',1,true,now());
     """)
     retry_ok = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
-    assert retry_ok["ok"] is True and retry_ok["retried"] == 1, "retry deve preservar entrega com tentativas disponíveis"
+    assert retry_ok["ok"] is True and retry_ok["retried"] == 1, "retry deve reservar e enfileirar uma tentativa disponível"
+    assert scalar("SELECT count(*) FROM public.webhook_deliveries WHERE error_message = 'retry_enqueued' AND attempt = 2;") == "1", "a tentativa deve ser registrada antes do enqueue"
     retry_headers = json.loads(scalar("SELECT headers::text FROM public.webhook_dispatch_test_requests ORDER BY id DESC LIMIT 1;"))
     retry_body = json.loads(scalar("SELECT body::text FROM public.webhook_dispatch_test_requests ORDER BY id DESC LIMIT 1;"))
     assert retry_headers.get("x-sicoob-internal-secret") == SECRET, "retry deve enviar o segredo dedicado"
@@ -227,19 +235,44 @@ try:
       VALUES ('00000000-0000-4000-8000-000000000004','00000000-0000-4000-8000-000000000002',
         'quote.created','{}','hash-max',3,false,now());
     """)
+    retry_lease = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
+    assert retry_lease["ok"] is True and retry_lease["retried"] == 0 and retry_lease["skipped_max_attempts"] == 1
+    assert scalar("SELECT count(*) FROM public.webhook_dispatch_test_requests;") == "7", "lease deve impedir novo enqueue enquanto aguarda o dispatcher"
+    sql("UPDATE public.webhook_deliveries SET delivered_at = now() - interval '16 minutes' WHERE error_message = 'retry_enqueued' AND attempt = 2;")
+    retry_after_lease = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
+    assert retry_after_lease["ok"] is True and retry_after_lease["retried"] == 1
+    assert scalar("SELECT count(*) FROM public.webhook_deliveries WHERE error_message = 'retry_enqueued' AND attempt = 3;") == "1", "após a lease, o contador deve avançar"
     retry_max = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
-    assert retry_max["ok"] is True and retry_max["retried"] == 1 and retry_max["skipped_max_attempts"] == 1
+    assert retry_max["ok"] is True and retry_max["retried"] == 0 and retry_max["skipped_max_attempts"] == 1
     assert scalar("SELECT count(*) FROM public.webhook_dispatch_test_requests;") == "8", "retry no limite não pode disparar outra chamada"
+    sql("""
+      INSERT INTO public.webhook_deliveries(id,webhook_id,event,payload,payload_hash,attempt,success,delivered_at)
+      VALUES ('00000000-0000-4000-8000-000000000007','00000000-0000-4000-8000-000000000002',
+        'quote.created','{\"quote_id\":\"qa\"}','hash-qa',3,true,now());
+    """)
+    retry_after_success = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
+    assert retry_after_success["ok"] is True and retry_after_success["retried"] == 0, "entrega confirmada não pode ser reenfileirada"
+    sql("""
+      INSERT INTO public.webhook_deliveries(id,webhook_id,event,payload,payload_hash,attempt,success,delivered_at)
+      VALUES ('00000000-0000-4000-8000-000000000008','00000000-0000-4000-8000-000000000002',
+        'quote.created','{\"quote_id\":\"enqueue-failure\"}','hash-failure',1,false,now());
+      UPDATE public.webhook_dispatch_test_config SET fail_http_post = true WHERE id = 1;
+    """)
+    retry_enqueue_failure = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
+    assert retry_enqueue_failure["ok"] is True and retry_enqueue_failure["retried"] == 1, "erro do enqueue não deve abortar o retry"
+    assert scalar("SELECT count(*) FROM public.webhook_deliveries WHERE payload->>'quote_id' = 'enqueue-failure' AND error_message = 'retry_enqueued' AND attempt = 2;") == "1", "claim deve sobreviver a erro de enqueue"
 
     result["resultado"] = "aprovado"
+    result["escopo"] = "simulação de contrato SQL com extensão HTTP stubada; não comprova pg_net real ou entrega Edge ponta a ponta"
     result["casos"] = [
         "trigger sem segredo não envia",
         "trigger com URL HTTP ou segredo curto também falha fechado",
         "trigger válido transmite só o segredo dedicado",
         "eventos de orçamento, pedido, desconto e kit são preservados; rascunho RE-* é ignorado",
         "retry sem segredo retorna bloqueio fechado",
-        "retry válido respeita max_attempts",
-        "retry identifica o hook falho e preserva o contador para evitar fan-out e tentativas infinitas",
+        "retry grava claim antes do enqueue, preserva o contador, respeita lease e max_attempts",
+        "retry identifica apenas o hook falho e um erro de enqueue não perde a tentativa reservada",
+        "resultado de sucesso mais recente encerra novos retries",
         "nenhum chamador envia Authorization/service_role",
         "ACL permite retry só a postgres/service_role e nega anon/authenticated",
     ]

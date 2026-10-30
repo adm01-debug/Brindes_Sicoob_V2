@@ -71,8 +71,15 @@ Deno.serve(async (req) => {
       test_webhook_id,
     } = parsed.data;
 
-    if (retry_after_attempt !== undefined && !target_webhook_id) {
-      return new Response(JSON.stringify({ error: "target_webhook_id obrigatório para retry" }), {
+    const hasRetryTarget = target_webhook_id !== undefined;
+    const hasRetryAttempt = retry_after_attempt !== undefined;
+    if (hasRetryTarget !== hasRetryAttempt) {
+      return new Response(JSON.stringify({ error: "target_webhook_id e retry_after_attempt devem ser informados juntos" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if ((hasRetryTarget && (test_mode || replay_delivery_id)) || (test_mode && replay_delivery_id)) {
+      return new Response(JSON.stringify({ error: "Retry, teste e replay são modos exclusivos" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
