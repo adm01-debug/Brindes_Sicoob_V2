@@ -104,16 +104,19 @@ Deno.serve(async (req) => {
           idempotencyKey: `scheduled-report:${report.id}:${report.next_run_at}`,
         }, async () => {
           const nextRun = calculateNextRun(report.frequency);
-          const { error: updateError } = await supabase
+          const { data: updatedReport, error: updateError } = await supabase
             .from("scheduled_reports")
             .update({
               last_sent_at: now,
               next_run_at: nextRun.toISOString(),
               updated_at: now,
             })
-            .eq("id", report.id);
+            .eq("id", report.id)
+            .select("id")
+            .maybeSingle();
 
           if (updateError) throw updateError;
+          if (!updatedReport) throw new Error("Agendamento não encontrado para confirmar o envio.");
         });
 
         results.push({ id: report.id, status: "sent", email: report.email_to });
