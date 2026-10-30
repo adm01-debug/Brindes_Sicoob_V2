@@ -7,7 +7,7 @@
  * Lógica detalhada vive em `e2e/helpers/cleanup-client.ts` e é
  * compartilhada com `global-setup.ts` e a fixture `cleanup-on-failure`.
  */
-import { loadCleanupConfig, logSkipReason, purgeAll } from "./helpers/cleanup-client";
+import { loadCleanupConfig, logSkipReason, purgeAllE2eTestData } from "./helpers/cleanup-client";
 
 export default async function globalTeardown(): Promise<void> {
   const cfg = loadCleanupConfig();
@@ -16,6 +16,5 @@ export default async function globalTeardown(): Promise<void> {
     logSkipReason("teardown");
     return;
   }
-  await purgeAll(cfg, { reason: "post-suite" });
-  await purgeAll(cfg, { reason: "post-suite-legacy", nameFilterPrefix: "[E2E:" });
+  await purgeAllE2eTestData(cfg, { reason: "post-suite" });
 }

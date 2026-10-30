@@ -31,13 +31,15 @@ proposto pelo colaborador e recebe os secrets desse ambiente. Configure no proje
 isolado a Edge Function `e2e-cleanup` com `E2E_CLEANUP_TOKEN` igual ao secret
 `E2E_STAGING_CLEANUP_TOKEN` e `E2E_CLEANUP_ALLOWED_EMAILS` restrita às cinco personas
 sintéticas. A validação exige esse token, a chave publicável e a chave administrativa
-antes de chamadas remotas; setup, teardown e limpeza por falha reprovam o job se não
-confirmarem sucesso. Execuções E2E são serializadas globalmente para evitar disputa do
-staging entre PRs. Setup/teardown fazem a limpeza sequencial dos prefixos literais
-`[E2E]` e `[E2E:` (formato legado); não há limpeza por teste, pois o endpoint também
-purga carrinhos por persona e poderia afetar outro teste paralelo. A variável
+antes de chamadas remotas; setup e teardown globais reprovam o job se não confirmarem
+sucesso. Execuções E2E são serializadas globalmente para evitar disputa do
+staging entre PRs. Setup/teardown fazem limpeza sequencial dos prefixos configurado,
+literal `[E2E]` e `[E2E:` (formato legado); não há limpeza por teste, pois o endpoint
+também purga carrinhos por persona e poderia afetar outro teste paralelo. A variável
 deve conter a ref exata do projeto descartável aprovado pelo owner; bloquear refs
 conhecidas não prova, por si só, que outra ref seja descartável.
+Se `E2E_TEST_PREFIX` for usado, ele deve permanecer no namespace E2E (`[E2E]`
+opcionalmente seguido de slug, ou `[E2E:<slug>]`); prefixos genéricos são recusados.
 
 Estado verificado em 30/10/2026: o environment `e2e-staging` não existe (GitHub
 API 404); também não há a variável `E2E_SUPABASE_PROJECT_ID` nem secrets dedicados

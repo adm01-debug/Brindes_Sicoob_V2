@@ -7,7 +7,7 @@
  *
  * Skip silencioso quando configuração de cleanup está ausente.
  */
-import { loadCleanupConfig, logSkipReason, purgeAll } from "./helpers/cleanup-client";
+import { loadCleanupConfig, logSkipReason, purgeAllE2eTestData } from "./helpers/cleanup-client";
 
 export default async function globalSetup(): Promise<void> {
   const cfg = loadCleanupConfig();
@@ -16,6 +16,5 @@ export default async function globalSetup(): Promise<void> {
     logSkipReason("setup");
     return;
   }
-  await purgeAll(cfg, { reason: "pre-suite" });
-  await purgeAll(cfg, { reason: "pre-suite-legacy", nameFilterPrefix: "[E2E:" });
+  await purgeAllE2eTestData(cfg, { reason: "pre-suite" });
 }

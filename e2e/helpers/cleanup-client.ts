@@ -72,6 +72,9 @@ export function loadCleanupConfig(): CleanupConfig | null {
   // usado por `e2eName(label)` para garantir paridade.
   const noNameFilter = process.env.E2E_CLEANUP_NO_NAME_FILTER === "1";
   const explicitPrefix = process.env.E2E_TEST_PREFIX?.trim();
+  if (explicitPrefix && !/^\[E2E\](?: [A-Za-z0-9-]{1,32})?$|^\[E2E:[A-Za-z0-9-]{1,32}\]$/.test(explicitPrefix)) {
+    throw new Error("E2E_TEST_PREFIX deve ser um prefixo específico [E2E] ou [E2E:<slug>].");
+  }
   const nameFilterPrefix = noNameFilter
     ? null
     : explicitPrefix && explicitPrefix.length > 0
@@ -331,6 +334,22 @@ export async function purgeAll(
   }
   if (failureCount > 0) {
     throw new Error(`[e2e-cleanup] limpeza não confirmada para ${failureCount} persona(s); o staging não pode ser considerado limpo.`);
+  }
+}
+
+/** Limpa nomes E2E atuais, o prefixo configurado e o formato legado, sem LIKE amplo. */
+export async function purgeAllE2eTestData(
+  cfg: CleanupConfig,
+  opts: PurgeOpts = {},
+): Promise<void> {
+  const prefixes = new Set([
+    cfg.nameFilterPrefix,
+    "[E2E]",
+    "[E2E:",
+  ].filter((prefix): prefix is string => Boolean(prefix)));
+
+  for (const nameFilterPrefix of prefixes) {
+    await purgeAll(cfg, { ...opts, nameFilterPrefix });
   }
 }
 
