@@ -217,3 +217,15 @@ Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Depen
 | Migration Ledger Drift | Fingerprint de `20261022120000` calculado com `local_sha256` incorreto; novo digest correto: `e2815b0...` | Corrigido fingerprint no `migration-ledger-baseline.json` | #129 |
 | 5 CVEs high (vite ≤6.4.3) | GHSA-698v, GHSA-r825, GHSA-587h, GHSA-9jrq, GHSA-rq7h | `vite` 6.4.3 → 6.4.5 | #126 |
 | Qualidade contínua (`ci.yml`) — ECR rate limit | `toomanyrequests: Data limit exceeded` ao puxar `public.ecr.aws/supabase/postgres:17.6.1.063` em dois steps (scripts `simular-controles-auditoria.py` e `simular-acl-efetiva.py`) | Rate limit do ECR Public se dissipou naturalmente; run `39780447863` → **success** | automático |
+
+---
+
+## Migration T031 — retry de status por usuário inativo
+
+**Estado:** correção implementada e simulada localmente; sem aplicação remota.
+
+**Motivo do bloqueio:** o ambiente Supabase isolado de construção e seu project ref ainda não foram confirmados. O executor versionado está restrito ao ref `cfmzkthhgliqelozlmwu`, que não foi confirmado como projeto de construção independente; portanto a migration `20261030210000_require_active_actor_for_quote_status_retry.sql` não foi adicionada à allowlist e não foi executada. Nenhuma migration, função ou dado remoto foi alterado.
+
+**Próxima ação necessária:** confirmar o ref e as credenciais do projeto Supabase de homologação/construção; revisar o diff da PR e os checks; somente então acrescentar a migration à allowlist restrita ao ref aprovado e executar preflight, aplicação e verificação de ledger/definição/ACL nesse projeto. Não usar o banco canônico nem o banco de produtos como fallback.
+
+**Prova local:** PostgreSQL 17 descartável, rede desativada. O cenário reproduz o acesso indevido com o wrapper anterior e confirma que o novo wrapper nega com `42501` antes de chamar o núcleo; o retry de vendedor ativo segue autorizado. Ver `RELATORIO_CI.md`, seção “Baseline e correção T031”.
