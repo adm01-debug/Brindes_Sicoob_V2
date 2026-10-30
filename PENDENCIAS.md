@@ -45,12 +45,18 @@ os chamadores falham fechados. A simulação local não comprova entrega externa
 configuração remota; nenhum banco remoto foi alterado. Claims ficam em tabela
 separada de `webhook_deliveries`, sem afetar métricas, e são removidos pelo job
 de limpeza existente após 90 dias. A simulação valida essa retenção; a entrega
-Edge ponta a ponta e ACK durável continuam sem comprovação.
+Edge ponta a ponta e ACK durável continuam sem comprovação. A lease de 15 minutos
+limita duplicidade, mas não consulta o estado interno de `pg_net`; se uma execução
+continuar pendente além da lease, a próxima tentativa pode se sobrepor. O contrato
+é at-least-once, não exactly-once, e esse risco precisa de teste/monitoramento em
+homologação antes de habilitar retry contínuo.
 
 ### Checks da PR #173 (observação em 2026-10-30, 11:10 UTC)
 
 A PR [#173](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/173), no SHA
 `977994fb5de3d3c0c4617496f0347b29e2053bd8`, permanece aberta e não foi mergeada.
+Os resultados abaixo são do SHA anterior ao ajuste local de claim/concorrência e
+precisam ser rechecados no commit seguinte da mesma PR.
 O CodeQL falhou no [run 41045149603](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149603)
 pela divergência entre a action configurada (4.39.1) e a executada (4.38.2), seguida
 da ausência de SARIF; a mesma causa já consta no inventário da `main`. O ajuste
