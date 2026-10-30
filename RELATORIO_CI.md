@@ -3,6 +3,31 @@
 **Gerado em:** 2026-10-30
 **Sessão:** Codex · auditoria da CI e dos dados BI
 
+### Verificação mais recente da PR #176 — SHA `66499bbf0427b8d57438b5a62aa569e8aba38253`
+
+Consulta via GitHub MCP em 30/10/2026. A branch local acompanha `origin/fix/ci-workflows-h369570`.
+
+| Check | Resultado | Evidência / causa |
+|---|---|---|
+| Qualidade contínua | ✅ success | [41122582281](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41122582281) — build, typecheck, lint, suíte e gates passaram. |
+| Security Scan | ✅ success | [41122582187](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41122582187) — audit no limiar high e Gitleaks passaram. |
+| CodeQL | ✅ success | [41122582152](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41122582152). |
+| Bundle Size Check | ✅ success | [41122582106](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41122582106). |
+| Portal Sicoob | ✅ success | [41122582212](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41122582212). |
+| Lighthouse | ✅ success na tentativa 2 | [41122582266](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41122582266). A tentativa 1 recebeu `npm E404` baixando `tslib-2.9.1.tgz`; a repetição concluiu. Não houve ajuste de dependência. |
+| E2E (Playwright) | ❌ bloqueado no preflight | [41122582161](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41122582161) falhou porque `E2E_SUPABASE_PROJECT_ID`, `E2E_STAGING_SUPABASE_URL` e `E2E_STAGING_SUPABASE_PUBLISHABLE_KEY` estavam vazios. RLS, Playwright e shards foram pulados; nenhuma chamada ao Supabase foi feita por este run. |
+| Copilot Review | ❌ bloqueado externamente | [41122597260](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41122597260) — HTTP 402 por limite de uso do serviço. |
+
+A PR continua aberta e não foi mesclada: E2E seguro depende do owner provisionar o
+ambiente e credenciais sintéticas; Copilot depende da cota do serviço. A aprovação
+humana obrigatória da `main` também não foi obtida. Nenhuma migration ou Edge Function
+foi aplicada/publicada, e nenhum banco Supabase foi consultado ou alterado.
+
+Gap registrado para trabalho posterior: P107 da matriz do plano aponta que o contrato
+SQL de registro de documento não garante igualdade entre o SHA da chamada e o SHA da
+evidência do scanner. Não foi alterado neste escopo; a instrução vigente proíbe mutação
+no Supabase e não havia relação causal com uma falha de CI.
+
 ## Estado atual — auditoria de 30/10/2026
 
 ### Inventário da `main` — consulta atualizada em 30/10/2026
