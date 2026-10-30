@@ -308,7 +308,7 @@ supabase/
 
 ## 🚢 Publicação
 
-O repositório não contém workflow de release do frontend. O procedimento de Edge Functions e migrations está descrito em [DEPLOYMENT.md](./docs/DEPLOYMENT.md); ele restringe operações remotas ao projeto isolado de construção e não comprova publicação ativa. Confirme o provedor e o ambiente antes de qualquer deploy.
+O repositório não contém workflow de release do frontend. O procedimento de Edge Functions e migrations está descrito em [DEPLOYMENT.md](./docs/DEPLOYMENT.md). O workflow exige um project ref e bloqueia o ref canônico, mas não prova sozinho que qualquer outro projeto seja isolado; confirme manualmente que a referência configurada aponta ao projeto de construção antes do disparo.
 
 ---
 

@@ -19,7 +19,7 @@ Plataforma multi-tenant com separação lógica e visual via **Skins Factory**.
 - **SSOT (Single Source of Truth):** Banco de dados externo para dados de produtos e estoque. O banco local (Supabase) atua como cache e persistência de dados de aplicação (pedidos, orçamentos, perfis).
 - **Arquitetura Multi-DB:** Conexão com Supabase Local, Catálogo Externo e CRM DB.
 - **Multimodal:** Suporte a áudio, IA generativa e assistentes conversacionais.
-- **Master Index:** Toda a arquitetura está mapeada no [Master Module Index (MODULES.md)](docs/MODULES.md).
+- **Master Index:** Mapa técnico disponível em [MODULES.md](MODULES.md); confirme a atualização do inventário antes de tratá-lo como estado atual.
 
 ## 3. Perfis de Usuário e Governança
 | Papel | Escopo | Rotas Chave |
