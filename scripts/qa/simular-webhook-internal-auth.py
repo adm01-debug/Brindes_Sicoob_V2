@@ -127,6 +127,11 @@ try:
       );
     """)
     sql(MIGRATION.read_text(encoding="utf-8"))
+    assert scalar("SELECT has_function_privilege('anon', 'public.retry_failed_webhook_deliveries()', 'EXECUTE');") == "f"
+    assert scalar("SELECT has_function_privilege('authenticated', 'public.retry_failed_webhook_deliveries()', 'EXECUTE');") == "f"
+    assert scalar("SELECT has_function_privilege('service_role', 'public.retry_failed_webhook_deliveries()', 'EXECUTE');") == "t"
+    assert scalar("SELECT has_function_privilege('anon', 'public.dispatch_quote_webhook_event()', 'EXECUTE');") == "f"
+    assert scalar("SELECT has_function_privilege('authenticated', 'public.dispatch_quote_webhook_event()', 'EXECUTE');") == "f"
     sql("""
       CREATE TRIGGER webhook_dispatch_test
       AFTER INSERT OR UPDATE ON public.quotes
@@ -227,6 +232,7 @@ try:
         "retry válido respeita max_attempts",
         "retry identifica o hook falho e preserva o contador para evitar fan-out e tentativas infinitas",
         "nenhum chamador envia Authorization/service_role",
+        "ACL permite retry só a postgres/service_role e nega anon/authenticated",
     ]
     print(json.dumps(result, ensure_ascii=False, indent=2))
 finally:
