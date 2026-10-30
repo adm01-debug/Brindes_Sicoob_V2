@@ -42,7 +42,7 @@ function QuoteItems({ items }: { items?: PublicQuoteApproval["items"] }) {
     <div className="space-y-2" aria-label="Itens do orçamento">
       <p className="text-sm font-semibold">Itens</p>
       {items.map((item, index) => (
-        <div key={item.id ?? `${item.product_sku ?? item.product_name}-${index}`} className="flex items-start justify-between gap-4 rounded-lg border p-3 text-sm">
+        <div key={`${item.product_sku ?? item.product_name}-${index}`} className="flex items-start justify-between gap-4 rounded-lg border p-3 text-sm">
           <div>
             <p className="font-medium">{item.product_name}</p>
             <p className="text-xs text-muted-foreground">

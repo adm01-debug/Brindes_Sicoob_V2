@@ -125,6 +125,10 @@ const TARGETS = [
     sha256: "87bf1a8d5bb689f202a4ff77968c6f8820cfbfe5fffdff5d9c16c439a611bf54",
   },
   {
+    file: "supabase/migrations/20261030174645_redact_public_quote_approval_costs.sql",
+    sha256: "ec7cd327cc2adbbed8c98ff25907870a0fdcd5c1519f1623e4f1e50e507d0efe",
+  },
+  {
     file: "supabase/migrations/20261030190000_bind_sicoob_scan_evidence_hash.sql",
     sha256: "d86250b37336a186af088c722ae01536a5995f575c913872b8675ee4684615e1",
   },

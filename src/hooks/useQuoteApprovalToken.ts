@@ -12,15 +12,11 @@ export interface PublicQuoteApproval {
   status: "active" | "responded";
   response: "approved" | "rejected" | null;
   responded_at: string | null;
-  expires_at: string | null;
-  subtotal?: number | null;
-  discount_amount?: number | null;
   shipping_cost?: number | null;
   payment_terms?: string | null;
   delivery_time?: string | null;
   notes?: string | null;
   items?: Array<{
-    id?: string;
     product_name: string;
     product_sku?: string | null;
     color_name?: string | null;
@@ -28,7 +24,7 @@ export interface PublicQuoteApproval {
     quantity: number;
     unit_price: number;
     subtotal: number;
-    personalizations?: Array<{ technique_id?: string | null; colors_count?: number | null; positions_count?: number | null; notes?: string | null }>;
+    personalizations?: Array<{ colors_count?: number | null; positions_count?: number | null; notes?: string | null }>;
   }>;
 }
 
