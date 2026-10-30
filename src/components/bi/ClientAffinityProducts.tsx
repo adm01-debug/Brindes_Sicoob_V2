@@ -17,7 +17,7 @@ interface Props {
 }
 
 export function ClientAffinityProducts({ clientId }: Props) {
-  const { data, isLoading } = useClientAffinity(clientId);
+  const { data, isLoading, isError } = useClientAffinity(clientId);
   const { focusedSlug } = useBICategoryFocus();
 
   const visibleCategories = useMemo(() => {
@@ -38,7 +38,9 @@ export function ClientAffinityProducts({ clientId }: Props) {
             <div>
               <h2 className="font-display font-semibold">Produtos das categorias favoritas</h2>
               <p className="text-xs text-muted-foreground">
-                {data?.categories.length
+                {isError
+                  ? "Não foi possível consultar a afinidade agora. Tente novamente mais tarde."
+                  : data?.categories.length
                   ? `Baseado em ${data.realProductsCount} produtos já orçados · agrupados por categoria`
                   : "A afinidade será exibida quando houver produtos orçados suficientes."}
               </p>
@@ -59,7 +61,9 @@ export function ClientAffinityProducts({ clientId }: Props) {
           <div className="space-y-5">
             {visibleCategories.length === 0 ? (
               <p className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground" role="status">
-                Sem amostra suficiente para identificar categorias favoritas deste cliente.
+                {isError
+                  ? "A consulta do histórico falhou; nenhum perfil de afinidade foi inferido."
+                  : "Sem amostra suficiente para identificar categorias favoritas deste cliente."}
               </p>
             ) : null}
             {visibleCategories.map((cat) => (

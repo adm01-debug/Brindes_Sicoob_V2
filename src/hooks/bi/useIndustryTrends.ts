@@ -28,7 +28,7 @@ export interface IndustryTrendItem {
   unitsSold: number;
   ordersCount: number;
   avgPrice: number;
-  trend: "up" | "stable" | "down";
+  trend: "up" | "stable" | "down" | null;
 }
 
 export interface IndustryTrendsResult {
@@ -76,12 +76,15 @@ export function useIndustryTrends(ramoAtividade?: string | null) {
         });
 
         if (error) throw error;
-        const real = (Array.isArray(data) ? data : []) as IndustryTopProduct[];
+        const real = ((Array.isArray(data) ? data : []) as IndustryTopProduct[]).filter((product) =>
+          Number(product.unique_clients) >= 3 &&
+          ((Number(product.total_quantity) || 0) > 0 || (Number(product.total_revenue) || 0) > 0),
+        );
         if (real.length > 0) {
           return {
             dataStatus: "available",
             isMock: false,
-            companiesInRamo: companyIds.length,
+            companiesInRamo: Math.max(...real.map((product) => Number(product.unique_clients) || 0)),
             trends: real.map((p) => ({
               productName: p.product_name,
               productId: p.product_id,
@@ -90,7 +93,7 @@ export function useIndustryTrends(ramoAtividade?: string | null) {
               unitsSold: Number(p.total_quantity) || 0,
               ordersCount: Number(p.unique_clients) || 0,
               avgPrice: Number(p.avg_unit_price) || 0,
-              trend: "stable" as const,
+              trend: null,
             })),
           };
         }

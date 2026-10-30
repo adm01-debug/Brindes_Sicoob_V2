@@ -105,12 +105,15 @@ async function fetchIndustryCategoryTrends(ramoAtividade: string | null | undefi
   if (!ramoAtividade) return { dataStatus: "insufficient" as const, isMock: false, companiesInRamo: 0, categories: [] };
   const companyIds = await fetchCompanyIds(ramoAtividade);
   if (companyIds.length === 0) return { dataStatus: "insufficient" as const, isMock: false, companiesInRamo: 0, categories: [] };
-  const rows = await fetchIndustryRows(companyIds);
+  const rows = (await fetchIndustryRows(companyIds)).filter((row) =>
+    Number(row.unique_clients) >= 3 &&
+    ((Number(row.total_quantity) || 0) > 0 || (Number(row.total_revenue) || 0) > 0),
+  );
   if (rows.length === 0) return { dataStatus: "insufficient" as const, isMock: false, companiesInRamo: companyIds.length, categories: [] };
   return {
     dataStatus: "available" as const,
     isMock: false,
-    companiesInRamo: companyIds.length,
+    companiesInRamo: Math.max(...rows.map((row) => Number(row.unique_clients) || 0)),
     categories: aggregateIndustryRows(rows),
   };
 }

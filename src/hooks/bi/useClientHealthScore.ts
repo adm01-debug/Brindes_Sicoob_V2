@@ -187,7 +187,7 @@ function hasEnoughHealthData(
   seasonality: ClientSeasonality,
   hasGrowthComparison: boolean,
 ) {
-  return bi.hasData && vs.hasEnoughSample && seasonality.hasClientData && hasGrowthComparison;
+  return bi.hasData && vs.hasEnoughSample && !vs.isMock && seasonality.hasClientData && hasGrowthComparison;
 }
 
 function insufficientHealthResult(isLoading: boolean): ClientHealthScoreResult {

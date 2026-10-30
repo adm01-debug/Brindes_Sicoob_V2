@@ -217,10 +217,17 @@ function seasonalityResult(
   isError: boolean,
 ) {
   const rows = readSeasonalityRows(data);
-  const { cells: client, monthsCovered } = buildClientCells(rows.clientRows);
-  const realIndustry = buildIndustryCells(rows.industryRows);
+  const clientRows = rows.clientRows.filter((row) =>
+    (Number(row.quotes_count) || 0) > 0 || (Number(row.total_revenue) || 0) > 0,
+  );
+  const industryRows = rows.industryRows.filter((row) =>
+    Number(row.companies_active) >= 3 &&
+    ((Number(row.avg_quotes_per_company) || 0) > 0 || (Number(row.avg_revenue_per_company) || 0) > 0),
+  );
+  const { cells: client, monthsCovered } = buildClientCells(clientRows);
+  const realIndustry = buildIndustryCells(industryRows);
   const hasClientData = monthsCovered >= 3;
-  const hasIndustryData = rows.industryRows.length > 0;
+  const hasIndustryData = industryRows.length > 0;
   const dataStatus = resolveSeasonalityStatus({
     isLoading,
     isError,

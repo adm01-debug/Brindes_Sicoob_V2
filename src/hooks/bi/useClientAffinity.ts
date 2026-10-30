@@ -32,7 +32,7 @@ export interface AffinityCategory {
 }
 
 export interface ClientAffinityResult {
-  dataStatus: "insufficient" | "available";
+  dataStatus: "insufficient" | "available" | "unavailable";
   isMock: boolean;
   realProductsCount: number;
   categories: AffinityCategory[];
