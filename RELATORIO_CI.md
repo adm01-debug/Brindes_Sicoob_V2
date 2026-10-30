@@ -31,7 +31,7 @@ O run [41118082692](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/run
 
 A PR #176 passou a executar somente com ambiente dedicado `e2e-staging`. Os jobs exigem variável `E2E_SUPABASE_PROJECT_ID`, secrets `E2E_STAGING_*`, URL/ref coincidentes e rejeitam os projetos `cfmzkthhgliqelozlmwu` e `doufsxqlfjyuvxuezpln`. O teste RLS agora verifica que o canário foi realmente removido, e `cancel-in-progress` está desligado para não interromper o cleanup em uma execução nova. Ainda falta o owner provisionar esse ambiente/variáveis e contas sintéticas; sem elas o preflight para antes de acessar Supabase.
 
-### Baseline e resultado local nesta branch
+### Baseline histórico e snapshot local da primeira rodada nesta branch
 
 | Verificação | Resultado | Observação |
 |---|---|---|
@@ -68,7 +68,7 @@ O cenário descartável não valida o estado do Supabase remoto. A migration est
 - O schema Zod agora mantém mensagens próprias apenas quando `goal_type` e `period` estão ausentes; valores enum inválidos continuam com a mensagem padrão. Dois testes cobrem os casos.
 - O formulário de produto mantém um adaptador tipado entre o resolver Zod e o estado RHF. A tipagem ampla de entrada de `z.coerce.number` torna `z.input` incompatível com o estado concreto da tela; o teste existente cobre defaults e coerção, e `typecheck` integral passou sem mudanças espalhadas pelos componentes consumidores.
 - `scripts/db/supabase-sql-client.mjs` agora usa a mesma validação alfanumérica de 20 caracteres que o executor de migrations. O cenário do cliente Management API aceita referência com dígitos e recusa referência inválida antes da rede (6/6 cenários passaram).
-- Nenhuma consulta ou mutação remota foi feita; nenhuma migration ou Edge Function foi publicada.
+- Até este registro local, nenhuma consulta ou mutação manual foi feita; nenhuma migration ou Edge Function foi publicada. Depois, o run E2E remoto da PR #177 executou os testes RLS e foi cancelado durante o smoke; veja a seção de interrupção acima.
 
 ### Snapshot remoto recente da PR #176 — SHA `37db9f1e3f6dc8a4a7a8772145099d2a61ef46ca`
 
@@ -118,7 +118,7 @@ Validação local do mesmo código após o commit: 5.868 testes aprovados, 68 ig
 | E2E (Playwright) | failure no preflight | [41109623268](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41109623268): `E2E_SUPABASE_PROJECT_ID` vazio; shards ignorados; Playwright autenticado não executou. |
 | Running Copilot Code Review | failure | [41109639994](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41109639994): erro HTTP 402 por limite de uso do ambiente gerenciado. |
 
-Validação local no HEAD: 5.868 testes aprovados, 68 ignorados e 0 falhas; typecheck e build passaram; lint com 0 erros e 874 avisos existentes. O inventário de nomes de secrets confirma a ausência de `E2E_SUPABASE_PROJECT_ID`; nenhum valor secreto foi lido. A aprovação obrigatória de reviewer humano também continua pendente. A PR #176 permanece aberta e sem merge. Nenhuma migration, Edge Function ou dado foi alterado no Supabase remoto.
+Validação local naquele HEAD: 5.868 testes aprovados, 68 ignorados e 0 falhas; typecheck e build passaram; lint com 0 erros e 874 avisos existentes. O inventário consultado então não mostrava `E2E_SUPABASE_PROJECT_ID`; nenhum valor secreto foi lido. A aprovação obrigatória de reviewer humano também continuava pendente. Esse snapshot não descreve o run #177 posterior; consulte a seção atualizada de interrupção E2E.
 
 ### Snapshot histórico da PR #176 — SHA `e540dfb`
 
@@ -126,7 +126,7 @@ A PR #176 continua aberta e bloqueada, sem merge, com base `main` em `e9d5902679
 
 ### Segurança de Supabase
 
-Nenhuma consulta ou mutação remota foi feita. A branch exige `CONSTRUCTION_SUPABASE_PROJECT_REF`, valida o host do banco e bloqueia o project ref canônico para migrations, deploy de funções e E2E. Não há evidência acessível de configuração dos secrets do environment `construction`; por isso, deploy, migrations e E2E remoto continuam bloqueados e documentados em `PENDENCIAS.md`.
+Nenhuma consulta SQL manual nem mutação remota direta foi feita nesta rodada. A PR #176 exige `CONSTRUCTION_SUPABASE_PROJECT_REF`, valida o host do banco e bloqueia os dois project refs protegidos em E2E. O run #177, iniciado sobre SHA antigo, executou testes E2E remotos antes de ser cancelado; o alvo não pôde ser identificado e a possível linha canário restante não foi verificada. Deploy e migrations não foram executados por esta rodada; consulte `PENDENCIAS.md`.
 
 Os workflows foram revisados para não usar `continue-on-error` nem `|| true`. Resumos continuam sendo produzidos com `if: always()`; os erros dos testes e da publicação de artefatos passam a manter o job em falha em vez de serem mascarados.
 

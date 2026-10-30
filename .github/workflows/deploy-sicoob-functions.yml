@@ -22,6 +22,7 @@ jobs:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_PROJECT_ID: ${{ secrets.CONSTRUCTION_SUPABASE_PROJECT_REF }}
       CANONICAL_SUPABASE_PROJECT_ID: cfmzkthhgliqelozlmwu
+      PRODUCTS_SUPABASE_PROJECT_ID: doufsxqlfjyuvxuezpln
     steps:
       - name: Baixar fonte versionada
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -35,8 +36,8 @@ jobs:
         run: |
           test -n "$SUPABASE_ACCESS_TOKEN"
           test -n "$SUPABASE_PROJECT_ID"
-          if [ "$SUPABASE_PROJECT_ID" = "$CANONICAL_SUPABASE_PROJECT_ID" ]; then
-            echo "::error::Publicação remota no projeto canônico está bloqueada por este workflow."
+          if [ "$SUPABASE_PROJECT_ID" = "$CANONICAL_SUPABASE_PROJECT_ID" ] || [ "$SUPABASE_PROJECT_ID" = "$PRODUCTS_SUPABASE_PROJECT_ID" ]; then
+            echo "::error::Publicação remota nos projetos protegidos está bloqueada por este workflow."
             exit 1
           fi
 

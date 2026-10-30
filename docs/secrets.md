@@ -25,10 +25,11 @@ Configurar no environment `e2e-staging`:
 - secrets `E2E_STAGING_SUPABASE_URL`, `E2E_STAGING_SUPABASE_PUBLISHABLE_KEY`, `E2E_STAGING_SERVICE_ROLE_KEY` e `E2E_STAGING_CLEANUP_TOKEN`;
 - secrets de personas: `E2E_STAGING_USER_EMAIL/PASSWORD`, `E2E_STAGING_VIEWER_EMAIL/PASSWORD`, `E2E_STAGING_MANAGER_EMAIL/PASSWORD`, `E2E_STAGING_ADMIN_EMAIL/PASSWORD/TOTP_SECRET` e `E2E_STAGING_DEV_EMAIL/PASSWORD/TOTP_SECRET`.
 
-Estado verificado em 30/10/2026: o job antigo passou o preflight com secrets do
-repositório, mas não havia `E2E_SUPABASE_PROJECT_ID` nem environment `e2e-staging`
-configurados. Não consultei valores. A nova configuração ainda precisa de uma
-execução que conclua o preflight e prove as jornadas no projeto descartável.
+Estado verificado em 30/10/2026: o environment `e2e-staging` não existe (GitHub
+API 404); também não há a variável `E2E_SUPABASE_PROJECT_ID` nem secrets dedicados
+`E2E_STAGING_*` no repositório. O preflight anterior confirmou project ref ausente.
+Não consultei valores. A nova configuração ainda precisa de uma execução que conclua
+o preflight e prove as jornadas no projeto descartável.
 
 ## Lidos pelas edge functions (`Deno.env.get`)
 
@@ -95,20 +96,17 @@ Para rotacionar, crie primeiro um segredo novo com nome versionado
 confiável. As chaves antigas não podem ser apagadas enquanto existirem
 assinaturas que as referenciem, pois são necessárias para verificar o histórico.
 
-## Lidos pelo GitHub Actions (`secrets.*`)
+## Lidos pelo GitHub Actions (`secrets`/`vars`)
 
 | Variável | Workflow | Status |
 |---|---|---|
-| `E2E_SUPABASE_PROJECT_ID` | `e2e.yml` | ❌ Nome ausente na lista de secrets do repositório consultada; o preflight do run 41099125007 confirma que pelo menos uma das três variáveis do projeto estava vazia. Secrets organizacionais não foram auditados |
-| `VITE_SUPABASE_PROJECT_ID` / `VITE_SUPABASE_URL` | `e2e.yml` | ✅ Nomes presentes na lista do repositório; valor, URL e correspondência com o projeto isolado não foram verificados |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | `e2e.yml` | ⚠️ Requerida; disponibilidade não verificada porque o preflight parou nos identificadores/URL |
-| `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` | `e2e.yml` | ⚠️ Requerida; estado não verificado no run atual |
-| `E2E_VIEWER_EMAIL` / `E2E_VIEWER_PASSWORD` | `e2e.yml` | ⚠️ Requerida; estado não verificado no run atual |
-| `E2E_MANAGER_EMAIL` / `E2E_MANAGER_PASSWORD` | `e2e.yml` | ⚠️ Requerida; estado não verificado no run atual |
-| `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` / `E2E_ADMIN_TOTP_SECRET` | `e2e.yml` | ⚠️ Requerida; estado não verificado no run atual |
-| `E2E_DEV_EMAIL` / `E2E_DEV_PASSWORD` / `E2E_DEV_TOTP_SECRET` | `e2e.yml` | ⚠️ Requerida; estado não verificado no run atual |
-| `E2E_CLEANUP_TOKEN` | `e2e.yml` | ⚠️ Requerida pelo workflow; estado não verificado no run atual |
-| `SUPABASE_SERVICE_ROLE_KEY` | `e2e.yml`, `security-compliance.yml` | ⚠️ Requerida para verificações remotas; estado atual não verificado |
+| `E2E_SUPABASE_PROJECT_ID` | `e2e.yml` / environment `e2e-staging` | ❌ Environment não existe (API 404); variável obrigatória ainda não configurada |
+| `E2E_STAGING_SUPABASE_URL` / `E2E_STAGING_SUPABASE_PUBLISHABLE_KEY` | `e2e.yml` / environment `e2e-staging` | ❌ Secrets dedicados de homologação ausentes; não reutilizar `VITE_SUPABASE_*` genéricos |
+| `E2E_STAGING_SERVICE_ROLE_KEY` / `E2E_STAGING_CLEANUP_TOKEN` | `e2e.yml` / environment `e2e-staging` | ❌ Secrets dedicados de homologação ausentes; necessários para RLS técnico e limpeza |
+| `E2E_STAGING_USER_EMAIL/PASSWORD`, `VIEWER_*`, `MANAGER_*`, `ADMIN_*`, `DEV_*` | `e2e.yml` / environment `e2e-staging` | ❌ Credenciais sintéticas dedicadas e TOTP (admin/dev) ainda não configurados |
+| `VITE_SUPABASE_PROJECT_ID` / `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` | Outros workflows | ✅ Nomes presentes em nível de repositório; não são mais consumidos pelos jobs E2E |
+| `E2E_USER_*` / `E2E_VIEWER_*` / `E2E_MANAGER_*` / `E2E_ADMIN_*` / `E2E_DEV_*` / `E2E_CLEANUP_TOKEN` | Configuração antiga de `e2e.yml` | ⚠️ Nomes genéricos existentes, não usados pelos jobs novos; alvo dos valores não foi lido e não foi comprovado |
+| `SUPABASE_SERVICE_ROLE_KEY` | `security-compliance.yml` | ⚠️ Requerida para verificações remotas; estado atual não verificado |
 | `SUPABASE_ACCESS_TOKEN` | `migration-ledger-drift.yml`, `apply-sicoob-migrations.yml` | ✅ Nome presente no environment `construction`; os workflows devem ser executados por main protegida e o projeto alvo é validado separadamente |
 | `CONSTRUCTION_SUPABASE_PROJECT_REF` | `apply-sicoob-migrations.yml` e workflows de deploy | ❌ Nome não encontrado nos secrets do repositório nem no environment `construction`; secrets organizacionais não foram auditados. Bloqueia a identificação explícita do projeto de construção |
 | `SUPABASE_DB_URL` | Não consumido pelos workflows atuais de migrations/drift | ✅ Nome presente no repositório; não confundir com as credenciais atualmente usadas, que são `SUPABASE_ACCESS_TOKEN` e `CONSTRUCTION_SUPABASE_PROJECT_REF` |

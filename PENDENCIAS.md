@@ -98,7 +98,7 @@ A PR está aberta e bloqueada (`merged=false`), com head `e540dfbd0e61c124dfeba3
 
 **Pendências que precisam de ação/decisão do owner:**
 
-1. Configurar como **secret do repositório** o `E2E_SUPABASE_PROJECT_ID` com o project ref de um Supabase de homologação isolado. O job E2E não declara `environment`, então um secret existente apenas no environment `construction` não fica disponível. Alinhar `VITE_SUPABASE_PROJECT_ID`, `VITE_SUPABASE_URL`, chave publicável, service role e contas/personas/TOTP de teste ao mesmo projeto. O projeto canônico é recusado pelo workflow. Nenhum valor secreto foi lido.
+1. Configurar environment `e2e-staging`, variável `E2E_SUPABASE_PROJECT_ID` e os secrets `E2E_STAGING_*` listados em `docs/secrets.md`. Os jobs novos não reutilizam chaves genéricas `VITE_SUPABASE_*`/`SUPABASE_SERVICE_ROLE_KEY`; o preflight exige URL/ref coincidentes e recusa os dois projetos protegidos. Environment ausente foi confirmado por API 404; nenhum valor secreto foi lido.
 2. Ajustar a allowlist do firewall do Copilot Actions para liberar `api.github.com` (ou configurar os setup steps do agente antes da ativação do firewall, conforme a mensagem do run). O workflow Copilot é gerenciado pelo GitHub e não é um YAML versionado no repositório.
 3. Aguardar revisão obrigatória e resolver os dois bloqueios acima antes do merge da PR #176. Ela permanece aberta e sem merge.
 4. O run de deploy Sicoob na `main` permanece falho/sem alvo de homologação comprovado. Antes de qualquer execução futura, configurar `CONSTRUCTION_SUPABASE_PROJECT_REF` e credenciais somente do projeto `construction`; não aplicar migrations nem publicar funções no banco canônico.
@@ -159,8 +159,12 @@ A proteção da `main` também exige uma aprovação humana por alguém diferent
 
 **Verificação de integridade do CI:** removidos do conjunto de workflows os usos de `continue-on-error` e `|| true`; etapas de resumo pós-falha seguem com `if: always()` e o job continua falhando quando o teste/report falha. `actionlint .github/workflows/*.yml` passou após corrigir quoting e escrita do step summary no Branch Protection Sentinel.
 
-Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
-O erro exato foi extraído do run mais recente disponível em main.
+## Arquivo histórico — snapshots anteriores a 30/10/2026
+
+As seções abaixo preservam diagnósticos de runs antigos e não descrevem o bloqueio
+atual da PR #176. Use o snapshot atualizado no início deste arquivo para o estado
+vigente; em particular, a antiga falha de quota do E2E foi substituída pelo bloqueio
+seguro do preflight por ausência de `e2e-staging`.
 
 ---
 
@@ -193,7 +197,7 @@ chama funções via Management API e o projeto rejeita por billing.
 
 ---
 
-## Workflow: `e2e` — Smoke gate Playwright bloqueado por quota Supabase
+## Histórico: workflow `e2e` — Smoke gate Playwright bloqueado por quota Supabase
 
 **Situação:** Duas partes distintas neste workflow:
 
@@ -216,13 +220,15 @@ global do Playwright (`tests/e2e/fixtures/auth.ts`) não consegue criar sessão 
 Process completed with exit code 1.
 ```
 
-**Este não é um bug no código** — é a mesma causa raiz do workflow Enterprise Compliance.
-A falha é inevitável enquanto a quota Supabase não for restaurada.
+**Contexto histórico:** esse diagnóstico pertence aos runs antigos da PR #141 e não
+explica o status atual da PR #176. O gate atualizado da #176 para antes de qualquer
+chamada remota quando falta `e2e-staging`; consulte o snapshot atual no início deste
+arquivo. Naquele run antigo, a quota Supabase esgotada era a causa observada.
 
 **O que você precisa fazer:**
 
-1. Restaure a quota Supabase (mesma ação da seção Enterprise Compliance acima).
-2. Após restaurar, o smoke gate passa automaticamente sem nenhuma mudança de código.
+1. Esta recomendação era válida somente para aquele run histórico; o E2E atual também
+   exige configurar e validar o ambiente dedicado `e2e-staging`.
 
 ---
 

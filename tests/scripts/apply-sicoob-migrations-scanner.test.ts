@@ -59,7 +59,10 @@ describe('proteção de ambiente do aplicador de migrations', () => {
     expect(result.stderr).toContain('migrations só podem ser aplicadas a partir de refs/heads/main');
   });
 
-  it('recusa o projeto Supabase canônico antes de qualquer acesso remoto', () => {
+  it.each([
+    ['projeto Sicoob canônico', 'cfmzkthhgliqelozlmwu'],
+    ['catálogo de produtos', 'doufsxqlfjyuvxuezpln'],
+  ])('recusa %s antes de qualquer acesso remoto', (_name, projectRef) => {
     const env = { ...process.env };
     delete env.GITHUB_ACTIONS;
     delete env.GITHUB_REF;
@@ -72,13 +75,13 @@ describe('proteção de ambiente do aplicador de migrations', () => {
       encoding: 'utf8',
       env: {
         ...env,
-        SUPABASE_PROJECT_REF: 'cfmzkthhgliqelozlmwu',
+        SUPABASE_PROJECT_REF: projectRef,
         SUPABASE_ACCESS_TOKEN: 'token-de-teste-nao-utilizado',
       },
     });
 
     expect(result.status).not.toBe(0);
-    expect(result.stderr).toContain('Aplicação de migrations no projeto canônico está bloqueada');
+    expect(result.stderr).toContain('Aplicação de migrations nos projetos protegidos está bloqueada');
   });
 
   it('recusa alvo ausente antes de qualquer acesso remoto', () => {
