@@ -80,6 +80,21 @@ A PR permanece aberta e sem merge. O E2E depende de projeto Supabase isolado e p
 
 A PR #176 continua aberta e sem merge. Não alterei o Supabase remoto.
 
+### Snapshot consultado do SHA `2575f1ea7bc0bd05c91e25f31eddeca51fbc8f73` — 30/10/2026
+
+| Workflow / check | Resultado mais recente | Evidência / causa |
+|---|---|---|
+| Qualidade contínua | success na attempt 2 | [41109622961](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41109622961). A primeira tentativa falhou ao baixar `public.ecr.aws/supabase/postgres:17.6.1.063` (`toomanyrequests: Data limit exceeded`); somente o job falho foi reexecutado e a segunda attempt concluiu verde. |
+| Security Scan | success | [41109623120](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41109623120). |
+| Bundle Size Check | success | [41109623142](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41109623142). |
+| Lighthouse Performance Audit | success | [41109623131](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41109623131). |
+| CodeQL | success | [41109623220](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41109623220). |
+| Portal Sicoob | success | [41109623171](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41109623171). |
+| E2E (Playwright) | failure no preflight | [41109623268](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41109623268): `E2E_SUPABASE_PROJECT_ID` vazio. Os shards foram skipped; nenhum teste Playwright autenticado rodou. O nome do secret não existe no repositório; nenhum valor de secret foi lido. |
+| Running Copilot Code Review | failure | [41109639994](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41109639994): limite de uso HTTP 402 no ambiente gerenciado. |
+
+A proteção da `main` também exige uma aprovação humana por alguém diferente do autor. A PR segue aberta, sem merge e bloqueada até configurar e validar o projeto isolado de E2E, resolver o bloqueio externo do Copilot e obter a aprovação requerida. Não houve alteração no Supabase remoto. A tentativa 2 da Qualidade contínua passou; a falha de ECR na tentativa 1 permanece registrada no histórico.
+
 **Correções adicionais pós-auditoria:** mensagens de erro de enums Zod agora distinguem ausência de valor inválido, com testes para os dois casos; o resolver do formulário mantém um adaptador tipado porque a entrada genérica de `z.coerce.number` não representa os defaults e controles numéricos concretos da tela. O cliente SQL do Supabase aceita project refs alfanuméricos de 20 caracteres, alinhado ao guard de migrations, com cenário cobrindo dígitos. Os commits após `729c3e2` foram validados localmente e remotamente no SHA `90e12ae`; a `main` permanece sem merge.
 
 **Verificação de integridade do CI:** removidos do conjunto de workflows os usos de `continue-on-error` e `|| true`; etapas de resumo pós-falha seguem com `if: always()` e o job continua falhando quando o teste/report falha. `actionlint .github/workflows/*.yml` passou após corrigir quoting e escrita do step summary no Branch Protection Sentinel.
