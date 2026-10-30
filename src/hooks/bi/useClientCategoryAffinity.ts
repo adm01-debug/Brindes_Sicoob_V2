@@ -119,7 +119,7 @@ function categoryDelta(category: CategoryAggregate) {
   if (category.revenuePrevious > 0) {
     return ((category.revenueRecent - category.revenuePrevious) / category.revenuePrevious) * 100;
   }
-  return category.revenueRecent > 0 ? 100 : null;
+  return null;
 }
 
 function categoryTrend(delta: number | null): CategoryAggregate["trend"] {

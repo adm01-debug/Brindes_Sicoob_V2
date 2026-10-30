@@ -72,7 +72,7 @@ const TIER_STYLES = {
     scoreText: 'text-muted-foreground',
     progressBar: '',
     icon: Info,
-    label: 'Calculando',
+    label: 'Dados insuficientes',
   },
 };
 
@@ -88,13 +88,14 @@ export function ClientHealthHero({ clientId, ramoAtividade, clientName }: Props)
   const favoriteCategory = clientCats.favorite;
   // Categoria-oportunidade: setor compra muito, cliente quase nada
   const opportunityCategory = useMemo(() => {
+    if (clientCats.dataStatus !== "available" || industryCats.dataStatus !== "available") return null;
     const clientSlugs = new Set(clientCats.categories.map((c) => c.slug));
     return (
       industryCats.categories
         .filter((ic) => ic.revenueSharePct >= 8 && !clientSlugs.has(ic.slug))
         .sort((a, b) => b.revenueSharePct - a.revenueSharePct)[0] ?? null
     );
-  }, [clientCats.categories, industryCats.categories]);
+  }, [clientCats.categories, clientCats.dataStatus, industryCats.categories, industryCats.dataStatus]);
 
   const styles = TIER_STYLES[health.tier];
   const Icon = styles.icon;
@@ -182,7 +183,7 @@ export function ClientHealthHero({ clientId, ramoAtividade, clientName }: Props)
                     styles.scoreText,
                   )}
                 >
-                  {health.score}
+                  {health.hasEnoughData ? health.score : "—"}
                 </span>
                 <span className="mt-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                   Health Score

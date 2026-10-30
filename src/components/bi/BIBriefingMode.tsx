@@ -65,14 +65,15 @@ export function BIBriefingMode({ open, onOpenChange, clientId, clientName, ramoA
       deltaPct: c.deltaPct,
     }));
     const clientSlugs = new Set(catAffinity.categories.map((c) => c.slug));
-    const gap = catIndustry.categories.find(
-      (ind) => !clientSlugs.has(ind.slug) && ind.revenueSharePct >= 8,
-    );
+    const canCompare = catAffinity.dataStatus === "available" && catIndustry.dataStatus === "available";
+    const gap = canCompare
+      ? catIndustry.categories.find((ind) => !clientSlugs.has(ind.slug) && ind.revenueSharePct >= 8)
+      : null;
     return {
       favorites,
       gap: gap ? { label: gap.label, sharePct: Math.round(gap.revenueSharePct) } : null,
     };
-  }, [catAffinity.categories, catIndustry.categories]);
+  }, [catAffinity.categories, catAffinity.dataStatus, catIndustry.categories, catIndustry.dataStatus]);
 
   const tierStyles = useMemo(() => {
     switch (health.tier) {
@@ -106,7 +107,9 @@ export function BIBriefingMode({ open, onOpenChange, clientId, clientName, ramoA
       pts.push({
         icon: TrendingUp,
         label: "Histórico",
-        detail: `LTV ${fmtBRL(bi.ltv)} em ${bi.ordersCount} pedidos · ticket médio ${fmtBRL(bi.avgTicket)}.`,
+        detail: bi.hasData
+          ? `LTV ${fmtBRL(bi.ltv)} em ${bi.ordersCount} pedidos · ticket médio ${fmtBRL(bi.avgTicket)}.`
+          : "Histórico insuficiente para descrever o padrão de compras.",
       });
     }
     return pts.slice(0, 3);
@@ -150,7 +153,7 @@ export function BIBriefingMode({ open, onOpenChange, clientId, clientName, ramoA
 
     return [
       `📋 BRIEFING — ${clientName}`,
-      `Score de saúde: ${health.score}/100 (${tierStyles.label})`,
+      `Score de saúde: ${health.hasEnoughData ? `${health.score}/100 (${tierStyles.label})` : "dados insuficientes"}`,
       ``,
       `Diagnóstico: ${health.crossZoneInsight}`,
       ``,
@@ -195,7 +198,7 @@ export function BIBriefingMode({ open, onOpenChange, clientId, clientName, ramoA
             <div className={cn("rounded-2xl p-4 flex items-center gap-4", tierStyles.bg)}>
               <div className="h-20 w-20 rounded-2xl bg-background/80 border-[1.5px] flex flex-col items-center justify-center shadow-sm shrink-0">
                 <span className={cn("font-display font-bold text-3xl leading-none", tierStyles.color)}>
-                  {health.score}
+                  {health.hasEnoughData ? health.score : "—"}
                 </span>
                 <span className="text-[9px] text-muted-foreground uppercase tracking-wider mt-0.5">
                   Score
