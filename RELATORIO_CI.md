@@ -181,3 +181,33 @@ Execução na branch `fix/hermes-h393620-inteligencia-real`, após os commits `0
 | `npm run check:npm-audit` | ❌ exit 1 | O primeiro baseline apontou `undici` e `zod`; `undici` foi atualizado depois para `8.12.3`, faixa compatível, e o gate agora aponta somente `zod@3.25.76` (high; correção proposta exige major v4). Ver `PENDENCIAS.md`. |
 
 O lote atual corrige o avanço indevido de relatórios agendados sem confirmação do Resend, acrescenta isolamento por vendedor, teste de paridade das Edge Functions chamadas pelos dispatchers cron e alinha as versões das ações CodeQL após falha remota. No SHA anterior `d58c2b39a093244ec75bfc7e2371bb5bbb27553c`, CodeQL (`41132174662`), Bundle Size (`41132174518`), Lighthouse (`41132174553`) e Portal Sicoob (`41132174565`) concluíram com sucesso; Security Scan (`41132174597`) e Qualidade contínua (`41132174582`) falharam no gate `zod`. O E2E (`41132174573`) ainda executava. Todos devem ser confirmados novamente no SHA com escopo por vendedor. Nenhum deploy de Edge Function ou escrita remota no Supabase foi feito.
+
+## Atualização local — migração do finding Zod (30/10/2026)
+
+Esta atualização registra o worktree **antes de commit/push**; os resultados remotos abaixo pertencem ao SHA anterior `095929978900f2939f32a1fc7fc31afdf6bc7804`.
+
+| Verificação | Resultado no worktree atual |
+|---|---|
+| `npm ci` | ✅ instalação limpa; 0 vulnerabilidades reportadas |
+| `npm run check:npm-audit` | ✅ gate aprovado |
+| `npm test` | ✅ 5.850 aprovados; 68 ignorados; 0 falhas (456 arquivos passaram, 4 ignorados) |
+| `npm run typecheck` | ✅ exit 0 |
+| `npm run lint` | ✅ exit 0; 0 erros e 874 avisos existentes |
+| `npm run build` | ✅ exit 0; avisos conhecidos de env Supabase local, PostCSS, imports dinâmicos e chunks grandes |
+| `git diff --check` | ✅ exit 0 |
+
+O pacote foi atualizado de `zod@3.25.76` para `4.6.7` e `@hookform/resolvers` para `5.9.2`. Os schemas existentes usam explicitamente `zod/v3` para preservar as APIs atuais. O formulário de produto declara o tipo de saída e documenta a fronteira tipada do resolver; testes existentes cobrem defaults completos e coerção numérica.
+
+### Estado remoto pré-correção no SHA `095929978900f2939f32a1fc7fc31afdf6bc7804`
+
+| Workflow | Run | Estado |
+|---|---:|---|
+| Security Scan | [41133550928](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41133550928) | ❌ falhou no gate do finding Zod daquele SHA |
+| Qualidade contínua | [41133551151](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41133551151) | ❌ falhou no gate do finding Zod daquele SHA |
+| CodeQL | [41133550983](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41133550983) | ✅ success |
+| Bundle Size Check | [41133550946](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41133550946) | ✅ success |
+| Lighthouse Performance Audit | [41133551003](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41133551003) | ✅ success |
+| Portal Sicoob | [41133550942](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41133550942) | ✅ success |
+| E2E (Playwright) | [41133550986](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41133550986) | Smoke passou; gate de header fixo ainda estava em execução na última consulta |
+
+Os resultados remotos desta tabela são anteriores à migração e não validam o novo código. Os checks do Zod só serão considerados resolvidos após o push e a conclusão dos workflows no SHA atualizado. Nenhuma alteração remota no Supabase ou deploy foi executada.

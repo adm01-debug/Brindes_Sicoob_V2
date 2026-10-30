@@ -4,7 +4,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { productFormSchema, type ProductFormData, defaultFormValues } from './ProductFormSchema';
 import { ProductPreviewPanel } from './ProductPreviewPanel';
@@ -98,6 +98,11 @@ const STEPS: StepDef[] = [
   { id: 'media', label: 'Mídia', description: 'Imagens e vídeos', icon: ImageIcon, requiredFields: [], fieldLabels: {} },
   { id: 'content', label: 'SEO', description: 'Meta tags e marketing', icon: Megaphone, requiredFields: [], fieldLabels: {} },
 ];
+
+// Os defaults completos e os campos numéricos registrados com `valueAsNumber`
+// mantêm o estado do formulário no contrato de saída, embora o schema aceite
+// entradas opcionais e coercíveis para validar valores externos.
+const productFormResolver = zodResolver(productFormSchema) as Resolver<ProductFormData>;
 
 function emptyString(value: string | null | undefined): string {
   return value ?? '';
@@ -400,7 +405,7 @@ export function ProductFormFullscreen({
     register, handleSubmit, setValue, watch, trigger, getValues,
     formState: { errors },
   } = useForm<ProductFormData>({
-    resolver: zodResolver(productFormSchema),
+    resolver: productFormResolver,
     defaultValues: { ...defaultFormValues, ...initialData },
   });
 
