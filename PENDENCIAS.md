@@ -74,7 +74,7 @@ A PR permanece aberta e sem merge. O E2E depende de projeto Supabase isolado e p
 | CodeQL | success | [41107963621](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963621). |
 | Gitleaks e npm audit | success | [41107963302](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963302). |
 | Bundle | success | [41107963479](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963479). |
-| E2E | failure | [41107963427](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963427): secrets/valores `E2E_SUPABASE_PROJECT_ID`, `VITE_SUPABASE_PROJECT_ID` e `VITE_SUPABASE_URL` ausentes; nenhum shard autenticado rodou. |
+| E2E | failure | [41107963427](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963427): preflight falhou. O inventário dos nomes confirma ausência do secret `E2E_SUPABASE_PROJECT_ID`; os nomes `VITE_SUPABASE_PROJECT_ID` e `VITE_SUPABASE_URL` existem, mas valores e alinhamento com homologação não foram lidos. Nenhum shard autenticado rodou. |
 | Copilot Review | failure | [41107976457](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107976457): HTTP 402 por limite de uso e firewall bloqueando `api.github.com`; requer ação do owner/GitHub. |
 | Segurança, contratos e build | in_progress | [41107963268](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963268) ainda executava; não é aprovação até terminar. |
 

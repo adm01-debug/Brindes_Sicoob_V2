@@ -90,7 +90,7 @@ Consultado em 30/10/2026 às 18:39 UTC. O job combinado de segurança, contratos
 | CodeQL | success | [41107963621](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963621) |
 | Gitleaks e npm audit | success | [41107963302](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963302) |
 | Bundle | success | [41107963479](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963479) |
-| E2E (Playwright) | failure | [41107963427](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963427): preflight não recebeu `E2E_SUPABASE_PROJECT_ID`, `VITE_SUPABASE_PROJECT_ID` e `VITE_SUPABASE_URL`; shards Playwright foram skipped. |
+| E2E (Playwright) | failure | [41107963427](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963427): preflight falhou. O inventário de nomes dos secrets confirma que `E2E_SUPABASE_PROJECT_ID` não está cadastrado; os nomes `VITE_SUPABASE_PROJECT_ID` e `VITE_SUPABASE_URL` existem, mas seus valores não foram lidos nem validados. Shards Playwright foram skipped. |
 | Copilot Code Review | failure | [41107976457](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107976457): quota adicional HTTP 402 e firewall bloqueando `api.github.com`. |
 | Segurança, contratos e build | in_progress | [41107963268](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963268) ainda executava na consulta. |
 
