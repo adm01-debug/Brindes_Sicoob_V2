@@ -115,6 +115,8 @@ Esta documentação não autoriza exclusão de dados. Antes de retenção/expurg
 
 ### Bloqueio de Usuário
 
+O SQL abaixo é um exemplo de procedimento, não uma autorização para alterar dados. Confirme identidade/escopo, aprovação do responsável e ambiente; não o execute no banco canônico sem processo formal de incidente e mudança.
+
 ```sql
 -- Desativar usuário comprometido
 UPDATE profiles SET is_active = false WHERE user_id = '<UUID>';
