@@ -13,6 +13,9 @@ FIXTURE = ROOT / "tests/scenarios/sql/quote-atomic-save-fixture.sql"
 BASE_MIGRATION = ROOT / "supabase/migrations/20261002160000_quote_items_id_format_validation.sql"
 GOVERNANCE_MIGRATION = ROOT / "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql"
 MIGRATION = ROOT / "supabase/migrations/20261013123000_preserve_atomic_quote_save_under_governance.sql"
+IDEMPOTENCY_BASE = ROOT / "supabase/migrations/20260928162048_quote_save_idempotency.sql"
+IDEMPOTENCY_HARDEN = ROOT / "supabase/migrations/20260928173500_harden_quote_save_idempotency.sql"
+PRICE_ATTESTATION_MIGRATION = ROOT / "supabase/migrations/20261030120000_quote_price_attestation_gate.sql"
 SELLER = "11111111-1111-4111-8111-111111111111"
 ORG = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 OTHER_ORG = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
@@ -39,9 +42,28 @@ def sql(statement, *, check=True):
 
 def actor_sql(statement, *, check=True):
     return sql(
-        f"SET ROLE authenticated; SET request.jwt.claim.sub = '{SELLER}';\n{statement}\nRESET ROLE;",
+        "SET ROLE authenticated; "
+        f"SET request.jwt.claim.sub = '{SELLER}'; SET request.jwt.claim.role = 'authenticated';\n"
+        f"{statement}\nRESET ROLE;",
         check=check,
     )
+
+
+def register_attestation(header, items, *, quote_id=None, version=None, history=None, actor=SELLER, check=True):
+    quote_sql = json.dumps(header, ensure_ascii=False, separators=(",", ":"))
+    items_sql = json.dumps(items, ensure_ascii=False, separators=(",", ":"))
+    history_sql = json.dumps(history or ["Registro transacional de teste"], ensure_ascii=False)
+    quote_id_sql = "NULL" if quote_id is None else f"'{quote_id}'::uuid"
+    version_sql = "NULL" if version is None else str(version)
+    response = sql(
+        "SET ROLE service_role; SET request.jwt.claim.role = 'service_role';\n"
+        "SELECT public.register_quote_price_attestation("
+        f"'{actor}'::uuid, {quote_id_sql}, {version_sql}, "
+        f"$quote${quote_sql}$quote$::jsonb, $items${items_sql}$items$::jsonb, "
+        f"$history${history_sql}$history$::jsonb); RESET ROLE;",
+        check=check,
+    )
+    return scalar(response) if check else response
 
 
 def scalar(response):
@@ -103,16 +125,35 @@ def quote_payload(*, org=ORG, quantity=2, failing=False):
     return header, items
 
 
-def rpc(header, items, *, quote_id=None, version=None, history=None, check=True):
-    quote_sql = json.dumps(header, ensure_ascii=False, separators=(",", ":"))
+def rpc(header, items, *, quote_id=None, version=None, history=None, check=True,
+        attested_header=None, attested_items=None, attestation_id=None):
+    stable_header = header if attested_header is None else attested_header
+    stable_items = items if attested_items is None else attested_items
+    stable_history = history or ["Registro transacional de teste"]
+    if attestation_id is None:
+        attestation_id = register_attestation(
+            stable_header, stable_items, quote_id=quote_id, version=version, history=stable_history,
+        )
+    payload_header = {**header, "price_attestation_id": attestation_id}
+    quote_sql = json.dumps(payload_header, ensure_ascii=False, separators=(",", ":"))
     items_sql = json.dumps(items, ensure_ascii=False, separators=(",", ":"))
-    history_sql = json.dumps(history or ["Registro transacional de teste"], ensure_ascii=False)
+    history_sql = json.dumps(stable_history, ensure_ascii=False)
     quote_id_sql = "NULL" if quote_id is None else f"'{quote_id}'::uuid"
     version_sql = "NULL" if version is None else str(version)
+    function_name = "save_quote_atomic_idempotent_attested" if quote_id is None else "save_quote_atomic_attested"
+    if quote_id is None:
+        key = str(uuid.uuid4())
+        call = (
+            f"public.{function_name}($quote${quote_sql}$quote$::jsonb, "
+            f"$items${items_sql}$items$::jsonb, '{key}'::uuid, $history${history_sql}$history$::jsonb)"
+        )
+    else:
+        call = (
+            f"public.{function_name}($quote${quote_sql}$quote$::jsonb, $items${items_sql}$items$::jsonb, "
+            f"{quote_id_sql}, {version_sql}, $history${history_sql}$history$::jsonb)"
+        )
     return actor_sql(
-        "SELECT public.save_quote_atomic("
-        f"$quote${quote_sql}$quote$::jsonb, $items${items_sql}$items$::jsonb, "
-        f"{quote_id_sql}, {version_sql}, $history${history_sql}$history$::jsonb);",
+        f"SELECT {call};",
         check=check,
     )
 
@@ -140,6 +181,9 @@ try:
     )
     sql(governance_sql[guard_start:guard_end])
     sql(MIGRATION.read_text())
+    sql(IDEMPOTENCY_BASE.read_text())
+    sql(IDEMPOTENCY_HARDEN.read_text())
+    sql(PRICE_ATTESTATION_MIGRATION.read_text())
 
     assert scalar(sql("""
       SELECT has_function_privilege(
@@ -151,6 +195,16 @@ try:
         'authenticated', 'public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)', 'EXECUTE'
       )::text;
     """)) == "true"
+    assert scalar(sql("""
+      SELECT has_function_privilege(
+        'authenticated', 'public.save_quote_atomic_attested(jsonb,jsonb,uuid,integer,jsonb)', 'EXECUTE'
+      )::text;
+    """)) == "true"
+    assert scalar(sql("""
+      SELECT has_function_privilege(
+        'authenticated', 'public.register_quote_price_attestation(uuid,uuid,integer,jsonb,jsonb,jsonb)', 'EXECUTE'
+      )::text;
+    """)) == "false"
 
     header, items = quote_payload()
     created = json.loads(scalar(rpc(header, items, history=["Orçamento criado atomicamente"])))
@@ -162,6 +216,37 @@ try:
     assert scalar(sql(f"SELECT count(*) FROM public.quote_items WHERE quote_id='{quote_id}';")) == "1"
     assert scalar(sql("SELECT count(*) FROM public.quote_item_personalizations;")) == "1"
     assert scalar(sql(f"SELECT action || '|' || description FROM public.quote_history WHERE quote_id='{quote_id}';")) == "created|Orçamento criado atomicamente"
+
+    # Um atestado sobre preço legítimo não autoriza outro preço, mesmo quando
+    # o navegador recalcula todos os totais adulterados para manter a aritmética.
+    valid_header, valid_items = quote_payload()
+    forged_header, forged_items = quote_payload()
+    forged_items[0]["unit_price"] = 0.01
+    forged_items[0]["unit_cost"] = 0
+    forged_header["subtotal"] = round((2 * 0.01 + 5) * 1.2, 2)
+    forged_header["discount_amount"] = round(forged_header["subtotal"] * 0.1, 2)
+    forged_header["total"] = round(forged_header["subtotal"] - forged_header["discount_amount"] + 2, 2)
+    forged_header["total_cost"] = 3
+    valid_attestation = register_attestation(valid_header, valid_items, history=["Tentativa adulterada"])
+    forged = rpc(
+        forged_header,
+        forged_items,
+        history=["Tentativa adulterada"],
+        check=False,
+        attested_header=valid_header,
+        attested_items=valid_items,
+        attestation_id=valid_attestation,
+    )
+    assert forged.returncode != 0 and "atestado" in forged.stderr.lower()
+    assert scalar(sql("SELECT count(*) FROM public.quotes;")) == "1"
+    assert scalar(sql("SELECT count(*) FROM public.quote_items;")) == "1"
+
+    direct_update = actor_sql(
+        f"UPDATE public.quote_items SET unit_price=0.01 WHERE quote_id='{quote_id}';",
+        check=False,
+    )
+    assert direct_update.returncode != 0 and "atestado" in direct_update.stderr.lower()
+    assert scalar(sql(f"SELECT unit_price FROM public.quote_items WHERE quote_id='{quote_id}';")) == "10"
 
     failing_header, failing_items = quote_payload(failing=True)
     failed_create = rpc(failing_header, failing_items, check=False)
@@ -209,6 +294,16 @@ try:
     assert cross_org.returncode != 0 and "organização informada" in cross_org.stderr
     assert scalar(sql("SELECT count(*) FROM public.quotes;")) == "1"
 
+    # RPCs antigas continuam expostas por compatibilidade, mas não conseguem
+    # escrever sem o wrapper atestado e o claim consumido nesta transação.
+    legacy_bypass = actor_sql(
+        "SELECT public.save_quote_atomic("
+        f"$quote${json.dumps(updated_header)}$quote$::jsonb, "
+        f"$items${json.dumps(updated_items)}$items$::jsonb, '{quote_id}'::uuid, 2, '[]'::jsonb);",
+        check=False,
+    )
+    assert legacy_bypass.returncode != 0 and "atestado" in legacy_bypass.stderr.lower()
+
     sql(
         "BEGIN; SELECT set_config('app.quote_governance_write','true',true); "
         f"UPDATE public.quotes SET status='pending' WHERE id='{quote_id}'; COMMIT;"
@@ -221,6 +316,7 @@ try:
         "atomicidade": "falha após cabeçalho e primeiro item reverte criação e atualização integralmente",
         "concorrencia": "row_version obsoleto recusado sem alterar itens ou histórico",
         "totais": "subtotal, desconto, frete e custo recalculados no servidor",
+        "atestado_de_preco": "token privado de uso único vinculado a ator, orçamento, versão e payload completo; adulteração de preço/custo e DML direto recusados",
         "governanca": "escopo organizacional e edição de orçamento enviado recusados",
         "integracao_gate": "save_quote_atomic preserva SECURITY INVOKER/RLS; toque direto ou GUC forjado não altera updated_at",
         "resultado": "aprovado",
