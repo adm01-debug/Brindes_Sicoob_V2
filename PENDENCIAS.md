@@ -142,7 +142,7 @@ errorType: 'quota', statusCode: 402
 
 ---
 
-## Workflow: `Segurança, contratos e build` (`ci.yml`) — ECR Rate Limit
+## Histórico: `Segurança, contratos e build` (`ci.yml`) — ECR Rate Limit
 
 **Commits afetados:** `5b34841` e `7211e12` (branch `claude/hopeful-mccarthy-8rqrqw`)
 **Runs:** `39850827027` · `39852468612`
@@ -157,9 +157,7 @@ docker: Error response from daemon: toomanyrequests: Data limit exceeded
 
 **Causa raiz:** Rate limit do ECR Public da AWS ao puxar a imagem Docker `public.ecr.aws/supabase/postgres:17.6.1.063` nos scripts `simular-controles-auditoria.py` e `simular-acl-efetiva.py`. Não é um bug no código do PR — é throttling de infraestrutura externa. Em execuções posteriores (ex: run `39780447863`) o rate limit se dissipar naturalmente e o workflow retornou **success**.
 
-**O que você precisa fazer:** Nenhuma ação imediata. Se a falha persistir em execuções futuras:
-1. Habilitar o Amazon ECR pull-through cache ou autenticar no ECR antes do pull.
-2. Alternativa: migrar os scripts para usar a imagem via GHCR ou Docker Hub se disponível.
+**Estado daquele incidente:** a falha deixou de ocorrer em execuções posteriores na época. A recorrência em 30/10/2026 está registrada na atualização mais recente ao final deste arquivo; o lote atual troca os dois pulls para GHCR com digest verificado e ainda aguarda confirmação remota.
 
 ---
 
