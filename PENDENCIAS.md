@@ -388,3 +388,16 @@ Este inventário substitui os snapshots antigos acima. Nenhuma migration, SQL, d
 - Testes focais atuais: **7/7 aprovados**; ESLint direcionado, `actionlint` e `git diff --check` sem erros. A checagem local não chamou o Supabase nem prova o conteúdo/hash efetivamente servido.
 - O novo commit ainda precisa passar pelos checks remotos da PR #186. As falhas já registradas de audit/build/CodeQL/E2E pertencem a um SHA anterior e à base antiga; consultar os checks do head novo antes de decidir merge.
 - Não houve dispatch do workflow, uso de token ou publicação de Edge Functions.
+=======
+---
+
+## Migration T031 — retry de status por usuário inativo
+
+**Estado:** correção implementada e simulada localmente; sem aplicação remota.
+
+**Motivo do bloqueio:** o ambiente Supabase isolado de construção e seu project ref ainda não foram confirmados. O executor versionado está restrito ao ref `cfmzkthhgliqelozlmwu`, que não foi confirmado como projeto de construção independente; portanto a migration `20261030210000_require_active_actor_for_quote_status_retry.sql` não foi adicionada à allowlist e não foi executada. Nenhuma migration, função ou dado remoto foi alterado.
+
+**Próxima ação necessária:** confirmar o ref e as credenciais do projeto Supabase de homologação/construção; revisar o diff da PR e os checks; somente então acrescentar a migration à allowlist restrita ao ref aprovado e executar preflight, aplicação e verificação de ledger/definição/ACL nesse projeto. Não usar o banco canônico nem o banco de produtos como fallback.
+
+**Prova local:** PostgreSQL 17 descartável, rede desativada. O cenário reproduz o acesso indevido com o wrapper anterior e confirma que o novo wrapper nega com `42501` antes de chamar o núcleo; o retry de vendedor ativo segue autorizado. Ver `RELATORIO_CI.md`, seção “Baseline e correção T031”.
+>>>>>>> 3e881c976 (Corrige retry de status para usuário inativo)
