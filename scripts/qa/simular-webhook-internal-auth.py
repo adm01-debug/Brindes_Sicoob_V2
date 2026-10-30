@@ -154,6 +154,14 @@ try:
     dispatch_quote(1)
     assert scalar("SELECT count(*) FROM public.webhook_dispatch_test_requests;") == "0", "trigger deve negar fail-closed sem Vault"
 
+    sql("""
+      INSERT INTO vault.decrypted_secrets(name,decrypted_secret) VALUES
+        ('sicoob_project_url','http://staging-sicoob.supabase.co'), ('webhook_dispatcher_secret','short');
+    """)
+    dispatch_quote(3)
+    assert scalar("SELECT count(*) FROM public.webhook_dispatch_test_requests;") == "0", "trigger deve negar URL/segredo inválidos"
+    sql("DELETE FROM vault.decrypted_secrets;")
+
     sql(f"""
       INSERT INTO vault.decrypted_secrets(name,decrypted_secret) VALUES
         ('sicoob_project_url','{PROJECT_URL}'), ('webhook_dispatcher_secret','{SECRET}');
@@ -226,6 +234,7 @@ try:
     result["resultado"] = "aprovado"
     result["casos"] = [
         "trigger sem segredo não envia",
+        "trigger com URL HTTP ou segredo curto também falha fechado",
         "trigger válido transmite só o segredo dedicado",
         "eventos de orçamento, pedido, desconto e kit são preservados; rascunho RE-* é ignorado",
         "retry sem segredo retorna bloqueio fechado",
