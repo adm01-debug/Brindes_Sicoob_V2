@@ -256,10 +256,10 @@ Merecem atenção logo em seguida: FE-095 e FE-100 (KPIs inventados nas telas Ge
 ### 3. Produto
 
 #### FE-030  Selos de inteligência de mercado com dados fictícios na página do produto
-- Status: STUB/MOCK
-- Origem: `src/hooks/useProductIntelligenceBadges.ts:1-5` ("falling back to mock data when MVs aren't populated").
-- Evidência no código: `:103-119` usa `generateMockIntelligence` e `generateMockVelocities` (`src/lib/stock-chart-utils.ts:51-230`, fornecedores inventados como "Spot Promo" e "Asia Import") sempre que `mv_product_intelligence`/`mv_stock_velocity` vêm vazias. Isso produz "Best-Seller", "Emergente", "Últimas Unidades" e um score de giro. É renderizado em `src/pages/ProductDetail.tsx:217,311`. O único aviso é um selo cinza "dados ilustrativos" (`components/common/IntelligenceBadges.tsx:124-128`). O mesmo mock alimenta `components/inventory/risk/ProductRiskDetail.tsx:35-37,188-190` (fora da fatia).
-- O que falta: popular e agendar a atualização das MVs e, sem dado real, não exibir selos de mercado.
+- Status: PARCIAL
+- Origem: `src/hooks/useProductIntelligenceBadges.ts` e `src/components/inventory/risk/ProductRiskDetail.tsx`.
+- Evidência atual: a página de produto já não usa geradores mock para substituir `mv_product_intelligence` ou `mv_stock_velocity`; sem inteligência real, mostra apenas flags editoriais do catálogo e mantém score/demanda nulos. `tests/hooks/intelligence-badges.test.ts` testa a função de produção, a ausência de dados, a preservação das flags e o caminho com dados reais. A tela de risco de estoque ainda usa dados mock em `src/components/inventory/risk/ProductRiskDetail.tsx:35-37,188-190`.
+- O que falta: remover ou identificar explicitamente os dados fictícios na tela de risco; confirmar atualização operacional das MVs antes de exibir selos de mercado nessa tela.
 - Impacto no negócio: o vendedor pode repassar ao cliente "produto mais vendido / últimas unidades" sem base real.
 - Esforço: M
 - Prioridade: P1
