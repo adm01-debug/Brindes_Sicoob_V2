@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
-  TrendingUp, Sparkles, ArrowUp, ArrowDown, Minus, CheckCircle2, Package,
+  TrendingUp, ArrowUp, ArrowDown, Minus, CheckCircle2, Package,
   Target, Check, X,
 } from "lucide-react";
 import { useIndustryTrends, type IndustryTrendItem, type IndustryTrendsResult } from "@/hooks/bi/useIndustryTrends";
@@ -62,14 +62,14 @@ function IndustryHeader(props: IndustryHeaderProps) {
         <div>
           <h2 className="font-display font-semibold">Tendência do setor{props.ramoAtividade && <span className="text-muted-foreground font-normal"> · {props.ramoAtividade}</span>}</h2>
           <p className="text-xs text-muted-foreground">
-            {props.data?.isMock ? "Top produtos dos últimos 90 dias · setor" : `Agregado de ${props.data?.companiesInRamo} empresas do mesmo ramo · 90 dias`}
+            {props.data?.dataStatus === "available" ? `Agregado de ${props.data.companiesInRamo} empresas do mesmo ramo · 90 dias` : "Indicador exibido quando houver amostra real suficiente do setor."}
             {props.totalCount > 0 && <> · <span className="text-success font-medium">{props.opportunityCount} oportunidade{props.opportunityCount !== 1 && "s"}</span></>}
           </p>
         </div>
       </div>
       <div className="flex items-center gap-3">
         {props.totalCount > 0 && <label className="flex items-center gap-2 cursor-pointer text-xs"><Switch checked={props.onlyOpportunities} onCheckedChange={props.onOnlyOpportunitiesChange} aria-label="Mostrar apenas oportunidades" /><span className="font-medium text-foreground">Só oportunidades</span></label>}
-        {props.data && (props.data.isMock ? <Badge variant="secondary" className="gap-1 text-[10px]"><Sparkles className="h-3 w-3" /> Simulado</Badge> : <Badge variant="outline" className="gap-1 border-success/50 text-success text-[10px]"><CheckCircle2 className="h-3 w-3" /> Dados reais</Badge>)}
+        {props.data?.dataStatus === "available" && <Badge variant="outline" className="gap-1 border-success/50 text-success text-[10px]"><CheckCircle2 className="h-3 w-3" /> Dados reais</Badge>}
       </div>
     </div>
   );
@@ -112,13 +112,13 @@ function OpportunityHeroes({ trends, visible }: { readonly trends: readonly Enri
   );
 }
 
-function TrendRows({ trends, onlyOpportunities }: { readonly trends: readonly EnrichedTrend[]; readonly onlyOpportunities: boolean }) {
-  if (trends.length === 0) return <p className="text-sm text-muted-foreground py-8 text-center">{onlyOpportunities ? "Cliente já compra todos os top produtos do setor 🎉" : "Sem dados de tendência para este ramo."}</p>;
+function TrendRows({ trends, canCompare }: { readonly trends: readonly EnrichedTrend[]; readonly canCompare: boolean }) {
+  if (trends.length === 0) return <p className="text-sm text-muted-foreground py-8 text-center" role="status">Sem amostra suficiente para inferir tendências ou oportunidades deste setor.</p>;
   return (
     <div className="space-y-1.5">
       {trends.map((trend, index) => {
         const Trend = trendIcon[trend.trend];
-        return <div key={`${trend.productName}-${index}`} className={cn("flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/60 transition-colors group", trend.alreadyBuys && "opacity-90")}><div className="h-7 w-7 rounded-md bg-muted flex items-center justify-center font-display font-bold text-xs text-muted-foreground shrink-0">{index + 1}</div><TrendImage trend={trend} size="row" /><div className="flex-1 min-w-0"><div className="font-medium text-sm truncate">{trend.productName}</div><div className="text-xs text-muted-foreground">{trend.category}</div></div><div className="shrink-0 hidden sm:flex items-center gap-1.5">{trend.alreadyBuys ? <Badge variant="outline" className="gap-1 border-success/40 text-success text-[10px]"><Check className="h-3 w-3" /> Já compra</Badge> : <Badge variant="outline" className="gap-1 border-warning/40 text-warning text-[10px]"><X className="h-3 w-3" /> Gap</Badge>}</div><div className="text-right shrink-0 hidden md:block"><div className="text-xs text-muted-foreground">unidades</div><div className="font-semibold text-sm">{trend.unitsSold.toLocaleString("pt-BR")}</div></div><div className="text-right shrink-0 hidden lg:block"><div className="text-xs text-muted-foreground">preço médio</div><div className="font-semibold text-sm">{fmtBRL(trend.avgPrice)}</div></div><Trend.icon className={cn("h-4 w-4 shrink-0", Trend.className)} /></div>;
+        return <div key={`${trend.productName}-${index}`} className={cn("flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/60 transition-colors group", trend.alreadyBuys && "opacity-90")}><div className="h-7 w-7 rounded-md bg-muted flex items-center justify-center font-display font-bold text-xs text-muted-foreground shrink-0">{index + 1}</div><TrendImage trend={trend} size="row" /><div className="flex-1 min-w-0"><div className="font-medium text-sm truncate">{trend.productName}</div><div className="text-xs text-muted-foreground">{trend.category}</div></div>{canCompare && <div className="shrink-0 hidden sm:flex items-center gap-1.5">{trend.alreadyBuys ? <Badge variant="outline" className="gap-1 border-success/40 text-success text-[10px]"><Check className="h-3 w-3" /> Já compra</Badge> : <Badge variant="outline" className="gap-1 border-warning/40 text-warning text-[10px]"><X className="h-3 w-3" /> Gap</Badge>}</div>}<div className="text-right shrink-0 hidden md:block"><div className="text-xs text-muted-foreground">unidades</div><div className="font-semibold text-sm">{trend.unitsSold.toLocaleString("pt-BR")}</div></div><div className="text-right shrink-0 hidden lg:block"><div className="text-xs text-muted-foreground">preço médio</div><div className="font-semibold text-sm">{fmtBRL(trend.avgPrice)}</div></div><Trend.icon className={cn("h-4 w-4 shrink-0", Trend.className)} /></div>;
       })}
     </div>
   );
@@ -127,6 +127,7 @@ function TrendRows({ trends, onlyOpportunities }: { readonly trends: readonly En
 export function IndustryTrendingProducts({ ramoAtividade, clientId }: Props) {
   const { data, isLoading } = useIndustryTrends(ramoAtividade);
   const { data: affinity } = useClientAffinity(clientId);
+  const canCompare = affinity?.dataStatus === "available";
   const { focusedSlug, focusedLabel } = useBICategoryFocus();
   const [onlyOpportunities, setOnlyOpportunities] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -172,7 +173,7 @@ export function IndustryTrendingProducts({ ramoAtividade, clientId }: Props) {
     return { items, filtered };
   }, [data, clientBuys, onlyOpportunities, effectiveCategory, focusedSlug]);
 
-  const opportunities = enriched.items.filter((t) => !t.alreadyBuys);
+  const opportunities = canCompare ? enriched.items.filter((t) => !t.alreadyBuys) : [];
   const topOpportunities = opportunities.slice(0, 3);
   const opportunityCount = opportunities.length;
   const totalCount = enriched.items.length;
@@ -185,7 +186,8 @@ export function IndustryTrendingProducts({ ramoAtividade, clientId }: Props) {
         <IndustryHeader ramoAtividade={ramoAtividade} data={data} totalCount={totalCount} opportunityCount={opportunityCount} onlyOpportunities={onlyOpportunities} onOnlyOpportunitiesChange={setOnlyOpportunities} />
         <CategoryChips chips={categoryChips} activeCategory={activeCategory} totalCount={totalCount} onChange={setActiveCategory} />
         <OpportunityHeroes trends={topOpportunities} visible={topOpportunities.length > 0 && !onlyOpportunities} />
-        <TrendRows trends={enriched.filtered} onlyOpportunities={onlyOpportunities} />
+        {!canCompare && enriched.items.length > 0 && <p className="text-xs text-muted-foreground" role="status">Sem histórico de produtos do cliente para distinguir itens já comprados de oportunidades.</p>}
+        <TrendRows trends={enriched.filtered} canCompare={canCompare} />
       </CardContent>
     </Card>
   );

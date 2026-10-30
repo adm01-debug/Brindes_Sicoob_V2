@@ -179,5 +179,5 @@ export function useClientCategoryAffinity(clientId?: string) {
     };
   }, [query.data]);
 
-  return { ...result, isLoading: query.isLoading };
+  return { ...result, isLoading: query.isLoading, isError: query.isError };
 }

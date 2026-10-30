@@ -3,12 +3,11 @@
  * Estratégia:
  * 1) Busca IDs de companies (CRM externo) com mesmo ramo_atividade
  * 2) Chama RPC get_industry_top_products(_company_ids, _days)
- * 3) Se RPC vazia → fallback mock determinístico
+ * 3) Se RPC vazia → amostra insuficiente, sem dados demonstrativos
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { selectCrm } from "@/lib/crm-db";
-import { getMockIndustryTrends, type MockIndustryTrend } from "@/lib/bi/mockData";
 
 export interface IndustryTopProduct {
   product_id: string | null;
@@ -33,6 +32,7 @@ export interface IndustryTrendItem {
 }
 
 export interface IndustryTrendsResult {
+  dataStatus: "insufficient" | "available" | "unavailable";
   isMock: boolean;
   companiesInRamo: number;
   trends: IndustryTrendItem[];
@@ -50,38 +50,22 @@ function deriveCategory(name: string): string {
   return "Outros";
 }
 
-function mockToItem(m: MockIndustryTrend): IndustryTrendItem {
-  return {
-    productName: m.productName,
-    category: m.category,
-    unitsSold: m.unitsSold,
-    ordersCount: m.ordersCount,
-    avgPrice: m.avgPrice,
-    trend: m.trend,
-  };
-}
-
 export function useIndustryTrends(ramoAtividade?: string | null) {
-  return useQuery<IndustryTrendsResult>({
+  const query = useQuery<IndustryTrendsResult>({
     queryKey: ["bi-industry-trends-v2", ramoAtividade],
     enabled: !!ramoAtividade,
     queryFn: async () => {
       if (!ramoAtividade) {
-        return { isMock: true, companiesInRamo: 0, trends: getMockIndustryTrends(null).map(mockToItem) };
+        return { dataStatus: "insufficient", isMock: false, companiesInRamo: 0, trends: [] };
       }
 
       // 1) Buscar empresas do mesmo ramo no CRM
-      let companyIds: string[] = [];
-      try {
-        const companies = await selectCrm<{ id: string }>("companies", {
-          select: "id",
-          filters: { ramo_atividade: ramoAtividade, deleted_at: null },
-          limit: 500,
-        });
-        companyIds = companies.map((c) => c.id).filter(Boolean);
-      } catch {
-        companyIds = [];
-      }
+      const companies = await selectCrm<{ id: string }>("companies", {
+        select: "id",
+        filters: { ramo_atividade: ramoAtividade, deleted_at: null },
+        limit: 500,
+      });
+      const companyIds = companies.map((c) => c.id).filter(Boolean);
 
       // 2) Se temos IDs, tenta RPC
       if (companyIds.length > 0) {
@@ -91,9 +75,11 @@ export function useIndustryTrends(ramoAtividade?: string | null) {
           _limit: 10,
         });
 
-        const real = (!error && Array.isArray(data) ? data : []) as IndustryTopProduct[];
+        if (error) throw error;
+        const real = (Array.isArray(data) ? data : []) as IndustryTopProduct[];
         if (real.length > 0) {
           return {
+            dataStatus: "available",
             isMock: false,
             companiesInRamo: companyIds.length,
             trends: real.map((p) => ({
@@ -110,13 +96,26 @@ export function useIndustryTrends(ramoAtividade?: string | null) {
         }
       }
 
-      // 3) Fallback mock
       return {
-        isMock: true,
+        dataStatus: "insufficient",
+        isMock: false,
         companiesInRamo: companyIds.length,
-        trends: getMockIndustryTrends(ramoAtividade).map(mockToItem),
+        trends: [],
       };
     },
     staleTime: 10 * 60 * 1000,
   });
+  if (!query.data) {
+    return {
+      data: {
+        dataStatus: query.isError ? "unavailable" as const : "insufficient" as const,
+        isMock: false,
+        companiesInRamo: 0,
+        trends: [],
+      },
+      isLoading: query.isLoading,
+      isError: query.isError,
+    };
+  }
+  return { ...query, data: query.isError ? { ...query.data, dataStatus: "unavailable" as const, trends: [] } : query.data };
 }
