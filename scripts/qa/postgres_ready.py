@@ -1,6 +1,11 @@
 """Sincronização robusta com o servidor final das imagens oficiais PostgreSQL."""
 import time
 
+POSTGRES_IMAGE = (
+    "ghcr.io/supabase/postgres:17.6.1.063"
+    "@sha256:178f0976b54a39237096bfa310c1a352dbc82fb1b08dda45cdb8acb5d40c1426"
+)
+
 
 def wait_for_postgres(command, container: str, attempts: int = 120) -> None:
     """Evita executar fixtures no servidor temporário usado durante o initdb."""

@@ -211,3 +211,35 @@ O pacote foi atualizado de `zod@3.25.76` para `4.6.7` e `@hookform/resolvers` pa
 | E2E (Playwright) | [41133550986](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41133550986) | Smoke passou; gate de header fixo ainda estava em execução na última consulta |
 
 Os resultados remotos desta tabela são anteriores à migração e não validam o novo código. Os checks do Zod só serão considerados resolvidos após o push e a conclusão dos workflows no SHA atualizado. Nenhuma alteração remota no Supabase ou deploy foi executada.
+
+## Estado remoto da PR #178 — SHA `e7d770c` (30/10/2026)
+
+O commit `e7d770c28cbbc8824f0611e6c04bd434a2effeef` está publicado no PR #178. A tabela registra a última consulta pelo GitHub MCP.
+
+| Workflow | Run | Estado |
+|---|---:|---|
+| Security Scan | [41136504200](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41136504200) | ✅ success |
+| CodeQL | [41136504217](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41136504217) | ✅ success |
+| Lighthouse Performance Audit | [41136504186](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41136504186) | ✅ success |
+| Bundle Size Check | [41136504296](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41136504296) | ✅ success |
+| Portal Sicoob | [41136504216](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41136504216) | ✅ success |
+| Qualidade contínua | [41136504246](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41136504246) | ❌ tentativa 2: `toomanyrequests: Data limit exceeded` no pull da imagem Supabase pelo ECR |
+| E2E (Playwright) | [41136504176](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41136504176) | ⏳ em execução na última consulta |
+
+A causa da Qualidade contínua é externa ao código: limite de transferência do ECR Public. Para evitar repetição, o worktree aponta os dois simuladores de PostgreSQL descartável ao GHCR oficial da Supabase, preso ao digest `sha256:178f0976b54a39237096bfa310c1a352dbc82fb1b08dda45cdb8acb5d40c1426`, que foi comparado localmente com o digest do tag ECR utilizado antes. Ambos os simuladores passaram localmente com essa imagem. O patch ainda não está publicado; o workflow precisa ser confirmado no SHA subsequente. Ver pendência detalhada em `PENDENCIAS.md`.
+
+### Comparação baseline local × validação local após commit `e7d770c`
+
+| Gate | Baseline registrado antes do lote | Após `e7d770c` |
+|---|---|---|
+| `npm ci` / `npm run check:npm-audit` | Finding alto de Zod; `undici` atualizado em lote anterior | ✅ instalação limpa; 0 vulnerabilidades |
+| TypeScript | exit 0 | ✅ exit 0 |
+| ESLint | 0 erros; 874 avisos existentes | ✅ 0 erros; 874 avisos existentes |
+| Build | exit 0 | ✅ exit 0; avisos ambientais já conhecidos |
+| Suíte completa | 5.839 passaram; 68 ignorados; 0 falhas | ✅ 5.850 passaram; 68 ignorados; 0 falhas |
+
+Sem regressão local observada; a suíte aumentou em 11 testes aprovados. Nenhuma migration ou alteração remota do banco foi executada.
+
+### Próxima validação local
+
+O lote seguinte altera apenas os scripts Python dos simuladores e esta documentação. Os cenários `simular-controles-auditoria.py` e `simular-acl-efetiva.py` já passaram com a referência GHCR. Após registrar o lote em commit, repetirei typecheck, lint, build, auditoria npm e a suíte completa conforme a regra anti-regressão; a publicação acionará checks remotos no SHA novo.

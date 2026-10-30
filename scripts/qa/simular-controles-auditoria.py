@@ -4,7 +4,7 @@ import json
 import subprocess
 import time
 import uuid
-from postgres_ready import wait_for_postgres
+from postgres_ready import POSTGRES_IMAGE, wait_for_postgres
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTAINER = 'sicoob-auditoria-' + uuid.uuid4().hex[:10]
@@ -19,7 +19,7 @@ def actor(role, uid, query, check=True):
 
 def start_container():
     args = ['docker','run','--rm','-d','--name',CONTAINER,'--network','none','-e','POSTGRES_HOST_AUTH_METHOD=trust',
-        'public.ecr.aws/supabase/postgres:17.6.1.063','postgres','-D','/var/lib/postgresql/data']
+        POSTGRES_IMAGE,'postgres','-D','/var/lib/postgresql/data']
     last_error = ''
     for attempt in range(3):
         result = command(args, check=False)

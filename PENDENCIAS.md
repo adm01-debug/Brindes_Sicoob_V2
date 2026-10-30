@@ -228,3 +228,27 @@ Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Depen
 - **Mudança:** `zod@4.6.7` e `@hookform/resolvers@5.9.2`; imports dos schemas existentes mantidos explicitamente em `zod/v3`. O formulário de produto declara o contrato de saída e documenta a fronteira do resolver; defaults completos, estado tipado e campos numéricos `valueAsNumber` mantêm o estado no tipo de saída.
 - **Validação local:** `npm ci` e `npm run check:npm-audit` passaram com 0 vulnerabilidades; `npm test` passou com 5.850 testes, 68 ignorados e 0 falhas; `npm run typecheck`, `npm run lint` (0 erros, 874 avisos existentes), `npm run build` e `git diff --check` passaram.
 - **Pendente:** registrar em commit e push pelo PR e aguardar Security Scan, Qualidade contínua e demais workflows no novo SHA. Não houve alteração no Supabase nem deploy.
+
+## Atualização da PR #178 — commit `e7d770c` e falha recorrente do ECR (30/10/2026)
+
+Esta seção substitui os estados pré-push registrados acima para a migração Zod. O commit `e7d770c28cbbc8824f0611e6c04bd434a2effeef` está publicado na branch `fix/hermes-h393620-inteligencia-real`, PR #178. A migração Zod passou pela instalação limpa, auditoria npm, typecheck, lint, build e suíte local.
+
+| Workflow no SHA `e7d770c` | Última execução | Estado |
+|---|---:|---|
+| Security Scan | [41136504200](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41136504200) | ✅ success |
+| CodeQL | [41136504217](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41136504217) | ✅ success |
+| Lighthouse Performance Audit | [41136504186](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41136504186) | ✅ success |
+| Bundle Size Check | [41136504296](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41136504296) | ✅ success |
+| Portal Sicoob | [41136504216](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41136504216) | ✅ success |
+| Qualidade contínua | [41136504246](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41136504246) | ❌ falha na tentativa 2 |
+| E2E (Playwright) | [41136504176](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41136504176) | ⏳ em execução na última consulta |
+
+### Causa e correção proposta para Qualidade contínua
+
+As duas tentativas do run `41136504246` falharam no step “Simular controles de auditoria e permissões em PostgreSQL descartável” com `toomanyrequests: Data limit exceeded` ao baixar `public.ecr.aws/supabase/postgres:17.6.1.063`. A falha reproduz o limite de dados do ECR documentado historicamente acima.
+
+O worktree troca somente o registry de origem para `ghcr.io/supabase/postgres:17.6.1.063` e fixa o índice OCI em `sha256:178f0976b54a39237096bfa310c1a352dbc82fb1b08dda45cdb8acb5d40c1426`. A comparação local de manifests confirmou que o índice GHCR e o índice ECR, incluindo o manifest linux/amd64, têm os mesmos digests. Os dois simuladores executaram localmente com sucesso usando essa referência. Fonte do pacote oficial: [supabase/postgres no GitHub Container Registry](https://github.com/supabase/postgres/pkgs/container/postgres).
+
+**Estado:** correção ainda não publicada nem confirmada pelo GitHub Actions. O próximo passo é revisar, validar e publicar o lote em novo commit da PR #178; depois confirmar `conclusion=success` no workflow `Qualidade contínua`. Até esse run verde, esta pendência permanece aberta.
+
+**Nenhuma alteração no Supabase ou deploy foi executada.**
