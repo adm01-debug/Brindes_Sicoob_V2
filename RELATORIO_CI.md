@@ -1,9 +1,62 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
-**Gerado em:** 2026-10-22  
+**Gerado em:** 2026-10-30
 **Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
 
 ---
+
+## Rechecagem de CI e validação local — 2026-10-30
+
+**Base local:** `main` em `e9d59026793b84fabeaeec9da890a068f64d49c3`.
+
+**Candidato isolado:** `fix/webhook-dispatch-auth-311333`.
+
+**Banco canônico:** somente leitura; nenhuma migration aplicada remotamente.
+
+### Inventário atual confirmado no GitHub MCP
+
+| Workflow | Último run de `main` considerado | Resultado |
+|---|---:|---|
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | Falha por vulnerabilidades high em `undici` e `zod`. |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | Falha pelo mesmo audit de dependências. |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | Falha por divergência entre action 4.39.1 configurada e 4.38.2 executada; nenhum SARIF. |
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | Falha no pull Docker Hub (`toomanyrequests: Data limit exceeded`); a função `sicoob-approval-reconciliation` permaneceu em v5. |
+| Running Copilot Code Review | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | Falha externa: GitHub Copilot HTTP 402, limite adicional de uso. |
+| Migration ledger drift | [41013281253](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41013281253) | `success`, run agendado em 30/10/2026. |
+| Enterprise Compliance & Audit Reporting | [40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958) | `success` no SHA de `main` revisado. |
+
+O PR [#164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164) contém alterações de dependências/CodeQL e isolamento E2E, mas permanece aberto e bloqueado: o run [40950721820](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40950721820) falha porque `E2E_SUPABASE_PROJECT_ID`, `E2E_SUPABASE_URL` e `E2E_SUPABASE_PUBLISHABLE_KEY` chegam vazios. O Actions inventory confirma que a variável e os secrets E2E dedicados ainda não existem no repositório.
+
+### Verificações locais do candidato
+
+| Comando | Resultado | Observação |
+|---|---|---|
+| `npm ci --no-audit --no-fund` | ✅ exit 0 | 980 pacotes instalados. |
+| `npm run build` | ✅ exit 0 | Build Vite concluído; avisos de chunks grandes e variáveis Vite ausentes não interrompem a compilação. |
+| `npm run lint` | ✅ exit 0 | 873 avisos ESLint, 0 erros. |
+| `npm run typecheck` | ✅ exit 0 | Aplicação e configuração Node sem diagnósticos. |
+| `npm run typecheck:baseline` | ✅ | 0 diagnósticos atuais, baseline 0. |
+| `npm run lint:baseline` | ✅ | 0 regressões; nenhum arquivo de aplicação foi alterado. |
+| `npm run test:coverage:ci` | ✅ | 452 arquivos aprovados, 4 skipped; 5.839 testes passaram, 68 skipped, 0 falhas; statements 94%, branches 86,79%, functions 97,22%, lines 97,6%. |
+| `npm run test:scenarios` | ✅ | 227 passaram, 0 falhas. |
+| `deno check supabase/functions/webhook-dispatcher/index.ts` | ✅ | Edge Function verificou sem erro. |
+| `python3 scripts/qa/simular-webhook-internal-auth.py` | ✅ | PostgreSQL 17 descartável, `--network none`; eventos de quatro tabelas, Vault, ACL, schema `extensions` do `pg_net`, retry por hook e limite de tentativas cobertos. `banco_canonico_alterado=false`. |
+| `node scripts/check-migration-immutability.mjs` | ✅ | Nenhuma migration existente foi alterada/removida. |
+| `node scripts/db/apply-sicoob-migrations.mjs --verify-files` | ✅ | `mutation:false`; não aplicou migration. |
+| `npm run check:critical-test-skips` | ✅ | 4/4 contratos críticos declarados. |
+| `node scripts/check-edge-authorization.mjs` | ✅ | 106/106 Edge Functions declaradas. |
+| `node scripts/db/check-runtime-refs.mjs` | ✅ | 2.087 arquivos; 0 referências quebradas fora da allowlist. |
+| `npm run check:npm-audit` | ❌ | 2 alertas high: `undici@8.10.2` e `zod@3.25.76`. Correção correspondente está no PR #164; não foi duplicada neste candidato de webhook. |
+
+### Escopo e limites da correção de webhook
+
+A migration e o dispatcher compartilham autenticação dedicada; retry usa
+`extensions.http_post`, como definido na instalação local de `pg_net`, aponta para
+um único `target_webhook_id` e conserva o contador da tentativa. A simulação cobre
+o contrato em PostgreSQL descartável. Permanecem sem comprovação a configuração
+do segredo no Vault/Edge de homologação, a entrega externa real, o ACK durável e a
+integração Bitrix; por isso P078 continua **Planejada** e a migration não foi
+aplicada.
 
 ## Baseline local — antes das alterações do PR #141
 

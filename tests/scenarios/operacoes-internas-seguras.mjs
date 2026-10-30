@@ -75,6 +75,39 @@ test('crons de conexões usam Vault e não mantêm credenciais no agendamento', 
   assert.doesNotMatch(migration, /nmojwpihnslkssljowjh|apikey|service_role_key|eyJ[a-zA-Z0-9_-]{20}/);
 });
 
+test('chamadores do webhook-dispatcher leem segredo dedicado do Vault antes da chamada', () => {
+  const migration = read('supabase/migrations/20261029213000_secure_webhook_dispatcher_callers.sql');
+  const dispatcher = read('supabase/functions/webhook-dispatcher/index.ts');
+  const retryStart = migration.indexOf('CREATE OR REPLACE FUNCTION public.retry_failed_webhook_deliveries()');
+  const trigger = migration.slice(0, retryStart);
+  const retry = migration.slice(retryStart);
+
+  assert.ok(retryStart > 0, 'a migration deve substituir os dois chamadores protegidos');
+  assert.match(dispatcher, /requireInternalService\(req, "WEBHOOK_DISPATCHER_SECRET"\)/);
+  assert.match(dispatcher, /target_webhook_id: z\.string\(\)\.uuid\(\)\.optional\(\)/);
+  assert.match(dispatcher, /retry_after_attempt: z\.number\(\)\.int\(\)\.min\(0\)\.max\(4\)\.optional\(\)/);
+  assert.match(dispatcher, /hooksQuery = hooksQuery\.eq\("id", target_webhook_id\)\.eq\("active", true\)/);
+  assert.match(dispatcher, /let attempt = retry_after_attempt \?\? 0/);
+  assert.match(read('docs/secrets.md'), /`WEBHOOK_DISPATCHER_SECRET`[\s\S]*`webhook_dispatcher_secret`/);
+  for (const [name, source, call] of [
+    ['trigger', trigger, 'extensions.http_post('],
+    ['retry', retry, 'extensions.http_post('],
+  ]) {
+    assert.match(source, /name = 'sicoob_project_url'/, `${name} deve ler a URL do Vault`);
+    assert.match(source, /name = 'webhook_dispatcher_secret'/, `${name} deve ler o segredo dedicado do Vault`);
+    assert.match(source, /'x-sicoob-internal-secret', v_dispatcher_secret/, `${name} deve enviar o cabeçalho interno`);
+    assert.ok(source.indexOf('length(COALESCE(v_dispatcher_secret') < source.indexOf(call), `${name} deve validar configuração antes da chamada HTTP`);
+  }
+
+  assert.match(migration, /REVOKE ALL ON FUNCTION public\.retry_failed_webhook_deliveries\(\)[\s\S]*FROM PUBLIC, anon, authenticated/);
+  assert.match(migration, /REVOKE ALL ON FUNCTION public\.dispatch_quote_webhook_event\(\)[\s\S]*FROM PUBLIC, anon, authenticated/);
+  assert.match(retry, /extensions\.http_post\(/, 'retry deve usar o schema onde pg_net é instalado pelo histórico');
+  assert.doesNotMatch(retry, /net\.http_post\(/, 'retry não deve depender do schema net');
+  assert.match(retry, /'target_webhook_id', rec\.webhook_id/);
+  assert.match(retry, /'retry_after_attempt', rec\.attempt/);
+  assert.doesNotMatch(migration, /Authorization|service_role_key|https:\/\/[a-z0-9-]+\.supabase\.co/i);
+});
+
 test('sync de conexões e favoritos respeitam a hierarquia e concorrência', () => {
   const fix = read('supabase/migrations/20260923112000_fix_connection_sync_and_favorites.sql');
   assert.match(fix, /role IN \('dev', 'supervisor', 'admin', 'manager'\)/);

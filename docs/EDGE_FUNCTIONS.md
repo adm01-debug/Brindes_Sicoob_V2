@@ -60,7 +60,7 @@
 | `verify-email` | Public | Restrita | Zod | DB | Verificação de email no signup |
 | `visual-search` | JWT | Restrita | Zod | DB (ai) | Busca visual por similaridade |
 | `voice-agent` | JWT | Restrita | Zod | DB (ai) | Agente de voz multimodal |
-| `webhook-dispatcher` | Service | Restrita | Zod | Não | Despacha webhooks para terceiros |
+| `webhook-dispatcher` | Segredo interno dedicado (teste/replay: supervisor) | Restrita | Zod | Não | Despacha webhooks para terceiros |
 
 ## Helpers compartilhados
 

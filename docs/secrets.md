@@ -26,6 +26,7 @@ dois gates de CI ficam vermelhos. Ninguém tinha essa lista consolidada antes.
 | `NOTIFICATION_FROM_EMAIL` | endereço remetente do Resend na fila de aprovações; somente email, sem nome de exibição | **configuração remota ainda não verificada** |
 | `SICOOB_APPROVAL_WORKER_SECRET` | autenticação HTTP dedicada do worker da outbox, sem transmitir a service role | **configuração remota ainda não verificada** |
 | `INTERNAL_FUNCTION_SECRET` | `send-notification`, `process-batch-export`, `monthly-health-report` e `connections-auto-test`; autentica chamadas de cron/Edge antes de criar cliente service role | **configurar nas Edge Functions antes de publicar** |
+| `WEBHOOK_DISPATCHER_SECRET` | `webhook-dispatcher`; segredo interno dedicado para disparos operacionais e retries | **configurar na Edge Function e no Vault antes de publicar a migration** |
 | `VIRUSTOTAL_API_KEY` | scan de upload | **preencher** |
 | `GITHUB_PAT` | `github-credentials-test`, `github-fix-config` | **preencher — escopo mínimo necessário** |
 | `LOVABLE_API_KEY` | integração Lovable | **preencher** |
@@ -60,6 +61,15 @@ Os crons de exportações e de conexões usam a cópia desse valor no Vault com 
 `sicoob_internal_function_secret`; os dois nomes devem conter exatamente o
 mesmo segredo. A URL usada por esse cron é `sicoob_project_url`, também no
 Vault. Sem os dois valores, o job apenas registra aviso e não faz chamada HTTP.
+
+O trigger de eventos comerciais e o retry de entregas do webhook leem
+`sicoob_project_url` e `webhook_dispatcher_secret` do Vault. O valor de
+`webhook_dispatcher_secret` deve ser idêntico ao secret de Edge
+`WEBHOOK_DISPATCHER_SECRET`, aleatório, exclusivo deste ambiente e com 32–512
+caracteres. A migration `20261029213000_secure_webhook_dispatcher_callers.sql`
+falha fechada: sem URL ou segredo válidos, o trigger não envia e o retry retorna
+`webhook_dispatcher_not_configured`. Não gravar o valor em migration, cron,
+GitHub, cliente web ou relatório.
 
 A evidência da assinatura pública exige o segredo
 `quote_approval_evidence_hmac` no Supabase Vault, com pelo menos 32 caracteres

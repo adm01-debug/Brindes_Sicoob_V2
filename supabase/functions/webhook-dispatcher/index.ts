@@ -17,6 +17,10 @@ const BodySchema = z.object({
   payload: z.unknown().optional(),
   // Replay mode: re-deliver a single failed delivery by id
   replay_delivery_id: z.string().uuid().optional(),
+  // Internal SQL retry: restrict redelivery to the webhook that failed and
+  // continue its attempt counter instead of fanning out to every subscriber.
+  target_webhook_id: z.string().uuid().optional(),
+  retry_after_attempt: z.number().int().min(0).max(4).optional(),
   // Test mode (Onda 13 #9): dispatch to a specific webhook, no metrics, no breaker, no DB log
   test_mode: z.boolean().optional(),
   test_webhook_id: z.string().uuid().optional(),
@@ -59,7 +63,19 @@ Deno.serve(async (req) => {
       });
     }
     let { event, payload } = parsed.data;
-    const { replay_delivery_id, test_mode, test_webhook_id } = parsed.data;
+    const {
+      replay_delivery_id,
+      target_webhook_id,
+      retry_after_attempt,
+      test_mode,
+      test_webhook_id,
+    } = parsed.data;
+
+    if (retry_after_attempt !== undefined && !target_webhook_id) {
+      return new Response(JSON.stringify({ error: "target_webhook_id obrigatório para retry" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Disparos operacionais são exclusivos de cron/Edge por segredo dedicado.
     // Teste e replay podem causar efeitos externos e por isso exigem supervisor.
@@ -158,6 +174,8 @@ Deno.serve(async (req) => {
       .contains("events", [event]);
     if (replayHookId) {
       hooksQuery = hooksQuery.eq("id", replayHookId); // replay ignora active flag
+    } else if (target_webhook_id) {
+      hooksQuery = hooksQuery.eq("id", target_webhook_id).eq("active", true);
     } else {
       hooksQuery = hooksQuery.eq("active", true);
     }
@@ -183,7 +201,7 @@ Deno.serve(async (req) => {
       const max = Math.max(1, Math.min(5, Number(policy.max_attempts ?? 3)));
       const backoff = Array.isArray(policy.backoff_seconds) ? policy.backoff_seconds : [5, 30, 120];
       let success = false;
-      let attempt = 0;
+      let attempt = retry_after_attempt ?? 0;
 
       while (attempt < max && !success) {
         attempt++;
