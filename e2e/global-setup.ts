@@ -12,6 +12,7 @@ import { loadCleanupConfig, logSkipReason, purgeAll } from "./helpers/cleanup-cl
 export default async function globalSetup(): Promise<void> {
   const cfg = loadCleanupConfig();
   if (!cfg) {
+    if (process.env.CI) throw new Error("E2E no CI exige cleanup configurado; recusando iniciar com dados possivelmente residuais.");
     logSkipReason("setup");
     return;
   }

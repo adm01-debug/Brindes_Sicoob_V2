@@ -4,7 +4,8 @@
  * Usado pelo globalSetup (limpa ANTES da suite), globalTeardown (limpa
  * DEPOIS) e pela fixture `cleanup-on-failure` (limpa por teste falho).
  *
- * Skip silencioso quando faltam VITE_SUPABASE_URL ou E2E_CLEANUP_TOKEN.
+ * Skip local quando faltam VITE_SUPABASE_URL ou E2E_CLEANUP_TOKEN; no CI,
+ * setup/teardown falham de forma fechada se a limpeza não puder ser confirmada.
  * Em CI loga warning amarelo; localmente loga em dim para não poluir.
  *
  * Variáveis de ambiente lidas:
@@ -35,6 +36,7 @@ export interface CleanupConfig {
   baseUrl: string;
   token: string;
   userEmail?: string;
+  additionalUserEmails?: string[];
   adminEmail?: string;
   dryRun: boolean;
   /** "explicit" exige que sellerId resolvido bata com o user_id resolvido por email. */
@@ -56,6 +58,11 @@ export function loadCleanupConfig(): CleanupConfig | null {
   const token = process.env.E2E_CLEANUP_TOKEN || "";
   const userEmail = process.env.E2E_USER_EMAIL || "";
   const adminEmail = process.env.E2E_ADMIN_EMAIL || "";
+  const additionalUserEmails = [
+    process.env.E2E_VIEWER_EMAIL,
+    process.env.E2E_MANAGER_EMAIL,
+    process.env.E2E_DEV_EMAIL,
+  ].filter((email): email is string => Boolean(email));
   const dryRun = process.env.E2E_CLEANUP_DRY_RUN === "1";
   const sellerScope: "self" | "explicit" =
     process.env.E2E_CLEANUP_SELLER_SCOPE === "explicit" ? "explicit" : "self";
@@ -79,6 +86,7 @@ export function loadCleanupConfig(): CleanupConfig | null {
     token,
     userEmail,
     adminEmail,
+    additionalUserEmails,
     dryRun,
     sellerScope,
     sellerId,
@@ -311,12 +319,18 @@ export async function purgeAll(
   opts: PurgeOpts = {},
 ): Promise<void> {
   const seen = new Set<string>();
-  if (cfg.userEmail) {
-    seen.add(cfg.userEmail.toLowerCase());
-    await purgeOne(cfg, cfg.userEmail, opts);
+  let failureCount = 0;
+  const configuredEmails = [cfg.userEmail, cfg.adminEmail, ...(cfg.additionalUserEmails ?? [])];
+  for (const email of configuredEmails) {
+    if (!email || seen.has(email.toLowerCase())) continue;
+    seen.add(email.toLowerCase());
+    const result = await purgeOne(cfg, email, opts);
+    if (!result || !result.ok || result.dryRun || Object.keys(result.errors ?? {}).length > 0) {
+      failureCount += 1;
+    }
   }
-  if (cfg.adminEmail && !seen.has(cfg.adminEmail.toLowerCase())) {
-    await purgeOne(cfg, cfg.adminEmail, opts);
+  if (failureCount > 0) {
+    throw new Error(`[e2e-cleanup] limpeza não confirmada para ${failureCount} persona(s); o staging não pode ser considerado limpo.`);
   }
 }
 

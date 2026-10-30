@@ -25,6 +25,18 @@ Configurar no environment `e2e-staging`:
 - secrets `E2E_STAGING_SUPABASE_URL`, `E2E_STAGING_SUPABASE_PUBLISHABLE_KEY`, `E2E_STAGING_SERVICE_ROLE_KEY` e `E2E_STAGING_CLEANUP_TOKEN`;
 - secrets de personas: `E2E_STAGING_USER_EMAIL/PASSWORD`, `E2E_STAGING_VIEWER_EMAIL/PASSWORD`, `E2E_STAGING_MANAGER_EMAIL/PASSWORD`, `E2E_STAGING_ADMIN_EMAIL/PASSWORD/TOTP_SECRET` e `E2E_STAGING_DEV_EMAIL/PASSWORD/TOTP_SECRET`.
 
+Antes de cadastrar esses secrets, configure proteção do GitHub Environment com
+revisores obrigatórios e restrição a branches confiáveis; o job de PR executa código
+proposto pelo colaborador e recebe os secrets desse ambiente. Configure no projeto
+isolado a Edge Function `e2e-cleanup` com `E2E_CLEANUP_TOKEN` igual ao secret
+`E2E_STAGING_CLEANUP_TOKEN` e `E2E_CLEANUP_ALLOWED_EMAILS` restrita às cinco personas
+sintéticas. A validação exige esse token, a chave publicável e a chave administrativa
+antes de chamadas remotas; setup, teardown e limpeza por falha reprovam o job se não
+confirmarem sucesso. Execuções E2E são serializadas globalmente para evitar disputa do
+staging entre PRs. A variável deve conter a ref exata do projeto descartável aprovado
+pelo owner; bloquear refs conhecidas não prova, por si só, que outra ref seja
+descartável.
+
 Estado verificado em 30/10/2026: o environment `e2e-staging` não existe (GitHub
 API 404); também não há a variável `E2E_SUPABASE_PROJECT_ID` nem secrets dedicados
 `E2E_STAGING_*` no repositório. O preflight anterior confirmou project ref ausente.
@@ -57,7 +69,7 @@ o preflight e prove as jornadas no projeto descartável.
 | `QUOTE_SYNC_API_KEY` | sync de orçamento | **preencher** |
 | `BI_SHARE_SECRET` | `bi-share-dossier` | **preencher** |
 | `WEBHOOK_HMAC_SECRET` | validação de assinatura de webhook | **preencher** (usado também em `ci.yml`) |
-| `E2E_CLEANUP_TOKEN` | `e2e-cleanup` | **GitHub secret — pendente (etapa 03)** |
+| `E2E_CLEANUP_TOKEN` | `e2e-cleanup` | **Secret da Edge Function no Supabase; igual a `E2E_STAGING_CLEANUP_TOKEN` do GitHub** |
 | `E2E_CLEANUP_ALLOWED_EMAILS` / `_RATE_LIMIT_MAX` / `_RATE_LIMIT_WINDOW_SECONDS` | `e2e-cleanup` (guarda-corpo) | **preencher** |
 | `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` / `TEST_ADMIN_JWT` | testes internos | **preencher** |
 | `SICOOB_TEST_EMAIL_CENTRAL` / `_GESTOR` / `_PA` / `_SINGULAR` / `SICOOB_TEST_USER_PASSWORD` | simulação de papéis Sicoob em CI | **preencher** |

@@ -203,9 +203,9 @@ chama funções via Management API e o projeto rejeita por billing.
 
 ### Parte 1 — Testes vitest (authz + RLS) ✅ Resolvido
 
-> ✅ **RESOLVIDO em 2026-10-22** — `edge-authz-bypass.test.ts` atualizado para aceitar HTTP 402
-> (quota Supabase). `e2e-cleanup-rate-limit.test.ts` atualizado para tratar quota com
-> `isQuotaExhaustedError` + flag `quotaExhausted`. Fix aplicado no PR #141.
+> **Histórico (2026-10-22):** o PR #141 aceitava HTTP 402 como infraestrutura e pulava
+> asserções remotas de authz/RLS. Na rodada atual, esses testes foram endurecidos para
+> falhar quando quota impede a validação; um skip não conta como prova de autorização.
 
 ### Parte 2 — Smoke gate Playwright ⚠️ Externo
 
@@ -225,10 +225,9 @@ explica o status atual da PR #176. O gate atualizado da #176 para antes de qualq
 chamada remota quando falta `e2e-staging`; consulte o snapshot atual no início deste
 arquivo. Naquele run antigo, a quota Supabase esgotada era a causa observada.
 
-**O que você precisa fazer:**
-
-1. Esta recomendação era válida somente para aquele run histórico; o E2E atual também
-   exige configurar e validar o ambiente dedicado `e2e-staging`.
+**Ação histórica:** restaurar quota era necessário para aquele run. Para a execução
+atual também é necessário provisionar e proteger `e2e-staging`, conforme o snapshot
+vigente no início deste arquivo.
 
 ---
 

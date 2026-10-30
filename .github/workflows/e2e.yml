@@ -14,7 +14,8 @@ permissions:
 # Não cancela uma execução ativa: os testes podem manter fixtures temporárias
 # no staging até que o cleanup termine.
 concurrency:
-  group: e2e-${{ github.workflow }}-${{ github.ref }}
+  # Um único staging e personas compartilhadas: serializar todas as refs, não só shards.
+  group: e2e-${{ github.workflow }}-staging
   cancel-in-progress: false
 
 jobs:
@@ -79,13 +80,25 @@ jobs:
 
       - name: Verificar credenciais da jornada autenticada
         shell: bash
+        env:
+          E2E_CLEANUP_TOKEN: ${{ secrets.E2E_STAGING_CLEANUP_TOKEN }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_STAGING_SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_STAGING_SERVICE_ROLE_KEY }}
         run: |
-          if [[ -z "$E2E_SUPABASE_PROJECT_ID" || -z "$VITE_SUPABASE_PROJECT_ID" || -z "$VITE_SUPABASE_URL" ]]; then
-            echo "::error title=Projeto E2E não configurado::Configure a variável E2E_SUPABASE_PROJECT_ID e os secrets E2E_STAGING_SUPABASE_URL e E2E_STAGING_SUPABASE_PUBLISHABLE_KEY no environment e2e-staging."
+          if [[ -z "$E2E_SUPABASE_PROJECT_ID" || -z "$VITE_SUPABASE_PROJECT_ID" || -z "$VITE_SUPABASE_URL" || -z "$VITE_SUPABASE_PUBLISHABLE_KEY" ]]; then
+            echo "::error title=Projeto E2E não configurado::Configure E2E_SUPABASE_PROJECT_ID, E2E_STAGING_SUPABASE_URL e E2E_STAGING_SUPABASE_PUBLISHABLE_KEY no environment e2e-staging."
             exit 1
           fi
           if [[ "$E2E_SUPABASE_PROJECT_ID" == "cfmzkthhgliqelozlmwu" || "$E2E_SUPABASE_PROJECT_ID" == "doufsxqlfjyuvxuezpln" || "$VITE_SUPABASE_PROJECT_ID" != "$E2E_SUPABASE_PROJECT_ID" || "$VITE_SUPABASE_URL" != "https://${E2E_SUPABASE_PROJECT_ID}.supabase.co" ]]; then
             echo "::error title=Projeto E2E inválido::A suíte só pode executar contra o projeto isolado identificado por E2E_SUPABASE_PROJECT_ID; o banco Sicoob e o catálogo de produtos são bloqueados."
+            exit 1
+          fi
+          if [[ -z "$SUPABASE_SERVICE_ROLE_KEY" ]]; then
+            echo "::error title=Credencial RLS ausente::Configure E2E_STAGING_SERVICE_ROLE_KEY no environment e2e-staging."
+            exit 1
+          fi
+          if [[ -z "$E2E_CLEANUP_TOKEN" ]]; then
+            echo "::error title=Token de limpeza ausente::Configure E2E_STAGING_CLEANUP_TOKEN no environment e2e-staging."
             exit 1
           fi
           if [[ -z "$E2E_USER_EMAIL" || -z "$E2E_USER_PASSWORD" || -z "$E2E_VIEWER_EMAIL" || -z "$E2E_VIEWER_PASSWORD" || -z "$E2E_MANAGER_EMAIL" || -z "$E2E_MANAGER_PASSWORD" || -z "$E2E_ADMIN_EMAIL" || -z "$E2E_ADMIN_PASSWORD" || -z "$E2E_ADMIN_TOTP_SECRET" || -z "$E2E_DEV_EMAIL" || -z "$E2E_DEV_PASSWORD" || -z "$E2E_DEV_TOTP_SECRET" ]]; then
