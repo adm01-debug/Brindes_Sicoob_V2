@@ -935,10 +935,10 @@ async function validateRecentSecurityMigrationContractOnDatabase(client, targets
         CASE WHEN p.oid IS NOT NULL THEN has_function_privilege('service_role', p.oid, 'EXECUTE') ELSE false END AS service_role_execute,
         CASE WHEN p.oid IS NOT NULL THEN has_function_privilege('anon', p.oid, 'EXECUTE') ELSE false END AS anon_execute,
         CASE WHEN p.oid IS NOT NULL THEN has_function_privilege('authenticated', p.oid, 'EXECUTE') ELSE false END AS authenticated_execute,
-        COALESCE((
+        CASE WHEN p.oid IS NOT NULL THEN COALESCE((
           SELECT bool_or(a.grantee = 0 AND a.privilege_type = 'EXECUTE')
           FROM LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
-        ), false) AS public_execute
+        ), false) ELSE false END AS public_execute
       FROM expected_functions expected
       LEFT JOIN pg_proc p ON p.oid = to_regprocedure(expected.signature)
     )
