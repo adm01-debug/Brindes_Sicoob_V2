@@ -78,6 +78,24 @@ O snapshot abaixo foi consultado após o commit documental `37db9f1`. Resultados
 
 O mesmo SHA foi validado localmente com 5.856 testes aprovados, 68 ignorados e 0 falhas; typecheck, lint, build, links locais e hooks de push passaram. Nenhuma alteração remota no Supabase foi feita.
 
+### Snapshot remoto da PR #176 — SHA `3441b830ffedfbc12d78a8b82f3d32b1e88e1ac5`
+
+Consultado em 30/10/2026 às 18:39 UTC. O job combinado de segurança, contratos e build ainda estava em execução; não contar como sucesso até conclusão.
+
+| Check | Estado | Evidência |
+|---|---|---|
+| Sicoob Gate | success | [41107963136](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963136) |
+| Portal Sicoob — aprovação e entrada responsiva | success | Jobs transacional e responsivo concluídos em [41107963136](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963136). |
+| Lighthouse | success | [41107963568](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963568) |
+| CodeQL | success | [41107963621](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963621) |
+| Gitleaks e npm audit | success | [41107963302](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963302) |
+| Bundle | success | [41107963479](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963479) |
+| E2E (Playwright) | failure | [41107963427](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963427): preflight falhou. O inventário de nomes dos secrets confirma que `E2E_SUPABASE_PROJECT_ID` não está cadastrado; os nomes `VITE_SUPABASE_PROJECT_ID` e `VITE_SUPABASE_URL` existem, mas seus valores não foram lidos nem validados. Shards Playwright foram skipped. |
+| Copilot Code Review | failure | [41107976457](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107976457): quota adicional HTTP 402 e firewall bloqueando `api.github.com`. |
+| Segurança, contratos e build | in_progress | [41107963268](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41107963268) ainda executava na consulta. |
+
+Validação local do mesmo código após o commit: 5.868 testes aprovados, 68 ignorados, 0 falhas; typecheck e build passaram; lint passou com 0 erros e 874 avisos existentes. Simulações PostgreSQL 16 descartáveis da aprovação pública e cadeia de documentos passaram. Nenhuma alteração remota no Supabase foi feita.
+
 ### Snapshot histórico da PR #176 — SHA `e540dfb`
 
 A PR #176 continua aberta e bloqueada, sem merge, com base `main` em `e9d59026793b84fabeaeec9da890a068f64d49c3`. No SHA `e540dfbd0e61c124dfeba314cb735a9733cdb48f`, Qualidade contínua [41096929659](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929659), Security Scan [41096929643](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929643), Bundle Size [41096929698](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929698), Portal Sicoob [41096929702](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929702), CodeQL [41096929662](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929662) e Lighthouse [41096929795](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929795) concluíram com success. O E2E [41096929852](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929852) falhou no preflight porque `E2E_SUPABASE_PROJECT_ID` chegou vazio; os shards foram skipped e nenhum teste Playwright autenticado rodou. O resumo secundário foi skipped corretamente sem `results.json`. O Copilot [41096943447](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096943447) falhou no processamento/limpeza do agente no ambiente gerenciado; o run anterior também registrou HTTP 402 e bloqueio de firewall a `api.github.com`. A PR não está apta para merge enquanto esses bloqueios persistirem.
