@@ -63,6 +63,13 @@ npm run build
    backlog histórico fora do ledger continua existindo e não é uma fila de
    migrations autorizadas.
 
+10. O fluxo P045 de integridade de preços exige publicar a Edge Function
+    `quote-price-attestation` e aplicar, pelo mesmo executor allowlisted, a
+    migration `20261030120000_quote_price_attestation_gate.sql`. A migration
+    impede gravação de preços sem atestado, portanto publique a função e aplique
+    a migration na sequência coordenada do workflow de construção. A validação
+    local usa PostgreSQL descartável; ela não comprova aplicação remota.
+
 ## Production Checklist
 - [ ] Environment variables configured
 - [ ] Database migrated

@@ -90,13 +90,13 @@ function StockWarning({ item }: { item: QuoteItem }) {
 }
 
 function ItemInputs({ props, total }: { props: SortableItemProps; total: number }) {
-  const { item, onUpdateQuantity, onUpdatePrice, formatCurrency } = props;
+  const { item, onUpdateQuantity, formatCurrency } = props;
   return <div className="flex items-center gap-3 flex-wrap"><div className="flex items-center gap-2">
     <span className="text-xs text-muted-foreground">Qtd:</span><Input type="number" min={1} value={item.quantity}
       onChange={(event: ChangeEvent<HTMLInputElement>) => onUpdateQuantity(parseInt(event.target.value) || 1)} className="w-20 h-8 text-sm" />
-    <StockWarning item={item} /></div><div className="flex items-center gap-2"><span className="text-xs text-muted-foreground">Preço:</span>
-      <Input type="number" step="0.01" min={0} value={item.unit_price}
-        onChange={(event: ChangeEvent<HTMLInputElement>) => onUpdatePrice(parseFloat(event.target.value) || 0)} className="w-28 h-8 text-sm" />
+    <StockWarning item={item} /></div><div className="flex items-center gap-2 rounded-md border px-3 py-1.5">
+      <span className="text-xs text-muted-foreground">Preço do catálogo:</span>
+      <span className="text-sm font-medium tabular-nums">{formatCurrency(item.unit_price)}</span>
     </div><div className="ml-auto text-right"><p className="text-xs text-muted-foreground">Subtotal</p>
       <p className="font-semibold text-sm">{formatCurrency(total)}</p></div></div>;
 }

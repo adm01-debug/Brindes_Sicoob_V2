@@ -94,6 +94,17 @@ O conector oficial recusou SQL e consulta do projeto por falta de permissão. O 
 
 Uma das três migrations candidatas já está no código de `main` (`20260928162048`); as de endurecimento e notificação (`20260928173500` e `20260928182000`) estão no PR #75. Presença no GitHub não significa aplicação no banco. A evidência administrativa de 28/09 permanece histórica.
 
+### Atualização do candidate P045 — 30/10/2026
+
+A lacuna de autoridade de preço recebeu implementação candidata na branch
+`fix/quote-price-authority-311333`: Edge de atestação, migration gate, atualização
+do editor e simulação PostgreSQL adversarial. Os checks locais não equivalem a
+CI da PR, publicação da Edge, aplicação no Supabase ou aceite da jornada
+autenticada. O estado verificável, os resultados do baseline e as pendências
+estão em [P045 — Integridade de preços](p045-integridade-precos-20261030.md).
+Esta atualização não reclassifica retroativamente os achados da revisão de
+01/10 nem declara concluída a etapa.
+
 ## Ordem de fechamento
 
 1. Corrigir autorização de status, incluindo repetição, lote e acesso de outra Singular; ampliar o teste que deixou esse caminho passar.

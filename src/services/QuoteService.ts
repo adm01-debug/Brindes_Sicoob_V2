@@ -149,6 +149,34 @@ function createClientMetadata(metadata?: Record<string, unknown>): Record<string
   };
 }
 
+async function requestQuotePriceAttestation(params: {
+  quote: Record<string, unknown>;
+  items: Json;
+  history: Json;
+  quoteId?: string;
+  expectedRowVersion?: number;
+}): Promise<string> {
+  const { data, error } = await supabase.functions.invoke('quote-price-attestation', {
+    body: {
+      quote: params.quote,
+      items: params.items,
+      history: params.history,
+      quoteId: params.quoteId ?? null,
+      expectedRowVersion: params.expectedRowVersion ?? null,
+    },
+  });
+  if (error) {
+    const responseData = data as { error?: unknown } | null;
+    const message = typeof responseData?.error === 'string' ? responseData.error : error.message;
+    throw new Error(message || 'Não foi possível validar os preços do orçamento.');
+  }
+  const attestationId = (data as { attestationId?: unknown } | null)?.attestationId;
+  if (typeof attestationId !== 'string' || !attestationId) {
+    throw new Error('O serviço de catálogo não retornou um atestado de preço válido.');
+  }
+  return attestationId;
+}
+
 export class QuoteService {
   static async list(params: { userId: string, scope: SalesScope, orgId: string | null }): Promise<Quote[]> {
     // rls-allow: scope self aplicado no builder seguinte; demais papéis dependem de RLS
@@ -188,10 +216,27 @@ export class QuoteService {
     try {
       const totals = calculateDocumentTotals(params.quote, params.items);
       const insertPayload = buildInsertPayload(params.quote, params.userId, params.orgId, totals);
-      const { data: inserted, error: insErr } = await supabase.rpc('save_quote_atomic_idempotent', {
+      const itemsPayload = buildAtomicQuoteItems(params.items);
+      const history = ['Orçamento criado'] as Json;
+      const { data: replay, error: replayError } = await supabase.rpc('get_quote_save_idempotent_replay', {
+        p_idempotency_key: params.idempotencyKey,
         p_quote: insertPayload as Json,
-        p_items: buildAtomicQuoteItems(params.items),
-        p_history: ['Orçamento criado'] as Json,
+        p_items: itemsPayload as Json,
+        p_history: history,
+      });
+      throwQuoteSaveError(replayError, 'Error checking idempotent quote replay:');
+      if (replay && typeof replay === 'object' && !Array.isArray(replay)) {
+        return replay as unknown as Quote;
+      }
+      const attestationId = await requestQuotePriceAttestation({
+        quote: insertPayload as Record<string, unknown>,
+        items: itemsPayload as Json,
+        history,
+      });
+      const { data: inserted, error: insErr } = await supabase.rpc('save_quote_atomic_idempotent_attested', {
+        p_quote: { ...insertPayload, price_attestation_id: attestationId } as Json,
+        p_items: itemsPayload as Json,
+        p_history: history,
         p_idempotency_key: params.idempotencyKey,
       });
       throwQuoteSaveError(insErr, "Error creating quote:");
@@ -220,15 +265,24 @@ export class QuoteService {
       const totals = calculateDocumentTotals(params.quote, params.items);
       const updatePayload = buildUpdatePayload({ ...params.quote, row_version: params.expectedRowVersion }, totals);
       const changes = describeQuoteChanges(oldQuote, params.quote, params.items);
-      const { data: updated, error: updErr } = await supabase.rpc('save_quote_atomic', {
-        p_quote: updatePayload as Json,
-        p_items: buildAtomicQuoteItems(params.items),
+      const itemsPayload = buildAtomicQuoteItems(params.items);
+      const history = quoteHistoryOrDefault(changes);
+      const attestationId = await requestQuotePriceAttestation({
+        quote: updatePayload as Record<string, unknown>,
+        items: itemsPayload as Json,
+        history,
+        quoteId: params.quoteId,
+        expectedRowVersion: params.expectedRowVersion,
+      });
+      const { data: updated, error: updErr } = await supabase.rpc('save_quote_atomic_attested', {
+        p_quote: { ...updatePayload, price_attestation_id: attestationId } as Json,
+        p_items: itemsPayload as Json,
         p_quote_id: params.quoteId,
         // A versão precisa ser aquela carregada pelo editor, nunca a de uma
         // leitura feita no instante do salvamento. Caso outro usuário tenha
         // gravado antes, a RPC recusa a atualização em vez de sobrescrever.
         p_expected_row_version: params.expectedRowVersion,
-        p_history: quoteHistoryOrDefault(changes),
+        p_history: history,
       });
 
       throwQuoteSaveError(updErr, "Error updating quote:");

@@ -15,7 +15,7 @@ import { QuoteService } from '@/services/QuoteService';
 
 describe('QuoteService.reorder', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     sessionStorage.clear();
   });
 
@@ -65,7 +65,10 @@ describe('QuoteService.reorder', () => {
   });
 
   it('envia a chave estável de criação para a RPC idempotente', async () => {
-    mocks.rpc.mockResolvedValue({ data: { id: 'quote-new', row_version: 1 }, error: null });
+    mocks.invoke.mockResolvedValue({ data: { attestationId: 'atestado-preco' }, error: null });
+    mocks.rpc
+      .mockResolvedValueOnce({ data: null, error: null })
+      .mockResolvedValueOnce({ data: { id: 'quote-new', row_version: 1 }, error: null });
 
     await QuoteService.create({
       quote: {},
@@ -75,12 +78,58 @@ describe('QuoteService.reorder', () => {
       idempotencyKey: '9a02c962-4f44-4f1b-8bcc-6fa80faac199',
     });
 
-    expect(mocks.rpc).toHaveBeenCalledWith('save_quote_atomic_idempotent', expect.objectContaining({
+    expect(mocks.rpc).toHaveBeenNthCalledWith(1, 'get_quote_save_idempotent_replay', expect.objectContaining({
+      p_idempotency_key: '9a02c962-4f44-4f1b-8bcc-6fa80faac199',
+    }));
+    expect(mocks.invoke).toHaveBeenCalledWith('quote-price-attestation', expect.objectContaining({
+      body: expect.objectContaining({ quoteId: null, expectedRowVersion: null }),
+    }));
+    expect(mocks.rpc).toHaveBeenCalledWith('save_quote_atomic_idempotent_attested', expect.objectContaining({
+      p_idempotency_key: '9a02c962-4f44-4f1b-8bcc-6fa80faac199',
+      p_quote: expect.objectContaining({ price_attestation_id: 'atestado-preco' }),
+    }));
+  });
+
+  it('não chama a RPC de criação quando o atestado de preços falha', async () => {
+    mocks.rpc.mockResolvedValueOnce({ data: null, error: null });
+    mocks.invoke.mockResolvedValue({
+      data: { error: 'O preço do catálogo mudou. Atualize o orçamento.' },
+      error: new Error('409'),
+    });
+
+    await expect(QuoteService.create({
+      quote: {},
+      items: [],
+      userId: 'ator-1',
+      orgId: null,
+      idempotencyKey: '9a02c962-4f44-4f1b-8bcc-6fa80faac199',
+    })).rejects.toThrow('O preço do catálogo mudou');
+    expect(mocks.rpc).toHaveBeenCalledTimes(1);
+    expect(mocks.rpc).toHaveBeenCalledWith('get_quote_save_idempotent_replay', expect.any(Object));
+  });
+
+  it('recupera criação já persistida sem chamar catálogo nem RPC de gravação', async () => {
+    const persisted = { id: 'quote-replay', row_version: 1 };
+    mocks.rpc.mockResolvedValueOnce({ data: persisted, error: null });
+
+    await expect(QuoteService.create({
+      quote: {},
+      items: [],
+      userId: 'ator-1',
+      orgId: null,
+      idempotencyKey: '9a02c962-4f44-4f1b-8bcc-6fa80faac199',
+    })).resolves.toBe(persisted);
+
+    expect(mocks.invoke).not.toHaveBeenCalled();
+    expect(mocks.rpc).toHaveBeenCalledTimes(1);
+    expect(mocks.rpc).toHaveBeenCalledWith('get_quote_save_idempotent_replay', expect.objectContaining({
       p_idempotency_key: '9a02c962-4f44-4f1b-8bcc-6fa80faac199',
     }));
   });
 
   it('preserva a versão aberta pelo editor ao atualizar, mesmo que a leitura auxiliar seja mais nova', async () => {
+    mocks.invoke.mockResolvedValue({ data: { attestationId: 'atestado-preco' }, error: null });
+    mocks.rpc.mockResolvedValue({ data: { id: 'quote-1', row_version: 3 }, error: null });
     const currentInDatabase = {
       id: 'quote-1',
       row_version: 9,
@@ -99,9 +148,12 @@ describe('QuoteService.reorder', () => {
       expectedRowVersion: 2,
     });
 
-    expect(mocks.rpc).toHaveBeenCalledWith('save_quote_atomic', expect.objectContaining({
+    expect(mocks.invoke).toHaveBeenCalledWith('quote-price-attestation', expect.objectContaining({
+      body: expect.objectContaining({ quoteId: 'quote-1', expectedRowVersion: 2 }),
+    }));
+    expect(mocks.rpc).toHaveBeenCalledWith('save_quote_atomic_attested', expect.objectContaining({
       p_expected_row_version: 2,
-      p_quote: expect.objectContaining({ row_version: 3 }),
+      p_quote: expect.objectContaining({ row_version: 3, price_attestation_id: 'atestado-preco' }),
     }));
   });
 });

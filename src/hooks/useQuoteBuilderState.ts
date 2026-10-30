@@ -78,7 +78,7 @@ function buildQuoteItem(product: Product, variant: ExternalVariantStock | null):
     product_sku: product.sku,
     product_image_url: preferredProductImage(product, variant),
     quantity: 1,
-    unit_price: product.price,
+    unit_price: definedOr(selected.sale_price, product.price),
     unit_cost: truthyOr(product.costPrice, 0),
     color_name: truthyOr(selected.color_name, undefined),
     color_hex: truthyOr(selected.color_hex, undefined),

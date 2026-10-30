@@ -12811,6 +12811,34 @@ export type Database = {
         }
         Returns: Json
       }
+      save_quote_atomic_attested: {
+        Args: {
+          p_expected_row_version?: number
+          p_history?: Json
+          p_items: Json
+          p_quote: Json
+          p_quote_id?: string
+        }
+        Returns: Json
+      }
+      save_quote_atomic_idempotent_attested: {
+        Args: {
+          p_history?: Json
+          p_idempotency_key: string
+          p_items: Json
+          p_quote: Json
+        }
+        Returns: Json
+      }
+      get_quote_save_idempotent_replay: {
+        Args: {
+          p_history?: Json
+          p_idempotency_key: string
+          p_items: Json
+          p_quote: Json
+        }
+        Returns: Json
+      }
       search_products_semantic: {
         Args: { _limit?: number; _products: Json; _query: string }
         Returns: {

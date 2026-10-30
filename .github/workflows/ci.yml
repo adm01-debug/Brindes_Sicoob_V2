@@ -125,6 +125,9 @@ jobs:
       - name: Simular idempotência e isolamento do salvamento de orçamentos
         run: python3 scripts/qa/simular-idempotencia-orcamento.py
 
+      - name: Simular atestado de preço e gravação atômica do orçamento
+        run: python3 scripts/qa/simular-salvamento-orcamento-atomico.py
+
       - name: Simular retry idempotente e notificação atômica de status
         run: bash scripts/qa/simular-governanca-orcamento.sh
 
