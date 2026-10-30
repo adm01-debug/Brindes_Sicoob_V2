@@ -13,7 +13,7 @@
 
 ## Edge Functions Sicoob
 
-O deploy remoto é manual e restrito ao environment `construction`, à branch `main` e ao workflow **Publicar funções Sicoob**. Antes de publicar, confirme no GitHub que `CONSTRUCTION_SUPABASE_PROJECT_REF` aponta para um projeto isolado de construção. O workflow recusa o projeto canônico `cfmzkthhgliqelozlmwu`.
+O deploy remoto é manual e restrito ao environment `construction`, à branch `main` e ao workflow **Publicar funções Sicoob**. Antes de publicar, confirme no GitHub que `CONSTRUCTION_SUPABASE_PROJECT_REF` aponta para o projeto isolado de construção aprovado. O workflow recusa o projeto canônico Sicoob (`cfmzkthhgliqelozlmwu`) e o catálogo de produtos (`doufsxqlfjyuvxuezpln`); essa denylist não substitui a confirmação da ref de construção.
 
 1. Abra **Actions → Publicar funções Sicoob → Run workflow** na branch `main`.
 2. Digite `PUBLICAR` no campo de confirmação.

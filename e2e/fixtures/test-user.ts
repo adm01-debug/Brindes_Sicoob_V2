@@ -53,15 +53,15 @@ export function getTestPrefix(): string {
 
 /**
  * Deriva um sub-prefixo determinístico a partir de um slug de spec
- * (ex.: "quote-create"). Garante isolamento por spec/feature: cleanup
- * pós-falha pode filtrar por `[E2E:quote-create]` sem tocar em recursos
- * vivos de specs paralelos `[E2E:kit-builder]`.
+ * (ex.: "quote-create"). Garante prefixo reconhecível por feature, com
+ * fechamento literal em `[E2E]` para permitir limpeza segura do legado e dos
+ * recursos atuais sem casar nomes parecidos.
  *
  * O slug é normalizado: apenas [a-zA-Z0-9-], truncado a 32 chars.
  */
 export function e2eScope(specSlug: string): string {
   const safe = specSlug.replace(/[^a-zA-Z0-9-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 32) || "spec";
-  return `[E2E:${safe}]`;
+  return `[E2E] ${safe}`;
 }
 
 /**
@@ -82,12 +82,13 @@ export function e2eName(label: string, opts: { prefix?: string } = {}): string {
 
 /**
  * Verifica se um nome arbitrário foi gerado pelo E2E (heurística pelo prefixo).
- * Aceita o prefixo global E2E_TEST_PREFIX OU qualquer sub-prefixo `[E2E:*]`.
+ * Aceita o prefixo global E2E_TEST_PREFIX OU sub-prefixos `[E2E] <slug>`.
  */
 export function isE2eName(name: string | null | undefined): boolean {
   if (!name) return false;
   if (name.startsWith(getTestPrefix())) return true;
-  return /^\[E2E:[a-zA-Z0-9-]{1,32}\]/.test(name);
+  return /^\[E2E\] [a-zA-Z0-9-]{1,32}/.test(name)
+    || /^\[E2E:[a-zA-Z0-9-]{1,32}\]/.test(name);
 }
 
 const userIdCache = new WeakMap<Page, string>();

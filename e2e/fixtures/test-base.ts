@@ -3,9 +3,9 @@
  *  - Captura automática de console/pageerror em toda página
  *  - afterEach que dispara coleta de evidências em qualquer falha
  *  - Helper `requireAuth()` que pula o teste se as credenciais não foram dadas
- *  - Fixture `e2eResources` com sub-prefixo POR SPEC e cleanup escopado
- *    em caso de falha — evita que um spec apague recursos vivos de outro
- *    spec rodando em paralelo no mesmo worker/CI.
+ *  - Fixture `e2eResources` com sub-prefixo POR TESTE — recursos ficam
+ *    identificáveis sem cleanup por teste, que poderia remover carrinhos de
+ *    outro teste paralelo da mesma persona.
  *
  * Uso:
  *   import { test, expect } from "../fixtures/test-base";
@@ -15,10 +15,9 @@
  *     // ...
  *   });
  */
-import path from "node:path";
+import { createHash } from "node:crypto";
 import { test as base, expect } from "@playwright/test";
 import { attachConsoleCapture, type EvidenceCollector } from "../helpers/evidence";
-import { loadCleanupConfig, purgeAll } from "../helpers/cleanup-client";
 import { e2eScope } from "./test-user";
 import {
   createE2eQuote,
@@ -46,17 +45,7 @@ export interface E2eResources {
 type Fixtures = {
   evidence: EvidenceCollector;
   resources: E2eResources;
-  /**
-   * Auto-fixture: em falha, dispara purge ESCOPADO ao prefixo do spec
-   * (não toca em recursos de outros specs paralelos). Pode ser desligada
-   * via `E2E_CLEANUP_ON_FAILURE=0`.
-   */
-  cleanupOnFailure: void;
 };
-
-function deriveSpecSlug(filePath: string): string {
-  return path.basename(filePath).replace(/\.spec\.tsx?$/, "");
-}
 
 export const test = base.extend<Fixtures>({
   evidence: async ({ page }, use, testInfo) => {
@@ -68,8 +57,8 @@ export const test = base.extend<Fixtures>({
   },
 
   resources: async ({ page }, use, testInfo) => {
-    const slug = deriveSpecSlug(testInfo.file);
-    const prefix = e2eScope(slug);
+    const testId = createHash("sha256").update(testInfo.testId).digest("hex").slice(0, 24);
+    const prefix = e2eScope(`t-${testId}`);
     const api: E2eResources = {
       prefix,
       createQuote: (o = {}) => createE2eQuote(page, { ...o, prefix }),
@@ -81,21 +70,6 @@ export const test = base.extend<Fixtures>({
     await use(api);
   },
 
-  cleanupOnFailure: [
-    async ({ resources }, use, testInfo) => {
-      await use();
-      if (process.env.E2E_CLEANUP_ON_FAILURE === "0") return;
-      if (testInfo.status === testInfo.expectedStatus) return;
-      const cfg = loadCleanupConfig();
-      if (!cfg) return;
-      await purgeAll(cfg, {
-        quiet: true,
-        reason: `failure:${testInfo.title}`,
-        nameFilterPrefix: resources.prefix,
-      }).catch(() => {});
-    },
-    { auto: true },
-  ],
 });
 
 export { expect };

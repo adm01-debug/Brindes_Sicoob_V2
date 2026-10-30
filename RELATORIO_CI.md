@@ -5,24 +5,60 @@
 
 ## Estado atual — auditoria de 30/10/2026
 
-### Inventário da `main`
+### Inventário da `main` — consulta atualizada em 30/10/2026
 
-Considerada apenas a execução mais recente na branch `main` para cada workflow, sem PRs.
+Considerada somente a execução mais recente com `head_branch=main` para cada workflow.
+Os quatro bloqueios de código têm correções locais no PR #176; a `main` continua sem
+elas até merge.
 
-| Workflow | Estado mais recente | Evidência / causa |
+| Workflow | Última execução em `main` | Causa / estado do fix |
 |---|---|---|
-| Publicar funções Sicoob | Falha | Run [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102): `No change found` e a confirmação exigiu versão maior que a anterior. A branch aceita versão igual (deploy idempotente), sem aceitar ausência/regressão de versão. |
-| Security Scan | Falha na `main` | Run [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158): `undici@8.10.2` e `zod@3.25.76` altos. Na PR #176, `undici@8.12.2` e Zod `4.6.7` passaram no run [41086090216](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41086090216); a `main` segue sem a correção até merge. |
-| Qualidade contínua | Falha na `main` | Run [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964): o passo de segurança falha pelo mesmo audit. A PR corrigiu o audit e passou suíte, Deno, simulações PostgreSQL e build em [41086090239](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41086090239) (attempt 2; a primeira attempt teve rate limit ECR transitório). |
-| CodeQL | Falha na `main` | Run [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073): init v4.39.1 misturado com autobuild/analyze v4.38.2. Pins alinhados e PR validada por [41086090279](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41086090279) → success. |
-| E2E (Playwright) | Startup failure na `main`; PR bloqueada por configuração | Run [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358): `startup_failure`, zero jobs. PR [41086090325](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41086090325) falha fechada porque `E2E_SUPABASE_PROJECT_ID` chegou vazio; não executa testes autenticados sem project ref isolado. |
-| Bundle Size Check | Falha antiga na `main` | Run [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911): logs expiraram (HTTP 404). Check local passou e PR [41086090390](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41086090390) → success. |
-| Lighthouse Performance Audit | Falha antiga na `main` | Run [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910): logs expiraram (HTTP 404). PR no runner Ubuntu [41086090424](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41086090424) → success. |
-| Running Copilot Code Review | Falha na `main` e na PR | Run main [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125): quota 402. Na PR [41086107888](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41086107888), quota adicional HTTP 402 e firewall bloqueando `api.github.com`; depende do owner/GitHub Actions gerenciado. |
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) — failure | CLI informou `No change found` para `sicoob-approval-reconciliation` (versão 5); a verificação antiga exigia incremento de versão. A PR #176 aceita igualdade se a função existe e a versão não regrediu. O dispatch não foi repetido, pois o alvo real do run antigo está redigido e o project ref explícito de construção não foi confirmado. |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) — failure | `undici@8.10.2` e `zod@3.25.76` têm vulnerabilidades altas. A atualização para `undici@8.12.2` e Zod `4.6.7` em #176 passou o check [41113334024](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41113334024). |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) — failure | `check:npm-audit` falhou pelos mesmos pacotes. O SHA atual de #176 passou testes, lint, typecheck, simulações PostgreSQL e build em [41113333321](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41113333321). |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) — failure | `init` v4.39.1 com `autobuild/analyze` v4.38.2 causou `JOB_STATUS_CONFIGURATION_ERROR`. Os três pins agora usam o SHA v4.39.1; análise passou em [41113333520](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41113333520). |
+| Running Copilot Code Review | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) — failure | HTTP 402 `errorType: quota`, limite adicional de uso do plano. Dependência do serviço/owner, fora do código. |
+| Dependabot `@vitest/mocker` | [39775463512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775463512) — failure | `security_update_not_possible`: updater resolvia 4.1.11, embora 4.1.12 fosse a versão não vulnerável. A `main` já tem `@vitest/mocker@4.1.12` via PR #139; trata-se de execução dinâmica histórica. |
+| E2E (Playwright) | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) — startup failure | Run na `main` iniciou zero jobs e não tem logs recuperáveis. Na PR #176, o gate falhou fechado por `E2E_SUPABASE_PROJECT_ID` ausente. A workflow foi atualizada para usar só environment `e2e-staging`, secrets prefixados `E2E_STAGING_` e bloquear os projetos Sicoob e produtos. |
+| Bundle Size Check | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) — failure | Logs expiraram (HTTP 404); causa antiga não pode ser recuperada. O check do PR #176 passou. |
+| Lighthouse Performance Audit | [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910) — failure | Logs expiraram (HTTP 404); causa antiga não pode ser recuperada. Lighthouse passou no runner do PR #176. |
 
-Verdes confirmados: Migration ledger drift `41013281253` (30/10), Branch Protection Sentinel `40602983038`, Enterprise Compliance `40602982958`, Portal Sicoob `39868499315`, Monthly DB Audit `36794161452` (01/10) e Dependabot Updates `40603001428`. O workflow manual de migrations teve último resultado `cancelled` (`37029743784`, 02/10), não contado como falha.
+Workflows verdes observados na `main`: Migration ledger drift [41013281253](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41013281253), Branch Protection Sentinel [40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038), Enterprise Compliance [40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958), Dependabot `undici` [40603001428](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40603001428), Dependabot `zod` [40603001197](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40603001197) e Portal Sicoob [39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315). O snapshot do SHA atual da PR #176 também mostra sucesso em Security Scan, Qualidade, CodeQL, Bundle, Lighthouse e Portal; E2E e Copilot continuam pendentes pelos bloqueios documentados.
 
-### Baseline e resultado local nesta branch
+### Interrupção do E2E na PR #177 — 30/10/2026
+
+O run [41118082692](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41118082692), SHA `141d7ae`, foi cancelado durante o smoke ao descobrir que essa PR ainda usava o workflow antigo, que não validava a identidade do projeto Supabase. O passo remoto RLS [124278629131](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41118082692/job/124278629131) terminou success: criou um canário UUID em `e2e_cleanup_rate_limit`, testou bloqueio anon e tentou remover o canário no `afterAll`, mas o teste antigo não validava erro nem contagem da remoção. A execução também chamou o cleanup remoto: uma persona recebeu `403 email_not_in_allow_list` e outra chamada retornou `DELETED 0`. O Playwright passou 13 testes de navegação e foi cancelado durante o smoke; os logs não provam se houve atualização de onboarding/telemetria nem identificam o projeto de destino. Não é possível afirmar que houve escrita em qualquer um dos dois bancos protegidos, nem certificar ausência de resíduo. Nenhuma credencial foi lida e não houve consulta ou correção manual de dados. Estes limites e a ação de revisão estão detalhados em `PENDENCIAS.md`.
+
+A PR #176 passou a executar somente com ambiente dedicado `e2e-staging`. Os jobs exigem variável `E2E_SUPABASE_PROJECT_ID`, secrets `E2E_STAGING_*`, URL/ref coincidentes e rejeitam os projetos `cfmzkthhgliqelozlmwu` e `doufsxqlfjyuvxuezpln`. O teste RLS agora verifica que o canário foi realmente removido, e `cancel-in-progress` está desligado para não interromper o cleanup em uma execução nova. Ainda falta o owner provisionar esse ambiente/variáveis e contas sintéticas; sem elas o preflight para antes de acessar Supabase.
+
+### Validação local adicional — worktree antes do próximo commit
+
+Estas verificações cobrem mudanças locais ainda não presentes no último SHA remoto da
+PR. Não representam sucesso da CI remota nem acesso ao Supabase:
+
+| Verificação | Resultado | Evidência |
+|---|---|---|
+| `npm run build` | ✅ exit 0 | Build concluído; avisos existentes de variáveis locais ausentes, imports mistos e chunks grandes. |
+| `npm run lint` | ✅ exit 0 | 0 erros e 874 avisos existentes. |
+| `npm run typecheck` | ✅ exit 0 | TS app e node. |
+| `npm test` | ✅ exit 0 | 5.884 passaram, 68 skipped, 0 falhas (464 arquivos; 460 passaram, 4 skipped). |
+| `npm run check:npm-audit` | ✅ exit 0 | SECURITY GATE PASSED. |
+| `actionlint .github/workflows/*.yml` | ✅ exit 0 | Todos os workflows versionados válidos. |
+| Testes focados de preflight E2E, cleanup, RLS e migrations | ✅ exit 0 | 50 passaram; 56 remotos skipped porque staging não está configurado localmente. |
+| `git diff --check` | ✅ exit 0 | Sem erros de whitespace. |
+
+O patch local também serializa E2E entre refs, limpa as cinco personas, reprova
+cleanup ausente/parcial, usa prefixos literais configurado, `[E2E]` e `[E2E:` em
+passadas sequenciais para cobrir nomes atuais e legados sem casar `[E2Evil]`, limita
+prefixos customizados ao namespace E2E e remove cleanup por teste porque o endpoint
+também apaga carrinhos por persona. HTTP 402 já não valida authz/RLS, e migrations/deploy
+são bloqueados nos dois refs protegidos. Nenhuma chamada ou
+alteração Supabase foi feita. Ainda falta o owner configurar e proteger
+`e2e-staging`, confirmar a ref exata do projeto descartável, criar as contas sintéticas
+e restringir a allowlist de e-mails da Edge Function; veja
+[`docs/secrets.md`](docs/secrets.md).
+
+### Baseline histórico e snapshot local da primeira rodada nesta branch
 
 | Verificação | Resultado | Observação |
 |---|---|---|
@@ -59,7 +95,7 @@ O cenário descartável não valida o estado do Supabase remoto. A migration est
 - O schema Zod agora mantém mensagens próprias apenas quando `goal_type` e `period` estão ausentes; valores enum inválidos continuam com a mensagem padrão. Dois testes cobrem os casos.
 - O formulário de produto mantém um adaptador tipado entre o resolver Zod e o estado RHF. A tipagem ampla de entrada de `z.coerce.number` torna `z.input` incompatível com o estado concreto da tela; o teste existente cobre defaults e coerção, e `typecheck` integral passou sem mudanças espalhadas pelos componentes consumidores.
 - `scripts/db/supabase-sql-client.mjs` agora usa a mesma validação alfanumérica de 20 caracteres que o executor de migrations. O cenário do cliente Management API aceita referência com dígitos e recusa referência inválida antes da rede (6/6 cenários passaram).
-- Nenhuma consulta ou mutação remota foi feita; nenhuma migration ou Edge Function foi publicada.
+- Até este registro local, nenhuma consulta ou mutação manual foi feita; nenhuma migration ou Edge Function foi publicada. Depois, o run E2E remoto da PR #177 executou os testes RLS e foi cancelado durante o smoke; veja a seção de interrupção acima.
 
 ### Snapshot remoto recente da PR #176 — SHA `37db9f1e3f6dc8a4a7a8772145099d2a61ef46ca`
 
@@ -109,7 +145,7 @@ Validação local do mesmo código após o commit: 5.868 testes aprovados, 68 ig
 | E2E (Playwright) | failure no preflight | [41109623268](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41109623268): `E2E_SUPABASE_PROJECT_ID` vazio; shards ignorados; Playwright autenticado não executou. |
 | Running Copilot Code Review | failure | [41109639994](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41109639994): erro HTTP 402 por limite de uso do ambiente gerenciado. |
 
-Validação local no HEAD: 5.868 testes aprovados, 68 ignorados e 0 falhas; typecheck e build passaram; lint com 0 erros e 874 avisos existentes. O inventário de nomes de secrets confirma a ausência de `E2E_SUPABASE_PROJECT_ID`; nenhum valor secreto foi lido. A aprovação obrigatória de reviewer humano também continua pendente. A PR #176 permanece aberta e sem merge. Nenhuma migration, Edge Function ou dado foi alterado no Supabase remoto.
+Validação local naquele HEAD: 5.868 testes aprovados, 68 ignorados e 0 falhas; typecheck e build passaram; lint com 0 erros e 874 avisos existentes. O inventário consultado então não mostrava `E2E_SUPABASE_PROJECT_ID`; nenhum valor secreto foi lido. A aprovação obrigatória de reviewer humano também continuava pendente. Esse snapshot não descreve o run #177 posterior; consulte a seção atualizada de interrupção E2E.
 
 ### Snapshot histórico da PR #176 — SHA `e540dfb`
 
@@ -117,7 +153,7 @@ A PR #176 continua aberta e bloqueada, sem merge, com base `main` em `e9d5902679
 
 ### Segurança de Supabase
 
-Nenhuma consulta ou mutação remota foi feita. A branch exige `CONSTRUCTION_SUPABASE_PROJECT_REF`, valida o host do banco e bloqueia o project ref canônico para migrations, deploy de funções e E2E. Não há evidência acessível de configuração dos secrets do environment `construction`; por isso, deploy, migrations e E2E remoto continuam bloqueados e documentados em `PENDENCIAS.md`.
+Nenhuma consulta SQL manual nem mutação remota direta foi feita nesta rodada. A PR #176 exige `CONSTRUCTION_SUPABASE_PROJECT_REF`, valida o host do banco e bloqueia os dois project refs protegidos em E2E. O run #177, iniciado sobre SHA antigo, executou testes E2E remotos antes de ser cancelado; o alvo não pôde ser identificado e a possível linha canário restante não foi verificada. Deploy e migrations não foram executados por esta rodada; consulte `PENDENCIAS.md`.
 
 Os workflows foram revisados para não usar `continue-on-error` nem `|| true`. Resumos continuam sendo produzidos com `if: always()`; os erros dos testes e da publicação de artefatos passam a manter o job em falha em vez de serem mascarados.
 

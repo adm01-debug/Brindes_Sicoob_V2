@@ -13,7 +13,10 @@ import { normalizedSql } from "./check-migration-ledger-drift.mjs";
 import { createSupabaseSqlClient } from "./supabase-sql-client.mjs";
 
 const ROOT = process.cwd();
-const CANONICAL_PROJECT_REF = "cfmzkthhgliqelozlmwu";
+const PROTECTED_PROJECT_REFS = new Set([
+  "cfmzkthhgliqelozlmwu",
+  "doufsxqlfjyuvxuezpln",
+]);
 const LEDGER_HASH_MARKER = /^sha256:([a-f0-9]{64}); executor:allowlisted-management-api$/;
 const TARGETS = [
   {
@@ -223,8 +226,8 @@ function validateProjectRef() {
   if (!projectRef || !/^[a-z0-9]{20}$/.test(projectRef)) {
     throw new Error("SUPABASE_PROJECT_REF deve identificar explicitamente o projeto de homologação.");
   }
-  if (projectRef === CANONICAL_PROJECT_REF) {
-    throw new Error("Aplicação de migrations no projeto canônico está bloqueada por este workflow.");
+  if (PROTECTED_PROJECT_REFS.has(projectRef)) {
+    throw new Error("Aplicação de migrations nos projetos protegidos está bloqueada por este workflow.");
   }
   return projectRef;
 }

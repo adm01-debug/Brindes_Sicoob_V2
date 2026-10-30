@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import { parse } from 'yaml';
 import {
   extractFunctionBody,
   hasTransactionControl,
@@ -59,7 +61,10 @@ describe('proteção de ambiente do aplicador de migrations', () => {
     expect(result.stderr).toContain('migrations só podem ser aplicadas a partir de refs/heads/main');
   });
 
-  it('recusa o projeto Supabase canônico antes de qualquer acesso remoto', () => {
+  it.each([
+    ['projeto Sicoob canônico', 'cfmzkthhgliqelozlmwu'],
+    ['catálogo de produtos', 'doufsxqlfjyuvxuezpln'],
+  ])('recusa %s antes de qualquer acesso remoto', (_name, projectRef) => {
     const env = { ...process.env };
     delete env.GITHUB_ACTIONS;
     delete env.GITHUB_REF;
@@ -72,13 +77,13 @@ describe('proteção de ambiente do aplicador de migrations', () => {
       encoding: 'utf8',
       env: {
         ...env,
-        SUPABASE_PROJECT_REF: 'cfmzkthhgliqelozlmwu',
+        SUPABASE_PROJECT_REF: projectRef,
         SUPABASE_ACCESS_TOKEN: 'token-de-teste-nao-utilizado',
       },
     });
 
     expect(result.status).not.toBe(0);
-    expect(result.stderr).toContain('Aplicação de migrations no projeto canônico está bloqueada');
+    expect(result.stderr).toContain('Aplicação de migrations nos projetos protegidos está bloqueada');
   });
 
   it('recusa alvo ausente antes de qualquer acesso remoto', () => {
@@ -95,6 +100,47 @@ describe('proteção de ambiente do aplicador de migrations', () => {
 
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('SUPABASE_PROJECT_REF deve identificar explicitamente');
+  });
+});
+
+describe('proteção do workflow de publicação de Edge Functions', () => {
+  const workflow = parse(readFileSync('.github/workflows/deploy-sicoob-functions.yml', 'utf8'));
+  const validation = workflow.jobs.deploy.steps.find(
+    (step: { name?: string }) => step.name === 'Validar credenciais de publicação',
+  )?.run;
+
+  if (typeof validation !== 'string') throw new Error('Validação de alvo do deploy não encontrada.');
+
+  it.each([
+    ['projeto Sicoob canônico', 'cfmzkthhgliqelozlmwu'],
+    ['catálogo de produtos', 'doufsxqlfjyuvxuezpln'],
+  ])('recusa %s antes de executar a CLI do Supabase', (_name, projectRef) => {
+    const result = spawnSync('bash', ['-euo', 'pipefail', '-c', validation], {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        SUPABASE_ACCESS_TOKEN: 'token-ficticio-nao-utilizado',
+        SUPABASE_PROJECT_ID: projectRef,
+        CANONICAL_SUPABASE_PROJECT_ID: 'cfmzkthhgliqelozlmwu',
+        PRODUCTS_SUPABASE_PROJECT_ID: 'doufsxqlfjyuvxuezpln',
+      },
+    });
+    expect(result.status).not.toBe(0);
+    expect(result.stdout + result.stderr).toContain('projetos protegidos está bloqueada');
+  });
+
+  it('permite a ref sintética de construção para simulação sem rede', () => {
+    const result = spawnSync('bash', ['-euo', 'pipefail', '-c', validation], {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        SUPABASE_ACCESS_TOKEN: 'token-ficticio-nao-utilizado',
+        SUPABASE_PROJECT_ID: 'abcdefghijabcdefghij',
+        CANONICAL_SUPABASE_PROJECT_ID: 'cfmzkthhgliqelozlmwu',
+        PRODUCTS_SUPABASE_PROJECT_ID: 'doufsxqlfjyuvxuezpln',
+      },
+    });
+    expect(result.status).toBe(0);
   });
 });
 

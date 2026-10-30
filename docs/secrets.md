@@ -11,6 +11,42 @@ ausentes no run acima. As demais credenciais de E2E e compliance não foram
 verificadas nesta execução e não devem ser classificadas como ausentes sem
 evidência do painel ou de um gate que as valide.
 
+## E2E em homologação isolada
+
+Os jobs E2E passaram a usar o environment `e2e-staging` e nomes exclusivos para
+não herdar credenciais genéricas do repositório. O preflight bloqueia os projetos
+Sicoob (`cfmzkthhgliqelozlmwu`) e catálogo de produtos (`doufsxqlfjyuvxuezpln`),
+exige URL e project ref coincidentes e para antes de qualquer chamada remota quando
+algum valor estiver ausente.
+
+Configurar no environment `e2e-staging`:
+
+- variável `E2E_SUPABASE_PROJECT_ID` (ref de projeto descartável, nunca os dois refs bloqueados acima);
+- secrets `E2E_STAGING_SUPABASE_URL`, `E2E_STAGING_SUPABASE_PUBLISHABLE_KEY`, `E2E_STAGING_SERVICE_ROLE_KEY` e `E2E_STAGING_CLEANUP_TOKEN`;
+- secrets de personas: `E2E_STAGING_USER_EMAIL/PASSWORD`, `E2E_STAGING_VIEWER_EMAIL/PASSWORD`, `E2E_STAGING_MANAGER_EMAIL/PASSWORD`, `E2E_STAGING_ADMIN_EMAIL/PASSWORD/TOTP_SECRET` e `E2E_STAGING_DEV_EMAIL/PASSWORD/TOTP_SECRET`.
+
+Antes de cadastrar esses secrets, configure proteção do GitHub Environment com
+revisores obrigatórios e restrição a branches confiáveis; o job de PR executa código
+proposto pelo colaborador e recebe os secrets desse ambiente. Configure no projeto
+isolado a Edge Function `e2e-cleanup` com `E2E_CLEANUP_TOKEN` igual ao secret
+`E2E_STAGING_CLEANUP_TOKEN` e `E2E_CLEANUP_ALLOWED_EMAILS` restrita às cinco personas
+sintéticas. A validação exige esse token, a chave publicável e a chave administrativa
+antes de chamadas remotas; setup e teardown globais reprovam o job se não confirmarem
+sucesso. Execuções E2E são serializadas globalmente para evitar disputa do
+staging entre PRs. Setup/teardown fazem limpeza sequencial dos prefixos configurado,
+literal `[E2E]` e `[E2E:` (formato legado); não há limpeza por teste, pois o endpoint
+também purga carrinhos por persona e poderia afetar outro teste paralelo. A variável
+deve conter a ref exata do projeto descartável aprovado pelo owner; bloquear refs
+conhecidas não prova, por si só, que outra ref seja descartável.
+Se `E2E_TEST_PREFIX` for usado, ele deve permanecer no namespace E2E (`[E2E]`
+opcionalmente seguido de slug, ou `[E2E:<slug>]`); prefixos genéricos são recusados.
+
+Estado verificado em 30/10/2026: o environment `e2e-staging` não existe (GitHub
+API 404); também não há a variável `E2E_SUPABASE_PROJECT_ID` nem secrets dedicados
+`E2E_STAGING_*` no repositório. O preflight anterior confirmou project ref ausente.
+Não consultei valores. A nova configuração ainda precisa de uma execução que conclua
+o preflight e prove as jornadas no projeto descartável.
+
 ## Lidos pelas edge functions (`Deno.env.get`)
 
 | Variável | Onde é lida (função) | Configurado em |
@@ -37,7 +73,7 @@ evidência do painel ou de um gate que as valide.
 | `QUOTE_SYNC_API_KEY` | sync de orçamento | **preencher** |
 | `BI_SHARE_SECRET` | `bi-share-dossier` | **preencher** |
 | `WEBHOOK_HMAC_SECRET` | validação de assinatura de webhook | **preencher** (usado também em `ci.yml`) |
-| `E2E_CLEANUP_TOKEN` | `e2e-cleanup` | **GitHub secret — pendente (etapa 03)** |
+| `E2E_CLEANUP_TOKEN` | `e2e-cleanup` | **Secret da Edge Function no Supabase; igual a `E2E_STAGING_CLEANUP_TOKEN` do GitHub** |
 | `E2E_CLEANUP_ALLOWED_EMAILS` / `_RATE_LIMIT_MAX` / `_RATE_LIMIT_WINDOW_SECONDS` | `e2e-cleanup` (guarda-corpo) | **preencher** |
 | `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` / `TEST_ADMIN_JWT` | testes internos | **preencher** |
 | `SICOOB_TEST_EMAIL_CENTRAL` / `_GESTOR` / `_PA` / `_SINGULAR` / `SICOOB_TEST_USER_PASSWORD` | simulação de papéis Sicoob em CI | **preencher** |
@@ -76,20 +112,17 @@ Para rotacionar, crie primeiro um segredo novo com nome versionado
 confiável. As chaves antigas não podem ser apagadas enquanto existirem
 assinaturas que as referenciem, pois são necessárias para verificar o histórico.
 
-## Lidos pelo GitHub Actions (`secrets.*`)
+## Lidos pelo GitHub Actions (`secrets`/`vars`)
 
 | Variável | Workflow | Status |
 |---|---|---|
-| `E2E_SUPABASE_PROJECT_ID` | `e2e.yml` | ❌ Nome ausente na lista de secrets do repositório consultada; o preflight do run 41099125007 confirma que pelo menos uma das três variáveis do projeto estava vazia. Secrets organizacionais não foram auditados |
-| `VITE_SUPABASE_PROJECT_ID` / `VITE_SUPABASE_URL` | `e2e.yml` | ✅ Nomes presentes na lista do repositório; valor, URL e correspondência com o projeto isolado não foram verificados |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | `e2e.yml` | ⚠️ Requerida; disponibilidade não verificada porque o preflight parou nos identificadores/URL |
-| `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` | `e2e.yml` | ⚠️ Requerida; estado não verificado no run atual |
-| `E2E_VIEWER_EMAIL` / `E2E_VIEWER_PASSWORD` | `e2e.yml` | ⚠️ Requerida; estado não verificado no run atual |
-| `E2E_MANAGER_EMAIL` / `E2E_MANAGER_PASSWORD` | `e2e.yml` | ⚠️ Requerida; estado não verificado no run atual |
-| `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` / `E2E_ADMIN_TOTP_SECRET` | `e2e.yml` | ⚠️ Requerida; estado não verificado no run atual |
-| `E2E_DEV_EMAIL` / `E2E_DEV_PASSWORD` / `E2E_DEV_TOTP_SECRET` | `e2e.yml` | ⚠️ Requerida; estado não verificado no run atual |
-| `E2E_CLEANUP_TOKEN` | `e2e.yml` | ⚠️ Requerida pelo workflow; estado não verificado no run atual |
-| `SUPABASE_SERVICE_ROLE_KEY` | `e2e.yml`, `security-compliance.yml` | ⚠️ Requerida para verificações remotas; estado atual não verificado |
+| `E2E_SUPABASE_PROJECT_ID` | `e2e.yml` / environment `e2e-staging` | ❌ Environment não existe (API 404); variável obrigatória ainda não configurada |
+| `E2E_STAGING_SUPABASE_URL` / `E2E_STAGING_SUPABASE_PUBLISHABLE_KEY` | `e2e.yml` / environment `e2e-staging` | ❌ Secrets dedicados de homologação ausentes; não reutilizar `VITE_SUPABASE_*` genéricos |
+| `E2E_STAGING_SERVICE_ROLE_KEY` / `E2E_STAGING_CLEANUP_TOKEN` | `e2e.yml` / environment `e2e-staging` | ❌ Secrets dedicados de homologação ausentes; necessários para RLS técnico e limpeza |
+| `E2E_STAGING_USER_EMAIL/PASSWORD`, `VIEWER_*`, `MANAGER_*`, `ADMIN_*`, `DEV_*` | `e2e.yml` / environment `e2e-staging` | ❌ Credenciais sintéticas dedicadas e TOTP (admin/dev) ainda não configurados |
+| `VITE_SUPABASE_PROJECT_ID` / `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` | Outros workflows | ✅ Nomes presentes em nível de repositório; não são mais consumidos pelos jobs E2E |
+| `E2E_USER_*` / `E2E_VIEWER_*` / `E2E_MANAGER_*` / `E2E_ADMIN_*` / `E2E_DEV_*` / `E2E_CLEANUP_TOKEN` | Configuração antiga de `e2e.yml` | ⚠️ Nomes genéricos existentes, não usados pelos jobs novos; alvo dos valores não foi lido e não foi comprovado |
+| `SUPABASE_SERVICE_ROLE_KEY` | `security-compliance.yml` | ⚠️ Requerida para verificações remotas; estado atual não verificado |
 | `SUPABASE_ACCESS_TOKEN` | `migration-ledger-drift.yml`, `apply-sicoob-migrations.yml` | ✅ Nome presente no environment `construction`; os workflows devem ser executados por main protegida e o projeto alvo é validado separadamente |
 | `CONSTRUCTION_SUPABASE_PROJECT_REF` | `apply-sicoob-migrations.yml` e workflows de deploy | ❌ Nome não encontrado nos secrets do repositório nem no environment `construction`; secrets organizacionais não foram auditados. Bloqueia a identificação explícita do projeto de construção |
 | `SUPABASE_DB_URL` | Não consumido pelos workflows atuais de migrations/drift | ✅ Nome presente no repositório; não confundir com as credenciais atualmente usadas, que são `SUPABASE_ACCESS_TOKEN` e `CONSTRUCTION_SUPABASE_PROJECT_REF` |

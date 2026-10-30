@@ -4,7 +4,8 @@
  * Usado pelo globalSetup (limpa ANTES da suite), globalTeardown (limpa
  * DEPOIS) e pela fixture `cleanup-on-failure` (limpa por teste falho).
  *
- * Skip silencioso quando faltam VITE_SUPABASE_URL ou E2E_CLEANUP_TOKEN.
+ * Skip local quando faltam VITE_SUPABASE_URL ou E2E_CLEANUP_TOKEN; no CI,
+ * setup/teardown falham de forma fechada se a limpeza não puder ser confirmada.
  * Em CI loga warning amarelo; localmente loga em dim para não poluir.
  *
  * Variáveis de ambiente lidas:
@@ -35,6 +36,7 @@ export interface CleanupConfig {
   baseUrl: string;
   token: string;
   userEmail?: string;
+  additionalUserEmails?: string[];
   adminEmail?: string;
   dryRun: boolean;
   /** "explicit" exige que sellerId resolvido bata com o user_id resolvido por email. */
@@ -56,6 +58,11 @@ export function loadCleanupConfig(): CleanupConfig | null {
   const token = process.env.E2E_CLEANUP_TOKEN || "";
   const userEmail = process.env.E2E_USER_EMAIL || "";
   const adminEmail = process.env.E2E_ADMIN_EMAIL || "";
+  const additionalUserEmails = [
+    process.env.E2E_VIEWER_EMAIL,
+    process.env.E2E_MANAGER_EMAIL,
+    process.env.E2E_DEV_EMAIL,
+  ].filter((email): email is string => Boolean(email));
   const dryRun = process.env.E2E_CLEANUP_DRY_RUN === "1";
   const sellerScope: "self" | "explicit" =
     process.env.E2E_CLEANUP_SELLER_SCOPE === "explicit" ? "explicit" : "self";
@@ -65,11 +72,14 @@ export function loadCleanupConfig(): CleanupConfig | null {
   // usado por `e2eName(label)` para garantir paridade.
   const noNameFilter = process.env.E2E_CLEANUP_NO_NAME_FILTER === "1";
   const explicitPrefix = process.env.E2E_TEST_PREFIX?.trim();
+  if (explicitPrefix && !/^\[E2E\](?: [A-Za-z0-9-]{1,32})?$|^\[E2E:[A-Za-z0-9-]{1,32}\]$/.test(explicitPrefix)) {
+    throw new Error("E2E_TEST_PREFIX deve ser um prefixo específico [E2E] ou [E2E:<slug>].");
+  }
   const nameFilterPrefix = noNameFilter
     ? null
     : explicitPrefix && explicitPrefix.length > 0
       ? explicitPrefix
-      : "[E2E]"; // fallback alinhado ao DEFAULT_PREFIX de test-user.ts
+      : "[E2E]"; // prefixo exato dos recursos E2E atuais
 
   if (!baseUrl || !token) return null;
   if (!userEmail && !adminEmail) return null;
@@ -79,6 +89,7 @@ export function loadCleanupConfig(): CleanupConfig | null {
     token,
     userEmail,
     adminEmail,
+    additionalUserEmails,
     dryRun,
     sellerScope,
     sellerId,
@@ -271,7 +282,7 @@ export async function purgeOne(
     console.warn(
       `${YELLOW}[e2e-cleanup] falha para ${email}: HTTP ${lastOutcome.status} ${json.error ?? ""}${RESET}`,
     );
-    return json;
+    return { ...json, ok: false };
   }
 
   // Sucesso
@@ -311,12 +322,34 @@ export async function purgeAll(
   opts: PurgeOpts = {},
 ): Promise<void> {
   const seen = new Set<string>();
-  if (cfg.userEmail) {
-    seen.add(cfg.userEmail.toLowerCase());
-    await purgeOne(cfg, cfg.userEmail, opts);
+  let failureCount = 0;
+  const configuredEmails = [cfg.userEmail, cfg.adminEmail, ...(cfg.additionalUserEmails ?? [])];
+  for (const email of configuredEmails) {
+    if (!email || seen.has(email.toLowerCase())) continue;
+    seen.add(email.toLowerCase());
+    const result = await purgeOne(cfg, email, opts);
+    if (!result || !result.ok || result.dryRun || Object.keys(result.errors ?? {}).length > 0) {
+      failureCount += 1;
+    }
   }
-  if (cfg.adminEmail && !seen.has(cfg.adminEmail.toLowerCase())) {
-    await purgeOne(cfg, cfg.adminEmail, opts);
+  if (failureCount > 0) {
+    throw new Error(`[e2e-cleanup] limpeza não confirmada para ${failureCount} persona(s); o staging não pode ser considerado limpo.`);
+  }
+}
+
+/** Limpa nomes E2E atuais, o prefixo configurado e o formato legado, sem LIKE amplo. */
+export async function purgeAllE2eTestData(
+  cfg: CleanupConfig,
+  opts: PurgeOpts = {},
+): Promise<void> {
+  const prefixes = new Set([
+    cfg.nameFilterPrefix,
+    "[E2E]",
+    "[E2E:",
+  ].filter((prefix): prefix is string => Boolean(prefix)));
+
+  for (const nameFilterPrefix of prefixes) {
+    await purgeAll(cfg, { ...opts, nameFilterPrefix });
   }
 }
 
