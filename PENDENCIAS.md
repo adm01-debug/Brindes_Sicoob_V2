@@ -265,8 +265,14 @@ e Portal Sicoob passaram; Qualidade contínua falhou porque o simulador de
 idempotência tentava criar novamente o schema `extensions` e a tabela
 `auth.users` já incluídos na fixture. A causa foi reproduzida localmente e a
 inicialização duplicada removida; o script agora passou em PostgreSQL 17
-descartável. O E2E foi bloqueado antes dos testes pela ausência da configuração
-isolada. Não aplicado nem publicado no Supabase remoto.
+descartável. No SHA `ac2baf62`, Qualidade falhou ao baixar do ECR público a
+imagem `public.ecr.aws/supabase/postgres:17.6.1.063` (`toomanyrequests: Data
+limit exceeded`). Os dois simuladores dependentes foram alinhados à imagem
+`postgres:17-alpine`, já usada com sucesso antes no mesmo job; schemas e papéis
+necessários são explicitamente provisionados nas fixtures. Os simuladores de
+auditoria e ACL passaram localmente. A nova revisão precisa confirmar no CI.
+O E2E foi bloqueado antes dos testes pela ausência da configuração isolada.
+Não aplicado nem publicado no Supabase remoto.
 
 - Migration versionada e allowlisted: `20261030120000_quote_price_attestation_gate.sql`.
 - Edge Function autenticada e registrada no manifesto, configuração e workflow
@@ -279,10 +285,9 @@ isolada. Não aplicado nem publicado no Supabase remoto.
 ### Pendências de fechamento
 
 1. Confirmar os checks remotos no SHA final após os ajustes de deduplicação de
-   variantes e da fixture do simulador. No snapshot `c9aa802d`, os gates de
-   Segurança, CodeQL, Bundle, Lighthouse e Portal Sicoob passaram; Qualidade
-   contínua falhou pela inicialização duplicada, corrigida e reproduzida em
-   PostgreSQL 17 descartável. Localmente, `npm audit` passou após atualizar
+   variantes e dependências dos simuladores. Os erros de inicialização da
+   fixture e limite de dados do ECR foram corrigidos e reproduzidos localmente
+   em PostgreSQL 17 descartável. Localmente, `npm audit` passou após atualizar
    `undici` para 8.12.3 e `zod` para 4.6.7.
 2. Não há prova de que a Edge Function foi publicada nem de que a migration foi
    aplicada ao Supabase de construção. O fluxo foi versionado; não executado.
