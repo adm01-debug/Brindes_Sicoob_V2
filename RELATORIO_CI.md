@@ -61,7 +61,24 @@ O cenário descartável não valida o estado do Supabase remoto. A migration est
 - `scripts/db/supabase-sql-client.mjs` agora usa a mesma validação alfanumérica de 20 caracteres que o executor de migrations. O cenário do cliente Management API aceita referência com dígitos e recusa referência inválida antes da rede (6/6 cenários passaram).
 - Nenhuma consulta ou mutação remota foi feita; nenhuma migration ou Edge Function foi publicada.
 
-### Último conjunto remoto da PR #176 — SHA `e540dfb`
+### Snapshot remoto recente da PR #176 — SHA `37db9f1e3f6dc8a4a7a8772145099d2a61ef46ca`
+
+O snapshot abaixo foi consultado após o commit documental `37db9f1`. Resultados `in_progress` ainda não são sucesso; a PR continua sem merge.
+
+| Workflow | Estado no snapshot | Evidência |
+|---|---|---|
+| Security Scan | success | [41105885304](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41105885304) concluiu com sucesso. |
+| Bundle Size Check | success | [41105885325](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41105885325) passou o orçamento. |
+| Lighthouse Performance Audit | success | [41105885359](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41105885359) concluiu com sucesso. |
+| E2E (Playwright) | failure | [41105885406](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41105885406) falhou no preflight porque `E2E_SUPABASE_PROJECT_ID` chegou vazio; Playwright autenticado não iniciou. |
+| Running Copilot Code Review | failure | [41105901369](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41105901369) falhou por limite adicional de uso HTTP 402 e firewall bloqueando `api.github.com`. |
+| Qualidade contínua | in_progress | [41105885328](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41105885328) ainda executava no instante da consulta. |
+| Portal Sicoob | in_progress | [41105885550](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41105885550): aprovação transacional passou; job de entrada responsiva ainda executava. |
+| CodeQL | in_progress | [41105885357](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41105885357) ainda analisava JavaScript/TypeScript. |
+
+O mesmo SHA foi validado localmente com 5.856 testes aprovados, 68 ignorados e 0 falhas; typecheck, lint, build, links locais e hooks de push passaram. Nenhuma alteração remota no Supabase foi feita.
+
+### Snapshot histórico da PR #176 — SHA `e540dfb`
 
 A PR #176 continua aberta e bloqueada, sem merge, com base `main` em `e9d59026793b84fabeaeec9da890a068f64d49c3`. No SHA `e540dfbd0e61c124dfeba314cb735a9733cdb48f`, Qualidade contínua [41096929659](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929659), Security Scan [41096929643](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929643), Bundle Size [41096929698](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929698), Portal Sicoob [41096929702](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929702), CodeQL [41096929662](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929662) e Lighthouse [41096929795](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929795) concluíram com success. O E2E [41096929852](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096929852) falhou no preflight porque `E2E_SUPABASE_PROJECT_ID` chegou vazio; os shards foram skipped e nenhum teste Playwright autenticado rodou. O resumo secundário foi skipped corretamente sem `results.json`. O Copilot [41096943447](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41096943447) falhou no processamento/limpeza do agente no ambiente gerenciado; o run anterior também registrou HTTP 402 e bloqueio de firewall a `api.github.com`. A PR não está apta para merge enquanto esses bloqueios persistirem.
 

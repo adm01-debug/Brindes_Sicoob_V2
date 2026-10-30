@@ -42,25 +42,25 @@ A PR está aberta e bloqueada (`merged=false`), com head `e540dfbd0e61c124dfeba3
 2. Ajustar a allowlist do firewall do Copilot Actions para liberar `api.github.com` (ou configurar os setup steps do agente antes da ativação do firewall, conforme a mensagem do run). O workflow Copilot é gerenciado pelo GitHub e não é um YAML versionado no repositório.
 3. Aguardar revisão obrigatória e resolver os dois bloqueios acima antes do merge da PR #176. Ela permanece aberta e sem merge.
 4. O run de deploy Sicoob na `main` permanece falho/sem alvo de homologação comprovado. Antes de qualquer execução futura, configurar `CONSTRUCTION_SUPABASE_PROJECT_REF` e credenciais somente do projeto `construction`; não aplicar migrations nem publicar funções no banco canônico.
-5. A migration candidata `20261030190000_bind_sicoob_scan_evidence_hash.sql` está versionada e autorizada somente na allowlist de construção. Foi validada em PostgreSQL descartável; não foi aplicada a Supabase remoto. Antes de qualquer aplicação, confirmar o projeto `construction`, executar o preflight de ledger e auditar os registros anteriores: a constraint `NOT VALID` protege gravações novas, mas não declara consistência histórica.
+5. As migrations candidatas `20261030174645_redact_public_quote_approval_costs.sql` e `20261030190000_bind_sicoob_scan_evidence_hash.sql` estão versionadas e autorizadas somente na allowlist de construção. Foram validadas em PostgreSQL descartável; não foram aplicadas a Supabase remoto. O executor agora confere os corpos, search paths e privilégios das três funções alteradas, além da expressão e do estado `NOT VALID` da constraint. Antes de qualquer aplicação, confirmar o projeto `construction`, executar o preflight de ledger e auditar os registros anteriores: `NOT VALID` protege gravações novas, mas não declara consistência histórica.
 6. O scanner segue sem provedor homologado. Faltam configurar URL/token no ambiente de construção, testar EICAR e timeout contra esse provedor e verificar limpeza de objetos órfãos no Storage. Não usar o mock `scanner-sintetico` como prova de integração real.
 
 **Validação local daquele snapshot:** suíte completa 5.854 passou, 68 skipped, 0 falhou; build e typecheck passaram; lint passou (0 erros, 874 avisos); `npm audit --audit-level=high` passou com 0 vulnerabilidades. A validação candidata posterior registra 5.856 aprovados em `RELATORIO_CI.md`. Os números acima refletem o snapshot antigo `e540dfb`; `main` permanece sem as alterações. Nenhuma migration, Edge Function ou dado remoto foi alterado.
 
-### PR #176 — snapshot consultado para o SHA `3096491e2c09711aee949628e39e41e98cc2c62b`
+### PR #176 — snapshot consultado para o SHA `37db9f1e3f6dc8a4a7a8772145099d2a61ef46ca`
 
-Os runs abaixo foram consultados antes do lote documental desta branch. Status `in_progress`/`queued` não é falha e ainda não é aceite de CI.
+Snapshot consultado após o lote documental. Status `in_progress`/`queued` não é falha e ainda não é aceite de CI.
 
 | Workflow | Status no último snapshot | Evidência / bloqueio | Run |
 |---|---|---|---|
-| Lighthouse Performance Audit | `success` | Auditoria concluída. | [41103728118](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41103728118) |
-| Portal Sicoob | `success` | Checks de portal passaram. | [41103726700](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41103726700) |
-| E2E (Playwright) | `failure` | Preflight falhou antes do Playwright: `E2E_SUPABASE_PROJECT_ID` vazio; jornadas autenticadas não rodaram. | [41103727637](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41103727637) |
-| Running Copilot Code Review | `failure` | Limite adicional de uso do Copilot (HTTP 402); também houve bloqueio de firewall para `api.github.com`. Depende do owner/GitHub. | [41103742008](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41103742008) |
-| Qualidade contínua | `in_progress` | Sem conclusão no momento da consulta. | [41103726857](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41103726857) |
-| Security Scan | `in_progress` | Sem conclusão no momento da consulta. | [41103726975](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41103726975) |
-| Bundle Size Check | `in_progress` | Sem conclusão no momento da consulta. | [41103727427](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41103727427) |
-| CodeQL | `queued` | Aguardando execução; sem causa de fila exposta. | [41103727897](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41103727897) |
+| Lighthouse Performance Audit | `success` | Auditoria concluída. | [41105885359](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41105885359) |
+| Bundle Size Check | `success` | Orçamento de bundle passou. | [41105885325](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41105885325) |
+| Security Scan | `success` | Verificações de segurança passaram. | [41105885304](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41105885304) |
+| E2E (Playwright) | `failure` | Preflight falhou antes do Playwright: `E2E_SUPABASE_PROJECT_ID` vazio; jornadas autenticadas não rodaram. | [41105885406](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41105885406) |
+| Running Copilot Code Review | `failure` | Limite adicional de uso do Copilot (HTTP 402); também houve bloqueio de firewall para `api.github.com`. Depende do owner/GitHub. | [41105901369](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41105901369) |
+| Qualidade contínua | `in_progress` | Ainda executando no momento da consulta. | [41105885328](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41105885328) |
+| Portal Sicoob | `in_progress` | O job de entrada responsiva ainda executava; aprovação transacional passou. | [41105885550](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41105885550) |
+| CodeQL | `in_progress` | A análise JavaScript/TypeScript ainda executava. | [41105885357](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41105885357) |
 
 A PR permanece aberta e sem merge. O E2E depende de projeto Supabase isolado e personas de teste configuradas como secrets acessíveis ao job. O canônico está bloqueado pelo workflow.
 
@@ -193,7 +193,7 @@ errorType: 'quota', statusCode: 402
 **Trigger:** `workflow_dispatch` apenas (manual) — requer input `confirmar: "APLICAR"` e branch `main`.  
 **Não há runs automáticos.** Workflow só executa quando o owner aciona manualmente via GitHub UI ou API.  
 **Último run:** não disponível (nenhum run automático indexado em `branch=main`).  
-**Ação necessária:** Nenhuma no momento — workflow é utilitário para aplicar migrations ao banco de construção sob demanda.
+**Status histórico:** Esse snapshot não certifica o estado atual do alvo. A aplicação permanece manual e bloqueada até confirmar que o environment `construction` aponta para projeto isolado, reconciliar o ledger remoto e concluir a auditoria dos dados históricos; consulte [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#migrations-sicoob).
 
 ---
 
