@@ -21,12 +21,14 @@ A contagem do teste foi reconciliada com o código atual: são **401 pedidos**, 
 
 No CI da PR #176, o run [41094675064](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41094675064) confirma que `E2E_SUPABASE_PROJECT_ID` chegou vazio e que a validação encerrou antes de executar a jornada autenticada. O resumo secundário também falhou porque o Playwright não produziu `playwright-report/results.json`; o workflow foi ajustado para só chamar o gerador quando esse arquivo existir. Isso remove a falha redundante, sem alterar o gate que continua reprovando projeto/credenciais ausentes.
 
+A revisão de segurança encontrou uma lacuna adicional entre Edge e banco: o SQL validava `clean` e `engine`, mas não exigia que o hash persistido na evidência correspondesse ao hash do registro. A migration candidata `20261030190000_bind_sicoob_scan_evidence_hash.sql` fecha a igualdade no RPC e por uma constraint `NOT VALID` que também protege gravações diretas. A simulação PostgreSQL descartável passou os casos de hash ausente, divergente e correspondente tanto no RPC quanto na constraint. A simulação continua usando `scanner-sintetico`; ela não é homologação de provedor antimalware.
+
 ## Critério de conclusão parcial
 
 | Critério de `PLA-T081` | Estado nesta revisão |
 |---|---|
 | Remessas particionadas para não exceder uma única consulta | Implementado no candidato local; teste cobre 401 pedidos em cinco lotes; falta CI remoto no SHA deste lote. |
-| Parecer antimalware correlacionado ao conteúdo | Verificação do hash implementada e testada localmente; ainda falta configurar/homologar um provedor real. |
+| Parecer antimalware correlacionado ao conteúdo | Edge, função SQL e constraint aditiva exigem SHA-256 da evidência igual ao arquivo; cenários descartáveis cobrem hash ausente, divergente e correspondente. A migration ainda não foi aplicada remotamente e falta homologar um provedor real. |
 | Erros de consulta preservados | Coberto por teste unitário existente. |
 | Alocação de quantidades por destino e expedição parcial | Não implementado por este lote. |
 | Jornada autenticada em ambiente isolado | Não validada; `E2E_SUPABASE_PROJECT_ID` permanece ausente na PR #176. |
@@ -51,5 +53,6 @@ No CI da PR #176, o run [41094675064](https://github.com/adm01-debug/Brindes_Sic
 - CI remoto precisa rodar sobre o SHA final publicado.
 - E2E autenticado exige projeto Supabase de homologação isolado, URL/chave pública e personas de teste configuradas no GitHub Actions.
 - O scanner continua bloqueando uploads quando não há URL/token do provedor ou quando o provedor não responde no novo contrato com o hash escaneado. Ainda falta testar EICAR sintético e timeout contra o provedor homologado.
+- A migration `20261030190000_bind_sicoob_scan_evidence_hash.sql` adiciona comparação fail-closed no RPC e constraint `NOT VALID` para novas gravações. Ela foi incluída na allowlist do aplicador restrito ao projeto de construção e validada em PostgreSQL descartável. Registros históricos ainda não foram varridos/validados e a migration não foi aplicada a nenhum Supabase remoto.
 - Nenhuma migration, função, dado ou configuração do Supabase remoto foi alterada.
 - O inventário de 682 lacunas de 11/10/2026 é histórico (`dc08200`) e precisa ser revalidado contra o SHA atual antes de servir como estado completo do backlog.
