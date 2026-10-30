@@ -102,4 +102,3 @@ export function ChurnRiskBanner({ clientId, clientName, clientPhone }: Props) {
     </Card>
   );
 }
-
