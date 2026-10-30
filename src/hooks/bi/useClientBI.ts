@@ -42,7 +42,7 @@ export interface ClientBI {
 const DAY_MS = 86400000;
 
 function pctDelta(current: number, previous: number): number {
-  if (!previous || previous <= 0) return current > 0 ? 100 : 0;
+  if (!previous || previous <= 0) return 0;
   return ((current - previous) / previous) * 100;
 }
 
@@ -144,7 +144,7 @@ export function useClientBI(clientId?: string): ClientBI {
         ltvDeltaPct: pctDelta(cur.ltv, prev.ltv),
         avgTicketDeltaPct: pctDelta(cur.avgTicket, prev.avgTicket),
         ordersCountDeltaPct: pctDelta(cur.ordersCount, prev.ordersCount),
-        hasPreviousData: inPrevious.length > 0,
+        hasPreviousData: inPrevious.length > 0 && sumLtv(inPrevious) > 0,
       },
       isLoading,
     };

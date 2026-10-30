@@ -60,6 +60,7 @@ jobs:
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
       VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+      E2E_SUPABASE_PROJECT_ID: ${{ secrets.E2E_SUPABASE_PROJECT_ID }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -76,6 +77,14 @@ jobs:
       - name: Verificar credenciais da jornada autenticada
         shell: bash
         run: |
+          if [[ -z "$E2E_SUPABASE_PROJECT_ID" || -z "$VITE_SUPABASE_PROJECT_ID" || -z "$VITE_SUPABASE_URL" ]]; then
+            echo "::error title=Projeto E2E não configurado::Configure E2E_SUPABASE_PROJECT_ID, VITE_SUPABASE_PROJECT_ID e VITE_SUPABASE_URL do projeto isolado de homologação."
+            exit 1
+          fi
+          if [[ "$E2E_SUPABASE_PROJECT_ID" == "cfmzkthhgliqelozlmwu" || "$VITE_SUPABASE_PROJECT_ID" != "$E2E_SUPABASE_PROJECT_ID" || "$VITE_SUPABASE_URL" != "https://${E2E_SUPABASE_PROJECT_ID}.supabase.co" ]]; then
+            echo "::error title=Projeto E2E inválido::A suíte só pode executar contra o projeto isolado identificado por E2E_SUPABASE_PROJECT_ID; o projeto canônico é bloqueado."
+            exit 1
+          fi
           if [[ -z "$E2E_USER_EMAIL" || -z "$E2E_USER_PASSWORD" || -z "$E2E_VIEWER_EMAIL" || -z "$E2E_VIEWER_PASSWORD" || -z "$E2E_MANAGER_EMAIL" || -z "$E2E_MANAGER_PASSWORD" || -z "$E2E_ADMIN_EMAIL" || -z "$E2E_ADMIN_PASSWORD" || -z "$E2E_ADMIN_TOTP_SECRET" || -z "$E2E_DEV_EMAIL" || -z "$E2E_DEV_PASSWORD" || -z "$E2E_DEV_TOTP_SECRET" ]]; then
             echo "::error title=Credenciais E2E ausentes::Configure as contas de vendedor, gestor, administrador e desenvolvedor, incluindo os segredos TOTP privilegiados. O gate autenticado não pode concluir por skip."
             exit 1
@@ -241,6 +250,7 @@ jobs:
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
       VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+      E2E_SUPABASE_PROJECT_ID: ${{ secrets.E2E_SUPABASE_PROJECT_ID }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

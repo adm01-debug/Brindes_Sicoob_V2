@@ -181,6 +181,41 @@ function growthNote(growthPct: number) {
   return ".";
 }
 
+function hasEnoughHealthData(
+  bi: ClientBiData,
+  vs: IndustryComparison,
+  seasonality: ClientSeasonality,
+  hasGrowthComparison: boolean,
+) {
+  return bi.hasData && vs.hasEnoughSample && seasonality.hasClientData && hasGrowthComparison;
+}
+
+function insufficientHealthResult(isLoading: boolean): ClientHealthScoreResult {
+  return {
+    isLoading,
+    hasEnoughData: false,
+    score: 0,
+    tier: "unknown",
+    breakdown: {
+      recency: { score: 0, weight: 30, label: "Recência" },
+      frequency: { score: 0, weight: 25, label: "Frequência" },
+      ticket: { score: 0, weight: 20, label: "Ticket vs setor" },
+      growth: { score: 0, weight: 15, label: "Crescimento" },
+      shareOfWallet: { score: 0, weight: 10, label: "Share-of-wallet" },
+    },
+    shareOfWalletPct: 0,
+    potentialUntappedBRL: 0,
+    growthPct: 0,
+    nextActionLabel: "Aguardando dados",
+    nextActionDetail: "Ainda não há amostra real suficiente para calcular o score e recomendar uma ação.",
+    scriptHint: "Consulte o cliente sobre as necessidades atuais sem pressupor preferências ou comportamento histórico.",
+    windowLabel: "Sem dados suficientes para definir uma janela",
+    crossZoneInsight: "Dados insuficientes para avaliar a saúde deste cliente.",
+    ctaLabel: "Aguardar amostra suficiente",
+    ctaUrgent: false,
+  };
+}
+
 function buildHealthResult(
   bi: ClientBiData,
   vs: IndustryComparison,
@@ -193,31 +228,7 @@ function buildHealthResult(
   const frequency = comparisonScore(frequencyMetric, bi.ordersCount, 10);
   const ticket = comparisonScore(ticketMetric, bi.avgTicket, 2500);
   const growth = growthMetrics(seasonality);
-  if (!bi.hasData || !vs.hasEnoughSample || !seasonality.hasClientData || !growth.hasComparison) {
-    return {
-      isLoading,
-      hasEnoughData: false,
-      score: 0,
-      tier: "unknown" as const,
-      breakdown: {
-        recency: { score: 0, weight: 30, label: "Recência" },
-        frequency: { score: 0, weight: 25, label: "Frequência" },
-        ticket: { score: 0, weight: 20, label: "Ticket vs setor" },
-        growth: { score: 0, weight: 15, label: "Crescimento" },
-        shareOfWallet: { score: 0, weight: 10, label: "Share-of-wallet" },
-      },
-      shareOfWalletPct: 0,
-      potentialUntappedBRL: 0,
-      growthPct: 0,
-      nextActionLabel: "Aguardando dados",
-      nextActionDetail: "Ainda não há amostra real suficiente para calcular o score e recomendar uma ação.",
-      scriptHint: "Consulte o cliente sobre as necessidades atuais sem pressupor preferências ou comportamento histórico.",
-      windowLabel: "Sem dados suficientes para definir uma janela",
-      crossZoneInsight: "Dados insuficientes para avaliar a saúde deste cliente.",
-      ctaLabel: "Aguardar amostra suficiente",
-      ctaUrgent: false,
-    };
-  }
+  if (!hasEnoughHealthData(bi, vs, seasonality, growth.hasComparison)) return insufficientHealthResult(isLoading);
   const share = shareMetrics(ticketMetric, bi);
   const score = Math.round(recency * 0.30 + frequency * 0.25 + ticket * 0.20 + growth.score * 0.15 + share.score * 0.10);
   const action = nextAction(recency, ticket, growth.growthPct, share.sharePct, share.potentialUntapped, bi, seasonality);

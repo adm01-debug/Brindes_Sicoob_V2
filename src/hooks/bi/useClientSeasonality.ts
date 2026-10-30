@@ -200,15 +200,15 @@ function readSeasonalityRows(data: {
   };
 }
 
-function combineSeasonalityInsight(
-  clientInsight: string | null,
-  clientMonths: ClientMonthCell[],
-  industryMonths: IndustryMonthCell[],
-  nextPeak: { month: number; days: number } | null,
-  hasIndustryData: boolean,
-) {
-  if (!hasIndustryData || !clientInsight) return clientInsight;
-  return buildInsight(clientMonths, pickTop(industryMonths, "avgQuotesPerCompany", 3), nextPeak);
+function combineSeasonalityInsight(input: {
+  clientInsight: string | null;
+  clientMonths: ClientMonthCell[];
+  industryMonths: IndustryMonthCell[];
+  nextPeak: { month: number; days: number } | null;
+  hasIndustryData: boolean;
+}) {
+  if (!input.hasIndustryData || !input.clientInsight) return input.clientInsight;
+  return buildInsight(input.clientMonths, pickTop(input.industryMonths, "avgQuotesPerCompany", 3), input.nextPeak);
 }
 
 function seasonalityResult(
@@ -230,13 +230,13 @@ function seasonalityResult(
   });
   const clientInsights = clientSeasonalityInsights(client, hasClientData);
   const topIndustryMonths = industryTopMonths(realIndustry, hasIndustryData);
-  const insight = combineSeasonalityInsight(
-    clientInsights.insight,
-    clientInsights.topMonths,
-    realIndustry,
-    clientInsights.nextPeak,
+  const insight = combineSeasonalityInsight({
+    clientInsight: clientInsights.insight,
+    clientMonths: clientInsights.topMonths,
+    industryMonths: realIndustry,
+    nextPeak: clientInsights.nextPeak,
     hasIndustryData,
-  );
+  });
   const base = {
     isLoading,
     dataStatus,
