@@ -159,6 +159,18 @@ docker: Error response from daemon: toomanyrequests: Data limit exceeded
 
 **Estado daquele incidente:** a falha deixou de ocorrer em execuções posteriores na época. A recorrência em 30/10/2026 está registrada na atualização mais recente ao final deste arquivo; o lote atual troca os dois pulls para GHCR com digest verificado e ainda aguarda confirmação remota.
 
+## Atualização supersedente — PR #178, SHA `145773579` (30/10/2026)
+
+Esta seção substitui a pendência de confirmação do GHCR e atualiza o diagnóstico E2E registrado acima.
+
+- **Qualidade contínua:** ✅ success no run [41139832598](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41139832598). O pull da imagem PostgreSQL GHCR fixada por digest e os dois simuladores passaram no runner do GitHub; a recorrência do ECR está corrigida para este SHA.
+- **E2E Playwright:** ❌ run [41139832427](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41139832427), tentativa 2. Setup autenticado e smoke (39/39) passaram; o job falhou no gate `header-sticky` antes de executar a medição de sticky em todas as rotas afetadas. O teste expirou em `e2e/helpers/nav.ts:171` aguardando `[data-route-pending]` desprender (`permissions`), inclusive em rotas que depois exibiram catálogo ou página de acesso negado. As chamadas observadas de sessão, `user_roles` e `profiles` responderam em aproximadamente 100–233 ms; não há evidência de quota ou secret ausente.
+- **Causa/limite:** o run não comprova regressão CSS do header. O helper esperava a conclusão do guard antes da spec poder observar `/login` ou `/403`; o snapshot final do caso de telemetria mostra acesso negado corretamente. A causa subjacente da transição lenta/inconsistente ainda precisa de confirmação no novo run.
+- **Correção candidata local, ainda sem validação remota:** a spec `22-header-sticky` agora não aguarda o gate de permissões internas e continua exigindo header visível antes das asserções de posição/CSS. A mensagem fail-fast distingue falha de prontidão (`nav.ts`) de falha visual. O patch será considerado resolvido somente após as verificações locais e o CI no novo SHA.
+- **Outros checks do SHA `145773579`:** Security Scan [41139832390](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41139832390), CodeQL [41139832435](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41139832435), Lighthouse [41139832355](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41139832355), Bundle Size [41139832444](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41139832444) e Portal Sicoob [41139832356](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41139832356) concluíram com sucesso.
+
+Nenhuma alteração foi feita no Supabase ou em produção.
+
 ---
 
 ## Gaps de banco de dados identificados em auditoria (2026-10-22)

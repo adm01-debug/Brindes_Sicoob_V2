@@ -55,20 +55,24 @@ function staticRoutes(routes: readonly RouteEntry[]): RouteEntry[] {
 
 /**
  * Núcleo da asserção: navega, valida sticky, rola, revalida.
- * Retorna `"ok"` se passou, `"redirected-to-login"` se a rota redirecionou.
+ * Retorna `"ok"` se passou ou `"redirected"` se o guard redirecionou.
  */
 async function assertHeaderSticky(
   page: import('@playwright/test').Page,
   routePath: string,
   viewportLabel: string,
-): Promise<'ok' | 'redirected-to-login'> {
-  await gotoAndSettle(page, routePath);
+): Promise<'ok' | 'redirected'> {
+  // O gate valida o shell global, não a autorização do conteúdo de cada rota.
+  // Em rotas bloqueadas, aguardar o guard de permissões antes de observar o
+  // redirect pode expirar enquanto o React conclui a transição. O header só é
+  // medido depois de estar visível; uma rota ainda sem shell continua falhando.
+  await gotoAndSettle(page, routePath, { waitForPermissions: false });
 
   // Aguarda redirect client-side pós-hydration (AdminRoute → /403, ProtectedRoute → /login)
   await page.waitForURL(/\/(login|403)(\?|$)/, { timeout: 3000 }).catch(() => {});
 
   if (/\/(login|403)(\?|$)/.test(page.url())) {
-    return 'redirected-to-login';
+    return 'redirected';
   }
 
   await waitForTestIdVisible(page, 'app-header');
@@ -122,8 +126,8 @@ for (const vp of VIEWPORTS) {
       test(`header permanece fixo ao rolar em ${route.path}`, async ({ page }) => {
         const result = await assertHeaderSticky(page, route.path, vp.name);
         test.skip(
-          result === 'redirected-to-login',
-          `Rota ${route.path} redirecionou para /login (role insuficiente para o usuário E2E)`,
+          result === 'redirected',
+          `Rota ${route.path} redirecionou para /login ou /403 (role insuficiente para o usuário E2E)`,
         );
       });
     }
@@ -138,8 +142,8 @@ for (const vp of VIEWPORTS) {
       test(`header permanece fixo ao rolar em ${route.path}`, async ({ page }) => {
         const result = await assertHeaderSticky(page, route.path, vp.name);
         test.skip(
-          result === 'redirected-to-login',
-          `Rota ${route.path} redirecionou para /login (admin sem role dev?)`,
+          result === 'redirected',
+          `Rota ${route.path} redirecionou para /login ou /403 (role insuficiente para o usuário admin E2E)`,
         );
       });
     }

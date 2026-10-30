@@ -171,7 +171,7 @@ jobs:
       - name: 🛑 Fail-fast se header sticky falhou
         if: env.SKIP_E2E != 'true' && steps.e2e_header_sticky.outcome == 'failure'
         run: |
-          echo "::error title=Header sticky regression::O Header global deixou de ser sticky em alguma rota/viewport. Spec: e2e/flows/22-header-sticky.spec.ts. Causa raiz típica: 'overflow' / 'transform' / 'filter' em ancestral do <header> em src/components/layout/MainLayout.tsx criando scroll container ou stacking context indevido. Veja o artifact 'playwright-report' (screenshot + vídeo + trace) para a rota específica."
+          echo "::error title=Gate de header sticky ou prontidão da rota::O gate falhou em e2e/flows/22-header-sticky.spec.ts. Confira error-context, screenshot e trace no artifact 'playwright-report': falhas em e2e/helpers/nav.ts indicam que a rota/shell não atingiu prontidão; falhas em boundingBox ou em getComputedStyle(position) indicam regressão visual do header. Investigue overflow, transform ou filter em ancestrais somente quando a evidência apontar para a medição sticky."
           exit 1
 
       - name: Upload Playwright report do gate

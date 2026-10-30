@@ -243,3 +243,36 @@ Sem regressão local observada; a suíte aumentou em 11 testes aprovados. Nenhum
 ### Próxima validação local
 
 O lote seguinte altera apenas os scripts Python dos simuladores e esta documentação. Os cenários `simular-controles-auditoria.py` e `simular-acl-efetiva.py` já passaram com a referência GHCR. Após registrar o lote em commit, repetirei typecheck, lint, build, auditoria npm e a suíte completa conforme a regra anti-regressão; a publicação acionará checks remotos no SHA novo.
+
+## Estado remoto e baseline da PR #178 — SHA `145773579` (30/10/2026)
+
+O SHA `145773579dc978606d671750e3797ab1f1c0581b` corrigiu a recorrência de pull do PostgreSQL pelos simuladores. **Qualidade contínua passou**, confirmando o GHCR no runner. Seis workflows passaram; o único gate com falha nesta amostra foi E2E.
+
+| Workflow | Run | Resultado |
+|---|---:|---|
+| Security Scan | [41139832390](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41139832390) | ✅ success |
+| CodeQL | [41139832435](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41139832435) | ✅ success |
+| Lighthouse Performance Audit | [41139832355](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41139832355) | ✅ success |
+| Bundle Size Check | [41139832444](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41139832444) | ✅ success |
+| Portal Sicoob | [41139832356](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41139832356) | ✅ success |
+| Qualidade contínua | [41139832598](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41139832598) | ✅ success; simuladores puxaram imagem GHCR e executaram |
+| E2E (Playwright) | [41139832427](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41139832427), tentativa 2 | ❌ falha no gate de prontidão/`header-sticky` |
+
+### Diagnóstico do E2E
+
+O setup autenticado e o smoke passaram (39/39). No gate `header-sticky`, 53 passaram, 1 falhou, 3 ficaram flaky, 14 foram ignorados e 127 não chegaram a executar. Os casos reportados falharam em `gotoAndSettle()` aguardando `[data-route-pending="permissions"]` desprender por 15 s, antes das asserções de bounding box ou `getComputedStyle(position)`. Os error-context posteriores mostram o catálogo ou o conteúdo 403 esperado; no trace de telemetria as chamadas `get_sicoob_access_state`, `user_roles`, `profiles` e `/auth/v1/user` concluíram com HTTP 200/204 em cerca de 100–233 ms. A evidência, portanto, **não demonstra regressão de CSS sticky nem indisponibilidade de quota/secret**; identifica um contrato frágil entre espera do guard e observação do shell/redirect.
+
+Na alteração candidata seguinte, `22-header-sticky.spec.ts` deixa de aguardar permissões do conteúdo e continua exigindo o header visível antes de medir `y`, scroll e `position: sticky`. A mensagem fail-fast de `.github/workflows/e2e.yml` passa a distinguir erros de prontidão do helper de falhas nas asserções visuais. O resultado só será aprovado se os checks locais e a nova execução remota passarem; até então, E2E permanece pendente, sem classificação como bloqueio externo.
+
+### Comparação baseline local → commit `145773579`
+
+| Gate | Baseline registrado | Após `145773579` | Avaliação |
+|---|---|---|---|
+| `npm run check:npm-audit` | 0 vulnerabilidades após Zod v4 | ✅ 0 vulnerabilidades | sem regressão |
+| TypeScript | exit 0 | ✅ exit 0 | sem regressão |
+| ESLint | 0 erros; 874 avisos existentes | ✅ 0 erros; 874 avisos existentes | sem regressão |
+| Build | exit 0 | ✅ exit 0 | sem regressão; avisos ambientais conhecidos |
+| Suíte Vitest | 5.850 passaram; 68 ignorados; 0 falhas | ✅ 5.850 passaram; 68 ignorados; 0 falhas | sem regressão |
+| Simuladores PostgreSQL | ECR intermitente antes do patch | ✅ ambos executaram local e no CI com GHCR | corrigido |
+
+Nenhuma migration, escrita no banco remoto ou deploy foi executada. A mudança de helper/mensagem agora em revisão não faz parte do SHA `145773579` e ainda precisa de validação.
