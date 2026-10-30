@@ -109,10 +109,11 @@ serve(withStructuredLogging("quote-approval", async (req) => {
       if (error) return json({ error: "Consulta indisponível." }, 503);
       if (!data) return json({ quote: null });
       const quote = publicQuoteProjection(data);
-      if (!quote) return json({ quote: null });
+      const approval = record(data);
+      if (!quote || !approval) return json({ quote: null });
       return json({
         quote,
-        approval: { status: quote.status, response: quote.response, responded_at: quote.responded_at },
+        approval: pick(approval, ["status", "response", "responded_at"]),
         seller: null,
       });
     }

@@ -179,6 +179,23 @@ try:
       actor("SELECT public.get_public_quote_approval('valido');",role='anon',check=False).returncode != 0
       and actor("SELECT public.submit_signed_quote_response('valido','approved','Pessoa','12345678901','"+SIGNATURE+"','127.0.0.1','teste');",role='anon',check=False).returncode != 0
     )
+    checks['getter_e_helper_negados_a_papeis_cliente'] = all(
+      actor(statement, role=role, check=False).returncode != 0
+      for role in ('anon', 'authenticated')
+      for statement in (
+        "SELECT public.get_public_quote_approval('valido');",
+        "SELECT public.quote_approval_public_items('00000000-0000-4000-8000-000000000001');",
+      )
+    )
+    for token, adjustment in [
+      ('redacao-expirado', "expires_at=now()-interval '1 second'"),
+      ('redacao-revogado', "status='revoked'"),
+    ]:
+      quote = new_quote(); issue(quote, token)
+      sql(f"UPDATE public.quote_approval_tokens SET {adjustment} WHERE token='{token}';")
+      checks[token+'_indisponivel'] = actor(
+        f"SELECT public.get_public_quote_approval('{token}') IS NULL;", role='service_role'
+      ).stdout.strip() == 't'
     viewed_quote = new_quote(); issue(viewed_quote, 'visualizado')
     sql(f"""
       INSERT INTO public.quote_item_personalizations
@@ -216,6 +233,14 @@ try:
       f"SELECT viewed_at::text='{first_viewed_at}' FROM public.quote_approval_tokens WHERE token='visualizado';"
     ).stdout.strip()=='t'
     actor("SELECT public.submit_signed_quote_response('visualizado','approved','Pessoa Teste','12345678901','"+SIGNATURE+"','203.0.113.20','teste-projecao');",role='service_role')
+    post_signature_payload = json.loads(actor(
+      "SELECT public.get_public_quote_approval('visualizado');", role='service_role'
+    ).stdout)
+    checks['projecao_publica_preserva_estado_respondido'] = (
+      post_signature_payload['status'] == 'responded'
+      and post_signature_payload['response'] == 'approved'
+      and not ({'unit_cost', 'setup_cost', 'total_cost'} & set(json_keys(post_signature_payload)))
+    )
     checks['snapshot_hmac_preserva_custos_privados'] = sql("""
       SELECT signature_evidence->'quote_snapshot'->'items'->0->'personalizations'->0->>'unit_cost'='31.17'
         AND signature_evidence->'quote_snapshot'->'items'->0->'personalizations'->0->>'setup_cost'='42.28'
