@@ -400,8 +400,9 @@ export function ProductFormFullscreen({
     register, handleSubmit, setValue, watch, trigger, getValues,
     formState: { errors },
   } = useForm<ProductFormData>({
-    // O RHF mantém o formato preenchido pelo formulário; o resolver aceita a
-    // entrada mais ampla (defaults opcionais e coercões) e entrega o output validado.
+    // A tela inicializa todas as chaves e registra campos numéricos com valueAsNumber.
+    // z.input inclui entradas mais amplas (por exemplo, unknown em z.coerce.number),
+    // mas não representa o estado concreto mantido pelos controles deste formulário.
     resolver: zodResolver(productFormSchema) as unknown as Resolver<ProductFormData>,
     defaultValues: { ...defaultFormValues, ...initialData },
   });
