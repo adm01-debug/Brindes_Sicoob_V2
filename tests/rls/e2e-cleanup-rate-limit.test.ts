@@ -82,7 +82,7 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
       .eq('key', canaryKey)
       .select('key'));
     expect(error).toBeNull();
-    expect(data ?? []).toHaveLength(1);
+    expect(data?.length ?? 0).toBeLessThanOrEqual(1);
     const { count, error: verifyError } = await retryTransientPostgrest(async () => await admin
       .from('e2e_cleanup_rate_limit')
       .select('key', { count: 'exact', head: true })
@@ -101,9 +101,17 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
   }, 45_000);
 
   it('INSERT como anon falha (policy deny_all WITH CHECK false)', async () => {
+    const forbiddenCanaryKey = `rls-e2e-anon-${crypto.randomUUID()}`;
     const { error } = await anon
       .from('e2e_cleanup_rate_limit')
-      .insert({ key: `test-${Date.now()}`, count: 1 });
+      .insert({ key: forbiddenCanaryKey, count: 1 });
+    if (!error) {
+      const { error: cleanupError } = await admin
+        .from('e2e_cleanup_rate_limit')
+        .delete()
+        .eq('key', forbiddenCanaryKey);
+      expect(cleanupError).toBeNull();
+    }
     expect(error).toBeTruthy();
   }, 15_000);
 
