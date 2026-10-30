@@ -83,6 +83,11 @@ fornecedor, preservando identidade legada persistida; RPCs de personalização e
 GET pelo transporte somente leitura; preço zero de variante; metadados/imagem
 de catálogo; leitura limitada do corpo; e retry após perda de resposta.
 
+Uma revisão independente posterior encontrou risco de consolidar no editor duas
+variantes com mesmo produto/cor/tamanho, mas identidade ou preço de catálogo
+diferentes. A deduplicação agora exige mesma variante, SKU, preço e custo; o
+caso de variante distinta e a mudança de snapshot têm testes unitários próprios.
+
 ## Validação local
 
 - `npm run typecheck`: sucesso.
@@ -105,8 +110,10 @@ de catálogo; leitura limitada do corpo; e retry após perda de resposta.
 
 ## O que falta para encerrar P045
 
-1. Push e execução da CI na PR; confirmar no runner remoto a correção do audit
-   e a ausência de regressões.
+1. Confirmar todos os checks remotos no SHA final da PR. No snapshot anterior
+   `c9aa802d`, Segurança, CodeQL, Bundle, Lighthouse e Portal Sicoob passaram;
+   Qualidade contínua ainda executava e o E2E foi bloqueado antes dos testes
+   pela ausência de um Supabase isolado.
 2. Publicar `quote-price-attestation` e aplicar a migration somente no projeto
    de construção autorizado. Ainda não foram executados.
 3. Configurar `E2E_SUPABASE_PROJECT_ID` para o projeto de homologação e executar
