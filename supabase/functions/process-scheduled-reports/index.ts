@@ -48,12 +48,15 @@ Deno.serve(async (req) => {
         const filters = report.filters || {};
 
         if (report.report_type === "sales" || report.report_type === "quotes") {
-          const { data: quotes } = await supabase
+          const { data: quotes, error: quotesError } = await supabase
             .from("quotes")
             .select("id, quote_number, status, total, created_at, client_name, client_company")
+            .eq("seller_id", report.user_id)
             .gte("created_at", getStartDate(report.frequency))
             .order("created_at", { ascending: false })
             .limit(100);
+
+          if (quotesError) throw quotesError;
 
           const total = (quotes || []).reduce((sum, q) => sum + (q.total || 0), 0);
           const approved = (quotes || []).filter(q => q.status === "approved").length;
@@ -75,12 +78,15 @@ Deno.serve(async (req) => {
             })),
           };
         } else if (report.report_type === "orders") {
-          const { data: orders } = await supabase
+          const { data: orders, error: ordersError } = await supabase
             .from("orders")
             .select("id, order_number, status, total, created_at, client_name")
+            .eq("seller_id", report.user_id)
             .gte("created_at", getStartDate(report.frequency))
             .order("created_at", { ascending: false })
             .limit(100);
+
+          if (ordersError) throw ordersError;
 
           const total = (orders || []).reduce((sum, o) => sum + (o.total || 0), 0);
 
