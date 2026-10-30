@@ -126,7 +126,6 @@ export const productFormSchema = z.object({
 });
 
 export type ProductFormData = z.infer<typeof productFormSchema>;
-export type ProductFormInput = z.input<typeof productFormSchema>;
 
 export const defaultFormValues: ProductFormData = {
   sku: '',
