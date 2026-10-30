@@ -1,7 +1,45 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
-**Gerado em:** 2026-10-22  
-**Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
+**Gerado em:** 2026-10-30  
+**Sessão:** Codex · auditoria da CI e dos dados BI
+
+## Estado atual — auditoria de 30/10/2026
+
+### Inventário da `main`
+
+Considerada apenas a execução mais recente na branch `main` para cada workflow, sem PRs.
+
+| Workflow | Estado mais recente | Evidência / causa |
+|---|---|---|
+| Publicar funções Sicoob | Falha | Run [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102): `No change found` e a confirmação exigiu versão maior que a anterior. A branch aceita versão igual (deploy idempotente), sem aceitar ausência/regressão de versão. |
+| Security Scan | Falha | Run [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158): `undici@8.10.2` e `zod@3.25.76` altos. Override `undici@8.12.2` corrige o pacote transitivo; Zod permanece pendente de migração major. |
+| Qualidade contínua | Falha | Run [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964): o passo de segurança falha pelo mesmo resultado de audit. |
+| CodeQL | Falha | Run [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073): init v4.39.1 misturado com autobuild/analyze v4.38.2; falha impede geração de SARIF. Pins estão alinhados na branch. |
+| Running Copilot Code Review | Falha | Run [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125): quota do plano Copilot, HTTP 402. |
+
+Verdes confirmados: Migration ledger drift `41013281253` (30/10), Branch Protection Sentinel `40602983038`, Enterprise Compliance `40602982958` e Portal Sicoob `39868499315`.
+
+### Baseline e resultado local nesta branch
+
+| Verificação | Resultado | Observação |
+|---|---|---|
+| `npm ci --ignore-scripts --no-audit --no-fund` | ✅ exit 0 | 980 pacotes; lockfile reproduzível. |
+| `npm run build` | ✅ exit 0 | Vite concluiu; permanecem avisos existentes de chunks grandes. |
+| `npm run typecheck` | ✅ exit 0 | TS app e node. |
+| `npm run typecheck:baseline` | ✅ exit 0 | 0 erros atuais e 0 no baseline. |
+| `npm run lint` | ✅ exit 0 | 0 erros, 874 avisos de estilo/complexidade. |
+| `npm run lint:baseline` | ✅ exit 0 | Nenhuma regressão nos 19 arquivos de aplicação alterados. |
+| `npm test` | ✅ exit 0 | 5.850 passaram, 68 skipped, 0 falhas (460 arquivos: 456 passaram, 4 skipped). |
+| `npm audit --audit-level=high` | ❌ exit 1 | Um alerta alto restante: Zod 3; undici foi corrigido na branch. |
+| `actionlint` + `git diff --check` | ✅ exit 0 | YAML alterado validado localmente. |
+
+O baseline anterior a esta rodada na branch tinha 5.844 testes aprovados e 68 skipped. O resultado final adiciona seis testes BI e mantém o número de skipped e nenhuma falha. O CI remoto da branch ainda não foi executado; a prova de sucesso depende de PR e dos checks do GitHub.
+
+### Segurança de Supabase
+
+Nenhuma consulta ou mutação remota foi feita. A branch exige `CONSTRUCTION_SUPABASE_PROJECT_REF`, valida o host do banco e bloqueia o project ref canônico para migrations, deploy de funções e E2E. Não há evidência acessível de configuração dos secrets do environment `construction`; por isso, deploy, migrations e E2E remoto continuam bloqueados e documentados em `PENDENCIAS.md`.
+
+---
 
 ---
 
