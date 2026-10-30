@@ -32,11 +32,18 @@ Verdes confirmados: Migration ledger drift `41013281253` (30/10), Branch Protect
 | `npm run typecheck:baseline` | ✅ exit 0 | 0 erros atuais e 0 no baseline. |
 | `npm run lint` | ✅ exit 0 | 0 erros, 874 avisos de estilo/complexidade. |
 | `npm run lint:baseline` | ✅ exit 0 | Nenhuma regressão nos arquivos alterados (gate comparou 22 arquivos de aplicação no push). |
-| `npm test` | ✅ exit 0 | 5.852 passaram, 68 skipped, 0 falhas (460 arquivos: 456 passaram, 4 skipped). |
+| `npm test` | ✅ exit 0 | 5.854 passaram, 68 skipped, 0 falhas (461 arquivos: 457 passaram, 4 skipped). |
 | `npm audit --audit-level=high` | ✅ exit 0 | Branch: Zod `4.6.7` e `undici@8.12.2`; 0 vulnerabilidades. `main` ainda não recebeu a correção. |
 | `actionlint .github/workflows/*.yml` + `git diff --check` | ✅ exit 0 | Todos os workflows YAML validam localmente; nenhuma ocorrência de `continue-on-error` ou `|| true`. |
 
-O baseline anterior a esta rodada na branch tinha 5.844 testes aprovados e 68 skipped. A validação final registra 5.852 aprovados, 68 skipped e 0 falhas. Typecheck, build, lint e audit locais passaram; também passaram os hooks pós-commit e as verificações de baseline.
+O baseline anterior a esta rodada na branch tinha 5.844 testes aprovados e 68 skipped. A validação final registra 5.854 aprovados, 68 skipped e 0 falhas. Typecheck, build, lint e audit locais passaram; também passaram os hooks pós-commit e as verificações de baseline.
+
+### Revisão complementar pós-CI
+
+- O schema Zod agora mantém mensagens próprias apenas quando `goal_type` e `period` estão ausentes; valores enum inválidos continuam com a mensagem padrão. Dois testes cobrem os casos.
+- O formulário de produto mantém um adaptador tipado entre o resolver Zod e o estado RHF. A tipagem ampla de entrada de `z.coerce.number` torna `z.input` incompatível com o estado concreto da tela; o teste existente cobre defaults e coerção, e `typecheck` integral passou sem mudanças espalhadas pelos componentes consumidores.
+- `scripts/db/supabase-sql-client.mjs` agora usa a mesma validação alfanumérica de 20 caracteres que o executor de migrations. O cenário do cliente Management API aceita referência com dígitos e recusa referência inválida antes da rede (6/6 cenários passaram).
+- Nenhuma consulta ou mutação remota foi feita; nenhuma migration ou Edge Function foi publicada.
 
 ### Estado remoto final da PR #176 — SHA `729c3e2`
 
