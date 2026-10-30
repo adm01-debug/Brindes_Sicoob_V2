@@ -320,6 +320,7 @@ try:
         "retry grava claim antes do enqueue, preserva o contador, respeita lease e max_attempts",
         "retry identifica apenas o hook falho e um erro de enqueue não perde a tentativa reservada",
         "resultado de sucesso mais recente encerra novos retries",
+        "delivery de replay limpa claims antigos e inicia nova geração",
         "limpeza diária retém claims por 90 dias",
         "nenhum chamador envia Authorization/service_role",
         "ACL permite retry só a postgres/service_role e nega anon/authenticated",
