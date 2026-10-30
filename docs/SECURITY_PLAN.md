@@ -1,25 +1,25 @@
-# 🛡️ Cronograma de Segurança e Monitoramento
+# Plano de Segurança e Monitoramento
 
-Este documento define o plano de manutenção preventiva de longo prazo.
+Revisado em 30/10/2026. As metas abaixo são planejamento; o repositório não contém evidência de contratação, agendamento ou conclusão dos testes externos.
 
-## 1. Monitoramento de Uptime (Externo)
-Recomendamos a configuração de um serviço externo (Better Stack, Checkly ou UptimeRobot) para monitorar os seguintes endpoints:
+## 1. Monitoramento de uptime (proposta)
+Avaliar serviço externo para monitorar endpoints de cada ambiente. Os endereços de produção e a configuração de monitoramento precisam ser confirmados antes de habilitar sondas:
 1. **Frontend**: `https://promogifts.com.br` (Status 200)
 2. **Bridge Catalog**: `https://<ref>.supabase.co/functions/v1/external-db-bridge` (POST /ping)
 3. **CRM Bridge**: `https://<ref>.supabase.co/functions/v1/crm-db-bridge` (POST /ping)
 
-### Meta (SLA)
+### Meta proposta (não é SLA vigente)
 - **Uptime**: 99.9%
 - **Tempo de Resposta**: < 500ms (P90)
 
 ## 2. Pen Tests (Testes de Intrusão)
 Meta: Realizar teste de intrusão externo trimestralmente.
 
-| Período | Foco | Status |
+| Período planejado | Foco | Situação em 30/10/2026 |
 |---|---|---|
-| Q2 2026 | Bypass de RLS e Escalação de Privilégios | Agendado |
-| Q3 2026 | Sanitização de Entradas (XSS/SQLi) | Pendente |
-| Q4 2026 | Vulnerabilidades em Dependências (Supply Chain) | Pendente |
+| Q2 2026 | Bypass de RLS e Escalação de Privilégios | Sem evidência de execução; período encerrado |
+| Q3 2026 | Sanitização de Entradas (XSS/SQLi) | Sem evidência de execução; período encerrado |
+| Q4 2026 | Vulnerabilidades em Dependências (Supply Chain) | Planejado; evidência de execução ainda não registrada |
 
 ## 3. Rotação de Credenciais
-Seguir o [Runbook de Rotação de Credenciais](docs/RUNBOOKS/CREDENTIAL_ROTATION.md) a cada 6 meses ou em caso de turnover na equipe de engenharia.
+Seguir o [Runbook de Rotação de Credenciais](RUNBOOKS/CREDENTIAL_ROTATION.md) conforme política aprovada. A cadência semestral é uma recomendação e não comprova que houve rotação.

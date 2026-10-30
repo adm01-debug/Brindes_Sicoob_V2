@@ -1,7 +1,7 @@
 # Observabilidade — Promo Gifts
 
-> **SSOT** para logs estruturados, correlação por `request_id` e dashboards/alertas.
-> Última atualização: 2026-04-27 (Onda Observability).
+> Referência de implementação e proposta operacional para logs estruturados e correlação por `request_id`.
+> Atualizado em 30/10/2026. A existência do código de instrumentação não confirma configuração ativa de Sentry, dashboards ou canais externos.
 
 ## 1. Correlação ponta-a-ponta (`request_id`)
 
@@ -49,7 +49,9 @@ SELECT * FROM public.get_webhook_delivery_summary(60);  -- últimos 60 min
 Retorna por `source` × `direction` × `status_class` (2xx/3xx/4xx/5xx):
 - `total`, `failures`, `p95_ms`, `last_failure_at`.
 
-## 4. Alertas Sentry
+## 4. Alertas sugeridos (configuração externa não verificada)
+
+As regras abaixo são sugestões de operação, não evidência de alertas já cadastrados. Confirme o projeto, os filtros e os destinos no provedor antes de tratar qualquer regra como ativa.
 
 | Alerta                       | Condição                                                | Severidade | Canal       |
 |------------------------------|---------------------------------------------------------|------------|-------------|
@@ -60,12 +62,12 @@ Retorna por `source` × `direction` × `status_class` (2xx/3xx/4xx/5xx):
 | Step-up MFA bypass attempt   | `scope:auth.stepUp event:bypass_attempt`                | P0         | PagerDuty   |
 | AI gateway saturation        | `scope:ai.gateway event:rate_limited` ≥ 50 em 5 min     | P2         | Slack #ai   |
 
-Configurar via Sentry → Alerts → Create Alert Rule, filtrando pelas tags
+Se Sentry estiver habilitado no ambiente, configurar via Sentry → Alerts → Create Alert Rule, filtrando pelas tags
 `scope`, `event` e `request_id` emitidas pelos loggers.
 
 ### Métrica complementar: webhook 5xx via DB
 
-Cron Sentry/cronjob externo pode rodar:
+Um cronjob externo autorizado pode consultar:
 ```sql
 SELECT source, failures, p95_ms, last_failure_at
 FROM public.get_webhook_delivery_summary(15)
@@ -99,16 +101,16 @@ try {
 }
 ```
 
-## 6. Como debugar uma falha
+## 6. Como investigar uma falha
 
 1. Pegue o `request_id` exibido ao usuário ou no erro do Sentry (tag `request_id`).
-2. **Edge logs** (Lovable Cloud → Edge Function logs): grep pelo id.
-3. **Auth logs** / **DB logs**: idem.
+2. Consulte os logs de Edge Functions, Auth e banco no provedor configurado para o ambiente; o provedor e a retenção devem ser confirmados antes da investigação.
+3. Procure o mesmo identificador nos logs disponíveis.
 4. **Webhook metrics**: `SELECT * FROM webhook_delivery_metrics WHERE request_id = '…'`.
 
 ## 7. App Health Dashboard (`/admin/telemetria`)
 
-O dashboard administrativo centraliza a visão de saúde da aplicação:
+Quando disponível e habilitado no ambiente, o dashboard administrativo pode centralizar:
 - **Saúde Global:** Latência média, taxa de erro (%), disponibilidade de serviços (External DB, CRM, Cloudflare).
 - **Consumo de IA:** Quotas por usuário/singular e latência de inferência.
 - **Auditoria de Chaves:** Eventos de emissão/rotação de chaves MCP.
@@ -116,16 +118,16 @@ O dashboard administrativo centraliza a visão de saúde da aplicação:
 
 ## 8. Gates de CI (Prevenção de Regressão)
 
-A plataforma utiliza gates rigorosos para manter a qualidade da observabilidade:
+A lista de gates precisa ser conferida nos workflows e scripts da branch antes de ser considerada vigente. A instrumentação não substitui confirmação dos sistemas externos:
 - **Edge Structured-Logging Gate:** `scripts/check-edge-structured-logging.mjs` bloqueia PRs se novas Edge Functions não usarem o logger estruturado.
 - **Edge Request-Id Propagation Gate:** Garante que o `X-Request-Id` seja propagado para serviços externos.
 - **Client Logging Gate:** Força o uso de `createClientLogger` em rotas críticas (Checkout, Auth, Admin).
 - **ESLint Baseline Gate:** `.eslint-baseline.json` bloqueia a introdução de novos warnings de lint que prejudiquem a observabilidade (ex: console.logs puros).
-- **Webhook Alerts → Sentry:** Monitoramento contínuo de webhooks inbound/outbound via cron job.
+- **Webhook Alerts → Sentry:** integração externa proposta; cron e destino ainda precisam de evidência de configuração.
 
-## 9. Onboarding Prático: Do Frontend ao Sentry
+## 9. Exemplo de correlação no frontend
 
-Para capturar e rastrear uma falha em tempo real, siga este fluxo:
+O exemplo mostra o uso do logger no código. A entrega ao Sentry depende da configuração do ambiente e não deve incluir dados pessoais ou credenciais no payload:
 
 1. **No Frontend (Captura):**
    Ao implementar uma nova ação, use o logger para gerar o `request_id`.
@@ -134,37 +136,20 @@ Para capturar e rastrear uma falha em tempo real, siga este fluxo:
    const log = createClientLogger('my-feature.action');
    
    const handleAction = async () => {
-     log.info('iniciando_acao', { userId: user.id });
+     log.info('iniciando_acao');
      try {
        const { data, error } = await supabase.functions.invoke('my-function', {
          headers: log.headers() // ESSENCIAL: Propaga o X-Request-Id
        });
        if (error) throw error;
      } catch (err) {
-       // O log.error automaticamente envia para o Sentry com a tag request_id
+       // O logger pode encaminhar o erro ao Sentry quando configurado.
        log.error('falha_na_acao', { error: err });
      }
    };
    ```
 
-2. **No Browser (Inspecionar):**
-   - Abra o Console do DevTools.
-   - Procure pelo log estruturado: `{"event": "falha_na_acao", "request_id": "550e8400-e29b-..."}`.
-   - Copie o `request_id`.
-
-3. **No Sentry (Localizar):**
-   - Vá para **Issues** ou **Discover**.
-   - Filtre por `request_id:550e8400-e29b-...`.
-   - Você verá o erro exato, o rastro do usuário e os logs de backend correlacionados.
-
-4. **Nas Edge Functions (Confirmar):**
-   - No painel da Lovable Cloud → **Edge Function Logs**, cole o `request_id` na busca.
-   - Você verá o ciclo de vida completo da requisição, desde o `request_start` até o `request_end` (ou erro).
-
----
-
-## 10. Gates de CI (Prevenção de Regressão)
-... keep existing code
+2. Copie o `request_id` do log estruturado e procure o identificador nos sistemas de observabilidade efetivamente habilitados no ambiente.
 
 
 
