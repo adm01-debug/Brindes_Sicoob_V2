@@ -1,0 +1,10 @@
+{
+  "runs": [
+    {
+      "data": "2026-09-11",
+      "input_tokens": null,
+      "output_tokens": null,
+      "nota": "Sem instrumentação confiável. Não interpretar campos zero dos fragmentos como custo medido."
+    }
+  ]
+}
