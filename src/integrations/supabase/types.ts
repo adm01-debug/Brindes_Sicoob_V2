@@ -11304,6 +11304,44 @@ export type Database = {
           },
         ]
       }
+      webhook_retry_claims: {
+        Row: {
+          attempt: number
+          claimed_at: string
+          event: string
+          id: string
+          payload: Json | null
+          payload_hash: string | null
+          webhook_id: string
+        }
+        Insert: {
+          attempt: number
+          claimed_at?: string
+          event: string
+          id?: string
+          payload?: Json | null
+          payload_hash?: string | null
+          webhook_id: string
+        }
+        Update: {
+          attempt?: number
+          claimed_at?: string
+          event?: string
+          id?: string
+          payload?: Json | null
+          payload_hash?: string | null
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_retry_claims_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "outbound_webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       webhook_delivery_metrics: {
         Row: {
           attempt: number
