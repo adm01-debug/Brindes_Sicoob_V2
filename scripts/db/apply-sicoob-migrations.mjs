@@ -13,7 +13,7 @@ import { normalizedSql } from "./check-migration-ledger-drift.mjs";
 import { createSupabaseSqlClient } from "./supabase-sql-client.mjs";
 
 const ROOT = process.cwd();
-const PROJECT_REF = "cfmzkthhgliqelozlmwu";
+const CANONICAL_PROJECT_REF = "cfmzkthhgliqelozlmwu";
 const LEDGER_HASH_MARKER = /^sha256:([a-f0-9]{64}); executor:allowlisted-management-api$/;
 const TARGETS = [
   {
@@ -210,13 +210,24 @@ export function loadAuthorizedTargets() {
   return TARGETS.map(parseTarget);
 }
 
-function validateEnvironment(connectionString) {
+function validateProjectRef() {
+  const projectRef = process.env.SUPABASE_PROJECT_REF;
+  if (!projectRef || !/^[a-z0-9]{20}$/.test(projectRef)) {
+    throw new Error("SUPABASE_PROJECT_REF deve identificar explicitamente o projeto de homologação.");
+  }
+  if (projectRef === CANONICAL_PROJECT_REF) {
+    throw new Error("Aplicação de migrations no projeto canônico está bloqueada por este workflow.");
+  }
+  return projectRef;
+}
+
+function validateEnvironment(connectionString, projectRef) {
   if (!connectionString) throw new Error("SUPABASE_DB_URL não definida.");
   const parsed = new URL(connectionString);
-  const directHost = `db.${PROJECT_REF}.supabase.co`;
+  const directHost = `db.${projectRef}.supabase.co`;
   const isDirect = parsed.hostname === directHost && parsed.username === "postgres";
   const isSessionPooler = parsed.hostname.endsWith(".pooler.supabase.com")
-    && decodeURIComponent(parsed.username) === `postgres.${PROJECT_REF}`;
+    && decodeURIComponent(parsed.username) === `postgres.${projectRef}`;
   const sslModes = parsed.searchParams.getAll("sslmode");
   const conflictingSslParameters = ["ssl", "sslrootcert", "sslcert", "sslkey"]
     .filter((parameter) => parsed.searchParams.has(parameter));
@@ -228,7 +239,7 @@ function validateEnvironment(connectionString) {
       || (sslModes[0] && !new Set(["require", "verify-full"]).has(sslModes[0]))
       || conflictingSslParameters.length > 0) {
     throw new Error(
-      `SUPABASE_DB_URL deve apontar ao projeto ${PROJECT_REF}, banco postgres, porta 5432 e TLS verificado.`,
+      `SUPABASE_DB_URL deve apontar ao projeto de homologação ${projectRef}, banco postgres, porta 5432 e TLS verificado.`,
     );
   }
   // A conexão efetiva sempre usa validação completa do certificado, mesmo se
@@ -1239,7 +1250,7 @@ async function main() {
   const targets = loadAuthorizedTargets();
   if (mode === "--verify-files") {
     console.log(JSON.stringify({
-      project_ref: PROJECT_REF,
+      project_ref: null,
       authorized: targets.map(({ version, name, sha256: hash }) => ({ version, name, sha256: hash })),
       mutation: false,
     }, null, 2));
@@ -1247,11 +1258,12 @@ async function main() {
   }
 
   validateGitHubRef();
+  const projectRef = validateProjectRef();
   if (!process.env.SUPABASE_ACCESS_TOKEN) {
-    process.env.SUPABASE_DB_URL = validateEnvironment(process.env.SUPABASE_DB_URL);
+    process.env.SUPABASE_DB_URL = validateEnvironment(process.env.SUPABASE_DB_URL, projectRef);
   }
   const client = await createSupabaseSqlClient({
-    projectRef: PROJECT_REF,
+    projectRef,
     readOnly: mode !== "--apply",
     applicationName: "sicoob-allowlisted-migrations",
   });
@@ -1262,7 +1274,7 @@ async function main() {
     validateLedger(targets, before);
     const pending = targets.filter((target) => !before.has(target.version));
     console.log(JSON.stringify({
-      project_ref: PROJECT_REF,
+      project_ref: projectRef,
       authorized: targets.map(({ version, name, sha256: hash }) => ({ version, name, sha256: hash })),
       applied: [...before.keys()],
       pending: pending.map((target) => target.version),

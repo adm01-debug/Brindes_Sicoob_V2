@@ -60,6 +60,7 @@ jobs:
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
       VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+      E2E_SUPABASE_PROJECT_ID: ${{ secrets.E2E_SUPABASE_PROJECT_ID }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -76,6 +77,14 @@ jobs:
       - name: Verificar credenciais da jornada autenticada
         shell: bash
         run: |
+          if [[ -z "$E2E_SUPABASE_PROJECT_ID" || -z "$VITE_SUPABASE_PROJECT_ID" || -z "$VITE_SUPABASE_URL" ]]; then
+            echo "::error title=Projeto E2E não configurado::Configure E2E_SUPABASE_PROJECT_ID, VITE_SUPABASE_PROJECT_ID e VITE_SUPABASE_URL do projeto isolado de homologação."
+            exit 1
+          fi
+          if [[ "$E2E_SUPABASE_PROJECT_ID" == "cfmzkthhgliqelozlmwu" || "$VITE_SUPABASE_PROJECT_ID" != "$E2E_SUPABASE_PROJECT_ID" || "$VITE_SUPABASE_URL" != "https://${E2E_SUPABASE_PROJECT_ID}.supabase.co" ]]; then
+            echo "::error title=Projeto E2E inválido::A suíte só pode executar contra o projeto isolado identificado por E2E_SUPABASE_PROJECT_ID; o projeto canônico é bloqueado."
+            exit 1
+          fi
           if [[ -z "$E2E_USER_EMAIL" || -z "$E2E_USER_PASSWORD" || -z "$E2E_VIEWER_EMAIL" || -z "$E2E_VIEWER_PASSWORD" || -z "$E2E_MANAGER_EMAIL" || -z "$E2E_MANAGER_PASSWORD" || -z "$E2E_ADMIN_EMAIL" || -z "$E2E_ADMIN_PASSWORD" || -z "$E2E_ADMIN_TOTP_SECRET" || -z "$E2E_DEV_EMAIL" || -z "$E2E_DEV_PASSWORD" || -z "$E2E_DEV_TOTP_SECRET" ]]; then
             echo "::error title=Credenciais E2E ausentes::Configure as contas de vendedor, gestor, administrador e desenvolvedor, incluindo os segredos TOTP privilegiados. O gate autenticado não pode concluir por skip."
             exit 1
@@ -132,14 +141,13 @@ jobs:
             --reporter=github,list,json
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-report/results.json
-        continue-on-error: true
 
       # Resumo dedicado do smoke: 1 linha por funcionalidade no log do step,
       # `::error file=...::` por falha (anotação inline no PR), `::group::`
       # colapsável para diagnóstico, e bloco "FINAL SUMMARY" sem ANSI no fim.
       - name: 📋 Generate SMOKE summary (sempre — log final + annotations)
         if: always()
-        run: node scripts/e2e-smoke-summary.mjs || true
+        run: node scripts/e2e-smoke-summary.mjs
 
       - name: 📤 Append SMOKE summary to GitHub UI
         if: always() && hashFiles('playwright-report/smoke-summary.md') != ''
@@ -151,7 +159,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: 🛑 Fail-fast se smoke falhou (gate)
-        if: env.SKIP_E2E != 'true' && steps.e2e_smoke.outcome != 'success'
+        if: always() && env.SKIP_E2E != 'true' && steps.e2e_smoke.outcome != 'success'
         run: |
           echo "::error title=Smoke gate failed::Smoke parou na 1ª falha — veja '🚦 E2E Smoke Summary' acima e o artifact 'playwright-report' (screenshots+vídeos+trace)."
           exit 1
@@ -166,10 +174,9 @@ jobs:
             --workers=2 \
             --max-failures=1 \
             --reporter=github,list
-        continue-on-error: true
 
       - name: 🛑 Fail-fast se header sticky falhou
-        if: env.SKIP_E2E != 'true' && steps.e2e_header_sticky.outcome == 'failure'
+        if: always() && env.SKIP_E2E != 'true' && steps.e2e_header_sticky.outcome == 'failure'
         run: |
           echo "::error title=Header sticky regression::O Header global deixou de ser sticky em alguma rota/viewport. Spec: e2e/flows/22-header-sticky.spec.ts. Causa raiz típica: 'overflow' / 'transform' / 'filter' em ancestral do <header> em src/components/layout/MainLayout.tsx criando scroll container ou stacking context indevido. Veja o artifact 'playwright-report' (screenshot + vídeo + trace) para a rota específica."
           exit 1
@@ -177,7 +184,6 @@ jobs:
       - name: Upload Playwright report do gate
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
         with:
           name: playwright-report-smoke-gate
           path: playwright-report
@@ -186,7 +192,6 @@ jobs:
       - name: Upload smoke summary (markdown + json)
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
         with:
           name: e2e-smoke-summary
           path: |
@@ -198,7 +203,6 @@ jobs:
       - name: Upload evidências do gate
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
         with:
           name: e2e-evidence-smoke-gate
           path: |
@@ -241,6 +245,7 @@ jobs:
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
       VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+      E2E_SUPABASE_PROJECT_ID: ${{ secrets.E2E_SUPABASE_PROJECT_ID }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -277,12 +282,11 @@ jobs:
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-report/results.json
           PLAYWRIGHT_JUNIT_OUTPUT_NAME: playwright-report/results.xml
-        continue-on-error: true
         id: e2e_run
 
       - name: 📋 Generate feature summary (regression)
         if: always()
-        run: node scripts/e2e-feature-summary.mjs || true
+        run: node scripts/e2e-feature-summary.mjs
 
       - name: 📤 Append feature summary to GitHub UI
         if: always() && hashFiles('playwright-report/feature-summary.md') != ''
@@ -296,7 +300,6 @@ jobs:
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
         with:
           name: playwright-report-shard-${{ matrix.shard }}
           path: playwright-report
@@ -305,7 +308,6 @@ jobs:
       - name: Upload feature summary (markdown)
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
         with:
           name: e2e-feature-summary-shard-${{ matrix.shard }}
           path: playwright-report/feature-summary.md
@@ -315,7 +317,6 @@ jobs:
       - name: Upload evidence artifacts
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
         with:
           name: e2e-evidence-shard-${{ matrix.shard }}
           path: |
@@ -324,7 +325,7 @@ jobs:
           retention-days: 7
 
       - name: 🛑 Fail job se regression registrou falhas
-        if: steps.e2e_run.outcome == 'failure'
+        if: always() && steps.e2e_run.outcome == 'failure'
         run: |
           echo "::error title=Regression failed::Algumas specs do shard ${{ matrix.shard }}/3 falharam — veja o resumo acima e os artifacts do shard (HTML, screenshots, vídeos e trace)."
           exit 1
