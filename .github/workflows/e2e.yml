@@ -142,11 +142,11 @@ jobs:
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-report/results.json
 
-      # Resumo dedicado do smoke: 1 linha por funcionalidade no log do step,
-      # `::error file=...::` por falha (anotação inline no PR), `::group::`
-      # colapsável para diagnóstico, e bloco "FINAL SUMMARY" sem ANSI no fim.
-      - name: 📋 Generate SMOKE summary (sempre — log final + annotations)
-        if: always()
+      # Resumo dedicado quando o Playwright gerou results.json. Se a validação
+      # de credenciais falhar antes do smoke, o gate de credenciais já reprova
+      # o job; não crie uma segunda falha por falta de arquivo de resultados.
+      - name: 📋 Generate SMOKE summary (quando houver resultado)
+        if: always() && hashFiles('playwright-report/results.json') != ''
         run: node scripts/e2e-smoke-summary.mjs
 
       - name: 📤 Append SMOKE summary to GitHub UI
