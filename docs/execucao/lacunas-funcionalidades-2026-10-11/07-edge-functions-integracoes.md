@@ -109,7 +109,7 @@ Legenda de status na matriz: `OK` = implementada e ligada, sem pendência encont
 | 67 | `ownership-repair` | Reparo de órfãos (admin) | src/components/admin/OwnershipRepairDialog.tsx:77 | — | OK | — |
 | 68 | `process-batch-export` | Gera exportações CSV/XLSX/PDF | cron `process-export-queue` (migr. 20260923111000:78) | INTERNAL_FUNCTION_SECRET, Vault: sicoob_project_url, sicoob_internal_function_secret | OK | PDF textual simplificado. |
 | 69 | `process-queue` | Agrupa notificações não lidas | nenhum (sem cron) | INTERNAL_FUNCTION_SECRET | STUB/MOCK | Não processa nada (EDG-26). |
-| 70 | `process-scheduled-reports` | Envia relatórios agendados | nenhum (sem cron) | RESEND_API_KEY, INTERNAL_FUNCTION_SECRET | ORFA | Duplicada; ignora escopo do usuário (EDG-24). |
+| 70 | `process-scheduled-reports` | Envia relatórios agendados | nenhum (sem cron) | RESEND_API_KEY, INTERNAL_FUNCTION_SECRET | PARCIAL | Duplicada; consulta sem escopo do usuário (EDG-24). |
 | 71 | `product-webhook` | Endpoint inerte (410) | nenhum | — | ORFA | Publicado ocupando vaga (EDG-08). |
 | 72 | `qa-block-monitor` | Monitor de bloqueios/RLS (dev) | nenhum | — | ORFA | Fonte não publicável (EDG-43). |
 | 73 | `quote-approval` | Aprovação/assinatura pública orçamento | src/pages/QuoteApprovalPage.tsx:47; src/hooks/useQuoteApprovalToken.ts:40 | — | PARCIAL | Observação do cliente descartada (EDG-29). |
@@ -125,7 +125,7 @@ Legenda de status na matriz: `OK` = implementada e ligada, sem pendência encont
 | 83 | `semantic-search` | Busca semântica global (IA) | src/components/search/useGlobalSearch.ts:97 | LOVABLE_API_KEY | BLOQUEADA_EXTERNA | EDG-01. |
 | 84 | `send-digest` | Resumo periódico de notificações | nenhum (sem cron) | INTERNAL_FUNCTION_SECRET | STUB/MOCK | Só conta; não envia (EDG-22). |
 | 85 | `send-notification` | Roteador omnichannel de notificações | nenhum | INTERNAL_FUNCTION_SECRET | ORFA | Saídas sem consumidor (EDG-23). |
-| 86 | `send-scheduled-reports` | Envia relatórios agendados (dup.) | nenhum (sem cron) | RESEND_API_KEY, INTERNAL_FUNCTION_SECRET | ORFA | Marca "sent" sem enviar (EDG-24). |
+| 86 | `send-scheduled-reports` | Envia relatórios agendados (dup.) | nenhum (sem cron) | RESEND_API_KEY, INTERNAL_FUNCTION_SECRET | PARCIAL | Agora exige recibo 2xx do Resend e persistência antes de avançar o ciclo; permanece sem cron e duplicada (EDG-24). |
 | 87 | `send-transactional-email` | E-mail transacional de eventos | src/services/OrderService.ts:419; src/hooks/useTransactionalEmail.ts:21 (sem uso) | — | STUB/MOCK | Retorna 501 (EDG-20). |
 | 88 | `sicoob-approval-notifications` | Worker da outbox de aprovações | cron (migr. 20260922224300:35, 20260922225500:37) | SICOOB_APPROVAL_WORKER_SECRET, Vault: sicoob_project_url, sicoob_approval_worker_secret, RESEND_API_KEY, NOTIFICATION_FROM_EMAIL, PUBLIC_APP_URL | BLOQUEADA_EXTERNA | Resend/Slack não homologados (EDG-21). |
 | 89 | `sicoob-approval-reconciliation` | Reconciliação de entregas incertas | src/pages/admin/sicoob/SicoobApprovalReconciliationPage.tsx:29 | — | OK | — |
@@ -426,11 +426,11 @@ Observação: o manifesto marca `runtime: "source-only"` só em 4 delas (`edge-a
 - Esforço: G
 - Prioridade: P2
 
-### EDG-24  Relatórios agendados: UI cria, ninguém envia
-- Status: ORFA
+### EDG-24  Relatórios agendados: envio sem cron e isolamento incompleto
+- Status: PARCIAL
 - Origem: `src/components/reports/ScheduledReportsManager.tsx` (montado em `src/pages/CustomizableDashboard.tsx:72`) e `src/hooks/useScheduledReports.ts`; `docs/EDGE_FUNCTIONS.md:46,54`.
-- Evidência no código: duas funções para o mesmo trabalho, ambas sem cron: `process-scheduled-reports` (consulta orçamentos/pedidos de **todos** os vendedores sem filtrar `user_id`, `index.ts:49-93`; ignora resposta do Resend, `101-113`) e `send-scheduled-reports` (marca `sent` mesmo sem `RESEND_API_KEY`, `index.ts:51-70`); remetente fixo "Promo Gifts <noreply@promogifts.com.br>" (`process-…:108`, `send-…:167`); tipos `clients`/`products` oferecidos na UI não têm geração.
-- O que falta: manter uma só função, filtrar pelo dono, remetente Sicoob, falhar quando não enviar, implementar tipos faltantes e agendar.
+- Evidência atual: duas funções duplicam o trabalho e nenhuma tem cron. `process-scheduled-reports` ainda consulta orçamentos/pedidos de **todos** os vendedores sem filtrar `user_id` (`index.ts`), e ambos ainda dependem de `RESEND_API_KEY`. Em `send-scheduled-reports`, o estado agora só avança após resposta 2xx com recibo do Resend e gravação bem-sucedida do agendamento; a chave idempotente usa o ID do relatório e o horário previsto. Testes cobrem chave ausente, 429/5xx, recibo inválido, sucesso e falha de persistência. O remetente fixo permanece "Promo Gifts <noreply@promogifts.com.br>" e tipos `clients`/`products` ainda não são gerados.
+- O que falta: manter uma só função, filtrar pelo dono, definir remetente Sicoob, implementar tipos faltantes e agendar com credenciais configuradas.
 - Impacto no negócio: gestor agenda relatório e não recebe; se ligado como está, pode receber dados de outros vendedores.
 - Esforço: M
 - Prioridade: P2
@@ -482,11 +482,11 @@ Observação: o manifesto marca `runtime: "source-only"` só em 4 delas (`edge-a
 - Esforço: P
 - Prioridade: P2
 
-### EDG-30  Pipeline de publicação cobre 7 de 100 funções
+### EDG-30  Pipeline de publicação cobre funções cron e outras sete funções
 - Status: PARCIAL
 - Origem: `docs/DEPLOYMENT.md:24-30` (deploy manual) e `AGENTS.md` ("Pronto = ligado em produção").
-- Evidência no código: `.github/workflows/deploy-sicoob-functions.yml:42-52,58-66` publica e confere só `expert-chat`, `external-db-bridge`, `sicoob-approval-reconciliation`, `sicoob-artwork-register`, `sicoob-document-ingest`, `sicoob-kit-quote`, `sicoob-reorder`; `sicoob-approval-notifications`, `quote-approval`, `process-batch-export` e as demais dependem de publicação manual.
-- O que falta: publicação versionada (lista derivada do manifesto `runtime: deployed`) com verificação de versão.
+- Evidência atual: `.github/workflows/deploy-sicoob-functions.yml` publica e confere 10 funções, incluindo `connections-auto-test`, `process-batch-export` e `sicoob-approval-notifications`, chamados pelos dispatchers cron versionados. `tests/scripts/scheduled-edge-deploy-parity.test.ts` compara dinamicamente as funções invocadas por `dispatch_sicoob_*` nas migrations com as duas listas do workflow e exige os respectivos `index.ts`.
+- O que falta: expandir o manifesto/versionamento para as demais funções cujo runtime deve ser publicado; a alteração do workflow não prova que uma publicação remota foi executada.
 - Impacto no negócio: correções podem ficar no GitHub sem chegar ao ar, sem alarme.
 - Esforço: P
 - Prioridade: P2
