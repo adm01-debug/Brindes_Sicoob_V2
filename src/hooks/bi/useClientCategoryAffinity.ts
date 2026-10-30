@@ -2,14 +2,13 @@
  * useClientCategoryAffinity — agrega histórico do cliente por CATEGORIA.
  *
  * Reaproveita o RPC `get_client_top_products` (já usado em useClientAffinity)
- * e dobra o resultado por categoria via `categoryResolver`. Quando vazio,
- * cai para mock determinístico baseado em MOCK_CLIENT_STATS.topCategories.
+ * e dobra o resultado por categoria via `categoryResolver`. Amostras vazias
+ * permanecem vazias; erros de RPC são preservados pelo React Query.
  */
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveBICategory, type BICategorySlug } from "@/lib/bi/categoryResolver";
-import { MOCK_CLIENT_STATS } from "@/lib/bi/mockData";
 
 export interface ClientTopProductRow {
   product_id: string | null;
@@ -50,45 +49,13 @@ export interface CategoryAggregate {
 }
 
 export interface ClientCategoryAffinityResult {
+  dataStatus: "insufficient" | "available";
   isMock: boolean;
   realProductsCount: number;
   /** Categorias ordenadas por receita desc */
   categories: CategoryAggregate[];
   /** Categoria favorita (top 1) — null se nenhuma */
   favorite: CategoryAggregate | null;
-}
-
-function buildMockResult(): ClientCategoryAffinityResult {
-  const totalRev = MOCK_CLIENT_STATS.topCategories.reduce((s, c) => s + c.revenue, 0) || 1;
-  // Mock: distribuir 60% receita "recente" e 40% "anterior" com leve variação determinística por slug
-  const categories: CategoryAggregate[] = MOCK_CLIENT_STATS.topCategories.map((c, i) => {
-    const meta = resolveBICategory(c.category, c.category);
-    const recentBias = 0.55 + ((i % 3) - 1) * 0.12; // 0.43, 0.55, 0.67
-    const revenueRecent = c.revenue * recentBias;
-    const revenuePrevious = c.revenue * (1 - recentBias);
-    const deltaPct = revenuePrevious > 0 ? ((revenueRecent - revenuePrevious) / revenuePrevious) * 100 : null;
-    const trend: CategoryAggregate["trend"] =
-      deltaPct === null || deltaPct === undefined ? "stable" : deltaPct > 15 ? "up" : deltaPct < -15 ? "down" : "stable";
-    return {
-      slug: meta.slug,
-      label: c.category,
-      occurrences: c.count,
-      totalQuantity: c.count * 12,
-      totalRevenue: c.revenue,
-      revenueSharePct: (c.revenue / totalRev) * 100,
-      revenueRecent,
-      revenuePrevious,
-      deltaPct,
-      trend,
-      topProducts: [],
-    };
-  });
-  return {
-    isMock: true,
-    realProductsCount: 0,
-    categories,
-    favorite: categories[0] ?? null,
-  };
 }
 
 function emptyCategory(row: ClientTopProductRow): CategoryAggregate {
@@ -190,18 +157,21 @@ export function useClientCategoryAffinity(clientId?: string) {
         _client_id: clientId,
         _limit: 50,
       });
-      if (error) return [];
+      if (error) throw error;
       return (Array.isArray(data) ? data : []) as ClientTopProductRow[];
     },
   });
 
   const result = useMemo<ClientCategoryAffinityResult>(() => {
     const rows = query.data ?? [];
-    if (rows.length === 0) return buildMockResult();
+    if (rows.length === 0) {
+      return { dataStatus: "insufficient", isMock: false, realProductsCount: 0, categories: [], favorite: null };
+    }
 
     const categories = finalizeCategories(aggregateCategories(rows));
 
     return {
+      dataStatus: "available",
       isMock: false,
       realProductsCount: rows.length,
       categories,

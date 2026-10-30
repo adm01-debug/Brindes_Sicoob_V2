@@ -1,11 +1,10 @@
 /**
  * useClientAffinity — produtos reais já orçados pelo cliente + sugestões similares.
  * Estratégia: usa quote_items via RPC get_client_top_products (proxy de "interesse confirmado").
- * Quando vazio → fallback mock determinístico por ramo.
+ * Sem amostra real, retorna categorias vazias em vez de recomendações simuladas.
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { MOCK_CLIENT_STATS } from "@/lib/bi/mockData";
 
 export interface ClientTopProduct {
   product_id: string | null;
@@ -33,37 +32,12 @@ export interface AffinityCategory {
 }
 
 export interface ClientAffinityResult {
+  dataStatus: "insufficient" | "available";
   isMock: boolean;
   realProductsCount: number;
   categories: AffinityCategory[];
   topProducts: ClientTopProduct[];
 }
-
-const MOCK_SUGGESTIONS: Record<string, AffinityCategory["suggestions"]> = {
-  "Garrafas e Squeezes": [
-    { name: "Garrafa Térmica Inox 750ml", priceFrom: 45, priceTo: 95, reason: "Upgrade da linha que ele já compra" },
-    { name: "Squeeze Esportivo Premium", priceFrom: 22, priceTo: 48, reason: "Categoria favorita do cliente" },
-    { name: "Garrafa Vidro com Capa Silicone", priceFrom: 30, priceTo: 65, reason: "Novidade na categoria preferida" },
-  ],
-  "Canetas Premium": [
-    { name: "Caneta Roller Premium", priceFrom: 28, priceTo: 75, reason: "Próximo nível em canetas executivas" },
-    { name: "Kit Caneta + Lapiseira", priceFrom: 45, priceTo: 120, reason: "Bundle dentro da categoria forte" },
-    { name: "Caneta Bambu Sustentável", priceFrom: 12, priceTo: 30, reason: "Alternativa ESG" },
-  ],
-  "Mochilas e Bolsas": [
-    { name: "Mochila Antifurto Premium", priceFrom: 95, priceTo: 220, reason: "Upgrade da linha mochilas" },
-    { name: "Bolsa Térmica Executiva", priceFrom: 55, priceTo: 130, reason: "Complemento natural" },
-    { name: "Sling Bag Compacta", priceFrom: 38, priceTo: 90, reason: "Tendência atual" },
-  ],
-  "Agendas": [
-    { name: "Agenda Permanente Couro", priceFrom: 60, priceTo: 150, reason: "Linha premium da categoria" },
-    { name: "Planner Mensal A4", priceFrom: 25, priceTo: 65, reason: "Variação útil" },
-  ],
-  "Brindes Tecnológicos": [
-    { name: "Carregador Wireless 15W", priceFrom: 40, priceTo: 110, reason: "Tech atualizado" },
-    { name: "Caixa de Som Bluetooth", priceFrom: 60, priceTo: 180, reason: "Categoria em alta" },
-  ],
-};
 
 /**
  * Agrupa top produtos reais em "categorias" derivadas do nome do produto.
@@ -88,7 +62,7 @@ export function useClientAffinity(clientId?: string) {
     enabled: !!clientId,
     queryFn: async () => {
       if (!clientId) {
-        return { isMock: true, realProductsCount: 0, categories: [], topProducts: [] };
+        return { dataStatus: "insufficient", isMock: false, realProductsCount: 0, categories: [], topProducts: [] };
       }
 
       // 1) Tenta dados reais via RPC
@@ -96,8 +70,9 @@ export function useClientAffinity(clientId?: string) {
         _client_id: clientId,
         _limit: 15,
       });
+      if (error) throw error;
 
-      const realProducts = (!error && Array.isArray(rpcData) ? rpcData : []) as ClientTopProduct[];
+      const realProducts = (Array.isArray(rpcData) ? rpcData : []) as ClientTopProduct[];
 
       if (realProducts.length > 0) {
         // Agrupa por categoria derivada
@@ -129,6 +104,7 @@ export function useClientAffinity(clientId?: string) {
           }));
 
         return {
+          dataStatus: "available",
           isMock: false,
           realProductsCount: realProducts.length,
           categories,
@@ -136,12 +112,7 @@ export function useClientAffinity(clientId?: string) {
         };
       }
 
-      // 2) Fallback mock
-      const mockCategories: AffinityCategory[] = MOCK_CLIENT_STATS.topCategories.map((c) => ({
-        ...c,
-        suggestions: MOCK_SUGGESTIONS[c.category] ?? [],
-      }));
-      return { isMock: true, realProductsCount: 0, categories: mockCategories, topProducts: [] };
+      return { dataStatus: "insufficient", isMock: false, realProductsCount: 0, categories: [], topProducts: [] };
     },
     staleTime: 5 * 60 * 1000,
   });
