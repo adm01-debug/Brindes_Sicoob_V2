@@ -24,7 +24,33 @@ revisão humana ainda estão pendentes.
 
 Migration ledger drift [41013281253](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41013281253), Branch Protection Sentinel [40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038), Enterprise Compliance [40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958), Dependabot `undici` [40603001428](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40603001428), Dependabot `zod` [40603001197](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40603001197) e Portal Sicoob [39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315). Esses verdes são da `main`; os checks do SHA da PR são listados separadamente abaixo.
 
-### PR #176 — estado remoto verificado no SHA `43b2f9f3`
+### PR #176 — execução mais recente verificada no SHA `66499bbf0427b8d57438b5a62aa569e8aba38253`
+
+PR [#176](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/176) segue aberta,
+sem merge. Resultados consultados em 30/10/2026:
+
+| Check | Run / resultado | Evidência |
+|---|---|---|
+| Qualidade contínua | [41122582281](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41122582281) — success | Build, typecheck, lint, suíte e gates passaram. |
+| Security Scan | [41122582187](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41122582187) — success | Audit no limiar high e Gitleaks passaram. |
+| CodeQL | [41122582152](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41122582152) — success | Análise JavaScript/TypeScript passou. |
+| Bundle Size Check | [41122582106](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41122582106) — success | Orçamento passou. |
+| Portal Sicoob | [41122582212](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41122582212) — success | Gate passou. |
+| Lighthouse | [41122582266](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41122582266) — success na tentativa 2 | A tentativa 1 recebeu `npm E404` para `tslib-2.9.1.tgz`; a repetição passou sem alteração no lockfile ou workflow. |
+| E2E Playwright | [41122582161](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41122582161) — failure fechada no preflight | `E2E_SUPABASE_PROJECT_ID`, `E2E_STAGING_SUPABASE_URL` e `E2E_STAGING_SUPABASE_PUBLISHABLE_KEY` estavam vazios. Testes remotos, smoke e shards foram pulados; o run não chamou Supabase. |
+| Copilot Review | [41122597260](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41122597260) — failure externa | HTTP 402 por limite de uso; requer ação de billing/owner do serviço. |
+
+Falta aprovação humana exigida para a `main`. O Environment `e2e-staging` precisa ser
+confirmado e provisionado com alvo descartável, proteção de reviewers/branches e os
+secrets listados em [`docs/secrets.md`](docs/secrets.md). Não li valores de secrets.
+Antes de cadastrar credenciais, o owner deve confirmar positivamente a ref de staging;
+a denylist dos dois bancos protegidos não prova sozinha que outra ref seja descartável.
+
+Nenhum banco Supabase foi consultado ou alterado nesta execução. O dispatch do deploy
+de funções também não foi repetido: ainda falta comprovar `CONSTRUCTION_SUPABASE_PROJECT_REF`
+e as credenciais do projeto de construção, e o run antigo ocultou o destino.
+
+### Snapshot histórico da PR #176 — SHA `43b2f9f3`
 
 PR [#176](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/176) segue aberta, sem merge e `mergeable_state=blocked`.
 
@@ -51,7 +77,8 @@ em passadas sequenciais os prefixos literais `[E2E]` e `[E2E:` para cobrir nomes
 atuais e legados sem casar `[E2Evil]`. Cleanup por teste foi removido porque a Edge
 Function também apaga carrinhos por persona e poderia atingir outro teste concorrente;
 as execuções compartilham um único grupo; HTTP 402 já não conta como validação
-authz/RLS. Essas mudanças ainda não têm novo run remoto. Antes de
+authz/RLS. Essas mudanças foram exercitadas nos checks do SHA `66499bbf` listados acima;
+o E2E parou no preflight por ausência de configuração. Antes de
 cadastrar secrets, configure reviewers e política de branches no Environment e
 confirme positivamente a ref descartável; negar dois refs conhecidos não prova, por si
 só, que uma terceira ref seja staging.
