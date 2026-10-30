@@ -113,14 +113,47 @@ try:
         seller_id uuid NOT NULL,
         updated_at timestamptz NOT NULL DEFAULT now()
       );
+      CREATE TABLE public.orders(
+        id uuid PRIMARY KEY,
+        order_number text NOT NULL,
+        status text NOT NULL,
+        client_name text,
+        total numeric NOT NULL,
+        seller_id uuid NOT NULL
+      );
+      CREATE TABLE public.discount_approval_requests(
+        id uuid PRIMARY KEY,
+        quote_id uuid NOT NULL,
+        requested_discount_percent numeric NOT NULL,
+        status text NOT NULL,
+        seller_id uuid NOT NULL
+      );
+      CREATE TABLE public.kit_share_tokens(
+        id uuid PRIMARY KEY,
+        kit_id uuid NOT NULL,
+        token text NOT NULL,
+        client_name text,
+        seller_id uuid NOT NULL
+      );
     """)
     sql(MIGRATION.read_text(encoding="utf-8"))
     sql("""
       CREATE TRIGGER webhook_dispatch_test
-      AFTER INSERT ON public.quotes
+      AFTER INSERT OR UPDATE ON public.quotes
+      FOR EACH ROW EXECUTE FUNCTION public.dispatch_quote_webhook_event();
+      CREATE TRIGGER webhook_dispatch_orders
+      AFTER INSERT OR UPDATE ON public.orders
+      FOR EACH ROW EXECUTE FUNCTION public.dispatch_quote_webhook_event();
+      CREATE TRIGGER webhook_dispatch_discounts
+      AFTER INSERT OR UPDATE ON public.discount_approval_requests
+      FOR EACH ROW EXECUTE FUNCTION public.dispatch_quote_webhook_event();
+      CREATE TRIGGER webhook_dispatch_kit_shares
+      AFTER INSERT OR UPDATE ON public.kit_share_tokens
       FOR EACH ROW EXECUTE FUNCTION public.dispatch_quote_webhook_event();
       INSERT INTO public.outbound_webhooks(id, active, events, retry_policy)
-      VALUES ('00000000-0000-4000-8000-000000000002', true, ARRAY['quote.created'], '{"max_attempts":3}');
+      VALUES ('00000000-0000-4000-8000-000000000002', true,
+        ARRAY['quote.created','quote.approved','order.created','discount.requested','discount.approved','kit.shared'],
+        '{"max_attempts":3}');
     """)
 
     dispatch_quote(1)
@@ -135,6 +168,28 @@ try:
     headers = json.loads(scalar("SELECT headers::text FROM public.webhook_dispatch_test_requests ORDER BY id DESC LIMIT 1;"))
     assert headers.get("x-sicoob-internal-secret") == SECRET, "trigger deve autenticar com segredo dedicado"
     assert "Authorization" not in headers, "trigger não deve transmitir service_role como bearer"
+
+    sql("""
+      UPDATE public.quotes SET status = 'approved'
+      WHERE id = '00000000-0000-4000-8000-000000000002';
+      INSERT INTO public.orders(id,order_number,status,client_name,total,seller_id) VALUES
+        ('00000000-0000-4000-8000-000000000010','RE-QA-10','rascunho','Cooperativa QA',10,'00000000-0000-4000-8000-000000000001'),
+        ('00000000-0000-4000-8000-000000000011','PED-QA-11','novo','Cooperativa QA',10,'00000000-0000-4000-8000-000000000001');
+      INSERT INTO public.discount_approval_requests(id,quote_id,requested_discount_percent,status,seller_id)
+      VALUES ('00000000-0000-4000-8000-000000000020','00000000-0000-4000-8000-000000000002',5,'pending','00000000-0000-4000-8000-000000000001');
+      UPDATE public.discount_approval_requests SET status = 'approved'
+      WHERE id = '00000000-0000-4000-8000-000000000020';
+      INSERT INTO public.kit_share_tokens(id,kit_id,token,client_name,seller_id)
+      VALUES ('00000000-0000-4000-8000-000000000030','00000000-0000-4000-8000-000000000031','token-qa','Cooperativa QA','00000000-0000-4000-8000-000000000001');
+    """)
+    events = json.loads(scalar("""
+      SELECT jsonb_agg(body->>'event' ORDER BY id)::text
+      FROM public.webhook_dispatch_test_requests;
+    """))
+    assert events == [
+      "quote.created", "quote.approved", "order.created",
+      "discount.requested", "discount.approved", "kit.shared",
+    ], "migração deve preservar eventos e ignorar rascunho RE-*"
 
     sql("DELETE FROM vault.decrypted_secrets;")
     retry_without_secret = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
@@ -160,12 +215,13 @@ try:
     """)
     retry_max = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
     assert retry_max["ok"] is True and retry_max["retried"] == 1 and retry_max["skipped_max_attempts"] == 1
-    assert scalar("SELECT count(*) FROM public.webhook_dispatch_test_requests;") == "3", "retry no limite não pode disparar outra chamada"
+    assert scalar("SELECT count(*) FROM public.webhook_dispatch_test_requests;") == "8", "retry no limite não pode disparar outra chamada"
 
     result["resultado"] = "aprovado"
     result["casos"] = [
         "trigger sem segredo não envia",
         "trigger válido transmite só o segredo dedicado",
+        "eventos de orçamento, pedido, desconto e kit são preservados; rascunho RE-* é ignorado",
         "retry sem segredo retorna bloqueio fechado",
         "retry válido respeita max_attempts",
         "nenhum chamador envia Authorization/service_role",
