@@ -10,8 +10,8 @@ As seções históricas abaixo refletem o estado de 22/10 e não substituem este
 | Workflow | Último status em `main` | Causa exata / bloqueio atual | Run |
 |---|---|---|---|
 | Publicar funções Sicoob | `failure` (28/10) | A publicação informou `No change found` para `sicoob-approval-reconciliation`; a verificação exigia incremento de versão mesmo sem alteração. Não repetir enquanto o ambiente `construction` e o project ref de homologação não forem comprovados. | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) |
-| Security Scan | `failure` (27/10) | `npm audit`: `undici` e `zod` com severidade alta. A branch de correção remove o alerta transitivo de `undici`; resta `zod@3.25.76`, cuja correção disponível exige migração major para Zod 4. | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) |
-| Qualidade contínua | `failure` (27/10) | Mesmo gate de audit: 2 alertas altos (`undici`, `zod`) na `main`. Com o override proposto, permanece o alerta de Zod. | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) |
+| Security Scan | `failure` (27/10) | Na `main`, `npm audit` ainda encontra `undici` e `zod` altos. Na PR #176, override `undici@8.12.2` e migração Zod `4.6.7` fizeram o audit local passar com 0 vulnerabilidades; aguarda novo CI remoto. | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) |
+| Qualidade contínua | `failure` (27/10) | Mesmo gate de audit na `main`. A branch corrigiu localmente undici/Zod e precisa confirmar o novo run remoto antes de considerar resolvido. | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) |
 | CodeQL | `failure` (27/10) | `init` estava em v4.39.1 e `autobuild`/`analyze` em v4.38.2; a inicialização entra em `JOB_STATUS_CONFIGURATION_ERROR` e não gera SARIF. Pins alinhados na branch; aguarda CI de PR. | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) |
 | E2E (Playwright) | `startup_failure` (08/10) | O GitHub registrou zero jobs, sem resumo/log que identifique a causa. O workflow agora exige project ref de homologação e bloqueia o canônico; falta comprovar a configuração e revalidar por PR. | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) |
 | Bundle Size Check | `failure` (27/09) | Logs expiraram (HTTP 404); causa exata não é recuperável. O check de orçamento será executado no PR da branch. | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) |
@@ -21,14 +21,26 @@ As seções históricas abaixo refletem o estado de 22/10 e não substituem este
 
 **Verdes confirmados:** Migration ledger drift (`41013281253`, 30/10), Branch Protection Sentinel (`40602983038`), Enterprise Compliance & Audit Reporting (`40602982958`), Portal Sicoob (`39868499315`), Monthly DB Audit (`36794161452`, 01/10) e Dependabot Updates (`40603001428`). O último run de Aplicar migrations Sicoob foi `cancelled` (`37029743784`, 02/10); cancelamento não é falha e nenhuma migration foi executada por esta auditoria.
 
+### PR #176 — checks remotos antes da migração Zod
+
+Último SHA validado: `0f13b6e9a531cfb04aa5042e13b98e0373cb28a8` (os resultados abaixo precisam ser atualizados após o novo push).
+
+| Workflow | Run/conclusão | Evidência |
+|---|---|---|
+| Qualidade contínua | [41077897875](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41077897875) — falhou | `npm audit` encontrou o alerta alto de Zod 3. A correção local da PR removeu os alertas, pendente de novo run. |
+| Security Scan | [41077897860](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41077897860) — falhou | Passo `npm audit`; mesmo alerta Zod 3 no SHA antigo. |
+| E2E (Playwright) | [41077897917](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41077897917) — falhou | Step `Verificar credenciais da jornada autenticada`: `E2E_SUPABASE_PROJECT_ID`, `VITE_SUPABASE_PROJECT_ID` e `VITE_SUPABASE_URL` ausentes/incompletos. A listagem de configuração não mostrou essas variáveis no repo nem no environment `construction`; este environment contém somente `SUPABASE_ACCESS_TOKEN`. Nenhum valor secreto foi lido. |
+| Copilot Code Review | [41077923346](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41077923346) — falhou | Quota do plano Copilot (HTTP 402), bloqueio externo ao código. |
+| Bundle Size Check, Portal Sicoob, CodeQL, Lighthouse | [41077897879](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41077897879), [41077897859](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41077897859), [41077897914](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41077897914), [41077897890](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41077897890) — success | Verdes no SHA anterior; conferir que continuam verdes após novo SHA. |
+
 **Pendências que precisam de ação/decisão do owner:**
 
-1. Confirmar e configurar no environment `construction` um Supabase isolado (project ref, URL/chave e contas de teste). O E2E rejeita o project ref canônico e falha fechado até existir esse ambiente. Nenhum secret foi lido.
-2. Aprovar uma migração major isolada de Zod 3 para Zod 4 (e do adaptador React Hook Form, se necessário). A última Zod 3 é `3.25.76`; `npm audit` identifica correção em Zod 4.6.7. O uso abrange formulários, autenticação e Edge Functions, portanto não foi aplicado `npm audit fix --force`.
+1. Configurar e comprovar no environment `construction` um Supabase isolado: `E2E_SUPABASE_PROJECT_ID`, `VITE_SUPABASE_PROJECT_ID`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY` e contas de teste exigidas pelo workflow. A execução não pode usar o projeto canônico. Nenhum valor secreto foi lido.
+2. Confirmar no novo CI a migração de Zod 3 para Zod `4.6.7` e `@hookform/resolvers` `5.9.2`. Typecheck, suíte, build, lint e `npm audit` passaram localmente na branch; a `main` não foi alterada e o CI remoto ainda precisa validar o novo SHA.
 3. Restaurar/ajustar a cota do GitHub Copilot para remover o HTTP 402 do workflow de revisão.
 4. Após o PR validado, executar deploy/migrations somente contra `construction` confirmado. Não repetir publicação remota enquanto o alvo não puder ser demonstrado como isolado.
 
-**Validação local da branch de correção:** `npm ci` e build/typecheck passaram; lint com 0 erros e 874 avisos (baseline gate sem regressões); suíte completa 5.850 passou, 68 skipped, 0 falhou. `npm audit --audit-level=high` ainda retorna 1 alerta alto de Zod, documentado acima. Nenhuma migration, Edge Function ou dado remoto foi alterado.
+**Validação local da branch de correção:** suíte completa 5.851 passou, 68 skipped, 0 falhou; build, typecheck e lint passaram (0 erros, 874 avisos); `npm audit --audit-level=high` e `check:npm-audit` passaram com 0 vulnerabilidades. Os números refletem o worktree da PR; `main` permanece sem essas alterações. Nenhuma migration, Edge Function ou dado remoto foi alterado.
 
 **Verificação de integridade do CI:** removidos do conjunto de workflows os usos de `continue-on-error` e `|| true`; etapas de resumo pós-falha seguem com `if: always()` e o job continua falhando quando o teste/report falha. `actionlint .github/workflows/*.yml` passou após corrigir quoting e escrita do step summary no Branch Protection Sentinel.
 

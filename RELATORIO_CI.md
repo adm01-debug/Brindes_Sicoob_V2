@@ -12,8 +12,8 @@ Considerada apenas a execução mais recente na branch `main` para cada workflow
 | Workflow | Estado mais recente | Evidência / causa |
 |---|---|---|
 | Publicar funções Sicoob | Falha | Run [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102): `No change found` e a confirmação exigiu versão maior que a anterior. A branch aceita versão igual (deploy idempotente), sem aceitar ausência/regressão de versão. |
-| Security Scan | Falha | Run [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158): `undici@8.10.2` e `zod@3.25.76` altos. Override `undici@8.12.2` corrige o pacote transitivo; Zod permanece pendente de migração major. |
-| Qualidade contínua | Falha | Run [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964): o passo de segurança falha pelo mesmo resultado de audit. |
+| Security Scan | Falha na `main` | Run [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158): `undici@8.10.2` e `zod@3.25.76` altos. Na PR #176, `undici@8.12.2` e Zod `4.6.7` deixam `npm audit` local sem vulnerabilidades; aguardam-se novos checks remotos. |
+| Qualidade contínua | Falha na `main` | Run [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964): o passo de segurança falha pelo mesmo resultado de audit. A correção da PR aguarda novo run remoto. |
 | CodeQL | Falha | Run [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073): init v4.39.1 misturado com autobuild/analyze v4.38.2; falha impede geração de SARIF. Pins estão alinhados na branch. |
 | E2E (Playwright) | Startup failure | Run [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358): `startup_failure`, zero jobs; causa não aparece no resumo do GitHub. PR reexecutará com guarda de project ref de homologação. |
 | Bundle Size Check | Falha | Run [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911): logs expiraram (HTTP 404); causa ainda não confirmada. Check local do orçamento e execução de PR pendentes. |
@@ -33,10 +33,14 @@ Verdes confirmados: Migration ledger drift `41013281253` (30/10), Branch Protect
 | `npm run lint` | ✅ exit 0 | 0 erros, 874 avisos de estilo/complexidade. |
 | `npm run lint:baseline` | ✅ exit 0 | Nenhuma regressão nos 19 arquivos de aplicação alterados. |
 | `npm test` | ✅ exit 0 | 5.850 passaram, 68 skipped, 0 falhas (460 arquivos: 456 passaram, 4 skipped). |
-| `npm audit --audit-level=high` | ❌ exit 1 | Um alerta alto restante: Zod 3; undici foi corrigido na branch. |
+| `npm audit --audit-level=high` | ✅ exit 0 | Branch: Zod `4.6.7` e `undici@8.12.2`; 0 vulnerabilidades. `main` ainda não recebeu a correção. |
 | `actionlint .github/workflows/*.yml` + `git diff --check` | ✅ exit 0 | Todos os workflows YAML validam localmente; nenhuma ocorrência de `continue-on-error` ou `|| true`. |
 
-O baseline anterior a esta rodada na branch tinha 5.844 testes aprovados e 68 skipped. O resultado final adiciona seis testes BI e mantém o número de skipped e nenhuma falha. O CI remoto da branch ainda não foi executado; a prova de sucesso depende de PR e dos checks do GitHub.
+O baseline anterior a esta rodada na branch tinha 5.844 testes aprovados e 68 skipped. A validação atual da PR registra 5.851 aprovados, 68 skipped e 0 falhas; inclui seis testes BI e um teste de coercão/defaults do formulário. Typecheck, build, lint e audit locais passaram. O último CI remoto disponível é do SHA anterior à migração Zod e ainda não prova a correção; os novos checks da PR são necessários.
+
+### Estado remoto da PR #176 antes da migração Zod
+
+No SHA `0f13b6e9a531cfb04aa5042e13b98e0373cb28a8`, Bundle Size Check, Portal Sicoob, CodeQL e Lighthouse passaram. Security Scan e Qualidade contínua falharam pelo alerta Zod 3; E2E falhou no passo de credenciais porque o projeto isolado de homologação não está configurado; Copilot Code Review falhou por HTTP 402/quota. Após o novo commit, todos os checks precisam ser reavaliados no SHA atualizado.
 
 ### Segurança de Supabase
 
