@@ -84,10 +84,14 @@ test('chamadores do webhook-dispatcher leem segredo dedicado do Vault antes da c
 
   assert.ok(retryStart > 0, 'a migration deve substituir os dois chamadores protegidos');
   assert.match(dispatcher, /requireInternalService\(req, "WEBHOOK_DISPATCHER_SECRET"\)/);
+  assert.match(dispatcher, /target_webhook_id: z\.string\(\)\.uuid\(\)\.optional\(\)/);
+  assert.match(dispatcher, /retry_after_attempt: z\.number\(\)\.int\(\)\.min\(0\)\.max\(4\)\.optional\(\)/);
+  assert.match(dispatcher, /hooksQuery = hooksQuery\.eq\("id", target_webhook_id\)\.eq\("active", true\)/);
+  assert.match(dispatcher, /let attempt = retry_after_attempt \?\? 0/);
   assert.match(read('docs/secrets.md'), /`WEBHOOK_DISPATCHER_SECRET`[\s\S]*`webhook_dispatcher_secret`/);
   for (const [name, source, call] of [
     ['trigger', trigger, 'extensions.http_post('],
-    ['retry', retry, 'net.http_post('],
+    ['retry', retry, 'extensions.http_post('],
   ]) {
     assert.match(source, /name = 'sicoob_project_url'/, `${name} deve ler a URL do Vault`);
     assert.match(source, /name = 'webhook_dispatcher_secret'/, `${name} deve ler o segredo dedicado do Vault`);
@@ -97,6 +101,10 @@ test('chamadores do webhook-dispatcher leem segredo dedicado do Vault antes da c
 
   assert.match(migration, /REVOKE ALL ON FUNCTION public\.retry_failed_webhook_deliveries\(\)[\s\S]*FROM PUBLIC, anon, authenticated/);
   assert.match(migration, /REVOKE ALL ON FUNCTION public\.dispatch_quote_webhook_event\(\)[\s\S]*FROM PUBLIC, anon, authenticated/);
+  assert.match(retry, /extensions\.http_post\(/, 'retry deve usar o schema onde pg_net é instalado pelo histórico');
+  assert.doesNotMatch(retry, /net\.http_post\(/, 'retry não deve depender do schema net');
+  assert.match(retry, /'target_webhook_id', rec\.webhook_id/);
+  assert.match(retry, /'retry_after_attempt', rec\.attempt/);
   assert.doesNotMatch(migration, /Authorization|service_role_key|https:\/\/[a-z0-9-]+\.supabase\.co/i);
 });
 

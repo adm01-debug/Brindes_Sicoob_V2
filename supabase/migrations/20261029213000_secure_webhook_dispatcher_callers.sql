@@ -115,7 +115,7 @@ BEGIN
 
   PERFORM extensions.http_post(
     url := v_project_url || '/functions/v1/webhook-dispatcher',
-    body := jsonb_build_object('event', v_event, 'payload', v_payload)::text,
+    body := jsonb_build_object('event', v_event, 'payload', v_payload),
     params := '{}'::jsonb,
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
@@ -169,34 +169,38 @@ BEGIN
 
   FOR rec IN
     WITH latest AS (
-      SELECT DISTINCT ON (d.webhook_id, d.event, d.payload_hash)
+      SELECT DISTINCT ON (d.webhook_id, d.event, d.payload)
         d.id, d.webhook_id, d.event, d.payload, d.attempt, d.success
       FROM public.webhook_deliveries AS d
       WHERE d.delivered_at > now() - interval '1 hour'
-      ORDER BY d.webhook_id, d.event, d.payload_hash, d.attempt DESC
+      ORDER BY d.webhook_id, d.event, d.payload, d.delivered_at DESC, d.attempt DESC, d.id DESC
     )
     SELECT l.*, w.active, w.retry_policy
     FROM latest AS l
     JOIN public.outbound_webhooks AS w ON w.id = l.webhook_id
     WHERE l.success = false AND w.active = true
   LOOP
-    v_max_attempts := COALESCE((rec.retry_policy->>'max_attempts')::integer, 3);
+    v_max_attempts := LEAST(5, GREATEST(1, COALESCE((rec.retry_policy->>'max_attempts')::integer, 3)));
 
     IF rec.attempt >= v_max_attempts THEN
       v_skipped := v_skipped + 1;
       CONTINUE;
     END IF;
 
-    PERFORM net.http_post(
+    PERFORM extensions.http_post(
       url := v_project_url || '/functions/v1/webhook-dispatcher',
+      body := jsonb_build_object(
+        'event', rec.event,
+        'payload', rec.payload,
+        'target_webhook_id', rec.webhook_id,
+        'retry_after_attempt', rec.attempt
+      ),
+      params := '{}'::jsonb,
       headers := jsonb_build_object(
         'Content-Type', 'application/json',
         'x-sicoob-internal-secret', v_dispatcher_secret
       ),
-      body := jsonb_build_object(
-        'event', rec.event,
-        'payload', rec.payload
-      )
+      timeout_milliseconds := 5000
     );
     v_retried := v_retried + 1;
   END LOOP;

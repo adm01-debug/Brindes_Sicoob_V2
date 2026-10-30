@@ -61,7 +61,6 @@ try:
       CREATE ROLE service_role;
       CREATE SCHEMA vault;
       CREATE SCHEMA extensions;
-      CREATE SCHEMA net;
       CREATE TABLE vault.decrypted_secrets(name text, decrypted_secret text, updated_at timestamptz DEFAULT now());
       CREATE TABLE public.webhook_dispatch_test_requests(
         id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -69,16 +68,7 @@ try:
         headers jsonb NOT NULL,
         body jsonb NOT NULL
       );
-      CREATE FUNCTION extensions.http_post(url text, body text, params jsonb, headers jsonb, timeout_milliseconds integer)
-      RETURNS bigint LANGUAGE plpgsql AS $$
-      DECLARE request_id bigint;
-      BEGIN
-        INSERT INTO public.webhook_dispatch_test_requests(target_url, headers, body)
-        VALUES (url, headers, body::jsonb) RETURNING id INTO request_id;
-        RETURN request_id;
-      END;
-      $$;
-      CREATE FUNCTION net.http_post(url text, headers jsonb, body jsonb)
+      CREATE FUNCTION extensions.http_post(url text, body jsonb, params jsonb, headers jsonb, timeout_milliseconds integer)
       RETURNS bigint LANGUAGE plpgsql AS $$
       DECLARE request_id bigint;
       BEGIN
@@ -198,15 +188,26 @@ try:
     sql(f"""
       INSERT INTO vault.decrypted_secrets(name,decrypted_secret) VALUES
         ('sicoob_project_url','{PROJECT_URL}'), ('webhook_dispatcher_secret','{SECRET}');
+      INSERT INTO public.outbound_webhooks(id, active, events, retry_policy)
+      VALUES ('00000000-0000-4000-8000-000000000004', true, ARRAY['quote.created'], '{{"max_attempts":3}}');
       INSERT INTO public.webhook_deliveries(id,webhook_id,event,payload,payload_hash,attempt,success,delivered_at)
       VALUES ('00000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000002',
+        'quote.created','{{"quote_id":"qa"}}','hash-old-qa',1,false,now() - interval '5 minutes');
+      INSERT INTO public.webhook_deliveries(id,webhook_id,event,payload,payload_hash,attempt,success,delivered_at)
+      VALUES ('00000000-0000-4000-8000-000000000006','00000000-0000-4000-8000-000000000002',
         'quote.created','{{"quote_id":"qa"}}','hash-qa',1,false,now());
+      INSERT INTO public.webhook_deliveries(id,webhook_id,event,payload,payload_hash,attempt,success,delivered_at)
+      VALUES ('00000000-0000-4000-8000-000000000005','00000000-0000-4000-8000-000000000004',
+        'quote.created','{{"quote_id":"qa"}}','hash-qa',1,true,now());
     """)
     retry_ok = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
     assert retry_ok["ok"] is True and retry_ok["retried"] == 1, "retry deve preservar entrega com tentativas disponíveis"
     retry_headers = json.loads(scalar("SELECT headers::text FROM public.webhook_dispatch_test_requests ORDER BY id DESC LIMIT 1;"))
+    retry_body = json.loads(scalar("SELECT body::text FROM public.webhook_dispatch_test_requests ORDER BY id DESC LIMIT 1;"))
     assert retry_headers.get("x-sicoob-internal-secret") == SECRET, "retry deve enviar o segredo dedicado"
     assert "Authorization" not in retry_headers, "retry não deve transmitir service_role como bearer"
+    assert retry_body.get("target_webhook_id") == "00000000-0000-4000-8000-000000000002", "retry deve indicar somente o webhook que falhou"
+    assert retry_body.get("retry_after_attempt") == 1, "retry deve preservar o contador de tentativas"
 
     sql("""
       INSERT INTO public.webhook_deliveries(id,webhook_id,event,payload,payload_hash,attempt,success,delivered_at)
@@ -224,6 +225,7 @@ try:
         "eventos de orçamento, pedido, desconto e kit são preservados; rascunho RE-* é ignorado",
         "retry sem segredo retorna bloqueio fechado",
         "retry válido respeita max_attempts",
+        "retry identifica o hook falho e preserva o contador para evitar fan-out e tentativas infinitas",
         "nenhum chamador envia Authorization/service_role",
     ]
     print(json.dumps(result, ensure_ascii=False, indent=2))
