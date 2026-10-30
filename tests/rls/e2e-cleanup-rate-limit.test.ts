@@ -67,6 +67,7 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
   }) : (null as never);
   const canaryKey = `rls-e2e-${crypto.randomUUID()}`;
   let quotaExhausted = false;
+  let canaryCreated = false;
 
   beforeAll(async () => {
     const { error } = await retryTransientPostgrest(async () => await admin
@@ -79,13 +80,18 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
       return;
     }
     expect(error).toBeNull();
+    canaryCreated = true;
   }, 45_000);
 
   afterAll(async () => {
-    await retryTransientPostgrest(async () => await admin
+    if (!canaryCreated) return;
+    const { data, error } = await retryTransientPostgrest(async () => await admin
       .from('e2e_cleanup_rate_limit')
       .delete()
-      .eq('key', canaryKey));
+      .eq('key', canaryKey)
+      .select('key'));
+    expect(error).toBeNull();
+    expect(data).toHaveLength(1);
   }, 45_000);
 
   it('SELECT como anon retorna zero linhas (policy deny_all)', async (ctx) => {

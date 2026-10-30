@@ -11,9 +11,11 @@ on:
 permissions:
   contents: read
 
+# Não cancela uma execução ativa: os testes podem manter fixtures temporárias
+# no staging até que o cleanup termine.
 concurrency:
   group: e2e-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   validate-source:
@@ -32,6 +34,7 @@ jobs:
 
   e2e:
     needs: validate-source
+    environment: e2e-staging
     runs-on: ubuntu-latest
     # O gate cobre 168 combinações de rota/viewport além do smoke. O limite
     # inclui instalação, servidor e upload das evidências no runner hospedado.
@@ -44,23 +47,23 @@ jobs:
       FORCE_COLOR: '0'
       # Falha imediatamente se algum spec ainda tiver `test.only` esquecido.
       PWTEST_FORBID_ONLY: '1'
-      E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
-      E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
-      E2E_VIEWER_EMAIL: ${{ secrets.E2E_VIEWER_EMAIL }}
-      E2E_VIEWER_PASSWORD: ${{ secrets.E2E_VIEWER_PASSWORD }}
-      E2E_MANAGER_EMAIL: ${{ secrets.E2E_MANAGER_EMAIL }}
-      E2E_MANAGER_PASSWORD: ${{ secrets.E2E_MANAGER_PASSWORD }}
-      E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
-      E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
-      E2E_ADMIN_TOTP_SECRET: ${{ secrets.E2E_ADMIN_TOTP_SECRET }}
-      E2E_DEV_EMAIL: ${{ secrets.E2E_DEV_EMAIL }}
-      E2E_DEV_PASSWORD: ${{ secrets.E2E_DEV_PASSWORD }}
-      E2E_DEV_TOTP_SECRET: ${{ secrets.E2E_DEV_TOTP_SECRET }}
-      E2E_CLEANUP_TOKEN: ${{ secrets.E2E_CLEANUP_TOKEN }}
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-      VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
-      E2E_SUPABASE_PROJECT_ID: ${{ secrets.E2E_SUPABASE_PROJECT_ID }}
+      E2E_USER_EMAIL: ${{ secrets.E2E_STAGING_USER_EMAIL }}
+      E2E_USER_PASSWORD: ${{ secrets.E2E_STAGING_USER_PASSWORD }}
+      E2E_VIEWER_EMAIL: ${{ secrets.E2E_STAGING_VIEWER_EMAIL }}
+      E2E_VIEWER_PASSWORD: ${{ secrets.E2E_STAGING_VIEWER_PASSWORD }}
+      E2E_MANAGER_EMAIL: ${{ secrets.E2E_STAGING_MANAGER_EMAIL }}
+      E2E_MANAGER_PASSWORD: ${{ secrets.E2E_STAGING_MANAGER_PASSWORD }}
+      E2E_ADMIN_EMAIL: ${{ secrets.E2E_STAGING_ADMIN_EMAIL }}
+      E2E_ADMIN_PASSWORD: ${{ secrets.E2E_STAGING_ADMIN_PASSWORD }}
+      E2E_ADMIN_TOTP_SECRET: ${{ secrets.E2E_STAGING_ADMIN_TOTP_SECRET }}
+      E2E_DEV_EMAIL: ${{ secrets.E2E_STAGING_DEV_EMAIL }}
+      E2E_DEV_PASSWORD: ${{ secrets.E2E_STAGING_DEV_PASSWORD }}
+      E2E_DEV_TOTP_SECRET: ${{ secrets.E2E_STAGING_DEV_TOTP_SECRET }}
+      E2E_CLEANUP_TOKEN: ${{ secrets.E2E_STAGING_CLEANUP_TOKEN }}
+      VITE_SUPABASE_URL: ${{ secrets.E2E_STAGING_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_STAGING_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_PROJECT_ID: ${{ vars.E2E_SUPABASE_PROJECT_ID }}
+      E2E_SUPABASE_PROJECT_ID: ${{ vars.E2E_SUPABASE_PROJECT_ID }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -81,8 +84,8 @@ jobs:
             echo "::error title=Projeto E2E não configurado::Configure E2E_SUPABASE_PROJECT_ID, VITE_SUPABASE_PROJECT_ID e VITE_SUPABASE_URL do projeto isolado de homologação."
             exit 1
           fi
-          if [[ "$E2E_SUPABASE_PROJECT_ID" == "cfmzkthhgliqelozlmwu" || "$VITE_SUPABASE_PROJECT_ID" != "$E2E_SUPABASE_PROJECT_ID" || "$VITE_SUPABASE_URL" != "https://${E2E_SUPABASE_PROJECT_ID}.supabase.co" ]]; then
-            echo "::error title=Projeto E2E inválido::A suíte só pode executar contra o projeto isolado identificado por E2E_SUPABASE_PROJECT_ID; o projeto canônico é bloqueado."
+          if [[ "$E2E_SUPABASE_PROJECT_ID" == "cfmzkthhgliqelozlmwu" || "$E2E_SUPABASE_PROJECT_ID" == "doufsxqlfjyuvxuezpln" || "$VITE_SUPABASE_PROJECT_ID" != "$E2E_SUPABASE_PROJECT_ID" || "$VITE_SUPABASE_URL" != "https://${E2E_SUPABASE_PROJECT_ID}.supabase.co" ]]; then
+            echo "::error title=Projeto E2E inválido::A suíte só pode executar contra o projeto isolado identificado por E2E_SUPABASE_PROJECT_ID; o banco Sicoob e o catálogo de produtos são bloqueados."
             exit 1
           fi
           if [[ -z "$E2E_USER_EMAIL" || -z "$E2E_USER_PASSWORD" || -z "$E2E_VIEWER_EMAIL" || -z "$E2E_VIEWER_PASSWORD" || -z "$E2E_MANAGER_EMAIL" || -z "$E2E_MANAGER_PASSWORD" || -z "$E2E_ADMIN_EMAIL" || -z "$E2E_ADMIN_PASSWORD" || -z "$E2E_ADMIN_TOTP_SECRET" || -z "$E2E_DEV_EMAIL" || -z "$E2E_DEV_PASSWORD" || -z "$E2E_DEV_TOTP_SECRET" ]]; then
@@ -94,7 +97,7 @@ jobs:
         env:
           RUN_REMOTE_AUTHZ_TESTS: '1'
           RUN_REMOTE_RLS_TESTS: '1'
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_STAGING_SERVICE_ROLE_KEY }}
         run: |
           npx vitest run \
             --no-file-parallelism \
@@ -214,9 +217,10 @@ jobs:
     name: E2E regression — shard ${{ matrix.shard }}/3
     needs: e2e
     if: needs.e2e.result == 'success'
+    environment: e2e-staging
     runs-on: ubuntu-latest
     # Três shards mantêm cada lote abaixo do limite hospedado de 40 minutos.
-    # A serialização permanece necessária porque as contas são canônicas.
+    # A serialização protege as contas sintéticas e as fixtures do staging.
     timeout-minutes: 40
     strategy:
       fail-fast: false
@@ -229,23 +233,23 @@ jobs:
       CI: 'true'
       FORCE_COLOR: '0'
       PWTEST_FORBID_ONLY: '1'
-      E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
-      E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
-      E2E_VIEWER_EMAIL: ${{ secrets.E2E_VIEWER_EMAIL }}
-      E2E_VIEWER_PASSWORD: ${{ secrets.E2E_VIEWER_PASSWORD }}
-      E2E_MANAGER_EMAIL: ${{ secrets.E2E_MANAGER_EMAIL }}
-      E2E_MANAGER_PASSWORD: ${{ secrets.E2E_MANAGER_PASSWORD }}
-      E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
-      E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
-      E2E_ADMIN_TOTP_SECRET: ${{ secrets.E2E_ADMIN_TOTP_SECRET }}
-      E2E_DEV_EMAIL: ${{ secrets.E2E_DEV_EMAIL }}
-      E2E_DEV_PASSWORD: ${{ secrets.E2E_DEV_PASSWORD }}
-      E2E_DEV_TOTP_SECRET: ${{ secrets.E2E_DEV_TOTP_SECRET }}
-      E2E_CLEANUP_TOKEN: ${{ secrets.E2E_CLEANUP_TOKEN }}
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-      VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
-      E2E_SUPABASE_PROJECT_ID: ${{ secrets.E2E_SUPABASE_PROJECT_ID }}
+      E2E_USER_EMAIL: ${{ secrets.E2E_STAGING_USER_EMAIL }}
+      E2E_USER_PASSWORD: ${{ secrets.E2E_STAGING_USER_PASSWORD }}
+      E2E_VIEWER_EMAIL: ${{ secrets.E2E_STAGING_VIEWER_EMAIL }}
+      E2E_VIEWER_PASSWORD: ${{ secrets.E2E_STAGING_VIEWER_PASSWORD }}
+      E2E_MANAGER_EMAIL: ${{ secrets.E2E_STAGING_MANAGER_EMAIL }}
+      E2E_MANAGER_PASSWORD: ${{ secrets.E2E_STAGING_MANAGER_PASSWORD }}
+      E2E_ADMIN_EMAIL: ${{ secrets.E2E_STAGING_ADMIN_EMAIL }}
+      E2E_ADMIN_PASSWORD: ${{ secrets.E2E_STAGING_ADMIN_PASSWORD }}
+      E2E_ADMIN_TOTP_SECRET: ${{ secrets.E2E_STAGING_ADMIN_TOTP_SECRET }}
+      E2E_DEV_EMAIL: ${{ secrets.E2E_STAGING_DEV_EMAIL }}
+      E2E_DEV_PASSWORD: ${{ secrets.E2E_STAGING_DEV_PASSWORD }}
+      E2E_DEV_TOTP_SECRET: ${{ secrets.E2E_STAGING_DEV_TOTP_SECRET }}
+      E2E_CLEANUP_TOKEN: ${{ secrets.E2E_STAGING_CLEANUP_TOKEN }}
+      VITE_SUPABASE_URL: ${{ secrets.E2E_STAGING_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_STAGING_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_PROJECT_ID: ${{ vars.E2E_SUPABASE_PROJECT_ID }}
+      E2E_SUPABASE_PROJECT_ID: ${{ vars.E2E_SUPABASE_PROJECT_ID }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

@@ -11,6 +11,25 @@ ausentes no run acima. As demais credenciais de E2E e compliance não foram
 verificadas nesta execução e não devem ser classificadas como ausentes sem
 evidência do painel ou de um gate que as valide.
 
+## E2E em homologação isolada
+
+Os jobs E2E passaram a usar o environment `e2e-staging` e nomes exclusivos para
+não herdar credenciais genéricas do repositório. O preflight bloqueia os projetos
+Sicoob (`cfmzkthhgliqelozlmwu`) e catálogo de produtos (`doufsxqlfjyuvxuezpln`),
+exige URL e project ref coincidentes e para antes de qualquer chamada remota quando
+algum valor estiver ausente.
+
+Configurar no environment `e2e-staging`:
+
+- variável `E2E_SUPABASE_PROJECT_ID` (ref de projeto descartável, nunca os dois refs bloqueados acima);
+- secrets `E2E_STAGING_SUPABASE_URL`, `E2E_STAGING_SUPABASE_PUBLISHABLE_KEY`, `E2E_STAGING_SERVICE_ROLE_KEY` e `E2E_STAGING_CLEANUP_TOKEN`;
+- secrets de personas: `E2E_STAGING_USER_EMAIL/PASSWORD`, `E2E_STAGING_VIEWER_EMAIL/PASSWORD`, `E2E_STAGING_MANAGER_EMAIL/PASSWORD`, `E2E_STAGING_ADMIN_EMAIL/PASSWORD/TOTP_SECRET` e `E2E_STAGING_DEV_EMAIL/PASSWORD/TOTP_SECRET`.
+
+Estado verificado em 30/10/2026: o job antigo passou o preflight com secrets do
+repositório, mas não havia `E2E_SUPABASE_PROJECT_ID` nem environment `e2e-staging`
+configurados. Não consultei valores. A nova configuração ainda precisa de uma
+execução que conclua o preflight e prove as jornadas no projeto descartável.
+
 ## Lidos pelas edge functions (`Deno.env.get`)
 
 | Variável | Onde é lida (função) | Configurado em |
