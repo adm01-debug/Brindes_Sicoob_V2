@@ -18,7 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getPriceFreshness } from "@/utils/price-freshness";
 import type { SelectedCompanyInfo, SelectedContactInfo } from "@/components/quotes/CompanyContactSelector";
 import type { ExternalVariantStock } from "@/hooks/useExternalVariantStock";
-import { getQuoteItemVariantIdentity } from "@/hooks/quotes/quoteVariantIdentity";
+import { findMergeableQuoteItemIndex, getQuoteItemVariantIdentity } from "@/hooks/quotes/quoteVariantIdentity";
 import type { QuoteBuilderStep } from "@/components/quotes/QuoteBuilderStepper";
 import { calculateQuoteTotals, formatCurrency, calculateItemTotal, calculateItemPersonalizationTotal } from "@/utils/quote-calculations";
 import type { Product, DiscountType, DeliveryMode } from "@/types/quote-builder";
@@ -508,7 +508,7 @@ export function useQuoteBuilderState() {
     const newItem = buildQuoteItem(product, variant);
     const { color_name: colorName, size_code: sizeCode } = newItem;
     
-    const existingIndex = items.findIndex(i => i.product_id === product.id && i.color_name === colorName && i.size_code === sizeCode);
+    const existingIndex = findMergeableQuoteItemIndex(items, newItem);
     
     if (existingIndex >= 0) {
       setItems(prev => prev.map((item, idx) => idx === existingIndex ? { ...item, quantity: item.quantity + 1 } : item));
