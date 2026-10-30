@@ -429,9 +429,9 @@ Observação: o manifesto marca `runtime: "source-only"` só em 4 delas (`edge-a
 ### EDG-24  Relatórios agendados: envio sem cron e isolamento incompleto
 - Status: PARCIAL
 - Origem: `src/components/reports/ScheduledReportsManager.tsx` (montado em `src/pages/CustomizableDashboard.tsx:72`) e `src/hooks/useScheduledReports.ts`; `docs/EDGE_FUNCTIONS.md:46,54`.
-- Evidência atual: duas funções duplicam o trabalho e nenhuma tem cron. `process-scheduled-reports` ainda consulta orçamentos/pedidos de **todos** os vendedores sem filtrar `user_id` (`index.ts`), e ambos ainda dependem de `RESEND_API_KEY`. Em `send-scheduled-reports`, o estado agora só avança após resposta 2xx com recibo do Resend e gravação bem-sucedida do agendamento; a chave idempotente usa o ID do relatório e o horário previsto. Testes cobrem chave ausente, 429/5xx, recibo inválido, sucesso e falha de persistência. O remetente fixo permanece "Promo Gifts <noreply@promogifts.com.br>" e tipos `clients`/`products` ainda não são gerados.
-- O que falta: manter uma só função, filtrar pelo dono, definir remetente Sicoob, implementar tipos faltantes e agendar com credenciais configuradas.
-- Impacto no negócio: gestor agenda relatório e não recebe; se ligado como está, pode receber dados de outros vendedores.
+- Evidência atual: duas funções duplicam o trabalho e nenhuma tem cron. Ambos os workers agora filtram orçamentos e pedidos por `seller_id = scheduled_reports.user_id`; o processamento também falha se a consulta retornar erro. O estado só avança após resposta 2xx com recibo do Resend e confirmação de que a linha do agendamento foi atualizada; a chave idempotente usa o ID do relatório e o horário previsto. Testes cobrem chave ausente, 429/5xx, recibo inválido, sucesso e falha de persistência/escopo. Ambos dependem de `RESEND_API_KEY`; o remetente fixo permanece "Promo Gifts <noreply@promogifts.com.br>" e tipos `clients`/`products` ainda não são gerados.
+- O que falta: manter uma só função, definir remetente Sicoob, implementar tipos faltantes e agendar com credenciais configuradas.
+- Impacto no negócio: gestor agenda relatório e não recebe; as duas funções continuam sem execução automática.
 - Esforço: M
 - Prioridade: P2
 
