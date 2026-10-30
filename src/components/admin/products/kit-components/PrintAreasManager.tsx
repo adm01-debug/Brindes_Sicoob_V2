@@ -12,10 +12,166 @@ import {
 } from '@/components/ui/alert-dialog';
 import { PrintAreaForm } from './PrintAreaForm';
 import { fetchPrintAreas, createPrintArea, updatePrintArea, deletePrintArea } from './api';
-import type { PrintArea, PrintAreaFormData } from './types';
-import { EMPTY_PRINT_AREA } from './types';
+import { type PrintArea, type PrintAreaFormData, EMPTY_PRINT_AREA } from "./types";
 
-export function PrintAreasManager({ componentId, componentName }: { componentId: string; componentName: string }) {
+interface AreaRowProps {
+  area: PrintArea;
+  editing: boolean;
+  isSaving: boolean;
+  onCancelEdit: () => void;
+  onDelete: (area: PrintArea) => void;
+  onEdit: (areaId: string) => void;
+  onUpdate: (areaId: string, data: PrintAreaFormData) => void;
+}
+
+function initialFormData(area: PrintArea): PrintAreaFormData {
+  return {
+    location_code: area.location_code || '',
+    location_name: area.location_name || '',
+    technique_name: area.technique_name || '',
+    technique_id: area.technique_id || '',
+    max_width_mm: area.max_width_mm,
+    max_height_mm: area.max_height_mm,
+    tabela_preco_id: area.tabela_preco_id || '',
+    display_order: area.display_order ?? 0,
+    notes: area.notes || '',
+  };
+}
+
+function printAreaName(area: PrintArea): string {
+  return area.location_name || area.location_code || 'Sem local';
+}
+
+function PrintAreaDisplay({
+  area,
+  onDelete,
+  onEdit,
+}: Pick<AreaRowProps, 'area' | 'onDelete' | 'onEdit'>) {
+  const techniqueBadge = area.area_name?.includes(' — ')
+    ? area.area_name.split(' — ')[1]
+    : area.technique_name;
+  return (
+    <div className="flex items-center gap-2 rounded-md border border-border/50 p-1.5 text-[10px] group hover:bg-accent/30 transition-colors">
+      <Target className="h-3 w-3 text-primary/60 shrink-0" />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1">
+          <span className="font-medium truncate">{printAreaName(area)}</span>
+          {techniqueBadge && <Badge variant="outline" className="text-[8px] px-1 py-0 shrink-0">{techniqueBadge}</Badge>}
+        </div>
+        <div className="flex items-center gap-1.5 text-muted-foreground">
+          {(area.max_width_mm || area.max_height_mm) && <span>{area.max_width_mm ?? '?'}×{area.max_height_mm ?? '?'} mm</span>}
+          {area.location_code && <span className="font-mono">{area.location_code}</span>}
+        </div>
+      </div>
+      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+        <Button type="button" variant="ghost" size="icon" aria-label="Editar" className="h-5 w-5" onClick={() => onEdit(area.id)}>
+          <Pencil className="h-2.5 w-2.5" />
+        </Button>
+        <Button type="button" variant="ghost" size="icon" aria-label="Excluir" className="h-5 w-5 text-destructive hover:text-destructive" onClick={() => onDelete(area)}>
+          <Trash2 className="h-2.5 w-2.5" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function PrintAreaRow({ area, editing, isSaving, onCancelEdit, onDelete, onEdit, onUpdate }: AreaRowProps) {
+  if (editing) {
+    return (
+      <PrintAreaForm
+        initial={initialFormData(area)}
+        onSave={(data) => onUpdate(area.id, data)}
+        onCancel={onCancelEdit}
+        isSaving={isSaving}
+      />
+    );
+  }
+  return <PrintAreaDisplay area={area} onDelete={onDelete} onEdit={onEdit} />;
+}
+
+function LoadingError({ error }: { error: unknown }) {
+  if (!error) return null;
+  const missingTable = error instanceof Error && error.message.includes('kit_component_print_areas');
+  return (
+    <div className="flex items-center gap-1.5 text-[10px] text-destructive py-1">
+      <AlertCircle className="h-3 w-3" />
+      {missingTable ? 'Tabela kit_component_print_areas não existe no banco externo. Crie-a primeiro.' : 'Erro ao carregar áreas'}
+    </div>
+  );
+}
+
+interface PrintAreaListProps {
+  areas: PrintArea[];
+  editingId: string | null;
+  error: unknown;
+  isCreating: boolean;
+  isLoading: boolean;
+  isSaving: boolean;
+  onCancelCreate: () => void;
+  onCancelEdit: () => void;
+  onCreate: (data: PrintAreaFormData) => void;
+  onDelete: (area: PrintArea) => void;
+  onEdit: (areaId: string) => void;
+  onStartCreate: () => void;
+  onUpdate: (areaId: string, data: PrintAreaFormData) => void;
+}
+
+function PrintAreaList(props: PrintAreaListProps) {
+  return (
+    <div className="ml-6 mt-1.5 space-y-1.5">
+      {props.isLoading && <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground py-1"><Loader2 className="h-3 w-3 animate-spin" /> Carregando áreas...</div>}
+      <LoadingError error={props.error} />
+      {!props.isLoading && !props.error && props.areas.length === 0 && !props.isCreating && <p className="text-[10px] text-muted-foreground py-1">Nenhuma área cadastrada</p>}
+      {props.areas.map((area) => (
+        <PrintAreaRow
+          key={area.id}
+          area={area}
+          editing={props.editingId === area.id}
+          isSaving={props.isSaving}
+          onCancelEdit={props.onCancelEdit}
+          onDelete={props.onDelete}
+          onEdit={props.onEdit}
+          onUpdate={props.onUpdate}
+        />
+      ))}
+      {props.isCreating && (
+        <PrintAreaForm
+          initial={{ ...EMPTY_PRINT_AREA, display_order: props.areas.length }}
+          onSave={props.onCreate}
+          onCancel={props.onCancelCreate}
+          isSaving={props.isSaving}
+        />
+      )}
+      {!props.isCreating && !props.error && (
+        <Button type="button" variant="ghost" size="sm" className="h-5 text-[10px] px-1.5 gap-0.5" onClick={props.onStartCreate}>
+          <Plus className="h-2.5 w-2.5" /> Área
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function PrintAreasTrigger({ areaCount, isOpen }: { areaCount: number; isOpen: boolean }) {
+  return (
+    <CollapsibleTrigger asChild>
+      <button
+        type="button"
+        className={cn(
+          'flex items-center gap-1.5 text-[10px] px-2 py-1 rounded-md transition-colors',
+          'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+          isOpen && 'text-primary bg-primary/10',
+          areaCount > 0 && !isOpen && 'text-primary',
+        )}
+      >
+        <Target className="h-3 w-3" /> Áreas de Gravação
+        {areaCount > 0 && <Badge variant="secondary" className="h-3.5 min-w-[14px] px-1 text-[8px]">{areaCount}</Badge>}
+        {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+      </button>
+    </CollapsibleTrigger>
+  );
+}
+
+export function PrintAreasManager({ componentId }: { componentId: string; componentName: string }) {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -23,14 +179,14 @@ export function PrintAreasManager({ componentId, componentName }: { componentId:
   const [isSaving, setIsSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<PrintArea | null>(null);
 
-  const { data: areas = [], isLoading, error } = useQuery({
+  const { data: areas = [], isLoading, error } = useQuery(({
     queryKey: ['kit-print-areas', componentId],
     queryFn: () => fetchPrintAreas(componentId),
     enabled: !!componentId && isOpen,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
     placeholderData: (prev) => prev,
-  });
+  }));
 
   const invalidate = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['kit-print-areas', componentId] });
@@ -108,124 +264,28 @@ export function PrintAreasManager({ componentId, componentName }: { componentId:
   return (
     <>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger asChild>
-          <button
-            type="button"
-            className={cn(
-              'flex items-center gap-1.5 text-[10px] px-2 py-1 rounded-md transition-colors',
-              'text-muted-foreground hover:text-foreground hover:bg-accent/50',
-              isOpen && 'text-primary bg-primary/10',
-              areas.length > 0 && !isOpen && 'text-primary'
-            )}
-          >
-            <Target className="h-3 w-3" />
-            Áreas de Gravação
-            {areas.length > 0 && (
-              <Badge variant="secondary" className="h-3.5 min-w-[14px] px-1 text-[8px]">{areas.length}</Badge>
-            )}
-            {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-          </button>
-        </CollapsibleTrigger>
+        <PrintAreasTrigger areaCount={areas.length} isOpen={isOpen} />
 
         <CollapsibleContent>
-          <div className="ml-6 mt-1.5 space-y-1.5">
-            {isLoading && (
-              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground py-1">
-                <Loader2 className="h-3 w-3 animate-spin" /> Carregando áreas...
-              </div>
-            )}
-
-            {error && (
-              <div className="flex items-center gap-1.5 text-[10px] text-destructive py-1">
-                <AlertCircle className="h-3 w-3" />
-                {error instanceof Error && error.message.includes('kit_component_print_areas')
-                  ? 'Tabela kit_component_print_areas não existe no banco externo. Crie-a primeiro.'
-                  : 'Erro ao carregar áreas'}
-              </div>
-            )}
-
-            {!isLoading && !error && areas.length === 0 && !isCreating && (
-              <p className="text-[10px] text-muted-foreground py-1">Nenhuma área cadastrada</p>
-            )}
-
-            {areas.map((area) => {
-              if (editingId === area.id) {
-                return (
-                  <PrintAreaForm
-                    key={area.id}
-                    initial={{
-                      location_code: area.location_code || '',
-                      location_name: area.location_name || '',
-                      technique_name: area.technique_name || '',
-                      technique_id: area.technique_id || '',
-                      max_width_mm: area.max_width_mm,
-                      max_height_mm: area.max_height_mm,
-                      tabela_preco_id: area.tabela_preco_id || '',
-                      display_order: area.display_order ?? 0,
-                      notes: area.notes || '',
-                    }}
-                    onSave={(data) => handleUpdate(area.id, data)}
-                    onCancel={() => setEditingId(null)}
-                    isSaving={isSaving}
-                  />
-                );
-              }
-
-              const techniqueBadge = area.area_name?.includes(' — ')
-                ? area.area_name.split(' — ')[1]
-                : area.technique_name;
-
-              return (
-                <div key={area.id} className="flex items-center gap-2 rounded-md border border-border/50 p-1.5 text-[10px] group hover:bg-accent/30 transition-colors">
-                  <Target className="h-3 w-3 text-primary/60 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1">
-                      <span className="font-medium truncate">{area.location_name || area.location_code || 'Sem local'}</span>
-                      {techniqueBadge && (
-                        <Badge variant="outline" className="text-[8px] px-1 py-0 shrink-0">{techniqueBadge}</Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                      {(area.max_width_mm || area.max_height_mm) && (
-                        <span>{area.max_width_mm ?? '?'}×{area.max_height_mm ?? '?'} mm</span>
-                      )}
-                      {area.location_code && <span className="font-mono">{area.location_code}</span>}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                    <Button type="button" variant="ghost" size="icon" aria-label="Editar" className="h-5 w-5"
-                      onClick={() => { setEditingId(area.id); setIsCreating(false); }}>
-                      <Pencil className="h-2.5 w-2.5" />
-                    </Button>
-                    <Button type="button" variant="ghost" size="icon" aria-label="Excluir" className="h-5 w-5 text-destructive hover:text-destructive"
-                      onClick={() => setDeleteTarget(area)}>
-                      <Trash2 className="h-2.5 w-2.5" />
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-
-            {isCreating && (
-              <PrintAreaForm
-                initial={{ ...EMPTY_PRINT_AREA, display_order: areas.length }}
-                onSave={handleCreate}
-                onCancel={() => setIsCreating(false)}
-                isSaving={isSaving}
-              />
-            )}
-
-            {!isCreating && !error && (
-              <Button type="button" variant="ghost" size="sm" className="h-5 text-[10px] px-1.5 gap-0.5"
-                onClick={() => { setIsCreating(true); setEditingId(null); }}>
-                <Plus className="h-2.5 w-2.5" /> Área
-              </Button>
-            )}
-          </div>
+          <PrintAreaList
+            areas={areas}
+            editingId={editingId}
+            error={error}
+            isCreating={isCreating}
+            isLoading={isLoading}
+            isSaving={isSaving}
+            onCancelCreate={() => setIsCreating(false)}
+            onCancelEdit={() => setEditingId(null)}
+            onCreate={handleCreate}
+            onDelete={setDeleteTarget}
+            onEdit={(areaId) => { setEditingId(areaId); setIsCreating(false); }}
+            onStartCreate={() => { setIsCreating(true); setEditingId(null); }}
+            onUpdate={handleUpdate}
+          />
         </CollapsibleContent>
       </Collapsible>
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+      {(<AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir área de gravação?</AlertDialogTitle>
@@ -241,7 +301,7 @@ export function PrintAreasManager({ componentId, componentName }: { componentId:
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog>
+      </AlertDialog>)}
     </>
   );
 }

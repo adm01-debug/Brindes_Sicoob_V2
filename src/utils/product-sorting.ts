@@ -1,6 +1,71 @@
 import type { Product } from "@/hooks/useProducts";
 import type { SupplierSalesEntry } from "@/hooks/useSupplierSalesRanking";
 
+interface SortOptions {
+  promoSalesMap?: Map<string, number>;
+  supplierSalesMap?: Map<string, SupplierSalesEntry>;
+  skipSort?: boolean;
+}
+
+type ProductComparator = (first: Product, second: Product) => number;
+
+function creationTime(product: Product): number {
+  if (!product.created_at) return 0;
+  return typeof product.created_at === 'number' ? product.created_at : new Date(product.created_at).getTime();
+}
+
+const BASIC_COMPARATORS: Record<string, ProductComparator> = {
+  name: (first, second) => first.name.localeCompare(second.name),
+  'price-asc': (first, second) => first.price - second.price,
+  'price-desc': (first, second) => second.price - first.price,
+  stock: (first, second) => (second.stock || 0) - (first.stock || 0),
+  newest: (first, second) => creationTime(second) - creationTime(first),
+};
+
+function fallbackSalesScore(product: Product): number {
+  return Number(product.featured) * 2 + Number(product.newArrival);
+}
+
+function productStock(product: Product): number {
+  return product.stock || 0;
+}
+
+function supplierMetrics(map: Map<string, SupplierSalesEntry>, productId: string): { score: number; velocity: number } {
+  const entry = map.get(productId);
+  return { score: entry?.turnoverScore ?? 0, velocity: entry?.velocity7d ?? 0 };
+}
+
+function supplierSalesComparator(map?: Map<string, SupplierSalesEntry>): ProductComparator {
+  if (!map?.size) {
+    return (first, second) => {
+      const firstScore = fallbackSalesScore(first);
+      const secondScore = fallbackSalesScore(second);
+      return secondScore !== firstScore ? secondScore - firstScore : productStock(second) - productStock(first);
+    };
+  }
+  return (first, second) => {
+    const firstMetrics = supplierMetrics(map, first.id);
+    const secondMetrics = supplierMetrics(map, second.id);
+    const scoreDifference = secondMetrics.score - firstMetrics.score;
+    if (scoreDifference !== 0) return scoreDifference;
+    const velocityDifference = secondMetrics.velocity - firstMetrics.velocity;
+    return velocityDifference !== 0 ? velocityDifference : first.name.localeCompare(second.name);
+  };
+}
+
+function promoSalesComparator(map?: Map<string, number>): ProductComparator {
+  return (first, second) => {
+    const difference = (map?.get(second.id) || 0) - (map?.get(first.id) || 0);
+    return difference !== 0 ? difference : first.name.localeCompare(second.name);
+  };
+}
+
+function productComparator(sortBy: string, options?: SortOptions): ProductComparator | undefined {
+  if (sortBy === 'best-seller-supplier') return supplierSalesComparator(options?.supplierSalesMap);
+  if (sortBy === 'best-seller-promo') return promoSalesComparator(options?.promoSalesMap);
+  return BASIC_COMPARATORS[sortBy];
+}
+
 /**
  * Centralized product sorting logic.
  * Used by both the Catalog (Index) and Super Filter (FiltersPage).
@@ -8,71 +73,10 @@ import type { SupplierSalesEntry } from "@/hooks/useSupplierSalesRanking";
 export function sortProducts(
   products: Product[],
   sortBy: string,
-  options?: {
-    promoSalesMap?: Map<string, number>;
-    supplierSalesMap?: Map<string, SupplierSalesEntry>;
-    skipSort?: boolean;
-  }
+  options?: SortOptions,
 ): Product[] {
   if (options?.skipSort) return products;
-
-  switch (sortBy) {
-    case "name":
-      products.sort((a, b) => a.name.localeCompare(b.name));
-      break;
-    case "price-asc":
-      products.sort((a, b) => a.price - b.price);
-      break;
-    case "price-desc":
-      products.sort((a, b) => b.price - a.price);
-      break;
-    case "stock":
-      products.sort((a, b) => (b.stock || 0) - (a.stock || 0));
-      break;
-    case "newest":
-      products.sort((a, b) => {
-        const timeA = a.created_at ? (typeof a.created_at === 'number' ? a.created_at : new Date(a.created_at).getTime()) : 0;
-        const timeB = b.created_at ? (typeof b.created_at === 'number' ? b.created_at : new Date(b.created_at).getTime()) : 0;
-        return timeB - timeA;
-      });
-      break;
-    case "best-seller-supplier": {
-      const sMap = options?.supplierSalesMap;
-      if (sMap && sMap.size > 0) {
-        // Real data from external DB (mv_product_intelligence)
-        products.sort((a, b) => {
-          const aEntry = sMap.get(a.id);
-          const bEntry = sMap.get(b.id);
-          const aScore = aEntry?.turnoverScore ?? 0;
-          const bScore = bEntry?.turnoverScore ?? 0;
-          if (bScore !== aScore) return bScore - aScore;
-          // Desempate: velocidade de saída 7d
-          const aVel = aEntry?.velocity7d ?? 0;
-          const bVel = bEntry?.velocity7d ?? 0;
-          if (bVel !== aVel) return bVel - aVel;
-          return a.name.localeCompare(b.name);
-        });
-      } else {
-        // Fallback: flags do produto (quando MV não populada)
-        products.sort((a, b) => {
-          const aScore = (a.featured ? 2 : 0) + (a.newArrival ? 1 : 0);
-          const bScore = (b.featured ? 2 : 0) + (b.newArrival ? 1 : 0);
-          if (bScore !== aScore) return bScore - aScore;
-          return (b.stock || 0) - (a.stock || 0);
-        });
-      }
-      break;
-    }
-    case "best-seller-promo":
-      products.sort((a, b) => {
-        const map = options?.promoSalesMap;
-        const aCount = map?.get(a.id) || 0;
-        const bCount = map?.get(b.id) || 0;
-        if (bCount !== aCount) return bCount - aCount;
-        return a.name.localeCompare(b.name);
-      });
-      break;
-  }
-
+  const comparator = productComparator(sortBy, options);
+  if (comparator) products.sort(comparator);
   return products;
 }

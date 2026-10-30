@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import * as Lucide from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSimilarKits } from '@/hooks/useSimilarKits';
 import { formatCurrency } from '@/lib/kit-builder';
@@ -20,6 +20,24 @@ interface Props {
 function getIcon(name: string) {
   const I = (Lucide as unknown as Record<string, Lucide.LucideIcon>)[name];
   return I ?? Lucide.Package;
+}
+
+type SimilarKit = NonNullable<ReturnType<typeof useSimilarKits>["data"]>[number];
+
+function SimilarKitButton({ item, onSelect }: { item: SimilarKit; onSelect: (id: string) => void }) {
+  const { template, ratio, overlap } = item;
+  const Icon = getIcon(template.icon);
+  return <button onClick={() => onSelect(template.id)}
+    className="w-full text-left rounded-md border p-2 hover:bg-accent/50 transition-colors flex items-center gap-2">
+    <div className="h-8 w-8 rounded-md flex items-center justify-center shrink-0"
+      style={{ backgroundColor: `${template.color}22`, color: template.color }}><Icon className="h-4 w-4" /></div>
+    <div className="flex-1 min-w-0"><div className="flex items-center gap-1">
+      <p className="text-xs font-medium truncate">{template.name}</p>
+      {template.tag && <Badge variant="outline" className="text-[9px] h-4 px-1">{template.tag}</Badge>}
+    </div><p className="text-[10px] text-muted-foreground">
+      {Math.round(ratio * 100)}% em comum · {overlap} itens · {formatCurrency(template.total_price)}
+    </p></div>
+  </button>;
 }
 
 export function SimilarKitsWidget({ currentSkus, excludeId }: Props) {
@@ -48,36 +66,8 @@ export function SimilarKitsWidget({ currentSkus, excludeId }: Props) {
             Nenhum template parecido. Continue montando — sua criação é única!
           </p>
         )}
-        {(data ?? []).map(({ template, ratio, overlap }) => {
-          const Icon = getIcon(template.icon);
-          return (
-            <button
-              key={template.id}
-              onClick={() => navigate(`/montar-kit?template=${template.id}`)}
-              className="w-full text-left rounded-md border p-2 hover:bg-accent/50 transition-colors flex items-center gap-2"
-            >
-              <div
-                className="h-8 w-8 rounded-md flex items-center justify-center shrink-0"
-                style={{ backgroundColor: `${template.color}22`, color: template.color }}
-              >
-                <Icon className="h-4 w-4" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1">
-                  <p className="text-xs font-medium truncate">{template.name}</p>
-                  {template.tag && (
-                    <Badge variant="outline" className="text-[9px] h-4 px-1">
-                      {template.tag}
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-[10px] text-muted-foreground">
-                  {Math.round(ratio * 100)}% em comum · {overlap} itens · {formatCurrency(template.total_price)}
-                </p>
-              </div>
-            </button>
-          );
-        })}
+        {(data ?? []).map((item) => <SimilarKitButton key={item.template.id} item={item}
+          onSelect={(id) => navigate(`/montar-kit?template=${id}`)} />)}
       </CardContent>
     </Card>
   );

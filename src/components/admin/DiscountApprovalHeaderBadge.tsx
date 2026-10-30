@@ -11,10 +11,37 @@ import { cn } from "@/lib/utils";
 
 const QUERY_KEY = ["pending-discount-approvals-count"];
 
+function useDiscountApprovalRealtime(isAdmin: boolean) {
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (!isAdmin) return;
+    const channel = supabase
+      .channel("discount-approvals-badge")
+      .on("postgres_changes", { event: "*", schema: "public", table: "discount_approval_requests" }, () => {
+        queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [isAdmin, queryClient]);
+}
+
+function ApprovalBadge({ count, onOpen }: { count: number; onOpen: () => void }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full" onClick={onOpen} aria-label={`${count} aprovações de desconto pendentes`}>
+          <Shield className="h-4 w-4 text-amber-500" />
+          <Badge className={cn("absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 text-[10px] font-bold", "bg-amber-500 text-white border-0 animate-pulse")}>{count > 9 ? "9+" : count}</Badge>
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent side="bottom"><p>{count} desconto{count !== 1 ? "s" : ""} aguardando aprovação</p></TooltipContent>
+    </Tooltip>
+  );
+}
+
 export function DiscountApprovalHeaderBadge() {
   const { isAdmin } = useAuth();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const { data: count = 0 } = useQuery({
     queryKey: QUERY_KEY,
@@ -31,48 +58,9 @@ export function DiscountApprovalHeaderBadge() {
     staleTime: 15_000,
   });
 
-  // Realtime: invalidate on any change
-  useEffect(() => {
-    if (!isAdmin) return;
-    const channel = supabase
-      .channel("discount-approvals-badge")
-      .on("postgres_changes", {
-        event: "*",
-        schema: "public",
-        table: "discount_approval_requests",
-      }, () => {
-        queryClient.invalidateQueries({ queryKey: QUERY_KEY });
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [isAdmin, queryClient]);
+  useDiscountApprovalRealtime(isAdmin);
 
   if (!isAdmin || count === 0) return null;
 
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative h-9 w-9 rounded-full"
-          onClick={() => navigate("/admin/usuarios?tab=discounts")}
-          aria-label={`${count} aprovações de desconto pendentes`}
-        >
-          <Shield className="h-4 w-4 text-amber-500" />
-          <Badge
-            className={cn(
-              "absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 text-[10px] font-bold",
-              "bg-amber-500 text-white border-0 animate-pulse"
-            )}
-          >
-            {count > 9 ? "9+" : count}
-          </Badge>
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent side="bottom">
-        <p>{count} desconto{count !== 1 ? "s" : ""} aguardando aprovação</p>
-      </TooltipContent>
-    </Tooltip>
-  );
+  return <ApprovalBadge count={count} onOpen={() => navigate("/admin/usuarios?tab=discounts")} />;
 }

@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
-import { OrderRow, OrderFilters, OrderItem, OrderStatus, OrderLogistics, OrderInvoice, OrderComment } from "@/types/orders";
+import type { Json, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import type { OrderRow, OrderFilters, OrderItem, OrderStatus, OrderLogistics, OrderInvoice, OrderComment } from "@/types/orders";
 import { ORDER_STATUS_LABELS } from "@/constants/orders";
 import { logger } from "@/lib/logger";
 import { invokeEdgeFunction } from "@/lib/edge-function-client";
@@ -17,34 +18,54 @@ export interface ConvertedOrder {
   total: number;
 }
 
+function createOrderListQuery() {
+  return supabase
+    // rls-allow: scope self aplicado pelo chamador; demais papéis dependem de RLS
+    .from("orders")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false });
+}
+
+type OrderListQuery = ReturnType<typeof createOrderListQuery>;
+
+function applyOrderScope(query: OrderListQuery, sellerId: string, scope: string): OrderListQuery {
+  return scope === "self" && sellerId ? query.eq("seller_id", sellerId) : query;
+}
+
+function applyOrderFieldFilters(query: OrderListQuery, filters?: OrderFilters): OrderListQuery {
+  let filtered = query;
+  if (filters?.status && filters.status !== "all") filtered = filtered.eq("status", filters.status);
+  if (filters?.clientCompany) filtered = filtered.ilike("client_company", `%${filters.clientCompany}%`);
+  if (filters?.startDate) filtered = filtered.gte("created_at", filters.startDate);
+  if (filters?.endDate) filtered = filtered.lte("created_at", filters.endDate);
+  return filtered;
+}
+
+function applyOrderSearch(query: OrderListQuery, searchValue?: string): OrderListQuery {
+  let filtered = query;
+  if (searchValue) {
+    const search = searchValue.trim();
+    filtered = filtered.or(`order_number.ilike.%${search}%,client_name.ilike.%${search}%,client_company.ilike.%${search}%`);
+  }
+  return filtered;
+}
+
+function applyOrderListFilters(
+  query: OrderListQuery,
+  sellerId: string,
+  scope: string,
+  filters?: OrderFilters,
+): OrderListQuery {
+  let filtered = applyOrderScope(query, sellerId, scope);
+  filtered = applyOrderFieldFilters(filtered, filters);
+  return applyOrderSearch(filtered, filters?.search);
+}
+
 export class OrderService {
   static async list(sellerId: string, scope: string, filters?: OrderFilters & { page?: number; pageSize?: number }): Promise<{ data: OrderRow[]; count: number | null }> {
     const page = filters?.page || 1;
     const pageSize = filters?.pageSize || 20;
-    
-    let q = supabase
-      .from("orders")
-      .select("*", { count: 'exact' })
-      .order("created_at", { ascending: false });
-    
-    if (scope === "self" && sellerId) q = q.eq("seller_id", sellerId);
-    
-    if (filters?.status && filters.status !== "all") {
-      q = q.eq("status", filters.status);
-    }
-    
-    if (filters?.clientCompany) {
-      q = q.ilike("client_company", `%${filters.clientCompany}%`);
-    }
-    
-    if (filters?.startDate) q = q.gte("created_at", filters.startDate);
-    if (filters?.endDate) q = q.lte("created_at", filters.endDate);
-    
-    if (filters?.search) {
-      // Improved multi-column search
-      const search = filters.search.trim();
-      q = q.or(`order_number.ilike.%${search}%,client_name.ilike.%${search}%,client_company.ilike.%${search}%`);
-    }
+    const q = applyOrderListFilters(createOrderListQuery(), sellerId, scope, filters);
 
     try {
       const { data, error, count } = await q.range((page - 1) * pageSize, page * pageSize - 1);
@@ -61,6 +82,7 @@ export class OrderService {
 
   static async getById(orderId: string) {
     if (!orderId) return null;
+    // rls-allow: lookup por id; RLS valida ownership e organização
     const { data: order, error: orderError } = await supabase.from("orders").select("*").eq("id", orderId).maybeSingle();
     if (orderError) throw orderError;
     if (!order) return null;
@@ -76,6 +98,7 @@ export class OrderService {
 
   static async update(orderId: string, patch: Partial<OrderRow>) {
     const { error } = await supabase
+      // rls-allow: atualização por id; RLS valida ownership e organização
       .from("orders")
       .update({ ...patch, updated_at: new Date().toISOString() })
       .eq("id", orderId);
@@ -91,29 +114,63 @@ export class OrderService {
       .eq("order_id", orderId)
       .maybeSingle();
     if (error) throw error;
-    return data as OrderLogistics | null;
+    if (!data) return null;
+
+    const { data: order, error: orderError } = await supabase
+      // rls-allow: lookup por UUID para compor logística; a RLS valida ownership/organização.
+      .from("orders")
+      .select("shipping_type")
+      .eq("id", orderId)
+      .maybeSingle();
+    if (orderError) throw orderError;
+
+    return {
+      id: data.id,
+      order_id: data.order_id,
+      tracking_number: data.tracking_code,
+      carrier: data.carrier_name,
+      shipping_type: order?.shipping_type ?? null,
+      estimated_delivery: data.estimated_delivery,
+      actual_delivery: data.actual_delivery,
+      status: data.delivery_status,
+      created_at: data.created_at ?? new Date(0).toISOString(),
+      updated_at: data.updated_at ?? new Date(0).toISOString(),
+    } satisfies OrderLogistics;
   }
 
   static async upsertLogistics(orderId: string, values: Partial<OrderLogistics>) {
     const existing = await this.getLogistics(orderId);
+    const logisticsValues = {
+      ...(values.tracking_number !== undefined && { tracking_code: values.tracking_number }),
+      ...(values.carrier !== undefined && { carrier_name: values.carrier }),
+      ...(values.estimated_delivery !== undefined && { estimated_delivery: values.estimated_delivery }),
+      ...(values.actual_delivery !== undefined && { actual_delivery: values.actual_delivery }),
+      ...(values.status !== undefined && { delivery_status: values.status }),
+    };
+    let saved;
     if (existing) {
       const { data, error } = await supabase
         .from("order_logistics")
-        .update(values)
+        .update(logisticsValues)
         .eq("id", existing.id)
         .select()
         .single();
       if (error) throw error;
-      return data;
+      saved = data;
     } else {
       const { data, error } = await supabase
         .from("order_logistics")
-        .insert({ order_id: orderId, ...values })
+        .insert({ order_id: orderId, ...logisticsValues })
         .select()
         .single();
       if (error) throw error;
-      return data;
+      saved = data;
     }
+
+    if (values.shipping_type !== undefined) {
+      await this.update(orderId, { shipping_type: values.shipping_type });
+    }
+    return saved;
   }
 
   // Invoices Methods
@@ -156,10 +213,16 @@ export class OrderService {
 
     const { data, error, count } = await query.range((page - 1) * pageSize, page * pageSize - 1);
     if (error) throw error;
-    return { comments: data as any[], count };
+    return { comments: data as unknown as OrderComment[], count };
   }
 
-  static async addComment(orderId: string, authorId: string, content: string, isInternal = false, attachments: any = null) {
+  static async addComment(
+    orderId: string,
+    authorId: string,
+    content: string,
+    ...options: [isInternal?: boolean, attachments?: Json | null]
+  ) {
+    const [isInternal = false, attachments = null] = options;
     if (!content?.trim()) throw new Error("Conteúdo do comentário é obrigatório");
 
     const { data, error } = await supabase
@@ -184,24 +247,25 @@ export class OrderService {
     orderId: string;
     eventType: string;
     description: string;
-    metadata: any;
+    metadata: Json;
     createdByName?: string;
   }) {
-    await supabase.rpc('log_order_audit_event', {
+    const { error } = await supabase.rpc('log_order_audit_event', {
       p_order_id: params.orderId,
       p_event_type: params.eventType,
       p_description: params.description,
       p_metadata: params.metadata,
       p_created_by_name: params.createdByName
     });
+    if (error) throw error;
   }
 
   static async listAuditEvents(orderId: string, filters?: { event_type?: string, search?: string }) {
     let query = supabase
       .from('order_audit_events')
-      .select('*')
+      .select('*, created_at:occurred_at')
       .eq('order_id', orderId)
-      .order('created_at', { ascending: false });
+      .order('occurred_at', { ascending: false });
 
     if (filters?.event_type && filters.event_type !== 'all') {
       query = query.eq('event_type', filters.event_type);
@@ -228,7 +292,7 @@ export class OrderService {
     return data;
   }
 
-  static async createPilotApproval(payload: any) {
+  static async createPilotApproval(payload: TablesInsert<"order_pilot_approvals">) {
     const { data, error } = await supabase
       .from("order_pilot_approvals")
       .insert(payload)
@@ -239,7 +303,7 @@ export class OrderService {
     return data;
   }
 
-  static async updatePilotApprovalStatus(id: string, payload: any) {
+  static async updatePilotApprovalStatus(id: string, payload: TablesUpdate<"order_pilot_approvals">) {
     const { error } = await supabase
       .from("order_pilot_approvals")
       .update(payload)
@@ -313,6 +377,7 @@ export class OrderService {
 
   static async getSmartAlerts() {
     const { data: pending } = await supabase
+      // rls-allow: alerta administrativo; RLS aplica papel e organização
       .from("orders")
       .select("id, created_at")
       .eq("status", "enviado_gestor");
@@ -349,7 +414,7 @@ export class OrderService {
 
     try {
       // Safe origin detection for both browser and SSR/Deno
-      const origin = typeof window !== 'undefined' ? window.location.origin : (process.env.APP_URL || '');
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
       
       await invokeEdgeFunction('send-transactional-email', {
         body: {
@@ -369,62 +434,21 @@ export class OrderService {
     }
   }
 
-  static async duplicate(orderId: string, sellerId: string): Promise<OrderRow> {
-    const result = await this.getById(orderId);
-    if (!result) throw new Error("Pedido não encontrado");
-    const { order: original, items } = result;
-
-    // Copy logistics if exists
-    const logistics = await this.getLogistics(orderId);
-
-    const newOrderNumber = `RE-${original.order_number.replace('PED-', '')}-${Math.floor(Math.random() * 1000)}`;
-    
-    const { data: newOrder, error: insErr } = await supabase
-      .from("orders")
-      .insert({
-        ...original,
-        id: undefined,
-        order_number: newOrderNumber,
-        status: "rascunho",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        seller_id: sellerId
-      })
-      .select()
-      .single();
-
-    if (insErr) throw insErr;
-
-    // Deep copy items
-    if (items?.length) {
-      const newItems = items.map(it => ({
-        ...it,
-        id: undefined, // Ensure new IDs
-        order_id: newOrder.id,
-      }));
-      await supabase.from("order_items").insert(newItems);
-    }
-
-    // Deep copy logistics
-    if (logistics) {
-      await supabase.from("order_logistics").insert({
-        ...logistics,
-        id: undefined,
-        order_id: newOrder.id,
-        tracking_code: null, // Reset tracking on duplication
-        status: 'pending'
-      });
-    }
-
-    // Log the event
-    await this.logAudit({
-      orderId: newOrder.id,
-      eventType: 'ORDER_DUPLICATED',
-      description: `Pedido duplicado a partir do pedido #${original.order_number}`,
-      metadata: { originalOrderId: orderId }
+  static async duplicate(
+    orderId: string,
+    idempotencyKey: string = crypto.randomUUID(),
+  ): Promise<OrderRow> {
+    const { data, error } = await supabase.rpc("duplicate_order_atomic", {
+      p_order_id: orderId,
+      p_idempotency_key: idempotencyKey,
     });
+    if (error) throw error;
 
-    return newOrder as OrderRow;
+    const duplicated = Array.isArray(data) ? data[0] : data;
+    if (!duplicated?.id || !duplicated?.order_number) {
+      throw new Error("O banco não confirmou a duplicação integral do pedido");
+    }
+    return duplicated as OrderRow;
   }
 
   static async convertQuoteToOrder({ quoteId }: ConvertQuoteToOrderParams): Promise<ConvertedOrder> {
@@ -444,7 +468,7 @@ export class OrderService {
         status: order.status,
         total: Number(order.total_amount ?? 0),
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error("Error converting quote to order:", error);
       throw error;
     }

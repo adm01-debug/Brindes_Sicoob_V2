@@ -18,6 +18,38 @@ interface ImageUploadButtonProps {
   className?: string;
 }
 
+function getUploadStatus(error: unknown): number | undefined {
+  let current = error;
+  for (let depth = 0; depth < 3; depth += 1) {
+    if (!current || typeof current !== "object") return undefined;
+    if ("status" in current && typeof current.status === "number") return current.status;
+    current = "context" in current ? current.context : undefined;
+  }
+  return undefined;
+}
+
+const wait = (delay: number) => new Promise((resolve) => setTimeout(resolve, delay));
+
+async function uploadWithRetry(formData: FormData, attempt = 1): Promise<string> {
+  try {
+    const { data, error } = await supabase.functions.invoke("secure-upload", { body: formData });
+    if (error) throw error;
+    if (!data?.url || typeof data.url !== "string") throw new Error("URL de upload ausente");
+    return data.url;
+  } catch (error) {
+    if (getUploadStatus(error) === 403 || attempt >= 3) throw error;
+    const delay = 2 ** attempt * 1000;
+    console.warn(`Tentativa ${attempt} falhou. Tentando novamente em ${delay}ms...`, error);
+    await wait(delay);
+    return uploadWithRetry(formData, attempt + 1);
+  }
+}
+
+async function removeStoredImage(currentImageUrl: string) {
+  const filePath = currentImageUrl.split("/personalization-images/")[1];
+  if (filePath) await supabase.storage.from("personalization-images").remove([filePath]);
+}
+
 export function ImageUploadButton({
   currentImageUrl,
   onUpload,
@@ -29,7 +61,7 @@ export function ImageUploadButton({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = (e.target.files?.[0]);
     if (!file) return;
 
     // 🛡️ Camada de Segurança V2.0: Validação de integridade e tipo real
@@ -40,64 +72,20 @@ export function ImageUploadButton({
     });
 
     if (!validation.valid) {
-      toast.error(validation.error || "Arquivo inválido");
+      toast.error((validation.error || "Arquivo inválido"));
       return;
     }
 
     setIsUploading(true);
 
     try {
-      // Generate unique filename
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-
       const formData = new FormData();
       formData.append("file", file);
       formData.append("folder", folder);
 
-      let retryCount = 0;
-      const maxRetries = 3;
-      let uploadSuccess = false;
-      let lastError: (Error & { status?: number; context?: any }) | null = null;
-
-      while (retryCount < maxRetries && !uploadSuccess) {
-        try {
-          const { data, error } = await supabase.functions.invoke("secure-upload", {
-            body: formData,
-          });
-
-          if (error) {
-            // Se for erro 403 (bloqueio por malware ou falha de verificação), não tentamos novamente
-            if (error.status === 403) {
-              throw error;
-            }
-            throw error;
-          }
-
-          onUpload(data.url);
-          toast.success("Imagem enviada com segurança!");
-          uploadSuccess = true;
-        } catch (error: unknown) {
-          const err = error as Error & { status?: number; context?: any };
-          lastError = err;
-          
-          // Se for bloqueio de segurança (403), interrompe as tentativas
-          if (err.status === 403 || (err.context?.context?.status === 403)) {
-            break;
-          }
-
-          retryCount++;
-          if (retryCount < maxRetries) {
-            const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff: 2s, 4s
-            console.warn(`Tentativa ${retryCount} falhou. Tentando novamente em ${delay}ms...`, error);
-            await new Promise(resolve => setTimeout(resolve, delay));
-          }
-        }
-      }
-
-      if (!uploadSuccess) {
-        throw lastError;
-      }
+      const url = await uploadWithRetry(formData);
+      onUpload(url);
+      toast.success("Imagem enviada com segurança!");
     } catch (error) {
       console.error("Upload error:", error);
       toast.error("Erro ao enviar imagem");
@@ -113,12 +101,7 @@ export function ImageUploadButton({
     if (!currentImageUrl) return;
 
     try {
-      // Extract path from URL
-      const urlParts = currentImageUrl.split("/personalization-images/");
-      if (urlParts.length > 1) {
-        const filePath = urlParts[1]!;
-        await supabase.storage.from("personalization-images").remove([filePath]);
-      }
+      await removeStoredImage(currentImageUrl);
       onRemove();
       toast.success("Imagem removida!");
     } catch (error) {

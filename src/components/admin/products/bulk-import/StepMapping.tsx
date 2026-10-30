@@ -3,11 +3,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { TARGET_FIELDS, type ColumnMapping, type TargetFieldKey } from './types';
+import { TARGET_FIELDS, type ColumnMapping, type SpreadsheetRow, type TargetFieldKey } from './types';
 
 interface StepMappingProps {
   headers: string[];
-  rawData: Record<string, any>[];
+  rawData: SpreadsheetRow[];
   mapping: ColumnMapping;
   setMapping: (fn: (prev: ColumnMapping) => ColumnMapping) => void;
   requiredMapped: boolean;
@@ -58,8 +58,7 @@ export function StepMapping({ headers, rawData, mapping, setMapping, requiredMap
           })}
         </div>
       </ScrollArea>
-      <div className="flex justify-between">
-        <Button variant="outline" onClick={onBack}>Voltar</Button>
+      <div className="flex justify-between"><Button variant="outline" onClick={onBack}>Voltar</Button>
         <Button onClick={onValidate} disabled={!requiredMapped || isCheckingSkus}>
           {isCheckingSkus ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />Verificando SKUs...</>) : (<>Validar Dados<ArrowRight className="h-4 w-4 ml-2" /></>)}
         </Button>

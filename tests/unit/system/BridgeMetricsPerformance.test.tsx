@@ -73,8 +73,6 @@ describe('BridgeMetricsOverlay Rendering Performance', () => {
     // está funcionando se tivéssemos um espião no componente Header.
     // Como o Header é definido no mesmo arquivo, usamos uma abordagem baseada em mocks de hooks.
     
-    const headerPropsBefore = (vi.mocked(BridgeMetricsOverlay) as any); // Simplificação para o pensamento
-
     // Mudamos um estado que NÃO deveria mudar os callbacks (ex: tab)
     bridgeMetricsState = { ...bridgeMetricsState, tab: 'longtasks' };
     

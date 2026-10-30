@@ -1,5 +1,7 @@
 # 📚 Documentação do Gifts Store
 
+> **Estado atual do Sicoob (08/10/2026):** [fechamento técnico do candidato de construção](execucao/fechamento-tecnico-2026-10-08.md), complementado pela [execução e preflight do banco canônico](execucao/execucao-plano-2026-10-01.md) e pela [revisão das 150 etapas, workflows e pendências](execucao/revisao-do-plano-2026-10-01.md). O índice legado abaixo não certifica o estado atual; há referências históricas indisponíveis.
+
 > Sistema de Catálogo de Brindes Promocionais  
 > **Idioma:** Português do Brasil 🇧🇷  
 > **Última atualização:** 27/12/2025
@@ -125,3 +127,7 @@
 **Mantido por:** Pink e Cerébro (adm01-debug)  
 **Última revisão completa:** 27/12/2025  
 **Status:** ✅ Documentação atualizada e completa
+
+## Plano atual de correções do portal Sicoob
+
+[Plano de 150 etapas — 27/09/2026](plano-implementacao/plano-150-etapas-20260927/plano.md). Inclui frentes de banco, integridade de orçamentos, operação, segurança e experiência de loja, com testes e checklist obrigatório.

@@ -3,7 +3,7 @@
  * Cálculos de preço para kits
  */
 
-import type { KitState, KitItem, KitBox, KitPersonalization } from './types';
+import type {  KitItem, KitBox, KitPersonalization } from './types';
 
 // ============================================
 // CÁLCULOS DE PREÇO

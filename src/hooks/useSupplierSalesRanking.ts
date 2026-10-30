@@ -25,6 +25,25 @@ export interface SupplierSalesEntry {
   depleted30d: number;
 }
 
+function valueOr<T>(value: T | null | undefined | false | "" | 0, fallback: T): T {
+  return value ? value as T : fallback;
+}
+
+function salesEntry(row: ProductIntelligenceRanking): SupplierSalesEntry {
+  return {
+    turnoverScore: valueOr(row.turnover_score, 0),
+    velocity7d: valueOr(row.avg_velocity_7d, 0),
+    velocity30d: valueOr(row.avg_velocity_30d, 0),
+    abcClass: valueOr(row.abc_classification, 'C'),
+    depleted30d: valueOr(row.total_depleted_30d, 0),
+  };
+}
+
+function unavailableMaterializedView(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : '';
+  return ['not been populated', 'não mapeada', 'does not exist'].some((pattern) => message.includes(pattern));
+}
+
 /**
  * Fetches supplier sales ranking from external DB (mv_product_intelligence).
  * Returns a Map<productId, SupplierSalesEntry> for use in sorting.
@@ -42,23 +61,15 @@ export function useSupplierSalesRanking() {
         });
 
         const map = new Map<string, SupplierSalesEntry>();
-        for (const row of result.records) {
+        for (const row of result.records ?? []) {
           if (!row.product_id) continue;
-          map.set(row.product_id, {
-            turnoverScore: row.turnover_score || 0,
-            velocity7d: row.avg_velocity_7d || 0,
-            velocity30d: row.avg_velocity_30d || 0,
-            abcClass: row.abc_classification || 'C',
-            depleted30d: row.total_depleted_30d || 0,
-          });
+          map.set(row.product_id, salesEntry(row));
         }
 
         logger.info(`[SupplierSalesRanking] Loaded ${map.size} products from mv_product_intelligence`);
         return map;
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : '';
-        // Graceful fallback if MV not populated
-        if (msg.includes('not been populated') || msg.includes('não mapeada') || msg.includes('does not exist')) {
+        if (unavailableMaterializedView(err)) {
           logger.warn('[SupplierSalesRanking] MV not populated yet, returning empty map');
           return new Map();
         }
@@ -67,8 +78,7 @@ export function useSupplierSalesRanking() {
     },
     staleTime: 10 * 60 * 1000, // 10 min cache
     retry: (failureCount, error: unknown) => {
-      const msg = error instanceof Error ? error.message : '';
-      if (msg.includes('not been populated') || msg.includes('does not exist')) return false;
+      if (unavailableMaterializedView(error)) return false;
       return failureCount < 2;
     },
   });

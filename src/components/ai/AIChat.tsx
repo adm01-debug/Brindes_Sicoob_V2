@@ -65,9 +65,51 @@ function extractProductMentions(text: string): ProductMention[] {
   let match: RegExpExecArray | null;
   PRODUCT_PATTERN.lastIndex = 0;
   while ((match = PRODUCT_PATTERN.exec(text)) !== null) {
-    mentions.push({ id: match[1]!, name: match[2]!, imageUrl: match[3] });
+    const [, id, name, imageUrl] = match;
+    if (id && name) mentions.push({ id, name, imageUrl });
   }
   return mentions;
+}
+
+async function responseError(response: Response) {
+  if (response.status === 429) return new Error("Limite de requisições atingido. Aguarde alguns instantes.");
+  if (response.status === 402) return new Error("Créditos de IA esgotados. Contate o administrador.");
+  const text = await response.text().catch(() => "");
+  return new Error(`Erro ${response.status}: ${text || "falha ao consultar IA"}`);
+}
+
+async function fetchAssistantContent(
+  messages: ChatMessage[],
+  systemPrompt: string | undefined,
+  contextId: string | undefined,
+  signal: AbortSignal,
+) {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData?.session?.access_token;
+  if (!token) throw new Error("Usuário não autenticado");
+  const response = await fetch(getSupabaseFunctionUrl('expert-chat'), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: supabasePublishableKey,
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      messages: messages.map(message => ({ role: message.role, content: message.content })),
+      systemPrompt,
+      contextId,
+    }),
+    signal,
+  });
+  if (!response.ok) throw await responseError(response);
+  const data = await response.json() as { message?: { content?: string }; content?: string; reply?: string };
+  const content = data.message?.content ?? data.content ?? data.reply ?? "";
+  if (!content) throw new Error("Resposta vazia do assistente");
+  return content;
+}
+
+function chatErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Erro desconhecido";
 }
 
 // ============================================
@@ -192,41 +234,7 @@ export function AIChat({
     abortRef.current = controller;
 
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
-      if (!token) throw new Error("Usuário não autenticado");
-
-      const response = await fetch(
-        getSupabaseFunctionUrl('expert-chat'),
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: supabasePublishableKey,
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            messages: nextMessages.map((m) => ({ role: m.role, content: m.content })),
-            systemPrompt,
-            contextId,
-          }),
-          signal: controller.signal,
-        }
-      );
-
-      if (!response.ok) {
-        if (response.status === 429) throw new Error("Limite de requisições atingido. Aguarde alguns instantes.");
-        if (response.status === 402) throw new Error("Créditos de IA esgotados. Contate o administrador.");
-        const txt = await response.text().catch(() => "");
-        throw new Error(`Erro ${response.status}: ${txt || "falha ao consultar IA"}`);
-      }
-
-      const data = await response.json();
-      const assistantContent: string =
-        data?.message?.content ?? data?.content ?? data?.reply ?? "";
-
-      if (!assistantContent) throw new Error("Resposta vazia do assistente");
-
+      const assistantContent = await fetchAssistantContent(nextMessages, systemPrompt, contextId, controller.signal);
       const assistantMsg: ChatMessage = {
         id: makeId(),
         role: "assistant",
@@ -234,14 +242,10 @@ export function AIChat({
         createdAt: Date.now(),
       };
       setMessages((prev) => [...prev, assistantMsg]);
-
-      // Notifica menções de produtos
-      if (onProductMention) {
-        extractProductMentions(assistantContent).forEach(onProductMention);
-      }
+      if (onProductMention) extractProductMentions(assistantContent).forEach(onProductMention);
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
-      const msg = err instanceof Error ? err.message : "Erro desconhecido";
+      const msg = chatErrorMessage(err);
       setError(msg);
       toast.error(msg);
     } finally {

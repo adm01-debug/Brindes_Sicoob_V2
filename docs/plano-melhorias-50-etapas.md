@@ -1,5 +1,10 @@
 # Runbook de correções e melhorias — 50 etapas
 
+> **Adendo de 27/09/2026:** [estado de implementação, evidências e limites](execucao/revisao-do-plano-2026-09-27.md). Preservadas as marcações históricas abaixo.
+
+> **Revisão de 24/09/2026:** [matriz atual dos planos, lacunas e testes executados](execucao/revisao-do-plano-2026-09-24.md). As marcações históricas abaixo não certificam conclusão integral; a revisão distingue código, implantação e homologação.
+
+
 > Versão em texto do plano publicado como artifact em 2026-09-13
 > (https://claude.ai/code/artifact/71600452-aedf-447a-8da3-580ac2050a2e).
 > Ver também [correcoes-validacao-2026-09-13.md](./correcoes-validacao-2026-09-13.md) e
@@ -57,7 +62,9 @@ ver doc de correções), zero regras de proteção em `main`.
 25. Blindar `image-proxy` contra SSRF — **não necessário**: já tem allowlist de domínio, anti-hotlinking e rate limit.
 26. Isolar/remover `external-db-inspect`/`migrate-helper` — **não necessário**: a primeira já exige role `dev`, a segunda já é stub 410 sem chamador.
 27. Fechar gap de `search_path` em `SECURITY DEFINER` (10 de 362 funções sem verificação clara — checar contra o Postgres real do projeto, não via MCP genérico).
-28. Adicionar Content-Security-Policy (hoje zero).
+28. Adicionar Content-Security-Policy — ✅ corrigido: `public/_headers` cobre
+    hospedagem compatível e `vercel.json` entrega a mesma política na Vercel;
+    o cenário `csp-providers.mjs` bloqueia divergência entre provedores.
 29. `.env.production` — **corrigido**: `ANON_KEY`/`PROJECT_ID` são usados em 4 lugares reais (`PublicComparisonPage.tsx` e afins); não tocar sem mapear todos os usos.
 30. Secret scanning no pre-commit e no GitHub (gitleaks).
 31. Promover checks de RLS/escopo (`test:rls`, `check:seller-scope`) a required no CI.

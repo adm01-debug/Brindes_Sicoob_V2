@@ -35,8 +35,7 @@ const PAGE_W = 794;
 const PAGE_H = 1123;
 const FIRST_HEADER_H = 128;
 const CONT_HEADER_H = 60;
-const CONT_CLIENT_H = 60; // compact client bar on continuation pages
-const FULL_FOOTER_H = 220;  // last page: totals + signature + notes + green bar
+const CONT_CLIENT_H = 60;  // last page: totals + signature + notes + green bar
 const SIMPLE_FOOTER_H = 30; // page number + green bar only
 const NOTES_FOOTER_H = 230; // notes block (conditions + terms) on every page
 const CONTENT_PAD = 36;
@@ -45,6 +44,37 @@ const TOTALS_H = 180;
 const NOTES_H = 310; // condições comerciais + aceite do cliente + assinatura vendedor
 const TABLE_HEADER_H = 38;
 const ROW_H = 76; // estimated row height
+type ProposalOptions = { hidePrices?: boolean; hidePhotos?: boolean; hideTotals?: boolean };
+
+function ProposalWatermark({ draft, status }: { draft: boolean; status: ProposalTemplateData["status"] }) {
+  if (!draft && status !== "expired") return null;
+  const expired = status === "expired";
+  return <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%) rotate(-35deg)", fontSize: "80px", fontWeight: 900, color: expired ? "rgba(255, 0, 0, 0.09)" : "rgba(200, 0, 0, 0.07)", letterSpacing: "0.3em", textTransform: "uppercase", pointerEvents: "none", zIndex: 5, userSelect: "none" }}>{expired ? "EXPIRADO" : "RASCUNHO"}</div>;
+}
+
+function ProposalPageClient({ first, data }: { first: boolean; data: ProposalTemplateData }) {
+  return first ? <ProposalClientBar data={data} /> : <ProposalClientBarCompact data={data} />;
+}
+
+function ProposalPageTotals({ last, hidden, data }: { last: boolean; hidden: boolean | undefined; data: ProposalTemplateData }) {
+  if (!last || hidden) return null;
+  return <><ProposalTotals data={data} /><div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}><ProposalSellerSignature data={data} /><ProposalClientSignature data={data} /></div></>;
+}
+
+function ProposalPage({ items, pageIndex, totalPages, startIndex, data, draft, options }: { items: ProposalItem[]; pageIndex: number; totalPages: number; startIndex: number; data: ProposalTemplateData; draft: boolean; options: ProposalOptions }) {
+  const first = pageIndex === 0;
+  const last = pageIndex === totalPages - 1;
+  return <div className="proposal-page" style={{ width: `${PAGE_W}px`, height: `${PAGE_H}px`, backgroundColor: "#fff", fontFamily: "'Roboto', 'Segoe UI', Helvetica, Arial, sans-serif", color: "#333", position: "relative", boxSizing: "border-box", overflow: "hidden", display: "flex", flexDirection: "column", pageBreakAfter: last ? "auto" : "always" }}><ProposalWatermark draft={draft} status={data.status} /><ProposalHeader data={data} isContinuation={!first} /><div style={{ padding: `0 ${CONTENT_PAD}px`, flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}><ProposalPageClient first={first} data={data} />{items.length > 0 ? <ProposalProductTable items={items} showHeader={true} startIndex={startIndex} options={options} /> : null}<ProposalPageTotals last={last} hidden={options.hideTotals} data={data} /><div style={{ marginTop: "auto" }}><ProposalNotes data={data} /></div></div><ProposalFooter data={data} isLastPage={last} pageNumber={pageIndex + 1} totalPages={totalPages} /></div>;
+}
+
+function pagesWithOffsets(pages: ProposalItem[][]) {
+  let startIndex = 0;
+  return pages.map((items, pageIndex) => {
+    const page = { items, pageIndex, startIndex };
+    startIndex += items.length;
+    return page;
+  });
+}
 
 function paginateItems(items: ProposalItem[]) {
   // Every page now has notes in footer, so we always reserve NOTES_FOOTER_H
@@ -112,93 +142,11 @@ export const PropostaComercialTailwind = forwardRef<HTMLDivElement, {
   ({ data, isDraft = false, options = {} }, ref) => {
     const pages = paginateItems(data.items);
     const totalPages = pages.length;
-    let itemIndex = 0;
+    const indexedPages = pagesWithOffsets(pages);
 
     return (
       <div ref={ref} style={{ display: "flex", flexDirection: "column", gap: "0px" }}>
-        {pages.map((pageItems, pageIdx) => {
-          const isFirst = pageIdx === 0;
-          const isLast = pageIdx === totalPages - 1;
-          const startIdx = itemIndex;
-          itemIndex += pageItems.length;
-
-          return (
-            <div
-              key={pageIdx}
-              className="proposal-page"
-              style={{
-                width: `${PAGE_W}px`,
-                height: `${PAGE_H}px`,
-                backgroundColor: "#fff",
-                fontFamily: "'Roboto', 'Segoe UI', Helvetica, Arial, sans-serif",
-                color: "#333",
-                position: "relative",
-                boxSizing: "border-box",
-                overflow: "hidden",
-                display: "flex",
-                flexDirection: "column",
-                pageBreakAfter: isLast ? "auto" : "always",
-              }}
-            >
-              {/* Watermark for drafts or expired */}
-              {(isDraft || data.status === "expired") && (
-                <div style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%) rotate(-35deg)",
-                  fontSize: "80px",
-                  fontWeight: 900,
-                  color: data.status === "expired" ? "rgba(255, 0, 0, 0.09)" : "rgba(200, 0, 0, 0.07)",
-                  letterSpacing: "0.3em",
-                  textTransform: "uppercase",
-                  pointerEvents: "none",
-                  zIndex: 5,
-                  userSelect: "none",
-                }}>
-                  {data.status === "expired" ? "EXPIRADO" : "RASCUNHO"}
-                </div>
-              )}
-              <ProposalHeader data={data} isContinuation={!isFirst} />
-
-              <div style={{ padding: `0 ${CONTENT_PAD}px`, flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-                {isFirst && <ProposalClientBar data={data} />}
-                {!isFirst && <ProposalClientBarCompact data={data} />}
-
-                {pageItems.length > 0 && (
-                  <ProposalProductTable
-                    items={pageItems}
-                    showHeader={true}
-                    startIndex={startIdx}
-                    options={options}
-                  />
-                )}
-
-                {isLast && !options.hideTotals && (
-                  <>
-                    <ProposalTotals data={data} />
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-                      <ProposalSellerSignature data={data} />
-                      <ProposalClientSignature data={data} />
-                    </div>
-                  </>
-                )}
-
-                {/* Commercial conditions on EVERY page */}
-                <div style={{ marginTop: "auto" }}>
-                  <ProposalNotes data={data} />
-                </div>
-              </div>
-
-              <ProposalFooter
-                data={data}
-                isLastPage={isLast}
-                pageNumber={pageIdx + 1}
-                totalPages={totalPages}
-              />
-            </div>
-          );
-        })}
+        {indexedPages.map((page) => <ProposalPage key={page.pageIndex} items={page.items} pageIndex={page.pageIndex} totalPages={totalPages} startIndex={page.startIndex} data={data} draft={isDraft} options={options} />)}
 
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@300;400;500;700&family=Sacramento&display=swap');

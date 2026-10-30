@@ -121,11 +121,13 @@ export function WorkflowCanvas() {
               </div>
               <div className="flex-1 min-w-0">
                 <Input
+                  aria-label="Nome do workflow"
                   value={workflow.name}
                   onChange={(e) => setWorkflow((p) => ({ ...p, name: e.target.value }))}
                   className="text-lg font-bold border-none p-0 h-auto focus-visible:ring-0 bg-transparent"
                 />
                 <Input
+                  aria-label="Descrição do workflow"
                   value={workflow.description}
                   onChange={(e) => setWorkflow((p) => ({ ...p, description: e.target.value }))}
                   className="text-sm text-muted-foreground border-none p-0 h-auto focus-visible:ring-0 bg-transparent mt-0.5"

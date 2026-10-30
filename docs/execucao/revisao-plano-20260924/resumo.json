@@ -1,0 +1,67 @@
+{
+  "data": "2026-09-24",
+  "commit_codigo": "6193793a7fad6ec7e1dacd0e68075e3685016e28",
+  "planos": {
+    "E": "docs/plano-implementacao/plano-100-etapas.md",
+    "R": "docs/plano-implementacao/plano-reconciliacao-50-etapas.md",
+    "C": "docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md",
+    "T": "docs/plano-melhorias-50-etapas.md",
+    "B": "docs/pesquisa/2026-09-11/benchmark-promo-gifts-v4.md"
+  },
+  "legenda": {
+    "L": "Implementado no escopo local/documental indicado",
+    "P": "Parcial — implementação ou integração incompleta",
+    "N": "Funcionalidade/artefato não localizado no escopo pesquisado",
+    "V": "Validação ou decisão externa/operacional pendente",
+    "H": "Evidência histórica; falta revalidação atual",
+    "R": "Premissa a substituir; não executar literalmente"
+  },
+  "etapas_documentais": 250,
+  "benchmark": 32,
+  "requisitos_indexados": 1000,
+  "requisitos_com_diagnostico_individual_atualizado": 20,
+  "requisitos_com_diagnostico_individual_historico_preservado": 980,
+  "etapas_produto_formalmente_encerradas": 0,
+  "contagens_por_plano": {
+    "E": {
+      "P": 81,
+      "V": 16,
+      "N": 3
+    },
+    "R": {
+      "R": 1,
+      "P": 31,
+      "H": 10,
+      "V": 4,
+      "L": 3,
+      "N": 1
+    },
+    "C": {
+      "P": 26,
+      "R": 2,
+      "L": 10,
+      "H": 2,
+      "V": 6,
+      "N": 4
+    },
+    "T": {
+      "H": 2,
+      "P": 28,
+      "V": 1,
+      "L": 14,
+      "N": 5
+    },
+    "B": {
+      "L": 5,
+      "P": 22,
+      "V": 4,
+      "N": 1
+    }
+  },
+  "limites": [
+    "Matriz documental não equivale a teste funcional de cada requisito.",
+    "Evidência histórica não foi promovida a prova remota atual.",
+    "L certifica somente o escopo local indicado.",
+    "Sem alterações no banco, implantação ou fusão dos PRs de correção."
+  ]
+}

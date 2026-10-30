@@ -8,6 +8,8 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+const DESTRUCTIVE_TEXT = "text-destructive";
+
 type CacheEntry = {
   name: string;
   source: "db" | "env" | "none";
@@ -69,7 +71,59 @@ function ratioTone(ratio: number): "ok" | "warn" | "error" {
   return "error";
 }
 
-export function CredentialCacheMetricsPanel() {
+function ratioClass(ratio: number): string {
+  const tone = ratioTone(ratio);
+  if (tone === "ok") return "text-green-600";
+  if (tone === "warn") return "text-amber-600";
+  return DESTRUCTIVE_TEXT;
+}
+
+function PerNameTable({ rows }: { rows: PerName[] }) {
+  if (rows.length === 0) return <p className="text-xs text-muted-foreground">Nenhuma resolução registrada ainda. Atue na app para popular as métricas.</p>;
+  const sorted = rows.slice().sort((left, right) => right.resolutions - left.resolutions);
+  return (
+    <div className="overflow-x-auto"><table className="w-full text-xs">
+      <thead><tr className="border-b text-left text-muted-foreground"><th className="py-1.5 pr-3 font-medium">Credencial</th><th className="py-1.5 pr-3 font-medium">Origem</th><th className="py-1.5 pr-3 font-medium text-right">Hits</th><th className="py-1.5 pr-3 font-medium text-right">Misses</th><th className="py-1.5 pr-3 font-medium text-right">Hit ratio</th><th className="py-1.5 pr-3 font-medium text-right">Última (ms)</th><th className="py-1.5 font-medium text-right">Última resolução</th></tr></thead>
+      <tbody>{sorted.map((row) => <tr key={row.name} className="border-b last:border-0 align-middle">
+        <td className="py-1.5 pr-3 font-mono text-[11px] truncate max-w-[280px]">{row.name}</td><td className="py-1.5 pr-3"><SourceBadge source={row.last_source} /></td><td className="py-1.5 pr-3 text-right tabular-nums">{row.hits}</td><td className="py-1.5 pr-3 text-right tabular-nums">{row.misses}</td><td className="py-1.5 pr-3 text-right"><span className={ratioClass(row.hit_ratio)}>{Math.round(row.hit_ratio * 100)}%</span></td><td className="py-1.5 pr-3 text-right tabular-nums">{row.last_duration_ms ?? "—"}</td><td className="py-1.5 text-right text-muted-foreground">{fmtTs(row.last_resolved_at)}</td>
+      </tr>)}</tbody>
+    </table></div>
+  );
+}
+
+function CacheEntries({ entries }: { entries: CacheEntry[] }) {
+  if (entries.length === 0) return <p className="text-xs text-muted-foreground">Cache vazio.</p>;
+  return <ul className="space-y-1 text-xs font-mono">{entries.map((entry) => <li key={entry.name} className="flex items-center justify-between gap-2 border-b pb-1 last:border-0">
+    <span className="truncate flex items-center gap-2"><SourceBadge source={entry.source} /><span>{entry.name}</span>{!entry.has_value && <Badge variant="outline" className="text-[9px]">sem valor</Badge>}</span>
+    <span className={`text-[10px] tabular-nums ${entry.expired ? DESTRUCTIVE_TEXT : "text-muted-foreground"}`}>{entry.expired ? "expirado" : `expira em ${fmtDuration(entry.ttl_remaining_ms)}`}</span>
+  </li>)}</ul>;
+}
+
+function SnapshotDetails({ snapshot }: { snapshot: Snapshot }) {
+  const ratioPct = Math.round(snapshot.counters.hit_ratio * 100);
+  return (
+    <>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Kpi icon={<TrendingUp className="h-4 w-4" />} label="Hit ratio" value={`${ratioPct}%`} hint={`${snapshot.counters.hits} hits / ${snapshot.counters.misses} misses`} tone={ratioTone(snapshot.counters.hit_ratio)} progress={ratioPct} />
+        <Kpi icon={<Gauge className="h-4 w-4" />} label="Resoluções" value={String(snapshot.counters.resolutions)} hint={`uptime ${fmtDuration(snapshot.uptime_ms)}`} tone="neutral" />
+        <Kpi icon={<Clock className="h-4 w-4" />} label="Latência p95" value={`${snapshot.duration_ms.p95} ms`} hint={`avg ${snapshot.duration_ms.avg} ms · p99 ${snapshot.duration_ms.p99} ms · max ${snapshot.duration_ms.max} ms`} tone={snapshot.duration_ms.p95 > 50 ? "warn" : "ok"} />
+        <Kpi icon={<Database className="h-4 w-4" />} label="Entradas em cache" value={String(snapshot.cache.size)} hint={`${snapshot.counters.expirations} expirações · ${snapshot.counters.invalidations_single + snapshot.counters.invalidations_full} invalidações`} tone="neutral" />
+      </div>
+      <div><h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">Por credencial ({snapshot.per_name.length})</h4><PerNameTable rows={snapshot.per_name} /></div>
+      <div><h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">Snapshot do cache ({snapshot.cache.size}) — TTL {Math.round(snapshot.cache.ttl_ms / 1000)}s</h4><CacheEntries entries={snapshot.cache.entries} /></div>
+      <p className="text-[10px] text-muted-foreground">Isolate iniciado em {fmtTs(snapshot.isolate_started_at)} · amostras de latência: {snapshot.duration_ms.samples}</p>
+    </>
+  );
+}
+
+function PanelContent({ error, loading, snapshot }: { error: string | null; loading: boolean; snapshot: Snapshot | null }) {
+  if (loading && !snapshot) return <Skeleton className="h-40 w-full" />;
+  if (error) return <p className={`text-xs ${DESTRUCTIVE_TEXT}`}>Erro: {error}</p>;
+  if (!snapshot) return null;
+  return <SnapshotDetails snapshot={snapshot} />;
+}
+
+function useCredentialCacheMetrics() {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -105,12 +159,14 @@ export function CredentialCacheMetricsPanel() {
   useEffect(() => {
     load();
   }, [load]);
+  return { error, load, loading, reset, snapshot };
+}
 
-  const ratioPct = snapshot ? Math.round(snapshot.counters.hit_ratio * 100) : 0;
-  const tone = snapshot ? ratioTone(snapshot.counters.hit_ratio) : "warn";
+export function CredentialCacheMetricsPanel() {
+  const { error, load, loading, reset, snapshot } = useCredentialCacheMetrics();
 
   return (
-    <Card>
+    (<Card>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="flex items-start gap-3">
@@ -137,156 +193,8 @@ export function CredentialCacheMetricsPanel() {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {loading && !snapshot ? (
-          <Skeleton className="h-40 w-full" />
-        ) : error ? (
-          <p className="text-xs text-destructive">Erro: {error}</p>
-        ) : snapshot ? (
-          <>
-            {/* KPIs */}
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <Kpi
-                icon={<TrendingUp className="h-4 w-4" />}
-                label="Hit ratio"
-                value={`${ratioPct}%`}
-                hint={`${snapshot.counters.hits} hits / ${snapshot.counters.misses} misses`}
-                tone={tone}
-                progress={ratioPct}
-              />
-              <Kpi
-                icon={<Gauge className="h-4 w-4" />}
-                label="Resoluções"
-                value={String(snapshot.counters.resolutions)}
-                hint={`uptime ${fmtDuration(snapshot.uptime_ms)}`}
-                tone="neutral"
-              />
-              <Kpi
-                icon={<Clock className="h-4 w-4" />}
-                label="Latência p95"
-                value={`${snapshot.duration_ms.p95} ms`}
-                hint={`avg ${snapshot.duration_ms.avg} ms · p99 ${snapshot.duration_ms.p99} ms · max ${snapshot.duration_ms.max} ms`}
-                tone={snapshot.duration_ms.p95 > 50 ? "warn" : "ok"}
-              />
-              <Kpi
-                icon={<Database className="h-4 w-4" />}
-                label="Entradas em cache"
-                value={String(snapshot.cache.size)}
-                hint={`${snapshot.counters.expirations} expirações · ${snapshot.counters.invalidations_single + snapshot.counters.invalidations_full} invalidações`}
-                tone="neutral"
-              />
-            </div>
-
-            {/* Per-name table */}
-            <div>
-              <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
-                Por credencial ({snapshot.per_name.length})
-              </h4>
-              {snapshot.per_name.length === 0 ? (
-                <p className="text-xs text-muted-foreground">
-                  Nenhuma resolução registrada ainda. Atue na app para popular as métricas.
-                </p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="border-b text-left text-muted-foreground">
-                        <th className="py-1.5 pr-3 font-medium">Credencial</th>
-                        <th className="py-1.5 pr-3 font-medium">Origem</th>
-                        <th className="py-1.5 pr-3 font-medium text-right">Hits</th>
-                        <th className="py-1.5 pr-3 font-medium text-right">Misses</th>
-                        <th className="py-1.5 pr-3 font-medium text-right">Hit ratio</th>
-                        <th className="py-1.5 pr-3 font-medium text-right">Última (ms)</th>
-                        <th className="py-1.5 font-medium text-right">Última resolução</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {snapshot.per_name
-                        .slice()
-                        .sort((a, b) => b.resolutions - a.resolutions)
-                        .map((p) => {
-                          const pct = Math.round(p.hit_ratio * 100);
-                          const t = ratioTone(p.hit_ratio);
-                          return (
-                            <tr key={p.name} className="border-b last:border-0 align-middle">
-                              <td className="py-1.5 pr-3 font-mono text-[11px] truncate max-w-[280px]">{p.name}</td>
-                              <td className="py-1.5 pr-3">
-                                <SourceBadge source={p.last_source} />
-                              </td>
-                              <td className="py-1.5 pr-3 text-right tabular-nums">{p.hits}</td>
-                              <td className="py-1.5 pr-3 text-right tabular-nums">{p.misses}</td>
-                              <td className="py-1.5 pr-3 text-right">
-                                <span
-                                  className={
-                                    t === "ok"
-                                      ? "text-green-600"
-                                      : t === "warn"
-                                        ? "text-amber-600"
-                                        : "text-destructive"
-                                  }
-                                >
-                                  {pct}%
-                                </span>
-                              </td>
-                              <td className="py-1.5 pr-3 text-right tabular-nums">
-                                {p.last_duration_ms ?? "—"}
-                              </td>
-                              <td className="py-1.5 text-right text-muted-foreground">
-                                {fmtTs(p.last_resolved_at)}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-
-            {/* Cache contents */}
-            <div>
-              <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
-                Snapshot do cache ({snapshot.cache.size}) — TTL{" "}
-                {Math.round(snapshot.cache.ttl_ms / 1000)}s
-              </h4>
-              {snapshot.cache.entries.length === 0 ? (
-                <p className="text-xs text-muted-foreground">Cache vazio.</p>
-              ) : (
-                <ul className="space-y-1 text-xs font-mono">
-                  {snapshot.cache.entries.map((e) => (
-                    <li
-                      key={e.name}
-                      className="flex items-center justify-between gap-2 border-b pb-1 last:border-0"
-                    >
-                      <span className="truncate flex items-center gap-2">
-                        <SourceBadge source={e.source} />
-                        <span>{e.name}</span>
-                        {!e.has_value && (
-                          <Badge variant="outline" className="text-[9px]">
-                            sem valor
-                          </Badge>
-                        )}
-                      </span>
-                      <span
-                        className={`text-[10px] tabular-nums ${
-                          e.expired ? "text-destructive" : "text-muted-foreground"
-                        }`}
-                      >
-                        {e.expired ? "expirado" : `expira em ${fmtDuration(e.ttl_remaining_ms)}`}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            <p className="text-[10px] text-muted-foreground">
-              Isolate iniciado em {fmtTs(snapshot.isolate_started_at)} · amostras de latência: {snapshot.duration_ms.samples}
-            </p>
-          </>
-        ) : null}
-      </CardContent>
-    </Card>
+      <CardContent className="space-y-4"><PanelContent error={error} loading={loading} snapshot={snapshot} /></CardContent>
+    </Card>)
   );
 }
 

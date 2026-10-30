@@ -1,0 +1,28 @@
+{
+  "ambiente": "PostgreSQL 16 descartável sem rede",
+  "remoto_validado": false,
+  "cenarios": {
+    "dry_run_reverte_schema": true,
+    "converte_para_dominio_sicoob": true,
+    "copia_itens_e_snapshot": true,
+    "congela_origem_e_hierarquia": true,
+    "componentes_comerciais_basicos_reconciliados": true,
+    "marca_orcamento_convertido": true,
+    "repeticao_idempotente": true,
+    "perfil_inativo_nao_acessa_conversao_idempotente": true,
+    "personalizado_exige_arte": true,
+    "arte_aprovada_libera_fluxo": true,
+    "pedido_convertido_nao_aceita_mutacao_de_itens": true,
+    "formula_brl_v1_preserva_personalizacao_markup_desconto_e_frete": true,
+    "total_adulterado_reverte_conversao": true,
+    "ator_alheio_bloqueado": true,
+    "item_invalido_reverte_tudo": true,
+    "falha_intermediaria_reverte_pedido_e_quote": true,
+    "concorrencia_retorna_mesmo_pedido": true,
+    "acl_authenticated_sem_anon": true,
+    "item_e_total_numa_transacao": true,
+    "remocao_e_total_numa_transacao": true,
+    "mutacao_de_item_bloqueia_ator_alheio": true,
+    "pedido_fora_de_rascunho_e_imutavel": true
+  }
+}

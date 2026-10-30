@@ -81,6 +81,43 @@ export interface BatchImportResult {
 
 const CHUNK_SIZE = 25;
 
+async function importChunk(chunk: ImportRow[], mode: ImportMode) {
+  const response = await invokeBridge<{ records: Array<{ id: string; sku: string; name: string }>; count: number }>({
+    table: 'products',
+    operation: 'batch_insert',
+    data: chunk,
+    ...(mode === 'upsert' ? { onConflict: 'sku' } : {}),
+  });
+  const records = response?.data?.records ?? (response as unknown as Record<string, unknown>)?.records ?? [];
+  return Array.isArray(records) ? records as Array<{ id: string }> : [];
+}
+
+function recordChunkSuccess(
+  records: Array<{ id: string }>,
+  chunkLength: number,
+  chunkIndex: number,
+  ...state: [
+    startIndex: number,
+    result: BatchImportResult,
+    progress: BatchImportProgress,
+  ]
+) {
+  const [startIndex, result, progress] = state;
+  result.succeeded += records.length;
+  result.failed += chunkLength - records.length;
+  progress.succeeded += records.length;
+  progress.failed += chunkLength - records.length;
+  for (const record of records) if (record.id) result.insertedIds.push(record.id);
+  if (records.length < chunkLength) {
+    result.errors.push({
+      chunkIndex,
+      startRow: startIndex + 1,
+      endRow: startIndex + chunkLength,
+      message: `${chunkLength - records.length} registros não foram processados`,
+    });
+  }
+}
+
 /**
  * Check which SKUs already exist in the external DB.
  * Returns a Set of existing SKUs.
@@ -149,35 +186,7 @@ export async function executeBatchImport(
     progress.currentChunk = chunkIndex + 1;
 
     try {
-      const response = await invokeBridge<{ records: Array<{ id: string; sku: string; name: string }>; count: number }>({
-        table: 'products',
-        operation: 'batch_insert',
-        data: chunk,
-        ...(mode === 'upsert' ? { onConflict: 'sku' } : {}),
-      });
-
-      const records = response?.data?.records ?? (response as unknown as Record<string, unknown>)?.records ?? [];
-      const insertedCount = Array.isArray(records) ? records.length : 0;
-
-      result.succeeded += insertedCount;
-      result.failed += chunk.length - insertedCount;
-      progress.succeeded += insertedCount;
-      progress.failed += chunk.length - insertedCount;
-
-      if (Array.isArray(records)) {
-        records.forEach((r: { id: string }) => {
-          if (r.id) result.insertedIds.push(r.id);
-        });
-      }
-
-      if (insertedCount < chunk.length) {
-        result.errors.push({
-          chunkIndex,
-          startRow: i + 1,
-          endRow: i + chunk.length,
-          message: `${chunk.length - insertedCount} registros não foram processados`,
-        });
-      }
+      recordChunkSuccess(await importChunk(chunk, mode), chunk.length, chunkIndex, i, result, progress);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
       logger.error(`[batch-import] Chunk ${chunkIndex} failed:`, err);

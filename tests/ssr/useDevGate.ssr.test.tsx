@@ -21,9 +21,9 @@ describe('useDevGate SSR', () => {
     
     // Simular ambiente SSR deletando window
     const originalWindow = global.window;
-    // @ts-ignore
+    // @ts-expect-error -- o teste remove APIs do navegador para simular SSR.
     delete global.window;
-    // @ts-ignore
+    // @ts-expect-error -- o teste remove APIs do navegador para simular SSR.
     delete global.localStorage;
 
     try {
@@ -40,9 +40,9 @@ describe('useDevGate SSR', () => {
     
     // Simular ambiente SSR
     const originalWindow = global.window;
-    // @ts-ignore
+    // @ts-expect-error -- o teste remove APIs do navegador para simular SSR.
     delete global.window;
-    // @ts-ignore
+    // @ts-expect-error -- o teste remove APIs do navegador para simular SSR.
     delete global.localStorage;
 
     try {
@@ -57,9 +57,9 @@ describe('useDevGate SSR', () => {
     (useAuth as any).mockReturnValue({ roles: ['dev'], isDev: true, isLoading: false });
     
     const originalWindow = global.window;
-    // @ts-ignore
+    // @ts-expect-error -- o teste remove APIs do navegador para simular SSR.
     delete global.window;
-    // @ts-ignore
+    // @ts-expect-error -- o teste remove APIs do navegador para simular SSR.
     delete global.localStorage;
 
     try {

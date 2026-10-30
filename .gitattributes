@@ -1,3 +1,6 @@
 # Artefato oficial distribuído com quebras de linha preservadas; o hash de
 # procedência é verificado pelos cenários de segurança.
 vendor/pptxgenjs-browser/dist/pptxgen.es.js -text
+
+# Migration já aplicada: o arquivo deve permanecer byte a byte igual ao ledger.
+supabase/migrations/20261008010000_fix_plpgsql_lint_failures.sql -whitespace

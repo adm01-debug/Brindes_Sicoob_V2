@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { invokeExternalDb } from "@/lib/external-db";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +25,6 @@ const VARIABLE_REFERENCE = [
 ];
 
 export function MockupPromptManager() {
-  const { user } = useAuth();
   const [configs, setConfigs] = useState<PromptConfig[]>([]);
   const [techniques, setTechniques] = useState<Technique[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -71,7 +69,7 @@ export function MockupPromptManager() {
       // trg_log_mockup_prompt_change (BEFORE UPDATE em mockup_prompt_configs),
       // que já incrementa version e insere em mockup_prompt_history — não
       // inserir manualmente aqui.
-      const { error } = await supabase.from("mockup_prompt_configs").update({ prompt_text: edited.prompt_text, ai_model: edited.ai_model, version: config.version + 1, updated_by: user?.id }).eq("id", config.id);
+      const { error } = await supabase.from("mockup_prompt_configs").update({ prompt_text: edited.prompt_text, ai_model: edited.ai_model, version: config.version + 1 }).eq("id", config.id);
       if (error) throw error;
       // Anexa a nota de mudança na linha de histórico que o trigger acabou de criar
       // (o trigger não recebe change_notes — ele só grava config_id/old_prompt/new_prompt/version).
@@ -107,7 +105,7 @@ export function MockupPromptManager() {
     const tech = techniques.find(t => t.id === selectedTechnique); if (!tech) return;
     if (configs.find(c => c.config_key === `technique_${tech.id}`)) { toast.error("Já existe um prompt para essa técnica"); return; }
     try {
-      const { error } = await supabase.from("mockup_prompt_configs").insert({ config_key: `technique_${tech.id}`, label: `Prompt: ${tech.name}`, prompt_text: `Apply the logo using ${tech.name} technique. The result should look realistic with proper ${tech.name.toLowerCase()} texture and finish on the product surface.`, ai_model: "google/gemini-2.5-flash-image-preview", technique_id: tech.id, created_by: user?.id });
+      const { error } = await supabase.from("mockup_prompt_configs").insert({ config_key: `technique_${tech.id}`, label: `Prompt: ${tech.name}`, prompt_text: `Apply the logo using ${tech.name} technique. The result should look realistic with proper ${tech.name.toLowerCase()} texture and finish on the product surface.`, ai_model: "google/gemini-2.5-flash-image-preview", technique_id: tech.id });
       if (error) throw error; toast.success(`Prompt para "${tech.name}" criado`); setAddTechniqueDialog(false); setSelectedTechnique(""); fetchAll();
     } catch (err: unknown) { toast.error("Erro ao criar prompt", { description: err instanceof Error ? err.message : undefined }); }
   };

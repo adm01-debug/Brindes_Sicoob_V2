@@ -4,6 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
+const KIT_SHARE_TOKENS_QUERY_KEY = "kit-share-tokens";
+const KIT_SHARE_SUMMARY_QUERY_KEY = "kit-share-summary";
+
+function requireIdentifier(value: string | undefined, entity: string): string {
+  if (!value) throw new Error(`${entity} não identificado`);
+  return value;
+}
+
 export interface KitShareToken {
   id: string;
   kit_id: string;
@@ -53,8 +61,8 @@ export function useKitShare() {
 
       const link = `${window.location.origin}/kit/${(data as Record<string, string>).token}`;
       toast.success("Link de apresentação gerado!");
-      qc.invalidateQueries({ queryKey: ["kit-share-tokens", kitId] });
-      qc.invalidateQueries({ queryKey: ["kit-share-summary"] });
+      qc.invalidateQueries({ queryKey: [KIT_SHARE_TOKENS_QUERY_KEY, kitId] });
+      qc.invalidateQueries({ queryKey: [KIT_SHARE_SUMMARY_QUERY_KEY] });
       return link;
     } catch (err) {
       console.error("Error generating share link:", err);
@@ -74,8 +82,8 @@ export function useKitShare() {
 
       if (error) throw error;
       toast.success("Link revogado");
-      if (kitId) qc.invalidateQueries({ queryKey: ["kit-share-tokens", kitId] });
-      qc.invalidateQueries({ queryKey: ["kit-share-summary"] });
+      if (kitId) qc.invalidateQueries({ queryKey: [KIT_SHARE_TOKENS_QUERY_KEY, kitId] });
+      qc.invalidateQueries({ queryKey: [KIT_SHARE_SUMMARY_QUERY_KEY] });
       return true;
     } catch (err) {
       console.error("Error revoking token:", err);
@@ -93,13 +101,14 @@ export function useKitShare() {
  */
 export function useKitShareTokens(kitId: string | undefined) {
   return useQuery({
-    queryKey: ["kit-share-tokens", kitId],
+    queryKey: [KIT_SHARE_TOKENS_QUERY_KEY, kitId],
     enabled: !!kitId,
     queryFn: async () => {
+      const requiredKitId = requireIdentifier(kitId, "Kit");
       const { data, error } = await supabase
         .from("kit_share_tokens")
         .select("*")
-        .eq("kit_id", kitId!)
+        .eq("kit_id", requiredKitId)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data || []) as unknown as KitShareToken[];
@@ -120,15 +129,17 @@ export interface KitShareSummary {
 
 export function useKitShareSummary() {
   const { user } = useAuth();
+  const authenticatedUserId = user?.id;
   return useQuery({
-    queryKey: ["kit-share-summary", user?.id],
-    enabled: !!user?.id,
+    queryKey: [KIT_SHARE_SUMMARY_QUERY_KEY, authenticatedUserId],
+    enabled: !!authenticatedUserId,
     staleTime: 60_000,
     queryFn: async (): Promise<Record<string, KitShareSummary>> => {
+      const userId = requireIdentifier(authenticatedUserId, "Usuário");
       const { data, error } = await supabase
         .from("kit_share_tokens")
         .select("kit_id, viewed_at, status")
-        .eq("seller_id", user!.id);
+        .eq("seller_id", userId);
       if (error) throw error;
       const map: Record<string, KitShareSummary> = {};
       for (const row of (data || []) as Array<{ kit_id: string; viewed_at: string | null; status: string }>) {

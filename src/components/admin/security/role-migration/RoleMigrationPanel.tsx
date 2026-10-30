@@ -9,6 +9,7 @@
  * Improvement: Strictly typed operational logic and improved validation feedback.
  * RBAC: Server-side RPC requires `is_admin_strict`.
  */
+import { isNullish } from "@/components/admin/utils/nullish";
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,7 +41,12 @@ interface ProfileLite {
   current_roles: AppRole[];
 }
 
-const STATUS_BADGE: Record<string, { variant: "default" | "destructive" | "secondary" | "outline"; className?: string }> = {
+interface StatusBadgeMeta {
+  variant: "default" | "destructive" | "secondary" | "outline";
+  className?: string;
+}
+
+const STATUS_BADGE: Record<string, StatusBadgeMeta> = {
   completed: { variant: "default", className: "bg-emerald-600 hover:bg-emerald-600" },
   partial:   { variant: "secondary" },
   failed:    { variant: "destructive" },
@@ -50,6 +56,173 @@ const STATUS_BADGE: Record<string, { variant: "default" | "destructive" | "secon
   success:   { variant: "default", className: "bg-emerald-600 hover:bg-emerald-600" },
   skipped:   { variant: "outline" },
 };
+const DEFAULT_STATUS_BADGE: StatusBadgeMeta = { variant: "outline" };
+
+async function fetchProfiles(): Promise<ProfileLite[]> {
+  const [{ data: profiles, error: profileError }, { data: roles, error: roleError }] = await Promise.all([
+    supabase.from("profiles").select("user_id, email, full_name").order("email"),
+    supabase.from("user_roles").select("user_id, role"),
+  ]);
+  if (profileError) throw profileError;
+  if (roleError) throw roleError;
+  const rolesByUser = new Map<string, AppRole[]>();
+  for (const item of roles ?? []) {
+    const userRoles = rolesByUser.get(item.user_id) ?? [];
+    userRoles.push(item.role as AppRole);
+    rolesByUser.set(item.user_id, userRoles);
+  }
+  return (profiles ?? []).map((profile) => ({
+    user_id: profile.user_id,
+    email: profile.email,
+    full_name: profile.full_name,
+    current_roles: rolesByUser.get(profile.user_id) ?? [],
+  }));
+}
+
+function migrationValidation(selectedCount: number, label: string, reason: string): string | null {
+  if (selectedCount === 0) return "Selecione ao menos 1 usuário";
+  if (label.trim().length < 3) return "Defina um rótulo descritivo para o lote (mín. 3 caracteres)";
+  if (reason.trim().length < 5) return "Justifique a migração (mín. 5 caracteres)";
+  return null;
+}
+
+function HighImpactAlert({
+  operation,
+  toRole,
+}: {
+  operation: MigrationItemInput["operation"];
+  toRole: AppRole;
+}) {
+  const replacesRoles = operation === "replace";
+  const grantsAdministrativeAccess = toRole === "admin" || toRole === "dev";
+  if (!replacesRoles && !grantsAdministrativeAccess) return null;
+  return (
+    <Alert variant="destructive">
+      <AlertTriangle className="h-4 w-4" />
+      <AlertTitle>Operação de alto impacto</AlertTitle>
+      <AlertDescription>
+        {replacesRoles && "Esta operação remove TODOS os papéis atuais antes de inserir o novo. "}
+        {grantsAdministrativeAccess && `Promover a "${toRole}" concede acesso administrativo. `}
+        Sempre execute dry-run primeiro e revise o histórico.
+      </AlertDescription>
+    </Alert>
+  );
+}
+
+interface BatchHistoryProps {
+  batches: BatchRow[];
+  loadingBatches: boolean;
+  loadingItems: boolean;
+  openBatch: BatchRow | null;
+  openItems: ItemRow[];
+  onCloseBatch: () => void;
+  onDrillDown: (batch: BatchRow) => void;
+  onRefresh: () => void;
+}
+
+function BatchHistory({
+  batches,
+  loadingBatches,
+  loadingItems,
+  openBatch,
+  openItems,
+  onCloseBatch,
+  onDrillDown,
+  onRefresh,
+}: BatchHistoryProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-muted"><History className="h-5 w-5 text-muted-foreground" /></div>
+            <div>
+              <CardTitle>Histórico de lotes</CardTitle>
+              <CardDescription>Últimos 50 lotes (dry-run incluso)</CardDescription>
+            </div>
+          </div>
+          <Button variant="ghost" size="sm" onClick={onRefresh} disabled={loadingBatches}>
+            {loadingBatches && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            Atualizar
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {batches.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-6 text-center">Nenhum lote ainda. Execute o primeiro acima.</p>
+        ) : (
+          <div className="space-y-2">
+            {batches.map((batch) => {
+              const meta = STATUS_BADGE[batch.status] ?? DEFAULT_STATUS_BADGE;
+              return (
+                <button
+                  key={batch.id}
+                  onClick={() => onDrillDown(batch)}
+                  className="w-full text-left p-3 rounded-lg border hover:bg-muted/40 flex items-center gap-3"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-sm truncate">{batch.label}</span>
+                      <Badge variant={meta.variant} className={meta.className}>{batch.status}</Badge>
+                      {batch.dry_run && <Badge variant="outline" className="text-[10px]">DRY-RUN</Badge>}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1 truncate">{batch.reason}</div>
+                    <div className="text-[11px] text-muted-foreground font-mono mt-1">
+                      {new Date(batch.created_at).toLocaleString("pt-BR")} · {batch.total_items} itens · ✅ {batch.success_count} · ❌ {batch.failed_count} · ⏭ {batch.skipped_count}
+                      {!isNullish(batch.duration_ms) && ` · ${batch.duration_ms}ms`}
+                    </div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {openBatch && (
+          <>
+            <Separator className="my-4" />
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold text-sm">Itens do lote: {openBatch.label}</h4>
+                <Button variant="ghost" size="sm" onClick={onCloseBatch}>Fechar</Button>
+              </div>
+              {loadingItems ? (
+                <div className="p-4 flex items-center justify-center text-muted-foreground">
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Carregando itens…
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {openItems.map((item) => {
+                    const meta = STATUS_BADGE[item.status] ?? DEFAULT_STATUS_BADGE;
+                    return (
+                      <div key={item.id} className="flex items-start gap-3 p-2 rounded border bg-card text-sm">
+                        <Badge variant={meta.variant} className={meta.className}>{item.status}</Badge>
+                        <div className="flex-1 min-w-0">
+                          <div className="truncate">
+                            <span className="font-medium">{item.user_email ?? item.user_id}</span>
+                            <span className="text-muted-foreground"> · {item.operation} </span>
+                            <code className="text-xs">{item.from_role ?? "—"} → {item.to_role}</code>
+                          </div>
+                          {item.error_message && (
+                            <div className="text-xs text-destructive mt-1 font-mono">{item.error_message}</div>
+                          )}
+                        </div>
+                        {!isNullish(item.duration_ms) && (
+                          <span className="text-[10px] font-mono text-muted-foreground">{item.duration_ms}ms</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export function RoleMigrationPanel() {
   const { batches, loadingBatches, submitting, refreshBatches, executeBatch, fetchItems } = useRoleMigration();
@@ -71,27 +244,9 @@ export function RoleMigrationPanel() {
     (async () => {
       setLoadingProfiles(true);
       try {
-        const [{ data: profs, error: pErr }, { data: roles, error: rErr }] = await Promise.all([
-          supabase.from("profiles").select("user_id, email, full_name").order("email"),
-          supabase.from("user_roles").select("user_id, role"),
-        ]);
-        if (pErr) throw pErr;
-        if (rErr) throw rErr;
+        const loaded = await fetchProfiles();
         if (cancelled) return;
-        const rolesByUser = new Map<string, AppRole[]>();
-        for (const r of roles ?? []) {
-          const arr = rolesByUser.get(r.user_id) ?? [];
-          arr.push(r.role as AppRole);
-          rolesByUser.set(r.user_id, arr);
-        }
-        setProfiles(
-          (profs ?? []).map((p) => ({
-            user_id: p.user_id,
-            email: p.email,
-            full_name: p.full_name,
-            current_roles: rolesByUser.get(p.user_id) ?? [],
-          })),
-        );
+        setProfiles(loaded);
       } catch (e) {
         toast.error("Falha ao carregar usuários", { description: e instanceof Error ? e.message : String(e) });
       } finally {
@@ -118,21 +273,11 @@ export function RoleMigrationPanel() {
   };
 
   const buildItems = (): MigrationItemInput[] =>
-    Array.from(selected).map((user_id) => ({ user_id, to_role: toRole, operation }));
+    Array.from(selected).map((userId) => ({ user_id: userId, to_role: toRole, operation }));
 
   const submit = async (dryRun: boolean) => {
-    if (selected.size === 0) {
-      toast.error("Selecione ao menos 1 usuário");
-      return;
-    }
-    if (label.trim().length < 3) {
-      toast.error("Defina um rótulo descritivo para o lote (mín. 3 caracteres)");
-      return;
-    }
-    if (reason.trim().length < 5) {
-      toast.error("Justifique a migração (mín. 5 caracteres)");
-      return;
-    }
+    const validationError = migrationValidation(selected.size, label, reason);
+    if (validationError) { toast.error(validationError); return; }
     try {
       const batchId = await executeBatch({
         label: label.trim(),
@@ -165,7 +310,7 @@ export function RoleMigrationPanel() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      {(<Card>
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10"><Users className="h-5 w-5 text-primary" /></div>
@@ -226,17 +371,7 @@ export function RoleMigrationPanel() {
             </div>
           </div>
 
-          {(operation === "replace" || toRole === "admin" || toRole === "dev") && (
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Operação de alto impacto</AlertTitle>
-              <AlertDescription>
-                {operation === "replace" && "Esta operação remove TODOS os papéis atuais antes de inserir o novo. "}
-                {(toRole === "admin" || toRole === "dev") && `Promover a "${toRole}" concede acesso administrativo. `}
-                Sempre execute dry-run primeiro e revise o histórico.
-              </AlertDescription>
-            </Alert>
-          )}
+          <HighImpactAlert operation={operation} toRole={toRole} />
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -289,98 +424,18 @@ export function RoleMigrationPanel() {
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </Card>)}
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-muted"><History className="h-5 w-5 text-muted-foreground" /></div>
-              <div>
-                <CardTitle>Histórico de lotes</CardTitle>
-                <CardDescription>Últimos 50 lotes (dry-run incluso)</CardDescription>
-              </div>
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => void refreshBatches()} disabled={loadingBatches}>
-              {loadingBatches && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Atualizar
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {batches.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">Nenhum lote ainda. Execute o primeiro acima.</p>
-          ) : (
-            <div className="space-y-2">
-              {batches.map((b) => {
-                const meta = STATUS_BADGE[b.status] ?? STATUS_BADGE.pending!;
-                return (
-                  <button
-                    key={b.id}
-                    onClick={() => void drillDown(b)}
-                    className="w-full text-left p-3 rounded-lg border hover:bg-muted/40 flex items-center gap-3"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium text-sm truncate">{b.label}</span>
-                        <Badge variant={meta.variant} className={meta.className}>{b.status}</Badge>
-                        {b.dry_run && <Badge variant="outline" className="text-[10px]">DRY-RUN</Badge>}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1 truncate">{b.reason}</div>
-                      <div className="text-[11px] text-muted-foreground font-mono mt-1">
-                        {new Date(b.created_at).toLocaleString("pt-BR")} · {b.total_items} itens · ✅ {b.success_count} · ❌ {b.failed_count} · ⏭ {b.skipped_count}
-                        {b.duration_ms != null && ` · ${b.duration_ms}ms`}
-                      </div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          {openBatch && (
-            <>
-              <Separator className="my-4" />
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-sm">Itens do lote: {openBatch.label}</h4>
-                  <Button variant="ghost" size="sm" onClick={() => { setOpenBatch(null); setOpenItems([]); }}>Fechar</Button>
-                </div>
-                {loadingItems ? (
-                  <div className="p-4 flex items-center justify-center text-muted-foreground">
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Carregando itens…
-                  </div>
-                ) : (
-                  <div className="space-y-1">
-                    {openItems.map((it) => {
-                      const meta = STATUS_BADGE[it.status] ?? STATUS_BADGE.pending!;
-                      return (
-                        <div key={it.id} className="flex items-start gap-3 p-2 rounded border bg-card text-sm">
-                          <Badge variant={meta.variant} className={meta.className}>{it.status}</Badge>
-                          <div className="flex-1 min-w-0">
-                            <div className="truncate">
-                              <span className="font-medium">{it.user_email ?? it.user_id}</span>
-                              <span className="text-muted-foreground"> · {it.operation} </span>
-                              <code className="text-xs">{it.from_role ?? "—"} → {it.to_role}</code>
-                            </div>
-                            {it.error_message && (
-                              <div className="text-xs text-destructive mt-1 font-mono">{it.error_message}</div>
-                            )}
-                          </div>
-                          {it.duration_ms != null && (
-                            <span className="text-[10px] font-mono text-muted-foreground">{it.duration_ms}ms</span>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
+      <BatchHistory
+        batches={batches}
+        loadingBatches={loadingBatches}
+        loadingItems={loadingItems}
+        openBatch={openBatch}
+        openItems={openItems}
+        onCloseBatch={() => { setOpenBatch(null); setOpenItems([]); }}
+        onDrillDown={(batch) => void drillDown(batch)}
+        onRefresh={() => void refreshBatches()}
+      />
     </div>
   );
 }

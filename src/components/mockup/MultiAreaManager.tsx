@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type DragEvent } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +45,40 @@ interface MultiAreaManagerProps {
   productLocations?: { code: string; name: string; order: number }[] | null;
 }
 
+function managerDescription(areas: PersonalizationArea[], dragging: boolean): string {
+  if (dragging) return "🎯 Solte a imagem para aplicar como logo";
+  const official = areas.some(area => (area.maxWidthCm !== null && area.maxWidthCm !== undefined) || (area.techniquesAvailable !== null && area.techniquesAvailable !== undefined));
+  if (official) return `${areas.length} ${areas.length === 1 ? "área oficial do produto" : "áreas oficiais do produto"}`;
+  return `${areas.length} ${areas.length === 1 ? "local configurado" : "locais configurados"} para este produto`;
+}
+
+function ManagerHeader({ areas, expanded, dragging }: { areas: PersonalizationArea[]; expanded: boolean; dragging: boolean }) {
+  return <CardHeader className="pb-3"><CollapsibleTrigger asChild><div className="flex items-center justify-between cursor-pointer hover:opacity-80"><div className="flex items-center gap-2"><Layers className="h-4 w-4 text-primary" /><CardTitle className="text-base">Áreas de Personalização</CardTitle><Badge variant="secondary" className="text-xs">{areas.length} {areas.length === 1 ? "área" : "áreas"}</Badge></div>{expanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}</div></CollapsibleTrigger><CardDescription className="text-xs">{managerDescription(areas, dragging)}</CardDescription></CardHeader>;
+}
+
+function AreasList({ areas, activeAreaId, onActiveAreaChange, onAreasChange, onLogoUpload, onLogoRemove }: Omit<MultiAreaManagerProps, "productLocations">) {
+  const removeLogo = (areaId: string) => {
+    onAreasChange(areas.map(area => area.id === areaId ? { ...area, logoData: null, logoPreview: null } : area));
+    onLogoRemove?.(areaId);
+  };
+  return <div className="space-y-2">{areas.map((area, index) => <AreaCard key={area.id} area={area} index={index} isActive={activeAreaId === area.id} isReadOnly canRemove={false} onSelect={() => onActiveAreaChange(area.id)} onNameChange={() => undefined} onLogoUpload={file => onLogoUpload(area.id, file)} onLogoRemove={() => removeLogo(area.id)} onRemove={() => undefined} />)}</div>;
+}
+
+function useLogoDrop(areas: PersonalizationArea[], activeAreaId: string | null, onLogoUpload: MultiAreaManagerProps["onLogoUpload"]) {
+  const [dragging, setDragging] = useState(false);
+  const onDragOver = (event: DragEvent) => { event.preventDefault(); event.stopPropagation(); setDragging(true); };
+  const onDragLeave = (event: DragEvent) => { event.preventDefault(); setDragging(false); };
+  const onDrop = (event: DragEvent) => {
+    event.preventDefault(); setDragging(false);
+    const file = event.dataTransfer.files?.[0];
+    const targetAreaId = activeAreaId || areas[0]?.id;
+    if (!file?.type.startsWith("image/") || !targetAreaId) return;
+    onLogoUpload(targetAreaId, file);
+    toast.success(`Logo aplicado na área "${areas.find(area => area.id === targetAreaId)?.name || "ativa"}"`);
+  };
+  return { dragging, onDragOver, onDragLeave, onDrop };
+}
+
 export function MultiAreaManager({
   areas,
   activeAreaId,
@@ -54,7 +88,7 @@ export function MultiAreaManager({
   onLogoRemove,
 }: MultiAreaManagerProps) {
   const [isExpanded, setIsExpanded] = useState(true);
-  const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const drop = useLogoDrop(areas, activeAreaId, onLogoUpload);
 
   const activeAreaHasLogo = areas.find((a) => a.id === activeAreaId)?.logoPreview;
 
@@ -67,76 +101,20 @@ export function MultiAreaManager({
 
   return (
     <Card
-      onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDraggingOver(true); }}
-      onDragLeave={(e) => { e.preventDefault(); setIsDraggingOver(false); }}
-      onDrop={(e) => {
-        e.preventDefault();
-        setIsDraggingOver(false);
-        const file = e.dataTransfer.files?.[0];
-        if (file && file.type.startsWith("image/")) {
-          const targetAreaId = activeAreaId || areas[0]?.id;
-          if (targetAreaId) {
-            onLogoUpload(targetAreaId, file);
-            toast.success(`Logo aplicado na área "${areas.find(a => a.id === targetAreaId)?.name || "ativa"}"`);
-          }
-        }
-      }}
+      onDragOver={drop.onDragOver}
+      onDragLeave={drop.onDragLeave}
+      onDrop={drop.onDrop}
       className={cn(
         "transition-all duration-200 border-border/30",
-        isDraggingOver && "ring-2 ring-primary border-primary bg-primary/5"
+        drop.dragging && "ring-2 ring-primary border-primary bg-primary/5"
       )}
     >
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-        <CardHeader className="pb-3">
-          <CollapsibleTrigger asChild>
-            <div className="flex items-center justify-between cursor-pointer hover:opacity-80">
-              <div className="flex items-center gap-2">
-                <Layers className="h-4 w-4 text-primary" />
-                <CardTitle className="text-base">Áreas de Personalização</CardTitle>
-                <Badge variant="secondary" className="text-xs">
-                  {areas.length} {areas.length === 1 ? "área" : "áreas"}
-                </Badge>
-              </div>
-              {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
-            </div>
-          </CollapsibleTrigger>
-          <CardDescription className="text-xs">
-            {isDraggingOver
-              ? "🎯 Solte a imagem para aplicar como logo"
-              : areas.some(a => a.maxWidthCm != null || a.techniquesAvailable != null)
-                ? `${areas.length} ${areas.length === 1 ? 'área oficial do produto' : 'áreas oficiais do produto'}`
-                : `${areas.length} ${areas.length === 1 ? 'local configurado' : 'locais configurados'} para este produto`}
-          </CardDescription>
-        </CardHeader>
+        <ManagerHeader areas={areas} expanded={isExpanded} dragging={drop.dragging} />
 
         <CollapsibleContent>
           <CardContent className="space-y-3 pt-0">
-            {/* Areas list — read-only, no add/remove */}
-            <div className="space-y-2">
-              {areas.map((area, index) => (
-                <AreaCard
-                  key={area.id}
-                  area={area}
-                  index={index}
-                  isActive={activeAreaId === area.id}
-                  isReadOnly={true}
-                  canRemove={false}
-                  onSelect={() => onActiveAreaChange(area.id)}
-                  onNameChange={() => {}}
-                  onLogoUpload={(file) => onLogoUpload(area.id, file)}
-                  onLogoRemove={() => {
-                    const updated = areas.map(a =>
-                      a.id === area.id
-                        ? { ...a, logoData: null, logoPreview: null }
-                        : a
-                    );
-                    onAreasChange(updated);
-                    onLogoRemove?.(area.id);
-                  }}
-                  onRemove={() => {}}
-                />
-              ))}
-            </div>
+            <AreasList areas={areas} activeAreaId={activeAreaId} onAreasChange={onAreasChange} onActiveAreaChange={onActiveAreaChange} onLogoUpload={onLogoUpload} onLogoRemove={onLogoRemove} />
 
             {areas.length > 1 && activeAreaHasLogo && (
               <Button variant="secondary" size="sm" onClick={applyLogoToAllAreas} className="w-full">

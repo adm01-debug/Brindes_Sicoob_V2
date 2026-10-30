@@ -1,0 +1,19 @@
+{
+  "ambiente": "PostgreSQL 17 descartável, --network none; somente dados sintéticos",
+  "migracao": "supabase/migrations/20260927193000_sicoob_cross_cooperative_rls.sql",
+  "producao_verificada": false,
+  "cenario_s20": "gestores e comprador PA viram apenas o próprio escopo; UUID alheio, itens, histórico, logs e aprovação cruzada retornaram zero; perfil inativo perdeu acesso; supervisor manteve escopo global explícito",
+  "resultado": "aprovado",
+  "evidencia_remota_herdada_na_saida_original": {
+    "projeto_canonico": "cfmzkthhgliqelozlmwu",
+    "postgres_remoto": "17.6",
+    "aplicacao_remota": {
+      "ledger": true,
+      "politicas_select_escopadas": 5,
+      "helper_parametrizado_privado": true,
+      "wrapper_do_ator_autenticado": true,
+      "comparacao_de_cooperativa_presente": true
+    }
+  },
+  "nota_auditoria": "Nesta execução somente fixture local; campos remotos vieram do arquivo histórico lido pelo script, não de consulta realizada hoje."
+}

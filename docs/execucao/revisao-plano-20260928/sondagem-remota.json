@@ -1,0 +1,35 @@
+{
+  "coletado_em": "2026-09-28T14:42:53.326025+00:00",
+  "tipo": "sondagem sem autenticação; não executa negócio",
+  "funcoes": [
+    {
+      "nome": "sicoob-artwork-register",
+      "http": 401
+    },
+    {
+      "nome": "sicoob-kit-quote",
+      "http": 401
+    },
+    {
+      "nome": "sicoob-reorder",
+      "http": 401
+    },
+    {
+      "nome": "sicoob-document-ingest",
+      "http": 401
+    },
+    {
+      "nome": "sicoob-approval-reconciliation",
+      "http": 401
+    }
+  ],
+  "frontend": {
+    "http": 200,
+    "csp": null,
+    "robots": null,
+    "url": "https://brindes-sicoob-v2.vercel.app/",
+    "titulo": "Brindes SICOOB",
+    "meta_robots": "noindex, nofollow",
+    "meta_csp": null
+  }
+}

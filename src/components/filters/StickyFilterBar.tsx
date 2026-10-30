@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SlidersHorizontal, ArrowUpDown, X, ChevronUp, LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -149,7 +150,7 @@ interface InlineFilterBarProps {
   onClearFilters: () => void;
   viewMode: "grid" | "list" | "table";
   onViewModeChange: (mode: "grid" | "list" | "table") => void;
-  columnSelector?: React.ReactNode;
+  columnSelector?: ReactNode;
 }
 
 export function InlineFilterBar({

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BookTemplate, Plus, Loader2, Trash2, Check } from "lucide-react";
+import { BookTemplate, Loader2, Trash2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 
 interface Props {
-  onApplyTemplate: (items: any[]) => void;
+  onApplyTemplate: (items: unknown[]) => void;
 }
 
 /**

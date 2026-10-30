@@ -4,19 +4,139 @@
  * Improvement: strictly typed event handling for drag-and-drop operations 
  * and improved bulk update performance via optimized batch processing.
  */
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { isNullish } from "@/components/admin/utils/nullish";
+import { useState, useRef, useCallback, useMemo, type ChangeEvent, type DragEvent } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import type { ExternalImage, FilterMode, VariantInfo, GalleryStats } from './types';
-import { IMAGE_TYPES } from './types';
+import { type ExternalImage, type FilterMode, type VariantInfo, type GalleryStats, IMAGE_TYPES } from "./types";
+
+const EXTERNAL_IMAGES_QUERY_KEY = 'product-images-ext';
+const EXTERNAL_DB_BRIDGE = 'external-db-bridge';
+const FILE_EXTENSION_SEPARATOR = '.';
+const IMAGE_STORAGE_BUCKET = 'personalization-images';
 
 interface UseProductImageGalleryProps {
   images: string[];
   onChange: (images: string[]) => void;
   folder: string;
   productId?: string;
+}
+
+function matchesImageFilters(
+  url: string,
+  externalImages: Map<string, ExternalImage>,
+  typeFilter: string,
+  filterMode: FilterMode,
+): boolean {
+  const image = externalImages.get(url);
+  if (!image) return filterMode === 'all' && typeFilter === 'all';
+  if (typeFilter !== 'all' && (image.image_type || 'untyped') !== typeFilter) return false;
+  const variantKey = image.supplier_code || image.variant_id;
+  if (filterMode === 'general') return !variantKey;
+  if (filterMode === 'by-variant') return Boolean(variantKey);
+  if (filterMode !== 'all') return variantKey === filterMode;
+  return true;
+}
+
+function resolveVariant(variants: Map<string, VariantInfo>, code: string): VariantInfo | null {
+  return code === 'none' ? null : variants.get(code) ?? null;
+}
+
+function nextDisplayOrder(images: ExternalImage[]): number {
+  if (images.length === 0) return 0;
+  return Math.max(...images.map(image => image.display_order || 0)) + 1;
+}
+
+interface ExternalImagePayloadInput {
+  productId: string;
+  url: string;
+  imageType: string;
+  primary: boolean;
+  order: number;
+  variant: VariantInfo | null;
+}
+
+function externalImagePayload({ productId, url, imageType, primary, order, variant }: ExternalImagePayloadInput): Record<string, unknown> {
+  return {
+    product_id: productId,
+    url_cdn: url,
+    url_original: url,
+    image_type: imageType,
+    is_primary: primary,
+    is_og_image: false,
+    display_order: order,
+    is_active: true,
+    supplier_code: variant?.supplier_code ?? null,
+    variant_id: variant?.id ?? null,
+    alt_text: null,
+  };
+}
+
+async function uploadFilesSequentially(
+  files: File[],
+  upload: (file: File) => Promise<string | null>,
+  onProgress: (value: number) => void,
+): Promise<string[]> {
+  const urls: string[] = [];
+  for (let index = 0; index < files.length; index++) {
+    onProgress(index + 1);
+    const file = files[index];
+    if (!file) continue;
+    const url = await upload(file);
+    if (url) urls.push(url);
+  }
+  return urls;
+}
+
+type ImageRecordResult = { ok: true } | { ok: false; error: string };
+interface PersistedImageResult { url: string; result: ImageRecordResult }
+
+function uploadVariantLabel(code: string, variants: Map<string, VariantInfo>): string | null {
+  if (code === 'none') return null;
+  const variant = variants.get(code);
+  return variant?.color_name || variant?.name || code;
+}
+
+function uploadTypeLabel(type: string): string {
+  return IMAGE_TYPES.find(candidate => candidate.value === type)?.label || type;
+}
+
+function partitionPersistenceResults(results: PersistedImageResult[]) {
+  return {
+    succeeded: results.filter(item => item.result.ok).map(item => item.url),
+    failed: results.filter((item): item is PersistedImageResult & { result: { ok: false; error: string } } => !item.result.ok),
+  };
+}
+
+function showUploadResult(succeeded: string[], failed: PersistedImageResult[], variantLabel: string | null, typeLabel: string): void {
+  if (failed.length === 0) {
+    const variantSuffix = variantLabel ? ` → ${variantLabel}` : '';
+    toast.success(`${succeeded.length} imagem(ns) enviada(s)${variantSuffix} (${typeLabel})`);
+    return;
+  }
+  if (succeeded.length > 0) {
+    toast.warning(`${succeeded.length} imagem(ns) enviada(s), ${failed.length} falharam no vínculo (${typeLabel})`);
+    return;
+  }
+  const firstError = failed[0]?.result;
+  toast.error(`Falha ao vincular imagens: ${firstError && !firstError.ok ? firstError.error : 'erro desconhecido'}`);
+}
+
+function buildAltText(
+  image: ExternalImage,
+  index: number,
+  template: string,
+  variants: Map<string, VariantInfo>,
+): string {
+  const typeLabel = IMAGE_TYPES.find(type => type.value === image.image_type)?.label || image.image_type || 'Imagem';
+  const variantKey = image.supplier_code || image.variant_id || '';
+  const variantLabel = variantKey ? variants.get(variantKey)?.color_name || '' : '';
+  return template
+    .replace('{tipo}', typeLabel)
+    .replace('{cor}', variantLabel)
+    .replace('{n}', String(index + 1));
 }
 
 export function useProductImageGallery({ images, onChange, folder, productId }: UseProductImageGalleryProps) {
@@ -43,9 +163,9 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
 
   // Fetch external images
   const { data: externalImages = [], isLoading: isLoadingExt } = useQuery<ExternalImage[]>({
-    queryKey: ['product-images-ext', productId],
+    queryKey: [EXTERNAL_IMAGES_QUERY_KEY, productId],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+      const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
         body: { table: 'product_images', operation: 'select', filters: { product_id: productId }, limit: 200, orderBy: { column: 'display_order', ascending: true } },
       });
       if (error) return [];
@@ -59,7 +179,7 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
   const { data: variants = [] } = useQuery<VariantInfo[]>({
     queryKey: ['product-variants-for-gallery', productId],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+      const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
         body: { table: 'product_variants', operation: 'select', select: 'id, name, color_name, color_hex, color_code', filters: { product_id: productId, is_active: true }, limit: 200, orderBy: { column: 'name', ascending: true } },
       });
       if (error) return [];
@@ -69,7 +189,7 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
         name: String(r.name ?? r.color_name ?? 'Variação'),
         color_name: (r.color_name as string) ?? null,
         color_hex: (r.color_hex as string) ?? null,
-        supplier_code: r.color_code != null ? String(r.color_code) : undefined,
+        supplier_code: !isNullish(r.color_code) ? String(r.color_code) : undefined,
       }));
     },
     enabled: !!productId,
@@ -119,15 +239,7 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
   const filteredImages = useMemo(() => {
     let filtered = [...images];
     if (typeFilter !== 'all' || filterMode !== 'all') {
-      filtered = filtered.filter(url => {
-        const ext = extImageMap.get(url);
-        if (!ext) return filterMode === 'all' && typeFilter === 'all';
-        if (typeFilter !== 'all' && (ext.image_type || 'untyped') !== typeFilter) return false;
-        if (filterMode === 'general') return !ext.supplier_code && !ext.variant_id;
-        if (filterMode === 'by-variant') return !!(ext.supplier_code || ext.variant_id);
-        if (filterMode !== 'all') return ext.supplier_code === filterMode || ext.variant_id === filterMode;
-        return true;
-      });
+      filtered = filtered.filter(url => matchesImageFilters(url, extImageMap, typeFilter, filterMode));
     }
     return filtered;
   }, [images, filterMode, typeFilter, extImageMap]);
@@ -143,13 +255,13 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
     const ext = extImageMap.get(imgUrl);
     if (!ext?.id) { toast.error('Imagem não encontrada no banco externo'); return; }
     try {
-      const { error } = await supabase.functions.invoke('external-db-bridge', {
+      const { error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
         body: { table: 'product_images', operation: 'update', id: ext.id, data: { alt_text: data.alt_text.trim() || null, image_type: data.image_type || 'main', caption: data.caption.trim() || null } },
       });
       if (error) throw new Error(error.message);
       toast.success('Metadados atualizados');
       setEditingIndex(null);
-      if (productId) queryClient.invalidateQueries({ queryKey: ['product-images-ext', productId] });
+      if (productId) queryClient.invalidateQueries({ queryKey: [EXTERNAL_IMAGES_QUERY_KEY, productId] });
     } catch (err) { toast.error(err instanceof Error ? err.message : 'Erro ao atualizar'); }
   }, [extImageMap, productId, queryClient]);
 
@@ -169,33 +281,35 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
     });
     if (!minDim) { toast.error(`"${file.name}" tem resolução muito baixa (mínimo 200×200px)`); return null; }
 
-    const fileExt = file.name.split('.').pop();
+    const fileExt = file.name.split(FILE_EXTENSION_SEPARATOR).pop();
     const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-    const { data, error } = await supabase.storage.from('personalization-images').upload(fileName, file, { cacheControl: '3600', upsert: false });
+    const { data, error } = await supabase.storage.from(IMAGE_STORAGE_BUCKET).upload(fileName, file, { cacheControl: '3600', upsert: false });
     if (error) { toast.error(`Erro ao enviar "${file.name}"`); return null; }
-    const { data: urlData } = supabase.storage.from('personalization-images').getPublicUrl(data.path);
+    const { data: urlData } = supabase.storage.from(IMAGE_STORAGE_BUCKET).getPublicUrl(data.path);
     return urlData.publicUrl;
   }, [folder]);
 
   const removeStorageFileByUrl = useCallback(async (url: string) => {
     const parts = url.split('/personalization-images/');
     if (parts.length < 2) return;
-    await supabase.storage.from('personalization-images').remove([decodeURIComponent(parts[1]!)]);
+    const storagePath = parts[1];
+    if (!storagePath) return;
+    await supabase.storage.from(IMAGE_STORAGE_BUCKET).remove([decodeURIComponent(storagePath)]);
   }, []);
 
-  const createExternalImageRecord = useCallback(async (url: string, variantCode: string, imageType: string, shouldBePrimary: boolean): Promise<{ ok: true } | { ok: false; error: string }> => {
+  const createExternalImageRecord = useCallback(async (url: string, variantCode: string, imageType: string, shouldBePrimary: boolean): Promise<ImageRecordResult> => {
     if (!productId) return { ok: true };
     try {
-      const variant = variantCode !== 'none' ? variantMap.get(variantCode) : null;
-      const nextOrder = externalImages.length > 0 ? Math.max(...externalImages.map(i => i.display_order || 0)) + 1 : 0;
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-        body: { table: 'product_images', operation: 'insert', data: { product_id: productId, url_cdn: url, url_original: url, image_type: imageType, is_primary: shouldBePrimary, is_og_image: false, display_order: nextOrder, is_active: true, supplier_code: variant?.supplier_code || null, variant_id: variant?.id || null, alt_text: null } },
-      });
+      const variant = resolveVariant(variantMap, variantCode);
+      const nextOrder = nextDisplayOrder(externalImages);
+      const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, ({
+        body: { table: 'product_images', operation: 'insert', data: externalImagePayload({ productId, url, imageType, primary: shouldBePrimary, order: nextOrder, variant }) },
+      }));
       if (error) throw new Error(error.message || 'Falha ao registrar imagem no banco externo');
       if (!data?.success) throw new Error(data?.error || 'Falha ao registrar imagem no banco externo');
       return { ok: true };
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao criar registro no BD externo';
+      const message = (err instanceof Error ? err.message : 'Erro ao criar registro no BD externo');
       logger.warn('Erro ao criar registro no BD externo:', message);
       return { ok: false, error: message };
     }
@@ -207,25 +321,17 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
     setUploadCount(files.length);
     setUploadProgress(0);
     try {
-      const uploadedUrls: string[] = [];
-      for (let i = 0; i < files.length; i++) {
-        setUploadProgress(i + 1);
-        const url = await uploadFile(files[i]!);
-        if (url) uploadedUrls.push(url);
-      }
+      const uploadedUrls = await uploadFilesSequentially(files, uploadFile, setUploadProgress);
       if (uploadedUrls.length === 0) return;
-      const variantLabel = uploadVariant !== 'none' ? variantMap.get(uploadVariant)?.color_name || variantMap.get(uploadVariant)?.name || uploadVariant : null;
-      const typeLabel = IMAGE_TYPES.find(t => t.value === uploadImageType)?.label || uploadImageType;
+      const variantLabel = uploadVariantLabel(uploadVariant, variantMap);
+      const typeLabel = uploadTypeLabel(uploadImageType);
       if (!productId) { onChange([...images, ...uploadedUrls]); toast.success(`${uploadedUrls.length} imagem(ns) enviada(s) (${typeLabel})`); return; }
       const hasPrimaryAlready = externalImages.some(img => img.is_primary);
       const persistResults = await Promise.all(uploadedUrls.map(async (url, index) => ({ url, result: await createExternalImageRecord(url, uploadVariant, uploadImageType, uploadImageType === 'main' && !hasPrimaryAlready && index === 0) })));
-      const successUrls = persistResults.filter(item => item.result.ok).map(item => item.url);
-      const failedItems = persistResults.filter(item => !item.result.ok) as Array<{ url: string; result: { ok: false; error: string } }>;
-      if (failedItems.length > 0) await Promise.all(failedItems.map(item => removeStorageFileByUrl(item.url)));
-      if (successUrls.length > 0) { onChange([...images, ...successUrls]); queryClient.invalidateQueries({ queryKey: ['product-images-ext', productId] }); }
-      if (failedItems.length === 0) toast.success(`${successUrls.length} imagem(ns) enviada(s)${variantLabel ? ` → ${variantLabel}` : ''} (${typeLabel})`);
-      else if (successUrls.length > 0) toast.warning(`${successUrls.length} imagem(ns) enviada(s), ${failedItems.length} falharam no vínculo (${typeLabel})`);
-      else toast.error(`Falha ao vincular imagens: ${failedItems[0]?.result.error || 'erro desconhecido'}`);
+      const { succeeded, failed } = partitionPersistenceResults(persistResults);
+      if (failed.length > 0) await Promise.all(failed.map(item => removeStorageFileByUrl(item.url)));
+      if (succeeded.length > 0) { onChange([...images, ...succeeded]); queryClient.invalidateQueries({ queryKey: [EXTERNAL_IMAGES_QUERY_KEY, productId] }); }
+      showUploadResult(succeeded, failed, variantLabel, typeLabel);
     } finally {
       setIsUploading(false);
       setUploadCount(0);
@@ -234,7 +340,7 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
     }
   }, [images, onChange, productId, uploadVariant, uploadImageType, variantMap, createExternalImageRecord, externalImages, queryClient, removeStorageFileByUrl, uploadFile]);
 
-  const handleFilesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFilesChange = async (e: ChangeEvent<HTMLInputElement>) => {
     await processUploadBatch(Array.from(e.target.files || []));
   };
 
@@ -247,10 +353,10 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
     const ext = extImageMap.get(url);
     if (ext?.id && productId) {
       try {
-        await supabase.functions.invoke('external-db-bridge', {
+        await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
           body: { table: 'product_images', operation: 'update', id: ext.id, data: { is_active: false } },
         });
-        queryClient.invalidateQueries({ queryKey: ['product-images-ext', productId] });
+        queryClient.invalidateQueries({ queryKey: [EXTERNAL_IMAGES_QUERY_KEY, productId] });
       } catch (err) {
         logger.warn('Erro ao desativar imagem no BD externo:', err);
       }
@@ -267,7 +373,8 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
     if (idx <= 0) return;
     const newImages = [...images];
     const [moved] = newImages.splice(idx, 1);
-    newImages.unshift(moved!);
+    if (!moved) return;
+    newImages.unshift(moved);
     onChange(newImages);
 
     if (productId) {
@@ -275,18 +382,18 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
         // Clear is_primary from all images for this product
         const currentPrimary = externalImages.find(img => img.is_primary);
         if (currentPrimary?.id) {
-          await supabase.functions.invoke('external-db-bridge', {
+          await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
             body: { table: 'product_images', operation: 'update', id: currentPrimary.id, data: { is_primary: false } },
           });
         }
         // Set new primary
         const newPrimaryExt = extImageMap.get(url);
         if (newPrimaryExt?.id) {
-          await supabase.functions.invoke('external-db-bridge', {
+          await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
             body: { table: 'product_images', operation: 'update', id: newPrimaryExt.id, data: { is_primary: true, display_order: 0 } },
           });
         }
-        queryClient.invalidateQueries({ queryKey: ['product-images-ext', productId] });
+        queryClient.invalidateQueries({ queryKey: [EXTERNAL_IMAGES_QUERY_KEY, productId] });
       } catch (err) {
         logger.warn('Erro ao persistir imagem principal:', err);
       }
@@ -300,20 +407,21 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
     reorderedUrls.forEach((url, index) => { const ext = extImageMap.get(url); if (ext?.id) updates.push({ id: ext.id, display_order: index }); });
     if (updates.length === 0) return;
     try {
-      await Promise.all(updates.map(({ id, display_order }) => supabase.functions.invoke('external-db-bridge', { body: { table: 'product_images', operation: 'update', id, data: { display_order } } })));
-      queryClient.invalidateQueries({ queryKey: ['product-images-ext', productId] });
+      await Promise.all(updates.map(({ id, display_order: displayOrder }) => supabase.functions.invoke(EXTERNAL_DB_BRIDGE, { body: { table: 'product_images', operation: 'update', id, data: { display_order: displayOrder } } })));
+      queryClient.invalidateQueries({ queryKey: [EXTERNAL_IMAGES_QUERY_KEY, productId] });
       toast.success('Ordem salva automaticamente');
     } catch (err) { logger.warn('Erro ao persistir ordem:', err); toast.error('Erro ao salvar nova ordem'); }
   }, [productId, extImageMap, queryClient]);
 
   const handleDragStart = (index: number) => setDragIndex(index);
-  const handleDragOver = (e: React.DragEvent, index: number) => { e.preventDefault(); setDragOverIndex(index); };
-  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+  const handleDragOver = (e: DragEvent, index: number) => { e.preventDefault(); setDragOverIndex(index); };
+  const handleDrop = (e: DragEvent, dropIndex: number) => {
     e.preventDefault();
     if (dragIndex === null || dragIndex === dropIndex) { setDragIndex(null); setDragOverIndex(null); return; }
     const newImages = [...images];
     const [moved] = newImages.splice(dragIndex, 1);
-    newImages.splice(dropIndex, 0, moved!);
+    if (!moved) return;
+    newImages.splice(dropIndex, 0, moved);
     onChange(newImages);
     setDragIndex(null);
     setDragOverIndex(null);
@@ -331,7 +439,7 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
     if (!productId || urls.length === 0) return 0;
     const results = await Promise.all(urls.map((url) => {
       const d = resolveData(url);
-      return supabase.functions.invoke('external-db-bridge', { body: { table: 'product_images', operation: 'insert', data: { product_id: productId, url_cdn: url, url_original: url, image_type: d.image_type, is_primary: Math.max(images.indexOf(url), 0) === 0, is_og_image: false, display_order: Math.max(images.indexOf(url), 0), is_active: true, supplier_code: d.supplier_code, variant_id: d.variant_id, alt_text: null } } });
+      return supabase.functions.invoke(EXTERNAL_DB_BRIDGE, { body: { table: 'product_images', operation: 'insert', data: { product_id: productId, url_cdn: url, url_original: url, image_type: d.image_type, is_primary: Math.max(images.indexOf(url), 0) === 0, is_og_image: false, display_order: Math.max(images.indexOf(url), 0), is_active: true, supplier_code: d.supplier_code, variant_id: d.variant_id, alt_text: null } } });
     }));
     return results.filter(({ data, error }) => !error && data?.success).length;
   }, [images, productId]);
@@ -343,9 +451,9 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
       const selectedList = Array.from(selectedUrls);
       const updates = selectedList.map(url => extImageMap.get(url)).filter((ext): ext is ExternalImage => !!ext?.id);
       const missingUrls = selectedList.filter(url => !extImageMap.get(url)?.id);
-      await Promise.all(updates.map(ext => supabase.functions.invoke('external-db-bridge', { body: { table: 'product_images', operation: 'update', id: ext.id, data: { image_type: newType } } })));
+      await Promise.all(updates.map(ext => supabase.functions.invoke(EXTERNAL_DB_BRIDGE, { body: { table: 'product_images', operation: 'update', id: ext.id, data: { image_type: newType } } })));
       const insertedCount = await createMissingExternalRecords(missingUrls, () => ({ image_type: newType, supplier_code: null, variant_id: null }));
-      queryClient.invalidateQueries({ queryKey: ['product-images-ext', productId] });
+      queryClient.invalidateQueries({ queryKey: [EXTERNAL_IMAGES_QUERY_KEY, productId] });
       const affectedCount = updates.length + insertedCount;
       const label = IMAGE_TYPES.find(t => t.value === newType)?.label || newType;
       if (affectedCount === 0) toast.warning('Nenhuma imagem elegível para classificação em lote');
@@ -362,9 +470,9 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
       const selectedList = Array.from(selectedUrls);
       const updates = selectedList.map(url => extImageMap.get(url)).filter((ext): ext is ExternalImage => !!ext?.id);
       const missingUrls = selectedList.filter(url => !extImageMap.get(url)?.id);
-      await Promise.all(updates.map(ext => supabase.functions.invoke('external-db-bridge', { body: { table: 'product_images', operation: 'update', id: ext.id, data: { supplier_code: variant?.supplier_code || null, variant_id: variant?.id || null } } })));
+      await Promise.all(updates.map(ext => supabase.functions.invoke(EXTERNAL_DB_BRIDGE, { body: { table: 'product_images', operation: 'update', id: ext.id, data: { supplier_code: variant?.supplier_code || null, variant_id: variant?.id || null } } })));
       const insertedCount = await createMissingExternalRecords(missingUrls, (url) => ({ image_type: images.indexOf(url) === 0 ? 'main' : 'gallery', supplier_code: variant?.supplier_code || null, variant_id: variant?.id || null }));
-      queryClient.invalidateQueries({ queryKey: ['product-images-ext', productId] });
+      queryClient.invalidateQueries({ queryKey: [EXTERNAL_IMAGES_QUERY_KEY, productId] });
       const affectedCount = updates.length + insertedCount;
       const label = variant ? (variant.color_name || variant.name) : 'Geral (sem cor)';
       if (affectedCount === 0) toast.warning('Nenhuma imagem elegível para vínculo em lote');
@@ -380,27 +488,27 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
       const toRemove = Array.from(selectedUrls);
       await Promise.all(toRemove.map(url => removeStorageFileByUrl(url)));
       const extUpdates = toRemove.map(url => extImageMap.get(url)).filter((ext): ext is ExternalImage => !!ext?.id);
-      await Promise.all(extUpdates.map(ext => supabase.functions.invoke('external-db-bridge', { body: { table: 'product_images', operation: 'update', id: ext.id, data: { is_active: false } } })));
+      await Promise.all(extUpdates.map(ext => supabase.functions.invoke(EXTERNAL_DB_BRIDGE, { body: { table: 'product_images', operation: 'update', id: ext.id, data: { is_active: false } } })));
       onChange(images.filter(url => !selectedUrls.has(url)));
-      if (productId) queryClient.invalidateQueries({ queryKey: ['product-images-ext', productId] });
+      if (productId) queryClient.invalidateQueries({ queryKey: [EXTERNAL_IMAGES_QUERY_KEY, productId] });
       toast.success(`${toRemove.length} imagem(ns) removida(s)`);
       clearSelection();
     } catch { toast.error('Erro ao remover imagens em lote'); } finally { setIsBulkUpdating(false); }
   }, [selectedUrls, extImageMap, images, onChange, productId, queryClient, removeStorageFileByUrl, clearSelection]);
 
-  const handleDropZone = useCallback(async (e: React.DragEvent) => {
+  const handleDropZone = useCallback(async (e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragOverZone(false);
     await processUploadBatch(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
   }, [processUploadBatch]);
 
-  const handleDropZoneDragOver = useCallback((e: React.DragEvent) => {
+  const handleDropZoneDragOver = useCallback((e: DragEvent) => {
     e.preventDefault();
     setIsDragOverZone(true);
   }, []);
 
-  const handleDropZoneDragLeave = useCallback((e: React.DragEvent) => {
+  const handleDropZoneDragLeave = useCallback((e: DragEvent) => {
     e.preventDefault();
     setIsDragOverZone(false);
   }, []);
@@ -413,17 +521,12 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
       const selectedList = Array.from(selectedUrls);
       const updates = selectedList.map(url => extImageMap.get(url)).filter((ext): ext is ExternalImage => !!ext?.id);
       await Promise.all(updates.map((ext, i) => {
-        const typeLabel = IMAGE_TYPES.find(t => t.value === ext.image_type)?.label || ext.image_type || 'Imagem';
-        const variantLabel = (ext.supplier_code || ext.variant_id) ? variantMap.get(ext.supplier_code || ext.variant_id || '')?.color_name || '' : '';
-        const altText = template
-          .replace('{tipo}', typeLabel)
-          .replace('{cor}', variantLabel)
-          .replace('{n}', String(i + 1));
-        return supabase.functions.invoke('external-db-bridge', {
+        const altText = buildAltText(ext, i, template, variantMap);
+        return supabase.functions.invoke(EXTERNAL_DB_BRIDGE, ({
           body: { table: 'product_images', operation: 'update', id: ext.id, data: { alt_text: altText.trim() || null } },
-        });
+        }));
       }));
-      queryClient.invalidateQueries({ queryKey: ['product-images-ext', productId] });
+      queryClient.invalidateQueries({ queryKey: [EXTERNAL_IMAGES_QUERY_KEY, productId] });
       toast.success(`Alt text atualizado em ${updates.length} imagem(ns)`);
       clearSelection();
     } catch { toast.error('Erro ao atualizar alt text em lote'); } finally { setIsBulkUpdating(false); }

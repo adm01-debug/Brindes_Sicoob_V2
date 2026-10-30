@@ -47,6 +47,16 @@ export interface QuoteItem {
   price_freshness_threshold_days?: number | null;
   /** Timestamp em que o vendedor confirmou o preço com o fornecedor durante a montagem do orçamento. Quando preenchido, o badge de preço defasado é suprimido neste item. */
   price_confirmed_at?: string | null;
+  /** Identidade da variação no catálogo externo, necessária para estoque e Bitrix. */
+  source_variant_id?: string | null;
+  source_variant_sku?: string | null;
+  catalog_checked_at?: string | null;
+  catalog_valid_until?: string | null;
+  catalog_available_stock?: number | null;
+  catalog_minimum_quantity?: number | null;
+  historical_unit_price?: number | null;
+  price_changed?: boolean;
+  catalog_stock_is_reserved?: boolean;
   personalizations?: QuoteItemPersonalization[];
 }
 
@@ -60,7 +70,7 @@ export interface Quote {
   client_company?: string;
   client_cnpj?: string;
   seller_id?: string;
-  status: "draft" | "pending" | "sent" | "approved" | "rejected" | "expired" | "pending_approval" | "pending_singular_approval" | "approved_singular" | "rejected_singular";
+  status: "draft" | "pending" | "sent" | "approved" | "rejected" | "expired" | "revision" | "viewed" | "converted" | "pending_approval" | "pending_singular_approval" | "approved_singular" | "rejected_singular";
   subtotal: number;
   discount_percent: number;
   discount_amount: number;
@@ -90,6 +100,8 @@ export interface Quote {
   created_at?: string;
   updated_at?: string;
   row_version?: number;
+  version?: number;
+  is_latest_version?: boolean;
   items?: QuoteItem[];
   singular_id?: string;
   rejection_notes?: string;
@@ -97,6 +109,12 @@ export interface Quote {
   approved_by?: string;
   approved_pdf_url?: string;
   tags?: string[];
+  reorder_source_order_id?: string | null;
+  reorder_source_quote_id?: string | null;
+  catalog_revalidated_at?: string | null;
+  catalog_valid_until?: string | null;
+  catalog_stock_is_reserved?: boolean;
+  reorder_price_changed_items?: number;
 }
 
 export interface PersonalizationTechnique {

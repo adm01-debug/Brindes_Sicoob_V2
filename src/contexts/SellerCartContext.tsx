@@ -14,6 +14,9 @@ interface SellerCartContextType {
   activeCart: SellerCart | null;
   activeCartId: string | null;
   isLoading: boolean;
+  isFetching: boolean;
+  queryError: Error | null;
+  refetchCarts: () => Promise<unknown>;
   totalItems: number;
   canCreateCart: boolean;
   
@@ -41,6 +44,9 @@ export function SellerCartProvider({ children }: { children: ReactNode }) {
   const {
     carts,
     isLoading,
+    isFetching,
+    error: queryError,
+    refetch: refetchCarts,
     totalItems,
     canCreateCart,
     createCart: createCartMutation,
@@ -61,7 +67,7 @@ export function SellerCartProvider({ children }: { children: ReactNode }) {
 
   const resolvedActiveCartId = activeCartId && carts.find(c => c.id === activeCartId)
     ? activeCartId
-    : carts.length > 0 ? carts[0].id : null;
+    : carts[0]?.id ?? null;
 
   const activeCart = carts.find(c => c.id === resolvedActiveCartId) || null;
 
@@ -147,6 +153,9 @@ export function SellerCartProvider({ children }: { children: ReactNode }) {
         activeCart,
         activeCartId: resolvedActiveCartId,
         isLoading,
+        isFetching,
+        queryError,
+        refetchCarts,
         totalItems,
         canCreateCart,
         setActiveCartId,

@@ -4,22 +4,28 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, Pencil, Trash2, Building2, MapPin, Phone, Mail, Globe, Palette } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Building2, Globe } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { Tables, TablesInsert } from "@/integrations/supabase/types";
+
+type SingularRow = Tables<"cooperativas"> & { sicoob_centrais: Pick<Tables<"sicoob_centrais">, "name"> | null };
+type CentralOption = Pick<Tables<"sicoob_centrais">, "id" | "name">;
+type TemaOption = Pick<Tables<"sicoob_temas">, "id" | "name">;
+type SingularFormData = TablesInsert<"cooperativas">;
 
 export default function AdminSingularesPage() {
-  const [singulares, setSingulares] = useState<any[]>([]);
-  const [centrais, setCentrais] = useState<any[]>([]);
-  const [temas, setTemas] = useState<any[]>([]);
+  const [singulares, setSingulares] = useState<SingularRow[]>([]);
+  const [centrais, setCentrais] = useState<CentralOption[]>([]);
+  const [temas, setTemas] = useState<TemaOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingSingular, setEditingSingular] = useState<any>(null);
+  const [editingSingular, setEditingSingular] = useState<SingularRow | null>(null);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -44,17 +50,14 @@ export default function AdminSingularesPage() {
 
   useEffect(() => { fetchData(); }, []);
 
-  const handleSave = async (formData: any) => {
+  const handleSave = async (formData: SingularFormData) => {
     try {
-      const dataToSave = { ...formData };
-      delete dataToSave.sicoob_centrais; // Remove joined data
-
       if (editingSingular) {
-        const { error } = await supabase.from('cooperativas').update(dataToSave).eq('id', editingSingular.id);
+        const { error } = await supabase.from('cooperativas').update(formData).eq('id', editingSingular.id);
         if (error) throw error;
         toast.success("Singular atualizada com sucesso");
       } else {
-        const { error } = await supabase.from('cooperativas').insert(dataToSave);
+        const { error } = await supabase.from('cooperativas').insert(formData);
         if (error) throw error;
         toast.success("Singular criada com sucesso");
       }
@@ -188,14 +191,23 @@ export default function AdminSingularesPage() {
 }
 
 
-function SingularFormDialog({ open, onOpenChange, singular, onSave, centrais, temas }: any) {
-  const [formData, setFormData] = useState<any>({ 
-    nome: '', 
-    codigo: '', 
+interface SingularFormDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  singular: SingularRow | null;
+  onSave: (formData: SingularFormData) => Promise<void>;
+  centrais: CentralOption[];
+  temas: TemaOption[];
+}
+
+function SingularFormDialog({ open, onOpenChange, singular, onSave, centrais, temas }: SingularFormDialogProps) {
+  const [formData, setFormData] = useState<SingularFormData>({
+    nome: '',
+    codigo: '',
     cnpj: '',
-    address: '', 
-    phone: '', 
-    email: '', 
+    address: '',
+    phone: '',
+    email: '',
     is_active: true,
     central_id: null,
     sicoob_tema_id: null,
@@ -261,7 +273,7 @@ function SingularFormDialog({ open, onOpenChange, singular, onSave, centrais, te
               <Select value={formData.central_id || ""} onValueChange={(val) => setFormData({ ...formData, central_id: val })}>
                 <SelectTrigger className="rounded-xl"><SelectValue placeholder="Selecione a Central" /></SelectTrigger>
                 <SelectContent>
-                    {centrais.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                    {centrais.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -271,7 +283,7 @@ function SingularFormDialog({ open, onOpenChange, singular, onSave, centrais, te
                 <SelectTrigger className="rounded-xl"><SelectValue placeholder="Catálogo Padrão" /></SelectTrigger>
                 <SelectContent>
                     <SelectItem value="none">Catálogo Global Sicoob</SelectItem>
-                    {temas.map((t: any) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                    {temas.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -287,7 +299,7 @@ function SingularFormDialog({ open, onOpenChange, singular, onSave, centrais, te
               <Input 
                 id="alcada" 
                 type="number" 
-                value={formData.alcada_superior_threshold} 
+                value={formData.alcada_superior_threshold ?? ""}
                 onChange={(e) => setFormData({ ...formData, alcada_superior_threshold: parseFloat(e.target.value) })} 
                 className="rounded-xl font-bold text-sicoob-green" 
               />

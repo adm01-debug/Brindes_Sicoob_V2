@@ -22,14 +22,6 @@ import type {
 
 type Raw = Record<string, unknown>;
 
-function pick<T = unknown>(obj: Raw, ...keys: string[]): T | undefined {
-  for (const k of keys) {
-    const v = obj[k];
-    if (v !== undefined && v !== null) return v as T;
-  }
-  return undefined;
-}
-
 function toNumberOrNull(v: unknown): number | null {
   if (v === null || v === undefined || v === '') return null;
   if (typeof v === 'number' && Number.isFinite(v)) return v;
@@ -103,7 +95,7 @@ function coerce(value: unknown, kind: Kind): unknown {
   switch (kind) {
     case 'number': return toNumberOrNull(value);
     case 'bool': return toBoolOrNull(value);
-    case 'string': return value == null ? null : String(value);
+    case 'string': return value === null || value === undefined ? null : String(value);
     default: return value;
   }
 }
@@ -118,29 +110,20 @@ function mirrorPairs<T extends Raw>(
   pairs: Array<[string, string, Kind]>,
   legacyPrefix: string,
 ): T {
-  for (const [ptKey, enKey, kind] of pairs) {
-    const ptVal = raw[ptKey];
-    const enVal = raw[enKey];
-    const hasPt = ptVal !== undefined && ptVal !== null;
-    const hasEn = enVal !== undefined && enVal !== null;
-
-    if (hasPt) recordLegacyField(`${legacyPrefix}.${ptKey}`);
-
-    if (hasPt && !hasEn) {
-      const coerced = coerce(ptVal, kind);
-      (out as Raw)[ptKey] = coerced;
-      (out as Raw)[enKey] = coerced;
-    } else if (!hasPt && hasEn) {
-      const coerced = coerce(enVal, kind);
-      (out as Raw)[enKey] = coerced;
-      (out as Raw)[ptKey] = coerced;
-    } else if (hasPt && hasEn) {
-      // Ambos presentes: prioriza EN (canônico novo) mas preserva PT como veio.
-      (out as Raw)[ptKey] = coerce(ptVal, kind);
-      (out as Raw)[enKey] = coerce(enVal, kind);
-    }
-  }
+  for (const pair of pairs) mirrorPair(out, raw, pair, legacyPrefix);
   return out;
+}
+
+function mirrorPair(out: Raw, raw: Raw, [ptKey, enKey, kind]: [string, string, Kind], legacyPrefix: string): void {
+  const ptVal = raw[ptKey];
+  const enVal = raw[enKey];
+  const hasPt = ptVal !== undefined && ptVal !== null;
+  const hasEn = enVal !== undefined && enVal !== null;
+  if (hasPt) recordLegacyField(`${legacyPrefix}.${ptKey}`);
+  if (hasPt) out[ptKey] = coerce(ptVal, kind);
+  if (hasEn) out[enKey] = coerce(enVal, kind);
+  if (hasPt && !hasEn) out[enKey] = out[ptKey];
+  if (!hasPt && hasEn) out[ptKey] = out[enKey];
 }
 
 /**

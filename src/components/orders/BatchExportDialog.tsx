@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useExportJobs, ExportJob } from "@/hooks/infrastructure/useExportJobs";
+import { useExportJobs, type ExportJob } from "@/hooks/infrastructure/useExportJobs";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -9,20 +10,26 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
 import { Card } from "@/components/ui/card";
 import { Download, FileSpreadsheet, FileText, RefreshCw, Clock, CheckCircle2, AlertCircle, ExternalLink, Calendar, Trash2 } from "lucide-react";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { Json } from "@/integrations/supabase/types";
 
 
 
 interface BatchExportDialogProps {
   entityType: 'orders' | 'quotes';
-  filters?: any;
+  filters?: unknown;
+}
+
+function serializeFilters(filters: unknown): Json {
+  if (filters === undefined) return {};
+  return JSON.parse(JSON.stringify(filters)) as Json;
 }
 
 export function BatchExportDialog({ entityType, filters }: BatchExportDialogProps) {
@@ -30,7 +37,13 @@ export function BatchExportDialog({ entityType, filters }: BatchExportDialogProp
   const [open, setOpen] = useState(false);
   const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [exportType, setExportType] = useState<'pdf' | 'excel'>('excel');
-  const [notifyByEmail, setNotifyByEmail] = useState(true);
+  const serializedFilters = serializeFilters(filters);
+  const downloadJob = async (job: ExportJob) => {
+    if (!job.file_path) return;
+    const { data, error } = await supabase.storage.from("exports").createSignedUrl(job.file_path, 300);
+    if (error) throw error;
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  };
 
   const entityJobs = jobs.filter(j => j.entity_type === entityType);
   const entityScheduled = scheduledExports.filter(s => s.entity_type === entityType);
@@ -49,7 +62,7 @@ export function BatchExportDialog({ entityType, filters }: BatchExportDialogProp
       entity_type: entityType,
       export_type: exportType,
       frequency,
-      filters,
+      filters: serializedFilters,
       is_active: true
     });
   };
@@ -79,14 +92,14 @@ export function BatchExportDialog({ entityType, filters }: BatchExportDialogProp
             <div className="flex gap-2">
               <Button 
                 className="flex-1 gap-2" 
-                onClick={() => createJob({ export_type: 'excel', entity_type: entityType, filters })}
+                onClick={() => createJob({ export_type: 'excel', entity_type: entityType, filters: serializedFilters })}
               >
                 <FileSpreadsheet className="h-4 w-4" /> Solicitar Excel
               </Button>
               <Button 
                 className="flex-1 gap-2" 
                 variant="secondary"
-                onClick={() => createJob({ export_type: 'pdf', entity_type: entityType, filters })}
+                onClick={() => createJob({ export_type: 'pdf', entity_type: entityType, filters: serializedFilters })}
               >
                 <FileText className="h-4 w-4" /> Solicitar PDF
               </Button>
@@ -115,11 +128,14 @@ export function BatchExportDialog({ entityType, filters }: BatchExportDialogProp
                           </div>
                         </div>
                         <div className="flex items-center gap-1">
-                          {job.status === 'completed' && job.file_url && (
-                            <Button size="icon" variant="ghost" className="h-7 w-7" asChild>
-                              <a href={job.file_url} target="_blank" rel="noopener noreferrer">
-                                <ExternalLink className="h-3.5 w-3.5" />
-                              </a>
+                          {job.status === 'completed' && job.file_path && (
+                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => void downloadJob(job)}>
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+                          {job.status === 'failed' && (
+                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => retryJob(job.id)}>
+                              <RefreshCw className="h-3.5 w-3.5" />
                             </Button>
                           )}
                         </div>
@@ -137,7 +153,7 @@ export function BatchExportDialog({ entityType, filters }: BatchExportDialogProp
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-xs font-medium">Frequência</label>
-                    <Select value={frequency} onValueChange={(v: any) => setFrequency(v)}>
+                    <Select value={frequency} onValueChange={(value) => setFrequency(value as typeof frequency)}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -150,7 +166,7 @@ export function BatchExportDialog({ entityType, filters }: BatchExportDialogProp
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-medium">Formato</label>
-                    <Select value={exportType} onValueChange={(v: any) => setExportType(v)}>
+                    <Select value={exportType} onValueChange={(value) => setExportType(value as typeof exportType)}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -161,18 +177,7 @@ export function BatchExportDialog({ entityType, filters }: BatchExportDialogProp
                     </Select>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 px-1">
-                  <input 
-                    type="checkbox" 
-                    id="notify-email" 
-                    checked={notifyByEmail} 
-                    onChange={(e) => setNotifyByEmail(e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300"
-                  />
-                  <label htmlFor="notify-email" className="text-xs text-muted-foreground cursor-pointer">
-                    Notificar por e-mail após a geração (apenas papéis autorizados)
-                  </label>
-                </div>
+                <p className="text-xs text-muted-foreground">A conclusão aparecerá nas notificações do portal. O download exige uma sessão autorizada.</p>
                 <Button className="w-full gap-2" variant="outline" onClick={handleSchedule}>
                   <Calendar className="h-4 w-4" /> Confirmar Agendamento
                 </Button>
@@ -214,4 +219,3 @@ export function BatchExportDialog({ entityType, filters }: BatchExportDialogProp
     </Dialog>
   );
 }
-

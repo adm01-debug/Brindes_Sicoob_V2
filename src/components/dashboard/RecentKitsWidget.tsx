@@ -5,7 +5,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Package, Pencil, Clock, ArrowRight } from 'lucide-react';
+import { Package, Clock, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -58,7 +58,7 @@ export function RecentKitsWidget() {
         </div>
       </CardHeader>
       <CardContent className="space-y-2">
-        {recentKits.map((kit: any) => (
+        {recentKits.map((kit) => (
           <div
             key={kit.id}
             className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/50 cursor-pointer transition-colors"

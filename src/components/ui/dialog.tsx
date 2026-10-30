@@ -30,6 +30,8 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 interface DialogContentProps extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
   /** Show close button */
   showCloseButton?: boolean;
+  /** Permite elevar o backdrop em gates de segurança que devem preceder overlays da aplicação. */
+  overlayClassName?: string;
 }
 
 const DialogContent = React.forwardRef<
@@ -39,13 +41,14 @@ const DialogContent = React.forwardRef<
   className, 
   children, 
   showCloseButton = true,
+  overlayClassName,
   ...props 
 }, ref) => {
   // Radix Dialog natively handles: focus trap, escape key, scroll lock.
   // We only add a lightweight cleanup on close to prevent stale scroll locks.
   return (
     <DialogPortal>
-      <DialogOverlay />
+      <DialogOverlay className={overlayClassName} />
       <DialogPrimitive.Content
         ref={ref}
         onCloseAutoFocus={() => {

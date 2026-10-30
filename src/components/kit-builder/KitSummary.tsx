@@ -3,15 +3,14 @@
  * Sub-components extracted to ./kit-summary/
  */
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+
 import { AlertTriangle } from 'lucide-react';
 import { KitMarginSimulator } from './KitMarginSimulator';
 import { KitVisualPreview } from './KitVisualPreview';
 import { DiscontinuedItemsAlert } from './DiscontinuedItemsAlert';
 import { FreightEstimator } from './FreightEstimator';
 import { useKitStockValidation } from '@/hooks/useKitStockValidation';
-import { calculateTotalKitPrice } from '@/lib/kit-builder';
-import type { KitState } from '@/lib/kit-builder';
+import { calculateTotalKitPrice, type KitState } from '@/lib/kit-builder';
 import { KitIdentificationCard } from './kit-summary/KitIdentificationCard';
 import { KitStatsCards } from './kit-summary/KitStatsCards';
 import { KitCompositionCard } from './kit-summary/KitCompositionCard';

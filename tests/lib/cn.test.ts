@@ -7,7 +7,8 @@ describe('cn (class name utility)', () => {
   });
 
   it('handles conditional classes', () => {
-    expect(cn('base', false && 'hidden', 'visible')).toBe('base visible');
+    const shouldHide = false;
+    expect(cn('base', shouldHide && 'hidden', 'visible')).toBe('base visible');
   });
 
   it('merges tailwind conflicts correctly', () => {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,7 +28,7 @@ interface KnownDevice {
   location: string | null;
   first_seen_at: string;
   last_seen_at: string;
-  is_trusted: boolean;
+  is_trusted: boolean | null;
 }
 
 interface KnownDevicesManagerProps {
@@ -43,16 +43,16 @@ export function KnownDevicesManager({ targetUserId }: KnownDevicesManagerProps) 
   const currentFingerprint = getDeviceInfo().fingerprint;
   const isManagingOther = !!targetUserId;
 
-  useEffect(() => {
-    loadDevices();
-  }, [targetUserId]);
-
-  const loadDevices = async () => {
+  const loadDevices = useCallback(async () => {
     setIsLoading(true);
     const data = await getKnownDevices();
-    setDevices(data as KnownDevice[]);
+    setDevices(data);
     setIsLoading(false);
-  };
+  }, [getKnownDevices]);
+
+  useEffect(() => {
+    void loadDevices();
+  }, [loadDevices, targetUserId]);
 
   const handleRemoveDevice = async (deviceId: string) => {
     const success = await removeDevice(deviceId);

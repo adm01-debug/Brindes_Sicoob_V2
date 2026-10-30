@@ -40,7 +40,7 @@ async function generateDossier() {
   try {
     const { data } = await supabase.rpc('check_tables_rls');
     rlsTables = data || [];
-  } catch (e) {
+  } catch {
     console.warn('RPC check_tables_rls failed, using fallback empty list');
   }
   
@@ -121,4 +121,3 @@ O sistema mantém conformidade total com as normas de segurança e governança e
 }
 
 generateDossier();
-

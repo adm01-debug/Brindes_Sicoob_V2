@@ -28,6 +28,94 @@ import { useKitBuilderQueries } from './useKitBuilderQueries';
 // Re-export kit-builder types so consumers can import them from this hook.
 export type { KitState } from '@/lib/kit-builder';
 
+function kitValidationErrors(
+  box: KitBox | null,
+  items: KitItem[],
+  volumeUsagePercent: number,
+  itemsWeight: number,
+): string[] {
+  const errors: string[] = [];
+  if (!box) errors.push('Selecione uma caixa');
+  if (items.length === 0) errors.push('Adicione pelo menos um item ao kit');
+  if (volumeUsagePercent > 100) errors.push('Volume dos itens excede a capacidade da caixa');
+  if (box?.maxWeight && itemsWeight > box.maxWeight) {
+    errors.push(`Peso dos itens (${(itemsWeight / 1000).toFixed(1)}kg) excede o limite da caixa (${(box.maxWeight / 1000).toFixed(1)}kg)`);
+  }
+  return errors;
+}
+
+interface KitStateInput {
+  name: string;
+  kitType: KitType;
+  box: KitBox | null;
+  items: KitItem[];
+  personalization: KitPersonalization;
+  identity: KitIdentity;
+  quantity: number;
+}
+
+function buildKitState(input: KitStateInput): KitState {
+  const totalItemsVolume = calculateTotalItemsVolume(input.items);
+  const boxVolume = input.box?.internalVolume || 0;
+  const usableVolume = input.box ? calculateUsableVolume(input.box) : 0;
+  const availableVolume = Math.max(0, usableVolume - totalItemsVolume);
+  const volumeUsagePercent = calculateVolumeUsagePercent(totalItemsVolume, boxVolume);
+  const itemsWeight = input.items.reduce((sum, item) => sum + ((item.weight || 0) * item.quantity), 0);
+  const totalWeight = (input.box?.weight || 0) + itemsWeight;
+  const pricing = calculateTotalKitPrice(input.box, input.items, input.personalization, input.quantity);
+  const validationErrors = kitValidationErrors(input.box, input.items, volumeUsagePercent, itemsWeight);
+  return {
+    name: input.name,
+    kitType: input.kitType,
+    box: input.box,
+    items: input.items,
+    personalization: input.personalization,
+    identity: input.identity,
+    totalItemsVolume,
+    availableVolume,
+    volumeUsagePercent,
+    totalWeight,
+    boxPrice: pricing.boxPrice,
+    itemsPrice: pricing.itemsPrice,
+    personalizationPrice: pricing.personalizationPrice,
+    totalPrice: pricing.total,
+    isValid: validationErrors.length === 0,
+    validationErrors,
+  };
+}
+
+function completedKitSteps(
+  box: KitBox | null,
+  items: KitItem[],
+  personalization: KitPersonalization,
+  currentStep: KitBuilderStep,
+): KitBuilderStep[] {
+  const completed: KitBuilderStep[] = [];
+  if (box) completed.push('box');
+  if (items.length > 0) completed.push('items');
+  if (Object.keys(personalization.items).length > 0 || personalization.box.enabled || currentStep === 'summary') {
+    completed.push('personalization');
+  }
+  return completed;
+}
+
+function canProceedFromStep(step: KitBuilderStep, state: KitState): boolean {
+  switch (step) {
+    case 'box': return state.box !== null;
+    case 'items': return state.items.length > 0 && state.volumeUsagePercent <= 100;
+    case 'personalization': return true;
+    case 'summary': return state.isValid;
+  }
+}
+
+function buildWizardState(currentStep: KitBuilderStep, kitState: KitState): KitBuilderWizardState {
+  return {
+    currentStep,
+    completedSteps: completedKitSteps(kitState.box, kitState.items, kitState.personalization, currentStep),
+    canProceed: canProceedFromStep(currentStep, kitState),
+  };
+}
+
 // ============================================
 // HOOK PRINCIPAL
 // ============================================
@@ -70,91 +158,17 @@ export function useKitBuilder() {
   // CÁLCULOS DERIVADOS
   // ============================================
 
-  const kitState = useMemo((): KitState => {
-    const totalItemsVolume = calculateTotalItemsVolume(selectedItems);
-    const boxVolume = selectedBox?.internalVolume || 0;
-    const usableVolume = selectedBox ? calculateUsableVolume(selectedBox) : 0;
-    const availableVolume = Math.max(0, usableVolume - totalItemsVolume);
-    const volumeUsagePercent = calculateVolumeUsagePercent(totalItemsVolume, boxVolume);
+  const kitState = useMemo(() => buildKitState({
+    name: kitName,
+    kitType,
+    box: selectedBox,
+    items: selectedItems,
+    personalization,
+    identity,
+    quantity: kitQuantity,
+  }), [kitName, kitType, selectedBox, selectedItems, personalization, kitQuantity, identity]);
 
-    const boxWeight = selectedBox?.weight || 0;
-    const itemsWeight = selectedItems.reduce(
-      (sum, item) => sum + ((item.weight || 0) * item.quantity), 0
-    );
-    const totalWeight = boxWeight + itemsWeight;
-
-    const pricing = calculateTotalKitPrice(
-      selectedBox,
-      selectedItems,
-      personalization,
-      kitQuantity
-    );
-
-    const validationErrors: string[] = [];
-    if (!selectedBox) validationErrors.push('Selecione uma caixa');
-    if (selectedItems.length === 0) validationErrors.push('Adicione pelo menos um item ao kit');
-    if (volumeUsagePercent > 100) validationErrors.push('Volume dos itens excede a capacidade da caixa');
-    
-    // Weight validation
-    if (selectedBox?.maxWeight && itemsWeight > selectedBox.maxWeight) {
-      validationErrors.push(
-        `Peso dos itens (${(itemsWeight / 1000).toFixed(1)}kg) excede o limite da caixa (${(selectedBox.maxWeight / 1000).toFixed(1)}kg)`
-      );
-    }
-
-    return {
-      name: kitName,
-      kitType,
-      box: selectedBox,
-      items: selectedItems,
-      personalization,
-      identity,
-      totalItemsVolume,
-      availableVolume,
-      volumeUsagePercent,
-      totalWeight,
-      boxPrice: pricing.boxPrice,
-      itemsPrice: pricing.itemsPrice,
-      personalizationPrice: pricing.personalizationPrice,
-      totalPrice: pricing.total,
-      isValid: validationErrors.length === 0,
-      validationErrors,
-    };
-  }, [kitName, kitType, selectedBox, selectedItems, personalization, kitQuantity, identity]);
-
-  const wizardState = useMemo((): KitBuilderWizardState => {
-    const completedSteps: KitBuilderStep[] = [];
-    
-    if (selectedBox) completedSteps.push('box');
-    if (selectedItems.length > 0) completedSteps.push('items');
-    
-    const hasPersonalizationConfig = Object.keys(personalization.items).length > 0 || personalization.box.enabled;
-    if (hasPersonalizationConfig || currentStep === 'summary') {
-      completedSteps.push('personalization');
-    }
-
-    let canProceed = false;
-    switch (currentStep) {
-      case 'box':
-        canProceed = selectedBox !== null;
-        break;
-      case 'items':
-        canProceed = selectedItems.length > 0 && kitState.volumeUsagePercent <= 100;
-        break;
-      case 'personalization':
-        canProceed = true;
-        break;
-      case 'summary':
-        canProceed = kitState.isValid;
-        break;
-    }
-
-    return {
-      currentStep,
-      completedSteps,
-      canProceed,
-    };
-  }, [currentStep, selectedBox, selectedItems, personalization, kitState]);
+  const wizardState = useMemo(() => buildWizardState(currentStep, kitState), [currentStep, kitState]);
 
   // ============================================
   // AÇÕES
@@ -178,7 +192,9 @@ export function useKitBuilder() {
     const existingIndex = selectedItems.findIndex(i => i.id === item.id);
     if (existingIndex >= 0) {
       const updatedItems = [...selectedItems];
-      const newQuantity = updatedItems[existingIndex]!.quantity + 1;
+      const existingItem = updatedItems[existingIndex];
+      if (!existingItem) return { fits: false, reason: 'Item não encontrado no kit' };
+      const newQuantity = existingItem.quantity + 1;
       
       const result = checkItemFits(
         { ...item, quantity: 1 },
@@ -189,7 +205,7 @@ export function useKitBuilder() {
 
       if (result.fits) {
         updatedItems[existingIndex] = {
-          ...updatedItems[existingIndex]!,
+          ...existingItem,
           quantity: newQuantity,
         };
         setSelectedItems(updatedItems);
@@ -311,17 +327,15 @@ export function useKitBuilder() {
   const nextStep = useCallback(() => {
     const steps: KitBuilderStep[] = ['box', 'items', 'personalization', 'summary'];
     const currentIndex = steps.indexOf(currentStep);
-    if (currentIndex < steps.length - 1) {
-      setCurrentStep(steps[currentIndex + 1]!);
-    }
+    const nextStep = steps[currentIndex + 1];
+    if (nextStep) setCurrentStep(nextStep);
   }, [currentStep]);
 
   const prevStep = useCallback(() => {
     const steps: KitBuilderStep[] = ['box', 'items', 'personalization', 'summary'];
     const currentIndex = steps.indexOf(currentStep);
-    if (currentIndex > 0) {
-      setCurrentStep(steps[currentIndex - 1]!);
-    }
+    const previousStep = steps[currentIndex - 1];
+    if (previousStep) setCurrentStep(previousStep);
   }, [currentStep]);
 
   const reorderItems = useCallback((fromIndex: number, toIndex: number) => {
@@ -397,7 +411,8 @@ export function useKitBuilder() {
     }
 
     if (itemFilters.category) {
-      items = items.filter(item => item.category?.toLowerCase().includes(itemFilters.category!.toLowerCase()));
+      const category = itemFilters.category.toLowerCase();
+      items = items.filter(item => item.category?.toLowerCase().includes(category));
     }
 
     return items;

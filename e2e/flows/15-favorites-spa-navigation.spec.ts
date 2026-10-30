@@ -16,9 +16,9 @@
  */
 import { test, expect, requireAuth } from "../fixtures/test-base";
 import { gotoAndSettle, settleAfterAction } from "../helpers/nav";
-import { installFavoritesCleanup } from "../helpers/favorites";
+import { installFavoritesCleanup, setCatalogFavorite } from "../helpers/favorites";
 import { Sel } from "../fixtures/selectors";
-import type { Locator, Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 const STORAGE_KEY = "product-favorites";
 
@@ -52,28 +52,21 @@ async function readFavoritesCount(page: Page): Promise<number> {
   return Number.parseInt(txt, 10) || 0;
 }
 
-async function isFavorited(button: Locator): Promise<boolean> {
-  const pressed = await button.getAttribute("aria-pressed");
-  if (pressed === "true") return true;
-  const html = await button.innerHTML();
-  return /fill-destructive|fill-current/.test(html);
-}
-
 /**
  * Navega via LINK in-app (sem reload). Tenta sidebar primeiro, depois qualquer
  * <a href="/favoritos"> visível, e por fim history.pushState como último recurso.
  * Falha o teste se nenhuma navegação SPA acontecer.
  */
 async function navigateToFavoritesInApp(page: Page): Promise<void> {
-  // 1. Sidebar (testid SSOT)
+  // O link vive em um grupo recolhível; expande o grupo quando necessário.
   const sidebar = page.locator(Sel.sidebar.link("favoritos")).first();
-  if (await sidebar.isVisible().catch(() => false)) {
-    await sidebar.click();
-  } else {
-    // 2. Último recurso: navegação SPA via history (sem reload)
-    await page.evaluate(() => window.history.pushState({}, "", "/favoritos"));
-    await page.evaluate(() => window.dispatchEvent(new PopStateEvent("popstate")));
+  if (!(await sidebar.isVisible().catch(() => false))) {
+    const catalogGroup = page.getByRole("button", { name: /grupo Catálogo/ }).first();
+    await expect(catalogGroup).toBeVisible();
+    await catalogGroup.click();
   }
+  await expect(sidebar).toBeVisible();
+  await sidebar.click();
 
   await page.waitForURL(/\/favoritos(\?|#|$)/, { timeout: 10_000 });
   await settleAfterAction(page);
@@ -88,7 +81,7 @@ test.describe("Fluxo: favoritar reflete via navegação (sem reload)", () => {
   }) => {
     // 0. Snapshot inicial em /favoritos
     await gotoAndSettle(page, "/favoritos");
-    await expect(page.locator(Sel.favorites.title)).toHaveText("Meus Favoritos");
+    await expect(page.locator(Sel.favorites.title)).toHaveText("Meus Produtos Favoritos");
     const original = await readStorage(page);
     const countBefore = await readFavoritesCount(page);
 
@@ -108,14 +101,8 @@ test.describe("Fluxo: favoritar reflete via navegação (sem reload)", () => {
       .catch(() => "");
     expect(productId, "data-product-id do 1º card não pôde ser lido").toBeTruthy();
 
-    const favBtn = card.locator(Sel.product.favorite).first();
-    await favBtn.waitFor({ state: "visible", timeout: 10_000 });
-
     // Garante estado inicial = NÃO favoritado
-    if (await isFavorited(favBtn)) {
-      await favBtn.click();
-      await expect.poll(() => isFavorited(favBtn), { timeout: 8_000 }).toBe(false);
-    }
+    await setCatalogFavorite(page, card, false);
 
     // 2. Marcador de "no-reload": injeta sentinel no window. Se a página recarregar,
     //    o sentinel some e o teste falha — assim provamos navegação SPA.
@@ -124,13 +111,7 @@ test.describe("Fluxo: favoritar reflete via navegação (sem reload)", () => {
     });
 
     // 3. Favorita
-    await favBtn.click();
-    await expect
-      .poll(() => isFavorited(favBtn), {
-        message: "botão não passou para estado favoritado",
-        timeout: 8_000,
-      })
-      .toBe(true);
+    await setCatalogFavorite(page, card, true);
 
     // Storage refletiu
     await expect

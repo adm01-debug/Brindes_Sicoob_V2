@@ -21,6 +21,8 @@ describe("QuoteService — Melhorias Recompra", () => {
   };
 
   let mock: ReturnType<typeof createSupabaseMock>;
+  let rpc: ReturnType<typeof vi.fn>;
+  let invoke: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     vi.resetModules();
@@ -32,9 +34,16 @@ describe("QuoteService — Melhorias Recompra", () => {
         personalization_techniques: []
       }
     });
+    rpc = vi.fn(async (_name: string, args: { p_quote: Record<string, unknown> }) => ({
+      data: { ...MOCK_QUOTE, id: 'q-recompra', quote_number: 'PED-2024-002', ...args.p_quote },
+      error: null,
+    }));
+    invoke = vi.fn(async () => ({ data: { quoteId: ORIGINAL_QUOTE_ID }, error: null }));
     vi.doMock("@/integrations/supabase/client", () => ({ 
       supabase: {
         ...mock.client,
+        rpc,
+        functions: { invoke },
         auth: {
           ...mock.client.auth,
           getSession: vi.fn(async () => ({ data: { session: null }, error: null })),
@@ -51,17 +60,17 @@ describe("QuoteService — Melhorias Recompra", () => {
     vi.clearAllMocks();
   });
 
-  it("reorder — cria novo orçamento como rascunho limpando IDs e metadados", async () => {
+  it("reorder — delega a recompra ao backend para consultar os valores atuais", async () => {
     const { QuoteService } = await import("@/services/QuoteService");
     await QuoteService.reorder(ORIGINAL_QUOTE_ID, USER_ID, ORG_ID);
 
-    const quoteInsert = mock.calls.insert.find(c => c.table === "quotes");
-    expect(quoteInsert).toBeDefined();
-    expect(quoteInsert!.payload).toMatchObject({
-      status: "draft",
-      client_id: "c1",
-      organization_id: ORG_ID
+    expect(invoke).toHaveBeenCalledWith('sicoob-reorder', {
+      body: {
+        sourceQuoteId: ORIGINAL_QUOTE_ID,
+        idempotencyKey: expect.any(String),
+      },
     });
+    expect(rpc).not.toHaveBeenCalled();
   });
 });
 

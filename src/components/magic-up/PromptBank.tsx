@@ -110,7 +110,7 @@ const SCENE_PROMPTS: ScenePrompt[] = [
   { id: "edu-02", category: "educacao", title: "Formatura", prompt: "Graduate in cap and gown proudly holding the product as a graduation gift, university campus in background, celebratory moment, achievement photography" },
 ];
 
-export function PromptBank({ selectedPrompt, onSelect, productName, clientSegment }: PromptBankProps) {
+export function PromptBank({ selectedPrompt, onSelect, clientSegment }: PromptBankProps) {
   const [activeCategory, setActiveCategory] = useState("all");
   const [search, setSearch] = useState("");
 

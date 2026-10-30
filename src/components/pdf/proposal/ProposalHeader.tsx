@@ -2,6 +2,8 @@ import React from "react";
 import type { ProposalTemplateData } from "../ProposalHtmlTemplate";
 import { LogoWithTransparentBg } from "./LogoWithTransparentBg";
 
+const MONTSERRAT = "'Montserrat', sans-serif";
+
 interface Props {
   data: ProposalTemplateData;
   isContinuation?: boolean;
@@ -24,10 +26,10 @@ export function ProposalHeader({ data, isContinuation }: Props) {
             style={{ height: "30px", display: "block" }}
           />
           <div style={{ textAlign: "right", color: "#fff", display: "flex", alignItems: "center", gap: "16px" }}>
-            <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 600, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.5px", opacity: 0.6 }}>
+            <span style={{ fontFamily: MONTSERRAT, fontWeight: 600, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.5px", opacity: 0.6 }}>
               Continuação
             </span>
-            <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: "12px", textTransform: "uppercase", letterSpacing: "0px", whiteSpace: "nowrap" }}>
+            <span style={{ fontFamily: MONTSERRAT, fontWeight: 700, fontSize: "12px", textTransform: "uppercase", letterSpacing: "0px", whiteSpace: "nowrap" }}>
               Proposta&nbsp;{quoteNumber}
             </span>
             <span style={{ fontSize: "11px", opacity: 0.6, whiteSpace: "nowrap" }}>
@@ -77,16 +79,16 @@ export function ProposalHeader({ data, isContinuation }: Props) {
       </div>
 
       <div style={{ position: "absolute", zIndex: 10, textAlign: "right", color: "#ffffff", top: "0", bottom: "0", right: "32px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "flex-end" }}>
-        <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: "20px", textTransform: "uppercase", letterSpacing: "3px", margin: "0 0 6px 0", lineHeight: 1, whiteSpace: "nowrap" }}>
+        <p style={{ fontFamily: MONTSERRAT, fontWeight: 900, fontSize: "20px", textTransform: "uppercase", letterSpacing: "3px", margin: "0 0 6px 0", lineHeight: 1, whiteSpace: "nowrap" }}>
           Proposta Comercial
         </p>
-        <p style={{ fontSize: "13px", opacity: 0.95, fontWeight: 400, lineHeight: "1.7", margin: 0, fontVariantNumeric: "tabular-nums", fontFamily: "'Montserrat', sans-serif", whiteSpace: "nowrap", letterSpacing: "0px" }}>
+        <p style={{ fontSize: "13px", opacity: 0.95, fontWeight: 400, lineHeight: "1.7", margin: 0, fontVariantNumeric: "tabular-nums", fontFamily: MONTSERRAT, whiteSpace: "nowrap", letterSpacing: "0px" }}>
           Proposta&nbsp;{quoteNumber}
         </p>
-        <p style={{ fontSize: "13px", opacity: 0.85, margin: "0 0 6px 0", fontFamily: "'Montserrat', sans-serif", fontWeight: 400 }}>
+        <p style={{ fontSize: "13px", opacity: 0.85, margin: "0 0 6px 0", fontFamily: MONTSERRAT, fontWeight: 400 }}>
           {data.date}
         </p>
-        <p style={{ fontSize: "12px", opacity: 0.7, margin: 0, fontFamily: "'Montserrat', sans-serif", fontWeight: 400, whiteSpace: "nowrap" }}>
+        <p style={{ fontSize: "12px", opacity: 0.7, margin: 0, fontFamily: MONTSERRAT, fontWeight: 400, whiteSpace: "nowrap" }}>
           (11) 4637-5517 &nbsp;|&nbsp; www.promobrindes.com.br
         </p>
       </div>

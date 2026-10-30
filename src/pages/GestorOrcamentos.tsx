@@ -17,6 +17,7 @@ import { useQuotes } from "@/hooks/quotes/useQuotes";
  */
 export default function GestorOrcamentos() {
   const [activeTab, setActiveTab] = useState("requests");
+  const [selectedQuoteIds, setSelectedQuoteIds] = useState<string[]>([]);
   const { profile } = useAuth();
   const { quotes } = useQuotes();
 
@@ -60,7 +61,17 @@ export default function GestorOrcamentos() {
           </TabsContent>
 
           <TabsContent value="kanban" className="mt-6 border border-border/50 rounded-2xl bg-card/30 p-4">
-             <QuoteKanbanBoard />
+             <QuoteKanbanBoard
+               quotes={quotes}
+               selectedIds={selectedQuoteIds}
+               onToggleSelection={(id) => {
+                 setSelectedQuoteIds((current) =>
+                   current.includes(id)
+                     ? current.filter((selectedId) => selectedId !== id)
+                     : [...current, id],
+                 );
+               }}
+             />
           </TabsContent>
 
           <TabsContent value="consolidation" className="mt-6 space-y-8">

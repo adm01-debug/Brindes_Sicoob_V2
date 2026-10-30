@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
       push({
         table: "quotes", op: "SELECT", scenario: "Ler próprio orçamento",
         expected: "allow", actual: actual as any, passed: actual === "allow",
-        detail: error?.message
+        detail: error ? "query_failed" : undefined
       });
     }
 
@@ -182,7 +182,7 @@ Deno.serve(async (req) => {
     const message = e instanceof Error ? e.message : String(e);
     console.error(`Error in RLS Audit: ${message}`);
     return new Response(
-      JSON.stringify({ error: "internal", detail: message }),
+      JSON.stringify({ error: "internal" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }

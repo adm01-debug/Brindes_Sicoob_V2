@@ -66,7 +66,13 @@ function createControlledLazy(label: string): ControlledLazy {
 // este teste deve ser atualizado em par.
 function RouteSuspense({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
-  return <Suspense fallback={getFallback(pathname)}>{children}</Suspense>;
+  return (
+    <Suspense
+      fallback={<div data-route-pending="lazy">{getFallback(pathname)}</div>}
+    >
+      {children}
+    </Suspense>
+  );
 }
 
 function NavigationProbe({
@@ -164,6 +170,7 @@ describe("Skeletons exibidos durante navegação lazy — sem ref warning", () =
         unmount();
         throw new Error(`Skeleton de ${path} não renderizou nada.`);
       }
+      expect(container.querySelector('[data-route-pending="lazy"]')).not.toBeNull();
       guard.expectNoRefWarning(`deep-link skeleton em ${path}`);
       unmount();
     }
@@ -227,6 +234,7 @@ describe("Skeletons exibidos durante navegação lazy — sem ref warning", () =
       lazies.get(path)!.resolve();
     });
     screen.getByTestId("page-produtos");
+    expect(document.querySelector('[data-route-pending="lazy"]')).toBeNull();
     guard.expectNoRefWarning(`pós-resolve em ${path}`);
   });
 

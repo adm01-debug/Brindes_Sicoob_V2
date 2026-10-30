@@ -1,7 +1,7 @@
 import React from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { PersonalizationTechnique } from "@/hooks/quotes/quoteTypes";
+import { type PersonalizationTechnique } from "@/hooks/quotes/quoteTypes";
 
 interface QuotePersonalizationSelectorProps {
   techniques: PersonalizationTechnique[];
@@ -36,8 +36,8 @@ export function QuotePersonalizationSelector({
           <SelectValue placeholder="Selecione uma técnica..." />
         </SelectTrigger>
         <SelectContent>
-          {techniques.map((tech) => (
-            <SelectItem key={tech.id} value={tech.id!}>
+          {techniques.filter((tech): tech is PersonalizationTechnique & { id: string } => Boolean(tech.id)).map((tech) => (
+            <SelectItem key={tech.id} value={tech.id}>
               <div className="flex flex-col">
                 <span className="font-medium">{tech.name}</span>
                 {tech.description && (

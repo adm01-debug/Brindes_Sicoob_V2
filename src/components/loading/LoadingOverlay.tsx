@@ -11,6 +11,17 @@ interface LoadingOverlayProps {
   className?: string;
 }
 
+function LoadingIndicator({ message, inline }: { message: string; inline: boolean }) {
+  return <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+    exit={{ scale: 0.9, opacity: 0 }} transition={{ duration: 0.2, delay: 0.1 }}
+    className={cn("flex flex-col items-center gap-3", !inline && "bg-card/80 backdrop-blur-md rounded-2xl p-6 shadow-xl border")}>
+    <div className="relative"><Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="absolute inset-0 h-8 w-8 animate-ping opacity-20"><Loader2 className="h-8 w-8 text-primary" /></div>
+    </div>
+    {message && <p className="text-sm font-medium text-muted-foreground animate-pulse">{message}</p>}
+  </motion.div>;
+}
+
 /**
  * Versatile loading overlay component
  * - fullscreen: covers entire viewport
@@ -49,28 +60,7 @@ export function LoadingOverlay({
             aria-valuetext={message}
             aria-busy="true"
           >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ duration: 0.2, delay: 0.1 }}
-              className={cn(
-                "flex flex-col items-center gap-3",
-                variant !== "inline" && "bg-card/80 backdrop-blur-md rounded-2xl p-6 shadow-xl border"
-              )}
-            >
-              <div className="relative">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <div className="absolute inset-0 h-8 w-8 animate-ping opacity-20">
-                  <Loader2 className="h-8 w-8 text-primary" />
-                </div>
-              </div>
-              {message && (
-                <p className="text-sm font-medium text-muted-foreground animate-pulse">
-                  {message}
-                </p>
-              )}
-            </motion.div>
+            <LoadingIndicator message={message} inline={variant === "inline"} />
           </motion.div>
           
           {/* Screen reader announcement */}

@@ -85,7 +85,7 @@ export interface OrderComment {
   author_id: string;
   content: string;
   is_internal: boolean;
-  attachments: any | null;
+  attachments: Json | null;
   created_at: string;
   author?: {
     full_name: string | null;
@@ -100,3 +100,4 @@ export interface OrderFilters {
   endDate?: string;
   clientCompany?: string;
 }
+import type { Json } from "@/integrations/supabase/types";

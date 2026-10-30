@@ -64,6 +64,60 @@ function debugLog(event: string, payload: Record<string, unknown>) {
   log.info(event, payload);
 }
 
+function transientNotificationError(message: string) {
+  return message.includes('fetch') || message.includes('503');
+}
+
+function notificationsChanged(next: WorkspaceNotification[], current: WorkspaceNotification[]) {
+  if (next.length !== current.length) return true;
+  return next.some((item, index) => {
+    const previous = current[index];
+    return item.id !== previous?.id || item.is_read !== previous?.is_read;
+  });
+}
+
+function performanceNow() {
+  return typeof performance !== "undefined" ? performance.now() : Date.now();
+}
+
+function recordNetworkBadge(items: WorkspaceNotification[], mountAt: number, startedAt: number) {
+  const elapsedMs = performanceNow() - mountAt;
+  const networkMs = Number((performanceNow() - startedAt).toFixed(2));
+  const unread = items.filter((item) => !item.is_read).length;
+  const payload = {
+    source: "network" as const,
+    elapsedMs: Number(elapsedMs.toFixed(2)),
+    target: "<16ms",
+    hit: elapsedMs < 16,
+    unreadCount: unread,
+    networkMs,
+  };
+  debugLog("badge-render", payload);
+  notificationsMetrics.recordBadgeRender({ ...payload, cacheAgeMs: null });
+}
+
+function recordBackgroundRefresh(items: WorkspaceNotification[], startedAt: number, silent: boolean) {
+  debugLog("background-refresh", {
+    silent,
+    networkMs: Number((performanceNow() - startedAt).toFixed(2)),
+    unreadCount: items.filter((item) => !item.is_read).length,
+  });
+}
+
+function setFetchLoading(
+  silent: boolean,
+  value: boolean,
+  setIsLoading: (value: boolean) => void,
+  setIsRefetching: (value: boolean) => void,
+) {
+  if (silent) setIsRefetching(value);
+  else setIsLoading(value);
+}
+
+function resolveSilentFetch(requested: boolean | undefined, hasData: boolean) {
+  return requested ?? hasData;
+}
+
 export function useWorkspaceNotifications() {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<WorkspaceNotification[]>([]);
@@ -126,13 +180,12 @@ export function useWorkspaceNotifications() {
     async (opts: { silent?: boolean; source?: FetchSource } = {}) => {
       if (!user) return;
       const hasData = notifications.length > 0;
-      const silent = opts.silent ?? hasData;
+      const silent = resolveSilentFetch(opts.silent, hasData);
 
-      if (silent) setIsRefetching(true);
-      else setIsLoading(true);
+      setFetchLoading(silent, true, setIsLoading, setIsRefetching);
 
       notificationsMetrics.recordFetch(opts.source ?? "initial");
-      const t0 = typeof performance !== "undefined" ? performance.now() : Date.now();
+      const t0 = performanceNow();
       try {
         const { data, error } = await supabase
           .from("workspace_notifications")
@@ -143,9 +196,9 @@ export function useWorkspaceNotifications() {
 
         if (error) {
           // Retry on network errors or transient bridge failures
-          if (error.message.includes('fetch') || error.message.includes('503')) {
+          if (transientNotificationError(error.message)) {
             await new Promise(r => setTimeout(r, 2000));
-            return fetchNotifications({ ...opts, silent: true, source: "retry" });
+            return fetchNotifications({ ...opts, silent: true });
           }
           throw error;
         }
@@ -153,8 +206,7 @@ export function useWorkspaceNotifications() {
         const items = (data || []) as WorkspaceNotification[];
         
         // Only update if data actually changed to prevent shallow-equal re-renders
-        const changed = items.length !== notifications.length || 
-                      items.some((it, idx) => it.id !== notifications[idx]?.id || it.is_read !== notifications[idx]?.is_read);
+        const changed = notificationsChanged(items, notifications);
         
         if (changed) {
           setNotifications(items);
@@ -165,44 +217,15 @@ export function useWorkspaceNotifications() {
         lastFetchAtRef.current = Date.now();
         
         if (badgeSourceRef.current !== "cache") {
-          const elapsedMs =
-            (typeof performance !== "undefined" ? performance.now() : Date.now()) -
-            mountAtRef.current;
           badgeSourceRef.current = "network";
-          const networkMs = Number(
-            ((typeof performance !== "undefined" ? performance.now() : Date.now()) - t0).toFixed(2)
-          );
-          const unread = items.filter((n) => !n.is_read).length;
-          debugLog("badge-render", {
-            source: "network",
-            elapsedMs: Number(elapsedMs.toFixed(2)),
-            target: "<16ms",
-            hit: elapsedMs < 16,
-            unreadCount: unread,
-            networkMs,
-          });
-          notificationsMetrics.recordBadgeRender({
-            source: "network",
-            elapsedMs: Number(elapsedMs.toFixed(2)),
-            cacheAgeMs: null,
-            networkMs,
-            unreadCount: unread,
-            hit: elapsedMs < 16,
-          });
+          recordNetworkBadge(items, mountAtRef.current, t0);
         } else {
-          debugLog("background-refresh", {
-            silent,
-            networkMs: Number(
-              ((typeof performance !== "undefined" ? performance.now() : Date.now()) - t0).toFixed(2)
-            ),
-            unreadCount: items.filter((n) => !n.is_read).length,
-          });
+          recordBackgroundRefresh(items, t0, silent);
         }
       } catch (err) {
         console.error("Error fetching notifications:", err);
       } finally {
-        if (silent) setIsRefetching(false);
-        else setIsLoading(false);
+        setFetchLoading(silent, false, setIsLoading, setIsRefetching);
       }
     },
     [user, notifications] // Added notifications to dependencies for correct comparison

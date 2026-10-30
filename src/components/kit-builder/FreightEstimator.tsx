@@ -54,7 +54,9 @@ export function FreightEstimator({ totalWeightGrams, kitQuantity }: FreightEstim
 
   const totalWeightKg = (totalWeightGrams * kitQuantity) / 1000;
   const table = FREIGHT_TABLE[method as keyof typeof FREIGHT_TABLE] || FREIGHT_TABLE.transportadora;
-  const perShipmentCost = table.find(r => totalWeightKg <= r.maxKg)?.price || table[table.length - 1].price;
+  const perShipmentCost = table.find(r => totalWeightKg <= r.maxKg)?.price
+    ?? table[table.length - 1]?.price
+    ?? 0;
 
   const noWeight = totalWeightGrams === 0;
 

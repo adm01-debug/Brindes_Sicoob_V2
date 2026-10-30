@@ -15,7 +15,11 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut, AlertTriangle, Loader2 } from "lucide-react";
 
-export function ForceGlobalLogoutDialog() {
+function LogoutConfirmation({ value, setValue }: { value: string; setValue: (value: string) => void }) {
+  return <div className="space-y-3"><div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm"><p className="font-medium text-destructive">Esta ação não pode ser desfeita.</p><p className="mt-1 text-muted-foreground text-xs">Todos os vendedores precisarão fazer login novamente. Recomenda-se notificar a equipe antes.</p></div><div><Label htmlFor="confirm">Digite <code className="text-xs bg-muted px-1 rounded">FORCE_LOGOUT_ALL</code> para confirmar</Label><Input id="confirm" value={value} onChange={event => setValue(event.target.value)} placeholder="FORCE_LOGOUT_ALL" className="font-mono mt-1.5" autoComplete="off" /></div></div>;
+}
+
+function useForceGlobalLogout() {
   const [open, setOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -52,8 +56,14 @@ export function ForceGlobalLogoutDialog() {
     }
   };
 
+  return { open, setOpen, confirmText, setConfirmText, loading, isValid, handleSubmit };
+}
+
+export function ForceGlobalLogoutDialog() {
+  const state = useForceGlobalLogout();
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={state.open} onOpenChange={state.setOpen}>
       <DialogTrigger asChild>
         <Button variant="destructive" size="sm">
           <LogOut className="h-4 w-4 mr-2" />
@@ -62,44 +72,16 @@ export function ForceGlobalLogoutDialog() {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-destructive" />
-            Forçar logout global
-          </DialogTitle>
-          <DialogDescription>
-            Revoga todas as sessões ativas de todos os usuários (exceto a sua). Use apenas em
-            resposta a um incidente de segurança suspeito.
-          </DialogDescription>
+          <DialogTitle className="flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-destructive" />Forçar logout global</DialogTitle>
+          <DialogDescription>Revoga todas as sessões ativas de todos os usuários (exceto a sua). Use apenas em resposta a um incidente de segurança suspeito.</DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
-          <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
-            <p className="font-medium text-destructive">Esta ação não pode ser desfeita.</p>
-            <p className="mt-1 text-muted-foreground text-xs">
-              Todos os vendedores precisarão fazer login novamente. Recomenda-se notificar a equipe
-              antes.
-            </p>
-          </div>
-          <div>
-            <Label htmlFor="confirm">
-              Digite <code className="text-xs bg-muted px-1 rounded">FORCE_LOGOUT_ALL</code> para
-              confirmar
-            </Label>
-            <Input
-              id="confirm"
-              value={confirmText}
-              onChange={(e) => setConfirmText(e.target.value)}
-              placeholder="FORCE_LOGOUT_ALL"
-              className="font-mono mt-1.5"
-              autoComplete="off"
-            />
-          </div>
-        </div>
+        <LogoutConfirmation value={state.confirmText} setValue={state.setConfirmText} />
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>
+          <Button variant="outline" onClick={() => state.setOpen(false)} disabled={state.loading}>
             Cancelar
           </Button>
-          <Button variant="destructive" onClick={handleSubmit} disabled={!isValid || loading}>
-            {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <LogOut className="h-4 w-4 mr-2" />}
+          <Button variant="destructive" onClick={state.handleSubmit} disabled={!state.isValid || state.loading}>
+            {state.loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <LogOut className="h-4 w-4 mr-2" />}
             Executar logout global
           </Button>
         </DialogFooter>

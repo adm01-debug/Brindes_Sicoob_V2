@@ -1,0 +1,66 @@
+{
+  "data": "2026-10-13",
+  "ambiente_local": "PostgreSQL 16 descartável, sem rede e com dados sintéticos",
+  "banco_canonico": "cfmzkthhgliqelozlmwu",
+  "banco_canonico_alterado": false,
+  "migracao_validada_com_rollback_no_canonico": true,
+  "pos_rollback": {
+    "artefatos_persistidos": 0,
+    "registros_sinteticos_persistidos": 0,
+    "violacoes_security_definer_acl": 0
+  },
+  "migracoes": [
+    "supabase/migrations/20261013115605_harden_sicoob_budget_authority.sql",
+    "supabase/migrations/20261013120512_fix_quote_governance_writers_and_freeze_content.sql",
+    "supabase/migrations/20261013123000_preserve_atomic_quote_save_under_governance.sql"
+  ],
+  "conversao_orcamento_pedido": {
+    "cenarios": 31,
+    "resultado": "aprovado",
+    "inclui": [
+      "concorrencia idempotente",
+      "serializacao entre decisao do orcamento e edicao tardia de item",
+      "rollback integral",
+      "reconciliacao da formula brl-v1",
+      "ACL dos nucleos internos",
+      "versionamento autorizado com restauracao do contexto",
+      "restauracao do contexto de governanca em sucesso e idempotencia",
+      "imutabilidade de itens e personalizacoes",
+      "contexto interno resistente a forja por cliente",
+      "preservacao de orcamento convertido",
+      "exclusao em cascata restrita a rascunho",
+      "interface alinhada aos estados comerciais editaveis"
+    ]
+  },
+  "aprovacao_publica": {
+    "cenarios": 68,
+    "resultado": "aprovado",
+    "inclui": [
+      "reproducao da falha real anterior",
+      "HMAC versionado",
+      "concorrencia entre links",
+      "expiracao apos espera por lock",
+      "rollback por falha intermediaria",
+      "imutabilidade e preservacao do conteudo aprovado",
+      "resposta do cliente protegida contra escrita direta",
+      "identidade, timestamps de ciclo de vida, exclusao logica e row_version protegidos",
+      "insercao direta restrita ao rascunho canonico sem resposta ou versao forjada",
+      "vinculo de consolidacao protegido contra preenchimento ou remocao direta",
+      "linhagem e validade da recompra protegidas contra remocao direta",
+      "updated_at protegido contra toque direto e avanco artificial da versao",
+      "salvamento atomico de rascunho preservado sob RLS e resistente a GUC forjada",
+      "versao historica integralmente imutavel",
+      "RLS de itens isolada por vendedor",
+      "versionamento autorizado com restauracao do contexto",
+      "reabertura revision ou rejeicao registrada como draft antes de novo envio",
+      "RPC de status executada no esquema canonico com rollback e contexto restaurado",
+      "RPCs de status, PDF e desconto encapsuladas com nucleos privados",
+      "execucao local dos quatro wrappers transacionais com contexto restaurado",
+      "contexto interno resistente a forja por cliente",
+      "exclusao em cascata validada para rascunho",
+      "gate principal SECURITY INVOKER com cobertura de DELETE",
+      "auditoria SECURITY DEFINER sem violacoes"
+    ]
+  },
+  "observacao_operacional": "A migration permanece local ate passar pelo fluxo branch, PR, CI e merge; nenhum dado do banco canonico foi persistido durante a validacao."
+}

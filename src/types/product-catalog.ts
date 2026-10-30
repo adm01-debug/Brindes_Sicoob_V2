@@ -16,6 +16,17 @@ export interface ProductColor {
   images?: string[];
 }
 
+export interface ProductVariation {
+  id: string;
+  sku: string;
+  color: { name: string; hex: string };
+  stock: number;
+  image?: string | null;
+  images?: string[];
+  videos?: ProductVideo[];
+  size_code?: string | null;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -49,6 +60,7 @@ export interface Product {
   packingType?: string | null;
   packingClassification?: string | null;
   hasCommercialPackaging?: boolean | null;
+  allowsPersonalization?: boolean | null;
   repackingType?: string | null;
   packagingContext?: 'always' | 'with_customization' | 'without_customization' | null;
   boxImage?: string | null;
@@ -79,7 +91,7 @@ export interface Product {
 
   subcategory?: string;
   groups?: Array<{ id: number; name: string }>;
-  variations?: any[];
+  variations?: ProductVariation[];
   kitItems?: KitComponent[];
 
   /** ISO timestamp of the last price update at the supplier (SSOT: external DB). */

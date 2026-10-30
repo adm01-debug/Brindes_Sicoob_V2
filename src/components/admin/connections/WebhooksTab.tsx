@@ -28,6 +28,55 @@ interface InboundEp {
   active: boolean; total_received: number; total_invalid: number; hmac_secret_ref: string;
 }
 
+type OutboundHookStatus = OutboundHook & {
+  auto_disabled_at?: string;
+  auto_disabled_reason?: string;
+  consecutive_failures?: number;
+};
+
+function OutboundHookDetails({ hook }: { hook: OutboundHookStatus }) {
+  return (
+    <div className="flex-1 min-w-0">
+      <div className="font-medium flex items-center gap-2">
+        {hook.name}
+        {!hook.active && <Badge variant="outline" className="text-[10px] bg-destructive/10 text-destructive border-destructive/20">Desativado{hook.auto_disabled_at ? " (auto)" : ""}</Badge>}
+      </div>
+      <div className="text-xs text-muted-foreground font-mono truncate">{hook.url}</div>
+      <div className="flex flex-wrap gap-1 mt-1">
+        {hook.events.map((event) => <Badge key={event} variant="secondary" className="text-xs">{event}</Badge>)}
+      </div>
+      <div className="text-xs text-muted-foreground mt-1">
+        ✓ {hook.total_success} · ✗ {hook.total_failure}
+        {hook.consecutive_failures ? <span className="ml-2 text-destructive">· {hook.consecutive_failures} falhas seguidas</span> : null}
+      </div>
+      {hook.auto_disabled_reason && <p className="text-[11px] text-destructive mt-1">{hook.auto_disabled_reason}</p>}
+    </div>
+  );
+}
+
+async function reactivateOutbound(hookId: string, onReload: () => void) {
+  const { error } = await supabase.from("outbound_webhooks")
+    .update({ active: true, consecutive_failures: 0, auto_disabled_at: null, auto_disabled_reason: null })
+    .eq("id", hookId);
+  if (error) toast.error(error.message);
+  else { toast.success("Reativado"); onReload(); }
+}
+
+function OutboundHookCard({ hook, onReload, onRemove }: { hook: OutboundHookStatus; onReload: () => void; onRemove: (id: string) => void }) {
+  return (
+    <div className="p-3 border border-border rounded-md">
+      <div className="flex items-start justify-between gap-2">
+        <OutboundHookDetails hook={hook} />
+        <div className="flex flex-col gap-1">
+          {!hook.active && <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => void reactivateOutbound(hook.id, onReload)}>Reativar</Button>}
+          <Button size="sm" variant="ghost" onClick={() => onRemove(hook.id)}><Trash2 className="h-4 w-4" /></Button>
+        </div>
+      </div>
+      <ConnectionTestHistoryPanel type="webhook_outbound" connectionId={hook.id} label={hook.name} />
+    </div>
+  );
+}
+
 export function WebhooksTab() {
   const [outbound, setOutbound] = useState<OutboundHook[]>([]);
   const [inbound, setInbound] = useState<InboundEp[]>([]);
@@ -71,7 +120,8 @@ export function WebhooksTab() {
     if (!formIn.name || !formIn.source_system) { toast.error("Preencha nome e sistema"); return; }
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
-    const slug = formIn.source_system.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Math.random().toString(36).slice(2, 8);
+    const suffix = crypto.randomUUID().replace(/-/g, "").slice(0, 8);
+    const slug = `${formIn.source_system.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${suffix}`;
     const secretRef = `INBOUND_WEBHOOK_HMAC_${slug.toUpperCase().replace(/-/g, "_")}`;
     const { error } = await supabase.from("inbound_webhook_endpoints").insert({
       slug, name: formIn.name, source_system: formIn.source_system,
@@ -133,60 +183,7 @@ export function WebhooksTab() {
               <p className="text-sm text-muted-foreground">Nenhum webhook configurado.</p>
             ) : (
               <div className="space-y-2">
-                {outbound.map((h) => (
-                  <div key={h.id} className="p-3 border border-border rounded-md">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium flex items-center gap-2">
-                          {h.name}
-                          {!h.active && (
-                            <Badge variant="outline" className="text-[10px] bg-destructive/10 text-destructive border-destructive/20">
-                              Desativado{(h as OutboundHook & { auto_disabled_at?: string }).auto_disabled_at ? " (auto)" : ""}
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="text-xs text-muted-foreground font-mono truncate">{h.url}</div>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {h.events.map((e) => <Badge key={e} variant="secondary" className="text-xs">{e}</Badge>)}
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          ✓ {h.total_success} · ✗ {h.total_failure}
-                          {(h as OutboundHook & { consecutive_failures?: number }).consecutive_failures ? (
-                            <span className="ml-2 text-destructive">
-                              · {(h as OutboundHook & { consecutive_failures: number }).consecutive_failures} falhas seguidas
-                            </span>
-                          ) : null}
-                        </div>
-                        {(h as OutboundHook & { auto_disabled_reason?: string }).auto_disabled_reason && (
-                          <p className="text-[11px] text-destructive mt-1">
-                            {(h as OutboundHook & { auto_disabled_reason: string }).auto_disabled_reason}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        {!h.active && (
-                          <Button size="sm" variant="outline" className="h-7 text-xs"
-                            onClick={async () => {
-                              const { error } = await supabase.from("outbound_webhooks")
-                                .update({ active: true, consecutive_failures: 0, auto_disabled_at: null, auto_disabled_reason: null })
-                                .eq("id", h.id);
-                              if (error) toast.error(error.message); else { toast.success("Reativado"); load(); }
-                            }}>
-                            Reativar
-                          </Button>
-                        )}
-                        <Button size="sm" variant="ghost" onClick={() => remove("outbound_webhooks", h.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    <ConnectionTestHistoryPanel
-                      type="webhook_outbound"
-                      connectionId={h.id}
-                      label={h.name}
-                    />
-                  </div>
-                ))}
+                {outbound.map((hook) => <OutboundHookCard key={hook.id} hook={hook} onReload={load} onRemove={(id) => remove("outbound_webhooks", id)} />)}
               </div>
             )}
           </CardContent>

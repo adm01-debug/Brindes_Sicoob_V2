@@ -1,0 +1,97 @@
+{
+  "bitrix_clients": {
+    "http": 404,
+    "code": "PGRST205",
+    "message": "Could not find the table 'public.bitrix_clients' in the schema cache"
+  },
+  "bitrix_deals": {
+    "http": 404,
+    "code": "PGRST205",
+    "message": "Could not find the table 'public.bitrix_deals' in the schema cache"
+  },
+  "bitrix_sync_logs": {
+    "http": 404,
+    "code": "PGRST205",
+    "message": "Could not find the table 'public.bitrix_sync_logs' in the schema cache"
+  },
+  "color_nuances": {
+    "http": 404,
+    "code": "PGRST205",
+    "message": "Could not find the table 'public.color_nuances' in the schema cache"
+  },
+  "companies": {
+    "http": 404,
+    "code": "PGRST205",
+    "message": "Could not find the table 'public.companies' in the schema cache"
+  },
+  "error_logs": {
+    "http": 404,
+    "code": "PGRST205",
+    "message": "Could not find the table 'public.error_logs' in the schema cache"
+  },
+  "personalization_simulations": {
+    "http": 404,
+    "code": "PGRST205",
+    "message": "Could not find the table 'public.personalization_simulations' in the schema cache"
+  },
+  "personalization_techniques": {
+    "http": 404,
+    "code": "PGRST205",
+    "message": "Could not find the table 'public.personalization_techniques' in the schema cache"
+  },
+  "product_component_location_techniques": {
+    "http": 404,
+    "code": "PGRST205",
+    "message": "Could not find the table 'public.product_component_location_techniques' in the schema cache"
+  },
+  "product_group_components": {
+    "http": 404,
+    "code": "PGRST205",
+    "message": "Could not find the table 'public.product_group_components' in the schema cache"
+  },
+  "product_group_location_techniques": {
+    "http": 404,
+    "code": "PGRST205",
+    "message": "Could not find the table 'public.product_group_location_techniques' in the schema cache"
+  },
+  "product_group_locations": {
+    "http": 404,
+    "code": "PGRST205",
+    "message": "Could not find the table 'public.product_group_locations' in the schema cache"
+  },
+  "products": {
+    "http": 404,
+    "code": "PGRST205",
+    "message": "Could not find the table 'public.products' in the schema cache"
+  },
+  "roles": {
+    "http": 404,
+    "code": "PGRST205",
+    "message": "Could not find the table 'public.roles' in the schema cache"
+  },
+  "sales_goals": {
+    "http": 404,
+    "code": "PGRST205",
+    "message": "Could not find the table 'public.sales_goals' in the schema cache"
+  },
+  "sicoob_budgets": {
+    "http": 404,
+    "code": "PGRST205",
+    "message": "Could not find the table 'public.sicoob_budgets' in the schema cache"
+  },
+  "user_2fa_settings": {
+    "http": 404,
+    "code": "PGRST205",
+    "message": "Could not find the table 'public.user_2fa_settings' in the schema cache"
+  },
+  "user_passkeys": {
+    "http": 404,
+    "code": "PGRST205",
+    "message": "Could not find the table 'public.user_passkeys' in the schema cache"
+  },
+  "v_full_scope_grants": {
+    "http": 403,
+    "code": "42501",
+    "message": "permission denied for table users"
+  }
+}

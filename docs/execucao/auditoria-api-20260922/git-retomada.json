@@ -1,0 +1,62 @@
+{
+  "collected_at": "2026-09-22T13:59:52.387657+00:00",
+  "snapshot_sha": "a9a22c589582312ee81ea5524058b779e2373142",
+  "github_heads": {
+    "audit/sicoob-reconciliation-20260915": "479ed8ec2f630dd5b80a7fdeabafa846a22778f1",
+    "execucao/sicoob-20260911130857": "47c474a67b7fce2f2640f31fd032cf195baa8501",
+    "execucao/sicoob-reconciliacao-20260915": "0b99ee634bed1a3f849ea11923d8fa421b4fbf1f",
+    "execucao/sicoob-reconciliacao-20260916": "9ed422b517f1814ecbbfac494c0666ea862b460e",
+    "main": "836896f62df1e089989c7f94519cc4c717bf844a"
+  },
+  "worktrees": [
+    {
+      "path": "/home/joaquim_ataides/projetos/Brindes_Sicoob_V2",
+      "branch": "main",
+      "head": "836896f62df1e089989c7f94519cc4c717bf844a",
+      "github_head": "836896f62df1e089989c7f94519cc4c717bf844a",
+      "status": [
+        "M supabase/.temp/cli-latest"
+      ]
+    },
+    {
+      "path": "/home/joaquim_ataides/hermes-workspaces/audit-sicoob-20260915",
+      "branch": "audit/sicoob-reconciliation-20260915",
+      "head": "479ed8ec2f630dd5b80a7fdeabafa846a22778f1",
+      "github_head": "479ed8ec2f630dd5b80a7fdeabafa846a22778f1",
+      "status": []
+    },
+    {
+      "path": "/home/joaquim_ataides/hermes-workspaces/auditoria-api-sicoob-20260922",
+      "branch": "audit/sicoob-api-20260922",
+      "head": "a9a22c589582312ee81ea5524058b779e2373142",
+      "github_head": null,
+      "status": [
+        "?? docs/execucao/auditoria-api-20260922/"
+      ]
+    },
+    {
+      "path": "/home/joaquim_ataides/hermes-workspaces/auditoria-sicoob-20260922",
+      "branch": "audit/sicoob-20260922",
+      "head": "7224919f4ce4a36181a52adf26c91e0c0ccaba16",
+      "github_head": null,
+      "status": []
+    },
+    {
+      "path": "/home/joaquim_ataides/hermes-workspaces/chat-sicoob-20260911130857",
+      "branch": "execucao/sicoob-20260911130857",
+      "head": "47c474a67b7fce2f2640f31fd032cf195baa8501",
+      "github_head": "47c474a67b7fce2f2640f31fd032cf195baa8501",
+      "status": []
+    },
+    {
+      "path": "/home/joaquim_ataides/hermes-workspaces/execucao-sicoob-reconciliacao-20260915",
+      "branch": "execucao/sicoob-reconciliacao-20260915",
+      "head": "0b99ee634bed1a3f849ea11923d8fa421b4fbf1f",
+      "github_head": "0b99ee634bed1a3f849ea11923d8fa421b4fbf1f",
+      "status": [
+        "M .gitignore",
+        " M supabase/.temp/cli-latest"
+      ]
+    }
+  ]
+}

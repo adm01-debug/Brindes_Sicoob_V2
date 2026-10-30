@@ -2,7 +2,7 @@
  * useExpertChat — Core logic extracted from ExpertChatDialog
  * Handles messages, conversations, TTS, streaming, filters.
  */
-import { useState, useRef, useEffect, useCallback } from "react";
+import { type Dispatch, type KeyboardEvent, type MouseEvent, type SetStateAction, useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { getSupabaseFunctionUrl, supabase } from "@/integrations/supabase/client";
@@ -47,6 +47,238 @@ interface UseExpertChatOptions {
   initialMessage?: string | null;
 }
 
+function parseExpertStreamLine(rawLine: string): { content?: string; retry?: boolean } {
+  const line = rawLine.endsWith("\r") ? rawLine.slice(0, -1) : rawLine;
+  if (line.startsWith(":") || line.trim() === "" || !line.startsWith("data: ")) return {};
+
+  const jsonText = line.slice(6).trim();
+  if (jsonText === "[DONE]") return {};
+
+  try {
+    const parsed = JSON.parse(jsonText) as {
+      choices?: Array<{ delta?: { content?: string } }>;
+    };
+    return { content: parsed.choices?.[0]?.delta?.content };
+  } catch {
+    return { retry: true };
+  }
+}
+
+async function readExpertStream(
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+  onUpdate: (content: string) => void,
+): Promise<string> {
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let assistantMessage = "";
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let newlineIndex = buffer.indexOf("\n");
+      while (newlineIndex !== -1) {
+        const line = buffer.slice(0, newlineIndex);
+        buffer = buffer.slice(newlineIndex + 1);
+        const parsed = parseExpertStreamLine(line);
+        if (parsed.retry) {
+          buffer = `${line}\n${buffer}`;
+          break;
+        }
+        if (parsed.content) {
+          assistantMessage += parsed.content;
+          onUpdate(assistantMessage);
+        }
+        newlineIndex = buffer.indexOf("\n");
+      }
+    }
+  } catch (error) {
+    if ((error as Error).name !== "AbortError") throw error;
+  }
+
+  return assistantMessage;
+}
+
+function uniqueSorted(values: string[]) {
+  return [...new Set(values.map(value => value.trim()).filter(Boolean))].sort((left, right) =>
+    left.localeCompare(right, "pt-BR", { sensitivity: "base" }),
+  );
+}
+
+async function fetchBaseFilterOptions(): Promise<FlowFilterOptions> {
+  const [categories, suppliers, techniques, tags, colors, materials] = await Promise.all([
+    invokeExternalDb<{ name: string }>({ table: "categories", operation: "select", select: "name", filters: { is_active: true }, orderBy: { column: "name", ascending: true }, limit: 500 }),
+    invokeExternalDb<{ name: string }>({ table: "suppliers", operation: "select", select: "name", orderBy: { column: "name", ascending: true }, limit: 200 }),
+    invokeExternalDb<{ nome: string }>({ table: "tecnicas_gravacao", operation: "select", select: "nome", filters: { ativo: true }, orderBy: { column: "nome", ascending: true }, limit: 100 }),
+    invokeExternalDb<{ name: string }>({ table: "tags", operation: "select", select: "name", orderBy: { column: "name", ascending: true }, limit: 200 }),
+    invokeExternalDb<{ name: string }>({ table: "color_groups", operation: "select", select: "name", orderBy: { column: "name", ascending: true }, limit: 200 }),
+    invokeExternalDb<{ name: string }>({ table: "material_groups", operation: "select", select: "name", orderBy: { column: "name", ascending: true }, limit: 200 }),
+  ]);
+  return {
+    categories: uniqueSorted((categories.records ?? []).map(item => item.name)),
+    materials: uniqueSorted((materials.records ?? []).map(item => item.name)),
+    colors: uniqueSorted((colors.records ?? []).map(item => item.name)),
+    suppliers: uniqueSorted((suppliers.records ?? []).map(item => item.name)),
+    techniques: uniqueSorted((techniques.records ?? []).map(item => item.nome)),
+    publicoAlvo: [], datasComemorativas: [], endomarketing: [], nichos: [],
+    tags: uniqueSorted((tags.records ?? []).map(item => item.name)),
+  };
+}
+
+async function fetchNicheOptions() {
+  try {
+    const result = await invokeExternalDb<{ nome: string }>({ table: "ramo_atividade", operation: "select", select: "nome", orderBy: { column: "nome", ascending: true }, limit: 200 });
+    return uniqueSorted((result.records ?? []).map(item => item.nome));
+  } catch {
+    return [];
+  }
+}
+
+function optionalList<T>(values: T[]) {
+  return values.length > 0 ? values : undefined;
+}
+
+function optionalNumber(value: string) {
+  return value ? Number(value) : undefined;
+}
+
+function enabled(value: boolean) {
+  return value || undefined;
+}
+
+function buildExpertRequestBody(messages: Message[], userMessage: string, clientId: string | undefined, filters: FlowFilterState) {
+  return {
+    messages: [...messages, { role: "user" as const, content: userMessage }]
+      .map(message => ({ role: message.role, content: message.content }))
+      .filter(message => Boolean(message.content?.length)),
+    clientId: clientId || undefined,
+    categoryFilter: optionalList(filters.selectedCategories),
+    priceMin: optionalNumber(filters.priceMin),
+    priceMax: optionalNumber(filters.priceMax),
+    materialFilter: optionalList(filters.selectedMaterials),
+    colorFilter: optionalList(filters.selectedColors),
+    genderFilter: optionalList(filters.selectedGenders),
+    supplierFilter: optionalList(filters.selectedSuppliers),
+    techniqueFilter: optionalList(filters.selectedTechniques),
+    publicoFilter: optionalList(filters.selectedPublicos),
+    dataComemorativaFilter: optionalList(filters.selectedDatasComemorativas),
+    endomarketingFilter: optionalList(filters.selectedEndomarketing),
+    nichoFilter: optionalList(filters.selectedNichos),
+    tagFilter: optionalList(filters.selectedTags),
+    onlyInStock: enabled(filters.onlyInStock),
+    onlyNew: enabled(filters.onlyNew),
+    onlyKit: enabled(filters.onlyKit),
+    onlyBestseller: enabled(filters.onlyBestseller),
+    onlyFeatured: enabled(filters.onlyFeatured),
+    hasPersonalization: enabled(filters.hasPersonalization),
+  };
+}
+
+type SetMessages = Dispatch<SetStateAction<Message[]>>;
+
+function updateAssistantMessage(setMessages: SetMessages, content: string) {
+  setMessages(previous => {
+    const next = [...previous];
+    const last = next[next.length - 1];
+    if (last?.role === "assistant") last.content = content;
+    return next;
+  });
+}
+
+interface RequestExpertAnswerOptions {
+  readonly messages: Message[];
+  readonly userMessage: string;
+  readonly clientId: string | undefined;
+  readonly filters: FlowFilterState;
+  readonly signal: AbortSignal;
+  readonly setMessages: SetMessages;
+}
+
+async function requestExpertAnswer(options: RequestExpertAnswerOptions) {
+  const session = await supabase.auth.getSession();
+  const response = await fetch(getSupabaseFunctionUrl('expert-chat'), {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.data.session?.access_token}` },
+    body: JSON.stringify(buildExpertRequestBody(options.messages, options.userMessage, options.clientId, options.filters)),
+    signal: options.signal,
+  });
+  if (!response.ok) {
+    const errorData = await response.json() as { error?: string };
+    throw new Error(errorData.error || "Erro ao conectar com o Flow");
+  }
+  const assistantMessageId = `assistant-${Date.now()}`;
+  options.setMessages(previous => [...previous, { id: assistantMessageId, role: "assistant", content: "", timestamp: Date.now() }]);
+  const reader = response.body?.getReader();
+  const content = reader ? await readExpertStream(reader, value => updateAssistantMessage(options.setMessages, value)) : "";
+  return { content, assistantMessageId };
+}
+
+interface EnsureConversationOptions {
+  readonly currentId: string | null;
+  readonly userMessage: string;
+  readonly create: (title: string) => Promise<string | null>;
+  readonly setCurrentId: Dispatch<SetStateAction<string | null>>;
+}
+
+async function ensureConversation(options: EnsureConversationOptions) {
+  if (options.currentId) return options.currentId;
+  const suffix = options.userMessage.length > 50 ? "..." : "";
+  const createdId = await options.create(options.userMessage.slice(0, 50) + suffix);
+  if (createdId) options.setCurrentId(createdId);
+  return createdId;
+}
+
+function expertErrorMessage(error: unknown) {
+  return error instanceof Error
+    ? `Desculpe, ocorreu um erro: ${error.message}`
+    : "Desculpe, ocorreu um erro ao processar sua mensagem.";
+}
+
+type SaveMessage = ReturnType<typeof useExpertConversations>['saveMessage'];
+
+interface SaveConversationMessageOptions {
+  readonly conversationId: string | null;
+  readonly role: Message['role'];
+  readonly content: string;
+  readonly save: SaveMessage;
+}
+
+async function saveConversationMessage(options: SaveConversationMessageOptions) {
+  if (options.conversationId) await options.save(options.conversationId, options.role, options.content);
+}
+
+interface AutoPlayAnswerOptions {
+  readonly enabled: boolean;
+  readonly fromVoice: boolean;
+  readonly answer: { content: string; assistantMessageId: string };
+  readonly play: (messageId: string, content: string) => void;
+}
+
+function autoPlayAnswer(options: AutoPlayAnswerOptions) {
+  if (!options.enabled || !options.fromVoice || !options.answer.content) return;
+  setTimeout(() => options.play(options.answer.assistantMessageId, options.answer.content), 300);
+}
+
+interface ReportExpertFailureOptions {
+  readonly error: unknown;
+  readonly conversationId: string | null;
+  readonly setMessages: SetMessages;
+  readonly save: SaveMessage;
+}
+
+async function reportExpertFailure(options: ReportExpertFailureOptions) {
+  if (options.error instanceof Error && options.error.name === 'AbortError') return;
+  console.error("Expert chat error:", options.error);
+  const content = expertErrorMessage(options.error);
+  options.setMessages(previous => [...previous, { id: `error-${Date.now()}`, role: "assistant", content, timestamp: Date.now(), isError: true }]);
+  await saveConversationMessage({ conversationId: options.conversationId, role: "assistant", content, save: options.save });
+}
+
+function resetInputHeight(input: HTMLTextAreaElement | null) {
+  if (input) input.style.height = "auto";
+}
+
 export function useExpertChat({
   isOpen,
   onClose,
@@ -84,6 +316,13 @@ export function useExpertChat({
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const handleAutoSend = useCallback((text: string) => {
+    setInput(text);
+    setTimeout(() => {
+      const sendButton = document.querySelector('[data-oracle-send]') as HTMLButtonElement | null;
+      sendButton?.click();
+    }, 50);
+  }, []);
 
   const {
     conversations,
@@ -99,10 +338,10 @@ export function useExpertChat({
     if (!isLoading) { setThinkingMessage(""); return; }
     const msgs = clientId ? THINKING_MESSAGES_CRM : THINKING_MESSAGES;
     let idx = 0;
-    setThinkingMessage(msgs[0]!);
+    setThinkingMessage(msgs[0] ?? "");
     const interval = setInterval(() => {
       idx = (idx + 1) % msgs.length;
-      setThinkingMessage(msgs[idx]!);
+      setThinkingMessage(msgs[idx] ?? "");
     }, 2500);
     return () => clearInterval(interval);
   }, [isLoading, clientId]);
@@ -119,11 +358,13 @@ export function useExpertChat({
           .select("full_name, preferences")
           .eq("user_id", user.id)
           .single();
-        if (profile?.full_name) setSellerFirstName(profile.full_name.split(" ")[0]!);
+        if (profile?.full_name) setSellerFirstName(profile.full_name.split(" ")[0] ?? "");
         const prefs = profile?.preferences as Record<string, unknown> | null;
         if (prefs && typeof prefs.flow_autoplay_tts === "boolean") {
           setAutoPlayTts(prefs.flow_autoplay_tts);
-          try { localStorage.setItem("flow_autoplay_tts", String(prefs.flow_autoplay_tts)); } catch {}
+          try { localStorage.setItem("flow_autoplay_tts", String(prefs.flow_autoplay_tts)); } catch {
+            // O armazenamento pode estar indisponível em modo privado.
+          }
         }
       } catch { /* ignore */ }
     };
@@ -134,42 +375,12 @@ export function useExpertChat({
   useEffect(() => {
     if (!isOpen) return;
     let cancelled = false;
-    const uniq = (values: string[]) =>
-      [...new Set(values.map(v => v.trim()).filter(Boolean))].sort((a, b) =>
-        a.localeCompare(b, "pt-BR", { sensitivity: "base" })
-      );
-    const fetchFilters = async () => {
-      try {
-        const [cat, sup, tec, tag, col, mat] = await Promise.all([
-          invokeExternalDb<{ name: string }>({ table: "categories", operation: "select", select: "name", filters: { is_active: true }, orderBy: { column: "name", ascending: true }, limit: 500 }),
-          invokeExternalDb<{ name: string }>({ table: "suppliers", operation: "select", select: "name", orderBy: { column: "name", ascending: true }, limit: 200 }),
-          invokeExternalDb<{ nome: string }>({ table: "tecnicas_gravacao", operation: "select", select: "nome", filters: { ativo: true }, orderBy: { column: "nome", ascending: true }, limit: 100 }),
-          invokeExternalDb<{ name: string }>({ table: "tags", operation: "select", select: "name", orderBy: { column: "name", ascending: true }, limit: 200 }),
-          invokeExternalDb<{ name: string }>({ table: "color_groups", operation: "select", select: "name", orderBy: { column: "name", ascending: true }, limit: 200 }),
-          invokeExternalDb<{ name: string }>({ table: "material_groups", operation: "select", select: "name", orderBy: { column: "name", ascending: true }, limit: 200 }),
-        ]);
-        if (cancelled) return;
-        setFilterOptions({
-          categories: uniq((cat.records ?? []).map(i => i.name)),
-          materials: uniq((mat.records ?? []).map(i => i.name)),
-          colors: uniq((col.records ?? []).map(i => i.name)),
-          suppliers: uniq((sup.records ?? []).map(i => i.name)),
-          techniques: uniq((tec.records ?? []).map((i: { nome: string }) => i.nome)),
-          publicoAlvo: [], datasComemorativas: [], endomarketing: [],
-          nichos: [],
-          tags: uniq((tag.records ?? []).map(i => i.name)),
-        });
-        try {
-          const [ramos] = await Promise.all([
-            invokeExternalDb<{ nome: string }>({ table: "ramo_atividade", operation: "select", select: "nome", orderBy: { column: "nome", ascending: true }, limit: 200 }),
-          ]);
-          if (!cancelled && ramos.records?.length) {
-            setFilterOptions(prev => ({ ...prev, nichos: uniq((ramos.records ?? []).map(i => i.nome)) }));
-          }
-        } catch {}
-      } catch (error) { console.error("Error fetching Flow filters:", error); }
-    };
-    fetchFilters();
+    void fetchBaseFilterOptions()
+      .then(options => { if (!cancelled) setFilterOptions(options); })
+      .catch(error => console.error("Error fetching Flow filters:", error));
+    void fetchNicheOptions().then(nichos => {
+      if (!cancelled && nichos.length > 0) setFilterOptions(previous => ({ ...previous, nichos }));
+    });
     return () => { cancelled = true; };
   }, [isOpen]);
 
@@ -189,13 +400,16 @@ export function useExpertChat({
       handleAutoSend(`Filtros aplicados: ${summary}. Me mostre os melhores produtos para esses filtros, com recomendações e insights de vendas.`);
     }, 1000);
     return () => { if (filterDebounceRef.current) clearTimeout(filterDebounceRef.current); };
-  }, [flowFilters, isLoading, isOpen]);
+  }, [flowFilters, handleAutoSend, isLoading, isOpen]);
 
   // Auto-scroll
   useEffect(() => {
     if (scrollRef.current && !showScrollDown) {
-      scrollRef.current.scrollTo?.({ top: scrollRef.current.scrollHeight, behavior: "smooth" }) ??
-        (scrollRef.current.scrollTop = scrollRef.current.scrollHeight);
+      if (scrollRef.current.scrollTo) {
+        scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+      } else {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
     }
   }, [messages, showScrollDown]);
 
@@ -207,8 +421,11 @@ export function useExpertChat({
 
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTo?.({ top: scrollRef.current.scrollHeight, behavior: "smooth" }) ??
-        (scrollRef.current.scrollTop = scrollRef.current.scrollHeight);
+      if (scrollRef.current.scrollTo) {
+        scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+      } else {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
       setShowScrollDown(false);
     }
   }, []);
@@ -261,7 +478,7 @@ export function useExpertChat({
       handleAutoSend(initialMessage);
     }
     if (!isOpen) { initialMessageSentRef.current = false; setIsFromVoice(false); isFromVoiceRef.current = false; }
-  }, [isOpen, initialMessage, isLoading]);
+  }, [handleAutoSend, isOpen, initialMessage, isLoading]);
 
   // TTS — delegated to useExpertChatTts
   const { handlePlayTts, handlePauseTts, stopTts } = tts;
@@ -277,7 +494,7 @@ export function useExpertChat({
     setShowHistory(false);
   }, [fetchMessages]);
 
-  const handleDeleteConversation = useCallback(async (e: React.MouseEvent, conversationId: string) => {
+  const handleDeleteConversation = useCallback(async (e: MouseEvent, conversationId: string) => {
     e.stopPropagation();
     await deleteConversation(conversationId);
     if (currentConversationId === conversationId) startNewConversation();
@@ -291,133 +508,45 @@ export function useExpertChat({
       return filtered;
     });
     handleAutoSend(lastUserInput);
-  }, [lastUserInput]);
+  }, [handleAutoSend, lastUserInput]);
 
   const handleStopGenerating = useCallback(() => {
     if (abortControllerRef.current) { abortControllerRef.current.abort(); abortControllerRef.current = null; }
   }, []);
 
-  const handleAutoSend = useCallback((text: string) => {
-    setInput(text);
-    setTimeout(() => {
-      const sendBtn = document.querySelector('[data-oracle-send]') as HTMLButtonElement;
-      sendBtn?.click();
-    }, 50);
-  }, []);
-
   const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
     const userMessage = input.trim();
+    if (!userMessage || isLoading) return;
     setInput(""); setLastUserInput(userMessage);
-    if (inputRef.current) inputRef.current.style.height = "auto";
-
-    let convId = currentConversationId;
-    if (!convId) {
-      const title = userMessage.slice(0, 50) + (userMessage.length > 50 ? "..." : "");
-      convId = await createConversation(title);
-      if (convId) setCurrentConversationId(convId);
-    }
+    resetInputHeight(inputRef.current);
+    const convId = await ensureConversation({
+      currentId: currentConversationId,
+      userMessage,
+      create: createConversation,
+      setCurrentId: setCurrentConversationId,
+    });
 
     setMessages(prev => [...prev, { id: `user-${Date.now()}`, role: "user", content: userMessage, timestamp: Date.now() }]);
     setIsLoading(true);
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
-    if (convId) await saveMessage(convId, "user", userMessage);
+    await saveConversationMessage({ conversationId: convId, role: "user", content: userMessage, save: saveMessage });
 
     try {
-      const response = await fetch(
-        getSupabaseFunctionUrl('expert-chat'),
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}` },
-          body: JSON.stringify({
-            messages: [...messages, { role: "user", content: userMessage }].map(m => ({ role: m.role, content: m.content })).filter(m => m.content?.length > 0),
-            clientId: clientId || undefined,
-            categoryFilter: flowFilters.selectedCategories.length > 0 ? flowFilters.selectedCategories : undefined,
-            priceMin: flowFilters.priceMin ? Number(flowFilters.priceMin) : undefined,
-            priceMax: flowFilters.priceMax ? Number(flowFilters.priceMax) : undefined,
-            materialFilter: flowFilters.selectedMaterials.length > 0 ? flowFilters.selectedMaterials : undefined,
-            colorFilter: flowFilters.selectedColors.length > 0 ? flowFilters.selectedColors : undefined,
-            genderFilter: flowFilters.selectedGenders.length > 0 ? flowFilters.selectedGenders : undefined,
-            supplierFilter: flowFilters.selectedSuppliers.length > 0 ? flowFilters.selectedSuppliers : undefined,
-            techniqueFilter: flowFilters.selectedTechniques.length > 0 ? flowFilters.selectedTechniques : undefined,
-            publicoFilter: flowFilters.selectedPublicos.length > 0 ? flowFilters.selectedPublicos : undefined,
-            dataComemorativaFilter: flowFilters.selectedDatasComemorativas.length > 0 ? flowFilters.selectedDatasComemorativas : undefined,
-            endomarketingFilter: flowFilters.selectedEndomarketing.length > 0 ? flowFilters.selectedEndomarketing : undefined,
-            nichoFilter: flowFilters.selectedNichos.length > 0 ? flowFilters.selectedNichos : undefined,
-            tagFilter: flowFilters.selectedTags.length > 0 ? flowFilters.selectedTags : undefined,
-            onlyInStock: flowFilters.onlyInStock || undefined,
-            onlyNew: flowFilters.onlyNew || undefined,
-            onlyKit: flowFilters.onlyKit || undefined,
-            onlyBestseller: flowFilters.onlyBestseller || undefined,
-            onlyFeatured: flowFilters.onlyFeatured || undefined,
-            hasPersonalization: flowFilters.hasPersonalization || undefined,
-          }),
-          signal: abortController.signal,
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Erro ao conectar com o Flow");
-      }
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let assistantMessage = "";
-      const assistantMsgId = `assistant-${Date.now()}`;
-      setMessages(prev => [...prev, { id: assistantMsgId, role: "assistant", content: "", timestamp: Date.now() }]);
-
-      if (reader) {
-        let buffer = "";
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            buffer += decoder.decode(value, { stream: true });
-            let newlineIndex: number;
-            while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
-              let line = buffer.slice(0, newlineIndex);
-              buffer = buffer.slice(newlineIndex + 1);
-              if (line.endsWith("\r")) line = line.slice(0, -1);
-              if (line.startsWith(":") || line.trim() === "") continue;
-              if (!line.startsWith("data: ")) continue;
-              const jsonStr = line.slice(6).trim();
-              if (jsonStr === "[DONE]") continue;
-              try {
-                const parsed = JSON.parse(jsonStr);
-                const content = parsed.choices?.[0]?.delta?.content;
-                if (content) {
-                  assistantMessage += content;
-                  setMessages(prev => {
-                    const n = [...prev];
-                    const last = n[n.length - 1];
-                    if (last?.role === "assistant") last.content = assistantMessage;
-                    return n;
-                  });
-                }
-              } catch { buffer = line + "\n" + buffer; break; }
-            }
-          }
-        } catch (err) { if ((err as Error).name !== 'AbortError') throw err; }
-      }
-
-      if (convId && assistantMessage) await saveMessage(convId, "assistant", assistantMessage);
-      if (isFromVoiceRef.current && autoPlayTts && assistantMessage) {
-        setTimeout(() => handlePlayTts(assistantMsgId, assistantMessage), 300);
-      }
+      const answer = await requestExpertAnswer({
+        messages, userMessage, clientId, filters: flowFilters,
+        signal: abortController.signal, setMessages,
+      });
+      await saveConversationMessage({ conversationId: answer.content ? convId : null, role: "assistant", content: answer.content, save: saveMessage });
+      autoPlayAnswer({ enabled: autoPlayTts, fromVoice: isFromVoiceRef.current, answer, play: handlePlayTts });
     } catch (error) {
-      if ((error as Error).name === 'AbortError') return;
-      console.error("Expert chat error:", error);
-      const errorMessage = error instanceof Error ? `Desculpe, ocorreu um erro: ${error.message}` : "Desculpe, ocorreu um erro ao processar sua mensagem.";
-      setMessages(prev => [...prev, { id: `error-${Date.now()}`, role: "assistant", content: errorMessage, timestamp: Date.now(), isError: true }]);
-      if (convId) await saveMessage(convId, "assistant", errorMessage);
+      await reportExpertFailure({ error, conversationId: convId, setMessages, save: saveMessage });
     } finally {
       setIsLoading(false); abortControllerRef.current = null;
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   };
 
@@ -425,7 +554,9 @@ export function useExpertChat({
 
   const handleToggleAutoPlayTts = useCallback(async (next: boolean) => {
     setAutoPlayTts(next);
-    try { localStorage.setItem("flow_autoplay_tts", String(next)); } catch {}
+    try { localStorage.setItem("flow_autoplay_tts", String(next)); } catch {
+      // O armazenamento pode estar indisponível em modo privado.
+    }
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -433,7 +564,9 @@ export function useExpertChat({
         const currentPrefs = (profile?.preferences as Record<string, unknown>) || {};
         await supabase.from("profiles").update({ preferences: { ...currentPrefs, flow_autoplay_tts: next } }).eq("user_id", user.id);
       }
-    } catch {}
+    } catch {
+      // A preferência local já foi aplicada; persistência remota é opcional.
+    }
   }, []);
 
   const resetFilters = useCallback(() => {

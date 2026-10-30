@@ -1,9 +1,8 @@
 /**
  * Comprehensive tests for Dashboard widgets and MeusKitsPage
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { renderWithProviders } from "../render-helpers";
-import { screen } from "@testing-library/react";
 import React from "react";
 
 vi.mock("@/integrations/supabase/client", () => ({

@@ -33,6 +33,78 @@ interface TestOptions {
   silent?: boolean;
 }
 
+interface ResolvedTestOptions {
+  config?: Record<string, string>;
+  connectionId?: string;
+  envKey?: "promobrind" | "crm";
+  silent: boolean;
+}
+
+function resolveTestOptions(
+  optionsOrConfig: TestOptions | Record<string, string>,
+  legacyConnectionId?: string,
+): ResolvedTestOptions {
+  const usesOptions = "config" in optionsOrConfig
+    || "env_key" in optionsOrConfig
+    || "connectionId" in optionsOrConfig
+    || "silent" in optionsOrConfig;
+  if (!usesOptions) {
+    return {
+      config: optionsOrConfig as Record<string, string>,
+      connectionId: legacyConnectionId,
+      silent: false,
+    };
+  }
+  const options = optionsOrConfig as TestOptions;
+  return {
+    config: options.config,
+    connectionId: options.connectionId ?? legacyConnectionId,
+    envKey: options.env_key,
+    silent: Boolean(options.silent),
+  };
+}
+
+function normalizeTestResult(data: unknown): TestResult {
+  const response = data as { result?: TestResult } | null;
+  const result = response?.result ?? { ok: false };
+  return {
+    ok: Boolean(result.ok),
+    status: result.status,
+    latency_ms: result.latency_ms,
+    error: result.error,
+    error_kind: result.error_kind,
+    message: result.message,
+    timeout_ms: result.timeout_ms,
+    tested_at: result.tested_at ?? new Date().toISOString(),
+  };
+}
+
+function successDescription(result: TestResult): string {
+  if (result.message) return result.message;
+  const status = result.status === undefined ? "200" : String(result.status);
+  const latency = result.latency_ms === undefined ? "?" : String(result.latency_ms);
+  return `${status} em ${latency}ms`;
+}
+
+function reportTestResult(
+  result: TestResult,
+  silent: boolean,
+  log: ReturnType<typeof createClientLogger>,
+): void {
+  if (result.ok) {
+    log.info('test_ok', { status: result.status, latency_ms: result.latency_ms });
+  } else {
+    log.warn('test_failed', { status: result.status, error_kind: result.error_kind, error: result.error });
+  }
+  if (silent) return;
+  if (result.ok) {
+    toast.success("Conexão OK", { description: successDescription(result) });
+    return;
+  }
+  const copy = getErrorCopy(result.error_kind, result.status, result.error ?? result.message, result.timeout_ms);
+  toast.error(copy.title, { description: copy.hint });
+}
+
 export function useConnectionTester() {
   const [isTesting, setIsTesting] = useState(false);
   const [lastResult, setLastResult] = useState<TestResult | null>(null);
@@ -42,20 +114,8 @@ export function useConnectionTester() {
     optionsOrConfig: TestOptions | Record<string, string> = {},
     legacyConnectionId?: string,
   ): Promise<TestResult> => {
-    let config: Record<string, string> | undefined;
-    let connection_id: string | undefined;
-    let env_key: "promobrind" | "crm" | undefined;
-    let silent = false;
-    if ("config" in optionsOrConfig || "env_key" in optionsOrConfig || "connectionId" in optionsOrConfig || "silent" in optionsOrConfig) {
-      const opts = optionsOrConfig as TestOptions;
-      config = opts.config;
-      connection_id = opts.connectionId ?? legacyConnectionId;
-      env_key = opts.env_key;
-      silent = !!opts.silent;
-    } else {
-      config = optionsOrConfig as Record<string, string>;
-      connection_id = legacyConnectionId;
-    }
+    const options = resolveTestOptions(optionsOrConfig, legacyConnectionId);
+    const { config, connectionId: connection_id, envKey: env_key, silent } = options;
 
     setIsTesting(true);
     const log = createClientLogger('connections.testCredentials', { base: { type, env_key, connection_id } });
@@ -66,35 +126,9 @@ export function useConnectionTester() {
         headers: log.headers(),
       });
       if (error) throw error;
-      const r = (data?.result ?? {}) as TestResult;
-      const normalized: TestResult = {
-        ok: !!r.ok,
-        status: r.status,
-        latency_ms: r.latency_ms,
-        error: r.error,
-        error_kind: r.error_kind,
-        message: r.message,
-        timeout_ms: r.timeout_ms,
-        tested_at: r.tested_at ?? new Date().toISOString(),
-      };
+      const normalized = normalizeTestResult(data);
       setLastResult(normalized);
-      if (normalized.ok) {
-        log.info('test_ok', { status: normalized.status, latency_ms: normalized.latency_ms });
-      } else {
-        log.warn('test_failed', { status: normalized.status, error_kind: normalized.error_kind, error: normalized.error });
-      }
-      if (!silent) {
-        if (normalized.ok) {
-          toast.success("Conexão OK", {
-            description: normalized.message ?? `${normalized.status ?? "200"} em ${normalized.latency_ms ?? "?"}ms`,
-          });
-        } else {
-          const copy = getErrorCopy(normalized.error_kind, normalized.status, normalized.error ?? normalized.message, normalized.timeout_ms);
-          toast.error(copy.title, {
-            description: copy.hint,
-          });
-        }
-      }
+      reportTestResult(normalized, silent, log);
       return normalized;
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro";

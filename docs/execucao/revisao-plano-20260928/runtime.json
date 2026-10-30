@@ -1,0 +1,300 @@
+{
+  "cache_generated_at": "2026-09-22T22:00:00Z",
+  "files_scanned": 2064,
+  "references_scanned": 1106,
+  "broken": [
+    {
+      "file": "src/hooks/quotes/useQuotes.ts",
+      "line": 112,
+      "kind": "rpc",
+      "name": "bulk_update_quote_status_atomic"
+    },
+    {
+      "file": "src/hooks/quotes/useQuotes.ts",
+      "line": 181,
+      "kind": "rpc",
+      "name": "bulk_update_quote_status_atomic"
+    },
+    {
+      "file": "src/hooks/useDiscountApproval.ts",
+      "line": 62,
+      "kind": "rpc",
+      "name": "request_discount_approval_atomic"
+    },
+    {
+      "file": "src/hooks/useDiscountApproval.ts",
+      "line": 164,
+      "kind": "rpc",
+      "name": "respond_discount_approval_atomic"
+    },
+    {
+      "file": "src/hooks/useQuoteHistory.ts",
+      "line": 66,
+      "kind": "rpc",
+      "name": "append_quote_history_note"
+    },
+    {
+      "file": "src/pages/sicoob/SicoobInvitationAcceptPage.tsx",
+      "line": 50,
+      "kind": "rpc",
+      "name": "get_sicoob_invitation"
+    },
+    {
+      "file": "src/pages/sicoob/SicoobInvitationAcceptPage.tsx",
+      "line": 60,
+      "kind": "rpc",
+      "name": "accept_sicoob_invitation"
+    },
+    {
+      "file": "src/pages/sicoob/SicoobInvitationsPage.tsx",
+      "line": 149,
+      "kind": "from",
+      "name": "sicoob_invitations",
+      "unresolved": false
+    },
+    {
+      "file": "src/pages/sicoob/SicoobInvitationsPage.tsx",
+      "line": 160,
+      "kind": "rpc",
+      "name": "issue_sicoob_invitation"
+    },
+    {
+      "file": "src/pages/sicoob/SicoobInvitationsPage.tsx",
+      "line": 186,
+      "kind": "rpc",
+      "name": "revoke_sicoob_invitation"
+    },
+    {
+      "file": "src/pages/sicoob/SicoobInvitationsPage.tsx",
+      "line": 201,
+      "kind": "rpc",
+      "name": "revoke_sicoob_user_access"
+    },
+    {
+      "file": "src/services/OrderService.ts",
+      "line": 414,
+      "kind": "rpc",
+      "name": "duplicate_order_atomic"
+    },
+    {
+      "file": "src/services/QuoteService.ts",
+      "line": 165,
+      "kind": "rpc",
+      "name": "save_quote_atomic"
+    },
+    {
+      "file": "src/services/QuoteService.ts",
+      "line": 193,
+      "kind": "rpc",
+      "name": "save_quote_atomic"
+    },
+    {
+      "file": "src/services/QuoteService.ts",
+      "line": 273,
+      "kind": "rpc",
+      "name": "append_quote_history_note"
+    },
+    {
+      "file": "src/services/quoteStatusTransition.ts",
+      "line": 27,
+      "kind": "rpc",
+      "name": "bulk_update_quote_status_atomic"
+    },
+    {
+      "file": "src/services/quoteStatusTransition.ts",
+      "line": 56,
+      "kind": "rpc",
+      "name": "approve_quote_with_pdf_atomic"
+    },
+    {
+      "file": "src/services/sicoob/approvalDelegationService.ts",
+      "line": 36,
+      "kind": "from",
+      "name": "sicoob_approval_delegations"
+    },
+    {
+      "file": "src/services/sicoob/approvalDelegationService.ts",
+      "line": 53,
+      "kind": "rpc",
+      "name": "list_sicoob_approval_delegate_candidates"
+    },
+    {
+      "file": "src/services/sicoob/approvalDelegationService.ts",
+      "line": 65,
+      "kind": "rpc",
+      "name": "create_sicoob_approval_delegation"
+    },
+    {
+      "file": "src/services/sicoob/approvalDelegationService.ts",
+      "line": 77,
+      "kind": "rpc",
+      "name": "revoke_sicoob_approval_delegation"
+    },
+    {
+      "file": "src/services/sicoob/approvalService.ts",
+      "line": 81,
+      "kind": "rpc",
+      "name": "sicoob_current_actor_approval_authority"
+    },
+    {
+      "file": "src/services/sicoob/approvalService.ts",
+      "line": 85,
+      "kind": "rpc",
+      "name": "sicoob_current_actor_approval_authority"
+    },
+    {
+      "file": "supabase/functions/sicoob-reorder/index.ts",
+      "line": 329,
+      "kind": "rpc",
+      "name": "refresh_sicoob_reorder_quote"
+    }
+  ],
+  "blocking": [
+    {
+      "file": "src/hooks/quotes/useQuotes.ts",
+      "line": 112,
+      "kind": "rpc",
+      "name": "bulk_update_quote_status_atomic"
+    },
+    {
+      "file": "src/hooks/quotes/useQuotes.ts",
+      "line": 181,
+      "kind": "rpc",
+      "name": "bulk_update_quote_status_atomic"
+    },
+    {
+      "file": "src/hooks/useDiscountApproval.ts",
+      "line": 62,
+      "kind": "rpc",
+      "name": "request_discount_approval_atomic"
+    },
+    {
+      "file": "src/hooks/useDiscountApproval.ts",
+      "line": 164,
+      "kind": "rpc",
+      "name": "respond_discount_approval_atomic"
+    },
+    {
+      "file": "src/hooks/useQuoteHistory.ts",
+      "line": 66,
+      "kind": "rpc",
+      "name": "append_quote_history_note"
+    },
+    {
+      "file": "src/pages/sicoob/SicoobInvitationAcceptPage.tsx",
+      "line": 50,
+      "kind": "rpc",
+      "name": "get_sicoob_invitation"
+    },
+    {
+      "file": "src/pages/sicoob/SicoobInvitationAcceptPage.tsx",
+      "line": 60,
+      "kind": "rpc",
+      "name": "accept_sicoob_invitation"
+    },
+    {
+      "file": "src/pages/sicoob/SicoobInvitationsPage.tsx",
+      "line": 149,
+      "kind": "from",
+      "name": "sicoob_invitations",
+      "unresolved": false
+    },
+    {
+      "file": "src/pages/sicoob/SicoobInvitationsPage.tsx",
+      "line": 160,
+      "kind": "rpc",
+      "name": "issue_sicoob_invitation"
+    },
+    {
+      "file": "src/pages/sicoob/SicoobInvitationsPage.tsx",
+      "line": 186,
+      "kind": "rpc",
+      "name": "revoke_sicoob_invitation"
+    },
+    {
+      "file": "src/pages/sicoob/SicoobInvitationsPage.tsx",
+      "line": 201,
+      "kind": "rpc",
+      "name": "revoke_sicoob_user_access"
+    },
+    {
+      "file": "src/services/OrderService.ts",
+      "line": 414,
+      "kind": "rpc",
+      "name": "duplicate_order_atomic"
+    },
+    {
+      "file": "src/services/QuoteService.ts",
+      "line": 165,
+      "kind": "rpc",
+      "name": "save_quote_atomic"
+    },
+    {
+      "file": "src/services/QuoteService.ts",
+      "line": 193,
+      "kind": "rpc",
+      "name": "save_quote_atomic"
+    },
+    {
+      "file": "src/services/QuoteService.ts",
+      "line": 273,
+      "kind": "rpc",
+      "name": "append_quote_history_note"
+    },
+    {
+      "file": "src/services/quoteStatusTransition.ts",
+      "line": 27,
+      "kind": "rpc",
+      "name": "bulk_update_quote_status_atomic"
+    },
+    {
+      "file": "src/services/quoteStatusTransition.ts",
+      "line": 56,
+      "kind": "rpc",
+      "name": "approve_quote_with_pdf_atomic"
+    },
+    {
+      "file": "src/services/sicoob/approvalDelegationService.ts",
+      "line": 36,
+      "kind": "from",
+      "name": "sicoob_approval_delegations"
+    },
+    {
+      "file": "src/services/sicoob/approvalDelegationService.ts",
+      "line": 53,
+      "kind": "rpc",
+      "name": "list_sicoob_approval_delegate_candidates"
+    },
+    {
+      "file": "src/services/sicoob/approvalDelegationService.ts",
+      "line": 65,
+      "kind": "rpc",
+      "name": "create_sicoob_approval_delegation"
+    },
+    {
+      "file": "src/services/sicoob/approvalDelegationService.ts",
+      "line": 77,
+      "kind": "rpc",
+      "name": "revoke_sicoob_approval_delegation"
+    },
+    {
+      "file": "src/services/sicoob/approvalService.ts",
+      "line": 81,
+      "kind": "rpc",
+      "name": "sicoob_current_actor_approval_authority"
+    },
+    {
+      "file": "src/services/sicoob/approvalService.ts",
+      "line": 85,
+      "kind": "rpc",
+      "name": "sicoob_current_actor_approval_authority"
+    },
+    {
+      "file": "supabase/functions/sicoob-reorder/index.ts",
+      "line": 329,
+      "kind": "rpc",
+      "name": "refresh_sicoob_reorder_quote"
+    }
+  ],
+  "allowed": []
+}

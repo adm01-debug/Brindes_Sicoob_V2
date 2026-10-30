@@ -1,6 +1,28 @@
-import { lazy, type ComponentType } from 'react';
+import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 import { logger } from "@/lib/logger";
 import { attemptChunkRecovery, isChunkLoadError } from "@/lib/chunk-recovery";
+
+function isRetryableImportError(error: unknown): boolean {
+  if (isChunkLoadError(error)) return true;
+  if (!(error instanceof Error)) return false;
+  return error.message.includes("Network request failed") || error.message.includes("Timeout");
+}
+
+async function handleImportFailure(
+  error: unknown,
+  attempt: number,
+  retries: number,
+  interval: number,
+): Promise<boolean> {
+  if (!isRetryableImportError(error)) throw error;
+  const delay = interval * (attempt + 1);
+  logger.warn(`Chunk load failed (attempt ${attempt + 1}/${retries}), retrying in ${delay}ms...`, error);
+  await new Promise((resolve) => setTimeout(resolve, delay));
+  if (attempt !== retries - 1) return false;
+  const reloaded = await attemptChunkRecovery(error);
+  if (!reloaded) throw error;
+  return true;
+}
 
 /**
  * Wrapper around React.lazy that retries on chunk loading failures.
@@ -21,7 +43,7 @@ export function lazyWithRetry<M extends { default: ComponentType<any> }>(
   componentImport: () => Promise<M>,
   retries = 3,
   interval = 1000
-): React.LazyExoticComponent<M["default"]> {
+): LazyExoticComponent<M["default"]> {
   type LoadedModule = Awaited<ReturnType<typeof componentImport>>;
 
   return lazy<M["default"]>(async () => {
@@ -37,32 +59,8 @@ export function lazyWithRetry<M extends { default: ComponentType<any> }>(
         return component;
       } catch (error) {
         lastError = error as Error;
-
-        // Cover silent fetch failures or timeout errors often seen on mobile/unstable networks
-        const shouldRetry = isChunkLoadError(error) || 
-                           (error instanceof Error && (
-                             error.message.includes("Network request failed") ||
-                             error.message.includes("Timeout")
-                           ));
-
-        if (shouldRetry) {
-          const delay = interval * (i + 1);
-          logger.warn(`Chunk load failed (attempt ${i + 1}/${retries}), retrying in ${delay}ms...`, error);
-          await new Promise(resolve => setTimeout(resolve, delay));
-
-          // Last attempt before giving up or doing hard reload
-          if (i === retries - 1) {
-            const reloaded = await attemptChunkRecovery(error);
-            if (reloaded) {
-              // Navigation triggered, return a never-resolving promise to keep Suspense active
-              return new Promise<LoadedModule>(() => {});
-            }
-            throw error;
-          }
-        } else {
-          // Immediate failure for logic/syntax errors
-          throw error;
-        }
+        const recoveryStarted = await handleImportFailure(error, i, retries, interval);
+        if (recoveryStarted) return new Promise<LoadedModule>(() => {});
       }
     }
 

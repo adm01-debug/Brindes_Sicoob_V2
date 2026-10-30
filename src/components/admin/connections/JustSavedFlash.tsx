@@ -14,7 +14,9 @@ interface Props {
   was_env_fallback?: boolean;
 }
 
-export function JustSavedFlash({ masked_suffix, length, action, was_update, duration = 2400, was_env_fallback }: Props) {
+export function JustSavedFlash(props: Props) {
+  const { masked_suffix: maskedSuffix, length, action, was_update: wasUpdate,
+    duration = 2400, was_env_fallback: wasEnvFallback } = props;
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
@@ -24,8 +26,8 @@ export function JustSavedFlash({ masked_suffix, length, action, was_update, dura
 
   if (!visible) return null;
 
-  const verb = action === "rotate" ? "Rotacionado" : was_update ? "Atualizado" : "Salvo";
-  const suffixText = formatMaskedSuffix(masked_suffix);
+  const verb = action === "rotate" ? "Rotacionado" : wasUpdate ? "Atualizado" : "Salvo";
+  const suffixText = formatMaskedSuffix(maskedSuffix);
 
   return (
     <p
@@ -37,7 +39,7 @@ export function JustSavedFlash({ masked_suffix, length, action, was_update, dura
     >
       <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
       <span>
-        {verb} • {suffixText} • {length} chars • {was_env_fallback ? "agora vem do banco" : "atualizado agora"}
+        {verb} • {suffixText} • {length} chars • {wasEnvFallback ? "agora vem do banco" : "atualizado agora"}
       </span>
     </p>
   );

@@ -17,46 +17,96 @@ const GENERATION_STEPS = [
   { icon: Sparkles, label: "Finalizando", duration: 1000 },
 ];
 
-export function GeneratingOverlay({
-  isVisible,
-  productName,
-  techniqueName,
-}: GeneratingOverlayProps) {
+const TOTAL_DURATION = GENERATION_STEPS.reduce((total, step) => total + step.duration, 0);
+
+function stepAt(elapsedTime: number) {
+  let accumulatedTime = 0;
+  const index = GENERATION_STEPS.findIndex((step) => {
+    accumulatedTime += step.duration;
+    return elapsedTime < accumulatedTime;
+  });
+  return index < 0 ? GENERATION_STEPS.length - 1 : index;
+}
+
+function useGenerationProgress(isVisible: boolean) {
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
-
   useEffect(() => {
     if (!isVisible) {
       setCurrentStep(0);
       setProgress(0);
       return;
     }
-
-    let totalElapsed = 0;
-    const totalDuration = GENERATION_STEPS.reduce((acc, step) => acc + step.duration, 0);
-
+    let elapsedTime = 0;
     const interval = setInterval(() => {
-      totalElapsed += 100;
-      const newProgress = Math.min((totalElapsed / totalDuration) * 100, 95);
-      setProgress(newProgress);
-
-      // Calculate current step
-      let elapsed = 0;
-      for (let i = 0; i < GENERATION_STEPS.length; i++) {
-        elapsed += GENERATION_STEPS[i].duration;
-        if (totalElapsed < elapsed) {
-          setCurrentStep(i);
-          break;
-        }
-      }
+      elapsedTime += 100;
+      setProgress(Math.min((elapsedTime / TOTAL_DURATION) * 100, 95));
+      setCurrentStep(stepAt(elapsedTime));
     }, 100);
-
     return () => clearInterval(interval);
   }, [isVisible]);
+  return { currentStep, progress };
+}
+
+function AnimatedDots() {
+  return (
+    <div className="ml-auto flex gap-1">
+      {["0ms", "150ms", "300ms"].map((delay) => (
+        <span key={delay} className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: delay }} />
+      ))}
+    </div>
+  );
+}
+
+interface GenerationStepProps {
+  step: (typeof GENERATION_STEPS)[number];
+  index: number;
+  currentStep: number;
+}
+
+function GenerationStep({ step, index, currentStep }: GenerationStepProps) {
+  const StepIcon = step.icon;
+  const status = index < currentStep ? "complete" : index === currentStep ? "current" : "pending";
+  const rowClass = { complete: "opacity-60", current: "bg-primary/10", pending: "" }[status];
+  const iconClass = {
+    complete: "bg-success text-success-foreground",
+    current: "bg-primary text-primary-foreground animate-pulse",
+    pending: "bg-muted text-muted-foreground",
+  }[status];
+  return (
+    <div className={cn("flex items-center gap-3 p-2 rounded-lg transition-all duration-300", rowClass)}>
+      <div className={cn("flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300", iconClass)}>
+        {status === "complete" ? <Check className="h-4 w-4" /> : <StepIcon className="h-4 w-4" />}
+      </div>
+      <span className={cn("text-sm transition-colors duration-300", status === "current" ? "font-medium text-foreground" : "text-muted-foreground")}>{step.label}</span>
+      {status === "current" && <AnimatedDots />}
+    </div>
+  );
+}
+
+function OverlayHeader({ currentStep, productName, techniqueName }: { currentStep: number; productName?: string; techniqueName?: string }) {
+  const CurrentIcon = GENERATION_STEPS[currentStep]?.icon ?? Sparkles;
+  const description = productName && techniqueName ? `${productName} com ${techniqueName}` : "Processando sua imagem...";
+  return (
+    <div className="text-center">
+      <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-4 relative">
+        <CurrentIcon className="h-10 w-10 text-primary animate-bounce" />
+        <div className="absolute inset-0 rounded-full border-2 border-primary/30 animate-pulse-ring" />
+      </div>
+      <h2 className="font-display text-xl font-semibold text-foreground mb-1">Gerando Mockup</h2>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+export function GeneratingOverlay({
+  isVisible,
+  productName,
+  techniqueName,
+}: GeneratingOverlayProps) {
+  const { currentStep, progress } = useGenerationProgress(isVisible);
 
   if (!isVisible) return null;
-
-  const CurrentIcon = GENERATION_STEPS[currentStep]?.icon || Sparkles;
 
   return (
     <div 
@@ -75,21 +125,7 @@ export function GeneratingOverlay({
         <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-primary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.5s' }} />
         
         <div className="relative space-y-6">
-          {/* Header */}
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-4 relative">
-              <CurrentIcon className="h-10 w-10 text-primary animate-bounce" />
-              <div className="absolute inset-0 rounded-full border-2 border-primary/30 animate-pulse-ring" />
-            </div>
-            <h2 className="font-display text-xl font-semibold text-foreground mb-1">
-              Gerando Mockup
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {productName && techniqueName
-                ? `${productName} com ${techniqueName}`
-                : "Processando sua imagem..."}
-            </p>
-          </div>
+          <OverlayHeader currentStep={currentStep} productName={productName} techniqueName={techniqueName} />
 
           {/* Progress */}
           <div className="space-y-2">
@@ -101,53 +137,7 @@ export function GeneratingOverlay({
 
           {/* Steps */}
           <div className="space-y-2">
-            {GENERATION_STEPS.map((step, index) => {
-              const StepIcon = step.icon;
-              const isComplete = index < currentStep;
-              const isCurrent = index === currentStep;
-
-              return (
-                <div
-                  key={index}
-                  className={cn(
-                    "flex items-center gap-3 p-2 rounded-lg transition-all duration-300",
-                    isCurrent && "bg-primary/10",
-                    isComplete && "opacity-60"
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300",
-                      isComplete && "bg-success text-success-foreground",
-                      isCurrent && "bg-primary text-primary-foreground animate-pulse",
-                      !isComplete && !isCurrent && "bg-muted text-muted-foreground"
-                    )}
-                  >
-                    {isComplete ? (
-                      <Check className="h-4 w-4" />
-                    ) : (
-                      <StepIcon className="h-4 w-4" />
-                    )}
-                  </div>
-                  <span
-                    className={cn(
-                      "text-sm transition-colors duration-300",
-                      isCurrent && "font-medium text-foreground",
-                      !isCurrent && "text-muted-foreground"
-                    )}
-                  >
-                    {step.label}
-                  </span>
-                  {isCurrent && (
-                    <div className="ml-auto flex gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {GENERATION_STEPS.map((step, index) => <GenerationStep key={step.label} step={step} index={index} currentStep={currentStep} />)}
           </div>
 
           {/* Tip */}

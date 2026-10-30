@@ -1,4 +1,4 @@
-import { RatioSample } from "./useNotificationsMetricsPanel";
+import { type RatioSample } from "./useNotificationsMetricsPanel";
 
 /**
  * Build the SVG `points` string for a polyline that fits the samples in a
@@ -62,7 +62,6 @@ export const downloadJson = (filenameStem: string, payload: unknown) => {
     // Defer revoke so Safari has a tick to honor the download.
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error("[NotificationsBadgeStatsPanel] export failed", err);
   }
 };

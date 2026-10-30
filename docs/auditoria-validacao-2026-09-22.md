@@ -6,12 +6,50 @@ Esta auditoria validou o lote de correções posterior ao commit `7e2e8f371` da
 `main`. Cinco frentes especializadas foram coordenadas: banco/RLS, Edge
 Functions e cenários adversariais, contratos frontend–backend, CI/integridade e
 módulos canônicos Sicoob. A execução usou código local, PostgreSQL 16
-descartável sem rede, testes unitários e cenários estáticos. Nenhuma migration
-foi aplicada ao projeto remoto e nenhuma Edge Function foi publicada.
+descartável sem rede, testes unitários, cenários estáticos e, em 23/09/2026,
+validação administrativa no projeto Supabase de construção.
 
 As simulações cobriram sucesso, falha parcial, concorrência, repetição,
 idempotência, rollback, isolamento por organização/PA, contrato inválido,
 credencial ausente, lease vencido, destino corrigido e registros históricos.
+
+## Reconciliação remota de 23/09/2026
+
+- A identidade funcional do projeto foi confirmada por 226 tabelas públicas,
+  263 rotinas e presença dos módulos `sicoob_orders`, `sicoob_order_items` e
+  `sicoob_approval_requests`.
+- O ledger remoto terminava em `20260922210000`. As 18 migrations consecutivas
+  até `20260922225600` foram primeiro executadas integralmente sob `ROLLBACK` e,
+  após a simulação sem erros, aplicadas em uma única transação atômica.
+- Os 18 registros gravados no ledger correspondem byte a byte aos arquivos do
+  repositório, incluindo nome, versão e MD5 do SQL armazenado.
+- Foram encontrados os 34 fluxos SQL, 4 tabelas, 4 crons e 4 gatilhos esperados;
+  não há índice público inválido, duplicidade de orçamento convertido,
+  duplicidade de evento da outbox ou parcela vencida ainda marcada como
+  pendente.
+- O banco não contém órfãos nas referências de consolidação, comprovante sem
+  autor ou estado legado incompatível de assinatura. A migration
+  `20260923100000` foi simulada, aplicada, registrada com MD5 idêntico ao
+  arquivo local e validou definitivamente as quatro constraints históricas.
+- As tabelas internas com RLS sem policy estão sem privilégios para `anon` e
+  `authenticated`. `webhook_configs` mantém o deny-all deliberado por RLS sem
+  policy. As duas policies de upload ausentes foram removidas deliberadamente
+  para obrigar a passagem pelo fluxo de quarentena.
+- Das 105 Edge Functions versionadas, 98 responderam HTTP 200, seis retornaram
+  404 e uma excedeu o timeout. `quote-approval` e
+  `sicoob-approval-notifications` respondem. Permanecem sem publicação os cinco
+  fluxos operacionais `sicoob-approval-reconciliation`,
+  `sicoob-artwork-register`, `sicoob-document-ingest`, `sicoob-kit-quote` e
+  `sicoob-reorder`. `migrate-helper` também retorna 404, situação desejada para
+  o stub legado inerte. `generate-mockup-nanobanana` ficou inconclusiva por
+  timeout.
+- O CLI está vinculado ao project ref correto, mas a conta disponível recebe
+  HTTP 403 da Management API para listar/publicar funções. O MCP permite ping e
+  invocação, porém não possui operação de deploy.
+- O Vault ainda não contém `sicoob_project_url` nem
+  `sicoob_approval_worker_secret`. A chave HMAC ativa está registrada, mas a
+  presença do segredo correspondente e sua rotação ainda precisam ser
+  homologadas sem expor o valor.
 
 ## Correções validadas
 
@@ -140,6 +178,13 @@ credencial ausente, lease vencido, destino corrigido e registros históricos.
 | Consolidação/distribuição Sicoob | aprovada, incluindo as duas novas FKs |
 | Financeiro/arte, verba e controles | aprovados |
 | Segredos no diff | nenhuma correspondência encontrada; 31 fingerprints históricos isolados em baseline específica |
+| Simulação remota das 18 migrations | aprovada sob `ROLLBACK` |
+| Ledger remoto | 18/18 arquivos com versão, nome e MD5 exatos |
+| Constraint de reconciliação `20260923100000` | simulada, aplicada e 4/4 constraints validadas |
+| Objetos remotos do lote | 34/34 funções; 4/4 tabelas; 4/4 crons; 4/4 gatilhos |
+| Integridade remota | 0 índices inválidos; 0 duplicidades; 0 órfãos; 0 vencimentos pendentes |
+| ACL remota sensível | 0 funções administrativas executáveis por `anon` |
+| Paridade de Edge Functions | 98/105 HTTP 200; 6 ausentes; 1 timeout |
 
 Os `109` testes ignorados pertencem a contratos que exigem ambiente, personas,
 provedores ou credenciais específicos. Eles não foram contabilizados como
@@ -147,20 +192,19 @@ sucesso.
 
 ## Pendências que dependem do ambiente
 
-1. Aplicar as migrations no banco de construção em ordem e confrontar o ledger.
-2. Configurar no Vault `sicoob_project_url` e
-   `sicoob_approval_worker_secret` e a chave HMAC versionada; publicar as Edge
-   Functions e validar os crons.
-3. Configurar `SICOOB_MALWARE_SCANNER_URL` e
+1. Configurar no Vault `sicoob_project_url` e
+   `sicoob_approval_worker_secret`; confirmar o segredo da chave HMAC ativa;
+   publicar as Edge Functions ausentes e exercitar os crons.
+2. Configurar `SICOOB_MALWARE_SCANNER_URL` e
    `SICOOB_MALWARE_SCANNER_TOKEN` com um scanner privado que devolva parecer
    conclusivo, publicar `sicoob-document-ingest` e executar arquivos EICAR no
    ambiente de construção.
-4. Configurar as personas RLS e os secrets administrativos do GitHub Actions.
-5. Restaurar o orçamento do GitHub Actions e tornar checks obrigatórios na
+3. Configurar as personas RLS e os secrets administrativos do GitHub Actions.
+4. Restaurar o orçamento do GitHub Actions e tornar checks obrigatórios na
    proteção da `main`, inclusive para administradores.
-6. Executar smoke test autenticado no banco de construção, envio real para
+5. Executar smoke test autenticado no banco de construção, envio real para
    provedores de teste e reconciliação de `uncertain`/`failed`.
-7. Confirmar no provedor a rotação da credencial histórica do `migrate-helper`;
+6. Confirmar no provedor a rotação da credencial histórica do `migrate-helper`;
    a baseline por fingerprint já mantém novos achados bloqueados.
 
 ## Gaps ainda abertos
@@ -177,6 +221,6 @@ sucesso.
 - Fixar Actions por SHA e estabelecer orçamento total/por rota do bundle, além
   do limite atual por arquivo.
 
-O lote está validado para revisão e aplicação controlada no ambiente de
-construção. Ele não está validado como produção: ainda não houve migration
-remota, deploy das Edge Functions, tráfego real nem CI remoto verde.
+O lote de banco está aplicado e reconciliado no ambiente de construção. Ele não
+está validado como produção: faltam os segredos operacionais, cinco Edge
+Functions de negócio, scanner homologado, tráfego real e CI remoto verde.

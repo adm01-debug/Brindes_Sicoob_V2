@@ -64,7 +64,8 @@ async function loadSentry(): Promise<SentryModule | null> {
         mod.setUser(bufferedUser);
       }
       while (ERROR_BUFFER.length) {
-        const item = ERROR_BUFFER.shift()!;
+        const item = ERROR_BUFFER.shift();
+        if (!item) continue;
         mod.captureException(item.error, { extra: item.context });
       }
       return mod;
@@ -129,4 +130,3 @@ export function setSentryUser(user: { id: string; email?: string } | null): void
 export function getSentryErrorBoundary(): typeof SentryNS.ErrorBoundary | null {
   return sentryRef?.ErrorBoundary ?? null;
 }
-

@@ -20,6 +20,19 @@ interface SaveTemplateDialogProps {
   areas: PersonalizationArea[];
 }
 
+function SavedAreasSummary({ areas }: { areas: PersonalizationArea[] }) {
+  return (
+    <div className="text-sm text-muted-foreground">
+      <p>Áreas que serão salvas:</p>
+      <ul className="list-disc list-inside mt-1">
+        {areas.map((area) => (
+          <li key={area.id}>{area.name} ({area.logoWidth}x{area.logoHeight}cm)</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function SaveTemplateDialog({
   open,
   onOpenChange,
@@ -47,16 +60,7 @@ export function SaveTemplateDialog({
               onKeyDown={(e) => e.key === "Enter" && onSave()}
             />
           </div>
-          <div className="text-sm text-muted-foreground">
-            <p>Áreas que serão salvas:</p>
-            <ul className="list-disc list-inside mt-1">
-              {areas.map((area) => (
-                <li key={area.id}>
-                  {area.name} ({area.logoWidth}x{area.logoHeight}cm)
-                </li>
-              ))}
-            </ul>
-          </div>
+          <SavedAreasSummary areas={areas} />
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

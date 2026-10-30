@@ -10,14 +10,16 @@ const logoPromises = new Map<string, Promise<string>>();
  * Result is cached for the lifetime of the page.
  */
 export function processLogoTransparent(src: string): Promise<string> {
-  if (logoCache.has(src)) return Promise.resolve(logoCache.get(src)!);
-  if (logoPromises.has(src)) return logoPromises.get(src)!;
+  const cachedLogo = logoCache.get(src);
+  if (cachedLogo) return Promise.resolve(cachedLogo);
+  const pendingLogo = logoPromises.get(src);
+  if (pendingLogo) return pendingLogo;
 
   const promise = fetch(src)
     .then((res) => res.blob())
     .then(
       (blob) =>
-        new Promise<string>((resolve, reject) => {
+        new Promise<string>((resolve) => {
           const objectUrl = URL.createObjectURL(blob);
           const img = new Image();
           img.onload = () => {
@@ -30,7 +32,7 @@ export function processLogoTransparent(src: string): Promise<string> {
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const d = imageData.data;
             for (let i = 0; i < d.length; i += 4) {
-              const r = d[i]!, g = d[i + 1]!, b = d[i + 2]!;
+              const r = d[i] ?? 0, g = d[i + 1] ?? 0, b = d[i + 2] ?? 0;
               // Threshold 235 catches off-white anti-alias edges
               if (r > 235 && g > 235 && b > 235) d[i + 3] = 0;
             }
@@ -61,8 +63,9 @@ export function LogoWithTransparentBg({ src, style, alt }: Props) {
   const [dataUrl, setDataUrl] = useState<string>(() => logoCache.get(src) ?? "");
 
   useEffect(() => {
-    if (logoCache.has(src)) {
-      setDataUrl(logoCache.get(src)!);
+    const cachedLogo = logoCache.get(src);
+    if (cachedLogo) {
+      setDataUrl(cachedLogo);
       return;
     }
     processLogoTransparent(src).then(setDataUrl);

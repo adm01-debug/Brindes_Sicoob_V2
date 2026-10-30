@@ -3,10 +3,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { diagnostics } from '@/lib/diagnostics';
 import { reportError } from '@/lib/error-reporter';
-import { Database } from '@/integrations/supabase/types';
+import { type Database } from '@/integrations/supabase/types';
 
 type AllowedIP = Database['public']['Tables']['ip_whitelist']['Row'];
 
+const UNKNOWN_ERROR_MESSAGE = 'Erro desconhecido';
 
 export function useAllowedIPs(targetUserId?: string) {
   const { user } = useAuth();
@@ -83,7 +84,7 @@ export function useAllowedIPs(targetUserId?: string) {
       await fetchAllowedIPs();
       return { success: true };
     } catch (error: unknown) {
-      return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' };
+      return { success: false, error: error instanceof Error ? error.message : UNKNOWN_ERROR_MESSAGE };
     }
   }, [userId, user, fetchAllowedIPs]);
 
@@ -101,7 +102,7 @@ export function useAllowedIPs(targetUserId?: string) {
       await fetchAllowedIPs();
       return { success: true };
     } catch (error: unknown) {
-      return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' };
+      return { success: false, error: error instanceof Error ? error.message : UNKNOWN_ERROR_MESSAGE };
     }
   }, [fetchAllowedIPs]);
 
@@ -120,7 +121,7 @@ export function useAllowedIPs(targetUserId?: string) {
       await fetchAllowedIPs();
       return { success: true };
     } catch (error: unknown) {
-      return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' };
+      return { success: false, error: error instanceof Error ? error.message : UNKNOWN_ERROR_MESSAGE };
     }
   }, [fetchAllowedIPs]);
 

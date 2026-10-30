@@ -3,7 +3,7 @@
  * Manages product loading, client search, generation, and history.
  * Generation logic delegated to useMagicUpGeneration.
  */
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, type ChangeEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,13 +11,15 @@ import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAriaLive } from "@/components/a11y";
 import { useProductCustomizationOptionsForMockup } from "@/hooks/useMockupTechniques";
-import { searchCrm, selectCrmById } from "@/lib/crm-db";
+import { searchCrm } from "@/lib/crm-db";
 import { getCompanyDisplayName, type CrmCompany } from "@/types/crm";
 import type { AreaShape, PrintAreaWithTechniques } from "@/types/gravacao";
 import type { ScenePrompt } from "@/components/magic-up/PromptBank";
 import type { GenerationHistoryItem } from "@/components/magic-up/AdImageResult";
 import { useMagicUpGeneration } from "./useMagicUpGeneration";
 import { DEFAULT_BRAND_KIT, DEFAULT_BRIEF, DEFAULT_CAMPAIGN, DEFAULT_CREATIVE_CONTROLS, buildBrandKitNotes, buildCopyPack, buildMagicScore, campaignFromBrief, type MagicUpBatchVariant, type MagicUpBrandKit, type MagicUpBrandLogo, type MagicUpBrief, type MagicUpCampaign, type MagicUpCampaignStatus, type MagicUpCreativeControls, type MagicUpCurationStatus, type MagicUpQualityDiagnosis, type MagicUpRefinement } from "@/pages/magic-up/magicUpStrategy";
+
+const ID_AND_UPDATED_AT_SELECT = "id, updated_at";
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -69,10 +71,172 @@ export interface VariationItem {
   isWinner?: boolean;
 }
 
+function valueOr<T>(value: T | null | undefined | false | "" | 0, fallback: T): T {
+  return value ? value as T : fallback;
+}
+
+interface BrandKitRow {
+  id: string;
+  client_id: string;
+  client_name: string;
+  logo_urls: unknown;
+  primary_color: string | null;
+  secondary_color: string | null;
+  tone_of_voice: string | null;
+  visual_style: string | null;
+  required_words: string[] | null;
+  forbidden_words: string[] | null;
+  notes: string | null;
+  updated_at: string;
+}
+
+function mapBrandKit(row: BrandKitRow, client: SelectedClient): MagicUpBrandKit {
+  const logos = Array.isArray(row.logo_urls) ? row.logo_urls as MagicUpBrandLogo[] : [];
+  const primaryLogo = logos.find((logo) => logo.isPrimary);
+  return {
+    id: row.id,
+    clientId: row.client_id,
+    clientName: row.client_name,
+    primaryLogoUrl: valueOr(primaryLogo?.url, valueOr(logos[0]?.url, valueOr(client.logo_url, null))),
+    logoUrls: logos,
+    primaryColor: row.primary_color,
+    secondaryColor: row.secondary_color,
+    toneOfVoice: valueOr(row.tone_of_voice, DEFAULT_BRAND_KIT.toneOfVoice),
+    visualStyle: valueOr(row.visual_style, DEFAULT_BRAND_KIT.visualStyle),
+    requiredWords: valueOr(row.required_words, []),
+    forbiddenWords: valueOr(row.forbidden_words, []),
+    notes: valueOr(row.notes, ""),
+    updatedAt: row.updated_at,
+  };
+}
+
+async function fetchBrandKit(
+  userId: string | undefined,
+  client: SelectedClient | null,
+): Promise<MagicUpBrandKit | null> {
+  if (!userId || !client) return null;
+  const { data, error } = await supabase
+    .from("magic_up_brand_kits")
+    .select("id, client_id, client_name, logo_urls, primary_color, secondary_color, tone_of_voice, visual_style, required_words, forbidden_words, notes, updated_at")
+    .eq("user_id", userId)
+    .eq("client_id", client.id)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapBrandKit(data as BrandKitRow, client) : null;
+}
+
+function selectCurrentImage(
+  images: ProductImage[],
+  color: ProductColor | null,
+  product: MagicUpProduct | null,
+): string | null {
+  if (images.length === 0) return valueOr(product?.primary_image_url, null);
+  if (color?.code) {
+    const match = images.find((image) => image.supplierCode === color.code);
+    if (match) return match.url;
+  }
+  const preferred = images.find((image) => image.isOgImage) || images.find((image) => image.isPrimary);
+  return valueOr(preferred?.url, valueOr(images[0]?.url, null));
+}
+
+interface PromptPreviewParams {
+  product: MagicUpProduct;
+  effectivePrompt: string;
+  brief: MagicUpBrief;
+  creativeControls: MagicUpCreativeControls;
+  activeRefinement: MagicUpRefinement | null;
+  brandNotes: string;
+  selectedColor: ProductColor | null;
+  selectedTechnique: Technique | null;
+  selectedLocationName: string | null;
+  selectedClient: SelectedClient | null;
+}
+
+function clientPromptLine(client: SelectedClient | null): string {
+  if (!client) return "";
+  const industry = client.ramo_atividade ? ` (${client.ramo_atividade})` : "";
+  return `CLIENTE: ${client.name}${industry}`;
+}
+
+function brandColorPromptLine(client: SelectedClient | null): string {
+  if (!client?.cor_primaria_hex) return "";
+  return `COR DA MARCA: ${valueOr(client.cor_primaria_nome, client.cor_primaria_hex)}`;
+}
+
+function buildFullPromptPreview(params: PromptPreviewParams): string {
+  const { product, brief, creativeControls } = params;
+  const refinement = valueOr(params.activeRefinement?.instruction, "Nenhum");
+  const brand = params.brandNotes ? `DIRETRIZES DA MARCA: ${params.brandNotes}` : "";
+  const color = params.selectedColor ? ` (${params.selectedColor.name})` : "";
+  const technique = valueOr(params.selectedTechnique?.name, "Não especificada");
+  const location = valueOr(params.selectedLocationName, "Não especificado");
+  return `BRIEFING: objetivo=${brief.objective}; canal=${brief.channel}; público=${brief.audience}; tom=${brief.tone}; CTA=${brief.cta}; ocasião=${brief.occasion}
+CONTROLE CRIATIVO: modo=${creativeControls.creativeMode}; composição=${creativeControls.composition}; formato=${creativeControls.aspectRatio}; qualidade=${creativeControls.qualityMode}; evitar=${creativeControls.negativePrompt.join(", ")}
+REFINAMENTO: ${refinement}
+${brand}
+PRODUTO: ${product.name}${color}
+TÉCNICA: ${technique} @ ${location}
+${clientPromptLine(params.selectedClient)}
+${brandColorPromptLine(params.selectedClient)}
+CENÁRIO: ${params.effectivePrompt}`;
+}
+
+function resolveCampaignDraft(
+  campaign: MagicUpCampaign | null,
+  brief: MagicUpBrief,
+  client: SelectedClient | null,
+  product: MagicUpProduct | null,
+): MagicUpCampaign {
+  if (campaign) return campaign;
+  return campaignFromBrief({
+    brief,
+    clientId: client?.id,
+    clientName: client?.name,
+    productName: product?.name,
+  });
+}
+
+function campaignPayload(
+  draft: MagicUpCampaign,
+  client: SelectedClient | null,
+  product: MagicUpProduct | null,
+  brandNotes: string,
+) {
+  return {
+    title: valueOr(draft.title, DEFAULT_CAMPAIGN.title),
+    client_id: valueOr(client?.id, draft.clientId),
+    client_name: valueOr(client?.name, draft.clientName),
+    objective: draft.objective,
+    channel: draft.channel,
+    audience: draft.audience,
+    tone: draft.tone,
+    cta: draft.cta,
+    occasion: draft.occasion,
+    status: draft.status,
+    metadata: { source: "magic-up", brand_notes: brandNotes, product_id: valueOr(product?.id, null) },
+  };
+}
+
+function entityId(entity: { id: string } | null): string | undefined {
+  return entity ? entity.id : undefined;
+}
+
+function arrayOrEmpty<T>(items: T[] | undefined): T[] {
+  return items || [];
+}
+
+function magicUpStep(product: MagicUpProduct | null, logo: string | null, prompt: string): number {
+  if (!product) return 1;
+  if (!logo) return 2;
+  if (!prompt) return 3;
+  return 4;
+}
+
 // ─── Hook ────────────────────────────────────────────────────────────
 
 export function useMagicUpState() {
   const { user } = useAuth();
+  const userId = entityId(user);
   const { announceStatus, announceAlert } = useAriaLive();
   const queryClient = useQueryClient();
 
@@ -80,13 +244,14 @@ export function useMagicUpState() {
   const [products, setProducts] = useState<MagicUpProduct[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<MagicUpProduct | null>(null);
+  const selectedProductId = entityId(selectedProduct);
   const [colors, setColors] = useState<ProductColor[]>([]);
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
   const [selectedColor, setSelectedColor] = useState<ProductColor | null>(null);
   const [loadingColors, setLoadingColors] = useState(false);
 
   // Technique & Location
-  const { data: customizationData, isLoading: loadingCustomization } = useProductCustomizationOptionsForMockup(selectedProduct?.id);
+  const { data: customizationData, isLoading: loadingCustomization } = useProductCustomizationOptionsForMockup(selectedProductId);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
   const [selectedTechnique, setSelectedTechnique] = useState<Technique | null>(null);
 
@@ -110,6 +275,7 @@ export function useMagicUpState() {
 
   // Client (CRM externo)
   const [selectedClient, setSelectedClient] = useState<SelectedClient | null>(null);
+  const selectedClientId = entityId(selectedClient);
   const [clientSearch, setClientSearch] = useState("");
   const [debouncedClientSearch, setDebouncedClientSearch] = useState("");
   const [showClientResults, setShowClientResults] = useState(false);
@@ -120,7 +286,7 @@ export function useMagicUpState() {
     return () => clearTimeout(t);
   }, [clientSearch]);
 
-  const { data: clientResults = [], isLoading: loadingClients } = useQuery({
+  const clientQuery = useQuery({
     queryKey: ["magic-up-clients", debouncedClientSearch],
     queryFn: async () => {
       if (debouncedClientSearch.length < 3) return [];
@@ -134,26 +300,29 @@ export function useMagicUpState() {
     },
     enabled: debouncedClientSearch.length >= 3,
   });
+  const clientResults = arrayOrEmpty(clientQuery.data);
+  const loadingClients = clientQuery.isLoading;
 
   // ─── Load History ──────────────────────────────────────────────
-  const { data: history = [] } = useQuery<GenerationHistoryItem[]>({
-    queryKey: ["magic-up-history", user?.id],
+  const historyQuery = useQuery<GenerationHistoryItem[]>({
+    queryKey: ["magic-up-history", userId],
     queryFn: async () => {
-      if (!user?.id) return [];
-      const { data } = await supabase.from("magic_up_generations").select("id, generated_image_url, product_name, scene_title, scene_category, is_favorite, created_at, client_name, quality_score, status, channel, aspect_ratio, metadata, copy_pack").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50);
+      if (!userId) return [];
+      const { data } = await supabase.from("magic_up_generations").select("id, generated_image_url, product_name, scene_title, scene_category, is_favorite, created_at, client_name, quality_score, status, channel, aspect_ratio, metadata, copy_pack").eq("user_id", userId).order("created_at", { ascending: false }).limit(50);
       return (data || []) as GenerationHistoryItem[];
     },
-    enabled: !!user?.id,
+    enabled: Boolean(userId),
   });
+  const history = arrayOrEmpty(historyQuery.data);
 
-  const { data: campaigns = [] } = useQuery<MagicUpCampaign[]>({
-    queryKey: ["magic-up-campaigns", user?.id],
+  const campaignsQuery = useQuery<MagicUpCampaign[]>({
+    queryKey: ["magic-up-campaigns", userId],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!userId) return [];
       const { data, error } = await supabase
         .from("magic_up_campaigns")
         .select("id, title, status, client_id, client_name, objective, channel, audience, tone, cta, occasion, created_at, updated_at")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .order("updated_at", { ascending: false })
         .limit(30);
       if (error) throw error;
@@ -173,39 +342,14 @@ export function useMagicUpState() {
         updatedAt: row.updated_at,
       }));
     },
-    enabled: !!user?.id,
+    enabled: Boolean(userId),
   });
+  const campaigns = arrayOrEmpty(campaignsQuery.data);
 
   const { data: loadedBrandKit, isFetching: loadingBrandKit } = useQuery<MagicUpBrandKit | null>({
-    queryKey: ["magic-up-brand-kit", user?.id, selectedClient?.id],
-    queryFn: async () => {
-      if (!user?.id || !selectedClient?.id) return null;
-      const { data, error } = await supabase
-        .from("magic_up_brand_kits")
-        .select("id, client_id, client_name, logo_urls, primary_color, secondary_color, tone_of_voice, visual_style, required_words, forbidden_words, notes, updated_at")
-        .eq("user_id", user.id)
-        .eq("client_id", selectedClient.id)
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) return null;
-      const logos = Array.isArray(data.logo_urls) ? data.logo_urls as unknown as MagicUpBrandLogo[] : [];
-      return {
-        id: data.id,
-        clientId: data.client_id,
-        clientName: data.client_name,
-        primaryLogoUrl: logos.find((logo) => logo.isPrimary)?.url || logos[0]?.url || selectedClient.logo_url || null,
-        logoUrls: logos,
-        primaryColor: data.primary_color,
-        secondaryColor: data.secondary_color,
-        toneOfVoice: data.tone_of_voice || DEFAULT_BRAND_KIT.toneOfVoice,
-        visualStyle: data.visual_style || DEFAULT_BRAND_KIT.visualStyle,
-        requiredWords: data.required_words || [],
-        forbiddenWords: data.forbidden_words || [],
-        notes: data.notes || "",
-        updatedAt: data.updated_at,
-      };
-    },
-    enabled: !!user?.id && !!selectedClient?.id,
+    queryKey: ["magic-up-brand-kit", userId, selectedClientId],
+    queryFn: () => fetchBrandKit(userId, selectedClient),
+    enabled: Boolean(userId) && Boolean(selectedClientId),
   });
 
   // ─── Load Products ──────────────────────────────────────────────
@@ -257,7 +401,7 @@ export function useMagicUpState() {
       } catch { setColors([]); setProductImages([]); }
       finally { setLoadingColors(false); }
     })();
-  }, [selectedProduct?.id]);
+  }, [selectedProduct, selectedProductId]);
 
   // ─── Print Areas from customization data ───────────────────────
   const printAreas = useMemo((): PrintAreaWithTechniques[] => {
@@ -305,9 +449,7 @@ export function useMagicUpState() {
 
   // ─── Current preview image ─────────────────────────────────────
   const currentImage = useMemo(() => {
-    if (productImages.length === 0) return selectedProduct?.primary_image_url || null;
-    if (selectedColor?.code) { const match = productImages.find(img => img.supplierCode === selectedColor.code); if (match) return match.url; }
-    return productImages.find(i => i.isOgImage)?.url || productImages.find(i => i.isPrimary)?.url || productImages[0]?.url || null;
+    return selectCurrentImage(productImages, selectedColor, selectedProduct);
   }, [productImages, selectedColor, selectedProduct]);
 
   const selectedLocationName = useMemo(() => {
@@ -326,15 +468,11 @@ export function useMagicUpState() {
 
   const fullPromptPreview = useMemo(() => {
     if (!selectedProduct || !effectivePrompt) return "";
-    return `BRIEFING: objetivo=${brief.objective}; canal=${brief.channel}; público=${brief.audience}; tom=${brief.tone}; CTA=${brief.cta}; ocasião=${brief.occasion}
-CONTROLE CRIATIVO: modo=${creativeControls.creativeMode}; composição=${creativeControls.composition}; formato=${creativeControls.aspectRatio}; qualidade=${creativeControls.qualityMode}; evitar=${creativeControls.negativePrompt.join(", ")}
-REFINAMENTO: ${activeRefinement?.instruction || "Nenhum"}
-${brandNotes ? `DIRETRIZES DA MARCA: ${brandNotes}` : ""}
-PRODUTO: ${selectedProduct.name}${selectedColor ? ` (${selectedColor.name})` : ""}
-TÉCNICA: ${selectedTechnique?.name || "Não especificada"} @ ${selectedLocationName || "Não especificado"}
-${selectedClient ? `CLIENTE: ${selectedClient.name}${selectedClient.ramo_atividade ? ` (${selectedClient.ramo_atividade})` : ""}` : ""}
-${selectedClient?.cor_primaria_hex ? `COR DA MARCA: ${selectedClient.cor_primaria_nome || selectedClient.cor_primaria_hex}` : ""}
-CENÁRIO: ${effectivePrompt}`;
+    return buildFullPromptPreview({
+      product: selectedProduct, effectivePrompt, brief, creativeControls,
+      activeRefinement, brandNotes, selectedColor, selectedTechnique,
+      selectedLocationName, selectedClient,
+    });
   }, [brief, creativeControls, activeRefinement, brandNotes, selectedProduct, selectedColor, selectedTechnique, selectedLocationName, effectivePrompt, selectedClient]);
 
   const qualityScore = useMemo(() => buildMagicScore({
@@ -373,30 +511,18 @@ CENÁRIO: ${effectivePrompt}`;
   }, [announceStatus]);
 
   const handleSaveCampaign = useCallback(async () => {
-    if (!user?.id) { toast.error("Faça login para salvar campanhas"); announceAlert("Login necessário para salvar campanha"); return; }
-    const draft = activeCampaign ?? campaignFromBrief({ brief, clientId: selectedClient?.id, clientName: selectedClient?.name, productName: selectedProduct?.name });
-    const basePayload = {
-      title: draft.title || DEFAULT_CAMPAIGN.title,
-      client_id: selectedClient?.id || draft.clientId,
-      client_name: selectedClient?.name || draft.clientName,
-      objective: draft.objective,
-      channel: draft.channel,
-      audience: draft.audience,
-      tone: draft.tone,
-      cta: draft.cta,
-      occasion: draft.occasion,
-      status: draft.status,
-      metadata: { source: "magic-up", brand_notes: brandNotes, product_id: selectedProduct?.id || null },
-    };
+    if (!userId) { toast.error("Faça login para salvar campanhas"); announceAlert("Login necessário para salvar campanha"); return; }
+    const draft = resolveCampaignDraft(activeCampaign, brief, selectedClient, selectedProduct);
+    const basePayload = campaignPayload(draft, selectedClient, selectedProduct, brandNotes);
     const result = draft.id
-      ? await supabase.from("magic_up_campaigns").update(basePayload satisfies TablesUpdate<"magic_up_campaigns">).eq("id", draft.id).select("id, updated_at").single()
-      : await supabase.from("magic_up_campaigns").insert({ ...basePayload, user_id: user.id } satisfies TablesInsert<"magic_up_campaigns">).select("id, created_at, updated_at").single();
+      ? await supabase.from("magic_up_campaigns").update(basePayload satisfies TablesUpdate<"magic_up_campaigns">).eq("id", draft.id).select(ID_AND_UPDATED_AT_SELECT).single()
+      : await supabase.from("magic_up_campaigns").insert({ ...basePayload, user_id: userId } satisfies TablesInsert<"magic_up_campaigns">).select("id, created_at, updated_at").single();
     if (result.error) { toast.error("Erro ao salvar campanha"); announceAlert("Erro ao salvar campanha"); return; }
-    setActiveCampaign({ ...draft, id: result.data.id, clientId: basePayload.client_id || null, clientName: basePayload.client_name || null, updatedAt: result.data.updated_at });
+    setActiveCampaign({ ...draft, id: result.data.id, clientId: valueOr(basePayload.client_id, null), clientName: valueOr(basePayload.client_name, null), updatedAt: result.data.updated_at });
     queryClient.invalidateQueries({ queryKey: ["magic-up-campaigns"] });
     toast.success("Campanha salva");
     announceStatus("Campanha salva com sucesso");
-  }, [activeCampaign, announceAlert, announceStatus, brandNotes, brief, queryClient, selectedClient, selectedProduct, user?.id]);
+  }, [activeCampaign, announceAlert, announceStatus, brandNotes, brief, queryClient, selectedClient, selectedProduct, userId]);
 
   const handleUpdateBrandKit = useCallback((patch: Partial<MagicUpBrandKit>) => {
     setBrandKit((current) => {
@@ -419,19 +545,19 @@ CENÁRIO: ${effectivePrompt}`;
   }, [brandKit.logoUrls, brandKit.primaryLogoUrl, handleUpdateBrandKit, logoPreview]);
 
   const handleSaveBrandKit = useCallback(async () => {
-    if (!user?.id) { toast.error("Faça login para salvar Brand Kit"); announceAlert("Login necessário para salvar Brand Kit"); return; }
-    if (!selectedClient?.id) { toast.error("Selecione uma empresa para salvar o Brand Kit"); announceAlert("Selecione uma empresa para salvar Brand Kit"); return; }
+    if (!userId) { toast.error("Faça login para salvar Brand Kit"); announceAlert("Login necessário para salvar Brand Kit"); return; }
+    if (!selectedClient) { toast.error("Selecione uma empresa para salvar o Brand Kit"); announceAlert("Selecione uma empresa para salvar Brand Kit"); return; }
     const logos = brandKit.logoUrls.length ? brandKit.logoUrls : logoPreview ? [{ id: "current-logo", label: "Logo atual", url: logoPreview, variant: "principal" as const, isPrimary: true }] : [];
     const payload = { client_id: selectedClient.id, client_name: selectedClient.name, logo_urls: logos, primary_color: brandKit.primaryColor, secondary_color: brandKit.secondaryColor, tone_of_voice: brandKit.toneOfVoice, visual_style: brandKit.visualStyle, required_words: brandKit.requiredWords, forbidden_words: brandKit.forbiddenWords, notes: brandKit.notes, metadata: { source: "magic-up" } };
     const result = brandKit.id
-      ? await supabase.from("magic_up_brand_kits").update(payload satisfies TablesUpdate<"magic_up_brand_kits">).eq("id", brandKit.id).select("id, updated_at").single()
-      : await supabase.from("magic_up_brand_kits").insert({ ...payload, user_id: user.id } satisfies TablesInsert<"magic_up_brand_kits">).select("id, updated_at").single();
+      ? await supabase.from("magic_up_brand_kits").update(payload satisfies TablesUpdate<"magic_up_brand_kits">).eq("id", brandKit.id).select(ID_AND_UPDATED_AT_SELECT).single()
+      : await supabase.from("magic_up_brand_kits").insert({ ...payload, user_id: userId } satisfies TablesInsert<"magic_up_brand_kits">).select(ID_AND_UPDATED_AT_SELECT).single();
     if (result.error) { toast.error("Erro ao salvar Brand Kit"); announceAlert("Erro ao salvar Brand Kit"); return; }
     setBrandKit((current) => ({ ...current, ...payload, id: result.data.id, clientId: selectedClient.id, clientName: selectedClient.name, primaryLogoUrl: logos.find((logo) => logo.isPrimary)?.url || logos[0]?.url || null, logoUrls: logos, updatedAt: result.data.updated_at }));
     queryClient.invalidateQueries({ queryKey: ["magic-up-brand-kit"] });
     toast.success("Brand Kit salvo");
     announceStatus("Brand Kit salvo com sucesso");
-  }, [announceAlert, announceStatus, brandKit, logoPreview, queryClient, selectedClient, user?.id]);
+  }, [announceAlert, announceStatus, brandKit, logoPreview, queryClient, selectedClient, userId]);
 
   const handleApplyRefinement = useCallback((refinement: MagicUpRefinement) => {
     setActiveRefinement(refinement);
@@ -445,7 +571,7 @@ CENÁRIO: ${effectivePrompt}`;
   // ─── Generation (delegated) ────────────────────────────────────
   const generation = useMagicUpGeneration({
     selectedProduct, currentImage, logoPreview, effectivePrompt,
-    selectedColor, selectedTechnique, selectedLocationName, selectedScene, selectedClient, userId: user?.id,
+    selectedColor, selectedTechnique, selectedLocationName, selectedScene, selectedClient, userId,
     brief, creativeControls, qualityScore, copyPack, fullPromptPreview, activeCampaign, brandKit, brandNotes, activeRefinement,
   });
 
@@ -486,7 +612,7 @@ CENÁRIO: ${effectivePrompt}`;
   }, [announceStatus, generation]);
 
   // ─── Handlers ──────────────────────────────────────────────────
-  const handleLogoUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) { toast.error("Selecione uma imagem válida"); return; }
@@ -502,13 +628,14 @@ CENÁRIO: ${effectivePrompt}`;
     if (company.logo_url && !logoPreview) setLogoPreview(company.logo_url);
   }, [logoPreview]);
 
+  const { setActiveVariation, setVariations } = generation;
   const handleSelectProduct = useCallback((p: MagicUpProduct | null) => {
-    setSelectedProduct(p); setSelectedColor(null); generation.setVariations([]); generation.setActiveVariation(0);
-  }, [generation.setActiveVariation, generation.setVariations]);
+    setSelectedProduct(p); setSelectedColor(null); setVariations([]); setActiveVariation(0);
+  }, [setActiveVariation, setVariations]);
 
   const handleClearClient = useCallback(() => { setSelectedClient(null); setLogoPreview(null); }, []);
 
-  const step = !selectedProduct ? 1 : !logoPreview ? 2 : !effectivePrompt ? 3 : 4;
+  const step = magicUpStep(selectedProduct, logoPreview, effectivePrompt);
 
   return {
     products, loadingProducts, selectedProduct, colors, productImages,

@@ -214,6 +214,15 @@ interface PresetParams {
   sl: number; // Secondary lightness
 }
 
+const LIGHT_FOREGROUND = '222 25% 10%';
+const DARK_FOREGROUND = '210 40% 98%';
+const DARK_SURFACE_HOVER = '240 5% 12%';
+const PRIDE_PRIMARY = '330 85% 60%';
+const GX_ELEVATED_SURFACE = '265 18% 17%';
+const GX_BORDER = '265 18% 22%';
+const FONT_SANS_PROPERTY = '--font-sans';
+const FONT_DISPLAY_PROPERTY = '--font-display';
+
 /**
  * buildPreset — Factory for generating consistent theme variables.
  * Ensures accessibility compliance by calculating light/dark variants from HSL base.
@@ -239,12 +248,12 @@ function buildPreset(p: PresetParams): ThemePreset {
 
   const light: ThemeModeColors = {
     background: `${h} 20% 97%`,
-    foreground: '222 25% 10%',
+    foreground: LIGHT_FOREGROUND,
     card: '0 0% 100%',
-    'card-foreground': '222 25% 10%',
+    'card-foreground': LIGHT_FOREGROUND,
     'card-elevated': '0 0% 100%',
     popover: '0 0% 100%',
-    'popover-foreground': '222 25% 10%',
+    'popover-foreground': LIGHT_FOREGROUND,
     primary,
     'primary-foreground': '0 0% 100%',
     'primary-hover': primaryHover,
@@ -270,7 +279,7 @@ function buildPreset(p: PresetParams): ThemePreset {
     'orange-glow': primaryGlow,
     'orange-foreground': '0 0% 100%',
     'sidebar-background': `${h} 14% 98%`,
-    'sidebar-foreground': '222 25% 10%',
+    'sidebar-foreground': LIGHT_FOREGROUND,
     'sidebar-primary': primary,
     'sidebar-primary-foreground': '0 0% 100%',
     'sidebar-accent': `${h} 14% 93%`,
@@ -308,12 +317,12 @@ function buildPreset(p: PresetParams): ThemePreset {
 
   const dark: ThemeModeColors = {
     background: '240 6% 6%',
-    foreground: '210 40% 98%',
+    foreground: DARK_FOREGROUND,
     card: '240 5% 10%',
-    'card-foreground': '210 40% 98%',
+    'card-foreground': DARK_FOREGROUND,
     'card-elevated': '240 5% 13%',
     popover: '240 5% 10%',
-    'popover-foreground': '210 40% 98%',
+    'popover-foreground': DARK_FOREGROUND,
     primary,
     'primary-foreground': '0 0% 100%',
     'primary-hover': primaryHover,
@@ -324,12 +333,12 @@ function buildPreset(p: PresetParams): ThemePreset {
     muted: '240 4% 18%',
     'muted-foreground': '215 20% 75%',
     accent: '240 5% 16%',
-    'accent-foreground': '210 40% 98%',
+    'accent-foreground': DARK_FOREGROUND,
     border: '240 4% 18%',
     input: '240 5% 14%',
     ring: primary,
     surface: '240 5% 9%',
-    'surface-hover': '240 5% 12%',
+    'surface-hover': DARK_SURFACE_HOVER,
     'text-secondary': '215 20% 72%',
     interactive: primary,
     divider: '240 4% 20%',
@@ -339,14 +348,14 @@ function buildPreset(p: PresetParams): ThemePreset {
     'orange-glow': primaryGlow,
     'orange-foreground': '0 0% 100%',
     'sidebar-background': '240 6% 5%',
-    'sidebar-foreground': '210 40% 98%',
+    'sidebar-foreground': DARK_FOREGROUND,
     'sidebar-primary': primary,
     'sidebar-primary-foreground': '0 0% 100%',
-    'sidebar-accent': '240 5% 12%',
-    'sidebar-accent-foreground': '210 40% 98%',
+    'sidebar-accent': DARK_SURFACE_HOVER,
+    'sidebar-accent-foreground': DARK_FOREGROUND,
     'sidebar-border': '240 4% 14%',
     'sidebar-ring': primary,
-    elevated: '240 5% 12%',
+    elevated: DARK_SURFACE_HOVER,
     'elevated-hover': '240 5% 15%',
     // Glass — dark mode with primary tint
     'glass-bg': '240 6% 8% / 0.85',
@@ -483,7 +492,7 @@ const diversityPreset: ThemePreset = {
   dark: {
     ...diversityBase.dark,
     // === SLOTS SEMÂNTICOS DISTRIBUÍDOS ===
-    primary: '330 85% 60%',
+    primary: PRIDE_PRIMARY,
     'primary-foreground': '0 0% 100%',
     'primary-hover': '330 85% 55%',
     'primary-active': '330 85% 50%',
@@ -492,19 +501,19 @@ const diversityPreset: ThemePreset = {
     'secondary-foreground': '0 0% 100%',
     accent: '280 50% 22%',
     'accent-foreground': '290 85% 78%',
-    ring: '330 85% 60%',
-    interactive: '330 85% 60%',
+    ring: PRIDE_PRIMARY,
+    interactive: PRIDE_PRIMARY,
     orange: PRIDE_ORANGE,
     'orange-hover': '30 90% 50%',
     'orange-active': '30 90% 45%',
     'orange-glow': '30 90% 65%',
     'orange-foreground': '0 0% 100%',
-    'sidebar-primary': '330 85% 60%',
+    'sidebar-primary': PRIDE_PRIMARY,
     'sidebar-primary-foreground': '0 0% 100%',
     'sidebar-accent': '280 50% 18%',
     'sidebar-accent-foreground': '290 85% 78%',
     'sidebar-border': '330 30% 18%',
-    'sidebar-ring': '330 85% 60%',
+    'sidebar-ring': PRIDE_PRIMARY,
     // === GRADIENTES — TODOS RAINBOW ===
     'gradient-primary': rainbowGrad,
     'gradient-secondary': rainbowGrad,
@@ -519,7 +528,7 @@ const diversityPreset: ThemePreset = {
     'shadow-glow-secondary': `0 0 28px hsl(${PRIDE_GREEN} / 0.4)`,
     'shadow-glow-success': `0 0 28px hsl(${PRIDE_GREEN} / 0.4)`,
     'shadow-glow-warning': `0 0 28px hsl(${PRIDE_YELLOW} / 0.4)`,
-    'chart-1': '330 85% 60%',
+    'chart-1': PRIDE_PRIMARY,
   },
 };
 
@@ -549,22 +558,22 @@ function applyGxDarkSurfaces(preset: ThemePreset): ThemePreset {
   const d = preset.dark;
   d.background = '265 22% 8%';
   d.card = '265 22% 12%';
-  d['card-elevated'] = '265 18% 17%';
+  d['card-elevated'] = GX_ELEVATED_SURFACE;
   d.popover = '265 22% 14%';
-  d.muted = '265 18% 17%';
-  d.input = '265 18% 17%';
-  d.border = '265 18% 22%';
-  d.secondary = '265 18% 17%';
-  d.accent = '265 18% 17%';
+  d.muted = GX_ELEVATED_SURFACE;
+  d.input = GX_ELEVATED_SURFACE;
+  d.border = GX_BORDER;
+  d.secondary = GX_ELEVATED_SURFACE;
+  d.accent = GX_ELEVATED_SURFACE;
   // Promo Gifts-specific tokens (não existem no Zapp): mantemos a família 265
   d.surface = '265 22% 10%';
-  d['surface-hover'] = '265 18% 17%';
-  d.divider = '265 18% 22%';
+  d['surface-hover'] = GX_ELEVATED_SURFACE;
+  d.divider = GX_BORDER;
   d['sidebar-background'] = '265 24% 10%';
   d['sidebar-accent'] = '265 18% 18%';
   d['sidebar-border'] = '265 18% 20%';
-  d.elevated = '265 18% 17%';
-  d['elevated-hover'] = '265 18% 22%';
+  d.elevated = GX_ELEVATED_SURFACE;
+  d['elevated-hover'] = GX_BORDER;
   d['gradient-surface'] = 'linear-gradient(180deg, hsl(265 22% 12%), hsl(265 24% 8%))';
   return preset;
 }
@@ -988,11 +997,11 @@ export function applyThemePreset(presetId: string, mode: 'light' | 'dark'): void
   // Restaura para o valor padrão (Plus Jakarta Sans + Outfit) se a skin não
   // declara fonte, garantindo que classics revertam o efeito GX.
   if (preset.font) {
-    root.style.setProperty('--font-sans', preset.font);
-    root.style.setProperty('--font-display', preset.font);
+    root.style.setProperty(FONT_SANS_PROPERTY, preset.font);
+    root.style.setProperty(FONT_DISPLAY_PROPERTY, preset.font);
   } else {
-    root.style.setProperty('--font-sans', DEFAULT_FONT_SANS);
-    root.style.setProperty('--font-display', DEFAULT_FONT_DISPLAY);
+    root.style.setProperty(FONT_SANS_PROPERTY, DEFAULT_FONT_SANS);
+    root.style.setProperty(FONT_DISPLAY_PROPERTY, DEFAULT_FONT_DISPLAY);
   }
 
   // Per-preset radius override (Opera GX skins → 4px angular).
@@ -1014,8 +1023,8 @@ export function clearThemeOverrides(): void {
   const root = document.documentElement;
   CSS_VARS_TO_APPLY.forEach((key) => root.style.removeProperty(`--${key}`));
   root.style.removeProperty('--radius');
-  root.style.removeProperty('--font-sans');
-  root.style.removeProperty('--font-display');
+  root.style.removeProperty(FONT_SANS_PROPERTY);
+  root.style.removeProperty(FONT_DISPLAY_PROPERTY);
 }
 
 export function exportThemeConfig(config: ThemeConfig): string {

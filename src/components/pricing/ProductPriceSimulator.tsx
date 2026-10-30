@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { type ElementType, useState, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -34,7 +34,7 @@ function StepProgressBar({
   steps,
   currentStep,
 }: {
-  steps: { number: number; label: string; icon: React.ElementType }[];
+  steps: { number: number; label: string; icon: ElementType }[];
   currentStep: number;
 }) {
   return (
@@ -87,6 +87,102 @@ function StepProgressBar({
   );
 }
 
+function ProductStep({ product, onSelect }: { readonly product: Product | null; readonly onSelect: (product: Product | null) => void }) {
+  return (
+    <div className="space-y-3 animate-fade-in">
+      <div className="flex items-center justify-between"><h3 className="font-display font-medium flex items-center gap-2"><Package className="w-4 h-4 text-primary" />1. Selecione o Produto</h3>{product && <Button variant="ghost" size="sm" onClick={() => onSelect(null)}>Alterar</Button>}</div>
+      {!product && <ProductSearch onSelect={onSelect} selectedProduct={product} />}
+      {product && <div className="p-3 rounded-lg bg-muted/50 flex items-center gap-3"><Check className="w-5 h-5 text-success shrink-0" /><div className="flex-1 min-w-0"><span className="font-medium truncate block">{product.name}</span><span className="text-xs text-muted-foreground">SKU: {product.sku}</span></div><Badge variant="secondary">{formatCurrency(product.price)}</Badge></div>}
+    </div>
+  );
+}
+
+interface VariantStepProps {
+  readonly visible: boolean;
+  readonly hasSizes: boolean;
+  readonly variants: readonly ProductVariant[];
+  readonly selected: ProductVariant | null;
+  readonly onSelect: (variant: ProductVariant | null) => void;
+}
+
+function VariantStep({ visible, hasSizes, variants, selected, onSelect }: VariantStepProps) {
+  if (!visible) return null;
+  return <div className="space-y-3 animate-fade-in"><div className="flex items-center justify-between"><h3 className="font-display font-medium flex items-center gap-2"><Palette className="w-4 h-4 text-primary" />2. {hasSizes ? 'Selecione Cor e Tamanho' : 'Selecione a Cor do Produto'}</h3></div><ProductVariantSelector variants={[...variants]} selectedVariant={selected} onSelect={onSelect} label="" /></div>;
+}
+
+interface EngravingStepProps {
+  readonly product: Product | null;
+  readonly visible: boolean;
+  readonly hasVariants: boolean;
+  readonly mode: SimulatorMode;
+  readonly engravings: readonly ConfiguredEngraving[];
+  readonly canAddMore: boolean;
+  readonly currentTechnique: ProductTechnique | null;
+  readonly currentColors: number;
+  readonly currentSizeOption: string | null;
+  readonly onRemove: (id: string) => void;
+  readonly onStartAdd: () => void;
+  readonly onCancel: () => void;
+  readonly onTechniqueSelect: (technique: ProductTechnique | null) => void;
+  readonly onColorsChange: (colors: number) => void;
+  readonly onSizeChange: (size: string | null) => void;
+  readonly onTableCodeChange: (code: string | null) => void;
+  readonly onConfirm: () => void;
+}
+
+function EngravingStep(props: EngravingStepProps) {
+  if (!props.visible || !props.product) return null;
+  return (
+    <div className="space-y-3 animate-fade-in">
+      <div className="flex items-center justify-between"><h3 className="font-display font-medium flex items-center gap-2"><Paintbrush className="w-4 h-4 text-primary" />{props.hasVariants ? '3' : '2'}. Personalizações</h3></div>
+      {props.mode === 'list' && <EngravingList engravings={[...props.engravings]} onRemove={props.onRemove} onAddNew={props.onStartAdd} canAddMore={props.canAddMore} maxEngravings={5} />}
+      {props.mode === 'adding' && <div className="space-y-4 p-4 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 animate-scale-in">
+        <div className="flex items-center justify-between"><h4 className="text-sm font-medium">Nova Gravação</h4><Button variant="ghost" size="sm" onClick={props.onCancel}><X className="w-4 h-4 mr-1" />Cancelar</Button></div>
+        {!props.currentTechnique && <TechniqueSelector productId={props.product.id} onSelect={props.onTechniqueSelect} selectedTechnique={props.currentTechnique} />}
+        {props.currentTechnique && <div className="space-y-4 animate-fade-in">
+          <div className="p-3 rounded-lg bg-background border flex items-center gap-3"><Check className="w-5 h-5 text-success shrink-0" /><div className="flex-1 min-w-0"><p className="font-medium text-sm">{props.currentTechnique.techniqueName}</p><p className="text-xs text-muted-foreground">{props.currentTechnique.componentName} → {props.currentTechnique.locationName}</p></div><Button variant="ghost" size="sm" onClick={() => props.onTechniqueSelect(null)}>Alterar</Button></div>
+          <div className="space-y-3"><h4 className="text-sm font-medium flex items-center gap-2"><Palette className="w-4 h-4 text-primary" />Opções de Personalização</h4><CustomizationOptions technique={props.currentTechnique} colors={props.currentColors} onColorsChange={props.onColorsChange} sizeOption={props.currentSizeOption} onSizeChange={props.onSizeChange} onTableCodeChange={props.onTableCodeChange} /></div>
+          <Button className="w-full" onClick={props.onConfirm}><Plus className="w-4 h-4 mr-2" />Adicionar Gravação</Button>
+        </div>}
+      </div>}
+    </div>
+  );
+}
+
+interface ResultStepProps {
+  readonly visible: boolean;
+  readonly product: Product | null;
+  readonly hasVariants: boolean;
+  readonly engravings: readonly ConfiguredEngraving[];
+  readonly quantity: number;
+  readonly onQuantityChange: (quantity: number) => void;
+  readonly onCreateQuote: () => void;
+}
+
+function ResultStep(props: ResultStepProps) {
+  if (!props.visible || !props.product) return null;
+  return <div className="space-y-4 animate-fade-in"><h3 className="font-display font-medium flex items-center gap-2"><Calculator className="w-4 h-4 text-primary" />{props.hasVariants ? '4' : '3'}. Quantidade e Resultado</h3><MultiEngravingResult product={props.product} engravings={[...props.engravings]} quantity={props.quantity} onQuantityChange={props.onQuantityChange} /><Button size="lg" className="w-full gap-2 font-display font-semibold" onClick={props.onCreateQuote}><FileText className="w-5 h-5" />Criar Orçamento a partir desta Simulação</Button></div>;
+}
+
+interface SimulatorVisibilityOptions {
+  readonly product: Product | null;
+  readonly hasVariants: boolean;
+  readonly selectedVariant: ProductVariant | null;
+  readonly hasEngravings: boolean;
+  readonly mode: SimulatorMode;
+}
+
+function simulatorVisibility({ product, hasVariants, selectedVariant, hasEngravings, mode }: SimulatorVisibilityOptions) {
+  const productReady = Boolean(product);
+  const variantReady = !hasVariants || Boolean(selectedVariant);
+  return {
+    needsVariantSelection: hasVariants && !selectedVariant,
+    showVariantStep: productReady && hasVariants,
+    showEngravingStep: productReady && variantReady,
+    showResults: productReady && hasEngravings && variantReady && mode === 'list',
+  };
+}
+
 export function ProductPriceSimulator({ className }: ProductPriceSimulatorProps) {
   const navigate = useNavigate();
 
@@ -131,7 +227,7 @@ export function ProductPriceSimulator({ className }: ProductPriceSimulatorProps)
         limit: 200,
         orderBy: { column: 'color_name', ascending: true },
       });
-      return result.records.filter(v => v.color_name);
+      return (result.records ?? []).filter(v => v.color_name);
     },
     enabled: !!selectedProduct?.id,
     staleTime: 5 * 60 * 1000,
@@ -159,7 +255,6 @@ export function ProductPriceSimulator({ className }: ProductPriceSimulatorProps)
 
   const hasSizes = useMemo(() => productVariants.some(v => v.size_code), [productVariants]);
   const hasVariants = productVariants.length > 0;
-  const needsVariantSelection = hasVariants && !selectedVariant;
 
   const handleProductSelect = useCallback((product: Product | null) => {
     setSelectedProduct(product);
@@ -216,11 +311,11 @@ export function ProductPriceSimulator({ className }: ProductPriceSimulatorProps)
 
   const canAddMore = engravings.length < MAX_ENGRAVINGS;
   const hasEngravings = engravings.length > 0;
-  const showResults = selectedProduct && hasEngravings && (!hasVariants || selectedVariant);
+  const visibility = simulatorVisibility({ product: selectedProduct, hasVariants, selectedVariant, hasEngravings, mode });
 
   const getCurrentStep = () => {
     if (!selectedProduct) return 1;
-    if (needsVariantSelection) return 2;
+    if (visibility.needsVariantSelection) return 2;
     if (mode === 'adding') {
       if (!currentTechnique) return 3;
       return 4;
@@ -267,156 +362,10 @@ export function ProductPriceSimulator({ className }: ProductPriceSimulatorProps)
         {/* #4 — Progress bar conectada */}
         <StepProgressBar steps={steps} currentStep={currentStep} />
 
-        {/* Step 1: Produto */}
-        <div className="space-y-3 animate-fade-in">
-          <div className="flex items-center justify-between">
-            <h3 className="font-display font-medium flex items-center gap-2">
-              <Package className="w-4 h-4 text-primary" />
-              1. Selecione o Produto
-            </h3>
-            {selectedProduct && (
-              <Button variant="ghost" size="sm" onClick={() => handleProductSelect(null)}>
-                Alterar
-              </Button>
-            )}
-          </div>
-          {!selectedProduct && (
-            <ProductSearch onSelect={handleProductSelect} selectedProduct={selectedProduct} />
-          )}
-          {selectedProduct && (
-            <div className="p-3 rounded-lg bg-muted/50 flex items-center gap-3">
-              <Check className="w-5 h-5 text-success shrink-0" />
-              <div className="flex-1 min-w-0">
-                <span className="font-medium truncate block">{selectedProduct.name}</span>
-                <span className="text-xs text-muted-foreground">SKU: {selectedProduct.sku}</span>
-              </div>
-              <Badge variant="secondary">{formatCurrency(selectedProduct.price)}</Badge>
-            </div>
-          )}
-        </div>
-
-        {/* Step 2: Variação/Cor */}
-        {selectedProduct && hasVariants && (
-          <div className="space-y-3 animate-fade-in">
-            <div className="flex items-center justify-between">
-              <h3 className="font-display font-medium flex items-center gap-2">
-                <Palette className="w-4 h-4 text-primary" />
-                2. {hasSizes ? 'Selecione Cor e Tamanho' : 'Selecione a Cor do Produto'}
-              </h3>
-            </div>
-            <ProductVariantSelector
-              variants={productVariants}
-              selectedVariant={selectedVariant}
-              onSelect={handleVariantSelect}
-              label=""
-            />
-          </div>
-        )}
-
-        {/* Step 3: Gravações */}
-        {selectedProduct && (!hasVariants || selectedVariant) && (
-          <div className="space-y-3 animate-fade-in">
-            <div className="flex items-center justify-between">
-              <h3 className="font-display font-medium flex items-center gap-2">
-                <Paintbrush className="w-4 h-4 text-primary" />
-                {hasVariants ? '3' : '2'}. Personalizações
-              </h3>
-            </div>
-
-            {mode === 'list' && (
-              <EngravingList
-                engravings={engravings}
-                onRemove={handleRemoveEngraving}
-                onAddNew={handleStartAddEngraving}
-                canAddMore={canAddMore}
-                maxEngravings={MAX_ENGRAVINGS}
-              />
-            )}
-
-            {mode === 'adding' && (
-              <div className="space-y-4 p-4 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 animate-scale-in">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium">Nova Gravação</h4>
-                  <Button variant="ghost" size="sm" onClick={handleCancelAddEngraving}>
-                    <X className="w-4 h-4 mr-1" />
-                    Cancelar
-                  </Button>
-                </div>
-
-                {!currentTechnique && (
-                  <TechniqueSelector
-                    productId={selectedProduct.id}
-                    onSelect={handleTechniqueSelect}
-                    selectedTechnique={currentTechnique}
-                  />
-                )}
-
-                {currentTechnique && (
-                  <div className="space-y-4 animate-fade-in">
-                    <div className="p-3 rounded-lg bg-background border flex items-center gap-3">
-                      <Check className="w-5 h-5 text-success shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm">{currentTechnique.techniqueName}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {currentTechnique.componentName} → {currentTechnique.locationName}
-                        </p>
-                      </div>
-                      <Button variant="ghost" size="sm" onClick={() => setCurrentTechnique(null)}>
-                        Alterar
-                      </Button>
-                    </div>
-
-                    <div className="space-y-3">
-                      <h4 className="text-sm font-medium flex items-center gap-2">
-                        <Palette className="w-4 h-4 text-primary" />
-                        Opções de Personalização
-                      </h4>
-                      <CustomizationOptions
-                        technique={currentTechnique}
-                        colors={currentColors}
-                        onColorsChange={setCurrentColors}
-                        sizeOption={currentSizeOption}
-                        onSizeChange={setCurrentSizeOption}
-                        onTableCodeChange={setCurrentTableCode}
-                      />
-                    </div>
-
-                    <Button className="w-full" onClick={handleConfirmEngraving}>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Adicionar Gravação
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Step 4: Resultados */}
-        {showResults && mode === 'list' && (
-          <div className="space-y-4 animate-fade-in">
-            <h3 className="font-display font-medium flex items-center gap-2">
-              <Calculator className="w-4 h-4 text-primary" />
-              {hasVariants ? '4' : '3'}. Quantidade e Resultado
-            </h3>
-            <MultiEngravingResult
-              product={selectedProduct}
-              engravings={engravings}
-              quantity={quantity}
-              onQuantityChange={setQuantity}
-            />
-
-            {/* #9 — CTA Criar Orçamento */}
-            <Button
-              size="lg"
-              className="w-full gap-2 font-display font-semibold"
-              onClick={handleCreateQuote}
-            >
-              <FileText className="w-5 h-5" />
-              Criar Orçamento a partir desta Simulação
-            </Button>
-          </div>
-        )}
+        <ProductStep product={selectedProduct} onSelect={handleProductSelect} />
+        <VariantStep visible={visibility.showVariantStep} hasSizes={hasSizes} variants={productVariants} selected={selectedVariant} onSelect={handleVariantSelect} />
+        <EngravingStep product={selectedProduct} visible={visibility.showEngravingStep} hasVariants={hasVariants} mode={mode} engravings={engravings} canAddMore={canAddMore} currentTechnique={currentTechnique} currentColors={currentColors} currentSizeOption={currentSizeOption} onRemove={handleRemoveEngraving} onStartAdd={handleStartAddEngraving} onCancel={handleCancelAddEngraving} onTechniqueSelect={handleTechniqueSelect} onColorsChange={setCurrentColors} onSizeChange={setCurrentSizeOption} onTableCodeChange={setCurrentTableCode} onConfirm={handleConfirmEngraving} />
+        <ResultStep visible={visibility.showResults} product={selectedProduct} hasVariants={hasVariants} engravings={engravings} quantity={quantity} onQuantityChange={setQuantity} onCreateQuote={handleCreateQuote} />
       </CardContent>
     </Card>
   );

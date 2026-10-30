@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -45,38 +45,41 @@ const TEST_USERS = [
   }
 ];
 
+type IntegrityStatus = Record<string, { isValid: boolean; reason?: string }>;
+
+async function validateTestUsers(attempt: number, setValidating: (value: boolean) => void, setStatus: (value: IntegrityStatus) => void): Promise<void> {
+  setValidating(true);
+  try {
+    const { data, error } = await supabase.functions.invoke("auth-integrity-check", {
+      body: { emails: TEST_USERS.map(user => user.email) },
+    });
+    if (error) throw error;
+    setStatus(data || {});
+  } catch (error) {
+    if (attempt < 2) {
+      setTimeout(() => { void validateTestUsers(attempt + 1, setValidating, setStatus); }, 2000 * (attempt + 1));
+      return;
+    }
+    console.warn("Validação de integridade indisponível no momento:", error);
+  } finally {
+    setValidating(false);
+  }
+}
+
 export function QuickTestLogin() {
   const { signIn } = useAuth();
   const { toast } = useToast();
   const [loadingEmail, setLoadingEmail] = useState<string | null>(null);
   const [isSeeding, setIsSeeding] = useState(false);
-  const [integrityStatus, setIntegrityStatus] = useState<Record<string, { isValid: boolean; reason?: string }>>({});
+  const [integrityStatus, setIntegrityStatus] = useState<IntegrityStatus>({});
   const [isValidating, setIsValidating] = useState(true);
 
-  const checkIntegrity = async (attempt = 0) => {
-    setIsValidating(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("auth-integrity-check", {
-        body: { emails: TEST_USERS.map(u => u.email) }
-      });
-      if (error) throw error;
-      setIntegrityStatus(data || {});
-    } catch (err) {
-      // Indisponibilidade temporária do backend (ex.: 521/503 no gateway):
-      // tenta novamente com backoff antes de desistir silenciosamente.
-      if (attempt < 2) {
-        setTimeout(() => { void checkIntegrity(attempt + 1); }, 2000 * (attempt + 1));
-        return;
-      }
-      console.warn("Validação de integridade indisponível no momento:", err);
-    } finally {
-      setIsValidating(false);
-    }
-  };
+  const checkIntegrity = useCallback((attempt = 0) =>
+    validateTestUsers(attempt, setIsValidating, setIntegrityStatus), []);
 
   useEffect(() => {
     void checkIntegrity();
-  }, []);
+  }, [checkIntegrity]);
 
 
   const runSeed = async (silent = false): Promise<boolean> => {
@@ -92,11 +95,11 @@ export function QuickTestLogin() {
       }
       await checkIntegrity();
       return true;
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         variant: "destructive",
         title: "Falha no seed",
-        description: err?.message || "Erro desconhecido",
+        description: err instanceof Error ? err.message : "Erro desconhecido",
       });
       return false;
     } finally {

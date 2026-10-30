@@ -5,7 +5,7 @@
  *
  * Uso: chamado automaticamente pelo afterEach em e2e/fixtures/test-base.ts.
  */
-import type { Page, TestInfo } from "@playwright/test";
+import type { Page, TestInfo } from '@playwright/test';
 
 export interface EvidenceCollector {
   consoleLogs: Array<{ type: string; text: string; ts: number }>;
@@ -14,13 +14,13 @@ export interface EvidenceCollector {
 }
 
 export function attachConsoleCapture(page: Page): EvidenceCollector {
-  const consoleLogs: EvidenceCollector["consoleLogs"] = [];
-  const pageErrors: EvidenceCollector["pageErrors"] = [];
+  const consoleLogs: EvidenceCollector['consoleLogs'] = [];
+  const pageErrors: EvidenceCollector['pageErrors'] = [];
 
-  page.on("console", (msg) => {
+  page.on('console', (msg) => {
     consoleLogs.push({ type: msg.type(), text: msg.text(), ts: Date.now() });
   });
-  page.on("pageerror", (err) => {
+  page.on('pageerror', (err) => {
     pageErrors.push({
       message: err.message,
       stack: err.stack,
@@ -34,33 +34,33 @@ export function attachConsoleCapture(page: Page): EvidenceCollector {
     async attachAll(p, testInfo) {
       try {
         const screenshot = await p.screenshot({ fullPage: true });
-        await testInfo.attach("screenshot.png", {
+        await testInfo.attach('screenshot.png', {
           body: screenshot,
-          contentType: "image/png",
+          contentType: 'image/png',
         });
-      } catch (e) {
+      } catch {
         // página pode estar fechada
       }
 
       try {
         const html = await p.content();
-        await testInfo.attach("dom.html", {
+        await testInfo.attach('dom.html', {
           body: html,
-          contentType: "text/html",
+          contentType: 'text/html',
         });
       } catch {
         // ignore
       }
 
-      await testInfo.attach("console.json", {
+      await testInfo.attach('console.json', {
         body: JSON.stringify(consoleLogs, null, 2),
-        contentType: "application/json",
+        contentType: 'application/json',
       });
 
       if (pageErrors.length > 0) {
-        await testInfo.attach("page-errors.json", {
+        await testInfo.attach('page-errors.json', {
           body: JSON.stringify(pageErrors, null, 2),
-          contentType: "application/json",
+          contentType: 'application/json',
         });
       }
 
@@ -68,11 +68,11 @@ export function attachConsoleCapture(page: Page): EvidenceCollector {
         url: p.url(),
         viewport: p.viewportSize(),
         timestamp: new Date().toISOString(),
-        title: await p.title().catch(() => ""),
+        title: await p.title().catch(() => ''),
       };
-      await testInfo.attach("meta.json", {
+      await testInfo.attach('meta.json', {
         body: JSON.stringify(meta, null, 2),
-        contentType: "application/json",
+        contentType: 'application/json',
       });
     },
   };

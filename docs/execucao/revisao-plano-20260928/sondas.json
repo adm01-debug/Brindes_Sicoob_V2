@@ -1,0 +1,32 @@
+{
+  "data": "2026-09-28T14:48:01.048475+00:00",
+  "tipo": "Passar reproduz a lacuna; não é aprovação do produto.",
+  "aprovadas_como_reproducao": 6,
+  "falhas_de_sonda": 0,
+  "cenarios": [
+    {
+      "nome": "não reencontra rascunho novo depois de desmontar e montar a página",
+      "resultado": "passed"
+    },
+    {
+      "nome": "restaura orçamento existente sem receber identidade do ator",
+      "resultado": "passed"
+    },
+    {
+      "nome": "retorna logística vazia se a primeira página não contém pedido logístico, ignorando o total",
+      "resultado": "passed"
+    },
+    {
+      "nome": "substitui a versão conhecida pelo editor pela recém-consultada",
+      "resultado": "passed"
+    },
+    {
+      "nome": "duas criações repetidas não fornecem chave idempotente à RPC",
+      "resultado": "passed"
+    },
+    {
+      "nome": "usa a mesma chave de previsão ao mudar unidades por item mantendo os mesmos produtos",
+      "resultado": "passed"
+    }
+  ]
+}

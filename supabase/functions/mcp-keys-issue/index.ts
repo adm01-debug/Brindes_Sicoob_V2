@@ -29,6 +29,7 @@ import { getOrCreateRequestId, REQUEST_ID_HEADER } from "../_shared/request-id.t
 import { writeAuditEntry, summarizePayload, extractRequestMeta } from "../_shared/audit-log.ts";
 import { recordMcpViolation, mapViolationReason } from "../_shared/mcp-violations.ts";
 import { castRpcResult } from "../_shared/supabase-client-adapter.ts";
+import { deferBackgroundTask } from "../_shared/background-task.ts";
 
 // Module-scope CORS headers — atribuído per-request no handler.
 let corsHeaders: Record<string, string> = {};
@@ -193,7 +194,10 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization") ?? "";
     const jwt = authHeader.replace(/^Bearer\s+/i, "");
     if (!jwt) {
-      await auditFailure("denied", "mcp_key.issue_denied", { reason: "unauthenticated" });
+      deferBackgroundTask(
+        auditFailure("denied", "mcp_key.issue_denied", { reason: "unauthenticated" }),
+        "mcp-keys-issue:unauthenticated",
+      );
       return jsonResponse({ error: "unauthenticated" }, 401, requestId);
     }
 
@@ -202,7 +206,10 @@ Deno.serve(async (req) => {
     });
     const { data: userData, error: userErr } = await userClient.auth.getUser();
     if (userErr || !userData.user) {
-      await auditFailure("denied", "mcp_key.issue_denied", { reason: "invalid_jwt" });
+      deferBackgroundTask(
+        auditFailure("denied", "mcp_key.issue_denied", { reason: "invalid_jwt" }),
+        "mcp-keys-issue:invalid-jwt",
+      );
       return jsonResponse({ error: "unauthenticated" }, 401, requestId);
     }
     userId = userData.user.id;
@@ -213,7 +220,7 @@ Deno.serve(async (req) => {
     );
     if (roleErr) {
       await auditFailure("error", "mcp_key.issue_error", { reason: "role_check_failed", detail: roleErr.message });
-      return jsonResponse({ error: "internal_error", detail: roleErr.message }, 500, requestId);
+      return jsonResponse({ error: "internal_error" }, 500, requestId);
     }
     if (!roleCheck) {
       await auditFailure("denied", "mcp_key.issue_denied", { reason: "not_dev" });
@@ -274,7 +281,7 @@ Deno.serve(async (req) => {
       );
       if (grantErr) {
         await auditFailure("error", "mcp_key.issue_error", { reason: "grant_check_failed", detail: grantErr.message });
-        return jsonResponse({ error: "internal_error", detail: grantErr.message }, 500, requestId);
+        return jsonResponse({ error: "internal_error" }, 500, requestId);
       }
       if (!canGrant) {
         await auditFailure("denied", "mcp_key.issue_denied", {
@@ -311,7 +318,7 @@ Deno.serve(async (req) => {
       .single();
     if (insertErr || !inserted) {
       await auditFailure("error", "mcp_key.issue_error", { reason: "insert_failed", detail: insertErr?.message });
-      return jsonResponse({ error: "insert_failed", detail: insertErr?.message ?? "unknown" }, 500, requestId);
+      return jsonResponse({ error: "insert_failed" }, 500, requestId);
     }
 
     // 7. Audit log (success)
@@ -390,6 +397,6 @@ Deno.serve(async (req) => {
   } catch (err) {
     const detail = err instanceof Error ? err.message : String(err);
     await auditFailure("error", "mcp_key.issue_error", { reason: "uncaught", detail });
-    return jsonResponse({ error: "internal_error", detail }, 500, requestId);
+    return jsonResponse({ error: "internal_error" }, 500, requestId);
   }
 });

@@ -3,10 +3,14 @@
  * Checks if any items in a kit are marked inactive and alerts the user
  */
 
-import { AlertTriangle, ExternalLink } from 'lucide-react';
+/**
+ * Discontinued Items Alert
+ * Checks if any items in a kit are marked inactive and alerts the user
+ */
+import { AlertTriangle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+
 import type { KitItem } from '@/lib/kit-builder';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,30 +19,27 @@ interface DiscontinuedItemsAlertProps {
   items: KitItem[];
 }
 
+async function fetchDiscontinuedItems(itemIds: string[]) {
+  if (itemIds.length === 0) return [];
+  try {
+    const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+      body: { table: 'products', operation: 'select', filters: {
+        id: `in.(${itemIds.join(',')})`, is_active: 'eq.false',
+      }, select: 'id,name,sku', limit: 50 },
+    });
+    if (error || !data?.data) return [];
+    return data.data as Array<{ id: string; name: string; sku: string }>;
+  } catch {
+    return [];
+  }
+}
+
 export function DiscontinuedItemsAlert({ items }: DiscontinuedItemsAlertProps) {
   const itemIds = items.map(i => i.id);
 
   const { data: discontinuedItems = [] } = useQuery({
     queryKey: ['discontinued-check', itemIds.join(',')],
-    queryFn: async () => {
-      if (itemIds.length === 0) return [];
-      try {
-        // Check against external DB via edge function
-        const { data, error } = await supabase.functions.invoke('external-db-bridge', {
-          body: {
-            table: 'products',
-            operation: 'select',
-            filters: { id: `in.(${itemIds.join(',')})`, is_active: 'eq.false' },
-            select: 'id,name,sku',
-            limit: 50,
-          },
-        });
-        if (error || !data?.data) return [];
-        return data.data as Array<{ id: string; name: string; sku: string }>;
-      } catch {
-        return [];
-      }
-    },
+    queryFn: () => fetchDiscontinuedItems(itemIds),
     enabled: itemIds.length > 0,
     staleTime: 60_000,
   });

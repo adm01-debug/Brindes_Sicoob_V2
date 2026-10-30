@@ -1,12 +1,11 @@
-import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Landmark, Wallet, Users, BellRing } from "lucide-react";
+import { Building2, Landmark, Wallet, Users, BellRing, UserCog } from "lucide-react";
 import { CooperativasTab } from "./tabs/CooperativasTab";
 import { PAsTab } from "./tabs/PAsTab";
 import { BudgetsTab } from "./tabs/BudgetsTab";
 import { UserAssignmentTab } from "./tabs/UserAssignmentTab";
 import { NotificationSettingsTab } from "./tabs/NotificationSettingsTab";
+import { ApprovalDelegationsTab } from "./tabs/ApprovalDelegationsTab";
 
 const SicoobManagementPage = () => {
   return (
@@ -19,7 +18,7 @@ const SicoobManagementPage = () => {
       </div>
 
       <Tabs defaultValue="cooperativas" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5 lg:w-[750px]">
+        <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-3 xl:w-[930px] xl:grid-cols-6">
           <TabsTrigger value="cooperativas" className="flex items-center gap-2">
             <Landmark className="h-4 w-4" />
             <span>Singulares</span>
@@ -39,6 +38,10 @@ const SicoobManagementPage = () => {
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <BellRing className="h-4 w-4" />
             <span>Alertas</span>
+          </TabsTrigger>
+          <TabsTrigger value="delegations" className="flex items-center gap-2">
+            <UserCog className="h-4 w-4" />
+            <span>Delegações</span>
           </TabsTrigger>
         </TabsList>
 
@@ -61,6 +64,10 @@ const SicoobManagementPage = () => {
 
         <TabsContent value="notifications">
           <NotificationSettingsTab />
+        </TabsContent>
+
+        <TabsContent value="delegations">
+          <ApprovalDelegationsTab />
         </TabsContent>
       </Tabs>
     </div>

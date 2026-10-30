@@ -36,7 +36,7 @@ export function GlobalCommandBar({ children, showTrigger = false }: GlobalComman
   const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
   const navigate = useNavigate();
   const { actualTheme, setTheme } = useTheme();
-  const { isDev, isAdmin } = useAuth();
+  const { isDev, isAdmin, roles } = useAuth();
 
   // Load recent items
   useEffect(() => {
@@ -84,8 +84,8 @@ export function GlobalCommandBar({ children, showTrigger = false }: GlobalComman
   const actions = useMemo(() => {
     const all = buildActions({ goTo, actualTheme, setTheme, setOpen });
     // Filtra ações que apontam para rotas restritas (admin/dev) sem papel.
-    return filterByRoutePermission(all, (a) => a.path, { isDev, isAdmin });
-  }, [goTo, actualTheme, setTheme, isDev, isAdmin]);
+    return filterByRoutePermission(all, (a) => a.path, { isDev, isAdmin, assignedRoles: roles });
+  }, [goTo, actualTheme, setTheme, isDev, isAdmin, roles]);
 
   // Filter
   const filteredActions = useMemo(() => {
@@ -115,7 +115,7 @@ export function GlobalCommandBar({ children, showTrigger = false }: GlobalComman
     const visible = filterByRoutePermission(
       recentItems,
       (i) => i.path,
-      { isDev, isAdmin },
+      { isDev, isAdmin, assignedRoles: roles },
     );
     return visible.map((item) => ({
       id: `recent-${item.id}`,
@@ -127,7 +127,7 @@ export function GlobalCommandBar({ children, showTrigger = false }: GlobalComman
       keywords: [],
       path: item.path,
     }));
-  }, [recentItems, search, goTo, isDev, isAdmin]);
+  }, [recentItems, search, goTo, isDev, isAdmin, roles]);
 
   return (
     <>

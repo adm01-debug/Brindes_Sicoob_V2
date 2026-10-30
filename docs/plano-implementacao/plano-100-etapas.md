@@ -1,5 +1,7 @@
 # Plano de implementação do portal Sicoob em 100 etapas
 
+> **Adendo de 27/09/2026:** [estado de implementação, evidências e limites](../execucao/revisao-do-plano-2026-09-27.md). O checklist original não recebe baixa automática por presença de código.
+
 Este plano organiza **100 etapas, cada uma com 10 subetapas obrigatórias: 1.000 itens de checklist**. A entrega atual é o plano; nenhuma subetapa de implementação foi marcada como executada. Os responsáveis indicados são funções sugeridas, a substituir por nomes durante o planejamento de capacidade.
 
 A direção combina estratégia de serviço, pesquisa com usuários, arquitetura de informação, sistema visual, conteúdo, acessibilidade e execução comercial. O objetivo é aproveitar o investimento existente e tornar a compra institucional clara, confiável e rastreável, da campanha ao recebimento por PA.

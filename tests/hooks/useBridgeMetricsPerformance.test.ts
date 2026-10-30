@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useBridgeMetrics } from '@/hooks/dev/useBridgeMetrics';
 import * as bridgeCallMetrics from '@/lib/telemetry/bridgeCallMetrics';
-import * as longTaskWatchdog from '@/lib/telemetry/longTaskWatchdog';
 
 describe('useBridgeMetrics Rerenders & Resubscriptions', () => {
   beforeEach(() => {

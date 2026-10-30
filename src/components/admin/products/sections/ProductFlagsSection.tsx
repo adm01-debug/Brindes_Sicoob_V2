@@ -8,7 +8,7 @@ import { ShieldCheck, Info, Clock } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { addDays, format } from 'date-fns';
+import { addDays } from "date-fns";
 import type { UseFormSetValue } from 'react-hook-form';
 import type { ProductFormData } from '../ProductFormSchema';
 
@@ -62,95 +62,30 @@ const FLAG_CONFIG: { key: keyof ProductFormData; label: string; hint: string; ex
   { key: 'is_on_sale', label: 'Em Promoção', hint: 'Sinaliza o produto com badge de promoção', expiryKey: 'is_on_sale_expires_at', activeClass: 'bg-destructive/10 border-destructive/40' },
 ];
 
+type FlagConfig = (typeof FLAG_CONFIG)[number];
+
+function FlagExpiry({ expiryKey, expiresAt, remaining, setValue }: { expiryKey: ExpiryKey; expiresAt: string | null; remaining: string | null; setValue: UseFormSetValue<ProductFormData> }) {
+  return <div className="px-3 pb-2.5 pt-0"><div className="flex items-center gap-1.5"><Clock className="h-3 w-3 text-muted-foreground/60 shrink-0" /><Select value={expiryToOption(expiresAt)} onValueChange={value => setValue(expiryKey, daysToExpiry(value))}><SelectTrigger className="h-6 text-[10px] bg-background/50 border-border/30 w-full"><SelectValue /></SelectTrigger><SelectContent>{EXPIRY_OPTIONS.map(option => <SelectItem key={option.value} value={option.value} className="text-xs">{option.label}</SelectItem>)}</SelectContent></Select>{remaining && <span className={cn('text-[10px] whitespace-nowrap font-medium', remaining === 'Expirado' ? 'text-destructive' : 'text-muted-foreground/60')}>{remaining}</span>}</div></div>;
+}
+
+function ProductFlagCard({ config, value, expiresAt, setValue }: { config: FlagConfig; value: boolean; expiresAt: string | null; setValue: UseFormSetValue<ProductFormData> }) {
+  const { key, label, hint, expiryKey, activeClass } = config;
+  const toggle = () => {
+    const nextValue = !value;
+    setValue(key, nextValue);
+    if (expiryKey) setValue(expiryKey, nextValue ? daysToExpiry('30') : null);
+  };
+  const remaining = expiryKey && value ? formatRemaining(expiresAt) : null;
+  return <div className={cn('flex flex-col rounded-lg border transition-all duration-200', value ? (activeClass || 'bg-primary/5 border-primary/20') : 'border-border/50')}><div className="flex items-center justify-between p-3 cursor-pointer hover:bg-accent/30 rounded-t-lg" onClick={toggle} role="switch" aria-checked={value} tabIndex={0} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggle(); } }}><div className="flex items-center gap-1.5"><Label className="cursor-pointer text-xs font-medium">{label}</Label><Tooltip><TooltipTrigger asChild><Info className="h-3 w-3 text-muted-foreground/40 cursor-help shrink-0" /></TooltipTrigger><TooltipContent className="text-xs max-w-[220px]">{hint}</TooltipContent></Tooltip></div><div onClick={event => event.stopPropagation()}><Switch checked={value} onCheckedChange={toggle} /></div></div>{expiryKey && value && <FlagExpiry expiryKey={expiryKey} expiresAt={expiresAt} remaining={remaining} setValue={setValue} />}</div>;
+}
+
 export function ProductFlagsSection({ setValue, flags, expirations }: Props) {
   const flagCount = Object.values(flags).filter(Boolean).length;
 
   return (
     <SectionCard id="flags" title="Status" icon={ShieldCheck} subtitle={`${flagCount} ativos`}>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-        {FLAG_CONFIG.map(({ key, label, hint, expiryKey, activeClass }) => {
-          const value = !!flags[key];
-          const toggle = () => {
-            const newVal = !value;
-            setValue(key, newVal);
-            // When turning on a flag with expiry, default to 30 days
-            if (newVal && expiryKey) {
-              setValue(expiryKey, daysToExpiry('30'));
-            }
-            // When turning off, clear expiry
-            if (!newVal && expiryKey) {
-              setValue(expiryKey, null);
-            }
-          };
-
-          const expiresAt = expiryKey ? (expirations[expiryKey] as string | null) : null;
-          const remaining = expiryKey && value ? formatRemaining(expiresAt) : null;
-
-          return (
-            <div
-              key={key}
-              className={cn(
-                'flex flex-col rounded-lg border transition-all duration-200',
-                value ? (activeClass || 'bg-primary/5 border-primary/20') : 'border-border/50',
-              )}
-            >
-              {/* Toggle row */}
-              <div
-                className="flex items-center justify-between p-3 cursor-pointer hover:bg-accent/30 rounded-t-lg"
-                onClick={toggle}
-                role="switch"
-                aria-checked={value}
-                tabIndex={0}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } }}
-              >
-                <div className="flex items-center gap-1.5">
-                  <Label className="cursor-pointer text-xs font-medium">{label}</Label>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Info className="h-3 w-3 text-muted-foreground/40 cursor-help shrink-0" />
-                    </TooltipTrigger>
-                    <TooltipContent className="text-xs max-w-[220px]">{hint}</TooltipContent>
-                  </Tooltip>
-                </div>
-                <div onClick={(e) => e.stopPropagation()}>
-                  <Switch checked={value} onCheckedChange={toggle} />
-                </div>
-              </div>
-
-              {/* Expiry selector — only for flags with expiryKey, when active */}
-              {expiryKey && value && (
-                <div className="px-3 pb-2.5 pt-0">
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="h-3 w-3 text-muted-foreground/60 shrink-0" />
-                    <Select
-                      value={expiryToOption(expiresAt)}
-                      onValueChange={(v) => setValue(expiryKey, daysToExpiry(v))}
-                    >
-                      <SelectTrigger className="h-6 text-[10px] bg-background/50 border-border/30 w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {EXPIRY_OPTIONS.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value} className="text-xs">
-                            {opt.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {remaining && (
-                      <span className={cn(
-                        'text-[10px] whitespace-nowrap font-medium',
-                        remaining === 'Expirado' ? 'text-destructive' : 'text-muted-foreground/60'
-                      )}>
-                        {remaining}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+        {FLAG_CONFIG.map(config => <ProductFlagCard key={config.key} config={config} value={Boolean(flags[config.key])} expiresAt={config.expiryKey ? (expirations[config.expiryKey] ?? null) : null} setValue={setValue} />)}
       </div>
     </SectionCard>
   );

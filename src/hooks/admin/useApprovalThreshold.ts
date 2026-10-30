@@ -2,7 +2,45 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-export const useApprovalThreshold = (items?: any[]) => {
+interface ApprovalItem {
+  category_id?: string | null;
+  unit_price: number;
+  quantity: number;
+}
+
+interface CategoryThreshold {
+  category_id: number | null;
+  limite_alcada: number;
+}
+
+function globalApprovalThreshold(profileThreshold?: number | null, budgetThreshold?: number | null): number {
+  return profileThreshold || budgetThreshold || 0;
+}
+
+function exceedsCategoryThreshold(items: ApprovalItem[], thresholds?: CategoryThreshold[] | null): boolean {
+  return items.some(item => {
+    const threshold = thresholds?.find(candidate => candidate.category_id !== null && String(candidate.category_id) === item.category_id);
+    return Boolean(threshold && item.unit_price * item.quantity > threshold.limite_alcada);
+  });
+}
+
+function approvalRequired(input: {
+  amount: number;
+  items: ApprovalItem[];
+  isDev: boolean;
+  isSupervisor: boolean;
+  isGestorCompras: boolean;
+  paId?: string | null;
+  globalThreshold: number;
+  categoryThresholds?: CategoryThreshold[] | null;
+}): boolean {
+  if (input.isDev || input.isSupervisor) return false;
+  if (input.isGestorCompras && !input.paId) return false;
+  if (input.amount > input.globalThreshold) return true;
+  return exceedsCategoryThreshold(input.items, input.categoryThresholds);
+}
+
+export const useApprovalThreshold = (items?: ApprovalItem[]) => {
   const { profile, isGestorCompras, isDev, isSupervisor } = useAuth();
 
   const { data: budget } = useQuery({
@@ -37,28 +75,21 @@ export const useApprovalThreshold = (items?: any[]) => {
     enabled: !!profile?.pa_id,
   });
 
-  const needsApproval = (amount: number, currentItems?: any[]) => {
-    if (isDev || isSupervisor) return false;
-    if (isGestorCompras && !profile?.pa_id) return false;
-
-    // 1. Check Manager/Individual Threshold (SSOT: profile.approval_threshold overrides budget)
-    const globalThreshold = profile?.approval_threshold || budget?.limite_alcada || 0;
-    if (amount > globalThreshold) return true;
-
-    // 2. Check Category-specific Thresholds
-    const itemsToCheck = currentItems || items || [];
-    for (const item of itemsToCheck) {
-      const catThreshold = categoryThresholds?.find(t => t.category_id === item.category_id);
-      if (catThreshold && (item.unit_price * item.quantity) > catThreshold.limite_alcada) {
-        return true;
-      }
-    }
-
-    return false;
+  const needsApproval = (amount: number, currentItems?: ApprovalItem[]) => {
+    return approvalRequired({
+      amount,
+      items: currentItems || items || [],
+      isDev,
+      isSupervisor,
+      isGestorCompras,
+      paId: profile?.pa_id,
+      globalThreshold: globalApprovalThreshold(profile?.approval_threshold, budget?.limite_alcada),
+      categoryThresholds,
+    });
   };
 
   return {
-    threshold: budget?.limite_alcada || 0,
+    threshold: globalApprovalThreshold(undefined, budget?.limite_alcada),
     categoryThresholds,
     needsApproval,
   };

@@ -1,4 +1,4 @@
-import { GateFlagProvider, GateValue } from './types';
+import { type GateFlagProvider, type GateValue } from './types';
 import { EnvGateProvider, LocalStorageGateProvider } from './providers';
 import type { AppRole } from '@/contexts/AuthContext';
 
@@ -26,11 +26,8 @@ class DefaultAccessPolicy implements AccessPolicy {
   }
 
   hasAccess(userRoles: AppRole[]): boolean {
-    const len = userRoles.length;
-    if (len === 0) return false;
-    // Otimização: Loop for tradicional é ligeiramente mais rápido que .some() em arrays pequenos
-    for (let i = 0; i < len; i++) {
-      if (this.allowedRoles.has(userRoles[i]!)) return true;
+    for (const role of userRoles) {
+      if (this.allowedRoles.has(role)) return true;
     }
     return false;
   }
@@ -140,12 +137,14 @@ export class DevInfraGate {
   private generateCacheKey(roles: AppRole[]): string {
     const len = roles.length;
     if (len === 0) return '';
-    if (len === 1) return roles[0]!;
+    if (len === 1) return roles[0] ?? '';
     // Otimização: Evitar sort se o array já estiver ordenado (caso comum em orquestração de roles)
     // Se precisarmos ordenar, fazemos uma cópia para não mutar o input
     let isSorted = true;
     for (let i = 0; i < len - 1; i++) {
-      if (roles[i]! > roles[i + 1]!) {
+      const current = roles[i];
+      const next = roles[i + 1];
+      if (current !== undefined && next !== undefined && current > next) {
         isSorted = false;
         break;
       }

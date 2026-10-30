@@ -16,6 +16,37 @@ import { hasSuspiciousLength } from "./secretValidators";
 import { TestProgressIndicator, type TestProgressPhase } from "./TestProgressIndicator";
 import { RetestCooldownSelector } from "./RetestCooldownSelector";
 
+function n8nStatus(configured: boolean, last: LastTestInfo | null): "active" | "error" | "unconfigured" {
+  if (!configured) return "unconfigured";
+  if (last?.ok === false) return "error";
+  return "active";
+}
+
+function testButtonTitle(configured: boolean, looksValid: boolean): string {
+  if (!configured) return "Configure a Base URL primeiro";
+  if (!looksValid) return "Credenciais com formato suspeito (comprimento curto) — re-salve antes de testar";
+  return "Testar /healthz";
+}
+
+function progressMessage(last: LastTestInfo | null): string | null {
+  if (!last) return null;
+  if (last.ok) return `HTTP ${last.status ?? 200}`;
+  return last.message ?? null;
+}
+
+function retestDisabledReason(configured: boolean): string {
+  if (!configured) return "Configure a Base URL primeiro";
+  return "Credenciais com formato suspeito — re-salve antes de testar";
+}
+
+interface N8nCardProps {
+  status: "active" | "error" | "unconfigured"; base: ReturnType<typeof useSecretsManager>["secrets"][number] | undefined; apiKey: ReturnType<typeof useSecretsManager>["secrets"][number] | undefined; list: () => void; isTesting: boolean; credsOk: boolean; credsLooksValid: boolean; onTest: () => Promise<void>; timelineOpen: boolean; setTimelineOpen: (open: boolean) => void; phase: TestProgressPhase; setPhase: (phase: TestProgressPhase) => void; last: LastTestInfo | null; detailsDialogOpen: boolean; setDetailsDialogOpen: (open: boolean) => void; historyKey: number; pendingStartedAt: string | null;
+}
+
+function N8nConnectionCard(props: N8nCardProps) {
+  return <Card data-retest-scope tabIndex={0} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"><CardHeader><div className="flex items-start justify-between"><div className="flex items-center gap-2"><Workflow className="h-5 w-5 text-primary" /><CardTitle>n8n</CardTitle></div><ConnectionStatusBadge status={props.status} /></div><CardDescription>Conecte uma instância n8n para automatizar workflows a partir de eventos do sistema.</CardDescription></CardHeader><CardContent className="space-y-4 max-w-2xl"><SecretField label="Base URL" secretName="N8N_BASE_URL" status={props.base} onSaved={props.list} connectionId="n8n" helperText="Ex: https://n8n.suaempresa.com" /><SecretField label="API Key" secretName="N8N_API_KEY" status={props.apiKey} onSaved={props.list} connectionId="n8n" /><div className="pt-2 flex flex-wrap gap-2"><Button size="sm" disabled={props.isTesting || !props.credsLooksValid} title={testButtonTitle(props.credsOk, props.credsLooksValid)} onClick={() => void props.onTest()}>{props.isTesting ? "Testando…" : "Testar /healthz"}</Button><ConnectionTimelineDrawer type="n8n" label="n8n" open={props.timelineOpen} onOpenChange={props.setTimelineOpen} /><RefreshFromDbButton onRefreshed={() => void props.list()} /><RetestCooldownSelector className="ml-auto" /></div><TestProgressIndicator phase={props.phase} latencyMs={props.last?.latency_ms ?? null} message={progressMessage(props.last)} onDismiss={() => props.setPhase("idle")} /><LastTestLine info={props.last} autoFocusOnFailure onClick={props.last?.tested_at ? () => props.setDetailsDialogOpen(true) : undefined} action={<RetestButton onRetest={props.onTest} disabled={!props.credsLooksValid} cooldownKey="n8n" disabledReason={retestDisabledReason(props.credsOk)} />} /><ConnectionTestHistoryPanel type="n8n" label="n8n" refreshKey={props.historyKey} pendingTest={props.pendingStartedAt ? { startedAt: props.pendingStartedAt } : null} /><ConnectionTestDetailsDialog open={props.detailsDialogOpen} onOpenChange={props.setDetailsDialogOpen} connectionType="n8n" connectionLabel="n8n" onViewFullHistory={() => props.setTimelineOpen(true)} /></CardContent></Card>;
+}
+
 export function N8nTab() {
   const { secrets, list } = useSecretsManager();
   const { test, isTesting, fetchLastTest } = useConnectionTester();
@@ -35,12 +66,10 @@ export function N8nTab() {
 
   const get = (n: string) => secrets.find((s) => s.name === n);
   const base = get("N8N_BASE_URL");
-  const credsOk = !!base?.has_value;
+  const credsOk = (!!base?.has_value);
   const suspicious = hasSuspiciousLength(secrets, ["N8N_BASE_URL", "N8N_API_KEY"]);
-  const credsLooksValid = credsOk && !suspicious;
-  const status: "active" | "error" | "unconfigured" = !credsOk
-    ? "unconfigured"
-    : last?.ok === false ? "error" : "active";
+  const credsLooksValid = (credsOk && !suspicious);
+  const status = n8nStatus(credsOk, last);
 
   const onTest = async () => {
     setPhase("running");
@@ -54,69 +83,7 @@ export function N8nTab() {
 
   return (
     <div className="space-y-4">
-      <Card data-retest-scope tabIndex={0} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-2">
-              <Workflow className="h-5 w-5 text-primary" />
-              <CardTitle>n8n</CardTitle>
-            </div>
-            <ConnectionStatusBadge status={status} />
-          </div>
-          <CardDescription>
-            Conecte uma instância n8n para automatizar workflows a partir de eventos do sistema.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 max-w-2xl">
-          <SecretField label="Base URL" secretName="N8N_BASE_URL" status={base} onSaved={list} connectionId="n8n"
-            helperText="Ex: https://n8n.suaempresa.com" />
-          <SecretField label="API Key" secretName="N8N_API_KEY" status={get("N8N_API_KEY")} onSaved={list} connectionId="n8n" />
-          <div className="pt-2 flex flex-wrap gap-2">
-            <Button size="sm" disabled={isTesting || !credsLooksValid}
-              title={!credsOk ? "Configure a Base URL primeiro"
-                : !credsLooksValid ? "Credenciais com formato suspeito (comprimento curto) — re-salve antes de testar"
-                : "Testar /healthz"}
-              onClick={onTest}>
-              {isTesting ? "Testando…" : "Testar /healthz"}
-            </Button>
-            <ConnectionTimelineDrawer type="n8n" label="n8n" open={timelineOpen} onOpenChange={setTimelineOpen} />
-            <RefreshFromDbButton onRefreshed={() => { void list(); }} />
-            <RetestCooldownSelector className="ml-auto" />
-          </div>
-          <TestProgressIndicator
-            phase={phase}
-            latencyMs={last?.latency_ms ?? null}
-            message={last?.ok ? `HTTP ${last?.status ?? 200}` : (last?.message ?? null)}
-            onDismiss={() => setPhase("idle")}
-          />
-          <LastTestLine
-            info={last}
-            autoFocusOnFailure
-            onClick={last?.tested_at ? () => setDetailsDialogOpen(true) : undefined}
-            action={
-              <RetestButton
-                onRetest={onTest}
-                disabled={!credsLooksValid}
-                cooldownKey="n8n"
-                disabledReason={!credsOk ? "Configure a Base URL primeiro" : "Credenciais com formato suspeito — re-salve antes de testar"}
-              />
-            }
-          />
-          <ConnectionTestHistoryPanel
-            type="n8n"
-            label="n8n"
-            refreshKey={historyKey}
-            pendingTest={pendingStartedAt ? { startedAt: pendingStartedAt } : null}
-          />
-          <ConnectionTestDetailsDialog
-            open={detailsDialogOpen}
-            onOpenChange={setDetailsDialogOpen}
-            connectionType="n8n"
-            connectionLabel="n8n"
-            onViewFullHistory={() => setTimelineOpen(true)}
-          />
-        </CardContent>
-      </Card>
+      <N8nConnectionCard status={status} base={base} apiKey={get("N8N_API_KEY")} list={list} isTesting={isTesting} credsOk={credsOk} credsLooksValid={credsLooksValid} onTest={onTest} timelineOpen={timelineOpen} setTimelineOpen={setTimelineOpen} phase={phase} setPhase={setPhase} last={last} detailsDialogOpen={detailsDialogOpen} setDetailsDialogOpen={setDetailsDialogOpen} historyKey={historyKey} pendingStartedAt={pendingStartedAt} />
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Workflows registrados</CardTitle>

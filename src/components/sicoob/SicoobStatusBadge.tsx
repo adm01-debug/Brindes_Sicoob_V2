@@ -36,8 +36,8 @@ export function SicoobStatusBadge({
   }
 
   return (
-    <Badge 
-      variant={config.badgeVariant as any} 
+    <Badge
+      variant={config.badgeVariant}
       className={cn("gap-1.5", className)}
     >
       {showIcon && <Icon className="h-3 w-3" />}

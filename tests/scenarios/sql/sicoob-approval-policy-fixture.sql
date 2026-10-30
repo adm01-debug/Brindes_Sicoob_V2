@@ -4,8 +4,12 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE ROLE authenticated NOLOGIN;
 CREATE ROLE anon NOLOGIN;
+CREATE ROLE service_role NOLOGIN;
 
 CREATE SCHEMA auth;
+CREATE TABLE auth.users (
+  id uuid PRIMARY KEY
+);
 CREATE FUNCTION auth.uid() RETURNS uuid
 LANGUAGE sql STABLE
 AS $$ SELECT NULLIF(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
@@ -20,9 +24,17 @@ CREATE TABLE public.cooperativas (
   name text
 );
 
+CREATE TABLE public.postos_atendimento (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  cooperativa_id uuid NOT NULL REFERENCES public.cooperativas(id),
+  nome text
+);
+
 CREATE TABLE public.profiles (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL UNIQUE,
+  full_name text,
+  email text,
   cooperativa_id uuid,
   pa_id uuid,
   is_active boolean DEFAULT true,
@@ -156,3 +168,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+-- Dependência criada na trilha de RLS cruzada. A fixture de aprovação mantém
+-- uma implementação neutra; a migration canônica a substitui no sistema real.
+CREATE FUNCTION public.sicoob_actor_can_manage_fulfillment(uuid, uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+AS $$ SELECT false $$;

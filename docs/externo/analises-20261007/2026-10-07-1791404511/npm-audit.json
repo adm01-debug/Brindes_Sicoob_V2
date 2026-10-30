@@ -1,0 +1,351 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "argparse": {
+      "name": "argparse",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "sprintf-js"
+      ],
+      "effects": [
+        "js-yaml"
+      ],
+      "range": "1.0.0 - 1.0.10",
+      "nodes": [
+        "node_modules/gray-matter/node_modules/argparse"
+      ],
+      "fixAvailable": {
+        "name": "md-to-pdf",
+        "version": "2.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "braces": {
+      "name": "braces",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1240992,
+          "name": "braces",
+          "dependency": "braces",
+          "title": "braces vulnerable to stack-exhaustion denial of service through deeply nested patterns",
+          "url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+          "severity": "high",
+          "cwe": [
+            "CWE-674"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<=3.0.3"
+        }
+      ],
+      "effects": [
+        "chokidar",
+        "micromatch"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/braces"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    },
+    "chokidar": {
+      "name": "chokidar",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "braces"
+      ],
+      "effects": [
+        "md-to-pdf",
+        "tailwindcss"
+      ],
+      "range": "2.0.0 - 3.6.0",
+      "nodes": [
+        "node_modules/chokidar"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    },
+    "fast-glob": {
+      "name": "fast-glob",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "micromatch"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/fast-glob"
+      ],
+      "fixAvailable": true
+    },
+    "gray-matter": {
+      "name": "gray-matter",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "js-yaml"
+      ],
+      "effects": [
+        "md-to-pdf"
+      ],
+      "range": ">=2.0.2",
+      "nodes": [
+        "node_modules/gray-matter"
+      ],
+      "fixAvailable": {
+        "name": "md-to-pdf",
+        "version": "2.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "js-yaml": {
+      "name": "js-yaml",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "argparse"
+      ],
+      "effects": [
+        "gray-matter"
+      ],
+      "range": "3.2.7 - 3.15.2",
+      "nodes": [
+        "node_modules/gray-matter/node_modules/js-yaml"
+      ],
+      "fixAvailable": {
+        "name": "md-to-pdf",
+        "version": "2.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "lovable-tagger": {
+      "name": "lovable-tagger",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "tailwindcss"
+      ],
+      "effects": [],
+      "range": ">=1.1.1",
+      "nodes": [
+        "node_modules/lovable-tagger"
+      ],
+      "fixAvailable": {
+        "name": "lovable-tagger",
+        "version": "1.0.20",
+        "isSemVerMajor": true
+      }
+    },
+    "md-to-pdf": {
+      "name": "md-to-pdf",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "chokidar",
+        "gray-matter"
+      ],
+      "effects": [],
+      "range": ">=2.1.4",
+      "nodes": [
+        "node_modules/md-to-pdf"
+      ],
+      "fixAvailable": {
+        "name": "md-to-pdf",
+        "version": "2.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "micromatch": {
+      "name": "micromatch",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "braces"
+      ],
+      "effects": [
+        "fast-glob",
+        "tailwindcss"
+      ],
+      "range": ">=0.2.0",
+      "nodes": [
+        "node_modules/micromatch"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    },
+    "postcss-nested": {
+      "name": "postcss-nested",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "postcss-selector-parser"
+      ],
+      "effects": [],
+      "range": "2.0.3 - 6.2.0",
+      "nodes": [
+        "node_modules/postcss-nested"
+      ],
+      "fixAvailable": true
+    },
+    "postcss-selector-parser": {
+      "name": "postcss-selector-parser",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1241232,
+          "name": "postcss-selector-parser",
+          "dependency": "postcss-selector-parser",
+          "title": "PostCSS: Quadratic complexity in flat selector parsing allows CPU exhaustion",
+          "url": "https://github.com/advisories/GHSA-rj75-hqrm-r3gf",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-400",
+            "CWE-407"
+          ],
+          "cvss": {
+            "score": 5.9,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<7.1.6"
+        }
+      ],
+      "effects": [
+        "postcss-nested",
+        "tailwindcss"
+      ],
+      "range": "<7.1.6",
+      "nodes": [
+        "node_modules/postcss-selector-parser"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    },
+    "source-map-js": {
+      "name": "source-map-js",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1241209,
+          "name": "source-map-js",
+          "dependency": "source-map-js",
+          "title": "source-map-js allows event-loop denial of service through indexed source-map section offsets",
+          "url": "https://github.com/advisories/GHSA-68fv-2mgg-jv7q",
+          "severity": "high",
+          "cwe": [
+            "CWE-1284"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=1.0.0 <1.2.2"
+        }
+      ],
+      "effects": [],
+      "range": "1.0.0 - 1.2.1",
+      "nodes": [
+        "node_modules/source-map-js"
+      ],
+      "fixAvailable": true
+    },
+    "sprintf-js": {
+      "name": "sprintf-js",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1241202,
+          "name": "sprintf-js",
+          "dependency": "sprintf-js",
+          "title": "sprintf-js vulnerable to denial of service through unbounded precision specifiers",
+          "url": "https://github.com/advisories/GHSA-hp3w-g68c-fv3c",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-1284"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": "<=1.1.3"
+        }
+      ],
+      "effects": [
+        "argparse"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/sprintf-js"
+      ],
+      "fixAvailable": {
+        "name": "md-to-pdf",
+        "version": "2.2.0",
+        "isSemVerMajor": true
+      }
+    },
+    "tailwindcss": {
+      "name": "tailwindcss",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "chokidar",
+        "fast-glob",
+        "micromatch",
+        "postcss-nested",
+        "postcss-selector-parser"
+      ],
+      "effects": [
+        "lovable-tagger"
+      ],
+      "range": "<=0.0.0-oxide-insiders.ff2c25f || 0.5.0 - 3.4.19",
+      "nodes": [
+        "node_modules/tailwindcss"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 7,
+      "high": 7,
+      "critical": 0,
+      "total": 14
+    },
+    "dependencies": {
+      "prod": 1011,
+      "dev": 72,
+      "optional": 88,
+      "peer": 1,
+      "peerOptional": 0,
+      "total": 1150
+    }
+  }
+}

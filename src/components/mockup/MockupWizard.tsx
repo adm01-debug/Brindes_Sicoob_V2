@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { type KeyboardEvent, type ReactNode, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, Package, Paintbrush, Upload, Move, Sparkles, Building2 } from "lucide-react";
 
@@ -6,7 +6,7 @@ interface MockupWizardStep {
   id: number;
   label: string;
   description: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   isCompleted: boolean;
   isActive: boolean;
 }
@@ -21,6 +21,23 @@ interface MockupWizardProps {
   hasGenerated: boolean;
   className?: string;
   onStepClick?: (step: number) => void;
+}
+
+function WizardStepCircle({ step, clickable }: { step: MockupWizardStep; clickable: boolean }) {
+  const stateClass = step.isCompleted ? "bg-primary border-primary text-primary-foreground shadow-md shadow-primary/25" : step.isActive ? "bg-background border-primary text-primary ring-4 ring-primary/20 animate-pulse" : "bg-muted border-muted-foreground/30 text-muted-foreground";
+  return <div className={cn("flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300", "font-semibold text-sm", stateClass, clickable ? "group-hover/step:scale-110 group-hover/step:shadow-lg transition-transform" : undefined)}>{step.isCompleted ? <CheckCircle2 className="h-5 w-5" /> : step.icon}</div>;
+}
+
+function WizardStepLabel({ step, clickable }: { step: MockupWizardStep; clickable: boolean }) {
+  const stateClass = step.isActive ? "text-primary" : step.isCompleted ? "text-foreground" : "text-muted-foreground";
+  return <div className="mt-2 text-center max-w-[100px]"><p className={cn("text-xs font-medium transition-colors", stateClass, clickable ? "group-hover/step:text-primary" : undefined)}>{step.label}</p><p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{step.description}</p></div>;
+}
+
+function DesktopWizardStep({ step, currentStep, onStepClick }: { step: MockupWizardStep; currentStep: number; onStepClick?: (step: number) => void }) {
+  const clickable = Boolean(onStepClick) && (step.isCompleted || step.id <= currentStep);
+  const activate = () => { if (clickable) onStepClick?.(step.id); };
+  const handleKey = (event: KeyboardEvent) => { if (clickable && event.key === "Enter") onStepClick?.(step.id); };
+  return <div className={cn("relative z-10 flex flex-col items-center", "flex-1 first:flex-initial last:flex-initial", clickable ? "cursor-pointer group/step" : undefined)} onClick={activate} role={clickable ? "button" : undefined} tabIndex={clickable ? 0 : undefined} onKeyDown={handleKey}><WizardStepCircle step={step} clickable={clickable} /><WizardStepLabel step={step} clickable={clickable} /></div>;
 }
 
 export const MockupWizard = forwardRef<HTMLDivElement, MockupWizardProps>(function MockupWizard({
@@ -113,60 +130,7 @@ export const MockupWizard = forwardRef<HTMLDivElement, MockupWizardProps>(functi
             style={{ width: `${progressPercent * 0.9}%` }}
           />
 
-          {steps.map((step, index) => {
-            // Allow clicking completed steps or the current active step's next
-            const isClickable = onStepClick && (step.isCompleted || step.id <= currentStep);
-            return (
-            <div
-              key={step.id}
-              className={cn(
-                "relative z-10 flex flex-col items-center",
-                "flex-1 first:flex-initial last:flex-initial",
-                isClickable && "cursor-pointer group/step"
-              )}
-              onClick={() => isClickable && onStepClick(step.id)}
-              role={isClickable ? "button" : undefined}
-              tabIndex={isClickable ? 0 : undefined}
-              onKeyDown={(e) => isClickable && e.key === "Enter" && onStepClick(step.id)}
-            >
-              {/* Step Circle */}
-              <div
-                className={cn(
-                  "flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300",
-                  "font-semibold text-sm",
-                  step.isCompleted && "bg-primary border-primary text-primary-foreground shadow-md shadow-primary/25",
-                  step.isActive && !step.isCompleted && "bg-background border-primary text-primary ring-4 ring-primary/20 animate-pulse",
-                  !step.isActive && !step.isCompleted && "bg-muted border-muted-foreground/30 text-muted-foreground",
-                  isClickable && "group-hover/step:scale-110 group-hover/step:shadow-lg transition-transform"
-                )}
-              >
-                {step.isCompleted ? (
-                  <CheckCircle2 className="h-5 w-5" />
-                ) : (
-                  step.icon
-                )}
-              </div>
-
-              {/* Label */}
-              <div className="mt-2 text-center max-w-[100px]">
-                <p
-                  className={cn(
-                    "text-xs font-medium transition-colors",
-                    step.isActive && "text-primary",
-                    step.isCompleted && "text-foreground",
-                    !step.isActive && !step.isCompleted && "text-muted-foreground",
-                    isClickable && "group-hover/step:text-primary"
-                  )}
-                >
-                  {step.label}
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">
-                  {step.description}
-                </p>
-              </div>
-            </div>
-            );
-          })}
+          {steps.map((step) => <DesktopWizardStep key={step.id} step={step} currentStep={currentStep} onStepClick={onStepClick} />)}
         </div>
       </div>
 
@@ -228,4 +192,3 @@ export const MockupWizard = forwardRef<HTMLDivElement, MockupWizardProps>(functi
     </div>
   );
 });
-

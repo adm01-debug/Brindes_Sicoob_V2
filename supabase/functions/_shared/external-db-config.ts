@@ -58,6 +58,7 @@ export const PRODUCT_TABLES = [
   'ramo_atividade_filho',
   'produto_ramo_atividade',
   'personalization_techniques',
+  'personalization_technique_options',
   'customization_price_tables',
   'customization_price_tiers',
   'tecnicas_gravacao',

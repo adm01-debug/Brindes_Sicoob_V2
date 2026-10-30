@@ -2,7 +2,7 @@
  * MockupAnnotations — Simple comment layer on generated mockup
  */
 
-import { useState, useRef, useCallback } from "react";
+import { type MouseEvent, useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -35,7 +35,7 @@ export function MockupAnnotations({
   const [editText, setEditText] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleClick = useCallback((e: React.MouseEvent) => {
+  const handleClick = useCallback((e: MouseEvent) => {
     if (!isAnnotating || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;

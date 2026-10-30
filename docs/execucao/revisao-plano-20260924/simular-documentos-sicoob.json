@@ -1,0 +1,26 @@
+{
+  "ambiente": "PostgreSQL 16 descartável sem rede",
+  "remoto_validado": false,
+  "cenarios": {
+    "nota_sem_objeto_bloqueada": true,
+    "registro_limpo_exige_service_role": true,
+    "nota_valida_vinculada": true,
+    "nota_recebe_identidade_verificada": true,
+    "documento_nao_pode_ser_reutilizado": true,
+    "metadata_forjada_sem_registro_limpo_bloqueada": true,
+    "comprovante_registrado_por_scanner": true,
+    "comprovante_valido_vinculado": true,
+    "proprietario_do_comprovante_materializado": true,
+    "novo_comprovante_registrado": true,
+    "upsert_vincula_comprovante_ao_registro_existente": true,
+    "identidade_do_comprovante_nao_pode_ser_adulterada": true,
+    "escrita_direta_de_item_revogada": true,
+    "comprovante_orfao_removivel": true,
+    "comprovante_recebe_identidade_verificada": true,
+    "remocao_do_caminho_elimina_identidade_pendente": true,
+    "uploads_diretos_finais_revogados": true,
+    "quarentena_privada": true,
+    "registro_nao_exposto_para_escrita": true,
+    "trigger_privado": true
+  }
+}

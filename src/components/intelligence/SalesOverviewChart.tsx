@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
 import { KpiCard } from "@/components/ui/KpiCard";
 import { useSalesHistoryMacro } from "@/hooks/useSalesHistoryMacro";
+import type { DailySalesPoint } from "@/hooks/useSalesHistory";
 import { safeParseDateForChart } from "@/lib/stock-chart-utils";
 
 interface Props {
@@ -29,8 +30,42 @@ interface Props {
   productId?: string | null;
 }
 
-export function SalesOverviewChart({ days = 30, productId }: Props) {
-  const { data, isLoading, error } = useSalesHistoryMacro(days);
+type SalesMacroChartDatum = DailySalesPoint & { dateFormatted: string; fullDate: string };
+
+interface SalesMacroTooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: SalesMacroChartDatum }>;
+}
+
+type SalesKpis = NonNullable<NonNullable<ReturnType<typeof useSalesHistoryMacro>["data"]>["kpis"]>;
+
+function conversionClass(rate: number) {
+  if (rate >= 40) return 'bg-primary/15 text-primary border-primary/30';
+  if (rate >= 20) return 'bg-warning/15 text-warning border-warning/30';
+  return 'bg-destructive/15 text-destructive border-destructive/30';
+}
+
+function ConversionBadge({ kpis }: { kpis: SalesKpis | undefined }) {
+  if (!kpis || kpis.conversionRate <= 0) return null;
+  return <Badge variant="outline" className={cn("font-bold text-xs", conversionClass(kpis.conversionRate))}><Target className="h-3 w-3 mr-1" />{kpis.conversionRate.toFixed(1)}% conversão</Badge>;
+}
+
+function SalesKpiGrid({ kpis }: { kpis: SalesKpis | undefined }) {
+  const values = kpis ?? { totalQuotedQty: 0, totalQuotedValue: 0, totalOrderedQty: 0, totalOrderedValue: 0, avgOrderValue: 0, uniqueSellers: 0, conversionRate: 0 };
+  const average = Number.isFinite(values.avgOrderValue) ? values.avgOrderValue : 0;
+  return <div className="grid grid-cols-3 sm:grid-cols-6 gap-2"><KpiCard icon={FileText} label="Orçado (qtd)" value={values.totalQuotedQty.toLocaleString('pt-BR')} sub={formatCurrency(values.totalQuotedValue)} /><KpiCard icon={ShoppingCart} label="Vendido (qtd)" value={values.totalOrderedQty.toLocaleString('pt-BR')} sub={formatCurrency(values.totalOrderedValue)} highlight /><KpiCard icon={DollarSign} label="Ticket médio" value={formatCurrency(average)} sub="por pedido" /><KpiCard icon={Users} label="Vendedores" value={String(values.uniqueSellers)} sub="ativos" /><KpiCard icon={Target} label="Conversão" value={`${values.conversionRate.toFixed(1)}%`} sub="orç → ped" /><KpiCard icon={Package} label="Faturamento" value={formatCurrency(values.totalOrderedValue)} sub="total no período" highlight /></div>;
+}
+
+function SalesChart({ data }: { data: SalesMacroChartDatum[] }) {
+  return <div className="h-[200px] w-full"><ResponsiveContainer width="100%" height="100%" debounce={50}><ComposedChart data={data} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}><CartesianGrid strokeDasharray="3 3" className="stroke-border" /><XAxis dataKey="dateFormatted" tick={{ fontSize: 10 }} className="fill-muted-foreground" interval="preserveStartEnd" /><YAxis yAxisId="qty" tick={{ fontSize: 10 }} className="fill-muted-foreground" width={45} /><YAxis yAxisId="value" orientation="right" hide /><Tooltip content={<SalesMacroTooltip />} /><Legend wrapperStyle={{ fontSize: '10px', paddingTop: '4px' }} iconSize={8} formatter={(value: string) => <span className="text-muted-foreground text-[10px]">{value}</span>} /><Bar yAxisId="qty" dataKey="quotedQty" fill="hsl(var(--primary) / 0.25)" name="Qtd Orçada" radius={[2, 2, 0, 0]} barSize={6} /><Bar yAxisId="qty" dataKey="orderedQty" fill="hsl(var(--primary))" name="Qtd Vendida" radius={[2, 2, 0, 0]} barSize={6} /><Area yAxisId="value" type="monotone" dataKey="orderedValue" stroke="hsl(var(--chart-2, 142 71% 45%))" fill="hsl(var(--chart-2, 142 71% 45%) / 0.1)" strokeWidth={1.5} name="Faturamento" dot={false} /></ComposedChart></ResponsiveContainer></div>;
+}
+
+function EmptySalesOverview() {
+  return <Card><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2"><div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center"><ShoppingCart className="h-3.5 w-3.5 text-primary-foreground" /></div>📊 Vendas Internas (Macro)</CardTitle></CardHeader><CardContent><p className="text-sm text-muted-foreground text-center py-6">Nenhum dado de vendas disponível. Os dados aparecerão quando houver orçamentos e pedidos.</p></CardContent></Card>;
+}
+
+export function SalesOverviewChart({ days = 30 }: Props) {
+  const { data, isLoading } = useSalesHistoryMacro(days);
 
   const chartData = useMemo(() => {
     if (!data?.daily?.length) return [];
@@ -55,27 +90,7 @@ export function SalesOverviewChart({ days = 30, productId }: Props) {
     );
   }
 
-  if (!hasData && !isLoading) {
-    return (
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-              <ShoppingCart className="h-3.5 w-3.5 text-primary-foreground" />
-            </div>
-            📊 Vendas Internas (Macro)
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground text-center py-6">
-            Nenhum dado de vendas disponível. Os dados aparecerão quando houver orçamentos e pedidos.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const safeAvgOrderValue = Number.isFinite(kpis?.avgOrderValue) ? kpis!.avgOrderValue : 0;
+  if (!hasData) return <EmptySalesOverview />;
 
   return (
     <Card>
@@ -92,86 +107,13 @@ export function SalesOverviewChart({ days = 30, productId }: Props) {
               Orçamentos vs Pedidos de toda a equipe · {days} dias
             </CardDescription>
           </div>
-          {kpis && kpis.conversionRate > 0 && (
-            <Badge
-              variant="outline"
-              className={cn(
-                "font-bold text-xs",
-                kpis.conversionRate >= 40 ? 'bg-primary/15 text-primary border-primary/30' :
-                kpis.conversionRate >= 20 ? 'bg-warning/15 text-warning border-warning/30' :
-                'bg-destructive/15 text-destructive border-destructive/30'
-              )}
-            >
-              <Target className="h-3 w-3 mr-1" />
-              {kpis.conversionRate.toFixed(1)}% conversão
-            </Badge>
-          )}
+          <ConversionBadge kpis={kpis} />
         </div>
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* KPI cards */}
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-          <KpiCard
-            icon={FileText}
-            label="Orçado (qtd)"
-            value={(kpis?.totalQuotedQty ?? 0).toLocaleString('pt-BR')}
-            sub={formatCurrency(kpis?.totalQuotedValue ?? 0)}
-          />
-          <KpiCard
-            icon={ShoppingCart}
-            label="Vendido (qtd)"
-            value={(kpis?.totalOrderedQty ?? 0).toLocaleString('pt-BR')}
-            sub={formatCurrency(kpis?.totalOrderedValue ?? 0)}
-            highlight
-          />
-          <KpiCard
-            icon={DollarSign}
-            label="Ticket médio"
-            value={formatCurrency(safeAvgOrderValue)}
-            sub="por pedido"
-          />
-          <KpiCard
-            icon={Users}
-            label="Vendedores"
-            value={String(kpis?.uniqueSellers ?? 0)}
-            sub="ativos"
-          />
-          <KpiCard
-            icon={Target}
-            label="Conversão"
-            value={`${(kpis?.conversionRate ?? 0).toFixed(1)}%`}
-            sub="orç → ped"
-          />
-          <KpiCard
-            icon={Package}
-            label="Faturamento"
-            value={formatCurrency(kpis?.totalOrderedValue ?? 0)}
-            sub="total no período"
-            highlight
-          />
-        </div>
-
-        {/* Chart */}
-        <div className="h-[200px] w-full">
-          <ResponsiveContainer width="100%" height="100%" debounce={50}>
-            <ComposedChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis dataKey="dateFormatted" tick={{ fontSize: 10 }} className="fill-muted-foreground" interval="preserveStartEnd" />
-              <YAxis yAxisId="qty" tick={{ fontSize: 10 }} className="fill-muted-foreground" width={45} />
-              <YAxis yAxisId="value" orientation="right" hide />
-              <Tooltip content={(props) => <SalesMacroTooltip {...props} />} />
-              <Legend
-                wrapperStyle={{ fontSize: '10px', paddingTop: '4px' }}
-                iconSize={8}
-                formatter={(value: string) => <span className="text-muted-foreground text-[10px]">{value}</span>}
-              />
-              <Bar yAxisId="qty" dataKey="quotedQty" fill="hsl(var(--primary) / 0.25)" name="Qtd Orçada" radius={[2, 2, 0, 0]} barSize={6} />
-              <Bar yAxisId="qty" dataKey="orderedQty" fill="hsl(var(--primary))" name="Qtd Vendida" radius={[2, 2, 0, 0]} barSize={6} />
-              <Area yAxisId="value" type="monotone" dataKey="orderedValue" stroke="hsl(var(--chart-2, 142 71% 45%))" fill="hsl(var(--chart-2, 142 71% 45%) / 0.1)" strokeWidth={1.5} name="Faturamento" dot={false} />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
+        <SalesKpiGrid kpis={kpis} />
+        <SalesChart data={chartData} />
 
       </CardContent>
     </Card>
@@ -179,7 +121,7 @@ export function SalesOverviewChart({ days = 30, productId }: Props) {
 }
 
 
-function SalesMacroTooltip({ active, payload }: any) {
+function SalesMacroTooltip({ active, payload }: SalesMacroTooltipProps) {
   if (!active || !payload?.length) return null;
   const data = payload[0]?.payload;
   if (!data) return null;

@@ -416,11 +416,12 @@ export function useIsProductNovelty(productId: string) {
         limit: 1,
       });
 
-      if (!result.records || !result.records.length) {
+      const product = result.records?.[0];
+      if (!product) {
         return { isNovelty: false, daysRemaining: null };
       }
 
-      const daysRemaining = calcDaysRemaining(result.records[0]!.created_at);
+      const daysRemaining = calcDaysRemaining(product.created_at);
       return {
         isNovelty: daysRemaining > 0,
         daysRemaining: daysRemaining > 0 ? daysRemaining : null,

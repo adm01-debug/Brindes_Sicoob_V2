@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  CACHE_TIMES, GC_TIMES, QUERY_KEY_PREFIXES,
+  CACHE_TIMES, GC_TIMES,
   getStaleTimeForKey, getGcTimeForKey,
   createQueryClient,
   TECNICAS_QUERY_OPTIONS, TABELAS_PRECO_QUERY_OPTIONS,

@@ -80,8 +80,8 @@ export const useApprovalRequests = (orderId?: string) => {
       queryClient.invalidateQueries({ queryKey: ["sicoob_orders"] });
       queryClient.invalidateQueries({ queryKey: ["sicoob_order_history", orderId] });
     },
-    onError: (error: any) => {
-      toast.error("Erro ao enviar solicitação: " + error.message);
+    onError: (error: unknown) => {
+      toast.error("Erro ao enviar solicitação: " + (error instanceof Error ? error.message : String(error)));
     }
   });
 
@@ -99,8 +99,8 @@ export const useApprovalRequests = (orderId?: string) => {
       queryClient.invalidateQueries({ queryKey: ["sicoob_orders"] });
       queryClient.invalidateQueries({ queryKey: ["sicoob_order_history", orderId] });
     },
-    onError: (error: any) => {
-      toast.error("Erro ao aprovar: " + error.message);
+    onError: (error: unknown) => {
+      toast.error("Erro ao aprovar: " + (error instanceof Error ? error.message : String(error)));
     }
   });
 
@@ -118,8 +118,8 @@ export const useApprovalRequests = (orderId?: string) => {
       queryClient.invalidateQueries({ queryKey: ["sicoob_orders"] });
       queryClient.invalidateQueries({ queryKey: ["sicoob_order_history", orderId] });
     },
-    onError: (error: any) => {
-      toast.error("Erro ao rejeitar: " + error.message);
+    onError: (error: unknown) => {
+      toast.error("Erro ao rejeitar: " + (error instanceof Error ? error.message : String(error)));
     }
   });
 
@@ -154,9 +154,9 @@ export const useApprovalRequests = (orderId?: string) => {
       queryClient.invalidateQueries({ queryKey: ["sicoob_order", orderId] });
       queryClient.invalidateQueries({ queryKey: ["sicoob_order_history", orderId] });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error("Erro ao atualizar status", {
-        description: error.message
+        description: error instanceof Error ? error.message : String(error)
       });
     }
   });

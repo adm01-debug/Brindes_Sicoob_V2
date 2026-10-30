@@ -69,12 +69,37 @@ interface IndustryRow {
 
 const WINDOW_MONTHS = 24;
 
+interface ClientAccumulator {
+  q: number;
+  r: number;
+  t: number;
+  n: number;
+}
+
+function clientMonthCell(
+  month: number,
+  value: ClientAccumulator | undefined,
+  totalQuotes: number,
+  maxQuotes: number,
+): ClientMonthCell {
+  const quotes = value?.q ?? 0;
+  return {
+    month,
+    monthLabel: MONTH_LABELS[month - 1] ?? String(month),
+    quotesCount: quotes,
+    totalRevenue: value?.r ?? 0,
+    avgTicket: value && value.n > 0 ? value.t / value.n : 0,
+    sharePercent: totalQuotes > 0 ? (quotes / totalQuotes) * 100 : 0,
+    intensity: maxQuotes > 0 ? quotes / maxQuotes : 0,
+  };
+}
+
 function buildClientCells(rows: ClientRow[]): {
   cells: ClientMonthCell[];
   monthsCovered: number;
 } {
   // Acumula por mês (1..12) somando os 24 meses
-  const acc: Record<number, { q: number; r: number; t: number; n: number }> = {};
+  const acc: Record<number, ClientAccumulator> = {};
   const monthsSet = new Set<string>();
   for (const r of rows) {
     monthsSet.add(`${r.year}-${r.month}`);
@@ -90,17 +115,7 @@ function buildClientCells(rows: ClientRow[]): {
 
   const cells: ClientMonthCell[] = [];
   for (let m = 1; m <= 12; m++) {
-    const v = acc[m];
-    const q = v?.q ?? 0;
-    cells.push({
-      month: m,
-      monthLabel: MONTH_LABELS[m - 1]!,
-      quotesCount: q,
-      totalRevenue: v?.r ?? 0,
-      avgTicket: v && v.n > 0 ? v.t / v.n : 0,
-      sharePercent: totalQuotes > 0 ? (q / totalQuotes) * 100 : 0,
-      intensity: maxQuotes > 0 ? q / maxQuotes : 0,
-    });
+    cells.push(clientMonthCell(m, acc[m], totalQuotes, maxQuotes));
   }
   return { cells, monthsCovered: monthsSet.size };
 }
@@ -125,17 +140,66 @@ function buildIndustryCells(rows: IndustryRow[]): IndustryMonthCell[] {
 
   const cells: IndustryMonthCell[] = [];
   for (let m = 1; m <= 12; m++) {
-    const v = monthly[m]!;
-    cells.push({
-      month: m,
-      monthLabel: MONTH_LABELS[m - 1]!,
-      avgQuotesPerCompany: v.q,
-      avgRevenuePerCompany: v.r,
-      sharePercent: totalQ > 0 ? (v.q / totalQ) * 100 : 0,
-      intensity: maxQ > 0 ? v.q / maxQ : 0,
-    });
+    cells.push(industryMonthCell(m, monthly[m] ?? { q: 0, r: 0 }, totalQ, maxQ));
   }
   return cells;
+}
+
+function industryMonthCell(
+  month: number,
+  value: { q: number; r: number },
+  totalQuotes: number,
+  maxQuotes: number,
+): IndustryMonthCell {
+  return {
+    month,
+    monthLabel: MONTH_LABELS[month - 1] ?? String(month),
+    avgQuotesPerCompany: value.q,
+    avgRevenuePerCompany: value.r,
+    sharePercent: totalQuotes > 0 ? (value.q / totalQuotes) * 100 : 0,
+    intensity: maxQuotes > 0 ? value.q / maxQuotes : 0,
+  };
+}
+
+function peakResult(
+  client: ClientMonthCell[],
+  industry: IndustryMonthCell[],
+  base: Omit<SeasonalityResult, "client" | "industry" | "topClientMonths" | "topIndustryMonths" | "nextPeakMonth" | "daysToNextPeak" | "insight">,
+): SeasonalityResult {
+  const topClient = pickTop(client, "quotesCount", 3);
+  const topIndustry = pickTop(industry, "avgQuotesPerCompany", 3);
+  const nextPeak = findNextPeak(topClient);
+  return {
+    ...base,
+    client,
+    industry,
+    topClientMonths: topClient,
+    topIndustryMonths: topIndustry,
+    nextPeakMonth: nextPeak?.month ?? null,
+    daysToNextPeak: nextPeak?.days ?? null,
+    insight: buildInsight(topClient, topIndustry, nextPeak),
+  };
+}
+
+function seasonalityResult(
+  data: { clientRows: ClientRow[]; industryRows: IndustryRow[]; companiesCount: number } | undefined,
+  isLoading: boolean,
+) {
+  const { cells: client, monthsCovered } = buildClientCells(data?.clientRows ?? []);
+  const realIndustry = buildIndustryCells(data?.industryRows ?? []);
+  const base = { isLoading, monthsCovered, windowMonths: WINDOW_MONTHS };
+  if (monthsCovered < 3) {
+    const mock = getMockSeasonality();
+    return peakResult(mock.client, mock.industry, {
+      ...base,
+      isMock: true,
+      hasEnoughData: false,
+    });
+  }
+  const industry = realIndustry.some((cell) => cell.avgQuotesPerCompany > 0)
+    ? realIndustry
+    : getMockSeasonality().industry;
+  return peakResult(client, industry, { ...base, isMock: false, hasEnoughData: true });
 }
 
 function pickTop<T extends { quotesCount?: number; avgQuotesPerCompany?: number }>(
@@ -215,10 +279,11 @@ export function useClientSeasonality(
     enabled: !!clientId,
     staleTime: 10 * 60 * 1000,
     queryFn: async () => {
+      if (!clientId) throw new Error("Cliente não identificado");
       // 1) Sazonalidade do cliente
       const { data: clientData, error: clientErr } = await supabase.rpc(
         "get_client_seasonality",
-        { _client_id: clientId!, _months: WINDOW_MONTHS },
+        { _client_id: clientId, _months: WINDOW_MONTHS },
       );
       if (clientErr) throw clientErr;
       const clientRows = (clientData ?? []) as ClientRow[];
@@ -251,60 +316,7 @@ export function useClientSeasonality(
     },
   });
 
-  const isLoading = query.isLoading;
-  const clientRows = query.data?.clientRows ?? [];
-  const industryRows = query.data?.industryRows ?? [];
-
-  const { cells: clientCells, monthsCovered } = buildClientCells(clientRows);
-  const realIndustryCells = buildIndustryCells(industryRows);
-  const hasEnoughData = monthsCovered >= 3;
-
-  // Fallback mock se cliente sem dados suficientes
-  if (!hasEnoughData) {
-    const mock = getMockSeasonality();
-    const topClient = pickTop(mock.client, "quotesCount", 3);
-    const topIndustry = pickTop(mock.industry, "avgQuotesPerCompany", 3);
-    const nextPeak = findNextPeak(topClient);
-    return {
-      isLoading,
-      isMock: true,
-      hasEnoughData: false,
-      monthsCovered,
-      windowMonths: WINDOW_MONTHS,
-      client: mock.client,
-      industry: mock.industry,
-      topClientMonths: topClient,
-      topIndustryMonths: topIndustry,
-      nextPeakMonth: nextPeak?.month ?? null,
-      daysToNextPeak: nextPeak?.days ?? null,
-      insight: buildInsight(topClient, topIndustry, nextPeak),
-    };
-  }
-
-  // Se setor estiver vazio mas cliente tem dados, usa mock só do setor para comparativo visual
-  const industryCells =
-    realIndustryCells.some((c) => c.avgQuotesPerCompany > 0)
-      ? realIndustryCells
-      : getMockSeasonality().industry;
-
-  const topClient = pickTop(clientCells, "quotesCount", 3);
-  const topIndustry = pickTop(industryCells, "avgQuotesPerCompany", 3);
-  const nextPeak = findNextPeak(topClient);
-
-  return {
-    isLoading,
-    isMock: false,
-    hasEnoughData: true,
-    monthsCovered,
-    windowMonths: WINDOW_MONTHS,
-    client: clientCells,
-    industry: industryCells,
-    topClientMonths: topClient,
-    topIndustryMonths: topIndustry,
-    nextPeakMonth: nextPeak?.month ?? null,
-    daysToNextPeak: nextPeak?.days ?? null,
-    insight: buildInsight(topClient, topIndustry, nextPeak),
-  };
+  return seasonalityResult(query.data, query.isLoading);
 }
 
 export const SEASONALITY_MONTH_LABELS = MONTH_LABELS;

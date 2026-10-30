@@ -1,5 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSalesScope } from '@/lib/auth/visibility-scope';
+import { applySellerScope } from '@/lib/auth/apply-seller-scope';
 
 interface ProductInsight {
   totalViews: number;
@@ -18,21 +21,100 @@ interface ProductInsight {
   }>;
 }
 
+const EMPTY_INSIGHT: ProductInsight = {
+  totalViews: 0,
+  totalQuotes: 0,
+  totalOrders: 0,
+  conversionRate: 0,
+  averageQuantity: 0,
+  topSegments: [],
+  recentActivity: [],
+};
+
+function calculateAverageQuantity(
+  quoteItems: Array<{ quantity: number | null }>,
+  orderItems: Array<{ quantity: number | null }>,
+) {
+  const quantities = [
+    ...quoteItems.map((item) => item.quantity ?? 0),
+    ...orderItems.map((item) => item.quantity ?? 0),
+  ];
+  if (quantities.length === 0) return 0;
+  return quantities.reduce((sum, quantity) => sum + quantity, 0) / quantities.length;
+}
+
+function countOrderSegments(
+  orders: Array<{ client_id: string | null }>,
+  segmentByClient: Record<string, string>,
+) {
+  const counts: Record<string, number> = {};
+  for (const order of orders) {
+    const segment = order.client_id ? segmentByClient[order.client_id] : undefined;
+    if (segment) counts[segment] = (counts[segment] || 0) + 1;
+  }
+  return Object.entries(counts)
+    .map(([segment, count]) => ({ segment, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+}
+
+async function fetchTopSegments(orderItems: Array<{ order_id: string | null }>, scope: ReturnType<typeof useSalesScope>, userId?: string) {
+  const orderIds = orderItems.map((item) => item.order_id).filter((id): id is string => id !== null);
+  if (orderIds.length === 0) return [];
+  const { data } = await applySellerScope(supabase.from('orders').select('client_id').in('id', orderIds), { scope, userId });
+  const orders = data || [];
+  const clientIds = [...new Set(orders.map((order) => order.client_id).filter(Boolean))];
+  if (clientIds.length === 0) return [];
+  const { selectCrm } = await import("@/lib/crm-db");
+  const clients = await selectCrm<{ id: string; ramo_atividade?: string }>("companies", {
+    select: "id, ramo_atividade",
+    filters: { id: { in: clientIds } },
+  });
+  const segmentByClient: Record<string, string> = {};
+  for (const client of clients) {
+    if (client.ramo_atividade) segmentByClient[client.id] = client.ramo_atividade;
+  }
+  return countOrderSegments(orders, segmentByClient);
+}
+
+async function fetchRecentActivity(productSku: string) {
+  const recentActivity: ProductInsight['recentActivity'] = [];
+  const [{ data: views }, { data: quotes }] = await Promise.all([
+    supabase
+      .from('product_views')
+      .select('created_at, seller_id')
+      .eq('product_sku', productSku)
+      .order('created_at', { ascending: false })
+      .limit(3),
+    supabase
+      .from('quote_items')
+      .select('created_at, quantity')
+      .eq('product_sku', productSku)
+      .order('created_at', { ascending: false })
+      .limit(3),
+  ]);
+  for (const view of views || []) {
+    recentActivity.push({ type: 'view', date: view.created_at, details: 'Visualizado por um vendedor' });
+  }
+  for (const quote of quotes || []) {
+    recentActivity.push({
+      type: 'quote',
+      date: quote.created_at,
+      details: `Adicionado em cotação (${quote.quantity} un.)`,
+    });
+  }
+  return recentActivity
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5);
+}
+
 export function useProductInsights(productId?: string, productSku?: string) {
+  const { user } = useAuth();
+  const scope = useSalesScope();
   return useQuery({
-    queryKey: ['product-insights', productSku],
+    queryKey: ['product-insights', productSku, scope, user?.id],
     queryFn: async (): Promise<ProductInsight> => {
-      if (!productSku) {
-        return {
-          totalViews: 0,
-          totalQuotes: 0,
-          totalOrders: 0,
-          conversionRate: 0,
-          averageQuantity: 0,
-          topSegments: [],
-          recentActivity: []
-        };
-      }
+      if (!productSku) return EMPTY_INSIGHT;
 
       const { count: viewsCount } = await supabase
         .from('product_views')
@@ -49,92 +131,14 @@ export function useProductInsights(productId?: string, productSku?: string) {
         .select('quantity, order_id', { count: 'exact' })
         .eq('product_sku', productSku);
 
-      const allQuantities = [
-        ...(quoteItems || []).map(q => q.quantity ?? 0),
-        ...(orderItems || []).map(o => o.quantity ?? 0)
-      ];
-      const averageQuantity = allQuantities.length > 0
-        ? allQuantities.reduce((a, b) => a + b, 0) / allQuantities.length
-        : 0;
-
-      const conversionRate = quotesCount && quotesCount > 0
-        ? ((ordersCount || 0) / quotesCount) * 100
-        : 0;
-
-      const orderIds = (orderItems || []).map(o => o.order_id).filter((id): id is string => id !== null);
-      let topSegments: ProductInsight['topSegments'] = [];
-      
-      if (orderIds.length > 0) {
-        const { data: orders } = await supabase
-          // rls-allow: agregação respeita escopo via RLS
-          .from('orders')
-          .select('client_id')
-          .in('id', orderIds);
-
-        const clientIds = [...new Set((orders || []).map(o => o.client_id).filter(Boolean))];
-        
-        if (clientIds.length > 0) {
-          const { selectCrm } = await import("@/lib/crm-db");
-          const clients = await selectCrm<{ id: string; ramo_atividade?: string }>("companies", {
-            select: "id, ramo_atividade",
-            filters: { id: { in: clientIds } },
-          });
-
-          const clientSegmentMap: Record<string, string> = {};
-          (clients || []).forEach((c: { id?: string; ramo_atividade?: string }) => {
-            if (c.ramo_atividade) clientSegmentMap[c.id as string] = c.ramo_atividade;
-          });
-
-          const segmentCounts: Record<string, number> = {};
-          (orders || []).forEach(order => {
-            const segment = order.client_id ? clientSegmentMap[order.client_id] : null;
-            if (segment) {
-              segmentCounts[segment] = (segmentCounts[segment] || 0) + 1;
-            }
-          });
-
-          topSegments = Object.entries(segmentCounts)
-            .map(([segment, count]) => ({ segment, count }))
-            .sort((a, b) => b.count - a.count)
-            .slice(0, 5);
-        }
-      }
-
-      const recentActivity: ProductInsight['recentActivity'] = [];
-
-      const { data: recentViews } = await supabase
-        .from('product_views')
-        .select('created_at, seller_id')
-        .eq('product_sku', productSku)
-        .order('created_at', { ascending: false })
-        .limit(3);
-
-      (recentViews || []).forEach(v => {
-        recentActivity.push({
-          type: 'view',
-          date: v.created_at,
-          details: 'Visualizado por um vendedor'
-        });
-      });
-
-      const { data: recentQuotes } = await supabase
-        .from('quote_items')
-        .select('created_at, quantity')
-        .eq('product_sku', productSku)
-        .order('created_at', { ascending: false })
-        .limit(3);
-
-      (recentQuotes || []).forEach(q => {
-        recentActivity.push({
-          type: 'quote',
-          date: q.created_at,
-          details: `Adicionado em cotação (${q.quantity} un.)`
-        });
-      });
-
-      recentActivity.sort((a, b) => 
-        new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
+      const quotes = quoteItems || [];
+      const orders = orderItems || [];
+      const averageQuantity = calculateAverageQuantity(quotes, orders);
+      const conversionRate = quotesCount ? ((ordersCount || 0) / quotesCount) * 100 : 0;
+      const [topSegments, recentActivity] = await Promise.all([
+        fetchTopSegments(orders, scope, user?.id),
+        fetchRecentActivity(productSku),
+      ]);
 
       return {
         totalViews: viewsCount || 0,
@@ -143,7 +147,7 @@ export function useProductInsights(productId?: string, productSku?: string) {
         conversionRate: Math.round(conversionRate * 10) / 10,
         averageQuantity: Math.round(averageQuantity),
         topSegments,
-        recentActivity: recentActivity.slice(0, 5)
+        recentActivity,
       };
     },
     enabled: !!productSku,

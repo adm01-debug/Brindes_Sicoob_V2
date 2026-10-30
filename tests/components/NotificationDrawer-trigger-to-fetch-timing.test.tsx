@@ -5,7 +5,7 @@
  * resolved prefetch, that the sample stays well within the 5s TTL window,
  * and that it correctly attributes coalesced events from a hover burst.
  */
-import React from "react";
+import React, { type JSX } from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, fireEvent, screen, cleanup, act } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";

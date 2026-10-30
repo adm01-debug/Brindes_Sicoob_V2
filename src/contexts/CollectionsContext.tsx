@@ -10,9 +10,11 @@ interface CollectionsContextType {
     name: string,
     description?: string,
     color?: string,
-    icon?: string,
-    clientId?: string | null,
-    clientName?: string | null
+    ...details: [
+      icon?: string,
+      clientId?: string | null,
+      clientName?: string | null,
+    ]
   ) => Collection;
   updateCollection: (
     id: string,
@@ -39,11 +41,12 @@ const CollectionsContext = createContext<CollectionsContextType | undefined>(und
 export function CollectionsProvider({ children }: { children: ReactNode }) {
   const collectionsHook = useCollections();
   const { getProductsByIds } = useProductsContext();
+  const { getCollectionProductsFromMap } = collectionsHook;
 
   const getCollectionProducts = useCallback(
     (collectionId: string): Product[] =>
-      collectionsHook.getCollectionProductsFromMap(collectionId, getProductsByIds),
-    [collectionsHook.getCollectionProductsFromMap, getProductsByIds]
+      getCollectionProductsFromMap(collectionId, getProductsByIds),
+    [getCollectionProductsFromMap, getProductsByIds]
   );
 
   return (

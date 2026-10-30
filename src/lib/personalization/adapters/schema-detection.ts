@@ -98,6 +98,15 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+const SCHEMA_DETECTORS: Array<{
+  version: Exclude<PriceSchemaVersion, 'unknown'>;
+  matches: (response: Record<string, unknown>) => boolean;
+}> = [
+  { version: 'v5.9-nested', matches: response => isObject(response.area) && 'id' in response.area },
+  { version: 'v6.x-flat', matches: response => ['preco_unitario', 'valor_gravacao', 'total_cobrado'].some(key => key in response) },
+  { version: 'v7-new', matches: response => 'unit_price' in response && ['subtotal_pieces', 'total_charged'].some(key => key in response) },
+];
+
 /**
  * Detecta a versão do payload retornado por `fn_get_customization_price`.
  */
@@ -107,24 +116,11 @@ export function detectPriceSchema(resp: Record<string, unknown> | null | undefin
     return 'unknown';
   }
 
-  // v5.9-nested: campo `area` é um objeto com `id`
-  if (isObject(resp.area) && 'id' in resp.area) {
-    bumpStat('v5.9-nested');
-    return 'v5.9-nested';
+  const detected = SCHEMA_DETECTORS.find(detector => detector.matches(resp))?.version;
+  if (detected) {
+    bumpStat(detected);
+    return detected;
   }
-
-  // v6.x-flat: campos em PT direto na raiz
-  if ('preco_unitario' in resp || 'valor_gravacao' in resp || 'total_cobrado' in resp) {
-    bumpStat('v6.x-flat');
-    return 'v6.x-flat';
-  }
-
-  // v7-new (hipotético): nomes em inglês na raiz
-  if ('unit_price' in resp && ('subtotal_pieces' in resp || 'total_charged' in resp)) {
-    bumpStat('v7-new');
-    return 'v7-new';
-  }
-
   bumpStat('unknown');
   return 'unknown';
 }
@@ -135,7 +131,6 @@ export function detectPriceSchema(resp: Record<string, unknown> | null | undefin
 export function warnUnknownSchemaOnce(key: string, payload?: unknown): void {
   if (warnedKeys.has(key)) return;
   warnedKeys.add(key);
-  // eslint-disable-next-line no-console
   console.warn(
     `[personalization/adapters] Payload com schema desconhecido (${key}). ` +
       'Verifique se o backend mudou a estrutura — adapter está caindo no fallback v6.x-flat.',
@@ -153,7 +148,7 @@ export function getSchemaStats(): Readonly<SchemaStats> {
 /**
  * Reset dos contadores (testes).
  */
-export function __resetSchemaStatsForTests(): void {
+export function resetSchemaStatsForTests(): void {
   stats['v5.9-nested'] = 0;
   stats['v6.x-flat'] = 0;
   stats['v7-new'] = 0;

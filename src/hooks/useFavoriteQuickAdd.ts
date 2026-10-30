@@ -1,13 +1,133 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFavoritesStore, type FavoriteVariantInfo } from "@/stores/useFavoritesStore";
-import { useFavoriteLists, useFavoriteListItems } from "@/hooks/useFavoriteLists";
+import { useFavoriteLists } from "@/hooks/useFavoriteLists";
 import type { Product } from "@/types/product-catalog";
 import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 
 const LAST_LIST_KEY = "favorites-last-used-list-id";
+const FAVORITE_MEMBERSHIP_QUERY_KEY = "favorite-membership";
+
+function membershipMap(rows: Array<{ product_id: string; list_id: string }>) {
+  const result = new Map<string, Set<string>>();
+  for (const row of rows) {
+    const lists = result.get(row.product_id) ?? new Set<string>();
+    lists.add(row.list_id);
+    result.set(row.product_id, lists);
+  }
+  return result;
+}
+
+function preferredListId(
+  forceListId: string | undefined,
+  lastUsedListId: string | null,
+  lists: Array<{ id: string }>,
+  defaultList: { id: string } | null | undefined,
+) {
+  if (forceListId) return forceListId;
+  if (lastUsedListId && lists.some((list) => list.id === lastUsedListId)) return lastUsedListId;
+  return defaultList?.id ?? null;
+}
+
+async function persistFavorite(
+  userId: string,
+  listId: string,
+  product: Product,
+  variant?: FavoriteVariantInfo,
+) {
+  const { error } = await supabase.from("favorite_items").upsert(
+    {
+      list_id: listId,
+      user_id: userId,
+      product_id: product.id,
+      variant_id: variant?.variant_id ?? null,
+      variant_info: (variant ?? null) as never,
+      price_at_save: typeof product.price === "number" ? product.price : null,
+    },
+    { onConflict: "list_id,product_id,variant_id", ignoreDuplicates: false },
+  );
+  if (error) throw error;
+}
+
+function saveLastListId(listId: string) {
+  try {
+    localStorage.setItem(LAST_LIST_KEY, listId);
+  } catch (error) {
+    logger.warn("Não foi possível salvar a última lista de favoritos", error);
+  }
+}
+
+function handleAddFailure({
+  productId,
+  addedLocally,
+  existsRemotely,
+  latest,
+  error,
+}: {
+  productId: string;
+  addedLocally: boolean;
+  existsRemotely: boolean;
+  latest: boolean;
+  error: unknown;
+}) {
+  if (!latest) return;
+  const store = useFavoritesStore.getState();
+  if (addedLocally && !existsRemotely && store.isFavorite(productId)) {
+    store.removeFavorite(productId);
+  }
+  toast.error(error instanceof Error ? error.message : "Erro ao salvar");
+}
+
+function handleRemoveFailure({
+  productId,
+  previousVariant,
+  existsRemotely,
+  latest,
+  error,
+}: {
+  productId: string;
+  previousVariant: FavoriteVariantInfo | undefined;
+  existsRemotely: boolean;
+  latest: boolean;
+  error: unknown;
+}) {
+  if (!latest) return;
+  const store = useFavoritesStore.getState();
+  if (existsRemotely && !store.isFavorite(productId)) {
+    store.addFavorite(productId, previousVariant);
+  }
+  console.warn("[favoriteQuickAdd] remove failed", error);
+}
+
+type FavoriteDecision = "local" | "remove" | "add" | "picker";
+interface FavoriteClickOptions {
+  shiftKey?: boolean;
+  variant?: FavoriteVariantInfo;
+  forceListId?: string;
+}
+
+function normalizedFavoriteOptions(options: FavoriteClickOptions | undefined) {
+  return {
+    shiftKey: Boolean(options?.shiftKey),
+    variant: options?.variant,
+    forceListId: options?.forceListId,
+  };
+}
+
+function favoriteDecision(
+  authenticated: boolean,
+  alreadyFavorite: boolean,
+  forceList: boolean,
+  directAdd: boolean,
+): FavoriteDecision {
+  if (!authenticated) return "local";
+  if (alreadyFavorite) return "remove";
+  if (forceList || directAdd) return "add";
+  return "picker";
+}
 
 /**
  * Hook orquestrador para favoritar a partir do catálogo.
@@ -22,10 +142,35 @@ export function useFavoriteQuickAdd() {
   const qc = useQueryClient();
   const { lists, defaultList, createList } = useFavoriteLists();
   const { toggleFavorite, isFavorite } = useFavoritesStore();
+  const productMutationTails = useRef(new Map<string, Promise<void>>());
+  const productMutationVersions = useRef(new Map<string, number>());
+  const productRemoteStates = useRef(new Map<string, boolean>());
+
+  const enqueueProductMutation = useCallback(async (
+    productId: string,
+    mutation: (isLatest: () => boolean) => Promise<void>,
+  ) => {
+    const version = (productMutationVersions.current.get(productId) ?? 0) + 1;
+    productMutationVersions.current.set(productId, version);
+    const previous = productMutationTails.current.get(productId) ?? Promise.resolve();
+    const current = previous
+      .catch(() => undefined)
+      .then(() => mutation(() => productMutationVersions.current.get(productId) === version));
+    productMutationTails.current.set(productId, current);
+    try {
+      await current;
+    } finally {
+      if (productMutationTails.current.get(productId) === current) {
+        productMutationTails.current.delete(productId);
+        productMutationVersions.current.delete(productId);
+        productRemoteStates.current.delete(productId);
+      }
+    }
+  }, []);
 
   // Index global de membership: produto X está em quais listas?
   const { data: membership = new Map<string, Set<string>>() } = useQuery({
-    queryKey: ["favorite-membership", user?.id],
+    queryKey: [FAVORITE_MEMBERSHIP_QUERY_KEY, user?.id],
     queryFn: async () => {
       if (!user) return new Map<string, Set<string>>();
       const { data, error } = await supabase
@@ -33,12 +178,7 @@ export function useFavoriteQuickAdd() {
         .select("product_id, list_id")
         .eq("user_id", user.id);
       if (error) throw error;
-      const map = new Map<string, Set<string>>();
-      (data ?? []).forEach((row: { product_id: string; list_id: string }) => {
-        if (!map.has(row.product_id)) map.set(row.product_id, new Set());
-        map.get(row.product_id)!.add(row.list_id);
-      });
-      return map;
+      return membershipMap(data ?? []);
     },
     enabled: !!user,
     staleTime: 30_000,
@@ -50,59 +190,81 @@ export function useFavoriteQuickAdd() {
 
   const hasMultipleLists = lists.length > 1;
 
+  const rememberRemoteState = useCallback((productId: string, localFallback: boolean) => {
+    if (!productRemoteStates.current.has(productId)) {
+      productRemoteStates.current.set(productId, membership.has(productId) || localFallback);
+    }
+  }, [membership]);
+
   /** Adiciona produto remotamente em uma lista específica + registra no store legado (sync local). */
   const addToList = useCallback(
     async (listId: string, product: Product, variant?: FavoriteVariantInfo) => {
       if (!user) return;
-      try {
-        const { error } = await supabase.from("favorite_items").upsert(
-          {
-            list_id: listId,
-            user_id: user.id,
-            product_id: product.id,
-            variant_id: variant?.variant_id ?? null,
-            variant_info: (variant ?? null) as never,
-            price_at_save: typeof product.price === "number" ? product.price : null,
-          },
-          { onConflict: "list_id,product_id,variant_id", ignoreDuplicates: false }
-        );
-        if (error) throw error;
-        try { localStorage.setItem(LAST_LIST_KEY, listId); } catch {}
-        // Sincroniza store legado (estado visual de "favoritado")
-        if (!isFavorite(product.id)) toggleFavorite(product.id, variant);
-        qc.invalidateQueries({ queryKey: ["favorite-membership"] });
-        qc.invalidateQueries({ queryKey: ["favorite-items"] });
-        qc.invalidateQueries({ queryKey: ["favorite-lists"] });
-        const listName = lists.find((l) => l.id === listId)?.name ?? "lista";
-        toast.success(`Adicionado em "${listName}"`);
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : "Erro ao salvar";
-        toast.error(msg);
-      }
+      // A interação visual e a cópia local são imediatas. A persistência
+      // remota não deve congelar o coração do catálogo em redes lentas.
+      const addedLocally = !isFavorite(product.id);
+      rememberRemoteState(product.id, !addedLocally);
+      if (addedLocally) toggleFavorite(product.id, variant);
+      await enqueueProductMutation(product.id, async (isLatest) => {
+        try {
+          await persistFavorite(user.id, listId, product, variant);
+          productRemoteStates.current.set(product.id, true);
+          saveLastListId(listId);
+          qc.invalidateQueries({ queryKey: [FAVORITE_MEMBERSHIP_QUERY_KEY] });
+          qc.invalidateQueries({ queryKey: ["favorite-items"] });
+          qc.invalidateQueries({ queryKey: ["favorite-lists"] });
+          const listName = lists.find((l) => l.id === listId)?.name ?? "lista";
+          if (isLatest()) toast.success(`Adicionado em "${listName}"`);
+        } catch (e) {
+          const existsRemotely = productRemoteStates.current.get(product.id) ?? false;
+          handleAddFailure({
+            productId: product.id,
+            addedLocally,
+            existsRemotely,
+            latest: isLatest(),
+            error: e,
+          });
+        }
+      });
     },
-    [user, qc, lists, isFavorite, toggleFavorite]
+    [user, qc, lists, isFavorite, toggleFavorite, enqueueProductMutation, rememberRemoteState]
   );
 
   /** Remove produto de TODAS as listas remotas + store legado. */
   const removeFromAll = useCallback(
     async (productId: string) => {
       if (!user) return;
-      try {
-        await supabase
-          .from("favorite_items")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("product_id", productId);
-        if (isFavorite(productId)) toggleFavorite(productId);
-        qc.invalidateQueries({ queryKey: ["favorite-membership"] });
-        qc.invalidateQueries({ queryKey: ["favorite-items"] });
-        qc.invalidateQueries({ queryKey: ["favorite-lists"] });
-      } catch (e) {
-        console.warn("[favoriteQuickAdd] remove failed", e);
-        if (isFavorite(productId)) toggleFavorite(productId);
-      }
+      // Mantém a experiência local responsiva; a sincronização com a nuvem
+      // acontece em segundo plano e reverte o estado se o banco a rejeitar.
+      const previousVariant = useFavoritesStore.getState().getFavoriteVariant(productId);
+      const removedLocally = isFavorite(productId);
+      rememberRemoteState(productId, removedLocally);
+      if (removedLocally) toggleFavorite(productId);
+      await enqueueProductMutation(productId, async (isLatest) => {
+        try {
+          const { error } = await supabase
+            .from("favorite_items")
+            .delete()
+            .eq("user_id", user.id)
+            .eq("product_id", productId);
+          if (error) throw error;
+          productRemoteStates.current.set(productId, false);
+          qc.invalidateQueries({ queryKey: [FAVORITE_MEMBERSHIP_QUERY_KEY] });
+          qc.invalidateQueries({ queryKey: ["favorite-items"] });
+          qc.invalidateQueries({ queryKey: ["favorite-lists"] });
+        } catch (e) {
+          const existsRemotely = productRemoteStates.current.get(productId) ?? removedLocally;
+          handleRemoveFailure({
+            productId,
+            previousVariant,
+            existsRemotely,
+            latest: isLatest(),
+            error: e,
+          });
+        }
+      });
     },
-    [user, qc, isFavorite, toggleFavorite]
+    [user, qc, isFavorite, toggleFavorite, enqueueProductMutation, rememberRemoteState]
   );
 
   /** Cria lista nova e adiciona o produto nela. */
@@ -122,36 +284,17 @@ export function useFavoriteQuickAdd() {
   const handleFavoriteClick = useCallback(
     (
       product: Product,
-      opts?: { shiftKey?: boolean; variant?: FavoriteVariantInfo; forceListId?: string },
+      opts?: FavoriteClickOptions,
     ): { resolved: true } | { resolved: false; reason: "picker-needed" } => {
-      if (!user) {
-        toggleFavorite(product.id, opts?.variant);
-        return { resolved: true };
-      }
+      const options = normalizedFavoriteOptions(opts);
       const alreadyFav = isFavorite(product.id);
-      if (alreadyFav) {
-        // Toggle off: remove de tudo
-        void removeFromAll(product.id);
-        return { resolved: true };
-      }
-      // Add path
-      if (opts?.forceListId) {
-        void addToList(opts.forceListId, product, opts.variant);
-        return { resolved: true };
-      }
-      // Sem múltiplas listas OU shift pressionado → vai para a default
-      if (!hasMultipleLists || opts?.shiftKey) {
-        const target = (lastUsedListId && lists.find((l) => l.id === lastUsedListId)) || defaultList;
-        if (target) {
-          void addToList(target.id, product, opts?.variant);
-        } else {
-          // Sem listas remotas ainda — fallback puro store legado
-          toggleFavorite(product.id, opts?.variant);
-        }
-        return { resolved: true };
-      }
-      // Múltiplas listas e sem shift → o caller deve mostrar picker
-      return { resolved: false, reason: "picker-needed" };
+      const targetListId = preferredListId(options.forceListId, lastUsedListId, lists, defaultList);
+      const decision = favoriteDecision(Boolean(user), alreadyFav, Boolean(options.forceListId), !hasMultipleLists || options.shiftKey);
+      if (decision === "picker") return { resolved: false, reason: "picker-needed" };
+      if (decision === "remove") void removeFromAll(product.id);
+      if (decision === "add" && targetListId) void addToList(targetListId, product, options.variant);
+      if (decision === "local" || (decision === "add" && !targetListId)) toggleFavorite(product.id, options.variant);
+      return { resolved: true };
     },
     [user, isFavorite, hasMultipleLists, lastUsedListId, defaultList, lists, toggleFavorite, removeFromAll, addToList]
   );

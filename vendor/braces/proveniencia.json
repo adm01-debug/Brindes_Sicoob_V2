@@ -1,0 +1,22 @@
+{
+  "pacote_origem": "braces",
+  "versao_origem": "3.0.3",
+  "versao_local": "3.0.4-sicoob.1",
+  "fonte": "https://registry.npmjs.org/braces/-/braces-3.0.3.tgz",
+  "motivacao": "Mitigação local para GHSA-vfj7-8cjw-p6xm enquanto não existe release corrigida upstream.",
+  "limite_de_profundidade": 100,
+  "alteracoes": {
+    "lib/parse.js": "Recusa entradas textuais cuja profundidade combinada de chaves e parênteses exceda 100 níveis.",
+    "lib/compile.js": "Recusa AST fornecida diretamente quando sua profundidade excede o limite.",
+    "lib/expand.js": "Recusa AST fornecida diretamente quando sua profundidade excede o limite.",
+    "lib/stringify.js": "Recusa AST fornecida diretamente quando sua profundidade excede o limite.",
+    "package.json": "Identifica a versão corrigida e remove metadados de desenvolvimento desnecessários ao pacote vendorizado."
+  },
+  "arquivos_sem_modificacao": [
+    "LICENSE",
+    "README.md",
+    "index.js",
+    "lib/constants.js",
+    "lib/utils.js"
+  ]
+}

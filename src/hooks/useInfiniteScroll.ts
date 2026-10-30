@@ -26,7 +26,7 @@ export function useInfiniteScroll({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) onLoadMore();
+        if (entry?.isIntersecting) onLoadMore();
       },
       { rootMargin, threshold }
     );

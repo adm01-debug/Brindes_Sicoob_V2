@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Move } from "lucide-react";
 import { useProductBounds } from "@/hooks/useProductBounds";
@@ -33,162 +33,84 @@ interface LogoPositionEditorProps {
   onRotationChange?: (rotation: number) => void;
   onSizeChange: (width: number, height: number) => void;
   onLogoScaleChange?: (scale: number) => void;
-  headerActions?: React.ReactNode;
+  headerActions?: ReactNode;
 }
 
-export function LogoPositionEditor({
-  productImageUrl,
-  logoPreview,
-  positionX,
-  positionY,
-  logoWidth,
-  logoHeight,
-  logoRotation = 0,
-  logoScale = 100,
-  techniqueCode,
-  techniqueName,
-  maxWidth,
-  maxHeight,
-  productHeightCm,
-  productWidthCm,
-  techniqueColorConfig,
-  onColorConfigClick,
-  onPositionChange,
-  onRotationChange,
-  onSizeChange,
-  onLogoScaleChange,
-  headerActions,
-}: LogoPositionEditorProps) {
+function getColorConfigFilter(config?: TechniqueColorConfig | null) {
+  if (!config) return null;
+  if (config.category === "laser") {
+    return config.laserTone === "claro"
+      ? { filter: "grayscale(1) brightness(1.4)", opacity: 0.75 }
+      : { filter: "grayscale(1) brightness(0.6)", opacity: 0.88 };
+  }
+  if (config.category === "serigrafia") return { filter: "contrast(1.2)", opacity: 0.92 };
+  return null;
+}
+
+type ProductBounds = ReturnType<typeof useProductBounds>;
+
+function renderedImageSize(containerWidth: number, containerHeight: number, imageAspectRatio: number) {
+  const containerAspectRatio = containerWidth / containerHeight;
+  if (imageAspectRatio > containerAspectRatio) return { width: containerWidth, height: containerWidth / imageAspectRatio };
+  return { width: containerHeight * imageAspectRatio, height: containerHeight };
+}
+
+function positive(value?: number | null) {
+  return value && value > 0 ? value : null;
+}
+
+function physicalDimensions(props: LogoPositionEditorProps) {
+  const productHeight = positive(props.productHeightCm);
+  const productWidth = positive(props.productWidthCm);
+  const maxWidth = positive(props.maxWidth);
+  const maxHeight = positive(props.maxHeight);
+  const widthFallback = maxWidth ? maxWidth * 2 : 8;
+  const heightFallback = maxHeight ? maxHeight * 2.5 : 20;
+  const width = productWidth || (productHeight ? productHeight * 0.4 : widthFallback);
+  const height = productHeight || (productWidth ? productWidth * 2.5 : heightFallback);
+  if (!productHeight && !productWidth) logger.warn("[LogoPositionEditor] Product physical dims missing — using estimates:", { physW: width, physH: height });
+  return { width, height };
+}
+
+function calculateLogoDisplay(props: LogoPositionEditorProps, containerSize: { width: number; height: number }, bounds: ProductBounds) {
+  if (!bounds.detected) return null;
+  const containerWidth = containerSize.width || 400;
+  const containerHeight = containerSize.height || containerWidth;
+  const rendered = renderedImageSize(containerWidth, containerHeight, bounds.imageAspectRatio || 1);
+  const physical = physicalDimensions(props);
+  const cmToPx = Math.min((rendered.width * bounds.fractionX) / physical.width, (rendered.height * bounds.fractionY) / physical.height);
+  const widthPx = props.logoWidth * cmToPx;
+  const heightPx = props.logoHeight * cmToPx;
+  if (widthPx >= 40 || heightPx >= 40) return { widthPx, heightPx };
+  const boost = 40 / Math.max(widthPx, heightPx);
+  return { widthPx: widthPx * boost, heightPx: heightPx * boost };
+}
+
+function useEditorState(props: LogoPositionEditorProps) {
   const { ref: containerRef, size: containerSize } = useElementSize<HTMLDivElement>();
-  const productBounds = useProductBounds(productImageUrl);
-  const { processedLogoUrl } = useLogoProcessing(logoPreview, techniqueColorConfig);
-  const { handlePointerDown } = useLogoDrag(containerRef, positionX, positionY, onPositionChange);
+  const productBounds = useProductBounds(props.productImageUrl);
+  const { processedLogoUrl } = useLogoProcessing(props.logoPreview, props.techniqueColorConfig);
+  const { handlePointerDown } = useLogoDrag(containerRef, props.positionX, props.positionY, props.onPositionChange);
+  const techniqueFilter = useMemo(() => getTechniqueFilter(props.techniqueCode, props.techniqueName), [props.techniqueCode, props.techniqueName]);
+  const colorConfigFilter = useMemo(() => getColorConfigFilter(props.techniqueColorConfig), [props.techniqueColorConfig]);
+  const logoDisplay = useMemo(() => calculateLogoDisplay(props, containerSize, productBounds), [props, containerSize, productBounds]);
+  return { containerRef, processedLogoUrl, handlePointerDown, techniqueFilter, colorConfigFilter, logoDisplay };
+}
 
-  const techniqueFilter = useMemo(
-    () => getTechniqueFilter(techniqueCode, techniqueName),
-    [techniqueCode, techniqueName]
-  );
+type EditorState = ReturnType<typeof useEditorState>;
 
-  const colorConfigFilter = useMemo(() => {
-    if (!techniqueColorConfig) return null;
-    if (techniqueColorConfig.category === "laser") {
-      const tone = techniqueColorConfig.laserTone || "escuro";
-      return tone === "claro"
-        ? { filter: "grayscale(1) brightness(1.4)", opacity: 0.75 }
-        : { filter: "grayscale(1) brightness(0.6)", opacity: 0.88 };
-    }
-    if (techniqueColorConfig.category === "serigrafia") {
-      return { filter: "contrast(1.2)", opacity: 0.92 };
-    }
-    return null;
-  }, [techniqueColorConfig]);
+function EditorHeader({ actions }: { actions?: ReactNode }) {
+  return <CardHeader className="pb-3"><div className="flex items-center justify-between"><div><CardTitle className="flex items-center gap-2 text-base"><Move className="h-4 w-4 text-primary" />Posicionar Logo</CardTitle><CardDescription className="text-xs">Arraste o logo para posicionar. Use os sliders para ajustar tamanho.</CardDescription></div>{actions}</div></CardHeader>;
+}
 
-  // cm→px conversion using product physical dimensions
-  const boundsReady = productBounds.detected;
-  const logoDisplay = useMemo(() => {
-    if (!boundsReady) return null;
+function EditorControls({ props, state, rotation, scale }: { props: LogoPositionEditorProps; state: EditorState; rotation: number; scale: number }) {
+  return <CardContent className="space-y-4"><LogoPreviewCanvas containerRef={state.containerRef} productImageUrl={props.productImageUrl} logoPreview={props.logoPreview} logoDisplay={state.logoDisplay} positionX={props.positionX} positionY={props.positionY} logoRotation={rotation} userScaleFactor={scale / 100} processedLogoUrl={state.processedLogoUrl} techniqueFilter={state.techniqueFilter} colorConfigFilter={state.colorConfigFilter} techniqueColorConfig={props.techniqueColorConfig} techniqueName={props.techniqueName} onPointerDown={props.logoPreview ? state.handlePointerDown : () => {}} onColorConfigClick={props.onColorConfigClick} /><LogoQuickActions logoPreview={props.logoPreview} positionX={props.positionX} positionY={props.positionY} logoRotation={rotation} onPositionChange={props.onPositionChange} onRotationChange={props.onRotationChange} /><LogoSizeControls logoPreview={props.logoPreview} logoWidth={props.logoWidth} logoHeight={props.logoHeight} logoScale={scale} logoRotation={rotation} positionX={props.positionX} positionY={props.positionY} maxWidth={props.maxWidth} maxHeight={props.maxHeight} onSizeChange={props.onSizeChange} onLogoScaleChange={props.onLogoScaleChange} /></CardContent>;
+}
 
-    const containerW = containerSize.width || 400;
-    const containerH = containerSize.height || containerW;
-    const prodH = productHeightCm && productHeightCm > 0 ? productHeightCm : null;
-    const prodW = productWidthCm && productWidthCm > 0 ? productWidthCm : null;
-    const effectiveMaxW = maxWidth && maxWidth > 0 ? maxWidth : null;
-    const effectiveMaxH = maxHeight && maxHeight > 0 ? maxHeight : null;
+export function LogoPositionEditor(props: LogoPositionEditorProps) {
+  const state = useEditorState(props);
+  const logoRotation = props.logoRotation ?? 0;
+  const logoScale = props.logoScale ?? 100;
 
-    const imgAR = productBounds.imageAspectRatio || 1;
-    const containerAR = containerW / containerH;
-    let renderedImgW: number, renderedImgH: number;
-    if (imgAR > containerAR) {
-      renderedImgW = containerW;
-      renderedImgH = containerW / imgAR;
-    } else {
-      renderedImgH = containerH;
-      renderedImgW = containerH * imgAR;
-    }
-
-    const physW = prodW || (prodH ? prodH * 0.4 : (effectiveMaxW ? effectiveMaxW * 2 : 8));
-    const physH = prodH || (prodW ? prodW * 2.5 : (effectiveMaxH ? effectiveMaxH * 2.5 : 20));
-
-    if (!prodH && !prodW) {
-      logger.warn("[LogoPositionEditor] Product physical dims missing — using estimates:", { physW, physH });
-    }
-
-    const scaleByW = (renderedImgW * productBounds.fractionX) / physW;
-    const scaleByH = (renderedImgH * productBounds.fractionY) / physH;
-    const cmToPx = Math.min(scaleByW, scaleByH);
-
-    const rawW = logoWidth * cmToPx;
-    const rawH = logoHeight * cmToPx;
-    const minPx = 40;
-    if (rawW < minPx && rawH < minPx) {
-      const boost = minPx / Math.max(rawW, rawH);
-      return { widthPx: rawW * boost, heightPx: rawH * boost };
-    }
-
-    return { widthPx: rawW, heightPx: rawH };
-  }, [boundsReady, logoWidth, logoHeight, containerSize.width, containerSize.height, maxWidth, maxHeight, productHeightCm, productWidthCm, productBounds]);
-
-  const userScaleFactor = (logoScale || 100) / 100;
-
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Move className="h-4 w-4 text-primary" />
-              Posicionar Logo
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Arraste o logo para posicionar. Use os sliders para ajustar tamanho.
-            </CardDescription>
-          </div>
-          {headerActions}
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        <LogoPreviewCanvas
-          containerRef={containerRef}
-          productImageUrl={productImageUrl}
-          logoPreview={logoPreview}
-          logoDisplay={logoDisplay}
-          positionX={positionX}
-          positionY={positionY}
-          logoRotation={logoRotation}
-          userScaleFactor={userScaleFactor}
-          processedLogoUrl={processedLogoUrl}
-          techniqueFilter={techniqueFilter}
-          colorConfigFilter={colorConfigFilter}
-          techniqueColorConfig={techniqueColorConfig}
-          techniqueName={techniqueName}
-          onPointerDown={logoPreview ? handlePointerDown : () => {}}
-          onColorConfigClick={onColorConfigClick}
-        />
-
-        <LogoQuickActions
-          logoPreview={logoPreview}
-          positionX={positionX}
-          positionY={positionY}
-          logoRotation={logoRotation}
-          onPositionChange={onPositionChange}
-          onRotationChange={onRotationChange}
-        />
-
-        <LogoSizeControls
-          logoPreview={logoPreview}
-          logoWidth={logoWidth}
-          logoHeight={logoHeight}
-          logoScale={logoScale}
-          logoRotation={logoRotation}
-          positionX={positionX}
-          positionY={positionY}
-          maxWidth={maxWidth}
-          maxHeight={maxHeight}
-          onSizeChange={onSizeChange}
-          onLogoScaleChange={onLogoScaleChange}
-        />
-      </CardContent>
-    </Card>
-  );
+  return <Card><EditorHeader actions={props.headerActions} /><EditorControls props={props} state={state} rotation={logoRotation} scale={logoScale} /></Card>;
 }

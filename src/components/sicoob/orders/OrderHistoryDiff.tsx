@@ -1,15 +1,15 @@
 import React from "react";
-import { cn } from "@/lib/utils";
+
 
 interface OrderHistoryDiffProps {
-  oldValue: any;
-  newValue: any;
+  oldValue: unknown;
+  newValue: unknown;
 }
 
 export const OrderHistoryDiff: React.FC<OrderHistoryDiffProps> = ({ oldValue, newValue }) => {
   if (!oldValue && !newValue) return null;
 
-  const renderValue = (val: any) => {
+  const renderValue = (val: unknown) => {
     if (val === null || val === undefined) return "vazio";
     if (typeof val === "object") return JSON.stringify(val);
     return String(val);

@@ -22,6 +22,7 @@ export async function exportQuotesAsZip(quoteIds: string[], userId: string) {
   if (!folder) throw new Error("Could not create ZIP folder");
 
   const { data: quotes, error } = await supabase
+    // rls-allow: exportação por ids selecionados; RLS valida cada orçamento
     .from("quotes")
     .select("id, quote_number, approved_pdf_url")
     .in("id", quoteIds)
@@ -34,9 +35,17 @@ export async function exportQuotesAsZip(quoteIds: string[], userId: string) {
 
   const fetchPromises = quotes.map(async (quote) => {
     try {
-      const response = await fetch(quote.approved_pdf_url!);
-      if (!response.ok) throw new Error(`Failed to fetch PDF for ${quote.quote_number}`);
-      const blob = await response.blob();
+      const pdfReference = quote.approved_pdf_url;
+      if (!pdfReference) throw new Error(`Orçamento ${quote.quote_number} sem PDF aprovado`);
+      const blob = pdfReference.startsWith("http")
+        ? await fetch(pdfReference).then(async (response) => {
+            if (!response.ok) throw new Error(`Não foi possível baixar o PDF ${quote.quote_number}`);
+            return response.blob();
+          })
+        : await supabase.storage.from("proposals").download(pdfReference).then(({ data, error: downloadError }) => {
+            if (downloadError || !data) throw downloadError ?? new Error(`Não foi possível baixar o PDF ${quote.quote_number}`);
+            return data;
+          });
       folder.file(`${quote.quote_number}_assinado.pdf`, blob);
       
       // Audit log

@@ -53,66 +53,81 @@ function findComplementaryKeywords(name: string): string[] {
   return complements;
 }
 
-function calculateMatchScore(source: Product, candidate: Product): { score: number; reasons: string[] } {
-  let score = 0;
-  const reasons: string[] = [];
+interface ScorePart {
+  score: number;
+  reasons: string[];
+}
 
-  // Same category
-  if (source.category_id && candidate.category_id && source.category_id === candidate.category_id) {
-    score += 30;
-    reasons.push('Mesma categoria');
-  }
+function categoryScore(source: Product, candidate: Product): ScorePart {
+  const matches = source.category_id && candidate.category_id && source.category_id === candidate.category_id;
+  return matches ? { score: 30, reasons: ['Mesma categoria'] } : { score: 0, reasons: [] };
+}
 
-  // Shared tags
-  const tagCategories: (keyof Product['tags'])[] = ['publicoAlvo', 'datasComemorativas', 'endomarketing'];
-  const tagLabels: Record<string, string> = {
+function normalizedTags(product: Product, key: keyof Product['tags']): string[] {
+  return (product.tags?.[key] || []).map((tag) => tag.trim().toLowerCase());
+}
+
+function sharedValues(left: string[], right: string[]): string[] {
+  return left.filter((value) => value && right.includes(value));
+}
+
+function tagScore(source: Product, candidate: Product): ScorePart {
+  const labels: Record<string, string> = {
     publicoAlvo: 'Público-alvo',
     datasComemorativas: 'Data comemorativa',
     endomarketing: 'Endomarketing',
   };
+  const categories: (keyof Product['tags'])[] = ['publicoAlvo', 'datasComemorativas', 'endomarketing'];
+  const matches = categories.flatMap((category) => {
+    const shared = sharedValues(normalizedTags(source, category), normalizedTags(candidate, category));
+    return shared.length ? [{ category, shared }] : [];
+  });
+  return {
+    score: matches.reduce((total, match) => total + (10 * match.shared.length), 0),
+    reasons: matches.map((match) => `${labels[match.category]}: ${match.shared.join(', ')}`),
+  };
+}
 
-  for (const tagCat of tagCategories) {
-    const srcTags = (source.tags?.[tagCat] || []).map(t => t.trim().toLowerCase());
-    const candTags = (candidate.tags?.[tagCat] || []).map(t => t.trim().toLowerCase());
-    const shared = srcTags.filter(t => t && candTags.includes(t));
-    if (shared.length > 0) {
-      score += 10 * shared.length;
-      reasons.push(`${tagLabels[tagCat]}: ${shared.join(', ')}`);
-    }
-  }
+function nicheValues(product: Product): string[] {
+  return [...normalizedTags(product, 'nicho'), ...normalizedTags(product, 'ramo')];
+}
 
-  // Shared nicho/ramo
-  const srcNiches = [...(source.tags?.nicho || []), ...(source.tags?.ramo || [])].map(n => n.trim().toLowerCase());
-  const candNiches = [...(candidate.tags?.nicho || []), ...(candidate.tags?.ramo || [])].map(n => n.trim().toLowerCase());
-  const sharedNiches = srcNiches.filter(n => n && candNiches.includes(n));
-  if (sharedNiches.length > 0) {
-    score += 15 * sharedNiches.length;
-    reasons.push(`Nicho: ${sharedNiches.join(', ')}`);
-  }
+function nicheScore(source: Product, candidate: Product): ScorePart {
+  const shared = sharedValues(nicheValues(source), nicheValues(candidate));
+  return shared.length
+    ? { score: 15 * shared.length, reasons: [`Nicho: ${shared.join(', ')}`] }
+    : { score: 0, reasons: [] };
+}
 
-  // Same supplier
-  if (source.supplier?.id && candidate.supplier?.id && source.supplier.id === candidate.supplier.id) {
-    score += 5;
-    reasons.push('Mesmo fornecedor');
-  }
+function supplierScore(source: Product, candidate: Product): ScorePart {
+  const matches = source.supplier?.id && candidate.supplier?.id && source.supplier.id === candidate.supplier.id;
+  return matches ? { score: 5, reasons: ['Mesmo fornecedor'] } : { score: 0, reasons: [] };
+}
 
-  // Complementary name keywords (exclude self-matching)
-  const complements = findComplementaryKeywords(source.name);
-  if (complements.length > 0) {
-    const candNormalized = normalizeText(candidate.name);
-    const sourceNormalized = normalizeText(source.name);
-    const matchedKeywords = complements.filter(kw => {
-      const kwNorm = normalizeText(kw);
-      // Only count if keyword matches candidate but NOT source (avoid self-match)
-      return candNormalized.includes(kwNorm) && !sourceNormalized.includes(kwNorm);
-    });
-    if (matchedKeywords.length > 0) {
-      score += 20 * matchedKeywords.length;
-      reasons.push(`Complementar: ${matchedKeywords.join(', ')}`);
-    }
-  }
+function complementaryScore(source: Product, candidate: Product): ScorePart {
+  const candidateName = normalizeText(candidate.name);
+  const sourceName = normalizeText(source.name);
+  const matches = findComplementaryKeywords(source.name).filter((keyword) => {
+    const normalized = normalizeText(keyword);
+    return candidateName.includes(normalized) && !sourceName.includes(normalized);
+  });
+  return matches.length
+    ? { score: 20 * matches.length, reasons: [`Complementar: ${matches.join(', ')}`] }
+    : { score: 0, reasons: [] };
+}
 
-  return { score, reasons };
+function calculateMatchScore(source: Product, candidate: Product): { score: number; reasons: string[] } {
+  const parts = [
+    categoryScore(source, candidate),
+    tagScore(source, candidate),
+    nicheScore(source, candidate),
+    supplierScore(source, candidate),
+    complementaryScore(source, candidate),
+  ];
+  return {
+    score: parts.reduce((total, part) => total + part.score, 0),
+    reasons: parts.flatMap((part) => part.reasons),
+  };
 }
 
 function getMatchType(score: number, isSameCategory: boolean, hasComplementary: boolean): MatchResult['matchType'] {
@@ -135,41 +150,53 @@ const DEFAULT_FILTERS: MatchFilters = {
   onlyInStock: false,
 };
 
+function passesMatchFilters(candidate: Product, source: Product, filters: MatchFilters): boolean {
+  if (candidate.id === source.id) return false;
+  if (filters.onlyInStock && candidate.stockStatus === 'out-of-stock') return false;
+  if (filters.categoryFilter && candidate.category?.name !== filters.categoryFilter) return false;
+  if (filters.supplierFilter && candidate.supplier?.name !== filters.supplierFilter) return false;
+  return true;
+}
+
+function matchCandidate(candidate: Product, source: Product, filters: MatchFilters): MatchResult | null {
+  if (!passesMatchFilters(candidate, source, filters)) return null;
+  const { score, reasons } = calculateMatchScore(source, candidate);
+  if (score < filters.minScore) return null;
+  const matchType = getMatchType(
+    score,
+    source.category_id === candidate.category_id,
+    reasons.some((reason) => reason.startsWith('Complementar')),
+  );
+  return filters.matchTypes.includes(matchType) ? { product: candidate, score, reasons, matchType } : null;
+}
+
 export function useProductMatch(
   sourceProduct: Product | null,
   allProducts: Product[],
   filters: Partial<MatchFilters> = {}
 ): { matches: MatchResult[]; isProcessing: boolean } {
-  const mergedFilters: MatchFilters = { ...DEFAULT_FILTERS, ...filters };
-  const matchTypesKey = (mergedFilters.matchTypes || []).join(',');
+  const mergedFilters = useMemo<MatchFilters>(() => ({
+    minScore: filters.minScore ?? DEFAULT_FILTERS.minScore,
+    matchTypes: filters.matchTypes ?? DEFAULT_FILTERS.matchTypes,
+    categoryFilter: filters.categoryFilter,
+    supplierFilter: filters.supplierFilter,
+    onlyInStock: filters.onlyInStock ?? DEFAULT_FILTERS.onlyInStock,
+  }), [
+    filters.categoryFilter,
+    filters.matchTypes,
+    filters.minScore,
+    filters.onlyInStock,
+    filters.supplierFilter,
+  ]);
 
   const matches = useMemo(() => {
     if (!sourceProduct || allProducts.length === 0) return [];
 
-    const results: MatchResult[] = [];
-
-    for (const candidate of allProducts) {
-      if (candidate.id === sourceProduct.id) continue;
-
-      // Pre-filters
-      if (mergedFilters.onlyInStock && candidate.stockStatus === 'out-of-stock') continue;
-      if (mergedFilters.categoryFilter && candidate.category?.name !== mergedFilters.categoryFilter) continue;
-      if (mergedFilters.supplierFilter && candidate.supplier?.name !== mergedFilters.supplierFilter) continue;
-
-      const { score, reasons } = calculateMatchScore(sourceProduct, candidate);
-      if (score < mergedFilters.minScore) continue;
-
-      const isSameCategory = sourceProduct.category_id === candidate.category_id;
-      const hasComplementary = reasons.some(r => r.startsWith('Complementar'));
-      const matchType = getMatchType(score, isSameCategory, hasComplementary);
-
-      if (!mergedFilters.matchTypes.includes(matchType)) continue;
-
-      results.push({ product: candidate, score, reasons, matchType });
-    }
-
-    return results.sort((a, b) => b.score - a.score);
-  }, [sourceProduct, allProducts, mergedFilters.minScore, matchTypesKey, mergedFilters.categoryFilter, mergedFilters.supplierFilter, mergedFilters.onlyInStock]);
+    return allProducts
+      .map((candidate) => matchCandidate(candidate, sourceProduct, mergedFilters))
+      .filter((match): match is MatchResult => match !== null)
+      .sort((left, right) => right.score - left.score);
+  }, [sourceProduct, allProducts, mergedFilters]);
 
   return { matches, isProcessing: false };
 }

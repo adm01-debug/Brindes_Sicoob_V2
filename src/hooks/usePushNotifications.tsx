@@ -46,7 +46,7 @@ export function usePushNotifications() {
       } 
         return false;
       
-    } catch (error) {
+    } catch {
       return false;
     }
   }, [state.isSupported]);
@@ -60,7 +60,6 @@ export function usePushNotifications() {
       const notification = new Notification(title, {
         icon: '/favicon.ico',
         badge: '/favicon.ico',
-        vibrate: [200, 100, 200],
         ...options,
       });
 

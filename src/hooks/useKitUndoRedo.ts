@@ -39,8 +39,9 @@ export function useKitUndoRedo() {
     if (history.length <= 1) return null;
     isRestoringRef.current = true;
     const newHistory = [...history];
-    const current = newHistory.pop()!;
-    const prev = newHistory[newHistory.length - 1]!;
+    const current = newHistory.pop();
+    const prev = newHistory[newHistory.length - 1];
+    if (!current || !prev) return null;
     setHistory(newHistory);
     setFuture(f => [current, ...f]);
     setTimeout(() => { isRestoringRef.current = false; }, 100);
@@ -48,10 +49,9 @@ export function useKitUndoRedo() {
   }, [history]);
 
   const redo = useCallback((): UndoRedoSnapshot | null => {
-    if (future.length === 0) return null;
+    const [next, ...rest] = future;
+    if (!next) return null;
     isRestoringRef.current = true;
-    const next = future[0]!;
-    const rest = future.slice(1);
     setFuture(rest);
     setHistory(prev => [...prev, next]);
     setTimeout(() => { isRestoringRef.current = false; }, 100);

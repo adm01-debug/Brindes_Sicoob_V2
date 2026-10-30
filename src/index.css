@@ -476,6 +476,14 @@ html[data-scroll-locked] body {
     @apply border-border;
   }
 
+  @media (max-width: 767px) {
+    .auth-entry-shell {
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-display: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: var(--font-sans);
+    }
+  }
+
   html {
     scroll-behavior: smooth;
     /* Garante que âncoras (#id) e scrollIntoView fiquem abaixo do Header sticky.

@@ -108,7 +108,7 @@ export function ProductSearchCombobox({
               <div className="flex-shrink-0 w-8 h-8 rounded-md bg-muted overflow-hidden">
                 {getProductImage(selectedProduct) ? (
                   <img
-                    src={getProductImage(selectedProduct)!}
+                    src={getProductImage(selectedProduct) ?? undefined}
                     alt={selectedProduct.name}
                     className="w-full h-full object-cover" loading="lazy" />
                 ) : (
@@ -207,7 +207,7 @@ export function ProductSearchCombobox({
                   <div className="flex-shrink-0 w-10 h-10 rounded-md bg-muted overflow-hidden">
                     {getProductImage(product) ? (
                       <img
-                        src={getProductImage(product)!}
+                        src={getProductImage(product) ?? undefined}
                         alt={product.name}
                         className="w-full h-full object-cover" loading="lazy" />
                     ) : (

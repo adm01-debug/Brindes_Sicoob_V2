@@ -1,6 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
+const FADE_IN_SKELETON = "overflow-hidden animate-fade-in opacity-0 [animation-fill-mode:forwards]";
+const SQUARE_SKELETON = "aspect-square rounded-xl";
+
 interface MockupSkeletonProps {
   variant?: "config" | "preview" | "result" | "card" | "editor" | "wizard";
   className?: string;
@@ -47,7 +50,7 @@ export function MockupSkeleton({
   if (variant === "editor") {
     return (
       <Card 
-        className={cn("overflow-hidden animate-fade-in opacity-0 [animation-fill-mode:forwards]", className)}
+        className={cn(FADE_IN_SKELETON, className)}
         style={staggerStyle}
       >
         <CardContent className="p-4 space-y-4">
@@ -61,7 +64,7 @@ export function MockupSkeleton({
           </div>
 
           {/* Canvas area */}
-          <div className={cn("aspect-square rounded-xl", shimmerClass)} />
+          <div className={cn(SQUARE_SKELETON, shimmerClass)} />
 
           {/* Quick actions */}
           <div className="flex gap-2">
@@ -89,7 +92,7 @@ export function MockupSkeleton({
   if (variant === "config") {
     return (
       <Card 
-        className={cn("overflow-hidden animate-fade-in opacity-0 [animation-fill-mode:forwards]", className)}
+        className={cn(FADE_IN_SKELETON, className)}
         style={staggerStyle}
       >
         <CardContent className="p-6 space-y-6">
@@ -120,7 +123,7 @@ export function MockupSkeleton({
   if (variant === "preview") {
     return (
       <Card 
-        className={cn("overflow-hidden animate-fade-in opacity-0 [animation-fill-mode:forwards]", className)}
+        className={cn(FADE_IN_SKELETON, className)}
         style={staggerStyle}
       >
         <CardContent className="p-4 space-y-4">
@@ -138,7 +141,7 @@ export function MockupSkeleton({
 
           {/* Image area with pulse ring */}
           <div className="relative">
-            <div className={cn("aspect-square rounded-xl", shimmerClass)} />
+            <div className={cn(SQUARE_SKELETON, shimmerClass)} />
             <div className="absolute inset-0 rounded-xl border-2 border-primary/20 animate-pulse" />
           </div>
 
@@ -156,7 +159,7 @@ export function MockupSkeleton({
   if (variant === "result") {
     return (
       <Card 
-        className={cn("overflow-hidden animate-fade-in opacity-0 [animation-fill-mode:forwards]", className)}
+        className={cn(FADE_IN_SKELETON, className)}
         style={staggerStyle}
       >
         <CardContent className="p-4 space-y-4">
@@ -171,7 +174,7 @@ export function MockupSkeleton({
 
           {/* Image with loading indicator */}
           <div className="relative">
-            <div className={cn("aspect-square rounded-xl", shimmerClass)} />
+            <div className={cn(SQUARE_SKELETON, shimmerClass)} />
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
             </div>

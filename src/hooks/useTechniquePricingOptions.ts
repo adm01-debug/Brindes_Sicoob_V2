@@ -39,6 +39,18 @@ export interface TechniquePricingInfo {
   getTableForSelection: (colors: number, sizeValue: string | null) => PriceTableEntry | null;
 }
 
+interface PriceTablePayload {
+  success?: boolean;
+  data?: { records?: PriceTableEntry[] } | PriceTableEntry[];
+}
+
+function extractPriceTableRecords(data: PriceTablePayload | null, hasError: boolean) {
+  if (hasError || !data) return null;
+  if (Array.isArray(data.data)) return data.data;
+  if (data.success && data.data?.records) return data.data.records;
+  return null;
+}
+
 export function useTechniquePricingOptions(techniqueCode: string | null): TechniquePricingInfo {
   const [tables, setTables] = useState<PriceTableEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -95,9 +107,9 @@ export function useTechniquePricingOptions(techniqueCode: string | null): Techni
     if (!hasPriceByColor) return [];
     
     const uniqueColors = new Set<number>();
-    tables
-      .filter(t => t.price_by_color && t.max_colors)
-      .forEach(t => uniqueColors.add(t.max_colors!));
+    tables.forEach((table) => {
+      if (table.price_by_color && table.max_colors) uniqueColors.add(table.max_colors);
+    });
     
     return Array.from(uniqueColors)
       .sort((a, b) => a - b)
@@ -113,11 +125,10 @@ export function useTechniquePricingOptions(techniqueCode: string | null): Techni
     
     const uniqueSizes = new Map<string, SizeOption>();
     
-    tables
-      .filter(t => t.price_by_area && t.max_area_width_cm && t.max_area_height_cm)
-      .forEach(t => {
-        const w = t.max_area_width_cm!;
-        const h = t.max_area_height_cm!;
+    tables.forEach(t => {
+        const w = t.max_area_width_cm;
+        const h = t.max_area_height_cm;
+        if (!t.price_by_area || !w || !h) return;
         const key = `${w}x${h}`;
         
         if (!uniqueSizes.has(key)) {
@@ -201,11 +212,8 @@ export function useMultipleTechniquePricing(techniqueCodes: string[]) {
               }
             });
 
-            if (!error && data?.success && data?.data?.records) {
-              results[code] = data.data.records;
-            } else if (!error && Array.isArray(data?.data)) {
-              results[code] = data.data;
-            }
+            const records = extractPriceTableRecords(data, Boolean(error));
+            if (records) results[code] = records;
           } catch (err) {
             console.error(`Error fetching pricing for ${code}:`, err);
           }
@@ -217,7 +225,7 @@ export function useMultipleTechniquePricing(techniqueCodes: string[]) {
     };
 
     fetchAll();
-  }, [techniqueCodes.join(',')]);
+  }, [techniqueCodes]);
 
   const getPricingInfo = (code: string): Omit<TechniquePricingInfo, 'isLoading'> => {
     const tables = allTables[code] || [];
@@ -227,7 +235,7 @@ export function useMultipleTechniquePricing(techniqueCodes: string[]) {
 
     const colorOptions: ColorOption[] = hasPriceByColor
       ? Array.from(new Set(
-          tables.filter(t => t.price_by_color && t.max_colors).map(t => t.max_colors!)
+          tables.flatMap((table) => table.price_by_color && table.max_colors ? [table.max_colors] : [])
         ))
         .sort((a, b) => a - b)
         .map(c => ({ value: c, label: c === 1 ? '1 cor' : `${c} cores` }))
@@ -236,16 +244,18 @@ export function useMultipleTechniquePricing(techniqueCodes: string[]) {
     const sizeOptions: SizeOption[] = hasPriceByArea
       ? Array.from(
           tables
-            .filter(t => t.price_by_area && t.max_area_width_cm && t.max_area_height_cm)
             .reduce((map, t) => {
-              const key = `${t.max_area_width_cm}x${t.max_area_height_cm}`;
+              const width = t.max_area_width_cm;
+              const height = t.max_area_height_cm;
+              if (!t.price_by_area || !width || !height) return map;
+              const key = `${width}x${height}`;
               if (!map.has(key)) {
                 map.set(key, {
                   value: key,
-                  label: `${t.max_area_width_cm} × ${t.max_area_height_cm} cm`,
-                  width: t.max_area_width_cm!,
-                  height: t.max_area_height_cm!,
-                  areaCm2: t.max_area_width_cm! * t.max_area_height_cm!
+                  label: `${width} × ${height} cm`,
+                  width,
+                  height,
+                  areaCm2: width * height
                 });
               }
               return map;

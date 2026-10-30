@@ -1,5 +1,5 @@
 
-import React from 'react';
+import type { ReactNode } from 'react';
 import { 
   CheckCircle2, 
   TrendingDown, 
@@ -19,11 +19,13 @@ import {
 import { cn } from '@/lib/utils';
 import { type StockStatus } from '@/types/stock';
 
+const DESTRUCTIVE_TEXT = 'text-destructive';
+
 export const STATUS_CONFIG: Record<StockStatus, { 
   label: string; 
   color: string; 
   bgColor: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
 }> = {
   in_stock: { 
     label: 'Em Estoque', 
@@ -39,13 +41,13 @@ export const STATUS_CONFIG: Record<StockStatus, {
   },
   critical: { 
     label: 'Crítico', 
-    color: 'text-destructive',
+    color: DESTRUCTIVE_TEXT,
     bgColor: 'bg-destructive/10 border-destructive/20',
     icon: <AlertTriangle className="h-4 w-4" />
   },
   out_of_stock: { 
     label: 'Esgotado', 
-    color: 'text-destructive',
+    color: DESTRUCTIVE_TEXT,
     bgColor: 'bg-destructive/10 border-destructive/20',
     icon: <XCircle className="h-4 w-4" />
   },
@@ -91,19 +93,8 @@ export function ColorSwatch({ hex, name }: { hex?: string; name?: string }) {
 }
 
 export function StockProgressBar({ current, min }: { current: number; min: number; max?: number }) {
-  const percentage = min > 0 ? Math.min((current / min) * 100, 100) : (current > 0 ? 100 : 0);
-  
-  const progressColor = 
-    current <= 0 ? 'bg-destructive' :
-    current <= min * 0.25 ? 'bg-destructive' :
-    current <= min ? 'bg-warning' :
-    'bg-success';
-
-  const statusLabel = 
-    current <= 0 ? 'Esgotado' :
-    current <= min * 0.25 ? 'Crítico' :
-    current <= min ? 'Baixo' :
-    'OK';
+  const { percentage, progressColor, statusLabel } = getStockProgress(current, min);
+  const percentageColor = getPercentageColor(percentage);
   
   return (
     <TooltipProvider>
@@ -115,7 +106,7 @@ export function StockProgressBar({ current, min }: { current: number; min: numbe
               className={cn("h-2", progressColor)} 
             />
             <div className="flex justify-between">
-              <span className={cn("text-[9px] tabular-nums", percentage <= 25 ? "text-destructive" : percentage <= 100 ? "text-warning" : "text-success")}>
+              <span className={cn("text-[9px] tabular-nums", percentageColor)}>
                 {Math.round(percentage)}%
               </span>
               <span className="text-[9px] text-muted-foreground">{statusLabel}</span>
@@ -133,4 +124,18 @@ export function StockProgressBar({ current, min }: { current: number; min: numbe
       </Tooltip>
     </TooltipProvider>
   );
+}
+
+function getStockProgress(current: number, min: number) {
+  const percentage = min > 0 ? Math.min((current / min) * 100, 100) : current > 0 ? 100 : 0;
+  if (current <= 0) return { percentage, progressColor: 'bg-destructive', statusLabel: 'Esgotado' };
+  if (current <= min * 0.25) return { percentage, progressColor: 'bg-destructive', statusLabel: 'Crítico' };
+  if (current <= min) return { percentage, progressColor: 'bg-warning', statusLabel: 'Baixo' };
+  return { percentage, progressColor: 'bg-success', statusLabel: 'OK' };
+}
+
+function getPercentageColor(percentage: number) {
+  if (percentage <= 25) return DESTRUCTIVE_TEXT;
+  if (percentage <= 100) return "text-warning";
+  return "text-success";
 }

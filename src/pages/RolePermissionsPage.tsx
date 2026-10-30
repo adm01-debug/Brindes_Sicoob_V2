@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { BackButton } from '@/components/common/BackButton';
 import { supabase } from '@/integrations/supabase/client';
 import { SidebarProvider, Sidebar, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
@@ -29,7 +29,7 @@ interface RolePermission {
   permission_code: string;
 }
 
-const ROLES: { value: AppRole; label: string; description: string; icon: React.ReactNode }[] = [
+const ROLES: { value: AppRole; label: string; description: string; icon: ReactNode }[] = [
   {
     value: 'supervisor',
     label: 'Supervisor',
@@ -43,6 +43,9 @@ const ROLES: { value: AppRole; label: string; description: string; icon: React.R
     icon: <Users className="h-5 w-5 text-primary" />
   },
 ];
+
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : "Erro desconhecido";
 
 export default function RolePermissionsPage() {
   const [permissions, setPermissions] = useState<Permission[]>([]);
@@ -69,8 +72,8 @@ export default function RolePermissionsPage() {
 
       setPermissions(permRes.data || []);
       setRolePermissions(rolePermRes.data || []);
-    } catch (error: any) {
-      toast({ title: 'Erro ao carregar dados', description: error.message, variant: 'destructive' });
+    } catch (error: unknown) {
+      toast({ title: 'Erro ao carregar dados', description: getErrorMessage(error), variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
@@ -134,8 +137,8 @@ export default function RolePermissionsPage() {
       toast({ title: 'Permissões atualizadas com sucesso!' });
       setPendingChanges(new Map());
       fetchData();
-    } catch (error: any) {
-      toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' });
+    } catch (error: unknown) {
+      toast({ title: 'Erro ao salvar', description: getErrorMessage(error), variant: 'destructive' });
     } finally {
       setIsSaving(false);
     }

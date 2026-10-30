@@ -113,10 +113,10 @@ function ReducedApp({
             <Route path="/dashboard" element={<DashboardStub />} />
             <Route path="/produtos" element={<ProductsStub />} />
             <Route path="/orcamentos" element={<QuotesStub />} />
+            <Route path="/admin/temas" element={<AdminThemesStub />} />
             <Route element={<AdminRoute />}>
               <Route path="/admin" element={<Navigate to="/admin/usuarios" replace />} />
               <Route path="/admin/usuarios" element={<AdminUsersStub />} />
-              <Route path="/admin/temas" element={<AdminThemesStub />} />
               <Route element={<DevRoute />}>
                 <Route path="/admin/telemetria" element={<AdminTelemetryStub />} />
                 <Route path="/admin/conexoes" element={<AdminConnectionsStub />} />
@@ -233,7 +233,6 @@ describe("Rotas admin/dev/protected — nenhum elemento renderizado usa `errorEl
     function Bait() {
       // Renderizamos um elemento *qualquer* com a prop — o React preserva
       // props desconhecidas em componentes de função custom.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const Custom = (_: any) => <span data-testid="bait" />;
       return <Custom errorElement={<div>boom</div>} />;
     }

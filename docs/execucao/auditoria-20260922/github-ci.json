@@ -1,0 +1,505 @@
+[
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-09-22T11:34:37Z",
+    "databaseId": 35722210544,
+    "event": "push",
+    "headSha": "e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68",
+    "status": "completed",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/35722210544",
+    "workflowName": "Bundle Size Check",
+    "jobs": [
+      {
+        "id": 106727475373,
+        "name": "bundle-stats",
+        "conclusion": "failure",
+        "steps": [],
+        "started_at": "2026-09-22T11:34:37Z",
+        "completed_at": "2026-09-22T11:34:40Z",
+        "annotations": [
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "failure",
+            "title": "",
+            "message": "The job was not started because an Actions budget is preventing further use.",
+            "raw_details": ""
+          },
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "notice",
+            "title": "",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "raw_details": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-09-22T11:34:37Z",
+    "databaseId": 35722210501,
+    "event": "push",
+    "headSha": "e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68",
+    "status": "completed",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/35722210501",
+    "workflowName": "Lighthouse Performance Audit",
+    "jobs": [
+      {
+        "id": 106727475306,
+        "name": "lighthouse",
+        "conclusion": "failure",
+        "steps": [],
+        "started_at": "2026-09-22T11:34:37Z",
+        "completed_at": "2026-09-22T11:34:40Z",
+        "annotations": [
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "failure",
+            "title": "",
+            "message": "The job was not started because an Actions budget is preventing further use.",
+            "raw_details": ""
+          },
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "notice",
+            "title": "",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "raw_details": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-09-22T11:34:37Z",
+    "databaseId": 35722210465,
+    "event": "push",
+    "headSha": "e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68",
+    "status": "completed",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/35722210465",
+    "workflowName": "Enterprise Compliance & Audit Reporting",
+    "jobs": [
+      {
+        "id": 106727475103,
+        "name": "compliance-audit",
+        "conclusion": "failure",
+        "steps": [],
+        "started_at": "2026-09-22T11:34:37Z",
+        "completed_at": "2026-09-22T11:34:40Z",
+        "annotations": [
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "failure",
+            "title": "",
+            "message": "The job was not started because an Actions budget is preventing further use.",
+            "raw_details": ""
+          },
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "notice",
+            "title": "",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "raw_details": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-09-22T11:34:37Z",
+    "databaseId": 35722210438,
+    "event": "push",
+    "headSha": "e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68",
+    "status": "completed",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/35722210438",
+    "workflowName": "CodeQL",
+    "jobs": [
+      {
+        "id": 106727475253,
+        "name": "Analyze (javascript-typescript)",
+        "conclusion": "failure",
+        "steps": [],
+        "started_at": "2026-09-22T11:34:37Z",
+        "completed_at": "2026-09-22T11:34:41Z",
+        "annotations": [
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "failure",
+            "title": "",
+            "message": "The job was not started because an Actions budget is preventing further use.",
+            "raw_details": ""
+          },
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "notice",
+            "title": "",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "raw_details": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-09-22T11:34:37Z",
+    "databaseId": 35722210435,
+    "event": "push",
+    "headSha": "e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68",
+    "status": "completed",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/35722210435",
+    "workflowName": "Branch Protection Sentinel",
+    "jobs": [
+      {
+        "id": 106727475053,
+        "name": "Verify push to main is from PR merge",
+        "conclusion": "failure",
+        "steps": [],
+        "started_at": "2026-09-22T11:34:37Z",
+        "completed_at": "2026-09-22T11:34:40Z",
+        "annotations": [
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "failure",
+            "title": "",
+            "message": "The job was not started because an Actions budget is preventing further use.",
+            "raw_details": ""
+          },
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "notice",
+            "title": "",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "raw_details": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-09-22T11:34:37Z",
+    "databaseId": 35722210432,
+    "event": "push",
+    "headSha": "e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68",
+    "status": "completed",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/35722210432",
+    "workflowName": "Qualidade contínua",
+    "jobs": [
+      {
+        "id": 106727475561,
+        "name": "Segurança, contratos e build",
+        "conclusion": "failure",
+        "steps": [],
+        "started_at": "2026-09-22T11:34:37Z",
+        "completed_at": "2026-09-22T11:34:40Z",
+        "annotations": [
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "failure",
+            "title": "",
+            "message": "The job was not started because an Actions budget is preventing further use.",
+            "raw_details": ""
+          },
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "notice",
+            "title": "",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "raw_details": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-09-22T11:34:37Z",
+    "databaseId": 35722210423,
+    "event": "push",
+    "headSha": "e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68",
+    "status": "completed",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/35722210423",
+    "workflowName": "Security Scan",
+    "jobs": [
+      {
+        "id": 106727475533,
+        "name": "Gitleaks — Secret Scan",
+        "conclusion": "failure",
+        "steps": [],
+        "started_at": "2026-09-22T11:34:37Z",
+        "completed_at": "2026-09-22T11:34:41Z",
+        "annotations": [
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "failure",
+            "title": "",
+            "message": "The job was not started because an Actions budget is preventing further use.",
+            "raw_details": ""
+          },
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "notice",
+            "title": "",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "raw_details": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-09-22T11:34:37Z",
+    "databaseId": 35722210368,
+    "event": "push",
+    "headSha": "e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68",
+    "status": "completed",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/35722210368",
+    "workflowName": "E2E (Playwright)",
+    "jobs": [
+      {
+        "id": 106727484521,
+        "name": "e2e",
+        "conclusion": "failure",
+        "steps": [],
+        "started_at": "2026-09-22T11:34:39Z",
+        "completed_at": "2026-09-22T11:34:44Z",
+        "annotations": [
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "failure",
+            "title": "",
+            "message": "The job was not started because an Actions budget is preventing further use.",
+            "raw_details": ""
+          },
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "notice",
+            "title": "",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "raw_details": ""
+          }
+        ]
+      },
+      {
+        "id": 106727507538,
+        "name": "E2E regression — shard ${{ matrix.shard }}/4",
+        "conclusion": "skipped",
+        "steps": [],
+        "started_at": "2026-09-22T11:34:45Z",
+        "completed_at": "2026-09-22T11:34:45Z",
+        "annotations": []
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-09-22T06:25:02Z",
+    "databaseId": 35694730573,
+    "event": "schedule",
+    "headSha": "f8954f36793992de5383fc2c810a704b75b949fe",
+    "status": "completed",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/35694730573",
+    "workflowName": "Migration ledger drift",
+    "jobs": [
+      {
+        "id": 106638996148,
+        "name": "drift-check",
+        "conclusion": "failure",
+        "steps": [],
+        "started_at": "2026-09-22T06:25:02Z",
+        "completed_at": "2026-09-22T06:25:06Z",
+        "annotations": [
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/f8954f36793992de5383fc2c810a704b75b949fe/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "failure",
+            "title": "",
+            "message": "The job was not started because an Actions budget is preventing further use.",
+            "raw_details": ""
+          },
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/f8954f36793992de5383fc2c810a704b75b949fe/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "notice",
+            "title": "",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "raw_details": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "conclusion": "failure",
+    "createdAt": "2026-09-21T10:40:25Z",
+    "databaseId": 35589986133,
+    "event": "push",
+    "headSha": "f8954f36793992de5383fc2c810a704b75b949fe",
+    "status": "completed",
+    "url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/35589986133",
+    "workflowName": "Portal Sicoob",
+    "jobs": [
+      {
+        "id": 106301956905,
+        "name": "Verba e aprovação transacionais",
+        "conclusion": "failure",
+        "steps": [],
+        "started_at": "2026-09-21T10:40:26Z",
+        "completed_at": "2026-09-21T10:40:28Z",
+        "annotations": [
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/f8954f36793992de5383fc2c810a704b75b949fe/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "failure",
+            "title": "",
+            "message": "The job was not started because an Actions budget is preventing further use.",
+            "raw_details": ""
+          },
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/f8954f36793992de5383fc2c810a704b75b949fe/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "notice",
+            "title": "",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "raw_details": ""
+          }
+        ]
+      },
+      {
+        "id": 106301957123,
+        "name": "Entrada e demonstração responsivas",
+        "conclusion": "failure",
+        "steps": [],
+        "started_at": "2026-09-21T10:40:26Z",
+        "completed_at": "2026-09-21T10:40:29Z",
+        "annotations": [
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/f8954f36793992de5383fc2c810a704b75b949fe/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "failure",
+            "title": "",
+            "message": "The job was not started because an Actions budget is preventing further use.",
+            "raw_details": ""
+          },
+          {
+            "path": ".github",
+            "blob_href": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/f8954f36793992de5383fc2c810a704b75b949fe/.github",
+            "start_line": 1,
+            "start_column": null,
+            "end_line": 1,
+            "end_column": null,
+            "annotation_level": "notice",
+            "title": "",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "raw_details": ""
+          }
+        ]
+      }
+    ]
+  }
+]

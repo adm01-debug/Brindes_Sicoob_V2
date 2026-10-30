@@ -60,16 +60,11 @@ SELECT jobname, schedule, active
 -- Se vazio: migration 20260429163414_* não foi aplicada
 ```
 
-**Ação:**
-
-```sql
--- Aplicar a migration ou rodar manualmente:
-SELECT cron.schedule(
-  'connections-auto-test',
-  '*/15 * * * *',
-  $$ SELECT net.http_post(...); $$
-);
-```
+**Ação:** aplicar `20260923140000_secure_legacy_connection_crons.sql` depois de
+configurar no Vault `sicoob_project_url` e
+`sicoob_internal_function_secret`. A migration recria o job com um dispatcher
+que lê os valores do Vault a cada execução; não crie um `net.http_post` manual
+com URL ou credencial no texto do cron.
 
 **Validar intervalo configurado:**
 
@@ -183,6 +178,6 @@ Todas usam `resolveCredential()` — DB-first, env como fallback.
 ## 📚 Referências
 
 - `supabase/functions/_shared/credentials.ts` — SSOT de resolução
-- `supabase/migrations/20260429163414_*.sql` — schedule do cron
+- `supabase/migrations/20260923140000_*.sql` — dispatchers seguros dos crons
 - `supabase/migrations/20260429163441_*.sql` — RLS para dev
 - `docs/RUNBOOK.md` — runbook geral

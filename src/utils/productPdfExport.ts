@@ -6,6 +6,7 @@
 const getJsPDF = () => import('jspdf').then(m => m.default);
 const getAutoTable = () => import('jspdf-autotable').then(m => m.default);
 import type { ProductFormData } from '@/components/admin/products/ProductFormSchema';
+import { getAutoTableFinalY } from '@/lib/pdf/auto-table';
 
 interface ProductPdfOptions {
   formData: ProductFormData;
@@ -15,16 +16,27 @@ interface ProductPdfOptions {
 }
 
 const formatCurrency = (value: number | null | undefined) =>
-  value != null ? `R$ ${value.toFixed(2).replace('.', ',')}` : '—';
+  value !== null && value !== undefined ? `R$ ${value.toFixed(2).replace('.', ',')}` : '—';
 
 const formatDimension = (value: number | null | undefined, unit: string) =>
-  value != null ? `${value} ${unit}` : '—';
+  value !== null && value !== undefined ? `${value} ${unit}` : '—';
 
 const formatBool = (value: boolean | undefined) => (value ? 'Sim' : 'Não');
 
 const nonEmpty = (value: string | null | undefined) => value?.trim() || '—';
 
-export async function exportProductPdf({ formData, productImages, categoryName, supplierName }: ProductPdfOptions) {
+const valueOr = <T>(value: T | null | undefined, fallback: T): T => value || fallback;
+
+const formatOptionalNumber = (value: number | null | undefined, suffix = '') =>
+  value !== null && value !== undefined ? `${value}${suffix}` : '—';
+
+const hasSeoData = (formData: ProductFormData) =>
+  [formData.meta_title, formData.meta_keywords, formData.slug].some(Boolean);
+
+const hasMarketingData = (formData: ProductFormData) =>
+  [formData.key_benefits, formData.use_cases].some(Boolean);
+
+export async function exportProductPdf({ formData, categoryName, supplierName }: ProductPdfOptions) {
   const [jsPDF, autoTable] = await Promise.all([getJsPDF(), getAutoTable()]);
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -46,7 +58,7 @@ export async function exportProductPdf({ formData, productImages, categoryName, 
   doc.text('FICHA TÉCNICA DO PRODUTO', margin, 12);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text(`SKU: ${formData.sku || 'N/A'}`, margin, 20);
+  doc.text(`SKU: ${valueOr(formData.sku, 'N/A')}`, margin, 20);
   doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, pageWidth - margin, 20, { align: 'right' });
 
   y = 36;
@@ -55,7 +67,7 @@ export async function exportProductPdf({ formData, productImages, categoryName, 
   doc.setTextColor(...darkColor);
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text(formData.name || 'Produto sem nome', margin, y);
+  doc.text(valueOr(formData.name, 'Produto sem nome'), margin, y);
   y += 6;
 
   if (formData.short_description) {
@@ -100,7 +112,66 @@ export async function exportProductPdf({ formData, productImages, categoryName, 
       },
       body: filteredRows,
     });
-    y = doc.lastAutoTable.finalY + 6;
+    y = getAutoTableFinalY(doc, y) + 6;
+  };
+
+  const addInternalDimensions = () => {
+    const hasInternal = [formData.internal_height_cm, formData.internal_width_cm, formData.internal_length_cm, formData.internal_diameter_cm]
+      .some(value => value !== null && value !== undefined);
+    if (!hasInternal) return;
+    addSectionTitle('Dimensões Internas');
+    addTable([
+      ['Altura Interna', formatDimension(formData.internal_height_cm, 'cm')],
+      ['Largura Interna', formatDimension(formData.internal_width_cm, 'cm')],
+      ['Profundidade Interna', formatDimension(formData.internal_length_cm, 'cm')],
+      ['Diâmetro Interno', formatDimension(formData.internal_diameter_cm, 'cm')],
+    ]);
+  };
+
+  const addSeoSection = () => {
+    if (!hasSeoData(formData)) return;
+    addSectionTitle('SEO');
+    addTable([
+      ['Meta Título', nonEmpty(formData.meta_title)],
+      ['Meta Descrição', nonEmpty(formData.meta_description)],
+      ['Palavras-chave', nonEmpty(formData.meta_keywords)],
+      ['Slug', nonEmpty(formData.slug)],
+    ]);
+  };
+
+  const addMarketingSection = () => {
+    if (!hasMarketingData(formData)) return;
+    addSectionTitle('Marketing');
+    if (formData.key_benefits) {
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...darkColor);
+      const benefitLines = doc.splitTextToSize(`Benefícios: ${formData.key_benefits}`, contentWidth);
+      if (y + benefitLines.length * 4 > 280) { doc.addPage(); y = margin; }
+      doc.text(benefitLines, margin, y);
+      y += benefitLines.length * 4 + 3;
+    }
+    if (formData.use_cases) {
+      const caseLines = doc.splitTextToSize(`Casos de Uso: ${formData.use_cases}`, contentWidth);
+      if (y + caseLines.length * 4 > 280) { doc.addPage(); y = margin; }
+      doc.text(caseLines, margin, y);
+      y += caseLines.length * 4 + 3;
+    }
+  };
+
+  const addDescriptionSection = () => {
+    if (!formData.description) return;
+    addSectionTitle('Descrição Completa');
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...darkColor);
+    const lines = doc.splitTextToSize(formData.description, contentWidth);
+    for (const line of lines) {
+      if (y > 280) { doc.addPage(); y = margin; }
+      doc.text(line, margin, y);
+      y += 4;
+    }
+    y += 4;
   };
 
   // ====== INFORMAÇÕES BÁSICAS ======
@@ -120,9 +191,9 @@ export async function exportProductPdf({ formData, productImages, categoryName, 
     ['Preço de Venda', formatCurrency(formData.sale_price)],
     ['Preço de Custo', formatCurrency(formData.cost_price)],
     ['Preço Sugerido', formatCurrency(formData.suggested_price)],
-    ['Estoque', `${formData.stock_quantity} ${formData.stock_unit || 'un'}`],
+    ['Estoque', `${formData.stock_quantity} ${valueOr(formData.stock_unit, 'un')}`],
     ['Qtd. Mínima', `${formData.min_quantity}`],
-    ['Qtd. Mín. Pedido', formData.min_order_quantity != null ? `${formData.min_order_quantity}` : '—'],
+    ['Qtd. Mín. Pedido', formatOptionalNumber(formData.min_order_quantity)],
   ]);
 
   // ====== COMERCIAL ======
@@ -130,8 +201,8 @@ export async function exportProductPdf({ formData, productImages, categoryName, 
   addTable([
     ['Tipo de Produto', nonEmpty(formData.product_type)],
     ['Modo de Fornecimento', nonEmpty(formData.supply_mode)],
-    ['Prazo de Entrega', formData.lead_time_days != null ? `${formData.lead_time_days} dias` : '—'],
-    ['Garantia', formData.warranty_months != null ? `${formData.warranty_months} meses` : '—'],
+    ['Prazo de Entrega', formatOptionalNumber(formData.lead_time_days, ' dias')],
+    ['Garantia', formatOptionalNumber(formData.warranty_months, ' meses')],
     ['Gênero', nonEmpty(formData.gender)],
   ]);
 
@@ -163,16 +234,7 @@ export async function exportProductPdf({ formData, productImages, categoryName, 
   ]);
 
   // Dimensões internas (only if any are set)
-  const hasInternal = [formData.internal_height_cm, formData.internal_width_cm, formData.internal_length_cm, formData.internal_diameter_cm].some(v => v != null);
-  if (hasInternal) {
-    addSectionTitle('Dimensões Internas');
-    addTable([
-      ['Altura Interna', formatDimension(formData.internal_height_cm, 'cm')],
-      ['Largura Interna', formatDimension(formData.internal_width_cm, 'cm')],
-      ['Profundidade Interna', formatDimension(formData.internal_length_cm, 'cm')],
-      ['Diâmetro Interno', formatDimension(formData.internal_diameter_cm, 'cm')],
-    ]);
-  }
+  addInternalDimensions();
 
   // ====== EMBALAGEM ======
   addSectionTitle('Embalagem');
@@ -185,8 +247,8 @@ export async function exportProductPdf({ formData, productImages, categoryName, 
     ['Altura Caixa', formatDimension(formData.box_height_mm, 'mm')],
     ['Profundidade Caixa', formatDimension(formData.box_length_mm, 'mm')],
     ['Peso Caixa', formatDimension(formData.box_weight_kg, 'kg')],
-    ['Qtd. por Caixa', formData.box_quantity != null ? `${formData.box_quantity}` : '—'],
-    ['Qtd. Inner', formData.box_inner_quantity != null ? `${formData.box_inner_quantity}` : '—'],
+    ['Qtd. por Caixa', formatOptionalNumber(formData.box_quantity)],
+    ['Qtd. Inner', formatOptionalNumber(formData.box_inner_quantity)],
     ['Volume Caixa', formatDimension(formData.box_volume_cm3, 'cm³')],
   ]);
 
@@ -196,55 +258,18 @@ export async function exportProductPdf({ formData, productImages, categoryName, 
     ['NCM', nonEmpty(formData.ncm_code)],
     ['EAN', nonEmpty(formData.ean)],
     ['GTIN', nonEmpty(formData.gtin)],
-    ['IPI', formData.ipi_rate != null ? `${formData.ipi_rate}%` : '—'],
+    ['IPI', formatOptionalNumber(formData.ipi_rate, '%')],
     ['País de Origem', nonEmpty(formData.country_of_origin)],
   ]);
 
   // ====== SEO ======
-  if (formData.meta_title || formData.meta_keywords || formData.slug) {
-    addSectionTitle('SEO');
-    addTable([
-      ['Meta Título', nonEmpty(formData.meta_title)],
-      ['Meta Descrição', nonEmpty(formData.meta_description)],
-      ['Palavras-chave', nonEmpty(formData.meta_keywords)],
-      ['Slug', nonEmpty(formData.slug)],
-    ]);
-  }
+  addSeoSection();
 
   // ====== MARKETING ======
-  if (formData.key_benefits || formData.use_cases) {
-    addSectionTitle('Marketing');
-    if (formData.key_benefits) {
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(...darkColor);
-      const benefitLines = doc.splitTextToSize(`Benefícios: ${formData.key_benefits}`, contentWidth);
-      if (y + benefitLines.length * 4 > 280) { doc.addPage(); y = margin; }
-      doc.text(benefitLines, margin, y);
-      y += benefitLines.length * 4 + 3;
-    }
-    if (formData.use_cases) {
-      const caseLines = doc.splitTextToSize(`Casos de Uso: ${formData.use_cases}`, contentWidth);
-      if (y + caseLines.length * 4 > 280) { doc.addPage(); y = margin; }
-      doc.text(caseLines, margin, y);
-      y += caseLines.length * 4 + 3;
-    }
-  }
+  addMarketingSection();
 
   // ====== DESCRIÇÃO COMPLETA ======
-  if (formData.description) {
-    addSectionTitle('Descrição Completa');
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...darkColor);
-    const descLines = doc.splitTextToSize(formData.description, contentWidth);
-    for (const line of descLines) {
-      if (y > 280) { doc.addPage(); y = margin; }
-      doc.text(line, margin, y);
-      y += 4;
-    }
-    y += 4;
-  }
+  addDescriptionSection();
 
   // ====== FOOTER on each page ======
   const totalPages = doc.getNumberOfPages();
@@ -253,7 +278,7 @@ export async function exportProductPdf({ formData, productImages, categoryName, 
     doc.setFontSize(7);
     doc.setTextColor(...grayColor);
     doc.text(
-      `Ficha Técnica — ${formData.sku || 'N/A'} — Página ${i}/${totalPages}`,
+      `Ficha Técnica — ${valueOr(formData.sku, 'N/A')} — Página ${i}/${totalPages}`,
       pageWidth / 2,
       doc.internal.pageSize.getHeight() - 6,
       { align: 'center' }
@@ -261,6 +286,6 @@ export async function exportProductPdf({ formData, productImages, categoryName, 
   }
 
   // Save
-  const fileName = `ficha-tecnica-${(formData.sku || 'produto').replace(/[^a-zA-Z0-9-_]/g, '_')}.pdf`;
+  const fileName = `ficha-tecnica-${valueOr(formData.sku, 'produto').replace(/[^a-zA-Z0-9-_]/g, '_')}.pdf`;
   doc.save(fileName);
 }

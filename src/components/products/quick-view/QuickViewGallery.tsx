@@ -1,7 +1,7 @@
 /**
  * Image gallery section for ProductQuickView — extracted for modularity
  */
-import { useState } from "react";
+import { type SyntheticEvent, useState } from "react";
 import { ChevronLeft, ChevronRight, Sparkles, Layers, ImageOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,77 @@ interface QuickViewGalleryProps {
   isKit?: boolean;
 }
 
+const PLACEHOLDER_IMAGE = '/placeholder.svg';
+
+function GalleryBadges({ featured, newArrival, isKit }: Pick<QuickViewGalleryProps, "featured" | "newArrival" | "isKit">) {
+  return (
+    <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+      {featured && <Badge className="bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-lg"><Sparkles className="h-3 w-3 mr-1" />Destaque</Badge>}
+      {newArrival && <Badge className="bg-gradient-to-r from-info to-info/80 text-info-foreground shadow-md">Novidade</Badge>}
+      {isKit && <Badge className="bg-gradient-to-r from-warning to-warning/80 text-warning-foreground shadow-md"><Layers className="h-3 w-3 mr-1" />KIT</Badge>}
+    </div>
+  );
+}
+
+function handleImageFallback(
+  event: SyntheticEvent<HTMLImageElement>,
+  currentImage: ProductImageMeta | undefined,
+  legacyImage: string | undefined,
+  onFinalError: () => void,
+) {
+  const image = event.currentTarget;
+  if (!image.dataset.fallback && currentImage?.url_original) {
+    image.dataset.fallback = '1';
+    image.srcset = '';
+    image.src = currentImage.url_original;
+    return;
+  }
+  if (!image.dataset.fallback2 && legacyImage) {
+    image.dataset.fallback2 = '1';
+    image.srcset = '';
+    image.src = legacyImage;
+    return;
+  }
+  onFinalError();
+}
+
+function GalleryImage({ image, url, srcSet, alt, legacyImage, imageError, onError }: {
+  image: ProductImageMeta | undefined;
+  url: string;
+  srcSet: string | undefined;
+  alt: string;
+  legacyImage: string | undefined;
+  imageError: boolean;
+  onError: () => void;
+}) {
+  const unavailable = imageError || url === PLACEHOLDER_IMAGE;
+  return (
+    <div className="relative w-full h-full flex items-center justify-center">
+      {unavailable && <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground bg-muted/30"><ImageOff className="h-16 w-16 mb-2 opacity-50" /><p className="text-sm">Imagem não disponível</p></div>}
+      {url !== PLACEHOLDER_IMAGE && <img src={url} srcSet={srcSet} sizes="(max-width: 768px) 100vw, 50vw" alt={alt} title={image?.title_text || alt} className="w-full h-full object-contain p-8 animate-fade-in" onError={(event) => handleImageFallback(event, image, legacyImage, onError)} />}
+    </div>
+  );
+}
+
+function GalleryNavigation({ visible, onPrev, onNext }: { visible: boolean; onPrev: () => void; onNext: () => void }) {
+  if (!visible) return null;
+  return (
+    <>
+      <Button variant="secondary" size="icon" aria-label="Voltar" className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card/90 backdrop-blur-md shadow-lg hover:bg-card" onClick={(event) => { event.stopPropagation(); onPrev(); }}><ChevronLeft className="h-5 w-5" /></Button>
+      <Button variant="secondary" size="icon" aria-label="Avançar" className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card/90 backdrop-blur-md shadow-lg hover:bg-card" onClick={(event) => { event.stopPropagation(); onNext(); }}><ChevronRight className="h-5 w-5" /></Button>
+    </>
+  );
+}
+
+function GalleryDots({ count, selected, onSelect }: { count: number; selected: number; onSelect: (index: number) => void }) {
+  if (count <= 1) return null;
+  return (
+    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+      {Array.from({ length: count }, (_, index) => <button type="button" aria-label={`Exibir imagem ${index + 1}`} key={index} className={cn("w-2.5 h-2.5 rounded-full transition-all duration-200", index === selected ? "bg-primary scale-110" : "bg-muted-foreground/30 hover:bg-muted-foreground/50")} onClick={(event) => { event.stopPropagation(); onSelect(index); }} />)}
+    </div>
+  );
+}
+
 export function QuickViewGallery({
   productName, images, displayImages, currentImageIndex, onIndexChange,
   featured, newArrival, isKit,
@@ -26,7 +97,7 @@ export function QuickViewGallery({
   const [imageError, setImageError] = useState(false);
 
   const currentImage = displayImages[currentImageIndex] || displayImages[0];
-  const currentImageUrl = currentImage ? getCdnUrl(currentImage.url_cdn, 'large') : '/placeholder.svg';
+  const currentImageUrl = currentImage ? getCdnUrl(currentImage.url_cdn, 'large') : PLACEHOLDER_IMAGE;
   const currentImageSrcSet = currentImage ? getSrcSet(currentImage.url_cdn) : undefined;
   const currentAlt = currentImage?.alt_text || `${productName} - Imagem ${currentImageIndex + 1}`;
 
@@ -42,82 +113,10 @@ export function QuickViewGallery({
 
   return (
     <div className="relative bg-white aspect-square md:aspect-auto md:min-h-[500px]">
-      {/* Badges */}
-      <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-        {featured && (
-          <Badge className="bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-lg">
-            <Sparkles className="h-3 w-3 mr-1" />Destaque
-          </Badge>
-        )}
-        {newArrival && (
-          <Badge className="bg-gradient-to-r from-info to-info/80 text-info-foreground shadow-md">Novidade</Badge>
-        )}
-        {isKit && (
-          <Badge className="bg-gradient-to-r from-warning to-warning/80 text-warning-foreground shadow-md">
-            <Layers className="h-3 w-3 mr-1" />KIT
-          </Badge>
-        )}
-      </div>
-
-      {/* Main Image */}
-      <div className="relative w-full h-full flex items-center justify-center">
-        {(imageError || currentImageUrl === '/placeholder.svg') && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground bg-muted/30">
-            <ImageOff className="h-16 w-16 mb-2 opacity-50" />
-            <p className="text-sm">Imagem não disponível</p>
-          </div>
-        )}
-        {currentImageUrl !== '/placeholder.svg' && (
-          <img
-            key={`${currentImageIndex}`}
-            src={currentImageUrl}
-            srcSet={currentImageSrcSet}
-            sizes="(max-width: 768px) 100vw, 50vw"
-            alt={currentAlt}
-            title={currentImage?.title_text || productName}
-            className="w-full h-full object-contain p-8 animate-fade-in"
-            onError={(e) => {
-              const img = e.currentTarget;
-              if (!img.dataset.fallback && currentImage?.url_original) {
-                img.dataset.fallback = '1'; img.srcset = ''; img.src = currentImage.url_original;
-              } else if (!img.dataset.fallback2) {
-                img.dataset.fallback2 = '1';
-                const legacyImg = images[currentImageIndex] || images[0];
-                if (legacyImg) { img.srcset = ''; img.src = legacyImg; } else setImageError(true);
-              } else setImageError(true);
-            }}
-          />
-        )}
-      </div>
-
-      {/* Navigation */}
-      {displayImages.length > 1 && (
-        <>
-          <Button variant="secondary" size="icon" aria-label="Voltar"
-            className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card/90 backdrop-blur-md shadow-lg hover:bg-card"
-            onClick={(e) => { e.stopPropagation(); handlePrev(); }}>
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <Button variant="secondary" size="icon" aria-label="Avançar"
-            className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card/90 backdrop-blur-md shadow-lg hover:bg-card"
-            onClick={(e) => { e.stopPropagation(); handleNext(); }}>
-            <ChevronRight className="h-5 w-5" />
-          </Button>
-        </>
-      )}
-
-      {/* Dots */}
-      {displayImages.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-          {displayImages.map((_, idx) => (
-            <button type="button" key={idx}
-              className={cn("w-2.5 h-2.5 rounded-full transition-all duration-200",
-                idx === currentImageIndex ? "bg-primary scale-110" : "bg-muted-foreground/30 hover:bg-muted-foreground/50")}
-              onClick={(e) => { e.stopPropagation(); setImageError(false); onIndexChange(idx); }}
-            />
-          ))}
-        </div>
-      )}
+      <GalleryBadges featured={featured} newArrival={newArrival} isKit={isKit} />
+      <GalleryImage key={currentImageIndex} image={currentImage} url={currentImageUrl} srcSet={currentImageSrcSet} alt={currentAlt} legacyImage={images[currentImageIndex] || images[0]} imageError={imageError} onError={() => setImageError(true)} />
+      <GalleryNavigation visible={displayImages.length > 1} onPrev={handlePrev} onNext={handleNext} />
+      <GalleryDots count={displayImages.length} selected={currentImageIndex} onSelect={(index) => { setImageError(false); onIndexChange(index); }} />
     </div>
   );
 }

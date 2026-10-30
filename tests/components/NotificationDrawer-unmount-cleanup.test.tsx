@@ -7,7 +7,7 @@
  * stray `prefetch()` call would race against route teardown and warn about
  * state updates on unmounted components.
  */
-import React from "react";
+import React, { type JSX } from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, fireEvent, screen, cleanup } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";

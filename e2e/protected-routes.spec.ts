@@ -1,3 +1,4 @@
+import { gotoAndSettle } from './helpers/nav';
 /**
  * E2E: Protected Routes — Verify auth guards on all critical routes
  */
@@ -20,7 +21,7 @@ const protectedRoutes = [
 test.describe('Protected Routes — Auth Guards', () => {
   for (const route of protectedRoutes) {
     test(`${route} should redirect to /login`, async ({ page }) => {
-      await page.goto(route);
+      await gotoAndSettle(page, route);
       await page.waitForURL(/login/, { timeout: 10000 });
       expect(page.url()).toMatch(/login/);
     });
@@ -38,7 +39,7 @@ const publicRoutes = [
 test.describe('Public Routes — No Auth Required', () => {
   for (const route of publicRoutes) {
     test(`${route} permanece na rota pública solicitada`, async ({ page }) => {
-      await page.goto(route);
+      await gotoAndSettle(page, route);
       await expect(page).toHaveURL(new RegExp(`${route}(?:[?#]|$)`));
     });
   }

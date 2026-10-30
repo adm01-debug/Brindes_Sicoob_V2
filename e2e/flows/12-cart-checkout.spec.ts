@@ -7,17 +7,17 @@
  *
  * Política: SSOT em e2e/fixtures/selectors.ts — somente data-testid.
  */
-import { test, expect, requireAuth } from "../fixtures/test-base";
-import { gotoAndSettle } from "../helpers/nav";
-import { Sel } from "../fixtures/selectors";
-import type { Locator, Page } from "@playwright/test";
+import { test, expect, requireAuth } from '../fixtures/test-base';
+import { gotoAndSettle, settleAfterAction } from '../helpers/nav';
+import { Sel } from '../fixtures/selectors';
+import type { Locator, Page } from '@playwright/test';
 
 const CARD_SELECTOR = Sel.product.card;
 const TOAST_SELECTOR = Sel.app.toast;
 
 async function firstCatalogCard(page: Page): Promise<Locator> {
   const card = page.locator(CARD_SELECTOR).first();
-  await card.waitFor({ state: "visible", timeout: 20_000 });
+  await card.waitFor({ state: 'visible', timeout: 20_000 });
   return card;
 }
 
@@ -26,7 +26,7 @@ async function firstCatalogCard(page: Page): Promise<Locator> {
  * escolher a primeira empresa do CartCompanyPickerDialog (via testid).
  */
 async function ensureActiveCart(page: Page): Promise<boolean> {
-  await gotoAndSettle(page, "/carrinhos");
+  await gotoAndSettle(page, '/carrinhos');
 
   const hasCart = await page
     .locator(Sel.cart.drawer)
@@ -35,12 +35,12 @@ async function ensureActiveCart(page: Page): Promise<boolean> {
     .catch(() => false);
   if (hasCart) return true;
 
-  await gotoAndSettle(page, "/carrinhos/novo");
+  await gotoAndSettle(page, '/carrinhos/novo');
 
   const firstCompany = page.locator(Sel.cart.companyPickerSelect).first();
   if (await firstCompany.isVisible().catch(() => false)) {
     await firstCompany.click().catch(() => {});
-    await page.waitForTimeout(800);
+    await settleAfterAction(page, { timeout: 800 });
     return true;
   }
   // Sem empresas cadastradas
@@ -52,21 +52,21 @@ async function ensureActiveCart(page: Page): Promise<boolean> {
  * Retorna o productId adicionado (ou null se não foi possível).
  */
 async function addFirstProductToCart(page: Page): Promise<string | null> {
-  await gotoAndSettle(page, "/produtos");
+  await gotoAndSettle(page, '/produtos');
   const card = await firstCatalogCard(page);
 
   const productId = await card.evaluate((el) => {
-    const node = (el as HTMLElement).matches("[data-product-id]")
+    const node = (el as HTMLElement).matches('[data-product-id]')
       ? (el as HTMLElement)
-      : (el.querySelector("[data-product-id]") as HTMLElement | null);
-    return node?.getAttribute("data-product-id") ?? "";
+      : (el.querySelector('[data-product-id]') as HTMLElement | null);
+    return node?.getAttribute('data-product-id') ?? '';
   });
 
   // Abre menu de ações rápidas, se presente
   const actionsToggle = card.locator(Sel.product.actionsToggle).first();
   if (await actionsToggle.isVisible().catch(() => false)) {
-    const open = await actionsToggle.getAttribute("data-actions-open");
-    if (open !== "true") {
+    const open = await actionsToggle.getAttribute('data-actions-open');
+    if (open !== 'true') {
       await actionsToggle.click().catch(() => {});
     }
   }
@@ -78,7 +78,7 @@ async function addFirstProductToCart(page: Page): Promise<string | null> {
 
   // Botão final dentro do popover (testid SSOT)
   const addBtn = page.locator(Sel.product.cardAddToCart).first();
-  await addBtn.waitFor({ state: "visible", timeout: 10_000 }).catch(() => {});
+  await addBtn.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => {});
   if (!(await addBtn.isVisible().catch(() => false))) return null;
 
   if (await addBtn.isDisabled().catch(() => false)) {
@@ -91,57 +91,47 @@ async function addFirstProductToCart(page: Page): Promise<string | null> {
 
   if (await addBtn.isEnabled().catch(() => false)) {
     await addBtn.click();
-    await page.waitForTimeout(600);
+    await settleAfterAction(page, { timeout: 600 });
     return productId || null;
   }
   return null;
 }
 
-test.describe("Fluxo: Carrinho → Checkout", () => {
+test.describe('Fluxo: Carrinho → Checkout', () => {
   test.beforeEach(() => requireAuth());
 
-  test("adiciona item, ajusta quantidade e abre checkout (Gerar Orçamento)", async ({
-    page,
-  }) => {
+  test('adiciona item, ajusta quantidade e abre checkout (Gerar Orçamento)', async ({ page }) => {
     const ready = await ensureActiveCart(page);
-    test.skip(!ready, "Sem empresas cadastradas para criar carrinho de teste");
+    test.skip(!ready, 'Sem empresas cadastradas para criar carrinho de teste');
 
     const productId = await addFirstProductToCart(page);
-    test.skip(
-      !productId,
-      "Não foi possível adicionar produto (popover/variante indisponível)",
-    );
+    test.skip(!productId, 'Não foi possível adicionar produto (popover/variante indisponível)');
 
-    await gotoAndSettle(page, "/carrinhos");
+    await gotoAndSettle(page, '/carrinhos');
 
     // Localiza item adicionado pelo data-product-id no cart-item
-    const itemCard = page
-      .locator(`${Sel.cart.item}[data-product-id="${productId}"]`)
-      .first();
-    await expect(itemCard, "item recém-adicionado deve aparecer no carrinho").toBeVisible({
+    const itemCard = page.locator(`${Sel.cart.item}[data-product-id="${productId}"]`).first();
+    await expect(itemCard, 'item recém-adicionado deve aparecer no carrinho').toBeVisible({
       timeout: 15_000,
     });
 
     // Lê quantidade atual e incrementa 2x via testid SSOT
     const qtyBadge = itemCard.locator(Sel.cart.qtyBadge).first();
     const qtyBefore =
-      parseInt(
-        ((await qtyBadge.innerText().catch(() => "1")) || "1").replace(/\D/g, ""),
-        10,
-      ) || 1;
+      parseInt(((await qtyBadge.innerText().catch(() => '1')) || '1').replace(/\D/g, ''), 10) || 1;
 
     const plusBtn = itemCard.locator(Sel.cart.increment).first();
     await plusBtn.click();
-    await page.waitForTimeout(250);
+    await settleAfterAction(page, { timeout: 250 });
     await plusBtn.click();
 
     await expect
       .poll(
         async () => {
-          const t = (await qtyBadge.innerText().catch(() => "")) || "";
-          return parseInt(t.replace(/\D/g, ""), 10) || 0;
+          const t = (await qtyBadge.innerText().catch(() => '')) || '';
+          return parseInt(t.replace(/\D/g, ''), 10) || 0;
         },
-        { timeout: 8_000, message: "quantidade não foi incrementada" },
+        { timeout: 8_000, message: 'quantidade não foi incrementada' },
       )
       .toBeGreaterThanOrEqual(qtyBefore + 1);
 
@@ -168,19 +158,17 @@ test.describe("Fluxo: Carrinho → Checkout", () => {
       const successToast = page.locator(TOAST_SELECTOR).first();
       await expect(
         successToast,
-        "esperava navegação para /orcamentos/novo OU toast de sucesso",
+        'esperava navegação para /orcamentos/novo OU toast de sucesso',
       ).toBeVisible({ timeout: 8_000 });
     }
   });
 
-  test("falha de backend ao gerar orçamento mostra erro e não quebra a UI", async ({
-    page,
-  }) => {
+  test('falha de backend ao gerar orçamento mostra erro e não quebra a UI', async ({ page }) => {
     const ready = await ensureActiveCart(page);
-    test.skip(!ready, "Sem empresas para preparar carrinho");
+    test.skip(!ready, 'Sem empresas para preparar carrinho');
 
     await addFirstProductToCart(page).catch(() => null);
-    await gotoAndSettle(page, "/carrinhos");
+    await gotoAndSettle(page, '/carrinhos');
 
     await page.route(
       (url) =>
@@ -188,11 +176,11 @@ test.describe("Fluxo: Carrinho → Checkout", () => {
         /\/functions\/v1\/(create-quote|external-db-bridge)/.test(url.href),
       async (route) => {
         const method = route.request().method();
-        if (method === "GET" || method === "HEAD") return route.continue();
+        if (method === 'GET' || method === 'HEAD') return route.continue();
         return route.fulfill({
           status: 500,
-          contentType: "application/json",
-          body: JSON.stringify({ error: "simulated_backend_failure" }),
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'simulated_backend_failure' }),
         });
       },
     );
@@ -200,7 +188,7 @@ test.describe("Fluxo: Carrinho → Checkout", () => {
     const checkoutBtn = page.locator(Sel.cart.checkoutCta).first();
 
     if (!(await checkoutBtn.isVisible().catch(() => false))) {
-      test.skip(true, "Sem item/carrinho disponível para testar checkout com falha");
+      test.skip(true, 'Sem item/carrinho disponível para testar checkout com falha');
       return;
     }
 
@@ -212,15 +200,16 @@ test.describe("Fluxo: Carrinho → Checkout", () => {
     }
 
     // Toast/banner de erro aparece (qualquer toast — sucesso ou erro indica feedback)
-    const feedback = page.locator(TOAST_SELECTOR).first().or(
-      page.locator(Sel.app.errorBanner).first(),
-    );
-    await expect(feedback, "esperava toast/banner de feedback após falha 500").toBeVisible({
+    const feedback = page
+      .locator(TOAST_SELECTOR)
+      .first()
+      .or(page.locator(Sel.app.errorBanner).first());
+    await expect(feedback, 'esperava toast/banner de feedback após falha 500').toBeVisible({
       timeout: 10_000,
     });
 
     // UI não quebrou — heading da página continua visível
-    await expect(page.locator(Sel.page.title("carrinhos")).first()).toBeVisible({
+    await expect(page.locator(Sel.page.title('carrinhos')).first()).toBeVisible({
       timeout: 5_000,
     });
 

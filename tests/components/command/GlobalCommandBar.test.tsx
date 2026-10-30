@@ -2,7 +2,6 @@
  * Tests for GlobalCommandBar (644 lines)
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import React from "react";
 
 vi.mock("@/contexts/ThemeContext", () => ({
   useTheme: vi.fn().mockReturnValue({

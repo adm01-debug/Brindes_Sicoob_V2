@@ -16,6 +16,35 @@ interface ProtectedRouteProps {
   requireDev?: boolean;
 }
 
+function isLoadingPermissions(isLoading: boolean, hasUser: boolean, rolesLoaded: boolean) {
+  return isLoading || (hasUser && !rolesLoaded);
+}
+
+function resolveRequiredRole(
+  requiredRole: RequiredRole | undefined,
+  requireDev: boolean,
+  requireAdmin: boolean,
+): RequiredRole | undefined {
+  if (requiredRole) return requiredRole;
+  if (requireDev) return "dev";
+  if (requireAdmin) return "supervisor";
+  return undefined;
+}
+
+function RouteLoader({ showPermissionsMessage }: { showPermissionsMessage: boolean }) {
+  return (
+    <div
+      data-route-pending="permissions"
+      className="min-h-screen flex items-center justify-center bg-background"
+    >
+      <div className="flex flex-col items-center gap-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        {showPermissionsMessage && <p className="text-sm text-muted-foreground animate-pulse">Carregando permissões...</p>}
+      </div>
+    </div>
+  );
+}
+
 export function ProtectedRoute({
   children,
   requiredRole,
@@ -25,15 +54,8 @@ export function ProtectedRoute({
   const { user, roles, isLoading, rolesLoaded, rolesError } = useAuth();
   const location = useLocation();
 
-  if (isLoading || (user && !rolesLoaded)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          {user && !rolesLoaded && <p className="text-sm text-muted-foreground animate-pulse">Carregando permissões...</p>}
-        </div>
-      </div>
-    );
+  if (isLoadingPermissions(isLoading, Boolean(user), rolesLoaded)) {
+    return <RouteLoader showPermissionsMessage={Boolean(user) && !rolesLoaded} />;
   }
 
   if (user && rolesError) return <PermissionsError />;
@@ -43,8 +65,7 @@ export function ProtectedRoute({
   }
 
   // Resolução do nível exigido (props mais explícitas têm prioridade)
-  const required: RequiredRole | undefined =
-    requiredRole ?? (requireDev ? "dev" : requireAdmin ? "supervisor" : undefined);
+  const required = resolveRequiredRole(requiredRole, requireDev, requireAdmin);
 
   if (!hasRequiredRole(roles, required)) {
     return <Navigate to="/403" replace />;

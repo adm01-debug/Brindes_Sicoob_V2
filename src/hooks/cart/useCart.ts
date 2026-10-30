@@ -2,8 +2,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { useCallback, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { createClientLogger } from "@/lib/telemetry/structuredLogger";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface CartItem {
   id: string;
@@ -15,7 +16,7 @@ export interface CartItem {
   quantity: number;
   color_name: string | null;
   color_hex: string | null;
-  metadata: Record<string, any>;
+  metadata: Json;
   created_at: string;
   updated_at: string;
 }
@@ -28,10 +29,48 @@ export interface AddToCartInput {
   quantity?: number;
   color_name?: string;
   color_hex?: string;
-  metadata?: Record<string, any>;
+  metadata?: Json;
 }
 
 const QUERY_KEY = "cart-items";
+
+async function findExistingCartItem(userId: string, input: AddToCartInput) {
+  let query = supabase
+    .from("cart_items")
+    .select("id, quantity")
+    .eq("user_id", userId)
+    .eq("product_id", input.product_id);
+  query = input.color_name
+    ? query.eq("color_name", input.color_name)
+    : query.is("color_name", null);
+  const { data } = await query.maybeSingle();
+  return data;
+}
+
+async function insertCartItem(userId: string, input: AddToCartInput) {
+  const { error } = await supabase.from("cart_items").insert({
+    user_id: userId,
+    product_id: input.product_id,
+    product_name: input.product_name,
+    product_image_url: input.product_image_url || null,
+    product_price: input.product_price,
+    quantity: input.quantity || 1,
+    color_name: input.color_name || null,
+    color_hex: input.color_hex || null,
+    metadata: input.metadata || {},
+  });
+  if (error) throw error;
+}
+
+async function persistCartItem(userId: string, input: AddToCartInput) {
+  const existing = await findExistingCartItem(userId, input);
+  if (!existing) return insertCartItem(userId, input);
+  const { error } = await supabase
+    .from("cart_items")
+    .update({ quantity: (existing.quantity || 0) + (input.quantity || 1) })
+    .eq("id", existing.id);
+  if (error) throw error;
+}
 
 /**
  * useCart — Optimized cart management for Portal Sicoob
@@ -71,36 +110,7 @@ export function useCart() {
         throw new Error("Não autenticado");
       }
 
-      const { data: existing } = await supabase
-        .from("cart_items")
-        .select("id, quantity")
-        .eq("user_id", userId)
-        .eq("product_id", input.product_id)
-        .eq("color_name", input.color_name || null)
-        .maybeSingle();
-
-      if (existing) {
-        const { error } = await supabase
-          .from("cart_items")
-          .update({ quantity: (existing.quantity || 0) + (input.quantity || 1) })
-          .eq("id", existing.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("cart_items")
-          .insert({
-            user_id: userId,
-            product_id: input.product_id,
-            product_name: input.product_name,
-            product_image_url: input.product_image_url || null,
-            product_price: input.product_price,
-            quantity: input.quantity || 1,
-            color_name: input.color_name || null,
-            color_hex: input.color_hex || null,
-            metadata: input.metadata || {},
-          });
-        if (error) throw error;
-      }
+      await persistCartItem(userId, input);
       
       const duration = performance.now() - startTime;
       log.info('add_item_success', { 
@@ -248,7 +258,7 @@ export function useCart() {
     },
   });
 
-  const cartItems = cartQuery.data || [];
+  const cartItems = useMemo(() => cartQuery.data || [], [cartQuery.data]);
   const subtotal = cartItems.reduce((sum, item) => sum + (item.product_price * item.quantity), 0);
   const totalItemsCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 

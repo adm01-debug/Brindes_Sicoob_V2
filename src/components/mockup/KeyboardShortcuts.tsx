@@ -10,6 +10,48 @@ interface KeyboardShortcutsProps {
   isLoading: boolean;
 }
 
+function isTypingTarget(target: EventTarget | null) {
+  const element = target as HTMLElement | null;
+  if (!element) return false;
+  return element.tagName === "INPUT" || element.tagName === "TEXTAREA" || element.isContentEditable;
+}
+
+function hasCommandModifier(event: KeyboardEvent) {
+  return event.ctrlKey || event.metaKey;
+}
+
+function runGenerateShortcut(event: KeyboardEvent, props: KeyboardShortcutsProps) {
+  if (!hasCommandModifier(event) || event.key !== "Enter") return false;
+  event.preventDefault();
+  if (props.canGenerate && !props.isLoading) {
+    props.onGenerate();
+    toast.info("⌨️ Gerando mockup...", { duration: 1500 });
+  } else if (!props.canGenerate) {
+    toast.warning("Complete todos os campos antes de gerar");
+  }
+  return true;
+}
+
+function runDownloadShortcut(event: KeyboardEvent, props: KeyboardShortcutsProps) {
+  if (!hasCommandModifier(event) || event.key !== "d") return false;
+  event.preventDefault();
+  if (props.canDownload) {
+    props.onDownload();
+    toast.info("⌨️ Baixando mockup...", { duration: 1500 });
+  }
+  return true;
+}
+
+function runResetShortcut(event: KeyboardEvent, props: KeyboardShortcutsProps) {
+  const commandReset = hasCommandModifier(event) && event.key === "r" && !event.shiftKey;
+  const escapeReset = event.key === "Escape" && !props.isLoading;
+  if (!commandReset && !escapeReset) return false;
+  event.preventDefault();
+  props.onReset();
+  toast.info("⌨️ Formulário limpo", { duration: 1500 });
+  return true;
+}
+
 export function useKeyboardShortcuts({
   onGenerate,
   onReset,
@@ -19,54 +61,12 @@ export function useKeyboardShortcuts({
   isLoading,
 }: KeyboardShortcutsProps) {
   const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      // Ignore if user is typing in an input/textarea
-      const target = e.target as HTMLElement;
-      if (
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.isContentEditable
-      ) {
-        return;
-      }
-
-      // Ctrl/Cmd + Enter: Generate mockup
-      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-        e.preventDefault();
-        if (canGenerate && !isLoading) {
-          onGenerate();
-          toast.info("⌨️ Gerando mockup...", { duration: 1500 });
-        } else if (!canGenerate) {
-          toast.warning("Complete todos os campos antes de gerar");
-        }
-        return;
-      }
-
-      // Ctrl/Cmd + D: Download mockup
-      if ((e.ctrlKey || e.metaKey) && e.key === "d") {
-        e.preventDefault();
-        if (canDownload) {
-          onDownload();
-          toast.info("⌨️ Baixando mockup...", { duration: 1500 });
-        }
-        return;
-      }
-
-      // Ctrl/Cmd + R (without shift): Reset form (prevent page refresh)
-      if ((e.ctrlKey || e.metaKey) && e.key === "r" && !e.shiftKey) {
-        e.preventDefault();
-        onReset();
-        toast.info("⌨️ Formulário limpo", { duration: 1500 });
-        return;
-      }
-
-      // Escape: Reset/cancel
-      if (e.key === "Escape" && !isLoading) {
-        e.preventDefault();
-        onReset();
-        toast.info("⌨️ Formulário limpo", { duration: 1500 });
-        return;
-      }
+    (event: KeyboardEvent) => {
+      const shortcutProps = { onGenerate, onReset, onDownload, canGenerate, canDownload, isLoading };
+      if (isTypingTarget(event.target)) return;
+      if (runGenerateShortcut(event, shortcutProps)) return;
+      if (runDownloadShortcut(event, shortcutProps)) return;
+      runResetShortcut(event, shortcutProps);
     },
     [canGenerate, canDownload, isLoading, onGenerate, onDownload, onReset]
   );

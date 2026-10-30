@@ -6,10 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { FieldLabel, SectionCard } from '../ProductFormHelpers';
+import { FieldLabel, SectionCard, type FormSectionProps } from "../ProductFormHelpers";
 import { Package, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { FormSectionProps } from '../ProductFormHelpers';
 
 type Props = FormSectionProps;
 
@@ -23,7 +22,7 @@ const PACKAGING_FLAGS = [
   { key: 'has_commercial_packaging' as const, label: 'Embalagem Nativa', hint: 'O produto já vem com embalagem comercial do fabricante' },
 ];
 
-export function ProductPackagingSection({ register, numericProps, watch, setValue }: Props) {
+export function ProductPackagingSection({ numericProps, watch, setValue }: Props) {
   const packingType = watch?.('packing_type') || '';
   const packagingMaterial = watch?.('packaging_material') || '';
   const packagingColor = watch?.('packaging_color') || '';

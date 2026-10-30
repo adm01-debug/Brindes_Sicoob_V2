@@ -32,6 +32,12 @@
 O sistema está em construção e passa por auditorias de segurança, banco,
 contratos e experiência. O relatório consolidado mais recente é:
 
+- 📄 **[Execução e preflight do banco canônico — 01/10/2026](./docs/execucao/execucao-plano-2026-10-01.md)** — correções consolidadas, testes do candidato e consulta administrativa atual do Supabase.
+
+- 📄 **[Revisão das 150 etapas e dos workflows — 01/10/2026](./docs/execucao/revisao-do-plano-2026-10-01.md)** — implementação atual, falha de autorização reproduzida e limites de validação do banco.
+
+- 📄 **[Revisão dos planos — 27/09/2026](./docs/execucao/revisao-do-plano-2026-09-27.md)** — avanços em main, lacunas reproduzidas e limites de implantação.
+
 - 📄 **[Auditoria de validação — 22/09/2026](./docs/auditoria-validacao-2026-09-22.md)**
 
 ---
@@ -95,7 +101,7 @@ do Sicoob que integra:
 
 ### Pré-requisitos
 
-- Node.js 18+
+- Node.js 24+
 - npm
 
 ### Instalação
@@ -103,7 +109,7 @@ do Sicoob que integra:
 ```bash
 # Clone o repositório
 git clone <repo-url>
-cd promo-brindes
+cd Brindes_Sicoob_V2
 
 # Instale dependências
 npm install
@@ -164,12 +170,12 @@ src/
 
 supabase/
 ├── config.toml       # Configuração do projeto Supabase
-├── functions/        # 104 Edge Functions com entrypoint
+├── functions/        # 106 Edge Functions com entrypoint
 │   ├── _shared/      # Utilitários compartilhados (CORS, auth, validação)
 │   ├── expert-chat/  # Assistente IA
 │   ├── external-db-bridge/ # Bridge para banco externo
 │   └── ...
-└── migrations/       # 529 migrations SQL versionadas
+└── migrations/       # 534 migrations SQL versionadas
 ```
 
 ---
@@ -243,7 +249,7 @@ supabase/
 
 ### Supabase (Interno)
 - 35+ tabelas com RLS completo
-- 529 migrations versionadas; o ledger remoto deve ser confrontado antes de qualquer deploy
+- 534 migrations versionadas; o ledger remoto deve ser confrontado antes de qualquer deploy
 - Tipos gerados automaticamente (`supabase gen types`)
 - Connection pooling via Supabase pooler
 

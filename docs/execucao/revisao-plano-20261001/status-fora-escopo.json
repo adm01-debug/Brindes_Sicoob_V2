@@ -1,0 +1,11 @@
+{
+  "tipo": "Simulação PostgreSQL 17 descartável; nenhum banco remoto acessado",
+  "main": "f1b4e0dd0ff33e5c78742ffa9d2cf5a7385d8e13",
+  "pr75": "5d6a392643c3500dac74aca37bf5d4a93134de28",
+  "main_leitura_direta": "SET\nSET\n0\nf\n",
+  "main_rpc_mesmo_status": "SET\nSET\n{\"id\":\"00000000-0000-0000-0000-000000000302\",\"status\":\"sent\",\"row_version\":3}\n",
+  "main_efeitos": "{\"row_version\" : 3, \"eventos_intruso\" : 1}\n",
+  "pr75_rpc_mesmo_status_versao_inventada": "SET\nSET\n{\"id\":\"00000000-0000-0000-0000-000000000302\",\"status\":\"sent\",\"row_version\":3}\n",
+  "pr75_leitura_direta": "SET\nSET\n0\n",
+  "resultado": "Falha confirmada em main: RPC escreve versão/histórico fora de escopo ao repetir mesmo status com versão conhecida. PR75 remove essa escrita mas retorna id/status/versão fora do escopo mesmo com versão incorreta."
+}

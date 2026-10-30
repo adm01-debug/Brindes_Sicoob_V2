@@ -73,6 +73,24 @@ export type InvokeFullScopeResult<TData> =
   | { status: "error"; error: unknown; data: unknown };
 
 const MAX_AUTO_RETRIES = 1;
+type StepUpErrorKind = "step_up_required" | "step_up_invalid" | "dev_role_required";
+
+function isDevRoleFailure(reason: string | undefined, error: string | undefined) {
+  return ["dev_role_required", "not_dev", "not_dev_at_edge"].includes(reason ?? "")
+    || ["MCP_KEY_AUTO_REVOKED_DEV_LOST", "dev_role_required"].includes(error ?? "");
+}
+
+function classifyStepUpError(data: unknown): StepUpErrorKind {
+  const error = (data as { error?: string } | null | undefined)?.error;
+  const reason = (data as { reason?: string } | null | undefined)?.reason;
+  if (isDevRoleFailure(reason, error)) return "dev_role_required";
+  return error === "step_up_invalid" ? "step_up_invalid" : "step_up_required";
+}
+
+function responseFailed(data: unknown) {
+  if (!data) return true;
+  return (data as { ok?: boolean }).ok === false;
+}
 
 export async function invokeFullScopeFunction<
   TBody extends Record<string, unknown>,
@@ -101,7 +119,6 @@ export async function invokeFullScopeFunction<
     });
 
     // Detecta step-up errors e exibe toast com CTA "Refazer verificação".
-    let stepUpKind: "step_up_required" | "step_up_invalid" | "dev_role_required" | null = null;
     const handled = handleStepUpError(data, error, () => {
       // Quando o usuário clica em "Refazer verificação", refaz o fluxo
       // completo (novo challenge + novo invoke). Resultado descartado —
@@ -113,20 +130,12 @@ export async function invokeFullScopeFunction<
 
     if (handled) {
       // `handleStepUpError` já consumiu o erro; identifica o tipo p/ retry automático.
-      const errStr = (data as { error?: string; reason?: string } | null | undefined)?.error;
-      const reasonStr = (data as { reason?: string } | null | undefined)?.reason;
-      if (
-        reasonStr === "dev_role_required" ||
-        reasonStr === "not_dev" ||
-        reasonStr === "not_dev_at_edge" ||
-        errStr === "MCP_KEY_AUTO_REVOKED_DEV_LOST" ||
-        errStr === "dev_role_required"
-      ) {
+      const stepUpKind = classifyStepUpError(data);
+      if (stepUpKind === "dev_role_required") {
         // Perda de role dev: NUNCA auto-retry. O usuário precisa
         // recuperar o papel manualmente antes de tentar novamente.
         return { status: "step_up_error", kind: "dev_role_required" };
       }
-      stepUpKind = errStr === "step_up_invalid" ? "step_up_invalid" : "step_up_required";
 
       if (stepUpKind === "step_up_invalid" && autoRetryOnInvalid && retriesLeft > 0) {
         // Token expirou entre desafio e chamada: tenta uma vez automaticamente.
@@ -136,7 +145,7 @@ export async function invokeFullScopeFunction<
     }
 
     if (error) return { status: "error", error, data };
-    if (!data || (data as { ok?: boolean }).ok === false) {
+    if (responseFailed(data)) {
       return { status: "error", error: null, data };
     }
     return { status: "ok", data: data as TData };

@@ -4,6 +4,10 @@ import { untypedFrom } from "@/lib/supabase-untyped";
 import { invokeExternalDb } from "@/lib/external-db";
 import { toast } from "sonner";
 
+const PRODUCT_COMPONENTS_KEY = "product-components";
+const COMPONENT_LOCATIONS_KEY = "component-locations";
+const LOCATION_TECHNIQUES_KEY = "location-techniques";
+
 export interface Product {
   id: string;
   name: string;
@@ -115,7 +119,7 @@ export function usePersonalizationData(selectedProduct: string | null) {
   });
 
   const { data: components, isLoading: componentsLoading } = useQuery({
-    queryKey: ["product-components", selectedProduct],
+    queryKey: [PRODUCT_COMPONENTS_KEY, selectedProduct],
     queryFn: async () => {
       if (!selectedProduct) return [];
       const { data, error } = await supabase
@@ -130,7 +134,7 @@ export function usePersonalizationData(selectedProduct: string | null) {
   });
 
   const { data: locations, error: locationsError } = useQuery({
-    queryKey: ["component-locations", selectedProduct],
+    queryKey: [COMPONENT_LOCATIONS_KEY, selectedProduct],
     queryFn: async () => {
       if (!components?.length) return [];
       const componentIds = components.map((c) => c.id);
@@ -159,7 +163,7 @@ export function usePersonalizationData(selectedProduct: string | null) {
   });
 
   const { data: locationTechniques, error: locationTechniquesError } = useQuery({
-    queryKey: ["location-techniques", selectedProduct],
+    queryKey: [LOCATION_TECHNIQUES_KEY, selectedProduct],
     queryFn: async () => {
       if (!locations?.length) return [];
       const locationIds = locations.map((l) => l.id);
@@ -174,8 +178,8 @@ export function usePersonalizationData(selectedProduct: string | null) {
 
   // ── Mutations ──
   const toggleGroupRulesMutation = useMutation({
-    mutationFn: async ({ id, use_group_rules }: { id: string; use_group_rules: boolean }) => {
-      const { error } = await supabase.from("product_group_members").update({ use_group_rules }).eq("id", id);
+    mutationFn: async ({ id, use_group_rules: useGroupRules }: { id: string; use_group_rules: boolean }) => {
+      const { error } = await supabase.from("product_group_members").update({ use_group_rules: useGroupRules }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -191,7 +195,7 @@ export function usePersonalizationData(selectedProduct: string | null) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["product-components"] });
+      queryClient.invalidateQueries({ queryKey: [PRODUCT_COMPONENTS_KEY] });
       toast.success("Componente adicionado!");
     },
     onError: () => toast.error("Erro ao adicionar componente"),
@@ -203,7 +207,7 @@ export function usePersonalizationData(selectedProduct: string | null) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["product-components"] });
+      queryClient.invalidateQueries({ queryKey: [PRODUCT_COMPONENTS_KEY] });
       toast.success("Componente atualizado!");
     },
     onError: () => toast.error("Erro ao atualizar componente"),
@@ -215,7 +219,7 @@ export function usePersonalizationData(selectedProduct: string | null) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["product-components"] });
+      queryClient.invalidateQueries({ queryKey: [PRODUCT_COMPONENTS_KEY] });
       toast.success("Componente removido!");
     },
     onError: () => toast.error("Erro ao remover componente"),
@@ -227,7 +231,7 @@ export function usePersonalizationData(selectedProduct: string | null) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["component-locations"] });
+      queryClient.invalidateQueries({ queryKey: [COMPONENT_LOCATIONS_KEY] });
       toast.success("Localização adicionada!");
     },
     onError: () => toast.error("Erro ao adicionar localização"),
@@ -239,7 +243,7 @@ export function usePersonalizationData(selectedProduct: string | null) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["component-locations"] });
+      queryClient.invalidateQueries({ queryKey: [COMPONENT_LOCATIONS_KEY] });
       toast.success("Localização atualizada!");
     },
     onError: () => toast.error("Erro ao atualizar localização"),
@@ -251,7 +255,7 @@ export function usePersonalizationData(selectedProduct: string | null) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["component-locations"] });
+      queryClient.invalidateQueries({ queryKey: [COMPONENT_LOCATIONS_KEY] });
       toast.success("Localização removida!");
     },
     onError: () => toast.error("Erro ao remover localização"),
@@ -263,7 +267,7 @@ export function usePersonalizationData(selectedProduct: string | null) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["location-techniques"] });
+      queryClient.invalidateQueries({ queryKey: [LOCATION_TECHNIQUES_KEY] });
       toast.success("Técnica associada!");
     },
     onError: () => toast.error("Erro ao associar técnica"),
@@ -275,7 +279,7 @@ export function usePersonalizationData(selectedProduct: string | null) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["location-techniques"] });
+      queryClient.invalidateQueries({ queryKey: [LOCATION_TECHNIQUES_KEY] });
       toast.success("Técnica atualizada!");
     },
     onError: () => toast.error("Erro ao atualizar técnica"),
@@ -287,7 +291,7 @@ export function usePersonalizationData(selectedProduct: string | null) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["location-techniques"] });
+      queryClient.invalidateQueries({ queryKey: [LOCATION_TECHNIQUES_KEY] });
       toast.success("Técnica removida!");
     },
     onError: () => toast.error("Erro ao remover técnica"),

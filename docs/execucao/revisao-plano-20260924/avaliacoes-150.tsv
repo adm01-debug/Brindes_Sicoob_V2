@@ -1,0 +1,151 @@
+id	estado	evidencias	diagnostico_e_condicao_de_fechamento
+R01	R	repo	Congelamento de produção não se aplica literalmente ao ambiente de construção autorizado. Falta definir um caminho auditável de aplicação remota e registrar exceções.
+R02	P	governanca	Há uma revisão obrigatória, mas sem checks obrigatórios e enforce_admins=false. Reforçar proteção e comprovar bloqueio de bypass.
+R03	P	governanca;segredos	Environments existem, mas os secrets de teste/SQL não aparecem no escopo do repositório. Conferir segredos por environment, personas e execução autenticada.
+R04	H	historico	Artefatos de reconciliação estão incorporados; o fechamento histórico dos PRs #8/#9 não foi reauditado individualmente nesta rodada.
+R05	V	historico	Não há evidência atual de restauração integral nem PITR testado. Produzir backup com hash e ensaiar restore em ambiente descartável.
+R06	P	historico;repo	Há snapshots datados, porém não foi localizada a tag baseline prevista nem prova de restore correspondente. Fixar baseline único reproduzível.
+R07	P	banco	OpenAPI, buckets e RPCs RLS foram observados; catálogo completo de funções, triggers, cron e grants ainda sem fotografia SQL atual.
+R08	P	baseline	Baseline aplicada foi recuperada como migration, mas isso não equivale ao dump completo schema.sql e dados de referência reproduzíveis.
+R09	P	backlog	468 migrations fora do ledger têm classificação estática histórica. Rever dependências e equivalência semântica contra o ledger atual antes de aplicar.
+R10	L	baseline	Versão canônica e cópia histórica arquivada estão separadas. Preservar unicidade e o gate de migrations nas próximas alterações.
+R11	P	baseline;backlog	O baseline divergente está arquivado; a classificação histórica completa ainda não autoriza arquivar ou reaplicar todo o backlog.
+R12	P	ledger;historico	Comparador bidirecional e evidência de lotes aplicados existem. Falta leitura atual dos 534 arquivos contra o ledger integral.
+R13	P	ledger;tipos	Drift zero não demonstrado; há oito relações, vinte RPCs e onze colunas remotas sem tipos. Corrigir tipos e executar diff administrativo.
+R14	V	historico	PostgreSQL descartável está disponível, mas não há homologação segregada equivalente ao Supabase com Auth, Storage e provedores.
+R15	P	governanca	Preview aparece nos checks, porém isso não comprova branch de banco por PR, seed, testes RLS e descarte. Homologar pipeline completo.
+R16	P	seed	Seed e controles de acesso existem; personas autenticadas de duas cooperativas e sua execução remota seguem sem evidência atual.
+R17	P	checks;banco	Build/testes locais e leituras de API funcionam; login e jornadas autenticadas com o schema real não foram certificados.
+R18	H	historico;banco	Tabelas operacionais aparecem na API e há evidência histórica de aplicação. Conferir definições e ledger atual antes de encerrar etapa estrutural.
+R19	H	historico	Índices foram verificados historicamente; nova inspeção de validade, cobertura de FKs e planos reais não foi realizada nesta rodada.
+R20	P	banco	230 tabelas/partições públicas têm RLS habilitado. Isso não substitui testes de isolamento por usuário, ação e cooperativa.
+R21	P	financeiro;sql	RPCs atômicas existem e a simulação de conversão passou 22 cenários. Falta ensaio autenticado remoto e a jornada com catálogo real.
+R22	P	banco;tipos	Helpers de consulta existem no contrato remoto; tipos, overloads e consumidores ainda precisam de reconciliação completa.
+R23	L	sql	Simulações SQL de conversão, documentos, distribuição e outbox executadas no PostgreSQL descartável. O aceite é local, sem certificação remota.
+R24	H	historico	Correções de views e security_invoker registradas historicamente. Revalidar definições e leitura como usuário de outra cooperativa.
+R25	P	banco;documentos	Buckets privados existem; ingestão documental depende de Edge ausente e scanner não homologado. Falta upload/download autenticado ponta a ponta.
+R26	P	runtime	Gate atual encontrou 1075 referências sem quebra contra cache de 22/09. Atualizar snapshot e cobrir chamadas dinâmicas; nomes não provam funcionalidade.
+R27	P	financeiro;sql	Totais, conversão e itens atômicos possuem testes. Faltam fechamento de período, estados financeiros completos e reconciliação com pedidos reais de teste.
+R28	L	banco	RPC administrativa confirmou RLS habilitado em todas as 230 tabelas/partições públicas, incluindo as três previstas. Não significa policies semanticamente corretas.
+R29	H	historico;banco	Policies registradas e RLS atual ativo; falta execução das ações positivas e negativas com personas reais para estas tabelas.
+R30	P	banco	Auditoria de matriz produziu 484 combinações e 50 predicados a revisar; marcação histórica de 33 policies não encerra auditoria de todas as policies.
+R31	P	banco	RPC de ACL SECURITY DEFINER retornou zero achados sob suas regras. Search_path, todos os grants e contratos autenticados ainda exigem catálogo completo.
+R32	P	edges;prs	Manifesto cobre 106 funções estaticamente; PR #28 ainda endurece workers não incorporados. Validar comportamento e código implantado.
+R33	H	historico	Reconciliação auth.users/profiles tem evidência histórica; não foi repetida contagem atual nem ensaio de expiração/revogação de sessão.
+R34	V	segredos	Rotação efetiva das credenciais históricas não foi comprovada no provedor. Registrar apenas nomes, datas e evidência de invalidação.
+R35	P	edges;banco	Cinco funções operacionais Sicoob retornaram 404 em 24/09. Publicar e executar chamadas autenticadas de cada fluxo.
+R36	N	edges	Existe inventário/ping, mas não foi localizado diff automático do código implantado contra o repositório. OPTIONS não compara versões.
+R37	P	tipos;banco	Tipos têm drift confirmado e não há prova de geração administrativa integral com gate de diff ativo.
+R38	P	checks	Baseline TypeScript permite 166 erros globais e lint registra 3314. Medir e eliminar dívida do escopo Sicoob sem confundir ratchet com zero erros.
+R39	P	checks	5472 testes passaram, 113 foram ignorados. Faltam Auth/Storage/Edge e isolamento real em staging com personas.
+R40	H	historico;banco	Particionamento consta em evidências históricas; RLS atual alcança partições, mas agendamento e horizonte de partições não foram revalidados por SQL.
+R41	H	historico	Limpeza foi registrada em 16/09; não executar novas exclusões sem inventário e retenção atuais.
+R42	H	historico	Retenção via cron consta historicamente. Confirmar jobs ativos, última execução e volume removido no catálogo administrativo atual.
+R43	P	outbox;prs	Cron e dispatcher existem em migrations; segredos/entrega real pendem e PR #24 corrige crons legados ainda não incorporados.
+R44	P	historico	Auditoria histórica foi parcial. Faltam planos reais, cobertura e latência por jornada no projeto atual.
+R45	H	historico	VACUUM/autovacuum foram verificados em 16/09. Não há nova leitura operacional; não tratar a fotografia antiga como prova atual.
+R46	P	governanca;checks	Checks existem, mas não são obrigatórios e o CI remoto não forneceu validação executada do lote. Restaurar execução e exigir gates.
+R47	P	ledger	Comparador e workflow diário existem; SUPABASE_DB_URL não está configurado no escopo observado. Demonstrar detecção de drift em execução real.
+R48	P	monitoramento	Telemetria e monitores possuem código; confirmar DSN, provedores, alertas e recuperação em incidente controlado.
+R49	P	runbooks	Runbooks versionados existem, mas instruções e snapshots de datas distintas divergem. Atualizar procedimentos e ensaiar execução independente.
+R50	V	checks;produto	Sem compra integral homologada, catálogo com ACL confirmada e fechamento dos bloqueadores. Piloto real é etapa futura do projeto em construção.
+C01	P	repo	O diretório principal está dois commits atrás do main consultado e possui três edições locais. Integrar preservando essas alterações.
+C02	P	historico;governanca	Novos lotes usam PR; a revisão retroativa específica e o bypass histórico ainda não têm encerramento comprovado nesta rodada.
+C03	P	prs;governanca	PRs #22 e #30 incorporados; #24–#29 continuam abertos. Revisão e merge não substituem execução de CI.
+C04	R	repo	Artefatos Graphify ignorados são úteis à auditoria; remover dados de outros worktrees não é necessário para concluir correções funcionais.
+C05	L	baseline	SQL da versão 20260915143442 existe no repositório, com evidência histórica de extração. Preservar origem e hash.
+C06	P	baseline	Diff versionado existe, mas normalização textual não demonstra equivalência semântica integral. Revisão desse limite continua necessária.
+C07	L	baseline	20260915160000 está em migrations_archive; 20260915143442 permanece como versão ativa canônica.
+C08	H	ledger;historico	Reconciliação da baseline foi comprovada anteriormente sem repair artificial. Falta leitura atual do ledger, não aplicar repair por suposição.
+C09	P	bitrix;banco	Cache Bitrix seguro foi implementado e três tabelas existem na API. Falta homologar sync/Kanban com credenciais e dados de teste.
+C10	P	financeiro;banco	create_quote_version_atomic está exposta e possui migration/testes; repetir concorrência e criação de versão pelo fluxo autenticado.
+C11	P	banco;edges	check_rls_enabled/get_enum_values existem; ausência original foi superada. Falta validar versão implantada da Edge de health-check.
+C12	P	banco	RLS ativo e auditoria ACL sem achados; testes positivos/negativos por papel nos contratos recém-aplicados não estão completos.
+C13	P	backlog	Classificação estática de 468 versões existe. Completar análise semântica de ordem/dependências e atualizar frente ao estado remoto.
+C14	L	financeiro	Serviço usa cooperativa_budgets/pa_budgets. Não recriar sicoob_budgets; homologação de competência é pendência distinta.
+C15	P	runtime;catalogo	Gate estático não acusa referências ausentes; controles legados ainda tentam escrita na ponte somente leitura. Ensaiar rotas públicas/CRM.
+C16	P	runtime;banco	Nomes de buckets antigos corrigidos no inventário; falta comprovação de upload autenticado e leitura no escopo correto.
+C17	L	mcp	Chamada separada de set_config removida. Não criar wrapper que prometa contexto transacional entre requisições; atomicidade log/revogação é limite separado.
+C18	P	monitoramento	error_logs foi substituída por telemetry_events e Sentry permanece opcional. Falta entrega real e DSN confirmado.
+C19	L	runtime;checks	Verificador AST e cenários existem; execução atual analisou 2050 arquivos e 1075 referências sem quebra, com limite de cache explícito.
+C20	P	runtime;governanca	Gate integrado ao ci.yml; falta execução remota obrigatória e bloqueio comprovado em PR de regressão.
+C21	P	orfaos	Inventário dos objetos órfãos existe; donos nominais, intenção operacional atual e prazos não estão consolidados.
+C22	V	orfaos	Famílias de PAs legadas exigem FKs/contagens atuais e decisão de retenção antes de qualquer remoção.
+C23	V	orfaos	Ausência de rota de blog não prova ausência de consumidor externo. Definir destino do recurso com base em uso real.
+C24	N	magic	magic_up_comments/public_shares/reactions continuam sem consumidor funcional fora dos tipos. Implementar colaboração ou retirar do escopo formalmente.
+C25	P	fulfillment;edges	Telas e serviços operacionais agora existem; arte, kits, recompra, ingestão e reconciliação dependem de funções remotas ausentes.
+C26	N	auditoria_ui	Nenhum consumidor das duas views foi localizado no src fora dos tipos. Ligar sicoob_budget_audit/v_full_scope_grants à tela e testar como admin.
+C27	P	orfaos	Lista histórica de funções órfãs existe; dependências internas, triggers e crons exigem catálogo completo para classificação definitiva.
+C28	V	banco;orfaos	order-documents/component-media existem. Decisão de remoção exige objetos, dependências e intenção atuais; não remover por snapshot antigo vazio.
+C29	P	ledger	Workflow diário e comparador implementados; sem execução real atual do ledger por falta da conexão SQL no escopo observado.
+C30	P	governanca	Causa operacional confirmada: enforce_admins=false e ausência de required checks. Mitigação ainda não aplicada.
+C31	N	governanca	Não foi localizado workflow que alerte commits/branches sem PR após prazo. Implementar e testar com caso conhecido.
+C32	L	runbooks	Runbook MCP/DDL está versionado e a execução documenta simulação e ledger. Não implica que todos os fluxos remotos já o obedecem.
+C33	L	runtime	Varredura suporta storage multilinha e não encontrou nomes quebrados contra o cache. Validar periodicamente contra snapshot novo.
+C34	L	historico	Relatório da auditoria tripla está versionado; esta revisão acrescenta estado atual sem reescrever o histórico.
+C35	P	historico	Há ligações entre plano e execução, mas vários checkboxes históricos continuam abertos ou superados. Usar a matriz atual como adendo.
+C36	P	historico;checks	Números dos documentos originais estão desatualizados; esta revisão publica novas métricas vinculadas ao commit 6193793a7.
+C37	P	decisoes	Documento de decisões existe, porém ainda afirma ausência de RPCs/tabelas hoje presentes. Atualizar decisões para não reabrir lacunas já resolvidas.
+C38	V	decisoes	Decisões de negócio/participantes não foram inventadas. Registrar responsáveis e aceite para colaboração, legados e políticas comerciais.
+C39	L	runtime;checks	Rerun completo do verificador passou com zero órfãos detectados. Cache de 22/09 e chamadas dinâmicas limitam a conclusão.
+C40	P	checks	Vitest, Node, build e ratchets passaram; 113 skips e dívidas globais permanecem. Isso não encerra contratos remotos.
+C41	V	produto;edges	Quatro jornadas completas com login, catálogo, mockup e Bitrix não foram homologadas. Funções ausentes e configuração bloqueiam parte delas.
+C42	P	repo;prs	Worktree desta revisão usa main atual; diretório principal e branches de correção ainda divergem. Não afirmar paridade de todos os worktrees.
+C43	H	historico;ledger	Hashes de lotes foram confirmados em 23/09. Leitura atual do ledger ainda falta, inclusive versões posteriores.
+C44	R	produto	Ambiente é construção; não há autorização para mensagens a terceiros nesta auditoria. Registrar aceite interno quando aplicável.
+C45	P	historico	Notas de mudança existem em relatórios; não foi comprovada release versionada ou CHANGELOG automatizado do lote.
+C46	P	decisoes	Backlog está documentado; faltam responsáveis nominais, prazo e critérios de encerramento para decisões remanescentes.
+C47	N	runtime;governanca	Verificador usa cache local e não foi localizado agendamento semanal que renove snapshot e execute a comparação.
+C48	P	sql;produto	Simulações PostgreSQL descartáveis executadas; equivalência com Auth/Storage/provedores de staging continua pendente.
+C49	V	decisoes	Prazos e responsáveis por recursos órfãos não estão definidos de forma auditável.
+C50	L	historico;runtime	Retrospectiva e cenários cobrem wrappers, partições, ACL e contexto transacional; limites de chamadas dinâmicas estão explícitos.
+T01	H	historico	Worktree histórico está preservado e foi publicado em lotes anteriores. Não remover cópias sem reconciliar commits e dados locais.
+T02	P	repo	Main local está atrás e com três edições; dependências isoladas desta auditoria foram reinstaladas, mas checkout principal não foi integrado.
+T03	V	segredos	Secrets E2E não aparecem na lista do repositório; conferir environments e criar personas mínimas antes de testar a jornada real.
+T04	P	segredos;governanca	Workflow de compliance existe, porém credenciais administrativas e personas não estão demonstradas na execução remota atual.
+T05	H	historico	PR #7 consta como incorporado no registro histórico. Não confundir esse merge com implantação das funções Sicoob ainda ausentes.
+T06	P	prs	Dez PRs continuam abertos, inclusive evidências históricas e correções sobrepostas. Revisar absorção e dependência antes de fechar branches.
+T07	P	governanca	Uma revisão é exigida, mas faltam checks obrigatórios e bloqueio de bypass administrativo.
+T08	L	pacotes	npm/package-lock é o caminho ativo; instalação isolada por npm ci passou. Consolidar futuras mudanças pelo mesmo gerenciador.
+T09	L	repo	Artefatos técnicos gerados estão ignorados. A auditoria preserva evidências intencionais versionadas e não adiciona caches/dependências.
+T10	L	pacotes	PDFs do plano ficam em docs; não são incluídos por padrão no build de public. Manter política de distribuição de documentos.
+T11	L	repo	Sondas tsconfig não fazem parte das alterações atuais; manter gate e limpeza de artefatos temporários.
+T12	P	governanca	Hooks locais não substituem regra remota; integração do editor automatizado e convenção de commits ainda precisam de contrato confirmado.
+T13	N	testes	tests, src/tests e src/test continuam coexistindo. Definir convenção de coleta sem perder fixtures e setup.
+T14	L	ledger	Gate de imutabilidade e política versionada existem; a aplicação de cada migration ainda requer prova remota própria.
+T15	L	pacotes	Scripts lint:check e lint:baseline estão definidos com propósito distinto e usados pelo projeto.
+T16	L	checks	Ratchet TypeScript por arquivo existe e execução atual passou com 166 erros no baseline. Não é typecheck global limpo.
+T17	P	checks	A redução histórica foi ampla; restam 166 erros globais. Congelar objetivo mensurável e concluir sem supressões indiscriminadas.
+T18	P	checks	Lint diferencial passou sem arquivos de aplicação alterados; 3314 erros globais permanecem e snapshot precisa ter escopo explícito.
+T19	P	tipos	any e wrappers não tipados continuam presentes. Regenerar contratos e reduzir casts nos fluxos críticos com testes.
+T20	P	monitoramento	Logger estruturado existe, mas console e falhas silenciosas ainda ocorrem. Priorizar erros úteis ao usuário/operador.
+T21	P	checks	Supressões ainda existem; não há registro atual de revisão completa com justificativa individual de cada ocorrência.
+T22	P	tipos;banco	Drift real de tipos confirmado; falta gate de geração/diff contra o projeto-alvo em CI.
+T23	N	pedidos	OrdersPage tem 906 linhas e OrderDetailPage 757. Decomposição prevista ainda não concluída; preservar contratos ao refatorar.
+T24	P	edges;prs	Manifesto estático 106/106 passou, mas hardening adicional do PR #28 não foi incorporado nem implantado.
+T25	L	proxy	image-proxy possui controles existentes e testes; plano original tratava parte deles como ausente. Manter revisão de allowlist e comportamento remoto.
+T26	L	edges	migrate-helper é stub e external-db-inspect tem controle técnico no código. Paridade remota e rotação histórica são pendências distintas.
+T27	P	banco	Auditoria ACL sem achados não cobre automaticamente todos os search_path. Revalidar catálogo PostgreSQL completo.
+T28	P	prs	CSP pela Vercel está no PR #27 aberto. Presença em branch não significa header entregue pelo main/deploy.
+T29	P	segredos	As duas chaves públicas versionadas recebem 401; PR #24 propõe env de exemplo. Validar valores do build e dos ambientes.
+T30	P	governanca	Workflow de Gitleaks existe; execução do PR #30 falhou antes de alocar runner. Confirmar hook, baseline e resultado remoto executado.
+T31	P	governanca;checks	Checks de RLS/escopo existem, mas não são required e parte dos testes depende de personas ausentes.
+T32	P	edges	Há rate limiting compartilhado em partes do backend; revisar todas as funções públicas e provar concorrência/múltiplas instâncias.
+T33	P	testes;sql	Auth/idempotência de kit, recompra e arte têm testes; cinco funções operacionais faltam no remoto e há 58 casos de bypass ignorados.
+T34	P	governanca;checks	Gates condicionais existem; CI atual não fornece prova executada em main e persistem 113 skips. Garantir falha explícita para contratos obrigatórios.
+T35	P	testes	Cobertura configurada mede oito arquivos críticos, não o sistema inteiro. Rodada atual não recalculou cobertura; não extrapolar percentuais históricos.
+T36	N	testes	Não foi localizada política operacional completa de quarentena com dono e prazo de 14 dias; skips não possuem esse aceite geral.
+T37	P	governanca	Há onze workflows no diretório; consolidação em cerca de quatro e setup comum não foi concluída.
+T38	L	pacotes	Build executa vite build e passou sem depender de npm audit. Auditoria de dependências continua como gate próprio.
+T39	L	sql	195 cenários Node e quatro simulações SQL executados nesta rodada, com escopo e isolamento declarados.
+T40	L	sql	Simuladores Python são versionados e executáveis contra PostgreSQL descartável; permanecem ferramentas de QA, sem inferir implantação.
+T41	P	bundle	Gate por chunks passou com dois avisos; orçamento total/por rota ainda não está comprovado. Build gerou cerca de 9,65 MB brutos.
+T42	P	logistica;produto	Rota logística ativa ainda usa dados fixos e KPIs simulados. Demonstração deve ser explícita ou substituída por dados reais.
+T43	L	pacotes;checks	Vendor PPTX tem proveniência e teste de arquivo válido; instalação limpa corrigiu apenas o link local quebrado. Manter rastreabilidade.
+T44	L	pacotes	Painel de conexões é chunk separado no build; tamanho de cerca de 402 kB bruto ainda merece orçamento e análise de carregamento.
+T45	P	bundle	Lighthouse tem thresholds bloqueantes, porém cobre somente /login e falta execução atual nas jornadas autenticadas.
+T46	N	governanca	Não foram localizados release-please/changesets e pipeline de tags/CHANGELOG automático correspondente ao plano.
+T47	P	segredos	Inventário de nomes existe, mas várias linhas ainda estão sem configuração/dono/rotação confirmados e há premissas antigas.
+T48	P	monitoramento;outbox	Monitores e dispatchers existem; entrega real de alertas, segredos e recuperação não foram homologados no ambiente correto.
+T49	P	repo;prs	Worktrees isolados são usados; várias branches antigas e PRs abertos demonstram que limpeza e fechamento semanal ainda pendem.
+T50	N	checks	Há baselines e relatórios pontuais; não foi localizado painel consolidado com tendência semanal de tipos, lint, any, cobertura e bundle.

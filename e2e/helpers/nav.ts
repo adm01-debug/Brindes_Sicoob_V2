@@ -9,7 +9,7 @@
  *  5. body sem aria-busy
  *  6. CSS kill-switch de animações (defensivo)
  */
-import { expect, type Locator, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from '@playwright/test';
 
 const ANIM_KILL_CSS = `
   *, *::before, *::after {
@@ -22,6 +22,25 @@ const ANIM_KILL_CSS = `
 `;
 
 const STYLED_PAGES = new WeakSet<Page>();
+
+async function dismissBlockingOnboarding(page: Page): Promise<void> {
+  const tour = page.getByTestId('onboarding-tour');
+  const visible = await tour.isVisible().catch(() => false);
+  if (!visible) return;
+
+  // Gates de segurança têm precedência sobre o tour. Tentar clicar no tour
+  // enquanto um diálogo modal está aberto interage com conteúdo inacessível
+  // atrás do backdrop; o tour será dispensado na navegação seguinte.
+  const modalVisible = await page
+    .locator('[role="dialog"][aria-modal="true"]')
+    .first()
+    .isVisible()
+    .catch(() => false);
+  if (modalVisible) return;
+
+  await tour.getByRole('button', { name: 'Pular', exact: true }).click();
+  await tour.waitFor({ state: 'hidden', timeout: 5_000 });
+}
 
 async function injectAnimKill(page: Page) {
   if (STYLED_PAGES.has(page)) return;
@@ -38,17 +57,36 @@ async function injectAnimKill(page: Page) {
  * Substitui usos de `waitForLoadState("networkidle")` em specs (proibido pelo
  * lint), pois `networkidle` é flaky em SPAs com realtime/polling.
  */
-export async function waitForRouteIdle(page: Page, opts?: { timeout?: number }) {
+interface RouteIdleOptions {
+  timeout?: number;
+  /**
+   * Gates MFA mantêm o marcador de permissões enquanto aguardam interação.
+   * Nesse fluxo, aguarde apenas o carregamento lazy para não criar uma espera
+   * circular antes de preencher o desafio.
+   */
+  waitForPermissions?: boolean;
+}
+
+function pendingRouteSelector(waitForPermissions: boolean | undefined): string {
+  return waitForPermissions === false ? '[data-route-pending="lazy"]' : '[data-route-pending]';
+}
+
+export async function waitForRouteIdle(page: Page, opts?: RouteIdleOptions) {
   const timeout = opts?.timeout ?? 10_000;
-  await page.waitForLoadState("domcontentloaded", { timeout });
+  await page.waitForLoadState('domcontentloaded', { timeout });
+  await page
+    .locator(pendingRouteSelector(opts?.waitForPermissions))
+    .first()
+    .waitFor({ state: 'detached', timeout });
   await page
     .waitForFunction(
       () => !document.querySelector('[data-state="loading"], [data-skeleton]'),
+      undefined,
       { timeout: Math.min(timeout, 8_000) },
     )
     .catch(() => {});
   await page
-    .waitForFunction(() => !document.querySelector('[aria-busy="true"]'), {
+    .waitForFunction(() => !document.querySelector('[aria-busy="true"]'), undefined, {
       timeout: Math.min(timeout, 3_000),
     })
     .catch(() => {});
@@ -63,58 +101,107 @@ export async function expectOnRoute(
   pathOrRegex: string | RegExp,
   opts?: { timeout?: number },
 ) {
-  const re = typeof pathOrRegex === "string"
-    ? new RegExp(pathOrRegex.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
-    : pathOrRegex;
+  const re =
+    typeof pathOrRegex === 'string'
+      ? new RegExp(pathOrRegex.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      : pathOrRegex;
   await expect(page, `esperado URL match ${re}`).toHaveURL(re, {
     timeout: opts?.timeout ?? 10_000,
   });
 }
 
-export async function gotoAndSettle(page: Page, path: string, opts?: { timeout?: number }) {
-  await page.goto(path, { waitUntil: "domcontentloaded", timeout: opts?.timeout ?? 20_000 });
+const TRANSIENT_NAVIGATION_ERRORS = [
+  'is interrupted by another navigation',
+  'Frame load interrupted',
+  'net::ERR_ABORTED',
+];
 
-  await page.waitForLoadState("networkidle", { timeout: 5_000 }).catch(() => {
-    /* best-effort: SPA pode manter conexões abertas (websockets/realtime) */
-  });
+function isTransientNavigationError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  return TRANSIENT_NAVIGATION_ERRORS.some((message) => error.message.includes(message));
+}
 
-  // Hidratação React: #root deve ter filhos
+async function navigateToPath(page: Page, path: string, timeout: number) {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      return await page.goto(path, { waitUntil: 'domcontentloaded', timeout });
+    } catch (error) {
+      lastError = error;
+      if (!isTransientNavigationError(error) || attempt === 2) throw error;
+
+      // O mecanismo de recuperação de chunks pode substituir a URL enquanto
+      // o teste inicia a próxima rota. Aguarde esse reload terminar e tente o
+      // destino original novamente, sem mascarar timeout ou erro HTTP real.
+      await page.waitForLoadState('domcontentloaded', { timeout }).catch(() => {});
+    }
+  }
+  throw lastError;
+}
+
+export async function gotoAndSettle(page: Page, path: string, opts?: RouteIdleOptions) {
+  const timeout = opts?.timeout ?? 20_000;
+  const response = await navigateToPath(page, path, timeout);
+
+  await Promise.all([
+    page.waitForLoadState('networkidle', { timeout: 1_500 }).catch(() => {
+      /* best-effort: SPA pode manter conexões abertas (websockets/realtime) */
+    }),
+    // Hidratação React: #root deve ter filhos.
+    page
+      .waitForFunction(
+        () => {
+          const root = document.querySelector('#root');
+          return !!root && root.children.length > 0;
+        },
+        undefined,
+        { timeout: 5_000 },
+      )
+      .catch(() => {
+        /* tolerável: rotas que não usam #root */
+      }),
+  ]);
+
+  // Lazy loading e resolução de papéis fazem parte do carregamento da rota;
+  // prosseguir com o fallback ativo gerava aprovações e falhas aleatórias.
+  const pendingSelector = pendingRouteSelector(opts?.waitForPermissions);
   await page
-    .waitForFunction(
-      () => {
-        const root = document.querySelector("#root");
-        return !!root && root.children.length > 0;
-      },
-      { timeout: 10_000 },
-    )
-    .catch(() => {
-      /* tolerável: rotas que não usam #root */
-    });
+    .locator(pendingSelector)
+    .first()
+    .waitFor({ state: 'detached', timeout: opts?.timeout ?? 15_000 });
 
-  // Skeletons devem sumir
-  await page
-    .waitForFunction(
-      () => !document.querySelector('[data-state="loading"], [data-skeleton]'),
-      { timeout: 8_000 },
-    )
-    .catch(() => {
-      /* tolerável: pode não haver skeleton */
-    });
+  // A preferência do tour é remota e pode ser recriada por uma limpeza E2E.
+  // Nenhuma jornada comum deve ficar bloqueada por esse overlay.
+  await dismissBlockingOnboarding(page);
 
-  // aria-busy false (best-effort)
-  await page
-    .waitForFunction(
-      () => {
-        const busy = document.querySelector('[aria-busy="true"]');
-        return !busy;
-      },
-      { timeout: 3_000 },
-    )
-    .catch(() => {
-      /* tolerável */
-    });
+  await Promise.all([
+    // Skeletons devem sumir.
+    page
+      .waitForFunction(
+        () => !document.querySelector('[data-state="loading"], [data-skeleton]'),
+        undefined,
+        { timeout: 4_000 },
+      )
+      .catch(() => {
+        /* tolerável: pode não haver skeleton */
+      }),
+    // aria-busy false (best-effort).
+    page
+      .waitForFunction(
+        () => {
+          const busy = document.querySelector('[aria-busy="true"]');
+          return !busy;
+        },
+        undefined,
+        { timeout: 2_500 },
+      )
+      .catch(() => {
+        /* tolerável */
+      }),
+  ]);
 
   await injectAnimKill(page);
+  return response;
 }
 
 /**
@@ -122,10 +209,11 @@ export async function gotoAndSettle(page: Page, path: string, opts?: { timeout?:
  */
 export async function settleAfterAction(page: Page, opts?: { timeout?: number }) {
   const timeout = opts?.timeout ?? 5_000;
-  await page.waitForLoadState("networkidle", { timeout }).catch(() => {});
+  await page.waitForLoadState('networkidle', { timeout }).catch(() => {});
   await page
     .waitForFunction(
       () => !document.querySelector('[data-state="loading"], [data-skeleton]'),
+      undefined,
       { timeout },
     )
     .catch(() => {});
@@ -140,7 +228,7 @@ export async function waitForVisible(
   timeout = 10_000,
 ): Promise<Locator> {
   const loc = page.locator(selector).first();
-  await loc.waitFor({ state: "visible", timeout });
+  await loc.waitFor({ state: 'visible', timeout });
   return loc;
 }
 
@@ -163,7 +251,7 @@ export async function waitForCount(
 export async function expectNoConsoleErrors(consoleLogs: Array<{ type: string; text: string }>) {
   const errors = consoleLogs.filter(
     (l) =>
-      l.type === "error" &&
+      l.type === 'error' &&
       // ruído conhecido aceitável
       !/Download the React DevTools/.test(l.text) &&
       !/ResizeObserver loop/.test(l.text) &&
@@ -173,6 +261,6 @@ export async function expectNoConsoleErrors(consoleLogs: Array<{ type: string; t
       !/analytics/i.test(l.text),
   );
   if (errors.length > 0) {
-    throw new Error(`Console errors detected:\n${errors.map((e) => e.text).join("\n")}`);
+    throw new Error(`Console errors detected:\n${errors.map((e) => e.text).join('\n')}`);
   }
 }

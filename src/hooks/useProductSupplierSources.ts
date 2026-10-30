@@ -78,8 +78,7 @@ export function useProductSupplierSources(productId?: string) {
       return true;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : '';
-      if (msg.includes('duplicate') || msg.includes('23505')) {
-      } else {
+      if (!msg.includes('duplicate') && !msg.includes('23505')) {
         toast.error('Erro ao adicionar fonte');
       }
       return false;
@@ -97,7 +96,7 @@ export function useProductSupplierSources(productId?: string) {
       toast.success('Fonte atualizada');
       await fetchSources();
       return true;
-    } catch (err: unknown) {
+    } catch {
       toast.error('Erro ao atualizar fonte');
       return false;
     }
@@ -113,7 +112,7 @@ export function useProductSupplierSources(productId?: string) {
       toast.success('Fonte removida');
       await fetchSources();
       return true;
-    } catch (err: unknown) {
+    } catch {
       toast.error('Erro ao remover fonte');
       return false;
     }

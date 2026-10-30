@@ -4,16 +4,26 @@
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, X, Copy } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { UseSimulatorWizardReturn } from '@/hooks/simulator/useSimulatorWizard';
 import { RemovePersonalizationDialog } from './RemovePersonalizationDialog';
 import { formatCurrency } from '@/lib/format';
-import { toast } from 'sonner';
+
 
 interface PersonalizationTabsProps {
   wizard: UseSimulatorWizardReturn;
   onAddNew: () => void;
+}
+
+function isPersonalizationStep(step: string) {
+  return step === 'location' || step === 'specs' || step === 'comparison';
+}
+
+function canCreatePersonalization(wizard: UseSimulatorWizardReturn) {
+  if (wizard.isEditingPersonalization) return false;
+  if (!wizard.hasAvailableLocations) return false;
+  return isPersonalizationStep(wizard.currentStep);
 }
 
 export function PersonalizationTabs({ wizard, onAddNew }: PersonalizationTabsProps) {
@@ -22,15 +32,10 @@ export function PersonalizationTabs({ wizard, onAddNew }: PersonalizationTabsPro
     currentPersonalizationIndex, 
     isEditingPersonalization,
     selectedLocation,
-    currentStep,
     hasAvailableLocations,
   } = wizard;
 
-  const isCreatingNew = !isEditingPersonalization && hasAvailableLocations && (
-    currentStep === 'location' || 
-    currentStep === 'specs' || 
-    currentStep === 'comparison'
-  );
+  const isCreatingNew = canCreatePersonalization(wizard);
 
   return (
     <div className="flex items-center gap-2 overflow-x-auto pb-2">

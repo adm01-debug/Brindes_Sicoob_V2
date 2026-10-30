@@ -8,11 +8,16 @@ import { CommemorativeDateFilter } from "./CommemorativeDateFilter";
 import type { ColorFilterSelection } from "./ColorGroupFilter";
 
 // Re-export types for backward compatibility
+const ACTIVE_ORANGE_BORDER = 'border-orange/60';
+
+function hasOptions(options: unknown[], selected: unknown[], loading: boolean, error: Error | null) {
+  return options.length > 0 || selected.length > 0 || loading || Boolean(error);
+}
+
 export type { FilterState, FilterPanelProps } from "./filter-panel/types";
 export { defaultFilters, SECTION_CONFIG, SECTION_GROUPS } from "./filter-panel/types";
 
-import type { FilterPanelProps } from "./filter-panel/types";
-import { SECTION_CONFIG, SECTION_GROUPS } from "./filter-panel/types";
+import { type FilterPanelProps, SECTION_CONFIG, SECTION_GROUPS } from "./filter-panel/types";
 import { useFilterPanelState } from "./filter-panel/useFilterPanelState";
 import { FilterSection, GroupSeparator } from "./filter-panel/FilterSection";
 import { FilterPanelHeader } from "./filter-panel/FilterPanelHeader";
@@ -28,10 +33,38 @@ import {
 } from "./filter-panel/sections/SimpleFilters";
 import { SizeFilter } from "./filter-panel/sections/SizeFilter";
 
-export function FilterPanel({
-  filters, onFilterChange, onReset, activeFiltersCount,
-  products = [], viewMode, onViewModeChange, gridColumns, onGridColumnsChange, filteredResultsCount,
-}: FilterPanelProps) {
+function sectionHasAvailableOptions(
+  sectionId: string,
+  state: ReturnType<typeof useFilterPanelState>,
+  filters: FilterPanelProps['filters'],
+): boolean {
+  const availability: Record<string, boolean> = {
+    tecnicas: state.techniqueOptions.length > 0,
+    tags: state.tagOptions.length > 0,
+    publico: hasOptions(state.publicoAlvoOptions, filters.publicoAlvo, state.publicoAlvoOptionsLoading, state.publicoAlvoOptionsError),
+    endomarketing: hasOptions(state.endomarketingOptions, filters.endomarketing, state.endomarketingOptionsLoading, state.endomarketingOptionsError),
+    temas: hasOptions(state.temaSicoobOptions, filters.sicoobThemes, state.temaSicoobOptionsLoading, state.temaSicoobOptionsError),
+  };
+  return availability[sectionId] ?? true;
+}
+
+function MarketingOptionsState({ loading, error, onRetry, children }: {
+  loading: boolean;
+  error: Error | null;
+  onRetry: () => void;
+  children: React.ReactNode;
+}) {
+  if (loading) return <p role="status" className="px-1 text-xs text-muted-foreground">Carregando opções...</p>;
+  return <>
+    {error && <div role="alert" className="mx-1 mb-2 rounded-md border border-destructive/30 bg-destructive/5 p-2 text-xs">
+      <p>Não foi possível carregar estas opções.</p>
+      <button type="button" className="mt-1 font-medium text-primary underline underline-offset-2" onClick={onRetry}>Tentar novamente</button>
+    </div>}
+    {children}
+  </>;
+}
+
+export function FilterPanel({ filters, onFilterChange, onReset, activeFiltersCount, products = [] }: FilterPanelProps) {
   const state = useFilterPanelState(filters, onFilterChange, products);
 
   const renderSection = (id: string, renderContent?: () => React.ReactNode) => {
@@ -75,7 +108,7 @@ export function FilterPanel({
       <div className="px-1">
         <div className="flex items-center gap-2 text-sm">
           <span className="text-muted-foreground text-xs whitespace-nowrap">Mínimo por cor</span>
-          <DebouncedPriceInput value={filters.minStock || ''} onChange={(v) => onFilterChange({ ...filters, minStock: v })} fallback={0} placeholder="Ex: 500" min={0} className={filters.minStock > 0 ? 'border-orange/60' : ''} />
+          <DebouncedPriceInput value={filters.minStock || ''} onChange={(v) => onFilterChange({ ...filters, minStock: v })} fallback={0} placeholder="Ex: 500" min={0} className={filters.minStock > 0 ? ACTIVE_ORANGE_BORDER : ''} />
           <span className="text-muted-foreground text-xs">un.</span>
         </div>
       </div>
@@ -85,12 +118,12 @@ export function FilterPanel({
         <div className="flex items-center gap-2 text-sm">
           <div className="flex items-center gap-1 flex-1">
             <span className="text-muted-foreground text-xs">R$</span>
-            <DebouncedPriceInput value={filters.priceRange[0]} onChange={(v) => onFilterChange({ ...filters, priceRange: [v, filters.priceRange[1]] })} fallback={0} min={0} className={filters.priceRange[0] > 0 ? 'border-orange/60' : ''} />
+            <DebouncedPriceInput value={filters.priceRange[0]} onChange={(v) => onFilterChange({ ...filters, priceRange: [v, filters.priceRange[1]] })} fallback={0} min={0} className={filters.priceRange[0] > 0 ? ACTIVE_ORANGE_BORDER : ''} />
           </div>
           <span className="text-muted-foreground text-xs">até</span>
           <div className="flex items-center gap-1 flex-1">
             <span className="text-muted-foreground text-xs">R$</span>
-            <DebouncedPriceInput value={filters.priceRange[1] >= 9999 ? '' : filters.priceRange[1]} onChange={(v) => onFilterChange({ ...filters, priceRange: [filters.priceRange[0], v || 9999] })} fallback={9999} placeholder="Sem limite" min={0} className={filters.priceRange[1] < 9999 ? 'border-orange/60' : ''} />
+            <DebouncedPriceInput value={filters.priceRange[1] >= 9999 ? '' : filters.priceRange[1]} onChange={(v) => onFilterChange({ ...filters, priceRange: [filters.priceRange[0], v || 9999] })} fallback={9999} placeholder="Sem limite" min={0} className={filters.priceRange[1] < 9999 ? ACTIVE_ORANGE_BORDER : ''} />
           </div>
         </div>
       </div>
@@ -106,13 +139,15 @@ export function FilterPanel({
       />
     ),
     publico: () => (
-      <PublicoFilter
-        filters={filters}
-        publicoAlvoOptions={state.publicoAlvoOptions}
-        publicoSearch={state.publicoSearch}
-        setPublicoSearch={state.setPublicoSearch}
-        toggleArrayFilter={state.toggleArrayFilter}
-      />
+      <MarketingOptionsState loading={state.publicoAlvoOptionsLoading} error={state.publicoAlvoOptionsError} onRetry={state.retryPublicoAlvoOptions}>
+        <PublicoFilter
+          filters={filters}
+          publicoAlvoOptions={state.publicoAlvoOptions}
+          publicoSearch={state.publicoSearch}
+          setPublicoSearch={state.setPublicoSearch}
+          toggleArrayFilter={state.toggleArrayFilter}
+        />
+      </MarketingOptionsState>
     ),
     "datas-comemorativas": () => (
       <CommemorativeDateFilter
@@ -123,13 +158,15 @@ export function FilterPanel({
       />
     ),
     endomarketing: () => (
-      <EndomarketingFilter
-        filters={filters}
-        endomarketingOptions={state.endomarketingOptions}
-        endoSearch={state.endoSearch}
-        setEndoSearch={state.setEndoSearch}
-        toggleArrayFilter={state.toggleArrayFilter}
-      />
+      <MarketingOptionsState loading={state.endomarketingOptionsLoading} error={state.endomarketingOptionsError} onRetry={state.retryEndomarketingOptions}>
+        <EndomarketingFilter
+          filters={filters}
+          endomarketingOptions={state.endomarketingOptions}
+          endoSearch={state.endoSearch}
+          setEndoSearch={state.setEndoSearch}
+          toggleArrayFilter={state.toggleArrayFilter}
+        />
+      </MarketingOptionsState>
     ),
     materiais: () => (
       <MaterialsFilter
@@ -194,24 +231,28 @@ export function FilterPanel({
       </Select>
     ),
     temas: () => (
-      <div className="flex flex-wrap gap-1.5 px-1">
-        {['Agro', 'Sul', 'Praia', 'Corporativo'].map((tema) => {
-          const isSelected = (filters.sicoobThemes || []).includes(tema);
-          return (
-            <button
-              key={tema}
-              onClick={() => state.toggleArrayFilter("sicoobThemes", tema)}
-              className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-all ${
-                isSelected
-                  ? "bg-sicoob-green text-white border-sicoob-green shadow-sm"
-                  : "bg-card border-border text-foreground hover:border-sicoob-green/40 hover:bg-accent"
-              }`}
-            >
-              {tema}
-            </button>
-          );
-        })}
-      </div>
+      <MarketingOptionsState loading={state.temaSicoobOptionsLoading} error={state.temaSicoobOptionsError} onRetry={state.retryTemaSicoobOptions}>
+        <div className="flex flex-wrap gap-1.5 px-1">
+          {state.temaSicoobOptions.map((tema) => {
+            const isSelected = (filters.sicoobThemes || []).includes(tema.slug);
+            return (
+              <button
+                key={tema.id}
+                type="button"
+                aria-pressed={isSelected}
+                onClick={() => state.toggleArrayFilter("sicoobThemes", tema.slug)}
+                className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-all ${
+                  isSelected
+                    ? "bg-sicoob-green text-white border-sicoob-green shadow-sm"
+                    : "bg-card border-border text-foreground hover:border-sicoob-green/40 hover:bg-accent"
+                }`}
+              >
+                {tema.name} <span className="opacity-70">({tema.productCount})</span>
+              </button>
+            );
+          })}
+        </div>
+      </MarketingOptionsState>
     ),
     "tiragem-minima": () => (
       <div className="px-1">
@@ -255,6 +296,10 @@ export function FilterPanel({
         selectedSizes={filters.sizes || []}
         onToggleSize={(size) => state.toggleArrayFilter("sizes", size)}
         products={products as Array<{ variations?: Array<{ size_code?: string | null }> }>}
+        availableSizes={state.availableSizes}
+        isLoading={state.availableSizesLoading}
+        error={state.availableSizesError}
+        onRetry={state.retryAvailableSizes}
       />
     ),
   };
@@ -276,9 +321,7 @@ export function FilterPanel({
             const config = SECTION_CONFIG[sId];
             if (!config) return false;
             if (!state.sectionMatchesSearch(sId, config.title)) return false;
-            if (sId === 'tecnicas' && state.techniqueOptions.length === 0) return false;
-            if (sId === 'tags' && state.tagOptions.length === 0) return false;
-            return true;
+            return sectionHasAvailableOptions(sId, state, filters);
           });
           if (visibleSections.length === 0) return null;
           return (

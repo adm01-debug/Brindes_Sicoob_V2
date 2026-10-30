@@ -14,7 +14,7 @@
  * facilitar QA via DevTools sem depender da UI.
  */
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { createClientLogger } from "@/lib/telemetry/structuredLogger";
 import { CheckCircle2, XCircle, Loader2, ListChecks, PlayCircle, Copy, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -96,6 +96,107 @@ interface Props {
   availableSecrets?: SecretStatus[];
 }
 
+type UpdateStep = (id: StepState["id"], patch: Partial<StepState>) => void;
+type SmokeLogger = ReturnType<typeof createClientLogger>;
+
+interface SmokeContext {
+  secretName: string;
+  expectedSuffix: string;
+  newValue: string;
+  sessionId: string;
+  startedAt: Date;
+  updateStep: UpdateStep;
+  log: SmokeLogger;
+}
+
+async function runRotationStep(context: SmokeContext, rotateSecret: ReturnType<typeof useSecretsManager>["rotateSecret"]): Promise<boolean> {
+  context.updateStep("rotate", { status: "running" });
+  const started = performance.now();
+  try {
+    const result = await rotateSecret(context.secretName, context.newValue, `smoke-test ${context.sessionId}`);
+    const durationMs = Math.round(performance.now() - started);
+    if (!result.ok) {
+      context.updateStep("rotate", { status: "failed", detail: result.error?.message ?? "Falha desconhecida", durationMs });
+      context.log.error("step_1_failed", { error: result.error });
+      context.updateStep("history", { status: "skipped", detail: "Pulado (rotação falhou)" });
+      context.updateStep("reload", { status: "skipped", detail: "Pulado (rotação falhou)" });
+      return false;
+    }
+    const suffixOk = normalizeMaskedSuffix(result.masked_suffix) === context.expectedSuffix;
+    const lengthOk = (result.length ?? 0) === context.newValue.length;
+    if (!suffixOk || !lengthOk) {
+      context.updateStep("rotate", { status: "failed", detail: `Sufixo esperado ${formatMaskedSuffix(context.expectedSuffix)}, recebido ${formatMaskedSuffix(result.masked_suffix)}`, durationMs });
+      context.log.error("step_1_mismatch", { expectedSuffix: context.expectedSuffix, got: result.masked_suffix });
+    } else {
+      context.updateStep("rotate", { status: "passed", detail: `previous=${result.previous_suffix ?? "(env)"} → new=${normalizeMaskedSuffix(result.masked_suffix)} • ${result.length} chars`, durationMs });
+      context.log.info("step_1_ok", { took: durationMs, suffix: result.masked_suffix });
+    }
+    return true;
+  } catch (error) {
+    const durationMs = Math.round(performance.now() - started);
+    context.updateStep("rotate", { status: "failed", detail: error instanceof Error ? error.message : "Erro inesperado", durationMs });
+    context.log.error("step_1_exception", { err: error });
+    return false;
+  }
+}
+
+async function runHistoryStep(context: SmokeContext, getRotationHistory: ReturnType<typeof useSecretsManager>["getRotationHistory"]) {
+  context.updateStep("history", { status: "running" });
+  const started = performance.now();
+  try {
+    const entries: RotationHistoryEntry[] = await getRotationHistory(context.secretName);
+    const durationMs = Math.round(performance.now() - started);
+    const matching = entries.find((entry) => entry.new_suffix === context.expectedSuffix && new Date(entry.rotated_at).getTime() >= context.startedAt.getTime() - 5000);
+    if (!matching) {
+      context.updateStep("history", { status: "failed", detail: `Nenhum registro com sufixo ${formatMaskedSuffix(context.expectedSuffix)} encontrado (${entries.length} entradas vistas).`, durationMs });
+      context.log.error("step_2_missing_entry", { expectedSuffix: context.expectedSuffix, total: entries.length });
+      return;
+    }
+    const author = matching.rotated_by_email ?? matching.rotated_by ?? "desconhecido";
+    context.updateStep("history", { status: "passed", detail: `Registro #${entries.length} • por ${author} • ${new Date(matching.rotated_at).toLocaleTimeString("pt-BR")}`, durationMs });
+    context.log.info("step_2_ok", { took: durationMs, author, entryId: matching.id });
+  } catch (error) {
+    context.updateStep("history", { status: "failed", detail: error instanceof Error ? error.message : "Erro ao consultar histórico", durationMs: Math.round(performance.now() - started) });
+    context.log.error("step_2_exception", { err: error });
+  }
+}
+
+async function runReloadStep(context: SmokeContext, list: ReturnType<typeof useSecretsManager>["list"]) {
+  context.updateStep("reload", { status: "running" });
+  const started = performance.now();
+  try {
+    const fresh = await list([context.secretName]);
+    const durationMs = Math.round(performance.now() - started);
+    const target = (fresh ?? []).find((secret) => secret.name === context.secretName);
+    if (!target) {
+      context.updateStep("reload", { status: "failed", detail: "Secret não retornou na listagem após reload.", durationMs });
+      context.log.error("step_3_missing_in_list");
+    } else if (normalizeMaskedSuffix(target.masked_suffix) !== context.expectedSuffix) {
+      context.updateStep("reload", { status: "failed", detail: `Sufixo divergente após reload: esperado ${formatMaskedSuffix(context.expectedSuffix)}, recebido ${formatMaskedSuffix(target.masked_suffix)}`, durationMs });
+      context.log.error("step_3_suffix_mismatch", { target });
+    } else {
+      const sourceTag = target.source ? ` • source=${target.source}` : "";
+      context.updateStep("reload", { status: "passed", detail: `Persistido • ${formatMaskedSuffix(target.masked_suffix)} • ${target.length} chars${sourceTag}`, durationMs });
+      context.log.info("step_3_ok", { took: durationMs, source: target.source });
+    }
+  } catch (error) {
+    context.updateStep("reload", { status: "failed", detail: error instanceof Error ? error.message : "Erro ao recarregar", durationMs: Math.round(performance.now() - started) });
+    context.log.error("step_3_exception", { err: error });
+  }
+}
+
+function SmokeSummary({ steps, summary, running }: { steps: StepState[]; summary: Record<StepStatus, number>; running: boolean }) {
+  const allPassed = summary.passed === steps.length;
+  const failed = summary.failed ?? 0;
+  if (!(summary.passed || failed) || running) return null;
+  return (
+    <div className={cn("rounded-lg border p-3 text-sm", allPassed && "border-green-500/40 bg-green-500/10 text-green-700 dark:text-green-400", failed > 0 && "border-destructive/50 bg-destructive/10 text-destructive")}>
+      {allPassed && <span>✅ Todos os {steps.length} passos passaram. Pipeline saudável.</span>}
+      {failed > 0 && <span>❌ {failed} falha{failed > 1 ? "s" : ""} de {steps.length}. Veja o console para stack traces.</span>}
+    </div>
+  );
+}
+
 export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
   const { list, rotateSecret, getRotationHistory } = useSecretsManager();
   const [open, setOpen] = useState(false);
@@ -123,139 +224,19 @@ export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
     }
     setRunning(true);
     reset();
-
     const newValue = customValue.trim() || makeTestValue();
-    const expectedSuffix = suffixOf(newValue);
-    const startedAt = new Date();
     const sessionId = `smoke-${Date.now().toString(36)}`;
-    const log = createClientLogger("admin.smoke-test", { requestId: sessionId });
-
-    log.info("starting", { secretName, expectedSuffix, length: newValue.length });
-
-    // STEP 1 — rotate
-    updateStep("rotate", { status: "running" });
-    const t1 = performance.now();
-    let rotateResult: Awaited<ReturnType<typeof rotateSecret>> | null = null;
-    try {
-      rotateResult = await rotateSecret(secretName, newValue, `smoke-test ${sessionId}`);
-      const took = Math.round(performance.now() - t1);
-      if (!rotateResult.ok) {
-        updateStep("rotate", {
-          status: "failed",
-          detail: rotateResult.error?.message ?? "Falha desconhecida",
-          durationMs: took,
-        });
-        log.error("step_1_failed", { error: rotateResult.error });
-        setRunning(false);
-        updateStep("history", { status: "skipped", detail: "Pulado (rotação falhou)" });
-        updateStep("reload", { status: "skipped", detail: "Pulado (rotação falhou)" });
-        return;
-      }
-      const suffixOk = normalizeMaskedSuffix(rotateResult.masked_suffix) === expectedSuffix;
-      const lengthOk = (rotateResult.length ?? 0) === newValue.length;
-      if (!suffixOk || !lengthOk) {
-        updateStep("rotate", {
-          status: "failed",
-          detail: `Sufixo esperado ${formatMaskedSuffix(expectedSuffix)}, recebido ${formatMaskedSuffix(rotateResult.masked_suffix)}`,
-          durationMs: took,
-        });
-        log.error("step_1_mismatch", { expectedSuffix, got: rotateResult.masked_suffix });
-      } else {
-        updateStep("rotate", {
-          status: "passed",
-          detail: `previous=${rotateResult.previous_suffix ?? "(env)"} → new=${normalizeMaskedSuffix(rotateResult.masked_suffix)} • ${rotateResult.length} chars`,
-          durationMs: took,
-        });
-        log.info("step_1_ok", { took, suffix: rotateResult.masked_suffix });
-      }
-    } catch (err) {
-      const took = Math.round(performance.now() - t1);
-      updateStep("rotate", {
-        status: "failed",
-        detail: err instanceof Error ? err.message : "Erro inesperado",
-        durationMs: took,
-      });
-      log.error("step_1_exception", { err });
-      setRunning(false);
-      return;
+    const context: SmokeContext = {
+      secretName, newValue, sessionId, expectedSuffix: suffixOf(newValue), startedAt: new Date(),
+      updateStep, log: createClientLogger("admin.smoke-test", { requestId: sessionId }),
+    };
+    context.log.info("starting", { secretName, expectedSuffix: context.expectedSuffix, length: newValue.length });
+    const rotated = await runRotationStep(context, rotateSecret);
+    if (rotated) {
+      await runHistoryStep(context, getRotationHistory);
+      await runReloadStep(context, list);
+      context.log.info("finished", { sessionId, secretName });
     }
-
-    // STEP 2 — history persisted
-    updateStep("history", { status: "running" });
-    const t2 = performance.now();
-    try {
-      const entries: RotationHistoryEntry[] = await getRotationHistory(secretName);
-      const took = Math.round(performance.now() - t2);
-      const matching = entries.find(
-        (e) => e.new_suffix === expectedSuffix && new Date(e.rotated_at).getTime() >= startedAt.getTime() - 5000,
-      );
-      if (!matching) {
-        updateStep("history", {
-          status: "failed",
-          detail: `Nenhum registro com sufixo ${formatMaskedSuffix(expectedSuffix)} encontrado (${entries.length} entradas vistas).`,
-          durationMs: took,
-        });
-        log.error("step_2_missing_entry", { expectedSuffix, total: entries.length });
-      } else {
-        const author = matching.rotated_by_email ?? matching.rotated_by ?? "desconhecido";
-        updateStep("history", {
-          status: "passed",
-          detail: `Registro #${entries.length} • por ${author} • ${new Date(matching.rotated_at).toLocaleTimeString("pt-BR")}`,
-          durationMs: took,
-        });
-        log.info("step_2_ok", { took, author, entryId: matching.id });
-      }
-    } catch (err) {
-      const took = Math.round(performance.now() - t2);
-      updateStep("history", {
-        status: "failed",
-        detail: err instanceof Error ? err.message : "Erro ao consultar histórico",
-        durationMs: took,
-      });
-      log.error("step_2_exception", { err });
-    }
-
-    // STEP 3 — cold reload from DB (simulates F5)
-    updateStep("reload", { status: "running" });
-    const t3 = performance.now();
-    try {
-      const fresh = await list([secretName]);
-      const took = Math.round(performance.now() - t3);
-      const target = (fresh ?? []).find((s) => s.name === secretName);
-      if (!target) {
-        updateStep("reload", {
-          status: "failed",
-          detail: "Secret não retornou na listagem após reload.",
-          durationMs: took,
-        });
-        log.error("step_3_missing_in_list");
-      } else if (normalizeMaskedSuffix(target.masked_suffix) !== expectedSuffix) {
-        updateStep("reload", {
-          status: "failed",
-          detail: `Sufixo divergente após reload: esperado ${formatMaskedSuffix(expectedSuffix)}, recebido ${formatMaskedSuffix(target.masked_suffix)}`,
-          durationMs: took,
-        });
-        log.error("step_3_suffix_mismatch", target);
-      } else {
-        const sourceTag = target.source ? ` • source=${target.source}` : "";
-        updateStep("reload", {
-          status: "passed",
-          detail: `Persistido • ${formatMaskedSuffix(target.masked_suffix)} • ${target.length} chars${sourceTag}`,
-          durationMs: took,
-        });
-        log.info("step_3_ok", { took, source: target.source });
-      }
-    } catch (err) {
-      const took = Math.round(performance.now() - t3);
-      updateStep("reload", {
-        status: "failed",
-        detail: err instanceof Error ? err.message : "Erro ao recarregar",
-        durationMs: took,
-      });
-      log.error("step_3_exception", { err });
-    }
-
-    log.info("finished", { sessionId, secretName });
     setRunning(false);
   };
 
@@ -281,9 +262,6 @@ export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
     },
     {} as Record<StepStatus, number>,
   );
-  const allPassed = summary.passed === steps.length;
-  const anyFailed = (summary.failed ?? 0) > 0;
-
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
@@ -305,7 +283,7 @@ export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
 
         <div className="mt-6 space-y-4">
           {/* Picker */}
-          <div className="space-y-2">
+          {(<div className="space-y-2">
             <Label htmlFor="smoke-secret">Credencial alvo</Label>
             <Select value={secretName} onValueChange={setSecretName} disabled={running}>
               <SelectTrigger id="smoke-secret">
@@ -322,7 +300,7 @@ export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
             <p className="text-xs text-muted-foreground">
               ⚠️ A rotação substitui o valor atual. Use uma credencial de teste ou esteja pronto para rotacionar de volta para o valor real.
             </p>
-          </div>
+          </div>)}
 
           <div className="space-y-2">
             <Label htmlFor="smoke-value">Valor de teste (opcional)</Label>
@@ -336,7 +314,7 @@ export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
             />
           </div>
 
-          <div className="flex gap-2">
+          {(<div className="flex gap-2">
             <Button onClick={runChecklist} disabled={running || !secretName} className="gap-2 flex-1">
               {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
               {running ? "Executando…" : "Rodar checklist"}
@@ -345,7 +323,7 @@ export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
               <Copy className="h-4 w-4" />
               Copiar
             </Button>
-          </div>
+          </div>)}
 
           {/* Steps */}
           <ol className="space-y-3 mt-2">
@@ -393,22 +371,7 @@ export function SmokeTestChecklist({ availableSecrets = [] }: Props) {
           </ol>
 
           {/* Summary */}
-          {(summary.passed || summary.failed) && !running && (
-            <div
-              className={cn(
-                "rounded-lg border p-3 text-sm",
-                allPassed && "border-green-500/40 bg-green-500/10 text-green-700 dark:text-green-400",
-                anyFailed && "border-destructive/50 bg-destructive/10 text-destructive",
-              )}
-            >
-              {allPassed && <span>✅ Todos os {steps.length} passos passaram. Pipeline saudável.</span>}
-              {anyFailed && (
-                <span>
-                  ❌ {summary.failed} falha{summary.failed > 1 ? "s" : ""} de {steps.length}. Veja o console para stack traces.
-                </span>
-              )}
-            </div>
-          )}
+          <SmokeSummary steps={steps} summary={summary} running={running} />
         </div>
       </SheetContent>
     </Sheet>

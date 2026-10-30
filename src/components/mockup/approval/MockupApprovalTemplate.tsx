@@ -5,7 +5,11 @@
 
 import React, { forwardRef } from "react";
 import type { MockupApprovalData } from "@/types/mockup-approval";
-import { LogoWithTransparentBg } from "@/components/pdf/proposal/LogoWithTransparentBg";
+
+
+const LIGHT_BORDER = "1px solid #e8e8e8";
+const MONTSERRAT = "'Montserrat', sans-serif";
+const FLEX_START = "flex-start";
 
 const GREEN = "#00c853";
 const DARK = "#000000";
@@ -48,7 +52,7 @@ export const MockupApprovalTemplate = forwardRef<HTMLDivElement, { data: MockupA
               <div style={{
                 width: "483px",
                 height: "630px",
-                border: "1px solid #e8e8e8",
+                border: LIGHT_BORDER,
                 borderRadius: "8px",
                 overflow: "hidden",
                 backgroundColor: "#fafafa",
@@ -70,7 +74,7 @@ export const MockupApprovalTemplate = forwardRef<HTMLDivElement, { data: MockupA
                 color: "#777",
                 textTransform: "uppercase",
                 letterSpacing: "1px",
-                fontFamily: "'Montserrat', sans-serif",
+                fontFamily: MONTSERRAT,
                 fontWeight: 600,
               }}>
                 {data.layoutMode === "ai" ? "Gerado com IA" : "Composição Estática"}
@@ -80,8 +84,8 @@ export const MockupApprovalTemplate = forwardRef<HTMLDivElement, { data: MockupA
             {/* Right: Product info + Personalization stacked */}
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "14px" }}>
               {/* Product info — compact, name + SKU + color only */}
-              <div style={{ border: "1px solid #e8e8e8", borderRadius: "6px", padding: "14px", backgroundColor: "#fafafa" }}>
-                <div style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: "11px", color: GREEN, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px" }}>
+              <div style={{ border: LIGHT_BORDER, borderRadius: "6px", padding: "14px", backgroundColor: "#fafafa" }}>
+                <div style={{ fontFamily: MONTSERRAT, fontWeight: 700, fontSize: "11px", color: GREEN, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px" }}>
                   Produto
                 </div>
                 <div style={{ fontWeight: 700, fontSize: "13px", color: "#111", marginBottom: "6px" }}>{data.product.name}</div>
@@ -112,8 +116,8 @@ export const MockupApprovalTemplate = forwardRef<HTMLDivElement, { data: MockupA
               </div>
 
               {/* Personalization */}
-              <div style={{ border: "1px solid #e8e8e8", borderRadius: "6px", padding: "14px", backgroundColor: "#fafafa" }}>
-                <div style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: "11px", color: GREEN, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px" }}>
+              <div style={{ border: LIGHT_BORDER, borderRadius: "6px", padding: "14px", backgroundColor: "#fafafa" }}>
+                <div style={{ fontFamily: MONTSERRAT, fontWeight: 700, fontSize: "11px", color: GREEN, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px" }}>
                   Personalização
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
@@ -174,20 +178,20 @@ function ApprovalHeader({ documentNumber, date }: { documentNumber: string; date
         <polygon points={`${greenStart},0 ${darkStart},0 ${darkEnd},${H} ${greenEnd},${H}`} fill={GREEN} />
         <rect x="0" y={H - barH} width={W} height={barH} fill={GREEN} />
       </svg>
-      <div style={{ position: "absolute", zIndex: 10, top: "0", left: "50px", bottom: `${barH}px`, width: "234px", display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "center", padding: "10px 14px" }}>
+      <div style={{ position: "absolute", zIndex: 10, top: "0", left: "50px", bottom: `${barH}px`, width: "234px", display: "flex", flexDirection: "column", alignItems: FLEX_START, justifyContent: "center", padding: "10px 14px" }}>
         <div className="bg-primary p-4 rounded-lg"><span className="text-white font-bold text-xl">SICOOB</span></div>
       </div>
       <div style={{ position: "absolute", zIndex: 10, textAlign: "right", color: "#ffffff", top: "0", bottom: "0", right: "32px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "flex-end" }}>
-        <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, fontSize: "20px", textTransform: "uppercase", letterSpacing: "3px", margin: "0 0 6px 0", lineHeight: 1, whiteSpace: "nowrap" }}>
+        <p style={{ fontFamily: MONTSERRAT, fontWeight: 900, fontSize: "20px", textTransform: "uppercase", letterSpacing: "3px", margin: "0 0 6px 0", lineHeight: 1, whiteSpace: "nowrap" }}>
           Aprovação de Layout
         </p>
-        <p style={{ fontSize: "13px", opacity: 0.95, fontWeight: 400, lineHeight: "1.7", margin: 0, fontVariantNumeric: "tabular-nums", fontFamily: "'Montserrat', sans-serif", whiteSpace: "nowrap", letterSpacing: "0px" }}>
+        <p style={{ fontSize: "13px", opacity: 0.95, fontWeight: 400, lineHeight: "1.7", margin: 0, fontVariantNumeric: "tabular-nums", fontFamily: MONTSERRAT, whiteSpace: "nowrap", letterSpacing: "0px" }}>
           Ref.&nbsp;{documentNumber}
         </p>
-        <p style={{ fontSize: "13px", opacity: 0.85, margin: "0 0 6px 0", fontFamily: "'Montserrat', sans-serif", fontWeight: 400 }}>
+        <p style={{ fontSize: "13px", opacity: 0.85, margin: "0 0 6px 0", fontFamily: MONTSERRAT, fontWeight: 400 }}>
           {date}
         </p>
-        <p style={{ fontSize: "12px", opacity: 0.7, margin: 0, fontFamily: "'Montserrat', sans-serif", fontWeight: 400, whiteSpace: "nowrap" }}>
+        <p style={{ fontSize: "12px", opacity: 0.7, margin: 0, fontFamily: MONTSERRAT, fontWeight: 400, whiteSpace: "nowrap" }}>
           (11) 4637-5517 &nbsp;|&nbsp; www.promobrindes.com.br
         </p>
       </div>
@@ -205,11 +209,11 @@ function ClientSection({ client }: { client: MockupApprovalData["client"] }) {
       marginBottom: "14px",
       display: "flex",
       justifyContent: "space-between",
-      alignItems: "flex-start",
+      alignItems: FLEX_START,
       borderRadius: "6px",
     }}>
       <div>
-        <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: "13px", color: "#00c853", textTransform: "uppercase", letterSpacing: "0.5px", margin: "0 0 4px 0" }}>
+        <p style={{ fontFamily: MONTSERRAT, fontWeight: 700, fontSize: "13px", color: "#00c853", textTransform: "uppercase", letterSpacing: "0.5px", margin: "0 0 4px 0" }}>
           Empresa
         </p>
         <p style={{ fontWeight: 700, fontSize: "15px", color: "#1a1a1a", margin: 0 }}>{client.name}</p>
@@ -221,7 +225,7 @@ function ClientSection({ client }: { client: MockupApprovalData["client"] }) {
         )}
       </div>
       <div style={{ textAlign: "right" }}>
-        <p style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: "13px", color: "#00c853", textTransform: "uppercase", letterSpacing: "0.5px", margin: "0 0 4px 0", textAlign: "right" }}>
+        <p style={{ fontFamily: MONTSERRAT, fontWeight: 700, fontSize: "13px", color: "#00c853", textTransform: "uppercase", letterSpacing: "0.5px", margin: "0 0 4px 0", textAlign: "right" }}>
           Solicitante
         </p>
         <p style={{ fontWeight: 700, fontSize: "15px", color: "#1a1a1a", margin: 0 }}>{client.contactName || "—"}</p>
@@ -243,7 +247,7 @@ function InfoCell({ label, value }: { label: string; value: string }) {
 function PantoneSection({ colors }: { colors: MockupApprovalData["pantoneColors"] }) {
   return (
     <div style={{ marginTop: "16px" }}>
-      <div style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: "10px", color: GREEN, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>
+      <div style={{ fontFamily: MONTSERRAT, fontWeight: 700, fontSize: "10px", color: GREEN, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>
         Cores Pantone
       </div>
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
@@ -274,7 +278,7 @@ function PantoneSection({ colors }: { colors: MockupApprovalData["pantoneColors"
 function ApprovalFooter({ printDate, seller }: { printDate: string; seller: MockupApprovalData["seller"] }) {
   return (
     <div style={{ width: "794px", flexShrink: 0, marginTop: "auto" }}>
-      <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", padding: "4px 36px", fontSize: "11px", color: "#000000", fontFamily: "'Montserrat', sans-serif", gap: "40px" }}>
+      <div style={{ display: "flex", justifyContent: FLEX_START, alignItems: "center", padding: "4px 36px", fontSize: "11px", color: "#000000", fontFamily: MONTSERRAT, gap: "40px" }}>
         <span></span>
         {seller.email && (
           <span style={{ textAlign: "left" }}>{seller.email}</span>
@@ -289,7 +293,7 @@ function ApprovalFooter({ printDate, seller }: { printDate: string; seller: Mock
 }
 
 /* ─── Product Specs Strip — horizontal with SVG icons ─── */
-function ProductSpecsStrip({ product }: { product: MockupApprovalData["product"] }) {
+function productSpecs(product: MockupApprovalData["product"]) {
   const specs: { icon: string; label: string; value: string }[] = [];
   if (product.material) specs.push({ icon: "◆", label: "Material", value: product.material });
   if (product.diameterCm) specs.push({ icon: "⊙", label: "Diâmetro", value: `${product.diameterCm} cm` });
@@ -298,11 +302,16 @@ function ProductSpecsStrip({ product }: { product: MockupApprovalData["product"]
   if (product.depthCm) specs.push({ icon: "⇔", label: "Profund.", value: `${product.depthCm} cm` });
   if (product.capacityMl) specs.push({ icon: "◉", label: "Capacidade", value: product.capacityMl >= 1000 ? `${(product.capacityMl / 1000).toFixed(1)} L` : `${product.capacityMl} ml` });
   if (product.weightG) specs.push({ icon: "⚖", label: "Peso", value: product.weightG >= 1000 ? `${(product.weightG / 1000).toFixed(1)} kg` : `${product.weightG} g` });
+  return specs;
+}
+
+function ProductSpecsStrip({ product }: { product: MockupApprovalData["product"] }) {
+  const specs = productSpecs(product);
   if (specs.length === 0) return null;
 
   return (
     <div style={{ marginTop: "16px", padding: "12px 0" }}>
-      <div style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: "10px", color: GREEN, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "10px" }}>
+      <div style={{ fontFamily: MONTSERRAT, fontWeight: 700, fontSize: "10px", color: GREEN, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "10px" }}>
         Especificações do Produto
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "18px" }}>
@@ -332,10 +341,10 @@ function ProductSpecsStrip({ product }: { product: MockupApprovalData["product"]
               {s.icon}
             </div>
             <div>
-              <div style={{ fontSize: "8px", color: "#999", textTransform: "uppercase", letterSpacing: "0.3px", fontFamily: "'Montserrat', sans-serif", fontWeight: 600 }}>
+              <div style={{ fontSize: "8px", color: "#999", textTransform: "uppercase", letterSpacing: "0.3px", fontFamily: MONTSERRAT, fontWeight: 600 }}>
                 {s.label}
               </div>
-              <div style={{ fontSize: "11px", fontWeight: 700, color: "#222", fontFamily: "'Montserrat', sans-serif" }}>
+              <div style={{ fontSize: "11px", fontWeight: 700, color: "#222", fontFamily: MONTSERRAT }}>
                 {s.value}
               </div>
             </div>

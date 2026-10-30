@@ -13,13 +13,7 @@ import {
   useSensors,
   type DragEndEvent,
 } from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  horizontalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import { SortableContext, sortableKeyboardCoordinates, useSortable, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { VariantSelector, type VariantSelectionData } from './VariantSelector';
 import { Button } from '@/components/ui/button';

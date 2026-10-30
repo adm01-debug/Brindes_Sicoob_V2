@@ -1,6 +1,6 @@
-import { forwardRef } from "react";
+import { type ReactNode, forwardRef } from "react";
 import { Loader2 } from "lucide-react";
-import { Button, type ButtonProps, buttonVariants } from "./button";
+import { Button, type ButtonProps } from "./button";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -9,8 +9,59 @@ interface LoadingButtonProps extends ButtonProps {
   loadingText?: string;
   successText?: string;
   isSuccess?: boolean;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   iconPosition?: "left" | "right";
+}
+
+function LoadingButtonContent({
+  isLoading,
+  loadingText,
+  isSuccess,
+  successText,
+  icon,
+  iconPosition,
+  children,
+}: Pick<LoadingButtonProps, "isLoading" | "loadingText" | "isSuccess" | "successText" | "icon" | "iconPosition" | "children">) {
+  if (isLoading) {
+    return (
+      <motion.span key="loading" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        {loadingText && <span>{loadingText}</span>}
+      </motion.span>
+    );
+  }
+  if (isSuccess) {
+    return (
+      <motion.span key="success" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} className="flex items-center gap-2">
+        <motion.svg viewBox="0 0 24 24" className="h-4 w-4" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.3 }}>
+          <motion.path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
+        </motion.svg>
+        {successText || children}
+      </motion.span>
+    );
+  }
+  return (
+    <motion.span key="default" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex items-center gap-2">
+      {icon && iconPosition === "left" && icon}
+      {children}
+      {icon && iconPosition === "right" && icon}
+    </motion.span>
+  );
+}
+
+function IconButtonContent({ isLoading, children }: Pick<LoadingButtonProps, "isLoading" | "children">) {
+  if (isLoading) {
+    return (
+      <motion.span key="loading" initial={{ opacity: 0, rotate: -90 }} animate={{ opacity: 1, rotate: 0 }} exit={{ opacity: 0, rotate: 90 }}>
+        <Loader2 className="h-4 w-4 animate-spin" />
+      </motion.span>
+    );
+  }
+  return (
+    <motion.span key="icon" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}>
+      {children}
+    </motion.span>
+  );
 }
 
 /**
@@ -48,56 +99,9 @@ export const LoadingButton = forwardRef<HTMLButtonElement, LoadingButtonProps>(
         {...props}
       >
         <AnimatePresence mode="wait">
-          {isLoading ? (
-            <motion.span
-              key="loading"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="flex items-center gap-2"
-            >
-              <Loader2 className="h-4 w-4 animate-spin" />
-              {loadingText && <span>{loadingText}</span>}
-            </motion.span>
-          ) : isSuccess ? (
-            <motion.span
-              key="success"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              className="flex items-center gap-2"
-            >
-              <motion.svg
-                viewBox="0 0 24 24"
-                className="h-4 w-4"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <motion.path
-                  d="M5 13l4 4L19 7"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={3}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </motion.svg>
-              {successText || children}
-            </motion.span>
-          ) : (
-            <motion.span
-              key="default"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="flex items-center gap-2"
-            >
-              {icon && iconPosition === "left" && icon}
-              {children}
-              {icon && iconPosition === "right" && icon}
-            </motion.span>
-          )}
+          <LoadingButtonContent isLoading={isLoading} loadingText={loadingText} isSuccess={isSuccess} successText={successText} icon={icon} iconPosition={iconPosition}>
+            {children}
+          </LoadingButtonContent>
         </AnimatePresence>
       </Button>
     );
@@ -119,25 +123,7 @@ export const IconButton = forwardRef<HTMLButtonElement, LoadingButtonProps>(
         disabled={props.disabled || isLoading}
         {...props}
        aria-label="AnimatePresence"><AnimatePresence mode="wait">
-          {isLoading ? (
-            <motion.span
-              key="loading"
-              initial={{ opacity: 0, rotate: -90 }}
-              animate={{ opacity: 1, rotate: 0 }}
-              exit={{ opacity: 0, rotate: 90 }}
-            >
-              <Loader2 className="h-4 w-4 animate-spin" />
-            </motion.span>
-          ) : (
-            <motion.span
-              key="icon"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-            >
-              {children}
-            </motion.span>
-          )}
+          <IconButtonContent isLoading={isLoading}>{children}</IconButtonContent>
         </AnimatePresence>
       </Button>
     );

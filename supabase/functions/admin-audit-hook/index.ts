@@ -103,7 +103,8 @@ serve(withStructuredLogging("admin-audit-hook", async (req) => {
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    return new Response(JSON.stringify({ error: message }), {
+    console.error('[admin-audit-hook] request_failed', message);
+    return new Response(JSON.stringify({ error: 'request_failed' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,
     })

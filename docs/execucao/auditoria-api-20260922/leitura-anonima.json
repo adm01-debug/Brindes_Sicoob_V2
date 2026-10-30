@@ -1,0 +1,1017 @@
+{
+  "collected_at": "2026-09-22T14:01:34.131505+00:00",
+  "method": "HEAD",
+  "credential": "publishable, sem sessão de usuário",
+  "probes": [
+    {
+      "resource": "access_blocked_log",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "access_security_settings",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "admin_audit_log",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "admin_config_audit",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "admin_settings",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "ai_insights_cache",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "ai_usage_events",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "ai_usage_logs",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "ai_usage_quotas",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "art_file_attachments",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "audit_log",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "blog_posts",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "bot_detection_log",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "campaigns",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "cart_items",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "cart_templates",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "category_icons",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "city_whitelist",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "cms_banners",
+      "http": 206,
+      "rows": 3
+    },
+    {
+      "resource": "cms_config",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "cms_sections",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "collection_item_reactions",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "collection_items",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "collection_items_trash",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "collections",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "comparison_reactions",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "component_media",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "connection_test_history",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "cooperativa_budgets",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "cooperativas",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "cooperativas_parceiras",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "coupons",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "custom_kits",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "device_login_notifications",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "discount_approval_requests",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "e2e_cleanup_audit",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "e2e_cleanup_rate_limit",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "expert_conversations",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "expert_messages",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "export_audit_log",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "export_jobs",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "external_connections",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "external_connections_sync_log",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "favorite_item_reactions",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "favorite_items",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "favorite_items_trash",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "favorite_lists",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "file_scan_logs",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "follow_up_reminders",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "generated_mockups",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "hardening_health_snapshots",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "inbound_webhook_endpoints",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "inbound_webhook_events",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "integration_credentials",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "ip_access_control",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "ip_whitelist",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "kit_collaborators",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "kit_comments",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "kit_share_tokens",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "kit_templates",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "kit_variants",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "limit_increase_requests",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "login_attempts",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "magic_up_brand_kits",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "magic_up_campaigns",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "magic_up_comments",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "magic_up_generations",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "magic_up_public_shares",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "magic_up_reactions",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "manager_notification_config",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "mcp_access_violations",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "mcp_api_keys",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "mcp_full_grantors",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "mcp_key_auto_revocations",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "mockup_drafts",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "mockup_prompt_configs",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "mockup_prompt_history",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "mockup_templates",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "newsletter_subscribers",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "notification_channels",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "notification_digests",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "notification_logs",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "notification_preferences",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "notification_templates",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "notifications",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "optimization_queue",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "optimization_queue_runs",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "order_approval_history",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "order_audit_events",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "order_comments",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "order_consolidation_orders",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "order_consolidations",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "order_invoices",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "order_items",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "order_logistics",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "order_logistics_tracking",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "order_payments",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "order_pilot_approvals",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "order_template_items",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "order_templates",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "orders",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "organization_members",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "organizations",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "outbound_webhooks",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "ownership_audit_reports",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "ownership_repair_logs",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "pa_budgets",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "pa_category_thresholds",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "pa_notification_settings",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "pa_singularidades",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "password_reset_requests",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "permissions",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "pontos_atendimento",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "portfolio_items",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "postos_atendimento",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "price_history",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "product_categories",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "product_component_locations",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "product_components",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "product_group_members",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "product_groups",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "product_price_freshness_overrides",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "product_sync_logs",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "product_views",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "profiles",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "public_token_failures",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "qa_release_evidences",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "qa_releases",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "qa_rls_audits",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "qa_run_steps",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "qa_runs",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "query_telemetry",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "quote_approval_tokens",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "quote_audit_logs",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "quote_comments",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "quote_consolidations",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "quote_history",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "quote_item_personalizations",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "quote_items",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "quote_templates",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "quotes",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "request_rate_limits",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "rls_denial_log",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "role_migration_batches",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "role_migration_items",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "role_permissions",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "saved_filters",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "saved_trends_views",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "scheduled_exports",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "scheduled_notifications",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "scheduled_reports",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "search_analytics",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "secret_rotation_log",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "seller_cart_items",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "seller_carts",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "seller_discount_limits",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sensitive_access_logs",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sicoob_approval_policies",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sicoob_approval_requests",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sicoob_budget_audit",
+      "http": 401,
+      "rows": null
+    },
+    {
+      "resource": "sicoob_centrais",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sicoob_delivery_allocations",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sicoob_delivery_destinations",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sicoob_delivery_receipt_events",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sicoob_kit_quote_requests",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sicoob_manager_audit",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sicoob_order_artwork_versions",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sicoob_order_history",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sicoob_order_invoices",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sicoob_order_item_logs",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sicoob_order_items",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sicoob_order_payments",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sicoob_order_shipments",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sicoob_orders",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sicoob_performance_reports",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sicoob_reorder_requests",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sicoob_rls_audit_logs",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "sicoob_temas",
+      "http": 206,
+      "rows": 4
+    },
+    {
+      "resource": "simulator_wizard_drafts",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "singulares",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "step_up_audit_log",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "step_up_challenges",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "step_up_tokens",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "system_settings",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "telemetry_events",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "telemetry_logs",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "telemetry_query_performance",
+      "http": 401,
+      "rows": null
+    },
+    {
+      "resource": "test_suites_runs",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "user_comparisons",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "user_known_devices",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "user_onboarding",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "user_preferences",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "user_roles",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "v_full_scope_grants",
+      "http": 401,
+      "rows": null
+    },
+    {
+      "resource": "v_sicoob_hierarchy",
+      "http": 401,
+      "rows": null
+    },
+    {
+      "resource": "video_variant_links",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "voice_command_logs",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "webhook_configs",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "webhook_deliveries",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "webhook_delivery_metrics",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "webhook_logs",
+      "http": 200,
+      "rows": 0
+    },
+    {
+      "resource": "workspace_notifications",
+      "http": 200,
+      "rows": 0
+    }
+  ]
+}

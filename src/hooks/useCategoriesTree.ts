@@ -175,8 +175,9 @@ export function useCategoriesTree() {
   const categoriesByLevel = useMemo(() => {
     const byLevel: Record<number, CategoryTreeItem[]> = {};
     categories.forEach(cat => {
-      if (!byLevel[cat.level]) byLevel[cat.level] = [];
-      byLevel[cat.level].push(cat);
+      const levelItems = byLevel[cat.level] ?? [];
+      levelItems.push(cat);
+      byLevel[cat.level] = levelItems;
     });
     return byLevel;
   }, [categories]);
@@ -204,8 +205,9 @@ export function useCategoriesTree() {
     
     while (current) {
       path.unshift(current);
-      if (current.parent_id) {
-        current = categories.find(cat => cat.id === current!.parent_id);
+      const parentId = current.parent_id;
+      if (parentId) {
+        current = categories.find(cat => cat.id === parentId);
       } else {
         current = undefined;
       }

@@ -1,3 +1,4 @@
+import type { ComponentType, MouseEvent } from "react";
 /**
  * Action buttons bar for ProductListItem — desktop & mobile
  */
@@ -14,10 +15,15 @@ interface ListItemActionsProps {
   isFavorited: boolean;
   isInCompare: boolean;
   canAddToCompare: boolean;
-  onFavorite: (e: React.MouseEvent) => void;
-  onCompare: (e: React.MouseEvent) => void;
-  onVariantAction: (mode: VariantActionMode, e: React.MouseEvent) => void;
-  onQuickView: (e: React.MouseEvent) => void;
+  onFavorite: (e: MouseEvent) => void;
+  onCompare: (e: MouseEvent) => void;
+  onVariantAction: (mode: VariantActionMode, e: MouseEvent) => void;
+  onQuickView: (e: MouseEvent) => void;
+}
+
+function ListAction({ label, icon, onClick, className, disabled, pressed, fill, testId, mobile = true }: { label: string; icon: ComponentType<{ className?: string }>; onClick: (event: MouseEvent) => void; className?: string; disabled?: boolean; pressed?: boolean; fill?: boolean; testId?: string; mobile?: boolean }) {
+  const ActionIcon = icon;
+  return <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className={cn("h-8 w-8 rounded-full", !mobile && "hidden sm:flex", className)} onClick={onClick} disabled={disabled} aria-label={label} aria-pressed={pressed} data-testid={testId}><ActionIcon className={cn("h-3.5 w-3.5", fill && "fill-current")} /></Button></TooltipTrigger><TooltipContent side="bottom">{label}</TooltipContent></Tooltip>;
 }
 
 export function ListItemActions({
@@ -30,67 +36,14 @@ export function ListItemActions({
       "opacity-100 sm:opacity-0 sm:group-hover:opacity-100",
       "transition-opacity duration-200"
     )}>
-      {/* Favoritar */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost" size="icon"
-            className={cn("h-8 w-8 rounded-full", isFavorited ? "text-destructive bg-destructive/10" : "text-muted-foreground hover:text-destructive")}
-            onClick={onFavorite} aria-label="Favoritar"
-            data-testid="product-favorite"
-            aria-pressed={isFavorited}
-          >
-            <Heart className={cn("h-3.5 w-3.5", isFavorited && "fill-current")} />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">{isFavorited ? "Remover favorito" : "Favoritar"}</TooltipContent>
-      </Tooltip>
-
-      {/* Comparar */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost" size="icon"
-            className={cn("h-8 w-8 rounded-full", isInCompare ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-primary")}
-            onClick={onCompare} disabled={!isInCompare && !canAddToCompare} aria-label="Comparar"
-          >
-            <GitCompare className="h-3.5 w-3.5" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">Comparar</TooltipContent>
-      </Tooltip>
+      <ListAction label={isFavorited ? "Remover favorito" : "Favoritar"} icon={Heart} onClick={onFavorite} className={isFavorited ? "text-destructive bg-destructive/10" : "text-muted-foreground hover:text-destructive"} pressed={isFavorited} fill={isFavorited} testId="product-favorite" />
+      <ListAction label="Comparar" icon={GitCompare} onClick={onCompare} className={isInCompare ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-primary"} disabled={!isInCompare && !canAddToCompare} pressed={isInCompare} />
 
       {/* Desktop-only actions */}
       <div className="hidden sm:flex items-center gap-0.5">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
-              onClick={(e) => onVariantAction('share', e)} aria-label="Compartilhar">
-              <Share2 className="h-3.5 w-3.5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Compartilhar</TooltipContent>
-        </Tooltip>
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
-              onClick={(e) => onVariantAction('collection', e)} aria-label="Adicionar à coleção">
-              <FolderPlus className="h-3.5 w-3.5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Coleção</TooltipContent>
-        </Tooltip>
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
-              onClick={(e) => onVariantAction('quote', e)} aria-label="Orçamento">
-              <FileText className="h-3.5 w-3.5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Orçamento</TooltipContent>
-        </Tooltip>
+        <ListAction label="Compartilhar" icon={Share2} onClick={(event) => onVariantAction('share', event)} className="text-muted-foreground hover:text-foreground" />
+        <ListAction label="Coleção" icon={FolderPlus} onClick={(event) => onVariantAction('collection', event)} className="text-muted-foreground hover:text-foreground" />
+        <ListAction label="Orçamento" icon={FileText} onClick={(event) => onVariantAction('quote', event)} className="text-muted-foreground hover:text-foreground" />
       </div>
 
       {/* Carrinho */}
@@ -101,15 +54,7 @@ export function ListItemActions({
       />
 
       {/* Quick View */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hidden sm:flex"
-            onClick={onQuickView} aria-label="Visualização rápida">
-            <Eye className="h-3.5 w-3.5" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">Quick View</TooltipContent>
-      </Tooltip>
+      <ListAction label="Quick View" icon={Eye} onClick={onQuickView} className="text-muted-foreground hover:text-foreground" mobile={false} />
     </div>
   );
 }

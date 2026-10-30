@@ -30,6 +30,7 @@ export function CartEmptyStateSmart({
   onApplyTemplate, onDuplicateLast, onNavigateProducts,
 }: CartEmptyStateSmartProps) {
   const topTemplates = templates.slice(0, 3);
+  const firstTemplate = topTemplates[0];
   const lastCartSameCompany = otherCarts
     .filter(c => c.company_id === activeCart.company_id && c.items.length > 0)
     .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())[0];
@@ -56,7 +57,7 @@ export function CartEmptyStateSmart({
             </div>
             <h4 className="font-semibold text-sm">Aplicar template</h4>
           </div>
-          {topTemplates.length > 0 ? (
+          {firstTemplate ? (
             <>
               <ul className="space-y-1 text-xs text-muted-foreground flex-1">
                 {topTemplates.map(t => (
@@ -70,9 +71,9 @@ export function CartEmptyStateSmart({
                 size="sm"
                 variant="outline"
                 className="w-full gap-1.5 text-xs"
-                onClick={() => onApplyTemplate(topTemplates[0]!.items)}
+                onClick={() => onApplyTemplate(firstTemplate.items)}
               >
-                Aplicar "{topTemplates[0]!.name}" <ArrowRight className="h-3 w-3" />
+                Aplicar "{firstTemplate.name}" <ArrowRight className="h-3 w-3" />
               </Button>
             </>
           ) : (

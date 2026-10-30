@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FolderTree, Pencil, Trash2, BarChart3, ListFilter, Plus, Loader2, Network, List as ListIcon } from "lucide-react";
-import { DialogDescription } from "@/components/ui/dialog";
+import { FolderTree, Pencil, Trash2, BarChart3, Plus, Loader2, Network, List as ListIcon } from "lucide-react";
+import { DialogDescription, Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,6 +17,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import * as XLSX from '@e965/xlsx';
 import { logAdminAction } from "@/utils/adminAudit";
 import { useAdminPermissions } from "@/hooks/admin/useAdminPermissions";
+import { getErrorMessage } from "@/components/admin/utils/errors";
+import type { Json } from "@/integrations/supabase/types";
 
 interface Category {
   id: string;
@@ -30,12 +31,44 @@ interface Category {
   created_at?: string | null;
 }
 
+function categoryAuditState(category: Category): Json {
+  return {
+    id: category.id,
+    name: category.name,
+    slug: category.slug,
+    description: category.description,
+    parent_id: category.parent_id,
+    sort_order: category.sort_order,
+    is_active: category.is_active,
+    created_at: category.created_at,
+  };
+}
+
+function importValue(item: Record<string, unknown>, keys: string[], fallback = ''): unknown {
+  for (const key of keys) {
+    const value = item[key];
+    if (value !== null && value !== undefined) return value;
+  }
+  return fallback;
+}
+
+function mapImportedCategory(item: Record<string, unknown>) {
+  const name = String(importValue(item, ['Nome', 'name']));
+  return {
+    name,
+    slug: String(importValue(item, ['Slug', 'slug'], name)).toLowerCase().replace(/\s+/g, '-'),
+    description: String(importValue(item, ['Descrição', 'description'])),
+    sort_order: Number.parseInt(String(importValue(item, ['Ordem', 'sort_order'], '0')), 10),
+    is_active: true,
+  };
+}
+
 export function CategoriesManager() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const { canEdit, canDelete, canImport, canExport } = useAdminPermissions();
+  const { canEdit, canDelete } = useAdminPermissions();
 
   const fetchCategories = async () => {
     setIsLoading(true);
@@ -73,8 +106,8 @@ export function CategoriesManager() {
           event_type: 'UPDATE',
           entity_type: 'product_categories',
           entity_id: editingCategory.id,
-          payload: formData,
-          previous_state: editingCategory
+          payload: categoryFormAuditState(formData),
+          previous_state: categoryAuditState(editingCategory)
         });
 
         toast.success("Categoria atualizada com sucesso");
@@ -90,7 +123,7 @@ export function CategoriesManager() {
           event_type: 'CREATE',
           entity_type: 'product_categories',
           entity_id: data.id,
-          payload: formData
+          payload: categoryFormAuditState(formData)
         });
 
         toast.success("Categoria criada com sucesso");
@@ -98,9 +131,9 @@ export function CategoriesManager() {
       setIsFormOpen(false);
       setEditingCategory(null);
       fetchCategories();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error saving category:", error);
-      toast.error(error.message || "Erro ao salvar categoria");
+      toast.error(getErrorMessage(error, "Erro ao salvar categoria"));
     } finally {
       setIsLoading(false);
     }
@@ -130,14 +163,8 @@ export function CategoriesManager() {
     }
   };
 
-  const handleImport = async (data: any[]) => {
-    const records = data.map(item => ({
-      name: item.Nome || item.name,
-      slug: item.Slug || item.slug || (item.Nome || item.name)?.toLowerCase().replace(/\s+/g, '-'),
-      description: item.Descrição || item.description || '',
-      sort_order: parseInt(item.Ordem || item.sort_order || '0'),
-      is_active: true
-    }));
+  const handleImport = async (data: Array<Record<string, unknown>>) => {
+    const records = data.map(mapImportedCategory);
 
     const { error } = await supabase.from('product_categories').upsert(records, { onConflict: 'slug' });
     if (error) throw error;
@@ -325,6 +352,16 @@ interface CategoryFormData {
   sort_order: number;
 }
 
+function categoryFormAuditState(formData: CategoryFormData): Json {
+  return {
+    name: formData.name,
+    slug: formData.slug,
+    description: formData.description,
+    parent_id: formData.parent_id,
+    sort_order: formData.sort_order,
+  };
+}
+
 interface CategoryFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -394,7 +431,7 @@ function CategoryFormDialog({ open, onOpenChange, category, onSave, categories, 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent onOpenAutoFocus={(e) => {
+      <DialogContent onOpenAutoFocus={() => {
         // Prevent default to control focus manually if needed, 
         // but Radix usually handles initial focus on first focusable element (Name input).
       }}>
@@ -444,8 +481,8 @@ function CategoryFormDialog({ open, onOpenChange, category, onSave, categories, 
               <SelectContent>
                 <SelectItem value="none">Nenhuma</SelectItem>
                 {categories
-                  ?.filter((c: any) => c.id !== category?.id)
-                  .map((c: any) => (
+                  ?.filter((c) => c.id !== category?.id)
+                  .map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.name}
                     </SelectItem>

@@ -19,6 +19,15 @@ interface Input {
   description?: string | null;
 }
 
+function parseSuggestion(data: unknown): IdentitySuggestion {
+  const response = data as { error?: string; suggestion?: IdentitySuggestion } | null;
+  if (response?.error) throw new Error(response.error);
+  const suggestion = response?.suggestion;
+  const complete = suggestion?.tag && suggestion.color && suggestion.icon;
+  if (!complete) throw new Error('Sugestão incompleta');
+  return suggestion;
+}
+
 export function useKitIdentitySuggestion() {
   const [isLoading, setIsLoading] = useState(false);
   const [suggestion, setSuggestion] = useState<IdentitySuggestion | null>(null);
@@ -32,9 +41,7 @@ export function useKitIdentitySuggestion() {
         body: input,
       });
       if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      const s = data?.suggestion as IdentitySuggestion | undefined;
-      if (!s?.tag || !s?.color || !s?.icon) throw new Error('Sugestão incompleta');
+      const s = parseSuggestion(data);
       setSuggestion(s);
       return s;
     } catch (e) {

@@ -18,7 +18,7 @@
  *      `SMOKE_COVERAGE` estiver vazio (sanity).
  *
  * Limitações conscientes:
- *   - Não tokeniza comentários multi-line `/* ... *​/` que envolvam um
+ *   - Não tokeniza comentários multi-line que envolvam um
  *     `test(...)` — risco aceitável (smoke spec não usa esse padrão).
  *   - Strings template com `{` dentro são tratadas como código; o spec
  *     do smoke não tem isso.
@@ -125,7 +125,9 @@ for (let i = 0; i < lines.length; i++) {
 
 /* ── Sanity: SMOKE_COVERAGE não vazio ─────────────────────── */
 const covMatch = src.match(/const\s+SMOKE_COVERAGE\s*=\s*\[([\s\S]*?)\]\s*as const/);
-const covCount = covMatch ? [...covMatch[1].matchAll(/"[^"]+"/g)].length : 0;
+const covCount = covMatch
+  ? [...covMatch[1].matchAll(/(?:"[^"]+"|'[^']+'|`[^`]+`)/g)].length
+  : 0;
 
 /* ── Relatório ────────────────────────────────────────────── */
 console.log(`${C.bold}═══ check-smoke-tags ═══${C.reset}`);

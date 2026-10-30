@@ -22,7 +22,8 @@ interface SortableStepProps {
 export function SortableStep({ step, index, totalSteps, onEdit, onDelete, onDuplicate }: SortableStepProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: step.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
-  const typeConfig = STEP_TYPES.find((t) => t.value === step.type) || STEP_TYPES[0]!;
+  const typeConfig = STEP_TYPES.find((type) => type.value === step.type) ?? STEP_TYPES[0];
+  if (!typeConfig) return null;
   const Icon = typeConfig.icon;
 
   return (

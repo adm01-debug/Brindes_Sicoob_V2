@@ -5,21 +5,96 @@
  * `page.route()` e utilitários de a11y/mobile que padronizam os 8 casos por
  * rota: render, happy, auth-fail, payload-invalido, timeout, 5xx, a11y, mobile.
  */
-import type { Page, Route } from "@playwright/test";
-import { expect } from "@playwright/test";
+import type { Page, Request, Route } from '@playwright/test';
+import { expect } from '@playwright/test';
 
 const SUPABASE_HOST_RE = /supabase\.(co|in)/;
 const FN_RE = /\/functions\/v1\//;
-const REST_RE = /\/rest\/v1\//;
 const AUTH_RE = /\/auth\/v1\//;
+
+type BootstrapRole = 'dev' | 'admin' | 'gestor_compras' | 'vendedor';
+
+function decodeRequestEmail(request: Request): string {
+  const authorization = request.headers().authorization ?? '';
+  const token = authorization.replace(/^Bearer\s+/i, '');
+  const payload = token.split('.')[1];
+  if (!payload) return '';
+
+  try {
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const decoded = Buffer.from(normalized, 'base64').toString('utf8');
+    const email = (JSON.parse(decoded) as { email?: unknown }).email;
+    return typeof email === 'string' ? email.toLowerCase() : '';
+  } catch {
+    return '';
+  }
+}
+
+function bootstrapRoleFor(request: Request): BootstrapRole {
+  const email = decodeRequestEmail(request);
+  if (email && email === process.env.E2E_DEV_EMAIL?.toLowerCase()) return 'dev';
+  if (email && email === process.env.E2E_ADMIN_EMAIL?.toLowerCase()) return 'admin';
+  if (email && email === process.env.E2E_MANAGER_EMAIL?.toLowerCase()) return 'gestor_compras';
+  return 'vendedor';
+}
+
+/**
+ * Isola as suítes estruturais por rota das consultas de bootstrap da sessão.
+ * Autenticação, RLS e revogação continuam cobertas pelos gates remotos e pelas
+ * jornadas dedicadas. Repetir essas consultas ao vivo em centenas de casos de
+ * layout saturava o endpoint e deixava o guard preso em permissões.
+ */
+export async function mockAuthenticatedBootstrap(page: Page) {
+  await page.route(/\/rest\/v1\/rpc\/get_sicoob_access_state(?:\?|$)/, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([{ active: true, reason: 'active' }]),
+    }),
+  );
+
+  await page.route(/\/rest\/v1\/user_roles(?:\?|$)/, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([{ role: bootstrapRoleFor(route.request()) }]),
+    }),
+  );
+
+  await page.route(/\/rest\/v1\/profiles(?:\?|$)/, (route) => {
+    if (route.request().method() !== 'GET') {
+      return route.fulfill({ status: 204, body: '' });
+    }
+    const profile = {
+      id: 'e2e-profile',
+      user_id: 'e2e-user',
+      full_name: 'Usuário E2E',
+      email: 'e2e@example.test',
+      role: bootstrapRoleFor(route.request()),
+    };
+    const expectsObject = route
+      .request()
+      .headers()
+      .accept?.includes('application/vnd.pgrst.object+json');
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(expectsObject ? profile : [profile]),
+    });
+  });
+}
 
 /* ============================================================
  * Mocks de falha
  * ============================================================ */
 
 export async function mock5xxOnAllEdgeFns(page: Page) {
-  await page.route(FN_RE, route =>
-    route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: "service_unavailable" }) }),
+  await page.route(FN_RE, (route) =>
+    route.fulfill({
+      status: 503,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'service_unavailable' }),
+    }),
   );
 }
 
@@ -30,9 +105,9 @@ export async function mockEdgeFn(
   body: unknown,
   opts: { delayMs?: number } = {},
 ) {
-  await page.route(new RegExp(`/functions/v1/${fnName}(\\?|$|/)`), async route => {
-    if (opts.delayMs) await new Promise(r => setTimeout(r, opts.delayMs));
-    await route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
+  await page.route(new RegExp(`/functions/v1/${fnName}(\\?|$|/)`), async (route) => {
+    if (opts.delayMs) await new Promise((r) => setTimeout(r, opts.delayMs));
+    await route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
   });
 }
 
@@ -43,13 +118,14 @@ export async function mockRestTable(
   body: unknown,
   opts: { delayMs?: number } = {},
 ) {
-  await page.route(new RegExp(`/rest/v1/${table}(\\?|$)`), async route => {
-    if (opts.delayMs) await new Promise(r => setTimeout(r, opts.delayMs));
-    await route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
+  await page.route(new RegExp(`/rest/v1/${table}(\\?|$)`), async (route) => {
+    if (opts.delayMs) await new Promise((r) => setTimeout(r, opts.delayMs));
+    await route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
   });
 }
 
-export type PublicResourceScenario = "success" | "notFound" | "expired" | "invalidPayload" | "timeout" | "serviceUnavailable";
+export type PublicResourceScenario =
+  'success' | 'notFound' | 'expired' | 'invalidPayload' | 'timeout' | 'serviceUnavailable';
 
 export async function mockPublicRestResource(
   page: Page,
@@ -58,53 +134,72 @@ export async function mockPublicRestResource(
   successBody: unknown,
   expiredBody: unknown,
 ) {
-  const result: { status: number; body: unknown; delayMs?: number } = scenario === "success"
-    ? { status: 200, body: successBody }
-    : scenario === "expired"
-      ? { status: 200, body: expiredBody }
-      : scenario === "notFound"
-        ? { status: 404, body: { message: "Recurso não encontrado" } }
-        : scenario === "invalidPayload"
-          ? { status: 400, body: { message: "Requisição inválida" } }
-          : scenario === "timeout"
-            ? { status: 504, body: {}, delayMs: 6000 }
-            : { status: 503, body: { message: "Serviço indisponível" } };
+  const result: { status: number; body: unknown; delayMs?: number } =
+    scenario === 'success'
+      ? { status: 200, body: successBody }
+      : scenario === 'expired'
+        ? { status: 200, body: expiredBody }
+        : scenario === 'notFound'
+          ? // `.maybeSingle()` representa ausência como resposta 200 sem linha.
+            // Um 404 artificial transforma "não encontrado" em indisponibilidade.
+            { status: 200, body: null }
+          : scenario === 'invalidPayload'
+            ? { status: 400, body: { message: 'Requisição inválida' } }
+            : scenario === 'timeout'
+              ? { status: 504, body: {}, delayMs: 6000 }
+              : { status: 503, body: { message: 'Serviço indisponível' } };
   return mockRestTable(page, table, result.status, result.body, { delayMs: result.delayMs });
 }
 
 export async function mockTimeoutOnFn(page: Page, fnName: string, hangMs = 30_000) {
-  await page.route(new RegExp(`/functions/v1/${fnName}(\\?|$|/)`), async route => {
-    await new Promise(r => setTimeout(r, hangMs));
-    await route.abort("timedout").catch(() => {});
+  await page.route(new RegExp(`/functions/v1/${fnName}(\\?|$|/)`), async (route) => {
+    await new Promise((r) => setTimeout(r, hangMs));
+    await route.abort('timedout').catch(() => {});
   });
 }
 
 export async function mockRestTable5xx(page: Page, table: string) {
-  await page.route(new RegExp(`/rest/v1/${table}(\\?|$)`), route =>
-    route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ message: "service unavailable" }) }),
+  await page.route(new RegExp(`/rest/v1/${table}(\\?|$)`), (route) =>
+    route.fulfill({
+      status: 503,
+      contentType: 'application/json',
+      body: JSON.stringify({ message: 'service unavailable' }),
+    }),
   );
 }
 
 export async function mockRestTable401(page: Page, table: string) {
-  await page.route(new RegExp(`/rest/v1/${table}(\\?|$)`), route =>
-    route.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ message: "JWT expired", code: "PGRST301" }) }),
+  await page.route(new RegExp(`/rest/v1/${table}(\\?|$)`), (route) =>
+    route.fulfill({
+      status: 401,
+      contentType: 'application/json',
+      body: JSON.stringify({ message: 'JWT expired', code: 'PGRST301' }),
+    }),
   );
 }
 
 export async function mockRestTablePayloadInvalid(page: Page, table: string) {
-  await page.route(new RegExp(`/rest/v1/${table}(\\?|$)`), async route => {
-    if (route.request().method() === "GET") return route.continue();
+  await page.route(new RegExp(`/rest/v1/${table}(\\?|$)`), async (route) => {
+    if (route.request().method() === 'GET') return route.continue();
     await route.fulfill({
       status: 400,
-      contentType: "application/json",
-      body: JSON.stringify({ message: "invalid input syntax", code: "22P02", details: "payload validation failed" }),
+      contentType: 'application/json',
+      body: JSON.stringify({
+        message: 'invalid input syntax',
+        code: '22P02',
+        details: 'payload validation failed',
+      }),
     });
   });
 }
 
 export async function mockSessionExpired(page: Page) {
-  await page.route(AUTH_RE, route =>
-    route.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ error: "invalid_grant", error_description: "JWT expired" }) }),
+  await page.route(AUTH_RE, (route) =>
+    route.fulfill({
+      status: 401,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'invalid_grant', error_description: 'JWT expired' }),
+    }),
   );
 }
 
@@ -114,17 +209,23 @@ export async function mockSessionExpired(page: Page) {
 
 export function spySupabaseRequests(page: Page) {
   const calls: Array<{ url: string; method: string; status?: number }> = [];
-  page.on("request", req => {
+  page.on('request', (req) => {
     if (SUPABASE_HOST_RE.test(req.url())) calls.push({ url: req.url(), method: req.method() });
   });
-  page.on("response", res => {
-    const i = calls.findIndex(c => c.url === res.url() && c.status === undefined);
-    if (i >= 0) calls[i].status = res.status();
+  page.on('response', (res) => {
+    const i = calls.findIndex((c) => c.url === res.url() && c.status === undefined);
+    if (i >= 0) calls[i]!.status = res.status();
   });
   return {
-    get all() { return calls; },
-    writes() { return calls.filter(c => ["POST", "PATCH", "PUT", "DELETE"].includes(c.method)); },
-    reset() { calls.length = 0; },
+    get all() {
+      return calls;
+    },
+    writes() {
+      return calls.filter((c) => ['POST', 'PATCH', 'PUT', 'DELETE'].includes(c.method));
+    },
+    reset() {
+      calls.length = 0;
+    },
   };
 }
 
@@ -134,40 +235,72 @@ export function spySupabaseRequests(page: Page) {
 
 export async function basicA11yChecks(page: Page) {
   // 1. Exatamente 1 <h1> visível (ou 0 — não falha; só checa não duplicar)
-  const h1Count = await page.locator("h1:visible").count();
-  expect(h1Count, "deve haver no máximo 1 <h1> visível por rota").toBeLessThanOrEqual(1);
+  const h1Count = await page.locator('h1:visible').count();
+  expect(h1Count, 'deve haver no máximo 1 <h1> visível por rota').toBeLessThanOrEqual(1);
 
   // 2. Inputs visíveis devem ter label, aria-label ou aria-labelledby
   const orphanInputs = await page.evaluate(() => {
-    const inputs = Array.from(document.querySelectorAll("input:not([type=hidden]), select, textarea"));
+    const inputs = Array.from(
+      document.querySelectorAll('input:not([type=hidden]), select, textarea'),
+    );
     return inputs
-      .filter(el => {
+      .filter((el) => {
+        if (el.getAttribute('aria-hidden') === 'true') return false;
         const visible = (el as HTMLElement).offsetParent !== null;
         if (!visible) return false;
-        const id = el.getAttribute("id");
+        const id = el.getAttribute('id');
         const hasLabelFor = id ? !!document.querySelector(`label[for="${id}"]`) : false;
-        const hasAria = el.hasAttribute("aria-label") || el.hasAttribute("aria-labelledby");
-        const wrappedInLabel = el.closest("label") !== null;
+        const labelledBy = el.getAttribute('aria-labelledby')?.trim();
+        const hasAriaLabelledBy = labelledBy?.split(/\s+/).some((labelId) => {
+          const label = document.getElementById(labelId);
+          return !!(label?.textContent?.trim() || label?.getAttribute('aria-label')?.trim());
+        });
+        const hasAria = !!el.getAttribute('aria-label')?.trim() || !!hasAriaLabelledBy;
+        const wrappedInLabel = el.closest('label') !== null;
         return !hasLabelFor && !hasAria && !wrappedInLabel;
       })
-      .map(el => (el as HTMLElement).outerHTML.slice(0, 120));
+      .map((el) => (el as HTMLElement).outerHTML.slice(0, 120));
   });
-  expect(orphanInputs, "inputs sem label acessível: " + JSON.stringify(orphanInputs)).toHaveLength(0);
+  expect(orphanInputs, 'inputs sem label acessível: ' + JSON.stringify(orphanInputs)).toHaveLength(
+    0,
+  );
 
-  // 3. Botões devem ter texto ou aria-label
+  // 3. Botões devem ter nome acessível (texto, ARIA, title ou label associado)
   const orphanButtons = await page.evaluate(() => {
-    const btns = Array.from(document.querySelectorAll("button:not([disabled])"));
+    const btns = Array.from(document.querySelectorAll('button:not([disabled])'));
     return btns
-      .filter(b => {
+      .filter((b) => {
         const visible = (b as HTMLElement).offsetParent !== null;
         if (!visible) return false;
-        const text = (b.textContent ?? "").trim();
-        const aria = b.getAttribute("aria-label");
-        return !text && !aria;
+        const text = (b.textContent ?? '').trim();
+        const ariaLabel = b.getAttribute('aria-label')?.trim();
+        const title = b.getAttribute('title')?.trim();
+        const labelledBy = b.getAttribute('aria-labelledby')?.trim();
+        const hasAriaLabelledBy = labelledBy?.split(/\s+/).some((labelId) => {
+          const label = document.getElementById(labelId);
+          return !!(label?.textContent?.trim() || label?.getAttribute('aria-label')?.trim());
+        });
+        const id = b.getAttribute('id');
+        const hasLabelFor = id ? !!document.querySelector(`label[for="${id}"]`) : false;
+        const wrappedLabel = b.closest('label');
+        const hasWrappedLabel = !!(
+          wrappedLabel?.textContent?.trim() || wrappedLabel?.getAttribute('aria-label')?.trim()
+        );
+        return (
+          !text &&
+          !ariaLabel &&
+          !title &&
+          !hasAriaLabelledBy &&
+          !hasLabelFor &&
+          !hasWrappedLabel
+        );
       })
-      .length;
+      .map((button) => button.outerHTML.slice(0, 240));
   });
-  expect(orphanButtons, "botões sem texto/aria-label").toBe(0);
+  expect(
+    orphanButtons,
+    'botões sem nome acessível: ' + JSON.stringify(orphanButtons),
+  ).toHaveLength(0);
 }
 
 /* ============================================================
@@ -192,7 +325,7 @@ export async function setMobileViewport(page: Page) {
  * SSOT em código novo.
  * ============================================================ */
 
-import { waitForRouteIdle as _waitForRouteIdle } from "../helpers/nav";
+import { waitForRouteIdle as _waitForRouteIdle } from '../helpers/nav';
 
 export async function waitRouteReady(page: Page, opts: { timeout?: number } = {}) {
   await _waitForRouteIdle(page, opts);

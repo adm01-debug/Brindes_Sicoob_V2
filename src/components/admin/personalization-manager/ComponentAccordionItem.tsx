@@ -47,6 +47,8 @@ interface ComponentAccordionItemProps {
   deleteTechnique: (id: string) => void;
 }
 
+const availableTechniques = (techniques: Technique[] | undefined): Technique[] => techniques ?? [];
+
 export function ComponentAccordionItem({
   component, selectedProduct, locations, techniques, locationTechniques,
   isAddLocationOpen, setIsAddLocationOpen, selectedComponentId, setSelectedComponentId,
@@ -126,7 +128,7 @@ export function ComponentAccordionItem({
               <div className="space-y-3 pl-6">
                 {compLocations.map((location) => (
                   <div key={location.id} className="border rounded-lg p-3 bg-muted/30">
-                    <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-3">
+                    {(<div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-3">
                       <div><Label className="text-xs text-muted-foreground">Código</Label><InlineEditField value={location.location_code} onSave={(v) => updateLocation({ id: location.id, location_code: v.toUpperCase() })} className="font-mono text-xs" /></div>
                       <div><Label className="text-xs text-muted-foreground">Nome</Label><InlineEditField value={location.location_name} onSave={(v) => updateLocation({ id: location.id, location_name: v })} /></div>
                       <div><Label className="text-xs text-muted-foreground">Larg. (cm)</Label><InlineEditField value={location.max_width_cm?.toString() || ""} onSave={(v) => updateLocation({ id: location.id, max_width_cm: v ? parseFloat(v) : null })} type="number" placeholder="—" /></div>
@@ -137,10 +139,10 @@ export function ComponentAccordionItem({
                         <ImageUploadButton currentImageUrl={location.area_image_url} onUpload={(url) => updateLocation({ id: location.id, area_image_url: url })} onRemove={() => updateLocation({ id: location.id, area_image_url: null })} folder={`products/${selectedProduct}`} />
                         <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive h-7 w-7 p-0" onClick={() => deleteLocation(location.id)}><Trash2 className="h-3 w-3" /></Button>
                       </div>
-                    </div>
+                    </div>)}
 
                     {/* Techniques */}
-                    <div className="border-t pt-2 mt-2">
+                    {(<div className="border-t pt-2 mt-2">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs text-muted-foreground">Técnicas permitidas:</span>
                         <Dialog open={isAddTechniqueOpen && selectedLocationId === location.id} onOpenChange={(open) => { setIsAddTechniqueOpen(open); if (open) setSelectedLocationId(location.id); }}>
@@ -151,7 +153,7 @@ export function ComponentAccordionItem({
                               <div><Label>Técnica</Label>
                                 <Select value={newTechniqueId} onValueChange={setNewTechniqueId}>
                                   <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                                  <SelectContent>{techniques?.map((t) => <SelectItem key={t.id} value={t.id}>{t.name} ({t.code})</SelectItem>)}</SelectContent>
+                                  <SelectContent>{availableTechniques(techniques).map((t) => <SelectItem key={t.id} value={t.id}>{t.name} ({t.code})</SelectItem>)}</SelectContent>
                                 </Select>
                               </div>
                               <div><Label>Máximo de Cores</Label><Input type="number" placeholder="Ex: 4" value={newMaxColors} onChange={(e) => setNewMaxColors(e.target.value)} /><p className="text-xs text-muted-foreground mt-1">Deixe em branco para sem limite</p></div>
@@ -179,7 +181,7 @@ export function ComponentAccordionItem({
                         ))}
                         {getLocationTechniques(location.id).length === 0 && <span className="text-xs text-muted-foreground">Nenhuma técnica associada</span>}
                       </div>
-                    </div>
+                    </div>)}
                   </div>
                 ))}
               </div>

@@ -20,6 +20,20 @@ interface LayoutPopoverProps {
   setGridColumns: (cols: ColumnCount) => void;
 }
 
+function ViewModeSelector({ viewMode, setViewMode }: Pick<LayoutPopoverProps, 'viewMode' | 'setViewMode'>) {
+  return (
+    <div>
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">Visualização</p>
+      <div className="relative flex items-center gap-0.5 p-1 rounded-xl bg-muted/60 border border-border/40">
+        {viewModes.map((mode) => {
+          const ModeIcon = mode.icon; const active = viewMode === mode.value;
+          return <button key={mode.value} className={cn("relative flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg text-xs font-medium transition-colors duration-150 z-10", active ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground")} onClick={() => setViewMode(mode.value)}>{active && <motion.div layoutId="viewmode-pill" className="absolute inset-0 rounded-lg bg-primary shadow-sm" transition={{ type: "spring", stiffness: 500, damping: 35 }} />}<span className="relative z-10 flex items-center gap-1.5"><ModeIcon className="h-3.5 w-3.5" />{mode.label}</span></button>;
+        })}
+      </div>
+    </div>
+  );
+}
+
 export const LayoutPopover = React.forwardRef<HTMLDivElement, LayoutPopoverProps>(
   function LayoutPopover({ viewMode, setViewMode, gridColumns, setGridColumns }, ref) {
     return (
@@ -33,42 +47,7 @@ export const LayoutPopover = React.forwardRef<HTMLDivElement, LayoutPopoverProps
           </PopoverTrigger>
           <PopoverContent align="end" className="w-60 p-4" sideOffset={8}>
             <div className="space-y-4">
-              {/* View Mode */}
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">
-                  Visualização
-                </p>
-                <div className="relative flex items-center gap-0.5 p-1 rounded-xl bg-muted/60 border border-border/40">
-                  {viewModes.map((mode) => {
-                    const Icon = mode.icon;
-                    const isActive = viewMode === mode.value;
-                    return (
-                      <button
-                        key={mode.value}
-                        className={cn(
-                          "relative flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg text-xs font-medium transition-colors duration-150 z-10",
-                          isActive
-                            ? "text-primary-foreground"
-                            : "text-muted-foreground hover:text-foreground"
-                        )}
-                        onClick={() => setViewMode(mode.value)}
-                      >
-                        {isActive && (
-                          <motion.div
-                            layoutId="viewmode-pill"
-                            className="absolute inset-0 rounded-lg bg-primary shadow-sm"
-                            transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                          />
-                        )}
-                        <span className="relative z-10 flex items-center gap-1.5">
-                          <Icon className="h-3.5 w-3.5" />
-                          {mode.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              <ViewModeSelector viewMode={viewMode} setViewMode={setViewMode} />
 
               {/* Column Selector - only in grid mode */}
               {viewMode === "grid" && (

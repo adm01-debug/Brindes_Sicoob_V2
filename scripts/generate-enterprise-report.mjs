@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js';
-import { execSync } from 'child_process';
 import fs from 'fs';
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
@@ -11,12 +10,6 @@ if (!supabaseUrl || !supabaseKey) {
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
-
-async function runQuery(query) {
-    const { data, error } = await supabase.rpc('run_sql_query', { sql: query });
-    if (error) return { count: 0, error: error.message };
-    return { data, count: Array.isArray(data) ? data.length : 0 };
-}
 
 async function getStats() {
     // Count objects in DB to justify evidence section

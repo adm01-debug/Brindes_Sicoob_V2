@@ -2,7 +2,7 @@ import { renderHook, waitFor, act } from '@testing-library/react';
 import { useAllowedIPs } from '@/hooks/useAllowedIPs';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach, type Mock } from 'vitest';
 
 // Mock Supabase
 vi.mock('@/integrations/supabase/client', () => ({
@@ -17,7 +17,7 @@ vi.mock('@/contexts/AuthContext', () => ({
 }));
 
 // Mock fetch for current IP
-global.fetch = vi.fn();
+globalThis.fetch = vi.fn();
 
 describe('useAllowedIPs', () => {
   const mockUser = { id: 'user-123' };
@@ -25,10 +25,10 @@ describe('useAllowedIPs', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useAuth as any).mockReturnValue({ user: mockUser });
-    (global.fetch as any).mockResolvedValue({
+    (useAuth as unknown as Mock).mockReturnValue({ user: mockUser });
+    (globalThis.fetch as Mock).mockResolvedValue({
       json: () => Promise.resolve({ ip: mockIP }),
-    });
+    } as Response);
   });
 
   it('should fetch allowed IPs on mount', async () => {
@@ -44,7 +44,7 @@ describe('useAllowedIPs', () => {
       }),
     });
 
-    (supabase.from as any).mockImplementation(mockFrom);
+    (supabase.from as unknown as Mock).mockImplementation(mockFrom);
 
     const { result } = renderHook(() => useAllowedIPs());
 
@@ -68,7 +68,7 @@ describe('useAllowedIPs', () => {
       }),
     });
 
-    (supabase.from as any).mockImplementation(mockFrom);
+    (supabase.from as unknown as Mock).mockImplementation(mockFrom);
 
     const { result } = renderHook(() => useAllowedIPs());
 
@@ -79,7 +79,7 @@ describe('useAllowedIPs', () => {
       addResult = await result.current.addIP(newIP, 'Home');
     });
 
-    expect(addResult!.success).toBe(true);
+    expect(addResult).toMatchObject({ success: true });
     expect(mockInsert).toHaveBeenCalledWith({
       created_by: mockUser.id,
       ip_address: newIP,
@@ -102,7 +102,7 @@ describe('useAllowedIPs', () => {
       }),
     });
 
-    (supabase.from as any).mockImplementation(mockFrom);
+    (supabase.from as unknown as Mock).mockImplementation(mockFrom);
 
     const { result } = renderHook(() => useAllowedIPs());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -112,7 +112,7 @@ describe('useAllowedIPs', () => {
       removeResult = await result.current.removeIP(ipId);
     });
 
-    expect(removeResult!.success).toBe(true);
+    expect(removeResult).toMatchObject({ success: true });
     expect(mockDelete).toHaveBeenCalled();
   });
 
@@ -122,7 +122,7 @@ describe('useAllowedIPs', () => {
       { id: '2', user_id: 'user-123', ip_address: '2.2.2.2', is_active: false },
     ];
 
-    (supabase.from as any).mockReturnValue({
+    (supabase.from as unknown as Mock).mockReturnValue({
       select: vi.fn().mockReturnValue({
         or: vi.fn().mockReturnValue({
           order: vi.fn().mockResolvedValue({ data: mockData, error: null }),

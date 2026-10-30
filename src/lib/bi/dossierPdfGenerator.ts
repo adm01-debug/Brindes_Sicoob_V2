@@ -12,6 +12,7 @@ import type { IndustryTrendsResult } from "@/hooks/bi/useIndustryTrends";
 import type { SeasonalityResult } from "@/hooks/bi/useClientSeasonality";
 import type { IndustryRecommendation } from "@/lib/bi/industryRecommendations";
 import type { CategorySection } from "@/lib/bi/executive-summary";
+import { getAutoTableFinalY } from "@/lib/pdf/auto-table";
 
 export interface DossierClient {
   name: string;
@@ -90,15 +91,141 @@ function addSectionTitle(doc: jsPDF, title: string, y: number): number {
   return y + 8;
 }
 
-export function generateBIDossierPDF(data: DossierData): Blob {
-  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-  const W = doc.internal.pageSize.getWidth();
-  const generatedAt = new Date().toLocaleString("pt-BR");
+function addCategoryPage(doc: jsPDF, width: number, category: CategorySection | undefined): void {
+  if (!category?.hasData) return;
+  doc.addPage();
+  let y = addSectionTitle(doc, "Mapa de Categorias", 22);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(...MUTED);
+  doc.text(
+    category.isMock
+      ? "Comparativo cliente × setor por categoria (dados parciais — amostra simulada)."
+      : "Comparativo cliente × setor por categoria de produto (últimos 90 dias).",
+    14,
+    y,
+  );
+  y += 5;
+  if (category.rows.length > 0) {
+    autoTable(doc, {
+      startY: y,
+      head: [["Categoria", "Cliente %", "Setor %", "Tendência (90d)"]],
+      body: category.rows.map(row => {
+        const arrow = row.trend === "up" ? "↑" : row.trend === "down" ? "↓" : row.trend === "stable" ? "→" : "—";
+        const delta = row.deltaPct === null || row.deltaPct === undefined
+          ? "—"
+          : `${row.deltaPct > 0 ? "+" : ""}${Math.round(row.deltaPct)}%`;
+        return [row.label, `${row.clientSharePct.toFixed(1)}%`, `${row.industrySharePct.toFixed(1)}%`, `${arrow} ${delta}`];
+      }),
+      theme: "grid",
+      headStyles: { fillColor: PRIMARY, textColor: 255, fontSize: 9 },
+      bodyStyles: { fontSize: 9 },
+      margin: { left: 14, right: 14 },
+      columnStyles: { 1: { halign: "right", cellWidth: 28 }, 2: { halign: "right", cellWidth: 28 }, 3: { halign: "center", cellWidth: 38, fontStyle: "bold" } },
+    });
+    y = getAutoTableFinalY(doc, y) + 8;
+  }
+  if (category.gaps.length > 0) {
+    const boxHeight = 14 + category.gaps.length * 6;
+    doc.setFillColor(254, 243, 226);
+    doc.roundedRect(14, y, width - 28, boxHeight, 2, 2, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(180, 83, 9);
+    doc.text("OPORTUNIDADES GAP — categorias fortes no setor que o cliente não compra", 18, y + 6);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(...TEXT);
+    category.gaps.forEach((gap, index) => doc.text(`•  ${gap.label} — ${gap.reason}`, 18, y + 13 + index * 6));
+    y += boxHeight + 6;
+  }
+  doc.setFillColor(245, 243, 255);
+  doc.roundedRect(14, y, width - 28, 22, 2, 2, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...PRIMARY);
+  doc.text("INSIGHT DE CATEGORIA", 18, y + 6);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(...TEXT);
+  doc.text(doc.splitTextToSize(category.insight, width - 36), 18, y + 12);
+}
 
-  // ============ CAPA ============
+function seasonalityDescription(seasonality: SeasonalityResult): string {
+  const suffix = seasonality.monthsCovered === 1 ? "" : "es";
+  return seasonality.isMock
+    ? `Padrão simulado (histórico real insuficiente — ${seasonality.monthsCovered} mês${suffix} cobertos).`
+    : `Janela de ${seasonality.windowMonths} meses · ${seasonality.monthsCovered} mês${suffix} com dados.`;
+}
+
+function addSeasonalityPage(doc: jsPDF, width: number, seasonality: SeasonalityResult | undefined): void {
+  if (!seasonality) return;
+  doc.addPage();
+  let y = addSectionTitle(doc, "Sazonalidade Cliente × Setor", 22);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(...MUTED);
+  doc.text(seasonalityDescription(seasonality), 14, y);
+  y += 5;
+  autoTable(doc, {
+    startY: y,
+    head: [["Mês", "Cliente (pedidos)", "Cliente (% ano)", "Setor (méd/empresa)", "Setor (% ano)"]],
+    body: seasonality.client.map((client, index) => {
+      const industry = seasonality.industry[index];
+      return [
+        client.monthLabel,
+        client.quotesCount > 0 ? String(client.quotesCount) : "—",
+        client.sharePercent > 0 ? `${client.sharePercent.toFixed(1)}%` : "—",
+        industry && industry.avgQuotesPerCompany > 0 ? industry.avgQuotesPerCompany.toFixed(1) : "—",
+        industry && industry.sharePercent > 0 ? `${industry.sharePercent.toFixed(1)}%` : "—",
+      ];
+    }),
+    theme: "grid",
+    headStyles: { fillColor: PRIMARY, textColor: 255, fontSize: 8.5 },
+    bodyStyles: { fontSize: 8 },
+    margin: { left: 14, right: 14 },
+    columnStyles: { 0: { fontStyle: "bold" }, 1: { halign: "center" }, 2: { halign: "right" }, 3: { halign: "center" }, 4: { halign: "right" } },
+  });
+  y = getAutoTableFinalY(doc, y) + 6;
+  if (seasonality.topClientMonths.length > 0) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(...TEXT);
+    doc.text("Top 3 meses do cliente:", 14, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...MUTED);
+    doc.text(seasonality.topClientMonths.map(item => `${item.monthLabel} (${item.quotesCount})`).join("  ·  "), 55, y);
+    y += 5;
+  }
+  if (seasonality.nextPeakMonth) {
+    const month = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"][seasonality.nextPeakMonth - 1];
+    const timing = seasonality.daysToNextPeak === 0 ? " (estamos no mês de pico)" : ` em ${seasonality.daysToNextPeak} dia(s)`;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(...TEXT);
+    doc.text("Próximo pico:", 14, y);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...MUTED);
+    doc.text(`${month}${timing}`, 40, y);
+    y += 6;
+  }
+  if (seasonality.insight) {
+    doc.setFillColor(245, 243, 255);
+    doc.roundedRect(14, y, width - 28, 22, 2, 2, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.setTextColor(...PRIMARY);
+    doc.text("INSIGHT DE TIMING", 18, y + 6);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(...TEXT);
+    doc.text(doc.splitTextToSize(seasonality.insight, width - 36), 18, y + 12);
+  }
+}
+
+function addCover(doc: jsPDF, width: number, data: DossierData, generatedAt: string): void {
   doc.setFillColor(...PRIMARY);
-  doc.rect(0, 0, W, 55, "F");
-
+  doc.rect(0, 0, width, 55, "F");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(255, 255, 255);
@@ -106,45 +233,88 @@ export function generateBIDossierPDF(data: DossierData): Blob {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
   doc.text("Inteligência Comercial · Business Analytic", 14, 24);
-
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
   doc.text("Dossiê Comercial", 14, 42);
-
-  // Bloco do cliente
   doc.setTextColor(...TEXT);
-  doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.text(data.client.name, 14, 75);
-
   const meta: string[] = [];
   if (data.client.ramo) meta.push(`Ramo: ${data.client.ramo}`);
   if (data.client.cnpj) meta.push(`CNPJ: ${data.client.cnpj}`);
-  if (data.client.cidade) {
-    meta.push(`Localidade: ${data.client.cidade}${data.client.estado ? `/${data.client.estado}` : ""}`);
-  }
+  if (data.client.cidade) meta.push(`Localidade: ${data.client.cidade}${data.client.estado ? `/${data.client.estado}` : ""}`);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(...MUTED);
-  let cy = 84;
+  let y = 84;
   for (const line of meta) {
-    doc.text(line, 14, cy);
-    cy += 5.5;
+    doc.text(line, 14, y);
+    y += 5.5;
   }
-
-  // Caixa de emissão
   doc.setDrawColor(220, 220, 230);
   doc.setLineWidth(0.3);
-  doc.roundedRect(14, cy + 6, W - 28, 26, 2, 2);
+  doc.roundedRect(14, y + 6, width - 28, 26, 2, 2);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(...TEXT);
-  doc.text("Emitido em", 18, cy + 14);
-  doc.text("Vendedor responsável", 18, cy + 23);
+  doc.text("Emitido em", 18, y + 14);
+  doc.text("Vendedor responsável", 18, y + 23);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...MUTED);
-  doc.text(generatedAt, 60, cy + 14);
-  doc.text(data.sellerName || "—", 60, cy + 23);
+  doc.text(generatedAt, 60, y + 14);
+  doc.text(data.sellerName || "—", 60, y + 23);
+}
+
+function addBenchmarkPage(doc: jsPDF, width: number, comparison: ClientVsIndustryResult): void {
+  doc.addPage();
+  const y = addSectionTitle(doc, "Cliente × Setor", 22);
+  if (!comparison.hasEnoughSample || comparison.metrics.length === 0) {
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(9);
+    doc.setTextColor(...MUTED);
+    doc.text("Amostra do ramo ainda insuficiente para benchmark (mínimo 3 empresas).", 14, y + 5);
+    return;
+  }
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(...MUTED);
+  doc.text(`Benchmark contra ${comparison.sampleSize} empresa(s) do mesmo ramo · últimos ${comparison.daysWindow} dias`, 14, y);
+  autoTable(doc, {
+    startY: y + 5,
+    head: [["Métrica", "Cliente", "Média do setor", "Δ %", "Classificação"]],
+    body: comparison.metrics.map(metric => [
+      metric.label,
+      metricValue(metric, "client"),
+      metricValue(metric, "industry"),
+      `${metric.deltaPercent > 0 ? "+" : ""}${Math.round(metric.deltaPercent)}%`,
+      classificationLabel(metric.classification),
+    ]),
+    theme: "grid",
+    headStyles: { fillColor: PRIMARY, textColor: 255, fontSize: 9 },
+    bodyStyles: { fontSize: 9 },
+    margin: { left: 14, right: 14 },
+    columnStyles: { 1: { halign: "right" }, 2: { halign: "right" }, 3: { halign: "right", fontStyle: "bold" } },
+  });
+  if (!comparison.insight) return;
+  const finalY = getAutoTableFinalY(doc, 0) + 8;
+  doc.setFillColor(245, 243, 255);
+  doc.roundedRect(14, finalY, width - 28, 18, 2, 2, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...PRIMARY);
+  doc.text("INSIGHT", 18, finalY + 6);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(...TEXT);
+  doc.text(doc.splitTextToSize(comparison.insight, width - 36), 18, finalY + 12);
+}
+
+export function generateBIDossierPDF(data: DossierData): Blob {
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  const W = doc.internal.pageSize.getWidth();
+  const generatedAt = new Date().toLocaleString("pt-BR");
+
+  addCover(doc, W, data, generatedAt);
 
   // ============ PÁGINA 2 — Visão 360° ============
   doc.addPage();
@@ -208,71 +378,7 @@ export function generateBIDossierPDF(data: DossierData): Blob {
     doc.text("Sem histórico de pedidos registrado.", 14, y + 5);
   }
 
-  // ============ PÁGINA 3 — Cliente × Setor ============
-  doc.addPage();
-  y = 22;
-  y = addSectionTitle(doc, "Cliente × Setor", y);
-
-  const vs = data.vsIndustry;
-  if (vs.hasEnoughSample && vs.metrics.length > 0) {
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(...MUTED);
-    doc.text(
-      `Benchmark contra ${vs.sampleSize} empresa(s) do mesmo ramo · últimos ${vs.daysWindow} dias`,
-      14,
-      y,
-    );
-    y += 5;
-
-    autoTable(doc, {
-      startY: y,
-      head: [["Métrica", "Cliente", "Média do setor", "Δ %", "Classificação"]],
-      body: vs.metrics.map((m) => {
-        const sign = m.deltaPercent > 0 ? "+" : "";
-        return [
-          m.label,
-          metricValue(m, "client"),
-          metricValue(m, "industry"),
-          `${sign}${Math.round(m.deltaPercent)}%`,
-          classificationLabel(m.classification),
-        ];
-      }),
-      theme: "grid",
-      headStyles: { fillColor: PRIMARY, textColor: 255, fontSize: 9 },
-      bodyStyles: { fontSize: 9 },
-      margin: { left: 14, right: 14 },
-      columnStyles: {
-        1: { halign: "right" },
-        2: { halign: "right" },
-        3: { halign: "right", fontStyle: "bold" },
-      },
-    });
-
-    if (vs.insight) {
-      const finalY = doc.lastAutoTable.finalY + 8;
-      doc.setFillColor(245, 243, 255);
-      doc.roundedRect(14, finalY, W - 28, 18, 2, 2, "F");
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(8.5);
-      doc.setTextColor(...PRIMARY);
-      doc.text("INSIGHT", 18, finalY + 6);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(...TEXT);
-      const wrapped = doc.splitTextToSize(vs.insight, W - 36);
-      doc.text(wrapped, 18, finalY + 12);
-    }
-  } else {
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(9);
-    doc.setTextColor(...MUTED);
-    doc.text(
-      "Amostra do ramo ainda insuficiente para benchmark (mínimo 3 empresas).",
-      14,
-      y + 5,
-    );
-  }
+  addBenchmarkPage(doc, W, data.vsIndustry);
 
   // ============ PÁGINA 4 — Recomendações ============
   doc.addPage();
@@ -310,7 +416,7 @@ export function generateBIDossierPDF(data: DossierData): Blob {
         3: { halign: "right", cellWidth: 28 },
       },
     });
-    y = doc.lastAutoTable.finalY + 6;
+    y = getAutoTableFinalY(doc, y) + 6;
   } else if (data.affinity.categories.length > 0) {
     const rows = data.affinity.categories.flatMap((c) =>
       c.suggestions.slice(0, 2).map((s) => [s.name, c.category, s.reason]),
@@ -324,7 +430,7 @@ export function generateBIDossierPDF(data: DossierData): Blob {
       bodyStyles: { fontSize: 8 },
       margin: { left: 14, right: 14 },
     });
-    y = doc.lastAutoTable.finalY + 6;
+    y = getAutoTableFinalY(doc, y) + 6;
   } else {
     doc.setFont("helvetica", "italic");
     doc.setFontSize(9);
@@ -364,7 +470,7 @@ export function generateBIDossierPDF(data: DossierData): Blob {
         3: { halign: "right", cellWidth: 30 },
       },
     });
-    y = doc.lastAutoTable.finalY + 6;
+    y = getAutoTableFinalY(doc, y) + 6;
   }
 
   // Sugestão do especialista
@@ -392,178 +498,8 @@ export function generateBIDossierPDF(data: DossierData): Blob {
     },
   });
 
-  // ============ PÁGINA 5 — Mapa de Categorias ============
-  const cat = data.categorySection;
-  if (cat && cat.hasData) {
-    doc.addPage();
-    y = 22;
-    y = addSectionTitle(doc, "Mapa de Categorias", y);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(...MUTED);
-    doc.text(
-      cat.isMock
-        ? "Comparativo cliente × setor por categoria (dados parciais — amostra simulada)."
-        : "Comparativo cliente × setor por categoria de produto (últimos 90 dias).",
-      14,
-      y,
-    );
-    y += 5;
-
-    if (cat.rows.length > 0) {
-      autoTable(doc, {
-        startY: y,
-        head: [["Categoria", "Cliente %", "Setor %", "Tendência (90d)"]],
-        body: cat.rows.map((r) => {
-          const arrow = r.trend === "up" ? "↑" : r.trend === "down" ? "↓" : r.trend === "stable" ? "→" : "—";
-          const delta = r.deltaPct == null
-            ? "—"
-            : `${r.deltaPct > 0 ? "+" : ""}${Math.round(r.deltaPct)}%`;
-          return [
-            r.label,
-            `${r.clientSharePct.toFixed(1)}%`,
-            `${r.industrySharePct.toFixed(1)}%`,
-            `${arrow} ${delta}`,
-          ];
-        }),
-        theme: "grid",
-        headStyles: { fillColor: PRIMARY, textColor: 255, fontSize: 9 },
-        bodyStyles: { fontSize: 9 },
-        margin: { left: 14, right: 14 },
-        columnStyles: {
-          1: { halign: "right", cellWidth: 28 },
-          2: { halign: "right", cellWidth: 28 },
-          3: { halign: "center", cellWidth: 38, fontStyle: "bold" },
-        },
-      });
-      y = doc.lastAutoTable.finalY + 8;
-    }
-
-    if (cat.gaps.length > 0) {
-      const boxH = 14 + cat.gaps.length * 6;
-      doc.setFillColor(254, 243, 226); // amber-50
-      doc.roundedRect(14, y, W - 28, boxH, 2, 2, "F");
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
-      doc.setTextColor(180, 83, 9); // amber-700
-      doc.text("OPORTUNIDADES GAP — categorias fortes no setor que o cliente não compra", 18, y + 6);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8.5);
-      doc.setTextColor(...TEXT);
-      cat.gaps.forEach((g, i) => {
-        doc.text(`•  ${g.label} — ${g.reason}`, 18, y + 13 + i * 6);
-      });
-      y += boxH + 6;
-    }
-
-    // Insight final
-    doc.setFillColor(245, 243, 255);
-    doc.roundedRect(14, y, W - 28, 22, 2, 2, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8.5);
-    doc.setTextColor(...PRIMARY);
-    doc.text("INSIGHT DE CATEGORIA", 18, y + 6);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(...TEXT);
-    const wrapped = doc.splitTextToSize(cat.insight, W - 36);
-    doc.text(wrapped, 18, y + 12);
-  }
-
-  // ============ PÁGINA 6 — Sazonalidade (opcional) ============
-  const seas = data.seasonality;
-  if (seas) {
-    doc.addPage();
-    y = 22;
-    y = addSectionTitle(doc, "Sazonalidade Cliente × Setor", y);
-
-  // (seas é o mesmo data.seasonality usado acima)
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(...MUTED);
-  doc.text(
-    seas.isMock
-      ? `Padrão simulado (histórico real insuficiente — ${seas.monthsCovered} mês${seas.monthsCovered === 1 ? "" : "es"} cobertos).`
-      : `Janela de ${seas.windowMonths} meses · ${seas.monthsCovered} mês${seas.monthsCovered === 1 ? "" : "es"} com dados.`,
-    14,
-    y,
-  );
-  y += 5;
-
-  autoTable(doc, {
-    startY: y,
-    head: [["Mês", "Cliente (pedidos)", "Cliente (% ano)", "Setor (méd/empresa)", "Setor (% ano)"]],
-    body: seas.client.map((c, i) => {
-      const ind = seas.industry[i];
-      return [
-        c.monthLabel,
-        c.quotesCount > 0 ? String(c.quotesCount) : "—",
-        c.sharePercent > 0 ? `${c.sharePercent.toFixed(1)}%` : "—",
-        ind && ind.avgQuotesPerCompany > 0 ? ind.avgQuotesPerCompany.toFixed(1) : "—",
-        ind && ind.sharePercent > 0 ? `${ind.sharePercent.toFixed(1)}%` : "—",
-      ];
-    }),
-    theme: "grid",
-    headStyles: { fillColor: PRIMARY, textColor: 255, fontSize: 8.5 },
-    bodyStyles: { fontSize: 8 },
-    margin: { left: 14, right: 14 },
-    columnStyles: {
-      0: { fontStyle: "bold" },
-      1: { halign: "center" },
-      2: { halign: "right" },
-      3: { halign: "center" },
-      4: { halign: "right" },
-    },
-  });
-  y = doc.lastAutoTable.finalY + 6;
-
-  // Top 3 picos
-  if (seas.topClientMonths.length > 0) {
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.setTextColor(...TEXT);
-    doc.text("Top 3 meses do cliente:", 14, y);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(...MUTED);
-    doc.text(
-      seas.topClientMonths.map((c) => `${c.monthLabel} (${c.quotesCount})`).join("  ·  "),
-      55,
-      y,
-    );
-    y += 5;
-  }
-  if (seas.nextPeakMonth) {
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.setTextColor(...TEXT);
-    doc.text("Próximo pico:", 14, y);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(...MUTED);
-    const monthFull = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"][seas.nextPeakMonth - 1];
-    doc.text(
-      `${monthFull}${seas.daysToNextPeak === 0 ? " (estamos no mês de pico)" : ` em ${seas.daysToNextPeak} dia(s)`}`,
-      40,
-      y,
-    );
-    y += 6;
-  }
-
-  // Insight em destaque
-  if (seas.insight) {
-    doc.setFillColor(245, 243, 255);
-    doc.roundedRect(14, y, W - 28, 22, 2, 2, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8.5);
-    doc.setTextColor(...PRIMARY);
-    doc.text("INSIGHT DE TIMING", 18, y + 6);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(...TEXT);
-    const wrapped = doc.splitTextToSize(seas.insight, W - 36);
-    doc.text(wrapped, 18, y + 12);
-  }
-  } // end if (seas)
+  addCategoryPage(doc, W, data.categorySection);
+  addSeasonalityPage(doc, W, data.seasonality);
 
   addFooter(doc, generatedAt);
 

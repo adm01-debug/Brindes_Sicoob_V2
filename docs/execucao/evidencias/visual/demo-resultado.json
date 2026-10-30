@@ -21,15 +21,11 @@
     "overflow": false,
     "assets": [
       {
-        "url": "http://127.0.0.1:4178/src/assets/demo/produtos-grid-v1.webp?import",
-        "status": 200
-      },
-      {
         "url": "http://127.0.0.1:4178/brand/store/hero-brindes-v1.webp",
         "status": 200
       },
       {
-        "url": "http://127.0.0.1:4178/src/assets/demo/produtos-grid-v1.webp",
+        "url": "http://127.0.0.1:4178/assets/produtos-grid-v1-Ceese12Y.webp",
         "status": 200
       }
     ],
@@ -58,15 +54,11 @@
     "overflow": false,
     "assets": [
       {
-        "url": "http://127.0.0.1:4178/src/assets/demo/produtos-grid-v1.webp?import",
-        "status": 200
-      },
-      {
         "url": "http://127.0.0.1:4178/brand/store/hero-brindes-v1.webp",
         "status": 200
       },
       {
-        "url": "http://127.0.0.1:4178/src/assets/demo/produtos-grid-v1.webp",
+        "url": "http://127.0.0.1:4178/assets/produtos-grid-v1-Ceese12Y.webp",
         "status": 200
       }
     ],
@@ -95,15 +87,11 @@
     "overflow": false,
     "assets": [
       {
-        "url": "http://127.0.0.1:4178/src/assets/demo/produtos-grid-v1.webp?import",
-        "status": 200
-      },
-      {
         "url": "http://127.0.0.1:4178/brand/store/hero-brindes-v1.webp",
         "status": 200
       },
       {
-        "url": "http://127.0.0.1:4178/src/assets/demo/produtos-grid-v1.webp",
+        "url": "http://127.0.0.1:4178/assets/produtos-grid-v1-Ceese12Y.webp",
         "status": 200
       }
     ],

@@ -1,0 +1,57 @@
+{
+  "tipo": "Revisão independente somente leitura do código e da reprodução fornecida; sem acesso ao banco remoto e sem nova execução da simulação.",
+  "main": {
+    "commit": "f1b4e0dd0ff33e5c78742ffa9d2cf5a7385d8e13",
+    "severidade": "Alta / P1 para a falha de autorização no código versionado; exposição remota não determinada.",
+    "causa": "bulk_update_quote_status_atomic lê e bloqueia por UUID sem filtro de ator. assert_quote_transition retorna quando o status informado é igual ao atual antes de rejeitar o ator sem escopo. A RPC então executa UPDATE e INSERT no histórico como SECURITY DEFINER.",
+    "comprovado_na_evidencia_fornecida": "Ator autenticado de outra Singular, can_manage_quote_scope=false, SELECT direto=0; chamada com status sent e versão 2 retorna versão 3 e grava um evento atribuído ao intruso.",
+    "precondicoes": "Conhecimento do UUID, status atual permitido pela RPC e versão atual; orçamento ativo e última versão. Não exige papel gerencial na entrada da RPC.",
+    "impacto_adicional_por_inspecao": "O UPDATE também pode sobrescrever rejection_notes em rejected/rejected_singular e approved_by/approved_at em approved_singular. Esses efeitos específicos não foram executados na reprodução fornecida.",
+    "referencias": [
+      "supabase/migrations/20260927171216_quote_approval_security_hardening.sql:330",
+      "supabase/migrations/20260927171216_quote_approval_security_hardening.sql:608",
+      "supabase/migrations/20260927171216_quote_approval_security_hardening.sql:632",
+      "supabase/migrations/20260927171216_quote_approval_security_hardening.sql:641"
+    ]
+  },
+  "pr75": {
+    "commit": "5d6a392643c3500dac74aca37bf5d4a93134de28",
+    "severidade": "Média / P2 para divulgação limitada de metadados; deve ser corrigida antes de tratar a PR como fechamento da autorização.",
+    "causa": "O caminho idempotente usa CONTINUE antes da versão e de assert_quote_transition; o segundo laço retorna id/status/row_version sem checar acesso ao orçamento.",
+    "comprovado_na_evidencia_fornecida": "O mesmo intruso obtém id/status/row_version mesmo enviando versão inventada 999999; SELECT direto permanece 0 na policy simulada.",
+    "impacto": "Divulgação de existência, estado e versão de UUID conhecido ou obtido por outra via. Não implica leitura de valores, itens, clientes ou documentos. Repetir o status não escreve versão/histórico nessa definição.",
+    "observacao": "O caminho idempotente também pula a validação de deleted_at/is_latest_version presente no assert; essa ampliação é visível no código, não exercitada na fixture.",
+    "referencias": [
+      "supabase/migrations/20260928182000_idempotent_quote_status_notifications.sql:42",
+      "supabase/migrations/20260928182000_idempotent_quote_status_notifications.sql:60"
+    ]
+  },
+  "conclusao": "O achado não é falso positivo nas funções SQL versionadas. A fixture demonstra o caminho vulnerável em PostgreSQL isolado. Não comprova implantação nem exploração em produção.",
+  "overrides_e_permissoes": {
+    "main": "Última definição da RPC e de assert_quote_transition é 20260927171216. A definição anterior 20260927110000 tinha validação explícita de propriedade/papel, substituída pelo hardening posterior.",
+    "pr75": "Última definição da RPC é 20260928182000. assert_quote_transition e can_manage_quote_scope continuam os de 20260927171216. Não foi localizado override posterior que feche o caminho.",
+    "acl": "As duas definições revogam PUBLIC/anon e concedem EXECUTE a authenticated explicitamente. A fixture não depende de EXECUTE artificialmente concedido à RPC.",
+    "rls": "A fixture cria policy de SELECT sintética e não reproduz todas as policies/grants históricos. Isso limita a conclusão sobre SELECT direto no esquema completo. Não elimina a ausência de autorização interna: as funções SECURITY DEFINER acessam como seu proprietário, que na fixture é postgres.",
+    "politicas_versionadas": "quotes_select_scope e quotes_role_access incluem papéis, vendedor e vínculos de PA/Singular; a policy sintética simplifica essas regras. Papéis e relações do intruso fornecido não o tornam vendedor, admin ou comprador da Singular alvo.",
+    "gatilhos": "guard_quote_governance_write aceita a flag transacional definida pela RPC. O trigger posterior sicoob_guard_reorder_catalog_validity só bloqueia mudança efetiva de status, portanto não cobre a repetição. validate_status_fields valida domínio do status e não escopo. A função real handle_row_version incrementa OLD.row_version + 1 como o substituto da fixture."
+  },
+  "limites": [
+    "Nenhuma consulta ao catálogo, funções, grants, policies, proprietário das funções, BYPASSRLS, FORCE RLS ou ledger do banco remoto foi feita nesta revisão.",
+    "Não afirmar incidente em produção, vulnerabilidade remotamente explorada nem implantação dessas migrations apenas com esta evidência.",
+    "A base isolada contém tabelas e auth.uid simplificados, policy de SELECT sintética, trigger de versão substituto e uma migration principal; não aplica integralmente o histórico do projeto.",
+    "A fixture usa quotes.status enum; migrations documentam que o banco canônico pode usar text. A divergência deve constar do limite de fidelidade, embora a decisão de autorização use status::text em ambos os caminhos.",
+    "Não foi comprovado acesso remoto à RPC por PostgREST nem configuração de schema exposto. O grant SQL versionado comprova intenção de chamada por authenticated, não a configuração efetiva do ambiente.",
+    "A revisão independente verificou o script e seus resultados registrados; não repetiu a simulação.",
+    "O grafo Graphify existente cobre majoritariamente Edge Functions e não forneceu evidência pertinente às funções SQL; a conclusão foi obtida pela leitura das migrations."
+  ],
+  "correcao_recomendada": "Validar ator e escopo de cada orçamento antes de qualquer retorno idempotente ou exposição de metadados; manter validação de disponibilidade e separar explicitamente a autorização da regra de transição. Cobrir intruso de outra Singular em mesmo status, versão correta/incorreta, orçamento excluído e versão histórica.",
+  "fontes_semantica_postgresql": [
+    "https://www.postgresql.org/docs/17/ddl-rowsecurity.html",
+    "https://www.postgresql.org/docs/17/sql-createfunction.html"
+  ],
+  "artefatos_revisados": [
+    "docs/execucao/revisao-plano-20261001/status-fora-escopo.json",
+    "docs/execucao/revisao-plano-20261001/reproduzir-status-fora-escopo.py",
+    "scripts/qa/simular-governanca-orcamento.sql"
+  ]
+}

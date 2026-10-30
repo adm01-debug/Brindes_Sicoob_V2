@@ -30,9 +30,13 @@ export function usePilotApprovals(orderId: string) {
   const createApproval = useMutation({
     mutationFn: async (payload: Partial<PilotApproval>) => {
       const { data: { user } } = await supabase.auth.getUser();
+      if (!payload.mockup_url) {
+        throw new Error("A URL do piloto é obrigatória.");
+      }
       
       const data = await OrderService.createPilotApproval({
         ...payload,
+        mockup_url: payload.mockup_url,
         order_id: orderId,
         status: payload.status || 'pending',
         revision_round: payload.revision_round || 1
@@ -93,4 +97,3 @@ export function usePilotApprovals(orderId: string) {
     updateStatus 
   };
 }
-

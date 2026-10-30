@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, type ReactNode } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 // import { MainLayout } from "@/components/layout/MainLayout";
@@ -66,7 +66,7 @@ const ipSchema = z.object({
     .trim()
     .min(3, "IP inválido")
     .max(45, "IP muito longo")
-    .regex(/^[0-9a-fA-F:.\/]+$/, "Use apenas IPv4, IPv6 ou CIDR"),
+    .regex(/^[0-9a-fA-F:./]+$/, "Use apenas IPv4, IPv6 ou CIDR"),
   list_type: z.enum(["allow", "block"]),
   reason: z.string().trim().max(500, "Máx 500 caracteres").optional().or(z.literal("")),
   expires_at: z.string().optional().or(z.literal("")),
@@ -119,7 +119,11 @@ export default function AdminSegurancaAcessoPage() {
   const submitIpEntry = async () => {
     const parsed = ipSchema.safeParse(form);
     if (!parsed.success) {
-      toast({ title: "Dados inválidos", description: parsed.error.errors[0].message, variant: "destructive" });
+      toast({
+        title: "Dados inválidos",
+        description: parsed.error.errors[0]?.message ?? "Revise os dados informados.",
+        variant: "destructive",
+      });
       return;
     }
     const { data: userRes } = await supabase.auth.getUser();
@@ -456,7 +460,7 @@ export default function AdminSegurancaAcessoPage() {
   );
 }
 
-function StatCard({ label, value, icon, valueClass }: { label: string; value: number; icon: React.ReactNode; valueClass?: string }) {
+function StatCard({ label, value, icon, valueClass }: { label: string; value: number; icon: ReactNode; valueClass?: string }) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">

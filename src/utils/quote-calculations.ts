@@ -1,5 +1,5 @@
 
-import { type QuoteItem, type QuoteItemPersonalization } from "@/hooks/quotes/useQuotes";
+import { type QuoteItem } from "@/hooks/quotes/useQuotes";
 
 export const calculateItemPersonalizationTotal = (item: QuoteItem) => {
   return (item.personalizations || []).reduce((sum, p) => sum + (p.total_cost || 0), 0);
@@ -25,14 +25,23 @@ export const calculateItemCost = (item: QuoteItem) => {
   return productCost + calculateItemPersonalizationCost(item);
 };
 
-export const calculateQuoteTotals = (
-  items: QuoteItem[],
-  negotiationMarkup: number,
-  discountType: "percent" | "amount" | string,
-  discountValue: number,
-  shippingCost: number = 0,
-  shippingType: string = "cif"
-) => {
+interface QuoteTotalsInput {
+  items: QuoteItem[];
+  negotiationMarkup: number;
+  discountType: "percent" | "amount" | string;
+  discountValue: number;
+  shippingCost?: number;
+  shippingType?: string;
+}
+
+export const calculateQuoteTotals = ({
+  items,
+  negotiationMarkup,
+  discountType,
+  discountValue,
+  shippingCost = 0,
+  shippingType = "cif",
+}: QuoteTotalsInput) => {
   const realSubtotal = items.reduce((sum, item) => sum + calculateItemTotal(item), 0);
   const totalCost = items.reduce((sum, item) => sum + calculateItemCost(item), 0);
   

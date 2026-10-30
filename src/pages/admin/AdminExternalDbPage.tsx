@@ -13,6 +13,7 @@ import {
   ENGRAVING_TABLES,
   diffColumns,
   buildMarkdownReport,
+  type ExpectedTable,
   type TableDiff,
 } from "./engraving-schema-diff";
 import {
@@ -23,6 +24,41 @@ import {
 import { ALL_CONTRACTS } from "@/lib/personalization/rpc-contracts";
 import { validateRpcPayload, type ValidationResult } from "@/lib/personalization/rpc-validator";
 import { invokeExternalRpc } from "@/lib/external-rpc";
+
+async function inspectEngravingTable(table: ExpectedTable): Promise<TableDiff> {
+  const { data, error } = await supabase.functions.invoke("external-db-inspect", {
+    body: { mode: "columns", tableName: table.table },
+  });
+  if (error || !data?.success) {
+    return {
+      table: table.table,
+      exists: false,
+      error: error?.message ?? data?.error ?? "Tabela não acessível",
+      expectedColumns: table.expectedColumns,
+      actualColumns: [],
+      missingInDb: [],
+      newInDb: [],
+      consumers: table.consumers,
+    };
+  }
+  const actual: string[] = data.columns ?? [];
+  const { missingInDb, newInDb } = diffColumns(table.expectedColumns, actual);
+  return {
+    table: table.table,
+    exists: true,
+    expectedColumns: table.expectedColumns,
+    actualColumns: actual,
+    missingInDb,
+    newInDb,
+    consumers: table.consumers,
+  };
+}
+
+async function collectEngravingDiffs(): Promise<TableDiff[]> {
+  const results: TableDiff[] = [];
+  for (const table of ENGRAVING_TABLES) results.push(await inspectEngravingTable(table));
+  return results;
+}
 
 export default function AdminExternalDbPage() {
   const { result, isLoading, listTables, describeTable } = useExternalDbInspect();
@@ -72,36 +108,7 @@ export default function AdminExternalDbPage() {
     setDiffLoading(true);
     setDiffs(null);
     try {
-      const results: TableDiff[] = [];
-      for (const t of ENGRAVING_TABLES) {
-        const { data, error } = await supabase.functions.invoke("external-db-inspect", {
-          body: { mode: "columns", tableName: t.table },
-        });
-        if (error || !data?.success) {
-          results.push({
-            table: t.table,
-            exists: false,
-            error: error?.message || data?.error || "Tabela não acessível",
-            expectedColumns: t.expectedColumns,
-            actualColumns: [],
-            missingInDb: [],
-            newInDb: [],
-            consumers: t.consumers,
-          });
-          continue;
-        }
-        const actual: string[] = data.columns || [];
-        const { missingInDb, newInDb } = diffColumns(t.expectedColumns, actual);
-        results.push({
-          table: t.table,
-          exists: true,
-          expectedColumns: t.expectedColumns,
-          actualColumns: actual,
-          missingInDb,
-          newInDb,
-          consumers: t.consumers,
-        });
-      }
+      const results = await collectEngravingDiffs();
       setDiffs(results);
       toast.success("Diff gerado", { description: `${results.length} tabelas inspecionadas` });
     } catch (err) {
@@ -269,74 +276,16 @@ export default function AdminExternalDbPage() {
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
-          {ALL_CONTRACTS.map((c) => {
-            const count = contractCounts[c.name] ?? 0;
-            const live = liveResults[c.name];
-            return (
-              <div key={c.name} className="border rounded-lg p-3 space-y-2">
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    {count === 0 ? (
-                      <CheckCircle2 className="h-4 w-4 text-success" />
-                    ) : (
-                      <AlertTriangle className="h-4 w-4 text-destructive" />
-                    )}
-                    <code className="text-sm font-semibold">{c.name}</code>
-                    <Badge variant={count === 0 ? "outline" : "destructive"}>
-                      {count} mismatch{count === 1 ? "" : "es"}
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {c.requiredFields.length} required
-                    </Badge>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={liveLoading === c.name}
-                    onClick={() => testContract(c.name)}
-                  >
-                    {liveLoading === c.name ? "Testando..." : "Testar agora"}
-                  </Button>
-                </div>
-                {live && (
-                  <div className="text-xs space-y-1 pt-1 border-t">
-                    <p>
-                      <strong>Resultado:</strong>{" "}
-                      <Badge variant={live.ok ? "default" : "destructive"} className="text-xs">
-                        {live.ok ? "OK" : "Mismatch"}
-                      </Badge>
-                    </p>
-                    {live.missing.length > 0 && (
-                      <p>
-                        <strong className="text-destructive">Missing:</strong>{" "}
-                        {live.missing.map((m) => (
-                          <code key={m} className="bg-destructive/10 px-1 rounded mr-1">
-                            {m}
-                          </code>
-                        ))}
-                      </p>
-                    )}
-                    {live.extras.length > 0 && (
-                      <p>
-                        <strong className="text-success">Extras:</strong>{" "}
-                        {live.extras.map((m) => (
-                          <code key={m} className="bg-success/10 px-1 rounded mr-1">
-                            {m}
-                          </code>
-                        ))}
-                      </p>
-                    )}
-                    {Object.keys(live.resolvedAliases).length > 0 && (
-                      <p>
-                        <strong>Aliases resolvidos:</strong>{" "}
-                        <code>{JSON.stringify(live.resolvedAliases)}</code>
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          {ALL_CONTRACTS.map((contract) => (
+            <ContractValidationRow
+              key={contract.name}
+              contract={contract}
+              count={contractCounts[contract.name] ?? 0}
+              live={liveResults[contract.name]}
+              loading={liveLoading === contract.name}
+              onTest={testContract}
+            />
+          ))}
           {recentMismatches.length > 0 && (
             <details className="text-xs">
               <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
@@ -360,94 +309,112 @@ export default function AdminExternalDbPage() {
         </CardContent>
       </Card>
 
-      {selectedTable ? (
-        <>
-          <Button variant="ghost" onClick={handleBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para lista
-          </Button>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Database className="h-5 w-5" />
-                {selectedTable}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="space-y-2">
-                  {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-8 w-full" />)}
-                </div>
-              ) : result?.table?.columns ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Coluna</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Nullable</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {result.table.columns.map((col, i) => (
-                      <TableRow key={i}>
-                        <TableCell className="font-mono text-sm">{col.name}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{col.type}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={col.nullable ? "secondary" : "default"}>
-                            {col.nullable ? "Sim" : "Não"}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <p className="text-muted-foreground text-center py-8">Nenhuma informação disponível</p>
-              )}
-            </CardContent>
-          </Card>
-        </>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Tabelas Disponíveis</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="space-y-2">
-                {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
-              </div>
-            ) : result?.tables?.length ? (
-              <div className="divide-y">
-                {result.tables.map((table) => (
-                  <div
-                    key={table.name}
-                    className="flex items-center justify-between py-3 px-2 hover:bg-muted/50 rounded cursor-pointer transition-colors"
-                    onClick={() => handleSelectTable(table.name)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Database className="h-4 w-4 text-primary" />
-                      <span className="font-mono text-sm">{table.name}</span>
-                      {table.schema && (
-                        <Badge variant="outline" className="text-xs">{table.schema}</Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {table.rowCount !== undefined && (
-                        <span className="text-xs text-muted-foreground">{table.rowCount} rows</span>
-                      )}
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-muted-foreground text-center py-8">Nenhuma tabela encontrada</p>
-            )}
-          </CardContent>
-        </Card>
-      )}
+      <DatabaseExplorer selectedTable={selectedTable} result={result} loading={isLoading}
+        onBack={handleBack} onSelect={handleSelectTable} />
+    </div>
+  );
+}
+
+type InspectResult = ReturnType<typeof useExternalDbInspect>["result"];
+
+interface DatabaseExplorerProps {
+  selectedTable: string | null;
+  result: InspectResult;
+  loading: boolean;
+  onBack: () => void;
+  onSelect: (tableName: string) => Promise<void>;
+}
+
+function TableColumns({ result, loading }: Pick<DatabaseExplorerProps, "result" | "loading">) {
+  if (loading) return <div className="space-y-2">{Array.from({ length: 5 }).map((_, index) => <Skeleton key={index} className="h-8 w-full" />)}</div>;
+  if (!result?.table?.columns) return <p className="text-muted-foreground text-center py-8">Nenhuma informação disponível</p>;
+  return (
+    <Table><TableHeader><TableRow><TableHead>Coluna</TableHead><TableHead>Tipo</TableHead><TableHead>Nullable</TableHead></TableRow></TableHeader>
+      <TableBody>{result.table.columns.map((column, index) => (
+        <TableRow key={index}><TableCell className="font-mono text-sm">{column.name}</TableCell>
+          <TableCell><Badge variant="outline">{column.type}</Badge></TableCell>
+          <TableCell><Badge variant={column.nullable ? "secondary" : "default"}>{column.nullable ? "Sim" : "Não"}</Badge></TableCell>
+        </TableRow>
+      ))}</TableBody>
+    </Table>
+  );
+}
+
+function TableList({ result, loading, onSelect }: Pick<DatabaseExplorerProps, "result" | "loading" | "onSelect">) {
+  if (loading) return <div className="space-y-2">{Array.from({ length: 8 }).map((_, index) => <Skeleton key={index} className="h-10 w-full" />)}</div>;
+  if (!result?.tables?.length) return <p className="text-muted-foreground text-center py-8">Nenhuma tabela encontrada</p>;
+  return <div className="divide-y">{result.tables.map((table) => (
+    <div key={table.name} className="flex items-center justify-between py-3 px-2 hover:bg-muted/50 rounded cursor-pointer transition-colors"
+      onClick={() => onSelect(table.name)}>
+      <div className="flex items-center gap-3"><Database className="h-4 w-4 text-primary" /><span className="font-mono text-sm">{table.name}</span>
+        {table.schema && <Badge variant="outline" className="text-xs">{table.schema}</Badge>}
+      </div>
+      <div className="flex items-center gap-2">
+        {table.rowCount !== undefined && <span className="text-xs text-muted-foreground">{table.rowCount} rows</span>}
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      </div>
+    </div>
+  ))}</div>;
+}
+
+function DatabaseExplorer({ selectedTable, result, loading, onBack, onSelect }: DatabaseExplorerProps) {
+  if (!selectedTable) {
+    return <Card><CardHeader><CardTitle className="text-lg">Tabelas Disponíveis</CardTitle></CardHeader>
+      <CardContent><TableList result={result} loading={loading} onSelect={onSelect} /></CardContent></Card>;
+  }
+  return (
+    <>
+      <Button variant="ghost" onClick={onBack}><ArrowLeft className="h-4 w-4 mr-2" /> Voltar para lista</Button>
+      <Card><CardHeader><CardTitle className="flex items-center gap-2"><Database className="h-5 w-5" />{selectedTable}</CardTitle></CardHeader>
+        <CardContent><TableColumns result={result} loading={loading} /></CardContent></Card>
+    </>
+  );
+}
+
+type RpcContract = (typeof ALL_CONTRACTS)[number];
+
+interface ContractValidationRowProps {
+  contract: RpcContract;
+  count: number;
+  live: ValidationResult | undefined;
+  loading: boolean;
+  onTest: (contractName: string) => Promise<void>;
+}
+
+function ContractLiveResult({ result }: { result: ValidationResult }) {
+  return (
+    <div className="text-xs space-y-1 pt-1 border-t">
+      <p><strong>Resultado:</strong>{" "}
+        <Badge variant={result.ok ? "default" : "destructive"} className="text-xs">{result.ok ? "OK" : "Mismatch"}</Badge>
+      </p>
+      {result.missing.length > 0 && <p><strong className="text-destructive">Missing:</strong>{" "}
+        {result.missing.map((field) => <code key={field} className="bg-destructive/10 px-1 rounded mr-1">{field}</code>)}
+      </p>}
+      {result.extras.length > 0 && <p><strong className="text-success">Extras:</strong>{" "}
+        {result.extras.map((field) => <code key={field} className="bg-success/10 px-1 rounded mr-1">{field}</code>)}
+      </p>}
+      {Object.keys(result.resolvedAliases).length > 0 && <p><strong>Aliases resolvidos:</strong>{" "}
+        <code>{JSON.stringify(result.resolvedAliases)}</code>
+      </p>}
+    </div>
+  );
+}
+
+function ContractValidationRow({ contract, count, live, loading, onTest }: ContractValidationRowProps) {
+  return (
+    <div className="border rounded-lg p-3 space-y-2">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
+          {count === 0 ? <CheckCircle2 className="h-4 w-4 text-success" /> : <AlertTriangle className="h-4 w-4 text-destructive" />}
+          <code className="text-sm font-semibold">{contract.name}</code>
+          <Badge variant={count === 0 ? "outline" : "destructive"}>{count} mismatch{count === 1 ? "" : "es"}</Badge>
+          <Badge variant="outline" className="text-xs">{contract.requiredFields.length} required</Badge>
+        </div>
+        <Button size="sm" variant="outline" disabled={loading} onClick={() => onTest(contract.name)}>
+          {loading ? "Testando..." : "Testar agora"}
+        </Button>
+      </div>
+      {live && <ContractLiveResult result={live} />}
     </div>
   );
 }

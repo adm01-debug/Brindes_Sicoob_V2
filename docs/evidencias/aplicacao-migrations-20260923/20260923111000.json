@@ -1,0 +1,27 @@
+{
+  "executado_em": "2026-09-23T19:18:01.933Z",
+  "arquivo": "20260923111000_schedule_secure_export_worker.sql",
+  "sha256": "c1e632f880e336906bc104cb3d882abaa3e39c3eba015520cd94b6552ed09787",
+  "resultado": {
+    "statements": 1,
+    "results": [
+      {
+        "command": null,
+        "rowCount": 1,
+        "fields": [
+          "version",
+          "name",
+          "conteudo_confere"
+        ],
+        "rows": [
+          {
+            "version": "20260923111000",
+            "name": "schedule_secure_export_worker",
+            "conteudo_confere": true
+          }
+        ]
+      }
+    ],
+    "notices": []
+  }
+}

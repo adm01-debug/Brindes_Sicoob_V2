@@ -25,29 +25,39 @@ export const COLOR_GROUP_HEX: Record<string, string> = {
   creme: '#FFFDD0',
 };
 
+type ProductColor = { hex?: string; group?: string; groupSlug?: string; variationSlug?: string };
+
+function groupHighlight(colors: ProductColor[], groups: string[]): string | null {
+  if (groups.length === 0) return null;
+  const match = colors.find(color => groups.includes(color.groupSlug || ''));
+  if (match?.hex) return match.hex;
+  const groupKey = groups.find(group => COLOR_GROUP_HEX[group]);
+  return groupKey ? COLOR_GROUP_HEX[groupKey] ?? null : null;
+}
+
+function variationHighlight(colors: ProductColor[], variations: string[]): string | null {
+  if (variations.length === 0) return null;
+  return colors.find(color => variations.includes(color.variationSlug || ''))?.hex ?? null;
+}
+
+function configuredHighlight(colors: ProductColor[], highlights?: string[]): string | null {
+  if (!highlights?.length) return null;
+  return colors.find(color => highlights.includes(color.group || ''))?.hex ?? null;
+}
+
 /**
  * Resolve a cor hex do destaque com base nos filtros ativos e cores do produto.
  */
 export function resolveHighlightHex(
-  productColors: Array<{ hex?: string; group?: string; groupSlug?: string; variationSlug?: string }>,
+  productColors: ProductColor[],
   activeColorFilter?: { groups: string[]; variations: string[] } | null,
   highlightColors?: string[],
 ): string | null {
   if (activeColorFilter) {
-    if (activeColorFilter.groups.length > 0) {
-      const match = productColors.find(c => activeColorFilter.groups.includes(c.groupSlug || ''));
-      if (match?.hex) return match.hex;
-      const groupKey = activeColorFilter.groups.find(g => COLOR_GROUP_HEX[g]);
-      if (groupKey) return COLOR_GROUP_HEX[groupKey];
-    }
-    if (activeColorFilter.variations.length > 0) {
-      const match = productColors.find(c => activeColorFilter.variations.includes(c.variationSlug || ''));
-      if (match?.hex) return match.hex;
-    }
+    const byGroup = groupHighlight(productColors, activeColorFilter.groups);
+    if (byGroup) return byGroup;
+    const byVariation = variationHighlight(productColors, activeColorFilter.variations);
+    if (byVariation) return byVariation;
   }
-  if (highlightColors?.length) {
-    const match = productColors.find(c => highlightColors.includes(c.group || ''));
-    if (match?.hex) return match.hex;
-  }
-  return null;
+  return configuredHighlight(productColors, highlightColors);
 }

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface QuoteHistoryEntry {
   id: string;
@@ -11,12 +11,45 @@ export interface QuoteHistoryEntry {
   old_value?: string | null;
   new_value?: string | null;
   description: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, Json>;
   created_at: string;
 }
 
+function valueOr<T>(value: T | null | undefined | false | "", fallback: T): T {
+  return value ? value as T : fallback;
+}
+
+interface HistoryOptions {
+  fieldChanged?: string;
+  oldValue?: string;
+  newValue?: string;
+  metadata?: Record<string, Json>;
+}
+
+function historyRpcParams(
+  quoteId: string,
+  action: string,
+  description: string,
+  options?: HistoryOptions,
+) {
+  const details = valueOr(options, {});
+  return {
+    p_quote_id: quoteId,
+    p_action: action,
+    p_description: description,
+    p_field_changed: valueOr(details.fieldChanged, undefined),
+    p_old_value: valueOr(details.oldValue, undefined),
+    p_new_value: valueOr(details.newValue, undefined),
+    p_metadata: {
+      ...valueOr(details.metadata, {}),
+      user_agent: navigator.userAgent,
+      screen_resolution: `${window.screen.width}x${window.screen.height}`,
+      language: navigator.language,
+    },
+  };
+}
+
 export function useQuoteHistory() {
-  const { user } = useAuth();
   const [history, setHistory] = useState<QuoteHistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -46,35 +79,16 @@ export function useQuoteHistory() {
     quoteId: string,
     action: string,
     description: string,
-    options?: {
-      fieldChanged?: string;
-      oldValue?: string;
-      newValue?: string;
-      metadata?: Record<string, any>;
-    }
+    options?: HistoryOptions
   ): Promise<boolean> => {
     // Audit logs are special: we want to capture UA/IP automatically via RPC if possible
     // or manually here if the RPC doesn't handle all metadata.
     
     try {
-      // Collect current browser info
-      const auditMetadata = {
-        ...(options?.metadata || {}),
-        user_agent: navigator.userAgent,
-        screen_resolution: `${window.screen.width}x${window.screen.height}`,
-        language: navigator.language
-      };
-
-      const { error } = await supabase.from("quote_history").insert({
-        quote_id: quoteId,
-        user_id: user?.id || null,
-        action,
-        description,
-        field_changed: options?.fieldChanged || null,
-        old_value: options?.oldValue || null,
-        new_value: options?.newValue || null,
-        metadata: auditMetadata,
-      } as Record<string, unknown>);
+      const { error } = await supabase.rpc(
+        "append_quote_history_note",
+        historyRpcParams(quoteId, action, description, options),
+      );
 
       if (error) throw error;
       return true;
@@ -117,7 +131,7 @@ export function useQuoteHistory() {
   const logDuplicated = async (quoteId: string, originalQuoteNumber: string) =>
     addHistoryEntry(quoteId, "created", `Orçamento duplicado a partir de ${originalQuoteNumber}`);
 
-  const logPdfGenerated = async (quoteId: string, options: any) =>
+  const logPdfGenerated = async (quoteId: string, options: Record<string, Json>) =>
     addHistoryEntry(quoteId, "pdf_generated", "Nova versão do PDF gerada", { metadata: { pdf_options: options } });
 
   return {

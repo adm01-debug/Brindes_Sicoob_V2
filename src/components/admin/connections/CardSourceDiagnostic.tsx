@@ -95,6 +95,38 @@ function describeLoadError(err: SecretError): { title: string; hint: string } {
   }
 }
 
+function LoadErrorAlert({ error, className }: { error: SecretError; className?: string }) {
+  const { title, hint } = describeLoadError(error);
+  return <Alert variant="destructive" className={className} role="alert" aria-live="polite"><Lock className="h-4 w-4" /><AlertTitle className="text-sm">{title}</AlertTitle><AlertDescription><p className="text-xs">{hint}</p><p className="mt-2 text-[10px] font-mono text-muted-foreground">código: {error.code}</p></AlertDescription></Alert>;
+}
+
+type DiagnosticRow = { label: string; source: keyof typeof SOURCE_META; suffix: string | null };
+
+function SourceDiagnosticRow({ row }: { row: DiagnosticRow }) {
+  const meta = SOURCE_META[row.source];
+  return (
+    <li className="flex items-center gap-2"><Tooltip><TooltipTrigger asChild><Badge variant="outline" tabIndex={0} className={`text-[10px] font-mono uppercase cursor-help focus:outline-none focus:ring-2 focus:ring-ring ${meta.cls}`} aria-label={`${row.label}: origem ${meta.label}`}>{meta.label}</Badge></TooltipTrigger><TooltipContent side="top" className="max-w-xs text-xs space-y-1"><p className="font-semibold">{meta.tooltip.title}</p><p>{meta.tooltip.body}</p><p className="text-muted-foreground">{meta.tooltip.action}</p></TooltipContent></Tooltip><span className="font-medium">{row.label}</span><span className="text-muted-foreground">→ {meta.description}</span>{row.suffix && <span className="ml-auto font-mono text-muted-foreground">••••{row.suffix}</span>}</li>
+  );
+}
+
+function diagnosticPresentation(hasMissing: boolean, usesEnvFallback: boolean) {
+  if (hasMissing) return { tone: "destructive" as const, Icon: ShieldAlert, title: "Credencial faltando — diagnóstico de origem" };
+  if (usesEnvFallback) return { tone: "warning" as const, Icon: AlertTriangle, title: "Usando fallback ENV — recomenda-se migrar para o banco" };
+  return { tone: "info" as const, Icon: Bug, title: "Diagnóstico de origem (modo debug)" };
+}
+
+function diagnosticClassName(tone: "destructive" | "warning" | "info", className?: string): string | undefined {
+  if (tone === "warning") return `border-warning/40 bg-warning/5 ${className ?? ""}`;
+  if (tone === "info") return `border-primary/30 bg-primary/5 ${className ?? ""}`;
+  return className;
+}
+
+function DiagnosticAdvice({ hasMissing, usesEnvFallback }: { hasMissing: boolean; usesEnvFallback: boolean }) {
+  if (hasMissing) return <p className="mt-2 text-xs text-muted-foreground"><Database className="inline h-3 w-3 mr-1" aria-hidden="true" />Adicione o valor abaixo no campo correspondente — ele será gravado em <code className="text-[10px]">integration_credentials</code> e usado tanto pela UI quanto pelo catálogo.</p>;
+  if (usesEnvFallback) return <p className="mt-2 text-xs text-muted-foreground">Salve novamente para migrar do ENV para o banco e habilitar rotação/auditoria.</p>;
+  return null;
+}
+
 export function CardSourceDiagnostic({ fields, readOnly, loadError, className }: Props) {
   const { enabled: explainOn } = useExplainMode();
 
@@ -104,24 +136,7 @@ export function CardSourceDiagnostic({ fields, readOnly, loadError, className }:
   // sem resposta do secrets-manager. Sem isso, todos os campos apareceriam como
   // "AUSENTE" e o usuário receberia um diagnóstico enganoso.
   if (loadError) {
-    const { title, hint } = describeLoadError(loadError);
-    return (
-      <Alert
-        variant="destructive"
-        className={className}
-        role="alert"
-        aria-live="polite"
-      >
-        <Lock className="h-4 w-4" />
-        <AlertTitle className="text-sm">{title}</AlertTitle>
-        <AlertDescription>
-          <p className="text-xs">{hint}</p>
-          <p className="mt-2 text-[10px] font-mono text-muted-foreground">
-            código: {loadError.code}
-          </p>
-        </AlertDescription>
-      </Alert>
-    );
+    return <LoadErrorAlert error={loadError} className={className} />;
   }
 
   const rows = fields.map((f) => ({
@@ -134,77 +149,25 @@ export function CardSourceDiagnostic({ fields, readOnly, loadError, className }:
   const usesEnvFallback = rows.some((r) => r.source === "env");
 
   // Só renderiza se houver problema OU explain mode ligado
-  if (!hasMissing && !usesEnvFallback && !explainOn) return null;
+  if ((!hasMissing && !usesEnvFallback && !explainOn)) return null;
 
-  const tone = hasMissing ? "destructive" : usesEnvFallback ? "warning" : "info";
-  const Icon = hasMissing ? ShieldAlert : usesEnvFallback ? AlertTriangle : Bug;
-  const title = hasMissing
-    ? "Credencial faltando — diagnóstico de origem"
-    : usesEnvFallback
-      ? "Usando fallback ENV — recomenda-se migrar para o banco"
-      : "Diagnóstico de origem (modo debug)";
+  const { tone, Icon, title } = diagnosticPresentation(hasMissing, usesEnvFallback);
 
   return (
-    <Alert
+    (<Alert
       variant={tone === "destructive" ? "destructive" : "default"}
-      className={
-        tone === "warning"
-          ? `border-warning/40 bg-warning/5 ${className ?? ""}`
-          : tone === "info"
-            ? `border-primary/30 bg-primary/5 ${className ?? ""}`
-            : className
-      }
+      className={diagnosticClassName(tone, className)}
     >
       <Icon className="h-4 w-4" />
       <AlertTitle className="text-sm">{title}</AlertTitle>
       <AlertDescription>
         <ul className="mt-2 space-y-1.5 text-xs">
           <TooltipProvider delayDuration={150}>
-            {rows.map((r) => {
-              const meta = SOURCE_META[r.source];
-              return (
-                <li key={r.label} className="flex items-center gap-2">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Badge
-                        variant="outline"
-                        tabIndex={0}
-                        className={`text-[10px] font-mono uppercase cursor-help focus:outline-none focus:ring-2 focus:ring-ring ${meta.cls}`}
-                        aria-label={`${r.label}: origem ${meta.label}`}
-                      >
-                        {meta.label}
-                      </Badge>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-xs text-xs space-y-1">
-                      <p className="font-semibold">{meta.tooltip.title}</p>
-                      <p>{meta.tooltip.body}</p>
-                      <p className="text-muted-foreground">{meta.tooltip.action}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <span className="font-medium">{r.label}</span>
-                  <span className="text-muted-foreground">→ {meta.description}</span>
-                  {r.suffix && (
-                    <span className="ml-auto font-mono text-muted-foreground">
-                      ••••{r.suffix}
-                    </span>
-                  )}
-                </li>
-              );
-            })}
+            {rows.map((row) => <SourceDiagnosticRow key={row.label} row={row} />)}
           </TooltipProvider>
         </ul>
-        {hasMissing && (
-          <p className="mt-2 text-xs text-muted-foreground">
-            <Database className="inline h-3 w-3 mr-1" aria-hidden="true" />
-            Adicione o valor abaixo no campo correspondente — ele será gravado em <code className="text-[10px]">integration_credentials</code> e usado tanto pela UI quanto pelo catálogo.
-          </p>
-        )}
-        {!hasMissing && usesEnvFallback && (
-          <p className="mt-2 text-xs text-muted-foreground">
-            Salve novamente para migrar do ENV para o banco e habilitar rotação/auditoria.
-          </p>
-        )}
+        <DiagnosticAdvice hasMissing={hasMissing} usesEnvFallback={usesEnvFallback} />
       </AlertDescription>
-    </Alert>
+    </Alert>)
   );
 }

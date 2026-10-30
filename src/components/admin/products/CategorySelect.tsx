@@ -18,6 +18,57 @@ interface CategoryNode extends ExternalCategory {
   fullPath: string[];
 }
 
+function CategoryItem({ node, selected, searching, onSelect, onNavigate }: {
+  node: CategoryNode; selected: boolean; searching: boolean; onSelect: (id: string) => void; onNavigate: (id: string) => void;
+}) {
+  const hasChildren = node.children.length > 0;
+  return (
+    <div className={cn('flex items-center rounded-sm hover:bg-accent transition-colors', selected && 'bg-accent')}>
+      <button type="button" className="flex-1 flex items-center gap-2 px-2 py-1.5 text-sm text-left min-w-0" onClick={() => onSelect(node.id)}>
+        <Check className={cn('h-4 w-4 shrink-0', selected ? 'opacity-100' : 'opacity-0')} />
+        {hasChildren ? <Folder className="h-3.5 w-3.5 shrink-0 text-primary/70" /> : <span className="w-3.5 shrink-0" />}
+        <span className="truncate">{searching ? <span className="flex flex-col"><span>{node.name}</span><span className="text-[10px] text-muted-foreground">{node.fullPath.slice(0, -1).join(' › ')}</span></span> : node.name}</span>
+      </button>
+      {hasChildren && !searching && <button type="button" className="shrink-0 px-2 py-1.5 text-muted-foreground hover:text-foreground transition-colors" onClick={() => onNavigate(node.id)} title={`Ver ${node.children.length} subcategorias`}><ChevronRight className="h-4 w-4" /></button>}
+    </div>
+  );
+}
+
+function CategoryItems({ loading, items, searching, value, onSelect, onNavigate }: {
+  loading: boolean; items: CategoryNode[]; searching: boolean; value: string; onSelect: (id: string) => void; onNavigate: (id: string) => void;
+}) {
+  if (loading) return <p className="text-sm text-muted-foreground text-center py-4">Carregando...</p>;
+  if (items.length === 0) return <p className="text-sm text-muted-foreground text-center py-4">{searching ? 'Nenhuma categoria encontrada' : 'Sem subcategorias'}</p>;
+  return <>{items.map(node => <CategoryItem key={node.id} node={node} selected={value === node.id} searching={searching} onSelect={onSelect} onNavigate={onNavigate} />)}</>;
+}
+
+function BreadcrumbNavigation({ visible, nodes, onBack, onRoot, onNavigate }: {
+  visible: boolean; nodes: CategoryNode[]; onBack: () => void; onRoot: () => void; onNavigate: (id: string) => void;
+}) {
+  if (!visible) return null;
+  return (
+    <div className="px-2 py-1.5 border-b border-border flex items-center gap-1 text-xs text-muted-foreground overflow-x-auto">
+      <button type="button" className="shrink-0 p-0.5 rounded hover:bg-accent transition-colors" onClick={onBack} aria-label="Voltar"><ArrowLeft className="h-3.5 w-3.5" /></button>
+      <button type="button" className="shrink-0 hover:text-foreground transition-colors" onClick={onRoot}>Raiz</button>
+      {nodes.map((node, index) => <span key={node.id} className="flex items-center gap-1 shrink-0"><ChevronRight className="h-3 w-3 text-muted-foreground/50" /><button type="button" className={cn('hover:text-foreground transition-colors truncate max-w-[120px]', index === nodes.length - 1 && 'text-foreground font-medium')} onClick={() => onNavigate(node.id)}>{node.name}</button></span>)}
+    </div>
+  );
+}
+
+function CurrentParentSelection({ parentId, searching, selectedId, nodeMap, onSelect }: {
+  parentId: string | null; searching: boolean; selectedId: string; nodeMap: Map<string, CategoryNode>; onSelect: (id: string) => void;
+}) {
+  if (searching || !parentId) return null;
+  const selected = selectedId === parentId;
+  return (
+    <div className="border-t border-border px-2 py-1.5">
+      <button type="button" className={cn('w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded-sm hover:bg-accent text-left', selected && 'bg-accent')} onClick={() => onSelect(parentId)}>
+        <Check className={cn('h-4 w-4 shrink-0', selected ? 'opacity-100' : 'opacity-0')} /><span className="text-muted-foreground">Selecionar "</span><span className="font-medium truncate">{nodeMap.get(parentId)?.name}</span><span className="text-muted-foreground">"</span>
+      </button>
+    </div>
+  );
+}
+
 export function CategorySelect({ value, onChange, error }: CategorySelectProps) {
   const { data: categories = [], isLoading } = useExternalCategoriesQuery();
   const [open, setOpen] = useState(false);
@@ -37,7 +88,7 @@ export function CategorySelect({ value, onChange, error }: CategorySelectProps) 
     // Second pass: link children
     for (const node of map.values()) {
       if (node.parent_id && map.has(node.parent_id)) {
-        map.get(node.parent_id)!.children.push(node);
+        map.get(node.parent_id)?.children.push(node);
       } else {
         roots.push(node);
       }
@@ -96,7 +147,7 @@ export function CategorySelect({ value, onChange, error }: CategorySelectProps) 
   }, [search, nodeMap]);
 
   const isSearching = search.length > 0;
-  const displayItems = isSearching ? searchResults : currentItems;
+  const displayItems = (isSearching ? searchResults : currentItems);
 
   const selected = useMemo(
     () => categories.find(c => c.id === value),
@@ -132,7 +183,7 @@ export function CategorySelect({ value, onChange, error }: CategorySelectProps) 
   return (
     <div className="space-y-1">
       <Popover open={open} onOpenChange={handleOpenChange}>
-        <PopoverTrigger asChild>
+        {(<PopoverTrigger asChild>
           <Button
             variant="outline"
             role="combobox"
@@ -159,7 +210,7 @@ export function CategorySelect({ value, onChange, error }: CategorySelectProps) 
               <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
             )}
           </Button>
-        </PopoverTrigger>
+        </PopoverTrigger>)}
         <PopoverContent className="w-[420px] p-0" align="start">
           {/* Search */}
           <div className="p-2 border-b border-border">
@@ -172,128 +223,22 @@ export function CategorySelect({ value, onChange, error }: CategorySelectProps) 
             />
           </div>
 
-          {/* Breadcrumb navigation */}
-          {!isSearching && currentParentId && (
-            <div className="px-2 py-1.5 border-b border-border flex items-center gap-1 text-xs text-muted-foreground overflow-x-auto">
-              <button
-                type="button"
-                className="shrink-0 p-0.5 rounded hover:bg-accent transition-colors"
-                onClick={handleBack}
-               aria-label="Voltar">
-                <ArrowLeft className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                className="shrink-0 hover:text-foreground transition-colors"
-                onClick={() => setCurrentParentId(null)}
-              >
-                Raiz
-              </button>
-              {navigationBreadcrumb.map((node, i) => (
-                <span key={node.id} className="flex items-center gap-1 shrink-0">
-                  <ChevronRight className="h-3 w-3 text-muted-foreground/50" />
-                  <button
-                    type="button"
-                    className={cn(
-                      'hover:text-foreground transition-colors truncate max-w-[120px]',
-                      i === navigationBreadcrumb.length - 1 && 'text-foreground font-medium'
-                    )}
-                    onClick={() => setCurrentParentId(node.id)}
-                  >
-                    {node.name}
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Items */}
+          <BreadcrumbNavigation
+            visible={!isSearching && Boolean(currentParentId)}
+            nodes={navigationBreadcrumb}
+            onBack={handleBack}
+            onRoot={() => setCurrentParentId(null)}
+            onNavigate={setCurrentParentId}
+          />
           <ScrollArea className="h-[280px]">
             <div className="p-1">
-              {isLoading ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Carregando...</p>
-              ) : displayItems.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  {isSearching ? 'Nenhuma categoria encontrada' : 'Sem subcategorias'}
-                </p>
-              ) : (
-                displayItems.map(node => {
-                  const hasChildren = node.children.length > 0;
-                  const isSelected = value === node.id;
-
-                  return (
-                    <div
-                      key={node.id}
-                      className={cn(
-                        'flex items-center rounded-sm hover:bg-accent transition-colors',
-                        isSelected && 'bg-accent'
-                      )}
-                    >
-                      {/* Select button */}
-                      <button
-                        type="button"
-                        className="flex-1 flex items-center gap-2 px-2 py-1.5 text-sm text-left min-w-0"
-                        onClick={() => handleSelect(node.id)}
-                      >
-                        <Check className={cn('h-4 w-4 shrink-0', isSelected ? 'opacity-100' : 'opacity-0')} />
-                        {hasChildren ? (
-                          <Folder className="h-3.5 w-3.5 shrink-0 text-primary/70" />
-                        ) : (
-                          <span className="w-3.5 shrink-0" />
-                        )}
-                        <span className="truncate">
-                          {isSearching ? (
-                            <span className="flex flex-col">
-                              <span>{node.name}</span>
-                              <span className="text-[10px] text-muted-foreground">
-                                {node.fullPath.slice(0, -1).join(' › ')}
-                              </span>
-                            </span>
-                          ) : (
-                            node.name
-                          )}
-                        </span>
-                      </button>
-
-                      {/* Navigate into folder */}
-                      {hasChildren && !isSearching && (
-                        <button
-                          type="button"
-                          className="shrink-0 px-2 py-1.5 text-muted-foreground hover:text-foreground transition-colors"
-                          onClick={() => handleNavigate(node.id)}
-                          title={`Ver ${node.children.length} subcategorias`}
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </button>
-                      )}
-                    </div>
-                  );
-                })
-              )}
+              <CategoryItems loading={isLoading} items={displayItems} searching={isSearching} value={value} onSelect={handleSelect} onNavigate={handleNavigate} />
             </div>
           </ScrollArea>
-
-          {/* Current parent: allow selecting it */}
-          {!isSearching && currentParentId && (
-            <div className="border-t border-border px-2 py-1.5">
-              <button
-                type="button"
-                className={cn(
-                  'w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded-sm hover:bg-accent text-left',
-                  value === currentParentId && 'bg-accent'
-                )}
-                onClick={() => handleSelect(currentParentId)}
-              >
-                <Check className={cn('h-4 w-4 shrink-0', value === currentParentId ? 'opacity-100' : 'opacity-0')} />
-                <span className="text-muted-foreground">Selecionar "</span>
-                <span className="font-medium truncate">{nodeMap.get(currentParentId)?.name}</span>
-                <span className="text-muted-foreground">"</span>
-              </button>
-            </div>
-          )}
+          <CurrentParentSelection parentId={currentParentId} searching={isSearching} selectedId={value} nodeMap={nodeMap} onSelect={handleSelect} />
         </PopoverContent>
       </Popover>
-      {error && <p className="text-xs text-destructive">{error}</p>}
+      {(error && <p className="text-xs text-destructive">{error}</p>)}
     </div>
   );
 }

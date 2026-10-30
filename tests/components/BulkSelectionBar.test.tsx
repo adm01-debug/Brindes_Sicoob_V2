@@ -107,5 +107,7 @@ describe("BulkSelectionBar", () => {
       <BulkSelectionBar {...baseProps} selectedCount={1} label="1 produto selecionado" />
     );
     expect(screen.getByText("1")).toBeInTheDocument();
+    rerender(<BulkSelectionBar {...baseProps} selectedCount={3} label="3 produtos selecionados" />);
+    expect(screen.getByText("3")).toBeInTheDocument();
   });
 });

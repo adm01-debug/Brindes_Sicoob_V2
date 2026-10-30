@@ -31,8 +31,9 @@ export function HotSearchesCard({ days }: HotSearchesCardProps) {
   const { data, isLoading } = useQuery({
     queryKey: ["hot-searches", days],
     queryFn: async (): Promise<HotSearchItem[]> => {
-      const { isDemoMode, MOCK_HOT_SEARCHES } = await import("@/pages/trends/trends-mock");
+      const { isDemoMode } = await import("@/pages/trends/is-demo-mode");
       if (isDemoMode()) {
+        const { MOCK_HOT_SEARCHES } = await import("@/pages/trends/trends-mock");
         return MOCK_HOT_SEARCHES.map(s => ({
           term: s.term,
           searchCount: s.count,
@@ -134,7 +135,7 @@ export function HotSearchesCard({ days }: HotSearchesCardProps) {
                     size="sm"
                     variant="outline"
                     className="h-7 text-[10px] gap-1 shrink-0"
-                    onClick={() => navigate(`/catalogo?busca=${encodeURIComponent(item.term)}`)}
+                    onClick={() => navigate(`/filtros?search=${encodeURIComponent(item.term)}`)}
                     aria-label={`Ver catálogo para ${item.term}`}
                   >
                     Ver

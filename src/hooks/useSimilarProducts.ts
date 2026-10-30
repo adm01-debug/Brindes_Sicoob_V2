@@ -64,13 +64,98 @@ async function fetchProductsByIds(ids: string[]): Promise<SimilarProductItem[]> 
     table: 'products',
     operation: 'select',
     select: SIMILAR_PRODUCT_SELECT,
-    filters: { id: ids, active: true },
+    filters: { id: ids, is_active: true },
     limit: ids.length,
   });
 
   return (records || [])
     .filter(p => p.sale_price > 0)
     .map(mapLightweightToSimilarItem);
+}
+
+async function fetchRelationshipProducts(productId: string): Promise<SimilarProductItem[]> {
+  try {
+    const { records } = await invokeExternalDb<{ related_product_id: string }>({
+      table: 'product_relationships',
+      operation: 'select',
+      select: 'related_product_id',
+      filters: { product_id: productId, relationship_type: 'similar' },
+      limit: 50,
+    });
+    return fetchProductsByIds((records ?? []).map(item => item.related_product_id));
+  } catch (error) {
+    logger.warn('[useSimilarProducts] product_relationships query failed, trying groups:', error);
+    return [];
+  }
+}
+
+async function fetchGroupProducts(productId: string): Promise<SimilarProductItem[]> {
+  try {
+    const { records: memberships } = await invokeExternalDb<{ group_id: string }>({
+      table: 'product_group_members',
+      operation: 'select',
+      select: 'group_id',
+      filters: { product_id: productId },
+      limit: 10,
+    });
+    const groupIds = [...new Set((memberships ?? []).map(item => item.group_id).filter(Boolean))];
+    if (groupIds.length === 0) return [];
+
+    const { records: allMembers } = await invokeExternalDb<{ product_id: string }>({
+      table: 'product_group_members',
+      operation: 'select',
+      select: 'product_id',
+      filters: { group_id: `in.(${groupIds.join(',')})` },
+      limit: 100,
+    });
+    const siblingIds = [...new Set(
+      (allMembers ?? []).map(item => item.product_id).filter(id => id !== productId),
+    )];
+    return fetchProductsByIds(siblingIds);
+  } catch (error) {
+    logger.warn('[useSimilarProducts] product_group_members query failed, using fallback:', error);
+    return [];
+  }
+}
+
+function buildFallbackFilters(supplierId?: string, categoryId?: string): Record<string, unknown> {
+  if (supplierId && supplierId !== 'unknown') return { is_active: true, supplier_id: supplierId };
+  if (categoryId) return { is_active: true, main_category_id: categoryId };
+  return { is_active: true };
+}
+
+async function fetchFallbackProducts(
+  productId: string,
+  supplierId?: string,
+  categoryId?: string,
+): Promise<SimilarProductItem[]> {
+  try {
+    const { records } = await invokeExternalDb<LightweightProduct>({
+      table: 'products',
+      operation: 'select',
+      select: SIMILAR_PRODUCT_SELECT,
+      filters: buildFallbackFilters(supplierId, categoryId),
+      limit: 30,
+      orderBy: { column: 'name', ascending: true },
+    });
+    return (records ?? [])
+      .filter(item => item.id !== productId && item.sale_price > 0)
+      .map(mapLightweightToSimilarItem);
+  } catch (error) {
+    logger.warn('[useSimilarProducts] Fallback query failed:', error);
+    return [];
+  }
+}
+
+async function findSimilarProducts(
+  productId: string,
+  supplierId?: string,
+  categoryId?: string,
+): Promise<SimilarProductItem[]> {
+  const related = await fetchRelationshipProducts(productId);
+  if (related.length > 0) return related;
+  const grouped = await fetchGroupProducts(productId);
+  return grouped.length > 0 ? grouped : fetchFallbackProducts(productId, supplierId, categoryId);
 }
 
 export function useSimilarProducts(product: Product | null | undefined) {
@@ -82,99 +167,7 @@ export function useSimilarProducts(product: Product | null | undefined) {
     queryKey: ['similar-products', productId],
     queryFn: async () => {
       if (!productId) return [];
-
-      // 1. Try product_relationships (direct pairs — fastest, 107k+ records)
-      try {
-        const { records: relationships } = await invokeExternalDb<{
-          related_product_id: string;
-        }>({
-          table: 'product_relationships',
-          operation: 'select',
-          select: 'related_product_id',
-          filters: {
-            product_id: productId,
-            relationship_type: 'similar',
-          },
-          limit: 50,
-        });
-
-        if (relationships && relationships.length > 0) {
-          const relatedIds = relationships.map(r => r.related_product_id);
-          const items = await fetchProductsByIds(relatedIds);
-          if (items.length > 0) return items;
-        }
-      } catch (err) {
-        logger.warn('[useSimilarProducts] product_relationships query failed, trying groups:', err);
-      }
-
-      // 2. Try product_group_members (group-based siblings)
-      try {
-        const { records: memberships } = await invokeExternalDb<{
-          group_id: string;
-        }>({
-          table: 'product_group_members',
-          operation: 'select',
-          select: 'group_id',
-          filters: { product_id: productId },
-          limit: 10,
-        });
-
-        if (memberships && memberships.length > 0) {
-          const groupIds = [...new Set(memberships.map(m => m.group_id))].filter(Boolean);
-          if (groupIds.length === 0) throw new Error('No valid group IDs');
-          
-          const { records: allMembers } = await invokeExternalDb<{
-            product_id: string;
-          }>({
-            table: 'product_group_members',
-            operation: 'select',
-            select: 'product_id',
-            filters: {
-              group_id: `in.(${groupIds.join(',')})`,
-            },
-            limit: 100,
-          });
-
-          const siblingIds = [...new Set(
-            (allMembers || [])
-              .map(m => m.product_id)
-              .filter(id => id !== productId)
-          )];
-
-          if (siblingIds.length > 0) {
-            const items = await fetchProductsByIds(siblingIds);
-            if (items.length > 0) return items;
-          }
-        }
-      } catch (err) {
-        logger.warn('[useSimilarProducts] product_group_members query failed, using fallback:', err);
-      }
-
-      // 3. Fallback: fetch related products from same supplier or category (lightweight)
-      try {
-        const fallbackFilters: Record<string, unknown> = { active: true };
-        if (supplierId && supplierId !== 'unknown') {
-          fallbackFilters.supplier_id = supplierId;
-        } else if (categoryId) {
-          fallbackFilters.main_category_id = categoryId;
-        }
-
-        const { records: fallbackProducts } = await invokeExternalDb<LightweightProduct>({
-          table: 'products',
-          operation: 'select',
-          select: SIMILAR_PRODUCT_SELECT,
-          filters: fallbackFilters,
-          limit: 30,
-          orderBy: { column: 'name', ascending: true },
-        });
-
-        return (fallbackProducts || [])
-          .filter(p => p.id !== productId && p.sale_price > 0)
-          .map(mapLightweightToSimilarItem);
-      } catch (err) {
-        logger.warn('[useSimilarProducts] Fallback query failed:', err);
-        return [];
-      }
+      return findSimilarProducts(productId, supplierId, categoryId ?? undefined);
     },
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,

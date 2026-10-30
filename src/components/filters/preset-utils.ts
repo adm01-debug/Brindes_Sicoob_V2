@@ -15,33 +15,36 @@ export const PRESET_EMOJIS = [
 ];
 
 /** Count the number of active filter dimensions in a FilterState */
+function hasCustomPriceRange(filters: FilterState) {
+  return (filters.priceRange?.[0] ?? 0) > 0 || (filters.priceRange?.[1] ?? 500) < 500;
+}
+
 export function countFilters(filters: FilterState): number {
-  let count = 0;
-  if (filters.categories?.length) count += filters.categories.length;
-  if (filters.suppliers?.length) count += filters.suppliers.length;
-  if (filters.colorGroups?.length) count += filters.colorGroups.length;
-  if (filters.colorVariations?.length) count += filters.colorVariations.length;
-  if (filters.gender?.length) count += filters.gender.length;
-  if (filters.sizes?.length) count += filters.sizes.length;
-  if (filters.priceRange?.[0] > 0 || filters.priceRange?.[1] < 500) count++;
-  if (filters.minStock > 0) count++;
-  if (filters.inStock) count++;
-  if (filters.featured) count++;
-  if (filters.isNew) count++;
-  return count;
+  const collections = [filters.categories, filters.suppliers, filters.colorGroups, filters.colorVariations, filters.gender, filters.sizes];
+  const collectionCount = collections.reduce((total, values) => total + (values?.length ?? 0), 0);
+  const flags = [hasCustomPriceRange(filters), filters.minStock > 0, filters.inStock, filters.featured, filters.isNew];
+  return collectionCount + flags.filter(Boolean).length;
 }
 
 /** Build a human-readable summary of a preset's filters */
+function countLabel(count: number | undefined, singular: string, plural: string) {
+  return count ? `${count} ${count === 1 ? singular : plural}` : null;
+}
+
+function filterFlagLabels(filters: FilterState) {
+  const entries: Array<[boolean, string]> = [[hasCustomPriceRange(filters), "faixa de preço"], [filters.inStock, "em estoque"],
+    [filters.featured, "destaques"], [filters.isNew, "novidades"]];
+  return entries.filter(([active]) => active).map(([, label]) => label);
+}
+
 export function summarizeFilters(filters: FilterState): string {
-  const parts: string[] = [];
-  if (filters.categories?.length) parts.push(`${filters.categories.length} categoria${filters.categories.length > 1 ? "s" : ""}`);
-  if (filters.suppliers?.length) parts.push(`${filters.suppliers.length} fornecedor${filters.suppliers.length > 1 ? "es" : ""}`);
-  if (filters.colorGroups?.length) parts.push(`${filters.colorGroups.length} cor${filters.colorGroups.length > 1 ? "es" : ""}`);
-  if (filters.gender?.length) parts.push(`${filters.gender.length} gênero${filters.gender.length > 1 ? "s" : ""}`);
-  if (filters.sizes?.length) parts.push(`${filters.sizes.length} tamanho${filters.sizes.length > 1 ? "s" : ""}`);
-  if (filters.priceRange?.[0] > 0 || filters.priceRange?.[1] < 500) parts.push("faixa de preço");
-  if (filters.inStock) parts.push("em estoque");
-  if (filters.featured) parts.push("destaques");
-  if (filters.isNew) parts.push("novidades");
-  return parts.length > 0 ? parts.join(" · ") : "Sem filtros";
+  const counts = [
+    countLabel(filters.categories?.length, "categoria", "categorias"),
+    countLabel(filters.suppliers?.length, "fornecedor", "fornecedores"),
+    countLabel(filters.colorGroups?.length, "cor", "cores"),
+    countLabel(filters.gender?.length, "gênero", "gêneros"),
+    countLabel(filters.sizes?.length, "tamanho", "tamanhos"),
+  ];
+  const parts = [...counts, ...filterFlagLabels(filters)].filter((part): part is string => Boolean(part));
+  return parts.length ? parts.join(" · ") : "Sem filtros";
 }

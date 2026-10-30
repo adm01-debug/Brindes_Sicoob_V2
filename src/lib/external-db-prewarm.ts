@@ -105,6 +105,57 @@ async function warmAllTables(tables: string[]): Promise<Array<{ table: string; o
   }
 }
 
+function alreadyPrewarmedThisSession(force: boolean, oncePerSession: boolean): boolean {
+  if (force || !oncePerSession) return false;
+  try {
+    const alreadyDone = sessionStorage.getItem(SESSION_KEY) === '1';
+    if (alreadyDone) logger.log('[Prewarm] Skipped — already done this session');
+    return alreadyDone;
+  } catch {
+    return false;
+  }
+}
+
+function cooldownIsActive(force: boolean, timestamp: number): boolean {
+  if (force || timestamp - lastPrewarmAt >= PREWARM_COOLDOWN_MS) return false;
+  logger.log('[Prewarm] Skipped — cooldown active');
+  return true;
+}
+
+function summarizeBatch(
+  result: PromiseSettledResult<Array<{ table: string; ok: boolean; ms: number; err?: string }>>,
+): { okCount: number; failCount: number } {
+  if (result.status === 'rejected') {
+    logger.warn(`[Prewarm] ⚠️ batch rejected:`, result.reason);
+    return { okCount: 0, failCount: PREWARM_TABLES.length };
+  }
+  let okCount = 0;
+  let failCount = 0;
+  for (const tableResult of result.value) {
+    if (tableResult.ok) {
+      okCount += 1;
+      logger.log(`[Prewarm] ✅ ${tableResult.table} warmed (batch ${tableResult.ms}ms)`);
+    } else {
+      failCount += 1;
+      logger.warn(`[Prewarm] ⚠️ ${tableResult.table} failed: ${tableResult.err}`);
+    }
+  }
+  return { okCount, failCount };
+}
+
+function crmSummary(result: PromiseSettledResult<{ ok: boolean; ms: number }>): string {
+  if (result.status === 'rejected') return 'crm=⚠️ rejected';
+  return `crm=${result.value.ok ? '✅' : '⚠️'} (${result.value.ms}ms)`;
+}
+
+function markSessionPrewarmed(): void {
+  try {
+    sessionStorage.setItem(SESSION_KEY, '1');
+  } catch {
+    // sessionStorage indisponível (SSR/private mode)
+  }
+}
+
 /**
  * Opções do prewarm.
  *  - `force`: ignora cooldown E sessionStorage (uso interno/debug)
@@ -115,22 +166,10 @@ async function warmAllTables(tables: string[]): Promise<Array<{ table: string; o
 export async function prewarmExternalDb(opts: { force?: boolean; oncePerSession?: boolean } = {}) {
   const { force = false, oncePerSession = false } = opts;
 
-  if (!force && oncePerSession) {
-    try {
-      if (sessionStorage.getItem(SESSION_KEY) === '1') {
-        logger.log('[Prewarm] Skipped — already done this session');
-        return;
-      }
-    } catch {
-      // sessionStorage indisponível (SSR/private mode) — segue adiante
-    }
-  }
+  if (alreadyPrewarmedThisSession(force, oncePerSession)) return;
 
   const now = Date.now();
-  if (!force && now - lastPrewarmAt < PREWARM_COOLDOWN_MS) {
-    logger.log('[Prewarm] Skipped — cooldown active');
-    return;
-  }
+  if (cooldownIsActive(force, now)) return;
   lastPrewarmAt = now;
 
   const totalStart = performance.now();
@@ -160,35 +199,11 @@ export async function prewarmExternalDb(opts: { force?: boolean; oncePerSession?
   ]);
 
   const totalMs = Math.round(performance.now() - totalStart);
-  let okCount = 0;
-  let failCount = 0;
-
-  if (batchResult.status === 'fulfilled') {
-    for (const r of batchResult.value) {
-      if (r.ok) {
-        okCount++;
-        logger.log(`[Prewarm] ✅ ${r.table} warmed (batch ${r.ms}ms)`);
-      } else {
-        failCount++;
-        logger.warn(`[Prewarm] ⚠️ ${r.table} failed: ${r.err}`);
-      }
-    }
-  } else {
-    failCount += PREWARM_TABLES.length;
-    logger.warn(`[Prewarm] ⚠️ batch rejected:`, batchResult.reason);
-  }
-
-  const crmInfo =
-    crmPing.status === 'fulfilled'
-      ? `crm=${crmPing.value.ok ? '✅' : '⚠️'} (${crmPing.value.ms}ms)`
-      : 'crm=⚠️ rejected';
+  const { okCount, failCount } = summarizeBatch(batchResult);
+  const crmInfo = crmSummary(crmPing);
 
   // Marca a sessão como aquecida — evita prewarm duplicado se outro gatilho disparar
-  try {
-    sessionStorage.setItem(SESSION_KEY, '1');
-  } catch {
-    /* ignore */
-  }
+  markSessionPrewarmed();
 
   logger.log(
     `[Prewarm] Done in ${totalMs}ms — ping=${ping.ms}ms (${ping.attempts}x) ${crmInfo} external_ok=${okCount} fail=${failCount} (1 batch invoke)`,

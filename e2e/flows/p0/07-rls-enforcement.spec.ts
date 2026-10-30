@@ -14,16 +14,16 @@
  *  - Cobertura smoke crítica vive em `flows/20-all-features-smoke.spec.ts`
  *    (teste 94) — vide `mem://testing/e2e-smoke-tag-isolation.md`.
  */
-import { test, expect } from "../../fixtures/test-base";
-import { loginViaUI } from "../../helpers/auth";
+import { test, expect } from '../../fixtures/test-base';
+import { loginViaUI } from '../../helpers/auth';
 
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? "";
-const SUPABASE_ANON = process.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? '';
+const SUPABASE_ANON = process.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '';
 
 const E2E_USER = process.env.E2E_USER_EMAIL;
 const E2E_PASS = process.env.E2E_USER_PASSWORD;
 
-async function getAccessToken(page: import("@playwright/test").Page): Promise<string | null> {
+async function getAccessToken(page: import('@playwright/test').Page): Promise<string | null> {
   return await page.evaluate(() => {
     try {
       for (const k of Object.keys(localStorage)) {
@@ -42,12 +42,16 @@ async function getAccessToken(page: import("@playwright/test").Page): Promise<st
   });
 }
 
-async function restGet(token: string, table: string, query = "select=*"): Promise<{ status: number; body: unknown }> {
+async function restGet(
+  token: string,
+  table: string,
+  query = 'select=*',
+): Promise<{ status: number; body: unknown }> {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}`, {
     headers: {
       apikey: SUPABASE_ANON,
       Authorization: `Bearer ${token}`,
-      Accept: "application/json",
+      Accept: 'application/json',
     },
   });
   let body: unknown = null;
@@ -59,29 +63,28 @@ async function restGet(token: string, table: string, query = "select=*"): Promis
   return { status: res.status, body };
 }
 
-test.describe("P0 — RLS enforcement", () => {
+test.describe('P0 — RLS enforcement', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
   test.beforeEach(async () => {
-    test.skip(!SUPABASE_URL || !SUPABASE_ANON, "VITE_SUPABASE_* ausentes — SDK fixtures requeridos");
-    test.skip(!E2E_USER || !E2E_PASS, "Credenciais E2E_USER_* ausentes");
+    test.skip(
+      !SUPABASE_URL || !SUPABASE_ANON,
+      'VITE_SUPABASE_* ausentes — SDK fixtures requeridos',
+    );
+    test.skip(!E2E_USER || !E2E_PASS, 'Credenciais E2E_USER_* ausentes');
   });
 
-  test("negativo: tabelas sensíveis não retornam linhas de outros usuários", async ({ page }) => {
+  test('negativo: tabelas sensíveis não retornam linhas de outros usuários', async ({ page }) => {
     await loginViaUI(page, { email: E2E_USER!, password: E2E_PASS! });
     const token = await getAccessToken(page);
-    expect(token, "access_token deve existir após login").toBeTruthy();
+    expect(token, 'access_token deve existir após login').toBeTruthy();
 
     // Cada tabela aqui DEVE responder 200 com array vazio (RLS oculta linhas
     // de outros), 401, 403 ou 404. NUNCA 200 com objetos de outros usuários.
-    const protectedTables = [
-      "password_reset_requests",
-      "login_attempts",
-      "e2e_cleanup_rate_limit",
-    ];
+    const protectedTables = ['password_reset_requests', 'login_attempts', 'e2e_cleanup_rate_limit'];
 
     for (const table of protectedTables) {
-      const { status, body } = await restGet(token!, table, "select=*&limit=50");
+      const { status, body } = await restGet(token!, table, 'select=*&limit=50');
       // 401/403/404 são aceitos (RLS bloqueou de fato).
       if (status === 401 || status === 403 || status === 404) continue;
       // 200 deve vir vazio OU somente com linhas do próprio usuário.
@@ -94,20 +97,20 @@ test.describe("P0 — RLS enforcement", () => {
       if (arr.length === 0) continue;
       // Se houver linhas, todas devem mencionar o user logado quando a coluna existir.
       for (const row of arr as Array<Record<string, unknown>>) {
-        if ("user_id" in row && row.user_id != null) {
+        if ('user_id' in row && row.user_id != null) {
           // não temos uid aqui — só registra; a violação real seria array enorme com IDs heterogêneos
-          expect(typeof row.user_id).toBe("string");
+          expect(typeof row.user_id).toBe('string');
         }
       }
     }
   });
 
-  test("positivo: usuário lê o próprio profile via RLS", async ({ page }) => {
+  test('positivo: usuário lê o próprio profile via RLS', async ({ page }) => {
     await loginViaUI(page, { email: E2E_USER!, password: E2E_PASS! });
     const token = await getAccessToken(page);
     expect(token).toBeTruthy();
 
-    const { status, body } = await restGet(token!, "profiles", "select=user_id&limit=5");
+    const { status, body } = await restGet(token!, 'profiles', 'select=user_id&limit=5');
     // Aceita 200 vazio OU 200 com pelo menos 1 row (depende do seed do user).
     expect([200, 401, 403]).toContain(status);
     if (status === 200) {
@@ -115,13 +118,16 @@ test.describe("P0 — RLS enforcement", () => {
     }
   });
 
-  test("negativo: anon (sem JWT) não acessa tabelas autenticadas", async () => {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/password_reset_requests?select=*&limit=1`,
-      { headers: { apikey: SUPABASE_ANON, Accept: "application/json" } },
-    );
+  test('negativo: anon (sem JWT) não acessa tabelas autenticadas', async () => {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/password_reset_requests?select=*&limit=1`, {
+      headers: { apikey: SUPABASE_ANON, Accept: 'application/json' },
+    });
     let body: unknown = null;
-    try { body = await res.json(); } catch { /* noop */ }
+    try {
+      body = await res.json();
+    } catch {
+      /* noop */
+    }
     // Esperado: 401 explícito OU 200 com array vazio (RLS denega tudo p/ anon).
     if (res.status === 200) {
       expect(Array.isArray(body)).toBe(true);
@@ -131,32 +137,33 @@ test.describe("P0 — RLS enforcement", () => {
     }
   });
 
-  test("negativo: tentativa de UPDATE em registro alheio é negada", async ({ page }) => {
+  test('negativo: tentativa de UPDATE em registro alheio é negada', async ({ page }) => {
     await loginViaUI(page, { email: E2E_USER!, password: E2E_PASS! });
     const token = await getAccessToken(page);
     expect(token).toBeTruthy();
 
     // ID inexistente / de outro user — deve retornar 0 linhas afetadas (RLS)
     // ou 401/403/404. NUNCA 200 com objeto modificado.
-    const fakeId = "00000000-0000-0000-0000-000000000001";
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${fakeId}`,
-      {
-        method: "PATCH",
-        headers: {
-          apikey: SUPABASE_ANON,
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Prefer: "return=representation",
-        },
-        body: JSON.stringify({ display_name: "PWNED" }),
+    const fakeId = '00000000-0000-0000-0000-000000000001';
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${fakeId}`, {
+      method: 'PATCH',
+      headers: {
+        apikey: SUPABASE_ANON,
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
       },
-    );
+      body: JSON.stringify({ full_name: 'PWNED' }),
+    });
     let body: unknown = null;
-    try { body = await res.json(); } catch { /* noop */ }
+    try {
+      body = await res.json();
+    } catch {
+      /* noop */
+    }
     if (res.status === 200) {
       expect(Array.isArray(body)).toBe(true);
-      expect((body as unknown[]).length, "PATCH não pode modificar linha alheia").toBe(0);
+      expect((body as unknown[]).length, 'PATCH não pode modificar linha alheia').toBe(0);
     } else {
       expect([401, 403, 404, 406]).toContain(res.status);
     }

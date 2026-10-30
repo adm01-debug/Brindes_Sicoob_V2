@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, type ReactNode, forwardRef } from "react";
 
 interface A11yContextType {
   reducedMotion: boolean;
@@ -20,7 +20,6 @@ export function useA11y() {
   return context;
 }
 
-import { forwardRef } from 'react';
 
 export const AccessibilityProvider = forwardRef<HTMLDivElement, { children: ReactNode }>(({ children }, ref) => {
   const [reducedMotion, setReducedMotion] = useState(false);

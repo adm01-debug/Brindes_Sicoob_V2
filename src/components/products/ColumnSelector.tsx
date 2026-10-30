@@ -1,7 +1,7 @@
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 
 const STORAGE_KEY = "product-grid-columns";
 
@@ -12,7 +12,7 @@ function GridIcon({ cols, rows = 2 }: { cols: number; rows?: number }) {
   const gap = 2;
   const cellW = (size - (cols - 1) * gap) / cols;
   const cellH = (size - (rows - 1) * gap) / rows;
-  const rects: React.ReactNode[] = [];
+  const rects: ReactNode[] = [];
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       rects.push(
@@ -62,7 +62,9 @@ function getDefaultColumns(): ColumnCount {
       const parsed = Number(saved) as ColumnCount;
       if ([3, 4, 5, 6, 8].includes(parsed)) return parsed;
     }
-  } catch {}
+  } catch {
+    // O valor padrão é usado quando o armazenamento não está disponível.
+  }
   if (typeof window !== "undefined") {
     const w = window.innerWidth;
     if (w < 1024) return 3;
@@ -74,6 +76,24 @@ interface ColumnSelectorProps {
   value: ColumnCount;
   onChange: (cols: ColumnCount) => void;
   className?: string;
+}
+
+function ColumnOptionButton({ option, active, onChange }: { option: ColumnOption; active: boolean; onChange: (value: ColumnCount) => void }) {
+  const select = () => {
+    onChange(option.value);
+    try { localStorage.setItem(STORAGE_KEY, String(option.value)); } catch { /* A escolha continua ativa na sessão. */ }
+  };
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button aria-label={option.label} className={cn("relative flex items-center justify-center h-9 w-9 rounded-lg transition-colors duration-150", active ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted")} onClick={select}>
+          {active && <motion.div layoutId="column-selector-bg" className="absolute inset-0 rounded-lg bg-primary shadow-sm" transition={{ type: "spring", stiffness: 500, damping: 35 }} />}
+          <span className="relative z-10"><GridIcon cols={option.cols} rows={option.rows} /></span>
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="bottom" className="text-xs">{option.label}</TooltipContent>
+    </Tooltip>
+  );
 }
 
 export function ColumnSelector({ value, onChange, className }: ColumnSelectorProps) {
@@ -102,42 +122,7 @@ export function ColumnSelector({ value, onChange, className }: ColumnSelectorPro
       className
     )}>
       <AnimatePresence mode="popLayout">
-        {available.map((opt) => {
-          const isActive = value === opt.value;
-          return (
-            <Tooltip key={opt.value}>
-              <TooltipTrigger asChild>
-                <button
-                  aria-label={opt.label}
-                  className={cn(
-                    "relative flex items-center justify-center h-9 w-9 rounded-lg transition-colors duration-150",
-                    isActive
-                      ? "text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  )}
-                  onClick={() => {
-                    onChange(opt.value);
-                    try { localStorage.setItem(STORAGE_KEY, String(opt.value)); } catch {}
-                  }}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="column-selector-bg"
-                      className="absolute inset-0 rounded-lg bg-primary shadow-sm"
-                      transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                    />
-                  )}
-                  <span className="relative z-10">
-                    <GridIcon cols={opt.cols} rows={opt.rows} />
-                  </span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="text-xs">
-                {opt.label}
-              </TooltipContent>
-            </Tooltip>
-          );
-        })}
+        {available.map((option) => <ColumnOptionButton key={option.value} option={option} active={value === option.value} onChange={onChange} />)}
       </AnimatePresence>
     </div>
   );

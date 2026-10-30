@@ -10,20 +10,23 @@ interface ChatEmptyStateProps {
   onShowHistory: () => void;
 }
 
+const CLIENT_SUGGESTIONS = [
+  { emoji: "📊", label: "Resumo do cliente", prompt: "Me dê um resumo executivo completo deste cliente: histórico, ticket médio, preferências e oportunidades." },
+  { emoji: "📝", label: "Montar proposta", prompt: "Monte uma proposta personalizada com produtos ideais para este cliente, considerando seu perfil e histórico." },
+  { emoji: "📞", label: "Follow-up", prompt: "Quais orçamentos estão pendentes? Sugira mensagens de follow-up para retomar contato com este cliente." },
+  { emoji: "🎯", label: "Oportunidades", prompt: "Analise oportunidades de upsell e cross-sell para este cliente baseado no histórico de compras." },
+  { emoji: "🎨", label: "Cores da marca", prompt: "Produtos que combinam com as cores da marca deste cliente" },
+  { emoji: "🎁", label: "Datas comemorativas", prompt: "Sugira produtos para as próximas datas comemorativas para este cliente" },
+];
+const GENERAL_SUGGESTIONS = [
+  { emoji: "✨", label: "Recomendações", prompt: "Quais produtos estão em alta e você recomenda para prospecção?" },
+  { emoji: "📝", label: "Montar proposta", prompt: "Me ajude a montar uma proposta comercial. Qual é o perfil do cliente?" },
+  { emoji: "📞", label: "Dicas de follow-up", prompt: "Me dê dicas de como fazer follow-up eficiente em orçamentos pendentes." },
+  { emoji: "🎯", label: "Oportunidades sazonais", prompt: "Quais são as melhores oportunidades de venda para este período do ano?" },
+];
+
 export function ChatEmptyState({ sellerFirstName, clientId, clientName, conversationsCount, onAutoSend, onShowHistory }: ChatEmptyStateProps) {
-  const suggestions = clientId ? [
-    { emoji: "📊", label: "Resumo do cliente", prompt: `Me dê um resumo executivo completo deste cliente: histórico, ticket médio, preferências e oportunidades.` },
-    { emoji: "📝", label: "Montar proposta", prompt: "Monte uma proposta personalizada com produtos ideais para este cliente, considerando seu perfil e histórico." },
-    { emoji: "📞", label: "Follow-up", prompt: "Quais orçamentos estão pendentes? Sugira mensagens de follow-up para retomar contato com este cliente." },
-    { emoji: "🎯", label: "Oportunidades", prompt: "Analise oportunidades de upsell e cross-sell para este cliente baseado no histórico de compras." },
-    { emoji: "🎨", label: "Cores da marca", prompt: "Produtos que combinam com as cores da marca deste cliente" },
-    { emoji: "🎁", label: "Datas comemorativas", prompt: "Sugira produtos para as próximas datas comemorativas para este cliente" },
-  ] : [
-    { emoji: "✨", label: "Recomendações", prompt: "Quais produtos estão em alta e você recomenda para prospecção?" },
-    { emoji: "📝", label: "Montar proposta", prompt: "Me ajude a montar uma proposta comercial. Qual é o perfil do cliente?" },
-    { emoji: "📞", label: "Dicas de follow-up", prompt: "Me dê dicas de como fazer follow-up eficiente em orçamentos pendentes." },
-    { emoji: "🎯", label: "Oportunidades sazonais", prompt: "Quais são as melhores oportunidades de venda para este período do ano?" },
-  ];
+  const suggestions = clientId ? CLIENT_SUGGESTIONS : GENERAL_SUGGESTIONS;
 
   return (
     <motion.div initial="hidden" animate="visible"

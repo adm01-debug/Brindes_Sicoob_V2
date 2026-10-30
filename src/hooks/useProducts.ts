@@ -1,6 +1,6 @@
 /**
  * useProducts — Product data hooks
- * 
+ *
  * Hooks for fetching products from the external catalog.
  * Types and utilities are extracted to dedicated modules but
  * re-exported here for backward compatibility with 29+ consumers.
@@ -22,12 +22,61 @@ function shouldRetryCatalog(failureCount: number, error: Error, maximum: number)
   return failureCount < maximum && !/CATALOG_NOT_CONFIGURED|CATALOG_READ_ONLY/.test(error.message);
 }
 
+function compareSearchRelevance(first: Product, second: Product, term: string): number {
+  const firstName = first.name.toLowerCase();
+  const secondName = second.name.toLowerCase();
+  const firstStarts = firstName.startsWith(term);
+  const secondStarts = secondName.startsWith(term);
+  if (firstStarts !== secondStarts) return firstStarts ? -1 : 1;
+  const firstIncludes = firstName.includes(term);
+  const secondIncludes = secondName.includes(term);
+  if (firstIncludes !== secondIncludes) return firstIncludes ? -1 : 1;
+  return firstName.localeCompare(secondName);
+}
+
+function matchesCategory(product: Product, category: string): boolean {
+  const normalized = category.toLowerCase();
+  return (
+    Boolean(product.category_name?.toLowerCase().includes(normalized)) ||
+    product.category_id === category ||
+    product.category?.id?.toString() === category
+  );
+}
+
+function applyProductFilters(products: Product[], filters?: ProductFilters): Product[] {
+  const sorted = sortProductsBySearch(products, filters?.search);
+  const byCategory = filterByCategory(sorted, filters?.category);
+  const byMinimum = filterByMinimumPrice(byCategory, filters?.minPrice);
+  const byMaximum = filterByMaximumPrice(byMinimum, filters?.maxPrice);
+  return filters?.inStock ? byMaximum.filter((product) => (product.stock || 0) > 0) : byMaximum;
+}
+
+function sortProductsBySearch(products: Product[], search?: string): Product[] {
+  if (!search) return [...products];
+  const normalizedSearch = search.toLowerCase();
+  return [...products].sort((first, second) =>
+    compareSearchRelevance(first, second, normalizedSearch),
+  );
+}
+
+function filterByCategory(products: Product[], category?: string): Product[] {
+  return category ? products.filter((product) => matchesCategory(product, category)) : products;
+}
+
+function filterByMinimumPrice(products: Product[], minimum?: number): Product[] {
+  return minimum === undefined ? products : products.filter((product) => product.price >= minimum);
+}
+
+function filterByMaximumPrice(products: Product[], maximum?: number): Product[] {
+  return maximum === undefined ? products : products.filter((product) => product.price <= maximum);
+}
+
 /**
  * Hook para buscar todos os produtos do catálogo externo.
  */
 export function useProducts(
   filters?: ProductFilters,
-  options?: Omit<UseQueryOptions<Product[]>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<Product[]>, 'queryKey' | 'queryFn'>,
 ) {
   return useQuery<Product[]>({
     queryKey: ['promobrind-products', filters],
@@ -37,47 +86,7 @@ export function useProducts(
         limit: filters?.limit ?? 50,
       });
 
-      let result = products.map(mapPromobrindToProduct);
-
-      // Relevância simples no frontend (se houver termo de busca)
-      if (filters?.search) {
-        const term = filters.search.toLowerCase();
-        result.sort((a, b) => {
-          const aName = a.name.toLowerCase();
-          const bName = b.name.toLowerCase();
-          
-          const aStartsWith = aName.startsWith(term);
-          const bStartsWith = bName.startsWith(term);
-          if (aStartsWith && !bStartsWith) return -1;
-          if (!aStartsWith && bStartsWith) return 1;
-          
-          const aIncludes = aName.includes(term);
-          const bIncludes = bName.includes(term);
-          if (aIncludes && !bIncludes) return -1;
-          if (!aIncludes && bIncludes) return 1;
-          
-          return aName.localeCompare(bName);
-        });
-      }
-
-      if (filters?.category) {
-        result = result.filter(p =>
-          p.category_name?.toLowerCase().includes(filters.category!.toLowerCase()) ||
-          p.category_id === filters.category ||
-          p.category?.id?.toString() === filters.category
-        );
-      }
-      if (filters?.minPrice !== undefined) {
-        result = result.filter(p => p.price >= filters.minPrice!);
-      }
-      if (filters?.maxPrice !== undefined) {
-        result = result.filter(p => p.price <= filters.maxPrice!);
-      }
-      if (filters?.inStock) {
-        result = result.filter(p => (p.stock || 0) > 0);
-      }
-
-      return result;
+      return applyProductFilters(products.map(mapPromobrindToProduct), filters);
     },
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
@@ -133,7 +142,7 @@ export function useRelatedProducts(product: Product | null | undefined, limit = 
 
       return raw
         .map(mapPromobrindToProduct)
-        .filter(p => p.id !== productId)
+        .filter((p) => p.id !== productId)
         .slice(0, limit);
     },
     staleTime: 10 * 60 * 1000,

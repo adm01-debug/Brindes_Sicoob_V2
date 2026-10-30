@@ -9,10 +9,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/format";
 import { format } from "date-fns";
-import { Check, X, Clock, AlertTriangle, Eye, ArrowLeft } from "lucide-react";
+import { Check, X, Clock, AlertTriangle, Eye, ArrowLeft, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+
+const usesDelegatedAuthority = (approval: {
+  approve: { source: string };
+  reject: { source: string };
+}) => [approval.approve.source, approval.reject.source].includes("delegated");
+
+const decisionIsDisabled = (canDecide: boolean, mutationPending: boolean) =>
+  !canDecide || mutationPending;
 
 export default function GestorApprovalsPage() {
   const queryClient = useQueryClient();
@@ -51,18 +59,22 @@ export default function GestorApprovalsPage() {
     }
   });
 
-  const handleApprove = (id: string, orderId: string) => {
-    if (confirm("Tem certeza que deseja aprovar este pedido?")) {
+  const handleApprove = (id: string, orderId: string, delegated: boolean) => {
+    const origin = delegated ? " Você atuará com autoridade temporariamente delegada." : "";
+    if (confirm(`Tem certeza que deseja aprovar este pedido?${origin}`)) {
       approveMutation.mutate({ id, orderId });
     }
   };
 
-  const handleReject = (id: string, orderId: string) => {
-    const reason = prompt("Por favor, informe o motivo da rejeição:");
+  const handleReject = (id: string, orderId: string, delegated: boolean) => {
+    const origin = delegated ? " A decisão usará autoridade temporariamente delegada." : "";
+    const reason = prompt(`Por favor, informe o motivo da rejeição.${origin}`);
     if (reason) {
       rejectMutation.mutate({ id, orderId, reason });
     }
   };
+
+  const decisionPending = approveMutation.isPending || rejectMutation.isPending;
 
   return (
     <>
@@ -116,6 +128,7 @@ export default function GestorApprovalsPage() {
                   <TableBody>
                     {approvals?.map((req) => {
                       const excess = req.amount_at_request - req.threshold_at_request;
+                      const delegated = usesDelegatedAuthority(req.approval_authority);
                       return (
                         <TableRow key={req.id}>
                           <TableCell className="text-sm">
@@ -138,7 +151,14 @@ export default function GestorApprovalsPage() {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
-                            <div className="flex justify-end gap-2">
+                            <div className="flex flex-col items-end gap-2">
+                              {delegated && (
+                                <Badge variant="secondary" className="gap-1 text-sicoob-green-dark">
+                                  <ShieldCheck className="h-3 w-3" />
+                                  Autoridade delegada
+                                </Badge>
+                              )}
+                              <div className="flex justify-end gap-2">
                               <Button variant="outline" size="sm" asChild>
                                 <Link to={`/sicoob/pedidos/${req.order_id}`}>
                                   <Eye className="h-4 w-4" />
@@ -148,19 +168,22 @@ export default function GestorApprovalsPage() {
                                 variant="outline" 
                                 size="sm" 
                                 className="text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20"
-                                onClick={() => handleReject(req.id, req.order_id)}
-                                disabled={approveMutation.isPending || rejectMutation.isPending}
+                                onClick={() => handleReject(req.id, req.order_id, req.approval_authority.reject.source === "delegated")}
+                                disabled={decisionIsDisabled(req.approval_authority.reject.can_decide, decisionPending)}
+                                aria-label="Rejeitar solicitação"
                               >
                                 <X className="h-4 w-4" />
                               </Button>
                               <Button 
                                 size="sm" 
                                 className="bg-sicoob-green hover:bg-sicoob-green-dark text-white"
-                                onClick={() => handleApprove(req.id, req.order_id)}
-                                disabled={approveMutation.isPending || rejectMutation.isPending}
+                                onClick={() => handleApprove(req.id, req.order_id, req.approval_authority.approve.source === "delegated")}
+                                disabled={decisionIsDisabled(req.approval_authority.approve.can_decide, decisionPending)}
+                                aria-label="Aprovar solicitação"
                               >
                                 <Check className="h-4 w-4" />
                               </Button>
+                              </div>
                             </div>
                           </TableCell>
                         </TableRow>

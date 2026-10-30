@@ -1,3 +1,4 @@
+import type { ElementType } from "react";
 /**
  * WizardStepIndicator - Indicador visual dos 4 passos
  * 
@@ -18,12 +19,31 @@ interface WizardStepIndicatorProps {
   wizard: UseSimulatorWizardReturn;
 }
 
-const STEP_ICONS: Record<WizardStep, React.ElementType> = {
+const STEP_ICONS: Record<WizardStep, ElementType> = {
   product: Package,
   location: MapPin,
   specs: SlidersHorizontal,
   comparison: BarChart3,
 };
+
+function DesktopStepIcon({ step, current, completed }: { step: WizardStep; current: boolean; completed: boolean }) {
+  const Icon = STEP_ICONS[step];
+  const stateClass = current ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30 ring-4 ring-primary/20' : completed ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground';
+  return <motion.div className={cn('w-12 h-12 rounded-full flex items-center justify-center transition-all relative', stateClass)} initial={false} animate={current ? { scale: [1, 1.05, 1] } : { scale: 1 }} transition={{ duration: 0.3 }}>{completed ? <Check className="h-5 w-5" strokeWidth={3} /> : <Icon className="h-5 w-5" />}{current ? <motion.div className="absolute inset-0 rounded-full bg-primary/20" initial={{ scale: 1, opacity: 0.5 }} animate={{ scale: 1.5, opacity: 0 }} transition={{ duration: 1.5, repeat: Infinity }} /> : null}</motion.div>;
+}
+
+function DesktopStepLabel({ index, current, clickable, label }: { index: number; current: boolean; clickable: boolean; label: string }) {
+  const hoverClass = clickable && !current ? 'group-hover:text-foreground' : undefined;
+  return <div className="text-center"><p className={cn('text-xs font-medium uppercase tracking-wider mb-0.5', current ? 'text-primary' : 'text-muted-foreground')}>Passo {index + 1}</p><p className={cn('text-sm font-semibold transition-colors', current ? 'text-foreground' : 'text-muted-foreground', hoverClass)}>{label}</p></div>;
+}
+
+function DesktopStep({ step, index, wizard, currentIndex }: { step: WizardStep; index: number; wizard: UseSimulatorWizardReturn; currentIndex: number }) {
+  const completed = index < currentIndex;
+  const current = step === wizard.currentStep;
+  const clickable = wizard.canNavigateToStep(step);
+  const activate = () => { if (clickable) wizard.setStep(step); };
+  return <motion.button onClick={activate} disabled={!clickable} className={cn('flex flex-col items-center gap-3 group transition-all', clickable ? 'cursor-pointer' : 'cursor-not-allowed')} whileHover={clickable ? { y: -2 } : undefined} whileTap={clickable ? { scale: 0.98 } : undefined}><DesktopStepIcon step={step} current={current} completed={completed} /><DesktopStepLabel index={index} current={current} clickable={clickable} label={WIZARD_STEP_CONFIG[step].shortLabel} /></motion.button>;
+}
 
 export function WizardStepIndicator({ wizard }: WizardStepIndicatorProps) {
   const currentIndex = WIZARD_STEPS.indexOf(wizard.currentStep);
@@ -96,70 +116,7 @@ export function WizardStepIndicator({ wizard }: WizardStepIndicatorProps) {
           </div>
 
           <div className="flex justify-between relative -mt-6">
-            {WIZARD_STEPS.map((step, idx) => {
-              const config = WIZARD_STEP_CONFIG[step];
-              const Icon = STEP_ICONS[step];
-              const isCompleted = idx < currentIndex;
-              const isCurrent = step === wizard.currentStep;
-              const isClickable = wizard.canNavigateToStep(step);
-
-              return (
-                <motion.button
-                  key={step}
-                  onClick={() => isClickable && wizard.setStep(step)}
-                  disabled={!isClickable}
-                  className={cn(
-                    'flex flex-col items-center gap-3 group transition-all',
-                    isClickable ? 'cursor-pointer' : 'cursor-not-allowed'
-                  )}
-                  whileHover={isClickable ? { y: -2 } : undefined}
-                  whileTap={isClickable ? { scale: 0.98 } : undefined}
-                >
-                  <motion.div 
-                    className={cn(
-                      'w-12 h-12 rounded-full flex items-center justify-center transition-all relative',
-                      isCurrent && 'bg-primary text-primary-foreground shadow-lg shadow-primary/30 ring-4 ring-primary/20',
-                      isCompleted && 'bg-primary/15 text-primary',
-                      !isCurrent && !isCompleted && 'bg-muted text-muted-foreground'
-                    )}
-                    initial={false}
-                    animate={isCurrent ? { scale: [1, 1.05, 1] } : { scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {isCompleted ? (
-                      <Check className="h-5 w-5" strokeWidth={3} />
-                    ) : (
-                      <Icon className="h-5 w-5" />
-                    )}
-                    
-                    {isCurrent && (
-                      <motion.div
-                        className="absolute inset-0 rounded-full bg-primary/20"
-                        initial={{ scale: 1, opacity: 0.5 }}
-                        animate={{ scale: 1.5, opacity: 0 }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
-                      />
-                    )}
-                  </motion.div>
-
-                  <div className="text-center">
-                    <p className={cn(
-                      'text-xs font-medium uppercase tracking-wider mb-0.5',
-                      isCurrent ? 'text-primary' : 'text-muted-foreground'
-                    )}>
-                      Passo {idx + 1}
-                    </p>
-                    <p className={cn(
-                      'text-sm font-semibold transition-colors',
-                      isCurrent ? 'text-foreground' : 'text-muted-foreground',
-                      isClickable && !isCurrent && 'group-hover:text-foreground'
-                    )}>
-                      {config.shortLabel}
-                    </p>
-                  </div>
-                </motion.button>
-              );
-            })}
+            {WIZARD_STEPS.map((step, index) => <DesktopStep key={step} step={step} index={index} wizard={wizard} currentIndex={currentIndex} />)}
           </div>
         </div>
       </div>

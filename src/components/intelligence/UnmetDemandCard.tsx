@@ -29,8 +29,9 @@ export function UnmetDemandCard({ days }: UnmetDemandCardProps) {
   const { data, isLoading } = useQuery({
     queryKey: ["unmet-demand", days],
     queryFn: async (): Promise<UnmetDemandItem[]> => {
-      const { isDemoMode, MOCK_UNMET_DEMAND } = await import("@/pages/trends/trends-mock");
+      const { isDemoMode } = await import("@/pages/trends/is-demo-mode");
       if (isDemoMode()) {
+        const { MOCK_UNMET_DEMAND } = await import("@/pages/trends/trends-mock");
         const now = new Date().toISOString();
         return MOCK_UNMET_DEMAND.map(d => ({
           term: d.term, searchCount: d.count, lastSearchedAt: now,
@@ -118,7 +119,7 @@ export function UnmetDemandCard({ days }: UnmetDemandCardProps) {
                   size="sm"
                   variant="outline"
                   className="h-7 text-[10px] gap-1 shrink-0"
-                  onClick={() => navigate(`/catalogo?busca=${encodeURIComponent(item.term)}`)}
+                  onClick={() => navigate(`/filtros?search=${encodeURIComponent(item.term)}`)}
                   aria-label={`Pesquisar ${item.term} no catálogo`}
                 >
                   <Plus className="h-3 w-3" />

@@ -5,6 +5,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from "@/lib/logger";
 import { createProductFuseOptions, dedupeById, rankProductSearchResults } from '@/utils/product-search';
 
+const PRODUCT_IMAGE_SELECT = 'product_id, url_cdn, image_type, is_primary, display_order';
+const PRODUCT_IMAGES_WARNING = 'Não foi possível buscar imagens da tabela product_images:';
+
 // ============================================
 // TIPOS
 // ============================================
@@ -113,7 +116,7 @@ async function invokeExternalDb<T>(
 // ============================================
 
 // Select fields que existem no schema Promobrind (campos legados mantidos para fallback)
-const PRODUCT_SELECT = 'id, name, sku, sale_price, primary_image_url, category_id, main_category_id, supplier_reference, description, brand, is_active, active, stock_quantity';
+const PRODUCT_SELECT = 'id, name, sku, sale_price, primary_image_url, category_id, main_category_id, supplier_reference, description, brand, is_active, stock_quantity';
 
 /**
  * Busca produtos do banco externo Promobrind com imagens da nova tabela product_images
@@ -129,7 +132,7 @@ export function useExternalProductSearch(searchQuery: string) {
         invokeExternalDb<ExternalProduct>('products', 'select', {
           filters: {
             _name_prefix: normalizedSearch,
-            active: true,
+            is_active: true,
           },
           select: PRODUCT_SELECT,
           limit: 200,
@@ -138,7 +141,7 @@ export function useExternalProductSearch(searchQuery: string) {
         invokeExternalDb<ExternalProduct>('products', 'select', {
           filters: {
             _search: normalizedSearch,
-            active: true,
+            is_active: true,
           },
           select: PRODUCT_SELECT,
           limit: 500,
@@ -157,7 +160,7 @@ export function useExternalProductSearch(searchQuery: string) {
         try {
           const imagesResult = await invokeExternalDb<ProductImageRecord>('product_images', 'select', {
             filters: { product_id: productIds, is_active: true },
-            select: 'product_id, url_cdn, image_type, is_primary, display_order',
+            select: PRODUCT_IMAGE_SELECT,
             orderBy: { column: 'display_order', ascending: true },
             limit: Math.max(productIds.length * 8, 100),
           });
@@ -169,10 +172,9 @@ export function useExternalProductSearch(searchQuery: string) {
           imagesResult.records.forEach(img => {
             if (!productIdSet.has(img.product_id)) return;
             
-            if (!imagesByProduct.has(img.product_id)) {
-              imagesByProduct.set(img.product_id, []);
-            }
-            imagesByProduct.get(img.product_id)!.push(img);
+            const productImages = imagesByProduct.get(img.product_id) ?? [];
+            productImages.push(img);
+            imagesByProduct.set(img.product_id, productImages);
           });
           
           // Enriquecer produtos com imagens
@@ -191,7 +193,7 @@ export function useExternalProductSearch(searchQuery: string) {
             }
           });
         } catch (err) {
-          logger.warn('Não foi possível buscar imagens da tabela product_images:', err);
+          logger.warn(PRODUCT_IMAGES_WARNING, err);
         }
       }
 
@@ -224,7 +226,7 @@ export function useExternalProduct(productId: string | null) {
         try {
           const imagesResult = await invokeExternalDb<ProductImageRecord>('product_images', 'select', {
             filters: { product_id: productId, is_active: true },
-            select: 'product_id, url_cdn, image_type, is_primary, display_order',
+            select: PRODUCT_IMAGE_SELECT,
             orderBy: { column: 'display_order', ascending: true },
             limit: 100,
           });
@@ -241,7 +243,7 @@ export function useExternalProduct(productId: string | null) {
             product.images = sortedImages.map(img => img.url_cdn);
           }
         } catch (err) {
-          logger.warn('Não foi possível buscar imagens da tabela product_images:', err);
+          logger.warn(PRODUCT_IMAGES_WARNING, err);
         }
       }
       
@@ -326,9 +328,9 @@ export function useExternalProductsList(options?: {
     queryFn: async () => {
       const result = await invokeExternalDb<ExternalProduct>('products', 'select', {
         filters: { 
-          active: true,
+          is_active: true,
         },
-        select: 'id, name, sku, sale_price, image_url, images, primary_image_url, supplier_reference, brand',
+        select: 'id, name, sku, sale_price, images, primary_image_url, supplier_reference, brand',
         limit: options?.limit || 100,
         orderBy: { column: 'name', ascending: true },
       });
@@ -342,7 +344,7 @@ export function useExternalProductsList(options?: {
         try {
           const imagesResult = await invokeExternalDb<ProductImageRecord>('product_images', 'select', {
             filters: { is_active: true },
-            select: 'product_id, url_cdn, image_type, is_primary, display_order',
+            select: PRODUCT_IMAGE_SELECT,
             orderBy: { column: 'display_order', ascending: true },
             limit: 2000,
           });
@@ -354,10 +356,9 @@ export function useExternalProductsList(options?: {
           imagesResult.records.forEach(img => {
             if (!productIdSet.has(img.product_id)) return;
             
-            if (!imagesByProduct.has(img.product_id)) {
-              imagesByProduct.set(img.product_id, []);
-            }
-            imagesByProduct.get(img.product_id)!.push(img);
+            const productImages = imagesByProduct.get(img.product_id) ?? [];
+            productImages.push(img);
+            imagesByProduct.set(img.product_id, productImages);
           });
           
           // Enriquecer produtos com imagens
@@ -376,7 +377,7 @@ export function useExternalProductsList(options?: {
             }
           });
         } catch (err) {
-          logger.warn('Não foi possível buscar imagens da tabela product_images:', err);
+          logger.warn(PRODUCT_IMAGES_WARNING, err);
         }
       }
 

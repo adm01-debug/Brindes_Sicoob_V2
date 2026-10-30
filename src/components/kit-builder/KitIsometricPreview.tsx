@@ -38,7 +38,7 @@ const PALETTE = [
 ];
 
 function colorFor(id: string, idx: number): string {
-  return PALETTE[idx % PALETTE.length] ?? PALETTE[0];
+  return PALETTE[idx % PALETTE.length] ?? PALETTE[0] ?? 'hsl(var(--primary))';
 }
 
 // Bin packing 3D simplificado (shelf packing por camadas Y)
@@ -101,162 +101,79 @@ function iso(x: number, y: number, z: number): { px: number; py: number } {
   };
 }
 
+type KitBox = NonNullable<KitState['box']>;
+
+function facePath(points: { px: number; py: number }[], tx: number, ty: number): string {
+  return points.map((point, index) => `${index === 0 ? 'M' : 'L'}${(point.px + tx).toFixed(1)},${(point.py + ty).toFixed(1)}`).join(' ') + ' Z';
+}
+
+function buildPreviewLayout(box: KitBox, items: KitState['items']) {
+  const placed = packItems(box.internalWidth, box.internalHeight, box.internalDepth, items.map(item => ({ id: item.id, name: item.name, w: Math.max(item.width, 1), h: Math.max(item.height, 1), d: Math.max(item.depth, 1), quantity: item.quantity })));
+  const sorted = [...placed].sort((a, b) => a.y - b.y || (b.x + b.d) - (a.x + a.d));
+  const totalRequested = items.reduce((sum, item) => sum + item.quantity, 0);
+  return { sorted, totalRequested };
+}
+
+function buildProjection(box: KitBox) {
+  const { internalWidth: width, internalHeight: height, internalDepth: depth } = box;
+  const corners = [iso(0, 0, 0), iso(width, 0, 0), iso(width, 0, depth), iso(0, 0, depth), iso(0, height, 0), iso(width, height, 0), iso(width, height, depth), iso(0, height, depth)];
+  const corner = (index: number) => corners[index] ?? { px: 0, py: 0 };
+  const xs = corners.map(point => point.px);
+  const ys = corners.map(point => point.py);
+  const pad = 12;
+  const tx = -Math.min(...xs) + pad;
+  const ty = -Math.min(...ys) + pad;
+  return { corners, corner, tx, ty, viewBoxWidth: Math.max(...xs) - Math.min(...xs) + pad * 2, viewBoxHeight: Math.max(...ys) - Math.min(...ys) + pad * 2 };
+}
+
+function capacityStatus(percentage: number): { color: string; label: string } {
+  if (percentage > 100) return { color: 'destructive', label: 'Excedido' };
+  if (percentage > 85) return { color: 'warning', label: 'Quase cheio' };
+  if (percentage > 50) return { color: 'primary', label: 'Bom uso' };
+  return { color: 'muted', label: 'Sobra espaço' };
+}
+
+function PreviewItem({ item, tx, ty }: { item: PlacedItem; tx: number; ty: number }) {
+  const c100 = iso(item.x + item.w, item.y, 0);
+  const c101 = iso(item.x + item.w, item.y, item.d);
+  const c001 = iso(item.x, item.y, item.d);
+  const c010 = iso(item.x, item.y + item.h, 0);
+  const c110 = iso(item.x + item.w, item.y + item.h, 0);
+  const c111 = iso(item.x + item.w, item.y + item.h, item.d);
+  const c011 = iso(item.x, item.y + item.h, item.d);
+  return <g><title>{item.name}</title><path d={facePath([c110, c100, c101, c111], tx, ty)} fill={item.color} fillOpacity="0.65" stroke="hsl(var(--background))" strokeWidth="0.6" /><path d={facePath([c011, c111, c101, c001], tx, ty)} fill={item.color} fillOpacity="0.85" stroke="hsl(var(--background))" strokeWidth="0.6" /><path d={facePath([c010, c110, c111, c011], tx, ty)} fill={item.color} fillOpacity="1" stroke="hsl(var(--background))" strokeWidth="0.6" /></g>;
+}
+
+function PreviewHeader({ percentage }: { percentage: number }) {
+  const status = capacityStatus(percentage);
+  return <div className="flex items-center justify-between"><h3 className="font-display font-semibold text-sm flex items-center gap-2"><Package className="h-4 w-4 text-primary" />Preview da Caixa</h3><Badge variant="outline" className={cn('text-[10px]', status.color === 'destructive' && 'border-destructive text-destructive', status.color === 'warning' && 'border-warning text-warning', status.color === 'primary' && 'border-primary text-primary')}>{percentage.toFixed(0)}% — {status.label}</Badge></div>;
+}
+
+function PreviewSvg({ box, items }: { box: KitBox; items: PlacedItem[] }) {
+  const projection = buildProjection(box);
+  const { corner, tx, ty } = projection;
+  const bottom = facePath([corner(0), corner(1), corner(2), corner(3)], tx, ty);
+  const back = facePath([corner(1), corner(2), corner(6), corner(5)], tx, ty);
+  const left = facePath([corner(0), corner(3), corner(7), corner(4)], tx, ty);
+  const top = facePath([corner(4), corner(5), corner(6), corner(7)], tx, ty);
+  return <div className="bg-muted/30 rounded-lg p-2 flex items-center justify-center"><svg viewBox={`0 0 ${projection.viewBoxWidth} ${projection.viewBoxHeight}`} className="w-full h-auto max-h-[280px]" role="img" aria-label={`Visualização isométrica da caixa ${box.name} com ${items.length} itens`}><path d={bottom} fill="hsl(var(--muted))" fillOpacity="0.4" stroke="hsl(var(--border))" strokeWidth="1" /><path d={back} fill="hsl(var(--muted))" fillOpacity="0.25" stroke="hsl(var(--border))" strokeWidth="1" /><path d={left} fill="hsl(var(--muted))" fillOpacity="0.3" stroke="hsl(var(--border))" strokeWidth="1" />{items.map(item => <PreviewItem key={item.id} item={item} tx={tx} ty={ty} />)}<path d={top} fill="none" stroke="hsl(var(--border))" strokeWidth="1" strokeDasharray="3 2" /></svg></div>;
+}
+
+function PreviewFooter({ box, placedCount, totalRequested }: { box: KitBox; placedCount: number; totalRequested: number }) {
+  const overflowCount = Math.max(0, totalRequested - placedCount);
+  return <div className="flex items-center justify-between text-xs text-muted-foreground"><span>{box.internalWidth}×{box.internalHeight}×{box.internalDepth} cm — {box.name}</span><span>{placedCount}/{totalRequested} itens visíveis{overflowCount > 0 && <span className="text-destructive ml-1">(+{overflowCount} fora)</span>}</span></div>;
+}
+
 export function KitIsometricPreview({ kitState, className }: KitIsometricPreviewProps) {
   const { box, items, volumeUsagePercent } = kitState;
-
-  const layout = useMemo(() => {
-    if (!box) return null;
-    const placed = packItems(
-      box.internalWidth,
-      box.internalHeight,
-      box.internalDepth,
-      items.map((i) => ({
-        id: i.id,
-        name: i.name,
-        w: Math.max(i.width, 1),
-        h: Math.max(i.height, 1),
-        d: Math.max(i.depth, 1),
-        quantity: i.quantity,
-      }))
-    );
-    return { placed, totalRequested: items.reduce((s, i) => s + i.quantity, 0) };
-  }, [box, items]);
-
-  if (!box) {
-    return (
-      <Card className={cn('flex items-center justify-center p-8 text-muted-foreground', className)}>
-        <Package className="h-5 w-5 mr-2" /> Selecione uma caixa para visualizar
-      </Card>
-    );
-  }
-
-  const { internalWidth: bw, internalHeight: bh, internalDepth: bd } = box;
-  const corners: { px: number; py: number }[] = [
-    iso(0, 0, 0), iso(bw, 0, 0), iso(bw, 0, bd), iso(0, 0, bd),
-    iso(0, bh, 0), iso(bw, bh, 0), iso(bw, bh, bd), iso(0, bh, bd),
-  ];
-  const corner = (i: number): { px: number; py: number } => corners[i] ?? { px: 0, py: 0 };
-  const xs = corners.map((c) => c.px);
-  const ys = corners.map((c) => c.py);
-  const minX = Math.min(...xs), maxX = Math.max(...xs);
-  const minY = Math.min(...ys), maxY = Math.max(...ys);
-  const pad = 12;
-  const vbW = maxX - minX + pad * 2;
-  const vbH = maxY - minY + pad * 2;
-  const tx = -minX + pad;
-  const ty = -minY + pad;
-
-  // Cor semântica do status
-  const statusColor =
-    volumeUsagePercent > 100 ? 'destructive' :
-    volumeUsagePercent > 85 ? 'warning' :
-    volumeUsagePercent > 50 ? 'primary' : 'muted';
-  const statusLabel =
-    volumeUsagePercent > 100 ? 'Excedido' :
-    volumeUsagePercent > 85 ? 'Quase cheio' :
-    volumeUsagePercent > 50 ? 'Bom uso' : 'Sobra espaço';
-
-  // Helpers para faces de cubo
-  const facePath = (pts: { px: number; py: number }[]) =>
-    pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${(p.px + tx).toFixed(1)},${(p.py + ty).toFixed(1)}`).join(' ') + ' Z';
-
-  // Caixa: face traseira-direita + base + lateral
-  const boxBack = facePath([corner(1), corner(2), corner(6), corner(5)]);
-  const boxLeft = facePath([corner(0), corner(3), corner(7), corner(4)]);
-  const boxBottom = facePath([corner(0), corner(1), corner(2), corner(3)]);
-
-  // Itens — desenhar do mais distante (z+x maior) ao mais próximo, baixo→alto
-  const sorted = layout
-    ? [...layout.placed].sort((a, b) =>
-        a.y - b.y ||
-        (b.x + b.d) - (a.x + a.d)
-      )
-    : [];
-
-  const placedCount = sorted.length;
-  const totalRequested = layout?.totalRequested ?? 0;
-  const overflowCount = Math.max(0, totalRequested - placedCount);
-
+  const layout = useMemo(() => box ? buildPreviewLayout(box, items) : null, [box, items]);
+  if (!box || !layout) return <Card className={cn('flex items-center justify-center p-8 text-muted-foreground', className)}><Package className="h-5 w-5 mr-2" /> Selecione uma caixa para visualizar</Card>;
   return (
     <Card className={cn('overflow-hidden', className)}>
       <CardContent className="p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="font-display font-semibold text-sm flex items-center gap-2">
-            <Package className="h-4 w-4 text-primary" />
-            Preview da Caixa
-          </h3>
-          <Badge
-            variant="outline"
-            className={cn(
-              'text-[10px]',
-              statusColor === 'destructive' && 'border-destructive text-destructive',
-              statusColor === 'warning' && 'border-warning text-warning',
-              statusColor === 'primary' && 'border-primary text-primary'
-            )}
-          >
-            {volumeUsagePercent.toFixed(0)}% — {statusLabel}
-          </Badge>
-        </div>
-
-        <div className="bg-muted/30 rounded-lg p-2 flex items-center justify-center">
-          <svg
-            viewBox={`0 0 ${vbW} ${vbH}`}
-            className="w-full h-auto max-h-[280px]"
-            role="img"
-            aria-label={`Visualização isométrica da caixa ${box.name} com ${placedCount} itens`}
-          >
-            {/* Faces da caixa (vazia/wireframe) */}
-            <path d={boxBottom} fill="hsl(var(--muted))" fillOpacity="0.4" stroke="hsl(var(--border))" strokeWidth="1" />
-            <path d={boxBack} fill="hsl(var(--muted))" fillOpacity="0.25" stroke="hsl(var(--border))" strokeWidth="1" />
-            <path d={boxLeft} fill="hsl(var(--muted))" fillOpacity="0.3" stroke="hsl(var(--border))" strokeWidth="1" />
-
-            {/* Itens empilhados */}
-            {sorted.map((p) => {
-              const c000 = iso(p.x, p.y, 0);
-              const c100 = iso(p.x + p.w, p.y, 0);
-              const c101 = iso(p.x + p.w, p.y, p.d);
-              const c001 = iso(p.x, p.y, p.d);
-              const c010 = iso(p.x, p.y + p.h, 0);
-              const c110 = iso(p.x + p.w, p.y + p.h, 0);
-              const c111 = iso(p.x + p.w, p.y + p.h, p.d);
-              const c011 = iso(p.x, p.y + p.h, p.d);
-
-              const top = facePath([c010, c110, c111, c011]);
-              const right = facePath([c110, c100, c101, c111]);
-              const front = facePath([c011, c111, c101, c001]);
-
-              return (
-                <g key={p.id}>
-                  <title>{p.name}</title>
-                  <path d={right} fill={p.color} fillOpacity="0.65" stroke="hsl(var(--background))" strokeWidth="0.6" />
-                  <path d={front} fill={p.color} fillOpacity="0.85" stroke="hsl(var(--background))" strokeWidth="0.6" />
-                  <path d={top} fill={p.color} fillOpacity="1" stroke="hsl(var(--background))" strokeWidth="0.6" />
-                </g>
-              );
-            })}
-
-            {/* Borda superior (wireframe) */}
-            <path
-              d={facePath([corner(4), corner(5), corner(6), corner(7)])}
-              fill="none"
-              stroke="hsl(var(--border))"
-              strokeWidth="1"
-              strokeDasharray="3 2"
-            />
-          </svg>
-        </div>
-
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>
-            {bw}×{bh}×{bd} cm — {box.name}
-          </span>
-          <span>
-            {placedCount}/{totalRequested} itens visíveis
-            {overflowCount > 0 && (
-              <span className="text-destructive ml-1">(+{overflowCount} fora)</span>
-            )}
-          </span>
-        </div>
+        <PreviewHeader percentage={volumeUsagePercent} />
+        <PreviewSvg box={box} items={layout.sorted} />
+        <PreviewFooter box={box} placedCount={layout.sorted.length} totalRequested={layout.totalRequested} />
       </CardContent>
     </Card>
   );

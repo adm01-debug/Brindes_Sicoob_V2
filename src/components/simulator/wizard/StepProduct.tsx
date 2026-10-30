@@ -17,7 +17,7 @@ import {
   Sparkles,
   Clock,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useExternalProductSearch } from '@/hooks/useExternalSimulator';
@@ -31,6 +31,16 @@ interface StepProductProps {
 }
 
 const QUANTITY_PRESETS = [50, 100, 250, 500, 1000];
+
+function RecentDrafts({ wizard, drafts }: { wizard: UseSimulatorWizardReturn; drafts: ReturnType<typeof useWizardDrafts>["drafts"] }) {
+  if (wizard.selectedProduct || drafts.length === 0) return null;
+  return <div className="flex items-center gap-2 overflow-x-auto pb-1"><Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" /><span className="text-xs text-muted-foreground shrink-0">Recentes:</span>{drafts.slice(0, 4).map((draft) => <Button key={draft.id} variant="outline" size="sm" className="h-7 text-xs gap-1.5 shrink-0 rounded-lg" onClick={() => { if (draft.product_data) { wizard.selectProduct(draft.product_data); wizard.setQuantity(draft.quantity); } }}><span className="truncate max-w-[120px]">{draft.title}</span><Badge variant="secondary" className="text-[9px] h-4 px-1">{draft.quantity}un</Badge></Button>)}</div>;
+}
+
+function ResultsCount({ loading, search, count }: { loading: boolean; search: string; count: number }) {
+  if (loading || search.trim().length < 2) return null;
+  return <p className="text-sm text-muted-foreground">{count} produtos encontrados{search ? <span> para "<span className="font-semibold">{search}</span>"</span> : null}</p>;
+}
 
 export function StepProduct({ wizard }: StepProductProps) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -111,6 +121,7 @@ export function StepProduct({ wizard }: StepProductProps) {
             ))}
           </div>
           <Input
+            aria-label="Quantidade de unidades"
             type="number"
             value={wizard.quantity}
             onChange={e => wizard.setQuantity(parseInt(e.target.value) || 1)}
@@ -132,33 +143,12 @@ export function StepProduct({ wizard }: StepProductProps) {
       </div>
 
       {/* Recent Drafts */}
-      {!wizard.selectedProduct && drafts.length > 0 && (
-        <div className="flex items-center gap-2 overflow-x-auto pb-1">
-          <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-          <span className="text-xs text-muted-foreground shrink-0">Recentes:</span>
-          {drafts.slice(0, 4).map((draft) => (
-            <Button
-              key={draft.id}
-              variant="outline"
-              size="sm"
-              className="h-7 text-xs gap-1.5 shrink-0 rounded-lg"
-              onClick={() => {
-                if (draft.product_data) {
-                  wizard.selectProduct(draft.product_data);
-                  wizard.setQuantity(draft.quantity);
-                }
-              }}
-            >
-              <span className="truncate max-w-[120px]">{draft.title}</span>
-              <Badge variant="secondary" className="text-[9px] h-4 px-1">{draft.quantity}un</Badge>
-            </Button>
-          ))}
-        </div>
-      )}
+      <RecentDrafts wizard={wizard} drafts={drafts} />
 
       <div className="relative">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
         <Input
+          aria-label="Pesquisar produto"
           placeholder="Pesquisar por nome, SKU ou categoria..."
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
@@ -178,12 +168,7 @@ export function StepProduct({ wizard }: StepProductProps) {
 
 
       {/* Results count */}
-      {!isLoading && searchTerm.trim().length >= 2 && (
-        <p className="text-sm text-muted-foreground">
-          {filteredProducts.length} produtos encontrados
-          {searchTerm && <span> para "<span className="font-semibold">{searchTerm}</span>"</span>}
-        </p>
-      )}
+      <ResultsCount loading={isLoading} search={searchTerm} count={filteredProducts.length} />
 
       {/* Products Grid - Virtualized */}
       <div ref={parentRef} className="h-[520px] overflow-auto pr-2 rounded-xl" style={{ contain: 'strict' }}>

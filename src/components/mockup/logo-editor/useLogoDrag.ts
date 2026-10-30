@@ -1,8 +1,8 @@
-import { useRef, useCallback } from "react";
+import { type PointerEvent as ReactPointerEvent, type RefObject, useRef, useCallback } from "react";
 import { clamp } from "./logoTechniqueFilters";
 
 export function useLogoDrag(
-  containerRef: React.RefObject<HTMLElement | null>,
+  containerRef: RefObject<HTMLElement | null>,
   positionX: number,
   positionY: number,
   onPositionChange: (x: number, y: number) => void
@@ -39,7 +39,7 @@ export function useLogoDrag(
   }, [handlePointerMove]);
 
   const handlePointerDown = useCallback(
-    (e: React.PointerEvent) => {
+    (e: ReactPointerEvent) => {
       e.preventDefault();
       e.stopPropagation();
 

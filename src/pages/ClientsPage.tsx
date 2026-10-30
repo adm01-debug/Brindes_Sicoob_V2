@@ -1,12 +1,11 @@
 import { useState } from "react";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
-import { Users, Search, Plus, Filter, TrendingUp, DollarSign, Target, ChevronRight } from "lucide-react";
+import { Users, Search, Plus, Filter, TrendingUp, DollarSign, Target } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 

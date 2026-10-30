@@ -9,15 +9,62 @@ interface MagicUpBrandSafetyChecklistProps {
   hasLogo: boolean;
 }
 
-export function MagicUpBrandSafetyChecklist({ kit, hasClient, hasLogo }: MagicUpBrandSafetyChecklistProps) {
-  const checks = [
+interface BrandSafetyCheck {
+  label: string;
+  passed: boolean;
+}
+
+function hasLogoAvailable(kit: MagicUpBrandKit, hasLogo: boolean) {
+  return hasLogo || kit.logoUrls.length > 0;
+}
+
+function hasBrandGuidelines(kit: MagicUpBrandKit) {
+  return Boolean(kit.notes.trim() || kit.toneOfVoice || kit.visualStyle);
+}
+
+function hasInstitutionalColors(kit: MagicUpBrandKit) {
+  return Boolean(kit.primaryColor || kit.secondaryColor);
+}
+
+function hasBrandTerms(kit: MagicUpBrandKit) {
+  return kit.requiredWords.length > 0 || kit.forbiddenWords.length > 0;
+}
+
+function hasLowGenericRisk(kit: MagicUpBrandKit, hasClient: boolean, hasLogo: boolean) {
+  const hasVisualReference = hasLogoAvailable(kit, hasLogo);
+  const hasWrittenReference = Boolean(kit.notes.trim() || kit.primaryColor);
+  return hasClient && hasVisualReference && hasWrittenReference;
+}
+
+function buildBrandSafetyChecks(
+  kit: MagicUpBrandKit,
+  hasClient: boolean,
+  hasLogo: boolean,
+): BrandSafetyCheck[] {
+  return [
     { label: "Cliente selecionado", passed: hasClient },
-    { label: "Logo disponível", passed: hasLogo || kit.logoUrls.length > 0 },
-    { label: "Diretrizes preenchidas", passed: !!kit.notes.trim() || !!kit.toneOfVoice || !!kit.visualStyle },
-    { label: "Cores institucionais", passed: !!kit.primaryColor || !!kit.secondaryColor },
-    { label: "Termos de marca", passed: kit.requiredWords.length > 0 || kit.forbiddenWords.length > 0 },
-    { label: "Baixo risco genérico", passed: hasClient && (hasLogo || kit.logoUrls.length > 0) && (!!kit.notes.trim() || !!kit.primaryColor) },
+    { label: "Logo disponível", passed: hasLogoAvailable(kit, hasLogo) },
+    { label: "Diretrizes preenchidas", passed: hasBrandGuidelines(kit) },
+    { label: "Cores institucionais", passed: hasInstitutionalColors(kit) },
+    { label: "Termos de marca", passed: hasBrandTerms(kit) },
+    { label: "Baixo risco genérico", passed: hasLowGenericRisk(kit, hasClient, hasLogo) },
   ];
+}
+
+function SafetyCheckRow({ check }: { check: BrandSafetyCheck }) {
+  const Icon = check.passed ? CheckCircle2 : AlertTriangle;
+  const iconClassName = check.passed ? "text-primary" : "text-warning";
+
+  return (
+    <div className={cn("flex items-center gap-1.5 text-[11px]", check.passed ? "text-foreground" : "text-muted-foreground")}>
+      <Icon className={cn("h-3.5 w-3.5", iconClassName)} />
+      <span>{check.label}</span>
+    </div>
+  );
+}
+
+export function MagicUpBrandSafetyChecklist({ kit, hasClient, hasLogo }: MagicUpBrandSafetyChecklistProps) {
+  const checks = buildBrandSafetyChecks(kit, hasClient, hasLogo);
   const passedCount = checks.filter((check) => check.passed).length;
 
   return (
@@ -28,10 +75,7 @@ export function MagicUpBrandSafetyChecklist({ kit, hasClient, hasLogo }: MagicUp
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
         {checks.map((check) => (
-          <div key={check.label} className={cn("flex items-center gap-1.5 text-[11px]", check.passed ? "text-foreground" : "text-muted-foreground")}>
-            {check.passed ? <CheckCircle2 className="h-3.5 w-3.5 text-primary" /> : <AlertTriangle className="h-3.5 w-3.5 text-warning" />}
-            <span>{check.label}</span>
-          </div>
+          <SafetyCheckRow key={check.label} check={check} />
         ))}
       </div>
     </div>

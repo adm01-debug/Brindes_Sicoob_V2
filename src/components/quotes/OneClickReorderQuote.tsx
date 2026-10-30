@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { type MouseEvent, useState } from "react";
 import { RotateCcw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+
 import { useNavigate } from "react-router-dom";
 import { useQuotes } from "@/hooks/quotes/useQuotes";
 import { cn } from "@/lib/utils";
@@ -14,14 +14,14 @@ interface Props {
 }
 
 /**
- * OneClickReorderQuote — Permite ao Gerente PA duplicar um orçamento anterior rapidamente.
+ * Recompra segura: usa o orçamento aprovado como referência e reconsulta o catálogo.
  */
 export function OneClickReorderQuote({ quoteId, variant = "outline", className, showLabel = true }: Props) {
   const [isProcessing, setIsProcessing] = useState(false);
   const navigate = useNavigate();
   const { reorderQuote } = useQuotes();
 
-  const handleReorder = async (e: React.MouseEvent) => {
+  const handleReorder = async (e: MouseEvent) => {
     e.stopPropagation();
     setIsProcessing(true);
     try {
@@ -49,7 +49,7 @@ export function OneClickReorderQuote({ quoteId, variant = "outline", className, 
       ) : (
         <RotateCcw className="h-4 w-4 mr-2" />
       )}
-      {showLabel && "Comprar novamente"}
+      {showLabel && "Recomprar com valores atuais"}
     </Button>
   );
 }

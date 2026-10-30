@@ -91,9 +91,39 @@ interface RawColor {
   code?: string;
   color_code?: string;
   supplier_code?: string;
-  image?: string;
+  image?: string | null;
   images?: string[];
   stock?: number;
+}
+
+function firstText(...values: Array<string | null | undefined>): string | undefined {
+  return values.find((value): value is string => Boolean(value));
+}
+
+function optionalText(value: string | null | undefined): string | undefined {
+  return value || undefined;
+}
+
+function resolveColorHex(color: RawColor, name: string): string {
+  const rawHex = firstText(color.hex, color.hex_code, color.color_hex);
+  if (!rawHex || rawHex === '#CCCCCC') return findKnownHex(name) || rawHex || '#CCCCCC';
+  return rawHex;
+}
+
+function normalizeColorObject(color: RawColor): ProductColor {
+  const name = firstText(color.name, color.color_name) ?? 'Sem cor';
+  const group = firstText(color.groupName, color.group, color.color_group) ?? detectColorGroup(name);
+
+  return {
+    name,
+    hex: resolveColorHex(color, name),
+    group,
+    groupSlug: optionalText(color.groupSlug),
+    variationSlug: optionalText(color.variationSlug),
+    code: firstText(color.code, color.color_code, color.supplier_code),
+    image: optionalText(color.image),
+    images: color.images?.length ? color.images : undefined,
+  };
 }
 
 /** Normaliza array de cores (strings ou objetos) para formato padronizado */
@@ -111,26 +141,6 @@ export function normalizeColors(colors: Array<string | RawColor> | undefined | n
       };
     }
 
-    const name = c.name || c.color_name || 'Sem cor';
-    const groupSlug = c.groupSlug || undefined;
-    const variationSlug = c.variationSlug || undefined;
-    const group = c.groupName || c.group || c.color_group || detectColorGroup(name);
-
-    let hex = c.hex || c.hex_code || c.color_hex;
-    if (!hex || hex === '#CCCCCC') {
-      const knownHex = findKnownHex(name);
-      if (knownHex) hex = knownHex;
-    }
-
-    return {
-      name,
-      hex: hex || '#CCCCCC',
-      group,
-      groupSlug,
-      variationSlug,
-      code: c.code || c.color_code || c.supplier_code || undefined,
-      image: c.image || undefined,
-      images: Array.isArray(c.images) && c.images.length ? c.images : undefined,
-    };
+    return normalizeColorObject(c);
   });
 }

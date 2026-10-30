@@ -1,0 +1,62 @@
+{
+  "data": "2026-09-28T14:48:01.048475+00:00",
+  "commit": "8028c879dedb011cda4946ccd8d0e86a75558bef",
+  "node": "v24.19.0",
+  "instalacao": {
+    "comando": "npm ci",
+    "resultado": "aprovado",
+    "vulnerabilidades_reportadas": 0
+  },
+  "vitest": {
+    "comando": "npm run test -- --reporter=dot",
+    "aprovados": 5547,
+    "falhas": 22,
+    "ignorados": 112,
+    "arquivos_aprovados": 397,
+    "arquivos_falhos": 3,
+    "arquivos_ignorados": 8,
+    "falhos": [
+      "tests/components/LoadingScreen.test.tsx",
+      "tests/components/PriceFreshnessBadge.colorAndIcon.test.tsx",
+      "tests/components/PriceFreshnessBadge.thresholdHosts.test.tsx"
+    ],
+    "diagnostico": "Asserções de classes de ícones incompatíveis com lucide-react atualizado; não foi comprovada falha do cálculo comercial nestes testes."
+  },
+  "cenarios_node": {
+    "aprovados": 202,
+    "falhas": 0,
+    "ignorados": 0
+  },
+  "typecheck": {
+    "resultado": "falhou",
+    "diagnosticos": 179,
+    "baseline": 166,
+    "arquivos_com_regressao": 15
+  },
+  "lint": {
+    "resultado": "gate sem regressão em zero arquivos de aplicação alterados",
+    "erros_globais": 3269
+  },
+  "build": {
+    "resultado": "aprovado",
+    "limites": [
+      "Variáveis VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY não fornecidas ao build isolado.",
+      "Build não equivale a configuração funcional de acesso ao banco.",
+      "Chunks acima de 600 kB."
+    ]
+  },
+  "sondas_reproducao": {
+    "react_servico": 6,
+    "sql": 2,
+    "interpretacao": "Reprodução de defeitos, não funcionalidades aprovadas."
+  },
+  "simuladores_sql_reexecutados": [
+    "salvamento-orcamento-atomico",
+    "convites-sicoob",
+    "delegacao-aprovacao-sicoob",
+    "rls-cruzada-sicoob"
+  ],
+  "e2e_autenticado": "não executado nesta revisão",
+  "deno": "não reexecutado nesta revisão",
+  "sql_canonico": "evidência anterior de 28/09 reutilizada; não consultado novamente nesta revisão"
+}

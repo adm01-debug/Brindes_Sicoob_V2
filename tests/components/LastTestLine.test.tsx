@@ -59,3 +59,4 @@ describe("LastTestLine", () => {
     expect(titled!.getAttribute("title")).toContain("504");
   });
 });
+import React from 'react';

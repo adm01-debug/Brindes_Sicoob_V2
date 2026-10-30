@@ -20,11 +20,24 @@ export default defineConfig(({ mode }) => ({
       template: 'treemap',
     }),
   ].filter(Boolean),
+
+  // A constante literal permite ao Rollup remover por completo as rotas e os
+  // ativos demonstrativos do bundle normal. O workflow visual opt-in define
+  // VITE_ENABLE_DEMO_PAGES=true e mantém as páginas disponíveis para QA.
+  define: {
+    __ENABLE_DEMO_PAGES__: JSON.stringify(
+      mode === 'development' || process.env.VITE_ENABLE_DEMO_PAGES === 'true',
+    ),
+  },
   
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    // O layout híbrido npm/Deno cria links físicos distintos para os peers de
+    // algumas dependências. Sem deduplicação, o bundle de produção pode conter
+    // duas instâncias do React e quebrar hooks ao carregar o aplicativo interno.
+    dedupe: ['react', 'react-dom'],
   },
   
   esbuild: {
@@ -54,9 +67,14 @@ export default defineConfig(({ mode }) => ({
             return 'core-vendor';
           }
           
-          // Data & API
-          if (id.includes('node_modules/@tanstack/') || id.includes('node_modules/@supabase/') || id.includes('node_modules/supabase')) {
-            return 'data-vendor';
+          // O login precisa do cliente Supabase, mas não do TanStack Query usado
+          // no aplicativo interno. Mantê-los no mesmo chunk fazia a entrada
+          // pública baixar dezenas de KiB de código sem uso antes do LCP.
+          if (id.includes('node_modules/@supabase/') || id.includes('node_modules/supabase')) {
+            return 'supabase-vendor';
+          }
+          if (id.includes('node_modules/@tanstack/')) {
+            return 'query-vendor';
           }
 
           // Bibliotecas utilizadas apenas em rotas (PDF, gráficos, ícones,

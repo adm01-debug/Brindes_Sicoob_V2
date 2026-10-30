@@ -17,6 +17,18 @@ interface QuoteWhatsAppShareProps {
   size?: "default" | "sm" | "lg" | "icon";
 }
 
+function buildWhatsAppMessage({ quoteNumber, total, validUntil, approvalLink }: QuoteWhatsAppShareProps): string {
+  const lines = [
+    `📋 *Proposta Comercial ${quoteNumber}*`,
+    "",
+    `💰 Valor Total: *${total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}*`,
+  ];
+  if (validUntil) lines.push(`📅 Válida até: ${format(new Date(validUntil), "dd/MM/yyyy", { locale: ptBR })}`);
+  if (approvalLink) lines.push("", "✅ Visualizar e aprovar proposta:", approvalLink);
+  lines.push("", "Qualquer dúvida, estou à disposição! 😊");
+  return encodeURIComponent(lines.join("\n"));
+}
+
 export function QuoteWhatsAppShare({
   quoteNumber,
   total,
@@ -28,30 +40,7 @@ export function QuoteWhatsAppShare({
   size = "default",
 }: QuoteWhatsAppShareProps) {
   const handleShare = () => {
-    const lines = [
-      `📋 *Proposta Comercial ${quoteNumber}*`,
-      "",
-      `💰 Valor Total: *${total.toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      })}*`,
-    ];
-
-    if (validUntil) {
-      lines.push(
-        `📅 Válida até: ${format(new Date(validUntil), "dd/MM/yyyy", {
-          locale: ptBR,
-        })}`
-      );
-    }
-
-    if (approvalLink) {
-      lines.push("", `✅ Visualizar e aprovar proposta:`, approvalLink);
-    }
-
-    lines.push("", "Qualquer dúvida, estou à disposição! 😊");
-
-    const message = encodeURIComponent(lines.join("\n"));
+    const message = buildWhatsAppMessage({ quoteNumber, total, validUntil, approvalLink });
     const phone = clientPhone?.replace(/\D/g, "") || "";
     
     // Se tiver telefone, envia direto, senão abre a lista de contatos

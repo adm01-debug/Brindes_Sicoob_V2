@@ -27,6 +27,23 @@ const MAGIC_NUMBERS: Record<string, string[]> = {
   "application/pdf": ["25504446"], // %PDF
 };
 
+function basicValidationError(file: File, options: Required<ValidationOptions>): string | null {
+  if (file.size > options.maxSizeMb * 1024 * 1024) return `Arquivo excede o limite de ${options.maxSizeMb}MB.`;
+  const extension = `.${file.name.split(".").pop()?.toLowerCase()}`;
+  if (!options.allowedExtensions.includes(extension)) return "Extensão de arquivo não permitida.";
+  if (!options.allowedMimeTypes.includes(file.type)) return "Tipo de arquivo inválido.";
+  return null;
+}
+
+async function hasValidSignature(file: File): Promise<boolean> {
+  const expected = MAGIC_NUMBERS[file.type];
+  if (!expected) return true;
+  const signature = await getFileSignature(file);
+  const valid = expected.some(candidate => signature.startsWith(candidate));
+  if (!valid) logger.error("File signature mismatch detected", { filename: file.name, reportedType: file.type, signature });
+  return valid;
+}
+
 export async function validateFile(
   file: File,
   options: ValidationOptions = {}
@@ -37,35 +54,13 @@ export async function validateFile(
     allowedMimeTypes = ["image/jpeg", "image/png", "image/webp", "application/pdf"],
   } = options;
 
-  // 1. Validação de Tamanho
-  const maxBytes = maxSizeMb * 1024 * 1024;
-  if (file.size > maxBytes) {
-    return { valid: false, error: `Arquivo excede o limite de ${maxSizeMb}MB.` };
-  }
-
-  // 2. Validação de Extensão
-  const extension = `.${file.name.split(".").pop()?.toLowerCase()}`;
-  if (!allowedExtensions.includes(extension)) {
-    return { valid: false, error: "Extensão de arquivo não permitida." };
-  }
-
-  // 3. Validação de MIME Type (Browser-reported)
-  if (!allowedMimeTypes.includes(file.type)) {
-    return { valid: false, error: "Tipo de arquivo inválido." };
-  }
+  const basicError = basicValidationError(file, { maxSizeMb, allowedExtensions, allowedMimeTypes });
+  if (basicError) return { valid: false, error: basicError };
 
   // 4. Verificação de Integridade (Magic Numbers)
   // Lê os primeiros 4 bytes do arquivo para confirmar o tipo real
   try {
-    const signature = await getFileSignature(file);
-    const expectedSignatures = MAGIC_NUMBERS[file.type];
-    
-    if (expectedSignatures && !expectedSignatures.some(s => signature.startsWith(s))) {
-      logger.error("File signature mismatch detected", { 
-        filename: file.name, 
-        reportedType: file.type, 
-        signature 
-      });
+    if (!(await hasValidSignature(file))) {
       return { valid: false, error: "Conteúdo do arquivo não corresponde à sua extensão (possível arquivo malicioso)." };
     }
   } catch (err) {

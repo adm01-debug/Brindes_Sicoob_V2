@@ -1,0 +1,458 @@
+{
+  "cache_date": "2026-09-17",
+  "live_database_verified": false,
+  "calls": [
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 77,
+      "resource": "product_group_components",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 99,
+      "resource": "product_group_locations",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 135,
+      "resource": "product_group_location_techniques",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 153,
+      "resource": "product_group_components",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 165,
+      "resource": "product_group_components",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 174,
+      "resource": "product_group_components",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 186,
+      "resource": "product_group_locations",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 198,
+      "resource": "product_group_locations",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 210,
+      "resource": "product_group_locations",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 222,
+      "resource": "product_group_location_techniques",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 234,
+      "resource": "product_group_location_techniques",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 246,
+      "resource": "product_group_location_techniques",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 268,
+      "resource": "product_group_components",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/personalization/GroupInheritance.tsx",
+      "line": 60,
+      "resource": "product_group_components",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/personalization/GroupInheritance.tsx",
+      "line": 76,
+      "resource": "product_group_locations",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/personalization/GroupInheritance.tsx",
+      "line": 80,
+      "resource": "product_component_locations",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/components/admin/personalization/GroupInheritance.tsx",
+      "line": 85,
+      "resource": "product_group_location_techniques",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/personalization/GroupInheritance.tsx",
+      "line": 90,
+      "resource": "product_component_location_techniques",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 140,
+      "resource": "product_component_locations",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 176,
+      "resource": "product_component_location_techniques",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 242,
+      "resource": "product_component_locations",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 254,
+      "resource": "product_component_locations",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 266,
+      "resource": "product_component_locations",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 278,
+      "resource": "product_component_location_techniques",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 290,
+      "resource": "product_component_location_techniques",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 302,
+      "resource": "product_component_location_techniques",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 136,
+      "resource": "product_component_locations",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 161,
+      "resource": "product_component_location_techniques",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 207,
+      "resource": "product_component_locations",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 216,
+      "resource": "product_component_locations",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 224,
+      "resource": "product_component_locations",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 231,
+      "resource": "product_component_location_techniques",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 240,
+      "resource": "product_component_location_techniques",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 248,
+      "resource": "product_component_location_techniques",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 302,
+      "resource": "product_group_components",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 311,
+      "resource": "product_group_locations",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 314,
+      "resource": "product_component_locations",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 319,
+      "resource": "product_group_location_techniques",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 324,
+      "resource": "product_component_location_techniques",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/components/intelligence/TopCategoriesCard.tsx",
+      "line": 59,
+      "resource": "product_views",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/components/intelligence/TrendsHeatmap.tsx",
+      "line": 28,
+      "resource": "product_views",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/components/intelligence/TrendsHeatmap.tsx",
+      "line": 29,
+      "resource": "search_analytics",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/hooks/mockup/mockupGenerationService.ts",
+      "line": 121,
+      "resource": "products",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/hooks/mockup/mockupGenerationService.ts",
+      "line": 127,
+      "resource": "personalization_techniques",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/hooks/use2FA.ts",
+      "line": 42,
+      "resource": "user_2fa_settings",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/hooks/use2FA.ts",
+      "line": 111,
+      "resource": "user_2fa_settings",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/hooks/use2FA.ts",
+      "line": 138,
+      "resource": "user_2fa_settings",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/hooks/use2FA.ts",
+      "line": 156,
+      "resource": "user_2fa_settings",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/hooks/useColorSystem.ts",
+      "line": 112,
+      "resource": "color_nuances",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/hooks/useColorSystem.ts",
+      "line": 158,
+      "resource": "color_nuances",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/hooks/useMockupDraft.ts",
+      "line": 83,
+      "resource": "products",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/hooks/useMockupDraft.ts",
+      "line": 95,
+      "resource": "personalization_techniques",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/hooks/useMockupDraft.ts",
+      "line": 107,
+      "resource": "bitrix_clients",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/hooks/usePasswordResetRequests.ts",
+      "line": 25,
+      "resource": "password_reset_requests",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/hooks/usePasswordResetRequests.ts",
+      "line": 53,
+      "resource": "password_reset_requests",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/hooks/usePasswordResetRequests.ts",
+      "line": 93,
+      "resource": "password_reset_requests",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/hooks/usePasswordResetRequests.ts",
+      "line": 124,
+      "resource": "password_reset_requests",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/hooks/usePasswordResetRequests.ts",
+      "line": 137,
+      "resource": "password_reset_requests",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/hooks/useProductAnalytics.ts",
+      "line": 29,
+      "resource": "product_views",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/hooks/useProductAnalytics.ts",
+      "line": 51,
+      "resource": "search_analytics",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 81,
+      "resource": "user_passkeys",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 162,
+      "resource": "user_passkeys",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 248,
+      "resource": "user_passkeys",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 258,
+      "resource": "user_passkeys",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 295,
+      "resource": "user_passkeys",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 325,
+      "resource": "user_passkeys",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/pages/RolesPage.tsx",
+      "line": 38,
+      "resource": "roles",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/pages/RolesPage.tsx",
+      "line": 54,
+      "resource": "roles",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/pages/RolesPage.tsx",
+      "line": 60,
+      "resource": "roles",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/pages/RolesPage.tsx",
+      "line": 82,
+      "resource": "roles",
+      "present_in_historical_cache": false
+    },
+    {
+      "file": "src/pages/TrendsPage.tsx",
+      "line": 107,
+      "resource": "product_views",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/pages/TrendsPage.tsx",
+      "line": 164,
+      "resource": "search_analytics",
+      "present_in_historical_cache": true
+    },
+    {
+      "file": "src/services/admin/UserService.ts",
+      "line": 100,
+      "resource": "profiles",
+      "present_in_historical_cache": true
+    }
+  ],
+  "missing_calls": 50,
+  "missing_resources": [
+    "bitrix_clients",
+    "color_nuances",
+    "personalization_techniques",
+    "product_component_location_techniques",
+    "product_group_components",
+    "product_group_location_techniques",
+    "product_group_locations",
+    "products",
+    "roles",
+    "user_2fa_settings",
+    "user_passkeys"
+  ]
+}

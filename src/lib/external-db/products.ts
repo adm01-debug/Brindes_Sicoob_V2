@@ -1,10 +1,8 @@
-import { type ExternalProduct } from "@/types/external-db";
 /**
  * Fetch products with full enrichment (colors, images, variants, suppliers).
  */
 import { logger } from '@/lib/logger';
-import { invokeExternalDb, invokeBatchBridge } from './bridge';
-import type { BatchQuery, BatchResult, InvokeResult } from './bridge';
+import { invokeExternalDb, invokeBatchBridge, type BatchQuery, type BatchResult, type InvokeResult } from './bridge';
 import {
   type PromobrindProduct,
   PRODUCT_SELECT_FIELDS_WITH_SALE,
@@ -12,138 +10,244 @@ import {
   shouldFallbackSelect,
 } from './product-types';
 
-export async function fetchPromobrindProducts(options?: {
+interface FetchPromobrindProductsOptions<ReturnCount extends boolean | undefined = undefined> {
   search?: string;
   limit?: number;
   offset?: number;
   orderBy?: { column: string; ascending?: boolean };
   filters?: Record<string, unknown>;
-}): Promise<PromobrindProduct[]>;
-export async function fetchPromobrindProducts(options?: {
-  search?: string;
-  limit?: number;
-  offset?: number;
-  orderBy?: { column: string; ascending?: boolean };
-  filters?: Record<string, unknown>;
-  returnCount?: true;
-}): Promise<{ products: PromobrindProduct[]; count: number | null }>;
-export async function fetchPromobrindProducts(options?: {
-  search?: string;
-  limit?: number;
-  offset?: number;
-  orderBy?: { column: string; ascending?: boolean };
-  filters?: Record<string, unknown>;
-  returnCount?: boolean;
-}): Promise<PromobrindProduct[] | { products: PromobrindProduct[]; count: number | null }> {
+  returnCount?: ReturnCount;
+}
+
+type ProductOrder = { column: string; ascending?: boolean };
+
+interface ProductPageParams {
+  filters: Record<string, unknown>;
+  orderBy: ProductOrder;
+  limit: number;
+  offset: number;
+  countMode: 'planned' | 'none';
+}
+
+interface VariantRecord {
+  id?: string;
+  product_id: string;
+  color_name: string | null;
+  color_hex: string | null;
+  color_code: string | null;
+  color_id: string | null;
+  sku: string | null;
+  stock_quantity: number | null;
+  images: string[] | null;
+  selected_thumbnail: string | null;
+}
+
+interface ImageRecord {
+  product_id: string;
+  url_cdn: string;
+  url_original: string | null;
+  filename: string | null;
+  image_type: string;
+  is_primary: boolean;
+  is_og_image: boolean;
+  applies_to_color: boolean | null;
+  display_order: number;
+  alt_text: string | null;
+  title_text: string | null;
+  supplier_code: string | null;
+  variant_id: string | null;
+}
+
+type SupplierRecord = { id: string; name: string; code: string };
+type ColorVariationRecord = { id: string; name: string; slug: string; group_id: string };
+type ColorGroupRecord = { id: string; name: string; slug: string };
+
+interface ProductImageInfo {
+  url: string;
+  urlOriginal: string | null;
+  filename: string | null;
+  type: string;
+  isPrimary: boolean;
+  isOgImage: boolean;
+  appliesToColor: boolean | null;
+  order: number;
+  supplierCode: string | null;
+  altText: string | null;
+  titleText: string | null;
+  variantId: string | null;
+}
+
+interface ProductColorInfo {
+  name: string;
+  hex: string;
+  code: string;
+  sku?: string;
+  stock?: number;
+  image?: string;
+  images?: string[];
+  groupSlug?: string;
+  groupName?: string;
+  variationSlug?: string;
+}
+
+type FetchPromobrindProductsResult<ReturnCount extends boolean | undefined> =
+  ReturnCount extends true
+    ? { products: PromobrindProduct[]; count: number | null }
+    : PromobrindProduct[];
+
+function buildProductFilters(options?: FetchPromobrindProductsOptions<boolean | undefined>): Record<string, unknown> {
   const filters: Record<string, unknown> = {
-    ...(options?.filters?.active === undefined && options?.filters?.is_active === undefined
-      ? { active: true }
-      : {}),
+    ...(options?.filters?.is_active === undefined ? { is_active: true } : {}),
     ...options?.filters,
   };
+  if (options?.search) filters._search = options.search;
+  return filters;
+}
 
-  if (options?.search) {
-    filters._search = options.search;
+async function invokeProductPage(params: ProductPageParams, select: string): Promise<InvokeResult<PromobrindProduct>> {
+  return invokeExternalDb<PromobrindProduct>({
+    table: 'products',
+    operation: 'select',
+    ...params,
+    select,
+  });
+}
+
+function isTimeoutError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : '';
+  return /statement timeout|57014|canceling statement/.test(message);
+}
+
+async function fetchPageWithFallback(params: ProductPageParams): Promise<InvokeResult<PromobrindProduct>> {
+  try {
+    return await invokeProductPage(params, PRODUCT_SELECT_FIELDS_WITH_SALE);
+  } catch (error) {
+    if (!shouldFallbackSelect(error)) throw error;
+    return invokeProductPage(params, PRODUCT_SELECT_FIELDS_LEGACY);
   }
+}
 
+type PaginatedPageResult =
+  | { kind: 'success'; page: InvokeResult<PromobrindProduct> }
+  | { kind: 'timeout'; fallback: boolean };
+
+async function fetchPaginatedPage(params: ProductPageParams): Promise<PaginatedPageResult> {
+  try {
+    return { kind: 'success', page: await invokeProductPage(params, PRODUCT_SELECT_FIELDS_WITH_SALE) };
+  } catch (error) {
+    if (isTimeoutError(error)) return { kind: 'timeout', fallback: false };
+    if (!shouldFallbackSelect(error)) throw error;
+  }
+  try {
+    return { kind: 'success', page: await invokeProductPage(params, PRODUCT_SELECT_FIELDS_LEGACY) };
+  } catch (error) {
+    if (isTimeoutError(error)) return { kind: 'timeout', fallback: true };
+    throw error;
+  }
+}
+
+async function fetchLimitedProducts(
+  options: FetchPromobrindProductsOptions<boolean | undefined>,
+  filters: Record<string, unknown>,
+  orderBy: ProductOrder,
+  shouldRequestCount: boolean,
+): Promise<{ products: PromobrindProduct[]; count: number | null }> {
+  const result = await fetchPageWithFallback({
+    filters,
+    orderBy,
+    limit: options.limit as number,
+    offset: options.offset ?? 0,
+    countMode: shouldRequestCount ? 'planned' : 'none',
+  });
+  return { products: result.records ?? [], count: result.count ?? null };
+}
+
+async function waitAfterTimeout(offset: number, consecutiveErrors: number, fallback: boolean): Promise<void> {
+  const context = fallback ? ' (fallback)' : '';
+  logger.warn(`[external-db] Timeout${context} at offset=${offset}, retrying (${consecutiveErrors}/2)...`);
+  await new Promise(resolve => setTimeout(resolve, 1000 * consecutiveErrors));
+}
+
+async function shouldStopAfterTimeout(
+  result: Extract<PaginatedPageResult, { kind: 'timeout' }>,
+  offset: number,
+  consecutiveErrors: number,
+  productCount: number,
+): Promise<boolean> {
+  if (consecutiveErrors >= 2) {
+    logger.warn(`[external-db] Stopping pagination${result.fallback ? ' (fallback)' : ''} at offset=${offset}. Got ${productCount} products.`);
+    return true;
+  }
+  await waitAfterTimeout(offset, consecutiveErrors, result.fallback);
+  return false;
+}
+
+function pageSizeFor(offset: number): number {
+  return offset >= 1000 ? 125 : 200;
+}
+
+function pageCountMode(shouldRequestCount: boolean, offset: number): 'planned' | 'none' {
+  return shouldRequestCount && offset === 0 ? 'planned' : 'none';
+}
+
+function updatedTotalCount(current: number | null, page: InvokeResult<PromobrindProduct>): number | null {
+  return typeof page.count === 'number' ? page.count : current;
+}
+
+function reachedPaginationEnd(recordCount: number, pageSize: number, total: number | null, loaded: number): boolean {
+  if (recordCount < pageSize) return true;
+  return total !== null && loaded >= total;
+}
+
+async function fetchAllProducts(
+  filters: Record<string, unknown>,
+  orderBy: ProductOrder,
+  shouldRequestCount: boolean,
+): Promise<{ products: PromobrindProduct[]; count: number | null }> {
+  const products: PromobrindProduct[] = [];
+  const startedAt = Date.now();
+  let offset = 0;
+  let count: number | null = null;
+  let consecutiveErrors = 0;
+
+  while (offset < 200000) {
+    if (Date.now() - startedAt > 30_000) {
+      logger.warn(`[external-db] Pagination time budget exceeded (30000ms). Got ${products.length} products at offset=${offset}.`);
+      break;
+    }
+    const pageSize = pageSizeFor(offset);
+    const result = await fetchPaginatedPage({
+      filters,
+      orderBy,
+      limit: pageSize,
+      offset,
+      countMode: pageCountMode(shouldRequestCount, offset),
+    });
+    if (result.kind === 'timeout') {
+      consecutiveErrors += 1;
+      if (await shouldStopAfterTimeout(result, offset, consecutiveErrors, products.length)) break;
+      continue;
+    }
+    consecutiveErrors = 0;
+    const records = result.page.records ?? [];
+    count = updatedTotalCount(count, result.page);
+    products.push(...records);
+    offset += records.length;
+    if (reachedPaginationEnd(records.length, pageSize, count, products.length)) break;
+  }
+  return { products, count };
+}
+
+export async function fetchPromobrindProducts<ReturnCount extends boolean | undefined = undefined>(
+  options?: FetchPromobrindProductsOptions<ReturnCount>,
+): Promise<FetchPromobrindProductsResult<ReturnCount>> {
+  const filters = buildProductFilters(options);
   const orderBy = options?.orderBy ?? { column: 'name', ascending: true };
-  let products: PromobrindProduct[] = [];
-  let totalCount: number | null = null;
   const shouldRequestCount = options?.returnCount === true;
-
-  if (typeof options?.limit === 'number' && options.limit > 0) {
-    const fetchOffset = options?.offset ?? 0;
-    let result: InvokeResult<PromobrindProduct>;
-    try {
-      result = await invokeExternalDb<PromobrindProduct>({
-        table: 'products', operation: 'select', filters,
-        select: PRODUCT_SELECT_FIELDS_WITH_SALE, orderBy,
-        limit: options.limit, offset: fetchOffset,
-        countMode: shouldRequestCount ? 'planned' : 'none',
-      });
-    } catch (err) {
-      if (!shouldFallbackSelect(err)) throw err;
-      result = await invokeExternalDb<PromobrindProduct>({
-        table: 'products', operation: 'select', filters,
-        select: PRODUCT_SELECT_FIELDS_LEGACY, orderBy,
-        limit: options.limit, offset: fetchOffset,
-        countMode: shouldRequestCount ? 'planned' : 'none',
-      });
-    }
-    products = result.records ?? [];
-    totalCount = result.count ?? null;
-  } else {
-    const BASE_PAGE_SIZE = 200;
-    let offset = 0;
-    let loopCount: number | null = null;
-    let consecutiveErrors = 0;
-    const MAX_CONSECUTIVE_ERRORS = 2; // Reduced from 3 — fail faster
-    const HARD_MAX = 200000;
-    const PAGINATION_START = Date.now();
-    const PAGINATION_TIMEOUT_MS = 30_000; // 30s total budget for full pagination
-
-    while (offset < HARD_MAX) {
-      // Time-budget check: stop if we've been paginating too long
-      if (Date.now() - PAGINATION_START > PAGINATION_TIMEOUT_MS) {
-        logger.warn(`[external-db] Pagination time budget exceeded (${PAGINATION_TIMEOUT_MS}ms). Got ${products.length} products at offset=${offset}.`);
-        break;
-      }
-
-      // Reduce page size aggressively because the external products table is timing out under larger ranges
-      const pageSize = offset >= 1000 ? 125 : BASE_PAGE_SIZE;
-      const countMode: 'planned' | 'none' = shouldRequestCount && offset === 0 ? 'planned' : 'none';
-      let page: InvokeResult<PromobrindProduct>;
-      try {
-        page = await invokeExternalDb<PromobrindProduct>({
-          table: 'products', operation: 'select', filters,
-          select: PRODUCT_SELECT_FIELDS_WITH_SALE, orderBy,
-          limit: pageSize, offset, countMode,
-        });
-        consecutiveErrors = 0;
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : '';
-        if (msg.includes('statement timeout') || msg.includes('57014') || msg.includes('canceling statement')) {
-          consecutiveErrors++;
-          if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
-            logger.warn(`[external-db] Stopping pagination at offset=${offset} after ${MAX_CONSECUTIVE_ERRORS} consecutive timeouts. Got ${products.length} products so far.`);
-            break;
-          }
-          logger.warn(`[external-db] Timeout at offset=${offset}, retrying (${consecutiveErrors}/${MAX_CONSECUTIVE_ERRORS})...`);
-          await new Promise(r => setTimeout(r, 1000 * consecutiveErrors));
-          continue;
-        }
-        if (!shouldFallbackSelect(err)) throw err;
-        try {
-          page = await invokeExternalDb<PromobrindProduct>({
-            table: 'products', operation: 'select', filters,
-            select: PRODUCT_SELECT_FIELDS_LEGACY, orderBy,
-            limit: pageSize, offset, countMode,
-          });
-          consecutiveErrors = 0;
-        } catch (fallbackErr: unknown) {
-          const fbMsg = fallbackErr instanceof Error ? fallbackErr.message : '';
-          if (fbMsg.includes('statement timeout') || fbMsg.includes('canceling statement')) {
-            consecutiveErrors++;
-            if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
-              logger.warn(`[external-db] Stopping pagination (fallback) at offset=${offset}. Got ${products.length} products.`);
-              break;
-            }
-            await new Promise(r => setTimeout(r, 1000 * consecutiveErrors));
-            continue;
-          }
-          throw fallbackErr;
-        }
-      }
-
-      const pageRecords = page!.records ?? [];
-      if (typeof page!.count === 'number') loopCount = page!.count;
-      products.push(...pageRecords);
-      offset += pageRecords.length;
-      if (pageRecords.length < pageSize) break;
-      if (loopCount !== null && products.length >= loopCount) break;
-    }
-    totalCount = loopCount;
-  }
+  const fetchResult = typeof options?.limit === 'number' && options.limit > 0
+    ? await fetchLimitedProducts(options, filters, orderBy, shouldRequestCount)
+    : await fetchAllProducts(filters, orderBy, shouldRequestCount);
+  const { products, count: totalCount } = fetchResult;
 
   // Enrich products
   if (products.length > 0) {
@@ -151,226 +255,252 @@ export async function fetchPromobrindProducts(options?: {
   }
 
   if (options?.returnCount) {
-    return { products, count: totalCount };
+    return { products, count: totalCount } as FetchPromobrindProductsResult<ReturnCount>;
   }
-  return products;
+  return products as FetchPromobrindProductsResult<ReturnCount>;
 }
 
 // ============================================
 // ENRICHMENT LOGIC
 // ============================================
 
-async function enrichProducts(
-  products: PromobrindProduct[],
-  options?: { limit?: number }
-) {
-  const productIdSet = new Set(products.map(p => p.id));
-  const productIds = Array.from(productIdSet);
-  const uniqueSupplierIds = [...new Set(products.map(p => p.supplier_id).filter(Boolean))] as string[];
-  const shouldRunHeavyEnrichment = products.length <= 500 || typeof options?.limit === 'number';
+interface EnrichmentQueryMap {
+  variants: number[];
+  images: number[];
+  suppliers: number[];
+  colorVariations: number[];
+  colorGroups: number[];
+}
 
-  if (!shouldRunHeavyEnrichment) {
-    logger.info(`[external-db] Skipping heavy enrichment for ${products.length} products to prevent timeouts`);
-  }
+function chunkIds(ids: string[], size: number): string[][] {
+  const chunks: string[][] = [];
+  for (let index = 0; index < ids.length; index += size) chunks.push(ids.slice(index, index + size));
+  return chunks;
+}
 
-  const CHUNK_SIZE = 80;
-  const idChunks: string[][] = [];
-  for (let i = 0; i < productIds.length; i += CHUNK_SIZE) {
-    idChunks.push(productIds.slice(i, i + CHUNK_SIZE));
-  }
-
-  const batchQueries: BatchQuery[] = [];
-  const queryMap: { variants: number[]; images: number[]; suppliers: number[]; colorVariations: number[]; colorGroups: number[] } = {
-    variants: [], images: [], suppliers: [], colorVariations: [], colorGroups: [],
-  };
-
-  if (shouldRunHeavyEnrichment) {
-    for (const chunk of idChunks) {
-      queryMap.variants.push(batchQueries.length);
-      batchQueries.push({
-        table: 'product_variants',
-        select: 'product_id, color_name, color_hex, color_code, color_id, sku, stock_quantity, images, selected_thumbnail',
-        filters: { is_active: true, product_id: chunk },
-        limit: 1000, offset: 0,
-      });
-    }
-    for (const chunk of idChunks) {
-      queryMap.images.push(batchQueries.length);
-      batchQueries.push({
-        table: 'product_images',
-        select: 'product_id, url_cdn, url_original, filename, image_type, is_primary, is_og_image, applies_to_color, display_order, alt_text, title_text, supplier_code, variant_id',
-        filters: { is_active: true, product_id: chunk },
-        limit: 1000, offset: 0,
-      });
-    }
-    queryMap.colorVariations.push(batchQueries.length);
-    batchQueries.push({
-      table: 'color_variations', select: 'id, name, slug, group_id',
-      filters: { is_active: true }, limit: 500, offset: 0,
-      cacheKey: 'ref:color_variations',
-    });
-    queryMap.colorGroups.push(batchQueries.length);
-    batchQueries.push({
-      table: 'color_groups', select: 'id, name, slug',
-      filters: { is_active: true }, limit: 100, offset: 0,
-      cacheKey: 'ref:color_groups',
+function addHeavyEnrichmentQueries(queries: BatchQuery[], map: EnrichmentQueryMap, chunks: string[][]): void {
+  for (const chunk of chunks) {
+    map.variants.push(queries.length);
+    queries.push({
+      table: 'product_variants',
+      select: 'product_id, color_name, color_hex, color_code, color_id, sku, stock_quantity, images, selected_thumbnail',
+      filters: { is_active: true, product_id: chunk }, limit: 1000, offset: 0,
     });
   }
-
-  if (uniqueSupplierIds.length > 0) {
-    queryMap.suppliers.push(batchQueries.length);
-    batchQueries.push({
-      table: 'suppliers', select: 'id, name, code',
-      filters: { id: uniqueSupplierIds },
-      limit: Math.max(uniqueSupplierIds.length, 1), offset: 0,
+  for (const chunk of chunks) {
+    map.images.push(queries.length);
+    queries.push({
+      table: 'product_images',
+      select: 'product_id, url_cdn, url_original, filename, image_type, is_primary, is_og_image, applies_to_color, display_order, alt_text, title_text, supplier_code, variant_id',
+      filters: { is_active: true, product_id: chunk }, limit: 1000, offset: 0,
     });
   }
+  map.colorVariations.push(queries.length);
+  queries.push({ table: 'color_variations', select: 'id, name, slug, group_id', filters: { is_active: true }, limit: 500, offset: 0, cacheKey: 'ref:color_variations' });
+  map.colorGroups.push(queries.length);
+  queries.push({ table: 'color_groups', select: 'id, name, slug', filters: { is_active: true }, limit: 100, offset: 0, cacheKey: 'ref:color_groups' });
+}
 
-  let batchResults: BatchResult[] = [];
+function buildEnrichmentQueries(
+  productIds: string[],
+  supplierIds: string[],
+  heavy: boolean,
+): { queries: BatchQuery[]; map: EnrichmentQueryMap } {
+  const queries: BatchQuery[] = [];
+  const map: EnrichmentQueryMap = { variants: [], images: [], suppliers: [], colorVariations: [], colorGroups: [] };
+  if (heavy) addHeavyEnrichmentQueries(queries, map, chunkIds(productIds, 80));
+  if (supplierIds.length) {
+    map.suppliers.push(queries.length);
+    queries.push({ table: 'suppliers', select: 'id, name, code', filters: { id: supplierIds }, limit: supplierIds.length, offset: 0 });
+  }
+  return { queries, map };
+}
+
+async function runEnrichmentQueries(queries: BatchQuery[]): Promise<BatchResult[] | null> {
   try {
-    batchResults = await invokeBatchBridge(batchQueries);
-  } catch (err) {
-    logger.warn('[external-db] Batch enrichment failed, products will have basic data:', err);
-    return;
+    return await invokeBatchBridge(queries);
+  } catch (error) {
+    logger.warn('[external-db] Batch enrichment failed, products will have basic data:', error);
+    return null;
   }
+}
 
-  // Extract results
-  type VariantRecord = {
-    id?: string; product_id: string; color_name: string | null; color_hex: string | null;
-    color_code: string | null; color_id: string | null; sku: string | null;
-    stock_quantity: number | null; images: string[] | null; selected_thumbnail: string | null;
-  };
-  type ImageRecord = {
-    product_id: string; url_cdn: string; url_original: string | null; filename: string | null;
-    image_type: string; is_primary: boolean; is_og_image: boolean; applies_to_color: boolean | null;
-    display_order: number; alt_text: string | null; title_text: string | null;
-    supplier_code: string | null; variant_id: string | null;
-  };
-  type SupplierRecord = { id: string; name: string; code: string };
-  type ColorVariationRecord = { id: string; name: string; slug: string; group_id: string };
-  type ColorGroupRecord = { id: string; name: string; slug: string };
+function collectRecords<T>(results: BatchResult[], indexes: number[]): T[] {
+  const records: T[] = [];
+  for (const index of indexes) {
+    const result = results[index];
+    if (result?.success && result.data?.records) records.push(...result.data.records as T[]);
+  }
+  return records;
+}
 
-  const variantsRecords: VariantRecord[] = [];
-  for (const idx of queryMap.variants) {
-    const r = batchResults[idx];
-    if (r?.success && r.data?.records) variantsRecords.push(...(r.data.records as VariantRecord[]));
-  }
-  const imagesRecords: ImageRecord[] = [];
-  for (const idx of queryMap.images) {
-    const r = batchResults[idx];
-    if (r?.success && r.data?.records) imagesRecords.push(...(r.data.records as ImageRecord[]));
-  }
-  const suppliersRecords: SupplierRecord[] = [];
-  for (const idx of queryMap.suppliers) {
-    const r = batchResults[idx];
-    if (r?.success && r.data?.records) suppliersRecords.push(...(r.data.records as SupplierRecord[]));
-  }
-
-  let colorVariationsRecords: ColorVariationRecord[] = [];
-  for (const idx of queryMap.colorVariations) {
-    const r = batchResults[idx];
-    if (r?.success && r.data?.records) colorVariationsRecords = r.data.records as ColorVariationRecord[];
-  }
-  let colorGroupsRecords: ColorGroupRecord[] = [];
-  for (const idx of queryMap.colorGroups) {
-    const r = batchResults[idx];
-    if (r?.success && r.data?.records) colorGroupsRecords = r.data.records as ColorGroupRecord[];
-  }
-
-  const suppliersMap = new Map(suppliersRecords.map(s => [s.id, s.name]));
-  // Popula cache de imutáveis para reaproveitar em telas de detalhe sem ida ao bridge.
+async function populateSupplierCache(suppliers: SupplierRecord[]): Promise<void> {
   try {
     const { putInCacheSafe } = await import('./immutableCache');
-    for (const s of suppliersRecords) {
-      if (s?.id && s?.name) putInCacheSafe('suppliers', { id: s.id, name: s.name, code: s.code });
+    for (const supplier of suppliers) {
+      if (supplier.id && supplier.name) putInCacheSafe('suppliers', supplier);
     }
-  } catch { /* cache populate is best-effort */ }
-  const colorVariationMap = new Map(colorVariationsRecords.map((v) => [v.id, { name: v.name, slug: v.slug, group_id: v.group_id }]));
-  const colorGroupMap = new Map(colorGroupsRecords.map((g) => [g.id, { name: g.name, slug: g.slug }]));
+  } catch {
+    // Cache de referência é apenas uma otimização.
+  }
+}
 
-  // Build image map (Set already exists)
-  // const productIdSet = new Set(productIds);
-  const imagesByProduct = new Map<string, Array<{
-    url: string; urlOriginal: string | null; filename: string | null; type: string;
-    isPrimary: boolean; isOgImage: boolean; appliesToColor: boolean | null;
-    order: number; supplierCode: string | null; altText: string | null;
-    titleText: string | null; variantId: string | null;
-  }>>();
+function toProductImageInfo(image: ImageRecord): ProductImageInfo {
+  return {
+    url: image.url_cdn,
+    urlOriginal: image.url_original || null,
+    filename: image.filename || null,
+    type: image.image_type,
+    isPrimary: image.is_primary,
+    isOgImage: image.is_og_image || false,
+    appliesToColor: image.applies_to_color ?? null,
+    order: image.display_order,
+    supplierCode: image.supplier_code || null,
+    altText: image.alt_text || null,
+    titleText: image.title_text || null,
+    variantId: image.variant_id || null,
+  };
+}
 
-  imagesRecords.forEach((img) => {
-    if (!productIdSet.has(img.product_id)) return;
-    if (!imagesByProduct.has(img.product_id)) imagesByProduct.set(img.product_id, []);
-    imagesByProduct.get(img.product_id)!.push({
-      url: img.url_cdn, urlOriginal: img.url_original || null,
-      filename: img.filename || null, type: img.image_type,
-      isPrimary: img.is_primary, isOgImage: img.is_og_image || false,
-      appliesToColor: img.applies_to_color ?? null, order: img.display_order,
-      supplierCode: img.supplier_code || null, altText: img.alt_text || null,
-      titleText: img.title_text || null, variantId: img.variant_id || null,
-    });
-  });
+function getOrCreate<T>(map: Map<string, T[]>, key: string): T[] {
+  const existing = map.get(key);
+  if (existing) return existing;
+  const created: T[] = [];
+  map.set(key, created);
+  return created;
+}
 
-  // Build color map
-  const colorsByProduct = new Map<string, Array<{
-    name: string; hex: string; code: string; sku?: string; stock?: number;
-    image?: string; images?: string[]; groupSlug?: string; groupName?: string; variationSlug?: string;
-  }>>();
+function buildImagesByProduct(records: ImageRecord[], productIds: Set<string>): Map<string, ProductImageInfo[]> {
+  const imagesByProduct = new Map<string, ProductImageInfo[]>();
+  for (const image of records) {
+    if (!productIds.has(image.product_id)) continue;
+    getOrCreate(imagesByProduct, image.product_id).push(toProductImageInfo(image));
+  }
+  return imagesByProduct;
+}
 
-  variantsRecords.forEach((variant) => {
-    if (!variant.color_name || !productIdSet.has(variant.product_id)) return;
-    if (!colorsByProduct.has(variant.product_id)) colorsByProduct.set(variant.product_id, []);
-    const colors = colorsByProduct.get(variant.product_id)!;
-    if (colors.some(c => c.name === variant.color_name)) return;
+function sortedUrls(images: ProductImageInfo[], predicate: (image: ProductImageInfo) => boolean): string[] {
+  return images.filter(predicate).sort((left, right) => left.order - right.order).map(image => image.url);
+}
 
-    const productImgs = imagesByProduct.get(variant.product_id) || [];
-    const byVariantId = productImgs.filter(img => img.variantId === variant.id && !img.isPrimary && !img.isOgImage).sort((a, b) => a.order - b.order).map(img => img.url);
-    const byCode = variant.color_code
-      ? productImgs.filter(img => img.supplierCode === variant.color_code && !img.isPrimary && !img.isOgImage).sort((a, b) => a.order - b.order).map(img => img.url)
-      : [];
-    const allById = byVariantId.length === 0
-      ? productImgs.filter(img => img.variantId === variant.id).sort((a, b) => a.order - b.order).map(img => img.url)
-      : [];
-    const legacy = variant.images?.length ? variant.images : [];
-    const finalImages = byVariantId.length > 0 ? byVariantId : byCode.length > 0 ? byCode : allById.length > 0 ? allById : legacy;
-    const thumbnailImage = finalImages[0] || variant.selected_thumbnail || null;
+function firstPopulatedImages(...candidates: string[][]): string[] {
+  return candidates.find(images => images.length > 0) || [];
+}
 
-    let groupSlug: string | undefined, groupName: string | undefined, variationSlug: string | undefined;
-    if (variant.color_id) {
-      const variation = colorVariationMap.get(variant.color_id);
-      if (variation) {
-        variationSlug = variation.slug;
-        const group = colorGroupMap.get(variation.group_id);
-        if (group) { groupSlug = group.slug; groupName = group.name; }
-      }
-    }
+function resolveVariantImages(variant: VariantRecord, images: ProductImageInfo[]): string[] {
+  const byVariant = sortedUrls(images, image => image.variantId === variant.id && !image.isPrimary && !image.isOgImage);
+  const byCode = variant.color_code
+    ? sortedUrls(images, image => image.supplierCode === variant.color_code && !image.isPrimary && !image.isOgImage)
+    : [];
+  const allByVariant = byVariant.length ? [] : sortedUrls(images, image => image.variantId === variant.id);
+  return firstPopulatedImages(byVariant, byCode, allByVariant, variant.images || []);
+}
 
-    colors.push({
-      name: variant.color_name, hex: variant.color_hex || '#CCCCCC',
-      code: variant.color_code || '', sku: variant.sku || undefined,
-      stock: variant.stock_quantity ?? undefined, image: thumbnailImage || undefined,
-      images: finalImages.length > 0 ? finalImages : undefined,
-      groupSlug, groupName, variationSlug,
-    });
-  });
+function colorClassification(
+  colorId: string | null,
+  variations: Map<string, ColorVariationRecord>,
+  groups: Map<string, ColorGroupRecord>,
+): Pick<ProductColorInfo, 'groupSlug' | 'groupName' | 'variationSlug'> {
+  if (!colorId) return {};
+  const variation = variations.get(colorId);
+  if (!variation) return {};
+  const group = groups.get(variation.group_id);
+  return { variationSlug: variation.slug, groupSlug: group?.slug, groupName: group?.name };
+}
 
-  // Apply enrichments to products
-  products.forEach(product => {
-    const productImages = imagesByProduct.get(product.id);
-    if (productImages && productImages.length > 0) {
-      productImages.sort((a, b) => a.order - b.order);
-      const colorImages = productImages.filter(img => img.supplierCode && img.type !== 'box');
-      const generalImages = productImages.filter(img => !img.supplierCode && img.type !== 'box');
-      const mainImages = [...colorImages, ...generalImages];
-      const primaryImage = mainImages.find(img => img.isPrimary) || mainImages[0];
-      if (primaryImage) { product.primary_image_url = primaryImage.url; product.image_url = primaryImage.url; }
-      const ogImage = mainImages.find(img => img.isOgImage) || mainImages.find(img => img.type === 'main') || primaryImage;
-      if (ogImage) product.og_image_url = ogImage.url;
-      product.images = mainImages.map(img => img.url);
-    }
-    const variantColors = colorsByProduct.get(product.id);
-    if (variantColors?.length) product.colors = variantColors;
-    if (product.supplier_id && suppliersMap.has(product.supplier_id)) {
-      product.supplier_name = suppliersMap.get(product.supplier_id);
-    }
-  });
+function createColorInfo(
+  variant: VariantRecord,
+  images: ProductImageInfo[],
+  variations: Map<string, ColorVariationRecord>,
+  groups: Map<string, ColorGroupRecord>,
+): ProductColorInfo {
+  const finalImages = resolveVariantImages(variant, images);
+  const thumbnail = finalImages[0] || variant.selected_thumbnail || undefined;
+  return {
+    name: variant.color_name as string,
+    hex: variant.color_hex || '#CCCCCC',
+    code: variant.color_code || '',
+    sku: variant.sku || undefined,
+    stock: variant.stock_quantity ?? undefined,
+    image: thumbnail,
+    images: finalImages.length ? finalImages : undefined,
+    ...colorClassification(variant.color_id, variations, groups),
+  };
+}
+
+function buildColorsByProduct(
+  variants: VariantRecord[],
+  productIds: Set<string>,
+  imagesByProduct: Map<string, ProductImageInfo[]>,
+  ...classifications: [
+    variations: Map<string, ColorVariationRecord>,
+    groups: Map<string, ColorGroupRecord>,
+  ]
+): Map<string, ProductColorInfo[]> {
+  const [variations, groups] = classifications;
+  const colorsByProduct = new Map<string, ProductColorInfo[]>();
+  for (const variant of variants) {
+    if (!variant.color_name || !productIds.has(variant.product_id)) continue;
+    const colors = getOrCreate(colorsByProduct, variant.product_id);
+    if (colors.some(color => color.name === variant.color_name)) continue;
+    colors.push(createColorInfo(variant, imagesByProduct.get(variant.product_id) || [], variations, groups));
+  }
+  return colorsByProduct;
+}
+
+function applyProductImages(product: PromobrindProduct, images: ProductImageInfo[] | undefined): void {
+  if (!images?.length) return;
+  images.sort((left, right) => left.order - right.order);
+  const colorImages = images.filter(image => Boolean(image.supplierCode) && image.type !== 'box');
+  const generalImages = images.filter(image => !image.supplierCode && image.type !== 'box');
+  const mainImages = [...colorImages, ...generalImages];
+  const primary = mainImages.find(image => image.isPrimary) || mainImages[0];
+  if (primary) {
+    product.primary_image_url = primary.url;
+    product.image_url = primary.url;
+  }
+  const ogImage = mainImages.find(image => image.isOgImage)
+    || mainImages.find(image => image.type === 'main')
+    || primary;
+  if (ogImage) product.og_image_url = ogImage.url;
+  product.images = mainImages.map(image => image.url);
+}
+
+function applyEnrichments(
+  products: PromobrindProduct[],
+  imagesByProduct: Map<string, ProductImageInfo[]>,
+  colorsByProduct: Map<string, ProductColorInfo[]>,
+  suppliers: Map<string, string>,
+): void {
+  for (const product of products) {
+    applyProductImages(product, imagesByProduct.get(product.id));
+    const colors = colorsByProduct.get(product.id);
+    if (colors?.length) product.colors = colors;
+    if (product.supplier_id && suppliers.has(product.supplier_id)) product.supplier_name = suppliers.get(product.supplier_id);
+  }
+}
+
+async function enrichProducts(products: PromobrindProduct[], options?: { limit?: number }): Promise<void> {
+  const productIds = new Set(products.map(product => product.id));
+  const supplierIds = [...new Set(products.map(product => product.supplier_id).filter(Boolean))] as string[];
+  const heavy = products.length <= 500 || typeof options?.limit === 'number';
+  if (!heavy) logger.info(`[external-db] Skipping heavy enrichment for ${products.length} products to prevent timeouts`);
+
+  const { queries, map } = buildEnrichmentQueries([...productIds], supplierIds, heavy);
+  const results = await runEnrichmentQueries(queries);
+  if (!results) return;
+
+  const variants = collectRecords<VariantRecord>(results, map.variants);
+  const images = collectRecords<ImageRecord>(results, map.images);
+  const supplierRecords = collectRecords<SupplierRecord>(results, map.suppliers);
+  const colorVariations = collectRecords<ColorVariationRecord>(results, map.colorVariations);
+  const colorGroups = collectRecords<ColorGroupRecord>(results, map.colorGroups);
+  await populateSupplierCache(supplierRecords);
+
+  const imagesByProduct = buildImagesByProduct(images, productIds);
+  const variationsMap = new Map(colorVariations.map(variation => [variation.id, variation]));
+  const groupsMap = new Map(colorGroups.map(group => [group.id, group]));
+  const colorsByProduct = buildColorsByProduct(variants, productIds, imagesByProduct, variationsMap, groupsMap);
+  const suppliersMap = new Map(supplierRecords.map(supplier => [supplier.id, supplier.name]));
+  applyEnrichments(products, imagesByProduct, colorsByProduct, suppliersMap);
 }

@@ -1,21 +1,10 @@
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { 
-  type Check, 
-  Clock, 
-  Package, 
-  Truck, 
-  CheckCircle2, 
-  XCircle,
-  FileText,
-  Send,
-  Eye,
-  MessageSquare,
-  CreditCard,
-  AlertCircle
-} from "lucide-react";
+import { type Check, Package, Truck, CheckCircle2, XCircle, FileText, Send, Eye, MessageSquare, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const INFO_BACKGROUND = "bg-info/10";
 
 type TimelineStatus = 
   | "created" 
@@ -54,12 +43,12 @@ const statusConfig: Record<TimelineStatus, {
   created: {
     icon: FileText,
     color: "text-info",
-    bgColor: "bg-info/10"
+    bgColor: INFO_BACKGROUND
   },
   sent: {
     icon: Send,
     color: "text-info",
-    bgColor: "bg-info/10"
+    bgColor: INFO_BACKGROUND
   },
   viewed: {
     icon: Eye,
@@ -89,7 +78,7 @@ const statusConfig: Record<TimelineStatus, {
   shipped: {
     icon: Truck,
     color: "text-info",
-    bgColor: "bg-info/10"
+    bgColor: INFO_BACKGROUND
   },
   delivered: {
     icon: CheckCircle2,

@@ -9,6 +9,22 @@ interface HierarchyPathProps {
   className?: string;
 }
 
+function HierarchyNode(props: {
+  icon: typeof Globe;
+  name: string | null;
+  active?: boolean;
+}) {
+  const { name, active = false } = props;
+  const Icon = props.icon;
+  return <div className="flex items-center gap-1 group cursor-default">
+    <div className={active ? "p-1 rounded bg-sicoob-green/10 text-sicoob-green"
+      : "p-1 rounded bg-muted/50 group-hover:bg-sicoob-green/10 transition-colors"}>
+      <Icon className="h-3 w-3 text-sicoob-green" />
+    </div>
+    <span className={active ? "text-sicoob-green-dark" : undefined}>{name}</span>
+  </div>;
+}
+
 export function HierarchyPath({ paId, className }: HierarchyPathProps) {
   const { data: hierarchy, isLoading } = useQuery({
     queryKey: ["sicoob-hierarchy-path", paId],
@@ -31,30 +47,11 @@ export function HierarchyPath({ paId, className }: HierarchyPathProps) {
 
   return (
     <div className={cn("flex items-center flex-wrap gap-1.5 text-[10px] uppercase font-bold tracking-tight text-muted-foreground/70", className)}>
-      <div className="flex items-center gap-1 group cursor-default">
-        <div className="p-1 rounded bg-muted/50 group-hover:bg-sicoob-green/10 transition-colors">
-          <Globe className="h-3 w-3 text-sicoob-green" />
-        </div>
-        <span>{hierarchy.central_name}</span>
-      </div>
-      
+      <HierarchyNode icon={Globe} name={hierarchy.central_name} />
       <ChevronRight className="h-3 w-3 opacity-30" />
-
-      <div className="flex items-center gap-1 group cursor-default">
-        <div className="p-1 rounded bg-muted/50 group-hover:bg-sicoob-green/10 transition-colors">
-          <Building2 className="h-3 w-3 text-sicoob-green" />
-        </div>
-        <span>{hierarchy.singular_name}</span>
-      </div>
-
+      <HierarchyNode icon={Building2} name={hierarchy.singular_name} />
       <ChevronRight className="h-3 w-3 opacity-30" />
-
-      <div className="flex items-center gap-1 group cursor-default">
-        <div className="p-1 rounded bg-sicoob-green/10 text-sicoob-green">
-          <MapPin className="h-3 w-3" />
-        </div>
-        <span className="text-sicoob-green-dark">{hierarchy.pa_name}</span>
-      </div>
+      <HierarchyNode icon={MapPin} name={hierarchy.pa_name} active />
       
       {hierarchy.tema_name && (
         <>

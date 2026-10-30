@@ -125,12 +125,15 @@ psql -f supabase/migrations/004_notification_functions.sql
 ### 2. Deploy Edge Function
 ```bash
 cd supabase/functions/send-notification
+# Esta função rejeita qualquer chamada sem segredo interno antes de usar
+# service_role. `--no-verify-jwt` só é permitido porque a validação ocorre no código.
 supabase functions deploy send-notification --no-verify-jwt
 ```
 
 ### 3. Configurar Secrets
 ```bash
 supabase secrets set RESEND_API_KEY=re_xxx
+supabase secrets set INTERNAL_FUNCTION_SECRET=<segredo-aleatorio-com-32-ou-mais-caracteres>
 supabase secrets set TWILIO_ACCOUNT_SID=ACxxx
 supabase secrets set TWILIO_AUTH_TOKEN=xxx
 supabase secrets set TWILIO_PHONE_NUMBER=+1xxx

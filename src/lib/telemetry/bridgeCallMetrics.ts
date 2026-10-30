@@ -15,7 +15,7 @@ export type BridgeName = 'external-db-bridge' | 'crm-db-bridge';
 
 /** Operações permitidas para cada bridge, garantindo consistência em compile-time. */
 export type BridgeOperation = 
-  | 'select' | 'insert' | 'update' | 'delete' | 'upsert' | 'batch' | 'rpc'
+  | 'select' | 'search' | 'insert' | 'update' | 'delete' | 'upsert' | 'batch' | 'rpc'
   | `rpc:${string}` 
   | `auth:${string}`
   | 'handshake'
@@ -74,13 +74,42 @@ function emit() {
   setTimeout(flush, EMIT_THROTTLE_MS);
 }
 
+function estimateArrayBytes(value: unknown[]) {
+  if (value.length === 0) return 2;
+  const sampleCount = Math.min(value.length, 5);
+  let sampleBytes = 0;
+  for (let index = 0; index < sampleCount; index += 1) {
+    sampleBytes += estimatePayloadBytes(value[index]);
+  }
+  return Math.round((sampleBytes / sampleCount) * value.length) + (value.length * 2);
+}
+
+function estimateObjectBytes(value: object) {
+  const keys = Object.keys(value);
+  if (keys.length === 0) return 2;
+  const object = value as Record<string, unknown>;
+  const nestedData = typeof object.data === 'object' && object.data !== null
+    ? object.data as Record<string, unknown>
+    : undefined;
+  const records = nestedData?.records ?? object.records;
+  if (Array.isArray(records)) return estimatePayloadBytes(records) + 64;
+  const sampleCount = Math.min(keys.length, 5);
+  let sampleBytes = 0;
+  for (let index = 0; index < sampleCount; index += 1) {
+    const key = keys[index];
+    if (key === undefined) continue;
+    sampleBytes += key.length + estimatePayloadBytes(object[key]) + 4;
+  }
+  return Math.round((sampleBytes / sampleCount) * keys.length) + 16;
+}
+
 /**
  * Estimativa ULTRA-RÁPIDA do tamanho serializado de um payload.
  *
  * Evita JSON.stringify() em objetos grandes para não bloquear a Main Thread.
  */
 export function estimatePayloadBytes(value: unknown): number {
-  if (value == null) return 0;
+  if (value === null || value === undefined) return 0;
   if (isInstrumentationPaused()) return 0;
 
   try {
@@ -89,36 +118,8 @@ export function estimatePayloadBytes(value: unknown): number {
     if (type === 'number') return 8;
     if (type === 'boolean') return 4;
 
-    // Heurística para arrays
-    if (Array.isArray(value)) {
-      if (value.length === 0) return 2;
-      const sampleCount = Math.min(value.length, 5);
-      let sampleBytes = 0;
-      for (let i = 0; i < sampleCount; i++) {
-        sampleBytes += estimatePayloadBytes(value[i]);
-      }
-      return Math.round((sampleBytes / sampleCount) * value.length) + (value.length * 2);
-    }
-
-    // Heurística para objetos
-    if (type === 'object') {
-      const keys = Object.keys(value as object);
-      if (keys.length === 0) return 2;
-      
-      const obj = value as any;
-      const records = obj.data?.records || obj.records;
-      if (Array.isArray(records)) {
-        return estimatePayloadBytes(records) + 64;
-      }
-
-      const sampleCount = Math.min(keys.length, 5);
-      let sampleBytes = 0;
-      for (let i = 0; i < sampleCount; i++) {
-        const key = keys[i]!;
-        sampleBytes += key.length + estimatePayloadBytes(obj[key]) + 4;
-      }
-      return Math.round((sampleBytes / sampleCount) * keys.length) + 16;
-    }
+    if (Array.isArray(value)) return estimateArrayBytes(value);
+    if (type === 'object') return estimateObjectBytes(value as object);
   } catch {
     return 0;
   }
@@ -184,7 +185,7 @@ export interface BridgeAggregateRow {
 function percentile(sortedAsc: number[], p: number): number {
   if (sortedAsc.length === 0) return 0;
   const idx = Math.min(sortedAsc.length - 1, Math.floor((p / 100) * sortedAsc.length));
-  return sortedAsc[idx]!;
+  return sortedAsc[idx] ?? 0;
 }
 
 export function aggregateByEndpoint(input: readonly BridgeCallSample[]): BridgeAggregateRow[] {
@@ -198,6 +199,8 @@ export function aggregateByEndpoint(input: readonly BridgeCallSample[]): BridgeA
 
   const rows: BridgeAggregateRow[] = [];
   for (const [key, arr] of groups.entries()) {
+    const firstSample = arr[0];
+    if (!firstSample) continue;
     const durations = arr.map(s => s.durationMs).sort((a, b) => a - b);
     const sumDur = durations.reduce((a, b) => a + b, 0);
     const errors = arr.reduce((acc, s) => acc + (s.ok ? 0 : 1), 0);
@@ -206,8 +209,8 @@ export function aggregateByEndpoint(input: readonly BridgeCallSample[]): BridgeA
     const lastTs = arr.reduce((acc, s) => Math.max(acc, s.ts), 0);
     rows.push({
       key,
-      bridge: arr[0]!.bridge,
-      op: arr[0]!.op,
+      bridge: firstSample.bridge,
+      op: firstSample.op,
       count: arr.length,
       errors,
       avgMs: Math.round(sumDur / arr.length),

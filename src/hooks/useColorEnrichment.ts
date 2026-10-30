@@ -11,7 +11,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useRef, useMemo, useEffect } from 'react';
 import { invokeBatchBridge } from '@/lib/external-db';
-import type { Product } from '@/types/product-catalog';
 import { logger } from '@/lib/logger';
 
 interface ColorEnrichmentData {
@@ -34,6 +33,183 @@ interface UseColorEnrichmentOptions {
 // Cached reference tables (shared across instances)
 let cachedColorGroups: Array<{ id: string; slug: string }> | null = null;
 let cachedColorVariations: Array<{ id: string; name: string; slug: string; group_id: string; hex_code: string | null }> | null = null;
+
+interface VariantRow {
+  product_id: string;
+  color_id: string | null;
+  color_name: string | null;
+  color_hex: string | null;
+  color_code: string | null;
+  stock_quantity: number | null;
+  selected_thumbnail: string | null;
+  images: string[] | null;
+  id: string;
+}
+
+interface ImageRow {
+  product_id: string;
+  variant_id: string | null;
+  supplier_code: string | null;
+  url_cdn: string | null;
+  is_og_image: boolean | null;
+  is_primary: boolean | null;
+  image_type: string | null;
+}
+
+interface ImageLookups {
+  byVariantId: Map<string, string>;
+  byProductAndCode: Map<string, string>;
+  primariesByProduct: Map<string, Set<string>>;
+}
+
+const CHUNK_SIZE = 80;
+
+function bridgeRecords<T>(result: Awaited<ReturnType<typeof invokeBatchBridge>>[number] | undefined): T[] {
+  if (!result?.success || !result.data?.records) return [];
+  return result.data.records as T[];
+}
+
+async function ensureColorReferences(): Promise<void> {
+  if (cachedColorGroups && cachedColorVariations) return;
+  const results = await invokeBatchBridge([
+    { table: 'color_groups', operation: 'select', select: 'id, slug', filters: { is_active: true }, limit: 200, offset: 0, cacheKey: 'ref:color_groups' },
+    { table: 'color_variations', operation: 'select', select: 'id, name, slug, group_id, hex_code', filters: { is_active: true }, limit: 500, offset: 0, cacheKey: 'ref:color_variations' },
+  ]);
+  cachedColorGroups = bridgeRecords<{ id: string; slug: string }>(results[0]);
+  cachedColorVariations = bridgeRecords<{ id: string; name: string; slug: string; group_id: string; hex_code: string | null }>(results[1]);
+}
+
+function resolveTargetColorIds(colorGroups: string[], colorVariations: string[]): Set<string> {
+  const groups = cachedColorGroups ?? [];
+  const variations = cachedColorVariations ?? [];
+  const groupsBySlug = new Map(groups.map(group => [group.slug, group.id]));
+  const variationsBySlug = new Map(variations.map(variation => [variation.slug, variation]));
+  const targetIds = new Set<string>();
+  for (const slug of colorVariations) {
+    const variation = variationsBySlug.get(slug);
+    if (variation) targetIds.add(variation.id);
+  }
+  for (const slug of colorGroups) {
+    const groupId = groupsBySlug.get(slug);
+    if (!groupId) continue;
+    variations.filter(variation => variation.group_id === groupId).forEach(variation => targetIds.add(variation.id));
+  }
+  return targetIds;
+}
+
+async function fetchColorVariants(productIds: string[], colorIds: string[]): Promise<VariantRow[]> {
+  const rows: VariantRow[] = [];
+  for (let index = 0; index < productIds.length; index += CHUNK_SIZE) {
+    const results = await invokeBatchBridge([{
+      table: 'product_variants', operation: 'select',
+      select: 'id, product_id, color_id, color_name, color_hex, color_code, stock_quantity, selected_thumbnail, images',
+      filters: { is_active: true, product_id: productIds.slice(index, index + CHUNK_SIZE), color_id: colorIds },
+      limit: 3000, offset: 0,
+    }]);
+    rows.push(...bridgeRecords<VariantRow>(results[0]));
+  }
+  return rows;
+}
+
+async function fetchProductImages(productIds: string[]): Promise<ImageRow[]> {
+  const rows: ImageRow[] = [];
+  for (let index = 0; index < productIds.length; index += CHUNK_SIZE) {
+    const results = await invokeBatchBridge([{
+      table: 'product_images', operation: 'select',
+      select: 'product_id, variant_id, supplier_code, url_cdn, is_og_image, is_primary, image_type',
+      filters: { product_id: productIds.slice(index, index + CHUNK_SIZE) },
+      limit: 3000, offset: 0,
+    }]);
+    rows.push(...bridgeRecords<ImageRow>(results[0]));
+  }
+  return rows;
+}
+
+function storePrimaryImage(row: ImageRow, target: Map<string, Set<string>>): void {
+  if (!row.url_cdn || (!row.is_primary && !row.is_og_image)) return;
+  const urls = target.get(row.product_id) ?? new Set<string>();
+  urls.add(row.url_cdn);
+  target.set(row.product_id, urls);
+}
+
+function storePreferredImage(key: string | null, url: string, preferred: boolean | null, target: Map<string, string>): void {
+  if (!key) return;
+  if (!target.has(key) || preferred) target.set(key, url);
+}
+
+function buildImageLookups(rows: ImageRow[]): ImageLookups {
+  const lookups: ImageLookups = {
+    byVariantId: new Map(),
+    byProductAndCode: new Map(),
+    primariesByProduct: new Map(),
+  };
+  for (const row of rows) {
+    if (!row.url_cdn || row.image_type === 'box') continue;
+    storePrimaryImage(row, lookups.primariesByProduct);
+    storePreferredImage(row.variant_id, row.url_cdn, row.is_og_image, lookups.byVariantId);
+    const supplierKey = row.supplier_code
+      ? `${row.product_id}|${row.supplier_code.toUpperCase()}`
+      : null;
+    storePreferredImage(supplierKey, row.url_cdn, row.is_og_image, lookups.byProductAndCode);
+  }
+  return lookups;
+}
+
+function groupVariants(rows: VariantRow[]): Map<string, VariantRow[]> {
+  const grouped = new Map<string, VariantRow[]>();
+  for (const row of rows) {
+    const productRows = grouped.get(row.product_id) ?? [];
+    productRows.push(row);
+    grouped.set(row.product_id, productRows);
+  }
+  return grouped;
+}
+
+function directVariantMatch(productId: string, variants: VariantRow[], lookups: ImageLookups): VariantRow | undefined {
+  return variants.find(variant => {
+    if (lookups.byVariantId.has(variant.id)) return true;
+    if (!variant.color_code) return false;
+    return lookups.byProductAndCode.has(`${productId}|${variant.color_code.toUpperCase()}`);
+  });
+}
+
+function directVariantUrl(productId: string, variant: VariantRow, lookups: ImageLookups): string | null {
+  const byVariant = lookups.byVariantId.get(variant.id);
+  if (byVariant) return byVariant;
+  if (!variant.color_code) return null;
+  return lookups.byProductAndCode.get(`${productId}|${variant.color_code.toUpperCase()}`) ?? null;
+}
+
+function thumbnailMatch(productId: string, variants: VariantRow[], lookups: ImageLookups): VariantRow | undefined {
+  const primaryUrls = lookups.primariesByProduct.get(productId);
+  return variants.find(variant => Boolean(variant.selected_thumbnail && !primaryUrls?.has(variant.selected_thumbnail)));
+}
+
+function arrayImageMatch(productId: string, variants: VariantRow[], lookups: ImageLookups): { variant: VariantRow; url: string } | null {
+  const primaryUrls = lookups.primariesByProduct.get(productId);
+  for (const variant of variants) {
+    const images = variant.images ?? [];
+    const url = images.find(image => !primaryUrls?.has(image)) ?? images[0];
+    if (url) return { variant, url };
+  }
+  return null;
+}
+
+function resolveVariantPresentation(productId: string, variants: VariantRow[], lookups: ImageLookups) {
+  const direct = directVariantMatch(productId, variants, lookups);
+  if (direct) return { variant: direct, image: directVariantUrl(productId, direct, lookups) };
+  const thumbnail = thumbnailMatch(productId, variants, lookups);
+  if (thumbnail) return { variant: thumbnail, image: thumbnail.selected_thumbnail };
+  const arrayImage = arrayImageMatch(productId, variants, lookups);
+  if (arrayImage) return { variant: arrayImage.variant, image: arrayImage.url };
+  return { variant: variants[0], image: null };
+}
+
+function stockStatus(stock: number): ColorEnrichmentData['stockStatus'] {
+  if (stock <= 0) return 'out-of-stock';
+  if (stock < 10) return 'low-stock';
+  return 'in-stock';
+}
 
 /**
  * Returns a Map<productId, ColorEnrichmentData> for products matching the color filter.
@@ -60,7 +236,7 @@ export function useColorEnrichment({ productIds, colorGroups, colorVariations }:
   const newProductIds = useMemo(() => {
     if (!hasFilter) return [];
     return productIds.filter(id => !enrichedIdsRef.current.has(id));
-  }, [productIds, hasFilter, filterKey]);
+  }, [productIds, hasFilter]);
 
   // Stable key: use count of new IDs + total count  
   const queryEnabled = hasFilter && newProductIds.length > 0;
@@ -70,208 +246,38 @@ export function useColorEnrichment({ productIds, colorGroups, colorVariations }:
     queryFn: async (): Promise<Map<string, ColorEnrichmentData>> => {
       if (newProductIds.length === 0) return accumulatedMapRef.current;
 
-      // Step 1: Load reference tables (cached after first call)
-      if (!cachedColorGroups || !cachedColorVariations) {
-        const refResults = await invokeBatchBridge([
-          {
-            table: 'color_groups',
-            operation: 'select' as const,
-            select: 'id, slug',
-            filters: { is_active: true },
-            limit: 200,
-            offset: 0,
-            cacheKey: 'ref:color_groups',
-          },
-          {
-            table: 'color_variations',
-            operation: 'select' as const,
-            select: 'id, name, slug, group_id, hex_code',
-            filters: { is_active: true },
-            limit: 500,
-            offset: 0,
-            cacheKey: 'ref:color_variations',
-          },
-        ]);
-
-        cachedColorGroups = refResults[0]?.success ? (refResults[0].data?.records || []) as Array<{ id: string; slug: string }> : [];
-        cachedColorVariations = refResults[1]?.success ? (refResults[1].data?.records || []) as Array<{ id: string; name: string; slug: string; group_id: string; hex_code: string | null }> : [];
-      }
-
-      const groupsBySlug = new Map(cachedColorGroups!.map(g => [g.slug, g.id]));
-      const variationsBySlug = new Map(cachedColorVariations!.map(v => [v.slug, v]));
-
-      // Resolve target color_ids
-      const targetColorIds = new Set<string>();
-
-      for (const slug of colorVariations) {
-        const v = variationsBySlug.get(slug);
-        if (v) targetColorIds.add(v.id);
-      }
-
-      for (const slug of colorGroups) {
-        const groupId = groupsBySlug.get(slug);
-        if (groupId) {
-          for (const v of cachedColorVariations!) {
-            if (v.group_id === groupId) targetColorIds.add(v.id);
-          }
-        }
-      }
+      await ensureColorReferences();
+      const targetColorIds = resolveTargetColorIds(colorGroups, colorVariations);
 
       if (targetColorIds.size === 0) return accumulatedMapRef.current;
 
-      // Step 2: Fetch variants for NEW products with these color_ids
       const colorIdArray = [...targetColorIds];
-      const CHUNK = 80; // Smaller chunks to stay well within limits
-      const allVariants: Array<{
-        product_id: string;
-        color_id: string | null;
-        color_name: string | null;
-        color_hex: string | null;
-        color_code: string | null;
-        stock_quantity: number | null;
-        selected_thumbnail: string | null;
-        images: string[] | null;
-        id: string;
-      }> = [];
-
-      for (let i = 0; i < newProductIds.length; i += CHUNK) {
-        const pidChunk = newProductIds.slice(i, i + CHUNK);
-        const results = await invokeBatchBridge([{
-          table: 'product_variants',
-          operation: 'select' as const,
-          select: 'id, product_id, color_id, color_name, color_hex, color_code, stock_quantity, selected_thumbnail, images',
-          filters: { is_active: true, product_id: pidChunk, color_id: colorIdArray },
-          limit: 3000,
-          offset: 0,
-        }]);
-
-        if (results[0]?.success && results[0].data?.records) {
-          allVariants.push(...(results[0].data.records as typeof allVariants));
-        }
-      }
+      const allVariants = await fetchColorVariants(newProductIds, colorIdArray);
 
       // Step 3: Fetch images for products with variants
       const productIdsWithVariants = [...new Set(allVariants.map(v => v.product_id))];
-      const allImages: Array<{
-        product_id: string;
-        variant_id: string | null;
-        supplier_code: string | null;
-        url_cdn: string | null;
-        is_og_image: boolean | null;
-        is_primary: boolean | null;
-        image_type: string | null;
-      }> = [];
-
-      for (let i = 0; i < productIdsWithVariants.length; i += CHUNK) {
-        const pidChunk = productIdsWithVariants.slice(i, i + CHUNK);
-        const results = await invokeBatchBridge([{
-          table: 'product_images',
-          operation: 'select' as const,
-          select: 'product_id, variant_id, supplier_code, url_cdn, is_og_image, is_primary, image_type',
-          filters: { product_id: pidChunk },
-          limit: 3000,
-          offset: 0,
-        }]);
-
-        if (results[0]?.success && results[0].data?.records) {
-          allImages.push(...(results[0].data.records as typeof allImages));
-        }
-      }
-
-      // Build image lookup maps — scoped per product to avoid cross-contamination
-      const imagesByVariantId = new Map<string, string>();
-      // Key: "productId|SUPPLIER_CODE" to avoid one product's image leaking to another
-      const imagesByProductAndCode = new Map<string, string>();
-      const primaryImagesByProduct = new Map<string, Set<string>>();
-
-      for (const img of allImages) {
-        if (!img.url_cdn || img.image_type === 'box') continue;
-        if ((img.is_primary || img.is_og_image) && img.url_cdn) {
-          if (!primaryImagesByProduct.has(img.product_id)) primaryImagesByProduct.set(img.product_id, new Set());
-          primaryImagesByProduct.get(img.product_id)!.add(img.url_cdn);
-        }
-        if (img.variant_id) {
-          if (!imagesByVariantId.has(img.variant_id) || img.is_og_image) {
-            imagesByVariantId.set(img.variant_id, img.url_cdn);
-          }
-        }
-        if (img.supplier_code) {
-          const key = `${img.product_id}|${img.supplier_code.toUpperCase()}`;
-          if (!imagesByProductAndCode.has(key) || img.is_og_image) {
-            imagesByProductAndCode.set(key, img.url_cdn);
-          }
-        }
-      }
+      const allImages = await fetchProductImages(productIdsWithVariants);
+      const imageLookups = buildImageLookups(allImages);
 
       // Step 4: Build enrichment for new products
-      const variantsByProduct = new Map<string, typeof allVariants>();
-      for (const v of allVariants) {
-        if (!variantsByProduct.has(v.product_id)) variantsByProduct.set(v.product_id, []);
-        variantsByProduct.get(v.product_id)!.push(v);
-      }
+      const variantsByProduct = groupVariants(allVariants);
 
       let withImage = 0;
       let withoutImage = 0;
 
       for (const [productId, variants] of variantsByProduct) {
-        let totalStock = 0;
-        let bestImage: string | null = null;
-        let bestColorName: string | null = null;
-        let bestColorHex: string | null = null;
-
-        // First pass: accumulate stock and find best image across ALL matching variants
-        for (const v of variants) {
-          totalStock += v.stock_quantity ?? 0;
-        }
-
-        // Second pass: try each variant for an image (prioritize variants WITH images)
-        for (const v of variants) {
-          if (bestImage) break;
-          // Priority 1: Direct variant_id link in product_images
-          const variantImage = imagesByVariantId.get(v.id) || null;
-          if (variantImage) { bestImage = variantImage; bestColorName = v.color_name; bestColorHex = v.color_hex; break; }
-          // Priority 2: color_code → supplier_code match
-          const colorImage = v.color_code ? imagesByProductAndCode.get(`${productId}|${v.color_code.toUpperCase()}`) || null : null;
-          if (colorImage) { bestImage = colorImage; bestColorName = v.color_name; bestColorHex = v.color_hex; break; }
-        }
-
-        // Priority 3: selected_thumbnail (only if not the main product image)
-        if (!bestImage) {
-          for (const v of variants) {
-            if (v.selected_thumbnail) {
-              const productPrimaries = primaryImagesByProduct.get(productId);
-              const isMainImage = productPrimaries?.has(v.selected_thumbnail) || false;
-              if (!isMainImage) { bestImage = v.selected_thumbnail; bestColorName = v.color_name; bestColorHex = v.color_hex; break; }
-            }
-          }
-        }
-
-        // Priority 4: variant images[] array
-        if (!bestImage) {
-          for (const v of variants) {
-            if (v.images?.length) {
-              // Filter out main product images from variant images
-              const productPrimaries = primaryImagesByProduct.get(productId);
-              const validImages = v.images.filter(img => !productPrimaries?.has(img));
-              if (validImages.length > 0) { bestImage = validImages[0]!; bestColorName = v.color_name; bestColorHex = v.color_hex; break; }
-              // Last resort: use first image even if it's a main image
-              if (v.images.length > 0) { bestImage = v.images[0]!; bestColorName = v.color_name; bestColorHex = v.color_hex; break; }
-            }
-          }
-        }
-
-        // Set color name/hex even without image
-        if (!bestColorName && variants.length > 0) {
-          bestColorName = variants[0]!.color_name;
-          bestColorHex = variants[0]!.color_hex;
-        }
+        const totalStock = variants.reduce((sum, variant) => sum + (variant.stock_quantity ?? 0), 0);
+        const presentation = resolveVariantPresentation(productId, variants, imageLookups);
+        const bestImage = presentation.image;
+        const bestColorName = presentation.variant?.color_name ?? null;
+        const bestColorHex = presentation.variant?.color_hex ?? null;
 
         if (bestImage) withImage++; else withoutImage++;
 
         accumulatedMapRef.current.set(productId, {
           image: bestImage,
           stock: totalStock,
-          stockStatus: totalStock <= 0 ? 'out-of-stock' : totalStock < 10 ? 'low-stock' : 'in-stock',
+          stockStatus: stockStatus(totalStock),
           colorName: bestColorName,
           colorHex: bestColorHex,
         });

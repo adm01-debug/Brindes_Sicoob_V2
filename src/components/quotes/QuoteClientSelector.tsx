@@ -6,8 +6,8 @@ interface QuoteClientSelectorProps {
   contactId: string;
   onClientChange: (id: string) => void;
   onContactChange: (id: string) => void;
-  onClientInfoChange?: (info: any) => void;
-  onContactInfoChange?: (info: any) => void;
+  onClientInfoChange?: (info: unknown) => void;
+  onContactInfoChange?: (info: unknown) => void;
   className?: string;
 }
 

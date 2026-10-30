@@ -58,6 +58,113 @@ const SELECT_BY_ENTITY: Record<Entity, string> = {
   material_types: 'id, name',
 };
 
+type ReferenceRecord = { id: string; name: string; code?: string };
+
+function partitionIds<T extends ReferenceRecord>(
+  entity: Entity,
+  ids: string[],
+  output: Map<string, T>,
+): { missing: string[]; awaited: string[] } {
+  const missing: string[] = [];
+  const awaited: string[] = [];
+  const seen = new Set<string>();
+  for (const id of ids) {
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    const cached = getFresh<T>(entity, id);
+    if (cached) output.set(id, cached);
+    else if (INFLIGHT_BY_ID[entity].has(id)) awaited.push(id);
+    else missing.push(id);
+  }
+  return { missing, awaited };
+}
+
+function piggybackRequests<T extends ReferenceRecord>(
+  entity: Entity,
+  awaited: string[],
+  missing: string[],
+  output: Map<string, T>,
+): Promise<void>[] {
+  const promises: Promise<void>[] = [];
+  for (const id of awaited) {
+    const pending = INFLIGHT_BY_ID[entity].get(id);
+    if (!pending) {
+      missing.push(id);
+      continue;
+    }
+    promises.push(pending.then((record) => {
+      if (record) output.set(id, record as T);
+    }));
+  }
+  return promises;
+}
+
+async function fetchReferenceRecords<T extends ReferenceRecord>(
+  entity: Entity,
+  missing: string[],
+): Promise<T[]> {
+  const start = performance.now();
+  const result = await invokeExternalDb<T>({
+    table: entity,
+    operation: 'select',
+    select: SELECT_BY_ENTITY[entity],
+    filters: { id: `in.(${missing.join(',')})` },
+    limit: Math.max(missing.length, 50),
+  });
+  const duration = performance.now() - start;
+  diagnostics.log('performance', 'immutableCache', `Fetched ${missing.length} ${entity}`, { duration, ids: missing });
+  return result.records as T[];
+}
+
+function registerPerIdResolvers<T extends ReferenceRecord>(
+  entity: Entity,
+  missing: string[],
+): Map<string, (record: T | undefined) => void> {
+  const resolvers = new Map<string, (record: T | undefined) => void>();
+  for (const id of missing) {
+    const pending = new Promise<T | undefined>((resolve) => resolvers.set(id, resolve));
+    INFLIGHT_BY_ID[entity].set(id, pending as Promise<ReferenceRecord | undefined>);
+  }
+  return resolvers;
+}
+
+function settlePerId<T extends ReferenceRecord>(
+  entity: Entity,
+  missing: string[],
+  resolvers: Map<string, (record: T | undefined) => void>,
+  records: T[],
+): void {
+  const byId = new Map(records.map((record) => [record.id, record]));
+  for (const id of missing) {
+    resolvers.get(id)?.(byId.get(id));
+    INFLIGHT_BY_ID[entity].delete(id);
+  }
+}
+
+async function loadMissingRecords<T extends ReferenceRecord>(
+  entity: Entity,
+  missing: string[],
+): Promise<T[]> {
+  const key = `${entity}:${[...missing].sort().join(',')}`;
+  const existing = INFLIGHT.get(key) as Promise<T[]> | undefined;
+  if (existing) return existing;
+
+  const pending = fetchReferenceRecords<T>(entity, missing);
+  INFLIGHT.set(key, pending as Promise<unknown>);
+  const resolvers = registerPerIdResolvers<T>(entity, missing);
+  try {
+    const records = await pending;
+    settlePerId(entity, missing, resolvers, records);
+    return records;
+  } catch (error) {
+    logger.warn(`[immutableCache] fetch failed for ${entity}:`, error);
+    settlePerId(entity, missing, resolvers, []);
+    return [];
+  } finally {
+    INFLIGHT.delete(key);
+  }
+}
+
 /**
  * Returns a Map<id, record> for the requested ids, fetching only the missing
  * ones in a single bridge call. De-duplicates concurrent requests via INFLIGHT.
@@ -67,88 +174,15 @@ export async function getCachedByIds<T extends { id: string; name: string; code?
   ids: string[],
 ): Promise<Map<string, T>> {
   const out = new Map<string, T>();
-  const missing: string[] = [];
-  /** ids cuja resposta vamos esperar de outra chamada já em voo. */
-  const awaitedFromOthers: string[] = [];
-  const seen = new Set<string>();
-  for (const raw of ids) {
-    if (!raw || seen.has(raw)) continue;
-    seen.add(raw);
-    const hit = getFresh<T>(entity, raw);
-    if (hit) { out.set(raw, hit); continue; }
-    if (INFLIGHT_BY_ID[entity].has(raw)) awaitedFromOthers.push(raw);
-    else missing.push(raw);
-  }
-
-  // Reaproveita promises por id em voo (sem disparar rede).
-  const piggybackPromises: Promise<void>[] = [];
-  for (const id of awaitedFromOthers) {
-    const p = INFLIGHT_BY_ID[entity].get(id);
-    if (!p) { missing.push(id); continue; }
-    piggybackPromises.push(p.then((rec) => {
-      if (rec) out.set(id, rec as T);
-    }));
-  }
+  const { missing, awaited } = partitionIds(entity, ids, out);
+  const piggybackPromises = piggybackRequests(entity, awaited, missing, out);
 
   if (missing.length === 0) {
     if (piggybackPromises.length) await Promise.all(piggybackPromises);
     return out;
   }
 
-  // Batch-level coalescing: a concurrent call requesting the exact same set of
-  // missing ids piggybacks on the single in-flight bridge promise.
-  const key = `${entity}:${[...missing].sort().join(',')}`;
-  const inflight = INFLIGHT.get(key) as Promise<T[]> | undefined;
-
-  let records: T[];
-  if (inflight) {
-    records = await inflight;
-  } else {
-    const start = performance.now();
-    const p = (async () => {
-      const inFilter = `in.(${missing.join(',')})`;
-      const res = await invokeExternalDb<T>({
-        table: entity, operation: 'select',
-        select: SELECT_BY_ENTITY[entity],
-        filters: { id: inFilter },
-        limit: Math.max(missing.length, 50), // Increased buffer
-      });
-      
-      const duration = performance.now() - start;
-      diagnostics.log('performance', 'immutableCache', `Fetched ${missing.length} ${entity}`, { duration, ids: missing });
-      
-      return res.records as T[];
-    })();
-    
-    INFLIGHT.set(key, p as Promise<unknown>);
-
-    const resolvers = new Map<string, (rec: T | undefined) => void>();
-    for (const id of missing) {
-      const perId = new Promise<T | undefined>((resolve) => {
-        resolvers.set(id, resolve);
-      });
-      INFLIGHT_BY_ID[entity].set(id, perId as Promise<{ id: string; name: string; code?: string } | undefined>);
-    }
-
-    try {
-      records = await p;
-      const byId = new Map(records.map(r => [r.id, r]));
-      for (const id of missing) {
-        const r = byId.get(id);
-        resolvers.get(id)?.(r);
-        INFLIGHT_BY_ID[entity].delete(id);
-      }
-    } catch (err) {
-      logger.warn(`[immutableCache] fetch failed for ${entity}:`, err);
-      for (const id of missing) {
-        resolvers.get(id)?.(undefined);
-        INFLIGHT_BY_ID[entity].delete(id);
-      }
-      records = [];
-    } finally {
-      INFLIGHT.delete(key);
-    }
-  }
+  const records = await loadMissingRecords<T>(entity, missing);
 
   for (const rec of records) {
     if (rec?.id) {

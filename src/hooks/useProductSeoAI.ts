@@ -17,6 +17,16 @@ const SEO_FIELDS: (keyof SeoAIResult)[] = [
   'meta_title', 'meta_description', 'meta_keywords', 'slug', 'key_benefits', 'use_cases',
 ];
 
+function applySeoResult(
+  data: SeoAIResult,
+  setValue: UseFormSetValue<ProductFormData>,
+): void {
+  for (const field of SEO_FIELDS) {
+    if (data[field]) setValue(field, data[field], { shouldDirty: true });
+  }
+  if (data.slug) setValue('canonical_url', `/produto/${data.slug}`, { shouldDirty: true });
+}
+
 export function useProductSeoAI(
   getValues: UseFormGetValues<ProductFormData>,
   setValue: UseFormSetValue<ProductFormData>,
@@ -49,16 +59,7 @@ export function useProductSeoAI(
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      for (const field of SEO_FIELDS) {
-        if (data[field]) {
-          setValue(field, data[field], { shouldDirty: true });
-        }
-      }
-
-      // Generate canonical_url from slug
-      if (data.slug) {
-        setValue('canonical_url', `/produto/${data.slug}`, { shouldDirty: true });
-      }
+      applySeoResult(data as SeoAIResult, setValue);
 
       toast.success('Campos SEO e marketing preenchidos com IA!');
     } catch (err) {

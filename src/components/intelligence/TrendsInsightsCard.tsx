@@ -2,7 +2,7 @@
  * TrendsInsightsCard — narrativa em IA dos dados de tendências.
  * Consome a edge function `trends-insights` (Lovable AI).
  */
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,8 +29,9 @@ export function TrendsInsightsCard({ days }: TrendsInsightsCardProps) {
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ["trends-insights", days, version],
     queryFn: async (): Promise<InsightResponse | null> => {
-      const { isDemoMode, MOCK_INSIGHTS } = await import("@/pages/trends/trends-mock");
+      const { isDemoMode } = await import("@/pages/trends/is-demo-mode");
       if (isDemoMode()) {
+        const { MOCK_INSIGHTS } = await import("@/pages/trends/trends-mock");
         // Simula latência leve para sensação real
         await new Promise(r => setTimeout(r, 400));
         return MOCK_INSIGHTS;
@@ -106,7 +107,7 @@ export function TrendsInsightsCard({ days }: TrendsInsightsCardProps) {
   );
 }
 
-function InsightRow({ icon, label, text }: { icon: React.ReactNode; label: string; text?: string }) {
+function InsightRow({ icon, label, text }: { icon: ReactNode; label: string; text?: string }) {
   if (!text) return null;
   return (
     <div className="flex items-start gap-2 p-2.5 rounded-md bg-card/60 border border-border/40">

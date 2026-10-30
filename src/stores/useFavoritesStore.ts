@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { Haptics } from "@/utils/haptics";
+import { logger } from "@/lib/logger";
 
 const STORAGE_KEY = "product-favorites";
 
@@ -35,11 +36,36 @@ interface FavoritesStore extends FavoritesState, FavoritesActions {
   favoriteCount: number;
 }
 
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isValidVariant(value: unknown): boolean {
+  return value === undefined || (typeof value === "object" && value !== null && !Array.isArray(value));
+}
+
+function isFavoriteItem(value: unknown): value is FavoriteItem {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const item = value as Partial<FavoriteItem>;
+  return isNonEmptyString(item.productId)
+    && isNonEmptyString(item.addedAt)
+    && isValidVariant(item.variant);
+}
+
+function parseStoredFavorites(raw: string): FavoriteItem[] {
+  const parsed: unknown = JSON.parse(raw);
+  if (!Array.isArray(parsed)) {
+    throw new TypeError("O armazenamento de favoritos contém um payload inválido");
+  }
+  return parsed.filter(isFavoriteItem);
+}
+
 function loadFromStorage(): FavoriteItem[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
+    return stored ? parseStoredFavorites(stored) : [];
+  } catch (error) {
+    logger.error("Error loading favorites:", error);
     return [];
   }
 }

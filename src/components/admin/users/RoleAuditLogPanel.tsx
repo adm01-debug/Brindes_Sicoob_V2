@@ -62,6 +62,85 @@ const ACTION_LABEL: Record<RoleAction, { label: string; variant: "default" | "se
   "role.demote":  { label: "Rebaixado", variant: "outline" },
 };
 
+const EMPTY_PROFILES = new Map<string, ProfileLite>();
+
+function profileMatches(profile: ProfileLite | undefined, query: string): boolean {
+  return [profile?.full_name, profile?.email]
+    .some((value) => value?.toLowerCase().includes(query));
+}
+
+function entryMatches(
+  entry: RoleAuditEntry,
+  profiles: Map<string, ProfileLite>,
+  query: string,
+): boolean {
+  const actor = profiles.get(entry.user_id);
+  const target = entry.resource_id ? profiles.get(entry.resource_id) : undefined;
+  return profileMatches(actor, query) || profileMatches(target, query);
+}
+
+function UserDetails({ userId, profiles }: { userId: string | null; profiles: Map<string, ProfileLite> }) {
+  if (!userId) return <span className="text-muted-foreground">—</span>;
+  const profile = profiles.get(userId);
+  if (!profile) return <span className="text-muted-foreground font-mono text-xs">{userId.slice(0, 8)}…</span>;
+  return (
+    <div className="flex flex-col">
+      <span className="text-sm font-medium">{profile.full_name || "Sem nome"}</span>
+      {profile.email && <span className="text-[11px] text-muted-foreground">{profile.email}</span>}
+    </div>
+  );
+}
+
+function RoleChange({ oldRole, newRole, reason }: { oldRole: string | null; newRole: string | null; reason?: string }) {
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap">
+      {oldRole ? <RoleBadge role={oldRole} /> : <span className="text-xs text-muted-foreground">—</span>}
+      <ArrowRight className="h-3 w-3 text-muted-foreground" />
+      {newRole ? <RoleBadge role={newRole} /> : <span className="text-xs text-muted-foreground">—</span>}
+      {reason && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge variant="outline" className="text-[10px] cursor-help">motivo</Badge>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">{reason}</TooltipContent>
+        </Tooltip>
+      )}
+    </div>
+  );
+}
+
+function RoleAuditRow({ entry, profiles }: { entry: RoleAuditEntry; profiles: Map<string, ProfileLite> }) {
+  const oldRole = (entry.details?.old_role as string | null) ?? null;
+  const newRole = (entry.details?.new_role as string | null) ?? null;
+  const reason = (entry.details?.reason as string | undefined) ?? undefined;
+  const meta = ACTION_LABEL[entry.action];
+  return (
+    <TableRow>
+      <TableCell>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="text-xs text-muted-foreground">
+              {formatDistanceToNow(new Date(entry.created_at), { addSuffix: true, locale: ptBR })}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            {format(new Date(entry.created_at), "dd/MM/yyyy HH:mm:ss", { locale: ptBR })}
+          </TooltipContent>
+        </Tooltip>
+      </TableCell>
+      <TableCell><UserDetails userId={entry.user_id} profiles={profiles} /></TableCell>
+      <TableCell><Badge variant={meta.variant}>{meta.label}</Badge></TableCell>
+      <TableCell><UserDetails userId={entry.resource_id} profiles={profiles} /></TableCell>
+      <TableCell>
+        <RoleChange oldRole={oldRole} newRole={newRole} reason={reason} />
+      </TableCell>
+      <TableCell>
+        <span className="text-[11px] text-muted-foreground font-mono">{entry.source || "—"}</span>
+      </TableCell>
+    </TableRow>
+  );
+}
+
 export function RoleAuditLogPanel() {
   const [search, setSearch] = useState("");
   const [actionFilter, setActionFilter] = useState<"all" | RoleAction>("all");
@@ -104,35 +183,14 @@ export function RoleAuditLogPanel() {
     refetchInterval: 30_000,
   });
 
-  const entries = data?.entries ?? [];
-  const profilesMap = data?.profilesMap ?? new Map<string, ProfileLite>();
+  const profilesMap = data?.profilesMap ?? EMPTY_PROFILES;
 
   const filtered = useMemo(() => {
+    const entries = data?.entries ?? [];
     const q = search.trim().toLowerCase();
     if (!q) return entries;
-    return entries.filter((e) => {
-      const actor = profilesMap.get(e.user_id);
-      const target = e.resource_id ? profilesMap.get(e.resource_id) : null;
-      return (
-        (actor?.full_name || "").toLowerCase().includes(q) ||
-        (actor?.email || "").toLowerCase().includes(q) ||
-        (target?.full_name || "").toLowerCase().includes(q) ||
-        (target?.email || "").toLowerCase().includes(q)
-      );
-    });
-  }, [entries, profilesMap, search]);
-
-  const renderUser = (uid: string | null) => {
-    if (!uid) return <span className="text-muted-foreground">—</span>;
-    const p = profilesMap.get(uid);
-    if (!p) return <span className="text-muted-foreground font-mono text-xs">{uid.slice(0, 8)}…</span>;
-    return (
-      <div className="flex flex-col">
-        <span className="text-sm font-medium">{p.full_name || "Sem nome"}</span>
-        {p.email && <span className="text-[11px] text-muted-foreground">{p.email}</span>}
-      </div>
-    );
-  };
+    return entries.filter((entry) => entryMatches(entry, profilesMap, q));
+  }, [data?.entries, profilesMap, search]);
 
   return (
     <Card className="border-border/50">
@@ -203,57 +261,9 @@ export function RoleAuditLogPanel() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((entry) => {
-                  const oldRole = (entry.details?.old_role as string | null) ?? null;
-                  const newRole = (entry.details?.new_role as string | null) ?? null;
-                  const reason = (entry.details?.reason as string | undefined) ?? undefined;
-                  const meta = ACTION_LABEL[entry.action];
-                  const target = entry.resource_id;
-
-                  return (
-                    <TableRow key={entry.id}>
-                      <TableCell>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(entry.created_at), { addSuffix: true, locale: ptBR })}
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {format(new Date(entry.created_at), "dd/MM/yyyy HH:mm:ss", { locale: ptBR })}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TableCell>
-                      <TableCell>{renderUser(entry.user_id)}</TableCell>
-                      <TableCell>
-                        <Badge variant={meta.variant}>{meta.label}</Badge>
-                      </TableCell>
-                      <TableCell>{renderUser(target)}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          {oldRole ? <RoleBadge role={oldRole} /> : <span className="text-xs text-muted-foreground">—</span>}
-                          <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                          {newRole ? <RoleBadge role={newRole} /> : <span className="text-xs text-muted-foreground">—</span>}
-                          {reason && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Badge variant="outline" className="text-[10px] cursor-help">
-                                  motivo
-                                </Badge>
-                              </TooltipTrigger>
-                              <TooltipContent className="max-w-xs">{reason}</TooltipContent>
-                            </Tooltip>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-[11px] text-muted-foreground font-mono">
-                          {entry.source || "—"}
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                {filtered.map((entry) => (
+                  <RoleAuditRow key={entry.id} entry={entry} profiles={profilesMap} />
+                ))}
               </TableBody>
             </Table>
           </div>

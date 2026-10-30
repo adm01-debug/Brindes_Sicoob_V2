@@ -11,6 +11,8 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+const MAX_PAYLOAD_BYTES = 1_048_576;
+
 async function hmacSign(payload: string, secret: string): Promise<string> {
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey(
@@ -45,13 +47,26 @@ Deno.serve(async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    if (!/^[a-z0-9][a-z0-9_-]{0,99}$/i.test(slug)) {
+      return new Response(JSON.stringify({ error: "slug inválido" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    const { data: endpoint } = await supabase
+    const contentLength = Number(req.headers.get("content-length") ?? "0");
+    if (Number.isFinite(contentLength) && contentLength > MAX_PAYLOAD_BYTES) {
+      return new Response(JSON.stringify({ error: "payload excede o limite de 1 MiB" }), {
+        status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: endpoint, error: endpointError } = await supabase
       .from("inbound_webhook_endpoints")
       .select("*")
       .eq("slug", slug)
       .eq("active", true)
       .maybeSingle();
+    if (endpointError) throw endpointError;
     if (!endpoint) {
       return new Response(JSON.stringify({ error: "endpoint não encontrado" }), {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -59,6 +74,11 @@ Deno.serve(async (req) => {
     }
 
     const rawBody = await req.text();
+    if (new TextEncoder().encode(rawBody).byteLength > MAX_PAYLOAD_BYTES) {
+      return new Response(JSON.stringify({ error: "payload excede o limite de 1 MiB" }), {
+        status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const signatureHeader = req.headers.get("x-signature-256")
       || req.headers.get("x-webhook-signature")
       || "";
@@ -72,29 +92,42 @@ Deno.serve(async (req) => {
       const provided = signatureHeader.startsWith("sha256=") ? signatureHeader : "sha256=" + signatureHeader;
       signatureValid = timingSafeEqual(expected, provided);
     }
+    const eventAllowed = endpoint.allowed_events.length === 0 || endpoint.allowed_events.includes(eventType);
+    const accepted = signatureValid && eventAllowed;
 
     let parsedPayload: unknown = null;
     try { parsedPayload = JSON.parse(rawBody); } catch { /* keep null */ }
 
-    await supabase.from("inbound_webhook_events").insert({
+    const { error: eventError } = await supabase.from("inbound_webhook_events").insert({
       endpoint_id: endpoint.id,
       event_type: eventType,
       payload: parsedPayload,
       signature_valid: signatureValid,
-      processed: signatureValid,
+      processed: accepted,
       source_ip: sourceIp,
-      error: signatureValid ? null : "HMAC inválido ou ausente",
+      error: !signatureValid
+        ? "HMAC inválido ou ausente"
+        : eventAllowed ? null : "Evento não permitido para este endpoint",
     });
+    // Não confirme o recebimento ao emissor se o evento não foi duravelmente registrado.
+    // Isso permite que o mecanismo de retry do emissor recupere a entrega.
+    if (eventError) throw eventError;
 
-    await supabase.from("inbound_webhook_endpoints").update({
+    const { error: metricsError } = await supabase.from("inbound_webhook_endpoints").update({
       last_received_at: new Date().toISOString(),
       total_received: (endpoint.total_received ?? 0) + 1,
-      total_invalid: (endpoint.total_invalid ?? 0) + (signatureValid ? 0 : 1),
+      total_invalid: (endpoint.total_invalid ?? 0) + (accepted ? 0 : 1),
     }).eq("id", endpoint.id);
+    if (metricsError) console.error("Falha ao atualizar métricas do webhook:", metricsError.message);
 
     if (!signatureValid) {
       return new Response(JSON.stringify({ error: "Assinatura inválida" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!eventAllowed) {
+      return new Response(JSON.stringify({ error: "Evento não permitido" }), {
+        status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 

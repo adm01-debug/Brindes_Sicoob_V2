@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ShieldCheck, Mail, KeyRound, Loader2 } from "lucide-react";
-import { useStepUpAuth, StepUpAction } from "@/hooks/useStepUpAuth";
+import { useStepUpAuth, type StepUpAction } from "@/hooks/useStepUpAuth";
 
 interface Props {
   open: boolean;
@@ -14,6 +14,11 @@ interface Props {
   targetRef?: string | null;
   actionLabel: string;
   onVerified: (token: string) => void | Promise<void>;
+}
+
+function getVerificationStep(challengeId: string | null, passwordVerified: boolean): "loading" | "password" | "otp" {
+  if (!challengeId) return "loading";
+  return passwordVerified ? "otp" : "password";
 }
 
 export function StepUpAuthDialog({ open, onOpenChange, action, targetRef, actionLabel, onVerified }: Props) {
@@ -38,12 +43,12 @@ export function StepUpAuthDialog({ open, onOpenChange, action, targetRef, action
     }
   }, [open, action, targetRef, actionLabel, state.challengeId, requestChallenge, reset, cancel, verifiedRef]);
 
-  const handlePassword = async (e: React.FormEvent) => {
+  const handlePassword = async (e: FormEvent) => {
     e.preventDefault();
     await verifyPassword(password);
   };
 
-  const handleOtp = async (e: React.FormEvent) => {
+  const handleOtp = async (e: FormEvent) => {
     e.preventDefault();
     const token = await verifyOtp(otp);
     if (token) {
@@ -53,8 +58,7 @@ export function StepUpAuthDialog({ open, onOpenChange, action, targetRef, action
     }
   };
 
-  const step: "loading" | "password" | "otp" =
-    !state.challengeId ? "loading" : !state.passwordVerified ? "password" : "otp";
+  const step = getVerificationStep(state.challengeId, state.passwordVerified);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

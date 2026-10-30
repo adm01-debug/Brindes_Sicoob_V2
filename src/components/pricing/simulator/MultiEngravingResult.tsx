@@ -7,7 +7,15 @@
  * - Código de orçamento automático
  */
 
-import { useMemo, useState, useEffect } from 'react';
+/**
+ * MultiEngravingResult - Resultado de múltiplas gravações v5.1
+ *
+ * Usa a RPC fn_get_customization_price para cálculos com:
+ * - Markup (115%)
+ * - Faturamento mínimo (setup como piso)
+ * - Código de orçamento automático
+ */
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -46,13 +54,31 @@ interface EngravingCalculationV51 {
   error: string | null;
 }
 
+function CalculationPrice({ calculation, copied, onCopy }: { calculation: EngravingCalculationV51; copied: string | null; onCopy: (code: string) => void }) {
+  if (calculation.loading) return <Loader2 className="w-4 h-4 animate-spin" />;
+  const price = calculation.priceData;
+  if (calculation.error || !price?.success) return <span className="text-sm text-destructive">N/D</span>;
+  return <div className="flex items-center gap-2"><Badge variant="outline" className="font-mono text-xs cursor-pointer hover:bg-muted transition-colors" onClick={() => onCopy(price.codigo_orcamento)}>{copied === price.codigo_orcamento ? <CheckCircle2 className="w-3 h-3 mr-1 text-primary dark:text-primary" /> : <Copy className="w-3 h-3 mr-1" />}{price.codigo_orcamento}</Badge><span className={cn("text-sm font-medium", price.minimum_applied ? "text-warning dark:text-warning" : undefined)}>{formatCurrency(price.total_price)}</span></div>;
+}
+
+function CalculationDetails({ calculation, quantity }: { calculation: EngravingCalculationV51; quantity: number }) {
+  const price = calculation.priceData;
+  if (!price?.success) return null;
+  return <div className="text-xs text-muted-foreground space-y-0.5"><div className="flex justify-between"><span>{formatNumber(quantity)} × {formatCurrency(price.unit_price)} {' '}(Faixa {price.tier_used})</span><span>{formatCurrency(price.subtotal_pecas)}</span></div>{price.minimum_applied ? <div className="flex items-center gap-1 text-warning dark:text-warning"><Info className="w-3 h-3" /><span>Fat. mínimo aplicado: {formatCurrency(price.faturamento_minimo_gravacao)}</span></div> : null}</div>;
+}
+
+function CalculationRow({ calculation, index, quantity, copied, onCopy }: { calculation: EngravingCalculationV51; index: number; quantity: number; copied: string | null; onCopy: (code: string) => void }) {
+  const colors = calculation.engraving.colors;
+  return <div className="pl-6 space-y-1 py-2 border-b border-dashed last:border-0"><div className="flex items-center justify-between gap-2"><span className="text-sm text-muted-foreground truncate">{index + 1}. {calculation.engraving.technique.techniqueName}{colors > 1 ? ` (${colors}c)` : null}</span><CalculationPrice calculation={calculation} copied={copied} onCopy={onCopy} /></div><CalculationDetails calculation={calculation} quantity={quantity} /></div>;
+}
+
 export function MultiEngravingResult({
   product,
   engravings,
   quantity,
   onQuantityChange,
 }: MultiEngravingResultProps) {
-  const { calculatePrice, loading: priceLoading } = useCustomizationPriceLegacy();
+  const { calculatePrice } = useCustomizationPriceLegacy();
   const [calculations, setCalculations] = useState<EngravingCalculationV51[]>([]);
   const [isCalculating, setIsCalculating] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
@@ -128,8 +154,8 @@ export function MultiEngravingResult({
 
   // Coletar todos os códigos de orçamento
   const allCodes = calculations
-    .filter((c) => c.priceData?.codigo_orcamento)
-    .map((c) => c.priceData!.codigo_orcamento);
+    .map((calculation) => calculation.priceData?.codigo_orcamento)
+    .filter((code): code is string => Boolean(code));
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -166,7 +192,7 @@ export function MultiEngravingResult({
 
         <Slider
           value={[quantity]}
-          onValueChange={([val]) => onQuantityChange(val)}
+          onValueChange={([val]) => onQuantityChange(val ?? 1)}
           min={1}
           max={10000}
           step={1}
@@ -255,62 +281,7 @@ export function MultiEngravingResult({
                 Personalizações ({engravings.length})
               </div>
               
-              {calculations.map((calc, idx) => (
-                <div key={calc.engraving.id} className="pl-6 space-y-1 py-2 border-b border-dashed last:border-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm text-muted-foreground truncate">
-                      {idx + 1}. {calc.engraving.technique.techniqueName}
-                      {calc.engraving.colors > 1 && ` (${calc.engraving.colors}c)`}
-                    </span>
-                    
-                    {calc.loading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : calc.error || !calc.priceData?.success ? (
-                      <span className="text-sm text-destructive">N/D</span>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <Badge 
-                          variant="outline" 
-                          className="font-mono text-xs cursor-pointer hover:bg-muted transition-colors"
-                          onClick={() => handleCopyCode(calc.priceData!.codigo_orcamento)}
-                        >
-                          {copied === calc.priceData.codigo_orcamento ? (
-                            <CheckCircle2 className="w-3 h-3 mr-1 text-primary dark:text-primary" />
-                          ) : (
-                            <Copy className="w-3 h-3 mr-1" />
-                          )}
-                          {calc.priceData.codigo_orcamento}
-                        </Badge>
-                        <span className={cn(
-                          "text-sm font-medium",
-                          calc.priceData.minimum_applied && "text-warning dark:text-warning"
-                        )}>
-                          {formatCurrency(calc.priceData.total_price)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {calc.priceData?.success && (
-                    <div className="text-xs text-muted-foreground space-y-0.5">
-                      <div className="flex justify-between">
-                        <span>
-                          {formatNumber(quantity)} × {formatCurrency(calc.priceData.unit_price)}
-                          {' '}(Faixa {calc.priceData.tier_used})
-                        </span>
-                        <span>{formatCurrency(calc.priceData.subtotal_pecas)}</span>
-                      </div>
-                      
-                      {calc.priceData.minimum_applied && (
-                        <div className="flex items-center gap-1 text-warning dark:text-warning">
-                          <Info className="w-3 h-3" />
-                          <span>Fat. mínimo aplicado: {formatCurrency(calc.priceData.faturamento_minimo_gravacao)}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
+              {calculations.map((calculation, index) => <CalculationRow key={calculation.engraving.id} calculation={calculation} index={index} quantity={quantity} copied={copied} onCopy={handleCopyCode} />)}
               
               {/* Subtotal personalização */}
               <div className="flex justify-between text-sm pt-2 pl-6 font-medium">

@@ -26,6 +26,13 @@ interface Options {
   limit?: number;
 }
 
+function parseHistoryResponse(data: unknown): { items: TestHistoryItem[]; total: number } {
+  const response = data as { items?: TestHistoryItem[]; total?: number } | null;
+  const items = response?.items ?? [];
+  const total = typeof response?.total === "number" ? response.total : items.length;
+  return { items, total };
+}
+
 export function useConnectionTestHistory({
   type,
   envKey,
@@ -55,8 +62,9 @@ export function useConnectionTestHistory({
       });
       if (fnErr) throw fnErr;
       if (cancelRef.current) return;
-      setItems((data?.items ?? []) as TestHistoryItem[]);
-      setTotal(typeof data?.total === "number" ? data.total : (data?.items?.length ?? 0));
+      const response = parseHistoryResponse(data);
+      setItems(response.items);
+      setTotal(response.total);
     } catch (e) {
       if (cancelRef.current) return;
       setError(e instanceof Error ? e.message : "Erro");

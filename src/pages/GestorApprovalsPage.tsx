@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -21,15 +21,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/format";
-import { Check, X, Eye, ShieldCheck, AlertCircle, Clock, Download, FileJson, Calendar as CalendarIcon, History, Settings } from "lucide-react";
+import { Check, X, Eye, ShieldCheck, AlertCircle, Clock, Download, History, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -43,7 +40,7 @@ export default function GestorApprovalsPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("pending");
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+  const [dateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
     to: undefined
   });
@@ -52,6 +49,7 @@ export default function GestorApprovalsPage() {
     queryKey: ["pending_approvals_list"],
     queryFn: async () => {
       const { data, error } = await supabase
+        // rls-allow: fila de gestor; RLS aplica cooperativa e papel
         .from("orders")
         .select(`
           *,
@@ -145,6 +143,7 @@ export default function GestorApprovalsPage() {
       const order = pendingOrders?.find(o => o.id === orderId);
       
       const { error: updateError } = await supabase
+        // rls-allow: decisão por pedido; RLS valida gestor e organização
         .from("orders")
         .update({ status: "aprovado_gestor" })
         .eq("id", orderId);
@@ -169,6 +168,7 @@ export default function GestorApprovalsPage() {
       const order = pendingOrders?.find(o => o.id === orderId);
       
       const { error: updateError } = await supabase
+        // rls-allow: decisão por pedido; RLS valida gestor e organização
         .from("orders")
         .update({ status: "cancelado" })
         .eq("id", orderId);

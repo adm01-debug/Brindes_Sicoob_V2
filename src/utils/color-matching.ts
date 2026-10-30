@@ -99,5 +99,7 @@ export function findNearestPantone(hex: string, topN: number = 5): PantoneMatch[
  * Find the single best Pantone match for a hex color.
  */
 export function getBestPantoneMatch(hex: string): PantoneMatch {
-  return findNearestPantone(hex, 1)[0];
+  const match = findNearestPantone(hex, 1)[0];
+  if (!match) throw new Error('Catálogo Pantone vazio.');
+  return match;
 }

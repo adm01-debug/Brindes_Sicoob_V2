@@ -2,13 +2,9 @@
 // Auditoria automatizada do Connections Hub — admin-only
 // Verifica: tabelas, edge functions, cron jobs, triggers e calcula score 0-10.
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from "../_shared/cors.ts";
-import { authenticateRequest, requireDev, authErrorResponse } from "../_shared/auth.ts";
-import { writeAuditEntry, extractRequestMeta } from "../_shared/audit-log.ts";
+import { authorize } from "../_shared/authorize.ts";
 import { getOrCreateRequestId, REQUEST_ID_HEADER } from "../_shared/request-id.ts";
-
-const SOURCE = "connections-hub-audit";
 
 interface CheckResult {
   name: string;
@@ -64,64 +60,17 @@ Deno.serve(async (req: Request) => {
   const requestId = getOrCreateRequestId(req);
   // X-Request-Id propagado em TODA resposta via spread de corsHeaders.
   const corsHeaders = { ...getCorsHeaders(req), [REQUEST_ID_HEADER]: requestId };
-  const startedAt = new Date().toISOString();
-  const startedMs = Date.now();
-  const { ip, ua } = extractRequestMeta(req);
-
-  // Service-role client p/ auditar tentativas negadas mesmo antes do auth resolver
-  const adminClient = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  );
-
-  let userId: string | null = null;
   try {
-    let auth;
-    try {
-      auth = await authenticateRequest(req);
-      userId = auth.userId;
-    } catch (authErr) {
-      await writeAuditEntry(adminClient, {
-        user_id: null,
-        action: "connections_hub_audit.access_denied",
-        resource_type: "edge_function",
-        resource_id: SOURCE,
-        ip_address: ip, user_agent: ua,
-        request_id: requestId,
-        started_at: startedAt,
-        finished_at: new Date().toISOString(),
-        duration_ms: Date.now() - startedMs,
-        status: "denied",
-        payload_summary: {},
-        source: SOURCE,
-        details: { reason: (authErr as { status?: number })?.status === 401 ? "unauthenticated" : "auth_failed", detail: (authErr as { message?: string })?.message },
-      });
-      throw authErr;
-    }
-    try {
-      requireDev(auth);
-    } catch (roleErr) {
-      await writeAuditEntry(adminClient, {
-        user_id: userId,
-        action: "connections_hub_audit.access_denied",
-        resource_type: "edge_function",
-        resource_id: SOURCE,
-        ip_address: ip, user_agent: ua,
-        request_id: requestId,
-        started_at: startedAt,
-        finished_at: new Date().toISOString(),
-        duration_ms: Date.now() - startedMs,
-        status: "denied",
-        payload_summary: {},
-        source: SOURCE,
-        details: { reason: "not_dev", roles: auth.userRoles },
-      });
-      throw roleErr;
+    const auth = await authorize(req, { requireRole: "dev", enforceServerSide: true });
+    if (!auth.ok) {
+      const headers = new Headers(auth.response.headers);
+      headers.set(REQUEST_ID_HEADER, requestId);
+      return new Response(auth.response.body, { status: auth.response.status, headers });
     }
 
     const tableChecks: CheckResult[] = [];
     for (const t of REQUIRED_TABLES) {
-      const { count, error } = await auth.localServiceClient
+      const { count, error } = await auth.supabaseAdmin
         .from(t as never)
         .select("*", { count: "exact", head: true });
       tableChecks.push({
@@ -143,7 +92,7 @@ Deno.serve(async (req: Request) => {
       const fnName = cronName === "webhook-retry-failed"
         ? "retry_failed_webhook_deliveries"
         : "cleanup_webhook_logs";
-      const { error } = await auth.localServiceClient.rpc(fnName as never);
+      const { error } = await auth.supabaseAdmin.rpc(fnName as never);
       cronChecks.push({
         name: cronName,
         ok: !error || (error.message?.includes("permission") ?? false) === false,
@@ -160,10 +109,6 @@ Deno.serve(async (req: Request) => {
 
     // Triggers — verify by attempting a metadata read of recent webhook_deliveries linked to these tables
     const triggerChecks: CheckResult[] = [];
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const sysClient = createClient(supabaseUrl, serviceKey);
-
     // Mapeia tabela → prefixo de evento emitido pelo trigger dispatch_quote_webhook_event
     const TABLE_TO_EVENT_PREFIX: Record<string, string> = {
       quotes: "quote.",
@@ -173,7 +118,7 @@ Deno.serve(async (req: Request) => {
     };
     for (const tbl of TRIGGER_TABLES) {
       const prefix = TABLE_TO_EVENT_PREFIX[tbl] ?? `${tbl}.`;
-      const { data, error } = await sysClient
+      const { data, error } = await auth.supabaseAdmin
         .from("webhook_deliveries" as never)
         .select("id")
         .ilike("event", `${prefix}%`)
@@ -212,6 +157,9 @@ Deno.serve(async (req: Request) => {
     });
   } catch (err) {
     console.error("[connections-hub-audit] error", err);
-    return authErrorResponse(err, getCorsHeaders(req));
+    return new Response(JSON.stringify({ error: "erro_interno" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });

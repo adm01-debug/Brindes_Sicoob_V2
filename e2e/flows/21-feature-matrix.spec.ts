@@ -7,6 +7,7 @@
  */
 import { test, expect, requireAuth } from "../fixtures/test-base";
 import { gotoAndSettle } from "../helpers/nav";
+import { setCatalogFavorite } from "../helpers/favorites";
 import { Sel } from "../fixtures/selectors";
 
 test.describe("Cross-feature matrix", () => {
@@ -17,8 +18,7 @@ test.describe("Cross-feature matrix", () => {
     const card = page.locator(Sel.product.card).first();
     if (!(await card.count())) test.skip(true, "Catálogo vazio neste ambiente");
 
-    const fav = card.locator(Sel.product.favorite).first();
-    if (await fav.count()) await fav.click().catch(() => {});
+    await setCatalogFavorite(page, card, true);
 
     await gotoAndSettle(page, "/favoritos");
     await expect(page).toHaveURL(/favoritos/);

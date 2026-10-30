@@ -1,10 +1,9 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Truck, MapPin, CheckCircle2, Package, ExternalLink, Globe, Info } from "lucide-react";
+import { Truck, MapPin, CheckCircle2, Package, ExternalLink, Globe, Info, Copy, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface LogisticsCommandCenterProps {
@@ -13,7 +12,7 @@ interface LogisticsCommandCenterProps {
   status: string;
 }
 
-export function LogisticsCommandCenter({ orderId, trackingCode, status }: LogisticsCommandCenterProps) {
+export function LogisticsCommandCenter({ trackingCode, status }: LogisticsCommandCenterProps) {
   const { toast } = useToast();
   const [copied, setCopied] = React.useState(false);
 

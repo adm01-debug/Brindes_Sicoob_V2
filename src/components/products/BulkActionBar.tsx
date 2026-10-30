@@ -9,8 +9,8 @@
  * - Separadores visuais entre grupos de ação
  * - Responsivo: labels escondidos em mobile, apenas ícones
  */
-import { memo } from "react";
-import { Heart, GitCompare, FolderPlus, X, CheckSquare, ShoppingBag, FileText, Sparkles } from "lucide-react";
+import { type ElementType, memo } from "react";
+import { Heart, GitCompare, FolderPlus, X, CheckSquare, ShoppingBag, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -39,20 +39,21 @@ const actionVariants = {
 };
 
 function ActionButton({
-  icon: Icon,
+  icon,
   label,
   onClick,
   disabled,
   className,
   index,
 }: {
-  icon: React.ElementType;
+  icon: ElementType;
   label: string;
   onClick: () => void;
   disabled?: boolean;
   className?: string;
   index: number;
 }) {
+  const IconComponent = icon;
   return (
     <motion.div custom={index} variants={actionVariants} initial="hidden" animate="visible">
       <Tooltip>
@@ -67,7 +68,7 @@ function ActionButton({
             onClick={onClick}
             disabled={disabled}
           >
-            <Icon className="h-3.5 w-3.5" />
+            <IconComponent className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">{label}</span>
           </Button>
         </TooltipTrigger>
@@ -77,17 +78,20 @@ function ActionButton({
   );
 }
 
-export const BulkActionBar = memo(function BulkActionBar({
-  selectedCount,
-  totalCount,
-  onSelectAll,
-  onClearSelection,
-  onBulkFavorite,
-  onBulkCompare,
-  onBulkCollection,
-  onBulkCart,
-  onBulkQuote,
-}: BulkActionBarProps) {
+function SelectionCount({ count }: { count: number }) {
+  return <motion.div className="flex items-center gap-2 pr-2.5 sm:pr-3 border-r border-border/50" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}><Badge variant="default" className="bg-primary text-primary-foreground text-xs font-bold px-2.5 py-0.5 min-w-[1.75rem] justify-center tabular-nums">{count}</Badge><span className="text-sm text-muted-foreground whitespace-nowrap hidden sm:inline">selecionado{count > 1 ? "s" : ""}</span></motion.div>;
+}
+
+function PrimaryActions({ cart, quote }: { cart?: () => void; quote?: () => void }) {
+  if (!cart && !quote) return null;
+  return <div className="flex items-center gap-0.5 pr-2 sm:pr-2.5 border-r border-border/50">{cart && <ActionButton icon={ShoppingBag} label="Carrinho" onClick={cart} index={0} className="text-cart hover:text-cart hover:bg-cart/10" />}{quote && <ActionButton icon={FileText} label="Orçamento" onClick={quote} index={1} className="text-primary hover:text-primary hover:bg-primary/10" />}</div>;
+}
+
+function SelectionControls({ selectedCount, totalCount, onSelectAll, onClear }: { selectedCount: number; totalCount: number; onSelectAll: () => void; onClear: () => void }) {
+  return <div className="flex items-center gap-0.5 pl-2 sm:pl-2.5 border-l border-border/50">{selectedCount < totalCount && <motion.div custom={5} variants={actionVariants} initial="hidden" animate="visible"><Button variant="ghost" size="sm" className="gap-1 text-xs h-8 text-muted-foreground hover:text-foreground" onClick={onSelectAll}><CheckSquare className="h-3.5 w-3.5" /><span className="hidden sm:inline">Todos</span></Button></motion.div>}<motion.div custom={6} variants={actionVariants} initial="hidden" animate="visible"><Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors" onClick={onClear} aria-label="Limpar seleção"><X className="h-3.5 w-3.5" /></Button></motion.div></div>;
+}
+
+export const BulkActionBar = memo(function BulkActionBar({ selectedCount, totalCount, onSelectAll, onClearSelection, onBulkFavorite, onBulkCompare, onBulkCollection, onBulkCart, onBulkQuote }: BulkActionBarProps) {
   return (
     <AnimatePresence>
       {selectedCount > 0 && (
@@ -103,47 +107,8 @@ export const BulkActionBar = memo(function BulkActionBar({
             "shadow-[0_8px_40px_-8px_hsl(var(--primary)/0.25),0_2px_12px_-2px_rgba(0,0,0,0.4)]"
           )}
         >
-          {/* Selection counter */}
-          <motion.div
-            className="flex items-center gap-2 pr-2.5 sm:pr-3 border-r border-border/50"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Badge
-              variant="default"
-              className="bg-primary text-primary-foreground text-xs font-bold px-2.5 py-0.5 min-w-[1.75rem] justify-center tabular-nums"
-            >
-              {selectedCount}
-            </Badge>
-            <span className="text-sm text-muted-foreground whitespace-nowrap hidden sm:inline">
-              selecionado{selectedCount > 1 ? "s" : ""}
-            </span>
-          </motion.div>
-
-          {/* Primary actions — Cart & Quote */}
-          {(onBulkCart || onBulkQuote) && (
-            <div className="flex items-center gap-0.5 pr-2 sm:pr-2.5 border-r border-border/50">
-              {onBulkCart && (
-                <ActionButton
-                  icon={ShoppingBag}
-                  label="Carrinho"
-                  onClick={onBulkCart}
-                  index={0}
-                  className="text-cart hover:text-cart hover:bg-cart/10"
-                />
-              )}
-              {onBulkQuote && (
-                <ActionButton
-                  icon={FileText}
-                  label="Orçamento"
-                  onClick={onBulkQuote}
-                  index={1}
-                  className="text-primary hover:text-primary hover:bg-primary/10"
-                />
-              )}
-            </div>
-          )}
+          <SelectionCount count={selectedCount} />
+          <PrimaryActions cart={onBulkCart} quote={onBulkQuote} />
 
           {/* Secondary actions */}
           <div className="flex items-center gap-0.5">
@@ -158,33 +123,7 @@ export const BulkActionBar = memo(function BulkActionBar({
             <ActionButton icon={FolderPlus} label="Coleção" onClick={onBulkCollection} index={4} />
           </div>
 
-          {/* Controls */}
-          <div className="flex items-center gap-0.5 pl-2 sm:pl-2.5 border-l border-border/50">
-            {selectedCount < totalCount && (
-              <motion.div custom={5} variants={actionVariants} initial="hidden" animate="visible">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="gap-1 text-xs h-8 text-muted-foreground hover:text-foreground"
-                  onClick={onSelectAll}
-                >
-                  <CheckSquare className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Todos</span>
-                </Button>
-              </motion.div>
-            )}
-            <motion.div custom={6} variants={actionVariants} initial="hidden" animate="visible">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                onClick={onClearSelection}
-                aria-label="Limpar seleção"
-              >
-                <X className="h-3.5 w-3.5" />
-              </Button>
-            </motion.div>
-          </div>
+          <SelectionControls selectedCount={selectedCount} totalCount={totalCount} onSelectAll={onSelectAll} onClear={onClearSelection} />
         </motion.div>
       )}
     </AnimatePresence>

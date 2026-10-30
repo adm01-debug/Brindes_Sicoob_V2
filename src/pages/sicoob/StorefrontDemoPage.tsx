@@ -166,7 +166,7 @@ export default function StorefrontDemoPage() {
 
   const scrollToQuote = () => document.getElementById("orcamento-demo")?.scrollIntoView({ behavior: "smooth" });
 
-  if (!import.meta.env.DEV) {
+  if (!import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEMO_PAGES !== "true") {
     return (
       <main className="grid min-h-screen place-items-center bg-background p-6 text-center">
         <div className="max-w-md space-y-4">

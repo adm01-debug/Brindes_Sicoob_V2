@@ -5,7 +5,7 @@
  * Provê: busca textual, seleção de status (multi via Select com "Todos") e
  * intervalo de datas (DateRange popover). Tudo controlado pelo pai.
  */
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar as CalendarIcon, Search, X } from "lucide-react";
@@ -52,6 +52,25 @@ export const EMPTY_FILTERS: WidgetFiltersValue = {
   dateRange: undefined,
 };
 
+function dateRangeLabel(range: DateRange | undefined) {
+  if (!range?.from) return "Período";
+  if (range.to) return `${format(range.from, "dd/MM")} – ${format(range.to, "dd/MM")}`;
+  return format(range.from, "dd/MM/yyyy");
+}
+
+function DateRangeFilter({ range, onChange }: { range: DateRange | undefined; onChange: (range: DateRange | undefined) => void }) {
+  const [open, setOpen] = useState(false);
+  return <Popover open={open} onOpenChange={setOpen}><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-8 px-2 text-xs gap-1.5 font-normal", !range?.from && "text-muted-foreground")}><CalendarIcon className="h-3.5 w-3.5" />{dateRangeLabel(range)}</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar mode="range" numberOfMonths={2} selected={range} onSelect={onChange} locale={ptBR} initialFocus className={cn("p-3 pointer-events-auto")} /></PopoverContent></Popover>;
+}
+
+function SearchFilter({ value, placeholder, onChange }: { value: string; placeholder: string; onChange: (value: string) => void }) {
+  return <div className="relative flex-1 min-w-[140px]"><Search className="h-3.5 w-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" /><Input value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} className="h-8 pl-7 text-xs" /></div>;
+}
+
+function StatusFilter({ value, options, allLabel, onChange }: { value: string; options: WidgetStatusOption[]; allLabel: string; onChange: (value: string) => void }) {
+  return <Select value={value} onValueChange={onChange}><SelectTrigger className="h-8 w-auto min-w-[110px] text-xs"><SelectValue placeholder={allLabel} /></SelectTrigger><SelectContent><SelectItem value="all">{allLabel}</SelectItem>{options.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectContent></Select>;
+}
+
 export function WidgetFiltersBar({
   value,
   onChange,
@@ -60,15 +79,6 @@ export function WidgetFiltersBar({
   allStatusLabel = "Todos os status",
   showDateRange = true,
 }: Props) {
-  const [open, setOpen] = useState(false);
-
-  const dateLabel = useMemo(() => {
-    const r = value.dateRange;
-    if (!r?.from) return "Período";
-    if (r.to) return `${format(r.from, "dd/MM")} – ${format(r.to, "dd/MM")}`;
-    return format(r.from, "dd/MM/yyyy");
-  }, [value.dateRange]);
-
   const hasAnyFilter =
     value.search.trim().length > 0 ||
     value.status !== "all" ||
@@ -76,61 +86,10 @@ export function WidgetFiltersBar({
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <div className="relative flex-1 min-w-[140px]">
-        <Search className="h-3.5 w-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-        <Input
-          value={value.search}
-          onChange={(e) => onChange({ ...value, search: e.target.value })}
-          placeholder={searchPlaceholder}
-          className="h-8 pl-7 text-xs"
-        />
-      </div>
+      <SearchFilter value={value.search} placeholder={searchPlaceholder} onChange={(search) => onChange({ ...value, search })} />
+      <StatusFilter value={value.status} options={statusOptions} allLabel={allStatusLabel} onChange={(status) => onChange({ ...value, status })} />
 
-      <Select
-        value={value.status}
-        onValueChange={(s) => onChange({ ...value, status: s })}
-      >
-        <SelectTrigger className="h-8 w-auto min-w-[110px] text-xs">
-          <SelectValue placeholder={allStatusLabel} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">{allStatusLabel}</SelectItem>
-          {statusOptions.map((opt) => (
-            <SelectItem key={opt.value} value={opt.value}>
-              {opt.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {showDateRange && (
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className={cn(
-                "h-8 px-2 text-xs gap-1.5 font-normal",
-                !value.dateRange?.from && "text-muted-foreground",
-              )}
-            >
-              <CalendarIcon className="h-3.5 w-3.5" />
-              {dateLabel}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="end">
-            <Calendar
-              mode="range"
-              numberOfMonths={2}
-              selected={value.dateRange}
-              onSelect={(r) => onChange({ ...value, dateRange: r })}
-              locale={ptBR}
-              initialFocus
-              className={cn("p-3 pointer-events-auto")}
-            />
-          </PopoverContent>
-        </Popover>
-      )}
+      {showDateRange ? <DateRangeFilter range={value.dateRange} onChange={(dateRange) => onChange({ ...value, dateRange })} /> : null}
 
       {hasAnyFilter && (
         <Button

@@ -6,6 +6,8 @@
  * otimizadas para operações de cálculo.
  */
 
+import type { PriceTier } from '../../types/domain';
+
 // Re-export comum do domínio
 export type {
   PriceTier,
@@ -51,7 +53,7 @@ export interface PriceTableInput {
   handlingPrice: number;
   
   // Faixas de quantidade
-  tiers: import('../../types/domain').PriceTier[];
+  tiers: PriceTier[];
   
   // Status
   isActive: boolean;

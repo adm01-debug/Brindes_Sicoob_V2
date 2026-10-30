@@ -1,3 +1,4 @@
+import type { ElementType } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LayoutTemplate, Save, Trash2, User } from "lucide-react";
@@ -30,7 +31,7 @@ interface TemplateArea {
 export interface ProductTemplate {
   id: string;
   name: string;
-  icon: React.ElementType;
+  icon: ElementType;
   areas: TemplateArea[];
   isCustom?: boolean;
 }

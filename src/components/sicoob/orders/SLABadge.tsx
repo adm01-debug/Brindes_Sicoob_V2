@@ -13,6 +13,31 @@ interface SLABadgeProps {
   showCountdown?: boolean;
 }
 
+function showSlaDetails(deadline: string | undefined, showCountdown: boolean) {
+  return Boolean(deadline) && showCountdown;
+}
+
+function progressClass(status: string) {
+  if (status === 'critical') return "bg-destructive";
+  if (status === 'warning') return "bg-amber-500";
+  return "bg-sicoob-green";
+}
+
+function SlaCountdown({ status, percent, timeLeft }: { status: string; percent: number; timeLeft: string }) {
+  const critical = status === 'critical';
+  return (
+    <div className="space-y-1">
+      <Progress value={percent} className="h-1" indicatorClassName={progressClass(status)} />
+      <span className={cn(
+        "text-[8px] font-medium px-1 flex items-center gap-1",
+        critical ? "text-destructive font-bold" : "text-muted-foreground",
+      )}>
+        {timeLeft}
+      </span>
+    </div>
+  );
+}
+
 export const SLABadge = ({ status, deadline, className, showCountdown = true }: SLABadgeProps) => {
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [percent, setPercent] = useState(0);
@@ -38,7 +63,7 @@ export const SLABadge = ({ status, deadline, className, showCountdown = true }: 
         }
 
         setTimeLeft(`Restam ${formatDistanceToNow(target, { locale: ptBR })}`);
-      } catch (e) {
+      } catch {
         setTimeLeft("");
       }
     };
@@ -68,6 +93,7 @@ export const SLABadge = ({ status, deadline, className, showCountdown = true }: 
 
   const current = config[status as keyof typeof config] || config.normal;
   const Icon = current.icon;
+  const displayDetails = showSlaDetails(deadline, showCountdown);
 
   return (
     <div className={cn("flex flex-col gap-1 min-w-[140px]", className)}>
@@ -82,7 +108,7 @@ export const SLABadge = ({ status, deadline, className, showCountdown = true }: 
           <Icon className="h-3 w-3" />
           <span>{current.label}</span>
         </Badge>
-        {deadline && showCountdown && (
+        {displayDetails && (
           <span className={cn(
             "text-[8px] font-bold",
             status === 'critical' ? "text-destructive" : "text-muted-foreground"
@@ -92,19 +118,7 @@ export const SLABadge = ({ status, deadline, className, showCountdown = true }: 
         )}
       </div>
       
-      {deadline && showCountdown && (
-        <div className="space-y-1">
-          <Progress value={percent} className="h-1" indicatorClassName={cn(
-            status === 'critical' ? "bg-destructive" : status === 'warning' ? "bg-amber-500" : "bg-sicoob-green"
-          )} />
-          <span className={cn(
-            "text-[8px] font-medium px-1 flex items-center gap-1",
-            status === 'critical' ? "text-destructive font-bold" : "text-muted-foreground"
-          )}>
-            {timeLeft}
-          </span>
-        </div>
-      )}
+      {displayDetails && <SlaCountdown status={status} percent={percent} timeLeft={timeLeft} />}
     </div>
   );
 };

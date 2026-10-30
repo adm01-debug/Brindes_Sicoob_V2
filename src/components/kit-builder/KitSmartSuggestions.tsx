@@ -18,6 +18,27 @@ interface KitSmartSuggestionsProps {
   onAddItem?: (item: { id: string; name: string }) => void;
 }
 
+type SuggestionAccumulator = Map<string, { name: string; count: number; imageUrl?: string }>;
+
+function addKitCandidates(items: KitItem[], selectedIds: Set<string>, coOccurrence: SuggestionAccumulator) {
+  const hasSelectedItem = items.some((item) => selectedIds.has(item.id));
+  if (!hasSelectedItem) return;
+
+  for (const item of items) {
+    if (selectedIds.has(item.id)) continue;
+    const existing = coOccurrence.get(item.id);
+    if (existing) {
+      existing.count += 1;
+      continue;
+    }
+    coOccurrence.set(item.id, {
+      name: item.name,
+      count: 1,
+      imageUrl: item.imageUrl ?? undefined,
+    });
+  }
+}
+
 export function KitSmartSuggestions({ selectedItems, onAddItem }: KitSmartSuggestionsProps) {
   const { user } = useAuth();
   const [expanded, setExpanded] = useState(false);
@@ -41,25 +62,7 @@ export function KitSmartSuggestions({ selectedItems, onAddItem }: KitSmartSugges
 
       for (const kit of kits) {
         const items = (kit.items_data as unknown as KitItem[]) || [];
-        const kitItemIds = items.map(i => i.id);
-        const hasSelectedItem = kitItemIds.some((id: string) => selectedIds.has(id));
-
-        if (hasSelectedItem) {
-          for (const item of items) {
-            if (!selectedIds.has(item.id)) {
-              const existing = coOccurrence.get(item.id);
-              if (existing) {
-                existing.count++;
-              } else {
-                coOccurrence.set(item.id, {
-                  name: item.name,
-                  count: 1,
-                  imageUrl: item.imageUrl ?? undefined,
-                });
-              }
-            }
-          }
-        }
+        addKitCandidates(items, selectedIds, coOccurrence);
       }
 
       // Sort by frequency and return top 5

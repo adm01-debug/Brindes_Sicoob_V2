@@ -65,3 +65,65 @@ describe("OrderService.convertQuoteToOrder", () => {
       .rejects.toThrow(/não confirmou/i);
   });
 });
+
+describe("OrderService.duplicate", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.rpc.mockResolvedValue({
+      data: [{
+        id: "00000000-0000-4000-8000-000000000201",
+        order_number: "RE-PED-2026-0001-ABCDEF12",
+        status: "rascunho",
+        total: 24,
+      }],
+      error: null,
+    });
+  });
+
+  it("delega cabeçalho, itens, logística e auditoria à RPC transacional", async () => {
+    await expect(OrderService.duplicate(
+      "00000000-0000-4000-8000-000000000001",
+      "00000000-0000-4000-8000-000000000099",
+    )).resolves.toMatchObject({
+      id: "00000000-0000-4000-8000-000000000201",
+      status: "rascunho",
+      total: 24,
+    });
+
+    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith("duplicate_order_atomic", {
+      p_order_id: "00000000-0000-4000-8000-000000000001",
+      p_idempotency_key: "00000000-0000-4000-8000-000000000099",
+    });
+    expect(mocks.from).not.toHaveBeenCalled();
+  });
+
+  it("propaga a falha transacional sem tentar completar o pedido no cliente", async () => {
+    const failure = new Error("item inválido");
+    mocks.rpc.mockResolvedValue({ data: null, error: failure });
+
+    await expect(OrderService.duplicate("order-1", "key-1")).rejects.toBe(failure);
+    expect(mocks.from).not.toHaveBeenCalled();
+  });
+
+  it("falha fechado quando o banco não confirma o pedido duplicado", async () => {
+    mocks.rpc.mockResolvedValue({ data: [], error: null });
+    await expect(OrderService.duplicate("order-1", "key-1"))
+      .rejects.toThrow(/não confirmou a duplicação integral/i);
+  });
+});
+
+describe("OrderService.logAudit", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("não oculta falha de persistência da trilha de auditoria", async () => {
+    const failure = new Error("schema de auditoria inválido");
+    mocks.rpc.mockResolvedValue({ data: null, error: failure });
+
+    await expect(OrderService.logAudit({
+      orderId: "order-1",
+      eventType: "status_change",
+      description: "Status alterado",
+      metadata: { old_status: "rascunho", new_status: "enviado_gestor" },
+    })).rejects.toBe(failure);
+  });
+});

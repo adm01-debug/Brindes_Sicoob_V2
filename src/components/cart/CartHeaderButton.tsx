@@ -11,11 +11,42 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSellerCartContext } from "@/contexts/SellerCartContext";
 import { CartCompanyPicker } from "./CartCompanyPicker";
 import { cn } from "@/lib/utils";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, type MouseEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import type { SellerCart, SellerCartItem } from "@/hooks/useSellerCarts";
 
 function formatCurrency(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function CartLogo({ cart, active }: { cart: SellerCart; active: boolean }) {
+  if (cart.company_logo_url) return <img src={cart.company_logo_url} alt="Logo da empresa" className="w-9 h-9 rounded-lg object-contain bg-background border border-border/50 flex-shrink-0 p-0.5" loading="lazy" />;
+  return <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0", active ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground")}><Building2 className="h-4 w-4" /></div>;
+}
+
+function CartCount({ count, active }: { count: number; active: boolean }) {
+  if (count === 0) return null;
+  return <span className={cn("text-[10px] font-bold tabular-nums rounded-full px-2 py-0.5", active ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground")}>{count} {count === 1 ? "item" : "itens"}</span>;
+}
+
+function CartItemPreview({ item, removeItem, updateQuantity }: { item: SellerCartItem; removeItem: (id: string) => void; updateQuantity: (id: string, quantity: number) => void }) {
+  const decrease = (event: MouseEvent) => {
+    event.stopPropagation();
+    if (item.quantity <= 1) removeItem(item.id);
+    else updateQuantity(item.id, item.quantity - 1);
+  };
+  return <div data-testid="cart-item" data-cart-item-id={item.id} data-product-id={item.product_id} className="flex items-start gap-2.5 py-1.5 px-1.5 rounded-lg hover:bg-background/60 group/item transition-colors">{item.product_image_url ? <img src={item.product_image_url} alt={`Foto de ${item.product_name}`} className="w-9 h-9 rounded-lg object-contain bg-background border border-border/30 flex-shrink-0 p-0.5 mt-0.5" loading="lazy" /> : <div className="w-9 h-9 rounded-lg bg-muted/40 flex flex-shrink-0 items-center justify-center mt-0.5"><Package className="h-3.5 w-3.5 text-muted-foreground/50" /></div>}<div className="flex-1 min-w-0"><p data-testid="cart-item-name" className="text-xs text-foreground/90 leading-tight line-clamp-2">{item.product_name}</p><div className="flex items-center justify-between mt-1.5 gap-2"><span className="text-[11px] font-semibold text-primary tabular-nums">{formatCurrency(item.product_price)}</span><div data-testid="cart-item-qty-stepper" className="flex items-center gap-0 border border-border/50 rounded-md overflow-hidden"><button data-testid="cart-qty-decrement" className="h-6 w-6 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors" aria-label={`Diminuir quantidade de ${item.product_name}`} onClick={decrease}>{item.quantity <= 1 ? <Trash2 data-testid="cart-qty-remove-icon" className="h-3 w-3 text-destructive" /> : <Minus data-testid="cart-qty-decrement-icon" className="h-3 w-3" />}</button><span data-testid="cart-qty-badge" data-qty={item.quantity} className="h-6 min-w-[28px] flex items-center justify-center text-[11px] font-bold tabular-nums bg-muted/20 border-x border-border/30">{item.quantity}</span><button data-testid="cart-qty-increment" className="h-6 w-6 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors" aria-label={`Aumentar quantidade de ${item.product_name}`} onClick={(event) => { event.stopPropagation(); updateQuantity(item.id, item.quantity + 1); }}><Plus className="h-3 w-3" /></button></div></div></div><button data-testid="cart-item-action-remove" className="h-5 w-5 flex items-center justify-center opacity-0 group-hover/item:opacity-100 text-muted-foreground hover:text-destructive transition-all flex-shrink-0 rounded mt-0.5" aria-label={`Remover ${item.product_name} do orçamento`} onClick={(event) => { event.stopPropagation(); removeItem(item.id); }}><X className="h-3 w-3" /></button></div>;
+}
+
+function CartItemsPreview({ cart, active, removeItem, updateQuantity }: { cart: SellerCart; active: boolean; removeItem: (id: string) => void; updateQuantity: (id: string, quantity: number) => void }) {
+  if (!active || cart.items.length === 0) return null;
+  return <div className="border-t border-border/30 px-3 py-2 space-y-1.5">{cart.items.slice(0, 5).map((item) => <CartItemPreview key={item.id} item={item} removeItem={removeItem} updateQuantity={updateQuantity} />)}{cart.items.length > 5 ? <p className="text-[10px] text-muted-foreground text-center py-1">+{cart.items.length - 5} mais itens</p> : null}</div>;
+}
+
+function CartSummaryCard({ cart, active, onActivate, onDelete, removeItem, updateQuantity }: { cart: SellerCart; active: boolean; onActivate: () => void; onDelete: () => void; removeItem: (id: string) => void; updateQuantity: (id: string, quantity: number) => void }) {
+  const clear = (event: MouseEvent) => { event.stopPropagation(); cart.items.forEach((item) => removeItem(item.id)); };
+  const remove = (event: MouseEvent) => { event.stopPropagation(); onDelete(); };
+  return <div data-testid="cart-tab" data-cart-id={cart.id} data-active={active ? "true" : "false"} className={cn("rounded-xl border transition-all duration-200 cursor-pointer group", active ? "border-primary/30 bg-primary/5" : "border-border/40 hover:border-border/60 hover:bg-muted/30")} onClick={onActivate}><div className="flex items-center gap-2.5 px-3 py-2.5"><CartLogo cart={cart} active={active} /><div className="min-w-0 flex-1"><p className={cn("text-[13px] font-semibold truncate leading-tight", active ? "text-primary" : undefined)}>{cart.company_name}</p>{cart.company_location ? <p className="text-[11px] text-muted-foreground mt-0.5">{cart.company_location}</p> : null}</div><div className="flex items-center gap-1.5 flex-shrink-0"><CartCount count={cart.items.length} active={active} />{active && cart.items.length > 0 ? <Tooltip><TooltipTrigger asChild><button className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors" aria-label={`Limpar seleção de ${cart.company_name}`} onClick={clear}><Eraser className="h-3.5 w-3.5" /></button></TooltipTrigger><TooltipContent side="top" className="text-[11px]">Limpar seleção</TooltipContent></Tooltip> : null}<Tooltip><TooltipTrigger asChild><button className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100" aria-label={`Excluir orçamento de ${cart.company_name}`} style={{ opacity: active ? 1 : undefined }} onClick={remove}><Trash2 className="h-3.5 w-3.5" /></button></TooltipTrigger><TooltipContent side="top" className="text-[11px]">Excluir orçamento em preparação</TooltipContent></Tooltip></div></div><CartItemsPreview cart={cart} active={active} removeItem={removeItem} updateQuantity={updateQuantity} /></div>;
 }
 
 export function CartHeaderButton() {
@@ -139,6 +170,7 @@ export function CartHeaderButton() {
                 </div>
                 {canCreateCart && (
                   <Button
+                    data-testid="cart-tab-new"
                     variant="outline"
                     size="sm"
                     className="h-7 text-[11px] gap-1 px-2.5 rounded-lg border-dashed border-primary/30 text-primary hover:bg-primary/10 hover:text-primary hover:border-primary/50"
@@ -172,191 +204,7 @@ export function CartHeaderButton() {
                 <>
                   <ScrollArea className="max-h-[440px]">
                     <div className="p-3 space-y-2">
-                      {carts.map((cart) => {
-                        const isActive = cart.id === activeCartId;
-                        const cartSubtotal = cart.items.reduce(
-                          (sum, item) => sum + item.product_price * item.quantity,
-                          0
-                        );
-                        return (
-                          <div
-                            key={cart.id}
-                            className={cn(
-                              "rounded-xl border transition-all duration-200 cursor-pointer group",
-                              isActive
-                                ? "border-primary/30 bg-primary/5"
-                                : "border-border/40 hover:border-border/60 hover:bg-muted/30"
-                            )}
-                            onClick={() => setActiveCartId(cart.id)}
-                          >
-                            {/* Cart header */}
-                            <div className="flex items-center gap-2.5 px-3 py-2.5">
-                              {cart.company_logo_url ? (
-                                <img
-                                  src={cart.company_logo_url}
-                                  alt="Logo da empresa"
-                                  className="w-9 h-9 rounded-lg object-contain bg-background border border-border/50 flex-shrink-0 p-0.5" loading="lazy" />
-                              ) : (
-                                <div className={cn(
-                                  "w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0",
-                                  isActive ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
-                                )}>
-                                  <Building2 className="h-4 w-4" />
-                                </div>
-                              )}
-
-                              <div className="min-w-0 flex-1">
-                                <p className={cn(
-                                  "text-[13px] font-semibold truncate leading-tight",
-                                  isActive && "text-primary"
-                                )}>
-                                  {cart.company_name}
-                                </p>
-                                {cart.company_location && (
-                                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                                    {cart.company_location}
-                                  </p>
-                                )}
-                              </div>
-
-                              <div className="flex items-center gap-1.5 flex-shrink-0">
-                                {cart.items.length > 0 && (
-                                  <span className={cn(
-                                    "text-[10px] font-bold tabular-nums rounded-full px-2 py-0.5",
-                                    isActive
-                                      ? "bg-primary/15 text-primary"
-                                      : "bg-muted text-muted-foreground"
-                                  )}>
-                                    {cart.items.length} {cart.items.length === 1 ? "item" : "itens"}
-                                  </span>
-                                )}
-                                {/* Limpar carrinho */}
-                                {isActive && cart.items.length > 0 && (
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <button
-                                        className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                                        aria-label={`Limpar seleção de ${cart.company_name}`}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          cart.items.forEach((item) => removeItem(item.id));
-                                        }}
-                                      >
-                                        <Eraser className="h-3.5 w-3.5" />
-                                      </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="top" className="text-[11px]">Limpar seleção</TooltipContent>
-                                  </Tooltip>
-                                )}
-                                {/* Excluir carrinho */}
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <button
-                                      className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                                      aria-label={`Excluir orçamento de ${cart.company_name}`}
-                                      style={{ opacity: isActive ? 1 : undefined }}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        deleteCart(cart.id);
-                                      }}
-                                    >
-                                      <Trash2 className="h-3.5 w-3.5" />
-                                    </button>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top" className="text-[11px]">Excluir orçamento em preparação</TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </div>
-
-                            {/* Items list — only for active cart */}
-                            {isActive && cart.items.length > 0 && (
-                              <div className="border-t border-border/30 px-3 py-2 space-y-1.5">
-                                {cart.items.slice(0, 5).map((item) => (
-                                  <div
-                                    key={item.id}
-                                    className="flex items-start gap-2.5 py-1.5 px-1.5 rounded-lg hover:bg-background/60 group/item transition-colors"
-                                  >
-                                    {item.product_image_url ? (
-                                      <img
-                                        src={item.product_image_url}
-                                        alt={`Foto de ${item.product_name}`}
-                                        className="w-9 h-9 rounded-lg object-contain bg-background border border-border/30 flex-shrink-0 p-0.5 mt-0.5" loading="lazy" />
-                                    ) : (
-                                      <div className="w-9 h-9 rounded-lg bg-muted/40 flex-shrink-0 flex items-center justify-center mt-0.5">
-                                        <Package className="h-3.5 w-3.5 text-muted-foreground/50" />
-                                      </div>
-                                    )}
-                                    
-                                    <div className="flex-1 min-w-0">
-                                      {/* Product name - 2 lines */}
-                                      <p className="text-xs text-foreground/90 leading-tight line-clamp-2">
-                                        {item.product_name}
-                                      </p>
-                                      {/* Price + Qty stepper row */}
-                                      <div className="flex items-center justify-between mt-1.5 gap-2">
-                                        <span className="text-[11px] font-semibold text-primary tabular-nums">
-                                          {formatCurrency(item.product_price)}
-                                        </span>
-                                        {/* Qty stepper */}
-                                        <div className="flex items-center gap-0 border border-border/50 rounded-md overflow-hidden">
-                                          <button
-                                            className="h-6 w-6 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-                                            aria-label={`Diminuir quantidade de ${item.product_name}`}
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              if (item.quantity <= 1) {
-                                                removeItem(item.id);
-                                              } else {
-                                                updateItemQuantity(item.id, item.quantity - 1);
-                                              }
-                                            }}
-                                          >
-                                            {item.quantity <= 1 ? (
-                                              <Trash2 className="h-3 w-3 text-destructive" />
-                                            ) : (
-                                              <Minus className="h-3 w-3" />
-                                            )}
-                                          </button>
-                                          <span className="h-6 min-w-[28px] flex items-center justify-center text-[11px] font-bold tabular-nums bg-muted/20 border-x border-border/30">
-                                            {item.quantity}
-                                          </span>
-                                          <button
-                                            className="h-6 w-6 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-                                            aria-label={`Aumentar quantidade de ${item.product_name}`}
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              updateItemQuantity(item.id, item.quantity + 1);
-                                            }}
-                                          >
-                                            <Plus className="h-3 w-3" />
-                                          </button>
-                                        </div>
-                                      </div>
-                                    </div>
-
-                                    {/* Remove button */}
-                                    <button
-                                      className="h-5 w-5 flex items-center justify-center opacity-0 group-hover/item:opacity-100 text-muted-foreground hover:text-destructive transition-all flex-shrink-0 rounded mt-0.5"
-                                      aria-label={`Remover ${item.product_name} do orçamento`}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        removeItem(item.id);
-                                      }}
-                                    >
-                                      <X className="h-3 w-3" />
-                                    </button>
-                                  </div>
-                                ))}
-                                {cart.items.length > 5 && (
-                                  <p className="text-[10px] text-muted-foreground text-center py-1">
-                                    +{cart.items.length - 5} mais itens
-                                  </p>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                      {carts.map((cart) => <CartSummaryCard key={cart.id} cart={cart} active={cart.id === activeCartId} onActivate={() => setActiveCartId(cart.id)} onDelete={() => deleteCart(cart.id)} removeItem={removeItem} updateQuantity={updateItemQuantity} />)}
                     </div>
                   </ScrollArea>
 

@@ -64,6 +64,83 @@ function isoDaysFromNow(days: number): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+function validateEscalation(expiresLocal: string, justification: string, confirmation: string): string | null {
+  if (!expiresLocal) return "Chaves FULL exigem data de expiração.";
+  const expiration = new Date(expiresLocal).getTime();
+  if (Number.isNaN(expiration) || expiration <= Date.now()) return "Expiração precisa ser no futuro.";
+  const maxMs = FULL_SCOPE_MAX_TTL_DAYS * 24 * 60 * 60 * 1000;
+  if (expiration - Date.now() > maxMs) return `Janela máxima é ${FULL_SCOPE_MAX_TTL_DAYS} dias.`;
+  if (justification.trim().length < FULL_SCOPE_MIN_JUSTIFICATION) {
+    return `Justificativa precisa de ao menos ${FULL_SCOPE_MIN_JUSTIFICATION} caracteres.`;
+  }
+  if (confirmation !== FULL_SCOPE_CONFIRMATION) return `Digite "${FULL_SCOPE_CONFIRMATION}" para confirmar a escalada.`;
+  return null;
+}
+
+function validateUpdate({
+  source,
+  name,
+  scopes,
+  escalating,
+  expiresLocal,
+  justification,
+  confirmation,
+}: {
+  source: McpKeyRow | null;
+  name: string;
+  scopes: McpScope[];
+  escalating: boolean;
+  expiresLocal: string;
+  justification: string;
+  confirmation: string;
+}): string | null {
+  if (!source) return null;
+  if (name.trim().length < 3) return "Nome precisa ter ao menos 3 caracteres.";
+  if (scopes.length === 0) return "Selecione ao menos um escopo.";
+  return escalating ? validateEscalation(expiresLocal, justification, confirmation) : null;
+}
+
+function buildUpdateBody({
+  source,
+  name,
+  description,
+  scopes,
+  expiresLocal,
+  escalating,
+  justification,
+  confirmation,
+}: {
+  source: McpKeyRow;
+  name: string;
+  description: string;
+  scopes: McpScope[];
+  expiresLocal: string;
+  escalating: boolean;
+  justification: string;
+  confirmation: string;
+}): Record<string, unknown> {
+  const trimmedName = name.trim();
+  const trimmedDescription = description.trim();
+  return {
+    key_id: source.id,
+    name: trimmedName !== source.name ? trimmedName : undefined,
+    description: trimmedDescription !== (source.description ?? "") ? trimmedDescription || null : undefined,
+    scopes,
+    expires_at: expiresLocal ? new Date(expiresLocal).toISOString() : null,
+    justification: escalating ? justification.trim() : null,
+    confirmation_phrase: escalating ? confirmation : null,
+  };
+}
+
+function isFullAccessLocked(grantorLoading: boolean, canGrantFull: boolean, escalating: boolean): boolean {
+  return !grantorLoading && !canGrantFull && escalating;
+}
+
+function updateButtonLabel(submitting: boolean, escalating: boolean): string {
+  if (submitting) return "Salvando…";
+  return escalating ? "Verificar e escalar para FULL" : "Salvar alterações";
+}
+
 export function UpdateMcpKeyDialog({ source, open, onOpenChange, onUpdated }: Props) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -90,7 +167,7 @@ export function UpdateMcpKeyDialog({ source, open, onOpenChange, onUpdated }: Pr
 
   const wasFull = useMemo(() => (source ? source.is_full : false), [source]);
   const willBeFull = isFullAccess(scopes);
-  const escalating = !wasFull && willBeFull;
+  const escalating = (!wasFull && willBeFull);
 
   const handleScopeToggle = (s: McpScope) => {
     setScopes((cur) => {
@@ -104,36 +181,12 @@ export function UpdateMcpKeyDialog({ source, open, onOpenChange, onUpdated }: Pr
   };
 
   const validation = useMemo(() => {
-    if (!source) return null;
-    if (name.trim().length < 3) return "Nome precisa ter ao menos 3 caracteres.";
-    if (scopes.length === 0) return "Selecione ao menos um escopo.";
-    if (escalating) {
-      if (!expiresLocal) return "Chaves FULL exigem data de expiração.";
-      const exp = new Date(expiresLocal).getTime();
-      if (Number.isNaN(exp) || exp <= Date.now()) return "Expiração precisa ser no futuro.";
-      const maxMs = FULL_SCOPE_MAX_TTL_DAYS * 24 * 60 * 60 * 1000;
-      if (exp - Date.now() > maxMs) return `Janela máxima é ${FULL_SCOPE_MAX_TTL_DAYS} dias.`;
-      if (justification.trim().length < FULL_SCOPE_MIN_JUSTIFICATION) {
-        return `Justificativa precisa de ao menos ${FULL_SCOPE_MIN_JUSTIFICATION} caracteres.`;
-      }
-      if (confirmation !== FULL_SCOPE_CONFIRMATION) {
-        return `Digite "${FULL_SCOPE_CONFIRMATION}" para confirmar a escalada.`;
-      }
-    }
-    return null;
+    return validateUpdate({ source, name, scopes, escalating, expiresLocal, justification, confirmation });
   }, [source, name, scopes, escalating, expiresLocal, justification, confirmation]);
 
   /** Body comum enviado para mcp-keys-update. */
-  const buildBody = (): Record<string, unknown> => ({
-    key_id: source!.id,
-    name: name.trim() !== source!.name ? name.trim() : undefined,
-    description: description.trim() !== (source!.description ?? "")
-      ? (description.trim() || null)
-      : undefined,
-    scopes,
-    expires_at: expiresLocal ? new Date(expiresLocal).toISOString() : null,
-    justification: escalating ? justification.trim() : null,
-    confirmation_phrase: escalating ? confirmation : null,
+  const buildBody = (currentSource: McpKeyRow): Record<string, unknown> => buildUpdateBody({
+    source: currentSource, name, description, scopes, expiresLocal, escalating, justification, confirmation,
   });
 
   const handleSuccess = (data: { ok?: boolean; escalated_to_full?: boolean }) => {
@@ -142,6 +195,42 @@ export function UpdateMcpKeyDialog({ source, open, onOpenChange, onUpdated }: Pr
     );
     onUpdated();
     onOpenChange(false);
+  };
+
+  const submitEscalation = async (currentSource: McpKeyRow) => {
+    const result = await invokeFullScopeFunction<
+      Record<string, unknown>,
+      { ok: boolean; escalated_to_full?: boolean }
+    >({
+      challenge,
+      functionName: "mcp-keys-update",
+      action: "mcp_full_escalate",
+      actionLabel: `Escalar chave MCP "${currentSource.name}" para FULL`,
+      targetRef: currentSource.id,
+      body: buildBody(currentSource),
+    });
+    if (result.status === "cancelled" || result.status === "step_up_error") return;
+    if (result.status === "error") {
+      toast.error("Falha ao atualizar chave", { description: sanitizeError(result.error ?? result.data) });
+      return;
+    }
+    handleSuccess(result.data);
+  };
+
+  const submitRegularUpdate = async (currentSource: McpKeyRow) => {
+    const { data, error } = await supabase.functions.invoke("mcp-keys-update", {
+      body: { ...buildBody(currentSource), step_up_token: null },
+    });
+    if (handleStepUpError(data, error, () => { void handleSubmit(); })) return;
+    if (error) {
+      toast.error("Falha ao atualizar chave", { description: sanitizeError(error) });
+      return;
+    }
+    if (!data?.ok) {
+      toast.error("Não foi possível atualizar a chave", { description: sanitizeError(data) });
+      return;
+    }
+    handleSuccess(data);
   };
 
   const handleSubmit = async () => {
@@ -153,39 +242,9 @@ export function UpdateMcpKeyDialog({ source, open, onOpenChange, onUpdated }: Pr
     setSubmitting(true);
     try {
       if (escalating) {
-        // Escalada → step-up obrigatório (mcp_full_escalate).
-        const result = await invokeFullScopeFunction<
-          Record<string, unknown>,
-          { ok: boolean; escalated_to_full?: boolean }
-        >({
-          challenge,
-          functionName: "mcp-keys-update",
-          action: "mcp_full_escalate",
-          actionLabel: `Escalar chave MCP "${source.name}" para FULL`,
-          targetRef: source.id,
-          body: buildBody(),
-        });
-        if (result.status === "cancelled" || result.status === "step_up_error") return;
-        if (result.status === "error") {
-          toast.error("Falha ao atualizar chave", { description: sanitizeError(result.error ?? result.data) });
-          return;
-        }
-        handleSuccess(result.data);
+        await submitEscalation(source);
       } else {
-        // Edição comum: chamada direta (sem step-up).
-        const { data, error } = await supabase.functions.invoke("mcp-keys-update", {
-          body: { ...buildBody(), step_up_token: null },
-        });
-        if (handleStepUpError(data, error, () => { void handleSubmit(); })) return;
-        if (error) {
-          toast.error("Falha ao atualizar chave", { description: sanitizeError(error) });
-          return;
-        }
-        if (!data?.ok) {
-          toast.error("Não foi possível atualizar a chave", { description: sanitizeError(data) });
-          return;
-        }
-        handleSuccess(data);
+        await submitRegularUpdate(source);
       }
     } finally {
       setSubmitting(false);
@@ -194,10 +253,10 @@ export function UpdateMcpKeyDialog({ source, open, onOpenChange, onUpdated }: Pr
 
   if (!source) return null;
 
-  const fullLockedForUser = !grantorLoading && !canGrantFull && escalating;
+  const fullLockedForUser = isFullAccessLocked(grantorLoading, canGrantFull, escalating);
 
   return (
-    <>
+    (<>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -344,15 +403,11 @@ export function UpdateMcpKeyDialog({ source, open, onOpenChange, onUpdated }: Pr
               onClick={handleSubmit}
               disabled={submitting || !!validation || fullLockedForUser}
             >
-              {submitting
-                ? "Salvando…"
-                : escalating
-                  ? "Verificar e escalar para FULL"
-                  : "Salvar alterações"}
+              {updateButtonLabel(submitting, escalating)}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </>)
   );
 }

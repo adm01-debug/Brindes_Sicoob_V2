@@ -40,6 +40,184 @@ export interface CategoryRankingItem {
   internalOrders: number; marketDepleted: number; totalScore: number;
 }
 
+type SalesScope = ReturnType<typeof useSalesScope>;
+const ORDER_ITEMS_TABLE = 'order_items';
+const PRODUCT_ID_COLUMN = 'product_id';
+const ORDER_VALUE_FIELDS = 'order_id, quantity, unit_price';
+
+function emptyCommercialKpi(): IntelligenceKPI {
+  return { totalQuotes: 0, totalOrders: 0, conversionRate: 0, totalRevenue: 0, averageTicket: 0, quotesThisMonth: 0, ordersThisMonth: 0, revenueThisMonth: 0 };
+}
+
+async function loadFilteredKpis(productIds: Set<string>, since: string, startOfMonth: string): Promise<IntelligenceKPI> {
+  const ids = Array.from(productIds).slice(0, 200);
+  if (ids.length === 0) return emptyCommercialKpi();
+  const [{ data: quotes }, { data: orders }, { data: monthOrders }, { data: monthQuotes }] = await Promise.all([
+    supabase.from('quote_items').select('quote_id').gte('created_at', since).in(PRODUCT_ID_COLUMN, ids),
+    supabase.from(ORDER_ITEMS_TABLE).select(ORDER_VALUE_FIELDS).gte('created_at', since).in(PRODUCT_ID_COLUMN, ids),
+    supabase.from(ORDER_ITEMS_TABLE).select(ORDER_VALUE_FIELDS).gte('created_at', startOfMonth).in(PRODUCT_ID_COLUMN, ids),
+    supabase.from('quote_items').select('quote_id').gte('created_at', startOfMonth).in(PRODUCT_ID_COLUMN, ids),
+  ]);
+  const uniqueQuotes = new Set((quotes || []).map(item => item.quote_id)).size;
+  const uniqueOrders = new Set((orders || []).map(item => item.order_id)).size;
+  const totalRevenue = (orders || []).reduce((sum, item) => sum + (item.quantity ?? 0) * (item.unit_price ?? 0), 0);
+  return {
+    totalQuotes: uniqueQuotes,
+    totalOrders: uniqueOrders,
+    conversionRate: uniqueQuotes > 0 ? Math.round((uniqueOrders / uniqueQuotes) * 100) : 0,
+    totalRevenue,
+    averageTicket: uniqueOrders > 0 ? totalRevenue / uniqueOrders : 0,
+    quotesThisMonth: new Set((monthQuotes || []).map(item => item.quote_id)).size,
+    ordersThisMonth: new Set((monthOrders || []).map(item => item.order_id)).size,
+    revenueThisMonth: (monthOrders || []).reduce((sum, item) => sum + (item.quantity ?? 0) * (item.unit_price ?? 0), 0),
+  };
+}
+
+async function loadGlobalKpis({ since, startOfMonth, organizationId, scope, userId }: { since: string; startOfMonth: string; organizationId: string | null; scope: SalesScope; userId?: string }): Promise<IntelligenceKPI> {
+  let quotesQuery = applySellerScope(supabase.from('quotes').select('id, total').gte('created_at', since), { scope, userId });
+  let ordersQuery = applySellerScope(supabase.from('orders').select('id, total').gte('created_at', since), { scope, userId });
+  let monthQuotesQuery = applySellerScope(supabase.from('quotes').select('id, total').gte('created_at', startOfMonth), { scope, userId });
+  let monthOrdersQuery = applySellerScope(supabase.from('orders').select('id, total').gte('created_at', startOfMonth), { scope, userId });
+  if (organizationId) {
+    quotesQuery = quotesQuery.eq('organization_id', organizationId);
+    ordersQuery = ordersQuery.eq('organization_id', organizationId);
+    monthQuotesQuery = monthQuotesQuery.eq('organization_id', organizationId);
+    monthOrdersQuery = monthOrdersQuery.eq('organization_id', organizationId);
+  }
+  const [quotes, orders, monthQuotes, monthOrders] = await Promise.all([
+    quotesQuery, ordersQuery, monthQuotesQuery, monthOrdersQuery,
+  ]);
+  const quoteRows = quotes.data || [];
+  const orderRows = orders.data || [];
+  const totalRevenue = orderRows.reduce((sum, order) => sum + (order.total ?? 0), 0);
+  return {
+    totalQuotes: quoteRows.length,
+    totalOrders: orderRows.length,
+    conversionRate: quoteRows.length > 0 ? Math.round((orderRows.length / quoteRows.length) * 100) : 0,
+    totalRevenue,
+    averageTicket: orderRows.length > 0 ? totalRevenue / orderRows.length : 0,
+    quotesThisMonth: (monthQuotes.data || []).length,
+    ordersThisMonth: (monthOrders.data || []).length,
+    revenueThisMonth: (monthOrders.data || []).reduce((sum, order) => sum + (order.total ?? 0), 0),
+  };
+}
+
+interface TrendingOrderRow {
+  product_id: string | null;
+  product_sku: string | null;
+  product_name: string | null;
+  product_image_url: string | null;
+  quantity: number | null;
+  unit_price: number | null;
+}
+
+function matchesProductSearch(item: TrendingOrderRow, searchTerm?: string | null): boolean {
+  if (!searchTerm) return true;
+  const term = searchTerm.toLowerCase();
+  return (item.product_name || '').toLowerCase().includes(term) || (item.product_sku || '').toLowerCase().includes(term);
+}
+
+function trendingProductKey(item: TrendingOrderRow): string {
+  return item.product_sku || item.product_id || item.product_name || '';
+}
+
+function createTrendingProduct(item: TrendingOrderRow): TrendingProduct {
+  return {
+    productId: item.product_id || '',
+    productSku: item.product_sku,
+    productName: item.product_name || 'Produto',
+    productImage: item.product_image_url,
+    orderCount: 0,
+    totalQuantity: 0,
+    totalRevenue: 0,
+    quoteCount: 0,
+    conversionRate: 0,
+    trend: 'stable',
+  };
+}
+
+function addTrendingOrder(map: Map<string, TrendingProduct>, item: TrendingOrderRow, searchTerm?: string | null): void {
+  const key = trendingProductKey(item);
+  if (!key || !matchesProductSearch(item, searchTerm)) return;
+  const existing = map.get(key) || createTrendingProduct(item);
+  existing.orderCount += 1;
+  existing.totalQuantity += item.quantity ?? 0;
+  existing.totalRevenue += (item.quantity ?? 0) * (item.unit_price ?? 0);
+  map.set(key, existing);
+}
+
+interface RevenueOrderRow {
+  quantity?: number | null;
+  unit_price?: number | null;
+  created_at: string;
+}
+
+interface RevenueQuoteRow {
+  created_at: string;
+}
+
+function emptyRevenuePoints(since: Date, days: number): Map<string, RevenuePoint> {
+  const points = new Map<string, RevenuePoint>();
+  for (let index = 0; index < days; index++) {
+    const date = new Date(since);
+    date.setDate(date.getDate() + index);
+    const key = date.toISOString().slice(0, 10);
+    points.set(key, { date: key, revenue: 0, orders: 0, quotes: 0 });
+  }
+  return points;
+}
+
+function aggregateRevenueTrend(
+  since: Date,
+  days: number,
+  orders: RevenueOrderRow[],
+  quotes: RevenueQuoteRow[],
+): RevenuePoint[] {
+  const points = emptyRevenuePoints(since, days);
+  for (const order of orders) {
+    const point = points.get(new Date(order.created_at).toISOString().slice(0, 10));
+    if (!point) continue;
+    point.revenue += (order.quantity ?? 1) * (order.unit_price ?? 0);
+    point.orders += 1;
+  }
+  for (const quote of quotes) {
+    const point = points.get(new Date(quote.created_at).toISOString().slice(0, 10));
+    if (point) point.quotes += 1;
+  }
+  return Array.from(points.values()).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+async function filteredRevenueRows(ids: Set<string>, since: string) {
+  const productIds = Array.from(ids).slice(0, 200);
+  if (productIds.length === 0) return { orders: [] as RevenueOrderRow[], quotes: [] as RevenueQuoteRow[] };
+  const [{ data: orders }, { data: quotes }] = await Promise.all([
+    supabase.from(ORDER_ITEMS_TABLE).select('quantity, unit_price, created_at').gte('created_at', since).in(PRODUCT_ID_COLUMN, productIds),
+    supabase.from('quote_items').select('created_at').gte('created_at', since).in(PRODUCT_ID_COLUMN, productIds),
+  ]);
+  return { orders: orders || [], quotes: quotes || [] };
+}
+
+async function globalRevenueRows(
+  since: string,
+  organizationId: string | null,
+  scope: SalesScope,
+  userId: string | undefined,
+) {
+  let ordersQuery = applySellerScope(supabase.from('orders').select('total, created_at').gte('created_at', since).order('created_at'), { scope, userId });
+  let quotesQuery = applySellerScope(supabase.from('quotes').select('created_at').gte('created_at', since).order('created_at'), { scope, userId });
+  if (organizationId) {
+    ordersQuery = ordersQuery.eq('organization_id', organizationId);
+    quotesQuery = quotesQuery.eq('organization_id', organizationId);
+  }
+  const [orders, quotes] = await Promise.all([
+    ordersQuery, quotesQuery,
+  ]);
+  return {
+    orders: (orders.data || []).map(order => ({ quantity: 1, unit_price: order.total, created_at: order.created_at })),
+    quotes: quotes.data || [],
+  };
+}
+
 // ============================================
 // useFilteredProductIds
 // ============================================
@@ -78,58 +256,8 @@ export function useCommercialKPIs(days = 30, categoryId?: string | null, supplie
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
-      if (hasFilter && productIds) {
-        const pids = Array.from(productIds);
-        if (!pids.length) return { totalQuotes: 0, totalOrders: 0, conversionRate: 0, totalRevenue: 0, averageTicket: 0, quotesThisMonth: 0, ordersThisMonth: 0, revenueThisMonth: 0 };
-
-        const [{ data: quoteItems }, { data: orderItems }, { data: orderItemsMonth }, { data: quoteItemsMonth }] = await Promise.all([
-          supabase.from('quote_items').select('quote_id, product_id').gte('created_at', since).in('product_id', pids.slice(0, 200)),
-          supabase.from('order_items').select('order_id, product_id, quantity, unit_price').gte('created_at', since).in('product_id', pids.slice(0, 200)),
-          supabase.from('order_items').select('order_id, product_id, quantity, unit_price').gte('created_at', startOfMonth).in('product_id', pids.slice(0, 200)),
-          supabase.from('quote_items').select('quote_id, product_id').gte('created_at', startOfMonth).in('product_id', pids.slice(0, 200)),
-        ]);
-
-        const uqQuotes = new Set((quoteItems || []).map(qi => qi.quote_id));
-        const uqOrders = new Set((orderItems || []).map(oi => oi.order_id));
-        const totalRevenue = (orderItems || []).reduce((s, i) => s + (i.quantity ?? 0) * (i.unit_price ?? 0), 0);
-        const revenueMonth = (orderItemsMonth || []).reduce((s, i) => s + (i.quantity ?? 0) * (i.unit_price ?? 0), 0);
-
-        return {
-          totalQuotes: uqQuotes.size, totalOrders: uqOrders.size,
-          conversionRate: uqQuotes.size > 0 ? Math.round((uqOrders.size / uqQuotes.size) * 100) : 0,
-          totalRevenue, averageTicket: uqOrders.size > 0 ? totalRevenue / uqOrders.size : 0,
-          quotesThisMonth: new Set((quoteItemsMonth || []).map(qi => qi.quote_id)).size,
-          ordersThisMonth: new Set((orderItemsMonth || []).map(oi => oi.order_id)).size,
-          revenueThisMonth: revenueMonth,
-        };
-      }
-
-      // rls-allow: respeita can_view_all_sales server-side
-      let q1 = supabase.from('quotes').select('id, total, status, created_at').gte('created_at', since);
-      // rls-allow: respeita can_view_all_sales server-side
-      let o1 = supabase.from('orders').select('id, total, status, created_at').gte('created_at', since);
-      // rls-allow: respeita can_view_all_sales server-side
-      let q2 = supabase.from('quotes').select('id, total').gte('created_at', startOfMonth);
-      // rls-allow: respeita can_view_all_sales server-side
-      let o2 = supabase.from('orders').select('id, total').gte('created_at', startOfMonth);
-      if (orgId) { q1 = q1.eq('organization_id', orgId); o1 = o1.eq('organization_id', orgId); q2 = q2.eq('organization_id', orgId); o2 = o2.eq('organization_id', orgId); }
-      // Defesa em profundidade: vendedor (scope === "self") só pede os próprios dados.
-      q1 = applySellerScope(q1, { scope, userId: user?.id });
-      o1 = applySellerScope(o1, { scope, userId: user?.id });
-      q2 = applySellerScope(q2, { scope, userId: user?.id });
-      o2 = applySellerScope(o2, { scope, userId: user?.id });
-
-      const [qr, or, qmr, omr] = await Promise.all([q1, o1, q2, o2]);
-      const quotes = qr.data || []; const orders = or.data || [];
-      const totalRevenue = orders.reduce((s, o) => s + (o.total ?? 0), 0);
-
-      return {
-        totalQuotes: quotes.length, totalOrders: orders.length,
-        conversionRate: quotes.length > 0 ? Math.round((orders.length / quotes.length) * 100) : 0,
-        totalRevenue, averageTicket: orders.length > 0 ? totalRevenue / orders.length : 0,
-        quotesThisMonth: (qmr.data || []).length, ordersThisMonth: (omr.data || []).length,
-        revenueThisMonth: (omr.data || []).reduce((s, o) => s + (o.total ?? 0), 0),
-      };
+      if (hasFilter && productIds) return loadFilteredKpis(productIds, since, startOfMonth);
+      return loadGlobalKpis({ since, startOfMonth, organizationId: orgId, scope, userId: user?.id });
     },
     staleTime: 1000 * 60 * 5,
     enabled: !!user && (!hasFilter || productIds !== undefined),
@@ -139,7 +267,8 @@ export function useCommercialKPIs(days = 30, categoryId?: string | null, supplie
 // ============================================
 // Trending Products
 // ============================================
-export function useTrendingProducts(days = 30, categoryId?: string | null, supplierId?: string | null, productId?: string | null, limit = 10, searchTerm?: string | null) {
+export function useTrendingProducts(...args: [days?: number, categoryId?: string | null, supplierId?: string | null, productId?: string | null, limit?: number, searchTerm?: string | null]) {
+  const [days = 30, categoryId, supplierId, productId, limit = 10, searchTerm] = args;
   const { user } = useAuth();
   const since = getSinceDate(days);
   const { data: productIds } = useFilteredProductIds(categoryId, supplierId, productId);
@@ -150,26 +279,16 @@ export function useTrendingProducts(days = 30, categoryId?: string | null, suppl
     queryFn: async (): Promise<TrendingProduct[]> => {
       const pids = productIds ? Array.from(productIds).slice(0, 200) : undefined;
       const [{ data: orderItems }, { data: quoteItems }] = await Promise.all([
-        pids ? supabase.from('order_items').select('product_id, product_sku, product_name, product_image_url, quantity, unit_price, order_id, created_at').gte('created_at', since).in('product_id', pids)
-          : supabase.from('order_items').select('product_id, product_sku, product_name, product_image_url, quantity, unit_price, order_id, created_at').gte('created_at', since),
-        pids ? supabase.from('quote_items').select('product_id, product_sku, product_name, product_image_url, quantity, unit_price, created_at').gte('created_at', since).in('product_id', pids)
+        pids ? supabase.from(ORDER_ITEMS_TABLE).select('product_id, product_sku, product_name, product_image_url, quantity, unit_price, order_id, created_at').gte('created_at', since).in(PRODUCT_ID_COLUMN, pids)
+          : supabase.from(ORDER_ITEMS_TABLE).select('product_id, product_sku, product_name, product_image_url, quantity, unit_price, order_id, created_at').gte('created_at', since),
+        pids ? supabase.from('quote_items').select('product_id, product_sku, product_name, product_image_url, quantity, unit_price, created_at').gte('created_at', since).in(PRODUCT_ID_COLUMN, pids)
           : supabase.from('quote_items').select('product_id, product_sku, product_name, product_image_url, quantity, unit_price, created_at').gte('created_at', since),
       ]);
 
       if (!orderItems?.length) return [];
       const productMap = new Map<string, TrendingProduct>();
-      orderItems.forEach(item => {
-        const key = item.product_sku || item.product_id || item.product_name;
-        if (!key) return;
-        if (searchTerm) {
-          const q = searchTerm.toLowerCase();
-          if (!(item.product_name || '').toLowerCase().includes(q) && !(item.product_sku || '').toLowerCase().includes(q)) return;
-        }
-        const existing = productMap.get(key) || { productId: item.product_id || '', productSku: item.product_sku, productName: item.product_name || 'Produto', productImage: item.product_image_url, orderCount: 0, totalQuantity: 0, totalRevenue: 0, quoteCount: 0, conversionRate: 0, trend: 'stable' as const };
-        existing.orderCount += 1; existing.totalQuantity += (item.quantity ?? 0); existing.totalRevenue += (item.quantity ?? 0) * (item.unit_price ?? 0);
-        productMap.set(key, existing);
-      });
-      quoteItems?.forEach(item => { const key = item.product_sku || item.product_id || item.product_name; if (key && productMap.has(key)) productMap.get(key)!.quoteCount += 1; });
+      orderItems.forEach(item => addTrendingOrder(productMap, item, searchTerm));
+      quoteItems?.forEach(item => { const key = item.product_sku || item.product_id || item.product_name; const product = key ? productMap.get(key) : undefined; if (product) product.quoteCount += 1; });
 
       return Array.from(productMap.values())
         .map(p => ({ ...p, conversionRate: p.quoteCount > 0 ? Math.round((p.orderCount / p.quoteCount) * 100) : 100, trend: (p.totalRevenue > 1000 ? 'up' : p.totalRevenue > 200 ? 'stable' : 'down') as 'up' | 'down' | 'stable' }))
@@ -264,35 +383,10 @@ export function useRevenueTrend(days = 30, categoryId?: string | null, supplierI
     queryKey: ['commercial-revenue-trend', user?.id, orgId, scope, days, categoryId, supplierId],
     queryFn: async (): Promise<RevenuePoint[]> => {
       const since = new Date(); since.setDate(since.getDate() - days); const sinceStr = since.toISOString();
-      let orderData: Array<{ quantity?: number | null; unit_price?: number | null; created_at: string }> = [];
-      let quoteData: Array<{ created_at: string }> = [];
-
-      if (hasFilter && productIds) {
-        const pids = Array.from(productIds).slice(0, 200);
-        if (!pids.length) { const m = new Map<string, RevenuePoint>(); for (let i = 0; i < days; i++) { const d = new Date(since); d.setDate(d.getDate() + i); const k = d.toISOString().split('T')[0]!; m.set(k, { date: k, revenue: 0, orders: 0, quotes: 0 }); } return Array.from(m.values()); }
-        const [{ data: oi }, { data: qi }] = await Promise.all([
-          supabase.from('order_items').select('quantity, unit_price, created_at').gte('created_at', sinceStr).in('product_id', pids),
-          supabase.from('quote_items').select('created_at').gte('created_at', sinceStr).in('product_id', pids),
-        ]);
-        orderData = oi || []; quoteData = qi || [];
-      } else {
-        // rls-allow: respeita can_view_all_sales server-side
-        let oq = supabase.from('orders').select('total, created_at').gte('created_at', sinceStr).order('created_at');
-        // rls-allow: respeita can_view_all_sales server-side
-        let qq = supabase.from('quotes').select('total, created_at').gte('created_at', sinceStr).order('created_at');
-        if (orgId) { oq = oq.eq('organization_id', orgId); qq = qq.eq('organization_id', orgId); }
-        oq = applySellerScope(oq, { scope, userId: user?.id });
-        qq = applySellerScope(qq, { scope, userId: user?.id });
-        const [{ data: orders }, { data: quotes }] = await Promise.all([oq, qq]);
-        orderData = (orders || []).map(o => ({ quantity: 1, unit_price: o.total, created_at: o.created_at }));
-        quoteData = quotes || [];
-      }
-
-      const dateMap = new Map<string, RevenuePoint>();
-      for (let i = 0; i < days; i++) { const d = new Date(since); d.setDate(d.getDate() + i); const k = d.toISOString().split('T')[0]!; dateMap.set(k, { date: k, revenue: 0, orders: 0, quotes: 0 }); }
-      orderData.forEach(o => { const k = new Date(o.created_at).toISOString().split('T')[0]!; const e = dateMap.get(k); if (e) { e.revenue += (o.quantity ?? 1) * (o.unit_price ?? 0); e.orders += 1; } });
-      quoteData.forEach(q => { const k = new Date(q.created_at).toISOString().split('T')[0]!; const e = dateMap.get(k); if (e) e.quotes += 1; });
-      return Array.from(dateMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+      const rows = hasFilter && productIds
+        ? await filteredRevenueRows(productIds, sinceStr)
+        : await globalRevenueRows(sinceStr, orgId, scope, user?.id);
+      return aggregateRevenueTrend(since, days, rows.orders, rows.quotes);
     },
     staleTime: 1000 * 60 * 5,
     enabled: !!user && (!hasFilter || productIds !== undefined),

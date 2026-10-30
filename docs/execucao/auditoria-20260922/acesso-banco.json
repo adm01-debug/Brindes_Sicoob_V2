@@ -1,0 +1,25 @@
+{
+  "collected_at": "2026-09-22T11:49:34.709268+00:00",
+  "project": "cfmzkthhgliqelozlmwu",
+  "environment": "construção, conforme confirmação do usuário",
+  "probes": [
+    {
+      "name": "VITE_SUPABASE_ANON_KEY",
+      "http": 401,
+      "message": "Invalid API key"
+    },
+    {
+      "name": "VITE_SUPABASE_PUBLISHABLE_KEY",
+      "http": 401,
+      "message": "Invalid API key"
+    },
+    {
+      "name": "CLI: leitura de metadados do projeto",
+      "http": 403,
+      "message": "Your account does not have the necessary privileges to access this endpoint. For more details, refer to our documentation https://supabase.com/docs/guides/platform/access-control"
+    }
+  ],
+  "mcp_configured": true,
+  "mcp_saved_session_expired": true,
+  "database_catalogues_read_successfully": false
+}

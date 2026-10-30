@@ -241,6 +241,6 @@ export interface ExternalProductForKit {
 // ============================================
 
 export function mmToCm(mm: number | null | undefined): number | null {
-  if (mm == null || mm <= 0) return null;
+  if (mm === null || mm === undefined || mm <= 0) return null;
   return mm / 10;
 }

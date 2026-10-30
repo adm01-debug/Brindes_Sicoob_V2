@@ -1,5 +1,5 @@
 import React from 'react';
-import { Truck, Package, CheckCircle, MapPin } from 'lucide-react';
+import { Truck } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MultiLevelTracker } from './MultiLevelTracker';
 
@@ -8,10 +8,16 @@ interface OrderTrackingTimelineProps {
   status: string;
 }
 
-export function OrderTrackingTimeline({ orderId, status }: OrderTrackingTimelineProps) {
+interface TrackingStep {
+  id: string;
+  label: string;
+  status: 'pending' | 'current' | 'completed' | 'failed';
+}
+
+export function OrderTrackingTimeline({ status }: OrderTrackingTimelineProps) {
   // Mapping order status to tracking steps
   const getSteps = () => {
-    const steps: any[] = [
+    const steps: TrackingStep[] = [
       { id: 'confirmed', label: 'Pedido Confirmado', status: 'pending' },
       { id: 'in_production', label: 'Em Produção', status: 'pending' },
       { id: 'in_separation', label: 'Em Separação', status: 'pending' },

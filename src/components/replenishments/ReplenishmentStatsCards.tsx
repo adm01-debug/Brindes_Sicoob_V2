@@ -1,7 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { RefreshCw, CalendarPlus, CalendarRange, CalendarDays, Building2, AlertTriangle } from "lucide-react";
-import { useReplenishmentStats } from "@/hooks/useReplenishments";
-import type { ReplenishmentStatsDisplay } from "@/hooks/useReplenishments";
+import { useReplenishmentStats, type ReplenishmentStatsDisplay } from "@/hooks/useReplenishments";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, type ReactNode } from "react";
 

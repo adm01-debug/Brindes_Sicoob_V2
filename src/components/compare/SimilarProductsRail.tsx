@@ -3,15 +3,35 @@
  * Mesma categoria + faixa de preço ±20% dos produtos já em comparação.
  */
 import { useMemo } from "react";
-import { useProducts } from "@/hooks/useProducts";
+import { useProducts, type Product } from "@/hooks/useProducts";
 import { useComparisonStore } from "@/stores/useComparisonStore";
 import { Button } from "@/components/ui/button";
 import { Plus, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 interface Props {
-  products: any[];
+  products: Product[];
   formatCurrency: (v: number) => string;
+}
+
+function SimilarProductCard({ product, formatCurrency, selected, disabled, onAdd }: {
+  product: Product;
+  formatCurrency: (value: number) => string;
+  selected: boolean;
+  disabled: boolean;
+  onAdd: () => void;
+}) {
+  return <div className="rounded-xl border border-border bg-card p-3 space-y-2 hover:shadow-md hover:border-primary/40 transition-all">
+    <div className="aspect-square rounded-lg overflow-hidden bg-muted">
+      <img src={product.images?.[0]} alt={product.name} className="w-full h-full object-contain" loading="lazy" />
+    </div>
+    <p className="text-xs font-medium line-clamp-2">{product.name}</p>
+    <p className="text-sm font-bold text-primary tabular-nums">{formatCurrency(product.price)}</p>
+    <Button size="sm" variant={selected ? "secondary" : "outline"} className="w-full h-7 text-xs"
+      onClick={onAdd} disabled={selected || disabled}>
+      <Plus className="h-3 w-3 mr-1" />{selected ? "Adicionado" : "Comparar"}
+    </Button>
+  </div>;
 }
 
 export function SimilarProductsRail({ products, formatCurrency }: Props) {
@@ -50,25 +70,9 @@ export function SimilarProductsRail({ products, formatCurrency }: Props) {
         <h2 className="font-display text-base font-semibold">Compare também com…</h2>
       </header>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {suggestions.map(p => (
-          <div key={p.id} className="rounded-xl border border-border bg-card p-3 space-y-2 hover:shadow-md hover:border-primary/40 transition-all">
-            <div className="aspect-square rounded-lg overflow-hidden bg-muted">
-              <img src={p.images?.[0]} alt={p.name} className="w-full h-full object-contain" loading="lazy" />
-            </div>
-            <p className="text-xs font-medium line-clamp-2">{p.name}</p>
-            <p className="text-sm font-bold text-primary tabular-nums">{formatCurrency(p.price)}</p>
-            <Button
-              size="sm"
-              variant={isInCompare(p.id) ? "secondary" : "outline"}
-              className="w-full h-7 text-xs"
-              onClick={() => handleAdd(p.id, p.name)}
-              disabled={isInCompare(p.id) || !canAddMore}
-            >
-              <Plus className="h-3 w-3 mr-1" />
-              {isInCompare(p.id) ? "Adicionado" : "Comparar"}
-            </Button>
-          </div>
-        ))}
+        {suggestions.map((product) => <SimilarProductCard key={product.id} product={product}
+          formatCurrency={formatCurrency} selected={isInCompare(product.id)} disabled={!canAddMore}
+          onAdd={() => handleAdd(product.id, product.name)} />)}
       </div>
     </section>
   );

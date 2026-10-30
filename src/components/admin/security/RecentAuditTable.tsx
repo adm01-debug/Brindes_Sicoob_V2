@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -24,6 +24,21 @@ interface AuditEntry {
 }
 
 interface ProfileLite { user_id: string; full_name: string | null; email: string | null }
+
+function auditMatchesSearch(entry: AuditEntry, profile: ProfileLite | undefined, search: string): boolean {
+  const query = search.toLowerCase();
+  if (!query) return true;
+  const adminName = `${profile?.full_name ?? ""} ${profile?.email ?? ""}`.toLowerCase();
+  return entry.action.toLowerCase().includes(query)
+    || entry.resource_type.toLowerCase().includes(query)
+    || (entry.resource_id ?? "").toLowerCase().includes(query)
+    || adminName.includes(query);
+}
+
+function auditMatchesFilter(entry: AuditEntry, profile: ProfileLite | undefined, action: string, search: string): boolean {
+  if (action !== "all" && entry.action !== action) return false;
+  return auditMatchesSearch(entry, profile, search);
+}
 
 export function RecentAuditTable() {
   const [entries, setEntries] = useState<AuditEntry[]>([]);
@@ -69,18 +84,7 @@ export function RecentAuditTable() {
   }, [entries]);
 
   const filtered = useMemo(() => {
-    return entries.filter((e) => {
-      if (filterAction !== "all" && e.action !== filterAction) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        const adminName = (profiles[e.user_id]?.full_name || profiles[e.user_id]?.email || "").toLowerCase();
-        if (!e.action.toLowerCase().includes(q) &&
-            !e.resource_type.toLowerCase().includes(q) &&
-            !(e.resource_id || "").toLowerCase().includes(q) &&
-            !adminName.includes(q)) return false;
-      }
-      return true;
-    });
+    return entries.filter((entry) => auditMatchesFilter(entry, profiles[entry.user_id], filterAction, search));
   }, [entries, filterAction, search, profiles]);
 
   return (
@@ -186,6 +190,6 @@ export function RecentAuditTable() {
   );
 }
 
-function Label({ children }: { children: React.ReactNode }) {
+function Label({ children }: { children: ReactNode }) {
   return <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground mb-0.5">{children}</div>;
 }

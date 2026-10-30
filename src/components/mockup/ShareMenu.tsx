@@ -1,3 +1,4 @@
+import type { RefObject } from "react";
 /**
  * ShareMenu — Multi-format sharing dropdown
  */
@@ -20,7 +21,7 @@ interface ShareMenuProps {
   productName?: string;
   techniqueName?: string;
   /** Optional ref to the mockup image element for PDF capture */
-  imageRef?: React.RefObject<HTMLImageElement>;
+  imageRef?: RefObject<HTMLImageElement>;
   className?: string;
 }
 

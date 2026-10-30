@@ -34,8 +34,17 @@ interface QuoteItem {
   price_updated_at?: string | null;
   /** Optional: per-product threshold (days) for the stale-price warning. */
   price_freshness_threshold_days?: number | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  personalizations?: any[];
+  personalizations?: ItemPersonalization[];
+  [key: string]: unknown;
+}
+
+interface ItemPersonalization {
+  total_cost?: number;
+  notes?: string;
+  width_cm?: number;
+  height_cm?: number;
+  technique_name?: string;
+  colors_count?: number;
   [key: string]: unknown;
 }
 
@@ -43,166 +52,70 @@ interface QuoteItemsTableProps {
   items: QuoteItem[];
 }
 
-export function QuoteItemsTable({ items }: QuoteItemsTableProps) {
-  const hasPersonalizations = items.some(item => item.personalizations && item.personalizations.length > 0);
-
-  // Group items: kit groups first, then loose items
+function groupQuoteItems(items: QuoteItem[]) {
   const kitGroups = new Map<string, { name: string; items: QuoteItem[] }>();
   const looseItems: QuoteItem[] = [];
-
   items.forEach(item => {
-    if (item.kit_group_id && item.kit_name) {
-      const group = kitGroups.get(item.kit_group_id) || { name: item.kit_name, items: [] };
-      group.items.push(item);
-      kitGroups.set(item.kit_group_id, group);
-    } else {
-      looseItems.push(item);
-    }
+    if (!item.kit_group_id || !item.kit_name) { looseItems.push(item); return; }
+    const group = kitGroups.get(item.kit_group_id) || { name: item.kit_name, items: [] };
+    group.items.push(item);
+    kitGroups.set(item.kit_group_id, group);
   });
+  return { kitGroups, looseItems };
+}
 
-  const colCount = hasPersonalizations ? 6 : 5;
+function personalizationLabels(personalization: ItemPersonalization): { location: string | null; dimensions: string | null } {
+  const [locationPart, dimensionPart] = (personalization.notes || "").split(" | ");
+  const location = locationPart ? locationPart.split(" — ")[0] ?? null : null;
+  if (dimensionPart) return { location, dimensions: dimensionPart.replace("cm", " cm") };
+  if (personalization.width_cm && personalization.height_cm) return { location, dimensions: `${personalization.width_cm} × ${personalization.height_cm} cm` };
+  return { location, dimensions: null };
+}
 
-  const renderItemRow = (item: QuoteItem, index: number) => {
-    const allPersonalizations = item.personalizations || [];
-    const personalizationCost = allPersonalizations.reduce(
-      (acc: number, p: { total_cost?: number }) => acc + calcPersTotal(p.total_cost || 0, item.quantity), 0
-    );
-    const itemTotal = item.quantity * item.unit_price + personalizationCost;
+function ProductCell({ item }: { item: QuoteItem }) {
+  return <td className="p-3"><div className="flex items-center gap-3">{item.product_image_url && <img src={item.product_image_url} alt={item.product_name} className="w-16 h-16 object-cover rounded border border-border print:hidden" loading="lazy" />}<div>{item.product_sku && <span className="inline-flex items-center gap-1 font-mono text-xs font-semibold px-2 py-0.5 rounded-md border mb-1" style={{ backgroundColor: item.color_hex ? `${item.color_hex}22` : undefined, borderColor: item.color_hex || 'hsl(var(--border))', color: item.color_hex || 'hsl(var(--foreground))' }}>{item.color_hex && <span className="w-2.5 h-2.5 rounded-full border border-border/50" style={{ backgroundColor: item.color_hex }} />}{item.product_sku}{item.color_name ? `-${item.color_name}` : ''}</span>}<p className="font-medium">{item.product_name}</p></div></div></td>;
+}
 
-    return (
-      <tr 
-        key={item.id || `item-${index}`} 
-        className={`border-b border-border/50 transition-colors hover:bg-muted/40 ${index % 2 === 1 ? 'bg-muted/20' : ''}`}
-      >
-        <td className="p-3">
-          <div className="flex items-center gap-3">
-            {item.product_image_url && (
-              <img src={item.product_image_url} 
-                alt={item.product_name}
-                className="w-16 h-16 object-cover rounded border border-border print:hidden"
-                loading="lazy"
-              />
-            )}
-            <div>
-              {item.product_sku && (
-                <span 
-                  className="inline-flex items-center gap-1 font-mono text-xs font-semibold px-2 py-0.5 rounded-md border mb-1"
-                  style={{ 
-                    backgroundColor: item.color_hex ? `${item.color_hex}22` : undefined,
-                    borderColor: item.color_hex || 'hsl(var(--border))',
-                    color: item.color_hex || 'hsl(var(--foreground))'
-                  }}
-                >
-                  {item.color_hex && (
-                    <span className="w-2.5 h-2.5 rounded-full border border-border/50" style={{ backgroundColor: item.color_hex }} />
-                  )}
-                  {item.product_sku}{item.color_name ? `-${item.color_name}` : ''}
-                </span>
-              )}
-              <p className="font-medium">{item.product_name}</p>
-            </div>
-          </div>
-        </td>
-        
-        {hasPersonalizations && (
-          <td className="p-3">
-            {allPersonalizations.length > 0 ? (
-              <div className="space-y-1.5">
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {allPersonalizations.map((p: any, pIdx: number) => {
-                  const notesRaw = p.notes || "";
-                  const [locationPart, dimPart] = notesRaw.split(" | ");
-                  const locationLabel = locationPart ? locationPart.split(" — ")[0] : null;
-                  let dimLabel: string | null = null;
-                  if (dimPart) {
-                    dimLabel = dimPart.replace("cm", " cm");
-                  } else if (p.width_cm && p.height_cm) {
-                    dimLabel = `${p.width_cm} × ${p.height_cm} cm`;
-                  }
-                  return (
-                    <div key={pIdx} className={`${pIdx > 0 ? 'pt-1.5 border-t border-border/30' : ''}`}>
-                      <div className="inline-flex flex-col gap-0.5 bg-primary/8 border border-primary/20 rounded-md px-2 py-1.5">
-                        <span className="text-xs font-semibold text-primary flex items-center gap-1">
-                          ✦ {p.technique_name}
-                        </span>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                          {locationLabel && <span className="font-medium text-foreground/70">{locationLabel}</span>}
-                          {dimLabel && <span className="font-medium text-foreground/80">{dimLabel}</span>}
-                          <span>{p.colors_count || 1} cor{(p.colors_count || 1) > 1 ? "es" : ""}</span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : <span className="text-muted-foreground text-sm">—</span>}
-          </td>
-        )}
-        <td className="p-3 text-center font-semibold text-sm w-20">{item.quantity}</td>
-        <td className="p-3 text-left text-muted-foreground tabular-nums w-28">
-          <div className="flex flex-col gap-0.5">
-            <span>
-              {formatCurrency(item.unit_price + (allPersonalizations.reduce((sum: number, p: { total_cost?: number }) => {
-                const pTotal = p.total_cost || 0;
-                return sum + (item.quantity > 0 ? Math.round((pTotal / item.quantity) * 100) / 100 : 0);
-              }, 0)))}
-            </span>
-            <PriceFreshnessBadge
-              priceUpdatedAt={item.price_updated_at}
-              thresholdDays={item.price_freshness_threshold_days}
-              variant="compact"
-            />
-          </div>
-        </td>
-        <td className="p-3 text-left font-bold text-base tabular-nums w-32">{formatCurrency(itemTotal)}</td>
-        <td className="p-3 text-center print:hidden">
-          <QuoteItemDetailSheet item={item} />
-        </td>
-      </tr>
-    );
-  };
+function PersonalizationBadge({ personalization, index }: { personalization: ItemPersonalization; index: number }) {
+  const labels = personalizationLabels(personalization);
+  const colorCount = personalization.colors_count || 1;
+  return <div className={index > 0 ? 'pt-1.5 border-t border-border/30' : ''}><div className="inline-flex flex-col gap-0.5 bg-primary/8 border border-primary/20 rounded-md px-2 py-1.5"><span className="text-xs font-semibold text-primary flex items-center gap-1">✦ {personalization.technique_name}</span><div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">{labels.location && <span className="font-medium text-foreground/70">{labels.location}</span>}{labels.dimensions && <span className="font-medium text-foreground/80">{labels.dimensions}</span>}<span>{colorCount} cor{colorCount > 1 ? "es" : ""}</span></div></div></div>;
+}
 
+function PersonalizationsCell({ personalizations }: { personalizations: ItemPersonalization[] }) {
+  if (personalizations.length === 0) return <td className="p-3"><span className="text-muted-foreground text-sm">—</span></td>;
+  return <td className="p-3"><div className="space-y-1.5">{personalizations.map((personalization, index) => <PersonalizationBadge key={`${personalization.technique_name}-${index}`} personalization={personalization} index={index} />)}</div></td>;
+}
+
+function personalizationUnitCost(personalizations: ItemPersonalization[], quantity: number): number {
+  return personalizations.reduce((sum, personalization) => {
+    const total = personalization.total_cost || 0;
+    return sum + (quantity > 0 ? Math.round((total / quantity) * 100) / 100 : 0);
+  }, 0);
+}
+
+function QuoteItemRow({ item, index, hasPersonalizations }: { item: QuoteItem; index: number; hasPersonalizations: boolean }) {
+  const personalizations = item.personalizations || [];
+  const personalizationCost = personalizations.reduce((sum, personalization) => sum + calcPersTotal(personalization.total_cost || 0, item.quantity), 0);
+  const itemTotal = item.quantity * item.unit_price + personalizationCost;
+  return <tr className={`border-b border-border/50 transition-colors hover:bg-muted/40 ${index % 2 === 1 ? 'bg-muted/20' : ''}`}><ProductCell item={item} />{hasPersonalizations && <PersonalizationsCell personalizations={personalizations} />}<td className="p-3 text-center font-semibold text-sm w-20">{item.quantity}</td><td className="p-3 text-left text-muted-foreground tabular-nums w-28"><div className="flex flex-col gap-0.5"><span>{formatCurrency(item.unit_price + personalizationUnitCost(personalizations, item.quantity))}</span><PriceFreshnessBadge priceUpdatedAt={item.price_updated_at} thresholdDays={item.price_freshness_threshold_days} variant="compact" /></div></td><td className="p-3 text-left font-bold text-base tabular-nums w-32">{formatCurrency(itemTotal)}</td><td className="p-3 text-center print:hidden"><QuoteItemDetailSheet item={item} /></td></tr>;
+}
+
+function QuoteItemsBody({ kitGroups, looseItems, columnCount, hasPersonalizations }: { kitGroups: Map<string, { name: string; items: QuoteItem[] }>; looseItems: QuoteItem[]; columnCount: number; hasPersonalizations: boolean }) {
+  return <tbody>{Array.from(kitGroups.entries()).map(([groupId, group]) => <React.Fragment key={groupId}><tr className="bg-accent/60 border-b border-border"><td colSpan={columnCount} className="p-3"><div className="flex items-center gap-2"><Package className="h-4 w-4 text-primary" /><span className="font-bold text-sm text-primary">Kit: {group.name}</span><Badge variant="outline" className="text-xs ml-1">{group.items.length} itens</Badge></div></td></tr>{group.items.map((item, index) => <QuoteItemRow key={item.id || `item-${index}`} item={item} index={index} hasPersonalizations={hasPersonalizations} />)}</React.Fragment>)}{kitGroups.size > 0 && looseItems.length > 0 && <tr className="bg-muted/30 border-b border-border"><td colSpan={columnCount} className="p-2 px-3"><span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Itens Avulsos</span></td></tr>}{looseItems.map((item, index) => <QuoteItemRow key={item.id || `item-${index}`} item={item} index={index} hasPersonalizations={hasPersonalizations} />)}</tbody>;
+}
+
+export function QuoteItemsTable({ items }: QuoteItemsTableProps) {
+  const hasPersonalizations = items.some(item => Boolean(item.personalizations?.length));
+  const { kitGroups, looseItems } = groupQuoteItems(items);
+  const columnCount = hasPersonalizations ? 6 : 5;
   return (
     <div>
       <h3 className="font-display font-semibold mb-4">Itens do Orçamento</h3>
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-primary/15">
-              <th className="text-left p-3 font-semibold text-primary text-sm">Produto</th>
-              {hasPersonalizations && (
-                <th className="text-left p-3 font-semibold text-primary text-sm">Personalização</th>
-              )}
-              <th className="text-center p-3 font-semibold text-primary text-sm w-20">Qtd</th>
-              <th className="text-left p-3 font-semibold text-primary text-sm w-28">Unitário</th>
-              <th className="text-left p-3 font-semibold text-primary text-sm w-32">Total</th>
-              <th className="text-center p-3 font-semibold text-primary text-sm print:hidden w-24"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {Array.from(kitGroups.entries()).map(([groupId, group]) => (
-              <React.Fragment key={groupId}>
-                <tr className="bg-accent/60 border-b border-border">
-                  <td colSpan={colCount} className="p-3">
-                    <div className="flex items-center gap-2">
-                      <Package className="h-4 w-4 text-primary" />
-                      <span className="font-bold text-sm text-primary">Kit: {group.name}</span>
-                      <Badge variant="outline" className="text-xs ml-1">{group.items.length} itens</Badge>
-                    </div>
-                  </td>
-                </tr>
-                {group.items.map((item, idx) => renderItemRow(item, idx))}
-              </React.Fragment>
-            ))}
-            {kitGroups.size > 0 && looseItems.length > 0 && (
-              <tr className="bg-muted/30 border-b border-border">
-                <td colSpan={colCount} className="p-2 px-3">
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Itens Avulsos</span>
-                </td>
-              </tr>
-            )}
-            {looseItems.map((item, idx) => renderItemRow(item, idx))}
-          </tbody>
+          <thead><tr className="bg-primary/15"><th className="text-left p-3 font-semibold text-primary text-sm">Produto</th>{hasPersonalizations && <th className="text-left p-3 font-semibold text-primary text-sm">Personalização</th>}<th className="text-center p-3 font-semibold text-primary text-sm w-20">Qtd</th><th className="text-left p-3 font-semibold text-primary text-sm w-28">Unitário</th><th className="text-left p-3 font-semibold text-primary text-sm w-32">Total</th><th className="text-center p-3 font-semibold text-primary text-sm print:hidden w-24"></th></tr></thead>
+          <QuoteItemsBody kitGroups={kitGroups} looseItems={looseItems} columnCount={columnCount} hasPersonalizations={hasPersonalizations} />
         </table>
       </div>
     </div>

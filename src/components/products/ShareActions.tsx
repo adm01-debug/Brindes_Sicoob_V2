@@ -30,6 +30,54 @@ interface ShareActionsProps {
   selectedVariant?: { variantName?: string | null; colorHex?: string | null; thumbnailUrl?: string | null } | null;
 }
 
+function countMainPhotos(product: Product) {
+  if (!product.colors || product.colors.length === 0) return product.images.length;
+  const colorImageUrls = new Set<string>();
+  product.colors.forEach((color) => {
+    if (color.image) colorImageUrls.add(color.image);
+    color.images?.forEach((image) => colorImageUrls.add(image));
+  });
+  const mainImages = product.images.filter((image) => !colorImageUrls.has(image));
+  return mainImages.length > 0 ? mainImages.length : 1;
+}
+
+interface ShareMenuProps {
+  product: Product;
+  copied: boolean;
+  downloading: boolean;
+  mainPhotosCount: number;
+  selectedPhotosCount: number;
+  onPreview: () => void;
+  onAllColors: () => void;
+  onCopy: () => void;
+  onDownload: () => void;
+  onKitOption: (title: string, description: string) => void;
+}
+
+function ShareMenu({ product, copied, downloading, mainPhotosCount, selectedPhotosCount, onPreview, onAllColors, onCopy, onDownload, onKitOption }: ShareMenuProps) {
+  const hasColors = Boolean(product.colors && product.colors.length > 1);
+  return (
+    <div className="inline-flex rounded-md shadow-sm">
+      <Button className="gap-2 rounded-r-none border-r border-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground" onClick={onPreview}>
+        <MessageCircle className="h-4 w-4" />Enviar - WhatsApp
+        <span className="bg-primary-foreground/20 text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded-full">{mainPhotosCount}</span>
+      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild><Button className="rounded-l-none px-2 bg-primary hover:bg-primary/90 text-primary-foreground"><ChevronDown className="h-4 w-4" /></Button></DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuLabel>Opções de Envio</DropdownMenuLabel><DropdownMenuSeparator />
+          <DropdownMenuItem onClick={onPreview}><MessageCircle className="h-4 w-4 mr-2" />Enviar Produto Simples<span className="ml-auto text-[10px] text-muted-foreground">{mainPhotosCount} foto{mainPhotosCount !== 1 ? "s" : ""}</span></DropdownMenuItem>
+          {hasColors && <DropdownMenuItem onClick={onAllColors}><Palette className="h-4 w-4 mr-2" />Enviar Todas as Cores<span className="ml-auto text-[10px] text-muted-foreground">{product.colors?.length}</span></DropdownMenuItem>}
+          {product.isKit && <><DropdownMenuItem onClick={() => onKitOption("KIT Completo", "Preparando fotos do kit montado...")}><ImageIcon className="h-4 w-4 mr-2" />Enviar KIT Completo</DropdownMenuItem><DropdownMenuItem onClick={() => onKitOption("Itens do KIT", "Preparando fotos individuais dos itens...")}><ImageIcon className="h-4 w-4 mr-2" />Enviar Itens Separados</DropdownMenuItem></>}
+          <DropdownMenuSeparator /><DropdownMenuLabel>Compartilhar</DropdownMenuLabel>
+          <DropdownMenuItem onClick={onCopy}>{copied ? <Check className="h-4 w-4 mr-2 text-success" /> : <Copy className="h-4 w-4 mr-2" />}Copiar Descrição</DropdownMenuItem>
+          <DropdownMenuItem onClick={onDownload} disabled={downloading}><Download className="h-4 w-4 mr-2" />{downloading ? "Baixando..." : `Download (${selectedPhotosCount || product.images.length} fotos)`}</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
 export function ShareActions({ product, selectedPhotosCount = 0, selectedVariant }: ShareActionsProps) {
   const { toast } = useToast();
   const [showPreview, setShowPreview] = useState(false);
@@ -37,20 +85,12 @@ export function ShareActions({ product, selectedPhotosCount = 0, selectedVariant
   const [copied, setCopied] = useState(false);
   const { downloadPhotos, downloading } = usePhotoDownload();
 
-  // Count main product images (excluding color-specific ones)
-  const mainPhotosCount = useMemo(() => {
-    if (!product.colors || product.colors.length === 0) return product.images.length;
-    const colorImageUrls = new Set<string>();
-    product.colors.forEach((color) => {
-      if (color.image) colorImageUrls.add(color.image);
-      color.images?.forEach((img) => colorImageUrls.add(img));
-    });
-    const filtered = product.images.filter((img) => !colorImageUrls.has(img));
-    return filtered.length > 0 ? filtered.length : 1;
-  }, [product.images, product.colors]);
+  const mainPhotosCount = useMemo(() => countMainPhotos(product), [product]);
 
   const handleCopyDescription = async () => {
-    const message = MESSAGE_TEMPLATES[1].generate(product); // informal default
+    const template = MESSAGE_TEMPLATES[1] ?? MESSAGE_TEMPLATES[0];
+    if (!template) return;
+    const message = template.generate(product); // informal default
     await navigator.clipboard.writeText(message);
     setCopied(true);
     toast({
@@ -60,102 +100,11 @@ export function ShareActions({ product, selectedPhotosCount = 0, selectedVariant
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleDownloadPhotos = () => {
-    downloadPhotos(product.images, product.name);
-  };
-
-  const hasColors = product.colors && product.colors.length > 1;
+  const hasColors = Boolean(product.colors && product.colors.length > 1);
 
   return (
     <>
-      <div className="inline-flex rounded-md shadow-sm">
-        <Button
-          className="gap-2 rounded-r-none border-r border-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground"
-          onClick={() => setShowPreview(true)}
-        >
-          <MessageCircle className="h-4 w-4" />
-          Enviar - WhatsApp
-          <span className="bg-primary-foreground/20 text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-            {mainPhotosCount}
-          </span>
-        </Button>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button className="rounded-l-none px-2 bg-primary hover:bg-primary/90 text-primary-foreground">
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>Opções de Envio</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-
-            <DropdownMenuItem onClick={() => setShowPreview(true)}>
-              <MessageCircle className="h-4 w-4 mr-2" />
-              Enviar Produto Simples
-              <span className="ml-auto text-[10px] text-muted-foreground">
-                {mainPhotosCount} foto{mainPhotosCount !== 1 ? "s" : ""}
-              </span>
-            </DropdownMenuItem>
-
-            {hasColors && (
-              <DropdownMenuItem onClick={() => setShowAllColors(true)}>
-                <Palette className="h-4 w-4 mr-2" />
-                Enviar Todas as Cores
-                <span className="ml-auto text-[10px] text-muted-foreground">
-                  {product.colors.length}
-                </span>
-              </DropdownMenuItem>
-            )}
-
-            {product.isKit && (
-              <>
-                <DropdownMenuItem
-                  onClick={() => {
-                    toast({
-                      title: "KIT Completo",
-                      description: "Preparando fotos do kit montado...",
-                    });
-                  }}
-                >
-                  <ImageIcon className="h-4 w-4 mr-2" />
-                  Enviar KIT Completo
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    toast({
-                      title: "Itens do KIT",
-                      description: "Preparando fotos individuais dos itens...",
-                    });
-                  }}
-                >
-                  <ImageIcon className="h-4 w-4 mr-2" />
-                  Enviar Itens Separados
-                </DropdownMenuItem>
-              </>
-            )}
-
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel>Compartilhar</DropdownMenuLabel>
-
-            <DropdownMenuItem onClick={handleCopyDescription}>
-              {copied ? (
-                <Check className="h-4 w-4 mr-2 text-success" />
-              ) : (
-                <Copy className="h-4 w-4 mr-2" />
-              )}
-              Copiar Descrição
-            </DropdownMenuItem>
-
-            <DropdownMenuItem onClick={handleDownloadPhotos} disabled={downloading}>
-              <Download className="h-4 w-4 mr-2" />
-              {downloading
-                ? "Baixando..."
-                : `Download (${selectedPhotosCount || product.images.length} fotos)`}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <ShareMenu product={product} copied={copied} downloading={downloading} mainPhotosCount={mainPhotosCount} selectedPhotosCount={selectedPhotosCount} onPreview={() => setShowPreview(true)} onAllColors={() => setShowAllColors(true)} onCopy={handleCopyDescription} onDownload={() => downloadPhotos(product.images, product.name)} onKitOption={(title, description) => toast({ title, description })} />
 
       <SharePreviewDialog
         open={showPreview}

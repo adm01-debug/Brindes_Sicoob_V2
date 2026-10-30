@@ -12,6 +12,10 @@ import {
   type LucideIcon 
 } from "lucide-react";
 
+const INFO_STATUS = "bg-info/10 text-info border border-info/20";
+const SUCCESS_STATUS = "bg-success/10 text-success border border-success/20";
+const DESTRUCTIVE_STATUS = "bg-destructive/10 text-destructive border border-destructive/20";
+
 const statusBadgeVariants = cva(
   "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors",
   {
@@ -20,24 +24,24 @@ const statusBadgeVariants = cva(
         // Quote statuses
         draft: "bg-muted text-muted-foreground",
         pending: "bg-warning/10 text-warning border border-warning/20",
-        sent: "bg-info/10 text-info border border-info/20",
-        approved: "bg-success/10 text-success border border-success/20",
-        rejected: "bg-destructive/10 text-destructive border border-destructive/20",
+        sent: INFO_STATUS,
+        approved: SUCCESS_STATUS,
+        rejected: DESTRUCTIVE_STATUS,
         expired: "bg-muted text-muted-foreground border border-border",
         
         // Order statuses
-        processing: "bg-info/10 text-info border border-info/20",
+        processing: INFO_STATUS,
         shipped: "bg-primary/10 text-primary border border-primary/20",
-        delivered: "bg-success/10 text-success border border-success/20",
-        cancelled: "bg-destructive/10 text-destructive border border-destructive/20",
+        delivered: SUCCESS_STATUS,
+        cancelled: DESTRUCTIVE_STATUS,
         
         // Generic statuses
-        active: "bg-success/10 text-success border border-success/20",
+        active: SUCCESS_STATUS,
         inactive: "bg-muted text-muted-foreground border border-border",
         warning: "bg-warning/10 text-warning border border-warning/20",
-        error: "bg-destructive/10 text-destructive border border-destructive/20",
-        info: "bg-info/10 text-info border border-info/20",
-        success: "bg-success/10 text-success border border-success/20",
+        error: DESTRUCTIVE_STATUS,
+        info: INFO_STATUS,
+        success: SUCCESS_STATUS,
         
         // Loading
         loading: "bg-muted text-muted-foreground animate-pulse",

@@ -39,7 +39,7 @@ export default function AdminCadastrosPage() {
 
   return (
     <>
-      <PageSEO title="Cadastros" description="Gerencie produtos, fornecedores e técnicas de personalização." path="/admin/cadastros" noIndex />
+      <PageSEO title="Cadastros" description="Consulte o catálogo e configure técnicas de personalização." path="/admin/cadastros" noIndex />
       <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in">
         <div className="flex items-center gap-3">
           <div className="p-3 rounded-xl bg-primary/10">
@@ -47,7 +47,7 @@ export default function AdminCadastrosPage() {
           </div>
           <div>
             <h1 className="font-display text-3xl font-bold tracking-tight">Cadastros</h1>
-            <p className="text-muted-foreground">Gerencie produtos, fornecedores e técnicas de personalização</p>
+            <p className="text-muted-foreground">Consulte produtos e fornecedores do catálogo mestre e configure a personalização</p>
           </div>
         </div>
 
@@ -75,7 +75,7 @@ export default function AdminCadastrosPage() {
 
           <TabsContent value="suppliers">
             <Suspense fallback={<TabFallback />}>
-              <SuppliersManager />
+              <SuppliersManager readOnly />
             </Suspense>
           </TabsContent>
 

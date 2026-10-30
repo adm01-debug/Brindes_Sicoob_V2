@@ -1,4 +1,5 @@
 import React from "react";
+import type { ColumnCount } from "@/components/products/ColumnSelector";
 import {
   Palette, LayoutGrid, Package, DollarSign, Truck, Users,
   Calendar, Briefcase, Gem, Building2, Paintbrush, Tag,
@@ -50,8 +51,8 @@ export interface FilterPanelProps {
   products?: Array<{ tags?: { publicoAlvo?: string[]; endomarketing?: string[]; ramo?: string[]; nicho?: string[] } }>;
   viewMode?: "grid" | "list";
   onViewModeChange?: (mode: "grid" | "list") => void;
-  gridColumns?: import("@/components/products/ColumnSelector").ColumnCount;
-  onGridColumnsChange?: (cols: import("@/components/products/ColumnSelector").ColumnCount) => void;
+  gridColumns?: ColumnCount;
+  onGridColumnsChange?: (cols: ColumnCount) => void;
   filteredResultsCount?: number;
 }
 

@@ -27,6 +27,7 @@ async function waitForReady(page: Page) {
   await page
     .waitForFunction(
       () => !document.querySelector('[data-state="loading"], [data-skeleton]'),
+      undefined,
       { timeout: 8_000 },
     )
     .catch(() => {});
@@ -34,7 +35,7 @@ async function waitForReady(page: Page) {
 
 /** Botão de favoritar do detalhe — somente testid (SSOT). */
 function detailFavoriteButton(page: Page): Locator {
-  return page.locator(Sel.product.detailFavorite).first();
+  return page.locator(`${Sel.product.detailFavorite}:visible`).first();
 }
 
 /** Detecta estado favoritado via aria-pressed. */
@@ -80,12 +81,7 @@ test.describe("Fluxo: Favoritar a partir da página de detalhe", () => {
     const { id: productId, href } = await firstCardProductId(page);
     expect(productId, "productId do 1º card não pôde ser lido").toBeTruthy();
 
-    if (href) {
-      await gotoAndSettle(page, href);
-    } else {
-      await page.locator(Sel.product.card).first().click();
-      await page.waitForURL(/\/produto\/[^/]+/, { timeout: 15_000 });
-    }
+    await gotoAndSettle(page, href ?? `/produto/${productId}`);
     await waitForReady(page);
     await expect(page).toHaveURL(/\/produto\/[^/]+/);
 
@@ -107,9 +103,8 @@ test.describe("Fluxo: Favoritar a partir da página de detalhe", () => {
     await favBtn.click();
 
     const noVariant = page.locator(Sel.variant.noVariant).first();
-    if (await noVariant.isVisible().catch(() => false)) {
-      await noVariant.click();
-    }
+    await expect(noVariant).toBeVisible({ timeout: 10_000 });
+    await noVariant.click();
 
     await expect
       .poll(() => isFavoritedDetail(favBtn), {
@@ -140,12 +135,9 @@ test.describe("Fluxo: Favoritar a partir da página de detalhe", () => {
     await expect(targetCard).toBeVisible({ timeout: 10_000 });
 
     // 7. Cleanup — desfavorita pela lista
-    await targetCard.locator(Sel.favorites.remove).first().click().catch(() => {});
-
-    const confirm = page.locator(Sel.dialog.confirmYes).first();
-    if (await confirm.isVisible().catch(() => false)) {
-      await confirm.click().catch(() => {});
-    }
+    const remove = targetCard.locator(Sel.favorites.remove).first();
+    await expect(remove).toBeVisible();
+    await remove.click();
 
     await expect
       .poll(() => readFavoritesCount(page), { timeout: 10_000 })

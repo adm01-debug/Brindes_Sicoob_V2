@@ -42,6 +42,51 @@ const FormSchema = z.object({
     .max(500, "Máximo 500 caracteres"),
 });
 
+type TargetRole = PromotionDialogProps["targetRole"];
+
+function roleLabel(role: TargetRole): string {
+  return role === "supervisor" ? "Supervisor" : "Agente";
+}
+
+function PromotionHeader({ isPromotion }: { isPromotion: boolean }) {
+  return (
+    <DialogHeader>
+      <DialogTitle className="flex items-center gap-2">
+        {isPromotion ? (
+          <ShieldCheck className="h-5 w-5 text-primary" />
+        ) : (
+          <ShieldAlert className="h-5 w-5 text-amber-500" />
+        )}
+        {isPromotion ? "Promover a Supervisor" : "Rebaixar a Agente"}
+      </DialogTitle>
+      <DialogDescription>
+        {isPromotion
+          ? "O usuário ganhará acesso à gestão de descontos, cadastros, relatórios e gestão de outros agentes."
+          : "O usuário perderá acesso a gestão de descontos, cadastros e ficará restrito aos próprios dados."}
+      </DialogDescription>
+    </DialogHeader>
+  );
+}
+
+async function changeUserRole(
+  userId: string,
+  targetRole: TargetRole,
+  password: string,
+  reason: string,
+): Promise<void> {
+  const { data, error } = await supabase.functions.invoke("manage-users", {
+    body: {
+      action: "promote_role",
+      user_id: userId,
+      new_role: targetRole,
+      caller_password: password,
+      reason,
+    },
+  });
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+}
+
 export function PromotionDialog({
   user,
   targetRole,
@@ -65,7 +110,7 @@ export function PromotionDialog({
   }, [open]);
 
   const isPromotion = targetRole === "supervisor";
-  const targetLabel = isPromotion ? "Supervisor" : "Agente";
+  const targetLabel = roleLabel(targetRole);
 
   const handleSubmit = async () => {
     if (!user) return;
@@ -79,17 +124,12 @@ export function PromotionDialog({
 
     setSubmitting(true);
     try {
-      const { data, error: invokeErr } = await supabase.functions.invoke("manage-users", {
-        body: {
-          action: "promote_role",
-          user_id: user.user_id,
-          new_role: targetRole,
-          caller_password: parsed.data.password,
-          reason: parsed.data.reason,
-        },
-      });
-      if (invokeErr) throw invokeErr;
-      if (data?.error) throw new Error(data.error);
+      await changeUserRole(
+        user.user_id,
+        targetRole,
+        parsed.data.password,
+        parsed.data.reason,
+      );
 
       toast.success(
         isPromotion
@@ -107,23 +147,9 @@ export function PromotionDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    (<Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {isPromotion ? (
-              <ShieldCheck className="h-5 w-5 text-primary" />
-            ) : (
-              <ShieldAlert className="h-5 w-5 text-amber-500" />
-            )}
-            {isPromotion ? "Promover a Supervisor" : "Rebaixar a Agente"}
-          </DialogTitle>
-          <DialogDescription>
-            {isPromotion
-              ? "O usuário ganhará acesso à gestão de descontos, cadastros, relatórios e gestão de outros agentes."
-              : "O usuário perderá acesso a gestão de descontos, cadastros e ficará restrito aos próprios dados."}
-          </DialogDescription>
-        </DialogHeader>
+        <PromotionHeader isPromotion={isPromotion} />
 
         {user && (
           <div className="rounded-lg border bg-muted/30 p-3">
@@ -193,6 +219,6 @@ export function PromotionDialog({
           </Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
+    </Dialog>)
   );
 }

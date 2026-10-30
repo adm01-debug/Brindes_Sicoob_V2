@@ -12,29 +12,27 @@ if (!supabaseUrl || !anonKey) {
 }
 
 async function runHealthcheck() {
-  console.log('🔍 Iniciando Preflight Healthcheck...');
-  
+  console.log('🔍 Iniciando Preflight Healthcheck (liveness)...');
+
   const url = `${supabaseUrl}/functions/v1/health-check`;
-  
+
   try {
+    // health-check é agora uma sonda de liveness: GET, sem body
     const response = await fetch(url, {
-      method: 'POST',
+      method: 'GET',
       headers: {
         'Authorization': `Bearer ${anonKey}`,
-        'Content-Type': 'application/json'
       }
     });
-    
+
     const data = await response.json();
-    
-    if (response.ok && data.status === 'healthy') {
-      console.log('✅ Sistema está SAUDÁVEL!');
-      console.log(`⏱️ Latência total: ${data.total_latency_ms}ms`);
-      console.table(data.checks);
+
+    // Sonda de liveness responde { status: "ok" }
+    if (response.ok && data.status === 'ok') {
+      console.log('✅ Liveness check OK — Edge Function está ativa.');
       process.exit(0);
     } else {
-      console.error('❌ Sistema em estado DEGRADADO ou UNHEALTHY!');
-      console.table(data.checks);
+      console.error('❌ Liveness check falhou:', response.status, JSON.stringify(data));
       process.exit(1);
     }
   } catch (error) {

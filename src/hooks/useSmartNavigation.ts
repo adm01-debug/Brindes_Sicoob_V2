@@ -54,7 +54,7 @@ export function useSmartNavigation() {
         navigate('/' + pathParts.slice(0, -1).join('/'));
       }
     }
-  }, [location.pathname, getPrevious, pop, navigate, setDirection]);
+  }, [location.pathname, getPrevious, isCriticalPath, pop, navigate, setDirection]);
 
   const goForward = useCallback((path: string) => {
     setDirection('forward');

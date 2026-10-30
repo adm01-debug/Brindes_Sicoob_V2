@@ -3,7 +3,7 @@ name: Portal Sicoob
 on:
   push:
     branches: [main]
-    paths: &sicoob_paths
+    paths:
       - 'src/pages/Auth.tsx'
       - 'src/pages/auth/**'
       - 'src/pages/sicoob/**'
@@ -27,7 +27,6 @@ on:
       - '.github/workflows/sicoob-ci.yml'
   pull_request:
     branches: [main]
-    paths: *sicoob_paths
 
 permissions:
   contents: read
@@ -40,46 +39,60 @@ jobs:
   transacoes:
     name: Verba e aprovação transacionais
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - name: Executar PostgreSQL isolado e casos concorrentes
         run: |
           python3 scripts/qa/simular-verba-atomica.py
+          python3 scripts/qa/simular-autoridade-verbas-sicoob.py
           python3 scripts/qa/simular-eventos-status-sicoob.py
           python3 scripts/qa/simular-politica-aprovacao-sicoob.py
+          python3 scripts/qa/simular-delegacao-aprovacao-sicoob.py
           python3 scripts/qa/simular-versionamento-orcamento-atomico.py
           python3 scripts/qa/simular-recompra-sicoob.py
+          python3 scripts/qa/simular-duplicacao-pedido-atomica.py
+          python3 scripts/qa/simular-notification-preferences-auth.py
           python3 scripts/qa/simular-kit-orcamento-sicoob.py
           python3 scripts/qa/simular-financeiro-arte-sicoob.py
           python3 scripts/qa/simular-logistica-canonica.py
           python3 scripts/qa/simular-consolidacao-sicoob.py
+          python3 scripts/qa/simular-rls-cruzada-sicoob.py
 
   experiencia:
     name: Entrada e demonstração responsivas
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
+      - run: npm ci --no-audit --no-fund
+      - name: Cache Playwright browsers
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: playwright-${{ runner.os }}-
       - name: Instalar Chromium
         run: npx playwright install --with-deps chromium
-      - name: Iniciar servidor local sintético
+      - name: Build de produção sintético
         env:
           VITE_SUPABASE_URL: http://127.0.0.1:59999
           VITE_SUPABASE_PUBLISHABLE_KEY: chave-sintetica-apenas-para-qa
+          VITE_ENABLE_DEMO_PAGES: 'true'
+        run: npm run build
+      - name: Iniciar servidor de preview
         run: |
-          npm run dev -- --host 127.0.0.1 --port 4178 > /tmp/portal-sicoob-vite.log 2>&1 &
-          for tentativa in {1..45}; do
-            if curl --fail --silent http://127.0.0.1:4178/login > /dev/null; then
+          npx vite preview --host 127.0.0.1 --port 4178 > /tmp/portal-sicoob-vite.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4178/ > /dev/null; then
               exit 0
             fi
             sleep 1
@@ -97,8 +110,27 @@ jobs:
         run: npm run test:e2e:pwa
       - name: Publicar evidências em caso de falha
         if: failure()
-        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: evidencias-visuais-sicoob
           path: docs/execucao/evidencias/visual/
           retention-days: 7
+
+  sicoob-gate:
+    name: sicoob-gate
+    if: always()
+    needs: [transacoes, experiencia]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Consolidar resultado dos contratos Sicoob
+        env:
+          RESULTADO_TRANSACOES: ${{ needs.transacoes.result }}
+          RESULTADO_EXPERIENCIA: ${{ needs.experiencia.result }}
+        run: |
+          if [[ "$RESULTADO_TRANSACOES" != "success" || "$RESULTADO_EXPERIENCIA" != "success" ]]; then
+            echo "::error::Gates Sicoob incompletos: transações=$RESULTADO_TRANSACOES, experiência=$RESULTADO_EXPERIENCIA"
+            exit 1
+          fi
+          echo "Contratos transacionais e experiência Sicoob aprovados."

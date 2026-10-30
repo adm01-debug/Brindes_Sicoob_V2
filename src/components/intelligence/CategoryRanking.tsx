@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutGrid, TrendingUp, Store, BarChart3, PieChart as PieChartIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -14,6 +14,18 @@ import { IntelligenceEmptyState } from "./IntelligenceEmptyState";
 
 type SortMode = "combined" | "internal" | "market";
 type ViewMode = "list" | "chart";
+
+interface CategoryPieDatum {
+  fullName: string;
+  value: number;
+  internalRevenue: number;
+  marketDepleted: number;
+}
+
+interface CategoryTooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: CategoryPieDatum }>;
+}
 
 const PIE_COLORS = [
   "hsl(var(--chart-1))",
@@ -60,13 +72,13 @@ export function CategoryRanking({ days = 30, categoryId, supplierId, productId, 
     }
   }, [categories, sortMode]);
 
-  const getBarValue = (cat: CategoryRankingItem): number => {
+  const getBarValue = useCallback((cat: CategoryRankingItem): number => {
     switch (sortMode) {
       case "internal": return cat.internalRevenue;
       case "market": return cat.marketDepleted;
       default: return cat.totalScore;
     }
-  };
+  }, [sortMode]);
 
   const getDisplayValue = (cat: CategoryRankingItem): string => {
     switch (sortMode) {
@@ -103,7 +115,7 @@ export function CategoryRanking({ days = 30, categoryId, supplierId, productId, 
     }
 
     return items;
-  }, [sortedCategories, sortMode]);
+  }, [getBarValue, sortedCategories]);
 
   if (isLoading) {
     return (
@@ -130,9 +142,10 @@ export function CategoryRanking({ days = 30, categoryId, supplierId, productId, 
     market: "Volume Mercado",
   };
 
-  const CustomTooltipContent = ({ active, payload }: any) => {
+  const CustomTooltipContent = ({ active, payload }: CategoryTooltipProps) => {
     if (!active || !payload?.length) return null;
-    const d = payload[0].payload;
+    const d = payload[0]?.payload;
+    if (!d) return null;
     const total = pieData.reduce((s, p) => s + p.value, 0);
     const pct = total > 0 ? ((d.value / total) * 100).toFixed(1) : '0';
     return (

@@ -4,6 +4,7 @@
  * ainda não foram visualizados pelo cliente. Idempotente por dia (não duplica).
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { requireInternalService } from "../_shared/internal-service-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,6 +13,13 @@ const corsHeaders = {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "metodo_nao_permitido" }), {
+      status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  const denied = await requireInternalService(req);
+  if (denied) return denied;
 
   try {
     const supabase = createClient(
@@ -85,8 +93,8 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "unknown";
-    return new Response(JSON.stringify({ ok: false, error: msg }), {
+    console.error("quote-followup-reminders error:", err);
+    return new Response(JSON.stringify({ ok: false, error: "erro_interno" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

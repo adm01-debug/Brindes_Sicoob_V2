@@ -3,7 +3,7 @@
  * Implementação leve in-house (sem react-joyride) com overlay + tooltip
  * ancorado em data-attrs (`data-tour="..."`). Persiste conclusão em localStorage.
  */
-import { useEffect, useState, useLayoutEffect, useRef } from "react";
+import { type CSSProperties, useEffect, useState, useLayoutEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { X, ChevronRight, ChevronLeft, Sparkles } from "lucide-react";
@@ -119,7 +119,7 @@ export function BITourGuide({ force = false, onClose }: Props) {
   if (!active || !currentStep) return null;
 
   // Cálculo da posição do tooltip
-  const tooltipStyle: React.CSSProperties = (() => {
+  const tooltipStyle: CSSProperties = (() => {
     if (!rect) {
       return {
         position: "fixed",
@@ -146,7 +146,7 @@ export function BITourGuide({ force = false, onClose }: Props) {
   })();
 
   // Spotlight (recorte) via box-shadow gigante
-  const spotlightStyle: React.CSSProperties | null = rect
+  const spotlightStyle: CSSProperties | null = rect
     ? {
         position: "fixed",
         top: rect.top - 8,

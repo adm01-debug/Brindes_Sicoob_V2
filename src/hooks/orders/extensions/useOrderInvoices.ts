@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { sicoobDocumentIngestService } from "@/services/sicoob/documentIngestService";
+import { requireOrderId } from "@/hooks/orders/require-order-id";
 
 interface AddSicoobInvoiceInput {
   invoice_number: string;
@@ -21,7 +22,7 @@ export const useOrderInvoices = (orderId?: string) => {
       const { data, error: queryError } = await supabase
         .from("sicoob_order_invoices")
         .select("*")
-        .eq("order_id", orderId!)
+        .eq("order_id", requireOrderId(orderId))
         .order("created_at", { ascending: false });
       if (queryError) throw queryError;
 
@@ -33,13 +34,13 @@ export const useOrderInvoices = (orderId?: string) => {
   const addInvoice = useMutation({
     mutationFn: async (values: AddSicoobInvoiceInput) => {
       const { data, error: mutationError } = await supabase.rpc('add_sicoob_order_invoice', {
-        p_order_id: orderId!,
+        p_order_id: requireOrderId(orderId),
         p_invoice_number: values.invoice_number,
         p_file_type: values.file_type,
         p_file_path: values.file_path,
-        p_amount: values.amount ?? null,
-        p_access_key: values.access_key ?? null,
-        p_issued_at: values.issued_at ?? null,
+        p_amount: values.amount ?? undefined,
+        p_access_key: values.access_key ?? undefined,
+        p_issued_at: values.issued_at ?? undefined,
       });
       if (mutationError) throw mutationError;
       return data;

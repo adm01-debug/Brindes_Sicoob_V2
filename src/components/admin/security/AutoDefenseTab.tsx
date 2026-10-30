@@ -16,36 +16,31 @@ interface AuditRow {
   created_at: string;
 }
 
-export function AutoDefenseTab() {
+function useAutoDefenseRows() {
   const [rows, setRows] = useState<AuditRow[]>([]);
-  const [count7d, setCount7d] = useState<number>(0);
+  const [count7d, setCount7d] = useState(0);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    const load = async () => {
+    void (async () => {
       setLoading(true);
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-
-      const [recent, week] = await Promise.all([
-        supabase
-          .from("admin_audit_log")
-          .select("id, ip_address, resource_id, details, created_at")
-          .eq("action", "auto_ip_block")
-          .order("created_at", { ascending: false })
-          .limit(20),
-        supabase
-          .from("admin_audit_log")
-          .select("id", { count: "exact", head: true })
-          .eq("action", "auto_ip_block")
-          .gte("created_at", sevenDaysAgo),
-      ]);
-
+      const [recent, week] = await Promise.all([supabase.from("admin_audit_log").select("id, ip_address, resource_id, details, created_at").eq("action", "auto_ip_block").order("created_at", { ascending: false }).limit(20), supabase.from("admin_audit_log").select("id", { count: "exact", head: true }).eq("action", "auto_ip_block").gte("created_at", sevenDaysAgo)]);
       setRows((recent.data || []) as AuditRow[]);
       setCount7d(week.count ?? 0);
       setLoading(false);
-    };
-    void load();
+    })();
   }, []);
+  return { rows, count7d, loading };
+}
+
+function AutoDefenseTable({ rows, loading }: { rows: AuditRow[]; loading: boolean }) {
+  if (loading) return <p className="text-sm text-muted-foreground">Carregando…</p>;
+  if (rows.length === 0) return <p className="text-sm text-muted-foreground">Nenhum auto-bloqueio registrado. O sistema só dispara quando um IP atinge ≥30 ofensas em 1h.</p>;
+  return <div className="overflow-x-auto"><Table><TableHeader><TableRow><TableHead>IP</TableHead><TableHead>Ofensas</TableHead><TableHead>Expira</TableHead><TableHead>Quando</TableHead></TableRow></TableHeader><TableBody>{rows.map(row => { const details = (row.details ?? {}) as { offense_count?: number; expires_at?: string }; return <TableRow key={row.id}><TableCell className="font-mono text-xs">{row.ip_address || row.resource_id || "—"}</TableCell><TableCell><Badge variant="destructive" className="text-xs">{details.offense_count ?? "—"}</Badge></TableCell><TableCell className="text-xs text-muted-foreground whitespace-nowrap">{details.expires_at ? format(new Date(details.expires_at), "dd/MM HH:mm", { locale: ptBR }) : "—"}</TableCell><TableCell className="text-xs text-muted-foreground whitespace-nowrap">{format(new Date(row.created_at), "dd/MM HH:mm:ss", { locale: ptBR })}</TableCell></TableRow>; })}</TableBody></Table></div>;
+}
+
+export function AutoDefenseTab() {
+  const { rows, count7d, loading } = useAutoDefenseRows();
 
   return (
     <div className="space-y-3">
@@ -80,51 +75,7 @@ export function AutoDefenseTab() {
           </CardTitle>
           <CardDescription>Entradas de `auto_ip_block` em admin_audit_log</CardDescription>
         </CardHeader>
-        <CardContent>
-          {loading ? (
-            <p className="text-sm text-muted-foreground">Carregando…</p>
-          ) : rows.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Nenhum auto-bloqueio registrado. O sistema só dispara quando um IP atinge ≥30 ofensas em 1h.
-            </p>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>IP</TableHead>
-                    <TableHead>Ofensas</TableHead>
-                    <TableHead>Expira</TableHead>
-                    <TableHead>Quando</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {rows.map((r) => {
-                    const details = (r.details ?? {}) as { offense_count?: number; expires_at?: string };
-                    return (
-                      <TableRow key={r.id}>
-                        <TableCell className="font-mono text-xs">{r.ip_address || r.resource_id || "—"}</TableCell>
-                        <TableCell>
-                          <Badge variant="destructive" className="text-xs">
-                            {details.offense_count ?? "—"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                          {details.expires_at
-                            ? format(new Date(details.expires_at), "dd/MM HH:mm", { locale: ptBR })
-                            : "—"}
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                          {format(new Date(r.created_at), "dd/MM HH:mm:ss", { locale: ptBR })}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
+        <CardContent><AutoDefenseTable rows={rows} loading={loading} /></CardContent>
       </Card>
     </div>
   );

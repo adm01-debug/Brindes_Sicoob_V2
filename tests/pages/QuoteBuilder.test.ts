@@ -2,7 +2,7 @@
  * Integration tests for QuoteBuilderPage — validates quote item logic,
  * pricing calculations, and data transformations.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { findKnownHex } from '@/hooks/useProducts';
 
 // ============================================

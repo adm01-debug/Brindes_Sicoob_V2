@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { useDevGate } from '@/hooks/useDevGate';
-import { useAuth } from '@/contexts/AuthContext';
 import { DevOnlyBridgeOverlay } from '@/components/dev/DevOnlyBridgeOverlay';
 import React from 'react';
 

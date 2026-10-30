@@ -2,6 +2,8 @@ import { useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeError, SAFE_MESSAGES } from "@/lib/security/sanitize-error";
 
+const STEP_UP_VERIFY_FUNCTION = "step-up-verify";
+
 export type StepUpAction =
   | "promote_dev"
   | "demote_dev"
@@ -59,7 +61,7 @@ export function useStepUpAuth() {
       actionLabel: actionLabel ?? null,
     };
     setState((s) => ({ ...s, loading: true, error: null }));
-    const { data, error } = await supabase.functions.invoke("step-up-verify", {
+    const { data, error } = await supabase.functions.invoke(STEP_UP_VERIFY_FUNCTION, {
       body: {
         step: "request",
         action,
@@ -78,7 +80,7 @@ export function useStepUpAuth() {
   const verifyPassword = useCallback(async (password: string) => {
     setState((s) => ({ ...s, loading: true, error: null }));
     const { action, targetRef, actionLabel } = ctxRef.current;
-    const { data, error } = await supabase.functions.invoke("step-up-verify", {
+    const { data, error } = await supabase.functions.invoke(STEP_UP_VERIFY_FUNCTION, {
       body: {
         step: "verify_password",
         challenge_id: state.challengeId,
@@ -100,7 +102,7 @@ export function useStepUpAuth() {
   const verifyOtp = useCallback(async (otp: string) => {
     setState((s) => ({ ...s, loading: true, error: null }));
     const { action, targetRef, actionLabel } = ctxRef.current;
-    const { data, error } = await supabase.functions.invoke("step-up-verify", {
+    const { data, error } = await supabase.functions.invoke(STEP_UP_VERIFY_FUNCTION, {
       body: {
         step: "verify_otp",
         challenge_id: state.challengeId,
@@ -128,7 +130,7 @@ export function useStepUpAuth() {
     // para evitar logs vazios em re-renders.
     if (!action && !state.challengeId) return;
     try {
-      await supabase.functions.invoke("step-up-verify", {
+      await supabase.functions.invoke(STEP_UP_VERIFY_FUNCTION, {
         body: {
           step: "cancel",
           challenge_id: state.challengeId,
@@ -138,7 +140,7 @@ export function useStepUpAuth() {
           cancel_reason: reason,
         },
       });
-    } catch (_) {
+    } catch {
       // Audit best-effort
     }
   }, [state.challengeId]);

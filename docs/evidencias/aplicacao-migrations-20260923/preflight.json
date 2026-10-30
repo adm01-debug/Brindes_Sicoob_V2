@@ -1,0 +1,692 @@
+{
+  "executado_em": "2026-09-23T19:16:26.415Z",
+  "statements": 1,
+  "results": [
+    {
+      "command": null,
+      "rowCount": 1,
+      "fields": [
+        "preflight"
+      ],
+      "rows": [
+        {
+          "preflight": {
+            "policies": [
+              {
+                "cmd": "SELECT",
+                "qual": "is_admin(auth.uid())",
+                "roles": [
+                  "public"
+                ],
+                "table": "external_connections_sync_log",
+                "schema": "public",
+                "policyname": "Admins read external_connections_sync_log",
+                "with_check": null
+              },
+              {
+                "cmd": "ALL",
+                "qual": "(EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND ((profiles.role = 'admin'::text) OR (profiles.role = 'dev'::text)))))",
+                "roles": [
+                  "public"
+                ],
+                "table": "system_settings",
+                "schema": "public",
+                "policyname": "Only admins can update system settings",
+                "with_check": null
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "(auth.role() = 'authenticated'::text)",
+                "roles": [
+                  "public"
+                ],
+                "table": "system_settings",
+                "schema": "public",
+                "policyname": "System settings are viewable by authenticated users",
+                "with_check": null
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "true",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "system_settings",
+                "schema": "public",
+                "policyname": "system_settings readable by authenticated",
+                "with_check": null
+              },
+              {
+                "cmd": "INSERT",
+                "qual": null,
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Acesso de inserção para usuários autenticados em personaliza",
+                "with_check": "(bucket_id = 'personalization-images'::text)"
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "(bucket_id = 'personalization-images'::text)",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Acesso de leitura para usuários autenticados em personalizatio",
+                "with_check": null
+              },
+              {
+                "cmd": "DELETE",
+                "qual": "((bucket_id = 'component-media'::text) AND is_supervisor_or_above(auth.uid()))",
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Admins can delete component media",
+                "with_check": null
+              },
+              {
+                "cmd": "DELETE",
+                "qual": "((bucket_id = 'personalization-images'::text) AND is_supervisor_or_above(auth.uid()))",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Admins can delete personalization images",
+                "with_check": null
+              },
+              {
+                "cmd": "DELETE",
+                "qual": "((bucket_id = 'product-videos'::text) AND is_supervisor_or_above(auth.uid()))",
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Admins can delete videos",
+                "with_check": null
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "((bucket_id = ANY (ARRAY['supplier-logos'::text, 'product-videos'::text, 'personalization-images'::text, 'component-media'::text])) AND is_supervisor_or_above(auth.uid()))",
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Admins can list protected buckets",
+                "with_check": null
+              },
+              {
+                "cmd": "UPDATE",
+                "qual": "((bucket_id = 'component-media'::text) AND is_supervisor_or_above(auth.uid()))",
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Admins can update component media",
+                "with_check": "((bucket_id = 'component-media'::text) AND is_supervisor_or_above(auth.uid()))"
+              },
+              {
+                "cmd": "INSERT",
+                "qual": null,
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Admins can upload QA evidences",
+                "with_check": "((bucket_id = 'qa-evidences'::text) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (ARRAY['admin'::text, 'diretoria'::text]))))))"
+              },
+              {
+                "cmd": "INSERT",
+                "qual": null,
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Admins can upload component media",
+                "with_check": "((bucket_id = 'component-media'::text) AND is_supervisor_or_above(auth.uid()))"
+              },
+              {
+                "cmd": "INSERT",
+                "qual": null,
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Admins can upload videos",
+                "with_check": "((bucket_id = 'product-videos'::text) AND is_supervisor_or_above(auth.uid()))"
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "((bucket_id = 'quarantine'::text) AND (((auth.jwt() ->> 'email'::text) ~~ '%admin%'::text) OR (((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)))",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Admins podem visualizar quarentena",
+                "with_check": null
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "(bucket_id = 'qa-evidences'::text)",
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Anyone can view QA evidences",
+                "with_check": null
+              },
+              {
+                "cmd": "INSERT",
+                "qual": null,
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Authenticated Upload Secondary",
+                "with_check": "((bucket_id = 'personalization-images-secondary'::text) AND (auth.role() = 'authenticated'::text))"
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "((bucket_id = 'component-media'::text) AND (name IS NOT NULL) AND (length(name) > 0))",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Authenticated direct read component-media",
+                "with_check": null
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "((bucket_id = 'personalization-images'::text) AND (name IS NOT NULL) AND (length(name) > 0))",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Authenticated direct read personalization-images",
+                "with_check": null
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "((bucket_id = 'product-videos'::text) AND (name IS NOT NULL) AND (length(name) > 0))",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Authenticated direct read product-videos",
+                "with_check": null
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "((bucket_id = 'supplier-logos'::text) AND (name IS NOT NULL) AND (length(name) > 0))",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Authenticated direct read supplier-logos",
+                "with_check": null
+              },
+              {
+                "cmd": "DELETE",
+                "qual": "((bucket_id = 'personalization-images'::text) AND (owner = auth.uid()))",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Authenticated users can delete own personalization images",
+                "with_check": null
+              },
+              {
+                "cmd": "DELETE",
+                "qual": "(bucket_id = 'proposals'::text)",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Authenticated users can delete proposals",
+                "with_check": null
+              },
+              {
+                "cmd": "UPDATE",
+                "qual": "((bucket_id = 'personalization-images'::text) AND (owner = auth.uid()))",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Authenticated users can update own personalization images",
+                "with_check": "((bucket_id = 'personalization-images'::text) AND (owner = auth.uid()))"
+              },
+              {
+                "cmd": "INSERT",
+                "qual": null,
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Authenticated users can upload personalization images",
+                "with_check": "(bucket_id = 'personalization-images'::text)"
+              },
+              {
+                "cmd": "INSERT",
+                "qual": null,
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Authenticated users can upload proposals",
+                "with_check": "(bucket_id = 'proposals'::text)"
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "(bucket_id = 'personalization-images'::text)",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Authenticated users can view personalization images",
+                "with_check": null
+              },
+              {
+                "cmd": "DELETE",
+                "qual": "((bucket_id = 'supplier-logos'::text) AND is_supervisor_or_above(auth.uid()))",
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Only admins can delete supplier logos",
+                "with_check": null
+              },
+              {
+                "cmd": "ALL",
+                "qual": "((bucket_id = 'supplier-logos'::text) AND is_supervisor_or_above(auth.uid()))",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Only admins can manage supplier logos",
+                "with_check": "((bucket_id = 'supplier-logos'::text) AND is_supervisor_or_above(auth.uid()))"
+              },
+              {
+                "cmd": "UPDATE",
+                "qual": "((bucket_id = 'product-videos'::text) AND is_supervisor_or_above(auth.uid()))",
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Only admins can update product videos",
+                "with_check": "((bucket_id = 'product-videos'::text) AND is_supervisor_or_above(auth.uid()))"
+              },
+              {
+                "cmd": "UPDATE",
+                "qual": "((bucket_id = 'supplier-logos'::text) AND is_supervisor_or_above(auth.uid()))",
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Only admins can update supplier logos",
+                "with_check": "((bucket_id = 'supplier-logos'::text) AND is_supervisor_or_above(auth.uid()))"
+              },
+              {
+                "cmd": "INSERT",
+                "qual": null,
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Only admins can upload supplier logos",
+                "with_check": "((bucket_id = 'supplier-logos'::text) AND is_supervisor_or_above(auth.uid()))"
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "(bucket_id = 'personalization-images-secondary'::text)",
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Public Access Secondary",
+                "with_check": null
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "(bucket_id = 'supplier-logos'::text)",
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Public can view supplier logos",
+                "with_check": null
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "(bucket_id = ANY (ARRAY['supplier-logos'::text, 'product-videos'::text, 'personalization-images'::text, 'component-media'::text]))",
+                "roles": [
+                  "service_role"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Service role full access protected buckets",
+                "with_check": null
+              },
+              {
+                "cmd": "ALL",
+                "qual": "(bucket_id = 'quarantine'::text)",
+                "roles": [
+                  "service_role"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Sistema pode gerenciar quarentena",
+                "with_check": "(bucket_id = 'quarantine'::text)"
+              },
+              {
+                "cmd": "DELETE",
+                "qual": "((bucket_id = 'mockup-art-files'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Users can delete their own art files",
+                "with_check": null
+              },
+              {
+                "cmd": "INSERT",
+                "qual": null,
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Users can upload own personalization images",
+                "with_check": "((bucket_id = 'personalization-images'::text) AND ((auth.uid())::text = split_part(name, '/'::text, 1)))"
+              },
+              {
+                "cmd": "INSERT",
+                "qual": null,
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Users can upload their own art files",
+                "with_check": "((bucket_id = 'mockup-art-files'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))"
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "((bucket_id = 'exports'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Users can view their own export files",
+                "with_check": null
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "((bucket_id = 'mockup-art-files'::text) AND (((storage.foldername(name))[1] = (auth.uid())::text) OR is_supervisor_or_above(auth.uid())))",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Users can view their own or shared art files",
+                "with_check": null
+              },
+              {
+                "cmd": "DELETE",
+                "qual": "((bucket_id = 'mockup-art-files'::text) AND ((auth.uid())::text = (storage.foldername(name))[1]))",
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Users delete own art files in storage",
+                "with_check": null
+              },
+              {
+                "cmd": "UPDATE",
+                "qual": "((bucket_id = 'mockup-art-files'::text) AND ((auth.uid())::text = (storage.foldername(name))[1]))",
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Users update own art files in storage",
+                "with_check": null
+              },
+              {
+                "cmd": "INSERT",
+                "qual": null,
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Users upload own art files to storage",
+                "with_check": "((bucket_id = 'mockup-art-files'::text) AND ((auth.uid())::text = (storage.foldername(name))[1]))"
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "((bucket_id = 'mockup-art-files'::text) AND ((auth.uid())::text = (storage.foldername(name))[1]))",
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Users view own art files in storage",
+                "with_check": null
+              },
+              {
+                "cmd": "INSERT",
+                "qual": null,
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Usuários autenticados podem subir documentos de pedidos",
+                "with_check": "(bucket_id = 'order-documents'::text)"
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "(bucket_id = 'order-documents'::text)",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "Usuários autenticados podem ver documentos de pedidos",
+                "with_check": null
+              },
+              {
+                "cmd": "ALL",
+                "qual": "((bucket_id = 'avatars'::text) AND (has_role(auth.uid(), 'admin'::app_role) OR has_role(auth.uid(), 'dev'::app_role)))",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "avatars_admin_write",
+                "with_check": "((bucket_id = 'avatars'::text) AND (has_role(auth.uid(), 'admin'::app_role) OR has_role(auth.uid(), 'dev'::app_role)))"
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "(bucket_id = 'avatars'::text)",
+                "roles": [
+                  "public"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "avatars_public_read",
+                "with_check": null
+              },
+              {
+                "cmd": "DELETE",
+                "qual": "((bucket_id = 'order-documents'::text) AND ((owner = auth.uid()) OR has_role(auth.uid(), 'admin'::app_role) OR has_role(auth.uid(), 'dev'::app_role)))",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "order_docs_delete_admin",
+                "with_check": null
+              },
+              {
+                "cmd": "INSERT",
+                "qual": null,
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "order_docs_insert_authenticated",
+                "with_check": "(bucket_id = 'order-documents'::text)"
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "(bucket_id = 'order-documents'::text)",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "order_docs_select_authenticated",
+                "with_check": null
+              },
+              {
+                "cmd": "UPDATE",
+                "qual": "((bucket_id = 'order-documents'::text) AND (owner = auth.uid()))",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "order_docs_update_owner",
+                "with_check": null
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "((bucket_id = 'proposals'::text) AND ((owner = auth.uid()) OR has_role(auth.uid(), 'admin'::app_role) OR has_role(auth.uid(), 'dev'::app_role)))",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "proposals_select_owner_or_admin",
+                "with_check": null
+              },
+              {
+                "cmd": "DELETE",
+                "qual": "((bucket_id = 'sicoob-order-documents'::text) AND (owner = auth.uid()) AND (name ~ '^[0-9a-fA-F-]+/artwork/.+\\.(pdf|png|jpg|jpeg|webp)$'::text) AND sicoob_current_actor_can_manage_fulfillment((split_part(name, '/'::text, 1))::uuid) AND (NOT (EXISTS ( SELECT 1\n   FROM sicoob_order_artwork_versions artwork\n  WHERE (artwork.file_path = objects.name)))))",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "sicoob_order_documents_delete_orphan_artwork",
+                "with_check": null
+              },
+              {
+                "cmd": "DELETE",
+                "qual": "((bucket_id = 'sicoob-order-documents'::text) AND (owner = auth.uid()) AND (name ~ '^[0-9a-fA-F-]+/delivery/.+\\.(png|jpg|jpeg|webp)$'::text) AND sicoob_current_actor_can_manage_fulfillment((split_part(name, '/'::text, 1))::uuid) AND (NOT (EXISTS ( SELECT 1\n   FROM sicoob_order_shipments shipment\n  WHERE (shipment.delivery_photo_path = objects.name)))))",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "sicoob_order_documents_delete_orphan_delivery",
+                "with_check": null
+              },
+              {
+                "cmd": "DELETE",
+                "qual": "((bucket_id = 'sicoob-order-documents'::text) AND (owner = auth.uid()) AND (name ~ '^[0-9a-fA-F-]+/invoices/.+\\.(pdf|xml)$'::text) AND sicoob_current_actor_can_manage_fulfillment((split_part(name, '/'::text, 1))::uuid) AND (NOT (EXISTS ( SELECT 1\n   FROM sicoob_order_invoices invoice\n  WHERE (invoice.file_path = objects.name)))))",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "sicoob_order_documents_delete_orphan_invoice",
+                "with_check": null
+              },
+              {
+                "cmd": "SELECT",
+                "qual": "((bucket_id = 'sicoob-order-documents'::text) AND (EXISTS ( SELECT 1\n   FROM sicoob_orders o\n  WHERE ((o.id)::text = split_part(objects.name, '/'::text, 1)))))",
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "sicoob_order_documents_read_in_order_scope",
+                "with_check": null
+              },
+              {
+                "cmd": "INSERT",
+                "qual": null,
+                "roles": [
+                  "authenticated"
+                ],
+                "table": "objects",
+                "schema": "storage",
+                "policyname": "sicoob_order_documents_upload_artwork",
+                "with_check": "((bucket_id = 'sicoob-order-documents'::text) AND (name ~ '^[0-9a-fA-F-]+/artwork/.+\\.(pdf|png|jpg|jpeg|webp)$'::text) AND sicoob_current_actor_can_manage_fulfillment((split_part(name, '/'::text, 1))::uuid))"
+              }
+            ],
+            "cron_jobs": null,
+            "extensions": [
+              "pg_net",
+              "pg_cron"
+            ],
+            "vault_url_ok": true,
+            "favorite_index": "CREATE UNIQUE INDEX idx_favorite_lists_one_default ON public.favorite_lists USING btree (user_id) WHERE (is_default = true)",
+            "ledger_columns": [
+              "version",
+              "statements",
+              "name",
+              "created_by",
+              "idempotency_key",
+              "rollback"
+            ],
+            "pending_exports": 0,
+            "vault_secret_ok": true,
+            "recent_migrations": [
+              "20260923100000"
+            ],
+            "legacy_bucket_objects": 0
+          }
+        }
+      ]
+    }
+  ],
+  "notices": []
+}

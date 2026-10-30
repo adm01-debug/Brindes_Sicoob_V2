@@ -18,88 +18,82 @@ export interface MatchedColorVariant {
   variationSlug?: string;
 }
 
+type ProductColorCandidate = {
+  name?: string;
+  hex?: string;
+  group?: string;
+  groupSlug?: string;
+  variationSlug?: string;
+  image?: string;
+  images?: string[];
+};
+
+function fallbackColors(groups: string[]): MatchedColorVariant[] {
+  return groups
+    .filter(group => Boolean(COLOR_GROUP_HEX[group]))
+    .map(group => ({ name: group.charAt(0).toUpperCase() + group.slice(1), hex: COLOR_GROUP_HEX[group] ?? '#888', groupSlug: group }));
+}
+
+function addMatch(results: MatchedColorVariant[], seen: Set<string>, color: ProductColorCandidate, slug: string): void {
+  const dedupKey = (color.name || '') + '|' + (color.hex || '');
+  if (seen.has(dedupKey)) return;
+  seen.add(dedupKey);
+  results.push({
+    name: color.name || slug,
+    hex: color.hex || COLOR_GROUP_HEX[slug] || '#888',
+    image: color.images?.[0] || color.image,
+    groupSlug: color.groupSlug,
+    variationSlug: color.variationSlug,
+  });
+}
+
+function groupMatches(colors: ProductColorCandidate[], slug: string): ProductColorCandidate[] {
+  const normalizedSlug = slug.toLowerCase().trim();
+  return colors.filter(color => {
+    if (color.groupSlug === slug) return true;
+    const group = (color.group || '').toLowerCase().trim();
+    return group === normalizedSlug || group.includes(normalizedSlug) || normalizedSlug.includes(group);
+  });
+}
+
+function addGroupMatches(results: MatchedColorVariant[], seen: Set<string>, colors: ProductColorCandidate[], groups: string[]): void {
+  for (const group of groups) {
+    const firstMatch = groupMatches(colors, group)[0];
+    if (firstMatch) {
+      addMatch(results, seen, firstMatch, group);
+      continue;
+    }
+    const fallback = fallbackColors([group])[0];
+    const fallbackKey = `${group}|fallback`;
+    if (fallback && !seen.has(fallbackKey)) {
+      seen.add(fallbackKey);
+      results.push(fallback);
+    }
+  }
+}
+
+function addVariationMatches(results: MatchedColorVariant[], seen: Set<string>, colors: ProductColorCandidate[], variations: string[]): void {
+  for (const variation of variations) {
+    const match = colors.find(color => color.variationSlug === variation);
+    if (match) addMatch(results, seen, match, variation);
+  }
+}
+
 /**
  * Retorna TODAS as variantes de um produto que fazem match com os filtros de cor ativos.
  * Diferente de resolveHighlightHex (que retorna a primeira), esta retorna um array completo.
  */
 export function resolveAllMatchingColors(
-  productColors: Array<{
-    name?: string;
-    hex?: string;
-    group?: string;
-    groupSlug?: string;
-    variationSlug?: string;
-    image?: string;
-    images?: string[];
-  }>,
+  productColors: ProductColorCandidate[],
   activeColorFilter?: ActiveColorFilter | null,
 ): MatchedColorVariant[] {
   if (!activeColorFilter) return [];
   if (!activeColorFilter.groups.length && !activeColorFilter.variations.length) return [];
-  if (!productColors?.length) {
-    // Fallback: return group hex for each filtered group even without product colors
-    const fallbacks: MatchedColorVariant[] = [];
-    for (const g of activeColorFilter.groups) {
-      if (COLOR_GROUP_HEX[g]) {
-        fallbacks.push({
-          name: g.charAt(0).toUpperCase() + g.slice(1),
-          hex: COLOR_GROUP_HEX[g],
-          groupSlug: g,
-        });
-      }
-    }
-    return fallbacks;
-  }
+  if (!productColors?.length) return fallbackColors(activeColorFilter.groups);
 
   const seen = new Set<string>();
   const results: MatchedColorVariant[] = [];
-
-  const addMatch = (color: typeof productColors[0], slug: string) => {
-    // Dedup by name+hex (not slug) to avoid duplicates when group and variation point to same color
-    const dedupKey = (color.name || '') + '|' + (color.hex || '');
-    if (seen.has(dedupKey)) return;
-    seen.add(dedupKey);
-    results.push({
-      name: color.name || slug,
-      hex: color.hex || COLOR_GROUP_HEX[slug] || '#888',
-      image: color.images?.[0] || color.image,
-      groupSlug: color.groupSlug,
-      variationSlug: color.variationSlug,
-    });
-  };
-
-  // Match by group slugs
-  for (const groupSlug of activeColorFilter.groups) {
-    const matches = productColors.filter(c => {
-      if (c.groupSlug === groupSlug) return true;
-      const g = (c.group || '').toLowerCase().trim();
-      const s = groupSlug.toLowerCase().trim();
-      return g === s || g.includes(s) || s.includes(g);
-    });
-    if (matches.length > 0) {
-      // Add the first match per group (most representative)
-      addMatch(matches[0], groupSlug);
-    } else if (COLOR_GROUP_HEX[groupSlug]) {
-      // No color data match but we know this group
-      const key = groupSlug + '|fallback';
-      if (!seen.has(key)) {
-        seen.add(key);
-        results.push({
-          name: groupSlug.charAt(0).toUpperCase() + groupSlug.slice(1),
-          hex: COLOR_GROUP_HEX[groupSlug],
-          groupSlug,
-        });
-      }
-    }
-  }
-
-  // Match by variation slugs
-  for (const varSlug of activeColorFilter.variations) {
-    const match = productColors.find(c => c.variationSlug === varSlug);
-    if (match) {
-      addMatch(match, varSlug);
-    }
-  }
-
+  addGroupMatches(results, seen, productColors, activeColorFilter.groups);
+  addVariationMatches(results, seen, productColors, activeColorFilter.variations);
   return results;
 }
