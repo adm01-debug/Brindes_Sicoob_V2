@@ -22,6 +22,8 @@ describe('gate obrigatório do scanner antimalware', () => {
       new Response('{', { status: 200 }),
       new Response(JSON.stringify({ clean: false, engine: 'clamav', threat: 'Eicar-Signature' }), { status: 200 }),
       new Response(JSON.stringify({ clean: true }), { status: 200 }),
+      new Response(JSON.stringify({ clean: true, engine: 'clamav' }), { status: 200 }),
+      new Response(JSON.stringify({ clean: true, engine: 'clamav', sha256: 'b'.repeat(64) }), { status: 200 }),
     ];
     for (const response of cases) {
       const promise = requireCleanScannerVerdict({
@@ -33,11 +35,11 @@ describe('gate obrigatório do scanner antimalware', () => {
 
   it('aceita somente parecer limpo com motor identificado e envia identidade nos headers', async () => {
     const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({
-      clean: true, engine: 'clamav', signatureVersion: '20260922',
+      clean: true, engine: 'clamav', signatureVersion: '20260922', sha256: base.sha256.toUpperCase(),
     }), { status: 200 }));
     await expect(requireCleanScannerVerdict({
       ...base, url: 'https://scanner.test', token: 'segredo', fetcher,
-    })).resolves.toEqual({ clean: true, engine: 'clamav', signatureVersion: '20260922' });
+    })).resolves.toEqual({ clean: true, engine: 'clamav', signatureVersion: '20260922', sha256: base.sha256 });
     expect(fetcher).toHaveBeenCalledWith('https://scanner.test', expect.objectContaining({
       method: 'POST',
       headers: expect.objectContaining({ 'X-Document-SHA256': base.sha256, 'X-Document-Purpose': 'invoice_pdf' }),

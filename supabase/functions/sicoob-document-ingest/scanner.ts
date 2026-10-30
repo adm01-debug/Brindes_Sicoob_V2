@@ -4,6 +4,7 @@ export interface ScannerVerdict {
   clean: true;
   engine: string;
   signatureVersion: string | null;
+  sha256: string;
 }
 
 export class ScannerGateError extends Error {
@@ -52,9 +53,13 @@ export async function requireCleanScannerVerdict(input: {
   if (verdict.clean !== true || typeof verdict.engine !== 'string' || verdict.engine.trim() === '') {
     throw new ScannerGateError('Arquivo reprovado ou sem parecer conclusivo do scanner.', 422);
   }
+  if (typeof verdict.sha256 !== 'string' || verdict.sha256.toLowerCase() !== input.sha256.toLowerCase()) {
+    throw new ScannerGateError('O parecer do scanner não corresponde ao arquivo enviado.', 503);
+  }
   return {
     clean: true,
     engine: verdict.engine,
     signatureVersion: typeof verdict.signatureVersion === 'string' ? verdict.signatureVersion : null,
+    sha256: verdict.sha256.toLowerCase(),
   };
 }

@@ -92,6 +92,7 @@ Deno.serve(withStructuredLogging('sicoob-document-ingest', async (req) => {
       clean: true,
       engine: verdict.engine,
       signatureVersion: verdict.signatureVersion,
+      sha256: verdict.sha256,
       inspectedAt: new Date().toISOString(),
     };
     const { error: registerError } = await adminClient.rpc('register_sicoob_clean_document', {

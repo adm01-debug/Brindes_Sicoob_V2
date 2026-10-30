@@ -71,19 +71,26 @@ describe('listSicoobLogisticsTracking', () => {
     const firstPage = Array.from({ length: 200 }, (_, index) => ({
       id: `order-${index}`, status: 'in_transit', order_number: `PED-${index}`,
     }));
+    const secondPage = Array.from({ length: 200 }, (_, index) => ({
+      id: `order-${index + 200}`, status: 'in_transit', order_number: `PED-${index + 200}`,
+    }));
     listOrders
-      .mockResolvedValueOnce({ orders: firstPage, total: 201 })
-      .mockResolvedValueOnce({ orders: [{ id: 'order-200', status: 'delivered', order_number: 'PED-200' }], total: 201 });
+      .mockResolvedValueOnce({ orders: firstPage, total: 401 })
+      .mockResolvedValueOnce({ orders: secondPage, total: 401 })
+      .mockResolvedValueOnce({ orders: [{ id: 'order-400', status: 'delivered', order_number: 'PED-400' }], total: 401 });
     inFilter.mockResolvedValue({ data: [], error: null });
 
     const tracking = await listSicoobLogisticsTracking();
 
-    expect(tracking).toHaveLength(201);
+    expect(tracking).toHaveLength(401);
     expect(listOrders).toHaveBeenNthCalledWith(1, expect.objectContaining({ page: 1, pageSize: 200 }));
     expect(listOrders).toHaveBeenNthCalledWith(2, expect.objectContaining({ page: 2, pageSize: 200 }));
-    expect(inFilter).toHaveBeenCalledTimes(3);
+    expect(listOrders).toHaveBeenNthCalledWith(3, expect.objectContaining({ page: 3, pageSize: 200 }));
+    expect(inFilter).toHaveBeenCalledTimes(5);
     expect(inFilter).toHaveBeenNthCalledWith(1, 'order_id', Array.from({ length: 100 }, (_, index) => `order-${index}`));
     expect(inFilter).toHaveBeenNthCalledWith(2, 'order_id', Array.from({ length: 100 }, (_, index) => `order-${index + 100}`));
-    expect(inFilter).toHaveBeenNthCalledWith(3, 'order_id', ['order-200']);
+    expect(inFilter).toHaveBeenNthCalledWith(3, 'order_id', Array.from({ length: 100 }, (_, index) => `order-${index + 200}`));
+    expect(inFilter).toHaveBeenNthCalledWith(4, 'order_id', Array.from({ length: 100 }, (_, index) => `order-${index + 300}`));
+    expect(inFilter).toHaveBeenNthCalledWith(5, 'order_id', ['order-400']);
   });
 });
