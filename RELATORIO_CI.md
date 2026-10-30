@@ -165,3 +165,19 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 ---
 
 *Relatório gerado automaticamente pela sessão Claude Code.*
+
+## Atualização de validação local — PR #178 (30/10/2026)
+
+Execução na branch `fix/hermes-h393620-inteligencia-real`, SHA `ee4f56b2` mais as alterações locais ainda não commitadas deste lote:
+
+| Verificação | Resultado | Observação |
+|---|---|---|
+| `npm test` | ✅ 5.848 passaram; 68 ignorados; 0 falhas | 455 arquivos passaram; 4 ignorados. Baseline anterior: 5.839 passaram, 68 ignorados. |
+| `npm run typecheck` | ✅ exit 0 | Sem regressão. |
+| `npm run lint` | ✅ exit 0 | 0 erros; 874 avisos existentes. |
+| `npm run build` | ✅ exit 0 | Avisos conhecidos: env Supabase local ausente, PostCSS e chunks grandes. |
+| `deno check` das duas funções agendadas | ✅ exit 0 | Aviso existente de override `file:vendor/braces` não interpretado pelo Deno. |
+| `git diff --check` | ✅ exit 0 | Sem erros de whitespace. |
+| `npm run check:npm-audit` | ❌ exit 1 | Baseline da branch apresenta `undici` (high) e `zod` (high); sem alteração de dependências neste lote. Ver `PENDENCIAS.md`. |
+
+O lote atual corrige o avanço indevido de relatórios agendados sem confirmação do Resend e acrescenta teste de paridade das Edge Functions chamadas pelos dispatchers cron. Os checks remotos do SHA final ainda precisam ser consultados após commit/push; nenhum deploy ou escrita remota no Supabase foi feito.
