@@ -171,7 +171,9 @@ try:
     assert scalar("RESET ROLE; SELECT count(*)::text FROM public.status_core_calls") == "1"
 
     retry_migration = RETRY_MIGRATION.read_text()
-    sql(function_statement(retry_migration, "bulk_update_quote_status_atomic"))
+    sql(retry_migration)
+    assert scalar("SELECT has_function_privilege('authenticated','public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)','EXECUTE')::text") == "true"
+    assert scalar("SELECT has_function_privilege('anon','public.bulk_update_quote_status_atomic(uuid[],integer[],text,text)','EXECUTE')::text") == "false"
     inactive_retry = sql(
         f"SET ROLE authenticated; SET request.jwt.claim.sub='{INACTIVE_SELLER}'; "
         f"SELECT id FROM public.bulk_update_quote_status_atomic(ARRAY['{SELLER_QUOTE}'::uuid],ARRAY[1],'draft',NULL);",
