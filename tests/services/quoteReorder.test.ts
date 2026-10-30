@@ -75,17 +75,17 @@ describe('QuoteService.reorder', () => {
       items: [],
       userId: 'ator-1',
       orgId: null,
-      idempotencyKey: '9a02c962-4f44-4f1b-8bcc-6fa80faac199',
+      idempotencyKey: 'chave-idempotente-de-teste',
     });
 
     expect(mocks.rpc).toHaveBeenNthCalledWith(1, 'get_quote_save_idempotent_replay', expect.objectContaining({
-      p_idempotency_key: '9a02c962-4f44-4f1b-8bcc-6fa80faac199',
+      p_idempotency_key: 'chave-idempotente-de-teste',
     }));
     expect(mocks.invoke).toHaveBeenCalledWith('quote-price-attestation', expect.objectContaining({
       body: expect.objectContaining({ quoteId: null, expectedRowVersion: null }),
     }));
     expect(mocks.rpc).toHaveBeenCalledWith('save_quote_atomic_idempotent_attested', expect.objectContaining({
-      p_idempotency_key: '9a02c962-4f44-4f1b-8bcc-6fa80faac199',
+      p_idempotency_key: 'chave-idempotente-de-teste',
       p_quote: expect.objectContaining({ price_attestation_id: 'atestado-preco' }),
     }));
   });
@@ -102,7 +102,7 @@ describe('QuoteService.reorder', () => {
       items: [],
       userId: 'ator-1',
       orgId: null,
-      idempotencyKey: '9a02c962-4f44-4f1b-8bcc-6fa80faac199',
+      idempotencyKey: 'chave-idempotente-de-teste',
     })).rejects.toThrow('O preço do catálogo mudou');
     expect(mocks.rpc).toHaveBeenCalledTimes(1);
     expect(mocks.rpc).toHaveBeenCalledWith('get_quote_save_idempotent_replay', expect.any(Object));
@@ -117,13 +117,13 @@ describe('QuoteService.reorder', () => {
       items: [],
       userId: 'ator-1',
       orgId: null,
-      idempotencyKey: '9a02c962-4f44-4f1b-8bcc-6fa80faac199',
+      idempotencyKey: 'chave-idempotente-de-teste',
     })).resolves.toBe(persisted);
 
     expect(mocks.invoke).not.toHaveBeenCalled();
     expect(mocks.rpc).toHaveBeenCalledTimes(1);
     expect(mocks.rpc).toHaveBeenCalledWith('get_quote_save_idempotent_replay', expect.objectContaining({
-      p_idempotency_key: '9a02c962-4f44-4f1b-8bcc-6fa80faac199',
+      p_idempotency_key: 'chave-idempotente-de-teste',
     }));
   });
 

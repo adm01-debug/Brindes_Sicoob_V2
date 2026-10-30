@@ -164,11 +164,10 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 
 ---
 
-*Relatório gerado automaticamente pela sessão Claude Code.*
-
 ## Atualização P045 — 30/10/2026
 
-Candidate local `fix/quote-price-authority-311333`, baseado no `main` em
+Candidate publicado em `fix/quote-price-authority-311333`, PR draft #175,
+baseado no `main` em
 `e9d59026793b84fabeaeec9da890a068f64d49c3`. Nenhuma migration ou Edge Function
 foi aplicada/publicada no Supabase remoto. Evidência detalhada:
 `docs/execucao/p045-integridade-precos-20261030.md`.
@@ -204,7 +203,9 @@ Workflows verdes observados: Migration ledger drift ([41013281253](https://githu
 O gate `node scripts/qa/check-bundle-budget.mjs` foi reproduzido localmente após o build do candidate e passou: 664 chunks, 10.748.443 bytes (3.261.814 gzip). Os dois maiores chunks geram warnings abaixo do limite bloqueante.
 
 O scan local de SECURITY DEFINER não foi executado porque este ambiente não
-tem URL/chave Supabase configuradas. O workflow remoto de CI ainda precisa
-confirmar o candidate após push/PR. A lista de secrets do repositório não
+tem URL/chave Supabase configuradas. O workflow remoto de CI precisa confirmar a revisão atual do PR #175. Na
+primeira revisão, Gitleaks classificou o UUID determinístico da chave de
+idempotência de teste como `generic-api-key`; o teste agora usa um identificador
+textual não secreto e os checks serão reexecutados. A lista de secrets do repositório não
 contém `E2E_SUPABASE_PROJECT_ID`; a jornada autenticada requer configurar o
 projeto de homologação. A lista contém credenciais E2E, sem consulta aos valores.

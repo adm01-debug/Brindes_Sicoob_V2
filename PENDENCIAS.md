@@ -223,15 +223,17 @@ Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Depen
 ## Inventário atual da `main` — 30/10/2026
 
 Falhas consideradas somente quando a execução mais recente da `main` está em
-`failure`. As correções listadas abaixo estão apenas no candidate local desta
-branch; ainda não foram publicadas nem validadas por PR.
+`failure`. As correções estão publicadas na branch candidate
+`fix/quote-price-authority-311333` e submetidas ao PR draft #175; ainda não foram
+incorporadas à `main`. Os checks da primeira revisão do PR apontaram falso
+positivo de Gitleaks para UUIDs fixos de teste, corrigido nesta atualização.
 
 | Workflow | Última execução | Causa provável confirmada | Estado da correção |
 |---|---|---|---|
-| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | Verificador exigiu aumento de versão para função que continuou na versão 5 após deploy sem alteração | Ajuste local para aceitar versão existente sem regressão; precisa CI remoto |
-| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `npm audit` alto em `undici` e `zod` | Candidate atualizou `undici`/`zod`; audit local zerado, precisa CI remoto |
-| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | Gate `check:npm-audit`, mesmos alertas altos | Candidate atualizado; audit local zerado, precisa CI remoto |
-| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `init` em 4.39.1 e `autobuild/analyze` em 4.38.2; SARIF não gerado | Candidate alinhou as referências SHA; precisa CI remoto |
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | Verificador exigiu aumento de versão para função que continuou na versão 5 após deploy sem alteração | Corrigido na branch candidate; validação remota necessária, sem executar deploy |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `npm audit` alto em `undici` e `zod` | Atualizados `undici`/`zod`; audit local zerado. Check inicial do PR pegou UUIDs fixos de teste com Gitleaks; identificador substituído nesta revisão |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | Gate `check:npm-audit`, mesmos alertas altos | Candidate atualizado; audit local zerado, aguardando CI da nova revisão |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `init` em 4.39.1 e `autobuild/analyze` em 4.38.2; SARIF não gerado | Candidate alinhou as referências SHA; aguardando CI da nova revisão |
 | Bundle Size Check | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) | Job falhou; log expirou (HTTP 404), causa do run antigo não comprovável. Candidate reproduz o gate localmente com sucesso: 664 chunks, 10.748.443 bytes e avisos não bloqueantes | Candidate passa o orçamento local; PR precisa registrar execução remota atual |
 | Lighthouse Performance Audit | [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910) | Job falhou; log expirou (HTTP 404). `LHCI_GITHUB_APP_TOKEN` não consta entre os nomes de secrets atuais, causa provável de autenticação ainda não comprovada | Configurar o secret e reexecutar; confirmar a causa no novo log antes de alterar código/performance |
 | E2E (Playwright) | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | `startup_failure`, nenhum job criado; a API não fornece causa detalhada | Reexecutar após configurar o projeto E2E e validar evento/permissões; `E2E_SUPABASE_PROJECT_ID` ainda não consta nos nomes de secrets |
@@ -249,9 +251,9 @@ Monthly DB Audit também concluiu com sucesso em
 
 ## P045 — Integridade de preços de orçamento (30/10/2026)
 
-**Status do candidate:** implementação local e validação descartável concluídas;
-aguardando CI da PR e homologação conectada. Não aplicado nem publicado no
-Supabase remoto.
+**Status do candidate:** branch publicada e PR draft #175 aberto; validação
+descartável concluída. CI remoto está em execução/revisão. Não aplicado nem
+publicado no Supabase remoto.
 
 - Migration versionada e allowlisted: `20261030120000_quote_price_attestation_gate.sql`.
 - Edge Function autenticada e registrada no manifesto, configuração e workflow
