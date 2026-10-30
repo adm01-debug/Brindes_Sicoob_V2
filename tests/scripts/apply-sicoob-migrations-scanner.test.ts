@@ -36,7 +36,7 @@ describe('hasTransactionControl — scanner de controle transacional', () => {
 });
 
 describe('proteção de ambiente do aplicador de migrations', () => {
-  it('recusa o projeto Supabase canônico antes de qualquer acesso remoto', () => {
+  it('recusa execução em PR no GitHub Actions antes de acessar qualquer banco', () => {
     const result = spawnSync(process.execPath, [
       'scripts/db/apply-sicoob-migrations.mjs',
       '--check',
@@ -45,6 +45,28 @@ describe('proteção de ambiente do aplicador de migrations', () => {
       encoding: 'utf8',
       env: {
         ...process.env,
+        GITHUB_ACTIONS: 'true',
+        GITHUB_REF: 'refs/pull/176/merge',
+      },
+    });
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('migrations só podem ser aplicadas a partir de refs/heads/main');
+  });
+
+  it('recusa o projeto Supabase canônico antes de qualquer acesso remoto', () => {
+    const env = { ...process.env };
+    delete env.GITHUB_ACTIONS;
+    delete env.GITHUB_REF;
+
+    const result = spawnSync(process.execPath, [
+      'scripts/db/apply-sicoob-migrations.mjs',
+      '--check',
+    ], {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+      env: {
+        ...env,
         SUPABASE_PROJECT_REF: 'cfmzkthhgliqelozlmwu',
         SUPABASE_ACCESS_TOKEN: 'token-de-teste-nao-utilizado',
       },
@@ -56,6 +78,8 @@ describe('proteção de ambiente do aplicador de migrations', () => {
 
   it('recusa alvo ausente antes de qualquer acesso remoto', () => {
     const env = { ...process.env };
+    delete env.GITHUB_ACTIONS;
+    delete env.GITHUB_REF;
     delete env.SUPABASE_PROJECT_REF;
     delete env.SUPABASE_DB_URL;
     delete env.SUPABASE_ACCESS_TOKEN;
