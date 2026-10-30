@@ -99,8 +99,10 @@ const STEPS: StepDef[] = [
   { id: 'content', label: 'SEO', description: 'Meta tags e marketing', icon: Megaphone, requiredFields: [], fieldLabels: {} },
 ];
 
-const productFormResolver: Resolver<ProductFormData> = (values, context, options) =>
-  zodResolver(productFormSchema)(values, context, options);
+// Os defaults completos e os campos numéricos registrados com `valueAsNumber`
+// mantêm o estado do formulário no contrato de saída, embora o schema aceite
+// entradas opcionais e coercíveis para validar valores externos.
+const productFormResolver = zodResolver(productFormSchema) as Resolver<ProductFormData>;
 
 function emptyString(value: string | null | undefined): string {
   return value ?? '';
