@@ -13,6 +13,20 @@
 
 **Banco canônico:** somente leitura; nenhuma migration aplicada remotamente.
 
+### Checks da PR #173 — observação em 2026-10-30, 11:04 UTC
+
+A PR [#173](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/173) está aberta,
+sem merge, no SHA `977994fb5de3d3c0c4617496f0347b29e2053bd8`. O CodeQL falhou no
+[run 41045149603](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149603):
+configuração 4.39.1, versão efetiva 4.38.2 e nenhum SARIF para upload. O ajuste
+correspondente do PR #164 não está incorporado neste candidato. Na última consulta,
+Bundle Size Check e Lighthouse estavam em andamento; Qualidade contínua, Security
+Scan, E2E, Portal Sicoob e revisão automática estavam enfileirados. Não se registra
+nenhum deles como sucesso ou falha até haver conclusão remota. Vercel Preview
+Comments passou; Devin Review retornou sucesso por review ignorado por falta de
+créditos, não por aprovação técnica. Portanto, os checks remotos da PR ainda não
+estão verdes e a PR não deve ser mergeada.
+
 ### Inventário atual confirmado no GitHub MCP
 
 | Workflow | Último run de `main` considerado | Resultado |

@@ -44,6 +44,22 @@ da Edge Function e como `webhook_dispatcher_secret` no Supabase Vault. Sem ambos
 os chamadores falham fechados. A simulação local não comprova entrega externa nem
 configuração remota; nenhum banco remoto foi alterado.
 
+### Checks da PR #173 (observação em 2026-10-30, 11:04 UTC)
+
+A PR [#173](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/173), no SHA
+`977994fb5de3d3c0c4617496f0347b29e2053bd8`, permanece aberta e não foi mergeada.
+O CodeQL falhou no [run 41045149603](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149603)
+pela divergência entre a action configurada (4.39.1) e a executada (4.38.2), seguida
+da ausência de SARIF; a mesma causa já consta no inventário da `main`. O ajuste
+proposto no PR #164 ainda não faz parte deste SHA.
+
+Na última consulta, Bundle Size Check e Lighthouse estavam em execução; Qualidade
+contínua, Security Scan, E2E, Portal Sicoob e revisão automática estavam na fila.
+Esses estados não são conclusões finais. Vercel Preview Comments passou; Devin
+Review foi `success` apenas por review ignorado (trial/créditos esgotados), portanto
+não é aprovação substantiva. Não fazer merge enquanto houver checks obrigatórios
+pendentes ou falhos.
+
 ---
 
 ~~## Workflow: `npm_and_yarn` — Dependabot `@vitest/mocker` Update~~
