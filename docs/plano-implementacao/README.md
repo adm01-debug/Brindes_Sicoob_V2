@@ -1,6 +1,7 @@
 # Plano de implementação do portal Sicoob
 
-> **Plano de encerramento — 01/10/2026:** [100 etapas com 1.000 itens de checklist](plano-encerramento-100-etapas-20261001/plano.md), dependências, cenários e aceites. Consolida as 150 etapas funcionais e as 100 de workflows auditadas, preservando a rastreabilidade dos planos anteriores. Esta entrega é somente planejamento.
+> **Plano de encerramento — 01/10/2026:** [100 etapas com 1.000 itens de checklist](plano-encerramento-100-etapas-20261001/plano.md), dependências, cenários e aceites. Consolida as 150 etapas funcionais e as 100 de workflows auditadas, preservando a rastreabilidade dos planos anteriores.
+> **Estado formal em 30/10/2026:** 0/1.000 subetapas concluídas no checklist oficial e nenhuma etapa formalmente aceita. Há trabalho parcial no código; veja o [progresso datado](../execucao/progresso-plano-2026-10-30.md). O checklist não é atualizado automaticamente pelos commits.
 
 > **Adendo de 27/09/2026:** [revisão das 250 etapas e 32 melhorias](../execucao/revisao-do-plano-2026-09-27.md), com data de cada diagnóstico e sondas de falhas remanescentes.
 
@@ -44,7 +45,7 @@ O plano usa o [diagnóstico versionado do projeto](https://github.com/adm01-debu
 
 **Esta entrega conclui a elaboração do plano.** O checklist-base mantém as 1.000 subetapas inicialmente pendentes para impedir baixa sem evidência. A implementação local já realizada está registrada no [checkpoint de execução](../execucao/checkpoint-local-2026-09-11.md); cada item só deve ser baixado no controle oficial depois da atribuição de responsável, revisor e evidência exigida pelo próprio plano.
 
-## Revisão atual — 12/09/2026
+## Revisão histórica — 12/09/2026
 
 A [revisão atualizada](../execucao/revisao-implementacao-2026-09-12.md) confronta os 1.000 requisitos e as 32 melhorias do benchmark com o candidato `cfbcd8f`. Resultado: **88 com evidência local delimitada, 622 parciais, 145 não demonstradas/localizadas e 145 dependentes de validação externa**. Nenhuma etapa está formalmente concluída.
 

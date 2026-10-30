@@ -4,9 +4,9 @@ Revisado em 30/10/2026. As metas abaixo são planejamento; o repositório não c
 
 ## 1. Monitoramento de uptime (proposta)
 Avaliar serviço externo para monitorar endpoints de cada ambiente. Os endereços de produção e a configuração de monitoramento precisam ser confirmados antes de habilitar sondas:
-1. **Frontend**: `https://promogifts.com.br` (Status 200)
-2. **Bridge Catalog**: `https://<ref>.supabase.co/functions/v1/external-db-bridge` (POST /ping)
-3. **CRM Bridge**: `https://<ref>.supabase.co/functions/v1/crm-db-bridge` (POST /ping)
+1. **Frontend**: domínio do ambiente a confirmar com o responsável pelo provedor antes de configurar a sonda; `promogifts.com.br` não está confirmado como endpoint deste projeto.
+2. **Bridge Catalog**: validar rota e método suportados em `external-db-bridge` antes de criar uma sonda; não há endpoint `/ping` confirmado.
+3. **CRM Bridge**: validar rota e método suportados em `crm-db-bridge` antes de criar uma sonda; não há endpoint `/ping` confirmado.
 
 ### Meta proposta (não é SLA vigente)
 - **Uptime**: 99.9%

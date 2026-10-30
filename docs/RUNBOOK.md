@@ -47,7 +47,8 @@ Use o fluxo documentado em [`DEPLOYMENT.md`](./DEPLOYMENT.md) e [`CI_CD.md`](./C
    ```sql
    SELECT count(*) FROM profiles WHERE is_active = true;
    ```
-4. **Integrações:** Testar endpoint Bitrix24 via Edge Function `quote-sync`
+   Execute com credencial de operador autorizada e interprete a contagem considerando o RLS da role; uma contagem autenticada pode representar apenas linhas visíveis, não a saúde integral do banco.
+4. **Integrações:** testar Bitrix24 somente com fixture sintética, credenciais e destino de sandbox autorizados. `quote-sync` pode produzir escrita externa; não o use como healthcheck de produção.
 
 ### Rotação de secrets
 
@@ -127,16 +128,17 @@ ORDER BY created_at DESC LIMIT 50;
 ### Auditoria de RLS
 
 ```sql
--- Verificar tabelas sem RLS
-SELECT schemaname, tablename 
-FROM pg_tables 
-WHERE schemaname = 'public' 
-AND tablename NOT IN (
-  SELECT tablename FROM pg_tables t
-  JOIN pg_class c ON c.relname = t.tablename
-  WHERE c.relrowsecurity = true
-);
+-- Listar tabelas públicas comuns/particionadas sem RLS
+SELECT n.nspname AS schemaname, c.relname AS tablename
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE n.nspname = 'public'
+  AND c.relkind IN ('r', 'p')
+  AND c.relrowsecurity IS NOT TRUE
+ORDER BY c.relname;
 ```
+
+Execute em contexto administrativo do ambiente correto. A checagem de RLS não substitui a revisão das policies; avalie também `relforcerowsecurity` se a política operacional exigir FORCE RLS.
 
 ---
 

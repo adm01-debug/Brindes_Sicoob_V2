@@ -18,11 +18,11 @@ Este documento registra objetivos propostos e verificações necessárias. Nenhu
 
 ### A. Indisponibilidade Regional (Cloud Provider)
 1.  Consultar a página de status oficial do provedor e confirmar o comportamento do hook `useCloudStatus` no ambiente.
-2.  Ativar aviso de "Modo de Leitura" via Feature Flag se o banco de dados principal estiver instável.
+2.  Se houver um modo de leitura/manutenção implementado e validado no ambiente, considerar sua ativação conforme decisão operacional. O repositório não comprova uma feature flag global para isso.
 3.  Acionar o procedimento de contingência previamente validado; a existência de uma página estática de contingência não foi comprovada.
 
 ### B. Corrupção de Dados / Erro Humano
-1.  Identificar o `transaction_id` ou timestamp exato do incidente via `admin_audit_log`.
+1.  Identificar o intervalo e os registros afetados usando `request_id`, `resource_id`, `created_at` e os campos disponíveis em `admin_audit_log`; essa tabela não possui coluna `transaction_id`.
 2.  Antes de solicitar PITR, confirmar que o recurso e o ponto de restauração estão disponíveis para o projeto; restaurar para uma instância isolada, nunca sobrescrever o canônico durante o diagnóstico.
 3.  Reprocessar eventos somente após verificar idempotência, origem e intervalo afetado. A existência de logs n8n e a capacidade de replay devem ser comprovadas para o ambiente.
 
