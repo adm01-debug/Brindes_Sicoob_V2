@@ -203,9 +203,10 @@ BEGIN
 
   -- Exclusão em cascata de um orçamento continua sendo permitida; a linha
   -- comercial deixa de existir, portanto não há preço novo sendo aceito.
-  IF TG_OP = 'DELETE' AND v_quote_id IS NOT NULL
-     AND NOT EXISTS (SELECT 1 FROM public.quotes q WHERE q.id = v_quote_id)
-     AND pg_trigger_depth() > 1 THEN
+  IF TG_OP = 'DELETE' AND pg_trigger_depth() > 1
+     AND (v_quote_id IS NULL OR NOT EXISTS (
+       SELECT 1 FROM public.quotes q WHERE q.id = v_quote_id
+     )) THEN
     RETURN OLD;
   END IF;
 
@@ -219,11 +220,22 @@ BEGIN
          FROM private.quote_price_attestations AS attestation
         WHERE attestation.id = v_attestation_id
           AND attestation.actor_id = v_actor_id
-          AND attestation.quote_id IS NOT DISTINCT FROM v_quote_id
+          AND attestation.quote_id IS NOT DISTINCT FROM CASE
+            WHEN TG_TABLE_NAME = 'quotes' AND TG_OP = 'INSERT' THEN NULL::uuid
+            ELSE v_quote_id
+          END
           AND attestation.consumed_transaction_id = pg_current_xact_id()
           AND attestation.consumed_at IS NOT NULL
      ) THEN
     RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'A gravação comercial exige atestado de preço válido.';
+  END IF;
+
+  IF TG_TABLE_NAME = 'quotes' AND TG_OP = 'INSERT' THEN
+    UPDATE private.quote_price_attestations
+       SET quote_id = v_quote_id
+     WHERE id = v_attestation_id
+       AND quote_id IS NULL
+       AND consumed_transaction_id = pg_current_xact_id();
   END IF;
 
   IF TG_TABLE_NAME = 'quote_items' AND TG_OP IN ('INSERT', 'UPDATE') THEN

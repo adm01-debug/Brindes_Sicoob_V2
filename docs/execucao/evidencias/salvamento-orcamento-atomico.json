@@ -6,6 +6,7 @@
   "atomicidade": "falha após cabeçalho e primeiro item reverte criação e atualização integralmente",
   "concorrencia": "row_version obsoleto recusado sem alterar itens ou histórico",
   "totais": "subtotal, desconto, frete e custo recalculados no servidor",
+  "atestado_de_preco": "token privado de uso único vinculado a ator, orçamento, versão e payload completo; adulteração de preço/custo e DML direto recusados",
   "governanca": "escopo organizacional e edição de orçamento enviado recusados",
   "integracao_gate": "save_quote_atomic preserva SECURITY INVOKER/RLS; toque direto ou GUC forjado não altera updated_at",
   "resultado": "aprovado"

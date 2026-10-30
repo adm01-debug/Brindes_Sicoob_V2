@@ -237,7 +237,7 @@ try:
         attested_items=valid_items,
         attestation_id=valid_attestation,
     )
-    assert forged.returncode != 0 and "atestado" in forged.stderr.lower()
+    assert forged.returncode != 0 and "não foi validado" in forged.stderr.lower(), forged.stderr
     assert scalar(sql("SELECT count(*) FROM public.quotes;")) == "1"
     assert scalar(sql("SELECT count(*) FROM public.quote_items;")) == "1"
 
