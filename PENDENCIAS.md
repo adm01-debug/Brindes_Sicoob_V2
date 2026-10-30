@@ -217,3 +217,6 @@ Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Depen
 | Migration Ledger Drift | Fingerprint de `20261022120000` calculado com `local_sha256` incorreto; novo digest correto: `e2815b0...` | Corrigido fingerprint no `migration-ledger-baseline.json` | #129 |
 | 5 CVEs high (vite ≤6.4.3) | GHSA-698v, GHSA-r825, GHSA-587h, GHSA-9jrq, GHSA-rq7h | `vite` 6.4.3 → 6.4.5 | #126 |
 | Qualidade contínua (`ci.yml`) — ECR rate limit | `toomanyrequests: Data limit exceeded` ao puxar `public.ecr.aws/supabase/postgres:17.6.1.063` em dois steps (scripts `simular-controles-auditoria.py` e `simular-acl-efetiva.py`) | Rate limit do ECR Public se dissipou naturalmente; run `39780447863` → **success** | automático |
+# Pendências identificadas nesta execução — 30/10/2026
+
+- **Auditoria local de dependências:** após `npm ci` em branch baseada na `origin/main` (`e9d590267`), `npm run check:npm-audit` sinalizou duas vulnerabilidades altas, em `undici` e `zod`. Não foi aplicada atualização: falta identificar a cadeia/dependência raiz e confirmar uma correção compatível sem upgrade major. Este achado é do baseline da branch e não foi introduzido pelo lote de inteligência de produto.
