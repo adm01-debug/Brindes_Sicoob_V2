@@ -170,6 +170,10 @@ try:
     hardened = (ROOT/'supabase/migrations/20260922225000_secure_public_quote_approval.sql').read_text()
     sql(hardened)
     sql(PUBLIC_COST_REDACTION.read_text())
+    sql(PUBLIC_COST_REDACTION.read_text())
+    checks['migration_projecao_reaplicavel'] = sql(
+      "SELECT to_regprocedure('public.quote_approval_public_items(uuid)') IS NOT NULL;"
+    ).stdout.strip() == 't'
     checks['historico_legado_preservado'] = sql("SELECT count(*)>=1 FROM public.quote_approval_tokens WHERE signature_data_url IS NOT NULL AND signature_evidence IS NULL;").stdout.strip() == 't'
     checks['anon_sem_acesso_direto'] = (
       actor("SELECT public.get_public_quote_approval('valido');",role='anon',check=False).returncode != 0

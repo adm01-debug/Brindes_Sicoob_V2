@@ -1,6 +1,6 @@
 -- A evidência assinada mantém o snapshot comercial completo. A resposta do
 -- token usa uma projeção separada e mínima para a interface pública.
-CREATE FUNCTION public.quote_approval_public_items(p_quote_id uuid)
+CREATE OR REPLACE FUNCTION public.quote_approval_public_items(p_quote_id uuid)
 RETURNS jsonb
 LANGUAGE sql
 STABLE

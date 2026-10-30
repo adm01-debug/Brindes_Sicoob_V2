@@ -19,8 +19,9 @@ devem ser registrados com data, URL, SHA e execução reproduzível em
 - Compressão: confirmar nos headers efetivamente servidos.
 
 ## Monitoring
-- Lighthouse: meta >95, medida por workflow; não equivale a meta atingida em
-  todas as jornadas.
+- Lighthouse: o workflow configura pontuação mínima de 0,90 para performance,
+  acessibilidade, boas práticas e SEO. Isso é um gate por execução, não uma
+  medição de todas as jornadas nem evidência de meta acima de 95.
 - Core Web Vitals: o código atual contém coleta via `web-vitals` e mantém a
   rota `/admin/performance`. A existência do código não prova ingestão ativa,
   dashboard operacional ou configuração Sentry no ambiente.

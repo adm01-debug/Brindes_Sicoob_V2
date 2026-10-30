@@ -7,7 +7,9 @@
 1. Instale dependências reproduzíveis com `npm ci`.
 2. Configure `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` e `VITE_SUPABASE_PROJECT_ID` no provedor de hospedagem do ambiente de destino. Não inclua chaves secretas em variáveis `VITE_*` nem versione `.env.production`.
 3. Execute `npm run typecheck`, `npm run lint`, `npm test` e `npm run build`.
-4. Publique somente o artefato do SHA aprovado pela PR e pelo fluxo de release do ambiente.
+4. Publique somente o artefato do SHA aprovado pela PR. O repositório não contém
+   workflow de release do frontend; identifique e valide o procedimento do
+   provedor de hospedagem antes de publicar.
 
 ## Edge Functions Sicoob
 

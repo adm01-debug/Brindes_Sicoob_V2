@@ -80,8 +80,8 @@ assinaturas que as referenciem, pois são necessárias para verificar o históri
 
 | Variável | Workflow | Status |
 |---|---|---|
-| `E2E_SUPABASE_PROJECT_ID` | `e2e.yml` | ❌ **ausente no run 41099125007; configurar para o projeto isolado de homologação** |
-| `VITE_SUPABASE_PROJECT_ID` / `VITE_SUPABASE_URL` | `e2e.yml` | ❌ **ausente no run 41099125007; devem corresponder ao mesmo projeto isolado** |
+| `E2E_SUPABASE_PROJECT_ID` | `e2e.yml` | ❌ Nome ausente na lista de secrets do repositório consultada; o preflight do run 41099125007 confirma que pelo menos uma das três variáveis do projeto estava vazia. Secrets organizacionais não foram auditados |
+| `VITE_SUPABASE_PROJECT_ID` / `VITE_SUPABASE_URL` | `e2e.yml` | ✅ Nomes presentes na lista do repositório; valor, URL e correspondência com o projeto isolado não foram verificados |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | `e2e.yml` | ⚠️ Requerida; disponibilidade não verificada porque o preflight parou nos identificadores/URL |
 | `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` | `e2e.yml` | ⚠️ Requerida; estado não verificado no run atual |
 | `E2E_VIEWER_EMAIL` / `E2E_VIEWER_PASSWORD` | `e2e.yml` | ⚠️ Requerida; estado não verificado no run atual |
@@ -90,7 +90,9 @@ assinaturas que as referenciem, pois são necessárias para verificar o históri
 | `E2E_DEV_EMAIL` / `E2E_DEV_PASSWORD` / `E2E_DEV_TOTP_SECRET` | `e2e.yml` | ⚠️ Requerida; estado não verificado no run atual |
 | `E2E_CLEANUP_TOKEN` | `e2e.yml` | ⚠️ Requerida pelo workflow; estado não verificado no run atual |
 | `SUPABASE_SERVICE_ROLE_KEY` | `e2e.yml`, `security-compliance.yml` | ⚠️ Requerida para verificações remotas; estado atual não verificado |
-| `SUPABASE_DB_URL` | `migration-ledger-drift.yml`, `apply-sicoob-migrations.yml` | ✅ configurado no repositório; uso de escrita restrito ao environment `construction` e à `main` protegida. O workflow de escrita exige banco `postgres`, porta `5432`, `sslmode=require` ou `verify-full` e host direto `db.cfmzkthhgliqelozlmwu.supabase.co` ou session pooler oficial com usuário `postgres.cfmzkthhgliqelozlmwu` |
+| `SUPABASE_ACCESS_TOKEN` | `migration-ledger-drift.yml`, `apply-sicoob-migrations.yml` | ✅ Nome presente no environment `construction`; os workflows devem ser executados por main protegida e o projeto alvo é validado separadamente |
+| `CONSTRUCTION_SUPABASE_PROJECT_REF` | `apply-sicoob-migrations.yml` e workflows de deploy | ❌ Nome não encontrado nos secrets do repositório nem no environment `construction`; secrets organizacionais não foram auditados. Bloqueia a identificação explícita do projeto de construção |
+| `SUPABASE_DB_URL` | Não consumido pelos workflows atuais de migrations/drift | ✅ Nome presente no repositório; não confundir com as credenciais atualmente usadas, que são `SUPABASE_ACCESS_TOKEN` e `CONSTRUCTION_SUPABASE_PROJECT_REF` |
 | `RLS_TEST_USER_A_EMAIL` / `_PASSWORD` | `security-compliance.yml` | estado atual não verificado |
 | `RLS_TEST_USER_B_EMAIL` / `_PASSWORD` | `security-compliance.yml` | estado atual não verificado |
 | `RLS_TEST_PRIVATE_QUOTE_B_ID` | `security-compliance.yml` | estado atual não verificado |
@@ -99,8 +101,8 @@ assinaturas que as referenciem, pois são necessárias para verificar o históri
 
 ## Como usar isto
 
-1. Só classifique como ausente o secret cuja ausência tenha sido confirmada por
-   anotação de workflow, painel ou API que exponha apenas nomes, nunca valores.
+1. Diferencie ausência do nome, valor vazio e valor incorreto. A API de nomes
+   não revela valores, e esta consulta não incluiu secrets organizacionais.
 2. Atualize este inventário quando os workflows ou o estado do ambiente mudarem.
 3. Criar um verificador automatizado que compare acessos no código e YAML com
    este inventário continua sendo uma melhoria pendente.

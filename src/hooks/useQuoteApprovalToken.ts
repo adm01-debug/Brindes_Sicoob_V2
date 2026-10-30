@@ -20,7 +20,7 @@ export interface PublicQuoteApproval {
   delivery_time?: string | null;
   notes?: string | null;
   items?: Array<{
-    id: string;
+    id?: string;
     product_name: string;
     product_sku?: string | null;
     color_name?: string | null;
