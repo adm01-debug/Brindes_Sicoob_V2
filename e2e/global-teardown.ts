@@ -17,4 +17,5 @@ export default async function globalTeardown(): Promise<void> {
     return;
   }
   await purgeAll(cfg, { reason: "post-suite" });
+  await purgeAll(cfg, { reason: "post-suite-legacy", nameFilterPrefix: "[E2E:" });
 }

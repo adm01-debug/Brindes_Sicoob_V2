@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadCleanupConfig, purgeAll } from '../../e2e/helpers/cleanup-client';
+import { e2eScope, isE2eName } from '../../e2e/fixtures/test-user';
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -25,6 +26,13 @@ function successfulCleanup() {
 }
 
 describe('limpeza E2E de homologação', () => {
+  it('mantém nomes E2E sob o prefixo literal e reconhece o formato legado', () => {
+    expect(e2eScope('t-0123456789abcdef')).toBe('[E2E] t-0123456789abcdef');
+    expect(isE2eName('[E2E] t-0123456789abcdef orçamento')).toBe(true);
+    expect(isE2eName('[E2E:legacy-spec] orçamento')).toBe(true);
+    expect(isE2eName('[E2Evil] dado manual')).toBe(false);
+  });
+
   it('purga cada persona configurada exatamente uma vez', async () => {
     const cfg = configurePersonas();
     const fetchMock = vi.fn().mockImplementation(async () => successfulCleanup());
@@ -41,7 +49,7 @@ describe('limpeza E2E de homologação', () => {
       'dev@example.test',
     ]);
     for (const [, init] of fetchMock.mock.calls) {
-      expect(JSON.parse(String(init?.body)).nameFilterPrefix).toBe('[E2E');
+      expect(JSON.parse(String(init?.body)).nameFilterPrefix).toBe('[E2E]');
     }
   });
 

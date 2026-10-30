@@ -76,7 +76,7 @@ export function loadCleanupConfig(): CleanupConfig | null {
     ? null
     : explicitPrefix && explicitPrefix.length > 0
       ? explicitPrefix
-      : "[E2E"; // abrange [E2E] e os escopos [E2E:<id>] das fixtures
+      : "[E2E]"; // prefixo exato dos recursos E2E atuais
 
   if (!baseUrl || !token) return null;
   if (!userEmail && !adminEmail) return null;

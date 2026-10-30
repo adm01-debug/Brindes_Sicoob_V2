@@ -35,7 +35,7 @@ const validEnvironment = {
 function runPreflight(overrides: Record<string, string | undefined> = {}) {
   const env = { ...validEnvironment, ...overrides };
   for (const [key, value] of Object.entries(env)) {
-    if (value === undefined) delete env[key as keyof typeof env];
+    if (value === undefined) env[key as keyof typeof env] = '';
   }
   return spawnSync('bash', ['-euo', 'pipefail', '-c', preflight], {
     encoding: 'utf8',

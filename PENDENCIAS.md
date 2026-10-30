@@ -46,10 +46,12 @@ humana exigida pela proteção de `main`.
 
 No worktree desta PR, o contrato de cleanup foi endurecido: a configuração é
 obrigatória no CI, a limpeza de todas as cinco personas falha se ausente, parcial ou
-em dry-run, erros HTTP não são reinterpretados como sucesso, e o prefixo global
-`[E2E` abrange nomes `[E2E]` e `[E2E:<id>]`. Cleanup por falha usa prefixo exclusivo
-por teste; as execuções compartilham um único grupo de concorrência; HTTP 402 já não
-conta como validação authz/RLS. Essas mudanças ainda não têm novo run remoto. Antes de
+em dry-run, erros HTTP não são reinterpretados como sucesso, e setup/teardown limpam
+em passadas sequenciais os prefixos literais `[E2E]` e `[E2E:` para cobrir nomes
+atuais e legados sem casar `[E2Evil]`. Cleanup por teste foi removido porque a Edge
+Function também apaga carrinhos por persona e poderia atingir outro teste concorrente;
+as execuções compartilham um único grupo; HTTP 402 já não conta como validação
+authz/RLS. Essas mudanças ainda não têm novo run remoto. Antes de
 cadastrar secrets, configure reviewers e política de branches no Environment e
 confirme positivamente a ref descartável; negar dois refs conhecidos não prova, por si
 só, que uma terceira ref seja staging.

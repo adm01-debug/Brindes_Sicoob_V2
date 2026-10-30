@@ -3,9 +3,9 @@
  *  - Captura automática de console/pageerror em toda página
  *  - afterEach que dispara coleta de evidências em qualquer falha
  *  - Helper `requireAuth()` que pula o teste se as credenciais não foram dadas
- *  - Fixture `e2eResources` com sub-prefixo POR TESTE e cleanup escopado
- *    em caso de falha — evita que um teste apague recursos vivos de outro
- *    teste em execução paralela.
+ *  - Fixture `e2eResources` com sub-prefixo POR TESTE — recursos ficam
+ *    identificáveis sem cleanup por teste, que poderia remover carrinhos de
+ *    outro teste paralelo da mesma persona.
  *
  * Uso:
  *   import { test, expect } from "../fixtures/test-base";
@@ -18,7 +18,6 @@
 import { createHash } from "node:crypto";
 import { test as base, expect } from "@playwright/test";
 import { attachConsoleCapture, type EvidenceCollector } from "../helpers/evidence";
-import { loadCleanupConfig, purgeAll } from "../helpers/cleanup-client";
 import { e2eScope } from "./test-user";
 import {
   createE2eQuote,
@@ -46,12 +45,6 @@ export interface E2eResources {
 type Fixtures = {
   evidence: EvidenceCollector;
   resources: E2eResources;
-  /**
-   * Auto-fixture: em falha, dispara purge ESCOPADO ao prefixo do spec
-   * (não toca em recursos de outros specs paralelos). Pode ser desligada
-   * via `E2E_CLEANUP_ON_FAILURE=0`.
-   */
-  cleanupOnFailure: void;
 };
 
 export const test = base.extend<Fixtures>({
@@ -77,21 +70,6 @@ export const test = base.extend<Fixtures>({
     await use(api);
   },
 
-  cleanupOnFailure: [
-    async ({ resources }, use, testInfo) => {
-      await use();
-      if (process.env.E2E_CLEANUP_ON_FAILURE === "0") return;
-      if (testInfo.status === testInfo.expectedStatus) return;
-      const cfg = loadCleanupConfig();
-      if (!cfg) return;
-      await purgeAll(cfg, {
-        quiet: true,
-        reason: `failure:${testInfo.title}`,
-        nameFilterPrefix: resources.prefix,
-      });
-    },
-    { auto: true },
-  ],
 });
 
 export { expect };

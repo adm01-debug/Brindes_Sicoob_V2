@@ -48,9 +48,10 @@ PR. Não representam sucesso da CI remota nem acesso ao Supabase:
 | `git diff --check` | ✅ exit 0 | Sem erros de whitespace. |
 
 O patch local também serializa E2E entre refs, limpa as cinco personas, reprova
-cleanup ausente/parcial, usa `[E2E` para abranger nomes `[E2E]` e `[E2E:<id>]`,
-isola cleanup de falha por teste, falha de forma fechada em HTTP 402 nos testes
-remotos e bloqueia migrations/deploy nos dois refs protegidos. Nenhuma chamada ou
+cleanup ausente/parcial, usa prefixos literais `[E2E]` e `[E2E:` em passadas
+sequenciais para cobrir os nomes atuais e legados sem casar `[E2Evil]`, remove
+cleanup por teste porque o endpoint também apaga carrinhos por persona, falha de forma
+fechada em HTTP 402 nos testes remotos e bloqueia migrations/deploy nos dois refs protegidos. Nenhuma chamada ou
 alteração Supabase foi feita. Ainda falta o owner configurar e proteger
 `e2e-staging`, confirmar a ref exata do projeto descartável, criar as contas sintéticas
 e restringir a allowlist de e-mails da Edge Function; veja

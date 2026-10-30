@@ -17,4 +17,5 @@ export default async function globalSetup(): Promise<void> {
     return;
   }
   await purgeAll(cfg, { reason: "pre-suite" });
+  await purgeAll(cfg, { reason: "pre-suite-legacy", nameFilterPrefix: "[E2E:" });
 }
