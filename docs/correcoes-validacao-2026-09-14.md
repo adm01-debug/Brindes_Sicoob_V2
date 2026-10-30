@@ -6658,3 +6658,25 @@ da cópia local anterior à atualização do `main`.
 **Validação:** `typecheck:baseline` aprovado: 162 diagnósticos atuais frente a
 166 no baseline, sem regressão. A correção reduz um diagnóstico frente ao
 mesmo código sem esse fallback.
+## secretNormalizers.ts (etapa 17)
+
+**Arquivo:** `src/components/admin/connections/secretNormalizers.ts`
+
+**Erro original:**
+```
+src/components/admin/connections/secretNormalizers.ts(45,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+```
+
+**Diagnóstico:** Em `stripBearer`, `m[1]` (grupo de captura de `s.match(/^Bearer\s+(.+)$/i)`) é tipado `string | undefined` sob `noUncheckedIndexedAccess`, mesmo o grupo `(.+)` sendo obrigatório e sempre presente quando `m` é truthy. O tipo de retorno declarado da função é `string`.
+
+**Fix aplicado:**
+```ts
+return m[1] ?? s;
+```
+Segue o padrão já estabelecido em `useSuppliersManager.ts` (`finMatchNew[1] ?? '-'`, `fiscalMatch[1] ?? '-'`, `carrierMatch[1] ?? '-'`) para grupos de captura de regex sob `noUncheckedIndexedAccess`; fallback defensivo para a string original caso o grupo nunca capture (não deve ocorrer na prática).
+
+**Validação:**
+- `tscheck-files.mjs`: 1 → 0 erros no arquivo.
+- `check-eslint-baseline.mjs`: 0 regressões (referência `origin/main` em `d9255b451c`).
+- Nenhum teste dedicado encontrado para o arquivo.
+- `typecheck:baseline`: 166 → 165 (165 arquivos), travado via `--update`.
