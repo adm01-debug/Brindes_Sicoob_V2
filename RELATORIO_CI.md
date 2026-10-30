@@ -1,14 +1,16 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
-**Gerado em:** 2026-10-30  
+**Gerado em:** 2026-10-30
 **Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
 
 ---
 
 ## Rechecagem de CI e validação local — 2026-10-30
 
-**Base local:** `main` em `e9d59026793b84fabeaeec9da890a068f64d49c3`.  
-**Candidato isolado:** `fix/webhook-dispatch-auth-311333`.  
+**Base local:** `main` em `e9d59026793b84fabeaeec9da890a068f64d49c3`.
+
+**Candidato isolado:** `fix/webhook-dispatch-auth-311333`.
+
 **Banco canônico:** somente leitura; nenhuma migration aplicada remotamente.
 
 ### Inventário atual confirmado no GitHub MCP
