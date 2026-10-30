@@ -4,7 +4,7 @@ import process from "node:process";
 const MANAGEMENT_API = "https://api.supabase.com";
 
 function assertProjectRef(projectRef) {
-  if (!/^[a-z]{20}$/.test(projectRef)) {
+  if (!/^[a-z0-9]{20}$/.test(projectRef)) {
     throw new Error("Project ref do Supabase inválido.");
   }
 }

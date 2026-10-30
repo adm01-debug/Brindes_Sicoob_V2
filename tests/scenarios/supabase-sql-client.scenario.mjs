@@ -35,6 +35,13 @@ test("envia consulta parametrizada ao projeto canônico sem expor o token", asyn
   assert.equal(request.options.headers.authorization, `Bearer ${accessToken}`);
 });
 
+test("aceita project ref válido que contenha dígitos", () => {
+  assert.doesNotThrow(() => createManagementSqlClient({
+    projectRef: "a1b2c3d4e5f6g7h8i9j0",
+    accessToken: randomUUID(),
+  }));
+});
+
 test("recusa project ref inválido antes da chamada remota", () => {
   assert.throws(
     () => createManagementSqlClient({ projectRef: "outro-projeto", accessToken: randomUUID() }),
