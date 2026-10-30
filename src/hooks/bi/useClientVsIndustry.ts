@@ -121,18 +121,9 @@ export function useClientVsIndustry(
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       if (!ramoAtividade) return { rows: [] as BenchmarkRow[], sampleSize: 0 };
-      // Demo: retorna benchmark mockado plausível
+      // Não inferir benchmark de ramo para clientes de demonstração.
       if (isDemoClient(clientId)) {
-        const mockRow: BenchmarkRow = {
-          total_clients_sampled: 24,
-          avg_ltv: 38500,
-          avg_ticket: 2850,
-          avg_quotes_per_client: 11,
-          avg_items_per_quote: 2.4,
-          top_product_name: "Garrafa Térmica Inox 500ml",
-          total_revenue: 924000,
-        };
-        return { rows: [mockRow], sampleSize: 24 };
+        return { rows: [] as BenchmarkRow[], sampleSize: 0 };
       }
 
       // 1) Resolver IDs de empresas do mesmo ramo, excluindo o próprio cliente
@@ -166,7 +157,7 @@ export function useClientVsIndustry(
   if (!benchmark || !hasEnoughSample) {
     return {
       isLoading,
-      isMock: true,
+      isMock: false,
       hasEnoughSample: false,
       sampleSize,
       daysWindow: DAYS_WINDOW,

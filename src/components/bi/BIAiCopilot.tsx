@@ -85,7 +85,8 @@ export function BIAiCopilot({ open, onOpenChange, clientId, clientName, ramoAtiv
       const context = {
         clientName,
         ramoAtividade,
-        score: health.score,
+        score: health.hasEnoughData ? health.score : null,
+        healthScoreMeasured: health.hasEnoughData,
         tier: health.tier,
         crossZoneInsight: health.crossZoneInsight,
         nextAction: health.nextActionLabel,

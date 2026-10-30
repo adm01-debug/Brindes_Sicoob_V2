@@ -1,13 +1,11 @@
 /**
  * useClientSeasonality — sazonalidade Cliente × Setor (12 meses).
  * Combina RPC do cliente + RPC do setor (empresas mesmo ramo).
- * Calcula: distribuição mensal, top 3 picos, próximo pico, insight textual.
- * Fallback mock determinístico se < 3 meses com dados.
+ * Calcula métricas apenas com dados reais e mantém vazia qualquer série sem amostra.
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { selectCrm } from "@/lib/crm-db";
-import { getMockSeasonality } from "@/lib/bi/mockData";
 
 const MONTH_LABELS = [
   "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
@@ -39,8 +37,11 @@ export interface IndustryMonthCell {
 
 export interface SeasonalityResult {
   isLoading: boolean;
+  dataStatus: "loading" | "unavailable" | "insufficient" | "available";
   isMock: boolean;
   hasEnoughData: boolean;
+  hasClientData: boolean;
+  hasIndustryData: boolean;
   monthsCovered: number;
   windowMonths: number;
   client: ClientMonthCell[]; // sempre 12 posições, Jan→Dez
@@ -161,45 +162,108 @@ function industryMonthCell(
   };
 }
 
-function peakResult(
-  client: ClientMonthCell[],
-  industry: IndustryMonthCell[],
-  base: Omit<SeasonalityResult, "client" | "industry" | "topClientMonths" | "topIndustryMonths" | "nextPeakMonth" | "daysToNextPeak" | "insight">,
-): SeasonalityResult {
-  const topClient = pickTop(client, "quotesCount", 3);
-  const topIndustry = pickTop(industry, "avgQuotesPerCompany", 3);
-  const nextPeak = findNextPeak(topClient);
+function resolveSeasonalityStatus(input: {
+  isLoading: boolean;
+  isError: boolean;
+  industryUnavailable: boolean;
+  hasClientData: boolean;
+  hasIndustryData: boolean;
+}): SeasonalityResult["dataStatus"] {
+  if (input.isLoading) return "loading";
+  if (input.isError || input.industryUnavailable) return "unavailable";
+  return input.hasClientData && input.hasIndustryData ? "available" : "insufficient";
+}
+
+function clientSeasonalityInsights(client: ClientMonthCell[], hasEnoughData: boolean) {
+  const topMonths = hasEnoughData ? pickTop(client, "quotesCount", 3) : [];
+  const nextPeak = hasEnoughData ? findNextPeak(topMonths) : null;
   return {
-    ...base,
-    client,
-    industry,
-    topClientMonths: topClient,
-    topIndustryMonths: topIndustry,
-    nextPeakMonth: nextPeak?.month ?? null,
-    daysToNextPeak: nextPeak?.days ?? null,
-    insight: buildInsight(topClient, topIndustry, nextPeak),
+    topMonths,
+    nextPeak,
+    insight: hasEnoughData ? buildInsight(topMonths, [], nextPeak) : null,
   };
 }
 
+function industryTopMonths(industry: IndustryMonthCell[], hasData: boolean) {
+  return hasData ? pickTop(industry, "avgQuotesPerCompany", 3) : [];
+}
+
+function readSeasonalityRows(data: {
+  clientRows: ClientRow[];
+  industryRows: IndustryRow[];
+  industryUnavailable: boolean;
+} | undefined) {
+  return {
+    clientRows: data?.clientRows ?? [],
+    industryRows: data?.industryRows ?? [],
+    industryUnavailable: data?.industryUnavailable ?? false,
+  };
+}
+
+function combineSeasonalityInsight(input: {
+  clientInsight: string | null;
+  clientMonths: ClientMonthCell[];
+  industryMonths: IndustryMonthCell[];
+  nextPeak: { month: number; days: number } | null;
+  hasIndustryData: boolean;
+}) {
+  if (!input.hasIndustryData || !input.clientInsight) return input.clientInsight;
+  return buildInsight(input.clientMonths, pickTop(input.industryMonths, "avgQuotesPerCompany", 3), input.nextPeak);
+}
+
 function seasonalityResult(
-  data: { clientRows: ClientRow[]; industryRows: IndustryRow[]; companiesCount: number } | undefined,
+  data: { clientRows: ClientRow[]; industryRows: IndustryRow[]; companiesCount: number; industryUnavailable: boolean } | undefined,
   isLoading: boolean,
+  isError: boolean,
 ) {
-  const { cells: client, monthsCovered } = buildClientCells(data?.clientRows ?? []);
-  const realIndustry = buildIndustryCells(data?.industryRows ?? []);
-  const base = { isLoading, monthsCovered, windowMonths: WINDOW_MONTHS };
-  if (monthsCovered < 3) {
-    const mock = getMockSeasonality();
-    return peakResult(mock.client, mock.industry, {
-      ...base,
-      isMock: true,
-      hasEnoughData: false,
-    });
-  }
-  const industry = realIndustry.some((cell) => cell.avgQuotesPerCompany > 0)
-    ? realIndustry
-    : getMockSeasonality().industry;
-  return peakResult(client, industry, { ...base, isMock: false, hasEnoughData: true });
+  const rows = readSeasonalityRows(data);
+  const clientRows = rows.clientRows.filter((row) =>
+    (Number(row.quotes_count) || 0) > 0 || (Number(row.total_revenue) || 0) > 0,
+  );
+  const industryRows = rows.industryRows.filter((row) =>
+    Number(row.companies_active) >= 3 &&
+    ((Number(row.avg_quotes_per_company) || 0) > 0 || (Number(row.avg_revenue_per_company) || 0) > 0),
+  );
+  const { cells: client, monthsCovered } = buildClientCells(clientRows);
+  const realIndustry = buildIndustryCells(industryRows);
+  const hasClientData = monthsCovered >= 3;
+  const hasIndustryData = industryRows.length > 0;
+  const dataStatus = resolveSeasonalityStatus({
+    isLoading,
+    isError,
+    industryUnavailable: rows.industryUnavailable,
+    hasClientData,
+    hasIndustryData,
+  });
+  const clientInsights = clientSeasonalityInsights(client, hasClientData);
+  const topIndustryMonths = industryTopMonths(realIndustry, hasIndustryData);
+  const insight = combineSeasonalityInsight({
+    clientInsight: clientInsights.insight,
+    clientMonths: clientInsights.topMonths,
+    industryMonths: realIndustry,
+    nextPeak: clientInsights.nextPeak,
+    hasIndustryData,
+  });
+  const base = {
+    isLoading,
+    dataStatus,
+    isMock: false,
+    hasEnoughData: hasClientData,
+    hasClientData,
+    hasIndustryData,
+    monthsCovered,
+    windowMonths: WINDOW_MONTHS,
+  };
+  return {
+    ...base,
+    client,
+    industry: realIndustry,
+    topClientMonths: clientInsights.topMonths,
+    topIndustryMonths,
+    nextPeakMonth: clientInsights.nextPeak?.month ?? null,
+    daysToNextPeak: clientInsights.nextPeak?.days ?? null,
+    insight,
+  };
 }
 
 function pickTop<T extends { quotesCount?: number; avgQuotesPerCompany?: number }>(
@@ -291,6 +355,7 @@ export function useClientSeasonality(
       // 2) Sazonalidade do setor (se houver ramo)
       let industryRows: IndustryRow[] = [];
       let companiesCount = 0;
+      let industryUnavailable = false;
       if (ramoAtividade) {
         try {
           const companies = await selectCrm<{ id: string }>("companies", {
@@ -305,18 +370,19 @@ export function useClientSeasonality(
               "get_industry_seasonality",
               { _company_ids: ids, _months: WINDOW_MONTHS },
             );
-            if (!indErr) industryRows = (indData ?? []) as IndustryRow[];
+            if (indErr) industryUnavailable = true;
+            else industryRows = (indData ?? []) as IndustryRow[];
           }
         } catch {
-          industryRows = [];
+          industryUnavailable = true;
         }
       }
 
-      return { clientRows, industryRows, companiesCount };
+      return { clientRows, industryRows, companiesCount, industryUnavailable };
     },
   });
 
-  return seasonalityResult(query.data, query.isLoading);
+  return seasonalityResult(query.data, query.isLoading, query.isError);
 }
 
 export const SEASONALITY_MONTH_LABELS = MONTH_LABELS;

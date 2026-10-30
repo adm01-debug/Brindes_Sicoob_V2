@@ -1,11 +1,8 @@
 /**
- * useClientBI — orquestra estatísticas 360° do cliente.
- * Tenta dados reais (orders); se vazio, retorna mock com flag `isMock: true`.
- * Sprint 3: também calcula deltas vs período anterior (90d atual vs 90d anteriores).
+ * useClientBI — orquestra estatísticas 360° do cliente usando apenas pedidos reais.
  */
 import { useMemo } from "react";
 import { useClientOrdersHistory } from "@/hooks/useClientOrdersHistory";
-import { MOCK_CLIENT_STATS } from "@/lib/bi/mockData";
 
 export interface PeriodDelta {
   ltvDeltaPct: number;
@@ -15,6 +12,8 @@ export interface PeriodDelta {
 }
 
 export interface ClientBI {
+  dataStatus: "loading" | "unavailable" | "insufficient" | "available";
+  hasData: boolean;
   isMock: boolean;
   ltv: number;
   avgTicket: number;
@@ -43,41 +42,33 @@ export interface ClientBI {
 const DAY_MS = 86400000;
 
 function pctDelta(current: number, previous: number): number {
-  if (!previous || previous <= 0) return current > 0 ? 100 : 0;
+  if (!previous || previous <= 0) return 0;
   return ((current - previous) / previous) * 100;
 }
 
 export function useClientBI(clientId?: string): ClientBI {
-  const { data, isLoading } = useClientOrdersHistory(clientId);
+  const { data, isLoading, isError } = useClientOrdersHistory(clientId);
 
   return useMemo(() => {
     if (!data || data.ordersCount === 0) {
-      const mockOrders = MOCK_CLIENT_STATS.recentOrders.map((o) => ({
-        ...o,
-        isAnomaly: false,
-        deviation: 0,
-      }));
       return {
-        isMock: true,
-        ...MOCK_CLIENT_STATS,
-        recentOrders: mockOrders,
-        lastOrderDate: MOCK_CLIENT_STATS.lastOrderDate,
-        daysSinceLastOrder: MOCK_CLIENT_STATS.daysSinceLastOrder,
-        current90d: {
-          ltv: MOCK_CLIENT_STATS.ltv * 0.35,
-          avgTicket: MOCK_CLIENT_STATS.avgTicket,
-          ordersCount: Math.max(1, Math.floor(MOCK_CLIENT_STATS.ordersCount * 0.3)),
-        },
-        previous90d: {
-          ltv: MOCK_CLIENT_STATS.ltv * 0.28,
-          avgTicket: MOCK_CLIENT_STATS.avgTicket * 0.92,
-          ordersCount: Math.max(1, Math.floor(MOCK_CLIENT_STATS.ordersCount * 0.25)),
-        },
+        dataStatus: isLoading ? "loading" : isError ? "unavailable" : "insufficient",
+        hasData: false,
+        isMock: false,
+        ltv: 0,
+        avgTicket: 0,
+        ordersCount: 0,
+        topCategories: [],
+        recentOrders: [],
+        lastOrderDate: null,
+        daysSinceLastOrder: null,
+        current90d: { ltv: 0, avgTicket: 0, ordersCount: 0 },
+        previous90d: { ltv: 0, avgTicket: 0, ordersCount: 0 },
         delta: {
-          ltvDeltaPct: 25,
-          avgTicketDeltaPct: 8,
-          ordersCountDeltaPct: 20,
-          hasPreviousData: true,
+          ltvDeltaPct: 0,
+          avgTicketDeltaPct: 0,
+          ordersCountDeltaPct: 0,
+          hasPreviousData: false,
         },
         isLoading,
       };
@@ -115,14 +106,16 @@ export function useClientBI(clientId?: string): ClientBI {
     };
 
     return {
+      dataStatus: "available",
+      hasData: true,
       isMock: false,
       ltv: data.totalLtv,
       avgTicket: data.avgTicket,
       ordersCount: data.ordersCount,
       lastOrderDate: data.lastOrderAt,
       daysSinceLastOrder: daysSince,
-      // Categorias reais ainda não temos (depende de order_items + categoria) — fallback mock parcial
-      topCategories: MOCK_CLIENT_STATS.topCategories,
+      // Sem categoria validada nos itens do pedido, não atribui preferência.
+      topCategories: [],
       recentOrders: (() => {
         const totals = valid.map((o) => o.total ?? 0).filter((t) => t > 0);
         const mean = totals.length > 0 ? totals.reduce((s, v) => s + v, 0) / totals.length : 0;
@@ -151,9 +144,9 @@ export function useClientBI(clientId?: string): ClientBI {
         ltvDeltaPct: pctDelta(cur.ltv, prev.ltv),
         avgTicketDeltaPct: pctDelta(cur.avgTicket, prev.avgTicket),
         ordersCountDeltaPct: pctDelta(cur.ordersCount, prev.ordersCount),
-        hasPreviousData: inPrevious.length > 0,
+        hasPreviousData: inPrevious.length > 0 && sumLtv(inPrevious) > 0,
       },
       isLoading,
     };
-  }, [data, isLoading]);
+  }, [data, isError, isLoading]);
 }

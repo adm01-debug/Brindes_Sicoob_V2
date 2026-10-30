@@ -1,11 +1,11 @@
 /**
  * ClientAffinityProducts — Zona 2: "O que esse cliente gosta"
- * Usa dados reais de quote_items quando existem; fallback mock caso contrário.
+ * Usa dados reais de quote_items; sem histórico suficiente, informa a falta de amostra.
  */
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Heart, Sparkles, CheckCircle2 } from "lucide-react";
+import { Heart, CheckCircle2 } from "lucide-react";
 import { useClientAffinity } from "@/hooks/bi/useClientAffinity";
 import { useBICategoryFocus } from "@/contexts/BICategoryFocusContext";
 import { resolveBICategory } from "@/lib/bi/categoryResolver";
@@ -17,7 +17,7 @@ interface Props {
 }
 
 export function ClientAffinityProducts({ clientId }: Props) {
-  const { data, isLoading } = useClientAffinity(clientId);
+  const { data, isLoading, isError } = useClientAffinity(clientId);
   const { focusedSlug } = useBICategoryFocus();
 
   const visibleCategories = useMemo(() => {
@@ -38,22 +38,19 @@ export function ClientAffinityProducts({ clientId }: Props) {
             <div>
               <h2 className="font-display font-semibold">Produtos das categorias favoritas</h2>
               <p className="text-xs text-muted-foreground">
-                {data?.isMock
-                  ? "Categorias preferidas + sugestões dentro de cada uma"
-                  : `Baseado em ${data?.realProductsCount} produtos já orçados · agrupados por categoria`}
+                {isError
+                  ? "Não foi possível consultar a afinidade agora. Tente novamente mais tarde."
+                  : data?.categories.length
+                  ? `Baseado em ${data.realProductsCount} produtos já orçados · agrupados por categoria`
+                  : "A afinidade será exibida quando houver produtos orçados suficientes."}
               </p>
             </div>
           </div>
-          {data &&
-            (data.isMock ? (
-              <Badge variant="outline" className="gap-1 border-amber-500/50 text-amber-700 dark:text-amber-300 text-[10px]">
-                <Sparkles className="h-3 w-3" /> Simulado
-              </Badge>
-            ) : (
+          {data?.categories.length ? (
               <Badge variant="outline" className="gap-1 border-emerald-500/50 text-emerald-700 dark:text-emerald-300 text-[10px]">
                 <CheckCircle2 className="h-3 w-3" /> Dados reais
               </Badge>
-            ))}
+            ) : null}
         </div>
 
         {isLoading ? (
@@ -62,6 +59,13 @@ export function ClientAffinityProducts({ clientId }: Props) {
           </div>
         ) : (
           <div className="space-y-5">
+            {visibleCategories.length === 0 ? (
+              <p className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground" role="status">
+                {isError
+                  ? "A consulta do histórico falhou; nenhum perfil de afinidade foi inferido."
+                  : "Sem amostra suficiente para identificar categorias favoritas deste cliente."}
+              </p>
+            ) : null}
             {visibleCategories.map((cat) => (
               <div key={cat.category}>
                 <div className="flex items-center justify-between mb-2">

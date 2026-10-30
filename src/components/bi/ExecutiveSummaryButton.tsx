@@ -54,13 +54,13 @@ function topTrend(data: { trends?: Array<{ productName?: string | null }> } | nu
 
 function buildSummary(data: ExecutiveData): string {
   const { health, bi, affinity, trends, seas, clientName, ramoAtividade } = data;
-  const tier = HEALTH_LABELS[health.tier] ?? "em risco";
+  const tier = health.hasEnoughData ? HEALTH_LABELS[health.tier] ?? "em risco" : "sem amostra suficiente";
   const lastOrder = lastOrderSuffix(bi.daysSinceLastOrder);
   return [
     `📊 Resumo executivo — ${clientName}${ramoSuffix(ramoAtividade)}`, "",
-    `▸ Saúde: cliente ${tier} (Health Score ${health.score}/100). ${health.crossZoneInsight}`, "",
-    `▸ Histórico: LTV ${fmtBRL(bi.ltv)} em ${bi.ordersCount} pedidos · ticket médio ${fmtBRL(bi.avgTicket)}${lastOrder}. Categoria forte: ${topCategory(affinity.data)}.`, "",
-    `▸ Oportunidade: share-of-wallet estimado em ${health.shareOfWalletPct}% (potencial não capturado: ${fmtBRL(health.potentialUntappedBRL)}). ${health.windowLabel}. Próxima ação: ${health.nextActionLabel} — ${health.nextActionDetail}`, "",
+    `▸ Saúde: cliente ${tier}${health.hasEnoughData ? ` (Health Score ${health.score}/100)` : ""}. ${health.crossZoneInsight}`, "",
+    `▸ Histórico: ${bi.hasData ? `LTV ${fmtBRL(bi.ltv)} em ${bi.ordersCount} pedidos · ticket médio ${fmtBRL(bi.avgTicket)}${lastOrder}. Categoria forte: ${topCategory(affinity.data)}.` : "Dados insuficientes para resumir o histórico de compras."}`, "",
+    `▸ Oportunidade: ${health.hasEnoughData ? `share-of-wallet estimado em ${health.shareOfWalletPct}% (potencial não capturado: ${fmtBRL(health.potentialUntappedBRL)}).` : "não calculada por falta de amostra"} ${health.windowLabel}. Próxima ação: ${health.nextActionLabel} — ${health.nextActionDetail}`, "",
     `▸ Setor: top tendência atual é "${topTrend(trends.data)}". ${seas.insight ?? ""}`, "", `📞 Script: "${health.scriptHint}"`,
   ].join("\n");
 }

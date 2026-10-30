@@ -130,16 +130,18 @@ export function buildCategorySection(
 ): CategorySection {
   const clientCats = arrayOrEmpty(catAffinity?.categories);
   const industryCats = arrayOrEmpty(catIndustry?.categories);
+  const hasComparableSamples =
+    catAffinity?.dataStatus === "available" && catIndustry?.dataStatus === "available";
 
   const clientBySlug = new Map<string, CategoryAggregate>(clientCats.map((c) => [c.slug, c]));
   const industryBySlug = new Map<string, IndustryCategoryAggregate>(industryCats.map((c) => [c.slug, c]));
 
-  const rows = orderedCategorySlugs(clientCats, industryCats)
-    .slice(0, 8)
-    .map(slug => categoryRow(slug, clientBySlug, industryBySlug));
+  const rows = hasComparableSamples
+    ? orderedCategorySlugs(clientCats, industryCats).slice(0, 8).map(slug => categoryRow(slug, clientBySlug, industryBySlug))
+    : [];
 
   // GAPs: forte no setor (≥8%) e fraco no cliente (<5%)
-  const gaps = categoryGaps(industryCats, clientBySlug);
+  const gaps = hasComparableSamples ? categoryGaps(industryCats, clientBySlug) : [];
 
   const favorite = firstDefined([catAffinity?.favorite, clientCats[0]], null);
   const favoriteLabel = categoryLabel(favorite);
