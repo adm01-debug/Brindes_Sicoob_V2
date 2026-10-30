@@ -54,7 +54,7 @@ O PR [#164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164) contém a
 | `npm run test:coverage:ci` | ✅ | 452 arquivos aprovados, 4 skipped; 5.839 testes passaram, 68 skipped, 0 falhas; statements 94%, branches 86,79%, functions 97,22%, lines 97,6%. |
 | `npm run test:scenarios` | ✅ | 227 passaram, 0 falhas. |
 | `deno check supabase/functions/webhook-dispatcher/index.ts` | ✅ | Edge Function verificou sem erro. |
-| `python3 scripts/qa/simular-webhook-internal-auth.py` | ✅ | PostgreSQL 17 descartável, `--network none`; eventos de quatro tabelas, Vault, ACL, schema `extensions` do `pg_net`, retry por hook e limite de tentativas cobertos. `banco_canonico_alterado=false`. |
+| `python3 scripts/qa/simular-webhook-internal-auth.py` | ✅ | Contrato SQL exercitado em PostgreSQL 17 descartável, `--network none`, com Vault e `extensions.http_post` simulados. Cobre claim/lease, limite de tentativas, falha de enqueue, ACL e headers. Não testa `pg_net` instalado, handler Edge real ou entrega assíncrona ponta a ponta. `banco_canonico_alterado=false`. |
 | `node scripts/check-migration-immutability.mjs` | ✅ | Nenhuma migration existente foi alterada/removida. |
 | `node scripts/db/apply-sicoob-migrations.mjs --verify-files` | ✅ | `mutation:false`; não aplicou migration. |
 | `npm run check:critical-test-skips` | ✅ | 4/4 contratos críticos declarados. |
@@ -65,9 +65,10 @@ O PR [#164](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/164) contém a
 ### Escopo e limites da correção de webhook
 
 A migration e o dispatcher compartilham autenticação dedicada; retry usa
-`extensions.http_post`, como definido na instalação local de `pg_net`, aponta para
-um único `target_webhook_id` e conserva o contador da tentativa. A simulação cobre
-o contrato em PostgreSQL descartável. Permanecem sem comprovação a configuração
+`extensions.http_post`, como definido na instalação histórica local de `pg_net`,
+aponta para um único `target_webhook_id`, grava um claim antes do enqueue,
+serializa as execuções e conserva o contador por uma lease de 15 minutos. A
+simulação cobre apenas o contrato SQL com HTTP stubado. Permanecem sem comprovação a configuração
 do segredo no Vault/Edge de homologação, a entrega externa real, o ACK durável e a
 integração Bitrix; por isso P078 continua **Planejada** e a migration não foi
 aplicada.

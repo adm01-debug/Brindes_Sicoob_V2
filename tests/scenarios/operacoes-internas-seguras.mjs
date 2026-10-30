@@ -78,6 +78,7 @@ test('crons de conexões usam Vault e não mantêm credenciais no agendamento', 
 test('chamadores do webhook-dispatcher leem segredo dedicado do Vault antes da chamada', () => {
   const migration = read('supabase/migrations/20261029213000_secure_webhook_dispatcher_callers.sql');
   const dispatcher = read('supabase/functions/webhook-dispatcher/index.ts');
+  const dispatcherContract = read('supabase/functions/_shared/webhook-dispatcher-contract.ts');
   const retryStart = migration.indexOf('CREATE OR REPLACE FUNCTION public.retry_failed_webhook_deliveries()');
   const trigger = migration.slice(0, retryStart);
   const retry = migration.slice(retryStart);
@@ -86,8 +87,9 @@ test('chamadores do webhook-dispatcher leem segredo dedicado do Vault antes da c
   assert.match(dispatcher, /requireInternalService\(req, "WEBHOOK_DISPATCHER_SECRET"\)/);
   assert.match(dispatcher, /target_webhook_id: z\.string\(\)\.uuid\(\)\.optional\(\)/);
   assert.match(dispatcher, /retry_after_attempt: z\.number\(\)\.int\(\)\.min\(0\)\.max\(4\)\.optional\(\)/);
-  assert.match(dispatcher, /hasRetryTarget !== hasRetryAttempt/);
-  assert.match(dispatcher, /Retry, teste e replay são modos exclusivos/);
+  assert.match(dispatcher, /validateWebhookDispatchModes\(parsed\.data\)/);
+  assert.match(dispatcherContract, /hasRetryTarget !== hasRetryAttempt/);
+  assert.match(dispatcherContract, /Retry, teste e replay são modos exclusivos/);
   assert.match(dispatcher, /hooksQuery = hooksQuery\.eq\("id", target_webhook_id\)\.eq\("active", true\)/);
   assert.match(dispatcher, /let attempt = retry_after_attempt \?\? 0/);
   assert.match(read('docs/secrets.md'), /`WEBHOOK_DISPATCHER_SECRET`[\s\S]*`webhook_dispatcher_secret`/);

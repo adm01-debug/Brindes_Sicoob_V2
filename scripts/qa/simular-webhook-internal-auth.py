@@ -92,7 +92,7 @@ try:
         retry_policy jsonb NOT NULL
       );
       CREATE TABLE public.webhook_deliveries(
-        id uuid PRIMARY KEY,
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         webhook_id uuid NOT NULL,
         event text NOT NULL,
         payload jsonb,
@@ -101,7 +101,7 @@ try:
         attempt integer NOT NULL,
         success boolean NOT NULL,
         error_message text,
-        delivered_at timestamptz NOT NULL
+        delivered_at timestamptz NOT NULL DEFAULT now()
       );
       CREATE TABLE public.quotes(
         id uuid PRIMARY KEY,
@@ -230,15 +230,10 @@ try:
     assert retry_body.get("target_webhook_id") == "00000000-0000-4000-8000-000000000002", "retry deve indicar somente o webhook que falhou"
     assert retry_body.get("retry_after_attempt") == 1, "retry deve preservar o contador de tentativas"
 
-    sql("""
-      INSERT INTO public.webhook_deliveries(id,webhook_id,event,payload,payload_hash,attempt,success,delivered_at)
-      VALUES ('00000000-0000-4000-8000-000000000004','00000000-0000-4000-8000-000000000002',
-        'quote.created','{}','hash-max',3,false,now());
-    """)
     retry_lease = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
     assert retry_lease["ok"] is True and retry_lease["retried"] == 0 and retry_lease["skipped_max_attempts"] == 1
     assert scalar("SELECT count(*) FROM public.webhook_dispatch_test_requests;") == "7", "lease deve impedir novo enqueue enquanto aguarda o dispatcher"
-    sql("UPDATE public.webhook_deliveries SET delivered_at = now() - interval '16 minutes' WHERE error_message = 'retry_enqueued' AND attempt = 2;")
+    sql("UPDATE public.webhook_deliveries SET delivered_at = now() - interval '16 minutes' WHERE webhook_id = '00000000-0000-4000-8000-000000000002' AND payload->>'quote_id' = 'qa' AND success = false;")
     retry_after_lease = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
     assert retry_after_lease["ok"] is True and retry_after_lease["retried"] == 1
     assert scalar("SELECT count(*) FROM public.webhook_deliveries WHERE error_message = 'retry_enqueued' AND attempt = 3;") == "1", "após a lease, o contador deve avançar"
