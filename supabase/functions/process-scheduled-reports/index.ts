@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { requireInternalService } from "../_shared/internal-service-auth.ts";
+import { sendScheduledReportEmail } from "../_shared/scheduled-report-email.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -93,36 +94,27 @@ Deno.serve(async (req) => {
           };
         }
 
-        // Send email via Resend
         const resendKey = Deno.env.get("RESEND_API_KEY");
-        if (resendKey) {
-          const htmlContent = generateEmailHtml(report.report_name, reportData);
+        const now = new Date().toISOString();
+        await sendScheduledReportEmail({
+          apiKey: resendKey,
+          to: report.email_to,
+          subject: `📊 ${report.report_name} — ${reportData.period}`,
+          html: generateEmailHtml(report.report_name, reportData),
+          idempotencyKey: `scheduled-report:${report.id}:${report.next_run_at}`,
+        }, async () => {
+          const nextRun = calculateNextRun(report.frequency);
+          const { error: updateError } = await supabase
+            .from("scheduled_reports")
+            .update({
+              last_sent_at: now,
+              next_run_at: nextRun.toISOString(),
+              updated_at: now,
+            })
+            .eq("id", report.id);
 
-          await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${resendKey}`,
-            },
-            body: JSON.stringify({
-              from: "Promo Gifts <noreply@promogifts.com.br>",
-              to: [report.email_to],
-              subject: `📊 ${report.report_name} — ${reportData.period}`,
-              html: htmlContent,
-            }),
-          });
-        }
-
-        // Update next_run_at
-        const nextRun = calculateNextRun(report.frequency);
-        await supabase
-          .from("scheduled_reports")
-          .update({
-            last_sent_at: new Date().toISOString(),
-            next_run_at: nextRun.toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", report.id);
+          if (updateError) throw updateError;
+        });
 
         results.push({ id: report.id, status: "sent", email: report.email_to });
       } catch (err) {

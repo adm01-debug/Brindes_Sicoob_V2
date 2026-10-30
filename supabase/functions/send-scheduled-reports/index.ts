@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { requireInternalService } from "../_shared/internal-service-auth.ts";
+import { sendScheduledReportEmail } from "../_shared/scheduled-report-email.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -47,25 +48,25 @@ Deno.serve(async (req: Request) => {
         // Generate report data
         const reportData = await generateReportData(supabase, report);
 
-        // Send email via Resend (if key available) or log
-        if (resendKey) {
-          await sendEmailViaResend(resendKey, report.email_to, report.report_name, reportData);
-        } else {
-          console.log(`[send-scheduled-reports] Would send "${report.report_name}" to ${report.email_to}`);
-        }
+        await sendScheduledReportEmail({
+          apiKey: resendKey,
+          to: report.email_to,
+          subject: `📊 ${report.report_name}`,
+          html: reportData,
+          idempotencyKey: `scheduled-report:${report.id}:${report.next_run_at}`,
+        }, async () => {
+          const nextRun = calculateNextRun(report.frequency);
+          const { error: updateError } = await supabase
+            .from("scheduled_reports")
+            .update({
+              last_sent_at: now,
+              next_run_at: nextRun.toISOString(),
+              updated_at: now,
+            })
+            .eq("id", report.id);
 
-        // Calculate next run
-        const nextRun = calculateNextRun(report.frequency);
-
-        // Update report
-        await supabase
-          .from("scheduled_reports")
-          .update({
-            last_sent_at: now,
-            next_run_at: nextRun.toISOString(),
-            updated_at: now,
-          })
-          .eq("id", report.id);
+          if (updateError) throw updateError;
+        });
 
         results.push({ id: report.id, status: "sent" });
       } catch (err) {
@@ -154,27 +155,6 @@ async function generateReportData(supabase: any, report: any): Promise<string> {
 
   html += `<hr/><p style='font-size:12px;color:#888'>Relatório automático — Promo Gifts</p>`;
   return html;
-}
-
-async function sendEmailViaResend(apiKey: string, to: string, subject: string, html: string) {
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "Promo Gifts <noreply@promogifts.com.br>",
-      to: [to],
-      subject: `📊 ${subject}`,
-      html,
-    }),
-  });
-
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Resend error: ${err}`);
-  }
 }
 
 function calculateNextRun(frequency: string): Date {
