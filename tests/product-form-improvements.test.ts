@@ -208,6 +208,21 @@ describe('Schema Validation — Happy Path', () => {
     expect(result.success).toBe(true);
   });
 
+  it('applies schema defaults and coerces numeric input before submission', () => {
+    const result = productFormSchema.safeParse({
+      sku: 'TEST-002',
+      name: 'Caneta Promocional',
+      supplier_id: 'supplier-uuid-123',
+      sale_price: '15.90',
+    });
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.data.sale_price).toBe(15.9);
+    expect(result.data.stock_quantity).toBe(defaultFormValues.stock_quantity);
+    expect(result.data.description).toBe(defaultFormValues.description);
+  });
+
   it('accepts full product with all fields', () => {
     const full: ProductFormData = {
       ...validProduct,
