@@ -38,6 +38,22 @@ Verdes confirmados: Migration ledger drift `41013281253` (30/10), Branch Protect
 
 O baseline anterior a esta rodada na branch tinha 5.844 testes aprovados e 68 skipped. A validação final registra 5.854 aprovados, 68 skipped e 0 falhas. Typecheck, build, lint e audit locais passaram; também passaram os hooks pós-commit e as verificações de baseline.
 
+### Atualização local de segurança e contrato — 30/10/2026
+
+Após o snapshot remoto anterior, a branch recebeu uma migration aditiva para retirar custos internos da resposta pública de aprovação, com projeção mínima na Edge como segunda barreira. A evidência HMAC continua usando o snapshot completo privado. Foi corrigido também o status persistido para kits válidos (`ready`). Estes resultados são locais e ainda não certificam a PR nem aplicação no banco:
+
+| Verificação | Resultado local do candidato |
+|---|---|
+| `npm test` | 5.856 passaram, 68 skipped, 0 falhas (458 arquivos aprovados, 4 skipped) |
+| `npm run typecheck` | exit 0 |
+| `npm run lint` | exit 0, 0 erros e 874 avisos existentes |
+| `npm run build` | exit 0; avisos de env Supabase local, PostCSS e chunks >600 KiB |
+| Simulação PostgreSQL 16 descartável | Todos os cenários passaram: allowlist, ausência recursiva de custos, ACL anon/authenticated, expiração/revogação, reaplicação da migration e verificação HMAC |
+| Testes Edge / kit / tela | 13 cenários Node da Edge e 5 testes Vitest direcionados aprovados |
+| Migration allowlist, workflow docs e catálogo E2E | 6 cenários SQL client, actionlint, `npm audit --audit-level=high --offline`, `git diff --check` e catálogo E2E passaram |
+
+O cenário descartável não valida o estado do Supabase remoto. A migration está na allowlist restrita ao projeto de construção e ainda não foi aplicada a nenhum projeto remoto.
+
 ### Revisão complementar pós-CI
 
 - O schema Zod agora mantém mensagens próprias apenas quando `goal_type` e `period` estão ausentes; valores enum inválidos continuam com a mensagem padrão. Dois testes cobrem os casos.

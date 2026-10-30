@@ -18,6 +18,49 @@ async function sha256Hex(value: string) {
   return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, "0")).join("");
 }
 
+function record(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+}
+
+function pick(source: Record<string, unknown>, allowed: string[]) {
+  return Object.fromEntries(allowed.filter(key => key in source).map(key => [key, source[key]]));
+}
+
+function publicQuoteProjection(value: unknown) {
+  const quote = record(value);
+  if (!quote) return null;
+  const items = Array.isArray(quote.items) ? quote.items.flatMap(value => {
+    const item = record(value);
+    if (!item) return [];
+    const personalizations = Array.isArray(item.personalizations)
+      ? item.personalizations.flatMap(value => {
+          const personalization = record(value);
+          return personalization
+            ? [pick(personalization, ["colors_count", "positions_count", "notes"])]
+            : [];
+        })
+      : [];
+    return [{
+      ...pick(item, [
+        "product_name", "product_sku", "color_name", "size_code",
+        "quantity", "unit_price", "subtotal",
+      ]),
+      personalizations,
+    }];
+  }) : [];
+
+  return {
+    ...pick(quote, [
+      "quote_number", "client_name", "total", "valid_until", "status",
+      "response", "responded_at", "payment_terms", "delivery_time",
+      "shipping_cost", "notes",
+    ]),
+    items,
+  };
+}
+
 serve(withStructuredLogging("quote-approval", async (req) => {
   const preflight = handleCorsPreflightIfNeeded(req);
   if (preflight) return preflight;
@@ -65,7 +108,14 @@ serve(withStructuredLogging("quote-approval", async (req) => {
       const { data, error } = await supabase.rpc('get_public_quote_approval', { _token: token });
       if (error) return json({ error: "Consulta indisponível." }, 503);
       if (!data) return json({ quote: null });
-      return json({ quote: data, approval: { status: data.status, response: data.response, responded_at: data.responded_at }, seller: null });
+      const quote = publicQuoteProjection(data);
+      const approval = record(data);
+      if (!quote || !approval) return json({ quote: null });
+      return json({
+        quote,
+        approval: pick(approval, ["status", "response", "responded_at"]),
+        seller: null,
+      });
     }
     if (!['approved', 'rejected'].includes(status) || (notes != null && (typeof notes !== 'string' || notes.length > 2000))) {
       return json({ error: "Resposta inválida." }, 400);

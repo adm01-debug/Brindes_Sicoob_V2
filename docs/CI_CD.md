@@ -1,11 +1,14 @@
 # CI e entrega — Brindes Sicoob V2
 
-## Estado comprovado em 22/09/2026
+## Estado verificado em 30/10/2026
 
-O repositório possui validação contínua, mas ainda não possui uma entrega em
-produção comprovada. O orçamento do GitHub Actions está bloqueando a execução
-remota dos jobs; por isso, resultado local não deve ser apresentado como CI
-verde.
+Há workflows remotos ativos; o orçamento do Actions não está impedindo esta
+rodada. A PR #176 continua aberta e sem merge. Na execução atual, os checks de
+segurança, CodeQL, Portal, bundle, Lighthouse, origem confiável e transações
+passaram. O E2E autenticado falhou antes de iniciar o Playwright porque falta a
+configuração do projeto isolado; o Copilot gerenciado também falhou. A Qualidade
+contínua ainda estava em execução na última consulta. Os resultados e links são
+mantidos em [RELATORIO_CI.md](../RELATORIO_CI.md) e [PENDENCIAS.md](../PENDENCIAS.md).
 
 | Workflow | Responsabilidade |
 |---|---|
@@ -19,9 +22,11 @@ verde.
 | `bundle-check.yml` e `lighthouse.yml` | Orçamento de bundle e auditoria de experiência |
 | `db-performance-audit.yml` | Auditoria programada do banco |
 
-Os workflows que acessam o ambiente exigem os secrets inventariados em
-[`secrets.md`](./secrets.md). Ausência de credenciais em gates remotos deve
-falhar fechado; os testes locais explicitamente opcionais registram `skip`.
+Os workflows que acessam ambiente exigem os secrets inventariados em
+[`secrets.md`](./secrets.md), que deve ser reconciliado com cada YAML e com a
+última execução. O E2E exige secrets de projeto, URL, chave publicável e contas
+de teste do mesmo Supabase isolado. Ausência de credenciais deve falhar fechado;
+os testes locais explicitamente opcionais registram `skip`.
 
 ## Fluxo de mudança
 

@@ -56,11 +56,11 @@ function kitIdentityDetails(identity: KitState['identity']) {
   };
 }
 
-function buildKitPayload(userId: string, kitState: KitState, kitQuantity: number) {
+export function buildKitPayload(userId: string, kitState: KitState, kitQuantity: number) {
   return {
     user_id: userId,
     name: kitState.name || 'Kit sem nome',
-    status: kitState.isValid ? 'complete' : 'draft',
+    status: kitState.isValid ? 'ready' : 'draft',
     kit_type: kitState.kitType || 'montado',
     box_data: kitState.box ? JSON.parse(JSON.stringify(kitState.box)) : null,
     items_data: JSON.parse(JSON.stringify(kitState.items)),

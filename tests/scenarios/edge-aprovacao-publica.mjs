@@ -100,6 +100,37 @@ test('link inexistente mantém contrato quote null sem falso erro operacional', 
   assert.deepEqual(JSON.parse(await response.text()),{quote:null});
 });
 
+test('projeção Edge da consulta pública remove campos extras e custos internos', async () => {
+  const instance = app({
+    data: {
+      quote_number: 'ORC-PRIVADO',
+      client_name: 'Cooperativa',
+      total: 100,
+      unit_cost: 900,
+      internal_notes: 'nota-interna-sentinela',
+      items: [{
+        id: 'id-interno',
+        product_name: 'Caneca',
+        subtotal: 100,
+        setup_cost: 45,
+        personalizations: [{ notes: 'Logo frontal', unit_cost: 12, setup_cost: 35, total_cost: 47 }],
+      }],
+      signature_evidence: { signer_document: '12345678901' },
+    },
+    error: null,
+  });
+  const response = await instance.request({ action: 'get_data', token: 'sintetico' });
+  const body = JSON.parse(await response.text());
+  assert.equal(response.status, 200);
+  assert.deepEqual(body.quote, {
+    quote_number: 'ORC-PRIVADO',
+    client_name: 'Cooperativa',
+    total: 100,
+    items: [{ product_name: 'Caneca', subtotal: 100, personalizations: [{ notes: 'Logo frontal' }] }],
+  });
+  assert.doesNotMatch(JSON.stringify(body), /nota-interna-sentinela|12345678901|setup_cost|unit_cost|total_cost|signature_evidence|id-interno/);
+});
+
 test('erro interno não expõe mensagem do banco', async () => {
   const instance=app({data:null,error:{code:'XX000',message:'detalhe-sigiloso'}});
   const response=await instance.request({ action:'get_data',token:'sintetico' });

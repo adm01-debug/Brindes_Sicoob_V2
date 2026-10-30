@@ -1,4 +1,9 @@
-# Performance Optimization
+# Desempenho — objetivos e estado verificado
+
+Este documento descreve práticas e metas; não comprova que serviços ou limites
+operacionais estejam configurados no ambiente publicado. Os resultados medidos
+devem ser registrados com data, URL, SHA e execução reproduzível em
+[`PERFORMANCE_AUDIT.md`](./PERFORMANCE_AUDIT.md).
 
 ## Frontend
 - Code splitting with React.lazy()
@@ -8,14 +13,19 @@
 
 ## Backend
 - Database indexing
-- Redis caching layer
-- CDN for static assets
-- Compression enabled
+- Cache de backend: avaliar e medir antes de selecionar uma tecnologia; não há
+  evidência neste repositório de uma camada Redis ativa.
+- CDN para assets: confirmar no provedor do ambiente.
+- Compressão: confirmar nos headers efetivamente servidos.
 
 ## Monitoring
-- Lighthouse CI score > 95
-- Core Web Vitals: rastreamento e dashboard agora cobertos por sistema externo (não há mais dashboard interno em `/admin/performance` nem coleta via `web-vitals` no app).
-- Error rate < 0.1%
+- Lighthouse: o workflow configura pontuação mínima de 0,90 para performance,
+  acessibilidade, boas práticas e SEO. Isso é um gate por execução, não uma
+  medição de todas as jornadas nem evidência de meta acima de 95.
+- Core Web Vitals: o código atual contém coleta via `web-vitals` e mantém a
+  rota `/admin/performance`. A existência do código não prova ingestão ativa,
+  dashboard operacional ou configuração Sentry no ambiente.
+- Taxa de erro: meta <0,1%; sem medição operacional recente anexada aqui.
 
 ## Targets (Google Core Web Vitals — official thresholds)
 | Metric | Good | Needs Improv. | Poor |

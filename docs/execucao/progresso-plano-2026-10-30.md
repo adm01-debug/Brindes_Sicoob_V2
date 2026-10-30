@@ -58,3 +58,13 @@ A revisão de segurança encontrou uma lacuna adicional entre Edge e banco: o SQ
 - A migration `20261030190000_bind_sicoob_scan_evidence_hash.sql` adiciona comparação fail-closed no RPC e constraint `NOT VALID` para novas gravações. Ela foi incluída na allowlist do aplicador restrito ao projeto de construção e validada em PostgreSQL descartável. Registros históricos ainda não foram varridos/validados e a migration não foi aplicada a nenhum Supabase remoto.
 - Nenhuma migration, função, dado ou configuração do Supabase remoto foi alterada.
 - O inventário de 682 lacunas de 11/10/2026 é histórico (`dc08200`) e precisa ser revalidado contra o SHA atual antes de servir como estado completo do backlog.
+
+## Correção de segurança da aprovação pública — 30/10/2026
+
+A revisão do endpoint por token encontrou que `get_public_quote_approval` retornava o snapshot de personalizações sem remover `setup_cost`, `unit_cost` e `total_cost). Uma nova migration aditiva cria uma allowlist SQL mínima para o contrato da tela ativa; o snapshot completo permanece privado para gerar e verificar a evidência HMAC. A Edge Function aplica uma segunda allowlist antes de responder ao cliente. O tipo público foi alinhado, e a chave visual dos itens não depende mais de IDs internos.
+
+O cenário PostgreSQL descartável aplica a migration duas vezes, verifica root/itens/personalizações por allowlist exata, busca chaves sensíveis recursivamente, valida ACLs para `anon` e `authenticated`, confirma consulta expirada/revogada sem dados e assinatura HMAC intacta. A Edge tem caso com sentinelas de custos, nota interna e documento do signatário. Também corrigimos a persistência de kit válido para usar o status `ready` aceito pelo contrato de banco.
+
+**Evidência local deste candidato:** `npm test` — 5.856 aprovados, 68 ignorados, 0 falhas; `npm run typecheck`, `npm run lint` (0 erros, 874 avisos), `npm run build`, `npm audit --audit-level=high --offline`, `actionlint`, verificação do catálogo E2E, 13 cenários da Edge, 6 cenários do cliente SQL e simulação PostgreSQL passaram. O build mantém avisos de variáveis Supabase ausentes no ambiente local, PostCSS e chunks grandes.
+
+A migration está incluída na allowlist cujo executor valida project ref de construção e recusa o canônico. Nenhuma migration, Edge Function ou dado foi alterado remotamente. A correção depende do merge e de execução autorizada no projeto isolado antes de estar ativa no banco; E2E autenticado e CI remoto no novo SHA ainda precisam ser confirmados. O plano de 100 etapas continua aberto.
