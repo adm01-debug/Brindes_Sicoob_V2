@@ -1,6 +1,6 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
-**Gerado em:** 2026-10-30  
+**Gerado em:** 2026-10-30
 **Sessão:** Codex · auditoria da CI e dos dados BI
 
 ## Estado atual — auditoria de 30/10/2026
@@ -15,6 +15,9 @@ Considerada apenas a execução mais recente na branch `main` para cada workflow
 | Security Scan | Falha | Run [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158): `undici@8.10.2` e `zod@3.25.76` altos. Override `undici@8.12.2` corrige o pacote transitivo; Zod permanece pendente de migração major. |
 | Qualidade contínua | Falha | Run [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964): o passo de segurança falha pelo mesmo resultado de audit. |
 | CodeQL | Falha | Run [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073): init v4.39.1 misturado com autobuild/analyze v4.38.2; falha impede geração de SARIF. Pins estão alinhados na branch. |
+| E2E (Playwright) | Startup failure | Run [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358): `startup_failure`, zero jobs; causa não aparece no resumo do GitHub. PR reexecutará com guarda de project ref de homologação. |
+| Bundle Size Check | Falha | Run [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911): logs expiraram (HTTP 404); causa ainda não confirmada. Check local do orçamento e execução de PR pendentes. |
+| Lighthouse Performance Audit | Falha | Run [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910): logs expiraram (HTTP 404); causa ainda não confirmada. Próxima execução requer também `LHCI_GITHUB_APP_TOKEN` válido. |
 | Running Copilot Code Review | Falha | Run [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125): quota do plano Copilot, HTTP 402. |
 
 Verdes confirmados: Migration ledger drift `41013281253` (30/10), Branch Protection Sentinel `40602983038`, Enterprise Compliance `40602982958` e Portal Sicoob `39868499315`.
@@ -38,6 +41,8 @@ O baseline anterior a esta rodada na branch tinha 5.844 testes aprovados e 68 sk
 ### Segurança de Supabase
 
 Nenhuma consulta ou mutação remota foi feita. A branch exige `CONSTRUCTION_SUPABASE_PROJECT_REF`, valida o host do banco e bloqueia o project ref canônico para migrations, deploy de funções e E2E. Não há evidência acessível de configuração dos secrets do environment `construction`; por isso, deploy, migrations e E2E remoto continuam bloqueados e documentados em `PENDENCIAS.md`.
+
+Os workflows foram revisados para não usar `continue-on-error` nem `|| true`. Resumos continuam sendo produzidos com `if: always()`; os erros dos testes e da publicação de artefatos passam a manter o job em falha em vez de serem mascarados.
 
 ---
 

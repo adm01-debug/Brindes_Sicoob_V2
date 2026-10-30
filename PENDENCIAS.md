@@ -13,6 +13,9 @@ As seções históricas abaixo refletem o estado de 22/10 e não substituem este
 | Security Scan | `failure` (27/10) | `npm audit`: `undici` e `zod` com severidade alta. A branch de correção remove o alerta transitivo de `undici`; resta `zod@3.25.76`, cuja correção disponível exige migração major para Zod 4. | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) |
 | Qualidade contínua | `failure` (27/10) | Mesmo gate de audit: 2 alertas altos (`undici`, `zod`) na `main`. Com o override proposto, permanece o alerta de Zod. | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) |
 | CodeQL | `failure` (27/10) | `init` estava em v4.39.1 e `autobuild`/`analyze` em v4.38.2; a inicialização entra em `JOB_STATUS_CONFIGURATION_ERROR` e não gera SARIF. Pins alinhados na branch; aguarda CI de PR. | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) |
+| E2E (Playwright) | `startup_failure` (08/10) | O GitHub registrou zero jobs, sem resumo/log que identifique a causa. O workflow agora exige project ref de homologação e bloqueia o canônico; falta comprovar a configuração e revalidar por PR. | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) |
+| Bundle Size Check | `failure` (27/09) | Logs expiraram (HTTP 404); causa exata não é recuperável. O check de orçamento será executado no PR da branch. | [36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) |
+| Lighthouse Performance Audit | `failure` (27/09) | Logs expiraram (HTTP 404); causa exata não é recuperável. A próxima execução por PR também depende de `LHCI_GITHUB_APP_TOKEN` válido. | [36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910) |
 | Publicar funções Sicoob / alvo | bloqueado | O workflow antigo fixava o projeto canônico `cfmzkthhgliqelozlmwu`; agora a branch exige `CONSTRUCTION_SUPABASE_PROJECT_REF` e recusa o canônico. Não houve confirmação verificável do secret/ambiente nem execução remota. | — |
 | Running Copilot Code Review | `failure` (22/10) | `SessionModelError`, HTTP 402: cota adicional do plano Copilot esgotada; depende do owner/assinatura. | [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) |
 
@@ -26,6 +29,8 @@ As seções históricas abaixo refletem o estado de 22/10 e não substituem este
 4. Após o PR validado, executar deploy/migrations somente contra `construction` confirmado. Não repetir publicação remota enquanto o alvo não puder ser demonstrado como isolado.
 
 **Validação local da branch de correção:** `npm ci` e build/typecheck passaram; lint com 0 erros e 874 avisos (baseline gate sem regressões); suíte completa 5.850 passou, 68 skipped, 0 falhou. `npm audit --audit-level=high` ainda retorna 1 alerta alto de Zod, documentado acima. Nenhuma migration, Edge Function ou dado remoto foi alterado.
+
+**Verificação de integridade do CI:** removidos do conjunto de workflows os usos de `continue-on-error` e `|| true`; etapas de resumo pós-falha seguem com `if: always()` e o job continua falhando quando o teste/report falha. A validação `actionlint` precisa ser repetida após o último ajuste YAML.
 
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
 O erro exato foi extraído do run mais recente disponível em main.
