@@ -219,5 +219,4 @@ Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Depen
 | Qualidade contínua (`ci.yml`) — ECR rate limit | `toomanyrequests: Data limit exceeded` ao puxar `public.ecr.aws/supabase/postgres:17.6.1.063` em dois steps (scripts `simular-controles-auditoria.py` e `simular-acl-efetiva.py`) | Rate limit do ECR Public se dissipou naturalmente; run `39780447863` → **success** | automático |
 # Pendências identificadas nesta execução — 30/10/2026
 
-- **Auditoria local de dependências:** após `npm ci` em branch baseada na `origin/main` (`e9d590267`), `npm run check:npm-audit -- --offline` sinalizou duas vulnerabilidades altas, em `undici` e `zod`. Não foi aplicada atualização: falta identificar a cadeia/dependência raiz e confirmar uma correção compatível sem upgrade major. Este achado é do baseline da branch e não foi introduzido pelo lote de inteligência de produto.
-
+- **Auditoria local de dependências:** após `npm ci` em branch baseada na `origin/main` (`e9d590267`), `npm run check:npm-audit` sinalizou duas vulnerabilidades altas, em `undici` e `zod`. Não foi aplicada atualização: falta identificar a cadeia/dependência raiz e confirmar uma correção compatível sem upgrade major. Este achado é do baseline da branch e não foi introduzido pelo lote de inteligência de produto.

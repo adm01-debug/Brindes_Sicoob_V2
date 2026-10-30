@@ -81,6 +81,48 @@ describe('buildBadgeResult', () => {
     expect(result.demandLevel).toBe('alta');
   });
 
+  it('maps ABC class B to the Popular badge', () => {
+    const result = buildBadgeResult({ ...intelligence, abc_classification: 'B' }, [], undefined, false);
+
+    expect(result.badges.map(({ type }) => type)).toEqual(['popular', 'last-units']);
+  });
+
+  it('maps ABC class C to the Normal badge', () => {
+    const result = buildBadgeResult({ ...intelligence, abc_classification: 'C' }, [], undefined, false);
+
+    expect(result.badges.map(({ type }) => type)).toEqual(['normal', 'last-units']);
+  });
+
+  it('does not mark a product as emerging when the trend is at the threshold', () => {
+    const result = buildBadgeResult(intelligence, [{ ...velocity, velocity_trend: 1.3 }], undefined, false);
+
+    expect(result.badges.map(({ type }) => type)).not.toContain('emergente');
+  });
+
+  it('does not show last units when real intelligence reports zero stock', () => {
+    const result = buildBadgeResult({ ...intelligence, total_current_stock: 0 }, [], undefined, false);
+
+    expect(result.badges.map(({ type }) => type)).toEqual(['best-seller']);
+  });
+
+  it('combines editorial catalog flags with market badges backed by real data', () => {
+    const result = buildBadgeResult(intelligence, [velocity], {
+      featured: true,
+      onSale: true,
+    }, false);
+
+    expect(result.badges.map(({ type }) => type)).toEqual([
+      'featured', 'on-sale', 'best-seller', 'emergente', 'last-units',
+    ]);
+  });
+
+  it('handles missing velocity rows without inventing an emerging trend', () => {
+    const result = buildBadgeResult(intelligence, [], undefined, false);
+
+    expect(result.badges.map(({ type }) => type)).not.toContain('emergente');
+    expect(result.demandLevel).toBe('alta');
+  });
+
   it('keeps real intelligence badges when velocity data is unavailable', () => {
     const result = buildBadgeResult(intelligence, [], undefined, true);
 
