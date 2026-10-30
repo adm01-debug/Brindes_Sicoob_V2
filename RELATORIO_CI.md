@@ -38,9 +38,9 @@ Verdes confirmados: Migration ledger drift `41013281253` (30/10), Branch Protect
 
 O baseline anterior a esta rodada na branch tinha 5.844 testes aprovados e 68 skipped. A validação atual da PR registra 5.851 aprovados, 68 skipped e 0 falhas; inclui seis testes BI e um teste de coercão/defaults do formulário. Typecheck, build, lint e audit locais passaram. O último CI remoto disponível é do SHA anterior à migração Zod e ainda não prova a correção; os novos checks da PR são necessários.
 
-### Estado remoto da PR #176 antes da migração Zod
+### Estado remoto da PR #176 — SHA `a9f4092`
 
-No SHA `0f13b6e9a531cfb04aa5042e13b98e0373cb28a8`, Bundle Size Check, Portal Sicoob, CodeQL e Lighthouse passaram. Security Scan e Qualidade contínua falharam pelo alerta Zod 3; E2E falhou no passo de credenciais porque o projeto isolado de homologação não está configurado; Copilot Code Review falhou por HTTP 402/quota. Após o novo commit, todos os checks precisam ser reavaliados no SHA atualizado.
+No SHA `a9f409230d900dad17b386fa2dfb5c5b5a7bc8c2`, Security Scan, Bundle Size Check, Portal Sicoob, CodeQL e Lighthouse passaram. Qualidade contínua falhou em dois testes que herdaram do runner `GITHUB_ACTIONS=true` e `GITHUB_REF=refs/pull/...`; a proteção de migrations recusou corretamente a execução em PR, mas os testes esperavam as mensagens de validação seguintes. O harness agora isola essas variáveis nos casos locais e inclui um teste explícito da recusa em PR. E2E permanece bloqueado porque `E2E_SUPABASE_PROJECT_ID` chegou vazio. Copilot Code Review falhou porque o firewall do agente bloqueou `api.github.com`. A correção do harness precisa de novo CI remoto.
 
 ### Segurança de Supabase
 

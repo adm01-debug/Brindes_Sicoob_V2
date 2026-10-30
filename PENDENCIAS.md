@@ -21,17 +21,17 @@ As seções históricas abaixo refletem o estado de 22/10 e não substituem este
 
 **Verdes confirmados:** Migration ledger drift (`41013281253`, 30/10), Branch Protection Sentinel (`40602983038`), Enterprise Compliance & Audit Reporting (`40602982958`), Portal Sicoob (`39868499315`), Monthly DB Audit (`36794161452`, 01/10) e Dependabot Updates (`40603001428`). O último run de Aplicar migrations Sicoob foi `cancelled` (`37029743784`, 02/10); cancelamento não é falha e nenhuma migration foi executada por esta auditoria.
 
-### PR #176 — checks remotos antes da migração Zod
+### PR #176 — último CI remoto, SHA `a9f4092`
 
-Último SHA validado: `0f13b6e9a531cfb04aa5042e13b98e0373cb28a8` (os resultados abaixo precisam ser atualizados após o novo push).
+Os resultados abaixo correspondem ao SHA `a9f409230d900dad17b386fa2dfb5c5b5a7bc8c2`; o commit seguinte contém o ajuste do harness para o teste de migrations e precisa de novos checks.
 
 | Workflow | Run/conclusão | Evidência |
 |---|---|---|
-| Qualidade contínua | [41077897875](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41077897875) — falhou | `npm audit` encontrou o alerta alto de Zod 3. A correção local da PR removeu os alertas, pendente de novo run. |
-| Security Scan | [41077897860](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41077897860) — falhou | Passo `npm audit`; mesmo alerta Zod 3 no SHA antigo. |
-| E2E (Playwright) | [41077897917](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41077897917) — falhou | Step `Verificar credenciais da jornada autenticada`: `E2E_SUPABASE_PROJECT_ID`, `VITE_SUPABASE_PROJECT_ID` e `VITE_SUPABASE_URL` ausentes/incompletos. A listagem de configuração não mostrou essas variáveis no repo nem no environment `construction`; este environment contém somente `SUPABASE_ACCESS_TOKEN`. Nenhum valor secreto foi lido. |
-| Copilot Code Review | [41077923346](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41077923346) — falhou | Quota do plano Copilot (HTTP 402), bloqueio externo ao código. |
-| Bundle Size Check, Portal Sicoob, CodeQL, Lighthouse | [41077897879](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41077897879), [41077897859](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41077897859), [41077897914](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41077897914), [41077897890](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41077897890) — success | Verdes no SHA anterior; conferir que continuam verdes após novo SHA. |
+| Qualidade contínua | [41080534355](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41080534355) — falhou | 2 dos 5.851 testes falharam porque herdaram a guarda de PR do runner. O script de aplicação bloqueou a ref `refs/pull/...` corretamente; harness corrigido no commit seguinte, pendente novo run. |
+| Security Scan | [41080534389](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41080534389) — success | `npm audit` e Gitleaks passaram; Zod 4.6.7 removeu o alerta alto. |
+| E2E (Playwright) | [41080534349](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41080534349) — falhou | `E2E_SUPABASE_PROJECT_ID` chegou vazio. A verificação de credenciais parou antes dos testes. O projeto de homologação ainda não foi configurado; nenhum valor secreto foi lido. |
+| Copilot Code Review | [41080553533](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41080553533) — falhou | O firewall do agente bloqueou `api.github.com`; é bloqueio da infraestrutura/configuração do workflow gerenciado pelo Copilot. |
+| Bundle Size, Portal Sicoob, CodeQL, Lighthouse | [41080534428](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41080534428), [41080534472](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41080534472), [41080534423](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41080534423), [41080534534](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41080534534) — success | Passaram no SHA `a9f4092`; aguarda-se confirmação de que os resultados continuam verdes após o ajuste seguinte. |
 
 **Pendências que precisam de ação/decisão do owner:**
 
