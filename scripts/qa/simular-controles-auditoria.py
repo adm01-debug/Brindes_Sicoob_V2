@@ -11,7 +11,7 @@ CONTAINER = 'sicoob-auditoria-' + uuid.uuid4().hex[:10]
 def command(args, *, stdin=None, check=True):
     return subprocess.run(args, input=stdin, text=True, capture_output=True, check=check)
 def sql(value, check=True):
-    result = command(['docker','exec','-i',CONTAINER,'psql','-U','supabase_admin','-d','sicoob_simulation','-X','-qAt','-v','ON_ERROR_STOP=1'], stdin=value, check=False)
+    result = command(['docker','exec','-i',CONTAINER,'psql','-U','postgres','-d','sicoob_simulation','-X','-qAt','-v','ON_ERROR_STOP=1'], stdin=value, check=False)
     if check and result.returncode: raise RuntimeError(result.stderr)
     return result
 def actor(role, uid, query, check=True):
@@ -19,7 +19,7 @@ def actor(role, uid, query, check=True):
 
 def start_container():
     args = ['docker','run','--rm','-d','--name',CONTAINER,'--network','none','-e','POSTGRES_HOST_AUTH_METHOD=trust',
-        'public.ecr.aws/supabase/postgres:17.6.1.063','postgres','-D','/var/lib/postgresql/data']
+        'postgres:17-alpine','postgres','-D','/var/lib/postgresql/data']
     last_error = ''
     for attempt in range(3):
         result = command(args, check=False)
@@ -34,7 +34,7 @@ def start_container():
 try:
     start_container()
     wait_for_postgres(command, CONTAINER)
-    command(['docker','exec',CONTAINER,'createdb','-U','supabase_admin','--template=template0','sicoob_simulation'])
+    command(['docker','exec',CONTAINER,'createdb','-U','postgres','--template=template0','sicoob_simulation'])
     sql((ROOT/'tests/scenarios/sql/audit-controls-fixture.sql').read_text())
     old = (ROOT/'supabase/migrations/20260425212807_54b0bb33-1b1f-47d7-a5d3-4409ca43bf80.sql').read_text()
     sql(old[old.index('CREATE OR REPLACE VIEW public.v_full_scope_grants AS'):])

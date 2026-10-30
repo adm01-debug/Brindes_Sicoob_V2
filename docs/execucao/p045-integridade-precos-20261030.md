@@ -114,8 +114,11 @@ caso de variante distinta e a mudança de snapshot têm testes unitários própr
    `c9aa802d`, Segurança, CodeQL, Bundle, Lighthouse e Portal Sicoob passaram;
    Qualidade contínua falhou porque o script e a fixture inicializavam o mesmo
    schema/tabela. Reproduzi e corrigi a duplicidade; os sete cenários passaram
-   localmente em PostgreSQL descartável. O E2E foi bloqueado antes dos testes
-   pela ausência de um Supabase isolado.
+   localmente em PostgreSQL descartável. Em `ac2baf62`, Qualidade falhou por
+   limite de dados do registry ECR público; os dois simuladores afetados foram
+   alinhados à imagem PostgreSQL 17 já usada no job e passaram localmente (31 e
+   23 cenários). O novo SHA ainda precisa confirmar os ajustes. O E2E foi
+   bloqueado antes dos testes pela ausência de um Supabase isolado.
 2. Publicar `quote-price-attestation` e aplicar a migration somente no projeto
    de construção autorizado. Ainda não foram executados.
 3. Configurar `E2E_SUPABASE_PROJECT_ID` para o projeto de homologação e executar
