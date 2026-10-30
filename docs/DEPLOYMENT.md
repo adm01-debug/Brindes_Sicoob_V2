@@ -24,7 +24,7 @@ Não substitua esse fluxo por `supabase functions deploy` manual nem por um proj
 
 ## Migrations Sicoob
 
-Use somente **Actions → Aplicar migrations Sicoob**, na branch protegida `main`, após revisão do SQL e confirmação do environment `construction`. O workflow executa preflight, aplica somente a allowlist versionada e valida o ledger e os contratos remotos.
+Use somente **Actions → Aplicar migrations Sicoob**, na branch protegida `main`, após revisão do SQL e confirmação do environment `construction`. O workflow executa preflight, aplica somente a allowlist versionada e valida o ledger, os contratos já conhecidos pelo executor e as pós-condições explícitas das migrations de redação pública e hash da evidência de scanner.
 
 Não execute `supabase db push --linked`, `--include-all`, SQL manual ou os lotes de setembro descritos em registros históricos. O ledger histórico ainda exige reconciliação; a existência de um arquivo local não comprova aplicação remota. As migrations `20261030174645_redact_public_quote_approval_costs.sql` e `20261030190000_bind_sicoob_scan_evidence_hash.sql` estão versionadas e autorizadas apenas na allowlist do projeto de construção; ambas foram validadas em PostgreSQL descartável, mas não foram aplicadas a nenhum Supabase remoto.
 

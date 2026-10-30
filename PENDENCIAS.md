@@ -42,7 +42,7 @@ A PR está aberta e bloqueada (`merged=false`), com head `e540dfbd0e61c124dfeba3
 2. Ajustar a allowlist do firewall do Copilot Actions para liberar `api.github.com` (ou configurar os setup steps do agente antes da ativação do firewall, conforme a mensagem do run). O workflow Copilot é gerenciado pelo GitHub e não é um YAML versionado no repositório.
 3. Aguardar revisão obrigatória e resolver os dois bloqueios acima antes do merge da PR #176. Ela permanece aberta e sem merge.
 4. O run de deploy Sicoob na `main` permanece falho/sem alvo de homologação comprovado. Antes de qualquer execução futura, configurar `CONSTRUCTION_SUPABASE_PROJECT_REF` e credenciais somente do projeto `construction`; não aplicar migrations nem publicar funções no banco canônico.
-5. A migration candidata `20261030190000_bind_sicoob_scan_evidence_hash.sql` está versionada e autorizada somente na allowlist de construção. Foi validada em PostgreSQL descartável; não foi aplicada a Supabase remoto. Antes de qualquer aplicação, confirmar o projeto `construction`, executar o preflight de ledger e auditar os registros anteriores: a constraint `NOT VALID` protege gravações novas, mas não declara consistência histórica.
+5. As migrations candidatas `20261030174645_redact_public_quote_approval_costs.sql` e `20261030190000_bind_sicoob_scan_evidence_hash.sql` estão versionadas e autorizadas somente na allowlist de construção. Foram validadas em PostgreSQL descartável; não foram aplicadas a Supabase remoto. O executor agora confere os corpos, search paths e privilégios das três funções alteradas, além da expressão e do estado `NOT VALID` da constraint. Antes de qualquer aplicação, confirmar o projeto `construction`, executar o preflight de ledger e auditar os registros anteriores: `NOT VALID` protege gravações novas, mas não declara consistência histórica.
 6. O scanner segue sem provedor homologado. Faltam configurar URL/token no ambiente de construção, testar EICAR e timeout contra esse provedor e verificar limpeza de objetos órfãos no Storage. Não usar o mock `scanner-sintetico` como prova de integração real.
 
 **Validação local daquele snapshot:** suíte completa 5.854 passou, 68 skipped, 0 falhou; build e typecheck passaram; lint passou (0 erros, 874 avisos); `npm audit --audit-level=high` passou com 0 vulnerabilidades. A validação candidata posterior registra 5.856 aprovados em `RELATORIO_CI.md`. Os números acima refletem o snapshot antigo `e540dfb`; `main` permanece sem as alterações. Nenhuma migration, Edge Function ou dado remoto foi alterado.
@@ -193,7 +193,7 @@ errorType: 'quota', statusCode: 402
 **Trigger:** `workflow_dispatch` apenas (manual) — requer input `confirmar: "APLICAR"` e branch `main`.  
 **Não há runs automáticos.** Workflow só executa quando o owner aciona manualmente via GitHub UI ou API.  
 **Último run:** não disponível (nenhum run automático indexado em `branch=main`).  
-**Ação necessária:** Nenhuma no momento — workflow é utilitário para aplicar migrations ao banco de construção sob demanda.
+**Status histórico:** Esse snapshot não certifica o estado atual do alvo. A aplicação permanece manual e bloqueada até confirmar que o environment `construction` aponta para projeto isolado, reconciliar o ledger remoto e concluir a auditoria dos dados históricos; consulte [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#migrations-sicoob).
 
 ---
 

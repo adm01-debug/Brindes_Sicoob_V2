@@ -284,7 +284,7 @@ function latestDefiner(targets, functionName) {
     declarations.some((declaration) => target.sql.includes(declaration)));
 }
 
-function extractFunctionBody(sql, functionName) {
+export function extractFunctionBody(sql, functionName) {
   const declarations = [
     `CREATE OR REPLACE FUNCTION public.${functionName}(`,
     `CREATE FUNCTION public.${functionName}(`,
@@ -293,14 +293,85 @@ function extractFunctionBody(sql, functionName) {
     .map((declaration) => sql.indexOf(declaration))
     .filter((index) => index >= 0)
     .sort((left, right) => left - right)[0] ?? -1;
-  const delimiter = "AS $function$";
-  const start = sql.indexOf(delimiter, declarationIndex);
-  const bodyStart = start + delimiter.length;
-  const end = sql.indexOf("$function$;", bodyStart);
+  const declarationEnd = declarationIndex < 0 ? -1 : sql.indexOf("(", declarationIndex);
+  const asClause = declarationEnd < 0
+    ? null
+    : /\bAS\s+(\$[A-Za-z_][A-Za-z0-9_]*\$|\$\$)/i.exec(sql.slice(declarationEnd));
+  const start = asClause ? declarationEnd + asClause.index : -1;
+  const delimiter = asClause?.[1];
+  const bodyStart = start < 0 ? -1 : start + asClause[0].length;
+  const end = bodyStart < 0 ? -1 : sql.indexOf(delimiter, bodyStart);
   if (declarationIndex < 0 || start < 0 || end < 0) {
     throw new Error(`Corpo autorizado não encontrado para public.${functionName}.`);
   }
   return sql.slice(bodyStart, end).trim();
+}
+
+const RECENT_SECURITY_FUNCTIONS = [
+  {
+    name: "quote_approval_public_items",
+    signature: "public.quote_approval_public_items(uuid)",
+    alias: "quote_approval_public_items",
+  },
+  {
+    name: "get_public_quote_approval",
+    signature: "public.get_public_quote_approval(text)",
+    alias: "get_public_quote_approval",
+  },
+  {
+    name: "register_sicoob_clean_document",
+    signature: "public.register_sicoob_clean_document(uuid,uuid,uuid,text,text,text,text,text,bigint,text,text,jsonb)",
+    alias: "register_sicoob_clean_document",
+  },
+];
+
+export function validateRecentSecurityMigrationContract(result, targets) {
+  const missing = RECENT_SECURITY_FUNCTIONS.filter((fn) => !latestDefiner(targets, fn.name));
+  const constraintMigration = targets.find((target) =>
+    target.sql.includes("sicoob_document_registry_scan_evidence_sha256_match"));
+  if (missing.length || !constraintMigration) {
+    throw new Error("Allowlist incompleta para validar as pós-condições de segurança recentes.");
+  }
+
+  const sourcesMatch = RECENT_SECURITY_FUNCTIONS.every((fn) => {
+    const source = result?.functions?.[fn.alias]?.source;
+    const migration = latestDefiner(targets, fn.name);
+    return typeof source === "string"
+      && sha256(source.trim()) === sha256(extractFunctionBody(migration.sql, fn.name));
+  });
+  const functionsSecure = RECENT_SECURITY_FUNCTIONS.every((fn) => {
+    const contract = result?.functions?.[fn.alias];
+    return contract?.exists === true
+      && contract.security_definer === true
+      && contract.safe_search_path === true
+      && contract.service_role_execute === true
+      && contract.anon_execute === false
+      && contract.authenticated_execute === false
+      && contract.public_execute === false;
+  });
+  const normalizedConstraint = typeof result?.scan_constraint_definition === "string"
+    ? result.scan_constraint_definition.toLowerCase()
+      .replace(/::(?:text|character varying)/g, "")
+      .replace(/[()\s\"]/g, "")
+    : "";
+  const constraintSemanticsMatch = normalizedConstraint.includes(
+    "jsonb_typeofscan_evidence->'sha256'isnotdistinctfrom'string'",
+  ) && normalizedConstraint.includes(
+    "lowerscan_evidence->>'sha256'isnotdistinctfromsha256",
+  );
+  const constraintSecure = result?.scan_constraint_exists === true
+    && result.scan_constraint_validated === false
+    && constraintSemanticsMatch;
+
+  if (!sourcesMatch || !functionsSecure || !constraintSecure) {
+    throw new Error(`Pós-condições de segurança das migrations recentes inválidas: ${JSON.stringify({
+      function_sources_match: sourcesMatch,
+      functions_secure: functionsSecure,
+      scan_constraint_secure: constraintSecure,
+      scan_constraint_exists: result?.scan_constraint_exists ?? false,
+      scan_constraint_validated: result?.scan_constraint_validated ?? null,
+    })}`);
+  }
 }
 
 async function readApplied(client, targets) {
@@ -849,6 +920,57 @@ async function validateContract(client, targets) {
       trigger_definition_exact: triggerDefinitionExact,
     })}`);
   }
+  await validateRecentSecurityMigrationContractOnDatabase(client, targets);
+}
+
+async function validateRecentSecurityMigrationContractOnDatabase(client, targets) {
+  const { rows } = await client.query(`
+    WITH expected_functions(function_name, signature) AS (
+      VALUES
+        ('quote_approval_public_items', 'public.quote_approval_public_items(uuid)'),
+        ('get_public_quote_approval', 'public.get_public_quote_approval(text)'),
+        ('register_sicoob_clean_document', 'public.register_sicoob_clean_document(uuid,uuid,uuid,text,text,text,text,text,bigint,text,text,jsonb)')
+    ), actual_functions AS (
+      SELECT expected.function_name, p.oid, p.prosrc, p.prosecdef, p.proconfig,
+        CASE WHEN p.oid IS NOT NULL THEN has_function_privilege('service_role', p.oid, 'EXECUTE') ELSE false END AS service_role_execute,
+        CASE WHEN p.oid IS NOT NULL THEN has_function_privilege('anon', p.oid, 'EXECUTE') ELSE false END AS anon_execute,
+        CASE WHEN p.oid IS NOT NULL THEN has_function_privilege('authenticated', p.oid, 'EXECUTE') ELSE false END AS authenticated_execute,
+        COALESCE((
+          SELECT bool_or(a.grantee = 0 AND a.privilege_type = 'EXECUTE')
+          FROM LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
+        ), false) AS public_execute
+      FROM expected_functions expected
+      LEFT JOIN pg_proc p ON p.oid = to_regprocedure(expected.signature)
+    )
+    SELECT
+      (SELECT jsonb_object_agg(function_name, jsonb_build_object(
+        'exists', oid IS NOT NULL,
+        'source', prosrc,
+        'security_definer', COALESCE(prosecdef, false),
+        'safe_search_path', COALESCE(proconfig @> ARRAY['search_path=pg_catalog, public']::text[], false),
+        'service_role_execute', service_role_execute,
+        'anon_execute', anon_execute,
+        'authenticated_execute', authenticated_execute,
+        'public_execute', public_execute
+      )) FROM actual_functions) AS functions,
+      EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE conrelid = to_regclass('public.sicoob_document_registry')
+          AND conname = 'sicoob_document_registry_scan_evidence_sha256_match'
+          AND contype = 'c'
+      ) AS scan_constraint_exists,
+      (SELECT convalidated FROM pg_constraint
+        WHERE conrelid = to_regclass('public.sicoob_document_registry')
+          AND conname = 'sicoob_document_registry_scan_evidence_sha256_match'
+          AND contype = 'c'
+        LIMIT 1) AS scan_constraint_validated,
+      (SELECT pg_get_expr(conbin, conrelid, true) FROM pg_constraint
+        WHERE conrelid = to_regclass('public.sicoob_document_registry')
+          AND conname = 'sicoob_document_registry_scan_evidence_sha256_match'
+          AND contype = 'c'
+        LIMIT 1) AS scan_constraint_definition
+  `);
+  validateRecentSecurityMigrationContract(rows[0], targets);
 }
 
 export function buildManagementApiBatch(targets, before) {

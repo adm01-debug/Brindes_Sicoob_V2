@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { hasTransactionControl } from '../../scripts/db/apply-sicoob-migrations.mjs';
+import {
+  extractFunctionBody,
+  hasTransactionControl,
+  loadAuthorizedTargets,
+  validateRecentSecurityMigrationContract,
+} from '../../scripts/db/apply-sicoob-migrations.mjs';
 
 // O lote management-api executa tudo numa única transação: qualquer controle
 // transacional na migration quebraria a promessa de aplicação atômica.
@@ -90,5 +95,66 @@ describe('proteção de ambiente do aplicador de migrations', () => {
 
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('SUPABASE_PROJECT_REF deve identificar explicitamente');
+  });
+});
+
+describe('pós-condições das migrations recentes de segurança', () => {
+  const targets = loadAuthorizedTargets();
+  const functionNames = [
+    'quote_approval_public_items',
+    'get_public_quote_approval',
+    'register_sicoob_clean_document',
+  ];
+
+  function validContract() {
+    const functions = Object.fromEntries(functionNames.map((name) => {
+      const migration = [...targets].reverse().find((target) =>
+        target.sql.includes(`CREATE OR REPLACE FUNCTION public.${name}(`));
+      return [name, {
+        exists: true,
+        source: extractFunctionBody(migration.sql, name),
+        security_definer: true,
+        safe_search_path: true,
+        service_role_execute: true,
+        anon_execute: false,
+        authenticated_execute: false,
+        public_execute: false,
+      }];
+    }));
+    return {
+      functions,
+      scan_constraint_exists: true,
+      scan_constraint_validated: false,
+      scan_constraint_definition: "jsonb_typeof(scan_evidence -> 'sha256'::text) IS NOT DISTINCT FROM 'string'::text AND lower(scan_evidence ->> 'sha256'::text) IS NOT DISTINCT FROM sha256",
+    };
+  }
+
+  it('aceita funções idênticas às migrations, protegidas e constraint NOT VALID', () => {
+    expect(() => validateRecentSecurityMigrationContract(validContract(), targets)).not.toThrow();
+  });
+
+  it.each([
+    ['função ausente', (contract) => { contract.functions.get_public_quote_approval.exists = false; }],
+    ['corpo de função divergente', (contract) => { contract.functions.get_public_quote_approval.source += '\n-- divergência'; }],
+    ['search_path inseguro', (contract) => { contract.functions.register_sicoob_clean_document.safe_search_path = false; }],
+    ['execução anon liberada', (contract) => { contract.functions.quote_approval_public_items.anon_execute = true; }],
+    ['execução PUBLIC liberada', (contract) => { contract.functions.get_public_quote_approval.public_execute = true; }],
+    ['constraint ausente', (contract) => { contract.scan_constraint_exists = false; }],
+    ['constraint validada sem reconciliação histórica', (contract) => { contract.scan_constraint_validated = true; }],
+    ['expressão da constraint divergente', (contract) => { contract.scan_constraint_definition = 'sha256 IS NOT NULL'; }],
+  ])('rejeita %s', (_scenario, corrupt) => {
+    const contract = validContract();
+    corrupt(contract);
+    expect(() => validateRecentSecurityMigrationContract(contract, targets)).toThrow(
+      'Pós-condições de segurança das migrations recentes inválidas',
+    );
+  });
+
+  it('rejeita allowlist sem uma migration que define a constraint esperada', () => {
+    const incompleteTargets = targets.filter((target) =>
+      !target.sql.includes('sicoob_document_registry_scan_evidence_sha256_match'));
+    expect(() => validateRecentSecurityMigrationContract(validContract(), incompleteTargets)).toThrow(
+      'Allowlist incompleta para validar as pós-condições de segurança recentes',
+    );
   });
 });
