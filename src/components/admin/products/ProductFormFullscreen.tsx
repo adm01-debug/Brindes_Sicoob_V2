@@ -6,7 +6,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { productFormSchema, type ProductFormData, defaultFormValues } from './ProductFormSchema';
+import { productFormSchema, type ProductFormData, type ProductFormInput, defaultFormValues } from './ProductFormSchema';
 import { ProductPreviewPanel } from './ProductPreviewPanel';
 import { HorizontalStepper, type StepDef } from './HorizontalStepper';
 import { ProductFormStepContent } from './ProductFormStepContent';
@@ -399,7 +399,7 @@ export function ProductFormFullscreen({
   const {
     register, handleSubmit, setValue, watch, trigger, getValues,
     formState: { errors },
-  } = useForm<ProductFormData>({
+  } = useForm<ProductFormInput, unknown, ProductFormData>({
     resolver: zodResolver(productFormSchema),
     defaultValues: { ...defaultFormValues, ...initialData },
   });
