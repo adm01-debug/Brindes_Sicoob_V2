@@ -271,3 +271,36 @@ Bloqueios ainda abertos:
 - **PR #180**, SHA `d92da2d0b3b790ec3a7c3aea9983f94302dcdad7`: Qualidade [41167348323](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348323) e Security [41167348518](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348518) falharam por `undici`/`zod`; E2E [41167348319](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348319) falhou no gate fail-fast após timeout do smoke Dashboard. Portal [41167348375](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348375), Bundle [41167348277](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348277), CodeQL [41167348293](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348293) e Lighthouse [41167348305](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348305) passaram.
 
 Não houve merge, deploy, rerun manual, escrita no banco canônico ou aplicação remota de migration. Próximo passo: concluir os checks da SHA `b18b662b1...` e reconciliar o snapshot com acesso somente leitura. Se o banco continuar inacessível, manter o bloqueio documentado em vez de aprovar a allowlist por inferência.
+
+
+## Atualização supersedente — checks e segurança E2E (31/10/2026, 04:53 UTC)
+
+Consulta somente leitura ao GitHub MCP. A `main` continua no SHA `e9d59026793b84fabeaeec9da890a068f64d49c3`: as quatro falhas do inventário acima seguem como últimas execuções dessa branch. Os runs verdes conhecidos (Migration ledger drift, Branch Protection Sentinel, Enterprise Compliance e Portal Sicoob) não foram alterados por esta sessão.
+
+### PR #151 — SHA `b18b662b179bb75dc4ffe10874ee5a6a6db6cf92`
+
+| Workflow | Run | Estado / evidência |
+|---|---|---|
+| Security Scan | [41169596556](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41169596556) | `failure`: npm audit reporta `undici`, `zod` e `minimatch` em severidade alta; Gitleaks passou. |
+| Qualidade contínua | [41169596475](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41169596475) | `failure`: o snapshot de catálogo de 14/10 não reconhece `get_public_favorite_list` e `get_public_favorite_reactions`, referenciadas em `publicFavoriteListService.ts:134,145`. Não ampliar allowlist sem conciliar o catálogo real com as migrations. |
+| E2E (Playwright) | [41169596483](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41169596483) | `failure`: o hook `beforeAll` de `e2e_cleanup_rate_limit` excedeu 45 s em `tests/rls/e2e-cleanup-rate-limit.test.ts:71`. O Vitest registrou 4 testes skipped após 74 s; os shards foram skipped. Isso não valida a jornada autenticada nem prova uma falha de policy. |
+| CodeQL | [41169596496](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41169596496) | `success`. |
+| Bundle Size Check | [41169596497](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41169596497) | `success`. |
+| Lighthouse | [41169596480](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41169596480) | `success`. |
+| Portal Sicoob | [41169596490](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41169596490) | `queued` na consulta; as verificações responsiva e transacional não têm conclusão. |
+| Copilot Review | [41169603429](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41169603429) | `queued`; revisão ainda sem conclusão. |
+
+**Risco de isolamento E2E:** o workflow neste SHA passa `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID` e `SUPABASE_SERVICE_ROLE_KEY` de secrets gerais aos testes RLS. O teste tenta inserir e apagar uma linha sintética `rls-e2e-*`. A consulta somente leitura feita ao banco canônico encontrou um registro com esse prefixo atualizado às 04:50:03 UTC; o run E2E executou entre 04:48 e 04:51 UTC. A coincidência temporal sugere que o workflow pode ter escrito no banco canônico, mas não é possível identificar a linha com certeza porque o UUID da chave é aleatório e não consta no log. Não houve escrita pela auditoria; nenhuma exclusão/limpeza manual foi feita. Até o proprietário confirmar o destino e o estado do registro, tratar como possível resíduo de teste no canônico. Bloquear novos E2E remotos com secrets gerais; usar exclusivamente secrets dedicadas a uma instância isolada de homologação e validar o project ref antes de qualquer chamada com service role.
+
+A migration de favoritos continua sem aplicação/validação no banco canônico. A revisão independente também identificou que o SQL não é reexecutável após remover a policy de INSERT que o preflight exige; e a simulação PostgreSQL local não comprova permissões/catálogo remotos. Manter sem merge/aplicação até revisar idempotência/retry e obter snapshot remoto confiável somente leitura.
+
+### PR #179 e PR #180
+
+- **PR #179**, SHA `03b4eee07136d99611ab84bcced842c89900669b`: Security, Qualidade, CodeQL, Bundle, Lighthouse e Portal passaram. E2E [41164617193](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41164617193) falhou no preflight: os quatro secrets `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_PROJECT_ID` e `E2E_SUPABASE_SERVICE_ROLE_KEY` não estão disponíveis; os testes não começaram. Não li valores.
+- **PR #180**, SHA `d1e8bb1ada89b611c75173184c66b9c00dfd0ef2`: Qualidade [41170084002](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170084002) falhou no gate de dependências por `undici` e `zod`; Bundle [41170083959](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170083959) passou. Security [41170083957](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170083957), CodeQL [41170083956](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170083956), E2E [41170083965](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170083965), Lighthouse [41170083976](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170083976) e Portal [41170083954](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170083954) estavam `queued` na última consulta. Sem conclusão verde, PRs não prontas para merge.
+
+### Comparação local
+
+Os gates locais registrados permanecem sem piora: no branch da PR #151, build, typecheck e lint passaram (873 avisos, zero erros), e a suíte ficou em 5.846 aprovados / 68 ignorados após cada commit. No branch #180, build, typecheck e lint passaram (mesmos 873 avisos, zero erros) e a suíte permaneceu em 5.840 aprovados / 68 ignorados antes e depois do commit documental anterior. Isto não substitui os checks remotos acima. Checkout principal continua intocado e com modificações locais pré-existentes.
+
+Nenhum merge, deploy, rerun manual, migration remota ou escrita manual no banco canônico foi executado nesta sessão. Próximo passo: impedir o caminho E2E com secrets gerais, confirmar o estado do possível resíduo com o proprietário, provisionar o projeto isolado e configurar nele os quatro secrets dedicados; reconciliar os RPCs com o snapshot real; resolver advisories sem enfraquecer gates e corrigir causa/idempotência da publicação antes de considerar integração.
