@@ -165,3 +165,17 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 ---
 
 *Relatório gerado automaticamente pela sessão Claude Code.*
+
+## Atualização da auditoria — 31/10/2026 (UTC)
+
+Na PR #181, commit `88cc084a65711ee1312c07df1ae36c45960fd168`, a validação local passou: build, typecheck; lint com 0 erros e 873 avisos existentes; suíte 5.841 aprovados / 68 ignorados. A instalação reproduz 17 advisories (2 altos, 15 moderados). O teste logístico focado passou 6/6.
+
+Checks remotos desse SHA:
+
+- Security Scan [41172056051](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172056051): falha por `undici` e `zod` altos.
+- Qualidade contínua [41172056053](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172056053): falha pelo mesmo gate de `npm audit`.
+- CodeQL [41172056049](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172056049): falha por versões de action inconsistentes. Correção local no commit `950799eb5`, ainda sem validação remota.
+- E2E [41172056061](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172056061): falha por timeouts de 15 s nas verificações UPDATE/DELETE de RLS; não chegou à suíte Playwright.
+- Lighthouse [41172056050](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172056050), Bundle [41172056052](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172056052) e Portal [41172056111](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172056111): success.
+
+O run E2E legado utilizou os secrets globais existentes, sem proteção contra o alvo canônico. A consulta administrativa somente leitura posterior encontrou 18 linhas antigas de teste e nenhuma atualização no intervalo da execução; nenhuma operação manual de escrita/limpeza foi feita. O candidato subsequente adiciona secrets E2E isolados e bloqueio explícito de project refs canônicos; sua prova remota ainda está pendente.

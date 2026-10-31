@@ -217,3 +217,17 @@ Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Depen
 | Migration Ledger Drift | Fingerprint de `20261022120000` calculado com `local_sha256` incorreto; novo digest correto: `e2815b0...` | Corrigido fingerprint no `migration-ledger-baseline.json` | #129 |
 | 5 CVEs high (vite ≤6.4.3) | GHSA-698v, GHSA-r825, GHSA-587h, GHSA-9jrq, GHSA-rq7h | `vite` 6.4.3 → 6.4.5 | #126 |
 | Qualidade contínua (`ci.yml`) — ECR rate limit | `toomanyrequests: Data limit exceeded` ao puxar `public.ecr.aws/supabase/postgres:17.6.1.063` em dois steps (scripts `simular-controles-auditoria.py` e `simular-acl-efetiva.py`) | Rate limit do ECR Public se dissipou naturalmente; run `39780447863` → **success** | automático |
+
+## Atualização supersedente — execução da PR #181 (31/10/2026, 05:30 UTC)
+
+Na PR [#181](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/181), SHA `88cc084a65711ee1312c07df1ae36c45960fd168`:
+
+- **E2E** [41172056061](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172056061): falhou no teste remoto de RLS em `e2e_cleanup_rate_limit`, com timeout de 15 s nas verificações de UPDATE/DELETE. As asserções de RLS não foram concluídas; isso não comprova defeito da policy.
+- O workflow usou secrets globais `VITE_SUPABASE_*`/`SUPABASE_SERVICE_ROLE_KEY`, sem validar que o projeto fosse isolado. O teste cria um canário via `service_role` e tenta removê-lo em `afterAll`, portanto houve possibilidade de escrita temporária no destino configurado. Não consultei nem registrei valores de secrets.
+- Consulta **somente leitura** ao banco canônico após o run: 18 linhas `rls-e2e-*`; mais recente `updated_at=2026-10-31 04:50:03.822133+00`; nenhuma linha atualizada durante `05:23:50–05:27:21 UTC`. Não encontrei novo resíduo da execução #181. Isso não prova que não houve inserção temporária, nem identifica a URL usada pelo secret global. Nenhuma linha foi alterada ou removida manualmente; o resíduo antigo segue para revisão do proprietário.
+- **Security Scan** [41172056051](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172056051) e **Qualidade contínua** [41172056053](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172056053): falham por vulnerabilidades altas em `undici` e `zod`. `undici` tem correção compatível disponível; `zod` exige avaliar migração major para v4. Não afrouxar os gates.
+- **CodeQL** [41172056049](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172056049): falhou por `init` v4.39.1 versus `autobuild/analyze` v4.38.2. Correção isolada no commit `950799eb5`; aguarda publicação e CI remoto.
+
+### Próxima execução E2E
+
+O candidato da PR #181 substitui secrets globais por secrets `E2E_SUPABASE_*`, valida URL/Project Ref e rejeita os projetos canônicos antes dos testes. A execução só pode acessar ambiente isolado depois que o proprietário provisionar esse projeto e configurar secrets dedicados. Enquanto ausentes, o preflight deve falhar fechado. Não repetir o E2E legado.
