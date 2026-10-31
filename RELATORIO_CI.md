@@ -165,3 +165,17 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 ---
 
 *Relatório gerado automaticamente pela sessão Claude Code.*
+
+## Atualização do audit de dependências — 31/10/2026
+
+No SHA base `e9d59026793b84fabeaeec9da890a068f64d49c3`, `npm ci` reportou 17 advisories (15 moderados, 2 altos). A causa `undici@8.10.2` veio de `vite-plugin-mkcert@2.1.0`; `npm update undici` atualizou apenas o lock para `8.12.3`.
+
+Validação local do candidato:
+
+- `npm run build`: aprovado.
+- `npm run lint`: aprovado, 0 erros / 873 avisos existentes.
+- `npm run typecheck`: aprovado.
+- `npm test`: 5.839 aprovados / 68 ignorados; baseline da branch sem mudança.
+- `npm audit --audit-level=high`: ainda falha por `zod@3.25.76` (um advisory alto restante; exige Zod v4). Total: 16 advisories, 15 moderados e 1 alto.
+
+A mudança do lockfile é limitada a `undici`; a migração de Zod foi mantida separada por exigir mudança major e teste de compatibilidade.
