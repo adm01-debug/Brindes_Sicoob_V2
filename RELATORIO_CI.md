@@ -303,6 +303,22 @@ A correção de Gestão de Compras foi commitada e publicada neste SHA; a atuali
 
 PR #184 segue aberta, sem merge, e exige review humano e janela para as mudanças em dependências runtime. A `main` continua em `e9d59026793b84fabeaeec9da890a068f64d49c3`; as cinco falhas do inventário nela continuam sem nova execução pós-merge, portanto não estão resolvidas. Nenhum segredo, banco Supabase, migration ou deploy foi acessado/alterado nesta etapa. A causa ECR repetiu-se no rerun (tentativa 2); o próximo retry deve aguardar a recuperação do limite ou usar uma origem de imagem previamente aprovada.
 
+### CI após a atualização documental — PR #184, SHA `e466ef7f788ef20640530a93aa9110ace1988a16` — 2026-10-31
+
+O commit `e466ef7f7` contém apenas `RELATORIO_CI.md` e `PENDENCIAS.md`; os gates locais foram repetidos após o commit, sem regressão. Na nova execução remota todos os workflows de produto terminaram em success:
+
+| Workflow/check | Resultado |
+|---|---|
+| E2E público | ✅ [run 41199507198](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507198) |
+| Security Scan | ✅ [run 41199507206](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507206) |
+| Qualidade contínua (inclui simulação PostgreSQL e build) | ✅ [run 41199507236](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507236) |
+| CodeQL | ✅ [run 41199507174](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507174) |
+| Portal Sicoob | ✅ [run 41199507176](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507176) |
+| Bundle Size | ✅ [run 41199507187](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507187) |
+| Lighthouse | ✅ [run 41199507235](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507235) |
+
+O E2E autenticado e os shards foram **skipped**, não certificados, porque `e2e-qa` continua 404. A tentativa 2 de [run 41197769071](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769071) repetiu o limite do ECR, mas o run posterior no SHA `e466ef7f7` passou pela mesma simulação, confirmando caráter intermitente; não há bloqueio ECR ativo no SHA atual. O Copilot Reviewer [41199514763](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199514763) falhou em `Processing Request (Linux)` sem causa acionável no resumo. A PR permanece aberta/bloqueada pela revisão humana, pela janela para mudança de dependências runtime e pela validação de E2E autenticado. As falhas da `main` não mudaram: não houve merge nem reexecução na `main`.
+
 ### Revalidação remota da PR #186 — SHA `3838556b62e6a3c6f0e9a67e7f57f4a408318da6` — 2026-10-31
 
 O verificador de publicação tem 7 testes focais aprovados localmente; build, lint/typecheck baseline, cenários e Vitest também passaram. O `npm run check:npm-audit` local, porém, falhou nesta branch baseada diretamente na `main`, que ainda contém os findings altos de `undici`/`zod` corrigidos apenas na PR #184. Estado remoto:
