@@ -6,6 +6,7 @@ import { getBreaker, circuitOpenResponse, getAllBreakerStatuses } from '../_shar
 import { AsyncLocalStorage } from "node:async_hooks";
 import { getOrCreateRequestId, REQUEST_ID_HEADER } from "../_shared/request-id.ts";
 import { resolveCredential, buildCredentialsHealth } from "../_shared/credentials.ts";
+import { escapeIlikeSearchTerm } from "../_shared/ilike-pattern.ts";
 
 const breaker = getBreaker("crm-db");
 
@@ -593,7 +594,7 @@ async function handleBatch(crm: SupabaseClient, queries: BatchQuery[]): Promise<
 
         if (q.filters) query = applyFilters(query, q.filters);
         if (q.search?.column && q.search?.term) {
-          query = query.ilike(q.search.column, `%${q.search.term}%`);
+          query = query.ilike(q.search.column, `%${escapeIlikeSearchTerm(q.search.term)}%`);
         }
         if (q.orderBy) query = applyOrdering(query, q.orderBy);
         if (q.limit) query = query.limit(q.limit);
@@ -751,7 +752,7 @@ async function handleSelect(crm: SupabaseClient, body: CrmQuery): Promise<Respon
   }
 
   if (filters) query = applyFilters(query, filters);
-  if (search) query = query.ilike(search.column, `%${search.term}%`);
+  if (search) query = query.ilike(search.column, `%${escapeIlikeSearchTerm(search.term)}%`);
   if (orderBy) query = applyOrdering(query, orderBy);
   if (limit) query = query.limit(limit);
   if (offset) query = query.range(offset, offset + (limit || 50) - 1);
@@ -775,7 +776,8 @@ async function handleSearch(crm: SupabaseClient, body: CrmQuery): Promise<Respon
     return jsonResponse({ error: "Search requires 'column' and 'term'" }, 400);
   }
 
-  let query = crm.from(table).select(select || "*").ilike(search.column, `%${search.term}%`);
+  let query = crm.from(table).select(select || "*")
+    .ilike(search.column, `%${escapeIlikeSearchTerm(search.term)}%`);
   if (orderBy) query = applyOrdering(query, orderBy);
   query = query.limit(limit || 50);
 

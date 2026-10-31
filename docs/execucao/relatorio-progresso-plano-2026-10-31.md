@@ -47,11 +47,13 @@ Execuções verdes identificadas: [Migration ledger drift — 30/10](https://git
 
 Foi corrigida localmente a causa comprovada do CodeQL: `init`, `autobuild` e `analyze` agora usam a mesma revisão imutável 4.39.1. `actionlint .github/workflows/codeql.yml` passou. O status remoto continua “falha” até um PR seguro executar os checks; não foi feito push.
 
+Depois do commit CodeQL `2707fb5a3`, passaram novamente `actionlint`, `npm run typecheck`, `npm run lint` (0 erros/873 avisos), `npm run build` e `npm test` (453 arquivos aprovados, 4 ignorados; 5.848 testes aprovados, 68 ignorados).
+
 ## Ajustes na auditoria anterior e riscos ainda em aberto
 
 - E-018 estava desatualizado na primeira leitura: a migration versionada `20260927171216_quote_approval_security_hardening.sql` remove a escrita direta do usuário autenticado e revoga INSERT/UPDATE/DELETE em `quote_history`. Isso confirma o código versionado, não o estado remoto do banco.
 - E-011: há definições históricas conflitantes de retorno para `cleanup_old_notifications()`, mas o executor atual tem allowlist própria e não aplica esses arquivos legados. Não foi alterado schema; a falha histórica precisa ser reproduzida no fluxo de bootstrap/preview vigente antes de propor migration corretiva.
-- Permanecem gaps auditados, entre outros: E-023 busca `ilike` sem escape literal; E-024 não estabelece idempotência de entrega de webhook; E-027 pode apagar arquivo após resultado ambíguo de persistência; E-019/E-020 têm riscos de paginação/validação de preferências.
+- Permanecem gaps auditados, entre outros: E-024 não estabelece idempotência de entrega de webhook; E-027 pode apagar arquivo após resultado ambíguo de persistência; E-019/E-020 têm riscos de paginação/validação de preferências.
 - A validação de ponta a ponta continua bloqueada por ambiente E2E de homologação e dados/contas de teste confirmados. Não se consultaram valores de secrets, não se executou Edge Function e não houve leitura ou escrita no Supabase remoto.
 - PR #178 segue aberto como rascunho no SHA `746f7d2`: https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/178. Nenhum PR foi alterado ou mesclado.
 
@@ -60,4 +62,4 @@ Foi corrigida localmente a causa comprovada do CodeQL: `init`, `autobuild` e `an
 1. Publicar/validar a correção CodeQL via PR após desbloqueio seguro do E2E; ainda corrigir o gate das vulnerabilidades de dependências sem esconder os alertas.
 2. Diagnosticar a divergência de versão da Edge Function com o estado do projeto de homologação autorizado; não publicar funções no banco canônico sem validação e autorização específicas.
 3. Retomar E2E após confirmação de projeto e contas de homologação, rotação da credencial exposta anteriormente e allowlist restrita ao ambiente de teste.
-4. Continuar E-023/E-024/E-027 e demais etapas em ordem de risco; registrar aceite externo como pendente, sem marcar o plano integral como concluído.
+4. E-023 agora tem correção local em `fix/hermes-h393620-docs-audit-20261031`: os três caminhos de busca do `crm-db-bridge` escapam `%`, `_` e `\\`; 2 testes Deno passaram e `deno check` passou. Ainda falta CI remoto. Continuar E-024/E-027 e demais etapas em ordem de risco; registrar aceite externo como pendente, sem marcar o plano integral como concluído.
