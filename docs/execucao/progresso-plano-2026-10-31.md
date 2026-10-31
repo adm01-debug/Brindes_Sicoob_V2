@@ -24,7 +24,7 @@ Ambiente: Node `v24.19.0`, npm `11.17.0`, dependências instaladas com `npm ci`.
 
 Em `src/components/quotes/QuoteHistoryTimeline.tsx`, a falha de consulta de `quote_history` ou `profiles` agora mostra mensagem de indisponibilidade e ação de retry. A mensagem “Nenhum evento registrado” fica reservada à resposta válida sem eventos. Em `tests/components/QuoteHistoryTimeline.test.tsx`, foram adicionados cenários de lista vazia, falha inicial e recuperação por retry.
 
-O teste focal passou: 1 arquivo, 3 testes. Build, lint, typecheck e suíte completa pós-alteração estão sendo repetidos antes do commit. Não foram alterados contratos de API, migrations, esquema, dados ou funções remotas.
+O teste focal passou: 1 arquivo, 3 testes. Build, lint, typecheck e suíte completa foram repetidos após a alteração, conforme a comparação abaixo. Não foram alterados contratos de API, migrations, esquema, dados ou funções remotas.
 
 ## Revisões especializadas e lacunas confirmadas
 

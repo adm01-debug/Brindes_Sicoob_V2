@@ -2,6 +2,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+const historyEvent = {
+  id: "evento-1",
+  action: "status_change",
+  description: "Orçamento aprovado",
+  metadata: null,
+  created_at: "2026-09-24T12:00:00.000Z",
+  user_id: "usuario-1",
+};
+
 const database = vi.hoisted(() => {
   const historyQuery: Record<string, ReturnType<typeof vi.fn>> = {};
   const profilesQuery: Record<string, ReturnType<typeof vi.fn>> = {};
@@ -36,17 +45,7 @@ import { QuoteHistoryTimeline } from "@/components/quotes/QuoteHistoryTimeline";
 
 describe("QuoteHistoryTimeline", () => {
   beforeEach(() => {
-    database.historyQuery.order.mockReset().mockResolvedValue({
-      data: [{
-        id: "evento-1",
-        action: "status_change",
-        description: "Orçamento aprovado",
-        metadata: null,
-        created_at: "2026-09-24T12:00:00.000Z",
-        user_id: "usuario-1",
-      }],
-      error: null,
-    });
+    database.historyQuery.order.mockReset().mockResolvedValue({ data: [historyEvent], error: null });
     database.profilesQuery.in.mockReset().mockResolvedValue({
       data: [{ user_id: "usuario-1", full_name: "Ana Gestora" }],
       error: null,
@@ -76,17 +75,7 @@ describe("QuoteHistoryTimeline", () => {
   it("exibe erro e permite tentar novamente até recuperar o histórico", async () => {
     database.historyQuery.order
       .mockRejectedValueOnce(new Error("falha interna"))
-      .mockResolvedValueOnce({
-        data: [{
-          id: "evento-1",
-          action: "status_change",
-          description: "Orçamento aprovado",
-          metadata: null,
-          created_at: "2026-09-24T12:00:00.000Z",
-          user_id: "usuario-1",
-        }],
-        error: null,
-      });
+      .mockResolvedValueOnce({ data: [historyEvent], error: null });
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 
     render(<QueryClientProvider client={queryClient}><QuoteHistoryTimeline quoteId="orcamento-com-falha" /></QueryClientProvider>);
