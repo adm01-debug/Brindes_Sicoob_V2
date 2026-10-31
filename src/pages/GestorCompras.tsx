@@ -2,12 +2,14 @@ import { useState } from "react";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClipboardCheck, LayoutGrid, Layers, Bell, Package } from "lucide-react";
+import { ArrowRight, ClipboardCheck, LayoutGrid, Layers, Bell, Package } from "lucide-react";
 import { ApprovalKanbanBoard } from "@/components/orders/ApprovalKanbanBoard";
 import { OrderConsolidationPanel } from "@/components/orders/OrderConsolidationPanel";
 import { SmartAlertsPanel } from "@/components/orders/SmartAlertsPanel";
 import { OrdersPage } from "./OrdersPage";
 import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 export default function GestorCompras() {
   const [activeTab, setActiveTab] = useState("alerts");
@@ -49,16 +51,6 @@ export default function GestorCompras() {
 
               <TabsContent value="alerts" className="mt-6 space-y-6">
                 <SmartAlertsPanel />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   <div className="p-6 rounded-2xl bg-card border border-border/50 text-center space-y-2">
-                     <p className="text-3xl font-bold">12</p>
-                     <p className="text-xs text-muted-foreground">Pedidos pendentes hoje</p>
-                   </div>
-                   <div className="p-6 rounded-2xl bg-card border border-border/50 text-center space-y-2">
-                     <p className="text-3xl font-bold text-success">85%</p>
-                     <p className="text-xs text-muted-foreground">SLA de aprovação (24h)</p>
-                   </div>
-                </div>
               </TabsContent>
 
               <TabsContent value="kanban" className="mt-6 border border-border/50 rounded-2xl bg-card/30 p-4">
@@ -78,29 +70,30 @@ export default function GestorCompras() {
           <div className="space-y-6">
             <div className="p-6 rounded-2xl bg-primary/5 border border-primary/20 space-y-4">
               <h3 className="font-bold flex items-center gap-2">
-                <ClipboardCheck className="h-4 w-4 text-primary" /> Atalho Rápido
+                <ClipboardCheck className="h-4 w-4 text-primary" /> Fila de aprovações
               </h3>
-              <p className="text-xs text-muted-foreground">Aprove todas as solicitações com valor abaixo do threshold de alçada (R$ 5.000,00).</p>
-              <button className="w-full py-2 bg-primary text-primary-foreground rounded-lg text-sm font-bold hover:opacity-90 transition-opacity">
-                Aprovação em Lote (SLA Rápido)
-              </button>
+              <p className="text-xs text-muted-foreground">
+                Revise as solicitações na fila de aprovações da Singular.
+              </p>
+              <Button asChild className="w-full">
+                <Link to="/gestor/aprovacoes">
+                  Abrir fila de aprovações
+                  <ArrowRight aria-hidden="true" />
+                </Link>
+              </Button>
             </div>
             
             <div className="p-6 rounded-2xl bg-card border border-border/50 space-y-4">
-              <h3 className="font-bold text-sm">Resumo da Cooperativa</h3>
-              <div className="space-y-3">
-                 <div className="flex justify-between text-xs">
-                   <span className="text-muted-foreground">Orçado no mês</span>
-                   <span className="font-bold">R$ 450.000,00</span>
-                 </div>
-                 <div className="flex justify-between text-xs">
-                   <span className="text-muted-foreground">Aprovado</span>
-                   <span className="font-bold text-success">R$ 380.000,00</span>
-                 </div>
-                 <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
-                    <div className="bg-success h-full w-[84%]" />
-                 </div>
-              </div>
+              <h3 className="font-bold text-sm">Indicadores da Singular</h3>
+              <p className="text-xs text-muted-foreground">
+                Consulte os valores carregados para a cooperativa e competência atual.
+              </p>
+              <Button asChild variant="outline" className="w-full">
+                <Link to="/gestor">
+                  Abrir painel de indicadores
+                  <ArrowRight aria-hidden="true" />
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
