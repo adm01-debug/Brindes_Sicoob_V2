@@ -285,3 +285,35 @@ Consulta atual ao GitHub MCP confirmou que a PR #184 permanece aberta, sem merge
 O inventário mais recente da `main` continua no SHA `e9d59026793b84fabeaeec9da890a068f64d49c3`; suas falhas registradas acima não foram reexecutadas após merge e permanecem pendentes. Não atribuir os checks verdes da PR à `main`.
 
 Validação local do candidato de interface de Gestão de Compras (antes do commit): build concluído; lint e typecheck sem regressões; Vitest completo em **455 arquivos, 5.857 testes aprovados, 4 arquivos e 68 testes skipped**; cobertura 94% statements, 86,79% branches, 97,22% funções e 97,6% linhas; cenários Node **227/227 aprovados**. Dois testes novos verificam ausência de indicadores inventados e links para a fila/painel reais. Permanecem avisos do build (ambiente Vite local sem URL/chave, PostCSS, import misto e chunks grandes). Os dois arquivos de interface/teste passaram ESLint com **zero avisos** e typecheck direcionado sem erros.
+
+### Estado pós-commit — PR #184, SHA `4cca418cdda15c6604b527ac7374b83973c7eda3` — 2026-10-31
+
+A correção de Gestão de Compras foi commitada e publicada neste SHA; a atualização anterior de `78eb93b` que dizia que ela aguardava commit não é mais estado atual. O conjunto local final após o commit passou: build; `lint:baseline`; `typecheck:baseline`; Vitest (455 arquivos, 5.857 aprovados e 68 skipped); cenários (227/227); `check:npm-audit` (sem vulnerabilidades). O hook pre-push repetiu lint, typecheck e Vitest com sucesso.
+
+| Workflow/check | Resultado remoto no SHA `4cca418c` |
+|---|---|
+| E2E público | ✅ [run 41197769091](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769091) |
+| Security Scan (npm audit/Gitleaks) | ✅ [run 41197769144](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769144) |
+| Gate transacional, responsividade e origem confiável | ✅ [run 41197769084](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769084) |
+| CodeQL | ✅ [run 41197769059](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769059) |
+| Bundle / Lighthouse | ✅ [runs 41197769065](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769065) / [41197769112](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769112) |
+| Qualidade contínua | ❌ falhou também no rerun | [run 41197769071](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769071), tentativa 2, step 16. O pull de `public.ecr.aws/supabase/postgres:17.6.1.063` recebeu novamente `toomanyrequests: Data limit exceeded` após três tentativas, antes de iniciar a simulação PostgreSQL. Não repetir enquanto o limite persistir. |
+| E2E autenticado e shards | ⏭️ skipped, não certificado | Environment `e2e-qa` retorna 404; `e2e-staging` não possui proteção adequada. |
+| Copilot Code Review | ❌ falha externa | [run 41197777721](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197777721), quota HTTP 402. |
+
+PR #184 segue aberta, sem merge, e exige review humano e janela para as mudanças em dependências runtime. A `main` continua em `e9d59026793b84fabeaeec9da890a068f64d49c3`; as cinco falhas do inventário nela continuam sem nova execução pós-merge, portanto não estão resolvidas. Nenhum segredo, banco Supabase, migration ou deploy foi acessado/alterado nesta etapa. A causa ECR repetiu-se no rerun (tentativa 2); o próximo retry deve aguardar a recuperação do limite ou usar uma origem de imagem previamente aprovada.
+
+### Revalidação remota da PR #186 — SHA `3838556b62e6a3c6f0e9a67e7f57f4a408318da6` — 2026-10-31
+
+O verificador de publicação tem 7 testes focais aprovados localmente; build, lint/typecheck baseline, cenários e Vitest também passaram. O `npm run check:npm-audit` local, porém, falhou nesta branch baseada diretamente na `main`, que ainda contém os findings altos de `undici`/`zod` corrigidos apenas na PR #184. Estado remoto:
+
+| Workflow/check | Resultado e causa observada |
+|---|---|
+| Portal Sicoob, Bundle e Lighthouse | ✅ success — [41198505598](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41198505598), [41198505662](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41198505662), [41198505614](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41198505614). |
+| Security Scan | ❌ [run 41198505586](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41198505586): gate `npm audit (high+critical)` reprova findings herdados de `undici`/`zod`; depende de a correção da PR #184 chegar à `main` antes de revalidar esta PR. |
+| Qualidade contínua | ❌ [run 41198505611](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41198505611): falha no step 9, verificação de dependências/autorização das Edge Functions; a branch-base ainda falha no gate de dependências. |
+| CodeQL | ❌ [run 41198505613](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41198505613): `Autobuild` falhou e não foi produzido SARIF; a base manteve referências desalinhadas entre CodeQL 4.39.1 e 4.38.2. O alinhamento foi corrigido na PR #184. |
+| E2E | ❌ [run 41198505589](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41198505589): o workflow herdado da `main` rodou a validação remota; 2 arquivos falharam (3 testes; 53 passaram), com timeout de 45 s no `beforeAll` do teste `e2e-cleanup-rate-limit`, timeouts de 15 s em UPDATE/DELETE anon e `system-healthcheck`. O destino das credenciais e qualquer efeito parcial não podem ser comprovados sem inspeção privada do owner; não repetir. |
+| Copilot Reviewer | ❌ [run 41198512274](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41198512274): etapa `Processing Request (Linux)` falhou sem causa acionável no trecho resumido; revisar quota/provedor com o owner. |
+
+Nenhum deploy, comando de escrita no Supabase ou acesso a secrets foi executado por esta auditoria. A tentativa E2E acima pertence ao CI remoto disparado pelo GitHub. Não afirmar que a base remota ficou intacta: o owner deve identificar em privado o projeto usado pelo run e verificar a fixture-canário se aplicável. A correção de isolamento está na PR #184; a PR #186 permanece bloqueada até a atualização da base e checks verdes.
