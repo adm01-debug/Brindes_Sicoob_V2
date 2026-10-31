@@ -35,6 +35,7 @@ dois gates de CI ficam vermelhos. Ninguém tinha essa lista consolidada antes.
 | `BI_SHARE_SECRET` | `bi-share-dossier` | **preencher** |
 | `WEBHOOK_HMAC_SECRET` | validação de assinatura de webhook | **preencher** (usado também em `ci.yml`) |
 | `E2E_CLEANUP_TOKEN` | `e2e-cleanup` | **GitHub secret — pendente (etapa 03)** |
+| `E2E_SUPABASE_PROJECT_ID` | `vars.E2E_SUPABASE_PROJECT_ID`; fixa o destino Supabase de homologação do E2E e impede executar o teste com a referência do banco canônico | **configurar no GitHub antes de habilitar testes remotos** |
 | `E2E_CLEANUP_ALLOWED_EMAILS` / `_RATE_LIMIT_MAX` / `_RATE_LIMIT_WINDOW_SECONDS` | `e2e-cleanup` (guarda-corpo) | **preencher** |
 | `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` / `TEST_ADMIN_JWT` | testes internos | **preencher** |
 | `SICOOB_TEST_EMAIL_CENTRAL` / `_GESTOR` / `_PA` / `_SINGULAR` / `SICOOB_TEST_USER_PASSWORD` | simulação de papéis Sicoob em CI | **preencher** |

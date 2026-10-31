@@ -40,6 +40,8 @@ Foram coordenados cinco pareceres somente leitura (E2E, CI/workflows, banco/migr
 
 Na SHA `24c8e674a`, checks remotos verdes: CodeQL, Bundle, Lighthouse e Portal Sicoob. Security Scan e Qualidade contínua seguem falhando pelo único advisory alto de Zod; E2E falhou por timeout 45 s em chamadas remotas dos hooks `beforeAll`/`afterAll` do teste `e2e-cleanup-rate-limit`. O run não determina se a causa é o ambiente QA ou o setup do teste. Ver links em `RELATORIO_CI.md` e `PENDENCIAS.md`.
 
+Na revalidação da SHA `044ade862`, os mesmos checks verdes/falhos se repetiram; ver os links em `RELATORIO_CI.md`. O workflow E2E agora exige `vars.E2E_SUPABASE_PROJECT_ID` e bloqueia chamadas remotas quando o ref não corresponde ao projeto de QA ou aponta ao banco canônico. A variável não constava na listagem de nomes do GitHub Actions; o usuário confirmou que irá configurá-la. Antes de qualquer acesso remoto: validar que URL e chaves E2E são do projeto dedicado. Cobertura offline do guard passou (4/4) e actionlint passou; aguarda execução remota após configuração.
+
 ## Validação final desta rodada, antes do commit
 
 | Verificação | Baseline (`e9d590267`) | Após alterações | Resultado |

@@ -73,6 +73,12 @@ jobs:
       - name: Install deps
         run: npm ci --no-audit --no-fund
 
+      - name: Validar destino Supabase de homologação
+        env:
+          E2E_SUPABASE_PROJECT_ID: ${{ vars.E2E_SUPABASE_PROJECT_ID }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/ci/validate-e2e-supabase-target.mjs
+
       - name: Verificar credenciais da jornada autenticada
         shell: bash
         run: |
