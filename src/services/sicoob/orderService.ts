@@ -56,10 +56,13 @@ function applyPeriodAndSearch(query: SicoobOrderQuery, filters?: OrderListFilter
   if (filters?.from) filtered = filtered.gte("created_at", filters.from);
   if (filters?.to) filtered = filtered.lte("created_at", filters.to);
   if (filters?.search) {
-    // Remove PostgREST syntax chars (,  ( )) that could inject extra filter conditions
+    // Remove PostgREST syntax chars (, ( )) that could inject extra filter conditions
     const term = filters.search.toLowerCase().trim().replace(/[,()]/g, '');
     if (term) {
       filtered = filtered.or(`order_number.ilike.%${term}%,notes.ilike.%${term}%,tracking_code.ilike.%${term}%`);
+    } else {
+      // Original search contained only sanitized-away punctuation — return no results
+      filtered = filtered.eq('order_number', '__no_match__');
     }
   }
   return filtered;
