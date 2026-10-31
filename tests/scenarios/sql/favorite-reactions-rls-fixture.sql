@@ -25,6 +25,12 @@ CREATE TABLE public.favorite_lists (
   shared_token text,
   shared_expires_at timestamptz
 );
+CREATE TABLE public.favorite_items (
+  id uuid PRIMARY KEY,
+  list_id uuid NOT NULL REFERENCES public.favorite_lists(id),
+  user_id uuid NOT NULL,
+  product_id text NOT NULL
+);
 CREATE TABLE public.favorite_item_reactions (
   id uuid PRIMARY KEY,
   item_id uuid NOT NULL,
@@ -37,20 +43,40 @@ CREATE TABLE public.favorite_item_reactions (
 );
 
 ALTER TABLE public.favorite_lists ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.favorite_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.favorite_item_reactions ENABLE ROW LEVEL SECURITY;
 GRANT USAGE ON SCHEMA public, auth TO anon, authenticated, service_role;
-GRANT SELECT, INSERT ON public.favorite_lists TO anon, authenticated;
-GRANT SELECT, INSERT ON public.favorite_item_reactions TO anon, authenticated;
+GRANT ALL PRIVILEGES ON public.favorite_lists, public.favorite_items,
+  public.favorite_item_reactions TO anon, authenticated;
+GRANT ALL PRIVILEGES ON public.favorite_lists, public.favorite_items,
+  public.favorite_item_reactions TO service_role;
 
-CREATE POLICY favorite_lists_owner_admin_select
-  ON public.favorite_lists FOR SELECT TO authenticated
+CREATE POLICY favorite_lists_merged_select
+  ON public.favorite_lists AS PERMISSIVE FOR SELECT TO public
   USING (
-    user_id = (SELECT auth.uid())
-    OR public.has_role((SELECT auth.uid()), 'admin'::public.app_role)
+    (pg_has_role(current_user, 'anon', 'member') AND shared_token IS NOT NULL)
+    OR
+    (pg_has_role(current_user, 'authenticated', 'member') AND (
+      user_id = (SELECT auth.uid())
+      OR public.has_role((SELECT auth.uid()), 'admin'::public.app_role)
+      OR shared_token IS NOT NULL
+    ))
   );
-CREATE POLICY favorite_lists_public_select
-  ON public.favorite_lists FOR SELECT TO anon, authenticated
-  USING (shared_token IS NOT NULL);
+CREATE POLICY favorite_items_merged_select
+  ON public.favorite_items AS PERMISSIVE FOR SELECT TO public
+  USING (
+    (pg_has_role(current_user, 'anon', 'member') AND EXISTS (
+      SELECT 1 FROM public.favorite_lists AS list
+       WHERE list.id = favorite_items.list_id
+         AND list.shared_token IS NOT NULL
+    ))
+    OR
+    (pg_has_role(current_user, 'authenticated', 'member') AND EXISTS (
+      SELECT 1 FROM public.favorite_lists AS list
+       WHERE list.id = favorite_items.list_id
+         AND list.shared_token IS NOT NULL
+    ))
+  );
 
 CREATE POLICY sicoob_merged_reactions_select
   ON public.favorite_item_reactions AS PERMISSIVE FOR SELECT TO public
@@ -77,6 +103,9 @@ CREATE POLICY sicoob_merged_reactions_insert
 INSERT INTO public.favorite_lists (id, user_id, shared_token) VALUES
   ('aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001', repeat('a', 64)),
   ('bbbbbbbb-0000-4000-8000-000000000002', 'bbbbbbbb-0000-4000-8000-000000000002', repeat('b', 64));
+INSERT INTO public.favorite_items (id, list_id, user_id, product_id) VALUES
+  ('aaaaaaaa-3000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001', 'produto-a'),
+  ('bbbbbbbb-3000-4000-8000-000000000002', 'bbbbbbbb-0000-4000-8000-000000000002', 'bbbbbbbb-0000-4000-8000-000000000002', 'produto-b');
 INSERT INTO public.favorite_item_reactions
   (id, item_id, list_id, anon_id, emoji, user_agent, ip_hash)
 VALUES
@@ -101,3 +130,18 @@ AS $$
 $$;
 REVOKE ALL ON FUNCTION public.get_public_favorite_reactions(text, text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.get_public_favorite_reactions(text, text) TO anon, authenticated;
+
+CREATE FUNCTION public.get_public_favorite_list(_token text)
+RETURNS TABLE(list_id uuid, item_id uuid)
+LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+  SELECT list.id, item.id
+    FROM public.favorite_lists AS list
+    LEFT JOIN public.favorite_items AS item ON item.list_id = list.id
+   WHERE length(_token) = 64
+     AND list.shared_token = _token
+     AND (list.shared_expires_at IS NULL OR list.shared_expires_at > statement_timestamp())
+$$;
+REVOKE ALL ON FUNCTION public.get_public_favorite_list(text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.get_public_favorite_list(text) TO anon, authenticated;

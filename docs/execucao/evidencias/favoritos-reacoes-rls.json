@@ -2,12 +2,5 @@
   "ambiente": "PostgreSQL 17 descartável, rede desativada e dados sintéticos",
   "migration": "supabase/migrations/20261031042808_secure_public_favorite_reactions_access.sql",
   "banco_canonico_alterado": false,
-  "anon_sem_select_direto": true,
-  "anon_sem_insert_direto": true,
-  "authenticated_sem_insert_direto": true,
-  "nao_proprietario_nao_le_reacoes_diretas": true,
-  "proprietario_le_reacoes_da_propria_lista": true,
-  "admin_le_reacoes": true,
-  "rpc_publico_filtra_por_token_e_mascara_outros_visitantes": true,
-  "resultado": "aprovado"
+  "resultado": "falhou"
 }
