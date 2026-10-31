@@ -8,6 +8,7 @@ import { History, User, Info } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface QuoteHistoryTimelineProps {
   quoteId: string;
@@ -58,7 +59,7 @@ function TimelineEntry({ event }: { event: TimelineEvent }) {
 }
 
 export function QuoteHistoryTimeline({ quoteId }: QuoteHistoryTimelineProps) {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["quote-history", quoteId],
     queryFn: () => fetchTimeline(quoteId),
   });
@@ -67,6 +68,17 @@ export function QuoteHistoryTimeline({ quoteId }: QuoteHistoryTimelineProps) {
     return (
       <div className="space-y-3">
         {[0, 1, 2].map((i) => <Skeleton key={i} className="h-14" />)}
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div role="alert" className="space-y-3 text-sm text-muted-foreground">
+        <p>Não foi possível carregar o histórico deste orçamento.</p>
+        <Button variant="outline" size="sm" onClick={() => { void refetch(); }}>
+          Tentar novamente
+        </Button>
       </div>
     );
   }

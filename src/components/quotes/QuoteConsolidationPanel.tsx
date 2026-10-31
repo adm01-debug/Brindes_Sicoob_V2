@@ -59,6 +59,9 @@ interface QuoteHistoryEntry {
 
 interface QuoteConsolidationPanelProps {
   quotes: Quote[];
+  loading?: boolean;
+  error?: boolean;
+  onRetry?: () => void;
   title?: string;
   description?: string;
 }
@@ -74,15 +77,20 @@ function ConsolidatedSource({ source }: { source: ConsolidatedQuoteItem["sources
 }
 
 function ConsolidatedRow({ item, expanded, toggle }: { item: ConsolidatedQuoteItem; expanded: boolean; toggle: () => void }) {
-  return <React.Fragment><TableRow className="hover:bg-muted/30 cursor-pointer" onClick={toggle}>
-    <TableCell>{expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}</TableCell>
+  const detailsId = `consolidated-sources-${item.key}`;
+  return <React.Fragment><TableRow className="hover:bg-muted/30">
+    <TableCell><Button type="button" variant="ghost" size="icon" className="h-8 w-8"
+      aria-label={`${expanded ? "Ocultar" : "Mostrar"} origens de ${item.product_name}`}
+      aria-expanded={expanded} aria-controls={expanded ? detailsId : undefined} onClick={toggle}>
+      {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+    </Button></TableCell>
     <TableCell><div className="flex flex-col"><span className="font-medium text-sm">{item.product_name}</span>
       {item.product_sku && <span className="text-[10px] font-mono text-muted-foreground">SKU: {item.product_sku}</span>}
     </div></TableCell><TableCell className="text-center font-semibold">{item.total_quantity}</TableCell>
     <TableCell className="text-center text-sm">{formatCurrency(item.average_price)}</TableCell>
     <TableCell className="text-center font-bold text-primary">{formatCurrency(item.total_value)}</TableCell>
     <TableCell className="text-right"><Badge variant="secondary" className="text-[9px] h-4 px-1">{item.sources.length} orçamentos</Badge></TableCell>
-  </TableRow>{expanded && <TableRow className="bg-muted/10 border-l-2 border-l-primary/50"><TableCell colSpan={6} className="p-0">
+  </TableRow>{expanded && <TableRow id={detailsId} className="bg-muted/10 border-l-2 border-l-primary/50"><TableCell colSpan={6} className="p-0">
     <div className="p-4 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
       <h4 className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest px-2">Detalhamento por Origem</h4>
       <div className="grid grid-cols-1 gap-2">{item.sources.map((source) => <ConsolidatedSource key={source.key} source={source} />)}</div>
@@ -121,12 +129,19 @@ function HistoryBody({ loading, error, entries, retry }: {
   </div>;
 }
 
-function ConsolidatedItemsTable({ items, expanded, toggle, sort }: {
+function ConsolidatedItemsTable({ items, expanded, toggle, sort, sortConfig }: {
   items: ConsolidatedQuoteItem[]; expanded: string[]; toggle: (key: string) => void; sort: (key: ConsolidationSortKey) => void;
+  sortConfig: ConsolidationSortConfig;
 }) {
+  const activeSort = sortConfig ?? { key: "total_value", direction: "desc" as const };
   const heading = (label: string, key: ConsolidationSortKey, centered = false) => <TableHead
-    className={cn("cursor-pointer hover:text-primary transition-colors", centered && "text-center")} onClick={() => sort(key)}>
-    <div className={cn("flex items-center gap-2", centered && "justify-center")}>{label}<ArrowUpDown className="h-3 w-3" /></div></TableHead>;
+    aria-sort={activeSort.key === key ? (activeSort.direction === "asc" ? "ascending" : "descending") : "none"}
+    className={cn(centered && "text-center")}>
+    <Button type="button" variant="ghost" size="sm" className={cn("h-auto p-1 font-medium", centered && "mx-auto")}
+      aria-label={`Ordenar por ${label}${activeSort.key === key ? `, ${activeSort.direction === "asc" ? "crescente" : "decrescente"}` : ""}`}
+      onClick={() => sort(key)}>
+      <span>{label}</span><ArrowUpDown className="h-3 w-3" aria-hidden="true" />
+    </Button></TableHead>;
   return <div className="rounded-md border"><Table><TableHeader><TableRow className="bg-muted/50"><TableHead className="w-10" />
     {heading("Produto / SKU", "product_name")}{heading("Qtd Total", "total_quantity", true)}
     {heading("Preço Médio", "average_price", true)}{heading("Total", "total_value", true)}
@@ -167,11 +182,15 @@ function useConsolidationFilters() {
   const toggleSort = (key: ConsolidationSortKey) => setSort((previous) => ({
     key, direction: previous?.key === key && previous.direction === "asc" ? "desc" : "asc",
   }));
-  const share = () => {
+  const share = async () => {
     const params = new URLSearchParams(window.location.search); params.set("q_search", search);
     if (sort) params.set("q_sort", btoa(JSON.stringify(sort)));
-    void navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?${params}`);
-    toast.success("Link de compartilhamento copiado!", { description: "Os filtros e ordenação atuais foram codificados na URL." });
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?${params}`);
+      toast.success("Link de compartilhamento copiado!", { description: "Os filtros e ordenação atuais foram codificados na URL." });
+    } catch {
+      toast.error("Não foi possível copiar o link. Verifique a permissão da área de transferência e tente novamente.");
+    }
   };
   return { search, setSearch, sort, setSort, reset, toggleSort, share };
 }
@@ -228,6 +247,35 @@ function useConsolidatedData(quotes: Quote[], search: string, sort: Consolidatio
   }, [quotes, search, sort]);
 }
 
+function hasConsolidationFallback(error: boolean, loading: boolean, data: ConsolidatedData | null): boolean {
+  return error || loading || !data;
+}
+
+function requireConsolidatedData(data: ConsolidatedData | null): ConsolidatedData {
+  if (!data) throw new Error("A consolidação só pode renderizar depois da consulta válida.");
+  return data;
+}
+
+function ConsolidationPanelFallback({ error, loading, onRetry }: {
+  error: boolean;
+  loading: boolean;
+  onRetry?: () => void;
+}) {
+  if (error) return <Card role="alert" className="border-destructive/30"><CardContent className="py-8 text-center">
+    <p className="text-sm text-muted-foreground">Não foi possível carregar os itens dos orçamentos para consolidação.</p>
+    {onRetry && <Button variant="outline" size="sm" className="mt-4 gap-2" onClick={onRetry} disabled={loading}>
+      <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+      {loading ? "Tentando novamente…" : "Tentar novamente"}
+    </Button>}
+  </CardContent></Card>;
+  if (loading) return <Card aria-label="Carregando itens para consolidação" className="border-dashed">
+    <CardContent className="space-y-3 py-8"><Skeleton className="h-8 w-48" /><Skeleton className="h-24" /></CardContent>
+  </Card>;
+  return <Card className="border-dashed"><CardContent className="py-10 text-center text-muted-foreground">
+    <Package className="h-10 w-10 mx-auto mb-3 opacity-20" /><p>Nenhum orçamento selecionado para consolidação.</p>
+  </CardContent></Card>;
+}
+
 function exportConsolidation(data: ConsolidatedData) {
   const headers = ["Produto", "SKU", "Qtd Total", "Preço Médio", "Total", "Nº Orçamentos"];
   const rows = data.items.map((item) => [item.product_name, item.product_sku || "", item.total_quantity,
@@ -254,7 +302,8 @@ function ItemsTab({ title, description, data, expanded, toggle, filters, saved }
       <SavedViewsDropdown views={saved.views} load={saved.load} remove={saved.remove} save={saved.save} />
       <Button variant="outline" size="sm" className="gap-2 h-9" onClick={filters.share}><Share2 className="h-4 w-4" />Compartilhar</Button>
       <Button variant="outline" size="sm" className="gap-2 h-9" onClick={() => exportConsolidation(data)}><Download className="h-4 w-4" />Exportar CSV</Button>
-    </div></CardHeader><CardContent><ConsolidatedItemsTable items={data.items} expanded={expanded} toggle={toggle} sort={filters.toggleSort} /></CardContent>
+    </div></CardHeader><CardContent><ConsolidatedItemsTable items={data.items} expanded={expanded} toggle={toggle}
+      sort={filters.toggleSort} sortConfig={filters.sort} /></CardContent>
   </Card>;
 }
 
@@ -290,7 +339,8 @@ function ConsolidationMetrics({ data }: { data: ConsolidatedData }) {
   return <div className="grid grid-cols-1 md:grid-cols-4 gap-4">{metrics.map((metric) => <MetricCard key={metric.label} {...metric} />)}</div>;
 }
 
-export function QuoteConsolidationPanel({ quotes, title = "Consolidação de Orçamentos",
+export function QuoteConsolidationPanel({ quotes, loading = false, error = false, onRetry,
+  title = "Consolidação de Orçamentos",
   description = "Visão unificada de múltiplos orçamentos para análise de compra." }: QuoteConsolidationPanelProps) {
   const filters = useConsolidationFilters();
   const saved = useSavedViews(filters);
@@ -300,17 +350,18 @@ export function QuoteConsolidationPanel({ quotes, title = "Consolidação de Or�
   const data = useConsolidatedData(quotes, filters.search, filters.sort);
   const toggle = (key: string) => setExpanded((previous) =>
     previous.includes(key) ? previous.filter((itemKey) => itemKey !== key) : [...previous, key]);
-  if (!data) return <Card className="border-dashed"><CardContent className="py-10 text-center text-muted-foreground">
-    <Package className="h-10 w-10 mx-auto mb-3 opacity-20" /><p>Nenhum orçamento selecionado para consolidação.</p>
-  </CardContent></Card>;
-  return <div className="space-y-6"><ConsolidationMetrics data={data} />
+  if (hasConsolidationFallback(error, loading, data)) {
+    return <ConsolidationPanelFallback error={error} loading={loading} onRetry={onRetry} />;
+  }
+  const consolidatedData = requireConsolidatedData(data);
+  return <div className="space-y-6"><ConsolidationMetrics data={consolidatedData} />
     <div className="flex items-center gap-2 mb-2 p-1 bg-muted/30 w-fit rounded-lg border border-border/40">
       <Button variant={activeTab === "items" ? "default" : "ghost"} size="sm" onClick={() => setActiveTab("items")} className="h-8 gap-2">
         <Layers className="h-4 w-4" /> Itens Consolidados</Button>
       <Button variant={activeTab === "history" ? "default" : "ghost"} size="sm" onClick={() => setActiveTab("history")} className="h-8 gap-2">
         <History className="h-4 w-4" /> Eventos registrados</Button>
     </div>
-    {activeTab === "items" ? <ItemsTab title={title} description={description} data={data} expanded={expanded}
+    {activeTab === "items" ? <ItemsTab title={title} description={description} data={consolidatedData} expanded={expanded}
       toggle={toggle} filters={filters} saved={saved} /> : <HistoryTab history={history} />}
   </div>;
 }

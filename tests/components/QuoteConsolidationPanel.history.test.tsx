@@ -1,7 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
+import { waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+
+const toastMocks = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() }));
+vi.mock("sonner", () => ({ toast: toastMocks }));
 
 const database = vi.hoisted(() => {
   const historyQuery: Record<string, ReturnType<typeof vi.fn>> = {};
@@ -40,11 +44,12 @@ vi.mock("@/integrations/supabase/client", () => ({
 
 import { QuoteConsolidationPanel } from "@/components/quotes/QuoteConsolidationPanel";
 
-function renderPanel() {
+function renderPanel(options: { loading?: boolean; error?: boolean; onRetry?: () => void } = {}) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={queryClient}>
       <QuoteConsolidationPanel
+        {...options}
         quotes={[{
           id: "orcamento-1",
           quote_number: "Q-100",
@@ -76,5 +81,51 @@ describe("QuoteConsolidationPanel — eventos registrados", () => {
     expect(database.from).toHaveBeenCalledWith("profiles");
     expect(database.profilesQuery.in).toHaveBeenCalledWith("user_id", ["usuario-1"]);
     expect(screen.queryByText(/Alteração de quantidade no item/i)).not.toBeInTheDocument();
+  });
+
+  it("não apresenta totais zerados quando a consulta de itens falha e oferece retry", async () => {
+    const onRetry = vi.fn();
+    renderPanel({ error: true, onRetry });
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Não foi possível carregar os itens dos orçamentos");
+    expect(screen.queryByText("Total Consolidado")).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole("button", { name: "Tentar novamente" }));
+    expect(onRetry).toHaveBeenCalledOnce();
+  });
+
+  it("mostra carregamento em vez de consolidar uma resposta ainda pendente", () => {
+    renderPanel({ loading: true });
+
+    expect(screen.getByLabelText("Carregando itens para consolidação")).toBeInTheDocument();
+    expect(screen.queryByText("Total Consolidado")).not.toBeInTheDocument();
+  });
+
+  it("oferece controles de expansão e ordenação acessíveis por teclado", async () => {
+    const user = userEvent.setup();
+    renderPanel();
+
+    const expand = screen.getByRole("button", { name: "Mostrar origens de Caneta" });
+    expect(expand).toHaveAttribute("aria-expanded", "false");
+    expand.focus();
+    expect(expand).toHaveFocus();
+    await user.keyboard("{Enter}");
+    expect(expand).toHaveAttribute("aria-expanded", "true");
+
+    const productSort = screen.getByRole("button", { name: "Ordenar por Produto / SKU" });
+    await user.click(productSort);
+    expect(productSort.closest("th")).toHaveAttribute("aria-sort", "ascending");
+  });
+
+  it("só confirma compartilhamento depois de copiar e anuncia falha se a API rejeitar", async () => {
+    const user = userEvent.setup();
+    const clipboardWrite = vi.spyOn(navigator.clipboard, "writeText").mockRejectedValue(new Error("permissão negada"));
+    toastMocks.success.mockClear();
+    toastMocks.error.mockClear();
+    renderPanel();
+
+    await user.click(screen.getByRole("button", { name: /compartilhar/i }));
+    await waitFor(() => expect(toastMocks.error).toHaveBeenCalledWith(expect.stringContaining("Não foi possível copiar")));
+    expect(toastMocks.success).not.toHaveBeenCalled();
+    expect(clipboardWrite).toHaveBeenCalledOnce();
   });
 });

@@ -62,6 +62,7 @@ export function createSupabaseMock(opts: MockOptions = {}): SupabaseMock {
     api.in = vi.fn(() => api);
     api.order = vi.fn(() => api);
     api.limit = vi.fn(() => api);
+    api.range = vi.fn(() => api);
 
     api.insert = vi.fn((payload: unknown) => {
       pendingOp = "insert";
