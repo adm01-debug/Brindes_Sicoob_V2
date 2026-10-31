@@ -8,8 +8,32 @@ import {
   collectLocalMigrations,
   compareLedger,
   comparePendingBaseline,
+  formatLedgerDiagnostic,
   normalizedSql,
 } from '../../scripts/db/check-migration-ledger-drift.mjs';
+
+test('diagnóstico do ledger informa a exceção e redige credenciais', () => {
+  const error = Object.assign(
+    new Error(
+      'fetch failed https://usuario:senha@db.example/rest?apikey=chave; Bearer eyJhbGci.abc.def',
+    ),
+    { code: 'ECONNREFUSED' },
+  );
+  const diagnostic = formatLedgerDiagnostic(error);
+
+  assert.equal(diagnostic.name, 'Error');
+  assert.equal(diagnostic.code, 'ECONNREFUSED');
+  assert.match(diagnostic.message, /fetch failed/);
+  assert.match(diagnostic.message, /\[URL redigida\]/);
+  assert.match(diagnostic.message, /Bearer \[redigido\]/);
+  assert.doesNotMatch(diagnostic.message, /senha|chave|eyJhbGci|db\.example/);
+
+  const labeledSecrets = formatLedgerDiagnostic(
+    new Error('password=senha-local; api_key: chave-local; token=token-local'),
+  );
+  assert.doesNotMatch(labeledSecrets.message, /senha-local|chave-local|token-local/);
+  assert.equal((labeledSecrets.message.match(/\[redigido\]/g) ?? []).length, 3);
+});
 test('compara oito dígitos, conteúdo e ausência nas duas direções', () => {
   const root = mkdtempSync(join(tmpdir(), 'sicoob-ledger-'));
   try {

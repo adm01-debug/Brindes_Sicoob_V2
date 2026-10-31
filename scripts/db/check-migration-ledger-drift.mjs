@@ -171,6 +171,31 @@ export function comparePendingBaseline(results, baselineFindings) {
     invalid_resolutions: invalidResolutions,
   };
 }
+
+export function formatLedgerDiagnostic(error) {
+  const name =
+    error && typeof error.name === 'string' && /^[\w.-]{1,80}$/.test(error.name)
+      ? error.name
+      : 'Error';
+  const code =
+    error && typeof error.code === 'string' && /^[\w.-]{1,80}$/.test(error.code)
+      ? error.code
+      : null;
+  const rawMessage = error instanceof Error ? error.message : String(error ?? '');
+  const message = rawMessage
+    .replace(/\bBearer\s+[A-Za-z0-9._~+/-]+=*/gi, 'Bearer [redigido]')
+    .replace(/\beyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g, '[JWT redigido]')
+    .replace(/\b(?:https?|postgres(?:ql)?):\/\/[^\s"'<>;]+/gi, '[URL redigida]')
+    .replace(
+      /\b(password|passwd|secret|token|api[_-]?key)(\s*[:=]\s*)("[^"]*"|'[^']*'|[^\s,;]+)/gi,
+      '$1$2[redigido]',
+    )
+    .replace(/[\r\n\t]+/g, ' ')
+    .slice(0, 300);
+
+  return { name, code, message };
+}
+
 async function fetchLedger() {
   const client = await createSupabaseSqlClient({
     projectRef: PROJECT_REF,
@@ -273,8 +298,11 @@ async function main() {
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((e) => {
+    const diagnostic = formatLedgerDiagnostic(e);
+    const code = diagnostic.code ? `, código ${diagnostic.code}` : '';
+    const reason = diagnostic.message ? `; motivo: ${diagnostic.message}` : '';
     console.error(
-      `[ledger] Verificação indisponível (${e.code ?? e.name}); nenhum resultado aprovado.`,
+      `[ledger] Verificação indisponível (${diagnostic.name}${code})${reason}; nenhum resultado aprovado.`,
     );
     process.exitCode = 2;
   });
