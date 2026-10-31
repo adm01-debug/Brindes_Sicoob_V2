@@ -24,6 +24,7 @@ const LOGISTICS_ORDER_STATUSES = new Set([
 ]);
 const LOGISTICS_ORDER_STATUS_LIST = [...LOGISTICS_ORDER_STATUSES];
 const LOGISTICS_PAGE_SIZE = 200;
+const SHIPMENT_ORDER_ID_BATCH_SIZE = 200;
 
 function statusFromOrder(status: string): SicoobLogisticsStatus {
   if (status === 'delivered' || status === 'completed') return 'delivered';
@@ -55,16 +56,36 @@ export async function listSicoobLogisticsTracking(): Promise<SicoobLogisticsTrac
   if (logisticsOrders.length === 0) return [];
 
   const orderIds = logisticsOrders.map((order) => order.id);
-  const { data: shipments, error } = await supabase
-    .from('sicoob_order_shipments')
-    .select('id, order_id, carrier_name, estimated_delivery, status, delivery_photo_path')
-    .in('order_id', orderIds);
+  const shipments = await listShipmentsByOrderIds(orderIds);
 
-  if (error) throw error;
-
-  const shipmentByOrderId = new Map((shipments ?? []).map((shipment) => [shipment.order_id, shipment]));
+  const shipmentByOrderId = new Map(shipments.map((shipment) => [shipment.order_id, shipment]));
 
   return logisticsOrders.map((order) => trackingFromOrder(order, shipmentByOrderId.get(order.id)));
+}
+
+async function listShipmentsByOrderIds(orderIds: string[]) {
+  const shipments: Array<{
+    id: string;
+    order_id: string;
+    carrier_name: string | null;
+    estimated_delivery: string | null;
+    status: string;
+    delivery_photo_path: string | null;
+  }> = [];
+
+  for (let offset = 0; offset < orderIds.length; offset += SHIPMENT_ORDER_ID_BATCH_SIZE) {
+    const orderIdBatch = orderIds.slice(offset, offset + SHIPMENT_ORDER_ID_BATCH_SIZE);
+    const { data, error } = await supabase
+      .from('sicoob_order_shipments')
+      .select('id, order_id, carrier_name, estimated_delivery, status, delivery_photo_path')
+      .in('order_id', orderIdBatch)
+      .order('order_id', { ascending: true });
+
+    if (error) throw error;
+    shipments.push(...(data ?? []));
+  }
+
+  return shipments;
 }
 
 async function listAllLogisticsOrders(): Promise<SicoobOrder[]> {
