@@ -11,6 +11,7 @@ import { getCorsHeaders, handleCorsPreflightIfNeeded } from "../_shared/cors.ts"
 import { authorize } from "../_shared/authorize.ts";
 import { requireInternalService } from "../_shared/internal-service-auth.ts";
 import { fetchExternal } from "../_shared/external-fetch.ts";
+import { decodeLimitedBody, readLimitedBody } from "../_shared/read-limited-body.ts";
 
 const BodySchema = z.object({
   event: z.string().min(1),
@@ -24,6 +25,7 @@ const BodySchema = z.object({
 
 // Circuit breaker: 5 falhas consecutivas → desativa o webhook
 const CIRCUIT_BREAKER_THRESHOLD = 5;
+const MAX_RESPONSE_BODY_BYTES = 16_384;
 
 async function hmacSign(payload: string, secret: string): Promise<string> {
   const enc = new TextEncoder();
@@ -199,7 +201,10 @@ Deno.serve(async (req) => {
           if (secret) headers["X-Signature-256"] = "sha256=" + await hmacSign(bodyJson, secret);
 
           const res = await fetchExternal(hook.url, { method: "POST", headers, body: bodyJson });
-          const respText = (await res.text()).slice(0, 4000);
+          const responseBody = await readLimitedBody(res.body, MAX_RESPONSE_BODY_BYTES);
+          const decodedResponse = decodeLimitedBody(responseBody);
+          const respText = decodedResponse.slice(0, 4000)
+            + (responseBody.truncated || decodedResponse.length > 4000 ? "…[truncado]" : "");
 
           await supabase.from("webhook_deliveries").insert({
             webhook_id: hook.id,
