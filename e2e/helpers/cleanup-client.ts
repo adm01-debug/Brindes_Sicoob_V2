@@ -302,13 +302,13 @@ export async function purgeOne(
       .map(([t, n]) => `  · ${t.padEnd(32)} ${n}`)
       .join("\n");
     if (rows) console.log(rows);
-    if (json.errors && Object.keys(json.errors).length > 0) {
-      console.warn(
-        `${YELLOW}[e2e-cleanup] avisos:${RESET}\n${Object.entries(json.errors)
-          .map(([t, e]) => `  · ${t}: ${e}`)
-          .join("\n")}`,
-      );
-    }
+  }
+  if (json.errors && Object.keys(json.errors).length > 0) {
+    console.warn(
+      `${YELLOW}[e2e-cleanup] avisos:${RESET}\n${Object.entries(json.errors)
+        .map(([table, error]) => `  · ${table}: ${error}`)
+        .join("\n")}`,
+    );
   }
   return json;
 }
@@ -322,12 +322,30 @@ export async function purgeAll(
   opts: PurgeOpts = {},
 ): Promise<void> {
   const seen = new Set<string>();
+  const failures: string[] = [];
+
+  const purge = async (email: string, label: string) => {
+    try {
+      const result = await purgeOne(cfg, email, opts);
+      if (!result?.ok || Object.keys(result.errors ?? {}).length > 0) {
+        failures.push(label);
+      }
+    } catch {
+      failures.push(label);
+    }
+  };
+
   if (cfg.userEmail) {
     seen.add(cfg.userEmail.toLowerCase());
-    await purgeOne(cfg, cfg.userEmail, opts);
+    await purge(cfg.userEmail, "E2E_USER_EMAIL");
   }
   if (cfg.adminEmail && !seen.has(cfg.adminEmail.toLowerCase())) {
-    await purgeOne(cfg, cfg.adminEmail, opts);
+    await purge(cfg.adminEmail, "E2E_ADMIN_EMAIL");
+  }
+  if (failures.length > 0) {
+    throw new Error(
+      `Limpeza E2E incompleta para ${[...new Set(failures)].join(", ")}; confira os avisos anteriores.`,
+    );
   }
 }
 

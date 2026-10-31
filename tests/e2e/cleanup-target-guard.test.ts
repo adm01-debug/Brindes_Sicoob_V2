@@ -55,4 +55,29 @@ describe("cleanup Playwright protegido por allowlist de QA", () => {
 
     expect(() => loadCleanupConfig()).toThrow("allowlist");
   });
+
+  it("falha visivelmente quando a Edge Function reporta limpeza incompleta", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        new Response(JSON.stringify({ ok: true, dryRun: false, errors: { quotes: "negado" } }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      ),
+    );
+    const { purgeAll } = await import("../../e2e/helpers/cleanup-client");
+
+    await expect(
+      purgeAll(
+        {
+          baseUrl: "https://qa-sicoob-123.supabase.co",
+          token: "cleanup-test-token",
+          userEmail: "qa@example.test",
+          dryRun: false,
+        },
+        { retryPolicy: { attempts: 1, baseDelayMs: 1, maxDelayMs: 1, requestTimeoutMs: 500 } },
+      ),
+    ).rejects.toThrow("Limpeza E2E incompleta para E2E_USER_EMAIL");
+  });
 });
