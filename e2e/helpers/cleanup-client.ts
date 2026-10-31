@@ -1,14 +1,16 @@
+import { validateE2ETarget } from "../../scripts/e2e-target.mjs";
+
 /**
  * Cliente da edge function `e2e-cleanup` reutilizável.
  *
  * Usado pelo globalSetup (limpa ANTES da suite), globalTeardown (limpa
  * DEPOIS) e pela fixture `cleanup-on-failure` (limpa por teste falho).
  *
- * Skip silencioso quando faltam VITE_SUPABASE_URL ou E2E_CLEANUP_TOKEN.
+ * Skip silencioso quando faltam as credenciais de cleanup.
  * Em CI loga warning amarelo; localmente loga em dim para não poluir.
  *
  * Variáveis de ambiente lidas:
- *   - VITE_SUPABASE_URL | SUPABASE_URL
+ *   - E2E_SUPABASE_URL, E2E_SUPABASE_PROJECT_ID e E2E_ALLOWED_PROJECT_ID
  *   - E2E_CLEANUP_TOKEN
  *   - E2E_USER_EMAIL
  *   - E2E_ADMIN_EMAIL  (opcional)
@@ -51,8 +53,7 @@ export interface CleanupConfig {
 }
 
 export function loadCleanupConfig(): CleanupConfig | null {
-  const baseUrl =
-    process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || "";
+  const baseUrl = process.env.E2E_SUPABASE_URL || "";
   const token = process.env.E2E_CLEANUP_TOKEN || "";
   const userEmail = process.env.E2E_USER_EMAIL || "";
   const adminEmail = process.env.E2E_ADMIN_EMAIL || "";
@@ -73,6 +74,14 @@ export function loadCleanupConfig(): CleanupConfig | null {
 
   if (!baseUrl || !token) return null;
   if (!userEmail && !adminEmail) return null;
+
+  validateE2ETarget({
+    url: baseUrl,
+    projectId: process.env.E2E_SUPABASE_PROJECT_ID,
+    allowedProjectId: process.env.E2E_ALLOWED_PROJECT_ID,
+    publishableKey: process.env.E2E_SUPABASE_PUBLISHABLE_KEY,
+    serviceRoleKey: process.env.E2E_SUPABASE_SERVICE_ROLE_KEY,
+  });
 
   return {
     baseUrl,
@@ -321,14 +330,13 @@ export async function purgeAll(
 }
 
 export function logSkipReason(phase: "setup" | "teardown"): void {
-  const baseUrl =
-    process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || "";
+  const baseUrl = process.env.E2E_SUPABASE_URL || "";
   const token = process.env.E2E_CLEANUP_TOKEN || "";
   const hasEmail = !!(process.env.E2E_USER_EMAIL || process.env.E2E_ADMIN_EMAIL);
 
   let msg = `[e2e-cleanup:${phase}] pulado — `;
   if (!baseUrl || !token) {
-    msg += "VITE_SUPABASE_URL ou E2E_CLEANUP_TOKEN ausentes.";
+    msg += "E2E_SUPABASE_URL ou E2E_CLEANUP_TOKEN ausentes.";
   } else if (!hasEmail) {
     msg += "nenhum E2E_USER_EMAIL/E2E_ADMIN_EMAIL definido.";
   } else {

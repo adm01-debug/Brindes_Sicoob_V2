@@ -30,8 +30,57 @@ jobs:
             exit 1
           fi
 
+  # O check obrigatório `e2e` em PR executa somente specs públicos sem secrets.
   e2e:
+    if: github.event_name == 'pull_request'
     needs: validate-source
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      FORCE_COLOR: '0'
+      PWTEST_FORBID_ONLY: '1'
+      VITE_SUPABASE_URL: https://e2e-public.invalid
+      VITE_SUPABASE_PUBLISHABLE_KEY: public-e2e-placeholder
+      VITE_SUPABASE_PROJECT_ID: e2e-public-no-backend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci --no-audit --no-fund
+
+      - name: Install Playwright (chromium)
+        run: npx playwright install --with-deps chromium
+
+      - name: Run jornadas públicas sem backend remoto
+        run: |
+          npx playwright test \
+            --project=chromium-public \
+            --project=routes-public \
+            --forbid-only \
+            --reporter=github,list
+
+      - name: Upload evidências públicas
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-public-pr
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7
+
+  e2e-authenticated:
+    if: github.event_name == 'workflow_dispatch'
+    needs: validate-source
+    environment: e2e-qa
     runs-on: ubuntu-latest
     # O gate cobre 168 combinações de rota/viewport além do smoke. O limite
     # inclui instalação, servidor e upload das evidências no runner hospedado.
@@ -57,13 +106,22 @@ jobs:
       E2E_DEV_PASSWORD: ${{ secrets.E2E_DEV_PASSWORD }}
       E2E_DEV_TOTP_SECRET: ${{ secrets.E2E_DEV_TOTP_SECRET }}
       E2E_CLEANUP_TOKEN: ${{ secrets.E2E_CLEANUP_TOKEN }}
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-      VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+      E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      E2E_SUPABASE_PROJECT_ID: ${{ secrets.E2E_SUPABASE_PROJECT_ID }}
+      E2E_ALLOWED_PROJECT_ID: ${{ vars.E2E_ALLOWED_PROJECT_ID }}
+      E2E_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
+      E2E_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
+      VITE_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_PROJECT_ID: ${{ secrets.E2E_SUPABASE_PROJECT_ID }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
+
+      - name: Validar destino exclusivo de homologação
+        run: node scripts/validate-e2e-target.mjs
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:

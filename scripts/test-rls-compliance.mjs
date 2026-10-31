@@ -1,13 +1,25 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
+import { validateE2ETarget } from './e2e-target.mjs';
 
-const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const publishableKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
+const url = process.env.E2E_SUPABASE_URL;
+const publishableKey = process.env.E2E_SUPABASE_PUBLISHABLE_KEY;
+const serviceRoleKey = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY;
+const projectId = process.env.E2E_SUPABASE_PROJECT_ID;
+const allowedProjectId = process.env.E2E_ALLOWED_PROJECT_ID;
+
+validateE2ETarget({
+  url,
+  projectId,
+  allowedProjectId,
+  publishableKey,
+  serviceRoleKey,
+});
+
 const missing = [
-  !url && 'SUPABASE_URL/VITE_SUPABASE_URL',
-  !publishableKey && 'VITE_SUPABASE_PUBLISHABLE_KEY',
-  !serviceRoleKey && 'SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEY',
+  !url && 'E2E_SUPABASE_URL',
+  !publishableKey && 'E2E_SUPABASE_PUBLISHABLE_KEY',
+  !serviceRoleKey && 'E2E_SUPABASE_SERVICE_ROLE_KEY',
 ].filter(Boolean);
 
 if (missing.length) {
