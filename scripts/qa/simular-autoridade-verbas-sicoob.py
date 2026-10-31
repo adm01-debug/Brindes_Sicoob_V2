@@ -88,14 +88,6 @@ try:
     wait_for_postgres(command, CONTAINER)
     sql(FIXTURE.read_text())
     sql(MIGRATION.read_text())
-    sql(REMOVED_BUYER_POLICY.read_text())
-    checks_after_consolidation = {
-        "regressao_reproduzida_comprador_singular_sem_leitura":
-            scalar(as_actor(COMPRADOR_SINGULAR_A, "SELECT count(*) FROM public.pa_budgets")) == "0",
-    }
-    assert all(checks_after_consolidation.values()), checks_after_consolidation
-    sql(RESTORE_BUYER_POLICY.read_text())
-
     sql(f"""
       INSERT INTO public.profiles
         (id, user_id, cooperativa_id, pa_id, is_active, deleted_at)
@@ -128,6 +120,17 @@ try:
         ('{COOP_BUDGET_A}', '{COOP_A}', 2026, 10, 5000, 1000),
         ('{COOP_BUDGET_B}', '{COOP_B}', 2026, 10, 9000, 2000);
     """)
+
+    # Reproduz o estado gerado pela consolidação, com atores e dados já existentes.
+    sql(REMOVED_BUYER_POLICY.read_text())
+    checks_after_consolidation = {
+        "regressao_reproduzida_comprador_singular_sem_leitura":
+            scalar(as_actor(COMPRADOR_SINGULAR_A, "SELECT count(*) FROM public.pa_budgets")) == "0",
+    }
+    assert all(checks_after_consolidation.values()), checks_after_consolidation
+    sql(RESTORE_BUYER_POLICY.read_text())
+    # Reaplicar comprova que a migration aceita execução idempotente sem relaxar escopo.
+    sql(RESTORE_BUYER_POLICY.read_text())
 
     assert scalar(as_actor(GESTOR_A, "SELECT count(*) FROM public.pa_budgets")) == "1"
     assert scalar(as_actor(GESTOR_A, f"SELECT count(*) FROM public.pa_budgets WHERE id='{BUDGET_B}'")) == "0"

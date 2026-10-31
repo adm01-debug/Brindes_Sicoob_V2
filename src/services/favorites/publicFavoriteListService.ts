@@ -61,7 +61,14 @@ function parsePublicFavoriteList(value: unknown): PublicFavoriteList | null {
   };
 }
 
-function isPublicFavoriteItem(value: unknown): value is Record<string, unknown> {
+function isPublicFavoriteItem(
+  value: unknown,
+): value is Record<string, unknown> & {
+  id: string;
+  product_id: string;
+  note: string | null;
+  added_at: string;
+} {
   if (
     !isRecord(value) ||
     typeof value.id !== "string" ||
