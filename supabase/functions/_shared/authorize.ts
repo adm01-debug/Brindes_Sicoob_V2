@@ -21,6 +21,7 @@
 
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { getCorsHeaders } from "./cors.ts";
+import { hasJwtStructure } from "./jwt-structure.ts";
 
 export type AppRole = "dev" | "supervisor" | "agente";
 
@@ -96,6 +97,19 @@ export async function authorize(
       ok: false,
       response: jsonResponse(
         { error: "missing_token", message: "Bearer token is empty" },
+        401,
+        corsHeaders,
+      ),
+    };
+  }
+
+  // Evita uma chamada de rede ao Auth para tokens estruturalmente inválidos.
+  // Tokens bem formados continuam sendo verificados pelo servidor com getUser.
+  if (!hasJwtStructure(token)) {
+    return {
+      ok: false,
+      response: jsonResponse(
+        { error: "invalid_token", message: "Token is invalid or expired" },
         401,
         corsHeaders,
       ),

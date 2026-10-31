@@ -1,6 +1,53 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
-Atualizado em: 2026-10-22
+## Atualização em 2026-10-29 — estado remoto atual
+
+O inventário abaixo, de 22/10, é histórico. A `main` atual é `e9d59026793b84fabeaeec9da890a068f64d49c3`. Permanecem estas falhas, conforme a última execução de cada workflow na `main`:
+
+| Workflow | Execução | Evidência da falha | Acompanhamento |
+|---|---|---|---|
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | Passo “Confirmar funções publicadas” esperava aumento da versão, mas `sicoob-approval-reconciliation` permaneceu em v5 após o deploy. | PR [#149](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/149) troca a verificação para conteúdo publicado. |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `npm audit` falha por duas vulnerabilidades altas: `undici` e `zod`. | PRs [#146](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/146), [#147](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/147) e [#148](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/148) estão abertos; checks deles também precisam passar. |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | O gate de autorização das Edge Functions é interrompido pelas mesmas vulnerabilidades altas em `undici` e `zod`. | Mesmo grupo de correção dos PRs #146–#148. |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | Configuração carregada na versão 4.39.1, mas ação executada na 4.38.2; autobuild falha e não gera SARIF, então o upload também falha. | PR [#148](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/148) altera workflow; requer nova execução verde. |
+
+O workflow “Migration ledger drift” tem como última execução [40670784182 — success](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40670784182), portanto não é uma falha atual, apesar do schedule anterior ter falhado.
+
+### Outros bloqueios de integração e paridade
+
+- O fix do timeout do token inválido está no PR [#155](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/155), commit `9aa2f43f0cf0508e5a6a3f3677b5f30dbceb6f72`. O E2E remoto, `npm audit` e CodeQL continuam bloqueando o PR. Não fazer merge até todos os checks obrigatórios ficarem verdes. Como altera autorização usada por Edge Functions, publicar somente após CI/PR aprovados e validar a função no ambiente canônico.
+- O Supabase canônico está acessível em leitura e registra 137 migrations até `20261022230000`; esta correção não requer DDL nem alteração de dados.
+- A listagem atual do ledger tem 137 registros: 134 timestampados e três legados (`001`, `002`, `003`). Doze versões timestampadas não têm arquivo correspondente em `main` e são o escopo do PR [#151](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/151). Em sentido inverso, 459 dos 581 arquivos timestampados em `main` não têm versão no ledger (122 coincidem). Não aplicar estes arquivos automaticamente; classificar por origem, conteúdo e sobreposição antes de qualquer execução.
+- O checkout principal local está em `main` no commit `6b71bdc09a454d8f8160166d45c9a670aa8b66e5`, 84 commits atrás de `origin/main`, e contém 14 entradas modificadas/não rastreadas. A comparação foi concluída: a correção de `secretNormalizers.ts` e seu registro já estão em `origin/main`; `ChurnRiskBanner.tsx` difere apenas por uma linha em branco; os índices de `bi-share-dossier` e `health-check` correspondem ao PR #150; helpers locais variam só na formatação, e o teste agregado local duplica `tests/edge-functions/bi-share-dossier.contract.test.ts` e `tests/edge-functions/health-check.liveness.test.ts`, já no PR #150. Os arquivos `supabase/.temp/*` e artefatos Graphify são gerados. Portanto, não há funcionalidade local adicional a importar; a implementação das Edge Functions continua pendente da integração do PR #150.
+- A listagem/compare de 100 Edge Functions não foi repetida nesta atualização. Os pings anteriores não provam igualdade entre código, imports compartilhados e configuração publicados. Não declarar paridade integral de funções.
+
+Nenhum bloqueio desta atualização requer ação imediata do owner (secret, permissão ou billing) para os quatro workflows listados; as correções de código estão distribuídas nos PRs citados e precisam ser validadas/mergeadas segundo os checks.
+
+### Resultado E2E e checks do PR #155 (2026-10-29)
+
+O run mais recente [40807299987](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40807299987), no head `b5b231d7`, falhou no passo “Validar autorização remota e RLS técnico”: 50 testes passaram, 4 foram ignorados e 2 falharam. Em `tests/security/edge-authz-bypass.test.ts`, as chamadas para `system-healthcheck` e `secrets-manager` usando JWT inválido expiraram em 30 s; `tests/rls/e2e-cleanup-rate-limit.test.ts` teve dois hooks expirados em 45 s. O guard local do PR tem teste Deno comprovando resposta 401 sem rede, mas ainda não foi publicado nas funções remotas. A causa dos timeouts RLS não foi confirmada: a consulta aos logs de serviço do Supabase foi negada por permissão. Não aumentar timeouts, aceitar respostas extras nem pular esses testes como contorno.
+
+No head atual do PR #155, CodeQL falhou (run [40807299921](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40807299921)), `npm audit` continua detectando severidades altas em `undici`/`zod` (run [40807299952](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40807299952)), e `copilot-pull-request-reviewer` falhou por limite de uso (run [40807307902](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40807307902)). CodeQL e dependências estão acompanhados nos PRs #148 e #146/#147; a falha do Copilot requer ajuste de billing pelo owner ou aguardar o reset. O PR #155 permanece aberto e bloqueado.
+
+### Revalidação dos checks e da paridade (2026-10-29, HEAD `07954e5165bc201f323daa11991a7232e082ec7b`)
+
+Os resultados abaixo substituem os runs antigos citados na seção anterior para o HEAD atual do PR #155:
+
+| Check | Run atual | Resultado observado | Próximo passo |
+|---|---|---|---|
+| E2E (Playwright) | [40808341558](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40808341558) | Falhou em “Validar autorização remota e RLS técnico”: 49 passaram, 3 falharam e 4 foram ignorados. Chamadas com JWT inválido para `system-healthcheck`, `migration-health-check` e `mcp-keys-update` expiraram em 30 s; os hooks `beforeAll`/`afterAll` de `e2e_cleanup_rate_limit` excederam 45 s. Os logs disponíveis não confirmam a causa dos timeouts. | Investigar disponibilidade e autorização remota; manter os asserts e tempos de espera atuais até identificar causa comprovada. |
+| Segurança, contratos e build | [40808341513](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40808341513) | O passo `check:npm-audit` bloqueou o restante do gate por duas vulnerabilidades altas: `undici` (8.0.0–8.12.1) e `zod` (<4.6.6). | Integrar e validar as correções de dependências nos PRs #146–#148. |
+| Security Scan / npm audit | [40808341472](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40808341472) | Confirma as mesmas duas vulnerabilidades altas em `undici` e `zod`. | Mesmo grupo de dependências. |
+| CodeQL | [40808341576](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40808341576) | `Autobuild` falhou com erro de configuração e o passo de preservação não encontrou SARIF. Os logs consultados não permitem atribuir uma causa mais específica. | Corrigir configuração e validar nova análise completa, inclusive a geração do SARIF. |
+| Revisão automática Copilot | [40808350810](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40808350810) | Falhou por limite de uso do serviço. | Aguardar renovação de cota ou regularizar o plano do Copilot. |
+
+O PR #155 continua aberto e não pode ser integrado com esses checks vermelhos. A correção nele altera autorização de Edge Function; não foi publicada no Supabase e não exige migration. Nenhuma escrita foi feita no banco canônico.
+
+Na reconciliação do checkout principal, `origin/main` está em `e9d59026793b84fabeaeec9da890a068f64d49c3`; o checkout local `main` está 84 commits atrás e contém 19 caminhos modificados ou não rastreados. Os diffs de `bi-share-dossier` e `health-check` pertencem ao escopo do PR #150, ainda aberto e bloqueado; o teste agregado local é adicional e duplica contratos cobertos por testes separados. Artefatos `supabase/.temp/*` e `graphify-out/*` são locais/gerados e não devem ser importados como código. Preservar essa árvore local; não sincronizar ou descartar seus arquivos automaticamente.
+
+No Supabase canônico, a leitura confirma 137 registros no ledger até `20261022230000` (134 timestampados e três legados). Doze versões timestampadas não têm arquivo em `origin/main`; o PR #151 restaura essas fontes, mas também está bloqueado pelos checks. Em sentido inverso, 459 dos 581 arquivos timestampados do repositório não têm versão no ledger (122 coincidem). Essa diferença não prova que 459 migrations devam ser executadas: não aplicar em lote; classificar cada origem e fingerprint primeiro. As três migrations de governança de 13/10 constam no ledger remoto.
+
+Atualização mais recente: 2026-10-29 (o conteúdo abaixo desta seção é histórico de 22/10)
 
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
 O erro exato foi extraído do run mais recente disponível em main.

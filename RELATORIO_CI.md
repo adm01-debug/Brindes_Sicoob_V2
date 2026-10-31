@@ -1,6 +1,50 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
-**Gerado em:** 2026-10-22  
+## Atualização de reconciliação — 2026-10-29
+
+Esta seção substitui o inventário datado de 22/10 para o estado atual de `main` e registra a validação da correção enviada no PR #155. O repositório remoto está em `e9d59026793b84fabeaeec9da890a068f64d49c3`; a branch local de trabalho é `fix/hermes-h239437-plan-convergence`, commit `9aa2f43f0cf0508e5a6a3f3677b5f30dbceb6f72`.
+
+### Baseline local após o commit
+
+| Verificação | Resultado | Observação |
+|---|---|---|
+| `npm ci` | ✅ | Instalação limpa concluída antes da correção; ainda reporta duas vulnerabilidades altas existentes em `undici` e `zod`. |
+| `npm run build` | ✅ | Build de produção concluído; permanecem avisos de variáveis de ambiente ausentes no ambiente local e chunks grandes. |
+| `npm run lint` | ✅ | 0 erros e 873 avisos preexistentes. |
+| `npm run typecheck` | ✅ | Sem erros. |
+| `npm run test -- --reporter=dot` | ✅ | 453 arquivos passaram, 4 foram ignorados; 5.843 testes passaram e 68 foram ignorados. |
+| `deno fmt --check`, `deno lint`, `deno test`, `deno check` | ✅ | Teste de autorização Deno: 1 aprovado; os demais gates focados passaram. |
+| Gates de pre-push | ✅ | Typecheck e lint sem regressões; suíte completa passou novamente. |
+
+### Inventário das últimas execuções de `main`
+
+| Workflow | Última execução na main considerada | Causa/estado |
+|---|---|---|
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) — falha | Publicou, mas o verificador exigia incremento de versão e encontrou `sicoob-approval-reconciliation` ainda na versão 5. PR #149 altera a confirmação para comparar o conteúdo publicado. |
+| Migration ledger drift | [40670784182](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40670784182) — sucesso | A execução seguinte ao schedule falho passou; portanto o último estado é verde. |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) — falha | Gate `npm audit` detectou vulnerabilidades altas em `undici` e `zod`; PRs #146/#147 e o lote #148 tratam dependências. |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) — falha | O gate de segurança detectou as mesmas vulnerabilidades `undici` e `zod`. |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) — falha | O workflow carregou configuração CodeQL 4.39.1 e executou ação 4.38.2; o autobuild falhou e, em seguida, não encontrou SARIF para armazenar. PR #148 inclui ajuste do workflow. |
+| Branch Protection Sentinel | [40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038) — sucesso | Verde. |
+| Enterprise Compliance & Audit Reporting | [40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958) — sucesso | Verde. |
+| Portal Sicoob | [39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315) — sucesso | Última execução encontrada na janela consultada; verde. |
+
+Os PRs #145–#151 ainda não estão integrados. O PR #155 adiciona um guard local para JWT estruturalmente malformado antes de chamar o Auth remoto. O E2E mais recente do head `b5b231d7` falhou no run [40807299987](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40807299987): 50 testes passaram, 4 foram ignorados e 2 falharam. As chamadas remotas com JWT inválido para `system-healthcheck` e `secrets-manager` expiraram em 30 s; dois hooks de limpeza de RLS excederam 45 s. A causa dos timeouts de RLS não foi confirmada. `npm audit`, CodeQL e revisão automatizada também falham no PR, conforme detalhado em `PENDENCIAS.md`. Não há CI verde integral no PR.
+
+### Estado do banco Supabase canônico
+
+Consulta somente leitura ao projeto `cfmzkthhgliqelozlmwu` confirmou PostgreSQL 17.6 saudável e 137 entradas em `supabase_migrations.schema_migrations`, até `20261022230000`. A versão máxima coincide com a migration mais recente em `origin/main`. A correção do PR #155 é exclusivamente código de Edge Function compartilhado: não adiciona schema nem modifica dados, logo nenhuma migration foi aplicada ou necessária nesta mudança.
+
+Paridade de arquivos e ledger ainda não fecha: a listagem atual contém 137 registros no banco (134 timestampados e três legados). Desses, 12 versões timestampadas não têm arquivo correspondente em `main`; são o escopo do PR #151. No sentido inverso, 459 dos 581 arquivos timestampados em `main` não têm versão correspondente no ledger (122 coincidem). Esses arquivos não devem ser aplicados em lote; requerem classificação de linhagem, conteúdo e sobreposição. O ledger remoto não prova sozinho equivalência integral do schema.
+
+### Limites da prova
+
+- O PR #155 está aberto, não integrado e ainda depende dos checks do GitHub; a função publicada no Supabase não recebeu esta correção.
+- O checkout principal local permanece 84 commits atrás de `origin/main` e tem 14 entradas modificadas/não rastreadas. Revisão arquivo a arquivo confirmou que `secretNormalizers.ts` e sua correção já estão em `origin/main`; a diferença local de `ChurnRiskBanner.tsx` é somente uma linha em branco; `bi-share-dossier` e `health-check` correspondem ao PR #150; os helpers locais diferem apenas na formatação e o teste agregado local duplica os dois testes já presentes no PR #150. Os demais itens são estado temporário da CLI/Graphify. Nenhuma funcionalidade local adicional ficou fora do GitHub; o código Edge correspondente segue pendente de integração no PR #150.
+- A publicação e equivalência completa das 100 Edge Functions, incluindo imports compartilhados e configuração, não está demonstrada por este relatório.
+- Nenhuma migração, linha de dados, função publicada ou configuração remota do Supabase foi alterada nesta sessão.
+
+**Versão original:** 2026-10-22 · **Adendo de estado atual:** 2026-10-29
 **Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
 
 ---
