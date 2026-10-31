@@ -217,3 +217,9 @@ Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Depen
 | Migration Ledger Drift | Fingerprint de `20261022120000` calculado com `local_sha256` incorreto; novo digest correto: `e2815b0...` | Corrigido fingerprint no `migration-ledger-baseline.json` | #129 |
 | 5 CVEs high (vite ≤6.4.3) | GHSA-698v, GHSA-r825, GHSA-587h, GHSA-9jrq, GHSA-rq7h | `vite` 6.4.3 → 6.4.5 | #126 |
 | Qualidade contínua (`ci.yml`) — ECR rate limit | `toomanyrequests: Data limit exceeded` ao puxar `public.ecr.aws/supabase/postgres:17.6.1.063` em dois steps (scripts `simular-controles-auditoria.py` e `simular-acl-efetiva.py`) | Rate limit do ECR Public se dissipou naturalmente; run `39780447863` → **success** | automático |
+
+## Atualização supersedente — dependências npm (31/10/2026)
+
+- A correção compatível de `undici` `8.10.2 → 8.12.3` reduz o audit de 17 para 16 advisories e de 2 para 1 nível alto; `npm audit fix` em modo dry-run confirmou que a atualização isolada altera somente esse pacote.
+- **Bloqueio restante:** `zod@3.25.76`, GHSA-mrhx-c7xc-m3w5, exige `zod >=4.6.6`; `npm audit fix --force` migraria para `4.6.7`, breaking change. Necessária PR separada para compatibilidade (principalmente contratos e Edge Functions) com typecheck, build e suíte integral. Não afrouxar `npm audit --audit-level=high`.
+- `minimatch` permanece com advisory moderado; a árvore de ESLint tem dependentes que ainda exigem v3 e o npm não oferece correção sem atualizar consumidores. Não aplicar override major global.
