@@ -1,5 +1,40 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
+## Atualização de 2026-10-31 — estado observado na `main`
+
+Este bloco registra apenas a verificação nova desta data. O inventário histórico abaixo foi preservado e não deve ser interpretado como estado atual sem consultar os links dos runs.
+
+### E2E: ambiente de homologação e guarda de destino
+
+- **Bloqueio:** o workflow ainda injeta credenciais e o token de cleanup em PRs; `globalSetup`, `globalTeardown` e a fixture de falhas podem chamar a limpeza remota. O destino é resolvido de `VITE_SUPABASE_URL`/`SUPABASE_URL` sem conferir o project ref.
+- **Configuração observada:** não há secrets de escopo de repositório chamados `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_PROJECT_ID` e `E2E_SUPABASE_SERVICE_ROLE_KEY`. O conector não permite inspecionar secrets de environments; portanto a ausência global não está comprovada.
+- **Run mais recente observado na `main`:** [E2E Playwright — run 37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358), `startup_failure`, SHA `a974d77` (08/10/2026). Logs expirados; causa exata indisponível.
+- **Próxima ação:** provisionar projeto Supabase de QA, configurar URL, publishable key, project ref e service-role key exclusivos nesse environment, criar allowlist não secreta do project ref e configurar required reviewers. Até a validação, não disparar a jornada autenticada.
+
+### Migration ledger drift: causa não identificada com evidência suficiente
+
+- **Run:** [Migration ledger drift — run 41175713780](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41175713780), attempt 2, SHA `e9d5902`, 31/10/2026.
+- **Step:** “Comparar ledger remoto contra arquivos locais”.
+- **Saída observada:** `[ledger] Verificação indisponível (Error); nenhum resultado aprovado.` Exit code 2. A auditoria de RLS do mesmo run passou.
+- **Bloqueio:** o workflow não fornece a causa original além do tipo `Error`, e o MCP Supabase retornou timeout `Management API 544` ao consultar a conexão. Não assumir divergência nem registrar migration como aplicada.
+- **Próxima ação:** recuperar uma conexão somente leitura, repetir a consulta de ledger com erro sanitizado e comparar hashes/versões; não usar operação de escrita.
+
+### Publicação de Edge Functions — confirmação do alvo necessária
+
+- **Run:** [Publicar funções Sicoob — run 40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102), SHA `e9d5902`, 28/10/2026.
+- **Falha:** verificação pós-publicação constatou `sicoob-approval-reconciliation` na versão 5, igual à versão anterior esperada pelo workflow, sem confirmação da versão da nova fonte.
+- **Próxima ação:** primeiro confirmar o projeto de construção autorizado e comparar versão remota com manifesto Git. Não repetir deploy enquanto alvo/resultado não estiverem identificados.
+
+### Dependências e scanners
+
+- **npm audit local:** 17 achados (15 moderados, 2 altos). `undici` tem correção de patch disponível; `zod` requer Zod 4 (major). Não usar `npm audit fix --force` nem atualizar major sem revisão de compatibilidade e migração por causa raiz.
+- **Runs no SHA `e9d5902`:** [Qualidade contínua 40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964), [Security Scan 40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) e [CodeQL 40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) falharam. Reexecutar após correções e analisar os trechos de falha do SHA atual.
+
+### Observabilidade histórica
+
+- Lighthouse [run 36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910) e Bundle Size [run 36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911) falharam no SHA antigo `99dd877`; logs expirados. Como são acionados por PR, o próximo PR com código deve ser usado para obter resultado atual e evidência recuperável.
+- A ferramenta Supabase MCP falhou com timeout 544 na consulta somente leitura. Nenhuma alteração foi feita no banco canônico.
+
 Atualizado em: 2026-10-22
 
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.

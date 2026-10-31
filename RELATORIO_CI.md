@@ -1,5 +1,52 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
+## Snapshot atualizado — 2026-10-31
+
+Este snapshot substitui apenas os estados operacionais anteriores desta página; os registros históricos abaixo foram preservados. Referência local: `origin/main` em `e9d59026793b84fabeaeec9da890a068f64d49c3`. A instalação e os comandos abaixo foram executados no worktree isolado `/home/joaquim_ataides/hermes-workspaces/chat-h428323`, antes de mudanças de código. O único diff inicial era documental.
+
+### Baseline local
+
+| Verificação | Resultado | Evidência/limite |
+|---|---|---|
+| `npm ci --no-audit --no-fund` | ✅ exit 0 | 980 pacotes instalados; npm avisou que scripts de instalação de `@swc/core`, `core-js` e `esbuild` ainda não estão aprovados. |
+| `npm run build` | ✅ exit 0 | Build Vite concluído. Avisos existentes: variáveis VITE ausentes no ambiente, aviso PostCSS, import dinâmico/estático misto e chunks acima de 600 kB. |
+| `npm run lint` | ✅ exit 0 | 0 erros e 873 avisos `max-lines-per-function`. |
+| `npm run typecheck` | ✅ exit 0 | TypeScript app e node sem diagnósticos. |
+| `npm test -- --reporter=dot` | ✅ exit 0 | 452 arquivos aprovados, 4 ignorados; 5.839 testes passaram, 68 ignorados, 0 falhas (5.907 total). |
+| `npm audit --audit-level=high` | ❌ exit 1 | 17 achados: 15 moderados e 2 altos (`undici` e `zod`). A atualização sugerida para Zod 4 é major e incompatível; não foi aplicada automaticamente. |
+
+A suíte Playwright autenticada não foi executada localmente: o destino E2E isolado não está confirmado e o cleanup global pode gravar/excluir dados. O inventário de secrets em escopo de repositório não encontrou `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_PROJECT_ID` nem `E2E_SUPABASE_SERVICE_ROLE_KEY`; secrets em escopo de environment não são expostos pela ferramenta consultada.
+
+### Inventário remoto — última execução observada na `main`
+
+| Workflow | Conclusão | Última execução observada |
+|---|---|---|
+| Branch Protection Sentinel | ✅ success | [run 40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038), SHA `e9d5902`. |
+| Enterprise Compliance & Audit Reporting | ✅ success | [run 40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958), SHA `e9d5902`. |
+| Portal Sicoob | ✅ success | [run 39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315), SHA `2df1b01` (não é o HEAD atual). |
+| Monthly DB Audit | ✅ success | [run 36794161452](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36794161452), SHA `f1b4e0d`. |
+| Migration ledger drift | ❌ failure | [run 41175713780](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41175713780), SHA `e9d5902`; etapa falhou com `[ledger] Verificação indisponível (Error)`, sem causa subjacente sanitizada. A verificação RLS da mesma execução passou. |
+| Publicar funções Sicoob | ❌ failure | [run 40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102), SHA `e9d5902`; verificação pós-publicação detectou `sicoob-approval-reconciliation` ainda na versão 5. |
+| Qualidade contínua | ❌ failure | [run 40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964), SHA `e9d5902`; gate de dependências/autorização falhou. A auditoria local atual encontra Zod e undici altos. |
+| Security Scan | ❌ failure | [run 40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158), SHA `e9d5902`; `npm audit` alto. Gitleaks passou na mesma execução. |
+| CodeQL | ❌ failure | [run 40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073), SHA `e9d5902`; autobuild falhou. |
+| E2E (Playwright) | ❌ startup_failure | [run 37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358), SHA `a974d77`; logs não estão mais disponíveis para determinar causa exata. |
+| Aplicar migrations Sicoob | ⏹ cancelled | [run 37029743784](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37029743784); cancelado, sem comprovação de aplicação. |
+| Lighthouse Performance Audit | ❌ failure | [run 36353765910](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765910), SHA `99dd877` (histórico; logs expirados). |
+| Bundle Size Check | ❌ failure | [run 36353765911](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/36353765911), SHA `99dd877` (histórico; logs expirados). |
+| Dependabot Updates | ✅ success | [run 40603001428](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40603001428), SHA `e9d5902`. |
+| Copilot | ❌ failure | [run 39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125); erro de cota HTTP 402 no registro anterior. |
+
+Esses estados são uma fotografia das últimas execuções encontradas, não um rerun. Não certifiquei publicação, tráfego de produção ou migrations aplicadas. A chamada somente leitura ao MCP Supabase falhou com timeout `Management API 544`; nenhum comando SQL foi executado e nenhum dado do banco foi alterado.
+
+### Pendências bloqueantes deste snapshot
+
+- Isolar os jobs E2E e recusar qualquer destino sem allowlist de homologação; o environment/reviewer e os quatro secrets `E2E_SUPABASE_*` precisam ser configurados no GitHub.
+- Obter causa sanitizada do erro do ledger e acesso de leitura estável ao Supabase antes de reconciliar migrations.
+- Resolver a defasagem da Edge Function após confirmar a URL/projeto de construção autorizado; nenhuma publicação foi feita.
+- Corrigir os alertas de dependências sem atualização major automática; compatibilidade Zod v4 requer trilha própria.
+- Reexecutar e investigar CodeQL, Lighthouse e Bundle Size no HEAD/PR atual; runs antigos não provam o estado atual.
+
 **Gerado em:** 2026-10-22  
 **Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
 
