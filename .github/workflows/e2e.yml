@@ -85,15 +85,8 @@ jobs:
             echo "::error title=Ambiente E2E de homologação incompleto::Configure secrets dedicados E2E para URL, projeto, chaves e contas de homologação. Nenhum teste remoto foi iniciado."
             exit 1
           fi
-          node --input-type=module -e '
-            const url = new URL(process.env.E2E_SUPABASE_URL);
-            const projectId = process.env.E2E_SUPABASE_PROJECT_ID;
-            const canonicalProjects = new Set(["cfmzkthhgliqelozlmwu", "doufsxqlfjyuvxuezpln"]);
-            if (url.hostname !== `${projectId}.supabase.co` || canonicalProjects.has(projectId)) {
-              console.error("::error title=Projeto E2E não isolado::A URL precisa corresponder ao projeto dedicado de homologação e não pode apontar aos projetos canônicos.");
-              process.exit(1);
-            }
-          '
+          node --test e2e/validate-supabase-target.test.mjs
+          node e2e/validate-supabase-target.mjs
 
       - name: Validar autorização remota e RLS técnico
         env:

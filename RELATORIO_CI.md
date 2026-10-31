@@ -18,7 +18,7 @@ Esta seção substitui o inventário remoto de 22/10 abaixo. A regra aplicada é
 | Branch Protection Sentinel | última execução observada em 27/10 | `success` | Continua verde no inventário consultado. |
 | Enterprise Compliance & Audit Reporting | última execução observada em 27/10 | `success` | Continua verde no inventário consultado. |
 
-As correções locais de workflow, dependências e aplicação não são consideradas concluídas no GitHub até PR e checks remotos verdes. A consulta ao GitHub retornou somente nomes/metadata de secrets, sem ler valores: os secrets E2E específicos de URL, project ref, chave publicável e service role não estavam cadastrados. Nenhuma migration, alteração de dado, execução de Edge Function ou deploy no Supabase canônico foi realizado. O workflow foi isolado para usar um projeto dedicado de homologação; a configuração e as contas ainda precisam de confirmação antes de nova execução E2E.
+As correções locais de workflow, dependências e aplicação não são consideradas concluídas no GitHub até PR e checks remotos verdes. A consulta ao GitHub retornou somente nomes/metadata de secrets, sem ler valores: os secrets E2E específicos de URL, project ref, chave publicável e service role não estavam cadastrados. A branch local agora mapeia o app apenas para esses secrets dedicados, valida URL/ref, bloqueia os dois refs canônicos conhecidos e limita o service role ao step de teste RLS. Quatro testes Node da validação de destino e `actionlint` passaram localmente. Nenhuma migration, alteração de dado, execução de Edge Function ou deploy no Supabase canônico foi realizado. A configuração e as contas ainda precisam de confirmação antes de nova execução E2E.
 
 ## Baseline × validação local após o commit `92e9885ef`
 
@@ -38,6 +38,10 @@ Executado em 30/10/2026 na branch isolada `fix/hermes-h393620-docs-audit-2026103
 O build também avisa que `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` não estão definidos no ambiente local, além de opção `from` do PostCSS, importação dinâmica compartilhada, chunks maiores que 600 kB e comentários `@__PURE__` do Zod 4 que Rollup remove. O comando ainda conclui com sucesso. A saída de testes inclui logs intencionais de casos de ErrorBoundary, sem falha da suíte.
 
 O commit `92e9885ef` protege os arquivos de documentos quando o resultado da RPC de registro é inconclusivo e verifica os metadados completos antes de aceitar o registro. Ele existe somente na branch/worktree local e ainda não tem execução remota associada. Nenhum workflow que falhou na `main` foi declarado resolvido até existir execução verde do commit/PR.
+
+## Verificação final após o commit `1336a823f`
+
+Após isolar as credenciais E2E, os gates foram repetidos: `npm run typecheck`, `npm run lint` (0 erros/873 avisos), `npm run build`, `npm test` (453 arquivos passaram/4 ignorados; 5.848 testes passaram/68 ignorados), `npm run check:npm-audit`, `npm audit --audit-level=high`, `actionlint .github/workflows/e2e.yml` e os quatro testes Node do validador de alvo E2E passaram. O teste de simulação também confirmou que o ref canônico conhecido é bloqueado. A branch tem validação local sem regressão; ainda não há execução do GitHub Actions para esses commits.
 
 ---
 
