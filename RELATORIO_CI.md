@@ -35,7 +35,7 @@ Executado em 31/10/2026 antes do push. O hook local repetiu typecheck baseline, 
 | Gate focado de Edge Functions | — | 7 testes passaram | idempotência, inventário completo, versões, resposta e paridade cobertos |
 | `actionlint` do workflow de deploy | — | passou | YAML e expressões do workflow válidos |
 
-O commit foi enviado para `fix/hermes-h393620-docs-audit-20261031` e associado ao PR #179. As execuções remotas do SHA `239898dd7b0f503d940fdd2a3431686001c4d330` foram iniciadas, mas ainda estavam `queued`/`pending` na consulta de 31/10. Secrets E2E dedicados continuam ausentes da listagem de nomes. O PR permanece em rascunho e nenhum merge, deploy, migration ou alteração do banco foi feito.
+O commit foi enviado para `fix/hermes-h393620-docs-audit-20261031` e associado ao PR #179. No SHA `14837dfadaf7fa585eea1f3cac77c545e35ccd33`, Security Scan [41163310513], Lighthouse [41163310671], CodeQL [41163310519], Portal Sicoob [41163310528], Bundle Size [41163310530] e Qualidade contínua [41163310589] passaram. E2E [41163310537] falhou no preflight pela ausência dos secrets de homologação, antes de iniciar os testes. O PR permanece em rascunho e nenhum merge, deploy, migration ou alteração do banco foi feito.
 
 ## Baseline × validação local após o commit `92e9885ef`
 
