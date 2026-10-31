@@ -149,19 +149,35 @@ function createClientMetadata(metadata?: Record<string, unknown>): Record<string
   };
 }
 
+const QUOTE_LIST_LIMIT = 500;
+
 export class QuoteService {
   static async list(params: { userId: string, scope: SalesScope, orgId: string | null }): Promise<Quote[]> {
     // rls-allow: scope self aplicado no builder seguinte; demais papéis dependem de RLS
-    let q = supabase.from("quotes").select("*").order("created_at", { ascending: false }).limit(500);
+    let q = supabase
+      .from("quotes")
+      .select("*", { count: 'estimated' })
+      .order("created_at", { ascending: false })
+      .limit(QUOTE_LIST_LIMIT);
     q = applySellerScope(q, { scope: params.scope, userId: params.userId });
     
     try {
-      const { data, error } = await q;
+      const { data, error, count } = await q;
       if (error) {
         logger.error("Error listing quotes:", error);
         throw error;
       }
-      return (data || []) as Quote[];
+      const rows = (data || []) as Quote[];
+      // Detecta truncamento silencioso: se o banco sabe que há mais registros
+      // do que o limite retornou, loga aviso explícito para orientar a
+      // implementação de paginação antes que a lista cresça além de 500.
+      if (count !== null && count > rows.length) {
+        logger.warn(
+          `QuoteService.list: listagem truncada em ${QUOTE_LIST_LIMIT} orçamentos ` +
+          `(total estimado no banco: ${count}). Implemente paginação ou aumente o limite.`
+        );
+      }
+      return rows;
     } catch (err) {
       logger.error("Unexpected error in QuoteService.list:", err);
       throw err;
