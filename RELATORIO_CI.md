@@ -165,3 +165,43 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 ---
 
 *Relatório gerado automaticamente pela sessão Claude Code.*
+
+---
+
+## Atualização supersedente — auditoria coordenada de CI (31/10/2026)
+
+Consulta GitHub MCP feita em 31/10/2026. O `main` permanece no SHA `e9d59026793b84fabeaeec9da890a068f64d49c3`; este registro substitui os inventários históricos acima para o estado atual.
+
+### Workflows da `main`: última execução por workflow
+
+| Workflow | Estado | Causa resumida / evidência |
+|---|---|---|
+| [Publicar funções Sicoob](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | ❌ failure | A publicação das sete funções ocorreu; a confirmação falhou porque `sicoob-approval-reconciliation` permaneceu na versão 5 (a versão anterior também era 5). O critério de incremento estrito rejeita no-op idempotente. |
+| [Security Scan](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | ❌ failure | `npm audit --audit-level=high`: findings altos em `undici` e `zod`. O job Gitleaks passou. |
+| [Qualidade contínua](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | ❌ failure | O gate de dependências detectou `undici` e `zod` altos. |
+| [CodeQL](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | ❌ failure | Configuração carregou CodeQL Action v4.39.1 junto de etapas v4.38.2; autobuild não produziu SARIF e o upload falhou em consequência. |
+| [Migration ledger drift](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41013281253) | ✅ success | Último schedule concluído. |
+| [Branch Protection Sentinel](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038) | ✅ success | Última execução observada concluída. |
+| [Enterprise Compliance & Audit Reporting](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958) | ✅ success | Última execução observada concluída. |
+| [Portal Sicoob](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315) | ✅ success | Última execução de push à main observada. |
+
+### Estado das PRs ligadas aos bloqueios
+
+- **PR #179**, SHA `03b4eee07136d99611ab84bcced842c89900669b`: segurança, qualidade, CodeQL, bundle, Lighthouse e Portal passaram; o E2E [41164617193](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41164617193) falhou no preflight de credenciais. Nenhum teste remoto foi iniciado. O workflow lê secrets do repositório e não declara o environment `e2e-staging`; as quatro variáveis obrigatórias de projeto E2E estão ausentes no destino usado pelo workflow. A resposta “Sim, vou configurar” ainda não aparece nos metadados/execução consultados.
+- **PR #180**, novo SHA `266b21de7d994105fcbae0ba2ea2dce860e3fdda`: atualização mínima para evitar retenção do buffer original ao truncar stream. Na consulta após push, CodeQL [41166888455](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41166888455) já falhou pelo mismatch v4.39.1/v4.38.2; os demais seis workflows de Actions permaneciam queued/pending. `npm audit` local também falha por `undici` e `zod`.
+- **PR #151**, SHA `239a25cc133c10dea848ed97d3e77a6e521612e4`: as 12 fontes de migrations presentes no PR não estão na `main`; cinco checks estão falhando e duas revisões Qodo apontam regressão potencial de acesso à lista compartilhada para `anon` e de leitura de verbas por `comprador_singular`. Não fazer merge até resolver os achados e obter CI verde. A afirmação do ledger 137/137 vem da descrição do PR e não foi revalidada no banco nesta consulta.
+
+### Baseline local × final do PR #180
+
+| Gate após commit `266b21de` | Resultado |
+|---|---|
+| `npm run build` | ✅ exit 0; avisos ambientais já conhecidos de variáveis Vite ausentes, PostCSS e chunks grandes |
+| `npm run typecheck` | ✅ exit 0; baseline de diagnósticos: 0 → 0 |
+| `npm run lint` | ✅ exit 0; 0 erros e 873 avisos existentes |
+| `npm test` | ✅ 5.840 passaram, 68 ignorados, 0 falhas (452 arquivos passaram, 4 ignorados) |
+| `deno test supabase/functions/_shared/read-limited-body.test.ts` | ✅ 4 passaram, 0 falhas |
+| `deno check` dos módulos e entrypoints de webhook | ✅ exit 0 |
+| `actionlint .github/workflows/ci.yml` | ✅ exit 0 |
+| `npm run check:npm-audit` | ❌ 2 findings altos: `undici` e `zod`; sem mudança em dependências neste PR |
+
+O mesmo total da suíte Vitest (5.840 aprovados e 68 ignorados) foi observado antes e após o commit; o escopo do código não altera fluxos de aplicação além da leitura limitada do corpo do webhook. Não houve escrita no Supabase, migration ou deploy. O push hook também concluiu baseline de TypeScript (0 → 0), baseline de lint sem regressão nos arquivos alterados e suíte Vitest com os mesmos 5.840/68.
