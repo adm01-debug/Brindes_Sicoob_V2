@@ -3,6 +3,42 @@
 **Gerado em:** 2026-10-22  
 **Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
 
+## Atualização do inventário remoto — 30/10/2026
+
+Esta seção substitui o inventário remoto de 22/10 abaixo. A regra aplicada é considerar somente a última execução de cada workflow na `main`.
+
+| Workflow | Última execução conhecida | Estado | Diagnóstico/evidência |
+|---|---|---|---|
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `failure` | Versões divergentes entre as etapas `init`, `autobuild` e `analyze`; alinhadas localmente em v4.39.1 e ainda sem confirmação remota. |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | `failure` | Gate reportou vulnerabilidades altas de `undici` e `zod`; ambas corrigidas localmente, aguardando execução em PR. |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `failure` | `npm audit` falhou pelas mesmas vulnerabilidades altas, corrigidas localmente sem `--force`; falta prova remota. |
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | `failure` | A verificação observou `sicoob-approval-reconciliation` ainda na versão 5. A causa da discrepância não foi comprovada; não houve deploy/redeploy nesta rodada. |
+| E2E Playwright | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | `startup_failure` | `total_jobs=0`; nenhum job/teste iniciou. O workflow usa `VITE_SUPABASE_PROJECT_ID` e requer credenciais de homologação/TOTP. O owner informou que configuraria o ambiente, mas a configuração ainda não foi verificada. |
+| Migration ledger drift | [41013281253](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41013281253) | `success` | Última execução observada em 30/10. |
+| Branch Protection Sentinel | última execução observada em 27/10 | `success` | Continua verde no inventário consultado. |
+| Enterprise Compliance & Audit Reporting | última execução observada em 27/10 | `success` | Continua verde no inventário consultado. |
+
+As correções locais de workflow, dependências e aplicação não são consideradas concluídas no GitHub até PR e checks remotos verdes. Nenhuma migration, alteração de dado, execução de Edge Function ou deploy no Supabase canônico foi realizado. A configuração e as contas de homologação ainda precisam de confirmação antes de nova execução E2E.
+
+## Baseline × validação local após o commit `92e9885ef`
+
+Executado em 30/10/2026 na branch isolada `fix/hermes-h393620-docs-audit-20261031`, baseada em `origin/main` `e9d590267`. A validação após este commit foi repetida conforme o gate anti-regressão.
+
+| Verificação | Baseline `e9d5902` | Após `92e9885ef` | Resultado |
+|---|---:|---:|---|
+| TypeScript (`npm run typecheck`) | passou | passou | sem regressão |
+| Lint (`npm run lint`) | 0 erros / 873 avisos | 0 erros / 873 avisos | sem novos erros ou avisos |
+| Build (`npm run build`) | passou | passou | avisos de ambiente/chunks e comentários Zod descritos abaixo |
+| Suíte (`npm test`) | 452 arquivos passaram, 4 ignorados; 5.839 testes passaram, 68 ignorados | 453 arquivos passaram, 4 ignorados; 5.848 testes passaram, 68 ignorados | +1 arquivo e +9 testes aprovados; skips inalterados |
+| `npm run check:npm-audit` | não havia no baseline | passou | gate high/critical aprovado |
+| `npm audit --audit-level=high` | 17 vulnerabilidades: 15 moderadas, 2 altas | exit 0; 13 moderadas, 0 altas/críticas | altas corrigidas; moderadas remanescentes na cadeia ESLint/minimatch sem fix compatível indicado |
+| Teste focado E-027 | — | 5 passaram, 0 falhas | estados de registro e limpeza cobertos |
+| `deno check` da Edge Function E-027 | — | passou | alerta preexistente do parser de override `file:vendor/braces` |
+
+O build também avisa que `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` não estão definidos no ambiente local, além de opção `from` do PostCSS, importação dinâmica compartilhada, chunks maiores que 600 kB e comentários `@__PURE__` do Zod 4 que Rollup remove. O comando ainda conclui com sucesso. A saída de testes inclui logs intencionais de casos de ErrorBoundary, sem falha da suíte.
+
+O commit `92e9885ef` protege os arquivos de documentos quando o resultado da RPC de registro é inconclusivo e verifica os metadados completos antes de aceitar o registro. Ele existe somente na branch/worktree local e ainda não tem execução remota associada. Nenhum workflow que falhou na `main` foi declarado resolvido até existir execução verde do commit/PR.
+
 ---
 
 ## Baseline local — antes das alterações do PR #141

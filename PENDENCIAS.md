@@ -1,6 +1,23 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
-Atualizado em: 2026-10-22
+## Estado atualizado — 30/10/2026 (prevalece sobre o inventário histórico abaixo)
+
+As conclusões abaixo foram conferidas contra a última execução conhecida de cada workflow na `main`. Correções locais ainda não validadas no GitHub continuam pendentes.
+
+| Workflow | Última execução conhecida | Estado e bloqueio atual |
+|---|---|---|
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `failure`: `init`, `autobuild` e `analyze` usaram revisões diferentes da action. Corrigido localmente para SHA imutável v4.39.1; falta PR e execução remota verde. |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | `failure`: gate encontrou vulnerabilidades altas em `undici` e `zod`. Corrigidas localmente sem upgrade major; `npm audit --audit-level=high` passa, mas falta CI remoto. |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `failure`: `npm audit` interrompeu por vulnerabilidades altas em `undici`/`zod`. Correção local aguarda CI remoto. |
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | `failure`: verificação final observou `sicoob-approval-reconciliation` na versão 5, igual à anterior. Causa da divergência de versão remota não comprovada; requer diagnóstico sem publicar no banco canônico. |
+| E2E Playwright | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | `startup_failure`, `total_jobs=0`: GitHub não iniciou jobs, portanto não há falha de teste reproduzível. O workflow mapeia `VITE_SUPABASE_PROJECT_ID` e exige secrets de contas de homologação/TOTP; o setup informado pelo owner ainda não foi confirmado. Não rerodar até confirmar ambiente e contas de teste. |
+| Migration ledger drift | [41013281253](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41013281253) | `success` (30/10). |
+| Branch Protection Sentinel | execução mais recente observada em 27/10 | `success`. |
+| Enterprise Compliance & Audit Reporting | execução mais recente observada em 27/10 | `success`. |
+
+**Restrições e próximo passo:** não consultar/imprimir valores de secrets; não executar migrations, Edge Functions ou alterações no Supabase canônico. Depois da confirmação de configuração E2E, atualizar a branch/PR e validar os checks remotos. O deploy de funções requer primeiro esclarecer a checagem de versão. Nenhum desses bloqueios autoriza merge de código de aplicação que dispare deploy de produção.
+
+Atualizado em: 2026-10-22 (inventário histórico; estado vigente acima em 30/10/2026)
 
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
 O erro exato foi extraído do run mais recente disponível em main.
