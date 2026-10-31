@@ -330,3 +330,14 @@ Esta atualização substitui afirmações de “estado atual” anteriores que a
 - Não houve execução de migration, alteração no Supabase, deploy remoto ou leitura/gravação de secrets.
 
 **Próximo passo:** registrar e enviar a correção de Gestão de Compras e esta atualização documental na PR #184; repetir os gates locais após o commit, acompanhar o CI do novo SHA e manter bloqueadas a validação E2E autenticada e a resolução das falhas de `main` até haver QA isolado e merge autorizado.
+
+## Estado posterior ao commit `4cca418c` — 2026-10-31
+
+Esta seção substitui como estado atual os apontamentos anteriores que diziam que a correção de Gestão de Compras aguardava commit ou novo CI.
+
+- **Falha transitória de CI/ECR:** o run [41197769071](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769071), step 16, não iniciou a simulação PostgreSQL descartável: três tentativas de pull de `public.ecr.aws/supabase/postgres:17.6.1.063` retornaram `toomanyrequests: Data limit exceeded`. Foi solicitado rerun somente da job em 31/10/2026 às 11:52 UTC; registrar conclusão após o run. A simulação usa container isolado e `--network none`; o evento não alterou Supabase.
+- **E2E autenticado pendente:** a API GitHub não encontra o environment `e2e-qa` (404). O existente `e2e-staging` não tem proteção adequada. Owner: criar projeto Supabase exclusivo para QA, proteger o environment, configurar variáveis/secrets e personas sintéticas, sem registrar valores secretos; depois, executar o dispatch autorizado.
+- **Copilot Reviewer:** [run 41197777721](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197777721) falhou por quota HTTP 402. Ação do owner: liberar/aguardar cota do serviço; não é falha de produto.
+- **Review e janela de merge:** PR [#184](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/184) continua aberta e requer aprovação humana. A mudança inclui dependências runtime (`zod` 3→4 e `@hookform/resolvers` 3→5); aguardar janela autorizada antes de mesclar.
+- **Falhas da `main` não resolvidas:** a última execução observada continua no SHA `e9d59026793b84fabeaeec9da890a068f64d49c3`. Ledger [41175713780](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41175713780), publicação Edge Functions [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102), Security Scan [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158), Qualidade contínua [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) e CodeQL [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) permanecem falhos até novos runs elegíveis na `main` terminarem em success.
+- Localmente, o commit `4cca418c` passou build, lint/typecheck baseline, Vitest (5.857 passados, 68 skipped), cenários (227/227) e npm audit. Checks verdes de PR não provam resolução na `main`.

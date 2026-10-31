@@ -285,3 +285,20 @@ Consulta atual ao GitHub MCP confirmou que a PR #184 permanece aberta, sem merge
 O inventário mais recente da `main` continua no SHA `e9d59026793b84fabeaeec9da890a068f64d49c3`; suas falhas registradas acima não foram reexecutadas após merge e permanecem pendentes. Não atribuir os checks verdes da PR à `main`.
 
 Validação local do candidato de interface de Gestão de Compras (antes do commit): build concluído; lint e typecheck sem regressões; Vitest completo em **455 arquivos, 5.857 testes aprovados, 4 arquivos e 68 testes skipped**; cobertura 94% statements, 86,79% branches, 97,22% funções e 97,6% linhas; cenários Node **227/227 aprovados**. Dois testes novos verificam ausência de indicadores inventados e links para a fila/painel reais. Permanecem avisos do build (ambiente Vite local sem URL/chave, PostCSS, import misto e chunks grandes). Os dois arquivos de interface/teste passaram ESLint com **zero avisos** e typecheck direcionado sem erros.
+
+### Estado pós-commit — PR #184, SHA `4cca418cdda15c6604b527ac7374b83973c7eda3` — 2026-10-31
+
+A correção de Gestão de Compras foi commitada e publicada neste SHA; a atualização anterior de `78eb93b` que dizia que ela aguardava commit não é mais estado atual. O conjunto local final após o commit passou: build; `lint:baseline`; `typecheck:baseline`; Vitest (455 arquivos, 5.857 aprovados e 68 skipped); cenários (227/227); `check:npm-audit` (sem vulnerabilidades). O hook pre-push repetiu lint, typecheck e Vitest com sucesso.
+
+| Workflow/check | Resultado remoto no SHA `4cca418c` |
+|---|---|
+| E2E público | ✅ [run 41197769091](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769091) |
+| Security Scan (npm audit/Gitleaks) | ✅ [run 41197769144](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769144) |
+| Gate transacional, responsividade e origem confiável | ✅ [run 41197769084](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769084) |
+| CodeQL | ✅ [run 41197769059](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769059) |
+| Bundle / Lighthouse | ✅ [runs 41197769065](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769065) / [41197769112](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769112) |
+| Qualidade contínua | ❌ tentativa 1; rerun da job solicitado | [run 41197769071](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769071), step 16. O pull de `public.ecr.aws/supabase/postgres:17.6.1.063` recebeu `toomanyrequests: Data limit exceeded` após três tentativas, antes de iniciar a simulação PostgreSQL. Tentativa 2 iniciada às 11:52 UTC; resultado ainda pendente. |
+| E2E autenticado e shards | ⏭️ skipped, não certificado | Environment `e2e-qa` retorna 404; `e2e-staging` não possui proteção adequada. |
+| Copilot Code Review | ❌ falha externa | [run 41197777721](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197777721), quota HTTP 402. |
+
+PR #184 segue aberta, sem merge, e exige review humano e janela para as mudanças em dependências runtime. A `main` continua em `e9d59026793b84fabeaeec9da890a068f64d49c3`; as cinco falhas do inventário nela continuam sem nova execução pós-merge, portanto não estão resolvidas. Nenhum segredo, banco Supabase, migration ou deploy foi acessado/alterado nesta etapa.
