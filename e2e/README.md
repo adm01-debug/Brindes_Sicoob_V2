@@ -36,8 +36,14 @@ e2e/
    ```bash
    cp .env.e2e.example .env.e2e
    ```
-2. Preencha com credenciais de um usuário de teste real:
+2. Configure um projeto de QA isolado. Preencha os cinco valores de destino/chaves e a allowlist com o mesmo project ref, além das contas de teste:
    ```
+   E2E_SUPABASE_URL=https://<project-ref>.supabase.co
+   E2E_SUPABASE_PROJECT_ID=<project-ref>
+   E2E_ALLOWED_PROJECT_ID=<project-ref>
+   E2E_SUPABASE_PUBLISHABLE_KEY=...
+   E2E_SUPABASE_SERVICE_ROLE_KEY=...
+   E2E_CLEANUP_TOKEN=...
    E2E_USER_EMAIL=teste@exemplo.com
    E2E_USER_PASSWORD=SuaSenhaForte
    ```
@@ -47,8 +53,9 @@ e2e/
    npm run test:e2e
    ```
 
-Sem essas variáveis, os specs autenticados são marcados `skip` automaticamente
-(o setup grava um storageState vazio).
+O cleanup só usa `E2E_SUPABASE_URL` e exige que URL, project ref e allowlist
+coincidam. Os project refs canônicos do portal e do catálogo mestre são
+recusados. Sem configuração válida, o cleanup falha fechado.
 
 ## Comandos
 
@@ -80,11 +87,19 @@ Tudo fica em `playwright-report/` (relatório HTML) e `e2e-artifacts/` (raw).
 ## CI
 
 Workflow em `.github/workflows/e2e.yml`:
-- Roda em todo push/PR contra `main`
-- Specs públicos sempre rodam
-- Specs autenticados só rodam se `E2E_USER_EMAIL`/`E2E_USER_PASSWORD`
-  forem secrets do repositório
-- Faz upload de `playwright-report` e `e2e-evidence` como artifacts (7 dias)
+- PR executa apenas os projetos públicos, com valores locais fictícios e sem secrets.
+- A jornada autenticada e os shards só executam por `workflow_dispatch` na `main`,
+  no environment `e2e-qa`, após validação da allowlist.
+- A configuração do environment deve conter os secrets `E2E_SUPABASE_URL`,
+  `E2E_SUPABASE_PROJECT_ID`, `E2E_SUPABASE_PUBLISHABLE_KEY`,
+  `E2E_SUPABASE_SERVICE_ROLE_KEY` e os dados das personas. A variável não secreta
+  `E2E_ALLOWED_PROJECT_ID` precisa ser idêntica ao project ref do QA.
+- Configure required reviewers em `e2e-qa`; criar o environment sem aprovadores
+  não fornece aprovação manual.
+- O workflow de compliance só executa o teste RLS destrutivo por dispatch na
+  `main`, também protegido por `e2e-qa` e pela mesma allowlist.
+- As secrets environment-scoped não são enumeradas pelo inventário de secrets
+  do repositório; confirme apenas os nomes, nunca grave valores em documentação.
 
 ## Cobertura por módulo
 
@@ -115,7 +130,13 @@ orçamentos criados pelos testes, o `globalTeardown` chama a edge function
 
 ### Configuração
 
-Defina os secrets no projeto e como variáveis no CI:
+Os PRs executam apenas jornadas públicas, sem secrets. Para executar jornadas
+autenticadas, configure o environment protegido `e2e-qa` com revisores
+obrigatórios e os secrets listados em `docs/secrets.md`. O destino precisa ser
+um projeto Supabase descartável de QA; URL, project ref e allowlist são
+validados antes da instalação das dependências e antes de cada job remoto.
+
+Defina os secrets no environment `e2e-qa`:
 
 | Variável                       | Onde                  | Descrição                                                     |
 |--------------------------------|-----------------------|---------------------------------------------------------------|
@@ -123,8 +144,12 @@ Defina os secrets no projeto e como variáveis no CI:
 | `E2E_CLEANUP_ALLOWED_EMAILS`   | Backend (CSV)         | Lista de emails permitidos. Defesa em profundidade.           |
 | `E2E_USER_EMAIL`               | CI                    | Email do usuário de teste — alvo do cleanup.                  |
 | `E2E_ADMIN_EMAIL`              | CI (opcional)         | Email do admin de teste — também é limpo.                     |
-| `VITE_SUPABASE_URL`            | CI                    | URL do backend (já preenchida em `.env`).                     |
-| `E2E_CLEANUP_DRY_RUN`          | CI (opcional)         | `1` = só conta, não apaga.                                    |
+| `E2E_SUPABASE_URL`             | `e2e-qa`              | URL exclusiva do projeto descartável de QA.                   |
+| `E2E_SUPABASE_PROJECT_ID`      | `e2e-qa`              | Project ref que deve corresponder à URL.                      |
+| `E2E_ALLOWED_PROJECT_ID`       | Variável `e2e-qa`      | Project ref autorizado; nunca use o portal nem o catálogo.   |
+| `E2E_SUPABASE_PUBLISHABLE_KEY` | `e2e-qa`              | Chave publicável do projeto de QA.                            |
+| `E2E_SUPABASE_SERVICE_ROLE_KEY`| `e2e-qa`              | Chave privilegiada exclusiva de QA.                           |
+| `E2E_CLEANUP_DRY_RUN`          | `e2e-qa` (opcional)   | Default é simulação; use exatamente `0` para remover dados.   |
 
 ### Como funciona (camadas de segurança)
 
@@ -133,12 +158,13 @@ Defina os secrets no projeto e como variáveis no CI:
    `E2E_CLEANUP_ALLOWED_EMAILS`. Sem isso, mesmo com o token correto, 403.
 3. **Lookup server-side** — `user_id` é resolvido via `auth.admin`; o
    cliente nunca passa UUID.
-4. **Dry-run default** — body sem `dryRun: false` apenas conta linhas.
+4. **Dry-run default** — o cliente só envia `dryRun: false` quando
+   `E2E_CLEANUP_DRY_RUN=0` estiver definido explicitamente.
 
 ### Rodar manualmente
 
 ```bash
-curl -X POST "$VITE_SUPABASE_URL/functions/v1/e2e-cleanup" \
+curl -X POST "$E2E_SUPABASE_URL/functions/v1/e2e-cleanup" \
   -H "x-e2e-cleanup-token: $E2E_CLEANUP_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"email":"e2e-tester@promogifts.com.br","dryRun":true}'

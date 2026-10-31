@@ -12,6 +12,8 @@ permissions:
 
 jobs:
   drift-check:
+    # O job usa token de gestão Supabase; dispatch só executa código da main.
+    if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: construction
