@@ -203,3 +203,7 @@ A primeira execução local do Playwright público falhou por Chromium ausente (
 Foi encontrado que três jobs com secrets Supabase privilegiados aceitavam disparo manual em refs arbitrárias: `compliance-audit`, `performance-audit` e `drift-check`. Os três agora condicionam `workflow_dispatch` a `refs/heads/main`; eventos de `push` (limitados a main no workflow) e `schedule` permanecem permitidos. `apply-sicoob-migrations.yml` e `deploy-sicoob-functions.yml` já tinham proteção de ref. Correção local ainda aguarda CI remoto.
 
 Auditoria adicional do Lighthouse: o upload do LHCI está configurado para `filesystem`, logo `LHCI_GITHUB_APP_TOKEN` não era necessário; removido do ambiente do processo que executa conteúdo do PR. Também foi removido `continue-on-error` do upload de artefatos para que falhas não sejam mascaradas. As asserções de performance/acessibilidade não foram alteradas.
+
+Removidas também as duas ocorrências preexistentes de `continue-on-error` em uploads de evidência do workflow Sicoob e do bundle-check. Falhas de publicação de artefatos agora são visíveis no status do job; nenhum gate funcional ou asserção foi enfraquecido.
+
+CodeQL falhava porque `init` estava no SHA release 4.39.1, mas `autobuild` e `analyze` continuavam em 4.38.2; o log dizia explicitamente “Loaded a configuration file for version '4.39.1', but running version '4.38.2'”. Os três passos agora usam o mesmo SHA 4.39.1. A análise e o bloqueio por SARIF permanecem ligados; validar no run do PR.

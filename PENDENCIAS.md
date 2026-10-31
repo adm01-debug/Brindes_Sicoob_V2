@@ -251,3 +251,7 @@ O [run 41177997096](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/run
 Revisão transversal encontrou jobs que recebiam credenciais privilegiadas durante `workflow_dispatch` em branches arbitrárias: compliance, auditoria de performance e migration-ledger drift. Os três agora restringem o disparo manual à `main`; os workflows de aplicação de migrations e deploy de Edge Functions já tinham essa proteção. `actionlint` e os gates locais serão repetidos; só o CI de PR poderá validar a mudança de forma remota. Em `migration-ledger-drift.yml`, confirmar também que o environment `construction` mantém política de branches restrita à `main`.
 
 O workflow Lighthouse também recebeu correção: o token da GitHub App foi removido porque o destino do upload é `filesystem`, e `continue-on-error` foi eliminado. O CI deve confirmar que o upload de artefatos e as asserções seguem verdes.
+
+Foram removidos ainda os `continue-on-error` restantes em `sicoob-ci.yml` e `bundle-check.yml`. O CI precisa confirmar publicação de artefatos sem supressão de falhas.
+
+O CodeQL também foi corrigido localmente ao alinhar `init`, `autobuild` e `analyze` no release 4.39.1. O run da `main` falhou antes de gerar SARIF por incompatibilidade 4.39.1/4.38.2; confirmar geração e validação de SARIF no PR.
