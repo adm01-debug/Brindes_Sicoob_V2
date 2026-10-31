@@ -123,8 +123,15 @@ Defina os secrets no projeto e como variáveis no CI:
 | `E2E_CLEANUP_ALLOWED_EMAILS`   | Backend (CSV)         | Lista de emails permitidos. Defesa em profundidade.           |
 | `E2E_USER_EMAIL`               | CI                    | Email do usuário de teste — alvo do cleanup.                  |
 | `E2E_ADMIN_EMAIL`              | CI (opcional)         | Email do admin de teste — também é limpo.                     |
-| `VITE_SUPABASE_URL`            | CI                    | URL do backend (já preenchida em `.env`).                     |
+| `E2E_SUPABASE_URL`             | CI                    | URL do projeto de homologação isolado.                        |
+| `E2E_SUPABASE_PROJECT_ID`      | CI                    | Ref do projeto E2E; deve corresponder ao host da URL.          |
+| `E2E_SUPABASE_PUBLISHABLE_KEY` | CI                    | Chave publicável do projeto de homologação.                   |
+| `E2E_SUPABASE_SERVICE_ROLE_KEY`| CI                    | Chave de serviço do projeto E2E, usada apenas pelo teste RLS. |
+| `VITE_SUPABASE_URL`            | CI (mapeada do E2E)   | Derivada de `E2E_SUPABASE_URL`; não use o secret compartilhado do app. |
 | `E2E_CLEANUP_DRY_RUN`          | CI (opcional)         | `1` = só conta, não apaga.                                    |
+
+O workflow rejeita projeto sem correspondência entre URL e project ref e bloqueia
+os refs canônicos conhecidos. Nunca aponte essas credenciais de E2E para produção.
 
 ### Como funciona (camadas de segurança)
 
