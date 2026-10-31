@@ -154,7 +154,8 @@ function initialSort(): ConsolidationSortConfig {
   const encoded = new URLSearchParams(window.location.search).get("q_sort");
   if (encoded) try { return JSON.parse(atob(encoded)) as ConsolidationSortConfig; } catch (error) { console.error(error); }
   const saved = localStorage.getItem("quote_consolidation_sort");
-  return saved ? JSON.parse(saved) as ConsolidationSortConfig : { key: "total_value", direction: "desc" };
+  if (saved) try { return JSON.parse(saved) as ConsolidationSortConfig; } catch { localStorage.removeItem("quote_consolidation_sort"); }
+  return { key: "total_value", direction: "desc" };
 }
 
 function useConsolidationFilters() {
@@ -170,15 +171,18 @@ function useConsolidationFilters() {
   const share = () => {
     const params = new URLSearchParams(window.location.search); params.set("q_search", search);
     if (sort) params.set("q_sort", btoa(JSON.stringify(sort)));
-    void navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?${params}`);
-    toast.success("Link de compartilhamento copiado!", { description: "Os filtros e ordenação atuais foram codificados na URL." });
+    navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?${params}`)
+      .then(() => toast.success("Link de compartilhamento copiado!", { description: "Os filtros e ordenação atuais foram codificados na URL." }))
+      .catch(() => toast.error("Não foi possível copiar o link. Copie a URL manualmente."));
   };
   return { search, setSearch, sort, setSort, reset, toggleSort, share };
 }
 
 function useSavedViews(filters: ReturnType<typeof useConsolidationFilters>) {
   const [views, setViews] = useState<SavedView[]>(() => {
-    const saved = localStorage.getItem("quote_consolidation_views"); return saved ? JSON.parse(saved) as SavedView[] : [];
+    const saved = localStorage.getItem("quote_consolidation_views");
+    if (saved) try { return JSON.parse(saved) as SavedView[]; } catch { localStorage.removeItem("quote_consolidation_views"); }
+    return [];
   });
   const persist = (next: SavedView[]) => { setViews(next); localStorage.setItem("quote_consolidation_views", JSON.stringify(next)); };
   const save = () => {
