@@ -1,19 +1,21 @@
 # Inventário de segredos e variáveis de ambiente
 
-Gerado em 2026-09-13 por `grep -rhoE "Deno\.env\.get\(...)" supabase/functions` e
-`grep -rhoE "secrets\.\w+" .github/workflows`. Etapa 47 do
+Inventário revisado em 31/10/2026 a partir dos nomes referenciados nos workflows e
+da listagem de nomes no GitHub Actions; valores de secrets nunca são lidos. Etapa 47 do
 [plano de 50 etapas](./plano-melhorias-50-etapas.md).
 
-**Preencher a coluna "Configurado em" — hoje é a lacuna real**: os secrets de E2E
-(etapa 03) e de compliance (etapa 04) faltam no GitHub Actions, e é assim que os
-dois gates de CI ficam vermelhos. Ninguém tinha essa lista consolidada antes.
+O E2E usa o ambiente protegido `e2e-staging`. Os jobs que precisam de credenciais
+aguardam aprovação do administrador; os secrets são passados somente aos passos
+de autenticação, testes remotos e Playwright, nunca a `npm ci` ou à instalação dos
+navegadores. O ref de QA ainda precisa ser configurado na variável de Actions
+`E2E_SUPABASE_PROJECT_ID`, e URL, ref e chaves devem apontar ao mesmo projeto
+isolado. A existência de um nome no GitHub não comprova que seu valor seja válido.
 
 ## Lidos pelas edge functions (`Deno.env.get`)
 
 | Variável | Onde é lida (função) | Configurado em |
 |---|---|---|
 | `SUPABASE_URL` | várias (client admin) | Supabase (automático) |
-| `SUPABASE_SERVICE_ROLE_KEY` | várias (client admin) | Supabase (automático) |
 | `SUPABASE_ANON_KEY` | várias | Supabase (automático) |
 | `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` / `VITE_SUPABASE_PROJECT_ID` | build do frontend | segredo/configuração do provedor de hospedagem; usar `.env.production.example` somente como modelo local |
 | `EXTERNAL_SUPABASE_URL` / `EXTERNAL_SUPABASE_SERVICE_KEY` | `categories-api`, `external-db-inspect` (catálogo externo) | **preencher** |
@@ -34,8 +36,8 @@ dois gates de CI ficam vermelhos. Ninguém tinha essa lista consolidada antes.
 | `QUOTE_SYNC_API_KEY` | sync de orçamento | **preencher** |
 | `BI_SHARE_SECRET` | `bi-share-dossier` | **preencher** |
 | `WEBHOOK_HMAC_SECRET` | validação de assinatura de webhook | **preencher** (usado também em `ci.yml`) |
-| `E2E_CLEANUP_TOKEN` | `e2e-cleanup` | **GitHub secret — pendente (etapa 03)** |
-| `E2E_SUPABASE_PROJECT_ID` | `vars.E2E_SUPABASE_PROJECT_ID`; fixa o destino Supabase de homologação do E2E e impede executar o teste com a referência do banco canônico | **configurar no GitHub antes de habilitar testes remotos** |
+| `E2E_CLEANUP_TOKEN` | `e2e-cleanup` | Nome listado no Actions; valor não lido. Exposto somente aos testes autenticados no ambiente `e2e-staging`. |
+| `E2E_SUPABASE_PROJECT_ID` | `vars.E2E_SUPABASE_PROJECT_ID`; fixa o destino Supabase de homologação do E2E e impede executar o teste com a referência do banco canônico | **pendente** — o run 41206933136 falhou no preflight por variável ausente e divergência do destino; configurar no ambiente `e2e-staging`. |
 | `E2E_CLEANUP_ALLOWED_EMAILS` / `_RATE_LIMIT_MAX` / `_RATE_LIMIT_WINDOW_SECONDS` | `e2e-cleanup` (guarda-corpo) | **preencher** |
 | `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` / `TEST_ADMIN_JWT` | testes internos | **preencher** |
 | `SICOOB_TEST_EMAIL_CENTRAL` / `_GESTOR` / `_PA` / `_SINGULAR` / `SICOOB_TEST_USER_PASSWORD` | simulação de papéis Sicoob em CI | **preencher** |
@@ -78,9 +80,7 @@ assinaturas que as referenciem, pois são necessárias para verificar o históri
 
 | Variável | Workflow | Status |
 |---|---|---|
-| `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` | `e2e.yml` | ❌ **ausente — causa da falha do PR #6 (etapa 03)** |
-| `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` | `e2e.yml` | ❌ **ausente — idem** |
-| `SUPABASE_SERVICE_ROLE_KEY` | `security-compliance.yml` | ❌ **ausente — causa da falha do job agendado em `main` (etapa 04)** |
+| `E2E_USER_*`, `E2E_VIEWER_*`, `E2E_MANAGER_*`, `E2E_ADMIN_*`, `E2E_DEV_*` | `e2e.yml` | Nomes necessários listados no Actions; valores não lidos. A validade das contas ainda depende da execução autenticada em QA. |
 | `SUPABASE_DB_URL` | `migration-ledger-drift.yml`, `apply-sicoob-migrations.yml` | ✅ configurado no repositório; uso de escrita restrito ao environment `construction` e à `main` protegida. O workflow de escrita exige banco `postgres`, porta `5432`, `sslmode=require` ou `verify-full` e host direto `db.cfmzkthhgliqelozlmwu.supabase.co` ou session pooler oficial com usuário `postgres.cfmzkthhgliqelozlmwu` |
 | `RLS_TEST_USER_A_EMAIL` / `_PASSWORD` | `security-compliance.yml` | ❌ **ausente — persona autenticada de uma organização isolada** |
 | `RLS_TEST_USER_B_EMAIL` / `_PASSWORD` | `security-compliance.yml` | ❌ **ausente — proprietário da fixture privada** |

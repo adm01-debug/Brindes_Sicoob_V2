@@ -33,6 +33,7 @@ jobs:
   e2e:
     needs: validate-source
     runs-on: ubuntu-latest
+    environment: e2e-staging
     # O gate cobre 168 combinações de rota/viewport além do smoke. O limite
     # inclui instalação, servidor e upload das evidências no runner hospedado.
     timeout-minutes: 35
@@ -44,22 +45,6 @@ jobs:
       FORCE_COLOR: '0'
       # Falha imediatamente se algum spec ainda tiver `test.only` esquecido.
       PWTEST_FORBID_ONLY: '1'
-      E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
-      E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
-      E2E_VIEWER_EMAIL: ${{ secrets.E2E_VIEWER_EMAIL }}
-      E2E_VIEWER_PASSWORD: ${{ secrets.E2E_VIEWER_PASSWORD }}
-      E2E_MANAGER_EMAIL: ${{ secrets.E2E_MANAGER_EMAIL }}
-      E2E_MANAGER_PASSWORD: ${{ secrets.E2E_MANAGER_PASSWORD }}
-      E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
-      E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
-      E2E_ADMIN_TOTP_SECRET: ${{ secrets.E2E_ADMIN_TOTP_SECRET }}
-      E2E_DEV_EMAIL: ${{ secrets.E2E_DEV_EMAIL }}
-      E2E_DEV_PASSWORD: ${{ secrets.E2E_DEV_PASSWORD }}
-      E2E_DEV_TOTP_SECRET: ${{ secrets.E2E_DEV_TOTP_SECRET }}
-      E2E_CLEANUP_TOKEN: ${{ secrets.E2E_CLEANUP_TOKEN }}
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-      VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -76,11 +61,27 @@ jobs:
       - name: Validar destino Supabase de homologação
         env:
           E2E_SUPABASE_PROJECT_ID: ${{ vars.E2E_SUPABASE_PROJECT_ID }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/ci/validate-e2e-supabase-target.mjs
 
       - name: Verificar credenciais da jornada autenticada
         shell: bash
+        env:
+          E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
+          E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+          E2E_VIEWER_EMAIL: ${{ secrets.E2E_VIEWER_EMAIL }}
+          E2E_VIEWER_PASSWORD: ${{ secrets.E2E_VIEWER_PASSWORD }}
+          E2E_MANAGER_EMAIL: ${{ secrets.E2E_MANAGER_EMAIL }}
+          E2E_MANAGER_PASSWORD: ${{ secrets.E2E_MANAGER_PASSWORD }}
+          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+          E2E_ADMIN_TOTP_SECRET: ${{ secrets.E2E_ADMIN_TOTP_SECRET }}
+          E2E_DEV_EMAIL: ${{ secrets.E2E_DEV_EMAIL }}
+          E2E_DEV_PASSWORD: ${{ secrets.E2E_DEV_PASSWORD }}
+          E2E_DEV_TOTP_SECRET: ${{ secrets.E2E_DEV_TOTP_SECRET }}
         run: |
           if [[ -z "$E2E_USER_EMAIL" || -z "$E2E_USER_PASSWORD" || -z "$E2E_VIEWER_EMAIL" || -z "$E2E_VIEWER_PASSWORD" || -z "$E2E_MANAGER_EMAIL" || -z "$E2E_MANAGER_PASSWORD" || -z "$E2E_ADMIN_EMAIL" || -z "$E2E_ADMIN_PASSWORD" || -z "$E2E_ADMIN_TOTP_SECRET" || -z "$E2E_DEV_EMAIL" || -z "$E2E_DEV_PASSWORD" || -z "$E2E_DEV_TOTP_SECRET" ]]; then
             echo "::error title=Credenciais E2E ausentes::Configure as contas de vendedor, gestor, administrador e desenvolvedor, incluindo os segredos TOTP privilegiados. O gate autenticado não pode concluir por skip."
@@ -92,6 +93,8 @@ jobs:
           RUN_REMOTE_AUTHZ_TESTS: '1'
           RUN_REMOTE_RLS_TESTS: '1'
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
         run: |
           npx vitest run \
             --no-file-parallelism \
@@ -137,6 +140,22 @@ jobs:
             --forbid-only \
             --reporter=github,list,json
         env:
+          E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
+          E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+          E2E_VIEWER_EMAIL: ${{ secrets.E2E_VIEWER_EMAIL }}
+          E2E_VIEWER_PASSWORD: ${{ secrets.E2E_VIEWER_PASSWORD }}
+          E2E_MANAGER_EMAIL: ${{ secrets.E2E_MANAGER_EMAIL }}
+          E2E_MANAGER_PASSWORD: ${{ secrets.E2E_MANAGER_PASSWORD }}
+          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+          E2E_ADMIN_TOTP_SECRET: ${{ secrets.E2E_ADMIN_TOTP_SECRET }}
+          E2E_DEV_EMAIL: ${{ secrets.E2E_DEV_EMAIL }}
+          E2E_DEV_PASSWORD: ${{ secrets.E2E_DEV_PASSWORD }}
+          E2E_DEV_TOTP_SECRET: ${{ secrets.E2E_DEV_TOTP_SECRET }}
+          E2E_CLEANUP_TOKEN: ${{ secrets.E2E_CLEANUP_TOKEN }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
           PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-report/results.json
         continue-on-error: true
 
@@ -217,6 +236,7 @@ jobs:
     needs: e2e
     if: needs.e2e.result == 'success'
     runs-on: ubuntu-latest
+    environment: e2e-staging
     # Três shards mantêm cada lote abaixo do limite hospedado de 40 minutos.
     # A serialização permanece necessária porque as contas são canônicas.
     timeout-minutes: 40
@@ -231,22 +251,6 @@ jobs:
       CI: 'true'
       FORCE_COLOR: '0'
       PWTEST_FORBID_ONLY: '1'
-      E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
-      E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
-      E2E_VIEWER_EMAIL: ${{ secrets.E2E_VIEWER_EMAIL }}
-      E2E_VIEWER_PASSWORD: ${{ secrets.E2E_VIEWER_PASSWORD }}
-      E2E_MANAGER_EMAIL: ${{ secrets.E2E_MANAGER_EMAIL }}
-      E2E_MANAGER_PASSWORD: ${{ secrets.E2E_MANAGER_PASSWORD }}
-      E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
-      E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
-      E2E_ADMIN_TOTP_SECRET: ${{ secrets.E2E_ADMIN_TOTP_SECRET }}
-      E2E_DEV_EMAIL: ${{ secrets.E2E_DEV_EMAIL }}
-      E2E_DEV_PASSWORD: ${{ secrets.E2E_DEV_PASSWORD }}
-      E2E_DEV_TOTP_SECRET: ${{ secrets.E2E_DEV_TOTP_SECRET }}
-      E2E_CLEANUP_TOKEN: ${{ secrets.E2E_CLEANUP_TOKEN }}
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-      VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -281,6 +285,22 @@ jobs:
             --pass-with-no-tests \
             --reporter=github,line,html,json,junit
         env:
+          E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
+          E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+          E2E_VIEWER_EMAIL: ${{ secrets.E2E_VIEWER_EMAIL }}
+          E2E_VIEWER_PASSWORD: ${{ secrets.E2E_VIEWER_PASSWORD }}
+          E2E_MANAGER_EMAIL: ${{ secrets.E2E_MANAGER_EMAIL }}
+          E2E_MANAGER_PASSWORD: ${{ secrets.E2E_MANAGER_PASSWORD }}
+          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+          E2E_ADMIN_TOTP_SECRET: ${{ secrets.E2E_ADMIN_TOTP_SECRET }}
+          E2E_DEV_EMAIL: ${{ secrets.E2E_DEV_EMAIL }}
+          E2E_DEV_PASSWORD: ${{ secrets.E2E_DEV_PASSWORD }}
+          E2E_DEV_TOTP_SECRET: ${{ secrets.E2E_DEV_TOTP_SECRET }}
+          E2E_CLEANUP_TOKEN: ${{ secrets.E2E_CLEANUP_TOKEN }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
           PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-report/results.json
           PLAYWRIGHT_JUNIT_OUTPUT_NAME: playwright-report/results.xml
         continue-on-error: true
