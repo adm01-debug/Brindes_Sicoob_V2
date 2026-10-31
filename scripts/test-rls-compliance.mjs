@@ -31,6 +31,7 @@ const passwordB = `Qa!${randomBytes(18).toString('base64url')}1b`;
 let userAId;
 let userBId;
 let quoteId;
+const quoteMarker = '[QA RLS] isolamento entre vendedores';
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -67,18 +68,26 @@ async function selectedQuoteIds(instance) {
 async function cleanup() {
   await Promise.allSettled([actorA.auth.signOut(), actorB.auth.signOut()]);
   const errors = [];
+  const attempt = async (label, operation) => {
+    try {
+      const { error } = await operation();
+      if (error) errors.push(`${label}: ${error.message}`);
+    } catch (error) {
+      errors.push(`${label}: ${error instanceof Error ? error.message : 'falha desconhecida'}`);
+    }
+  };
+
   if (quoteId) {
-    const { error } = await admin.from('quotes').delete().eq('id', quoteId);
-    if (error) errors.push(`orçamento de QA: ${error.message}`);
+    await attempt('orçamento de QA', () => admin.from('quotes').delete().eq('id', quoteId));
+  } else if (userBId) {
+    // Recupera também uma inserção cujo servidor confirmou, mas cuja resposta
+    // perdeu-se na rede antes de o teste receber o ID da linha.
+    await attempt('orçamento de QA', () =>
+      admin.from('quotes').delete().eq('seller_id', userBId).eq('client_name', quoteMarker),
+    );
   }
-  if (userAId) {
-    const { error } = await admin.auth.admin.deleteUser(userAId);
-    if (error) errors.push(`persona A: ${error.message}`);
-  }
-  if (userBId) {
-    const { error } = await admin.auth.admin.deleteUser(userBId);
-    if (error) errors.push(`persona B: ${error.message}`);
-  }
+  if (userAId) await attempt('persona A', () => admin.auth.admin.deleteUser(userAId));
+  if (userBId) await attempt('persona B', () => admin.auth.admin.deleteUser(userBId));
   return errors;
 }
 
@@ -100,7 +109,7 @@ async function testCompliance() {
       .from('quotes')
       .insert({
         seller_id: userBId,
-        client_name: '[QA RLS] isolamento entre vendedores',
+        client_name: quoteMarker,
         status: 'draft',
         subtotal: 100,
         total: 100,

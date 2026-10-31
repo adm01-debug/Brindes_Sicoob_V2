@@ -165,3 +165,35 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 ---
 
 *Relatório gerado automaticamente pela sessão Claude Code.*
+
+
+## Atualização da auditoria CI — 2026-10-31
+
+**Repositório e branch-base:** `adm01-debug/Brindes_Sicoob_V2`, `origin/main` em `e9d59026793b84fabeaeec9da890a068f64d49c3`.
+**Execução:** worktree isolada `fix/hermes-h429269-e2e-qa-guard`; nenhuma alteração feita na main local ou no banco canônico.
+
+### Baseline local reproduzido
+
+| Gate | Resultado | Observações |
+|---|---|---|
+| `npm ci --no-audit --no-fund` | ✅ exit 0 | 980 pacotes instalados; scripts opcionais do projeto não aprovados pelo npm. |
+| `npm run build` | ✅ exit 0 | Avisos preexistentes: variáveis Vite ausentes no ambiente local, PostCSS sem `from`, import misto e chunks acima de 600 kB. |
+| `npm run lint` | ✅ exit 0 | 0 erros; 873 avisos. |
+| `npm run lint:baseline` | ✅ exit 0 | 0 regressões acima do baseline. |
+| `npm run typecheck` | ✅ exit 0 | `tsc` app e node sem erros. |
+| `npm run typecheck:baseline` | ✅ exit 0 | 0 diagnósticos atuais; baseline também 0. |
+| `npm test` | ✅ exit 0 | 5.854 testes passaram, 68 skipped, 0 falhas (execução anterior aos dois últimos ajustes E2E; reexecução em andamento). Base anterior: 5.839 passaram + 68 skipped; os 15 adicionais cobrem os guards de destino/cleanup. |
+| `actionlint` nos workflows E2E e compliance | ✅ exit 0 | YAML/workflow válido. |
+| `npm audit` | ❌ exit 1 | 17 findings: 15 moderate e 2 high (`undici` e `zod`). A correção do `zod` sugere major 4; não foi aplicada sem teste de compatibilidade. |
+
+### Estado remoto observado no PR #183 (SHA `a8be40e23bb529c8cb0b3b0b885cee539de69fc1`)
+
+| Workflow | Conclusão | Evidência e causa |
+|---|---|---|
+| Bundle Size Check | ✅ success | [run 41177997020](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177997020) |
+| Portal Sicoob | ✅ success | [run 41177997101](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177997101) |
+| Security Scan | ❌ failure | [run 41177996979](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177996979): `npm audit` bloqueou em `undici` e `zod` (severidade alta). |
+| Qualidade contínua | ❌ failure | [run 41177997004](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177997004): o job parou no mesmo gate `check:npm-audit`; mesma causa raiz. |
+| E2E (Playwright) | ❌ failure | [run 41177997096](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177997096): `beforeAll` de `e2e-cleanup-rate-limit` excedeu 45 s; o job executou testes remotos e recebeu credenciais de escopo genérico sem validar destino. A nova branch remove segredos de PR e exige environment `e2e-qa`/allowlist em disparo manual na main. |
+
+A primeira execução local do Playwright público também falhou por Chromium ausente (corrigido ao instalar o browser) e por um teste que chamava o Supabase real apesar do backend isolado. O teste foi convertido para mock de `quote-approval`; o cenário individual passou. A suíte pública completa será registrada após a execução em andamento terminar.
