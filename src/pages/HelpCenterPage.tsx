@@ -117,6 +117,7 @@ function KeyboardShortcuts() {
       <CardContent className="grid gap-2 text-sm sm:grid-cols-2">
         {[
           ['Ctrl ou ⌘ + K', 'Abrir comandos e navegação'],
+          ['Ctrl ou ⌘ + Shift + P', 'Abrir busca de ações e ferramentas'],
           ['Alt + N', 'Criar novo orçamento'],
           ['Alt + O', 'Abrir meus orçamentos'],
           ['Alt + P', 'Abrir produtos'],
