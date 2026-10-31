@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { getConsolidationIntent, getDeliveryReceiptIntent } from '@/lib/sicoob/consolidation-intent';
+import {
+  getConsolidationIntent,
+  getDeliveryReceiptIntent,
+  validateDeliveryReceiptInput,
+} from '@/lib/sicoob/consolidation-intent';
 
 describe('intenção idempotente de consolidação', () => {
   it('reutiliza a chave em retries do mesmo vendedor e conjunto de pedidos', () => {
@@ -31,5 +35,25 @@ describe('intenção idempotente de recebimento', () => {
     expect(retry).toBe(first);
     expect(changed.key).toBe('recebimento-2');
     expect(createKey).toHaveBeenCalledTimes(2);
+  });
+
+  it('recusa frações, excesso e divergência sem justificativa suficiente', () => {
+    expect(validateDeliveryReceiptInput({ received: 1.5, damaged: 0, missing: 0, notes: '', remaining: 5 }))
+      .toContain('inteiras');
+    expect(validateDeliveryReceiptInput({ received: 6, damaged: 0, missing: 0, notes: '', remaining: 5 }))
+      .toContain('supera');
+    expect(validateDeliveryReceiptInput({ received: 3, damaged: 1, missing: 0, notes: 'avaria', remaining: 5 }))
+      .toContain('10 caracteres');
+  });
+
+  it('aceita recebimento parcial íntegro e divergência devidamente descrita', () => {
+    expect(validateDeliveryReceiptInput({ received: 3, damaged: 0, missing: 0, notes: '', remaining: 5 })).toBeNull();
+    expect(validateDeliveryReceiptInput({
+      received: 3,
+      damaged: 1,
+      missing: 1,
+      notes: 'Caixas violadas no transporte',
+      remaining: 5,
+    })).toBeNull();
   });
 });

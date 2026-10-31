@@ -11,6 +11,7 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const DARK_SCHEME_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 
 interface ThemeProviderProps {
   children: ReactNode;
@@ -32,7 +33,7 @@ export const ThemeProvider = ({
 
   const [actualTheme, setActualTheme] = useState<'light' | 'dark'>(() => {
     if (theme === 'auto') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      return window.matchMedia(DARK_SCHEME_MEDIA_QUERY).matches ? 'dark' : 'light';
     }
     return theme;
   });
@@ -46,7 +47,7 @@ export const ThemeProvider = ({
 
     let resolved: 'light' | 'dark';
     if (theme === 'auto') {
-      resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      resolved = window.matchMedia(DARK_SCHEME_MEDIA_QUERY).matches ? 'dark' : 'light';
     } else {
       resolved = theme;
     }
@@ -64,7 +65,7 @@ export const ThemeProvider = ({
   useEffect(() => {
     if (theme !== 'auto') return;
 
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const mediaQuery = window.matchMedia(DARK_SCHEME_MEDIA_QUERY);
 
     const handleChange = (e: MediaQueryListEvent) => {
       const resolved = e.matches ? 'dark' : 'light';

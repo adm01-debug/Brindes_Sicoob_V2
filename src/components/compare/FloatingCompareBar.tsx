@@ -4,9 +4,16 @@ import { useNavigate } from "react-router-dom";
 import { GitCompare, X, ChevronRight, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useComparisonStore } from "@/stores/useComparisonStore";
+import { useComparisonStore, type CompareVariantInfo } from "@/stores/useComparisonStore";
 import { useProductsContextSafe } from "@/contexts/ProductsContext";
 import { cn } from "@/lib/utils";
+import type { Product } from "@/hooks/useProducts";
+
+interface CompareEntry {
+  product: Product;
+  variant?: CompareVariantInfo;
+  index: number;
+}
 
 export const FloatingCompareBar = React.forwardRef<HTMLDivElement>(
   function FloatingCompareBar(_props, ref) {
@@ -20,18 +27,18 @@ export const FloatingCompareBar = React.forwardRef<HTMLDivElement>(
   const compareEntries = useMemo(() => {
     if (!getProductsByIds) return [];
     const uniqueIds = [...new Set(compareItems.map(i => i.productId))];
-    const productMap = new Map<string, any>();
-    getProductsByIds(uniqueIds).forEach((p: any) => productMap.set(p.id, p));
+    const productMap = new Map<string, Product>(cacheSignal?.map(product => [product.id, product]) ?? []);
+    getProductsByIds(uniqueIds).forEach((product) => productMap.set(product.id, product));
     
-    return compareItems.map((item, index) => {
+    return compareItems.reduce<CompareEntry[]>((entries, item, index) => {
       const product = productMap.get(item.productId);
-      if (!product) return null;
+      if (!product) return entries;
       const displayProduct = item.variant?.thumbnail
         ? { ...product, images: [item.variant.thumbnail, ...product.images] }
         : product;
-      return { product: displayProduct, variant: item.variant, index };
-    }).filter(Boolean) as { product: any; variant?: any; index: number }[];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      entries.push({ product: displayProduct, variant: item.variant, index });
+      return entries;
+    }, []);
   }, [compareItems, getProductsByIds, cacheSignal]);
 
   if (compareCount === 0) return null;
@@ -39,6 +46,7 @@ export const FloatingCompareBar = React.forwardRef<HTMLDivElement>(
   return (
     <AnimatePresence>
       <motion.div
+        ref={ref}
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 100, opacity: 0 }}

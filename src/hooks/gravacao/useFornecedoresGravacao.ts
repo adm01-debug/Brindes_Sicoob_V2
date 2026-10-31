@@ -31,7 +31,7 @@ export function useFornecedoresGravacao() {
         operation: 'select',
         orderBy: { column: 'nome', ascending: true },
       });
-      return result.records;
+      return result.records ?? [];
     },
     staleTime: 10 * 60 * 1000,
   });

@@ -7,7 +7,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Button } from "@/components/ui/button";
 import { History, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useComparisonStore } from "@/stores/useComparisonStore";
+import { useComparisonStore, type CompareVariantInfo } from "@/stores/useComparisonStore";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -16,7 +16,7 @@ interface RecentRow {
   id: string;
   name: string | null;
   client_name: string | null;
-  items: Array<{ productId: string; variant?: any }>;
+  items: Array<{ productId: string; variant?: CompareVariantInfo }>;
   item_count: number;
   updated_at: string;
 }
@@ -33,7 +33,7 @@ export function RecentComparisonsSidebar() {
     (async () => {
       try {
         const { data } = await supabase.rpc("get_user_recent_comparisons", { p_limit: 5 });
-        setItems((data ?? []) as any);
+        setItems((data ?? []) as unknown as RecentRow[]);
       } catch {
         // ignore
       } finally {

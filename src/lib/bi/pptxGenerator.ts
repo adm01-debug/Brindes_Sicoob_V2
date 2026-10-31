@@ -39,6 +39,58 @@ const C = {
   bad: "EF4444", // red-500
 };
 
+type Slide = ReturnType<PptxGenJS['addSlide']>;
+
+function addBusinessSector(slide: Slide, sector: string | null): void {
+  if (!sector) return;
+  slide.addText(sector, {
+    x: 0.8, y: 1.95, w: 8, h: 0.4,
+    fontSize: 14, fontFace: "Calibri", color: C.bgLight, italic: true,
+  });
+}
+
+function addIndustryComparison(slide: Slide, comparison: ClientVsIndustryResult): void {
+  if (comparison.metrics.length === 0) {
+    slide.addText("Amostra do setor insuficiente para benchmark.", { x: 0.5, y: 5.2, w: 12, h: 0.5, fontSize: 12, color: C.muted, italic: true });
+    return;
+  }
+  comparison.metrics.slice(0, 4).forEach((metric, index) => {
+    const x = 0.5 + index * 3.15;
+    const tone = metric.classification === "above" ? C.good : metric.classification === "below" ? C.bad : C.warn;
+    const arrow = metric.deltaPercent > 0 ? "▲" : metric.deltaPercent < 0 ? "▼" : "—";
+    slide.addShape("rect", { x, y: 5.1, w: 2.95, h: 1.7, fill: { color: "FFFFFF" }, line: { color: "E2E8F0", width: 1 } });
+    slide.addText(metric.label, { x: x + 0.15, y: 5.2, w: 2.6, h: 0.3, fontSize: 10, fontFace: "Calibri", color: C.muted, bold: true });
+    slide.addText(`${arrow} ${Math.abs(Math.round(metric.deltaPercent))}%`, {
+      x: x + 0.15, y: 5.55, w: 2.6, h: 0.6, fontSize: 22, fontFace: "Calibri", color: tone, bold: true,
+    });
+    slide.addText("vs média do setor", { x: x + 0.15, y: 6.2, w: 2.6, h: 0.4, fontSize: 9, fontFace: "Calibri", color: C.muted });
+  });
+}
+
+function addClientAffinity(slide: Slide, affinity: ClientAffinityResult | null): void {
+  const categories = (affinity?.categories ?? []).slice(0, 4);
+  categories.forEach((category, index) => {
+    slide.addShape("rect", { x: 0.5, y: 2.1 + index * 1.1, w: 6, h: 0.95, fill: { color: "FFFFFF" }, line: { color: "E2E8F0", width: 1 } });
+    slide.addText(category.category, { x: 0.7, y: 2.2 + index * 1.1, w: 4, h: 0.4, fontSize: 14, color: C.text, bold: true });
+    slide.addText(`${category.count} compras · ${fmtBRL(category.revenue)}`, { x: 0.7, y: 2.65 + index * 1.1, w: 4, h: 0.3, fontSize: 10, color: C.muted });
+    const suggestion = category.suggestions[0];
+    if (suggestion) slide.addText(suggestion.name, { x: 4.7, y: 2.4 + index * 1.1, w: 1.7, h: 0.5, fontSize: 9, color: C.accent, italic: true, align: "right" });
+  });
+  if (categories.length === 0) slide.addText("Sem histórico de afinidade ainda.", { x: 0.5, y: 2.2, w: 6, h: 0.5, fontSize: 12, color: C.muted, italic: true });
+}
+
+function addIndustryTrends(slide: Slide, trends: IndustryTrendsResult | null): void {
+  const items = (trends?.trends ?? []).slice(0, 5);
+  items.forEach((trend, index) => {
+    slide.addShape("rect", { x: 7.0, y: 2.1 + index * 0.85, w: 5.8, h: 0.75, fill: { color: "FFFFFF" }, line: { color: "E2E8F0", width: 1 } });
+    slide.addText(`${index + 1}.`, { x: 7.15, y: 2.25 + index * 0.85, w: 0.4, h: 0.4, fontSize: 14, color: C.muted, bold: true });
+    slide.addText(trend.productName, { x: 7.6, y: 2.2 + index * 0.85, w: 3.2, h: 0.3, fontSize: 12, color: C.text, bold: true });
+    slide.addText(`${trend.category} · ${trend.unitsSold.toLocaleString("pt-BR")}u`, { x: 7.6, y: 2.5 + index * 0.85, w: 3.2, h: 0.3, fontSize: 9, color: C.muted });
+    slide.addText(fmtBRL(trend.avgPrice), { x: 11.0, y: 2.3 + index * 0.85, w: 1.6, h: 0.4, fontSize: 12, color: C.primary, bold: true, align: "right" });
+  });
+  if (items.length === 0) slide.addText("Sem tendências do setor disponíveis.", { x: 7.0, y: 2.2, w: 5.8, h: 0.5, fontSize: 12, color: C.muted, italic: true });
+}
+
 function tierColor(tier: string): string {
   if (tier === "healthy") return C.good;
   if (tier === "attention") return C.warn;
@@ -83,12 +135,7 @@ export async function generateBIPptx({
     x: 0.8, y: 0.85, w: 11, h: 1.1,
     fontSize: 40, fontFace: "Calibri", color: "FFFFFF", bold: true,
   });
-  if (ramoAtividade) {
-    s1.addText(ramoAtividade, {
-      x: 0.8, y: 1.95, w: 8, h: 0.4,
-      fontSize: 14, fontFace: "Calibri", color: C.bgLight, italic: true,
-    });
-  }
+  addBusinessSector(s1, ramoAtividade);
 
   // Score circular grande
   s1.addShape("ellipse", {
@@ -142,7 +189,7 @@ export async function generateBIPptx({
   const kpis = [
     { label: "LTV TOTAL", value: fmtBRL(bi.ltv), sub: `${bi.ordersCount} pedidos`, color: C.primary },
     { label: "TICKET MÉDIO", value: fmtBRL(bi.avgTicket), sub: "por pedido", color: C.accent },
-    { label: "ÚLT. COMPRA", value: bi.daysSinceLastOrder != null ? `${bi.daysSinceLastOrder}d` : "—", sub: "atrás", color: C.warn },
+    { label: "ÚLT. COMPRA", value: bi.daysSinceLastOrder !== null && bi.daysSinceLastOrder !== undefined ? `${bi.daysSinceLastOrder}d` : "—", sub: "atrás", color: C.warn },
     { label: "SHARE-OF-WALLET", value: `${health.shareOfWalletPct}%`, sub: `Potencial: ${fmtBRL(health.potentialUntappedBRL)}`, color: C.good },
   ];
   kpis.forEach((k, i) => {
@@ -159,21 +206,7 @@ export async function generateBIPptx({
     x: 0.5, y: 4.6, w: 12, h: 0.4,
     fontSize: 16, fontFace: "Calibri", color: C.text, bold: true,
   });
-  if (vs.metrics.length > 0) {
-    vs.metrics.slice(0, 4).forEach((m, i) => {
-      const x = 0.5 + i * 3.15;
-      const tone = m.classification === "above" ? C.good : m.classification === "below" ? C.bad : C.warn;
-      const arrow = m.deltaPercent > 0 ? "▲" : m.deltaPercent < 0 ? "▼" : "—";
-      s2.addShape("rect", { x, y: 5.1, w: 2.95, h: 1.7, fill: { color: "FFFFFF" }, line: { color: "E2E8F0", width: 1 } });
-      s2.addText(m.label, { x: x + 0.15, y: 5.2, w: 2.6, h: 0.3, fontSize: 10, fontFace: "Calibri", color: C.muted, bold: true });
-      s2.addText(`${arrow} ${Math.abs(Math.round(m.deltaPercent))}%`, {
-        x: x + 0.15, y: 5.55, w: 2.6, h: 0.6, fontSize: 22, fontFace: "Calibri", color: tone, bold: true,
-      });
-      s2.addText(`vs média do setor`, { x: x + 0.15, y: 6.2, w: 2.6, h: 0.4, fontSize: 9, fontFace: "Calibri", color: C.muted });
-    });
-  } else {
-    s2.addText("Amostra do setor insuficiente para benchmark.", { x: 0.5, y: 5.2, w: 12, h: 0.5, fontSize: 12, color: C.muted, italic: true });
-  }
+  addIndustryComparison(s2, vs);
 
   // ====================== SLIDE 3 — AFINIDADE & TENDÊNCIAS ======================
   const s3 = pptx.addSlide();
@@ -189,38 +222,11 @@ export async function generateBIPptx({
 
   // Coluna 1: afinidade
   s3.addText("AFINIDADE DO CLIENTE", { x: 0.5, y: 1.7, w: 6, h: 0.3, fontSize: 11, color: C.primary, bold: true, charSpacing: 2 });
-  const topAff = (affinity?.categories ?? []).slice(0, 4);
-  topAff.forEach((c, i) => {
-    s3.addShape("rect", { x: 0.5, y: 2.1 + i * 1.1, w: 6, h: 0.95, fill: { color: "FFFFFF" }, line: { color: "E2E8F0", width: 1 } });
-    s3.addText(c.category, { x: 0.7, y: 2.2 + i * 1.1, w: 4, h: 0.4, fontSize: 14, color: C.text, bold: true });
-    s3.addText(`${c.count} compras · ${fmtBRL(c.revenue)}`, {
-      x: 0.7, y: 2.65 + i * 1.1, w: 4, h: 0.3, fontSize: 10, color: C.muted,
-    });
-    if (c.suggestions[0]) {
-      s3.addText(c.suggestions[0].name, { x: 4.7, y: 2.4 + i * 1.1, w: 1.7, h: 0.5, fontSize: 9, color: C.accent, italic: true, align: "right" });
-    }
-  });
-  if (topAff.length === 0) {
-    s3.addText("Sem histórico de afinidade ainda.", { x: 0.5, y: 2.2, w: 6, h: 0.5, fontSize: 12, color: C.muted, italic: true });
-  }
+  addClientAffinity(s3, affinity);
 
   // Coluna 2: tendências do setor
   s3.addText("TENDÊNCIAS DO SETOR", { x: 7.0, y: 1.7, w: 5.8, h: 0.3, fontSize: 11, color: C.accent, bold: true, charSpacing: 2 });
-  const topTrends = (trends?.trends ?? []).slice(0, 5);
-  topTrends.forEach((t, i) => {
-    s3.addShape("rect", { x: 7.0, y: 2.1 + i * 0.85, w: 5.8, h: 0.75, fill: { color: "FFFFFF" }, line: { color: "E2E8F0", width: 1 } });
-    s3.addText(`${i + 1}.`, { x: 7.15, y: 2.25 + i * 0.85, w: 0.4, h: 0.4, fontSize: 14, color: C.muted, bold: true });
-    s3.addText(t.productName, { x: 7.6, y: 2.2 + i * 0.85, w: 3.2, h: 0.3, fontSize: 12, color: C.text, bold: true });
-    s3.addText(`${t.category} · ${t.unitsSold.toLocaleString("pt-BR")}u`, {
-      x: 7.6, y: 2.5 + i * 0.85, w: 3.2, h: 0.3, fontSize: 9, color: C.muted,
-    });
-    s3.addText(fmtBRL(t.avgPrice), {
-      x: 11.0, y: 2.3 + i * 0.85, w: 1.6, h: 0.4, fontSize: 12, color: C.primary, bold: true, align: "right",
-    });
-  });
-  if (topTrends.length === 0) {
-    s3.addText("Sem tendências do setor disponíveis.", { x: 7.0, y: 2.2, w: 5.8, h: 0.5, fontSize: 12, color: C.muted, italic: true });
-  }
+  addIndustryTrends(s3, trends);
 
   // ====================== SLIDE 4 — SAZONALIDADE ======================
   const s4 = pptx.addSlide();
@@ -253,7 +259,7 @@ export async function generateBIPptx({
       x: startX + i * cellW, y: 2.1, w: cellW - 0.05, h: 0.7,
       fontSize: 12, color: intensity > 0.5 ? "FFFFFF" : C.text, bold: true, align: "center", valign: "middle",
     });
-    s4.addText(monthLabels[i], {
+    s4.addText(monthLabels[i] ?? "", {
       x: startX + i * cellW, y: 2.85, w: cellW - 0.05, h: 0.3,
       fontSize: 9, color: C.muted, align: "center",
     });
@@ -360,7 +366,7 @@ export async function generateBIPptx({
       { text: `${r.clientSharePct.toFixed(0)}%`, options: { fontSize: 11, color: C.text, align: "center" as const, bold: true } },
       { text: `${r.industrySharePct.toFixed(0)}%`, options: { fontSize: 11, color: C.muted, align: "center" as const } },
       {
-        text: `${trendSymbol(r.trend)} ${r.deltaPct != null ? `${r.deltaPct > 0 ? "+" : ""}${Math.round(r.deltaPct)}%` : "—"}`,
+        text: `${trendSymbol(r.trend)} ${r.deltaPct !== null && r.deltaPct !== undefined ? `${r.deltaPct > 0 ? "+" : ""}${Math.round(r.deltaPct)}%` : "—"}`,
         options: { fontSize: 11, color: trendColor(r.trend), align: "center" as const, bold: true },
       },
     ]);

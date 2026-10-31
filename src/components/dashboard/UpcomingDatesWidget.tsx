@@ -207,6 +207,19 @@ function CompactDateCard({ date, onClick }: DateCardProps) {
   );
 }
 
+function fullDateCardClass(isFirst: boolean | undefined, isToday: boolean, isThisWeek: boolean) {
+  if (isToday) return "border-success bg-success/10";
+  if (isFirst) return "border-primary/50 bg-primary/5";
+  if (isThisWeek) return "border-warning/30";
+  return undefined;
+}
+
+function countdownClass(isToday: boolean, isThisWeek: boolean) {
+  if (isToday) return "bg-success text-success-foreground";
+  if (isThisWeek) return "bg-warning text-primary-foreground";
+  return "bg-muted text-foreground";
+}
+
 function FullDateCard({ date, onClick, isFirst }: DateCardProps) {
   const isToday = date.days_until === 0;
   const isThisWeek = date.days_until !== null && date.days_until <= 7;
@@ -218,9 +231,7 @@ function FullDateCard({ date, onClick, isFirst }: DateCardProps) {
       className={cn(
         "w-full flex items-center gap-3 p-3 rounded-lg border transition-all text-left",
         "hover:border-primary hover:bg-primary/5",
-        isFirst && "border-primary/50 bg-primary/5",
-        isToday && "border-success bg-success/10",
-        isThisWeek && !isToday && !isFirst && "border-warning/30"
+        fullDateCardClass(isFirst, isToday, isThisWeek)
       )}
     >
       {/* Cor indicadora */}
@@ -262,11 +273,7 @@ function FullDateCard({ date, onClick, isFirst }: DateCardProps) {
         <span
           className={cn(
             "text-xs font-bold px-2 py-1 rounded",
-            isToday
-              ? "bg-success text-success-foreground"
-              : isThisWeek
-              ? "bg-warning text-primary-foreground"
-              : "bg-muted text-foreground"
+            countdownClass(isToday, isThisWeek)
           )}
         >
           {getDaysUntilText(date.days_until)}

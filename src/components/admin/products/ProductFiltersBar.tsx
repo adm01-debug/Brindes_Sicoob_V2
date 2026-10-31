@@ -50,6 +50,185 @@ interface ProductFiltersBarProps {
   onChange: (filters: ProductFilters) => void;
 }
 
+type UpdateFilters = (partial: Partial<ProductFilters>) => void;
+
+function countActiveFilters(filters: ProductFilters): number {
+  const checks = [
+    Boolean(filters.category_id),
+    Boolean(filters.supplier_id),
+    filters.is_active !== undefined && filters.is_active !== 'all',
+    Boolean(filters.is_kit),
+    (filters.price_min ?? 0) > 0,
+    (filters.price_max ?? 0) > 0,
+  ];
+  return checks.filter(Boolean).length;
+}
+
+function FilterTrigger({ activeCount, isOpen }: { activeCount: number; isOpen: boolean }) {
+  return (
+    <CollapsibleTrigger asChild>
+      <Button variant="outline" size="sm" className={cn('gap-2 transition-colors', activeCount > 0 && 'border-primary text-primary hover:text-primary')}>
+        <Filter className="h-3.5 w-3.5" /> Filtros
+        {activeCount > 0 && <Badge variant="default" className="h-5 min-w-[20px] px-1.5 text-[10px]">{activeCount}</Badge>}
+        <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', isOpen && 'rotate-180')} />
+      </Button>
+    </CollapsibleTrigger>
+  );
+}
+
+function NamedFilterBadge({ prefix, name, maxLength, onRemove }: { prefix: string; name?: string; maxLength: number; onRemove: () => void }) {
+  if (!name) return null;
+  const label = name.length > maxLength ? `${name.slice(0, maxLength)}…` : name;
+  return <Badge variant="secondary" className="text-xs gap-1">{prefix}: {label}<X className="h-3 w-3 cursor-pointer" onClick={onRemove} /></Badge>;
+}
+
+function StatusFilterBadge({ filters, update }: { filters: ProductFilters; update: UpdateFilters }) {
+  if (filters.is_active === undefined || filters.is_active === 'all') return null;
+  return (
+    <Badge variant="secondary" className="text-xs gap-1">
+      {filters.is_active ? 'Ativos' : 'Inativos'}
+      <X className="h-3 w-3 cursor-pointer" onClick={() => update({ is_active: 'all' })} />
+    </Badge>
+  );
+}
+
+function KitFilterBadge({ enabled, update }: { enabled: boolean | undefined; update: UpdateFilters }) {
+  if (!enabled) return null;
+  return <Badge variant="secondary" className="text-xs gap-1"><Boxes className="h-3 w-3" />Apenas Kits<X className="h-3 w-3 cursor-pointer" onClick={() => update({ is_kit: undefined })} /></Badge>;
+}
+
+function PriceFilterBadge({ filters, update }: { filters: ProductFilters; update: UpdateFilters }) {
+  const minimum = filters.price_min ?? 0;
+  const maximum = filters.price_max ?? 0;
+  if (minimum <= 0 && maximum <= 0) return null;
+  return (
+    <Badge variant="secondary" className="text-xs gap-1">
+      R$ {minimum} – {maximum > 0 ? maximum : '∞'}
+      <X className="h-3 w-3 cursor-pointer" onClick={() => update({ price_min: undefined, price_max: undefined })} />
+    </Badge>
+  );
+}
+
+function ActiveFilterBadges({ activeCount, isOpen, categoryName, supplierName, filters, update, clearAll }: {
+  activeCount: number;
+  isOpen: boolean;
+  categoryName?: string;
+  supplierName?: string;
+  filters: ProductFilters;
+  update: UpdateFilters;
+  clearAll: () => void;
+}) {
+  if (activeCount === 0 || isOpen) return null;
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap">
+      <NamedFilterBadge prefix="Cat" name={categoryName} maxLength={20} onRemove={() => update({ category_id: undefined })} />
+      <NamedFilterBadge prefix="Forn" name={supplierName} maxLength={15} onRemove={() => update({ supplier_id: undefined })} />
+      <StatusFilterBadge filters={filters} update={update} />
+      <KitFilterBadge enabled={filters.is_kit} update={update} />
+      <PriceFilterBadge filters={filters} update={update} />
+      <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-muted-foreground" onClick={clearAll}><RotateCcw className="h-3 w-3 mr-1" />Limpar</Button>
+    </div>
+  );
+}
+
+function CategoryFilter({ filters, categories, loading, search, onSearch, update }: {
+  filters: ProductFilters; categories: CategoryOption[]; loading: boolean; search: string; onSearch: (value: string) => void; update: UpdateFilters;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-xs font-medium text-muted-foreground">Categoria</label>
+      <Select value={filters.category_id || '__all__'} onValueChange={(value) => update({ category_id: value === '__all__' ? undefined : value })}>
+        <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={loading ? 'Carregando...' : 'Todas'} /></SelectTrigger>
+        <SelectContent className="max-h-64">
+          <div className="p-2 pb-1"><Input placeholder="Buscar categoria..." value={search} onChange={(event) => onSearch(event.target.value)} className="h-8 text-xs" /></div>
+          <SelectItem value="__all__">Todas as categorias</SelectItem>
+          {categories.map(category => <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>)}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+function SupplierFilter({ filters, suppliers, loading, search, onSearch, update }: {
+  filters: ProductFilters; suppliers: SupplierOption[]; loading: boolean; search: string; onSearch: (value: string) => void; update: UpdateFilters;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-xs font-medium text-muted-foreground">Fornecedor</label>
+      <Select value={filters.supplier_id || '__all__'} onValueChange={(value) => update({ supplier_id: value === '__all__' ? undefined : value })}>
+        <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={loading ? 'Carregando...' : 'Todos'} /></SelectTrigger>
+        <SelectContent className="max-h-64">
+          <div className="p-2 pb-1"><Input placeholder="Buscar fornecedor..." value={search} onChange={(event) => onSearch(event.target.value)} className="h-8 text-xs" /></div>
+          <SelectItem value="__all__">Todos os fornecedores</SelectItem>
+          {suppliers.map(supplier => <SelectItem key={supplier.id} value={supplier.id}>{supplier.name} {supplier.code ? `(${supplier.code})` : ''}</SelectItem>)}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+function activeFilterValue(value: ProductFilters['is_active']): string {
+  if (value === undefined || value === 'all') return '__all__';
+  return value ? 'active' : 'inactive';
+}
+
+function StatusFilter({ value, update }: { value: ProductFilters['is_active']; update: UpdateFilters }) {
+  const change = (selected: string) => update({ is_active: selected === '__all__' ? 'all' : selected === 'active' });
+  return (
+    <div className="space-y-1.5">
+      <label className="text-xs font-medium text-muted-foreground">Status</label>
+      <Select value={activeFilterValue(value)} onValueChange={change}>
+        <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Todos" /></SelectTrigger>
+        <SelectContent><SelectItem value="__all__">Todos</SelectItem><SelectItem value="active">Ativos</SelectItem><SelectItem value="inactive">Inativos</SelectItem></SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+function KitFilter({ checked, update }: { checked: boolean | undefined; update: UpdateFilters }) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-xs font-medium text-muted-foreground">Tipo</label>
+      <div className="flex items-center gap-2 h-9 px-3 rounded-md border border-input bg-background">
+        <Boxes className="h-3.5 w-3.5 text-primary" /><span className="text-sm flex-1">Apenas Kits</span>
+        <Switch checked={Boolean(checked)} onCheckedChange={(value) => update({ is_kit: value || undefined })} className="scale-90" />
+      </div>
+    </div>
+  );
+}
+
+function PriceFilter({ filters, update }: { filters: ProductFilters; update: UpdateFilters }) {
+  const parsePrice = (value: string) => value ? parseFloat(value) : undefined;
+  return (
+    <div className="space-y-1.5">
+      <label className="text-xs font-medium text-muted-foreground">Faixa de Preço (R$)</label>
+      <div className="flex items-center gap-2">
+        <Input type="number" placeholder="Mín" value={filters.price_min ?? ''} onChange={(event) => update({ price_min: parsePrice(event.target.value) })} className="h-9 text-sm" min={0} step={0.01} />
+        <span className="text-xs text-muted-foreground">–</span>
+        <Input type="number" placeholder="Máx" value={filters.price_max ?? ''} onChange={(event) => update({ price_max: parsePrice(event.target.value) })} className="h-9 text-sm" min={0} step={0.01} />
+      </div>
+    </div>
+  );
+}
+
+function FiltersContent({ filters, categories, suppliers, loadingCats, loadingSups, catSearch, supSearch, setCatSearch, setSupSearch, update, activeCount, clearAll }: {
+  filters: ProductFilters; categories: CategoryOption[]; suppliers: SupplierOption[]; loadingCats: boolean; loadingSups: boolean; catSearch: string; supSearch: string;
+  setCatSearch: (value: string) => void; setSupSearch: (value: string) => void; update: UpdateFilters; activeCount: number; clearAll: () => void;
+}) {
+  return (
+    <CollapsibleContent>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-3 p-3 bg-muted/30 rounded-lg border border-border/50">
+        <CategoryFilter filters={filters} categories={categories} loading={loadingCats} search={catSearch} onSearch={setCatSearch} update={update} />
+        <SupplierFilter filters={filters} suppliers={suppliers} loading={loadingSups} search={supSearch} onSearch={setSupSearch} update={update} />
+        <StatusFilter value={filters.is_active} update={update} />
+        <KitFilter checked={filters.is_kit} update={update} />
+        <PriceFilter filters={filters} update={update} />
+        {activeCount > 0 && <div className="sm:col-span-2 lg:col-span-4 flex justify-end"><Button variant="ghost" size="sm" className="text-xs" onClick={clearAll}><RotateCcw className="h-3.5 w-3.5 mr-1" />Limpar todos os filtros</Button></div>}
+      </div>
+    </CollapsibleContent>
+  );
+}
+
 export function ProductFiltersBar({ filters, onChange }: ProductFiltersBarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
@@ -64,7 +243,7 @@ export function ProductFiltersBar({ filters, onChange }: ProductFiltersBarProps)
     if (!isOpen) return;
     if (categories.length === 0) loadCategories();
     if (suppliers.length === 0) loadSuppliers();
-  }, [isOpen]);
+  }, [isOpen, categories.length, suppliers.length]);
 
   const loadCategories = async () => {
     setLoadingCats(true);
@@ -112,16 +291,7 @@ export function ProductFiltersBar({ filters, onChange }: ProductFiltersBarProps)
     setSupSearch('');
   }, [onChange]);
 
-  const activeCount = useMemo(() => {
-    let count = 0;
-    if (filters.category_id) count++;
-    if (filters.supplier_id) count++;
-    if (filters.is_active !== undefined && filters.is_active !== 'all') count++;
-    if (filters.is_kit) count++;
-    if (filters.price_min !== undefined && filters.price_min > 0) count++;
-    if (filters.price_max !== undefined && filters.price_max > 0) count++;
-    return count;
-  }, [filters]);
+  const activeCount = useMemo(() => countActiveFilters(filters), [filters]);
 
   const filteredCategories = useMemo(() => {
     if (!catSearch) return categories.slice(0, 50);
@@ -137,209 +307,37 @@ export function ProductFiltersBar({ filters, onChange }: ProductFiltersBarProps)
     );
   }, [suppliers, supSearch]);
 
-  const selectedCategoryName = categories.find(c => c.id === filters.category_id)?.name;
-  const selectedSupplierName = suppliers.find(s => s.id === filters.supplier_id)?.name;
+  const selectedCategoryName = (categories.find(c => c.id === filters.category_id)?.name);
+  const selectedSupplierName = (suppliers.find(s => s.id === filters.supplier_id)?.name);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <div className="flex items-center gap-2">
-        <CollapsibleTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className={cn(
-              'gap-2 transition-colors',
-              activeCount > 0 && 'border-primary text-primary hover:text-primary'
-            )}
-          >
-            <Filter className="h-3.5 w-3.5" />
-            Filtros
-            {activeCount > 0 && (
-              <Badge variant="default" className="h-5 min-w-[20px] px-1.5 text-[10px]">
-                {activeCount}
-              </Badge>
-            )}
-            <ChevronDown className={cn(
-              'h-3.5 w-3.5 transition-transform',
-              isOpen && 'rotate-180'
-            )} />
-          </Button>
-        </CollapsibleTrigger>
-
-        {/* Badges dos filtros ativos */}
-        {activeCount > 0 && !isOpen && (
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {selectedCategoryName && (
-              <Badge variant="secondary" className="text-xs gap-1">
-                Cat: {selectedCategoryName.length > 20 ? selectedCategoryName.slice(0, 20) + '…' : selectedCategoryName}
-                <X className="h-3 w-3 cursor-pointer" onClick={() => update({ category_id: undefined })} />
-              </Badge>
-            )}
-            {selectedSupplierName && (
-              <Badge variant="secondary" className="text-xs gap-1">
-                Forn: {selectedSupplierName.length > 15 ? selectedSupplierName.slice(0, 15) + '…' : selectedSupplierName}
-                <X className="h-3 w-3 cursor-pointer" onClick={() => update({ supplier_id: undefined })} />
-              </Badge>
-            )}
-            {filters.is_active !== undefined && filters.is_active !== 'all' && (
-              <Badge variant="secondary" className="text-xs gap-1">
-                {filters.is_active ? 'Ativos' : 'Inativos'}
-                <X className="h-3 w-3 cursor-pointer" onClick={() => update({ is_active: 'all' })} />
-              </Badge>
-            )}
-            {filters.is_kit && (
-              <Badge variant="secondary" className="text-xs gap-1">
-                <Boxes className="h-3 w-3" />
-                Apenas Kits
-                <X className="h-3 w-3 cursor-pointer" onClick={() => update({ is_kit: undefined })} />
-              </Badge>
-            )}
-            {((filters.price_min ?? 0) > 0 || (filters.price_max ?? 0) > 0) && (
-              <Badge variant="secondary" className="text-xs gap-1">
-                R$ {filters.price_min || 0} – {filters.price_max || '∞'}
-                <X className="h-3 w-3 cursor-pointer" onClick={() => update({ price_min: undefined, price_max: undefined })} />
-              </Badge>
-            )}
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-muted-foreground" onClick={clearAll}>
-              <RotateCcw className="h-3 w-3 mr-1" />
-              Limpar
-            </Button>
-          </div>
-        )}
+        <FilterTrigger activeCount={activeCount} isOpen={isOpen} />
+        <ActiveFilterBadges
+          activeCount={activeCount}
+          isOpen={isOpen}
+          categoryName={selectedCategoryName}
+          supplierName={selectedSupplierName}
+          filters={filters}
+          update={update}
+          clearAll={clearAll}
+        />
       </div>
-
-      <CollapsibleContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-3 p-3 bg-muted/30 rounded-lg border border-border/50">
-          {/* Categoria */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Categoria</label>
-            <Select
-              value={filters.category_id || '__all__'}
-              onValueChange={(v) => update({ category_id: v === '__all__' ? undefined : v })}
-            >
-              <SelectTrigger className="h-9 text-sm">
-                <SelectValue placeholder={loadingCats ? 'Carregando...' : 'Todas'} />
-              </SelectTrigger>
-              <SelectContent className="max-h-64">
-                <div className="p-2 pb-1">
-                  <Input
-                    placeholder="Buscar categoria..."
-                    value={catSearch}
-                    onChange={(e) => setCatSearch(e.target.value)}
-                    className="h-8 text-xs"
-                  />
-                </div>
-                <SelectItem value="__all__">Todas as categorias</SelectItem>
-                {filteredCategories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Fornecedor */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Fornecedor</label>
-            <Select
-              value={filters.supplier_id || '__all__'}
-              onValueChange={(v) => update({ supplier_id: v === '__all__' ? undefined : v })}
-            >
-              <SelectTrigger className="h-9 text-sm">
-                <SelectValue placeholder={loadingSups ? 'Carregando...' : 'Todos'} />
-              </SelectTrigger>
-              <SelectContent className="max-h-64">
-                <div className="p-2 pb-1">
-                  <Input
-                    placeholder="Buscar fornecedor..."
-                    value={supSearch}
-                    onChange={(e) => setSupSearch(e.target.value)}
-                    className="h-8 text-xs"
-                  />
-                </div>
-                <SelectItem value="__all__">Todos os fornecedores</SelectItem>
-                {filteredSuppliers.map((sup) => (
-                  <SelectItem key={sup.id} value={sup.id}>
-                    {sup.name} {sup.code ? `(${sup.code})` : ''}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Status */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Status</label>
-            <Select
-              value={filters.is_active === undefined || filters.is_active === 'all' ? '__all__' : filters.is_active ? 'active' : 'inactive'}
-              onValueChange={(v) => {
-                if (v === '__all__') update({ is_active: 'all' });
-                else update({ is_active: v === 'active' });
-              }}
-            >
-              <SelectTrigger className="h-9 text-sm">
-                <SelectValue placeholder="Todos" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__all__">Todos</SelectItem>
-                <SelectItem value="active">Ativos</SelectItem>
-                <SelectItem value="inactive">Inativos</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Kit */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Tipo</label>
-            <div className="flex items-center gap-2 h-9 px-3 rounded-md border border-input bg-background">
-              <Boxes className="h-3.5 w-3.5 text-primary" />
-              <span className="text-sm flex-1">Apenas Kits</span>
-              <Switch
-                checked={!!filters.is_kit}
-                onCheckedChange={(checked) => update({ is_kit: checked || undefined })}
-                className="scale-90"
-              />
-            </div>
-          </div>
-
-          {/* Faixa de Preço */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Faixa de Preço (R$)</label>
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                placeholder="Mín"
-                value={filters.price_min ?? ''}
-                onChange={(e) => update({ price_min: e.target.value ? parseFloat(e.target.value) : undefined })}
-                className="h-9 text-sm"
-                min={0}
-                step={0.01}
-              />
-              <span className="text-xs text-muted-foreground">–</span>
-              <Input
-                type="number"
-                placeholder="Máx"
-                value={filters.price_max ?? ''}
-                onChange={(e) => update({ price_max: e.target.value ? parseFloat(e.target.value) : undefined })}
-                className="h-9 text-sm"
-                min={0}
-                step={0.01}
-              />
-            </div>
-          </div>
-
-          {/* Ações */}
-          {activeCount > 0 && (
-            <div className="sm:col-span-2 lg:col-span-4 flex justify-end">
-              <Button variant="ghost" size="sm" className="text-xs" onClick={clearAll}>
-                <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                Limpar todos os filtros
-              </Button>
-            </div>
-          )}
-        </div>
-      </CollapsibleContent>
+      <FiltersContent
+        filters={filters}
+        categories={filteredCategories}
+        suppliers={filteredSuppliers}
+        loadingCats={loadingCats}
+        loadingSups={loadingSups}
+        catSearch={catSearch}
+        supSearch={supSearch}
+        setCatSearch={setCatSearch}
+        setSupSearch={setSupSearch}
+        update={update}
+        activeCount={activeCount}
+        clearAll={clearAll}
+      />
     </Collapsible>
   );
 }

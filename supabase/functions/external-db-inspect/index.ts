@@ -1,7 +1,6 @@
 import { authorize } from "../_shared/authorize.ts";
-import { createReadOnlyCatalogFetch } from "../_shared/external-read-only.ts";
+import { createExternalCatalogClient } from "../_shared/catalog-client.ts";
 import { getCorsHeaders } from '../_shared/cors.ts';
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { runBotProtection } from '../_shared/bot-protection.ts';
 
@@ -18,7 +17,12 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
-    // Anti-scraping: bot UA check + rate limit por IP (camada externa antes do auth)
+    // A edge é exclusiva para dev. Rejeitar primeiro evita que chamadas sem
+    // identidade dependam do rate limiter persistido no banco para obter 401.
+    const actor = await authorize(req, { requireRole: "dev" });
+    if (!actor.ok) return actor.response;
+
+    // Anti-scraping: bot UA check + rate limit por IP para atores autenticados.
     const protection = await runBotProtection(req, {
       endpoint: 'external-db-inspect',
       maxRequests: 30,
@@ -26,9 +30,6 @@ Deno.serve(async (req) => {
       blockSeconds: 1800,
     }, corsHeaders);
     if (!protection.allowed) return protection.blockResponse!;
-
-    const actor = await authorize(req, { requireRole: "dev" });
-    if (!actor.ok) return actor.response;
 
     // Validate body
     let rawBody: unknown = {};
@@ -43,14 +44,11 @@ Deno.serve(async (req) => {
     console.log(`[INSPECT] Mode: ${mode}, Table: ${tableName || 'all'}`);
 
     // External DB connection
-    const externalUrl = Deno.env.get('EXTERNAL_SUPABASE_URL');
-    const externalKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_KEY');
-    if (!externalUrl || !externalKey) {
-      console.warn('[external-db-inspect] EXTERNAL_SUPABASE_URL/KEY not configured — returning empty payload');
+    const externalSupabase = await createExternalCatalogClient();
+    if (!externalSupabase) {
+      console.warn('[external-db-inspect] credenciais do catálogo externo indisponíveis');
       return jsonResponse({ error: 'CATALOG_NOT_CONFIGURED', message: 'Catálogo indisponível' }, 503);
     }
-
-    const externalSupabase = createClient(externalUrl, externalKey, { global: { fetch: createReadOnlyCatalogFetch() } });
 
     // Inspect specific table columns
     if (mode === 'columns' && tableName) {

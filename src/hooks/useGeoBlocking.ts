@@ -3,10 +3,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { diagnostics } from '@/lib/diagnostics';
 import { reportError } from '@/lib/error-reporter';
-import { Database } from '@/integrations/supabase/types';
+import { type Database } from '@/integrations/supabase/types';
 
 type AllowedCountry = Database['public']['Tables']['city_whitelist']['Row'];
 
+const UNKNOWN_ERROR_MESSAGE = 'Erro desconhecido';
 
 interface GeoBlockingSettings {
   enabled: boolean;
@@ -83,9 +84,9 @@ export function useGeoBlocking() {
       setSettings(prev => ({ ...prev, enabled }));
       return { success: true };
     } catch (error: unknown) {
-      return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' };
+      return { success: false, error: error instanceof Error ? error.message : UNKNOWN_ERROR_MESSAGE };
     }
-  }, [settings, user]);
+  }, []);
 
   const addCountry = useCallback(async (
     countryCode: string,
@@ -114,7 +115,7 @@ export function useGeoBlocking() {
       await fetchData();
       return { success: true };
     } catch (error: unknown) {
-      return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' };
+      return { success: false, error: error instanceof Error ? error.message : UNKNOWN_ERROR_MESSAGE };
     }
   }, [user, fetchData]);
 
@@ -129,7 +130,7 @@ export function useGeoBlocking() {
       await fetchData();
       return { success: true };
     } catch (error: unknown) {
-      return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' };
+      return { success: false, error: error instanceof Error ? error.message : UNKNOWN_ERROR_MESSAGE };
     }
   }, [fetchData]);
 
@@ -147,7 +148,7 @@ export function useGeoBlocking() {
       await fetchData();
       return { success: true };
     } catch (error: unknown) {
-      return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' };
+      return { success: false, error: error instanceof Error ? error.message : UNKNOWN_ERROR_MESSAGE };
     }
   }, [fetchData]);
 

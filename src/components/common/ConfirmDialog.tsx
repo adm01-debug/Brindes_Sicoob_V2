@@ -60,6 +60,15 @@ const variantConfig = {
   },
 };
 
+function scopedTestId(scope: string | undefined, suffix: string, fallback: string) {
+  return scope ? `${scope}-${suffix}` : fallback;
+}
+
+function LoadingIcon({ loading, testId }: { loading: boolean; testId?: string }) {
+  if (!loading) return null;
+  return <Loader2 className="w-4 h-4 mr-2 animate-spin" data-testid={scopedTestId(testId, "loading", "confirm-dialog-loading")} />;
+}
+
 export function ConfirmDialog({
   open,
   onOpenChange,
@@ -70,13 +79,13 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
   variant = "default",
-  icon: CustomIcon,
+  icon: customIcon,
   loading = false,
   impactPreview,
   testId,
 }: ConfirmDialogProps) {
   const config = variantConfig[variant];
-  const Icon = CustomIcon || config.icon;
+  const Icon = customIcon ?? config.icon;
 
   const handleConfirm = async () => {
     await onConfirm();
@@ -96,10 +105,10 @@ export function ConfirmDialog({
   // Isso elimina o uso do testid genérico "confirm-dialog-yes" quando vários
   // diálogos podem coexistir na mesma tela. Os genéricos continuam disponíveis
   // como fallback para compatibilidade com specs já existentes.
-  const yesTestId = testId ? `${testId}-yes` : "confirm-dialog-yes";
-  const noTestId = testId ? `${testId}-no` : "confirm-dialog-no";
-  const titleTestId = testId ? `${testId}-title` : "confirm-dialog-title";
-  const descriptionTestId = testId ? `${testId}-description` : "confirm-dialog-description";
+  const yesTestId = scopedTestId(testId, "yes", "confirm-dialog-yes");
+  const noTestId = scopedTestId(testId, "no", "confirm-dialog-no");
+  const titleTestId = scopedTestId(testId, "title", "confirm-dialog-title");
+  const descriptionTestId = scopedTestId(testId, "description", "confirm-dialog-description");
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -137,7 +146,7 @@ export function ConfirmDialog({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="my-4 p-4 rounded-lg bg-muted/50 border border-border"
-            data-testid={testId ? `${testId}-impact` : "confirm-dialog-impact"}
+            data-testid={scopedTestId(testId, "impact", "confirm-dialog-impact")}
           >
             <h4 className="text-sm font-medium mb-2">{impactPreview.title}</h4>
             <ul className="space-y-1">
@@ -169,7 +178,7 @@ export function ConfirmDialog({
               variant === "destructive" && "bg-destructive text-destructive-foreground hover:bg-destructive/90"
             )}
           >
-            {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" data-testid={testId ? `${testId}-loading` : "confirm-dialog-loading"} />}
+            <LoadingIcon loading={loading} testId={testId} />
             {confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>

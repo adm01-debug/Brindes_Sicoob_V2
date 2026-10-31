@@ -25,55 +25,79 @@ interface CompanyContactSelectorProps {
   onContactInfoChange?: (info: SelectedContactInfo | null) => void;
 }
 
+async function fetchCompany(companyId: string): Promise<CompanyOption | null> {
+  if (!companyId) return null;
+  const data = await selectCrm<CrmCompany>("companies", {
+    select: "id, razao_social, nome_fantasia, ramo_atividade, cnpj, logo_url", filters: { id: companyId }, limit: 1,
+  });
+  const company = data[0];
+  if (!company) return null;
+  return { id: company.id, name: getCompanyDisplayName(company), razao_social: company.razao_social, nome_fantasia: company.nome_fantasia, ramo_atividade: company.ramo_atividade || null, cnpj: company.cnpj, logo_url: company.logo_url || null };
+}
+
+async function enrichContact(contact: CrmContact): Promise<ContactOption> {
+  let email: string | null = null;
+  let phone: string | null = null;
+  try {
+    const [emails, phones] = await Promise.all([
+      selectCrm<CrmContactEmail>("contact_emails", { filters: { contact_id: contact.id }, limit: 1 }),
+      selectCrm<CrmContactPhone>("contact_phones", { filters: { contact_id: contact.id }, limit: 1 }),
+    ]);
+    email = emails[0]?.email ?? null;
+    phone = phones[0]?.numero ?? null;
+  } catch {
+    // Dados auxiliares não impedem a seleção do contato.
+  }
+  return { id: contact.id, name: contact.full_name || [contact.first_name, contact.last_name].filter(Boolean).join(" "), cargo: contact.cargo, email, phone };
+}
+
+async function fetchContacts(companyId: string): Promise<ContactOption[]> {
+  if (!companyId) return [];
+  const contacts = await selectCrm<CrmContact>("contacts", {
+    select: "id, first_name, last_name, full_name, cargo", filters: { company_id: companyId, deleted_at: null },
+    orderBy: { column: "first_name", ascending: true }, limit: 50,
+  });
+  return Promise.all(contacts.map(enrichContact));
+}
+
+function useCompanyContactData(companyId: string) {
+  const companyQuery = useQuery<CompanyOption | null>({
+    queryKey: ["quote-company-by-id", companyId], queryFn: () => fetchCompany(companyId), enabled: Boolean(companyId), staleTime: 10 * 60 * 1000,
+  });
+  const contactsQuery = useQuery<ContactOption[]>({
+    queryKey: ["quote-company-contacts", companyId], queryFn: () => fetchContacts(companyId), enabled: Boolean(companyId), staleTime: 5 * 60 * 1000,
+  });
+  return { fetchedCompany: companyQuery.data, contacts: contactsQuery.data, loadingContacts: contactsQuery.isLoading };
+}
+
+interface ContactFieldProps {
+  companyId: string;
+  contacts?: ContactOption[];
+  isLoading: boolean;
+  contactId?: string;
+  onContactChange?: (contactId: string) => void;
+  onContactInfoChange?: (info: SelectedContactInfo | null) => void;
+}
+
+function ContactField({ companyId, contacts, isLoading, contactId, onContactChange, onContactInfoChange }: ContactFieldProps) {
+  if (!companyId) return <div className={cn("flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground")}>Selecione uma empresa primeiro</div>;
+  if (isLoading) return <div className={cn("flex h-10 w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground")}><Loader2 className="h-4 w-4 animate-spin" />Carregando...</div>;
+  if (!contacts?.length) return <div className={cn("flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground")}>Nenhum contato cadastrado</div>;
+  const contact = contacts[0];
+  if (contacts.length === 1 && contact) return <SingleContactDisplay contact={contact} contactId={contactId} onContactChange={onContactChange} onContactInfoChange={onContactInfoChange} />;
+  return <ContactDropdown contacts={contacts} contactId={contactId} onContactChange={onContactChange} onContactInfoChange={onContactInfoChange} />;
+}
+
+function selectedCompanyInfo(id: string, company: CompanyOption | null | undefined): SelectedCompanyInfo | null | undefined {
+  if (!id) return null;
+  if (company?.id !== id) return undefined;
+  return { id: company.id, name: company.name, cnpj: company.cnpj || undefined, ramo_atividade: company.ramo_atividade || undefined };
+}
+
 export function CompanyContactSelector({
   companyId, contactId, onCompanyChange, onContactChange, onCompanyInfoChange, onContactInfoChange,
 }: CompanyContactSelectorProps) {
-  // Fetch selected company by ID
-  const { data: fetchedCompany } = useQuery<CompanyOption | null>({
-    queryKey: ["quote-company-by-id", companyId],
-    queryFn: async () => {
-      if (!companyId) return null;
-      const data = await selectCrm<CrmCompany>("companies", {
-        select: "id, razao_social, nome_fantasia, ramo_atividade, cnpj, logo_url", filters: { id: companyId }, limit: 1,
-      });
-      const [c] = data;
-      if (!c) return null;
-      return { id: c.id, name: getCompanyDisplayName(c), razao_social: c.razao_social, nome_fantasia: c.nome_fantasia, ramo_atividade: c.ramo_atividade || null, cnpj: c.cnpj, logo_url: c.logo_url || null };
-    },
-    enabled: !!companyId,
-    staleTime: 10 * 60 * 1000,
-  });
-
-  // Fetch contacts for selected company
-  // Tipo ContactOption (não SelectedContactInfo): os subcomponentes
-  // (ContactDropdown/SingleContactDisplay) esperam null nos campos opcionais
-  // e só convertem pra undefined no boundary de onContactInfoChange.
-  const { data: contacts, isLoading: loadingContacts } = useQuery<ContactOption[]>({
-    queryKey: ["quote-company-contacts", companyId],
-    queryFn: async () => {
-      if (!companyId) return [];
-      const contactsData = await selectCrm<CrmContact>("contacts", {
-        select: "id, first_name, last_name, full_name, cargo", filters: { company_id: companyId, deleted_at: null },
-        orderBy: { column: "first_name", ascending: true }, limit: 50,
-      });
-      return Promise.all(contactsData.map(async (ct) => {
-        let email: string | null = null; let phone: string | null = null;
-        try {
-          const [emails, phones] = await Promise.all([
-            selectCrm<CrmContactEmail>("contact_emails", { filters: { contact_id: ct.id }, limit: 1 }),
-            selectCrm<CrmContactPhone>("contact_phones", { filters: { contact_id: ct.id }, limit: 1 }),
-          ]);
-          const [primaryEmail] = emails;
-          const [primaryPhone] = phones;
-          if (primaryEmail) email = primaryEmail.email;
-          if (primaryPhone) phone = primaryPhone.numero;
-        } catch { /* silently fail */ }
-        return { id: ct.id, name: ct.full_name || [ct.first_name, ct.last_name].filter(Boolean).join(" "), cargo: ct.cargo, email, phone };
-      }));
-    },
-    enabled: !!companyId,
-    staleTime: 5 * 60 * 1000,
-  });
+  const { fetchedCompany, contacts, loadingContacts } = useCompanyContactData(companyId);
 
   const selectedCompany = useMemo(() => fetchedCompany || null, [fetchedCompany]);
 
@@ -81,11 +105,8 @@ export function CompanyContactSelector({
     onCompanyChange(id);
     onContactChange?.("");
     onContactInfoChange?.(null);
-    if (id && fetchedCompany?.id === id) {
-      onCompanyInfoChange?.({ id: fetchedCompany.id, name: fetchedCompany.name, cnpj: fetchedCompany.cnpj || undefined, ramo_atividade: fetchedCompany.ramo_atividade || undefined });
-    } else if (!id) {
-      onCompanyInfoChange?.(null);
-    }
+    const companyInfo = selectedCompanyInfo(id, fetchedCompany);
+    if (companyInfo !== undefined) onCompanyInfoChange?.(companyInfo);
   };
 
   const handleClearCompany = () => {
@@ -101,18 +122,7 @@ export function CompanyContactSelector({
 
       <div className="space-y-2">
         <Label className="flex items-center gap-2"><User className="h-4 w-4" />Contato</Label>
-        {!companyId ? (
-          <div className={cn("flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground")}>Selecione uma empresa primeiro</div>
-        ) : loadingContacts ? (
-          <div className={cn("flex h-10 w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground")}><Loader2 className="h-4 w-4 animate-spin" />Carregando...</div>
-        ) : !contacts || contacts.length === 0 ? (
-          <div className={cn("flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground")}>Nenhum contato cadastrado</div>
-        ) : contacts.length === 1 ? (
-          // contacts[0] existe: o ramo do ternário já garante contacts.length === 1.
-          <SingleContactDisplay contact={contacts[0]!} contactId={contactId} onContactChange={onContactChange} onContactInfoChange={onContactInfoChange} />
-        ) : (
-          <ContactDropdown contacts={contacts} contactId={contactId} onContactChange={onContactChange} onContactInfoChange={onContactInfoChange} />
-        )}
+        <ContactField companyId={companyId} contacts={contacts} isLoading={loadingContacts} contactId={contactId} onContactChange={onContactChange} onContactInfoChange={onContactInfoChange} />
       </div>
     </div>
   );

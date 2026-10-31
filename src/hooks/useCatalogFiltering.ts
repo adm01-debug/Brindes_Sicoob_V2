@@ -20,14 +20,201 @@ interface CatalogFilteringOptions {
   hasCategoryFilter: boolean;
   categoryFilteredProductIds: Set<string>;
   isLoadingCategoryFilter: boolean;
+  hasColorFilter: boolean;
+  colorFilteredProductIds: Set<string>;
+  isLoadingColorFilter: boolean;
+  hasTagFilter: boolean;
+  tagFilteredProductIds: Set<string>;
+  isLoadingTagFilter: boolean;
+  hasTechniqueFilter: boolean;
+  techniqueFilteredProductIds: Set<string>;
+  isLoadingTechniqueFilter: boolean;
+  hasSizeFilter: boolean;
+  sizeFilteredProductIds: Set<string>;
+  isLoadingSizeFilter: boolean;
+  hasActivityFilter: boolean;
+  activityFilteredProductIds: Set<string>;
+  isLoadingActivityFilter: boolean;
+  hasMarketingFilter: boolean;
+  marketingFilteredProductIds: Set<string>;
+  isLoadingMarketingFilter: boolean;
+  hasCommemorativeDateFilter: boolean;
+  commemorativeDateProductIds: Set<string>;
+  isLoadingCommemorativeDateFilter: boolean;
   promoSalesMap?: Map<string, number>;
   supplierSalesMap?: Map<string, SupplierSalesEntry>;
+}
+
+interface CatalogFilterContext {
+  filters: FilterState;
+  colorFilterSet: Set<string>;
+  colorGroupSet: Set<string>;
+  colorVariationSet: Set<string>;
+  categoryFilterSet: Set<string>;
+  supplierFilterSet: Set<string>;
+  genderFilterSet: Set<string>;
+  hasMaterialFilter: boolean;
+  materialFilteredProductIds: Set<string>;
+  isLoadingMaterialFilter: boolean;
+  hasCategoryFilter: boolean;
+  categoryFilteredProductIds: Set<string>;
+  isLoadingCategoryFilter: boolean;
+  hasColorFilter: boolean;
+  colorFilteredProductIds: Set<string>;
+  isLoadingColorFilter: boolean;
+  hasTagFilter: boolean;
+  tagFilteredProductIds: Set<string>;
+  isLoadingTagFilter: boolean;
+  hasTechniqueFilter: boolean;
+  techniqueFilteredProductIds: Set<string>;
+  isLoadingTechniqueFilter: boolean;
+  hasSizeFilter: boolean;
+  sizeFilteredProductIds: Set<string>;
+  isLoadingSizeFilter: boolean;
+  hasActivityFilter: boolean;
+  activityFilteredProductIds: Set<string>;
+  isLoadingActivityFilter: boolean;
+  hasMarketingFilter: boolean;
+  marketingFilteredProductIds: Set<string>;
+  isLoadingMarketingFilter: boolean;
+  hasCommemorativeDateFilter: boolean;
+  commemorativeDateProductIds: Set<string>;
+  isLoadingCommemorativeDateFilter: boolean;
+}
+
+function relationalIdFilter(products: Product[], active: boolean, ids: Set<string>, loading: boolean): Product[] {
+  if (!active) return products;
+  if (loading) return products;
+  if (ids.size > 0) return products.filter(product => ids.has(product.id));
+  return [];
+}
+
+function relationalCategoryFilter(products: Product[], context: CatalogFilterContext): Product[] {
+  if (!context.hasCategoryFilter) return products;
+  if (context.isLoadingCategoryFilter) return products;
+  if (context.categoryFilteredProductIds.size > 0) return products.filter(product => context.categoryFilteredProductIds.has(product.id));
+  return [];
+}
+
+function minimumQuantityFilter(products: Product[], minimum?: number): Product[] {
+  if (!minimum || minimum <= 0) return products;
+  return products.filter(product => (product.minQuantity || 0) <= minimum);
+}
+
+function directColorFilter(products: Product[], selected: Set<string>): Product[] {
+  if (selected.size === 0) return products;
+  return products.filter(product => product.colors?.some(color => selected.has(color.name)));
+}
+
+function colorMatchesGroup(color: ProductColor, groups: Set<string>, normalizedGroups: string[]): boolean {
+  const groupSlug = (color.groupSlug || '').toLowerCase().trim();
+  const group = (color.group || '').toLowerCase().trim();
+  if (groups.has(groupSlug) || groups.has(group)) return true;
+  const name = (color.name || '').toLowerCase().trim();
+  return normalizedGroups.some(candidate => name.includes(candidate));
+}
+
+function colorGroupFilter(products: Product[], groups: Set<string>): Product[] {
+  if (groups.size === 0) return products;
+  const normalized = Array.from(groups).map(group => group.toLowerCase());
+  return products.filter(product => product.colors?.some(color => colorMatchesGroup(color, groups, normalized)));
+}
+
+function colorVariationFilter(products: Product[], variations: Set<string>): Product[] {
+  if (variations.size === 0) return products;
+  return products.filter(product => product.colors?.some(color => variations.has((color.variationSlug || '').toLowerCase().trim())));
+}
+
+function directCategoryFilter(products: Product[], categories: Set<string>): Product[] {
+  return categories.size > 0 ? products.filter(product => categories.has(product.category_id || '')) : products;
+}
+
+function supplierFilter(products: Product[], suppliers: Set<string>): Product[] {
+  if (suppliers.size === 0) return products;
+  return products.filter(product => suppliers.has(product.brand || '') || suppliers.has(product.supplier_reference || ''));
+}
+
+function priceFilter(products: Product[], range: FilterState['priceRange']): Product[] {
+  if (range[0] <= 0 && range[1] >= 9999) return products;
+  return products.filter(product => product.price >= range[0] && product.price <= range[1]);
+}
+
+function stockFilter(products: Product[], filters: FilterState): Product[] {
+  let result = filters.inStock ? products.filter(product => (product.stock ?? 0) > 0) : products;
+  if (filters.minStock > 0) {
+    result = result.filter(product => product.variations?.length
+      ? product.variations.some(variation => variation.stock >= filters.minStock)
+      : product.stock >= filters.minStock);
+  }
+  return result;
+}
+
+function genderFilter(products: Product[], genders: Set<string>): Product[] {
+  if (genders.size === 0) return products;
+  return products.filter(product => genders.has((product.gender || '').toLowerCase().trim()));
+}
+
+function relationalMaterialFilter(products: Product[], context: CatalogFilterContext): Product[] {
+  if (!context.hasMaterialFilter) return products;
+  if (context.materialFilteredProductIds.size > 0) return products.filter(product => context.materialFilteredProductIds.has(product.id));
+  return context.isLoadingMaterialFilter ? products : [];
+}
+
+function materialTextFilter(products: Product[], context: CatalogFilterContext): Product[] {
+  if (context.hasMaterialFilter || context.filters.materiais.length === 0) return products;
+  const selected = context.filters.materiais.map(material => material.toLowerCase());
+  return products.filter(product => {
+    const rawMaterials: unknown = product.materials;
+    const text = Array.isArray(rawMaterials) ? rawMaterials.join(' ').toLowerCase() : String(rawMaterials || '').toLowerCase();
+    return selected.some(material => text.includes(material));
+  });
+}
+
+function quickOptionsFilter(products: Product[], filters: FilterState): Product[] {
+  let result = products;
+  if (filters.isKit) result = result.filter(product => product.isKit);
+  if (filters.featured) result = result.filter(product => product.featured);
+  if (filters.isNew) result = result.filter(product => product.newArrival);
+  if (filters.hasPersonalization) result = result.filter(product => product.allowsPersonalization === true);
+  return result;
+}
+
+function applyCatalogFilters(products: Product[], context: CatalogFilterContext): Product[] {
+  let result = relationalCategoryFilter(products, context);
+  result = relationalIdFilter(result, context.hasColorFilter, context.colorFilteredProductIds, context.isLoadingColorFilter);
+  result = relationalIdFilter(result, context.hasTagFilter, context.tagFilteredProductIds, context.isLoadingTagFilter);
+  result = relationalIdFilter(result, context.hasTechniqueFilter, context.techniqueFilteredProductIds, context.isLoadingTechniqueFilter);
+  result = relationalIdFilter(result, context.hasSizeFilter, context.sizeFilteredProductIds, context.isLoadingSizeFilter);
+  result = relationalIdFilter(result, context.hasActivityFilter, context.activityFilteredProductIds, context.isLoadingActivityFilter);
+  result = relationalIdFilter(result, context.hasMarketingFilter, context.marketingFilteredProductIds, context.isLoadingMarketingFilter);
+  result = relationalIdFilter(result, context.hasCommemorativeDateFilter, context.commemorativeDateProductIds, context.isLoadingCommemorativeDateFilter);
+  result = minimumQuantityFilter(result, context.filters.minQuantity);
+  if (!context.hasColorFilter) {
+    result = directColorFilter(result, context.colorFilterSet);
+    result = colorGroupFilter(result, context.colorGroupSet);
+    result = colorVariationFilter(result, context.colorVariationSet);
+  }
+  result = directCategoryFilter(result, context.categoryFilterSet);
+  result = supplierFilter(result, context.supplierFilterSet);
+  result = priceFilter(result, context.filters.priceRange);
+  result = stockFilter(result, context.filters);
+  result = genderFilter(result, context.genderFilterSet);
+  result = relationalMaterialFilter(result, context);
+  result = materialTextFilter(result, context);
+  return quickOptionsFilter(result, context.filters);
 }
 
 export function useCatalogFiltering({
   realProducts, filters, sortBy, hasFuzzySearch, fuzzySearchResults,
   hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter,
   hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter,
+  hasColorFilter, colorFilteredProductIds, isLoadingColorFilter,
+  hasTagFilter, tagFilteredProductIds, isLoadingTagFilter,
+  hasTechniqueFilter, techniqueFilteredProductIds, isLoadingTechniqueFilter,
+  hasSizeFilter, sizeFilteredProductIds, isLoadingSizeFilter,
+  hasActivityFilter, activityFilteredProductIds, isLoadingActivityFilter,
+  hasMarketingFilter, marketingFilteredProductIds, isLoadingMarketingFilter,
+  hasCommemorativeDateFilter, commemorativeDateProductIds, isLoadingCommemorativeDateFilter,
   promoSalesMap, supplierSalesMap,
 }: CatalogFilteringOptions): Product[] {
   // Otimização: Memoizamos conjuntos de filtros para lookup O(1)
@@ -39,110 +226,20 @@ export function useCatalogFiltering({
   const genderFilterSet = useMemo(() => new Set(filters.gender?.map(g => g.toLowerCase().trim())), [filters.gender]);
 
   return useMemo(() => {
-    let result = hasFuzzySearch ? [...fuzzySearchResults] : [...realProducts];
-
-    if (result.length === 0) return result;
-
-    if (hasCategoryFilter && categoryFilteredProductIds.size > 0) {
-      result = result.filter((p) => categoryFilteredProductIds.has(p.id));
-    } else if (hasCategoryFilter && categoryFilteredProductIds.size === 0 && !isLoadingCategoryFilter) {
-      return [];
-    }
-
-    // New Sicoob Theme Filter
-    if (filters.sicoobThemes?.length > 0) {
-      const selectedThemes = new Set(filters.sicoobThemes.map(t => t.toLowerCase()));
-      result = result.filter(p => {
-        const pThemes = (p.tags?.temas || []).map((t: string) => t.toLowerCase());
-        return pThemes.some(t => selectedThemes.has(t));
-      });
-    }
-
-    // New Minimum Quantity Filter
-    if (filters.minQuantity && filters.minQuantity > 0) {
-      result = result.filter(p => {
-        const minQ = (p as any).min_quantity || 0;
-        return minQ <= filters.minQuantity!;
-      });
-    }
-
-    if (colorFilterSet.size > 0) {
-      result = result.filter((p) =>
-        p.colors?.some((c: ProductColor) => colorFilterSet.has(c.name))
-      );
-    }
-
-    if (colorGroupSet.size > 0) {
-      const lowerGroupFilters = Array.from(colorGroupSet).map(s => s.toLowerCase());
-      result = result.filter((p) =>
-        p.colors?.some((c: ProductColor) => {
-          const groupSlug = (c.groupSlug || '').toLowerCase().trim();
-          const group = (c.group || '').toLowerCase().trim();
-          if (colorGroupSet.has(groupSlug) || colorGroupSet.has(group)) return true;
-          
-          const name = (c.name || '').toLowerCase().trim();
-          return lowerGroupFilters.some(s => name.includes(s));
-        })
-      );
-    }
-
-    if (colorVariationSet.size > 0) {
-      result = result.filter((p) =>
-        p.colors?.some((c: ProductColor) => {
-          const variationSlug = (c.variationSlug || '').toLowerCase().trim();
-          return colorVariationSet.has(variationSlug);
-        })
-      );
-    }
-
-    if (categoryFilterSet.size > 0) {
-      result = result.filter((p) => categoryFilterSet.has(p.category_id || ''));
-    }
-
-    if (supplierFilterSet.size > 0) {
-      result = result.filter((p) =>
-        supplierFilterSet.has(p.brand || '') ||
-        supplierFilterSet.has(p.supplier_reference || '')
-      );
-    }
-
-    if (filters.priceRange[0] > 0 || filters.priceRange[1] < 500) {
-      result = result.filter((p) => p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1]);
-    }
-
-    if (filters.inStock) {
-      result = result.filter((p) => {
-        const stock = (p as any).stock_quantity ?? p.stock ?? 0;
-        return stock > 0;
-      });
-    }
-
-    if (genderFilterSet.size > 0) {
-      result = result.filter((p) => {
-        const productGender = (p.gender || '').toLowerCase().trim();
-        return genderFilterSet.has(productGender);
-      });
-    }
-
-    if (hasMaterialFilter && materialFilteredProductIds.size > 0) {
-      result = result.filter((p) => materialFilteredProductIds.has(p.id));
-    } else if (hasMaterialFilter && materialFilteredProductIds.size === 0 && !isLoadingMaterialFilter) {
-      return [];
-    }
-
-    // Filtro por termo de produto (fallback legível do filtro de materiais)
-    if (!hasMaterialFilter && filters.materiais.length) {
-      const lowerMateriais = filters.materiais.map(m => m.toLowerCase());
-      result = result.filter((p) => {
-        // p.materials é tipado como string[], mas dados legados/externos já vieram
-        // como string solta — tratamos como unknown pra manter a defesa em runtime.
-        const rawMaterials: unknown = p.materials;
-        const materialsStr = Array.isArray(rawMaterials)
-          ? rawMaterials.join(' ').toLowerCase()
-          : String(rawMaterials || '').toLowerCase();
-        return lowerMateriais.some((m) => materialsStr.includes(m));
-      });
-    }
+    const initial = hasFuzzySearch ? [...fuzzySearchResults] : [...realProducts];
+    const context: CatalogFilterContext = {
+      filters, colorFilterSet, colorGroupSet, colorVariationSet, categoryFilterSet, supplierFilterSet, genderFilterSet,
+      hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter,
+      hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter,
+      hasColorFilter, colorFilteredProductIds, isLoadingColorFilter,
+      hasTagFilter, tagFilteredProductIds, isLoadingTagFilter,
+      hasTechniqueFilter, techniqueFilteredProductIds, isLoadingTechniqueFilter,
+      hasSizeFilter, sizeFilteredProductIds, isLoadingSizeFilter,
+      hasActivityFilter, activityFilteredProductIds, isLoadingActivityFilter,
+      hasMarketingFilter, marketingFilteredProductIds, isLoadingMarketingFilter,
+      hasCommemorativeDateFilter, commemorativeDateProductIds, isLoadingCommemorativeDateFilter,
+    };
+    const result = applyCatalogFilters(initial, context);
 
     // ⚠️ REGRA DE NEGÓCIO — NÃO ALTERAR — Ordem técnica Portal Sicoob
     const skipSort = hasFuzzySearch && sortBy === 'name';
@@ -150,10 +247,16 @@ export function useCatalogFiltering({
 
     return result;
   }, [
-    filters.sicoobThemes, filters.minQuantity,
     filters, sortBy, hasFuzzySearch, fuzzySearchResults, realProducts, 
     hasMaterialFilter, materialFilteredProductIds, isLoadingMaterialFilter, 
     hasCategoryFilter, categoryFilteredProductIds, isLoadingCategoryFilter, 
+    hasColorFilter, colorFilteredProductIds, isLoadingColorFilter,
+    hasTagFilter, tagFilteredProductIds, isLoadingTagFilter,
+    hasTechniqueFilter, techniqueFilteredProductIds, isLoadingTechniqueFilter,
+    hasSizeFilter, sizeFilteredProductIds, isLoadingSizeFilter,
+    hasActivityFilter, activityFilteredProductIds, isLoadingActivityFilter,
+    hasMarketingFilter, marketingFilteredProductIds, isLoadingMarketingFilter,
+    hasCommemorativeDateFilter, commemorativeDateProductIds, isLoadingCommemorativeDateFilter,
     promoSalesMap, supplierSalesMap, colorFilterSet, colorGroupSet, colorVariationSet, 
     categoryFilterSet, supplierFilterSet, genderFilterSet
   ]);

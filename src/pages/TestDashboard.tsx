@@ -4,7 +4,6 @@ import { PageSEO } from '@/components/seo/PageSEO';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   CheckCircle2, 
-  XCircle, 
   BarChart3, 
   ShieldCheck, 
   Activity,

@@ -2,7 +2,7 @@
  * Stock Module — Comprehensive Performance & Stress Test Suite
  * Tests: data processing, filtering, alerts, aggregation, memory, edge cases
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   calculateStockStatus,
   calculateDaysUntilStockout,
@@ -12,7 +12,6 @@ import {
   type VariantStock,
   type ProductStockSummary,
   type StockFilters,
-  type StockStatus,
 } from '@/types/stock';
 import { generateStockAlerts } from '@/hooks/stock/stockAlerts';
 import { toNumber } from '@/hooks/stock/stockFetcher';
@@ -731,6 +730,8 @@ describe('Memory Pressure', () => {
       const alerts = generateStockAlerts(products);
       const filtered = applyFilters(products, { ...defaultStockFilters, status: 'out_of_stock' });
       expect(products.length).toBe(2000);
+      expect(Array.isArray(alerts)).toBe(true);
+      expect(Array.isArray(filtered)).toBe(true);
     }
     // If we reach here, no OOM
     expect(true).toBe(true);

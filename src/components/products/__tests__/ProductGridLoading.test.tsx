@@ -1,10 +1,17 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { ProductGridSkeleton } from '@/components/products/ProductCardSkeleton';
 import { CatalogContent } from '@/components/catalog/CatalogContent';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
+
+interface RuntimeConfigGlobal {
+  __PORTAL_SICOOB_RUNTIME_CONFIG__?: {
+    url: string;
+    publishableKey: string;
+  };
+}
 
 vi.mock('@/contexts/SellerCartContext', () => ({
   useSellerCartContext: () => ({
@@ -14,7 +21,7 @@ vi.mock('@/contexts/SellerCartContext', () => ({
 }));
 
 // Define globally needed variables for backend client tests.
-(globalThis as any).__PORTAL_SICOOB_RUNTIME_CONFIG__ = {
+(globalThis as typeof globalThis & RuntimeConfigGlobal).__PORTAL_SICOOB_RUNTIME_CONFIG__ = {
   url: 'https://mock.supabase.co',
   publishableKey: 'mock-key',
 };
@@ -63,7 +70,7 @@ describe('ProductGrid Loading Visuals', () => {
   });
 
   it('CatalogContent shows skeleton when shouldShowCatalogSkeleton is true', () => {
-    const mockProps: any = {
+    const mockProps: React.ComponentProps<typeof CatalogContent> = {
       viewMode: 'grid',
       shouldShowCatalogSkeleton: true,
       shouldShowEmptyState: false,

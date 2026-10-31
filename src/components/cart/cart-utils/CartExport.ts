@@ -70,14 +70,25 @@ export async function exportCartToPDF(cart: SellerCart) {
 
   doc.setFontSize(7);
   doc.setTextColor(180);
-  doc.text("Gerado pelo CRM", 14, doc.internal.pageSize.getHeight() - 10);
+  doc.text("Gerado pelo Portal de Compras Sicoob", 14, doc.internal.pageSize.getHeight() - 10);
   doc.save(`carrinho-${cart.company_name.replace(/\s+/g, "-").toLowerCase()}.pdf`);
   toast.success("PDF exportado com sucesso");
 }
 
 export function shareCartLink(cartId: string) {
   const url = `${window.location.origin}/carrinhos/${cartId}`;
-  navigator.clipboard.writeText(url).then(() => {
-    toast.success("Link copiado!", { description: url });
-  });
+  if (!navigator.clipboard?.writeText) {
+    toast.error("Não foi possível copiar o link do carrinho");
+    return Promise.resolve();
+  }
+
+  return navigator.clipboard.writeText(url)
+    .then(() => {
+      toast.success("Link pessoal copiado!", {
+        description: "Este endereço exige login e só abre para o proprietário do carrinho.",
+      });
+    })
+    .catch(() => {
+      toast.error("Não foi possível copiar o link do carrinho");
+    });
 }

@@ -34,10 +34,11 @@ export function useProductFreshnessOverride(productId: string | null | undefined
     queryKey: QK(productId ?? "_"),
     enabled: !!productId,
     queryFn: async (): Promise<ProductFreshnessOverride | null> => {
+      if (!productId) throw new Error("Produto não identificado");
       const { data, error } = await supabase
         .from("product_price_freshness_overrides")
         .select("*")
-        .eq("product_id", productId!)
+        .eq("product_id", productId)
         .maybeSingle();
       if (error) throw error;
       return (data as ProductFreshnessOverride | null) ?? null;

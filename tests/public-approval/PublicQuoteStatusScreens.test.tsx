@@ -73,3 +73,4 @@ describe("PublicQuoteStatusScreens", () => {
     expect(screen.getByText("Proposta recusada")).toBeInTheDocument();
   });
 });
+import React from 'react';

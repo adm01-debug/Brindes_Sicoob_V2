@@ -35,6 +35,35 @@ const DEFAULT_QUANTITIES = [50, 100, 250, 500, 1000];
 
 // formatCurrency imported from @/lib/format
 
+async function calculatePersonalizationPrice(pers: Personalization, quantity: number) {
+  try {
+    const rpcParams: Record<string, unknown> = {
+      p_area_id: pers.technique.id,
+      p_quantidade: quantity,
+      p_num_cores: pers.specs.colors,
+    };
+    if (pers.specs.width > 0 && pers.specs.height > 0) {
+      rpcParams.p_largura_cm = pers.specs.width;
+      rpcParams.p_altura_cm = pers.specs.height;
+    }
+
+    const result = await invokeExternalRpc<CustomizationPriceResponse>(
+      'fn_get_customization_price',
+      rpcParams
+    );
+    if (!result?.success) return { persId: pers.id, unitPrice: 0, totalPrice: 0 };
+
+    const flat = adaptPriceResponse(result as unknown as Record<string, unknown>);
+    return {
+      persId: pers.id,
+      unitPrice: flat.unit_price,
+      totalPrice: flat.total_price,
+    };
+  } catch {
+    return { persId: pers.id, unitPrice: 0, totalPrice: 0 };
+  }
+}
+
 export function QuantityRangeComparison({
   personalizations,
   currentQuantity,
@@ -43,8 +72,7 @@ export function QuantityRangeComparison({
   const [isOpen, setIsOpen] = useState(false);
   const [quantities, setQuantities] = useState<number[]>(() => {
     const defaults = DEFAULT_QUANTITIES.filter(q => q !== currentQuantity);
-    const selected = [currentQuantity, ...defaults.slice(0, 3)].sort((a, b) => a - b);
-    return selected;
+    return [currentQuantity, ...defaults.slice(0, 3)].sort((a, b) => a - b);
   });
   const [results, setResults] = useState<QuantityResult[]>([]);
   const [isCalculating, setIsCalculating] = useState(false);
@@ -79,35 +107,7 @@ export function QuantityRangeComparison({
         const persPrices: QuantityResult['persPrices'] = [];
 
         for (const pers of personalizations) {
-          try {
-            const rpcParams: Record<string, unknown> = {
-              p_area_id: pers.technique.id,
-              p_quantidade: qty,
-              p_num_cores: pers.specs.colors,
-            };
-            if (pers.specs.width > 0 && pers.specs.height > 0) {
-              rpcParams.p_largura_cm = pers.specs.width;
-              rpcParams.p_altura_cm = pers.specs.height;
-            }
-
-            const result = await invokeExternalRpc<CustomizationPriceResponse>(
-              'fn_get_customization_price',
-              rpcParams
-            );
-
-            if (result?.success) {
-              const flat = adaptPriceResponse(result);
-              persPrices.push({
-                persId: pers.id,
-                unitPrice: flat.unit_price,
-                totalPrice: flat.total_price,
-              });
-            } else {
-              persPrices.push({ persId: pers.id, unitPrice: 0, totalPrice: 0 });
-            }
-          } catch {
-            persPrices.push({ persId: pers.id, unitPrice: 0, totalPrice: 0 });
-          }
+          persPrices.push(await calculatePersonalizationPrice(pers, qty));
         }
 
         const customTotal = persPrices.reduce((s, p) => s + p.totalPrice, 0);

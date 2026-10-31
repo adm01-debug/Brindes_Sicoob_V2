@@ -7,6 +7,20 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
+function valueOr<T>(value: T | null | undefined | false | "", fallback: T): T {
+  return value ? value as T : fallback;
+}
+
+function decodeBase64Image(base64Data: string): { blob: Blob; extension: string; mimeType: string } | null {
+  const base64Content = base64Data.split(",")[1];
+  if (!base64Content) return null;
+
+  const mimeType = valueOr(base64Data.match(/data:([^;]+);/)?.[1], "image/png");
+  const extension = valueOr(mimeType.split("/")[1], "png");
+  const byteArray = Uint8Array.from(atob(base64Content), (character) => character.charCodeAt(0));
+  return { blob: new Blob([byteArray], { type: mimeType }), extension, mimeType };
+}
+
 /**
  * Upload a base64 image to the mockup-art-files bucket.
  * Returns the public URL of the uploaded file.
@@ -17,24 +31,12 @@ export async function uploadLogoToStorage(
   fileName?: string
 ): Promise<string | null> {
   try {
-    // Convert base64 to blob
-    const base64Content = base64Data.split(",")[1];
-    if (!base64Content) return null;
-
-    const mimeMatch = base64Data.match(/data:([^;]+);/);
-    const mimeType = mimeMatch?.[1] || "image/png";
-    const extension = mimeType.split("/")[1] || "png";
-
-    const byteCharacters = atob(base64Content);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], { type: mimeType });
+    const decoded = decodeBase64Image(base64Data);
+    if (!decoded) return null;
+    const { blob, extension, mimeType } = decoded;
 
     // Generate unique file path: userId/logos/timestamp-name.ext
-    const safeName = (fileName || "logo").replace(/[^a-zA-Z0-9-_]/g, "_");
+    const safeName = valueOr(fileName, "logo").replace(/[^a-zA-Z0-9-_]/g, "_");
     const filePath = `${userId}/logos/${Date.now()}-${safeName}.${extension}`;
 
     const { error: uploadError } = await supabase.storage
@@ -53,7 +55,7 @@ export async function uploadLogoToStorage(
       .from("mockup-art-files")
       .getPublicUrl(filePath);
 
-    return urlData?.publicUrl || null;
+    return valueOr(urlData?.publicUrl, null);
   } catch (err) {
     console.error("[mockup-storage] Exception during upload:", err);
     return null;
@@ -160,4 +162,3 @@ function getImageInfo(src: string): Promise<{ width: number; height: number }> {
     img.src = src;
   });
 }
-

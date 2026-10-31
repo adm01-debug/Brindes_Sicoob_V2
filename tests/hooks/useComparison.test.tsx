@@ -36,3 +36,4 @@ describe('useComparison', () => {
     expect(result.current.compareIds).toContain('product-1');
   });
 });
+import React from 'react';

@@ -41,6 +41,22 @@ describe('error-reporter', () => {
     window.history.replaceState({}, '', '/');
   });
 
+  it('não confunde números no caminho do stack com status HTTP transitório', async () => {
+    const { isTransientEdgeRuntimeError } = await import('@/lib/error-reporter');
+    const error = new Error('Falha de envio');
+    error.stack = 'Error: Falha de envio\n    at /workspace/chat-h206502/src/app.ts:502:10';
+
+    expect(isTransientEdgeRuntimeError(error)).toBe(false);
+    expect(isTransientEdgeRuntimeError('identificador item-502-falhou')).toBe(false);
+    expect(isTransientEdgeRuntimeError('arquivo version.503 falhou')).toBe(false);
+    expect(isTransientEdgeRuntimeError('rota /504 indisponível')).toBe(false);
+    expect(isTransientEdgeRuntimeError('HTTP 502 Bad Gateway')).toBe(true);
+    expect(isTransientEdgeRuntimeError('response status: 503')).toBe(true);
+    expect(isTransientEdgeRuntimeError('function returned 504')).toBe(true);
+    expect(isTransientEdgeRuntimeError('503 Service Unavailable')).toBe(true);
+    expect(isTransientEdgeRuntimeError('Edge Function returned a non-2xx status code | 503 Service Unavailable')).toBe(true);
+  });
+
   it('reportError queues an error and schedules flush', async () => {
     const { reportError } = await import('@/lib/error-reporter');
     const err = new Error('test error');

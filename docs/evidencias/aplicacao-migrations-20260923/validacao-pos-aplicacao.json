@@ -1,0 +1,19 @@
+{
+  "executado_em": "2026-09-23T19:18:26.360Z",
+  "statements": 1,
+  "results": [
+    {
+      "command": null,
+      "rowCount": 1,
+      "fields": [
+        "resultado"
+      ],
+      "rows": [
+        {
+          "resultado": "VALIDACOES_POS_APLICACAO_OK"
+        }
+      ]
+    }
+  ],
+  "notices": []
+}

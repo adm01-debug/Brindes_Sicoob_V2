@@ -1,0 +1,6 @@
+ Test Files  400 passed | 8 skipped (408)
+      Tests  5575 passed | 112 skipped (5687)
+Statements   : 93.95% ( 140/149 )
+Branches     : 86.79% ( 138/159 )
+Functions    : 97.22% ( 35/36 )
+Lines        : 97.58% ( 121/124 )

@@ -24,7 +24,7 @@ export function HistoricalPriceOverlay({ productId, currentPrice, enabled = true
       try {
         const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
         const { data, error } = await supabase
-          .from("price_history" as any)
+          .from("price_history")
           .select("price, recorded_at")
           .eq("product_id", productId)
           .lte("recorded_at", thirtyDaysAgo)
@@ -32,13 +32,13 @@ export function HistoricalPriceOverlay({ productId, currentPrice, enabled = true
           .limit(1)
           .maybeSingle();
         if (!active || error || !data) return;
-        setOldPrice(Number((data as any).price) || null);
+        setOldPrice(Number(data.price) || null);
       } catch { /* tabela inexistente — silencioso */ }
     })();
     return () => { active = false; };
   }, [productId, enabled]);
 
-  if (!enabled || oldPrice == null || oldPrice === currentPrice) return null;
+  if (!enabled || oldPrice === null || oldPrice === undefined || oldPrice === currentPrice) return null;
   const diff = currentPrice - oldPrice;
   const pct = (diff / oldPrice) * 100;
   const Icon = diff < 0 ? TrendingDown : diff > 0 ? TrendingUp : Minus;

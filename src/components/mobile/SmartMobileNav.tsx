@@ -1,29 +1,11 @@
-import React from "react";
+import React, { useState, useEffect, forwardRef } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { getPrefetchHandlers } from "@/lib/routePrefetch";
-import { 
-  Home, 
-  Package, 
-  FileText, 
-   
-  Plus,
-  Heart,
-  Wand2,
-  BarChart3,
-  ShoppingCart,
-  Settings,
-  Sparkles,
-  Calculator,
-  FolderOpen,
-  X,
-  Sun,
-  Moon,
-} from "lucide-react";
-import { useTheme } from "@/contexts/ThemeContext";
+import { Home, Package, FileText, Plus, Heart, Wand2, ShoppingCart, Calculator, FolderOpen, X } from "lucide-react";
+
 import { cn } from "@/lib/utils";
-import { useState, useEffect, forwardRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { VisuallyHidden } from "@/components/a11y/VisuallyHidden";
+
 
 interface NavItem {
   icon: typeof Home;
@@ -172,7 +154,7 @@ export const SmartMobileNav = forwardRef<HTMLDivElement>(function SmartMobileNav
         aria-label="Navegação principal mobile"
       >
         <div className="flex items-center justify-around h-14 sm:h-16 px-1 sm:px-2 relative">
-          {mainNavItems.map((item, index) => {
+          {mainNavItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
             const isFab = item.href === "#fab";

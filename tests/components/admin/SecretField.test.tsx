@@ -277,3 +277,4 @@ describe("SecretField — handler de salvar nunca chama API com sufixo <4 chars"
     expect(alert).toHaveTextContent(/Salvamento bloqueado/);
   });
 });
+import React from 'react';

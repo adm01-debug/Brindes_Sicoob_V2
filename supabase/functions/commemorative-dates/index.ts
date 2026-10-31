@@ -1,6 +1,4 @@
-import { createReadOnlyCatalogFetch } from "../_shared/external-read-only.ts";
-import { getCorsHeaders } from '../_shared/cors.ts';
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { catalogFunctionErrorResponse, createExternalCatalogClient, prepareAuthenticatedCatalogRequest } from "../_shared/catalog-client.ts";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { parseBodyWithSchema } from "../_shared/zod-validate.ts";
 
@@ -9,41 +7,17 @@ const ActionSchema = z.object({
   params: z.object({
     days_ahead: z.number().int().min(1).max(365).optional(),
     slug: z.string().trim().min(1).max(200).optional(),
-    limit: z.number().int().min(1).max(500).optional(),
+    limit: z.number().int().min(1).max(10_001).optional(),
     include_all_colors: z.boolean().optional(),
   }).optional(),
 });
 
 Deno.serve(async (req) => {
-  const corsHeaders = getCorsHeaders(req);
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const context = await prepareAuthenticatedCatalogRequest(req);
+  if (!context.ok) return context.response;
+  const { corsHeaders } = context;
 
   try {
-    // Auth check
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(
-        JSON.stringify({ error: 'Não autorizado' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const localSupabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: userError } = await localSupabase.auth.getUser();
-    if (userError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Token inválido' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     // Validate body with Zod
     const parsed = await parseBodyWithSchema(req, ActionSchema, corsHeaders);
     if ('error' in parsed) return parsed.error;
@@ -51,18 +25,15 @@ Deno.serve(async (req) => {
     const { action, params } = parsed.data;
 
     // External DB client
-    const externalUrl = Deno.env.get('EXTERNAL_SUPABASE_URL');
-    const externalKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_KEY');
-
-    if (!externalUrl || !externalKey) {
-      console.warn('[commemorative-dates] EXTERNAL_SUPABASE_URL/KEY not configured — returning empty payload');
+    const externalSupabase = await createExternalCatalogClient();
+    if (!externalSupabase) {
+      console.warn('[commemorative-dates] credenciais do catálogo externo indisponíveis');
       return new Response(
-        JSON.stringify({ data: [], records: [], count: 0, _unconfigured: true, _message: 'Banco externo não configurado' }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'CATALOG_NOT_CONFIGURED', _unconfigured: true, _message: 'Banco externo não configurado' }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const externalSupabase = createClient(externalUrl, externalKey, { global: { fetch: createReadOnlyCatalogFetch() } });
     let result;
 
     switch (action) {
@@ -133,11 +104,6 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('Unexpected error:', errorMessage);
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return catalogFunctionErrorResponse(error, corsHeaders, 'commemorative-dates');
   }
 });

@@ -28,7 +28,17 @@ export interface BatchQuery {
 
 export interface BatchResult {
   success: boolean;
-  data?: { records: unknown[]; count: number | null };
+  data?: {
+    records: unknown[];
+    count: number | null;
+    meta?: {
+      pagination_degraded?: boolean;
+      requested_limit?: number;
+      effective_limit?: number;
+      offset?: number;
+      [key: string]: unknown;
+    };
+  };
   error?: string;
   fromCache?: boolean;
 }
@@ -97,10 +107,11 @@ export async function invokeExternalDbSingle<T>(
   options: InvokeOptions
 ): Promise<T> {
   const result = await invokeExternalDb<T>(options);
-  if (!result.records?.length) {
+  const record = result.records?.[0];
+  if (!record) {
     throw new Error('Nenhum registro retornado');
   }
-  return result.records[0];
+  return record;
 }
 
 export async function invokeExternalDbDelete(

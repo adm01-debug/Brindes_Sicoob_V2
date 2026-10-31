@@ -8,6 +8,7 @@ import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { invokeExternalDb } from '@/lib/external-db';
 import { invokeExternalRpc } from '@/lib/external-rpc';
+import type { PrintAreaFromProduct } from '@/lib/fetch-print-areas';
 
 // Re-export types & helpers for backward compat
 export type { TabelaPrecoOficial, FaixaPrecoOficial, CustomizationPriceV2, PrintAreaWithTechniques } from './gravacao/gravacao-types';
@@ -18,6 +19,115 @@ export {
 } from './gravacao/gravacao-constants';
 
 import type { TabelaPrecoOficial, FaixaPrecoOficial, CustomizationPriceV2, PrintAreaWithTechniques } from './gravacao/gravacao-types';
+
+interface TechniqueSummary {
+  id: string;
+  nome: string;
+  codigo: string;
+}
+
+function toRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' ? value as Record<string, unknown> : {};
+}
+
+function stringValue(record: Record<string, unknown>, key: string, fallback = ''): string {
+  return typeof record[key] === 'string' ? record[key] : fallback;
+}
+
+function numberValue(record: Record<string, unknown>, key: string, fallback = 0): number {
+  return typeof record[key] === 'number' ? record[key] : fallback;
+}
+
+function booleanValue(record: Record<string, unknown>, key: string): boolean {
+  return typeof record[key] === 'boolean' ? record[key] : false;
+}
+
+function nullableNumberValue(record: Record<string, unknown>, key: string): number | null {
+  return typeof record[key] === 'number' ? record[key] : null;
+}
+
+function areaTechniques(
+  ids: string[],
+  techniquesById: Map<string, Record<string, unknown>>,
+): TechniqueSummary[] {
+  return ids.flatMap(id => {
+    const technique = techniquesById.get(id);
+    if (!technique) return [];
+    return [{
+      id: stringValue(technique, 'id'),
+      nome: stringValue(technique, 'nome'),
+      codigo: stringValue(technique, 'codigo_curto', stringValue(technique, 'codigo_tabela')),
+    }];
+  });
+}
+
+function toPrintArea(
+  area: PrintAreaFromProduct,
+  techniquesById: Map<string, Record<string, unknown>>,
+): PrintAreaWithTechniques {
+  return {
+    area_id: area.id,
+    area_code: area.area_code || '',
+    area_name: area.area_name || '',
+    max_width: area.max_width || 0,
+    max_height: area.max_height || 0,
+    shape: area.shape || 'rectangle',
+    is_curved: area.is_curved ?? false,
+    is_primary: area.is_primary ?? false,
+    display_order: area.display_order ?? 0,
+    techniques: areaTechniques(area.allowed_technique_ids || [], techniquesById),
+  };
+}
+
+function buildCustomizationPrice(
+  raw: Record<string, unknown>,
+  areaId: string,
+  quantity: number,
+  numColors: number,
+): CustomizationPriceV2 {
+  const area = toRecord(raw.area);
+  const tier = toRecord(raw.faixa);
+  const table = toRecord(raw.tabela);
+  const parameters = toRecord(raw.parametros);
+  const costs = toRecord(raw.custos);
+  const prices = toRecord(raw.precos);
+  const tableCode = stringValue(table, 'codigo_tabela');
+  const unitCost = numberValue(costs, 'custo_unitario_total');
+  return {
+    success: true,
+    area_id: stringValue(area, 'id', areaId),
+    area_code: stringValue(area, 'code'),
+    area_name: stringValue(area, 'name'),
+    area_order: numberValue(tier, 'ordem'),
+    tabela_id: stringValue(table, 'id'),
+    tabela_codigo: tableCode,
+    tabela_codigo_curto: tableCode.split('-')[0] || '',
+    technique: stringValue(table, 'nome'),
+    codigo_orcamento: stringValue(raw, 'codigo_orcamento'),
+    quantity: numberValue(parameters, 'quantidade', quantity),
+    num_cores: numberValue(parameters, 'num_cores', numColors),
+    tier_used: numberValue(tier, 'ordem'),
+    tier_min_qty: numberValue(tier, 'quantidade_minima'),
+    tier_max_qty: numberValue(tier, 'quantidade_maxima'),
+    cost_base_unit: numberValue(costs, 'custo_base_unitario'),
+    cost_unit_total: unitCost,
+    cost_setup: numberValue(costs, 'custo_setup_base'),
+    cost_total: unitCost * quantity,
+    markup_percent: numberValue(prices, 'markup_percent'),
+    preco_minimo_unitario: 0,
+    unit_price: numberValue(prices, 'preco_unitario_final'),
+    subtotal_pecas: numberValue(prices, 'subtotal_pecas'),
+    faturamento_minimo_gravacao: numberValue(prices, 'faturamento_minimo_gravacao'),
+    minimum_applied: booleanValue(prices, 'aplica_minimo'),
+    total_price: numberValue(prices, 'total_final'),
+    margin_percent: numberValue(prices, 'markup_percent'),
+    price_by_color: booleanValue(table, 'cobra_por_cor'),
+    setup_by_color: false,
+    production_days: nullableNumberValue(tier, 'prazo_dias'),
+    largura_max_tecnica: nullableNumberValue(area, 'max_width'),
+    altura_max_tecnica: nullableNumberValue(area, 'max_height'),
+  };
+}
 
 // ============================================
 // HOOKS
@@ -41,25 +151,7 @@ export function useProductPrintAreas(productId: string | null) {
 
       const techById = new Map((techResult.records || []).map((t) => [t.id as string, t]));
 
-      return areas.map((area) => {
-        const techniques: { id: string; nome: string; codigo: string }[] = [];
-        for (const tid of (area.allowed_technique_ids || [])) {
-          const tech = techById.get(tid);
-          if (tech) techniques.push({ id: String(tech.id ?? ''), nome: String(tech.nome ?? ''), codigo: String(tech.codigo_curto ?? tech.codigo_tabela ?? '') });
-        }
-        return {
-          area_id: area.id,
-          area_code: area.area_code || '',
-          area_name: area.area_name || '',
-          max_width: area.max_width || 0,
-          max_height: area.max_height || 0,
-          shape: area.shape || 'rectangle',
-          is_curved: area.is_curved ?? false,
-          is_primary: area.is_primary ?? false,
-          display_order: area.display_order ?? 0,
-          techniques,
-        };
-      });
+      return areas.map(area => toPrintArea(area, techById));
     },
     enabled: !!productId,
     staleTime: 60 * 1000,
@@ -106,8 +198,9 @@ export function useCustomizationPriceLegacy() {
 
   const calculatePriceByArea = useCallback(async (
     areaId: string, quantidade: number, numCores: number = 1,
-    larguraCm?: number | null, alturaCm?: number | null
+    ...dimensions: [larguraCm?: number | null, alturaCm?: number | null]
   ): Promise<CustomizationPriceV2 | null> => {
+    const [larguraCm, alturaCm] = dimensions;
     setLoading(true);
     setError(null);
     try {
@@ -117,50 +210,7 @@ export function useCustomizationPriceLegacy() {
       );
       if (!rawResult?.success) { setLoading(false); return null; }
 
-      const asRecord = (value: unknown): Record<string, unknown> =>
-        (value && typeof value === 'object') ? (value as Record<string, unknown>) : {};
-      const area = asRecord(rawResult.area);
-      const faixa = asRecord(rawResult.faixa);
-      const tabela = asRecord(rawResult.tabela);
-      const parametros = asRecord(rawResult.parametros);
-      const custos = asRecord(rawResult.custos);
-      const precos = asRecord(rawResult.precos);
-      const tabelaCodigo = (tabela.codigo_tabela as string | undefined) || '';
-
-      const result: CustomizationPriceV2 = {
-        success: true,
-        area_id: (area.id as string | undefined) || areaId,
-        area_code: (area.code as string | undefined) || '',
-        area_name: (area.name as string | undefined) || '',
-        area_order: (faixa.ordem as number | undefined) || 0,
-        tabela_id: (tabela.id as string | undefined) || '',
-        tabela_codigo: tabelaCodigo,
-        tabela_codigo_curto: tabelaCodigo.split('-')[0] || '',
-        technique: (tabela.nome as string | undefined) || '',
-        codigo_orcamento: (rawResult.codigo_orcamento as string | undefined) || '',
-        quantity: (parametros.quantidade as number | undefined) || quantidade,
-        num_cores: (parametros.num_cores as number | undefined) || numCores,
-        tier_used: (faixa.ordem as number | undefined) || 0,
-        tier_min_qty: (faixa.quantidade_minima as number | undefined) || 0,
-        tier_max_qty: (faixa.quantidade_maxima as number | undefined) || 0,
-        cost_base_unit: (custos.custo_base_unitario as number | undefined) || 0,
-        cost_unit_total: (custos.custo_unitario_total as number | undefined) || 0,
-        cost_setup: (custos.custo_setup_base as number | undefined) || 0,
-        cost_total: ((custos.custo_unitario_total as number | undefined) || 0) * quantidade,
-        markup_percent: (precos.markup_percent as number | undefined) || 0,
-        preco_minimo_unitario: 0,
-        unit_price: (precos.preco_unitario_final as number | undefined) || 0,
-        subtotal_pecas: (precos.subtotal_pecas as number | undefined) || 0,
-        faturamento_minimo_gravacao: (precos.faturamento_minimo_gravacao as number | undefined) || 0,
-        minimum_applied: (precos.aplica_minimo as boolean | undefined) || false,
-        total_price: (precos.total_final as number | undefined) || 0,
-        margin_percent: (precos.markup_percent as number | undefined) || 0,
-        price_by_color: (tabela.cobra_por_cor as boolean | undefined) || false,
-        setup_by_color: false,
-        production_days: (faixa.prazo_dias as number | null | undefined) ?? null,
-        largura_max_tecnica: (area.max_width as number | null | undefined) ?? null,
-        altura_max_tecnica: (area.max_height as number | null | undefined) ?? null,
-      };
+      const result = buildCustomizationPrice(rawResult, areaId, quantidade, numCores);
       setLoading(false);
       return result;
     } catch (err) {

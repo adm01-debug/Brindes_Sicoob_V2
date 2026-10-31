@@ -57,14 +57,7 @@ function sizeSort(a: string, b: string): number {
   return a.localeCompare(b, 'pt-BR');
 }
 
-export function VariantSelector({
-  itemId,
-  itemName,
-  allowedVariantIds,
-  selectedColor,
-  selectedSize,
-  onSelectVariant,
-}: VariantSelectorProps) {
+export function VariantSelector({ itemId, allowedVariantIds, selectedColor, selectedSize, onSelectVariant }: VariantSelectorProps) {
   const [open, setOpen] = useState(false);
 
   const { data: variants = [], isLoading } = useQuery({
@@ -80,7 +73,7 @@ export function VariantSelector({
         limit: 50,
       });
 
-      return result.records.filter(v => v.color_name);
+      return (result.records ?? []).filter(v => v.color_name);
     },
     enabled: open && allowedVariantIds.length > 0,
     staleTime: 10 * 60 * 1000,
@@ -95,8 +88,9 @@ export function VariantSelector({
     const map = new Map<string, VariantOption[]>();
     for (const v of variants) {
       const key = v.color_name || 'Padrão';
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(v);
+      const group = map.get(key);
+      if (group) group.push(v);
+      else map.set(key, [v]);
     }
     // Sort sizes within each group
     for (const [, group] of map) {

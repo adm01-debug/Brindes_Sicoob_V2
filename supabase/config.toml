@@ -1,5 +1,25 @@
 project_id = "cfmzkthhgliqelozlmwu"
 
+# Endpoint legado inerte. A barreira do gateway impede chamadas anônimas e o
+# handler nunca lê credenciais nem altera contas.
+[functions.verify-email]
+verify_jwt = true
+
+# Estas duas funções validam o JWT dentro do handler. O gateway permanece sem
+# validação para aceitar tanto chaves JWT legadas quanto publishable keys.
+[functions.expert-chat]
+verify_jwt = false
+
+[functions.external-db-bridge]
+verify_jwt = false
+
+# Estes handlers mantêm a dupla barreira: gateway e validação auth.getUser.
+[functions.sicoob-kit-quote]
+verify_jwt = true
+
+[functions.sicoob-reorder]
+verify_jwt = true
+
 [functions.migrate-helper]
 verify_jwt = false
 
@@ -7,4 +27,56 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.quote-approval]
+verify_jwt = false
+
+# Chamadas de cron/Edge são autenticadas no próprio código pelo segredo
+# INTERNAL_FUNCTION_SECRET. A verificação explícita evita depender de estado
+# antigo do gateway e falha fechada se o segredo não estiver configurado.
+[functions.send-notification]
+verify_jwt = false
+
+[functions.process-batch-export]
+verify_jwt = false
+
+[functions.monthly-health-report]
+verify_jwt = false
+
+# Serviços assíncronos não aceitam JWT público: todos verificam
+# INTERNAL_FUNCTION_SECRET antes de instanciar qualquer cliente service_role.
+[functions.cleanup-notifications]
+verify_jwt = false
+
+[functions.process-queue]
+verify_jwt = false
+
+[functions.send-digest]
+verify_jwt = false
+
+[functions.process-scheduled-reports]
+verify_jwt = false
+
+[functions.send-scheduled-reports]
+verify_jwt = false
+
+[functions.quote-followup-reminders]
+verify_jwt = false
+
+[functions.connections-health-check]
+verify_jwt = false
+
+[functions.collections-watcher]
+verify_jwt = false
+
+[functions.favorites-watcher]
+verify_jwt = false
+
+[functions.comparison-price-watcher]
+verify_jwt = false
+
+[functions.ownership-audit]
+verify_jwt = false
+
+# Disparo de integração autentica cron/Edge por WEBHOOK_DISPATCHER_SECRET;
+# teste e replay usam JWT de supervisor no próprio handler.
+[functions.webhook-dispatcher]
 verify_jwt = false

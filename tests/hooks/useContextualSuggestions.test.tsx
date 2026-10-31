@@ -27,3 +27,4 @@ describe('useContextualSuggestions', () => {
     expect(result.current.suggestions).toBeDefined();
   });
 });
+import React from 'react';

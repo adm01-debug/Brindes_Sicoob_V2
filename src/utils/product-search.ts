@@ -1,5 +1,4 @@
-import type Fuse from "fuse.js";
-import { type IFuseOptions } from "fuse.js";
+import type { default as Fuse, IFuseOptions } from "fuse.js";
 
 export interface SearchableProductLike {
   id: string;
@@ -86,6 +85,83 @@ function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+interface SearchBuckets<T> {
+  nameExact: T[];
+  nameStartsWith: T[];
+  nameExactWord: T[];
+  nameContains: T[];
+  codeStartsWith: T[];
+  codeContains: T[];
+  metadataContains: T[];
+}
+
+type BucketName = keyof SearchBuckets<unknown>;
+
+function emptyBuckets<T>(): SearchBuckets<T> {
+  return { nameExact: [], nameStartsWith: [], nameExactWord: [], nameContains: [], codeStartsWith: [], codeContains: [], metadataContains: [] };
+}
+
+function codeMatchesStart(sku: string, reference: string, query: string): boolean {
+  return sku.startsWith(query) || reference.startsWith(query);
+}
+
+function codeIncludes(sku: string, reference: string, query: string): boolean {
+  return sku.includes(query) || reference.includes(query);
+}
+
+function metadataIncludes(product: SearchableProductLike, query: string): boolean {
+  return [product.brand, product.category_name, product.description].some(value => getNormalizedValue(value).includes(query));
+}
+
+function productBucket(product: SearchableProductLike, query: string, wordBoundary: RegExp): BucketName | null {
+  const name = getNormalizedValue(product.name);
+  const sku = getNormalizedValue(product.sku);
+  const reference = getNormalizedValue(product.supplier_reference);
+  if (name === query) return 'nameExact';
+  if (name.startsWith(query)) return 'nameStartsWith';
+  if (wordBoundary.test(name)) return 'nameExactWord';
+  if (name.includes(query)) return 'nameContains';
+  if (codeMatchesStart(sku, reference, query)) return 'codeStartsWith';
+  if (codeIncludes(sku, reference, query)) return 'codeContains';
+  return metadataIncludes(product, query) ? 'metadataContains' : null;
+}
+
+function classifyProducts<T extends SearchableProductLike>(products: T[], query: string): SearchBuckets<T> {
+  const buckets = emptyBuckets<T>();
+  const wordBoundary = new RegExp(`\\b${escapeRegExp(query)}\\b`, "i");
+  for (const product of products) {
+    const bucket = productBucket(product, query, wordBoundary);
+    if (bucket) buckets[bucket].push(product);
+  }
+  return buckets;
+}
+
+function exactCodeMatches<T extends SearchableProductLike>(products: T[], query: string): T[] {
+  return products.filter(product => [product.sku, product.supplier_reference].some(value => getNormalizedValue(value) === query));
+}
+
+function fuzzyMatches<T extends SearchableProductLike>(fuse: Fuse<T> | undefined, query: string, threshold: number): T[] {
+  if (!fuse) return [];
+  return fuse.search(query).filter(result => (result.score ?? 1) < threshold).map(result => result.item);
+}
+
+function limited<T>(products: T[], limit?: number): T[] {
+  return typeof limit === "number" ? products.slice(0, limit) : products;
+}
+
+function combineBuckets<T extends SearchableProductLike>(buckets: SearchBuckets<T>, query: string, fuzzyItems: T[]): T[] {
+  return dedupeById([
+    ...sortByRelevancePosition(buckets.nameExact, query),
+    ...sortByRelevancePosition(buckets.nameStartsWith, query),
+    ...sortByRelevancePosition(buckets.nameExactWord, query),
+    ...sortByRelevancePosition(buckets.nameContains, query),
+    ...sortByRelevancePosition(buckets.codeStartsWith, query),
+    ...sortByRelevancePosition(buckets.codeContains, query),
+    ...sortByRelevancePosition(buckets.metadataContains, query),
+    ...fuzzyItems,
+  ]);
+}
+
 /**
  * Classifica produtos por relevância ao termo de busca.
  *
@@ -119,83 +195,12 @@ export function rankProductSearchResults<T extends SearchableProductLike>(
   const fuzzyThreshold = options.fuzzyThreshold ?? 0.45;
 
   if (!normalizedQuery || normalizedQuery.length < 2) {
-    return typeof limit === "number" ? products.slice(0, limit) : products;
+    return limited(products, limit);
   }
 
-  const exactCodeMatches = products.filter((product) => {
-    const sku = getNormalizedValue(product.sku);
-    const supplierReference = getNormalizedValue(product.supplier_reference);
-    return sku === normalizedQuery || supplierReference === normalizedQuery;
-  });
-
-  if (exactCodeMatches.length > 0) {
-    return typeof limit === "number"
-      ? exactCodeMatches.slice(0, limit)
-      : exactCodeMatches;
-  }
-
-  const nameExact: T[] = [];
-  const nameStartsWith: T[] = [];
-  const nameExactWord: T[] = [];
-  const nameContains: T[] = [];
-  const codeStartsWith: T[] = [];
-  const codeContains: T[] = [];
-  const metadataContains: T[] = [];
-
-  const wordBoundary = new RegExp(`\\b${escapeRegExp(normalizedQuery)}\\b`, "i");
-
-  for (const product of products) {
-    const name = getNormalizedValue(product.name);
-    const sku = getNormalizedValue(product.sku);
-    const supplierReference = getNormalizedValue(product.supplier_reference);
-    const brand = getNormalizedValue(product.brand);
-    const categoryName = getNormalizedValue(product.category_name);
-    const description = getNormalizedValue(product.description);
-
-    if (name === normalizedQuery) {
-      nameExact.push(product);
-    } else if (name.startsWith(normalizedQuery)) {
-      nameStartsWith.push(product);
-    } else if (wordBoundary.test(name)) {
-      nameExactWord.push(product);
-    } else if (name.includes(normalizedQuery)) {
-      nameContains.push(product);
-    } else if (
-      sku.startsWith(normalizedQuery) ||
-      supplierReference.startsWith(normalizedQuery)
-    ) {
-      codeStartsWith.push(product);
-    } else if (
-      sku.includes(normalizedQuery) ||
-      supplierReference.includes(normalizedQuery)
-    ) {
-      codeContains.push(product);
-    } else if (
-      brand.includes(normalizedQuery) ||
-      categoryName.includes(normalizedQuery) ||
-      description.includes(normalizedQuery)
-    ) {
-      metadataContains.push(product);
-    }
-  }
-
-  const fuzzyItems = fuse
-    ? fuse
-        .search(searchQuery)
-        .filter((result) => (result.score ?? 1) < fuzzyThreshold)
-        .map((result) => result.item)
-    : [];
-
-  const combined = dedupeById([
-    ...sortByRelevancePosition(nameExact, normalizedQuery),
-    ...sortByRelevancePosition(nameStartsWith, normalizedQuery),
-    ...sortByRelevancePosition(nameExactWord, normalizedQuery),
-    ...sortByRelevancePosition(nameContains, normalizedQuery),
-    ...sortByRelevancePosition(codeStartsWith, normalizedQuery),
-    ...sortByRelevancePosition(codeContains, normalizedQuery),
-    ...sortByRelevancePosition(metadataContains, normalizedQuery),
-    ...fuzzyItems,
-  ]);
-
-  return typeof limit === "number" ? combined.slice(0, limit) : combined;
+  const exactMatches = exactCodeMatches(products, normalizedQuery);
+  if (exactMatches.length > 0) return limited(exactMatches, limit);
+  const buckets = classifyProducts(products, normalizedQuery);
+  const combined = combineBuckets(buckets, normalizedQuery, fuzzyMatches(fuse, searchQuery, fuzzyThreshold));
+  return limited(combined, limit);
 }

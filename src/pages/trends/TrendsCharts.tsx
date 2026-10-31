@@ -18,8 +18,30 @@ const tooltipStyle = {
   borderRadius: "8px",
 };
 
+interface DailyTrend {
+  dateLabel: string;
+  views: number;
+  searches: number;
+}
+
+interface TrendProduct {
+  id: string;
+  name: string;
+  sku?: string;
+  views: number;
+  compares: number;
+  trendingScore?: number;
+  classification?: "rising" | "stable" | "falling" | "new";
+}
+
+interface TrendSearch {
+  term: string;
+  count: number;
+  avgResults: number;
+}
+
 interface ActivityChartProps {
-  dailyTrends: any[] | undefined;
+  dailyTrends: DailyTrend[] | undefined;
   isLoading: boolean;
 }
 
@@ -71,7 +93,7 @@ export function ActivityChart({ dailyTrends, isLoading }: ActivityChartProps) {
 }
 
 interface ProductsTabProps {
-  topProducts: any[] | undefined;
+  topProducts: TrendProduct[] | undefined;
   isLoading: boolean;
 }
 
@@ -190,7 +212,7 @@ export function ProductsTabContent({ topProducts, isLoading }: ProductsTabProps)
 }
 
 interface SearchesTabProps {
-  topSearches: any[] | undefined;
+  topSearches: TrendSearch[] | undefined;
   isLoading: boolean;
 }
 

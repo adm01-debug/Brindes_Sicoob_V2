@@ -1,18 +1,27 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.42.7"
 import { createStructuredLogger } from "../_shared/structured-logger.ts";
 import { getOrCreateRequestId } from "../_shared/request-id.ts";
+import { authorize } from "../_shared/authorize.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-request-id, x-client-timestamp, traceparent, tracestate, baggage',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Max-Age': '86400',
-}
+const errorMessage = (error: unknown) => error instanceof Error ? error.message : "erro_desconhecido";
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
+  // O SDK Supabase invoca Edge Functions por POST; GET mantém o endpoint útil
+  // para diagnósticos autenticados fora do navegador.
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'metodo_nao_permitido' }), {
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const access = await authorize(req, { requireRole: 'dev', enforceServerSide: true });
+  if (!access.ok) return access.response;
 
   const requestId = getOrCreateRequestId(req);
   const log = createStructuredLogger({ fn: "system-healthcheck", requestId, req });
@@ -65,9 +74,10 @@ Deno.serve(async (req) => {
         health.services.bridge_external.status = bridgeRes.ok ? 'healthy' : 'unhealthy'
         health.services.bridge_external.latency = Date.now() - start
       } catch (e) {
+        const message = errorMessage(e);
         health.services.bridge_external.status = 'unhealthy'
-        health.services.bridge_external.error = e.message
-        log.warn('external_bridge_check_failed', { err: e.message });
+        health.services.bridge_external.error = message
+        log.warn('external_bridge_check_failed', { err: message });
       }
     } else {
       health.services.bridge_external.status = 'skipped'
@@ -84,9 +94,10 @@ Deno.serve(async (req) => {
         health.services.bridge_crm.status = crmRes.ok ? 'healthy' : 'unhealthy'
         health.services.bridge_crm.latency = Date.now() - start
       } catch (e) {
+        const message = errorMessage(e);
         health.services.bridge_crm.status = 'unhealthy'
-        health.services.bridge_crm.error = e.message
-        log.warn('crm_bridge_check_failed', { err: e.message });
+        health.services.bridge_crm.error = message
+        log.warn('crm_bridge_check_failed', { err: message });
       }
     } else {
       health.services.bridge_crm.status = 'skipped'
@@ -107,8 +118,9 @@ Deno.serve(async (req) => {
     }));
 
   } catch (error) {
-    log.error('health_check_critical_error', { err: error.message });
-    return log.respond(new Response(JSON.stringify({ error: error.message, request_id: requestId }), {
+    const message = errorMessage(error);
+    log.error('health_check_critical_error', { err: message });
+    return log.respond(new Response(JSON.stringify({ error: message, request_id: requestId }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500
     }));

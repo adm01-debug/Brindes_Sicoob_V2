@@ -29,34 +29,36 @@ const WINDOW_MS: Record<Exclude<OverviewWindowFilter, "any" | "never">, number> 
   "7d": 7 * 24 * 60 * 60_000,
 };
 
+function matchesTypeAndStatus(row: OverviewRow, filters: OverviewFilters): boolean {
+  if (filters.types.length > 0 && !filters.types.includes(row.type)) return false;
+  if (filters.status === "ok") return row.last_test_ok === true;
+  if (filters.status === "fail") return row.last_test_ok === false;
+  return true;
+}
+
+function matchesWindow(row: OverviewRow, windowFilter: OverviewWindowFilter, now: number): boolean {
+  if (windowFilter === "never") return row.last_test_at === null;
+  if (windowFilter === "any") return true;
+  if (!row.last_test_at) return false;
+  const timestamp = new Date(row.last_test_at).getTime();
+  return !Number.isNaN(timestamp) && now - timestamp <= WINDOW_MS[windowFilter];
+}
+
+function matchesFailureCount(row: OverviewRow, filters: OverviewFilters, failures?: Map<string, ConsecutiveFailureInfo>): boolean {
+  if (!filters.onlyConsecutiveFailures) return true;
+  const info = failures?.get(row.key);
+  return Boolean(info && info.count >= CONSECUTIVE_FAILURE_THRESHOLD);
+}
+
 export function applyFilters(
   rows: OverviewRow[],
   filters: OverviewFilters,
   consecutiveFailuresMap?: Map<string, ConsecutiveFailureInfo>,
   now: number = Date.now(),
 ): OverviewRow[] {
-  return rows.filter((r) => {
-    if (filters.types.length > 0 && !filters.types.includes(r.type)) return false;
-
-    if (filters.status === "ok" && r.last_test_ok !== true) return false;
-    if (filters.status === "fail" && r.last_test_ok !== false) return false;
-
-    if (filters.window === "never") {
-      if (r.last_test_at !== null) return false;
-    } else if (filters.window !== "any") {
-      if (!r.last_test_at) return false;
-      const ts = new Date(r.last_test_at).getTime();
-      if (Number.isNaN(ts)) return false;
-      if (now - ts > WINDOW_MS[filters.window]) return false;
-    }
-
-    if (filters.onlyConsecutiveFailures) {
-      const info = consecutiveFailuresMap?.get(r.key);
-      if (!info || info.count < CONSECUTIVE_FAILURE_THRESHOLD) return false;
-    }
-
-    return true;
-  });
+  return rows.filter(row => matchesTypeAndStatus(row, filters)
+    && matchesWindow(row, filters.window, now)
+    && matchesFailureCount(row, filters, consecutiveFailuresMap));
 }
 
 export function useConnectionsOverviewFilters() {

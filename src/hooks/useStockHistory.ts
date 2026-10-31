@@ -7,6 +7,8 @@ import { useQuery } from '@tanstack/react-query';
 import { invokeExternalDb } from '@/lib/external-db';
 import { logger } from '@/lib/logger';
 
+const UNPOPULATED_VIEW_MESSAGE = 'not been populated';
+
 // ---------- Types ----------
 
 export interface StockDailySummary {
@@ -122,7 +124,7 @@ export function useStockVelocity(productId: string | undefined) {
         return result.records || [];
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : '';
-        if (msg.includes('not been populated') || msg.includes('não mapeada')) {
+        if (msg.includes(UNPOPULATED_VIEW_MESSAGE) || msg.includes('não mapeada')) {
           logger.warn('[StockVelocity] MV not populated yet, returning empty');
           return [];
         }
@@ -133,7 +135,7 @@ export function useStockVelocity(productId: string | undefined) {
     staleTime: 30 * 60 * 1000,
     retry: (failureCount, error: unknown): boolean => {
       const msg = error instanceof Error ? error.message : '';
-      if (msg.includes('not been populated')) return false;
+      if (msg.includes(UNPOPULATED_VIEW_MESSAGE)) return false;
       return failureCount < 3;
     },
   });
@@ -158,7 +160,7 @@ export function useProductIntelligenceData(productId: string | undefined) {
         return result.records?.[0] || null;
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : '';
-        if (msg.includes('not been populated') || msg.includes('não mapeada')) {
+        if (msg.includes(UNPOPULATED_VIEW_MESSAGE) || msg.includes('não mapeada')) {
           return null;
         }
         throw err;
@@ -168,7 +170,7 @@ export function useProductIntelligenceData(productId: string | undefined) {
     staleTime: 30 * 60 * 1000,
     retry: (failureCount, error: unknown): boolean => {
       const msg = error instanceof Error ? error.message : '';
-      if (msg.includes('not been populated')) return false;
+      if (msg.includes(UNPOPULATED_VIEW_MESSAGE)) return false;
       return failureCount < 3;
     },
   });
@@ -183,6 +185,43 @@ export type IntelligenceFlag =
   | 'negotiation-opportunity'
   | 'frequent-restock'
   | 'class-a';
+
+interface AggregatedDailySummary {
+  date: string;
+  stockClose: number;
+  depleted: number;
+  restocked: number;
+  restockDetected: boolean;
+  costPriceClose: number | null;
+  _costWeightedSum: number;
+  _costWeightedCount: number;
+}
+
+function createDailySummary(summary: StockDailySummary): AggregatedDailySummary {
+  const hasCost = summary.cost_price_close !== null && summary.cost_price_close !== undefined;
+  return {
+    date: summary.summary_date,
+    stockClose: summary.stock_close,
+    depleted: summary.units_depleted,
+    restocked: summary.units_restocked,
+    restockDetected: summary.restock_detected,
+    costPriceClose: summary.cost_price_close,
+    _costWeightedSum: (summary.cost_price_close ?? 0) * summary.stock_close,
+    _costWeightedCount: hasCost ? summary.stock_close : 0,
+  };
+}
+
+function addDailySummary(existing: AggregatedDailySummary, summary: StockDailySummary): void {
+  existing.stockClose += summary.stock_close;
+  existing.depleted += summary.units_depleted;
+  existing.restocked += summary.units_restocked;
+  existing.restockDetected ||= summary.restock_detected;
+
+  if (summary.cost_price_close === null || summary.cost_price_close === undefined || summary.stock_close <= 0) return;
+  existing._costWeightedSum += summary.cost_price_close * summary.stock_close;
+  existing._costWeightedCount += summary.stock_close;
+  existing.costPriceClose = existing._costWeightedSum / existing._costWeightedCount;
+}
 
 export function getActiveFlags(data: ProductIntelligenceData | null): IntelligenceFlag[] {
   if (!data) return [];
@@ -202,41 +241,14 @@ export function getActiveFlags(data: ProductIntelligenceData | null): Intelligen
  */
 export function aggregateDailySummaryByDate(summaries: StockDailySummary[], supplierId?: string) {
   const filtered = supplierId ? summaries.filter(s => s.supplier_id === supplierId) : summaries;
-  const map = new Map<string, {
-    date: string;
-    stockClose: number;
-    depleted: number;
-    restocked: number;
-    restockDetected: boolean;
-    costPriceClose: number | null;
-    _costWeightedSum: number;
-    _costWeightedCount: number;
-  }>();
+  const map = new Map<string, AggregatedDailySummary>();
 
   for (const s of filtered) {
     const existing = map.get(s.summary_date);
     if (existing) {
-      existing.stockClose += s.stock_close;
-      existing.depleted += s.units_depleted;
-      existing.restocked += s.units_restocked;
-      if (s.restock_detected) existing.restockDetected = true;
-      // B17 fix: weighted average cost by stock_close volume
-      if (s.cost_price_close != null && s.stock_close > 0) {
-        existing._costWeightedSum += s.cost_price_close * s.stock_close;
-        existing._costWeightedCount += s.stock_close;
-        existing.costPriceClose = existing._costWeightedSum / existing._costWeightedCount;
-      }
+      addDailySummary(existing, s);
     } else {
-      map.set(s.summary_date, {
-        date: s.summary_date,
-        stockClose: s.stock_close,
-        depleted: s.units_depleted,
-        restocked: s.units_restocked,
-        restockDetected: s.restock_detected,
-        costPriceClose: s.cost_price_close,
-        _costWeightedSum: (s.cost_price_close ?? 0) * s.stock_close,
-        _costWeightedCount: s.cost_price_close != null ? s.stock_close : 0,
-      });
+      map.set(s.summary_date, createDailySummary(s));
     }
   }
 

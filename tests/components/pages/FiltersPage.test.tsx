@@ -4,6 +4,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../render-helpers";
+import { ProductsProvider } from "@/contexts/ProductsContext";
 import React from "react";
 
 vi.mock("@/components/layout/MainLayout", () => ({
@@ -97,7 +98,11 @@ describe("FiltersPage", () => {
 
   it("renders without crashing", async () => {
     const { default: FiltersPage } = await import("@/pages/FiltersPage");
-    renderWithProviders(<FiltersPage />);
+    renderWithProviders(
+      <ProductsProvider>
+        <FiltersPage />
+      </ProductsProvider>,
+    );
     expect(screen.getByTestId("page-title-produtos")).toHaveTextContent("Catálogo de Produtos");
   }, 15000);
 });

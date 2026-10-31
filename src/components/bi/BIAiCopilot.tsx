@@ -2,7 +2,7 @@
  * BIAiCopilot — chat lateral grounded nos dados do BI.
  * "Pergunte ao BI" — chama edge function `bi-copilot` (Lovable AI · gemini-flash).
  */
-import { useState, useRef, useEffect } from "react";
+import { type RefObject, useState, useRef, useEffect } from "react";
 import {
   Sheet,
   SheetContent,
@@ -45,6 +45,16 @@ const SUGGESTED_QUESTIONS = [
   "Qual o melhor pitch para hoje?",
 ];
 
+function canSendQuestion(question: string, loading: boolean) {
+  return question.length > 0 && !loading;
+}
+
+async function requestCopilot(question: string, context: object, history: Message[]) {
+  const { data, error } = await supabase.functions.invoke("bi-copilot", { body: { question, context, history } });
+  if (error) throw error;
+  return (data as { answer?: string })?.answer ?? "Não consegui processar agora.";
+}
+
 export function BIAiCopilot({ open, onOpenChange, clientId, clientName, ramoAtividade }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -66,7 +76,7 @@ export function BIAiCopilot({ open, onOpenChange, clientId, clientName, ramoAtiv
 
   const handleSend = async (text?: string) => {
     const question = (text ?? input).trim();
-    if (!question || loading) return;
+    if (!canSendQuestion(question, loading)) return;
     setInput("");
     setMessages((prev) => [...prev, { role: "user", content: question }]);
     setLoading(true);
@@ -107,18 +117,9 @@ export function BIAiCopilot({ open, onOpenChange, clientId, clientName, ramoAtiv
         })),
       };
 
-      const { data, error } = await supabase.functions.invoke("bi-copilot", {
-        body: {
-          question,
-          context,
-          history: messages.slice(-6),
-        },
-      });
-
-      if (error) throw error;
-      const answer = (data as { answer?: string })?.answer ?? "Não consegui processar agora.";
+      const answer = await requestCopilot(question, context, messages.slice(-6));
       setMessages((prev) => [...prev, { role: "assistant", content: answer }]);
-    } catch (e) {
+    } catch {
       toast.error("Erro ao consultar o copiloto. Tente novamente.");
       setMessages((prev) => [
         ...prev,
@@ -144,7 +145,7 @@ export function BIAiCopilot({ open, onOpenChange, clientId, clientName, ramoAtiv
           </SheetDescription>
         </SheetHeader>
 
-        <ScrollArea className="flex-1" ref={scrollRef as React.RefObject<HTMLDivElement>}>
+        <ScrollArea className="flex-1" ref={scrollRef as RefObject<HTMLDivElement>}>
           <div className="p-4 space-y-3">
             {messages.length === 0 && (
               <div className="space-y-3">

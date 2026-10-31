@@ -26,7 +26,8 @@ export interface Profile {
   department: string | null;
   is_active: boolean | null;
   last_login_at: string | null;
-  preferences: Record<string, any> | null;
+  preferences: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
+  approval_threshold?: number | null;
 }

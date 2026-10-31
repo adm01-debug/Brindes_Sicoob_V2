@@ -1,0 +1,696 @@
+{
+  "live_api_metadata": true,
+  "scope": "Revalidação dos achados do scanner histórico e de todos os wrappers untypedFrom.",
+  "count": 83,
+  "resources_count": 22,
+  "counts_per_resource": {
+    "bitrix_clients": 4,
+    "bitrix_deals": 2,
+    "bitrix_sync_logs": 4,
+    "check_rls_enabled": 1,
+    "color_nuances": 2,
+    "companies": 1,
+    "create_quote_version_atomic": 1,
+    "error_logs": 1,
+    "get_enum_values": 1,
+    "personalization_simulations": 3,
+    "personalization_techniques": 3,
+    "product_component_location_techniques": 10,
+    "product_group_components": 7,
+    "product_group_location_techniques": 6,
+    "product_group_locations": 6,
+    "products": 7,
+    "roles": 4,
+    "sales_goals": 6,
+    "set_config": 1,
+    "sicoob_budgets": 3,
+    "user_2fa_settings": 4,
+    "user_passkeys": 6
+  },
+  "calls": [
+    {
+      "file": "src/components/admin/MockupPromptManager.tsx",
+      "line": 51,
+      "resource": "personalization_techniques",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "src/hooks/useSalesGoals.ts",
+      "line": 58,
+      "resource": "sales_goals",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "src/hooks/useSalesGoals.ts",
+      "line": 78,
+      "resource": "sales_goals",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "src/hooks/useSalesGoals.ts",
+      "line": 100,
+      "resource": "sales_goals",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "src/hooks/useSalesGoals.ts",
+      "line": 146,
+      "resource": "sales_goals",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "src/hooks/useSalesGoals.ts",
+      "line": 166,
+      "resource": "sales_goals",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "src/hooks/useSalesGoals.ts",
+      "line": 201,
+      "resource": "sales_goals",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "src/hooks/useSimulation.ts",
+      "line": 145,
+      "resource": "personalization_simulations",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "src/hooks/useSimulation.ts",
+      "line": 336,
+      "resource": "personalization_simulations",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "src/hooks/useSimulation.ts",
+      "line": 349,
+      "resource": "personalization_simulations",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "src/lib/error-reporter.ts",
+      "line": 118,
+      "resource": "error_logs",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "src/lib/pdf/whitelabel-comparison.ts",
+      "line": 16,
+      "resource": "companies",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "src/pages/QuotesKanbanPage.tsx",
+      "line": 72,
+      "resource": "bitrix_clients",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "src/services/quotes/quoteVersionService.ts",
+      "line": 33,
+      "resource": "create_quote_version_atomic",
+      "kind": "rpc",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "src/services/sicoob/budgetService.ts",
+      "line": 5,
+      "resource": "sicoob_budgets",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "src/services/sicoob/budgetService.ts",
+      "line": 20,
+      "resource": "sicoob_budgets",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "src/services/sicoob/budgetService.ts",
+      "line": 34,
+      "resource": "sicoob_budgets",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 298,
+      "resource": "bitrix_sync_logs",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 387,
+      "resource": "bitrix_clients",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 412,
+      "resource": "bitrix_deals",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 425,
+      "resource": "bitrix_sync_logs",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 467,
+      "resource": "bitrix_sync_logs",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 485,
+      "resource": "bitrix_clients",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 517,
+      "resource": "bitrix_deals",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "supabase/functions/bitrix-sync/index.ts",
+      "line": 554,
+      "resource": "bitrix_sync_logs",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "supabase/functions/mcp-keys-revoke/index.ts",
+      "line": 200,
+      "resource": "set_config",
+      "kind": "rpc",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "supabase/functions/migration-health-check/index.ts",
+      "line": 24,
+      "resource": "get_enum_values",
+      "kind": "rpc",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "supabase/functions/migration-health-check/index.ts",
+      "line": 35,
+      "resource": "check_rls_enabled",
+      "kind": "rpc",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "supabase/functions/product-webhook/index.ts",
+      "line": 145,
+      "resource": "products",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "supabase/functions/product-webhook/index.ts",
+      "line": 248,
+      "resource": "products",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "supabase/functions/product-webhook/index.ts",
+      "line": 257,
+      "resource": "products",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "supabase/functions/product-webhook/index.ts",
+      "line": 267,
+      "resource": "products",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "supabase/functions/product-webhook/index.ts",
+      "line": 277,
+      "resource": "products",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "verificador existente"
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 77,
+      "resource": "product_group_components",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 99,
+      "resource": "product_group_locations",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 135,
+      "resource": "product_group_location_techniques",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 153,
+      "resource": "product_group_components",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 165,
+      "resource": "product_group_components",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 174,
+      "resource": "product_group_components",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 186,
+      "resource": "product_group_locations",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 198,
+      "resource": "product_group_locations",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 210,
+      "resource": "product_group_locations",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 222,
+      "resource": "product_group_location_techniques",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 234,
+      "resource": "product_group_location_techniques",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 246,
+      "resource": "product_group_location_techniques",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/hooks/useGroupPersonalization.ts",
+      "line": 268,
+      "resource": "product_group_components",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/personalization/GroupInheritance.tsx",
+      "line": 60,
+      "resource": "product_group_components",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/personalization/GroupInheritance.tsx",
+      "line": 76,
+      "resource": "product_group_locations",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/personalization/GroupInheritance.tsx",
+      "line": 85,
+      "resource": "product_group_location_techniques",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/personalization/GroupInheritance.tsx",
+      "line": 90,
+      "resource": "product_component_location_techniques",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 176,
+      "resource": "product_component_location_techniques",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 278,
+      "resource": "product_component_location_techniques",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 290,
+      "resource": "product_component_location_techniques",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/personalization/usePersonalizationData.ts",
+      "line": 302,
+      "resource": "product_component_location_techniques",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 161,
+      "resource": "product_component_location_techniques",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 231,
+      "resource": "product_component_location_techniques",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 240,
+      "resource": "product_component_location_techniques",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 248,
+      "resource": "product_component_location_techniques",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 302,
+      "resource": "product_group_components",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 311,
+      "resource": "product_group_locations",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 319,
+      "resource": "product_group_location_techniques",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/components/admin/personalization-manager/usePersonalizationManager.ts",
+      "line": 324,
+      "resource": "product_component_location_techniques",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/hooks/mockup/mockupGenerationService.ts",
+      "line": 121,
+      "resource": "products",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/hooks/mockup/mockupGenerationService.ts",
+      "line": 127,
+      "resource": "personalization_techniques",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/hooks/use2FA.ts",
+      "line": 42,
+      "resource": "user_2fa_settings",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/hooks/use2FA.ts",
+      "line": 111,
+      "resource": "user_2fa_settings",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/hooks/use2FA.ts",
+      "line": 138,
+      "resource": "user_2fa_settings",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/hooks/use2FA.ts",
+      "line": 156,
+      "resource": "user_2fa_settings",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/hooks/useColorSystem.ts",
+      "line": 112,
+      "resource": "color_nuances",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/hooks/useColorSystem.ts",
+      "line": 158,
+      "resource": "color_nuances",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/hooks/useMockupDraft.ts",
+      "line": 83,
+      "resource": "products",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/hooks/useMockupDraft.ts",
+      "line": 95,
+      "resource": "personalization_techniques",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/hooks/useMockupDraft.ts",
+      "line": 107,
+      "resource": "bitrix_clients",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 81,
+      "resource": "user_passkeys",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 162,
+      "resource": "user_passkeys",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 248,
+      "resource": "user_passkeys",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 258,
+      "resource": "user_passkeys",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 295,
+      "resource": "user_passkeys",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/hooks/useWebAuthn.ts",
+      "line": 325,
+      "resource": "user_passkeys",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/pages/RolesPage.tsx",
+      "line": 38,
+      "resource": "roles",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/pages/RolesPage.tsx",
+      "line": 54,
+      "resource": "roles",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/pages/RolesPage.tsx",
+      "line": 60,
+      "resource": "roles",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    },
+    {
+      "file": "src/pages/RolesPage.tsx",
+      "line": 82,
+      "resource": "roles",
+      "kind": "from",
+      "present_in_api": false,
+      "source": "AST untypedFrom"
+    }
+  ]
+}

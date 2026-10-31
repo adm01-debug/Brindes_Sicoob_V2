@@ -30,6 +30,87 @@ interface ProductStock {
   stock_quantity: number | null;
 }
 
+interface StockData {
+  variants: VariantStock[];
+  products: ProductStock[];
+}
+
+interface StockMaps {
+  byProduct: Map<string, number>;
+  byVariant: Map<string, number>;
+}
+
+function initialProductStock(stockData?: StockData): Map<string, number> {
+  const stock = new Map<string, number>();
+  for (const product of stockData?.products ?? []) stock.set(product.id, product.stock_quantity ?? 0);
+  return stock;
+}
+
+function addVariantStock(maps: StockMaps, initialized: Set<string>, variant: VariantStock): void {
+  if (!initialized.has(variant.product_id)) {
+    initialized.add(variant.product_id);
+    maps.byProduct.set(variant.product_id, 0);
+  }
+  maps.byProduct.set(variant.product_id, (maps.byProduct.get(variant.product_id) || 0) + (variant.stock_quantity ?? 0));
+  maps.byVariant.set(variant.id, variant.stock_quantity ?? 0);
+}
+
+function buildStockMaps(stockData?: StockData): StockMaps {
+  const maps: StockMaps = { byProduct: initialProductStock(stockData), byVariant: new Map() };
+  const initializedProducts = new Set<string>();
+  for (const variant of stockData?.variants ?? []) addVariantStock(maps, initializedProducts, variant);
+  return maps;
+}
+
+function boxStockAlert(box: KitBox | null, quantity: number, stock: Map<string, number>): StockAlert | null {
+  if (!box) return null;
+  const available = stock.get(box.id) ?? 0;
+  if (available >= quantity) return null;
+  return { itemId: box.id, itemName: box.name, sku: box.sku, required: quantity, available, deficit: quantity - available, isBox: true };
+}
+
+function missingVariantAlert(item: KitItem, required: number): StockAlert | null {
+  const requiresVariant = Boolean(item.isReplaceable && item.allowedVariantIds?.length);
+  if (!requiresVariant || item.selectedVariantId) return null;
+  return { itemId: item.id, itemName: item.name, sku: item.sku, required, available: 0, deficit: required, reason: 'variant_required' };
+}
+
+function itemStockKey(item: KitItem): string {
+  return item.selectedVariantId ? `variant:${item.selectedVariantId}` : `product:${item.id}`;
+}
+
+function itemAvailableStock(item: KitItem, maps: StockMaps): number {
+  return item.selectedVariantId ? maps.byVariant.get(item.selectedVariantId) ?? 0 : maps.byProduct.get(item.id) ?? 0;
+}
+
+function addItemRequirement(requirements: Map<string, StockAlert>, item: KitItem, required: number, maps: StockMaps): void {
+  const key = itemStockKey(item);
+  const previous = requirements.get(key);
+  if (previous) {
+    previous.required += required;
+    previous.deficit = Math.max(0, previous.required - previous.available);
+    return;
+  }
+  const available = itemAvailableStock(item, maps);
+  requirements.set(key, { itemId: item.id, itemName: item.name, sku: item.sku, required, available, deficit: Math.max(0, required - available), reason: 'insufficient_stock' });
+}
+
+function buildStockAlerts(input: { items: KitItem[]; box: KitBox | null; kitQuantity: number; maps: StockMaps; hasData: boolean }): StockAlert[] {
+  if (!input.hasData) return [];
+  const alerts: StockAlert[] = [];
+  const boxAlert = boxStockAlert(input.box, input.kitQuantity, input.maps.byProduct);
+  if (boxAlert) alerts.push(boxAlert);
+  const requirements = new Map<string, StockAlert>();
+  for (const item of input.items) {
+    const required = item.quantity * input.kitQuantity;
+    const variantAlert = missingVariantAlert(item, required);
+    if (variantAlert) alerts.push(variantAlert);
+    else addItemRequirement(requirements, item, required, input.maps);
+  }
+  alerts.push(...Array.from(requirements.values()).filter(requirement => requirement.deficit > 0));
+  return alerts;
+}
+
 export function useKitStockValidation(
   items: KitItem[],
   box: KitBox | null,
@@ -60,7 +141,7 @@ export function useKitStockValidation(
           table: 'products',
           operation: 'select',
           select: 'id, stock_quantity',
-          filters: { id: productIds, active: true },
+          filters: { id: productIds, is_active: true },
           limit: productIds.length,
         }),
       ]);
@@ -75,95 +156,8 @@ export function useKitStockValidation(
     refetchOnWindowFocus: true,
   });
 
-  // O resumo por produto atende caixas e cards. Para itens com uma variante
-  // selecionada, a disponibilidade abaixo usa exclusivamente o SKU escolhido.
-  const stockByProduct = new Map<string, number>();
-  const stockByVariant = new Map<string, number>();
-  if (stockData) {
-    for (const product of stockData.products) {
-      stockByProduct.set(product.id, product.stock_quantity ?? 0);
-    }
-    const productsWithVariants = new Set<string>();
-    for (const v of stockData.variants) {
-      if (!productsWithVariants.has(v.product_id)) {
-        productsWithVariants.add(v.product_id);
-        stockByProduct.set(v.product_id, 0);
-      }
-      const current = stockByProduct.get(v.product_id) || 0;
-      stockByProduct.set(v.product_id, current + (v.stock_quantity ?? 0));
-      stockByVariant.set(v.id, v.stock_quantity ?? 0);
-    }
-  }
-
-  // Build alerts
-  const alerts: StockAlert[] = [];
-
-  if (stockData) {
-    // Check box stock
-    if (box) {
-      const available = stockByProduct.get(box.id) ?? 0;
-      const required = kitQuantity;
-      if (available < required) {
-        alerts.push({
-          itemId: box.id,
-          itemName: box.name,
-          sku: box.sku,
-          required,
-          available,
-          deficit: required - available,
-          isBox: true,
-        });
-      }
-    }
-
-    // Itens substituíveis precisam de uma variante explícita. A necessidade é
-    // agregada por SKU estocável para que duas linhas nunca reutilizem o mesmo
-    // saldo como se fossem pedidos independentes.
-    const requiredByStockKey = new Map<string, StockAlert>();
-    for (const item of items) {
-      const required = item.quantity * kitQuantity;
-      const requiresVariant = Boolean(item.isReplaceable && item.allowedVariantIds?.length);
-
-      if (requiresVariant && !item.selectedVariantId) {
-        alerts.push({
-          itemId: item.id,
-          itemName: item.name,
-          sku: item.sku,
-          required,
-          available: 0,
-          deficit: required,
-          reason: 'variant_required',
-        });
-        continue;
-      }
-
-      const stockKey = item.selectedVariantId
-        ? `variant:${item.selectedVariantId}`
-        : `product:${item.id}`;
-      const previous = requiredByStockKey.get(stockKey);
-      if (previous) {
-        previous.required += required;
-        previous.deficit = Math.max(0, previous.required - previous.available);
-      } else {
-        const available = item.selectedVariantId
-          ? (stockByVariant.get(item.selectedVariantId) ?? 0)
-          : (stockByProduct.get(item.id) ?? 0);
-        requiredByStockKey.set(stockKey, {
-          itemId: item.id,
-          itemName: item.name,
-          sku: item.sku,
-          required,
-          available,
-          deficit: Math.max(0, required - available),
-          reason: 'insufficient_stock',
-        });
-      }
-    }
-
-    for (const requirement of requiredByStockKey.values()) {
-      if (requirement.deficit > 0) alerts.push(requirement);
-    }
-  }
+  const stockMaps = buildStockMaps(stockData);
+  const alerts = buildStockAlerts({ items, box, kitQuantity, maps: stockMaps, hasData: Boolean(stockData) });
 
   return {
     alerts,
@@ -171,7 +165,7 @@ export function useKitStockValidation(
     error,
     refetch,
     dataUpdatedAt,
-    stockByProduct,
+    stockByProduct: stockMaps.byProduct,
     hasStockIssues: alerts.length > 0,
   };
 }

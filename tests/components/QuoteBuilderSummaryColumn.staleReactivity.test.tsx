@@ -54,7 +54,7 @@ function makeItem(overrides: Partial<QuoteItem> = {}): QuoteItem {
  * `items` (contrato do reducer real), forçando o re-render que dispara o
  * recálculo do `useMemo` do chip.
  */
-function Harness({ initial }: { initial: QuoteItem[] }) {
+function Harness({ initial, readOnly = false }: { initial: QuoteItem[]; readOnly?: boolean }) {
   const [items, setItems] = useState(initial);
   const confirmItemPrice = useCallback((index: number) => {
     setItems((prev) =>
@@ -75,6 +75,7 @@ function Harness({ initial }: { initial: QuoteItem[] }) {
   return (
     <TooltipProvider>
       <QuoteBuilderSummaryColumn
+        readOnly={readOnly}
         items={items}
         activeItemIndex={null}
         setActiveItemIndex={() => {}}
@@ -121,6 +122,15 @@ function getInlineConfirmCtas(): HTMLElement[] {
 }
 
 describe("QuoteBuilderSummaryColumn — reatividade do chip + botão de confirmar todos", () => {
+  it("desativa a interação do resumo no modo somente leitura", () => {
+    const { container } = render(
+      <Harness initial={[makeItem({ product_name: "A" })]} readOnly />,
+    );
+
+    expect(container.firstElementChild).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getAllByRole("button").every(button => (button as HTMLButtonElement).disabled)).toBe(true);
+  });
+
   it("monta com 2 stale → chip mostra '2' e botão 'Confirmar todos' aparece", () => {
     render(
       <Harness

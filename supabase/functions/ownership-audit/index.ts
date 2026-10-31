@@ -1,4 +1,5 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { requireInternalService } from "../_shared/internal-service-auth.ts";
 /**
  * ownership-audit — executa a varredura de propriedade de registros.
  *
@@ -16,6 +17,9 @@ let corsHeaders: Record<string, string> = {};
 Deno.serve(async (req) => {
   corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
+  if (req.method !== "POST") return json({ error: "metodo_nao_permitido" }, 405);
+  const denied = await requireInternalService(req);
+  if (denied) return denied;
 
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -45,7 +49,7 @@ Deno.serve(async (req) => {
     }));
     if (error) {
       console.error("[ownership-audit] rpc error", error);
-      return json({ error: error.message }, 500);
+      return json({ error: "erro_interno" }, 500);
     }
 
     const { data: report, error: fetchErr } = await admin
@@ -83,7 +87,7 @@ Deno.serve(async (req) => {
     });
   } catch (e) {
     console.error("[ownership-audit] uncaught", e);
-    return json({ error: (e as Error).message }, 500);
+    return json({ error: "erro_interno" }, 500);
   }
 });
 

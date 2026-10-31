@@ -16,10 +16,56 @@ import {
 } from '@/components/ui/dialog';
 import { usePasswordResetRequests, type PasswordResetRequest } from '@/hooks/usePasswordResetRequests';
 
+type ResetAction = 'approve' | 'reject' | null;
+
+function ResetConfirmationDialog({ request, action, notes, isProcessing, onNotesChange, onClose, onConfirm }: {
+  request: PasswordResetRequest | null;
+  action: ResetAction;
+  notes: string;
+  isProcessing: boolean;
+  onNotesChange: (notes: string) => void;
+  onClose: () => void;
+  onConfirm: () => void;
+}) {
+  const isApproval = action === 'approve';
+  return (
+    <Dialog open={Boolean(request && action)} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{isApproval ? 'Aprovar Solicitação' : 'Rejeitar Solicitação'}</DialogTitle>
+          <DialogDescription>
+            {isApproval
+              ? `Ao aprovar, um email de recuperação será enviado para ${request?.email}`
+              : `A solicitação de ${request?.email} será rejeitada`}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium">Observações (opcional)</label>
+            <Textarea placeholder="Adicione uma observação..." value={notes} onChange={(event) => onNotesChange(event.target.value)} className="mt-1.5" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button variant={isApproval ? 'orange' : 'destructive'} onClick={onConfirm} disabled={isProcessing}>
+            {isProcessing ? (
+              <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Processando...</>
+            ) : isApproval ? (
+              <><Check className="h-4 w-4 mr-2" />Aprovar e Enviar Email</>
+            ) : (
+              <><X className="h-4 w-4 mr-2" />Rejeitar</>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function PasswordResetApproval() {
-  const { requests, isLoading, approveRequest, rejectRequest, refetch } = usePasswordResetRequests();
+  const { requests, isLoading, approveRequest, rejectRequest } = usePasswordResetRequests();
   const [selectedRequest, setSelectedRequest] = useState<PasswordResetRequest | null>(null);
-  const [action, setAction] = useState<'approve' | 'reject' | null>(null);
+  const [action, setAction] = useState<ResetAction>(null);
   const [notes, setNotes] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -38,6 +84,12 @@ export function PasswordResetApproval() {
     }
     
     setIsProcessing(false);
+    setSelectedRequest(null);
+    setAction(null);
+    setNotes('');
+  };
+
+  const closeDialog = () => {
     setSelectedRequest(null);
     setAction(null);
     setNotes('');
@@ -67,7 +119,7 @@ export function PasswordResetApproval() {
   return (
     <div className="space-y-6">
       {/* Pending Requests */}
-      <Card>
+      {(<Card>
         <CardHeader>
           <div className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-orange" />
@@ -130,10 +182,10 @@ export function PasswordResetApproval() {
             </div>
           )}
         </CardContent>
-      </Card>
+      </Card>)}
 
       {/* Processed Requests */}
-      {processedRequests.length > 0 && (
+      {(processedRequests.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Histórico</CardTitle>
@@ -165,64 +217,17 @@ export function PasswordResetApproval() {
             </div>
           </CardContent>
         </Card>
-      )}
+      ))}
 
-      {/* Confirmation Dialog */}
-      <Dialog open={!!selectedRequest && !!action} onOpenChange={() => { setSelectedRequest(null); setAction(null); setNotes(''); }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {action === 'approve' ? 'Aprovar Solicitação' : 'Rejeitar Solicitação'}
-            </DialogTitle>
-            <DialogDescription>
-              {action === 'approve' 
-                ? `Ao aprovar, um email de recuperação será enviado para ${selectedRequest?.email}`
-                : `A solicitação de ${selectedRequest?.email} será rejeitada`
-              }
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Observações (opcional)</label>
-              <Textarea
-                placeholder="Adicione uma observação..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="mt-1.5"
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setSelectedRequest(null); setAction(null); setNotes(''); }}>
-              Cancelar
-            </Button>
-            <Button
-              variant={action === 'approve' ? 'orange' : 'destructive'}
-              onClick={handleAction}
-              disabled={isProcessing}
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Processando...
-                </>
-              ) : action === 'approve' ? (
-                <>
-                  <Check className="h-4 w-4 mr-2" />
-                  Aprovar e Enviar Email
-                </>
-              ) : (
-                <>
-                  <X className="h-4 w-4 mr-2" />
-                  Rejeitar
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ResetConfirmationDialog
+        request={selectedRequest}
+        action={action}
+        notes={notes}
+        isProcessing={isProcessing}
+        onNotesChange={setNotes}
+        onClose={closeDialog}
+        onConfirm={handleAction}
+      />
     </div>
   );
 }

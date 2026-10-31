@@ -1,6 +1,9 @@
-import type { ImportMode, ImportRow, BatchImportProgress, BatchImportResult } from '@/lib/external-db/batch-import';
+import { type ImportRow } from "@/lib/external-db/batch-import";
 
 export type Step = 'upload' | 'mapping' | 'preview' | 'importing' | 'complete';
+
+export type SpreadsheetCell = string | number | boolean | null | undefined;
+export type SpreadsheetRow = Record<string, SpreadsheetCell>;
 
 export type TargetFieldKey = typeof TARGET_FIELDS[number]['key'];
 

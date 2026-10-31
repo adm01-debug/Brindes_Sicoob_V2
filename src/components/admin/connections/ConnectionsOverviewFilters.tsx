@@ -91,7 +91,8 @@ export function ConnectionsOverviewFilters({
           </PopoverTrigger>
           <PopoverContent align="start" className="w-56 p-2">
             <div className="space-y-1">
-              {TYPE_OPTIONS.map(({ value, label, Icon }) => {
+              {TYPE_OPTIONS.map(({ value, label, Icon: optionIcon }) => {
+                const OptionIcon = optionIcon;
                 const checked = filters.types.includes(value);
                 return (
                   <label
@@ -103,7 +104,7 @@ export function ConnectionsOverviewFilters({
                       onCheckedChange={() => toggleType(value)}
                       aria-label={`Filtrar por ${label}`}
                     />
-                    <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                    <OptionIcon className="h-3.5 w-3.5 text-muted-foreground" />
                     <span className="flex-1">{label}</span>
                   </label>
                 );

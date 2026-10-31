@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Maximize2, Minimize2 } from "lucide-react";
 import { toast } from "sonner";
 
+const FOCUS_MODE_CLASS = "compare-focus-mode";
+
 export function useFocusMode() {
   const [focus, setFocus] = useState(false);
 
@@ -14,10 +16,10 @@ export function useFocusMode() {
     setFocus(prev => {
       const next = !prev;
       if (next) {
-        document.body.classList.add("compare-focus-mode");
+        document.body.classList.add(FOCUS_MODE_CLASS);
         toast.success("Modo Foco ativado · pressione F para sair");
       } else {
-        document.body.classList.remove("compare-focus-mode");
+        document.body.classList.remove(FOCUS_MODE_CLASS);
       }
       return next;
     });
@@ -35,7 +37,7 @@ export function useFocusMode() {
     window.addEventListener("keydown", handler);
     return () => {
       window.removeEventListener("keydown", handler);
-      document.body.classList.remove("compare-focus-mode");
+      document.body.classList.remove(FOCUS_MODE_CLASS);
     };
   }, [toggle]);
 

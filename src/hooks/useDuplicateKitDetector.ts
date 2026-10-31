@@ -25,6 +25,40 @@ function extractSkus(items: unknown): string[] {
     .filter(Boolean);
 }
 
+interface KitRow {
+  id: string;
+  name: string;
+  items_data: unknown;
+}
+
+function duplicateCandidate(row: KitRow, current: Set<string>): DuplicateMatch | null {
+  const skus = extractSkus(row.items_data);
+  if (skus.length === 0) return null;
+  const overlap = skus.filter((sku) => current.has(sku)).length;
+  const union = new Set([...skus, ...current]).size;
+  return {
+    id: row.id,
+    name: row.name,
+    ratio: union > 0 ? overlap / union : 0,
+    overlap,
+  };
+}
+
+function bestDuplicate(
+  rows: KitRow[],
+  currentSkus: string[],
+  threshold: number,
+  excludeId?: string,
+): DuplicateMatch | null {
+  const current = new Set(currentSkus.map((sku) => sku.toLowerCase()));
+  const candidates = rows
+    .filter((row) => row.id !== excludeId)
+    .map((row) => duplicateCandidate(row, current))
+    .filter((candidate): candidate is DuplicateMatch => candidate !== null)
+    .filter((candidate) => candidate.ratio >= threshold);
+  return candidates.sort((left, right) => right.ratio - left.ratio)[0] ?? null;
+}
+
 export function useDuplicateKitDetector() {
   const { user } = useAuth();
 
@@ -44,21 +78,7 @@ export function useDuplicateKitDetector() {
         .limit(50);
       if (error) return null;
 
-      const current = new Set(currentSkus.map((s) => s.toLowerCase()));
-      let best: DuplicateMatch | null = null;
-
-      for (const row of (data ?? []) as Array<{ id: string; name: string; items_data: unknown }>) {
-        if (opts?.excludeId && row.id === opts.excludeId) continue;
-        const skus = extractSkus(row.items_data);
-        if (skus.length === 0) continue;
-        const overlap = skus.filter((s) => current.has(s)).length;
-        const union = new Set([...skus, ...current]).size;
-        const ratio = union > 0 ? overlap / union : 0; // Jaccard
-        if (ratio >= threshold && (!best || ratio > best.ratio)) {
-          best = { id: row.id, name: row.name, ratio, overlap };
-        }
-      }
-      return best;
+      return bestDuplicate((data ?? []) as KitRow[], currentSkus, threshold, opts?.excludeId);
     },
     [user?.id],
   );

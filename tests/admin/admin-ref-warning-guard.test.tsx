@@ -99,3 +99,4 @@ describe("Admin governance — React ref warning guard", () => {
     guard.expectNoRefWarning("RlsIntegrationTestsDialog");
   });
 });
+import React from 'react';

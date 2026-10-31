@@ -4,18 +4,20 @@
  * Hierarquia oficial SICOOB: dev > gestor_compras > comprador_singular > gerente_pa > comprador_pac > agente.
  * 'vendedor' e 'supervisor' são mapeados conforme o contexto.
  */
-import type { LucideIcon } from "lucide-react";
-import { 
+import {
   Code2, 
   ShieldCheck, 
   User, 
   Landmark, 
-  Building2, 
-  Briefcase,
+  Building2,
   ShoppingCart,
   ShieldAlert,
-  Users
+  Users,
+  type LucideIcon,
 } from "lucide-react";
+
+const SUPERVISOR_CLASS_NAME = "bg-primary text-primary-foreground border-primary";
+const SUPERVISOR_DESCRIPTION = "Aprova orçamentos e descontos, gerencia equipe e operação.";
 
 export type AppRole = 
   | "dev" 
@@ -100,23 +102,23 @@ export const ROLE_VISUAL: Record<string, RoleVisual> = {
     label: "Supervisor",
     Icon: ShieldCheck,
     variant: "default",
-    className: "bg-primary text-primary-foreground border-primary",
-    description: "Aprova orçamentos e descontos, gerencia equipe e operação.",
+    className: SUPERVISOR_CLASS_NAME,
+    description: SUPERVISOR_DESCRIPTION,
   },
   // ── Aliases legados ──
   admin: {
     label: "Supervisor",
     Icon: ShieldCheck,
     variant: "default",
-    className: "bg-primary text-primary-foreground border-primary",
-    description: "Aprova orçamentos e descontos, gerencia equipe e operação.",
+    className: SUPERVISOR_CLASS_NAME,
+    description: SUPERVISOR_DESCRIPTION,
   },
   manager: {
     label: "Supervisor",
     Icon: ShieldCheck,
     variant: "default",
-    className: "bg-primary text-primary-foreground border-primary",
-    description: "Aprova orçamentos e descontos, gerencia equipe e operação.",
+    className: SUPERVISOR_CLASS_NAME,
+    description: SUPERVISOR_DESCRIPTION,
   },
 };
 
@@ -129,6 +131,8 @@ export function getRoleLabel(role: string | null | undefined): string {
 /** Retorna a configuração visual completa (com fallback para Agente). */
 export function getRoleVisual(role: string | null | undefined): RoleVisual {
   const visual = role ? ROLE_VISUAL[role] : undefined;
-  if (!visual) return ROLE_VISUAL.agente;
-  return visual;
+  const fallback = ROLE_VISUAL.agente;
+  if (visual) return visual;
+  if (fallback) return fallback;
+  throw new Error("Configuração visual da função Agente não encontrada");
 }

@@ -21,47 +21,125 @@ interface OrderAddItemDialogProps {
   isPending: boolean;
 }
 
-export function OrderAddItemDialog({ onAdd, isPending }: OrderAddItemDialogProps) {
+type CatalogProduct = NonNullable<ReturnType<typeof useProducts>["data"]>[number];
+type CatalogCategory = NonNullable<ReturnType<typeof useCategories>["data"]>[number];
+
+interface ProductFiltersProps {
+  categories: CatalogCategory[] | undefined;
+  categoryId: string;
+  search: string;
+  onCategoryChange: (value: string) => void;
+  onSearchChange: (value: string) => void;
+}
+
+function ProductFilters({ categories, categoryId, search, onCategoryChange, onSearchChange }: ProductFiltersProps) {
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      <div className="space-y-2">
+        <Label>Categoria</Label>
+        <Select value={categoryId} onValueChange={onCategoryChange}>
+          <SelectTrigger><SelectValue placeholder="Todas" /></SelectTrigger>
+          <SelectContent><SelectItem value="all">Todas as Categorias</SelectItem>{categories?.map((category) => <SelectItem key={String(category.id)} value={String(category.id)}>{category.name}</SelectItem>)}</SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-2">
+        <Label>Buscar Produto</Label>
+        <div className="relative"><Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" /><Input placeholder="Nome ou SKU..." className="pl-8" value={search} onChange={(event) => onSearchChange(event.target.value)} /></div>
+      </div>
+    </div>
+  );
+}
+
+interface ProductPickerProps {
+  products: CatalogProduct[] | undefined;
+  isLoading: boolean;
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}
+
+function ProductPicker({ products, isLoading, selectedId, onSelect }: ProductPickerProps) {
+  let content = <div className="p-4 text-center text-sm text-muted-foreground">Nenhum produto encontrado</div>;
+  if (isLoading) content = <div className="p-4 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto" /></div>;
+  else if (products?.length) {
+    content = <div className="grid grid-cols-1 divide-y">{products.map((product) => (
+      <button key={product.id} type="button" className={`p-2 text-left text-sm hover:bg-muted transition-colors ${selectedId === product.id ? 'bg-primary/10 border-l-4 border-primary' : ''}`} onClick={() => onSelect(product.id)}>
+        <div className="font-medium">{product.name}</div><div className="text-xs text-muted-foreground">SKU: {product.sku || 'N/A'} • R$ {product.price.toLocaleString('pt-BR')}</div>
+      </button>
+    ))}</div>;
+  }
+  return <div className="space-y-2"><Label>Selecione o Produto</Label><div className="border rounded-md max-h-48 overflow-y-auto">{content}</div></div>;
+}
+
+function VariantPicker({ product, selected, onSelect }: { product: CatalogProduct | undefined; selected: string | null; onSelect: (color: string) => void }) {
+  if (!product?.colors?.length) return null;
+  return (
+    <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+      <Label>Cor/Variante</Label>
+      <div className="flex flex-wrap gap-2">{product.colors.map((color) => <button key={color.name} type="button" className={`px-3 py-1 text-xs rounded-full border transition-all ${selected === color.name ? 'bg-primary text-white border-primary' : 'bg-background hover:border-primary'}`} onClick={() => onSelect(color.name)}>{color.name}</button>)}</div>
+    </div>
+  );
+}
+
+interface AddItemContentProps {
+  categories: CatalogCategory[] | undefined;
+  products: CatalogProduct[] | undefined;
+  selectedProduct: CatalogProduct | undefined;
+  categoryId: string;
+  search: string;
+  selectedProductId: string | null;
+  selectedColor: string | null;
+  quantity: number;
+  isLoading: boolean;
+  onCategoryChange: (value: string) => void;
+  onSearchChange: (value: string) => void;
+  onProductChange: (value: string) => void;
+  onColorChange: (value: string) => void;
+  onQuantityChange: (value: number) => void;
+}
+
+function AddItemContent(props: AddItemContentProps) {
+  return (
+    <div className="space-y-4 py-4">
+      <ProductFilters categories={props.categories} categoryId={props.categoryId} search={props.search} onCategoryChange={props.onCategoryChange} onSearchChange={props.onSearchChange} />
+      <ProductPicker products={props.products} isLoading={props.isLoading} selectedId={props.selectedProductId} onSelect={props.onProductChange} />
+      <VariantPicker product={props.selectedProduct} selected={props.selectedColor} onSelect={props.onColorChange} />
+      <div className="space-y-2">
+        <Label>Quantidade</Label>
+        <Input type="number" min={1} value={props.quantity} onChange={(event) => props.onQuantityChange(parseInt(event.target.value) || 1)} />
+      </div>
+    </div>
+  );
+}
+
+function useAddItemDialog(onAdd: OrderAddItemDialogProps["onAdd"]) {
   const [isOpen, setIsOpen] = useState(false);
   const [productSearch, setProductSearch] = useState("");
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
+  const [selectedCategoryId, setSelectedCategoryId] = useState("all");
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [selectedVariantColor, setSelectedVariantColor] = useState<string | null>(null);
   const [itemQuantity, setItemQuantity] = useState(1);
-
   const { data: categories } = useCategories();
-  const { data: products, isLoading: isLoadingProducts } = useProducts(
-    { 
-      search: productSearch, 
-      category: selectedCategoryId !== "all" ? selectedCategoryId : undefined,
-      limit: 20 
-    }, 
-    { enabled: isOpen }
-  );
-
-  const selectedProduct = products?.find(p => p.id === selectedProductId);
-
-  const handleConfirm = () => {
+  const category = selectedCategoryId !== "all" ? selectedCategoryId : undefined;
+  const { data: products, isLoading: isLoadingProducts } = useProducts({ search: productSearch, category, limit: 20 }, { enabled: isOpen });
+  const selectedProduct = products?.find((product) => product.id === selectedProductId);
+  const reset = () => {
+    setProductSearch(""); setSelectedCategoryId("all"); setSelectedProductId(null);
+    setSelectedVariantColor(null); setItemQuantity(1);
+  };
+  const confirm = () => {
     if (!selectedProduct) return;
     const variantLabel = selectedVariantColor ? ` (${selectedVariantColor})` : "";
-    
-    onAdd({
-      productId: selectedProduct.id,
-      productName: `${selectedProduct.name}${variantLabel}`,
-      quantity: itemQuantity,
-      unitPrice: selectedProduct.price,
-    });
-    setIsOpen(false);
-    reset();
+    onAdd({ productId: selectedProduct.id, productName: `${selectedProduct.name}${variantLabel}`, quantity: itemQuantity, unitPrice: selectedProduct.price });
+    setIsOpen(false); reset();
   };
+  return { isOpen, setIsOpen, productSearch, setProductSearch, selectedCategoryId, setSelectedCategoryId, selectedProductId, setSelectedProductId, selectedVariantColor, setSelectedVariantColor, itemQuantity, setItemQuantity, categories, products, isLoadingProducts, selectedProduct, confirm };
+}
 
-  const reset = () => {
-    setProductSearch("");
-    setSelectedCategoryId("all");
-    setSelectedProductId(null);
-    setSelectedVariantColor(null);
-    setItemQuantity(1);
-  };
+export function OrderAddItemDialog({ onAdd, isPending }: OrderAddItemDialogProps) {
+  const dialog = useAddItemDialog(onAdd);
+  const { isOpen, setIsOpen, productSearch, setProductSearch, selectedCategoryId, setSelectedCategoryId, selectedProductId, setSelectedProductId, selectedVariantColor, setSelectedVariantColor, itemQuantity, setItemQuantity, categories, products, isLoadingProducts, selectedProduct, confirm } = dialog;
+  const needsVariant = Boolean(selectedProduct?.colors?.length);
+  const confirmDisabled = !selectedProductId || (needsVariant && !selectedVariantColor) || isPending;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -75,90 +153,10 @@ export function OrderAddItemDialog({ onAdd, isPending }: OrderAddItemDialogProps
           <DialogTitle>Adicionar Item ao Pedido</DialogTitle>
           <DialogDescription>Busque produtos do catálogo Sicoob para adicionar a este pedido.</DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Categoria</Label>
-              <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todas" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as Categorias</SelectItem>
-                  {categories?.map(c => (
-                    <SelectItem key={String(c.id)} value={String(c.id)}>{c.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Buscar Produto</Label>
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Nome ou SKU..." 
-                  className="pl-8" 
-                  value={productSearch}
-                  onChange={(e) => setProductSearch(e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Selecione o Produto</Label>
-            <div className="border rounded-md max-h-48 overflow-y-auto">
-              {isLoadingProducts ? (
-                <div className="p-4 text-center"><Loader2 className="h-4 w-4 animate-spin mx-auto" /></div>
-              ) : products?.length === 0 ? (
-                <div className="p-4 text-center text-sm text-muted-foreground">Nenhum produto encontrado</div>
-              ) : (
-                <div className="grid grid-cols-1 divide-y">
-                  {products?.map(p => (
-                    <button
-                      key={p.id}
-                      className={`p-2 text-left text-sm hover:bg-muted transition-colors ${selectedProductId === p.id ? 'bg-primary/10 border-l-4 border-primary' : ''}`}
-                      onClick={() => setSelectedProductId(p.id)}
-                    >
-                      <div className="font-medium">{p.name}</div>
-                      <div className="text-xs text-muted-foreground">SKU: {p.sku || 'N/A'} • R$ {p.price.toLocaleString('pt-BR')}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {selectedProduct && selectedProduct.colors && selectedProduct.colors.length > 0 && (
-            <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-              <Label>Cor/Variante</Label>
-              <div className="flex flex-wrap gap-2">
-                {selectedProduct.colors.map((color) => (
-                  <button
-                    key={color.name}
-                    className={`px-3 py-1 text-xs rounded-full border transition-all ${selectedVariantColor === color.name ? 'bg-primary text-white border-primary' : 'bg-background hover:border-primary'}`}
-                    onClick={() => setSelectedVariantColor(color.name)}
-                  >
-                    {color.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label>Quantidade</Label>
-            <Input 
-              type="number" 
-              min={1} 
-              value={itemQuantity}
-              onChange={(e) => setItemQuantity(parseInt(e.target.value) || 1)}
-            />
-          </div>
-        </div>
+        <AddItemContent categories={categories} products={products} selectedProduct={selectedProduct} categoryId={selectedCategoryId} search={productSearch} selectedProductId={selectedProductId} selectedColor={selectedVariantColor} quantity={itemQuantity} isLoading={isLoadingProducts} onCategoryChange={setSelectedCategoryId} onSearchChange={setProductSearch} onProductChange={setSelectedProductId} onColorChange={setSelectedVariantColor} onQuantityChange={setItemQuantity} />
         <DialogFooter>
           <Button variant="outline" onClick={() => setIsOpen(false)}>Cancelar</Button>
-          <Button disabled={!selectedProductId || ((selectedProduct?.colors?.length ?? 0) > 0 && !selectedVariantColor) || isPending} onClick={handleConfirm}>
+          <Button disabled={confirmDisabled} onClick={confirm}>
             {isPending ? "Adicionando..." : "Confirmar"}
           </Button>
         </DialogFooter>

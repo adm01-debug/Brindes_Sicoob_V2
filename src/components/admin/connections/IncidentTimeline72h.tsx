@@ -27,6 +27,7 @@ const SEV_LABEL: Record<IncidentSeverity, string> = {
   P1: "Alto (P1)",
   P2: "Informativo (P2)",
 };
+const SEVERITY_DOT_CLASS = "h-2 w-2 rounded-full";
 
 function formatRelative(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -58,7 +59,7 @@ function TimelineMarker({ ev }: { ev: TimelineEvent }) {
       <TooltipContent side="top" className="max-w-xs">
         <div className="space-y-1">
           <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide">
-            <span className={cn("inline-block h-2 w-2 rounded-full", SEV_DOT[ev.severity])} />
+            <span className={cn("inline-block", SEVERITY_DOT_CLASS, SEV_DOT[ev.severity])} />
             {SEV_LABEL[ev.severity]}
           </div>
           <div className="text-xs font-medium leading-tight">{ev.title}</div>
@@ -73,6 +74,16 @@ function TimelineMarker({ ev }: { ev: TimelineEvent }) {
       </TooltipContent>
     </Tooltip>
   );
+}
+
+function TimelineHeader({ count, counts }: { count: number; counts: Record<IncidentSeverity, number> }) {
+  return <header className="flex items-center justify-between gap-3 flex-wrap"><div className="flex items-center gap-2 text-xs font-medium text-muted-foreground"><AlertTriangle className="h-3.5 w-3.5" /><span>Últimas 72h · {count} evento{count === 1 ? "" : "s"}</span></div><div className="flex items-center gap-3 text-[11px] text-muted-foreground">{(["P0", "P1", "P2"] as const).map(severity => <span key={severity} className="inline-flex items-center gap-1"><span className={cn(SEVERITY_DOT_CLASS, SEV_DOT[severity])} /> {severity} {counts[severity]}</span>)}</div></header>;
+}
+
+function TimelineTrack({ events }: { events: TimelineEvent[] }) {
+  const ticks = [0, 1 / 6, 2 / 6, 3 / 6, 4 / 6, 5 / 6, 1];
+  if (events.length === 0) return <p className="text-xs text-muted-foreground py-2">Sem incidentes na janela atual. Sistema estável. ✨</p>;
+  return <div className="relative pt-2 pb-5"><div className="relative h-2 rounded-full bg-muted/60">{ticks.map(tick => <div key={tick} className="absolute top-0 bottom-0 w-px bg-border/60" style={{ left: `${tick * 100}%` }} />)}{events.map(event => <TimelineMarker key={event.id} ev={event} />)}</div><div className="relative mt-1.5 h-3 text-[10px] text-muted-foreground">{[{ pos: 0, label: "-72h" }, { pos: 0.5, label: "-36h" }, { pos: 1, label: "agora" }].map(tick => <span key={tick.label} className="absolute -translate-x-1/2" style={{ left: `${tick.pos * 100}%` }}>{tick.label}</span>)}</div></div>;
 }
 
 export function IncidentTimeline72h() {
@@ -99,72 +110,14 @@ export function IncidentTimeline72h() {
     );
   }
 
-  // Tick labels a cada 12h (0h, 12h, 24h, 36h, 48h, 60h, 72h)
-  const ticks = [0, 1 / 6, 2 / 6, 3 / 6, 4 / 6, 5 / 6, 1];
-
   return (
     <TooltipProvider delayDuration={150}>
       <section
         aria-label="Timeline de incidentes nas últimas 72 horas"
         className="rounded-lg border bg-card px-4 py-3 space-y-2"
       >
-        <header className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-            <AlertTriangle className="h-3.5 w-3.5" />
-            <span>Últimas 72h · {filteredEvents.length} evento{filteredEvents.length === 1 ? "" : "s"}</span>
-          </div>
-          <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-            <span className="inline-flex items-center gap-1">
-              <span className={cn("h-2 w-2 rounded-full", SEV_DOT.P0)} /> P0 {counts.P0}
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <span className={cn("h-2 w-2 rounded-full", SEV_DOT.P1)} /> P1 {counts.P1}
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <span className={cn("h-2 w-2 rounded-full", SEV_DOT.P2)} /> P2 {counts.P2}
-            </span>
-          </div>
-        </header>
-
-        {filteredEvents.length === 0 ? (
-          <p className="text-xs text-muted-foreground py-2">
-            Sem incidentes na janela atual. Sistema estável. ✨
-          </p>
-        ) : (
-          <div className="relative pt-2 pb-5">
-            {/* Trilha */}
-            <div className="relative h-2 rounded-full bg-muted/60">
-              {/* Ticks verticais */}
-              {ticks.map((t) => (
-                <div
-                  key={t}
-                  className="absolute top-0 bottom-0 w-px bg-border/60"
-                  style={{ left: `${t * 100}%` }}
-                />
-              ))}
-              {/* Marcadores de evento */}
-              {filteredEvents.map((ev) => (
-                <TimelineMarker key={ev.id} ev={ev} />
-              ))}
-            </div>
-            {/* Labels de tick */}
-            <div className="relative mt-1.5 h-3 text-[10px] text-muted-foreground">
-              {[
-                { pos: 0, label: "-72h" },
-                { pos: 0.5, label: "-36h" },
-                { pos: 1, label: "agora" },
-              ].map((t) => (
-                <span
-                  key={t.label}
-                  className="absolute -translate-x-1/2"
-                  style={{ left: `${t.pos * 100}%` }}
-                >
-                  {t.label}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
+        <TimelineHeader count={filteredEvents.length} counts={counts} />
+        <TimelineTrack events={filteredEvents} />
       </section>
     </TooltipProvider>
   );

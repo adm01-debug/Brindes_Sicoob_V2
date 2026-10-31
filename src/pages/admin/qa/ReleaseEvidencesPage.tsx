@@ -1,15 +1,14 @@
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FileUp, Trash2, ExternalLink, Package, CheckCircle2 } from "lucide-react";
+import { FileUp, ExternalLink, Package } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 
 export default function ReleaseEvidencesPage() {
   const queryClient = useQueryClient();
@@ -17,7 +16,7 @@ export default function ReleaseEvidencesPage() {
   const [selectedReleaseId, setSelectedReleaseId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  const { data: releases, isLoading: loadingReleases } = useQuery({
+  const { data: releases } = useQuery({
     queryKey: ["qa_releases"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -60,7 +59,7 @@ export default function ReleaseEvidencesPage() {
     }
   });
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !selectedReleaseId) return;
     const file = e.target.files[0];
     if (!file) return;
@@ -91,8 +90,8 @@ export default function ReleaseEvidencesPage() {
 
       queryClient.invalidateQueries({ queryKey: ["qa_evidences", selectedReleaseId] });
       toast.success("Evidência anexada com sucesso!");
-    } catch (err: any) {
-      toast.error("Erro ao subir arquivo: " + err.message);
+    } catch (err: unknown) {
+      toast.error("Erro ao subir arquivo: " + (err instanceof Error ? err.message : "erro desconhecido"));
     } finally {
       setUploading(false);
     }

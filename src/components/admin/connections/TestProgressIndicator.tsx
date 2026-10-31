@@ -1,3 +1,4 @@
+import { isNullish } from "@/components/admin/utils/nullish";
 import { useEffect, useState } from "react";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,17 @@ interface Props {
   /** Called when the auto-dismiss fires. */
   onDismiss?: () => void;
   className?: string;
+}
+
+function completedDetail(latencyMs: number | null | undefined, message: string | null | undefined, fallback: string): string {
+  const details = [!isNullish(latencyMs) ? `${latencyMs}ms` : null, message].filter(Boolean).join(" · ");
+  return details || fallback;
+}
+
+function progressPresentation(phase: Exclude<TestProgressPhase, "idle">, latencyMs?: number | null, message?: string | null) {
+  if (phase === "running") return { Icon: Loader2, tone: "border-primary/30 bg-primary/5 text-primary", label: "Teste em andamento…", detail: "Adicionando ao histórico assim que terminar", spinning: true };
+  if (phase === "completed") return { Icon: CheckCircle2, tone: "border-green-500/30 bg-green-500/5 text-green-700 dark:text-green-400", label: "Teste concluído", detail: completedDetail(latencyMs, message, "Histórico atualizado"), spinning: false };
+  return { Icon: XCircle, tone: "border-destructive/30 bg-destructive/5 text-destructive", label: "Teste falhou", detail: completedDetail(latencyMs, message, "Veja detalhes no histórico"), spinning: false };
 }
 
 /**
@@ -46,34 +58,12 @@ export function TestProgressIndicator({
     return () => clearTimeout(t);
   }, [phase, autoDismissMs, onDismiss]);
 
-  if (!visible || phase === "idle") return null;
+  if ((!visible || phase === "idle")) return null;
 
-  const isRunning = phase === "running";
-  const isOk = phase === "completed";
-  const isFail = phase === "failed";
-
-  const Icon = isRunning ? Loader2 : isOk ? CheckCircle2 : XCircle;
-  const tone = isRunning
-    ? "border-primary/30 bg-primary/5 text-primary"
-    : isOk
-      ? "border-green-500/30 bg-green-500/5 text-green-700 dark:text-green-400"
-      : "border-destructive/30 bg-destructive/5 text-destructive";
-
-  const label = isRunning
-    ? "Teste em andamento…"
-    : isOk
-      ? "Teste concluído"
-      : "Teste falhou";
-
-  const detail = isRunning
-    ? "Adicionando ao histórico assim que terminar"
-    : [
-        latencyMs != null ? `${latencyMs}ms` : null,
-        message,
-      ].filter(Boolean).join(" · ") || (isOk ? "Histórico atualizado" : "Veja detalhes no histórico");
+  const { Icon, tone, label, detail, spinning } = progressPresentation(phase, latencyMs, message);
 
   return (
-    <div
+    (<div
       role="status"
       aria-live="polite"
       className={cn(
@@ -82,11 +72,11 @@ export function TestProgressIndicator({
         className,
       )}
     >
-      <Icon className={cn("h-3.5 w-3.5 shrink-0", isRunning && "animate-spin")} aria-hidden />
+      <Icon className={cn("h-3.5 w-3.5 shrink-0", spinning && "animate-spin")} aria-hidden />
       <span className="font-medium">{label}</span>
       {detail && (
         <span className="text-[11px] opacity-80 truncate">— {detail}</span>
       )}
-    </div>
+    </div>)
   );
 }

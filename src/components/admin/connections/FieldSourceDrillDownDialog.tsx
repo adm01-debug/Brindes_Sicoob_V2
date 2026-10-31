@@ -76,6 +76,15 @@ const kindIcon = (kind: FieldDrillDownData["technicalSource"]["kind"]) => {
   }
 };
 
+function TechnicalSourcePanel({ data, copied, onCopy }: { data: FieldDrillDownData; copied: boolean; onCopy: () => void }) {
+  return <div className="rounded-lg border bg-muted/30 p-3 space-y-2"><div className="flex items-center justify-between gap-2 flex-wrap"><div className="flex items-center gap-2 text-xs font-semibold">{kindIcon(data.technicalSource.kind)}<span className="uppercase tracking-wide text-muted-foreground">{data.technicalSource.kind.replace("_", " ")}</span><code className="px-1.5 py-0.5 rounded bg-background border text-[11px]">{data.technicalSource.name}</code></div><div className="flex items-center gap-1"><Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={onCopy}>{copied ? <Check className="h-3 w-3 mr-1" /> : <Copy className="h-3 w-3 mr-1" />}Copiar</Button>{data.technicalSource.docsHref && <a href={data.technicalSource.docsHref} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 text-xs text-primary hover:underline px-2 py-1">Ver <ExternalLink className="h-3 w-3" /></a>}</div></div><pre className="text-[11px] font-mono bg-background border rounded p-2 overflow-x-auto whitespace-pre">{data.technicalSource.snippet}</pre><p className="text-[11px] text-muted-foreground">{data.notes}</p></div>;
+}
+
+function CurrentSamples({ data }: { data: FieldDrillDownData }) {
+  if (data.samples.length === 0) return <div><h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Estado atual (0)</h4><p className="text-xs text-muted-foreground italic">{data.emptyMessage ?? "Nenhuma amostra disponível no momento."}</p></div>;
+  return <div><h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Estado atual ({data.samples.length})</h4><ScrollArea className="max-h-64 rounded-lg border"><ul className="divide-y">{data.samples.map((sample, index) => <li key={`${sample.label}-${index}`} className="flex items-center justify-between gap-3 px-3 py-2"><div className="min-w-0"><div className="text-xs font-medium font-mono truncate">{sample.label}</div><div className="text-[11px] text-muted-foreground font-mono truncate">{sample.display}</div></div>{sample.badge && <Badge variant="outline" className={`shrink-0 text-[10px] ${toneClass(sample.badge.tone)}`}>{sample.badge.text}</Badge>}</li>)}</ul></ScrollArea></div>;
+}
+
 export function FieldSourceDrillDownDialog({ open, onOpenChange, data }: FieldSourceDrillDownDialogProps) {
   const [copied, setCopied] = useState(false);
 
@@ -108,74 +117,7 @@ export function FieldSourceDrillDownDialog({ open, onOpenChange, data }: FieldSo
               </div>
             </DialogHeader>
 
-            <div className="space-y-4">
-              {/* Origem técnica */}
-              <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <div className="flex items-center gap-2 text-xs font-semibold">
-                    {kindIcon(data.technicalSource.kind)}
-                    <span className="uppercase tracking-wide text-muted-foreground">
-                      {data.technicalSource.kind.replace("_", " ")}
-                    </span>
-                    <code className="px-1.5 py-0.5 rounded bg-background border text-[11px]">
-                      {data.technicalSource.name}
-                    </code>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={copySnippet}>
-                      {copied ? <Check className="h-3 w-3 mr-1" /> : <Copy className="h-3 w-3 mr-1" />}
-                      Copiar
-                    </Button>
-                    {data.technicalSource.docsHref && (
-                      <a
-                        href={data.technicalSource.docsHref}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className="inline-flex items-center gap-1 text-xs text-primary hover:underline px-2 py-1"
-                      >
-                        Ver <ExternalLink className="h-3 w-3" />
-                      </a>
-                    )}
-                  </div>
-                </div>
-                <pre className="text-[11px] font-mono bg-background border rounded p-2 overflow-x-auto whitespace-pre">
-                  {data.technicalSource.snippet}
-                </pre>
-                <p className="text-[11px] text-muted-foreground">{data.notes}</p>
-              </div>
-
-              {/* Amostras (valor mascarado / status real) */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Estado atual ({data.samples.length})
-                  </h4>
-                </div>
-                {data.samples.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic">
-                    {data.emptyMessage ?? "Nenhuma amostra disponível no momento."}
-                  </p>
-                ) : (
-                  <ScrollArea className="max-h-64 rounded-lg border">
-                    <ul className="divide-y">
-                      {data.samples.map((s, i) => (
-                        <li key={`${s.label}-${i}`} className="flex items-center justify-between gap-3 px-3 py-2">
-                          <div className="min-w-0">
-                            <div className="text-xs font-medium font-mono truncate">{s.label}</div>
-                            <div className="text-[11px] text-muted-foreground font-mono truncate">{s.display}</div>
-                          </div>
-                          {s.badge && (
-                            <Badge variant="outline" className={`shrink-0 text-[10px] ${toneClass(s.badge.tone)}`}>
-                              {s.badge.text}
-                            </Badge>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </ScrollArea>
-                )}
-              </div>
-            </div>
+            <div className="space-y-4"><TechnicalSourcePanel data={data} copied={copied} onCopy={() => void copySnippet()} /><CurrentSamples data={data} /></div>
           </>
         )}
       </DialogContent>

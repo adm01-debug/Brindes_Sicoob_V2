@@ -18,6 +18,37 @@ import type {
 } from '@/types/tecnica-unificada';
 import { logger } from "@/lib/logger";
 
+function buildTabelaFilters(filtros?: TabelaPrecoFiltros): Record<string, unknown> {
+  if (!filtros) return {};
+  return {
+    ...(filtros.apenasAtivas ? { is_active: true } : {}),
+    ...(filtros.tecnicaId ? { technique_id: filtros.tecnicaId } : {}),
+    ...(filtros.codigoTabela ? { table_code: filtros.codigoTabela } : {}),
+    ...(filtros.nomeTecnica ? { customization_type_name: filtros.nomeTecnica } : {}),
+  };
+}
+
+function filterByMaxColors(
+  tabelas: TabelaPrecoTecnica[],
+  maxCores: number | undefined,
+): TabelaPrecoTecnica[] {
+  return maxCores === undefined ? tabelas : tabelas.filter(tabela => tabela.maxCores === maxCores);
+}
+
+function warnExceededDimensions(
+  tabela: TabelaPrecoTecnica | undefined,
+  larguraCm?: number,
+  alturaCm?: number,
+): void {
+  if (!tabela || !larguraCm || !alturaCm) return;
+  if (tabela.larguraMaxCm && larguraCm > tabela.larguraMaxCm) {
+    logger.warn(`Largura ${larguraCm}cm excede máximo ${tabela.larguraMaxCm}cm`);
+  }
+  if (tabela.alturaMaxCm && alturaCm > tabela.alturaMaxCm) {
+    logger.warn(`Altura ${alturaCm}cm excede máximo ${tabela.alturaMaxCm}cm`);
+  }
+}
+
 /**
  * Lista de tabelas de preço com filtros
  */
@@ -25,20 +56,7 @@ export function useTabelasPreco(filtros?: TabelaPrecoFiltros) {
   return useQuery({
     queryKey: [...TECNICAS_QUERY_KEYS.tabelasPreco(), filtros],
     queryFn: async (): Promise<TabelaPrecoTecnica[]> => {
-      const filters: Record<string, unknown> = {};
-      
-      if (filtros?.apenasAtivas) {
-        filters.is_active = true;
-      }
-      if (filtros?.tecnicaId) {
-        filters.technique_id = filtros.tecnicaId;
-      }
-      if (filtros?.codigoTabela) {
-        filters.table_code = filtros.codigoTabela;
-      }
-      if (filtros?.nomeTecnica) {
-        filters.customization_type_name = filtros.nomeTecnica;
-      }
+      const filters = buildTabelaFilters(filtros);
 
       const result = await invokeExternalDb<CustomizationPriceTableRaw>({
         table: 'customization_price_tables',
@@ -48,14 +66,7 @@ export function useTabelasPreco(filtros?: TabelaPrecoFiltros) {
         limit: 500,
       });
 
-      let tabelas = transformRawToTabelas(result.records ?? []);
-
-      // Filtro de max_colors pós-query
-      if (filtros?.maxCores !== undefined) {
-        tabelas = tabelas.filter(t => t.maxCores === filtros.maxCores);
-      }
-
-      return tabelas;
+      return filterByMaxColors(transformRawToTabelas(result.records ?? []), filtros?.maxCores);
     },
     ...TABELAS_PRECO_QUERY_OPTIONS,
   });
@@ -157,15 +168,7 @@ export async function buscarTabelaAdequada(
     tabelaAdequada = tabelas[tabelas.length - 1];
   }
 
-  // Validar dimensões se fornecidas
-  if (tabelaAdequada && larguraCm && alturaCm) {
-    if (tabelaAdequada.larguraMaxCm && larguraCm > tabelaAdequada.larguraMaxCm) {
-      logger.warn(`Largura ${larguraCm}cm excede máximo ${tabelaAdequada.larguraMaxCm}cm`);
-    }
-    if (tabelaAdequada.alturaMaxCm && alturaCm > tabelaAdequada.alturaMaxCm) {
-      logger.warn(`Altura ${alturaCm}cm excede máximo ${tabelaAdequada.alturaMaxCm}cm`);
-    }
-  }
+  warnExceededDimensions(tabelaAdequada, larguraCm, alturaCm);
 
   return tabelaAdequada ?? null;
 }

@@ -12,7 +12,7 @@ export function useAuthAAL() {
       setCurrentAAL(prev => prev === data.currentAAL ? prev : data.currentAAL);
       setNextAAL(prev => prev === data.nextAAL ? prev : data.nextAAL);
       setHasMFA(prev => prev === data.hasMFA ? prev : data.hasMFA);
-    } catch (e) {
+    } catch {
       // Fail silently in background
     }
   }, []);

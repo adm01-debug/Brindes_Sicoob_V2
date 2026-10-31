@@ -4,7 +4,10 @@ import { type OrderRow } from "@/hooks/orders/useOrders";
 import { Badge } from "@/components/ui/badge";
 
 interface LogisticsPanelProps {
-  order: OrderRow;
+  order: OrderRow & {
+    shipping_carrier?: string | null;
+    shipping_delivery_forecast?: string | null;
+  };
 }
 
 export function LogisticsPanel({ order }: LogisticsPanelProps) {
@@ -19,7 +22,7 @@ export function LogisticsPanel({ order }: LogisticsPanelProps) {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
             <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Transportadora</p>
-            <p className="text-sm font-medium">{(order as any).shipping_carrier || "Não informada"}</p>
+            <p className="text-sm font-medium">{order.shipping_carrier || "Não informada"}</p>
           </div>
           <div className="space-y-1">
             <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Código de Rastreio</p>
@@ -38,7 +41,7 @@ export function LogisticsPanel({ order }: LogisticsPanelProps) {
           <div className="text-right">
             <Calendar className="h-4 w-4 text-muted-foreground ml-auto" />
             <p className="text-[10px] text-muted-foreground mt-1">
-              {(order as any).shipping_delivery_forecast ? new Date((order as any).shipping_delivery_forecast).toLocaleDateString() : "Sem previsão"}
+              {order.shipping_delivery_forecast ? new Date(order.shipping_delivery_forecast).toLocaleDateString() : "Sem previsão"}
             </p>
           </div>
         </div>

@@ -1,3 +1,4 @@
+import { isNullish } from "@/components/admin/utils/nullish";
 import { useEffect, useMemo, useState } from "react";
 import {
   Dialog,
@@ -74,6 +75,68 @@ function fmtDate(iso: string | null | undefined): string {
   } catch {
     return iso;
   }
+}
+
+function RotationSummary({ entry, loading }: { entry?: RotationHistoryEntry | null; loading: boolean }) {
+  if (loading) return <span className="text-muted-foreground">carregando…</span>;
+  if (!entry) return <span className="text-muted-foreground">nenhuma registrada</span>;
+  const author = entry.rotated_by_email
+    ?? (entry.rotated_by ? `${entry.rotated_by.slice(0, 8)}…` : "autor desconhecido");
+  return (
+    <span className="flex items-center gap-1.5">
+      <UserRound className="h-3 w-3 text-muted-foreground" />
+      <span className="font-medium">{author}</span>
+      <span className="text-muted-foreground">· {fmtDate(entry.rotated_at)}</span>
+      {entry.action_type && <Badge variant="outline" className="ml-1 px-1 py-0 text-[9px] uppercase">{entry.action_type}</Badge>}
+    </span>
+  );
+}
+
+function CredentialValue({ field, hasValue }: { field: CredentialField; hasValue: boolean }) {
+  if (!hasValue) {
+    return <Badge variant="outline" className="border-destructive/40 bg-destructive/10 text-destructive">ausente</Badge>;
+  }
+  return (
+    <MaskedSuffixBadge
+      suffix={field.status?.masked_suffix ?? null}
+      length={field.status?.length ?? null}
+      secretName={field.secretName}
+      showWhenValid
+    />
+  );
+}
+
+interface CredentialItemProps {
+  field: CredentialField;
+  history?: RotationHistoryEntry | null;
+  loading: boolean;
+}
+
+function CredentialItem({ field, history, loading }: CredentialItemProps) {
+  const { status } = field;
+  const hasValue = Boolean(status?.has_value);
+  return (
+    <li className="rounded-md border bg-background p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          {field.sensitive ? <ShieldCheck className="h-4 w-4 text-primary" /> : <KeyRound className="h-4 w-4 text-muted-foreground" />}
+          <div>
+            <p className="text-sm font-medium">{field.label}</p>
+            <p className="font-mono text-[10px] text-muted-foreground">{field.secretName}</p>
+          </div>
+        </div>
+        <CredentialValue field={field} hasValue={hasValue} />
+      </div>
+      <dl className="mt-2 grid grid-cols-3 gap-x-3 gap-y-1 text-[11px]">
+        <dt className="text-muted-foreground">Tamanho</dt>
+        <dd className="col-span-2 font-mono">{status?.length ? `${status.length} chars` : "—"}</dd>
+        <dt className="text-muted-foreground">Origem</dt>
+        <dd className="col-span-2 capitalize">{status?.source ?? (hasValue ? "—" : "não configurado")}</dd>
+        <dt className="text-muted-foreground">Última rotação</dt>
+        <dd className="col-span-2"><RotationSummary entry={history} loading={loading} /></dd>
+      </dl>
+    </li>
+  );
 }
 
 /**
@@ -167,7 +230,7 @@ export function ConnectionDetailsDialog({
                   </dd>
                   <dt className="text-muted-foreground">Quando</dt>
                   <dd>{fmtDate(last.tested_at)}</dd>
-                  {last.latency_ms != null && (
+                  {!isNullish(last.latency_ms) && (
                     <>
                       <dt className="text-muted-foreground">Latência</dt>
                       <dd>{last.latency_ms} ms</dd>
@@ -203,94 +266,10 @@ export function ConnectionDetailsDialog({
                 </span>
               </h3>
               <ul className="space-y-3">
-                {fields.map((f) => {
-                  const status = f.status;
-                  const has = !!status?.has_value;
-                  const last = historyBySecret[f.secretName];
-                  return (
-                    <li
-                      key={f.secretName}
-                      className="rounded-md border bg-background p-3"
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          {f.sensitive ? (
-                            <ShieldCheck className="h-4 w-4 text-primary" />
-                          ) : (
-                            <KeyRound className="h-4 w-4 text-muted-foreground" />
-                          )}
-                          <div>
-                            <p className="text-sm font-medium">{f.label}</p>
-                            <p className="font-mono text-[10px] text-muted-foreground">
-                              {f.secretName}
-                            </p>
-                          </div>
-                        </div>
-                        {has ? (
-                          <MaskedSuffixBadge
-                            suffix={status?.masked_suffix ?? null}
-                            length={status?.length ?? null}
-                            secretName={f.secretName}
-                            showWhenValid
-                          />
-                        ) : (
-                          <Badge
-                            variant="outline"
-                            className="border-destructive/40 bg-destructive/10 text-destructive"
-                          >
-                            ausente
-                          </Badge>
-                        )}
-                      </div>
-
-                      <dl className="mt-2 grid grid-cols-3 gap-x-3 gap-y-1 text-[11px]">
-                        <dt className="text-muted-foreground">Tamanho</dt>
-                        <dd className="col-span-2 font-mono">
-                          {status?.length ? `${status.length} chars` : "—"}
-                        </dd>
-                        <dt className="text-muted-foreground">Origem</dt>
-                        <dd className="col-span-2 capitalize">
-                          {status?.source ?? (has ? "—" : "não configurado")}
-                        </dd>
-                        <dt className="text-muted-foreground">
-                          Última rotação
-                        </dt>
-                        <dd className="col-span-2">
-                          {loading ? (
-                            <span className="text-muted-foreground">
-                              carregando…
-                            </span>
-                          ) : last ? (
-                            <span className="flex items-center gap-1.5">
-                              <UserRound className="h-3 w-3 text-muted-foreground" />
-                              <span className="font-medium">
-                                {last.rotated_by_email ??
-                                  (last.rotated_by
-                                    ? `${last.rotated_by.slice(0, 8)}…`
-                                    : "autor desconhecido")}
-                              </span>
-                              <span className="text-muted-foreground">
-                                · {fmtDate(last.rotated_at)}
-                              </span>
-                              {last.action_type && (
-                                <Badge
-                                  variant="outline"
-                                  className="ml-1 px-1 py-0 text-[9px] uppercase"
-                                >
-                                  {last.action_type}
-                                </Badge>
-                              )}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">
-                              nenhuma registrada
-                            </span>
-                          )}
-                        </dd>
-                      </dl>
-                    </li>
-                  );
-                })}
+                {fields.map((field) => (
+                  <CredentialItem key={field.secretName} field={field}
+                    history={historyBySecret[field.secretName]} loading={loading} />
+                ))}
               </ul>
             </section>
           </div>

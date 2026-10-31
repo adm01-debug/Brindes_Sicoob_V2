@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { ONBOARDING_STEPS } from "@/constants/onboarding";
+import { logger } from "@/lib/logger";
 export { ONBOARDING_STEPS } from "@/constants/onboarding";
 
 export function useOnboarding() {
@@ -65,7 +66,7 @@ export function useOnboarding() {
 
   const updateStep = useCallback(async (step: number) => {
     setCurrentStep(step);
-    console.log(`[onboarding] Avançando para o passo ${step}`, { onboardingId, userId: user?.id });
+    logger.debug(`[onboarding] Avançando para o passo ${step}`, { onboardingId, userId: user?.id });
 
     if (!user || !onboardingId) return;
 

@@ -3,7 +3,7 @@
  * Sticky thumbnails ao rolar, hover swatch troca foto, AnimatePresence em colunas,
  * sparkline 30d, badge risco estoque, linha "outros fornecedores".
  */
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { X, Check, Minus, Crown, AlertTriangle, ShieldCheck } from "lucide-react";
+import { X, Check, Minus, Crown, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useComparisonHighlight, highlightClasses } from "./ComparisonHighlights";
@@ -19,16 +19,19 @@ import { PriceSparkline } from "./PriceSparkline";
 import { StockRiskBadge } from "./StockRiskBadge";
 import { OtherSuppliersRow } from "./OtherSuppliersRow";
 import type { CompareVariantInfo } from "@/stores/useComparisonStore";
+import type { Product, ProductColor } from "@/hooks/useProducts";
+
+const OUT_OF_STOCK = "out-of-stock";
 
 interface CompareEntry {
-  product: any;
+  product: Product;
   variant?: CompareVariantInfo;
   index: number;
 }
 
 interface CompareTableViewProps {
   entries: CompareEntry[];
-  products: any[];
+  products: Product[];
   formatCurrency: (v: number) => string;
   getStockStatusLabel: (s: string) => { label: string; color: string };
   onRemove: (index: number) => void;
@@ -39,7 +42,7 @@ function leadTimeProxy(status: string | undefined): number {
   switch (status) {
     case "in-stock": return 1;
     case "low-stock": return 2;
-    case "out-of-stock": return 4;
+    case OUT_OF_STOCK: return 4;
     default: return 2;
   }
 }
@@ -48,7 +51,7 @@ function leadTimeLabel(status: string | undefined): string {
   switch (status) {
     case "in-stock": return "1-3 dias";
     case "low-stock": return "5-10 dias";
-    case "out-of-stock": return "Sob consulta";
+    case OUT_OF_STOCK: return "Sob consulta";
     default: return "—";
   }
 }
@@ -57,6 +60,10 @@ function allEqual<T>(arr: T[]): boolean {
   if (arr.length < 2) return true;
   const first = JSON.stringify(arr[0]);
   return arr.every(v => JSON.stringify(v) === first);
+}
+
+function MaybeRow({ visible, children }: { visible: boolean; children: ReactNode }) {
+  return visible ? children : null;
 }
 
 export function CompareTableView({
@@ -77,7 +84,7 @@ export function CompareTableView({
     const el = headerSentinelRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
-      ([entry]) => setHeaderStuck(!entry!.isIntersecting),
+      ([entry]) => setHeaderStuck(entry ? !entry.isIntersecting : false),
       { threshold: 0, rootMargin: "0px" }
     );
     observer.observe(el);
@@ -174,7 +181,7 @@ export function CompareTableView({
                           {/* Hover swatches → swap header image */}
                           {(entry.product.colors?.length ?? 0) > 1 && (
                             <div className="flex gap-0.5 flex-wrap justify-center">
-                              {entry.product.colors.slice(0, 6).map((c: any, i: number) => (
+                              {entry.product.colors.slice(0, 6).map((c: ProductColor, i: number) => (
                                 <button
                                   key={i}
                                   type="button"
@@ -183,7 +190,7 @@ export function CompareTableView({
                                   title={c.name}
                                   onMouseEnter={() => {
                                     const altImg = entry.product.images[i] ?? entry.product.images[0];
-                                    setHoveredVariant(prev => ({ ...prev, [entry.index]: altImg }));
+                                    setHoveredVariant(prev => ({ ...prev, [entry.index]: altImg ?? null }));
                                   }}
                                   onMouseLeave={() => setHoveredVariant(prev => ({ ...prev, [entry.index]: null }))}
                                 />
@@ -217,19 +224,18 @@ export function CompareTableView({
               <HighlightedNumberRow label="Quantidade mínima" products={products} valueFn={(p) => p.minQuantity} renderFn={(v) => `${v} un.`} mode="lower-is-better" />
               <HighlightedNumberRow label="Custo total (qtd. mín.)" products={products} valueFn={(p) => Number(p.price ?? 0) * Number(p.minQuantity ?? 1)} renderFn={(v) => formatCurrency(v)} mode="lower-is-better" subtitle="TCO" />
               <HighlightedNumberRow label="Estoque" products={products} valueFn={(p) => p.stock ?? 0} renderFn={(v) => `${v.toLocaleString("pt-BR")} un.`} mode="higher-is-better" />
-              <HighlightedNumberRow label="Lead time" products={products} valueFn={(p) => leadTimeProxy(p.stockStatus)} renderFn={(v) => leadTimeLabel(v === 1 ? "in-stock" : v === 2 ? "low-stock" : "out-of-stock")} mode="lower-is-better" />
+              <HighlightedNumberRow label="Lead time" products={products} valueFn={(p) => leadTimeProxy(p.stockStatus)} renderFn={(v) => leadTimeLabel(v === 1 ? "in-stock" : v === 2 ? "low-stock" : OUT_OF_STOCK)} mode="lower-is-better" />
               <HighlightedNumberRow label="Variedade de cores" products={products} valueFn={(p) => (p.colors?.length ?? 0)} renderFn={(v) => `${v} cores`} mode="higher-is-better" />
 
-              {showRow("sku") && <SimpleRow label="SKU" products={products} render={(p) => <span className="font-mono text-sm">{p.sku}</span>} />}
-              {showRow("category") && <SimpleRow label="Categoria" products={products} render={(p) => <Badge variant="outline">{p.category?.icon} {p.category?.name}</Badge>} />}
-              {showRow("supplier") && (
+              <MaybeRow visible={showRow("sku")}><SimpleRow label="SKU" products={products} render={(p) => <span className="font-mono text-sm">{p.sku}</span>} /></MaybeRow>
+              <MaybeRow visible={showRow("category")}><SimpleRow label="Categoria" products={products} render={(p) => <Badge variant="outline">{p.category?.name}</Badge>} /></MaybeRow>
+              <MaybeRow visible={showRow("supplier")}>
                 <SimpleRow label="Fornecedor" products={products} render={(p) => (
                   <div className="flex items-center justify-center gap-1.5">
-                    {p.supplier?.verified && <ShieldCheck className="h-3.5 w-3.5 text-success" />}
                     <span>{p.supplier?.name}</span>
                   </div>
                 )} />
-              )}
+              </MaybeRow>
               <SimpleRow label="Estoque (status)" products={products} render={(p) => {
                 const s = getStockStatusLabel(p.stockStatus);
                 return (<span className={cn("font-medium", s.color)}>{s.label}</span>);
@@ -237,7 +243,7 @@ export function CompareTableView({
               {showRow("isKit") && <SimpleRow label="É Kit?" products={products} render={(p) => p.isKit ? <Check className="h-5 w-5 text-success mx-auto" /> : <Minus className="h-5 w-5 text-muted-foreground mx-auto" />} />}
               <SimpleRow label="Cores disponíveis" products={products} render={(p) => (
                 <div className="flex flex-wrap justify-center gap-1">
-                  {p.colors?.slice(0, 6).map((c: any, i: number) => <div key={i} className="w-5 h-5 rounded-full border border-border" style={{ backgroundColor: c.hex }} title={c.name} />)}
+                  {p.colors?.slice(0, 6).map((c: ProductColor, i: number) => <div key={i} className="w-5 h-5 rounded-full border border-border" style={{ backgroundColor: c.hex }} title={c.name} />)}
                   {(p.colors?.length ?? 0) > 6 && <span className="text-xs text-muted-foreground">+{p.colors.length - 6}</span>}
                 </div>
               )} />
@@ -293,7 +299,7 @@ export function CompareTableView({
   );
 }
 
-function SimpleRow({ label, products, render }: { label: string; products: any[]; render: (p: any) => React.ReactNode }) {
+function SimpleRow({ label, products, render }: { label: string; products: Product[]; render: (p: Product) => ReactNode }) {
   return (
     <TableRow>
       <TableCell className="font-medium bg-muted/50 sticky left-0">{label}</TableCell>
@@ -306,8 +312,8 @@ function HighlightedNumberRow({
   label, products, valueFn, renderFn, mode, subtitle,
 }: {
   label: string;
-  products: any[];
-  valueFn: (p: any) => number;
+  products: Product[];
+  valueFn: (p: Product) => number;
   renderFn: (v: number) => string;
   mode: "lower-is-better" | "higher-is-better";
   subtitle?: string;
@@ -323,14 +329,14 @@ function HighlightedNumberRow({
         </div>
       </TableCell>
       {products.map((_, idx) => (
-        <TableCell key={`cell-${idx}`} className={cn("text-center", highlightClasses[highlights[idx]!])}>
+        <TableCell key={`cell-${idx}`} className={cn("text-center", highlightClasses[highlights[idx] ?? "neutral"])}>
           <div className="flex items-center justify-center gap-1">
             {highlights[idx] === "best" && <Crown className="h-3.5 w-3.5 text-success" />}
             <span className={cn(
               highlights[idx] === "best" ? "font-semibold text-success" :
               highlights[idx] === "worst" ? "text-destructive" : ""
             )}>
-              {renderFn(values[idx]!)}
+              {renderFn(values[idx] ?? 0)}
             </span>
             {highlights[idx] === "worst" && <AlertTriangle className="h-3 w-3 text-destructive" />}
           </div>

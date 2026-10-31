@@ -74,3 +74,4 @@ describe('AdminRoute', () => {
     expect(screen.queryByText('Admin Panel')).not.toBeInTheDocument();
   });
 });
+import React from 'react';

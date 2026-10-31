@@ -32,17 +32,42 @@ interface BackendErrorShape {
 function collectCandidates(data: unknown, error: unknown): BackendErrorShape[] {
   const candidates: BackendErrorShape[] = [];
   if (data && typeof data === "object") candidates.push(data as BackendErrorShape);
-  if (error && typeof error === "object") {
-    const e = error as { context?: { body?: unknown }; message?: string };
-    const body = e.context?.body;
-    if (typeof body === "string") {
-      try { candidates.push(JSON.parse(body) as BackendErrorShape); } catch { /* noop */ }
-    } else if (body && typeof body === "object") {
-      candidates.push(body as BackendErrorShape);
-    }
-    if (typeof e.message === "string") candidates.push({ error: e.message });
-  }
+  if (!error || typeof error !== "object") return candidates;
+  const typedError = error as { context?: { body?: unknown }; message?: string };
+  const bodyCandidate = parseErrorBody(typedError.context?.body);
+  if (bodyCandidate) candidates.push(bodyCandidate);
+  if (typeof typedError.message === "string") candidates.push({ error: typedError.message });
   return candidates;
+}
+
+function parseErrorBody(body: unknown): BackendErrorShape | null {
+  if (body && typeof body === "object") return body as BackendErrorShape;
+  if (typeof body !== "string") return null;
+  try {
+    return JSON.parse(body) as BackendErrorShape;
+  } catch {
+    return null;
+  }
+}
+
+function candidateKind(candidate: BackendErrorShape): StepUpErrorKind | null {
+  const devLossReasons = new Set(["dev_role_required", "not_dev", "not_dev_at_edge"]);
+  const devLossErrors = new Set(["MCP_KEY_AUTO_REVOKED_DEV_LOST", "dev_role_required"]);
+  if ((candidate.reason && devLossReasons.has(candidate.reason)) || (candidate.error && devLossErrors.has(candidate.error))) {
+    return "dev_role_required";
+  }
+  if (candidate.error === "step_up_required" || candidate.error === "step_up_invalid") return candidate.error;
+  return null;
+}
+
+function candidateMessage(candidate: BackendErrorShape, kind: StepUpErrorKind): string {
+  if (candidate.message?.trim()) return candidate.message;
+  if (kind === "dev_role_required") {
+    return "Seu papel de desenvolvedor foi removido entre a confirmação e a execução desta operação. Peça para um administrador restaurar o acesso e refaça a verificação dupla.";
+  }
+  return kind === "step_up_required"
+    ? "Confirme sua identidade (senha + código por e-mail) para continuar."
+    : "Verificação dupla expirou ou é inválida. Refaça a confirmação.";
 }
 
 /** Tenta extrair erro de step-up / perda de role do body devolvido pela edge function. */
@@ -52,36 +77,9 @@ export function extractStepUpError(
 ): { kind: StepUpErrorKind; message: string } | null {
   const candidates = collectCandidates(data, error);
 
-  for (const c of candidates) {
-    // Perda de role dev entre confirmação e execução. O backend devolve
-    // `error: "forbidden"` com `reason: "not_dev" | "dev_role_required" | "not_dev_at_edge"`,
-    // e o mcp-server pode devolver `MCP_KEY_AUTO_REVOKED_DEV_LOST`.
-    const isDevLost =
-      c.reason === "dev_role_required" ||
-      c.reason === "not_dev" ||
-      c.reason === "not_dev_at_edge" ||
-      c.error === "MCP_KEY_AUTO_REVOKED_DEV_LOST" ||
-      c.error === "dev_role_required";
-    if (isDevLost) {
-      return {
-        kind: "dev_role_required",
-        message:
-          typeof c.message === "string" && c.message.trim().length > 0
-            ? c.message
-            : "Seu papel de desenvolvedor foi removido entre a confirmação e a execução desta operação. Peça para um administrador restaurar o acesso e refaça a verificação dupla.",
-      };
-    }
-
-    if (c.error === "step_up_required" || c.error === "step_up_invalid") {
-      return {
-        kind: c.error,
-        message: typeof c.message === "string" && c.message.trim().length > 0
-          ? c.message
-          : c.error === "step_up_required"
-            ? "Confirme sua identidade (senha + código por e-mail) para continuar."
-            : "Verificação dupla expirou ou é inválida. Refaça a confirmação.",
-      };
-    }
+  for (const candidate of candidates) {
+    const kind = candidateKind(candidate);
+    if (kind) return { kind, message: candidateMessage(candidate, kind) };
   }
   return null;
 }

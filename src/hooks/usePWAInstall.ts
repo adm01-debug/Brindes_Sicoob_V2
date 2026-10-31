@@ -24,7 +24,8 @@ export function usePWAInstall() {
     window.addEventListener("beforeinstallprompt", handler);
 
     // Detect if already installed
-    if (window.matchMedia("(display-mode: standalone)").matches || (window.navigator as any).standalone) {
+    const navigatorWithStandalone = window.navigator as Navigator & { standalone?: boolean };
+    if (window.matchMedia("(display-mode: standalone)").matches || navigatorWithStandalone.standalone === true) {
       setIsInstalled(true);
     }
 

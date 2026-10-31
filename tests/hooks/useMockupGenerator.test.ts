@@ -141,3 +141,4 @@ describe("GeneratedMockup data shape", () => {
     expect(mockup.created_at).toBeTruthy();
   });
 });
+import React from 'react';

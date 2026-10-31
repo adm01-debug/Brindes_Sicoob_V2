@@ -21,7 +21,7 @@ export async function resilientUpload(filePath: string, file: File) {
       return await fallbackUpload(filePath, file);
     }
     return data;
-  } catch (err) {
+  } catch {
     console.warn(`[storage] Critical error in primary, trying secondary...`);
     return await fallbackUpload(filePath, file);
   }

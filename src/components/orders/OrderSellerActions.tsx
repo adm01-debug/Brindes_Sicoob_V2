@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useUpdateOrder, type OrderRow, ORDER_STATUS_LABELS } from "@/hooks";
+import { useUpdateOrder, type OrderRow } from "@/hooks";
 import { Play, Package, Truck, CheckCircle, Flag } from "lucide-react";
 import { toast } from "sonner";
 
@@ -7,10 +7,18 @@ interface OrderSellerActionsProps {
   order: OrderRow;
 }
 
+const ACTIONS: Partial<Record<OrderRow["status"], { next: OrderRow["status"]; label: string; text: string; icon: typeof Play; variant?: "secondary" | "default" | "outline"; className?: string }>> = {
+  enviado_vendedor: { next: "em_producao", label: "Produção", text: "Iniciar Produção", icon: Play },
+  em_producao: { next: "em_separacao", label: "Separação", text: "Iniciar Separação", icon: Package, variant: "secondary" },
+  em_separacao: { next: "em_transporte", label: "Transporte", text: "Despachar Pedido", icon: Truck },
+  em_transporte: { next: "entregue", label: "Entregue", text: "Confirmar Entrega", icon: CheckCircle, variant: "outline", className: "border-green-200 text-green-700 hover:bg-green-50" },
+  entregue: { next: "concluido", label: "Concluído", text: "Concluir Pedido", icon: Flag, className: "bg-green-600 hover:bg-green-700" },
+};
+
 export function OrderSellerActions({ order }: OrderSellerActionsProps) {
   const update = useUpdateOrder(order.id, order.status);
 
-  const handleStatusChange = (nextStatus: string, label: string) => {
+  const handleStatusChange = (nextStatus: OrderRow["status"], label: string) => {
     update.mutate({ status: nextStatus }, {
       onSuccess: () => {
         toast.success(`Pedido em ${label}`);
@@ -19,40 +27,17 @@ export function OrderSellerActions({ order }: OrderSellerActionsProps) {
   };
 
   const currentStatus = order.status;
+  const action = ACTIONS[currentStatus];
+  const ActionIcon = action?.icon;
 
   return (
     <div className="flex flex-wrap gap-2 items-center bg-muted/30 p-3 rounded-lg border border-muted">
       <span className="text-xs font-semibold mr-2 text-muted-foreground uppercase">Ações do Vendedor:</span>
       
-      {currentStatus === "enviado_vendedor" && (
-        <Button size="sm" onClick={() => handleStatusChange("em_producao", "Produção")} disabled={update.isPending}>
-          <Play className="h-4 w-4 mr-2" /> Iniciar Produção
-        </Button>
-      )}
-
-      {currentStatus === "em_producao" && (
-        <Button size="sm" variant="secondary" onClick={() => handleStatusChange("em_separacao", "Separação")} disabled={update.isPending}>
-          <Package className="h-4 w-4 mr-2" /> Iniciar Separação
-        </Button>
-      )}
-
-      {currentStatus === "em_separacao" && (
-        <Button size="sm" variant="default" onClick={() => handleStatusChange("em_transporte", "Transporte")} disabled={update.isPending}>
-          <Truck className="h-4 w-4 mr-2" /> Despachar Pedido
-        </Button>
-      )}
-
-      {currentStatus === "em_transporte" && (
-        <Button size="sm" variant="outline" onClick={() => handleStatusChange("entregue", "Entregue")} disabled={update.isPending} className="border-green-200 text-green-700 hover:bg-green-50">
-          <CheckCircle className="h-4 w-4 mr-2" /> Confirmar Entrega
-        </Button>
-      )}
-
-      {currentStatus === "entregue" && (
-        <Button size="sm" variant="default" onClick={() => handleStatusChange("concluido", "Concluído")} disabled={update.isPending} className="bg-green-600 hover:bg-green-700">
-          <Flag className="h-4 w-4 mr-2" /> Concluir Pedido
-        </Button>
-      )}
+      {action && ActionIcon && <Button size="sm" variant={action.variant} className={action.className}
+        onClick={() => handleStatusChange(action.next, action.label)} disabled={update.isPending}>
+        <ActionIcon className="h-4 w-4 mr-2" /> {action.text}
+      </Button>}
 
       {["concluido", "cancelado"].includes(currentStatus) && (
         <span className="text-sm italic text-muted-foreground">

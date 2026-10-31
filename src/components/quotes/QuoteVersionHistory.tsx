@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { GitBranch, GitCompare, Plus, Eye, Check, Clock, FileText } from "lucide-react";
+import { GitBranch, GitCompare, Plus, Eye, Clock, FileText } from "lucide-react";
 import { QuoteVersionCompare } from "./QuoteVersionCompare";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useQuoteVersions, type QuoteVersion } from "@/hooks/useQuoteVersions";
+import { useQuoteVersions } from "@/hooks/useQuoteVersions";
 import { QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
 
 interface QuoteVersionHistoryProps {
@@ -19,16 +19,76 @@ interface QuoteVersionHistoryProps {
   onCreateVersion?: () => void;
 }
 
+type QuoteVersion = ReturnType<typeof useQuoteVersions>["versions"][number];
+
+function formatCurrency(value: number) {
+  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function VersionHistoryHeader({ count, showCompare, createVersion, creating, canCreate }: {
+  count: number; showCompare: () => void; createVersion: () => void; creating: boolean; canCreate: boolean;
+}) {
+  return <CardHeader className="pb-3"><div className="flex items-center justify-between">
+    <CardTitle className="text-sm font-medium flex items-center gap-2"><GitBranch className="h-4 w-4 text-primary" />
+      Versões do Orçamento{count > 1 && <Badge variant="secondary" className="text-xs">{count} versões</Badge>}
+    </CardTitle><div className="flex items-center gap-1">{count > 1 && <Tooltip><TooltipTrigger asChild>
+      <Button size="sm" variant="outline" onClick={showCompare} className="h-7 text-xs gap-1">
+        <GitCompare className="h-3 w-3" />Comparar</Button></TooltipTrigger>
+      <TooltipContent>Comparar versões lado a lado</TooltipContent></Tooltip>}
+      <Tooltip><TooltipTrigger asChild><Button size="sm" variant="outline" onClick={createVersion}
+        disabled={creating || !canCreate} className="h-7 text-xs gap-1"><Plus className="h-3 w-3" />Nova Versão</Button>
+      </TooltipTrigger><TooltipContent>{canCreate ? 'Criar nova versão baseada neste orçamento' : 'Abra a versão atual para criar uma nova versão'}</TooltipContent></Tooltip>
+    </div></div></CardHeader>;
+}
+
+function VersionRow({ version, index, currentId, onOpen }: {
+  version: QuoteVersion; index: number; currentId: string; onOpen: (id: string) => void;
+}) {
+  const current = version.id === currentId;
+  const status = QUOTE_STATUS_CONFIG[version.status as keyof typeof QUOTE_STATUS_CONFIG];
+  return <div>{index > 0 && <Separator className="my-1" />}<button onClick={() => !current && onOpen(version.id)}
+    disabled={current} className={`w-full text-left p-2 rounded-md transition-colors ${current ? "bg-primary/10 border border-primary/20" : "hover:bg-muted/50 cursor-pointer"}`}>
+    <div className="flex items-center justify-between gap-2"><div className="flex items-center gap-2 min-w-0">
+      <span className="text-xs font-mono font-bold text-primary">v{version.version}</span>
+      <span className="text-xs text-muted-foreground truncate">{version.quote_number}</span>
+      {version.is_latest_version && <Badge variant="default" className="text-[10px] h-4 px-1">Atual</Badge>}
+      {current && <Eye className="h-3 w-3 text-primary flex-shrink-0" />}
+    </div><Badge variant={(status?.badgeVariant as "secondary" | "default" | "destructive" | "outline") || "secondary"}
+      className="text-[10px] h-4 px-1 flex-shrink-0">{status?.label || version.status}</Badge></div>
+    <div className="flex items-center justify-between mt-1"><span className="text-[10px] text-muted-foreground flex items-center gap-1">
+      <Clock className="h-2.5 w-2.5" />{format(new Date(version.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}</span>
+      <div className="flex items-center gap-2"><span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+        <FileText className="h-2.5 w-2.5" />{version.items_count || 0} itens</span>
+        <span className="text-xs font-medium">{formatCurrency(version.total)}</span></div>
+    </div></button></div>;
+}
+
+function VersionsList({ versions, currentId, onOpen }: {
+  versions: QuoteVersion[]; currentId: string; onOpen: (id: string) => void;
+}) {
+  if (versions.length <= 1) return <p className="text-xs text-muted-foreground">
+    Este é o orçamento original (v1). Crie uma nova versão para registrar alterações.</p>;
+  return <ScrollArea className="max-h-[280px]"><div className="space-y-2">
+    {versions.map((version, index) => <VersionRow key={version.id} version={version} index={index}
+      currentId={currentId} onOpen={onOpen} />)}
+  </div></ScrollArea>;
+}
+
 export function QuoteVersionHistory({ quoteId, currentQuoteId, onCreateVersion }: QuoteVersionHistoryProps) {
   const navigate = useNavigate();
-  const { versions, isLoading, fetchVersions, createNewVersion, hasMultipleVersions } = useQuoteVersions(quoteId);
+  const { versions, isLoading, fetchVersions, createNewVersion } = useQuoteVersions(quoteId);
+  const fetchVersionsRef = useRef(fetchVersions);
   const [isCreating, setIsCreating] = useState(false);
   const [showCompare, setShowCompare] = useState(false);
   const currentVersion = versions.find((version) => version.id === currentQuoteId);
   const canCreateVersion = !currentVersion || currentVersion.is_latest_version;
 
   useEffect(() => {
-    fetchVersions();
+    fetchVersionsRef.current = fetchVersions;
+  }, [fetchVersions]);
+
+  useEffect(() => {
+    fetchVersionsRef.current();
   }, [quoteId]);
 
   const handleCreateVersion = async () => {
@@ -40,9 +100,6 @@ export function QuoteVersionHistory({ quoteId, currentQuoteId, onCreateVersion }
       navigate(`/orcamentos/${newQuote.id}`);
     }
   };
-
-  const formatCurrency = (value: number) =>
-    value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
   if (isLoading && versions.length === 0) {
     return (
@@ -57,134 +114,11 @@ export function QuoteVersionHistory({ quoteId, currentQuoteId, onCreateVersion }
     );
   }
 
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <GitBranch className="h-4 w-4 text-primary" />
-            Versões do Orçamento
-            {hasMultipleVersions && (
-              <Badge variant="secondary" className="text-xs">
-                {versions.length} versões
-              </Badge>
-            )}
-          </CardTitle>
-          <div className="flex items-center gap-1">
-            {hasMultipleVersions && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setShowCompare(true)}
-                    className="h-7 text-xs gap-1"
-                  >
-                    <GitCompare className="h-3 w-3" />
-                    Comparar
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Comparar versões lado a lado</TooltipContent>
-              </Tooltip>
-            )}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleCreateVersion}
-                  disabled={isCreating || !canCreateVersion}
-                  className="h-7 text-xs gap-1"
-                >
-                  <Plus className="h-3 w-3" />
-                  Nova Versão
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {canCreateVersion ? 'Criar nova versão baseada neste orçamento' : 'Abra a versão atual para criar uma nova versão'}
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        {versions.length <= 1 ? (
-          <p className="text-xs text-muted-foreground">
-            Este é o orçamento original (v1). Crie uma nova versão para registrar alterações.
-          </p>
-        ) : (
-          <ScrollArea className="max-h-[280px]">
-            <div className="space-y-2">
-              {versions.map((version, idx) => {
-                const isCurrent = version.id === currentQuoteId;
-                const statusCfg = QUOTE_STATUS_CONFIG[version.status as keyof typeof QUOTE_STATUS_CONFIG];
-
-                return (
-                  <div key={version.id}>
-                    {idx > 0 && <Separator className="my-1" />}
-                    <button
-                      onClick={() => !isCurrent && navigate(`/orcamentos/${version.id}`)}
-                      disabled={isCurrent}
-                      className={`w-full text-left p-2 rounded-md transition-colors ${
-                        isCurrent
-                          ? "bg-primary/10 border border-primary/20"
-                          : "hover:bg-muted/50 cursor-pointer"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-xs font-mono font-bold text-primary">
-                            v{version.version}
-                          </span>
-                          <span className="text-xs text-muted-foreground truncate">
-                            {version.quote_number}
-                          </span>
-                          {version.is_latest_version && (
-                            <Badge variant="default" className="text-[10px] h-4 px-1">
-                              Atual
-                            </Badge>
-                          )}
-                          {isCurrent && (
-                            <Eye className="h-3 w-3 text-primary flex-shrink-0" />
-                          )}
-                        </div>
-                        <Badge
-                          variant={(statusCfg?.badgeVariant as "secondary" | "default" | "destructive" | "outline") || "secondary"}
-                          className="text-[10px] h-4 px-1 flex-shrink-0"
-                        >
-                          {statusCfg?.label || version.status}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center justify-between mt-1">
-                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                          <Clock className="h-2.5 w-2.5" />
-                          {format(new Date(version.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                            <FileText className="h-2.5 w-2.5" />
-                            {version.items_count || 0} itens
-                          </span>
-                          <span className="text-xs font-medium">
-                            {formatCurrency(version.total)}
-                          </span>
-                        </div>
-                      </div>
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </ScrollArea>
-        )}
-      </CardContent>
-
-      <QuoteVersionCompare
-        open={showCompare}
-        onOpenChange={setShowCompare}
-        versions={versions}
-        currentQuoteId={currentQuoteId}
-      />
-    </Card>
-  );
+  return <Card>
+    <VersionHistoryHeader count={versions.length} showCompare={() => setShowCompare(true)}
+      createVersion={handleCreateVersion} creating={isCreating} canCreate={canCreateVersion} />
+    <CardContent className="pt-0"><VersionsList versions={versions} currentId={currentQuoteId}
+      onOpen={(id) => navigate(`/orcamentos/${id}`)} /></CardContent>
+    <QuoteVersionCompare open={showCompare} onOpenChange={setShowCompare} versions={versions} currentQuoteId={currentQuoteId} />
+  </Card>;
 }

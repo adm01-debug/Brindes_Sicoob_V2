@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useDropboxFiles, DropboxEntry } from "@/hooks/useDropboxFiles";
+import {  useEffect } from "react";
+import { useDropboxFiles } from "@/hooks/useDropboxFiles";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +33,7 @@ export default function DropboxBrowserPage() {
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 p-6">
       <PageSEO title="Navegador de Arquivos" description="Navegue e gerencie arquivos do Dropbox integrado." path="/dropbox" noIndex />
         <CloudOff className="h-16 w-16 text-muted-foreground" />
-        <h2 className="font-display text-xl font-semibold text-foreground">Dropbox não conectado</h2>
+        <h2 data-testid="page-title-dropbox" className="font-display text-xl font-semibold text-foreground">Dropbox não conectado</h2>
         <p className="text-muted-foreground text-center max-w-md">
           Configure o token de acesso do Dropbox nas variáveis de ambiente para usar esta integração.
         </p>

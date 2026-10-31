@@ -77,7 +77,7 @@ export const sicoobStatsService = {
       topClients: Object.entries(clientMap)
         .map(([name, value]) => ({ name, value, grow: null as string | null }))
         .sort((a, b) => b.value - a.value).slice(0, 3),
-      recentActivity: (historyResult.data || []).map((history: any) => ({
+      recentActivity: (historyResult.data || []).map((history) => ({
         action: `Status: ${history.new_status}`,
         client: history.order?.pa?.nome || `Pedido #${history.order?.order_number || 'sem número'}`,
         time: new Date(history.created_at).toLocaleDateString('pt-BR'),

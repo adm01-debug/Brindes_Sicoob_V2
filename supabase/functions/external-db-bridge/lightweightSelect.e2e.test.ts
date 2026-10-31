@@ -12,7 +12,14 @@ import { assert, assertEquals } from "https://deno.land/std@0.224.0/assert/mod.t
 
 const SUPABASE_URL = Deno.env.get("VITE_SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("VITE_SUPABASE_PUBLISHABLE_KEY")!;
+const TEST_USER_JWT = Deno.env.get("TEST_USER_JWT")!;
 const ENDPOINT = `${SUPABASE_URL}/functions/v1/external-db-bridge`;
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !TEST_USER_JWT) {
+  throw new Error(
+    "Teste E2E requer VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY e TEST_USER_JWT",
+  );
+}
 
 // Confirmados empiricamente:
 //  - Payload completo (full SELECT *):     ~148 colunas
@@ -34,7 +41,7 @@ async function callBridge(body: Record<string, unknown>): Promise<unknown[]> {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      "Authorization": `Bearer ${TEST_USER_JWT}`,
       "apikey": SUPABASE_ANON_KEY,
     },
     body: JSON.stringify(body),

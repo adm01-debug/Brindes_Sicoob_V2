@@ -118,7 +118,7 @@ export function getCategoryIcon(
   }
   
   // 4. Busca por primeira palavra significativa no banco
-  const firstWord = nameLower.split(/[\s|]/)[0]!;
+  const firstWord = nameLower.split(/[\s|]/)[0] ?? '';
   if (firstWord.length > 2) {
     const firstWordMatch = icons.find(
       i => i.category_name.toLowerCase().includes(firstWord)

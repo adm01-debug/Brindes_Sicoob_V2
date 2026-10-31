@@ -1,7 +1,7 @@
 /**
  * Import step components extracted from BulkImportPanel
  */
-import { Loader2, CheckCircle2, AlertCircle, Upload, X, ArrowRight } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, Upload, X, ArrowRight, Table as TableIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -11,7 +11,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PRODUCT_FIELDS, type ColumnMapping } from "@/hooks/useProductRegistration";
 import { cn } from "@/lib/utils";
-import { Table as TableIcon } from "lucide-react";
 
 interface ParsedData {
   headers: string[];

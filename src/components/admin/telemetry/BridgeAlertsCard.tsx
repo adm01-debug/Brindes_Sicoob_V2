@@ -45,96 +45,52 @@ function formatBytes(b: number): string {
   return `${(b / 1024 / 1024).toFixed(2)} MB`;
 }
 
-export function BridgeAlertsCard() {
+function getAlertCardClass(criticalCount: number, warningCount: number): string {
+  if (criticalCount > 0) return 'border-destructive/40 bg-destructive/5';
+  if (warningCount > 0) return 'border-warning/40 bg-warning/5';
+  return '';
+}
+
+function useBridgeAlerts() {
   const samples = useSyncExternalStore(subscribeBridgeCalls, getBridgeSamples, getBridgeSamples);
   const thresholds = useSyncExternalStore(subscribeThresholds, getThresholds, getThresholds);
-
   const rows = useMemo(() => aggregateByEndpoint(samples), [samples]);
   const alerts = useMemo(() => evaluateAlerts(rows, thresholds), [rows, thresholds]);
-
-  const [showSettings, setShowSettings] = useState(false);
-
-  // Toast só quando uma nova chave de alerta surge (evita spam)
   const seenRef = useRef<Set<string>>(new Set());
   useEffect(() => {
-    for (const a of alerts) {
-      if (seenRef.current.has(a.key)) continue;
-      seenRef.current.add(a.key);
-      const enabled = thresholds[a.bridge].toastEnabled;
-      if (!enabled) continue;
-      const fn = a.severity === 'crit' ? toast.error : toast.warning;
-      fn(`[${a.bridge}] ${a.message}`, { description: `${a.count} amostras` });
+    for (const alert of alerts) {
+      if (seenRef.current.has(alert.key)) continue;
+      seenRef.current.add(alert.key);
+      if (!thresholds[alert.bridge].toastEnabled) continue;
+      const notify = alert.severity === 'crit' ? toast.error : toast.warning;
+      notify(`[${alert.bridge}] ${alert.message}`, { description: `${alert.count} amostras` });
     }
-    // Remove chaves resolvidas para que voltem a alertar caso reincidam
-    const active = new Set(alerts.map(a => a.key));
-    for (const k of Array.from(seenRef.current)) {
-      if (!active.has(k)) seenRef.current.delete(k);
-    }
+    const active = new Set(alerts.map(alert => alert.key));
+    for (const key of Array.from(seenRef.current)) if (!active.has(key)) seenRef.current.delete(key);
   }, [alerts, thresholds]);
+  return { alerts, thresholds };
+}
 
+function BridgeAlertsHeader({ alerts, showSettings, onToggleSettings }: { alerts: BridgeAlert[]; showSettings: boolean; onToggleSettings: () => void }) {
+  const criticalCount = alerts.filter(alert => alert.severity === 'crit').length;
+  const warningCount = alerts.filter(alert => alert.severity === 'warn').length;
+  return <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0"><CardTitle className="text-base flex items-center gap-2"><Bell className="h-4 w-4" />Alertas das Bridges{criticalCount > 0 && <Badge variant="destructive" className="text-[10px]">{criticalCount} crítico{criticalCount > 1 ? 's' : ''}</Badge>}{warningCount > 0 && <Badge className="text-[10px] bg-warning/20 text-warning border-warning/30">{warningCount} aviso{warningCount > 1 ? 's' : ''}</Badge>}{alerts.length === 0 && <Badge variant="secondary" className="text-[10px]">tudo ok</Badge>}</CardTitle><div className="flex items-center gap-2"><Button variant="outline" size="sm" onClick={() => resetThresholds()}><RotateCcw className="h-3.5 w-3.5 mr-1.5" />Padrão</Button><Button variant="outline" size="sm" onClick={onToggleSettings}><Settings2 className="h-3.5 w-3.5 mr-1.5" />{showSettings ? 'Fechar' : 'Configurar'}</Button></div></CardHeader>;
+}
+
+function BridgeAlertsContent({ alerts, showSettings, thresholds }: { alerts: BridgeAlert[]; showSettings: boolean; thresholds: ReturnType<typeof getThresholds> }) {
+  return <CardContent>{alerts.length === 0 ? <div className="flex items-center gap-2 text-sm text-muted-foreground"><ShieldCheck className="h-4 w-4 text-success" />Nenhum limiar excedido nas amostras atuais.</div> : <ul className="space-y-2">{alerts.map(alert => <AlertRow key={alert.key} alert={alert} />)}</ul>}{showSettings && <div className="mt-5 grid gap-4 md:grid-cols-2">{BRIDGES.map(({ id, label }) => <ThresholdEditor key={id} bridge={id} label={label} t={thresholds[id]} />)}</div>}</CardContent>;
+}
+
+export function BridgeAlertsCard() {
+  const { alerts, thresholds } = useBridgeAlerts();
+  const [showSettings, setShowSettings] = useState(false);
   const critCount = alerts.filter(a => a.severity === 'crit').length;
   const warnCount = alerts.filter(a => a.severity === 'warn').length;
 
   return (
-    <Card
-      className={
-        critCount > 0
-          ? 'border-destructive/40 bg-destructive/5'
-          : warnCount > 0
-            ? 'border-warning/40 bg-warning/5'
-            : ''
-      }
-    >
-      <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-base flex items-center gap-2">
-          <Bell className="h-4 w-4" />
-          Alertas das Bridges
-          {critCount > 0 && (
-            <Badge variant="destructive" className="text-[10px]">{critCount} crítico{critCount > 1 ? 's' : ''}</Badge>
-          )}
-          {warnCount > 0 && (
-            <Badge className="text-[10px] bg-warning/20 text-warning border-warning/30">
-              {warnCount} aviso{warnCount > 1 ? 's' : ''}
-            </Badge>
-          )}
-          {alerts.length === 0 && (
-            <Badge variant="secondary" className="text-[10px]">tudo ok</Badge>
-          )}
-        </CardTitle>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => resetThresholds()}>
-            <RotateCcw className="h-3.5 w-3.5 mr-1.5" />Padrão
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setShowSettings(s => !s)}>
-            <Settings2 className="h-3.5 w-3.5 mr-1.5" />
-            {showSettings ? 'Fechar' : 'Configurar'}
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {/* Lista de alertas ativos */}
-        {alerts.length === 0 ? (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <ShieldCheck className="h-4 w-4 text-success" />
-            Nenhum limiar excedido nas amostras atuais.
-          </div>
-        ) : (
-          <ul className="space-y-2">
-            {alerts.map(a => (
-              <AlertRow key={a.key} alert={a} />
-            ))}
-          </ul>
-        )}
-
-        {/* Configuração de limiares */}
-        {showSettings && (
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
-            {BRIDGES.map(({ id, label }) => (
-              <ThresholdEditor key={id} bridge={id} label={label} t={thresholds[id]} />
-            ))}
-          </div>
-        )}
-      </CardContent>
+    <Card className={getAlertCardClass(critCount, warnCount)}>
+      <BridgeAlertsHeader alerts={alerts} showSettings={showSettings} onToggleSettings={() => setShowSettings(current => !current)} />
+      <BridgeAlertsContent alerts={alerts} showSettings={showSettings} thresholds={thresholds} />
     </Card>
   );
 }
@@ -170,26 +126,22 @@ function AlertRow({ alert }: { alert: BridgeAlert }) {
   );
 }
 
+type BridgeThreshold = ReturnType<typeof getThresholds>[BridgeName];
+
+function ThresholdNumberInput({ value, onChange, min = 0 }: { value: number; onChange: (value: number) => void; min?: number }) {
+  return <Input type="number" value={value} min={min} onChange={(event) => { const next = Number(event.target.value); if (Number.isFinite(next) && next >= min) onChange(next); }} className="h-8 text-sm" />;
+}
+
+function ThresholdFields({ threshold, onUpdate }: { threshold: BridgeThreshold; onUpdate: (patch: Partial<BridgeThreshold>) => void }) {
+  const responseWarningKb = Math.round(threshold.avgRespWarnBytes / 1024);
+  const responseCriticalKb = Math.round(threshold.avgRespCritBytes / 1024);
+  return <div className="grid grid-cols-2 gap-2"><div className="space-y-1"><Label className="text-[11px] text-muted-foreground">p95 aviso (ms)</Label><ThresholdNumberInput value={threshold.p95WarnMs} onChange={(value) => onUpdate({ p95WarnMs: value })} /></div><div className="space-y-1"><Label className="text-[11px] text-muted-foreground">p95 crítico (ms)</Label><ThresholdNumberInput value={threshold.p95CritMs} onChange={(value) => onUpdate({ p95CritMs: value })} /></div><div className="space-y-1"><Label className="text-[11px] text-muted-foreground">resp. aviso (KB)</Label><ThresholdNumberInput value={responseWarningKb} onChange={(value) => onUpdate({ avgRespWarnBytes: value * 1024 })} /></div><div className="space-y-1"><Label className="text-[11px] text-muted-foreground">resp. crítico (KB)</Label><ThresholdNumberInput value={responseCriticalKb} onChange={(value) => onUpdate({ avgRespCritBytes: value * 1024 })} /></div><div className="space-y-1 col-span-2"><Label className="text-[11px] text-muted-foreground">amostras mínimas</Label><ThresholdNumberInput value={threshold.minSamples} onChange={(value) => onUpdate({ minSamples: Math.max(1, value) })} min={1} /></div></div>;
+}
+
 function ThresholdEditor({
   bridge, label, t,
 }: { bridge: BridgeName; label: string; t: ReturnType<typeof getThresholds>[BridgeName] }) {
   const update = (patch: Partial<typeof t>) => setThresholds(bridge, patch);
-  const numInput = (val: number, onChange: (n: number) => void, min = 0) => (
-    <Input
-      type="number"
-      value={val}
-      min={min}
-      onChange={e => {
-        const n = Number(e.target.value);
-        if (Number.isFinite(n) && n >= min) onChange(n);
-      }}
-      className="h-8 text-sm"
-    />
-  );
-
-  const respWarnKb = Math.round(t.avgRespWarnBytes / 1024);
-  const respCritKb = Math.round(t.avgRespCritBytes / 1024);
-
   return (
     <div className="rounded-lg border border-border/60 p-3 bg-muted/20 space-y-3">
       <div className="flex items-center justify-between">
@@ -199,28 +151,7 @@ function ThresholdEditor({
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <div className="space-y-1">
-          <Label className="text-[11px] text-muted-foreground">p95 aviso (ms)</Label>
-          {numInput(t.p95WarnMs, n => update({ p95WarnMs: n }))}
-        </div>
-        <div className="space-y-1">
-          <Label className="text-[11px] text-muted-foreground">p95 crítico (ms)</Label>
-          {numInput(t.p95CritMs, n => update({ p95CritMs: n }))}
-        </div>
-        <div className="space-y-1">
-          <Label className="text-[11px] text-muted-foreground">resp. aviso (KB)</Label>
-          {numInput(respWarnKb, n => update({ avgRespWarnBytes: n * 1024 }))}
-        </div>
-        <div className="space-y-1">
-          <Label className="text-[11px] text-muted-foreground">resp. crítico (KB)</Label>
-          {numInput(respCritKb, n => update({ avgRespCritBytes: n * 1024 }))}
-        </div>
-        <div className="space-y-1 col-span-2">
-          <Label className="text-[11px] text-muted-foreground">amostras mínimas</Label>
-          {numInput(t.minSamples, n => update({ minSamples: Math.max(1, n) }), 1)}
-        </div>
-      </div>
+      <ThresholdFields threshold={t} onUpdate={update} />
 
       <div className="flex items-center justify-between pt-1 border-t border-border/40">
         <Label htmlFor={`toast-${bridge}`} className="text-xs">Notificar via toast</Label>

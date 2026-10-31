@@ -14,12 +14,15 @@ import { useComparisonStore } from "@/stores/useComparisonStore";
 import { AnimatePresence, motion } from "framer-motion";
 import { ReplenishmentTableView } from "./ReplenishmentCards";
 import { ReplenishmentToolbar } from "./ReplenishmentToolbar";
-import { VirtualizedReplenishmentGrid } from "./VirtualizedReplenishmentGrid";
+import { VirtualizedReplenishmentGrid, getGridColsClass, getGridGapClass } from "./VirtualizedReplenishmentGrid";
 import { VirtualizedReplenishmentList } from "./VirtualizedReplenishmentList";
-import { getGridColsClass, getGridGapClass } from "./VirtualizedReplenishmentGrid";
 
 type ViewMode = "grid" | "list" | "table";
 type SortMode = "name" | "price-asc" | "price-desc" | "newest" | "stock";
+
+function hasReplenishmentFilters(supplier: string, category: string, query: string) {
+  return supplier !== "all" || category !== "all" || query.trim() !== "";
+}
 
 function useLoadingProgress(isLoading: boolean): number {
   const [progress, setProgress] = useState(0);
@@ -57,7 +60,7 @@ export function ReplenishmentProductGrid() {
   const [selectionMode, setSelectionMode] = useState(false);
 
   const { data: replenishments, isLoading, isFetching, error } = useReplenishmentsWithDetails({ limit: 200 });
-  const products = replenishments ?? [];
+  const products = useMemo(() => replenishments ?? [], [replenishments]);
   const loadingProgress = useLoadingProgress(isLoading);
 
   const { suppliers, categories } = useMemo(() => {
@@ -100,7 +103,7 @@ export function ReplenishmentProductGrid() {
   }, [products, selectedSupplier, selectedCategory, sortMode, searchQuery]);
 
   const sel = useReplenishmentsSelectionMode({ selectionMode, filteredProducts });
-  const hasActiveFilters = selectedSupplier !== "all" || selectedCategory !== "all" || searchQuery.trim() !== "";
+  const hasActiveFilters = hasReplenishmentFilters(selectedSupplier, selectedCategory, searchQuery);
 
   const handleProductClick = useCallback((id: string) => navigate(`/produto/${id}`), [navigate]);
   const clearFilters = useCallback(() => { setSelectedSupplier("all"); setSelectedCategory("all"); setSearchQuery(""); }, []);

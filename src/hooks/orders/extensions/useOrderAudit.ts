@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { OrderService } from "@/services/OrderService";
+import { requireOrderId } from "@/hooks/orders/require-order-id";
 
 export interface OrderAuditStatusValue {
   fulfillment_status?: string;
@@ -39,7 +40,7 @@ export const useOrderAudit = (orderId?: string, filters?: OrderAuditFilters) => 
 
   const { data, isLoading } = useQuery({
     queryKey: ["order-audit", orderId, filters],
-    queryFn: () => OrderService.listAuditEvents(orderId!, filters) as Promise<OrderAuditEvent[]>,
+    queryFn: () => OrderService.listAuditEvents(requireOrderId(orderId), filters) as Promise<OrderAuditEvent[]>,
     enabled: !!orderId,
   });
 

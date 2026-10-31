@@ -1,13 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface NotificationPreferences {
   user_id: string;
   email_enabled: boolean;
   push_enabled: boolean;
   whatsapp_enabled: boolean;
-  events_config: any;
+  events_config: Json;
   dnd_enabled: boolean;
   dnd_start: string;
   dnd_end: string;
@@ -80,8 +81,8 @@ export function useNotificationPreferences() {
       queryClient.invalidateQueries({ queryKey: ["notification_preferences"] });
       toast.success("Preferências atualizadas com sucesso!");
     },
-    onError: (error: any) => {
-      toast.error(`Erro ao atualizar preferências: ${error.message}`);
+    onError: (error: unknown) => {
+      toast.error(`Erro ao atualizar preferências: ${error instanceof Error ? error.message : String(error)}`);
     },
   });
 

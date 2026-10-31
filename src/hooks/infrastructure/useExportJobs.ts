@@ -1,16 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import type { Json } from "@/integrations/supabase/types";
+
+type ExportRpcClient = {
+  rpc: (name: "retry_own_sicoob_export_job", args: { p_job_id: string }) => Promise<{ data: boolean | null; error: Error | null }>;
+};
 
 export interface ExportJob {
   id: string;
   user_id: string;
   export_type: 'pdf' | 'excel' | 'csv';
   entity_type: 'orders' | 'quotes';
-  filters: any;
+  filters: Json;
   status: 'pending' | 'processing' | 'completed' | 'failed';
   attempts: number;
   file_url?: string;
+  file_path?: string;
   error_message?: string;
   total_count: number;
   created_at: string;
@@ -21,7 +27,7 @@ export interface ScheduledExport {
   user_id: string;
   entity_type: 'orders' | 'quotes';
   export_type: 'pdf' | 'excel';
-  filters: any;
+  filters: Json;
   frequency: 'daily' | 'weekly' | 'monthly';
   last_run_at: string | null;
   next_run_at: string | null;
@@ -66,7 +72,11 @@ export function useExportJobs() {
       const { data, error } = await supabase
         .from("export_jobs")
         .insert({
-          ...job,
+          entity_type: job.entity_type,
+          export_type: job.export_type,
+          filters: job.filters as Json,
+          error_message: job.error_message,
+          file_url: job.file_url,
           user_id: user.id,
           status: "pending",
         })
@@ -80,19 +90,16 @@ export function useExportJobs() {
       queryClient.invalidateQueries({ queryKey: ["export_jobs"] });
       toast.success("Exportação solicitada! Você receberá uma notificação quando estiver pronto.");
     },
-    onError: (error: any) => {
-      toast.error(`Erro ao solicitar exportação: ${error.message}`);
+    onError: (error: unknown) => {
+      toast.error(`Erro ao solicitar exportação: ${error instanceof Error ? error.message : String(error)}`);
     },
   });
 
   const retryJob = useMutation({
     mutationFn: async (jobId: string) => {
-      const { error } = await supabase
-        .from("export_jobs")
-        .update({ status: "pending", attempts: 0, error_message: null })
-        .eq("id", jobId);
-
+      const { data, error } = await (supabase as unknown as ExportRpcClient).rpc("retry_own_sicoob_export_job", { p_job_id: jobId });
       if (error) throw error;
+      if (data !== true) throw new Error("A exportação não pôde ser reenfileirada.");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["export_jobs"] });

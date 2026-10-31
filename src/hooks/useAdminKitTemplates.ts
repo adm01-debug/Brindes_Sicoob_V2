@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import type { KitTemplateRow } from './useKitTemplates';
 
 const QUERY_KEY = ['admin-kit-templates'] as const;
+const KIT_TEMPLATES_QUERY_KEY = ['kit-templates'] as const;
 
 export type KitTemplateInput = Partial<Omit<KitTemplateRow, 'id' | 'created_at' | 'updated_at'>> & {
   name: string;
@@ -46,7 +47,7 @@ export function useAdminKitTemplates() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
-      queryClient.invalidateQueries({ queryKey: ['kit-templates'] });
+      queryClient.invalidateQueries({ queryKey: KIT_TEMPLATES_QUERY_KEY });
       toast.success('Template salvo');
     },
     onError: (err: Error) => toast.error(`Erro: ${err.message}`),
@@ -59,23 +60,23 @@ export function useAdminKitTemplates() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
-      queryClient.invalidateQueries({ queryKey: ['kit-templates'] });
+      queryClient.invalidateQueries({ queryKey: KIT_TEMPLATES_QUERY_KEY });
       toast.success('Template removido');
     },
     onError: () => toast.error('Erro ao remover'),
   });
 
   const toggleActiveMutation = useMutation({
-    mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
+    mutationFn: async ({ id, is_active: isActive }: { id: string; is_active: boolean }) => {
       const { error } = await supabase
         .from('kit_templates')
-        .update({ is_active } as never)
+        .update({ is_active: isActive } as never)
         .eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
-      queryClient.invalidateQueries({ queryKey: ['kit-templates'] });
+      queryClient.invalidateQueries({ queryKey: KIT_TEMPLATES_QUERY_KEY });
     },
   });
 

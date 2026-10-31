@@ -7,6 +7,9 @@ import { formatCurrency } from '@/hooks/useSimulation';
 import type { TechniqueWithRecommendation } from '@/hooks/useTechniqueRecommendations';
 
 // Miniaturas de exemplo por categoria de técnica
+const PRIMARY_BACKGROUND = 'bg-primary';
+const PRIMARY_TEXT = 'text-primary';
+
 export const TECHNIQUE_THUMBNAILS: Record<string, string> = {
   'SILK': 'https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9?w=100&h=100&fit=crop',
   'SERIGRAFIA': 'https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9?w=100&h=100&fit=crop',
@@ -18,20 +21,24 @@ export const TECHNIQUE_THUMBNAILS: Record<string, string> = {
   'UV': 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=100&h=100&fit=crop',
 };
 
+function includesTechnique(code: string, names: string[]) {
+  return names.some((name) => code.includes(name));
+}
+
 export function getTechniqueStyle(code: string) {
   const c = code?.toUpperCase() || '';
-  if (c.includes('SILK') || c.includes('SERIGRAFIA'))
-    return { color: 'bg-primary', textColor: 'text-primary', icon: '🎨' };
+  if (includesTechnique(c, ['SILK', 'SERIGRAFIA']))
+    return { color: PRIMARY_BACKGROUND, textColor: PRIMARY_TEXT, icon: '🎨' };
   if (c.includes('DTF'))
     return { color: 'bg-info', textColor: 'text-info', icon: '🖨️' };
-  if (c.includes('SUB') || c.includes('TRANSFER'))
-    return { color: 'bg-primary', textColor: 'text-primary', icon: '🌈' };
-  if (c.includes('BORD') || c.includes('EMBROID'))
+  if (includesTechnique(c, ['SUB', 'TRANSFER']))
+    return { color: PRIMARY_BACKGROUND, textColor: PRIMARY_TEXT, icon: '🌈' };
+  if (includesTechnique(c, ['BORD', 'EMBROID']))
     return { color: 'bg-warning', textColor: 'text-warning', icon: '🧵' };
   if (c.includes('LASER'))
     return { color: 'bg-destructive', textColor: 'text-destructive', icon: '⚡' };
   if (c.includes('UV'))
-    return { color: 'bg-primary', textColor: 'text-primary', icon: '💜' };
+    return { color: PRIMARY_BACKGROUND, textColor: PRIMARY_TEXT, icon: '💜' };
   return { color: 'bg-muted-foreground', textColor: 'text-muted-foreground', icon: '✨' };
 }
 
@@ -44,7 +51,7 @@ export function getTechniqueThumbnail(code: string): string | null {
 }
 
 export function getSlaInfo(days: number) {
-  if (days <= 3) return { label: 'Express', color: 'bg-primary', textColor: 'text-primary' };
+  if (days <= 3) return { label: 'Express', color: PRIMARY_BACKGROUND, textColor: PRIMARY_TEXT };
   if (days <= 7) return { label: 'Padrão', color: 'bg-warning', textColor: 'text-warning' };
   return { label: 'Estendido', color: 'bg-destructive', textColor: 'text-destructive' };
 }

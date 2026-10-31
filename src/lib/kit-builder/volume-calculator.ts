@@ -77,9 +77,9 @@ export function checkItemFits(
   const boxDims = [box.internalWidth, box.internalHeight, box.internalDepth].sort((a, b) => a - b);
 
   // Se as dimensões ordenadas do item excedem as da caixa, não cabe em nenhuma orientação
-  const [itemD0, itemD1, itemD2] = itemDims;
-  const [boxD0, boxD1, boxD2] = boxDims;
-  const fitsAnyOrientation = (itemD0 ?? 0) <= (boxD0 ?? 0) && (itemD1 ?? 0) <= (boxD1 ?? 0) && (itemD2 ?? 0) <= (boxD2 ?? 0);
+  const fitsAnyOrientation = itemDims.every((dimension, index) => (
+    dimension <= (boxDims[index] ?? 0)
+  ));
 
   if (!fitsAnyOrientation) {
     return {
@@ -212,63 +212,15 @@ export function extractProductDimensions(
     internal_height_cm?: number | null;
   }
 ): { width: number; height: number; depth: number } | null {
-  // Primeiro tenta campos específicos de dimensão interna (para caixas)
-  if (
-    product.internal_width_cm &&
-    product.internal_length_cm &&
-    product.internal_height_cm
-  ) {
-    return {
-      width: product.internal_width_cm,
-      height: product.internal_height_cm,
-      depth: product.internal_length_cm,
-    };
-  }
+  const internal = completeDimensions(product.internal_width_cm, product.internal_height_cm, product.internal_length_cm);
+  if (internal) return internal;
+  const box = completeDimensions(product.box_width_cm, product.box_height_cm, product.box_length_cm);
+  if (box) return box;
+  const direct = completeDimensions(product.width_cm, product.height_cm, product.length_cm);
+  if (direct) return direct;
 
-  // Depois tenta campos de dimensão externa
-  if (
-    product.box_width_cm &&
-    product.box_length_cm &&
-    product.box_height_cm
-  ) {
-    return {
-      width: product.box_width_cm,
-      height: product.box_height_cm,
-      depth: product.box_length_cm,
-    };
-  }
-
-  // Depois tenta campos diretos em cm
-  if (
-    product.width_cm &&
-    product.length_cm &&
-    product.height_cm
-  ) {
-    return {
-      width: product.width_cm,
-      height: product.height_cm,
-      depth: product.length_cm,
-    };
-  }
-
-  // Tenta JSONB dimensions (formato do banco externo)
-  if (product.dimensions && typeof product.dimensions === 'object') {
-    const dims = product.dimensions as { width_cm?: number; height_cm?: number; length_cm?: number };
-    if (dims.width_cm && dims.height_cm && dims.length_cm) {
-      return {
-        width: dims.width_cm,
-        height: dims.height_cm,
-        depth: dims.length_cm,
-      };
-    }
-    if (dims.width_cm && dims.height_cm) {
-      return {
-        width: dims.width_cm,
-        height: dims.height_cm,
-        depth: dims.length_cm || Math.min(dims.width_cm, dims.height_cm) * 0.5,
-      };
-    }
-  }
+  const structured = structuredDimensions(product.dimensions);
+  if (structured) return structured;
 
   // Por fim tenta parsear string de dimensões
   if (typeof product.dimensions === 'string') {
@@ -276,6 +228,29 @@ export function extractProductDimensions(
   }
 
   return null;
+}
+
+function structuredDimensions(
+  dimensions: string | { width_cm?: number; height_cm?: number; length_cm?: number; diameter_cm?: number } | null | undefined,
+): { width: number; height: number; depth: number } | null {
+  if (!dimensions || typeof dimensions !== 'object') return null;
+  const complete = completeDimensions(dimensions.width_cm, dimensions.height_cm, dimensions.length_cm);
+  if (complete) return complete;
+  if (!dimensions.width_cm || !dimensions.height_cm) return null;
+  return {
+    width: dimensions.width_cm,
+    height: dimensions.height_cm,
+    depth: dimensions.length_cm || Math.min(dimensions.width_cm, dimensions.height_cm) * 0.5,
+  };
+}
+
+function completeDimensions(
+  width: number | null | undefined,
+  height: number | null | undefined,
+  depth: number | null | undefined,
+): { width: number; height: number; depth: number } | null {
+  if (!width || !height || !depth) return null;
+  return { width, height, depth };
 }
 
 // ============================================
@@ -289,33 +264,16 @@ export function estimateDefaultDimensions(
   category?: string
 ): { width: number; height: number; depth: number } {
   const categoryLower = (category || '').toLowerCase();
-
-  // Estimativas baseadas em categorias comuns
-  if (categoryLower.includes('caneta') || categoryLower.includes('pen')) {
-    return { width: 1.5, height: 15, depth: 1.5 };
-  }
-  if (categoryLower.includes('caderno') || categoryLower.includes('agenda')) {
-    return { width: 15, height: 21, depth: 2 };
-  }
-  if (categoryLower.includes('garrafa') || categoryLower.includes('squeeze')) {
-    return { width: 7, height: 25, depth: 7 };
-  }
-  if (categoryLower.includes('copo') || categoryLower.includes('caneca')) {
-    return { width: 10, height: 12, depth: 10 };
-  }
-  if (categoryLower.includes('mochila') || categoryLower.includes('bolsa')) {
-    return { width: 30, height: 40, depth: 15 };
-  }
-  if (categoryLower.includes('necessaire')) {
-    return { width: 20, height: 12, depth: 8 };
-  }
-  if (categoryLower.includes('guarda-chuva') || categoryLower.includes('sombrinha')) {
-    return { width: 5, height: 60, depth: 5 };
-  }
-  if (categoryLower.includes('power bank') || categoryLower.includes('carregador')) {
-    return { width: 7, height: 14, depth: 2 };
-  }
-
-  // Padrão genérico para itens pequenos
-  return { width: 10, height: 10, depth: 5 };
+  const estimates = [
+    { keywords: ['caneta', 'pen'], dimensions: { width: 1.5, height: 15, depth: 1.5 } },
+    { keywords: ['caderno', 'agenda'], dimensions: { width: 15, height: 21, depth: 2 } },
+    { keywords: ['garrafa', 'squeeze'], dimensions: { width: 7, height: 25, depth: 7 } },
+    { keywords: ['copo', 'caneca'], dimensions: { width: 10, height: 12, depth: 10 } },
+    { keywords: ['mochila', 'bolsa'], dimensions: { width: 30, height: 40, depth: 15 } },
+    { keywords: ['necessaire'], dimensions: { width: 20, height: 12, depth: 8 } },
+    { keywords: ['guarda-chuva', 'sombrinha'], dimensions: { width: 5, height: 60, depth: 5 } },
+    { keywords: ['power bank', 'carregador'], dimensions: { width: 7, height: 14, depth: 2 } },
+  ];
+  const match = estimates.find((estimate) => estimate.keywords.some((keyword) => categoryLower.includes(keyword)));
+  return match?.dimensions ?? { width: 10, height: 10, depth: 5 };
 }

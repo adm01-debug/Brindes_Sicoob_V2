@@ -1,4 +1,3 @@
-import { useState } from "react";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { QuotesListPage } from "./QuotesListPage";
@@ -43,4 +42,3 @@ export default function MeusOrcamentos() {
     </>
   );
 }
-

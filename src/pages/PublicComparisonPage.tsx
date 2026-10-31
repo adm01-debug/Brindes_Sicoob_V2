@@ -2,18 +2,18 @@
  * PublicComparisonPage — Visualização pública de uma comparação via /comparar-publica/:token
  * Read-only, sem auth, com reactions anônimas.
  */
-import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
-import { supabase } from "@/integrations/supabase/client";
-import { fetchPromobrindProducts } from "@/lib/external-db";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { GitCompare, Sparkles, Heart, Package } from "lucide-react";
-import { formatCurrency } from "@/lib/format";
-import { toast } from "sonner";
-import { createClientLogger } from "@/lib/telemetry/structuredLogger";
-import type { CompareItem } from "@/stores/useComparisonStore";
+import { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+import { supabase } from '@/integrations/supabase/client';
+import { fetchPromobrindProducts } from '@/lib/external-db';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { GitCompare, Sparkles, Heart, Package } from 'lucide-react';
+import { formatCurrency } from '@/lib/format';
+import { toast } from 'sonner';
+import { createClientLogger } from '@/lib/telemetry/structuredLogger';
+import type { CompareItem } from '@/stores/useComparisonStore';
 
 interface PublicComparison {
   id: string;
@@ -30,16 +30,127 @@ interface ProductDetail {
   sku: string | null;
 }
 
-const EMOJIS = ["👍", "❤️", "🔥", "💡"] as const;
+const EMOJIS = ['👍', '❤️', '🔥', '💡'] as const;
+
+function parseCompareItems(value: unknown): CompareItem[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is CompareItem => {
+    if (!item || typeof item !== 'object') return false;
+    const candidate = item as Partial<CompareItem>;
+    return typeof candidate.productId === 'string';
+  });
+}
 
 function getOrCreateAnonId(): string {
-  const KEY = "pg_anon_id";
+  const KEY = 'pg_anon_id';
   let id = localStorage.getItem(KEY);
   if (!id) {
-    id = crypto.randomUUID().replace(/-/g, "");
+    id = crypto.randomUUID().replace(/-/g, '');
     localStorage.setItem(KEY, id);
   }
   return id;
+}
+
+function ProductImage({ image, name }: { image?: string; name?: string }) {
+  return (
+    <div className="aspect-square overflow-hidden bg-muted">
+      {image ? (
+        <img
+          src={image}
+          alt={name ?? 'Produto'}
+          loading="lazy"
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+          <Package className="h-10 w-10" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductVariant({ item }: { item: CompareItem }) {
+  if (!item.variant?.color_name) return null;
+  return (
+    <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      {item.variant.color_hex && (
+        <span
+          className="h-3 w-3 rounded-full border border-border"
+          style={{ backgroundColor: item.variant.color_hex }}
+        />
+      )}
+      {item.variant.color_name}
+    </p>
+  );
+}
+
+function ReactionButtons({
+  counts,
+  react,
+}: {
+  counts?: Map<string, number>;
+  react: (emoji: string) => void;
+}) {
+  return (
+    <div className="mt-auto flex items-center gap-1 border-t border-border pt-2">
+      {EMOJIS.map((emoji) => {
+        const count = counts?.get(emoji) ?? 0;
+        return (
+          <button
+            key={emoji}
+            type="button"
+            onClick={() => react(emoji)}
+            className="flex items-center gap-0.5 rounded-md px-2 py-1 text-sm transition-colors hover:bg-accent"
+            aria-label={`Reagir com ${emoji}`}
+          >
+            <span>{emoji}</span>
+            {count > 0 && (
+              <span className="text-[10px] tabular-nums text-muted-foreground">{count}</span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function PublicProductCard({
+  item,
+  index,
+  product,
+  counts,
+  sendReaction,
+}: {
+  item: CompareItem;
+  index: number;
+  product?: ProductDetail;
+  counts?: Map<string, number>;
+  sendReaction: (index: number, emoji: string) => void;
+}) {
+  const image = item.variant?.thumbnail || product?.images?.[0];
+  return (
+    <article className="flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-shadow hover:shadow-md">
+      <ProductImage image={image} name={product?.name} />
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        <h3 className="line-clamp-2 text-sm font-medium leading-tight">
+          {product?.name ?? 'Produto'}
+        </h3>
+        {product?.price ? (
+          <p className="font-display text-lg font-bold text-primary">
+            {formatCurrency(product.price)}
+          </p>
+        ) : null}
+        <ProductVariant item={item} />
+        <ReactionButtons
+          counts={counts}
+          react={(emoji) => {
+            void sendReaction(index, emoji);
+          }}
+        />
+      </div>
+    </article>
+  );
 }
 
 export default function PublicComparisonPage() {
@@ -52,28 +163,32 @@ export default function PublicComparisonPage() {
   const anonId = useMemo(() => getOrCreateAnonId(), []);
 
   useEffect(() => {
-    if (!token) { setError("Token inválido"); setLoading(false); return; }
+    if (!token) {
+      setError('Token inválido');
+      setLoading(false);
+      return;
+    }
     let mounted = true;
     (async () => {
       const { data: cmp, error: cErr } = await supabase
-        .from("user_comparisons")
-        .select("id, client_name, share_expires_at, is_public, items")
-        .eq("share_token", token)
+        .from('user_comparisons')
+        .select('id, client_name, share_expires_at, is_public, items')
+        .eq('share_token', token)
         .maybeSingle();
 
       if (!mounted) return;
       if (cErr || !cmp || !cmp.is_public) {
-        setError("Comparação não encontrada ou link inválido.");
+        setError('Comparação não encontrada ou link inválido.');
         setLoading(false);
         return;
       }
       if (cmp.share_expires_at && new Date(cmp.share_expires_at) < new Date()) {
-        setError("Este link expirou.");
+        setError('Este link expirou.');
         setLoading(false);
         return;
       }
 
-      const items = (cmp.items as CompareItem[]) ?? [];
+      const items = parseCompareItems(cmp.items);
       setComparison({
         id: cmp.id,
         client_name: cmp.client_name,
@@ -81,7 +196,7 @@ export default function PublicComparisonPage() {
         items,
       });
 
-      const productIds = [...new Set(items.map(i => i.productId))];
+      const productIds = [...new Set(items.map((i) => i.productId))];
       if (productIds.length > 0) {
         // Produtos vêm do catálogo externo (Promobrind), não do banco operacional —
         // a tabela local "products" não existe. Ver docs/execucao/evidencias/products_companies_fix_20260917.md
@@ -90,31 +205,35 @@ export default function PublicComparisonPage() {
           limit: productIds.length,
         }).catch(() => []);
         const pMap = new Map<string, ProductDetail>();
-        prods.forEach(p => pMap.set(p.id, {
-          id: p.id,
-          name: p.name,
-          price: p.sale_price ?? null,
-          images: p.images,
-          sku: p.sku,
-        }));
+        prods.forEach((p) =>
+          pMap.set(p.id, {
+            id: p.id,
+            name: p.name,
+            price: p.sale_price ?? null,
+            images: p.images,
+            sku: p.sku,
+          }),
+        );
         setProducts(pMap);
       }
 
       const { data: reacts } = await supabase
-        .from("comparison_reactions")
-        .select("item_index, emoji")
-        .eq("comparison_id", cmp.id);
+        .from('comparison_reactions')
+        .select('item_index, emoji')
+        .eq('comparison_id', cmp.id);
       const rMap = new Map<number, Map<string, number>>();
       (reacts ?? []).forEach((r: { item_index: number; emoji: string }) => {
-        if (!rMap.has(r.item_index)) rMap.set(r.item_index, new Map());
-        const m = rMap.get(r.item_index)!;
-        m.set(r.emoji, (m.get(r.emoji) ?? 0) + 1);
+        const counts = rMap.get(r.item_index) ?? new Map<string, number>();
+        counts.set(r.emoji, (counts.get(r.emoji) ?? 0) + 1);
+        rMap.set(r.item_index, counts);
       });
       setReactions(rMap);
 
       setLoading(false);
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [token]);
 
   const sendReaction = async (itemIndex: number, emoji: string) => {
@@ -124,8 +243,8 @@ export default function PublicComparisonPage() {
     try {
       const url = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/comparisons-public-react`;
       const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...log.headers() },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...log.headers() },
         body: JSON.stringify({
           share_token: token,
           comparison_id: comparison.id,
@@ -138,10 +257,10 @@ export default function PublicComparisonPage() {
         const body = await res.json().catch(() => ({}));
         if (res.status === 429) {
           log.warn('reaction_rate_limited', { status: 429 });
-          toast.error("Muitas reações em pouco tempo. Aguarde um instante.");
+          toast.error('Muitas reações em pouco tempo. Aguarde um instante.');
         } else {
           log.warn('reaction_failed', { status: res.status, body });
-          toast.error(body.error || "Falha ao reagir");
+          toast.error(body.error || 'Falha ao reagir');
         }
         return;
       }
@@ -153,20 +272,22 @@ export default function PublicComparisonPage() {
         return next;
       });
       log.info('reaction_ok', { itemIndex, emoji });
-      toast.success("Obrigado pelo feedback!");
+      toast.success('Obrigado pelo feedback!');
     } catch (err) {
       log.error('reaction_exception', { err });
-      toast.error("Erro de conexão");
+      toast.error('Erro de conexão');
     }
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background p-6">
-        <div className="max-w-6xl mx-auto space-y-4">
+        <div className="mx-auto max-w-6xl space-y-4">
           <Skeleton className="h-12 w-64" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-72 rounded-xl" />)}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-72 rounded-xl" />
+            ))}
           </div>
         </div>
       </div>
@@ -175,12 +296,14 @@ export default function PublicComparisonPage() {
 
   if (error || !comparison) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <div className="text-center max-w-md">
-          <GitCompare className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-          <h1 className="font-display text-2xl font-bold mb-2">Link indisponível</h1>
-          <p className="text-muted-foreground mb-6">{error}</p>
-          <Button asChild variant="outline"><a href="/">Ir para o início</a></Button>
+      <div className="flex min-h-screen items-center justify-center bg-background p-6">
+        <div className="max-w-md text-center">
+          <GitCompare className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+          <h1 className="mb-2 font-display text-2xl font-bold">Link indisponível</h1>
+          <p className="mb-6 text-muted-foreground">{error}</p>
+          <Button asChild variant="outline">
+            <a href="/">Ir para o início</a>
+          </Button>
         </div>
       </div>
     );
@@ -193,18 +316,18 @@ export default function PublicComparisonPage() {
         <meta name="robots" content="noindex" />
       </Helmet>
 
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10 shrink-0">
+      <header className="sticky top-0 z-10 border-b border-border bg-card/50 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4 sm:px-6">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
             <GitCompare className="h-6 w-6 text-primary" />
           </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">
+          <div className="min-w-0 flex-1">
+            <h1 className="font-display text-xl font-bold text-foreground sm:text-2xl">
               Comparação de Produtos
             </h1>
-            {comparison.client_name && comparison.client_name !== "current" && (
-              <p className="text-xs text-primary font-medium mt-0.5">
-                <Sparkles className="h-3 w-3 inline mr-1" />
+            {comparison.client_name && comparison.client_name !== 'current' && (
+              <p className="mt-0.5 text-xs font-medium text-primary">
+                <Sparkles className="mr-1 inline h-3 w-3" />
                 Curadoria para {comparison.client_name}
               </p>
             )}
@@ -212,60 +335,22 @@ export default function PublicComparisonPage() {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
         {comparison.items.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground">
-            Esta comparação está vazia.
-          </div>
+          <div className="py-16 text-center text-muted-foreground">Esta comparação está vazia.</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {comparison.items.map((item, idx) => {
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {comparison.items.map((item, index) => {
               const product = products.get(item.productId);
-              const img = item.variant?.thumbnail || product?.images?.[0];
-              const reactionMap = reactions.get(idx);
               return (
-                <article key={`${item.productId}-${idx}`} className="rounded-xl border border-border bg-card overflow-hidden flex flex-col hover:shadow-md transition-shadow">
-                  <div className="aspect-square bg-muted overflow-hidden">
-                    {img ? (
-                      <img src={img} alt={product?.name ?? "Produto"} loading="lazy" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                        <Package className="h-10 w-10" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4 flex-1 flex flex-col gap-2">
-                    <h3 className="font-medium text-sm line-clamp-2 leading-tight">{product?.name ?? "Produto"}</h3>
-                    {product?.price ? (
-                      <p className="font-display text-lg font-bold text-primary">{formatCurrency(product.price)}</p>
-                    ) : null}
-                    {item.variant?.color_name && (
-                      <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                        {item.variant.color_hex && (
-                          <span className="w-3 h-3 rounded-full border border-border" style={{ backgroundColor: item.variant.color_hex }} />
-                        )}
-                        {item.variant.color_name}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-1 mt-auto pt-2 border-t border-border">
-                      {EMOJIS.map((e) => {
-                        const count = reactionMap?.get(e) ?? 0;
-                        return (
-                          <button
-                            key={e}
-                            type="button"
-                            onClick={() => sendReaction(idx, e)}
-                            className="flex items-center gap-0.5 px-2 py-1 rounded-md hover:bg-accent transition-colors text-sm"
-                            aria-label={`Reagir com ${e}`}
-                          >
-                            <span>{e}</span>
-                            {count > 0 && <span className="text-[10px] tabular-nums text-muted-foreground">{count}</span>}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </article>
+                <PublicProductCard
+                  key={`${item.productId}-${index}`}
+                  item={item}
+                  index={index}
+                  product={product}
+                  counts={reactions.get(index)}
+                  sendReaction={sendReaction}
+                />
               );
             })}
           </div>
@@ -273,7 +358,7 @@ export default function PublicComparisonPage() {
       </main>
 
       <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
-        <Heart className="h-3 w-3 inline mr-1 text-primary" />
+        <Heart className="mr-1 inline h-3 w-3 text-primary" />
         Comparação compartilhada via Brindes Sicoob
       </footer>
     </div>

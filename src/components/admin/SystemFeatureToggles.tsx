@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -99,28 +99,28 @@ export function SystemFeatureToggles() {
             icon={<Package className="h-4 w-4" />}
             label="Sistema de Carrinho (B2C/Legado)"
             description="Controla o carrinho legado B2C; o portal Sicoob usa a jornada de orçamento."
-            enabled={features.feature_cart_system}
+            enabled={!!features.feature_cart_system}
             onToggle={() => toggleFeature('feature_cart_system')}
           />
           <FeatureToggle 
             icon={<MessageSquare className="h-4 w-4" />}
             label="Chat Direto Vendedor-Cliente"
             description="Canal de comunicação persistente em tempo real."
-            enabled={features.feature_direct_chat}
+            enabled={!!features.feature_direct_chat}
             onToggle={() => toggleFeature('feature_direct_chat')}
           />
           <FeatureToggle 
             icon={<Zap className="h-4 w-4" />}
             label="Módulo de Blog & CMS Público"
             description="Ativa páginas institucionais dinâmicas."
-            enabled={features.feature_cms_blog}
+            enabled={!!features.feature_cms_blog}
             onToggle={() => toggleFeature('feature_cms_blog')}
           />
           <FeatureToggle 
             icon={<ShieldCheck className="h-4 w-4" />}
             label="Validação de Verbas (PAC)"
             description="Trava orçamentos acima do saldo do PA."
-            enabled={features.feature_budget_enforcement}
+            enabled={!!features.feature_budget_enforcement}
             onToggle={() => toggleFeature('feature_budget_enforcement')}
           />
         </div>
@@ -144,7 +144,15 @@ export function SystemFeatureToggles() {
   );
 }
 
-function FeatureToggle({ icon, label, description, enabled, onToggle }: any) {
+interface FeatureToggleProps {
+  icon: ReactNode;
+  label: string;
+  description: string;
+  enabled: boolean;
+  onToggle: (enabled: boolean) => void;
+}
+
+function FeatureToggle({ icon, label, description, enabled, onToggle }: FeatureToggleProps) {
   return (
     <div className="flex items-start justify-between gap-4 p-3 rounded-xl border border-border/40 bg-muted/10 hover:bg-muted/20 transition-colors">
       <div className="flex gap-3">

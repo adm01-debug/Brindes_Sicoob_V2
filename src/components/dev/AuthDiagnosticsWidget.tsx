@@ -1,24 +1,23 @@
 import React, { useState, useEffect, forwardRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Activity, X, Terminal, ChevronDown, ChevronUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
+
+
+
+
 import { useDevGate } from "@/hooks/useDevGate";
 
 interface DebugLog {
   ts: string;
   scope: string;
   message: string;
-  data: any;
+  data: unknown;
   type: 'info' | 'error';
 }
 
 export const AuthDiagnosticsWidget = forwardRef<HTMLDivElement>((_props, ref) => {
   const { isAllowed } = useDevGate();
-  const [logs, setLogs] = useState<DebugLog[]>([]);
+  const [, setLogs] = useState<DebugLog[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
 
   useEffect(() => {
     if (!isAllowed) return;
@@ -34,7 +33,7 @@ export const AuthDiagnosticsWidget = forwardRef<HTMLDivElement>((_props, ref) =>
       try {
         const stored = JSON.parse(localStorage.getItem('auth_debug_history') || '[]');
         setLogs(stored.reverse());
-      } catch (e) {
+      } catch {
         setLogs([]);
       }
     };

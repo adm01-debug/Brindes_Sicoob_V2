@@ -84,8 +84,8 @@ describe("Route guards — React ref warning guard", () => {
   });
 
   afterEach(() => {
-    guard.dispose();
     cleanup();
+    guard.dispose();
   });
 
   it("AdminRoute (loading) — sem warning de ref", () => {
@@ -170,6 +170,21 @@ function CustomFallback() {
   return <div role="alert">custom-error-fallback</div>;
 }
 
+const EXPECTED_BOUNDARY_ERRORS = new Set([
+  "boom",
+  "admin-boom",
+  "dev-boom",
+  "p-boom",
+  "nested-boom",
+  "full-ui",
+  "retry-boom",
+]);
+
+function suppressExpectedBoundaryError(event: ErrorEvent) {
+  const message = event.error instanceof Error ? event.error.message : event.message;
+  if (EXPECTED_BOUNDARY_ERRORS.has(message)) event.preventDefault();
+}
+
 describe("Route guards + EnhancedErrorBoundary — sem warning de ref ao falhar", () => {
   let guard: ReturnType<typeof installReactWarningGuard>;
   // Silencia o console.error que React emite ao capturar o erro no boundary
@@ -177,6 +192,7 @@ describe("Route guards + EnhancedErrorBoundary — sem warning de ref ao falhar"
   let errorSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
+    window.addEventListener("error", suppressExpectedBoundaryError);
     guard = installReactWarningGuard();
     errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     Object.assign(authState, {
@@ -189,9 +205,10 @@ describe("Route guards + EnhancedErrorBoundary — sem warning de ref ao falhar"
   });
 
   afterEach(() => {
-    guard.dispose();
-    errorSpy.mockRestore();
     cleanup();
+    window.removeEventListener("error", suppressExpectedBoundaryError);
+    errorSpy.mockRestore();
+    guard.dispose();
   });
 
   it("EnhancedErrorBoundary global captura throw em rota não-protegida — sem warning", () => {

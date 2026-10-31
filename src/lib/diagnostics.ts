@@ -4,12 +4,14 @@
  * Helps identifying where the application might be "stuck" or "hanging".
  */
 
+const browserConsole = globalThis.console;
+
 export interface DiagnosticLog {
   timestamp: number;
   type: 'info' | 'error' | 'request' | 'response' | 'event' | 'performance' | 'security';
   source: string;
   message: string;
-  data?: any;
+  data?: unknown;
   duration?: number;
 }
 
@@ -35,11 +37,17 @@ export class DiagnosticsManager {
   constructor() {
     if (typeof window !== 'undefined') {
       window.__DIAGNOSTICS__ = this;
-      console.log('🔍 Sicoob Diagnostic Engine v2 initialized. [OND-018-HEALTH]');
+      browserConsole.log('🔍 Sicoob Diagnostic Engine v2 initialized. [OND-018-HEALTH]');
     }
   }
 
-  log(type: DiagnosticLog['type'], source: string, message: string, data?: any, duration?: number) {
+  log(
+    type: DiagnosticLog['type'],
+    source: string,
+    message: string,
+    ...details: [data?: unknown, duration?: number]
+  ) {
+    const [data, duration] = details;
     const log: DiagnosticLog = {
       timestamp: Date.now(),
       type,
@@ -57,7 +65,7 @@ export class DiagnosticsManager {
     // Output to console in development
     if (import.meta.env.DEV) {
       const color = this.getTypeColor(type);
-      console.log(
+      browserConsole.log(
         `%c[${source}] %c${message} ${duration ? `(${duration.toFixed(0)}ms)` : ''}`, 
         `color: #00334e; font-weight: bold;`, 
         `color: ${color}; font-weight: 500;`, 
@@ -147,7 +155,7 @@ export class DiagnosticsManager {
             try {
               const { attemptChunkRecovery } = await import('@/lib/chunk-recovery');
               attemptChunkRecovery('Precondition Failed (412)');
-            } catch (e) {
+            } catch {
               window.location.reload();
             }
           }

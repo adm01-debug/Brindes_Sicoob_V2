@@ -17,6 +17,12 @@ interface SidePanelProps {
   footer?: React.ReactNode;
 }
 
+const SIDE_PANEL_SIZE_CLASSES = { sm: 'w-80', md: 'w-96', lg: 'w-[28rem]', xl: 'w-[32rem]' };
+const SIDE_PANEL_SLIDE_ANIMATION = {
+  left: { initial: { x: '-100%' }, animate: { x: 0 }, exit: { x: '-100%' } },
+  right: { initial: { x: '100%' }, animate: { x: 0 }, exit: { x: '100%' } },
+};
+
 /**
  * Side Panel deslizante
  */
@@ -31,26 +37,6 @@ export function SidePanel({
   overlay = true,
   footer,
 }: SidePanelProps) {
-  const sizeClasses = {
-    sm: 'w-80',
-    md: 'w-96',
-    lg: 'w-[28rem]',
-    xl: 'w-[32rem]',
-  };
-
-  const slideAnimation = {
-    left: {
-      initial: { x: '-100%' },
-      animate: { x: 0 },
-      exit: { x: '-100%' },
-    },
-    right: {
-      initial: { x: '100%' },
-      animate: { x: 0 },
-      exit: { x: '100%' },
-    },
-  };
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -65,44 +51,56 @@ export function SidePanel({
             />
           )}
           <motion.div
-            {...slideAnimation[side]}
+            {...SIDE_PANEL_SLIDE_ANIMATION[side]}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
             className={cn(
               'fixed top-0 z-50 h-full bg-background shadow-2xl',
-              sizeClasses[size],
-              side === 'left' ? 'left-0' : 'right-0'
+              SIDE_PANEL_SIZE_CLASSES[size],
+              side === 'left' ? 'left-0' : 'right-0',
             )}
           >
-            <div className="flex h-full flex-col">
-              {/* Header */}
-              <div className="flex items-start justify-between border-b p-4">
-                <div>
-                  {title && <h2 className="font-display text-lg font-semibold">{title}</h2>}
-                  {description && (
-                    <p className="text-sm text-muted-foreground">{description}</p>
-                  )}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onClose}
-                  className="shrink-0"
-                 aria-label="Fechar"><X className="h-4 w-4" />
-                </Button>
-              </div>
-
-              {/* Content */}
-              <ScrollArea className="flex-1 p-4">{children}</ScrollArea>
-
-              {/* Footer */}
-              {footer && (
-                <div className="border-t p-4">{footer}</div>
-              )}
-            </div>
+            <SidePanelContent
+              title={title}
+              description={description}
+              onClose={onClose}
+              footer={footer}
+            >
+              {children}
+            </SidePanelContent>
           </motion.div>
         </>
       )}
     </AnimatePresence>
+  );
+}
+
+function SidePanelContent({
+  children,
+  title,
+  description,
+  onClose,
+  footer,
+}: Pick<SidePanelProps, 'children' | 'title' | 'description' | 'onClose' | 'footer'>) {
+  return (
+    <div className="flex h-full flex-col">
+      <div className="flex items-start justify-between border-b p-4">
+        <div>
+          {title && <h2 className="font-display text-lg font-semibold">{title}</h2>}
+          {description && <p className="text-sm text-muted-foreground">{description}</p>}
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="shrink-0"
+          aria-label="Fechar"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+      <ScrollArea className="flex-1 p-4">{children}</ScrollArea>
+      {footer && <div className="border-t p-4">{footer}</div>}
+    </div>
   );
 }
 
@@ -133,57 +131,64 @@ export function CollapsibleSidebar({
       className={cn(
         'relative flex h-full flex-col border-r bg-background',
         side === 'right' && 'border-l border-r-0',
-        className
+        className,
       )}
     >
-      {/* Toggle Button */}
-      <Button
-        variant="ghost"
-        size="icon" aria-label="Avançar"
-        onClick={onToggle}
-        className={cn(
-          'absolute top-4 z-10 h-6 w-6 rounded-full border bg-background shadow-sm',
-          side === 'left' ? '-right-3' : '-left-3'
-        )}
-      >
-        {isCollapsed ? (
-          side === 'left' ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <ChevronLeft className="h-4 w-4" />
-          )
-        ) : side === 'left' ? (
-          <ChevronLeft className="h-4 w-4" />
-        ) : (
-          <ChevronRight className="h-4 w-4" />
-        )}
-      </Button>
-
-      {/* Content */}
-      <AnimatePresence mode="wait">
-        {isCollapsed ? (
-          <motion.div
-            key="collapsed"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex-1 overflow-hidden"
-          >
-            {collapsedContent}
-          </motion.div>
-        ) : (
-          <motion.div
-            key="expanded"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex-1 overflow-auto"
-          >
-            {children}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <SidebarToggle collapsed={isCollapsed} side={side} onToggle={onToggle} />
+      <SidebarContent collapsed={isCollapsed} collapsedContent={collapsedContent}>
+        {children}
+      </SidebarContent>
     </motion.aside>
+  );
+}
+
+function SidebarToggle({
+  collapsed,
+  side,
+  onToggle,
+}: {
+  collapsed: boolean;
+  side: 'left' | 'right';
+  onToggle: () => void;
+}) {
+  const pointsRight = collapsed === (side === 'left');
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      aria-label="Alternar menu lateral"
+      onClick={onToggle}
+      className={cn(
+        'absolute top-4 z-10 h-6 w-6 rounded-full border bg-background shadow-sm',
+        side === 'left' ? '-right-3' : '-left-3',
+      )}
+    >
+      {pointsRight ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+    </Button>
+  );
+}
+
+function SidebarContent({
+  children,
+  collapsed,
+  collapsedContent,
+}: {
+  children: React.ReactNode;
+  collapsed: boolean;
+  collapsedContent?: React.ReactNode;
+}) {
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={collapsed ? 'collapsed' : 'expanded'}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className={cn('flex-1', collapsed ? 'overflow-hidden' : 'overflow-auto')}
+      >
+        {collapsed ? collapsedContent : children}
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
@@ -206,7 +211,7 @@ export function ResizablePanelGroup({
       className={cn(
         'flex h-full w-full',
         direction === 'horizontal' ? 'flex-row' : 'flex-col',
-        className
+        className,
       )}
     >
       {children}
@@ -233,14 +238,8 @@ export function ExpandablePanel({
   className,
 }: ExpandablePanelProps) {
   return (
-    <motion.div
-      layout
-      className={cn('rounded-lg border bg-card', className)}
-    >
-      <button
-        onClick={onToggle}
-        className="flex w-full items-center justify-between p-4 text-left"
-      >
+    <motion.div layout className={cn('rounded-lg border bg-card', className)}>
+      <button onClick={onToggle} className="flex w-full items-center justify-between p-4 text-left">
         <span className="font-medium">{title}</span>
         {isExpanded ? (
           <Minimize2 className="h-4 w-4 text-muted-foreground" />
@@ -248,7 +247,7 @@ export function ExpandablePanel({
           <Maximize2 className="h-4 w-4 text-muted-foreground" />
         )}
       </button>
-      
+
       <AnimatePresence>
         {isExpanded && (
           <motion.div

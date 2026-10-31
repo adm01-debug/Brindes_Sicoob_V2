@@ -175,9 +175,8 @@ Deno.serve(async (req) => {
               results.push({ id: quote.id, success: true });
             }
           } catch (syncErr) {
-            const errorMessage = syncErr instanceof Error ? syncErr.message : "Unknown error";
             console.error(`Error syncing quote ${quote.id}:`, syncErr);
-            results.push({ id: quote.id, success: false, error: errorMessage });
+            results.push({ id: quote.id, success: false, error: "sync_failed" });
           }
         }
 
@@ -204,7 +203,8 @@ Deno.serve(async (req) => {
             });
             results.n8n = { success: response.ok, status: response.status };
           } catch (e) {
-            results.n8n = { success: false, error: String(e) };
+            console.error("N8N webhook test failed:", e);
+            results.n8n = { success: false, error: "request_failed" };
           }
         }
 
@@ -217,10 +217,11 @@ Deno.serve(async (req) => {
               headers: { "Content-Type": "application/json", "x-api-key": apiKey },
               body: JSON.stringify({ test: true, timestamp: new Date().toISOString(), source: "gifts-store" }),
             });
-            const body = await response.text();
-            results.salespro = { success: response.ok, status: response.status, body };
+            await response.body?.cancel();
+            results.salespro = { success: response.ok, status: response.status };
           } catch (e) {
-            results.salespro = { success: false, error: String(e) };
+            console.error("SalesPro webhook test failed:", e);
+            results.salespro = { success: false, error: "request_failed" };
           }
         }
 
@@ -233,7 +234,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     log.error('request_failed', { error: errorMessage });
-    return log.respond(new Response(JSON.stringify({ error: errorMessage }), {
+    return log.respond(new Response(JSON.stringify({ error: "request_failed" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     }));

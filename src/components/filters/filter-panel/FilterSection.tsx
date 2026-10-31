@@ -4,8 +4,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 
+const ACTIVE_COLOR = "text-orange";
+
 export const SECTION_ICON_COLORS: Record<string, string> = {
-  cores: "text-orange",
+  cores: ACTIVE_COLOR,
   categorias: "text-orange/80",
   estoque: "text-info",
   preco: "text-success",
@@ -38,6 +40,41 @@ export const SECTION_TOOLTIPS: Record<string, string> = {
   ordenacao: "Defina a ordem de exibição dos resultados",
 };
 
+interface SectionHeaderProps {
+  title: string;
+  icon?: React.ReactNode;
+  iconColor: string;
+  tooltip?: string;
+  activeCount?: number;
+  activeSummary?: string;
+  isOpen: boolean;
+  hasActive: boolean;
+}
+
+function SectionHeader({ title, icon, iconColor, tooltip, activeCount, activeSummary, isOpen, hasActive }: SectionHeaderProps) {
+  return (
+    <>
+      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+        {icon && <span className={cn("transition-colors duration-200 shrink-0", isOpen ? ACTIVE_COLOR : iconColor)}>{icon}</span>}
+        <span className="truncate">{title}</span>
+        {hasActive && !isOpen && <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 text-[10px] font-bold rounded-full bg-orange text-orange-foreground shrink-0 animate-scale-in">{activeCount}</span>}
+        {tooltip && (
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild><span className="opacity-0 group-hover:opacity-40 transition-opacity text-muted-foreground shrink-0 cursor-help"><SlidersHorizontal className="h-3 w-3" /></span></TooltipTrigger>
+            <TooltipContent side="right" className="max-w-48 text-xs bg-card border-border z-[100]">{tooltip}</TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        {!isOpen && activeSummary && <span className="text-[10px] text-muted-foreground max-w-24 truncate hidden sm:inline">{activeSummary}</span>}
+        <span className={cn("transition-all duration-200 group-hover:text-orange", isOpen ? ACTIVE_COLOR : "text-muted-foreground/50")}>
+          {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </span>
+      </div>
+    </>
+  );
+}
+
 export function FilterSection({
   id, title, icon, children, openSections, onToggle, activeCount, activeSummary,
 }: {
@@ -55,31 +92,9 @@ export function FilterSection({
       <div className={cn("transition-all duration-200 border-l-[3px]", hasActive ? "border-l-orange bg-orange/5" : "border-l-transparent hover:border-l-muted-foreground/20")}>
         <CollapsibleTrigger className={cn(
           "flex items-center justify-between w-full py-2.5 px-3 text-sm font-medium transition-all duration-200 group",
-          isOpen ? "text-orange" : hasActive ? "text-foreground" : "text-foreground/80 hover:text-foreground"
+          isOpen ? ACTIVE_COLOR : hasActive ? "text-foreground" : "text-foreground/80 hover:text-foreground"
         )}>
-          <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            {icon && <span className={cn("transition-colors duration-200 shrink-0", isOpen ? "text-orange" : iconColor)}>{icon}</span>}
-            <span className="truncate">{title}</span>
-            {hasActive && !isOpen && (
-              <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 text-[10px] font-bold rounded-full bg-orange text-orange-foreground shrink-0 animate-scale-in">{activeCount}</span>
-            )}
-            {tooltip && (
-              <Tooltip delayDuration={300}>
-                <TooltipTrigger asChild>
-                  <span className="opacity-0 group-hover:opacity-40 transition-opacity text-muted-foreground shrink-0 cursor-help">
-                    <SlidersHorizontal className="h-3 w-3" />
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent side="right" className="max-w-48 text-xs bg-card border-border z-[100]">{tooltip}</TooltipContent>
-              </Tooltip>
-            )}
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {!isOpen && activeSummary && <span className="text-[10px] text-muted-foreground max-w-24 truncate hidden sm:inline">{activeSummary}</span>}
-            <span className={cn("transition-all duration-200", "group-hover:text-orange", isOpen ? "text-orange" : "text-muted-foreground/50")}>
-              {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </span>
-          </div>
+          <SectionHeader title={title} icon={icon} iconColor={iconColor} tooltip={tooltip} activeCount={activeCount} activeSummary={activeSummary} isOpen={isOpen} hasActive={hasActive} />
         </CollapsibleTrigger>
         <CollapsibleContent className="overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
           <div className="pb-3 px-3 space-y-2">{isOpen && children}</div>
@@ -89,12 +104,14 @@ export function FilterSection({
   );
 }
 
-export function GroupSeparator({ label, icon: Icon }: { label: string; icon: React.ComponentType<{ className?: string }> }) {
+export function GroupSeparator(props: { label: string; icon: React.ComponentType<{ className?: string }> }) {
+  const { label } = props;
+  const SeparatorIcon = props.icon;
   return (
     <div className="flex items-center gap-2 pt-4 pb-1 px-1 first:pt-1">
       <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border/60 to-transparent" />
       <div className="flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.15em] text-muted-foreground/60 uppercase shrink-0">
-        <Icon className="h-3 w-3" />
+        <SeparatorIcon className="h-3 w-3" />
         {label}
       </div>
       <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border/60 to-transparent" />

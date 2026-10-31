@@ -4,13 +4,21 @@ import { ArrowLeft, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { OrderRow } from "@/types/orders";
+import { type OrderItem, type OrderRow } from "@/types/orders";
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS, FULFILLMENT_LABELS, FULFILLMENT_COLORS } from "@/constants/orders";
 import { exportToPDF } from "@/utils/orderExportUtils";
 
 interface OrderDetailHeaderProps {
   order: OrderRow;
-  items: any[];
+  items: OrderItem[];
+}
+
+function exportOrderItems(order: OrderRow, items: OrderItem[]) {
+  const rows = items.map((item) => ({
+    ...item,
+    total: (item.quantity ?? 0) * (item.unit_price ?? 0),
+  }));
+  exportToPDF(rows, `pedido_${order.order_number}`);
 }
 
 export function OrderDetailHeader({ order, items }: OrderDetailHeaderProps) {
@@ -20,24 +28,6 @@ export function OrderDetailHeader({ order, items }: OrderDetailHeaderProps) {
   const scLabel = ORDER_STATUS_LABELS[order.status] || order.status;
   const fcColor = FULFILLMENT_COLORS[order.fulfillment_status] || "";
   const fcLabel = FULFILLMENT_LABELS[order.fulfillment_status] || order.fulfillment_status;
-
-  const handleExport = () => {
-    const data = {
-      items: items.map(it => ({
-        ...it,
-        total: (it.quantity || 0) * (it.unit_price || 0)
-      })),
-      filename: `pedido_${order.order_number}`,
-      columns: [
-        { header: "Produto", key: "product_name" },
-        { header: "SKU", key: "product_sku" },
-        { header: "Qtd", key: "quantity" },
-        { header: "Preço", key: "unit_price" },
-        { header: "Subtotal", key: "total" },
-      ]
-    };
-    exportToPDF(data as any);
-  };
 
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -57,7 +47,7 @@ export function OrderDetailHeader({ order, items }: OrderDetailHeaderProps) {
       <div className="flex flex-wrap items-center gap-2">
         <Badge variant="outline" className={scColor}>{scLabel}</Badge>
         <Badge variant="outline" className={fcColor}>{fcLabel}</Badge>
-        <Button variant="outline" size="sm" className="gap-2" onClick={handleExport}>
+        <Button variant="outline" size="sm" className="gap-2" onClick={() => exportOrderItems(order, items)}>
           <Download className="h-4 w-4" /> PDF
         </Button>
       </div>

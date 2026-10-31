@@ -1,4 +1,4 @@
-import React from "react";
+import type { MouseEvent, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 import {
@@ -22,139 +22,55 @@ interface MaterialBadgeProps {
   productCount?: number;
 }
 
-export function MaterialBadge({
-  name,
-  groupName,
-  hexCode,
-  size = "md",
-  variant = "default",
-  showGroup = false,
-  onClick,
-  onRemove,
-  className,
-  showTooltip = true,
-  productCount,
-}: MaterialBadgeProps) {
-  const sizeClasses = {
-    sm: "text-[11px] px-2 py-0.5 gap-1",
-    md: "text-xs px-2.5 py-1 gap-1.5",
-    lg: "text-sm px-3 py-1.5 gap-2",
-  };
+type BadgeSize = NonNullable<MaterialBadgeProps["size"]>;
+type BadgeVariant = NonNullable<MaterialBadgeProps["variant"]>;
 
-  const colorDotSizes = {
-    sm: "w-2 h-2",
-    md: "w-2.5 h-2.5",
-    lg: "w-3 h-3",
-  };
+const SIZE_CLASSES: Record<BadgeSize, string> = {
+  sm: "text-[11px] px-2 py-0.5 gap-1",
+  md: "text-xs px-2.5 py-1 gap-1.5",
+  lg: "text-sm px-3 py-1.5 gap-2",
+};
+const TEXT_WIDTHS: Record<BadgeSize, string> = { sm: "max-w-[100px]", md: "max-w-[120px]", lg: "max-w-[150px]" };
+const COUNT_CLASSES: Record<BadgeSize, string> = { sm: "text-[9px] px-1", md: "text-[10px] px-1.5", lg: "text-xs px-2" };
+const REMOVE_CLASSES: Record<BadgeSize, string> = { sm: "p-0.5 ml-0.5", md: "p-0.5 ml-1", lg: "p-1 ml-1" };
+const ICON_CLASSES: Record<BadgeSize, string> = { sm: "w-2.5 h-2.5", md: "w-3 h-3", lg: "w-3.5 h-3.5" };
+const VARIANT_CLASSES: Record<BadgeVariant, string> = {
+  default: "bg-muted/60 text-muted-foreground hover:bg-muted",
+  outline: "border border-border bg-background text-foreground hover:bg-muted/50",
+  solid: "bg-primary/15 text-primary border border-primary/20 hover:bg-primary/25",
+  ghost: "bg-transparent text-muted-foreground hover:bg-muted/50",
+};
 
-  const variantClasses = {
-    default: "bg-muted/60 text-muted-foreground hover:bg-muted",
-    outline: "border border-border bg-background text-foreground hover:bg-muted/50",
-    solid: "bg-primary/15 text-primary border border-primary/20 hover:bg-primary/25",
-    ghost: "bg-transparent text-muted-foreground hover:bg-muted/50",
-  };
+function ProductCounter({ count, size }: { count?: number; size: BadgeSize }) {
+  if (count === undefined || count <= 0) return null;
+  return <span className={cn("rounded-full bg-background/80 text-muted-foreground font-normal", COUNT_CLASSES[size])}>{count}</span>;
+}
 
-  const displayText = showGroup && groupName ? `${groupName}: ${name}` : name;
+function RemoveButton({ onRemove, size }: { onRemove?: () => void; size: BadgeSize }) {
+  if (!onRemove) return null;
+  const handleClick = (event: MouseEvent) => { event.stopPropagation(); onRemove(); };
+  return <button type="button" onClick={handleClick} className={cn("rounded-full transition-all duration-150 hover:bg-destructive/20 hover:text-destructive", REMOVE_CLASSES[size])}><X className={ICON_CLASSES[size]} /></button>;
+}
 
-  const badgeContent = (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full font-medium transition-all duration-200",
-        sizeClasses[size],
-        variantClasses[variant],
-        onClick && "cursor-pointer",
-        onRemove && "pr-1",
-        className
-      )}
-      onClick={onClick}
-    >
-      
-      {/* Texto */}
-      <span className={cn(
-        "truncate",
-        size === "sm" && "max-w-[100px]",
-        size === "md" && "max-w-[120px]",
-        size === "lg" && "max-w-[150px]"
-      )}>
-        {displayText}
-      </span>
-      
-      {/* Contador de produtos */}
-      {productCount !== undefined && productCount > 0 && (
-        <span className={cn(
-          "rounded-full bg-background/80 text-muted-foreground font-normal",
-          size === "sm" && "text-[9px] px-1",
-          size === "md" && "text-[10px] px-1.5",
-          size === "lg" && "text-xs px-2"
-        )}>
-          {productCount}
-        </span>
-      )}
-      
-      {/* Botão remover */}
-      {onRemove && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove();
-          }}
-          className={cn(
-            "rounded-full transition-all duration-150 hover:bg-destructive/20 hover:text-destructive",
-            size === "sm" && "p-0.5 ml-0.5",
-            size === "md" && "p-0.5 ml-1",
-            size === "lg" && "p-1 ml-1"
-          )}
-        >
-          <X className={cn(
-            size === "sm" && "w-2.5 h-2.5",
-            size === "md" && "w-3 h-3",
-            size === "lg" && "w-3.5 h-3.5"
-          )} />
-        </button>
-      )}
-    </span>
-  );
+function BadgeContent(props: MaterialBadgeProps & { size: BadgeSize; variant: BadgeVariant }) {
+  const displayText = props.showGroup && props.groupName ? `${props.groupName}: ${props.name}` : props.name;
+  return <span className={cn("inline-flex items-center rounded-full font-medium transition-all duration-200", SIZE_CLASSES[props.size], VARIANT_CLASSES[props.variant], props.onClick && "cursor-pointer", props.onRemove && "pr-1", props.className)} onClick={props.onClick}><span className={cn("truncate", TEXT_WIDTHS[props.size])}>{displayText}</span><ProductCounter count={props.productCount} size={props.size} /><RemoveButton onRemove={props.onRemove} size={props.size} /></span>;
+}
 
-  // Com tooltip
-  if (showTooltip && (groupName || productCount)) {
-    return (
-      <TooltipProvider delayDuration={300}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            {badgeContent}
-          </TooltipTrigger>
-          <TooltipContent 
-            side="top" 
-            className="text-xs"
-          >
-            <div className="flex flex-col gap-0.5">
-              {groupName && (
-                <span className="font-medium">{groupName}</span>
-              )}
-              <span>{name}</span>
-              {productCount !== undefined && (
-                <span className="text-muted-foreground">
-                  {productCount} produto{productCount !== 1 ? 's' : ''}
-                </span>
-              )}
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
+function BadgeTooltip({ props, children }: { props: MaterialBadgeProps; children: ReactNode }) {
+  return <TooltipProvider delayDuration={300}><Tooltip><TooltipTrigger asChild>{children}</TooltipTrigger><TooltipContent side="top" className="text-xs"><div className="flex flex-col gap-0.5">{props.groupName && <span className="font-medium">{props.groupName}</span>}<span>{props.name}</span>{props.productCount !== undefined && <span className="text-muted-foreground">{props.productCount} produto{props.productCount !== 1 ? "s" : ""}</span>}</div></TooltipContent></Tooltip></TooltipProvider>;
+}
 
-  return badgeContent;
+export function MaterialBadge(props: MaterialBadgeProps) {
+  const size = props.size ?? "md";
+  const variant = props.variant ?? "default";
+  const content = <BadgeContent {...props} size={size} variant={variant} />;
+  const needsTooltip = (props.showTooltip ?? true) && Boolean(props.groupName || props.productCount);
+  return needsTooltip ? <BadgeTooltip props={props}>{content}</BadgeTooltip> : content;
 }
 
 // Variante compacta para listas
-export function CompactMaterialBadge({
-  name,
-  hexCode,
-  isSelected,
-  onClick,
-}: {
+export function CompactMaterialBadge({ name, isSelected, onClick }: {
   name: string;
   hexCode?: string | null;
   isSelected?: boolean;

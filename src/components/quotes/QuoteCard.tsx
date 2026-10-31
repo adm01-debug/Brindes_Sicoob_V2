@@ -1,9 +1,10 @@
 /**
  * QuoteCard — card resumido de orçamento para listagens e Kanban.
  */
+import type { SVGProps } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, User, Calendar, RotateCcw } from "lucide-react";
+import { FileText, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { QUOTE_STATUS_CONFIG } from "@/lib/quote-status-config";
 import { OneClickReorderQuote } from "./OneClickReorderQuote";
@@ -27,9 +28,44 @@ interface QuoteCardProps {
   className?: string;
 }
 
+function QuoteCardHeader({ quote }: { quote: QuoteCardData }) {
+  const status = QUOTE_STATUS_CONFIG[quote.status];
+  return <div className="flex items-start justify-between gap-2"><div className="flex items-center gap-2 min-w-0">
+    <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><FileText className="h-4 w-4 text-primary" /></div>
+    <span className="font-bold text-sm truncate">{quote.quote_number}</span></div>
+    <Badge variant={status?.badgeVariant || 'outline'} className={cn('text-[10px] h-5', status?.badgeClassName)}>
+      {status?.label || quote.status}</Badge>
+  </div>;
+}
+
+function QuoteClientSummary({ quote }: { quote: QuoteCardData }) {
+  const client = quote.client_company || quote.client_name;
+  return <div className="space-y-1">{client && <p className="text-xs font-medium text-foreground flex items-center gap-1.5 truncate">
+    <Building2 className="h-3.5 w-3.5 text-muted-foreground" /><span className="truncate">{client}</span></p>}
+    <div className="flex items-center justify-between text-[11px] text-muted-foreground"><span className="inline-flex items-center gap-1">
+      <Calendar className="h-3 w-3" />{new Date(quote.created_at).toLocaleDateString('pt-BR')}</span>
+      <span className="font-bold text-foreground tabular-nums">R$ {Number(quote.total ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+    </div>
+  </div>;
+}
+
+function QuoteTags({ tags }: { tags: string[] | null | undefined }) {
+  if (!tags || tags.length === 0) return null;
+  return <div className="flex flex-wrap gap-1">{tags.slice(0, 3).map((tag) => <Badge key={tag} variant="secondary"
+    className="text-[9px] h-4 px-1 opacity-70">{tag}</Badge>)}
+    {tags.length > 3 && <span className="text-[9px] text-muted-foreground">+{tags.length - 3}</span>}
+  </div>;
+}
+
+function ReorderAction({ quote, allowed }: { quote: QuoteCardData; allowed: boolean }) {
+  if (!allowed || (quote.status !== 'approved' && quote.status !== 'converted')) return null;
+  return <div className="pt-2 border-t border-border/40" onClick={(event) => event.stopPropagation()}>
+    <OneClickReorderQuote quoteId={quote.id} className="w-full h-8 text-[11px]" />
+  </div>;
+}
+
 export function QuoteCard({ quote, onClick, className }: QuoteCardProps) {
   const { isGerentePa } = useAuth();
-  const statusCfg = QUOTE_STATUS_CONFIG[quote.status];
 
   return (
     <Card
@@ -49,63 +85,16 @@ export function QuoteCard({ quote, onClick, className }: QuoteCardProps) {
       )}
     >
       <CardContent className="p-4 space-y-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <FileText className="h-4 w-4 text-primary" />
-            </div>
-            <span className="font-bold text-sm truncate">{quote.quote_number}</span>
-          </div>
-          <Badge 
-            variant={statusCfg?.badgeVariant || "outline"} 
-            className={cn("text-[10px] h-5", statusCfg?.badgeClassName)}
-          >
-            {statusCfg?.label || quote.status}
-          </Badge>
-        </div>
-
-        <div className="space-y-1">
-          {(quote.client_name || quote.client_company) && (
-            <p className="text-xs font-medium text-foreground flex items-center gap-1.5 truncate">
-              <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="truncate">{quote.client_company || quote.client_name}</span>
-            </p>
-          )}
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-            <span className="inline-flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              {new Date(quote.created_at).toLocaleDateString("pt-BR")}
-            </span>
-            <span className="font-bold text-foreground tabular-nums">
-              R$ {Number(quote.total ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-            </span>
-          </div>
-        </div>
-
-        {quote.tags && quote.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {quote.tags.slice(0, 3).map((tag) => (
-              <Badge key={tag} variant="secondary" className="text-[9px] h-4 px-1 opacity-70">
-                {tag}
-              </Badge>
-            ))}
-            {quote.tags.length > 3 && (
-              <span className="text-[9px] text-muted-foreground">+{quote.tags.length - 3}</span>
-            )}
-          </div>
-        )}
-
-        {isGerentePa && (quote.status === 'approved' || quote.status === 'converted') && (
-          <div className="pt-2 border-t border-border/40" onClick={e => e.stopPropagation()}>
-            <OneClickReorderQuote quoteId={quote.id} className="w-full h-8 text-[11px]" />
-          </div>
-        )}
+        <QuoteCardHeader quote={quote} />
+        <QuoteClientSummary quote={quote} />
+        <QuoteTags tags={quote.tags} />
+        <ReorderAction quote={quote} allowed={isGerentePa} />
       </CardContent>
     </Card>
   );
 }
 
-function Building2(props: any) {
+function Building2(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -133,4 +122,3 @@ function Building2(props: any) {
     </svg>
   );
 }
-

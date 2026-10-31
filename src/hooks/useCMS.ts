@@ -1,6 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface CMSBanner {
   id: string;
@@ -18,7 +19,7 @@ export interface CMSSection {
   id: string;
   name: string;
   type: string;
-  content: any;
+  content: Json;
   is_active: boolean | null;
   sort_order: number | null;
 }

@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 
+const DATA_STATE_ATTRIBUTE = 'data-state';
+
 /**
  * Scroll-lock fix v9 — Minimal observer, no layout thrashing.
  * 
@@ -25,26 +27,32 @@ function hasActiveOverlay(): boolean {
 function cleanupScrollLock() {
   if (hasActiveOverlay()) return;
 
-  for (const el of [document.documentElement, document.body]) {
-    el.removeAttribute('data-scroll-locked');
-
-    const s = el.style;
-    if (s.overflow === 'hidden') s.overflow = '';
-    if (s.overflowY === 'hidden') s.overflowY = '';
-    if (s.position === 'fixed') s.position = '';
-    if (s.marginRight) s.marginRight = '';
-    if (s.paddingRight) s.paddingRight = '';
-    if (s.touchAction === 'none') s.touchAction = '';
-    if (s.pointerEvents === 'none') s.pointerEvents = '';
-    if (s.top && s.position !== 'fixed') s.top = '';
-    if (s.width === '100%' && el === document.body) s.width = '';
-  }
+  for (const element of [document.documentElement, document.body]) resetScrollStyles(element);
 
   document.body.classList.forEach(cls => {
     if (cls.startsWith('block-interactivity-')) {
       document.body.classList.remove(cls);
     }
   });
+}
+
+function resetScrollStyles(element: HTMLElement): void {
+  element.removeAttribute('data-scroll-locked');
+  const style = element.style;
+  const properties = [
+    { name: 'overflow', active: style.overflow === 'hidden' },
+    { name: 'overflow-y', active: style.overflowY === 'hidden' },
+    { name: 'position', active: style.position === 'fixed' },
+    { name: 'margin-right', active: Boolean(style.marginRight) },
+    { name: 'padding-right', active: Boolean(style.paddingRight) },
+    { name: 'touch-action', active: style.touchAction === 'none' },
+    { name: 'pointer-events', active: style.pointerEvents === 'none' },
+    { name: 'top', active: Boolean(style.top) && style.position !== 'fixed' },
+    { name: 'width', active: style.width === '100%' && element === document.body },
+  ];
+  for (const property of properties) {
+    if (property.active) style.removeProperty(property.name);
+  }
 }
 
 export function useScrollLockFix() {
@@ -63,9 +71,9 @@ export function useScrollLockFix() {
     // Only watch data-state attribute changes — no childList to reduce noise
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
-        if (mutation.attributeName === 'data-state') {
+        if (mutation.attributeName === DATA_STATE_ATTRIBUTE) {
           const target = mutation.target as HTMLElement;
-          if (target.getAttribute('data-state') === 'closed') {
+          if (target.getAttribute(DATA_STATE_ATTRIBUTE) === 'closed') {
             scheduleCleanup();
             break;
           }
@@ -76,7 +84,7 @@ export function useScrollLockFix() {
     observer.observe(document.body, {
       subtree: true,
       attributes: true,
-      attributeFilter: ['data-state'],
+      attributeFilter: [DATA_STATE_ATTRIBUTE],
     });
 
     // One-time initial cleanup

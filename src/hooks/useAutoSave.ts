@@ -1,13 +1,36 @@
-import { useEffect, useRef, useCallback } from "react";
-import { toast } from "sonner";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { createClientLogger } from "@/lib/telemetry/structuredLogger";
 
 const log = createClientLogger("autosave");
+const AUTO_SAVE_VERSION = 1;
+const AUTO_SAVE_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+
+interface StoredAutoSave<T> {
+  version: typeof AUTO_SAVE_VERSION;
+  savedAt: string;
+  data: T;
+}
+
+function parseStoredAutoSave<T>(value: string): T | null {
+  const parsed: unknown = JSON.parse(value);
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return parsed as T;
+
+  const candidate = parsed as Partial<StoredAutoSave<T>>;
+  if (candidate.version !== AUTO_SAVE_VERSION || typeof candidate.savedAt !== "string" || !("data" in candidate)) {
+    // Compatibilidade com rascunhos gravados antes do envelope versionado.
+    return parsed as T;
+  }
+
+  const savedAt = Date.parse(candidate.savedAt);
+  if (!Number.isFinite(savedAt) || Date.now() - savedAt > AUTO_SAVE_RETENTION_MS) return null;
+  return candidate.data as T;
+}
 
 interface AutoSaveOptions<T> {
   key: string;
   data: T;
   onSave?: (data: T) => void | Promise<void>;
+  onError?: (error: Error) => void;
   interval?: number;
   enabled?: boolean;
 }
@@ -20,11 +43,13 @@ export function useAutoSave<T>({
   key,
   data,
   onSave,
-  interval = 30000, // 30 segundos
+  onError,
+  interval = 2000,
   enabled = true,
 }: AutoSaveOptions<T>) {
   const lastSavedData = useRef<string>(JSON.stringify(data));
-  const saveTimeout = useRef<NodeJS.Timeout | null>(null);
+  const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [lastError, setLastError] = useState<Error | null>(null);
 
   const save = useCallback(async () => {
     const currentDataStr = JSON.stringify(data);
@@ -34,7 +59,12 @@ export function useAutoSave<T>({
 
     try {
       // Persistência local
-      localStorage.setItem(`autosave_${key}`, currentDataStr);
+      const stored: StoredAutoSave<T> = {
+        version: AUTO_SAVE_VERSION,
+        savedAt: new Date().toISOString(),
+        data,
+      };
+      localStorage.setItem(`autosave_${key}`, JSON.stringify(stored));
       
       // Persistência remota opcional
       if (onSave) {
@@ -42,11 +72,15 @@ export function useAutoSave<T>({
       }
       
       lastSavedData.current = currentDataStr;
+      setLastError(null);
       log.info("saved", { key });
     } catch (error) {
-      log.error("save_failed", { key, error });
+      const saveError = error instanceof Error ? error : new Error("Não foi possível salvar o rascunho.");
+      setLastError(saveError);
+      onError?.(saveError);
+      log.error("save_failed", { key, error: saveError });
     }
-  }, [key, data, onSave]);
+  }, [key, data, onError, onSave]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -56,19 +90,19 @@ export function useAutoSave<T>({
     
     saveTimeout.current = setTimeout(() => {
       save();
-    }, 2000); // Salva 2 segundos após a última mudança
+    }, interval);
 
     return () => {
       if (saveTimeout.current) clearTimeout(saveTimeout.current);
     };
-  }, [data, enabled, save]);
+  }, [data, enabled, interval, save]);
 
   // Função para restaurar dados
   const restore = useCallback((): T | null => {
     const saved = localStorage.getItem(`autosave_${key}`);
     if (!saved) return null;
     try {
-      return JSON.parse(saved) as T;
+      return parseStoredAutoSave<T>(saved);
     } catch {
       return null;
     }
@@ -79,5 +113,5 @@ export function useAutoSave<T>({
     localStorage.removeItem(`autosave_${key}`);
   }, [key]);
 
-  return { restore, clear, lastSaved: lastSavedData.current };
+  return { restore, clear, lastSaved: lastSavedData.current, lastError };
 }

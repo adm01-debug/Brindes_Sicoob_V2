@@ -16,6 +16,16 @@ interface SecuritySettingsCardProps {
   onUpdate: (settings: Partial<SecuritySettings>) => void;
 }
 
+function WhitelistToggle(props: { icon: typeof Wifi; label: string; description: string; checked: boolean; onCheckedChange: (checked: boolean) => void }) {
+  const { label, description, checked, onCheckedChange } = props;
+  const Icon = props.icon;
+  return <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/20"><div className="space-y-1"><Label className="font-medium flex items-center gap-2"><Icon className="h-4 w-4" />{label}</Label><p className="text-xs text-muted-foreground">{description}</p></div><Switch checked={checked} onCheckedChange={onCheckedChange} /></div>;
+}
+
+function SecurityNumberSetting({ label, value, min, fallback, onChange }: { label: string; value: number; min: number; fallback: number; onChange: (value: number) => void }) {
+  return <div className="space-y-2"><Label>{label}</Label><Input type="number" min={min} value={value} onChange={(event) => onChange(parseInt(event.target.value) || fallback)} className="w-32" /></div>;
+}
+
 export function SecuritySettingsCard({ settings, onUpdate }: SecuritySettingsCardProps) {
   return (
     <Card className="border-border/50">
@@ -30,58 +40,12 @@ export function SecuritySettingsCard({ settings, onUpdate }: SecuritySettingsCar
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/20">
-            <div className="space-y-1">
-              <Label className="font-medium flex items-center gap-2">
-                <Wifi className="h-4 w-4" />
-                Whitelist de IPs
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                Apenas IPs cadastrados podem acessar
-              </p>
-            </div>
-            <Switch
-              checked={settings?.ip_whitelist_enabled ?? false}
-              onCheckedChange={(checked) => onUpdate({ ip_whitelist_enabled: checked })}
-            />
-          </div>
-          <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/20">
-            <div className="space-y-1">
-              <Label className="font-medium flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                Whitelist de Cidades
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                Apenas cidades cadastradas podem acessar
-              </p>
-            </div>
-            <Switch
-              checked={settings?.city_whitelist_enabled ?? false}
-              onCheckedChange={(checked) => onUpdate({ city_whitelist_enabled: checked })}
-            />
-          </div>
+          <WhitelistToggle icon={Wifi} label="Whitelist de IPs" description="Apenas IPs cadastrados podem acessar" checked={settings?.ip_whitelist_enabled ?? false} onCheckedChange={(checked) => onUpdate({ ip_whitelist_enabled: checked })} />
+          <WhitelistToggle icon={MapPin} label="Whitelist de Cidades" description="Apenas cidades cadastradas podem acessar" checked={settings?.city_whitelist_enabled ?? false} onCheckedChange={(checked) => onUpdate({ city_whitelist_enabled: checked })} />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Máx. tentativas falhadas antes do bloqueio</Label>
-            <Input
-              type="number"
-              min={0}
-              value={settings?.max_failed_attempts ?? 5}
-              onChange={(e) => onUpdate({ max_failed_attempts: parseInt(e.target.value) || 0 })}
-              className="w-32"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Duração do bloqueio (minutos)</Label>
-            <Input
-              type="number"
-              min={1}
-              value={settings?.lockout_duration_minutes ?? 15}
-              onChange={(e) => onUpdate({ lockout_duration_minutes: parseInt(e.target.value) || 15 })}
-              className="w-32"
-            />
-          </div>
+          <SecurityNumberSetting label="Máx. tentativas falhadas antes do bloqueio" value={settings?.max_failed_attempts ?? 5} min={0} fallback={0} onChange={(value) => onUpdate({ max_failed_attempts: value })} />
+          <SecurityNumberSetting label="Duração do bloqueio (minutos)" value={settings?.lockout_duration_minutes ?? 15} min={1} fallback={15} onChange={(value) => onUpdate({ lockout_duration_minutes: value })} />
         </div>
       </CardContent>
     </Card>

@@ -10,11 +10,12 @@ import { toast } from "sonner";
 
 interface OrderInvoicesTabProps {
   orderId: string;
+  canManage: boolean;
 }
 
 type Invoice = NonNullable<ReturnType<typeof useOrderInvoices>["invoices"]>[number];
 
-export function OrderInvoicesTab({ orderId }: OrderInvoicesTabProps) {
+export function OrderInvoicesTab({ orderId, canManage }: OrderInvoicesTabProps) {
   const { invoices, addInvoice, uploadFile, getInvoiceDownloadUrl, isLoading, error } = useOrderInvoices(orderId);
   const [invoiceNumber, setInvoiceNumber] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -43,6 +44,11 @@ export function OrderInvoicesTab({ orderId }: OrderInvoicesTabProps) {
   };
 
   const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>, type: 'xml' | 'pdf') => {
+    if (!canManage) {
+      event.target.value = '';
+      return;
+    }
+
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -77,7 +83,7 @@ export function OrderInvoicesTab({ orderId }: OrderInvoicesTabProps) {
 
   return (
     <div className="space-y-6">
-      <Card>
+      {canManage && <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Upload className="h-5 w-5" />
@@ -134,10 +140,40 @@ export function OrderInvoicesTab({ orderId }: OrderInvoicesTabProps) {
             </div>
           )}
         </CardContent>
-      </Card>
+      </Card>}
 
       <InvoiceList invoices={invoices} downloadingId={downloadingId} onDownload={handleDownload} />
     </div>
+  );
+}
+
+function InvoiceCard({ invoice, downloading, onDownload }: {
+  invoice: Invoice;
+  downloading: boolean;
+  onDownload: (invoice: Invoice) => void;
+}) {
+  return (
+    <Card>
+      <CardContent className="flex items-center justify-between py-4">
+        <div className="flex items-center gap-4">
+          <div className="p-2 bg-sicoob-green/10 rounded">
+            {invoice.file_type === 'xml'
+              ? <FileCode className="h-6 w-6 text-sicoob-green" />
+              : <FileText className="h-6 w-6 text-sicoob-green" />}
+          </div>
+          <div>
+            <p className="font-bold text-sicoob-green-dark">NF #{invoice.invoice_number}</p>
+            <p className="text-xs text-muted-foreground">
+              {invoice.file_type.toUpperCase()} • Enviado em {new Date(invoice.created_at).toLocaleDateString('pt-BR')}
+            </p>
+          </div>
+        </div>
+        <Button variant="ghost" size="icon" aria-label={`Baixar nota fiscal ${invoice.invoice_number}`}
+          disabled={downloading} onClick={() => onDownload(invoice)}>
+          <Download className="h-4 w-4" />
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -161,34 +197,7 @@ function InvoiceList({
   return (
     <div className="grid grid-cols-1 gap-4">
       {invoices.map((invoice) => (
-        <Card key={invoice.id}>
-          <CardContent className="flex items-center justify-between py-4">
-            <div className="flex items-center gap-4">
-              <div className="p-2 bg-sicoob-green/10 rounded">
-                {invoice.file_type === 'xml' ? (
-                  <FileCode className="h-6 w-6 text-sicoob-green" />
-                ) : (
-                  <FileText className="h-6 w-6 text-sicoob-green" />
-                )}
-              </div>
-              <div>
-                <p className="font-bold text-sicoob-green-dark">NF #{invoice.invoice_number}</p>
-                <p className="text-xs text-muted-foreground">
-                  {invoice.file_type.toUpperCase()} • Enviado em {new Date(invoice.created_at).toLocaleDateString('pt-BR')}
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={`Baixar nota fiscal ${invoice.invoice_number}`}
-              disabled={downloadingId === invoice.id}
-              onClick={() => onDownload(invoice)}
-            >
-              <Download className="h-4 w-4" />
-            </Button>
-          </CardContent>
-        </Card>
+        <InvoiceCard key={invoice.id} invoice={invoice} downloading={downloadingId === invoice.id} onDownload={onDownload} />
       ))}
     </div>
   );

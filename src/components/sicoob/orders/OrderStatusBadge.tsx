@@ -1,6 +1,6 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { OrderStatus, ORDER_STATUS_CONFIG } from "@/types/sicoob/orders";
+import { type OrderStatus, ORDER_STATUS_CONFIG } from "@/types/sicoob/orders";
 
 interface OrderStatusBadgeProps extends React.HTMLAttributes<HTMLDivElement> {
   status: OrderStatus;

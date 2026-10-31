@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { type ChangeEvent, useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 
 interface DebouncedPriceInputProps {
@@ -28,7 +28,7 @@ export function DebouncedPriceInput({
     setLocalValue(String(value));
   }, [value]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
     setLocalValue(raw);
 

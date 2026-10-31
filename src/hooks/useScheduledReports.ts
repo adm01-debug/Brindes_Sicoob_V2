@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import type { Json } from '@/integrations/supabase/types';
 
 export type ReportFrequency = 'daily' | 'weekly' | 'monthly';
 export type ReportType = 'sales' | 'quotes' | 'clients' | 'products' | 'orders';
@@ -13,7 +14,7 @@ export interface ScheduledReport {
   frequency: ReportFrequency;
   email_to: string;
   report_name: string;
-  filters: Record<string, any>;
+  filters: Record<string, Json>;
   is_active: boolean;
   last_sent_at: string | null;
   next_run_at: string;
@@ -26,7 +27,7 @@ export interface CreateReportInput {
   frequency: ReportFrequency;
   email_to: string;
   report_name: string;
-  filters?: Record<string, any>;
+  filters?: Record<string, Json>;
 }
 
 const FREQUENCY_LABELS: Record<ReportFrequency, string> = {
@@ -83,7 +84,7 @@ export function useScheduledReports() {
           frequency: input.frequency,
           email_to: input.email_to,
           report_name: input.report_name,
-          filters: (input.filters || {}) as Record<string, unknown>,
+          filters: (input.filters || {}) as Json,
           next_run_at: nextRun.toISOString(),
         });
 
@@ -153,9 +154,10 @@ function calculateNextRun(frequency: ReportFrequency): Date {
       return new Date(now.getTime() + 24 * 60 * 60 * 1000);
     case 'weekly':
       return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    case 'monthly':
+    case 'monthly': {
       const next = new Date(now);
       next.setMonth(next.getMonth() + 1);
       return next;
+    }
   }
 }

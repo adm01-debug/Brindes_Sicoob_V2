@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     log.error("fetch_logs_failed", { err: message });
-    return log.respond(new Response(JSON.stringify({ error: message }), {
+    return log.respond(new Response(JSON.stringify({ error: "fetch_logs_failed" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     }));

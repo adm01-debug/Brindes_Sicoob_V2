@@ -29,6 +29,55 @@ function dedupKey(userId: string, clientId: string, peakMonth: number) {
   return `bi.peak-notif.${userId}.${clientId}.${peakMonth}.${today}`;
 }
 
+function hasDedupMarker(key: string) {
+  try {
+    return localStorage.getItem(key) === "1";
+  } catch {
+    return true;
+  }
+}
+
+function saveDedupMarker(key: string) {
+  try {
+    localStorage.setItem(key, "1");
+  } catch {
+    // O armazenamento local pode estar indisponível em navegação privada.
+  }
+}
+
+function peakTitle(clientName: string, daysToNextPeak: number) {
+  if (daysToNextPeak === 0) return `📅 ${clientName} está em pico sazonal hoje`;
+  const unit = daysToNextPeak === 1 ? "dia" : "dias";
+  return `📅 ${clientName} entra em pico em ${daysToNextPeak} ${unit}`;
+}
+
+interface NotificationInput {
+  userId: string;
+  clientId: string;
+  clientName: string;
+  daysToNextPeak: number;
+  nextPeakMonth: number;
+  key: string;
+}
+
+async function sendPeakNotification(input: NotificationInput) {
+  const monthLabel = MONTHS[input.nextPeakMonth - 1] ?? "—";
+  const { error } = await supabase.from("workspace_notifications").insert({
+    user_id: input.userId,
+    title: peakTitle(input.clientName, input.daysToNextPeak),
+    message: `${input.clientName} historicamente concentra compras em ${monthLabel}. Momento ideal para abordagem.`,
+    type: "info",
+    category: "bi_seasonal_peak",
+    action_url: `/ferramentas/bi?clientId=${encodeURIComponent(input.clientId)}`,
+    metadata: {
+      clientId: input.clientId,
+      peakMonth: input.nextPeakMonth,
+      daysToPeak: input.daysToNextPeak,
+    },
+  });
+  if (!error) saveDedupMarker(input.key);
+}
+
 export function useSeasonalPeakNotifications({
   clientId,
   clientName,
@@ -39,44 +88,18 @@ export function useSeasonalPeakNotifications({
 
   useEffect(() => {
     if (!user?.id || !clientId || !clientName) return;
-    if (daysToNextPeak == null || nextPeakMonth == null) return;
+    if (daysToNextPeak === null || nextPeakMonth === null) return;
     if (daysToNextPeak > 7) return;
 
     const key = dedupKey(user.id, clientId, nextPeakMonth);
-    try {
-      if (localStorage.getItem(key) === "1") return;
-    } catch {
-      return;
-    }
-
-    const monthLabel = MONTHS[nextPeakMonth - 1] ?? "—";
-    const title =
-      daysToNextPeak === 0
-        ? `📅 ${clientName} está em pico sazonal hoje`
-        : `📅 ${clientName} entra em pico em ${daysToNextPeak} ${daysToNextPeak === 1 ? "dia" : "dias"}`;
-    const message = `${clientName} historicamente concentra compras em ${monthLabel}. Momento ideal para abordagem.`;
-
-    (async () => {
-      try {
-        const { error } = await supabase.from("workspace_notifications").insert({
-          user_id: user.id,
-          title,
-          message,
-          type: "info",
-          category: "bi_seasonal_peak",
-          action_url: `/ferramentas/bi?clientId=${encodeURIComponent(clientId)}`,
-          metadata: { clientId, peakMonth: nextPeakMonth, daysToPeak: daysToNextPeak },
-        });
-        if (!error) {
-          try {
-            localStorage.setItem(key, "1");
-          } catch {
-            // ignore
-          }
-        }
-      } catch {
-        // silencioso
-      }
-    })();
+    if (hasDedupMarker(key)) return;
+    void sendPeakNotification({
+      userId: user.id,
+      clientId,
+      clientName,
+      daysToNextPeak,
+      nextPeakMonth,
+      key,
+    }).catch(() => undefined);
   }, [user?.id, clientId, clientName, daysToNextPeak, nextPeakMonth]);
 }

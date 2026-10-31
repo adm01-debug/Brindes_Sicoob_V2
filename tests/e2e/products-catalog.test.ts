@@ -126,8 +126,17 @@ describe('E2E Catalog — Favorites', () => {
   it('starts empty', () => expect(favorites.size).toBe(0));
   it('add favorite', () => { favorites.add('1'); expect(favorites.has('1')).toBe(true); });
   it('remove favorite', () => { favorites.add('1'); favorites.delete('1'); expect(favorites.has('1')).toBe(false); });
-  it('toggle on', () => { favorites.has('1') ? favorites.delete('1') : favorites.add('1'); expect(favorites.has('1')).toBe(true); });
-  it('toggle off', () => { favorites.add('1'); favorites.has('1') ? favorites.delete('1') : favorites.add('1'); expect(favorites.has('1')).toBe(false); });
+  it('toggle on', () => {
+    if (favorites.has('1')) favorites.delete('1');
+    else favorites.add('1');
+    expect(favorites.has('1')).toBe(true);
+  });
+  it('toggle off', () => {
+    favorites.add('1');
+    if (favorites.has('1')) favorites.delete('1');
+    else favorites.add('1');
+    expect(favorites.has('1')).toBe(false);
+  });
   it('multiple favorites', () => { favorites.add('1'); favorites.add('3'); favorites.add('5'); expect(favorites.size).toBe(3); });
   it('no duplicates', () => { favorites.add('1'); favorites.add('1'); expect(favorites.size).toBe(1); });
 });

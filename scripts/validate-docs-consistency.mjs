@@ -34,7 +34,7 @@ function validateLinks() {
   });
 
   // 3. Validar se rotas críticas em INVENTORY_FILE estão presentes em ROUTES_FILE
-  const criticalRoutes = inventoryContent.match(/\/[a-z0-9\/-]+/g) || [];
+  const criticalRoutes = inventoryContent.match(/\/[a-z0-9/-]+/g) || [];
   criticalRoutes.forEach(route => {
     // Filtrar rotas que parecem caminhos de arquivo ou não são do app
     if (route.startsWith('/admin') || route.startsWith('/dashboard')) {

@@ -101,7 +101,7 @@ async function checkRest(): Promise<{ ok: boolean; ms: number }> {
   }
 }
 
-async function checkHealthFunction(): Promise<{ ok: boolean; ms: number; data?: any }> {
+async function checkHealthFunction(): Promise<{ ok: boolean; ms: number; data?: unknown }> {
   const t0 = performance.now();
   try {
     const headers = getRequestHeaders();
@@ -113,6 +113,11 @@ async function checkHealthFunction(): Promise<{ ok: boolean; ms: number; data?: 
   } catch {
     return { ok: false, ms: Math.round(performance.now() - t0) };
   }
+}
+
+function healthFunctionStatus(data: unknown): string | undefined {
+  if (!data || typeof data !== 'object' || !('status' in data)) return undefined;
+  return typeof data.status === 'string' ? data.status : undefined;
 }
 
 function deriveStatus(signals: CloudStatusSnapshot['signals']): CloudStatus {
@@ -146,8 +151,9 @@ export async function probeCloudStatus(force = false): Promise<CloudStatusSnapsh
     let status = deriveStatus(signals);
 
     // Se a function de health reportar erro crítico, refletimos isso
-    if (healthFn.ok && healthFn.data?.status === 'down') status = 'down';
-    if (healthFn.ok && healthFn.data?.status === 'degraded' && status === 'healthy') status = 'warming';
+    const healthStatus = healthFunctionStatus(healthFn.data);
+    if (healthFn.ok && healthStatus === 'down') status = 'down';
+    if (healthFn.ok && healthStatus === 'degraded' && status === 'healthy') status = 'warming';
 
     const snapshot: CloudStatusSnapshot = {
       status,

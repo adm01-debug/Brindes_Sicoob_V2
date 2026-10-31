@@ -7,7 +7,7 @@ export interface CalcProduct {
   name: string;
   sku: string;
   price: number;
-  images: any;
+  images: string[];
   category_name: string | null;
 }
 

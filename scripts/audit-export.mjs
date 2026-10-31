@@ -30,7 +30,9 @@ filtered.forEach((item, i) => {
   let gitInfo = "N/A (Local Only)";
   try {
     gitInfo = execSync(`git log -1 --format="%h | %an | %ad" -- ${item.path}`).toString().trim();
-  } catch(e) {}
+  } catch (error) {
+    console.warn(`Sem histórico Git para ${item.path}:`, error.message);
+  }
   
   output += `<a name="feature-${i}"></a>\n`;
   output += `### ${item.feature}\n`;

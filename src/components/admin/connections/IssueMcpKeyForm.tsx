@@ -65,6 +65,252 @@ function isoDaysFromNow(days: number): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+function validateFullScope(expiresLocal: string, justification: string, confirmation: string): string | null {
+  if (!expiresLocal) return "Defina uma data de expiração.";
+  const expiration = new Date(expiresLocal).getTime();
+  if (Number.isNaN(expiration) || expiration <= Date.now()) return "Expiração precisa ser no futuro.";
+  const maxMs = FULL_SCOPE_MAX_TTL_DAYS * 24 * 60 * 60 * 1000;
+  if (expiration - Date.now() > maxMs) return `Janela máxima é ${FULL_SCOPE_MAX_TTL_DAYS} dias.`;
+  if (justification.trim().length < FULL_SCOPE_MIN_JUSTIFICATION) {
+    return `Justificativa precisa de ao menos ${FULL_SCOPE_MIN_JUSTIFICATION} caracteres.`;
+  }
+  if (confirmation !== FULL_SCOPE_CONFIRMATION) return `Digite "${FULL_SCOPE_CONFIRMATION}" para confirmar.`;
+  return null;
+}
+
+function validateKeyForm({
+  name,
+  scopes,
+  full,
+  expiresLocal,
+  justification,
+  confirmation,
+}: {
+  name: string;
+  scopes: McpScope[];
+  full: boolean;
+  expiresLocal: string;
+  justification: string;
+  confirmation: string;
+}): string | null {
+  if (name.trim().length < 3) return "Informe um nome (mín. 3 caracteres).";
+  if (scopes.length === 0) return "Selecione ao menos um escopo.";
+  return full ? validateFullScope(expiresLocal, justification, confirmation) : null;
+}
+
+function scopeButtonClass(active: boolean, full: boolean, locked: boolean): string {
+  if (locked) return "bg-muted text-muted-foreground border-border cursor-not-allowed opacity-60";
+  if (!active) return "bg-background border-border hover:border-primary/40";
+  return full
+    ? "bg-destructive text-destructive-foreground border-destructive"
+    : "bg-primary text-primary-foreground border-primary";
+}
+
+interface ScopePickerProps {
+  scopes: McpScope[];
+  canGrantFull: boolean;
+  grantorLoading: boolean;
+  onToggle: (scope: McpScope) => void;
+}
+
+function ScopePicker({ scopes, canGrantFull, grantorLoading, onToggle }: ScopePickerProps) {
+  return (
+    <div>
+      <Label className="block mb-2">Escopos</Label>
+      <TooltipProvider delayDuration={200}>
+        <div className="flex flex-wrap gap-2">
+          {KNOWN_SCOPES.map((scope) => {
+            const active = scopes.includes(scope);
+            const full = scope === FULL_SCOPE;
+            const locked = full && !canGrantFull && !grantorLoading;
+            const description = SCOPE_DESCRIPTIONS[scope];
+            return (
+              <Tooltip key={scope}>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => onToggle(scope)}
+                    disabled={locked}
+                    className={["px-2 py-1 rounded text-xs border font-mono transition", scopeButtonClass(active, full, locked)].join(" ")}
+                  >
+                    {scope}{locked && " 🔒"}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-xs">
+                  <div className="space-y-1 text-xs">
+                    <p className="font-semibold">{description.label}</p>
+                    <p className="text-muted-foreground">Tools habilitadas:</p>
+                    <ul className="space-y-0.5">{description.tools.map((tool) => <li key={tool} className="font-mono">• {tool}</li>)}</ul>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
+        </div>
+      </TooltipProvider>
+      {!grantorLoading && !canGrantFull && (
+        <p className="mt-2 text-[11px] text-muted-foreground">
+          🔒 Você não está autorizado a conceder o escopo <code className="font-mono">*</code> (FULL).
+          Solicite a um admin já listado em <code className="font-mono">mcp_full_grantors</code> para te incluir.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function issueActionLabel(full: boolean, name: string): string {
+  return full ? `Emitir chave MCP FULL "${name}"` : `Emitir chave MCP "${name}"`;
+}
+
+function issueBody({
+  name,
+  scopes,
+  expiresLocal,
+  justification,
+  confirmation,
+  targetRepo,
+  targetTool,
+  full,
+}: {
+  name: string;
+  scopes: McpScope[];
+  expiresLocal: string;
+  justification: string;
+  confirmation: string;
+  targetRepo: string;
+  targetTool: string;
+  full: boolean;
+}): Record<string, unknown> {
+  return {
+    name: name.trim(),
+    scopes,
+    expires_at: expiresLocal ? new Date(expiresLocal).toISOString() : null,
+    justification: justification.trim() || null,
+    confirmation_phrase: full ? confirmation : null,
+    target_repo: targetRepo.trim() || null,
+    target_tool: targetTool.trim() || null,
+  };
+}
+
+interface FullScopeConfigurationProps {
+  confirmation: string;
+  justification: string;
+  targetRepo: string;
+  targetTool: string;
+  setConfirmation: (value: string) => void;
+  setJustification: (value: string) => void;
+  setTargetRepo: (value: string) => void;
+  setTargetTool: (value: string) => void;
+}
+
+function FullScopeConfiguration(props: FullScopeConfigurationProps) {
+  return (
+    <>
+      <Alert variant="destructive">
+        <ShieldAlert className="h-4 w-4" />
+        <AlertTitle className="flex items-center gap-2">Acesso total (FULL) <Badge variant="destructive">*</Badge></AlertTitle>
+        <AlertDescription>
+          Esta chave poderá <strong>ler e escrever</strong> em código-fonte, CRM, orçamentos e catálogo.
+          Exige expiração, justificativa e confirmação explícita.
+        </AlertDescription>
+      </Alert>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <Label htmlFor="mcp-key-target-repo">Repo / sistema alvo</Label>
+          <Input id="mcp-key-target-repo" value={props.targetRepo} onChange={(event) => props.setTargetRepo(event.target.value)} placeholder="ex: org/promo-gifts ou n8n-prod" maxLength={200} />
+        </div>
+        <div>
+          <Label htmlFor="mcp-key-target-tool">Ferramenta consumidora</Label>
+          <Input id="mcp-key-target-tool" value={props.targetTool} onChange={(event) => props.setTargetTool(event.target.value)} placeholder="ex: Claude Desktop, Cursor, n8n" maxLength={100} />
+        </div>
+      </div>
+      <div>
+        <Label htmlFor="mcp-key-just">Justificativa <span className="text-destructive">*</span></Label>
+        <Textarea id="mcp-key-just" value={props.justification} onChange={(event) => props.setJustification(event.target.value)} placeholder="Ex: Acesso temporário para refatoração do módulo de orçamentos pelo agente IA." rows={3} maxLength={1000} />
+        <p className="text-xs text-muted-foreground mt-1">{props.justification.length}/{FULL_SCOPE_MIN_JUSTIFICATION} mínimo — registrado no audit log.</p>
+      </div>
+      <div>
+        <Label htmlFor="mcp-key-confirm">Confirmação <span className="text-destructive">*</span></Label>
+        <Input id="mcp-key-confirm" value={props.confirmation} onChange={(event) => props.setConfirmation(event.target.value)} placeholder={`Digite "${FULL_SCOPE_CONFIRMATION}"`} className="font-mono" />
+      </div>
+    </>
+  );
+}
+
+interface RootConfirmationProps {
+  keyName: string;
+  matches: boolean;
+  open: boolean;
+  rootNameEcho: string;
+  submitting: boolean;
+  onConfirm: () => void;
+  onOpenChange: (open: boolean) => void;
+  onRootNameChange: (value: string) => void;
+}
+
+function RootRiskDescription() {
+  return (
+    <>
+      <p>O escopo <code className="font-mono bg-muted px-1 rounded">*</code> concede acesso <strong>total</strong> a este sistema, equivalente ao papel de <strong>superusuário</strong>:</p>
+      <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+        <li>Ler e escrever em qualquer tabela (CRM, orçamentos, catálogo, usuários)</li>
+        <li>Disparar funções administrativas e jobs internos</li>
+        <li>Modificar configurações de segurança e integrações</li>
+        <li>Agir em nome de qualquer usuário autenticado</li>
+      </ul>
+      <p className="text-foreground">Esta chave aparecerá em <strong>todos os logs de auditoria</strong> com seu nome como emissor. Você é <strong>responsável</strong> por seu uso e armazenamento seguro.</p>
+    </>
+  );
+}
+
+function RootConfirmationDialog(props: RootConfirmationProps) {
+  return (
+    <AlertDialog open={props.open} onOpenChange={props.onOpenChange}>
+      <AlertDialogContent className="max-w-lg">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+            <AlertTriangle className="h-5 w-5" /> Você está prestes a emitir uma chave de acesso ROOT
+          </AlertDialogTitle>
+          <AlertDialogDescription asChild>
+            <div className="space-y-3 text-sm">
+              <RootRiskDescription />
+              <div className="pt-2">
+                <Label htmlFor="mcp-key-root-echo" className="text-foreground">
+                  Para confirmar, digite o nome exato da chave: <code className="font-mono bg-muted px-1 rounded">{props.keyName}</code>
+                </Label>
+                <Input
+                  id="mcp-key-root-echo"
+                  value={props.rootNameEcho}
+                  onChange={(event) => props.onRootNameChange(event.target.value)}
+                  placeholder={props.keyName}
+                  className="font-mono mt-2"
+                  autoComplete="off"
+                  autoFocus
+                  maxLength={100}
+                />
+                {props.rootNameEcho.length > 0 && !props.matches && <p className="text-xs text-destructive mt-1">O nome digitado não confere.</p>}
+              </div>
+            </div>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={props.submitting}>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            disabled={!props.matches || props.submitting}
+            onClick={(event) => {
+              event.preventDefault();
+              if (props.matches) props.onConfirm();
+            }}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            Avançar para verificação dupla
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
 export function IssueMcpKeyForm({ onIssued }: Props) {
   const [name, setName] = useState("");
   const [scopes, setScopes] = useState<McpScope[]>(["quotes:read"]);
@@ -95,22 +341,7 @@ export function IssueMcpKeyForm({ onIssued }: Props) {
   };
 
   const validation = useMemo(() => {
-    if (name.trim().length < 3) return "Informe um nome (mín. 3 caracteres).";
-    if (scopes.length === 0) return "Selecione ao menos um escopo.";
-    if (full) {
-      if (!expiresLocal) return "Defina uma data de expiração.";
-      const exp = new Date(expiresLocal).getTime();
-      if (Number.isNaN(exp) || exp <= Date.now())
-        return "Expiração precisa ser no futuro.";
-      const maxMs = FULL_SCOPE_MAX_TTL_DAYS * 24 * 60 * 60 * 1000;
-      if (exp - Date.now() > maxMs)
-        return `Janela máxima é ${FULL_SCOPE_MAX_TTL_DAYS} dias.`;
-      if (justification.trim().length < FULL_SCOPE_MIN_JUSTIFICATION)
-        return `Justificativa precisa de ao menos ${FULL_SCOPE_MIN_JUSTIFICATION} caracteres.`;
-      if (confirmation !== FULL_SCOPE_CONFIRMATION)
-        return `Digite "${FULL_SCOPE_CONFIRMATION}" para confirmar.`;
-    }
-    return null;
+    return validateKeyForm({ name, scopes, full, expiresLocal, justification, confirmation });
   }, [name, scopes, full, expiresLocal, justification, confirmation]);
 
   const submitWithChallenge = async (action: "mcp_full_issue" | "mcp_key_rotate") => {
@@ -123,19 +354,9 @@ export function IssueMcpKeyForm({ onIssued }: Props) {
         challenge,
         functionName: "mcp-keys-issue",
         action,
-        actionLabel: full
-          ? `Emitir chave MCP FULL "${name}"`
-          : `Emitir chave MCP "${name}"`,
+        actionLabel: issueActionLabel(full, name),
         targetRef: null, // chave ainda não existe
-        body: {
-          name: name.trim(),
-          scopes,
-          expires_at: expiresLocal ? new Date(expiresLocal).toISOString() : null,
-          justification: justification.trim() || null,
-          confirmation_phrase: full ? confirmation : null,
-          target_repo: targetRepo.trim() || null,
-          target_tool: targetTool.trim() || null,
-        },
+        body: issueBody({ name, scopes, expiresLocal, justification, confirmation, targetRepo, targetTool, full }),
       });
 
       if (result.status === "cancelled" || result.status === "step_up_error") return;
@@ -182,7 +403,7 @@ export function IssueMcpKeyForm({ onIssued }: Props) {
   };
 
   const rootNameMatches =
-    rootNameEcho.trim() === name.trim() && name.trim().length >= 3;
+    (rootNameEcho.trim() === name.trim() && name.trim().length >= 3);
 
   const copy = (s: string) => {
     navigator.clipboard.writeText(s);
@@ -223,75 +444,22 @@ export function IssueMcpKeyForm({ onIssued }: Props) {
         />
       </div>
 
-      <div>
-        <Label className="block mb-2">Escopos</Label>
-        <TooltipProvider delayDuration={200}>
-          <div className="flex flex-wrap gap-2">
-            {KNOWN_SCOPES.map((s) => {
-              const active = scopes.includes(s);
-              const desc = SCOPE_DESCRIPTIONS[s];
-              const isFull = s === FULL_SCOPE;
-              return (
-                <Tooltip key={s}>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      onClick={() => handleScopeToggle(s)}
-                      disabled={isFull && !canGrantFull && !grantorLoading}
-                      className={[
-                        "px-2 py-1 rounded text-xs border font-mono transition",
-                        isFull && !canGrantFull && !grantorLoading
-                          ? "bg-muted text-muted-foreground border-border cursor-not-allowed opacity-60"
-                          : active
-                            ? isFull
-                              ? "bg-destructive text-destructive-foreground border-destructive"
-                              : "bg-primary text-primary-foreground border-primary"
-                            : "bg-background border-border hover:border-primary/40",
-                      ].join(" ")}
-                    >
-                      {s}
-                      {isFull && !canGrantFull && !grantorLoading && " 🔒"}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-xs">
-                    <div className="space-y-1 text-xs">
-                      <p className="font-semibold">{desc.label}</p>
-                      <p className="text-muted-foreground">Tools habilitadas:</p>
-                      <ul className="space-y-0.5">
-                        {desc.tools.map((t) => (
-                          <li key={t} className="font-mono">• {t}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              );
-            })}
-          </div>
-        </TooltipProvider>
-        {!grantorLoading && !canGrantFull && (
-          <p className="mt-2 text-[11px] text-muted-foreground">
-            🔒 Você não está autorizado a conceder o escopo <code className="font-mono">*</code> (FULL).
-            Solicite a um admin já listado em <code className="font-mono">mcp_full_grantors</code> para te incluir.
-          </p>
-        )}
-      </div>
+      <ScopePicker scopes={scopes} canGrantFull={canGrantFull} grantorLoading={grantorLoading} onToggle={handleScopeToggle} />
 
       {full && (
-        <Alert variant="destructive">
-          <ShieldAlert className="h-4 w-4" />
-          <AlertTitle className="flex items-center gap-2">
-            Acesso total (FULL) <Badge variant="destructive">*</Badge>
-          </AlertTitle>
-          <AlertDescription>
-            Esta chave poderá <strong>ler e escrever</strong> em código-fonte,
-            CRM, orçamentos e catálogo. Exige expiração, justificativa e
-            confirmação explícita.
-          </AlertDescription>
-        </Alert>
+        <FullScopeConfiguration
+          confirmation={confirmation}
+          justification={justification}
+          targetRepo={targetRepo}
+          targetTool={targetTool}
+          setConfirmation={setConfirmation}
+          setJustification={setJustification}
+          setTargetRepo={setTargetRepo}
+          setTargetTool={setTargetTool}
+        />
       )}
 
-      <div>
+      {(<div>
         <Label htmlFor="mcp-key-expires">
           Expira em {full && <span className="text-destructive">*</span>}
         </Label>
@@ -306,137 +474,25 @@ export function IssueMcpKeyForm({ onIssued }: Props) {
             ? `Obrigatório para chave FULL. Default: ${FULL_SCOPE_DEFAULT_TTL_DAYS} dias. Máximo: ${FULL_SCOPE_MAX_TTL_DAYS} dias.`
             : "Opcional para chaves restritas — em branco = sem expiração."}
         </p>
-      </div>
+      </div>)}
 
-      {full && (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="mcp-key-target-repo">Repo / sistema alvo</Label>
-              <Input
-                id="mcp-key-target-repo"
-                value={targetRepo}
-                onChange={(e) => setTargetRepo(e.target.value)}
-                placeholder="ex: org/promo-gifts ou n8n-prod"
-                maxLength={200}
-              />
-            </div>
-            <div>
-              <Label htmlFor="mcp-key-target-tool">Ferramenta consumidora</Label>
-              <Input
-                id="mcp-key-target-tool"
-                value={targetTool}
-                onChange={(e) => setTargetTool(e.target.value)}
-                placeholder="ex: Claude Desktop, Cursor, n8n"
-                maxLength={100}
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="mcp-key-just">
-              Justificativa <span className="text-destructive">*</span>
-            </Label>
-            <Textarea
-              id="mcp-key-just"
-              value={justification}
-              onChange={(e) => setJustification(e.target.value)}
-              placeholder="Ex: Acesso temporário para refatoração do módulo de orçamentos pelo agente IA."
-              rows={3}
-              maxLength={1000}
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              {justification.length}/{FULL_SCOPE_MIN_JUSTIFICATION} mínimo —
-              registrado no audit log.
-            </p>
-          </div>
-
-          <div>
-            <Label htmlFor="mcp-key-confirm">
-              Confirmação <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="mcp-key-confirm"
-              value={confirmation}
-              onChange={(e) => setConfirmation(e.target.value)}
-              placeholder={`Digite "${FULL_SCOPE_CONFIRMATION}"`}
-              className="font-mono"
-            />
-          </div>
-        </>
-      )}
-
-      <div className="flex justify-end pt-2">
+      {(<div className="flex justify-end pt-2">
         <Button onClick={requestSubmit} disabled={submitting || !!validation}>
           <Key className="h-4 w-4 mr-1" />
           {submitting ? "Emitindo…" : full ? "Revisar e emitir FULL" : "Gerar chave"}
         </Button>
-      </div>
+      </div>)}
 
-      <AlertDialog open={confirmRootOpen} onOpenChange={setConfirmRootOpen}>
-        <AlertDialogContent className="max-w-lg">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
-              <AlertTriangle className="h-5 w-5" />
-              Você está prestes a emitir uma chave de acesso ROOT
-            </AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div className="space-y-3 text-sm">
-                <p>
-                  O escopo <code className="font-mono bg-muted px-1 rounded">*</code> concede
-                  acesso <strong>total</strong> a este sistema, equivalente ao papel de{" "}
-                  <strong>superusuário</strong>:
-                </p>
-                <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
-                  <li>Ler e escrever em qualquer tabela (CRM, orçamentos, catálogo, usuários)</li>
-                  <li>Disparar funções administrativas e jobs internos</li>
-                  <li>Modificar configurações de segurança e integrações</li>
-                  <li>Agir em nome de qualquer usuário autenticado</li>
-                </ul>
-                <p className="text-foreground">
-                  Esta chave aparecerá em <strong>todos os logs de auditoria</strong> com seu
-                  nome como emissor. Você é <strong>responsável</strong> por seu uso e
-                  armazenamento seguro.
-                </p>
-                <div className="pt-2">
-                  <Label htmlFor="mcp-key-root-echo" className="text-foreground">
-                    Para confirmar, digite o nome exato da chave:{" "}
-                    <code className="font-mono bg-muted px-1 rounded">{name.trim()}</code>
-                  </Label>
-                  <Input
-                    id="mcp-key-root-echo"
-                    value={rootNameEcho}
-                    onChange={(e) => setRootNameEcho(e.target.value)}
-                    placeholder={name.trim()}
-                    className="font-mono mt-2"
-                    autoComplete="off"
-                    autoFocus
-                    maxLength={100}
-                  />
-                  {rootNameEcho.length > 0 && !rootNameMatches && (
-                    <p className="text-xs text-destructive mt-1">
-                      O nome digitado não confere.
-                    </p>
-                  )}
-                </div>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={submitting}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              disabled={!rootNameMatches || submitting}
-              onClick={(e) => {
-                e.preventDefault();
-                if (rootNameMatches) handleRootConfirmed();
-              }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Avançar para verificação dupla
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <RootConfirmationDialog
+        keyName={name.trim()}
+        matches={rootNameMatches}
+        open={confirmRootOpen}
+        rootNameEcho={rootNameEcho}
+        submitting={submitting}
+        onConfirm={() => { void handleRootConfirmed(); }}
+        onOpenChange={setConfirmRootOpen}
+        onRootNameChange={setRootNameEcho}
+      />
     </div>
   );
 }

@@ -15,8 +15,10 @@
 *.sw?
 .DS_Store
 .env
+.env.production
 .env.*.local
 .env.local
+.vercel
 .idea
 .nyc_output/
 .storybook/
@@ -67,3 +69,12 @@ audit_report.pdf
 # etapa 08) — se alguem rodar bun localmente por engano, o lock nao entra no repo.
 bun.lock
 bun.lockb
+
+# Saída gerada pelo graphify (grafo local por máquina)
+graphify-out/
+
+# Estado efêmero gerado por `supabase link` e pela CLI local.
+supabase/.temp/*
+
+# Relatórios locais de orçamento de bundle; a CI os publica como artefato.
+bundle-stats/

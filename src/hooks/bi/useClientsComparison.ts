@@ -34,6 +34,47 @@ export interface ClientComparisonRow {
   shareOfWalletPct: number;
 }
 
+type CategoryAffinity = ReturnType<typeof useClientCategoryAffinity>;
+type ClientAffinity = ReturnType<typeof useClientAffinity>;
+type ClientBi = ReturnType<typeof useClientBI>;
+type IndustryTrends = ReturnType<typeof useIndustryCategoryTrends>;
+
+function resolveTopCategory(
+  categoryAffinity: CategoryAffinity,
+  affinity: ClientAffinity,
+  bi: ClientBi,
+): string | null {
+  return (
+    categoryAffinity.favorite?.label ??
+    affinity.data?.categories?.[0]?.category ??
+    bi.topCategories?.[0]?.category ??
+    null
+  );
+}
+
+function resolveFavoriteCategory(categoryAffinity: CategoryAffinity) {
+  return {
+    label: categoryAffinity.favorite?.label ?? null,
+    sharePct: Math.round(categoryAffinity.favorite?.revenueSharePct ?? 0),
+  };
+}
+
+function resolveOpportunity(categoryAffinity: CategoryAffinity, industry: IndustryTrends) {
+  const clientSlugs = new Set(categoryAffinity.categories.map((category) => category.slug));
+  const opportunity = industry.categories.find(
+    (category) => !clientSlugs.has(category.slug) && category.revenueSharePct >= 8,
+  );
+  return {
+    label: opportunity?.label ?? null,
+    sharePct: Math.round(opportunity?.revenueSharePct ?? 0),
+  };
+}
+
+function resolveNextPeakLabel(daysToNextPeak: number | null, nextPeakMonth: number | null) {
+  if (daysToNextPeak === 0) return "Hoje";
+  return daysToNextPeak !== null && nextPeakMonth !== null ? `${daysToNextPeak}d` : "—";
+}
+
 /** Hook por cliente (precisa ser chamado em ordem fixa). */
 export function useSingleClientComparisonRow(clientId: string): ClientComparisonRow {
   const { data: company } = useCrmCompany(clientId);
@@ -45,29 +86,10 @@ export function useSingleClientComparisonRow(clientId: string): ClientComparison
   const catAffinity = useClientCategoryAffinity(clientId);
   const catIndustry = useIndustryCategoryTrends(ramo);
 
-  const topCategory =
-    catAffinity.favorite?.label ??
-    affinity.data?.categories?.[0]?.category ??
-    bi.topCategories?.[0]?.category ??
-    null;
-
-  const favoriteCategoryLabel = catAffinity.favorite?.label ?? null;
-  const favoriteCategorySharePct = Math.round(catAffinity.favorite?.revenueSharePct ?? 0);
-
-  // GAP: categoria forte do setor que o cliente não compra
-  const clientSlugs = new Set(catAffinity.categories.map((c) => c.slug));
-  const opportunity = catIndustry.categories.find(
-    (ind) => !clientSlugs.has(ind.slug) && ind.revenueSharePct >= 8,
-  );
-  const opportunityCategoryLabel = opportunity?.label ?? null;
-  const opportunityCategorySharePct = Math.round(opportunity?.revenueSharePct ?? 0);
-
-  const nextPeakLabel =
-    seas.daysToNextPeak === 0
-      ? "Hoje"
-      : seas.daysToNextPeak !== null && seas.nextPeakMonth !== null
-        ? `${seas.daysToNextPeak}d`
-        : "—";
+  const topCategory = resolveTopCategory(catAffinity, affinity, bi);
+  const favorite = resolveFavoriteCategory(catAffinity);
+  const opportunity = resolveOpportunity(catAffinity, catIndustry);
+  const nextPeakLabel = resolveNextPeakLabel(seas.daysToNextPeak, seas.nextPeakMonth);
 
   return {
     clientId,
@@ -81,10 +103,10 @@ export function useSingleClientComparisonRow(clientId: string): ClientComparison
     ordersCount: bi.ordersCount,
     daysSinceLastOrder: bi.daysSinceLastOrder,
     topCategory,
-    favoriteCategoryLabel,
-    favoriteCategorySharePct,
-    opportunityCategoryLabel,
-    opportunityCategorySharePct,
+    favoriteCategoryLabel: favorite.label,
+    favoriteCategorySharePct: favorite.sharePct,
+    opportunityCategoryLabel: opportunity.label,
+    opportunityCategorySharePct: opportunity.sharePct,
     nextPeakLabel,
     daysToNextPeak: seas.daysToNextPeak,
     shareOfWalletPct: health.shareOfWalletPct,

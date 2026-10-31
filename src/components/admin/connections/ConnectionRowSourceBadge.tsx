@@ -67,6 +67,25 @@ const META: Record<Aggregate, { label: string; cls: string; Icon: typeof Databas
   },
 };
 
+type SourceEntry = ReturnType<typeof aggregateSource>["per"][number];
+
+function MissingSourceBadge({ className }: { className?: string }) {
+  const meta = META.none;
+  const Icon = meta.Icon;
+  return <span className={cn("inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide", meta.cls, className)} aria-label="Origem indisponível (sem env_key)"><Icon className="h-2.5 w-2.5" />n/a</span>;
+}
+
+function sourceEntryPresentation(source: SourceEntry["source"]) {
+  if (source === "missing") return { tag: "não configurado", tone: "text-destructive" };
+  if (source === "env") return { tag: "ENV", tone: "text-warning" };
+  if (source === "db") return { tag: "DB", tone: "text-success" };
+  return { tag: source ?? "—", tone: "text-success" };
+}
+
+function CredentialSourceDetails({ entries, envKey, tooltip }: { entries: SourceEntry[]; envKey: string; tooltip: string }) {
+  return <div className="text-xs space-y-1.5"><div>{tooltip}</div><ul className="space-y-0.5 font-mono text-[10px]">{entries.map((entry) => { const presentation = sourceEntryPresentation(entry.source); return <li key={entry.name} className="flex items-center justify-between gap-2"><span className="truncate">{entry.name.replace(`EXTERNAL_${envKey.toUpperCase()}_`, "…_")}</span><span className={cn("font-semibold uppercase", presentation.tone)}>{presentation.tag}</span></li>; })}</ul></div>;
+}
+
 export function ConnectionRowSourceBadge({
   envKey,
   secrets,
@@ -76,23 +95,7 @@ export function ConnectionRowSourceBadge({
   secrets: SecretStatus[];
   className?: string;
 }) {
-  if (!envKey) {
-    const m = META.none;
-    const Icon = m.Icon;
-    return (
-      <span
-        className={cn(
-          "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
-          m.cls,
-          className,
-        )}
-        aria-label="Origem indisponível (sem env_key)"
-      >
-        <Icon className="h-2.5 w-2.5" />
-        n/a
-      </span>
-    );
-  }
+  if (!envKey) return <MissingSourceBadge className={className} />;
 
   const { state, per } = aggregateSource(envKey, secrets);
   const m = META[state];
@@ -115,33 +118,7 @@ export function ConnectionRowSourceBadge({
         </span>
       </TooltipTrigger>
       <TooltipContent side="top" className="max-w-xs">
-        <div className="text-xs space-y-1.5">
-          <div>{m.tooltip}</div>
-          <ul className="space-y-0.5 font-mono text-[10px]">
-            {per.map((p) => {
-              const tag =
-                p.source === "missing"
-                  ? "não configurado"
-                  : p.source === "env"
-                    ? "ENV"
-                    : p.source === "db"
-                      ? "DB"
-                      : (p.source ?? "—");
-              const tone =
-                p.source === "missing"
-                  ? "text-destructive"
-                  : p.source === "env"
-                    ? "text-warning"
-                    : "text-success";
-              return (
-                <li key={p.name} className="flex items-center justify-between gap-2">
-                  <span className="truncate">{p.name.replace(`EXTERNAL_${envKey.toUpperCase()}_`, "…_")}</span>
-                  <span className={cn("font-semibold uppercase", tone)}>{tag}</span>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+        <CredentialSourceDetails entries={per} envKey={envKey} tooltip={m.tooltip} />
       </TooltipContent>
     </Tooltip>
   );

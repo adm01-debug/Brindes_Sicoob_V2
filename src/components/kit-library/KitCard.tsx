@@ -1,3 +1,4 @@
+import type { ComponentType } from "react";
 /**
  * Kit Card — Cartão visual rico para "Meus Kits" e "Sugeridos".
  */
@@ -41,11 +42,33 @@ interface Props {
   isBusy?: boolean;
 }
 
+function ClientViewedBadge({ data }: { readonly data: KitCardData }) {
+  if (!data.viewedByClient) return null;
+  const message = data.lastViewedAt
+    ? `Visualizado pelo cliente em ${new Date(data.lastViewedAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}`
+    : 'Visualizado pelo cliente';
+  return <TooltipProvider><Tooltip><TooltipTrigger asChild><Badge variant="outline" className="text-[10px] gap-1 border-success/40 text-success bg-success/10"><Eye className="h-3 w-3" />Visto</Badge></TooltipTrigger><TooltipContent>{message}</TooltipContent></Tooltip></TooltipProvider>;
+}
+
+function KitBadges({ data }: { readonly data: KitCardData }) {
+  return <>{data.badge && <Badge variant={data.badge === 'Popular' ? 'default' : 'outline'} className={cn('text-[10px]', data.badge === 'Popular' && 'bg-warning/15 text-warning border-warning/30')}>{data.badge}</Badge>}{data.usageBadge && <Badge variant="secondary" className="text-[10px] gap-1">{data.usageBadge}</Badge>}<ClientViewedBadge data={data} /></>;
+}
+
+function KitHeaderActions({ data, variant, onTogglePin, onToggleFavorite }: Pick<Props, 'data' | 'variant' | 'onTogglePin' | 'onToggleFavorite'>) {
+  if (variant !== 'mine') return null;
+  return <div className="flex items-center gap-0.5 shrink-0">{onTogglePin && <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8" onClick={onTogglePin} aria-label={data.isPinned ? 'Desafixar' : 'Fixar em destaque'}><Pin className={cn('h-4 w-4 transition-colors', data.isPinned ? 'fill-primary text-primary' : 'text-muted-foreground')} /></Button></TooltipTrigger><TooltipContent>{data.isPinned ? 'Desafixar' : 'Fixar em destaque'}</TooltipContent></Tooltip></TooltipProvider>}{onToggleFavorite && <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onToggleFavorite} aria-label={data.isFavorite ? 'Remover dos favoritos' : 'Favoritar'}><Star className={cn('h-4 w-4 transition-colors', data.isFavorite ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground')} /></Button>}</div>;
+}
+
+function KitFooterActions(props: Pick<Props, 'variant' | 'onEdit' | 'onDuplicate' | 'onDelete' | 'onUseTemplate' | 'isBusy'>) {
+  if (props.variant === 'template') return <Button size="sm" onClick={props.onUseTemplate} disabled={props.isBusy} className="gap-1"><Wand2 className="h-3.5 w-3.5" />Usar</Button>;
+  return <><Button variant="ghost" size="icon" className="h-8 w-8" onClick={props.onEdit} aria-label="Editar"><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="icon" className="h-8 w-8" onClick={props.onDuplicate} aria-label="Duplicar"><Copy className="h-4 w-4" /></Button><Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={props.onDelete} aria-label="Excluir"><Trash2 className="h-4 w-4" /></Button></>;
+}
+
 export function KitCard({
   data, variant, onEdit, onDuplicate, onDelete, onToggleFavorite, onTogglePin, onUseTemplate, isBusy,
 }: Props) {
   const Icon =
-    (Lucide as unknown as Record<string, React.ComponentType<{ className?: string }>>)[data.icon] ||
+    (Lucide as unknown as Record<string, ComponentType<{ className?: string }>>)[data.icon] ||
     Lucide.Package;
 
   return (
@@ -67,86 +90,14 @@ export function KitCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-display font-semibold truncate">{data.name}</h3>
-              {data.badge && (
-                <Badge
-                  variant={data.badge === 'Popular' ? 'default' : 'outline'}
-                  className={cn('text-[10px]', data.badge === 'Popular' && 'bg-warning/15 text-warning border-warning/30')}
-                >
-                  {data.badge}
-                </Badge>
-              )}
-              {data.usageBadge && (
-                <Badge variant="secondary" className="text-[10px] gap-1">
-                  {data.usageBadge}
-                </Badge>
-              )}
-              {data.viewedByClient && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Badge
-                        variant="outline"
-                        className="text-[10px] gap-1 border-success/40 text-success bg-success/10"
-                      >
-                        <Eye className="h-3 w-3" />
-                        Visto
-                      </Badge>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {data.lastViewedAt
-                        ? `Visualizado pelo cliente em ${new Date(data.lastViewedAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}`
-                        : 'Visualizado pelo cliente'}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
+              <KitBadges data={data} />
             </div>
             {data.description && (
               <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{data.description}</p>
             )}
           </div>
 
-          <div className="flex items-center gap-0.5 shrink-0">
-            {variant === 'mine' && onTogglePin && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={onTogglePin}
-                      aria-label={data.isPinned ? 'Desafixar' : 'Fixar em destaque'}
-                    >
-                      <Pin
-                        className={cn(
-                          'h-4 w-4 transition-colors',
-                          data.isPinned ? 'fill-primary text-primary' : 'text-muted-foreground',
-                        )}
-                      />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{data.isPinned ? 'Desafixar' : 'Fixar em destaque'}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-            {variant === 'mine' && onToggleFavorite && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={onToggleFavorite}
-                aria-label={data.isFavorite ? 'Remover dos favoritos' : 'Favoritar'}
-              >
-                <Star
-                  className={cn(
-                    'h-4 w-4 transition-colors',
-                    data.isFavorite ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground',
-                  )}
-                />
-              </Button>
-            )}
-          </div>
+          <KitHeaderActions data={data} variant={variant} onTogglePin={onTogglePin} onToggleFavorite={onToggleFavorite} />
         </div>
 
         <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
@@ -169,30 +120,7 @@ export function KitCard({
           </div>
 
           <div className="flex items-center gap-1">
-            {variant === 'mine' ? (
-              <>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onEdit} aria-label="Editar">
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onDuplicate} aria-label="Duplicar">
-                  <Copy className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-destructive hover:text-destructive"
-                  onClick={onDelete}
-                  aria-label="Excluir"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </>
-            ) : (
-              <Button size="sm" onClick={onUseTemplate} disabled={isBusy} className="gap-1">
-                <Wand2 className="h-3.5 w-3.5" />
-                Usar
-              </Button>
-            )}
+            <KitFooterActions variant={variant} onEdit={onEdit} onDuplicate={onDuplicate} onDelete={onDelete} onUseTemplate={onUseTemplate} isBusy={isBusy} />
           </div>
         </div>
       </CardContent>

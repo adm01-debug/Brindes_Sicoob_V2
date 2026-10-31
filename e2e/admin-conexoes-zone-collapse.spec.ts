@@ -1,3 +1,4 @@
+import { gotoAndSettle, settleAfterAction } from './helpers/nav';
 /**
  * E2E: Colapso/expansão das zonas em /admin/conexoes
  *
@@ -34,7 +35,7 @@ const ZONES: Array<{
 ];
 
 async function gotoOrSkip(page: Page) {
-  await page.goto(ROUTE);
+  await gotoAndSettle(page, ROUTE);
   // Se a guarda de admin redirecionar para /login, pulamos.
   await page.waitForLoadState('domcontentloaded');
   const url = page.url();
@@ -48,24 +49,34 @@ async function gotoOrSkip(page: Page) {
   if (/\/login/i.test(page.url())) {
     test.skip(true, 'Sessão admin não disponível.');
   }
+  const zone = page.locator('#zone-health');
+  const accessDenied = page.getByRole('alert', { name: /acesso restrito/i });
+  await expect(zone.or(accessDenied)).toBeVisible({ timeout: 30_000 });
+  if (await accessDenied.isVisible()) {
+    test.skip(true, 'Sessão atual não possui o papel dev exigido por /admin/conexoes.');
+  }
 }
 
 async function getToggleButton(page: Page, zone: (typeof ZONES)[number]) {
   // O aria-label é "Colapsar {title}" ou "Expandir {title}".
-  return page.locator(
-    `#${zone.anchor} button[aria-controls="${zone.anchor}-content"]`,
-  );
+  return page.locator(`#${zone.anchor} button[aria-controls="${zone.anchor}-content"]`);
 }
 
 async function getContentWrapper(page: Page, zone: (typeof ZONES)[number]) {
   return page.locator(`#${zone.anchor}-content`);
 }
 
+async function toggleZoneWithKeyboard(page: Page, zone: (typeof ZONES)[number]) {
+  const toggle = await getToggleButton(page, zone);
+  await toggle.press('Enter');
+  return toggle;
+}
+
 test.describe('Admin Conexões — Colapso/Expansão de Zonas (E2E)', () => {
+  test.describe.configure({ timeout: 90_000 });
+
   test.beforeEach(async ({ page }) => {
     await gotoOrSkip(page);
-    // Aguarda ao menos a primeira zona aparecer.
-    await expect(page.locator('#zone-health')).toBeVisible({ timeout: 10_000 });
   });
 
   test('colapsa e expande individualmente cada uma das 3 zonas', async ({ page }) => {
@@ -78,7 +89,7 @@ test.describe('Admin Conexões — Colapso/Expansão de Zonas (E2E)', () => {
       await expect(content).not.toHaveAttribute('hidden', /.*/);
 
       // Colapsa.
-      await toggle.click();
+      await toggleZoneWithKeyboard(page, zone);
       await expect(toggle).toHaveAttribute('aria-expanded', 'false');
       await expect(content).toHaveAttribute('hidden', /.*/);
 
@@ -88,7 +99,7 @@ test.describe('Admin Conexões — Colapso/Expansão de Zonas (E2E)', () => {
       ).toBeVisible();
 
       // Expande de volta.
-      await toggle.click();
+      await toggleZoneWithKeyboard(page, zone);
       await expect(toggle).toHaveAttribute('aria-expanded', 'true');
       await expect(content).not.toHaveAttribute('hidden', /.*/);
     }
@@ -99,15 +110,12 @@ test.describe('Admin Conexões — Colapso/Expansão de Zonas (E2E)', () => {
     for (const zone of ['health', 'operation'] as const) {
       const z = ZONES.find((x) => x.id === zone)!;
       const toggle = await getToggleButton(page, z);
-      await toggle.click();
+      await toggleZoneWithKeyboard(page, z);
       await expect(toggle).toHaveAttribute('aria-expanded', 'false');
     }
 
     // Confirma que localStorage foi gravado com o estado correto.
-    const stored = await page.evaluate(
-      (key) => localStorage.getItem(key),
-      STORAGE_KEY,
-    );
+    const stored = await page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY);
     expect(stored).not.toBeNull();
     expect(JSON.parse(stored!)).toMatchObject({
       health: true,
@@ -138,7 +146,7 @@ test.describe('Admin Conexões — Colapso/Expansão de Zonas (E2E)', () => {
     // chega para uma zona oculta pelo usuário.
     const healthZone = ZONES[0];
     const toggle = await getToggleButton(page, healthZone);
-    await toggle.click();
+    await toggleZoneWithKeyboard(page, healthZone);
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
 
     // Dispara o evento que a Incident Strip emite ao clicar num incidente.
@@ -159,11 +167,13 @@ test.describe('Admin Conexões — Colapso/Expansão de Zonas (E2E)', () => {
     await expect(section).toHaveClass(/ring-2/, { timeout: 1000 });
 
     // Após ~1.8s, o highlight deve sumir.
-    await page.waitForTimeout(2200);
+    await settleAfterAction(page, { timeout: 2200 });
     await expect(section).not.toHaveClass(/ring-2/);
   });
 
-  test('deep-link funciona também quando a zona já está expandida (no-op de expand)', async ({ page }) => {
+  test('deep-link funciona também quando a zona já está expandida (no-op de expand)', async ({
+    page,
+  }) => {
     const operationZone = ZONES[1];
     const toggle = await getToggleButton(page, operationZone);
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');

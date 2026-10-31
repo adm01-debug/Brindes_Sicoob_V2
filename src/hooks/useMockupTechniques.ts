@@ -81,15 +81,128 @@ interface CustomizationResponse {
   locations: CustomizationLocation[];
 }
 
-interface TabelaPrecoOficial {
-  id: string;
-  codigo: string;
-  nome: string;
-}
-
 interface FaixaPreco {
   largura_max: number | null;
   altura_max: number | null;
+}
+
+interface TechniqueDimensions {
+  maxWidth: number | null;
+  maxHeight: number | null;
+}
+
+function groupPriceTiers(rows: Array<FaixaPreco & { tabela_preco_gravacao_id: string }>): Map<string, FaixaPreco[]> {
+  const grouped = new Map<string, FaixaPreco[]>();
+  for (const row of rows) {
+    const tiers = grouped.get(row.tabela_preco_gravacao_id) || [];
+    tiers.push(row);
+    grouped.set(row.tabela_preco_gravacao_id, tiers);
+  }
+  return grouped;
+}
+
+function maxDimension(rows: FaixaPreco[], key: 'largura_max' | 'altura_max'): number | null {
+  const values = rows.map(row => row[key]).filter((value): value is number => value !== null && value !== undefined);
+  if (values.some(value => value >= 90)) return null;
+  return values.length > 0 ? Math.max(...values) : null;
+}
+
+function buildDimensionMap(
+  techniques: Array<{ id: string; code: string }>,
+  groupedTiers: Map<string, FaixaPreco[]>,
+): Map<string, TechniqueDimensions> {
+  const dimensions = new Map<string, TechniqueDimensions>();
+  for (const technique of techniques) {
+    const tiers = groupedTiers.get(technique.id) || [];
+    if (tiers.length === 0) continue;
+    dimensions.set(technique.code, {
+      maxWidth: maxDimension(tiers, 'largura_max'),
+      maxHeight: maxDimension(tiers, 'altura_max'),
+    });
+  }
+  return dimensions;
+}
+
+function techniqueWithoutLimits(technique: Technique, dimensions?: TechniqueDimensions): TechniqueWithLimits {
+  return {
+    ...technique,
+    maxWidth: dimensions?.maxWidth ?? null,
+    maxHeight: dimensions?.maxHeight ?? null,
+    areaName: null,
+    locationName: null,
+    maxColors: null,
+    chargesPerColor: false,
+    usesDimension: false,
+    isCurved: false,
+    setupCost: null,
+    variationLabel: null,
+    groupCode: null,
+    shape: null,
+  };
+}
+
+function bestOptionsByTechnique(locations: CustomizationLocation[]) {
+  const best = new Map<string, { option: CustomizationOption; locationName: string }>();
+  for (const location of locations) {
+    for (const option of location.options) {
+      const existing = best.get(option.tecnica_nome);
+      const area = option.efetiva_largura_max * option.efetiva_altura_max;
+      const existingArea = existing
+        ? existing.option.efetiva_largura_max * existing.option.efetiva_altura_max
+        : 0;
+      if (!existing || area > existingArea) {
+        best.set(option.tecnica_nome, { option, locationName: location.location_name });
+      }
+    }
+  }
+  return best;
+}
+
+function truthyOrNull<T>(value: T): T | null {
+  return value || null;
+}
+
+function definedOrNull<T>(value: T | null | undefined): T | null {
+  return value ?? null;
+}
+
+function optionToTechnique(option: CustomizationOption, locationName: string): TechniqueWithLimits {
+  return {
+    id: option.technique_id,
+    name: option.tecnica_nome,
+    code: truthyOrNull(option.codigo_tabela),
+    maxWidth: truthyOrNull(option.efetiva_largura_max),
+    maxHeight: truthyOrNull(option.efetiva_altura_max),
+    areaName: `${locationName} — ${option.tecnica_nome}`,
+    locationName,
+    maxColors: definedOrNull(option.max_cores),
+    chargesPerColor: option.cobra_por_cor,
+    usesDimension: option.usa_dimensao,
+    isCurved: option.is_curved,
+    setupCost: definedOrNull(option.custo_setup),
+    variationLabel: truthyOrNull(option.variacao_label),
+    groupCode: truthyOrNull(option.grupo_tecnica),
+    shape: truthyOrNull(option.shape),
+  };
+}
+
+function resolveFilteredTechniques(
+  techniques: Technique[],
+  selectedProduct: { id: string } | null,
+  data: CustomizationResponse | null | undefined,
+  dimensions: Map<string, TechniqueDimensions> | undefined,
+): TechniqueWithLimits[] {
+  if (!selectedProduct || techniques.length === 0) return techniques.map(technique => techniqueWithoutLimits(technique));
+  if (!data?.locations) return [];
+  if (data.locations.length === 0) {
+    return techniques.map(technique => techniqueWithoutLimits(
+      technique,
+      technique.code ? dimensions?.get(technique.code) : undefined,
+    ));
+  }
+  const result = Array.from(bestOptionsByTechnique(data.locations).values())
+    .map(({ option, locationName }) => optionToTechnique(option, locationName));
+  return result.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /**
@@ -99,9 +212,10 @@ export function useProductCustomizationOptionsForMockup(productId: string | unde
   return useQuery({
     queryKey: ['mockup-customization-options', productId],
     queryFn: async () => {
+      if (!productId) throw new Error('Produto não identificado');
       const raw = await invokeExternalRpc<Record<string, unknown>>(
         'fn_get_product_customization_options',
-        { p_product_id: productId! }
+        { p_product_id: productId }
       );
       // Passa pelo adapter para absorver futuras mudanças de schema (PT → EN).
       const adapted = adaptCustomizationOptions(raw);
@@ -139,44 +253,10 @@ function useAllTechniqueDimensions(techniques: Technique[], shouldFetch: boolean
         limit: 5000,
       });
 
-      // Group faixas by technique ID
-      const faixasByTech = new Map<string, FaixaPreco[]>();
-      for (const f of faixaResult.records ?? []) {
-        const key = f.tabela_preco_gravacao_id;
-        if (!faixasByTech.has(key)) faixasByTech.set(key, []);
-        faixasByTech.get(key)!.push(f);
-      }
-
-      // Build code → dimensions map
-      const codeMap = new Map<string, { maxWidth: number | null; maxHeight: number | null }>();
-
-      for (const tech of techResult.records ?? []) {
-        const faixas = faixasByTech.get(tech.id) || [];
-        if (!faixas.length) continue;
-
-        const larguras: number[] = [];
-        const alturas: number[] = [];
-        let larguraSentinel = false;
-        let alturaSentinel = false;
-
-        for (const f of faixas) {
-          if (f.largura_max != null) {
-            if (f.largura_max >= 90) larguraSentinel = true;
-            else larguras.push(f.largura_max);
-          }
-          if (f.altura_max != null) {
-            if (f.altura_max >= 90) alturaSentinel = true;
-            else alturas.push(f.altura_max);
-          }
-        }
-
-        let maxWidth = larguras.length > 0 ? Math.max(...larguras) : null;
-        let maxHeight = alturas.length > 0 ? Math.max(...alturas) : null;
-        if (larguraSentinel) maxWidth = null;
-        if (alturaSentinel) maxHeight = null;
-
-        codeMap.set(tech.code, { maxWidth, maxHeight });
-      }
+      const codeMap = buildDimensionMap(
+        techResult.records ?? [],
+        groupPriceTiers(faixaResult.records ?? []),
+      );
 
       logger.log('[useMockupTechniques] Loaded technique dimensions for', codeMap.size, 'techniques');
       return codeMap;
@@ -209,110 +289,8 @@ export function useFilteredTechniques(
 
   const { data: techniqueDims } = useAllTechniqueDimensions(techniques, needsTechniqueDims);
 
-  return useMemo(() => {
-    // No product selected -> return all techniques without limits
-    if (!selectedProduct || !techniques.length) {
-      return techniques.map(t => ({
-        ...t,
-        maxWidth: null,
-        maxHeight: null,
-        areaName: null,
-        locationName: null,
-        maxColors: null,
-        chargesPerColor: false,
-        usesDimension: false,
-        isCurved: false,
-        setupCost: null,
-        variationLabel: null,
-        groupCode: null,
-        shape: null,
-      }));
-    }
-
-    // No customization data yet (loading) -> return empty to avoid showing wrong list
-    if (!customizationData?.locations) {
-      return [];
-    }
-
-    // RPC returned successfully but product has NO configured areas
-    // → Use technique-level dimensions from pricing tables
-    if (customizationData.locations.length === 0) {
-      return techniques.map(t => {
-        const dims = t.code ? techniqueDims?.get(t.code) : undefined;
-        return {
-          ...t,
-          maxWidth: dims?.maxWidth ?? null,
-          maxHeight: dims?.maxHeight ?? null,
-          areaName: null,
-          locationName: null,
-          maxColors: null,
-          chargesPerColor: false,
-          usesDimension: false,
-          isCurved: false,
-          setupCost: null,
-          variationLabel: null,
-          groupCode: null,
-          shape: null,
-        };
-      });
-    }
-
-    // Extract all unique techniques from all locations
-    // Use a map keyed by tecnica_nome to deduplicate, keeping the best dimensions
-    const techniqueMap = new Map<string, {
-      option: CustomizationOption;
-      locationName: string;
-    }>();
-
-    for (const location of customizationData.locations) {
-      for (const option of location.options) {
-        const key = option.tecnica_nome;
-        const existing = techniqueMap.get(key);
-        
-        const area = option.efetiva_largura_max * option.efetiva_altura_max;
-        const existingArea = existing 
-          ? existing.option.efetiva_largura_max * existing.option.efetiva_altura_max 
-          : 0;
-        
-        if (!existing || area > existingArea) {
-          techniqueMap.set(key, {
-            option,
-            locationName: location.location_name,
-          });
-        }
-      }
-    }
-
-    if (techniqueMap.size === 0) {
-      return [];
-    }
-
-    // Build the result — use technique_id from the RPC as the ID
-    const result: TechniqueWithLimits[] = [];
-    
-    for (const [techName, { option, locationName }] of techniqueMap.entries()) {
-      result.push({
-        id: option.technique_id,
-        name: option.tecnica_nome,
-        code: option.codigo_tabela || null,
-        maxWidth: option.efetiva_largura_max || null,
-        maxHeight: option.efetiva_altura_max || null,
-        areaName: `${locationName} — ${option.tecnica_nome}`,
-        locationName,
-        maxColors: option.max_cores ?? null,
-        chargesPerColor: option.cobra_por_cor ?? false,
-        usesDimension: option.usa_dimensao ?? false,
-        isCurved: option.is_curved ?? false,
-        setupCost: option.custo_setup ?? null,
-        variationLabel: option.variacao_label || null,
-        groupCode: option.grupo_tecnica || null,
-        shape: option.shape || null,
-      });
-    }
-
-    // Sort by name
-    result.sort((a, b) => a.name.localeCompare(b.name));
-
-    return result;
-  }, [techniques, selectedProduct, customizationData, techniqueDims]);
+  return useMemo(
+    () => resolveFilteredTechniques(techniques, selectedProduct, customizationData, techniqueDims),
+    [techniques, selectedProduct, customizationData, techniqueDims],
+  );
 }

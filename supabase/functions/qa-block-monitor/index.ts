@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     log.error("monitor_failed", { err: message });
-    return log.respond(new Response(JSON.stringify({ error: message }), {
+    return log.respond(new Response(JSON.stringify({ error: "monitor_failed" }), {
       status: 500,
       headers: { "Content-Type": "application/json" }
     }));

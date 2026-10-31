@@ -30,7 +30,7 @@ de todos os triggers e integrações do projeto remoto.
 
 ## Checklist deste lote
 
-- [x] Mapear as dependências do backend com [Graphify](../../graphify-out/README.md).
+- [x] Mapear as dependências do backend com Graphify (`graphify-out/README.md`, artefato local gerado por `graphify update .` — não versionado).
 - [x] Consultar funções, triggers, políticas e estado real antes do patch.
 - [x] Restringir emissão de token ao orçamento vigente e ao vendedor correspondente.
 - [x] Impedir troca de destino/titular e falsificação direta de resposta pelo cliente.

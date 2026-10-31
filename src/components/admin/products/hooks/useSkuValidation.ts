@@ -15,9 +15,8 @@ export function useSkuValidation(currentSku: string, isEdit: boolean, originalSk
     const timer = setTimeout(async () => {
       try {
         const { fetchPromobrindProducts } = await import('@/lib/external-db');
-        const existing = await fetchPromobrindProducts({ search: currentSku, limit: 5 });
-        const products = Array.isArray(existing) ? existing : (existing as Record<string, unknown>).products || [];
-        const dup = products.find((p: any) => p.sku?.toLowerCase() === currentSku.toLowerCase());
+        const products = await fetchPromobrindProducts({ search: currentSku, limit: 5 });
+        const dup = products.find((product) => product.sku?.toLowerCase() === currentSku.toLowerCase());
         if (dup) { setStatus('duplicate'); setDuplicateName(dup.name || ''); }
         else { setStatus('valid'); setDuplicateName(''); }
       } catch { setStatus('idle'); }

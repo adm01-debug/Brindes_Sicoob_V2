@@ -1,0 +1,87 @@
+{
+  "live_api_metadata": true,
+  "scope": "Presença de relações/colunas e nomes de argumentos RPC; sem certificar tipos SQL, nulabilidade, overloads ou corpos.",
+  "types_tables": 203,
+  "types_views": 4,
+  "api_relations": 202,
+  "relations_only_types": [
+    "admin_audit_log_archive",
+    "admin_audit_log_default",
+    "admin_audit_log_old",
+    "admin_audit_log_y2024",
+    "admin_audit_log_y2025",
+    "admin_audit_log_y2026_m01",
+    "admin_audit_log_y2026_m02",
+    "admin_audit_log_y2026_m03",
+    "admin_audit_log_y2026_m04",
+    "admin_audit_log_y2026_m05",
+    "admin_audit_log_y2026_m06",
+    "personalization_simulations",
+    "sales_goals"
+  ],
+  "relations_only_api": [
+    "audit_log",
+    "notification_templates",
+    "password_reset_requests",
+    "sicoob_kit_quote_requests",
+    "sicoob_order_shipments",
+    "sicoob_reorder_requests",
+    "webhook_configs",
+    "webhook_logs"
+  ],
+  "columns_differences": [
+    {
+      "name": "profiles",
+      "only_types": [],
+      "only_api": [
+        "singular_id",
+        "carteira_id"
+      ]
+    },
+    {
+      "name": "quote_item_personalizations",
+      "only_types": [],
+      "only_api": [
+        "catalog_checked_at"
+      ]
+    },
+    {
+      "name": "sicoob_orders",
+      "only_types": [],
+      "only_api": [
+        "order_number"
+      ]
+    }
+  ],
+  "types_functions": 150,
+  "api_functions": 167,
+  "functions_only_types": [],
+  "functions_only_api": [
+    "assert_sicoob_approval_actor",
+    "create_sicoob_kit_quote",
+    "ensure_admin_audit_log_partitions",
+    "get_sicoob_kit_quote_idempotency",
+    "get_sicoob_order_approval_policy",
+    "get_sicoob_order_shipment",
+    "get_sicoob_reorder_idempotency",
+    "get_user_singular_id",
+    "sicoob_actor_can_approve",
+    "sicoob_actor_can_manage_consolidation",
+    "sicoob_actor_can_manage_finance",
+    "sicoob_actor_can_manage_fulfillment",
+    "sicoob_actor_can_receive_consolidation",
+    "sicoob_actor_can_receive_destination",
+    "sicoob_actor_can_request_approval",
+    "sicoob_actor_can_view_all_consolidation",
+    "upsert_sicoob_order_shipment"
+  ],
+  "rpc_argument_differences": [
+    {
+      "name": "reorder_sicoob_order_as_quote",
+      "only_types": [],
+      "only_api": [
+        "p_request_hash"
+      ]
+    }
+  ]
+}

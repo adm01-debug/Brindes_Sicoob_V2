@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SicoobStatusBadge } from "@/components/sicoob/SicoobStatusBadge";
-import { SicoobFulfillmentStatus, SICOOB_STATUS_CONFIG } from "@/lib/sicoob-status-config";
+import { type SicoobFulfillmentStatus, SICOOB_STATUS_CONFIG } from "@/lib/sicoob-status-config";
 import { 
   Palette, 
   CheckCircle2, 
@@ -54,17 +54,6 @@ const TOKEN_MAP = {
   success: "bg-success",
   warning: "bg-warning",
   destructive: "bg-destructive",
-};
-
-const TEXT_TOKEN_MAP = {
-  brand: "text-brand",
-  primary: "text-primary",
-  secondary: "text-secondary",
-  accent: "text-accent",
-  reward: "text-reward",
-  success: "text-success",
-  warning: "text-warning",
-  destructive: "text-destructive",
 };
 
 export default function ColorDocumentationPage() {
@@ -358,7 +347,6 @@ export default function ColorDocumentationPage() {
                       <ContrastRow 
                         key={data.token}
                         token={data.token} 
-                        bg={data.bg} 
                         ratio={data.ratio} 
                         usage={data.usage}
                       />

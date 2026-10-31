@@ -46,8 +46,49 @@ const defaultMetrics: SecurityMetrics = {
   knownDevicesCount: 0, recentLoginAttempts: 0, failedLoginAttempts: 0, securityAlerts: 0,
 };
 
+interface SecuritySnapshot {
+  attempts: LoginAttempt[];
+  notifications: SecurityNotification[];
+  devicesCount: number;
+}
+
+async function fetchSecuritySnapshot(userId: string): Promise<SecuritySnapshot> {
+  const [{ data: attempts }, { count: devicesCount }, { data: notifications }] = await Promise.all([
+    supabase.from("login_attempts").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(20),
+    supabase.from("user_known_devices").select("*", { count: "exact", head: true }).eq("user_id", userId),
+    supabase.from("notifications").select("*").eq("user_id", userId).eq("type", "security").order("created_at", { ascending: false }).limit(10),
+  ]);
+  return {
+    attempts: (attempts as LoginAttempt[] | null) ?? [],
+    notifications: (notifications as SecurityNotification[] | null) ?? [],
+    devicesCount: devicesCount ?? 0,
+  };
+}
+
+interface MetricsContext {
+  snapshot: SecuritySnapshot;
+  mfaAvailable: boolean;
+  mfaEnabled: boolean;
+  allowedIpCount: number;
+}
+
+function calculateMetrics({ snapshot, mfaAvailable, mfaEnabled, allowedIpCount }: MetricsContext): SecurityMetrics {
+  const failedAttempts = snapshot.attempts.filter(attempt => !attempt.success).length;
+  let score = 40;
+  if (mfaAvailable && mfaEnabled) score += 30;
+  if (allowedIpCount > 0) score += 20;
+  if (snapshot.devicesCount > 0) score += 10;
+  if (failedAttempts > 5) score -= 10;
+  return {
+    score: Math.min(100, Math.max(0, score)), mfaEnabled,
+    ipRestrictionsActive: allowedIpCount > 0, knownDevicesCount: snapshot.devicesCount,
+    recentLoginAttempts: snapshot.attempts.length, failedLoginAttempts: failedAttempts,
+    securityAlerts: snapshot.notifications.filter(notification => !notification.is_read).length,
+  };
+}
+
 export function useSecurityData(effectiveUserId: string | undefined, isManagingOther: boolean, selectedUserId: string | null) {
-  const { is2FAEnabled, isLoading: is2FALoading, error: mfaError } = use2FA(isManagingOther ? selectedUserId! : undefined);
+  const { is2FAEnabled, isLoading: is2FALoading, error: mfaError } = use2FA(isManagingOther ? selectedUserId ?? undefined : undefined);
   const mfaStatusAvailable = !isManagingOther && !mfaError;
   const { allowedIPs } = useAllowedIPs();
   const [metrics, setMetrics] = useState<SecurityMetrics>(defaultMetrics);
@@ -59,42 +100,10 @@ export function useSecurityData(effectiveUserId: string | undefined, isManagingO
     if (!effectiveUserId) return;
     setIsLoading(true);
     try {
-      const { data: attempts } = await supabase
-        .from('login_attempts').select('*')
-        .eq('user_id', effectiveUserId)
-        .order('created_at', { ascending: false }).limit(20);
-
-      setLoginAttempts((attempts as LoginAttempt[]) || []);
-
-      const { count: devicesCount } = await supabase
-        .from('user_known_devices').select('*', { count: 'exact', head: true })
-        .eq('user_id', effectiveUserId);
-
-      const { data: notifs } = await supabase
-        .from('notifications').select('*')
-        .eq('user_id', effectiveUserId).eq('type', 'security')
-        .order('created_at', { ascending: false }).limit(10);
-
-      setNotifications((notifs as SecurityNotification[]) || []);
-
-      const failedAttempts = attempts?.filter(a => !a.success).length || 0;
-      const unreadAlerts = notifs?.filter(n => !n.is_read).length || 0;
-
-      let score = 40;
-      if (mfaStatusAvailable && is2FAEnabled) score += 30;
-      if (allowedIPs.length > 0) score += 20;
-      if (devicesCount && devicesCount > 0) score += 10;
-      if (failedAttempts > 5) score -= 10;
-
-      setMetrics({
-        score: Math.min(100, Math.max(0, score)),
-        mfaEnabled: is2FAEnabled,
-        ipRestrictionsActive: allowedIPs.length > 0,
-        knownDevicesCount: devicesCount || 0,
-        recentLoginAttempts: attempts?.length || 0,
-        failedLoginAttempts: failedAttempts,
-        securityAlerts: unreadAlerts,
-      });
+      const snapshot = await fetchSecuritySnapshot(effectiveUserId);
+      setLoginAttempts(snapshot.attempts);
+      setNotifications(snapshot.notifications);
+      setMetrics(calculateMetrics({ snapshot, mfaAvailable: mfaStatusAvailable, mfaEnabled: is2FAEnabled, allowedIpCount: allowedIPs.length }));
     } catch (error) {
       console.error('Error loading security data:', error);
     } finally {

@@ -12,6 +12,14 @@ export * from './tecnica-unificada';
 export * from './gravacao-database';
 
 // Feature modules
-export * from './product';
+export type {
+  Product,
+  ProductColor as CatalogProductColor,
+  ProductVariation,
+  KitItem,
+  ProductMetadata,
+  ProductFilters,
+  ProductListItem,
+} from './product';
 export * from './quote';
 export * from './mockup';

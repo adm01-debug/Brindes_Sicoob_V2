@@ -59,7 +59,7 @@ export function BorderRadiusControl({ value, onChange }: BorderRadiusControlProp
             min={0}
             max={20}
             step={1}
-            onValueChange={([v]) => onChange(v)}
+            onValueChange={([v]) => onChange(v ?? 0)}
             className="my-2"
             aria-label="Raio da borda em pixels"
           />

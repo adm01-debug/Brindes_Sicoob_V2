@@ -32,6 +32,36 @@ interface State {
   errorCount: number;
 }
 
+function SimulatorErrorFallback({ title, error, tooManyRetries, onRetry, onGoBack }: {
+  title: string;
+  error: Error | null;
+  tooManyRetries: boolean;
+  onRetry: () => void;
+  onGoBack?: () => void;
+}) {
+  return <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+    className="max-w-lg mx-auto text-center py-16 px-4">
+    <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-destructive/10 flex items-center justify-center">
+      <AlertTriangle className="h-8 w-8 text-destructive" />
+    </div>
+    <h3 className="font-display text-xl font-bold mb-2">{title}</h3>
+    <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
+      {tooManyRetries ? 'O erro persiste após várias tentativas. Tente recarregar a página ou voltar ao início.'
+        : 'Ocorreu um erro inesperado. Isso pode ser uma falha temporária de conexão.'}
+    </p>
+    {error?.message && <div className="mb-6 p-3 rounded-lg bg-muted text-xs font-mono text-muted-foreground text-left break-all">
+      {error.message}
+    </div>}
+    <div className="flex flex-wrap gap-3 justify-center">
+      {!tooManyRetries && <Button onClick={onRetry} className="gap-2"><RefreshCw className="h-4 w-4" />Tentar Novamente</Button>}
+      {onGoBack && <Button variant="outline" onClick={onGoBack} className="gap-2"><ArrowLeft className="h-4 w-4" />Voltar</Button>}
+      {tooManyRetries && <Button onClick={() => window.location.reload()} className="gap-2">
+        <RefreshCw className="h-4 w-4" />Recarregar Página
+      </Button>}
+    </div>
+  </motion.div>;
+}
+
 export class SimulatorErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -56,57 +86,10 @@ export class SimulatorErrorBoundary extends Component<Props, State> {
   };
 
   render() {
-    if (!this.state.hasError) {
-      return this.props.children;
-    }
-
+    if (!this.state.hasError) return this.props.children;
     const { fallbackTitle = 'Erro no Simulador', onGoBack } = this.props;
     const tooManyRetries = this.state.errorCount >= 3;
-
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-lg mx-auto text-center py-16 px-4"
-      >
-        <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-destructive/10 flex items-center justify-center">
-          <AlertTriangle className="h-8 w-8 text-destructive" />
-        </div>
-
-        <h3 className="font-display text-xl font-bold mb-2">{fallbackTitle}</h3>
-        <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
-          {tooManyRetries
-            ? 'O erro persiste após várias tentativas. Tente recarregar a página ou voltar ao início.'
-            : 'Ocorreu um erro inesperado. Isso pode ser uma falha temporária de conexão.'}
-        </p>
-
-        {this.state.error?.message && (
-          <div className="mb-6 p-3 rounded-lg bg-muted text-xs font-mono text-muted-foreground text-left break-all">
-            {this.state.error.message}
-          </div>
-        )}
-
-        <div className="flex flex-wrap gap-3 justify-center">
-          {!tooManyRetries && (
-            <Button onClick={this.handleRetry} className="gap-2">
-              <RefreshCw className="h-4 w-4" />
-              Tentar Novamente
-            </Button>
-          )}
-          {onGoBack && (
-            <Button variant="outline" onClick={onGoBack} className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Voltar
-            </Button>
-          )}
-          {tooManyRetries && (
-            <Button onClick={() => window.location.reload()} className="gap-2">
-              <RefreshCw className="h-4 w-4" />
-              Recarregar Página
-            </Button>
-          )}
-        </div>
-      </motion.div>
-    );
+    return <SimulatorErrorFallback title={fallbackTitle} error={this.state.error} tooManyRetries={tooManyRetries}
+      onRetry={this.handleRetry} onGoBack={onGoBack} />;
   }
 }

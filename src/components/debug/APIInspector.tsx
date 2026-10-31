@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { diagnostics, DiagnosticLog } from "@/lib/diagnostics";
+import { diagnostics, type DiagnosticLog } from "@/lib/diagnostics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Database, Activity, X, ChevronRight, ChevronDown } from "lucide-react";
@@ -69,7 +69,6 @@ export function APIInspector() {
                 </div>
               ) : (
                 logs.map((log, i) => {
-                  const isPost = log.message.includes('POST');
                   const isRpc = log.message.includes('/rpc/');
                   const tableName = log.message.split('/').pop()?.split('?')[0] || '';
                   
@@ -96,7 +95,7 @@ export function APIInspector() {
                           Table: {tableName}
                         </div>
                       )}
-                      {log.data && (
+                      {log.data !== null && log.data !== undefined && (
                         <pre className="mt-1 text-[8px] text-muted-foreground max-h-20 overflow-auto bg-black/5 p-1 rounded">
                           {JSON.stringify(log.data, null, 2)}
                         </pre>

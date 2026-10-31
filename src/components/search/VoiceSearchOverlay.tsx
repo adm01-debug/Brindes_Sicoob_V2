@@ -42,267 +42,130 @@ const PHASE_META: Record<VoiceAgentPhase, { title: string; subtitle: string; emo
   error: { title: "Erro", subtitle: "Toque para tentar novamente", emoji: "⚠️" },
 };
 
-export const VoiceSearchOverlay = React.forwardRef<HTMLDivElement, VoiceSearchOverlayProps>(
-  function VoiceSearchOverlay({
-    isOpen, phase, partialTranscript, finalTranscript, agentResponse, error,
-    recentCommands, currentAction, onClose, onStartListening, onStopListening, onStopSpeaking, onCommandSelect, onSimulateCommand,
-  }, ref) {
-    const [isAutoStarting, setIsAutoStarting] = useState(false);
-    const [isClosing, setIsClosing] = useState(false);
-    const [bootingTimedOut, setBootingTimedOut] = useState(false);
-    const wasOpenRef = useRef(false);
+function useClosingTransition(isOpen: boolean): boolean {
+  const [isClosing, setIsClosing] = useState(false);
+  const wasOpenRef = useRef(false);
+  useEffect(() => {
+    if (isOpen) { wasOpenRef.current = true; setIsClosing(false); return; }
+    if (!wasOpenRef.current) return;
+    wasOpenRef.current = false;
+    setIsClosing(true);
+    const timer = setTimeout(() => setIsClosing(false), 300);
+    return () => clearTimeout(timer);
+  }, [isOpen]);
+  return isClosing;
+}
 
-    // Closing transition guard
-    useEffect(() => {
-      if (isOpen) {
-        wasOpenRef.current = true;
-        setIsClosing(false);
-      } else if (wasOpenRef.current) {
-        wasOpenRef.current = false;
-        setIsClosing(true);
-        const timer = setTimeout(() => setIsClosing(false), 300);
-        return () => clearTimeout(timer);
-      }
-    }, [isOpen]);
+function useAutoListening(isOpen: boolean, phase: VoiceAgentPhase, onStartListening: () => void): boolean {
+  const [autoStarting, setAutoStarting] = useState(false);
+  const previousPhase = useRef<VoiceAgentPhase>('idle');
+  const hasStarted = useRef(false);
+  const startRef = useRef(onStartListening);
+  useEffect(() => { startRef.current = onStartListening; }, [onStartListening]);
+  useEffect(() => {
+    if (!isOpen) { hasStarted.current = false; previousPhase.current = 'idle'; setAutoStarting(false); return; }
+    if (phase === 'idle' && !hasStarted.current) { hasStarted.current = true; setAutoStarting(true); const timer = window.setTimeout(() => startRef.current(), 120); return () => clearTimeout(timer); }
+    if (phase === 'idle' && previousPhase.current === 'speaking') { setAutoStarting(true); previousPhase.current = phase; const timer = window.setTimeout(() => startRef.current(), 800); return () => clearTimeout(timer); }
+    if (phase !== 'idle') { setAutoStarting(false); hasStarted.current = true; }
+    previousPhase.current = phase;
+  }, [isOpen, phase]);
+  return autoStarting;
+}
 
-    // Keyboard shortcuts
-    useEffect(() => {
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (!isOpen) return;
-        if (e.key === "Escape") { onClose(); return; }
-        if (e.key === " " && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
-          e.preventDefault();
-          handleOrbClick();
-        }
-      };
-      document.addEventListener("keydown", handleKeyDown);
-      return () => document.removeEventListener("keydown", handleKeyDown);
-    }, [isOpen, onClose]);
+function useBootingTimeout(isOpen: boolean, booting: boolean): boolean {
+  const [timedOut, setTimedOut] = useState(false);
+  useEffect(() => {
+    if (!isOpen) { setTimedOut(false); return; }
+    if (!booting) { setTimedOut(false); return; }
+    const timer = setTimeout(() => setTimedOut(true), 10000);
+    return () => clearTimeout(timer);
+  }, [isOpen, booting]);
+  return timedOut;
+}
 
-    // Auto-start & continuous listening
-    const prevPhaseRef = useRef<VoiceAgentPhase>("idle");
-    const hasAutoStarted = useRef(false);
-    const startListeningRef = useRef(onStartListening);
+function buildBorderGlow(primary: string) {
+  const match = primary.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+  const [hue, saturation, lightness] = match ? [match[1], match[2], match[3]] : ['220', '80', '55'];
+  return { border: `hsla(${hue}, ${saturation}%, ${lightness}%, 0.35)`, shadowDim: `0 0 12px 1px hsla(${hue}, ${saturation}%, ${lightness}%, 0.15), 0 0 30px 4px hsla(${hue}, ${saturation}%, ${lightness}%, 0.08), inset 0 0 10px 0px hsla(${hue}, ${saturation}%, ${lightness}%, 0.05)`, shadowBright: `0 0 25px 5px hsla(${hue}, ${saturation}%, ${lightness}%, 0.35), 0 0 60px 10px hsla(${hue}, ${saturation}%, ${lightness}%, 0.15), inset 0 0 18px 0px hsla(${hue}, ${saturation}%, ${lightness}%, 0.1)`, borderDim: `hsla(${hue}, ${saturation}%, ${lightness}%, 0.3)`, borderBright: `hsla(${hue}, ${saturation}%, ${lightness}%, 0.7)` };
+}
 
-    useEffect(() => {
-      startListeningRef.current = onStartListening;
-    }, [onStartListening]);
+function usePhaseFeedback(phase: VoiceAgentPhase, vibrate: (pattern: number | number[]) => void) {
+  const previousPhase = useRef(phase);
+  useEffect(() => {
+    if (phase === previousPhase.current) return;
+    if (phase === 'listening') { vibrate(10); playStartSound(); }
+    else if (phase === 'processing') playProcessingSound();
+    else if (phase === 'speaking') { vibrate([10, 50, 10]); playSpeakingSound(); }
+    else if (phase === 'error') { vibrate([30, 80, 30]); playErrorSound(); }
+    else if (phase === 'idle' && previousPhase.current === 'listening') playStopSound();
+    previousPhase.current = phase;
+  }, [phase, vibrate]);
+}
 
-    useEffect(() => {
-      if (!isOpen) {
-        hasAutoStarted.current = false;
-        prevPhaseRef.current = "idle";
-        setIsAutoStarting(false);
-        return;
-      }
-      if (phase === "idle" && !hasAutoStarted.current) {
-        hasAutoStarted.current = true;
-        setIsAutoStarting(true);
-        const timer = window.setTimeout(() => startListeningRef.current(), 120);
-        return () => clearTimeout(timer);
-      }
-      if (phase === "idle" && prevPhaseRef.current === "speaking") {
-        setIsAutoStarting(true);
-        const timer = window.setTimeout(() => startListeningRef.current(), 800);
-        prevPhaseRef.current = phase;
-        return () => clearTimeout(timer);
-      }
-      if (phase !== "idle") {
-        setIsAutoStarting(false);
-        hasAutoStarted.current = true;
-      }
-      prevPhaseRef.current = phase;
-    }, [isOpen, phase]);
+function orbLabel(phase: VoiceAgentPhase, booting: boolean): string {
+  if (booting) return 'Ativando microfone';
+  if (phase === 'listening') return 'Parar de ouvir';
+  if (phase === 'processing') return 'Processando comando';
+  if (phase === 'speaking') return 'Parar resposta';
+  return 'Iniciar microfone';
+}
 
-    // Booting timeout
-    useEffect(() => {
-      if (!isOpen) { setBootingTimedOut(false); return; }
-      const showsBooting = isAutoStarting && phase === "idle";
-      if (showsBooting) {
-        const timer = setTimeout(() => setBootingTimedOut(true), 10000);
-        return () => clearTimeout(timer);
-      }
-      setBootingTimedOut(false);
-    }, [isOpen, isAutoStarting, phase]);
+function voiceLabels(meta: typeof PHASE_META[VoiceAgentPhase], booting: boolean, timedOut: boolean) {
+  if (!booting) return { title: meta.title, subtitle: meta.subtitle };
+  if (timedOut) return { title: 'Microfone indisponível', subtitle: 'Verifique as permissões do navegador' };
+  return { title: 'Ativando microfone…', subtitle: 'Preparando sua conversa por voz' };
+}
 
-    const showBooting = (isAutoStarting && phase === "idle") || isClosing;
-    const meta = PHASE_META[phase] ?? PHASE_META.idle;
-    const colors = usePhaseColors(phase, showBooting);
-    const isWaveformActive = phase === "listening" || phase === "speaking" || showBooting;
+function VoiceWaveform({ phase, booting, colors }: { phase: VoiceAgentPhase; booting: boolean; colors: ReturnType<typeof usePhaseColors> }) {
+  const active = ['listening', 'speaking'].includes(phase) || booting;
+  if (!active) return null;
+  return <motion.div key="spectrum" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}><SpectrumWaveform colors={colors} isActive isSpeaking={phase === 'speaking'} /></motion.div>;
+}
 
-    // Border glow
-    const borderGlow = useMemo(() => {
-      const match = colors.primary.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
-      const [h, s, l] = match ? [match[1], match[2], match[3]] : ["220", "80", "55"];
-      return {
-        border: `hsla(${h}, ${s}%, ${l}%, 0.35)`,
-        shadowDim: `0 0 12px 1px hsla(${h}, ${s}%, ${l}%, 0.15), 0 0 30px 4px hsla(${h}, ${s}%, ${l}%, 0.08), inset 0 0 10px 0px hsla(${h}, ${s}%, ${l}%, 0.05)`,
-        shadowBright: `0 0 25px 5px hsla(${h}, ${s}%, ${l}%, 0.35), 0 0 60px 10px hsla(${h}, ${s}%, ${l}%, 0.15), inset 0 0 18px 0px hsla(${h}, ${s}%, ${l}%, 0.1)`,
-        borderDim: `hsla(${h}, ${s}%, ${l}%, 0.3)`,
-        borderBright: `hsla(${h}, ${s}%, ${l}%, 0.7)`,
-      };
-    }, [colors.primary]);
+function VoiceLiveRegion({ phase, booting, finalTranscript, agentResponse, error }: { phase: VoiceAgentPhase; booting: boolean; finalTranscript: string; agentResponse: string; error?: string | null }) {
+  let message = '';
+  if (booting) message = 'Ativando microfone.';
+  else if (phase === 'listening') message = 'Ouvindo. Fale seu comando.';
+  else if (phase === 'processing') message = `Processando: ${finalTranscript}`;
+  else if (phase === 'speaking') message = `Resposta: ${agentResponse}`;
+  else if (phase === 'error') message = `Erro: ${error}`;
+  return <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{message}</div>;
+}
 
-    // Haptic feedback
-    const vibrate = useCallback((pattern: number | number[]) => {
-      try { navigator?.vibrate?.(pattern); } catch { /* unsupported */ }
-    }, []);
+function VoiceDialog({ props, showBooting, bootingTimedOut, colors, borderGlow, onOrbClick, dialogRef }: { props: VoiceSearchOverlayProps; showBooting: boolean; bootingTimedOut: boolean; colors: ReturnType<typeof usePhaseColors>; borderGlow: ReturnType<typeof buildBorderGlow>; onOrbClick: () => void; dialogRef: React.ForwardedRef<HTMLDivElement> }) {
+  const { phase, partialTranscript, finalTranscript, agentResponse, error, recentCommands, currentAction, onClose, onCommandSelect, onSimulateCommand } = props;
+  const meta = PHASE_META[phase] ?? PHASE_META.idle;
+  const labels = voiceLabels(meta, showBooting, bootingTimedOut);
+  return <motion.div ref={dialogRef} data-testid="voice-search-dialog" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Assistente de Voz"><motion.div className="absolute inset-0 backdrop-blur-xl" animate={{ backgroundColor: ["rgba(2,2,10,0.20)", "rgba(2,2,10,0.65)", "rgba(2,2,10,0.20)"] }} transition={{ duration: 6.6, repeat: Infinity, ease: "easeInOut" }} onClick={onClose} /><FloatingParticles phase={phase} isBooting={showBooting} /><div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none"><motion.div initial={{ scale: 0.9, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 30 }} transition={{ type: "spring", damping: 25, stiffness: 250 }} className="relative max-w-xs w-full pointer-events-auto"><motion.div className="relative flex flex-col items-center gap-4 w-full px-6 py-7 rounded-3xl max-h-[90vh] overflow-hidden" style={{ background: "rgba(8,8,18,0.95)" }} animate={{ boxShadow: [borderGlow.shadowDim, borderGlow.shadowBright, borderGlow.shadowDim], borderColor: [borderGlow.borderDim, borderGlow.borderBright, borderGlow.borderDim], border: `1.5px solid ${borderGlow.border}` }} transition={{ boxShadow: { duration: 3.5, repeat: Infinity, ease: "easeInOut" }, borderColor: { duration: 3.5, repeat: Infinity, ease: "easeInOut" }, border: { duration: 0.8, ease: "easeInOut" } }}><motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="text-center space-y-1"><h2 className="font-display text-sm font-semibold text-white/70 tracking-wide">{labels.title}</h2><p className="text-white/30 text-[11px] tracking-wider">{labels.subtitle}</p></motion.div><motion.div className="cursor-pointer select-none" onClick={onOrbClick} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} role="button" aria-label={orbLabel(phase, showBooting)} tabIndex={0} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') onOrbClick(); }}><VoiceOrb phase={phase} isBooting={showBooting} /></motion.div><AnimatePresence mode="wait"><VoiceWaveform phase={phase} booting={showBooting} colors={colors} /></AnimatePresence><VoiceTranscriptPanel phase={phase} partialTranscript={partialTranscript} finalTranscript={finalTranscript} agentResponse={agentResponse} error={error} currentAction={currentAction} /><VoiceSuggestionsPanel phase={phase} isBooting={showBooting} recentCommands={recentCommands} onCommandSelect={onCommandSelect} onSimulateCommand={onSimulateCommand} onClose={onClose} /></motion.div></motion.div></div><VoiceLiveRegion phase={phase} booting={showBooting} finalTranscript={finalTranscript} agentResponse={agentResponse} error={error} /></motion.div>;
+}
 
-    const handleOrbClick = useCallback(() => {
-      if (showBooting || phase === "processing") return;
-      vibrate(15);
-      if (phase === "listening") onStopListening();
-      else if (phase === "speaking") onStopSpeaking();
-      else if (phase === "idle" || phase === "error") onStartListening();
-    }, [phase, showBooting, vibrate, onStartListening, onStopListening, onStopSpeaking]);
-
-    // Vibrate on phase transitions
-    const prevVibratePhase = useRef(phase);
-    useEffect(() => {
-      if (phase !== prevVibratePhase.current) {
-        if (phase === "listening") { vibrate(10); playStartSound(); }
-        else if (phase === "processing") { playProcessingSound(); }
-        else if (phase === "speaking") { vibrate([10, 50, 10]); playSpeakingSound(); }
-        else if (phase === "error") { vibrate([30, 80, 30]); playErrorSound(); }
-        else if (phase === "idle" && prevVibratePhase.current === "listening") { playStopSound(); }
-        prevVibratePhase.current = phase;
-      }
-    }, [phase, vibrate]);
-
-    return createPortal(
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-50"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Assistente de Voz"
-          >
-            {/* Glass backdrop */}
-            <motion.div
-              className="absolute inset-0 backdrop-blur-xl"
-              animate={{ backgroundColor: ["rgba(2,2,10,0.20)", "rgba(2,2,10,0.65)", "rgba(2,2,10,0.20)"] }}
-              transition={{ duration: 6.6, repeat: Infinity, ease: "easeInOut" }}
-              onClick={onClose}
-            />
-
-            <FloatingParticles phase={phase} isBooting={showBooting} />
-
-            {/* Centered card */}
-            <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0, y: 30 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.9, opacity: 0, y: 30 }}
-                transition={{ type: "spring", damping: 25, stiffness: 250 }}
-                className="relative max-w-xs w-full pointer-events-auto"
-              >
-                <motion.div
-                  className="relative flex flex-col items-center gap-4 w-full px-6 py-7 rounded-3xl max-h-[90vh] overflow-hidden"
-                  style={{ background: "rgba(8,8,18,0.95)" }}
-                  animate={{
-                    boxShadow: [borderGlow.shadowDim, borderGlow.shadowBright, borderGlow.shadowDim],
-                    borderColor: [borderGlow.borderDim, borderGlow.borderBright, borderGlow.borderDim],
-                    border: `1.5px solid ${borderGlow.border}`,
-                  }}
-                  transition={{
-                    boxShadow: { duration: 3.5, repeat: Infinity, ease: "easeInOut" },
-                    borderColor: { duration: 3.5, repeat: Infinity, ease: "easeInOut" },
-                    border: { duration: 0.8, ease: "easeInOut" },
-                  }}
-                >
-                  {/* Title */}
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15 }}
-                    className="text-center space-y-1"
-                  >
-                    <h2 className="font-display text-sm font-semibold text-white/70 tracking-wide">
-                      {showBooting
-                        ? (bootingTimedOut ? "Microfone indisponível" : "Ativando microfone…")
-                        : meta.title}
-                    </h2>
-                    <p className="text-white/30 text-[11px] tracking-wider">
-                      {showBooting
-                        ? (bootingTimedOut ? "Verifique as permissões do navegador" : "Preparando sua conversa por voz")
-                        : meta.subtitle}
-                    </p>
-                  </motion.div>
-
-                  {/* Clickable Orb */}
-                  <motion.div
-                    className="cursor-pointer select-none"
-                    onClick={handleOrbClick}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    role="button"
-                    aria-label={
-                      showBooting ? "Ativando microfone"
-                        : phase === "listening" ? "Parar de ouvir"
-                        : phase === "processing" ? "Processando comando"
-                        : phase === "speaking" ? "Parar resposta"
-                        : "Iniciar microfone"
-                    }
-                    tabIndex={0}
-                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleOrbClick(); }}
-                  >
-                    <VoiceOrb phase={phase} isBooting={showBooting} />
-                  </motion.div>
-
-                  {/* Spectrum waveform */}
-                  <AnimatePresence mode="wait">
-                    {isWaveformActive && (
-                      <motion.div
-                        key="spectrum"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                      >
-                        <SpectrumWaveform colors={colors} isActive={isWaveformActive} isSpeaking={phase === "speaking"} />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Transcript + Response + Error */}
-                  <VoiceTranscriptPanel
-                    phase={phase}
-                    partialTranscript={partialTranscript}
-                    finalTranscript={finalTranscript}
-                    agentResponse={agentResponse}
-                    error={error}
-                    currentAction={currentAction}
-                  />
-
-                  {/* Suggestions + Text Input + Footer */}
-                  <VoiceSuggestionsPanel
-                    phase={phase}
-                    isBooting={showBooting}
-                    recentCommands={recentCommands}
-                    onCommandSelect={onCommandSelect}
-                    onSimulateCommand={onSimulateCommand}
-                    onClose={onClose}
-                  />
-                </motion.div>
-              </motion.div>
-            </div>
-
-            {/* Screen-reader live region */}
-            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-              {showBooting && "Ativando microfone."}
-              {phase === "listening" && "Ouvindo. Fale seu comando."}
-              {phase === "processing" && `Processando: ${finalTranscript}`}
-              {phase === "speaking" && `Resposta: ${agentResponse}`}
-              {phase === "error" && `Erro: ${error}`}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>,
-      document.body
-    );
-  }
-);
+export const VoiceSearchOverlay = React.forwardRef<HTMLDivElement, VoiceSearchOverlayProps>(function VoiceSearchOverlay(props, ref) {
+  const { isOpen, phase, onClose, onStartListening, onStopListening, onStopSpeaking } = props;
+  const isClosing = useClosingTransition(isOpen);
+  const isAutoStarting = useAutoListening(isOpen, phase, onStartListening);
+  const booting = isAutoStarting && phase === 'idle';
+  const bootingTimedOut = useBootingTimeout(isOpen, booting);
+  const showBooting = booting || isClosing;
+  const colors = usePhaseColors(phase, showBooting);
+  const borderGlow = useMemo(() => buildBorderGlow(colors.primary), [colors.primary]);
+  const vibrate = useCallback((pattern: number | number[]) => { try { navigator?.vibrate?.(pattern); } catch { /* unsupported */ } }, []);
+  const handleOrbClick = useCallback(() => {
+    if (showBooting || phase === 'processing') return;
+    vibrate(15);
+    if (phase === 'listening') onStopListening();
+    else if (phase === 'speaking') onStopSpeaking();
+    else if (phase === 'idle' || phase === 'error') onStartListening();
+  }, [phase, showBooting, vibrate, onStartListening, onStopListening, onStopSpeaking]);
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isOpen) return;
+      if (event.key === 'Escape') { onClose(); return; }
+      const isTyping = event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement;
+      if (event.key === ' ' && !isTyping) { event.preventDefault(); handleOrbClick(); }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleOrbClick, isOpen, onClose]);
+  usePhaseFeedback(phase, vibrate);
+  return createPortal(<AnimatePresence>{isOpen && <VoiceDialog props={props} showBooting={showBooting} bootingTimedOut={bootingTimedOut} colors={colors} borderGlow={borderGlow} onOrbClick={handleOrbClick} dialogRef={ref} />}</AnimatePresence>, document.body);
+});

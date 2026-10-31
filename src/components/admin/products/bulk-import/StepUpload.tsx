@@ -2,10 +2,10 @@ import { useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload, Download, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
-import { MAX_ROWS, TARGET_FIELDS, TEMPLATE_EXAMPLES, ALIAS_MAP, type ColumnMapping } from './types';
+import { MAX_ROWS, TARGET_FIELDS, TEMPLATE_EXAMPLES, ALIAS_MAP, type ColumnMapping, type SpreadsheetRow } from './types';
 
 interface StepUploadProps {
-  onFileProcessed: (headers: string[], rows: Record<string, any>[], fileName: string, mapping: ColumnMapping) => void;
+  onFileProcessed: (headers: string[], rows: SpreadsheetRow[], fileName: string, mapping: ColumnMapping) => void;
 }
 
 const normalizeStr = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
@@ -25,11 +25,11 @@ function parseCSVLine(line: string, delimiter: string): string[] {
 }
 
 function parseCSV(text: string): { headers: string[]; rows: Record<string, string>[] } {
-  const firstLine = text.split('\n')[0]!;
+  const firstLine = text.split('\n')[0] ?? '';
   const delimiter = firstLine.includes(';') ? ';' : firstLine.includes('\t') ? '\t' : ',';
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   if (lines.length < 2) return { headers: [], rows: [] };
-  const headers = parseCSVLine(lines[0]!, delimiter);
+  const headers = parseCSVLine(lines[0] ?? '', delimiter);
   const rows = lines.slice(1).map(line => {
     const values = parseCSVLine(line, delimiter);
     const row: Record<string, string> = {};
@@ -45,10 +45,11 @@ async function parseXLSX(file: File) {
   const wb = XLSX.read(buffer, { type: 'array' });
   const firstSheetName = wb.SheetNames[0];
   if (!firstSheetName) return null;
-  const sheet = wb.Sheets[firstSheetName]!;
-  const json = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, { defval: '' });
+  const sheet = wb.Sheets[firstSheetName];
+  if (!sheet) return null;
+  const json = XLSX.utils.sheet_to_json<SpreadsheetRow>(sheet, { defval: '' });
   if (json.length === 0) return null;
-  return { headers: Object.keys(json[0]!), rows: json };
+  return { headers: Object.keys(json[0] ?? {}), rows: json };
 }
 
 function downloadBlob(content: string, filename: string, type: string) {
@@ -61,29 +62,51 @@ function downloadBlob(content: string, filename: string, type: string) {
   URL.revokeObjectURL(url);
 }
 
+async function parseUploadedFile(file: File): Promise<{ headers: string[]; rows: SpreadsheetRow[] } | null> {
+  const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
+  if (extension === 'csv') return parseCSV(await file.text());
+  if (['xlsx', 'xls'].includes(extension)) return parseXLSX(file);
+  toast.error('Formato não suportado. Use CSV, XLSX ou XLS.');
+  return null;
+}
+
+function inferColumnMapping(headers: string[]): ColumnMapping {
+  const mapping: ColumnMapping = {};
+  for (const column of headers) {
+    const target = ALIAS_MAP[normalizeStr(column)];
+    if (target && !Object.values(mapping).includes(target)) mapping[column] = target;
+  }
+  return mapping;
+}
+
+function downloadTemplateCSV() {
+  const labels = TARGET_FIELDS.map(field => `${field.label}${field.required ? ' *' : ''}`);
+  const example = TARGET_FIELDS.map(field => TEMPLATE_EXAMPLES[field.key] ?? '');
+  downloadBlob('\uFEFF' + [labels.join(';'), example.join(';')].join('\n'), 'template_importacao_produtos.csv', 'text/csv;charset=utf-8;');
+  toast.success('Template CSV baixado!');
+}
+
+async function downloadTemplateXLSX() {
+  try {
+    const XLSX = await import('@e965/xlsx');
+    const rows = [TARGET_FIELDS.map(field => `${field.label}${field.required ? ' *' : ''}`), TARGET_FIELDS.map(field => TEMPLATE_EXAMPLES[field.key] ?? '')];
+    const worksheet = XLSX.utils.aoa_to_sheet(rows);
+    worksheet['!cols'] = TARGET_FIELDS.map((_, index) => ({ wch: index < 3 ? 20 : 15 }));
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Produtos');
+    XLSX.writeFile(workbook, 'template_importacao_produtos.xlsx');
+    toast.success('Template Excel baixado!');
+  } catch { toast.error('Erro ao gerar template Excel'); }
+}
+
 export function StepUpload({ onFileProcessed }: StepUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = useCallback(async (file: File) => {
-    const ext = file.name.split('.').pop()?.toLowerCase();
     try {
-      let parsedHeaders: string[] = [];
-      let parsedRows: Record<string, any>[] = [];
-
-      if (ext === 'csv') {
-        const text = await file.text();
-        const result = parseCSV(text);
-        parsedHeaders = result.headers;
-        parsedRows = result.rows;
-      } else if (['xlsx', 'xls'].includes(ext || '')) {
-        const result = await parseXLSX(file);
-        if (!result) { toast.error('Planilha vazia ou sem abas'); return; }
-        parsedHeaders = result.headers;
-        parsedRows = result.rows;
-      } else {
-        toast.error('Formato não suportado. Use CSV, XLSX ou XLS.');
-        return;
-      }
+      const parsed = await parseUploadedFile(file);
+      if (!parsed) { toast.error('Planilha vazia ou sem abas'); return; }
+      const { headers: parsedHeaders, rows: parsedRows } = parsed;
 
       if (parsedRows.length > MAX_ROWS) {
         toast.error(`Arquivo excede o limite de ${MAX_ROWS.toLocaleString()} linhas`);
@@ -91,46 +114,13 @@ export function StepUpload({ onFileProcessed }: StepUploadProps) {
       }
       if (parsedRows.length === 0) { toast.error('Nenhuma linha de dados encontrada'); return; }
 
-      const newMapping: ColumnMapping = {};
-      for (const col of parsedHeaders) {
-        const normalized = normalizeStr(col);
-        if (ALIAS_MAP[normalized]) {
-          const alreadyMapped = Object.values(newMapping).includes(ALIAS_MAP[normalized]);
-          if (!alreadyMapped) newMapping[col] = ALIAS_MAP[normalized];
-        }
-      }
-
-      onFileProcessed(parsedHeaders, parsedRows, file.name, newMapping);
+      onFileProcessed(parsedHeaders, parsedRows, file.name, inferColumnMapping(parsedHeaders));
       toast.success(`${file.name} carregado — ${parsedRows.length.toLocaleString()} linhas`);
     } catch (error) {
       console.error('Parse error:', error);
       toast.error('Erro ao ler o arquivo. Verifique o formato.');
     }
   }, [onFileProcessed]);
-
-  const downloadTemplateCSV = useCallback(() => {
-    const labels = TARGET_FIELDS.map(f => `${f.label}${f.required ? ' *' : ''}`);
-    const example = TARGET_FIELDS.map(f => TEMPLATE_EXAMPLES[f.key] ?? '');
-    const csv = '\uFEFF' + [labels.join(';'), example.join(';')].join('\n');
-    downloadBlob(csv, 'template_importacao_produtos.csv', 'text/csv;charset=utf-8;');
-    toast.success('Template CSV baixado!');
-  }, []);
-
-  const downloadTemplateXLSX = useCallback(async () => {
-    try {
-      const XLSX = await import('@e965/xlsx');
-      const exampleValues = TARGET_FIELDS.map(f => TEMPLATE_EXAMPLES[f.key] ?? '');
-      const ws = XLSX.utils.aoa_to_sheet([
-        TARGET_FIELDS.map(f => `${f.label}${f.required ? ' *' : ''}`),
-        exampleValues,
-      ]);
-      ws['!cols'] = TARGET_FIELDS.map((_, i) => ({ wch: i < 3 ? 20 : 15 }));
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Produtos');
-      XLSX.writeFile(wb, 'template_importacao_produtos.xlsx');
-      toast.success('Template Excel baixado!');
-    } catch { toast.error('Erro ao gerar template Excel'); }
-  }, []);
 
   return (
     <div className="space-y-4">

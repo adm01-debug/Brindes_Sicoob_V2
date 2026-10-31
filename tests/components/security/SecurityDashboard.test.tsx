@@ -2,7 +2,6 @@
  * Tests for SecurityDashboard (680 lines)
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import React from "react";
 
 vi.mock("@/hooks/use2FA", () => ({
   use2FA: vi.fn().mockReturnValue({

@@ -3,20 +3,23 @@
  * Enriquecido com: part (parte do produto), percentage (composição %), notes
  */
 
-import { useState, useCallback } from 'react';
+import { isNullish } from "@/components/admin/utils/nullish";
+import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { materialService, type MaterialType } from '@/services/materialService';
+import { materialService, type MaterialGroup, type MaterialType } from '@/services/materialService';
 import { supabase } from '@/integrations/supabase/client';
 import { MaterialBadge } from '@/components/materials/MaterialBadge';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Loader2, X, Search, Gem, Save, Pencil } from 'lucide-react';
+import { X, Search, Gem, Save, Pencil } from "lucide-react";
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { MaterialGroupTree } from './MaterialGroupTree';
+
+const PRODUCT_MATERIALS_QUERY_KEY = 'product-materials-full';
+const EXTERNAL_DB_BRIDGE = 'external-db-bridge';
 
 interface ProductMaterialsSectionProps {
   productId: string;
@@ -41,7 +44,7 @@ function MaterialDetailEditor({
   onCancel: () => void;
 }) {
   const [part, setPart] = useState(linked.part || '');
-  const [percentage, setPercentage] = useState<string>(linked.percentage != null ? String(linked.percentage) : '');
+  const [percentage, setPercentage] = useState<string>(!isNullish(linked.percentage) ? String(linked.percentage) : '');
   const [notes, setNotes] = useState(linked.notes || '');
 
   return (
@@ -82,6 +85,33 @@ function MaterialDetailEditor({
   );
 }
 
+function materialBadgeName(typeName: string, linked: LinkedMaterial | undefined): string {
+  const hasDetail = Boolean(linked?.part) || !isNullish(linked?.percentage);
+  if (!hasDetail) return typeName;
+  const part = linked?.part ?? '';
+  const percentage = isNullish(linked?.percentage) ? '' : ` ${linked.percentage}%`;
+  return `${typeName} (${part}${percentage})`;
+}
+
+function SelectedMaterialItem({ type, group, linked, editing, onToggleEdit, onRemove }: { type: MaterialType; group: MaterialGroup | undefined; linked: LinkedMaterial | undefined; editing: boolean; onToggleEdit: () => void; onRemove: () => void }) {
+  return <div className="flex items-center gap-0.5"><MaterialBadge name={materialBadgeName(type.name, linked)} hexCode={group?.group_hex_code} size="sm" variant="outline" onRemove={onRemove} /><button type="button" onClick={onToggleEdit} className={cn("text-muted-foreground hover:text-primary p-0.5", editing && "text-primary")} title="Editar detalhes (parte, %, obs)"><Pencil className="h-2.5 w-2.5" /></button></div>;
+}
+
+function SelectedMaterials({ allTypes, groups, linkedIds, linkedMap, editingId, onEdit, onRemove, onClear, onUpdate }: { allTypes: MaterialType[]; groups: MaterialGroup[]; linkedIds: Set<string>; linkedMap: Map<string, LinkedMaterial>; editingId: string | null; onEdit: (id: string | null) => void; onRemove: (id: string) => void; onClear: () => void; onUpdate: (id: string, data: { part: string; percentage: number | null; notes: string }) => void }) {
+  if (linkedIds.size === 0) return null;
+  const selected = allTypes.filter((type) => linkedIds.has(type.id)).sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+  const editing = editingId ? linkedMap.get(editingId) : undefined;
+  return (
+    <div className="p-2.5 bg-primary/5 rounded-lg border border-primary/20"><div className="flex items-center justify-between mb-2"><span className="text-xs font-medium text-primary flex items-center gap-1.5"><Gem className="h-3 w-3" />Selecionados</span><button type="button" onClick={onClear} className="text-[10px] text-muted-foreground hover:text-destructive transition-colors">Limpar todos</button></div><div className="flex flex-wrap gap-1.5">{selected.map((type) => <SelectedMaterialItem key={type.id} type={type} group={groups.find((group) => group.group_id === type.group_id)} linked={linkedMap.get(type.id)} editing={editingId === type.id} onToggleEdit={() => onEdit(editingId === type.id ? null : type.id)} onRemove={() => onRemove(type.id)} />)}</div>{editing && editingId && <MaterialDetailEditor linked={editing} onSave={(data) => onUpdate(editingId, data)} onCancel={() => onEdit(null)} />}</div>
+  );
+}
+
+function filterTypes(typesByGroup: Record<string, MaterialType[]>, search: string): Record<string, MaterialType[]> {
+  if (!search) return typesByGroup;
+  const query = search.toLowerCase();
+  return Object.fromEntries(Object.entries(typesByGroup).map(([groupId, types]) => [groupId, types.filter((type) => type.name.toLowerCase().includes(query))]));
+}
+
 export function ProductMaterialsSection({ productId }: ProductMaterialsSectionProps) {
   const queryClient = useQueryClient();
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
@@ -102,9 +132,9 @@ export function ProductMaterialsSection({ productId }: ProductMaterialsSectionPr
 
   // Fetch full linked records (with part, percentage, notes)
   const { data: linkedRecords = [], isLoading: loadingProductMaterials } = useQuery<LinkedMaterial[]>({
-    queryKey: ['product-materials-full', productId],
+    queryKey: [PRODUCT_MATERIALS_QUERY_KEY, productId],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+      const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
         body: {
           table: 'product_materials',
           operation: 'select',
@@ -118,33 +148,30 @@ export function ProductMaterialsSection({ productId }: ProductMaterialsSectionPr
     enabled: !!productId,
   });
 
-  const linkedMap = new Map<string, LinkedMaterial>(
-    linkedRecords.map((r) => [r.material_id, r])
-  );
-  const linkedMaterialIds = new Set<string>(linkedMap.keys());
+  const linkedMap = useMemo(() => new Map<string, LinkedMaterial>(linkedRecords.map((record) => [record.material_id, record])), [linkedRecords]);
+  const linkedMaterialIds = useMemo(() => new Set<string>(linkedMap.keys()), [linkedMap]);
+  const allTypes = useMemo(() => typesData?.types ?? [], [typesData?.types]);
+  const groups = useMemo(() => groupsData?.groups ?? [], [groupsData?.groups]);
 
-  const allTypes = typesData?.types || [];
-  const groups = groupsData?.groups || [];
-
-  const typesByGroup = allTypes.reduce<Record<string, MaterialType[]>>((acc, t) => {
+  const typesByGroup = useMemo(() => allTypes.reduce<Record<string, MaterialType[]>>((acc, t) => {
     const gid = t.group_id;
     if (!acc[gid]) acc[gid] = [];
     acc[gid].push(t);
     return acc;
-  }, {});
+  }, {}), [allTypes]);
 
   const toggleMaterial = useCallback(async (materialId: string, isLinked: boolean) => {
     try {
       if (isLinked) {
         const linked = linkedMap.get(materialId);
         if (!linked?.id) { toast.error('Registro não encontrado'); return; }
-        const { error: delError } = await supabase.functions.invoke('external-db-bridge', {
+        const { error: delError } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
           body: { table: 'product_materials', operation: 'delete', id: linked.id },
         });
         if (delError) throw new Error(delError.message);
         toast.success('Material removido');
       } else {
-        const { error } = await supabase.functions.invoke('external-db-bridge', {
+        const { error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
           body: {
             table: 'product_materials',
             operation: 'insert',
@@ -154,7 +181,7 @@ export function ProductMaterialsSection({ productId }: ProductMaterialsSectionPr
         if (error) throw new Error(error.message);
         toast.success('Material adicionado');
       }
-      queryClient.invalidateQueries({ queryKey: ['product-materials-full', productId] });
+      queryClient.invalidateQueries({ queryKey: [PRODUCT_MATERIALS_QUERY_KEY, productId] });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Erro ao alterar material');
     }
@@ -168,7 +195,7 @@ export function ProductMaterialsSection({ productId }: ProductMaterialsSectionPr
     if (!linked?.id) return;
 
     try {
-      const { error } = await supabase.functions.invoke('external-db-bridge', {
+      const { error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
         body: {
           table: 'product_materials',
           operation: 'update',
@@ -183,7 +210,7 @@ export function ProductMaterialsSection({ productId }: ProductMaterialsSectionPr
       if (error) throw new Error(error.message);
       toast.success('Detalhes atualizados');
       setEditingMaterialId(null);
-      queryClient.invalidateQueries({ queryKey: ['product-materials-full', productId] });
+      queryClient.invalidateQueries({ queryKey: [PRODUCT_MATERIALS_QUERY_KEY, productId] });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Erro ao atualizar');
     }
@@ -205,7 +232,7 @@ export function ProductMaterialsSection({ productId }: ProductMaterialsSectionPr
     }
   }, [allTypes, linkedMaterialIds, toggleMaterial]);
 
-  const isLoading = loadingGroups || loadingTypes || loadingProductMaterials;
+  const isLoading = (loadingGroups || loadingTypes || loadingProductMaterials);
 
   if (isLoading) {
     return (
@@ -227,82 +254,12 @@ export function ProductMaterialsSection({ productId }: ProductMaterialsSectionPr
   }
 
   const linkedCount = linkedMaterialIds.size;
-  const searchLower = search.toLowerCase();
-
-  const filteredTypesByGroup = search
-    ? Object.fromEntries(
-        Object.entries(typesByGroup).map(([gid, types]) => [
-          gid,
-          types.filter(t => t.name.toLowerCase().includes(searchLower)),
-        ])
-      )
-    : typesByGroup;
-
-  const visibleGroups = [...groups]
-    .filter(g =>
-      !search ||
-      g.group_name.toLowerCase().includes(searchLower) ||
-      (filteredTypesByGroup[g.group_id]?.length || 0) > 0
-    )
-    .sort((a, b) => a.group_name.localeCompare(b.group_name, 'pt-BR'));
+  const filteredTypesByGroup = filterTypes(typesByGroup, search);
 
   return (
-    <div className="space-y-3">
+    (<div className="space-y-3">
       {/* Badges dos materiais selecionados — padrão Super Filtro */}
-      {linkedCount > 0 && (
-        <div className="p-2.5 bg-primary/5 rounded-lg border border-primary/20">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-primary flex items-center gap-1.5">
-              <Gem className="h-3 w-3" />
-              Selecionados
-            </span>
-            <button
-              type="button"
-              onClick={clearAll}
-              className="text-[10px] text-muted-foreground hover:text-destructive transition-colors"
-            >
-              Limpar todos
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {allTypes
-              .filter(t => linkedMaterialIds.has(t.id))
-              .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
-              .map(t => {
-                const group = groups.find(g => g.group_id === t.group_id);
-                const linked = linkedMap.get(t.id);
-                const hasDetail = linked?.part || linked?.percentage != null;
-                return (
-                  <div key={t.id} className="flex items-center gap-0.5">
-                    <MaterialBadge
-                      name={`${t.name}${hasDetail ? ` (${linked?.part || ''}${linked?.percentage != null ? ` ${linked.percentage}%` : ''})` : ''}`}
-                      hexCode={group?.group_hex_code}
-                      size="sm"
-                      variant="outline"
-                      onRemove={() => toggleMaterial(t.id, true)}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setEditingMaterialId(editingMaterialId === t.id ? null : t.id)}
-                      className="text-muted-foreground hover:text-primary p-0.5"
-                      title="Editar detalhes (parte, %, obs)"
-                    >
-                      <Pencil className="h-2.5 w-2.5" />
-                    </button>
-                  </div>
-                );
-              })}
-          </div>
-          {/* Inline editor for selected material */}
-          {editingMaterialId && linkedMap.has(editingMaterialId) && (
-            <MaterialDetailEditor
-              linked={linkedMap.get(editingMaterialId)!}
-              onSave={(data) => updateMaterialDetail(editingMaterialId, data)}
-              onCancel={() => setEditingMaterialId(null)}
-            />
-          )}
-        </div>
-      )}
+      <SelectedMaterials allTypes={allTypes} groups={groups} linkedIds={linkedMaterialIds} linkedMap={linkedMap} editingId={editingMaterialId} onEdit={setEditingMaterialId} onRemove={(id) => void toggleMaterial(id, true)} onClear={() => void clearAll()} onUpdate={(id, data) => void updateMaterialDetail(id, data)} />
 
       {/* Busca */}
       <div className="relative">
@@ -352,6 +309,6 @@ export function ProductMaterialsSection({ productId }: ProductMaterialsSectionPr
           onUpdateMaterialDetail={updateMaterialDetail}
         />
       </ScrollArea>
-    </div>
+    </div>)
   );
 }

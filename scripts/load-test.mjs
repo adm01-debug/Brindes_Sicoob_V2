@@ -26,7 +26,7 @@ async function runLoadTest() {
         const latency = Date.now() - start;
         results.latencies.push(latency);
         if (res.ok) results.success++; else results.failed++;
-      } catch (err) {
+      } catch {
         results.failed++;
       }
     }

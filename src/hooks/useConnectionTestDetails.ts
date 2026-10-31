@@ -36,6 +36,17 @@ interface Args {
   historyId?: string;
 }
 
+function inferLegacyErrorKind(details: TestDetails | null): TestDetails | null {
+  if (!details || details.ok || !details.error || details.error.kind) return details;
+  details.error.kind = inferErrorKind({
+    errorKind: null,
+    errorMessage: details.error.message ?? null,
+    statusCode: details.response?.status ?? null,
+    success: details.ok,
+  });
+  return details;
+}
+
 /**
  * Carrega o registro completo do último teste para uma conexão (ou de um teste específico via historyId).
  * Refaz a busca toda vez que `open` transita para true ou a chave composta muda.
@@ -62,18 +73,7 @@ export function useConnectionTestDetails({ open, type, envKey, connectionId, his
       });
       if (invokeError) throw invokeError;
       const raw = (data?.details ?? null) as TestDetails | null;
-      // Fallback: registros antigos podem ter `error.kind = null`. Inferimos o
-      // kind a partir do error_message + status_code para que o badge semântico
-      // apareça mesmo retroativamente.
-      if (raw && !raw.ok && raw.error && !raw.error.kind) {
-        raw.error.kind = inferErrorKind({
-          errorKind: raw.error.kind ?? null,
-          errorMessage: raw.error.message ?? null,
-          statusCode: raw.response?.status ?? null,
-          success: raw.ok,
-        });
-      }
-      setDetails(raw);
+      setDetails(inferLegacyErrorKind(raw));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erro");
       setDetails(null);

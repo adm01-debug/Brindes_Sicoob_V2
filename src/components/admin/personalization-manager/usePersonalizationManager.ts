@@ -13,6 +13,11 @@ import type {
   Product, ProductGroup, ProductGroupMember, Component, Location, Technique, LocationTechnique,
 } from "./types";
 
+const PRODUCT_MEMBERSHIP_KEY = "product-membership";
+const PRODUCT_COMPONENTS_KEY = "product-components";
+const COMPONENT_LOCATIONS_KEY = "component-locations";
+const LOCATION_TECHNIQUES_KEY = "location-techniques";
+
 export function usePersonalizationManager() {
   const queryClient = useQueryClient();
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
@@ -75,7 +80,7 @@ export function usePersonalizationManager() {
   }) || [];
 
   const { data: productMembership } = useQuery({
-    queryKey: ["product-membership", selectedProduct],
+    queryKey: [PRODUCT_MEMBERSHIP_KEY, selectedProduct],
     queryFn: async () => {
       if (!selectedProduct) return null;
       const { data, error } = await supabase
@@ -90,7 +95,7 @@ export function usePersonalizationManager() {
   });
 
   const { data: components, isLoading: componentsLoading } = useQuery({
-    queryKey: ["product-components", selectedProduct],
+    queryKey: [PRODUCT_COMPONENTS_KEY, selectedProduct],
     queryFn: async () => {
       if (!selectedProduct) return [];
       const { data, error } = await supabase.from("product_components").select("*").eq("product_id", selectedProduct).order("sort_order");
@@ -101,7 +106,7 @@ export function usePersonalizationManager() {
   });
 
   const { data: locations, error: locationsError } = useQuery({
-    queryKey: ["component-locations", selectedProduct],
+    queryKey: [COMPONENT_LOCATIONS_KEY, selectedProduct],
     queryFn: async () => {
       if (!components?.length) return [];
       const componentIds = components.map((c) => c.id);
@@ -124,7 +129,7 @@ export function usePersonalizationManager() {
   });
 
   const { data: locationTechniques, error: locationTechniquesError } = useQuery({
-    queryKey: ["location-techniques", selectedProduct],
+    queryKey: [LOCATION_TECHNIQUES_KEY, selectedProduct],
     queryFn: async () => {
       if (!locations?.length) return [];
       const locationIds = locations.map((l) => l.id);
@@ -139,11 +144,11 @@ export function usePersonalizationManager() {
 
   // ── Mutations ──
   const toggleGroupRulesMutation = useMutation({
-    mutationFn: async ({ id, use_group_rules }: { id: string; use_group_rules: boolean }) => {
-      const { error } = await supabase.from("product_group_members").update({ use_group_rules }).eq("id", id);
+    mutationFn: async ({ id, use_group_rules: useGroupRules }: { id: string; use_group_rules: boolean }) => {
+      const { error } = await supabase.from("product_group_members").update({ use_group_rules: useGroupRules }).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["product-membership"] }); toast.success("Modo de regras atualizado!"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: [PRODUCT_MEMBERSHIP_KEY] }); toast.success("Modo de regras atualizado!"); },
     onError: () => toast.error("Erro ao atualizar modo"),
   });
 
@@ -152,7 +157,7 @@ export function usePersonalizationManager() {
       const { error } = await supabase.from("product_components").insert(data);
       if (error) throw error;
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["product-components"] }); setIsAddComponentOpen(false); setNewComponent({ code: "", name: "" }); toast.success("Componente adicionado!"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: [PRODUCT_COMPONENTS_KEY] }); setIsAddComponentOpen(false); setNewComponent({ code: "", name: "" }); toast.success("Componente adicionado!"); },
     onError: () => toast.error("Erro ao adicionar componente"),
   });
 
@@ -161,13 +166,13 @@ export function usePersonalizationManager() {
       const { error } = await supabase.from("product_components").update(data).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["product-components"] }); toast.success("Componente atualizado!"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: [PRODUCT_COMPONENTS_KEY] }); toast.success("Componente atualizado!"); },
     onError: () => toast.error("Erro ao atualizar componente"),
   });
 
   const deleteComponentMutation = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from("product_components").delete().eq("id", id); if (error) throw error; },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["product-components"] }); toast.success("Componente removido!"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: [PRODUCT_COMPONENTS_KEY] }); toast.success("Componente removido!"); },
     onError: () => toast.error("Erro ao remover componente"),
   });
 
@@ -176,7 +181,7 @@ export function usePersonalizationManager() {
       const { error } = await untypedFrom<Location>("product_component_locations").insert(data);
       if (error) throw error;
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["component-locations"] }); setIsAddLocationOpen(false); setNewLocation({ code: "", name: "", maxWidth: "", maxHeight: "", maxArea: "" }); toast.success("Localização adicionada!"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: [COMPONENT_LOCATIONS_KEY] }); setIsAddLocationOpen(false); setNewLocation({ code: "", name: "", maxWidth: "", maxHeight: "", maxArea: "" }); toast.success("Localização adicionada!"); },
     onError: () => toast.error("Erro ao adicionar localização"),
   });
 
@@ -185,13 +190,13 @@ export function usePersonalizationManager() {
       const { error } = await untypedFrom<Location>("product_component_locations").update(data).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["component-locations"] }); toast.success("Localização atualizada!"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: [COMPONENT_LOCATIONS_KEY] }); toast.success("Localização atualizada!"); },
     onError: () => toast.error("Erro ao atualizar localização"),
   });
 
   const deleteLocationMutation = useMutation({
     mutationFn: async (id: string) => { const { error } = await untypedFrom<Location>("product_component_locations").delete().eq("id", id); if (error) throw error; },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["component-locations"] }); toast.success("Localização removida!"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: [COMPONENT_LOCATIONS_KEY] }); toast.success("Localização removida!"); },
     onError: () => toast.error("Erro ao remover localização"),
   });
 
@@ -200,7 +205,7 @@ export function usePersonalizationManager() {
       const { error } = await untypedFrom<LocationTechnique>("product_component_location_techniques").insert(data);
       if (error) throw error;
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["location-techniques"] }); setIsAddTechniqueOpen(false); setNewTechniqueId(""); setNewMaxColors(""); toast.success("Técnica associada!"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: [LOCATION_TECHNIQUES_KEY] }); setIsAddTechniqueOpen(false); setNewTechniqueId(""); setNewMaxColors(""); toast.success("Técnica associada!"); },
     onError: () => toast.error("Erro ao associar técnica"),
   });
 
@@ -209,13 +214,13 @@ export function usePersonalizationManager() {
       const { error } = await untypedFrom<LocationTechnique>("product_component_location_techniques").update(data).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["location-techniques"] }); toast.success("Técnica atualizada!"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: [LOCATION_TECHNIQUES_KEY] }); toast.success("Técnica atualizada!"); },
     onError: () => toast.error("Erro ao atualizar técnica"),
   });
 
   const deleteTechniqueMutation = useMutation({
     mutationFn: async (id: string) => { const { error } = await untypedFrom<LocationTechnique>("product_component_location_techniques").delete().eq("id", id); if (error) throw error; },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["location-techniques"] }); toast.success("Técnica removida!"); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: [LOCATION_TECHNIQUES_KEY] }); toast.success("Técnica removida!"); },
     onError: () => toast.error("Erro ao remover técnica"),
   });
 
@@ -262,7 +267,7 @@ export function usePersonalizationManager() {
         await supabase.from("product_components").update({ sort_order: i }).eq("id", item.id);
       }
     }
-    queryClient.invalidateQueries({ queryKey: ["product-components"] });
+    queryClient.invalidateQueries({ queryKey: [PRODUCT_COMPONENTS_KEY] });
     toast.success("Ordem atualizada!");
   };
 
@@ -272,10 +277,10 @@ export function usePersonalizationManager() {
     try {
       const { error } = await supabase.rpc("copy_group_personalization_to_product", { p_membership_id: productMembership.id });
       if (error) throw error;
-      queryClient.invalidateQueries({ queryKey: ["product-components"] });
-      queryClient.invalidateQueries({ queryKey: ["component-locations"] });
-      queryClient.invalidateQueries({ queryKey: ["location-techniques"] });
-      queryClient.invalidateQueries({ queryKey: ["product-membership"] });
+      queryClient.invalidateQueries({ queryKey: [PRODUCT_COMPONENTS_KEY] });
+      queryClient.invalidateQueries({ queryKey: [COMPONENT_LOCATIONS_KEY] });
+      queryClient.invalidateQueries({ queryKey: [LOCATION_TECHNIQUES_KEY] });
+      queryClient.invalidateQueries({ queryKey: [PRODUCT_MEMBERSHIP_KEY] });
       toast.success("Regras do grupo copiadas! Agora você pode customizar.");
     } catch (error) {
       logger.error("Error copying rules:", error);

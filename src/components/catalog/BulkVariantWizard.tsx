@@ -29,6 +29,35 @@ interface BulkVariantWizardProps {
   onComplete: (selections: BulkVariantSelection[]) => void;
 }
 
+function handleVariantImageError(image: HTMLImageElement, thumbnail: string | null) {
+  if (thumbnail && image.src.includes('/thumbnail')) {
+    image.src = thumbnail;
+    return;
+  }
+  image.style.display = 'none';
+}
+
+function VariantSwatch({ variant }: { variant: ExternalVariantStock }) {
+  if (variant.selected_thumbnail) return <img src={`${variant.selected_thumbnail}/thumbnail`} alt={variant.color_name ?? ''} className="w-10 h-10 rounded-lg object-cover border border-border/50 shrink-0 shadow-sm group-hover:scale-105 transition-transform" onError={(event) => handleVariantImageError(event.currentTarget, variant.selected_thumbnail)} />;
+  return <div className="w-10 h-10 rounded-lg border border-border/50 shrink-0 shadow-sm group-hover:scale-105 transition-transform" style={{ backgroundColor: variant.color_hex ?? '#CCC' }} />;
+}
+
+function VariantStock({ stock }: { stock: number }) {
+  if (stock === 0) return <span className="text-[10px] text-destructive flex items-center gap-0.5"><AlertTriangle className="h-2.5 w-2.5" />Sem estoque</span>;
+  const stockClass = stock < 100 ? 'text-warning' : 'text-success';
+  const stockLabel = stock >= 1000 ? `${(stock / 1000).toFixed(1)}k` : stock.toString();
+  return <span className={cn('text-[10px] font-medium flex items-center gap-0.5', stockClass)}><Package className="h-2.5 w-2.5" />{stockLabel} un</span>;
+}
+
+function VariantButton({ variant, onSelect }: { variant: ExternalVariantStock; onSelect: (variant: ExternalVariantStock) => void }) {
+  const stock = variant.stock_quantity ?? 0;
+  const isOutOfStock = stock === 0;
+  return <button onClick={() => onSelect(variant)} className={cn('relative flex items-center gap-2.5 p-2.5 rounded-xl border transition-all text-left group', 'hover:border-primary/50 hover:bg-accent/60 hover:shadow-sm', isOutOfStock ? 'opacity-50 border-border/40 bg-muted/20' : 'border-border/60 bg-card')}>
+    <VariantSwatch variant={variant} />
+    <div className="flex-1 min-w-0"><p className="text-xs font-medium truncate leading-tight">{variant.color_name ?? 'Sem nome'}{variant.size_code ? <span className="text-muted-foreground ml-1">— {variant.size_code}</span> : null}</p><div className="flex items-center gap-1 mt-1"><VariantStock stock={stock} /></div></div>
+  </button>;
+}
+
 /* ── Step: variant picker for a single product ── */
 function ProductVariantStep({
   product,
@@ -125,67 +154,7 @@ function ProductVariantStep({
 
       {/* Variant grid */}
       <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto pr-1 scrollbar-thin">
-        {sortedVariants.map((variant) => {
-          const stock = variant.stock_quantity ?? 0;
-          const isOutOfStock = stock === 0;
-          const isLowStock = stock > 0 && stock < 100;
-
-          return (
-            <button
-              key={variant.id}
-              onClick={() => onSelect(variant)}
-              className={cn(
-                'relative flex items-center gap-2.5 p-2.5 rounded-xl border transition-all text-left group',
-                'hover:border-primary/50 hover:bg-accent/60 hover:shadow-sm',
-                isOutOfStock
-                  ? 'opacity-50 border-border/40 bg-muted/20'
-                  : 'border-border/60 bg-card',
-              )}
-            >
-              {variant.selected_thumbnail ? (
-                <img
-                  src={`${variant.selected_thumbnail}/thumbnail`}
-                  alt={variant.color_name ?? ''}
-                  className="w-10 h-10 rounded-lg object-cover border border-border/50 shrink-0 shadow-sm group-hover:scale-105 transition-transform"
-                  onError={(e) => {
-                    const t = e.currentTarget;
-                    if (t.src.includes('/thumbnail')) {
-                      t.src = variant.selected_thumbnail!;
-                    } else {
-                      t.style.display = 'none';
-                    }
-                  }}
-                />
-              ) : (
-                <div
-                  className="w-10 h-10 rounded-lg border border-border/50 shrink-0 shadow-sm group-hover:scale-105 transition-transform"
-                  style={{ backgroundColor: variant.color_hex || '#CCC' }}
-                />
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium truncate leading-tight">
-                  {variant.color_name || 'Sem nome'}
-                  {variant.size_code && (
-                    <span className="text-muted-foreground ml-1">— {variant.size_code}</span>
-                  )}
-                </p>
-                <div className="flex items-center gap-1 mt-1">
-                  {isOutOfStock ? (
-                    <span className="text-[10px] text-destructive flex items-center gap-0.5">
-                      <AlertTriangle className="h-2.5 w-2.5" />
-                      Sem estoque
-                    </span>
-                  ) : (
-                    <span className={cn('text-[10px] font-medium flex items-center gap-0.5', isLowStock ? 'text-warning' : 'text-success')}>
-                      <Package className="h-2.5 w-2.5" />
-                      {fmt(stock)} un
-                    </span>
-                  )}
-                </div>
-              </div>
-            </button>
-          );
-        })}
+        {sortedVariants.map((variant) => <VariantButton key={variant.id} variant={variant} onSelect={onSelect} />)}
       </div>
     </motion.div>
   );
@@ -250,7 +219,8 @@ export function BulkVariantWizard({ open, onOpenChange, products, mode, onComple
 
   const handleSelect = useCallback(
     (variant: ExternalVariantStock | null) => {
-      const product = products[currentIndex]!;
+      const product = products[currentIndex];
+      if (!product) return;
       const newSelections = [...selections, { product, variant }];
 
       if (currentIndex + 1 >= products.length) {

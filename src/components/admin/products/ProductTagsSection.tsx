@@ -3,7 +3,7 @@
  * Gradientes, badges removíveis, color dots, contadores
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -13,6 +13,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { X, Search, Tag, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+
+const EXTERNAL_DB_BRIDGE = 'external-db-bridge';
 
 interface ProductTagsSectionProps {
   productId: string;
@@ -32,7 +34,7 @@ interface ProductTag {
 }
 
 async function fetchTags(): Promise<ExternalTag[]> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
     body: { table: 'tags', operation: 'select', limit: 500, orderBy: { column: 'name', ascending: true }, countMode: 'none' },
   });
   if (error) throw new Error(error.message);
@@ -40,11 +42,57 @@ async function fetchTags(): Promise<ExternalTag[]> {
 }
 
 async function fetchProductTags(productId: string): Promise<ProductTag[]> {
-  const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
     body: { table: 'product_tags', operation: 'select', filters: { product_id: productId }, limit: 500 },
   });
   if (error) throw new Error(error.message);
   return data?.data?.records || [];
+}
+
+async function removeProductTag(productId: string, tagId: string, productTags: ProductTag[]) {
+  let id = productTags.find((item) => item.tag_id === tagId)?.id;
+  if (!id) {
+    const { data } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
+      body: { table: 'product_tags', operation: 'select', filters: { product_id: productId, tag_id: tagId }, limit: 1 },
+    });
+    id = data?.data?.records?.[0]?.id;
+  }
+  if (!id) {
+    toast.error('Registro não encontrado');
+    return false;
+  }
+  await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, { body: { table: 'product_tags', operation: 'delete', id } });
+  return true;
+}
+
+function SelectedTags({ linkedIds, onClear, onToggle, tags }: {
+  linkedIds: Set<string>; onClear: () => void; onToggle: (id: string) => void; tags: ExternalTag[];
+}) {
+  if (linkedIds.size === 0) return null;
+  const selected = tags.filter((tag) => linkedIds.has(tag.id)).sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+  return (
+    <div className="p-2.5 bg-primary/5 rounded-lg border border-primary/20">
+      <div className="flex items-center justify-between mb-2"><span className="text-xs font-medium text-primary flex items-center gap-1.5"><Tag className="h-3 w-3" />Selecionadas</span><button type="button" onClick={onClear} className="text-[10px] text-muted-foreground hover:text-destructive transition-colors">Limpar todas</button></div>
+      <div className="flex flex-wrap gap-1.5">{selected.map((tag) => <span key={tag.id} className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-medium border border-border bg-background text-foreground hover:bg-muted/50 cursor-pointer transition-all duration-200" onClick={() => onToggle(tag.id)}>
+        {tag.color && <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: tag.color }} />}<span className="truncate max-w-[100px]">{tag.name}</span>
+        <button type="button" onClick={(event) => { event.stopPropagation(); onToggle(tag.id); }} className="rounded-full p-0.5 ml-0.5 hover:bg-destructive/20 hover:text-destructive transition-all duration-150"><X className="w-2.5 h-2.5" /></button>
+      </span>)}</div>
+    </div>
+  );
+}
+
+function TagsList({ filtered, linkedIds, search, togglingIds, onToggle }: {
+  filtered: ExternalTag[]; linkedIds: Set<string>; search: string; togglingIds: Set<string>;
+  onToggle: (id: string, linked: boolean) => void;
+}) {
+  if (filtered.length === 0 && search) return <div className="text-center py-6"><Search className="h-6 w-6 text-muted-foreground/50 mx-auto mb-2" /><p className="text-sm text-muted-foreground">Nenhuma tag encontrada para "<span className="font-medium">{search}</span>"</p></div>;
+  return <>{filtered.map((tag) => {
+    const linked = linkedIds.has(tag.id);
+    return <label key={tag.id} className={cn("flex items-center gap-2.5 py-1.5 px-2.5 rounded-md cursor-pointer text-sm transition-all duration-150", linked ? "bg-primary/15 text-foreground font-medium shadow-sm" : "text-muted-foreground hover:bg-muted/60 hover:text-foreground")}>
+      {togglingIds.has(tag.id) ? <Loader2 className="w-4 h-4 animate-spin text-primary flex-shrink-0" /> : <Checkbox checked={linked} onCheckedChange={() => onToggle(tag.id, linked)} className="data-[state=checked]:bg-primary data-[state=checked]:border-primary" />}
+      {tag.color && <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: tag.color }} />}<span className="truncate flex-1">{tag.name}</span>{linked && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />}
+    </label>;
+  })}</>;
 }
 
 export function ProductTagsSection({ productId }: ProductTagsSectionProps) {
@@ -64,31 +112,17 @@ export function ProductTagsSection({ productId }: ProductTagsSectionProps) {
     enabled: !!productId,
   });
 
-  const linkedTagIds = new Set(productTags.map(pt => pt.tag_id));
+  const linkedTagIds = useMemo(() => new Set(productTags.map((productTag) => productTag.tag_id)), [productTags]);
 
   const toggleTag = useCallback(async (tagId: string, isLinked: boolean) => {
     if (togglingIds.has(tagId)) return;
     setTogglingIds(prev => new Set(prev).add(tagId));
     try {
       if (isLinked) {
-        const record = productTags.find(pt => pt.tag_id === tagId);
-        if (!record?.id) {
-          const { data: findData } = await supabase.functions.invoke('external-db-bridge', {
-            body: { table: 'product_tags', operation: 'select', filters: { product_id: productId, tag_id: tagId }, limit: 1 },
-          });
-          const found = findData?.data?.records?.[0];
-          if (!found?.id) { toast.error('Registro não encontrado'); return; }
-          await supabase.functions.invoke('external-db-bridge', {
-            body: { table: 'product_tags', operation: 'delete', id: found.id },
-          });
-        } else {
-          await supabase.functions.invoke('external-db-bridge', {
-            body: { table: 'product_tags', operation: 'delete', id: record.id },
-          });
-        }
+        if (!await removeProductTag(productId, tagId, productTags)) return;
         toast.success('Tag removida');
       } else {
-        await supabase.functions.invoke('external-db-bridge', {
+        await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
           body: { table: 'product_tags', operation: 'insert', data: { product_id: productId, tag_id: tagId } },
         });
         toast.success('Tag adicionada');
@@ -108,7 +142,7 @@ export function ProductTagsSection({ productId }: ProductTagsSectionProps) {
     }
   }, [tags, linkedTagIds, toggleTag]);
 
-  const isLoading = loadingTags || loadingLinks;
+  const isLoading = (loadingTags || loadingLinks);
 
   if (isLoading) {
     return (
@@ -136,52 +170,10 @@ export function ProductTagsSection({ productId }: ProductTagsSectionProps) {
     .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
 
   return (
-    <div className="space-y-3">
+    (<div className="space-y-3">
       {/* Badges dos selecionados */}
-      {linkedCount > 0 && (
-        <div className="p-2.5 bg-primary/5 rounded-lg border border-primary/20">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-primary flex items-center gap-1.5">
-              <Tag className="h-3 w-3" />
-              Selecionadas
-            </span>
-            <button
-              type="button"
-              onClick={clearAll}
-              className="text-[10px] text-muted-foreground hover:text-destructive transition-colors"
-            >
-              Limpar todas
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {tags
-              .filter(t => linkedTagIds.has(t.id))
-              .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
-              .map(t => (
-                <span
-                  key={t.id}
-                  className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-medium border border-border bg-background text-foreground hover:bg-muted/50 cursor-pointer transition-all duration-200"
-                  onClick={() => toggleTag(t.id, true)}
-                >
-                  {t.color && (
-                    <span
-                      className="w-2 h-2 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: t.color }}
-                    />
-                  )}
-                  <span className="truncate max-w-[100px]">{t.name}</span>
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); toggleTag(t.id, true); }}
-                    className="rounded-full p-0.5 ml-0.5 hover:bg-destructive/20 hover:text-destructive transition-all duration-150"
-                  >
-                    <X className="w-2.5 h-2.5" />
-                  </button>
-                </span>
-              ))}
-          </div>
-        </div>
-      )}
+      <SelectedTags linkedIds={linkedTagIds} onClear={() => { void clearAll(); }}
+        onToggle={(id) => { void toggleTag(id, true); }} tags={tags} />
 
       {/* Busca */}
       <div className="relative">
@@ -215,51 +207,10 @@ export function ProductTagsSection({ productId }: ProductTagsSectionProps) {
       {/* Lista */}
       <ScrollArea className="h-56">
         <div className="space-y-0.5 pr-3">
-          {filtered.length === 0 && search ? (
-            <div className="text-center py-6">
-              <Search className="h-6 w-6 text-muted-foreground/50 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">
-                Nenhuma tag encontrada para "<span className="font-medium">{search}</span>"
-              </p>
-            </div>
-          ) : (
-            filtered.map(tag => {
-              const isLinked = linkedTagIds.has(tag.id);
-              return (
-                <label
-                  key={tag.id}
-                  className={cn(
-                    "flex items-center gap-2.5 py-1.5 px-2.5 rounded-md cursor-pointer text-sm transition-all duration-150",
-                    isLinked
-                      ? "bg-primary/15 text-foreground font-medium shadow-sm"
-                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-                  )}
-                >
-                  {togglingIds.has(tag.id) ? (
-                    <Loader2 className="w-4 h-4 animate-spin text-primary flex-shrink-0" />
-                  ) : (
-                    <Checkbox
-                      checked={isLinked}
-                      onCheckedChange={() => toggleTag(tag.id, isLinked)}
-                      className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                    />
-                  )}
-                  {tag.color && (
-                    <span
-                      className="w-2 h-2 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: tag.color }}
-                    />
-                  )}
-                  <span className="truncate flex-1">{tag.name}</span>
-                  {isLinked && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                  )}
-                </label>
-              );
-            })
-          )}
+          <TagsList filtered={filtered} linkedIds={linkedTagIds} search={search} togglingIds={togglingIds}
+            onToggle={(id, linked) => { void toggleTag(id, linked); }} />
         </div>
       </ScrollArea>
-    </div>
+    </div>)
   );
 }

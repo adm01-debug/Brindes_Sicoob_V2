@@ -45,28 +45,58 @@ function pctDelta(client: number, industry: number): number {
   return ((client - industry) / industry) * 100;
 }
 
+function metricMatches(
+  metric: MetricComparison | undefined,
+  classification: ComparisonClassification,
+  minimumDelta: number,
+): boolean {
+  if (!metric || metric.classification !== classification) return false;
+  return classification === "below"
+    ? metric.deltaPercent <= -minimumDelta
+    : metric.deltaPercent >= minimumDelta;
+}
+
+function roundedDelta(metric: MetricComparison | undefined) {
+  return Math.round(metric?.deltaPercent ?? 0);
+}
+
 function buildInsight(metrics: MetricComparison[]): string | null {
   const ticket = metrics.find((m) => m.label === "Ticket médio");
   const ltv = metrics.find((m) => m.label === "LTV");
   const freq = metrics.find((m) => m.label === "Frequência (pedidos)");
 
-  if (ticket && ticket.classification === "above" && ticket.deltaPercent >= 25) {
-    return `Este cliente compra ${Math.round(ticket.deltaPercent)}% mais por pedido que a média do setor — bom alvo para upsell premium.`;
+  if (metricMatches(ticket, "above", 25)) {
+    return `Este cliente compra ${roundedDelta(ticket)}% mais por pedido que a média do setor — bom alvo para upsell premium.`;
   }
-  if (ltv && ltv.classification === "below" && ltv.deltaPercent <= -25) {
-    return `LTV ${Math.abs(Math.round(ltv.deltaPercent))}% abaixo da média do ramo — potencial de crescimento via cross-sell.`;
+  if (metricMatches(ltv, "below", 25)) {
+    return `LTV ${Math.abs(roundedDelta(ltv))}% abaixo da média do ramo — potencial de crescimento via cross-sell.`;
   }
-  if (freq && freq.classification === "above" && freq.deltaPercent >= 30) {
-    return `Cliente compra ${Math.round(freq.deltaPercent)}% mais frequentemente que o setor — cultive a recorrência com programas de fidelidade.`;
+  if (metricMatches(freq, "above", 30)) {
+    return `Cliente compra ${roundedDelta(freq)}% mais frequentemente que o setor — cultive a recorrência com programas de fidelidade.`;
   }
-  if (freq && freq.classification === "below" && freq.deltaPercent <= -30) {
-    return `Frequência ${Math.abs(Math.round(freq.deltaPercent))}% abaixo do setor — oportunidade clara de reativação.`;
+  if (metricMatches(freq, "below", 30)) {
+    return `Frequência ${Math.abs(roundedDelta(freq))}% abaixo do setor — oportunidade clara de reativação.`;
   }
   const allOnPar = metrics.every((m) => m.classification === "on_par" || m.classification === "no_data");
   if (allOnPar) {
     return "Cliente alinhado à média do setor em todas as métricas — performance saudável e estável.";
   }
   return null;
+}
+
+function comparisonMetric(
+  label: string,
+  clientValue: number,
+  industryAvg: number,
+  format: MetricComparison["format"],
+): MetricComparison {
+  const deltaPercent = pctDelta(clientValue, industryAvg);
+  return { label, clientValue, industryAvg, deltaPercent, classification: classify(deltaPercent), format };
+}
+
+function averageItems(orders: Array<{ itemsCount?: number }>) {
+  if (orders.length === 0) return 0;
+  return orders.reduce((sum, order) => sum + (order.itemsCount ?? 1), 0) / orders.length;
 }
 
 interface BenchmarkRow {
@@ -90,6 +120,7 @@ export function useClientVsIndustry(
     enabled: !!ramoAtividade && !!clientId,
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
+      if (!ramoAtividade) return { rows: [] as BenchmarkRow[], sampleSize: 0 };
       // Demo: retorna benchmark mockado plausível
       if (isDemoClient(clientId)) {
         const mockRow: BenchmarkRow = {
@@ -107,7 +138,7 @@ export function useClientVsIndustry(
       // 1) Resolver IDs de empresas do mesmo ramo, excluindo o próprio cliente
       const companies = await selectCrm<Pick<CrmCompany, "id">>("companies", {
         select: "id",
-        filters: { ramo_atividade: ramoAtividade!, deleted_at: null },
+        filters: { ramo_atividade: ramoAtividade, deleted_at: null },
         limit: 500,
       });
       const ids = companies
@@ -145,43 +176,13 @@ export function useClientVsIndustry(
   }
 
   // Estimativa: itens/orçamento do cliente — sem RPC dedicada, derivamos de recentOrders
-  const clientAvgItems = clientBI.recentOrders.length
-    ? clientBI.recentOrders.reduce((s, o) => s + (o.itemsCount ?? 1), 0) / clientBI.recentOrders.length
-    : 0;
+  const clientAvgItems = averageItems(clientBI.recentOrders);
 
   const metrics: MetricComparison[] = [
-    {
-      label: "LTV",
-      clientValue: clientBI.ltv,
-      industryAvg: Number(benchmark.avg_ltv),
-      deltaPercent: pctDelta(clientBI.ltv, Number(benchmark.avg_ltv)),
-      classification: classify(pctDelta(clientBI.ltv, Number(benchmark.avg_ltv))),
-      format: "currency",
-    },
-    {
-      label: "Ticket médio",
-      clientValue: clientBI.avgTicket,
-      industryAvg: Number(benchmark.avg_ticket),
-      deltaPercent: pctDelta(clientBI.avgTicket, Number(benchmark.avg_ticket)),
-      classification: classify(pctDelta(clientBI.avgTicket, Number(benchmark.avg_ticket))),
-      format: "currency",
-    },
-    {
-      label: "Frequência (pedidos)",
-      clientValue: clientBI.ordersCount,
-      industryAvg: Number(benchmark.avg_quotes_per_client),
-      deltaPercent: pctDelta(clientBI.ordersCount, Number(benchmark.avg_quotes_per_client)),
-      classification: classify(pctDelta(clientBI.ordersCount, Number(benchmark.avg_quotes_per_client))),
-      format: "number",
-    },
-    {
-      label: "Itens por orçamento",
-      clientValue: clientAvgItems,
-      industryAvg: Number(benchmark.avg_items_per_quote),
-      deltaPercent: pctDelta(clientAvgItems, Number(benchmark.avg_items_per_quote)),
-      classification: classify(pctDelta(clientAvgItems, Number(benchmark.avg_items_per_quote))),
-      format: "number",
-    },
+    comparisonMetric("LTV", clientBI.ltv, Number(benchmark.avg_ltv), "currency"),
+    comparisonMetric("Ticket médio", clientBI.avgTicket, Number(benchmark.avg_ticket), "currency"),
+    comparisonMetric("Frequência (pedidos)", clientBI.ordersCount, Number(benchmark.avg_quotes_per_client), "number"),
+    comparisonMetric("Itens por orçamento", clientAvgItems, Number(benchmark.avg_items_per_quote), "number"),
   ];
 
   return {

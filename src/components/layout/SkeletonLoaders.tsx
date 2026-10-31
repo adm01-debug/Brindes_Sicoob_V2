@@ -1,6 +1,8 @@
-import * as React from "react";
-import { Skeleton as BaseSkeleton } from "@/components/ui/skeleton";
-import { motion } from "framer-motion";
+import * as React from 'react';
+import { Skeleton as BaseSkeleton } from '@/components/ui/skeleton';
+import { motion } from 'framer-motion';
+
+const PAGE_SKELETON_CLASS = 'p-4 lg:p-6 space-y-6';
 
 /**
  * Skeleton otimizado com redução de custo de render em hardware fraco.
@@ -11,10 +13,10 @@ const Skeleton = ({ className, ...props }: React.ComponentProps<typeof BaseSkele
     <motion.div
       initial={{ opacity: 0.5 }}
       animate={{ opacity: [0.5, 0.7, 0.5] }}
-      transition={{ 
-        duration: 2, 
-        repeat: Infinity, 
-        ease: "linear" // Linear é mais barato que easeInOut para loops infinitos
+      transition={{
+        duration: 2,
+        repeat: Infinity,
+        ease: 'linear', // Linear é mais barato que easeInOut para loops infinitos
       }}
       className="will-change-opacity"
     >
@@ -35,50 +37,40 @@ const Skeleton = ({ className, ...props }: React.ComponentProps<typeof BaseSkele
  */
 type SkeletonRootProps = React.HTMLAttributes<HTMLDivElement>;
 
-function makeSkeleton(
-  displayName: string,
-  render: () => React.ReactNode,
-  rootClassName: string,
-) {
-  const Cmp = React.forwardRef<HTMLDivElement, SkeletonRootProps>(
-    ({ className, ...rest }, ref) => (
-      <div
-        ref={ref}
-        className={[rootClassName, className].filter(Boolean).join(" ")}
-        {...rest}
-      >
-        {render()}
-      </div>
-    ),
-  );
+function makeSkeleton(displayName: string, render: () => React.ReactNode, rootClassName: string) {
+  const Cmp = React.forwardRef<HTMLDivElement, SkeletonRootProps>(({ className, ...rest }, ref) => (
+    <div ref={ref} className={[rootClassName, className].filter(Boolean).join(' ')} {...rest}>
+      {render()}
+    </div>
+  ));
   Cmp.displayName = displayName;
   return Cmp;
 }
 
 /** Catalog / Products page skeleton */
 export const CatalogSkeleton = makeSkeleton(
-  "CatalogSkeleton",
+  'CatalogSkeleton',
   () => (
     <>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-8 w-48" />
-        <div className="flex gap-2">
-          <Skeleton className="h-10 w-32" />
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <Skeleton className="h-8 w-32 sm:w-48" />
+        <div className="flex shrink-0 gap-2">
+          <Skeleton className="h-10 w-20 sm:w-32" />
           <Skeleton className="h-10 w-10" />
-          <Skeleton className="h-10 w-10" />
+          <Skeleton className="hidden h-10 w-10 sm:block" />
         </div>
       </div>
       {/* Toolbar / search */}
       <Skeleton className="h-10 w-full max-w-md" />
       {/* Product grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {Array.from({ length: 10 }).map((_, i) => (
-          <div key={i} className="bg-card/30 rounded-2xl p-3 border border-border/5 space-y-3">
+          <div key={i} className="space-y-3 rounded-2xl border border-border/5 bg-card/30 p-3">
             <Skeleton className="aspect-square w-full rounded-xl" />
             <Skeleton className="h-4 w-3/4 rounded-full" />
             <Skeleton className="h-4 w-1/2 rounded-full" />
-            <div className="flex justify-between items-center pt-1">
+            <div className="flex items-center justify-between pt-1">
               <Skeleton className="h-5 w-1/3 rounded-full" />
               <Skeleton className="h-8 w-8 rounded-full" />
             </div>
@@ -87,16 +79,16 @@ export const CatalogSkeleton = makeSkeleton(
       </div>
     </>
   ),
-  "space-y-6 p-4 lg:p-6",
+  'space-y-6 p-4 lg:p-6',
 );
 
 /** Product detail page skeleton */
 export const ProductDetailSkeleton = makeSkeleton(
-  "ProductDetailSkeleton",
+  'ProductDetailSkeleton',
   () => (
     <>
       <Skeleton className="h-6 w-40" />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         {/* Image */}
         <Skeleton className="aspect-square w-full rounded-2xl" />
         {/* Info */}
@@ -117,19 +109,19 @@ export const ProductDetailSkeleton = makeSkeleton(
       </div>
     </>
   ),
-  "p-4 lg:p-6 space-y-6",
+  PAGE_SKELETON_CLASS,
 );
 
 /** Quotes list page skeleton */
 export const QuotesSkeleton = makeSkeleton(
-  "QuotesSkeleton",
+  'QuotesSkeleton',
   () => (
     <>
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-8 w-52" />
-        <Skeleton className="h-10 w-36" />
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <Skeleton className="h-8 w-36 sm:w-52" />
+        <Skeleton className="h-10 w-24 sm:w-36" />
       </div>
-      <div className="flex gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:flex">
         {Array.from({ length: 4 }).map((_, i) => (
           <Skeleton key={i} className="h-9 w-24 rounded-full" />
         ))}
@@ -141,20 +133,20 @@ export const QuotesSkeleton = makeSkeleton(
       </div>
     </>
   ),
-  "p-4 lg:p-6 space-y-6",
+  PAGE_SKELETON_CLASS,
 );
 
 /** Admin pages skeleton */
 export const AdminSkeleton = makeSkeleton(
-  "AdminSkeleton",
+  'AdminSkeleton',
   () => (
     <>
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-8 w-56" />
-        <Skeleton className="h-10 w-32" />
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <Skeleton className="h-8 w-36 sm:w-56" />
+        <Skeleton className="h-10 w-24 sm:w-32" />
       </div>
       {/* Stats row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Skeleton key={i} className="h-24 rounded-xl" />
         ))}
@@ -166,32 +158,32 @@ export const AdminSkeleton = makeSkeleton(
       ))}
     </>
   ),
-  "p-4 lg:p-6 space-y-6",
+  PAGE_SKELETON_CLASS,
 );
 
 /** Dashboard / home skeleton */
 export const DashboardSkeleton = makeSkeleton(
-  "DashboardSkeleton",
+  'DashboardSkeleton',
   () => (
     <>
       <Skeleton className="h-8 w-64" />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Skeleton key={i} className="h-32 rounded-xl" />
         ))}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Skeleton className="h-64 rounded-xl" />
         <Skeleton className="h-64 rounded-xl" />
       </div>
     </>
   ),
-  "p-4 lg:p-6 space-y-6",
+  PAGE_SKELETON_CLASS,
 );
 
 /** Orders page skeleton */
 export const OrdersSkeleton = makeSkeleton(
-  "OrdersSkeleton",
+  'OrdersSkeleton',
   () => (
     <>
       {/* Breadcrumb & Header */}
@@ -202,17 +194,17 @@ export const OrdersSkeleton = makeSkeleton(
           <Skeleton className="h-6 w-24 rounded-full" />
         </div>
       </div>
-      
+
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Skeleton key={i} className="h-24 rounded-xl" />
         ))}
       </div>
 
       {/* Filters Area */}
-      <div className="bg-card rounded-xl border p-4 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="space-y-4 rounded-xl border bg-card p-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <Skeleton className="h-11 w-full" />
           <Skeleton className="h-11 w-full" />
           <Skeleton className="h-11 w-full" />
@@ -228,30 +220,30 @@ export const OrdersSkeleton = makeSkeleton(
       </div>
     </>
   ),
-  "p-4 lg:p-6 space-y-6",
+  PAGE_SKELETON_CLASS,
 );
 
 /** Tools page skeleton (Mockup, Kit Builder, Simulador) */
 export const ToolsSkeleton = makeSkeleton(
-  "ToolsSkeleton",
+  'ToolsSkeleton',
   () => (
     <>
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-8 w-52" />
-        <div className="flex gap-2">
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <Skeleton className="h-8 w-36 sm:w-52" />
+        <div className="flex shrink-0 gap-2">
           <Skeleton className="h-10 w-10 rounded-lg" />
           <Skeleton className="h-10 w-10 rounded-lg" />
         </div>
       </div>
       {/* Wizard steps */}
-      <div className="flex gap-2 justify-center">
+      <div className="flex justify-center gap-2">
         {Array.from({ length: 4 }).map((_, i) => (
           <Skeleton key={i} className="h-2 w-16 rounded-full" />
         ))}
       </div>
       {/* Main content area */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-4">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="space-y-4 lg:col-span-2">
           <Skeleton className="h-64 w-full rounded-xl" />
           <Skeleton className="h-10 w-full rounded-lg" />
         </div>
@@ -262,12 +254,12 @@ export const ToolsSkeleton = makeSkeleton(
       </div>
     </>
   ),
-  "p-4 lg:p-6 space-y-6",
+  PAGE_SKELETON_CLASS,
 );
 
 /** Profile page skeleton */
 export const ProfileSkeleton = makeSkeleton(
-  "ProfileSkeleton",
+  'ProfileSkeleton',
   () => (
     <>
       <div className="flex items-center gap-4">
@@ -285,12 +277,12 @@ export const ProfileSkeleton = makeSkeleton(
       <Skeleton className="h-12 w-32 rounded-lg" />
     </>
   ),
-  "p-4 lg:p-6 space-y-6 max-w-2xl mx-auto",
+  'p-4 lg:p-6 space-y-6 max-w-2xl mx-auto',
 );
 
 /** Generic page skeleton (fallback) */
 export const GenericSkeleton = makeSkeleton(
-  "GenericSkeleton",
+  'GenericSkeleton',
   () => (
     <>
       <Skeleton className="h-8 w-48" />
@@ -301,36 +293,48 @@ export const GenericSkeleton = makeSkeleton(
       </div>
     </>
   ),
-  "p-4 lg:p-6 space-y-6",
+  PAGE_SKELETON_CLASS,
 );
 
 /**
  * Returns the appropriate skeleton component based on the current route.
  */
-export function getFallback(pathname: string): React.ReactNode {
-  // Check exact matches or patterns
-  if (pathname.includes("/produto/")) return <ProductDetailSkeleton />;
-  if (
-    pathname === "/produtos" ||
-    pathname === "/filtros" ||
-    pathname === "/" ||
-    pathname === "/novidades" ||
-    pathname === "/reposicao" ||
-    pathname === "/favoritos"
-  )
-    return <CatalogSkeleton />;
-  
-  if (pathname.includes("/orcamentos")) return <QuotesSkeleton />;
-  if (pathname.includes("/admin") || pathname === "/status")
-    return <AdminSkeleton />;
-  if (pathname === "/dashboard") return <DashboardSkeleton />;
-  if (pathname.includes("/pedidos")) return <OrdersSkeleton />;
+const CATALOG_SKELETON_ROUTES = new Set([
+  '/produtos',
+  '/filtros',
+  '/',
+  '/novidades',
+  '/reposicao',
+  '/favoritos',
+]);
 
-  const isTool = ["/mockup-generator", "/montar-kit", "/simulador", "/magic-up", "/simulador-precos", "/busca-preco"].some(p => pathname.startsWith(p));
-  if (isTool) return <ToolsSkeleton />;
-  
-  if (pathname === "/tendencias")
-    return <AdminSkeleton />;
-  
-  return <GenericSkeleton />;
+const TOOL_SKELETON_ROUTES = [
+  '/mockup-generator',
+  '/montar-kit',
+  '/simulador',
+  '/magic-up',
+  '/simulador-precos',
+  '/busca-preco',
+];
+
+const FALLBACK_MATCHERS: Array<{ matches: (pathname: string) => boolean; node: React.ReactNode }> =
+  [
+    { matches: (pathname) => pathname.includes('/produto/'), node: <ProductDetailSkeleton /> },
+    { matches: (pathname) => CATALOG_SKELETON_ROUTES.has(pathname), node: <CatalogSkeleton /> },
+    { matches: (pathname) => pathname.includes('/orcamentos'), node: <QuotesSkeleton /> },
+    {
+      matches: (pathname) => pathname.includes('/admin') || pathname === '/status',
+      node: <AdminSkeleton />,
+    },
+    { matches: (pathname) => pathname === '/dashboard', node: <DashboardSkeleton /> },
+    { matches: (pathname) => pathname.includes('/pedidos'), node: <OrdersSkeleton /> },
+    {
+      matches: (pathname) => TOOL_SKELETON_ROUTES.some((route) => pathname.startsWith(route)),
+      node: <ToolsSkeleton />,
+    },
+    { matches: (pathname) => pathname === '/tendencias', node: <AdminSkeleton /> },
+  ];
+
+export function getFallback(pathname: string): React.ReactNode {
+  return FALLBACK_MATCHERS.find(({ matches }) => matches(pathname))?.node ?? <GenericSkeleton />;
 }

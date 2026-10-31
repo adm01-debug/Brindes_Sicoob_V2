@@ -2,11 +2,8 @@
  * E2E Tests — Auth Module
  * Covers: Login, Signup, Logout, Protected Routes, Password Reset, IP Blocking
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
-import { renderWithProviders } from '../components/render-helpers';
 
 // Mock modules before imports
 const mockNavigate = vi.fn();
@@ -188,4 +185,3 @@ describe('E2E Auth — Flow Simulation (Full User Path)', () => {
     expect(session.expires > Date.now()).toBe(true);
   });
 });
-

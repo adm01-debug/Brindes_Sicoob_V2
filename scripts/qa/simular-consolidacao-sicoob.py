@@ -1,5 +1,7 @@
 """Valida consolidação, destinos e recebimentos parciais sem rede."""
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
+import hashlib
 import json
 import subprocess
 import time
@@ -13,6 +15,8 @@ MIGRATION = ROOT / "supabase/migrations/20260912190000_sicoob_consolidation_dist
 FOLLOWUP_MIGRATION = ROOT / "supabase/migrations/20260913120004_sicoob_consolidation_distribution_followup.sql"
 POLICY_WRAPPER_MIGRATION = ROOT / "supabase/migrations/20260922224000_sicoob_policy_helper_wrappers.sql"
 REFERENTIAL_INTEGRITY_MIGRATION = ROOT / "supabase/migrations/20260922224900_consolidation_referential_integrity.sql"
+CONCURRENCY_MIGRATION = ROOT / "supabase/migrations/20260927213000_sicoob_consolidation_concurrency.sql"
+EVIDENCE = ROOT / "docs/execucao/evidencias/consolidacao-sicoob.json"
 MANAGER = "11111111-1111-1111-1111-111111111111"
 SELLER = "22222222-2222-2222-2222-222222222222"
 PA_RECEIVER = "33333333-3333-3333-3333-333333333333"
@@ -69,9 +73,18 @@ def scalar(response):
 
 result = {
     "ambiente": "PostgreSQL 16 descartável, --network none; somente dados sintéticos",
-    "migracao": str(MIGRATION.relative_to(ROOT)),
+    "migracoes": [
+        str(MIGRATION.relative_to(ROOT)),
+        str(CONCURRENCY_MIGRATION.relative_to(ROOT)),
+    ],
     "producao_verificada": False,
 }
+if EVIDENCE.exists():
+    previous_result = json.loads(EVIDENCE.read_text())
+    canonical_database = previous_result.get("banco_canonico_de_construcao")
+    migration_sha256 = hashlib.sha256(CONCURRENCY_MIGRATION.read_bytes()).hexdigest()
+    if canonical_database and canonical_database.get("sha256") == migration_sha256:
+        result["banco_canonico_de_construcao"] = canonical_database
 
 try:
     command([
@@ -95,6 +108,7 @@ try:
     """)
     sql(POLICY_WRAPPER_MIGRATION.read_text())
     sql(REFERENTIAL_INTEGRITY_MIGRATION.read_text())
+    sql(CONCURRENCY_MIGRATION.read_text())
     sql(f"""
       INSERT INTO auth.users VALUES ('{MANAGER}'), ('{SELLER}'), ('{PA_RECEIVER}'), ('{OUTSIDER}'), ('{OTHER_SELLER}');
       INSERT INTO public.user_roles VALUES
@@ -140,11 +154,19 @@ try:
     """, check=False)
     assert wrong_seller.returncode != 0 and "nesta Singular" in wrong_seller.stderr
 
-    consolidation = scalar(actor_sql(MANAGER, f"""
+    create_statement = f"""
       SELECT public.create_sicoob_order_consolidation(
         ARRAY['{ORDER1}'::uuid, '{ORDER2}'::uuid], '{SELLER}', '{KEY}'
       );
-    """))
+    """
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        concurrent_creates = list(pool.map(lambda _: actor_sql(MANAGER, create_statement), range(2)))
+    assert all(response.returncode == 0 for response in concurrent_creates), [
+        response.stderr for response in concurrent_creates
+    ]
+    concurrent_ids = [scalar(response) for response in concurrent_creates]
+    assert len(set(concurrent_ids)) == 1, concurrent_ids
+    consolidation = concurrent_ids[0]
     repeated = scalar(actor_sql(MANAGER, f"""
       SELECT public.create_sicoob_order_consolidation(
         ARRAY['{ORDER1}'::uuid, '{ORDER2}'::uuid], '{SELLER}', '{KEY}'
@@ -159,7 +181,7 @@ try:
           'order_consolidations_vendedor_id_fkey'
         )
         AND NOT convalidated;
-    """)) == "2"
+    """)) == "0"
     orphan_reference = sql(f"""
       BEGIN;
       SET LOCAL app.sicoob_consolidation_operation = 'create';
@@ -194,7 +216,7 @@ try:
     """, check=False)
     assert failed_create.returncode != 0 and "confirmados" in failed_create.stderr
     assert scalar(sql("SELECT count(*) FROM public.order_consolidations;")) == "1"
-    result["criacao"] = "vendedor de outra Singular recusado; dois pedidos vinculados atomicamente; repetição idempotente limitada ao mesmo ator e conteúdo; lote inválido sem órfãos"
+    result["criacao"] = "vendedor de outra Singular recusado; duas chamadas concorrentes e a repetição sequencial retornaram o mesmo lote; dois pedidos vinculados atomicamente; chave limitada ao mesmo ator e conteúdo; FKs validadas; lote inválido sem órfãos"
 
     sql(f"UPDATE public.postos_atendimento SET is_active=false WHERE id='{PA2}';")
     invalid_destination = actor_sql(
@@ -202,7 +224,7 @@ try:
         f"SELECT public.allocate_sicoob_consolidation_by_order_pa('{consolidation}');",
         check=False,
     )
-    assert invalid_destination.returncode != 0 and "ativos e com endereço completo" in invalid_destination.stderr
+    assert invalid_destination.returncode != 0 and "ativos, identificados e com endereço completo" in invalid_destination.stderr
     assert scalar(sql(f"SELECT count(*) FROM public.sicoob_delivery_destinations WHERE consolidation_id='{consolidation}';")) == "2"
     sql(f"UPDATE public.postos_atendimento SET is_active=true WHERE id='{PA2}';")
 
@@ -221,10 +243,22 @@ try:
         f"SELECT public.dispatch_sicoob_order_consolidation('{consolidation}');",
         check=False,
     )
-    assert invalid_dispatch.returncode != 0 and "permanecer ativos" in invalid_dispatch.stderr
+    assert invalid_dispatch.returncode != 0 and "atualize a distribuição" in invalid_dispatch.stderr
     assert scalar(sql(f"SELECT status FROM public.order_consolidations WHERE id='{consolidation}';")) == "pending_seller"
     assert scalar(sql(f"SELECT string_agg(status, ',' ORDER BY id) FROM public.sicoob_orders WHERE consolidation_id='{consolidation}';")) == "confirmed,confirmed"
-    sql(f"UPDATE public.postos_atendimento SET endereco='Rua Dois' WHERE id='{PA2}';")
+    sql(f"UPDATE public.postos_atendimento SET endereco='Rua Dois atualizada' WHERE id='{PA2}';")
+    stale_snapshot = actor_sql(
+        MANAGER,
+        f"SELECT public.dispatch_sicoob_order_consolidation('{consolidation}');",
+        check=False,
+    )
+    assert stale_snapshot.returncode != 0 and "atualize a distribuição" in stale_snapshot.stderr
+    actor_sql(MANAGER, f"SELECT public.allocate_sicoob_consolidation_by_order_pa('{consolidation}');")
+    assert scalar(sql(f"""
+      SELECT address_snapshot ->> 'endereco'
+      FROM public.sicoob_delivery_destinations
+      WHERE consolidation_id='{consolidation}' AND pa_id='{PA2}';
+    """)) == "Rua Dois atualizada"
     actor_sql(MANAGER, f"SELECT public.dispatch_sicoob_order_consolidation('{consolidation}');")
     assert scalar(sql(f"SELECT string_agg(status, ',' ORDER BY id) FROM public.sicoob_orders WHERE consolidation_id='{consolidation}';")) == "logistic,logistic"
     receiver_scope = scalar(rls_actor_sql(PA_RECEIVER, f"""
@@ -235,7 +269,7 @@ try:
     assert receiver_scope == "1|1|1", receiver_scope
     direct_change = sql(f"UPDATE public.order_consolidations SET total_value=1 WHERE id='{consolidation}';", check=False)
     assert direct_change.returncode != 0 and "fluxo transacional" in direct_change.stderr
-    result["distribuicao"] = "PA inativo e endereço incompleto recusados sem mutação parcial; itens distribuídos integralmente; despacho moveu lote e pedidos para logística; PA enxergou somente seu destino; escrita direta bloqueada"
+    result["distribuicao"] = "PA inativo, endereço incompleto e fotografia desatualizada recusados sem mutação parcial; atualização refez destinos; itens distribuídos integralmente; despacho moveu lote e pedidos para logística; PA enxergou somente seu destino; escrita direta bloqueada"
 
     allocation1 = scalar(sql(f"""
       SELECT a.id FROM public.sicoob_delivery_allocations a
@@ -269,8 +303,7 @@ try:
     result["recebimento"] = "retry idempotente não duplicou quantidades; parciais acumulados por destino; excesso e ator externo recusados; divergência manteve os pedidos em logística; avaria preservada em evento imutável"
 
     result["resultado"] = "aprovado"
-    evidence = ROOT / "docs/execucao/evidencias/consolidacao-sicoob.json"
-    evidence.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
+    EVIDENCE.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
     print(json.dumps(result, ensure_ascii=False))
 finally:
     command(["docker", "rm", "-f", CONTAINER], check=False)

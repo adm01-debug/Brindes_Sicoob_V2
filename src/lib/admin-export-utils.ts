@@ -1,8 +1,6 @@
 import * as XLSX from '@e965/xlsx';
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
-export async function exportToExcel(data: any[], filename: string) {
+export async function exportToExcel(data: Array<Record<string, unknown>>, filename: string) {
   const worksheet = XLSX.utils.json_to_sheet(data);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Dados");
@@ -16,12 +14,15 @@ export async function importFromExcel(file: File, table: string, mapping: Record
       try {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+        const firstSheetName = workbook.SheetNames[0];
+        if (!firstSheetName) throw new Error('A planilha não contém abas para importar.');
+        const firstSheet = workbook.Sheets[firstSheetName];
+        if (!firstSheet) throw new Error('Não foi possível ler a primeira aba da planilha.');
+        const jsonData = XLSX.utils.sheet_to_json<Record<string, unknown>>(firstSheet);
         
         // Map and validate
-        const mappedData = jsonData.map((row: any) => {
-          const item: any = {};
+        const mappedData = jsonData.map((row) => {
+          const item: Record<string, unknown> = {};
           for (const [fileKey, dbKey] of Object.entries(mapping)) {
             item[dbKey] = row[fileKey];
           }

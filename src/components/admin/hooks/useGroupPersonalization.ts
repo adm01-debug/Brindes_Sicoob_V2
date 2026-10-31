@@ -5,6 +5,10 @@ import { untypedFrom } from "@/lib/supabase-untyped";
 import { invokeExternalDb } from "@/lib/external-db";
 import { toast } from "sonner";
 
+const GROUP_COMPONENTS_KEY = "group-components";
+const GROUP_LOCATIONS_KEY = "group-locations";
+const GROUP_LOCATION_TECHNIQUES_KEY = "group-location-techniques";
+
 export type UpdateData = { id: string; [key: string]: string | number | boolean | null | undefined };
 
 export interface ProductGroup {
@@ -70,7 +74,7 @@ export function useGroupPersonalization() {
   });
 
   const { data: components, isLoading: componentsLoading, error: componentsError } = useQuery({
-    queryKey: ["group-components", selectedGroup],
+    queryKey: [GROUP_COMPONENTS_KEY, selectedGroup],
     queryFn: async () => {
       if (!selectedGroup) return [];
       const { data, error } = await untypedFrom<GroupComponent>("product_group_components")
@@ -84,7 +88,7 @@ export function useGroupPersonalization() {
   });
 
   const { data: locations, error: locationsError } = useQuery({
-    queryKey: ["group-locations", selectedGroup],
+    queryKey: [GROUP_LOCATIONS_KEY, selectedGroup],
     queryFn: async () => {
       if (!components?.length) return [];
       const componentIds = components.map((c) => c.id);
@@ -113,7 +117,7 @@ export function useGroupPersonalization() {
   });
 
   const { data: locationTechniques, error: locationTechniquesError } = useQuery({
-    queryKey: ["group-location-techniques", selectedGroup],
+    queryKey: [GROUP_LOCATION_TECHNIQUES_KEY, selectedGroup],
     queryFn: async () => {
       if (!locations?.length) return [];
       const locationIds = locations.map((l) => l.id);
@@ -133,7 +137,7 @@ export function useGroupPersonalization() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group-components"] });
+      queryClient.invalidateQueries({ queryKey: [GROUP_COMPONENTS_KEY] });
       toast.success("Componente adicionado!");
     },
     onError: () => toast.error("Erro ao adicionar componente"),
@@ -144,7 +148,7 @@ export function useGroupPersonalization() {
       const { error } = await untypedFrom<GroupComponent>("product_group_components").update(data).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["group-components"] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [GROUP_COMPONENTS_KEY] }),
     onError: () => toast.error("Erro ao atualizar componente"),
   });
 
@@ -154,7 +158,7 @@ export function useGroupPersonalization() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group-components"] });
+      queryClient.invalidateQueries({ queryKey: [GROUP_COMPONENTS_KEY] });
       toast.success("Componente removido!");
     },
     onError: () => toast.error("Erro ao remover componente"),
@@ -166,7 +170,7 @@ export function useGroupPersonalization() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group-locations"] });
+      queryClient.invalidateQueries({ queryKey: [GROUP_LOCATIONS_KEY] });
       toast.success("Localização adicionada!");
     },
     onError: () => toast.error("Erro ao adicionar localização"),
@@ -178,7 +182,7 @@ export function useGroupPersonalization() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group-locations"] });
+      queryClient.invalidateQueries({ queryKey: [GROUP_LOCATIONS_KEY] });
       toast.success("Localização atualizada!");
     },
     onError: () => toast.error("Erro ao atualizar localização"),
@@ -190,7 +194,7 @@ export function useGroupPersonalization() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group-locations"] });
+      queryClient.invalidateQueries({ queryKey: [GROUP_LOCATIONS_KEY] });
       toast.success("Localização removida!");
     },
     onError: () => toast.error("Erro ao remover localização"),
@@ -205,7 +209,7 @@ export function useGroupPersonalization() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group-location-techniques"] });
+      queryClient.invalidateQueries({ queryKey: [GROUP_LOCATION_TECHNIQUES_KEY] });
       toast.success("Técnica associada!");
     },
     onError: () => toast.error("Erro ao associar técnica"),
@@ -217,7 +221,7 @@ export function useGroupPersonalization() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group-location-techniques"] });
+      queryClient.invalidateQueries({ queryKey: [GROUP_LOCATION_TECHNIQUES_KEY] });
       toast.success("Técnica atualizada!");
     },
     onError: () => toast.error("Erro ao atualizar técnica"),
@@ -229,7 +233,7 @@ export function useGroupPersonalization() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["group-location-techniques"] });
+      queryClient.invalidateQueries({ queryKey: [GROUP_LOCATION_TECHNIQUES_KEY] });
       toast.success("Técnica removida!");
     },
     onError: () => toast.error("Erro ao remover técnica"),
@@ -251,7 +255,7 @@ export function useGroupPersonalization() {
         await untypedFrom<GroupComponent>("product_group_components").update({ sort_order: i }).eq("id", item.id);
       }
     }
-    queryClient.invalidateQueries({ queryKey: ["group-components"] });
+    queryClient.invalidateQueries({ queryKey: [GROUP_COMPONENTS_KEY] });
     toast.success("Ordem atualizada!");
   };
 

@@ -14,10 +14,7 @@ interface ProductRowProps {
 
 export function ProductRow({ product, isExpanded, onToggle }: ProductRowProps) {
   return (
-    <TableRow 
-      className={cn("cursor-pointer hover:bg-muted/50 transition-colors group", isExpanded && "bg-muted/30")}
-      onClick={onToggle}
-    >
+    <TableRow className={cn("cursor-pointer hover:bg-muted/50 transition-colors group", isExpanded && "bg-muted/30")} onClick={onToggle}>
       <TableCell>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" aria-label={isExpanded ? `Recolher ${product.productName}` : `Expandir ${product.productName}`} className="h-6 w-6">
@@ -25,9 +22,7 @@ export function ProductRow({ product, isExpanded, onToggle }: ProductRowProps) {
           </Button>
           <div className="flex flex-col">
             <span className="font-medium truncate max-w-[200px]">{product.productName}</span>
-            <span className="text-xs text-muted-foreground">
-              {product.productSku} • {product.totalVariants} {product.totalVariants === 1 ? 'variação' : 'variações'}
-            </span>
+            <span className="text-xs text-muted-foreground">{product.productSku} • {product.totalVariants} {product.totalVariants === 1 ? 'variação' : 'variações'}</span>
           </div>
         </div>
       </TableCell>

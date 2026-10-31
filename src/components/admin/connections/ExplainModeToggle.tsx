@@ -11,7 +11,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 export function ExplainModeToggle({ className }: { className?: string }) {
   const { enabled, toggle } = useExplainMode();
-
   return (
     <TooltipProvider delayDuration={200}>
       <Tooltip>

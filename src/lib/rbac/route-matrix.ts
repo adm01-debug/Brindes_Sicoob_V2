@@ -57,9 +57,12 @@ export const RBAC_ROUTES: RbacRouteEntry[] = [
   // ─── Autenticadas (qualquer papel logado) ────────────────────────────
   { path: "/", label: "Início / Catálogo", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "catalog" },
   { path: "/dashboard", label: "Dashboard pessoal", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "user" },
+  { path: "/ajuda", label: "Central de Ajuda", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "user" },
   { path: "/produtos", label: "Produtos", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "catalog" },
   { path: "/orcamentos", label: "Orçamentos", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "user" },
   { path: "/carrinhos", label: "Carrinhos", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "user" },
+  { path: "/carrinhos/novo", label: "Novo carrinho", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "user" },
+  { path: "/carrinhos/:cartId", label: "Detalhe do carrinho", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "user" },
   { path: "/favoritos", label: "Favoritos", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "user" },
   { path: "/comparar", label: "Comparador", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "user" },
   { path: "/colecoes", label: "Coleções", guard: "ProtectedRoute", role: "authenticated", mfaAal2: false, category: "user" },
@@ -72,6 +75,11 @@ export const RBAC_ROUTES: RbacRouteEntry[] = [
   { path: "/admin/usuarios", label: "Usuários", guard: "AdminRoute", role: "admin", mfaAal2: true, rlsHelper: "is_admin / has_role(_,'admin')", category: "admin" },
   { path: "/admin/usuarios/promover", label: "Promover usuário", guard: "AdminRoute", role: "admin", mfaAal2: true, rlsHelper: "is_admin", category: "admin", notes: "Step-up de segurança aplicado no diálogo." },
   { path: "/admin/cadastros", label: "Cadastros", guard: "AdminRoute", role: "admin", mfaAal2: true, category: "admin" },
+  { path: "/admin/newsletter", label: "Newsletter", guard: "AdminRoute", role: "admin", mfaAal2: true, category: "admin" },
+  { path: "/admin/campanhas", label: "Campanhas", guard: "AdminRoute", role: "admin", mfaAal2: true, category: "admin" },
+  { path: "/admin/singulares", label: "Singulares", guard: "AdminRoute", role: "admin", mfaAal2: true, category: "admin" },
+  { path: "/admin/pas", label: "Postos de Atendimento", guard: "AdminRoute", role: "admin", mfaAal2: true, category: "admin" },
+  { path: "/admin/cooperativas", label: "Cooperativas", guard: "AdminRoute", role: "admin", mfaAal2: true, category: "admin" },
   { path: "/admin/permissoes", label: "Permissões", guard: "AdminRoute", role: "admin", mfaAal2: true, rlsHelper: "is_admin", category: "admin" },
   { path: "/admin/roles", label: "Papéis", guard: "AdminRoute", role: "admin", mfaAal2: true, rlsHelper: "is_admin", category: "admin" },
   { path: "/admin/role-permissoes", label: "Permissões de Papéis", guard: "AdminRoute", role: "admin", mfaAal2: true, rlsHelper: "is_admin", category: "admin" },
@@ -88,6 +96,8 @@ export const RBAC_ROUTES: RbacRouteEntry[] = [
   { path: "/admin/seguranca-acesso", label: "Acesso & Bots", guard: "DevRoute", role: "dev", mfaAal2: true, rlsHelper: "can_view_audit_logs", category: "audit", notes: "ip_access_control, bot_detection_log, login_attempts." },
   { path: "/admin/seguranca/chaves", label: "Chaves & Secrets (MCP)", guard: "DevRoute", role: "dev", mfaAal2: true, rlsHelper: "is_supervisor_or_above + audit", category: "secrets" },
   { path: "/admin/seguranca/migracao-papeis", label: "Migração de papéis", guard: "DevRoute", role: "dev", mfaAal2: true, rlsHelper: "can_view_audit_logs", category: "audit" },
+  { path: "/admin/seguranca/rls", label: "Auditoria RLS", guard: "DevRoute", role: "dev", mfaAal2: true, rlsHelper: "can_view_audit_logs", category: "audit" },
+  { path: "/admin/qa/release-evidences", label: "Evidências QA", guard: "DevRoute", role: "dev", mfaAal2: true, category: "ops" },
   { path: "/admin/conexoes", label: "Conexões externas", guard: "DevRoute", role: "dev", mfaAal2: true, rlsHelper: "can_view_connections / can_manage_connections", category: "connections" },
   { path: "/admin/conexoes/status", label: "Status de conexões", guard: "DevRoute", role: "dev", mfaAal2: true, rlsHelper: "can_view_connections", category: "connections" },
   { path: "/admin/telemetria", label: "Telemetria", guard: "DevRoute", role: "dev", mfaAal2: true, rlsHelper: "can_view_telemetry", category: "telemetry" },
@@ -121,19 +131,25 @@ export function summarizeRoutes(routes: RbacRouteEntry[] = RBAC_ROUTES) {
  * e usar o guard DevRoute. Retorna lista de inconsistências.
  */
 export function findInconsistencies(routes: RbacRouteEntry[] = RBAC_ROUTES): string[] {
+  return routes.flatMap(routeInconsistencies);
+}
+
+function routeInconsistencies(route: RbacRouteEntry): string[] {
   const issues: string[] = [];
-  for (const r of routes) {
-    if (r.role === "dev" && r.guard !== "DevRoute") {
-      issues.push(`${r.path}: role=dev mas guard=${r.guard}`);
+  if (route.role === "dev") {
+    if (route.guard !== "DevRoute") {
+      issues.push(`${route.path}: role=dev mas guard=${route.guard}`);
     }
-    if (r.role === "dev" && !r.mfaAal2) {
-      issues.push(`${r.path}: role=dev sem MFA/AAL2`);
+    if (!route.mfaAal2) {
+      issues.push(`${route.path}: role=dev sem MFA/AAL2`);
     }
-    if (r.role === "admin" && !["AdminRoute", "DevRoute"].includes(r.guard)) {
-      issues.push(`${r.path}: role=admin mas guard=${r.guard}`);
+  }
+  if (route.role === "admin") {
+    if (!["AdminRoute", "DevRoute"].includes(route.guard)) {
+      issues.push(`${route.path}: role=admin mas guard=${route.guard}`);
     }
-    if (r.role === "admin" && !r.mfaAal2) {
-      issues.push(`${r.path}: role=admin sem MFA/AAL2`);
+    if (!route.mfaAal2) {
+      issues.push(`${route.path}: role=admin sem MFA/AAL2`);
     }
   }
   return issues;

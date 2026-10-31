@@ -6,7 +6,7 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { PrintAreaWithTechniques, TecnicaGravacao } from '@/types/gravacao';
+import type { AreaShape, PrintAreaWithTechniques, TecnicaGravacao } from '@/types/gravacao';
 import { logger } from "@/lib/logger";
 import {
   adaptPrintAreaTechniqueRows,
@@ -15,6 +15,82 @@ import {
   type PrintAreaTechniqueCanonical,
   type TabelaPrecoCanonical,
 } from '@/lib/personalization/adapters';
+
+const EXTERNAL_DB_BRIDGE_FUNCTION = 'external-db-bridge';
+
+function areaShape(shape: string | null | undefined): AreaShape {
+  const valid: AreaShape[] = ['rectangle', 'circle', 'oval', 'triangle', 'custom'];
+  return valid.includes(shape as AreaShape) ? shape as AreaShape : 'rectangle';
+}
+
+function areaTechnique(tech: TabelaPrecoCanonical | null | undefined) {
+  if (!tech) return [];
+  return [{
+    id: tech.id,
+    nome: tech.name ?? tech.nome ?? '',
+    codigo: tech.codigo_curto ?? tech.codigo_tabela ?? tech.code ?? tech.codigo ?? '',
+  }];
+}
+
+function areaLocation(area: PrintAreaTechniqueCanonical) {
+  return {
+    name: area.location_name ?? area.area_name ?? null,
+    code: area.location_code ?? area.area_code ?? '',
+  };
+}
+
+function areaDimensions(area: PrintAreaTechniqueCanonical) {
+  return {
+    max_width: area.max_width ?? area.largura_max ?? 0,
+    max_height: area.max_height ?? area.altura_max ?? 0,
+  };
+}
+
+function areaTechniqueId(area: PrintAreaTechniqueCanonical) {
+  return area.price_table_id ?? area.tabela_preco_id ?? null;
+}
+
+async function fetchPriceTechniques() {
+  const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE_FUNCTION, {
+    body: {
+      table: 'tabela_preco_gravacao_oficial',
+      operation: 'select',
+      filters: { ativo: true },
+      limit: 100,
+    },
+  });
+  if (error) throw new Error(error.message);
+  if (!data?.success) throw new Error(data?.error || 'Erro ao buscar técnicas');
+  return adaptTabelaPrecoRows(data.data?.records || []);
+}
+
+function toPrintArea(
+  area: PrintAreaTechniqueCanonical,
+  index: number,
+  techniquesById: Map<string, TabelaPrecoCanonical>,
+): PrintAreaWithTechniques {
+  const techniqueId = areaTechniqueId(area);
+  const technique = techniqueId ? techniquesById.get(techniqueId) : null;
+  const location = areaLocation(area);
+  const techniqueName = technique?.name ?? technique?.nome;
+  const displayName = location.name
+    ? (techniqueName ? `${location.name} — ${techniqueName}` : location.name)
+    : `Área ${index + 1}`;
+  return {
+    area_id: area.id,
+    area_code: location.code,
+    area_name: displayName,
+    component_name: null,
+    location_name: location.name,
+    ...areaDimensions(area),
+    unit: 'cm',
+    shape: areaShape(area.shape),
+    is_curved: area.is_curved ?? false,
+    is_primary: index === 0,
+    display_order: area.technique_order ?? index,
+    techniques: areaTechnique(technique),
+  };
+}
 
 // ============================================
 // FUNÇÕES AUXILIARES
@@ -25,7 +101,7 @@ import {
  */
 async function fetchProductPrintAreas(productId: string): Promise<PrintAreaTechniqueCanonical[]> {
   try {
-    const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+    const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE_FUNCTION, {
       body: {
         table: 'print_area_techniques',
         operation: 'select',
@@ -63,66 +139,11 @@ export function usePrintAreas(productId: string | null) {
       const areas = await fetchProductPrintAreas(productId);
       if (!areas.length) return [];
 
-      // Coletar tabela_preco_ids (lê tanto PT quanto EN graças ao adapter)
-      const priceTableIds = new Set<string>();
-      for (const area of areas) {
-        const id = area.price_table_id ?? area.tabela_preco_id;
-        if (id) priceTableIds.add(id);
-      }
-
       // Buscar técnicas ativas
-      const { data: techData, error: techError } = await supabase.functions.invoke('external-db-bridge', {
-        body: {
-          table: 'tabela_preco_gravacao_oficial',
-          operation: 'select',
-          filters: { ativo: true },
-          limit: 100,
-        },
-      });
-
-      if (techError) throw new Error(techError.message);
-      if (!techData?.success) throw new Error(techData?.error || 'Erro ao buscar técnicas');
-
-      const allTechs: TabelaPrecoCanonical[] = adaptTabelaPrecoRows(techData.data?.records || []);
+      const allTechs = await fetchPriceTechniques();
       const techById = new Map(allTechs.map(t => [t.id, t]));
 
-      return areas.map((area, idx) => {
-        const techId = area.price_table_id ?? area.tabela_preco_id ?? null;
-        const tech = techId ? techById.get(techId) : null;
-        const techniques: { id: string; nome: string; codigo: string }[] = [];
-
-        if (tech) {
-          const techNome = tech.name ?? tech.nome ?? '';
-          const techCodigo = tech.codigo_curto ?? tech.codigo_tabela ?? tech.code ?? tech.codigo ?? '';
-          techniques.push({
-            id: tech.id,
-            nome: techNome,
-            codigo: techCodigo,
-          });
-        }
-
-        const locationName = area.location_name ?? area.area_name ?? null;
-        const locationCode = area.location_code ?? area.area_code ?? '';
-        const techNomeForLabel = tech?.name ?? tech?.nome;
-
-        return {
-          area_id: area.id,
-          area_code: locationCode,
-          area_name: locationName
-            ? (techNomeForLabel ? `${locationName} — ${techNomeForLabel}` : locationName)
-            : `Área ${idx + 1}`,
-          component_name: null,
-          location_name: locationName,
-          max_width: area.max_width ?? area.largura_max ?? 0,
-          max_height: area.max_height ?? area.altura_max ?? 0,
-          unit: 'cm',
-          shape: area.shape || 'rectangle',
-          is_curved: area.is_curved ?? false,
-          is_primary: idx === 0,
-          display_order: area.technique_order ?? idx,
-          techniques,
-        };
-      });
+      return areas.map((area, index) => toPrintArea(area, index, techById));
     },
     enabled: !!productId,
     staleTime: 60000,
@@ -136,7 +157,7 @@ export function useTechniques() {
   return useQuery({
     queryKey: ['techniques-all'],
     queryFn: async (): Promise<TecnicaGravacao[]> => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+      const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE_FUNCTION, {
         body: {
           table: 'tecnica_gravacao',
           operation: 'select',
@@ -161,7 +182,7 @@ export function useTechniqueStats() {
   return useQuery({
     queryKey: ['technique-stats'],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+      const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE_FUNCTION, {
         body: {
           table: 'v_technique_stats',
           operation: 'select',
@@ -188,7 +209,7 @@ export function useHasPrintAreas(productId: string | null) {
       if (!productId) return false;
 
       try {
-        const { data, error } = await supabase.functions.invoke('external-db-bridge', {
+        const { data, error } = await supabase.functions.invoke(EXTERNAL_DB_BRIDGE_FUNCTION, {
           body: {
             table: 'print_area_techniques',
             operation: 'select',

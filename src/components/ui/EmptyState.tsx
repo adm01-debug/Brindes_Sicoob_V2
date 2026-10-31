@@ -29,6 +29,8 @@ type EmptyStateVariant =
   | "analytics"
   | "generic";
 
+const PRIMARY_TEXT = "text-primary";
+
 interface EmptyStateProps {
   variant?: EmptyStateVariant;
   title?: string;
@@ -55,13 +57,13 @@ const variants: Record<EmptyStateVariant, {
     icon: Package,
     title: "Nenhum produto encontrado",
     description: "Não encontramos produtos com os filtros selecionados. Tente ajustar sua busca.",
-    color: "text-primary"
+    color: PRIMARY_TEXT
   },
   quotes: {
     icon: FileText,
     title: "Nenhum orçamento ainda",
     description: "Comece criando seu primeiro orçamento para um cliente.",
-    color: "text-primary"
+    color: PRIMARY_TEXT
   },
   orders: {
     icon: ShoppingCart,
@@ -73,7 +75,7 @@ const variants: Record<EmptyStateVariant, {
     icon: Users,
     title: "Nenhum cliente cadastrado",
     description: "Adicione clientes para começar a criar orçamentos personalizados.",
-    color: "text-primary"
+    color: PRIMARY_TEXT
   },
   search: {
     icon: Search,
@@ -97,13 +99,13 @@ const variants: Record<EmptyStateVariant, {
     icon: ShoppingCart,
     title: "Carrinho vazio",
     description: "Adicione produtos ao carrinho para criar um orçamento.",
-    color: "text-primary"
+    color: PRIMARY_TEXT
   },
   notifications: {
     icon: Bell,
     title: "Nenhuma notificação",
     description: "Você está em dia! Novas notificações aparecerão aqui.",
-    color: "text-primary"
+    color: PRIMARY_TEXT
   },
   analytics: {
     icon: TrendingUp,
@@ -224,20 +226,21 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(func
 // Compact version for inline use
 export function InlineEmptyState({ 
   message, 
-  icon: Icon = Inbox,
+  icon = Inbox,
   className 
 }: { 
   message: string; 
   icon?: typeof Inbox;
   className?: string;
 }) {
+  const InlineIcon = icon;
   return (
     <div className={cn(
       "flex items-center gap-3 py-4 px-4 rounded-lg bg-muted/30",
       "text-muted-foreground text-sm",
       className
     )}>
-      <Icon className="h-5 w-5 flex-shrink-0" />
+      <InlineIcon className="h-5 w-5 flex-shrink-0" />
       <span>{message}</span>
     </div>
   );

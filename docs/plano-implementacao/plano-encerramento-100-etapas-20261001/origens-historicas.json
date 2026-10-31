@@ -1,0 +1,2369 @@
+[
+  {
+    "origem": "B01",
+    "destinos": [
+      "T060"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B02",
+    "destinos": [
+      "T060"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B03",
+    "destinos": [
+      "T093"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B04",
+    "destinos": [
+      "T058"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B05",
+    "destinos": [
+      "T095"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B06",
+    "destinos": [
+      "T034",
+      "T035",
+      "T038",
+      "T044"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B07",
+    "destinos": [
+      "T095"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B08",
+    "destinos": [
+      "T058"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B09",
+    "destinos": [
+      "T005",
+      "T018"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B10",
+    "destinos": [
+      "T052"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B11",
+    "destinos": [
+      "T093"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B12",
+    "destinos": [
+      "T083"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B13",
+    "destinos": [
+      "T059",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B14",
+    "destinos": [
+      "T061",
+      "T067"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B15",
+    "destinos": [
+      "T054"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B16",
+    "destinos": [
+      "T041",
+      "T044"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B17",
+    "destinos": [
+      "T059",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B18",
+    "destinos": [
+      "T061",
+      "T062",
+      "T067"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B19",
+    "destinos": [
+      "T062",
+      "T063"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B20",
+    "destinos": [
+      "T040",
+      "T092",
+      "T093"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B21",
+    "destinos": [
+      "T089"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B22",
+    "destinos": [
+      "T053"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B23",
+    "destinos": [
+      "T089"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B24",
+    "destinos": [
+      "T094"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B25",
+    "destinos": [
+      "T061",
+      "T067"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B26",
+    "destinos": [
+      "T065"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B27",
+    "destinos": [
+      "T068",
+      "T069"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B28",
+    "destinos": [
+      "T086"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B29",
+    "destinos": [
+      "T086"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B30",
+    "destinos": [
+      "T073"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B31",
+    "destinos": [
+      "T081",
+      "T082",
+      "T083",
+      "T084"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "B32",
+    "destinos": [
+      "T099"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C01",
+    "destinos": [
+      "T001"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C02",
+    "destinos": [
+      "T010"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C03",
+    "destinos": [
+      "T010"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C04",
+    "destinos": [
+      "T002"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C05",
+    "destinos": [
+      "T022"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C06",
+    "destinos": [
+      "T022"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C07",
+    "destinos": [
+      "T022"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C08",
+    "destinos": [
+      "T022"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C09",
+    "destinos": [
+      "T079"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C10",
+    "destinos": [
+      "T023"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C11",
+    "destinos": [
+      "T023"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C12",
+    "destinos": [
+      "T024"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C13",
+    "destinos": [
+      "T009"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C14",
+    "destinos": [
+      "T056",
+      "T087"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C15",
+    "destinos": [
+      "T058"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C16",
+    "destinos": [
+      "T023"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C17",
+    "destinos": [
+      "T025"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C18",
+    "destinos": [
+      "T049",
+      "T089"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C19",
+    "destinos": [
+      "T023"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C20",
+    "destinos": [
+      "T015",
+      "T020"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C21",
+    "destinos": [
+      "T004",
+      "T026"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C22",
+    "destinos": [
+      "T026"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C23",
+    "destinos": [
+      "T026"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C24",
+    "destinos": [
+      "T078"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C25",
+    "destinos": [
+      "T030",
+      "T097"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C26",
+    "destinos": [
+      "T089"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C27",
+    "destinos": [
+      "T026"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C28",
+    "destinos": [
+      "T026"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C29",
+    "destinos": [
+      "T015",
+      "T020"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C30",
+    "destinos": [
+      "T019"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C31",
+    "destinos": [
+      "T015",
+      "T020"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C32",
+    "destinos": [
+      "T008"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C33",
+    "destinos": [
+      "T023"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C34",
+    "destinos": [
+      "T001"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C35",
+    "destinos": [
+      "T003",
+      "T004",
+      "T100"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C36",
+    "destinos": [
+      "T003"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C37",
+    "destinos": [
+      "T004"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C38",
+    "destinos": [
+      "T004"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C39",
+    "destinos": [
+      "T009",
+      "T023"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C40",
+    "destinos": [
+      "T014",
+      "T031",
+      "T034",
+      "T096"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C41",
+    "destinos": [
+      "T096"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C42",
+    "destinos": [
+      "T001"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C43",
+    "destinos": [
+      "T022"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C44",
+    "destinos": [
+      "T098"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C45",
+    "destinos": [
+      "T097"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C46",
+    "destinos": [
+      "T004",
+      "T100"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C47",
+    "destinos": [
+      "T015",
+      "T020",
+      "T023"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C48",
+    "destinos": [
+      "T005"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C49",
+    "destinos": [
+      "T004",
+      "T026"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "C50",
+    "destinos": [
+      "T100"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E001",
+    "destinos": [
+      "T001",
+      "T005"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E002",
+    "destinos": [
+      "T007"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E003",
+    "destinos": [
+      "T001",
+      "T005",
+      "T058"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E004",
+    "destinos": [
+      "T091"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E005",
+    "destinos": [
+      "T004",
+      "T091"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E006",
+    "destinos": [
+      "T091"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E007",
+    "destinos": [
+      "T084"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E008",
+    "destinos": [
+      "T052",
+      "T057"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E009",
+    "destinos": [
+      "T089"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E010",
+    "destinos": [
+      "T003",
+      "T004",
+      "T100"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E011",
+    "destinos": [
+      "T021"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E012",
+    "destinos": [
+      "T031",
+      "T047"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E013",
+    "destinos": [
+      "T005",
+      "T024",
+      "T041",
+      "T043",
+      "T057",
+      "T074"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E014",
+    "destinos": [
+      "T005",
+      "T018"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E015",
+    "destinos": [
+      "T005",
+      "T018"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E016",
+    "destinos": [
+      "T051"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E017",
+    "destinos": [
+      "T037",
+      "T056",
+      "T087",
+      "T088"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E018",
+    "destinos": [
+      "T031",
+      "T032",
+      "T040",
+      "T052"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E019",
+    "destinos": [
+      "T014",
+      "T096"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E020",
+    "destinos": [
+      "T005",
+      "T008",
+      "T047",
+      "T049",
+      "T089"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E021",
+    "destinos": [
+      "T060",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E022",
+    "destinos": [
+      "T059",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E023",
+    "destinos": [
+      "T060"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E024",
+    "destinos": [
+      "T060"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E025",
+    "destinos": [
+      "T041",
+      "T060",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E026",
+    "destinos": [
+      "T044",
+      "T084",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E027",
+    "destinos": [
+      "T040",
+      "T044",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E028",
+    "destinos": [
+      "T044",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E029",
+    "destinos": [
+      "T046",
+      "T047",
+      "T048",
+      "T049",
+      "T050"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E030",
+    "destinos": [
+      "T091",
+      "T092",
+      "T093"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E031",
+    "destinos": [
+      "T071",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E032",
+    "destinos": [
+      "T093"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E033",
+    "destinos": [
+      "T071",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E034",
+    "destinos": [
+      "T071",
+      "T092",
+      "T093"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E035",
+    "destinos": [
+      "T059",
+      "T073",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E036",
+    "destinos": [
+      "T071",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E037",
+    "destinos": [
+      "T044",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E038",
+    "destinos": [
+      "T040",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E039",
+    "destinos": [
+      "T044",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E040",
+    "destinos": [
+      "T071",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E041",
+    "destinos": [
+      "T051",
+      "T060",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E042",
+    "destinos": [
+      "T060",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E043",
+    "destinos": [
+      "T060",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E044",
+    "destinos": [
+      "T060"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E045",
+    "destinos": [
+      "T060"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E046",
+    "destinos": [
+      "T059",
+      "T070",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E047",
+    "destinos": [
+      "T036",
+      "T072"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E048",
+    "destinos": [
+      "T040",
+      "T065",
+      "T086",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E049",
+    "destinos": [
+      "T054"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E050",
+    "destinos": [
+      "T061",
+      "T067"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E051",
+    "destinos": [
+      "T078",
+      "T086",
+      "T090"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E052",
+    "destinos": [
+      "T086",
+      "T090"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E053",
+    "destinos": [
+      "T071"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E054",
+    "destinos": [
+      "T036",
+      "T072",
+      "T073",
+      "T076",
+      "T080"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E055",
+    "destinos": [
+      "T062",
+      "T063",
+      "T064",
+      "T066",
+      "T070"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E056",
+    "destinos": [
+      "T081",
+      "T082",
+      "T083"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E057",
+    "destinos": [
+      "T035",
+      "T036",
+      "T037",
+      "T040",
+      "T041",
+      "T042",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E058",
+    "destinos": [
+      "T035",
+      "T036",
+      "T037",
+      "T040",
+      "T088",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E059",
+    "destinos": [
+      "T032",
+      "T033",
+      "T036",
+      "T038",
+      "T072"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E060",
+    "destinos": [
+      "T054",
+      "T055"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E061",
+    "destinos": [
+      "T038"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E062",
+    "destinos": [
+      "T056",
+      "T087",
+      "T088",
+      "T090"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E063",
+    "destinos": [
+      "T046",
+      "T047",
+      "T049",
+      "T050",
+      "T053"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E064",
+    "destinos": [
+      "T052",
+      "T053"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E065",
+    "destinos": [
+      "T073",
+      "T076",
+      "T080"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E066",
+    "destinos": [
+      "T055",
+      "T056",
+      "T085"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E067",
+    "destinos": [
+      "T053"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E068",
+    "destinos": [
+      "T032",
+      "T034",
+      "T040",
+      "T053",
+      "T089"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E069",
+    "destinos": [
+      "T085"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E070",
+    "destinos": [
+      "T081",
+      "T083",
+      "T090"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E071",
+    "destinos": [
+      "T076",
+      "T077"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E072",
+    "destinos": [
+      "T073"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E073",
+    "destinos": [
+      "T059",
+      "T070",
+      "T083"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E074",
+    "destinos": [
+      "T081",
+      "T083",
+      "T090"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E075",
+    "destinos": [
+      "T081",
+      "T084"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E076",
+    "destinos": [
+      "T083",
+      "T084",
+      "T090"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E077",
+    "destinos": [
+      "T085",
+      "T090"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E078",
+    "destinos": [
+      "T074",
+      "T075",
+      "T076",
+      "T077",
+      "T080",
+      "T088",
+      "T090"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E079",
+    "destinos": [
+      "T068",
+      "T069",
+      "T070"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E080",
+    "destinos": [
+      "T049",
+      "T085",
+      "T089"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E081",
+    "destinos": [
+      "T045",
+      "T093"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E082",
+    "destinos": [
+      "T045",
+      "T093"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E083",
+    "destinos": [
+      "T093"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E084",
+    "destinos": [
+      "T094"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E085",
+    "destinos": [
+      "T033",
+      "T042",
+      "T045"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E086",
+    "destinos": [
+      "T025",
+      "T030",
+      "T079",
+      "T095"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E087",
+    "destinos": [
+      "T042",
+      "T043",
+      "T047",
+      "T076",
+      "T095"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E088",
+    "destinos": [
+      "T091",
+      "T092",
+      "T093"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E089",
+    "destinos": [
+      "T081",
+      "T089"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E090",
+    "destinos": [
+      "T009",
+      "T030",
+      "T040",
+      "T045",
+      "T050",
+      "T090",
+      "T096",
+      "T097"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E091",
+    "destinos": [
+      "T096"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E092",
+    "destinos": [
+      "T091",
+      "T092",
+      "T093"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E093",
+    "destinos": [
+      "T098"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E094",
+    "destinos": [
+      "T098"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E095",
+    "destinos": [
+      "T098"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E096",
+    "destinos": [
+      "T099"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E097",
+    "destinos": [
+      "T099"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E098",
+    "destinos": [
+      "T099"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E099",
+    "destinos": [
+      "T005",
+      "T057",
+      "T099"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "E100",
+    "destinos": [
+      "T004",
+      "T100"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "F01",
+    "destinos": [
+      "T030",
+      "T049",
+      "T066",
+      "T068",
+      "T074",
+      "T075",
+      "T076",
+      "T080",
+      "T097"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "F02",
+    "destinos": [
+      "T023",
+      "T030",
+      "T031",
+      "T034",
+      "T039",
+      "T097"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "F03",
+    "destinos": [
+      "T010",
+      "T031",
+      "T032",
+      "T034",
+      "T039"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "F04",
+    "destinos": [
+      "T033",
+      "T035",
+      "T036",
+      "T037",
+      "T038",
+      "T040",
+      "T044",
+      "T072"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "F05",
+    "destinos": [
+      "T033",
+      "T038",
+      "T040"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "F06",
+    "destinos": [
+      "T031",
+      "T032",
+      "T034",
+      "T035",
+      "T040"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "F07",
+    "destinos": [
+      "T041",
+      "T042",
+      "T043",
+      "T044",
+      "T045"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "F08",
+    "destinos": [
+      "T081",
+      "T090"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "F09",
+    "destinos": [
+      "T046",
+      "T047",
+      "T050"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "F10",
+    "destinos": [
+      "T004",
+      "T011",
+      "T012",
+      "T019",
+      "T100"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "F11",
+    "destinos": [
+      "T001",
+      "T004",
+      "T005",
+      "T006",
+      "T021",
+      "T022",
+      "T023",
+      "T030",
+      "T097",
+      "T100"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "F12",
+    "destinos": [
+      "T063",
+      "T064",
+      "T065"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R01",
+    "destinos": [
+      "T004",
+      "T100"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R02",
+    "destinos": [
+      "T019"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R03",
+    "destinos": [
+      "T006"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R04",
+    "destinos": [
+      "T010"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R05",
+    "destinos": [
+      "T008"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R06",
+    "destinos": [
+      "T008",
+      "T022",
+      "T027",
+      "T028"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R07",
+    "destinos": [
+      "T006",
+      "T021"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R08",
+    "destinos": [
+      "T008",
+      "T022",
+      "T027",
+      "T028"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R09",
+    "destinos": [
+      "T022"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R10",
+    "destinos": [
+      "T022"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R11",
+    "destinos": [
+      "T022"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R12",
+    "destinos": [
+      "T022"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R13",
+    "destinos": [
+      "T022"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R14",
+    "destinos": [
+      "T005"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R15",
+    "destinos": [
+      "T005"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R16",
+    "destinos": [
+      "T005"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R17",
+    "destinos": [
+      "T005",
+      "T018"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R18",
+    "destinos": [
+      "T022"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R19",
+    "destinos": [
+      "T026"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R20",
+    "destinos": [
+      "T024"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R21",
+    "destinos": [
+      "T032",
+      "T034",
+      "T039"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R22",
+    "destinos": [
+      "T023"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R23",
+    "destinos": [
+      "T014",
+      "T096"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R24",
+    "destinos": [
+      "T025"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R25",
+    "destinos": [
+      "T076",
+      "T077"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R26",
+    "destinos": [
+      "T023"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R27",
+    "destinos": [
+      "T037",
+      "T038",
+      "T056",
+      "T087"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R28",
+    "destinos": [
+      "T024"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R29",
+    "destinos": [
+      "T024"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R30",
+    "destinos": [
+      "T024"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R31",
+    "destinos": [
+      "T025"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R32",
+    "destinos": [
+      "T025",
+      "T030"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R33",
+    "destinos": [
+      "T005",
+      "T018"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R34",
+    "destinos": [
+      "T007"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R35",
+    "destinos": [
+      "T030"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R36",
+    "destinos": [
+      "T030",
+      "T097"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R37",
+    "destinos": [
+      "T023"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R38",
+    "destinos": [
+      "T013"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R39",
+    "destinos": [
+      "T014",
+      "T096"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R40",
+    "destinos": [
+      "T030",
+      "T048",
+      "T079"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R41",
+    "destinos": [
+      "T030",
+      "T048",
+      "T079"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R42",
+    "destinos": [
+      "T030",
+      "T048",
+      "T076",
+      "T079"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R43",
+    "destinos": [
+      "T030",
+      "T047",
+      "T048",
+      "T049",
+      "T079"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R44",
+    "destinos": [
+      "T026"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R45",
+    "destinos": [
+      "T026"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R46",
+    "destinos": [
+      "T011",
+      "T012"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R47",
+    "destinos": [
+      "T022",
+      "T027",
+      "T028"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R48",
+    "destinos": [
+      "T048",
+      "T049",
+      "T089"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R49",
+    "destinos": [
+      "T008",
+      "T097"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "R50",
+    "destinos": [
+      "T004",
+      "T098",
+      "T100"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T01",
+    "destinos": [
+      "T002"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T02",
+    "destinos": [
+      "T002"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T03",
+    "destinos": [
+      "T005",
+      "T018"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T04",
+    "destinos": [
+      "T005",
+      "T018"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T05",
+    "destinos": [
+      "T010"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T06",
+    "destinos": [
+      "T010"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T07",
+    "destinos": [
+      "T019"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T08",
+    "destinos": [
+      "T015",
+      "T020"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T09",
+    "destinos": [
+      "T002"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T10",
+    "destinos": [
+      "T094"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T11",
+    "destinos": [
+      "T002"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T12",
+    "destinos": [
+      "T019"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T13",
+    "destinos": [
+      "T013"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T14",
+    "destinos": [
+      "T022",
+      "T027",
+      "T028"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T15",
+    "destinos": [
+      "T015",
+      "T020"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T16",
+    "destinos": [
+      "T013"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T17",
+    "destinos": [
+      "T013"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T18",
+    "destinos": [
+      "T013"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T19",
+    "destinos": [
+      "T013"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T20",
+    "destinos": [
+      "T013"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T21",
+    "destinos": [
+      "T013"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T22",
+    "destinos": [
+      "T023"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T23",
+    "destinos": [
+      "T013"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T24",
+    "destinos": [
+      "T025",
+      "T030"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T25",
+    "destinos": [
+      "T095"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T26",
+    "destinos": [
+      "T030",
+      "T048",
+      "T079"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T27",
+    "destinos": [
+      "T021",
+      "T025",
+      "T095"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T28",
+    "destinos": [
+      "T097"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T29",
+    "destinos": [
+      "T007"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T30",
+    "destinos": [
+      "T095"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T31",
+    "destinos": [
+      "T019"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T32",
+    "destinos": [
+      "T095"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T33",
+    "destinos": [
+      "T014",
+      "T025",
+      "T030",
+      "T074",
+      "T096"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T34",
+    "destinos": [
+      "T005",
+      "T014",
+      "T018",
+      "T096"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T35",
+    "destinos": [
+      "T014",
+      "T096"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T36",
+    "destinos": [
+      "T014",
+      "T096"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T37",
+    "destinos": [
+      "T015",
+      "T020"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T38",
+    "destinos": [
+      "T015",
+      "T020"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T39",
+    "destinos": [
+      "T014",
+      "T034",
+      "T096"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T40",
+    "destinos": [
+      "T014",
+      "T096"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T41",
+    "destinos": [
+      "T094"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T42",
+    "destinos": [
+      "T059",
+      "T092"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T43",
+    "destinos": [
+      "T013"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T44",
+    "destinos": [
+      "T094"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T45",
+    "destinos": [
+      "T094"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T46",
+    "destinos": [
+      "T097"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T47",
+    "destinos": [
+      "T007"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T48",
+    "destinos": [
+      "T049",
+      "T089"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T49",
+    "destinos": [
+      "T002"
+    ],
+    "conclusao_formal": false
+  },
+  {
+    "origem": "T50",
+    "destinos": [
+      "T013",
+      "T100"
+    ],
+    "conclusao_formal": false
+  }
+]

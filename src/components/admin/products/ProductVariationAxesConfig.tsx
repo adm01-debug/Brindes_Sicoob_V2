@@ -6,7 +6,8 @@
  * Gênero é um eixo especial que lê/escreve em products.gender (nível de produto).
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { isNullish } from "@/components/admin/utils/nullish";
+import { useState, useMemo, useCallback, type ElementType } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -34,7 +35,7 @@ import {
 interface AxisDefinition {
   key: string;
   label: string;
-  icon: React.ElementType;
+  icon: ElementType;
   description: string;
   field: string; // campo no product_variants
 }
@@ -120,7 +121,7 @@ export function ProductVariationAxesConfig({ productId, gender, onGenderChange }
       const values = new Set<string>();
       for (const v of variants) {
         const val = v[axis.field as keyof VariantRecord];
-        if (val != null && val !== '' && val !== false) {
+        if (!isNullish(val) && val !== '' && val !== false) {
           values.add(String(val));
         }
       }

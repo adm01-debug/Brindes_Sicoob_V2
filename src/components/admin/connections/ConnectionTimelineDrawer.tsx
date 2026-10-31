@@ -5,6 +5,7 @@
  * - Tabela paginada dos últimos 50 testes
  * - Top 5 erros agrupados
  */
+import { isNullish } from "@/components/admin/utils/nullish";
 import { useEffect, useMemo, useState } from "react";
 import {
   Sheet,
@@ -74,6 +75,30 @@ interface Props {
   hideTrigger?: boolean;
 }
 
+function useControllableOpen(openProp: boolean | undefined, onOpenChange: ((open: boolean) => void) | undefined) {
+  const [openInternal, setOpenInternal] = useState(false);
+  const isControlled = openProp !== undefined;
+  const open = isControlled ? openProp : openInternal;
+  const setOpen = (value: boolean) => {
+    if (!isControlled) setOpenInternal(value);
+    onOpenChange?.(value);
+  };
+  return { open, setOpen };
+}
+
+function TimelineTrigger({ hidden, variant, size }: {
+  hidden: boolean;
+  variant: NonNullable<Props['triggerVariant']>;
+  size: NonNullable<Props['triggerSize']>;
+}) {
+  if (hidden) return null;
+  return (
+    <SheetTrigger asChild>
+      <Button variant={variant} size={size}><History className="h-4 w-4 mr-1" /> Histórico</Button>
+    </SheetTrigger>
+  );
+}
+
 export function ConnectionTimelineDrawer({
   type,
   label,
@@ -83,13 +108,7 @@ export function ConnectionTimelineDrawer({
   onOpenChange,
   hideTrigger = false,
 }: Props) {
-  const [openInternal, setOpenInternal] = useState(false);
-  const isControlled = openProp !== undefined;
-  const open = isControlled ? openProp : openInternal;
-  const setOpen = (v: boolean) => {
-    if (!isControlled) setOpenInternal(v);
-    onOpenChange?.(v);
-  };
+  const { open, setOpen } = useControllableOpen(openProp, onOpenChange);
   const [rows, setRows] = useState<TestRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
@@ -162,8 +181,8 @@ export function ConnectionTimelineDrawer({
     const total = rows.length;
     const ok = rows.filter((r) => r.success).length;
     const avgLat =
-      rows.filter((r) => r.latency_ms != null).reduce((s, r) => s + (r.latency_ms ?? 0), 0) /
-      Math.max(1, rows.filter((r) => r.latency_ms != null).length);
+      rows.filter((r) => !isNullish(r.latency_ms)).reduce((s, r) => s + (r.latency_ms ?? 0), 0) /
+      Math.max(1, rows.filter((r) => !isNullish(r.latency_ms)).length);
     return {
       total,
       ok,
@@ -176,14 +195,8 @@ export function ConnectionTimelineDrawer({
   const pages = Math.ceil(rows.length / pageSize);
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      {!hideTrigger && (
-        <SheetTrigger asChild>
-          <Button variant={triggerVariant} size={triggerSize}>
-            <History className="h-4 w-4 mr-1" /> Histórico
-          </Button>
-        </SheetTrigger>
-      )}
+    (<Sheet open={open} onOpenChange={setOpen}>
+      <TimelineTrigger hidden={hideTrigger} variant={triggerVariant} size={triggerSize} />
       <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
@@ -343,7 +356,7 @@ export function ConnectionTimelineDrawer({
                             )}
                           </TableCell>
                           <TableCell className="text-xs font-mono">
-                            {r.latency_ms != null ? `${r.latency_ms}ms` : "—"}
+                            {!isNullish(r.latency_ms) ? `${r.latency_ms}ms` : "—"}
                           </TableCell>
                           <TableCell
                             className={cn(
@@ -387,6 +400,6 @@ export function ConnectionTimelineDrawer({
           )}
         </div>
       </SheetContent>
-    </Sheet>
+    </Sheet>)
   );
 }

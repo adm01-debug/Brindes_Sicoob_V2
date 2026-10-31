@@ -8,6 +8,7 @@ import { test, expect } from "./fixtures/test-base";
 import { loginAs, logout, Role as AuthRole } from "./helpers/auth";
 import { gotoAndSettle } from "./helpers/nav";
 import { PERMISSION_MATRIX, Role, resolvePath } from "./fixtures/permissions-matrix";
+import { Sel } from "./fixtures/selectors";
 
 test.describe("Matriz de Permissões Automatizada", () => {
 
@@ -38,28 +39,25 @@ test.describe("Matriz de Permissões Automatizada", () => {
 
           switch (route.expectedBehavior) {
             case "allow":
-              // Garante que não houve redirect para login ou home
-              await expect(page).not.toHaveURL(/\/login/);
-              if (actualPath !== "/") {
+              if (actualPath === "/login") {
+                await expect(page).toHaveURL(/\/login/);
+              } else {
+                await expect(page).not.toHaveURL(/\/login/);
+              }
+              if (actualPath !== "/" && actualPath !== "/login") {
                 await expect(page).toHaveURL(new RegExp(actualPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
               }
-              // Garante que não há overlay de acesso negado
-              await expect(page.locator("text=Acesso restrito")).not.toBeVisible();
+              await expect(page.locator(`${Sel.app.forbidden}, ${Sel.app.accessDenied}`)).not.toBeVisible();
               break;
 
             case "deny_login":
               await expect(page).toHaveURL(/\/login/);
               break;
 
-            case "deny_redirect_home":
-              // O ProtectedRoute redireciona para "/" quando o papel é insuficiente
-              await expect(page).toHaveURL(/\/($|#)/);
-              break;
-
             case "deny_403":
-              // O DevRoute exibe a página de erro 403 (DevAccessDeniedPage)
-              await expect(page.locator("text=Acesso restrito")).toBeVisible();
-              await expect(page.locator("text=403")).toBeVisible();
+              // AdminRoute redireciona para /403; DevRoute preserva a URL e
+              // exibe sua negação contextual. Ambos devem bloquear o conteúdo.
+              await expect(page.locator(`${Sel.app.forbidden}, ${Sel.app.accessDenied}`)).toBeVisible();
               break;
           }
         });

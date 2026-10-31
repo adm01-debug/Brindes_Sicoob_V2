@@ -2,6 +2,23 @@ import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { type UserWithRole, type AppRole } from "@/types/users";
 import { UserService } from "@/services/admin/UserService";
+import { getErrorMessage } from "@/components/admin/utils/errors";
+
+function hasRequiredCredentials(form: { email: string; password: string }): boolean {
+  return Boolean(form.email && form.password);
+}
+
+function isStrongPassword(password: string): boolean {
+  return /[A-Z]/.test(password)
+    && /[a-z]/.test(password)
+    && /[0-9]/.test(password)
+    && /[!@#$%^&*(),.?":{}|<>]/.test(password);
+}
+
+function isDuplicateUserMessage(message: string): boolean {
+  const normalized = message.toLowerCase();
+  return normalized.includes("already been registered") || normalized.includes("already exists");
+}
 
 export function useUserManagement() {
   const [users, setUsers] = useState<UserWithRole[]>([]);
@@ -41,7 +58,7 @@ export function useUserManagement() {
   };
 
   const handleCreateUser = async (form: { full_name: string; email: string; password: string; role: AppRole }) => {
-    if (!form.email || !form.password) {
+    if (!hasRequiredCredentials(form)) {
       toast.error("Email e senha são obrigatórios");
       return false;
     }
@@ -49,7 +66,7 @@ export function useUserManagement() {
       toast.error("A senha deve ter no mínimo 8 caracteres");
       return false;
     }
-    if (!/[A-Z]/.test(form.password) || !/[a-z]/.test(form.password) || !/[0-9]/.test(form.password) || !/[!@#$%^&*(),.?":{}|<>]/.test(form.password)) {
+    if (!isStrongPassword(form.password)) {
       toast.error("A senha deve conter maiúscula, minúscula, número e caractere especial");
       return false;
     }
@@ -58,9 +75,9 @@ export function useUserManagement() {
       toast.success("Usuário criado com sucesso");
       await fetchUsers();
       return true;
-    } catch (error: any) {
-      const msg = error.message || "";
-      if (msg.toLowerCase().includes("already been registered") || msg.toLowerCase().includes("already exists")) {
+    } catch (error: unknown) {
+      const msg = getErrorMessage(error, "");
+      if (isDuplicateUserMessage(msg)) {
         toast.error("Este e-mail já está cadastrado", { description: "Já existe um usuário com este e-mail no sistema." });
       } else {
         toast.error("Erro ao criar usuário", { description: msg });
@@ -75,9 +92,9 @@ export function useUserManagement() {
       toast.success("Usuário excluído com sucesso");
       setUsers((prev) => prev.filter((u) => u.user_id !== userId));
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error deleting user:", error);
-      toast.error("Erro ao excluir usuário", { description: error.message });
+      toast.error("Erro ao excluir usuário", { description: getErrorMessage(error) });
       return false;
     }
   };
@@ -94,9 +111,9 @@ export function useUserManagement() {
       );
       toast.success("Usuário atualizado com sucesso");
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating user:", error);
-      toast.error("Erro ao atualizar usuário", { description: error.message });
+      toast.error("Erro ao atualizar usuário", { description: getErrorMessage(error) });
       return false;
     }
   };
@@ -111,9 +128,9 @@ export function useUserManagement() {
       setUsers((prev) => prev.map((u) => u.user_id === userId ? { ...u, avatar_url: publicUrl } : u));
       toast.success("Foto atualizada com sucesso");
       return publicUrl;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error uploading avatar:", error);
-      toast.error("Erro ao enviar foto", { description: error.message });
+      toast.error("Erro ao enviar foto", { description: getErrorMessage(error) });
       return null;
     }
   };
@@ -143,4 +160,3 @@ export function useUserManagement() {
     handleRemoveAvatar,
   };
 }
-

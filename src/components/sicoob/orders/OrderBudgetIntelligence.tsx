@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, AlertCircle, CheckCircle2, Wallet, BarChart3 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Wallet, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface OrderBudgetIntelligenceProps {

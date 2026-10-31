@@ -7,15 +7,15 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Package, Scale, Box, DollarSign } from 'lucide-react';
-import { formatCurrency } from '@/lib/kit-builder';
+import { formatCurrency, type KitBox, type KitItem } from '@/lib/kit-builder';
 
 interface KitForComparison {
   id: string;
   name: string;
   kit_type: string;
   status: string;
-  box_data: any;
-  items_data: any[];
+  box_data: Partial<KitBox> | null;
+  items_data: KitItem[];
   kit_quantity: number;
   box_price: number;
   items_price: number;
@@ -35,12 +35,12 @@ export function KitComparisonDialog({ open, onOpenChange, kits }: KitComparisonD
 
   const getTotalWeight = (kit: KitForComparison): number => {
     const boxWeight = kit.box_data?.weight || 0;
-    const itemsWeight = (kit.items_data || []).reduce((sum: number, i: any) => sum + (i.weight || 0) * (i.quantity || 1), 0);
+    const itemsWeight = (kit.items_data || []).reduce((sum, item) => sum + (item.weight || 0) * (item.quantity || 1), 0);
     return boxWeight + itemsWeight;
   };
 
   const getItemCount = (kit: KitForComparison): number => {
-    return (kit.items_data || []).reduce((sum: number, i: any) => sum + (i.quantity || 1), 0);
+    return (kit.items_data || []).reduce((sum, item) => sum + (item.quantity || 1), 0);
   };
 
   const rows = [
@@ -58,7 +58,9 @@ export function KitComparisonDialog({ open, onOpenChange, kits }: KitComparisonD
   ];
 
   // Find the cheapest kit for highlighting
-  const cheapestId = kits.reduce((min, k) => Number(k.total_price) / Math.max(k.kit_quantity, 1) < Number(min.total_price) / Math.max(min.kit_quantity, 1) ? k : min, kits[0]!).id;
+  const firstKit = kits[0];
+  if (!firstKit) return null;
+  const cheapestId = kits.reduce((min, kit) => Number(kit.total_price) / Math.max(kit.kit_quantity, 1) < Number(min.total_price) / Math.max(min.kit_quantity, 1) ? kit : min, firstKit).id;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -114,7 +116,7 @@ export function KitComparisonDialog({ open, onOpenChange, kits }: KitComparisonD
             {kits.map(kit => (
               <div key={kit.id} className="space-y-1.5">
                 <p className="font-semibold text-sm mb-2">{kit.name}</p>
-                {(kit.items_data || []).map((item: any, idx: number) => (
+                {(kit.items_data || []).map((item, idx) => (
                   <div key={idx} className="flex items-center gap-2 text-xs bg-muted/50 rounded p-1.5">
                     {item.imageUrl && 
 <img src={item.imageUrl} alt="" className="w-6 h-6 rounded object-contain"  loading="lazy" />}

@@ -30,6 +30,123 @@ function formatMs(ms: number): string {
   return `${(ms / 1000).toFixed(2)} s`;
 }
 
+interface RequestIdsProps {
+  sample: BridgeCallSample;
+  copied: string | null;
+  copy: (label: string, value: string) => void;
+}
+
+function RequestIds({ sample, copied, copy }: RequestIdsProps) {
+  const requestId = sample.requestId;
+  const idsMatch = sample.requestId && sample.serverRequestId
+    ? sample.requestId === sample.serverRequestId
+    : null;
+
+  return (
+    <div className="space-y-2">
+      <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Request ID (client)</p>
+      <div className="flex items-center gap-2">
+        <code className="flex-1 font-mono text-xs bg-muted/50 px-3 py-2 rounded border border-border/50 break-all">
+          {requestId ?? '—'}
+        </code>
+        {requestId && (
+          <Button size="sm" variant="outline" onClick={() => copy('Request ID', requestId)}>
+            {copied === 'Request ID' ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+          </Button>
+        )}
+      </div>
+      {sample.serverRequestId && (
+        <>
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium pt-2">Request ID (server eco)</p>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 font-mono text-xs bg-muted/50 px-3 py-2 rounded border border-border/50 break-all">
+              {sample.serverRequestId}
+            </code>
+            {idsMatch === false && (
+              <Badge variant="destructive" className="text-[10px] flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" /> divergente
+              </Badge>
+            )}
+            {idsMatch === true && <Badge variant="secondary" className="text-[10px]">match ✓</Badge>}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function BridgeIdentification({ sample }: { sample: BridgeCallSample }) {
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <div>
+        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Bridge</p>
+        <p className="font-mono text-sm font-medium">{sample.bridge}</p>
+      </div>
+      <div>
+        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Operação</p>
+        <p className="font-mono text-sm font-medium">{sample.op}</p>
+      </div>
+      {sample.target && (
+        <div className="col-span-2">
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Alvo</p>
+          <p className="font-mono text-xs break-all">{sample.target}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CallMetrics({ sample }: { sample: BridgeCallSample }) {
+  return (
+    <div className="grid grid-cols-3 gap-3">
+      {[
+        ['Latência', formatMs(sample.durationMs)],
+        ['Enviado', formatBytes(sample.reqBytes)],
+        ['Recebido', formatBytes(sample.respBytes)],
+      ].map(([label, value]) => (
+        <div key={label} className="p-3 rounded-lg border border-border/50 bg-muted/30">
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
+          <p className="font-display text-lg font-bold tabular-nums">{value}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CallMetadata({ sample }: { sample: BridgeCallSample }) {
+  return (
+    <div className="text-xs text-muted-foreground">
+      <p><span className="font-medium text-foreground">Quando:</span>{' '}{new Date(sample.ts).toLocaleString('pt-BR')}</p>
+      {typeof sample.status === 'number' && (
+        <p><span className="font-medium text-foreground">Status HTTP:</span> {sample.status}</p>
+      )}
+    </div>
+  );
+}
+
+function BridgeCallContent({ sample, copied, copy }: RequestIdsProps) {
+  return (
+    <div className="mt-6 space-y-5">
+      <RequestIds sample={sample} copied={copied} copy={copy} />
+      <BridgeIdentification sample={sample} />
+      <CallMetrics sample={sample} />
+      <CallMetadata sample={sample} />
+      {sample.errorMessage && (
+        <div className="p-3 rounded-lg border border-destructive/30 bg-destructive/5">
+          <p className="text-[10px] uppercase tracking-wide text-destructive font-medium mb-1">Erro</p>
+          <p className="text-xs font-mono break-words text-destructive/90">{sample.errorMessage}</p>
+        </div>
+      )}
+      {sample.requestId && (
+        <div className="text-[11px] text-muted-foreground border-t border-border/50 pt-3">
+          💡 Para encontrar este request nos logs do edge function, busque por:
+          <code className="block mt-1 font-mono bg-muted/50 px-2 py-1 rounded">req_id={sample.requestId}</code>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function BridgeCallDetailDrawer({ sample, open, onOpenChange }: Props) {
   const [copied, setCopied] = useState<string | null>(null);
 
@@ -46,14 +163,10 @@ export function BridgeCallDetailDrawer({ sample, open, onOpenChange }: Props) {
 
   if (!sample) return null;
 
-  const idsMatch = sample.requestId && sample.serverRequestId
-    ? sample.requestId === sample.serverRequestId
-    : null;
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-        <SheetHeader>
+        {(<SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             Detalhes da chamada
             <Badge variant={sample.ok ? 'secondary' : 'destructive'} className="text-[10px]">
@@ -63,123 +176,9 @@ export function BridgeCallDetailDrawer({ sample, open, onOpenChange }: Props) {
           <SheetDescription>
             Use o request-id para correlacionar com os logs do edge function.
           </SheetDescription>
-        </SheetHeader>
+        </SheetHeader>)}
 
-        <div className="mt-6 space-y-5">
-          {/* Request ID — destaque */}
-          <div className="space-y-2">
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
-              Request ID (client)
-            </p>
-            <div className="flex items-center gap-2">
-              <code className="flex-1 font-mono text-xs bg-muted/50 px-3 py-2 rounded border border-border/50 break-all">
-                {sample.requestId ?? '—'}
-              </code>
-              {sample.requestId && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => copy('Request ID', sample.requestId!)}
-                >
-                  {copied === 'Request ID' ? (
-                    <Check className="h-3.5 w-3.5" />
-                  ) : (
-                    <Copy className="h-3.5 w-3.5" />
-                  )}
-                </Button>
-              )}
-            </div>
-            {sample.serverRequestId && (
-              <>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium pt-2">
-                  Request ID (server eco)
-                </p>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 font-mono text-xs bg-muted/50 px-3 py-2 rounded border border-border/50 break-all">
-                    {sample.serverRequestId}
-                  </code>
-                  {idsMatch === false && (
-                    <Badge variant="destructive" className="text-[10px] flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" /> divergente
-                    </Badge>
-                  )}
-                  {idsMatch === true && (
-                    <Badge variant="secondary" className="text-[10px]">match ✓</Badge>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Identificação */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Bridge</p>
-              <p className="font-mono text-sm font-medium">{sample.bridge}</p>
-            </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Operação</p>
-              <p className="font-mono text-sm font-medium">{sample.op}</p>
-            </div>
-            {sample.target && (
-              <div className="col-span-2">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Alvo</p>
-                <p className="font-mono text-xs break-all">{sample.target}</p>
-              </div>
-            )}
-          </div>
-
-          {/* Timing & sizes */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="p-3 rounded-lg border border-border/50 bg-muted/30">
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Latência</p>
-              <p className="font-display text-lg font-bold tabular-nums">{formatMs(sample.durationMs)}</p>
-            </div>
-            <div className="p-3 rounded-lg border border-border/50 bg-muted/30">
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Enviado</p>
-              <p className="font-display text-lg font-bold tabular-nums">{formatBytes(sample.reqBytes)}</p>
-            </div>
-            <div className="p-3 rounded-lg border border-border/50 bg-muted/30">
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Recebido</p>
-              <p className="font-display text-lg font-bold tabular-nums">{formatBytes(sample.respBytes)}</p>
-            </div>
-          </div>
-
-          {/* Timestamps */}
-          <div className="text-xs text-muted-foreground">
-            <p>
-              <span className="font-medium text-foreground">Quando:</span>{' '}
-              {new Date(sample.ts).toLocaleString('pt-BR')}
-            </p>
-            {typeof sample.status === 'number' && (
-              <p>
-                <span className="font-medium text-foreground">Status HTTP:</span> {sample.status}
-              </p>
-            )}
-          </div>
-
-          {/* Erro */}
-          {sample.errorMessage && (
-            <div className="p-3 rounded-lg border border-destructive/30 bg-destructive/5">
-              <p className="text-[10px] uppercase tracking-wide text-destructive font-medium mb-1">
-                Erro
-              </p>
-              <p className="text-xs font-mono break-words text-destructive/90">
-                {sample.errorMessage}
-              </p>
-            </div>
-          )}
-
-          {/* Hint p/ logs do servidor */}
-          {sample.requestId && (
-            <div className="text-[11px] text-muted-foreground border-t border-border/50 pt-3">
-              💡 Para encontrar este request nos logs do edge function, busque por:
-              <code className="block mt-1 font-mono bg-muted/50 px-2 py-1 rounded">
-                req_id={sample.requestId}
-              </code>
-            </div>
-          )}
-        </div>
+        <BridgeCallContent sample={sample} copied={copied} copy={copy} />
       </SheetContent>
     </Sheet>
   );

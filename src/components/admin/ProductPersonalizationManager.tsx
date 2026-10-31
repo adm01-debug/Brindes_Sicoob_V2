@@ -22,9 +22,27 @@ import { toast } from "sonner";
 import { InlineEditField } from "./InlineEditField";
 import { ImageUploadButton } from "./ImageUploadButton";
 import { SortableItem } from "./SortableItem";
-import { usePersonalizationData } from "./personalization/usePersonalizationData";
+import { usePersonalizationData, type ProductGroupMember } from "./personalization/usePersonalizationData";
 import { ProductSelector } from "./personalization/ProductSelector";
 import { GroupInheritance } from "./personalization/GroupInheritance";
+
+const optionalFloat = (value: string): number | undefined => value ? Number.parseFloat(value) : undefined;
+const numberText = (value: number | null): string => value?.toString() ?? "";
+const nullableFloat = (value: string): number | null => value ? Number.parseFloat(value) : null;
+
+function PersonalizationLoadError({ show }: { show: boolean }) {
+  if (!show) return null;
+  return <div role="alert" className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">Não foi possível carregar as regras de personalização. Verifique o acesso ao banco e tente novamente.</div>;
+}
+
+function ProductGroupInheritance({ selectedProduct, membership, onToggle }: { selectedProduct: string | null; membership: ProductGroupMember | null | undefined; onToggle: (params: { id: string; use_group_rules: boolean }) => void }) {
+  if (!selectedProduct || !membership) return null;
+  return <GroupInheritance productMembership={membership} toggleGroupRules={onToggle} />;
+}
+
+function showsCustomRules(selectedProduct: string | null, hasGroup: boolean, isUsingGroupRules: boolean): boolean {
+  return Boolean(selectedProduct && (!hasGroup || !isUsingGroupRules));
+}
 
 export function ProductPersonalizationManager() {
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
@@ -64,18 +82,19 @@ export function ProductPersonalizationManager() {
   const handleAddLocation = () => {
     if (!selectedComponentId || !newLocation.code || !newLocation.name) return;
     addLocationMutation.mutate(
-      { component_id: selectedComponentId, location_code: newLocation.code.toUpperCase(), location_name: newLocation.name, max_width_cm: newLocation.maxWidth ? parseFloat(newLocation.maxWidth) : undefined, max_height_cm: newLocation.maxHeight ? parseFloat(newLocation.maxHeight) : undefined, max_area_cm2: newLocation.maxArea ? parseFloat(newLocation.maxArea) : undefined },
+      { component_id: selectedComponentId, location_code: newLocation.code.toUpperCase(), location_name: newLocation.name, max_width_cm: optionalFloat(newLocation.maxWidth), max_height_cm: optionalFloat(newLocation.maxHeight), max_area_cm2: optionalFloat(newLocation.maxArea) },
       { onSuccess: () => { setIsAddLocationOpen(false); setNewLocation({ code: "", name: "", maxWidth: "", maxHeight: "", maxArea: "" }); } }
     );
   };
 
   const handleAddTechnique = () => {
     if (!selectedLocationId || !newTechniqueId) return;
-    const allLocs = components?.flatMap(c => getLocationsForComponent(c.id)) || [];
-    const loc = allLocs.find(l => l.id === selectedLocationId);
-    const comp = components?.find(c => c.id === loc?.component_id);
-    const tech = techniques?.find(t => t.id === newTechniqueId);
-    if (!loc || !comp || !tech) return;
+    const componentList = components ?? [];
+    const loc = componentList.flatMap((component) => getLocationsForComponent(component.id)).find((location) => location.id === selectedLocationId);
+    if (!loc) return;
+    const comp = componentList.find((component) => component.id === loc.component_id);
+    const tech = (techniques ?? []).find((technique) => technique.id === newTechniqueId);
+    if (!comp || !tech) return;
     addTechniqueMutation.mutate(
       { component_location_id: selectedLocationId, technique_id: newTechniqueId, composed_code: `${comp.component_code}-${loc.location_code}-${tech.code}`, max_colors: newMaxColors ? parseInt(newMaxColors) : undefined },
       { onSuccess: () => { setIsAddTechniqueOpen(false); setNewTechniqueId(""); setNewMaxColors(""); } }
@@ -89,7 +108,8 @@ export function ProductPersonalizationManager() {
     const newIndex = components.findIndex(c => c.id === over.id);
     const reordered = arrayMove(components, oldIndex, newIndex);
     for (let i = 0; i < reordered.length; i++) {
-      const item = reordered[i]!;
+      const item = reordered[i];
+      if (!item) continue;
       if (item.sort_order !== i) {
         await supabase.from("product_components").update({ sort_order: i }).eq("id", item.id);
       }
@@ -98,16 +118,12 @@ export function ProductPersonalizationManager() {
     toast.success("Ordem atualizada!");
   };
 
-  const isUsingGroupRules = productMembership?.use_group_rules ?? false;
+  const isUsingGroupRules = (productMembership?.use_group_rules ?? false);
   const hasGroup = !!productMembership;
 
   return (
     <div className="space-y-6">
-      {(locationsError || locationTechniquesError) && (
-        <div role="alert" className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-          Não foi possível carregar as regras de personalização. Verifique o acesso ao banco e tente novamente.
-        </div>
-      )}
+      <PersonalizationLoadError show={Boolean(locationsError || locationTechniquesError)} />
       <ProductSelector
         products={products}
         productsLoading={productsLoading}
@@ -117,14 +133,9 @@ export function ProductPersonalizationManager() {
         onSelectProduct={setSelectedProduct}
       />
 
-      {selectedProduct && hasGroup && productMembership && (
-        <GroupInheritance
-          productMembership={productMembership}
-          toggleGroupRules={(p) => toggleGroupRulesMutation.mutate(p)}
-        />
-      )}
+      <ProductGroupInheritance selectedProduct={selectedProduct} membership={productMembership} onToggle={(params) => toggleGroupRulesMutation.mutate(params)} />
 
-      {selectedProduct && (!hasGroup || !isUsingGroupRules) && (
+      {(showsCustomRules(selectedProduct, hasGroup, isUsingGroupRules) && (
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -214,9 +225,9 @@ export function ProductPersonalizationManager() {
                                       <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-3">
                                         <div><Label className="text-xs text-muted-foreground">Código</Label><InlineEditField value={location.location_code} onSave={v => updateLocationMutation.mutate({ id: location.id, location_code: v.toUpperCase() })} className="font-mono text-xs" /></div>
                                         <div><Label className="text-xs text-muted-foreground">Nome</Label><InlineEditField value={location.location_name} onSave={v => updateLocationMutation.mutate({ id: location.id, location_name: v })} /></div>
-                                        <div><Label className="text-xs text-muted-foreground">Larg. (cm)</Label><InlineEditField value={location.max_width_cm?.toString() || ""} onSave={v => updateLocationMutation.mutate({ id: location.id, max_width_cm: v ? parseFloat(v) : null })} type="number" placeholder="—" /></div>
-                                        <div><Label className="text-xs text-muted-foreground">Alt. (cm)</Label><InlineEditField value={location.max_height_cm?.toString() || ""} onSave={v => updateLocationMutation.mutate({ id: location.id, max_height_cm: v ? parseFloat(v) : null })} type="number" placeholder="—" /></div>
-                                        <div><Label className="text-xs text-muted-foreground">Área (cm²)</Label><InlineEditField value={location.max_area_cm2?.toString() || ""} onSave={v => updateLocationMutation.mutate({ id: location.id, max_area_cm2: v ? parseFloat(v) : null })} type="number" placeholder="—" /></div>
+                                        <div><Label className="text-xs text-muted-foreground">Larg. (cm)</Label><InlineEditField value={numberText(location.max_width_cm)} onSave={v => updateLocationMutation.mutate({ id: location.id, max_width_cm: nullableFloat(v) })} type="number" placeholder="—" /></div>
+                                        <div><Label className="text-xs text-muted-foreground">Alt. (cm)</Label><InlineEditField value={numberText(location.max_height_cm)} onSave={v => updateLocationMutation.mutate({ id: location.id, max_height_cm: nullableFloat(v) })} type="number" placeholder="—" /></div>
+                                        <div><Label className="text-xs text-muted-foreground">Área (cm²)</Label><InlineEditField value={numberText(location.max_area_cm2)} onSave={v => updateLocationMutation.mutate({ id: location.id, max_area_cm2: nullableFloat(v) })} type="number" placeholder="—" /></div>
                                         <div className="flex items-end gap-2">
                                           <div className="flex items-center gap-1"><Switch checked={location.is_active} onCheckedChange={c => updateLocationMutation.mutate({ id: location.id, is_active: c })} /><Label className="text-xs">Ativo</Label></div>
                                           <ImageUploadButton currentImageUrl={location.area_image_url} onUpload={url => updateLocationMutation.mutate({ id: location.id, area_image_url: url })} onRemove={() => updateLocationMutation.mutate({ id: location.id, area_image_url: null })} folder={`products/${selectedProduct}`} />
@@ -279,7 +290,7 @@ export function ProductPersonalizationManager() {
             )}
           </CardContent>
         </Card>
-      )}
+      ))}
     </div>
   );
 }

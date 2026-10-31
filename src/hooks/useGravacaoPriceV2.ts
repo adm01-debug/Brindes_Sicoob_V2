@@ -200,6 +200,52 @@ interface TabelaOficialRaw {
   ativo: boolean;
 }
 
+function areaDisplayDefaults(area: ProductPrintAreaRaw) {
+  return {
+    unit: area.unit || 'cm',
+    shape: area.shape || 'rectangle',
+    is_curved: area.is_curved ?? false,
+    is_primary: area.is_primary ?? false,
+    display_order: area.display_order ?? 0,
+  };
+}
+
+function techniqueDisplayDefaults(
+  area: ProductPrintAreaRaw,
+  technique: TabelaOficialRaw | undefined,
+) {
+  return {
+    max_colors: area.max_colors ?? technique?.max_cores ?? null,
+    technique_name: technique?.nome ?? null,
+    grupo_tecnica: technique?.grupo_tecnica ?? null,
+    cobra_por_cor: technique?.cobra_por_cor ?? false,
+  };
+}
+
+function toPrintArea(
+  area: ProductPrintAreaRaw,
+  techById: Map<string, TabelaOficialRaw>,
+): PrintAreaV2 {
+  const tech = area.customization_price_table_id
+    ? techById.get(area.customization_price_table_id)
+    : undefined;
+  return {
+    area_id: area.id,
+    area_code: area.area_code,
+    area_name: area.area_name,
+    component_name: area.component_name,
+    component_code: area.component_code,
+    location_name: area.location_name,
+    location_code: area.location_code,
+    max_width: area.max_width,
+    max_height: area.max_height,
+    ...areaDisplayDefaults(area),
+    ...techniqueDisplayDefaults(area, tech),
+    customization_price_table_id: area.customization_price_table_id,
+    allowed_technique_ids: area.allowed_technique_ids,
+  };
+}
+
 // ============================================
 // PASSO 1: Buscar áreas + técnicas via queries diretas
 // ============================================
@@ -240,34 +286,7 @@ async function buildPrintAreasFromTables(productId: string): Promise<PrintAreaV2
   }
 
   // 4. Montar PrintAreaV2 para cada área
-  return areasResult.records.map(area => {
-    const tech = area.customization_price_table_id
-      ? techById.get(area.customization_price_table_id)
-      : undefined;
-
-    return {
-      area_id: area.id,
-      area_code: area.area_code,
-      area_name: area.area_name,
-      component_name: area.component_name,
-      component_code: area.component_code,
-      location_name: area.location_name,
-      location_code: area.location_code,
-      max_width: area.max_width,
-      max_height: area.max_height,
-      unit: area.unit || 'cm',
-      shape: area.shape || 'rectangle',
-      is_curved: area.is_curved ?? false,
-      is_primary: area.is_primary ?? false,
-      display_order: area.display_order ?? 0,
-      max_colors: area.max_colors ?? tech?.max_cores ?? null,
-      customization_price_table_id: area.customization_price_table_id,
-      allowed_technique_ids: area.allowed_technique_ids,
-      technique_name: tech?.nome ?? null,
-      grupo_tecnica: tech?.grupo_tecnica ?? null,
-      cobra_por_cor: tech?.cobra_por_cor ?? false,
-    };
-  });
+  return areasResult.records.map((area) => toPrintArea(area, techById));
 }
 
 export function useProductPrintAreasV2(productId: string | null) {

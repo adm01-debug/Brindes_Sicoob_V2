@@ -1,0 +1,112 @@
+{
+  "numTotalTestSuites": 2,
+  "numPassedTestSuites": 2,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 6,
+  "numPassedTests": 6,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1790522976036,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Lacunas remanescentes após os PRs #32–#41"
+          ],
+          "fullName": "Lacunas remanescentes após os PRs #32–#41 não reencontra rascunho novo depois de desmontar e montar a página",
+          "status": "passed",
+          "title": "não reencontra rascunho novo depois de desmontar e montar a página",
+          "duration": 26.17123700000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lacunas remanescentes após os PRs #32–#41"
+          ],
+          "fullName": "Lacunas remanescentes após os PRs #32–#41 restaura orçamento existente sem receber identidade do ator",
+          "status": "passed",
+          "title": "restaura orçamento existente sem receber identidade do ator",
+          "duration": 3.2710850000000846,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lacunas remanescentes após os PRs #32–#41"
+          ],
+          "fullName": "Lacunas remanescentes após os PRs #32–#41 retorna logística vazia se a primeira página não contém pedido logístico, ignorando o total",
+          "status": "passed",
+          "title": "retorna logística vazia se a primeira página não contém pedido logístico, ignorando o total",
+          "duration": 0.7433730000000196,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lacunas remanescentes após os PRs #32–#41"
+          ],
+          "fullName": "Lacunas remanescentes após os PRs #32–#41 rejeita criação após gravar cabeçalho, sem compensação quando itens falham",
+          "status": "passed",
+          "title": "rejeita criação após gravar cabeçalho, sem compensação quando itens falham",
+          "duration": 0.8581560000000081,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lacunas remanescentes após os PRs #32–#41"
+          ],
+          "fullName": "Lacunas remanescentes após os PRs #32–#41 ignora erro REST de exclusão dos itens e retorna atualização como sucesso",
+          "status": "passed",
+          "title": "ignora erro REST de exclusão dos itens e retorna atualização como sucesso",
+          "duration": 0.9901740000000245,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Lacunas remanescentes após os PRs #32–#41"
+          ],
+          "fullName": "Lacunas remanescentes após os PRs #32–#41 resolve gravação de histórico mesmo quando a API retorna erro",
+          "status": "passed",
+          "title": "resolve gravação de histórico mesmo quando a API retorna erro",
+          "duration": 0.42429200000003675,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790522976748,
+      "endTime": 1790522976781.4243,
+      "status": "passed",
+      "message": "",
+      "name": "scripts/revisao/lacunas-20260927.cenarios.tsx"
+    }
+  ]
+}

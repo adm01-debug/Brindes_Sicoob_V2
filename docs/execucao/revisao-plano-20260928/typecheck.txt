@@ -1,0 +1,28 @@
+
+> @adm01-debug/gifts-store@2.0.0 typecheck:baseline
+> node scripts/check-typecheck-baseline.mjs
+
+
+🧮 Typecheck baseline gate
+   Total atual:   179
+   Total baseline: 166
+
+📉 8 arquivo(s) melhoraram — rode --update para travar o ganho.
+
+❌ 15 regressão(ões) de tipagem:
+
+   src/components/admin/MockupPromptManager.tsx: 2 erro(s) (baseline 0)
+   src/components/filters/FilterPresets.ts: 2 erro(s) (baseline 1)
+   src/components/mockup/approval/OffscreenLayoutCapture.tsx: 1 erro(s) (baseline 0)
+   src/hooks/admin/useAccessSecurity.ts: 3 erro(s) (baseline 0)
+   src/hooks/infrastructure/useExportJobs.ts: 1 erro(s) (baseline 0)
+   src/hooks/simulator/useWizardDrafts.ts: 2 erro(s) (baseline 1)
+   src/hooks/useFavoriteLists.ts: 1 erro(s) (baseline 0)
+   src/hooks/useKitTemplates.ts: 3 erro(s) (baseline 1)
+   src/hooks/useSellerCarts.ts: 2 erro(s) (baseline 0)
+   src/pages/admin/AdminVerbasPage.tsx: 1 erro(s) (baseline 0)
+   src/pages/admin/RLSAuditPage.tsx: 3 erro(s) (baseline 1)
+   src/pages/sicoob/reports/SicoobReportsPage.tsx: 1 erro(s) (baseline 0)
+   src/services/admin/UserService.ts: 2 erro(s) (baseline 1)
+   src/services/encryption.ts: 1 erro(s) (baseline 0)
+   src/services/sicoob/budgetService.ts: 1 erro(s) (baseline 0)

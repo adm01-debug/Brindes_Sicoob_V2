@@ -138,11 +138,7 @@ export function getHeroImage(images: ProductImageMeta[]): ProductImageMeta | nul
  * Prioridade: is_og_image → qualquer main → is_primary → primeira
  */
 export function getOgImage(images: ProductImageMeta[]): ProductImageMeta | null {
-  return images.find(i => i.is_og_image)
-    || images.find(i => i.image_type === 'main')
-    || images.find(i => i.is_primary)
-    || images[0]
-    || null;
+  return getCardImage(images);
 }
 
 // ============================================

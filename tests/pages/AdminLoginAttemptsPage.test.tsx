@@ -107,3 +107,4 @@ describe("AdminLoginAttemptsPage", () => {
     expect(screen.getByText("Histórico de Tentativas")).toBeInTheDocument();
   });
 });
+import React from 'react';

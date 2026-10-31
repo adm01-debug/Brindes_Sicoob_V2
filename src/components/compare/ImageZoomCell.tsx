@@ -1,7 +1,7 @@
 /**
  * ImageZoomCell (C6 #6) — Hover ativa lupa flutuante 2× sobre a imagem.
  */
-import { useRef, useState } from "react";
+import { type MouseEvent, useRef, useState } from "react";
 
 interface Props {
   src: string;
@@ -15,7 +15,7 @@ export function ImageZoomCell({ src, alt, className = "", zoomLevel = 2 }: Props
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const ref = useRef<HTMLDivElement>(null);
 
-  const onMove = (e: React.MouseEvent) => {
+  const onMove = (e: MouseEvent) => {
     if (!ref.current) return;
     const rect = ref.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;

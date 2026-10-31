@@ -1,6 +1,4 @@
 import { createClient } from '@supabase/supabase-js';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;

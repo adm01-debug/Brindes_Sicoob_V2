@@ -22,18 +22,20 @@ import { useOptimizationQueue, type OptimizationItem } from '@/pages/admin/telem
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+const MUTED_STATUS_CLASS = 'bg-muted text-muted-foreground';
+
 function StatusBadge({ status }: { status: OptimizationItem['status'] }) {
   const map: Record<OptimizationItem['status'], { label: string; cls: string; Icon: typeof Clock }> = {
-    pending: { label: 'Pendente', cls: 'bg-muted text-muted-foreground', Icon: Clock },
+    pending: { label: 'Pendente', cls: MUTED_STATUS_CLASS, Icon: Clock },
     running: { label: 'Executando', cls: 'bg-primary/15 text-primary border-primary/30', Icon: Loader2 },
     done: { label: 'Concluído', cls: 'bg-success/15 text-success border-success/30', Icon: CheckCircle2 },
     failed: { label: 'Falhou', cls: 'bg-destructive/15 text-destructive border-destructive/30', Icon: AlertTriangle },
     blocked: { label: 'Bloqueado', cls: 'bg-warning/15 text-warning border-warning/30', Icon: AlertTriangle },
-    skipped: { label: 'Ignorado', cls: 'bg-muted text-muted-foreground', Icon: Clock },
+    skipped: { label: 'Ignorado', cls: MUTED_STATUS_CLASS, Icon: Clock },
   };
   const { label, cls, Icon } = map[status] ?? {
     label: String(status ?? 'Desconhecido'),
-    cls: 'bg-muted text-muted-foreground',
+    cls: MUTED_STATUS_CLASS,
     Icon: Clock,
   };
   return (
@@ -42,6 +44,21 @@ function StatusBadge({ status }: { status: OptimizationItem['status'] }) {
       {label}
     </Badge>
   );
+}
+
+function RetryFailureBadge({ visible }: { visible: boolean }) {
+  if (!visible) return null;
+  return (
+    <Badge variant="outline" className="ml-1.5 h-4 px-1 text-[9px] bg-warning/10 border-warning/30 text-warning">
+      1
+    </Badge>
+  );
+}
+
+function retryButtonTitle(failure: { title: string; error?: string | null } | null): string {
+  return failure
+    ? `Re-enfileirar: ${failure.title} (${failure.error ?? 'erro'})`
+    : 'Sem falhas de 503/SUPABASE_EDGE_RUNTIME_ERROR para retry';
 }
 
 export function OptimizationQueuePanel() {
@@ -77,7 +94,7 @@ export function OptimizationQueuePanel() {
 
   return (
     <Card>
-      <CardHeader className="pb-3">
+      {(<CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <CardTitle className="text-base flex items-center gap-2">
             <ListChecks className="h-4 w-4" />
@@ -130,21 +147,13 @@ export function OptimizationQueuePanel() {
               className={cn(
                 lastBridgeFailure && 'border-warning/50 text-warning hover:bg-warning/10 hover:text-warning',
               )}
-              title={
-                lastBridgeFailure
-                  ? `Re-enfileirar: ${lastBridgeFailure.title} (${lastBridgeFailure.error ?? 'erro'})`
-                  : 'Sem falhas de 503/SUPABASE_EDGE_RUNTIME_ERROR para retry'
-              }
+              title={retryButtonTitle(lastBridgeFailure)}
             >
               {requeuing
                 ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
                 : <Zap className="h-3.5 w-3.5 mr-1.5" />}
               Retry 503
-              {lastBridgeFailure && (
-                <Badge variant="outline" className="ml-1.5 h-4 px-1 text-[9px] bg-warning/10 border-warning/30 text-warning">
-                  1
-                </Badge>
-              )}
+              <RetryFailureBadge visible={Boolean(lastBridgeFailure)} />
             </Button>
             {isExecuting ? (
               <Button variant="destructive" size="sm" onClick={stopAuto}>
@@ -162,8 +171,8 @@ export function OptimizationQueuePanel() {
             )}
           </div>
         </div>
-      </CardHeader>
-      <CardContent>
+      </CardHeader>)}
+      {(<CardContent>
         {isLoading ? (
           <p className="text-xs text-muted-foreground py-4">Carregando fila…</p>
         ) : items.length === 0 ? (
@@ -225,7 +234,7 @@ export function OptimizationQueuePanel() {
             </table>
           </div>
         )}
-      </CardContent>
+      </CardContent>)}
     </Card>
   );
 }

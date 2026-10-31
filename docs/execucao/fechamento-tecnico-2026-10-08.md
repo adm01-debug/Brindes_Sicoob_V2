@@ -1,0 +1,76 @@
+# Fechamento técnico do candidato de construção — 08/10/2026
+
+## Escopo e referência
+
+Este relatório registra a execução técnica do plano de encerramento sobre a branch `fix/hermes-h8111165-fechamento`, baseada no commit `a974d7732` de `main`. O candidato está no [PR #98](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/98).
+
+O ambiente continua sendo de construção. Este documento não declara lançamento, compra real, aceite de marca ou estabilidade de 30 dias. Esses marcos dependem de decisão e tráfego reais, conforme T098–T100 do plano.
+
+## Resultado do saneamento
+
+| Gate | Situação anterior auditada | Resultado do candidato |
+|---|---:|---:|
+| TypeScript | 153 diagnósticos | 0 diagnósticos |
+| ESLint | 3.247 erros | 0 erros e 872 avisos não bloqueantes |
+| Dependências | 7 alertas altos | 0 vulnerabilidades no `npm audit` |
+| Vitest | baseline parcial | 423 arquivos aprovados, 4 ignorados; 5.705 testes aprovados e 68 ignorados |
+| Build | não certificado no lote | builds normal e visual opt-in aprovados |
+| Deno | cobertura incompleta | 108 unidades verificadas |
+| Segredos no diff | não certificado | Gitleaks do diff sem achados |
+
+Os avisos remanescentes do ESLint são majoritariamente estruturais, como tamanho de funções, duplicações de strings e dependências de hooks. Eles permanecem visíveis, sem erro bloqueante e sem elevação de baseline.
+
+## Banco canônico
+
+Projeto conferido: `cfmzkthhgliqelozlmwu`.
+
+- As 18 migrations autorizadas constam no repositório e no ledger remoto, sem pendência.
+- `20261008123000_fix_favorite_items_upsert_conflict.sql` substituiu o índice funcional de favoritos por uma restrição `UNIQUE NULLS NOT DISTINCT (list_id, product_id, variant_id)`. O contrato passou a ser inferível pelo `ON CONFLICT` do PostgREST, inclusive quando a variante é nula; o índice legado foi removido e o aplicador allowlisted confere ambos os efeitos dentro e depois da transação.
+- O conteúdo de `20261008010000_fix_plpgsql_lint_failures.sql` foi restaurado byte a byte a partir do ledger canônico. A diferença encontrada era apenas espaço em branco dentro de corpos PL/pgSQL, mas alterava o hash do artefato aplicado; o arquivo e o ledger voltaram ao mesmo SHA-256 (`4783e63b...`).
+- `supabase db lint --linked --level error` concluiu sem erro de schema.
+- As 236 tabelas públicas auditadas têm RLS habilitada e ao menos uma policy.
+- A auditoria de ACL de funções `SECURITY DEFINER` não encontrou concessão proibida.
+- O reparo de RLS restringiu 245 policies que dependiam de helpers vedados a `anon`, incluindo 168 policies consolidadas, sem devolver `EXECUTE` anônimo às funções sensíveis. Quatro policies mínimas preservam somente leitura pública de banners, seções e categorias ativas e inscrição na newsletter.
+- A busca semântica passou a classificar todos os candidatos antes do `LIMIT`; a validação real encontrou o resultado exato na posição 25 com limite 1 e consulta em caixa mista.
+- O inventário vivo corresponde ao snapshot versionado: 222 relações, 237 funções e 14 buckets, sem diferença.
+- As tabelas críticas `profiles`, `quote_history`, `quotes` e `workspace_notifications` não apresentaram RLS desabilitada, policy ausente ou policy permissiva irrestrita.
+- As personas de QA foram conferidas no Auth e em `user_roles`: vendedor, gestor de compras, administrador, desenvolvedor e gerente de PA. Administrador e desenvolvedor possuem TOTP verificado e atingiram AAL2 em sessão real.
+
+O repositório conserva 491 diferenças históricas de ledger já catalogadas. Elas não foram reaplicadas em massa, pois nome de arquivo local não comprova ausência do efeito no banco. O gate usa baseline versionada e bloqueia diferença nova.
+
+## Edge Functions e contratos remotos
+
+- 100 funções remotas estão `ACTIVE`.
+- 106 fontes locais executáveis têm categoria explícita de autorização.
+- Seis fontes locais não são publicáveis por decisão registrada: `e2e-auth-test`, `error-monitor`, `generate-mockup-nanobanana`, `migrate-helper`, `qa-block-monitor` e `sicoob-seed-debug`.
+- Os contratos críticos de IA, aprovação, fila e health check responderam com os códigos esperados.
+- 108 unidades Deno passaram por verificação de tipos.
+- O catálogo externo permanece somente leitura e ganhou contrato compartilhado para normalização e validação de produto.
+
+## CI, E2E e reconciliação de PRs
+
+O workflow E2E agora roda em `ubuntu-latest`, exige credenciais em vez de concluir por skip e executa validações remotas de autorização/RLS. Disparos manuais com segredos são restritos à `main`, e os checkouts usam o SHA imutável do evento. As contas de vendedor, gestor, administrador e desenvolvedor usam segredos separados no GitHub; os papéis privilegiados também exigem seus segredos TOTP. O segredo de serviço fica restrito ao passo técnico que o consome.
+
+O Deno passou a usar o cache próprio sem reescrever `node_modules`; a sequência limpa `npm ci` → Vitest → `deno check` → Playwright preservou uma única instalação dos runtimes. A espera compartilhada do Playwright também passou a enviar timeouts no parâmetro correto da API e aguarda marcadores explícitos de carregamento lazy e de permissões. O step-up privilegiado espera somente o carregamento lazy, pois o marcador de permissões permanece ativo enquanto o usuário interage com o desafio MFA. Os shards autenticados são serializados porque compartilham contas TOTP canônicas, evitando invalidação concorrente das sessões. O clique do desafio MFA aguarda habilitação e usa a referência DOM atual. O resumo do smoke reprova uma execução totalmente bloqueada em vez de tratar todos os casos não executados como aprovação. O teste PWA de produção foi desacoplado da rota de demonstração e aprovou registro do Service Worker, cache do shell e fallback offline real. A QA visual aprovou login, demonstração e loja em 1440, 390 e 320 pixels, sem erro de página, violação WCAG ou overflow horizontal. As simulações PostgreSQL descartáveis repetem a criação do contêiner até três vezes e preservam a saída de erro para diagnóstico de falhas transitórias do Docker.
+
+A rodada hospedada seguinte expôs problemas adicionais que a execução local isolada não reproduzia: o bundle normal ainda empacotava um ativo da demonstração, 14 rotas tinham controles sem nome acessível, o painel excedia 390 px, `/admin/verbas` apontava para a página incorreta, favoritos falhavam com `42P10`, rotas administrativas reutilizavam a persona errada e a busca global podia avançar antes do carregamento lazy. O lote atual corrige esses contratos. Uma constante de compilação permite ao Rollup eliminar as rotas demonstrativas do build normal, preservando o build visual opt-in; os controles receberam nomes acessíveis; carrinho e ações rápidas respeitam a largura móvel; rotas privilegiadas restauram a sessão adequada com AAL2; e os fallbacks lazy passaram a integrar a espera determinística. A regressão foi redistribuída de dois para três shards serializados, mantendo cada lote abaixo do limite hospedado de 40 minutos sem criar desafios MFA concorrentes. A margem de LCP hospedado foi ajustada de 2.500 para 2.600 ms, mantendo o gate da categoria de performance em 0,90 e absorvendo a oscilação observada de aproximadamente 35 ms.
+
+O build normal foi inspecionado e não contém `produtos-grid-v1.webp` nem o marcador da página demonstrativa. O build com `VITE_ENABLE_DEMO_PAGES=true` contém ambos, comprovando que o isolamento não desativou a QA visual. O catálogo E2E documentado agora cobre 58 rotas.
+
+Os reparos úteis dos PRs #92, #93, #94 e #97 foram incorporados ao PR #98. Os PRs anteriores só devem ser encerrados como substituídos depois da aprovação dos gates do candidato consolidado.
+
+A revisão automatizada do PR também foi reconciliada: IDs de empresas do carrinho permanecem vinculados ao CRM; a listagem percorre todas as páginas; filtros não modificam o estado padrão; a relevância textual ignora caixa; fornecedores usam a coluna `active`; o inventário compara contratos estruturais; e os acessos públicos não inicializam helpers de autorização restritos. Quatro testes de regressão específicos foram adicionados. A suíte de cenários de arquitetura e segurança aprovou 224 de 224 casos.
+
+Na estação local, a suíte de navegador autenticada anterior concluiu 277 casos com 185 aprovados, 92 skips explícitos e zero falhas. Uma rodada consolidada posterior revelou contratos frágeis e um conflito real entre o tour de onboarding e o gate MFA; ambos foram corrigidos. A autenticação canônica criou e validou os quatro estados de sessão em sequência, incluindo administrador e desenvolvedor com TOTP/AAL2. A regressão genérica foi coberta em lotes equivalentes a 55 aprovações e um skip declarado; as suítes específicas de gestor e desenvolvedor cobriram 17/17 casos; e o smoke autenticado terminou com 38/38 aprovações. Os cenários incluem sessão, loja, catálogo, favoritos, orçamento, estoque, kits, mockups, BI, rotas públicas e RLS. A CI do PR #98 repete os gates obrigatórios em ambiente hospedado e isolado.
+
+## Limites honestos do encerramento
+
+O candidato fecha o passivo técnico mensurável deste lote e publica suas provas no GitHub. O plano integral não pode ser marcado como 100% concluído enquanto faltarem os marcos de negócio que o próprio plano exige:
+
+1. decisão formal de piloto e responsáveis operacionais;
+2. execução autorizada de operações reais em duas cooperativas;
+3. comprovação de recebimento e conciliação financeira;
+4. observação de 30 dias de estabilidade com tráfego real;
+5. aceite final independente de produto, marketing, compras, financeiro e operação.
+
+Esses itens não são defeitos de código nem podem ser simulados como produção. Até sua autorização, o estado correto permanece **candidato de construção tecnicamente validado**, condicionado ao CI do PR #98.

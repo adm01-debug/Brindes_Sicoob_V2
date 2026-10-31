@@ -3,11 +3,13 @@
  */
 import { Bot, Zap, Search, FileText } from "lucide-react";
 
+const PRIMARY_BACKGROUND = "bg-primary/10";
+
 export const STEP_TYPES = [
-  { value: "agent", label: "Agente IA", icon: Bot, color: "text-primary", bg: "bg-primary/10", border: "border-primary/30" },
+  { value: "agent", label: "Agente IA", icon: Bot, color: "text-primary", bg: PRIMARY_BACKGROUND, border: "border-primary/30" },
   { value: "tool", label: "Ferramenta", icon: Zap, color: "text-warning", bg: "bg-warning/10", border: "border-warning/30" },
-  { value: "condition", label: "Condição", icon: Search, color: "text-primary/80", bg: "bg-primary/10", border: "border-primary/25" },
-  { value: "output", label: "Saída", icon: FileText, color: "text-primary", bg: "bg-primary/10", border: "border-primary/30" },
+  { value: "condition", label: "Condição", icon: Search, color: "text-primary/80", bg: PRIMARY_BACKGROUND, border: "border-primary/25" },
+  { value: "output", label: "Saída", icon: FileText, color: "text-primary", bg: PRIMARY_BACKGROUND, border: "border-primary/30" },
 ];
 
 export const AI_MODELS = [

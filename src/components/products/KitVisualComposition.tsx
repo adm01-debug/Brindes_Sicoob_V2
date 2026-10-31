@@ -38,7 +38,7 @@ export function KitVisualComposition({ items, className }: KitVisualCompositionP
           </div>
           <div className="p-2 text-xs">
             <p className="font-medium truncate">{item.name}</p>
-            {item.quantity != null && <p className="text-muted-foreground">x{item.quantity}</p>}
+            {item.quantity !== null && item.quantity !== undefined && <p className="text-muted-foreground">x{item.quantity}</p>}
           </div>
         </Card>
       ))}

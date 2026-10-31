@@ -1,13 +1,28 @@
-import { useState, useEffect, useCallback } from 'react';
-import { DndContext, type DragEndEvent, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
+import {
+  DndContext,
+  type DragEndEvent,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
 import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, LayoutDashboard, TrendingUp, Users, ShoppingCart, Package, FileText, Target, Eye, EyeOff, RotateCcw, Save } from 'lucide-react';
+import {
+  GripVertical,
+  LayoutDashboard,
+  ShoppingCart,
+  FileText,
+  Target,
+  RotateCcw,
+  Save,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 // import { MainLayout } from "@/components/layout/MainLayout";
-import { PageSEO } from "@/components/seo/PageSEO";
+import { PageSEO } from '@/components/seo/PageSEO';
 import { UpcomingDatesWidget } from '@/components/dashboard/UpcomingDatesWidget';
 import { QuickActionsPanel } from '@/components/dashboard/QuickActionsPanel';
 import { RecentKitsWidget } from '@/components/dashboard/RecentKitsWidget';
@@ -21,6 +36,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCurrentOrgId } from '@/hooks/useCurrentOrgId';
 import { useSalesScope } from '@/lib/auth/visibility-scope';
+import { applySellerScope } from '@/lib/auth/apply-seller-scope';
 import { toast } from 'sonner';
 
 interface WidgetConfig {
@@ -45,9 +61,71 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
 ];
 
 const LAYOUT_KEY = 'dashboard_layout';
+const STATIC_WIDGET_RENDERERS: Record<string, () => ReactNode> = {
+  'quick-actions': () => <QuickActionsPanel />,
+  'upcoming-dates': () => <UpcomingDatesWidget variant="compact" daysAhead={60} maxItems={6} />,
+  'recent-kits': () => <RecentKitsWidget />,
+  'my-quotes': () => <MyRecentQuotesWidget />,
+  'my-orders': () => <MyPendingOrdersWidget />,
+  'my-discounts': () => <MyDiscountRequestsWidget />,
+  'my-clients': () => <MyClientsWidget />,
+  'scheduled-reports': () => <ScheduledReportsManager />,
+};
 
-function SortableWidget({ id, children, title }: { id: string; children: React.ReactNode; title: string }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+interface DashboardMetrics {
+  quotes: number;
+  orders: number;
+  quotesDraft: number;
+}
+
+function renderMetricWidget(widgetId: string, metrics: DashboardMetrics) {
+  if (widgetId === 'vendas')
+    return (
+      <MetricCard
+        title="Total de Orçamentos"
+        icon={<FileText className="h-4 w-4 text-primary" />}
+        value={metrics.quotes.toLocaleString('pt-BR')}
+        subtitle={`${metrics.quotesDraft} rascunhos`}
+      />
+    );
+  if (widgetId === 'orcamentos')
+    return (
+      <MetricCard
+        title="Rascunhos"
+        icon={<Target className="h-4 w-4 text-warning" />}
+        value={metrics.quotesDraft.toLocaleString('pt-BR')}
+        subtitle="aguardando envio"
+      />
+    );
+  if (widgetId === 'pedidos')
+    return (
+      <MetricCard
+        title="Pedidos Pendentes"
+        icon={<ShoppingCart className="h-4 w-4 text-orange" />}
+        value={metrics.orders.toLocaleString('pt-BR')}
+        subtitle="aguardando processamento"
+      />
+    );
+  return null;
+}
+
+function renderWidgetContent(widgetId: string, metrics: DashboardMetrics) {
+  const renderStaticWidget = STATIC_WIDGET_RENDERERS[widgetId];
+  return renderStaticWidget ? renderStaticWidget() : renderMetricWidget(widgetId, metrics);
+}
+
+function SortableWidget({
+  id,
+  children,
+  title,
+}: {
+  id: string;
+  children: ReactNode;
+  title: string;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -57,10 +135,18 @@ function SortableWidget({ id, children, title }: { id: string; children: React.R
   };
 
   return (
-    <div ref={setNodeRef} style={style}>
-      <Card className={`relative group ${isDragging ? 'ring-2 ring-primary shadow-lg' : ''}`}>
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-          <Button variant="ghost" size="icon" className="h-6 w-6 cursor-grab active:cursor-grabbing" {...attributes} {...listeners} aria-label="Mover"><GripVertical className="h-3.5 w-3.5 text-muted-foreground" />
+    <div ref={setNodeRef} style={style} aria-label={title}>
+      <Card className={`group relative ${isDragging ? 'shadow-lg ring-2 ring-primary' : ''}`}>
+        <div className="absolute right-2 top-2 z-10 opacity-0 transition-opacity group-hover:opacity-100">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 cursor-grab active:cursor-grabbing"
+            {...attributes}
+            {...listeners}
+            aria-label="Mover"
+          >
+            <GripVertical className="h-3.5 w-3.5 text-muted-foreground" />
           </Button>
         </div>
         {children}
@@ -69,18 +155,28 @@ function SortableWidget({ id, children, title }: { id: string; children: React.R
   );
 }
 
-function MetricCard({ title, icon, value, subtitle }: { title: string; icon: React.ReactNode; value: string; subtitle?: string }) {
+function MetricCard({
+  title,
+  icon,
+  value,
+  subtitle,
+}: {
+  title: string;
+  icon: ReactNode;
+  value: string;
+  subtitle?: string;
+}) {
   return (
     <>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-sm font-medium">
           {icon}
           {title}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
-        {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
+        {subtitle && <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>}
       </CardContent>
     </>
   );
@@ -100,34 +196,30 @@ export function CustomizableDashboard() {
       try {
         const parsed = JSON.parse(saved) as WidgetConfig[];
         // Merge with defaults (in case new widgets were added)
-        const merged = DEFAULT_WIDGETS.map(dw => {
-          const savedWidget = parsed.find(p => p.id === dw.id);
-          return savedWidget ? { ...dw, visible: savedWidget.visible, order: savedWidget.order } : dw;
+        const merged = DEFAULT_WIDGETS.map((dw) => {
+          const savedWidget = parsed.find((p) => p.id === dw.id);
+          return savedWidget
+            ? { ...dw, visible: savedWidget.visible, order: savedWidget.order }
+            : dw;
         }).sort((a, b) => a.order - b.order);
         setWidgetOrder(merged);
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
   }, []);
 
   const orgId = useCurrentOrgId();
-  
+
   const salesScope = useSalesScope();
 
   // Fetch real metrics — RLS faz o isolamento; só filtramos manualmente quando o escopo é "self".
   useEffect(() => {
     if (!user) return;
     const fetchMetrics = async () => {
-      // rls-allow: respeita can_view_all_sales; RLS filtra por seller
-      let quotesQ = supabase.from('quotes').select('id', { count: 'exact', head: true });
-      // rls-allow: respeita can_view_all_sales; RLS filtra por seller
-      let ordersQ = supabase.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'pending');
-      // rls-allow: respeita can_view_all_sales; RLS filtra por seller
-      let draftQ = supabase.from('quotes').select('id', { count: 'exact', head: true }).eq('status', 'draft');
-      if (salesScope === 'self') {
-        quotesQ = quotesQ.eq('seller_id', user.id);
-        ordersQ = ordersQ.eq('seller_id', user.id);
-        draftQ = draftQ.eq('seller_id', user.id);
-      }
+      let quotesQ = applySellerScope(supabase.from('quotes').select('id', { count: 'exact', head: true }), { scope: salesScope, userId: user.id });
+      let ordersQ = applySellerScope(supabase.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'pending'), { scope: salesScope, userId: user.id });
+      let draftQ = applySellerScope(supabase.from('quotes').select('id', { count: 'exact', head: true }).eq('status', 'draft'), { scope: salesScope, userId: user.id });
       if (orgId) {
         quotesQ = quotesQ.eq('organization_id', orgId);
         ordersQ = ordersQ.eq('organization_id', orgId);
@@ -141,7 +233,7 @@ export function CustomizableDashboard() {
       });
     };
     fetchMetrics();
-  }, [user, orgId]);
+  }, [user, orgId, salesScope]);
 
   const saveLayout = useCallback((configs: WidgetConfig[]) => {
     localStorage.setItem(LAYOUT_KEY, JSON.stringify(configs));
@@ -151,9 +243,12 @@ export function CustomizableDashboard() {
     const { active, over } = event;
     if (over && active.id !== over.id) {
       setWidgetOrder((items) => {
-        const oldIndex = items.findIndex(i => i.id === active.id);
-        const newIndex = items.findIndex(i => i.id === over.id);
-        const newItems = arrayMove(items, oldIndex, newIndex).map((item, idx) => ({ ...item, order: idx }));
+        const oldIndex = items.findIndex((i) => i.id === active.id);
+        const newIndex = items.findIndex((i) => i.id === over.id);
+        const newItems = arrayMove(items, oldIndex, newIndex).map((item, idx) => ({
+          ...item,
+          order: idx,
+        }));
         saveLayout(newItems);
         return newItems;
       });
@@ -161,8 +256,8 @@ export function CustomizableDashboard() {
   };
 
   const toggleWidget = (widgetId: string) => {
-    setWidgetOrder(prev => {
-      const updated = prev.map(w => w.id === widgetId ? { ...w, visible: !w.visible } : w);
+    setWidgetOrder((prev) => {
+      const updated = prev.map((w) => (w.id === widgetId ? { ...w, visible: !w.visible } : w));
       saveLayout(updated);
       return updated;
     });
@@ -174,73 +269,37 @@ export function CustomizableDashboard() {
     toast.success('Layout restaurado para o padrão');
   };
 
-  const visibleWidgets = widgetOrder.filter(w => w.visible);
-
-  const renderWidgetContent = (widgetId: string) => {
-    switch (widgetId) {
-      case 'quick-actions':
-        return <QuickActionsPanel />;
-      case 'upcoming-dates':
-        return <UpcomingDatesWidget variant="compact" daysAhead={60} maxItems={6} />;
-      case 'recent-kits':
-        return <RecentKitsWidget />;
-      case 'my-quotes':
-        return <MyRecentQuotesWidget />;
-      case 'my-orders':
-        return <MyPendingOrdersWidget />;
-      case 'my-discounts':
-        return <MyDiscountRequestsWidget />;
-      case 'my-clients':
-        return <MyClientsWidget />;
-      case 'scheduled-reports':
-        return <ScheduledReportsManager />;
-      case 'vendas':
-        return (
-          <MetricCard
-            title="Total de Orçamentos"
-            icon={<FileText className="h-4 w-4 text-primary" />}
-            value={metrics.quotes.toLocaleString('pt-BR')}
-            subtitle={`${metrics.quotesDraft} rascunhos`}
-          />
-        );
-      case 'orcamentos':
-        return (
-          <MetricCard
-            title="Rascunhos"
-            icon={<Target className="h-4 w-4 text-warning" />}
-            value={metrics.quotesDraft.toLocaleString('pt-BR')}
-            subtitle="aguardando envio"
-          />
-        );
-      case 'pedidos':
-        return (
-          <MetricCard
-            title="Pedidos Pendentes"
-            icon={<ShoppingCart className="h-4 w-4 text-orange" />}
-            value={metrics.orders.toLocaleString('pt-BR')}
-            subtitle="aguardando processamento"
-          />
-        );
-      default:
-        return null;
-    }
-  };
+  const visibleWidgets = widgetOrder.filter((w) => w.visible);
 
   // Widgets that render as full-width vs metric cards
-  const fullWidthIds = new Set(['quick-actions', 'upcoming-dates', 'recent-kits', 'my-quotes', 'my-orders', 'my-discounts']);
+  const fullWidthIds = new Set([
+    'quick-actions',
+    'upcoming-dates',
+    'recent-kits',
+    'my-quotes',
+    'my-orders',
+    'my-discounts',
+  ]);
 
   return (
     <>
-      <PageSEO title="Dashboard" description="Painel personalizado com métricas, ações rápidas e widgets." path="/dashboard" />
-      <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in">
-        <div className="flex items-center justify-between flex-wrap gap-2">
+      <PageSEO
+        title="Dashboard"
+        description="Painel personalizado com métricas, ações rápidas e widgets."
+        path="/dashboard"
+      />
+      <div className="mx-auto w-full max-w-[1920px] animate-fade-in space-y-3 px-3 py-3 pb-24 sm:space-y-4 sm:px-4 sm:py-4 md:pb-6 lg:px-6 xl:px-8">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h1 data-testid="page-title-dashboard" className="font-display text-2xl font-bold flex items-center gap-2">
+            <h1
+              data-testid="page-title-dashboard"
+              className="flex items-center gap-2 font-display text-2xl font-bold"
+            >
               <LayoutDashboard className="h-6 w-6" />
               Dashboard
             </h1>
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <p className="text-muted-foreground text-sm">
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <p className="text-sm text-muted-foreground">
                 {isCustomizing ? 'Personalize seu dashboard' : 'Arraste widgets para reorganizar'}
               </p>
               <ScopeBadge />
@@ -254,12 +313,16 @@ export function CustomizableDashboard() {
               </Button>
             )}
             <Button
-              variant={isCustomizing ? "default" : "outline"}
+              variant={isCustomizing ? 'default' : 'outline'}
               size="sm"
               onClick={() => setIsCustomizing(!isCustomizing)}
               className="gap-1"
             >
-              {isCustomizing ? <Save className="h-3.5 w-3.5" /> : <LayoutDashboard className="h-3.5 w-3.5" />}
+              {isCustomizing ? (
+                <Save className="h-3.5 w-3.5" />
+              ) : (
+                <LayoutDashboard className="h-3.5 w-3.5" />
+              )}
               {isCustomizing ? 'Concluir' : 'Personalizar'}
             </Button>
           </div>
@@ -269,10 +332,10 @@ export function CustomizableDashboard() {
         {isCustomizing && (
           <Card>
             <CardContent className="p-4">
-              <h3 className="font-display text-sm font-medium mb-3">Widgets Visíveis</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {widgetOrder.map(w => (
-                  <label key={w.id} className="flex items-center gap-2 text-sm cursor-pointer">
+              <h3 className="mb-3 font-display text-sm font-medium">Widgets Visíveis</h3>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                {widgetOrder.map((w) => (
+                  <label key={w.id} className="flex cursor-pointer items-center gap-2 text-sm">
                     <Switch checked={w.visible} onCheckedChange={() => toggleWidget(w.id)} />
                     <span className={w.visible ? '' : 'text-muted-foreground line-through'}>
                       {w.title}
@@ -285,16 +348,16 @@ export function CustomizableDashboard() {
         )}
 
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={visibleWidgets.map(w => w.id)} strategy={rectSortingStrategy}>
-            <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4 pb-24 md:pb-6 animate-fade-in">
+          <SortableContext items={visibleWidgets.map((w) => w.id)} strategy={rectSortingStrategy}>
+            <div className="mx-auto w-full max-w-[1920px] animate-fade-in space-y-3 px-3 py-3 pb-24 sm:space-y-4 sm:px-4 sm:py-4 md:pb-6 lg:px-6 xl:px-8">
               {visibleWidgets.map((widget) => {
                 const isFullWidth = fullWidthIds.has(widget.id);
-                
+
                 if (isFullWidth) {
                   return (
                     <SortableWidget key={widget.id} id={widget.id} title={widget.title}>
                       <CardContent className="p-0">
-                        {renderWidgetContent(widget.id)}
+                        {renderWidgetContent(widget.id, metrics)}
                       </CardContent>
                     </SortableWidget>
                   );
@@ -305,11 +368,13 @@ export function CustomizableDashboard() {
 
               {/* Metric cards in grid */}
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {visibleWidgets.filter(w => !fullWidthIds.has(w.id)).map(widget => (
-                  <SortableWidget key={widget.id} id={widget.id} title={widget.title}>
-                    {renderWidgetContent(widget.id)}
-                  </SortableWidget>
-                ))}
+                {visibleWidgets
+                  .filter((w) => !fullWidthIds.has(w.id))
+                  .map((widget) => (
+                    <SortableWidget key={widget.id} id={widget.id} title={widget.title}>
+                      {renderWidgetContent(widget.id, metrics)}
+                    </SortableWidget>
+                  ))}
               </div>
             </div>
           </SortableContext>

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 /**
  * RemovePersonalizationDialog - Confirmação antes de excluir gravação
  */
@@ -21,7 +22,7 @@ interface RemovePersonalizationDialogProps {
   techniqueName: string;
   locationName: string;
   onConfirm: () => void;
-  trigger?: React.ReactNode;
+  trigger?: ReactNode;
   variant?: 'icon' | 'button';
   className?: string;
 }

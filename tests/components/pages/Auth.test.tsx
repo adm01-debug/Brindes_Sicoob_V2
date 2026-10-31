@@ -36,7 +36,11 @@ function renderizar() {
     <MemoryRouter initialEntries={['/login']}><Routes><Route path="/login" element={<Auth />} /></Routes></MemoryRouter>
   </QueryClientProvider></HelmetProvider>);
 }
-beforeEach(() => { vi.clearAllMocks(); mocks.signIn.mockResolvedValue({ error: null }); });
+beforeEach(() => {
+  vi.clearAllMocks();
+  mocks.signIn.mockResolvedValue({ error: null });
+  mocks.logLoginAttempt.mockResolvedValue(undefined);
+});
 describe('Entrada institucional', () => {
   it('apresenta formulário acessível e remove contas de teste e provedores não configurados', () => {
     renderizar();
@@ -65,6 +69,7 @@ describe('Entrada institucional', () => {
   });
   it('envia o formulário válido uma vez e recupera o botão após erro', async () => {
     mocks.signIn.mockResolvedValue({ error: new Error('Invalid login credentials') });
+    mocks.logLoginAttempt.mockImplementation(() => new Promise(() => {}));
     const user = userEvent.setup(); renderizar();
     await user.type(screen.getByLabelText('E-mail de trabalho'), 'compras@cooperativa.example');
     await user.type(screen.getByLabelText('Senha', { exact: true }), 'senha-sintetica');

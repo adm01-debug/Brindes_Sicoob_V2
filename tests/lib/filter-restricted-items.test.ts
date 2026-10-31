@@ -13,6 +13,8 @@ const items: Item[] = [
   { id: "telemetry", path: "/admin/telemetria" },
   { id: "connections", path: "/admin/conexoes/status" },
   { id: "rbac", path: "/admin/rbac-rotas" },
+  { id: "manager-quotes", path: "/gestor/orcamentos" },
+  { id: "themes", path: "/admin/temas" },
   { id: "theme-toggle" }, // sem path → sempre visível
 ];
 
@@ -21,14 +23,16 @@ describe("filterByRoutePermission", () => {
     const out = filterByRoutePermission(items, (i) => i.path, {
       isDev: false,
       isAdmin: false,
+      assignedRoles: ['agente'],
     });
-    expect(out.map((i) => i.id)).toEqual(["home", "quotes", "theme-toggle"]);
+    expect(out.map((i) => i.id)).toEqual(["home", "quotes", "themes", "theme-toggle"]);
   });
 
   it("admin vê admin + autenticadas, mas NÃO vê dev-only", () => {
     const out = filterByRoutePermission(items, (i) => i.path, {
       isDev: false,
       isAdmin: true,
+      assignedRoles: ['supervisor'],
     });
     const ids = out.map((i) => i.id);
     expect(ids).toContain("users");
@@ -41,6 +45,7 @@ describe("filterByRoutePermission", () => {
     const out = filterByRoutePermission(items, (i) => i.path, {
       isDev: true,
       isAdmin: true,
+      assignedRoles: ['dev'],
     });
     expect(out).toHaveLength(items.length);
   });
@@ -49,7 +54,24 @@ describe("filterByRoutePermission", () => {
     const out = filterByRoutePermission(items, (i) => i.path, {
       isDev: false,
       isAdmin: false,
+      assignedRoles: ['agente'],
     });
     expect(out.find((i) => i.id === "theme-toggle")).toBeTruthy();
+  });
+
+  it("aplica a matriz Sicoob quando os papéis atribuídos estão disponíveis", () => {
+    const seller = filterByRoutePermission(items, (item) => item.path, {
+      isDev: false,
+      isAdmin: false,
+      assignedRoles: ['vendedor'],
+    });
+    const manager = filterByRoutePermission(items, (item) => item.path, {
+      isDev: false,
+      isAdmin: false,
+      assignedRoles: ['gestor_compras'],
+    });
+
+    expect(seller.map((item) => item.id)).not.toContain('manager-quotes');
+    expect(manager.map((item) => item.id)).toContain('manager-quotes');
   });
 });

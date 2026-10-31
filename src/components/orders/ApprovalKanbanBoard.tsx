@@ -10,8 +10,7 @@ import {
 } from "@dnd-kit/core";
 import { toast } from "sonner";
 import { useOrdersList, useUpdateOrder, ORDER_STATUS_LABELS, canTransitionTo, type OrderRow, type OrderStatus } from "@/hooks";
-import { DroppableColumn, type DroppableColumnProps } from "@/pages/sicoob/orders/OrdersKanbanPage";
-import { DraggableCard, type DraggableCardProps } from "@/pages/sicoob/orders/OrdersKanbanPage";
+import { DroppableColumn, type DroppableColumnProps, DraggableCard, type DraggableCardProps } from "@/pages/sicoob/orders/OrdersKanbanPage";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 import { OrderDetailSheet } from "./OrderDetailSheet";

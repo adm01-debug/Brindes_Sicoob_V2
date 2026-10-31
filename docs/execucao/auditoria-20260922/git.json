@@ -1,0 +1,182 @@
+{
+  "collected_at": "2026-09-22T11:50:30.060278+00:00",
+  "snapshot_commit": "e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68",
+  "root_head": "e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68",
+  "github_main": "e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68",
+  "github_main_tree": "07d63887ce35a4cc16bb3fe628c59ee560a73e9d",
+  "tracked_blobs_main": 3551,
+  "local_branches": [
+    {
+      "branch": "audit/sicoob-reconciliation-20260915",
+      "sha": "479ed8ec2f630dd5b80a7fdeabafa846a22778f1",
+      "remote_sha": "479ed8ec2f630dd5b80a7fdeabafa846a22778f1",
+      "identical": true
+    },
+    {
+      "branch": "execucao/sicoob-20260911130857",
+      "sha": "47c474a67b7fce2f2640f31fd032cf195baa8501",
+      "remote_sha": "47c474a67b7fce2f2640f31fd032cf195baa8501",
+      "identical": true
+    },
+    {
+      "branch": "execucao/sicoob-reconciliacao-20260915",
+      "sha": "0b99ee634bed1a3f849ea11923d8fa421b4fbf1f",
+      "remote_sha": "0b99ee634bed1a3f849ea11923d8fa421b4fbf1f",
+      "identical": true
+    },
+    {
+      "branch": "execucao/sicoob-reconciliacao-20260916",
+      "sha": "9ed422b517f1814ecbbfac494c0666ea862b460e",
+      "remote_sha": "9ed422b517f1814ecbbfac494c0666ea862b460e",
+      "identical": true
+    },
+    {
+      "branch": "main",
+      "sha": "e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68",
+      "remote_sha": "e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68",
+      "identical": true
+    }
+  ],
+  "github_branches": {
+    "audit/sicoob-reconciliation-20260915": "479ed8ec2f630dd5b80a7fdeabafa846a22778f1",
+    "execucao/sicoob-20260911130857": "47c474a67b7fce2f2640f31fd032cf195baa8501",
+    "execucao/sicoob-reconciliacao-20260915": "0b99ee634bed1a3f849ea11923d8fa421b4fbf1f",
+    "execucao/sicoob-reconciliacao-20260916": "9ed422b517f1814ecbbfac494c0666ea862b460e",
+    "main": "e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68"
+  },
+  "remote_branches_without_local_branch": [],
+  "worktrees": [
+    {
+      "path": "/home/joaquim_ataides/projetos/Brindes_Sicoob_V2",
+      "branch": "main",
+      "head": "e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68",
+      "remote_head": "e984c4b1117e766e6a0d9df5cfd54a33c6ba0c68",
+      "head_equals_remote": true,
+      "dirty": [
+        {
+          "status": " M",
+          "file": ".typecheck-baseline.json",
+          "blob": "0e250a11583769a3f2691f40b203bded76da5f57",
+          "same_blob_at_remote_head": []
+        },
+        {
+          "status": " M",
+          "file": "docs/correcoes-validacao-2026-09-14.md",
+          "blob": "d6d93b084972ddfa52c6d08b019479b5aacf2c4d",
+          "same_blob_at_remote_head": []
+        },
+        {
+          "status": " M",
+          "file": "docs/plano-melhorias-50-etapas.md",
+          "blob": "e5951141ae4b40c07ffbc63c717cede77fbb4553",
+          "same_blob_at_remote_head": []
+        },
+        {
+          "status": " M",
+          "file": "src/pages/GestorApprovalsPage.tsx",
+          "blob": "83d4a6097cbd8a49dd332364adf6a9b8f35ac719",
+          "same_blob_at_remote_head": []
+        },
+        {
+          "status": " M",
+          "file": "src/pages/sicoob/GestorApprovalsPage.tsx",
+          "blob": "6a627584f8a89e86d99dadf1237fc519cc51e918",
+          "same_blob_at_remote_head": []
+        },
+        {
+          "status": " M",
+          "file": "src/pages/sicoob/orders/OrderDetailPage.tsx",
+          "blob": "a38119d0cd3a9ed366d1db020c6131833fc79e5c",
+          "same_blob_at_remote_head": []
+        },
+        {
+          "status": " M",
+          "file": "src/services/sicoob/approvalService.ts",
+          "blob": "f6ce4265afa68dfa1ceda69822568197565a2e58",
+          "same_blob_at_remote_head": []
+        },
+        {
+          "status": " M",
+          "file": "src/types/sicoob/orders.ts",
+          "blob": "6abcfac6d77e16dd369dc444b12445accab8a79c",
+          "same_blob_at_remote_head": []
+        },
+        {
+          "status": " M",
+          "file": "supabase/.temp/cli-latest",
+          "blob": "ee671afab878cf2d8f198710be7c02413a94b689",
+          "same_blob_at_remote_head": []
+        }
+      ],
+      "ignored_count_by_root": {
+        ".claude": 2,
+        ".husky": 17,
+        ".vscode": 2,
+        "api_usage.json": 1,
+        "audit_report.pdf": 1,
+        "deno.lock": 1,
+        "dependencies.json": 1,
+        "dist": 652,
+        "node_modules": 57140,
+        "service_map.txt": 1,
+        "triage-edge-typecheck.json": 1,
+        "tsconfig.tsbuildinfo": 1
+      }
+    },
+    {
+      "path": "/home/joaquim_ataides/hermes-workspaces/audit-sicoob-20260915",
+      "branch": "audit/sicoob-reconciliation-20260915",
+      "head": "479ed8ec2f630dd5b80a7fdeabafa846a22778f1",
+      "remote_head": "479ed8ec2f630dd5b80a7fdeabafa846a22778f1",
+      "head_equals_remote": true,
+      "dirty": [],
+      "ignored_count_by_root": {}
+    },
+    {
+      "path": "/home/joaquim_ataides/hermes-workspaces/chat-sicoob-20260911130857",
+      "branch": "execucao/sicoob-20260911130857",
+      "head": "47c474a67b7fce2f2640f31fd032cf195baa8501",
+      "remote_head": "47c474a67b7fce2f2640f31fd032cf195baa8501",
+      "head_equals_remote": true,
+      "dirty": [],
+      "ignored_count_by_root": {
+        ".husky": 17,
+        "deno.lock": 1,
+        "dist": 665,
+        "e2e-artifacts": 7,
+        "e2e": 1,
+        "node_modules": 57378,
+        "playwright-report": 14,
+        "scripts": 5,
+        "test-results": 1,
+        "tsconfig.tsbuildinfo": 1
+      }
+    },
+    {
+      "path": "/home/joaquim_ataides/hermes-workspaces/execucao-sicoob-reconciliacao-20260915",
+      "branch": "execucao/sicoob-reconciliacao-20260915",
+      "head": "0b99ee634bed1a3f849ea11923d8fa421b4fbf1f",
+      "remote_head": "0b99ee634bed1a3f849ea11923d8fa421b4fbf1f",
+      "head_equals_remote": true,
+      "dirty": [
+        {
+          "status": " M",
+          "file": ".gitignore",
+          "blob": "94d1a1aea19f004b7317bd3d738d6893743ba083",
+          "same_blob_at_remote_head": []
+        },
+        {
+          "status": " M",
+          "file": "supabase/.temp/cli-latest",
+          "blob": "ee671afab878cf2d8f198710be7c02413a94b689",
+          "same_blob_at_remote_head": []
+        }
+      ],
+      "ignored_count_by_root": {
+        "dist": 652,
+        "node_modules": 57139,
+        "scripts": 1
+      }
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import { isNullish } from "@/components/admin/utils/nullish";
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,7 @@ const WINDOW_OPTIONS: Array<{ value: number; label: string; help: string }> = [
   { value: 240, label: "4 horas", help: "Apenas incidentes graves" },
 ];
 
-export function FailureWindowCard() {
+function useFailureWindow() {
   const [current, setCurrent] = useState<number | null>(null);
   const [draft, setDraft] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -64,6 +65,16 @@ export function FailureWindowCard() {
     });
   }
 
+  return { current, draft, setDraft, loading, saving, dirty, save };
+}
+
+function FailureWindowInfo() {
+  return <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><span className="inline-flex"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span></TooltipTrigger><TooltipContent side="top" className="max-w-[300px]"><p className="text-xs">Evita ruído de incidentes em flaps transitórios. O cron de health-check só dispara <code>connection_down</code> se nenhum teste sucesso ocorreu dentro da janela. Alterações são auditadas.</p></TooltipContent></Tooltip></TooltipProvider>;
+}
+
+export function FailureWindowCard() {
+  const state = useFailureWindow();
+
   return (
     <Card className="border-dashed">
       <CardContent className="flex flex-wrap items-center gap-3 py-3">
@@ -79,26 +90,13 @@ export function FailureWindowCard() {
           </div>
         </div>
 
-        <TooltipProvider delayDuration={200}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="inline-flex"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="max-w-[300px]">
-              <p className="text-xs">
-                Evita ruído de incidentes em flaps transitórios. O cron de health-check
-                só dispara <code>connection_down</code> se nenhum teste sucesso ocorreu
-                dentro da janela. Alterações são auditadas.
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <FailureWindowInfo />
 
         <div className="flex items-center gap-2 ml-auto">
           <span className="text-xs text-muted-foreground tabular-nums">
-            Atual: {loading ? "…" : current != null ? formatLabel(current) : "—"}
+            Atual: {state.loading ? "…" : !isNullish(state.current) ? formatLabel(state.current) : "—"}
           </span>
-          <Select value={draft} onValueChange={setDraft} disabled={loading || saving}>
+          <Select value={state.draft} onValueChange={state.setDraft} disabled={state.loading || state.saving}>
             <SelectTrigger className="h-9 w-[140px]" aria-label="Selecionar janela">
               <SelectValue placeholder="Janela" />
             </SelectTrigger>
@@ -113,8 +111,8 @@ export function FailureWindowCard() {
               ))}
             </SelectContent>
           </Select>
-          <Button size="sm" onClick={save} disabled={!dirty || saving || loading}>
-            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+          <Button size="sm" onClick={state.save} disabled={!state.dirty || state.saving || state.loading}>
+            {state.saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
             Salvar
           </Button>
         </div>

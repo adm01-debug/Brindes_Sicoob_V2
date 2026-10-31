@@ -50,21 +50,14 @@ export function TechniqueCard({ technique, isSelected, onSelect }: TechniqueCard
       onClick={() => onSelect(technique)}
     >
       {/* Radio */}
-      <div className={cn(
-        "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors mt-0.5 flex-shrink-0",
-        isSelected
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-muted-foreground/40"
-      )}>
+      <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors mt-0.5 flex-shrink-0", isSelected ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/40")}>
         {isSelected && <Check className="h-3 w-3" />}
       </div>
 
       {/* Content */}
       <div className="flex-1 min-w-0 space-y-1.5">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-medium text-sm text-foreground">
-            {technique.tecnica_nome}
-          </span>
+          <span className="font-medium text-sm text-foreground">{technique.tecnica_nome}</span>
           <Badge variant="outline" className={cn("text-[10px] h-5 border", getGroupColor(technique.grupo_tecnica))}>
             {technique.grupo_tecnica}
           </Badge>
@@ -76,9 +69,7 @@ export function TechniqueCard({ technique, isSelected, onSelect }: TechniqueCard
             até {technique.efetiva_largura_max} × {technique.efetiva_altura_max} cm
           </span>
           <span>{colorLabel}</span>
-          {technique.is_curved && (
-            <Badge variant="outline" className="text-[10px] h-4">curvo</Badge>
-          )}
+          {technique.is_curved && <Badge variant="outline" className="text-[10px] h-4">curvo</Badge>}
         </div>
       </div>
     </button>

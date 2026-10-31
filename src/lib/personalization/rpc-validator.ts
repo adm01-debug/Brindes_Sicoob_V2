@@ -25,12 +25,25 @@ const warnedKeys = new Set<string>();
 function warnOnce(key: string, msg: string, payload?: unknown): void {
   if (warnedKeys.has(key)) return;
   warnedKeys.add(key);
-  // eslint-disable-next-line no-console
   console.warn(`[rpc-validator] ${msg}`, payload);
 }
 
 function isObject(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
+}
+
+function resolveSegment(cursors: unknown[], rawSegment: string): unknown[] {
+  const isArray = rawSegment.endsWith('[]');
+  const segment = isArray ? rawSegment.slice(0, -2) : rawSegment;
+  const next: unknown[] = [];
+  for (const cursor of cursors) {
+    if (!isObject(cursor)) continue;
+    const value = cursor[segment];
+    if (value === undefined) continue;
+    if (isArray && Array.isArray(value)) next.push(...value);
+    else if (!isArray) next.push(value);
+  }
+  return next;
 }
 
 /**
@@ -43,20 +56,7 @@ function resolvePath(payload: unknown, path: string): unknown[] {
   let cursors: unknown[] = [payload];
 
   for (const rawSeg of segments) {
-    const isArray = rawSeg.endsWith('[]');
-    const seg = isArray ? rawSeg.slice(0, -2) : rawSeg;
-    const next: unknown[] = [];
-    for (const cur of cursors) {
-      if (!isObject(cur)) continue;
-      const val = cur[seg];
-      if (val === undefined) continue;
-      if (isArray) {
-        if (Array.isArray(val)) next.push(...val);
-      } else {
-        next.push(val);
-      }
-    }
-    cursors = next;
+    cursors = resolveSegment(cursors, rawSeg);
     if (cursors.length === 0) return [];
   }
   return cursors;
@@ -88,7 +88,7 @@ function topLevelKeys(payload: unknown): string[] {
 function knownTopLevel(contract: RpcContract): Set<string> {
   const out = new Set<string>();
   const collect = (path: string) => {
-    const top = path.split('.')[0].replace(/\[\]$/, '');
+    const top = (path.split('.')[0] ?? '').replace(/\[\]$/, '');
     if (top) out.add(top);
   };
   contract.requiredFields.forEach(collect);
@@ -102,21 +102,51 @@ function knownTopLevel(contract: RpcContract): Set<string> {
   return out;
 }
 
+function resolveRequiredFields(
+  contract: RpcContract,
+  payload: unknown,
+): { missing: string[]; resolvedAliases: Record<string, string> } {
+  const missing: string[] = [];
+  const resolvedAliases: Record<string, string> = {};
+  for (const field of contract.requiredFields) {
+    const found = findFieldName(payload, field, contract.aliasMap);
+    if (!found) missing.push(field);
+    else if (found !== field) resolvedAliases[field] = found;
+  }
+  return { missing, resolvedAliases };
+}
+
+function reportValidation(
+  contract: RpcContract,
+  payload: unknown,
+  missing: string[],
+  ...validation: [extras: string[], resolvedAliases: Record<string, string>]
+): void {
+  const [extras, resolvedAliases] = validation;
+  if (missing.length > 0) {
+    recordContractMismatch(contract.name, missing, extras);
+    if (import.meta.env.DEV) {
+      warnOnce(
+        `${contract.name}:${missing.join(',')}`,
+        `Payload de ${contract.name} faltando campos: ${missing.join(', ')}`,
+        payload,
+      );
+    }
+    return;
+  }
+  if (Object.keys(resolvedAliases).length > 0 && import.meta.env.DEV) {
+    warnOnce(
+      `${contract.name}:aliases:${Object.keys(resolvedAliases).join(',')}`,
+      `Payload de ${contract.name} usando aliases: ${JSON.stringify(resolvedAliases)}`,
+    );
+  }
+}
+
 export function validateRpcPayload(
   contract: RpcContract,
   payload: unknown,
 ): ValidationResult {
-  const missing: string[] = [];
-  const resolvedAliases: Record<string, string> = {};
-
-  for (const field of contract.requiredFields) {
-    const found = findFieldName(payload, field, contract.aliasMap);
-    if (!found) {
-      missing.push(field);
-    } else if (found !== field) {
-      resolvedAliases[field] = found;
-    }
-  }
+  const { missing, resolvedAliases } = resolveRequiredFields(contract, payload);
 
   // Extras: chaves top-level desconhecidas
   const known = knownTopLevel(contract);
@@ -124,22 +154,7 @@ export function validateRpcPayload(
 
   const ok = missing.length === 0;
 
-  // Telemetria
-  if (!ok) {
-    recordContractMismatch(contract.name, missing, extras);
-    if (import.meta.env?.DEV) {
-      warnOnce(
-        `${contract.name}:${missing.join(',')}`,
-        `Payload de ${contract.name} faltando campos: ${missing.join(', ')}`,
-        payload,
-      );
-    }
-  } else if (Object.keys(resolvedAliases).length > 0 && import.meta.env?.DEV) {
-    warnOnce(
-      `${contract.name}:aliases:${Object.keys(resolvedAliases).join(',')}`,
-      `Payload de ${contract.name} usando aliases: ${JSON.stringify(resolvedAliases)}`,
-    );
-  }
+  reportValidation(contract, payload, missing, extras, resolvedAliases);
 
   return { contract: contract.name, ok, missing, extras, resolvedAliases };
 }

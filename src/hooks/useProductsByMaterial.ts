@@ -40,11 +40,10 @@ export function useProductsByMaterial(options: UseProductsByMaterialOptions = {}
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['products-by-materials', materialTypeSlugs, materialGroupSlugs],
     queryFn: async () => {
-      const result = await materialService.getProductsByMaterials({
+      return await materialService.getProductsByMaterials({
         materialTypeIds: materialTypeSlugs.length > 0 ? materialTypeSlugs : undefined,
         materialGroupSlugs: materialGroupSlugs.length > 0 ? materialGroupSlugs : undefined,
       });
-      return result;
     },
     enabled: shouldFetch,
     staleTime: 2 * 60 * 1000, // 2 minutos

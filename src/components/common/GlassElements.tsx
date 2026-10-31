@@ -1,5 +1,7 @@
-import { type ReactNode } from "react";
+import { type InputHTMLAttributes, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+
+const GLASS_BORDER = "border border-white/20 dark:border-white/10";
 
 interface GlassCardProps {
   children: ReactNode;
@@ -30,7 +32,7 @@ export function GlassCard({
       className={cn(
         "relative rounded-xl",
         blurLevels[blur],
-        border && "border border-white/20 dark:border-white/10",
+        border && GLASS_BORDER,
         gradient && "bg-gradient-to-br from-white/10 to-white/5 dark:from-white/5 dark:to-white/[0.02]",
         !gradient && `bg-background/${opacity}`,
         "shadow-lg shadow-black/5",
@@ -108,7 +110,7 @@ export function GlassButton({
       className={cn(
         "px-4 py-2 rounded-lg",
         "backdrop-blur-md bg-background/10",
-        "border border-white/20 dark:border-white/10",
+        GLASS_BORDER,
         "text-foreground font-medium",
         "hover:bg-background/20",
         "active:scale-[0.98]",
@@ -172,13 +174,13 @@ export function GlassSidebar({
 export function GlassInput({
   className,
   ...props
-}: React.InputHTMLAttributes<HTMLInputElement>) {
+}: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       className={cn(
         "w-full px-4 py-2 rounded-lg",
         "backdrop-blur-sm bg-background/10",
-        "border border-white/20 dark:border-white/10",
+        GLASS_BORDER,
         "text-foreground placeholder:text-muted-foreground",
         "focus:outline-none focus:ring-2 focus:ring-primary/50",
         "transition-all duration-200",

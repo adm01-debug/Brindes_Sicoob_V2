@@ -342,20 +342,25 @@ export interface StockDashboardSummary {
 export function calculateStockStatus(
   current: number, 
   min: number, 
-  max?: number,
-  inTransit?: number,
-  daysUntilStockout?: number
+  ...options: [max?: number, inTransit?: number, daysUntilStockout?: number]
 ): StockStatus {
-  if (current <= 0) {
-    if (inTransit && inTransit > 0) return 'incoming';
-    return 'out_of_stock';
-  }
-  
-  // Status preditivo: se esgotamento em < 7 dias, tratar como crítico
-  if (daysUntilStockout !== undefined && daysUntilStockout < 7) return 'critical';
-  // Se esgotamento em < 15 dias, tratar como baixo estoque
-  if (daysUntilStockout !== undefined && daysUntilStockout < 15) return 'low_stock';
+  const [max, inTransit, daysUntilStockout] = options;
+  if (current <= 0) return emptyStockStatus(inTransit);
+  const predicted = predictedStockStatus(daysUntilStockout);
+  return predicted ?? boundedStockStatus(current, min, max);
+}
 
+function emptyStockStatus(inTransit?: number): StockStatus {
+  return inTransit && inTransit > 0 ? 'incoming' : 'out_of_stock';
+}
+
+function predictedStockStatus(days?: number): StockStatus | null {
+  if (days !== undefined && days < 7) return 'critical';
+  if (days !== undefined && days < 15) return 'low_stock';
+  return null;
+}
+
+function boundedStockStatus(current: number, min: number, max?: number): StockStatus {
   if (current <= min * 0.25) return 'critical';
   if (current <= min) return 'low_stock';
   if (max && current > max * 1.5) return 'overstocked';
@@ -377,6 +382,64 @@ export function calculateAvailableStock(
   return Math.max(0, currentStock - reservedStock);
 }
 
+interface VariantStatusCounts {
+  inStock: number;
+  lowStock: number;
+  critical: number;
+  outOfStock: number;
+  incoming: number;
+}
+
+function countVariantStatuses(variants: VariantStock[]): VariantStatusCounts {
+  const counts: VariantStatusCounts = { inStock: 0, lowStock: 0, critical: 0, outOfStock: 0, incoming: 0 };
+  for (const variant of variants) {
+    if (variant.status === 'in_stock') counts.inStock += 1;
+    if (variant.status === 'low_stock') counts.lowStock += 1;
+    if (variant.status === 'critical') counts.critical += 1;
+    if (variant.status === 'out_of_stock') counts.outOfStock += 1;
+    if (variant.status === 'incoming' || variant.inTransitStock > 0) counts.incoming += 1;
+  }
+  return counts;
+}
+
+function groupVariantsByColor(variants: VariantStock[]): Map<string, VariantStock[]> {
+  const groups = new Map<string, VariantStock[]>();
+  for (const variant of variants) {
+    const key = variant.colorName || 'Sem cor';
+    const group = groups.get(key) ?? [];
+    group.push(variant);
+    groups.set(key, group);
+  }
+  return groups;
+}
+
+function colorStockInfo(colorName: string, variants: VariantStock[]): ColorStockInfo {
+  const totalStock = variants.reduce((sum, variant) => sum + variant.currentStock, 0);
+  const availableStock = variants.reduce((sum, variant) => sum + variant.availableStock, 0);
+  const minStock = variants.reduce((sum, variant) => sum + variant.minStock, 0);
+  return {
+    colorId: variants[0]?.colorId,
+    colorName,
+    colorHex: variants[0]?.colorHex,
+    totalStock,
+    availableStock,
+    status: calculateStockStatus(totalStock, minStock),
+    variants,
+  };
+}
+
+function productOverallStatus(variantCount: number, totalStock: number, counts: VariantStatusCounts): StockStatus {
+  if (variantCount === 0) return 'in_stock';
+  if (hasIncomingShortage(totalStock, counts)) return 'incoming';
+  if (counts.outOfStock === variantCount) return 'out_of_stock';
+  if (counts.critical > 0 || counts.outOfStock > 0) return 'critical';
+  return counts.lowStock > 0 ? 'low_stock' : 'in_stock';
+}
+
+function hasIncomingShortage(totalStock: number, counts: VariantStatusCounts): boolean {
+  return counts.incoming > 0 && (counts.outOfStock > 0 || totalStock === 0);
+}
+
 export function aggregateVariantsToProduct(
   variants: VariantStock[]
 ): Omit<ProductStockSummary, 'productId' | 'productName' | 'productSku' | 'productImageUrl' | 'categoryName' | 'supplierName'> {
@@ -386,63 +449,9 @@ export function aggregateVariantsToProduct(
   const totalInTransitStock = variants.reduce((sum, v) => sum + v.inTransitStock, 0);
   const totalAvailableStock = variants.reduce((sum, v) => sum + v.availableStock, 0);
   
-  // #13 fix: single-loop variant status counting (O(n) instead of O(4n))
-  let variantsInStock = 0;
-  let variantsLowStock = 0;
-  let variantsCritical = 0;
-  let variantsOutOfStock = 0;
-  for (const v of variants) {
-    switch (v.status) {
-      case 'in_stock': variantsInStock++; break;
-      case 'low_stock': variantsLowStock++; break;
-      case 'critical': variantsCritical++; break;
-      case 'out_of_stock': variantsOutOfStock++; break;
-    }
-  }
-  
-  // Agrupar por cor
-  const colorMap = new Map<string, VariantStock[]>();
-  variants.forEach(v => {
-    const colorKey = v.colorName || 'Sem cor';
-    if (!colorMap.has(colorKey)) {
-      colorMap.set(colorKey, []);
-    }
-    colorMap.get(colorKey)!.push(v);
-  });
-  
-  const availableColors: ColorStockInfo[] = Array.from(colorMap.entries()).map(([colorName, colorVariants]) => {
-    const totalStock = colorVariants.reduce((sum, v) => sum + v.currentStock, 0);
-    const availableStock = colorVariants.reduce((sum, v) => sum + v.availableStock, 0);
-    const minStock = colorVariants.reduce((sum, v) => sum + v.minStock, 0);
-    
-    return {
-      colorId: colorVariants[0]?.colorId,
-      colorName,
-      colorHex: colorVariants[0]?.colorHex,
-      totalStock,
-      availableStock,
-      status: calculateStockStatus(totalStock, minStock),
-      variants: colorVariants,
-    };
-  });
-  
-  // Contagem de variantes com estoque chegando
-  const variantsIncoming = variants.filter(v => v.status === 'incoming' || v.inTransitStock > 0).length;
-  
-  // Status geral - prioridade: incoming > out_of_stock > critical > low_stock > in_stock
-  let overallStatus: StockStatus = 'in_stock';
-  if (variants.length === 0) {
-    // Edge case: no variants — report as in_stock (nothing to alert on)
-    overallStatus = 'in_stock';
-  } else if (variantsIncoming > 0 && (variantsOutOfStock > 0 || totalCurrentStock === 0)) {
-    overallStatus = 'incoming';
-  } else if (variantsOutOfStock === variants.length) {
-    overallStatus = 'out_of_stock';
-  } else if (variantsCritical > 0 || variantsOutOfStock > 0) {
-    overallStatus = 'critical';
-  } else if (variantsLowStock > 0) {
-    overallStatus = 'low_stock';
-  }
+  const counts = countVariantStatuses(variants);
+  const availableColors = Array.from(groupVariantsByColor(variants).entries()).map(([name, colorVariants]) => colorStockInfo(name, colorVariants));
+  const overallStatus = productOverallStatus(variants.length, totalCurrentStock, counts);
   
   return {
     totalCurrentStock,
@@ -451,10 +460,10 @@ export function aggregateVariantsToProduct(
     totalInTransitStock,
     totalAvailableStock,
     overallStatus,
-    variantsInStock,
-    variantsLowStock,
-    variantsCritical,
-    variantsOutOfStock,
+    variantsInStock: counts.inStock,
+    variantsLowStock: counts.lowStock,
+    variantsCritical: counts.critical,
+    variantsOutOfStock: counts.outOfStock,
     totalVariants: variants.length,
     variants,
     availableColors,

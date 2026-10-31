@@ -5,8 +5,19 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
+interface AuditEvent {
+  event_type?: string | null;
+  description?: string | null;
+  created_by_name?: string | null;
+  actor_role?: string | null;
+  created_at?: string | null;
+  occurred_at?: string | null;
+  observations?: string | null;
+  metadata?: { file_url?: string | null } | null;
+}
+
 interface AuditEventCardProps {
-  event: any;
+  event: AuditEvent;
 }
 
 export function AuditEventCard({ event }: AuditEventCardProps) {
@@ -32,7 +43,7 @@ export function AuditEventCard({ event }: AuditEventCardProps) {
               </span>
               <span className="flex items-center gap-1">
                 <History className="h-3 w-3" /> 
-                {format(new Date(event.created_at || event.occurred_at), "dd/MM/yyyy HH:mm:ss", { locale: ptBR })}
+                {format(new Date(event.created_at ?? event.occurred_at ?? Date.now()), "dd/MM/yyyy HH:mm:ss", { locale: ptBR })}
               </span>
             </div>
           </div>

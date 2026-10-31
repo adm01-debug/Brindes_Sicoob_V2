@@ -14,52 +14,38 @@ interface OffenderRow {
   total: number;
 }
 
+function aggregateOffenders(loginIps: Array<string | null>, tokenIps: Array<string | null>, botIps: Array<string | null>): OffenderRow[] {
+  const rows = new Map<string, OffenderRow>();
+  const bump = (ip: string | null, key: "loginFailures" | "tokenFailures" | "botHits") => {
+    if (!ip) return;
+    const row = rows.get(ip) ?? { ip, loginFailures: 0, tokenFailures: 0, botHits: 0, total: 0 };
+    row[key] += 1;
+    row.total += 1;
+    rows.set(ip, row);
+  };
+  loginIps.forEach(ip => bump(ip, "loginFailures"));
+  tokenIps.forEach(ip => bump(ip, "tokenFailures"));
+  botIps.forEach(ip => bump(ip, "botHits"));
+  return Array.from(rows.values()).sort((left, right) => right.total - left.total).slice(0, 10);
+}
+
+async function fetchTopOffenders(): Promise<OffenderRow[]> {
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const [login, token, bot] = await Promise.all([supabase.from("login_attempts").select("ip_address").eq("success", false).gte("created_at", since).limit(2000), supabase.from("public_token_failures").select("ip_address").gte("created_at", since).limit(2000), supabase.from("bot_detection_log").select("ip_address").eq("blocked", true).gte("created_at", since).limit(2000)]);
+  return aggregateOffenders((login.data ?? []).map(row => row.ip_address), (token.data ?? []).map(row => row.ip_address), (bot.data ?? []).map(row => row.ip_address));
+}
+
+function OffenderItem({ row, onBlocked }: { row: OffenderRow; onBlocked: () => void }) {
+  return <div className={cn("flex items-center justify-between gap-2 rounded-md border px-2.5 py-1.5 text-xs", row.total >= 20 && "border-destructive/40 bg-destructive/5", row.total >= 10 && row.total < 20 && "border-warning/40 bg-warning/5")}><div className="flex min-w-0 flex-1 items-center gap-2"><span className="font-mono font-medium tabular-nums">{row.ip}</span><div className="flex flex-wrap gap-1">{row.loginFailures > 0 && <Badge variant="outline" className="h-5 px-1.5 text-[10px]">login {row.loginFailures}</Badge>}{row.tokenFailures > 0 && <Badge variant="outline" className="h-5 px-1.5 text-[10px]">token {row.tokenFailures}</Badge>}{row.botHits > 0 && <Badge variant="outline" className="h-5 px-1.5 text-[10px]">bot {row.botHits}</Badge>}</div></div><div className="flex items-center gap-2"><span className="font-display font-bold tabular-nums">{row.total}</span><BlockIpButton defaultIp={row.ip} defaultReason={`Top ofensor 24h: ${row.loginFailures} login + ${row.tokenFailures} token + ${row.botHits} bot`} onBlocked={onBlocked} /></div></div>;
+}
+
 export function TopOffenderIpsCard() {
   const [rows, setRows] = useState<OffenderRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
     setLoading(true);
-    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-
-    const [loginRes, tokenRes, botRes] = await Promise.all([
-      supabase
-        .from("login_attempts")
-        .select("ip_address")
-        .eq("success", false)
-        .gte("created_at", since)
-        .limit(2000),
-      supabase
-        .from("public_token_failures")
-        .select("ip_address")
-        .gte("created_at", since)
-        .limit(2000),
-      supabase
-        .from("bot_detection_log")
-        .select("ip_address")
-        .eq("blocked", true)
-        .gte("created_at", since)
-        .limit(2000),
-    ]);
-
-    const map = new Map<string, OffenderRow>();
-    const bump = (ip: string | null, key: keyof Omit<OffenderRow, "ip" | "total">) => {
-      if (!ip) return;
-      const r = map.get(ip) ?? { ip, loginFailures: 0, tokenFailures: 0, botHits: 0, total: 0 };
-      r[key] += 1;
-      r.total += 1;
-      map.set(ip, r);
-    };
-
-    (loginRes.data ?? []).forEach((r) => bump(r.ip_address, "loginFailures"));
-    (tokenRes.data ?? []).forEach((r) => bump(r.ip_address, "tokenFailures"));
-    (botRes.data ?? []).forEach((r) => bump(r.ip_address, "botHits"));
-
-    const top = Array.from(map.values())
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 10);
-
-    setRows(top);
+    setRows(await fetchTopOffenders());
     setLoading(false);
   };
 
@@ -84,45 +70,7 @@ export function TopOffenderIpsCard() {
         )}
         {rows.length > 0 && (
           <div className="space-y-1.5">
-            {rows.map((r) => (
-              <div
-                key={r.ip}
-                className={cn(
-                  "flex items-center justify-between gap-2 rounded-md border px-2.5 py-1.5 text-xs",
-                  r.total >= 20 && "border-destructive/40 bg-destructive/5",
-                  r.total >= 10 && r.total < 20 && "border-warning/40 bg-warning/5"
-                )}
-              >
-                <div className="flex min-w-0 flex-1 items-center gap-2">
-                  <span className="font-mono font-medium tabular-nums">{r.ip}</span>
-                  <div className="flex flex-wrap gap-1">
-                    {r.loginFailures > 0 && (
-                      <Badge variant="outline" className="h-5 px-1.5 text-[10px]">
-                        login {r.loginFailures}
-                      </Badge>
-                    )}
-                    {r.tokenFailures > 0 && (
-                      <Badge variant="outline" className="h-5 px-1.5 text-[10px]">
-                        token {r.tokenFailures}
-                      </Badge>
-                    )}
-                    {r.botHits > 0 && (
-                      <Badge variant="outline" className="h-5 px-1.5 text-[10px]">
-                        bot {r.botHits}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-display font-bold tabular-nums">{r.total}</span>
-                  <BlockIpButton
-                    defaultIp={r.ip}
-                    defaultReason={`Top ofensor 24h: ${r.loginFailures} login + ${r.tokenFailures} token + ${r.botHits} bot`}
-                    onBlocked={load}
-                  />
-                </div>
-              </div>
-            ))}
+            {rows.map(row => <OffenderItem key={row.ip} row={row} onBlocked={load} />)}
           </div>
         )}
       </CardContent>

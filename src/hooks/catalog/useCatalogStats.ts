@@ -1,7 +1,7 @@
-import { useMemo } from "react";
-import React from "react";
+import React, { useMemo } from "react";
 import { Package, Heart, Users, FolderTree, Palette } from "lucide-react";
 import type { Product } from "@/hooks/useProducts";
+import type { CatalogRealStats } from "@/hooks/useCatalogRealStats";
 
 interface UseCatalogStatsProps {
   filteredProducts: Product[];
@@ -9,9 +9,39 @@ interface UseCatalogStatsProps {
   activeFiltersCount: number;
   searchQuery: string;
   hasNextPage: boolean | undefined;
-  realStats: any;
+  realStats: CatalogRealStats | undefined;
   isFavorite: (id: string) => boolean;
   favoriteCount: number;
+}
+
+function uniqueProducts(products: Product[]): Product[] {
+  const seen = new Set<string>();
+  return products.filter(product => {
+    if (seen.has(product.id)) return false;
+    seen.add(product.id);
+    return true;
+  });
+}
+
+function countVariants(products: Product[]): number {
+  return products.reduce((sum, product) => {
+    const colorCount = product.colors?.length || 0;
+    const variationCount = !colorCount && product.variations?.length ? product.variations.length : 0;
+    return sum + colorCount + variationCount;
+  }, 0);
+}
+
+function localCatalogStats(products: Product[], isFavorite: (id: string) => boolean, favoriteCount: number) {
+  const deduped = uniqueProducts(products);
+  const categoryIds = new Set(deduped.map(product => product.category_id || (product.category?.id ? String(product.category.id) : "")).filter(Boolean));
+  const suppliers = new Set(deduped.map(product => product.supplier?.name?.trim().toLowerCase()).filter(name => name && name !== "sem fornecedor"));
+  return [
+    { id: "products", label: "Catálogo Sicoob", value: deduped.length, icon: React.createElement(Package, { className: "h-4 w-4" }) },
+    { id: "variants", label: "Variações Ativas", value: countVariants(deduped), icon: React.createElement(Palette, { className: "h-4 w-4" }) },
+    { id: "categories", label: "Nichos", value: categoryIds.size, icon: React.createElement(FolderTree, { className: "h-4 w-4" }) },
+    { id: "suppliers", label: "Homologados", value: suppliers.size, icon: React.createElement(Users, { className: "h-4 w-4" }) },
+    { id: "favorites", label: "Meus Favoritos", value: isFavorite ? deduped.filter(product => isFavorite(product.id)).length : favoriteCount, icon: React.createElement(Heart, { className: "h-4 w-4" }) },
+  ];
 }
 
 export function useCatalogStats({
@@ -19,7 +49,6 @@ export function useCatalogStats({
   totalEstimate,
   activeFiltersCount,
   searchQuery,
-  hasNextPage,
   realStats,
   isFavorite,
   favoriteCount,
@@ -39,36 +68,6 @@ export function useCatalogStats({
       ];
     }
 
-    // Deduplicate products by ID only if strictly needed
-    const seen = new Set<string>();
-    const deduped = filteredProducts.filter((p) => {
-      if (seen.has(p.id)) return false;
-      seen.add(p.id);
-      return true;
-    });
-
-    const productCount = deduped.length;
-
-    const localVariants = deduped.reduce((sum, p) => {
-      const colorCount = p.colors?.length || 0;
-      const variationCount = !colorCount && p.variations?.length ? p.variations.length : 0;
-      return sum + colorCount + variationCount;
-    }, 0);
-
-    const uniqueCategoryIds = new Set(
-      deduped.map((p) => p.category_id || (p.category?.id ? String(p.category.id) : "")).filter(Boolean)
-    );
-
-    const uniqueSuppliers = new Set(
-      deduped.map((p) => p.supplier?.name?.trim().toLowerCase()).filter(n => n && n !== "sem fornecedor")
-    );
-
-    return [
-      { id: "products", label: "Catálogo Sicoob", value: productCount, icon: React.createElement(Package, { className: "h-4 w-4" }) },
-      { id: "variants", label: "Variações Ativas", value: localVariants, icon: React.createElement(Palette, { className: "h-4 w-4" }) },
-      { id: "categories", label: "Nichos", value: uniqueCategoryIds.size, icon: React.createElement(FolderTree, { className: "h-4 w-4" }) },
-      { id: "suppliers", label: "Homologados", value: uniqueSuppliers.size, icon: React.createElement(Users, { className: "h-4 w-4" }) },
-      { id: "favorites", label: "Meus Favoritos", value: isFavorite ? deduped.filter(p => isFavorite(p.id)).length : favoriteCount, icon: React.createElement(Heart, { className: "h-4 w-4" }) },
-    ];
-  }, [filteredProducts, favoriteCount, isFavorite, activeFiltersCount, searchQuery, totalEstimate, hasNextPage, realStats]);
+    return localCatalogStats(filteredProducts, isFavorite, favoriteCount);
+  }, [filteredProducts, favoriteCount, isFavorite, activeFiltersCount, searchQuery, totalEstimate, realStats]);
 }

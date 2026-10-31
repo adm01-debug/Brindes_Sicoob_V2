@@ -2,7 +2,7 @@
  * E2E Tests — Quotes Module
  * Covers: CRUD, status flow, filtering, templates, approval, comments, history
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 // ============ Quote Status Machine ============
 const STATUSES = ['draft', 'pending', 'sent', 'approved', 'rejected', 'expired'] as const;

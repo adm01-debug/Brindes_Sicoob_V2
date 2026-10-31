@@ -2,6 +2,7 @@
  * ProductEngravingSection — Aba de Gravação com Wizard guiado
  * Refactored: 960 → ~280 lines (orchestrator + steps inline)
  */
+import { isNullish } from "@/components/admin/utils/nullish";
 import React from 'react';
 import { SectionCard } from '../ProductFormHelpers';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,96 @@ import { EngravingAreaCard } from './engraving/EngravingAreaCard';
 interface Props {
   productId?: string;
   isEdit: boolean;
+}
+
+type WizardState = ReturnType<typeof useEngravingWizard>;
+
+function optionalNumberInput(value: number | null): number | '' {
+  return value ?? '';
+}
+
+function parseOptionalNumber(value: string): number | null {
+  return value ? Number(value) : null;
+}
+
+function TechniqueLimits({ w }: { w: WizardState }) {
+  const rawMaxColors = w.selectedTechnique?.max_cores;
+  const maxColors = isNullish(rawMaxColors) ? null : Number(rawMaxColors);
+  const setupCost = w.selectedTechnique?.custo_setup ?? null;
+  if (!maxColors && !setupCost) return null;
+  return (
+    <div className="flex items-center gap-4 text-xs p-2 rounded-md bg-muted/20 border border-border/20">
+      <Info className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+      <span className="text-muted-foreground">Dados da técnica:</span>
+      {!isNullish(maxColors) && <span><Palette className="h-3 w-3 inline mr-0.5" />{maxColors} cores máx.</span>}
+      {!isNullish(setupCost) && setupCost > 0 && <span><DollarSign className="h-3 w-3 inline mr-0.5" />Setup R${setupCost}</span>}
+    </div>
+  );
+}
+
+interface EngravingContentProps {
+  w: WizardState;
+  isEdit: boolean;
+  renderWizardStepper: () => React.ReactNode;
+  renderComponentStep: () => React.ReactNode;
+  renderLocationStep: () => React.ReactNode;
+  renderTechniqueStep: () => React.ReactNode;
+  renderDetailsStep: () => React.ReactNode;
+}
+
+function EngravingAreaList({ w, isEdit }: Pick<EngravingContentProps, 'w' | 'isEdit'>) {
+  const activeCount = w.displayAreas.filter((area) => area.is_active).length;
+  return (
+    <motion.div key="list" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">{w.displayAreas.length} {w.displayAreas.length === 1 ? 'área' : 'áreas'} configurada{w.displayAreas.length !== 1 ? 's' : ''}</span>
+          {activeCount < w.displayAreas.length && <Badge variant="outline" className="text-[10px] h-4">{activeCount} ativas</Badge>}
+          {!isEdit && w.localAreas.length > 0 && <Badge variant="secondary" className="text-[10px] h-4 gap-0.5"><Info className="h-2.5 w-2.5" /> Serão salvas ao criar o produto</Badge>}
+        </div>
+        <Button type="button" size="sm" onClick={w.startWizard} className="gap-1.5 h-7 text-xs"><Plus className="h-3 w-3" /> Nova Personalização</Button>
+      </div>
+      {w.displayAreas.length === 0 && (
+        <div className="text-center py-10 border border-dashed border-border/50 rounded-xl">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3"><Paintbrush className="h-7 w-7 text-primary" /></div>
+          <p className="text-sm font-medium mb-1">Nenhuma personalização configurada</p>
+          <p className="text-xs text-muted-foreground mb-4 max-w-[300px] mx-auto">Use o assistente para definir componentes, locais e técnicas de gravação do produto.</p>
+          <Button type="button" size="sm" onClick={w.startWizard} className="gap-1.5"><Zap className="h-3.5 w-3.5" /> Iniciar Configuração</Button>
+        </div>
+      )}
+      {w.displayAreas.length > 0 && (
+        <div className="space-y-1.5">
+          {w.displayAreas.map((area) => (
+            <EngravingAreaCard key={area.id} area={area}
+              isExpanded={w.expandedId === area.id}
+              onToggleExpand={() => w.setExpandedId(w.expandedId === area.id ? null : area.id)}
+              onToggleActive={() => w.handleToggleActive(area)}
+              onDelete={() => w.handleDeleteArea(area)} />
+          ))}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+function EngravingContent(props: EngravingContentProps) {
+  const { w } = props;
+  if (w.isLoading) {
+    return <div className="space-y-2"><Skeleton className="h-14 w-full rounded-lg" /><Skeleton className="h-14 w-full rounded-lg" /></div>;
+  }
+  if (w.wizardStep === 'list') return <EngravingAreaList w={w} isEdit={props.isEdit} />;
+  return (
+    <motion.div key={w.wizardStep} initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.25 }}>
+      <button type="button" onClick={w.resetWizard} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-3 transition-colors" aria-label="Voltar">
+        <ChevronLeft className="h-3 w-3" /> Voltar à lista
+      </button>
+      {props.renderWizardStepper()}
+      {w.wizardStep === 'component' && props.renderComponentStep()}
+      {w.wizardStep === 'location' && props.renderLocationStep()}
+      {w.wizardStep === 'technique' && props.renderTechniqueStep()}
+      {w.wizardStep === 'details' && props.renderDetailsStep()}
+    </motion.div>
+  );
 }
 
 export default function ProductEngravingSection({ productId, isEdit }: Props) {
@@ -133,7 +224,7 @@ export default function ProductEngravingSection({ productId, isEdit }: Props) {
                           <p className="text-xs font-medium truncate">{tech.nome}</p>
                           <p className="text-[10px] text-muted-foreground font-mono">{tech.codigo_curto || '—'}</p>
                         </div>
-                        {tech.max_cores != null && Number(tech.max_cores) > 0 && <Palette className="h-3 w-3 text-muted-foreground shrink-0" />}
+                        {!isNullish(tech.max_cores) && Number(tech.max_cores) > 0 && <Palette className="h-3 w-3 text-muted-foreground shrink-0" />}
                       </button>
                     );
                   })}
@@ -151,8 +242,6 @@ export default function ProductEngravingSection({ productId, isEdit }: Props) {
   );
 
   const renderDetailsStep = () => {
-    const maxCores = w.selectedTechnique?.max_cores != null ? Number(w.selectedTechnique.max_cores) : null;
-    const custoSetup = w.selectedTechnique?.custo_setup ?? null;
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-2 mb-1"><Ruler className="h-4 w-4 text-primary" /><h4 className="text-sm font-semibold">Detalhes da personalização</h4></div>
@@ -163,22 +252,16 @@ export default function ProductEngravingSection({ productId, isEdit }: Props) {
           <ChevronRight className="h-3 w-3 text-muted-foreground" />
           <Badge className="text-[10px] gap-1 bg-primary/15 text-primary border-primary/30">{getTechniqueIcon(w.selectedTechnique?.codigo_curto || '')} {w.selectedTechnique?.nome}</Badge>
         </div>
-        {(maxCores || custoSetup) && (
-          <div className="flex items-center gap-4 text-xs p-2 rounded-md bg-muted/20 border border-border/20">
-            <Info className="h-3.5 w-3.5 text-muted-foreground shrink-0" /><span className="text-muted-foreground">Dados da técnica:</span>
-            {maxCores != null && <span><Palette className="h-3 w-3 inline mr-0.5" />{maxCores} cores máx.</span>}
-            {custoSetup != null && custoSetup > 0 && <span><DollarSign className="h-3 w-3 inline mr-0.5" />Setup R${custoSetup}</span>}
-          </div>
-        )}
+        <TechniqueLimits w={w} />
         <div className="grid grid-cols-2 gap-3">
           <div><label className="text-[11px] font-medium text-muted-foreground mb-1 block">Largura máx. (cm)</label>
-            <Input type="number" step="0.1" placeholder="Ex: 10" value={w.detailForm.max_width ?? ''} onChange={e => w.setDetailForm(f => ({ ...f, max_width: e.target.value ? Number(e.target.value) : null }))} className="h-8 text-sm" /></div>
+            <Input type="number" step="0.1" placeholder="Ex: 10" value={optionalNumberInput(w.detailForm.max_width)} onChange={e => w.setDetailForm(f => ({ ...f, max_width: parseOptionalNumber(e.target.value) }))} className="h-8 text-sm" /></div>
           <div><label className="text-[11px] font-medium text-muted-foreground mb-1 block">Altura máx. (cm)</label>
-            <Input type="number" step="0.1" placeholder="Ex: 5" value={w.detailForm.max_height ?? ''} onChange={e => w.setDetailForm(f => ({ ...f, max_height: e.target.value ? Number(e.target.value) : null }))} className="h-8 text-sm" /></div>
+            <Input type="number" step="0.1" placeholder="Ex: 5" value={optionalNumberInput(w.detailForm.max_height)} onChange={e => w.setDetailForm(f => ({ ...f, max_height: parseOptionalNumber(e.target.value) }))} className="h-8 text-sm" /></div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div><label className="text-[11px] font-medium text-muted-foreground mb-1 block">Custo unit. sobrescrito (R$)</label>
-            <Input type="number" step="0.01" placeholder="Só se diferir da tabela" value={w.detailForm.unit_cost ?? ''} onChange={e => w.setDetailForm(f => ({ ...f, unit_cost: e.target.value ? Number(e.target.value) : null }))} className="h-8 text-sm" /></div>
+            <Input type="number" step="0.01" placeholder="Só se diferir da tabela" value={optionalNumberInput(w.detailForm.unit_cost)} onChange={e => w.setDetailForm(f => ({ ...f, unit_cost: parseOptionalNumber(e.target.value) }))} className="h-8 text-sm" /></div>
           <div className="flex items-end gap-3"><div className="flex items-center gap-2 pb-1"><Switch checked={w.detailForm.is_curved} onCheckedChange={v => w.setDetailForm(f => ({ ...f, is_curved: v }))} /><span className="text-xs text-muted-foreground">Superfície curva</span></div></div>
         </div>
         <div><label className="text-[11px] font-medium text-muted-foreground mb-1 block">Observações</label>
@@ -194,54 +277,17 @@ export default function ProductEngravingSection({ productId, isEdit }: Props) {
 
   return (
     <SectionCard id="engraving" title="Gravação e Personalização" icon={Paintbrush} subtitle="Configure locais e técnicas de personalização (BD externo)">
-      {w.isLoading ? (
-        <div className="space-y-2"><Skeleton className="h-14 w-full rounded-lg" /><Skeleton className="h-14 w-full rounded-lg" /></div>
-      ) : (
-        <AnimatePresence mode="wait">
-          {w.wizardStep === 'list' ? (
-            <motion.div key="list" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">{w.displayAreas.length} {w.displayAreas.length === 1 ? 'área' : 'áreas'} configurada{w.displayAreas.length !== 1 ? 's' : ''}</span>
-                  {w.displayAreas.filter(a => a.is_active).length < w.displayAreas.length && <Badge variant="outline" className="text-[10px] h-4">{w.displayAreas.filter(a => a.is_active).length} ativas</Badge>}
-                  {!isEdit && w.localAreas.length > 0 && <Badge variant="secondary" className="text-[10px] h-4 gap-0.5"><Info className="h-2.5 w-2.5" /> Serão salvas ao criar o produto</Badge>}
-                </div>
-                <Button type="button" size="sm" onClick={w.startWizard} className="gap-1.5 h-7 text-xs"><Plus className="h-3 w-3" /> Nova Personalização</Button>
-              </div>
-              {w.displayAreas.length === 0 && (
-                <div className="text-center py-10 border border-dashed border-border/50 rounded-xl">
-                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3"><Paintbrush className="h-7 w-7 text-primary" /></div>
-                  <p className="text-sm font-medium mb-1">Nenhuma personalização configurada</p>
-                  <p className="text-xs text-muted-foreground mb-4 max-w-[300px] mx-auto">Use o assistente para definir componentes, locais e técnicas de gravação do produto.</p>
-                  <Button type="button" size="sm" onClick={w.startWizard} className="gap-1.5"><Zap className="h-3.5 w-3.5" /> Iniciar Configuração</Button>
-                </div>
-              )}
-              {w.displayAreas.length > 0 && (
-                <div className="space-y-1.5">
-                  {w.displayAreas.map(area => (
-                    <EngravingAreaCard key={area.id} area={area}
-                      isExpanded={w.expandedId === area.id}
-                      onToggleExpand={() => w.setExpandedId(w.expandedId === area.id ? null : area.id)}
-                      onToggleActive={() => w.handleToggleActive(area)}
-                      onDelete={() => w.handleDeleteArea(area)} />
-                  ))}
-                </div>
-              )}
-            </motion.div>
-          ) : (
-            <motion.div key={w.wizardStep} initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.25 }}>
-              <button type="button" onClick={w.resetWizard} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-3 transition-colors" aria-label="Voltar">
-                <ChevronLeft className="h-3 w-3" /> Voltar à lista
-              </button>
-              {renderWizardStepper()}
-              {w.wizardStep === 'component' && renderComponentStep()}
-              {w.wizardStep === 'location' && renderLocationStep()}
-              {w.wizardStep === 'technique' && renderTechniqueStep()}
-              {w.wizardStep === 'details' && renderDetailsStep()}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      )}
+      <AnimatePresence mode="wait">
+        <EngravingContent
+          w={w}
+          isEdit={isEdit}
+          renderWizardStepper={renderWizardStepper}
+          renderComponentStep={renderComponentStep}
+          renderLocationStep={renderLocationStep}
+          renderTechniqueStep={renderTechniqueStep}
+          renderDetailsStep={renderDetailsStep}
+        />
+      </AnimatePresence>
     </SectionCard>
   );
 }

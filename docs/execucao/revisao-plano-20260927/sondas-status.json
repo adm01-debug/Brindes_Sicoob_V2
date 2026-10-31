@@ -1,0 +1,10 @@
+{
+  "base": "3094cbab22adfa012edcca5278680fa739df46ca",
+  "ambiente": "PostgreSQL 17 descartável, sem rede e sem portas publicadas",
+  "resultado": "Duas lacunas reproduzidas",
+  "cenarios": [
+    "Migration 20260927110100 falha em schema com quotes.status text e sem enum quote_status.",
+    "Após 20260927110000, atualização direta de status não gera histórico pelo gatilho legado."
+  ],
+  "limite": "Fixture mínimo; não reproduz todas as constraints, policies e triggers do Supabase canônico."
+}

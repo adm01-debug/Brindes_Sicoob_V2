@@ -1,0 +1,12 @@
+{
+  "data": "2026-10-01",
+  "commit": "f1b4e0dd0ff33e5c78742ffa9d2cf5a7385d8e13",
+  "comando": "./node_modules/.bin/vitest run tests/services/quoteStatusTransition.test.ts tests/services/quoteReorder.test.ts tests/services/sicoobLogisticsReportService.test.ts tests/hooks/useAutoSave.test.tsx tests/hooks/useKitStockForecast.test.ts tests/edge-functions/sicoob-kit-quote-catalog.test.ts tests/edge-functions/sicoob-artwork-register.test.ts tests/unit/sicoob-document-scanner.test.ts --reporter=dot",
+  "resultado": {
+    "arquivos_aprovados": 8,
+    "testes_aprovados": 39,
+    "falhos": 0,
+    "duracao_s": 3.84
+  },
+  "observacao": "Resultado observado da execução focal nesta revisão. Falha de escopo foi reproduzida em fixture PostgreSQL separada; não integra esta suíte."
+}

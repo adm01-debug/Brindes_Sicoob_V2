@@ -2,53 +2,72 @@
  * useProductFormDraft — Auto-save / restore form drafts from localStorage
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { type UseFormSetValue } from 'react-hook-form';
+import { type FieldPath, type FieldPathValue, type UseFormSetValue } from 'react-hook-form';
 import { toast } from 'sonner';
 import type { ProductFormData } from '../ProductFormSchema';
 
-export function useProductFormDraft(
-  productId: string | undefined,
-  setValue: UseFormSetValue<ProductFormData>,
-  formValues: ProductFormData,
-  images: string[],
-  stepIndex: number,
-  setImages: (imgs: string[]) => void,
-  setStepIndex: (i: number) => void,
-) {
-  const DRAFT_KEY = `product-draft-${productId || 'new'}`;
-  const draftRestoredRef = useRef(false);
-  const [hasDraft, setHasDraft] = useState(false);
+interface ProductFormDraftOptions {
+  productId?: string;
+  setValue: UseFormSetValue<ProductFormData>;
+  formValues: ProductFormData;
+  images: string[];
+  stepIndex: number;
+  setImages: (images: string[]) => void;
+  setStepIndex: (index: number) => void;
+}
 
-  // Restore draft on mount (only once)
+interface ProductDraft {
+  formData: Partial<ProductFormData>;
+  images: string[];
+  stepIndex: number;
+  savedAt: number;
+}
+
+function restoreFormValues(setValue: UseFormSetValue<ProductFormData>, values: Partial<ProductFormData>) {
+  type ProductPath = FieldPath<ProductFormData>;
+  for (const key of Object.keys(values) as ProductPath[]) {
+    const value = values[key] as FieldPathValue<ProductFormData, typeof key> | undefined;
+    if (value !== undefined) setValue(key, value);
+  }
+}
+
+function useDraftRestore(options: ProductFormDraftOptions, draftKey: string, onRestored: () => void) {
+  const restoredRef = useRef(false);
   useEffect(() => {
-    if (draftRestoredRef.current) return;
-    draftRestoredRef.current = true;
+    if (restoredRef.current) return;
+    restoredRef.current = true;
     try {
-      const raw = localStorage.getItem(DRAFT_KEY);
+      const raw = localStorage.getItem(draftKey);
       if (!raw) return;
-      const draft = JSON.parse(raw) as {
-        formData: Partial<ProductFormData>;
-        images: string[];
-        stepIndex: number;
-        savedAt: number;
-      };
-      if (Date.now() - draft.savedAt > 24 * 60 * 60 * 1000) {
-        localStorage.removeItem(DRAFT_KEY);
-        return;
-      }
-      const keys = Object.keys(draft.formData) as (keyof ProductFormData)[];
-      keys.forEach((key) => {
-        const val = draft.formData[key];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (val !== undefined) setValue(key, val as any);
-      });
-      if (draft.images?.length) setImages(draft.images);
-      if (typeof draft.stepIndex === 'number') setStepIndex(draft.stepIndex);
-      setHasDraft(true);
-    } catch {
-      /* ignore corrupt drafts */
-    }
-  }, [DRAFT_KEY, setValue, setImages, setStepIndex]);
+      const draft = JSON.parse(raw) as ProductDraft;
+      if (Date.now() - draft.savedAt > 24 * 60 * 60 * 1000) { localStorage.removeItem(draftKey); return; }
+      restoreFormValues(options.setValue, draft.formData);
+      if (draft.images?.length) options.setImages(draft.images);
+      if (typeof draft.stepIndex === 'number') options.setStepIndex(draft.stepIndex);
+      onRestored();
+    } catch { /* ignora rascunhos corrompidos */ }
+  }, [draftKey, onRestored, options]);
+}
+
+function useDraftPersistence(formValues: ProductFormData, images: string[], stepIndex: number, draftKey: string) {
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      if (!formValues.name && !formValues.sku) return;
+      try { localStorage.setItem(draftKey, JSON.stringify({ formData: formValues, images, stepIndex, savedAt: Date.now() })); } catch { /* quota excedida */ }
+    }, 2000);
+    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
+  }, [formValues, images, stepIndex, draftKey]);
+}
+
+export function useProductFormDraft({
+  productId, setValue, formValues, images, stepIndex, setImages, setStepIndex,
+}: ProductFormDraftOptions) {
+  const DRAFT_KEY = `product-draft-${productId || 'new'}`;
+  const [hasDraft, setHasDraft] = useState(false);
+  const markRestored = useCallback(() => setHasDraft(true), []);
+  useDraftRestore({ productId, setValue, formValues, images, stepIndex, setImages, setStepIndex }, DRAFT_KEY, markRestored);
 
   // Show draft restored notification
   useEffect(() => {
@@ -66,25 +85,7 @@ export function useProductFormDraft(
     });
   }, [hasDraft, DRAFT_KEY]);
 
-  // Save draft with debounce (2s)
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => {
-      if (!formValues.name && !formValues.sku) return;
-      try {
-        localStorage.setItem(
-          DRAFT_KEY,
-          JSON.stringify({ formData: formValues, images, stepIndex, savedAt: Date.now() }),
-        );
-      } catch {
-        /* quota exceeded */
-      }
-    }, 2000);
-    return () => {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    };
-  }, [formValues, images, stepIndex, DRAFT_KEY]);
+  useDraftPersistence(formValues, images, stepIndex, DRAFT_KEY);
 
   const clearDraft = useCallback(() => {
     localStorage.removeItem(DRAFT_KEY);

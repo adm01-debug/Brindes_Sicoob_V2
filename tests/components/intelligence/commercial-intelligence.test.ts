@@ -13,7 +13,7 @@
  * 9. Bugs encontrados durante auditoria
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 // =============================================
 // 1. PURE LOGIC TESTS — getSinceDate equivalent
@@ -1024,7 +1024,7 @@ describe('Supabase query limit concerns', () => {
     // This documents a potential data integrity issue:
     // Categories with >200 products will only analyze the first 200
     const categorySizes = { 'Canetas': 50, 'Garrafas': 30, 'Mochilas': 15, 'Todos': 5000 };
-    Object.entries(categorySizes).forEach(([cat, size]) => {
+    Object.entries(categorySizes).forEach(([, size]) => {
       if (size > 200) {
         // This category will have truncated results
         expect(size).toBeGreaterThan(200);

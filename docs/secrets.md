@@ -15,7 +15,7 @@ dois gates de CI ficam vermelhos. Ninguém tinha essa lista consolidada antes.
 | `SUPABASE_URL` | várias (client admin) | Supabase (automático) |
 | `SUPABASE_SERVICE_ROLE_KEY` | várias (client admin) | Supabase (automático) |
 | `SUPABASE_ANON_KEY` | várias | Supabase (automático) |
-| `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` | build do frontend | GitHub secret + `.env.production` |
+| `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` / `VITE_SUPABASE_PROJECT_ID` | build do frontend | segredo/configuração do provedor de hospedagem; usar `.env.production.example` somente como modelo local |
 | `EXTERNAL_SUPABASE_URL` / `EXTERNAL_SUPABASE_SERVICE_KEY` | `categories-api`, `external-db-inspect` (catálogo externo) | **preencher** |
 | `CRM_SUPABASE_URL` / `CRM_SUPABASE_ANON_KEY` / `CRM_SUPABASE_SERVICE_KEY` | `crm-db-bridge` | **preencher** |
 | `BITRIX24_WEBHOOK_URL` | `bitrix-sync` | **preencher** |
@@ -25,6 +25,7 @@ dois gates de CI ficam vermelhos. Ninguém tinha essa lista consolidada antes.
 | `RESEND_API_KEY` | e-mail da fila de aprovações Sicoob e relatórios | **configuração remota ainda não verificada** |
 | `NOTIFICATION_FROM_EMAIL` | endereço remetente do Resend na fila de aprovações; somente email, sem nome de exibição | **configuração remota ainda não verificada** |
 | `SICOOB_APPROVAL_WORKER_SECRET` | autenticação HTTP dedicada do worker da outbox, sem transmitir a service role | **configuração remota ainda não verificada** |
+| `INTERNAL_FUNCTION_SECRET` | `send-notification`, `process-batch-export`, `monthly-health-report` e `connections-auto-test`; autentica chamadas de cron/Edge antes de criar cliente service role | **configurar nas Edge Functions antes de publicar** |
 | `VIRUSTOTAL_API_KEY` | scan de upload | **preencher** |
 | `GITHUB_PAT` | `github-credentials-test`, `github-fix-config` | **preencher — escopo mínimo necessário** |
 | `LOVABLE_API_KEY` | integração Lovable | **preencher** |
@@ -48,6 +49,18 @@ O agendamento da outbox exige ainda dois segredos no Supabase Vault:
 `SICOOB_APPROVAL_WORKER_SECRET`). Sem ambos, o job permanece inerte, registra
 um aviso e não realiza chamadas externas.
 
+As quatro funções internas acima exigem o mesmo
+`INTERNAL_FUNCTION_SECRET` no ambiente das Edge Functions e o cabeçalho
+`x-sicoob-internal-secret` em cada chamada de cron ou de outra função. Sem o
+segredo, elas respondem `503`; com credencial ausente ou inválida, respondem
+`401`. O valor deve ser aleatório, exclusivo deste ambiente e nunca pode ser
+enviado ao navegador ou versionado no repositório.
+
+Os crons de exportações e de conexões usam a cópia desse valor no Vault com o nome
+`sicoob_internal_function_secret`; os dois nomes devem conter exatamente o
+mesmo segredo. A URL usada por esse cron é `sicoob_project_url`, também no
+Vault. Sem os dois valores, o job apenas registra aviso e não faz chamada HTTP.
+
 A evidência da assinatura pública exige o segredo
 `quote_approval_evidence_hmac` no Supabase Vault, com pelo menos 32 caracteres
 aleatórios. A chave não deve ser colocada em variáveis `VITE_*` nem no
@@ -67,7 +80,7 @@ assinaturas que as referenciem, pois são necessárias para verificar o históri
 | `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` | `e2e.yml` | ❌ **ausente — causa da falha do PR #6 (etapa 03)** |
 | `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` | `e2e.yml` | ❌ **ausente — idem** |
 | `SUPABASE_SERVICE_ROLE_KEY` | `security-compliance.yml` | ❌ **ausente — causa da falha do job agendado em `main` (etapa 04)** |
-| `SUPABASE_DB_URL` | `migration-ledger-drift.yml` | ❌ **ausente — impede comparar o ledger remoto** |
+| `SUPABASE_DB_URL` | `migration-ledger-drift.yml`, `apply-sicoob-migrations.yml` | ✅ configurado no repositório; uso de escrita restrito ao environment `construction` e à `main` protegida. O workflow de escrita exige banco `postgres`, porta `5432`, `sslmode=require` ou `verify-full` e host direto `db.cfmzkthhgliqelozlmwu.supabase.co` ou session pooler oficial com usuário `postgres.cfmzkthhgliqelozlmwu` |
 | `RLS_TEST_USER_A_EMAIL` / `_PASSWORD` | `security-compliance.yml` | ❌ **ausente — persona autenticada de uma organização isolada** |
 | `RLS_TEST_USER_B_EMAIL` / `_PASSWORD` | `security-compliance.yml` | ❌ **ausente — proprietário da fixture privada** |
 | `RLS_TEST_PRIVATE_QUOTE_B_ID` | `security-compliance.yml` | ❌ **ausente — orçamento privado determinístico da persona B** |

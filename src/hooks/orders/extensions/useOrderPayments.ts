@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { requireOrderId } from '@/hooks/orders/require-order-id';
 
 export interface OrderPayment {
   id: string;
@@ -29,6 +30,7 @@ export interface RecordOrderPaymentInput {
 }
 
 const SICOOB_FINANCIAL_TIME_ZONE = 'America/Sao_Paulo';
+const ORDER_PAYMENTS_QUERY_KEY = 'sicoob-order-payments';
 
 export function getSicoobFinancialDate(date = new Date()): string {
   const parts = new Intl.DateTimeFormat('en-US', {
@@ -44,12 +46,12 @@ export function getSicoobFinancialDate(date = new Date()): string {
 export function useOrderPayments(orderId?: string) {
   const queryClient = useQueryClient();
   const query = useQuery({
-    queryKey: ['sicoob-order-payments', orderId],
+    queryKey: [ORDER_PAYMENTS_QUERY_KEY, orderId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('sicoob_order_payments')
         .select('id, status, installment_number, amount, due_date, paid_at, refunded_at, refunded_by, refund_reason, payment_method, external_reference, updated_at')
-        .eq('order_id', orderId!)
+        .eq('order_id', requireOrderId(orderId))
         .order('installment_number');
       if (error) throw error;
       return (data || []) as OrderPayment[];
@@ -66,17 +68,17 @@ export function useOrderPayments(orderId?: string) {
         p_amount: input.amount,
         p_due_date: input.dueDate,
         p_status: input.status,
-        p_invoice_id: input.invoiceId ?? null,
-        p_payment_method: input.paymentMethod ?? null,
-        p_external_reference: input.externalReference ?? null,
-        p_expected_updated_at: input.expectedUpdatedAt ?? null,
+        p_invoice_id: input.invoiceId ?? undefined,
+        p_payment_method: input.paymentMethod ?? undefined,
+        p_external_reference: input.externalReference ?? undefined,
+        p_expected_updated_at: input.expectedUpdatedAt ?? undefined,
       });
       if (error) throw error;
       if (!data) throw new Error('O banco não confirmou o registro financeiro.');
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sicoob-order-payments', orderId] });
+      queryClient.invalidateQueries({ queryKey: [ORDER_PAYMENTS_QUERY_KEY, orderId] });
       queryClient.invalidateQueries({ queryKey: ['order-audit', orderId] });
       toast.success('Parcela registrada');
     },
@@ -95,7 +97,7 @@ export function useOrderPayments(orderId?: string) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sicoob-order-payments', orderId] });
+      queryClient.invalidateQueries({ queryKey: [ORDER_PAYMENTS_QUERY_KEY, orderId] });
       queryClient.invalidateQueries({ queryKey: ['order-audit', orderId] });
       toast.success('Estorno registrado com rastreabilidade');
     },

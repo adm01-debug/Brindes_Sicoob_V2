@@ -1,4 +1,4 @@
-import { memo, useCallback } from "react";
+import { type MouseEvent, memo, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Package, Building2, FolderTree } from "lucide-react";
@@ -18,6 +18,14 @@ function formatPrice(price: number): string {
   return price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+function hasPrice(price: number | null | undefined) {
+  return Number(price) > 0;
+}
+
+function isActivationKey(key: string) {
+  return key === 'Enter' || key === ' ';
+}
+
 const STOCK_CONFIG: Record<StockStatus, { className: string; label: string; mobileIcon: string }> = {
   'in-stock':     { className: 'in-stock',     label: 'Em estoque',    mobileIcon: '✓' },
   'low-stock':    { className: 'low-stock',    label: 'Estoque baixo', mobileIcon: '!' },
@@ -32,6 +40,30 @@ export interface ReplenishmentCardProps {
   readonly selectionMode: boolean;
   readonly isSelected: boolean;
   readonly onToggleSelect: () => void;
+}
+
+interface CardSelectionProps {
+  readonly enabled: boolean;
+  readonly selected: boolean;
+  readonly productName: string;
+  readonly onToggle: () => void;
+  readonly onClick: (event: MouseEvent) => void;
+}
+
+function CardSelection({ enabled, selected, productName, onToggle, onClick }: CardSelectionProps) {
+  if (!enabled) return null;
+
+  return (
+    <div className="absolute top-2 right-2 z-10" onClick={onClick} role="group" aria-label="Seleção">
+      <SelectionCheckbox
+        checked={selected}
+        onChange={onToggle}
+        size="md"
+        animateEntry
+        aria-label={`Selecionar ${productName}`}
+      />
+    </div>
+  );
 }
 
 export const ReplenishmentGridCard = memo(function ReplenishmentGridCard({
@@ -50,7 +82,7 @@ export const ReplenishmentGridCard = memo(function ReplenishmentGridCard({
     else onClick();
   }, [selectionMode, onToggleSelect, onClick]);
 
-  const handleCheckboxClick = useCallback((e: React.MouseEvent) => {
+  const handleCheckboxClick = useCallback((e: MouseEvent) => {
     e.stopPropagation();
   }, []);
 
@@ -67,7 +99,7 @@ export const ReplenishmentGridCard = memo(function ReplenishmentGridCard({
       aria-label={`${product.product_name} — ${stockConfig.label}, ${formatPrice(product.base_price ?? 0)}`}
       aria-selected={selectionMode ? isSelected : undefined}
       tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } }}
+      onKeyDown={(e) => { if (isActivationKey(e.key)) { e.preventDefault(); handleClick(); } }}
     >
       <CardContent className="p-0">
         {/* Image Section */}
@@ -86,17 +118,13 @@ export const ReplenishmentGridCard = memo(function ReplenishmentGridCard({
             </div>
           )}
 
-          {selectionMode && (
-            <div className="absolute top-2 right-2 z-10" onClick={handleCheckboxClick} role="group" aria-label="Seleção">
-              <SelectionCheckbox
-                checked={isSelected}
-                onChange={onToggleSelect}
-                size="md"
-                animateEntry
-                aria-label={`Selecionar ${product.product_name}`}
-              />
-            </div>
-          )}
+          <CardSelection
+            enabled={selectionMode}
+            selected={isSelected}
+            productName={product.product_name}
+            onToggle={onToggleSelect}
+            onClick={handleCheckboxClick}
+          />
 
           <div className="absolute top-2 left-2">
             <ReplenishmentBadge daysSince={product.days_since} size="sm" />
@@ -133,11 +161,11 @@ export const ReplenishmentGridCard = memo(function ReplenishmentGridCard({
           {/* Price + Stock */}
           <div className="flex items-end justify-between pt-0.5 sm:pt-1">
             <div>
-              {product.base_price != null && product.base_price > 0 ? (
+              {hasPrice(product.base_price) ? (
                 <>
                   <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5">A partir de</p>
                   <span className="text-base sm:text-xl font-display font-bold text-foreground tabular-nums">
-                    {formatPrice(product.base_price)}
+                    {formatPrice(Number(product.base_price))}
                   </span>
                 </>
               ) : (
@@ -232,9 +260,10 @@ export function ReplenishmentTableView({
                 onClick={() => selectionMode ? onToggleSelect(product.product_id) : onProductClick(product.product_id)}
                 tabIndex={0}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
+                  if (isActivationKey(e.key)) {
                     e.preventDefault();
-                    selectionMode ? onToggleSelect(product.product_id) : onProductClick(product.product_id);
+                    if (selectionMode) onToggleSelect(product.product_id);
+                    else onProductClick(product.product_id);
                   }
                 }}
                 aria-selected={selectionMode ? isSelected : undefined}
@@ -291,8 +320,8 @@ export function ReplenishmentTableView({
                   <p className="text-[10px] text-muted-foreground tabular-nums">{stockQty.toLocaleString('pt-BR')} un.</p>
                 </TableCell>
                 <TableCell className="text-right px-2 py-1.5">
-                  {product.base_price != null && product.base_price > 0 ? (
-                    <span className="text-xs font-semibold tabular-nums">{formatPrice(product.base_price)}</span>
+                  {hasPrice(product.base_price) ? (
+                    <span className="text-xs font-semibold tabular-nums">{formatPrice(Number(product.base_price))}</span>
                   ) : (
                     <span className="text-[11px] text-muted-foreground">—</span>
                   )}

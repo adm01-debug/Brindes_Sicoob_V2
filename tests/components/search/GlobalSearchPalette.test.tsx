@@ -2,7 +2,6 @@
  * Render tests for GlobalSearchPalette
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import React from "react";
 
 vi.mock("@/hooks/useSearch", () => ({
   useSearch: vi.fn().mockReturnValue({

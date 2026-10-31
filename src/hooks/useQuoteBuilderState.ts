@@ -11,19 +11,348 @@ import { useDiscountApproval } from "@/hooks/useDiscountApproval";
 import { format, addDays } from "date-fns";
 import { toast } from "sonner";
 import { validateQuoteForm, QUOTE_FIELD_LABELS } from "@/lib/validations";
-import { useQuotes, type QuoteItem, type QuoteItemPersonalization } from "@/hooks/quotes/useQuotes";
+import { useQuotes, type Quote, type QuoteItem, type QuoteItemPersonalization } from "@/hooks/quotes/useQuotes";
 import { useQuoteTemplates, type QuoteTemplate, type QuoteTemplateItem } from "@/hooks/useQuoteTemplates";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRBAC } from "@/hooks/useRBAC";
 import { supabase } from "@/integrations/supabase/client";
 import { getPriceFreshness } from "@/utils/price-freshness";
 import type { SelectedCompanyInfo, SelectedContactInfo } from "@/components/quotes/CompanyContactSelector";
 import type { ExternalVariantStock } from "@/hooks/useExternalVariantStock";
+import { getQuoteItemVariantIdentity } from "@/hooks/quotes/quoteVariantIdentity";
 import type { QuoteBuilderStep } from "@/components/quotes/QuoteBuilderStepper";
 import { calculateQuoteTotals, formatCurrency, calculateItemTotal, calculateItemPersonalizationTotal } from "@/utils/quote-calculations";
 import type { Product, DiscountType, DeliveryMode } from "@/types/quote-builder";
 import { useQuoteProductSearch } from "@/hooks/quote/useQuoteProductSearch";
 import { useQuoteInitialization } from "@/hooks/quote/useQuoteInitialization";
+import { isQuoteCommerciallyEditable, quoteStatusRequiresDraftReset } from "@/lib/quote-status-config";
+
+export function validateBudgetForSubmission<T>(
+  budget: T | null,
+  error: unknown,
+): { ok: true; budget: T } | { ok: false; message: string } {
+  if (error) {
+    return { ok: false, message: "Não foi possível validar a verba do PA. Tente novamente antes de enviar." };
+  }
+  if (!budget) {
+    return { ok: false, message: "A verba desta competência ainda não foi configurada para o seu PA." };
+  }
+  return { ok: true, budget };
+}
+
+function truthyOr<T>(value: T | null | undefined | false | "" | 0, fallback: T): T {
+  return value ? value as T : fallback;
+}
+
+function definedOr<T>(value: T | null | undefined, fallback: T): T {
+  return value === undefined || value === null ? fallback : value;
+}
+
+function quoteBuilderSteps(
+  clientId: string,
+  itemCount: number,
+  paymentTerms: string,
+  ...conditions: [deliveryTime: string, shippingType: string]
+): QuoteBuilderStep[] {
+  const [deliveryTime, shippingType] = conditions;
+  const steps: QuoteBuilderStep[] = [];
+  const hasConditions = [paymentTerms, deliveryTime, shippingType].every(Boolean);
+  if (clientId) steps.push("client");
+  if (itemCount > 0) steps.push("items");
+  if (hasConditions) steps.push("conditions");
+  if ([clientId, itemCount > 0, hasConditions].every(Boolean)) steps.push("review");
+  return steps;
+}
+
+function preferredProductImage(product: Product, variant: ExternalVariantStock | null): string | undefined {
+  if (variant?.selected_thumbnail) return variant.selected_thumbnail;
+  if (variant?.images?.length) return variant.images[0];
+  if (Array.isArray(product.images) && product.images.length > 0) return product.images[0] as string;
+  return undefined;
+}
+
+function buildQuoteItem(product: Product, variant: ExternalVariantStock | null): QuoteItem {
+  const selected = truthyOr(variant, {} as Partial<ExternalVariantStock>);
+  return {
+    product_id: product.id,
+    product_name: product.name,
+    product_sku: product.sku,
+    product_image_url: preferredProductImage(product, variant),
+    quantity: 1,
+    unit_price: product.price,
+    unit_cost: truthyOr(product.costPrice, 0),
+    color_name: truthyOr(selected.color_name, undefined),
+    color_hex: truthyOr(selected.color_hex, undefined),
+    size_code: truthyOr(selected.size_code, undefined),
+    bitrix_product_id: definedOr(selected.bitrix_product_id, null),
+    ...getQuoteItemVariantIdentity(variant),
+    price_updated_at: definedOr(product.priceUpdatedAt, null),
+    price_freshness_threshold_days: definedOr(product.priceFreshnessThresholdDays, null),
+    stock_available: definedOr(selected.stock_quantity, definedOr(product.totalStock, null)),
+    personalizations: [],
+  };
+}
+
+function mapTemplateItem(item: QuoteTemplateItem): QuoteItem {
+  return {
+    product_id: truthyOr(item.productId, ""),
+    product_name: item.productName,
+    product_sku: item.productSku,
+    product_image_url: item.productImageUrl,
+    quantity: item.quantity,
+    unit_price: item.unitPrice,
+    color_name: item.colorName,
+    color_hex: item.colorHex,
+    personalizations: item.personalizations?.map((personalization) => ({
+      technique_id: truthyOr(personalization.techniqueId, ""),
+      technique_name: personalization.techniqueName,
+      colors_count: personalization.colorsCount,
+      positions_count: personalization.positionsCount,
+      unit_cost: personalization.unitCost,
+      setup_cost: personalization.setupCost,
+    })),
+  };
+}
+
+function applyTemplateDiscount(
+  template: QuoteTemplate,
+  setDiscountType: (type: DiscountType) => void,
+  setDiscountValue: (value: number) => void,
+): void {
+  if ((template.discount_percent ?? 0) > 0) {
+    setDiscountType("percent");
+    setDiscountValue(template.discount_percent ?? 0);
+    return;
+  }
+  if ((template.discount_amount ?? 0) > 0) {
+    setDiscountType("amount");
+    setDiscountValue(template.discount_amount ?? 0);
+  }
+}
+
+type SaveStatus = "draft" | "pending" | "pending_approval" | "pending_singular_approval";
+
+function validateSaveForm(
+  status: SaveStatus,
+  isDraftValid: boolean,
+  isFormValid: boolean,
+  validationErrors: string[],
+): boolean {
+  if (status === "draft" && !isDraftValid) {
+    toast.error("Selecione uma empresa para salvar o rascunho.");
+    return false;
+  }
+  if (status !== "draft" && !isFormValid) {
+    const missing = validationErrors.map((error) => QUOTE_FIELD_LABELS[error] || error).join(", ");
+    toast.error(`Preencha os campos obrigatórios: ${missing}`);
+    return false;
+  }
+  return true;
+}
+
+function validateFreshPrices(status: SaveStatus, items: QuoteItem[]): boolean {
+  if (status === "draft") return true;
+  const staleUnconfirmed = items.some((item) => {
+    if (item.price_confirmed_at) return false;
+    return getPriceFreshness(item.price_updated_at, item.price_freshness_threshold_days).isStale;
+  });
+  if (!staleUnconfirmed) return true;
+  toast.error("Confirme os preços defasados antes de fechar o orçamento");
+  return false;
+}
+
+function isPaPurchaser(isGerentePa: boolean, roles: string[] | undefined): boolean {
+  return isGerentePa || Boolean(roles?.includes("comprador_pac"));
+}
+
+interface BudgetValidationParams {
+  status: SaveStatus;
+  isPaUser: boolean;
+  paId: string | null | undefined;
+  total: number;
+}
+
+function validateTransactionLimit(total: number, limit: number): boolean {
+  if (limit <= 0 || total <= limit) return true;
+  toast.error("Limite de alçada excedido!", {
+    description: `Este pedido (R$ ${total.toLocaleString()}) supera seu limite de R$ ${limit.toLocaleString()}.`,
+  });
+  return false;
+}
+
+function validateMonthlyBudget(total: number, budget: { verba_total: number; verba_consumida: number | null }): boolean {
+  const remaining = budget.verba_total - (budget.verba_consumida || 0);
+  if (budget.verba_total <= 0 || total <= remaining) return true;
+  toast.error("Verba insuficiente!", {
+    description: `Você possui apenas R$ ${remaining.toLocaleString()} de verba disponível este mês.`,
+  });
+  return false;
+}
+
+async function validatePaBudget(params: BudgetValidationParams): Promise<boolean> {
+  const { status, isPaUser, paId, total } = params;
+  if (status === "draft" || !isPaUser) return true;
+  if (!paId) {
+    toast.error("Seu perfil não possui um Ponto de Atendimento vinculado.");
+    return false;
+  }
+  const { data: budget, error } = await supabase
+    .from('pa_budgets')
+    .select('*')
+    .eq('pa_id', paId)
+    .eq('ano', new Date().getFullYear())
+    .eq('mes', new Date().getMonth() + 1)
+    .maybeSingle();
+  const validation = validateBudgetForSubmission(budget, error);
+  if (!validation.ok) {
+    toast.error(validation.message);
+    return false;
+  }
+  const limit = validation.budget.limite_alcada ?? 0;
+  return validateTransactionLimit(total, limit) && validateMonthlyBudget(total, validation.budget);
+}
+
+function finalQuoteStatus(status: SaveStatus, isPaUser: boolean): SaveStatus {
+  return status === "pending" && isPaUser ? "pending_singular_approval" : status;
+}
+
+interface QuoteDataParams {
+  isEditMode: boolean;
+  currentStatus: string;
+  clientId: string;
+  contactInfo: SelectedContactInfo | null;
+  companyInfo: SelectedCompanyInfo | null;
+  tags: string[];
+  discountType: DiscountType;
+  discountValue: number;
+  markup: number;
+  notes: string;
+  internalNotes: string;
+  validUntil: string;
+  paymentTerms: string;
+  deliveryTime: string;
+  shippingType: string;
+  shippingCost: number;
+}
+
+function buildQuoteData(params: QuoteDataParams): Partial<Quote> {
+  const persistedStatus = (params.isEditMode ? params.currentStatus : "draft") as Quote["status"];
+  const paidShipping = ["fob_pre", "fob"].includes(params.shippingType);
+  return {
+    client_id: truthyOr(params.clientId, undefined),
+    client_name: truthyOr(params.contactInfo?.name, undefined),
+    client_company: truthyOr(params.companyInfo?.name, undefined),
+    client_cnpj: truthyOr(params.companyInfo?.cnpj, undefined),
+    client_email: truthyOr(params.contactInfo?.email, undefined),
+    client_phone: truthyOr(params.contactInfo?.phone, undefined),
+    status: persistedStatus,
+    tags: params.tags,
+    discount_percent: params.discountType === "percent" ? params.discountValue : 0,
+    discount_amount: params.discountType === "amount" ? params.discountValue : 0,
+    negotiation_markup_percent: params.markup,
+    notes: truthyOr(params.notes, undefined),
+    internal_notes: truthyOr(params.internalNotes, undefined),
+    valid_until: truthyOr(params.validUntil, undefined),
+    payment_terms: truthyOr(params.paymentTerms, undefined),
+    delivery_time: truthyOr(params.deliveryTime, undefined),
+    shipping_type: truthyOr(params.shippingType, undefined),
+    shipping_cost: paidShipping ? params.shippingCost : undefined,
+  };
+}
+
+interface PersistQuoteParams {
+  isEditMode: boolean;
+  quoteId?: string;
+  expectedRowVersion: number | null;
+  quoteData: Partial<Quote>;
+  items: QuoteItem[];
+  idempotencyKeyRef: { current: string | null };
+  createQuote: (quote: Partial<Quote>, items: QuoteItem[], idempotencyKey: string) => Promise<Quote | null>;
+  updateQuote: (quoteId: string, quote: Partial<Quote>, items: QuoteItem[], expectedVersion: number) => Promise<Quote | null>;
+}
+
+async function persistQuote(params: PersistQuoteParams): Promise<Quote | null> {
+  const { isEditMode, quoteId, expectedRowVersion, quoteData, items } = params;
+  if (isEditMode && quoteId && expectedRowVersion !== null) {
+    return params.updateQuote(
+      quoteId,
+      { ...quoteData, row_version: expectedRowVersion },
+      items,
+      expectedRowVersion,
+    );
+  }
+  params.idempotencyKeyRef.current ??= crypto.randomUUID();
+  return params.createQuote(quoteData, items, params.idempotencyKeyRef.current);
+}
+
+interface TransitionQuoteParams {
+  quote: Quote;
+  finalStatus: SaveStatus;
+  persistedStatus: Quote["status"];
+  maxDiscountPercent: number | null | undefined;
+  realDiscountPercent: number;
+  sellerNotes?: string;
+  requestApproval: (quoteId: string, requested: number, allowed: number, notes?: string) => Promise<boolean>;
+  updateQuoteStatus: (quoteId: string, status: Quote["status"]) => Promise<boolean>;
+}
+
+async function applyQuoteTransition(params: TransitionQuoteParams): Promise<boolean> {
+  const quoteId = params.quote.id;
+  if (!quoteId) return false;
+  let effectiveStatus = params.persistedStatus;
+  if (quoteStatusRequiresDraftReset(effectiveStatus)) {
+    const reopened = await params.updateQuoteStatus(quoteId, "draft");
+    if (!reopened) return false;
+    effectiveStatus = "draft";
+  }
+  if (params.finalStatus === "pending_approval" && params.maxDiscountPercent !== null && params.maxDiscountPercent !== undefined) {
+    return params.requestApproval(
+      quoteId,
+      params.realDiscountPercent,
+      params.maxDiscountPercent,
+      params.sellerNotes,
+    );
+  }
+  if (params.finalStatus !== effectiveStatus) {
+    return params.updateQuoteStatus(quoteId, params.finalStatus);
+  }
+  return true;
+}
+
+function persistedQuoteStatus(isEditMode: boolean, currentStatus: string): Quote["status"] {
+  return (isEditMode ? currentStatus : "draft") as Quote["status"];
+}
+
+function canPersistQuoteVersion(isEditMode: boolean, expectedRowVersion: number | null): boolean {
+  if (!isEditMode || expectedRowVersion !== null) return true;
+  toast.error("Não foi possível confirmar a versão do orçamento. Recarregue a página antes de salvar.");
+  return false;
+}
+
+interface CompleteSaveParams {
+  result: Quote;
+  isEditMode: boolean;
+  expectedRowVersion: number | null;
+  finalStatus: SaveStatus;
+  transitionApplied: boolean;
+  setExpectedRowVersion: (version: number | null) => void;
+  navigate: (path: string) => void;
+}
+
+function completeQuoteSave(params: CompleteSaveParams): void {
+  const { result, finalStatus, transitionApplied } = params;
+  if (params.isEditMode) {
+    params.setExpectedRowVersion(result.row_version ?? params.expectedRowVersion);
+  }
+  if (!transitionApplied) {
+    toast.warning("O orçamento foi salvo, mas não foi possível confirmar o status final. Consulte a tela do orçamento antes de tentar novamente.");
+    params.navigate(`/orcamentos/${result.id}`);
+    return;
+  }
+  if (finalStatus === "pending_singular_approval") {
+    toast.success("Solicitação enviada para aprovação da Singular!");
+  }
+  params.navigate(`/orcamentos/${result.id}`);
+}
 
 export function useQuoteBuilderState() {
   const navigate = useNavigate();
@@ -32,9 +361,8 @@ export function useQuoteBuilderState() {
   const [searchParams] = useSearchParams();
   const isEditMode = Boolean(quoteId);
 
-  const { user, roles: userRoles, isGerentePa } = useAuth();
-  const { isSupervisorOrAbove } = useRBAC();
-  const { createQuote, updateQuote, fetchQuote, isLoading: quotesLoading } = useQuotes();
+  const { user, profile, roles: userRoles, isGerentePa } = useAuth();
+  const { createQuote, updateQuote, updateQuoteStatus, fetchQuote, isLoading: quotesLoading } = useQuotes();
   const { templates } = useQuoteTemplates();
   const { myLimit: maxDiscountPercent } = useSellerDiscountLimits();
   const { requestApproval } = useDiscountApproval();
@@ -55,6 +383,8 @@ export function useQuoteBuilderState() {
   const [tags, setTags] = useState<string[]>([]);
   const [quoteNumber, setQuoteNumber] = useState("");
   const [currentStatus, setCurrentStatus] = useState("draft");
+  const [isLatestVersion, setIsLatestVersion] = useState(true);
+  const [expectedRowVersion, setExpectedRowVersion] = useState<number | null>(null);
   const [paymentTerms, setPaymentTerms] = useState("");
   const [deliveryTime, setDeliveryTime] = useState("");
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>("prazo");
@@ -67,37 +397,42 @@ export function useQuoteBuilderState() {
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [selectedItemIndexes, setSelectedItemIndexes] = useState<Set<number>>(new Set());
+  const createIdempotencyKeyRef = useRef<string | null>(null);
 
   // ── Modular Hooks ──
   const search = useQuoteProductSearch();
+  const initializationSetters = useMemo(() => ({
+    setClientId, setContactId, setValidUntil, setNotes, setInternalNotes,
+    setQuoteNumber, setCurrentStatus, setIsLatestVersion, setExpectedRowVersion, setContactInfo, setCompanyInfo,
+    setDiscountType, setDiscountValue, setNegotiationMarkup, setPaymentTerms,
+    setShippingType, setShippingCost, setDeliveryMode, setDeliveryDate,
+    setDeliveryTime, setItems, setTags, setLoadingQuote, setActiveItemIndex, setExpandedItems,
+  }), []);
   
   useQuoteInitialization({
     isEditMode, quoteId, fetchQuote, 
     locationState: location.state, 
     searchParams,
-    setters: {
-      setClientId, setContactId, setValidUntil, setNotes, setInternalNotes,
-      setQuoteNumber, setCurrentStatus, setContactInfo, setCompanyInfo,
-      setDiscountType, setDiscountValue, setNegotiationMarkup, setPaymentTerms,
-      setShippingType, setShippingCost, setDeliveryMode, setDeliveryDate,
-      setDeliveryTime, setItems, setTags, setLoadingQuote, setActiveItemIndex, setExpandedItems
-    }
+    setters: initializationSetters,
   });
 
   // ── Computeds ──
   const totals = useMemo(() => 
-    calculateQuoteTotals(items, negotiationMarkup, discountType, discountValue, shippingCost, shippingType),
+    calculateQuoteTotals({
+      items,
+      negotiationMarkup,
+      discountType,
+      discountValue,
+      shippingCost,
+      shippingType,
+    }),
     [items, negotiationMarkup, discountType, discountValue, shippingCost, shippingType]
   );
 
-  const completedSteps = useMemo((): QuoteBuilderStep[] => {
-    const steps: QuoteBuilderStep[] = [];
-    if (clientId) steps.push("client");
-    if (items.length > 0) steps.push("items");
-    if (paymentTerms && deliveryTime && shippingType) steps.push("conditions");
-    if (clientId && items.length > 0 && paymentTerms && deliveryTime && shippingType) steps.push("review");
-    return steps;
-  }, [clientId, items.length, paymentTerms, deliveryTime, shippingType]);
+  const completedSteps = useMemo(
+    () => quoteBuilderSteps(clientId, items.length, paymentTerms, deliveryTime, shippingType),
+    [clientId, items.length, paymentTerms, deliveryTime, shippingType],
+  );
 
   const validationErrors = useMemo(() => validateQuoteForm({
     clientId, contactId, paymentTerms, deliveryTime, shippingType, shippingCost, itemsCount: items.length,
@@ -107,7 +442,7 @@ export function useQuoteBuilderState() {
   const isDraftValid = !!clientId;
 
   const isDiscountExceeded = useMemo(() => {
-    if (maxDiscountPercent == null) return false;
+    if (maxDiscountPercent === null || maxDiscountPercent === undefined) return false;
     const effectivePercent = discountType === "percent" 
       ? discountValue 
       : (totals.subtotal > 0 ? (discountValue / totals.subtotal) * 100 : 0);
@@ -116,10 +451,8 @@ export function useQuoteBuilderState() {
 
   const canEdit = useMemo(() => {
     if (!isEditMode) return true;
-    if (isSupervisorOrAbove) return true;
-    // Agentes só editam rascunhos ou pendentes (não enviados/aprovados)
-    return ["draft", "pending"].includes(currentStatus);
-  }, [isEditMode, isSupervisorOrAbove, currentStatus]);
+    return isQuoteCommerciallyEditable(currentStatus, isLatestVersion);
+  }, [isEditMode, currentStatus, isLatestVersion]);
 
   const defaultTemplate = useMemo(() => templates.find(t => t.is_default), [templates]);
 
@@ -159,7 +492,12 @@ export function useQuoteBuilderState() {
 
   // ── Actions ──
   const toggleExpanded = useCallback((index: number) => {
-    setExpandedItems(prev => { const n = new Set(prev); n.has(index) ? n.delete(index) : n.add(index); return n; });
+    setExpandedItems(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
   }, []);
 
   const handlePersonalizationsChange = useCallback((index: number, personalizations: QuoteItemPersonalization[]) => {
@@ -167,10 +505,8 @@ export function useQuoteBuilderState() {
   }, []);
 
   const addProductWithColor = useCallback((product: Product, variant: ExternalVariantStock | null) => {
-    const colorName = variant?.color_name || undefined;
-    const colorHex = variant?.color_hex || undefined;
-    const sizeCode = variant?.size_code || undefined;
-    const imageUrl = variant?.selected_thumbnail || (variant?.images?.length ? variant.images[0] : undefined) || (Array.isArray(product.images) && product.images.length > 0 ? (product.images[0] as string) : undefined);
+    const newItem = buildQuoteItem(product, variant);
+    const { color_name: colorName, size_code: sizeCode } = newItem;
     
     const existingIndex = items.findIndex(i => i.product_id === product.id && i.color_name === colorName && i.size_code === sizeCode);
     
@@ -179,17 +515,7 @@ export function useQuoteBuilderState() {
       setActiveItemIndex(existingIndex);
     } else {
       setItems(prev => {
-        const newItems = [...prev, {
-          product_id: product.id, product_name: product.name, product_sku: product.sku,
-          product_image_url: imageUrl, quantity: 1, unit_price: product.price,
-          unit_cost: product.costPrice || 0,
-          color_name: colorName, color_hex: colorHex, size_code: sizeCode,
-          bitrix_product_id: variant?.bitrix_product_id ?? null,
-          price_updated_at: product.priceUpdatedAt ?? null,
-          price_freshness_threshold_days: product.priceFreshnessThresholdDays ?? null,
-          stock_available: variant?.stock_quantity ?? product.totalStock ?? null,
-          personalizations: [],
-        }];
+        const newItems = [...prev, newItem];
         setActiveItemIndex(newItems.length - 1);
         return newItems;
       });
@@ -247,20 +573,9 @@ export function useQuoteBuilderState() {
   }, []);
 
   const applyTemplate = useCallback((template: QuoteTemplate) => {
-    const newItems: QuoteItem[] = (template.items_data ?? []).map((item: QuoteTemplateItem) => ({
-      product_id: item.productId || "", product_name: item.productName,
-      product_sku: item.productSku, product_image_url: item.productImageUrl,
-      quantity: item.quantity, unit_price: item.unitPrice,
-      color_name: item.colorName, color_hex: item.colorHex,
-      personalizations: item.personalizations?.map(p => ({
-        technique_id: p.techniqueId || "", technique_name: p.techniqueName,
-        colors_count: p.colorsCount, positions_count: p.positionsCount,
-        unit_cost: p.unitCost, setup_cost: p.setupCost,
-      })),
-    }));
+    const newItems = (template.items_data ?? []).map(mapTemplateItem);
     setItems(newItems);
-    if ((template.discount_percent ?? 0) > 0) { setDiscountType("percent"); setDiscountValue(template.discount_percent ?? 0); }
-    else if ((template.discount_amount ?? 0) > 0) { setDiscountType("amount"); setDiscountValue(template.discount_amount ?? 0); }
+    applyTemplateDiscount(template, setDiscountType, setDiscountValue);
     if (template.notes) setNotes(template.notes);
     if (template.internal_notes) setInternalNotes(template.internal_notes);
     if (template.validity_days) setValidUntil(format(addDays(new Date(), template.validity_days), "yyyy-MM-dd"));
@@ -268,97 +583,42 @@ export function useQuoteBuilderState() {
     toast.success(`Template "${template.name}" aplicado!`);
   }, []);
 
-  const handleSaveQuote = useCallback(async (status: "draft" | "pending" | "pending_approval" | "pending_singular_approval" = "draft", sellerNotes?: string) => {
-    if (status === "draft") {
-      if (!isDraftValid) { toast.error("Selecione uma empresa para salvar o rascunho."); return; }
-    } else if (!isFormValid) {
-      const missing = validationErrors.map(e => QUOTE_FIELD_LABELS[e] || e).join(", ");
-      toast.error(`Preencha os campos obrigatórios: ${missing}`); return;
+  const handleSaveQuote = useCallback(async (status: SaveStatus = "draft", sellerNotes?: string) => {
+    if (!canEdit) {
+      toast.error("Este orçamento está disponível somente para leitura.");
+      return;
     }
+    if (!validateSaveForm(status, isDraftValid, isFormValid, validationErrors)) return;
+    if (!validateFreshPrices(status, items)) return;
+    const isPaUser = isPaPurchaser(isGerentePa, userRoles);
+    const validBudget = await validatePaBudget({ status, isPaUser, paId: profile?.pa_id, total: totals.total });
+    if (!validBudget) return;
+    const finalStatus = finalQuoteStatus(status, isPaUser);
+    if (!canPersistQuoteVersion(isEditMode, expectedRowVersion)) return;
 
-    if (status !== "draft") {
-      const staleUnconfirmed = items.filter(item => {
-        if (item.price_confirmed_at) return false;
-        const f = getPriceFreshness(item.price_updated_at, item.price_freshness_threshold_days);
-        return f.isStale;
-      });
-      if (staleUnconfirmed.length > 0) {
-        toast.error("Confirme os preços defasados antes de fechar o orçamento");
-        return;
-      }
-    }
+    const persistedStatus = persistedQuoteStatus(isEditMode, currentStatus);
+    const quoteData = buildQuoteData({
+      isEditMode, currentStatus, clientId, contactInfo, companyInfo, tags,
+      discountType, discountValue, markup: totals.markup, notes, internalNotes,
+      validUntil, paymentTerms, deliveryTime, shippingType, shippingCost,
+    });
+    const result = await persistQuote({
+      isEditMode, quoteId, expectedRowVersion, quoteData, items,
+      idempotencyKeyRef: createIdempotencyKeyRef, createQuote, updateQuote,
+    });
+    if (!result) return;
 
-    // Budget threshold check for Sicoob PA users (PAC workflow)
-    if (status !== "draft" && (isGerentePa || userRoles?.includes("comprador_pac"))) {
-      const { data: budget } = await supabase
-        .from('pa_budgets')
-        .select('*')
-        .eq('pa_id', clientId)
-        .eq('ano', new Date().getFullYear())
-        .eq('mes', new Date().getMonth() + 1)
-        .maybeSingle();
-      
-      if (budget) {
-        // 1. Check Alçada (transaction limit)
-        const limiteAlcada = budget.limite_alcada ?? 0;
-        if (limiteAlcada > 0 && totals.total > limiteAlcada) {
-          toast.error("Limite de alçada excedido!", {
-            description: `Este pedido (R$ ${totals.total.toLocaleString()}) supera seu limite de R$ ${limiteAlcada.toLocaleString()}.`
-          });
-          return;
-        }
-        
-        // 2. Check remaining monthly budget
-        const remaining = budget.verba_total - (budget.verba_consumida || 0);
-        if (budget.verba_total > 0 && totals.total > remaining) {
-          toast.error("Verba insuficiente!", {
-            description: `Você possui apenas R$ ${remaining.toLocaleString()} de verba disponível este mês.`
-          });
-          return;
-        }
-      }
-    }
-
-    // PAC workflow: force status to pending_singular_approval if user is Gerente PA and status is not draft
-    let finalStatus = status;
-    if (status === "pending" && (isGerentePa || userRoles?.includes("comprador_pac"))) {
-      finalStatus = "pending_singular_approval";
-    }
-
-    const quoteData = {
-      client_id: clientId || undefined, client_name: contactInfo?.name || undefined,
-      client_company: companyInfo?.name || undefined, client_cnpj: companyInfo?.cnpj || undefined,
-      client_email: contactInfo?.email || undefined, client_phone: contactInfo?.phone || undefined,
-      status: finalStatus, 
-      tags: tags,
-      discount_percent: discountType === "percent" ? discountValue : 0,
-      discount_amount: discountType === "amount" ? discountValue : 0,
-      negotiation_markup_percent: totals.markup,
-      notes: notes || undefined, internal_notes: internalNotes || undefined,
-      valid_until: validUntil || undefined, payment_terms: paymentTerms || undefined,
-      delivery_time: deliveryTime || undefined, shipping_type: shippingType || undefined,
-      shipping_cost: (shippingType === "fob_pre" || shippingType === "fob") ? shippingCost : undefined,
-    };
-
-    let result;
-    if (isEditMode && quoteId) { 
-      const currentQuote = await fetchQuote(quoteId);
-      result = await updateQuote(quoteId, { ...quoteData, row_version: currentQuote?.row_version }, items); 
-    } else { 
-      result = await createQuote(quoteData, items); 
-    }
-
-    if (result?.id && finalStatus === "pending_approval" && maxDiscountPercent != null) {
-      await requestApproval(result.id, totals.realDiscountPercent, maxDiscountPercent, sellerNotes);
-    }
-
-    if (result) {
-      if (finalStatus === "pending_singular_approval") {
-        toast.success("Solicitação enviada para aprovação da Singular!");
-      }
-      navigate(`/orcamentos/${result.id}`);
-    }
-  }, [isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, maxDiscountPercent, requestApproval, isGerentePa, userRoles]);
+    createIdempotencyKeyRef.current = null;
+    const transitionApplied = await applyQuoteTransition({
+      quote: result, finalStatus, persistedStatus, maxDiscountPercent,
+      realDiscountPercent: totals.realDiscountPercent, sellerNotes,
+      requestApproval, updateQuoteStatus,
+    });
+    completeQuoteSave({
+      result, isEditMode, expectedRowVersion, finalStatus, transitionApplied,
+      setExpectedRowVersion, navigate,
+    });
+  }, [canEdit, isDraftValid, isFormValid, validationErrors, clientId, contactInfo, companyInfo, discountType, discountValue, totals, notes, internalNotes, tags, validUntil, paymentTerms, deliveryTime, shippingType, shippingCost, isEditMode, quoteId, items, navigate, updateQuote, createQuote, updateQuoteStatus, currentStatus, expectedRowVersion, maxDiscountPercent, requestApproval, isGerentePa, userRoles, profile?.pa_id]);
 
   return {
     navigate, quoteId, isEditMode, loadingQuote, hasUnsavedData, user,

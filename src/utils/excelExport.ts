@@ -1,6 +1,6 @@
 // src/utils/excelExport.ts
 
-import { formatDate, formatDateTime } from '@/lib/date-utils';
+import {  formatDateTime } from '@/lib/date-utils';
 
 const getXLSX = () => import('@e965/xlsx');
 
@@ -23,7 +23,7 @@ export interface ExcelExportConfig<T = Record<string, unknown>> {
 /**
  * Definição de coluna
  */
-export interface ExcelColumn<T = any> {
+export interface ExcelColumn<T = Record<string, unknown>> {
   /** Chave do campo no objeto de dados */
   key: string;
   /** Cabeçalho da coluna */
@@ -31,7 +31,7 @@ export interface ExcelColumn<T = any> {
   /** Largura da coluna (em caracteres) */
   width?: number;
   /** Função de formatação customizada */
-  format?: (value: any, row: T) => string | number;
+  format?: (value: unknown, row: T) => string | number;
 }
 
 /**
@@ -124,7 +124,7 @@ export async function exportToExcel<T extends Record<string, unknown> = Record<s
 
     // 6. Fazer download
     XLSX.writeFile(workbook, fullFilename);
-  } catch (error) {
+  } catch {
     throw new Error('Falha ao exportar arquivo Excel');
   }
 }
@@ -176,7 +176,7 @@ export async function exportMultipleSheets<T extends Record<string, unknown> = R
     const fullFilename = `${filename}${timestamp}.xlsx`;
 
     XLSX.writeFile(workbook, fullFilename);
-  } catch (error) {
+  } catch {
     throw new Error('Falha ao exportar arquivo Excel');
   }
 }
@@ -186,12 +186,15 @@ export async function exportMultipleSheets<T extends Record<string, unknown> = R
  */
 
 // Pega valor aninhado de objeto (ex: 'client.name')
-function getNestedValue(obj: Record<string, any>, path: string): any {
-  return path.split('.').reduce((current, prop) => current?.[prop], obj);
+function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
+  return path.split('.').reduce<unknown>((current, prop) => {
+    if (typeof current !== 'object' || current === null) return undefined;
+    return (current as Record<string, unknown>)[prop];
+  }, obj);
 }
 
 // Formata valor automaticamente
-function formatValue(value: any): string | number {
+function formatValue(value: unknown): string | number {
   if (value instanceof Date) {
     return formatDateTime(value);
   }

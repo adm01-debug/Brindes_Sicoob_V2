@@ -6,14 +6,15 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Download, FileText, Image as ImageIcon, FileSpreadsheet, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import type { Product } from "@/hooks/useProducts";
 
 interface Props {
-  products: any[];
+  products: Product[];
   targetSelector?: string; // CSS selector for PNG capture
   formatCurrency: (v: number) => string;
 }
 
-export function ExportComparisonButton({ products, targetSelector = "#compare-export-area", formatCurrency }: Props) {
+export function ExportComparisonButton({ products, targetSelector = "#compare-export-area" }: Props) {
   const [busy, setBusy] = useState(false);
 
   const exportCSV = () => {

@@ -2,7 +2,7 @@
  * Bateria exaustiva de testes para o módulo de Estoque.
  * Cobre: tipos, helpers, lógica de alertas, componentes UI, edge cases.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   calculateStockStatus,
   calculateDaysUntilStockout,
@@ -309,6 +309,7 @@ describe('Alert generation logic (analysis)', () => {
   it('does NOT generate prediction for out_of_stock variants', () => {
     const daysUntilStockout = 0;
     const status: StockStatus = 'out_of_stock';
+    expect(daysUntilStockout).toBe(0);
     expect(status !== 'out_of_stock').toBe(false);
   });
 });

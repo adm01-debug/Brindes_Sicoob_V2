@@ -24,9 +24,9 @@
  */
 import { test, expect, requireAuth } from "../fixtures/test-base";
 import { gotoAndSettle } from "../helpers/nav";
-import { installFavoritesCleanup } from "../helpers/favorites";
+import { installFavoritesCleanup, setCatalogFavorite } from "../helpers/favorites";
 import { Sel } from "../fixtures/selectors";
-import type { Locator, Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 const STORAGE_KEY = "product-favorites";
 
@@ -64,13 +64,6 @@ async function readFavoritesCount(page: Page): Promise<number> {
   const loc = page.locator(Sel.favorites.countItems).first();
   await loc.waitFor({ state: "visible", timeout: 10_000 });
   return Number.parseInt((await loc.innerText()).trim(), 10) || 0;
-}
-
-async function isFavorited(button: Locator): Promise<boolean> {
-  const pressed = await button.getAttribute("aria-pressed");
-  if (pressed === "true") return true;
-  const html = await button.innerHTML();
-  return /fill-destructive|fill-current/.test(html);
 }
 
 /**
@@ -113,27 +106,12 @@ test.describe("Fluxo: localStorage product-favorites — adição + persistênci
     const card = page.locator(Sel.product.card).first();
     await card.waitFor({ state: "visible", timeout: 15_000 });
 
-    const favBtn = card.locator(Sel.product.favorite).first();
-    await favBtn.waitFor({ state: "visible", timeout: 10_000 });
-
     // Se já estiver favoritado (estado herdado), desfavorita primeiro p/ partir do baseline
-    if (await isFavorited(favBtn)) {
-      await favBtn.click();
-      await expect.poll(() => isFavorited(favBtn), { timeout: 8_000 }).toBe(false);
-      await expect
-        .poll(async () => (await readStorage(page)).length, { timeout: 8_000 })
-        .toBe(original.length);
-    }
+    await setCatalogFavorite(page, card, false);
 
     // Marca janela temporal para validar `addedAt` posteriormente
     const tStart = Date.now();
-    await favBtn.click();
-    await expect
-      .poll(() => isFavorited(favBtn), {
-        message: "botão não passou para estado favoritado",
-        timeout: 8_000,
-      })
-      .toBe(true);
+    await setCatalogFavorite(page, card, true);
 
     // 2. Storage deve refletir +1 com payload válido
     await expect

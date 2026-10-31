@@ -44,39 +44,43 @@ interface InlinePriceCalculatorProps {
   defaultOpen?: boolean;
 }
 
+function priceTier(source: SupplierSourcePricing, index: number, markupRatio: number): PriceTableRow | null {
+  const costPrice = source[`cost_price_${index}` as keyof SupplierSourcePricing] as number | null | undefined;
+  const minimumQuantity = source[`min_qty_${index}` as keyof SupplierSourcePricing] as number | null | undefined;
+  if (!costPrice || costPrice <= 0) return null;
+
+  const quantity = minimumQuantity && minimumQuantity > 0 ? minimumQuantity : index === 1 ? 1 : index * 50;
+  const unitPrice = Number((costPrice * markupRatio).toFixed(2));
+  return { quantity, unitPrice, total: Number((unitPrice * quantity).toFixed(2)), discount: 0 };
+}
+
+function addTierDiscount(tier: PriceTableRow, referencePrice: number, index: number) {
+  tier.discount = index === 0 || referencePrice <= 0
+    ? 0
+    : Math.max(0, Math.round((1 - tier.unitPrice / referencePrice) * 100));
+}
+
 const extractPriceTiersFromSource = (source: SupplierSourcePricing, basePrice: number): PriceTableRow[] => {
   const tiers: PriceTableRow[] = [];
   const baseCost = source.cost_price_1 ?? source.cost_price ?? null;
   const markupRatio = baseCost && baseCost > 0 ? basePrice / baseCost : 1;
 
-  for (let i = 1; i <= 5; i++) {
-    const costPrice = source[`cost_price_${i}` as keyof SupplierSourcePricing] as number | null;
-    const qty = source[`min_qty_${i}` as keyof SupplierSourcePricing] as number | null;
-    if (costPrice != null && costPrice > 0) {
-      const quantity = qty != null && qty > 0 ? qty : (i === 1 ? 1 : i * 50);
-      const salePrice = costPrice * markupRatio;
-      tiers.push({ quantity, unitPrice: Number(salePrice.toFixed(2)), total: Number((salePrice * quantity).toFixed(2)), discount: 0 });
-    }
+  for (let index = 1; index <= 5; index++) {
+    const tier = priceTier(source, index, markupRatio);
+    if (tier) tiers.push(tier);
   }
   tiers.sort((a, b) => a.quantity - b.quantity);
-  const refPrice = tiers.length > 0 ? tiers[0]!.unitPrice : basePrice;
-  tiers.forEach((tier, idx) => {
-    tier.discount = idx === 0 ? 0 : (refPrice > 0 ? Math.max(0, Math.round((1 - tier.unitPrice / refPrice) * 100)) : 0);
-  });
+  const refPrice = tiers[0]?.unitPrice ?? basePrice;
+  tiers.forEach((tier, index) => addTierDiscount(tier, refPrice, index));
   return tiers;
 };
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price);
 
-export function InlinePriceCalculator({
-  productId, variantId, basePrice, minQuantity = 1, productName: _productName, className, defaultOpen = false,
-}: InlinePriceCalculatorProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-  const [customQuantity, setCustomQuantity] = useState<number>(minQuantity);
+function useSupplierPriceTiers(productId: string | undefined, variantId: string | undefined, basePrice: number) {
   const [priceTiers, setPriceTiers] = useState<PriceTableRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-
   useEffect(() => {
     async function fetchPriceTiers() {
       if (!productId) { setPriceTiers([]); return; }
@@ -85,19 +89,23 @@ export function InlinePriceCalculator({
         const variantFilters: Record<string, unknown> = { product_id: productId, is_active: true };
         if (variantId) variantFilters.id = variantId;
         const variantResponse = await invokeExternalDb<{ id: string }>({ table: "product_variants", operation: "select", select: "id", filters: variantFilters, range: [0, 1] });
-        const variants = variantResponse?.records || [];
-        if (variants.length === 0) { setPriceTiers([]); setIsLoading(false); return; }
-        const targetVariantId = variants[0]!.id;
-        const sourceResponse = await invokeExternalDb({ table: "variant_supplier_sources", operation: "select", select: "id,cost_price,cost_price_1,cost_price_2,cost_price_3,cost_price_4,cost_price_5,min_qty_1,min_qty_2,min_qty_3,min_qty_4,min_qty_5", filters: { variant_id: targetVariantId, is_active: true, is_preferred: true }, range: [0, 1] });
-        const sources = sourceResponse?.records || [];
-        if (sources.length > 0) {
-          setPriceTiers(extractPriceTiersFromSource(sources[0] as SupplierSourcePricing, basePrice));
-        } else { setPriceTiers([]); }
-      } catch (error) { console.error("Error fetching price tiers:", error); setPriceTiers([]); }
-      finally { setIsLoading(false); }
+        const targetVariant = variantResponse?.records?.[0];
+        if (!targetVariant) { setPriceTiers([]); return; }
+        const response = await invokeExternalDb({ table: "variant_supplier_sources", operation: "select", select: "id,cost_price,cost_price_1,cost_price_2,cost_price_3,cost_price_4,cost_price_5,min_qty_1,min_qty_2,min_qty_3,min_qty_4,min_qty_5", filters: { variant_id: targetVariant.id, is_active: true, is_preferred: true }, range: [0, 1] });
+        const source = response?.records?.[0] as SupplierSourcePricing | undefined;
+        setPriceTiers(source ? extractPriceTiersFromSource(source, basePrice) : []);
+      } catch (error) {
+        console.error("Error fetching price tiers:", error); setPriceTiers([]);
+      } finally { setIsLoading(false); }
     }
     fetchPriceTiers();
-  }, [productId, variantId, basePrice, minQuantity]);
+  }, [basePrice, productId, variantId]);
+  return { priceTiers, isLoading };
+}
+
+export function InlinePriceCalculator({ productId, variantId, basePrice, minQuantity = 1, productName: _productName, className, defaultOpen = false }: InlinePriceCalculatorProps) {
+  const [isOpen, setIsOpen] = useState(defaultOpen); const [customQuantity, setCustomQuantity] = useState<number>(minQuantity);
+  const { priceTiers, isLoading } = useSupplierPriceTiers(productId, variantId, basePrice);
 
   const getCustomPrice = (qty: number) => {
     if (priceTiers.length === 0) return { unitPrice: basePrice, discount: 0 };
@@ -105,8 +113,7 @@ export function InlinePriceCalculator({
     return tier ? { unitPrice: tier.unitPrice, discount: tier.discount || 0 } : { unitPrice: priceTiers[0]?.unitPrice || basePrice, discount: 0 };
   };
 
-  const customPriceInfo = getCustomPrice(customQuantity);
-  const customTotal = customPriceInfo.unitPrice * customQuantity;
+  const customPriceInfo = getCustomPrice(customQuantity); const customTotal = customPriceInfo.unitPrice * customQuantity;
 
   if (defaultOpen) {
     return (

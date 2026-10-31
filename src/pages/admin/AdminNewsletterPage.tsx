@@ -6,13 +6,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AdminDataTable } from "@/components/admin/common/AdminDataTable";
+import { AdminDataTable, type Column } from "@/components/admin/common/AdminDataTable";
 import { ImportExportManager } from "@/components/admin/common/ImportExportManager";
 // XLSX will be loaded dynamically when needed
 import { logAdminAction } from "@/utils/adminAudit";
+import type { Tables, TablesInsert } from "@/integrations/supabase/types";
+
+type NewsletterSubscriber = Tables<"newsletter_subscribers">;
+type NewsletterImportRow = Record<string, unknown>;
+
+const readText = (row: NewsletterImportRow, ...keys: string[]): string | undefined => {
+  for (const key of keys) {
+    const value = row[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return undefined;
+};
 
 export default function AdminNewsletterPage() {
-  const [subscribers, setSubscribers] = useState<any[]>([]);
+  const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = async () => {
@@ -55,11 +67,11 @@ export default function AdminNewsletterPage() {
     }
   };
 
-  const handleImport = async (data: any[]) => {
-    const records = data.map(item => ({
-      email: item.Email || item.email,
-      full_name: item['Nome Completo'] || item.full_name || item.name,
-      source: item.Origem || item.source || 'Importação Manual',
+  const handleImport = async (data: NewsletterImportRow[]) => {
+    const records: TablesInsert<"newsletter_subscribers">[] = data.map(item => ({
+      email: readText(item, "Email", "email") ?? "",
+      full_name: readText(item, "Nome Completo", "full_name", "name"),
+      source: readText(item, "Origem", "source") ?? "Importação Manual",
       is_active: true
     }));
 
@@ -85,7 +97,7 @@ export default function AdminNewsletterPage() {
       const exportData = subscribers.map(s => ({
         'Email': s.email,
         'Nome Completo': s.full_name || '',
-        'Data de Inscrição': new Date(s.created_at).toLocaleDateString('pt-BR'),
+        'Data de Inscrição': s.created_at ? new Date(s.created_at).toLocaleDateString('pt-BR') : '',
         'Origem': s.source || 'Geral',
         'Status': s.is_active ? 'Ativo' : 'Inativo'
       }));
@@ -107,7 +119,7 @@ export default function AdminNewsletterPage() {
     }
   };
 
-  const columns = [
+  const columns: Column<NewsletterSubscriber>[] = [
     { 
       header: "Email", 
       accessorKey: "email",
@@ -121,7 +133,9 @@ export default function AdminNewsletterPage() {
     { 
       header: "Data de Inscrição", 
       accessorKey: "created_at",
-      cell: (row: any) => new Date(row.created_at).toLocaleDateString('pt-BR'),
+      cell: (row) => row.created_at
+        ? new Date(row.created_at).toLocaleDateString('pt-BR')
+        : "-",
       sortable: true
     },
     { 
@@ -132,7 +146,7 @@ export default function AdminNewsletterPage() {
     { 
       header: "Status", 
       accessorKey: "is_active",
-      cell: (row: any) => (
+      cell: (row) => (
         <Badge variant={row.is_active ? "default" : "secondary"}>
           {row.is_active ? "Ativo" : "Inativo"}
         </Badge>
@@ -142,7 +156,7 @@ export default function AdminNewsletterPage() {
     {
       header: "Ações",
       accessorKey: "id",
-      cell: (row: any) => (
+      cell: (row) => (
         <div className="flex justify-end">
           <Button 
             variant="ghost" 
@@ -197,4 +211,3 @@ export default function AdminNewsletterPage() {
     </>
   );
 }
-

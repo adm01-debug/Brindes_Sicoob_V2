@@ -1,0 +1,42 @@
+[
+  {
+    "url": "https://brindes-sicoob-v2.vercel.app/",
+    "status": 200,
+    "csp": null,
+    "robots": null,
+    "meta_noindex": true
+  },
+  {
+    "url": "https://cfmzkthhgliqelozlmwu.supabase.co/functions/v1/sicoob-document-ingest",
+    "status": 401,
+    "csp": null,
+    "robots": null,
+    "meta_noindex": null
+  },
+  {
+    "url": "https://cfmzkthhgliqelozlmwu.supabase.co/functions/v1/sicoob-kit-quote",
+    "status": 401,
+    "csp": null,
+    "robots": null,
+    "meta_noindex": null
+  },
+  {
+    "url": "https://cfmzkthhgliqelozlmwu.supabase.co/functions/v1/sicoob-reorder",
+    "status": 401,
+    "csp": null,
+    "robots": null,
+    "meta_noindex": null
+  },
+  {
+    "url": "https://cfmzkthhgliqelozlmwu.supabase.co/functions/v1/sicoob-artwork-register",
+    "status": 401,
+    "metodo": "POST",
+    "autenticado": false
+  },
+  {
+    "url": "https://cfmzkthhgliqelozlmwu.supabase.co/functions/v1/sicoob-approval-reconciliation",
+    "status": 401,
+    "metodo": "POST",
+    "autenticado": false
+  }
+]

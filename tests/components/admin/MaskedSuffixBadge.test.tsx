@@ -87,3 +87,4 @@ describe("MaskedSuffixBadge — UI por tamanho de sufixo", () => {
     expect(container.textContent).toBe("");
   });
 });
+import React from 'react';

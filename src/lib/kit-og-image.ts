@@ -11,6 +11,17 @@ interface KitOgInput {
   color?: string; // hex
 }
 
+function kitColor(color: string | undefined): string {
+  return color && /^#[0-9a-f]{6}$/i.test(color) ? color : "#3B82F6";
+}
+
+function drawItemsCount(ctx: CanvasRenderingContext2D, count: number | undefined): void {
+  if (typeof count !== "number" || count <= 0) return;
+  ctx.fillStyle = "rgba(255,255,255,0.9)";
+  ctx.font = "500 32px system-ui, -apple-system, 'Segoe UI', sans-serif";
+  ctx.fillText(`${count} ${count === 1 ? "item" : "itens"}`, 80, 520);
+}
+
 /**
  * Renderiza uma imagem OG e devolve um data URL PNG.
  * Retorna null em ambientes sem suporte a canvas (SSR).
@@ -24,7 +35,7 @@ export function generateKitOgImage(input: KitOgInput): string | null {
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
 
-    const color = input.color && /^#[0-9a-f]{6}$/i.test(input.color) ? input.color : "#3B82F6";
+    const color = kitColor(input.color);
     // Background gradient diagonal
     const grad = ctx.createLinearGradient(0, 0, 1200, 630);
     grad.addColorStop(0, color);
@@ -46,15 +57,18 @@ export function generateKitOgImage(input: KitOgInput): string | null {
     // Kit name — large
     ctx.fillStyle = "#ffffff";
     ctx.font = "700 84px system-ui, -apple-system, 'Segoe UI', sans-serif";
-    wrapText(ctx, input.kitName || "Kit personalizado", 80, 200, 1040, 96, 3);
+    wrapText({
+      ctx,
+      text: input.kitName || "Kit personalizado",
+      x: 80,
+      y: 200,
+      maxWidth: 1040,
+      lineHeight: 96,
+      maxLines: 3,
+    });
 
     // Footer — items count
-    if (typeof input.itemsCount === "number" && input.itemsCount > 0) {
-      ctx.fillStyle = "rgba(255,255,255,0.9)";
-      ctx.font = "500 32px system-ui, -apple-system, 'Segoe UI', sans-serif";
-      const itemsLabel = `${input.itemsCount} ${input.itemsCount === 1 ? "item" : "itens"}`;
-      ctx.fillText(itemsLabel, 80, 520);
-    }
+    drawItemsCount(ctx, input.itemsCount);
 
     // Brand corner
     ctx.fillStyle = "rgba(255,255,255,0.7)";
@@ -69,33 +83,42 @@ export function generateKitOgImage(input: KitOgInput): string | null {
   }
 }
 
-function wrapText(
-  ctx: CanvasRenderingContext2D,
-  text: string,
-  x: number,
-  y: number,
-  maxWidth: number,
-  lineHeight: number,
-  maxLines: number,
-): void {
+interface TextLayout {
+  ctx: CanvasRenderingContext2D;
+  text: string;
+  x: number;
+  y: number;
+  maxWidth: number;
+}
+
+function wrapText({
+  ctx,
+  text,
+  x,
+  y,
+  maxWidth,
+  lineHeight,
+  maxLines,
+}: TextLayout & { lineHeight: number; maxLines: number }): void {
   const words = text.split(/\s+/);
   let line = "";
   let lines = 0;
   for (let n = 0; n < words.length; n++) {
-    const test = line ? `${line} ${words[n]!}` : words[n]!;
+    const word = words[n] ?? '';
+    const test = line ? `${line} ${word}` : word;
     const w = ctx.measureText(test).width;
     if (w > maxWidth && line) {
       ctx.fillText(line, x, y + lines * lineHeight);
-      line = words[n]!;
+      line = word;
       lines += 1;
       if (lines >= maxLines - 1) {
-        // last line — truncate remaining words with ellipsis
-        const remaining = words.slice(n).join(" ");
-        let truncated = remaining;
-        while (ctx.measureText(truncated + "…").width > maxWidth && truncated.length > 0) {
-          truncated = truncated.slice(0, -1);
-        }
-        ctx.fillText(truncated + "…", x, y + lines * lineHeight);
+        drawTruncatedLine({
+          ctx,
+          text: words.slice(n).join(" "),
+          x,
+          y: y + lines * lineHeight,
+          maxWidth,
+        });
         return;
       }
     } else {
@@ -103,6 +126,14 @@ function wrapText(
     }
   }
   if (line) ctx.fillText(line, x, y + lines * lineHeight);
+}
+
+function drawTruncatedLine({ ctx, text, x, y, maxWidth }: TextLayout): void {
+  let truncated = text;
+  while (ctx.measureText(`${truncated}…`).width > maxWidth && truncated.length > 0) {
+    truncated = truncated.slice(0, -1);
+  }
+  ctx.fillText(`${truncated}…`, x, y);
 }
 
 function shade(hex: string, percent: number): string {

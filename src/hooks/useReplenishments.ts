@@ -112,6 +112,44 @@ function getReplenishmentStatus(daysRemaining: number): ReplenishmentStatus {
   return 'active';
 }
 
+interface ReplenishmentStatRow {
+  daysRemaining: number;
+  updatedTime: number;
+  supplierId: string | null;
+}
+
+function topSupplier(rows: ReplenishmentStatRow[]) {
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    if (row.supplierId) counts.set(row.supplierId, (counts.get(row.supplierId) ?? 0) + 1);
+  }
+  let top = { id: null as string | null, count: 0 };
+  for (const [id, count] of counts) {
+    if (count > top.count) top = { id, count };
+  }
+  return top;
+}
+
+async function supplierName(supplierId: string | null) {
+  if (!supplierId) return null;
+  try {
+    const result = await invokeExternalDb<{ name: string }>({
+      table: 'suppliers',
+      operation: 'select',
+      select: 'name',
+      filters: { id: supplierId },
+      limit: 1,
+    });
+    return result.records?.[0]?.name ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function replenishmentRate(activeCount: number, totalProducts: number) {
+  return totalProducts > 0 ? Math.round((activeCount / totalProducts) * 100) : 0;
+}
+
 function isReplenishment(p: RawProduct): boolean {
   if (!p.updated_at || !p.created_at) return false;
   const created = new Date(p.created_at).getTime();
@@ -267,50 +305,20 @@ export function useReplenishmentStats() {
       const totalProducts = totalResult.count ?? 0;
       const activeCount = active.length;
 
-      // Find top supplier
-      const supplierCounts = new Map<string, number>();
-      for (const n of active) {
-        if (n.supplierId) {
-          supplierCounts.set(n.supplierId, (supplierCounts.get(n.supplierId) ?? 0) + 1);
-        }
-      }
-
-      let topSupplierId: string | null = null;
-      let topSupplierCount = 0;
-      for (const [id, count] of supplierCounts) {
-        if (count > topSupplierCount) {
-          topSupplierCount = count;
-          topSupplierId = id;
-        }
-      }
-
-      let topSupplierName: string | null = null;
-      if (topSupplierId) {
-        try {
-          const supResult = await invokeExternalDb<{ name: string }>({
-            table: 'suppliers',
-            operation: 'select',
-            select: 'name',
-            filters: { id: topSupplierId },
-            limit: 1,
-          });
-          topSupplierName = supResult.records?.[0]?.name ?? null;
-        } catch {
-          // Graceful fallback — supplier name unavailable
-        }
-      }
+      const supplier = topSupplier(active);
+      const topSupplierName = await supplierName(supplier.id);
 
       return {
         totalReplenishments: replenishments.length,
         activeReplenishments: activeCount,
         expiringSoon: expiring.length,
         totalProducts,
-        replenishmentRate: totalProducts > 0 ? Math.round((activeCount / totalProducts) * 100) : 0,
+        replenishmentRate: replenishmentRate(activeCount, totalProducts),
         restockedToday,
         restockedThisWeek,
         restockedLast15Days,
         topSupplierName,
-        topSupplierCount,
+        topSupplierCount: supplier.count,
       };
     },
     staleTime: 5 * 60 * 1000,

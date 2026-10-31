@@ -33,7 +33,8 @@ interface SpeechRecognitionErrorEvent extends Event {
   readonly message: string;
 }
 
-interface SpeechRecognition extends EventTarget {
+declare class SpeechRecognition extends EventTarget {
+  constructor();
   lang: string;
   continuous: boolean;
   interimResults: boolean;
@@ -45,14 +46,4 @@ interface SpeechRecognition extends EventTarget {
   onerror: ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => void) | null;
   onend: ((this: SpeechRecognition, ev: Event) => void) | null;
   onstart: ((this: SpeechRecognition, ev: Event) => void) | null;
-}
-
-declare var SpeechRecognition: {
-  prototype: SpeechRecognition;
-  new (): SpeechRecognition;
-};
-
-interface Window {
-  SpeechRecognition?: typeof SpeechRecognition;
-  webkitSpeechRecognition?: typeof SpeechRecognition;
 }

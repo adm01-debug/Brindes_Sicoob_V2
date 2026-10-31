@@ -1,7 +1,10 @@
 /**
  * OrderStatusTimeline — visualização horizontal do progresso do pedido.
  */
-import { Check, Circle, XCircle, Clock, Package, Truck, CheckCircle2, ShieldCheck, History, Info } from "lucide-react";
+/**
+ * OrderStatusTimeline — visualização horizontal do progresso do pedido.
+ */
+import { Check, Circle, XCircle, Clock, Package, Truck, CheckCircle2, ShieldCheck, History, type LucideIcon } from "lucide-react";
 import { ORDER_STATUS_FLOW, ORDER_STATUS_LABELS, type OrderStatus } from "@/hooks/orders/useOrders";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -18,7 +21,7 @@ function formatApprovalDate(createdAt: string | null): string | null {
   return createdAt ? format(new Date(createdAt), "dd/MM/yyyy HH:mm") : null;
 }
 
-const statusIcons: Record<string, any> = {
+const statusIcons: Record<string, LucideIcon> = {
   rascunho: Clock,
   enviado_gestor: ShieldCheck,
   aprovado_gestor: Package,

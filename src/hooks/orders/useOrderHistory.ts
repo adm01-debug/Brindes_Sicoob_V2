@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { requireOrderId } from "@/hooks/orders/require-order-id";
 
 export function useOrderHistory(orderId?: string) {
   return useQuery({
@@ -7,9 +8,9 @@ export function useOrderHistory(orderId?: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("order_audit_events")
-        .select("*")
-        .eq("order_id", orderId!)
-        .order("created_at", { ascending: false });
+        .select("*, created_at:occurred_at")
+        .eq("order_id", requireOrderId(orderId))
+        .order("occurred_at", { ascending: false });
 
       if (error) throw error;
       return data;

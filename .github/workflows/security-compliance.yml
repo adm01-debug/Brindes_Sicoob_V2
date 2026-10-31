@@ -2,26 +2,41 @@ name: Enterprise Compliance & Audit Reporting
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.github/CODEOWNERS'
   schedule:
-    - cron: '0 0 * * 0' # Weekly scan every Sunday
+    - cron: '0 0 * * 0'
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: compliance-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   compliance-audit:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           cache: npm
 
       - name: Instalar dependências reproduzíveis
-        run: npm ci
+        run: npm ci --no-audit --no-fund
+
+      - name: Preparar diretório de relatórios
+        run: mkdir -p reports
 
       - name: Database RLS Scan
         env:
@@ -40,11 +55,7 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-          RLS_TEST_USER_A_EMAIL: ${{ secrets.RLS_TEST_USER_A_EMAIL }}
-          RLS_TEST_USER_A_PASSWORD: ${{ secrets.RLS_TEST_USER_A_PASSWORD }}
-          RLS_TEST_USER_B_EMAIL: ${{ secrets.RLS_TEST_USER_B_EMAIL }}
-          RLS_TEST_USER_B_PASSWORD: ${{ secrets.RLS_TEST_USER_B_PASSWORD }}
-          RLS_TEST_PRIVATE_QUOTE_B_ID: ${{ secrets.RLS_TEST_PRIVATE_QUOTE_B_ID }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           node scripts/test-rls-compliance.mjs > reports/rls-cross-check.txt
 
@@ -57,12 +68,6 @@ jobs:
           node scripts/validate-audit-links.mjs
           node scripts/test-audit-scripts.mjs
 
-      - name: Generate PDF Report
-        run: |
-          # If a markdown-to-pdf tool was available, we would run it here. 
-          # For now we ensure the .md is clean and artifact-ready.
-          cp DOSSIA_AUDITORIA_ENTERPRISE_V5.md reports/dossier-v5.md
-
       - name: Generate Filtered Audit Exports
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
@@ -72,13 +77,8 @@ jobs:
           node scripts/audit-export.mjs --status=a-implementar
 
       - name: Upload Enterprise Audit Bundle
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: enterprise-compliance-v10
-          path: |
-            reports/
-            DOSSIA_AUDITORIA_ENTERPRISE_V5.md
-            ENTERPRISE_AUDIT_REPORT_V6.md
-            AUDIT_EXPORT_FILTERED.md
-            FINAL_ENTERPRISE_AUDIT_REPORT.md
-
+          path: reports/
+          if-no-files-found: warn

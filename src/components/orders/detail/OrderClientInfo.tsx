@@ -1,6 +1,6 @@
 import { User, Building2, Mail, Phone } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { OrderRow } from "@/types/orders";
+import { type OrderRow } from "@/types/orders";
 
 interface OrderClientInfoProps {
   order: OrderRow;

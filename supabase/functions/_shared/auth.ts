@@ -12,33 +12,44 @@ export interface AuthResult {
   localServiceClient: SupabaseClient;
 }
 
+export type UserAuthenticationResult =
+  | { ok: true; userId: string; error: null }
+  | { ok: false; userId: null; error: string };
+
+/** Valida apenas a identidade JWT, sem consultar papéis nem usar service role. */
+export async function authenticateUser(req: Request): Promise<UserAuthenticationResult> {
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return { ok: false, userId: null, error: 'Não autorizado' };
+  }
+
+  const client = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_ANON_KEY')!,
+    { global: { headers: { Authorization: authHeader } } },
+  );
+  const { data, error } = await client.auth.getUser();
+  if (error || !data.user) return { ok: false, userId: null, error: 'Token inválido' };
+
+  return { ok: true, userId: data.user.id, error: null };
+}
+
 /**
  * Authenticate a request using the Authorization header (JWT).
  * Returns the user ID, all roles, and a service-role client for further queries.
  * Throws an object with { status, message } on failure.
  */
 export async function authenticateRequest(req: Request): Promise<AuthResult> {
-  const authHeader = req.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    throw { status: 401, message: 'Token de autenticação ausente' };
+  const authentication = await authenticateUser(req);
+  if (!authentication.ok) {
+    const message = authentication.error === 'Não autorizado'
+      ? 'Token de autenticação ausente'
+      : 'Token inválido ou expirado';
+    throw { status: 401, message };
   }
-
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-  const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-  // Validate token using getUser (works with all supabase-js versions)
-  const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-    global: { headers: { Authorization: authHeader } },
-  });
-
-  const { data: userData, error } = await userClient.auth.getUser();
-
-  if (error || !userData?.user) {
-    throw { status: 401, message: 'Token inválido ou expirado' };
-  }
-
-  const userId = userData.user.id;
+  const userId = authentication.userId;
 
   // Fetch ALL roles using service role client (bypasses RLS)
   const localServiceClient = createClient(supabaseUrl, serviceRoleKey);

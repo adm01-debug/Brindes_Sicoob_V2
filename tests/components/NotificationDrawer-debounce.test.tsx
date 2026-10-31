@@ -4,7 +4,7 @@
  * Verifies that rapid hover/focus events on the bell trigger collapse to a
  * single `prefetch()` call via a 200ms trailing-edge debounce.
  */
-import React from "react";
+import React, { type JSX } from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, fireEvent, screen, cleanup } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";

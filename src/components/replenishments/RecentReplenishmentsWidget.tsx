@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { RefreshCw, ChevronRight, Package, Building2 } from "lucide-react";
-import { useReplenishmentsWithDetails } from "@/hooks/useReplenishments";
+import { useReplenishmentsWithDetails, type ReplenishmentWithDetails } from "@/hooks/useReplenishments";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useMemo, useCallback } from "react";
@@ -37,6 +37,39 @@ interface SupplierBreakdown {
   readonly name: string;
   readonly count: number;
   readonly percentage: number;
+}
+
+function RecentReplenishmentItem({ item, highlighted, onClick }: {
+  item: ReplenishmentWithDetails;
+  highlighted: boolean;
+  onClick: (productId: string) => void;
+}) {
+  const variant = getRecencyVariant(item.replenished_at);
+  return (
+    <li><button type="button" onClick={() => onClick(item.product_id)}
+      aria-label={`${item.product_name} — reposto ${formatDaysAgo(item.replenished_at)}`}
+      className={cn("group w-full flex items-center gap-2 p-1.5 rounded-md cursor-pointer text-left",
+        "hover:bg-info/10 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-info",
+        highlighted ? "border border-info/20 hover:border-info/40 bg-info/5" : "border border-transparent")}>
+      <div className="shrink-0 w-8 h-8 rounded bg-muted overflow-hidden relative">
+        {item.product_image
+          ? <img src={item.product_image} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
+          : <div className="w-full h-full flex items-center justify-center text-muted-foreground/30" aria-hidden="true">
+            <Package className="h-3 w-3" />
+          </div>}
+        {highlighted && <div className="absolute -top-0.5 -right-0.5" aria-hidden="true">
+          <RefreshCw className="h-2.5 w-2.5 text-info drop-shadow-[0_0_4px_hsl(var(--info)/0.5)]" />
+        </div>}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[11px] font-medium line-clamp-1 group-hover:text-primary transition-colors">{item.product_name}</p>
+        <div className="flex items-center gap-1"><RefreshCw className={cn("h-2.5 w-2.5", RECENCY_STYLES[variant])} aria-hidden="true" />
+          <span className={cn("text-[10px] font-medium", RECENCY_STYLES[variant])}>{formatDaysAgo(item.replenished_at)}</span>
+        </div>
+      </div>
+      <ChevronRight className="h-3 w-3 text-muted-foreground/40 group-hover:text-primary shrink-0 transition-colors" aria-hidden="true" />
+    </button></li>
+  );
 }
 
 // ─── Widget ──────────────────────────────────────────────────────
@@ -99,57 +132,8 @@ export function RecentReplenishmentsWidget() {
             <ScrollArea className="h-auto max-h-[280px]">
               <nav aria-label="Lista de produtos repostos recentemente">
                 <ul className="space-y-1" role="list">
-                  {recentItems.map((item, idx) => {
-                    const isVeryNew = idx < 3;
-                    const variant = getRecencyVariant(item.replenished_at);
-                    return (
-                      <li key={item.replenishment_id}>
-                        <button
-                          type="button"
-                          className={cn(
-                            "group w-full flex items-center gap-2 p-1.5 rounded-md cursor-pointer text-left",
-                            "hover:bg-info/10 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-info",
-                            isVeryNew ? "border border-info/20 hover:border-info/40 bg-info/5" : "border border-transparent",
-                          )}
-                          onClick={() => handleClick(item.product_id)}
-                          aria-label={`${item.product_name} — reposto ${formatDaysAgo(item.replenished_at)}`}
-                        >
-                          <div className="shrink-0 w-8 h-8 rounded bg-muted overflow-hidden relative">
-                            {item.product_image ? (
-                              <img
-                                src={item.product_image}
-                                alt=""
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                                decoding="async"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-muted-foreground/30" aria-hidden="true">
-                                <Package className="h-3 w-3" />
-                              </div>
-                            )}
-                            {isVeryNew && (
-                              <div className="absolute -top-0.5 -right-0.5" aria-hidden="true">
-                                <RefreshCw className="h-2.5 w-2.5 text-info drop-shadow-[0_0_4px_hsl(var(--info)/0.5)]" />
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[11px] font-medium line-clamp-1 group-hover:text-primary transition-colors">
-                              {item.product_name}
-                            </p>
-                            <div className="flex items-center gap-1">
-                              <RefreshCw className={cn("h-2.5 w-2.5", RECENCY_STYLES[variant])} aria-hidden="true" />
-                              <span className={cn("text-[10px] font-medium", RECENCY_STYLES[variant])}>
-                                {formatDaysAgo(item.replenished_at)}
-                              </span>
-                            </div>
-                          </div>
-                          <ChevronRight className="h-3 w-3 text-muted-foreground/40 group-hover:text-primary shrink-0 transition-colors" aria-hidden="true" />
-                        </button>
-                      </li>
-                    );
-                  })}
+                  {recentItems.map((item, index) => <RecentReplenishmentItem key={item.replenishment_id}
+                    item={item} highlighted={index < 3} onClick={handleClick} />)}
                 </ul>
               </nav>
             </ScrollArea>

@@ -29,6 +29,21 @@ const RecommendationRequestSchema = z.object({
   products: z.array(ProductSchema).min(1).max(100),
 });
 
+type RecommendationInput = z.infer<typeof RecommendationRequestSchema>;
+
+function buildDeterministicFallback({ client, products }: RecommendationInput) {
+  return {
+    recommendations: products.slice(0, 6).map((product, index) => ({
+      productId: product.id,
+      score: Math.max(0.5, 0.8 - index * 0.05),
+      reason: `${product.name} é uma opção aderente à categoria ${product.category}.`,
+    })),
+    insights: `Seleção inicial para ${client.name}, ordenada pela disponibilidade informada. Refine o perfil para recomendações personalizadas.`,
+    fallback: true,
+    source: 'deterministic',
+  };
+}
+
 /**
  * Robustly extract & parse JSON from an LLM response.
  * Handles markdown fences, prose around JSON, trailing commas, and minor
@@ -117,7 +132,10 @@ Deno.serve(async (req) => {
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+      console.warn('[ai-recommendations] LOVABLE_API_KEY ausente; usando fallback determinístico');
+      return new Response(JSON.stringify(buildDeterministicFallback(parsed.data)), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const systemPrompt = `Você é um especialista em brindes promocionais e marketing corporativo. 
@@ -189,19 +207,30 @@ Com base no perfil do cliente, recomende os produtos mais adequados.`;
       }
       const errorText = await response.text();
       console.error("AI Gateway error:", response.status, errorText);
-      throw new Error(`AI Gateway error: ${response.status}`);
+      return new Response(JSON.stringify(buildDeterministicFallback(parsed.data)), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content;
 
     if (!content) {
-      throw new Error("No content in AI response");
+      console.error("[ai-recommendations] Provedor respondeu sem conteúdo; usando fallback");
+      return new Response(JSON.stringify(buildDeterministicFallback(parsed.data)), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Parse JSON from response — robust extraction + sanitization to survive
     // markdown fences, trailing commas, prose around the JSON, and minor truncation.
-    const recommendations = extractAndParseJSON(content);
+    let recommendations: unknown;
+    try {
+      recommendations = extractAndParseJSON(content);
+    } catch {
+      console.error("[ai-recommendations] Resposta inválida do provedor; usando fallback");
+      recommendations = buildDeterministicFallback(parsed.data);
+    }
 
     return new Response(JSON.stringify(recommendations), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

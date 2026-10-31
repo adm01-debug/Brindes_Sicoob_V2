@@ -1,26 +1,34 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Truck, MapPin, Camera, CheckCircle2, Clock, Search, Filter } from "lucide-react";
+import { Truck, MapPin, Camera, CheckCircle2, Clock, Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { listSicoobLogisticsTracking } from "@/services/sicoob/logisticsReportService";
+
+function formatDate(value: string | null): string {
+  if (!value) return "A confirmar";
+  return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(new Date(`${value}T00:00:00Z`));
+}
 
 export default function LogisticsReportPage() {
-  const { data: tracking = [] } = useQuery({
+  const [search, setSearch] = useState("");
+  const { data: tracking = [], isLoading, isError } = useQuery({
     queryKey: ["sicoob-logistics"],
-    queryFn: async () => {
-      // Simulation of tracking data for SICOOB parity
-      return [
-        { id: "1", order: "PED-24-001", dest: "PA 01 - Centro", status: "delivered", courier: "TransSicoob", date: "2026-05-02", photo: true },
-        { id: "2", order: "PED-24-012", dest: "PA 04 - Industrial", status: "in_transit", courier: "LogB2B", date: "2026-05-03", photo: false },
-        { id: "3", order: "PED-24-045", dest: "PA 02 - Norte", status: "pending", courier: "-", date: "-", photo: false },
-      ];
-    }
+    queryFn: listSicoobLogisticsTracking,
   });
+  const filteredTracking = useMemo(() => {
+    const normalizedSearch = search.trim().toLocaleLowerCase("pt-BR");
+    if (!normalizedSearch) return tracking;
+    return tracking.filter((item) => [item.orderNumber, item.destination, item.carrierName]
+      .filter(Boolean)
+      .some((value) => value!.toLocaleLowerCase("pt-BR").includes(normalizedSearch)));
+  }, [search, tracking]);
+  const inTransitCount = tracking.filter((item) => item.status === "in_transit").length;
+  const deliveredCount = tracking.filter((item) => item.status === "delivered").length;
+  const proofCount = tracking.filter((item) => item.hasDeliveryProof).length;
 
   return (
     <>
@@ -33,9 +41,8 @@ export default function LogisticsReportPage() {
           <div className="flex gap-2 w-full md:w-auto">
             <div className="relative flex-1 md:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Buscar pedido ou PA..." className="pl-9" />
+                <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar pedido, PA ou transportadora..." className="pl-9" />
             </div>
-            <Button variant="outline" size="icon"><Filter className="h-4 w-4" /></Button>
           </div>
         </div>
 
@@ -46,8 +53,8 @@ export default function LogisticsReportPage() {
                     <Truck className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">142</div>
-                    <p className="text-xs text-muted-foreground mt-1">Acumulado do trimestre</p>
+                    <div className="text-2xl font-bold">{tracking.length}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Pedidos no fluxo logístico</p>
                 </CardContent>
             </Card>
             <Card className="border-[1.5px]">
@@ -56,18 +63,18 @@ export default function LogisticsReportPage() {
                     <Clock className="h-4 w-4 text-status-production" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold text-status-production">8</div>
-                    <p className="text-xs text-muted-foreground mt-1">Pedidos com tracking ativo</p>
+                    <div className="text-2xl font-bold text-status-production">{inTransitCount}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Pedidos com rastreio ativo</p>
                 </CardContent>
             </Card>
             <Card className="border-[1.5px]">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">Taxa de Sucesso</CardTitle>
+                    <CardTitle className="text-sm font-medium">Entregas concluídas</CardTitle>
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold text-green-600">99.2%</div>
-                    <p className="text-xs text-muted-foreground mt-1">Entregas sem ocorrência</p>
+                    <div className="text-2xl font-bold text-green-600">{deliveredCount}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Com confirmação de entrega</p>
                 </CardContent>
             </Card>
             <Card className="border-[1.5px] bg-sicoob-green/5 border-sicoob-green/20">
@@ -76,8 +83,8 @@ export default function LogisticsReportPage() {
                     <Camera className="h-4 w-4 text-sicoob-green" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold text-sicoob-green-dark">128</div>
-                    <p className="text-xs text-sicoob-green/70 mt-1">Fotos de entrega anexadas</p>
+                    <div className="text-2xl font-bold text-sicoob-green-dark">{proofCount}</div>
+                    <p className="text-xs text-sicoob-green/70 mt-1">Com comprovante anexado</p>
                 </CardContent>
             </Card>
         </div>
@@ -100,26 +107,28 @@ export default function LogisticsReportPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {tracking.map((item) => (
+                {isLoading && <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">Carregando rastreamento…</TableCell></TableRow>}
+                {isError && <TableRow><TableCell colSpan={6} className="py-10 text-center text-destructive">Não foi possível carregar o rastreamento. Tente novamente.</TableCell></TableRow>}
+                {!isLoading && !isError && filteredTracking.length === 0 && <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">Nenhum pedido logístico encontrado.</TableCell></TableRow>}
+                {filteredTracking.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell className="font-bold">{item.order}</TableCell>
+                    <TableCell className="font-bold">{item.orderNumber}</TableCell>
                     <TableCell>
                         <div className="flex items-center gap-2">
                             <MapPin className="h-3 w-3 text-muted-foreground" />
-                            {item.dest}
+                            {item.destination}
                         </div>
                     </TableCell>
-                    <TableCell>{item.courier}</TableCell>
-                    <TableCell>{item.date}</TableCell>
+                    <TableCell>{item.carrierName ?? "A confirmar"}</TableCell>
+                    <TableCell>{formatDate(item.estimatedDelivery)}</TableCell>
                     <TableCell>
                       <Badge variant={item.status === 'delivered' ? 'secondary' : (item.status === 'in_transit' ? 'default' : 'outline')} className="gap-1">
-                        {item.status === 'delivered' ? 'Entregue' : (item.status === 'in_transit' ? 'Em Trânsito' : 'Pendente')}
+                        {item.status === 'delivered' ? 'Entregue' : (item.status === 'in_transit' ? 'Em Trânsito' : 'Em separação')}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        {item.photo && <Button variant="ghost" size="icon" title="Ver foto da entrega"><Camera className="h-4 w-4" /></Button>}
-                        <Button variant="ghost" size="icon" title="Ver no mapa"><MapPin className="h-4 w-4" /></Button>
+                        {item.hasDeliveryProof && <span className="inline-flex items-center gap-1 text-xs text-success"><Camera className="h-4 w-4" /> Comprovante</span>}
                       </div>
                     </TableCell>
                   </TableRow>

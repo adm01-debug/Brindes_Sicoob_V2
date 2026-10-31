@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { createReadOnlyCatalogFetch, isReadOnlyCatalogRequest, CATALOG_ORIGIN } from '../../supabase/functions/_shared/external-read-only.ts';
 import { PERMISSIONS, ALLOWED_RPCS } from '../../supabase/functions/_shared/external-db-config.ts';
 import { redactInternalCatalogFields } from '../../supabase/functions/_shared/catalog-redaction.ts';
+import { EXTERNAL_PRODUCT_LIGHTWEIGHT_SELECT } from '../../supabase/functions/_shared/external-product-contract.ts';
 
 for (const operation of ['insert','update','delete','upsert','batch_insert','truncate','execute_sql']) {
   test(`bloqueia ${operation} no contrato e nas permissões`, () => {
@@ -73,8 +74,8 @@ test('remove custo, margem e fornecedor interno sem alterar a origem', () => {
 
 test('seleção leve do bridge não solicita custo interno', () => {
   const source = readFileSync('supabase/functions/external-db-bridge/index.ts', 'utf8');
-  const select = source.match(/const PRODUCTS_LIGHTWEIGHT_SELECT = '([^']+)'/)?.[1];
-  assert.ok(select);
-  assert.equal(select.includes('cost_price'), false);
+  assert.equal(EXTERNAL_PRODUCT_LIGHTWEIGHT_SELECT.includes('cost_price'), false);
+  assert.equal(EXTERNAL_PRODUCT_LIGHTWEIGHT_SELECT.split(',').includes('active'), false);
+  assert.match(source, /const PRODUCTS_LIGHTWEIGHT_SELECT = EXTERNAL_PRODUCT_LIGHTWEIGHT_SELECT;/);
   assert.match(source, /result = redactInternalCatalogFields\(result\);/);
 });

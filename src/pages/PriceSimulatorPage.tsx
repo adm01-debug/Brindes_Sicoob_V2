@@ -3,8 +3,7 @@ import { PageSEO } from '@/components/seo/PageSEO';
 import { ProductPriceSimulator } from '@/components/pricing/ProductPriceSimulator';
 import { QuantityPriceCalculator } from '@/components/pricing/QuantityPriceCalculator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Calculator, 
+import {
   Package,
   BarChart3,
 } from 'lucide-react';

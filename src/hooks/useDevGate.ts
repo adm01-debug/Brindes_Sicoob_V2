@@ -17,9 +17,7 @@ export function useDevGate() {
   
   // Otimização: Estabilizamos a referência das roles usando uma stringificação leve.
   // Isso evita que o hook dispare re-renders se o AuthContext retornar uma nova instância de array com os mesmos dados.
-  const safeRoles = roles ?? [];
-  const rolesKey = safeRoles.join(',');
-  const stableRoles = useMemo(() => safeRoles, [rolesKey]);
+  const stableRoles = useMemo(() => roles ?? [], [roles]);
 
   const isAllowedStore = useSyncExternalStore(
     (onStoreChange) => devInfraGate.subscribe(onStoreChange),

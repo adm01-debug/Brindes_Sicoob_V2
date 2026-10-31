@@ -5,8 +5,24 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { selectCrm, selectCrmById, searchCrm } from "@/lib/crm-db";
-import { type CrmCompany, type CrmCompanyFilters, type CrmCustomer, toLegacyClient, getCompanyDisplayName, type LegacyClientFormat } from "@/types/crm";
-import { DEMO_CLIENT_ID, DEMO_COMPANY, isDemoClient } from "@/lib/bi/demoClient";
+import { type CrmCompany, type CrmCompanyFilters, type CrmCustomer, toLegacyClient, getCompanyDisplayName } from "@/types/crm";
+import {  DEMO_COMPANY, isDemoClient } from "@/lib/bi/demoClient";
+
+function setDefinedFilter(target: Record<string, unknown>, key: string, value: unknown): void {
+  if (value !== undefined && value !== null && value !== '') target[key] = value;
+}
+
+function buildCompanyFilters(filters?: CrmCompanyFilters): Record<string, unknown> {
+  const result: Record<string, unknown> = { deleted_at: null };
+  setDefinedFilter(result, 'status', filters?.status);
+  setDefinedFilter(result, 'cidade', filters?.cidade);
+  setDefinedFilter(result, 'estado', filters?.estado);
+  setDefinedFilter(result, 'ramo_atividade', filters?.ramo_atividade);
+  setDefinedFilter(result, 'is_customer', filters?.is_customer);
+  setDefinedFilter(result, 'is_supplier', filters?.is_supplier);
+  setDefinedFilter(result, 'is_carrier', filters?.is_carrier);
+  return result;
+}
 
 /**
  * Lista empresas do CRM com filtros opcionais
@@ -15,18 +31,7 @@ export function useCrmCompanies(filters?: CrmCompanyFilters) {
   return useQuery<CrmCompany[]>({
     queryKey: ["crm-companies", filters],
     queryFn: async () => {
-      const queryFilters: Record<string, unknown> = {};
-
-      if (filters?.status) queryFilters.status = filters.status;
-      if (filters?.cidade) queryFilters.cidade = filters.cidade;
-      if (filters?.estado) queryFilters.estado = filters.estado;
-      if (filters?.ramo_atividade) queryFilters.ramo_atividade = filters.ramo_atividade;
-      if (filters?.is_customer !== undefined) queryFilters.is_customer = filters.is_customer;
-      if (filters?.is_supplier !== undefined) queryFilters.is_supplier = filters.is_supplier;
-      if (filters?.is_carrier !== undefined) queryFilters.is_carrier = filters.is_carrier;
-
-      // Excluir deletados por padrão
-      queryFilters.deleted_at = null;
+      const queryFilters = buildCompanyFilters(filters);
 
       if (filters?.search) {
         return searchCrm<CrmCompany>("companies", "razao_social", filters.search, {

@@ -6,6 +6,10 @@ import { defineRoute } from "@/lib/router-utils";
  * Refatoradas para excelência técnica 10/10
  */
 export const toolRoutes = [
+  defineRoute({
+    path: "/ajuda",
+    component: lazyWithRetry(() => import("@/pages/HelpCenterPage")),
+  }),
   defineRoute({ 
     path: "/mockup-generator", 
     component: lazyWithRetry(() => import("@/pages/MockupGenerator")) 

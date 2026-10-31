@@ -86,6 +86,15 @@ describe("product-mapper", () => {
       expect(result.featured).toBe(true);
     });
 
+    it("não confunde mais vendido com destaque", () => {
+      const result = mapPromobrindToProduct({
+        ...baseProduct,
+        is_featured: false,
+        is_bestseller: true,
+      } as any);
+      expect(result.featured).toBe(false);
+    });
+
     it("parses materials from string", () => {
       const result = mapPromobrindToProduct(baseProduct as any);
       expect(result.materials).toEqual(["Metal", "Plástico"]);
@@ -101,6 +110,26 @@ describe("product-mapper", () => {
       const noImages = { ...baseProduct, images: [] };
       const result = mapPromobrindToProduct(noImages as any);
       expect(result.images).toContain("/placeholder.svg");
+    });
+
+    it("normaliza todos os formatos legados de imagem para URLs", () => {
+      const result = mapPromobrindToProduct({
+        ...baseProduct,
+        images: [
+          { url: "https://img.example.com/url.jpg" },
+          { src: "https://img.example.com/src.jpg" },
+          { image_url: "https://img.example.com/image-url.jpg" },
+          {},
+        ],
+      } as any);
+
+      expect(result.images).toEqual([
+        "https://img.example.com/url.jpg",
+        "https://img.example.com/src.jpg",
+        "https://img.example.com/image-url.jpg",
+      ]);
+      expect(result.image_url).toBe("https://img.example.com/url.jpg");
+      expect(result.images.every((image) => typeof image === "string")).toBe(true);
     });
 
     it("parses marketing tags", () => {

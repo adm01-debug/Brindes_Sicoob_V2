@@ -119,78 +119,94 @@ async function resolveEntity(entityId: string, kindHint?: string | null): Promis
   return (await tryConnection()) ?? (await tryWebhook());
 }
 
-async function fetchDetails(input: IncidentDetailsInput): Promise<IncidentDetails> {
-  const windowMs = (input.windowMinutes ?? 120) * 60 * 1000;
-  const center = new Date(input.occurredAt).getTime();
-  const start = new Date(center - windowMs).toISOString();
-  const end = new Date(center + windowMs).toISOString();
-
-  // Resolve entidade (em paralelo às queries quando possível).
-  const entityPromise = input.entityId
+function resolveIncidentEntity(input: IncidentDetailsInput): Promise<IncidentEntity | null> {
+  return input.entityId
     ? resolveEntity(input.entityId, input.kind)
-    : Promise.resolve<IncidentEntity | null>(null);
+    : Promise.resolve(null);
+}
 
-  // Tests
-  let testQuery = supabase
+function createTestQuery(input: IncidentDetailsInput, start: string, end: string) {
+  let query = supabase
     .from("connection_test_history")
     .select("id, tested_at, success, latency_ms, status_code, error_message, error_kind, triggered_by, attempts")
     .gte("tested_at", start)
     .lte("tested_at", end)
     .order("tested_at", { ascending: false })
     .limit(200);
-  if (input.entityId) testQuery = testQuery.eq("connection_id", input.entityId);
+  if (input.entityId) query = query.eq("connection_id", input.entityId);
+  return query;
+}
 
-  // Deliveries
-  let delivQuery = supabase
+function createDeliveryQuery(input: IncidentDetailsInput, start: string, end: string) {
+  let query = supabase
     .from("webhook_deliveries")
     .select("id, webhook_id, event, delivered_at, success, status_code, attempt, error_message")
     .gte("delivered_at", start)
     .lte("delivered_at", end)
     .order("delivered_at", { ascending: false })
     .limit(200);
-  if (input.entityId) delivQuery = delivQuery.eq("webhook_id", input.entityId);
+  if (input.entityId) query = query.eq("webhook_id", input.entityId);
+  return query;
+}
+
+function percentage(success: number, total: number): number | null {
+  return total > 0 ? (success / total) * 100 : null;
+}
+
+function average(values: number[]): number | null {
+  if (values.length === 0) return null;
+  return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+}
+
+function buildIncidentMetrics(
+  tests: TestEvent[],
+  deliveries: DeliveryEvent[],
+  start: string,
+  end: string,
+): IncidentMetrics {
+  const testSuccess = tests.filter(test => test.success).length;
+  const deliverySuccess = deliveries.filter(delivery => delivery.success).length;
+  const latencies = tests.map(test => test.latency_ms).filter((value): value is number => typeof value === "number");
+  const timestamps = [
+    ...tests.map(test => test.tested_at),
+    ...deliveries.map(delivery => delivery.delivered_at),
+  ].sort();
+  return {
+    windowStart: start,
+    windowEnd: end,
+    testCount: tests.length,
+    testSuccess,
+    testFail: tests.length - testSuccess,
+    testSuccessRate: percentage(testSuccess, tests.length),
+    testAvgLatency: average(latencies),
+    testP95Latency: p95(latencies),
+    deliveryCount: deliveries.length,
+    deliverySuccess,
+    deliveryFail: deliveries.length - deliverySuccess,
+    deliverySuccessRate: percentage(deliverySuccess, deliveries.length),
+    firstEventAt: timestamps[0] ?? null,
+    lastEventAt: timestamps[timestamps.length - 1] ?? null,
+  };
+}
+
+async function fetchDetails(input: IncidentDetailsInput): Promise<IncidentDetails> {
+  const windowMs = ((input.windowMinutes ?? 120) * 60 * 1000);
+  const center = new Date(input.occurredAt).getTime();
+  const start = new Date(center - windowMs).toISOString();
+  const end = new Date(center + windowMs).toISOString();
 
   const [{ data: tests }, { data: deliveries }, entity] = await Promise.all([
-    testQuery,
-    delivQuery,
-    entityPromise,
+    createTestQuery(input, start, end),
+    createDeliveryQuery(input, start, end),
+    resolveIncidentEntity(input),
   ]);
 
   const testRows = (tests ?? []) as TestEvent[];
-  const delivRows = (deliveries ?? []) as DeliveryEvent[];
-
-  const testSuccess = testRows.filter((t) => t.success).length;
-  const testFail = testRows.length - testSuccess;
-  const latencies = testRows.map((t) => t.latency_ms).filter((n): n is number => typeof n === "number");
-  const avgLat = latencies.length > 0 ? latencies.reduce((a, b) => a + b, 0) / latencies.length : null;
-
-  const delivSuccess = delivRows.filter((d) => d.success).length;
-  const delivFail = delivRows.length - delivSuccess;
-
-  const allTimestamps = [
-    ...testRows.map((t) => t.tested_at),
-    ...delivRows.map((d) => d.delivered_at),
-  ].sort();
-
+  const deliveryRows = (deliveries ?? []) as DeliveryEvent[];
   return {
-    metrics: {
-      windowStart: start,
-      windowEnd: end,
-      testCount: testRows.length,
-      testSuccess,
-      testFail,
-      testSuccessRate: testRows.length > 0 ? (testSuccess / testRows.length) * 100 : null,
-      testAvgLatency: avgLat !== null ? Math.round(avgLat) : null,
-      testP95Latency: p95(latencies),
-      deliveryCount: delivRows.length,
-      deliverySuccess: delivSuccess,
-      deliveryFail: delivFail,
-      deliverySuccessRate: delivRows.length > 0 ? (delivSuccess / delivRows.length) * 100 : null,
-      firstEventAt: allTimestamps[0] ?? null,
-      lastEventAt: allTimestamps[allTimestamps.length - 1] ?? null,
-    },
+    metrics: buildIncidentMetrics(testRows, deliveryRows, start, end),
     tests: testRows,
-    deliveries: delivRows,
+    deliveries: deliveryRows,
     entity: entity ?? null,
   };
 }

@@ -265,18 +265,39 @@ function validateRequest(
   };
 }
 
+function priceAdjustedForColors(
+  basePrice: number,
+  table: TabelaPrecoTecnica,
+  colors: number | undefined,
+) {
+  if (!table.precoPorCor || !colors || !table.maxCores || colors <= table.maxCores) {
+    return basePrice;
+  }
+  return basePrice * (colors / table.maxCores);
+}
+
+function tableMaxArea(table: TabelaPrecoTecnica) {
+  if (!table.larguraMaxCm || !table.alturaMaxCm) return null;
+  return {
+    widthCm: table.larguraMaxCm,
+    heightCm: table.alturaMaxCm,
+    areaCm2: table.larguraMaxCm * table.alturaMaxCm,
+  };
+}
+
 function calculatePriceFromTable(
   table: TabelaPrecoTecnica,
   params: PriceCalculationParams
 ): PriceCalculationResult {
   const { quantity, colors } = params;
 
-  if (table.faixas.length === 0) {
+  const firstTier = table.faixas[0];
+  if (!firstTier) {
     throw new Error(`Tabela de preço "${table.codigoTabelaOpcao}" não possui faixas de quantidade configuradas`);
   }
 
   // Encontrar faixa adequada
-  let tierUsed = table.faixas[0]!;
+  let tierUsed = firstTier;
   for (const faixa of table.faixas) {
     if (quantity >= faixa.quantidadeMinima) {
       tierUsed = faixa;
@@ -285,15 +306,7 @@ function calculatePriceFromTable(
     }
   }
 
-  let unitPrice = tierUsed.precoUnitario;
-
-  // Ajustar por cores se aplicável
-  if (table.precoPorCor && colors && table.maxCores) {
-    if (colors > table.maxCores) {
-      const fatorCor = colors / table.maxCores;
-      unitPrice = unitPrice * fatorCor;
-    }
-  }
+  const unitPrice = priceAdjustedForColors(tierUsed.precoUnitario, table, colors);
 
   const subtotal = unitPrice * quantity;
   const grandTotal = subtotal + table.precoSetup + table.precoManuseio;
@@ -318,13 +331,7 @@ function calculatePriceFromTable(
     savings,
     slaDays: tierUsed.slaDias,
     maxColors: table.maxCores,
-    maxArea: table.larguraMaxCm && table.alturaMaxCm
-      ? {
-          widthCm: table.larguraMaxCm,
-          heightCm: table.alturaMaxCm,
-          areaCm2: table.larguraMaxCm * table.alturaMaxCm,
-        }
-      : null,
+    maxArea: tableMaxArea(table),
   };
 }
 

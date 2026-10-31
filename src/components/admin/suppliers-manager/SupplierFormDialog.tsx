@@ -7,10 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Building2, Phone, DollarSign, Settings2, MapPin, Globe, UserPlus, Landmark, Loader2, Plus, Trash2, ImagePlus, X, Search, Truck } from 'lucide-react';
-import { maskCnpj, maskPhone, maskCep, ESTADOS_BR } from '@/utils/masks';
+import { maskCnpj, maskPhone, ESTADOS_BR } from '@/utils/masks';
 import { applyPixMask, pixPlaceholder, validatePixKey } from '@/utils/pixMask';
-import type { Supplier, SupplierContact, PixKey } from './types';
-import { CONTACT_ROLES } from './types';
+import { type Supplier, type SupplierContact, type PixKey, CONTACT_ROLES } from "./types";
 import React from 'react';
 
 interface SupplierFormDialogProps {
@@ -60,13 +59,53 @@ interface SupplierFormDialogProps {
   removePixKey: (id: string) => void;
 }
 
+function fieldText(value: string | null | undefined, fallback = ''): string {
+  return value || fallback;
+}
+
+function fieldNumber(value: number | null | undefined, fallback: number | ''): number | '' {
+  return value ?? fallback;
+}
+
+function parseOptionalFloat(value: string): number | null {
+  return value ? parseFloat(value) : null;
+}
+
+function parseOptionalInt(value: string, fallback: number | null = null): number | null {
+  return value ? parseInt(value) : fallback;
+}
+
+function cnpjLookupDisabled(fetching: boolean, cnpj: string | null | undefined): boolean {
+  return fetching || fieldText(cnpj).replace(/\D/g, '').length !== 14;
+}
+
+function carrierName(carrier: { nome_fantasia: string; razao_social: string }): string {
+  return carrier.nome_fantasia || carrier.razao_social;
+}
+
+function saveButtonLabel(isNew: boolean): string {
+  return isNew ? 'Criar Fornecedor' : 'Salvar Alterações';
+}
+
+function dialogTitle(isNew: boolean, supplierName: string | undefined): string {
+  return isNew ? 'Novo Fornecedor' : `Editar: ${supplierName}`;
+}
+
+function loadingIcon(loading: boolean, idleIcon: React.ReactNode): React.ReactNode {
+  return loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : idleIcon;
+}
+
+function booleanDefault(value: boolean | null | undefined, fallback: boolean): boolean {
+  return value ?? fallback;
+}
+
 export function SupplierFormDialog({
   editingSupplier, setEditingSupplier, isNew, saving, uploadingLogo, fetchingCnpj,
   contacts, formaPagamento, setFormaPagamento, pixKeys,
   foneFixo1, setFoneFixo1, foneFixo2, setFoneFixo2,
   inscricaoEstadual, setInscricaoEstadual, regimeTributario, setRegimeTributario,
   estadoFaturamento, setEstadoFaturamento,
-  transportadoraPadrao, setTransportadoraPadrao, transportadoraId, setTransportadoraId,
+  transportadoraPadrao, setTransportadoraPadrao, setTransportadoraId,
   carrierSearch, setCarrierSearch, carrierResults, searchingCarriers, showCarrierDropdown, setShowCarrierDropdown,
   searchCarriers, carrierSearchTimeout,
   logoInputRef,
@@ -80,12 +119,12 @@ export function SupplierFormDialog({
   return (
     <Dialog open={!!editingSupplier} onOpenChange={(open) => { if (!open) setEditingSupplier(null); }}>
       <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
+        {(<DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            {isNew ? 'Novo Fornecedor' : `Editar: ${editingSupplier.name}`}
+            {dialogTitle(isNew, editingSupplier.name)}
           </DialogTitle>
-        </DialogHeader>
+        </DialogHeader>)}
 
         <Tabs defaultValue="basic" className="mt-2">
           <TabsList className="grid w-full grid-cols-7 h-9">
@@ -101,7 +140,7 @@ export function SupplierFormDialog({
           {/* BASIC */}
           <TabsContent value="basic" className="space-y-4 pt-3">
             {/* LOGO + NOME FANTASIA + CÓDIGO */}
-            <div className="flex items-center gap-4">
+            {(<div className="flex items-center gap-4">
               <div className="relative shrink-0">
                 {editingSupplier.logo_url ? (
                   <div className="relative w-20 h-20 rounded-lg border border-border overflow-hidden bg-muted">
@@ -118,22 +157,22 @@ export function SupplierFormDialog({
               </div>
               <div className="flex-1">
                 <Label className="text-xs font-semibold">Nome Fantasia</Label>
-                <Input value={editingSupplier.trading_name || ''} onChange={e => updateField('trading_name', e.target.value)} className={fieldClass} />
+                <Input value={fieldText(editingSupplier.trading_name)} onChange={e => updateField('trading_name', e.target.value)} className={fieldClass} />
               </div>
               <div className="w-40 shrink-0">
                 <Label className="text-xs font-semibold">Código <span className="text-destructive">*</span></Label>
-                <Input value={editingSupplier.code || ''} onChange={e => updateField('code', e.target.value)} className={`${fieldClass} font-mono uppercase`} />
+                <Input value={fieldText(editingSupplier.code)} onChange={e => updateField('code', e.target.value)} className={`${fieldClass} font-mono uppercase`} />
               </div>
-            </div>
-            <div><Label className="text-xs font-semibold">Razão Social <span className="text-destructive">*</span></Label><Input value={editingSupplier.name || ''} onChange={e => updateField('name', e.target.value)} className={fieldClass} /></div>
+            </div>)}
+            {(<div><Label className="text-xs font-semibold">Razão Social <span className="text-destructive">*</span></Label><Input value={fieldText(editingSupplier.name)} onChange={e => updateField('name', e.target.value)} className={fieldClass} /></div>)}
             {/* CNPJ + INSCRIÇÃO ESTADUAL */}
-            <div className="grid grid-cols-2 gap-4">
+            {(<div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="text-xs font-semibold">CNPJ</Label>
                 <div className="flex gap-1.5">
-                  <Input value={editingSupplier.cnpj || ''} onChange={e => updateField('cnpj', maskCnpj(e.target.value))} className={`${fieldClass} font-mono flex-1`} maxLength={18} />
-                  <Button type="button" variant="outline" size="sm" className="h-9 px-2.5 shrink-0" disabled={fetchingCnpj || (editingSupplier.cnpj?.replace(/\D/g, '') || '').length !== 14} onClick={handleCnpjLookup}>
-                    {fetchingCnpj ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
+                  <Input value={fieldText(editingSupplier.cnpj)} onChange={e => updateField('cnpj', maskCnpj(e.target.value))} className={`${fieldClass} font-mono flex-1`} maxLength={18} />
+                  <Button type="button" variant="outline" size="sm" className="h-9 px-2.5 shrink-0" disabled={cnpjLookupDisabled(fetchingCnpj, editingSupplier.cnpj)} onClick={handleCnpjLookup}>
+                    {loadingIcon(fetchingCnpj, <Search className="h-3.5 w-3.5" />)}
                   </Button>
                 </div>
               </div>
@@ -141,7 +180,7 @@ export function SupplierFormDialog({
                 <Label className="text-xs font-semibold">Inscrição Estadual</Label>
                 <Input value={inscricaoEstadual} onChange={e => setInscricaoEstadual(e.target.value)} placeholder="Ex: 123.456.789.000" className={fieldClass} />
               </div>
-            </div>
+            </div>)}
             <div className="grid grid-cols-2 gap-4">
               <div><Label className="text-xs font-semibold">Fone Fixo 01</Label><Input value={foneFixo1} onChange={e => setFoneFixo1(maskPhone(e.target.value))} placeholder="(00) 0000-0000" className={fieldClass} maxLength={15} /></div>
               <div><Label className="text-xs font-semibold">Fone Fixo 02</Label><Input value={foneFixo2} onChange={e => setFoneFixo2(maskPhone(e.target.value))} placeholder="(00) 0000-0000" className={fieldClass} maxLength={15} /></div>
@@ -172,7 +211,7 @@ export function SupplierFormDialog({
                 </Select>
               </div>
             </div>
-            <div className="flex items-center justify-between rounded-lg border border-border p-3"><Label className="text-sm">Ativo</Label><Switch checked={editingSupplier.active ?? true} onCheckedChange={v => updateField('active', v)} /></div>
+            {(<div className="flex items-center justify-between rounded-lg border border-border p-3"><Label className="text-sm">Ativo</Label><Switch checked={editingSupplier.active !== false} onCheckedChange={v => updateField('active', v)} /></div>)}
           </TabsContent>
 
           {/* CONTACTS */}
@@ -209,41 +248,41 @@ export function SupplierFormDialog({
 
           {/* ADDRESS */}
           <TabsContent value="address" className="space-y-3 pt-3">
-            <div className="grid grid-cols-2 gap-4">
-              <div><Label className="text-xs font-semibold">CEP</Label><Input value={editingSupplier.cep || ''} onChange={e => handleCepLookup(e.target.value)} placeholder="00000-000" className={`${fieldClass} font-mono`} maxLength={9} /></div>
+            {(<div className="grid grid-cols-2 gap-4">
+              <div><Label className="text-xs font-semibold">CEP</Label><Input value={fieldText(editingSupplier.cep)} onChange={e => handleCepLookup(e.target.value)} placeholder="00000-000" className={`${fieldClass} font-mono`} maxLength={9} /></div>
               <div><Label className="text-xs font-semibold">Tipo Logradouro</Label>
-                <select value={editingSupplier.tipo_logradouro || ''} onChange={e => updateField('tipo_logradouro', e.target.value)} className="mt-1.5 h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+                <select value={fieldText(editingSupplier.tipo_logradouro)} onChange={e => updateField('tipo_logradouro', e.target.value)} className="mt-1.5 h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
                   <option value="">Selecione</option>{['Rua', 'Avenida', 'Alameda', 'Travessa', 'Praça', 'Rodovia', 'Estrada', 'Viela', 'Largo', 'Outro'].map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
-            </div>
-            <div><Label className="text-xs font-semibold">Logradouro</Label><Input value={editingSupplier.logradouro || ''} onChange={e => updateField('logradouro', e.target.value)} className={fieldClass} /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div><Label className="text-xs font-semibold">Número</Label><Input value={editingSupplier.numero || ''} onChange={e => updateField('numero', e.target.value)} className={fieldClass} /></div>
-              <div><Label className="text-xs font-semibold">Complemento</Label><Input value={editingSupplier.complemento || ''} onChange={e => updateField('complemento', e.target.value)} className={fieldClass} /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div><Label className="text-xs font-semibold">Bairro</Label><Input value={editingSupplier.bairro || ''} onChange={e => updateField('bairro', e.target.value)} className={fieldClass} /></div>
-              <div><Label className="text-xs font-semibold">Cidade</Label><Input value={editingSupplier.cidade || ''} onChange={e => updateField('cidade', e.target.value)} className={fieldClass} /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
+            </div>)}
+            {(<div><Label className="text-xs font-semibold">Logradouro</Label><Input value={fieldText(editingSupplier.logradouro)} onChange={e => updateField('logradouro', e.target.value)} className={fieldClass} /></div>)}
+            {(<div className="grid grid-cols-2 gap-4">
+              <div><Label className="text-xs font-semibold">Número</Label><Input value={fieldText(editingSupplier.numero)} onChange={e => updateField('numero', e.target.value)} className={fieldClass} /></div>
+              <div><Label className="text-xs font-semibold">Complemento</Label><Input value={fieldText(editingSupplier.complemento)} onChange={e => updateField('complemento', e.target.value)} className={fieldClass} /></div>
+            </div>)}
+            {(<div className="grid grid-cols-2 gap-4">
+              <div><Label className="text-xs font-semibold">Bairro</Label><Input value={fieldText(editingSupplier.bairro)} onChange={e => updateField('bairro', e.target.value)} className={fieldClass} /></div>
+              <div><Label className="text-xs font-semibold">Cidade</Label><Input value={fieldText(editingSupplier.cidade)} onChange={e => updateField('cidade', e.target.value)} className={fieldClass} /></div>
+            </div>)}
+            {(<div className="grid grid-cols-2 gap-4">
               <div><Label className="text-xs font-semibold">Estado</Label>
-                <select value={editingSupplier.estado || ''} onChange={e => updateField('estado', e.target.value)} className="mt-1.5 h-9 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="">Selecione</option>{ESTADOS_BR.map(uf => <option key={uf} value={uf}>{uf}</option>)}</select>
+                <select value={fieldText(editingSupplier.estado)} onChange={e => updateField('estado', e.target.value)} className="mt-1.5 h-9 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="">Selecione</option>{ESTADOS_BR.map(uf => <option key={uf} value={uf}>{uf}</option>)}</select>
               </div>
-              <div><Label className="text-xs font-semibold">País</Label><Input value={editingSupplier.pais || 'Brasil'} onChange={e => updateField('pais', e.target.value)} className={fieldClass} /></div>
-            </div>
-            <div><Label className="text-xs font-semibold">Ponto de Referência</Label><Input value={editingSupplier.ponto_referencia || ''} onChange={e => updateField('ponto_referencia', e.target.value)} className={fieldClass} /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div><Label className="text-xs font-semibold">Latitude</Label><Input type="number" step="any" value={editingSupplier.latitude ?? ''} onChange={e => updateField('latitude', e.target.value ? parseFloat(e.target.value) : null)} className={`${fieldClass} font-mono`} /></div>
-              <div><Label className="text-xs font-semibold">Longitude</Label><Input type="number" step="any" value={editingSupplier.longitude ?? ''} onChange={e => updateField('longitude', e.target.value ? parseFloat(e.target.value) : null)} className={`${fieldClass} font-mono`} /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div><Label className="text-xs font-semibold">Google Maps URL</Label><Input value={editingSupplier.google_maps_url || ''} onChange={e => updateField('google_maps_url', e.target.value)} className={fieldClass} /></div>
-              <div><Label className="text-xs font-semibold">Google Place ID</Label><Input value={editingSupplier.google_place_id || ''} onChange={e => updateField('google_place_id', e.target.value)} className={fieldClass} /></div>
-            </div>
-            <div><Label className="text-xs font-semibold">Horário de Funcionamento</Label><Input value={editingSupplier.horario_funcionamento || ''} onChange={e => updateField('horario_funcionamento', e.target.value)} className={fieldClass} /></div>
+              <div><Label className="text-xs font-semibold">País</Label><Input value={fieldText(editingSupplier.pais, 'Brasil')} onChange={e => updateField('pais', e.target.value)} className={fieldClass} /></div>
+            </div>)}
+            {(<div><Label className="text-xs font-semibold">Ponto de Referência</Label><Input value={fieldText(editingSupplier.ponto_referencia)} onChange={e => updateField('ponto_referencia', e.target.value)} className={fieldClass} /></div>)}
+            {(<div className="grid grid-cols-2 gap-4">
+              <div><Label className="text-xs font-semibold">Latitude</Label><Input type="number" step="any" value={fieldNumber(editingSupplier.latitude, '')} onChange={e => updateField('latitude', parseOptionalFloat(e.target.value))} className={`${fieldClass} font-mono`} /></div>
+              <div><Label className="text-xs font-semibold">Longitude</Label><Input type="number" step="any" value={fieldNumber(editingSupplier.longitude, '')} onChange={e => updateField('longitude', parseOptionalFloat(e.target.value))} className={`${fieldClass} font-mono`} /></div>
+            </div>)}
+            {(<div className="grid grid-cols-2 gap-4">
+              <div><Label className="text-xs font-semibold">Google Maps URL</Label><Input value={fieldText(editingSupplier.google_maps_url)} onChange={e => updateField('google_maps_url', e.target.value)} className={fieldClass} /></div>
+              <div><Label className="text-xs font-semibold">Google Place ID</Label><Input value={fieldText(editingSupplier.google_place_id)} onChange={e => updateField('google_place_id', e.target.value)} className={fieldClass} /></div>
+            </div>)}
+            {(<div><Label className="text-xs font-semibold">Horário de Funcionamento</Label><Input value={fieldText(editingSupplier.horario_funcionamento)} onChange={e => updateField('horario_funcionamento', e.target.value)} className={fieldClass} /></div>)}
             {/* TRANSPORTADORA PADRÃO */}
-            <div className="relative">
+            {(<div className="relative">
               <Label className="text-xs font-semibold flex items-center gap-1.5">
                 <Truck className="h-3.5 w-3.5" />
                 Transportadora Padrão
@@ -285,14 +324,14 @@ export function SupplierFormDialog({
                           className="w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors"
                           onMouseDown={(e) => {
                             e.preventDefault();
-                            const displayName = c.nome_fantasia || c.razao_social;
+                            const displayName = carrierName(c);
                             setTransportadoraPadrao(displayName);
                             setTransportadoraId(c.id);
                             setCarrierSearch('');
                             setShowCarrierDropdown(false);
                           }}
                         >
-                          <span className="font-medium">{c.nome_fantasia || c.razao_social}</span>
+                          <span className="font-medium">{carrierName(c)}</span>
                           {c.nome_fantasia && c.razao_social && (
                             <span className="text-xs text-muted-foreground ml-2">({c.razao_social})</span>
                           )}
@@ -302,37 +341,37 @@ export function SupplierFormDialog({
                   )}
                 </div>
               )}
-            </div>
-            <div><Label className="text-xs font-semibold">Instruções de Entrega</Label><Textarea value={editingSupplier.instrucoes_entrega || ''} onChange={e => updateField('instrucoes_entrega', e.target.value)} className="mt-1.5 min-h-[60px]" /></div>
+            </div>)}
+            {(<div><Label className="text-xs font-semibold">Instruções de Entrega</Label><Textarea value={fieldText(editingSupplier.instrucoes_entrega)} onChange={e => updateField('instrucoes_entrega', e.target.value)} className="mt-1.5 min-h-[60px]" /></div>)}
           </TabsContent>
 
           {/* SOCIAL */}
-          <TabsContent value="social" className="space-y-4 pt-3">
-            <div><Label className="text-xs font-semibold">Website</Label><Input value={editingSupplier.website || ''} onChange={e => updateField('website', e.target.value)} className={fieldClass} /></div>
-            <div><Label className="text-xs font-semibold">Instagram</Label><Input value={editingSupplier.instagram || ''} onChange={e => updateField('instagram', e.target.value)} className={fieldClass} /></div>
-            <div><Label className="text-xs font-semibold">Facebook</Label><Input value={editingSupplier.facebook || ''} onChange={e => updateField('facebook', e.target.value)} className={fieldClass} /></div>
-            <div><Label className="text-xs font-semibold">LinkedIn</Label><Input value={editingSupplier.linkedin || ''} onChange={e => updateField('linkedin', e.target.value)} className={fieldClass} /></div>
-            <div><Label className="text-xs font-semibold">YouTube</Label><Input value={editingSupplier.youtube || ''} onChange={e => updateField('youtube', e.target.value)} className={fieldClass} /></div>
-            <div><Label className="text-xs font-semibold">TikTok</Label><Input value={editingSupplier.tiktok || ''} onChange={e => updateField('tiktok', e.target.value)} className={fieldClass} /></div>
-          </TabsContent>
+          {(<TabsContent value="social" className="space-y-4 pt-3">
+            <div><Label className="text-xs font-semibold">Website</Label><Input value={fieldText(editingSupplier.website)} onChange={e => updateField('website', e.target.value)} className={fieldClass} /></div>
+            <div><Label className="text-xs font-semibold">Instagram</Label><Input value={fieldText(editingSupplier.instagram)} onChange={e => updateField('instagram', e.target.value)} className={fieldClass} /></div>
+            <div><Label className="text-xs font-semibold">Facebook</Label><Input value={fieldText(editingSupplier.facebook)} onChange={e => updateField('facebook', e.target.value)} className={fieldClass} /></div>
+            <div><Label className="text-xs font-semibold">LinkedIn</Label><Input value={fieldText(editingSupplier.linkedin)} onChange={e => updateField('linkedin', e.target.value)} className={fieldClass} /></div>
+            <div><Label className="text-xs font-semibold">YouTube</Label><Input value={fieldText(editingSupplier.youtube)} onChange={e => updateField('youtube', e.target.value)} className={fieldClass} /></div>
+            <div><Label className="text-xs font-semibold">TikTok</Label><Input value={fieldText(editingSupplier.tiktok)} onChange={e => updateField('tiktok', e.target.value)} className={fieldClass} /></div>
+          </TabsContent>)}
 
           {/* COMMERCIAL */}
-          <TabsContent value="commercial" className="space-y-4 pt-3">
+          {(<TabsContent value="commercial" className="space-y-4 pt-3">
             <div className="grid grid-cols-3 gap-4">
-              <div><Label className="text-xs font-semibold">Markup (%)</Label><Input type="number" value={editingSupplier.default_markup_percent ?? ''} onChange={e => updateField('default_markup_percent', e.target.value ? parseFloat(e.target.value) : null)} className={fieldClass} /></div>
-              <div><Label className="text-xs font-semibold">Pedido Mínimo (R$)</Label><Input type="number" value={editingSupplier.min_order_value ?? ''} onChange={e => updateField('min_order_value', e.target.value ? parseFloat(e.target.value) : null)} className={fieldClass} /></div>
-              <div><Label className="text-xs font-semibold">Prazo (dias)</Label><Input type="number" value={editingSupplier.delivery_time_days ?? ''} onChange={e => updateField('delivery_time_days', e.target.value ? parseInt(e.target.value) : null)} className={fieldClass} /></div>
+              <div><Label className="text-xs font-semibold">Markup (%)</Label><Input type="number" value={fieldNumber(editingSupplier.default_markup_percent, '')} onChange={e => updateField('default_markup_percent', parseOptionalFloat(e.target.value))} className={fieldClass} /></div>
+              <div><Label className="text-xs font-semibold">Pedido Mínimo (R$)</Label><Input type="number" value={fieldNumber(editingSupplier.min_order_value, '')} onChange={e => updateField('min_order_value', parseOptionalFloat(e.target.value))} className={fieldClass} /></div>
+              <div><Label className="text-xs font-semibold">Prazo (dias)</Label><Input type="number" value={fieldNumber(editingSupplier.delivery_time_days, '')} onChange={e => updateField('delivery_time_days', parseOptionalInt(e.target.value))} className={fieldClass} /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div><Label className="text-xs font-semibold">Cond. Pagamento</Label><Input value={editingSupplier.payment_terms || ''} onChange={e => updateField('payment_terms', e.target.value)} className={fieldClass} /></div>
-              <div><Label className="text-xs font-semibold">Cond. Frete</Label><Input value={editingSupplier.shipping_terms || ''} onChange={e => updateField('shipping_terms', e.target.value)} className={fieldClass} /></div>
+              <div><Label className="text-xs font-semibold">Cond. Pagamento</Label><Input value={fieldText(editingSupplier.payment_terms)} onChange={e => updateField('payment_terms', e.target.value)} className={fieldClass} /></div>
+              <div><Label className="text-xs font-semibold">Cond. Frete</Label><Input value={fieldText(editingSupplier.shipping_terms)} onChange={e => updateField('shipping_terms', e.target.value)} className={fieldClass} /></div>
             </div>
-            <div><Label className="text-xs font-semibold">Prioridade (0-100)</Label><Input type="number" value={editingSupplier.priority ?? 50} onChange={e => updateField('priority', e.target.value ? parseInt(e.target.value) : 50)} className={`${fieldClass} w-24`} min={0} max={100} /></div>
-            <div><Label className="text-xs font-semibold">Observações</Label><Textarea value={editingSupplier.notes || ''} onChange={e => updateField('notes', e.target.value)} className="mt-1.5 min-h-[80px]" /></div>
-          </TabsContent>
+            <div><Label className="text-xs font-semibold">Prioridade (0-100)</Label><Input type="number" value={fieldNumber(editingSupplier.priority, 50)} onChange={e => updateField('priority', parseOptionalInt(e.target.value, 50))} className={`${fieldClass} w-24`} min={0} max={100} /></div>
+            <div><Label className="text-xs font-semibold">Observações</Label><Textarea value={fieldText(editingSupplier.notes)} onChange={e => updateField('notes', e.target.value)} className="mt-1.5 min-h-[80px]" /></div>
+          </TabsContent>)}
 
           {/* FINANCIAL */}
-          <TabsContent value="financial" className="space-y-4 pt-3">
+          {(<TabsContent value="financial" className="space-y-4 pt-3">
             <div>
               <Label className="text-xs font-semibold">Formas de Pagamento</Label>
               <div className="flex gap-3 mt-1.5">
@@ -371,28 +410,28 @@ export function SupplierFormDialog({
                 ))}
               </div>
             )}
-          </TabsContent>
+          </TabsContent>)}
 
           {/* CLASSIFICATION */}
-          <TabsContent value="classification" className="space-y-6 pt-3">
+          {(<TabsContent value="classification" className="space-y-6 pt-3">
             <div className="flex items-center justify-between rounded-lg border border-border p-4">
               <div><p className="text-sm font-medium">Fornecedor de Produtos</p><p className="text-xs text-muted-foreground">Fornece produtos físicos para revenda</p></div>
-              <Switch checked={editingSupplier.is_product_supplier ?? true} onCheckedChange={v => updateField('is_product_supplier', v)} />
+              <Switch checked={booleanDefault(editingSupplier.is_product_supplier, true)} onCheckedChange={v => updateField('is_product_supplier', v)} />
             </div>
             <div className="flex items-center justify-between rounded-lg border border-border p-4">
               <div><p className="text-sm font-medium">Fornecedor de Gravação</p><p className="text-xs text-muted-foreground">Fornece serviços de personalização/gravação</p></div>
-              <Switch checked={editingSupplier.is_engraving_supplier ?? false} onCheckedChange={v => updateField('is_engraving_supplier', v)} />
+              <Switch checked={booleanDefault(editingSupplier.is_engraving_supplier, false)} onCheckedChange={v => updateField('is_engraving_supplier', v)} />
             </div>
-          </TabsContent>
+          </TabsContent>)}
         </Tabs>
 
-        <div className="flex justify-end gap-2 pt-4 border-t border-border mt-4">
+        {(<div className="flex justify-end gap-2 pt-4 border-t border-border mt-4">
           <Button variant="ghost" size="sm" onClick={() => setEditingSupplier(null)}>Cancelar</Button>
           <Button size="sm" disabled={saving} onClick={handleSave} className="gap-1.5">
-            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
-            {isNew ? 'Criar Fornecedor' : 'Salvar Alterações'}
+            {loadingIcon(saving, <Plus className="h-3.5 w-3.5" />)}
+            {saveButtonLabel(isNew)}
           </Button>
-        </div>
+        </div>)}
       </DialogContent>
     </Dialog>
   );

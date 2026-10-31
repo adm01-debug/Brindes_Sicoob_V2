@@ -118,7 +118,7 @@ for (const fn of TARGETS) {
   //    Reescreve para uma constante imutável `BASE_CORS` (não usada) só para preservar histórico,
   //    e substitui referências de `corsHeaders` pela chamada `getCorsHeaders(req)`.
   //    Para evitar reescrita em arquivos sem `req` no escopo, validamos que o arquivo usa `(req`.
-  if (!/\(req[\s,:)\]]/.test(src) && !/\(\s*req\s*[:)\,]/.test(src)) {
+  if (!/\(req[\s,:)\]]/.test(src) && !/\(\s*req\s*[:),]/.test(src)) {
     errors.push(`${fn}: handler não usa parâmetro 'req' — pulando, requer revisão manual`);
     continue;
   }
@@ -135,7 +135,7 @@ for (const fn of TARGETS) {
   // Substitui todas as referências livres ao identificador corsHeaders
   // por getCorsHeaders(req). Cuidado: não tocar em propriedades (.corsHeaders)
   // nem strings.
-  src = src.replace(/(?<![\w.\$"'`])corsHeaders(?![\w$])/g, "getCorsHeaders(req)");
+  src = src.replace(/(?<![\w.$"'`])corsHeaders(?![\w$])/g, "getCorsHeaders(req)");
 
   if (src === original) {
     skipped++;

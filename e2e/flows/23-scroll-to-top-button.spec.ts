@@ -14,26 +14,26 @@
  * porque o objetivo é a feature do botão, não cobertura exaustiva de rotas
  * (essa fica em `flows/22-header-sticky.spec.ts`).
  */
-import { test, expect, requireAuth } from "../fixtures/test-base";
-import { gotoAndSettle, waitForRouteIdle } from "../helpers/nav";
-import { waitForTestIdVisible, pollUntil } from "../helpers/waits";
-import { Sel } from "../fixtures/selectors";
+import { test, expect, requireAuth } from '../fixtures/test-base';
+import { gotoAndSettle, waitForRouteIdle } from '../helpers/nav';
+import { waitForTestIdVisible, pollUntil } from '../helpers/waits';
+import { Sel } from '../fixtures/selectors';
 
 /** Tolerância em px para o "topo" — animação smooth pode parar em y∈[0,2]. */
 const TOP_TOLERANCE_PX = 4;
 
 /** Módulos principais cobertos. */
 const MAIN_MODULES = [
-  "/dashboard",
-  "/produtos",
-  "/orcamentos",
-  "/colecoes",
-  "/favoritos",
-  "/kits",
+  '/dashboard',
+  '/produtos',
+  '/orcamentos',
+  '/colecoes',
+  '/favoritos',
+  '/montar-kit',
 ] as const;
 
-test.describe("ScrollToTopButton — módulos principais", () => {
-  test.describe.configure({ mode: "parallel" });
+test.describe('ScrollToTopButton — módulos principais', () => {
+  test.describe.configure({ mode: 'parallel' });
   test.beforeEach(() => requireAuth());
 
   for (const route of MAIN_MODULES) {
@@ -46,7 +46,7 @@ test.describe("ScrollToTopButton — módulos principais", () => {
       );
 
       await waitForRouteIdle(page);
-      await waitForTestIdVisible(page, "app-header");
+      await waitForTestIdVisible(page, 'app-header');
 
       // Desabilita scroll suave para tornar o teste determinístico
       // (evita flake por animação ainda em curso ao medir scrollY).
@@ -57,9 +57,9 @@ test.describe("ScrollToTopButton — módulos principais", () => {
       // Garante altura para rolar (algumas rotas têm pouco conteúdo).
       await page.evaluate(() => {
         if (document.body.scrollHeight < window.innerHeight + 2000) {
-          const spacer = document.createElement("div");
-          spacer.style.height = "2400px";
-          spacer.setAttribute("data-e2e-spacer", "");
+          const spacer = document.createElement('div');
+          spacer.style.height = '2400px';
+          spacer.setAttribute('data-e2e-spacer', '');
           document.body.appendChild(spacer);
         }
         window.scrollTo(0, 0);
@@ -73,10 +73,10 @@ test.describe("ScrollToTopButton — módulos principais", () => {
 
       // Rola para baixo (acima do threshold de 150px).
       await page.evaluate(() => window.scrollTo(0, 1500));
-      await page.waitForFunction(() => window.scrollY > 1000, { timeout: 3000 });
+      await page.waitForFunction(() => window.scrollY > 1000, undefined, { timeout: 3000 });
 
       // Botão aparece após scroll.
-      await waitForTestIdVisible(page, "scroll-to-top");
+      await waitForTestIdVisible(page, 'scroll-to-top');
       const button = page.locator(Sel.app.layout.scrollToTop);
       await expect(button).toBeVisible();
 
@@ -117,60 +117,54 @@ test.describe("ScrollToTopButton — módulos principais", () => {
    * para `#main-content` — caso contrário usuários de teclado/leitor de tela
    * ficariam órfãos (o botão desaparece ao chegar no topo).
    */
-  for (const key of ["Enter", "Space"] as const) {
-    test(`ativável por teclado (${key}) e foco migra para #main-content`, async ({
-      page,
-    }) => {
-      await gotoAndSettle(page, "/dashboard");
-      test.skip(
-        /\/login(\?|$)/.test(page.url()),
-        "Dashboard redirecionou para /login.",
-      );
+  for (const key of ['Enter', 'Space'] as const) {
+    test(`ativável por teclado (${key}) e foco migra para #main-content`, async ({ page }) => {
+      await gotoAndSettle(page, '/dashboard');
+      test.skip(/\/login(\?|$)/.test(page.url()), 'Dashboard redirecionou para /login.');
       await waitForRouteIdle(page);
-      await waitForTestIdVisible(page, "app-header");
+      await waitForTestIdVisible(page, 'app-header');
 
       // Determinístico: scroll instantâneo + foca alvo imediatamente.
       await page.addStyleTag({
         content: `html { scroll-behavior: auto !important; }
                   *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; }`,
       });
-      await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
 
       await page.evaluate(() => {
         if (document.body.scrollHeight < window.innerHeight + 2000) {
-          const spacer = document.createElement("div");
-          spacer.style.height = "2400px";
-          spacer.setAttribute("data-e2e-spacer", "");
+          const spacer = document.createElement('div');
+          spacer.style.height = '2400px';
+          spacer.setAttribute('data-e2e-spacer', '');
           document.body.appendChild(spacer);
         }
         window.scrollTo(0, 1500);
       });
-      await page.waitForFunction(() => window.scrollY > 1000, { timeout: 3000 });
+      await page.waitForFunction(() => window.scrollY > 1000, undefined, { timeout: 3000 });
 
-      await waitForTestIdVisible(page, "scroll-to-top");
+      await waitForTestIdVisible(page, 'scroll-to-top');
       const button = page.locator(Sel.app.layout.scrollToTop);
 
       // Foca via API e valida atributos de a11y.
       await button.focus();
       await expect(button).toBeFocused();
-      await expect(button).toHaveAttribute("aria-label", /voltar ao topo/i);
+      await expect(button).toHaveAttribute('aria-label', /voltar ao topo/i);
 
       // Aciona via teclado.
       await page.keyboard.press(key);
 
       // Scroll volta a 0 e foco migra para o main.
-      await pollUntil(
-        async () => (await page.evaluate(() => window.scrollY)) <= TOP_TOLERANCE_PX,
-        { timeoutMs: 3000, intervalMs: 50, message: "scrollY não voltou a 0" },
-      );
+      await pollUntil(async () => (await page.evaluate(() => window.scrollY)) <= TOP_TOLERANCE_PX, {
+        timeoutMs: 3000,
+        intervalMs: 50,
+        message: 'scrollY não voltou a 0',
+      });
 
-      const focusedId = await page.evaluate(
-        () => document.activeElement?.id ?? null,
-      );
+      const focusedId = await page.evaluate(() => document.activeElement?.id ?? null);
       expect(
         focusedId,
         `Foco deveria migrar para #main-content após ${key} (recebido id="${focusedId}")`,
-      ).toBe("main-content");
+      ).toBe('main-content');
     });
   }
 
@@ -183,42 +177,37 @@ test.describe("ScrollToTopButton — módulos principais", () => {
    * Não dependemos de testid: o contrato real consumido por AT é o atributo
    * `aria-live` no DOM, então buscamos por seletor de atributo.
    */
-  test("anuncia mudança de contexto via aria-live ao acionar", async ({ page }) => {
-    await gotoAndSettle(page, "/dashboard");
-    test.skip(
-      /\/login(\?|$)/.test(page.url()),
-      "Dashboard redirecionou para /login.",
-    );
+  test('anuncia mudança de contexto via aria-live ao acionar', async ({ page }) => {
+    await gotoAndSettle(page, '/dashboard');
+    test.skip(/\/login(\?|$)/.test(page.url()), 'Dashboard redirecionou para /login.');
     await waitForRouteIdle(page);
-    await waitForTestIdVisible(page, "app-header");
+    await waitForTestIdVisible(page, 'app-header');
 
     // Determinístico: reduced-motion → anúncio "fim" sai imediatamente.
     await page.addStyleTag({
       content: `html { scroll-behavior: auto !important; }`,
     });
-    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
 
     await page.evaluate(() => {
       if (document.body.scrollHeight < window.innerHeight + 2000) {
-        const spacer = document.createElement("div");
-        spacer.style.height = "2400px";
-        spacer.setAttribute("data-e2e-spacer", "");
+        const spacer = document.createElement('div');
+        spacer.style.height = '2400px';
+        spacer.setAttribute('data-e2e-spacer', '');
         document.body.appendChild(spacer);
       }
       window.scrollTo(0, 1500);
     });
-    await page.waitForFunction(() => window.scrollY > 1000, { timeout: 3000 });
+    await page.waitForFunction(() => window.scrollY > 1000, undefined, { timeout: 3000 });
 
-    await waitForTestIdVisible(page, "scroll-to-top");
+    await waitForTestIdVisible(page, 'scroll-to-top');
     const button = page.locator(Sel.app.layout.scrollToTop);
 
     // Sanity: regiões aria-live existem no DOM antes do clique.
-    const liveRegionsBefore = await page
-      .locator('[aria-live="polite"]')
-      .count();
+    const liveRegionsBefore = await page.locator('[aria-live="polite"]').count();
     expect(
       liveRegionsBefore,
-      "AriaLiveProvider deveria montar ao menos uma região [aria-live=polite] global",
+      'AriaLiveProvider deveria montar ao menos uma região [aria-live=polite] global',
     ).toBeGreaterThan(0);
 
     await button.click();
@@ -226,12 +215,8 @@ test.describe("ScrollToTopButton — módulos principais", () => {
     // Aguarda alguma região aria-live conter a mensagem esperada.
     await pollUntil(
       async () => {
-        const texts = await page
-          .locator('[aria-live="polite"]')
-          .allTextContents();
-        return texts.some((t) =>
-          /voltando ao topo|topo da página/i.test(t.trim()),
-        );
+        const texts = await page.locator('[aria-live="polite"]').allTextContents();
+        return texts.some((t) => /voltando ao topo|topo da página/i.test(t.trim()));
       },
       {
         timeoutMs: 3000,

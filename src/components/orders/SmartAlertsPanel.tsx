@@ -11,40 +11,23 @@ export interface SmartAlert {
   timestamp: string;
 }
 
+async function fetchSmartAlerts(): Promise<SmartAlert[]> {
+  const pending = await OrderService.getSmartAlerts();
+  const alerts: SmartAlert[] = [];
+  if (pending.length > 5) alerts.push({ id: "high-volume", type: "warning", title: "Alto volume de aprovações",
+    message: `Você tem ${pending.length} pedidos aguardando aprovação.`, timestamp: new Date().toISOString() });
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const oldOrders = pending.filter((order) => new Date(order.created_at) < yesterday);
+  if (oldOrders.length > 0) alerts.push({ id: "stale-orders", type: "critical", title: "Pedidos atrasados",
+    message: `${oldOrders.length} pedidos estão aguardando há mais de 24h.`, timestamp: new Date().toISOString() });
+  return alerts;
+}
+
 export function SmartAlertsPanel() {
   const { data: alerts } = useQuery({
     queryKey: ["smart-alerts"],
-    queryFn: async () => {
-      const pending = await OrderService.getSmartAlerts();
-      const alerts: SmartAlert[] = [];
-      
-      if (pending.length > 5) {
-        alerts.push({
-          id: "high-volume",
-          type: "warning",
-          title: "Alto volume de aprovações",
-          message: `Você tem ${pending.length} pedidos aguardando aprovação.`,
-          timestamp: new Date().toISOString()
-        });
-      }
-
-      // Check for old orders
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const oldOrders = pending.filter(o => new Date(o.created_at) < yesterday);
-      
-      if (oldOrders.length > 0) {
-        alerts.push({
-          id: "stale-orders",
-          type: "critical",
-          title: "Pedidos atrasados",
-          message: `${oldOrders.length} pedidos estão aguardando há mais de 24h.`,
-          timestamp: new Date().toISOString()
-        });
-      }
-
-      return alerts;
-    }
+    queryFn: fetchSmartAlerts,
   });
 
   if (!alerts || alerts.length === 0) return null;

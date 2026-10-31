@@ -20,7 +20,7 @@ export default function GestorCompras() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-display font-bold text-foreground">Gestão de Compras</h1>
+            <h1 data-testid="page-title-gestor-compras" className="text-3xl font-display font-bold text-foreground">Gestão de Compras</h1>
             <p className="text-muted-foreground text-sm">Aprovação, consolidação e monitoramento de pedidos.</p>
           </div>
         </div>

@@ -22,14 +22,7 @@ interface Props {
   className?: string;
 }
 
-export function SecretMaskedDiff({
-  currentSuffix,
-  currentLength,
-  newSuffix,
-  newLength,
-  newOnly,
-  className,
-}: Props) {
+export function SecretMaskedDiff({ currentSuffix, currentLength, newSuffix, newLength, newOnly, className }: Props) {
   const cur = safeSuffix(currentSuffix);
   const next = safeSuffix(newSuffix);
 

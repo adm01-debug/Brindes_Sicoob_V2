@@ -11,9 +11,68 @@ import type {
 } from './useProductRegistration';
 import type { ExternalSupplier, ExternalCategory } from './useExternalDatabase';
 
+function resolveSupplierId(
+  row: BulkImportRow,
+  suppliers: ExternalSupplier[],
+  errors: string[],
+): string | undefined {
+  if (row.supplier_id) return row.supplier_id;
+  const supplier = row.supplier_name
+    ? suppliers.find(item => item.name.toLowerCase() === row.supplier_name?.toLowerCase())
+    : undefined;
+  if (supplier) return supplier.id;
+  errors.push(row.supplier_name
+    ? `Fornecedor "${row.supplier_name}" não encontrado`
+    : 'Fornecedor é obrigatório');
+  return undefined;
+}
+
+function resolveCategoryId(
+  row: BulkImportRow,
+  categories: ExternalCategory[],
+  errors: string[],
+  warnings: string[],
+): string | undefined {
+  if (row.category_id) return row.category_id;
+  const category = row.category_name
+    ? categories.find(item => item.name.toLowerCase() === row.category_name?.toLowerCase())
+    : undefined;
+  if (category) return category.id;
+  if (row.category_name) warnings.push(`Categoria "${row.category_name}" não encontrada`);
+  errors.push('Categoria é obrigatória');
+  return undefined;
+}
+
+function splitValues(value: string | undefined): string[] {
+  return value?.split(',').map(item => item.trim()).filter(Boolean) || [];
+}
+
+function optionalFloat(value: string | number | undefined): number | undefined {
+  return value ? parseFloat(String(value)) : undefined;
+}
+
+function optionalInteger(value: string | number | undefined, fallback?: number): number | undefined {
+  return value ? parseInt(String(value)) : fallback;
+}
+
+function validateIdentity(row: BulkImportRow, errors: string[]): void {
+  if (!row.name?.trim()) errors.push('Nome é obrigatório');
+  if (!row.sku?.trim()) errors.push('SKU é obrigatório');
+}
+
+function parsePrice(value: string | number, errors: string[]): number {
+  const price = typeof value === 'string' ? parseFloat(value) : value;
+  if (isNaN(price) || price <= 0) errors.push('Preço deve ser um número maior que zero');
+  return price;
+}
+
+function requireValues(values: string[], message: string, errors: string[]): void {
+  if (values.length === 0) errors.push(message);
+}
+
 export function useProductImport(
   referenceData: { suppliers: ExternalSupplier[]; categories: ExternalCategory[] },
-  createProduct: (data: ProductFormData) => Promise<any>
+  createProduct: (data: ProductFormData) => Promise<unknown>
 ) {
   const [importProgress, setImportProgress] = useState<{
     total: number; processed: number; succeeded: number; failed: number;
@@ -26,54 +85,40 @@ export function useProductImport(
     const errors: string[] = [];
     const warnings: string[] = [];
 
-    if (!row.name?.trim()) errors.push('Nome é obrigatório');
-    if (!row.sku?.trim()) errors.push('SKU é obrigatório');
+    validateIdentity(row, errors);
+    const price = parsePrice(row.price, errors);
 
-    const price = typeof row.price === 'string' ? parseFloat(row.price) : row.price;
-    if (isNaN(price) || price <= 0) errors.push('Preço deve ser um número maior que zero');
+    const supplierId = resolveSupplierId(row, suppliers, errors);
+    const categoryId = resolveCategoryId(row, categories, errors, warnings);
 
-    let supplierId = row.supplier_id;
-    if (!supplierId && row.supplier_name) {
-      const supplier = suppliers.find(s => s.name.toLowerCase() === row.supplier_name?.toLowerCase());
-      if (supplier) supplierId = supplier.id;
-      else errors.push(`Fornecedor "${row.supplier_name}" não encontrado`);
-    }
-    if (!supplierId) errors.push('Fornecedor é obrigatório');
+    const colors = splitValues(row.colors);
+    requireValues(colors, 'Pelo menos uma cor é obrigatória', errors);
 
-    let categoryId = row.category_id;
-    if (!categoryId && row.category_name) {
-      const category = categories.find(c => c.name.toLowerCase() === row.category_name?.toLowerCase());
-      if (category) categoryId = category.id;
-      else warnings.push(`Categoria "${row.category_name}" não encontrada`);
-    }
-    if (!categoryId) errors.push('Categoria é obrigatória');
+    const materials = splitValues(row.materials);
+    requireValues(materials, 'Pelo menos um material é obrigatório', errors);
 
-    const colors = row.colors?.split(',').map(c => c.trim()).filter(Boolean) || [];
-    if (colors.length === 0) errors.push('Pelo menos uma cor é obrigatória');
-
-    const materials = row.materials?.split(',').map(m => m.trim()).filter(Boolean) || [];
-    if (materials.length === 0) errors.push('Pelo menos um material é obrigatório');
-
-    const imageUrls = row.images?.split(',').map(u => u.trim()).filter(Boolean) || [];
-    if (imageUrls.length === 0) errors.push('Pelo menos uma imagem é obrigatória');
+    const imageUrls = splitValues(row.images);
+    requireValues(imageUrls, 'Pelo menos uma imagem é obrigatória', errors);
 
     const images: ProductImageInput[] = imageUrls.map((url, idx) => ({
       url, is_primary: idx === 0, image_type: 'main' as const,
     }));
 
-    if (errors.length > 0) return { valid: false, errors, warnings, row: rowNumber };
+    if (errors.length > 0 || !supplierId || !categoryId) {
+      return { valid: false, errors, warnings, row: rowNumber };
+    }
 
     return {
       valid: true, errors: [], warnings, row: rowNumber,
       data: {
         name: row.name.trim(), sku: row.sku.trim(), price,
-        supplier_id: supplierId!, category_id: categoryId!,
+        supplier_id: supplierId, category_id: categoryId,
         description: row.description?.trim(),
-        cost_price: row.cost_price ? parseFloat(String(row.cost_price)) : undefined,
+        cost_price: optionalFloat(row.cost_price),
         brand: row.brand?.trim(), model: row.model?.trim(),
-        weight_grams: row.weight_grams ? parseInt(String(row.weight_grams)) : undefined,
-        stock: row.stock ? parseInt(String(row.stock)) : 0,
-        min_quantity: row.min_quantity ? parseInt(String(row.min_quantity)) : 1,
+        weight_grams: optionalInteger(row.weight_grams),
+        stock: optionalInteger(row.stock, 0),
+        min_quantity: optionalInteger(row.min_quantity, 1),
         colors, materials, images,
       },
     };
@@ -91,7 +136,9 @@ export function useProductImport(
     const errors: Array<{ row: number; errors: string[] }> = [];
 
     for (let i = 0; i < rows.length; i++) {
-      const validation = validateImportRow(rows[i], i + 1, suppliers, categories);
+      const row = rows[i];
+      if (!row) continue;
+      const validation = validateImportRow(row, i + 1, suppliers, categories);
       if (!validation.valid) {
         progress.failed++;
         errors.push({ row: i + 1, errors: validation.errors });

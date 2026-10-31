@@ -57,6 +57,14 @@ export const devRoutes = [
     component: lazyWithRetry(() => import("@/pages/admin/qa/PreflightPage")) 
   }),
   defineRoute({
+    path: "/admin/qa/release-evidences",
+    component: lazyWithRetry(() => import("@/pages/admin/qa/ReleaseEvidencesPage"))
+  }),
+  defineRoute({
+    path: "/admin/seguranca/rls",
+    component: lazyWithRetry(() => import("@/pages/admin/RLSAuditPage"))
+  }),
+  defineRoute({
     path: "/admin/seguranca/chaves",
     component: lazyWithRetry(() => import("@/pages/admin/AdminSegurancaChavesPage"))
   }),

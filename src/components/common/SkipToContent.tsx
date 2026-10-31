@@ -5,19 +5,19 @@ import { forwardRef } from "react";
  * Allows keyboard users to skip to main areas of the page
  */
 
-interface SkipLink {
+interface SkipLinkProps {
   href: string;
   label: string;
 }
 
-const defaultLinks: SkipLink[] = [
+const defaultLinks: SkipLinkProps[] = [
   { href: "#main-content", label: "Ir para o conteúdo principal" },
   { href: "#main-navigation", label: "Ir para a navegação" },
   { href: "#search", label: "Ir para a busca" },
 ];
 
 interface SkipToContentProps {
-  links?: SkipLink[];
+  links?: SkipLinkProps[];
 }
 
 export const SkipToContent = forwardRef<HTMLDivElement, SkipToContentProps>(
@@ -46,7 +46,7 @@ export const SkipToContent = forwardRef<HTMLDivElement, SkipToContentProps>(
 SkipToContent.displayName = "SkipToContent";
 
 // Simple single skip link for basic usage
-export const SkipLink = forwardRef<HTMLAnchorElement, Partial<SkipLink>>(
+export const SkipLink = forwardRef<HTMLAnchorElement, Partial<SkipLinkProps>>(
   ({ href = "#main-content", label = "Ir para o conteúdo principal" }, ref) => {
     return (
       <a

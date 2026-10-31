@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { type MouseEvent, type WheelEvent, useState, useRef, useCallback, useEffect } from "react";
 import { ZoomIn, ZoomOut, Move, RotateCcw, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -20,6 +20,10 @@ interface Product {
 interface SyncedZoomGalleryProps {
   products: Product[];
   onProductClick?: (productId: string) => void;
+}
+
+function productSlotKey(keys: string[], index: number) {
+  return keys[index] || `slot-${index}`;
 }
 
 export function SyncedZoomGallery({ products, onProductClick }: SyncedZoomGalleryProps) {
@@ -54,7 +58,7 @@ export function SyncedZoomGallery({ products, onProductClick }: SyncedZoomGaller
   };
   const resetView = () => { setZoom(1); setPan({ x: 0, y: 0 }); };
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+  const handleMouseDown = useCallback((e: MouseEvent) => {
     if (zoom > 1) {
       e.preventDefault();
       setIsPanning(true);
@@ -62,7 +66,7 @@ export function SyncedZoomGallery({ products, onProductClick }: SyncedZoomGaller
     }
   }, [zoom, pan]);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+  const handleMouseMove = useCallback((e: MouseEvent) => {
     if (isPanning && zoom > 1) {
       const newX = e.clientX - panStartRef.current.x;
       const newY = e.clientY - panStartRef.current.y;
@@ -76,14 +80,15 @@ export function SyncedZoomGallery({ products, onProductClick }: SyncedZoomGaller
 
   const handleMouseUp = useCallback(() => setIsPanning(false), []);
 
-  const handleWheel = useCallback((e: React.WheelEvent) => {
+  const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
     if (e.deltaY < 0) handleZoomIn(); else handleZoomOut();
   }, []);
 
   const handleSliderChange = (value: number[]) => {
-    setZoom(value[0]!);
-    if (value[0] === 1) setPan({ x: 0, y: 0 });
+    const nextZoom = value[0] ?? 1;
+    setZoom(nextZoom);
+    if (nextZoom === 1) setPan({ x: 0, y: 0 });
   };
 
   /**
@@ -91,7 +96,8 @@ export function SyncedZoomGallery({ products, onProductClick }: SyncedZoomGaller
    * matching color (name or hex distance < 30).
    */
   const selectColor = (slotIdx: number, colorIdx: number) => {
-    const sourceProduct = products[slotIdx]!;
+    const sourceProduct = products[slotIdx];
+    if (!sourceProduct) return;
     const sourceColor = sourceProduct.colors?.[colorIdx];
     setSelectedColorIdx(prev => {
       const next = { ...prev, [`slot-${slotIdx}`]: colorIdx };
@@ -145,7 +151,7 @@ export function SyncedZoomGallery({ products, onProductClick }: SyncedZoomGaller
         products.length >= 4 && "grid-cols-2 lg:grid-cols-4"
       )}>
         {products.map((product, slotIdx) => {
-          const slotKey = productKeys[slotIdx]!;
+          const slotKey = productSlotKey(productKeys, slotIdx);
           const colorIdx = selectedColorIdx[slotKey] ?? 0;
           const currentImage = product.images[Math.min(colorIdx, product.images.length - 1)] ?? product.images[0];
           const colors = product.colors ?? [];

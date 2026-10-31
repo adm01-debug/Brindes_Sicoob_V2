@@ -65,6 +65,56 @@ function formatAbsolute(iso: string | null): string | null {
   });
 }
 
+type SourceTone = "success" | "warning" | "destructive";
+type GroupedSecrets = Record<"db" | "env" | "none", SecretStatus[]>;
+
+function groupSecrets(secrets: SecretStatus[]): GroupedSecrets {
+  const grouped: GroupedSecrets = { db: [], env: [], none: [] };
+  for (const secret of secrets) grouped[resolveSource(secret)].push(secret);
+  for (const items of Object.values(grouped)) items.sort((a, b) => a.name.localeCompare(b.name));
+  return grouped;
+}
+
+function toneClass(tone: SourceTone): string {
+  if (tone === "success") return "text-success";
+  if (tone === "warning") return "text-warning";
+  return "text-destructive";
+}
+
+function SecretNameList({ items, tone }: { items: SecretStatus[]; tone: SourceTone }) {
+  if (items.length === 0) return <p className="text-muted-foreground italic">Nenhum secret nesta categoria.</p>;
+  const visible = items.slice(0, 12);
+  const rest = items.length - visible.length;
+  return <ul className="font-mono text-[10px] space-y-0.5 max-h-56 overflow-y-auto pr-1">{visible.map((secret) => <li key={secret.name} className="flex items-center justify-between gap-2"><span className={`truncate ${toneClass(tone)}`}>{secret.name}</span><span className="text-muted-foreground shrink-0">{secret.masked_suffix ? `••••${secret.masked_suffix}` : "—"}</span></li>)}{rest > 0 && <li className="text-muted-foreground italic pt-0.5">+ {rest} mais…</li>}</ul>;
+}
+
+function latestUpdatedSecret(secrets: SecretStatus[]): SecretStatus | undefined {
+  return secrets.filter((secret) => secret.updated_at).sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)))[0];
+}
+
+function updatedAt(secret: SecretStatus | undefined): string | null {
+  return secret?.updated_at ?? null;
+}
+
+function LatestUpdateText({ latest, relative, absolute, loading }: { latest: SecretStatus | undefined; relative: string | null; absolute: string | null; loading: boolean }) {
+  if (loading) return <span className="italic">Carregando…</span>;
+  if (!relative) return <span>Sem atualização registrada</span>;
+  return <span><span className="font-medium text-foreground">Atualizado {relative}</span>{absolute && <span className="ml-1 hidden md:inline text-muted-foreground/80">· {absolute}</span>}{latest?.updated_by_email && <span className="ml-1 hidden lg:inline">· por <span className="font-mono">{latest.updated_by_email}</span></span>}</span>;
+}
+
+function LatestUpdate({ secrets, isLoading }: { secrets: SecretStatus[]; isLoading?: boolean }) {
+  const latest = latestUpdatedSecret(secrets);
+  const iso = updatedAt(latest);
+  const relative = formatRelative(iso);
+  const absolute = formatAbsolute(iso);
+  return <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0" title={absolute ? `Última gravação em ${absolute}` : undefined}><Clock className="h-3.5 w-3.5" aria-hidden="true" /><LatestUpdateText latest={latest} relative={relative} absolute={absolute} loading={Boolean(isLoading && secrets.length === 0)} /></div>;
+}
+
+function RefreshCredentialsButton({ onRefresh, refreshing, isLoading }: { onRefresh?: () => void; refreshing: boolean; isLoading?: boolean }) {
+  if (!onRefresh) return null;
+  return <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><Button type="button" variant="outline" size="sm" onClick={onRefresh} disabled={refreshing || isLoading} aria-label="Forçar atualização dos secrets" aria-busy={refreshing} data-testid="credentials-source-refresh" className="shrink-0 self-start"><RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} aria-hidden="true" /><span className="ml-1.5 text-xs">{refreshing ? "Atualizando…" : "Atualizar"}</span></Button></TooltipTrigger><TooltipContent side="top" className="max-w-xs text-xs">Invalida o cache do <code className="font-mono">secrets-manager</code> e recarrega <code className="font-mono">integration_credentials</code> imediatamente. Útil após editar secrets em outra aba.</TooltipContent></Tooltip></TooltipProvider>;
+}
+
 export function CredentialsSourceIndicator({ secrets, isLoading, onRefresh, className }: Props) {
   const [refreshing, setRefreshing] = useState(false);
 
@@ -87,19 +137,7 @@ export function CredentialsSourceIndicator({ secrets, isLoading, onRefresh, clas
 
   // Agrupa secrets por origem resolvida — usado tanto para os contadores
   // quanto para listar os nomes contribuintes em cada tooltip.
-  const grouped = secrets.reduce(
-    (acc, s) => {
-      const src = resolveSource(s);
-      acc[src].push(s);
-      return acc;
-    },
-    { db: [] as SecretStatus[], env: [] as SecretStatus[], none: [] as SecretStatus[] },
-  );
-
-  // Ordena alfabeticamente para consistência de leitura nos tooltips.
-  (Object.keys(grouped) as Array<"db" | "env" | "none">).forEach((k) => {
-    grouped[k].sort((a, b) => a.name.localeCompare(b.name));
-  });
+  const grouped = groupSecrets(secrets);
 
   const counts = {
     db: grouped.db.length,
@@ -107,57 +145,13 @@ export function CredentialsSourceIndicator({ secrets, isLoading, onRefresh, clas
     none: grouped.none.length,
   };
 
-  // Limita a lista exibida no tooltip para não estourar a viewport
-  // quando houver muitos secrets — o restante aparece como "+ N mais".
-  const TOOLTIP_LIMIT = 12;
-  function renderNameList(items: SecretStatus[], tone: "success" | "warning" | "destructive") {
-    if (items.length === 0) {
-      return (
-        <p className="text-muted-foreground italic">Nenhum secret nesta categoria.</p>
-      );
-    }
-    const visible = items.slice(0, TOOLTIP_LIMIT);
-    const rest = items.length - visible.length;
-    const toneCls =
-      tone === "success"
-        ? "text-success"
-        : tone === "warning"
-          ? "text-warning"
-          : "text-destructive";
-    return (
-      <ul className="font-mono text-[10px] space-y-0.5 max-h-56 overflow-y-auto pr-1">
-        {visible.map((s) => (
-          <li key={s.name} className="flex items-center justify-between gap-2">
-            <span className={`truncate ${toneCls}`}>{s.name}</span>
-            {s.masked_suffix ? (
-              <span className="text-muted-foreground shrink-0">••••{s.masked_suffix}</span>
-            ) : (
-              <span className="text-muted-foreground shrink-0">—</span>
-            )}
-          </li>
-        ))}
-        {rest > 0 && (
-          <li className="text-muted-foreground italic pt-0.5">+ {rest} mais…</li>
-        )}
-      </ul>
-    );
-  }
-
-  // Pega o secret mais recentemente atualizado (apenas os com updated_at)
-  const latest = secrets
-    .filter((s) => !!s.updated_at)
-    .sort((a, b) => (b.updated_at! > a.updated_at! ? 1 : -1))[0];
-
-  const relative = formatRelative(latest?.updated_at ?? null);
-  const absolute = formatAbsolute(latest?.updated_at ?? null);
-
   return (
     <div
-      className={[
+      className={([
         "rounded-lg border bg-card px-4 py-3",
         "flex items-start gap-3 flex-wrap",
         className ?? "",
-      ].join(" ")}
+      ].join(" "))}
       role="status"
       aria-live="polite"
       data-testid="credentials-source-indicator"
@@ -231,7 +225,7 @@ export function CredentialsSourceIndicator({ secrets, isLoading, onRefresh, clas
                   <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
                     Secrets contribuintes
                   </p>
-                  {renderNameList(grouped.db, "success")}
+                  <SecretNameList items={grouped.db} tone="success" />
                 </div>
                 <p className="text-muted-foreground">
                   ✅ Nada a fazer — auditável, rotacionável e versionado pelo painel.
@@ -261,7 +255,7 @@ export function CredentialsSourceIndicator({ secrets, isLoading, onRefresh, clas
                   <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
                     Secrets resolvidos por ENV
                   </p>
-                  {renderNameList(grouped.env, "warning")}
+                  <SecretNameList items={grouped.env} tone="warning" />
                 </div>
                 <p className="text-muted-foreground">
                   ⚠ Abra o card correspondente e clique em <strong>Salvar</strong> para
@@ -292,7 +286,7 @@ export function CredentialsSourceIndicator({ secrets, isLoading, onRefresh, clas
                   <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
                     Secrets ausentes
                   </p>
-                  {renderNameList(grouped.none, "destructive")}
+                  <SecretNameList items={grouped.none} tone="destructive" />
                 </div>
                 <p className="text-muted-foreground">
                   🔧 Preencha o campo correspondente no card e salve para gravar em{" "}
@@ -304,64 +298,8 @@ export function CredentialsSourceIndicator({ secrets, isLoading, onRefresh, clas
         </div>
       </div>
 
-      <div
-        className="flex items-center gap-2 text-xs text-muted-foreground shrink-0"
-        title={absolute ? `Última gravação em ${absolute}` : undefined}
-      >
-        <Clock className="h-3.5 w-3.5" aria-hidden="true" />
-        {isLoading && secrets.length === 0 ? (
-          <span className="italic">Carregando…</span>
-        ) : !relative ? (
-          <span>Sem atualização registrada</span>
-        ) : (
-          <span>
-            <span className="font-medium text-foreground">Atualizado {relative}</span>
-            {absolute && (
-              <span className="ml-1 hidden md:inline text-muted-foreground/80">
-                · {absolute}
-              </span>
-            )}
-            {latest?.updated_by_email && (
-              <span className="ml-1 hidden lg:inline">
-                · por <span className="font-mono">{latest.updated_by_email}</span>
-              </span>
-            )}
-          </span>
-        )}
-      </div>
-
-      {onRefresh && (
-        <TooltipProvider delayDuration={200}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleRefresh}
-                disabled={refreshing || isLoading}
-                aria-label="Forçar atualização dos secrets"
-                aria-busy={refreshing}
-                data-testid="credentials-source-refresh"
-                className="shrink-0 self-start"
-              >
-                <RefreshCw
-                  className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`}
-                  aria-hidden="true"
-                />
-                <span className="ml-1.5 text-xs">
-                  {refreshing ? "Atualizando…" : "Atualizar"}
-                </span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="max-w-xs text-xs">
-              Invalida o cache do <code className="font-mono">secrets-manager</code>{" "}
-              e recarrega <code className="font-mono">integration_credentials</code>{" "}
-              imediatamente. Útil após editar secrets em outra aba.
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
+      <LatestUpdate secrets={secrets} isLoading={isLoading} />
+      <RefreshCredentialsButton onRefresh={onRefresh ? () => void handleRefresh() : undefined} refreshing={refreshing} isLoading={isLoading} />
     </div>
   );
 }

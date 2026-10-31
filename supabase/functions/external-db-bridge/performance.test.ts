@@ -12,7 +12,14 @@ import { assert, assertEquals } from "https://deno.land/std@0.224.0/assert/mod.t
 
 const SUPABASE_URL = Deno.env.get("VITE_SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("VITE_SUPABASE_PUBLISHABLE_KEY")!;
+const TEST_USER_JWT = Deno.env.get("TEST_USER_JWT")!;
 const ENDPOINT = `${SUPABASE_URL}/functions/v1/external-db-bridge`;
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !TEST_USER_JWT) {
+  throw new Error(
+    "Teste de performance requer VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY e TEST_USER_JWT",
+  );
+}
 
 // SLAs (ms). Ajustados a partir da telemetria validada (~1.7s média pós-otimização).
 const SLA_MEDIAN_MS = 3500;       // mediana deve ficar bem abaixo do baseline (~3000ms pré-otimização)
@@ -42,7 +49,7 @@ async function callListing(limit: number): Promise<{ ms: number; rows: any[]; st
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      "Authorization": `Bearer ${TEST_USER_JWT}`,
       "apikey": SUPABASE_ANON_KEY,
     },
     body: JSON.stringify({

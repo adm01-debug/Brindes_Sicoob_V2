@@ -38,6 +38,78 @@ const OrganizationContext = createContext<OrganizationContextType | null>(null);
 
 const orgStorageKey = (userId: string) => `selected_org_id:${userId}`;
 
+interface OrganizationStateActions {
+  setOrganizations: (organizations: Organization[]) => void;
+  setCurrentOrg: (organization: Organization | null) => void;
+  setCurrentRole: (role: OrgMember["role"] | null) => void;
+  membershipsRef: { current: Map<string, OrgMember["role"]> };
+}
+
+function clearOrganizationState(actions: OrganizationStateActions, userId?: string): void {
+  actions.setOrganizations([]);
+  actions.setCurrentOrg(null);
+  actions.setCurrentRole(null);
+  actions.membershipsRef.current = new Map();
+  if (userId) useRecentlyViewedStore.getState().setScope(`user:${userId}`);
+}
+
+function rolesByOrganization(
+  members: Array<{ organization_id: string; role: string }>,
+): Map<string, OrgMember["role"]> {
+  return new Map(members.map((member) => [
+    member.organization_id,
+    member.role as OrgMember["role"],
+  ]));
+}
+
+function chooseOrganization(organizations: Organization[], userId: string): Organization | null {
+  localStorage.removeItem("selected_org_id");
+  const savedOrgId = localStorage.getItem(orgStorageKey(userId));
+  return organizations.find((organization) => organization.id === savedOrgId) || organizations[0] || null;
+}
+
+function applyOrganizationSelection(
+  actions: OrganizationStateActions,
+  organizations: Organization[],
+  roles: Map<string, OrgMember["role"]>,
+  userId: string,
+): void {
+  actions.membershipsRef.current = roles;
+  actions.setOrganizations(organizations);
+  const selected = chooseOrganization(organizations, userId);
+  actions.setCurrentOrg(selected);
+
+  if (!selected) {
+    localStorage.removeItem(orgStorageKey(userId));
+    useRecentlyViewedStore.getState().setScope(`user:${userId}`);
+    return;
+  }
+  actions.setCurrentRole(roles.get(selected.id) || null);
+  localStorage.setItem(orgStorageKey(userId), selected.id);
+  useRecentlyViewedStore.getState().setScope(`user:${userId}:org:${selected.id}`);
+}
+
+async function fetchOrganizationMemberships(
+  userId: string,
+): Promise<Array<{ organization_id: string; role: string }>> {
+  const { data, error } = await supabase
+    .from("organization_members")
+    .select("organization_id, role")
+    .eq("user_id", userId);
+  if (error) throw error;
+  return data || [];
+}
+
+async function fetchActiveOrganizations(orgIds: string[]): Promise<Organization[]> {
+  const { data, error } = await supabase
+    .from("organizations")
+    .select("*")
+    .in("id", orgIds)
+    .eq("is_active", true);
+  if (error) throw error;
+  return (data || []) as Organization[];
+}
+
 export function OrganizationProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -48,13 +120,16 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchOrganizations = useCallback(async () => {
+    const stateActions: OrganizationStateActions = {
+      setOrganizations,
+      setCurrentOrg,
+      setCurrentRole,
+      membershipsRef,
+    };
     const requestVersion = ++requestVersionRef.current;
     const userId = user?.id;
     if (!userId) {
-      setOrganizations([]);
-      setCurrentOrg(null);
-      setCurrentRole(null);
-      membershipsRef.current = new Map();
+      clearOrganizationState(stateActions);
       setIsLoading(false);
       return;
     }
@@ -65,68 +140,24 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
     setCurrentRole(null);
     membershipsRef.current = new Map();
     try {
-      // Fetch orgs via members join
-      const { data: members, error: membersError } = await supabase
-        .from("organization_members")
-        .select("organization_id, role")
-        .eq("user_id", userId);
-
-      if (membersError) throw membersError;
+      const members = await fetchOrganizationMemberships(userId);
       if (requestVersion !== requestVersionRef.current) return;
 
-      if (!members || members.length === 0) {
-        setOrganizations([]);
-        setCurrentOrg(null);
-        setCurrentRole(null);
-        membershipsRef.current = new Map();
-        useRecentlyViewedStore.getState().setScope(`user:${userId}`);
+      if (members.length === 0) {
+        clearOrganizationState(stateActions, userId);
         setIsLoading(false);
         return;
       }
 
       const orgIds = members.map((m) => m.organization_id);
-
-      const { data: orgs, error: orgsError } = await supabase
-        .from("organizations")
-        .select("*")
-        .in("id", orgIds)
-        .eq("is_active", true);
-
-      if (orgsError) throw orgsError;
+      const orgList = await fetchActiveOrganizations(orgIds);
       if (requestVersion !== requestVersionRef.current) return;
 
-      const orgList = (orgs || []) as Organization[];
-      const rolesByOrg = new Map<string, OrgMember["role"]>();
-      for (const member of members) {
-        rolesByOrg.set(member.organization_id, member.role as OrgMember["role"]);
-      }
-      membershipsRef.current = rolesByOrg;
-      setOrganizations(orgList);
-
-      // Restore saved org or pick first, ensuring the user actually belongs to it
-      localStorage.removeItem("selected_org_id");
-      const savedOrgId = localStorage.getItem(orgStorageKey(userId));
-      const savedOrg = orgList.find((o) => o.id === savedOrgId);
-      const selected = savedOrg || orgList[0] || null;
-
-      setCurrentOrg(selected);
-
-      if (selected) {
-        setCurrentRole(rolesByOrg.get(selected.id) || null);
-        localStorage.setItem(orgStorageKey(userId), selected.id);
-        useRecentlyViewedStore.getState().setScope(`user:${userId}:org:${selected.id}`);
-      } else {
-        localStorage.removeItem(orgStorageKey(userId));
-        useRecentlyViewedStore.getState().setScope(`user:${userId}`);
-      }
+      applyOrganizationSelection(stateActions, orgList, rolesByOrganization(members), userId);
     } catch (err) {
       if (requestVersion !== requestVersionRef.current) return;
       console.error("Failed to fetch organizations:", err);
-      setOrganizations([]);
-      setCurrentOrg(null);
-      setCurrentRole(null);
-      membershipsRef.current = new Map();
-      useRecentlyViewedStore.getState().setScope(`user:${userId}`);
+      clearOrganizationState(stateActions, userId);
     } finally {
       if (requestVersion === requestVersionRef.current) setIsLoading(false);
     }

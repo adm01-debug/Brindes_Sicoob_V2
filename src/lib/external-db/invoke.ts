@@ -10,7 +10,9 @@ import { recordBridgeCall, estimatePayloadBytes, type BridgeOperation } from '@/
 import { newRequestId, REQUEST_ID_HEADER, newTraceparent, TRACEPARENT_HEADER } from '@/lib/telemetry/requestId';
 import { getCircuitBreaker } from '@/lib/circuit-breaker';
 
-const bridgeBreaker = getCircuitBreaker('external-db-bridge', {
+const BRIDGE_NAME = 'external-db-bridge';
+
+const bridgeBreaker = getCircuitBreaker(BRIDGE_NAME, {
   failureThreshold: 10,
   resetTimeout: 45000,
 });
@@ -109,32 +111,133 @@ function isRetryableError(msg: string): boolean {
 }
 
 export async function extractFunctionErrorMessage(error: unknown): Promise<string> {
-  if (error instanceof Error) {
-    const maybeContext = error as Error & { context?: Response };
-    if (maybeContext.context instanceof Response) {
-      try {
-        const raw = await maybeContext.context.clone().text();
-        if (raw) {
-          try {
-            const parsed = JSON.parse(raw) as {
-              error?: string; details?: string; hint?: string;
-              message?: string; code?: string;
-            };
-            const detailed = [parsed.error, parsed.code, parsed.message, parsed.details, parsed.hint]
-              .filter(Boolean).join(' | ');
-            if (detailed) return `${error.message} | ${detailed}`;
-          } catch {
-            return `${error.message} | ${raw}`;
-          }
-        }
-      } catch {
-        // ignore parse failure
-      }
-    }
-    return error.message;
-  }
+  if (!(error instanceof Error)) return 'Erro ao acessar banco externo';
+  const context = (error as Error & { context?: Response }).context;
+  if (!(context instanceof Response)) return error.message;
+  return extractResponseMessage(context, error.message);
+}
 
-  return 'Erro ao acessar banco externo';
+function parseFunctionError(raw: string, fallback: string): string {
+  try {
+    const parsed = JSON.parse(raw) as {
+      error?: string; details?: string; hint?: string;
+      message?: string; code?: string;
+    };
+    const detailed = [parsed.error, parsed.code, parsed.message, parsed.details, parsed.hint]
+      .filter(Boolean).join(' | ');
+    return detailed ? `${fallback} | ${detailed}` : fallback;
+  } catch {
+    return `${fallback} | ${raw}`;
+  }
+}
+
+async function extractResponseMessage(response: Response, fallback: string): Promise<string> {
+  try {
+    const raw = await response.clone().text();
+    return raw ? parseFunctionError(raw, fallback) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+interface InvokeTelemetry {
+  startedAt: number;
+  reqBytes: number;
+  op: BridgeOperation;
+  target?: string;
+  requestId: string;
+  serverRequestId?: string;
+}
+
+type InvokeOutcome = { data: unknown; error: Error | null };
+
+function responseRequestId(data: unknown): string | undefined {
+  if (!data || typeof data !== 'object' || !('request_id' in data)) return undefined;
+  const value = (data as { request_id?: unknown }).request_id;
+  return value === undefined || value === null ? undefined : String(value);
+}
+
+function finalizeInvoke(result: InvokeOutcome, telemetry: InvokeTelemetry): InvokeOutcome {
+  const serverRequestId = responseRequestId(result.data) || telemetry.serverRequestId;
+  recordBridgeCall({
+    bridge: BRIDGE_NAME,
+    op: telemetry.op,
+    target: telemetry.target,
+    durationMs: performance.now() - telemetry.startedAt,
+    reqBytes: telemetry.reqBytes,
+    respBytes: result.error ? 0 : estimatePayloadBytes(result.data),
+    ok: !result.error,
+    errorMessage: result.error?.message,
+    requestId: telemetry.requestId,
+    serverRequestId,
+  });
+  return result;
+}
+
+async function cloudGateOutcome(telemetry: InvokeTelemetry): Promise<InvokeOutcome | null> {
+  const cached = getCachedCloudStatus();
+  if (!cached || (cached.status !== 'down' && cached.status !== 'degraded')) return null;
+  try {
+    await ensureCloudReady(3000, true);
+    return null;
+  } catch (error) {
+    if (!(error instanceof CloudNotReadyError)) throw error;
+    logger.warn(`[external-db] Aborting invoke — cloud ${error.status}`);
+    emitBridgeStatus({ type: 'unavailable', reason: error.message, attempts: 0 });
+    return finalizeInvoke({ data: null, error }, telemetry);
+  }
+}
+
+function compatibilityError(data: unknown): Error | null {
+  if (!data || typeof data !== 'object') return null;
+  const payload = data as { _unconfigured?: unknown; fallback?: unknown; error?: unknown; message?: unknown };
+  if (!payload._unconfigured && !payload.fallback && !payload.error) return null;
+  const message = payload._unconfigured
+    ? 'CATALOG_NOT_CONFIGURED: catálogo indisponível'
+    : String(payload.message || payload.error || 'Catálogo indisponível');
+  return new Error(message);
+}
+
+async function waitBeforeRetry(
+  message: string,
+  attempt: number,
+  retries: number,
+  onRetry?: (attempt: number, maxRetries: number, delayMs: number) => void,
+): Promise<boolean> {
+  const base = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
+  const jitter = Math.floor(Math.random() * 200);
+  const delay = Math.min(base + jitter, 4000);
+  logger.warn(`[external-db] Retry ${attempt + 1}/${retries} after ${delay}ms (base=${base}+jitter=${jitter}): ${message}`);
+  onRetry?.(attempt + 1, retries, delay);
+  const coldStart = isColdStartSignal(message);
+  if (coldStart) {
+    emitBridgeStatus({
+      type: 'degraded', attempt: attempt + 1, maxAttempts: retries,
+      delayMs: delay, baseDelayMs: base, jitterMs: jitter, reason: message,
+    });
+  }
+  await new Promise(resolve => setTimeout(resolve, delay));
+  return coldStart;
+}
+
+function finalizeSuccessfulInvoke(data: unknown, sawColdStart: boolean, telemetry: InvokeTelemetry): InvokeOutcome {
+  const legacyError = compatibilityError(data);
+  if (legacyError) return finalizeInvoke({ data: null, error: legacyError }, telemetry);
+  if (sawColdStart) emitBridgeStatus({ type: 'recovered' });
+  return finalizeInvoke({ data, error: null }, telemetry);
+}
+
+function finalizeFailedInvoke(args: {
+  data: unknown;
+  error: Error;
+  message: string;
+  attempt: number;
+  telemetry: InvokeTelemetry;
+}): InvokeOutcome {
+  if (isColdStartSignal(args.message)) {
+    emitBridgeStatus({ type: 'unavailable', reason: args.message, attempts: args.attempt + 1 });
+  }
+  return finalizeInvoke({ data: args.data, error: args.error }, args.telemetry);
 }
 
 export async function invokeWithRetry(
@@ -148,50 +251,17 @@ export async function invokeWithRetry(
   const { op, target } = deriveExternalOp(body);
   const requestId = newRequestId();
   const traceparent = newTraceparent();
-  let serverRequestId: string | undefined;
-
-  const finalize = (result: { data: unknown; error: Error | null }) => {
-    // Servidor pode ecoar request_id no body — prioriza o eco quando presente.
-    const echoed =
-      result.data && typeof result.data === 'object' && 'request_id' in result.data
-        ? String((result.data as { request_id?: unknown }).request_id ?? '')
-        : '';
-    if (echoed) serverRequestId = echoed;
-    recordBridgeCall({
-      bridge: 'external-db-bridge',
-      op,
-      target,
-      durationMs: performance.now() - startedAt,
-      reqBytes,
-      respBytes: result.error ? 0 : estimatePayloadBytes(result.data),
-      ok: !result.error,
-      errorMessage: result.error?.message,
-      requestId,
-      serverRequestId,
-    });
-    return result;
-  };
+  const telemetry: InvokeTelemetry = { startedAt, reqBytes, op, target, requestId };
 
   // Gate best-effort: só bloqueia se uma sondagem recente confirmou estado ruim.
   // Não força sondagem nova aqui (evita latência extra e dependência em testes mockados);
   // o polling do useCloudStatus mantém o cache atualizado.
-  const cachedSnap = getCachedCloudStatus();
-  if (cachedSnap && (cachedSnap.status === 'down' || cachedSnap.status === 'degraded')) {
-    try {
-      await ensureCloudReady(3000, true);
-    } catch (gateErr) {
-      if (gateErr instanceof CloudNotReadyError) {
-        logger.warn(`[external-db] Aborting invoke — cloud ${gateErr.status}`);
-        emitBridgeStatus({ type: 'unavailable', reason: gateErr.message, attempts: 0 });
-        return finalize({ data: null, error: gateErr });
-      }
-      throw gateErr;
-    }
-  }
+  const gateOutcome = await cloudGateOutcome(telemetry);
+  if (gateOutcome) return gateOutcome;
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     const { data, error } = await bridgeBreaker.execute(() => 
-      supabase.functions.invoke('external-db-bridge', {
+      supabase.functions.invoke(BRIDGE_NAME, {
         body,
         headers: { 
           [REQUEST_ID_HEADER]: requestId,
@@ -200,55 +270,22 @@ export async function invokeWithRetry(
       })
     );
 
-    if (!error) {
-
-      // Compatibilidade durante o deploy: o bridge antigo retornava HTTP 200
-      // com essas flags. Falha de integração não representa catálogo vazio.
-      if (data && typeof data === 'object' && (data._unconfigured || data.fallback || data.error)) {
-        return finalize({ data: null, error: new Error(data._unconfigured
-          ? 'CATALOG_NOT_CONFIGURED: catálogo indisponível'
-          : String(data.message || data.error || 'Catálogo indisponível')) });
-      }
-
-      if (sawColdStart) emitBridgeStatus({ type: 'recovered' });
-      return finalize({ data, error: null });
-    }
+    if (!error) return finalizeSuccessfulInvoke(data, sawColdStart, telemetry);
 
     const msg = await extractFunctionErrorMessage(error);
 
     // Fail-fast em erros determinísticos (schema/validação/auth) — retry não muda o resultado.
     if (isNonRetryableError(msg)) {
       logger.warn(`[external-db] Fail-fast (deterministic error, no retry): ${msg}`);
-      return finalize({ data, error });
+      return finalizeInvoke({ data, error }, telemetry);
     }
 
     if (attempt < retries && isRetryableError(msg)) {
-      // Backoff exponencial com jitter (evita thundering herd em prewarm paralelo)
-      const base = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
-      const jitter = Math.floor(Math.random() * 200);
-      const delay = Math.min(base + jitter, 4000);
-      logger.warn(`[external-db] Retry ${attempt + 1}/${retries} after ${delay}ms (base=${base}+jitter=${jitter}): ${msg}`);
-      onRetry?.(attempt + 1, retries, delay);
-      if (isColdStartSignal(msg)) {
-        sawColdStart = true;
-        emitBridgeStatus({
-          type: 'degraded',
-          attempt: attempt + 1,
-          maxAttempts: retries,
-          delayMs: delay,
-          baseDelayMs: base,
-          jitterMs: jitter,
-          reason: msg,
-        });
-      }
-      await new Promise(r => setTimeout(r, delay));
+      sawColdStart = await waitBeforeRetry(msg, attempt, retries, onRetry) || sawColdStart;
       continue;
     }
 
-    if (isColdStartSignal(msg)) {
-      emitBridgeStatus({ type: 'unavailable', reason: msg, attempts: attempt + 1 });
-    }
-    return finalize({ data, error });
+    return finalizeFailedInvoke({ data, error, message: msg, attempt, telemetry });
   }
-  return finalize({ data: null, error: new Error('Max retries exceeded') });
+  return finalizeInvoke({ data: null, error: new Error('Max retries exceeded') }, telemetry);
 }

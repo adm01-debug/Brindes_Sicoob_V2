@@ -25,6 +25,8 @@ import { toast } from "sonner";
 import { PRESET_COLORS, countFilters, summarizeFilters } from "./preset-utils";
 import { ColorEmojiPicker } from "./PresetFormParts";
 
+const DEFAULT_PRESET_COLOR = PRESET_COLORS[0] ?? "#003641";
+
 // Re-export for external consumers
 export { PRESET_COLORS } from "./preset-utils";
 
@@ -32,6 +34,24 @@ interface PresetsBarProps {
   currentFilters: FilterState;
   onApplyPreset: (filters: FilterState, presetId?: string) => void;
   activePresetId?: string;
+}
+
+function PresetCountBadge({ count }: { readonly count: number }) {
+  if (count === 0) return null;
+  return <Badge variant="secondary" className="absolute -top-1.5 -right-1.5 h-5 min-w-5 p-0 flex items-center justify-center text-[10px] font-bold bg-primary text-primary-foreground rounded-full">{count}</Badge>;
+}
+
+function ActivePresetIndicator({ preset, onClear }: { readonly preset: FilterPreset | undefined; readonly onClear: () => void }) {
+  if (!preset) return null;
+  return <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-primary/10 border border-primary/20 text-xs"><Check className="h-3 w-3 text-primary shrink-0" /><span className="text-primary font-medium truncate flex-1">{preset.name}</span><button onClick={onClear} className="p-0.5 hover:bg-primary/20 rounded transition-colors shrink-0" aria-label="Desativar preset"><X className="h-3 w-3 text-primary" /></button></div>;
+}
+
+function SavingLabel({ saving, label }: { readonly saving: boolean; readonly label: string }) {
+  return <>{saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}{label}</>;
+}
+
+function isSaveDisabled(isSaving: boolean, name: string) {
+  return isSaving || !name.trim();
 }
 
 export const PresetsBar = React.forwardRef<HTMLDivElement, PresetsBarProps>(
@@ -44,7 +64,7 @@ export const PresetsBar = React.forwardRef<HTMLDivElement, PresetsBarProps>(
     const [selectedPreset, setSelectedPreset] = useState<FilterPreset | null>(null);
     const [newPresetName, setNewPresetName] = useState("");
     const [newPresetDescription, setNewPresetDescription] = useState("");
-    const [newPresetColor, setNewPresetColor] = useState(PRESET_COLORS[0]!);
+    const [newPresetColor, setNewPresetColor] = useState(DEFAULT_PRESET_COLOR);
     const [newPresetEmoji, setNewPresetEmoji] = useState("📦");
     const [isSaving, setIsSaving] = useState(false);
 
@@ -52,11 +72,12 @@ export const PresetsBar = React.forwardRef<HTMLDivElement, PresetsBarProps>(
       () => JSON.stringify(currentFilters) !== JSON.stringify(defaultFilters),
       [currentFilters]
     );
+    const activePreset = presets.find(preset => preset.id === activePresetId);
 
     const resetForm = useCallback(() => {
       setNewPresetName("");
       setNewPresetDescription("");
-      setNewPresetColor(PRESET_COLORS[0]!);
+      setNewPresetColor(DEFAULT_PRESET_COLOR);
       setNewPresetEmoji("📦");
     }, []);
 
@@ -130,7 +151,7 @@ export const PresetsBar = React.forwardRef<HTMLDivElement, PresetsBarProps>(
       setSelectedPreset(preset);
       setNewPresetName(preset.name);
       setNewPresetDescription(preset.description || "");
-      setNewPresetColor(preset.color || PRESET_COLORS[0]!);
+      setNewPresetColor(preset.color || DEFAULT_PRESET_COLOR);
       setNewPresetEmoji(preset.icon || "📦");
       setIsEditOpen(true);
     }, []);
@@ -158,11 +179,7 @@ export const PresetsBar = React.forwardRef<HTMLDivElement, PresetsBarProps>(
               )}
             >
               <Bookmark className="h-4 w-4" />
-              {presets.length > 0 && (
-                <Badge variant="secondary" className="absolute -top-1.5 -right-1.5 h-5 min-w-5 p-0 flex items-center justify-center text-[10px] font-bold bg-primary text-primary-foreground rounded-full">
-                  {presets.length}
-                </Badge>
-              )}
+              <PresetCountBadge count={presets.length} />
             </Button>
           </PopoverTrigger>
           <PopoverContent align="end" className="w-80 p-3" sideOffset={8}>
@@ -193,21 +210,7 @@ export const PresetsBar = React.forwardRef<HTMLDivElement, PresetsBarProps>(
               </div>
 
               {/* Active preset indicator with clear */}
-              {activePresetId && presets.find(p => p.id === activePresetId) && (
-                <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-primary/10 border border-primary/20 text-xs">
-                  <Check className="h-3 w-3 text-primary shrink-0" />
-                  <span className="text-primary font-medium truncate flex-1">
-                    {presets.find(p => p.id === activePresetId)?.name}
-                  </span>
-                  <button
-                    onClick={handleClearPreset}
-                    className="p-0.5 hover:bg-primary/20 rounded transition-colors shrink-0"
-                    aria-label="Desativar preset"
-                  >
-                    <X className="h-3 w-3 text-primary" />
-                  </button>
-                </div>
-              )}
+              <ActivePresetIndicator preset={activePreset} onClear={handleClearPreset} />
 
               {/* List */}
               {isLoading ? (
@@ -348,8 +351,8 @@ export const PresetsBar = React.forwardRef<HTMLDivElement, PresetsBarProps>(
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancelar</Button>
-              <Button onClick={handleCreatePreset} disabled={isSaving || !newPresetName.trim()}>
-                {isSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}Salvar Preset
+              <Button onClick={handleCreatePreset} disabled={isSaveDisabled(isSaving, newPresetName)}>
+                <SavingLabel saving={isSaving} label="Salvar Preset" />
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -377,8 +380,8 @@ export const PresetsBar = React.forwardRef<HTMLDivElement, PresetsBarProps>(
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsEditOpen(false)}>Cancelar</Button>
-              <Button onClick={handleUpdatePreset} disabled={isSaving || !newPresetName.trim()}>
-                {isSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}Salvar
+              <Button onClick={handleUpdatePreset} disabled={isSaveDisabled(isSaving, newPresetName)}>
+                <SavingLabel saving={isSaving} label="Salvar" />
               </Button>
             </DialogFooter>
           </DialogContent>

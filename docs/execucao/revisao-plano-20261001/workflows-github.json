@@ -1,0 +1,196 @@
+{
+  "coletado_em": "2026-10-01T12:27:28.321490+00:00",
+  "metodo": "GitHub REST via gh api, somente GET; secrets apenas nomes e datas, sem valores.",
+  "main_auditado": "f1b4e0dd0ff33e5c78742ffa9d2cf5a7385d8e13",
+  "repo": {
+    "id": 1235607026,
+    "allow_update_branch": false,
+    "delete_branch_on_merge": false,
+    "allow_merge_commit": true,
+    "allow_rebase_merge": true,
+    "allow_squash_merge": true,
+    "security_and_analysis": null,
+    "private": true
+  },
+  "environments": {
+    "total_count": 5,
+    "environments": [
+      {
+        "id": 22864214267,
+        "node_id": "EN_kwDOSaXd8s8AAAAFUtA4-w",
+        "name": "construction",
+        "url": "https://api.github.com/repos/adm01-debug/Brindes_Sicoob_V2/environments/construction",
+        "html_url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/deployments/activity_log?environments_filter=construction",
+        "created_at": "2026-09-27T15:18:44Z",
+        "updated_at": "2026-09-27T15:18:44Z",
+        "can_admins_bypass": true,
+        "protection_rules": [
+          {
+            "id": 66996167,
+            "node_id": "GA_kwDOSaXd8s4D_kfH",
+            "type": "branch_policy"
+          }
+        ],
+        "deployment_branch_policy": {
+          "protected_branches": true,
+          "custom_branch_policies": false
+        },
+        "secrets_nomes": []
+      },
+      {
+        "id": 16686141014,
+        "node_id": "EN_kwDOSaXd8s8AAAAD4pJOVg",
+        "name": "copilot",
+        "url": "https://api.github.com/repos/adm01-debug/Brindes_Sicoob_V2/environments/copilot",
+        "html_url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/deployments/activity_log?environments_filter=copilot",
+        "created_at": "2026-06-14T15:05:15Z",
+        "updated_at": "2026-06-14T15:05:15Z",
+        "can_admins_bypass": true,
+        "protection_rules": [],
+        "deployment_branch_policy": null,
+        "secrets_nomes": []
+      },
+      {
+        "id": 21739916711,
+        "node_id": "EN_kwDOSaXd8s8AAAAFD8zNpw",
+        "name": "Preview",
+        "url": "https://api.github.com/repos/adm01-debug/Brindes_Sicoob_V2/environments/Preview",
+        "html_url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/deployments/activity_log?environments_filter=Preview",
+        "created_at": "2026-09-11T15:14:36Z",
+        "updated_at": "2026-09-11T15:14:36Z",
+        "can_admins_bypass": true,
+        "protection_rules": [],
+        "deployment_branch_policy": null,
+        "secrets_nomes": []
+      },
+      {
+        "id": 21316658601,
+        "node_id": "EN_kwDOSaXd8s8AAAAE9pJlqQ",
+        "name": "Production",
+        "url": "https://api.github.com/repos/adm01-debug/Brindes_Sicoob_V2/environments/Production",
+        "html_url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/deployments/activity_log?environments_filter=Production",
+        "created_at": "2026-09-05T18:16:44Z",
+        "updated_at": "2026-09-05T18:16:44Z",
+        "can_admins_bypass": true,
+        "protection_rules": [],
+        "deployment_branch_policy": null,
+        "secrets_nomes": []
+      },
+      {
+        "id": 22609542988,
+        "node_id": "EN_kwDOSaXd8s8AAAAFQ6I_TA",
+        "name": "Production – sicoob-csp-202635-1790202890178-XEua",
+        "url": "https://api.github.com/repos/adm01-debug/Brindes_Sicoob_V2/environments/Production – sicoob-csp-202635-1790202890178-XEua",
+        "html_url": "https://github.com/adm01-debug/Brindes_Sicoob_V2/deployments/activity_log?environments_filter=Production+%E2%80%93+sicoob-csp-202635-1790202890178-XEua",
+        "created_at": "2026-09-23T22:35:10Z",
+        "updated_at": "2026-09-23T22:35:10Z",
+        "can_admins_bypass": true,
+        "protection_rules": [],
+        "deployment_branch_policy": null,
+        "secrets_nomes": []
+      }
+    ]
+  },
+  "secrets_nomes": {
+    "total_count": 11,
+    "secrets": [
+      {
+        "name": "E2E_ADMIN_EMAIL",
+        "updated_at": "2026-09-28T00:01:32Z"
+      },
+      {
+        "name": "E2E_ADMIN_PASSWORD",
+        "updated_at": "2026-09-28T00:01:32Z"
+      },
+      {
+        "name": "E2E_USER_EMAIL",
+        "updated_at": "2026-09-28T00:01:30Z"
+      },
+      {
+        "name": "E2E_USER_PASSWORD",
+        "updated_at": "2026-09-28T00:01:31Z"
+      },
+      {
+        "name": "SUPABASE_ACCESS_TOKEN",
+        "updated_at": "2026-09-23T18:44:01Z"
+      },
+      {
+        "name": "SUPABASE_DB_URL",
+        "updated_at": "2026-09-28T11:32:06Z"
+      },
+      {
+        "name": "SUPABASE_SERVICE_ROLE_KEY",
+        "updated_at": "2026-09-28T10:31:36Z"
+      },
+      {
+        "name": "VITE_SUPABASE_ANON_KEY",
+        "updated_at": "2026-09-08T10:20:31Z"
+      },
+      {
+        "name": "VITE_SUPABASE_PROJECT_ID",
+        "updated_at": "2026-09-08T10:20:43Z"
+      },
+      {
+        "name": "VITE_SUPABASE_PUBLISHABLE_KEY",
+        "updated_at": "2026-09-08T10:20:13Z"
+      },
+      {
+        "name": "VITE_SUPABASE_URL",
+        "updated_at": "2026-09-08T10:20:01Z"
+      }
+    ]
+  },
+  "actions_permissions": {
+    "enabled": true,
+    "allowed_actions": "all",
+    "sha_pinning_required": false
+  },
+  "token_permissions": {
+    "default_workflow_permissions": "read",
+    "can_approve_pull_request_reviews": false
+  },
+  "labels": [
+    "automated",
+    "bug",
+    "ci",
+    "dependencies",
+    "documentation",
+    "duplicate",
+    "enhancement",
+    "good first issue",
+    "help wanted",
+    "invalid",
+    "question",
+    "wontfix"
+  ],
+  "variables": {
+    "nomes": []
+  },
+  "runners": {
+    "total_count": 3,
+    "runners": [
+      {
+        "id": 22,
+        "status": "offline",
+        "busy": false
+      },
+      {
+        "id": 21,
+        "status": "offline",
+        "busy": false
+      },
+      {
+        "id": 23,
+        "status": "online",
+        "busy": false
+      }
+    ]
+  },
+  "dependabot_alerts": {
+    "erro": "gh: Vulnerability alerts are disabled. (HTTP 404)"
+  },
+  "automated_security": {
+    "enabled": false,
+    "paused": false
+  }
+}

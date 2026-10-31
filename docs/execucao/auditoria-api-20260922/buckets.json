@@ -1,0 +1,110 @@
+[
+  {
+    "id": "component-media",
+    "name": "component-media",
+    "public": false,
+    "file_size_limit": 5242880,
+    "allowed_mime_types": null,
+    "type": "STANDARD"
+  },
+  {
+    "id": "exports",
+    "name": "exports",
+    "public": false,
+    "file_size_limit": null,
+    "allowed_mime_types": null,
+    "type": "STANDARD"
+  },
+  {
+    "id": "mockup-art-files",
+    "name": "mockup-art-files",
+    "public": false,
+    "file_size_limit": 5242880,
+    "allowed_mime_types": null,
+    "type": "STANDARD"
+  },
+  {
+    "id": "order-documents",
+    "name": "order-documents",
+    "public": false,
+    "file_size_limit": null,
+    "allowed_mime_types": null,
+    "type": "STANDARD"
+  },
+  {
+    "id": "personalization-images",
+    "name": "personalization-images",
+    "public": false,
+    "file_size_limit": 5242880,
+    "allowed_mime_types": null,
+    "type": "STANDARD"
+  },
+  {
+    "id": "personalization-images-secondary",
+    "name": "personalization-images-secondary",
+    "public": true,
+    "file_size_limit": null,
+    "allowed_mime_types": null,
+    "type": "STANDARD"
+  },
+  {
+    "id": "product-videos",
+    "name": "product-videos",
+    "public": false,
+    "file_size_limit": 104857600,
+    "allowed_mime_types": null,
+    "type": "STANDARD"
+  },
+  {
+    "id": "proposals",
+    "name": "proposals",
+    "public": false,
+    "file_size_limit": null,
+    "allowed_mime_types": null,
+    "type": "STANDARD"
+  },
+  {
+    "id": "qa-evidences",
+    "name": "qa-evidences",
+    "public": true,
+    "file_size_limit": null,
+    "allowed_mime_types": null,
+    "type": "STANDARD"
+  },
+  {
+    "id": "quarantine",
+    "name": "quarantine",
+    "public": false,
+    "file_size_limit": 5242880,
+    "allowed_mime_types": null,
+    "type": "STANDARD"
+  },
+  {
+    "id": "supplier-logos",
+    "name": "supplier-logos",
+    "public": false,
+    "file_size_limit": 2097152,
+    "allowed_mime_types": null,
+    "type": "STANDARD"
+  },
+  {
+    "id": "sicoob-order-documents",
+    "name": "sicoob-order-documents",
+    "public": false,
+    "file_size_limit": null,
+    "allowed_mime_types": null,
+    "type": "STANDARD"
+  },
+  {
+    "id": "avatars",
+    "name": "avatars",
+    "public": true,
+    "file_size_limit": 2097152,
+    "allowed_mime_types": [
+      "image/png",
+      "image/jpeg",
+      "image/webp"
+    ],
+    "type": "STANDARD"
+  }
+]

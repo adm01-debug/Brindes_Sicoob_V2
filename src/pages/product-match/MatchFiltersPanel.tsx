@@ -1,6 +1,7 @@
 /**
  * Match Filters Panel — filters for product match page
  */
+import type { Dispatch, SetStateAction } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -10,7 +11,7 @@ import type { MatchFilters } from "@/hooks/useProductMatch";
 
 interface MatchFiltersPanelProps {
   filters: Partial<MatchFilters>;
-  setFilters: React.Dispatch<React.SetStateAction<Partial<MatchFilters>>>;
+  setFilters: Dispatch<SetStateAction<Partial<MatchFilters>>>;
   categories: string[];
   suppliers: string[];
 }

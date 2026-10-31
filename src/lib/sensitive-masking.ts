@@ -50,7 +50,7 @@ const BEARER_RE = /(Bearer\s+)([A-Za-z0-9._-]{8,})/g;
  * (ou `null` se a entrada for `null`/`undefined`). Nunca lança.
  */
 export function maskSensitiveText(text: string | null | undefined): string | null {
-  if (text == null) return null;
+  if (text === null || text === undefined) return null;
   let out = String(text);
 
   // 1. JWTs e refs em URL (substitui o segmento inteiro)

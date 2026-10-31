@@ -18,17 +18,18 @@ export function useClientOrdersHistory(clientId?: string) {
     queryKey: ["client-orders-history", clientId],
     enabled: !!clientId,
     queryFn: async () => {
+      if (!clientId) throw new Error("Cliente não identificado");
       const { data, error } = await supabase
         // rls-allow: filtrado por client_id; RLS aplica seller scope
         .from("orders")
         .select("*")
-        .eq("client_id", clientId!)
+        .eq("client_id", clientId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
       const orders = (data ?? []) as OrderRow[];
-      const valid = orders.filter((o) => o.status !== "cancelled");
+      const valid = orders.filter((o) => o.status !== "cancelado");
       const totalLtv = valid.reduce((sum, o) => sum + (o.total ?? 0), 0);
       const ordersCount = valid.length;
       const avgTicket = ordersCount > 0 ? totalLtv / ordersCount : 0;

@@ -14,6 +14,107 @@ import {
 } from '@/types/stock';
 import { fetchAndProcessStockData } from './stock/stockFetcher';
 
+function countStatuses(productStocks: ProductStockSummary[]) {
+  const products = { in_stock: 0, low_stock: 0, critical: 0, out_of_stock: 0 };
+  const variants = { in_stock: 0, low_stock: 0, critical: 0, out_of_stock: 0 };
+  let totalVariants = 0;
+  let daysSum = 0;
+  const colors = new Set<string>();
+  for (const product of productStocks) {
+    if (product.overallStatus in products) products[product.overallStatus as keyof typeof products] += 1;
+    for (const variant of product.variants) {
+      totalVariants += 1;
+      if (variant.colorName) colors.add(variant.colorName);
+      daysSum += variant.daysUntilStockout || 0;
+      if (variant.status in variants) variants[variant.status as keyof typeof variants] += 1;
+    }
+  }
+  return { products, variants, totalVariants, daysSum, colors };
+}
+
+function buildStockSummary(
+  productStocks: ProductStockSummary[],
+  alerts: Array<{ severity: string }>,
+): StockDashboardSummary {
+  const counts = countStatuses(productStocks);
+  return {
+    totalProducts: productStocks.length,
+    totalVariants: counts.totalVariants,
+    totalColors: counts.colors.size,
+    productsInStock: counts.products.in_stock,
+    productsLowStock: counts.products.low_stock,
+    productsCritical: counts.products.critical,
+    productsOutOfStock: counts.products.out_of_stock,
+    variantsInStock: counts.variants.in_stock,
+    variantsLowStock: counts.variants.low_stock,
+    variantsCritical: counts.variants.critical,
+    variantsOutOfStock: counts.variants.out_of_stock,
+    totalStockValue: 0,
+    totalAvailableValue: 0,
+    averageDaysOfStock: counts.daysSum / Math.max(1, counts.totalVariants),
+    stockTurnoverRate: 0,
+    totalAlerts: alerts.length,
+    criticalAlerts: alerts.filter((alert) => alert.severity === 'error').length,
+    incomingStockValue: 0,
+  };
+}
+
+function matchesStockStatus(product: ProductStockSummary, status: StockFilters['status']) {
+  if (product.overallStatus === status) return true;
+  if (status === 'low_stock' && product.overallStatus === 'critical') return true;
+  if (status === 'incoming') {
+    return product.totalInTransitStock > 0
+      || product.variants.some((variant) => variant.status === 'incoming' || variant.inTransitStock > 0);
+  }
+  return product.variants.some((variant) => variant.status === status);
+}
+
+function matchesStockSearch(product: ProductStockSummary, search: string) {
+  const query = search.toLowerCase();
+  return product.productName.toLowerCase().includes(query)
+    || product.productSku.toLowerCase().includes(query)
+    || product.variants.some((variant) => (
+      variant.colorName?.toLowerCase().includes(query) || variant.variantSku.toLowerCase().includes(query)
+    ));
+}
+
+function filterStockProducts(
+  products: ProductStockSummary[],
+  filters: StockFilters,
+  alertProductIds: Set<string>,
+  restrictToAlerts: boolean,
+) {
+  let items = restrictToAlerts ? products.filter((p) => alertProductIds.has(p.productId)) : [...products];
+  if (filters.status) items = items.filter((product) => matchesStockStatus(product, filters.status));
+  if (filters.search) items = items.filter((product) => matchesStockSearch(product, filters.search));
+  if (filters.categoryId) items = items.filter((product) => product.categoryName === filters.categoryId);
+  if (filters.supplierId) items = items.filter((product) => product.supplierName === filters.supplierId);
+  if (filters.colorName) {
+    items = items.filter((product) => product.variants.some((variant) => variant.colorName === filters.colorName));
+  }
+  if (filters.colorGroup) {
+    const group = filters.colorGroup.toLowerCase();
+    items = items.filter((product) => product.variants.some((variant) => variant.colorName?.toLowerCase().includes(group)));
+  }
+  if (filters.minQuantityNeeded && filters.minQuantityNeeded > 0) {
+    const minimumQuantity = filters.minQuantityNeeded;
+    items = items.filter((product) => product.totalAvailableStock >= minimumQuantity);
+  }
+  return items;
+}
+
+function sortStockProducts(items: ProductStockSummary[], filters: StockFilters) {
+  const direction = filters.sortDirection === 'asc' ? 1 : -1;
+  switch (filters.sortBy) {
+    case 'name': return items.sort((a, b) => a.productName.localeCompare(b.productName) * direction);
+    case 'sku': return items.sort((a, b) => a.productSku.localeCompare(b.productSku) * direction);
+    case 'stock_quantity': return items.sort((a, b) => (a.totalCurrentStock - b.totalCurrentStock) * direction);
+    case 'available_stock': return items.sort((a, b) => (a.totalAvailableStock - b.totalAvailableStock) * direction);
+    case 'days_remaining': return items.sort((a, b) => ((a.daysUntilFullStockout ?? 999) - (b.daysUntilFullStockout ?? 999)) * direction);
+    default: return items;
+  }
+}
+
 export function useVariantStock() {
   const [filters, setFilters] = useState<StockFilters>(defaultStockFilters);
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
@@ -29,9 +130,9 @@ export function useVariantStock() {
     refetchOnMount: false,
   });
 
-  const productStocks = data?.productStocks ?? [];
-  const rawAlerts = data?.alerts ?? [];
-  const futureStock = data?.futureStock ?? [];
+  const productStocks = useMemo(() => data?.productStocks ?? [], [data?.productStocks]);
+  const rawAlerts = useMemo(() => data?.alerts ?? [], [data?.alerts]);
+  const futureStock = useMemo(() => data?.futureStock ?? [], [data?.futureStock]);
 
   const alerts = useMemo(() => {
     if (dismissedAlerts.size === 0) return rawAlerts;
@@ -47,52 +148,7 @@ export function useVariantStock() {
     queryClient.invalidateQueries({ queryKey: ['variant-stock-data'] });
   }, [queryClient]);
 
-  const summary = useMemo((): StockDashboardSummary => {
-    // Single-loop aggregation for O(n) instead of O(8n)
-    let totalVariants = 0;
-    let productsInStock = 0, productsLowStock = 0, productsCritical = 0, productsOutOfStock = 0;
-    let variantsInStock = 0, variantsLowStock = 0, variantsCritical = 0, variantsOutOfStock = 0;
-    let daysSum = 0;
-    const colorSet = new Set<string>();
-
-    for (const p of productStocks) {
-      switch (p.overallStatus) {
-        case 'in_stock': productsInStock++; break;
-        case 'low_stock': productsLowStock++; break;
-        case 'critical': productsCritical++; break;
-        case 'out_of_stock': productsOutOfStock++; break;
-      }
-      for (const v of p.variants) {
-        totalVariants++;
-        if (v.colorName) colorSet.add(v.colorName);
-        daysSum += v.daysUntilStockout || 0;
-        switch (v.status) {
-          case 'in_stock': variantsInStock++; break;
-          case 'low_stock': variantsLowStock++; break;
-          case 'critical': variantsCritical++; break;
-          case 'out_of_stock': variantsOutOfStock++; break;
-        }
-      }
-    }
-
-    let criticalAlerts = 0;
-    for (const a of alerts) { if (a.severity === 'error') criticalAlerts++; }
-
-    return {
-      totalProducts: productStocks.length,
-      totalVariants,
-      totalColors: colorSet.size,
-      productsInStock, productsLowStock, productsCritical, productsOutOfStock,
-      variantsInStock, variantsLowStock, variantsCritical, variantsOutOfStock,
-      totalStockValue: 0,
-      totalAvailableValue: 0,
-      averageDaysOfStock: daysSum / Math.max(1, totalVariants),
-      stockTurnoverRate: 0,
-      totalAlerts: alerts.length,
-      criticalAlerts,
-      incomingStockValue: 0,
-    };
-  }, [productStocks, alerts]);
+  const summary = useMemo(() => buildStockSummary(productStocks, alerts), [productStocks, alerts]);
 
   // Extract unique categories and suppliers for filter dropdowns
   const availableCategories = useMemo(() => {
@@ -142,76 +198,16 @@ export function useVariantStock() {
   }, [rawAlerts]);
 
   const filteredProducts = useMemo(() => {
-    let items = [...productStocks];
-
     const activeAlerts = alertTypeFilter === 'all' 
       ? alerts 
       : alerts.filter(a => a.type === alertTypeFilter);
     const activeAlertProductIds = new Set(activeAlerts.map(a => a.productId));
-
-    if (filters.showOnlyWithAlerts || (alertTypeFilter !== 'all')) {
-      items = items.filter(p => activeAlertProductIds.has(p.productId));
-    }
-
-    if (filters.status) {
-      items = items.filter(p => {
-        if (p.overallStatus === filters.status) return true;
-        // "low_stock" filter should also include "critical" products
-        if (filters.status === 'low_stock' && p.overallStatus === 'critical') return true;
-        if (filters.status === 'incoming') {
-          return p.totalInTransitStock > 0 || p.variants.some(v => v.status === 'incoming' || v.inTransitStock > 0);
-        }
-        return p.variants.some(v => v.status === filters.status);
-      });
-    }
-
-    if (filters.search) {
-      const s = filters.search.toLowerCase();
-      items = items.filter(p =>
-        p.productName.toLowerCase().includes(s) ||
-        p.productSku.toLowerCase().includes(s) ||
-        p.variants.some(v => v.colorName?.toLowerCase().includes(s) || v.variantSku.toLowerCase().includes(s))
-      );
-    }
-
-    if (filters.categoryId) {
-      items = items.filter(p => p.categoryName === filters.categoryId);
-    }
-
-    if (filters.supplierId) {
-      items = items.filter(p => p.supplierName === filters.supplierId);
-    }
-
-    if (filters.colorName) {
-      items = items.filter(p => p.variants.some(v => v.colorName === filters.colorName));
-    }
-
-    if (filters.colorGroup) {
-      const groupLower = filters.colorGroup.toLowerCase();
-      items = items.filter(p =>
-        p.variants.some(v => v.colorName?.toLowerCase().includes(groupLower))
-      );
-    }
-
-    if (filters.minQuantityNeeded && filters.minQuantityNeeded > 0) {
-      items = items.filter(p => p.totalAvailableStock >= filters.minQuantityNeeded!);
-    }
-
-    if (filters.showOnlyWithAlerts) {
-      // items = items.filter(p => ids.has(p.productId)); // Já filtrado acima se alertTypeFilter != 'all'
-    }
-
-    const dir = filters.sortDirection === 'asc' ? 1 : -1;
-    switch (filters.sortBy) {
-      case 'name': items.sort((a, b) => a.productName.localeCompare(b.productName) * dir); break;
-      case 'sku': items.sort((a, b) => a.productSku.localeCompare(b.productSku) * dir); break;
-      case 'stock_quantity': items.sort((a, b) => (a.totalCurrentStock - b.totalCurrentStock) * dir); break;
-      case 'available_stock': items.sort((a, b) => (a.totalAvailableStock - b.totalAvailableStock) * dir); break;
-      case 'days_remaining': items.sort((a, b) => ((a.daysUntilFullStockout ?? 999) - (b.daysUntilFullStockout ?? 999)) * dir); break;
-    }
-
-    return items;
-  }, [productStocks, filters, alerts]);
+    const restrictToAlerts = filters.showOnlyWithAlerts || alertTypeFilter !== 'all';
+    return sortStockProducts(
+      filterStockProducts(productStocks, filters, activeAlertProductIds, restrictToAlerts),
+      filters,
+    );
+  }, [productStocks, filters, alerts, alertTypeFilter]);
 
   const allColors = useMemo(() => {
     const s = new Set<string>();
@@ -265,7 +261,7 @@ export function useVariantStock() {
 }
 
 export function useProductVariantStock(productId: string) {
-  const { productStocks, alerts, isLoading, fetchStockData, allProductStocks } = useVariantStock();
+  const { alerts, isLoading, fetchStockData, allProductStocks } = useVariantStock();
 
   const productStock = useMemo(() => allProductStocks.find(p => p.productId === productId), [allProductStocks, productId]);
   const productAlerts = useMemo(() => alerts.filter(a => a.productId === productId), [alerts, productId]);

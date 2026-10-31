@@ -1,3 +1,5 @@
+import { inspectDocumentBytes } from '../sicoob-document-ingest/inspection.ts';
+
 export const ARTWORK_BUCKET = 'sicoob-order-documents';
 export const MAX_ARTWORK_BYTES = 20 * 1024 * 1024;
 
@@ -22,6 +24,24 @@ export function assertArtworkContentType(filePath: string, contentType: string):
   if (!CONTENT_TYPE_BY_EXTENSION[extension]?.includes(contentType.toLowerCase())) {
     throw new Error('O conteúdo do arquivo não corresponde a um formato de arte permitido.');
   }
+}
+
+export function inspectArtworkBytes(
+  filePath: string,
+  declaredContentType: string,
+  content: ArrayBuffer,
+): string {
+  assertArtworkContentType(filePath, declaredContentType);
+  const extension = filePath.split('.').pop()?.toLowerCase() || '';
+  const inspected = inspectDocumentBytes(
+    new Uint8Array(content),
+    extension === 'pdf' ? 'invoice_pdf' : 'delivery_proof',
+  );
+  const expectedTypes = CONTENT_TYPE_BY_EXTENSION[extension] || [];
+  if (!expectedTypes.includes(inspected.mime) || inspected.mime !== declaredContentType.toLowerCase()) {
+    throw new Error('A assinatura real do arquivo não corresponde ao formato de arte informado.');
+  }
+  return inspected.mime;
 }
 
 export async function sha256Hex(content: ArrayBuffer): Promise<string> {

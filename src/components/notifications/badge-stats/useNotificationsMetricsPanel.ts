@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { notificationsMetrics, type BadgeRenderStat, type TriggerSource } from "@/lib/notifications-metrics";
+import { notificationsMetrics } from "@/lib/notifications-metrics";
 
 /** Sliding-window length for the sparkline (60 samples × 1s = 60s). */
 const SPARK_WINDOW_SECONDS = 60;
@@ -16,6 +16,44 @@ export interface StreakTrend {
   direction: "rising" | "flat" | "falling";
   slopePerSec: number;
   suggestion: { primary: string; rationale: string } | null;
+}
+
+function trendSlope(window: RatioSample[]) {
+  const xs = window.map((_, index) => index);
+  const ys = window.map((sample) => sample.ratio);
+  const meanX = xs.reduce((sum, value) => sum + value, 0) / window.length;
+  const meanY = ys.reduce((sum, value) => sum + value, 0) / window.length;
+  let numerator = 0;
+  let denominator = 0;
+  for (let index = 0; index < window.length; index++) {
+    const x = xs[index];
+    const y = ys[index];
+    if (x === undefined || y === undefined) continue;
+    numerator += (x - meanX) * (y - meanY);
+    denominator += (x - meanX) ** 2;
+  }
+  return denominator === 0 ? 0 : numerator / denominator;
+}
+
+function trendDirection(slope: number): StreakTrend['direction'] {
+  if (slope >= 0.01) return 'rising';
+  if (slope <= -0.01) return 'falling';
+  return 'flat';
+}
+
+function trendSuggestion(direction: StreakTrend['direction']) {
+  if (direction === 'rising') return { primary: "Try debounce 200ms → 400ms", rationale: "Ratio still climbing — widen the trailing-edge window first to absorb growing micro-bursts before touching the TTL gate." };
+  if (direction === 'flat') return { primary: "Try TTL 5s → 10s (keep debounce 200ms)", rationale: "Ratio plateaued at a high level — debounce is firing per burst; raise the prefetch TTL gate so back-to-back bursts coalesce." };
+  return { primary: "Hold values — ratio is self-recovering", rationale: "Trend is falling. Wait one more streak cycle before tuning to avoid over-correcting." };
+}
+
+function calculateStreakTrend(samples: RatioSample[], streakStartIndex: number): StreakTrend {
+  if (streakStartIndex < 0) return { direction: 'flat', slopePerSec: 0, suggestion: null };
+  const window = samples.slice(streakStartIndex);
+  if (window.length < 3) return { direction: 'flat', slopePerSec: 0, suggestion: { primary: "Hold current values; need ≥3s of data to recommend.", rationale: "Streak too short to fit a trend line." } };
+  const slopePerSec = trendSlope(window);
+  const direction = trendDirection(slopePerSec);
+  return { direction, slopePerSec, suggestion: trendSuggestion(direction) };
 }
 
 /** Read the runtime debug toggle (mirrors `isDebugEnabled` in notifications-metrics). */
@@ -129,58 +167,7 @@ export function useNotificationsMetricsPanel(visible: boolean) {
     };
   }, [samples, streakStartIdx, suspiciousStreakSeconds]);
 
-  const streakTrend = useMemo<StreakTrend>(() => {
-    if (streakStartIdx < 0) {
-      return { direction: "flat", slopePerSec: 0, suggestion: null };
-    }
-    const window = samples.slice(streakStartIdx);
-    if (window.length < 3) {
-      return {
-        direction: "flat",
-        slopePerSec: 0,
-        suggestion: {
-          primary: "Hold current values; need \u22653s of data to recommend.",
-          rationale: "Streak too short to fit a trend line.",
-        },
-      };
-    }
-    const n = window.length;
-    const xs = window.map((_, i) => i);
-    const ys = window.map((s) => s.ratio);
-    const meanX = xs.reduce((a, b) => a + b, 0) / n;
-    const meanY = ys.reduce((a, b) => a + b, 0) / n;
-    let num = 0;
-    let den = 0;
-    for (let i = 0; i < n; i++) {
-      const xi = xs[i];
-      const yi = ys[i];
-      if (xi === undefined || yi === undefined) continue;
-      num += (xi - meanX) * (yi - meanY);
-      den += (xi - meanX) ** 2;
-    }
-    const slopePerSec = den === 0 ? 0 : num / den;
-    const direction: "rising" | "flat" | "falling" =
-      slopePerSec >= 0.01 ? "rising" : slopePerSec <= -0.01 ? "falling" : "flat";
-
-    let suggestion: { primary: string; rationale: string };
-    if (direction === "rising") {
-      suggestion = {
-        primary: "Try debounce 200ms \u2192 400ms",
-        rationale: "Ratio still climbing \u2014 widen the trailing-edge window first to absorb growing micro-bursts before touching the TTL gate.",
-      };
-    } else if (direction === "flat") {
-      suggestion = {
-        primary: "Try TTL 5s \u2192 10s (keep debounce 200ms)",
-        rationale: "Ratio plateaued at a high level \u2014 debounce is firing per burst; raise the prefetch TTL gate so back-to-back bursts coalesce.",
-      };
-    } else {
-      suggestion = {
-        primary: "Hold values \u2014 ratio is self-recovering",
-        rationale: "Trend is falling. Wait one more streak cycle before tuning to avoid over-correcting.",
-      };
-    }
-    return { direction, slopePerSec, suggestion };
-  }, [samples, streakStartIdx]);
+  const streakTrend = useMemo(() => calculateStreakTrend(samples, streakStartIdx), [samples, streakStartIdx]);
 
   return {
     debugOn,

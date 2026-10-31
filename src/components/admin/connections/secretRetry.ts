@@ -6,37 +6,14 @@ import type { SecretMutationResult, SecretError } from "@/hooks/useSecretsManage
  */
 export function isRetryableSecretError(err: SecretError | undefined): boolean {
   if (!err) return false;
-  const msg = (err.message || "").toLowerCase();
+  const message = (err.message || "").toLowerCase();
   const code = (err.code || "").toLowerCase();
-
-  // Never retry: client/auth/validation
-  if (
-    code === "forbidden" ||
-    code === "not_whitelisted" ||
-    code === "invalid_value" ||
-    code === "unauthorized"
-  ) {
-    return false;
-  }
-
-  // Retry: network / timeout / 5xx
-  return (
-    msg.includes("network") ||
-    msg.includes("failed to fetch") ||
-    msg.includes("timeout") ||
-    msg.includes("timed out") ||
-    msg.includes("aborted") === false && (
-      msg.includes(" 500") ||
-      msg.includes(" 502") ||
-      msg.includes(" 503") ||
-      msg.includes(" 504") ||
-      msg.includes("internal server error") ||
-      msg.includes("bad gateway") ||
-      msg.includes("service unavailable") ||
-      msg.includes("gateway timeout")
-    ) ||
-    code === "db_error"
-  );
+  const forbiddenCodes = new Set(["forbidden", "not_whitelisted", "invalid_value", "unauthorized"]);
+  if (forbiddenCodes.has(code)) return false;
+  if (["network", "failed to fetch", "timeout", "timed out"].some(term => message.includes(term))) return true;
+  if (message.includes("aborted")) return code === "db_error";
+  const serverTerms = [" 500", " 502", " 503", " 504", "internal server error", "bad gateway", "service unavailable", "gateway timeout"];
+  return serverTerms.some(term => message.includes(term)) || code === "db_error";
 }
 
 export interface RetryOptions {
@@ -53,6 +30,34 @@ export class CancelledError extends Error {
   }
 }
 
+function throwIfCancelled(signal: AbortSignal | undefined): void {
+  if (signal?.aborted) throw new CancelledError();
+}
+
+function notifyAttempt(callback: RetryOptions["onAttempt"], attempt: number, delay: number | null): void {
+  callback?.(attempt, delay);
+}
+
+function waitForRetry(delay: number, signal: AbortSignal | undefined): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(new CancelledError());
+    };
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, delay);
+    if (!signal) return;
+    if (signal.aborted) {
+      clearTimeout(timer);
+      reject(new CancelledError());
+      return;
+    }
+    signal.addEventListener("abort", onAbort, { once: true });
+  });
+}
+
 /**
  * Runs `fn` with exponential backoff retries on retryable network/5xx errors.
  * Cancellable via AbortSignal — rejects with CancelledError immediately.
@@ -66,9 +71,8 @@ export async function withRetryBackoff(
   let lastResult: SecretMutationResult | null = null;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    if (signal?.aborted) throw new CancelledError();
-
-    onAttempt?.(attempt, null);
+    throwIfCancelled(signal);
+    notifyAttempt(onAttempt, attempt, null);
     const result = await fn();
     lastResult = result;
 
@@ -78,27 +82,9 @@ export async function withRetryBackoff(
 
     // Exponential backoff with small jitter: 600ms, 1200ms, 2400ms…
     const delay = baseDelayMs * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 150);
-    onAttempt?.(attempt, delay);
-
-    await new Promise<void>((resolve, reject) => {
-      const timer = setTimeout(() => {
-        signal?.removeEventListener("abort", onAbort);
-        resolve();
-      }, delay);
-      const onAbort = () => {
-        clearTimeout(timer);
-        reject(new CancelledError());
-      };
-      if (signal) {
-        if (signal.aborted) {
-          clearTimeout(timer);
-          reject(new CancelledError());
-          return;
-        }
-        signal.addEventListener("abort", onAbort, { once: true });
-      }
-    });
+    notifyAttempt(onAttempt, attempt, delay);
+    await waitForRetry(delay, signal);
   }
 
-  return lastResult ?? { ok: false, error: { code: "unexpected", message: "Sem resultado" } };
+  return (lastResult ?? { ok: false, error: { code: "unexpected", message: "Sem resultado" } });
 }

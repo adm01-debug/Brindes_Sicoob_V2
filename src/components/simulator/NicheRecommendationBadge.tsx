@@ -4,7 +4,7 @@
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Sparkles, Target, TrendingUp } from "lucide-react";
+import { Sparkles, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Mapeamento de nichos/ramos para técnicas recomendadas
@@ -84,8 +84,8 @@ export function NicheRecommendationBadge({
     if (!clientRamo && !clientNicho) return null;
     
     const searchTerms = [clientRamo, clientNicho]
-      .filter(Boolean)
-      .map(t => t!.toLowerCase());
+      .filter((term): term is string => Boolean(term))
+      .map(term => term.toLowerCase());
     
     for (const term of searchTerms) {
       for (const [key, value] of Object.entries(NICHE_TECHNIQUE_MAP)) {
@@ -155,8 +155,8 @@ export function useNicheRecommendations(
     }
     
     const searchTerms = [clientRamo, clientNicho]
-      .filter(Boolean)
-      .map(t => t!.toLowerCase());
+      .filter((term): term is string => Boolean(term))
+      .map(term => term.toLowerCase());
     
     const allRecommendedCodes: string[] = [];
     let reason: string | null = null;

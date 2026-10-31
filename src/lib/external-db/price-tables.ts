@@ -24,14 +24,62 @@ export interface PromobrindPriceTable {
   technique_name?: string;
 }
 
-export async function fetchPromobrindPriceTables(options?: {
+type PriceTableOptions = {
   techniqueName?: string;
   techniqueCode?: string;
   quantity?: number;
   colors?: number;
   width?: number;
   height?: number;
-}): Promise<PromobrindPriceTable[]> {
+};
+
+function numericOr(value: unknown, fallback: number): number {
+  return typeof value === 'number' && value !== 0 ? value : fallback;
+}
+
+function nullableNumber(value: unknown): number | null {
+  return numericOr(value, 0) || null;
+}
+
+function mapPriceTable(row: Record<string, unknown>): PromobrindPriceTable {
+  return {
+    id: row.id as string,
+    table_code: row.table_code as string,
+    table_code_option: row.table_code_option as string,
+    customization_type_name: row.customization_type_name as string,
+    technique_code: (row.serv_code || row.table_code) as string | null,
+    min_quantity: numericOr(row.tier_1_min_qty, 1),
+    max_quantity: nullableNumber(row.tier_15_min_qty),
+    min_colors: null,
+    max_colors: nullableNumber(row.max_colors),
+    max_area_width_cm: nullableNumber(row.max_area_width_cm),
+    max_area_height_cm: nullableNumber(row.max_area_height_cm),
+    unit_price: numericOr(row.tier_1_unit_price, 0),
+    setup_price: nullableNumber(row.setup_price),
+    handling_price: nullableNumber(row.handling_price),
+    sla_days: nullableNumber(row.tier_1_sla_days),
+    is_active: row.is_active as boolean,
+    code_option: row.table_code_option as string,
+    technique_name: row.customization_type_name as string,
+  };
+}
+
+function filterByQuantity(tables: PromobrindPriceTable[], quantity?: number): PromobrindPriceTable[] {
+  if (!quantity) return tables;
+  return tables.filter(table => table.min_quantity <= quantity && (table.max_quantity === null || table.max_quantity >= quantity));
+}
+
+function filterByColors(tables: PromobrindPriceTable[], colors?: number): PromobrindPriceTable[] {
+  if (!colors) return tables;
+  return tables.filter(table => (table.min_colors === null || table.min_colors <= colors) && (table.max_colors === null || table.max_colors >= colors));
+}
+
+function filterByMaximum(tables: PromobrindPriceTable[], value: number | undefined, field: 'max_area_width_cm' | 'max_area_height_cm'): PromobrindPriceTable[] {
+  if (!value) return tables;
+  return tables.filter(table => table[field] === null || table[field] >= value);
+}
+
+export async function fetchPromobrindPriceTables(options?: PriceTableOptions): Promise<PromobrindPriceTable[]> {
   const filters: Record<string, unknown> = { is_active: true };
   if (options?.techniqueName) filters.customization_type_name = options.techniqueName;
   if (options?.techniqueCode) filters.table_code = options.techniqueCode;
@@ -42,32 +90,11 @@ export async function fetchPromobrindPriceTables(options?: {
     orderBy: { column: 'tier_1_min_qty', ascending: true },
   });
 
-  let tables: PromobrindPriceTable[] = result.records.map(r => ({
-    id: r.id as string,
-    table_code: r.table_code as string,
-    table_code_option: r.table_code_option as string,
-    customization_type_name: r.customization_type_name as string,
-    technique_code: (r.serv_code || r.table_code) as string | null,
-    min_quantity: (r.tier_1_min_qty as number) || 1,
-    max_quantity: (r.tier_15_min_qty as number) || null,
-    min_colors: null,
-    max_colors: (r.max_colors as number) || null,
-    max_area_width_cm: (r.max_area_width_cm as number) || null,
-    max_area_height_cm: (r.max_area_height_cm as number) || null,
-    unit_price: (r.tier_1_unit_price as number) || 0,
-    setup_price: (r.setup_price as number) || null,
-    handling_price: (r.handling_price as number) || null,
-    sla_days: (r.tier_1_sla_days as number) || null,
-    is_active: r.is_active as boolean,
-    code_option: r.table_code_option as string,
-    technique_name: r.customization_type_name as string,
-  }));
-
-  if (options?.quantity) tables = tables.filter(t => t.min_quantity <= options.quantity! && (t.max_quantity === null || t.max_quantity >= options.quantity!));
-  if (options?.colors) tables = tables.filter(t => (t.min_colors === null || t.min_colors <= options.colors!) && (t.max_colors === null || t.max_colors >= options.colors!));
-  if (options?.width) tables = tables.filter(t => t.max_area_width_cm === null || t.max_area_width_cm >= options.width!);
-  if (options?.height) tables = tables.filter(t => t.max_area_height_cm === null || t.max_area_height_cm >= options.height!);
-
+  let tables = (result.records ?? []).map(mapPriceTable);
+  tables = filterByQuantity(tables, options?.quantity);
+  tables = filterByColors(tables, options?.colors);
+  tables = filterByMaximum(tables, options?.width, 'max_area_width_cm');
+  tables = filterByMaximum(tables, options?.height, 'max_area_height_cm');
   return tables;
 }
 

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Scale, Box, ArrowUpDown, ArrowLeftRight, MoveHorizontal, Droplets } from "lucide-react";
 
 interface ProductDimensionsProps {
@@ -13,7 +14,7 @@ interface ProductDimensionsProps {
 }
 
 interface SpecItemProps {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   value: string;
   unit: string;
@@ -49,47 +50,39 @@ function SpecItem({ icon, label, value, unit, iconBgClass = "bg-primary/10", ico
   );
 }
 
+function formatWeight(g: number) {
+  if (g >= 1000) return { val: (g / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 }), unit: 'kg' };
+  return { val: g.toLocaleString('pt-BR'), unit: 'g' };
+}
+
+function formatCapacity(ml: number) {
+  if (ml >= 1000) return { val: (ml / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 }), unit: 'L' };
+  return { val: ml.toLocaleString('pt-BR'), unit: 'ml' };
+}
+
+function buildSpecs(dimensions: NonNullable<ProductDimensionsProps["dimensions"]>): SpecItemProps[] {
+  const { height_cm, width_cm, length_cm, diameter_cm, weight_g, capacity_ml } = dimensions;
+  const specs: SpecItemProps[] = [];
+  if (diameter_cm) specs.push({ icon: <Box className="h-5 w-5" />, label: "Diâmetro", value: `${diameter_cm}`, unit: "cm" });
+  if (height_cm) specs.push({ icon: <ArrowUpDown className="h-5 w-5" />, label: "Altura", value: `${height_cm}`, unit: "cm" });
+  if (width_cm) specs.push({ icon: <ArrowLeftRight className="h-5 w-5" />, label: "Largura", value: `${width_cm}`, unit: "cm" });
+  if (length_cm) specs.push({ icon: <MoveHorizontal className="h-5 w-5" />, label: "Profundidade", value: `${length_cm}`, unit: "cm" });
+  if (capacity_ml) {
+    const capacity = formatCapacity(capacity_ml);
+    specs.push({ icon: <Droplets className="h-5 w-5" />, label: "Capacidade", value: capacity.val, unit: capacity.unit, iconBgClass: "bg-primary/10", iconColorClass: "text-primary" });
+  }
+  if (weight_g) {
+    const weight = formatWeight(weight_g);
+    specs.push({ icon: <Scale className="h-5 w-5" />, label: "Peso", value: weight.val, unit: weight.unit, iconBgClass: "bg-info/10", iconColorClass: "text-info" });
+  }
+  return specs;
+}
+
 export function ProductDimensions({ dimensions, compact }: ProductDimensionsProps) {
   if (!dimensions) return null;
 
-  const { height_cm, width_cm, length_cm, diameter_cm, weight_g, capacity_ml } = dimensions;
-  
-  const hasAnySpec = height_cm || width_cm || length_cm || diameter_cm || weight_g || capacity_ml;
-  
-  if (!hasAnySpec) return null;
-
-  const formatWeight = (g: number) => {
-    if (g >= 1000) return { val: (g / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 }), unit: 'kg' };
-    return { val: g.toLocaleString('pt-BR'), unit: 'g' };
-  };
-
-  const formatCapacity = (ml: number) => {
-    if (ml >= 1000) return { val: (ml / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 }), unit: 'L' };
-    return { val: ml.toLocaleString('pt-BR'), unit: 'ml' };
-  };
-
-  const specs: SpecItemProps[] = [];
-
-  if (diameter_cm) {
-    specs.push({ icon: <Box className="h-5 w-5" />, label: "Diâmetro", value: `${diameter_cm}`, unit: "cm" });
-  }
-  if (height_cm) {
-    specs.push({ icon: <ArrowUpDown className="h-5 w-5" />, label: "Altura", value: `${height_cm}`, unit: "cm" });
-  }
-  if (width_cm) {
-    specs.push({ icon: <ArrowLeftRight className="h-5 w-5" />, label: "Largura", value: `${width_cm}`, unit: "cm" });
-  }
-  if (length_cm) {
-    specs.push({ icon: <MoveHorizontal className="h-5 w-5" />, label: "Profundidade", value: `${length_cm}`, unit: "cm" });
-  }
-  if (capacity_ml) {
-    const cap = formatCapacity(capacity_ml);
-    specs.push({ icon: <Droplets className="h-5 w-5" />, label: "Capacidade", value: cap.val, unit: cap.unit, iconBgClass: "bg-primary/10", iconColorClass: "text-primary" });
-  }
-  if (weight_g) {
-    const w = formatWeight(weight_g);
-    specs.push({ icon: <Scale className="h-5 w-5" />, label: "Peso", value: w.val, unit: w.unit, iconBgClass: "bg-info/10", iconColorClass: "text-info" });
-  }
+  const specs = buildSpecs(dimensions);
+  if (specs.length === 0) return null;
 
   if (compact) {
     return (

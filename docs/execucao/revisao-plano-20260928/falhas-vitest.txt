@@ -1,0 +1,34 @@
+ FAIL  tests/components/LoadingScreen.test.tsx > LoadingScreen > renders spinner
+ FAIL  tests/components/PriceFreshnessBadge.colorAndIcon.test.tsx > PriceFreshnessBadge — cor e ícone por status × superfície > superfície: card (variant="icon-only") > status=fresh renderiza o ícone Lucide correspondente
+ FAIL  tests/components/PriceFreshnessBadge.colorAndIcon.test.tsx > PriceFreshnessBadge — cor e ícone por status × superfície > superfície: table (variant="icon-only") > status=fresh renderiza o ícone Lucide correspondente
+AssertionError: expected 'lucide lucide-circle-check h-3.5 w-3.5' to match /lucide-circle-check-big|lucide-check-…/
+ FAIL  tests/components/PriceFreshnessBadge.colorAndIcon.test.tsx > PriceFreshnessBadge — cor e ícone por status × superfície > superfície: card (variant="icon-only") > status=unknown renderiza o ícone Lucide correspondente
+ FAIL  tests/components/PriceFreshnessBadge.colorAndIcon.test.tsx > PriceFreshnessBadge — cor e ícone por status × superfície > superfície: table (variant="icon-only") > status=unknown renderiza o ícone Lucide correspondente
+AssertionError: expected 'lucide lucide-circle-question-mark h-…' to match /lucide-circle-help|lucide-help-circle/
+ FAIL  tests/components/PriceFreshnessBadge.colorAndIcon.test.tsx > PriceFreshnessBadge — cor e ícone por status × superfície > superfície: list (variant="compact") > status=fresh renderiza o ícone Lucide correspondente
+AssertionError: expected 'lucide lucide-circle-check h-3 w-3' to match /lucide-circle-check-big|lucide-check-…/
+ FAIL  tests/components/PriceFreshnessBadge.colorAndIcon.test.tsx > PriceFreshnessBadge — cor e ícone por status × superfície > superfície: list (variant="compact") > status=unknown renderiza o ícone Lucide correspondente
+AssertionError: expected 'lucide lucide-circle-question-mark h-…' to match /lucide-circle-help|lucide-help-circle/
+ FAIL  tests/components/PriceFreshnessBadge.colorAndIcon.test.tsx > PriceFreshnessBadge — cor e ícone por status × superfície > superfície: quick (variant="inline") > status=fresh renderiza o ícone Lucide correspondente
+AssertionError: expected 'lucide lucide-circle-check h-3.5 w-3.…' to match /lucide-circle-check-big|lucide-check-…/
+ FAIL  tests/components/PriceFreshnessBadge.colorAndIcon.test.tsx > PriceFreshnessBadge — cor e ícone por status × superfície > superfície: quick (variant="inline") > status=unknown renderiza o ícone Lucide correspondente
+AssertionError: expected 'lucide lucide-circle-question-mark h-…' to match /lucide-circle-help|lucide-help-circle/
+ FAIL  tests/components/PriceFreshnessBadge.thresholdHosts.test.tsx > PriceFreshnessBadge — thresholdDays variável (30/60/120) × hosts > thresholdDays=30 > card (icon-only) · fresh em 13d aplica verde + CheckCircle2
+ FAIL  tests/components/PriceFreshnessBadge.thresholdHosts.test.tsx > PriceFreshnessBadge — thresholdDays variável (30/60/120) × hosts > thresholdDays=30 > table (icon-only) · fresh em 13d aplica verde + CheckCircle2
+ FAIL  tests/components/PriceFreshnessBadge.thresholdHosts.test.tsx > PriceFreshnessBadge — thresholdDays variável (30/60/120) × hosts > thresholdDays=60 > card (icon-only) · fresh em 28d aplica verde + CheckCircle2
+ FAIL  tests/components/PriceFreshnessBadge.thresholdHosts.test.tsx > PriceFreshnessBadge — thresholdDays variável (30/60/120) × hosts > thresholdDays=60 > table (icon-only) · fresh em 28d aplica verde + CheckCircle2
+ FAIL  tests/components/PriceFreshnessBadge.thresholdHosts.test.tsx > PriceFreshnessBadge — thresholdDays variável (30/60/120) × hosts > thresholdDays=120 > card (icon-only) · fresh em 58d aplica verde + CheckCircle2
+ FAIL  tests/components/PriceFreshnessBadge.thresholdHosts.test.tsx > PriceFreshnessBadge — thresholdDays variável (30/60/120) × hosts > thresholdDays=120 > table (icon-only) · fresh em 58d aplica verde + CheckCircle2
+AssertionError: expected 'lucide lucide-circle-check h-3.5 w-3.5' to match /lucide-circle-check-big|lucide-check-…/
+ FAIL  tests/components/PriceFreshnessBadge.thresholdHosts.test.tsx > PriceFreshnessBadge — thresholdDays variável (30/60/120) × hosts > thresholdDays=30 > list (compact) · fresh em 13d aplica verde + CheckCircle2
+ FAIL  tests/components/PriceFreshnessBadge.thresholdHosts.test.tsx > PriceFreshnessBadge — thresholdDays variável (30/60/120) × hosts > thresholdDays=60 > list (compact) · fresh em 28d aplica verde + CheckCircle2
+ FAIL  tests/components/PriceFreshnessBadge.thresholdHosts.test.tsx > PriceFreshnessBadge — thresholdDays variável (30/60/120) × hosts > thresholdDays=120 > list (compact) · fresh em 58d aplica verde + CheckCircle2
+AssertionError: expected 'lucide lucide-circle-check h-3 w-3' to match /lucide-circle-check-big|lucide-check-…/
+ FAIL  tests/components/PriceFreshnessBadge.thresholdHosts.test.tsx > PriceFreshnessBadge — thresholdDays variável (30/60/120) × hosts > thresholdDays=30 > quick (inline) · fresh em 13d aplica verde + CheckCircle2
+ FAIL  tests/components/PriceFreshnessBadge.thresholdHosts.test.tsx > PriceFreshnessBadge — thresholdDays variável (30/60/120) × hosts > thresholdDays=60 > quick (inline) · fresh em 28d aplica verde + CheckCircle2
+ FAIL  tests/components/PriceFreshnessBadge.thresholdHosts.test.tsx > PriceFreshnessBadge — thresholdDays variável (30/60/120) × hosts > thresholdDays=120 > quick (inline) · fresh em 58d aplica verde + CheckCircle2
+AssertionError: expected 'lucide lucide-circle-check h-3.5 w-3.…' to match /lucide-circle-check-big|lucide-check-…/
+ FAIL  tests/components/PriceFreshnessBadge.thresholdHosts.test.tsx > PriceFreshnessBadge — thresholdDays variável (30/60/120) × hosts > invariante cruzada: daysSince=45 muda de status conforme o threshold em todos os hosts
+AssertionError: ícone surface=card threshold=120 esperado=fresh: expected 'lucide lucide-circle-check h-3.5 w-3.5' to match /lucide-circle-check-big|lucide-check-…/
+ Test Files  3 failed | 397 passed | 8 skipped (408)
+      Tests  22 failed | 5547 passed | 112 skipped (5681)

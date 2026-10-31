@@ -2,13 +2,35 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatCurrency, generatePriceBreakdown, calculateTotalKitPrice } from "@/lib/kit-builder";
-import type { KitState } from "@/lib/kit-builder";
+import { formatCurrency, generatePriceBreakdown, calculateTotalKitPrice, type KitState } from "@/lib/kit-builder";
 
 interface KitPricingCardProps {
   kitState: KitState;
   kitQuantity: number;
   onKitQuantityChange: (quantity: number) => void;
+}
+
+function QuantityPricing({ kitState, kitQuantity, onChange }: {
+  kitState: KitState;
+  kitQuantity: number;
+  onChange: (quantity: number) => void;
+}) {
+  const { box, items, personalization } = kitState;
+  return <Card><CardHeader className="pb-3"><CardTitle className="text-base flex items-center gap-2">
+    <TrendingUp className="h-4 w-4 text-primary" />Preço por Quantidade
+  </CardTitle></CardHeader><CardContent><div className="grid grid-cols-5 gap-2 text-center">
+    {[50, 100, 200, 500, 1000].map((quantity) => {
+      const price = calculateTotalKitPrice(box, items, personalization, quantity);
+      const current = quantity === kitQuantity;
+      return <button key={quantity} onClick={() => onChange(quantity)}
+        className={cn("rounded-lg p-2.5 border transition-all cursor-pointer", current
+          ? "border-primary bg-primary/10 ring-1 ring-primary" : "border-border/50 bg-secondary/30 hover:border-primary/30")}>
+        <p className="text-[11px] text-muted-foreground">{quantity} kits</p>
+        <p className={cn("text-sm font-bold", current && "text-primary")}>{formatCurrency(price.unitPrice)}</p>
+        <p className="text-[10px] text-muted-foreground">/kit</p>
+      </button>;
+    })}
+  </div></CardContent></Card>;
 }
 
 export function KitPricingCard({ kitState, kitQuantity, onKitQuantityChange }: KitPricingCardProps) {
@@ -45,26 +67,7 @@ export function KitPricingCard({ kitState, kitQuantity, onKitQuantityChange }: K
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2"><TrendingUp className="h-4 w-4 text-primary" />Preço por Quantidade</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-5 gap-2 text-center">
-            {[50, 100, 200, 500, 1000].map(qty => {
-              const qtyPricing = calculateTotalKitPrice(box, items, personalization, qty);
-              const isCurrentQty = qty === kitQuantity;
-              return (
-                <button key={qty} onClick={() => onKitQuantityChange(qty)} className={cn("rounded-lg p-2.5 border transition-all cursor-pointer", isCurrentQty ? "border-primary bg-primary/10 ring-1 ring-primary" : "border-border/50 bg-secondary/30 hover:border-primary/30")}>
-                  <p className="text-[11px] text-muted-foreground">{qty} kits</p>
-                  <p className={cn("text-sm font-bold", isCurrentQty && "text-primary")}>{formatCurrency(qtyPricing.unitPrice)}</p>
-                  <p className="text-[10px] text-muted-foreground">/kit</p>
-                </button>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      <QuantityPricing kitState={kitState} kitQuantity={kitQuantity} onChange={onKitQuantityChange} />
     </>
   );
 }

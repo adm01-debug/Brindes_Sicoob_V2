@@ -14,6 +14,14 @@ interface InlineEditFieldProps {
   disabled?: boolean;
 }
 
+function EditingField({ inputRef, type, value, setValue, onKeyDown, onSave, onCancel, className, inputClassName, placeholder }: { inputRef: React.RefObject<HTMLInputElement>; type: "text" | "number"; value: string; setValue: (value: string) => void; onKeyDown: (event: React.KeyboardEvent) => void; onSave: () => void; onCancel: () => void; className?: string; inputClassName?: string; placeholder?: string }) {
+  return <div className={cn("flex items-center gap-1", className)}><Input ref={inputRef} type={type} value={value} onChange={event => setValue(event.target.value)} onKeyDown={onKeyDown} onBlur={onSave} className={cn("h-7 text-sm", inputClassName)} placeholder={placeholder} /><Button size="icon" variant="ghost" className="h-6 w-6 text-success hover:text-success/80" onClick={onSave} aria-label="Confirmar"><Check className="h-3 w-3" /></Button><Button size="icon" variant="ghost" className="h-6 w-6 text-destructive" onClick={onCancel} aria-label="Fechar"><X className="h-3 w-3" /></Button></div>;
+}
+
+function DisplayField({ value, placeholder, disabled, className, onEdit }: Pick<InlineEditFieldProps, 'value' | 'placeholder' | 'disabled' | 'className'> & { onEdit: () => void }) {
+  return <div className={cn("group flex items-center gap-1 cursor-pointer hover:bg-muted/50 rounded px-1 -mx-1 transition-colors", disabled && "cursor-default hover:bg-transparent", className)} onClick={() => !disabled && onEdit()}><span className={cn("text-sm", !value && "text-muted-foreground")}>{value || placeholder || "—"}</span>{!disabled && <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />}</div>;
+}
+
 export function InlineEditField({
   value,
   onSave,
@@ -59,51 +67,7 @@ export function InlineEditField({
   };
 
   if (isEditing) {
-    return (
-      <div className={cn("flex items-center gap-1", className)}>
-        <Input
-          ref={inputRef}
-          type={type}
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onBlur={handleSave}
-          className={cn("h-7 text-sm", inputClassName)}
-          placeholder={placeholder}
-        />
-        <Button
-          size="icon"
-          variant="ghost"
-          className="h-6 w-6 text-success hover:text-success/80"
-          onClick={handleSave}
-         aria-label="Confirmar"><Check className="h-3 w-3" />
-        </Button>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="h-6 w-6 text-destructive"
-          onClick={handleCancel}
-         aria-label="Fechar"><X className="h-3 w-3" />
-        </Button>
-      </div>
-    );
+    return <EditingField inputRef={inputRef} type={type} value={editValue} setValue={setEditValue} onKeyDown={handleKeyDown} onSave={handleSave} onCancel={handleCancel} className={className} inputClassName={inputClassName} placeholder={placeholder} />;
   }
-
-  return (
-    <div
-      className={cn(
-        "group flex items-center gap-1 cursor-pointer hover:bg-muted/50 rounded px-1 -mx-1 transition-colors",
-        disabled && "cursor-default hover:bg-transparent",
-        className
-      )}
-      onClick={() => !disabled && setIsEditing(true)}
-    >
-      <span className={cn("text-sm", !value && "text-muted-foreground")}>
-        {value || placeholder || "—"}
-      </span>
-      {!disabled && (
-        <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />
-      )}
-    </div>
-  );
+  return <DisplayField value={value} placeholder={placeholder} disabled={disabled} className={className} onEdit={() => setIsEditing(true)} />;
 }

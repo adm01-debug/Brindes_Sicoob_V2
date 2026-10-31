@@ -283,7 +283,7 @@ export const getStepIndex = (step: WizardStep): number => {
 export const getNextStep = (currentStep: WizardStep): WizardStep | null => {
   const index = getStepIndex(currentStep);
   if (index < WIZARD_STEPS.length - 1) {
-    return WIZARD_STEPS[index + 1]!;
+    return WIZARD_STEPS[index + 1] ?? null;
   }
   return null;
 };
@@ -291,7 +291,7 @@ export const getNextStep = (currentStep: WizardStep): WizardStep | null => {
 export const getPreviousStep = (currentStep: WizardStep): WizardStep | null => {
   const index = getStepIndex(currentStep);
   if (index > 0) {
-    return WIZARD_STEPS[index - 1]!;
+    return WIZARD_STEPS[index - 1] ?? null;
   }
   return null;
 };
@@ -324,7 +324,8 @@ export const canNavigateToStep = (targetStep: WizardStep, state: SimulatorWizard
   if (targetStep === 'comparison' && state.personalizations.length > 0) return true;
   
   for (let i = 0; i < targetIndex; i++) {
-    if (!isStepComplete(WIZARD_STEPS[i]!, state)) {
+    const step = WIZARD_STEPS[i];
+    if (!step || !isStepComplete(step, state)) {
       return false;
     }
   }

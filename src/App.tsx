@@ -38,7 +38,9 @@ import { ThemeInitializer } from '@/components/system/ThemeInitializer';
 const RouteSuspense = ({ children }: { children: ReactNode }) => {
   const { pathname } = useLocation();
   return (
-    <Suspense fallback={getFallback(pathname)}>{children}</Suspense>
+    <Suspense fallback={<div data-route-pending="lazy">{getFallback(pathname)}</div>}>
+      {children}
+    </Suspense>
   );
 };
 
@@ -109,15 +111,16 @@ const App = () => {
                             {toolRoutes.map(r => (
                               <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
                             ))}
+                            <Route path="/admin/temas" element={<RouteSuspense><AdminTemasPage /></RouteSuspense>} />
 
                             {/* Admin & Sicoob Group */}
                             <Route element={<AdminRoute />}>
+                              <Route path="/admin/aprovacoes-desconto" element={<Navigate to="/admin/usuarios?tab=discounts" replace />} />
                               {adminRoutes.map(r => (
                                 <Route key={r.path} path={r.path} element={<RouteSuspense><r.component /></RouteSuspense>} />
                               ))}
                               
                               <Route path="/admin/design-system/colors" element={<RouteSuspense><ColorDocumentationPage /></RouteSuspense>} />
-                              <Route path="/admin/temas" element={<RouteSuspense><AdminTemasPage /></RouteSuspense>} />
                               <Route path="/admin/saude-testes" element={<RouteSuspense><TestDashboard /></RouteSuspense>} />
                             </Route>
 

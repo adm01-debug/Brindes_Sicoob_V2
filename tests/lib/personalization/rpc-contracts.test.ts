@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { PRICE_CONTRACT, OPTIONS_CONTRACT } from '@/lib/personalization/rpc-contracts';
 import { validateRpcPayload } from '@/lib/personalization/rpc-validator';
-import { __resetSchemaStatsForTests } from '@/lib/personalization/adapters/schema-detection';
+import { resetSchemaStatsForTests } from '@/lib/personalization/adapters/schema-detection';
 
-beforeEach(() => __resetSchemaStatsForTests());
+beforeEach(() => resetSchemaStatsForTests());
 
 describe('PRICE_CONTRACT', () => {
   const canonical = {

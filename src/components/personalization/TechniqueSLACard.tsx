@@ -1,5 +1,5 @@
-import { type ExternalTechnique } from "@/types/external-db";
-import { useState } from "react";
+import type { ExternalTechnique } from "@/types/external-db";
+import { type ReactNode, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { invokeExternalDb } from "@/lib/external-db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,7 +42,7 @@ interface TechniqueSLACardProps {
   className?: string;
 }
 
-function getSLAColor(days: number | null): { color: string; label: string; icon: React.ReactNode } {
+function getSLAColor(days: number | null): { color: string; label: string; icon: ReactNode } {
   if (!days) return { color: "bg-muted", label: "Não informado", icon: <Info className="h-3 w-3" /> };
   if (days <= 3) return { color: "bg-primary", label: "Entrega Rápida", icon: <Zap className="h-3 w-3" /> };
   if (days <= 7) return { color: "bg-warning", label: "Prazo Normal", icon: <Clock className="h-3 w-3" /> };
@@ -60,15 +60,52 @@ function calculateTotalCost(technique: Technique, quantity: number): number {
   return setup + (unit * quantity);
 }
 
-export function TechniqueSLACard({
-  productId,
-  onSelectTechnique,
-  selectedTechniqueId,
-  quantity = 100,
-  className,
-}: TechniqueSLACardProps) {
+type SortMode = "sla" | "cost";
+
+function sortTechniques(techniques: Technique[], sortBy: SortMode, quantity: number) {
+  const sorted = [...techniques];
+  if (sortBy === "sla") return sorted.sort((left, right) => (left.estimated_days || 999) - (right.estimated_days || 999));
+  return sorted.sort((left, right) => calculateTotalCost(left, quantity) - calculateTotalCost(right, quantity));
+}
+
+function LoadingCard({ className }: { className?: string }) {
+  return <Card className={className}><CardHeader className="pb-3"><Skeleton className="h-6 w-48" /><Skeleton className="h-4 w-64" /></CardHeader><CardContent className="space-y-3">{[1, 2, 3].map((item) => <Skeleton key={item} className="h-24 w-full" />)}</CardContent></Card>;
+}
+
+function EmptyCard({ className }: { className?: string }) {
+  return <Card className={className}><CardContent className="py-8"><div className="text-center text-muted-foreground"><Palette className="h-12 w-12 mx-auto mb-4 opacity-50" /><p>Nenhuma técnica disponível</p></div></CardContent></Card>;
+}
+
+function TechniqueHeader({ sortBy, setSortBy, expanded, toggle }: { sortBy: SortMode; setSortBy: (mode: SortMode) => void; expanded: boolean; toggle: () => void }) {
+  return <CardHeader className="pb-3"><div className="flex items-center justify-between"><div><CardTitle className="flex items-center gap-2 text-lg"><Palette className="h-5 w-5 text-primary" />Técnicas de Gravação</CardTitle><CardDescription>Selecione a técnica de personalização com base no prazo e custo</CardDescription></div><div className="flex items-center gap-2"><div className="flex bg-muted rounded-lg p-1"><Button variant={sortBy === "sla" ? "secondary" : "ghost"} size="sm" className="h-7 px-2 text-xs" onClick={() => setSortBy("sla")}><Clock className="h-3 w-3 mr-1" />Prazo</Button><Button variant={sortBy === "cost" ? "secondary" : "ghost"} size="sm" className="h-7 px-2 text-xs" onClick={() => setSortBy("cost")}><DollarSign className="h-3 w-3 mr-1" />Custo</Button></div><Button variant="ghost" size="sm" onClick={toggle}>{expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</Button></div></div></CardHeader>;
+}
+
+function MinimumQuantity({ technique, quantity, minQtyMet }: { technique: Technique; quantity: number; minQtyMet: boolean }) {
+  if (!technique.min_quantity) return null;
+  const message = minQtyMet ? "Quantidade mínima atendida" : `Quantidade mínima não atingida (${quantity}/${technique.min_quantity})`;
+  return <Tooltip><TooltipTrigger asChild><span className={cn("flex items-center gap-1 text-muted-foreground", !minQtyMet && "text-destructive")}><Package className="h-3 w-3" />Mín. {technique.min_quantity} un.</span></TooltipTrigger><TooltipContent><p>{message}</p></TooltipContent></Tooltip>;
+}
+
+function TechniqueSLA({ technique }: { technique: Technique }) {
+  if (!technique.estimated_days) return null;
+  const sla = getSLAColor(technique.estimated_days);
+  return <div className="mt-3"><div className="flex items-center justify-between text-xs text-muted-foreground mb-1"><span>SLA de Entrega</span><span>{sla.label}</span></div><Progress value={Math.max(10, 100 - technique.estimated_days * 10)} className="h-1.5" /></div>;
+}
+
+function TechniqueRow({ technique, quantity, selected, onSelect }: { technique: Technique; quantity: number; selected: boolean; onSelect?: (technique: Technique) => void }) {
+  const sla = getSLAColor(technique.estimated_days);
+  const minQtyMet = !technique.min_quantity || quantity >= technique.min_quantity;
+  const handleSelect = () => { if (minQtyMet) onSelect?.(technique); };
+  return <TooltipProvider><div className={cn("relative border rounded-lg p-4 transition-all cursor-pointer hover:shadow-md", selected ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/50", !minQtyMet && "opacity-60")} onClick={handleSelect}>{selected && <div className="absolute top-2 right-2"><CheckCircle2 className="h-5 w-5 text-primary" /></div>}<div className="flex items-start justify-between gap-4"><div className="flex-1 min-w-0"><div className="flex items-center gap-2 mb-1"><h4 className="font-semibold text-foreground">{technique.name}</h4>{technique.code && <Badge variant="outline" className="text-xs font-mono">{technique.code}</Badge>}</div>{technique.description && <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{technique.description}</p>}<div className="flex flex-wrap items-center gap-3 text-sm"><Tooltip><TooltipTrigger asChild><Badge variant="secondary" className={cn("gap-1", sla.color, "text-primary-foreground")}>{sla.icon}{technique.estimated_days ? `${technique.estimated_days} dias` : "N/A"}</Badge></TooltipTrigger><TooltipContent><p>Prazo estimado de produção: {sla.label}</p></TooltipContent></Tooltip><MinimumQuantity technique={technique} quantity={quantity} minQtyMet={minQtyMet} /></div></div><div className="text-right shrink-0"><div className="text-lg font-bold text-foreground">{formatCurrency(calculateTotalCost(technique, quantity))}</div><div className="text-xs text-muted-foreground">p/ {quantity} un.</div>{technique.setup_cost ? <div className="text-xs text-muted-foreground mt-1">Setup: {formatCurrency(technique.setup_cost)}</div> : null}</div></div><TechniqueSLA technique={technique} /></div></TooltipProvider>;
+}
+
+function TechniqueList({ techniques, quantity, selectedId, onSelect }: { techniques: Technique[]; quantity: number; selectedId?: string; onSelect?: (technique: Technique) => void }) {
+  return <CardContent className="space-y-3">{techniques.map((technique) => <TechniqueRow key={technique.id} technique={technique} quantity={quantity} selected={selectedId === technique.id} onSelect={onSelect} />)}<div className="pt-2 border-t"><p className="text-xs text-muted-foreground text-center">💡 Dica: Técnicas com menor prazo podem ter custo adicional para produção expressa</p></div></CardContent>;
+}
+
+export function TechniqueSLACard({ productId, onSelectTechnique, selectedTechniqueId, quantity = 100, className }: TechniqueSLACardProps) {
   const [isExpanded, setIsExpanded] = useState(true);
-  const [sortBy, setSortBy] = useState<"sla" | "cost">("sla");
+  const [sortBy, setSortBy] = useState<SortMode>("sla");
 
   const { data: techniques, isLoading } = useQuery({
     queryKey: ["techniques-sla-external", productId],
@@ -88,209 +125,8 @@ export function TechniqueSLACard({
     },
   });
 
-  const sortedTechniques = techniques?.slice().sort((a, b) => {
-    if (sortBy === "sla") {
-      return (a.estimated_days || 999) - (b.estimated_days || 999);
-    }
-    return calculateTotalCost(a, quantity) - calculateTotalCost(b, quantity);
-  });
-
-  if (isLoading) {
-    return (
-      <Card className={className}>
-        <CardHeader className="pb-3">
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-64" />
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-24 w-full" />
-          ))}
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!techniques?.length) {
-    return (
-      <Card className={className}>
-        <CardContent className="py-8">
-          <div className="text-center text-muted-foreground">
-            <Palette className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Nenhuma técnica disponível</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className={className}>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Palette className="h-5 w-5 text-primary" />
-              Técnicas de Gravação
-            </CardTitle>
-            <CardDescription>
-              Selecione a técnica de personalização com base no prazo e custo
-            </CardDescription>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex bg-muted rounded-lg p-1">
-              <Button
-                variant={sortBy === "sla" ? "secondary" : "ghost"}
-                size="sm"
-                className="h-7 px-2 text-xs"
-                onClick={() => setSortBy("sla")}
-              >
-                <Clock className="h-3 w-3 mr-1" />
-                Prazo
-              </Button>
-              <Button
-                variant={sortBy === "cost" ? "secondary" : "ghost"}
-                size="sm"
-                className="h-7 px-2 text-xs"
-                onClick={() => setSortBy("cost")}
-              >
-                <DollarSign className="h-3 w-3 mr-1" />
-                Custo
-              </Button>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsExpanded(!isExpanded)}
-            >
-              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-
-      {isExpanded && (
-        <CardContent className="space-y-3">
-          {sortedTechniques?.map((technique) => {
-            const sla = getSLAColor(technique.estimated_days);
-            const isSelected = selectedTechniqueId === technique.id;
-            const totalCost = calculateTotalCost(technique, quantity);
-            const minQtyMet = !technique.min_quantity || quantity >= technique.min_quantity;
-
-            return (
-              <TooltipProvider key={technique.id}>
-                <div
-                  className={cn(
-                    "relative border rounded-lg p-4 transition-all cursor-pointer hover:shadow-md",
-                    isSelected
-                      ? "border-primary bg-primary/5 shadow-sm"
-                      : "border-border hover:border-primary/50",
-                    !minQtyMet && "opacity-60"
-                  )}
-                  onClick={() => minQtyMet && onSelectTechnique?.(technique)}
-                >
-                  {isSelected && (
-                    <div className="absolute top-2 right-2">
-                      <CheckCircle2 className="h-5 w-5 text-primary" />
-                    </div>
-                  )}
-
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-semibold text-foreground">{technique.name}</h4>
-                        {technique.code && (
-                          <Badge variant="outline" className="text-xs font-mono">
-                            {technique.code}
-                          </Badge>
-                        )}
-                      </div>
-
-                      {technique.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                          {technique.description}
-                        </p>
-                      )}
-
-                      <div className="flex flex-wrap items-center gap-3 text-sm">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Badge 
-                              variant="secondary" 
-                              className={cn("gap-1", sla.color, "text-primary-foreground")}
-                            >
-                              {sla.icon}
-                              {technique.estimated_days ? `${technique.estimated_days} dias` : "N/A"}
-                            </Badge>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Prazo estimado de produção: {sla.label}</p>
-                          </TooltipContent>
-                        </Tooltip>
-
-                        {technique.min_quantity && (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className={cn(
-                                "flex items-center gap-1 text-muted-foreground",
-                                !minQtyMet && "text-destructive"
-                              )}>
-                                <Package className="h-3 w-3" />
-                                Mín. {technique.min_quantity} un.
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>
-                                {minQtyMet 
-                                  ? "Quantidade mínima atendida" 
-                                  : `Quantidade mínima não atingida (${quantity}/${technique.min_quantity})`
-                                }
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="text-right shrink-0">
-                      <div className="text-lg font-bold text-foreground">
-                        {formatCurrency(totalCost)}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        p/ {quantity} un.
-                      </div>
-                      {technique.setup_cost ? (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          Setup: {formatCurrency(technique.setup_cost)}
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  {technique.estimated_days && (
-                    <div className="mt-3">
-                      <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                        <span>SLA de Entrega</span>
-                        <span>{sla.label}</span>
-                      </div>
-                      <Progress 
-                        value={Math.max(10, 100 - (technique.estimated_days * 10))} 
-                        className="h-1.5"
-                      />
-                    </div>
-                  )}
-                </div>
-              </TooltipProvider>
-            );
-          })}
-
-          <div className="pt-2 border-t">
-            <p className="text-xs text-muted-foreground text-center">
-              💡 Dica: Técnicas com menor prazo podem ter custo adicional para produção expressa
-            </p>
-          </div>
-        </CardContent>
-      )}
-    </Card>
-  );
+  if (isLoading) return <LoadingCard className={className} />;
+  if (!techniques?.length) return <EmptyCard className={className} />;
+  const sorted = sortTechniques(techniques, sortBy, quantity);
+  return <Card className={className}><TechniqueHeader sortBy={sortBy} setSortBy={setSortBy} expanded={isExpanded} toggle={() => setIsExpanded((value) => !value)} />{isExpanded && <TechniqueList techniques={sorted} quantity={quantity} selectedId={selectedTechniqueId} onSelect={onSelectTechnique} />}</Card>;
 }

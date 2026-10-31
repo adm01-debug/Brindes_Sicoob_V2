@@ -14,6 +14,8 @@ export interface PasswordResetRequest {
   reviewer_notes: string | null;
 }
 
+const UNKNOWN_ERROR_MESSAGE = 'Erro desconhecido';
+
 export function usePasswordResetRequests() {
   const { toast } = useToast();
   const [requests, setRequests] = useState<PasswordResetRequest[]>([]);
@@ -80,7 +82,7 @@ export function usePasswordResetRequests() {
       toast({
         variant: 'destructive',
         title: 'Erro ao aprovar',
-        description: error instanceof Error ? error.message : 'Erro desconhecido',
+        description: error instanceof Error ? error.message : UNKNOWN_ERROR_MESSAGE,
       });
       return false;
     }
@@ -112,7 +114,7 @@ export function usePasswordResetRequests() {
       toast({
         variant: 'destructive',
         title: 'Erro ao rejeitar',
-        description: error instanceof Error ? error.message : 'Erro desconhecido',
+        description: error instanceof Error ? error.message : UNKNOWN_ERROR_MESSAGE,
       });
       return false;
     }
@@ -146,7 +148,7 @@ export function usePasswordResetRequests() {
     } catch (error: unknown) {
       return { 
         success: false, 
-        message: error instanceof Error ? error.message : 'Erro desconhecido'
+        message: error instanceof Error ? error.message : UNKNOWN_ERROR_MESSAGE
       };
     }
   };

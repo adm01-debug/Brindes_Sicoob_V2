@@ -7,6 +7,21 @@ permite bypass administrativo. PRs recentes foram mesclados com jobs em falha
 porque o orçamento do GitHub Actions impediu a inicialização. Portanto, a
 proteção atual não comprova qualidade nem segurança do conteúdo mesclado.
 
+## Estado configurado em 31/10/2026
+
+Ajustes aplicados via API (`gh api`) por `adm01-debug`:
+
+- `allow_auto_merge: true` — PR verde entra sozinho após `gh pr merge --auto --squash`.
+- `delete_branch_on_merge: true` — branch remota removida após merge.
+- `required_approving_review_count: 0` (antes: 1) — o repositório possui um
+  único colaborador humano e o GitHub proíbe aprovar o próprio PR; a exigência
+  de 1 review tornava todo PR estruturalmente não mesclável sem bypass.
+  Os 10 status checks obrigatórios, `strict` (branch atualizada), `enforce_admins`,
+  bloqueio de force push e de exclusão permanecem ativos.
+- `dismiss_stale_reviews: true` mantido.
+
+Quando houver um segundo revisor humano, restaurar `required_approving_review_count: 1`.
+
 ## Configuração alvo
 
 Em <https://github.com/adm01-debug/Brindes_Sicoob_V2/settings/branches>, a

@@ -2,7 +2,7 @@
  * CategoryCascadeSelector — Seleção de categoria com cascata de 2+ níveis,
  * breadcrumb persistente e navegação em árvore via dialog.
  */
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState } from "react";
 import { useExternalCategoriesQuery, type ExternalCategory } from '@/hooks/useExternalCategoriesQuery';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -33,7 +33,7 @@ function buildTree(categories: ExternalCategory[]): { roots: CatNode[]; nodeMap:
   }
   for (const node of map.values()) {
     if (node.parent_id && map.has(node.parent_id)) {
-      map.get(node.parent_id)!.children.push(node);
+      map.get(node.parent_id)?.children.push(node);
     } else {
       roots.push(node);
     }
@@ -77,7 +77,9 @@ function CascadeSelects({
     const result: { items: CatNode[]; selectedId: string }[] = [];
     result.push({ items: roots, selectedId: selectedChain[0] || '' });
     for (let i = 0; i < selectedChain.length; i++) {
-      const node = nodeMap.get(selectedChain[i]);
+      const selectedId = selectedChain[i];
+      if (!selectedId) continue;
+      const node = nodeMap.get(selectedId);
       if (node && node.children.length > 0) {
         result.push({ items: node.children, selectedId: selectedChain[i + 1] || '' });
       }
@@ -142,17 +144,45 @@ function CascadeSelects({
 }
 
 // ─── Tree Dialog ───────────────────────────────
-function TreeNode({
-  node,
-  selectedId,
-  onSelect,
-  depth,
-}: {
+function TreeNodeIcon({ hasChildren, expanded, selected }: { hasChildren: boolean; expanded: boolean; selected: boolean }) {
+  if (hasChildren) {
+    return expanded
+      ? <FolderOpen className="h-4 w-4 text-primary/70 shrink-0" />
+      : <Folder className="h-4 w-4 text-primary/70 shrink-0" />;
+  }
+  return (
+    <div className="w-4 h-4 rounded-full border-2 border-muted-foreground/30 shrink-0 flex items-center justify-center">
+      {selected && <div className="w-2 h-2 rounded-full bg-primary" />}
+    </div>
+  );
+}
+
+function TreeNodeChildren({ node, selectedId, onSelect, depth, expanded }: {
   node: CatNode;
   selectedId: string;
   onSelect: (id: string) => void;
   depth: number;
+  expanded: boolean;
 }) {
+  if (!expanded || node.children.length === 0) return null;
+  return (
+    <div className="relative">
+      <div className="absolute left-0 top-0 bottom-0 border-l border-border/30" style={{ marginLeft: `${depth * 20 + 18}px` }} />
+      {node.children.map(child => (
+        <TreeNode key={child.id} node={child} selectedId={selectedId} onSelect={onSelect} depth={depth + 1} />
+      ))}
+    </div>
+  );
+}
+
+interface TreeNodeProps {
+  node: CatNode;
+  selectedId: string;
+  onSelect: (id: string) => void;
+  depth: number;
+}
+
+function TreeNode({ node, selectedId, onSelect, depth }: TreeNodeProps) {
   const [expanded, setExpanded] = useState(
     () => {
       if (node.id === selectedId) return true;
@@ -167,7 +197,7 @@ function TreeNode({
 
   return (
     <div>
-      <button
+      {(<button
         type="button"
         className={cn(
           'flex items-center gap-2 w-full text-left py-1.5 px-2.5 rounded-md text-sm transition-all duration-150',
@@ -185,24 +215,11 @@ function TreeNode({
         ) : (
           <span className="w-3.5 shrink-0" />
         )}
-        {hasChildren ? (
-          expanded ? <FolderOpen className="h-4 w-4 text-primary/70 shrink-0" /> : <Folder className="h-4 w-4 text-primary/70 shrink-0" />
-        ) : (
-          <div className="w-4 h-4 rounded-full border-2 border-muted-foreground/30 shrink-0 flex items-center justify-center">
-            {isSelected && <div className="w-2 h-2 rounded-full bg-primary" />}
-          </div>
-        )}
+        <TreeNodeIcon hasChildren={hasChildren} expanded={expanded} selected={isSelected} />
         <span className="truncate flex-1">{node.name}</span>
         {isSelected && hasChildren && <Check className="h-4 w-4 text-primary shrink-0" />}
-      </button>
-      {expanded && hasChildren && (
-        <div className="relative">
-          <div className="absolute left-0 top-0 bottom-0 border-l border-border/30" style={{ marginLeft: `${depth * 20 + 18}px` }} />
-          {node.children.map(child => (
-            <TreeNode key={child.id} node={child} selectedId={selectedId} onSelect={onSelect} depth={depth + 1} />
-          ))}
-        </div>
-      )}
+      </button>)}
+      <TreeNodeChildren node={node} selectedId={selectedId} onSelect={onSelect} depth={depth} expanded={expanded} />
     </div>
   );
 }

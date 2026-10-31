@@ -1,3 +1,4 @@
+import type { ChangeEvent } from "react";
 /**
  * ClientPicker — campo de seleção/busca de cliente para orçamentos.
  * Implementação minimalista (entrada manual). Pode ser estendida para autocompletar via CRM.
@@ -21,7 +22,7 @@ interface ClientPickerProps {
 }
 
 export function ClientPicker({ value, onChange }: ClientPickerProps) {
-  const set = (k: keyof ClientData) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const set = (k: keyof ClientData) => (e: ChangeEvent<HTMLInputElement>) =>
     onChange({ ...value, [k]: e.target.value });
 
   return (

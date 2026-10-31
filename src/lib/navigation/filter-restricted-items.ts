@@ -10,10 +10,12 @@
  *   const visible = filterByRoutePermission(items, (i) => i.path, roles);
  */
 import { canNavigateTo, isDevOnlyPath, isAdminOnlyPath } from "@/lib/navigation/restricted-routes";
+import { canAccessSicoobPath } from "@/lib/access/role-policy";
 
 export interface RouteAccessRoles {
   isDev: boolean;
   isAdmin: boolean;
+  assignedRoles?: readonly string[];
 }
 
 /**
@@ -28,7 +30,8 @@ export function filterByRoutePermission<T>(
   return items.filter((item) => {
     const path = getPath(item);
     if (!path) return true;
-    return canNavigateTo(path, roles);
+    return canNavigateTo(path, roles)
+      && (roles.assignedRoles === undefined || canAccessSicoobPath(path, roles.assignedRoles));
   });
 }
 

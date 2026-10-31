@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Mail, Loader2, ArrowLeft, CheckCircle, Clock } from 'lucide-react';
+import { Mail, Loader2, ArrowLeft, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -49,7 +49,7 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
         title: 'Solicitação enviada!',
         description: result.message,
       });
-    } catch (error) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Erro inesperado',

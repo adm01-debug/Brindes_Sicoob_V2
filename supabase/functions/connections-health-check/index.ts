@@ -1,4 +1,5 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { requireInternalService } from "../_shared/internal-service-auth.ts";
 // connections-health-check: cron-driven (every 15min). Re-tests every active
 // connection, notifies admins on transitions (active→error), on auto-disabled
 // outbound webhooks and on stale secrets (>90 days). Dedupe 4h per (key) to
@@ -59,6 +60,13 @@ async function notifyAdmins(
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "metodo_nao_permitido" }), {
+      status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  const denied = await requireInternalService(req);
+  if (denied) return denied;
 
   try {
     const service = createClient(
@@ -195,7 +203,8 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {
-    return new Response(JSON.stringify({ error: err instanceof Error ? err.message : "Erro" }), {
+    console.error("connections-health-check error:", err);
+    return new Response(JSON.stringify({ error: "erro_interno" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

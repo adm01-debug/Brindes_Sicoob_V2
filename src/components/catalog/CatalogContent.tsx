@@ -1,13 +1,12 @@
-import { useRef, useCallback, useEffect, useState, useMemo } from "react";
+import { useRef, useCallback, useEffect, useState, useMemo, type RefObject } from "react";
 import type { ActiveColorFilter } from "@/utils/color-image-resolver";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Loader2, ArrowUp } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AnimatePresence, motion } from "framer-motion";
-import { ProductCard } from "@/components/products/ProductCard";
 import { ProductListItem } from "@/components/products/ProductListItem";
 import { ProductTableView } from "@/components/products/ProductTableView";
-import { ProductGridSkeleton } from "@/components/products/ProductCardSkeleton";
+
 import { ProductListSkeleton } from "@/components/products/ProductListItemSkeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SelectionCheckbox } from "@/components/common/SelectionCheckbox";
@@ -17,7 +16,6 @@ import { cn } from "@/lib/utils";
 import type { Product } from "@/hooks/useProducts";
 import type { ViewMode } from "@/hooks/useCatalogState";
 import type { ColumnCount } from "@/components/products/ColumnSelector";
-import type { RefObject } from "react";
 import { SparklineSalesProvider } from "@/hooks/useSparklineSales";
 import { ProductGrid } from "@/components/products/ProductGrid";
 
@@ -114,76 +112,6 @@ function useScrollableContainer(hasMore: boolean, isLoadingMore: boolean, onLoad
 
 const CONTAINER_CLASS = "h-[calc(100vh-180px)] min-h-[500px] overflow-y-auto rounded-xl border border-border/40 bg-gradient-to-b from-background/80 to-background/40 backdrop-blur-sm scrollbar-products shadow-inner will-change-scroll";
 
-// ─── VirtualGrid ────────────────────────────────────────────────────
-function VirtualGrid({ products, columns, navigate, handleViewProduct, handleShareProduct, isFavorite, toggleFavorite, isInCompare, onToggleCompare, canAddToCompare, hasMore, isLoadingMore, totalEstimate, filteredCount, loadMoreRef, itemsPerPage, onLoadMore, selectionMode, selectedIds, onToggleSelect, activeColorFilter }: {
-  products: Product[]; columns: ColumnCount; navigate: (p: string) => void;
-  handleViewProduct: (p: Product) => void; handleShareProduct: (p: Product) => void;
-  isFavorite: (id: string) => boolean; toggleFavorite: (id: string) => void;
-  isInCompare: (id: string) => boolean; onToggleCompare: (id: string) => { added: boolean; isFull: boolean }; canAddToCompare: boolean;
-  hasMore: boolean; isLoadingMore: boolean; totalEstimate: number | null; filteredCount: number;
-  loadMoreRef: RefObject<HTMLDivElement>; itemsPerPage: number; onLoadMore?: () => void;
-  selectionMode?: boolean; selectedIds?: Set<string>; onToggleSelect?: (id: string) => void;
-  activeColorFilter?: ActiveColorFilter | null;
-}) {
-  const { parentRef, showScrollTop, scrollToTop } = useScrollableContainer(hasMore, isLoadingMore, onLoadMore);
-  const rowCount = Math.ceil(products.length / columns);
-
-  const estimateRowHeight = useCallback(() => {
-    if (columns <= 1) return 520; if (columns <= 2) return 500;
-    if (columns >= 8) return 380; if (columns >= 6) return 420; if (columns >= 5) return 460;
-    return 500;
-  }, [columns]);
-
-  const virtualizer = useVirtualizer({ count: rowCount + 1, getScrollElement: () => parentRef.current, estimateSize: estimateRowHeight, overscan: 5 });
-  const gap = columns >= 8 ? 16 : columns >= 6 ? 24 : 32;
-
-  return (
-    <div className="relative h-full">
-      <div ref={parentRef} className={CONTAINER_CLASS} style={{ contain: "strict" }}>
-        <div style={{ height: `${virtualizer.getTotalSize()}px`, width: "100%", position: "relative", padding: "1rem" }}>
-          {virtualizer.getVirtualItems().map((vr) => {
-            if (vr.index === rowCount) return (
-              <div key="footer" style={{ position: "absolute", top: 0, left: 0, width: "100%", transform: `translateY(${vr.start}px)` }}>
-                <VirtualFooter hasMore={hasMore} loadMoreRef={loadMoreRef} productsCount={products.length} totalEstimate={totalEstimate} filteredCount={filteredCount} isLoadingMore={isLoadingMore} itemsPerPage={itemsPerPage} skeletonType="grid" />
-              </div>
-            );
-            const startIdx = vr.index * columns;
-            const rowProducts = products.slice(startIdx, startIdx + columns);
-            return (
-              <div key={vr.key} data-index={vr.index} ref={virtualizer.measureElement}
-                style={{ position: "absolute", top: 0, left: 0, width: "100%", transform: `translateY(${vr.start}px)`, display: "grid", gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`, columnGap: `${gap}px`, paddingBottom: `${gap}px` }}>
-                {rowProducts.map((product) => {
-                  const isSelected = selectionMode && selectedIds?.has(product.id);
-                  return (
-                    <div key={product.id} className="relative">
-                      {selectionMode && <div className="absolute top-2.5 left-2.5 z-20"><SelectionCheckbox checked={!!isSelected} onChange={() => onToggleSelect?.(product.id)} size="lg" animateEntry /></div>}
-                      <div className={cn("transition-all duration-200 rounded-xl", isSelected && "ring-2 ring-sicoob-green/50 shadow-[0_0_12px_-4px_rgba(40,167,69,0.3)]")}>
-                        <ProductCard
-                          product={product}
-                          onClick={() => selectionMode ? onToggleSelect?.(product.id) : navigate(`/produto/${product.id}`)}
-                          onView={handleViewProduct}
-                          onShare={handleShareProduct}
-                          isFavorited={isFavorite(product.id)}
-                          onToggleFavorite={toggleFavorite}
-                          isInCompare={isInCompare(product.id)}
-                          onToggleCompare={onToggleCompare}
-                          canAddToCompare={canAddToCompare}
-                          activeColorFilter={activeColorFilter}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      <ScrollToTopButton show={showScrollTop} onClick={scrollToTop} />
-    </div>
-  );
-}
-
 // ─── VirtualList ────────────────────────────────────────────────────
 function VirtualList({ products, navigate, handleViewProduct, handleShareProduct, isFavorite, toggleFavorite, isInCompare, onToggleCompare, canAddToCompare, hasMore, isLoadingMore, totalEstimate, filteredCount, loadMoreRef, itemsPerPage, onLoadMore, selectionMode, selectedIds, onToggleSelect, activeColorFilter }: {
   products: Product[]; navigate: (p: string) => void;
@@ -232,115 +160,108 @@ function VirtualList({ products, navigate, handleViewProduct, handleShareProduct
 }
 
 // ─── CatalogContent — Orchestrator ──────────────────────────────────
-export function CatalogContent({
-  viewMode, shouldShowCatalogSkeleton, shouldShowEmptyState, catalogError, onRetryCatalog, hasActiveCatalogConstraints,
-  paginatedProducts, filteredProducts, gridColumns, hasMoreProducts, isLoadingMore, totalEstimate,
-  loadMoreRef, itemsPerPage, navigate, handleViewProduct, handleShareProduct,
-  handleFavoriteProduct, isFavorite, toggleFavorite, isInCompare, onToggleCompare, canAddToCompare,
-  onLoadMore, onResetFilters, selectionMode, onSelectedCountChange, activeColorFilter,
-}: CatalogContentProps) {
-  const sparklineProductIds = useMemo(() => paginatedProducts.map(p => p.id), [paginatedProducts]);
-  const sel = useCatalogSelection(paginatedProducts, selectionMode, onSelectedCountChange);
+type CatalogSelection = ReturnType<typeof useCatalogSelection>;
 
-  const sharedProps = {
-    products: paginatedProducts, navigate, handleViewProduct, handleShareProduct,
-    isFavorite, toggleFavorite, isInCompare, onToggleCompare, canAddToCompare,
-    hasMore: hasMoreProducts, isLoadingMore, totalEstimate,
-    filteredCount: filteredProducts.length, loadMoreRef, itemsPerPage, onLoadMore,
-    selectionMode, selectedIds: sel.selectedIds, onToggleSelect: sel.toggleSelect,
-    activeColorFilter,
+function CatalogErrorState({ error, onRetry }: { error: Error; onRetry?: () => void }) {
+  const configurationMissing = /CATALOG_NOT_CONFIGURED|CATALOG_READ_ONLY/.test(error.message);
+  const action = !configurationMissing && onRetry ? { label: "Tentar novamente", onClick: onRetry } : undefined;
+  return <div className={`${CONTAINER_CLASS} p-4`} role="alert"><EmptyState variant="products" title={configurationMissing ? "Catálogo temporariamente indisponível" : "Não foi possível carregar o catálogo"} description={configurationMissing ? "A consulta aos produtos ainda precisa ser configurada. Tente novamente mais tarde ou fale com a equipe responsável." : "Houve uma falha na consulta aos produtos. Tente novamente em instantes."} action={action} className="min-h-[420px]" /></div>;
+}
+
+function CatalogEmptyState({ constrained, onReset }: { constrained: boolean; onReset?: () => void }) {
+  const action = constrained && onReset ? { label: "Limpar tudo e ver catálogo completo", onClick: onReset } : undefined;
+  return <div className={`${CONTAINER_CLASS} p-4`}><EmptyState variant={constrained ? "search" : "products"} title={constrained ? "Nenhum resultado para sua busca" : "Catálogo indisponível no momento"} description={constrained ? "Tente ajustar os filtros ou remover termos da busca para ampliar os resultados técnicos." : "O catálogo ainda não retornou itens para exibição."} action={action} className="min-h-[420px]" /></div>;
+}
+
+function buildSharedProps(props: CatalogContentProps, selection: CatalogSelection) {
+  return {
+    products: props.paginatedProducts, navigate: props.navigate, handleViewProduct: props.handleViewProduct, handleShareProduct: props.handleShareProduct,
+    isFavorite: props.isFavorite, toggleFavorite: props.toggleFavorite, isInCompare: props.isInCompare, onToggleCompare: props.onToggleCompare, canAddToCompare: props.canAddToCompare,
+    hasMore: props.hasMoreProducts, isLoadingMore: props.isLoadingMore, totalEstimate: props.totalEstimate,
+    filteredCount: props.filteredProducts.length, loadMoreRef: props.loadMoreRef, itemsPerPage: props.itemsPerPage, onLoadMore: props.onLoadMore,
+    selectionMode: props.selectionMode, selectedIds: selection.selectedIds, onToggleSelect: selection.toggleSelect,
+    activeColorFilter: props.activeColorFilter,
   };
+}
 
-  if (catalogError && paginatedProducts.length === 0) {
-    const configurationMissing = /CATALOG_NOT_CONFIGURED|CATALOG_READ_ONLY/.test(catalogError.message);
-    return (
-      <div className={`${CONTAINER_CLASS} p-4`} role="alert">
-        <EmptyState
-          variant="products"
-          title={configurationMissing ? "Catálogo temporariamente indisponível" : "Não foi possível carregar o catálogo"}
-          description={configurationMissing
-            ? "A consulta aos produtos ainda precisa ser configurada. Tente novamente mais tarde ou fale com a equipe responsável."
-            : "Houve uma falha na consulta aos produtos. Tente novamente em instantes."}
-          action={!configurationMissing && onRetryCatalog ? { label: "Tentar novamente", onClick: onRetryCatalog } : undefined}
-          className="min-h-[420px]"
-        />
-      </div>
-    );
-  }
-
-  if (shouldShowEmptyState) {
-    return (
-      <div className={`${CONTAINER_CLASS} p-4`}>
-        <EmptyState
-          variant={hasActiveCatalogConstraints ? "search" : "products"}
-          title={hasActiveCatalogConstraints ? "Nenhum resultado para sua busca" : "Catálogo indisponível no momento"}
-          description={hasActiveCatalogConstraints ? "Tente ajustar os filtros ou remover termos da busca para ampliar os resultados técnicos." : "O catálogo ainda não retornou itens para exibição."}
-          action={hasActiveCatalogConstraints && onResetFilters ? { label: "Limpar tudo e ver catálogo completo", onClick: onResetFilters } : undefined}
-          className="min-h-[420px]"
-        />
-      </div>
-    );
-  }
-
-  const content = viewMode === "table" ? (
+function CatalogTable({ props, selection }: { props: CatalogContentProps; selection: CatalogSelection }) {
+  return (
     <div className={`${CONTAINER_CLASS}`}>
-      {shouldShowCatalogSkeleton ? (
+      {props.shouldShowCatalogSkeleton ? (
          <div className="p-4"><ProductListSkeleton count={12} /></div>
       ) : (
         <>
           <ProductTableView
-            products={paginatedProducts} onProductClick={(id) => navigate(`/produto/${id}`)}
-            isFavorite={isFavorite} onToggleFavorite={toggleFavorite}
-            isInCompare={isInCompare} onToggleCompare={onToggleCompare} canAddToCompare={canAddToCompare}
-            onShareProduct={handleShareProduct} selectionMode={selectionMode}
-            selectedIds={sel.selectedIds} onToggleSelect={sel.toggleSelect} activeColorFilter={activeColorFilter}
+            products={props.paginatedProducts} onProductClick={(id) => props.navigate(`/produto/${id}`)}
+            isFavorite={props.isFavorite} onToggleFavorite={props.toggleFavorite}
+            isInCompare={props.isInCompare} onToggleCompare={props.onToggleCompare} canAddToCompare={props.canAddToCompare}
+            onShareProduct={props.handleShareProduct} selectionMode={props.selectionMode}
+            selectedIds={selection.selectedIds} onToggleSelect={selection.toggleSelect} activeColorFilter={props.activeColorFilter}
           />
-          {hasMoreProducts && (
-            <div ref={loadMoreRef} className="flex flex-col items-center gap-3 pt-8 pb-4 px-4" style={{ minHeight: "60px" }}>
-              <p className="text-sm text-muted-foreground">Mostrando {paginatedProducts.length} de {(totalEstimate ?? filteredProducts.length).toLocaleString("pt-BR")} produtos</p>
+          {props.hasMoreProducts && (
+            <div ref={props.loadMoreRef} className="flex flex-col items-center gap-3 pt-8 pb-4 px-4" style={{ minHeight: "60px" }}>
+              <p className="text-sm text-muted-foreground">Mostrando {props.paginatedProducts.length} de {(props.totalEstimate ?? props.filteredProducts.length).toLocaleString("pt-BR")} produtos</p>
             </div>
           )}
         </>
       )}
     </div>
-  ) : viewMode === "list" ? (
-    <SparklineSalesProvider productIds={sparklineProductIds}>
-      {shouldShowCatalogSkeleton ? (
+  );
+}
+
+function CatalogList({ props, productIds, sharedProps }: { props: CatalogContentProps; productIds: string[]; sharedProps: ReturnType<typeof buildSharedProps> }) {
+  return <SparklineSalesProvider productIds={productIds}>
+      {props.shouldShowCatalogSkeleton ? (
         <div className={`${CONTAINER_CLASS} p-4`}><ProductListSkeleton count={8} /></div>
       ) : (
         <VirtualList {...sharedProps} />
       )}
-    </SparklineSalesProvider>
-  ) : (
-    <SparklineSalesProvider productIds={sparklineProductIds}>
+    </SparklineSalesProvider>;
+}
+
+function CatalogGrid({ props, productIds, sharedProps, selection }: { props: CatalogContentProps; productIds: string[]; sharedProps: ReturnType<typeof buildSharedProps>; selection: CatalogSelection }) {
+  return <SparklineSalesProvider productIds={productIds}>
       <div className="rounded-2xl bg-background">
         <ProductGrid
           {...sharedProps}
-          products={paginatedProducts}
-          isLoading={shouldShowCatalogSkeleton}
-          columns={gridColumns}
-          onProductClick={(id) => selectionMode ? sel.toggleSelect(id) : navigate(`/produto/${id}`)}
-          onViewProduct={handleViewProduct}
-          onShareProduct={handleShareProduct}
+          products={props.paginatedProducts}
+          isLoading={props.shouldShowCatalogSkeleton}
+          columns={props.gridColumns}
+          onProductClick={(id) => props.selectionMode ? selection.toggleSelect(id) : props.navigate(`/produto/${id}`)}
+          onViewProduct={props.handleViewProduct}
+          onShareProduct={props.handleShareProduct}
         />
         <VirtualFooter
-          hasMore={hasMoreProducts}
-          loadMoreRef={loadMoreRef}
-          productsCount={paginatedProducts.length}
-          totalEstimate={totalEstimate}
-          filteredCount={filteredProducts.length}
-          isLoadingMore={isLoadingMore}
-          itemsPerPage={itemsPerPage}
+          hasMore={props.hasMoreProducts}
+          loadMoreRef={props.loadMoreRef}
+          productsCount={props.paginatedProducts.length}
+          totalEstimate={props.totalEstimate}
+          filteredCount={props.filteredProducts.length}
+          isLoadingMore={props.isLoadingMore}
+          itemsPerPage={props.itemsPerPage}
           skeletonType="grid"
         />
       </div>
-    </SparklineSalesProvider>
-  );
+    </SparklineSalesProvider>;
+}
+
+function CatalogView({ props, productIds, selection }: { props: CatalogContentProps; productIds: string[]; selection: CatalogSelection }) {
+  const sharedProps = buildSharedProps(props, selection);
+  if (props.viewMode === "table") return <CatalogTable props={props} selection={selection} />;
+  if (props.viewMode === "list") return <CatalogList props={props} productIds={productIds} sharedProps={sharedProps} />;
+  return <CatalogGrid props={props} productIds={productIds} sharedProps={sharedProps} selection={selection} />;
+}
+
+export function CatalogContent(props: CatalogContentProps) {
+  const productIds = useMemo(() => props.paginatedProducts.map(product => product.id), [props.paginatedProducts]);
+  const selection = useCatalogSelection(props.paginatedProducts, props.selectionMode, props.onSelectedCountChange);
+  if (props.catalogError && props.paginatedProducts.length === 0) return <CatalogErrorState error={props.catalogError} onRetry={props.onRetryCatalog} />;
+  if (props.shouldShowEmptyState) return <CatalogEmptyState constrained={props.hasActiveCatalogConstraints} onReset={props.onResetFilters} />;
 
   return (
     <>
-      {content}
-      <CatalogBulkModals sel={sel} selectionMode={selectionMode} totalCount={paginatedProducts.length} />
+      <CatalogView props={props} productIds={productIds} selection={selection} />
+      <CatalogBulkModals sel={selection} selectionMode={props.selectionMode} totalCount={props.paginatedProducts.length} />
     </>
   );
 }

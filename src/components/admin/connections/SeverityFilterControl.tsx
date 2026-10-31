@@ -68,6 +68,22 @@ interface Props {
   className?: string;
 }
 
+function SeverityPill({ pill, count, active, onSelect }: { pill: PillCfg; count: number | undefined; active: boolean; onSelect: (value: SeverityFilter) => void }) {
+  const Icon = pill.icon;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button type="button" role="radio" aria-checked={active} onClick={() => onSelect(pill.value)} className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-all", active ? pill.activeCls : cn("bg-background", pill.cls))}>
+          <Icon className="h-3 w-3" aria-hidden="true" /><span>{pill.short}</span>
+          {pill.value !== "all" && <span className="text-[10px] text-muted-foreground/80 -mx-0.5">{pill.label}</span>}
+          {typeof count === "number" && count > 0 && <span className={cn("inline-flex items-center justify-center min-w-[18px] h-4 px-1 rounded-full text-[10px] font-bold tabular-nums", active ? "bg-background/30" : "bg-muted text-foreground")}>{count}</span>}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="bottom" className="max-w-xs"><p className="text-xs">{pill.description}</p></TooltipContent>
+    </Tooltip>
+  );
+}
+
 export function SeverityFilterControl({ counts, className }: Props) {
   const { filter, setFilter } = useSeverityFilter();
 
@@ -86,51 +102,7 @@ export function SeverityFilterControl({ counts, className }: Props) {
           Filtrar por severidade:
         </span>
         <div role="radiogroup" aria-label="Severidade" className="flex items-center gap-1.5 flex-wrap">
-          {PILLS.map((pill) => {
-            const Icon = pill.icon;
-            const active = filter === pill.value;
-            const count =
-              pill.value === "all"
-                ? counts?.total
-                : counts?.[pill.value as "P0" | "P1" | "P2"];
-            return (
-              <Tooltip key={pill.value}>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    role="radio"
-                    aria-checked={active}
-                    onClick={() => setFilter(pill.value)}
-                    className={cn(
-                      "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-all",
-                      active ? pill.activeCls : cn("bg-background", pill.cls),
-                    )}
-                  >
-                    <Icon className="h-3 w-3" aria-hidden="true" />
-                    <span>{pill.short}</span>
-                    {pill.value !== "all" && (
-                      <span className="text-[10px] text-muted-foreground/80 -mx-0.5">
-                        {pill.label}
-                      </span>
-                    )}
-                    {typeof count === "number" && count > 0 && (
-                      <span
-                        className={cn(
-                          "inline-flex items-center justify-center min-w-[18px] h-4 px-1 rounded-full text-[10px] font-bold tabular-nums",
-                          active ? "bg-background/30" : "bg-muted text-foreground",
-                        )}
-                      >
-                        {count}
-                      </span>
-                    )}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-xs">
-                  <p className="text-xs">{pill.description}</p>
-                </TooltipContent>
-              </Tooltip>
-            );
-          })}
+          {PILLS.map((pill) => <SeverityPill key={pill.value} pill={pill} count={pill.value === "all" ? counts?.total : counts?.[pill.value]} active={filter === pill.value} onSelect={setFilter} />)}
         </div>
         {filter !== "all" && (
           <button

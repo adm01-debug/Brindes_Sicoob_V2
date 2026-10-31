@@ -14,6 +14,8 @@ import {
   Activity, Plug, ShieldCheck, Workflow,
 } from "lucide-react";
 
+const MOCKUP_GENERATOR_PATH = "/mockup-generator";
+
 export interface SpotlightItem {
   id: string;
   title: string;
@@ -37,7 +39,7 @@ export function buildSpotlightItems(navigate: (path: string) => void): Spotlight
   return [
     // Quick Actions
     { id: "new-quote", title: "Novo Orçamento", description: "Criar orçamento rapidamente", icon: React.createElement(Plus, { className: "h-4 w-4" }), action: nav("/orcamentos/novo"), path: "/orcamentos/novo", category: "Ações Rápidas", shortcut: "N", isQuickAction: true },
-    { id: "mockup-quick", title: "Gerar Mockup", description: "Criar mockup com logo", icon: React.createElement(Wand2, { className: "h-4 w-4" }), action: nav("/mockup-generator"), path: "/mockup-generator", category: "Ações Rápidas", shortcut: "M", isQuickAction: true },
+    { id: "mockup-quick", title: "Gerar Mockup", description: "Criar mockup com logo", icon: React.createElement(Wand2, { className: "h-4 w-4" }), action: nav(MOCKUP_GENERATOR_PATH), path: MOCKUP_GENERATOR_PATH, category: "Ações Rápidas", shortcut: "M", isQuickAction: true },
     // Navigation
     { id: "products", title: "Catálogo de Produtos", description: "Navegar pelo catálogo completo", icon: React.createElement(Package, { className: "h-4 w-4" }), action: nav("/"), path: "/", category: "Navegação" },
     { id: "quotes", title: "Orçamentos", description: "Gerenciar todos os orçamentos", icon: React.createElement(FileText, { className: "h-4 w-4" }), action: nav("/orcamentos"), path: "/orcamentos", category: "Navegação" },
@@ -49,7 +51,7 @@ export function buildSpotlightItems(navigate: (path: string) => void): Spotlight
     { id: "compare", title: "Comparar Produtos", description: "Comparação lado a lado", icon: React.createElement(GitCompare, { className: "h-4 w-4" }), action: nav("/comparar"), path: "/comparar", category: "Navegação" },
     // Tools
     { id: "simulator", title: "Simulador de Custos", description: "Calcular personalização", icon: React.createElement(Calculator, { className: "h-4 w-4" }), action: nav("/simulador"), path: "/simulador", category: "Ferramentas" },
-    { id: "mockup", title: "Gerador de Mockup", description: "Mockups profissionais", icon: React.createElement(Wand2, { className: "h-4 w-4" }), action: nav("/mockup-generator"), path: "/mockup-generator", category: "Ferramentas" },
+    { id: "mockup", title: "Gerador de Mockup", description: "Mockups profissionais", icon: React.createElement(Wand2, { className: "h-4 w-4" }), action: nav(MOCKUP_GENERATOR_PATH), path: MOCKUP_GENERATOR_PATH, category: "Ferramentas" },
     { id: "magic-up", title: "Magic Up", description: "IA para edição de imagens", icon: React.createElement(Sparkles, { className: "h-4 w-4" }), action: nav("/magic-up"), path: "/magic-up", category: "Ferramentas" },
     { id: "commercial-intelligence", title: "Inteligência Comercial", description: "Insights estratégicos de vendas", icon: React.createElement(BarChart3, { className: "h-4 w-4" }), action: nav("/inteligencia-comercial"), path: "/inteligencia-comercial", category: "Ferramentas" },
     // Analytics

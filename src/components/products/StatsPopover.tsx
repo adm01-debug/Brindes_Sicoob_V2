@@ -1,20 +1,30 @@
+import type { ReactNode } from "react";
 import { BarChart3, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-interface StatItem {
+export interface StatItem {
   id: string;
   label: string;
   value: number;
-  icon: React.ReactNode;
+  icon: ReactNode;
 }
 
 interface StatsPopoverProps {
   stats: StatItem[];
   /** Whether filters/search are active — shows contextual indicator */
   isFiltered?: boolean;
+}
+
+function StatRow({ stat }: { stat: StatItem }) {
+  return (
+    <div key={stat.id} className="flex items-center justify-between py-1.5 group" role="listitem" aria-label={`${stat.label}: ${stat.value.toLocaleString("pt-BR")}`}>
+      <div className="flex items-center gap-2 text-sm text-muted-foreground"><span className="text-primary transition-transform group-hover:scale-110">{stat.icon}</span>{stat.label}</div>
+      <span className={cn("text-sm font-bold tabular-nums transition-colors", stat.value === 0 ? "text-muted-foreground/50" : "text-foreground")}>{stat.value.toLocaleString("pt-BR")}</span>
+    </div>
+  );
 }
 
 export function StatsPopover({ stats, isFiltered = false }: StatsPopoverProps) {
@@ -52,25 +62,7 @@ export function StatsPopover({ stats, isFiltered = false }: StatsPopoverProps) {
             )}
           </div>
 
-          {stats.map((stat) => (
-            <div
-              key={stat.id}
-              className="flex items-center justify-between py-1.5 group"
-              role="listitem"
-              aria-label={`${stat.label}: ${stat.value.toLocaleString("pt-BR")}`}
-            >
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span className="text-primary transition-transform group-hover:scale-110">{stat.icon}</span>
-                {stat.label}
-              </div>
-              <span className={cn(
-                "text-sm font-bold tabular-nums transition-colors",
-                stat.value === 0 ? "text-muted-foreground/50" : "text-foreground"
-              )}>
-                {stat.value.toLocaleString("pt-BR")}
-              </span>
-            </div>
-          ))}
+          {stats.map((stat) => <StatRow key={stat.id} stat={stat} />)}
         </div>
       </PopoverContent>
     </Popover>

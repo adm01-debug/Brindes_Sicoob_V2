@@ -1,5 +1,4 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
-import { createBiShareUnavailableResponse, resolveBiShareSecret } from "./contract.ts";
 /**
  * bi-share-dossier — gera token assinado HMAC para compartilhamento público
  * do dossiê BI (read-only, expira em 7 dias).
@@ -12,7 +11,7 @@ import { createBiShareUnavailableResponse, resolveBiShareSecret } from "./contra
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
 
-const SHARE_SECRET = resolveBiShareSecret({ BI_SHARE_SECRET: Deno.env.get("BI_SHARE_SECRET") ?? undefined });
+const SHARE_SECRET = Deno.env.get("BI_SHARE_SECRET") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
 function b64urlEncode(bytes: Uint8Array): string {
   let s = btoa(String.fromCharCode(...bytes));
@@ -44,9 +43,6 @@ function toArrayBuffer(u8: Uint8Array): ArrayBuffer {
 }
 
 async function hmac(payloadB64: string): Promise<string> {
-  if (SHARE_SECRET === null) {
-    throw new Error("BI_SHARE_SECRET is not configured");
-  }
   const key = await crypto.subtle.importKey(
     "raw",
     toArrayBuffer(utf8(SHARE_SECRET)),
@@ -95,8 +91,11 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
-  if (SHARE_SECRET === null) {
-    return createBiShareUnavailableResponse(corsHeaders);
+  if (!SHARE_SECRET) {
+    return new Response(
+      JSON.stringify({ error: "Server not configured (missing secret)" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   }
 
   try {
@@ -181,10 +180,10 @@ Deno.serve(async (req) => {
 
     return new Response("Method not allowed", { status: 405, headers: corsHeaders });
   } catch (err) {
-    console.error("[bi-share-dossier] request failed", err instanceof Error ? err.name : "unknown error");
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
+    console.error("[bi-share-dossier] error", err);
+    return new Response(JSON.stringify({ error: "internal_error" }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });

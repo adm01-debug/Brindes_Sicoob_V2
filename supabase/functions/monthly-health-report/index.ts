@@ -1,6 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.42.7"
 import { createStructuredLogger } from "../_shared/structured-logger.ts";
 import { getOrCreateRequestId } from "../_shared/request-id.ts";
+import { requireInternalService } from "../_shared/internal-service-auth.ts";
+
+const errorMessage = (error: unknown) => error instanceof Error ? error.message : "erro_desconhecido";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +14,15 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'metodo_nao_permitido' }), {
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const denied = await requireInternalService(req)
+  if (denied) return denied
 
   const requestId = getOrCreateRequestId(req);
   const log = createStructuredLogger({ fn: "monthly-health-report", requestId, req });
@@ -63,8 +75,9 @@ Deno.serve(async (req) => {
     }));
 
   } catch (error) {
-    log.error("report_generation_failed", { err: error.message });
-    return log.respond(new Response(JSON.stringify({ error: error.message }), {
+    const message = errorMessage(error);
+    log.error("report_generation_failed", { err: message });
+    return log.respond(new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500
     }));

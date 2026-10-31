@@ -79,7 +79,8 @@ export function calcularPreco(
   numeroCores?: number
 ): ResultadoCalculoPreco {
   // Tabela sem faixas configuradas: retorna preço zerado em vez de quebrar
-  if (tabela.faixas.length === 0) {
+  const firstTier = tabela.faixas[0];
+  if (!firstTier) {
     return {
       tabelaId: tabela.id,
       codigoTabela: tabela.codigoTabelaOpcao,
@@ -94,7 +95,7 @@ export function calcularPreco(
   }
 
   // Encontrar a faixa correta
-  let faixaUtilizada = tabela.faixas[0]!;
+  let faixaUtilizada = firstTier;
 
   for (const faixa of tabela.faixas) {
     if (quantidade >= faixa.quantidadeMinima) {
@@ -153,9 +154,10 @@ export function calculatePriceForQuantity(
   tabela: TabelaPrecoTecnica,
   quantity: number
 ): PriceCalculation | null {
-  if (tabela.faixas.length === 0) return null;
+  const firstTier = tabela.faixas[0];
+  if (!firstTier) return null;
 
-  let selectedFaixa = tabela.faixas[0]!;
+  let selectedFaixa = firstTier;
   for (const faixa of tabela.faixas) {
     if (quantity >= faixa.quantidadeMinima) {
       selectedFaixa = faixa;
@@ -166,7 +168,7 @@ export function calculatePriceForQuantity(
   const totalPrice = unitPrice * quantity;
   const grandTotal = totalPrice + tabela.precoSetup + tabela.precoManuseio;
 
-  const minPrice = tabela.faixas[0]!.precoUnitario;
+  const minPrice = firstTier.precoUnitario;
   const savingsPerUnit = minPrice - unitPrice;
   const percentageOff = minPrice > 0 ? ((minPrice - unitPrice) / minPrice) * 100 : 0;
   
@@ -256,7 +258,7 @@ export function usePrecoCalculation() {
  * Hook para simulador de preços
  */
 export function usePriceSimulator(productBasePrice: number = 0) {
-  const { tabelas, isLoading, error, calculateAllPrices } = usePrecoCalculation();
+  const { isLoading, error, calculateAllPrices } = usePrecoCalculation();
   const [quantity, setQuantity] = useState(100);
   const [selectedTechniqueCode, setSelectedTechniqueCode] = useState<string | null>(null);
 

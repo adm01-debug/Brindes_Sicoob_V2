@@ -5,6 +5,8 @@
 
 import type { KitBox, KitItem } from './types';
 
+const KRAFT_PAPER_MATERIAL = 'Papel Kraft';
+
 export const MOCK_BOXES: KitBox[] = [
   {
     id: 'mock-box-1',
@@ -16,7 +18,7 @@ export const MOCK_BOXES: KitBox[] = [
     internalHeight: 10,
     internalDepth: 8,
     internalVolume: 1200,
-    material: 'Papel Kraft',
+    material: KRAFT_PAPER_MATERIAL,
     weight: 120,
   },
   {
@@ -29,7 +31,7 @@ export const MOCK_BOXES: KitBox[] = [
     internalHeight: 15,
     internalDepth: 12,
     internalVolume: 4500,
-    material: 'Papel Kraft',
+    material: KRAFT_PAPER_MATERIAL,
     weight: 200,
   },
   {
@@ -42,7 +44,7 @@ export const MOCK_BOXES: KitBox[] = [
     internalHeight: 20,
     internalDepth: 15,
     internalVolume: 10500,
-    material: 'Papel Kraft',
+    material: KRAFT_PAPER_MATERIAL,
     weight: 350,
   },
   {

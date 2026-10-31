@@ -1,0 +1,8 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Hashes SHA-256 do inventário estrutural versionado"
+paths = ['''^scripts/db/\.inventory-cache\.json$''']
+regexTarget = "line"
+regexes = ['''^\s*"[^"]+":\s*"[0-9a-f]{64}",?\s*$''']

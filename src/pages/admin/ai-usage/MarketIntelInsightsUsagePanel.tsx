@@ -2,6 +2,7 @@
  * MarketIntelInsightsUsagePanel — telemetria do módulo Inteligência de Mercado.
  * Mostra: total de regenerações por dia, top usuários, % cache hit estimado.
  */
+import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -138,7 +139,7 @@ export function MarketIntelInsightsUsagePanel() {
   );
 }
 
-function StatTile({ icon, label, value, hint }: { icon: React.ReactNode; label: string; value: number | string; hint?: string }) {
+function StatTile({ icon, label, value, hint }: { icon: ReactNode; label: string; value: number | string; hint?: string }) {
   return (
     <div className="p-3 rounded-lg border border-border/50 bg-card/60">
       <div className="flex items-center gap-1.5 text-muted-foreground text-[10px] uppercase tracking-wide font-semibold">

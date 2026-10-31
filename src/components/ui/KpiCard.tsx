@@ -4,8 +4,7 @@
  * v2: suporta tooltip explicativo opcional (retrocompatível).
  */
 import { cn } from "@/lib/utils";
-import type { LucideIcon } from "lucide-react";
-import { Info } from "lucide-react";
+import { type LucideIcon, Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
 interface KpiCardProps {
@@ -24,8 +23,30 @@ interface KpiCardProps {
   animationDelay?: number;
 }
 
+function getCardTone(alert?: boolean, warning?: boolean, highlight?: boolean): string {
+  if (alert) return "bg-destructive/10 border border-destructive/20";
+  if (warning) return "bg-warning/10 border border-warning/20";
+  if (highlight) return "bg-primary/10 border border-primary/20";
+  return "bg-muted/50";
+}
+
+function getIconTone(alert?: boolean, warning?: boolean, highlight?: boolean): string {
+  if (alert) return "text-destructive";
+  if (warning) return "text-warning";
+  if (highlight) return "text-primary";
+  return "text-muted-foreground";
+}
+
+function getValueTone(customValueColor?: string, alert?: boolean, warning?: boolean, highlight?: boolean): string {
+  if (customValueColor) return customValueColor;
+  if (alert) return "text-destructive";
+  if (warning) return "text-warning";
+  if (highlight) return "text-primary";
+  return "text-foreground";
+}
+
 export function KpiCard({
-  icon: Icon,
+  icon,
   label,
   value,
   sub,
@@ -37,14 +58,12 @@ export function KpiCard({
   tooltip,
   animationDelay,
 }: KpiCardProps) {
+  const Icon = icon;
   const content = (
     <div
       className={cn(
         "rounded-lg p-2 text-center animate-fade-in",
-        alert ? "bg-destructive/10 border border-destructive/20" :
-        warning ? "bg-warning/10 border border-warning/20" :
-        highlight ? "bg-primary/10 border border-primary/20" :
-        "bg-muted/50"
+        getCardTone(alert, warning, highlight)
       )}
       style={animationDelay ? { animationDelay: `${animationDelay}ms` } : undefined}
       role="status"
@@ -54,10 +73,7 @@ export function KpiCard({
         <Icon
           className={cn(
             "h-3 w-3",
-            alert ? "text-destructive" :
-            warning ? "text-warning" :
-            highlight ? "text-primary" :
-            "text-muted-foreground"
+            getIconTone(alert, warning, highlight)
           )}
           aria-hidden="true"
         />
@@ -83,11 +99,7 @@ export function KpiCard({
       </div>
       <p className={cn(
         "text-sm font-bold",
-        customValueColor ? customValueColor :
-        alert ? "text-destructive" :
-        warning ? "text-warning" :
-        highlight ? "text-primary" :
-        "text-foreground"
+        getValueTone(customValueColor, alert, warning, highlight)
       )}>{value}</p>
       <p className="text-[10px] text-muted-foreground">{sub}</p>
     </div>
@@ -98,4 +110,3 @@ export function KpiCard({
   }
   return content;
 }
-

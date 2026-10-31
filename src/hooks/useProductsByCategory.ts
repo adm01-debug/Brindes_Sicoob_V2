@@ -17,6 +17,41 @@ interface UseProductsByCategoryResult {
   refetch: () => Promise<void>;
 }
 
+interface CategoryProductsResponse {
+  productIds: string[];
+  categoriesUsed?: number;
+  source?: string | null;
+}
+
+async function loadCategoryProducts(categoryIds: string[], includeDescendants: boolean): Promise<CategoryProductsResponse> {
+  const { data, error } = await supabase.functions.invoke('categories-api', {
+    body: { action: 'products_by_categories', categoryIds, includeDescendants },
+  });
+  if (error) throw new Error(error.message);
+  if (!data.success) throw new Error(data.error || 'Erro ao buscar produtos por categoria');
+  return {
+    productIds: data.productIds || [],
+    categoriesUsed: data.categoriesUsed,
+    source: data.source,
+  };
+}
+
+function keepEmptyProductIds(current: Set<string>): Set<string> {
+  return current.size === 0 ? current : new Set();
+}
+
+function shouldSkipCategoryFetch(force: boolean, currentKey: string, requestKey: string): boolean {
+  return !force && currentKey === requestKey;
+}
+
+function shouldResetCategoryFilter(enabled: boolean, hasFilter: boolean): boolean {
+  return !enabled || !hasFilter;
+}
+
+function categoryFetchErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Erro desconhecido';
+}
+
 /**
  * Hook para buscar IDs de produtos vinculados a categorias via tabela relacional
  * Usa a tabela product_category_assignments (ou fallbacks)
@@ -36,71 +71,66 @@ export function useProductsByCategory({
     categoryIds.length > 0 ? [...categoryIds].sort().join(',') : '', 
     [categoryIds]
   );
+  const stableCategoryIds = useMemo(
+    () => categoryIdsKey ? categoryIdsKey.split(',') : [],
+    [categoryIdsKey],
+  );
   
   const lastFetchedKey = useRef<string>('');
-  const isFetchingRef = useRef(false);
+  const requestSequence = useRef(0);
 
   // Verificar se há filtro ativo
   const hasFilter = useMemo(() => {
     return categoryIds.length > 0;
   }, [categoryIds.length]);
 
-  const fetchProductIds = useCallback(async () => {
-    // Evitar chamadas duplicadas
-    if (isFetchingRef.current) return;
-    if (lastFetchedKey.current === categoryIdsKey && productIds.size > 0) return;
-    
-    if (!hasFilter || !enabled) {
-      setProductIds(new Set());
+  const requestKey = `${includeDescendants ? 'with-descendants' : 'direct'}:${categoryIdsKey}`;
+
+  const fetchProductIds = useCallback(async (force = false) => {
+    if (shouldSkipCategoryFetch(force, lastFetchedKey.current, requestKey)) return;
+    if (shouldResetCategoryFilter(enabled, hasFilter)) {
+      requestSequence.current += 1;
+      setProductIds(keepEmptyProductIds);
       setCategoriesCount(0);
       setSource(null);
       lastFetchedKey.current = '';
+      setIsLoading(false);
       return;
     }
 
-    isFetchingRef.current = true;
+    const requestId = ++requestSequence.current;
     setIsLoading(true);
     setError(null);
 
     try {
-      const { data, error: invokeError } = await supabase.functions.invoke('categories-api', {
-        body: {
-          action: 'products_by_categories',
-          categoryIds,
-          includeDescendants,
-        },
-      });
-
-      if (invokeError) {
-        throw new Error(invokeError.message);
-      }
-
-      if (!data.success) {
-        throw new Error(data.error || 'Erro ao buscar produtos por categoria');
-      }
-
-      setProductIds(new Set(data.productIds || []));
-      setCategoriesCount(data.categoriesUsed || categoryIds.length);
-      setSource(data.source || null);
-      lastFetchedKey.current = categoryIdsKey;
+      const result = await loadCategoryProducts(stableCategoryIds, includeDescendants);
+      if (requestId !== requestSequence.current) return;
+      setProductIds(new Set(result.productIds));
+      setCategoriesCount(result.categoriesUsed ?? stableCategoryIds.length);
+      setSource(result.source ?? null);
+      lastFetchedKey.current = requestKey;
 
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro desconhecido';
+      if (requestId !== requestSequence.current) return;
+      const message = categoryFetchErrorMessage(err);
       console.error('Erro ao buscar produtos por categoria:', err);
       setError(message);
       setProductIds(new Set());
     } finally {
-      setIsLoading(false);
-      isFetchingRef.current = false;
+      if (requestId === requestSequence.current) setIsLoading(false);
     }
-  }, [categoryIdsKey, includeDescendants, hasFilter, enabled, categoryIds]);
+  }, [enabled, hasFilter, includeDescendants, requestKey, stableCategoryIds]);
 
   // Buscar quando a chave de categorias muda
   useEffect(() => {
-    if (categoryIdsKey !== lastFetchedKey.current || !hasFilter) {
-      fetchProductIds();
+    if (requestKey !== lastFetchedKey.current || !hasFilter) {
+      void fetchProductIds();
     }
-  }, [categoryIdsKey, hasFilter, fetchProductIds]);
+  }, [requestKey, hasFilter, fetchProductIds]);
+
+  useEffect(() => () => {
+    requestSequence.current += 1;
+  }, []);
 
   return {
     productIds,
@@ -109,7 +139,7 @@ export function useProductsByCategory({
     error,
     categoriesCount,
     source,
-    refetch: fetchProductIds,
+    refetch: () => fetchProductIds(true),
   };
 }
 

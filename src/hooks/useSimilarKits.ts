@@ -57,7 +57,7 @@ export function useSimilarKits({
       if (error) throw error;
 
       const set = new Set(currentSkus.map((s) => s.toLowerCase()));
-      const ranked = ((data ?? []) as TemplateRow[])
+      return ((data ?? []) as TemplateRow[])
         .filter((t) => t.id !== excludeId)
         .map((t) => {
           const skus = extractSkus(t.items_data);
@@ -72,7 +72,6 @@ export function useSimilarKits({
         .sort((a, b) => b.ratio - a.ratio || b.overlap - a.overlap)
         .slice(0, limit);
 
-      return ranked;
     },
   });
 }

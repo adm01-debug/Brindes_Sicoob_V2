@@ -1,7 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, type MouseEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, ChevronRight, X, Trash2 } from "lucide-react";
+import { Clock, X, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useRecentlyViewedStore } from "@/stores/useRecentlyViewedStore";
@@ -13,14 +13,30 @@ interface RecentlyViewedBarProps {
   maxVisible?: number;
 }
 
+type RecentProduct = ReturnType<ReturnType<typeof useProductsContext>['getProductsByIds']>[number];
+
+function RecentlyViewedItem({ product, index, onOpen, onRemove }: { product: RecentProduct; index: number; onOpen: () => void; onRemove: () => void }) {
+  const remove = (event: MouseEvent) => { event.stopPropagation(); onRemove(); };
+  return (
+    <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }} transition={{ delay: index * 0.03 }} className="relative flex-shrink-0 group">
+      <Tooltip><TooltipTrigger asChild><button onClick={onOpen} className={cn("w-10 h-10 rounded-lg overflow-hidden border-2 border-border/50", "bg-muted cursor-pointer hover:border-primary/50 transition-all duration-200", "hover:scale-110 hover:shadow-md")}><img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" loading="lazy" /></button></TooltipTrigger><TooltipContent side="bottom" className="max-w-[200px]"><p className="font-medium truncate">{product.name}</p><p className="text-xs text-muted-foreground">{new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(product.price)}</p></TooltipContent></Tooltip>
+      <button onClick={remove} className={cn("absolute -top-1 -right-1 w-4 h-4 rounded-full", "bg-muted-foreground/80 text-background flex items-center justify-center", "opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive")}><X className="h-2.5 w-2.5" /></button>
+    </motion.div>
+  );
+}
+
+function ClearHistoryButton({ onClear }: { onClear: () => void }) {
+  return <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={onClear} aria-label="Excluir"><Trash2 className="h-4 w-4" /></Button></TooltipTrigger><TooltipContent>Limpar histórico</TooltipContent></Tooltip>;
+}
+
+function RemainingItems({ count, onOpen }: { count: number; onOpen: () => void }) {
+  if (count <= 0) return null;
+  return <button onClick={onOpen} className="w-10 h-10 rounded-lg border-2 border-dashed border-border/50 flex items-center justify-center flex-shrink-0 hover:border-primary/50 transition-colors"><span className="text-xs font-medium text-muted-foreground">+{count}</span></button>;
+}
+
 export function RecentlyViewedBar({ className, maxVisible = 6 }: RecentlyViewedBarProps) {
   const navigate = useNavigate();
-  const { 
-    items, 
-    itemCount, 
-    removeFromRecentlyViewed,
-    clearRecentlyViewed 
-  } = useRecentlyViewedStore();
+  const { items, itemCount, removeFromRecentlyViewed, clearRecentlyViewed } = useRecentlyViewedStore();
   const { getProductsByIds } = useProductsContext();
 
   const products = useMemo(
@@ -50,88 +66,12 @@ export function RecentlyViewedBar({ className, maxVisible = 6 }: RecentlyViewedB
 
           {/* Products */}
           <div className="flex items-center gap-2 flex-1 overflow-x-auto scrollbar-none">
-            {products.map((product, idx) => (
-              <motion.div
-                key={product.id}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0 }}
-                transition={{ delay: idx * 0.03 }}
-                className="relative flex-shrink-0 group"
-              >
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => navigate(`/produto/${product.id}`)}
-                      className={cn(
-                        "w-10 h-10 rounded-lg overflow-hidden border-2 border-border/50",
-                        "bg-muted cursor-pointer hover:border-primary/50 transition-all duration-200",
-                        "hover:scale-110 hover:shadow-md"
-                      )}
-                    >
-                      <img
-                        src={product.images[0]}
-                        alt={product.name}
-                        className="w-full h-full object-cover" loading="lazy" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="max-w-[200px]">
-                    <p className="font-medium truncate">{product.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Intl.NumberFormat("pt-BR", {
-                        style: "currency",
-                        currency: "BRL",
-                      }).format(product.price)}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
+            {products.map((product, index) => <RecentlyViewedItem key={product.id} product={product} index={index} onOpen={() => navigate(`/produto/${product.id}`)} onRemove={() => removeFromRecentlyViewed(product.id)} />)}
 
-                {/* Remove button */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeFromRecentlyViewed(product.id);
-                  }}
-                  className={cn(
-                    "absolute -top-1 -right-1 w-4 h-4 rounded-full",
-                    "bg-muted-foreground/80 text-background",
-                    "flex items-center justify-center",
-                    "opacity-0 group-hover:opacity-100 transition-opacity",
-                    "hover:bg-destructive"
-                  )}
-                >
-                  <X className="h-2.5 w-2.5" />
-                </button>
-              </motion.div>
-            ))}
-
-            {itemCount > maxVisible && (
-              <button
-                onClick={() => navigate("/favoritos")}
-                className="w-10 h-10 rounded-lg border-2 border-dashed border-border/50 flex items-center justify-center flex-shrink-0 hover:border-primary/50 transition-colors"
-              >
-                <span className="text-xs font-medium text-muted-foreground">
-                  +{itemCount - maxVisible}
-                </span>
-              </button>
-            )}
+            <RemainingItems count={itemCount - maxVisible} onOpen={() => navigate("/favoritos")} />
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                  onClick={clearRecentlyViewed}
-                 aria-label="Excluir"><Trash2 className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Limpar histórico</TooltipContent>
-            </Tooltip>
-          </div>
+          <div className="flex items-center gap-1 flex-shrink-0"><ClearHistoryButton onClear={clearRecentlyViewed} /></div>
         </div>
       </motion.div>
     </AnimatePresence>

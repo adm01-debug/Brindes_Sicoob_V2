@@ -22,11 +22,18 @@ export const initialState: SimulatorWizardState = {
   error: null,
 };
 
-export function wizardReducer(state: SimulatorWizardState, action: WizardAction): SimulatorWizardState {
+function engravingSpecsForLocation(location: SimulatorWizardState['selectedLocation']) {
+  return {
+    colors: 1,
+    width: Math.min(5, location?.maxWidthCm || 50),
+    height: Math.min(5, location?.maxHeightCm || 50),
+  };
+}
+
+function reduceWizardSetup(state: SimulatorWizardState, action: WizardAction): SimulatorWizardState | null {
   switch (action.type) {
     case 'SET_STEP':
       return { ...state, currentStep: action.payload };
-
     case 'SELECT_PRODUCT':
       return {
         ...state, selectedProduct: action.payload,
@@ -34,7 +41,6 @@ export function wizardReducer(state: SimulatorWizardState, action: WizardAction)
         isEditingPersonalization: false, selectedLocation: null,
         availableLocations: [], comparisonResults: [], selectedComparison: null,
       };
-
     case 'SET_QUANTITY':
       return {
         ...state, quantity: action.payload,
@@ -43,30 +49,42 @@ export function wizardReducer(state: SimulatorWizardState, action: WizardAction)
           ...p, pricing: { ...p.pricing, _needsRecalc: true },
         })),
       };
-
     case 'SET_AVAILABLE_LOCATIONS':
       return { ...state, availableLocations: action.payload };
-
     case 'SELECT_LOCATION':
       return {
         ...state, selectedLocation: action.payload,
         comparisonResults: [], selectedComparison: null,
-        engravingSpecs: {
-          colors: 1,
-          width: Math.min(5, action.payload?.maxWidthCm || 50),
-          height: Math.min(5, action.payload?.maxHeightCm || 50),
-        },
+        engravingSpecs: engravingSpecsForLocation(action.payload),
       };
-
     case 'UPDATE_SPECS':
       return { ...state, engravingSpecs: { ...state.engravingSpecs, ...action.payload }, comparisonResults: [], selectedComparison: null };
+    default:
+      return null;
+  }
+}
 
+function reduceWizardResults(state: SimulatorWizardState, action: WizardAction): SimulatorWizardState | null {
+  switch (action.type) {
     case 'SET_COMPARISON_RESULTS':
       return { ...state, comparisonResults: action.payload };
-
     case 'SELECT_COMPARISON':
       return { ...state, selectedComparison: action.payload };
+    case 'REMOVE_ALL_PERSONALIZATIONS':
+      return { ...state, personalizations: [] };
+    case 'SET_CALCULATING':
+      return { ...state, isCalculating: action.payload };
+    case 'SET_ERROR':
+      return { ...state, error: action.payload };
+    case 'RESET_WIZARD':
+      return initialState;
+    default:
+      return null;
+  }
+}
 
+function reducePersonalizationChanges(state: SimulatorWizardState, action: WizardAction): SimulatorWizardState | null {
+  switch (action.type) {
     case 'ADD_PERSONALIZATION':
       return {
         ...state, personalizations: [...state.personalizations, action.payload],
@@ -76,17 +94,12 @@ export function wizardReducer(state: SimulatorWizardState, action: WizardAction)
         engravingSpecs: { colors: 1, width: 5, height: 5 },
         currentStep: 'comparison',
       };
-
     case 'REMOVE_PERSONALIZATION': {
       const newPersonalizations = state.personalizations
         .filter(p => p.id !== action.payload)
         .map((p, idx) => ({ ...p, index: idx + 1 }));
       return { ...state, personalizations: newPersonalizations };
     }
-
-    case 'REMOVE_ALL_PERSONALIZATIONS':
-      return { ...state, personalizations: [] };
-
     case 'UPDATE_PERSONALIZATION': {
       const { index: editIndex, personalization: updatedPers } = action.payload;
       const updatedPersonalizations = [...state.personalizations];
@@ -100,7 +113,6 @@ export function wizardReducer(state: SimulatorWizardState, action: WizardAction)
         currentStep: 'comparison',
       };
     }
-
     case 'EDIT_PERSONALIZATION': {
       const pers = state.personalizations[action.payload];
       if (!pers) return state;
@@ -111,7 +123,22 @@ export function wizardReducer(state: SimulatorWizardState, action: WizardAction)
         selectedComparison: null, currentStep: 'location',
       };
     }
+    default:
+      return null;
+  }
+}
 
+function recalculatePersonalization(state: SimulatorWizardState, personalizationId: string, pricing: SimulatorWizardState['personalizations'][number]['pricing']): SimulatorWizardState {
+  return {
+    ...state,
+    personalizations: state.personalizations.map(personalization =>
+      personalization.id === personalizationId ? { ...personalization, pricing } : personalization,
+    ),
+  };
+}
+
+function reducePersonalizationFlow(state: SimulatorWizardState, action: WizardAction): SimulatorWizardState | null {
+  switch (action.type) {
     case 'START_NEW_PERSONALIZATION':
       return {
         ...state, currentPersonalizationIndex: state.personalizations.length,
@@ -120,30 +147,16 @@ export function wizardReducer(state: SimulatorWizardState, action: WizardAction)
         engravingSpecs: { colors: 1, width: 5, height: 5 },
         currentStep: 'location',
       };
-
     case 'CANCEL_PERSONALIZATION':
       return {
         ...state, isEditingPersonalization: false,
         selectedLocation: null, selectedComparison: null,
         currentStep: state.personalizations.length > 0 ? 'comparison' : 'product',
       };
-
-    case 'SET_CALCULATING':
-      return { ...state, isCalculating: action.payload };
-
-    case 'SET_ERROR':
-      return { ...state, error: action.payload };
-
     case 'RECALC_PERSONALIZATION_PRICING': {
       const { personalizationId, pricing } = action.payload;
-      return {
-        ...state,
-        personalizations: state.personalizations.map(p =>
-          p.id === personalizationId ? { ...p, pricing } : p
-        ),
-      };
+      return recalculatePersonalization(state, personalizationId, pricing);
     }
-
     case 'DUPLICATE_PERSONALIZATION': {
       const { sourceId, targetLocation } = action.payload;
       const source = state.personalizations.find(p => p.id === sourceId);
@@ -159,11 +172,15 @@ export function wizardReducer(state: SimulatorWizardState, action: WizardAction)
         currentStep: 'comparison' as const,
       };
     }
-
-    case 'RESET_WIZARD':
-      return initialState;
-
     default:
-      return state;
+      return null;
   }
+}
+
+export function wizardReducer(state: SimulatorWizardState, action: WizardAction): SimulatorWizardState {
+  return reduceWizardSetup(state, action)
+    ?? reduceWizardResults(state, action)
+    ?? reducePersonalizationChanges(state, action)
+    ?? reducePersonalizationFlow(state, action)
+    ?? state;
 }

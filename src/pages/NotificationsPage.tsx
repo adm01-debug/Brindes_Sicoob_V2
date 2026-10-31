@@ -1,7 +1,7 @@
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { useNotifications } from "@/hooks/useNotifications";
-import { Bell, CheckCircle2, Info, AlertCircle, ShoppingCart } from "lucide-react";
+import { Bell, Info, AlertCircle, ShoppingCart, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
@@ -9,7 +9,6 @@ import { ptBR } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { NotificationPreferences } from "@/components/settings/NotificationPreferences";
 import { OrderEventAlerts } from "@/components/settings/OrderEventAlerts";
-import { Settings } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 export default function NotificationsPage() {

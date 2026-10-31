@@ -15,6 +15,7 @@ import { AlertTriangle, Flame, Activity, TrendingUp, TrendingDown, Minus } from 
 import { usePlatformFailureMetrics } from '@/pages/admin/telemetry/usePlatformFailureMetrics';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import type { ReactNode } from 'react';
 
 function statusForRate(ratePct: number): 'ok' | 'warn' | 'crit' {
   if (ratePct === 0) return 'ok';
@@ -46,6 +47,20 @@ function DeltaIndicator({ delta }: { delta: number }) {
   );
 }
 
+type FailureMetrics = NonNullable<ReturnType<typeof usePlatformFailureMetrics>["data"]>;
+
+function FailureRateCard(props: { title: string; icon: typeof AlertTriangle; count: number; rate: number; children: ReactNode }) {
+  const { title, count, rate, children } = props;
+  const Icon = props.icon;
+  const status = statusForRate(rate);
+  return <Card className={statusClass(status)}><CardHeader className="pb-2"><CardTitle className="text-sm font-medium flex items-center gap-2"><Icon className="h-4 w-4" />{title}</CardTitle></CardHeader><CardContent className="space-y-1"><div className="flex items-baseline gap-2"><span className="text-2xl font-bold tabular-nums">{count}</span><Badge variant={status === 'crit' ? 'destructive' : 'secondary'} className="text-xs">{rate.toFixed(2)}%</Badge></div>{children}</CardContent></Card>;
+}
+
+function FailureCardsContent({ data, windowMinutes }: { data: FailureMetrics; windowMinutes: number }) {
+  const lastColdStart = data.lastColdStartAt ? formatDistanceToNow(new Date(data.lastColdStartAt), { addSuffix: true, locale: ptBR }) : 'nunca';
+  return <div className="grid gap-3 md:grid-cols-3"><FailureRateCard title={`Falhas 503 (${windowMinutes}min)`} icon={AlertTriangle} count={data.total503} rate={data.rate503Pct}><DeltaIndicator delta={data.delta503} /></FailureRateCard><FailureRateCard title={`Cold starts (${windowMinutes}min)`} icon={Flame} count={data.totalColdStarts} rate={data.rateColdStartPct}><p className="text-xs text-muted-foreground">Último: {lastColdStart}</p></FailureRateCard><Card className="border-muted-foreground/20"><CardHeader className="pb-2"><CardTitle className="text-sm font-medium flex items-center gap-2"><Activity className="h-4 w-4" />Volume total</CardTitle></CardHeader><CardContent className="space-y-1"><div className="text-2xl font-bold tabular-nums">{data.totalCalls.toLocaleString('pt-BR')}</div><p className="text-xs text-muted-foreground">chamadas registradas na janela</p></CardContent></Card></div>;
+}
+
 export function PlatformFailureCards({ windowMinutes = 60 }: { windowMinutes?: number }) {
   const { data, isLoading } = usePlatformFailureMetrics(windowMinutes);
 
@@ -66,62 +81,5 @@ export function PlatformFailureCards({ windowMinutes = 60 }: { windowMinutes?: n
     );
   }
 
-  const status503 = statusForRate(data.rate503Pct);
-  const statusCold = statusForRate(data.rateColdStartPct);
-  const lastColdStart = data.lastColdStartAt
-    ? formatDistanceToNow(new Date(data.lastColdStartAt), { addSuffix: true, locale: ptBR })
-    : 'nunca';
-
-  return (
-    <div className="grid gap-3 md:grid-cols-3">
-      <Card className={statusClass(status503)}>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4" />
-            Falhas 503 ({windowMinutes}min)
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-1">
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold tabular-nums">{data.total503}</span>
-            <Badge variant={status503 === 'crit' ? 'destructive' : 'secondary'} className="text-xs">
-              {data.rate503Pct.toFixed(2)}%
-            </Badge>
-          </div>
-          <DeltaIndicator delta={data.delta503} />
-        </CardContent>
-      </Card>
-
-      <Card className={statusClass(statusCold)}>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Flame className="h-4 w-4" />
-            Cold starts ({windowMinutes}min)
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-1">
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold tabular-nums">{data.totalColdStarts}</span>
-            <Badge variant={statusCold === 'crit' ? 'destructive' : 'secondary'} className="text-xs">
-              {data.rateColdStartPct.toFixed(2)}%
-            </Badge>
-          </div>
-          <p className="text-xs text-muted-foreground">Último: {lastColdStart}</p>
-        </CardContent>
-      </Card>
-
-      <Card className="border-muted-foreground/20">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Activity className="h-4 w-4" />
-            Volume total
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-1">
-          <div className="text-2xl font-bold tabular-nums">{data.totalCalls.toLocaleString('pt-BR')}</div>
-          <p className="text-xs text-muted-foreground">chamadas registradas na janela</p>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  return <FailureCardsContent data={data} windowMinutes={windowMinutes} />;
 }

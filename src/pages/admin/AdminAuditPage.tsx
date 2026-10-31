@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from 'react';
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { History, Search, Filter, FileDown, User, Activity, Calendar, ShieldCheck } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { History, Filter, FileDown, User, Activity, Calendar, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { AdminDataTable } from "@/components/admin/common/AdminDataTable";
+import { AdminDataTable, type Column } from "@/components/admin/common/AdminDataTable";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import type { Tables } from "@/integrations/supabase/types";
 // XLSX will be loaded dynamically when needed
 
 // admin_audit_log.details (JSONB) guarda o payload estruturado gravado pela
@@ -25,9 +26,24 @@ interface AuditLogDetails {
   metadata?: { user_email?: string; user_agent?: string } & Record<string, unknown>;
 }
 
+type AuditLog = Omit<Tables<"admin_audit_log">, "details"> & {
+  details: AuditLogDetails | null;
+};
+
+type BadgeVariant = "default" | "secondary" | "destructive" | "outline";
+
+const AUDIT_VARIANTS: Record<string, BadgeVariant> = {
+  CREATE: "default",
+  UPDATE: "secondary",
+  DELETE: "destructive",
+  IMPORT: "outline",
+  EXPORT: "outline",
+  PUBLISH_CMS: "default",
+};
+
 export default function AdminAuditPage() {
   const navigate = useNavigate();
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -84,7 +100,7 @@ export default function AdminAuditPage() {
       const { data, error, count } = await query;
       if (error) throw error;
 
-      setLogs(data || []);
+      setLogs((data || []) as AuditLog[]);
       setTotalCount(count || 0);
     } catch (error) {
       console.error("Error fetching audit logs:", error);
@@ -149,11 +165,11 @@ export default function AdminAuditPage() {
     }
   };
 
-  const columns = [
+  const columns: Column<AuditLog>[] = [
     {
       header: "Data/Hora",
       accessorKey: "created_at",
-      cell: (row: any) => (
+      cell: (row) => (
         <div className="text-sm">
           {format(new Date(row.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
         </div>
@@ -163,7 +179,7 @@ export default function AdminAuditPage() {
     {
       header: "Usuário",
       accessorKey: "details",
-      cell: (row: any) => (
+      cell: (row) => (
         <div className="flex flex-col">
           <span className="font-medium text-sm">{row.details?.metadata?.user_email?.split('@')[0] || 'Sistema'}</span>
           <span className="text-[10px] text-muted-foreground">{row.details?.metadata?.user_email || ''}</span>
@@ -173,29 +189,21 @@ export default function AdminAuditPage() {
     {
       header: "Evento",
       accessorKey: "action",
-      cell: (row: any) => {
-        const variants: Record<string, any> = {
-          'CREATE': 'default',
-          'UPDATE': 'secondary',
-          'DELETE': 'destructive',
-          'IMPORT': 'outline',
-          'EXPORT': 'outline',
-          'PUBLISH_CMS': 'default',
-        };
-        return <Badge variant={variants[row.action] || 'outline'}>{row.action}</Badge>;
+      cell: (row) => {
+        return <Badge variant={AUDIT_VARIANTS[row.action] || 'outline'}>{row.action}</Badge>;
       },
       sortable: true
     },
     {
       header: "Entidade",
       accessorKey: "resource_type",
-      cell: (row: any) => <span className="text-sm font-mono">{row.resource_type}</span>,
+      cell: (row) => <span className="text-sm font-mono">{row.resource_type}</span>,
       sortable: true
     },
     {
       header: "Detalhes",
       accessorKey: "id",
-      cell: (row: any) => (
+      cell: (row) => (
         <div className="max-w-[300px] truncate text-xs text-muted-foreground">
           {row.action === 'UPDATE' ? 'Alteração de dados' :
            row.action === 'DELETE' ? `ID: ${row.resource_id}` :

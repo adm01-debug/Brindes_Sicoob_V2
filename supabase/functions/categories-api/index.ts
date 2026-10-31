@@ -1,6 +1,5 @@
-import { createReadOnlyCatalogFetch } from "../_shared/external-read-only.ts";
+import { createExternalCatalogClient } from "../_shared/catalog-client.ts";
 import { getCorsHeaders } from '../_shared/cors.ts';
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from '../_shared/zod-validate.ts';
 import { runBotProtection } from '../_shared/bot-protection.ts';
 
@@ -9,6 +8,27 @@ const CategoriesRequestSchema = z.object({
   categoryIds: z.array(z.string().uuid()).max(200).optional(),
   includeDescendants: z.boolean().optional(),
 });
+
+interface CategoryRelation {
+  id: string;
+  parent_id: string | null;
+}
+
+function collectCategoryDescendants(parentIds: string[], categories: CategoryRelation[]): string[] {
+  const descendants = new Set<string>();
+  const queue = [...parentIds];
+
+  while (queue.length > 0) {
+    const currentId = queue.shift()!;
+    if (descendants.has(currentId)) continue;
+    descendants.add(currentId);
+    queue.push(...categories
+      .filter((category) => category.parent_id === currentId)
+      .map((category) => category.id));
+  }
+
+  return [...descendants];
+}
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -28,14 +48,12 @@ Deno.serve(async (req) => {
     }, corsHeaders);
     if (!protection.allowed) return protection.blockResponse!;
 
-    const externalUrl = Deno.env.get('EXTERNAL_SUPABASE_URL');
-    const externalKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_KEY');
-
-    if (!externalUrl || !externalKey) {
-      throw new Error('Missing external database configuration');
+    const externalClient = await createExternalCatalogClient();
+    if (!externalClient) {
+      return new Response(JSON.stringify({ error: 'CATALOG_NOT_CONFIGURED', message: 'Catálogo indisponível' }), {
+        status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
-
-    const externalClient = createClient(externalUrl, externalKey, { global: { fetch: createReadOnlyCatalogFetch() } });
 
     const rawBody = await req.json().catch(() => ({}));
     const parsed = CategoriesRequestSchema.safeParse(rawBody);
@@ -93,27 +111,7 @@ Deno.serve(async (req) => {
 
         if (catError) throw catError;
 
-        // Função para encontrar todos os descendentes
-        const findDescendants = (parentIds: string[]): string[] => {
-          const descendants: string[] = [];
-          const queue = [...parentIds];
-          
-          while (queue.length > 0) {
-            const currentId = queue.shift()!;
-            descendants.push(currentId);
-            
-            // Encontrar filhos diretos
-            const children = allCategories
-              .filter((c: any) => c.parent_id === currentId)
-              .map((c: any) => c.id);
-            
-            queue.push(...children);
-          }
-          
-          return [...new Set(descendants)]; // Remover duplicatas
-        };
-
-        const allCategoryIds = findDescendants(categoryIds);
+        const allCategoryIds = collectCategoryDescendants(categoryIds, allCategories);
 
         return new Response(
           JSON.stringify({ success: true, data: allCategoryIds }),
@@ -140,26 +138,7 @@ Deno.serve(async (req) => {
 
           if (catError) throw catError;
 
-          // Encontrar todos os descendentes
-          const findDescendants = (parentIds: string[]): string[] => {
-            const descendants: string[] = [];
-            const queue = [...parentIds];
-            
-            while (queue.length > 0) {
-              const currentId = queue.shift()!;
-              descendants.push(currentId);
-              
-              const children = allCategories
-                .filter((c: any) => c.parent_id === currentId)
-                .map((c: any) => c.id);
-              
-              queue.push(...children);
-            }
-            
-            return [...new Set(descendants)];
-          };
-
-          targetCategoryIds = findDescendants(categoryIds);
+          targetCategoryIds = collectCategoryDescendants(categoryIds, allCategories);
         }
 
         console.log('Querying products for categories:', targetCategoryIds.length, 'categories');

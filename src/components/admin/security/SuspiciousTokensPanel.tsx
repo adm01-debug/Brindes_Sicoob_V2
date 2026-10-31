@@ -76,7 +76,7 @@ export function SuspiciousTokensPanel() {
       if (r.created_at > g.last) g.last = r.created_at;
     }
     // Compute distinct IPs per group
-    for (const [key, g] of map.entries()) {
+    for (const g of map.values()) {
       const ips = new Set(rows.filter((r) => r.resource_id === g.resource_id && r.resource_type === g.resource_type).map((r) => r.ip_address));
       g.distinctIps = ips.size;
     }

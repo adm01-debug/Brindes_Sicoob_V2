@@ -19,15 +19,16 @@ As seguintes variáveis podem ser configuradas no Supabase/Lovable Secrets para 
 O comando de seed (`/sicoob-seed`) garante a existência da seguinte topologia:
 
 ### 1. Organização
-- **Central:** CENTRAL TESTE (Código: 0001)
-- **Singular:** SINGULAR TESTE (Código: 0002) - Vinculada à Central.
+- **Central:** CENTRAL TESTE (Código: 0001) — registrada em `sicoob_centrais`.
+- **Singular:** SINGULAR TESTE (Código: 0002) - Vinculada à Central (`cooperativas.central_id`).
 - **Posto de Atendimento:** PA TESTE 01 (Código: 01) - Vinculado à Singular.
 
 ### 2. Papéis e Permissões
-- **sicoob_pa:** Acesso restrito aos pedidos do próprio PA.
-- **sicoob_singular:** Acesso aos pedidos de todos os PAs vinculados à sua Singular.
-- **sicoob_central:** Visão gerencial de todas as Singulares vinculadas.
-- **sicoob_gestor:** Permissão total (Admin Comercial) e gestão logística.
+Os papéis seguem o enum `app_role` (hierarquia: dev > gestor_compras > comprador_singular > gerente_pa > comprador_pac) e são gravados em `user_roles` (fonte de verdade) e espelhados em `profiles.role`.
+- **gerente_pa** (usuário PA): Acesso restrito aos pedidos do próprio PA.
+- **comprador_singular** (usuário Singular): Acesso aos pedidos de todos os PAs vinculados à sua Singular.
+- **gestor_compras** (usuário Central): Aprovação de alçada e visão gerencial da Singular. Não existe papel de nível Central no sistema; a Central é apenas organização.
+- **supervisor** (usuário Gestor): Gestão comercial Promo Brindes, acesso a todas as cooperativas.
 
 ## Como Recriar o Ambiente
 

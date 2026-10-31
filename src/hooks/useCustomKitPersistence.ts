@@ -41,6 +41,63 @@ export interface CustomKitRow {
 
 const QUERY_KEY = ['custom-kits'] as const;
 
+function kitIdentityLabels(identity: KitState['identity']) {
+  return {
+    color: identity?.color ?? '#3B82F6',
+    icon: identity?.icon ?? 'Package',
+    tag: identity?.tag ?? null,
+  };
+}
+
+function kitIdentityDetails(identity: KitState['identity']) {
+  return {
+    description: identity?.description ?? null,
+    is_favorite: identity?.isFavorite ?? false,
+  };
+}
+
+function buildKitPayload(userId: string, kitState: KitState, kitQuantity: number) {
+  return {
+    user_id: userId,
+    name: kitState.name || 'Kit sem nome',
+    status: kitState.isValid ? 'complete' : 'draft',
+    kit_type: kitState.kitType || 'montado',
+    box_data: kitState.box ? JSON.parse(JSON.stringify(kitState.box)) : null,
+    items_data: JSON.parse(JSON.stringify(kitState.items)),
+    personalization_data: JSON.parse(JSON.stringify(kitState.personalization)),
+    kit_quantity: kitQuantity,
+    box_price: kitState.boxPrice,
+    items_price: kitState.itemsPrice,
+    personalization_price: kitState.personalizationPrice,
+    total_price: kitState.totalPrice,
+    volume_usage_percent: kitState.volumeUsagePercent,
+    ...kitIdentityLabels(kitState.identity),
+    ...kitIdentityDetails(kitState.identity),
+    updated_at: new Date().toISOString(),
+  };
+}
+
+async function persistCustomKit(
+  userId: string,
+  kitId: string | undefined,
+  payload: ReturnType<typeof buildKitPayload>,
+) {
+  if (kitId) {
+    const { data, error } = await supabase
+      .from('custom_kits')
+      .update(payload)
+      .eq('id', kitId)
+      .eq('user_id', userId)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+  const { data, error } = await supabase.from('custom_kits').insert(payload).select().single();
+  if (error) throw error;
+  return data;
+}
+
 // ============================================
 // HOOK
 // ============================================
@@ -76,48 +133,7 @@ export function useCustomKitPersistence() {
     }) => {
       if (!user?.id) throw new Error('Usuário não autenticado');
 
-      const identity = kitState.identity;
-      const payload = {
-        user_id: user.id,
-        name: kitState.name || 'Kit sem nome',
-        status: kitState.isValid ? 'complete' : 'draft',
-        kit_type: kitState.kitType || 'montado',
-        box_data: kitState.box ? JSON.parse(JSON.stringify(kitState.box)) : null,
-        items_data: JSON.parse(JSON.stringify(kitState.items)),
-        personalization_data: JSON.parse(JSON.stringify(kitState.personalization)),
-        kit_quantity: kitQuantity,
-        box_price: kitState.boxPrice,
-        items_price: kitState.itemsPrice,
-        personalization_price: kitState.personalizationPrice,
-        total_price: kitState.totalPrice,
-        volume_usage_percent: kitState.volumeUsagePercent,
-        color: identity?.color ?? '#3B82F6',
-        icon: identity?.icon ?? 'Package',
-        tag: identity?.tag ?? null,
-        description: identity?.description ?? null,
-        is_favorite: identity?.isFavorite ?? false,
-        updated_at: new Date().toISOString(),
-      };
-
-      if (kitId) {
-        const { data, error } = await supabase
-          .from('custom_kits')
-          .update(payload)
-          .eq('id', kitId)
-          .eq('user_id', user.id)
-          .select()
-          .single();
-        if (error) throw error;
-        return data;
-      } 
-        const { data, error } = await supabase
-          .from('custom_kits')
-          .insert(payload)
-          .select()
-          .single();
-        if (error) throw error;
-        return data;
-      
+      return persistCustomKit(user.id, kitId, buildKitPayload(user.id, kitState, kitQuantity));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
@@ -193,7 +209,7 @@ export function useCustomKitPersistence() {
         .eq('user_id', user.id);
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success(value ? 'Kit fixado em destaque' : 'Kit desafixado');
-    } catch (err) {
+    } catch {
       toast.error('Erro ao alterar destaque');
     }
   }, [user?.id, queryClient]);

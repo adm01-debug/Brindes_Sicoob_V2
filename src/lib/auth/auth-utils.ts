@@ -1,4 +1,4 @@
-import { AppRole } from "@/contexts/AuthContext";
+import { type AppRole } from "@/contexts/AuthContext";
 
 export function getGreeting(): string {
   const hour = new Date().getHours();
@@ -59,8 +59,9 @@ export function getDefaultRouteByRole(role: AppRole | null): string {
 
   switch (role) {
     case "dev":
-    case "supervisor":
       return "/admin/telemetria";
+    case "supervisor":
+      return "/admin/usuarios";
     case "gestor_compras":
     case "comprador_singular":
       return "/gestor/orcamentos";

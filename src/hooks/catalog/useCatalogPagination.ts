@@ -7,7 +7,7 @@ interface UseCatalogPaginationProps {
   hasMoreProducts: boolean;
   isFetchingNextPage: boolean;
   hasNextPage: boolean | undefined;
-  fetchNextPage: () => Promise<any>;
+  fetchNextPage: () => Promise<unknown>;
   filteredProductsLength: number;
 }
 
@@ -59,7 +59,7 @@ export function useCatalogPagination({
     observerRef.current = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
-        if (entry.isIntersecting && hasMoreProducts && !isLoadingMore && !isUpdatingRef.current) {
+        if (entry?.isIntersecting && hasMoreProducts && !isLoadingMore && !isUpdatingRef.current) {
           loadMore();
         }
       },

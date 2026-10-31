@@ -97,15 +97,15 @@ function warmupCrmClient(): Promise<void> {
     try {
       const client = await getCrmClient();
       if (!client) {
-        warmupError = 'CRM_SUPABASE_URL/KEY not configured';
-        console.warn(`[crm-boot-warmup] ⚠️ ${warmupError}`);
+        warmupError = "crm_not_configured";
+        console.warn("[crm-boot-warmup] ⚠️ CRM_SUPABASE_URL/KEY não configuradas");
         warmupMs = Math.round(performance.now() - t0);
         return;
       }
       const { error } = await client.from('companies').select('id').limit(1);
       warmupMs = Math.round(performance.now() - t0);
       if (error) {
-        warmupError = error.message;
+        warmupError = "warmup_query_failed";
         console.warn(`[crm-boot-warmup] ⚠️ warmup_ms=${warmupMs} error="${error.message}"`);
       } else {
         warmupOk = true;
@@ -117,8 +117,9 @@ function warmupCrmClient(): Promise<void> {
       }
     } catch (e) {
       warmupMs = Math.round(performance.now() - t0);
-      warmupError = e instanceof Error ? e.message : String(e);
-      console.warn(`[crm-boot-warmup] ⚠️ warmup_ms=${warmupMs} ${warmupError}`);
+      const detail = e instanceof Error ? e.message : String(e);
+      warmupError = "warmup_failed";
+      console.warn(`[crm-boot-warmup] ⚠️ warmup_ms=${warmupMs} ${detail}`);
     }
   })();
   return crmWarmupPromise;
@@ -614,12 +615,13 @@ async function handleBatch(crm: SupabaseClient, queries: BatchQuery[]): Promise<
           }
 
           console.error(`[batch] Query ${idx} (${q.table}) error: ${error.message}`);
-          return { success: false, error: error.message };
+          return { success: false, error: "query_failed" };
         }
         console.log(`[batch] Query ${idx} (${q.table}) ${duration}ms, ${(data || []).length} records`);
         return { success: true, data: { records: data || [], count: (data || []).length } };
       } catch (err: unknown) {
-        return { success: false, error: err instanceof Error ? err.message : "Unknown error" };
+        console.error(`[batch] Query ${idx} (${q.table}) failed:`, err);
+        return { success: false, error: "query_failed" };
       }
     })
   );
@@ -667,7 +669,7 @@ async function handleInsert(crm: SupabaseClient, body: CrmQuery): Promise<Respon
       return createOptionalWriteError(table);
     }
     console.error("CRM insert error:", error);
-    return jsonResponse({ error: error.message }, 500);
+    return jsonResponse({ error: "insert_failed" }, 500);
   }
   return jsonResponse({ data: result, count: result?.length || 0 });
 }
@@ -697,7 +699,7 @@ async function handleUpdate(crm: SupabaseClient, body: CrmQuery): Promise<Respon
       return createOptionalWriteError(table);
     }
     console.error("CRM update error:", error);
-    return jsonResponse({ error: error.message }, 500);
+    return jsonResponse({ error: "update_failed" }, 500);
   }
   return jsonResponse({ data: result, count: result?.length || 0 });
 }
@@ -720,7 +722,7 @@ async function handleDelete(crm: SupabaseClient, body: CrmQuery): Promise<Respon
       return createOptionalWriteError(table);
     }
     console.error("CRM delete error:", error);
-    return jsonResponse({ error: error.message }, 500);
+    return jsonResponse({ error: "delete_failed" }, 500);
   }
   return jsonResponse({ data: null, success: true });
 }
@@ -740,7 +742,10 @@ async function handleSelect(crm: SupabaseClient, body: CrmQuery): Promise<Respon
       if (isOptionalQuoteTable(table) && isMissingTableError(error, table)) {
         return createOptionalSelectFallback(table, true);
       }
-      return jsonResponse({ error: error.message }, error.code === "PGRST116" ? 404 : 500);
+      return jsonResponse(
+        { error: error.code === "PGRST116" ? "record_not_found" : "select_failed" },
+        error.code === "PGRST116" ? 404 : 500,
+      );
     }
     return jsonResponse({ data, count: 1 });
   }
@@ -758,7 +763,8 @@ async function handleSelect(crm: SupabaseClient, body: CrmQuery): Promise<Respon
     if (isOptionalQuoteTable(table) && isMissingTableError(error, table)) {
       return createOptionalSelectFallback(table, false);
     }
-    return jsonResponse({ error: error.message }, 500);
+    console.error("CRM select error:", error);
+    return jsonResponse({ error: "select_failed" }, 500);
   }
   return jsonResponse({ data: data || [], count });
 }
@@ -778,7 +784,8 @@ async function handleSearch(crm: SupabaseClient, body: CrmQuery): Promise<Respon
     if (isOptionalQuoteTable(table) && isMissingTableError(error, table)) {
       return createOptionalSelectFallback(table, false);
     }
-    return jsonResponse({ error: error.message }, 500);
+    console.error("CRM search error:", error);
+    return jsonResponse({ error: "search_failed" }, 500);
   }
   return jsonResponse({ data: data || [], count: data?.length || 0 });
 }
@@ -1009,7 +1016,7 @@ Deno.serve((req) => {
       `[crm-runtime] [req_id=${requestId}] error_ms=${elapsed} was_cold=${wasCold} ` +
         `${error instanceof Error ? error.message : String(error)}`,
     );
-    return jsonResponse({ error: error instanceof Error ? error.message : "Internal error" }, 500);
+    return jsonResponse({ error: "internal_error" }, 500);
   }
   });
 });

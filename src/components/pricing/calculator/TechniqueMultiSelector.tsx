@@ -10,6 +10,7 @@ import { AlertCircle, Package, Paintbrush, Palette, Ruler, Sparkles } from 'luci
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 import type { ProductTechnique, SelectedTechniqueConfig } from './types';
+import type { CustomizationOptionsResponse } from '@/types/customization';
 
 interface Props {
   productId: string;
@@ -17,28 +18,48 @@ interface Props {
   onToggleTechnique: (technique: ProductTechnique, add: boolean) => void;
 }
 
+function mapTechniques(result: CustomizationOptionsResponse): ProductTechnique[] {
+  const techniques: ProductTechnique[] = [];
+  for (const location of result.locations || []) {
+    for (const option of location.options || []) {
+      techniques.push({
+        id: option.technique_id,
+        techniqueId: option.technique_id,
+        techniqueName: option.tecnica_nome || 'Técnica',
+        techniqueCode: option.codigo_tabela || '',
+        componentName: location.location_name,
+        locationName: location.location_name,
+        locationCode: location.location_code,
+        composedCode: option.codigo_tabela,
+        maxWidth: null,
+        maxHeight: null,
+        maxArea: null,
+        maxColors: option.max_cores ?? null,
+        isDefault: false,
+      });
+    }
+  }
+  return techniques;
+}
+
+async function fetchProductTechniques(productId: string): Promise<ProductTechnique[]> {
+  try {
+    const result = await invokeExternalRpc<CustomizationOptionsResponse>(
+      'fn_get_product_customization_options',
+      { p_product_id: productId },
+    );
+    if (!result) return [];
+    return mapTechniques(result);
+  } catch (error) {
+    logger.warn('Error fetching techniques via v6:', error);
+    return [];
+  }
+}
+
 export function TechniqueMultiSelector({ productId, selectedTechniques, onToggleTechnique }: Props) {
   const { data: techniques, isLoading, error } = useQuery({
     queryKey: ['product-techniques-multi', productId],
-    queryFn: async (): Promise<ProductTechnique[]> => {
-      try {
-        const result = await invokeExternalRpc<any>('fn_get_product_customization_options', { p_product_id: productId });
-        if (!result?.locations?.length) return [];
-        const techList: ProductTechnique[] = [];
-        for (const loc of result.locations) {
-          for (const opt of loc.options || []) {
-            techList.push({
-              id: opt.technique_id, techniqueId: opt.technique_id,
-              techniqueName: opt.tecnica_nome || 'Técnica', techniqueCode: opt.codigo_tabela || '',
-              componentName: loc.location_name, locationName: loc.location_name, locationCode: loc.location_code,
-              composedCode: opt.codigo_tabela, maxWidth: null, maxHeight: null, maxArea: null,
-              maxColors: opt.max_cores ?? null, isDefault: false,
-            });
-          }
-        }
-        return techList;
-      } catch (err) { logger.warn('Error fetching techniques via v6:', err); return []; }
-    },
+    queryFn: () => fetchProductTechniques(productId),
     enabled: !!productId,
   });
 

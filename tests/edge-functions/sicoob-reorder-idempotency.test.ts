@@ -9,4 +9,11 @@ describe('identidade estável da recompra', () => {
       await hashReorderIntent('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'),
     );
   });
+
+  it('separa a identidade de pedido da identidade de orçamento', async () => {
+    const source = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    expect(await hashReorderIntent(source, 'order')).not.toBe(
+      await hashReorderIntent(source, 'quote'),
+    );
+  });
 });

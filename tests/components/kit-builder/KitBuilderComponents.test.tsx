@@ -3,8 +3,8 @@
  * Covers: KitVisualPreview, FreightEstimator, DiscontinuedItemsAlert,
  * KitComparisonDialog, KitSmartSuggestions, KitSummary
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../render-helpers";
 import React from "react";
 
