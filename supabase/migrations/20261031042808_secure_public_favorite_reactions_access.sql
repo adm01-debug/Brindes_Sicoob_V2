@@ -49,7 +49,7 @@ DECLARE
   existing_policy record;
 BEGIN
   FOR existing_policy IN
-    SELECT policyname, cmd
+    SELECT tablename, policyname, cmd
       FROM pg_catalog.pg_policies
      WHERE schemaname = 'public'
        AND tablename IN ('favorite_lists', 'favorite_items', 'favorite_item_reactions')
