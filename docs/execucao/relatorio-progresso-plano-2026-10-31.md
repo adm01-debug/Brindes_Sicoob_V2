@@ -43,6 +43,10 @@ Consulta de execuções no GitHub em 31/10/2026. As causas abaixo são o que o r
 
 Execuções verdes identificadas: [Migration ledger drift — 30/10](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41013281253), Branch Protection Sentinel e Enterprise Compliance & Audit Reporting na execução de push de 27/10. Não foram disparados reruns, deploys ou alterações no GitHub nesta rodada.
 
+### Atualização após diagnóstico
+
+Foi corrigida localmente a causa comprovada do CodeQL: `init`, `autobuild` e `analyze` agora usam a mesma revisão imutável 4.39.1. `actionlint .github/workflows/codeql.yml` passou. O status remoto continua “falha” até um PR seguro executar os checks; não foi feito push.
+
 ## Ajustes na auditoria anterior e riscos ainda em aberto
 
 - E-018 estava desatualizado na primeira leitura: a migration versionada `20260927171216_quote_approval_security_hardening.sql` remove a escrita direta do usuário autenticado e revoga INSERT/UPDATE/DELETE em `quote_history`. Isso confirma o código versionado, não o estado remoto do banco.
@@ -53,7 +57,7 @@ Execuções verdes identificadas: [Migration ledger drift — 30/10](https://git
 
 ## Próximos passos
 
-1. Corrigir separadamente as causas raiz de CodeQL e dependências, preservando compatibilidade e repetindo a suíte após cada commit.
+1. Publicar/validar a correção CodeQL via PR após desbloqueio seguro do E2E; ainda corrigir o gate das vulnerabilidades de dependências sem esconder os alertas.
 2. Diagnosticar a divergência de versão da Edge Function com o estado do projeto de homologação autorizado; não publicar funções no banco canônico sem validação e autorização específicas.
 3. Retomar E2E após confirmação de projeto e contas de homologação, rotação da credencial exposta anteriormente e allowlist restrita ao ambiente de teste.
 4. Continuar E-023/E-024/E-027 e demais etapas em ordem de risco; registrar aceite externo como pendente, sem marcar o plano integral como concluído.
