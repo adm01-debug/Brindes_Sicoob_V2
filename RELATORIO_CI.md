@@ -276,3 +276,13 @@ Na alteração candidata seguinte, `22-header-sticky.spec.ts` deixa de aguardar 
 | Simuladores PostgreSQL | ECR intermitente antes do patch | ✅ ambos executaram local e no CI com GHCR | corrigido |
 
 Nenhuma migration, escrita no banco remoto ou deploy foi executada. A mudança de helper/mensagem agora em revisão não faz parte do SHA `145773579` e ainda precisa de validação.
+
+## Atualização E2E — PR #178, SHA `d97e89d` (31/10/2026)
+
+Run [41143815278](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41143815278): a origem confiável, o smoke autenticado e o gate de header sticky passaram. O gate sticky concluiu com 156 testes aprovados, 42 ignorados e zero falhas. O shard 1/3 da regressão concluiu com 238 aprovados, 23 falhas e 20 ignorados; na consulta, os shards 2/3 e 3/3 ainda não tinham concluído.
+
+As 23 falhas reportam `aguardando restauração da sessão user` em `e2e/helpers/auth.ts`. Os logs do Playwright mostram que o e-mail esperado e o encontrado no `storageState` diferem (ambos mascarados pelo GitHub). A causa no código é o contrato divergente: `auth.setup.ts` gera o estado com `E2E_USER_*`, enquanto `loginAs('user')` priorizava `E2E_VIEWER_*`. `E2E_USER_*` é a identidade canônica usada também por `getTestUserIdentity`, RLS e limpeza de dados; a conta viewer não tem alvo de cleanup. Não há evidência de falha de quota, segredo ausente ou expiração do token.
+
+**Candidato local ainda não publicado:** `loginAs('user')` passa a usar a identidade canônica `E2E_USER_*`, papéis compartilham um resolvedor coberto por testes, a restauração confere a identidade antes de aplicar o `storageState`, e o workflow deixa de mascarar falhas com `continue-on-error`/`|| true`. Os resumos só rodam quando existe `results.json`; passos de anotação e upload continuam executando após falhas. Validação local do candidato: `npm run check:npm-audit` passou sem vulnerabilidades; typecheck e build passaram; lint com 0 erros e 874 avisos existentes; suíte com 5.856 aprovados, 68 ignorados e 0 falhas; actionlint e `git diff --check` passaram. Ainda não é sucesso remoto: aguarda conclusão do run acima e, após commit, nova execução E2E na PR.
+
+Nenhuma alteração no Supabase, migration ou deploy foi realizada.
