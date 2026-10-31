@@ -321,3 +321,34 @@ Workflows verdes a preservar: Migration ledger drift [41013281253](https://githu
 ### Regra de segurança operacional
 
 Sem merge, deploy, aplicação remota de migration ou escrita SQL no banco canônico durante esta execução. Não aprovar PR com checks obrigatórios vermelhos/pendentes; não reexecutar o workflow de deploy até o verificador ser corrigido e o alvo/estado serem confirmados.
+
+
+## Pendências supersedentes — consulta GitHub e banco somente leitura (31/10/2026, 04:57 UTC)
+
+### Falhas na `main` — última execução por workflow
+
+A branch continua no SHA `e9d59026793b84fabeaeec9da890a068f64d49c3`; permanecem as quatro falhas e os quatro workflows verdes descritos na atualização supersedente anterior. Não houve merge; portanto não há regressão nova na `main` causada por esta sessão.
+
+### PR #151 — bloqueios atuais no SHA `b18b662b179bb75dc4ffe10874ee5a6a6db6cf92`
+
+- **Security Scan** [41169596556](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41169596556): `npm audit` encontrou `undici`, `zod` e `minimatch` em severidade alta. Não usar `--force`, downgrade, nem afrouxar o gate.
+- **Qualidade contínua** [41169596475](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41169596475): o cache de catálogo de 14/10 não contém `get_public_favorite_list` e `get_public_favorite_reactions`, referenciadas pelo serviço público. MCP anterior expirou; obter estado remoto em modo somente leitura e confirmar se a migration está aplicada antes de gerar snapshot. Não incluir RPCs na allowlist apenas pelo SQL local.
+- **E2E** [41169596483](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41169596483): hook `beforeAll` de `e2e_cleanup_rate_limit` excedeu 45 s (linha 71). Shards foram skipped. É falha de timeout no setup remoto; não constitui prova de policy quebrada nem de jornada autenticada aprovada.
+- **Sucessos:** CodeQL [41169596496](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41169596496), Bundle [41169596497](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41169596497), Lighthouse [41169596480](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41169596480). **Sem conclusão:** Portal Sicoob [41169596490](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41169596490) e Copilot Review [41169603429](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41169603429) continuavam `queued`.
+
+### Risco de escrita remota pelo E2E e ação necessária
+
+O workflow deste SHA mapeia secrets gerais `VITE_SUPABASE_*` e `SUPABASE_SERVICE_ROLE_KEY` para teste que insere/remove registros sintéticos `rls-e2e-*`. Uma consulta SQL somente leitura ao banco canônico encontrou um registro desse prefixo atualizado às `2026-10-31 04:50:03 UTC`, durante a execução E2E `41169596483` (04:48–04:51 UTC). A coincidência temporal sugere possível escrita pelo teste, mas não comprova que o registro é o canário daquele run, porque o UUID não foi emitido no log. A auditoria não alterou nem apagou dados. **Não executar novos E2E usando as secrets gerais.** O run E2E [41170083965](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170083965) da PR #180 foi cancelado antes de iniciar. O proprietário deve confirmar no painel/destino se o registro é resíduo e decidir a limpeza; não realizar exclusão pelo MCP durante esta tarefa. A branch #180 contém localmente, ainda sem commit, a guarda que exige as quatro secrets E2E dedicadas e bloqueia project ref canônico antes de qualquer teste com service role; validar, commitar e observar o novo run fail-fast se as secrets ainda faltarem. A PR #179 contém esse guard, porém está bloqueada porque os secrets dedicados de homologação ainda faltam.
+
+### PR #179 / #180
+
+- PR #179: os checks de segurança, qualidade, CodeQL, bundle, Lighthouse e Portal passaram; E2E [41164617193](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41164617193) parou no preflight por ausência de `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_PROJECT_ID` e `E2E_SUPABASE_SERVICE_ROLE_KEY`. O usuário informou que configuraria; os nomes ainda não estão disponíveis no escopo do workflow. Não ler os valores.
+- PR #180 no SHA `d1e8bb1ada89b611c75173184c66b9c00dfd0ef2`: Qualidade [41170084002](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170084002) falhou por advisories `undici`/`zod`; Bundle [41170083959](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170083959) passou; Security, CodeQL, E2E, Lighthouse e Portal permaneciam em fila na consulta. Não afirmar sucesso ou mergeabilidade enquanto pendentes.
+
+### Revisão da migration RLS de favoritos
+
+A simulação PostgreSQL 17 descartável passou, mas não cobre o catálogo, roles e grants do banco remoto. Revisão independente identificou: (1) migration não reexecutável, pois o preflight exige policy INSERT que a própria migration remove; (2) ausência de validação de DELETE autenticado e da minimização de `user_agent`/`ip_hash` no SELECT direto do owner. Resolver/justificar esses pontos e validar estado remoto por leitura antes de aplicar em qualquer ambiente. Nenhuma migration foi aplicada.
+
+### Gates locais e limites operacionais
+
+Os testes locais registrados não caíram: #151 segue em 5.846 aprovados / 68 ignorados, lint com 873 avisos e zero erros, typecheck e build aprovados; #180 segue em 5.840 aprovados / 68 ignorados, mesmos avisos de lint e build/typecheck aprovados. CI remoto ainda tem falhas acima. Banco canônico permanece sem escrita manual; sem merge, deploy, rerun ou execução de migration.
