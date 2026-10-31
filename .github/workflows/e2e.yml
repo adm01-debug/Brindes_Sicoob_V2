@@ -1,7 +1,8 @@
 name: E2E (Playwright)
 
 # Gate de release: exige as contas de homologação e executa jornadas públicas
-# e autenticadas. Artefatos (HTML, screenshots, vídeos e traces) são publicados.
+# e autenticadas. Relatórios HTML, screenshots e vídeos de falha são publicados;
+# traces Playwright ficam desativados em CI para evitar persistir campos sensíveis.
 
 on:
   pull_request:
@@ -150,7 +151,7 @@ jobs:
       - name: 🛑 Fail-fast se smoke falhou (gate)
         if: always() && env.SKIP_E2E != 'true' && steps.e2e_smoke.outcome != 'success'
         run: |
-          echo "::error title=Smoke gate failed::Smoke parou na 1ª falha — veja '🚦 E2E Smoke Summary' acima e o artifact 'playwright-report' (screenshots+vídeos+trace)."
+          echo "::error title=Smoke gate failed::Smoke parou na 1ª falha — veja '🚦 E2E Smoke Summary' acima e o artifact 'playwright-report' (screenshots+vídeos)."
           exit 1
 
       # ─── HEADER STICKY GATE ─────────────────────────────────────────────
@@ -167,7 +168,7 @@ jobs:
       - name: 🛑 Fail-fast se header sticky falhou
         if: always() && env.SKIP_E2E != 'true' && steps.e2e_header_sticky.outcome == 'failure'
         run: |
-          echo "::error title=Gate de header sticky ou prontidão da rota::O gate falhou em e2e/flows/22-header-sticky.spec.ts. Confira error-context, screenshot e trace no artifact 'playwright-report': falhas em e2e/helpers/nav.ts indicam que a rota/shell não atingiu prontidão; falhas em boundingBox ou em getComputedStyle(position) indicam regressão visual do header. Investigue overflow, transform ou filter em ancestrais somente quando a evidência apontar para a medição sticky."
+          echo "::error title=Gate de header sticky ou prontidão da rota::O gate falhou em e2e/flows/22-header-sticky.spec.ts. Confira error-context e screenshot no artifact 'playwright-report': falhas em e2e/helpers/nav.ts indicam que a rota/shell não atingiu prontidão; falhas em boundingBox ou em getComputedStyle(position) indicam regressão visual do header. Investigue overflow, transform ou filter em ancestrais somente quando a evidência apontar para a medição sticky."
           exit 1
 
       - name: Upload Playwright report do gate
@@ -313,5 +314,5 @@ jobs:
       - name: 🛑 Fail job se regression registrou falhas
         if: always() && steps.e2e_run.outcome == 'failure'
         run: |
-          echo "::error title=Regression failed::Algumas specs do shard ${{ matrix.shard }}/3 falharam — veja o resumo acima e os artifacts do shard (HTML, screenshots, vídeos e trace)."
+          echo "::error title=Regression failed::Algumas specs do shard ${{ matrix.shard }}/3 falharam — veja o resumo acima e os artifacts do shard (HTML, screenshots e vídeos)."
           exit 1
