@@ -16,7 +16,7 @@ Ambiente: Node `v24.19.0`, npm `11.17.0`, instalação por `npm ci` na worktree 
 | `npm run typecheck` | ✅ exit 0 | `tsconfig.app.json` e `tsconfig.node.json`. |
 | `npm test -- --reporter=dot` | ✅ exit 0 | 452 arquivos passaram, 4 ignorados; 5.839 testes passaram, 68 ignorados. |
 
-O baseline acima foi executado antes da correção da timeline de histórico. O teste focal pós-correção passou (3 testes; inclui erro, recuperação e resultado vazio). Build, lint, typecheck e suíte completa ainda precisam ser repetidos após a alteração.
+O baseline acima foi executado antes da correção da timeline de histórico. Após a alteração, o build passou em 53,75 s, lint passou com 0 erros/873 avisos, typecheck passou e a suíte completa passou com 5.841 testes, 68 ignorados e 452 arquivos aprovados (4 ignorados). O teste focal da timeline passou (3/3); ESLint e `git diff --check` também passaram. Comparação: +2 testes aprovados, sem aumento de skips ou avisos de lint. Os avisos de build permanecem. Isso prova somente a validação local na worktree, não CI remoto ou homologação.
 
 ### Última execução observada na `main`
 
@@ -31,7 +31,7 @@ Outras falhas remanescentes observadas na `main`: **Publicar funções Sicoob** 
 - A auditoria funcional de 11/10 registra 682 lacunas em dez frentes; o plano de encerramento de 100 etapas permanece sem aceite integral formal. Este lote não encerra o plano.
 - Nenhuma consulta ou escrita foi feita nos bancos Supabase e nenhuma Edge Function foi publicada.
 
-**Registro histórico abaixo gerado em:** 2026-10-22  
+**Registro histórico abaixo gerado em:** 2026-10-22
 **Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
 
 ---
