@@ -39,6 +39,10 @@ O build também avisa que `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` 
 
 O commit `92e9885ef` protege os arquivos de documentos quando o resultado da RPC de registro é inconclusivo e verifica os metadados completos antes de aceitar o registro. Ele existe somente na branch/worktree local e ainda não tem execução remota associada. Nenhum workflow que falhou na `main` foi declarado resolvido até existir execução verde do commit/PR.
 
+## Verificação final após o commit `1336a823f`
+
+Após isolar as credenciais E2E, os gates foram repetidos: `npm run typecheck`, `npm run lint` (0 erros/873 avisos), `npm run build`, `npm test` (453 arquivos passaram/4 ignorados; 5.848 testes passaram/68 ignorados), `npm run check:npm-audit`, `npm audit --audit-level=high`, `actionlint .github/workflows/e2e.yml` e os quatro testes Node do validador de alvo E2E passaram. O teste de simulação também confirmou que o ref canônico conhecido é bloqueado. A branch tem validação local sem regressão; ainda não há execução do GitHub Actions para esses commits.
+
 ---
 
 ## Baseline local — antes das alterações do PR #141
