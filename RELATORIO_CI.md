@@ -20,6 +20,25 @@ Esta seção substitui o inventário remoto de 22/10 abaixo. A regra aplicada é
 
 As correções locais de workflow, dependências e aplicação não são consideradas concluídas no GitHub até PR e checks remotos verdes. Nenhuma migration, alteração de dado, execução de Edge Function ou deploy no Supabase canônico foi realizado. A configuração e as contas de homologação ainda precisam de confirmação antes de nova execução E2E.
 
+## Baseline × validação local após o commit `92e9885ef`
+
+Executado em 30/10/2026 na branch isolada `fix/hermes-h393620-docs-audit-20261031`, baseada em `origin/main` `e9d590267`. A validação após este commit foi repetida conforme o gate anti-regressão.
+
+| Verificação | Baseline `e9d5902` | Após `92e9885ef` | Resultado |
+|---|---:|---:|---|
+| TypeScript (`npm run typecheck`) | passou | passou | sem regressão |
+| Lint (`npm run lint`) | 0 erros / 873 avisos | 0 erros / 873 avisos | sem novos erros ou avisos |
+| Build (`npm run build`) | passou | passou | avisos de ambiente/chunks e comentários Zod descritos abaixo |
+| Suíte (`npm test`) | 452 arquivos passaram, 4 ignorados; 5.839 testes passaram, 68 ignorados | 453 arquivos passaram, 4 ignorados; 5.848 testes passaram, 68 ignorados | +1 arquivo e +9 testes aprovados; skips inalterados |
+| `npm run check:npm-audit` | não havia no baseline | passou | gate high/critical aprovado |
+| `npm audit --audit-level=high` | 17 vulnerabilidades: 15 moderadas, 2 altas | exit 0; 13 moderadas, 0 altas/críticas | altas corrigidas; moderadas remanescentes na cadeia ESLint/minimatch sem fix compatível indicado |
+| Teste focado E-027 | — | 5 passaram, 0 falhas | estados de registro e limpeza cobertos |
+| `deno check` da Edge Function E-027 | — | passou | alerta preexistente do parser de override `file:vendor/braces` |
+
+O build também avisa que `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` não estão definidos no ambiente local, além de opção `from` do PostCSS, importação dinâmica compartilhada, chunks maiores que 600 kB e comentários `@__PURE__` do Zod 4 que Rollup remove. O comando ainda conclui com sucesso. A saída de testes inclui logs intencionais de casos de ErrorBoundary, sem falha da suíte.
+
+O commit `92e9885ef` protege os arquivos de documentos quando o resultado da RPC de registro é inconclusivo e verifica os metadados completos antes de aceitar o registro. Ele existe somente na branch/worktree local e ainda não tem execução remota associada. Nenhum workflow que falhou na `main` foi declarado resolvido até existir execução verde do commit/PR.
+
 ---
 
 ## Baseline local — antes das alterações do PR #141
