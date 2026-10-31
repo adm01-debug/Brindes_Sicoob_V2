@@ -217,3 +217,30 @@ Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Depen
 | Migration Ledger Drift | Fingerprint de `20261022120000` calculado com `local_sha256` incorreto; novo digest correto: `e2815b0...` | Corrigido fingerprint no `migration-ledger-baseline.json` | #129 |
 | 5 CVEs high (vite ≤6.4.3) | GHSA-698v, GHSA-r825, GHSA-587h, GHSA-9jrq, GHSA-rq7h | `vite` 6.4.3 → 6.4.5 | #126 |
 | Qualidade contínua (`ci.yml`) — ECR rate limit | `toomanyrequests: Data limit exceeded` ao puxar `public.ecr.aws/supabase/postgres:17.6.1.063` em dois steps (scripts `simular-controles-auditoria.py` e `simular-acl-efetiva.py`) | Rate limit do ECR Public se dissipou naturalmente; run `39780447863` → **success** | automático |
+
+## Inventário atualizado — última execução por workflow na `main` (2026-10-31)
+
+Este inventário substitui os snapshots antigos acima. Nenhuma migration, SQL, deploy de função ou escrita no banco canônico foi executada durante esta auditoria.
+
+| Workflow | Última execução na `main` | Causa / evidência | Ação e estado |
+|---|---|---|---|
+| Migration ledger drift | [41175713780](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41175713780) — failure | Step 6: `[ledger] Verificação indisponível (Error); nenhum resultado aprovado.`. O log do run não contém a causa interna. | PR #184 inclui mensagem de erro sanitizada e teste local; aguarda nova execução autorizada na `main` para revelar a causa sem expor chaves. Nenhuma migration aplicada. |
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) — failure | O CLI informou `No change found` para `sicoob-approval-reconciliation`; versão anterior e atual eram 5. O verificador exigia aumento de versão e gerou falso negativo após deploy sem alterações. | PR #186 altera a confirmação para exigir função presente, versão válida e sem regressão; 4 testes de simulação passaram. Não reexecutei o deploy. |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) — failure | `npm audit` reportou `undici` e `zod` com severidade alta. | PR #185 atualiza `undici`/Zod e o check remoto `npm audit` no SHA `2edff699` passou; sem merge até a revisão/deploy seguro. Restam 15 findings moderados, sem gate high/critical. |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) — failure | Mesmo gate `check:npm-audit`; parou com as duas CVEs altas. | Mesma causa e correção da PR #185; CI remoto do novo SHA ainda está em andamento. |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) — failure | `init` 4.39.1 versus `autobuild/analyze` 4.38.2; análise não gerou SARIF. | Correção está na PR #184 e commit correspondente também foi incorporado à PR #185; nova análise remota está em andamento. |
+
+**Verdes na última execução da `main`:** Branch Protection Sentinel [40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038), Enterprise Compliance [40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958) e Portal Sicoob [39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315). Estes runs precedem os PRs em aberto.
+
+## Bloqueios externos e validações que ainda faltam
+
+- **E2E autenticado e RLS remoto:** confirmei que a API do GitHub retorna `404 Not Found` para o environment `e2e-qa`. O owner informou que configuraria o ambiente. Criar o environment protegido, projeto Supabase descartável, secrets/personas e variáveis descritas na seção anterior; depois executar `workflow_dispatch` na `main`. Não usar os projetos canônicos `cfmzkthhgliqelozlmwu` nem `doufsxqlfjyuvxuezpln`.
+- **Revisão Copilot:** run da PR #185 [41183332482](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41183332482) falhou com `SessionModelError`, HTTP 402, `errorCode=quota` (“additional usage limit” do plano). Ação do owner: revisar a cota em `github.com/settings/copilot/features`; o check não pode ser corrigido por alteração de código.
+- **Merge/deploy:** as PRs #184 e #185 incluem mudanças de configuração CI e/ou dependências/código de aplicação. Não mesclar se a política de produção for disparada pelo merge de alteração da aplicação; manter abertas até revisão do owner e janela segura. A PR #186 só corrige workflow manual e não foi executada contra o Supabase.
+
+### Atualização dos checks remotos das PRs (2026-10-31)
+
+- **PR #184:** `npm audit` e `Segurança, contratos e build` falharam na SHA `2accc783`; estes checks antecedem a correção de dependências da PR #185. CodeQL, E2E público, responsividade, verba/aprovação e demais checks reportados passaram; `e2e-authenticated` foi `skipped` conforme a proteção de secrets em PRs. Evidência: runs [41181549625](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41181549625), [41181549634](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41181549634) e [41181549751](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41181549751).
+- **PR #185, SHA `2edff699`:** `npm audit`, Gitleaks, origem confiável, verba/aprovação, Lighthouse, responsividade e bundle passaram. E2E, build/contratos e CodeQL ainda estavam `in_progress` na última consulta. Revisão Copilot falhou por quota [41183332482](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41183332482). Esses checks ainda não certificam a PR inteira.
+- **PR #186, SHA `d721f3a2`:** só há Preview success, Agent Review neutral e Copilot failure por quota [41182966896](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41182966896); não há checks de CI da aplicação visíveis após a alteração de base para `main`. Portanto, a validação local registrada não equivale a CI remoto aprovado.
+- **Decisão:** manter as três PRs abertas. Não fazer merge enquanto houver checks obrigatórios pendentes/falhos, enquanto o ambiente de QA não for validado e sem confirmar se o merge dispara deploy de produção. O banco Supabase canônico permaneceu somente leitura.
