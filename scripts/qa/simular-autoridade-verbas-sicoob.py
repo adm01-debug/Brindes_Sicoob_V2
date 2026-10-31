@@ -72,6 +72,10 @@ def scalar(response):
 result = {
     "ambiente": "PostgreSQL 17 descartável, sem rede e com dados sintéticos",
     "migracao": str(MIGRATION.relative_to(ROOT)),
+    "migracoes_de_reproducao_e_correcao": [
+        str(REMOVED_BUYER_POLICY.relative_to(ROOT)),
+        str(RESTORE_BUYER_POLICY.relative_to(ROOT)),
+    ],
     "banco_canonico_alterado": False,
 }
 
@@ -266,6 +270,10 @@ try:
         "administrador_ativo_preservado": True,
         "insercao_inicia_consumo_em_zero": True,
         "compradores_legitimos_leem_verba_do_escopo": True,
+        "regressao_da_policy_reproduzida_e_corrigida": checks_after_consolidation[
+            "regressao_reproduzida_comprador_singular_sem_leitura"
+        ],
+        "comprador_singular_nao_ve_outra_cooperativa": True,
         "autoalteracao_de_escopo_do_perfil_bloqueada": True,
         "autocadastro_de_perfil_nao_reativa_papel_residual": True,
         "verba_cooperativa_isolada": True,

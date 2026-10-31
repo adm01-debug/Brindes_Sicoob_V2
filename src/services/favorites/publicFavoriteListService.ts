@@ -26,6 +26,12 @@ export interface PublicFavoriteListResponse {
   items: PublicFavoriteItem[];
 }
 
+export interface PublicFavoriteReaction {
+  item_id: string;
+  emoji: string;
+  anon_id: string;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -55,7 +61,7 @@ function parsePublicFavoriteList(value: unknown): PublicFavoriteList | null {
   };
 }
 
-function parsePublicFavoriteItem(value: unknown): PublicFavoriteItem | null {
+function isPublicFavoriteItem(value: unknown): value is Record<string, unknown> {
   if (
     !isRecord(value) ||
     typeof value.id !== "string" ||
@@ -63,23 +69,31 @@ function parsePublicFavoriteItem(value: unknown): PublicFavoriteItem | null {
     !isNullableString(value.note) ||
     typeof value.added_at !== "string"
   ) {
-    return null;
+    return false;
   }
+  return true;
+}
 
-  let variantInfo: PublicFavoriteItem["variant_info"] = null;
-  if (isRecord(value.variant_info)) {
-    variantInfo = {
-      color_name: typeof value.variant_info.color_name === "string" || value.variant_info.color_name === null
-        ? value.variant_info.color_name
-        : undefined,
-      color_hex: typeof value.variant_info.color_hex === "string" || value.variant_info.color_hex === null
-        ? value.variant_info.color_hex
-        : undefined,
-      thumbnail: typeof value.variant_info.thumbnail === "string" || value.variant_info.thumbnail === null
-        ? value.variant_info.thumbnail
-        : undefined,
-    };
-  }
+function parseVariantInfo(value: unknown): PublicFavoriteItem["variant_info"] {
+  if (!isRecord(value)) return null;
+
+  return {
+    color_name: typeof value.color_name === "string" || value.color_name === null
+      ? value.color_name
+      : undefined,
+    color_hex: typeof value.color_hex === "string" || value.color_hex === null
+      ? value.color_hex
+      : undefined,
+    thumbnail: typeof value.thumbnail === "string" || value.thumbnail === null
+      ? value.thumbnail
+      : undefined,
+  };
+}
+
+function parsePublicFavoriteItem(value: unknown): PublicFavoriteItem | null {
+  if (!isPublicFavoriteItem(value)) return null;
+
+  const variantInfo = parseVariantInfo(value.variant_info);
 
   return {
     id: value.id,
@@ -113,4 +127,18 @@ export async function fetchPublicFavoriteList(token?: string): Promise<PublicFav
   const { data, error } = await supabase.rpc("get_public_favorite_list", { _token: token });
   if (error) throw error;
   return parsePublicFavoriteListResponse(data);
+}
+
+export async function fetchPublicFavoriteReactions(
+  token?: string | null,
+  anonId?: string,
+): Promise<PublicFavoriteReaction[]> {
+  if (!token || !anonId) return [];
+
+  const { data, error } = await supabase.rpc("get_public_favorite_reactions", {
+    _token: token,
+    _anon_id: anonId,
+  });
+  if (error) throw error;
+  return data ?? [];
 }
