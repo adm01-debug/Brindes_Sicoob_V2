@@ -234,3 +234,19 @@ Inventário consultado por GitHub Actions MCP, excluindo runs de PR e mantendo a
 ### Checks dinâmicos auxiliares
 
 O Copilot Code Review falhou por cota HTTP 402 no run [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) e novamente em PR [41183332482](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41183332482); depende de ação do owner no plano GitHub. O run antigo do Dependabot para `@vitest/mocker` [39775463512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775463512) registrou `security_update_not_possible`; atualizações posteriores de `undici` e Zod na main terminaram success ([40603001428](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40603001428), [40603001197](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40603001197)). Este run histórico não foi tratado como workflow de produto ainda bloqueado.
+
+## Atualização após correções de dependências — 2026-10-31
+
+Os commits `a96fd44ca` (Undici) e `46e6cc33c` (Zod 4) foram incorporados à branch `fix/hermes-h429269-e2e-qa-guard`, na PR #184. A verificação local posterior terminou sem regressões:
+
+| Gate | Resultado | Observações |
+|---|---|---|
+| `npm ci --no-audit --no-fund` | ✅ exit 0 | 983 pacotes instalados; scripts opcionais não aprovados pelo npm. |
+| `npm run check:npm-audit` | ✅ exit 0 | Nenhuma vulnerabilidade reportada. |
+| `npm run build` | ✅ exit 0 | Avisos de bundle/chunks continuam; sem erro de build. |
+| `npm run typecheck` + `npm run typecheck:baseline` | ✅ exit 0 | 0 diagnósticos atuais e nenhuma regressão do baseline. |
+| `npm run lint` + `npm run lint:baseline` | ✅ exit 0 | 0 erros, 873 avisos existentes; nenhuma regressão nos arquivos alterados. |
+| `npm run test:scenarios` | ✅ exit 0 | 227 cenários aprovados. |
+| `npm run test:coverage:ci` | ✅ exit 0 | 454 arquivos aprovados, 4 ignorados; 5.855 testes aprovados, 68 ignorados; cobertura: statements 94%, branches 86,79%, funções 97,22%, linhas 97,6%. |
+
+A listagem remota de environments confirmou que `e2e-qa` não existe. `e2e-staging` existe sem regras de proteção nem política de branches e, por isso, não foi usado para executar testes autenticados. Nenhum secret foi lido ou escrito; nenhuma migration ou operação Supabase foi executada. A PR #184 ainda precisa de CI remoto no novo SHA e aprovação exigida pela proteção de branches. As cinco falhas do inventário permanecem abertas até novos runs correspondentes na `main` terminarem em `success`.
