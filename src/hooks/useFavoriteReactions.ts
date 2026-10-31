@@ -5,6 +5,10 @@
 import {  useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  fetchPublicFavoriteReactions,
+  type PublicFavoriteReaction,
+} from "@/services/favorites/publicFavoriteListService";
 
 const ANON_KEY = "fav-anon-id";
 
@@ -21,13 +25,7 @@ function getAnonId(): string {
   }
 }
 
-export interface ReactionRow {
-  id: string;
-  item_id: string;
-  emoji: string;
-  anon_id: string;
-  created_at: string;
-}
+export type ReactionRow = PublicFavoriteReaction;
 
 /** Para a página pública: lê + envia reactions. */
 export function useFavoriteReactions(listId: string | null, listToken: string | null) {
@@ -36,16 +34,8 @@ export function useFavoriteReactions(listId: string | null, listToken: string | 
 
   const reactionsQuery = useQuery({
     queryKey: ["fav-reactions", listId],
-    queryFn: async (): Promise<ReactionRow[]> => {
-      if (!listId) return [];
-      const { data, error } = await supabase
-        .from("favorite_item_reactions")
-        .select("id, item_id, emoji, anon_id, created_at")
-        .eq("list_id", listId);
-      if (error) throw error;
-      return (data ?? []) as ReactionRow[];
-    },
-    enabled: !!listId,
+    queryFn: (): Promise<ReactionRow[]> => fetchPublicFavoriteReactions(listToken, anonId),
+    enabled: !!listId && !!listToken,
     staleTime: 10_000,
   });
 
