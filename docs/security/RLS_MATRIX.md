@@ -32,14 +32,30 @@
 | SELECT | vendedor (dono)     | próprio          | ALLOW | `Users manage own favorite lists` (`user_id = auth.uid()`) |
 | SELECT | vendedor (terceiro) | alheio           | DENY  | Não casa `user_id = auth.uid()` |
 | SELECT | admin               | qualquer         | ALLOW | `Admins read all favorite lists` (`is_admin`) |
-| SELECT | anon (token)        | compartilhado    | ALLOW | `Public can read shared lists by token` (token válido) |
-| SELECT | anon (sem token)    | qualquer         | DENY  | Sem `shared_token` válido |
+| SELECT direto | anon (com token) | qualquer | DENY | O token não concede leitura direta às tabelas; compartilhamento público passa pelos RPCs validados abaixo |
+| SELECT direto | anon (sem token) | qualquer | DENY | `anon` não tem privilégio de leitura nas tabelas de favoritos |
 | INSERT | vendedor            | próprio          | ALLOW | `WITH CHECK user_id = auth.uid()` |
 | INSERT | vendedor            | alheio           | DENY  | `WITH CHECK` falha |
 | UPDATE | vendedor            | próprio          | ALLOW | `USING + WITH CHECK user_id = auth.uid()` |
 | UPDATE | vendedor            | alheio           | DENY  | `USING` falha |
 | DELETE | vendedor            | próprio          | ALLOW | `USING user_id = auth.uid()` |
 | DELETE | vendedor            | alheio           | DENY  | `USING` falha |
+
+### Compartilhamento e itens de favoritos
+
+| Recurso/Op | Role/Ator | Escopo | Esperado | Justificativa |
+|---|---|---|---|---|
+| SELECT direto em `favorite_items` | anon | qualquer | DENY | Leitura pública não expõe linhas nem aceita token via PostgREST |
+| SELECT direto em `favorite_item_reactions` | anon | qualquer | DENY | Reações só são lidas diretamente por usuário autenticado autorizado |
+| SELECT em listas/itens | vendedor (dono) | próprios | ALLOW | Policy owner/admin, vinculada a `auth.uid()` |
+| SELECT em listas/itens | vendedor (terceiro) | alheios | DENY | Fora do escopo de propriedade |
+| SELECT em listas/itens | admin/dev | qualquer | ALLOW | Policy owner/admin |
+| SELECT em reações | vendedor (dono da lista) | própria lista | ALLOW | Policy confere o proprietário da lista relacionada |
+| SELECT em reações | vendedor (terceiro) | lista alheia | DENY | Não atende ao proprietário/admin |
+| INSERT direto em `favorite_item_reactions` | cliente autenticado ou anon | qualquer | DENY | Escrita de reações passa pela Edge Function autorizada |
+| SELECT público compartilhado | anon com token válido | lista compartilhada | ALLOW | Somente RPC de compartilhamento validado por token, como `get_public_favorite_list` e `get_public_favorite_reactions`; não equivale a SELECT direto |
+
+> Esta seção descreve o contrato introduzido pela migration `20261031042808_secure_public_favorite_reactions_access.sql`. A aplicação no banco deve ser confirmada pelo ledger; a presença da migration no repositório não comprova implantação.
 
 ## `collections`
 
