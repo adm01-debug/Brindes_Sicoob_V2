@@ -184,12 +184,36 @@ A mudança do lockfile é limitada a `undici`; a migração de Zod foi mantida s
 ## Atualização CodeQL — 31/10/2026
 
 - A execução `41174320744` falhou no Autobuild porque o `init` carregou CodeQL 4.39.1, mas `autobuild`/`analyze` executaram 4.38.2; o erro identificou explicitamente a divergência.
-- Esta branch alinha `autobuild` e `analyze` ao mesmo SHA v4.39.1 usado pelo `init`. No run `41175640945`, `Initialize CodeQL` e `Autobuild` passaram; `Perform CodeQL Analysis` ainda estava em execução na última consulta.
+- Esta branch alinha `autobuild` e `analyze` ao mesmo SHA v4.39.1 usado pelo `init`. Os runs `41175640945` e `41176030706` concluíram com success, confirmando a correção.
 
 ## Execução E2E legada e isolamento do banco — 31/10/2026
 
 - Run `41174676250` do SHA `0a1d8b573bd42dd120096cd070d4229a2326fb89` falhou no step de autorização/RLS: `system-healthcheck` e `migration-health-check` excederam timeout; os hooks de INSERT/limpeza em `e2e_cleanup_rate_limit` também excederam 45 s. Total: 50 testes passaram, 4 ignorados e 2 falharam nos testes remotos.
 - Essa execução da base `main` ainda usava `SUPABASE_SERVICE_ROLE_KEY` e `VITE_SUPABASE_*` globais, sem isolamento de destino. Por isso, há possibilidade de escrita temporária no alvo configurado; o agente não inseriu nem removeu dados diretamente.
 - A inspeção somente leitura posterior pelo MCP falhou com `Management API 544` (timeout); não é possível afirmar se existe resíduo nem que nenhum INSERT temporário ocorreu. Não repetir esse fluxo sem o guard.
-- No run `41175640824`, a nova verificação falhou no preflight (step 5) porque estavam ausentes `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_PROJECT_ID` e `E2E_SUPABASE_SERVICE_ROLE_KEY`. O guard confirmou o bloqueio antes de iniciar qualquer teste remoto; o job de regressão foi ignorado. Nenhum acesso ao banco ocorreu nesse run.
+- Nos runs `41175640824` (SHA `a5e17aea`) e `41176030800` (head `046f396a`), a nova verificação falhou no preflight (step 5) porque estavam ausentes `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_PROJECT_ID` e `E2E_SUPABASE_SERVICE_ROLE_KEY`. O guard confirmou o bloqueio antes de iniciar qualquer teste remoto; o job de regressão foi ignorado. Nenhum acesso ao banco ocorreu nesses runs.
 - Para executar a jornada autenticada, o responsável pelo repositório precisa provisionar um projeto Supabase de homologação separado e configurar os quatro secrets acima com valores desse mesmo projeto. A URL/ref serão verificadas pelo guard, que rejeita os projetos canônicos. Até isso ocorrer, a jornada E2E remota não está validada.
+
+## Última execução da `main` — inventário de falhas e bloqueios — 31/10/2026
+
+Inventário das últimas execuções concluídas visíveis em `main` antes da nova validação. Workflows concluídos com `success` no mesmo inventário incluem Branch Protection Sentinel, Enterprise Compliance & Audit Reporting, Portal Sicoob e os updates de dependências listados na API.
+
+| Workflow | Último run na `main` | Resultado e causa observada | Estado nesta PR |
+|---|---|---|---|
+| Migration ledger drift | [#41175713780](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41175713780) | Duas tentativas: ledger retornou “Verificação indisponível” sem produzir comparação; na primeira, auditoria RLS recebeu HTTP 544, e na segunda passou com `missing_tables=[]`, `rls_disabled=[]` e `unrestricted_permissive=[]`. Não há evidência de drift, mas o estado da migration local adicional não foi confirmado no ledger remoto. | Sem alteração no ledger/banco. Aguardar disponibilidade do endpoint de verificação do ledger e repetir apenas essa leitura. |
+| Publicar funções Sicoob | [#40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | As chamadas de publicação terminaram, mas a verificação observou `sicoob-approval-reconciliation` na versão 5, igual à anterior. A causa do não incremento não foi provada. Como houve publicação antes da falha, o estado do projeto `construction` precisa ser confirmado pelo responsável antes de qualquer nova execução. | Nenhuma publicação executada por esta PR. |
+| Security Scan / Qualidade contínua | [#40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) / [#40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | O audit na `main` apontou advisories altos em `undici` e Zod. A PR removeu o advisory alto de `undici`, mas os runs atuais `41176030765` (Security Scan) e `41176030735` (Qualidade contínua) falharam apenas pelo advisory alto de Zod 3. | Zod requer migração major compatível para v4 em PR separada; não mesclar esta PR enquanto o gate obrigatório estiver vermelho. |
+| CodeQL | [#40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | Falha de configuração: `init` usou 4.39.1 e `autobuild` 4.38.2; o SARIF não foi produzido como consequência. | Corrigido: runs `41175640945` e `41176030706` concluíram com success após alinhar as actions em v4.39.1. |
+| Running Copilot Code Review | [#39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | Serviço retornou HTTP 402 `errorType: quota`: limite de uso adicional do plano Copilot atingido. | Requer que o responsável revise/regularize a cota Copilot; sem alteração técnica no repositório. |
+| Dependabot `@vitest/mocker` | [#39775463512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775463512) | O `update_files` do Dependabot falhou; o detalhe adicional só está disponível no log privado do Dependabot. | Superado: PR [#139](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/139) foi mergeada em 22/10 e atualizou `@vitest/mocker` para 4.1.12, versão confirmada no lockfile atual. |
+
+### Checks da PR #182 — head `046f396a`
+
+| Check | Resultado | Evidência |
+|---|---|---|
+| CodeQL | ✅ success | [run #41176030706](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41176030706) |
+| Portal Sicoob | ✅ success | [run #41176030764](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41176030764) |
+| Bundle Size Check | ✅ success | [run #41176031003](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41176031003) |
+| Lighthouse Performance Audit | ✅ success | [run #41176030726](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41176030726) |
+| E2E autenticado | ❌ bloqueado no preflight por falta dos quatro secrets `E2E_SUPABASE_*`; nenhum teste remoto executado | [run #41176030800](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41176030800) |
+| Security Scan e Qualidade contínua | ❌ gate de audit pelo único advisory alto restante em Zod v3 | [Security Scan #41176030765](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41176030765) · [Qualidade contínua #41176030735](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41176030735) |
