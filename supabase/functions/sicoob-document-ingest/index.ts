@@ -110,11 +110,14 @@ Deno.serve(withStructuredLogging('sicoob-document-ingest', async (req) => {
     });
     if (registerError) throw registerError;
 
-    await adminClient.storage.from(QUARANTINE_BUCKET).remove([quarantinePath]);
+    const { error: cleanupError } = await adminClient.storage.from(QUARANTINE_BUCKET).remove([quarantinePath]);
+    if (cleanupError) console.warn(`[sicoob-document-ingest] cleanup quarantine failed: ${cleanupError.message}`);
     return json(req, { documentId, path: finalPath, sha256, detectedMime: detected.mime });
   } catch (error) {
-    if (finalPath) await adminClient.storage.from(FINAL_BUCKET).remove([finalPath]);
-    if (quarantinePath) await adminClient.storage.from(QUARANTINE_BUCKET).remove([quarantinePath]);
+    await Promise.allSettled([
+      finalPath ? adminClient.storage.from(FINAL_BUCKET).remove([finalPath]) : Promise.resolve(),
+      quarantinePath ? adminClient.storage.from(QUARANTINE_BUCKET).remove([quarantinePath]) : Promise.resolve(),
+    ]);
     if (error instanceof ScannerGateError) return json(req, { error: error.message }, error.status);
     if (error instanceof DocumentInspectionError) return json(req, { error: error.message }, 422);
     return json(req, { error: 'Não foi possível processar o documento com segurança.' }, 500);
