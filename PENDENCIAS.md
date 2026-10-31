@@ -217,3 +217,52 @@ Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Depen
 | Migration Ledger Drift | Fingerprint de `20261022120000` calculado com `local_sha256` incorreto; novo digest correto: `e2815b0...` | Corrigido fingerprint no `migration-ledger-baseline.json` | #129 |
 | 5 CVEs high (vite ≤6.4.3) | GHSA-698v, GHSA-r825, GHSA-587h, GHSA-9jrq, GHSA-rq7h | `vite` 6.4.3 → 6.4.5 | #126 |
 | Qualidade contínua (`ci.yml`) — ECR rate limit | `toomanyrequests: Data limit exceeded` ao puxar `public.ecr.aws/supabase/postgres:17.6.1.063` em dois steps (scripts `simular-controles-auditoria.py` e `simular-acl-efetiva.py`) | Rate limit do ECR Public se dissipou naturalmente; run `39780447863` → **success** | automático |
+
+
+# Pendências atualizadas — 2026-10-31
+
+Esta seção substitui snapshots anteriores para o estado atual dos workflows e do E2E. Não registrar valores de segredo neste arquivo.
+
+## Bloqueio externo: ambiente isolado para E2E autenticado
+
+O repositório remoto ainda não fornece evidência verificável de que os secrets de environment `e2e-qa` existem: o conector lista apenas secrets no escopo do repositório e não revela os valores/nomes definidos em environments. Os nomes `E2E_SUPABASE_URL`, `E2E_SUPABASE_PROJECT_ID`, `E2E_SUPABASE_PUBLISHABLE_KEY` e `E2E_SUPABASE_SERVICE_ROLE_KEY` não foram encontrados no escopo do repositório; isso **não prova** que estejam ausentes do environment.
+
+Para liberar os testes remotos com segurança, concluir no GitHub:
+
+1. Criar/confirmar um projeto Supabase exclusivo e descartável para QA; nunca usar o projeto do portal `cfmzkthhgliqelozlmwu` nem o catálogo `doufsxqlfjyuvxuezpln`.
+2. Criar o environment `e2e-qa` com revisores obrigatórios.
+3. Configurar nele os quatro secrets `E2E_SUPABASE_*`, `E2E_CLEANUP_TOKEN` e credenciais/TOTP das personas de teste.
+4. Configurar as variáveis `E2E_ALLOWED_PROJECT_ID` e `E2E_CLEANUP_DRY_RUN=0`. O workflow falha antes dos testes se o projeto não estiver na allowlist ou se o cleanup de QA não estiver explicitamente habilitado.
+5. Configurar a Edge Function `e2e-cleanup` nesse projeto com token e lista de emails exclusivos de QA.
+6. Após a configuração, executar `E2E (Playwright)` e `Enterprise Compliance & Audit Reporting` por `workflow_dispatch` na `main`; confirmar todos os jobs verdes e que as fixtures foram removidas.
+
+**Bloqueio:** enquanto esses passos não forem concluídos, a jornada autenticada completa e o teste RLS remoto permanecem sem prova de execução. O E2E público, sem secrets, pode continuar rodando em PRs.
+
+## Bloqueio de dependências — npm audit
+
+Os runs [Security Scan #41177996979](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177996979) e [Qualidade contínua #41177997004](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177997004) falharam pelo mesmo gate: `npm audit` reportou `undici` (high) e `zod` (high). `undici` tem correção sem major; `zod@3.25.76` só tem correção indicada em major 4 (>=4.6.6). Fazer uma branch de correção separada, atualizar `undici` sem major e avaliar Zod 4 com migração, typecheck, build e suíte completa. Não desativar nem enfraquecer o gate.
+
+## E2E remoto no PR #183
+
+O [run 41177997096](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177997096) recebeu secrets genéricos em PR e falhou quando o `beforeAll` do teste RLS passou de 45 s. A causa operacional exata não é demonstrável porque o valor do projeto está mascarado e não há acesso aos secrets de environment. A correção proposta move a jornada autenticada para `workflow_dispatch` na main + `e2e-qa`, torna o PR estritamente público/sem secrets e faz o destino ser validado no workflow e nos testes remotos. O status remoto dessa correção só poderá ser provado após publicar a branch e aguardar o CI.
+
+## Validação pendente: proteção dos dispatches com credenciais Supabase
+
+Revisão transversal encontrou jobs que recebiam credenciais privilegiadas durante `workflow_dispatch` em branches arbitrárias: compliance, auditoria de performance e migration-ledger drift. Os três agora restringem o disparo manual à `main`; os workflows de aplicação de migrations e deploy de Edge Functions já tinham essa proteção. `actionlint` e os gates locais serão repetidos; só o CI de PR poderá validar a mudança de forma remota. Em `migration-ledger-drift.yml`, confirmar também que o environment `construction` mantém política de branches restrita à `main`.
+
+O workflow Lighthouse também recebeu correção: o token da GitHub App foi removido porque o destino do upload é `filesystem`, e `continue-on-error` foi eliminado. O CI deve confirmar que o upload de artefatos e as asserções seguem verdes.
+
+Foram removidos ainda os `continue-on-error` restantes em `sicoob-ci.yml` e `bundle-check.yml`. O CI precisa confirmar publicação de artefatos sem supressão de falhas.
+
+O CodeQL também foi corrigido localmente ao alinhar `init`, `autobuild` e `analyze` no release 4.39.1. O run da `main` falhou antes de gerar SARIF por incompatibilidade 4.39.1/4.38.2; confirmar geração e validação de SARIF no PR.
+
+## Falhas atuais da última execução da `main` — inventário 2026-10-31
+
+* **Migration ledger drift — [run 41175713780](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41175713780):** step 6 terminou com exit 2 e `[ledger] Verificação indisponível (Error); nenhum resultado aprovado.`. O step 7 (auditoria RLS) completou sem findings. A causa exata não era confirmável porque o script ocultava `error.message`; agora a mensagem é exibida com Bearer/access/service/API keys redigidas, e o cenário unitário verifica essa redação. Não apliquei migrations nem executei SQL remoto. Próximo passo: validar diagnóstico numa execução posterior autorizada na main.
+* **Security Scan — [run 40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) e Qualidade contínua — [run 40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964):** ambos bloqueados pelo audit high em `undici` e `zod`. Atualização segura do Undici e migração de compatibilidade Zod 4 permanecem em branch separada, com suíte completa exigida; não atualizar por `--force`.
+* **CodeQL — [run 40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073):** causa era mix de versões (init 4.39.1 vs autobuild/analyze 4.38.2); correção local preparada e aguarda CI.
+* Workflows verdes vistos no inventário: Branch Protection Sentinel [40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038), Enterprise Compliance [40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958) e Portal Sicoob [39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315).
+
+## Validação local pós-commit
+
+Após o quarto commit: build, lint (0 erros; 873 avisos existentes), lint baseline, typecheck, typecheck baseline e suíte completa passaram. Resultado: 454 arquivos de teste aprovados, 4 condicionais pulados; 5.855 testes aprovados, 68 condicionais pulados. A primeira execução pós-commit apresentou exceção assíncrona jsdom/Radix em `admin-ref-warning-guard`; a repetição integral passou sem alterar nem enfraquecer o teste. `npm audit` continua bloqueado pelos 2 findings high já descritos.

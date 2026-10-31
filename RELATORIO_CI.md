@@ -165,3 +165,60 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 ---
 
 *Relatório gerado automaticamente pela sessão Claude Code.*
+
+
+## Atualização da auditoria CI — 2026-10-31
+
+**Repositório e branch-base:** `adm01-debug/Brindes_Sicoob_V2`, `origin/main` em `e9d59026793b84fabeaeec9da890a068f64d49c3`.
+**Execução:** worktree isolada `fix/hermes-h429269-e2e-qa-guard`; nenhuma alteração feita na main local ou no banco canônico.
+
+### Baseline local reproduzido
+
+| Gate | Resultado | Observações |
+|---|---|---|
+| `npm ci --no-audit --no-fund` | ✅ exit 0 | 980 pacotes instalados; scripts opcionais do projeto não aprovados pelo npm. |
+| `npm run build` | ✅ exit 0 | Avisos preexistentes: variáveis Vite ausentes no ambiente local, PostCSS sem `from`, import misto e chunks acima de 600 kB. |
+| `npm run lint` | ✅ exit 0 | 0 erros; 873 avisos. |
+| `npm run lint:baseline` | ✅ exit 0 | 0 regressões acima do baseline. |
+| `npm run typecheck` | ✅ exit 0 | `tsc` app e node sem erros. |
+| `npm run typecheck:baseline` | ✅ exit 0 | 0 diagnósticos atuais; baseline também 0. |
+| `npm test` | ✅ exit 0 | 5.855 testes passaram, 68 skipped, 0 falhas. Uma execução concorrente capturou exceção assíncrona jsdom/Radix em FocusScope; reexecução isolada passou. Base anterior: 5.839 passaram + 68 skipped; os 16 adicionais cobrem guards de destino/cleanup e redação do diagnóstico do ledger. |
+| `actionlint` nos workflows E2E e compliance | ✅ exit 0 | YAML/workflow válido. |
+| `npm audit` | ❌ exit 1 | 17 findings: 15 moderate e 2 high (`undici` e `zod`). A correção do `zod` sugere major 4; não foi aplicada sem teste de compatibilidade. |
+
+### Estado remoto observado no PR #183 (SHA `a8be40e23bb529c8cb0b3b0b885cee539de69fc1`)
+
+| Workflow | Conclusão | Evidência e causa |
+|---|---|---|
+| Bundle Size Check | ✅ success | [run 41177997020](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177997020) |
+| Portal Sicoob | ✅ success | [run 41177997101](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177997101) |
+| Security Scan | ❌ failure | [run 41177996979](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177996979): `npm audit` bloqueou em `undici` e `zod` (severidade alta). |
+| Qualidade contínua | ❌ failure | [run 41177997004](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177997004): o job parou no mesmo gate `check:npm-audit`; mesma causa raiz. |
+| E2E (Playwright) | ❌ failure | [run 41177997096](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177997096): `beforeAll` de `e2e-cleanup-rate-limit` excedeu 45 s; o job executou testes remotos e recebeu credenciais de escopo genérico sem validar destino. A nova branch remove segredos de PR e exige environment `e2e-qa`/allowlist em disparo manual na main. |
+
+A primeira execução local do Playwright público falhou por Chromium ausente (instalado) e por um teste que chamava o Supabase real apesar do backend isolado. O teste foi convertido para mock de `quote-approval`; o cenário individual passou e a suíte pública completa passou com 109/109 testes em 3,1 min, sem secrets e sem backend remoto.
+
+### Revisão transversal de `workflow_dispatch` com credenciais privilegiadas
+
+Foi encontrado que três jobs com secrets Supabase privilegiados aceitavam disparo manual em refs arbitrárias: `compliance-audit`, `performance-audit` e `drift-check`. Os três agora condicionam `workflow_dispatch` a `refs/heads/main`; eventos de `push` (limitados a main no workflow) e `schedule` permanecem permitidos. `apply-sicoob-migrations.yml` e `deploy-sicoob-functions.yml` já tinham proteção de ref. Correção local ainda aguarda CI remoto.
+
+Auditoria adicional do Lighthouse: o upload do LHCI está configurado para `filesystem`, logo `LHCI_GITHUB_APP_TOKEN` não era necessário; removido do ambiente do processo que executa conteúdo do PR. Também foi removido `continue-on-error` do upload de artefatos para que falhas não sejam mascaradas. As asserções de performance/acessibilidade não foram alteradas.
+
+Removidas também as duas ocorrências preexistentes de `continue-on-error` em uploads de evidência do workflow Sicoob e do bundle-check. Falhas de publicação de artefatos agora são visíveis no status do job; nenhum gate funcional ou asserção foi enfraquecido.
+
+CodeQL falhava porque `init` estava no SHA release 4.39.1, mas `autobuild` e `analyze` continuavam em 4.38.2; o log dizia explicitamente “Loaded a configuration file for version '4.39.1', but running version '4.38.2'”. Os três passos agora usam o mesmo SHA 4.39.1. A análise e o bloqueio por SARIF permanecem ligados; validar no run do PR.
+
+O diagnosticador do ledger mascarava `error.message`, impedindo descobrir por que a Management API recusou a consulta. Agora emite até 240 caracteres do motivo, redige Bearer/access/service/API keys e mantém o exit 2; um cenário unitário verifica a redação e preservação do status HTTP.
+
+### Inventário da última execução de cada workflow na `main` — 2026-10-31
+
+Inventário consultado por GitHub Actions MCP, excluindo runs de PR e mantendo apenas a última execução por workflow.
+
+| Workflow | Status | Causa provável / evidência |
+|---|---|---|
+| Migration ledger drift | ❌ failure | [run 41175713780](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41175713780), schedule de 2026-10-31: o check do ledger retornou exit 2 e log `[ledger] Verificação indisponível (Error); nenhum resultado aprovado.`. O job executou a auditoria RLS depois e ela não encontrou tabelas ausentes, RLS desabilitado nem policies permissivas irrestritas. Causa interna ainda não identificada porque o script mascara a mensagem original; necessita diagnóstico sem expor credenciais. |
+| Security Scan | ❌ failure | [run 40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158): npm audit bloqueou por `undici` e `zod` (2 altas). |
+| Qualidade contínua | ❌ failure | [run 40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964): `check:npm-audit` parou em `undici` e `zod` antes de verificar autorização das Edge Functions e escopo seller. |
+| CodeQL | ❌ failure | [run 40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073): config de `init` 4.39.1 incompatível com `autobuild/analyze` 4.38.2; não gerou SARIF. Os três action SHAs foram alinhados localmente em 4.39.1. |
+
+**Verdes na última execução observada na `main`:** Branch Protection Sentinel — [run 40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038); Enterprise Compliance & Audit Reporting — [run 40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958); Portal Sicoob — [run 39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315). A proteção de workflows com segredos e o pipeline de E2E ainda precisam ser provados por CI na branch de correção.
