@@ -16,7 +16,7 @@ Ambiente: Node `v24.19.0`, npm `11.17.0`, dependências instaladas com `npm ci`.
 | Lint | Exit 0; 0 erros e 873 avisos no escopo `src`. |
 | Typecheck | Passou nos projetos app e node. |
 | Suíte Vitest completa | 452 arquivos passaram, 4 ignorados; 5.839 testes passaram, 68 ignorados. |
-| `npm audit` | 17 advisories: 15 moderados, 2 altos (`undici` e `zod`). |
+| `npm audit` antes do lote | 17 advisories: 15 moderados, 2 altos (`undici` e `zod`). |
 
 ## Lote implementado
 
@@ -34,7 +34,7 @@ Foram coordenados cinco pareceres somente leitura (E2E, CI/workflows, banco/migr
 2. **Autorização por cooperativa/papel carece de cobertura adversarial completa.** O teste de rota verifica sessão ausente, não todos os casos de usuário autenticado fora do escopo.
 3. **Banco e Edge Functions seguem bloqueados para reconciliação operacional.** Os relatórios anteriores registram migrations divergentes e falta de acesso de publicação. Este lote não acessou banco, não aplicou migration e não publicou função.
 4. **CI tem falhas em execução recente na `main`.** A mais nova é Migration ledger drift, run [41175713780](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41175713780): “Verificação indisponível (Error); nenhum resultado aprovado”. A mensagem não revela causa raiz; o próximo passo é adicionar diagnóstico seguro e redigido e reproduzir. Permanecem falhas observadas em publicação Sicoob, Security Scan, Qualidade contínua, CodeQL e Copilot. Inventário e evidências estão em [`RELATORIO_CI.md`](../../RELATORIO_CI.md) e [`PENDENCIAS.md`](../../PENDENCIAS.md).
-5. **Dependências vulneráveis:** `npm ci` reportou 17 advisories, incluindo dois altos. A atualização potencial de `undici` pode ser avaliada em lote isolado; a correção de `zod` encontrada é major e requer análise. Nenhuma dependência foi atualizada nesta rodada.
+5. **Dependências vulneráveis:** o ajuste não-forçado atualizou `undici` 8.10.2→8.12.3 dentro da faixa principal já usada e baixou o audit de 17 para 14 (13 moderados, 1 alto). Zod 4.6.7 foi testado e descartado: typecheck aponta incompatibilidades na API de enums/errors e o resolver 3.10.0 lança em validação inválida. O alto de Zod segue pendente de migração explicitamente testada.
 6. **Documentação:** `docs/README.md` agora identifica a proveniência do índice legado e aponta para a auditoria funcional e o plano vigente, sem apagar o histórico importado.
 
 ## Validação final desta rodada, antes do commit
@@ -47,7 +47,7 @@ Foram coordenados cinco pareceres somente leitura (E2E, CI/workflows, banco/migr
 | Vitest | 5.839 passaram, 68 ignorados | 5.841 passaram, 68 ignorados | +2 testes, nenhum teste adicional ignorado; 452 arquivos passaram e 4 foram ignorados em ambos. |
 | Teste focal da timeline | — | 3 passaram | Inclui falha, retry com recuperação e resposta vazia. |
 | Lint focal | — | Passou | Os arquivos alterados passaram ESLint; mantida a formatação existente para evitar churn não relacionado. |
-| `npm audit` | 17 advisories, 2 altos | 17 advisories, 2 altos | Nenhuma dependência foi alterada; baseline de vulnerabilidades preservado. |
+| `npm audit` | 17 advisories, 2 altos | 14 advisories, 1 alto | `undici` corrigido dentro da major; a migração major de Zod foi rejeitada por regressão reproduzida. |
 
 `git diff --check` também foi executado após a correção de whitespace e não reportou problema. A comparação não certifica homologação autenticada nem corrige os advisories do baseline.
 

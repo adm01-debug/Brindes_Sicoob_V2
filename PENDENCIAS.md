@@ -6,7 +6,9 @@ O inventário mais recente está em [RELATORIO_CI.md](./RELATORIO_CI.md#revalida
 
 Também permanecem falhas observadas na `main`: publicação de funções Sicoob (run `40772348102`), Security Scan (`40602983158`), Qualidade contínua (`40602982964`), CodeQL (`40602983073`) e Copilot (`39785094125`). Ver detalhes e evidência por SHA em `RELATORIO_CI.md`. As seções posteriores neste arquivo são um retrato de 22/10/2026 e devem ser tratadas como histórico quando divergirem do adendo atual.
 
-O baseline local de 31/10 reportou **17 advisories npm (2 altos)**; a atualização focal de `undici` deve ser avaliada separadamente. A correção disponível para `zod` implica major e não foi autorizada por este lote. Nenhuma dependência foi alterada.
+O baseline local de 31/10 reportou **17 advisories npm (2 altos)**. No lote corrente, a atualização sem `--force` elevou `undici` 8.10.2 para 8.12.3 e reduziu o total para **14 (13 moderados, 1 alto)**. A vulnerabilidade alta restante é Zod (<4.6.6). O teste experimental em Zod 4.6.7 falhou no typecheck e o resolver atual (`@hookform/resolvers@3.10.0`) lançou `ZodError` em validação inválida; portanto o salto major foi revertido e deve aguardar migração compatível com testes de formulários.
+
+No PR #187, E2E run [41204113889](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41204113889) expirou em chamadas reais de setup/cleanup para `e2e_cleanup_rate_limit` (hooks de 45 s); o fluxo Playwright não iniciou. A evidência não identifica se o bloqueio é o endpoint de QA ou condição do teste, então não rerun sem validar o ambiente. Security Scan [41204113796](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41204113796) e Qualidade contínua [41204113855](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41204113855) falharam antes do bump compatível por dois advisories altos. CodeQL, Bundle, Lighthouse e Portal Sicoob estavam verdes na SHA anterior; os checks para a nova SHA ainda devem ser observados.
 
 Atualização corrente: 2026-10-31; as seções históricas abaixo foram escritas em 2026-10-22.
 
