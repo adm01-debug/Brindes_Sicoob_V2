@@ -176,9 +176,9 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 | Build | exit 0 | exit 0 | ✅; avisos locais Vite/PostCSS/chunks e comentários `@__PURE__` do Zod 4 |
 | ESLint | 0 erros, 873 avisos | 0 erros, 873 avisos | ✅ sem piora |
 | Typecheck + baseline | 0 / 0 | 0 / 0 | ✅ sem piora |
-| Suíte completa | 5.839 aprovados, 68 skips | 5.839 aprovados, 68 skips | ✅ sem regressão; PR #186 acrescenta 4 testes focais, total 5.843 naquele branch |
+| Suíte completa | 5.839 aprovados, 68 skips | 5.839 aprovados, 68 skips | ✅ sem regressão; PR #186 passa a acrescentar 7 testes focais, total 5.846 naquele branch |
 | `npm run check:npm-audit` | ❌ 2 high, 15 moderate | ✅ 0 high/critical, 15 moderate | ✅ vulnerabilidades altas eliminadas |
-| actionlint/diff check do verificador do deploy | não aplicável | exit 0; 4/4 casos do script | ✅ |
+| actionlint/diff check do verificador do deploy | não aplicável | exit 0; 7/7 casos focais do script | ✅ |
 
 ### Estado remoto dos PRs em 2026-10-31
 
@@ -189,3 +189,9 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 | [#186](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/186) | corrigir falso negativo de deploy sem mudança de versão | local: build/typecheck/lint/suíte success, actionlint success, simulação 5/5 sem backend; remoto só mostra Preview success e Agent Review neutral | não há CI de aplicação visível após atualizar a base para `main`; Copilot falhou por quota ([41182966896](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41182966896)); não executar deploy |
 
 O environment `e2e-qa` não foi encontrado (API GitHub retornou 404). Os checks Copilot da PR #185 [41183332482](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41183332482) e #186 [41182966896](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41182966896) falharam por limite adicional de uso do plano (HTTP 402; `errorCode=quota`). Esses bloqueios requerem ação no GitHub pelo owner. Os checks da PR #185 ainda pendentes e a ausência de CI da #186 impedem afirmar certificação remota completa.
+
+### Endurecimento offline do verificador de publicação — 2026-10-31
+
+Na branch da PR #186, o gate agora exige exatamente uma entrada por slug, `status=ACTIVE`, versão positiva e não regressiva; aceita número JSON e string decimal canônica, e rejeita coerções como `true`, `5.0`, `05`, notação exponencial ou whitespace. Também verifica paridade entre a lista `requiredFunctions` e o loop do workflow. A versão igual continua válida para a resposta CLI `No change found`.
+
+Validação focada: **7/7 testes Vitest**, ESLint direcionado sem avisos, `actionlint` e `git diff --check` passaram. O gate atesta metadados retornados por `supabase functions list`; ele não compara hash do bundle servido. Nenhum token foi usado, nenhum deploy foi disparado e o Supabase remoto não foi consultado. O CI remoto do novo commit ainda precisa ser observado antes de declarar o workflow concluído.
