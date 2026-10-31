@@ -117,11 +117,10 @@ describe("QuoteConsolidationPanel — eventos registrados", () => {
   });
 
   it("só confirma compartilhamento depois de copiar e anuncia falha se a API rejeitar", async () => {
-    const clipboardWrite = vi.fn().mockRejectedValue(new Error("permissão negada"));
-    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: clipboardWrite } });
+    const user = userEvent.setup();
+    const clipboardWrite = vi.spyOn(navigator.clipboard, "writeText").mockRejectedValue(new Error("permissão negada"));
     toastMocks.success.mockClear();
     toastMocks.error.mockClear();
-    const user = userEvent.setup();
     renderPanel();
 
     await user.click(screen.getByRole("button", { name: /compartilhar/i }));
