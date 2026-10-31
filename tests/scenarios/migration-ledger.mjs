@@ -29,10 +29,34 @@ test('diagnóstico do ledger informa a exceção e redige credenciais', () => {
   assert.doesNotMatch(diagnostic.message, /senha|chave|eyJhbGci|db\.example/);
 
   const labeledSecrets = formatLedgerDiagnostic(
-    new Error('password=senha-local; api_key: chave-local; token=token-local'),
+    new Error(
+      'password=senha-local; api_key: chave-local; token=token-local; service_role_key=sb_secret_teste',
+    ),
   );
-  assert.doesNotMatch(labeledSecrets.message, /senha-local|chave-local|token-local/);
-  assert.equal((labeledSecrets.message.match(/\[redigido\]/g) ?? []).length, 3);
+  assert.doesNotMatch(labeledSecrets.message, /senha-local|chave-local|token-local|sb_secret_teste/);
+  assert.equal((labeledSecrets.message.match(/\[redigido\]/g) ?? []).length, 4);
+
+  for (const uri of [
+    'postgresql://user:p;ass@db.example/db',
+    'mysql://user:senha@db.example/catalog',
+    'redis://:senha@cache.example/0',
+  ]) {
+    const safe = formatLedgerDiagnostic(new Error(uri));
+    assert.equal(safe.message, '[URL redigida]');
+    assert.doesNotMatch(safe.message, /user|senha|ass@db\.example|db\.example/);
+  }
+
+  const basicAuth = formatLedgerDiagnostic(new Error('Authorization: Basic dXNlcjpwYXNz'));
+  assert.doesNotMatch(basicAuth.message, /dXNlcjpwYXNz/);
+
+  const rawSupabaseKey = formatLedgerDiagnostic(new Error('falha ao autenticar sb_secret_chave_teste'));
+  assert.doesNotMatch(rawSupabaseKey.message, /sb_secret_chave_teste/);
+
+  const jsonSecrets = formatLedgerDiagnostic(
+    new Error('{"password":"json-secret", "cookie": "session-cookie-value"}'),
+  );
+  assert.doesNotMatch(jsonSecrets.message, /json-secret|session-cookie-value/);
+  assert.match(formatLedgerDiagnostic(new Error('x://user:senha@host')).message, /\[URL redigida\]/);
 });
 test('compara oito dígitos, conteúdo e ausência nas duas direções', () => {
   const root = mkdtempSync(join(tmpdir(), 'sicoob-ledger-'));
