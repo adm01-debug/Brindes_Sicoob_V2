@@ -21,7 +21,17 @@ describe("cleanup Playwright protegido por allowlist de QA", () => {
       SUPABASE_URL: "https://cfmzkthhgliqelozlmwu.supabase.co",
     }).forEach(([key, value]) => vi.stubEnv(key, value));
 
-    expect(loadCleanupConfig()?.baseUrl).toBe(validTarget.E2E_SUPABASE_URL);
+    const config = loadCleanupConfig();
+    expect(config?.baseUrl).toBe(validTarget.E2E_SUPABASE_URL);
+    expect(config?.dryRun).toBe(true);
+  });
+
+  it("só permite limpeza destrutiva com opt-in explícito", () => {
+    Object.entries({ ...validTarget, E2E_CLEANUP_DRY_RUN: "0" }).forEach(
+      ([key, value]) => vi.stubEnv(key, value),
+    );
+
+    expect(loadCleanupConfig()?.dryRun).toBe(false);
   });
 
   it("não habilita limpeza quando só existem variáveis genéricas", () => {

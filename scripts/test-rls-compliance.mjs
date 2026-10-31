@@ -66,12 +66,24 @@ async function selectedQuoteIds(instance) {
 
 async function cleanup() {
   await Promise.allSettled([actorA.auth.signOut(), actorB.auth.signOut()]);
-  if (quoteId) await admin.from('quotes').delete().eq('id', quoteId);
-  if (userAId) await admin.auth.admin.deleteUser(userAId);
-  if (userBId) await admin.auth.admin.deleteUser(userBId);
+  const errors = [];
+  if (quoteId) {
+    const { error } = await admin.from('quotes').delete().eq('id', quoteId);
+    if (error) errors.push(`orçamento de QA: ${error.message}`);
+  }
+  if (userAId) {
+    const { error } = await admin.auth.admin.deleteUser(userAId);
+    if (error) errors.push(`persona A: ${error.message}`);
+  }
+  if (userBId) {
+    const { error } = await admin.auth.admin.deleteUser(userBId);
+    if (error) errors.push(`persona B: ${error.message}`);
+  }
+  return errors;
 }
 
 async function testCompliance() {
+  let testError;
   try {
     userAId = await createPersona(emailA, passwordA, 'A');
     userBId = await createPersona(emailB, passwordB, 'B');
@@ -151,8 +163,20 @@ async function testCompliance() {
     console.log(
       'Isolamento RLS confirmado com duas personas efêmeras e as quatro operações de quotes.',
     );
-  } finally {
-    await cleanup();
+  } catch (error) {
+    testError = error;
+  }
+
+  const cleanupErrors = await cleanup();
+  if (testError && cleanupErrors.length > 0) {
+    throw new AggregateError(
+      [testError, new Error(`Falha ao remover dados efêmeros de QA: ${cleanupErrors.join('; ')}`)],
+      'A validação RLS falhou e o cleanup deixou resíduos no projeto de QA.',
+    );
+  }
+  if (testError) throw testError;
+  if (cleanupErrors.length > 0) {
+    throw new Error(`Falha ao remover dados efêmeros de QA: ${cleanupErrors.join('; ')}`);
   }
 }
 

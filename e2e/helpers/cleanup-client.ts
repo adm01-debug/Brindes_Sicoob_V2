@@ -14,7 +14,7 @@ import { validateE2ETarget } from "../../scripts/e2e-target.mjs";
  *   - E2E_CLEANUP_TOKEN
  *   - E2E_USER_EMAIL
  *   - E2E_ADMIN_EMAIL  (opcional)
- *   - E2E_CLEANUP_DRY_RUN ("1" para apenas contar)
+ *   - E2E_CLEANUP_DRY_RUN ("0" libera remoção; qualquer outro valor simula)
  */
 const YELLOW = "\x1b[33m";
 const GREEN = "\x1b[32m";
@@ -57,7 +57,9 @@ export function loadCleanupConfig(): CleanupConfig | null {
   const token = process.env.E2E_CLEANUP_TOKEN || "";
   const userEmail = process.env.E2E_USER_EMAIL || "";
   const adminEmail = process.env.E2E_ADMIN_EMAIL || "";
-  const dryRun = process.env.E2E_CLEANUP_DRY_RUN === "1";
+  // A limpeza automática é somente simulada por padrão. Escrita exige opt-in
+  // explícito e inequívoco: E2E_CLEANUP_DRY_RUN=0.
+  const dryRun = process.env.E2E_CLEANUP_DRY_RUN !== "0";
   const sellerScope: "self" | "explicit" =
     process.env.E2E_CLEANUP_SELLER_SCOPE === "explicit" ? "explicit" : "self";
   const sellerId = process.env.E2E_CLEANUP_SELLER_ID || undefined;

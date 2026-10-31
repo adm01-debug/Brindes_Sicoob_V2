@@ -23,6 +23,11 @@ environment `e2e-qa`, após validar a URL e o project ref contra
 | `E2E_USER_*`, `E2E_VIEWER_*`, `E2E_MANAGER_*`, `E2E_ADMIN_*`, `E2E_DEV_*` e TOTP | Environment `e2e-qa` | Nomes aparecem no escopo do repositório; confirmar transferência/duplicação controlada para o environment e uso apenas em QA. |
 | `SUPABASE_SERVICE_ROLE_KEY` genérica | Repositório | Nome aparece no repositório, mas não deve ser consumido por testes que escrevem. O workflow RLS agora usa `E2E_SUPABASE_SERVICE_ROLE_KEY`. |
 
+Para executar a suíte remota, configure todos os segredos e a variável no
+environment `e2e-qa`, não no escopo geral do repositório. Os jobs autenticados
+validam o destino antes de instalar dependências ou acessar o backend. A chave
+privilegiada genérica do repositório não é válida para esses jobs.
+
 Não versionar valores, tokens, senhas, URL com credenciais ou screenshots que os revelem. A ausência em secrets de repositório não comprova ausência em secrets de environment.
 
 ## Lidos pelas edge functions (`Deno.env.get`)

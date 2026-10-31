@@ -22,6 +22,8 @@ describe("guarda de destino E2E", () => {
     ["catálogo mestre", { ...validConfig, projectId: "doufsxqlfjyuvxuezpln", allowedProjectId: "doufsxqlfjyuvxuezpln", url: "https://doufsxqlfjyuvxuezpln.supabase.co" }],
     ["endpoint sem TLS", { ...validConfig, url: "http://qa-sicoob-123.supabase.co" }],
     ["host de projeto diferente", { ...validConfig, url: "https://other.supabase.co" }],
+    ["caminho alternativo", { ...validConfig, url: "https://qa-sicoob-123.supabase.co/proxy" }],
+    ["porta customizada", { ...validConfig, url: "https://qa-sicoob-123.supabase.co:8443" }],
     ["chaves repetidas", { ...validConfig, serviceRoleKey: validConfig.publishableKey }],
   ])("rejeita %s", (_reason, config) => {
     expect(() => validateE2ETarget(config)).toThrow();

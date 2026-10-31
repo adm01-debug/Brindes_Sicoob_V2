@@ -75,8 +75,8 @@ jobs:
           path: reports/
           if-no-files-found: warn
 
-  cross-organization-access-test:
-    name: Teste RLS isolado de homologação
+  seller-quote-rls-test:
+    name: Teste RLS de orçamento em homologação
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20

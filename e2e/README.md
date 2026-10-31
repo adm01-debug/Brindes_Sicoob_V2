@@ -130,7 +130,13 @@ orçamentos criados pelos testes, o `globalTeardown` chama a edge function
 
 ### Configuração
 
-Defina os secrets no projeto e como variáveis no CI:
+Os PRs executam apenas jornadas públicas, sem secrets. Para executar jornadas
+autenticadas, configure o environment protegido `e2e-qa` com revisores
+obrigatórios e os secrets listados em `docs/secrets.md`. O destino precisa ser
+um projeto Supabase descartável de QA; URL, project ref e allowlist são
+validados antes da instalação das dependências e antes de cada job remoto.
+
+Defina os secrets no environment `e2e-qa`:
 
 | Variável                       | Onde                  | Descrição                                                     |
 |--------------------------------|-----------------------|---------------------------------------------------------------|
@@ -138,8 +144,12 @@ Defina os secrets no projeto e como variáveis no CI:
 | `E2E_CLEANUP_ALLOWED_EMAILS`   | Backend (CSV)         | Lista de emails permitidos. Defesa em profundidade.           |
 | `E2E_USER_EMAIL`               | CI                    | Email do usuário de teste — alvo do cleanup.                  |
 | `E2E_ADMIN_EMAIL`              | CI (opcional)         | Email do admin de teste — também é limpo.                     |
-| `VITE_SUPABASE_URL`            | CI                    | URL do backend (já preenchida em `.env`).                     |
-| `E2E_CLEANUP_DRY_RUN`          | CI (opcional)         | `1` = só conta, não apaga.                                    |
+| `E2E_SUPABASE_URL`             | `e2e-qa`              | URL exclusiva do projeto descartável de QA.                   |
+| `E2E_SUPABASE_PROJECT_ID`      | `e2e-qa`              | Project ref que deve corresponder à URL.                      |
+| `E2E_ALLOWED_PROJECT_ID`       | Variável `e2e-qa`      | Project ref autorizado; nunca use o portal nem o catálogo.   |
+| `E2E_SUPABASE_PUBLISHABLE_KEY` | `e2e-qa`              | Chave publicável do projeto de QA.                            |
+| `E2E_SUPABASE_SERVICE_ROLE_KEY`| `e2e-qa`              | Chave privilegiada exclusiva de QA.                           |
+| `E2E_CLEANUP_DRY_RUN`          | `e2e-qa` (opcional)   | Default é simulação; use exatamente `0` para remover dados.   |
 
 ### Como funciona (camadas de segurança)
 
@@ -148,12 +158,13 @@ Defina os secrets no projeto e como variáveis no CI:
    `E2E_CLEANUP_ALLOWED_EMAILS`. Sem isso, mesmo com o token correto, 403.
 3. **Lookup server-side** — `user_id` é resolvido via `auth.admin`; o
    cliente nunca passa UUID.
-4. **Dry-run default** — body sem `dryRun: false` apenas conta linhas.
+4. **Dry-run default** — o cliente só envia `dryRun: false` quando
+   `E2E_CLEANUP_DRY_RUN=0` estiver definido explicitamente.
 
 ### Rodar manualmente
 
 ```bash
-curl -X POST "$VITE_SUPABASE_URL/functions/v1/e2e-cleanup" \
+curl -X POST "$E2E_SUPABASE_URL/functions/v1/e2e-cleanup" \
   -H "x-e2e-cleanup-token: $E2E_CLEANUP_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"email":"e2e-tester@promogifts.com.br","dryRun":true}'

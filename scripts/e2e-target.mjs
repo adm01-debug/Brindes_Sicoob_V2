@@ -25,6 +25,8 @@ export function validateE2ETarget({
   const hostProjectId = parsedUrl.hostname.match(/^([a-z0-9-]+)\.supabase\.co$/)?.[1];
   if (
     parsedUrl.protocol !== "https:" ||
+    parsedUrl.port !== "" ||
+    parsedUrl.pathname !== "/" ||
     parsedUrl.username ||
     parsedUrl.password ||
     parsedUrl.search ||
@@ -37,6 +39,10 @@ export function validateE2ETarget({
 
   if (projectId !== allowedProjectId || FORBIDDEN_PROJECT_IDS.has(projectId)) {
     throw new Error("Destino E2E fora da allowlist de homologação.");
+  }
+
+  if (!/^[a-z0-9-]{3,63}$/.test(projectId)) {
+    throw new Error("Identificador do projeto E2E inválido.");
   }
 
   if (publishableKey === serviceRoleKey) {
