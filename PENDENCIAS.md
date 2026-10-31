@@ -1,6 +1,6 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
-## Estado atualizado — 30/10/2026 (prevalece sobre o inventário histórico abaixo)
+## Estado atualizado — 31/10/2026 (prevalece sobre o inventário histórico abaixo)
 
 As conclusões abaixo foram conferidas contra a última execução conhecida de cada workflow na `main`. Correções locais ainda não validadas no GitHub continuam pendentes.
 
@@ -10,14 +10,16 @@ As conclusões abaixo foram conferidas contra a última execução conhecida de 
 | Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | `failure`: gate encontrou vulnerabilidades altas em `undici` e `zod`. Corrigidas localmente sem upgrade major; `npm audit --audit-level=high` passa, mas falta CI remoto. |
 | Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `failure`: `npm audit` interrompeu por vulnerabilidades altas em `undici`/`zod`. Correção local aguarda CI remoto. |
 | Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | `failure`: o step de deploy passou; a confirmação falhou porque exigia incremento de versão para todas as funções. O log registra `No change found` para bundle inalterado, um no-op válido segundo a estratégia oficial de comparação por checksum. A branch troca a exigência de incremento por função `ACTIVE`, baseline completo, versão inteira válida e sem regressão; sete testes locais cobrem no-op, atualização, baseline incompleto, ausência/inatividade, coerção, regressão, resposta malformada/duplicada e paridade da lista. O workflow é `workflow_dispatch` restrito à `main`, então a execução remota corrigida só pode ser validada após merge e acionamento manual seguro. |
-| E2E Playwright | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | `startup_failure`, `total_jobs=0`: GitHub não iniciou jobs, portanto não há falha de teste reproduzível. A lista de secrets (somente nomes) contém credenciais E2E antigas e `VITE_SUPABASE_*`, mas não comprova valores nem o projeto de destino. A branch local agora exige `E2E_SUPABASE_URL`, `E2E_SUPABASE_PROJECT_ID`, `E2E_SUPABASE_PUBLISHABLE_KEY` e `E2E_SUPABASE_SERVICE_ROLE_KEY`, rejeita URL/ref divergente e bloqueia refs canônicos. Esses quatro secrets dedicados ainda não constavam na listagem. Aguardando configuração/confirmação do owner antes de executar. |
+| E2E Playwright | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | Última execução na `main`: `startup_failure`, `total_jobs=0`; GitHub não iniciou jobs. No SHA do PR `239898dd7`, [run 41162891747](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41162891747) estava `queued` na consulta. A listagem atualizada contém somente credenciais E2E antigas e `VITE_SUPABASE_*`, não os quatro secrets dedicados nem prova de valores/projeto. O E2E aguarda configuração de ambiente e contas isolados. |
 | Migration ledger drift | [41013281253](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41013281253) | `success` (30/10). |
 | Branch Protection Sentinel | execução mais recente observada em 27/10 | `success`. |
 | Enterprise Compliance & Audit Reporting | execução mais recente observada em 27/10 | `success`. |
 
-**Restrições e próximo passo:** a consulta de secrets retornou apenas metadados/nome, sem valores. Não imprimir secrets, executar migrations, invocar Edge Functions ou alterar o Supabase canônico. Após configurar e confirmar o ambiente isolado, abrir/atualizar PR e validar os checks remotos. O deploy de funções requer primeiro esclarecer a checagem de versão. Nenhum desses bloqueios autoriza merge de código de aplicação que dispare deploy de produção.
+**Execuções do PR #179 em 31/10/2026:** SHA `239898dd7b0f503d940fdd2a3431686001c4d330`. Na consulta, estavam `queued` Security Scan [41162891641], Lighthouse [41162891603], CodeQL [41162891658], Portal Sicoob [41162891591], Bundle Size [41162891616] e E2E [41162891747]; Qualidade contínua [41162891597] estava `pending`. Nenhuma conclusão remota foi presumida. O run da main Publicar funções [40772348102] segue como última falha na main; a correção está na branch e requer validação do workflow manual depois do merge.
 
-Atualizado em: 2026-10-22 (inventário histórico; estado vigente acima em 30/10/2026)
+**Restrições e próximo passo:** a consulta de secrets retornou apenas metadados/nome, sem valores. Não imprimir secrets, executar migrations, invocar Edge Functions ou alterar o Supabase canônico. O PR deve permanecer em rascunho até os secrets e contas de homologação estarem configurados e os checks do SHA atual ficarem verdes. O workflow manual de publicação precisa validação pós-merge controlada. Nenhum desses bloqueios autoriza merge de código de aplicação que dispare deploy de produção.
+
+Atualizado em: 2026-10-31 (inventário histórico; estado vigente acima)
 
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
 O erro exato foi extraído do run mais recente disponível em main.
