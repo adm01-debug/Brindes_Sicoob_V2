@@ -8,8 +8,56 @@ import {
   collectLocalMigrations,
   compareLedger,
   comparePendingBaseline,
+  formatLedgerDiagnostic,
   normalizedSql,
 } from '../../scripts/db/check-migration-ledger-drift.mjs';
+
+test('diagnóstico do ledger informa a exceção e redige credenciais', () => {
+  const error = Object.assign(
+    new Error(
+      'fetch failed https://usuario:senha@db.example/rest?apikey=chave; Bearer eyJhbGci.abc.def',
+    ),
+    { code: 'ECONNREFUSED' },
+  );
+  const diagnostic = formatLedgerDiagnostic(error);
+
+  assert.equal(diagnostic.name, 'Error');
+  assert.equal(diagnostic.code, 'ECONNREFUSED');
+  assert.match(diagnostic.message, /fetch failed/);
+  assert.match(diagnostic.message, /\[URL redigida\]/);
+  assert.match(diagnostic.message, /Bearer \[redigido\]/);
+  assert.doesNotMatch(diagnostic.message, /senha|chave|eyJhbGci|db\.example/);
+
+  const labeledSecrets = formatLedgerDiagnostic(
+    new Error(
+      'password=senha-local; api_key: chave-local; token=token-local; service_role_key=sb_secret_teste',
+    ),
+  );
+  assert.doesNotMatch(labeledSecrets.message, /senha-local|chave-local|token-local|sb_secret_teste/);
+  assert.equal((labeledSecrets.message.match(/\[redigido\]/g) ?? []).length, 4);
+
+  for (const uri of [
+    'postgresql://user:p;ass@db.example/db',
+    'mysql://user:senha@db.example/catalog',
+    'redis://:senha@cache.example/0',
+  ]) {
+    const safe = formatLedgerDiagnostic(new Error(uri));
+    assert.equal(safe.message, '[URL redigida]');
+    assert.doesNotMatch(safe.message, /user|senha|ass@db\.example|db\.example/);
+  }
+
+  const basicAuth = formatLedgerDiagnostic(new Error('Authorization: Basic dXNlcjpwYXNz'));
+  assert.doesNotMatch(basicAuth.message, /dXNlcjpwYXNz/);
+
+  const rawSupabaseKey = formatLedgerDiagnostic(new Error('falha ao autenticar sb_secret_chave_teste'));
+  assert.doesNotMatch(rawSupabaseKey.message, /sb_secret_chave_teste/);
+
+  const jsonSecrets = formatLedgerDiagnostic(
+    new Error('{"password":"json-secret", "cookie": "session-cookie-value"}'),
+  );
+  assert.doesNotMatch(jsonSecrets.message, /json-secret|session-cookie-value/);
+  assert.match(formatLedgerDiagnostic(new Error('x://user:senha@host')).message, /\[URL redigida\]/);
+});
 test('compara oito dígitos, conteúdo e ausência nas duas direções', () => {
   const root = mkdtempSync(join(tmpdir(), 'sicoob-ledger-'));
   try {
