@@ -297,10 +297,18 @@ A PR #184 introduz a proteção: PRs usam placeholders sem secrets e executam ap
 - Os commits de correção de `undici` e Zod 4 (`a96fd44ca`, `46e6cc33c`) foram cherry-picked para a branch da PR #184. `npm audit` local terminou sem vulnerabilidades; build, typecheck e suíte completa passaram. A correção ainda **não está na main** e os checks remotos do novo SHA ainda precisam concluir.
 - A consulta de environments do GitHub confirmou que `e2e-qa` ainda não existe (404). Existe `e2e-staging`, mas sem regras de proteção ou política de branches. Ele não atende ao isolamento exigido e não será usado como destino remoto. O owner informou que vai configurar o projeto QA; até isso ser confirmado, testes E2E autenticados permanecem bloqueados.
 - Nenhum valor de secret foi lido ou registrado. Não houve chamada de escrita ao Supabase nem execução de migration/deploy.
-- Os commits estão publicados na PR #184; aguardar os checks e resolver a limitação externa do ECR abaixo. Os cinco workflows ainda constam como falha na última execução da `main` do inventário de 2026-10-31; só novas execuções na `main` poderão confirmar a resolução.
+- Os commits estão publicados na PR #184. Os cinco workflows ainda constam como falha na última execução da `main` do inventário de 2026-10-31; só novas execuções na `main` poderão confirmar a resolução.
+
+> **Correção de status:** a cota do ECR foi recuperada; a execução posterior no SHA `640944d97` passou, conforme abaixo. O bloqueio atual é de revisão/merge, não de ECR.
 
 ### Falha intermitente de infraestrutura na PR #184 — ECR
 
 O run [41188633657](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41188633657), no SHA `c1c0a6e30fb1be755aee9b30fec5835600514cc7`, falhou apenas em **“Simular controles de auditoria e permissões em PostgreSQL descartável”**. O pull de `public.ecr.aws/supabase/postgres:17.6.1.063` respondeu `toomanyrequests: Data limit exceeded` após três retentativas internas. O rerun somente do job (tentativa 2) repetiu a causa. Posteriormente, o SHA `640944d97f8ee3da1c66fa40247b1397d2809474` executou novamente o workflow [41190013312](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41190013312) e todas as simulações, inclusive a mesma etapa PostgreSQL, terminaram **success**. O limite do ECR foi transitório e não é bloqueio atual da PR.
 
 Nenhuma conexão ao Supabase foi feita por esses jobs: o container da simulação é descartável e usa `--network none`. Não há ação pendente do owner para o ECR neste momento; se o limite voltar a ocorrer, registrar o novo run e repetir somente o job falho após o pull se recuperar.
+
+### Merge da PR #184 aguardando janela de deploy
+
+A branch altera dependências de runtime: `zod` 3 → 4 e `@hookform/resolvers` 3 → 5. Os testes e checks verificam a compatibilidade, mas a mudança afeta o artefato da aplicação. Como a instrução de CI vigente determina não mesclar PR que possa disparar deploy de produção quando alterar código/dependências da aplicação, a PR permanece aberta e pronta para revisão; não mesclar até o owner autorizar uma janela apropriada para esse deploy. Sem merge, as correções ainda não estão na `main` e os workflows desta lista não podem ser declarados resolvidos na branch principal.
+
+Na execução mais recente observada da PR [#184](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/184), SHA `e01e6fdaf`, todos os checks de produto terminaram success. O E2E autenticado e os shards dependentes ficaram skipped porque o ambiente `e2e-qa` continua ausente; o Vercel Agent Review foi neutral por billing desabilitado. A jornada autenticada permanece sem prova até a configuração do projeto isolado e secrets de QA pelo owner.
