@@ -1,6 +1,10 @@
 {
   "ambiente": "PostgreSQL 17 descartável, sem rede e com dados sintéticos",
   "migracao": "supabase/migrations/20261013115605_harden_sicoob_budget_authority.sql",
+  "migracoes_de_reproducao_e_correcao": [
+    "supabase/migrations/20261016173000_remove_redundant_pa_budget_select_policy.sql",
+    "supabase/migrations/20261031041308_restore_pa_budget_buyer_select_scope.sql"
+  ],
   "banco_canonico_alterado": false,
   "gestor_ve_somente_cooperativa": true,
   "gestor_nao_altera_outra_cooperativa": true,
@@ -10,6 +14,8 @@
   "administrador_ativo_preservado": true,
   "insercao_inicia_consumo_em_zero": true,
   "compradores_legitimos_leem_verba_do_escopo": true,
+  "regressao_da_policy_reproduzida_e_corrigida": true,
+  "comprador_singular_nao_ve_outra_cooperativa": true,
   "autoalteracao_de_escopo_do_perfil_bloqueada": true,
   "autocadastro_de_perfil_nao_reativa_papel_residual": true,
   "verba_cooperativa_isolada": true,
