@@ -49,6 +49,8 @@ Foi corrigida localmente a causa comprovada do CodeQL: `init`, `autobuild` e `an
 
 Depois do commit CodeQL `2707fb5a3`, passaram novamente `actionlint`, `npm run typecheck`, `npm run lint` (0 erros/873 avisos), `npm run build` e `npm test` (453 arquivos aprovados, 4 ignorados; 5.848 testes aprovados, 68 ignorados).
 
+Também foram resolvidas localmente as vulnerabilidades altas do npm: Zod foi atualizado para `4.6.7` (o advisory não tinha versão corrigida v3; ajustes de compatibilidade ficaram limitados a `error` nos enums e `issues` no erro de validação) e `undici` transitivo foi atualizado para `8.12.3` dentro da major 8. `npm audit fix` sem `--force` reduziu as moderadas de 15 para 13. Permanecem moderadas na cadeia do ESLint/`minimatch`, sem atualização compatível indicada; não foi feito upgrade major dessa cadeia. `npm run check:npm-audit`, `npm audit --audit-level=high`, typecheck, lint, build e toda a suíte passaram; o build acrescenta avisos de comentários `@__PURE__` no Zod 4, sem falhar.
+
 ## Ajustes na auditoria anterior e riscos ainda em aberto
 
 - E-018 estava desatualizado na primeira leitura: a migration versionada `20260927171216_quote_approval_security_hardening.sql` remove a escrita direta do usuário autenticado e revoga INSERT/UPDATE/DELETE em `quote_history`. Isso confirma o código versionado, não o estado remoto do banco.
@@ -59,7 +61,7 @@ Depois do commit CodeQL `2707fb5a3`, passaram novamente `actionlint`, `npm run t
 
 ## Próximos passos
 
-1. Publicar/validar a correção CodeQL via PR após desbloqueio seguro do E2E; ainda corrigir o gate das vulnerabilidades de dependências sem esconder os alertas.
+1. Publicar/validar via PR as correções CodeQL, npm e aplicação após desbloqueio seguro do E2E; os gates locais estão verdes, mas ainda falta prova remota.
 2. Diagnosticar a divergência de versão da Edge Function com o estado do projeto de homologação autorizado; não publicar funções no banco canônico sem validação e autorização específicas.
 3. Retomar E2E após confirmação de projeto e contas de homologação, rotação da credencial exposta anteriormente e allowlist restrita ao ambiente de teste.
 4. E-023 agora tem correção local em `fix/hermes-h393620-docs-audit-20261031`: os três caminhos de busca do `crm-db-bridge` escapam `%`, `_` e `\\`; 2 testes Deno passaram e `deno check` passou. Ainda falta CI remoto. Continuar E-024/E-027 e demais etapas em ordem de risco; registrar aceite externo como pendente, sem marcar o plano integral como concluído.
