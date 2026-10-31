@@ -217,3 +217,16 @@ Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Depen
 | Migration Ledger Drift | Fingerprint de `20261022120000` calculado com `local_sha256` incorreto; novo digest correto: `e2815b0...` | Corrigido fingerprint no `migration-ledger-baseline.json` | #129 |
 | 5 CVEs high (vite ≤6.4.3) | GHSA-698v, GHSA-r825, GHSA-587h, GHSA-9jrq, GHSA-rq7h | `vite` 6.4.3 → 6.4.5 | #126 |
 | Qualidade contínua (`ci.yml`) — ECR rate limit | `toomanyrequests: Data limit exceeded` ao puxar `public.ecr.aws/supabase/postgres:17.6.1.063` em dois steps (scripts `simular-controles-auditoria.py` e `simular-acl-efetiva.py`) | Rate limit do ECR Public se dissipou naturalmente; run `39780447863` → **success** | automático |
+
+## Atualização supersedente — PR #151 (31/10/2026, 05:35 UTC)
+
+No SHA `6ca2cd43bd17404bf7d2880dd44dd033eaa32852`:
+
+- **E2E** [41172498132](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172498132): autorização remota/RLS passou; o smoke autenticado falhou em `helpers/auth.ts:220`, pois permaneceu em `/login` após tentativa de entrar. `Fail-fast se smoke falhou` encerrou o restante da jornada.
+- Esse run ainda usou secrets globais e não comprovou isolamento do destino. O teste de rate-limit cria um canário por `service_role` e tenta removê-lo em `afterAll`; a consulta SQL somente leitura para confirmar o estado posterior expirou com Management API 544. Portanto, a existência de resíduo novo ainda não foi confirmada nem descartada. Não consultar valores de secrets e não remover linhas manualmente.
+- **Security Scan** [41172498103](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172498103) e **Qualidade contínua** [41172498114](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172498114): falhas por `undici`/`zod` altos.
+- CodeQL [41172498100](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172498100), Lighthouse [41172498109](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172498109), Bundle [41172498091](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172498091) e Portal [41172498086](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172498086): success.
+
+### Bloqueio de novas execuções E2E
+
+O candidato atual substitui os secrets globais por `E2E_SUPABASE_*` e valida o destino antes de qualquer conexão. Até o proprietário provisionar homologação isolada/configurar os secrets e a consulta read-only ao estado do canário voltar a funcionar, não rerodar E2E que use o workflow antigo.
