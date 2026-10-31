@@ -297,11 +297,11 @@ A correção de Gestão de Compras foi commitada e publicada neste SHA; a atuali
 | Gate transacional, responsividade e origem confiável | ✅ [run 41197769084](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769084) |
 | CodeQL | ✅ [run 41197769059](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769059) |
 | Bundle / Lighthouse | ✅ [runs 41197769065](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769065) / [41197769112](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769112) |
-| Qualidade contínua | ❌ tentativa 1; rerun da job solicitado | [run 41197769071](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769071), step 16. O pull de `public.ecr.aws/supabase/postgres:17.6.1.063` recebeu `toomanyrequests: Data limit exceeded` após três tentativas, antes de iniciar a simulação PostgreSQL. Tentativa 2 iniciada às 11:52 UTC; resultado ainda pendente. |
+| Qualidade contínua | ❌ falhou também no rerun | [run 41197769071](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769071), tentativa 2, step 16. O pull de `public.ecr.aws/supabase/postgres:17.6.1.063` recebeu novamente `toomanyrequests: Data limit exceeded` após três tentativas, antes de iniciar a simulação PostgreSQL. Não repetir enquanto o limite persistir. |
 | E2E autenticado e shards | ⏭️ skipped, não certificado | Environment `e2e-qa` retorna 404; `e2e-staging` não possui proteção adequada. |
 | Copilot Code Review | ❌ falha externa | [run 41197777721](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197777721), quota HTTP 402. |
 
-PR #184 segue aberta, sem merge, e exige review humano e janela para as mudanças em dependências runtime. A `main` continua em `e9d59026793b84fabeaeec9da890a068f64d49c3`; as cinco falhas do inventário nela continuam sem nova execução pós-merge, portanto não estão resolvidas. Nenhum segredo, banco Supabase, migration ou deploy foi acessado/alterado nesta etapa.
+PR #184 segue aberta, sem merge, e exige review humano e janela para as mudanças em dependências runtime. A `main` continua em `e9d59026793b84fabeaeec9da890a068f64d49c3`; as cinco falhas do inventário nela continuam sem nova execução pós-merge, portanto não estão resolvidas. Nenhum segredo, banco Supabase, migration ou deploy foi acessado/alterado nesta etapa. A causa ECR repetiu-se no rerun (tentativa 2); o próximo retry deve aguardar a recuperação do limite ou usar uma origem de imagem previamente aprovada.
 
 ### Revalidação remota da PR #186 — SHA `3838556b62e6a3c6f0e9a67e7f57f4a408318da6` — 2026-10-31
 
