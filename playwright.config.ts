@@ -163,6 +163,8 @@ export default defineConfig({
       testMatch: /fixtures\/auth\.setup\.ts/,
       fullyParallel: false,
       workers: 1,
+      // O projeto de setup digita credenciais reais; evite gravá-las em traces.
+      use: { trace: "off", screenshot: "off", video: "off" },
     },
     {
       name: "chromium-public",

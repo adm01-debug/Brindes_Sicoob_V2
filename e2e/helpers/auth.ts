@@ -240,6 +240,10 @@ export async function loginViaUI(page: Page, creds: LoginCreds): Promise<boolean
   await passLoc.fill(creds.password);
 
   await clickTestId(page, 'login-submit');
+  // Playwright guarda snapshots de acessibilidade ao falhar uma asserção.
+  // Limpar o campo após o submit evita persistir a credencial em error-context
+  // e relatórios públicos; o handler já capturou `data` antes do await.
+  await passLoc.fill('').catch(() => {});
 
   if (creds.expectFail) {
     // Continua em /login OU mostra mensagem de erro — auto-retry expect.
