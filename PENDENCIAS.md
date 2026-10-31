@@ -1,6 +1,14 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
-Atualizado em: 2026-10-22
+## Atualização de 31/10/2026
+
+O inventário mais recente está em [RELATORIO_CI.md](./RELATORIO_CI.md#revalidação-em-31102026--base-e9d59026793b84fabeaeec9da890a068f64d49c3). A última execução de `Migration ledger drift` na `main` falhou no run [41175713780](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41175713780), tentativa 2, SHA `e9d590267`. A etapa “Comparar ledger remoto contra arquivos locais” reportou `[ledger] Verificação indisponível (Error); nenhum resultado aprovado.` A causa raiz exata continua **não determinada**; não repetir o run sem melhorar o diagnóstico redigido e reproduzir a chamada. A auditoria de RLS do job passou. Não ler nem registrar valor de secret, não executar repair nem aplicar migration.
+
+Também permanecem falhas observadas na `main`: publicação de funções Sicoob (run `40772348102`), Security Scan (`40602983158`), Qualidade contínua (`40602982964`), CodeQL (`40602983073`) e Copilot (`39785094125`). Ver detalhes e evidência por SHA em `RELATORIO_CI.md`. As seções posteriores neste arquivo são um retrato de 22/10/2026 e devem ser tratadas como histórico quando divergirem do adendo atual.
+
+O baseline local de 31/10 reportou **17 advisories npm (2 altos)**; a atualização focal de `undici` deve ser avaliada separadamente. A correção disponível para `zod` implica major e não foi autorizada por este lote. Nenhuma dependência foi alterada.
+
+Atualização corrente: 2026-10-31; as seções históricas abaixo foram escritas em 2026-10-22.
 
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
 O erro exato foi extraído do run mais recente disponível em main.

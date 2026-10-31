@@ -4,6 +4,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { History, User, Info } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -58,7 +59,7 @@ function TimelineEntry({ event }: { event: TimelineEvent }) {
 }
 
 export function QuoteHistoryTimeline({ quoteId }: QuoteHistoryTimelineProps) {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["quote-history", quoteId],
     queryFn: () => fetchTimeline(quoteId),
   });
@@ -67,6 +68,17 @@ export function QuoteHistoryTimeline({ quoteId }: QuoteHistoryTimelineProps) {
     return (
       <div className="space-y-3">
         {[0, 1, 2].map((i) => <Skeleton key={i} className="h-14" />)}
+      </div>
+    );
+  }
+
+  if (isError && !data?.length) {
+    return (
+      <div role="alert" className="flex flex-col items-start gap-2 text-sm text-muted-foreground">
+        <p>Não foi possível carregar o histórico do orçamento.</p>
+        <Button type="button" variant="outline" size="sm" onClick={() => void refetch()}>
+          Tentar novamente
+        </Button>
       </div>
     );
   }
