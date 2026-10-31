@@ -180,3 +180,8 @@ Validação local do candidato:
 - `npm audit --audit-level=high`: ainda falha por `zod@3.25.76` (um advisory alto restante; exige Zod v4). Total: 16 advisories, 15 moderados e 1 alto.
 
 A mudança do lockfile é limitada a `undici`; a migração de Zod foi mantida separada por exigir mudança major e teste de compatibilidade.
+
+## Atualização CodeQL — 31/10/2026
+
+- A execução `41174320744` falhou no Autobuild porque o `init` carregou CodeQL 4.39.1, mas `autobuild`/`analyze` executaram 4.38.2; o erro identificou explicitamente a divergência.
+- Esta branch alinha `autobuild` e `analyze` ao mesmo SHA v4.39.1 usado pelo `init`. A confirmação final depende do check CodeQL da nova execução da PR #182.
