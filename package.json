@@ -32,7 +32,7 @@
     "test:e2e:report": "npx playwright show-report",
     "test:e2e:install": "npx playwright install --with-deps chromium",
     "test:e2e:pwa": "npx playwright test --config=playwright.pwa.config.ts",
-    "test:cleanup": "curl -X POST $(echo $VITE_SUPABASE_URL)/functions/v1/e2e-cleanup -H 'Content-Type: application/json' -H \"x-e2e-cleanup-token: $E2E_CLEANUP_TOKEN\" -d '{\"email\": \"test@example.com\", \"dryRun\": false}'",
+    "test:cleanup": "node scripts/e2e-cleanup.mjs",
     "check:seller-scope": "node scripts/check-seller-scope.mjs",
     "check:route-error-element": "node scripts/check-route-error-element.mjs",
     "check:aschild-nesting": "node scripts/check-aschild-nesting.mjs",
@@ -88,7 +88,7 @@
     "@e965/xlsx": "0.20.3",
     "@elevenlabs/react": "^1.16.0",
     "@eslint/js": "^9.39.5",
-    "@hookform/resolvers": "^3.3.4",
+    "@hookform/resolvers": "^5.9.2",
     "@lovable.dev/cloud-auth-js": "^1.2.1",
     "@radix-ui/react-accordion": "^1.2.20",
     "@radix-ui/react-alert-dialog": "^1.1.23",
@@ -184,7 +184,7 @@
     "vaul": "^0.9.0",
     "vitest": "^4.1.12",
     "web-vitals": "^5.2.0",
-    "zod": "^3.22.4",
+    "zod": "^4.6.7",
     "zustand": "^4.5.0"
   },
   "devDependencies": {
