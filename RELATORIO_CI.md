@@ -1,11 +1,12 @@
 # Relatório CI — adm01-debug/Brindes_Sicoob_V2
 
-**Gerado em:** 2026-10-22  
-**Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
+**Relatório iniciado em:** 2026-10-22
+**Última atualização:** 2026-10-31
+Os resultados da seção inicial são registros históricos da execução de 22/10; o estado mais recente de dependências está na atualização de 31/10 ao final deste arquivo.
 
 ---
 
-## Baseline local — antes das alterações do PR #141
+## Snapshot histórico — baseline local antes das alterações do PR #141 (22/10/2026)
 
 **Executado em:** 2026-10-22 · **Commit base da main:** `82262c4b`
 
@@ -119,7 +120,7 @@ Atualizado em: 2026-10-22 · CI concluído · **PR aguarda 1 aprovação humana*
 | CodeQL | success | success | ✅ sem regressão |
 | Security Scan (npm audit gate) | — (gate adicionado em #139) | ✅ success | ✅ melhorou |
 
-**Verificações locais pendentes:** `npm install` em execução no container (node_modules foi removido para clean install). TypeScript e ESLint serão executados após conclusão; baseline de CI já confirmado acima.
+**Status histórico em 22/10:** `npm install` ainda estava em execução no container; TypeScript e ESLint aguardavam conclusão. Este registro não descreve o estado atual. Consulte a atualização de 31/10 ao final para o resultado vigente.
 
 ---
 
@@ -164,7 +165,7 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 
 ---
 
-*Relatório gerado automaticamente pela sessão Claude Code.*
+*Registro inicial elaborado em 22/10/2026; atualizações posteriores estão identificadas pela respectiva data.*
 
 ## Atualização do audit de dependências — 31/10/2026
 
