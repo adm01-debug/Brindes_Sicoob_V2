@@ -43,11 +43,11 @@ describe('Gestão de Compras da Singular', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('link', { name: 'Abrir fila de aprovações' }).getAttribute('href')).toBe(
-      '/gestor/aprovacoes',
-    );
-    expect(screen.getByRole('link', { name: 'Abrir painel de indicadores' }).getAttribute('href')).toBe(
-      '/gestor',
-    );
+    expect(
+      screen.getByRole('link', { name: 'Abrir fila de aprovações' }).getAttribute('href'),
+    ).toBe('/gestor/aprovacoes');
+    expect(
+      screen.getByRole('link', { name: 'Abrir painel de indicadores' }).getAttribute('href'),
+    ).toBe('/gestor');
   });
 });
