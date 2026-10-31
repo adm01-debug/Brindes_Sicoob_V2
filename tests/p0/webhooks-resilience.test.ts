@@ -104,4 +104,18 @@ describe("P0 — webhooks resilientes", () => {
     ]);
     expectContract(handler, ["eventAllowed", "signatureValid && eventAllowed"]);
   });
+
+  it("webhooks: aplica limite ao stream de entrada e à resposta externa", () => {
+    const inbound = source("supabase/functions/webhook-inbound/index.ts");
+    const dispatcher = source("supabase/functions/webhook-dispatcher/index.ts");
+
+    expectContract(inbound, [
+      "readLimitedBody(req.body, MAX_PAYLOAD_BYTES)",
+      "if (requestBody.truncated)",
+    ]);
+    expectContract(dispatcher, [
+      "readLimitedBody(res.body, MAX_RESPONSE_BODY_BYTES)",
+      "responseBody.truncated",
+    ]);
+  });
 });

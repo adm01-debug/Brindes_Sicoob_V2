@@ -4,6 +4,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { crypto } from "https://deno.land/std@0.224.0/crypto/mod.ts";
 import { encodeHex } from "https://deno.land/std@0.224.0/encoding/hex.ts";
+import { decodeLimitedBody, readLimitedBody } from "../_shared/read-limited-body.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -73,12 +74,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    const rawBody = await req.text();
-    if (new TextEncoder().encode(rawBody).byteLength > MAX_PAYLOAD_BYTES) {
+    const requestBody = await readLimitedBody(req.body, MAX_PAYLOAD_BYTES);
+    if (requestBody.truncated) {
       return new Response(JSON.stringify({ error: "payload excede o limite de 1 MiB" }), {
         status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const rawBody = decodeLimitedBody(requestBody);
     const signatureHeader = req.headers.get("x-signature-256")
       || req.headers.get("x-webhook-signature")
       || "";
