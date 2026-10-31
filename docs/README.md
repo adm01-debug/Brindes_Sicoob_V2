@@ -1,133 +1,50 @@
-# 📚 Documentação do Gifts Store
+# Documentação do Portal de Brindes Sicoob V2
 
-> **Estado atual do Sicoob (08/10/2026):** [fechamento técnico do candidato de construção](execucao/fechamento-tecnico-2026-10-08.md), complementado pela [execução e preflight do banco canônico](execucao/execucao-plano-2026-10-01.md) e pela [revisão das 150 etapas, workflows e pendências](execucao/revisao-do-plano-2026-10-01.md). O índice legado abaixo não certifica o estado atual; há referências históricas indisponíveis.
+Este índice aponta para a documentação mantida neste repositório. Relatórios de
+execução registram um retrato com data e commit; não comprovam, por si só, o
+estado atual do banco, dos serviços externos ou de uma operação em produção.
+O projeto permanece em construção até que os critérios de piloto e go-live
+sejam atendidos.
 
-> Sistema de Catálogo de Brindes Promocionais  
-> **Idioma:** Português do Brasil 🇧🇷  
-> **Última atualização:** 27/12/2025
+## Comece por aqui
 
----
+1. [README do projeto](../README.md) — visão geral, arquitetura e instalação local.
+2. [Alinhamento de escopo Sicoob](./SCOPE_ALIGNMENT.md) — escopo de produto e limites das integrações.
+3. [Plano de encerramento em 100 etapas](./plano-implementacao/plano-encerramento-100-etapas-20261001/plano.md) — etapas, dependências e critérios de conclusão.
+4. [Revisão do plano de 01/10/2026](./execucao/revisao-do-plano-2026-10-01.md) — evidências e pendências daquele retrato.
+5. [Fechamento técnico de 08/10/2026](./execucao/fechamento-tecnico-2026-10-08.md) — validações do candidato de construção naquela data; não é confirmação do estado atual.
 
-## 📋 Índice de Documentação
+## Referências por assunto
 
-### 🎯 **Documentação Essencial**
+- [Arquitetura](./03_ARQUITETURA_DO_SISTEMA.md)
+- [Rotas](./ROUTES.md)
+- [Autenticação e passkeys](./AUTH_PASSKEYS.md)
+- [Segurança](./SECURITY.md) e [plano de segurança](./SECURITY_PLAN.md)
+- [Banco de dados e dicionário](./DATA_DICTIONARY.md)
+- [Edge Functions](./EDGE_FUNCTIONS.md) e [drift conhecido](./EDGE_FUNCTIONS_DRIFT.md)
+- [Testes](./TESTING.md), [cenários E2E por papel](./CASOS_TESTE_E2E_POR_PAPEL.md) e [cobertura smoke](./E2E_SMOKE_COVERAGE.md)
+- [CI/CD](./CI_CD.md), [proteção de branches](./BRANCH_PROTECTION.md) e [deploy](./DEPLOYMENT.md)
+- [Observabilidade](./OBSERVABILITY.md), [recuperação de desastre](./DR.md) e [runbooks](./RUNBOOK.md)
+- [Checklist de go-live](./GO_LIVE_CHECKLIST.md)
 
-1. **[POLITICA_IDIOMA_PT_BR.md](./POLITICA_IDIOMA_PT_BR.md)** 🔴  
-   **Política definitiva de idioma** - LEITURA OBRIGATÓRIA  
-   - Sistema é **exclusivamente pt-BR**
-   - Proibições absolutas (i18n, multi-idioma)
-   - Regras obrigatórias de desenvolvimento
-   - Justificativa técnica e de negócio
+## Planos e auditorias
 
-2. **[ANALISE_EXAUSTIVA_GIFTS_STORE.md](./ANALISE_EXAUSTIVA_GIFTS_STORE.md)** 📊  
-   **Análise completa do projeto** (67 KB)
-   - Arquitetura técnica detalhada
-   - Stack tecnológico
-   - Estrutura de pastas e componentes
-   - Roadmap 2025-2027 (Q1-Q4)
-   - Melhorias priorizadas
-   - Métricas de qualidade
+Os documentos abaixo são registros versionados; consulte a data, o commit e os
+limites declarados dentro de cada relatório antes de usar seus resultados como
+evidência atual.
 
-3. **[MELHORIAS_PENDENTES_PLANO_IMPLEMENTACAO.md](./MELHORIAS_PENDENTES_PLANO_IMPLEMENTACAO.md)** 🚀 **NOVO!**  
-   **Plano de implementação de melhorias** (15 KB)
-   - 38 melhorias identificadas e categorizadas
-   - Alta prioridade: 12 melhorias críticas
-   - Média prioridade: 15 melhorias importantes
-   - Baixa prioridade: 11 nice-to-have
-   - Cronograma sugerido de 8 semanas
-   - Dependências entre melhorias
-   - Métricas de sucesso
+- [Planos de implementação](./plano-implementacao/README.md)
+- [Lacunas funcionais identificadas em 11/10/2026](./execucao/lacunas-funcionalidades-2026-10-11/01-plano-encerramento.md)
+- [Auditorias e revisões de execução](./execucao/)
+- [Pendências e decisões de produto](./execucao/decisoes_pendentes.md)
 
-4. **[DIAGRAMAS_PROCESSOS_GIFTS_STORE.md](./DIAGRAMAS_PROCESSOS_GIFTS_STORE.md)** 🔄  
-   **Processos de negócio** (36 KB)
-   - Fluxos de orçamento
-   - Processos de venda
-   - Gestão de clientes
-   - Integrações (Bitrix24, n8n)
-   - Diagramas BPMN textuais
+## Regras de segurança operacional
 
-5. **[CONFIGURACAO_LOCALE_PT_BR.md](./CONFIGURACAO_LOCALE_PT_BR.md)** ⚙️  
-   **Guia de implementação técnica** (14 KB)
-   - Configuração date-fns pt-BR
-   - Utilitários de formatação
-   - Checklist de implementação
-   - Exemplos de código
-   - Testes e validação
-
----
-
-## 🚀 Quick Start
-
-### Para Desenvolvedores Novos:
-
-1. ✅ **Leia primeiro:** [POLITICA_IDIOMA_PT_BR.md](./POLITICA_IDIOMA_PT_BR.md)
-2. 📊 **Entenda o projeto:** [ANALISE_EXAUSTIVA_GIFTS_STORE.md](./ANALISE_EXAUSTIVA_GIFTS_STORE.md)
-3. 🚀 **Veja o que implementar:** [MELHORIAS_PENDENTES_PLANO_IMPLEMENTACAO.md](./MELHORIAS_PENDENTES_PLANO_IMPLEMENTACAO.md)
-4. ⚙️ **Configure o ambiente:** [CONFIGURACAO_LOCALE_PT_BR.md](./CONFIGURACAO_LOCALE_PT_BR.md)
-5. 🔄 **Entenda os processos:** [DIAGRAMAS_PROCESSOS_GIFTS_STORE.md](./DIAGRAMAS_PROCESSOS_GIFTS_STORE.md)
-
-### Para Gestores/PMs:
-
-1. 📊 **Visão geral:** [ANALISE_EXAUSTIVA_GIFTS_STORE.md](./ANALISE_EXAUSTIVA_GIFTS_STORE.md) (seções de Roadmap e Priorização)
-2. 🚀 **Backlog priorizado:** [MELHORIAS_PENDENTES_PLANO_IMPLEMENTACAO.md](./MELHORIAS_PENDENTES_PLANO_IMPLEMENTACAO.md)
-3. 🔄 **Processos de negócio:** [DIAGRAMAS_PROCESSOS_GIFTS_STORE.md](./DIAGRAMAS_PROCESSOS_GIFTS_STORE.md)
-4. 🔴 **Decisões de produto:** [POLITICA_IDIOMA_PT_BR.md](./POLITICA_IDIOMA_PT_BR.md)
-
----
-
-## 🇧🇷 Política de Idioma
-
-**⚠️ IMPORTANTE:** Este sistema é **EXCLUSIVAMENTE em Português do Brasil**.
-
-- ❌ **SEM** suporte a multi-idioma (i18n)
-- ❌ **SEM** internacionalização
-- ✅ **Locale fixo:** pt-BR
-- ✅ **Timezone:** America/Sao_Paulo
-- ✅ **Moeda:** Real (R$)
-
-**Detalhes:** Ver [POLITICA_IDIOMA_PT_BR.md](./POLITICA_IDIOMA_PT_BR.md)
-
----
-
-## 📊 Estatísticas da Documentação
-
-| Documento | Tamanho | Seções | Última Atualização |
-|-----------|---------|--------|---------------------|
-| POLITICA_IDIOMA_PT_BR.md | 5.6 KB | 9 | 27/12/2025 |
-| ANALISE_EXAUSTIVA_GIFTS_STORE.md | 67 KB | 15 | 27/12/2025 |
-| MELHORIAS_PENDENTES_PLANO_IMPLEMENTACAO.md | 15 KB | 5 | 27/12/2025 |
-| DIAGRAMAS_PROCESSOS_GIFTS_STORE.md | 36 KB | 8 | 27/12/2025 |
-| CONFIGURACAO_LOCALE_PT_BR.md | 14 KB | 7 | 27/12/2025 |
-| **TOTAL** | **138 KB** | **44 seções** | - |
-
----
-
-## 🔗 Links Úteis
-
-- **Repositório:** https://github.com/adm01-debug/gifts-store
-- **Stack:** React + TypeScript + Vite + Supabase + shadcn/ui
-- **date-fns:** https://date-fns.org/
-- **Bitrix24 API:** https://dev.1c-bitrix.ru/rest_help/
-
----
-
-## 📝 Convenções de Documentação
-
-- **🔴 Vermelho:** Política/regra obrigatória
-- **⚠️ Amarelo:** Atenção/cuidado
-- **✅ Verde:** Já implementado/OK
-- **⏳ Relógio:** Em desenvolvimento/pendente
-- **📊 Gráfico:** Análise/dados
-- **🔄 Ciclo:** Processo/fluxo
-- **⚙️ Engrenagem:** Configuração técnica
-- **🚀 Foguete:** Melhorias/roadmap
-
----
-
-**Mantido por:** Pink e Cerébro (adm01-debug)  
-**Última revisão completa:** 27/12/2025  
-**Status:** ✅ Documentação atualizada e completa
-
-## Plano atual de correções do portal Sicoob
-
-[Plano de 150 etapas — 27/09/2026](plano-implementacao/plano-150-etapas-20260927/plano.md). Inclui frentes de banco, integridade de orçamentos, operação, segurança e experiência de loja, com testes e checklist obrigatório.
+- Não aplique migrations diretamente com `supabase db push` neste projeto. O
+  ledger histórico exige os fluxos allowlisted e protegidos documentados em
+  [DEPLOYMENT.md](./DEPLOYMENT.md) e
+  [MCP_DDL_APPLICATION.md](./RUNBOOKS/MCP_DDL_APPLICATION.md).
+- Nunca registre tokens, senhas, chaves privadas ou conteúdo de secrets em
+  commits, issues, relatórios ou logs.
+- Marque uma funcionalidade como concluída somente com critério de aceite e
+  evidência compatível com o ambiente e o fluxo descritos.
