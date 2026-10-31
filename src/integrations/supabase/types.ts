@@ -12183,6 +12183,11 @@ export type Database = {
         Returns: Json
       }
       get_public_quote_approval: { Args: { _token: string }; Returns: Json }
+      get_public_favorite_list: { Args: { _token: string }; Returns: Json }
+      get_public_favorite_reactions: {
+        Args: { _anon_id: string; _token: string }
+        Returns: { anon_id: string; emoji: string; item_id: string }[]
+      }
       get_query_telemetry_p95: {
         Args: { window_minutes?: number }
         Returns: {
