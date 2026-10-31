@@ -171,9 +171,15 @@ function useConsolidationFilters() {
   const share = () => {
     const params = new URLSearchParams(window.location.search); params.set("q_search", search);
     if (sort) params.set("q_sort", btoa(JSON.stringify(sort)));
-    navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?${params}`)
+    const shareUrl = `${window.location.origin}${window.location.pathname}?${params}`;
+    window.history.pushState(null, '', `?${params}`);
+    if (!navigator.clipboard) {
+      toast.error("Área de transferência indisponível. Copie a URL da barra de endereço.");
+      return;
+    }
+    navigator.clipboard.writeText(shareUrl)
       .then(() => toast.success("Link de compartilhamento copiado!", { description: "Os filtros e ordenação atuais foram codificados na URL." }))
-      .catch(() => toast.error("Não foi possível copiar o link. Copie a URL manualmente."));
+      .catch(() => toast.error("Não foi possível copiar. Copie a URL da barra de endereço."));
   };
   return { search, setSearch, sort, setSort, reset, toggleSort, share };
 }
