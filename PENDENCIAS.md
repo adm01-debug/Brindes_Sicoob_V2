@@ -291,3 +291,10 @@ A PR #184 introduz a proteção: PRs usam placeholders sem secrets e executam ap
 
 - O run Copilot dinâmico na branch de referência `main` [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) falhou por quota HTTP 402; a execução atual na PR #185 também falhou pela mesma quota ([41183332482](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41183332482)). Ação do owner: liberar/aguardar cota do Copilot.
 - O run dinâmico de Dependabot para `@vitest/mocker` [39775463512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775463512) falhou com `security_update_not_possible`; os updates posteriores de `undici` e Zod reportados na main foram `success` ([40603001428](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40603001428), [40603001197](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40603001197)). Sem PR aberta reproduzível para esse run antigo, manter como histórico, não como bloqueio atual dos cinco workflows de produto listados.
+
+## Situação atual após correções locais — 2026-10-31
+
+- Os commits de correção de `undici` e Zod 4 (`a96fd44ca`, `46e6cc33c`) foram cherry-picked para a branch da PR #184. `npm audit` local terminou sem vulnerabilidades; build, typecheck e suíte completa passaram. A correção ainda **não está na main** e os checks remotos do novo SHA ainda precisam concluir.
+- A consulta de environments do GitHub confirmou que `e2e-qa` ainda não existe (404). Existe `e2e-staging`, mas sem regras de proteção ou política de branches. Ele não atende ao isolamento exigido e não será usado como destino remoto. O owner informou que vai configurar o projeto QA; até isso ser confirmado, testes E2E autenticados permanecem bloqueados.
+- Nenhum valor de secret foi lido ou registrado. Não houve chamada de escrita ao Supabase nem execução de migration/deploy.
+- Próximo passo: publicar os commits em #184 e aguardar todos os checks. Os cinco workflows ainda constam como falha na última execução da `main` do inventário de 2026-10-31; só novas execuções na `main` poderão confirmar a resolução.
