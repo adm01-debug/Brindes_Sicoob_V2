@@ -165,7 +165,7 @@ function useConsolidationFilters() {
   useEffect(() => localStorage.setItem("quote_consolidation_search", search), [search]);
   useEffect(() => localStorage.setItem("quote_consolidation_sort", JSON.stringify(sort)), [sort]);
   // Limpa também os parâmetros de compartilhamento da URL ao redefinir filtros
-  const reset = () => { setSearch(""); setSort({ key: "total_value", direction: "desc" }); const params = new URLSearchParams(window.location.search); params.delete("q_search"); params.delete("q_sort"); const query = params.toString(); window.history.replaceState(null, '', query ? `?${query}` : window.location.pathname); toast.info("Filtros redefinidos"); };
+  const reset = () => { setSearch(""); setSort({ key: "total_value", direction: "desc" }); const params = new URLSearchParams(window.location.search); params.delete("q_search"); params.delete("q_sort"); const query = params.toString(); window.history.replaceState(window.history.state, '', query ? `?${query}` : window.location.pathname); toast.info("Filtros redefinidos"); };
   const toggleSort = (key: ConsolidationSortKey) => setSort((previous) => ({
     key, direction: previous?.key === key && previous.direction === "asc" ? "desc" : "asc",
   }));
