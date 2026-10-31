@@ -18,7 +18,8 @@ describe('verifyPublishedFunctions', () => {
   });
 
   it('rejeita função ausente na lista atual', () => {
-    expect(() => verifyPublishedFunctions(listedAtVersion(5), listedAtVersion(5).slice(1)))
+    const current = listedAtVersion(5).filter(({ slug }) => slug !== 'sicoob-approval-reconciliation');
+    expect(() => verifyPublishedFunctions(listedAtVersion(5), current))
       .toThrow(/sicoob-approval-reconciliation.*ausente/);
   });
 
