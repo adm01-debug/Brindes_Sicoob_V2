@@ -165,3 +165,15 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 ---
 
 *Relatório gerado automaticamente pela sessão Claude Code.*
+
+## Atualização da PR #151 — 31/10/2026, 05:35 UTC
+
+Commit `6ca2cd43bd17404bf7d2880dd44dd033eaa32852`: build, typecheck e suíte passaram; lint com 0 erros e 873 avisos; suíte 5.846 aprovados / 68 ignorados, sem queda em relação ao baseline registrado. A matriz `docs/security/RLS_MATRIX.md` agora descreve acesso público via RPC com token, sem SELECT direto anônimo.
+
+Checks remotos do SHA:
+
+- E2E [41172498132](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172498132): falha após RLS remoto passar; smoke autenticado ficou em `/login` e o fail-fast impediu a continuação.
+- Security [41172498103](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172498103) e Qualidade [41172498114](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172498114): falha pelo audit alto de `undici` e `zod`.
+- CodeQL [41172498100](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172498100), Lighthouse [41172498109](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172498109), Bundle [41172498091](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172498091) e Portal [41172498086](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41172498086): success.
+
+O workflow E2E da branch ainda usava secrets globais. A Migration/Edge não foi executada por este run, mas o teste remoto de RLS cria e tenta remover canário. A consulta posterior no banco via MCP falhou com Management API 544; estado residual não confirmado. O candidato passa a usar projeto/secrets E2E isolados e a bloquear project refs canônicos antes de acessar o banco. Não houve escrita SQL ou remoção manual pelo Codex.
