@@ -29,11 +29,11 @@ describe('Gestão de Compras da Singular', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.queryByText('Pedidos pendentes hoje')).not.toBeInTheDocument();
-    expect(screen.queryByText('SLA de aprovação (24h)')).not.toBeInTheDocument();
-    expect(screen.queryByText(/R\$ 450\.000,00/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/R\$ 380\.000,00/)).not.toBeInTheDocument();
-    expect(screen.queryByText('Aprovação em Lote (SLA Rápido)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Pedidos pendentes hoje')).toBeNull();
+    expect(screen.queryByText('SLA de aprovação (24h)')).toBeNull();
+    expect(screen.queryByText(/R\$ 450\.000,00/)).toBeNull();
+    expect(screen.queryByText(/R\$ 380\.000,00/)).toBeNull();
+    expect(screen.queryByText('Aprovação em Lote (SLA Rápido)')).toBeNull();
   });
 
   it('direciona o gestor para a fila real e para os indicadores da Singular', () => {
@@ -43,12 +43,10 @@ describe('Gestão de Compras da Singular', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('link', { name: 'Abrir fila de aprovações' })).toHaveAttribute(
-      'href',
+    expect(screen.getByRole('link', { name: 'Abrir fila de aprovações' }).getAttribute('href')).toBe(
       '/gestor/aprovacoes',
     );
-    expect(screen.getByRole('link', { name: 'Abrir painel de indicadores' })).toHaveAttribute(
-      'href',
+    expect(screen.getByRole('link', { name: 'Abrir painel de indicadores' }).getAttribute('href')).toBe(
       '/gestor',
     );
   });
