@@ -10,10 +10,21 @@ export const REQUIRED_EDGE_FUNCTIONS = [
   "sicoob-reorder",
 ];
 
+function parseVersion(value) {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 1
+    ? value
+    : null;
+}
+
 function toFunctionMap(payload) {
   const functions = Array.isArray(payload) ? payload : payload?.functions;
   if (!Array.isArray(functions)) return null;
-  return new Map(functions.filter((fn) => fn && typeof fn.slug === "string").map((fn) => [fn.slug, fn]));
+  const result = new Map();
+  for (const fn of functions) {
+    if (!fn || typeof fn.slug !== "string" || !fn.slug.trim() || result.has(fn.slug)) return null;
+    result.set(fn.slug, fn);
+  }
+  return result;
 }
 
 export function verifyEdgeFunctionDeployments(beforePayload, currentPayload) {
@@ -23,6 +34,15 @@ export function verifyEdgeFunctionDeployments(beforePayload, currentPayload) {
 
   const errors = [];
   const confirmations = [];
+
+  for (const slug of REQUIRED_EDGE_FUNCTIONS) {
+    if (!before.has(slug)) {
+      errors.push(`${slug} não consta no inventário anterior completo.`);
+    }
+  }
+
+  if (errors.length > 0) return { ok: false, errors, confirmations };
+
   for (const slug of REQUIRED_EDGE_FUNCTIONS) {
     const deployed = current.get(slug);
     if (!deployed) {
@@ -34,19 +54,19 @@ export function verifyEdgeFunctionDeployments(beforePayload, currentPayload) {
       continue;
     }
 
-    const currentVersion = Number(deployed.version);
-    if (!Number.isSafeInteger(currentVersion) || currentVersion < 1) {
+    const currentVersion = parseVersion(deployed.version);
+    if (currentVersion === null) {
       errors.push(`${slug} tem versão remota inválida.`);
       continue;
     }
 
     const previous = before.get(slug);
-    const previousVersion = previous ? Number(previous.version) : 0;
-    if (previous && (!Number.isSafeInteger(previousVersion) || previousVersion < 1)) {
+    const previousVersion = parseVersion(previous.version);
+    if (previousVersion === null) {
       errors.push(`${slug} tinha versão anterior inválida.`);
       continue;
     }
-    if (previous && currentVersion < previousVersion) {
+    if (currentVersion < previousVersion) {
       errors.push(`${slug} regrediu da versão ${previousVersion} para ${currentVersion}.`);
       continue;
     }
