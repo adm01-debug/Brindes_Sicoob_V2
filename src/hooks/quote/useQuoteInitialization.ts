@@ -4,6 +4,7 @@ import { format, addDays } from "date-fns";
 import { toast } from "sonner";
 import type { Quote, QuoteItem, QuoteItemPersonalization } from "@/hooks/quotes/quoteTypes";
 import type { SelectedCompanyInfo, SelectedContactInfo } from "@/components/quotes/CompanyContactSelector";
+import { useQuoteUrlPrefill } from "./useQuoteUrlPrefill";
 
 interface InitParams {
   isEditMode: boolean;
@@ -241,29 +242,13 @@ export function useQuoteInitialization({ isEditMode, quoteId, fetchQuote, locati
   }, [locationState, setters]);
 
   // 4. Pre-fill from URL params
-  useEffect(() => {
-    if (isEditMode) return;
-    const rawItems = searchParams.getAll("items[]");
-    if (rawItems.length > 0) {
-      try {
-        const parsedItems: QuoteItem[] = rawItems.map(raw => {
-          const p = JSON.parse(raw);
-          return {
-            product_id: p.product_id || "", product_name: p.product_name || "",
-            product_sku: p.product_sku || "", product_image_url: p.product_image || undefined,
-            quantity: Math.max(1, p.quantity || 1), unit_price: parseFloat(p.product_price || "0"),
-            color_name: p.color_name || undefined, color_hex: p.color_hex || undefined,
-            personalizations: [],
-          };
-        });
-        if (parsedItems.length > 0) {
-          setters.setItems(parsedItems); setters.setActiveItemIndex(0);
-          toast.success(`${parsedItems.length} produto(s) adicionado(s) ao orçamento`);
-          window.history.replaceState({}, document.title, window.location.pathname);
-        }
-      } catch (e) { console.warn("Failed to parse items[]", e); }
-    }
-  }, [isEditMode, searchParams, setters]);
+  useQuoteUrlPrefill({
+    isEditMode,
+    searchParams,
+    setClientId: setters.setClientId,
+    setItems: setters.setItems,
+    setActiveItemIndex: setters.setActiveItemIndex,
+  });
 
   // 5. Pre-fill from template (passed via state)
   useEffect(() => {
