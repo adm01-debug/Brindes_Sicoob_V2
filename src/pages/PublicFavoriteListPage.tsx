@@ -12,27 +12,11 @@ import { PageSEO } from '@/components/seo/PageSEO';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/format';
-
-interface PublicList {
-  id: string;
-  name: string;
-  description: string | null;
-  color: string;
-  shared_expires_at: string | null;
-  user_id: string;
-}
-
-interface PublicItem {
-  id: string;
-  product_id: string;
-  variant_info: {
-    color_name?: string | null;
-    color_hex?: string | null;
-    thumbnail?: string | null;
-  } | null;
-  note: string | null;
-  added_at: string;
-}
+import {
+  fetchPublicFavoriteList,
+  type PublicFavoriteItem,
+  type PublicFavoriteList,
+} from '@/services/favorites/publicFavoriteListService';
 
 interface ExternalProduct {
   id: string;
@@ -100,7 +84,7 @@ function FavoriteReactionBar({
   );
 }
 
-function getFavoriteProductPresentation(item: PublicItem, product?: ExternalProduct) {
+function getFavoriteProductPresentation(item: PublicFavoriteItem, product?: ExternalProduct) {
   if (!product) {
     return {
       name: 'Produto indisponível',
@@ -122,7 +106,7 @@ function FavoriteProductCard({
   isPending,
   onReact,
 }: {
-  item: PublicItem;
+  item: PublicFavoriteItem;
   product?: ExternalProduct;
   meta?: FavoriteReactionMeta;
   isPending: boolean;
@@ -164,35 +148,12 @@ function FavoriteProductCard({
   );
 }
 
-async function fetchPublicFavoriteList(token?: string) {
-  if (!token) return null;
-  const { data, error } = await supabase
-    .from('favorite_lists')
-    .select('id, name, description, color, shared_expires_at, user_id')
-    .eq('shared_token', token)
-    .maybeSingle();
-  if (error) throw error;
-  return data as PublicList | null;
-}
-
-function isFavoriteListExpired(list: PublicList | null | undefined) {
+function isFavoriteListExpired(list: PublicFavoriteList | null | undefined) {
   if (!list?.shared_expires_at) return false;
   return new Date(list.shared_expires_at) < new Date();
 }
 
-async function fetchPublicFavoriteItems(listId?: string) {
-  if (!listId) return [];
-  const { data, error } = await supabase
-    .from('favorite_items')
-    .select('id, product_id, variant_info, note, added_at')
-    .eq('list_id', listId)
-    .order('position', { ascending: true })
-    .order('added_at', { ascending: false });
-  if (error) throw error;
-  return (data ?? []) as PublicItem[];
-}
-
-async function fetchPublicFavoriteProducts(items: PublicItem[]) {
+async function fetchPublicFavoriteProducts(items: PublicFavoriteItem[]) {
   if (items.length === 0) return [];
   const ids = items.map((item) => item.product_id);
   const { data, error } = await supabase.functions.invoke('external-db-bridge', {
@@ -226,15 +187,10 @@ function usePublicFavoriteListData(token?: string) {
     enabled: Boolean(token),
     retry: false,
   });
-  const list = listQuery.data;
+  const list = listQuery.data?.list ?? null;
+  const items = listQuery.data?.items ?? [];
   const expired = isFavoriteListExpired(list);
   const listId = list?.id;
-  const itemsQuery = useQuery({
-    queryKey: ['public-favorite-items', listId],
-    queryFn: () => fetchPublicFavoriteItems(listId),
-    enabled: Boolean(listId) && !expired,
-  });
-  const items = itemsQuery.data ?? [];
   const productIds = items.map((item) => item.product_id).join(',');
   const productsQuery = useQuery({
     queryKey: ['public-favorite-products', productIds],

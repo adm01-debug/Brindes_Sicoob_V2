@@ -13,6 +13,8 @@ ROOT = Path(__file__).resolve().parents[2]
 CONTAINER = "sicoob-verbas-" + uuid.uuid4().hex[:10]
 FIXTURE = ROOT / "tests/scenarios/sql/pa-budgets-authority-fixture.sql"
 MIGRATION = ROOT / "supabase/migrations/20261013115605_harden_sicoob_budget_authority.sql"
+REMOVED_BUYER_POLICY = ROOT / "supabase/migrations/20261016173000_remove_redundant_pa_budget_select_policy.sql"
+RESTORE_BUYER_POLICY = ROOT / "supabase/migrations/20261031041308_restore_pa_budget_buyer_select_scope.sql"
 EVIDENCE = ROOT / "docs/execucao/evidencias/autoridade-verbas-sicoob.json"
 
 COOP_A = "aaaaaaaa-0000-4000-8000-000000000001"
@@ -70,6 +72,10 @@ def scalar(response):
 result = {
     "ambiente": "PostgreSQL 17 descartável, sem rede e com dados sintéticos",
     "migracao": str(MIGRATION.relative_to(ROOT)),
+    "migracoes_de_reproducao_e_correcao": [
+        str(REMOVED_BUYER_POLICY.relative_to(ROOT)),
+        str(RESTORE_BUYER_POLICY.relative_to(ROOT)),
+    ],
     "banco_canonico_alterado": False,
 }
 
@@ -82,7 +88,6 @@ try:
     wait_for_postgres(command, CONTAINER)
     sql(FIXTURE.read_text())
     sql(MIGRATION.read_text())
-
     sql(f"""
       INSERT INTO public.profiles
         (id, user_id, cooperativa_id, pa_id, is_active, deleted_at)
@@ -116,6 +121,17 @@ try:
         ('{COOP_BUDGET_B}', '{COOP_B}', 2026, 10, 9000, 2000);
     """)
 
+    # Reproduz o estado gerado pela consolidação, com atores e dados já existentes.
+    sql(REMOVED_BUYER_POLICY.read_text())
+    checks_after_consolidation = {
+        "regressao_reproduzida_comprador_singular_sem_leitura":
+            scalar(as_actor(COMPRADOR_SINGULAR_A, "SELECT count(*) FROM public.pa_budgets")) == "0",
+    }
+    assert all(checks_after_consolidation.values()), checks_after_consolidation
+    sql(RESTORE_BUYER_POLICY.read_text())
+    # Reaplicar comprova que a migration aceita execução idempotente sem relaxar escopo.
+    sql(RESTORE_BUYER_POLICY.read_text())
+
     assert scalar(as_actor(GESTOR_A, "SELECT count(*) FROM public.pa_budgets")) == "1"
     assert scalar(as_actor(GESTOR_A, f"SELECT count(*) FROM public.pa_budgets WHERE id='{BUDGET_B}'")) == "0"
     assert scalar(as_actor(GESTOR_A, f"UPDATE public.pa_budgets SET verba_total=1100 WHERE id='{BUDGET_A}' RETURNING verba_total")) == "1100"
@@ -144,6 +160,8 @@ try:
     assert scalar(as_actor(ADMIN, "SELECT count(*) FROM public.pa_budgets")) == "2"
     assert scalar(as_actor(COMPRADOR_PA_A, "SELECT count(*) FROM public.pa_budgets")) == "1"
     assert scalar(as_actor(COMPRADOR_SINGULAR_A, "SELECT count(*) FROM public.pa_budgets")) == "1"
+    assert scalar(as_actor(COMPRADOR_SINGULAR_A, f"SELECT count(*) FROM public.pa_budgets WHERE id='{BUDGET_A}'")) == "1"
+    assert scalar(as_actor(COMPRADOR_SINGULAR_A, f"SELECT count(*) FROM public.pa_budgets WHERE id='{BUDGET_B}'")) == "0"
 
     forged_scope = as_actor(
         GESTOR_A,
@@ -255,6 +273,10 @@ try:
         "administrador_ativo_preservado": True,
         "insercao_inicia_consumo_em_zero": True,
         "compradores_legitimos_leem_verba_do_escopo": True,
+        "regressao_da_policy_reproduzida_e_corrigida": checks_after_consolidation[
+            "regressao_reproduzida_comprador_singular_sem_leitura"
+        ],
+        "comprador_singular_nao_ve_outra_cooperativa": True,
         "autoalteracao_de_escopo_do_perfil_bloqueada": True,
         "autocadastro_de_perfil_nao_reativa_papel_residual": True,
         "verba_cooperativa_isolada": True,
