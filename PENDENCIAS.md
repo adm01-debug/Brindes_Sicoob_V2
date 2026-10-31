@@ -12,6 +12,8 @@ No PR #187, após o bump de `undici`, CodeQL [41205319549](https://github.com/ad
 
 O diagnóstico do ledger foi ampliado na branch para incluir erro sanitizado e limitado; fixtures adversariais passaram localmente. A causa da falha remota de `Migration ledger drift` continua **não determinada** até uma próxima execução autorizada. Nenhuma consulta/escrita foi feita no banco nesta rodada.
 
+O run E2E da SHA `044ade862906b55499a70b90140cbd680b934ca2` falhou nos hooks de setup/cleanup do teste RLS remoto (linhas 71 e 84; 90 s somados). A revisão encontrou que o workflow não separava o ambiente de homologação do banco canônico. O workflow atualizado exige a variável de Actions `E2E_SUPABASE_PROJECT_ID`, confere correspondência com `VITE_SUPABASE_URL` e `VITE_SUPABASE_PROJECT_ID` e bloqueia a referência canônica antes de qualquer chamada que grave o canário. No inventário somente de nomes, essa variável ainda não existia; os valores de secrets não foram lidos. **Ação pendente:** configurar `E2E_SUPABASE_PROJECT_ID` com o ref de um projeto Supabase exclusivo de homologação e garantir que URL/chaves usadas no E2E pertençam a esse mesmo projeto. Até então, o job deve falhar fechado na checagem, sem tocar banco remoto.
+
 Atualização corrente: 2026-10-31; as seções históricas abaixo foram escritas em 2026-10-22.
 
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
