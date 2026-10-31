@@ -24,6 +24,7 @@ sejam atendidos.
 - [Edge Functions](./EDGE_FUNCTIONS.md) e [drift conhecido](./EDGE_FUNCTIONS_DRIFT.md)
 - [Testes](./TESTING.md), [cenários E2E por papel](./CASOS_TESTE_E2E_POR_PAPEL.md) e [cobertura smoke](./E2E_SMOKE_COVERAGE.md)
 - [CI/CD](./CI_CD.md), [proteção de branches](./BRANCH_PROTECTION.md) e [deploy](./DEPLOYMENT.md)
+- [Relatório CI](../RELATORIO_CI.md) e [pendências operacionais/CI](../PENDENCIAS.md)
 - [Observabilidade](./OBSERVABILITY.md), [recuperação de desastre](./DR.md) e [runbooks](./RUNBOOK.md)
 - [Checklist de go-live](./GO_LIVE_CHECKLIST.md)
 

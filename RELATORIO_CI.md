@@ -165,3 +165,41 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 ---
 
 *Relatório gerado automaticamente pela sessão Claude Code.*
+
+---
+
+## Atualização de auditoria — 2026-10-31
+
+### Última execução de cada workflow na `main`
+
+Consultado via GitHub Actions MCP, agrupado por workflow e excluindo execuções
+de PR. Esta tabela é um retrato do SHA `e9d59026793b84fabeaeec9da890a068f64d49c3`.
+
+| Workflow | Conclusão | Evidência / causa observada |
+|---|---|---|
+| Migration ledger drift | ❌ `failure` | [run 41175713780](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41175713780): step de comparação do ledger terminou com exit 2 e erro genérico `Verificação indisponível (Error)`; auditoria RLS subsequente passou sem findings. |
+| Publicar funções Sicoob | ❌ `failure` | [run 40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102): `No change found` manteve a função na versão 5, mas o verificador exigia incremento. PR #186 trata esse falso negativo. |
+| Security Scan | ❌ `failure` | [run 40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158): npm audit encontrou `undici` e `zod` em severidade alta. |
+| Qualidade contínua | ❌ `failure` | [run 40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964): o gate npm audit parou pelos mesmos dois pacotes. |
+| CodeQL | ❌ `failure` | [run 40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073): versões `init` 4.39.1 e `autobuild/analyze` 4.38.2 divergentes; sem SARIF. Correção preparada no PR #184. |
+
+**Continuavam verdes neste inventário:** Branch Protection Sentinel — [run 40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038); Enterprise Compliance & Audit Reporting — [run 40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958); Portal Sicoob — [run 39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315). O estado precisa ser reconsultado depois de merges; não foi feita alteração direta na `main`.
+
+### Validação local desta branch documental
+
+Base: `main` em `e9d59026793b84fabeaeec9da890a068f64d49c3`; alterações somente em documentação.
+
+| Verificação | Resultado | Observação |
+|---|---|---|
+| `npm ci --no-audit --no-fund` | ✅ exit 0 | Node 24.19.0; instalação limpa de 980 pacotes. npm avisou que scripts opcionais de três dependências não foram aprovados. |
+| `npm run build` | ✅ exit 0 | Avisos preexistentes: variáveis Vite ausentes localmente, import misto, PostCSS sem `from` e chunks maiores que 600 kB. |
+| `npm run typecheck` | ✅ exit 0 | App e configuração Node sem erros. |
+| `npm run typecheck:baseline` | ✅ exit 0 | 0 diagnósticos atuais e 0 no baseline. |
+| `npm run lint` | ✅ exit 0 | 0 erros e 873 avisos. |
+| `npm run lint:baseline` | ✅ exit 0 | 0 regressões nos arquivos de aplicação alterados. |
+| `npm run test:scenarios` | ✅ exit 0 | 226 cenários aprovados; nenhum skip ou falha. |
+| `npm run test:coverage:ci` | ✅ exit 0 | 452 arquivos aprovados, 4 ignorados; 5.839 testes aprovados, 68 ignorados. Cobertura: 94% statements, 86,79% branches, 97,22% functions e 97,6% lines. |
+| `npm run check:npm-audit` | ❌ exit 1 | Reproduz duas vulnerabilidades altas em `undici` e `zod`, já rastreadas no PR #185. |
+| Verificação local de links e comandos dos quatro guias revisados | ✅ | Todos os links relativos existem e todos os scripts npm citados estão declarados. |
+
+Os testes locais não validam o destino das secrets nem a jornada Supabase autenticada. O environment isolado `e2e-qa` ainda aguarda configuração e execução protegida. O repositório não recebeu deploy de Edge Functions nem aplicação de migrations nesta etapa; nenhum SQL remoto foi executado.
