@@ -182,7 +182,7 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 | `npm run lint:baseline` | ✅ exit 0 | 0 regressões acima do baseline. |
 | `npm run typecheck` | ✅ exit 0 | `tsc` app e node sem erros. |
 | `npm run typecheck:baseline` | ✅ exit 0 | 0 diagnósticos atuais; baseline também 0. |
-| `npm test` | ✅ exit 0 | 5.854 testes passaram, 68 skipped, 0 falhas (execução anterior aos dois últimos ajustes E2E; reexecução em andamento). Base anterior: 5.839 passaram + 68 skipped; os 15 adicionais cobrem os guards de destino/cleanup. |
+| `npm test` | ✅ exit 0 | 5.854 testes passaram, 68 skipped, 0 falhas. A primeira reexecução concorrente com Playwright capturou uma exceção jsdom/Radix; executado novamente isolado, passou. Base anterior: 5.839 passaram + 68 skipped; os 15 adicionais cobrem os guards de destino/cleanup. |
 | `actionlint` nos workflows E2E e compliance | ✅ exit 0 | YAML/workflow válido. |
 | `npm audit` | ❌ exit 1 | 17 findings: 15 moderate e 2 high (`undici` e `zod`). A correção do `zod` sugere major 4; não foi aplicada sem teste de compatibilidade. |
 
@@ -196,4 +196,10 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 | Qualidade contínua | ❌ failure | [run 41177997004](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177997004): o job parou no mesmo gate `check:npm-audit`; mesma causa raiz. |
 | E2E (Playwright) | ❌ failure | [run 41177997096](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177997096): `beforeAll` de `e2e-cleanup-rate-limit` excedeu 45 s; o job executou testes remotos e recebeu credenciais de escopo genérico sem validar destino. A nova branch remove segredos de PR e exige environment `e2e-qa`/allowlist em disparo manual na main. |
 
-A primeira execução local do Playwright público também falhou por Chromium ausente (corrigido ao instalar o browser) e por um teste que chamava o Supabase real apesar do backend isolado. O teste foi convertido para mock de `quote-approval`; o cenário individual passou. A suíte pública completa será registrada após a execução em andamento terminar.
+A primeira execução local do Playwright público falhou por Chromium ausente (instalado) e por um teste que chamava o Supabase real apesar do backend isolado. O teste foi convertido para mock de `quote-approval`; o cenário individual passou e a suíte pública completa passou com 109/109 testes em 3,1 min, sem secrets e sem backend remoto.
+
+### Revisão transversal de `workflow_dispatch` com credenciais privilegiadas
+
+Foi encontrado que três jobs com secrets Supabase privilegiados aceitavam disparo manual em refs arbitrárias: `compliance-audit`, `performance-audit` e `drift-check`. Os três agora condicionam `workflow_dispatch` a `refs/heads/main`; eventos de `push` (limitados a main no workflow) e `schedule` permanecem permitidos. `apply-sicoob-migrations.yml` e `deploy-sicoob-functions.yml` já tinham proteção de ref. Correção local ainda aguarda CI remoto.
+
+Auditoria adicional do Lighthouse: o upload do LHCI está configurado para `filesystem`, logo `LHCI_GITHUB_APP_TOKEN` não era necessário; removido do ambiente do processo que executa conteúdo do PR. Também foi removido `continue-on-error` do upload de artefatos para que falhas não sejam mascaradas. As asserções de performance/acessibilidade não foram alteradas.

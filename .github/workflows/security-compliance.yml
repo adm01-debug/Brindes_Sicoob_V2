@@ -20,6 +20,9 @@ concurrency:
 
 jobs:
   compliance-audit:
+    # Os passos abaixo usam credenciais do projeto canônico. Uma execução
+    # manual só pode executar o código confiável publicado na branch principal.
+    if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

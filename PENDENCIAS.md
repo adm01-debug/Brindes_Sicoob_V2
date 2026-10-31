@@ -245,3 +245,9 @@ Os runs [Security Scan #41177996979](https://github.com/adm01-debug/Brindes_Sico
 ## E2E remoto no PR #183
 
 O [run 41177997096](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177997096) recebeu secrets genéricos em PR e falhou quando o `beforeAll` do teste RLS passou de 45 s. A causa operacional exata não é demonstrável porque o valor do projeto está mascarado e não há acesso aos secrets de environment. A correção proposta move a jornada autenticada para `workflow_dispatch` na main + `e2e-qa`, torna o PR estritamente público/sem secrets e faz o destino ser validado no workflow e nos testes remotos. O status remoto dessa correção só poderá ser provado após publicar a branch e aguardar o CI.
+
+## Validação pendente: proteção dos dispatches com credenciais Supabase
+
+Revisão transversal encontrou jobs que recebiam credenciais privilegiadas durante `workflow_dispatch` em branches arbitrárias: compliance, auditoria de performance e migration-ledger drift. Os três agora restringem o disparo manual à `main`; os workflows de aplicação de migrations e deploy de Edge Functions já tinham essa proteção. `actionlint` e os gates locais serão repetidos; só o CI de PR poderá validar a mudança de forma remota. Em `migration-ledger-drift.yml`, confirmar também que o environment `construction` mantém política de branches restrita à `main`.
+
+O workflow Lighthouse também recebeu correção: o token da GitHub App foi removido porque o destino do upload é `filesystem`, e `continue-on-error` foi eliminado. O CI deve confirmar que o upload de artefatos e as asserções seguem verdes.
