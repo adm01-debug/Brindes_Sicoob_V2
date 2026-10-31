@@ -36,8 +36,14 @@ e2e/
    ```bash
    cp .env.e2e.example .env.e2e
    ```
-2. Preencha com credenciais de um usuário de teste real:
+2. Configure um projeto de QA isolado. Preencha os cinco valores de destino/chaves e a allowlist com o mesmo project ref, além das contas de teste:
    ```
+   E2E_SUPABASE_URL=https://<project-ref>.supabase.co
+   E2E_SUPABASE_PROJECT_ID=<project-ref>
+   E2E_ALLOWED_PROJECT_ID=<project-ref>
+   E2E_SUPABASE_PUBLISHABLE_KEY=...
+   E2E_SUPABASE_SERVICE_ROLE_KEY=...
+   E2E_CLEANUP_TOKEN=...
    E2E_USER_EMAIL=teste@exemplo.com
    E2E_USER_PASSWORD=SuaSenhaForte
    ```
@@ -47,8 +53,9 @@ e2e/
    npm run test:e2e
    ```
 
-Sem essas variáveis, os specs autenticados são marcados `skip` automaticamente
-(o setup grava um storageState vazio).
+O cleanup só usa `E2E_SUPABASE_URL` e exige que URL, project ref e allowlist
+coincidam. Os project refs canônicos do portal e do catálogo mestre são
+recusados. Sem configuração válida, o cleanup falha fechado.
 
 ## Comandos
 
@@ -80,11 +87,19 @@ Tudo fica em `playwright-report/` (relatório HTML) e `e2e-artifacts/` (raw).
 ## CI
 
 Workflow em `.github/workflows/e2e.yml`:
-- Roda em todo push/PR contra `main`
-- Specs públicos sempre rodam
-- Specs autenticados só rodam se `E2E_USER_EMAIL`/`E2E_USER_PASSWORD`
-  forem secrets do repositório
-- Faz upload de `playwright-report` e `e2e-evidence` como artifacts (7 dias)
+- PR executa apenas os projetos públicos, com valores locais fictícios e sem secrets.
+- A jornada autenticada e os shards só executam por `workflow_dispatch` na `main`,
+  no environment `e2e-qa`, após validação da allowlist.
+- A configuração do environment deve conter os secrets `E2E_SUPABASE_URL`,
+  `E2E_SUPABASE_PROJECT_ID`, `E2E_SUPABASE_PUBLISHABLE_KEY`,
+  `E2E_SUPABASE_SERVICE_ROLE_KEY` e os dados das personas. A variável não secreta
+  `E2E_ALLOWED_PROJECT_ID` precisa ser idêntica ao project ref do QA.
+- Configure required reviewers em `e2e-qa`; criar o environment sem aprovadores
+  não fornece aprovação manual.
+- O workflow de compliance só executa o teste RLS destrutivo por dispatch na
+  `main`, também protegido por `e2e-qa` e pela mesma allowlist.
+- As secrets environment-scoped não são enumeradas pelo inventário de secrets
+  do repositório; confirme apenas os nomes, nunca grave valores em documentação.
 
 ## Cobertura por módulo
 

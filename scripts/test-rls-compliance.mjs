@@ -16,17 +16,6 @@ validateE2ETarget({
   serviceRoleKey,
 });
 
-const missing = [
-  !url && 'E2E_SUPABASE_URL',
-  !publishableKey && 'E2E_SUPABASE_PUBLISHABLE_KEY',
-  !serviceRoleKey && 'E2E_SUPABASE_SERVICE_ROLE_KEY',
-].filter(Boolean);
-
-if (missing.length) {
-  console.error(`Configuração incompleta do teste RLS: ${missing.join(', ')}`);
-  process.exit(1);
-}
-
 const client = (key) =>
   createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },

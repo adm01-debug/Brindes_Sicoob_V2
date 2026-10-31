@@ -134,8 +134,8 @@ jobs:
       - name: Verificar credenciais da jornada autenticada
         shell: bash
         run: |
-          if [[ -z "$E2E_USER_EMAIL" || -z "$E2E_USER_PASSWORD" || -z "$E2E_VIEWER_EMAIL" || -z "$E2E_VIEWER_PASSWORD" || -z "$E2E_MANAGER_EMAIL" || -z "$E2E_MANAGER_PASSWORD" || -z "$E2E_ADMIN_EMAIL" || -z "$E2E_ADMIN_PASSWORD" || -z "$E2E_ADMIN_TOTP_SECRET" || -z "$E2E_DEV_EMAIL" || -z "$E2E_DEV_PASSWORD" || -z "$E2E_DEV_TOTP_SECRET" ]]; then
-            echo "::error title=Credenciais E2E ausentes::Configure as contas de vendedor, gestor, administrador e desenvolvedor, incluindo os segredos TOTP privilegiados. O gate autenticado não pode concluir por skip."
+          if [[ -z "$E2E_USER_EMAIL" || -z "$E2E_USER_PASSWORD" || -z "$E2E_VIEWER_EMAIL" || -z "$E2E_VIEWER_PASSWORD" || -z "$E2E_MANAGER_EMAIL" || -z "$E2E_MANAGER_PASSWORD" || -z "$E2E_ADMIN_EMAIL" || -z "$E2E_ADMIN_PASSWORD" || -z "$E2E_ADMIN_TOTP_SECRET" || -z "$E2E_DEV_EMAIL" || -z "$E2E_DEV_PASSWORD" || -z "$E2E_DEV_TOTP_SECRET" || -z "$E2E_CLEANUP_TOKEN" ]]; then
+            echo "::error title=Credenciais E2E ausentes::Configure as contas QA de vendedor, gestor, administrador e desenvolvedor, TOTP e o token de cleanup. O gate autenticado não pode concluir por skip."
             exit 1
           fi
 
@@ -266,15 +266,16 @@ jobs:
 
   e2e-regression:
     name: E2E regression — shard ${{ matrix.shard }}/3
-    needs: e2e
-    if: needs.e2e.result == 'success'
+    needs: e2e-authenticated
+    if: needs.e2e-authenticated.result == 'success'
+    environment: e2e-qa
     runs-on: ubuntu-latest
     # Três shards mantêm cada lote abaixo do limite hospedado de 40 minutos.
-    # A serialização permanece necessária porque as contas são canônicas.
+    # A serialização evita disputas entre as personas isoladas de QA.
     timeout-minutes: 40
     strategy:
       fail-fast: false
-      # Os shards usam as mesmas contas canônicas e o mesmo fator TOTP. A
+      # Os shards usam as mesmas contas de QA e o mesmo fator TOTP. A
       # serialização evita desafios MFA concorrentes e limpezas cruzadas.
       max-parallel: 1
       matrix:
@@ -296,9 +297,15 @@ jobs:
       E2E_DEV_PASSWORD: ${{ secrets.E2E_DEV_PASSWORD }}
       E2E_DEV_TOTP_SECRET: ${{ secrets.E2E_DEV_TOTP_SECRET }}
       E2E_CLEANUP_TOKEN: ${{ secrets.E2E_CLEANUP_TOKEN }}
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-      VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+      E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      E2E_SUPABASE_PROJECT_ID: ${{ secrets.E2E_SUPABASE_PROJECT_ID }}
+      E2E_ALLOWED_PROJECT_ID: ${{ vars.E2E_ALLOWED_PROJECT_ID }}
+      E2E_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
+      E2E_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
+      VITE_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_PROJECT_ID: ${{ secrets.E2E_SUPABASE_PROJECT_ID }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
