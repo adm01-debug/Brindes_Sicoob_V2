@@ -250,3 +250,16 @@ Os commits `a96fd44ca` (Undici) e `46e6cc33c` (Zod 4) foram incorporados à bran
 | `npm run test:coverage:ci` | ✅ exit 0 | 454 arquivos aprovados, 4 ignorados; 5.855 testes aprovados, 68 ignorados; cobertura: statements 94%, branches 86,79%, funções 97,22%, linhas 97,6%. |
 
 A listagem remota de environments confirmou que `e2e-qa` não existe. `e2e-staging` existe sem regras de proteção nem política de branches e, por isso, não foi usado para executar testes autenticados. Nenhum secret foi lido ou escrito; nenhuma migration ou operação Supabase foi executada. A PR #184 ainda precisa de CI remoto no novo SHA e aprovação exigida pela proteção de branches. As cinco falhas do inventário permanecem abertas até novos runs correspondentes na `main` terminarem em `success`.
+
+### Resultado remoto da PR #184 — SHA `c1c0a6e30fb1be755aee9b30fec5835600514cc7`
+
+| Check | Resultado | Evidência |
+|---|---|---|
+| E2E público | ✅ success | [run 41188633632](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41188633632); jornada autenticada e shards remotos ficaram skipped porque `e2e-qa` ainda não está configurado. |
+| npm audit | ✅ success | [run 41188633761](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41188633761); zero vulnerabilidades no branch. |
+| CodeQL | ✅ success | [run 41188633748](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41188633748). |
+| Gitleaks | ✅ success | [run 41188633761](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41188633761). |
+| Bundle, Lighthouse, responsividade, simulação transacional e origem confiável | ✅ success | Runs [41188633631](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41188633631), [41188633630](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41188633630), [41188633673](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41188633673) e [41188633632](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41188633632). |
+| Qualidade contínua / suíte, simulações e build | ❌ failure | [run 41188633657](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41188633657), tentativa 2: a suíte completa passou; a simulação “controles de auditoria e permissões” não conseguiu baixar `public.ecr.aws/supabase/postgres:17.6.1.063` por `toomanyrequests: Data limit exceeded`, após três tentativas. O rerun isolado repetiu o rate limit. Aguardando cota do ECR ou imagem de origem aprovada pelo owner. |
+
+O run não teve step de Supabase: a simulação PostgreSQL usa container descartável com `--network none`. Nenhum outro job falhou na PR. O merge continua bloqueado por esse check e pela revisão da branch protection. Não há motivo comprovado para alterar o código da aplicação.
