@@ -73,6 +73,7 @@ async function listShipmentsByOrderIds(orderIds: string[]) {
     delivery_photo_path: string | null;
   }> = [];
 
+  // sicoob_order_shipments.order_id é UNIQUE; cada lote pode retornar no máximo uma remessa por pedido.
   for (let offset = 0; offset < orderIds.length; offset += SHIPMENT_ORDER_ID_BATCH_SIZE) {
     const orderIdBatch = orderIds.slice(offset, offset + SHIPMENT_ORDER_ID_BATCH_SIZE);
     const { data, error } = await supabase

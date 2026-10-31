@@ -93,13 +93,34 @@ describe('listSicoobLogisticsTracking', () => {
       order_number: `PED-${index}`,
     }));
     for (let offset = 0; offset < orders.length; offset += 200) {
-      listOrders.mockResolvedValueOnce({ orders: orders.slice(offset, offset + 200), total: orders.length });
+      const orderBatch = orders.slice(offset, offset + 200);
+      listOrders.mockResolvedValueOnce({ orders: orderBatch, total: orders.length });
+      orderShipments.mockResolvedValueOnce({
+        data: orderBatch.map(({ id }, batchIndex) => ({
+          id: `shipment-${id}`,
+          order_id: id,
+          carrier_name: `Transportadora ${offset + batchIndex}`,
+          estimated_delivery: null,
+          status: 'in_transit',
+          delivery_photo_path: null,
+        })),
+        error: null,
+      });
     }
-    orderShipments.mockResolvedValue({ data: [], error: null });
 
     const tracking = await listSicoobLogisticsTracking();
 
     expect(tracking).toHaveLength(1001);
+    expect(tracking[0]).toEqual(expect.objectContaining({
+      id: 'shipment-order-0',
+      orderId: 'order-0',
+      carrierName: 'Transportadora 0',
+    }));
+    expect(tracking[1000]).toEqual(expect.objectContaining({
+      id: 'shipment-order-1000',
+      orderId: 'order-1000',
+      carrierName: 'Transportadora 1000',
+    }));
     expect(inFilter).toHaveBeenCalledTimes(6);
     expect(inFilter).toHaveBeenNthCalledWith(1, 'order_id', orders.slice(0, 200).map(({ id }) => id));
     expect(inFilter).toHaveBeenNthCalledWith(6, 'order_id', ['order-1000']);
