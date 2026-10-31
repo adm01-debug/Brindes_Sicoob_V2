@@ -19,19 +19,19 @@ import {
 } from '../../supabase/functions/_shared/edge-authz-manifest';
 import { validateE2ETarget } from '../../scripts/e2e-target.mjs';
 
-const URL = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
-const ANON = (import.meta as any).env?.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
+// As sondas usam EXCLUSIVAMENTE o destino E2E validado (projeto de QA
+// allowlisted). Nunca ler VITE_* aqui: se divergissem, o guard aprovaria QA
+// enquanto os POSTs atingiriam outro projeto.
+const URL = process.env.E2E_SUPABASE_URL;
+const ANON = process.env.E2E_SUPABASE_PUBLISHABLE_KEY;
 
 const requested = process.env.RUN_REMOTE_AUTHZ_TESTS === '1';
-if (requested && (!URL || !ANON)) {
-  throw new Error('RUN_REMOTE_AUTHZ_TESTS=1 exige VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY.');
-}
 if (requested) {
   validateE2ETarget({
-    url: process.env.E2E_SUPABASE_URL,
+    url: URL,
     projectId: process.env.E2E_SUPABASE_PROJECT_ID,
     allowedProjectId: process.env.E2E_ALLOWED_PROJECT_ID,
-    publishableKey: process.env.E2E_SUPABASE_PUBLISHABLE_KEY,
+    publishableKey: ANON,
     serviceRoleKey: process.env.E2E_SUPABASE_SERVICE_ROLE_KEY,
   });
 }
