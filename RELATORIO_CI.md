@@ -184,11 +184,12 @@ A mudança do lockfile é limitada a `undici`; a migração de Zod foi mantida s
 ## Atualização CodeQL — 31/10/2026
 
 - A execução `41174320744` falhou no Autobuild porque o `init` carregou CodeQL 4.39.1, mas `autobuild`/`analyze` executaram 4.38.2; o erro identificou explicitamente a divergência.
-- Esta branch alinha `autobuild` e `analyze` ao mesmo SHA v4.39.1 usado pelo `init`. A confirmação final depende do check CodeQL da nova execução da PR #182.
+- Esta branch alinha `autobuild` e `analyze` ao mesmo SHA v4.39.1 usado pelo `init`. No run `41175640945`, `Initialize CodeQL` e `Autobuild` passaram; `Perform CodeQL Analysis` ainda estava em execução na última consulta.
 
 ## Execução E2E legada e isolamento do banco — 31/10/2026
 
 - Run `41174676250` do SHA `0a1d8b573bd42dd120096cd070d4229a2326fb89` falhou no step de autorização/RLS: `system-healthcheck` e `migration-health-check` excederam timeout; os hooks de INSERT/limpeza em `e2e_cleanup_rate_limit` também excederam 45 s. Total: 50 testes passaram, 4 ignorados e 2 falharam nos testes remotos.
 - Essa execução da base `main` ainda usava `SUPABASE_SERVICE_ROLE_KEY` e `VITE_SUPABASE_*` globais, sem isolamento de destino. Por isso, há possibilidade de escrita temporária no alvo configurado; o agente não inseriu nem removeu dados diretamente.
 - A inspeção somente leitura posterior pelo MCP falhou com `Management API 544` (timeout); não é possível afirmar se existe resíduo nem que nenhum INSERT temporário ocorreu. Não repetir esse fluxo sem o guard.
-- Esta PR substitui as chaves globais por secrets `E2E_SUPABASE_*`, exige URL e project ref isolados, bloqueia os projetos canônicos e valida o destino antes dos testes remotos. A nova execução ainda precisa confirmar o comportamento.
+- No run `41175640824`, a nova verificação falhou no preflight (step 5) porque estavam ausentes `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_PROJECT_ID` e `E2E_SUPABASE_SERVICE_ROLE_KEY`. O guard confirmou o bloqueio antes de iniciar qualquer teste remoto; o job de regressão foi ignorado. Nenhum acesso ao banco ocorreu nesse run.
+- Para executar a jornada autenticada, o responsável pelo repositório precisa provisionar um projeto Supabase de homologação separado e configurar os quatro secrets acima com valores desse mesmo projeto. A URL/ref serão verificadas pelo guard, que rejeita os projetos canônicos. Até isso ocorrer, a jornada E2E remota não está validada.
