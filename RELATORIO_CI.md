@@ -205,3 +205,32 @@ Consulta GitHub MCP feita em 31/10/2026. O `main` permanece no SHA `e9d59026793b
 | `npm run check:npm-audit` | ❌ 2 findings altos: `undici` e `zod`; sem mudança em dependências neste PR |
 
 O mesmo total da suíte Vitest (5.840 aprovados e 68 ignorados) foi observado antes e após o commit; o escopo do código não altera fluxos de aplicação além da leitura limitada do corpo do webhook. Não houve escrita no Supabase, migration ou deploy. O push hook também concluiu baseline de TypeScript (0 → 0), baseline de lint sem regressão nos arquivos alterados e suíte Vitest com os mesmos 5.840/68.
+
+---
+
+## Atualização de estado — 31/10/2026, conclusão parcial das Actions do PR #180
+
+Consulta feita para o head `d92da2d0b3b790ec3a7c3aea9983f94302dcdad7`.
+
+| Workflow | Run | Resultado observado |
+|---|---:|---|
+| Qualidade contínua | [41167348323](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348323) | ❌ `failure`: gate combinado falhou no `npm audit`, com `undici` e `zod` em severidade alta; a autorização de Edge Functions não apresentou falha própria. |
+| Security Scan | [41167348518](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348518) | ❌ `failure`: `npm audit` pelos mesmos pacotes. Gitleaks verde. |
+| E2E (Playwright) | [41167348319](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348319) | ⏳ `in_progress` na última consulta; sucesso não confirmado. |
+| Portal Sicoob | [41167348375](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348375) | ⏳ `queued` na última consulta. |
+| Bundle Size Check | [41167348277](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348277) | ✅ `success`. |
+| CodeQL | [41167348293](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348293) | ✅ `success` após alinhar as três actions na versão 4.39.1. |
+| Lighthouse Performance Audit | [41167348305](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348305) | ✅ `success`. |
+
+Os dois gates de segurança exigem correção de dependências em causa isolada. O PR #180 corrige o buffer do webhook e o desalinhamento do CodeQL; não alterei suas dependências. Não houve merge nem deploy.
+
+### Atualização do PR #151
+
+O HEAD remoto continua no SHA `239a25cc133c10dea848ed97d3e77a6e521612e4`; os commits abaixo são locais no worktree isolado `fix/hermes-ledger-sources-20261028` e ainda não têm CI remoto:
+
+- `2aa996bae` corrige leitura de verbas para compradores. A simulação PostgreSQL descartável agora semeia atores e verbas antes de remover a policy, comprova a regressão, restaura a policy, testa isolamento entre cooperativas e reaplica a migration para validar idempotência. Banco canônico inalterado.
+- A correção de favoritos públicos segue em validação local e será separada em commit próprio.
+
+No HEAD remoto original do PR #151, o E2E [40779162142](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40779162142) falhou no smoke “Dashboard customizável”: `page-title-dashboard` não ficou visível em 19.999 ms (`flows/20-all-features-smoke.spec.ts:218`). É falha funcional, diferente do preflight de secrets do PR #179. Dependências altas (`undici`, `zod`), mismatch de CodeQL e quota do Copilot também permaneciam sem resolução nesse SHA.
+
+**Baseline local do PR #151 antes destes commits:** build ✅, lint ✅ (873 avisos; 0 erros), typecheck ✅ (0 erros), Vitest ✅ (5.839 aprovados, 68 ignorados, 0 falhas). A validação após cada commit deve ser registrada separadamente; esse baseline não valida o HEAD remoto.
