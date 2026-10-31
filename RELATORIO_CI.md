@@ -3,7 +3,7 @@
 **Gerado em:** 2026-10-22  
 **Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
 
-## Atualização do inventário remoto — 30/10/2026
+## Atualização do inventário remoto — 31/10/2026
 
 Esta seção substitui o inventário remoto de 22/10 abaixo. A regra aplicada é considerar somente a última execução de cada workflow na `main`.
 
@@ -19,6 +19,23 @@ Esta seção substitui o inventário remoto de 22/10 abaixo. A regra aplicada é
 | Enterprise Compliance & Audit Reporting | última execução observada em 27/10 | `success` | Continua verde no inventário consultado. |
 
 As correções locais de workflow, dependências e aplicação não são consideradas concluídas no GitHub até PR e checks remotos verdes. A consulta ao GitHub retornou somente nomes/metadata de secrets, sem ler valores: os secrets E2E específicos de URL, project ref, chave publicável e service role não estavam cadastrados. A branch local mapeia o app apenas para esses secrets dedicados, valida URL/ref, bloqueia os dois refs canônicos conhecidos e limita o service role ao step de teste RLS. Quatro testes Node de isolamento E2E passaram. Para publicação de Edge Functions, sete testes Vitest cobrem a validação de versões, baseline completo, resposta e paridade com o workflow; `actionlint` passou. Nenhuma migration, alteração de dado, execução de Edge Function ou deploy no Supabase canônico foi realizado. A configuração E2E ainda precisa de confirmação; a correção do deploy de funções depende do acionamento manual na `main` após merge.
+
+## Validação local após o commit `239898dd7`
+
+Executado em 31/10/2026 antes do push. O hook local repetiu typecheck baseline, lint baseline e suíte completa após o commit e também passou.
+
+| Verificação | Baseline `e9d5902` | Após `239898dd7` | Resultado |
+|---|---:|---:|---|
+| TypeScript (`npm run typecheck`) | passou | passou | sem regressão |
+| Lint (`npm run lint`) | 0 erros / 873 avisos | 0 erros / 873 avisos | sem novos erros ou avisos |
+| Build (`npm run build`) | passou | passou | avisos de ambiente/chunks e comentários Zod já conhecidos |
+| Suíte (`npm test`) | 452 arquivos passaram, 4 ignorados; 5.839 testes passaram, 68 ignorados | 454 arquivos passaram, 4 ignorados; 5.855 testes passaram, 68 ignorados | +2 arquivos e +16 testes aprovados; skips inalterados |
+| `npm run check:npm-audit` | não havia no baseline | passou | gate high/critical aprovado |
+| `npm audit --audit-level=high` | 17 vulnerabilidades: 15 moderadas, 2 altas | exit 0; 13 moderadas, 0 altas/críticas | altas corrigidas; moderadas remanescentes na cadeia ESLint/minimatch sem fix compatível indicado |
+| Gate focado de Edge Functions | — | 7 testes passaram | idempotência, inventário completo, versões, resposta e paridade cobertos |
+| `actionlint` do workflow de deploy | — | passou | YAML e expressões do workflow válidos |
+
+O commit foi enviado para `fix/hermes-h393620-docs-audit-20261031` e associado ao PR #179. As execuções remotas do SHA `239898dd7b0f503d940fdd2a3431686001c4d330` foram iniciadas, mas ainda estavam `queued`/`pending` na consulta de 31/10. Secrets E2E dedicados continuam ausentes da listagem de nomes. O PR permanece em rascunho e nenhum merge, deploy, migration ou alteração do banco foi feito.
 
 ## Baseline × validação local após o commit `92e9885ef`
 
