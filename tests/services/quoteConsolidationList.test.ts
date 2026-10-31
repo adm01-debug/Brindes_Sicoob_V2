@@ -9,6 +9,7 @@ const database = vi.hoisted(() => ({
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { from: database.from } }));
 
 import { QuoteService } from "@/services/QuoteService";
+import { consolidateQuoteItems } from "@/components/quotes/quoteConsolidationHelpers";
 
 function createBuilder(table: string) {
   const request = { table, filters: {} as Record<string, unknown>, range: null as [number, number] | null };
@@ -79,6 +80,12 @@ describe("QuoteService.listForConsolidation", () => {
       expect.objectContaining({ id: "pers-1", quote_item_id: "i1", technique_id: "laser" }),
     ]);
     expect(result[1].items?.[0]).toMatchObject({ id: "i2", quote_id: "q2", quantity: 3, personalizations: [] });
+    expect(consolidateQuoteItems(result, "", { key: "total_value", direction: "desc" })).toEqual([
+      expect.objectContaining({ total_quantity: 5, total_value: 56, average_price: 11.2, sources: expect.arrayContaining([
+        expect.objectContaining({ key: "q1", quantity: 2, total_value: 20 }),
+        expect.objectContaining({ key: "q2", quantity: 3, total_value: 36 }),
+      ]) }),
+    ]);
     expect(database.calls.map((call) => call.table)).toEqual(["quotes", "quote_items", "quote_item_personalizations"]);
     expect(database.calls[1].filters.quote_id).toEqual(["q1", "q2"]);
   });
