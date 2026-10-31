@@ -266,3 +266,22 @@ O CodeQL também foi corrigido localmente ao alinhar `init`, `autobuild` e `anal
 ## Validação local pós-commit
 
 Após o quarto commit: build, lint (0 erros; 873 avisos existentes), lint baseline, typecheck, typecheck baseline e suíte completa passaram. Resultado: 454 arquivos de teste aprovados, 4 condicionais pulados; 5.855 testes aprovados, 68 condicionais pulados. A primeira execução pós-commit apresentou exceção assíncrona jsdom/Radix em `admin-ref-warning-guard`; a repetição integral passou sem alterar nem enfraquecer o teste. `npm audit` continua bloqueado pelos 2 findings high já descritos.
+
+## Atualização de auditoria dos PRs — 2026-10-31
+
+### PR #185: E2E remoto não pode ser repetido até comprovação do destino
+
+O run [41183325196](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41183325196) falhou no `beforeAll` de `tests/rls/e2e-cleanup-rate-limit.test.ts`, com timeout de 45 s ao inserir uma linha-canário em `public.e2e_cleanup_rate_limit`. O teste usa `SUPABASE_SERVICE_ROLE_KEY`, tenta apagar a canary no `afterAll` e também executa operações anon de insert/update/delete.
+
+Na versão do workflow da `main` usada por esse PR, as secrets genéricas `VITE_SUPABASE_URL`, `VITE_SUPABASE_PROJECT_ID` e `SUPABASE_SERVICE_ROLE_KEY` são entregues ao job de PR sem `environment: e2e-qa` ou allowlist. Não é possível comprovar pelo GitHub qual projeto essas secrets apontaram nem se a requisição de insert foi efetivada antes do timeout. Não afirmo que o banco ficou intacto. A conexão MCP de leitura ao Supabase canônico expirou duas vezes; nenhum SQL foi executado por esta auditoria.
+
+**Ação do owner:** identificar em privado o destino configurado nas secrets utilizadas no run; se era o projeto QA autorizado, inspecionar nele a canary criada no horário do run e removê-la apenas se confirmada como fixture órfã. Se o destino era um projeto canônico, avaliar o impacto e a rotação das secrets de acordo com a política da organização. Não publicar valores de secrets. **Não rerodar E2E remoto** até que a proteção da PR #184 esteja na árvore do workflow e o destino QA seja comprovado.
+
+A PR #184 introduz a proteção: PRs usam placeholders sem secrets e executam apenas jornadas públicas; testes remotos autenticados ficam em `workflow_dispatch` com environment `e2e-qa`, allowlist de projeto e bloqueio dos projetos canônicos. O E2E duplicado da PR #186 [41184349669](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41184349669) foi cancelado para evitar nova tentativa de escrita com destino não comprovado.
+
+### Outros checks remotos ainda bloqueados
+
+- A simulação PostgreSQL da PR #185 falhou no run [41183325186](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41183325186) porque o ECR respondeu `toomanyrequests: Data limit exceeded` ao baixar `public.ecr.aws/supabase/postgres:17.6.1.063`. O container usa `--network none`; foi solicitado rerun apenas dos jobs falhos, tentativa 2 em andamento na última consulta. Não é uma chamada Supabase.
+- Na PR #185, `npm audit` e CodeQL passaram; E2E falhou pelo timeout acima. Copilot continua bloqueado por HTTP 402/quota ([run 41183332482](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41183332482)).
+- Na PR #186, `npm audit` ainda encontra `undici` e `zod` high porque a branch parte da `main` sem a correção da PR #185 ([run 41184349697](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41184349697)). CodeQL também herdou o desalinhamento 4.39.1/4.38.2 ([run 41184349695](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41184349695)); o fix está nas PRs #184/#185, não nesta branch. Copilot falhou por quota ([run 41184357641](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41184357641)).
+- Não mesclar PRs com checks falhos/pendentes. Não houve escrita manual ao banco canônico; permanece sem comprovação se o workflow remoto da PR #185 teve efeito parcial, conforme descrito acima.
