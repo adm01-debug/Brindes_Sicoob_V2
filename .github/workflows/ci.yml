@@ -92,6 +92,9 @@ jobs:
       - name: Simular autoridade e isolamento das verbas Sicoob
         run: python3 scripts/qa/simular-autoridade-verbas-sicoob.py
 
+      - name: Simular isolamento das reações públicas de favoritos
+        run: python3 scripts/qa/simular-reacoes-favoritos-rls.py
+
       - name: Simular controles de auditoria e permissões em PostgreSQL descartável
         run: python3 scripts/qa/simular-controles-auditoria.py
 
