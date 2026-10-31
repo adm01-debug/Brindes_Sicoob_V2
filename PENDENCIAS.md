@@ -1,9 +1,81 @@
 # Pendências de CI — adm01-debug/Brindes_Sicoob_V2
 
-Atualizado em: 2026-10-22
+Atualizado em: 2026-10-30
 
 Cada seção abaixo descreve um workflow que falha por motivo externo ao código do repositório.
 O erro exato foi extraído do run mais recente disponível em main.
+
+> **Rechecagem atual (2026-10-30):** as seções antigas deste arquivo registram o
+> histórico de 22/10. Abaixo está o inventário mais recente confirmado no GitHub
+> MCP; ele prevalece quando houver conflito com o histórico.
+
+## Inventário atual de workflows e configuração pendente (2026-10-30)
+
+| Workflow / item | Evidência mais recente | Situação e causa confirmada |
+|---|---|---|
+| Qualidade contínua | [run 40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | `failure` na `main`; auditoria de dependências aponta `undici` e `zod` com vulnerabilidades high. |
+| Security Scan | [run 40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `failure` na `main`; mesma causa de dependências high (`undici` e `zod`). |
+| CodeQL | [run 40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `failure` na `main`; configuração `4.39.1` diverge da versão efetiva `4.38.2`, sem SARIF. A correção está no PR #164, ainda aberto. |
+| Publicar funções Sicoob | [run 40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | `failure` na `main`; pull da imagem Docker Hub bloqueado por `toomanyrequests: Data limit exceeded`; verificação também observou `sicoob-approval-reconciliation` ainda na versão 5. |
+| Running Copilot Code Review | [run 39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) | `failure`; quota adicional do GitHub Copilot retornou HTTP 402 (`SessionModelError`). |
+| Migration ledger drift | [run 41013281253](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41013281253) | `success` em 30/10/2026. |
+| Enterprise Compliance & Audit Reporting | [run 40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958) | `success` no SHA atual de `main` (`e9d59026793b84fabeaeec9da890a068f64d49c3`). |
+| E2E do PR #164 | [run 40950721820](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40950721820) | `failure` antes da jornada: configuração do projeto Supabase E2E isolado ausente. A variável e os secrets E2E dedicados não estão configurados no repositório. O PR #164 continua aberto e bloqueado. |
+
+### Ação do owner para liberar E2E isolado
+
+Configurar no GitHub Actions, sem compartilhar os valores na conversa:
+
+- variável `E2E_SUPABASE_PROJECT_ID` com o project ref do Supabase de homologação;
+- secrets `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY` e
+  `E2E_SUPABASE_SERVICE_ROLE_KEY` do mesmo projeto isolado.
+
+O inventário de nomes confirma que esses quatro itens ainda faltam; as credenciais
+de usuário E2E existem. A validação do workflow impede usar os projetos protegidos
+de produtos e do portal como destino de testes.
+
+### Configuração da nova correção de webhook
+
+A migration `20261029213000_secure_webhook_dispatcher_callers.sql`, no candidato
+`fix/webhook-dispatch-auth-311333`, ainda não foi aplicada. Antes de qualquer
+aplicação no ambiente autorizado, provisionar no ambiente de homologação o mesmo
+segredo aleatório de 32–512 caracteres como secret `WEBHOOK_DISPATCHER_SECRET`
+da Edge Function e como `webhook_dispatcher_secret` no Supabase Vault. Sem ambos,
+os chamadores falham fechados. A simulação local não comprova entrega externa nem
+configuração remota; nenhum banco remoto foi alterado. Claims ficam em tabela
+separada de `webhook_deliveries`, sem afetar métricas, e são removidos pelo job
+de limpeza existente após 90 dias. A simulação valida essa retenção; a entrega
+Edge ponta a ponta e ACK durável continuam sem comprovação. A lease de 15 minutos
+limita duplicidade, mas não consulta o estado interno de `pg_net`; se uma execução
+continuar pendente além da lease, a próxima tentativa pode se sobrepor. O contrato
+é at-least-once, não exactly-once, e esse risco precisa de teste/monitoramento em
+homologação antes de habilitar retry contínuo.
+
+### Checks da PR #173 (observação em 2026-10-30, 11:10 UTC)
+
+A PR [#173](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/173), no SHA
+`977994fb5de3d3c0c4617496f0347b29e2053bd8`, permanece aberta e não foi mergeada.
+Os resultados abaixo são do SHA anterior ao ajuste local de claim/concorrência e
+precisam ser rechecados no commit seguinte da mesma PR.
+O CodeQL falhou no [run 41045149603](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149603)
+pela divergência entre a action configurada (4.39.1) e a executada (4.38.2), seguida
+da ausência de SARIF; a mesma causa já consta no inventário da `main`. O ajuste
+proposto no PR #164 ainda não faz parte deste SHA.
+
+| Workflow | Run | Resultado observado |
+|---|---:|---|
+| CodeQL | [41045149603](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149603) | Falha: action configurada 4.39.1, efetiva 4.38.2, sem SARIF. |
+| Qualidade contínua | [41045149542](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149542) | Falha: `undici` e `zod` high no `npm audit`. |
+| Security Scan | [41045149525](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149525) | Falha pelo mesmo `npm audit`; Gitleaks passou. |
+| Running Copilot Code Review | [41045168591](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045168591) | Falha externa: HTTP 402 por limite adicional do Copilot. |
+| Bundle Size Check | [41045149500](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149500) | `success`. |
+| Lighthouse Performance Audit | [41045149507](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149507) | `success`. |
+| Portal Sicoob | [41045149586](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149586) | `success`. |
+| E2E (Playwright) | [41045149524](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41045149524) | Ainda em execução às 11:10 UTC; não inferir resultado. |
+
+Vercel Preview Comments passou. Devin Review foi `success` apenas por review
+ignorado (trial/créditos esgotados), portanto não é aprovação substantiva. Não
+fazer merge enquanto houver checks obrigatórios pendentes ou falhos.
 
 ---
 

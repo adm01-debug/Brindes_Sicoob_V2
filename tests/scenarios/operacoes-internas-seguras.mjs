@@ -75,6 +75,51 @@ test('crons de conexões usam Vault e não mantêm credenciais no agendamento', 
   assert.doesNotMatch(migration, /nmojwpihnslkssljowjh|apikey|service_role_key|eyJ[a-zA-Z0-9_-]{20}/);
 });
 
+test('chamadores do webhook-dispatcher leem segredo dedicado do Vault antes da chamada', () => {
+  const migration = read('supabase/migrations/20261029213000_secure_webhook_dispatcher_callers.sql');
+  const dispatcher = read('supabase/functions/webhook-dispatcher/index.ts');
+  const dispatcherContract = read('supabase/functions/_shared/webhook-dispatcher-contract.ts');
+  const retryStart = migration.indexOf('CREATE OR REPLACE FUNCTION public.retry_failed_webhook_deliveries()');
+  const trigger = migration.slice(0, retryStart);
+  const retry = migration.slice(retryStart);
+
+  assert.ok(retryStart > 0, 'a migration deve substituir os dois chamadores protegidos');
+  assert.match(dispatcher, /requireInternalService\(req, "WEBHOOK_DISPATCHER_SECRET"\)/);
+  assert.match(dispatcher, /target_webhook_id: z\.string\(\)\.uuid\(\)\.optional\(\)/);
+  assert.match(dispatcher, /retry_after_attempt: z\.number\(\)\.int\(\)\.min\(0\)\.max\(4\)\.optional\(\)/);
+  assert.match(dispatcher, /validateWebhookDispatchModes\(parsed\.data\)/);
+  assert.match(dispatcherContract, /hasRetryTarget !== hasRetryAttempt/);
+  assert.match(dispatcherContract, /Retry, teste e replay são modos exclusivos/);
+  assert.match(dispatcher, /hooksQuery = hooksQuery\.eq\("id", target_webhook_id\)\.eq\("active", true\)/);
+  assert.match(dispatcher, /let attempt = retry_after_attempt \?\? 0/);
+  assert.match(read('docs/secrets.md'), /`WEBHOOK_DISPATCHER_SECRET`[\s\S]*`webhook_dispatcher_secret`/);
+  for (const [name, source, call] of [
+    ['trigger', trigger, 'extensions.http_post('],
+    ['retry', retry, 'extensions.http_post('],
+  ]) {
+    assert.match(source, /name = 'sicoob_project_url'/, `${name} deve ler a URL do Vault`);
+    assert.match(source, /name = 'webhook_dispatcher_secret'/, `${name} deve ler o segredo dedicado do Vault`);
+    assert.match(source, /'x-sicoob-internal-secret', v_dispatcher_secret/, `${name} deve enviar o cabeçalho interno`);
+    assert.ok(source.indexOf('length(COALESCE(v_dispatcher_secret') < source.indexOf(call), `${name} deve validar configuração antes da chamada HTTP`);
+  }
+
+  assert.match(migration, /REVOKE ALL ON FUNCTION public\.retry_failed_webhook_deliveries\(\)[\s\S]*FROM PUBLIC, anon, authenticated/);
+  assert.match(migration, /REVOKE ALL ON FUNCTION public\.dispatch_quote_webhook_event\(\)[\s\S]*FROM PUBLIC, anon, authenticated/);
+  assert.match(retry, /extensions\.http_post\(/, 'retry deve usar o schema onde pg_net é instalado pelo histórico');
+  assert.doesNotMatch(retry, /net\.http_post\(/, 'retry não deve depender do schema net');
+  assert.match(retry, /'target_webhook_id', rec\.webhook_id/);
+  assert.match(retry, /'retry_after_attempt', rec\.attempt/);
+  assert.match(retry, /pg_try_advisory_xact_lock\(20261029, 213000\)/);
+  assert.match(retry, /source = 'retry_claim'/);
+  assert.ok(retry.indexOf('INSERT INTO public.webhook_retry_claims') < retry.indexOf('PERFORM extensions.http_post'));
+  assert.match(retry, /'skipped_active_lease', v_skipped_active_lease/);
+  assert.match(retry, /'skipped_max_attempts', v_skipped_max_attempts/);
+  assert.match(retry, /'enqueue_errors', v_enqueue_errors/);
+  assert.match(retry, /v_retried := v_retried \+ 1/);
+  assert.match(migration, /DELETE FROM public\.webhook_retry_claims[\s\S]*claimed_at < now\(\) - interval '90 days'/);
+  assert.doesNotMatch(migration, /Authorization|service_role_key|https:\/\/[a-z0-9-]+\.supabase\.co/i);
+});
+
 test('sync de conexões e favoritos respeitam a hierarquia e concorrência', () => {
   const fix = read('supabase/migrations/20260923112000_fix_connection_sync_and_favorites.sql');
   assert.match(fix, /role IN \('dev', 'supervisor', 'admin', 'manager'\)/);
