@@ -19,6 +19,7 @@ environment `e2e-qa`, após validar a URL e o project ref contra
 | `E2E_SUPABASE_PUBLISHABLE_KEY` | Environment `e2e-qa` | Não aparece na lista de secrets do repositório; confirmar o nome no environment. |
 | `E2E_SUPABASE_SERVICE_ROLE_KEY` | Environment `e2e-qa` | Não aparece na lista de secrets do repositório; confirmar o nome no environment. Nunca usar a chave canônica. |
 | `E2E_ALLOWED_PROJECT_ID` | Variável do environment `e2e-qa` | Não observada; definir com o mesmo project ref do QA. O portal canônico e o catálogo mestre são recusados pelo código. |
+| `E2E_CLEANUP_DRY_RUN` | Variável do environment `e2e-qa` | O E2E autenticado exige o valor literal `0` para limpar somente as personas/fixtures QA após validar o destino. Localmente, o template mantém simulação (`1`). |
 | `E2E_CLEANUP_TOKEN` | Environment `e2e-qa` e Edge Function de QA | Nome aparece como secret do repositório; confirmar que o valor serve somente à função de cleanup do projeto QA. |
 | `E2E_USER_*`, `E2E_VIEWER_*`, `E2E_MANAGER_*`, `E2E_ADMIN_*`, `E2E_DEV_*` e TOTP | Environment `e2e-qa` | Nomes aparecem no escopo do repositório; confirmar transferência/duplicação controlada para o environment e uso apenas em QA. |
 | `SUPABASE_SERVICE_ROLE_KEY` genérica | Repositório | Nome aparece no repositório, mas não deve ser consumido por testes que escrevem. O workflow RLS agora usa `E2E_SUPABASE_SERVICE_ROLE_KEY`. |

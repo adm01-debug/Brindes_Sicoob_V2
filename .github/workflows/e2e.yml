@@ -109,6 +109,7 @@ jobs:
       E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
       E2E_SUPABASE_PROJECT_ID: ${{ secrets.E2E_SUPABASE_PROJECT_ID }}
       E2E_ALLOWED_PROJECT_ID: ${{ vars.E2E_ALLOWED_PROJECT_ID }}
+      E2E_CLEANUP_DRY_RUN: ${{ vars.E2E_CLEANUP_DRY_RUN }}
       E2E_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
       E2E_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
       VITE_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
@@ -136,6 +137,10 @@ jobs:
         run: |
           if [[ -z "$E2E_USER_EMAIL" || -z "$E2E_USER_PASSWORD" || -z "$E2E_VIEWER_EMAIL" || -z "$E2E_VIEWER_PASSWORD" || -z "$E2E_MANAGER_EMAIL" || -z "$E2E_MANAGER_PASSWORD" || -z "$E2E_ADMIN_EMAIL" || -z "$E2E_ADMIN_PASSWORD" || -z "$E2E_ADMIN_TOTP_SECRET" || -z "$E2E_DEV_EMAIL" || -z "$E2E_DEV_PASSWORD" || -z "$E2E_DEV_TOTP_SECRET" || -z "$E2E_CLEANUP_TOKEN" ]]; then
             echo "::error title=Credenciais E2E ausentes::Configure as contas QA de vendedor, gestor, administrador e desenvolvedor, TOTP e o token de cleanup. O gate autenticado não pode concluir por skip."
+            exit 1
+          fi
+          if [[ "$E2E_CLEANUP_DRY_RUN" != "0" ]]; then
+            echo "::error title=Cleanup E2E não habilitado::Defina a variável E2E_CLEANUP_DRY_RUN=0 somente no environment isolado e protegido e2e-qa."
             exit 1
           fi
 
@@ -295,6 +300,7 @@ jobs:
       E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
       E2E_SUPABASE_PROJECT_ID: ${{ secrets.E2E_SUPABASE_PROJECT_ID }}
       E2E_ALLOWED_PROJECT_ID: ${{ vars.E2E_ALLOWED_PROJECT_ID }}
+      E2E_CLEANUP_DRY_RUN: ${{ vars.E2E_CLEANUP_DRY_RUN }}
       E2E_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
       E2E_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
       VITE_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
