@@ -114,29 +114,88 @@ async function fetchQuoteRecord(quoteId: string) {
 }
 
 async function fetchQuoteItems(quoteId: string) {
-  const { data, error } = await supabase
-    .from("quote_items")
-    .select("*")
-    .eq("quote_id", quoteId)
-    .order("sort_order", { ascending: true });
-  if (error) {
-    logger.error("Error fetching quote items:", error);
-    throw error;
-  }
-  return data ?? [];
+  return fetchQuoteItemsForQuotes([quoteId]);
+}
+
+const CHILD_QUERY_BATCH_SIZE = 100;
+const CHILD_QUERY_PAGE_SIZE = 1000;
+
+function chunkValues<T>(values: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let index = 0; index < values.length; index += size) chunks.push(values.slice(index, index + size));
+  return chunks;
+}
+
+async function fetchQuoteItemsForQuotes(quoteIds: string[]) {
+  if (quoteIds.length === 0) return [];
+  const batches = await Promise.all(chunkValues(quoteIds, CHILD_QUERY_BATCH_SIZE).map(async (ids) => {
+    const rows: Array<Record<string, unknown> & { id: string; product_id: string | null }> = [];
+    for (let offset = 0; ; offset += CHILD_QUERY_PAGE_SIZE) {
+      const { data, error } = await supabase.from("quote_items").select("*")
+        .in("quote_id", ids)
+        .order("sort_order", { ascending: true, nullsFirst: false })
+        .order("id", { ascending: true })
+        .range(offset, offset + CHILD_QUERY_PAGE_SIZE - 1);
+      if (error) {
+        logger.error("Error fetching quote items:", error);
+        throw error;
+      }
+      const page = (data ?? []) as Array<Record<string, unknown> & { id: string; product_id: string | null }>;
+      rows.push(...page);
+      if (page.length < CHILD_QUERY_PAGE_SIZE) break;
+    }
+    return rows;
+  }));
+  return batches.flat();
 }
 
 async function fetchQuotePersonalizations(itemIds: string[]): Promise<Array<Record<string, unknown>>> {
   if (itemIds.length === 0) return [];
-  const { data, error } = await supabase
-    .from("quote_item_personalizations")
-    .select("*")
-    .in("quote_item_id", itemIds);
-  if (error) {
-    logger.error("Error fetching quote personalizations:", error);
-    throw error;
+  const batches = await Promise.all(chunkValues(itemIds, CHILD_QUERY_BATCH_SIZE).map(async (ids) => {
+    const rows: Array<Record<string, unknown>> = [];
+    for (let offset = 0; ; offset += CHILD_QUERY_PAGE_SIZE) {
+      const { data, error } = await supabase.from("quote_item_personalizations").select("*")
+        .in("quote_item_id", ids)
+        .order("quote_item_id", { ascending: true })
+        .order("id", { ascending: true })
+        .range(offset, offset + CHILD_QUERY_PAGE_SIZE - 1);
+      if (error) {
+        logger.error("Error fetching quote personalizations:", error);
+        throw error;
+      }
+      const page = (data ?? []) as Array<Record<string, unknown>>;
+      rows.push(...page);
+      if (page.length < CHILD_QUERY_PAGE_SIZE) break;
+    }
+    return rows;
+  }));
+  return batches.flat();
+}
+
+function hydrateQuotesWithItems(
+  quotes: Quote[],
+  itemRows: Array<Record<string, unknown> & { id: string; product_id: string | null }>,
+  personalizations: Array<Record<string, unknown>>,
+): Quote[] {
+  const personalizationsByItem = new Map<string, Array<Record<string, unknown>>>();
+  for (const personalization of personalizations) {
+    const itemId = personalization.quote_item_id;
+    if (typeof itemId !== "string") continue;
+    const current = personalizationsByItem.get(itemId) ?? [];
+    current.push(personalization);
+    personalizationsByItem.set(itemId, current);
   }
-  return (data ?? []) as Array<Record<string, unknown>>;
+
+  const itemsByQuote = new Map<string, QuoteItem[]>();
+  for (const item of itemRows) {
+    const quoteId = item.quote_id;
+    if (typeof quoteId !== "string") continue;
+    const quoteItems = itemsByQuote.get(quoteId) ?? [];
+    quoteItems.push(mapDbQuoteItemRow(item, personalizationsByItem.get(item.id) ?? []));
+    itemsByQuote.set(quoteId, quoteItems);
+  }
+
+  return quotes.map((quote) => ({ ...quote, items: itemsByQuote.get(quote.id ?? "") ?? [] }));
 }
 
 function createClientMetadata(metadata?: Record<string, unknown>): Record<string, unknown> {
@@ -166,6 +225,17 @@ export class QuoteService {
       logger.error("Unexpected error in QuoteService.list:", err);
       throw err;
     }
+  }
+
+  /** Lista os cabeçalhos no escopo atual e hidrata os filhos em lotes, sem N+1. */
+  static async listForConsolidation(params: { userId: string, scope: SalesScope, orgId: string | null }): Promise<Quote[]> {
+    const quotes = await this.list(params);
+    const quoteIds = quotes.flatMap((quote) => quote.id ? [quote.id] : []);
+    if (quoteIds.length === 0) return [];
+
+    const itemRows = await fetchQuoteItemsForQuotes(quoteIds);
+    const personalizations = await fetchQuotePersonalizations(itemRows.map((item) => item.id));
+    return hydrateQuotesWithItems(quotes, itemRows, personalizations);
   }
 
   static async getById(quoteId: string): Promise<Quote | null> {

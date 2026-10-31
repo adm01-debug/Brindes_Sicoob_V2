@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from "@/components/seo/PageSEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,7 +10,10 @@ import { QuoteKanbanBoard } from "@/components/quotes/QuoteKanbanBoard";
 import { OrderConsolidationPanel } from "@/components/orders/OrderConsolidationPanel";
 import { QuoteConsolidationPanel } from "@/components/quotes/QuoteConsolidationPanel";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrganization } from "@/contexts/OrganizationContext";
+import { useSalesScope } from "@/lib/auth/visibility-scope";
 import { useQuotes } from "@/hooks/quotes/useQuotes";
+import { QuoteService } from "@/services/QuoteService";
 
 /**
  * GestorOrcamentos — Painel central do Gestor de Compras (Singular).
@@ -18,11 +22,22 @@ import { useQuotes } from "@/hooks/quotes/useQuotes";
 export default function GestorOrcamentos() {
   const [activeTab, setActiveTab] = useState("requests");
   const [selectedQuoteIds, setSelectedQuoteIds] = useState<string[]>([]);
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
+  const { currentOrg } = useOrganization();
+  const scope = useSalesScope();
   const { quotes } = useQuotes();
+  const consolidationQuery = useQuery({
+    queryKey: ["quote-consolidation-items", user?.id, currentOrg?.id ?? null, scope],
+    queryFn: () => {
+      if (!user) throw new Error("Sessão ausente ao carregar a consolidação.");
+      return QuoteService.listForConsolidation({ userId: user.id, scope, orgId: currentOrg?.id ?? null });
+    },
+    enabled: activeTab === "consolidation" && Boolean(user),
+    staleTime: 30_000,
+  });
 
   // Orçamentos aguardando aprovação ou já aprovados que podem ser consolidados
-  const pendingQuotes = quotes.filter(q => 
+  const pendingQuotes = (consolidationQuery.data ?? []).filter(q =>
     ["pending_singular_approval", "approved_singular"].includes(q.status)
   );
 
@@ -83,6 +98,9 @@ export default function GestorOrcamentos() {
                  </h3>
                  <QuoteConsolidationPanel 
                    quotes={pendingQuotes} 
+                   loading={consolidationQuery.isFetching}
+                   error={consolidationQuery.isError}
+                   onRetry={() => { void consolidationQuery.refetch(); }}
                    title="Visão de Compra Centralizada"
                    description="Mapeamento de demanda de todos os PACs para negociação em volume."
                  />

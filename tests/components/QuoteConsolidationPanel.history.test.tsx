@@ -40,11 +40,12 @@ vi.mock("@/integrations/supabase/client", () => ({
 
 import { QuoteConsolidationPanel } from "@/components/quotes/QuoteConsolidationPanel";
 
-function renderPanel() {
+function renderPanel(options: { loading?: boolean; error?: boolean; onRetry?: () => void } = {}) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={queryClient}>
       <QuoteConsolidationPanel
+        {...options}
         quotes={[{
           id: "orcamento-1",
           quote_number: "Q-100",
@@ -76,5 +77,22 @@ describe("QuoteConsolidationPanel — eventos registrados", () => {
     expect(database.from).toHaveBeenCalledWith("profiles");
     expect(database.profilesQuery.in).toHaveBeenCalledWith("user_id", ["usuario-1"]);
     expect(screen.queryByText(/Alteração de quantidade no item/i)).not.toBeInTheDocument();
+  });
+
+  it("não apresenta totais zerados quando a consulta de itens falha e oferece retry", async () => {
+    const onRetry = vi.fn();
+    renderPanel({ error: true, onRetry });
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Não foi possível carregar os itens dos orçamentos");
+    expect(screen.queryByText("Total Consolidado")).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole("button", { name: "Tentar novamente" }));
+    expect(onRetry).toHaveBeenCalledOnce();
+  });
+
+  it("mostra carregamento em vez de consolidar uma resposta ainda pendente", () => {
+    renderPanel({ loading: true });
+
+    expect(screen.getByLabelText("Carregando itens para consolidação")).toBeInTheDocument();
+    expect(screen.queryByText("Total Consolidado")).not.toBeInTheDocument();
   });
 });
