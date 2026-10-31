@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { from, inFilter, listOrders } = vi.hoisted(() => ({
+const { from, inFilter, orderShipments, listOrders } = vi.hoisted(() => ({
   from: vi.fn(),
   inFilter: vi.fn(),
+  orderShipments: vi.fn(),
   listOrders: vi.fn(),
 }));
 
@@ -15,6 +16,7 @@ describe('listSicoobLogisticsTracking', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     from.mockReturnValue({ select: vi.fn(() => ({ in: inFilter })) });
+    inFilter.mockReturnValue({ order: orderShipments });
   });
 
   it('não consulta remessas quando não há pedido no fluxo logístico', async () => {
@@ -36,7 +38,7 @@ describe('listSicoobLogisticsTracking', () => {
       ],
       total: 2,
     });
-    inFilter.mockResolvedValue({
+    orderShipments.mockResolvedValue({
       data: [{
         id: 'shipment-1', order_id: 'order-1', carrier_name: 'Transportadora Sicoob',
         estimated_delivery: '2026-09-30', status: 'in_transit', delivery_photo_path: null,
@@ -54,6 +56,7 @@ describe('listSicoobLogisticsTracking', () => {
       }),
     ]);
     expect(inFilter).toHaveBeenCalledWith('order_id', ['order-1', 'order-2']);
+    expect(orderShipments).toHaveBeenCalledWith('order_id', { ascending: true });
   });
 
   it('propaga falhas da fonte de remessas para a tela exibir estado de erro', async () => {
@@ -62,7 +65,7 @@ describe('listSicoobLogisticsTracking', () => {
       total: 1,
     });
     const failure = new Error('banco indisponível');
-    inFilter.mockResolvedValue({ data: null, error: failure });
+    orderShipments.mockResolvedValue({ data: null, error: failure });
 
     await expect(listSicoobLogisticsTracking()).rejects.toBe(failure);
   });
@@ -74,12 +77,70 @@ describe('listSicoobLogisticsTracking', () => {
     listOrders
       .mockResolvedValueOnce({ orders: firstPage, total: 201 })
       .mockResolvedValueOnce({ orders: [{ id: 'order-200', status: 'delivered', order_number: 'PED-200' }], total: 201 });
-    inFilter.mockResolvedValue({ data: [], error: null });
+    orderShipments.mockResolvedValue({ data: [], error: null });
 
     const tracking = await listSicoobLogisticsTracking();
 
     expect(tracking).toHaveLength(201);
     expect(listOrders).toHaveBeenNthCalledWith(1, expect.objectContaining({ page: 1, pageSize: 200 }));
     expect(listOrders).toHaveBeenNthCalledWith(2, expect.objectContaining({ page: 2, pageSize: 200 }));
+  });
+
+  it('consulta remessas em lotes determinísticos quando há mais de mil pedidos', async () => {
+    const orders = Array.from({ length: 1001 }, (_, index) => ({
+      id: `order-${index}`,
+      status: 'in_transit',
+      order_number: `PED-${index}`,
+    }));
+    for (let offset = 0; offset < orders.length; offset += 200) {
+      const orderBatch = orders.slice(offset, offset + 200);
+      listOrders.mockResolvedValueOnce({ orders: orderBatch, total: orders.length });
+      orderShipments.mockResolvedValueOnce({
+        data: orderBatch.map(({ id }, batchIndex) => ({
+          id: `shipment-${id}`,
+          order_id: id,
+          carrier_name: `Transportadora ${offset + batchIndex}`,
+          estimated_delivery: null,
+          status: 'in_transit',
+          delivery_photo_path: null,
+        })),
+        error: null,
+      });
+    }
+
+    const tracking = await listSicoobLogisticsTracking();
+
+    expect(tracking).toHaveLength(1001);
+    expect(tracking[0]).toEqual(expect.objectContaining({
+      id: 'shipment-order-0',
+      orderId: 'order-0',
+      carrierName: 'Transportadora 0',
+    }));
+    expect(tracking[1000]).toEqual(expect.objectContaining({
+      id: 'shipment-order-1000',
+      orderId: 'order-1000',
+      carrierName: 'Transportadora 1000',
+    }));
+    expect(inFilter).toHaveBeenCalledTimes(6);
+    expect(inFilter).toHaveBeenNthCalledWith(1, 'order_id', orders.slice(0, 200).map(({ id }) => id));
+    expect(inFilter).toHaveBeenNthCalledWith(6, 'order_id', ['order-1000']);
+    expect(orderShipments).toHaveBeenCalledTimes(6);
+    expect(orderShipments).toHaveBeenNthCalledWith(6, 'order_id', { ascending: true });
+  });
+
+  it('interrompe a consolidação se qualquer lote de remessas falhar', async () => {
+    const orders = Array.from({ length: 201 }, (_, index) => ({
+      id: `order-${index}`,
+      status: 'in_transit',
+      order_number: `PED-${index}`,
+    }));
+    listOrders.mockResolvedValueOnce({ orders, total: orders.length });
+    const failure = new Error('falha ao consultar o segundo lote');
+    orderShipments
+      .mockResolvedValueOnce({ data: [], error: null })
+      .mockResolvedValueOnce({ data: null, error: failure });
+
+    await expect(listSicoobLogisticsTracking()).rejects.toBe(failure);
+    expect(inFilter).toHaveBeenCalledTimes(2);
   });
 });
