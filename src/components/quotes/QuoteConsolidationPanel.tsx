@@ -81,7 +81,7 @@ function ConsolidatedRow({ item, expanded, toggle }: { item: ConsolidatedQuoteIt
   return <React.Fragment><TableRow className="hover:bg-muted/30">
     <TableCell><Button type="button" variant="ghost" size="icon" className="h-8 w-8"
       aria-label={`${expanded ? "Ocultar" : "Mostrar"} origens de ${item.product_name}`}
-      aria-expanded={expanded} aria-controls={detailsId} onClick={toggle}>
+      aria-expanded={expanded} aria-controls={expanded ? detailsId : undefined} onClick={toggle}>
       {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
     </Button></TableCell>
     <TableCell><div className="flex flex-col"><span className="font-medium text-sm">{item.product_name}</span>
@@ -133,11 +133,12 @@ function ConsolidatedItemsTable({ items, expanded, toggle, sort, sortConfig }: {
   items: ConsolidatedQuoteItem[]; expanded: string[]; toggle: (key: string) => void; sort: (key: ConsolidationSortKey) => void;
   sortConfig: ConsolidationSortConfig;
 }) {
+  const activeSort = sortConfig ?? { key: "total_value", direction: "desc" as const };
   const heading = (label: string, key: ConsolidationSortKey, centered = false) => <TableHead
-    aria-sort={sortConfig.key === key ? (sortConfig.direction === "asc" ? "ascending" : "descending") : "none"}
+    aria-sort={activeSort.key === key ? (activeSort.direction === "asc" ? "ascending" : "descending") : "none"}
     className={cn(centered && "text-center")}>
     <Button type="button" variant="ghost" size="sm" className={cn("h-auto p-1 font-medium", centered && "mx-auto")}
-      aria-label={`Ordenar por ${label}${sortConfig.key === key ? `, ${sortConfig.direction === "asc" ? "crescente" : "decrescente"}` : ""}`}
+      aria-label={`Ordenar por ${label}${activeSort.key === key ? `, ${activeSort.direction === "asc" ? "crescente" : "decrescente"}` : ""}`}
       onClick={() => sort(key)}>
       <span>{label}</span><ArrowUpDown className="h-3 w-3" aria-hidden="true" />
     </Button></TableHead>;
