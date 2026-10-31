@@ -26,7 +26,7 @@ export async function readLimitedBody(
       const remaining = maxBytes - totalBytes;
       if (value.byteLength > remaining) {
         if (remaining > 0) {
-          chunks.push(value.subarray(0, remaining));
+          chunks.push(value.slice(0, remaining));
           totalBytes += remaining;
         }
         truncated = true;
