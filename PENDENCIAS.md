@@ -323,7 +323,7 @@ Workflows verdes a preservar: Migration ledger drift [41013281253](https://githu
 Sem merge, deploy, aplicação remota de migration ou escrita SQL no banco canônico durante esta execução. Não aprovar PR com checks obrigatórios vermelhos/pendentes; não reexecutar o workflow de deploy até o verificador ser corrigido e o alvo/estado serem confirmados.
 
 
-## Pendências supersedentes — consulta GitHub e banco somente leitura (31/10/2026, 04:53 UTC)
+## Pendências supersedentes — consulta GitHub e banco somente leitura (31/10/2026, 04:57 UTC)
 
 ### Falhas na `main` — última execução por workflow
 
@@ -338,7 +338,7 @@ A branch continua no SHA `e9d59026793b84fabeaeec9da890a068f64d49c3`; permanecem 
 
 ### Risco de escrita remota pelo E2E e ação necessária
 
-O workflow deste SHA mapeia secrets gerais `VITE_SUPABASE_*` e `SUPABASE_SERVICE_ROLE_KEY` para teste que insere/remove registros sintéticos `rls-e2e-*`. Uma consulta SQL somente leitura ao banco canônico encontrou um registro desse prefixo atualizado às `2026-10-31 04:50:03 UTC`, durante a execução E2E `41169596483` (04:48–04:51 UTC). A coincidência temporal sugere possível escrita pelo teste, mas não comprova que o registro é o canário daquele run, porque o UUID não foi emitido no log. A auditoria não alterou nem apagou dados. **Não executar novos E2E usando as secrets gerais.** O proprietário deve confirmar no painel/destino se o registro é resíduo e decidir a limpeza; não realizar exclusão pelo MCP durante esta tarefa. Corrigir o workflow para exigir as quatro secrets E2E dedicadas e bloquear project ref canônico antes de qualquer teste com service role. A PR #179 contém esse guard, porém está bloqueada porque os secrets dedicados de homologação ainda faltam.
+O workflow deste SHA mapeia secrets gerais `VITE_SUPABASE_*` e `SUPABASE_SERVICE_ROLE_KEY` para teste que insere/remove registros sintéticos `rls-e2e-*`. Uma consulta SQL somente leitura ao banco canônico encontrou um registro desse prefixo atualizado às `2026-10-31 04:50:03 UTC`, durante a execução E2E `41169596483` (04:48–04:51 UTC). A coincidência temporal sugere possível escrita pelo teste, mas não comprova que o registro é o canário daquele run, porque o UUID não foi emitido no log. A auditoria não alterou nem apagou dados. **Não executar novos E2E usando as secrets gerais.** O run E2E [41170083965](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41170083965) da PR #180 foi cancelado antes de iniciar. O proprietário deve confirmar no painel/destino se o registro é resíduo e decidir a limpeza; não realizar exclusão pelo MCP durante esta tarefa. A branch #180 contém localmente, ainda sem commit, a guarda que exige as quatro secrets E2E dedicadas e bloqueia project ref canônico antes de qualquer teste com service role; validar, commitar e observar o novo run fail-fast se as secrets ainda faltarem. A PR #179 contém esse guard, porém está bloqueada porque os secrets dedicados de homologação ainda faltam.
 
 ### PR #179 / #180
 
