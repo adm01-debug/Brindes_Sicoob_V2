@@ -263,3 +263,61 @@ Este inventário substitui os status históricos acima para as falhas ainda aber
 ### 7. Banco canônico e deploy
 
 Nenhuma escrita SQL, migration, alteração de configuração ou deploy do Supabase foi realizado nesta auditoria. As ações remotas acima permanecem limitadas a consulta de estado do GitHub.
+
+---
+
+## Atualização supersedente — 31/10/2026
+
+### PR #180 — estado do head `d92da2d0b3b790ec3a7c3aea9983f94302dcdad7`
+
+- [Qualidade contínua, run 41167348323](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348323): `failure` porque o audit encontra `undici` e `zod` com severidade alta. O step combinado não reportou falha própria de autorização de Edge Function.
+- [Security Scan, run 41167348518](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348518): `failure` pelo mesmo audit. Gitleaks passou.
+- [E2E, run 41167348319](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348319): `in_progress` na última consulta.
+- [Portal Sicoob, run 41167348375](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348375): `queued` na última consulta.
+- [Bundle Size, run 41167348277](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348277), [CodeQL, run 41167348293](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348293) e [Lighthouse, run 41167348305](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348305): `success`.
+- Ação: tratar dependências em PR isolada; manter PR #180 sem merge enquanto os gates obrigatórios falham ou não terminam.
+
+### PR #151 — correções locais ainda sem CI remoto
+
+- HEAD remoto: `239a25cc133c10dea848ed97d3e77a6e521612e4`. [E2E run 40779162142](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40779162142) falha no smoke “Dashboard customizável”: `page-title-dashboard` não aparece em 19.999 ms (`flows/20-all-features-smoke.spec.ts:218`). Esta falha funcional não é falta de credenciais.
+- Commit local `2aa996bae` restaura a leitura de verbas para compradores e corrige o falso positivo na simulação. A migration está versionada no branch isolado, ainda não enviada e não aplicada. A simulação usa PostgreSQL descartável; banco canônico inalterado.
+- O patch de favoritos públicos está local e será separado após validação. Dependências altas, mismatch CodeQL e quota Copilot continuam como bloqueios conhecidos do SHA remoto. Não fazer merge até obter novo CI verde.
+
+### Banco e deploy
+
+Nenhuma migration foi aplicada ao Supabase canônico e nenhum deploy foi executado nesta atualização.
+
+## Pendências supersedentes — consulta de 31/10/2026
+
+### 1. Workflows que continuam falhando na `main`
+
+| Workflow | Run | Bloqueio e ação para fechar |
+|---|---|---|
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | O verificador pós-publicação recusa versão igual (5→5) após publicar. Corrigir a regra de idempotência e validar estado/hash antes de nova publicação; nenhuma reexecução manual feita. |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `npm audit` bloqueia `undici` e `zod` high. A candidata #179 atualiza `undici` na mesma major e `zod` v3→v4; concluir revisão de compatibilidade antes de merge. |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | Mesma causa de dependências high. |
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | Digests de `autobuild`/`analyze` executam v4.38.2 enquanto configuração espera v4.39.1. Correção já está candidata nas PRs #179/#180/#151; exige confirmação na `main` depois de integração aprovada. |
+
+Workflows verdes a preservar: Migration ledger drift [41013281253](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41013281253), Branch Protection Sentinel [40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038), Enterprise Compliance [40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958) e Portal Sicoob [39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315).
+
+### 2. PR #151 — inventário/API e migration RLS
+
+- Head remoto `b18b662b179bb75dc4ffe10874ee5a6a6db6cf92`; PR continua aberta. Novos runs [Qualidade 41169596475](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41169596475), [Security 41169596556](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41169596556), [CodeQL 41169596496](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41169596496), [E2E 41169596483](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41169596483) e demais workflows ainda estavam `queued`/`pending` na consulta de 31/10 às 04:43 UTC.
+- Qualidade no SHA anterior apontou RPCs `get_public_favorite_list` e `get_public_favorite_reactions` ausentes do snapshot capturado em 14/10. A consulta de catálogo SQL no banco pelo MCP expirou por timeout. Ação necessária: obter uma leitura administrativa do contrato atual e confirmar se as migrations RPC da PR já estão aplicadas; só então atualizar o snapshot real ou registrar que a migration ainda está pendente. Não incluir os nomes manualmente na allowlist com base apenas no SQL local.
+- Migration `20261031042808_secure_public_favorite_reactions_access.sql` e simulador foram commitados em `6f2e71821`. A simulação PostgreSQL descartável passou para acesso direto, owner/admin, RPC pública, tokens inválido/expirado e escrita `service_role`. O erro inicial `existing_policy.tablename` foi corrigido antes do commit. O banco canônico não foi alterado; revisão e aplicação em ambiente de construção continuam pendentes.
+- CodeQL foi alinhado em `b18b662b1`; o novo run ainda aguardava execução. O E2E novo também aguardava execução; o histórico de #151 registra falha funcional do marcador de Dashboard, enquanto #179 tem outro bloqueio de credentials.
+
+### 3. E2E autenticado na PR #179
+
+- Run [41164617193](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41164617193) falhou no preflight; nenhum teste remoto começou.
+- Não aparecem na listagem de nomes dos repository secrets: `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_PROJECT_ID` e `E2E_SUPABASE_SERVICE_ROLE_KEY`. Os nomes `E2E_ADMIN_*`, `E2E_USER_*` etc. existentes não substituem credenciais do projeto isolado exigidas pelo preflight.
+- Ação do owner: adicionar secrets no escopo que o workflow lê, sem compartilhar valores no chat; então aguardar/reexecutar pelo fluxo normal e exigir que os testes realmente iniciem. Não ler nem registrar valores.
+
+### 4. PR #180
+
+- No SHA `d92da2d0b3b790ec3a7c3aea9983f94302dcdad7`, Qualidade [41167348323](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348323) e Security [41167348518](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348518) falharam pelo audit de `undici`/`zod`.
+- E2E [41167348319](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348319) falhou no gate fail-fast após timeout do smoke Dashboard. Portal [41167348375](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348375), Bundle [41167348277](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348277), CodeQL [41167348293](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348293) e Lighthouse [41167348305](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41167348305) passaram.
+
+### Regra de segurança operacional
+
+Sem merge, deploy, aplicação remota de migration ou escrita SQL no banco canônico durante esta execução. Não aprovar PR com checks obrigatórios vermelhos/pendentes; não reexecutar o workflow de deploy até o verificador ser corrigido e o alvo/estado serem confirmados.
