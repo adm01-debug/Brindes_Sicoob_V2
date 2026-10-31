@@ -131,6 +131,10 @@ BEGIN
 END;
 $$;
 
+-- DROP necessario: 004_notification_functions.sql declara esta funcao como RETURNS INT;
+-- CREATE OR REPLACE nao permite mudanca de tipo de retorno (erro 42P13 em replay do zero).
+DROP FUNCTION IF EXISTS public.cleanup_old_notifications();
+
 CREATE OR REPLACE FUNCTION public.cleanup_old_notifications()
 RETURNS VOID
 LANGUAGE plpgsql
