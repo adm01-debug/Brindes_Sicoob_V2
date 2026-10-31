@@ -132,10 +132,10 @@ export default defineConfig({
     baseURL: process.env.E2E_BASE_URL ?? LOCAL_URL,
     headless: HEADLESS,
     testIdAttribute: "data-testid",
-    // Evita gravar centenas de MB nos casos aprovados. Em caso de falha, a
-    // primeira repetição ainda registra vídeo e trace, enquanto a captura de
-    // tela é produzida imediatamente pela tentativa que falhou.
-    trace: "on-first-retry",
+    // Em execução local, a primeira repetição registra vídeo e trace, enquanto
+    // a tentativa que falhou produz screenshot. No CI, não grave traces que
+    // possam serializar valores digitados em campos sensíveis.
+    trace: process.env.CI ? "off" : "on-first-retry",
     screenshot: "only-on-failure",
     video: "on-first-retry",
     actionTimeout: 10_000,
@@ -258,7 +258,7 @@ export default defineConfig({
         // Garante diagnóstico visual completo no CI sem depender de retries.
         screenshot: { mode: "only-on-failure", fullPage: true },
         video: { mode: "retain-on-failure", size: { width: 1280, height: 720 } },
-        trace: "retain-on-failure",
+        trace: process.env.CI ? "off" : "retain-on-failure",
       },
       dependencies: ["setup"],
       testMatch: /flows\/20-all-features-smoke\.spec\.ts/,

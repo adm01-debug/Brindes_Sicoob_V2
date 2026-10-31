@@ -286,3 +286,23 @@ As 23 falhas reportam `aguardando restauração da sessão user` em `e2e/helpers
 **Candidato local ainda não publicado:** `loginAs('user')` passa a usar a identidade canônica `E2E_USER_*`, papéis compartilham um resolvedor coberto por testes, a restauração confere a identidade antes de aplicar o `storageState`, e o workflow deixa de mascarar falhas com `continue-on-error`/`|| true`. Os resumos só rodam quando existe `results.json`; passos de anotação e upload continuam executando após falhas. Validação local do candidato: `npm run check:npm-audit` passou sem vulnerabilidades; typecheck e build passaram; lint com 0 erros e 874 avisos existentes; suíte com 5.856 aprovados, 68 ignorados e 0 falhas; actionlint e `git diff --check` passaram. Ainda não é sucesso remoto: aguarda conclusão do run acima e, após commit, nova execução E2E na PR.
 
 Nenhuma alteração no Supabase, migration ou deploy foi realizada.
+
+## Auditoria E2E posterior ao commit `746f7d2` — 30/10/2026
+
+Run [41150963780](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41150963780), SHA `746f7d277e86dd08d1e14270bb467de38c57fd85`, terminou `cancelled` após intervenção para conter exposição de credencial nos artefatos. O job principal, smoke autenticado (39/39) e header sticky passaram. Os seis workflows não E2E no SHA — Security Scan, CodeQL, Portal Sicoob, Bundle Size, Lighthouse e Qualidade contínua — concluíram `success`.
+
+| Shard | Resultado | Evidência |
+|---|---|---|
+| 1/3 | `cancelled` ao exceder o timeout de 40 min; estava em `[224/281]`; não publicou `results.json` nem resumo | job [124393498316](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41150963780/job/124393498316); evidência parcial id `13025191619` |
+| 2/3 | `failure`; setup autenticado falhou em `esperado redirect para fora de /login`; 10 passaram, 1 falhou e 270 foram ignorados porque o projeto `setup` não concluiu | job [124393498355](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41150963780/job/124393498355); resumo id `13025676822` |
+| 3/3 | cancelado após contenção preventiva da exposição; sem resumo final | job [124393498325](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41150963780/job/124393498325) |
+
+Os artefatos parciais do shard 1 mostram várias telas estacionadas em `Carregando permissões...`, retries de cleanup e timeout de teardown; não contêm a antiga mensagem literal `aguardando restauração da sessão user`. O resumo do shard 2 mostra falha do login no setup, portanto a correção da identidade canônica ainda **não está comprovada por uma regressão completa**.
+
+A investigação identificou HTTP 403 `email_not_in_allow_list` no Edge Function `e2e-cleanup` para a conta canônica do teste, além de tentativas posteriores abortadas por rede. O owner deve adicionar `E2E_USER_EMAIL` à `E2E_CLEANUP_ALLOWED_EMAILS` **somente no projeto Supabase de homologação**, mantendo a allowlist restrita. O trace de autorização para o spinner de permissões ainda precisa ser capturado depois da contenção de credenciais.
+
+**Contenção de credencial:** um snapshot gerado pela falha do setup incluía o valor do campo de senha em artefato do repositório público. Os artefatos de evidência e relatório/trace que continham o snapshot foram removidos via GitHub MCP (HTTP 204); os artefatos restantes foram conferidos por nome/conteúdo conhecido e não incluem esse snapshot. A conta de teste precisa de senha rotacionada e o secret `E2E_USER_PASSWORD` do GitHub Actions atualizado antes de nova execução. Não registrar a senha em arquivos, logs ou conversa.
+
+### Patch local de proteção contra nova exposição
+
+No worktree, `e2e/helpers/auth.ts` limpa o campo da senha em `finally`, antes de qualquer asserção que possa gerar snapshot. Playwright desativa traces globalmente em CI e no projeto `chromium-smoke`; o projeto `setup` desativa trace, screenshot e vídeo. Screenshots e vídeos de falhas dos demais projetos seguem habilitados. Typecheck, lint, build e a suíte Vitest passaram para a versão anterior deste patch: typecheck passou; lint passou com 0 erros e 874 avisos existentes; build passou com avisos ambientais já registrados; Vitest passou com 5.856 testes, 68 ignorados e 0 falhas. A validação do patch final está em andamento. O patch e esta atualização documental aguardam rotação da credencial e configuração da allowlist de homologação antes de commit/push e novo E2E; não houve alteração no banco canônico nem deploy.
