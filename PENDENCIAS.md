@@ -262,3 +262,9 @@ O worktree troca somente o registry de origem para `ghcr.io/supabase/postgres:17
 **Estado:** correção ainda não publicada nem confirmada pelo GitHub Actions. O próximo passo é revisar, validar e publicar o lote em novo commit da PR #178; depois confirmar `conclusion=success` no workflow `Qualidade contínua`. Até esse run verde, esta pendência permanece aberta.
 
 **Nenhuma alteração no Supabase ou deploy foi executada.**
+
+## E2E Playwright — PR #178, SHA `d97e89d` (31/10/2026)
+
+- **Run:** [41143815278](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41143815278). Smoke autenticado e header sticky passaram (156 aprovados, 42 ignorados); o shard 1/3 da regressão falhou: 23/281 testes, todos expiraram aguardando restauração da sessão user. Os shards 2/3 e 3/3 ainda estavam em execução/fila na última consulta.
+- **Causa:** o setup gravava sessão com `E2E_USER_*`, mas `loginAs('user')` preferia `E2E_VIEWER_*`; o log confirma que os e-mails mascarados esperado e encontrado são diferentes. `E2E_USER_*` é a identidade canônica de dados e cleanup. Não é bloqueio por segredo ausente nem por quota.
+- **Próximo passo:** publicar a correção local validada que alinha `loginAs('user')` a `E2E_USER_*`, valida o e-mail antes de restaurar sessão e remove a supressão de falhas no workflow; confirmar os checks verdes no novo SHA. Até lá, PR #178 permanece aberta e sem merge.
