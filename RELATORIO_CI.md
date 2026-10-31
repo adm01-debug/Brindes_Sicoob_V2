@@ -182,7 +182,7 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 | `npm run lint:baseline` | ✅ exit 0 | 0 regressões acima do baseline. |
 | `npm run typecheck` | ✅ exit 0 | `tsc` app e node sem erros. |
 | `npm run typecheck:baseline` | ✅ exit 0 | 0 diagnósticos atuais; baseline também 0. |
-| `npm test` | ✅ exit 0 | 5.854 testes passaram, 68 skipped, 0 falhas. A primeira reexecução concorrente com Playwright capturou uma exceção jsdom/Radix; executado novamente isolado, passou. Base anterior: 5.839 passaram + 68 skipped; os 15 adicionais cobrem os guards de destino/cleanup. |
+| `npm test` | ✅ exit 0 | 5.855 testes passaram, 68 skipped, 0 falhas. Uma execução concorrente capturou exceção assíncrona jsdom/Radix em FocusScope; reexecução isolada passou. Base anterior: 5.839 passaram + 68 skipped; os 16 adicionais cobrem guards de destino/cleanup e redação do diagnóstico do ledger. |
 | `actionlint` nos workflows E2E e compliance | ✅ exit 0 | YAML/workflow válido. |
 | `npm audit` | ❌ exit 1 | 17 findings: 15 moderate e 2 high (`undici` e `zod`). A correção do `zod` sugere major 4; não foi aplicada sem teste de compatibilidade. |
 
