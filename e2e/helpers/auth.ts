@@ -24,6 +24,7 @@ import * as OTPAuth from 'otpauth';
 
 import { Sel } from '../fixtures/selectors';
 import { test } from '../fixtures/test-base';
+import { getUserCredentials } from './user-credentials';
 import { gotoAndSettle, waitForRouteIdle } from './nav';
 import { clickTestId } from './waits';
 
@@ -161,6 +162,20 @@ async function restoreRoleStorage(page: Page, role: Role, email: string): Promis
   const originState = state.origins?.find(({ origin }) => origin === currentOrigin);
   if (!originState?.localStorage.length) return false;
 
+  const storedEmail = originState.localStorage
+    .filter(({ name }) => /sb-.*-auth-token/.test(name))
+    .map(({ value }) => {
+      try {
+        const session = JSON.parse(value);
+        const candidate = session?.user?.email ?? session?.currentSession?.user?.email;
+        return typeof candidate === 'string' ? candidate.toLowerCase() : null;
+      } catch {
+        return null;
+      }
+    })
+    .find((candidate) => candidate === email.toLowerCase());
+  if (!storedEmail) return false;
+
   await page.context().clearCookies();
   await page.evaluate((entries) => {
     localStorage.clear();
@@ -236,6 +251,7 @@ export async function loginViaUI(page: Page, creds: LoginCreds): Promise<boolean
  * variáveis de ambiente não estiverem configuradas.
  */
 export async function loginAs(page: Page, role: Role = 'user'): Promise<void> {
+  const userCredentials = getUserCredentials(process.env);
   const email =
     role === 'dev'
       ? process.env.E2E_DEV_EMAIL
@@ -243,7 +259,7 @@ export async function loginAs(page: Page, role: Role = 'user'): Promise<void> {
         ? process.env.E2E_ADMIN_EMAIL
         : role === 'editor'
           ? process.env.E2E_MANAGER_EMAIL || process.env.E2E_ADMIN_EMAIL
-          : process.env.E2E_VIEWER_EMAIL || process.env.E2E_USER_EMAIL;
+          : userCredentials.email;
   const password =
     role === 'dev'
       ? process.env.E2E_DEV_PASSWORD
@@ -251,7 +267,7 @@ export async function loginAs(page: Page, role: Role = 'user'): Promise<void> {
         ? process.env.E2E_ADMIN_PASSWORD
         : role === 'editor'
           ? process.env.E2E_MANAGER_PASSWORD || process.env.E2E_ADMIN_PASSWORD
-          : process.env.E2E_VIEWER_PASSWORD || process.env.E2E_USER_PASSWORD;
+          : userCredentials.password;
 
   if (!email || !password) {
     test.skip(true, `Credenciais E2E_${role.toUpperCase()}_EMAIL/PASSWORD ausentes`);
