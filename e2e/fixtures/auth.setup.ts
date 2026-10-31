@@ -8,7 +8,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { loginAs, loginViaUI, logout } from '../helpers/auth';
-import { getUserCredentials } from '../helpers/user-credentials';
 
 const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const STORAGE = path.resolve(CURRENT_DIR, '../.auth/storageState.json');
@@ -52,7 +51,8 @@ setup('authenticate canonical role states', async ({ page }) => {
   setup.setTimeout(180_000);
   fs.mkdirSync(path.dirname(STORAGE), { recursive: true });
 
-  const { email, password } = getUserCredentials(process.env);
+  const email = process.env.E2E_USER_EMAIL;
+  const password = process.env.E2E_USER_PASSWORD;
 
   if (!email || !password) {
     writeEmptyState(

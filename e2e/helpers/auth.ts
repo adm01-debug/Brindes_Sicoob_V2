@@ -24,7 +24,6 @@ import * as OTPAuth from 'otpauth';
 
 import { Sel } from '../fixtures/selectors';
 import { test } from '../fixtures/test-base';
-import { getUserCredentials } from './user-credentials';
 import { gotoAndSettle, waitForRouteIdle } from './nav';
 import { clickTestId } from './waits';
 
@@ -40,6 +39,21 @@ export interface LoginCreds {
 }
 
 export type Role = 'user' | 'admin' | 'dev' | 'editor';
+
+export function credentialsForRole(
+  role: Role,
+  env: Record<string, string | undefined> = process.env,
+): { email: string | undefined; password: string | undefined } {
+  if (role === 'dev') return { email: env.E2E_DEV_EMAIL, password: env.E2E_DEV_PASSWORD };
+  if (role === 'admin') return { email: env.E2E_ADMIN_EMAIL, password: env.E2E_ADMIN_PASSWORD };
+  if (role === 'editor') {
+    return {
+      email: env.E2E_MANAGER_EMAIL || env.E2E_ADMIN_EMAIL,
+      password: env.E2E_MANAGER_PASSWORD || env.E2E_ADMIN_PASSWORD,
+    };
+  }
+  return { email: env.E2E_USER_EMAIL, password: env.E2E_USER_PASSWORD };
+}
 
 const LOGIN_URL_RE = /\/login(\?|#|$)/;
 const AUTH_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../.auth');
@@ -137,6 +151,20 @@ interface StoredBrowserState {
   }>;
 }
 
+export function storedSessionEmail(entries: Array<{ name: string; value: string }>): string | null {
+  for (const { name, value } of entries) {
+    if (!/sb-.*-auth-token/.test(name)) continue;
+    try {
+      const session = JSON.parse(value);
+      const candidate = session?.user?.email ?? session?.currentSession?.user?.email;
+      if (typeof candidate === 'string') return candidate;
+    } catch {
+      // Um item inválido não deve impedir a tentativa de outro token da origin.
+    }
+  }
+  return null;
+}
+
 function roleStoragePath(role: Role): string {
   const filenames: Record<Role, string> = {
     user: 'storageState.json',
@@ -162,19 +190,8 @@ async function restoreRoleStorage(page: Page, role: Role, email: string): Promis
   const originState = state.origins?.find(({ origin }) => origin === currentOrigin);
   if (!originState?.localStorage.length) return false;
 
-  const storedEmail = originState.localStorage
-    .filter(({ name }) => /sb-.*-auth-token/.test(name))
-    .map(({ value }) => {
-      try {
-        const session = JSON.parse(value);
-        const candidate = session?.user?.email ?? session?.currentSession?.user?.email;
-        return typeof candidate === 'string' ? candidate.toLowerCase() : null;
-      } catch {
-        return null;
-      }
-    })
-    .find((candidate) => candidate === email.toLowerCase());
-  if (!storedEmail) return false;
+  const storedEmail = storedSessionEmail(originState.localStorage);
+  if (storedEmail?.toLowerCase() !== email.toLowerCase()) return false;
 
   await page.context().clearCookies();
   await page.evaluate((entries) => {
@@ -251,23 +268,7 @@ export async function loginViaUI(page: Page, creds: LoginCreds): Promise<boolean
  * variáveis de ambiente não estiverem configuradas.
  */
 export async function loginAs(page: Page, role: Role = 'user'): Promise<void> {
-  const userCredentials = getUserCredentials(process.env);
-  const email =
-    role === 'dev'
-      ? process.env.E2E_DEV_EMAIL
-      : role === 'admin'
-        ? process.env.E2E_ADMIN_EMAIL
-        : role === 'editor'
-          ? process.env.E2E_MANAGER_EMAIL || process.env.E2E_ADMIN_EMAIL
-          : userCredentials.email;
-  const password =
-    role === 'dev'
-      ? process.env.E2E_DEV_PASSWORD
-      : role === 'admin'
-        ? process.env.E2E_ADMIN_PASSWORD
-        : role === 'editor'
-          ? process.env.E2E_MANAGER_PASSWORD || process.env.E2E_ADMIN_PASSWORD
-          : userCredentials.password;
+  const { email, password } = credentialsForRole(role);
 
   if (!email || !password) {
     test.skip(true, `Credenciais E2E_${role.toUpperCase()}_EMAIL/PASSWORD ausentes`);
