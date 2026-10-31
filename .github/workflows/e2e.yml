@@ -30,8 +30,57 @@ jobs:
             exit 1
           fi
 
+  # O check obrigatório `e2e` em PR executa somente specs públicos sem secrets.
   e2e:
+    if: github.event_name == 'pull_request'
     needs: validate-source
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      FORCE_COLOR: '0'
+      PWTEST_FORBID_ONLY: '1'
+      VITE_SUPABASE_URL: https://e2e-public.invalid
+      VITE_SUPABASE_PUBLISHABLE_KEY: public-e2e-placeholder
+      VITE_SUPABASE_PROJECT_ID: e2e-public-no-backend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci --no-audit --no-fund
+
+      - name: Install Playwright (chromium)
+        run: npx playwright install --with-deps chromium
+
+      - name: Run jornadas públicas sem backend remoto
+        run: |
+          npx playwright test \
+            --project=chromium-public \
+            --project=routes-public \
+            --forbid-only \
+            --reporter=github,list
+
+      - name: Upload evidências públicas
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-public-pr
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7
+
+  e2e-authenticated:
+    if: github.event_name == 'workflow_dispatch'
+    needs: validate-source
+    environment: e2e-qa
     runs-on: ubuntu-latest
     # O gate cobre 168 combinações de rota/viewport além do smoke. O limite
     # inclui instalação, servidor e upload das evidências no runner hospedado.
@@ -57,13 +106,23 @@ jobs:
       E2E_DEV_PASSWORD: ${{ secrets.E2E_DEV_PASSWORD }}
       E2E_DEV_TOTP_SECRET: ${{ secrets.E2E_DEV_TOTP_SECRET }}
       E2E_CLEANUP_TOKEN: ${{ secrets.E2E_CLEANUP_TOKEN }}
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-      VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+      E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      E2E_SUPABASE_PROJECT_ID: ${{ secrets.E2E_SUPABASE_PROJECT_ID }}
+      E2E_ALLOWED_PROJECT_ID: ${{ vars.E2E_ALLOWED_PROJECT_ID }}
+      E2E_CLEANUP_DRY_RUN: ${{ vars.E2E_CLEANUP_DRY_RUN }}
+      E2E_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
+      E2E_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
+      VITE_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_PROJECT_ID: ${{ secrets.E2E_SUPABASE_PROJECT_ID }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
+
+      - name: Validar destino exclusivo de homologação
+        run: node scripts/validate-e2e-target.mjs
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -76,8 +135,12 @@ jobs:
       - name: Verificar credenciais da jornada autenticada
         shell: bash
         run: |
-          if [[ -z "$E2E_USER_EMAIL" || -z "$E2E_USER_PASSWORD" || -z "$E2E_VIEWER_EMAIL" || -z "$E2E_VIEWER_PASSWORD" || -z "$E2E_MANAGER_EMAIL" || -z "$E2E_MANAGER_PASSWORD" || -z "$E2E_ADMIN_EMAIL" || -z "$E2E_ADMIN_PASSWORD" || -z "$E2E_ADMIN_TOTP_SECRET" || -z "$E2E_DEV_EMAIL" || -z "$E2E_DEV_PASSWORD" || -z "$E2E_DEV_TOTP_SECRET" ]]; then
-            echo "::error title=Credenciais E2E ausentes::Configure as contas de vendedor, gestor, administrador e desenvolvedor, incluindo os segredos TOTP privilegiados. O gate autenticado não pode concluir por skip."
+          if [[ -z "$E2E_USER_EMAIL" || -z "$E2E_USER_PASSWORD" || -z "$E2E_VIEWER_EMAIL" || -z "$E2E_VIEWER_PASSWORD" || -z "$E2E_MANAGER_EMAIL" || -z "$E2E_MANAGER_PASSWORD" || -z "$E2E_ADMIN_EMAIL" || -z "$E2E_ADMIN_PASSWORD" || -z "$E2E_ADMIN_TOTP_SECRET" || -z "$E2E_DEV_EMAIL" || -z "$E2E_DEV_PASSWORD" || -z "$E2E_DEV_TOTP_SECRET" || -z "$E2E_CLEANUP_TOKEN" ]]; then
+            echo "::error title=Credenciais E2E ausentes::Configure as contas QA de vendedor, gestor, administrador e desenvolvedor, TOTP e o token de cleanup. O gate autenticado não pode concluir por skip."
+            exit 1
+          fi
+          if [[ "$E2E_CLEANUP_DRY_RUN" != "0" ]]; then
+            echo "::error title=Cleanup E2E não habilitado::Defina a variável E2E_CLEANUP_DRY_RUN=0 somente no environment isolado e protegido e2e-qa."
             exit 1
           fi
 
@@ -85,7 +148,7 @@ jobs:
         env:
           RUN_REMOTE_AUTHZ_TESTS: '1'
           RUN_REMOTE_RLS_TESTS: '1'
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           npx vitest run \
             --no-file-parallelism \
@@ -132,14 +195,13 @@ jobs:
             --reporter=github,list,json
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-report/results.json
-        continue-on-error: true
 
       # Resumo dedicado do smoke: 1 linha por funcionalidade no log do step,
       # `::error file=...::` por falha (anotação inline no PR), `::group::`
       # colapsável para diagnóstico, e bloco "FINAL SUMMARY" sem ANSI no fim.
       - name: 📋 Generate SMOKE summary (sempre — log final + annotations)
         if: always()
-        run: node scripts/e2e-smoke-summary.mjs || true
+        run: node scripts/e2e-smoke-summary.mjs
 
       - name: 📤 Append SMOKE summary to GitHub UI
         if: always() && hashFiles('playwright-report/smoke-summary.md') != ''
@@ -166,7 +228,6 @@ jobs:
             --workers=2 \
             --max-failures=1 \
             --reporter=github,list
-        continue-on-error: true
 
       - name: 🛑 Fail-fast se header sticky falhou
         if: env.SKIP_E2E != 'true' && steps.e2e_header_sticky.outcome == 'failure'
@@ -177,7 +238,6 @@ jobs:
       - name: Upload Playwright report do gate
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
         with:
           name: playwright-report-smoke-gate
           path: playwright-report
@@ -186,7 +246,6 @@ jobs:
       - name: Upload smoke summary (markdown + json)
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
         with:
           name: e2e-smoke-summary
           path: |
@@ -198,7 +257,6 @@ jobs:
       - name: Upload evidências do gate
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
         with:
           name: e2e-evidence-smoke-gate
           path: |
@@ -208,15 +266,16 @@ jobs:
 
   e2e-regression:
     name: E2E regression — shard ${{ matrix.shard }}/3
-    needs: e2e
-    if: needs.e2e.result == 'success'
+    needs: e2e-authenticated
+    if: needs.e2e-authenticated.result == 'success'
+    environment: e2e-qa
     runs-on: ubuntu-latest
     # Três shards mantêm cada lote abaixo do limite hospedado de 40 minutos.
-    # A serialização permanece necessária porque as contas são canônicas.
+    # A serialização evita disputas entre as personas isoladas de QA.
     timeout-minutes: 40
     strategy:
       fail-fast: false
-      # Os shards usam as mesmas contas canônicas e o mesmo fator TOTP. A
+      # Os shards usam as mesmas contas de QA e o mesmo fator TOTP. A
       # serialização evita desafios MFA concorrentes e limpezas cruzadas.
       max-parallel: 1
       matrix:
@@ -238,13 +297,23 @@ jobs:
       E2E_DEV_PASSWORD: ${{ secrets.E2E_DEV_PASSWORD }}
       E2E_DEV_TOTP_SECRET: ${{ secrets.E2E_DEV_TOTP_SECRET }}
       E2E_CLEANUP_TOKEN: ${{ secrets.E2E_CLEANUP_TOKEN }}
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-      VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+      E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      E2E_SUPABASE_PROJECT_ID: ${{ secrets.E2E_SUPABASE_PROJECT_ID }}
+      E2E_ALLOWED_PROJECT_ID: ${{ vars.E2E_ALLOWED_PROJECT_ID }}
+      E2E_CLEANUP_DRY_RUN: ${{ vars.E2E_CLEANUP_DRY_RUN }}
+      E2E_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
+      E2E_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
+      VITE_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_PROJECT_ID: ${{ secrets.E2E_SUPABASE_PROJECT_ID }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
+
+      - name: Validar destino exclusivo de homologação
+        run: node scripts/validate-e2e-target.mjs
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -277,12 +346,11 @@ jobs:
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-report/results.json
           PLAYWRIGHT_JUNIT_OUTPUT_NAME: playwright-report/results.xml
-        continue-on-error: true
         id: e2e_run
 
       - name: 📋 Generate feature summary (regression)
         if: always()
-        run: node scripts/e2e-feature-summary.mjs || true
+        run: node scripts/e2e-feature-summary.mjs
 
       - name: 📤 Append feature summary to GitHub UI
         if: always() && hashFiles('playwright-report/feature-summary.md') != ''
@@ -296,7 +364,6 @@ jobs:
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
         with:
           name: playwright-report-shard-${{ matrix.shard }}
           path: playwright-report
@@ -305,7 +372,6 @@ jobs:
       - name: Upload feature summary (markdown)
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
         with:
           name: e2e-feature-summary-shard-${{ matrix.shard }}
           path: playwright-report/feature-summary.md
@@ -315,7 +381,6 @@ jobs:
       - name: Upload evidence artifacts
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        continue-on-error: true
         with:
           name: e2e-evidence-shard-${{ matrix.shard }}
           path: |

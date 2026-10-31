@@ -1,19 +1,20 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
+import { validateE2ETarget } from './e2e-target.mjs';
 
-const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const publishableKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
-const missing = [
-  !url && 'SUPABASE_URL/VITE_SUPABASE_URL',
-  !publishableKey && 'VITE_SUPABASE_PUBLISHABLE_KEY',
-  !serviceRoleKey && 'SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEY',
-].filter(Boolean);
+const url = process.env.E2E_SUPABASE_URL;
+const publishableKey = process.env.E2E_SUPABASE_PUBLISHABLE_KEY;
+const serviceRoleKey = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY;
+const projectId = process.env.E2E_SUPABASE_PROJECT_ID;
+const allowedProjectId = process.env.E2E_ALLOWED_PROJECT_ID;
 
-if (missing.length) {
-  console.error(`Configuração incompleta do teste RLS: ${missing.join(', ')}`);
-  process.exit(1);
-}
+validateE2ETarget({
+  url,
+  projectId,
+  allowedProjectId,
+  publishableKey,
+  serviceRoleKey,
+});
 
 const client = (key) =>
   createClient(url, key, {
@@ -30,6 +31,7 @@ const passwordB = `Qa!${randomBytes(18).toString('base64url')}1b`;
 let userAId;
 let userBId;
 let quoteId;
+const quoteMarker = '[QA RLS] isolamento entre vendedores';
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -65,12 +67,32 @@ async function selectedQuoteIds(instance) {
 
 async function cleanup() {
   await Promise.allSettled([actorA.auth.signOut(), actorB.auth.signOut()]);
-  if (quoteId) await admin.from('quotes').delete().eq('id', quoteId);
-  if (userAId) await admin.auth.admin.deleteUser(userAId);
-  if (userBId) await admin.auth.admin.deleteUser(userBId);
+  const errors = [];
+  const attempt = async (label, operation) => {
+    try {
+      const { error } = await operation();
+      if (error) errors.push(`${label}: ${error.message}`);
+    } catch (error) {
+      errors.push(`${label}: ${error instanceof Error ? error.message : 'falha desconhecida'}`);
+    }
+  };
+
+  if (quoteId) {
+    await attempt('orçamento de QA', () => admin.from('quotes').delete().eq('id', quoteId));
+  } else if (userBId) {
+    // Recupera também uma inserção cujo servidor confirmou, mas cuja resposta
+    // perdeu-se na rede antes de o teste receber o ID da linha.
+    await attempt('orçamento de QA', () =>
+      admin.from('quotes').delete().eq('seller_id', userBId).eq('client_name', quoteMarker),
+    );
+  }
+  if (userAId) await attempt('persona A', () => admin.auth.admin.deleteUser(userAId));
+  if (userBId) await attempt('persona B', () => admin.auth.admin.deleteUser(userBId));
+  return errors;
 }
 
 async function testCompliance() {
+  let testError;
   try {
     userAId = await createPersona(emailA, passwordA, 'A');
     userBId = await createPersona(emailB, passwordB, 'B');
@@ -87,7 +109,7 @@ async function testCompliance() {
       .from('quotes')
       .insert({
         seller_id: userBId,
-        client_name: '[QA RLS] isolamento entre vendedores',
+        client_name: quoteMarker,
         status: 'draft',
         subtotal: 100,
         total: 100,
@@ -150,8 +172,20 @@ async function testCompliance() {
     console.log(
       'Isolamento RLS confirmado com duas personas efêmeras e as quatro operações de quotes.',
     );
-  } finally {
-    await cleanup();
+  } catch (error) {
+    testError = error;
+  }
+
+  const cleanupErrors = await cleanup();
+  if (testError && cleanupErrors.length > 0) {
+    throw new AggregateError(
+      [testError, new Error(`Falha ao remover dados efêmeros de QA: ${cleanupErrors.join('; ')}`)],
+      'A validação RLS falhou e o cleanup deixou resíduos no projeto de QA.',
+    );
+  }
+  if (testError) throw testError;
+  if (cleanupErrors.length > 0) {
+    throw new Error(`Falha ao remover dados efêmeros de QA: ${cleanupErrors.join('; ')}`);
   }
 }
 

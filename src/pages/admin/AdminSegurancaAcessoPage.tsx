@@ -121,7 +121,7 @@ export default function AdminSegurancaAcessoPage() {
     if (!parsed.success) {
       toast({
         title: "Dados inválidos",
-        description: parsed.error.errors[0]?.message ?? "Revise os dados informados.",
+        description: parsed.error.issues[0]?.message ?? "Revise os dados informados.",
         variant: "destructive",
       });
       return;
