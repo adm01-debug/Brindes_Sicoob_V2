@@ -5,7 +5,7 @@ import { DocumentInspectionError, inspectDocumentBytes, sha256Hex, type Document
 import { requireCleanScannerVerdict, ScannerGateError } from './scanner.ts';
 import {
   getDocumentCleanupPlan,
-  matchesExpectedRegistration,
+  getVerifiedRegistrationState,
   type RegistrationState,
 } from './registration-state.ts';
 
@@ -65,6 +65,7 @@ Deno.serve(withStructuredLogging('sicoob-document-ingest', async (req) => {
 
   let quarantinePath: string | null = null;
   let finalPath: string | null = null;
+  let registrationDocumentId: string | null = null;
   let registrationState: RegistrationState = 'not_attempted';
   try {
     const form = await req.formData();
@@ -86,6 +87,7 @@ Deno.serve(withStructuredLogging('sicoob-document-ingest', async (req) => {
     const detected = inspectDocumentBytes(bytes, purpose);
     const sha256 = await sha256Hex(bytes);
     const documentId = crypto.randomUUID();
+    registrationDocumentId = documentId;
     quarantinePath = `${authData.user.id}/${orderId}/${purpose}/${documentId}.${detected.extension}`;
     const folder = purpose === 'delivery_proof' ? 'delivery' : 'invoices';
     finalPath = `${orderId}/${folder}/${documentId}.${detected.extension}`;
@@ -115,9 +117,14 @@ Deno.serve(withStructuredLogging('sicoob-document-ingest', async (req) => {
     };
     const expectedRegistration = {
       id: documentId,
+      order_id: orderId,
+      purpose,
+      uploaded_by: authData.user.id,
       final_path: finalPath,
       quarantine_path: quarantinePath,
       sha256,
+      detected_mime: detected.mime,
+      byte_size: bytes.length,
     };
     registrationState = 'unknown';
     const { data: registeredId, error: registerError } = await adminClient.rpc('register_sicoob_clean_document', {
@@ -139,7 +146,7 @@ Deno.serve(withStructuredLogging('sicoob-document-ingest', async (req) => {
     } else {
       const { data: existingRegistration, error: verificationError } = await adminClient
         .from('sicoob_document_registry')
-        .select('id, final_path, quarantine_path, sha256, status')
+        .select('id, order_id, purpose, uploaded_by, final_path, quarantine_path, sha256, detected_mime, byte_size, status')
         .eq('id', documentId)
         .maybeSingle();
       if (verificationError) {
@@ -147,14 +154,15 @@ Deno.serve(withStructuredLogging('sicoob-document-ingest', async (req) => {
         throw registerError ?? verificationError;
       }
       if (!existingRegistration) {
-        registrationState = 'rejected';
+        // A leitura pode ocorrer antes de uma RPC que perdeu a resposta concluir.
+        // Sem prova de rollback, preservar os objetos evita referências quebradas.
         throw registerError ?? new Error('O registro do documento não foi confirmado.');
       }
-      if (!matchesExpectedRegistration(existingRegistration, expectedRegistration)) {
+      registrationState = getVerifiedRegistrationState(existingRegistration, expectedRegistration);
+      if (registrationState !== 'confirmed') {
         console.error(`[sicoob-document-ingest] registration_mismatch document_id=${documentId}`);
         throw registerError ?? new Error('O registro persistido diverge do documento enviado.');
       }
-      registrationState = 'confirmed';
     }
 
     await removeUploadedObject(adminClient, QUARANTINE_BUCKET, quarantinePath);
@@ -162,7 +170,7 @@ Deno.serve(withStructuredLogging('sicoob-document-ingest', async (req) => {
   } catch (error) {
     const cleanupPlan = getDocumentCleanupPlan(registrationState);
     if (registrationState === 'unknown') {
-      console.error('[sicoob-document-ingest] registration_outcome_unknown; objetos preservados para reconciliação');
+      console.error(`[sicoob-document-ingest] registration_outcome_unknown document_id=${registrationDocumentId ?? 'unavailable'}; objetos preservados para reconciliação`);
     }
     if (cleanupPlan.removeFinal && finalPath) {
       await removeUploadedObject(adminClient, FINAL_BUCKET, finalPath);

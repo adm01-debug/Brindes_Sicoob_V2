@@ -3,6 +3,23 @@
 **Gerado em:** 2026-10-22  
 **Sessão:** https://claude.ai/code/session_01SHmPf5qSD8u44upSVHw2WY
 
+## Atualização do inventário remoto — 30/10/2026
+
+Esta seção substitui o inventário remoto de 22/10 abaixo. A regra aplicada é considerar somente a última execução de cada workflow na `main`.
+
+| Workflow | Última execução conhecida | Estado | Diagnóstico/evidência |
+|---|---|---|---|
+| CodeQL | [40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `failure` | Versões divergentes entre as etapas `init`, `autobuild` e `analyze`; alinhadas localmente em v4.39.1 e ainda sem confirmação remota. |
+| Qualidade contínua | [40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | `failure` | Gate reportou vulnerabilidades altas de `undici` e `zod`; ambas corrigidas localmente, aguardando execução em PR. |
+| Security Scan | [40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `failure` | `npm audit` falhou pelas mesmas vulnerabilidades altas, corrigidas localmente sem `--force`; falta prova remota. |
+| Publicar funções Sicoob | [40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | `failure` | A verificação observou `sicoob-approval-reconciliation` ainda na versão 5. A causa da discrepância não foi comprovada; não houve deploy/redeploy nesta rodada. |
+| E2E Playwright | [37775702358](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37775702358) | `startup_failure` | `total_jobs=0`; nenhum job/teste iniciou. O workflow usa `VITE_SUPABASE_PROJECT_ID` e requer credenciais de homologação/TOTP. O owner informou que configuraria o ambiente, mas a configuração ainda não foi verificada. |
+| Migration ledger drift | [41013281253](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41013281253) | `success` | Última execução observada em 30/10. |
+| Branch Protection Sentinel | última execução observada em 27/10 | `success` | Continua verde no inventário consultado. |
+| Enterprise Compliance & Audit Reporting | última execução observada em 27/10 | `success` | Continua verde no inventário consultado. |
+
+As correções locais de workflow, dependências e aplicação não são consideradas concluídas no GitHub até PR e checks remotos verdes. Nenhuma migration, alteração de dado, execução de Edge Function ou deploy no Supabase canônico foi realizado. A configuração e as contas de homologação ainda precisam de confirmação antes de nova execução E2E.
+
 ---
 
 ## Baseline local — antes das alterações do PR #141

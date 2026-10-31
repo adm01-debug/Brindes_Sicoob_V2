@@ -27,7 +27,7 @@ O plano canônico `docs/plano-implementacao/plano-100-etapas.md` continua com 10
 | Testes focais de orçamentos | — | 4 arquivos, 14 testes passaram | Inclui paginação, hidratação, erro/retry, cópia e teclado |
 | `git diff --check` | — | passou | Sem erros de whitespace |
 
-`npm audit` reportou 17 vulnerabilidades na árvore instalada: 15 moderadas e 2 altas (`undici` e `zod`); nenhuma crítica. Não foi aplicado `npm audit fix` nem alteração de dependências nesta rodada.
+Na baseline inicial, `npm audit` reportou 17 vulnerabilidades: 15 moderadas e 2 altas (`undici` e `zod`), sem críticas. A correção posterior das duas altas e a contagem final estão registradas abaixo.
 
 ## GitHub Actions observadas na `main`
 
@@ -55,7 +55,7 @@ Também foram resolvidas localmente as vulnerabilidades altas do npm: Zod foi at
 
 - E-018 estava desatualizado na primeira leitura: a migration versionada `20260927171216_quote_approval_security_hardening.sql` remove a escrita direta do usuário autenticado e revoga INSERT/UPDATE/DELETE em `quote_history`. Isso confirma o código versionado, não o estado remoto do banco.
 - E-011: há definições históricas conflitantes de retorno para `cleanup_old_notifications()`, mas o executor atual tem allowlist própria e não aplica esses arquivos legados. Não foi alterado schema; a falha histórica precisa ser reproduzida no fluxo de bootstrap/preview vigente antes de propor migration corretiva.
-- Permanecem gaps auditados, entre outros: E-024 não estabelece idempotência de entrega de webhook; E-027 pode apagar arquivo após resultado ambíguo de persistência; E-019/E-020 têm riscos de paginação/validação de preferências.
+- Permanecem gaps auditados, entre outros: a entrega de webhook ainda precisa de revisão explícita de idempotência (etapa correspondente a confirmar; E024 neste plano trata de filtros e ordenação); E-019/E-020 têm riscos de paginação/validação de preferências.
 - A validação de ponta a ponta continua bloqueada por ambiente E2E de homologação e dados/contas de teste confirmados. Não se consultaram valores de secrets, não se executou Edge Function e não houve leitura ou escrita no Supabase remoto.
 - PR #178 segue aberto como rascunho no SHA `746f7d2`: https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/178. Nenhum PR foi alterado ou mesclado.
 
@@ -64,4 +64,4 @@ Também foram resolvidas localmente as vulnerabilidades altas do npm: Zod foi at
 1. Publicar/validar via PR as correções CodeQL, npm e aplicação após desbloqueio seguro do E2E; os gates locais estão verdes, mas ainda falta prova remota.
 2. Diagnosticar a divergência de versão da Edge Function com o estado do projeto de homologação autorizado; não publicar funções no banco canônico sem validação e autorização específicas.
 3. Retomar E2E após confirmação de projeto e contas de homologação, rotação da credencial exposta anteriormente e allowlist restrita ao ambiente de teste.
-4. E-023 agora tem correção local em `fix/hermes-h393620-docs-audit-20261031`: os três caminhos de busca do `crm-db-bridge` escapam `%`, `_` e `\\`; 2 testes Deno passaram e `deno check` passou. Ainda falta CI remoto. Continuar E-024/E-027 e demais etapas em ordem de risco; registrar aceite externo como pendente, sem marcar o plano integral como concluído.
+4. E-023 agora tem correção local em `fix/hermes-h393620-docs-audit-20261031`: os três caminhos de busca do `crm-db-bridge` escapam `%`, `_` e `\\`; 2 testes Deno passaram e `deno check` passou. E-027 preserva os objetos quando a RPC ou sua verificação de registro têm resultado ambíguo; ausência/divergência não é tratada como rollback. Após o ajuste, `deno fmt --check`, 5 testes Deno e `deno check` passaram. Ainda falta CI remoto. Continuar as etapas rastreáveis em ordem de risco; registrar aceite externo como pendente, sem marcar o plano integral como concluído.
