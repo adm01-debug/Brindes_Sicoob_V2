@@ -110,11 +110,23 @@ Deno.serve(withStructuredLogging('sicoob-document-ingest', async (req) => {
     });
     if (registerError) throw registerError;
 
-    await adminClient.storage.from(QUARANTINE_BUCKET).remove([quarantinePath]);
+    const { error: cleanupError } = await adminClient.storage.from(QUARANTINE_BUCKET).remove([quarantinePath]);
+    if (cleanupError) console.warn(`[sicoob-document-ingest] cleanup quarantine failed: ${cleanupError.message}`);
     return json(req, { documentId, path: finalPath, sha256, detectedMime: detected.mime });
   } catch (error) {
-    if (finalPath) await adminClient.storage.from(FINAL_BUCKET).remove([finalPath]);
-    if (quarantinePath) await adminClient.storage.from(QUARANTINE_BUCKET).remove([quarantinePath]);
+    const cleanupResults = await Promise.allSettled([
+      finalPath ? adminClient.storage.from(FINAL_BUCKET).remove([finalPath]) : Promise.resolve({ data: null, error: null }),
+      quarantinePath ? adminClient.storage.from(QUARANTINE_BUCKET).remove([quarantinePath]) : Promise.resolve({ data: null, error: null }),
+    ]);
+    const cleanupPaths = [finalPath, quarantinePath];
+    for (let i = 0; i < cleanupResults.length; i++) {
+      const result = cleanupResults[i];
+      if (result.status === 'rejected') {
+        console.warn(`[sicoob-document-ingest] cleanup ${cleanupPaths[i]} falhou (exceção): ${result.reason}`);
+      } else if (result.value?.error) {
+        console.warn(`[sicoob-document-ingest] cleanup ${cleanupPaths[i]} falhou: ${result.value.error.message}`);
+      }
+    }
     if (error instanceof ScannerGateError) return json(req, { error: error.message }, error.status);
     if (error instanceof DocumentInspectionError) return json(req, { error: error.message }, 422);
     return json(req, { error: 'Não foi possível processar o documento com segurança.' }, 500);
