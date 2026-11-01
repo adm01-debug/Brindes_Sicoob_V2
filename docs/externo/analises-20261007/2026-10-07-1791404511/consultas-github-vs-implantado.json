@@ -1,0 +1,48 @@
+[
+  {
+    "case": "external-db-bridge-github",
+    "http": 400,
+    "codigo": "42703",
+    "mensagem": "column products.active does not exist"
+  },
+  {
+    "case": "external-db-bridge-deployed",
+    "http": 200,
+    "linhas_amostra": 1
+  },
+  {
+    "case": "sicoob-kit-quote-github",
+    "http": 400,
+    "codigo": "42703",
+    "mensagem": "column products.base_price does not exist"
+  },
+  {
+    "case": "sicoob-kit-quote-deployed",
+    "http": 400,
+    "codigo": "42703",
+    "mensagem": "column products.base_price does not exist"
+  },
+  {
+    "case": "sicoob-reorder-github",
+    "http": 400,
+    "codigo": "42703",
+    "mensagem": "column products.base_price does not exist"
+  },
+  {
+    "case": "sicoob-reorder-deployed",
+    "http": 400,
+    "codigo": "42703",
+    "mensagem": "column products.base_price does not exist"
+  },
+  {
+    "case": "imagem-alias",
+    "http": 400,
+    "codigo": "42703",
+    "mensagem": "column products.image_url does not exist"
+  },
+  {
+    "case": "contrato-minimo-candidato",
+    "http": 200,
+    "linhas_amostra": 1
+  }
+]

@@ -13,14 +13,23 @@
  */
 import { afterAll, beforeAll, describe, it, expect } from 'vitest';
 import { createClient } from '@supabase/supabase-js';
+import { validateE2ETarget } from '../../scripts/e2e-target.mjs';
 
-const URL = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
-const ANON = (import.meta as any).env?.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
-const SERVICE_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+const URL = process.env.E2E_SUPABASE_URL;
+const ANON = process.env.E2E_SUPABASE_PUBLISHABLE_KEY;
+const SERVICE_KEY = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY;
+const PROJECT_ID = process.env.E2E_SUPABASE_PROJECT_ID;
+const ALLOWED_PROJECT_ID = process.env.E2E_ALLOWED_PROJECT_ID;
 
 const requested = process.env.RUN_REMOTE_RLS_TESTS === '1';
-if (requested && (!URL || !ANON || !SERVICE_KEY)) {
-  throw new Error('RUN_REMOTE_RLS_TESTS=1 exige URL, chave publicável e chave administrativa do Supabase.');
+if (requested) {
+  validateE2ETarget({
+    url: URL,
+    projectId: PROJECT_ID,
+    allowedProjectId: ALLOWED_PROJECT_ID,
+    publishableKey: ANON,
+    serviceRoleKey: SERVICE_KEY,
+  });
 }
 const enabled = requested && Boolean(URL && ANON && SERVICE_KEY);
 const d = enabled ? describe : describe.skip;
@@ -62,19 +71,19 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
     },
   }) : (null as never);
   const canaryKey = `rls-e2e-${crypto.randomUUID()}`;
-
   beforeAll(async () => {
     const { error } = await retryTransientPostgrest(async () => await admin
       .from('e2e_cleanup_rate_limit')
       .insert({ key: canaryKey, count: 1 }));
-    expect(error).toBeNull();
+    expect(error, 'O projeto E2E de QA deve permitir a fixture controlada de RLS.').toBeNull();
   }, 45_000);
 
   afterAll(async () => {
-    await retryTransientPostgrest(async () => await admin
+    const { error } = await retryTransientPostgrest(async () => await admin
       .from('e2e_cleanup_rate_limit')
       .delete()
       .eq('key', canaryKey));
+    expect(error, 'O cleanup deve remover a fixture temporária de RLS do projeto de QA.').toBeNull();
   }, 45_000);
 
   it('SELECT como anon retorna zero linhas (policy deny_all)', async () => {

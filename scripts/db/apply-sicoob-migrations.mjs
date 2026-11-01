@@ -124,6 +124,10 @@ const TARGETS = [
     file: "supabase/migrations/20261015102000_fix_pg_net_recycled_request_ids.sql",
     sha256: "ef148dedbf709e27899d16c2e1bf3a1f67803d314f582d84bc332b2d001b668b",
   },
+  {
+    file: "supabase/migrations/20261022120000_add_public_favorites_to_security_definer_allowlist.sql",
+    sha256: "87bf1a8d5bb689f202a4ff77968c6f8820cfbfe5fffdff5d9c16c439a611bf54",
+  },
 ];
 
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(

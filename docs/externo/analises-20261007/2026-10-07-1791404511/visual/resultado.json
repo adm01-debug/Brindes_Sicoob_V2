@@ -1,0 +1,83 @@
+[
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "measurements": {
+      "overflow": false,
+      "logos": [
+        {
+          "complete": true,
+          "width": 1000
+        },
+        {
+          "complete": true,
+          "width": 1000
+        }
+      ]
+    },
+    "errors": [],
+    "acessibilidade": {
+      "violacoes": [],
+      "aprovacoes": 21
+    },
+    "teclado": "validado",
+    "validacaoFormulario": "validada",
+    "backend": "sintético indisponível; não comprova login real"
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "measurements": {
+      "overflow": false,
+      "logos": [
+        {
+          "complete": true,
+          "width": 1000
+        },
+        {
+          "complete": true,
+          "width": 1000
+        }
+      ]
+    },
+    "errors": [],
+    "acessibilidade": {
+      "violacoes": [],
+      "aprovacoes": 19
+    },
+    "teclado": "validado",
+    "validacaoFormulario": "validada",
+    "backend": "sintético indisponível; não comprova login real"
+  },
+  {
+    "viewport": {
+      "width": 320,
+      "height": 740
+    },
+    "measurements": {
+      "overflow": false,
+      "logos": [
+        {
+          "complete": true,
+          "width": 1000
+        },
+        {
+          "complete": true,
+          "width": 1000
+        }
+      ]
+    },
+    "errors": [],
+    "acessibilidade": {
+      "violacoes": [],
+      "aprovacoes": 19
+    },
+    "teclado": "validado",
+    "validacaoFormulario": "validada",
+    "backend": "sintético indisponível; não comprova login real"
+  }
+]

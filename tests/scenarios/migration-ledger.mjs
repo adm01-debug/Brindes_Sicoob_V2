@@ -8,8 +8,19 @@ import {
   collectLocalMigrations,
   compareLedger,
   comparePendingBaseline,
+  formatLedgerError,
   normalizedSql,
 } from '../../scripts/db/check-migration-ledger-drift.mjs';
+
+test('diagnóstico do ledger preserva causa e remove credenciais', () => {
+  const detail = formatLedgerError(
+    new Error('HTTP 401 Authorization: Bearer secret-value SUPABASE_ACCESS_TOKEN=private-value'),
+  );
+  assert.match(detail, /HTTP 401/);
+  assert.doesNotMatch(detail, /secret-value|private-value/);
+  assert.match(detail, /redigido/);
+});
+
 test('compara oito dígitos, conteúdo e ausência nas duas direções', () => {
   const root = mkdtempSync(join(tmpdir(), 'sicoob-ledger-'));
   try {

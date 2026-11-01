@@ -1,0 +1,43 @@
+{
+  "sha": "a974d77326217b237bbffec0aa01770efbf3e64a",
+  "data": "2026-10-07",
+  "vitest": {
+    "numPassedTests": 5611,
+    "numFailedTests": 0,
+    "numPendingTests": 112,
+    "success": true
+  },
+  "scenarios": {
+    "passaram": 213,
+    "falharam": 0
+  },
+  "typescript": {
+    "diagnosticos": 153,
+    "baseline": 153,
+    "gate": "aprovado; tipagem não está limpa"
+  },
+  "eslint": {
+    "erros": 3247,
+    "avisos": 2746
+  },
+  "npm_audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 7,
+    "high": 7,
+    "critical": 0,
+    "total": 14
+  },
+  "build": "aprovado",
+  "visual": {
+    "combinacoes": 9,
+    "erros": 0,
+    "violacoes_axe": 0,
+    "ambiente": "local; login com backend sintético e páginas demonstrativas"
+  },
+  "postgres_simulado": [
+    "identidade dos itens: aprovado",
+    "governança, escopo e retry: aprovado",
+    "migration candidata de formato, IDs inválidos e atomicidade: aprovado"
+  ]
+}

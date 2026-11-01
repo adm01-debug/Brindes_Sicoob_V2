@@ -1,0 +1,354 @@
+[
+  {
+    "audit": {
+      "cron_outcomes_24h": [
+        {
+          "count": 2,
+          "status": "failed"
+        },
+        {
+          "count": 4208,
+          "status": "succeeded"
+        }
+      ],
+      "crons": [
+        {
+          "active": true,
+          "name": "ensure-admin-audit-log-partitions",
+          "schedule": "0 3 1 * *"
+        },
+        {
+          "active": true,
+          "name": "cleanup-rate-limits",
+          "schedule": "0 * * * *"
+        },
+        {
+          "active": true,
+          "name": "cleanup-expired-step-up",
+          "schedule": "*/15 * * * *"
+        },
+        {
+          "active": true,
+          "name": "archive-old-admin-audit-logs",
+          "schedule": "0 2 * * *"
+        },
+        {
+          "active": true,
+          "name": "cleanup-expired-collection-trash",
+          "schedule": "0 3 * * *"
+        },
+        {
+          "active": true,
+          "name": "cleanup-expired-favorite-trash",
+          "schedule": "10 3 * * *"
+        },
+        {
+          "active": true,
+          "name": "cleanup-expired-public-comparisons",
+          "schedule": "20 3 * * *"
+        },
+        {
+          "active": true,
+          "name": "cleanup-old-notifications",
+          "schedule": "30 3 * * *"
+        },
+        {
+          "active": true,
+          "name": "cleanup-security-logs",
+          "schedule": "40 3 * * *"
+        },
+        {
+          "active": true,
+          "name": "cleanup-webhook-logs",
+          "schedule": "50 3 * * *"
+        },
+        {
+          "active": true,
+          "name": "trim-connection-test-history",
+          "schedule": "0 4 * * *"
+        },
+        {
+          "active": true,
+          "name": "cleanup-discount-test-data",
+          "schedule": "10 4 * * *"
+        },
+        {
+          "active": true,
+          "name": "sicoob-approval-outbox-worker",
+          "schedule": "* * * * *"
+        },
+        {
+          "active": true,
+          "name": "sicoob-materialize-overdue-payments",
+          "schedule": "17 * * * *"
+        },
+        {
+          "active": true,
+          "name": "sicoob-approval-outbox-retention",
+          "schedule": "23 3 * * *"
+        },
+        {
+          "active": true,
+          "name": "sicoob-approval-outbox-monitor",
+          "schedule": "*/2 * * * *"
+        },
+        {
+          "active": true,
+          "name": "process-export-queue",
+          "schedule": "* * * * *"
+        },
+        {
+          "active": true,
+          "name": "external-db-bridge-keepalive",
+          "schedule": "*/4 * * * *"
+        },
+        {
+          "active": true,
+          "name": "connections-auto-test",
+          "schedule": "*/15 * * * *"
+        }
+      ],
+      "database_version": "17.6",
+      "external_connection_columns": [
+        {
+          "column": "id",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "connection_id",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "tested_at",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "success",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "latency_ms",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "status_code",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "error_message",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "created_at",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "triggered_by",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "error_kind",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "request_method",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "request_url",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "response_headers",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "response_body",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "dns_ms",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "tcp_ms",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "tls_ms",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "ttfb_ms",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "download_ms",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "triggered_by_user_id",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "attempts",
+          "table": "connection_test_history"
+        },
+        {
+          "column": "id",
+          "table": "external_connections_sync_log"
+        },
+        {
+          "column": "ran_at",
+          "table": "external_connections_sync_log"
+        },
+        {
+          "column": "triggered_by_user_id",
+          "table": "external_connections_sync_log"
+        },
+        {
+          "column": "triggered_by_secret_name",
+          "table": "external_connections_sync_log"
+        },
+        {
+          "column": "trigger_op",
+          "table": "external_connections_sync_log"
+        },
+        {
+          "column": "processed",
+          "table": "external_connections_sync_log"
+        },
+        {
+          "column": "created_count",
+          "table": "external_connections_sync_log"
+        },
+        {
+          "column": "updated_count",
+          "table": "external_connections_sync_log"
+        },
+        {
+          "column": "status",
+          "table": "external_connections_sync_log"
+        },
+        {
+          "column": "error_message",
+          "table": "external_connections_sync_log"
+        },
+        {
+          "column": "duration_ms",
+          "table": "external_connections_sync_log"
+        },
+        {
+          "column": "details",
+          "table": "external_connections_sync_log"
+        },
+        {
+          "column": "created_at",
+          "table": "external_connections_sync_log"
+        },
+        {
+          "column": "id",
+          "table": "external_connections"
+        },
+        {
+          "column": "type",
+          "table": "external_connections"
+        },
+        {
+          "column": "name",
+          "table": "external_connections"
+        },
+        {
+          "column": "config",
+          "table": "external_connections"
+        },
+        {
+          "column": "secret_refs",
+          "table": "external_connections"
+        },
+        {
+          "column": "status",
+          "table": "external_connections"
+        },
+        {
+          "column": "last_test_at",
+          "table": "external_connections"
+        },
+        {
+          "column": "last_test_ok",
+          "table": "external_connections"
+        },
+        {
+          "column": "last_test_message",
+          "table": "external_connections"
+        },
+        {
+          "column": "created_by",
+          "table": "external_connections"
+        },
+        {
+          "column": "created_at",
+          "table": "external_connections"
+        },
+        {
+          "column": "updated_at",
+          "table": "external_connections"
+        },
+        {
+          "column": "last_latency_ms",
+          "table": "external_connections"
+        },
+        {
+          "column": "env_key",
+          "table": "external_connections"
+        },
+        {
+          "column": "auto_test_enabled",
+          "table": "external_connections"
+        }
+      ],
+      "migrations": [
+        "20260928162048",
+        "20260928173500",
+        "20260928182000",
+        "20261002120000"
+      ],
+      "public_views": [
+        {
+          "anon_select": false,
+          "name": "v_full_scope_grants",
+          "options": [
+            "security_invoker=on"
+          ]
+        },
+        {
+          "anon_select": false,
+          "name": "v_sicoob_hierarchy",
+          "options": [
+            "security_invoker=on"
+          ]
+        },
+        {
+          "anon_select": false,
+          "name": "sicoob_budget_audit",
+          "options": [
+            "security_invoker=on"
+          ]
+        },
+        {
+          "anon_select": false,
+          "name": "telemetry_query_performance",
+          "options": [
+            "security_invoker=on"
+          ]
+        }
+      ],
+      "unvalidated_constraints": 0,
+      "vault_names": [
+        "sicoob_approval_worker_secret",
+        "sicoob_internal_function_secret",
+        "sicoob_project_url"
+      ]
+    }
+  }
+]

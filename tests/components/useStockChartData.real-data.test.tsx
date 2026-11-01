@@ -54,9 +54,14 @@ describe('useStockChartData', () => {
   });
 
   it('mantém o histórico retornado pela fonte externa', () => {
+    // Data dinâmica: sempre 5 dias atrás, dentro da janela de 30 dias do hook.
+    // (Data fixa aqui vira teste-bomba-relógio: sai da janela e o filtro descarta a linha.)
+    const cincoDiasAtras = new Date();
+    cincoDiasAtras.setDate(cincoDiasAtras.getDate() - 5);
+    const dataRecente = cincoDiasAtras.toISOString().slice(0, 10);
     source.summaries = [
       {
-        summary_date: '2026-09-20',
+        summary_date: dataRecente,
         stock_close: 42,
         units_depleted: 3,
         units_restocked: 10,

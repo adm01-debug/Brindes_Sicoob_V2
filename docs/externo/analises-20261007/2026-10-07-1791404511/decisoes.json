@@ -1,0 +1,215 @@
+{
+  "sha": "a974d77326217b237bbffec0aa01770efbf3e64a",
+  "data": "2026-10-07",
+  "estado": "análise e decisões; correções não executadas nesta rodada",
+  "decisoes": [
+    {
+      "id": "D01",
+      "area": "Planejamento",
+      "escolha": "Adotar o plano de encerramento de 01/10 como referência única",
+      "justificativa": "Manter IDs T001–T100 e suas origens; atualizar estado e prova por entrega. Evita perder requisitos entre planos concorrentes.",
+      "plano": "T001–T010",
+      "aceite": "Estado de cada entrega ligado a SHA, teste e destino."
+    },
+    {
+      "id": "D02",
+      "area": "Arquitetura",
+      "escolha": "Preservar React, TypeScript, Vite e Supabase",
+      "justificativa": "Evoluir os módulos existentes. A análise não mostrou motivo para reconstruir o portal nem introduzir outro backend.",
+      "plano": "T010/T023",
+      "aceite": "Fluxos mantidos com regressão testada."
+    },
+    {
+      "id": "D03",
+      "area": "Repositório",
+      "escolha": "Usar o main remoto em worktree e reconciliar mudanças locais individualmente",
+      "justificativa": "O checkout original está 64 commits atrás e tem alterações do usuário. Incorporar apenas diferenças reais; preservá-las antes de qualquer atualização.",
+      "plano": "T001/T002",
+      "aceite": "Nenhuma edição perdida; candidato com SHA conhecido."
+    },
+    {
+      "id": "D04",
+      "area": "Catálogo",
+      "escolha": "Normalizar o contrato no bridge usando os campos reais",
+      "justificativa": "Selecionar is_active, sale_price e primary_image_url; aliases necessários ao domínio ficam no adaptador. Não criar campos artificiais nem escrever no catálogo mestre para satisfazer o frontend.",
+      "plano": "T058/T059",
+      "aceite": "As seleções reais de catálogo, kit e recompra retornam 200 e validam tipo, mínimo, saldo e preço."
+    },
+    {
+      "id": "D05",
+      "area": "Paridade Edge",
+      "escolha": "Incorporar a correção implantada de active/is_active e corrigir base_price/image_url nas duas origens",
+      "justificativa": "O código implantado contém um ajuste válido ausente do GitHub, mas kits e recompra ainda têm consultas inválidas. Publicar só depois de testar o contrato.",
+      "plano": "T030/T039/T070",
+      "aceite": "Fonte e implantação coincidem no candidato e consultas reais passam."
+    },
+    {
+      "id": "D06",
+      "area": "Banco",
+      "escolha": "Aplicar apenas migrations revisadas e faltantes, com hash e transação",
+      "justificativa": "A candidata 20261002160000 passou na simulação adicional. Incluir a política explícita de tabelas internas no aplicador autorizado; não executar o backlog histórico em massa.",
+      "plano": "T021–T030",
+      "aceite": "Ledger, definição viva e testes do lote correspondem."
+    },
+    {
+      "id": "D07",
+      "area": "Auditoria do banco",
+      "escolha": "Retirar o cron de arquivamento obsoleto e planejar retenção compatível com partições",
+      "justificativa": "A tabela de destino foi removida intencionalmente. Preservar dados; a política de retenção existente não autoriza descarte improvisado para esconder o erro.",
+      "plano": "T026/T076/T089",
+      "aceite": "Sem agendamento inválido; eventual arquivamento preserva integridade, permissões e retenção aprovada."
+    },
+    {
+      "id": "D08",
+      "area": "Limpeza do banco",
+      "escolha": "Remover o cron redundante de trim e conservar o trigger válido",
+      "justificativa": "A função usa NEW.connection_id e mantém 200 registros por conexão; o trigger está habilitado. A rotina diária é inválida e duplicada.",
+      "plano": "T026",
+      "aceite": "Inserções acima do limite continuam retendo os registros corretos; cron não volta a chamar trigger diretamente."
+    },
+    {
+      "id": "D09",
+      "area": "Tipos",
+      "escolha": "Regenerar tipos do banco após reconciliar o lote",
+      "justificativa": "Corrigir consumidores conforme contratos verdadeiros; usar versões fixadas do gerador e comparação automatizada.",
+      "plano": "T023",
+      "aceite": "Tipos compilam e nenhuma edição manual mascara objeto ausente."
+    },
+    {
+      "id": "D10",
+      "area": "Autenticação",
+      "escolha": "Versionar a política de autenticação por Edge Function",
+      "justificativa": "Distinguir usuário, worker interno e webhook público assinado. Preservar os validadores existentes e alinhar verify_jwt ao contrato; ativação global pode quebrar chamadas internas.",
+      "plano": "T024/T025/T030",
+      "aceite": "Sem token, token inválido, papel insuficiente e outra cooperativa são negados; chamador permitido funciona."
+    },
+    {
+      "id": "D11",
+      "area": "Documentos",
+      "escolha": "Usar ClamAV privado com adaptador HTTP para o contrato existente",
+      "justificativa": "Manter quarentena privada, atualização de assinaturas, hash, timeout e bloqueio sem parecer. Dimensionar o host e testar a integração antes da liberação.",
+      "plano": "T074–T080",
+      "aceite": "Arquivo limpo liberado; EICAR, indisponibilidade e parecer inválido bloqueados; download respeita escopo."
+    },
+    {
+      "id": "D12",
+      "area": "Dependências",
+      "escolha": "Atualizar source-map-js, substituir md-to-pdf por impressão com Playwright e migrar Tailwind 4 em lote próprio",
+      "justificativa": "Apenas Tailwind e md-to-pdf introduzem braces na árvore atual. Não existe patch upstream de braces para um override simples. A migração visual exige prova de compatibilidade e novo audit, sem npm audit fix --force.",
+      "plano": "T011–T020/T092/T093",
+      "aceite": "Cadeias vulneráveis removidas; audit e regressão visual passam no lockfile final."
+    },
+    {
+      "id": "D13",
+      "area": "CI",
+      "escolha": "Exigir checks concretos e impedir aprovação com teste ausente",
+      "justificativa": "Obrigar qualidade, contratos/RLS e smoke autenticado do SHA. Credencial ausente bloqueia o gate de integração. Não tratar todo continue-on-error como defeito: alguns têm gate de falha posterior.",
+      "plano": "T011–T020",
+      "aceite": "Falha real ou ausência de execução bloqueia merge e publicação."
+    },
+    {
+      "id": "D14",
+      "area": "Segurança de código",
+      "escolha": "Preservar análise estática e corrigir a integração CodeQL",
+      "justificativa": "Confirmar habilitação/licença do repositório privado antes de escolher upload SARIF. Não assumir que mudar runner corrige configuração do serviço. Manter análise local/artefatos e gates já existentes.",
+      "plano": "T011–T020",
+      "aceite": "Ferramenta executa, artefato é revisável e resultado não é marcado verde por upload omitido."
+    },
+    {
+      "id": "D15",
+      "area": "Testes",
+      "escolha": "Separar suíte local, integração remota e E2E por configuração explícita",
+      "justificativa": "Substituir asserções tautológicas por estado antes/depois e expectativa de erro precisa. A primeira rodada com endpoint sintético habilitou contratos remotos por presença de env; a rodada local corrigida passou.",
+      "plano": "T014/T024/T095/T096",
+      "aceite": "Servidor indisponível não é aceito como prova de RLS; skips e origem dos testes ficam explícitos."
+    },
+    {
+      "id": "D16",
+      "area": "Qualidade",
+      "escolha": "Reduzir dívida de tipos e lint por fluxo crítico sem ampliar baseline",
+      "justificativa": "Começar por catálogo, orçamento, autorização e financeiro. Corrigir a causa após gerar tipos; evitar refatoração global de milhares de linhas sem ligação com entrega.",
+      "plano": "T010–T020",
+      "aceite": "Cada lote reduz dívida e não introduz novos diagnósticos."
+    },
+    {
+      "id": "D17",
+      "area": "Compra",
+      "escolha": "Adotar jornada B2B de orçamento e aprovação",
+      "justificativa": "Fluxo: produto → quantidade/personalização → revisão → aprovação → pedido → arte → produção → entrega. Revalidar preço, mínimo, saldo e verba no servidor; consulta de estoque não promete reserva.",
+      "plano": "T031–T040/T051–T070",
+      "aceite": "Retry, mudança de preço, duas abas e concorrência preservam intenção, identidade e totais."
+    },
+    {
+      "id": "D18",
+      "area": "Governança",
+      "escolha": "Políticas versionadas e configuráveis por cooperativa",
+      "justificativa": "Quantidade de propostas, alçadas e exceção de fornecedor único são configuráveis; exigir justificativa e responsável. Não inventar obrigação universal de três propostas ou limites financeiros.",
+      "plano": "T052–T057",
+      "aceite": "Alteração material invalida aprovação quando previsto; outra cooperativa não decide nem lê o pedido."
+    },
+    {
+      "id": "D19",
+      "area": "Comunicação",
+      "escolha": "Manter outbox transacional existente e medir entrega efetiva",
+      "justificativa": "Reconciliar timeout/503 com deduplicação e tentativa auditada. Sucesso do cron/HTTP sem mensagens não comprova notificação ao comprador.",
+      "plano": "T046–T050",
+      "aceite": "Uma intenção gera uma entrega confirmada ou uma falha acionável, sem duplicação."
+    },
+    {
+      "id": "D20",
+      "area": "Kits",
+      "escolha": "Exigir especificação física ou revisão técnica registrada",
+      "justificativa": "Preço e estoque corretos não comprovam que o conjunto cabe na embalagem. Usar dimensões, peso e tolerâncias; dado ausente bloqueia confirmação física automática.",
+      "plano": "T062–T066",
+      "aceite": "Kit incompatível é recusado; exceção técnica é identificada, versionada e auditável."
+    },
+    {
+      "id": "D21",
+      "area": "Logística e financeiro",
+      "escolha": "Concluir distribuição com importação validada e saldos por destino",
+      "justificativa": "Prévia de CSV/XLSX, erros por linha, confirmação atômica, recebimento parcial, avaria, devolução e compensação financeira ligados ao pedido.",
+      "plano": "T081–T090",
+      "aceite": "Três destinos reconciliam quantidades e valores sem duplicar lançamento."
+    },
+    {
+      "id": "D22",
+      "area": "Experiência",
+      "escolha": "Aproveitar a identidade da vitrine e separar compra da gestão",
+      "justificativa": "Manter fotos reais de SKU, busca dominante, navegação por finalidade e orçamento persistente. Levar o padrão de loja à jornada autenticada; a demonstração continua identificada como fictícia.",
+      "plano": "T060/T071/T092",
+      "aceite": "Comprador monta orçamento sem atravessar menus técnicos; gestores acessam a área própria."
+    },
+    {
+      "id": "D23",
+      "area": "Conversão",
+      "escolha": "Reduzir a introdução e antecipar produtos na primeira visita",
+      "justificativa": "O primeiro card da demo começa após 1599/1744 px. Compactar hero/faixas; priorizar busca e cards, com recompra/histórico nas visitas seguintes. Curadoria por finalidade usa atributos verificados.",
+      "plano": "T060/T092",
+      "aceite": "Produtos aparecem mais cedo e o usuário mantém contexto de busca, filtros e orçamento em mobile."
+    },
+    {
+      "id": "D24",
+      "area": "Desempenho",
+      "escolha": "Otimizar por rota e substituir catálogo completo de ícones por mapa explícito",
+      "justificativa": "Carregar voz, BI e planilhas quando utilizados. Medir JS transferido e experiência nas rotas principais, não só o maior arquivo do build.",
+      "plano": "T094",
+      "aceite": "Orçamentos de tamanho/tempo definidos e medidos no candidato, sem aumentar limites para ocultar regressão."
+    },
+    {
+      "id": "D25",
+      "area": "Escopo",
+      "escolha": "Priorizar compra completa; executar módulos avançados depois com pendência explícita",
+      "justificativa": "Magic Up colaborativo, BI avançado e voz permanecem no plano. Implementar as lacunas após estabilizar orçamento, arte, documento e entrega; não contar tabelas vazias como funcionalidade entregue.",
+      "plano": "T078/T086/T089/T096",
+      "aceite": "Cada módulo tem UI, autorização, testes e destino integrado antes do aceite."
+    },
+    {
+      "id": "D26",
+      "area": "Conclusão",
+      "escolha": "Encerrar por evidência de jornada e piloto autorizado",
+      "justificativa": "Dados sintéticos de duas cooperativas e três destinos; testes positivos, adversariais, concorrência e falhas. Operação real e 30 dias de estabilidade são etapas futuras, não simuláveis como aceite.",
+      "plano": "T095–T100",
+      "aceite": "Candidato publicado reproduz o SHA testado; compra/entrega e estabilidade têm prova observada."
+    }
+  ]
+}

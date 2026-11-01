@@ -1,0 +1,113 @@
+[
+  {
+    "pagina": "demo",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "errors": [],
+    "overflow": false,
+    "assets": [],
+    "violations": [],
+    "dados": "sintéticos; sem conexão com bancos"
+  },
+  {
+    "pagina": "loja",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "errors": [],
+    "overflow": false,
+    "assets": [
+      {
+        "url": "http://127.0.0.1:4178/src/assets/demo/produtos-grid-v1.webp?import",
+        "status": 200
+      },
+      {
+        "url": "http://127.0.0.1:4178/brand/store/hero-brindes-v1.webp",
+        "status": 200
+      },
+      {
+        "url": "http://127.0.0.1:4178/src/assets/demo/produtos-grid-v1.webp",
+        "status": 200
+      }
+    ],
+    "violations": [],
+    "dados": "sintéticos; sem conexão com bancos"
+  },
+  {
+    "pagina": "demo",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "errors": [],
+    "overflow": false,
+    "assets": [],
+    "violations": [],
+    "dados": "sintéticos; sem conexão com bancos"
+  },
+  {
+    "pagina": "loja",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "errors": [],
+    "overflow": false,
+    "assets": [
+      {
+        "url": "http://127.0.0.1:4178/src/assets/demo/produtos-grid-v1.webp?import",
+        "status": 200
+      },
+      {
+        "url": "http://127.0.0.1:4178/brand/store/hero-brindes-v1.webp",
+        "status": 200
+      },
+      {
+        "url": "http://127.0.0.1:4178/src/assets/demo/produtos-grid-v1.webp",
+        "status": 200
+      }
+    ],
+    "violations": [],
+    "dados": "sintéticos; sem conexão com bancos"
+  },
+  {
+    "pagina": "demo",
+    "viewport": {
+      "width": 320,
+      "height": 740
+    },
+    "errors": [],
+    "overflow": false,
+    "assets": [],
+    "violations": [],
+    "dados": "sintéticos; sem conexão com bancos"
+  },
+  {
+    "pagina": "loja",
+    "viewport": {
+      "width": 320,
+      "height": 740
+    },
+    "errors": [],
+    "overflow": false,
+    "assets": [
+      {
+        "url": "http://127.0.0.1:4178/src/assets/demo/produtos-grid-v1.webp?import",
+        "status": 200
+      },
+      {
+        "url": "http://127.0.0.1:4178/brand/store/hero-brindes-v1.webp",
+        "status": 200
+      },
+      {
+        "url": "http://127.0.0.1:4178/src/assets/demo/produtos-grid-v1.webp",
+        "status": 200
+      }
+    ],
+    "violations": [],
+    "dados": "sintéticos; sem conexão com bancos"
+  }
+]
