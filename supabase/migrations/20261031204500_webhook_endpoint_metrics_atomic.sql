@@ -20,6 +20,13 @@ BEGIN
 END;
 $$;
 
+-- A função é SECURITY DEFINER e o projeto concede EXECUTE por default a
+-- anon/authenticated; restringe o acesso para que a RPC só possa ser chamada
+-- pela edge function via service_role, fechando a escalada que contornava a
+-- policy administrativa de inbound_webhook_endpoints e a validação HMAC.
+REVOKE EXECUTE ON FUNCTION public.increment_webhook_endpoint_metrics(uuid, timestamptz, boolean) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.increment_webhook_endpoint_metrics(uuid, timestamptz, boolean) TO service_role;
+
 COMMENT ON FUNCTION public.increment_webhook_endpoint_metrics(uuid, timestamptz, boolean) IS
   'Atualiza atomicamente last_received_at, total_received e total_invalid do endpoint.
    Chamada pela edge function webhook-inbound em substituição ao UPDATE com valores lidos
