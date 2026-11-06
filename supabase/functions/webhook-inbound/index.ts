@@ -113,11 +113,13 @@ Deno.serve(async (req) => {
     // Isso permite que o mecanismo de retry do emissor recupere a entrega.
     if (eventError) throw eventError;
 
-    const { error: metricsError } = await supabase.from("inbound_webhook_endpoints").update({
-      last_received_at: new Date().toISOString(),
-      total_received: (endpoint.total_received ?? 0) + 1,
-      total_invalid: (endpoint.total_invalid ?? 0) + (accepted ? 0 : 1),
-    }).eq("id", endpoint.id);
+    // Incremento atômico via função SQL para evitar race condition
+    // em leituras simultâneas do mesmo endpoint (A-025).
+    const { error: metricsError } = await supabase.rpc("increment_webhook_endpoint_metrics", {
+      p_id: endpoint.id,
+      p_received_at: new Date().toISOString(),
+      p_invalid: !accepted,
+    });
     if (metricsError) console.error("Falha ao atualizar métricas do webhook:", metricsError.message);
 
     if (!signatureValid) {
