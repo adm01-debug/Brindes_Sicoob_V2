@@ -1,7 +1,7 @@
 // webhook-inbound: receives external webhooks at /webhook-inbound?slug=<slug>
 // Validates HMAC signature using the secret stored in env (referenced by the
 // endpoint row), records every event in inbound_webhook_events.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 import { crypto } from "https://deno.land/std@0.224.0/crypto/mod.ts";
 import { encodeHex } from "https://deno.land/std@0.224.0/encoding/hex.ts";
 

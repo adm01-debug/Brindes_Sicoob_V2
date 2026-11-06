@@ -2,7 +2,7 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 import { requireInternalService } from "../_shared/internal-service-auth.ts";
 // favorites-watcher: cron diário que detecta quedas de preço em favoritos
 // e gera workspace_notifications (categoria "favorites") com dedupe 24h.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
+import { createClient } from "npm:@supabase/supabase-js@2.95.0";
 import { castSupabaseClient } from "../_shared/supabase-client-adapter.ts";
 
 const DEDUPE_WINDOW_HOURS = 24;
