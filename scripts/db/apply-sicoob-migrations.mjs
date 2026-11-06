@@ -126,7 +126,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261031204500_webhook_endpoint_metrics_atomic.sql",
-    sha256: "41fb90ebde144db1e372601542d6d7afcbe1ec16f3244d666cfe3db236b6f8da",
+    sha256: "272bc3e6e90786545b1ac76acba95deb4f5664080c45f07070bf3845e868746a",
   },
 ];
 
