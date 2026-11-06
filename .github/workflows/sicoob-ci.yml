@@ -81,6 +81,7 @@ jobs:
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
           restore-keys: playwright-${{ runner.os }}-
       - name: Instalar Chromium
+        timeout-minutes: 10
         run: npx playwright install --with-deps chromium
       - name: Build de produção sintético
         env:
