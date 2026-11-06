@@ -193,16 +193,21 @@ function useConsolidationFilters() {
 }
 
 const VALID_SORT_KEYS = ["product_name", "total_quantity", "average_price", "total_value"];
-function isValidSavedView(value: unknown): value is SavedView {
-  if (typeof value !== "object" || value === null) return false;
-  const candidate = value as Record<string, unknown>;
-  if (typeof candidate.id !== "string" || typeof candidate.name !== "string" || typeof candidate.searchTerm !== "string") return false;
-  const config = candidate.sortConfig;
+function isValidSortConfig(config: unknown): boolean {
   if (config === null) return true;
   if (typeof config !== "object") return false;
   const sortConfig = config as Record<string, unknown>;
-  return typeof sortConfig.key === "string" && VALID_SORT_KEYS.includes(sortConfig.key)
+  return typeof sortConfig.key === "string"
+    && VALID_SORT_KEYS.includes(sortConfig.key)
     && (sortConfig.direction === "asc" || sortConfig.direction === "desc");
+}
+function isValidSavedView(value: unknown): value is SavedView {
+  if (typeof value !== "object" || value === null) return false;
+  const candidate = value as Record<string, unknown>;
+  if (typeof candidate.id !== "string") return false;
+  if (typeof candidate.name !== "string") return false;
+  if (typeof candidate.searchTerm !== "string") return false;
+  return isValidSortConfig(candidate.sortConfig);
 }
 
 function useSavedViews(filters: ReturnType<typeof useConsolidationFilters>) {
