@@ -126,7 +126,7 @@ const TARGETS = [
   },
   {
     file: "supabase/migrations/20261106200300_restrict_proposals_delete_scope.sql",
-    sha256: "35696f7c83ac8486e6a45b11f484877e67b0cf03c85322184bba3b8a4eb2081e",
+    sha256: "c9ed6a8c27fc27159601b1fba713a30b03150eeb57a21047cbb40e47dc95cd74",
   },
 ];
 
