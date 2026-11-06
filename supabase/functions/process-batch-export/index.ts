@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2.119.0'
 import * as XLSX from 'npm:xlsx@0.18.5'
 import { createStructuredLogger } from '../_shared/structured-logger.ts'
 import { getOrCreateRequestId } from '../_shared/request-id.ts'

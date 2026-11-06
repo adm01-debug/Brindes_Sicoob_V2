@@ -2,7 +2,7 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 // github-credentials-test: valida GITHUB_TOKEN/REPO/DEFAULT_BRANCH lendo
 // a API do GitHub. Admin-only. Lê credenciais do `integration_credentials`
 // com fallback para Deno.env (mesma política do secrets-manager).
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 
 interface CheckResult {
   ok: boolean;
