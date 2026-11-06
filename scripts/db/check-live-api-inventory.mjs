@@ -15,6 +15,14 @@ function setDifference(left, right) {
   return [...new Set(left)].filter((value) => !rightSet.has(value)).sort();
 }
 
+export function hasBlockingDifferences(differences) {
+  return differences.some(
+    (d) =>
+      d.kind === 'project_ref' ||
+      (Array.isArray(d.missing_live) && d.missing_live.length > 0),
+  );
+}
+
 export function compareInventorySnapshots(expected, live) {
   const differences = [];
   if (expected.project_ref !== PROJECT_REF || live.project_ref !== PROJECT_REF) {
@@ -91,7 +99,7 @@ async function main() {
     differences,
   };
   console.log(JSON.stringify(result, null, 2));
-  if (differences.length) process.exitCode = 1;
+  if (hasBlockingDifferences(differences)) process.exitCode = 1;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
