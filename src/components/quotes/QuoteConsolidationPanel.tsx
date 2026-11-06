@@ -154,7 +154,8 @@ function initialSort(): ConsolidationSortConfig {
   const encoded = new URLSearchParams(window.location.search).get("q_sort");
   if (encoded) try { return JSON.parse(atob(encoded)) as ConsolidationSortConfig; } catch (error) { console.error(error); }
   const saved = localStorage.getItem("quote_consolidation_sort");
-  return saved ? JSON.parse(saved) as ConsolidationSortConfig : { key: "total_value", direction: "desc" };
+  if (saved) try { return JSON.parse(saved) as ConsolidationSortConfig; } catch { localStorage.removeItem("quote_consolidation_sort"); }
+  return { key: "total_value", direction: "desc" };
 }
 
 function useConsolidationFilters() {
@@ -163,22 +164,58 @@ function useConsolidationFilters() {
   const [sort, setSort] = useState<ConsolidationSortConfig>(initialSort);
   useEffect(() => localStorage.setItem("quote_consolidation_search", search), [search]);
   useEffect(() => localStorage.setItem("quote_consolidation_sort", JSON.stringify(sort)), [sort]);
-  const reset = () => { setSearch(""); setSort({ key: "total_value", direction: "desc" }); toast.info("Filtros redefinidos"); };
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (search) params.set("q_search", search); else params.delete("q_search");
+    if (sort) params.set("q_sort", btoa(JSON.stringify(sort))); else params.delete("q_sort");
+    const query = params.toString();
+    window.history.replaceState(window.history.state, '', query ? `?${query}` : window.location.pathname);
+  }, [search, sort]);
+  // Limpa também os parâmetros de compartilhamento da URL ao redefinir filtros
+  const reset = () => { setSearch(""); setSort({ key: "total_value", direction: "desc" }); const params = new URLSearchParams(window.location.search); params.delete("q_search"); params.delete("q_sort"); const query = params.toString(); window.history.replaceState(window.history.state, '', query ? `?${query}` : window.location.pathname); toast.info("Filtros redefinidos"); };
   const toggleSort = (key: ConsolidationSortKey) => setSort((previous) => ({
     key, direction: previous?.key === key && previous.direction === "asc" ? "desc" : "asc",
   }));
   const share = () => {
     const params = new URLSearchParams(window.location.search); params.set("q_search", search);
     if (sort) params.set("q_sort", btoa(JSON.stringify(sort)));
-    void navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?${params}`);
-    toast.success("Link de compartilhamento copiado!", { description: "Os filtros e ordenação atuais foram codificados na URL." });
+    const shareUrl = `${window.location.origin}${window.location.pathname}?${params}`;
+    window.history.replaceState(window.history.state, '', `?${params}`);
+    if (!navigator.clipboard) {
+      toast.error("Área de transferência indisponível. Copie a URL da barra de endereço.");
+      return;
+    }
+    navigator.clipboard.writeText(shareUrl)
+      .then(() => toast.success("Link de compartilhamento copiado!", { description: "Os filtros e ordenação atuais foram codificados na URL." }))
+      .catch(() => toast.error("Não foi possível copiar. Copie a URL da barra de endereço."));
   };
   return { search, setSearch, sort, setSort, reset, toggleSort, share };
 }
 
+const VALID_SORT_KEYS = ["product_name", "total_quantity", "average_price", "total_value"];
+function isValidSavedView(value: unknown): value is SavedView {
+  if (typeof value !== "object" || value === null) return false;
+  const candidate = value as Record<string, unknown>;
+  if (typeof candidate.id !== "string" || typeof candidate.name !== "string" || typeof candidate.searchTerm !== "string") return false;
+  const config = candidate.sortConfig;
+  if (config === null) return true;
+  if (typeof config !== "object") return false;
+  const sortConfig = config as Record<string, unknown>;
+  return typeof sortConfig.key === "string" && VALID_SORT_KEYS.includes(sortConfig.key)
+    && (sortConfig.direction === "asc" || sortConfig.direction === "desc");
+}
+
 function useSavedViews(filters: ReturnType<typeof useConsolidationFilters>) {
   const [views, setViews] = useState<SavedView[]>(() => {
-    const saved = localStorage.getItem("quote_consolidation_views"); return saved ? JSON.parse(saved) as SavedView[] : [];
+    const saved = localStorage.getItem("quote_consolidation_views");
+    if (!saved) return [];
+    let parsed: unknown = null;
+    try { parsed = JSON.parse(saved); } catch { localStorage.removeItem("quote_consolidation_views"); return []; }
+    if (!Array.isArray(parsed)) { localStorage.removeItem("quote_consolidation_views"); return []; }
+    const valid = parsed.filter(isValidSavedView);
+    if (!valid.length) { localStorage.removeItem("quote_consolidation_views"); return []; }
+    if (valid.length !== parsed.length) localStorage.setItem("quote_consolidation_views", JSON.stringify(valid));
+    return valid;
   });
   const persist = (next: SavedView[]) => { setViews(next); localStorage.setItem("quote_consolidation_views", JSON.stringify(next)); };
   const save = () => {
