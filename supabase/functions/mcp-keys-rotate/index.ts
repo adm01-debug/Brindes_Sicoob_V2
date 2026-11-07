@@ -7,8 +7,8 @@ import { getCorsHeaders } from "../_shared/cors.ts";
  * NÃO é revogada automaticamente. Auditoria com request_id e payload_summary.
  */
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
-import { z } from "https://esm.sh/zod@3.23.8";
+import { createClient } from "npm:@supabase/supabase-js@2.95.0";
+import { z } from "npm:zod@3.23.8";
 import {
   FULL_SCOPE_CONFIRMATION,
   FULL_SCOPE_MIN_JUSTIFICATION,

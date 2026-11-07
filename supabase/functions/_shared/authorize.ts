@@ -19,7 +19,7 @@
 // Hierarquia: requireRole "supervisor" aceita supervisor OU dev.
 //             requireRole "agente" aceita qualquer authenticated.
 
-import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient, SupabaseClient } from "npm:@supabase/supabase-js@2.49.4";
 import { getCorsHeaders } from "./cors.ts";
 
 export type AppRole = "dev" | "supervisor" | "agente";
