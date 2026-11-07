@@ -77,7 +77,7 @@ function getReadinessViewModel(input: {
   if (error) artworkState = 'destructive';
 
   let StatusIcon = CircleDashed;
-  let statusIconClass = 'text-amber-700';
+  let statusIconClass = 'text-warning';
   if (error) {
     StatusIcon = AlertCircle;
     statusIconClass = 'text-destructive';
@@ -114,7 +114,7 @@ export function OrderProductionReadiness(props: OrderProductionReadinessProps) {
       aria-live="polite"
       className={cn(
         'border-[1.5px]',
-        ready ? 'border-success/30 bg-success/5' : 'border-amber-300/60 bg-amber-50/60',
+        ready ? 'border-success/30 bg-success/5' : 'border-warning/30 bg-warning/5',
       )}
     >
       <StatusIcon className={cn('h-5 w-5', statusIconClass)} />

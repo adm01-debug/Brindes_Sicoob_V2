@@ -19,7 +19,7 @@ function showSlaDetails(deadline: string | undefined, showCountdown: boolean) {
 
 function progressClass(status: string) {
   if (status === 'critical') return "bg-destructive";
-  if (status === 'warning') return "bg-amber-500";
+  if (status === 'warning') return "bg-warning";
   return "bg-sicoob-green";
 }
 
@@ -82,7 +82,7 @@ export const SLABadge = ({ status, deadline, className, showCountdown = true }: 
     warning: {
       label: "Atenção (SLA)",
       icon: AlertCircle,
-      classes: "bg-amber-100 text-amber-700 border-amber-200 animate-pulse",
+      classes: "bg-warning/10 text-warning border-warning/20 animate-pulse",
     },
     critical: {
       label: "Crítico (SLA)",
