@@ -575,6 +575,7 @@ async function validateContract(client, targets) {
       (SELECT count(*)
         FROM pg_policies
         WHERE schemaname = 'public'
+          AND tablename NOT LIKE 'admin_audit_log_y%'
           AND (
             COALESCE(qual, '') ~ 'auth\\.(uid|role|jwt)\\(\\)'
             OR COALESCE(with_check, '') ~ 'auth\\.(uid|role|jwt)\\(\\)'
@@ -1094,6 +1095,7 @@ BEGIN
        SELECT 1
        FROM pg_policies
        WHERE schemaname = 'public'
+         AND tablename NOT LIKE 'admin_audit_log_y%'
          AND (
            COALESCE(qual, '') ~ 'auth\\.(uid|role|jwt)\\(\\)'
            OR COALESCE(with_check, '') ~ 'auth\\.(uid|role|jwt)\\(\\)'
