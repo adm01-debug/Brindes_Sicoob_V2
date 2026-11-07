@@ -1,7 +1,7 @@
 // webhook-inbound: receives external webhooks at /webhook-inbound?slug=<slug>
 // Validates HMAC signature using the secret stored in env (referenced by the
 // endpoint row), records every event in inbound_webhook_events.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 import { crypto } from "https://deno.land/std@0.224.0/crypto/mod.ts";
 import { encodeHex } from "https://deno.land/std@0.224.0/encoding/hex.ts";
 
@@ -113,11 +113,13 @@ Deno.serve(async (req) => {
     // Isso permite que o mecanismo de retry do emissor recupere a entrega.
     if (eventError) throw eventError;
 
-    const { error: metricsError } = await supabase.from("inbound_webhook_endpoints").update({
-      last_received_at: new Date().toISOString(),
-      total_received: (endpoint.total_received ?? 0) + 1,
-      total_invalid: (endpoint.total_invalid ?? 0) + (accepted ? 0 : 1),
-    }).eq("id", endpoint.id);
+    // Incremento atômico via função SQL para evitar race condition
+    // em leituras simultâneas do mesmo endpoint (A-025).
+    const { error: metricsError } = await supabase.rpc("increment_webhook_endpoint_metrics", {
+      p_id: endpoint.id,
+      p_received_at: new Date().toISOString(),
+      p_invalid: !accepted,
+    });
     if (metricsError) console.error("Falha ao atualizar métricas do webhook:", metricsError.message);
 
     if (!signatureValid) {

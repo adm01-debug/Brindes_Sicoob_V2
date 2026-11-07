@@ -2,7 +2,7 @@
  * AI Usage Tracking Helper
  * Tracks AI consumption per user with quota checking and cost estimation.
  */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 
 // Cost per 1M tokens (USD) — updated 2026-04
 const MODEL_PRICING: Record<string, { input: number; output: number }> = {

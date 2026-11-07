@@ -1,5 +1,5 @@
 import { catalogFunctionErrorResponse, createExternalCatalogClient, prepareAuthenticatedCatalogRequest } from "../_shared/catalog-client.ts";
-import { z } from "https://esm.sh/zod@3.23.8";
+import { z } from "npm:zod@3.23.8";
 import { parseBodyWithSchema } from "../_shared/zod-validate.ts";
 
 const ActionSchema = z.object({
