@@ -13,11 +13,15 @@ const FILES_TO_VALIDATE = [
 
 const TIMEOUT_MS = 5000;
 
+let hasFailures = false;
+let filesFound = 0;
+
 async function validateLinks() {
   console.log('🔗 Iniciando validação de links externos de evidências...');
   
   for (const file of FILES_TO_VALIDATE) {
     if (!fs.existsSync(file)) continue;
+    filesFound += 1;
     
     console.log(`\n📄 Analisando: ${file}`);
     const content = fs.readFileSync(file, 'utf-8');
@@ -46,13 +50,29 @@ async function validateLinks() {
         if (response.ok) {
           console.log(`  ✅ [${response.status}] ${link}`);
         } else {
-          console.warn(`  ⚠️ [${response.status}] ${link}`);
+          console.error(`  ❌ [${response.status}] ${link}`);
+          hasFailures = true;
         }
       } catch (e) {
         console.error(`  ❌ [ERROR] ${link} - ${e.message}`);
+        hasFailures = true;
       }
     }
   }
 }
 
-validateLinks();
+await validateLinks();
+
+if (filesFound === 0) {
+  console.warn('\n⚠️ Nenhum arquivo de auditoria encontrado — nada foi validado.');
+  console.warn('   Esperado: FINAL_ENTERPRISE_AUDIT_REPORT.md, ENTERPRISE_AUDIT_REPORT_V6.md, AUDIT_INVENTORY_DETAILED.md');
+  console.warn('   Gere-os com: node scripts/generate-audit-dossier.mjs');
+}
+
+if (hasFailures) {
+  console.error('\n🛑 Links externos quebrados encontrados nas evidências de auditoria.');
+  process.exit(1);
+}
+
+console.log('\n✅ Todos os links externos das evidências estão acessíveis.');
+process.exit(0);
