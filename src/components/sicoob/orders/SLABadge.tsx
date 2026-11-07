@@ -82,7 +82,7 @@ export const SLABadge = ({ status, deadline, className, showCountdown = true }: 
     warning: {
       label: "Atenção (SLA)",
       icon: AlertCircle,
-      classes: "bg-warning/10 text-warning border-warning/20 animate-pulse",
+      classes: "bg-warning/10 text-warning-foreground border-warning/20 animate-pulse",
     },
     critical: {
       label: "Crítico (SLA)",

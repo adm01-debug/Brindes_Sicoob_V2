@@ -77,7 +77,7 @@ function getReadinessViewModel(input: {
   if (error) artworkState = 'destructive';
 
   let StatusIcon = CircleDashed;
-  let statusIconClass = 'text-warning';
+  let statusIconClass = 'text-warning-foreground';
   if (error) {
     StatusIcon = AlertCircle;
     statusIconClass = 'text-destructive';

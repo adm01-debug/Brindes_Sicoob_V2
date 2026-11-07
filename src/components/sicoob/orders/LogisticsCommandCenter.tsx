@@ -53,12 +53,12 @@ export function LogisticsCommandCenter({ trackingCode, status }: LogisticsComman
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Globe className="h-4 w-4 text-info" />
+              <Globe className="h-4 w-4 text-primary" />
               Acompanhamento logístico
             </CardTitle>
             <CardDescription className="text-[10px]">Marcos registrados no fluxo do pedido</CardDescription>
           </div>
-          <Badge variant="outline" className="bg-info/10 text-info border-info/20 text-[10px] gap-1.5 px-2 py-0.5">
+          <Badge variant="outline" className="bg-info/10 text-primary border-info/20 text-[10px] gap-1.5 px-2 py-0.5">
             <div className={cn("h-1.5 w-1.5 rounded-full", trackingCode ? "bg-info" : "bg-slate-400")} />
             {trackingCode ? 'Rastreio informado' : 'Sem rastreio'}
           </Badge>
@@ -73,7 +73,7 @@ export function LogisticsCommandCenter({ trackingCode, status }: LogisticsComman
               <div className={cn(
                 "h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all duration-300",
                 step.status === 'completed' ? "bg-sicoob-green border-sicoob-green text-white" :
-                step.status === 'current' ? "bg-white border-info text-info animate-bounce" :
+                step.status === 'current' ? "bg-white border-info text-primary animate-bounce" :
                 "bg-white border-slate-200 text-slate-400"
               )}>
                 <step.icon className="h-4 w-4" />
@@ -106,7 +106,7 @@ export function LogisticsCommandCenter({ trackingCode, status }: LogisticsComman
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 gap-2 text-xs text-info hover:bg-info/10 hover:text-info"
+                className="h-8 gap-2 text-xs text-primary hover:bg-info/10 hover:text-primary"
                 onClick={() => window.open(`https://www.rastreie.com.br/${encodeURIComponent(trackingCode)}`, '_blank', 'noopener,noreferrer')}
               >
                 <ExternalLink className="h-3.5 w-3.5" /> Consultar rastreio
@@ -115,7 +115,7 @@ export function LogisticsCommandCenter({ trackingCode, status }: LogisticsComman
           </div>
 
           <div className="flex min-h-28 items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-            <Info className="h-5 w-5 shrink-0 text-info" />
+            <Info className="h-5 w-5 shrink-0 text-primary" />
             A localização em tempo real não é fornecida por esta integração. Use o código informado para consultar os eventos publicados pela transportadora.
           </div>
         </div>
