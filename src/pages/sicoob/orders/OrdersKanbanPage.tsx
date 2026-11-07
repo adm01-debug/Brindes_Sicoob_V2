@@ -75,7 +75,7 @@ function getCardInteractionClass(canDrag: boolean) {
 
 function getSlaBadgeClass(status: OrderCard['sla_status']) {
   if (status === 'critical') return 'bg-destructive/10 text-destructive border-destructive/20';
-  if (status === 'warning') return 'bg-warning/10 text-warning-foreground border-warning/20';
+  if (status === 'warning') return 'bg-warning/10 text-warning-foreground dark:text-warning border-warning/20';
   return 'bg-success/10 text-success border-success/20';
 }
 
@@ -514,7 +514,7 @@ export default function OrdersKanbanPage() {
                     {activeOrder.pa}
                   </p>
                   <div className="mt-3 flex items-center gap-2 text-[10px] italic text-muted-foreground">
-                    <Zap className="h-3 w-3 text-warning-foreground" />
+                    <Zap className="h-3 w-3 text-warning-foreground dark:text-warning" />
                     Movendo para novo status...
                   </div>
                 </div>

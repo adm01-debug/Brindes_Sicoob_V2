@@ -107,7 +107,7 @@ function BudgetMetric({ stats, budgetUsed }: { stats?: DashboardStats; budgetUse
           {formatCurrency(stats?.availableBudget || 0)}
         </div>
         {stats && !stats.hasConfiguredBudget && (
-          <p className="mt-1 text-xs text-warning-foreground">Verba ainda não configurada para este PA.</p>
+          <p className="mt-1 text-xs text-warning-foreground dark:text-warning">Verba ainda não configurada para este PA.</p>
         )}
         <div className="mt-2 space-y-1">
           <div className="flex justify-between text-[10px] font-bold uppercase text-muted-foreground">
