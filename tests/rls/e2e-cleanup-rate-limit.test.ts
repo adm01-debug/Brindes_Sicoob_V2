@@ -13,14 +13,23 @@
  */
 import { afterAll, beforeAll, describe, it, expect } from 'vitest';
 import { createClient } from '@supabase/supabase-js';
+import { validateE2ETarget } from '../../scripts/e2e-target.mjs';
 
-const URL = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
-const ANON = (import.meta as any).env?.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
-const SERVICE_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+const URL = process.env.E2E_SUPABASE_URL;
+const ANON = process.env.E2E_SUPABASE_PUBLISHABLE_KEY;
+const SERVICE_KEY = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY;
+const PROJECT_ID = process.env.E2E_SUPABASE_PROJECT_ID;
+const ALLOWED_PROJECT_ID = process.env.E2E_ALLOWED_PROJECT_ID;
 
 const requested = process.env.RUN_REMOTE_RLS_TESTS === '1';
-if (requested && (!URL || !ANON || !SERVICE_KEY)) {
-  throw new Error('RUN_REMOTE_RLS_TESTS=1 exige URL, chave publicável e chave administrativa do Supabase.');
+if (requested) {
+  validateE2ETarget({
+    url: URL,
+    projectId: PROJECT_ID,
+    allowedProjectId: ALLOWED_PROJECT_ID,
+    publishableKey: ANON,
+    serviceRoleKey: SERVICE_KEY,
+  });
 }
 const enabled = requested && Boolean(URL && ANON && SERVICE_KEY);
 const d = enabled ? describe : describe.skip;
@@ -44,10 +53,6 @@ async function retryTransientPostgrest<T extends PostgrestResult>(
   return result;
 }
 
-function isQuotaExhaustedError(error: PostgrestResult['error']): boolean {
-  return Boolean(error?.message?.includes('exceed_') && error?.message?.includes('quota'));
-}
-
 d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
   const anon = enabled ? createClient(URL!, ANON!, {
     auth: {
@@ -66,30 +71,22 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
     },
   }) : (null as never);
   const canaryKey = `rls-e2e-${crypto.randomUUID()}`;
-  let quotaExhausted = false;
-
   beforeAll(async () => {
     const { error } = await retryTransientPostgrest(async () => await admin
       .from('e2e_cleanup_rate_limit')
       .insert({ key: canaryKey, count: 1 }));
-    if (isQuotaExhaustedError(error)) {
-      // Supabase quota esgotada — mesma causa raiz documentada em PENDENCIAS.md.
-      // O endpoint está bloqueado para todos os acessos; a segurança está garantida.
-      quotaExhausted = true;
-      return;
-    }
-    expect(error).toBeNull();
+    expect(error, 'O projeto E2E de QA deve permitir a fixture controlada de RLS.').toBeNull();
   }, 45_000);
 
   afterAll(async () => {
-    await retryTransientPostgrest(async () => await admin
+    const { error } = await retryTransientPostgrest(async () => await admin
       .from('e2e_cleanup_rate_limit')
       .delete()
       .eq('key', canaryKey));
+    expect(error, 'O cleanup deve remover a fixture temporária de RLS do projeto de QA.').toBeNull();
   }, 45_000);
 
-  it('SELECT como anon retorna zero linhas (policy deny_all)', async (ctx) => {
-    if (quotaExhausted) { ctx.skip(); return; }
+  it('SELECT como anon retorna zero linhas (policy deny_all)', async () => {
     const { data, error } = await retryTransientPostgrest(async () => await anon
       .from('e2e_cleanup_rate_limit')
       .select('key')
@@ -98,16 +95,14 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
     expect(error !== null || (Array.isArray(data) && data.length === 0)).toBe(true);
   }, 45_000);
 
-  it('INSERT como anon falha (policy deny_all WITH CHECK false)', async (ctx) => {
-    if (quotaExhausted) { ctx.skip(); return; }
+  it('INSERT como anon falha (policy deny_all WITH CHECK false)', async () => {
     const { error } = await anon
       .from('e2e_cleanup_rate_limit')
       .insert({ key: `test-${Date.now()}`, count: 1 });
     expect(error).toBeTruthy();
   }, 15_000);
 
-  it('UPDATE como anon falha (policy deny_all USING false)', async (ctx) => {
-    if (quotaExhausted) { ctx.skip(); return; }
+  it('UPDATE como anon falha (policy deny_all USING false)', async () => {
     const { data } = await anon
       .from('e2e_cleanup_rate_limit')
       .update({ count: 999 })
@@ -124,8 +119,7 @@ d('RLS — e2e_cleanup_rate_limit (deny anon)', () => {
     expect(canary?.count).toBe(1);
   }, 15_000);
 
-  it('DELETE como anon falha (policy deny_all USING false)', async (ctx) => {
-    if (quotaExhausted) { ctx.skip(); return; }
+  it('DELETE como anon falha (policy deny_all USING false)', async () => {
     const { data } = await anon
       .from('e2e_cleanup_rate_limit')
       .delete()

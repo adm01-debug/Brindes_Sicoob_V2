@@ -136,6 +136,17 @@ function findingDigest(finding) {
   return hash(findingFingerprint(finding));
 }
 
+export function formatLedgerError(error) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message
+    .replace(/Bearer\s+\S+/gi, 'Bearer [redigido]')
+    .replace(
+      /((?:access|service|publishable|api)[_-]?key|token)\s*[:=]\s*[^\s,;]+/gi,
+      '$1=[redigido]',
+    )
+    .slice(0, 240);
+}
+
 function normalizeBaselineFindings(baselineFindings) {
   if (Array.isArray(baselineFindings)) {
     return baselineFindings.map((finding) => ({
@@ -273,9 +284,9 @@ async function main() {
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((e) => {
-    console.error(
-      `[ledger] Verificação indisponível (${e.code ?? e.name}); nenhum resultado aprovado.`,
-    );
+    const category = e?.code ?? e?.name ?? 'Error';
+    console.error(`[ledger] Verificação indisponível (${category}): ${formatLedgerError(e)}`);
+    console.error('[ledger] Nenhum resultado aprovado.');
     process.exitCode = 2;
   });
 }

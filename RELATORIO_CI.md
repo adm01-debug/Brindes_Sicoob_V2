@@ -165,3 +165,171 @@ A branch protection de `main` exige `required_approving_review_count: 1`. O assi
 ---
 
 *Relatório gerado automaticamente pela sessão Claude Code.*
+
+
+## Atualização da auditoria CI — 2026-10-31
+
+**Repositório e branch-base:** `adm01-debug/Brindes_Sicoob_V2`, `origin/main` em `e9d59026793b84fabeaeec9da890a068f64d49c3`.
+**Execução:** worktree isolada `fix/hermes-h429269-e2e-qa-guard`; nenhuma alteração feita na main local ou no banco canônico.
+
+### Baseline local reproduzido
+
+| Gate | Resultado | Observações |
+|---|---|---|
+| `npm ci --no-audit --no-fund` | ✅ exit 0 | 980 pacotes instalados; scripts opcionais do projeto não aprovados pelo npm. |
+| `npm run build` | ✅ exit 0 | Avisos preexistentes: variáveis Vite ausentes no ambiente local, PostCSS sem `from`, import misto e chunks acima de 600 kB. |
+| `npm run lint` | ✅ exit 0 | 0 erros; 873 avisos. |
+| `npm run lint:baseline` | ✅ exit 0 | 0 regressões acima do baseline. |
+| `npm run typecheck` | ✅ exit 0 | `tsc` app e node sem erros. |
+| `npm run typecheck:baseline` | ✅ exit 0 | 0 diagnósticos atuais; baseline também 0. |
+| `npm test` | ✅ exit 0 | 5.855 testes passaram, 68 skipped, 0 falhas. Uma execução concorrente capturou exceção assíncrona jsdom/Radix em FocusScope; reexecução isolada passou. Base anterior: 5.839 passaram + 68 skipped; os 16 adicionais cobrem guards de destino/cleanup e redação do diagnóstico do ledger. |
+| `actionlint` nos workflows E2E e compliance | ✅ exit 0 | YAML/workflow válido. |
+| `npm audit` | ❌ exit 1 | 17 findings: 15 moderate e 2 high (`undici` e `zod`). A correção do `zod` sugere major 4; não foi aplicada sem teste de compatibilidade. |
+
+### Estado remoto observado no PR #183 (SHA `a8be40e23bb529c8cb0b3b0b885cee539de69fc1`)
+
+| Workflow | Conclusão | Evidência e causa |
+|---|---|---|
+| Bundle Size Check | ✅ success | [run 41177997020](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177997020) |
+| Portal Sicoob | ✅ success | [run 41177997101](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177997101) |
+| Security Scan | ❌ failure | [run 41177996979](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177996979): `npm audit` bloqueou em `undici` e `zod` (severidade alta). |
+| Qualidade contínua | ❌ failure | [run 41177997004](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177997004): o job parou no mesmo gate `check:npm-audit`; mesma causa raiz. |
+| E2E (Playwright) | ❌ failure | [run 41177997096](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41177997096): `beforeAll` de `e2e-cleanup-rate-limit` excedeu 45 s; o job executou testes remotos e recebeu credenciais de escopo genérico sem validar destino. A nova branch remove segredos de PR e exige environment `e2e-qa`/allowlist em disparo manual na main. |
+
+A primeira execução local do Playwright público falhou por Chromium ausente (instalado) e por um teste que chamava o Supabase real apesar do backend isolado. O teste foi convertido para mock de `quote-approval`; o cenário individual passou e a suíte pública completa passou com 109/109 testes em 3,1 min, sem secrets e sem backend remoto.
+
+### Revisão transversal de `workflow_dispatch` com credenciais privilegiadas
+
+Foi encontrado que três jobs com secrets Supabase privilegiados aceitavam disparo manual em refs arbitrárias: `compliance-audit`, `performance-audit` e `drift-check`. Os três agora condicionam `workflow_dispatch` a `refs/heads/main`; eventos de `push` (limitados a main no workflow) e `schedule` permanecem permitidos. `apply-sicoob-migrations.yml` e `deploy-sicoob-functions.yml` já tinham proteção de ref. Correção local ainda aguarda CI remoto.
+
+Auditoria adicional do Lighthouse: o upload do LHCI está configurado para `filesystem`, logo `LHCI_GITHUB_APP_TOKEN` não era necessário; removido do ambiente do processo que executa conteúdo do PR. Também foi removido `continue-on-error` do upload de artefatos para que falhas não sejam mascaradas. As asserções de performance/acessibilidade não foram alteradas.
+
+Removidas também as duas ocorrências preexistentes de `continue-on-error` em uploads de evidência do workflow Sicoob e do bundle-check. Falhas de publicação de artefatos agora são visíveis no status do job; nenhum gate funcional ou asserção foi enfraquecido.
+
+CodeQL falhava porque `init` estava no SHA release 4.39.1, mas `autobuild` e `analyze` continuavam em 4.38.2; o log dizia explicitamente “Loaded a configuration file for version '4.39.1', but running version '4.38.2'”. Os três passos agora usam o mesmo SHA 4.39.1. A análise e o bloqueio por SARIF permanecem ligados; validar no run do PR.
+
+O diagnosticador do ledger mascarava `error.message`, impedindo descobrir por que a Management API recusou a consulta. Agora emite até 240 caracteres do motivo, redige Bearer/access/service/API keys e mantém o exit 2; um cenário unitário verifica a redação e preservação do status HTTP.
+
+### Inventário da última execução de cada workflow na `main` — 2026-10-31
+
+Inventário consultado por GitHub Actions MCP, excluindo runs de PR e mantendo apenas a última execução por workflow.
+
+| Workflow | Status | Causa provável / evidência |
+|---|---|---|
+| Migration ledger drift | ❌ failure | [run 41175713780](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41175713780), schedule de 2026-10-31: o check do ledger retornou exit 2 e log `[ledger] Verificação indisponível (Error); nenhum resultado aprovado.`. O job executou a auditoria RLS depois e ela não encontrou tabelas ausentes, RLS desabilitado nem policies permissivas irrestritas. Causa interna ainda não identificada porque o script mascara a mensagem original; necessita diagnóstico sem expor credenciais. |
+| Publicar funções Sicoob | ❌ failure | [run 40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102): Supabase CLI respondeu `No change found`, manteve a versão 5 e a confirmação do workflow interpretou a ausência de incremento como falha. PR #186 corrige o falso negativo e passou 4 testes locais; sem rerun/deploy remoto. |
+| Security Scan | ❌ failure | [run 40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158): npm audit bloqueou por `undici` e `zod` (2 altas). |
+| Qualidade contínua | ❌ failure | [run 40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964): `check:npm-audit` parou em `undici` e `zod` antes de verificar autorização das Edge Functions e escopo seller. |
+| CodeQL | ❌ failure | [run 40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073): config de `init` 4.39.1 incompatível com `autobuild/analyze` 4.38.2; não gerou SARIF. Os três action SHAs foram alinhados localmente em 4.39.1. |
+
+**Verdes na última execução observada na `main`:** Branch Protection Sentinel — [run 40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038); Enterprise Compliance & Audit Reporting — [run 40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958); Portal Sicoob — [run 39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315). A proteção de workflows com segredos e o pipeline de E2E ainda precisam ser provados por CI na branch de correção.
+
+## Atualização pós-CI das PRs — 2026-10-31
+
+- **PR #185 / SHA `2edff699`:** `npm audit` e CodeQL passaram. E2E falhou no run [41183325196](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41183325196), hook de 45 s no teste RLS remoto. A versão do workflow herdada da main usou secrets genéricas sem allowlist e o teste tenta inserir/remover uma canary com a chave administrativa. Não se pode provar o projeto de destino nem se o insert teve efeito; rerun foi bloqueado. A API MCP do Supabase canônico expirou em duas tentativas de leitura, sem executar SQL.
+- **PR #185 / CI:** simulação isolada inicialmente falhou por limite de download ECR (`toomanyrequests: Data limit exceeded`) no run [41183325186](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41183325186). O rerun apenas dos jobs falhos terminou `success` na tentativa 2; o container usa `--network none`, sem banco Supabase.
+- **PR #186 / SHA `c0c03485`:** run E2E [41184349669](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41184349669) cancelado para evitar repetição da escrita remota com destino desconhecido; audit high falhou [41184349697](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41184349697) e CodeQL falhou por versão do autobuild diferente do init [41184349695](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41184349695). Esses dois fixes estão nas PRs #185 e #184, respectivamente.
+- **Bloqueio de conclusão:** a PR #184 muda o E2E para placeholders sem secrets em PR e exige environment isolado `e2e-qa`/allowlist para jobs remotos. Nenhuma PR deve ser mesclada com checks pendentes/falhos; não houve escrita manual no banco canônico. A tentativa remota da PR #185 pode ter tido efeito parcial e requer confirmação privada do owner no projeto de destino.
+
+### Checks dinâmicos auxiliares
+
+O Copilot Code Review falhou por cota HTTP 402 no run [39785094125](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39785094125) e novamente em PR [41183332482](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41183332482); depende de ação do owner no plano GitHub. O run antigo do Dependabot para `@vitest/mocker` [39775463512](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39775463512) registrou `security_update_not_possible`; atualizações posteriores de `undici` e Zod na main terminaram success ([40603001428](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40603001428), [40603001197](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40603001197)). Este run histórico não foi tratado como workflow de produto ainda bloqueado.
+
+## Atualização após correções de dependências — 2026-10-31
+
+Os commits `a96fd44ca` (Undici) e `46e6cc33c` (Zod 4) foram incorporados à branch `fix/hermes-h429269-e2e-qa-guard`, na PR #184. A verificação local posterior terminou sem regressões:
+
+| Gate | Resultado | Observações |
+|---|---|---|
+| `npm ci --no-audit --no-fund` | ✅ exit 0 | 983 pacotes instalados; scripts opcionais não aprovados pelo npm. |
+| `npm run check:npm-audit` | ✅ exit 0 | Nenhuma vulnerabilidade reportada. |
+| `npm run build` | ✅ exit 0 | Avisos de bundle/chunks continuam; sem erro de build. |
+| `npm run typecheck` + `npm run typecheck:baseline` | ✅ exit 0 | 0 diagnósticos atuais e nenhuma regressão do baseline. |
+| `npm run lint` + `npm run lint:baseline` | ✅ exit 0 | 0 erros, 873 avisos existentes; nenhuma regressão nos arquivos alterados. |
+| `npm run test:scenarios` | ✅ exit 0 | 227 cenários aprovados. |
+| `npm run test:coverage:ci` | ✅ exit 0 | 454 arquivos aprovados, 4 ignorados; 5.855 testes aprovados, 68 ignorados; cobertura: statements 94%, branches 86,79%, funções 97,22%, linhas 97,6%. |
+
+A listagem remota de environments confirmou que `e2e-qa` não existe. `e2e-staging` existe sem regras de proteção nem política de branches e, por isso, não foi usado para executar testes autenticados. Nenhum secret foi lido ou escrito; nenhuma migration ou operação Supabase foi executada. A PR #184 ainda precisa de CI remoto no novo SHA e aprovação exigida pela proteção de branches. As cinco falhas do inventário permanecem abertas até novos runs correspondentes na `main` terminarem em `success`.
+
+### Resultado remoto da PR #184 — SHA `c1c0a6e30fb1be755aee9b30fec5835600514cc7`
+
+| Check | Resultado | Evidência |
+|---|---|---|
+| E2E público | ✅ success | [run 41188633632](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41188633632); jornada autenticada e shards remotos ficaram skipped porque `e2e-qa` ainda não está configurado. |
+| npm audit | ✅ success | [run 41188633761](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41188633761); zero vulnerabilidades no branch. |
+| CodeQL | ✅ success | [run 41188633748](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41188633748). |
+| Gitleaks | ✅ success | [run 41188633761](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41188633761). |
+| Bundle, Lighthouse, responsividade, simulação transacional e origem confiável | ✅ success | Runs [41188633631](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41188633631), [41188633630](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41188633630), [41188633673](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41188633673) e [41188633632](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41188633632). |
+| Qualidade contínua / suíte, simulações e build | ❌ failure | [run 41188633657](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41188633657), tentativa 2: a suíte completa passou; a simulação “controles de auditoria e permissões” não conseguiu baixar `public.ecr.aws/supabase/postgres:17.6.1.063` por `toomanyrequests: Data limit exceeded`, após três tentativas. O rerun isolado repetiu o rate limit. Aguardando cota do ECR ou imagem de origem aprovada pelo owner. |
+
+O run de `c1c0a6e30` teve falha intermitente por cota do ECR. O commit documental seguinte, SHA `640944d97`, iniciou novos runs; a suíte completa com todas as simulações e build terminou **success** em [41190013312](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41190013312). Os checks obrigatórios no SHA `640944d97` terminaram em success: E2E público [41190013334](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41190013334), npm audit e Gitleaks [41190013355](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41190013355), responsividade, gate transacional e origem confiável [41190013313](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41190013313), CodeQL [41190013341](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41190013341), bundle [41190013321](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41190013321) e Lighthouse [41190013338](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41190013338). Os jobs autenticado e shards de E2E ficaram skipped pela ausência de `e2e-qa`; Vercel Agent Review ficou neutral por billing desabilitado, sem falha de job de produto.
+
+O run com a falha de ECR não acessou Supabase: as simulações PostgreSQL usam container descartável com `--network none`. No SHA `e01e6fdaf`, o check não era bloqueio; a atualização posterior do SHA `f4014641d` voltou a falhar por rate limit, conforme registrado adiante. Merge segue pendente da aprovação de review exigida pela proteção de branches e da configuração do environment QA para provar a jornada autenticada.
+
+### Execução mais recente e decisão de merge
+
+No SHA `e01e6fdaf` (somente documentação além do código já validado), os checks de produto voltaram a passar: E2E público [41190889664](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41190889664), qualidade/simulações/build [41190889752](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41190889752), responsividade, simulação transacional e origem [41190889685](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41190889685), CodeQL [41190889694](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41190889694), bundle [41190889713](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41190889713), Lighthouse [41190889679](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41190889679), npm audit e Gitleaks [41190889566](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41190889566). Os dois jobs autenticados dependentes de `e2e-qa` foram skipped; o Vercel Agent Review ficou neutral por billing.
+
+Não mesclar agora: a PR altera dependências de runtime (`zod` v3→v4 e `@hookform/resolvers` v3→v5), portanto pode disparar um deploy de produção com alteração de aplicação. A instrução do usuário exige deixar esse tipo de mudança pronta para revisão e aguardar uma janela de deploy. A PR #184 permanece aberta/sem merge; por isso não houve novos runs na `main` e as falhas da main continuam pendentes de validação pós-merge. O environment `e2e-qa` também precisa ser provisionado pelo owner para validar autenticação real.
+
+**Atualização dos SHAs `f4014641d` e `123482fde`:** os runs [41191870511](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41191870511) e [41193290224](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41193290224) repetiram a falha intermitente no pull da imagem do ECR. No run 41191870511, o rerun isolado (tentativa 2) também repetiu o limite. O log resumido confirma `Unable to find image 'public.ecr.aws/supabase/postgres:17.6.1.063' locally` seguido de `toomanyrequests: Data limit exceeded`. A suíte completa passou antes das simulações; os outros checks de produto ficaram verdes. A execução anterior [41190013312](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41190013312) havia passado pelas mesmas simulações.
+
+**Estado atual:** no SHA `9e9e15cca`, o run [41194181710](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41194181710) completou as simulações PostgreSQL e o build em **success**; o ECR não está bloqueando o head atual. Todos os checks de produto no SHA atual passaram, exceto os jobs autenticado e shards dependentes, skipped por ausência do environment `e2e-qa`. A PR #184 está pronta para review. Merge continua bloqueado pela regra explícita de aguardar uma janela de produção, pois houve alteração em dependências runtime, e pela ausência de QA autenticado. Enquanto não houver merge autorizado, as falhas do inventário da main continuam sem validação pós-merge.
+
+O check auxiliar `copilot-pull-request-reviewer` no mesmo SHA também falhou: [run 41194779827](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41194779827/job/124518649729), etapa `Processing Request (Linux)`. A anotação retorna somente `Process completed with exit code 1`, sem diagnóstico acionável no trecho de log disponível. Não é um check de produto; registrar como bloqueio da integração auxiliar dependente do provedor, sem alterar workflows nem repetir um run cuja causa não é conhecida. O Vercel Agent Review continua `neutral` porque billing está desabilitado.
+
+### Atualização verificada — PR #184, SHA `78eb93b02e88bb11d2767c13f7445850466afa75` — 2026-10-31
+
+Consulta atual ao GitHub MCP confirmou que a PR #184 permanece aberta, sem merge e bloqueada pela revisão exigida. Os checks de produto no SHA acima estão em success: qualidade/simulações/build [41195458006](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41195458006), E2E público [41195457991](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41195457991), gate transacional/responsividade [41195457975](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41195457975), audit/Gitleaks [41195457976](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41195457976), CodeQL [41195458012](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41195458012), bundle [41195458021](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41195458021) e Lighthouse [41195458079](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41195458079). Os jobs de E2E autenticado e shards estão **skipped**, não aprovados. A consulta ao environment `e2e-qa` retornou 404; os testes autenticados seguem sem evidência. O Vercel Agent Review está `neutral` por billing desabilitado. O Copilot Reviewer falhou no run [41195466764](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41195466764), com HTTP 402 por limite de uso/quota do serviço; não é falha de produto nem há correção de código a aplicar.
+
+O inventário mais recente da `main` continua no SHA `e9d59026793b84fabeaeec9da890a068f64d49c3`; suas falhas registradas acima não foram reexecutadas após merge e permanecem pendentes. Não atribuir os checks verdes da PR à `main`.
+
+Validação local do candidato de interface de Gestão de Compras (antes do commit): build concluído; lint e typecheck sem regressões; Vitest completo em **455 arquivos, 5.857 testes aprovados, 4 arquivos e 68 testes skipped**; cobertura 94% statements, 86,79% branches, 97,22% funções e 97,6% linhas; cenários Node **227/227 aprovados**. Dois testes novos verificam ausência de indicadores inventados e links para a fila/painel reais. Permanecem avisos do build (ambiente Vite local sem URL/chave, PostCSS, import misto e chunks grandes). Os dois arquivos de interface/teste passaram ESLint com **zero avisos** e typecheck direcionado sem erros.
+
+### Estado pós-commit — PR #184, SHA `4cca418cdda15c6604b527ac7374b83973c7eda3` — 2026-10-31
+
+A correção de Gestão de Compras foi commitada e publicada neste SHA; a atualização anterior de `78eb93b` que dizia que ela aguardava commit não é mais estado atual. O conjunto local final após o commit passou: build; `lint:baseline`; `typecheck:baseline`; Vitest (455 arquivos, 5.857 aprovados e 68 skipped); cenários (227/227); `check:npm-audit` (sem vulnerabilidades). O hook pre-push repetiu lint, typecheck e Vitest com sucesso.
+
+| Workflow/check | Resultado remoto no SHA `4cca418c` |
+|---|---|
+| E2E público | ✅ [run 41197769091](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769091) |
+| Security Scan (npm audit/Gitleaks) | ✅ [run 41197769144](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769144) |
+| Gate transacional, responsividade e origem confiável | ✅ [run 41197769084](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769084) |
+| CodeQL | ✅ [run 41197769059](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769059) |
+| Bundle / Lighthouse | ✅ [runs 41197769065](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769065) / [41197769112](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769112) |
+| Qualidade contínua | ❌ falhou também no rerun | [run 41197769071](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769071), tentativa 2, step 16. O pull de `public.ecr.aws/supabase/postgres:17.6.1.063` recebeu novamente `toomanyrequests: Data limit exceeded` após três tentativas, antes de iniciar a simulação PostgreSQL. Não repetir enquanto o limite persistir. |
+| E2E autenticado e shards | ⏭️ skipped, não certificado | Environment `e2e-qa` retorna 404; `e2e-staging` não possui proteção adequada. |
+| Copilot Code Review | ❌ falha externa | [run 41197777721](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197777721), quota HTTP 402. |
+
+PR #184 segue aberta, sem merge, e exige review humano e janela para as mudanças em dependências runtime. A `main` continua em `e9d59026793b84fabeaeec9da890a068f64d49c3`; as cinco falhas do inventário nela continuam sem nova execução pós-merge, portanto não estão resolvidas. Nenhum segredo, banco Supabase, migration ou deploy foi acessado/alterado nesta etapa. A causa ECR repetiu-se no rerun (tentativa 2); o próximo retry deve aguardar a recuperação do limite ou usar uma origem de imagem previamente aprovada.
+
+### CI após a atualização documental — PR #184, SHA `e466ef7f788ef20640530a93aa9110ace1988a16` — 2026-10-31
+
+O commit `e466ef7f7` contém apenas `RELATORIO_CI.md` e `PENDENCIAS.md`; os gates locais foram repetidos após o commit, sem regressão. Na nova execução remota todos os workflows de produto terminaram em success:
+
+| Workflow/check | Resultado |
+|---|---|
+| E2E público | ✅ [run 41199507198](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507198) |
+| Security Scan | ✅ [run 41199507206](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507206) |
+| Qualidade contínua (inclui simulação PostgreSQL e build) | ✅ [run 41199507236](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507236) |
+| CodeQL | ✅ [run 41199507174](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507174) |
+| Portal Sicoob | ✅ [run 41199507176](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507176) |
+| Bundle Size | ✅ [run 41199507187](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507187) |
+| Lighthouse | ✅ [run 41199507235](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199507235) |
+
+O E2E autenticado e os shards foram **skipped**, não certificados, porque `e2e-qa` continua 404. A tentativa 2 de [run 41197769071](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41197769071) repetiu o limite do ECR, mas o run posterior no SHA `e466ef7f7` passou pela mesma simulação, confirmando caráter intermitente; não há bloqueio ECR ativo no SHA atual. O Copilot Reviewer [41199514763](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41199514763) falhou em `Processing Request (Linux)` sem causa acionável no resumo. A PR permanece aberta/bloqueada pela revisão humana, pela janela para mudança de dependências runtime e pela validação de E2E autenticado. As falhas da `main` não mudaram: não houve merge nem reexecução na `main`.
+
+### Revalidação remota da PR #186 — SHA `3838556b62e6a3c6f0e9a67e7f57f4a408318da6` — 2026-10-31
+
+O verificador de publicação tem 7 testes focais aprovados localmente; build, lint/typecheck baseline, cenários e Vitest também passaram. O `npm run check:npm-audit` local, porém, falhou nesta branch baseada diretamente na `main`, que ainda contém os findings altos de `undici`/`zod` corrigidos apenas na PR #184. Estado remoto:
+
+| Workflow/check | Resultado e causa observada |
+|---|---|
+| Portal Sicoob, Bundle e Lighthouse | ✅ success — [41198505598](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41198505598), [41198505662](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41198505662), [41198505614](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41198505614). |
+| Security Scan | ❌ [run 41198505586](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41198505586): gate `npm audit (high+critical)` reprova findings herdados de `undici`/`zod`; depende de a correção da PR #184 chegar à `main` antes de revalidar esta PR. |
+| Qualidade contínua | ❌ [run 41198505611](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41198505611): falha no step 9, verificação de dependências/autorização das Edge Functions; a branch-base ainda falha no gate de dependências. |
+| CodeQL | ❌ [run 41198505613](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41198505613): `Autobuild` falhou e não foi produzido SARIF; a base manteve referências desalinhadas entre CodeQL 4.39.1 e 4.38.2. O alinhamento foi corrigido na PR #184. |
+| E2E | ❌ [run 41198505589](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41198505589): o workflow herdado da `main` rodou a validação remota; 2 arquivos falharam (3 testes; 53 passaram), com timeout de 45 s no `beforeAll` do teste `e2e-cleanup-rate-limit`, timeouts de 15 s em UPDATE/DELETE anon e `system-healthcheck`. O destino das credenciais e qualquer efeito parcial não podem ser comprovados sem inspeção privada do owner; não repetir. |
+| Copilot Reviewer | ❌ [run 41198512274](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41198512274): etapa `Processing Request (Linux)` falhou sem causa acionável no trecho resumido; revisar quota/provedor com o owner. |
+
+Nenhum deploy, comando de escrita no Supabase ou acesso a secrets foi executado por esta auditoria. A tentativa E2E acima pertence ao CI remoto disparado pelo GitHub. Não afirmar que a base remota ficou intacta: o owner deve identificar em privado o projeto usado pelo run e verificar a fixture-canário se aplicável. A correção de isolamento está na PR #184; a PR #186 permanece bloqueada até a atualização da base e checks verdes.

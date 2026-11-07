@@ -9,6 +9,13 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Quote Approval — Public Page', () => {
   test('should show error for invalid token', async ({ page }) => {
+    await page.route('**/functions/v1/quote-approval', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ quote: null }),
+      });
+    });
     await gotoAndSettle(page, '/proposta/invalid-token-12345');
     // Should show loading first, then error or expired screen
     await settleAfterAction(page, { timeout: 3000 });
