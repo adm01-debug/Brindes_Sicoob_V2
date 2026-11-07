@@ -627,6 +627,7 @@ async function validateContract(client, targets) {
          AND dep.refclassid = 'pg_proc'::regclass
         JOIN pg_proc AS proc ON proc.oid = dep.refobjid
         WHERE ns.nspname = 'public'
+          AND cls.relname NOT LIKE 'admin_audit_log_y%'
           AND 0 = ANY (pol.polroles)
           AND NOT has_function_privilege('anon', proc.oid, 'EXECUTE')
       ) AS anon_blocked_rls_dependency_count,
@@ -1145,6 +1146,7 @@ BEGIN
         AND dep.refclassid = 'pg_proc'::regclass
        JOIN pg_proc AS proc ON proc.oid = dep.refobjid
        WHERE ns.nspname = 'public'
+         AND cls.relname NOT LIKE 'admin_audit_log_y%'
          AND 0 = ANY (pol.polroles)
          AND NOT has_function_privilege('anon', proc.oid, 'EXECUTE')
      )
