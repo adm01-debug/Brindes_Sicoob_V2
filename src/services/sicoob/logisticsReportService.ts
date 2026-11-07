@@ -24,6 +24,7 @@ const LOGISTICS_ORDER_STATUSES = new Set([
 ]);
 const LOGISTICS_ORDER_STATUS_LIST = [...LOGISTICS_ORDER_STATUSES];
 const LOGISTICS_PAGE_SIZE = 200;
+const SHIPMENT_ORDER_ID_BATCH_SIZE = 200;
 
 function statusFromOrder(status: string): SicoobLogisticsStatus {
   if (status === 'delivered' || status === 'completed') return 'delivered';
@@ -55,16 +56,28 @@ export async function listSicoobLogisticsTracking(): Promise<SicoobLogisticsTrac
   if (logisticsOrders.length === 0) return [];
 
   const orderIds = logisticsOrders.map((order) => order.id);
-  const { data: shipments, error } = await supabase
-    .from('sicoob_order_shipments')
-    .select('id, order_id, carrier_name, estimated_delivery, status, delivery_photo_path')
-    .in('order_id', orderIds);
-
-  if (error) throw error;
+  const shipments = await listShipmentsForOrders(orderIds);
 
   const shipmentByOrderId = new Map((shipments ?? []).map((shipment) => [shipment.order_id, shipment]));
 
   return logisticsOrders.map((order) => trackingFromOrder(order, shipmentByOrderId.get(order.id)));
+}
+
+async function listShipmentsForOrders(orderIds: string[]) {
+  const shipments = [];
+
+  for (let offset = 0; offset < orderIds.length; offset += SHIPMENT_ORDER_ID_BATCH_SIZE) {
+    const orderIdBatch = orderIds.slice(offset, offset + SHIPMENT_ORDER_ID_BATCH_SIZE);
+    const { data, error } = await supabase
+      .from('sicoob_order_shipments')
+      .select('id, order_id, carrier_name, estimated_delivery, status, delivery_photo_path')
+      .in('order_id', orderIdBatch);
+
+    if (error) throw error;
+    shipments.push(...(data ?? []));
+  }
+
+  return shipments;
 }
 
 async function listAllLogisticsOrders(): Promise<SicoobOrder[]> {
