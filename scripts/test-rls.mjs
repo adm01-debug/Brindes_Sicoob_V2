@@ -1,5 +1,20 @@
+#!/usr/bin/env node
+/**
+ * test-rls.mjs
+ * ----------------------------------------------------------------
+ * Gate de CI: cross-check de RLS. Cria um registro para o usuário B,
+ * chama a Edge Function `rls-audit` simulando acesso do usuário A e
+ * valida que o RLS bloqueia o acesso cross-tenant.
+ *
+ * Saída:
+ *  - exit 0 → auditoria passou.
+ *  - exit 1 → falha de RLS ou erro de execução.
+ *  - exit 2 → erro de configuração.
+ */
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
+
+const isCI = process.env.CI === "true" || process.env.CI === "1";
 
 dotenv.config();
 
@@ -7,8 +22,8 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
-  process.exit(1);
+  console.error('❌ SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são obrigatórios');
+  process.exit(2);
 }
 
 const adminClient = createClient(supabaseUrl, supabaseKey);
@@ -23,8 +38,8 @@ async function testRLS() {
     .limit(10);
 
   if (profileErr || !profiles || profiles.length < 2) {
-    console.error('Erro ao buscar perfis para teste ou perfis insuficientes:', profileErr);
-    return;
+    console.error('❌ Erro ao buscar perfis para teste ou perfis insuficientes:', profileErr?.message || profileErr);
+    process.exit(1);
   }
 
   // Tenta encontrar dois usuários com orgs ou PAs diferentes
@@ -55,43 +70,51 @@ async function testRLS() {
     .single();
 
   if (quoteErr) {
-    console.error('Erro ao criar registro de teste para B:', quoteErr);
-    return;
+    console.error('❌ Erro ao criar registro de teste para B:', quoteErr.message);
+    process.exit(1);
   }
 
   console.log(`📝 Registro de teste criado para B: ${quoteB.id}`);
 
   // 3. Simular acesso do Usuário A ao registro do Usuário B.
-  // A Edge Function realiza a auditoria sem disparar um magic link para o usuário.
   console.log('🔗 Chamando Edge Function rls-audit para auditoria profunda...');
-  
-  // Como não temos o token fácil aqui sem simular login completo, vamos chamar a function
-  // passando o user_id que queremos auditar se a function permitir (vamos ajustar a function pra aceitar um admin trigger)
-  
+
   const { data: auditResult, error: auditErr } = await adminClient.functions.invoke('rls-audit', {
     headers: {
-      // Aqui idealmente passaríamos o token do User A, mas para o script de CLI
-      // vamos fazer uma versão que a Edge Function aceite um "target_user_id" se chamada com service role
       "X-Admin-Audit": "true",
       "X-Target-User-Id": userA.user_id
     }
   });
 
   if (auditErr) {
-    console.error('Erro ao chamar rls-audit:', auditErr);
-  } else {
-    console.log('\n📊 RESULTADOS DA AUDITORIA RLS:');
-    console.log(`Total: ${auditResult.summary.total} | Passou: ${auditResult.summary.passed} | Falhou: ${auditResult.summary.failed}`);
-    
-    auditResult.results.forEach((r) => {
-      const icon = r.passed ? '✅' : '❌';
-      console.log(`${icon} [${r.table}] ${r.op}: ${r.scenario} -> ${r.actual} (Esperado: ${r.expected})`);
-    });
+    console.error('❌ Erro ao chamar rls-audit:', auditErr.message);
+    process.exit(1);
   }
+
+  console.log('\n📊 RESULTADOS DA AUDITORIA RLS:');
+  console.log(`Total: ${auditResult.summary.total} | Passou: ${auditResult.summary.passed} | Falhou: ${auditResult.summary.failed}`);
+
+  auditResult.results.forEach((r) => {
+    const icon = r.passed ? '✅' : '❌';
+    console.log(`${icon} [${r.table}] ${r.op}: ${r.scenario} -> ${r.actual} (Esperado: ${r.expected})`);
+    if (!r.passed && isCI) {
+      console.log(`::error file=test-rls.mjs,title=RLS falhou::[${r.table}] ${r.op}: ${r.scenario}`);
+    }
+  });
 
   // Cleanup
   await adminClient.from('quotes').delete().eq('id', quoteB.id);
   console.log('\n🧹 Cleanup concluído.');
+
+  if (auditResult.summary.failed > 0) {
+    console.error(`\n❌ ${auditResult.summary.failed} cenário(s) de RLS falharam.`);
+    process.exit(1);
+  }
+  console.log('\n✅ Todos os cenários de RLS passaram.');
+  process.exit(0);
 }
 
-testRLS();
+testRLS().catch((error) => {
+  console.error('❌ Falha inesperada no gate: ' + (error instanceof Error ? error.message : String(error)));
+  process.exit(2);
+});
