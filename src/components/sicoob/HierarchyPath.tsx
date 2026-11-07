@@ -56,7 +56,7 @@ export function HierarchyPath({ paId, className }: HierarchyPathProps) {
       {hierarchy.tema_name && (
         <>
           <div className="h-3 w-px bg-border/60 mx-1" />
-          <div className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-100 flex items-center gap-1 shadow-sm">
+          <div className="px-2 py-0.5 rounded-full bg-warning/10 text-warning-foreground dark:text-warning border border-warning/20 flex items-center gap-1 shadow-sm">
             <span className="text-[9px]">CURADORIA:</span>
             <span>{hierarchy.tema_name}</span>
           </div>

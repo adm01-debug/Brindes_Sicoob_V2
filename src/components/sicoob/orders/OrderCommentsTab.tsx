@@ -77,13 +77,13 @@ export const OrderCommentsTab = ({ orderId }: OrderCommentsTabProps) => {
                     id="internal-mode" 
                     checked={isInternal} 
                     onCheckedChange={setIsInternal}
-                    className="data-[state=checked]:bg-amber-500"
+                    className="data-[state=checked]:bg-warning"
                   />
                   <Label htmlFor="internal-mode" className="text-xs cursor-pointer flex items-center gap-1.5 text-muted-foreground">
                     {isInternal ? (
                       <>
-                        <ShieldAlert className="h-3 w-3 text-amber-500" />
-                        <span className="text-amber-600 font-medium">Nota Interna (Apenas Gestão)</span>
+                        <ShieldAlert className="h-3 w-3 text-warning-foreground dark:text-warning" />
+                        <span className="text-warning-foreground font-medium dark:text-warning">Nota Interna (Apenas Gestão)</span>
                       </>
                     ) : (
                       <>
@@ -128,7 +128,7 @@ export const OrderCommentsTab = ({ orderId }: OrderCommentsTabProps) => {
               className={cn(
                 "group flex flex-col gap-2 p-4 rounded-xl border transition-all hover:shadow-sm",
                 comment.is_internal 
-                  ? "bg-amber-50/50 border-amber-200/60" 
+                  ? "bg-warning/5 border-warning/30" 
                   : "bg-white border-muted/60"
               )}
             >
@@ -146,7 +146,7 @@ export const OrderCommentsTab = ({ orderId }: OrderCommentsTabProps) => {
                         {comment.author?.full_name || "Usuário Sicoob"}
                       </span>
                       {comment.is_internal && (
-                        <Badge variant="outline" className="h-5 bg-amber-100 text-amber-700 border-amber-200 text-[10px] gap-1 px-1.5 py-0">
+                        <Badge variant="outline" className="h-5 bg-warning/10 text-warning-foreground dark:text-warning border-warning/20 text-[10px] gap-1 px-1.5 py-0">
                           <ShieldAlert className="h-3 w-3" />
                           INTERNO
                         </Badge>
