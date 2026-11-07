@@ -57,7 +57,7 @@ const indicadores = [
 ] as const;
 
 const pedidos = [
-  { numero: "SCB-2026-0841", campanha: "Semana do Cooperativismo", valor: "R$ 18.420", situacao: "Aprovação", estilo: "bg-warning/10 text-warning-foreground dark:text-warning" },
+  { numero: "SCB-2026-0841", campanha: "Semana do Cooperativismo", valor: "R$ 18.420", situacao: "Aprovação", estilo: "bg-warning/10 text-warning-foreground" },
   { numero: "SCB-2026-0836", campanha: "Boas-vindas novos associados", valor: "R$ 9.780", situacao: "Produção", estilo: "bg-sky-100 text-sky-900" },
   { numero: "SCB-2026-0829", campanha: "Assembleia 2026", valor: "R$ 6.350", situacao: "Em transporte", estilo: "bg-violet-100 text-violet-900" },
 ] as const;
