@@ -65,6 +65,16 @@ test("monta lote atômico somente com migrations allowlisted e guarda do ledger"
   assert.match(batch, /O ledger mudou depois do preflight/);
   assert.match(batch, /CREATE TABLE public\.quote_save_idempotency/);
   assert.match(batch, /CREATE OR REPLACE FUNCTION public\.bulk_update_quote_status_atomic/);
+  assert.match(batch, /sicoob_approval_worker_dispatches_request_id_key/);
+  assert.match(batch, /idx_sicoob_approval_worker_queued_request/);
+  assert.match(batch, /pg_get_indexdef\(i\.indexrelid\)/);
+  assert.match(batch, /monitor_sicoob_approval_worker\(\)/);
+  assert.match(batch, /DISTINCT ON \(r\.id\)/);
+  assert.match(batch, /pending_status/);
+  assert.match(batch, /r\.created ASC/);
+  assert.match(batch, /has_newer_result/);
+  assert.match(batch, /ID reciclado; resposta correlacionada ao disparo mais recente/);
+  assert.match(batch, /Corpo do monitor divergiu do contrato esperado/);
   assert.match(batch, /O contrato crítico não foi produzido/);
   assert.doesNotMatch(
     batch,
