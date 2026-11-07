@@ -37,7 +37,10 @@ async function fetchWithTimeout(url, timeoutMs) {
   try {
     const head = await fetch(url, { method: 'HEAD', signal: controller.signal });
     if (head.ok) return head;
-    return await fetch(url, { method: 'GET', signal: controller.signal });
+    const get = await fetch(url, { method: 'GET', signal: controller.signal });
+    // Apenas o status importa; cancela o corpo para não prender o processo.
+    await get.body?.cancel();
+    return get;
   } finally {
     clearTimeout(timer);
   }
@@ -147,7 +150,7 @@ await runCli(
         message: `${broken.length} link(s) externo(s) inalcançável(is).`,
       };
     }
-    log.info('Todos os links externos responderam.');
+        if (!values.json) log.info('Todos os links externos responderam.');
     return 0;
   },
 );

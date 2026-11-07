@@ -99,7 +99,7 @@ await runCli(
         message: `${violations.length} import(s) relativo(s) encontrado(s); substitua por "${SEARCH_HOOKS_PATH}".`,
       };
     }
-    log.info(`Nenhum import relativo de hook de busca em ${values.root}.`);
+        if (!values.json) log.info(`Nenhum import relativo de hook de busca em ${values.root}.`);
     return 0;
   },
 );

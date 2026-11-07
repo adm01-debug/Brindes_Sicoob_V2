@@ -88,7 +88,7 @@ await runCli(
     if (errors.length > 0) {
       return { exitCode: EXIT_FAIL, message: `${errors.length} inconsistência(s) documental(is).` };
     }
-    log.info(`Consistência documental validada (${criticalRoutes.size} rota(s) crítica(s)).`);
+        if (!values.json) log.info(`Consistência documental validada (${criticalRoutes.size} rota(s) crítica(s)).`);
     return 0;
   },
 );
