@@ -9,7 +9,7 @@
     "build:dev": "npm run typecheck:baseline && vite build --mode development",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:coverage:ci": "vitest run --coverage --coverage.reporter=text --coverage.reporter=json-summary --coverage.reporter=html --coverage.reporter=lcov --coverage.thresholds.statements=80 --coverage.thresholds.branches=75",
+    "test:coverage:ci": "vitest run --coverage --coverage.reporter=text --coverage.reporter=json-summary --coverage.reporter=html --coverage.reporter=lcov --coverage.thresholds.statements=80 --coverage.thresholds.branches=80",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "coverage": "vitest run --coverage",
