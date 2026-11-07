@@ -35,15 +35,22 @@ async function fetchWithTimeout(url, timeoutMs) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const head = await fetch(url, { method: 'HEAD', signal: controller.signal });
-    if (head.ok) return head;
-    const get = await fetch(url, { method: 'GET', signal: controller.signal });
-    // Apenas o status importa; cancela o corpo para não prender o processo.
-    await get.body?.cancel();
-    return get;
-  } finally {
-    clearTimeout(timer);
-  }
+      let head;
+      try {
+        head = await fetch(url, { method: 'HEAD', signal: controller.signal });
+      } catch {
+        // Alguns servidores encerram a conexão para HEAD mas atendem GET;
+        // preserva o fallback para erros de transporte, respeitando o timeout.
+        head = null;
+      }
+      if (head && head.ok) return head;
+      const get = await fetch(url, { method: 'GET', signal: controller.signal });
+      // Apenas o status importa; cancela o corpo para não prender o processo.
+      await get.body?.cancel();
+      return get;
+    } finally {
+      clearTimeout(timer);
+    }
 }
 
 async function checkLink(url, timeoutMs) {

@@ -143,7 +143,7 @@ await runCli(
         message: `${failures.length} par(es) de cor reprovado(s) no nível ${level.toUpperCase()}.`,
       };
     }
-    log.info(`Todos os pares aprovados no nível ${level.toUpperCase()}.`);
+    if (!values.json) log.info(`Todos os pares aprovados no nível ${level.toUpperCase()}.`);
     return 0;
   },
 );
