@@ -10,8 +10,9 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
-import time
 from pathlib import Path
+
+from postgres_ready import wait_for_postgres
 
 
 CONTAINER = "sicoob-desconto-atomico-20260927"
@@ -247,12 +248,7 @@ def main() -> int:
             "docker", "run", "--rm", "-d", "--name", CONTAINER, "--network", "none",
             "-e", "POSTGRES_HOST_AUTH_METHOD=trust", "postgres:17.6-alpine",
         ])
-        for _ in range(30):
-            if run(["docker", "exec", CONTAINER, "pg_isready", "-U", "postgres"], check=False).returncode == 0:
-                break
-            time.sleep(1)
-        else:
-            raise RuntimeError("PostgreSQL isolado não iniciou")
+        wait_for_postgres(run, CONTAINER)
         sql(BOOTSTRAP)
         for migration in MIGRATIONS:
             sql(migration.read_text(encoding="utf-8"))
