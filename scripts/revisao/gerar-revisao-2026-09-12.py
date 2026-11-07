@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Materializa a revisão longitudinal sem baixar itens do plano oficial."""
 from pathlib import Path
 from collections import Counter

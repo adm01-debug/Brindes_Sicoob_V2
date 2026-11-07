@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Gera a revisão dos 1.000 requisitos sem alterar o checklist oficial."""
 from pathlib import Path
 import csv

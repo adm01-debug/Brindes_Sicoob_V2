@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Prova atomicidade, RLS, recálculo e concorrência do salvamento de orçamento."""
 from pathlib import Path
 import json

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Reproduz lacunas da revisão; sucesso do script NÃO significa produto aprovado.
 
 Usa somente fixture sintética e quatro migrations, em PostgreSQL sem rede.

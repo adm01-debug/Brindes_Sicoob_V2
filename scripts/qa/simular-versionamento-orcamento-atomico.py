@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Valida o versionamento de orçamento em PostgreSQL descartável e sem rede."""
 from pathlib import Path
 import json

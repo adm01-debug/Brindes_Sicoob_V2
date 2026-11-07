@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Valida atomicidade, idempotência e escopo da recompra em PostgreSQL isolado."""
 from pathlib import Path
 import json

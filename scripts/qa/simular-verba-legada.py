@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Reproduz os gatilhos versionados em banco descartável, sem rede e sem dados reais."""
 from pathlib import Path
 import subprocess, json, uuid

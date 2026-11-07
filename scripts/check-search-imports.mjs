@@ -1,55 +1,105 @@
-import { readFileSync, readdirSync, statSync } from 'fs';
-import { join, extname } from 'path';
+#!/usr/bin/env node
+/**
+ * check-search-imports
+ * --------------------------------------------------------------
+ * Gate estático: hooks de busca devem ser importados pelo alias
+ * `@/hooks/search/`, nunca por caminho relativo. Import relativo
+ * quebra o bundle quando o hook muda de pasta e escapa do alias
+ * configurado no Vite/TS.
+ *
+ * Uso local:
+ *   node scripts/check-search-imports.mjs
+ *   node scripts/check-search-imports.mjs --root src --json
+ *
+ * Exit codes: 0 = limpo, 1 = violações, 2 = uso inválido.
+ */
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join, extname, relative } from 'node:path';
+import { runCli, EXIT_FAIL } from './lib/cli.mjs';
 
 const SEARCH_HOOKS_PATH = '@/hooks/search/';
-const PROJECT_ROOT = process.cwd();
+const HOOK_NAMES = ['usePopularSearchItems', 'useVoiceSearchAction'];
+const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'coverage']);
+const SOURCE_EXTS = new Set(['.ts', '.tsx', '.js', '.jsx']);
+
+const RELATIVE_HOOK_IMPORT = new RegExp(
+  `from\\s+['"](?:\\./|\\.\\./)+(?:${HOOK_NAMES.join('|')})['"]`,
+);
 
 function checkFile(filePath) {
   const content = readFileSync(filePath, 'utf8');
-  const lines = content.split('\n');
-  let hasError = false;
-
-  lines.forEach((line, index) => {
-    // Look for imports from ./ or ../ that should be using the alias for search hooks
-    // but only if they are targeting search hooks specifically
-    const relativeHookImport = /from\s+['"](\.\/|\.\.\/)+(usePopularSearchItems|useVoiceSearchAction)['"]/.exec(line);
-    
-    if (relativeHookImport) {
-      console.error(`Error in ${filePath}:${index + 1}: Relative import found for search hook: "${line.trim()}". Use "${SEARCH_HOOKS_PATH}" instead.`);
-      hasError = true;
+  const violations = [];
+  content.split('\n').forEach((line, index) => {
+    if (RELATIVE_HOOK_IMPORT.test(line)) {
+      violations.push({ file: filePath, line: index + 1, text: line.trim() });
     }
   });
-
-  return hasError;
+  return violations;
 }
 
-function walkDir(dir) {
-  let hasErrors = false;
-  const files = readdirSync(dir);
-
-  for (const file of files) {
-    const fullPath = join(dir, file);
-    const stat = statSync(fullPath);
-
+function walkDir(dir, violations) {
+  for (const entry of readdirSync(dir)) {
+    const fullPath = join(dir, entry);
+    let stat;
+    try {
+      stat = statSync(fullPath);
+    } catch {
+      continue;
+    }
     if (stat.isDirectory()) {
-      if (file !== 'node_modules' && file !== '.git' && file !== 'dist') {
-        if (walkDir(fullPath)) hasErrors = true;
-      }
-    } else if (['.ts', '.tsx', '.js', '.jsx'].includes(extname(file))) {
-      if (checkFile(fullPath)) hasErrors = true;
+      if (!SKIP_DIRS.has(entry)) walkDir(fullPath, violations);
+    } else if (SOURCE_EXTS.has(extname(entry))) {
+      violations.push(...checkFile(fullPath));
     }
   }
-  return hasErrors;
 }
 
-console.log('Checking for relative search hook imports...');
-const srcPath = join(PROJECT_ROOT, 'src');
-const hasErrors = walkDir(srcPath);
+await runCli(
+  {
+    name: 'check-search-imports',
+    summary: 'Garante que hooks de busca sejam importados via alias @/hooks/search/.',
+    usage: 'node scripts/check-search-imports.mjs [opções]',
+    spec: {
+      root: { type: 'string', default: 'src', description: 'Diretório raiz a inspecionar' },
+      json: { type: 'boolean', default: false, description: 'Emite o resultado em JSON' },
+    },
+    examples: [
+      'node scripts/check-search-imports.mjs',
+      'node scripts/check-search-imports.mjs --root src --json',
+    ],
+  },
+  async ({ values, log }) => {
+    let stat;
+    try {
+      stat = statSync(values.root);
+    } catch {
+      return { exitCode: EXIT_FAIL, message: `Diretório não encontrado: ${values.root}` };
+    }
+    if (!stat.isDirectory()) {
+      return { exitCode: EXIT_FAIL, message: `Não é um diretório: ${values.root}` };
+    }
 
-if (hasErrors) {
-  console.error('\nFound relative imports that should be replaced with "@/hooks/search/".');
-  process.exit(1);
-} else {
-  console.log('No relative search hook imports found. All good!');
-  process.exit(0);
-}
+    const violations = [];
+    walkDir(values.root, violations);
+
+    if (values.json) {
+      console.log(JSON.stringify({ root: values.root, violations }, null, 2));
+    } else {
+      for (const violation of violations) {
+        log.error(
+          `Import relativo de hook de busca em ${relative(process.cwd(), violation.file)}:${violation.line}: "${violation.text}". Use "${SEARCH_HOOKS_PATH}".`,
+          violation.file,
+        );
+      }
+    }
+
+    if (violations.length > 0) {
+      return {
+        exitCode: EXIT_FAIL,
+        message: `${violations.length} import(s) relativo(s) encontrado(s); substitua por "${SEARCH_HOOKS_PATH}".`,
+      };
+    }
+    log.info(`Nenhum import relativo de hook de busca em ${values.root}.`);
+    return 0;
+  },
+);

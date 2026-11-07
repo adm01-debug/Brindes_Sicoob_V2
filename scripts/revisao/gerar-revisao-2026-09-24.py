@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Gera a matriz documental preservando evidência histórica e limites da revisão atual."""
 from pathlib import Path
 import csv

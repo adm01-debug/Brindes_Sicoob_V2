@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Simula o gate ACL em PostgreSQL isolado, sem rede e sem dados de clientes."""
 from pathlib import Path
 import json
