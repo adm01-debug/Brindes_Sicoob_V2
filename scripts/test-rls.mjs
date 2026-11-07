@@ -51,64 +51,79 @@ async function testRLS() {
   console.log(`👤 Usuário A: ${userA.email} (Coop: ${userA.cooperativa_id}, PA: ${userA.pa_id})`);
   console.log(`👤 Usuário B: ${userB.email} (Coop: ${userB.cooperativa_id}, PA: ${userB.pa_id})`);
 
-  // 2. Criar um registro para Usuário B
-  const { data: quoteB, error: quoteErr } = await adminClient
-    .from('quotes')
-    .insert({
-      seller_id: userB.user_id,
-      singular_id: userB.cooperativa_id,
-      pa_id: userB.pa_id,
-      client_name: '[RLS-TEST] Registro do Usuário B',
-      status: 'draft',
-      subtotal: 100,
-      total: 100
-    })
-    .select()
-    .single();
+  // 2. Criar um registro para Usuário B.
+  // Cleanup em `finally` garante a remoção do registro de teste mesmo em
+  // falha (erro de auditoria ou cenário RLS reprovado) — evita órfão [RLS-TEST].
+  let quoteId = null;
+  let exitCode = 0;
+  try {
+    const { data: quoteB, error: quoteErr } = await adminClient
+      .from('quotes')
+      .insert({
+        seller_id: userB.user_id,
+        singular_id: userB.cooperativa_id,
+        pa_id: userB.pa_id,
+        client_name: '[RLS-TEST] Registro do Usuário B',
+        status: 'draft',
+        subtotal: 100,
+        total: 100
+      })
+      .select()
+      .single();
 
-  if (quoteErr) {
-    console.error('❌ Erro ao criar registro de teste para B:', quoteErr.message);
-    process.exit(1);
-  }
-
-  console.log(`📝 Registro de teste criado para B: ${quoteB.id}`);
-
-  // 3. Simular acesso do Usuário A ao registro do Usuário B.
-  console.log('🔗 Chamando Edge Function rls-audit para auditoria profunda...');
-
-  const { data: auditResult, error: auditErr } = await adminClient.functions.invoke('rls-audit', {
-    headers: {
-      "X-Admin-Audit": "true",
-      "X-Target-User-Id": userA.user_id
+    if (quoteErr) {
+      console.error('❌ Erro ao criar registro de teste para B:', quoteErr.message);
+      process.exit(1);
     }
-  });
 
-  if (auditErr) {
-    console.error('❌ Erro ao chamar rls-audit:', auditErr.message);
-    process.exit(1);
-  }
+    quoteId = quoteB.id;
+    console.log(`📝 Registro de teste criado para B: ${quoteB.id}`);
 
-  console.log('\n📊 RESULTADOS DA AUDITORIA RLS:');
-  console.log(`Total: ${auditResult.summary.total} | Passou: ${auditResult.summary.passed} | Falhou: ${auditResult.summary.failed}`);
+    // 3. Simular acesso do Usuário A ao registro do Usuário B.
+    console.log('🔗 Chamando Edge Function rls-audit para auditoria profunda...');
 
-  auditResult.results.forEach((r) => {
-    const icon = r.passed ? '✅' : '❌';
-    console.log(`${icon} [${r.table}] ${r.op}: ${r.scenario} -> ${r.actual} (Esperado: ${r.expected})`);
-    if (!r.passed && isCI) {
-      console.log(`::error file=test-rls.mjs,title=RLS falhou::[${r.table}] ${r.op}: ${r.scenario}`);
+    const { data: auditResult, error: auditErr } = await adminClient.functions.invoke('rls-audit', {
+      headers: {
+        "X-Admin-Audit": "true",
+        "X-Target-User-Id": userA.user_id
+      }
+    });
+
+    if (auditErr) {
+      throw new Error(`Erro ao chamar rls-audit: ${auditErr.message}`);
     }
-  });
 
-  // Cleanup
-  await adminClient.from('quotes').delete().eq('id', quoteB.id);
-  console.log('\n🧹 Cleanup concluído.');
+    console.log('\n📊 RESULTADOS DA AUDITORIA RLS:');
+    console.log(`Total: ${auditResult.summary.total} | Passou: ${auditResult.summary.passed} | Falhou: ${auditResult.summary.failed}`);
 
-  if (auditResult.summary.failed > 0) {
-    console.error(`\n❌ ${auditResult.summary.failed} cenário(s) de RLS falharam.`);
-    process.exit(1);
+    auditResult.results.forEach((r) => {
+      const icon = r.passed ? '✅' : '❌';
+      console.log(`${icon} [${r.table}] ${r.op}: ${r.scenario} -> ${r.actual} (Esperado: ${r.expected})`);
+      if (!r.passed && isCI) {
+        console.log(`::error file=test-rls.mjs,title=RLS falhou::[${r.table}] ${r.op}: ${r.scenario}`);
+      }
+    });
+
+    if (auditResult.summary.failed > 0) {
+      throw new Error(`${auditResult.summary.failed} cenário(s) de RLS falharam.`);
+    }
+    console.log('\n✅ Todos os cenários de RLS passaram.');
+  } catch (error) {
+    exitCode = 1;
+    console.error('❌ ' + (error instanceof Error ? error.message : String(error)));
+  } finally {
+    // Cleanup sempre executado, inclusive em caminho de erro.
+    if (quoteId) {
+      const { error: delErr } = await adminClient.from('quotes').delete().eq('id', quoteId);
+      if (delErr) {
+        console.error('⚠️ Cleanup do registro de teste falhou:', delErr.message);
+      } else {
+        console.log('\n🧹 Cleanup concluído.');
+      }
+    }
   }
-  console.log('\n✅ Todos os cenários de RLS passaram.');
-  process.exit(0);
+
+  process.exit(exitCode);
 }
 
 testRLS().catch((error) => {
