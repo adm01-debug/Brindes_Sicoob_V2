@@ -1,13 +1,12 @@
 import { createStructuredLogger } from "../_shared/structured-logger.ts";
 import { getOrCreateRequestId } from "../_shared/request-id.ts";
 import { authorize } from "../_shared/authorize.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-request-id",
-};
+const MAX_LIMIT = 500;
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   const requestId = getOrCreateRequestId(req);
@@ -19,8 +18,18 @@ Deno.serve(async (req) => {
     if (!auth.ok) return log.respond(auth.response);
     const supabase = auth.supabaseAdmin;
 
-    const body = await req.json();
-    const { severity, table_name, limit = 100, offset = 0 } = body;
+    let body: { severity?: string; table_name?: string; limit?: number; offset?: number };
+    try {
+      body = await req.json();
+    } catch {
+      return log.respond(new Response(JSON.stringify({ error: "Corpo da requisição inválido." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      }));
+    }
+    const { severity, table_name } = body;
+    const limit = Math.min(Math.max(Number(body.limit) || 100, 1), MAX_LIMIT);
+    const offset = Math.max(Number(body.offset) || 0, 0);
 
     let query = supabase
       .from("query_telemetry")
