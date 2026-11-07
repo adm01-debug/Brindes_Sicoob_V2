@@ -26,6 +26,7 @@ describe('Central de Ajuda', () => {
     ).toBe('/filtros');
     expect(screen.getByText(/Nunca compartilhe senha/)).toBeTruthy();
     expect(screen.getByText('Ctrl ou ⌘ + K')).toBeTruthy();
+    expect(screen.getByText('Ctrl ou ⌘ + Shift + P')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Reiniciar tour' })).toBeTruthy();
     expect(screen.queryByText('Acompanhar pedidos')).toBeNull();
   });

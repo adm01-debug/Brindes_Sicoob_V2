@@ -9,8 +9,10 @@ import { buildSpotlightItems, type SpotlightItem } from "./spotlight/SpotlightIt
 import { useAuth } from "@/contexts/AuthContext";
 import { filterByRoutePermission } from "@/lib/navigation/filter-restricted-items";
 
+const OPEN_SPOTLIGHT_EVENT = "sicoob:enhanced-spotlight:open";
+
 function isSpotlightShortcut(event: KeyboardEvent) {
-  return (event.metaKey || event.ctrlKey) && event.key === "k";
+  return (event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === "p";
 }
 
 // SpotlightItem type imported from ./spotlight/SpotlightItems
@@ -128,7 +130,7 @@ export const EnhancedSpotlight = forwardRef<HTMLDivElement, unknown>(function En
   // Keyboard handlers
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      // Toggle with Cmd+K / Ctrl+K
+      // Ctrl/Cmd+K pertence exclusivamente à GlobalCommandBar.
       if (isSpotlightShortcut(e)) {
         e.preventDefault();
         setIsOpen((prev) => !prev);
@@ -171,6 +173,16 @@ export const EnhancedSpotlight = forwardRef<HTMLDivElement, unknown>(function En
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
+
+  useEffect(() => {
+    const openSpotlight = () => {
+      setIsOpen(true);
+      setQuery("");
+      setSelectedIndex(0);
+    };
+    window.addEventListener(OPEN_SPOTLIGHT_EVENT, openSpotlight);
+    return () => window.removeEventListener(OPEN_SPOTLIGHT_EVENT, openSpotlight);
+  }, []);
 
   // Reset selection when query changes
   useEffect(() => {
@@ -344,7 +356,7 @@ export const EnhancedSpotlight = forwardRef<HTMLDivElement, unknown>(function En
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Command className="h-3 w-3" />
-                  <span>K para fechar</span>
+                  <span>Esc para fechar</span>
                 </div>
               </div>
             </div>
@@ -359,9 +371,7 @@ export const EnhancedSpotlight = forwardRef<HTMLDivElement, unknown>(function En
 // Trigger button component
 export function EnhancedSpotlightTrigger({ className }: { className?: string }) {
   const handleClick = () => {
-    window.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "k", metaKey: true })
-    );
+    window.dispatchEvent(new CustomEvent(OPEN_SPOTLIGHT_EVENT));
   };
 
   return (
@@ -374,11 +384,11 @@ export function EnhancedSpotlightTrigger({ className }: { className?: string }) 
         "active:scale-[0.98]",
         className
       )}
-     aria-label="Buscar">
+     aria-label="Buscar ações (Ctrl+Shift+P)">
       <Search className="h-4 w-4" />
       <span className="hidden sm:inline">Buscar...</span>
       <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded bg-background px-1.5 py-0.5 text-xs font-medium border border-border/50">
-        <Command className="h-3 w-3" />K
+        <Command className="h-3 w-3" />⇧P
       </kbd>
     </button>
   );

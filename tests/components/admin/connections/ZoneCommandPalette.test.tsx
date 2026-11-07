@@ -1,8 +1,8 @@
 /**
- * Testes para ZoneCommandPalette + useZoneCommandPaletteShortcut.
+ * Testes para ZoneCommandPalette + estado local de abertura.
  *
  * Cobre:
- *  - Atalho ⌘K / Ctrl+K abre/fecha o palette (e é ignorado em inputs).
+ *  - Ctrl/Cmd+K fica reservado à barra global; o palette local é aberto pelo botão.
  *  - Selecionar uma zona dispara o evento "connections:focus-zone".
  *  - Selecionar um módulo interno dispara o evento da zona pai e
  *    faz scrollIntoView no anchor do módulo após pequeno delay.
@@ -12,13 +12,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act, renderHook } from "@testing-library/react";
 import {
   ZoneCommandPalette,
-  useZoneCommandPaletteShortcut,
+  useZoneCommandPalette,
   DEFAULT_MODULES,
 } from "@/components/admin/connections/ZoneCommandPalette";
 
-describe("useZoneCommandPaletteShortcut", () => {
-  it("abre/fecha ao pressionar Ctrl+K (não-mac)", () => {
-    const { result } = renderHook(() => useZoneCommandPaletteShortcut());
+describe("useZoneCommandPalette", () => {
+  it("não captura Ctrl+K, reservado à barra global de comandos", () => {
+    const { result } = renderHook(() => useZoneCommandPalette());
     expect(result.current.open).toBe(false);
 
     act(() => {
@@ -26,28 +26,11 @@ describe("useZoneCommandPaletteShortcut", () => {
         new KeyboardEvent("keydown", { key: "k", ctrlKey: true }),
       );
     });
-    expect(result.current.open).toBe(true);
-
-    act(() => {
-      window.dispatchEvent(
-        new KeyboardEvent("keydown", { key: "k", ctrlKey: true }),
-      );
-    });
     expect(result.current.open).toBe(false);
-  });
-
-  it("abre ao pressionar Cmd+K (Mac)", () => {
-    const { result } = renderHook(() => useZoneCommandPaletteShortcut());
-    act(() => {
-      window.dispatchEvent(
-        new KeyboardEvent("keydown", { key: "k", metaKey: true }),
-      );
-    });
-    expect(result.current.open).toBe(true);
   });
 
   it("ignora o atalho quando o foco está num <input>", () => {
-    const { result } = renderHook(() => useZoneCommandPaletteShortcut());
+    const { result } = renderHook(() => useZoneCommandPalette());
     const input = document.createElement("input");
     document.body.appendChild(input);
     input.focus();
