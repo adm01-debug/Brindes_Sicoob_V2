@@ -23,6 +23,7 @@ import Fuse from 'fuse.js';
 import { createProductFuseOptions, rankProductSearchResults } from '@/utils/product-search';
 import type { PromobrindProduct } from '@/lib/external-db';
 import type { CrmCompany } from '@/types/crm';
+import { clientDetailPath } from '@/routes/clientRoutes';
 
 export type SearchResultType =
   | 'product'
@@ -328,7 +329,7 @@ async function executeProductSearch(
   }
 }
 
-async function executeClientSearch(intent: SearchIntent): Promise<SearchResult[]> {
+export async function executeClientSearch(intent: SearchIntent): Promise<SearchResult[]> {
   try {
     const { searchCrm } = await import('@/lib/crm-db');
     const searchTerm = intent.filters.clientName || intent.keywords.join(' ');
@@ -342,7 +343,7 @@ async function executeClientSearch(intent: SearchIntent): Promise<SearchResult[]
       title: c.nome_fantasia || c.razao_social,
       subtitle: c.ramo_atividade || 'Empresa',
       type: 'client',
-      href: `/cliente/${c.id}`,
+      href: clientDetailPath(c.id),
     }));
   } catch {
     return [];
