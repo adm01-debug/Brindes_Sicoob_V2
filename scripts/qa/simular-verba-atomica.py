@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Valida a migração financeira em PostgreSQL descartável e sem rede."""
 from pathlib import Path
 import json

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Valida os eventos transacionais de status Sicoob em PostgreSQL isolado e sem rede."""
 from pathlib import Path
 import json

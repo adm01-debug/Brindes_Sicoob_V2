@@ -1,78 +1,163 @@
-import fs from 'fs';
-
+#!/usr/bin/env node
 /**
- * Enterprise Evidence Link Validator
- * Verifies that all external links in audit documents are reachable.
+ * validate-audit-links
+ * --------------------------------------------------------------
+ * Valida que os links externos dos documentos de auditoria estão
+ * alcançáveis. Roda no workflow `security-compliance.yml`.
+ *
+ * Antes: qualquer link quebrado apenas imprimia um aviso e o script
+ * saía com código 0 — o gate nunca reprovava. Também não havia
+ * timeout efetivo no fallback GET (o `clearTimeout` só rodava no
+ * caminho de sucesso) e nenhum limite de concorrência.
+ *
+ * Agora: falha (exit 1) quando há link inalcançável, respeita
+ * `--timeout`, limita concorrência e permite `--allow-missing` para
+ * documentos ausentes.
+ *
+ * Exit codes: 0 = todos os links OK, 1 = link quebrado, 2 = uso inválido.
  */
+import fs from 'node:fs';
+import path from 'node:path';
+import { runCli, EXIT_FAIL } from './lib/cli.mjs';
 
-const FILES_TO_VALIDATE = [
+const DEFAULT_FILES = [
   'FINAL_ENTERPRISE_AUDIT_REPORT.md',
   'ENTERPRISE_AUDIT_REPORT_V6.md',
-  'AUDIT_INVENTORY_DETAILED.md'
+  'AUDIT_INVENTORY_DETAILED.md',
 ];
 
-const TIMEOUT_MS = 5000;
+// Os relatórios de auditoria vivem em docs/audits/, não na raiz do repo.
+const DEFAULT_DOCS_DIR = 'docs/audits';
 
-let hasFailures = false;
-let filesFound = 0;
+const LINK_PATTERN = /https?:\/\/[^\s)<>"']+/g;
 
-async function validateLinks() {
-  console.log('🔗 Iniciando validação de links externos de evidências...');
-  
-  for (const file of FILES_TO_VALIDATE) {
-    if (!fs.existsSync(file)) continue;
-    filesFound += 1;
-    
-    console.log(`\n📄 Analisando: ${file}`);
-    const content = fs.readFileSync(file, 'utf-8');
-    const links = content.match(/https?:\/\/[^\s)]+/g) || [];
-    
-    if (links.length === 0) {
-      console.log('  ✅ Nenhum link externo encontrado.');
-      continue;
-    }
-
-    const uniqueLinks = [...new Set(links)];
-    console.log(`  🔍 Verificando ${uniqueLinks.length} links únicos...`);
-
-    for (const link of uniqueLinks) {
+async function fetchWithTimeout(url, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+      let head;
       try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
-        
-        const response = await fetch(link, { 
-          method: 'HEAD', 
-          signal: controller.signal 
-        }).catch(() => fetch(link, { method: 'GET', signal: controller.signal }));
-
-        clearTimeout(timeout);
-
-        if (response.ok) {
-          console.log(`  ✅ [${response.status}] ${link}`);
-        } else {
-          console.error(`  ❌ [${response.status}] ${link}`);
-          hasFailures = true;
-        }
-      } catch (e) {
-        console.error(`  ❌ [ERROR] ${link} - ${e.message}`);
-        hasFailures = true;
+        head = await fetch(url, { method: 'HEAD', signal: controller.signal });
+      } catch {
+        // Alguns servidores encerram a conexão para HEAD mas atendem GET;
+        // preserva o fallback para erros de transporte, respeitando o timeout.
+        head = null;
       }
+      if (head && head.ok) return head;
+      const get = await fetch(url, { method: 'GET', signal: controller.signal });
+      // Apenas o status importa; cancela o corpo para não prender o processo.
+      await get.body?.cancel();
+      return get;
+    } finally {
+      clearTimeout(timer);
     }
+}
+
+async function checkLink(url, timeoutMs) {
+  try {
+    const response = await fetchWithTimeout(url, timeoutMs);
+    return { url, status: response.status, ok: response.ok };
+  } catch (error) {
+    return { url, status: 0, ok: false, error: error.message };
   }
 }
 
-await validateLinks();
-
-if (filesFound === 0) {
-  console.warn('\n⚠️ Nenhum arquivo de auditoria encontrado — nada foi validado.');
-  console.warn('   Esperado: FINAL_ENTERPRISE_AUDIT_REPORT.md, ENTERPRISE_AUDIT_REPORT_V6.md, AUDIT_INVENTORY_DETAILED.md');
-  console.warn('   Gere-os com: node scripts/generate-audit-dossier.mjs');
+async function mapWithConcurrency(items, limit, worker) {
+  const results = new Array(items.length);
+  let cursor = 0;
+  const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (cursor < items.length) {
+      const index = cursor;
+      cursor += 1;
+      results[index] = await worker(items[index]);
+    }
+  });
+  await Promise.all(runners);
+  return results;
 }
 
-if (hasFailures) {
-  console.error('\n🛑 Links externos quebrados encontrados nas evidências de auditoria.');
-  process.exit(1);
-}
+await runCli(
+  {
+    name: 'validate-audit-links',
+    summary: 'Verifica se os links externos dos relatórios de auditoria respondem.',
+    usage: 'node scripts/validate-audit-links.mjs [opções]',
+    spec: {
+      timeout: { type: 'string', default: '5000', description: 'Timeout por link em ms' },
+      concurrency: { type: 'string', default: '5', description: 'Requisições simultâneas' },
+      'allow-missing': {
+        type: 'boolean',
+        default: false,
+        description: 'Não falha quando um documento de auditoria não existe',
+      },
+            'docs-dir': {
+              type: 'string',
+              default: DEFAULT_DOCS_DIR,
+              description: 'Diretório onde estão os relatórios de auditoria',
+            },
+            json: { type: 'boolean', default: false, description: 'Emite o resultado em JSON' },
+          },
+          examples: [
+            'node scripts/validate-audit-links.mjs',
+            'node scripts/validate-audit-links.mjs --timeout 10000 --concurrency 3',
+            'node scripts/validate-audit-links.mjs --docs-dir docs/audits',
+          ],
+  },
+  async ({ values, log }) => {
+    const timeoutMs = Number(values.timeout);
+    const concurrency = Number(values.concurrency);
+    if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+      return { exitCode: 2, message: `--timeout inválido: ${values.timeout}` };
+    }
+    if (!Number.isInteger(concurrency) || concurrency <= 0) {
+      return { exitCode: 2, message: `--concurrency inválido: ${values.concurrency}` };
+    }
 
-console.log('\n✅ Todos os links externos das evidências estão acessíveis.');
-process.exit(0);
+    const report = [];
+    const missing = [];
+
+    for (const file of DEFAULT_FILES) {
+          const filePath = path.join(values['docs-dir'], file);
+          if (!fs.existsSync(filePath)) {
+            missing.push(file);
+            continue;
+          }
+          const content = fs.readFileSync(filePath, 'utf8');
+      const links = [...new Set(content.match(LINK_PATTERN) ?? [])];
+      const results = await mapWithConcurrency(links, concurrency, (link) =>
+        checkLink(link, timeoutMs),
+      );
+      report.push({ file, links: results });
+    }
+
+    if (missing.length > 0) {
+      const message = `Documento(s) de auditoria ausente(s): ${missing.join(', ')}`;
+      if (values['allow-missing']) log.warn(message);
+      else return { exitCode: EXIT_FAIL, message };
+    }
+
+    const broken = report.flatMap((entry) =>
+      entry.links.filter((link) => !link.ok).map((link) => ({ file: entry.file, ...link })),
+    );
+
+    if (values.json) {
+      console.log(JSON.stringify({ report, broken, missing }, null, 2));
+    } else {
+      for (const entry of report) {
+        log.info(`${entry.file}: ${entry.links.length} link(s) externo(s)`);
+        for (const link of entry.links) {
+          if (link.ok) console.log(`  OK    [${link.status}] ${link.url}`);
+          else log.error(`  FALHA [${link.status || 'sem resposta'}] ${link.url}`, entry.file);
+        }
+      }
+    }
+
+    if (broken.length > 0) {
+      return {
+        exitCode: EXIT_FAIL,
+        message: `${broken.length} link(s) externo(s) inalcançável(is).`,
+      };
+    }
+        if (!values.json) log.info('Todos os links externos responderam.');
+    return 0;
+  },
+);

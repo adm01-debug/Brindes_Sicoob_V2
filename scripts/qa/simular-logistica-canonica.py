@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Valida o fluxo logístico canônico e a compatibilidade legada sem rede."""
 from pathlib import Path
 import json

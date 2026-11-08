@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Valida isolamento e autoridade de verbas em PostgreSQL descartável."""
 
 from pathlib import Path

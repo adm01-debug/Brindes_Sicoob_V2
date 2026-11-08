@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Valida consolidação, destinos e recebimentos parciais sem rede."""
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
