@@ -41,7 +41,7 @@ workflow falhar de forma estranha.
 | Rulesets | **nenhum** (`GET /rulesets` → `[]`) — a proteção é só o branch protection clássico |
 | Merge | `allow_squash_merge: true` · `allow_merge_commit: true` · `allow_rebase_merge: true` · `allow_auto_merge: true` · `delete_branch_on_merge: true`. **Não é squash-only**; com histórico linear exigido, merge-commit falha na prática — use squash |
 | Squash | `squash_merge_commit_title: COMMIT_OR_PR_TITLE` · `squash_merge_commit_message: COMMIT_MESSAGES` · `use_squash_pr_title_as_default: false` |
-| Environments | **6**: `construction` (branch policy = só branches protegidas, sem revisor) · `copilot` · `e2e-staging` (revisor obrigatório `adm01-debug`, `can_admins_bypass: false`) · `Preview` · `Production` · `Production – sicoob-csp-…` |
+| Environments | **7**: `construction` (branch policy = só branches protegidas, sem revisor) · `copilot` · `e2e-qa` (criado em 08/11/2026, sem secrets — ver abaixo) · `e2e-staging` (revisor obrigatório `adm01-debug`, `can_admins_bypass: false`) · `Preview` · `Production` · `Production – sicoob-csp-…` |
 | Segurança | secret scanning **on**, push protection **on**, dependabot security updates **on**, `secret_scanning_non_provider_patterns` **off** |
 
 Fatos do perímetro que já custaram retrabalho:
@@ -52,9 +52,17 @@ Fatos do perímetro que já custaram retrabalho:
   liberava. Removido o `paths-ignore` do `pull_request` dos dois (mantido no `push`, que não é gate de
   PR): agora os dois sempre rodam em PR contra `main`, custando mais CI em PR doc-only em troca de nunca
   mais travar o merge.
-- **`environment: e2e-qa` não existe.** `e2e.yml:83`, `e2e.yml:271` e `security-compliance.yml:86`
-  apontam para ele; os 6 environments reais estão na tabela acima. Resultado: E2E autenticado fica
-  `skipped`, nunca "aprovado" (`PENDENCIAS.md:316`). O `e2e-staging`, criado em 30/10, não é referenciado
+- **`environment: e2e-qa` criado em 08/11/2026, ainda sem secrets.** `e2e.yml:83`, `e2e.yml:271` e
+  `security-compliance.yml:86` apontam para ele. O environment agora existe (sem branch policy nem
+  revisor), mas `e2e-authenticated` continua falhando fechado — `e2e.yml:135-146` exige ~13 secrets
+  `E2E_*` (ver `.env.e2e.example`: `E2E_SUPABASE_URL`, `E2E_SUPABASE_PROJECT_ID`,
+  `E2E_ALLOWED_PROJECT_ID`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_SERVICE_ROLE_KEY`,
+  `E2E_CLEANUP_TOKEN`, `E2E_CLEANUP_DRY_RUN`, `E2E_USER_EMAIL`/`PASSWORD`, `E2E_VIEWER_*`,
+  `E2E_MANAGER_*`, `E2E_ADMIN_EMAIL`/`PASSWORD`/`TOTP_SECRET`, `E2E_DEV_EMAIL`/`PASSWORD`/`TOTP_SECRET`)
+  que precisam ser cadastrados pelo dono em
+  Settings → Environments → `e2e-qa` → Secrets, com contas de teste reais — nenhum agente deve
+  inventar ou commitar esses valores. Até lá, E2E autenticado continua `skipped`, não "aprovado"
+  (`PENDENCIAS.md:316`). O `e2e-staging`, criado em 30/10, não é referenciado
   por workflow nenhum.
 - **O required check `e2e` não cobre jornada autenticada.** Ele roda só
   `--project=chromium-public --project=routes-public` contra Supabase placeholder
@@ -199,6 +207,6 @@ Rodam em nenhum workflow (não confie neles como gate, mas são úteis): `npm ru
 
 ## Pendências deste doc
 
-1. `environment: e2e-qa` inexistente (ver "Fatos do perímetro") continua aberto.
+1. `environment: e2e-qa` existe mas está sem secrets (ver "Fatos do perímetro") — depende do dono.
 2. `.github/workflows/ci.yml` foi tocado por esta mudança (guard `check:agents-md` adicionado) enquanto
    as PRs #151, #173 e #180 também o tocavam — se alguma mesclar antes desta, rebase simples.
