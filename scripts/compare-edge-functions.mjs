@@ -31,9 +31,17 @@ function compareFunctions() {
     process.exit(2);
   }
 
+  const IGNORED_DIRS = new Set(['_shared', 'tests']);
+
   const realFunctions = fs.readdirSync(FUNCTIONS_DIR).filter(file => {
     const fullPath = path.join(FUNCTIONS_DIR, file);
-    return fs.statSync(fullPath).isDirectory() && file !== '_shared' && file !== 'tests';
+    if (!fs.statSync(fullPath).isDirectory()) return false;
+    if (IGNORED_DIRS.has(file)) return false;
+    // Exige entrypoint: index.ts ou index.js — diretórios sem entrypoint
+    // (ex: placeholders com só .gitignore) não são edge functions válidas.
+    const hasEntrypoint = fs.existsSync(path.join(fullPath, 'index.ts'))
+      || fs.existsSync(path.join(fullPath, 'index.js'));
+    return hasEntrypoint;
   });
 
   const inventoryContent = fs.readFileSync(INVENTORY_FILE, 'utf8');

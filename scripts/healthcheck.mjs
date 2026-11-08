@@ -1,7 +1,17 @@
 import fetch from 'node-fetch';
-import dotenv from 'dotenv';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
-dotenv.config();
+// Carrega .env local sem dependência de dotenv
+const envFile = resolve(process.cwd(), '.env');
+if (existsSync(envFile)) {
+  for (const line of readFileSync(envFile, 'utf8').split('\n')) {
+    const m = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*)$/);
+    if (m && !(m[1] in process.env)) {
+      process.env[m[1]] = m[2].replace(/^["']|["']$/g, '').trim();
+    }
+  }
+}
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const anonKey = process.env.SUPABASE_ANON_KEY;
