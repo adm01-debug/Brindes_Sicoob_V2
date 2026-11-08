@@ -40,8 +40,7 @@ function resolveInput(arg) {
   if (existsSync(reportsDir)) {
     const mds = readdirSync(reportsDir)
       .filter(f => f.endsWith('.md'))
-      .sort()
-      .reverse();
+      .sort((a, b) => statSync(join(reportsDir, b)).mtimeMs - statSync(join(reportsDir, a)).mtimeMs);
     if (mds.length > 0) return join(reportsDir, mds[0]);
   }
 
