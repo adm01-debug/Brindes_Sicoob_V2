@@ -294,8 +294,9 @@ for f in fontes:
     capturado = subprocess.run(['git','-C',str(ROOT),'show',f'{COMMIT}:{f}'], capture_output=True)
     historico = subprocess.run(['git','-C',str(ROOT),'show',f'{ANTERIOR}:{f}'], capture_output=True)
     no_commit = capturado.returncode == 0 and hashlib.sha256(capturado.stdout).hexdigest() == atual
-    if f.startswith(('src/','supabase/','tests/','e2e/','.github/')):
-        assert no_commit, f'Código mudou após o candidato: {f}'
+    if f.startswith(('src/','supabase/','tests/','e2e/','.github/')) and not no_commit:
+        print(f'❌ Código mudou após o candidato: {f}', file=sys.stderr)
+        sys.exit(1)
     manifesto.append({'arquivo': f, 'sha256': atual, 'bytes': path.stat().st_size,
         'conteudo_igual_ao_commit_codigo': no_commit,
         'alterado_desde_revisao_anterior': historico.returncode != 0 or hashlib.sha256(historico.stdout).hexdigest() != atual,

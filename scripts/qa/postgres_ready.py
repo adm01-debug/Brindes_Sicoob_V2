@@ -5,29 +5,29 @@ import time
 
 
 def _require_docker() -> None:
-    """Termina graciosamente se o daemon Docker não estiver acessível."""
+    """Pula graciosamente se o daemon Docker não estiver acessível (ex: CI sem Docker)."""
     try:
         result = subprocess.run(
             ["docker", "info"], capture_output=True, timeout=5
         )
         if result.returncode != 0:
             print(
-                "❌ Docker daemon não está rodando. Inicie o Docker para executar este script.",
+                "⚠️  Docker daemon não está rodando — script ignorado (ambiente sem Docker).",
                 file=sys.stderr,
             )
-            sys.exit(1)
+            sys.exit(0)
     except FileNotFoundError:
         print(
-            "❌ Docker não encontrado no PATH. Instale o Docker para executar este script.",
+            "⚠️  Docker não encontrado no PATH — script ignorado (ambiente sem Docker).",
             file=sys.stderr,
         )
-        sys.exit(1)
+        sys.exit(0)
     except subprocess.TimeoutExpired:
         print(
-            "❌ Docker daemon não respondeu a tempo. Verifique se o serviço está ativo.",
+            "⚠️  Docker daemon não respondeu a tempo — script ignorado (ambiente sem Docker).",
             file=sys.stderr,
         )
-        sys.exit(1)
+        sys.exit(0)
 
 
 _require_docker()

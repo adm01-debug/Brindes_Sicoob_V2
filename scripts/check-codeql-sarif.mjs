@@ -40,7 +40,15 @@ function findingFrom(result, rules) {
 }
 
 export async function inspectSarif(directory) {
-  const entries = await readdir(directory, { recursive: true, withFileTypes: true });
+  let entries;
+  try {
+    entries = await readdir(directory, { recursive: true, withFileTypes: true });
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      throw new Error(`Diretório '${directory}' não encontrado. Execute o passo CodeQL antes deste gate.`);
+    }
+    throw err;
+  }
   const files = entries
     .filter((entry) => entry.isFile() && entry.name.endsWith('.sarif'))
     .map((entry) => resolve(entry.parentPath, entry.name));
