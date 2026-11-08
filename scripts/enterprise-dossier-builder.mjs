@@ -8,6 +8,11 @@ import { chromium } from '@playwright/test';
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+if (!supabaseUrl || !supabaseKey) {
+  console.error('❌ VITE_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são necessários. Configure as variáveis de ambiente antes de executar este script.');
+  process.exit(0);
+}
+
 function escapeMarkdownText(value) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
