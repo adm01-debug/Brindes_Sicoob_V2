@@ -27,7 +27,7 @@ O sistema foi submetido a uma auditoria automatizada de 360 graus no ambiente **
 - **Cobertura de Linhas (Vitest):** indisponível
 - **Componentes TSX Identificados:** 1196
 - **Arquivos de Teste Detectados:** 5
-- **Integridade de RLS:** 100% das tabelas validadas.
+- **Integridade de RLS:** dados de cobertura não disponíveis (ver seção abaixo — tabela sem entradas).
 
 <a name="checklist"></a>
 ### 📑 Checklist Auditável de Conformidade
