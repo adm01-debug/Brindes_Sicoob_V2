@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /* global document, innerWidth, window */
 import { chromium } from '@playwright/test';
 import { createRequire } from 'node:module';

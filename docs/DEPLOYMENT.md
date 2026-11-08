@@ -1,71 +1,54 @@
-# Guia de deploy
+# Publicação e migrations
 
-## Pré-requisitos
-- Node.js 24+
-- Projeto Supabase vinculado ao ambiente de construção
-- Segredos configurados no painel/Vault do ambiente; nunca em `.env` versionado
+## Estado e limites
 
-## Etapas
+O projeto está em construção. Este guia descreve os fluxos versionados para o
+ambiente protegido `construction`; não afirma que o portal esteja em produção
+ou que qualquer publicação específica tenha sido executada com sucesso.
 
-1. Instalar dependências reproduzíveis:
-```bash
-npm ci
-```
+O repositório exige Node.js `>=24 <25` (`package.json`). Use Node 24.x e npm.
+Não existe script `npm run deploy`. A publicação do frontend depende do
+provedor configurado para o projeto e deve ser comprovada pelo respectivo
+deploy e smoke test.
 
-2. Configurar `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` e
-   `VITE_SUPABASE_PROJECT_ID` no provedor de hospedagem. Use
-   `.env.production.example` apenas como referência local; o arquivo
-   `.env.production` nunca deve ser versionado.
+## Publicar Edge Functions Sicoob
 
-3. Antes das migrations de operações internas, configurar `INTERNAL_FUNCTION_SECRET`
-   nas Edge Functions e os segredos `sicoob_project_url` e
-   `sicoob_internal_function_secret` no Vault. Os dois segredos internos devem
-   ter o mesmo valor aleatório de pelo menos 32 caracteres.
+Use somente o workflow [Publicar funções Sicoob](../.github/workflows/deploy-sicoob-functions.yml):
 
-4. Publicar primeiro as Edge Functions que substituem os caminhos privilegiados
-   legados. Isso garante que a revogação das RPCs no banco não deixa a aplicação
-   sem um caminho autenticado equivalente:
-```bash
-npx supabase functions deploy send-notification process-batch-export monthly-health-report connections-auto-test system-healthcheck external-connections-sync --project-ref cfmzkthhgliqelozlmwu
-```
+1. Faça merge da alteração revisada em `main`.
+2. Abra **Actions → Publicar funções Sicoob → Run workflow**, selecione `main`
+   e digite `PUBLICAR` no campo de confirmação.
+3. O workflow exige o ambiente protegido `construction` e valida a versão
+   publicada de cada função da allowlist. Consulte a execução e os logs do job
+   antes de registrar sucesso.
 
-5. Compilar:
-```bash
-npm run build
-```
+Não substitua esse fluxo por um deploy manual de uma lista diferente de funções.
 
-6. Publicar o frontend pelo provedor configurado.
+## Aplicar migrations autorizadas
 
-7. Aplicar somente as migrations novas e revisadas em ordem de versão no ambiente
-   de construção. **Não executar `supabase db push --linked`** enquanto o ledger
-   histórico estiver divergente: ele tentaria reaplicar centenas de arquivos que
-   não representam o baseline remoto. Neste lote, aplicar
-   `20260923110000_harden_internal_operations.sql`,
-   `20260923111000_schedule_secure_export_worker.sql`,
-   `20260923112000_fix_connection_sync_and_favorites.sql`,
-   `20260923130000_secure_sicoob_documents_and_exports.sql` e
-   `20260923140000_secure_legacy_connection_crons.sql`, registrando cada uma
-   no ledger na mesma transação de aplicação.
+Use somente o workflow
+[Aplicar migrations Sicoob](../.github/workflows/apply-sicoob-migrations.yml).
+Ele aceita execução manual na `main`, exige digitar `APLICAR`, usa o ambiente
+protegido `construction` e aplica a allowlist validada pelo script
+`scripts/db/apply-sicoob-migrations.mjs` com verificação de ledger e contrato.
 
-8. Verificar após a aplicação: as cinco versões aparecem no ledger, as chamadas
-   anônimas às funções internas retornam `401` ou `503`, a sincronização externa
-   exige sessão de supervisor e os crons `process-export-queue`,
-   `connections-auto-test` e `external-db-bridge-keepalive` existem somente
-   quando os segredos necessários do Vault foram configurados.
+**Não execute `supabase db push`, `supabase db push --linked` ou
+`--include-all` neste repositório.** O histórico do ledger contém divergências
+catalogadas; o nome ou a existência de um arquivo SQL não prova que seu efeito
+esteja ausente do banco. Não aplique arquivos fora da allowlist autorizada pelo
+workflow nem grave secrets em arquivos versionados.
 
-9. Para o lote de idempotência de 28/09/2026, usar exclusivamente o workflow
-   manual `Aplicar migrations Sicoob` a partir da branch protegida `main`. Ele
-   autoriza pelos hashes SHA-256 somente as versões `20260928162048`,
-   `20260928173500` e `20260928182000`, faz preflight read-only e registra todo
-   o lote no ledger na mesma transação. O pós-check valida o corpo crítico das
-   RPCs, RLS, políticas, privilégios, constraints e o trigger de notificação
-   transacional. Não substituir esse fluxo por `db push --include-all`: o
-   backlog histórico fora do ledger continua existindo e não é uma fila de
-   migrations autorizadas.
+Detalhes de preflight e de aplicação manual controlada estão em
+[RUNBOOKS/MCP_DDL_APPLICATION.md](./RUNBOOKS/MCP_DDL_APPLICATION.md).
 
-## Production Checklist
-- [ ] Environment variables configured
-- [ ] Database migrated
-- [ ] SSL certificates installed
-- [ ] CDN configured
-- [ ] Monitoring enabled
+## Verificação da publicação
+
+- Confirme conclusão `success` na execução do workflow correspondente.
+- Para migrations, confirme no job a verificação das versões aplicadas e dos
+  contratos remotos.
+- Para funções, confirme que as versões remotas avançaram para cada item da
+  allowlist.
+- Registre link da execução, SHA da `main`, ambiente e resultado em relatório
+  datado. Uma execução local ou o código versionado não comprovam estado remoto.
+- Não marque go-live sem completar os critérios de
+  [GO_LIVE_CHECKLIST.md](./GO_LIVE_CHECKLIST.md) e obter os aceites operacionais.

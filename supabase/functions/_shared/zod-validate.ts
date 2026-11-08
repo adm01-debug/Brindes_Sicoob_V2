@@ -3,9 +3,9 @@
  * Provides type-safe request body parsing with clear error messages.
  */
 
-// Using Zod from esm.sh for Deno compatibility
-export { z } from "https://esm.sh/zod@3.23.8";
-import { z } from "https://esm.sh/zod@3.23.8";
+// Zod via npm specifier pinado para compatibilidade Deno
+export { z } from "npm:zod@3.23.8";
+import { z } from "npm:zod@3.23.8";
 
 /**
  * Parse and validate a request body against a Zod schema.

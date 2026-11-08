@@ -1,0 +1,10 @@
+
+> @adm01-debug/gifts-store@2.0.0 typecheck:baseline
+> node scripts/check-typecheck-baseline.mjs
+
+
+🧮 Typecheck baseline gate
+   Total atual:   153
+   Total baseline: 153
+
+✅ Sem regressões de tipagem.

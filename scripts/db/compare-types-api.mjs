@@ -1,18 +1,62 @@
-// Compara nomes do contrato TypeScript com um snapshot OpenAPI; não acessa o banco.
+#!/usr/bin/env node
+/**
+ * compare-types-api
+ * --------------------------------------------------------------
+ * Compara nomes do contrato TypeScript (src/integrations/supabase/types.ts)
+ * com um snapshot OpenAPI local. Não acessa o banco.
+ *
+ * Exit codes: 0 = sem divergências, 1 = divergências encontradas,
+ *             2 = uso inválido ou arquivo de entrada ilegível.
+ */
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import ts from 'typescript';
+
+const USAGE = `compare-types-api — compara o contrato TypeScript com um snapshot OpenAPI.
+
+Uso:
+  node scripts/db/compare-types-api.mjs <openapi.json>
+
+Argumentos:
+  <openapi.json>  Snapshot OpenAPI do PostgREST (obrigatório)
+
+Exit codes: 0 = sem divergências, 1 = divergências, 2 = uso inválido.`;
+
 const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
-if (!process.argv[2]) {
-  console.error('Uso: node scripts/db/compare-types-api.mjs <openapi.json>');
-  process.exit(2);
+const openapiPath = process.argv[2];
+
+if (!openapiPath || openapiPath === '--help' || openapiPath === '-h') {
+  console.log(USAGE);
+  process.exit(openapiPath ? 0 : 2);
 }
+
+function readJsonOrFail(filePath, label) {
+  let raw;
+  try {
+    raw = readFileSync(filePath);
+  } catch (error) {
+    console.error(`[compare-types-api] Não foi possível ler ${label} (${filePath}): ${error.message}`);
+    process.exit(2);
+  }
+  try {
+    return { raw, parsed: JSON.parse(raw) };
+  } catch (error) {
+    console.error(`[compare-types-api] ${label} não é JSON válido (${filePath}): ${error.message}`);
+    process.exit(2);
+  }
+}
+
 const text = readFileSync(join(root, 'src/integrations/supabase/types.ts'), 'utf8');
 const ast = ts.createSourceFile('types.ts', text, ts.ScriptTarget.Latest, true);
-const rawApi = readFileSync(process.argv[2]);
-const api = JSON.parse(rawApi);
+const { raw: rawApi, parsed: api } = readJsonOrFail(openapiPath, 'snapshot OpenAPI');
+if (!api.definitions || !api.paths) {
+  console.error(
+    '[compare-types-api] Snapshot OpenAPI sem "definitions"/"paths"; não é um contrato PostgREST.',
+  );
+  process.exit(2);
+}
 const database = ast.statements.find(
   (s) => ts.isTypeAliasDeclaration(s) && s.name.text === 'Database',
 );

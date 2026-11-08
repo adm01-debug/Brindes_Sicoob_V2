@@ -1,0 +1,86 @@
+[
+  {
+    "id": "F01",
+    "prioridade": "P1",
+    "titulo": "Contrato do catálogo incompatível com código",
+    "evidencia": "A tabela de produtos possui is_active e não possui active, base_price ou image_url. A seleção atual de external-db-bridge no GitHub retorna HTTP 400; a seleção implantada retorna 200. As seleções de kits e recompra retornam 400 mesmo nas versões implantadas. A confirmação foi uma leitura dos mesmos campos pela Data API; não foi uma compra ou execução completa dessas Edge Functions.",
+    "arquivo": "consultas-github-vs-implantado.json"
+  },
+  {
+    "id": "F02",
+    "prioridade": "P1",
+    "titulo": "Scanner documental sem configuração",
+    "evidencia": "Os nomes SICOOB_MALWARE_SCANNER_URL e SICOOB_MALWARE_SCANNER_TOKEN estão ausentes da lista de secrets. O handler exige ambos e falha fechado quando ausentes. Upload operacional e homologação EICAR continuam pendentes.",
+    "arquivo": "secret-names.json"
+  },
+  {
+    "id": "F03",
+    "prioridade": "P1",
+    "titulo": "Dois crons falhando no banco real",
+    "evidencia": "archive-old-admin-audit-logs referencia admin_audit_log_archive, removida pela migration de 16/09. trim-connection-test-history chama uma função RETURNS trigger diretamente. O trigger correto está habilitado e mantém a limpeza por conexão.",
+    "arquivo": "connections.json"
+  },
+  {
+    "id": "F04",
+    "prioridade": "P1",
+    "titulo": "Dependências bloqueiam CI",
+    "evidencia": "npm audit reportou 14 alertas por pacote: 7 altos e 7 moderados. A cadeia braces inclui Tailwind 3 e md-to-pdf; braces 3.0.3 não possui versão corrigida publicada. source-map-js tem correção em 1.2.2.",
+    "arquivo": "npm-audit.json"
+  },
+  {
+    "id": "F05",
+    "prioridade": "P1",
+    "titulo": "Critérios de integração insuficientes",
+    "evidencia": "A proteção da main não exige status checks e não é imposta a administradores. O PR 97 falhou no gate de dependências e no upload CodeQL, pois code scanning não está habilitado. O E2E do PR 94 falhou esperando a tela Tendências.",
+    "arquivo": "https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/37500796932"
+  },
+  {
+    "id": "F06",
+    "prioridade": "P1",
+    "titulo": "Testes de RLS aceitam resultados sem comprovação",
+    "evidencia": "tests/rls/e2e-cleanup-rate-limit.test.ts contém expect(error || true).toBeTruthy() em UPDATE e DELETE: essas asserções sempre passam. Alguns contratos remotos são ativados apenas pela presença de variáveis e confundem indisponibilidade com negação válida.",
+    "arquivo": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/a974d77326217b237bbffec0aa01770efbf3e64a/tests/rls/e2e-cleanup-rate-limit.test.ts"
+  },
+  {
+    "id": "F07",
+    "prioridade": "P2",
+    "titulo": "Dívida de qualidade medida",
+    "evidencia": "O baseline TypeScript passou com 153 diagnósticos, não com zero erros. ESLint encontrou 3247 erros e 2746 avisos. O build passou.",
+    "arquivo": "resumo-verificacoes.json"
+  },
+  {
+    "id": "F08",
+    "prioridade": "P2",
+    "titulo": "Reconciliação de schema e histórico pendente",
+    "evidencia": "As migrations 20260928140600 e 20261002160000 não estão no ledger. A primeira torna explícito o bloqueio já implícito em nove tabelas; a segunda melhora os erros de IDs inválidos. Os tipos gerados estão defasados, conforme auditoria anterior. Lista vazia de statements no ledger não comprova divergência de SQL.",
+    "arquivo": "db-operacional.json"
+  },
+  {
+    "id": "F09",
+    "prioridade": "P2",
+    "titulo": "Descoberta dos produtos distante da entrada",
+    "evidencia": "Na demonstração de loja, o primeiro card começa em y=1599 px no desktop de 1440 px e y=1744 px no mobile de 390 px. Isso fundamenta reduzir a área introdutória e aproximar busca e produtos. As métricas são da demonstração, não de uma sessão autenticada.",
+    "arquivo": "visual-metrics.json"
+  },
+  {
+    "id": "F10",
+    "prioridade": "P2",
+    "titulo": "Funcionalidades de encerramento ainda incompletas",
+    "evidencia": "Permanecem lacunas em capacidade física de embalagem, importação assistida de destinos, propostas institucionais/fornecedor único, cronograma regressivo de campanha e interfaces para colaboração Magic Up/views de auditoria. As buscas atuais e a revisão de 01/10 sustentam a priorização; o plano completo não foi certificado linha a linha nesta rodada.",
+    "arquivo": "https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/a974d77326217b237bbffec0aa01770efbf3e64a/docs/execucao/revisao-do-plano-2026-10-01.md"
+  },
+  {
+    "id": "F11",
+    "prioridade": "P2",
+    "titulo": "Conectividade não equivale a operação concluída",
+    "evidencia": "O último teste registrado do catálogo estava positivo; o do CRM estava em erro desde 06/10. Na outbox houve 1437 despachos com 200, um timeout e um 503 nas últimas 24h; não havia linhas de entrega para certificar comunicação com compradores.",
+    "arquivo": "rotinas-confirmadas.json"
+  },
+  {
+    "id": "F12",
+    "prioridade": "P2",
+    "titulo": "Carga de módulos merece otimização dirigida",
+    "evidencia": "O build gerou lucide-react com aproximadamente 768 kB minificados; há oito imports de namespace no módulo de kits. Voz e XLSX também geram chunks grandes. Tamanho do chunk não prova transferência inicial: medir por rota antes de intervir.",
+    "arquivo": "build.log"
+  }
+]

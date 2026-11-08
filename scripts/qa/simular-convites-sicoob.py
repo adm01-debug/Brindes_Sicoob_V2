@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Valida convites institucionais e revogação de vínculo sem rede."""
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path

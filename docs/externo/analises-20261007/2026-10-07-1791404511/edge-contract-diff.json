@@ -1,0 +1,46 @@
+[
+  {
+    "function": "external-db-bridge",
+    "changes": [
+      {
+        "github_line": 1687,
+        "github": [
+          "const PRODUCTS_LIGHTWEIGHT_SELECT = 'id,name,sku,sale_price,primary_image_url,category_id,main_category_id,supplier_id,supplier_reference,description,short_description,brand,is_active,active,stock_quantity,min_quantity,created_at,updated_at,is_featured,is_bestseller,is_new,is_on_sale,is_kit';"
+        ],
+        "deployed": [
+          "const PRODUCTS_LIGHTWEIGHT_SELECT = 'id,name,sku,sale_price,primary_image_url,category_id,main_category_id,supplier_id,supplier_reference,description,short_description,brand,is_active,stock_quantity,min_quantity,created_at,updated_at,is_featured,is_bestseller,is_new,is_on_sale,is_kit';"
+        ]
+      }
+    ]
+  },
+  {
+    "function": "sicoob-kit-quote",
+    "changes": [
+      {
+        "github_line": 150,
+        "github": [
+          "          select: 'id,name,sku,sale_price,base_price,primary_image_url,image_url,is_active,active,stock_quantity,min_quantity',",
+          "          filters: { id: productIds, active: true },"
+        ],
+        "deployed": [
+          "          select: 'id,name,sku,sale_price,base_price,primary_image_url,image_url,is_active,stock_quantity,min_quantity',",
+          "          filters: { id: productIds, is_active: true },"
+        ]
+      }
+    ]
+  },
+  {
+    "function": "sicoob-reorder",
+    "changes": [
+      {
+        "github_line": 167,
+        "github": [
+          "      select: \"id,name,sku,sale_price,base_price,primary_image_url,is_active,active,stock_quantity,min_quantity,min_order_quantity,is_stockout,last_stock_update_at,price_updated_at,price_verified_at,price_last_verified_at,price_freshness_threshold_days\","
+        ],
+        "deployed": [
+          "      select: \"id,name,sku,sale_price,base_price,primary_image_url,is_active,stock_quantity,min_quantity,min_order_quantity,is_stockout,last_stock_update_at,price_updated_at,price_verified_at,price_last_verified_at,price_freshness_threshold_days\","
+        ]
+      }
+    ]
+  }
+]

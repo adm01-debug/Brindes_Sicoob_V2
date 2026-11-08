@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Conversão quote→pedido Sicoob em PostgreSQL descartável e sem rede."""
 from pathlib import Path
 import json

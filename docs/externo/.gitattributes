@@ -1,0 +1,4 @@
+# Documentos fornecidos escaneados como texto pelo git (sem NUL na janela de
+# detecção): declarar binário para diff/log não explodir a revisão.
+*.pdf binary
+*.xlsx binary

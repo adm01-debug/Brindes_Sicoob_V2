@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Fila de aprovação: transações, papéis e concorrência reais sem acesso à rede."""
 from pathlib import Path
 import json

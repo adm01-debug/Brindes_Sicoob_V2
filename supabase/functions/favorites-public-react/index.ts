@@ -5,8 +5,8 @@
 // - Rate limit 5 req/min/IP via bot_detection_log.
 // - Hash do IP (não armazena IP cru).
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { z } from "https://esm.sh/zod@3.23.8";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
+import { z } from "npm:zod@3.23.8";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

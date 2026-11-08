@@ -8,7 +8,7 @@ import { getCorsHeaders } from "../_shared/cors.ts";
  * Requer JWT de admin/dev. A RPC `audit_rls_matrix` valida a role internamente
  * (SECURITY DEFINER), mas validamos aqui também para resposta 401 amigável.
  */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 import { castRpcResult } from "../_shared/supabase-client-adapter.ts";
 
 // Module-scope CORS headers — atribuído per-request no handler.

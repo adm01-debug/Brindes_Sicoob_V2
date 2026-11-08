@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Relaciona as 32 melhorias do benchmark ao plano original e à revisão."""
 import json
 from pathlib import Path
