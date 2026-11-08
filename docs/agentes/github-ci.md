@@ -46,11 +46,12 @@ workflow falhar de forma estranha.
 
 Fatos do perímetro que já custaram retrabalho:
 
-- **PR só de docs/`*.md` nunca fica mergeável.** `codeql.yml:11-17` e `lighthouse.yml:4-9` têm
-  `paths-ignore` **no gatilho `pull_request`**, mas `Analyze (javascript-typescript)` e `lighthouse` são
-  required checks: os jobs não iniciam, os checks ficam pendentes para sempre e `strict: true` não libera.
-  `ci.yml` e `security.yml` não têm esse problema (filtro só no `push`). Ao mexer em doc, inclua algum
-  arquivo fora de `docs/**`/`*.md` ou combine o destravamento com o dono.
+- **Corrigido em 08/11/2026:** `codeql.yml` e `lighthouse.yml` tinham `paths-ignore` **no gatilho
+  `pull_request`**, e `Analyze (javascript-typescript)`/`lighthouse` são required checks — o job nunca
+  iniciava em PR só de `docs/**`/`*.md`, o check ficava pendente para sempre e `strict: true` nunca
+  liberava. Removido o `paths-ignore` do `pull_request` dos dois (mantido no `push`, que não é gate de
+  PR): agora os dois sempre rodam em PR contra `main`, custando mais CI em PR doc-only em troca de nunca
+  mais travar o merge.
 - **`environment: e2e-qa` não existe.** `e2e.yml:83`, `e2e.yml:271` e `security-compliance.yml:86`
   apontam para ele; os 6 environments reais estão na tabela acima. Resultado: E2E autenticado fica
   `skipped`, nunca "aprovado" (`PENDENCIAS.md:316`). O `e2e-staging`, criado em 30/10, não é referenciado
@@ -99,10 +100,10 @@ Fatos do perímetro que já custaram retrabalho:
 | `ci.yml` | Qualidade contínua | push `main` (com `paths-ignore`) + PR `main` (sem filtro) | — |
 | `sicoob-ci.yml` | Portal Sicoob | push `main` (com `paths`) + PR `main` (sem filtro) | — |
 | `security.yml` | Security Scan | PR `main` + push `main` + `schedule 30 6 * * 1` | — |
-| `codeql.yml` | CodeQL | push/PR `main` (ambos com `paths-ignore`) + `schedule 0 9 * * 1` | — |
+| `codeql.yml` | CodeQL | push `main` (com `paths-ignore`) + PR `main` (sem filtro) + `schedule 0 9 * * 1` | — |
 | `e2e.yml` | E2E (Playwright) | PR `main` + dispatch | `e2e-qa` (**inexistente**) |
 | `bundle-check.yml` | Bundle Size Check | PR `main` | — |
-| `lighthouse.yml` | Lighthouse Performance Audit | PR `main` (com `paths-ignore`) | — |
+| `lighthouse.yml` | Lighthouse Performance Audit | PR `main` (sem filtro) | — |
 | `branch-protection-sentinel.yml` | Branch Protection Sentinel | push `main` + dispatch | — |
 | `migration-ledger-drift.yml` | Migration ledger drift | `schedule 0 6 * * *` + dispatch | `construction` |
 | `apply-sicoob-migrations.yml` | Aplicar migrations Sicoob | **só dispatch** (`confirmar = APLICAR`) | `construction` |
@@ -170,7 +171,7 @@ Mapa comando → job que o roda:
 | `npm run test:e2e:pwa` | `sicoob-ci.yml:111` |
 | `node scripts/check-codeql-sarif.mjs` | `codeql.yml:72` |
 | `npm run check:security-definer-acl` | `security-compliance.yml:55` (precisa de service_role) |
-| `npm run check:agents-md` | **ainda não está em nenhum workflow** — ver "Pendências" |
+| `AGENTS_MD_BASE=FETCH_HEAD npm run check:agents-md` (depois de `git fetch --no-tags --depth=1 origin main`) | `ci.yml` job `qualidade`, step "Integridade das instruções para agentes" |
 
 Rodam em nenhum workflow (não confie neles como gate, mas são úteis): `npm run typecheck` (tsc puro, e é o
 único que cobre `tsconfig.node.json`), `lint`/`lint:check`, `format:check`, `check:route-error-element`,
@@ -198,10 +199,6 @@ Rodam em nenhum workflow (não confie neles como gate, mas são úteis): `npm ru
 
 ## Pendências deste doc
 
-1. `npm run check:agents-md` (`scripts/ci/check-agents-md-integrity.mjs`, guard de integridade das
-   instruções para agentes) **não está wired em nenhum workflow** — PRs abertas tocam `.github/workflows/ci.yml`
-   (#151, #173, #180), então o step não foi adicionado nesta passagem. Depois que elas fecharem, o passo é:
-   `git fetch --no-tags --depth=1 origin main` + `AGENTS_MD_BASE=FETCH_HEAD npm run check:agents-md` no job
-   `qualidade`.
-2. Required check de doc-only (ver "Fatos do perímetro") e `environment: e2e-qa` inexistente continuam
-   abertos.
+1. `environment: e2e-qa` inexistente (ver "Fatos do perímetro") continua aberto.
+2. `.github/workflows/ci.yml` foi tocado por esta mudança (guard `check:agents-md` adicionado) enquanto
+   as PRs #151, #173 e #180 também o tocavam — se alguma mesclar antes desta, rebase simples.
