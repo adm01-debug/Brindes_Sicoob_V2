@@ -19,13 +19,13 @@ def _require_docker() -> None:
         r = subprocess.run(["docker", "info"], capture_output=True, timeout=5)
         if r.returncode != 0:
             print("❌ Docker daemon não está rodando. Inicie o Docker para executar este script.", file=sys.stderr)
-            sys.exit(0)
+            sys.exit(1)
     except FileNotFoundError:
         print("❌ Docker não encontrado no PATH.", file=sys.stderr)
-        sys.exit(0)
+        sys.exit(1)
     except subprocess.TimeoutExpired:
         print("❌ Docker daemon não respondeu a tempo.", file=sys.stderr)
-        sys.exit(0)
+        sys.exit(1)
 
 
 _require_docker()
