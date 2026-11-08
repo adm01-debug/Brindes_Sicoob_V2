@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Reproduz permissões e regressões em PostgreSQL sem rede, com limpeza final."""
 from pathlib import Path
 import json

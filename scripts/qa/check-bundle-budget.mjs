@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import assert from 'node:assert/strict';
 import { gzipSync } from 'node:zlib';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';

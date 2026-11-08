@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /** Reproduz achados da revisão com módulos reais e dependências simuladas, sem rede. */
 import fs from 'node:fs';
 import vm from 'node:vm';

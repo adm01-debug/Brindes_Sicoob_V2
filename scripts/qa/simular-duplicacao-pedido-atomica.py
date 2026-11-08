@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Prova atomicidade, idempotência, autorização e recálculo da duplicação de pedido."""
 from pathlib import Path
 import json

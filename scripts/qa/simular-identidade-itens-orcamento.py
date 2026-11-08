@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Prova a preservação de identidade dos itens no salvamento atômico de orçamento."""
 from pathlib import Path
 import json
