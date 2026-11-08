@@ -11,6 +11,14 @@ if (!['127.0.0.1', 'localhost'].includes(parsedUrl.hostname)) {
   throw new Error('A demonstração automatizada só pode usar um servidor local.');
 }
 
+// Verifica se o servidor QA está rodando antes de lançar o navegador
+try {
+  await fetch(`${baseUrl}/`, { signal: AbortSignal.timeout(3000) });
+} catch {
+  console.error(`❌ Servidor QA não está rodando em ${baseUrl}. Inicie com \`npm run preview\` ou configure QA_BASE_URL.`);
+  process.exit(1);
+}
+
 const evidenceDirectory = 'docs/execucao/evidencias/visual';
 const viewports = [
   { width: 1440, height: 1000 },
