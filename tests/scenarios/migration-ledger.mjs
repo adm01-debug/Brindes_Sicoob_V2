@@ -56,6 +56,14 @@ test('diagnóstico do ledger informa a exceção e redige credenciais', () => {
     new Error('{"password":"json-secret", "cookie": "session-cookie-value"}'),
   );
   assert.doesNotMatch(jsonSecrets.message, /json-secret|session-cookie-value/);
+  const escapedJsonSecret = formatLedgerDiagnostic(
+    new Error('{"password":"safe\\\"-suffix", "cookie":"private\\\"-suffix"}'),
+  );
+  assert.doesNotMatch(escapedJsonSecret.message, /safe|private|-suffix/);
+  const punctuatedSupabaseKey = formatLedgerDiagnostic(
+    new Error('sb_secret_chave-teste.extra-sufixo'),
+  );
+  assert.doesNotMatch(punctuatedSupabaseKey.message, /chave-teste|extra-sufixo/);
   assert.match(formatLedgerDiagnostic(new Error('x://user:senha@host')).message, /\[URL redigida\]/);
 });
 test('compara oito dígitos, conteúdo e ausência nas duas direções', () => {

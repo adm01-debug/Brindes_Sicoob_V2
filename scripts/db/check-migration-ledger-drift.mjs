@@ -186,10 +186,10 @@ export function formatLedgerDiagnostic(error) {
     .replace(/\bBearer\s+[A-Za-z0-9._~+/-]+=*/gi, 'Bearer [redigido]')
     .replace(/\bBasic\s+[A-Za-z0-9+/]+=*/gi, 'Basic [redigido]')
     .replace(/\beyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g, '[JWT redigido]')
-    .replace(/\bsb_(?:secret|publishable)_[A-Za-z0-9_-]+\b/g, '[chave Supabase redigida]')
+    .replace(/\bsb_(?:secret|publishable)_[A-Za-z0-9._-]+/g, '[chave Supabase redigida]')
     .replace(/\b[a-z][a-z\d+.-]{0,20}:\/\/[^\s"'<>]+/gi, '[URL redigida]')
     .replace(
-      /["']?\b(password|passwd|secret(?:[_-]?key)?|token|api[_-]?key|apikey|authorization|service[_-]?role[_-]?key|publishable[_-]?key|access[_-]?token|refresh[_-]?token|private[_-]?key|anon[_-]?key|cookie|set-cookie|session(?:[_-]?(?:id|token))?|csrf[_-]?token)["']?(\s*[:=]\s*)("[^"]*"|'[^']*'|[^\s,;}"']+)/gi,
+      /["']?\b(password|passwd|secret(?:[_-]?key)?|token|api[_-]?key|apikey|authorization|service[_-]?role[_-]?key|publishable[_-]?key|access[_-]?token|refresh[_-]?token|private[_-]?key|anon[_-]?key|cookie|set-cookie|session(?:[_-]?(?:id|token))?|csrf[_-]?token)["']?(\s*[:=]\s*)("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^\s,;}"']+)/gi,
       '$1$2[redigido]',
     )
     .replace(/[\r\n\t]+/g, ' ')
