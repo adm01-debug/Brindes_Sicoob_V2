@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 // Carrega .env local sem dependência de dotenv
 const envFile = resolve(process.cwd(), '.env');
 if (existsSync(envFile)) {
-  for (const line of readFileSync(envFile, 'utf8').split('\n')) {
+  for (const line of readFileSync(envFile, 'utf8').replace(/\r\n/g, '\n').split('\n')) {
     const m = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*)$/);
     if (m && !(m[1] in process.env)) {
       process.env[m[1]] = m[2].replace(/^["']|["']$/g, '').trim();

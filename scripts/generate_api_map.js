@@ -1,7 +1,7 @@
 import fs from 'fs';
 
 if (!fs.existsSync('service_map.txt')) {
-  console.error('❌ service_map.txt não encontrado. Gere-o com: grep -rn "supabase\\.(rpc\\|from)" src/ > service_map.txt');
+  console.error('❌ service_map.txt não encontrado. Gere-o com: grep -rn -E "supabase\\.(rpc|from)" src/ > service_map.txt');
   process.exit(2);
 }
 const serviceData = fs.readFileSync('service_map.txt', 'utf8');

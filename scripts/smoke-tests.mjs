@@ -41,7 +41,7 @@ const REQUIRED_ROUTES = [
   "/colecao-publica/:token",
   "/comparar-publica/:token",
   "/dossie/:token",
-  "/auth/callback",
+  "/sso/callback",
   "/produtos",
   "/orcamentos",
   "/orcamentos/novo",
@@ -80,9 +80,9 @@ function checkStaticRoutes() {
   const cwd = process.cwd();
 
   // Arquivos onde rotas podem ser declaradas (todos opcionais — tolerante à estrutura)
+  // route-matrix.ts é metadado RBAC, não declaração de rota no React Router — excluído para evitar falso positivo
   const routeSources = [
     resolve(cwd, "src/App.tsx"),
-    resolve(cwd, "src/lib/rbac/route-matrix.ts"),
   ];
 
   // src/routes/config/*.ts
