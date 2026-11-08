@@ -11,7 +11,7 @@ A **Promo Gifts** é uma plataforma B2B dual-mode (Catálogo Geral + Especializa
 - **150+ hooks customizados**
 - **600+ componentes** modulares
 - **~80 tabelas** no banco de dados com RLS estrito
-- **~90 Edge Functions** (IA, Integrações, Automações, Segurança)
+- **~106 Edge Functions** (IA, Integrações, Automações, Segurança)
 - **5 perfis de acesso** (`admin`, `vendedor`, `gestor_compras`, `gerente_pa`, `dev`)
 
 ## 2. Visão Geral do Sistema
@@ -40,29 +40,32 @@ Plataforma multi-tenant com separação lógica e visual via **Skins Factory**.
 - **MCP Security:** Gestão de chaves, auditoria de uso, auto-revogação por papel e diagnóstico de telemetria.
 - **App Health:** Telemetria em tempo real, health dashboard e monitoramento de latência de RPCs.
 
-## 5. Lista de Edge Functions (~90)
+## 5. Lista de Edge Functions (~106)
 A plataforma conta com uma vasta camada de lógica serverless, categorizada abaixo:
 
 ### IA & Multimodalidade
 - `ai-recommendations`, `bi-copilot`, `comparison-ai-advisor`, `generate-ad-image`, `generate-ad-prompt`, `generate-mockup`, `generate-mockup-nanobanana`, `generate-product-seo`, `kit-ai-builder`, `kit-identity-suggest`, `semantic-search`, `voice-agent`, `trends-insights`, `visual-search`, `elevenlabs-tts`, `elevenlabs-scribe-token`, `analyze-logo-colors`.
 
 ### Integrações & Sync
-- `bitrix-sync`, `crm-db-bridge`, `external-db-bridge`, `external-db-inspect`, `product-webhook`, `quote-sync`, `sync-quote-bitrix`, `bi-share-dossier`, `dropbox-list`, `github-credentials-test`, `github-fix-config`.
+- `bitrix-sync`, `crm-db-bridge`, `external-db-bridge`, `external-db-inspect`, `external-connections-sync`, `product-webhook`, `quote-sync`, `sync-quote-bitrix`, `bi-share-dossier`, `dropbox-list`, `github-credentials-test`, `github-fix-config`.
 
 ### Segurança & Governança (MCP)
-- `auth-integrity-check`, `block-ip-temporarily`, `mcp-keys-issue`, `mcp-keys-revoke`, `mcp-keys-rotate`, `mcp-keys-update`, `mcp-server`, `rls-audit`, `validate-access`, `step-up-verify`, `ownership-audit`, `ownership-repair`, `force-global-logout`, `log-login-attempt`, `detect-new-device`, `secrets-manager`, `secure-upload`.
+- `admin-audit-hook`, `auth-integrity-check`, `block-ip-temporarily`, `mcp-keys-issue`, `mcp-keys-revoke`, `mcp-keys-rotate`, `mcp-keys-update`, `mcp-server`, `rls-audit`, `validate-access`, `step-up-verify`, `ownership-audit`, `ownership-repair`, `force-global-logout`, `log-login-attempt`, `detect-new-device`, `secrets-manager`, `secure-upload`.
 
 ### Monitoramento & Saúde
-- `health-check`, `full-op-diagnostics`, `connection-tester`, `connections-auto-test`, `connections-health-check`, `connections-hub-audit`, `migration-health-check`, `rls-integration-tests`, `rls-matrix-export`, `process-queue`, `process-scheduled-reports`, `e2e-auth-test`, `e2e-cleanup`.
+- `health-check`, `system-healthcheck`, `error-monitor`, `get-app-logs`, `monthly-health-report`, `qa-block-monitor`, `full-op-diagnostics`, `connection-tester`, `connections-auto-test`, `connections-health-check`, `connections-hub-audit`, `migration-health-check`, `rls-integration-tests`, `rls-matrix-export`, `process-queue`, `process-scheduled-reports`, `e2e-auth-test`, `e2e-cleanup`.
 
 ### Comunicação & Notificação
 - `send-notification`, `send-digest`, `send-scheduled-reports`, `send-transactional-email`, `quote-followup-reminders`, `cleanup-notifications`, `cleanup-novelties`, `verify-email`.
 
 ### Watchers & Public Share
-- `collections-watcher`, `favorites-watcher`, `comparison-price-watcher`, `collections-public-react`, `comparisons-public-react`, `favorites-public-react`, `kit-public-view`, `quote-public-view`.
+- `collections-watcher`, `favorites-watcher`, `comparison-price-watcher`, `collections-public-react`, `comparisons-public-react`, `favorites-public-react`, `kit-public-view`, `quote-public-view`, `quote-approval`.
+
+### Sicoob (Vertical Específico)
+- `sicoob-approval-notifications`, `sicoob-approval-reconciliation`, `sicoob-artwork-register`, `sicoob-document-ingest`, `sicoob-kit-quote`, `sicoob-reorder`, `sicoob-seed-qa`.
 
 ### Utilidades & Outros
-- `cnpj-lookup`, `image-proxy`, `categories-api`, `materials-api`, `commemorative-dates`, `expert-chat`, `get-visitor-info`, `magic-up-score`, `manage-users`, `market-intelligence-insights`, `sicoob-seed`, `sicoob-seed-debug`, `webhook-dispatcher`, `webhook-inbound`.
+- `cnpj-lookup`, `image-proxy`, `categories-api`, `materials-api`, `commemorative-dates`, `expert-chat`, `get-visitor-info`, `magic-up-score`, `manage-users`, `market-intelligence-insights`, `migrate-helper`, `process-batch-export`, `sicoob-seed`, `sicoob-seed-debug`, `webhook-dispatcher`, `webhook-inbound`.
 
 ## 6. Arquitetura de Segurança e Observabilidade
 - **RLS First:** Políticas em todas as tabelas, audit trail imutável via triggers.

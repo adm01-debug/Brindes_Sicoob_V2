@@ -8,13 +8,12 @@ const serviceRoleKey = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY;
 const projectId = process.env.E2E_SUPABASE_PROJECT_ID;
 const allowedProjectId = process.env.E2E_ALLOWED_PROJECT_ID;
 
-validateE2ETarget({
-  url,
-  projectId,
-  allowedProjectId,
-  publishableKey,
-  serviceRoleKey,
-});
+try {
+  validateE2ETarget({ url, projectId, allowedProjectId, publishableKey, serviceRoleKey });
+} catch (err) {
+  console.error(`❌ ${err.message}`);
+  process.exit(err.message === 'Configuração obrigatória do destino E2E ausente.' ? 2 : 1);
+}
 
 const client = (key) =>
   createClient(url, key, {

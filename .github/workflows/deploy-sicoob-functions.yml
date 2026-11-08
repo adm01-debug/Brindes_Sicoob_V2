@@ -46,7 +46,13 @@ jobs:
             sicoob-artwork-register \
             sicoob-document-ingest \
             sicoob-kit-quote \
-            sicoob-reorder
+            sicoob-reorder \
+            bi-copilot \
+            comparison-ai-advisor \
+            get-app-logs \
+            get-visitor-info \
+            secure-upload \
+            auth-integrity-check
           do
             supabase functions deploy "$function_name" --project-ref "$SUPABASE_PROJECT_ID"
           done

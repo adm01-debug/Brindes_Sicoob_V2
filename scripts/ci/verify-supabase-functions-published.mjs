@@ -9,6 +9,12 @@ export const requiredFunctions = [
   'sicoob-document-ingest',
   'sicoob-kit-quote',
   'sicoob-reorder',
+  'bi-copilot',
+  'comparison-ai-advisor',
+  'get-app-logs',
+  'get-visitor-info',
+  'secure-upload',
+  'auth-integrity-check',
 ];
 
 function getFunctions(payload, label) {
@@ -85,6 +91,7 @@ async function main() {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((error) => {
     console.error(`::error title=Publicação não confirmada::${error.message}`);
-    process.exitCode = 1;
+    const isUsageError = error.message.startsWith('Uso:');
+    process.exitCode = isUsageError ? 2 : 1;
   });
 }

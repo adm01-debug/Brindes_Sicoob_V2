@@ -2,8 +2,12 @@
  * Webhook Simulation and Fuzzing Script
  * Simulates thousands of webhook scenarios against the local or remote environment.
  */
-import { crypto } from 'crypto';
+import crypto from 'crypto';
 
+if (!process.env.VITE_SUPABASE_URL) {
+  console.error('❌ VITE_SUPABASE_URL não configurada. Configure no .env antes de rodar o simulador de webhooks.');
+  process.exit(2);
+}
 const ENDPOINT_URL = process.env.VITE_SUPABASE_URL + '/functions/v1/webhook-inbound';
 const HMAC_SECRET = process.env.WEBHOOK_HMAC_SECRET || 'test-secret';
 
