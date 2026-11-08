@@ -1,72 +1,132 @@
-# AGENTS.md — Brindes_Sicoob_V2
+# AGENTS.md — Brindes Sicoob V2
 
-Regras de ouro — Perfil Otimizado (Hermes Agent / multi-agente).
-Auto-carregado por agentes compatíveis (Hermes, Claude Code, Codex, OpenCode).
+Regras do dono para qualquer agente de IA; vencem `docs/` (histórico). Detalhe em `docs/agentes/<tema>.md`;
+divergiu da realidade → corrija no mesmo PR do fix. Responda sempre em PT-BR.
 
-## Idioma
+## Postura
+- O dono não é dev: decide negócio; o agente executa a engenharia inteira via MCP. Nunca passo manual do
+  dono nem pedir que ele revise diff.
+- Qualidade + velocidade, mínimo de tokens. Decida como dev sênior; pergunte só com custo, arquitetura,
+  dado destrutivo em produção, trade-off de negócio ou item "chame o dono". Para ler, não peça permissão.
+- Verdade acima de validação: não sabe → diga; falhou → diga. Afirmação sobre código cita evidência
+  (arquivo:linha, diff, saída de comando); sem evidência = "NÃO VERIFICADO" + motivo; nunca "testado" sem
+  ter rodado. Branch/commit/PR não provam nada — leia o código.
+- Diff mínimo, zero churn: causa raiz, não reescrita; não refatore, renomeie ou comente o que não foi pedido;
+  não reescreva arquivo inteiro para mudar 3 linhas. Dependência nova ou bump major só se indispensável (avise na PR).
+- `APROVADO` = execute o plano como descrito, sem reconfirmar.
+- Uma tarefa por vez, cada uma com sua branch/PR. Outro bug → "Próximos passos". Travou → reporte o erro
+  exato e pare; não contorne regra. Releia o pedido antes de concluir.
+- Tokens: leia só o trecho necessário; grafo antes de busca por texto; exploração ampla → subagente;
+  nenhuma tool "por garantia"; não gere código que não será aplicado.
+- Segredos nunca em código, commit ou resposta — só em env/secret do serviço (edge: dashboard Supabase,
+  `supabase secrets` ou tabela `integration_credentials` via `/admin/conexoes`). PAT exposto em chat →
+  rotacionar na hora (`docs/RUNBOOKS/CREDENTIAL_ROTATION.md`). Nunca imprima nem commite `.env*`,
+  tokens ou `service_role`. **Toda `VITE_*` é pública** — nunca segredo com esse prefixo.
 
-**SEMPRE comunicar em Português do Brasil (pt-BR)** — respostas, comentários de código, mensagens de commit, descrições de PR e qualquer saída de texto em pt-BR. Nunca alternar para inglês.
+## Bugs e funcionalidades
+- Diagnóstico antes de patch: logs e estado real, ponto exato (arquivo:linha), causa; várias causas → liste
+  todas, corrija a pedida.
+- Antes da PR: `npm run typecheck:baseline`, `npm run lint:baseline` e `npx vitest run <caminho tocado>`.
+  Só erro seu conta; erro herdado da `main` → "Próximos passos". A dívida de lint e de typecheck está em
+  **zero** (`.eslint-baseline.json`, `.typecheck-baseline.json`): não há margem.
+- "Pronto" = PR mergeada + deploy confirmado + comportamento verificado (log, query ou request real); faltou
+  um → diga onde parou. Deploy do front **não é automático pelo CI** e tem publicador ambíguo — ver
+  `docs/agentes/servicos.md` antes de dizer que subiu.
+- Funcionalidade pronta = integrada ponta a ponta (rota registrada em `src/routes/config/`, entrada na UI,
+  hook/serviço chamado, edge invocada **e no `edge-authz-manifest.ts`**, tabela com RLS, estados
+  erro/loading/vazio, submit), sem mock, hardcode ou TODO. Pela metade não é pronto; não cabe na sessão →
+  entregue o funcional e liste o que falta, em ordem, com arquivos. Nunca deixe código morto ou feature
+  "quase" sem dizer.
+- Teste crítico nunca é resolvido com `skip`: o orçamento de skip em `tests/p0`, `tests/rls` e
+  `tests/security` é catraca de CI (`scripts/check-critical-test-skip-budget.mjs`).
 
-## Sistema
+## Comunicação
+- Resultado primeiro, só o que muda decisão do dono. Sem introdução, recapitulação, narração, hedging,
+  disclaimer, lição de moral ou cortesia. Efeito no negócio; técnica só se perguntarem. Resposta e plano
+  proporcionais ao tamanho do fix; não despeje log — cite a linha que importa. Caminhos, comandos e links
+  completos. Destrutivo de verdade: uma linha ("isso apaga X, sem volta — confirma?").
+- Toda execução fecha com exatamente 3 "Próximos passos" (`N. [título] — [por quê] · [arquivo]`), por
+  impacto, do que você viu, executáveis via MCP, para não-dev; nada de genérico ("adicionar testes",
+  "melhorar documentação", "revisar segurança"). É um menu: `1`, `1 e 3`, `APROVADO 2`, "todos" ou o bloco
+  devolvido = executar na ordem, sem reconfirmar. Só consulta, já rejeitadas ou nada pendente →
+  `Próximos passos: nada pendente neste escopo.`
 
-- **Repo:** adm01-debug/Brindes_Sicoob_V2
-- **Visibilidade:** privado
-- **Descrição:** —
-- **Branch padrão:** main
+## Fluxo Git — detalhe em `docs/agentes/github-ci.md`
+- Repo `adm01-debug/Brindes_Sicoob_V2`, `main`, **público**. Escrita no GitHub: MCP
+  **`GITHUB - MCP - FOREVER`** (`github_push_files`: `files` + `delete` num commit); `git push` só em repo
+  autorizado na sessão.
+- Nunca commite em `main`. Só escreva em branch que **você** criou nesta sessão; branch alheia ou já
+  existente é somente leitura. Antes do push, confira que o último commit é seu.
+- PR aberta nos mesmos arquivos → pare e avise o dono (liste via `github_graphql`). Há muitas PRs de outros
+  agentes abertas neste repo ao mesmo tempo — essa checagem não é formalidade.
+- Branch de `main` atualizado: `claude/<fix|feat|chore|docs|refactor|ci>-<slug>-<AAMMDD-HHMM>`.
+- Commit PT-BR, 1 atômico, Conventional Commits `<tipo>(<escopo>): <assunto>` sem ponto final. Tipos em uso
+  na `main`: `fix docs chore infra feat ci`. **Não há hook `commit-msg` nem commitlint** — siga o padrão
+  mesmo assim. Nunca `--no-verify` para fugir de `pre-commit`/`pre-push`: eles replicam o CI.
+- PR sempre: título = o que muda; corpo = causa + o que foi verificado, com evidência. Use
+  `.github/pull_request_template.md` (o de 26 linhas, com "Evidência verificada").
+- Mergeie sem aprovação (squash, apague a branch) PR sua pronta: os **10 checks obrigatórios** verdes, sem
+  conflito, **todas as conversas de bot resolvidas** (`required_conversation_resolution: true`), escopo
+  comum (front, edge, config). **Deixe aberta e chame o dono**: DDL/migration em produção; CI/workflows,
+  segredos, Dockerfile/runner, Portainer, Cloudflare/Terraform; deleção de dado, arquitetura ou custo;
+  conflito com PR de outro agente.
+- Conflito: rebase em `main`; `--force-with-lease` só na sua branch. `strict: true` → PR `BEHIND` não
+  mergeia mesmo com CI verde: atualize a branch, nunca mexa no `strict`.
+- **PR só de `docs/**` ou `*.md` não fica mergeável**: `Analyze (javascript-typescript)` e `lighthouse` são
+  required checks mas têm `paths-ignore` no `pull_request` — os checks nunca reportam. Inclua algum arquivo
+  fora desses caminhos ou combine com o dono.
+- Merge = produção (Vercel/Lovable publicam a `main` sem esperar o CI): confira o deploy e reporte. CI
+  vermelha → leia o resumo da falha antes de qualquer patch; do seu merge → `fix:` em branch nova na mesma
+  sessão.
+- Fim: link da PR + estado.
 
-## Regra de ouro antes de agir
+## Banco — ler `docs/agentes/banco.md` antes de SQL, migration ou deploy
+- Oficial: Supabase **`cfmzkthhgliqelozlmwu`** (`supabase/config.toml:1`); SQL pela **Management API**
+  (`scripts/db/supabase-sql-client.mjs`, `readOnly` default), com `SUPABASE_ACCESS_TOKEN`. **Não há MCP de
+  SQL versionado neste repo** — confirme em qual projeto o MCP carregado está antes de rodar qualquer coisa.
+- NÃO escrever no catálogo externo **`doufsxqlfjyuvxuezpln`** (somente leitura imposta por código) nem no
+  CRM **`pgxfvjmuubtbowutlide`**; `nmojwpihnslkssljowjh`, `bojgeppypmtormfjsyun` e `hgbzltfwozdkcudofypy`
+  são legado de outra origem. E2E/QA nunca aponta para o oficial nem para o catálogo
+  (`scripts/e2e-target.mjs`).
+- Diagnóstico = produção só leitura; teste de banco = Postgres descartável (`scripts/qa/simular-*.py`).
+  `npm run dev` usa o `.env` local e **não há banco local neste front** — se o `.env` for o de produção, a
+  tela fala com produção.
+- DDL só pelo fluxo de `banco.md`: arquivo → PR → merge → entrada na allowlist →
+  `apply-sicoob-migrations.yml` (dispatch com `APLICAR`, environment `construction`). Migration mesclada é
+  **imutável**; DDL aplicado via MCP/Management API exige o `.sql` no **mesmo** commit/PR. Proibido
+  `supabase db push`. O ledger ao vivo é a verdade.
+- Destrutivo, segredos e rotação: só com o dono. Backup em `_backup_<tabela>_YYYYMMDD` antes de `DROP`;
+  RLS ON em toda tabela nova; policy nova usa helper semântico, nunca `has_role(...,'admin')`.
 
-1. **Leia o README.md** (se existir) e qualquer doc em `docs/` antes de qualquer mudança — ele é a fonte de verdade do projeto.
-2. **Pronto = ligado em produção com tráfego real.** Código existir não é pronto.
-3. **Diagnóstico antes de patch.** Em bug de produção: leia logs/estado real antes de qualquer fix.
+## Serviços
+- **Deploy/Vercel/Lovable** — ler `docs/agentes/servicos.md` ao confirmar deploy ou mexer em env/domínio/CSP.
+  Dois publicadores declarados para a `main` sem decisão registrada; nenhum workflow publica o front. CSP
+  duplicada em `vercel.json` e `public/_headers` — mexeu em uma, mexa na outra.
+- **Edge functions** — deploy só por `deploy-sicoob-functions.yml` (dispatch com `PUBLICAR`, allowlist de
+  13 funções); as outras ~93 não sobem por ali. Confirme o run; nunca deploy manual.
+- **GitHub/CI** — ler `docs/agentes/github-ci.md` ao mexer em settings, branch protection ou workflows
+  (10 required checks, `strict=true`, `enforce_admins=true`, conversas resolvidas). Mudou perímetro →
+  atualize a tabela desse doc na mesma PR.
+- **Integrações** (Lovable AI, ElevenLabs, Bitrix24, Resend, CNPJa, VirusTotal, Dropbox, n8n/SalesPro,
+  catálogo e CRM externos) — tabela de código ↔ segredo em `docs/agentes/servicos.md`; secrets em
+  `docs/secrets.md`.
+- **Regras de domínio** — ler `docs/agentes/regras-dominio.md` ao mexer em papéis Sicoob, escopo de
+  vendedor, verba de PA, kit/recompra, preço do catálogo, aprovação, upload ou cleanup de E2E.
 
-## GIT: Isolamento Worktree (OBRIGATÓRIO)
+## Stack e comandos — detalhe em `docs/agentes/mapa-repo.md`
+- Vite + React + TS (`src/`), Supabase (`supabase/functions/` com 106 funções, `supabase/migrations/` com
+  590 arquivos), Vitest (`tests/`), Playwright (`e2e/`), **npm** (`npm ci`; não há `bun.lock` — está no
+  `.gitignore`), Node 24.
+- `npx vitest run <caminho>`; `node scripts/tscheck-files.mjs <arquivos>` (ou `npm run typecheck`);
+  `npx eslint <arquivos>`; `npm run test:scenarios`; `npm run test:e2e:smoke`; `npm run build`;
+  `npm run check:agents-md` (integridade deste arquivo e de `docs/agentes/`).
+- Antes de qualquer tarefa: `PENDENCIAS.md` (o que está quebrado), `RELATORIO_CI.md` (estado do CI) e o doc
+  de `docs/agentes/` do tema. `docs/ROUTES.md` é gerado — não edite à mão.
+- Automação em `scripts/<nome>/` com README (leia antes de alterar); nunca em `supabase/` nem `src/`.
 
-**NUNCA usar `git checkout -b` diretamente.** Sempre criar worktree isolado:
-
-```bash
-# 1. Gerar ID único
-HERMES_BRANCH_ID="{{ h$(date +%s | tail -c 7) }}"
-BRANCH="fix/hermes-${HERMES_BRANCH_ID}-<descricao>"
-WORKSPACE="$HOME/hermes-workspaces/chat-${HERMES_BRANCH_ID}"
-
-# 2. Criar worktree
-git worktree add "$WORKSPACE" -b "$BRANCH" && cd "$WORKSPACE"
-
-# 3. Verificar isolamento
-[ "$(git branch --show-current)" = "$BRANCH" ] || exit 1
-
-# ... trabalhar, commit, push, PR, merge ...
-
-# 4. Cleanup obrigatório
-git branch -D "$BRANCH"
-git worktree remove "$WORKSPACE" --force
-git worktree prune
-```
-
-**Por quê:** múltiplos agentes/chats no mesmo repo = colisão de branches.
-
-## PR Flow
-
-branch → commit (--no-verify) → push → PR via GitHub → CI → merge squash → delete branch.
-Workers/editores NUNCA mexem em git/branches — só o orquestrador.
-
-## Regras de trabalho
-
-1. **Aja como dev sênior e decida.** Escolha de biblioteca, nome de arquivo, abordagem de fix: decida e siga. Só pergunte se envolver custo, mudança de arquitetura, dado destrutivo em produção ou trade-off real de negócio.
-2. **Verdade acima de validação.** Não sabe → diga. Falhou → diga. Nunca "sucesso" fabricado.
-3. **Zero churn / diff mínimo.** Não refatore nem reescreva arquivo inteiro para mudar 3 linhas.
-4. **Execução end-to-end.** Nunca proponha "copie e cole" — execute inteiro até o artefato funcionar, com evidência real.
-
-## graphify
-
-This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
-
-When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
-
-Rules:
-- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
-- Dirty graphify-out/ files are expected after hooks or incremental updates; dirty graph files are not a reason to skip graphify. Only skip graphify if the task is about stale or incorrect graph output, or the user explicitly says not to use it.
-- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
-- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
-- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+## Grafo de código (graphify)
+Grafo em `graphify-out/` (`npm run graph:setup`; ver `mapa-repo.md`), fora do Git — cada clone gera o seu.
+Quando `graphify-out/graph.json` existir: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`,
+`graphify explain "<conceito>"` antes de buscar por texto; `GRAPH_REPORT.md` só para revisão ampla.
+Alterou código ou o report não é do HEAD atual → `npm run graph:update` (só AST). Em nuvem o grafo é gerado
+em segundo plano (`.claude/hooks/session-start.sh`) — siga sem ele até terminar.

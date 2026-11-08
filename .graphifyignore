@@ -1,0 +1,30 @@
+# .graphifyignore — Brindes Sicoob V2
+.env
+.env.*
+!.env.*.example
+*.pem
+*.key
+*-baseline.json
+*.baseline.json
+node_modules/
+supabase/functions/node_modules/
+vendor/
+dist/
+coverage/
+build/
+bundle-stats/
+e2e-artifacts/
+playwright-report/
+test-results/
+reports/
+graphify-out/graph.json
+graphify-out/graph.html
+
+# Arquivo morto de migrations: não entra no grafo (o vivo é supabase/migrations/).
+supabase/migrations_archive/
+
+# Relatórios e evidências de auditoria: milhares de nós de texto que poluem a busca do grafo.
+docs/evidencias/
+docs/execucao/
+docs/audits/
+docs/pesquisa/
