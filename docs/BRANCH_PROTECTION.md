@@ -1,11 +1,36 @@
 # Proteção da branch `main`
 
-## Estado observado em 22/09/2026
+## Estado observado em 22/09/2026 (histórico — superado abaixo)
 
-A regra remota exige uma revisão, mas não possui status checks obrigatórios e
-permite bypass administrativo. PRs recentes foram mesclados com jobs em falha
-porque o orçamento do GitHub Actions impediu a inicialização. Portanto, a
-proteção atual não comprova qualidade nem segurança do conteúdo mesclado.
+A regra remota exigia uma revisão, mas não possuía status checks obrigatórios e
+permitia bypass administrativo. PRs foram mescladas com jobs em falha porque o
+orçamento do GitHub Actions impedia a inicialização.
+
+## Estado configurado em 31/10/2026
+
+Ajustes aplicados via API (`gh api`) por `adm01-debug`:
+
+- `allow_auto_merge: true` — PR verde entra sozinho após `gh pr merge --auto --squash`.
+- `delete_branch_on_merge: true` — branch remota removida após merge.
+- `required_approving_review_count: 0` (antes: 1) — o repositório possui um
+  único colaborador humano e o GitHub proíbe aprovar o próprio PR; a exigência
+  de 1 review tornava todo PR estruturalmente não mesclável sem bypass.
+  Os 10 status checks obrigatórios, `strict` (branch atualizada), `enforce_admins`,
+  bloqueio de force push e de exclusão permanecem ativos.
+- `require_last_push_approval: false` (antes: `true`) — mesmo com contagem 0,
+  essa flag mantinha todo PR em `BLOCKED` ("the base branch policy prohibits
+  the merge") porque exige aprovação de *outra* pessoa no último push. Foi a
+  causa final do bloqueio do PR #184 após todos os checks ficarem verdes.
+- `dismiss_stale_reviews: true` mantido.
+
+Quando houver um segundo revisor humano, restaurar `required_approving_review_count: 1`
+e `require_last_push_approval: true`.
+
+Evidência: PR #184 mesclado por auto-merge em 31/10/2026 15:10 UTC (`1f4f2bd89`)
+após a correção, com os 10 checks obrigatórios verdes e 0 conversas pendentes.
+PR #231 (08/11/2026) confirmou o estado por leitura ao vivo da API: ver
+`docs/agentes/github-ci.md` para a tabela completa e os 10 nomes exatos dos
+checks obrigatórios.
 
 ## Configuração alvo
 
