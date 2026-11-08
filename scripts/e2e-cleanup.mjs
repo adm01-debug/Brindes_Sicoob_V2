@@ -26,13 +26,21 @@ await runCli(
     examples: ['node scripts/e2e-cleanup.mjs', 'node scripts/e2e-cleanup.mjs --no-dry-run'],
   },
   async ({ values, log }) => {
-    const target = validateE2ETarget({
-      url: process.env.E2E_SUPABASE_URL,
-      projectId: process.env.E2E_SUPABASE_PROJECT_ID,
-      allowedProjectId: process.env.E2E_ALLOWED_PROJECT_ID,
-      publishableKey: process.env.E2E_SUPABASE_PUBLISHABLE_KEY,
-      serviceRoleKey: process.env.E2E_SUPABASE_SERVICE_ROLE_KEY,
-    });
+    let target;
+    try {
+      target = validateE2ETarget({
+        url: process.env.E2E_SUPABASE_URL,
+        projectId: process.env.E2E_SUPABASE_PROJECT_ID,
+        allowedProjectId: process.env.E2E_ALLOWED_PROJECT_ID,
+        publishableKey: process.env.E2E_SUPABASE_PUBLISHABLE_KEY,
+        serviceRoleKey: process.env.E2E_SUPABASE_SERVICE_ROLE_KEY,
+      });
+    } catch (err) {
+      if (err.message === 'Configuração obrigatória do destino E2E ausente.') {
+        return { exitCode: 2, message: err.message };
+      }
+      throw err;
+    }
     const cleanupToken = process.env.E2E_CLEANUP_TOKEN;
     const email = process.env.E2E_USER_EMAIL;
 
