@@ -19,12 +19,16 @@ export function isGithubActions() {
   return process.env.GITHUB_ACTIONS === 'true';
 }
 
-/** Anotação nativa do GitHub Actions; no-op fora do CI. */
+/**
+ * Anotação nativa do GitHub Actions; no-op fora do CI.
+ * Vai para stderr para não corromper a saída `--json` (o runner lê comandos
+ * de ambos os streams).
+ */
 export function annotate(level, message, file) {
   if (!isGithubActions()) return;
   const safe = String(message).replace(/\r?\n/g, '%0A');
   const suffix = file ? ` file=${file}` : '';
-  process.stdout.write(`::${level}${suffix}::${safe}\n`);
+  process.stderr.write(`::${level}${suffix}::${safe}\n`);
 }
 
 export function createLogger(name) {
