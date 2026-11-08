@@ -78,6 +78,20 @@ describe('verifyPublishedFunctions', () => {
     }
   });
 
+  it('cobre as 7 canônicas e as 6 endurecidas (total 13)', () => {
+    expect(requiredFunctions).toHaveLength(13);
+    for (const slug of [
+      'bi-copilot',
+      'comparison-ai-advisor',
+      'get-app-logs',
+      'get-visitor-info',
+      'secure-upload',
+      'auth-integrity-check',
+    ]) {
+      expect(requiredFunctions).toContain(slug);
+    }
+  });
+
   it('mantém a lista publicada no workflow em paridade com o verificador', () => {
     const workflow = readFileSync('.github/workflows/deploy-sicoob-functions.yml', 'utf8');
     const command = workflow.match(/for function_name in \\\n([\s\S]*?)\n\s*do/);

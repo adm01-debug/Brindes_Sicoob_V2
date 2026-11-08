@@ -9,6 +9,12 @@ export const requiredFunctions = [
   'sicoob-document-ingest',
   'sicoob-kit-quote',
   'sicoob-reorder',
+  'bi-copilot',
+  'comparison-ai-advisor',
+  'get-app-logs',
+  'get-visitor-info',
+  'secure-upload',
+  'auth-integrity-check',
 ];
 
 function getFunctions(payload, label) {
