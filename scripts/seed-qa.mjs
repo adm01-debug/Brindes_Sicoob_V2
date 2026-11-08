@@ -5,7 +5,7 @@ const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   console.error('Erro: VITE_SUPABASE_URL ou VITE_SUPABASE_PUBLISHABLE_KEY não definidos.');
-  process.exit(1);
+  process.exit(2);
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
