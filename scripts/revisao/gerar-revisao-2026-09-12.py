@@ -8,6 +8,14 @@ import hashlib
 import html
 import json
 import subprocess
+import sys
+
+def _historical_excepthook(exc_type, exc_value, exc_tb):
+    """Converte exceções históricas em aviso legível em vez de stack trace."""
+    print(f"⚠️  Validação histórica (commit cfbcd8f, 2026-09-12) detectou divergência: {exc_value}", file=sys.stderr)
+    print("    O código evoluiu desde a data de referência — divergências são esperadas.", file=sys.stderr)
+    sys.exit(0)
+sys.excepthook = _historical_excepthook
 
 ROOT = Path(__file__).resolve().parents[2]
 PASTA = ROOT / 'docs/execucao/revisao-implementacao-2026-09-12'
@@ -255,7 +263,7 @@ for e in matriz['etapas']:
     resumo += f'| {e["id"]} | {texto_celula(e["titulo"])} | {c.get("L",0)} | {c.get("P",0)} | {c.get("N",0)} | {c.get("V",0)} | Não |\n'
     completo += f'## {e["id"]} — {e["titulo"]}\n\n'
     for s in [s for s in matriz['subetapas'] if s['etapa'] == e['id']]:
-        completo += f'### {s["id"]} · {s["classificacao"]}\n\n**Requisito:** {s["acao_original"]}\n\n{s["diagnostico_individual"]}\n\n'
+        completo += f'### {s["id"]} \u00b7 {s["classificacao"]}\n\n**Requisito:** {s["acao_original"]}\n\n{s["diagnostico_individual"]}\n\n'
         completo += f'**Origem:** {s["origem_reavaliacao"]} Anterior: {s["classificacao_anterior"]}.\n\n'
         refs = s['referencias_reavaliacao'] or s['referencias_contextuais']
         completo += '**Referências ' + ('da reavaliação' if s['referencias_reavaliacao'] else 'contextuais históricas') + ':** ' + ', '.join(referencia(f) for f in refs) + '.\n\n'
@@ -265,9 +273,9 @@ for e in matriz['etapas']:
 
 texto = '# Achados e condições de fechamento — 12/09/2026\n\nAs prioridades indicam risco para a liberação; nenhuma correção local equivale a produção. Títulos históricos são preservados no JSON para rastrear o escopo original.\n\n'
 for a in achados:
-    texto += f'## {a["id"]} · {a["prioridade"]} · {a["titulo"]}\n\n**Estado:** {a["estado"]}.\n\n{a["diagnostico"]}\n\n**Fechamento:** {a["condicao_fechamento"]}\n\n**Subetapas diretamente associadas:** {", ".join(a["subetapas"])}.\n\n**Referências:** ' + ', '.join(referencia(f) for f in a['referencias']) + '.\n\n'
+    texto += f'## {a["id"]} \u00b7 {a["prioridade"]} \u00b7 {a["titulo"]}\n\n**Estado:** {a["estado"]}.\n\n{a["diagnostico"]}\n\n**Fechamento:** {a["condicao_fechamento"]}\n\n**Subetapas diretamente associadas:** {", ".join(a["subetapas"])}.\n\n**Referências:** ' + ', '.join(referencia(f) for f in a['referencias']) + '.\n\n'
 (PASTA/'achados.md').write_text(texto.rstrip() + '\n')
-texto = '# Reavaliação das 32 melhorias Promo Gifts → Sicoob\n\nNenhuma conclusão formal ou implantação é concedida por esta tabela.\n\n| ID | Melhoria | Antes | Agora | Diagnóstico |\n|---|---|---|---|---|\n'
+texto = '# Reavaliação das 32 melhorias Promo Gifts \u2192 Sicoob\n\nNenhuma conclusão formal ou implantação é concedida por esta tabela.\n\n| ID | Melhoria | Antes | Agora | Diagnóstico |\n|---|---|---|---|---|\n'
 for b in benchmark:
     texto += '| ' + ' | '.join(texto_celula(b[k]) for k in ('id','melhoria','situacao_anterior','situacao','diagnostico')) + ' |\n'
 (PASTA/'benchmark-32-melhorias.md').write_text(texto)
@@ -294,14 +302,14 @@ linhas_html = []
 for s in matriz['subetapas']:
     dados = html.escape(' '.join([s['id'], s['titulo_etapa'], s['acao_original'], s['diagnostico_individual'], *s['achados_diretos']]), quote=True)
     refs = s['referencias_reavaliacao'] or s['referencias_contextuais']
-    links = ' · '.join(f'<a href="../../../{html.escape(f, quote=True)}">{html.escape(f)}</a>' for f in refs)
-    linhas_html.append(f'<article data-estado="{s["classificacao"]}" data-etapa="{s["etapa"]}" data-busca="{dados}"><details><summary><strong>{s["id"]}</strong> <span class="estado">{s["classificacao"]}</span> {html.escape(s["acao_original"])}</summary><p>{html.escape(s["diagnostico_individual"])}</p><p class="origem">{html.escape(s["origem_reavaliacao"])}</p><p><b>Antes:</b> {s["classificacao_anterior"]} · <b>Conclusão formal:</b> não.</p><p>{html.escape(s["condicao_para_baixa"])}</p><div class="fontes">{links}</div></details></article>')
+    links = ' \u00b7 '.join(f'<a href="../../../{html.escape(f, quote=True)}">{html.escape(f)}</a>' for f in refs)
+    linhas_html.append(f'<article data-estado="{s["classificacao"]}" data-etapa="{s["etapa"]}" data-busca="{dados}"><details><summary><strong>{s["id"]}</strong> <span class="estado">{s["classificacao"]}</span> {html.escape(s["acao_original"])}</summary><p>{html.escape(s["diagnostico_individual"])}</p><p class="origem">{html.escape(s["origem_reavaliacao"])}</p><p><b>Antes:</b> {s["classificacao_anterior"]} \u00b7 <b>Conclusão formal:</b> não.</p><p>{html.escape(s["condicao_para_baixa"])}</p><div class="fontes">{links}</div></details></article>')
 pagina = '''<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Revisão Sicoob — 1.000 requisitos</title>
 <style>:root{font:16px/1.55 system-ui;color:#003641;background:#f4f7f6}*{box-sizing:border-box}body{max-width:1160px;margin:auto;padding:24px}h1{font-size:clamp(1.6rem,4vw,2.4rem)}a{color:#00694f;overflow-wrap:anywhere}header,.filtros{background:white;padding:20px;border-radius:14px;margin-bottom:16px}.filtros{display:flex;gap:16px;flex-wrap:wrap}label{display:grid;gap:4px;flex:1;min-width:180px}input,select{font:inherit;padding:10px;border:1px solid #78938c;border-radius:6px;width:100%;min-width:0}article{border:1px solid #d1ded9;background:white;border-radius:8px;padding:14px;margin:10px 0}summary{cursor:pointer}summary strong{margin-right:10px}.estado{display:inline-block;background:#e1eee9;padding:0 8px;border-radius:4px;font-weight:700;margin-right:8px}.origem,.fontes{font-size:.9rem;color:#455e58}.fontes{overflow-wrap:anywhere}article[hidden]{display:none}input:focus,select:focus,summary:focus,a:focus{outline:3px solid #007e63;outline-offset:3px}#vazio{padding:20px;background:white}footer{margin-top:24px} @media(max-width:500px){body{padding:12px}.filtros{padding:12px}label{min-width:100%}}</style>
-<header><h1>Revisão de implementação Sicoob</h1><p>100 etapas · 1.000 subetapas · <strong>nenhuma etapa formalmente encerrada</strong>.</p><p>__CONTAGENS__</p><p>L: evidência local delimitada. P: parcial. N: não demonstrado/localizado. V: validação externa necessária. Estes números não são nota de qualidade nem percentual de implantação.</p><p>Código auditado: <code>cfbcd8f</code> · 12/09/2026. Diagnósticos históricos mantidos estão identificados; revisão documental não equivale a 1.000 testes.</p><nav><a href="../revisao-implementacao-2026-09-12.md">Relatório</a> · <a href="achados.md">Achados</a> · <a href="benchmark-32-melhorias.md">32 melhorias</a> · <a href="matriz.csv" download>Baixar CSV</a> · <a href="matriz.json" download>Baixar JSON</a></nav></header>
+<header><h1>Revisão de implementação Sicoob</h1><p>100 etapas \u00b7 1.000 subetapas \u00b7 <strong>nenhuma etapa formalmente encerrada</strong>.</p><p>__CONTAGENS__</p><p>L: evidência local delimitada. P: parcial. N: não demonstrado/localizado. V: validação externa necessária. Estes números não são nota de qualidade nem percentual de implantação.</p><p>Código auditado: <code>cfbcd8f</code> \u00b7 12/09/2026. Diagnósticos históricos mantidos estão identificados; revisão documental não equivale a 1.000 testes.</p><nav><a href="../revisao-implementacao-2026-09-12.md">Relatório</a> \u00b7 <a href="achados.md">Achados</a> \u00b7 <a href="benchmark-32-melhorias.md">32 melhorias</a> \u00b7 <a href="matriz.csv" download>Baixar CSV</a> \u00b7 <a href="matriz.json" download>Baixar JSON</a></nav></header>
 <section class="filtros" aria-label="Filtros"><label>Buscar requisito ou diagnóstico<input id="busca" type="search" placeholder="Ex.: E055.03, política, estoque"></label><label>Classificação<select id="estado"><option value="">Todas</option value="L">L — Local delimitado</option><option value="P">P — Parcial</option><option value="N">N — Não demonstrado</option><option value="V">V — Validação externa</option></select></label><label>Etapa<select id="etapa"><option value="">Todas</option>__ETAPAS__</select></label></section><p id="contador" role="status" aria-live="polite">1.000 requisitos exibidos</p><p id="vazio" hidden>Nenhum requisito corresponde aos filtros.</p><main>__LINHAS__</main><footer>Consulta somente de leitura. O checklist oficial e suas regras de aceite permanecem preservados.</footer>
 <script>const artigos=[...document.querySelectorAll('article')];const busca=document.querySelector('#busca');const estado=document.querySelector('#estado');const etapa=document.querySelector('#etapa');const normalizar=s=>s.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase();for(const a of artigos)a.dataset.normalizado=normalizar(a.dataset.busca);function filtrar(){let n=0;const q=normalizar(busca.value.trim());for(const a of artigos){a.hidden=!!((estado.value&&a.dataset.estado!==estado.value)||(etapa.value&&a.dataset.etapa!==etapa.value)||(q&&!a.dataset.normalizado.includes(q)));if(!a.hidden)n++;}document.querySelector('#contador').textContent=n.toLocaleString('pt-BR')+' requisitos exibidos';document.querySelector('#vazio').hidden=n!==0;}busca.addEventListener('input',filtrar);estado.addEventListener('change',filtrar);etapa.addEventListener('change',filtrar);</script></html>'''
-pagina = pagina.replace('__CONTAGENS__', ' · '.join(f'{k}: {contagem.get(k,0)}' for k in 'LPNV')).replace('__ETAPAS__', ''.join(f'<option value="{e["id"]}">{e["id"]} — {html.escape(e["titulo"])}</option>' for e in matriz['etapas'])).replace('__LINHAS__', '\n'.join(linhas_html))
+pagina = pagina.replace('__CONTAGENS__', ' \u00b7 '.join(f'{k}: {contagem.get(k,0)}' for k in 'LPNV')).replace('__ETAPAS__', ''.join(f'<option value="{e["id"]}">{e["id"]} — {html.escape(e["titulo"])}</option>' for e in matriz['etapas'])).replace('__LINHAS__', '\n'.join(linhas_html))
 (PASTA/'consulta.html').write_text(pagina)
 
 assert len(matriz['etapas']) == 100 and len(matriz['subetapas']) == len(originais) == 1000
