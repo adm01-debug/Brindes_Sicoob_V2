@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Valida vínculo e limpeza de documentos Sicoob sem rede ou arquivos reais."""
 from pathlib import Path
 import json

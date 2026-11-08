@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /* global document, innerWidth, window */
 import { chromium } from '@playwright/test';
 import { createRequire } from 'node:module';
@@ -6,6 +7,14 @@ import assert from 'node:assert/strict';
 const require = createRequire(import.meta.url);
 const url = process.env.QA_BASE_URL ?? 'http://127.0.0.1:4178';
 if (!['127.0.0.1','localhost'].includes(new URL(url).hostname)) throw new Error('Esta simulação só pode usar servidor local.');
+
+// Verifica se o servidor QA está rodando antes de lançar o navegador
+try {
+  await fetch(`${url}/`, { signal: AbortSignal.timeout(3000) });
+} catch {
+  console.error(`❌ Servidor QA não está rodando em ${url}. Inicie com \`npm run preview\` ou configure QA_BASE_URL.`);
+  process.exit(1);
+}
 const pasta = 'docs/execucao/evidencias/visual';
 await mkdir(pasta, { recursive: true });
 const browser = await chromium.launch({ executablePath: process.env.QA_CHROMIUM_PATH, headless: true });

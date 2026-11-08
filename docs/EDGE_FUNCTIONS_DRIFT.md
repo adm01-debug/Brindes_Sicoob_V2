@@ -1,10 +1,10 @@
 
 # Relatório de Divergência de Edge Functions
-Data: 2026-05-03T14:12:33.158Z
+Data: 2026-11-08T05:06:52.416Z
 
 ## Resumo
-- Total reais (repo): 89
-- Total documentadas: 92
+- Total reais (repo): 106
+- Total documentadas: 109
 
 ## No Repositório mas ausentes no Inventário:
 - Nenhuma

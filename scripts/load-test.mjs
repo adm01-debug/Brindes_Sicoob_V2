@@ -3,6 +3,10 @@
  * Measures latency and stability under high concurrency.
  */
 
+if (!process.env.VITE_SUPABASE_URL) {
+  console.error('❌ VITE_SUPABASE_URL não configurada. Configure no .env antes de rodar o load test.');
+  process.exit(2);
+}
 const TARGET_URL = process.env.VITE_SUPABASE_URL + '/functions/v1/health-check';
 const CONCURRENCY = 50;
 const TOTAL_REQUESTS = 1000;

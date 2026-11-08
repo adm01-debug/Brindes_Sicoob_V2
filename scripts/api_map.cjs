@@ -1,4 +1,8 @@
 const fs = require('fs');
+if (!fs.existsSync('service_map.txt')) {
+  console.error('❌ service_map.txt não encontrado. Gere-o com: grep -rn -E "supabase\\.(rpc|from)" src/ > service_map.txt');
+  process.exit(2);
+}
 const serviceData = fs.readFileSync('service_map.txt', 'utf8');
 const lines = serviceData.split('\n');
 const map = {};
@@ -43,4 +47,11 @@ for (const [page, data] of Object.entries(map).sort()) {
     }
     markdown += '\n';
 }
-fs.writeFileSync('docs/API_DEPENDENCY_MAP.md', markdown);
+try {
+  fs.mkdirSync('docs', { recursive: true });
+  fs.writeFileSync('docs/API_DEPENDENCY_MAP.md', markdown);
+  console.log('✅ Mapa gerado em docs/API_DEPENDENCY_MAP.md');
+} catch (e) {
+  console.error('❌ Falha ao gravar docs/API_DEPENDENCY_MAP.md:', e.message);
+  process.exit(1);
+}

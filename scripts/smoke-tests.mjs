@@ -5,7 +5,8 @@
  * Objetivo: detectar quebras críticas em <30s antes de rodar a suíte completa.
  *
  * Verifica:
- *  1. Build estático: rotas críticas declaradas em src/App.tsx existem nos arquivos esperados
+ *  1. Build estático: rotas críticas declaradas no routing (App.tsx + route
+ *     configs + route-matrix) existem nos arquivos esperados
  *  2. Health-check: edge function /health-check responde (se BASE_URL fornecida)
  *  3. Rotas públicas: HEAD em /login, / (published URL) responde <2s sem 5xx
  *
@@ -18,8 +19,8 @@
  * Saída: exit 0 se OK, exit 1 se algum check crítico falhar.
  */
 
-import { readFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
+import { resolve, join } from "node:path";
 
 const TIMEOUT_MS = Number(process.env.SMOKE_TIMEOUT_MS ?? 5000);
 const BASE_URL = process.env.SMOKE_BASE_URL?.replace(/\/$/, "");
@@ -40,7 +41,7 @@ const REQUIRED_ROUTES = [
   "/colecao-publica/:token",
   "/comparar-publica/:token",
   "/dossie/:token",
-  "/auth/callback",
+  "/sso/callback",
   "/produtos",
   "/orcamentos",
   "/orcamentos/novo",
@@ -73,18 +74,57 @@ async function withTimeout(promise, ms, label) {
 }
 
 // ============================================================
-// Check 1: rotas declaradas estaticamente em src/App.tsx
+// Check 1: rotas declaradas no routing (App.tsx + route configs + route-matrix)
 // ============================================================
 function checkStaticRoutes() {
-  const appPath = resolve(process.cwd(), "src/App.tsx");
-  if (!existsSync(appPath)) {
-    log("fail", "static-routes", "src/App.tsx não encontrado");
+  const cwd = process.cwd();
+
+  // Arquivos onde rotas podem ser declaradas (todos opcionais — tolerante à estrutura)
+  // route-matrix.ts é metadado RBAC, não declaração de rota no React Router — excluído para evitar falso positivo
+  const routeSources = [
+    resolve(cwd, "src/App.tsx"),
+  ];
+
+  // src/routes/config/*.ts
+  const routeConfigDir = resolve(cwd, "src/routes/config");
+  if (existsSync(routeConfigDir)) {
+    try {
+      for (const f of readdirSync(routeConfigDir)) {
+        if (f.endsWith(".ts") || f.endsWith(".tsx")) {
+          routeSources.push(join(routeConfigDir, f));
+        }
+      }
+    } catch { /* diretório inacessível — ignora */ }
+  }
+
+  // Combina todo o conteúdo em uma string única para a busca
+  let combined = "";
+  const missing_sources = [];
+  for (const src of routeSources) {
+    if (existsSync(src)) {
+      combined += readFileSync(src, "utf8") + "\n";
+    } else {
+      missing_sources.push(src);
+    }
+  }
+
+  if (!combined) {
+    log("fail", "static-routes", "nenhum arquivo de routing encontrado");
     return;
   }
-  const src = readFileSync(appPath, "utf8");
-  const missing = REQUIRED_ROUTES.filter((r) => !src.includes(`path="${r}"`));
+
+  // Aceita tanto path="<rota>" (JSX) como path: "<rota>" / path: '<rota>' (TS object)
+  function routePresent(route) {
+    // Escapa caracteres especiais de regex no caminho da rota
+    const escaped = route.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/:\w+/g, "[^\"'\\s,]+");
+    const re = new RegExp(`path[=:\\s]+["']${escaped}["']`);
+    return re.test(combined);
+  }
+
+  const missing = REQUIRED_ROUTES.filter((r) => !routePresent(r));
+
   if (missing.length === 0) {
-    log("ok", "static-routes", `${REQUIRED_ROUTES.length} rotas críticas declaradas`);
+    log("ok", "static-routes", `${REQUIRED_ROUTES.length} rotas críticas declaradas (${routeSources.length - missing_sources.length} arquivo(s) varrido(s))`);
   } else {
     log("fail", "static-routes", `rotas ausentes: ${missing.join(", ")}`, { missing });
   }

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Valida documentos privados e aprovação versionada de arte sem rede."""
 from pathlib import Path
 import json

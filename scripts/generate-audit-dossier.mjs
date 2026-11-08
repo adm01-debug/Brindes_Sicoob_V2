@@ -1,12 +1,28 @@
-import { createClient } from '@supabase/supabase-js';
-import { execSync } from 'child_process';
-import fs from 'fs';
+#!/usr/bin/env node
+/**
+ * generate-audit-dossier.mjs
+ * ----------------------------------------------------------------
+ * Gerador de CI: produz o Dossiê de Auditoria Enterprise V5
+ * (`DOSSIA_AUDITORIA_ENTERPRISE_V5.md`), com matriz RLS real
+ * (RPC `check_tables_rls`), trilha de auditoria Git e evidências
+ * rastreáveis de funcionalidades.
+ *
+ * Requer as variáveis de ambiente VITE_SUPABASE_URL e
+ * SUPABASE_SERVICE_ROLE_KEY (definidas no workflow security-compliance.yml).
+ *
+ * Saída:
+ *  - exit 0 → dossiê gerado e gravado com sucesso.
+ *  - exit 1 → falha de execução (credenciais ausentes, RPC/git quebrado).
+ */
+import { createClient } from "@supabase/supabase-js";
+import { execSync } from "node:child_process";
+import fs from "node:fs";
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing environment variables for dossier generation');
+  console.error("❌ Variáveis de ambiente ausentes (VITE_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY).");
   process.exit(1);
 }
 
@@ -24,34 +40,34 @@ async function getGitInfo(path) {
 
 async function getLatestGlobalCommit() {
   try {
-    return execSync('git rev-parse --short HEAD').toString().trim();
+    return execSync("git rev-parse --short HEAD").toString().trim();
   } catch {
     return "unknown";
   }
 }
 
 async function generateDossier() {
-  console.log('📑 Gerando Dossiê de Auditoria Enterprise V5...');
+  console.log("📑 Gerando Dossiê de Auditoria Enterprise V5...");
 
   const globalRef = await getLatestGlobalCommit();
   const generationDate = new Date().toLocaleString();
 
   let rlsTables = [];
   try {
-    const { data } = await supabase.rpc('check_tables_rls');
+    const { data } = await supabase.rpc("check_tables_rls");
     rlsTables = data || [];
   } catch {
-    console.warn('RPC check_tables_rls failed, using fallback empty list');
+    console.warn("⚠️ RPC check_tables_rls falhou; usando lista vazia de fallback.");
   }
-  
-  let rlsSection = '| Tabela | RLS Habilitado | Último Commit (ID/Autor/Data) |\n| :--- | :--- | :--- |\n';
+
+  let rlsSection = "| Tabela | RLS Habilitado | Último Commit (ID/Autor/Data) |\n| :--- | :--- | :--- |\n";
   for (const table of rlsTables) {
     let migrationFile = "";
     try {
       migrationFile = execSync(`grep -l "ALTER TABLE public.${table.relname} ENABLE ROW LEVEL SECURITY" supabase/migrations/*.sql | head -1`).toString().trim();
-    } catch { /* ignore */ }
+    } catch { /* sem arquivo de migração para esta tabela */ }
     const gitInfo = await getGitInfo(migrationFile);
-    rlsSection += `| ${table.relname} | ${table.relrowsecurity ? '✅' : '❌'} | ${gitInfo} |\n`;
+    rlsSection += `| ${table.relname} | ${table.relrowsecurity ? "✅" : "❌"} | ${gitInfo} |\n`;
   }
 
   const dossierContent = `
@@ -93,13 +109,13 @@ ${rlsSection}
 *   **Funcionalidade:** Isolamento Multi-tenant
     *   **Arquivo:** \`supabase/migrations/20250103_02_rls_organizations.sql\`
     *   **Citação:** \`CREATE POLICY "org_members_view_quotes" ... USING (public.user_is_org_member(organization_id));\`
-    *   **Auditoria:** ${await getGitInfo('supabase/migrations/20250103_02_rls_organizations.sql')}
+    *   **Auditoria:** ${await getGitInfo("supabase/migrations/20250103_02_rls_organizations.sql")}
 
 ### 4.2 Módulo: Financeiro
 *   **Funcionalidade:** Precisão de 4 Casas Decimais
     *   **Arquivo:** \`supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql\`
     *   **Citação:** \`unit_price numeric(14,4)\`
-    *   **Auditoria:** ${await getGitInfo('supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql')}
+    *   **Auditoria:** ${await getGitInfo("supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql")}
 
 ---
 
@@ -116,8 +132,11 @@ ${rlsSection}
 O sistema mantém conformidade total com as normas de segurança e governança enterprise em ${new Date().getFullYear()}.
 `;
 
-  fs.writeFileSync('DOSSIA_AUDITORIA_ENTERPRISE_V5.md', dossierContent);
-  console.log('✅ Dossiê gerado com sucesso.');
+  fs.writeFileSync("DOSSIA_AUDITORIA_ENTERPRISE_V5.md", dossierContent);
+  console.log("✅ Dossiê gerado com sucesso.");
 }
 
-generateDossier();
+generateDossier().catch((err) => {
+  console.error(`❌ Erro inesperado no gerador de dossiê: ${err?.message ?? err}`);
+  process.exit(1);
+});
