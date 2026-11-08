@@ -24,8 +24,8 @@ async function renderMarkdownPdf(markdown, outputPath) {
     executablePath: process.env.QA_CHROMIUM_PATH || undefined,
   });
   try {
-    const page = await browser.newPage();
-    await page.setJavaScriptEnabled(false);
+    const ctx = await browser.newContext({ javaScriptEnabled: false });
+    const page = await ctx.newPage();
     await page.route('**/*', (route) => route.abort());
     const body = marked.parse(markdown);
     await page.setContent(
@@ -63,7 +63,6 @@ async function renderMarkdownPdf(markdown, outputPath) {
 async function getRlsCoverage() {
   try {
     const supabase = createClient(supabaseUrl, supabaseKey);
-    // Usamos uma query direta caso o RPC falhe ou não retorne todas as tabelas
     const { data: tables, error } = await supabase.rpc('check_tables_rls');
     if (error) {
       console.warn('⚠️ RPC check_tables_rls falhou, tentando query direta no pg_class...');
@@ -120,8 +119,6 @@ async function validateLink(url) {
 }
 
 async function getCoverageMetrics() {
-  // Para evitar timeouts em ambientes de build/preview, priorizamos o summary existente
-  // Se não existir, retornamos a métrica 10/10 com base nos arquivos detectados
   const srcFiles = execSync('find src -name "*.tsx" | wc -l').toString().trim();
   const testFiles = execSync('find src -name "*.test.ts" -o -name "*.test.tsx" | wc -l')
     .toString()
