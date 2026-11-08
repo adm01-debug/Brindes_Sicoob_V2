@@ -91,7 +91,7 @@ fixada: `0.9.73`, a mesma de `.devin/skills/graphify/.graphify_version`.
 
 - `README.md:173` diz "106 Edge Functions" e `:266` diz "104"; o real é **106 diretórios com `index.ts`**
   (109 entradas em `supabase/functions/`, descontando `_shared`, `tests` e `graphify-out`).
-- `README.md:178,252` dizem "534 migrations"; há **590** arquivos.
+- `README.md:178,252` dizem "534 migrations" e `README.md:349` diz "529"; há **590** arquivos.
 - `README.md:251` diz "35+ tabelas"; `docs/DATA_DICTIONARY.md:3` diz 63.
 - `README.md:271,274` lista edges `fetch-product-details`, `generate-pdf`, `send-email`, `tts-*` — nenhuma
   existe.

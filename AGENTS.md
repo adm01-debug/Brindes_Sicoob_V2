@@ -30,8 +30,9 @@ divergiu da realidade → corrija no mesmo PR do fix. Responda sempre em PT-BR.
   Só erro seu conta; erro herdado da `main` → "Próximos passos". A dívida de lint e de typecheck está em
   **zero** (`.eslint-baseline.json`, `.typecheck-baseline.json`): não há margem.
 - "Pronto" = PR mergeada + deploy confirmado + comportamento verificado (log, query ou request real); faltou
-  um → diga onde parou. Deploy do front **não é automático pelo CI** e tem publicador ambíguo — ver
-  `docs/agentes/servicos.md` antes de dizer que subiu.
+  um → diga onde parou. Deploy do front **não é automático pelo CI** — Vercel publica a `main` sem
+  esperar o CI (decidido 08/11/2026, ver `docs/agentes/servicos.md`) — confirme o deploy antes de dizer
+  que subiu.
 - Funcionalidade pronta = integrada ponta a ponta (rota registrada em `src/routes/config/`, entrada na UI,
   hook/serviço chamado, edge invocada **e no `edge-authz-manifest.ts`**, tabela com RLS, estados
   erro/loading/vazio, submit), sem mock, hardcode ou TODO. Pela metade não é pronto; não cabe na sessão →
@@ -82,10 +83,10 @@ divergiu da realidade → corrija no mesmo PR do fix. Responda sempre em PT-BR.
   conflito com PR de outro agente.
 - Conflito: rebase em `main`; `--force-with-lease` só na sua branch. `strict: true` → PR `BEHIND` não
   mergeia mesmo com CI verde: atualize a branch, nunca mexa no `strict`.
-- **PR só de `docs/**` ou `*.md` não fica mergeável**: `Analyze (javascript-typescript)` e `lighthouse` são
-  required checks mas têm `paths-ignore` no `pull_request` — os checks nunca reportam. Inclua algum arquivo
-  fora desses caminhos ou combine com o dono.
-- Merge = produção (Vercel/Lovable publicam a `main` sem esperar o CI): confira o deploy e reporte. CI
+- **PR só de `docs/**`/`*.md` mergeia normalmente** desde a correção de 08/11/2026: `codeql.yml`/
+  `lighthouse.yml` não têm mais `paths-ignore` no `pull_request`, então `Analyze (javascript-typescript)`
+  e `lighthouse` sempre reportam (detalhe em `docs/agentes/github-ci.md`).
+- Merge = produção (Vercel publica a `main` sem esperar o CI): confira o deploy e reporte. CI
   vermelha → leia o resumo da falha antes de qualquer patch; do seu merge → `fix:` em branch nova na mesma
   sessão.
 - Fim: link da PR + estado.
@@ -109,8 +110,8 @@ divergiu da realidade → corrija no mesmo PR do fix. Responda sempre em PT-BR.
   RLS ON em toda tabela nova; policy nova usa helper semântico, nunca `has_role(...,'admin')`.
 
 ## Serviços
-- **Deploy/Vercel/Lovable** — ler `docs/agentes/servicos.md` ao confirmar deploy ou mexer em env/domínio/CSP.
-  Dois publicadores declarados para a `main` sem decisão registrada; nenhum workflow publica o front. CSP
+- **Deploy/Vercel** — ler `docs/agentes/servicos.md` ao confirmar deploy ou mexer em env/domínio/CSP.
+  Vercel é o publicador oficial (decidido 08/11/2026); nenhum workflow publica o front. CSP
   duplicada em `vercel.json` e `public/_headers` — mexeu em uma, mexa na outra.
 - **Edge functions** — deploy só por `deploy-sicoob-functions.yml` (dispatch com `PUBLICAR`, allowlist de
   13 funções); as outras ~93 não sobem por ali. Confirme o run; nunca deploy manual.

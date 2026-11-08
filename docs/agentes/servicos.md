@@ -15,7 +15,7 @@ Havia dois publicadores declarados para a mesma branch sem decisão registrada; 
 | GitHub (API) | `homepage: https://brindes-sicoob-v2.vercel.app` |
 | `vercel.json` | rewrites de SPA e headers de segurança |
 | `supabase/functions/_shared/cors.ts:10,22` | aceita `https://brindes-sicoob-v2.vercel.app` e previews `^https://brindes-sicoob-v2(-[a-z0-9-]+)?\.vercel\.app$` |
-| `README.md:317-326` | **desatualizado** — ainda descreve o Lovable Cloud como publicador; corrigir separadamente |
+| `README.md` > "## 🚢 Deploy" | corrigido no mesmo commit (#234): já descreve Vercel como oficial |
 
 **Lovable Cloud não é mais o publicador.** Continua referenciado em `README.md` e na allowlist de CORS
 por histórico do projeto; desativar a integração no dashboard do Lovable é ação do dono (fora do
