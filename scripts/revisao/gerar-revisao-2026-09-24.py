@@ -8,11 +8,11 @@ import sys
 from collections import Counter
 
 def _historical_excepthook(exc_type, exc_value, exc_tb):
-    """Converte FileNotFoundError/KeyError históricos em aviso; re-lança outros erros."""
-    if exc_type in (FileNotFoundError, KeyError):
+    """Converte erros históricos de divergência em aviso; re-lança outros erros."""
+    if exc_type in (FileNotFoundError, KeyError, AssertionError):
         print(f"⚠️  Validação histórica (2026-09-24) detectou divergência: {exc_value}", file=sys.stderr)
         print("    O código evoluiu desde a data de referência — divergências são esperadas.", file=sys.stderr)
-        sys.exit(0)
+        sys.exit(1)
     import traceback
     traceback.print_exception(exc_type, exc_value, exc_tb)
     sys.exit(1)
