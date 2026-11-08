@@ -45,3 +45,4 @@
 - **Status:** ⏳ A Implementar
 - **Caminho:** `roadmap/ledger-integration`
 - **Trilha de Auditoria (Último Commit):** N/A (Sem commits)
+
