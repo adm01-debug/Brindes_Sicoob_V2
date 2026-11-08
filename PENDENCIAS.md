@@ -217,3 +217,28 @@ Branch Protection Sentinel, CodeQL, Migration Ledger Drift, Portal Sicoob, Depen
 | Migration Ledger Drift | Fingerprint de `20261022120000` calculado com `local_sha256` incorreto; novo digest correto: `e2815b0...` | Corrigido fingerprint no `migration-ledger-baseline.json` | #129 |
 | 5 CVEs high (vite ≤6.4.3) | GHSA-698v, GHSA-r825, GHSA-587h, GHSA-9jrq, GHSA-rq7h | `vite` 6.4.3 → 6.4.5 | #126 |
 | Qualidade contínua (`ci.yml`) — ECR rate limit | `toomanyrequests: Data limit exceeded` ao puxar `public.ecr.aws/supabase/postgres:17.6.1.063` em dois steps (scripts `simular-controles-auditoria.py` e `simular-acl-efetiva.py`) | Rate limit do ECR Public se dissipou naturalmente; run `39780447863` → **success** | automático |
+
+---
+
+# Atualização de pendências — 2026-10-31
+
+O inventário abaixo substitui os snapshots anteriores para o estado remoto da
+`main`. Nenhum valor de secret é registrado neste arquivo.
+
+## Falhas na última execução de cada workflow da `main`
+
+| Workflow | Evidência | Causa / ação pendente |
+|---|---|---|
+| Migration ledger drift | [run 41175713780](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41175713780) | O comparador terminou com exit 2 e registrou `Verificação indisponível (Error)`; a auditoria RLS seguinte passou sem findings. A mensagem original estava mascarada. PR #184 ajusta a redação sanitizada do erro, mas ainda falta execução posterior para identificar a causa real sem expor credenciais. |
+| Publicar funções Sicoob | [run 40772348102](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40772348102) | Supabase CLI retornou `No change found`; a função continuou na versão 5 e o verificador tratou a ausência de incremento como falha. PR #186 corrige esse falso negativo e exige existência, versão positiva e não regressiva. O deploy não foi repetido. |
+| Security Scan | [run 40602983158](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983158) | `npm audit` reportou vulnerabilidades altas em `undici` e `zod`. PR #185 contém a correção de dependências e passou os gates locais de audit e CodeQL; aguarda conclusão dos checks obrigatórios para merge. |
+| Qualidade contínua | [run 40602982964](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982964) | O job parou em `check:npm-audit` pelas mesmas duas vulnerabilidades altas antes dos demais gates. A correção está no PR #185; a execução local desta branch também reproduziu esse bloqueio. |
+| CodeQL | [run 40602983073](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983073) | `init` usava CodeQL 4.39.1 e `autobuild`/`analyze` 4.38.2; o job não produziu SARIF. PR #184 alinha as três actions, ainda sem confirmação final de execução verde na branch atualizada. |
+
+**Verdes no inventário da `main`:** Branch Protection Sentinel — [run 40602983038](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602983038); Enterprise Compliance & Audit Reporting — [run 40602982958](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40602982958); Portal Sicoob — [run 39868499315](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/39868499315). Os demais workflows dinâmicos de Dependabot consultados tiveram execuções mais recentes verdes, exceto o run histórico de `@vitest/mocker` já registrado acima.
+
+## Bloqueios externos e validação autenticada
+
+- A jornada E2E autenticada e a validação RLS remota dependem de projeto Supabase isolado de QA, environment `e2e-qa`, allowlist, credenciais por persona e token de cleanup. O responsável informou que vai configurar o ambiente; ainda falta confirmar a configuração e executar o workflow protegido. Não rerodar testes remotos de escrita antes dessa confirmação. O run [41183325196](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41183325196) expirou ao inserir uma canary; não é possível provar pelo log qual projeto recebeu a requisição ou se o insert teve efeito. Não afirmar que o banco ficou intacto.
+- A migração de dependências está em PR #185; os checks E2E falhos/cancelados e a proteção de merge continuam sendo avaliados. PR #184 prepara o isolamento de E2E e correções CodeQL/ledger; PR #186 ajusta a confirmação idempotente de deploy. Nenhum deles deve ser considerado integrado à `main` antes do merge protegido.
+- A tentativa de leitura ao Supabase canônico expirou duas vezes; nenhuma consulta SQL ou mutação remota foi executada por esta auditoria. Migrations e deploy de funções não foram executados.
