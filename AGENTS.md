@@ -51,6 +51,17 @@ git worktree prune
 branch → commit (--no-verify) → push → PR via GitHub → CI → merge squash → delete branch.
 Workers/editores NUNCA mexem em git/branches — só o orquestrador.
 
+**Fechar o ciclo é obrigatório.** Abrir PR não é entregar. Após `gh pr create`:
+
+1. `gh pr merge <n> --auto --squash` — o repo tem auto-merge ligado; o PR entra sozinho quando os 10 checks obrigatórios ficarem verdes e todas as conversas estiverem resolvidas.
+2. Acompanhar até `MERGED`. Check vermelho → diagnosticar (`gh run view <id> --log-failed`) e corrigir no mesmo PR. Falha de infra (ECR `toomanyrequests`, timeout de Supabase) → `gh run rerun <id> --failed`.
+3. Comentário de bot (qodo/codex/copilot) → responder e resolver o thread; "High" de segurança exige correção ou justificativa técnica.
+4. Só então fazer o cleanup do worktree (passo 4 acima).
+
+**Limite de fila:** não abrir PR novo enquanto houver mais de 5 PRs abertos do mesmo autor. Prioridade é esvaziar a fila, não aumentá-la.
+
+**Fazer PR pequeno.** Um assunto por PR. PR com >30 arquivos misturando CI + feature + docs é rejeitado na triagem.
+
 ## Regras de trabalho
 
 1. **Aja como dev sênior e decida.** Escolha de biblioteca, nome de arquivo, abordagem de fix: decida e siga. Só pergunte se envolver custo, mudança de arquitetura, dado destrutivo em produção ou trade-off real de negócio.
