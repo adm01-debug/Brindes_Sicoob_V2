@@ -53,8 +53,8 @@ await cenario('A04', 'Bug corrigido: autosave não atualiza lastSavedAt quando S
     useCallback(fn) { callbacks.push(fn); return fn; },
   };
   const resposta = { data: null, error: { message: 'Falha simulada de persistência' } };
-  // Stub cobre toda a cadeia de chamadas do persistAutoSave (insert/update + select + single)
-  const consulta = { update() { return this; }, insert() { return this; }, eq() { return this; }, select() { return this; }, single() { return this; }, then(resolver) { resolver(resposta); } };
+  // Stub cobre toda a cadeia de chamadas do persistAutoSave (insert/update + select + single/maybeSingle)
+  const consulta = { update() { return this; }, insert() { return this; }, eq() { return this; }, select() { return this; }, single() { return this; }, maybeSingle() { return this; }, then(resolver) { resolver(resposta); } };
   const { useKitAutoSave } = carregar('src/hooks/useKitAutoSave.ts', {
     react, '@/integrations/supabase/client': { supabase: { from: () => consulta } },
     '@/contexts/AuthContext': { useAuth: () => ({ user: { id: 'usuario-simulado' } }) },
@@ -70,18 +70,22 @@ await cenario('A04', 'Bug corrigido: autosave não atualiza lastSavedAt quando S
 
 await cenario('A05', 'Bug corrigido: estoque de cor diferente não cobre mais a falta da variante selecionada', async () => {
   const { useKitStockValidation } = carregar('src/hooks/useKitStockValidation.ts', {
-    '@tanstack/react-query': { useQuery: () => ({ data: [
-      { product_id: 'produto', color_name: 'Verde', stock_quantity: 0 },
-      { product_id: 'produto', color_name: 'Azul', stock_quantity: 100 },
-    ], isLoading: false }) },
+    '@tanstack/react-query': { useQuery: () => ({ data: {
+      variants: [
+        { id: 'v-verde', product_id: 'produto', stock_quantity: 0, color_name: 'Verde' },
+        { id: 'v-azul', product_id: 'produto', stock_quantity: 100, color_name: 'Azul' },
+      ],
+      products: [],
+    }, isLoading: false }) },
     '@/lib/external-db/bridge': { invokeExternalDb() { throw new Error('Rede proibida nesta simulação'); } },
   });
-  const resultado = useKitStockValidation([{ id: 'produto', name: 'Copo verde', sku: 'V', selectedColor: { name: 'Verde' }, quantity: 1 }], null, 50);
-  // Fix confirmado: verde=0 agora gera alerta de estoque insuficiente (não usa azul=100 para cobrir)
-  assert.equal(resultado.hasStockIssues, true, 'hasStockIssues deve ser true quando a cor selecionada está sem estoque');
+  // selectedVariantId: 'v-verde' força lookup em byVariant (stock=0), não byProduct (soma verde+azul=100)
+  const resultado = useKitStockValidation([{ id: 'produto', name: 'Copo verde', sku: 'V', selectedVariantId: 'v-verde', quantity: 1 }], null, 50);
+  // Fix confirmado: verde=0 gera alerta de estoque insuficiente; byProduct teria azul=100 mas byVariant isola a variante correta
+  assert.equal(resultado.hasStockIssues, true, 'hasStockIssues deve ser true quando a variante selecionada está sem estoque');
   assert.ok(resultado.alerts.length > 0, 'Deve haver alerta de estoque insuficiente para Verde');
   assert.equal(resultado.alerts[0].itemId, 'produto');
-  return 'Fix confirmado: 50 unidades solicitadas; verde=0 e azul=100; hook retorna hasStockIssues=true com alerta para o produto; azul não cobre mais a falta de verde.';
+  return 'Fix confirmado: 50 unidades solicitadas; v-verde=0 e v-azul=100; hook retorna hasStockIssues=true com alerta para o produto; azul não cobre mais a falta de verde.';
 }, 'lacuna_corrigida');
 
 await cenario('A05b', 'Bug corrigido: campo error agora exposto no contrato quando consulta falha', async () => {

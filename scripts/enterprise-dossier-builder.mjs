@@ -10,7 +10,7 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('❌ VITE_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são necessários. Configure as variáveis de ambiente antes de executar este script.');
-  process.exit(0);
+  process.exit(2);
 }
 
 function escapeMarkdownText(value) {
