@@ -47,4 +47,11 @@ for (const [page, data] of Object.entries(map).sort()) {
     }
     markdown += '\n';
 }
-fs.writeFileSync('docs/API_DEPENDENCY_MAP.md', markdown);
+try {
+  fs.mkdirSync('docs', { recursive: true });
+  fs.writeFileSync('docs/API_DEPENDENCY_MAP.md', markdown);
+  console.log('✅ Mapa gerado em docs/API_DEPENDENCY_MAP.md');
+} catch (e) {
+  console.error('❌ Falha ao gravar docs/API_DEPENDENCY_MAP.md:', e.message);
+  process.exit(1);
+}

@@ -16,7 +16,10 @@ if (!existsSync(assetsDirectory)) {
 }
 
 const files = (await readdir(assetsDirectory)).filter(file => file.endsWith('.js'));
-assert.ok(files.length > 0, 'Nenhum chunk JavaScript foi encontrado em dist/assets.');
+if (files.length === 0) {
+  console.error('❌ Nenhum chunk JavaScript encontrado em dist/assets. Execute `npm run build` antes deste script.');
+  process.exit(1);
+}
 
 const chunks = await Promise.all(files.map(async file => {
   const content = await readFile(path.join(assetsDirectory, file));
