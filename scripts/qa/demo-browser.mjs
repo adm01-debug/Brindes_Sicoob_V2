@@ -16,7 +16,7 @@ try {
   await fetch(`${baseUrl}/`, { signal: AbortSignal.timeout(3000) });
 } catch {
   console.error(`❌ Servidor QA não está rodando em ${baseUrl}. Inicie com \`npm run preview\` ou configure QA_BASE_URL.`);
-  process.exit(0);
+  process.exit(1);
 }
 
 const evidenceDirectory = 'docs/execucao/evidencias/visual';

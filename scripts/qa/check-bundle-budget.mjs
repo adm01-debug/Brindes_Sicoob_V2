@@ -12,7 +12,7 @@ const warningLimitBytes = 500 * 1024;
 import { existsSync } from 'node:fs';
 if (!existsSync(assetsDirectory)) {
   console.error(`❌ dist/assets não encontrado. Execute \`npm run build\` antes de rodar este script.`);
-  process.exit(0);
+  process.exit(1);
 }
 
 const files = (await readdir(assetsDirectory)).filter(file => file.endsWith('.js'));

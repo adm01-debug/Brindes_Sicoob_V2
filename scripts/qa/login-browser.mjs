@@ -13,7 +13,7 @@ try {
   await fetch(`${url}/`, { signal: AbortSignal.timeout(3000) });
 } catch {
   console.error(`❌ Servidor QA não está rodando em ${url}. Inicie com \`npm run preview\` ou configure QA_BASE_URL.`);
-  process.exit(0);
+  process.exit(1);
 }
 const pasta = 'docs/execucao/evidencias/visual';
 await mkdir(pasta, { recursive: true });

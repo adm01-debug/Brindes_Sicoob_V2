@@ -23,10 +23,10 @@ function carregar(arquivo, dependencias = {}) {
   }, { filename: arquivo, timeout: 5000 });
   return exports;
 }
-async function cenario(id, descricao, executar) {
+async function cenario(id, descricao, executar, tipo = 'lacuna_reproduzida') {
   try {
     const observado = await executar();
-    resultados.push({ id, descricao, resultado: 'lacuna_reproduzida', observado });
+    resultados.push({ id, descricao, resultado: tipo, observado });
   } catch (err) {
     // Lacuna pode ter sido corrigida ou dependências mudaram — registra sem travar o script
     resultados.push({ id, descricao, resultado: 'cenario_nao_reproduzido', motivo: err.message });
@@ -118,7 +118,7 @@ await cenario('A03', 'Componente de recompra navega para rota de orçamentos (la
   const rotas = fs.readdirSync(path.join(raiz, 'src/routes/config')).filter(f => /\.tsx?$/.test(f)).map(f => fs.readFileSync(path.join(raiz, 'src/routes/config', f), 'utf8')).join('\n');
   assert.ok(/path[=:\s]+["']\/orcamentos/.test(rotas), 'Rota /orcamentos não encontrada no config — lacuna de rota ativa.');
   return `Componente navega para ${destinos[0]} e a rota /orcamentos está registrada; lacuna original de /pedidos/ foi corrigida.`;
-});
+}, 'lacuna_corrigida');
 
 const relatorio = { escopo: 'Simulação local com código real transpilado e dependências controladas; não equivale a E2E, SQL remoto ou exploração em produção.', cenarios: resultados.length, resultados };
 process.stdout.write(`${JSON.stringify(relatorio, null, 2)}\n`);
