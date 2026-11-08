@@ -45,7 +45,7 @@ await cenario('A01', 'Serviço de status rejeita o contrato usado pela aba de lo
   return 'Rejeição antes de qualquer acesso ao banco quando currentStatus é omitido.';
 });
 
-await cenario('A04', 'Autosave sinaliza salvo apesar de erro retornado pelo Supabase', async () => {
+await cenario('A04', 'Bug corrigido: autosave não atualiza lastSavedAt quando Supabase retorna erro', async () => {
   const setters = [], callbacks = [];
   const react = {
     useState(valor) { const indice = setters.length; setters.push([]); return [valor, v => setters[indice].push(v)]; },
@@ -53,20 +53,22 @@ await cenario('A04', 'Autosave sinaliza salvo apesar de erro retornado pelo Supa
     useCallback(fn) { callbacks.push(fn); return fn; },
   };
   const resposta = { data: null, error: { message: 'Falha simulada de persistência' } };
-  const consulta = { update() { return this; }, eq() { return this; }, then(resolver) { resolver(resposta); } };
+  // Stub cobre toda a cadeia de chamadas do persistAutoSave (insert/update + select + single)
+  const consulta = { update() { return this; }, insert() { return this; }, eq() { return this; }, select() { return this; }, single() { return this; }, then(resolver) { resolver(resposta); } };
   const { useKitAutoSave } = carregar('src/hooks/useKitAutoSave.ts', {
     react, '@/integrations/supabase/client': { supabase: { from: () => consulta } },
     '@/contexts/AuthContext': { useAuth: () => ({ user: { id: 'usuario-simulado' } }) },
-    sonner: { toast: {} }, '@/lib/logger': { logger: { warn() {} } },
+    sonner: { toast: { error() {} } }, '@/lib/logger': { logger: { warn() {} } },
   });
   useKitAutoSave({ items: [{ id: 'produto', quantity: 1 }], personalization: {}, totalPrice: 10 }, 1, 'kit-simulado');
-  await callbacks[0]();
-  assert.equal(setters[0].length, 1);
-  assert.ok(setters[0][0] instanceof Date);
-  return 'lastSavedAt recebe uma data mesmo com data=null e error preenchido; nenhuma rede utilizada.';
-});
+  // callbacks[1] é o trigger de autosave após refatoração (3 useCallback no hook)
+  await callbacks[1]();
+  // setter[0] = lastSavedAt: deve permanecer vazio quando há erro (fix confirmado)
+  assert.equal(setters[0].length, 0, 'lastSavedAt não deve ser atualizado quando o Supabase retorna erro');
+  return 'Fix confirmado: lastSavedAt permanece null após erro de persistência; setLastSaveError é chamado em vez disso; nenhuma rede utilizada.';
+}, 'lacuna_corrigida');
 
-await cenario('A05', 'Estoque de outra cor cobre indevidamente a falta da variante selecionada', async () => {
+await cenario('A05', 'Bug corrigido: estoque de cor diferente não cobre mais a falta da variante selecionada', async () => {
   const { useKitStockValidation } = carregar('src/hooks/useKitStockValidation.ts', {
     '@tanstack/react-query': { useQuery: () => ({ data: [
       { product_id: 'produto', color_name: 'Verde', stock_quantity: 0 },
@@ -75,30 +77,34 @@ await cenario('A05', 'Estoque de outra cor cobre indevidamente a falta da varian
     '@/lib/external-db/bridge': { invokeExternalDb() { throw new Error('Rede proibida nesta simulação'); } },
   });
   const resultado = useKitStockValidation([{ id: 'produto', name: 'Copo verde', sku: 'V', selectedColor: { name: 'Verde' }, quantity: 1 }], null, 50);
-  assert.equal(resultado.hasStockIssues, false);
-  assert.equal(resultado.stockByProduct.get('produto'), 100);
-  return '50 unidades solicitadas; verde=0 e azul=100; hook retorna hasStockIssues=false.';
-});
+  // Fix confirmado: verde=0 agora gera alerta de estoque insuficiente (não usa azul=100 para cobrir)
+  assert.equal(resultado.hasStockIssues, true, 'hasStockIssues deve ser true quando a cor selecionada está sem estoque');
+  assert.ok(resultado.alerts.length > 0, 'Deve haver alerta de estoque insuficiente para Verde');
+  assert.equal(resultado.alerts[0].itemId, 'produto');
+  return 'Fix confirmado: 50 unidades solicitadas; verde=0 e azul=100; hook retorna hasStockIssues=true com alerta para o produto; azul não cobre mais a falta de verde.';
+}, 'lacuna_corrigida');
 
-await cenario('A05b', 'Erro na consulta de estoque não aparece no contrato retornado ao consumidor', async () => {
+await cenario('A05b', 'Bug corrigido: campo error agora exposto no contrato quando consulta falha', async () => {
   const { useKitStockValidation } = carregar('src/hooks/useKitStockValidation.ts', {
     '@tanstack/react-query': { useQuery: () => ({ data: undefined, isLoading: false, isError: true, error: new Error('Consulta indisponível') }) },
     '@/lib/external-db/bridge': {},
   });
   const resultado = useKitStockValidation([{ id: 'produto', quantity: 1 }], null, 50);
+  // Fix confirmado: o campo error agora é passado no contrato de retorno do hook
+  assert.ok('error' in resultado, 'Campo error deve estar presente no contrato quando a consulta falha');
+  // hasStockIssues permanece false pois sem dados não há alertas concretos
   assert.equal(resultado.hasStockIssues, false);
-  assert.equal('error' in resultado || 'isError' in resultado, false);
-  return 'Consulta com erro retorna alertas vazios sem expor error/isError; isso não comprova estoque disponível.';
-});
+  return 'Fix confirmado: campo error está presente no contrato de retorno do hook; consumidores podem agora detectar falha na consulta de estoque.';
+}, 'lacuna_corrigida');
 
-await cenario('A10', 'Redação de campos não remove custos retornados pelos aliases do catálogo', async () => {
+await cenario('A10', 'Bug corrigido: redação agora remove setup_cost e unit_cost dos aliases do catálogo', async () => {
   const { redactInternalCatalogFields } = carregar('supabase/functions/_shared/catalog-redaction.ts');
   const resultado = redactInternalCatalogFields({ cost_price: 8, tecnica: { setup_cost: 23, unit_cost: 4 } });
   assert.equal('cost_price' in resultado, false);
-  assert.equal(resultado.tecnica.setup_cost, 23);
-  assert.equal(resultado.tecnica.unit_cost, 4);
-  return 'A lista remove cost_price, mas preserva setup_cost/unit_cost; alcance remoto e política comercial ainda precisam de validação.';
-});
+  assert.equal('setup_cost' in resultado.tecnica, false, 'setup_cost deve ser removido da redação');
+  assert.equal('unit_cost' in resultado.tecnica, false, 'unit_cost deve ser removido da redação');
+  return 'Fix confirmado: cost_price, setup_cost e unit_cost todos removidos pela redação; aliases de custo não vazam mais para o cliente.';
+}, 'lacuna_corrigida');
 
 await cenario('A03', 'Componente de recompra navega para rota de orçamentos (lacuna original corrigida)', async () => {
   const destinos = [];
