@@ -21,13 +21,22 @@ await runCli(
     examples: ['node scripts/validate-e2e-target.mjs'],
   },
   async ({ values, log }) => {
-    const { projectId } = validateE2ETarget({
-      url: process.env.E2E_SUPABASE_URL,
-      projectId: process.env.E2E_SUPABASE_PROJECT_ID,
-      allowedProjectId: process.env.E2E_ALLOWED_PROJECT_ID,
-      publishableKey: process.env.E2E_SUPABASE_PUBLISHABLE_KEY,
-      serviceRoleKey: process.env.E2E_SUPABASE_SERVICE_ROLE_KEY,
-    });
+    let result;
+    try {
+      result = validateE2ETarget({
+        url: process.env.E2E_SUPABASE_URL,
+        projectId: process.env.E2E_SUPABASE_PROJECT_ID,
+        allowedProjectId: process.env.E2E_ALLOWED_PROJECT_ID,
+        publishableKey: process.env.E2E_SUPABASE_PUBLISHABLE_KEY,
+        serviceRoleKey: process.env.E2E_SUPABASE_SERVICE_ROLE_KEY,
+      });
+    } catch (err) {
+      if (err.message === 'Configuração obrigatória do destino E2E ausente.') {
+        return { exitCode: 2, message: err.message };
+      }
+      throw err;
+    }
+    const { projectId } = result;
 
     if (values.json) {
       console.log(JSON.stringify({ projectId }, null, 2));

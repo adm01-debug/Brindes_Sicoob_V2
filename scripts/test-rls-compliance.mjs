@@ -12,7 +12,7 @@ try {
   validateE2ETarget({ url, projectId, allowedProjectId, publishableKey, serviceRoleKey });
 } catch (err) {
   console.error(`❌ ${err.message}`);
-  process.exit(1);
+  process.exit(err.message === 'Configuração obrigatória do destino E2E ausente.' ? 2 : 1);
 }
 
 const client = (key) =>
