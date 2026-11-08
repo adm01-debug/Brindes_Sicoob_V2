@@ -36,6 +36,11 @@ jobs:
       - name: Instalar dependências reproduzíveis
         run: npm ci --no-audit --no-fund
 
+      - name: Integridade das instruções para agentes (AGENTS.md + docs/agentes/)
+        run: |
+          git fetch --no-tags --depth=1 origin main
+          AGENTS_MD_BASE=FETCH_HEAD npm run check:agents-md
+
       - name: Bloquear regressões conhecidas de tipagem
         run: npm run typecheck:baseline
 
