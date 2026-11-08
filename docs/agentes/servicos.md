@@ -2,28 +2,29 @@
 
 Ler quando for confirmar um deploy, mexer em env var de hospedagem, domínio, CSP ou integração externa.
 
-## Deploy do front — ambiguidade aberta, não resolvida
+## Deploy do front — Vercel é o publicador oficial (decidido em 08/11/2026)
 
-**Há dois publicadores declarados para a mesma branch e nenhuma decisão registrada.** Antes de afirmar
-que algo "subiu", diga por qual trilha e com que evidência.
+Havia dois publicadores declarados para a mesma branch sem decisão registrada; o dono decidiu:
+**Vercel** (projeto `brindes-sicoob-v2`, team `juca1`) é o publicador oficial da `main`. Merge em
+`main` = deploy automático em produção, **sem esperar o CI** — confirme os checks antes de mergear
+(risco real e já registrado: "50 merges com CI vermelha já foram para produção").
 
 | Fonte | O que diz |
 |---|---|
-| `README.md:317-326` | "O deploy é gerenciado automaticamente pelo **Lovable Cloud**"; produção = `https://criar-together-now.lovable.app`, preview = `https://id-preview--*.lovable.app` |
-| `docs/DEPLOYMENT.md:10-12` | "Não existe script `npm run deploy`. A publicação do frontend depende do provedor configurado para o projeto e deve ser comprovada pelo respectivo deploy e smoke test" — **não nomeia o provedor** |
+| `docs/DEPLOYMENT.md` | registra a decisão oficial |
 | GitHub (API) | `homepage: https://brindes-sicoob-v2.vercel.app` |
-| `vercel.json` | existe na raiz, com rewrites de SPA e headers de segurança |
+| `vercel.json` | rewrites de SPA e headers de segurança |
 | `supabase/functions/_shared/cors.ts:10,22` | aceita `https://brindes-sicoob-v2.vercel.app` e previews `^https://brindes-sicoob-v2(-[a-z0-9-]+)?\.vercel\.app$` |
+| `README.md:317-326` | **desatualizado** — ainda descreve o Lovable Cloud como publicador; corrigir separadamente |
 
-Pendência explícita já registrada:
-`docs/plano-implementacao/plano-encerramento-100-etapas-20261001/rastreabilidade-250.json:4323` —
-"Definir em docs/DEPLOYMENT.md quem é produção: Vercel ou Lovable. Hoje dois publicadores para o mesmo
-branch." Risco associado (`:4305`, marcado como **não revalidado** em `:4307`): "Vercel publica main sem
-esperar CI… 50 merges com CI vermelha já foram para produção".
+**Lovable Cloud não é mais o publicador.** Continua referenciado em `README.md` e na allowlist de CORS
+por histórico do projeto; desativar a integração no dashboard do Lovable é ação do dono (fora do
+alcance de qualquer agente via MCP neste repo) — só desative quando confirmar que nada mais depende
+dela (previews antigos, por exemplo).
 
-**Nenhum dos 13 workflows publica o front.** Merge em `main` dispara o publicador externo (integração
-Vercel e/ou Lovable), não o CI. "Vercel Agent Review" aparece nos checks como `neutral` por billing
-desabilitado (`PENDENCIAS.md:326`).
+**Nenhum dos 13 workflows publica o front.** Merge em `main` dispara o Vercel direto, não o CI.
+"Vercel Agent Review" aparece nos checks como `neutral` por billing desabilitado
+(`PENDENCIAS.md:326`).
 
 ### Deploy de backend — manual e com confirmação
 

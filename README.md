@@ -314,16 +314,16 @@ supabase/
 
 ## 🚢 Deploy
 
-O deploy é gerenciado automaticamente pelo **Lovable Cloud**:
+O publicador oficial do frontend é o **Vercel** (decisão de 08/11/2026 — ver `docs/DEPLOYMENT.md`):
 
-1. Push para a branch principal
-2. Build automático via Vite
-3. Edge Functions deployadas automaticamente
-4. Preview disponível em URL única
+1. Merge em `main` → build automático via Vite → deploy em produção, **sem esperar o CI**.
+2. Preview automático por PR.
+3. Edge Functions **não** são automáticas: só via workflow dedicado, allowlist de 13 funções —
+   ver `docs/DEPLOYMENT.md` > "Publicar Edge Functions Sicoob".
 
 ### URLs
-- **Preview**: `https://id-preview--*.lovable.app`
-- **Produção**: `https://criar-together-now.lovable.app`
+- **Produção**: `https://brindes-sicoob-v2.vercel.app`
+- **Preview**: `https://brindes-sicoob-v2-<hash>-juca1.vercel.app` (por PR)
 
 ---
 
