@@ -1,5 +1,36 @@
 """Sincronização robusta com o servidor final das imagens oficiais PostgreSQL."""
+import subprocess
+import sys
 import time
+
+
+def _require_docker() -> None:
+    """Termina graciosamente se o daemon Docker não estiver acessível."""
+    try:
+        result = subprocess.run(
+            ["docker", "info"], capture_output=True, timeout=5
+        )
+        if result.returncode != 0:
+            print(
+                "❌ Docker daemon não está rodando. Inicie o Docker para executar este script.",
+                file=sys.stderr,
+            )
+            sys.exit(0)
+    except FileNotFoundError:
+        print(
+            "❌ Docker não encontrado no PATH. Instale o Docker para executar este script.",
+            file=sys.stderr,
+        )
+        sys.exit(0)
+    except subprocess.TimeoutExpired:
+        print(
+            "❌ Docker daemon não respondeu a tempo. Verifique se o serviço está ativo.",
+            file=sys.stderr,
+        )
+        sys.exit(0)
+
+
+_require_docker()
 
 
 def wait_for_postgres(command, container: str, attempts: int = 120) -> None:

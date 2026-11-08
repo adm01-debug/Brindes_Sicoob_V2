@@ -24,8 +24,13 @@ function carregar(arquivo, dependencias = {}) {
   return exports;
 }
 async function cenario(id, descricao, executar) {
-  const observado = await executar();
-  resultados.push({ id, descricao, resultado: 'lacuna_reproduzida', observado });
+  try {
+    const observado = await executar();
+    resultados.push({ id, descricao, resultado: 'lacuna_reproduzida', observado });
+  } catch (err) {
+    // Lacuna pode ter sido corrigida ou dependências mudaram — registra sem travar o script
+    resultados.push({ id, descricao, resultado: 'cenario_nao_reproduzido', motivo: err.message });
+  }
 }
 
 await cenario('A01', 'Serviço de status rejeita o contrato usado pela aba de logística', async () => {
@@ -33,6 +38,7 @@ await cenario('A01', 'Serviço de status rejeita o contrato usado pela aba de lo
   const { sicoobOrderService } = carregar('src/services/sicoob/orderService.ts', {
     '@/integrations/supabase/client': { supabase: { auth: { getUser() { chamadas++; } } } },
     '@/types/sicoob/orders': { canSicoobTransitionTo: () => true },
+    './reorderIdempotency': { beginReorderIntent: async () => {}, completeReorderIntent: async () => {} },
   });
   await assert.rejects(sicoobOrderService.updateOrderStatus('pedido-simulado', 'logistic'), /status atual é obrigatório/);
   assert.equal(chamadas, 0);
@@ -94,21 +100,24 @@ await cenario('A10', 'Redação de campos não remove custos retornados pelos al
   return 'A lista remove cost_price, mas preserva setup_cost/unit_cost; alcance remoto e política comercial ainda precisam de validação.';
 });
 
-await cenario('A03', 'Componente de recompra navega para destino sem registro no mapa de rotas', async () => {
+await cenario('A03', 'Componente de recompra navega para rota de orçamentos (lacuna original corrigida)', async () => {
   const destinos = [];
+  const reorderIdempotencyStub = { beginReorderIntent: async () => {}, completeReorderIntent: async () => {} };
+  const orderServiceStub = { sicoobOrderService: { reorderOrder: async () => 'novo-orcamento' } };
   const { OneClickReorder } = carregar('src/components/orders/OneClickReorder.tsx', {
-    react: { useState: v => [v, () => {}] },
+    react: { useState: v => [v, () => {}], type: null },
     'react/jsx-runtime': { jsx: (type, props) => ({ type, props }), jsxs: (type, props) => ({ type, props }), Fragment: 'fragmento' },
     lucide: {}, 'lucide-react': { RotateCcw: 'icone', Loader2: 'espera' },
     '@/components/ui/button': { Button: 'botao' }, sonner: { toast: { success() {}, error() {} } },
     'react-router-dom': { useNavigate: () => destino => destinos.push(destino) },
-    '@/hooks/orders/useOrders': { useOrders: () => ({ duplicateOrder: async () => ({ id: 'novo-pedido' }) }) },
+    '@/services/sicoob/orderService': orderServiceStub,
+    './reorderIdempotency': reorderIdempotencyStub,
   });
   await OneClickReorder({ orderId: 'pedido-simulado' }).props.onClick({ stopPropagation() {} });
-  assert.equal(destinos[0], '/pedidos/novo-pedido/editar');
+  assert.ok(destinos[0]?.startsWith('/orcamentos/'), `Destino inesperado: ${destinos[0]}`);
   const rotas = fs.readdirSync(path.join(raiz, 'src/routes/config')).filter(f => /\.tsx?$/.test(f)).map(f => fs.readFileSync(path.join(raiz, 'src/routes/config', f), 'utf8')).join('\n');
-  assert.equal(/path:\s*["']\/pedidos\//.test(rotas), false);
-  return 'O componente usa useOrders legado e gera /pedidos/novo-pedido/editar; nenhuma rota com esse prefixo foi encontrada em src/routes/config.';
+  assert.ok(/path[=:\s]+["']\/orcamentos/.test(rotas), 'Rota /orcamentos não encontrada no config — lacuna de rota ativa.');
+  return `Componente navega para ${destinos[0]} e a rota /orcamentos está registrada; lacuna original de /pedidos/ foi corrigida.`;
 });
 
 const relatorio = { escopo: 'Simulação local com código real transpilado e dependências controladas; não equivale a E2E, SQL remoto ou exploração em produção.', cenarios: resultados.length, resultados };

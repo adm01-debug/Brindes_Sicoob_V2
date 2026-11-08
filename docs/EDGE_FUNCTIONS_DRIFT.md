@@ -1,6 +1,6 @@
 
 # Relatório de Divergência de Edge Functions
-Data: 2026-11-08T02:52:34.254Z
+Data: 2026-11-08T03:13:33.325Z
 
 ## Resumo
 - Total reais (repo): 106
