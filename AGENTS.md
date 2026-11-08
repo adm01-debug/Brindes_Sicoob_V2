@@ -64,7 +64,17 @@ divergiu da realidade → corrija no mesmo PR do fix. Responda sempre em PT-BR.
   na `main`: `fix docs chore infra feat ci`. **Não há hook `commit-msg` nem commitlint** — siga o padrão
   mesmo assim. Nunca `--no-verify` para fugir de `pre-commit`/`pre-push`: eles replicam o CI.
 - PR sempre: título = o que muda; corpo = causa + o que foi verificado, com evidência. Use
-  `.github/pull_request_template.md` (o de 26 linhas, com "Evidência verificada").
+  `.github/pull_request_template.md` (o de 26 linhas, com "Evidência verificada"). **Um assunto por
+  PR** — PR misturando CI + feature + docs em >30 arquivos é rejeitado na triagem.
+- **Fechar o ciclo é obrigatório — abrir PR não é entregar.** Depois de criar a PR: ative
+  `gh pr merge <n> --auto --squash` (auto-merge está ligado; a PR entra sozinha quando os 10 checks
+  obrigatórios ficarem verdes e as conversas estiverem resolvidas) e acompanhe até `MERGED`. Check
+  vermelho → diagnostique (`gh run view <id> --log-failed`) e corrija na mesma PR; falha de infra
+  (rate limit de registry, timeout de Supabase) → re-rode uma vez
+  (`gh run rerun <id> --failed`). Comentário de bot (qodo/codex/copilot) → responda e resolva a
+  thread; achado "High" de segurança exige correção ou justificativa técnica, nunca silêncio.
+- **Limite de fila:** não abra PR nova enquanto houver mais de 5 PRs suas abertas. Esvaziar a fila
+  tem prioridade sobre aumentá-la.
 - Mergeie sem aprovação (squash, apague a branch) PR sua pronta: os **10 checks obrigatórios** verdes, sem
   conflito, **todas as conversas de bot resolvidas** (`required_conversation_resolution: true`), escopo
   comum (front, edge, config). **Deixe aberta e chame o dono**: DDL/migration em produção; CI/workflows,
