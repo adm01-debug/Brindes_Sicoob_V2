@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "1.0",
+  "padrao": "agentes-zapp-web-v2",
+  "replicadoDe": "https://github.com/adm01-debug/Zapp_Web_V2",
+  "replicadoEm": "2026-11-08",
+  "repo": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
+  "skill": "brindes-sicoob-v2",
+  "regras": {
+    "fonte": "AGENTS.md",
+    "atalho": "CLAUDE.md (apenas `@AGENTS.md`)",
+    "detalhePorTema": "docs/agentes/*.md",
+    "guardDeIntegridade": "scripts/ci/check-agents-md-integrity.mjs (npm run check:agents-md)",
+    "secoesObrigatorias EmAgentsMd": [
+      "## Postura",
+      "## Bugs e funcionalidades",
+      "## Comunicação",
+      "## Fluxo Git",
+      "## Banco",
+      "## Serviços",
+      "## Stack e comandos",
+      "## Grafo de código"
+    ]
+  },
+  "arquivos": [
+    { "path": "CLAUDE.md", "descricao": "Atalho para AGENTS.md; nada além de `@AGENTS.md`." },
+    { "path": "AGENTS.md", "descricao": "Regras do dono. Fonte única; vence docs/ histórico." },
+    { "path": "README.md", "descricao": "Visão geral do projeto; seção Deploy descreve Vercel como publicador oficial (decidido 08/11/2026)." },
+    { "path": "docs/DEPLOYMENT.md", "descricao": "Decisão oficial de publicador (Vercel); fluxo de deploy de edge functions e migrations." },
+    { "path": "docs/agentes/banco.md", "descricao": "Banco oficial, externos, migrations, ledger, RLS, edge functions, secrets." },
+    { "path": "docs/agentes/github-ci.md", "descricao": "Perímetro do GitHub, branch protection ao vivo, 13 workflows, guards locais." },
+    { "path": "docs/agentes/mapa-repo.md", "descricao": "Onde fica cada coisa, comandos e divergências doc↔realidade." },
+    { "path": "docs/agentes/servicos.md", "descricao": "Deploy, domínios, CSP, env vars e integrações externas." },
+    { "path": "docs/agentes/regras-dominio.md", "descricao": "Regras de negócio que o código não deixa óbvio (papéis, verba, kit, preço, E2E)." },
+    { "path": ".claude/settings.json", "descricao": "Hook SessionStart (grafo na nuvem) + PreToolUse hook-guard do graphify." },
+    { "path": ".claude/hooks/session-start.sh", "descricao": "Instala o graphify e gera graphify-out/ em segundo plano em sessão de nuvem." },
+    { "path": ".claude/skills/brindes-sicoob-v2/SKILL.md", "descricao": "Convenções de código e commit (skill do Claude Code)." },
+    { "path": ".claude/identity.json", "descricao": "Perfil de resposta para o harness." },
+    { "path": ".claude/homunculus/instincts/inherited/brindes-sicoob-v2-instincts.yaml", "descricao": "Instincts medidos no repo (commit, import, export, nomes, testes, migration)." },
+    { "path": ".agents/skills/brindes-sicoob-v2/SKILL.md", "descricao": "Cópia da skill para harnesses que leem .agents/." },
+    { "path": ".agents/skills/brindes-sicoob-v2/agents/openai.yaml", "descricao": "Metadados da skill para o Codex." },
+    { "path": ".codex/AGENTS.md", "descricao": "Suplemento do Codex: ordem de leitura e onde está a skill." },
+    { "path": ".codex/config.toml", "descricao": "Baseline de MCP e multi-agente do Codex." },
+    { "path": ".codex/agents/explorer.toml", "descricao": "Papel explorer (somente leitura)." },
+    { "path": ".codex/agents/reviewer.toml", "descricao": "Papel reviewer (correção e segurança)." },
+    { "path": ".codex/agents/docs-researcher.toml", "descricao": "Papel docs researcher (verificação de API)." },
+    { "path": "scripts/ci/check-agents-md-integrity.mjs", "descricao": "GA02: barra wipe/esvaziamento das instruções por sessão paralela." },
+    { "path": "scripts/graphify/setup.sh", "descricao": "Instala o graphify no clone (npm run graph:setup)." },
+    { "path": "scripts/graphify/README.md", "descricao": "O que a automação faz, como rodar e versão fixada." },
+    { "path": ".graphifyignore", "descricao": "O que não entra no grafo de código." }
+  ],
+  "pendentes": [
+    "Aviso no topo do README.md apontando para CLAUDE.md (PR #170 aberta toca README.md)."
+  ]
+}
