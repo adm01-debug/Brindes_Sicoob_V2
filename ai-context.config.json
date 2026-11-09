@@ -1,0 +1,14 @@
+{
+  "routeFiles": [
+    "src/routes/config/admin.ts",
+    "src/routes/config/dev.ts",
+    "src/routes/config/products.ts",
+    "src/routes/config/public.ts",
+    "src/routes/config/quotes.ts",
+    "src/routes/config/sicoob-rbac.ts",
+    "src/routes/config/sicoob.ts",
+    "src/routes/config/tools.ts"
+  ],
+  "menuFiles": ["src/components/layout/SidebarReorganized.tsx"],
+  "publicacao": "Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`."
+}
