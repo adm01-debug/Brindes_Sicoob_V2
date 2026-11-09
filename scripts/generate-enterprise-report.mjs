@@ -3,50 +3,72 @@
  * generate-enterprise-report.mjs
  * ----------------------------------------------------------------
  * Gerador de CI: produz o Relatório de Auditoria e Governança
- * (`ENTERPRISE_AUDIT_REPORT_V6.md`) com métricas reais do Supabase
+ * (`reports/ENTERPRISE_AUDIT_REPORT_V6.md`) com métricas reais do Supabase
  * (tabelas com RLS, logs de auditoria, total de Edge Functions).
  *
+ * Toda métrica é medida nesta execução; status sem medição sai rotulado como
+ * declaração. Nenhum percentual é literal.
+ *
  * Requer VITE_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY (definidas no
- * workflow security-compliance.yml).
+ * workflow security-compliance.yml). `AUDIT_REPORTS_DIR` troca o diretório de
+ * saída (padrão: `reports/`, publicado como artifact pelo workflow).
  *
  * Saída:
  *  - exit 0 → relatório gerado e gravado com sucesso.
- *  - exit 1 → falha de execução (credenciais ausentes, RPC/leitura quebrada).
+ *  - exit 1 → falha de execução (credenciais ausentes, RPC/leitura com erro).
  */
-import { createClient } from "@supabase/supabase-js";
 import fs from "node:fs";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
+import {
+  AUDIT_INVENTORY,
+  DECLARED,
+  countEdgeFunctions,
+  fetchRlsTables,
+  reportsDir,
+  summarizeRls,
+  verifyEvidence,
+} from "./lib/audit-evidence.mjs";
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+export const OUT_NAME = "ENTERPRISE_AUDIT_REPORT_V6.md";
 
-if (!supabaseUrl || !supabaseKey) {
-  console.error("❌ Variáveis de ambiente ausentes (VITE_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY).");
-  process.exit(1);
+/**
+ * Métricas do banco. supabase-js não lança em erro: devolve `{ error }`, e com
+ * `head: true` a contagem vem em `count` (o `data` é sempre null).
+ */
+export async function getStats(supabase) {
+  const rls = summarizeRls(await fetchRlsTables(supabase));
+  // Requisição HEAD: em erro não há corpo, então a mensagem vem vazia e o status é o que informa.
+  const { count, error, status } = await supabase
+    .from("admin_audit_log")
+    .select("id", { count: "exact", head: true });
+  if (error) throw new Error(`Contagem de admin_audit_log falhou: ${error.message || `HTTP ${status}`}`);
+  if (typeof count !== "number") throw new Error("Contagem de admin_audit_log não devolvida pelo banco.");
+
+  return { rls, auditLogs: count, functions: countEdgeFunctions() };
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-async function getStats() {
-  // Conta objetos no banco para justificar a seção de evidências.
-  const { data: tableCount } = await supabase.rpc("check_tables_rls");
-  const { data: edgeLogs } = await supabase.from("admin_audit_log").select("id", { count: "exact", head: true });
-
-  return {
-    tables: tableCount?.length || 0,
-    auditLogs: edgeLogs || 0,
-    functions: fs.readdirSync("supabase/functions").length,
-  };
+function moduleStatus(feature) {
+  const item = AUDIT_INVENTORY.find((entry) => entry.feature === feature);
+  if (!item) return DECLARED;
+  const check = verifyEvidence(item);
+  return check.ok ? "✅ Evidência conferida" : `❌ ${check.reason}`;
 }
 
-async function generateEnterpriseAuditor() {
-  console.log("🏗️ Gerando Relatório de Auditoria Estruturado (Enterprise Grade)...");
+function modulePath(feature) {
+  return AUDIT_INVENTORY.find((entry) => entry.feature === feature)?.path ?? "—";
+}
 
-  const stats = await getStats();
+export function buildReport(stats, now = new Date()) {
+  const { rls } = stats;
+  const rlsLine = rls.compliant
+    ? `${rls.withRls} de ${rls.total} (cobertura de ${rls.pct}% das tabelas em 'public').`
+    : `${rls.withRls} de ${rls.total} (cobertura de ${rls.pct}%) — ❌ sem RLS: ${rls.without.map((name) => `\`${name}\``).join(", ")}.`;
 
-  const report = `
+  return `
 # 🏢 RELATÓRIO DE AUDITORIA E GOVERNANÇA - PROMOGIFTS V3.4
 
-**Data de Emissão:** ${new Date().toLocaleDateString()}
+**Data de Emissão:** ${now.toISOString().slice(0, 10)}
 **Versão do Documento:** 6.0
 **Classificação:** ESTRITAMENTE CONFIDENCIAL
 
@@ -54,7 +76,7 @@ async function generateEnterpriseAuditor() {
 
 ## 📋 1. SUMÁRIO EXECUTIVO
 
-Este relatório apresenta o diagnóstico técnico exaustivo do ecossistema PromoGifts. O sistema demonstra conformidade **P0 (Crítica)** em todos os fluxos de isolamento de dados e integridade financeira. A infraestrutura baseada em **Edge Functions** e **RLS (Row Level Security)** garante um ambiente multi-tenant resiliente e auditável.
+Este relatório apresenta as métricas medidas nesta execução sobre o ecossistema PromoGifts. Isolamento de dados (RLS): ${rls.compliant ? `✅ ${rls.withRls}/${rls.total} tabelas do schema public com RLS ativo` : `❌ ${rls.without.length} tabela(s) do schema public sem RLS`}. Status com ✅/❌ foram medidos; itens com 📝 são declarações de projeto, não medições.
 
 ### 🚩 Riscos e Lacunas (GAP Analysis)
 *   **Performance (IA):** Dependência de latência de terceiros (Gemini/OpenAI). *Ações Mitigatórias: Fallback implementado.*
@@ -67,11 +89,11 @@ Este relatório apresenta o diagnóstico técnico exaustivo do ecossistema Promo
 
 | Módulo | Funcionalidade Principal | Path do Repositório | Dependências | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **SEGURANÇA** | Isolamento de Dados (RLS) | \`supabase/migrations/20250103_02_rls_organizations.sql\` | PostgreSQL, Auth | ✅ Implementado |
-| **FINANCEIRO** | Precisão 4 Casas Decimais | \`supabase/migrations/20260502174252_a88e3c13-...\` | NUMERIC(14,4) | ✅ Implementado |
-| **IA (MAGIC UP)** | Recomendações & Mockups | \`supabase/functions/ai-recommendations/\` | Gemini 2.5, OpenAI | ✅ Implementado |
-| **INFRA** | Audit Trail & Cold Storage | \`scripts/generate-audit-dossier.mjs\` | Git, Supabase RPC | ✅ Implementado |
-| **SICOOB** | Workflow de Alçadas | \`supabase/functions/sicoob-approval-notifications/\` | Slack/Email Webhooks | ✅ Implementado |
+| **SEGURANÇA** | Isolamento de Dados (RLS) | \`${modulePath("RLS Cross-Tenant")}\` | PostgreSQL, Auth | ${moduleStatus("RLS Cross-Tenant")} |
+| **FINANCEIRO** | Precisão 4 Casas Decimais | \`${modulePath("Precisão 4 Casas")}\` | NUMERIC(14,4) | ${moduleStatus("Precisão 4 Casas")} |
+| **IA (MAGIC UP)** | Fallback entre modelos | \`${modulePath("Fallback Automático")}\` | Lovable AI Gateway | ${moduleStatus("Fallback Automático")} |
+| **INFRA** | Audit Trail & Cold Storage | \`${modulePath("Cold Storage Logs")}\` | Git, Supabase RPC | ${moduleStatus("Cold Storage Logs")} |
+| **SICOOB** | Workflow de Alçadas | \`supabase/functions/sicoob-approval-notifications/\` | Slack/Email Webhooks | ${DECLARED} |
 
 ---
 
@@ -80,14 +102,13 @@ Este relatório apresenta o diagnóstico técnico exaustivo do ecossistema Promo
 Justificativa técnica baseada em telemetria e análise de código:
 
 ### 3.1 Métricas de Banco de Dados
-*   **Tabelas com RLS:** ${stats.tables} (Cobertura de 100% das tabelas em 'public').
+*   **Tabelas com RLS:** ${rlsLine}
 *   **Logs de Auditoria Ativos:** ${stats.auditLogs} registros rastreáveis em \`admin_audit_log\`.
-*   **Integridade de Tipo:** Mapeamento via \`NUMERIC(14,4)\` garante zero erro de arredondamento em transações > R$ 1MM.
+*   **Integridade de Tipo:** preço unitário em \`NUMERIC(14,4)\` — ${moduleStatus("Precisão 4 Casas")}.
 
 ### 3.2 Contratos de Edge Functions (SLA)
-*   **Total de Funções:** ${stats.functions}
-*   **Timeout Padrão:** 60s
-*   **Segurança:** Todas utilizam \`authenticateRequest\` em \`_shared/auth.ts\`.
+*   **Total de Funções:** ${stats.functions} (diretórios com \`index.ts\` em \`supabase/functions/\`).
+*   **Segurança:** cobertura de autorização medida pelo gate \`node scripts/check-edge-authorization.mjs\` (não reexecutado aqui).
 
 ---
 
@@ -113,18 +134,43 @@ Justificativa técnica baseada em telemetria e análise de código:
 
 ## 📎 6. EXPORTAÇÃO FILTRADA
 *Para exportar trechos específicos, utilize os scripts:*
-*   \`node scripts/audit-export.mjs --module=Seguranca\`
-*   \`node scripts/audit-export.mjs --status=Pending\`
+*   \`node scripts/audit-export.mjs --module=Segurança\`
+*   \`node scripts/audit-export.mjs --status=a-implementar\`
 
 ---
 *Gerado por: Lovable AI Enterprise Auditor*
 `;
 
-  fs.writeFileSync("ENTERPRISE_AUDIT_REPORT_V6.md", report);
-  console.log("✅ Relatório Enterprise V6 gerado com sucesso em: ENTERPRISE_AUDIT_REPORT_V6.md");
 }
 
-generateEnterpriseAuditor().catch((err) => {
-  console.error(`❌ Erro inesperado no gerador de relatório: ${err?.message ?? err}`);
-  process.exit(1);
-});
+async function main() {
+  const supabaseUrl = process.env.VITE_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    console.error("❌ Variáveis de ambiente ausentes (VITE_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY).");
+    return 1;
+  }
+
+  console.log("🏗️ Gerando Relatório de Auditoria Estruturado (Enterprise Grade)...");
+  const { createClient } = await import("@supabase/supabase-js");
+  const stats = await getStats(createClient(supabaseUrl, supabaseKey));
+
+  const outFile = path.join(reportsDir(), OUT_NAME);
+  fs.writeFileSync(outFile, buildReport(stats));
+  console.log(
+    `✅ Relatório Enterprise V6 gerado em: ${outFile} ` +
+      `(${stats.rls.withRls}/${stats.rls.total} tabelas com RLS, ${stats.auditLogs} logs, ${stats.functions} funções).`,
+  );
+  return 0;
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+  main()
+    .then((code) => {
+      process.exitCode = code;
+    })
+    .catch((err) => {
+      console.error(`❌ Erro no gerador de relatório: ${err?.message ?? err}`);
+      process.exitCode = 1;
+    });
+}
