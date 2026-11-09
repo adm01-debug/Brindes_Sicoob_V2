@@ -15,6 +15,16 @@ const srcFiles = (ctx) =>
     .filter((f) => /\.(?:ts|tsx|js|jsx)$/.test(f) && !f.endsWith('.d.ts') && !isTestPath(f) && !f.includes('integrations/supabase/types'));
 const top = (rows, n = 40) => rows.sort((a, b) => b[1] - a[1]).slice(0, n);
 
+// Posição da aspa simples que FECHA o literal que começa em `from` ('' é aspa escapada, não fecha). -1 se não fecha.
+function fimDeLiteral(sql, from) {
+  for (let i = from; i < sql.length; i++) {
+    if (sql[i] !== "'") continue;
+    if (sql[i + 1] === "'") { i++; continue; }
+    return i;
+  }
+  return -1;
+}
+
 // ---- etapa 27: SECURITY DEFINER sem search_path --------------------------------------------
 export function definerSemSearchPath(migrations) {
   const fns = new Map(); // nome -> { file, definer, searchPath }
@@ -32,7 +42,7 @@ export function definerSemSearchPath(migrations) {
       const tagMatch = /\bas\s+(\$[\w]*\$|')/i.exec(sql.slice(from));
       const tag = tagMatch[1];
       const bodyOpen = from + tagMatch[0].length;
-      const bodyClose = tag === "'" ? sql.indexOf("'", bodyOpen) : sql.indexOf(tag, bodyOpen);
+      const bodyClose = tag === "'" ? fimDeLiteral(sql, bodyOpen) : sql.indexOf(tag, bodyOpen);
       const head = sql.slice(m.index, from);
       const tail = bodyClose < 0 ? '' : sql.slice(bodyClose + tag.length, (sql.indexOf(';', bodyClose + tag.length) + 1) || undefined);
       const attrs = (head + ' ' + tail).toLowerCase();

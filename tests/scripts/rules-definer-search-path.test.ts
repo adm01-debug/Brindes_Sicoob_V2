@@ -32,6 +32,15 @@ describe('rules/plano-definer-sem-search-path', () => {
     expect(run(def, 'alter function g() set "search_path" = public;')).toEqual([]);
   });
 
+  it('corpo entre aspas simples com \'\' escapado não vira atributo da função', () => {
+    // o texto "SET search_path" está DENTRO do corpo: a função continua sem proteção
+    expect(run("create function public.f() returns text as 'select ''set search_path''::text' language sql security definer;")).toHaveLength(1);
+    // o inverso: "SECURITY DEFINER" só dentro do corpo de uma função INVOKER não gera alerta
+    expect(run("create function public.g() returns text as 'select ''security definer''::text' language sql;")).toEqual([]);
+    // atributo real depois do corpo continua valendo
+    expect(run("create function public.h() returns text as 'select ''x''::text' language sql security definer set search_path = public;")).toEqual([]);
+  });
+
   it('ignora função INVOKER', () => {
     expect(run('create function h() returns int as $$ select 1 $$ language sql;')).toEqual([]);
   });
