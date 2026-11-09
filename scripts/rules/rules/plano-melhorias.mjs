@@ -36,14 +36,14 @@ export function definerSemSearchPath(migrations) {
       const head = sql.slice(m.index, from);
       const tail = bodyClose < 0 ? '' : sql.slice(bodyClose + tag.length, (sql.indexOf(';', bodyClose + tag.length) + 1) || undefined);
       const attrs = (head + ' ' + tail).toLowerCase();
-      events.push({ pos: m.index, type: 'create', name, definer: /security\s+definer/.test(attrs), searchPath: /set\s+search_path/.test(attrs) });
+      events.push({ pos: m.index, type: 'create', name, definer: /security\s+definer/.test(attrs), searchPath: /set\s+"?search_path"?/.test(attrs) });
       re.lastIndex = bodyClose > 0 ? bodyClose : re.lastIndex;
     }
     // Endurecimento em lote: DO $$ ... FOR ... IN pg_proc ... EXECUTE format('ALTER FUNCTION ... SET search_path ...').
     // Cobre toda função pública já existente neste ponto; CREATE OR REPLACE posterior sem SET volta a ficar exposta.
-    const bulk = /execute\s+format\s*\(\s*'alter\s+function[^']*set\s+search_path/i.exec(sql);
+    const bulk = /execute\s+format\s*\(\s*'alter\s+function[^']*set\s+"?search_path"?/i.exec(sql);
     if (bulk && /pg_proc/i.test(sql)) events.push({ pos: bulk.index, type: 'bulk' });
-    for (const a of sql.matchAll(/alter\s+function\s+(?:"?public"?\s*\.\s*)?"?([a-z_][a-z0-9_]*)"?[^;]*?set\s+search_path/gi)) events.push({ pos: a.index, type: 'alter', name: a[1].toLowerCase() });
+    for (const a of sql.matchAll(/alter\s+function\s+(?:"?public"?\s*\.\s*)?"?([a-z_][a-z0-9_]*)"?[^;]*?set\s+"?search_path"?/gi)) events.push({ pos: a.index, type: 'alter', name: a[1].toLowerCase() });
     for (const d of sql.matchAll(/drop\s+function\s+(?:if\s+exists\s+)?(?:"?public"?\s*\.\s*)?"?([a-z_][a-z0-9_]*)"?/gi)) events.push({ pos: d.index, type: 'drop', name: d[1].toLowerCase() });
     for (const e of events.sort((x, y) => x.pos - y.pos)) {
       if (e.type === 'create') fns.set(e.name, { file, definer: e.definer, searchPath: e.searchPath });

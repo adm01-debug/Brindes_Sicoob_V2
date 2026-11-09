@@ -69,4 +69,11 @@ describe('rules/rls-estatico — DROP POLICY', () => {
     expect(run(base, 'ALTER TABLE "public"."a" DISABLE ROW LEVEL SECURITY;').get('a')?.rls).toBe(false);
     expect(run(base, 'drop table "public" . "a";').has('a')).toBe(false);
   });
+  it('policy criada com aspas e removida sem (ou o contrário) é a mesma; caixa só conta entre aspas', () => {
+    const base = 'create table a (id int); alter table a enable row level security;';
+    expect(run(base, 'create policy "p" on a using (true);', 'drop policy p on a;').get('a')?.policies).toBe(0);
+    expect(run(base, 'create policy p on a using (true);', 'drop policy "p" on a;').get('a')?.policies).toBe(0);
+    expect(run(base, 'create policy P on a using (true);', 'drop policy "p" on a;').get('a')?.policies).toBe(0);
+    expect(run(base, 'create policy "P" on a using (true);', 'drop policy p on a;').get('a')?.policies).toBe(1);
+  });
 });

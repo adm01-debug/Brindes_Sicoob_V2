@@ -25,6 +25,13 @@ describe('rules/plano-definer-sem-search-path', () => {
     expect(run(def, 'drop function if exists "public" . "f"();')).toEqual([]);
   });
 
+  it('reconhece SET "search_path" entre aspas (CREATE e ALTER)', () => {
+    expect(run('create function f() returns int security definer set "search_path" to public as $$ select 1 $$ language sql;')).toEqual([]);
+    const def = 'create function g() returns void security definer language sql as $$ select 1 $$;';
+    expect(run(def)).toHaveLength(1);
+    expect(run(def, 'alter function g() set "search_path" = public;')).toEqual([]);
+  });
+
   it('ignora função INVOKER', () => {
     expect(run('create function h() returns int as $$ select 1 $$ language sql;')).toEqual([]);
   });

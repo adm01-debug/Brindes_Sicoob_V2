@@ -3,6 +3,9 @@ import { readMigrations, stripSqlComments } from '../lib.mjs';
 // Nome de tabela, com ou sem "public." e aspas.
 const NAME = String.raw`(?:"?public"?\s*\.\s*)?"?([a-z_][a-z0-9_]*)"?`;
 
+// Identificador do Postgres: sem aspas vira minúsculo; entre aspas mantém a caixa e perde as aspas ("p" == p, "P" != p).
+const ident = (s) => (s.startsWith('"') ? s.slice(1, -1).replace(/""/g, '"') : s.toLowerCase());
+
 const SQL_WORDS = new Set(['if', 'not', 'exists', 'as', 'only', 'public']);
 
 /**
@@ -27,8 +30,8 @@ export function analyze(migrations) {
       if (m[2].toLowerCase() !== 'force') events.push({ pos: m.index, type: 'rls', name: m[1], on: m[2].toLowerCase() === 'enable' });
     }
     const POL = String.raw`("[^"]+"|\w+)\s+on\s+`;
-    for (const m of sql.matchAll(new RegExp(String.raw`create\s+policy\s+` + POL + NAME, 'gi'))) events.push({ pos: m.index, type: 'policy', policy: m[1].toLowerCase(), name: m[2] });
-    for (const m of sql.matchAll(new RegExp(String.raw`drop\s+policy\s+(?:if\s+exists\s+)?` + POL + NAME, 'gi'))) events.push({ pos: m.index, type: 'droppolicy', policy: m[1].toLowerCase(), name: m[2] });
+    for (const m of sql.matchAll(new RegExp(String.raw`create\s+policy\s+` + POL + NAME, 'gi'))) events.push({ pos: m.index, type: 'policy', policy: ident(m[1]), name: m[2] });
+    for (const m of sql.matchAll(new RegExp(String.raw`drop\s+policy\s+(?:if\s+exists\s+)?` + POL + NAME, 'gi'))) events.push({ pos: m.index, type: 'droppolicy', policy: ident(m[1]), name: m[2] });
     for (const e of events.sort((x, y) => x.pos - y.pos)) {
       if (e.type === 'create') { if (!tables.has(e.name)) tables.set(e.name, { file, rls: false, policies: 0, policyNames: new Set(), partition: e.partition }); }
       else if (e.type === 'drop') tables.delete(e.name);
