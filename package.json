@@ -22,6 +22,7 @@
     "typecheck:baseline": "node scripts/check-typecheck-baseline.mjs",
     "typecheck:baseline:update": "node scripts/check-typecheck-baseline.mjs --update",
     "typecheck:files": "node scripts/tscheck-files.mjs",
+    "gaps": "node scripts/rules/run.mjs",
     "autofix": "node scripts/autofix/run.mjs",
     "autofix:apply": "node scripts/autofix/run.mjs --apply",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
