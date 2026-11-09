@@ -85,7 +85,8 @@ export function parseArgs(argv, spec = {}) {
     const eq = raw.indexOf('=');
     const key = eq === -1 ? raw : raw.slice(0, eq);
     const inlineValue = eq === -1 ? undefined : raw.slice(eq + 1);
-    const name = spec[key] ? key : byAlias.get(key);
+    // `Object.hasOwn`: `spec['constructor']` resolveria no protótipo e aceitaria `--constructor=x`.
+    const name = Object.hasOwn(spec, key) ? key : byAlias.get(key);
 
     if (!name) throw new UsageError(`Flag desconhecida: ${token}`);
 
