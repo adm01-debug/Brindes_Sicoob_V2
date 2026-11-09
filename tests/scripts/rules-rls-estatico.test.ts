@@ -48,3 +48,18 @@ describe('rules/rls-estatico — ordem dos comandos', () => {
     expect(run('create table a (id int); drop table a;').has('a')).toBe(false);
   });
 });
+
+describe('rules/rls-estatico — DROP POLICY', () => {
+  const base = 'create table a (id int); alter table a enable row level security;';
+
+  it('DROP POLICY da última policy zera a contagem', () => {
+    const t = run(base, 'create policy "p" on public.a for select using (true);', 'drop policy if exists "p" on public.a;');
+    expect(t.get('a')?.policies).toBe(0);
+  });
+
+  it('com 2 policies, remover 1 mantém 1; recriar a mesma não duplica', () => {
+    const t = run(base, 'create policy p1 on a for select using (true); create policy p2 on a for insert with check (true);', 'drop policy p1 on a;');
+    expect(t.get('a')?.policies).toBe(1);
+    expect(run(base, 'create policy p1 on a using (true);', 'drop policy p1 on a; create policy p1 on a using (true);').get('a')?.policies).toBe(1);
+  });
+});

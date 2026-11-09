@@ -15,7 +15,7 @@
  * Sai 0 mesmo com achados (achado não é falha da rotina); sai 1 só se a rotina em si quebrar.
  * Pula (exit 0) se a máquina estiver sob carga alta ou se outra execução estiver em andamento.
  */
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync, readdirSync, symlinkSync, copyFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync, readdirSync, symlinkSync, copyFileSync, renameSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { homedir, loadavg, tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -54,6 +54,14 @@ process.on('exit', cleanup);
 process.on('SIGINT', () => process.exit(130));
 process.on('SIGTERM', () => process.exit(143));
 
+// Restos de execução anterior morta (SIGKILL/timeout do systemd): worktrees temporários ainda registrados.
+// A trava acima garante que nenhuma outra rotina está usando estes.
+for (const l of git(['worktree', 'list', '--porcelain']).stdout.split('\n')) {
+  const m = /^worktree (.*[\\/]gaps-wt-[^\\/]+)$/.exec(l);
+  if (m) { git(['worktree', 'remove', '--force', '--force', m[1]]); rmSync(m[1], { recursive: true, force: true }); }
+}
+git(['worktree', 'prune']);
+
 const notes = [];
 const fetched = git(['fetch', 'origin', '--quiet', '--no-tags']);
 if (fetched.status !== 0) notes.push(`git fetch falhou (${(fetched.stderr || 'sem rede?').trim().split('\n')[0]}); usando a última cópia local de ${REF}`);
@@ -67,7 +75,12 @@ if (add.status !== 0) { log(`worktree falhou: ${add.stderr}`); process.exit(1); 
 if (existsSync(join(REPO, 'node_modules'))) symlinkSync(join(REPO, 'node_modules'), join(work, 'node_modules'));
 
 const day = new Date().toISOString().slice(0, 10);
-const dayDir = join(OUT, day);
+const finalDir = join(OUT, day);
+// A rodada é feita numa pasta temporária e só substitui a do dia se TERMINAR com sucesso:
+// uma repetição que falhe (ou estoure o timeout) não pode apagar o relatório válido já existente.
+mkdirSync(OUT, { recursive: true });
+for (const d of readdirSync(OUT).filter((x) => /^\.\d{4}-\d{2}-\d{2}\.tmp-/.test(x))) rmSync(join(OUT, d), { recursive: true, force: true });
+const dayDir = join(OUT, `.${day}.tmp-${process.pid}`);
 mkdirSync(dayDir, { recursive: true });
 log(`analisando ${REF} @ ${commit.slice(0, 9)}`);
 // O runner vive no repo atual (pode ainda não estar no ref analisado); roda com cwd = worktree.
@@ -104,10 +117,15 @@ const resumo = [
   `## Situação atual`,
   `| severidade | regra | tipo | qtd |`, `|---|---|---|---|`, ...tabela,
   ``,
-  `Detalhe completo: \`${join(dayDir, 'latest.md')}\``,
+  `Detalhe completo: \`${join(finalDir, 'latest.md')}\``,
 ].join('\n');
 writeFileSync(join(dayDir, 'RESUMO.md'), resumo);
-copyFileSync(join(dayDir, 'RESUMO.md'), join(OUT, 'ULTIMO.md'));
+// troca: pasta do dia antiga sai do caminho, a nova entra, a antiga é apagada só depois
+const old = `${finalDir}.old-${process.pid}`;
+if (existsSync(finalDir)) renameSync(finalDir, old);
+renameSync(dayDir, finalDir);
+rmSync(old, { recursive: true, force: true });
+copyFileSync(join(finalDir, 'RESUMO.md'), join(OUT, 'ULTIMO.md'));
 
 // --- retenção ---------------------------------------------------------------------------------
 const dias = readdirSync(OUT).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort();

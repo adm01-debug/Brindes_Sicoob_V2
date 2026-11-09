@@ -26,12 +26,15 @@ export function analyze(migrations) {
     for (const m of sql.matchAll(new RegExp(String.raw`alter\s+table\s+(?:if\s+exists\s+)?(?:only\s+)?` + NAME + String.raw`\s+(enable|disable|force)\s+row\s+level\s+security`, 'gi'))) {
       if (m[2].toLowerCase() !== 'force') events.push({ pos: m.index, type: 'rls', name: m[1], on: m[2].toLowerCase() === 'enable' });
     }
-    for (const m of sql.matchAll(new RegExp(String.raw`create\s+policy\s+(?:"[^"]+"|\w+)\s+on\s+` + NAME, 'gi'))) events.push({ pos: m.index, type: 'policy', name: m[1] });
+    const POL = String.raw`("[^"]+"|\w+)\s+on\s+`;
+    for (const m of sql.matchAll(new RegExp(String.raw`create\s+policy\s+` + POL + NAME, 'gi'))) events.push({ pos: m.index, type: 'policy', policy: m[1].toLowerCase(), name: m[2] });
+    for (const m of sql.matchAll(new RegExp(String.raw`drop\s+policy\s+(?:if\s+exists\s+)?` + POL + NAME, 'gi'))) events.push({ pos: m.index, type: 'droppolicy', policy: m[1].toLowerCase(), name: m[2] });
     for (const e of events.sort((x, y) => x.pos - y.pos)) {
-      if (e.type === 'create') { if (!tables.has(e.name)) tables.set(e.name, { file, rls: false, policies: 0, partition: e.partition }); }
+      if (e.type === 'create') { if (!tables.has(e.name)) tables.set(e.name, { file, rls: false, policies: 0, policyNames: new Set(), partition: e.partition }); }
       else if (e.type === 'drop') tables.delete(e.name);
       else if (e.type === 'rls') { const t = tables.get(e.name); if (t) t.rls = e.on; }
-      else { const t = tables.get(e.name); if (t) t.policies += 1; }
+      else if (e.type === 'policy') { const t = tables.get(e.name); if (t) { t.policyNames.add(e.policy); t.policies = t.policyNames.size; } }
+      else { const t = tables.get(e.name); if (t) { t.policyNames.delete(e.policy); t.policies = t.policyNames.size; } }
     }
   }
   return { tables, dynamic };
