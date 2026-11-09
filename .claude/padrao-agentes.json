@@ -10,7 +10,7 @@
     "atalho": "CLAUDE.md (apenas `@AGENTS.md`)",
     "detalhePorTema": "docs/agentes/*.md",
     "guardDeIntegridade": "scripts/ci/check-agents-md-integrity.mjs (npm run check:agents-md)",
-    "secoesObrigatoriasEmAgentsMd": [
+    "secoesObrigatorias EmAgentsMd": [
       "## Postura",
       "## Bugs e funcionalidades",
       "## Comunicação",
@@ -24,6 +24,8 @@
   "arquivos": [
     { "path": "CLAUDE.md", "descricao": "Atalho para AGENTS.md; nada além de `@AGENTS.md`." },
     { "path": "AGENTS.md", "descricao": "Regras do dono. Fonte única; vence docs/ histórico." },
+    { "path": "README.md", "descricao": "Visão geral do projeto; seção Deploy descreve Vercel como publicador oficial (decidido 08/11/2026)." },
+    { "path": "docs/DEPLOYMENT.md", "descricao": "Decisão oficial de publicador (Vercel); fluxo de deploy de edge functions e migrations." },
     { "path": "docs/agentes/banco.md", "descricao": "Banco oficial, externos, migrations, ledger, RLS, edge functions, secrets." },
     { "path": "docs/agentes/github-ci.md", "descricao": "Perímetro do GitHub, branch protection ao vivo, 13 workflows, guards locais." },
     { "path": "docs/agentes/mapa-repo.md", "descricao": "Onde fica cada coisa, comandos e divergências doc↔realidade." },
@@ -47,8 +49,6 @@
     { "path": ".graphifyignore", "descricao": "O que não entra no grafo de código." }
   ],
   "pendentes": [
-    "Wire do `npm run check:agents-md` no job `qualidade` de .github/workflows/ci.yml (PRs abertas tocam esse arquivo).",
-    "Aviso no topo do README.md apontando para CLAUDE.md (PR #170 aberta toca README.md).",
-    "`.hermes.md` ainda descreve o fluxo de worktree antigo e diz que o repo é privado."
+    "Aviso no topo do README.md apontando para CLAUDE.md (PR #170 aberta toca README.md)."
   ]
 }
