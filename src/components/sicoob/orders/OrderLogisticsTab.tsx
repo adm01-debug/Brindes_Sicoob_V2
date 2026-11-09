@@ -78,7 +78,7 @@ function useLogisticsActions(context: LogisticsActionsContext) {
 }
 
 function LogisticsInfo() {
-  return <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-xl flex items-start gap-3"><Info className="h-5 w-5 text-blue-500 mt-0.5" /><div className="space-y-1"><p className="text-xs font-bold text-blue-900">Gestão de fluxo logístico</p><p className="text-[10px] text-blue-700 leading-relaxed">O rastreio move o pedido da separação para o trânsito. O comprovante privado confirma a entrega; pedidos legados em logística continuam aceitos.</p></div></div>;
+  return <div className="bg-info/10 border border-info/20 p-4 rounded-xl flex items-start gap-3"><Info className="h-5 w-5 text-foreground mt-0.5" /><div className="space-y-1"><p className="text-xs font-bold text-foreground">Gestão de fluxo logístico</p><p className="text-[10px] text-foreground leading-relaxed">O rastreio move o pedido da separação para o trânsito. O comprovante privado confirma a entrega; pedidos legados em logística continuam aceitos.</p></div></div>;
 }
 
 function ShipmentSummary({ shipment }: { shipment: ReturnType<typeof useSicoobShipment>["data"] }) {

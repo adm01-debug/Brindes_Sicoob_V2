@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.42.7"
+import { createClient } from "npm:@supabase/supabase-js@2.42.7"
 import { createStructuredLogger } from "../_shared/structured-logger.ts";
 import { getOrCreateRequestId } from "../_shared/request-id.ts";
 import { authorize } from "../_shared/authorize.ts";

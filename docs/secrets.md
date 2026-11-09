@@ -1,12 +1,35 @@
 # Inventário de segredos e variáveis de ambiente
 
-Gerado em 2026-09-13 por `grep -rhoE "Deno\.env\.get\(...)" supabase/functions` e
-`grep -rhoE "secrets\.\w+" .github/workflows`. Etapa 47 do
-[plano de 50 etapas](./plano-melhorias-50-etapas.md).
+Inventário originalmente gerado em 2026-09-13. O estado abaixo foi revisado em
+2026-10-31 consultando apenas **nomes** de secrets do repositório, nunca valores.
+As linhas de status antigas preservadas neste documento são históricas e não
+devem ser usadas como estado atual.
 
-**Preencher a coluna "Configurado em" — hoje é a lacuna real**: os secrets de E2E
-(etapa 03) e de compliance (etapa 04) faltam no GitHub Actions, e é assim que os
-dois gates de CI ficam vermelhos. Ninguém tinha essa lista consolidada antes.
+## E2E e compliance — configuração vigente em 2026-10-31
+
+Os jobs de PR executam E2E público sem secrets. O E2E autenticado e o teste RLS
+com criação/exclusão de personas só podem executar por dispatch na `main`, no
+environment `e2e-qa`, após validar a URL e o project ref contra
+`E2E_ALLOWED_PROJECT_ID`. O environment precisa ter required reviewers.
+
+| Nome | Local | Estado observado |
+|---|---|---|
+| `E2E_SUPABASE_URL` | Environment `e2e-qa` | Não aparece na lista de secrets do repositório; secrets de environment não são enumerados pelo conector. |
+| `E2E_SUPABASE_PROJECT_ID` | Environment `e2e-qa` | Não aparece na lista de secrets do repositório; confirmar o nome no environment. |
+| `E2E_SUPABASE_PUBLISHABLE_KEY` | Environment `e2e-qa` | Não aparece na lista de secrets do repositório; confirmar o nome no environment. |
+| `E2E_SUPABASE_SERVICE_ROLE_KEY` | Environment `e2e-qa` | Não aparece na lista de secrets do repositório; confirmar o nome no environment. Nunca usar a chave canônica. |
+| `E2E_ALLOWED_PROJECT_ID` | Variável do environment `e2e-qa` | Não observada; definir com o mesmo project ref do QA. O portal canônico e o catálogo mestre são recusados pelo código. |
+| `E2E_CLEANUP_DRY_RUN` | Variável do environment `e2e-qa` | O E2E autenticado exige o valor literal `0` para limpar somente as personas/fixtures QA após validar o destino. Localmente, o template mantém simulação (`1`). |
+| `E2E_CLEANUP_TOKEN` | Environment `e2e-qa` e Edge Function de QA | Nome aparece como secret do repositório; confirmar que o valor serve somente à função de cleanup do projeto QA. |
+| `E2E_USER_*`, `E2E_VIEWER_*`, `E2E_MANAGER_*`, `E2E_ADMIN_*`, `E2E_DEV_*` e TOTP | Environment `e2e-qa` | Nomes aparecem no escopo do repositório; confirmar transferência/duplicação controlada para o environment e uso apenas em QA. |
+| `SUPABASE_SERVICE_ROLE_KEY` genérica | Repositório | Nome aparece no repositório, mas não deve ser consumido por testes que escrevem. O workflow RLS agora usa `E2E_SUPABASE_SERVICE_ROLE_KEY`. |
+
+Para executar a suíte remota, configure todos os segredos e a variável no
+environment `e2e-qa`, não no escopo geral do repositório. Os jobs autenticados
+validam o destino antes de instalar dependências ou acessar o backend. A chave
+privilegiada genérica do repositório não é válida para esses jobs.
+
+Não versionar valores, tokens, senhas, URL com credenciais ou screenshots que os revelem. A ausência em secrets de repositório não comprova ausência em secrets de environment.
 
 ## Lidos pelas edge functions (`Deno.env.get`)
 
@@ -77,13 +100,13 @@ assinaturas que as referenciem, pois são necessárias para verificar o históri
 
 | Variável | Workflow | Status |
 |---|---|---|
-| `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` | `e2e.yml` | ❌ **ausente — causa da falha do PR #6 (etapa 03)** |
-| `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` | `e2e.yml` | ❌ **ausente — idem** |
-| `SUPABASE_SERVICE_ROLE_KEY` | `security-compliance.yml` | ❌ **ausente — causa da falha do job agendado em `main` (etapa 04)** |
+| `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` | `e2e-qa` | ✅ nomes observados em secrets do repositório; confirmar uso exclusivo de contas QA no environment protegido |
+| `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` | `e2e-qa` | ✅ nomes observados em secrets do repositório; confirmar uso exclusivo de contas QA no environment protegido |
+| `SUPABASE_SERVICE_ROLE_KEY` | jobs de leitura | ✅ nome observado no repositório; não usar em jobs com escrita/cleanup |
 | `SUPABASE_DB_URL` | `migration-ledger-drift.yml`, `apply-sicoob-migrations.yml` | ✅ configurado no repositório; uso de escrita restrito ao environment `construction` e à `main` protegida. O workflow de escrita exige banco `postgres`, porta `5432`, `sslmode=require` ou `verify-full` e host direto `db.cfmzkthhgliqelozlmwu.supabase.co` ou session pooler oficial com usuário `postgres.cfmzkthhgliqelozlmwu` |
-| `RLS_TEST_USER_A_EMAIL` / `_PASSWORD` | `security-compliance.yml` | ❌ **ausente — persona autenticada de uma organização isolada** |
-| `RLS_TEST_USER_B_EMAIL` / `_PASSWORD` | `security-compliance.yml` | ❌ **ausente — proprietário da fixture privada** |
-| `RLS_TEST_PRIVATE_QUOTE_B_ID` | `security-compliance.yml` | ❌ **ausente — orçamento privado determinístico da persona B** |
+| `RLS_TEST_USER_A_EMAIL` / `_PASSWORD` | fluxo legado | histórico; não requerido pelo job RLS isolado atual |
+| `RLS_TEST_USER_B_EMAIL` / `_PASSWORD` | fluxo legado | histórico; não requerido pelo job RLS isolado atual |
+| `RLS_TEST_PRIVATE_QUOTE_B_ID` | fluxo legado | histórico; não requerido pelo job RLS isolado atual |
 | `VITE_SUPABASE_URL` | `ci.yml`, `security-compliance.yml` | verificar se está presente |
 | `LHCI_GITHUB_APP_TOKEN` | `lighthouse.yml` | verificar |
 | `GITHUB_TOKEN` | vários (automático do Actions) | automático, não precisa configurar |

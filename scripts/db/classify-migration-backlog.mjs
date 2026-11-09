@@ -10,6 +10,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { collectLocalMigrations } from './check-migration-ledger-drift.mjs';
+import { UsageError } from '../lib/cli.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const DEFAULT_LEDGER = join(ROOT, 'docs/execucao/evidencias/retomada-mcp-20260922/ledger.json');
@@ -204,13 +205,36 @@ export function renderMarkdownSummary(result, jsonPath = 'migration-backlog-clas
   return lines.join('\n');
 }
 
+const USAGE = `classify-migration-backlog — classifica migrations locais ausentes do ledger (sem executar SQL).
+
+Uso:
+  node scripts/db/classify-migration-backlog.mjs [opções]
+
+Opções:
+  --ledger <arquivo>     Ledger de referência (padrão: ${DEFAULT_LEDGER})
+  --inventory <arquivo>  Inventário de objetos (padrão: ${DEFAULT_INVENTORY})
+  --output <arquivo>     Escreve o JSON no arquivo em vez do stdout
+  --markdown <arquivo>   Escreve também um resumo em Markdown
+  -h, --help             Mostra esta ajuda e sai com código 0.
+
+Exit codes: 0 = ok, 1 = cobertura incompleta/erro, 2 = uso inválido.`;
+
 function valueAfter(args, flag, fallback) {
   const index = args.indexOf(flag);
-  return index < 0 ? fallback : resolve(args[index + 1]);
+  if (index < 0) return fallback;
+  const value = args[index + 1];
+  if (value === undefined || value.startsWith('-')) {
+    throw new UsageError(`A flag ${flag} exige um valor.`);
+  }
+  return resolve(value);
 }
 
 async function main() {
   const args = process.argv.slice(2);
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(USAGE);
+    return;
+  }
   const ledgerPath = valueAfter(args, '--ledger', DEFAULT_LEDGER);
   const inventoryPath = valueAfter(args, '--inventory', DEFAULT_INVENTORY);
   const outputPath = valueAfter(args, '--output', null);
@@ -229,5 +253,9 @@ async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch(error => { console.error(`[classificador] ${error.message}`); process.exitCode = 1; });
+  main().catch(error => {
+    console.error(`[classificador] ${error.message}`);
+    if (error instanceof UsageError) console.error(`\n${USAGE}`);
+    process.exitCode = error instanceof UsageError ? 2 : 1;
+  });
 }

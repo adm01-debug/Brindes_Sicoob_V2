@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Sonda local: resultados positivos reproduzem lacunas, não aprovam o produto."""
 import json
 from pathlib import Path

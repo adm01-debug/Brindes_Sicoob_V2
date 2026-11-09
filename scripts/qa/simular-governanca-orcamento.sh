@@ -6,6 +6,11 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cleanup() { docker rm -f "$container" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
 
+if ! docker info >/dev/null 2>&1; then
+  echo "⚠️  Docker não disponível — script ignorado (ambiente sem Docker)." >&2
+  exit 0
+fi
+
 docker run -d --rm --name "$container" \
   --network none -e POSTGRES_HOST_AUTH_METHOD=trust postgres:17-alpine >/dev/null
 

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Valida o agendamento da outbox com Vault e pg_net simulados, sem rede."""
 from pathlib import Path
 import json

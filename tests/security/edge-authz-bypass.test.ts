@@ -17,13 +17,23 @@ import { describe, it, expect } from 'vitest';
 import {
   EDGE_AUTHZ_MANIFEST,
 } from '../../supabase/functions/_shared/edge-authz-manifest';
+import { validateE2ETarget } from '../../scripts/e2e-target.mjs';
 
-const URL = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
-const ANON = (import.meta as any).env?.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
+// As sondas usam EXCLUSIVAMENTE o destino E2E validado (projeto de QA
+// allowlisted). Nunca ler VITE_* aqui: se divergissem, o guard aprovaria QA
+// enquanto os POSTs atingiriam outro projeto.
+const URL = process.env.E2E_SUPABASE_URL;
+const ANON = process.env.E2E_SUPABASE_PUBLISHABLE_KEY;
 
 const requested = process.env.RUN_REMOTE_AUTHZ_TESTS === '1';
-if (requested && (!URL || !ANON)) {
-  throw new Error('RUN_REMOTE_AUTHZ_TESTS=1 exige VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY.');
+if (requested) {
+  validateE2ETarget({
+    url: URL,
+    projectId: process.env.E2E_SUPABASE_PROJECT_ID,
+    allowedProjectId: process.env.E2E_ALLOWED_PROJECT_ID,
+    publishableKey: ANON,
+    serviceRoleKey: process.env.E2E_SUPABASE_SERVICE_ROLE_KEY,
+  });
 }
 const enabled = requested && Boolean(URL && ANON);
 const d = enabled ? describe : describe.skip;
@@ -65,12 +75,10 @@ d('Edge authz bypass — supervisor/dev sem auth retorna 401', () => {
     it(`${name}: anon sem Authorization → 401`, async (ctx) => {
       const res = await invokeSensitiveEdge(name);
       await res.text(); // drena o corpo
-      // 402 (Payment Required): quota Supabase esgotada — endpoint bloqueado por
-      // infraestrutura, não por lógica de auth. Não conta como validação de authz;
-      // sinaliza infraestrutura indisponível.
+      // 402 indica indisponibilidade da infraestrutura. Falhar evita marcar
+      // esse cenário como validado sem resposta efetiva de autorização.
       if (res.status === 402) {
-        ctx.skip();
-        return;
+        throw new Error(`Supabase indisponível (HTTP 402) ao validar ${name}.`);
       }
       // Edge runtime do Supabase aplica verify_jwt=true por padrão →
       // sem header Authorization retorna 401. Aceitamos também 403
@@ -82,8 +90,7 @@ d('Edge authz bypass — supervisor/dev sem auth retorna 401', () => {
       const res = await invokeSensitiveEdge(name, 'Bearer invalid.jwt.token');
       await res.text();
       if (res.status === 402) {
-        ctx.skip();
-        return;
+        throw new Error(`Supabase indisponível (HTTP 402) ao validar ${name}.`);
       }
       expect([401, 403]).toContain(res.status);
     }, TEST_TIMEOUT_MS);

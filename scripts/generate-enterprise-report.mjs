@@ -1,33 +1,48 @@
-import { createClient } from '@supabase/supabase-js';
-import fs from 'fs';
+#!/usr/bin/env node
+/**
+ * generate-enterprise-report.mjs
+ * ----------------------------------------------------------------
+ * Gerador de CI: produz o Relatório de Auditoria e Governança
+ * (`ENTERPRISE_AUDIT_REPORT_V6.md`) com métricas reais do Supabase
+ * (tabelas com RLS, logs de auditoria, total de Edge Functions).
+ *
+ * Requer VITE_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY (definidas no
+ * workflow security-compliance.yml).
+ *
+ * Saída:
+ *  - exit 0 → relatório gerado e gravado com sucesso.
+ *  - exit 1 → falha de execução (credenciais ausentes, RPC/leitura quebrada).
+ */
+import { createClient } from "@supabase/supabase-js";
+import fs from "node:fs";
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing environment variables for auditor generation');
+  console.error("❌ Variáveis de ambiente ausentes (VITE_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY).");
   process.exit(1);
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function getStats() {
-    // Count objects in DB to justify evidence section
-    const { data: tableCount } = await supabase.rpc('check_tables_rls');
-    const { data: edgeLogs } = await supabase.from('admin_audit_log').select('id', { count: 'exact', head: true });
-    
-    return {
-        tables: tableCount?.length || 0,
-        auditLogs: edgeLogs || 0,
-        functions: fs.readdirSync('supabase/functions').length
-    };
+  // Conta objetos no banco para justificar a seção de evidências.
+  const { data: tableCount } = await supabase.rpc("check_tables_rls");
+  const { data: edgeLogs } = await supabase.from("admin_audit_log").select("id", { count: "exact", head: true });
+
+  return {
+    tables: tableCount?.length || 0,
+    auditLogs: edgeLogs || 0,
+    functions: fs.readdirSync("supabase/functions").length,
+  };
 }
 
 async function generateEnterpriseAuditor() {
-  console.log('🏗️ Gerando Relatório de Auditoria Estruturado (Enterprise Grade)...');
-  
+  console.log("🏗️ Gerando Relatório de Auditoria Estruturado (Enterprise Grade)...");
+
   const stats = await getStats();
-  
+
   const report = `
 # 🏢 RELATÓRIO DE AUDITORIA E GOVERNANÇA - PROMOGIFTS V3.4
 
@@ -82,7 +97,7 @@ Justificativa técnica baseada em telemetria e análise de código:
 | :--- | :--- | :--- | :--- |
 | Vazamento Multi-tenant | Muito Baixa | Catastrófico | RLS OrgID enforced em nível de Engine. |
 | Falha de Provedor de IA | Média | Moderado | Workflow de Fallback Automático (Shared Lib). |
-| Inconsistência de Verba | Baixa | Alto | Lock pessimista e Precisão Arbitrária. |
+| Inconsistência de Verba | Baixa | Moderado | Lock pessimista e Precisão Arbitrária. |
 
 ---
 
@@ -105,8 +120,11 @@ Justificativa técnica baseada em telemetria e análise de código:
 *Gerado por: Lovable AI Enterprise Auditor*
 `;
 
-  fs.writeFileSync('ENTERPRISE_AUDIT_REPORT_V6.md', report);
-  console.log('✅ Relatório Enterprise V6 gerado com sucesso em: ENTERPRISE_AUDIT_REPORT_V6.md');
+  fs.writeFileSync("ENTERPRISE_AUDIT_REPORT_V6.md", report);
+  console.log("✅ Relatório Enterprise V6 gerado com sucesso em: ENTERPRISE_AUDIT_REPORT_V6.md");
 }
 
-generateEnterpriseAuditor();
+generateEnterpriseAuditor().catch((err) => {
+  console.error(`❌ Erro inesperado no gerador de relatório: ${err?.message ?? err}`);
+  process.exit(1);
+});

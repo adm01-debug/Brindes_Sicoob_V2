@@ -5,8 +5,8 @@ import { getCorsHeaders } from "../_shared/cors.ts";
  * Atualiza campos sensíveis de uma chave MCP (name, description, scopes, expires_at).
  * Toda mudança é auditada com request_id, payload_summary, duração e status.
  */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
-import { z } from "https://esm.sh/zod@3.23.8";
+import { createClient } from "npm:@supabase/supabase-js@2.95.0";
+import { z } from "npm:zod@3.23.8";
 import {
   KNOWN_SCOPES,
   FULL_SCOPE_CONFIRMATION,

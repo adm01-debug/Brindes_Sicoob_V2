@@ -4,7 +4,7 @@
 // Apenas dev/admin podem invocar. Usa service role para setup/teardown
 // e clientes autenticados (anon + JWT por usuário) para validar policies.
 
-import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.49.4";
 import { getCorsHeaders, handleCorsPreflightIfNeeded } from "../_shared/cors.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;

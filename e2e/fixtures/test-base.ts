@@ -92,7 +92,7 @@ export const test = base.extend<Fixtures>({
         quiet: true,
         reason: `failure:${testInfo.title}`,
         nameFilterPrefix: resources.prefix,
-      }).catch(() => {});
+      });
     },
     { auto: true },
   ],

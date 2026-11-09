@@ -8,7 +8,7 @@ import { requireInternalService } from "../_shared/internal-service-auth.ts";
  * (`audit_ownership_orphans`) verifica permissão internamente quando
  * chamada por usuário autenticado.
  */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 import { castRpcResult } from "../_shared/supabase-client-adapter.ts";
 
 // Module-scope CORS headers — atribuído per-request no handler.

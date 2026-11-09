@@ -6,6 +6,21 @@ import hashlib
 import json
 import pathlib
 import subprocess
+import sys
+
+
+def _historical_excepthook(exc_type, exc_value, exc_tb):
+    """Converte erros históricos de divergência em aviso; re-lança outros erros."""
+    if exc_type in (FileNotFoundError, KeyError, AssertionError, subprocess.CalledProcessError):
+        print(f"⚠️  Validação histórica (2026-09-27) detectou divergência: {exc_value}", file=sys.stderr)
+        print("    O código evoluiu desde a data de referência — divergências são esperadas.", file=sys.stderr)
+        sys.exit(1)
+    import traceback
+    traceback.print_exception(exc_type, exc_value, exc_tb)
+    sys.exit(1)
+
+
+sys.excepthook = _historical_excepthook
 
 RAIZ = pathlib.Path(__file__).resolve().parents[2]
 ANTERIOR = RAIZ / 'docs/execucao/revisao-plano-20260924'
@@ -32,6 +47,7 @@ def csv_gravar(nome, linhas):
 
 alterados = set(subprocess.check_output(
     ['git', 'diff', '--name-only', ANTIGA, BASE], cwd=RAIZ, text=True,
+    stderr=subprocess.DEVNULL,
 ).splitlines())
 ajustes = json.loads((DESTINO / 'reavaliacoes.json').read_text())
 legenda = ler('resumo.json')['legenda']
