@@ -18,6 +18,13 @@ describe('rules/plano-definer-sem-search-path', () => {
     expect(run('create function g() returns int as $$ select 1 $$ language sql security definer set search_path = public;')).toEqual([]);
   });
 
+  it('reconhece o schema public entre aspas (CREATE, ALTER e DROP)', () => {
+    const def = 'create function "public"."f"() returns void security definer language sql as $$ select 1 $$;';
+    expect(run(def)).toHaveLength(1);
+    expect(run(def, 'alter function "public"."f"() set search_path = public;')).toEqual([]);
+    expect(run(def, 'drop function if exists "public" . "f"();')).toEqual([]);
+  });
+
   it('ignora função INVOKER', () => {
     expect(run('create function h() returns int as $$ select 1 $$ language sql;')).toEqual([]);
   });

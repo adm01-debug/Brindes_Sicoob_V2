@@ -22,7 +22,7 @@ export function definerSemSearchPath(migrations) {
     const sql = stripSqlComments(raw);
     // Coleta os comandos com a posição e aplica NA ORDEM do SQL (DROP seguido de CREATE deixa a função existir).
     const events = [];
-    const re = /create\s+(?:or\s+replace\s+)?function\s+(?:public\.)?"?([a-z_][a-z0-9_]*)"?\s*\(/gi;
+    const re = /create\s+(?:or\s+replace\s+)?function\s+(?:"?public"?\s*\.\s*)?"?([a-z_][a-z0-9_]*)"?\s*\(/gi;
     let m;
     while ((m = re.exec(sql))) {
       const name = m[1].toLowerCase();
@@ -43,8 +43,8 @@ export function definerSemSearchPath(migrations) {
     // Cobre toda função pública já existente neste ponto; CREATE OR REPLACE posterior sem SET volta a ficar exposta.
     const bulk = /execute\s+format\s*\(\s*'alter\s+function[^']*set\s+search_path/i.exec(sql);
     if (bulk && /pg_proc/i.test(sql)) events.push({ pos: bulk.index, type: 'bulk' });
-    for (const a of sql.matchAll(/alter\s+function\s+(?:public\.)?"?([a-z_][a-z0-9_]*)"?[^;]*?set\s+search_path/gi)) events.push({ pos: a.index, type: 'alter', name: a[1].toLowerCase() });
-    for (const d of sql.matchAll(/drop\s+function\s+(?:if\s+exists\s+)?(?:public\.)?"?([a-z_][a-z0-9_]*)"?/gi)) events.push({ pos: d.index, type: 'drop', name: d[1].toLowerCase() });
+    for (const a of sql.matchAll(/alter\s+function\s+(?:"?public"?\s*\.\s*)?"?([a-z_][a-z0-9_]*)"?[^;]*?set\s+search_path/gi)) events.push({ pos: a.index, type: 'alter', name: a[1].toLowerCase() });
+    for (const d of sql.matchAll(/drop\s+function\s+(?:if\s+exists\s+)?(?:"?public"?\s*\.\s*)?"?([a-z_][a-z0-9_]*)"?/gi)) events.push({ pos: d.index, type: 'drop', name: d[1].toLowerCase() });
     for (const e of events.sort((x, y) => x.pos - y.pos)) {
       if (e.type === 'create') fns.set(e.name, { file, definer: e.definer, searchPath: e.searchPath });
       else if (e.type === 'bulk') for (const f of fns.values()) f.searchPath = true;
