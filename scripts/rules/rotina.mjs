@@ -19,7 +19,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync
 import { spawnSync } from 'node:child_process';
 import { homedir, loadavg, tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { comparar } from './diff.mjs';
+import { comparar, carregarBase } from './diff.mjs';
 import { limparRegistrados } from './worktrees.mjs';
 import { fileURLToPath } from 'node:url';
 
@@ -95,8 +95,9 @@ if (run.status !== 0 || !existsSync(join(dayDir, 'latest.json'))) {
 
 // --- comparação com a execução anterior -------------------------------------------------------
 const cur = JSON.parse(readFileSync(join(dayDir, 'latest.json'), 'utf8'));
-const prevDir = readdirSync(OUT).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d) && d < day).sort().pop();
-const prev = prevDir && existsSync(join(OUT, prevDir, 'latest.json')) ? JSON.parse(readFileSync(join(OUT, prevDir, 'latest.json'), 'utf8')) : null;
+const base = carregarBase(OUT, day); // lido ANTES de a pasta do dia ser substituída
+const prev = base?.json ?? null;
+const prevDir = base?.rotulo;
 const { novos, resolvidos } = comparar(cur, prev);
 const ORDER = { alta: 0, media: 1, baixa: 2 };
 const bySev = (x, y) => ORDER[x.severity] - ORDER[y.severity];

@@ -85,4 +85,13 @@ describe('rules/rls-estatico — DROP POLICY', () => {
     expect(run(base, 'drop table public.a;').has('a')).toBe(false);
     expect(run(base, 'alter publication p drop table a; drop table a;').has('a')).toBe(false);
   });
+  it('DDL escrito dentro de corpo de função não é executado pela migration', () => {
+    const base = 'create table public.a (id int); alter table public.a enable row level security;';
+    const g = "create function public.g() returns text language sql as $$ select 'drop table public.a; alter table public.a disable row level security' $$;";
+    const t = run(base, g);
+    expect(t.has('a')).toBe(true);
+    expect(t.get('a')?.rls).toBe(true);
+    // DO $$ executa na hora
+    expect(run(base, 'DO $$ BEGIN DROP TABLE public.a; END $$;').has('a')).toBe(false);
+  });
 });

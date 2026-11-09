@@ -41,6 +41,18 @@ describe('rules/plano-definer-sem-search-path', () => {
     expect(run("create function public.h() returns text as 'select ''x''::text' language sql security definer set search_path = public;")).toEqual([]);
   });
 
+  it('ALTER/DROP escritos dentro do corpo de outra função não são comandos executados', () => {
+    const f = 'create function public.f() returns void security definer language sql as $$ select 1 $$;';
+    expect(run(f)).toHaveLength(1);
+    // g só RETORNA o texto "alter function ... set search_path": f continua vulnerável
+    expect(run(f, "create function public.g() returns text language sql as $$ select 'ALTER FUNCTION public.f() SET search_path = public' $$;")).toHaveLength(1);
+    expect(run(f, 'create function public.g() returns text language sql as $b$ select $x$DROP FUNCTION public.f()$x$ $b$;')).toHaveLength(1);
+    // fora de corpo continua valendo
+    expect(run(f, 'ALTER FUNCTION public.f() SET search_path = public;')).toEqual([]);
+    // DO $$ executa na hora: o ALTER dentro dele conta
+    expect(run(f, 'DO $$ BEGIN ALTER FUNCTION public.f() SET search_path = public; END $$;')).toEqual([]);
+  });
+
   it('ignora função INVOKER', () => {
     expect(run('create function h() returns int as $$ select 1 $$ language sql;')).toEqual([]);
   });

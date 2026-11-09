@@ -6,7 +6,7 @@
  */
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { sh, readMigrations, stripSqlComments } from '../lib.mjs';
+import { sh, readMigrations, stripSqlComments, fimDeLiteral, mascararCorposDeFuncao } from '../lib.mjs';
 
 const isTestPath = (p) => /(?:^|\/)(?:tests?|__tests__|__mocks__|e2e)\/|\.(?:test|spec)\.[tj]sx?$/.test(p);
 const srcFiles = (ctx) =>
@@ -15,21 +15,12 @@ const srcFiles = (ctx) =>
     .filter((f) => /\.(?:ts|tsx|js|jsx)$/.test(f) && !f.endsWith('.d.ts') && !isTestPath(f) && !f.includes('integrations/supabase/types'));
 const top = (rows, n = 40) => rows.sort((a, b) => b[1] - a[1]).slice(0, n);
 
-// Posição da aspa simples que FECHA o literal que começa em `from` ('' é aspa escapada, não fecha). -1 se não fecha.
-function fimDeLiteral(sql, from) {
-  for (let i = from; i < sql.length; i++) {
-    if (sql[i] !== "'") continue;
-    if (sql[i + 1] === "'") { i++; continue; }
-    return i;
-  }
-  return -1;
-}
-
 // ---- etapa 27: SECURITY DEFINER sem search_path --------------------------------------------
 export function definerSemSearchPath(migrations) {
   const fns = new Map(); // nome -> { file, definer, searchPath }
   for (const { file, sql: raw } of migrations) {
     const sql = stripSqlComments(raw);
+    const exec = mascararCorposDeFuncao(sql); // DDL executado: sem o texto armazenado dentro de corpos de função
     // Coleta os comandos com a posição e aplica NA ORDEM do SQL (DROP seguido de CREATE deixa a função existir).
     const events = [];
     const re = /create\s+(?:or\s+replace\s+)?function\s+(?:"?public"?\s*\.\s*)?"?([a-z_][a-z0-9_]*)"?\s*\(/gi;
@@ -51,10 +42,10 @@ export function definerSemSearchPath(migrations) {
     }
     // Endurecimento em lote: DO $$ ... FOR ... IN pg_proc ... EXECUTE format('ALTER FUNCTION ... SET search_path ...').
     // Cobre toda função pública já existente neste ponto; CREATE OR REPLACE posterior sem SET volta a ficar exposta.
-    const bulk = /execute\s+format\s*\(\s*'alter\s+function[^']*set\s+"?search_path"?/i.exec(sql);
-    if (bulk && /pg_proc/i.test(sql)) events.push({ pos: bulk.index, type: 'bulk' });
-    for (const a of sql.matchAll(/alter\s+function\s+(?:"?public"?\s*\.\s*)?"?([a-z_][a-z0-9_]*)"?[^;]*?set\s+"?search_path"?/gi)) events.push({ pos: a.index, type: 'alter', name: a[1].toLowerCase() });
-    for (const d of sql.matchAll(/drop\s+function\s+(?:if\s+exists\s+)?(?:"?public"?\s*\.\s*)?"?([a-z_][a-z0-9_]*)"?/gi)) events.push({ pos: d.index, type: 'drop', name: d[1].toLowerCase() });
+    const bulk = /execute\s+format\s*\(\s*'alter\s+function[^']*set\s+"?search_path"?/i.exec(exec);
+    if (bulk && /pg_proc/i.test(exec)) events.push({ pos: bulk.index, type: 'bulk' });
+    for (const a of exec.matchAll(/alter\s+function\s+(?:"?public"?\s*\.\s*)?"?([a-z_][a-z0-9_]*)"?[^;]*?set\s+"?search_path"?/gi)) events.push({ pos: a.index, type: 'alter', name: a[1].toLowerCase() });
+    for (const d of exec.matchAll(/drop\s+function\s+(?:if\s+exists\s+)?(?:"?public"?\s*\.\s*)?"?([a-z_][a-z0-9_]*)"?/gi)) events.push({ pos: d.index, type: 'drop', name: d[1].toLowerCase() });
     for (const e of events.sort((x, y) => x.pos - y.pos)) {
       if (e.type === 'create') fns.set(e.name, { file, definer: e.definer, searchPath: e.searchPath });
       else if (e.type === 'bulk') for (const f of fns.values()) f.searchPath = true;

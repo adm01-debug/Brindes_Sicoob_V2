@@ -88,3 +88,37 @@ export function edgeFunctions(root) {
       (existsSync(join(p, 'index.ts')) || existsSync(join(p, 'index.js')));
   });
 }
+
+/** Posição da aspa simples que FECHA o literal que começa em `from` ('' é aspa escapada, não fecha). -1 se não fecha. */
+export function fimDeLiteral(sql, from) {
+  for (let i = from; i < sql.length; i++) {
+    if (sql[i] !== "'") continue;
+    if (sql[i + 1] === "'") { i++; continue; }
+    return i;
+  }
+  return -1;
+}
+
+/**
+ * Troca por espaços o CORPO de cada CREATE FUNCTION/PROCEDURE (entre $tag$..$tag$ ou '..'), mantendo as posições.
+ * O texto de um corpo é código armazenado, não DDL executado pela migration: um `ALTER FUNCTION`/`DROP TABLE`
+ * escrito lá dentro (ex.: função que só retorna esse texto) não pode ser aplicado no replay.
+ * DO $$ ... $$ NÃO é função: roda na hora e continua visível.
+ */
+export function mascararCorposDeFuncao(sql) {
+  const re = /create\s+(?:or\s+replace\s+)?(?:function|procedure)\b/gi;
+  let out = sql;
+  let m;
+  while ((m = re.exec(sql))) {
+    const rel = sql.slice(m.index).search(/\bas\s+(\$[\w]*\$|')/i);
+    if (rel < 0) continue;
+    const tm = /\bas\s+(\$[\w]*\$|')/i.exec(sql.slice(m.index + rel));
+    const tag = tm[1];
+    const abre = m.index + rel + tm[0].length;
+    const fecha = tag === "'" ? fimDeLiteral(sql, abre) : sql.indexOf(tag, abre);
+    if (fecha < 0) continue;
+    out = out.slice(0, abre) + out.slice(abre, fecha).replace(/[^\n]/g, ' ') + out.slice(fecha);
+    re.lastIndex = fecha;
+  }
+  return out;
+}

@@ -1,4 +1,4 @@
-import { readMigrations, stripSqlComments } from '../lib.mjs';
+import { readMigrations, stripSqlComments, mascararCorposDeFuncao } from '../lib.mjs';
 
 // Nome de tabela, com ou sem "public." e aspas.
 const NAME = String.raw`(?:"?public"?\s*\.\s*)?"?([a-z_][a-z0-9_]*)"?`;
@@ -16,8 +16,9 @@ export function analyze(migrations) {
   const tables = new Map(); // nome -> { file, rls, policies, partition }
   const dynamic = new Set();
   for (const { file, sql: raw } of migrations) {
-    const sql = stripSqlComments(raw);
-    if (/execute\s+format\s*\([^;]*row level security/i.test(sql)) dynamic.add(file);
+    const todo = stripSqlComments(raw);
+    const sql = mascararCorposDeFuncao(todo); // DDL executado: o texto dentro de corpos de função é código armazenado
+    if (/execute\s+format\s*\([^;]*row level security/i.test(todo)) dynamic.add(file);
     // Coleta os comandos com a posição e aplica NA ORDEM do SQL (DROP seguido de CREATE recria a tabela).
     const events = [];
     for (const m of sql.matchAll(/create\s+table\s+(?:if\s+not\s+exists\s+)?(?:"?([a-z_][a-z0-9_]*)"?\.)?"?([a-z_][a-z0-9_]*)"?(?![\w."'])([^;]{0,200})/gi)) {
