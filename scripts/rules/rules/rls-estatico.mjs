@@ -10,24 +10,28 @@ const SQL_WORDS = new Set(['if', 'not', 'exists', 'as', 'only', 'public']);
  * e RENAME não são seguidos — por isso o resultado é um LEVANTAMENTO, não prova.
  */
 export function analyze(migrations) {
-  const tables = new Map(); // nome -> { file, rls, policies }
+  const tables = new Map(); // nome -> { file, rls, policies, partition }
   const dynamic = new Set();
   for (const { file, sql: raw } of migrations) {
     const sql = stripSqlComments(raw);
     if (/execute\s+format\s*\([^;]*row level security/i.test(sql)) dynamic.add(file);
+    // Coleta os comandos com a posição e aplica NA ORDEM do SQL (DROP seguido de CREATE recria a tabela).
+    const events = [];
     for (const m of sql.matchAll(/create\s+table\s+(?:if\s+not\s+exists\s+)?(?:"?([a-z_][a-z0-9_]*)"?\.)?"?([a-z_][a-z0-9_]*)"?(?![\w."'])([^;]{0,200})/gi)) {
       if (m[1] && m[1].toLowerCase() !== 'public') continue; // outro schema
       if (SQL_WORDS.has(m[2].toLowerCase())) continue; // SQL dentro de string/format()
-      if (!tables.has(m[2])) tables.set(m[2], { file, rls: false, policies: 0, partition: /^\s*partition\s+of\b/i.test(m[3]) });
+      events.push({ pos: m.index, type: 'create', name: m[2], partition: /^\s*partition\s+of\b/i.test(m[3]) });
     }
-    for (const m of sql.matchAll(new RegExp(String.raw`drop\s+table\s+(?:if\s+exists\s+)?` + NAME, 'gi'))) tables.delete(m[1]);
+    for (const m of sql.matchAll(new RegExp(String.raw`drop\s+table\s+(?:if\s+exists\s+)?` + NAME, 'gi'))) events.push({ pos: m.index, type: 'drop', name: m[1] });
     for (const m of sql.matchAll(new RegExp(String.raw`alter\s+table\s+(?:if\s+exists\s+)?(?:only\s+)?` + NAME + String.raw`\s+(enable|disable|force)\s+row\s+level\s+security`, 'gi'))) {
-      const t = tables.get(m[1]);
-      if (t && m[2].toLowerCase() !== 'force') t.rls = m[2].toLowerCase() === 'enable';
+      if (m[2].toLowerCase() !== 'force') events.push({ pos: m.index, type: 'rls', name: m[1], on: m[2].toLowerCase() === 'enable' });
     }
-    for (const m of sql.matchAll(new RegExp(String.raw`create\s+policy\s+(?:"[^"]+"|\w+)\s+on\s+` + NAME, 'gi'))) {
-      const t = tables.get(m[1]);
-      if (t) t.policies += 1;
+    for (const m of sql.matchAll(new RegExp(String.raw`create\s+policy\s+(?:"[^"]+"|\w+)\s+on\s+` + NAME, 'gi'))) events.push({ pos: m.index, type: 'policy', name: m[1] });
+    for (const e of events.sort((x, y) => x.pos - y.pos)) {
+      if (e.type === 'create') { if (!tables.has(e.name)) tables.set(e.name, { file, rls: false, policies: 0, partition: e.partition }); }
+      else if (e.type === 'drop') tables.delete(e.name);
+      else if (e.type === 'rls') { const t = tables.get(e.name); if (t) t.rls = e.on; }
+      else { const t = tables.get(e.name); if (t) t.policies += 1; }
     }
   }
   return { tables, dynamic };

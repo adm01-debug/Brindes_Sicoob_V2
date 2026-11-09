@@ -19,6 +19,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync
 import { spawnSync } from 'node:child_process';
 import { homedir, loadavg, tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
+import { comparar } from './diff.mjs';
 import { fileURLToPath } from 'node:url';
 
 const REPO = resolve(fileURLToPath(new URL('../..', import.meta.url))); // repo onde este script vive
@@ -80,13 +81,10 @@ if (run.status !== 0 || !existsSync(join(dayDir, 'latest.json'))) {
 }
 
 // --- comparação com a execução anterior -------------------------------------------------------
-const flat = (json) => new Map(json.results.flatMap((r) => r.items.map((i) => [`${r.id}|${i}`, { id: r.id, severity: r.severity, item: i }])));
 const cur = JSON.parse(readFileSync(join(dayDir, 'latest.json'), 'utf8'));
 const prevDir = readdirSync(OUT).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d) && d < day).sort().pop();
 const prev = prevDir && existsSync(join(OUT, prevDir, 'latest.json')) ? JSON.parse(readFileSync(join(OUT, prevDir, 'latest.json'), 'utf8')) : null;
-const a = flat(cur), b = prev ? flat(prev) : new Map();
-const novos = prev ? [...a].filter(([k]) => !b.has(k)).map(([, v]) => v) : [];
-const resolvidos = prev ? [...b].filter(([k]) => !a.has(k)).map(([, v]) => v) : [];
+const { novos, resolvidos } = comparar(cur, prev);
 const ORDER = { alta: 0, media: 1, baixa: 2 };
 const bySev = (x, y) => ORDER[x.severity] - ORDER[y.severity];
 const tabela = cur.results.filter((r) => r.items.length).sort(bySev).map((r) => `| ${r.severity} | ${r.id} | ${r.kind} | ${r.items.length} |`);
@@ -96,6 +94,7 @@ const resumo = [
   `# Gaps — ${day}`,
   `Ref analisada: \`${REF}\` @ \`${commit.slice(0, 9)}\` · comparação com: ${prevDir ?? '— (primeira execução)'}`,
   ...notes.map((n) => `> ⚠️ ${n}`),
+  ...cur.results.filter((r) => r.error).map((r) => `> ⚠️ Regra **${r.id}** falhou e NÃO foi verificada: ${r.error}`),
   ``,
   `## Mudanças desde a última execução`,
   prev ? `**${novos.length} novo(s)** · **${resolvidos.length} resolvido(s)**` : 'Primeira execução: sem base de comparação.',

@@ -81,4 +81,6 @@ mkdirSync(OUT, { recursive: true });
 writeFileSync(join(OUT, 'latest.md'), md);
 writeFileSync(join(OUT, 'latest.json'), JSON.stringify({ behind: ctx.behind, results }, null, 2));
 console.log(`\n${found.length} regra(s) com achados → ${join(OUT, 'latest.md')}`);
-process.exit(argv.includes('--strict') && found.some((f) => f.severity === 'alta') ? 1 : 0);
+const comErro = results.filter((r) => r.error);
+if (comErro.length) console.error(`\n⚠ ${comErro.length} regra(s) com ERRO (resultado inconclusivo): ${comErro.map((r) => r.id).join(', ')}`);
+process.exit(argv.includes('--strict') && (comErro.length || found.some((f) => f.severity === 'alta')) ? 1 : 0);

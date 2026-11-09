@@ -38,3 +38,13 @@ describe('rules/rls-estatico', () => {
     expect(t.get('b')?.partition).toBe(false);
   });
 });
+
+describe('rules/rls-estatico — ordem dos comandos', () => {
+  it('DROP TABLE seguido de CREATE TABLE na mesma migration: a tabela existe (sem RLS)', () => {
+    expect(run('drop table if exists a; create table a (id int);').get('a')?.rls).toBe(false);
+  });
+
+  it('CREATE seguido de DROP na mesma migration: a tabela some', () => {
+    expect(run('create table a (id int); drop table a;').has('a')).toBe(false);
+  });
+});

@@ -38,3 +38,15 @@ describe('rules/plano-definer-sem-search-path', () => {
     expect(run('create function f() returns int as $$ begin perform 1; return 1; end; $$ language plpgsql security definer;')).toHaveLength(1);
   });
 });
+
+describe('rules/plano-definer-sem-search-path — ordem dos comandos', () => {
+  it('DROP seguido de CREATE na mesma migration: a função existe e continua acusada', () => {
+    const sql = 'drop function if exists f(); create function f() returns int security definer as $$ select 1 $$ language sql;';
+    expect(run(sql)).toHaveLength(1);
+  });
+
+  it('CREATE seguido de DROP na mesma migration: a função some', () => {
+    const sql = 'create function f() returns int security definer as $$ select 1 $$ language sql; drop function f();';
+    expect(run(sql)).toEqual([]);
+  });
+});
