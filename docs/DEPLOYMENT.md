@@ -7,9 +7,20 @@ ambiente protegido `construction`; não afirma que o portal esteja em produção
 ou que qualquer publicação específica tenha sido executada com sucesso.
 
 O repositório exige Node.js `>=24 <25` (`package.json`). Use Node 24.x e npm.
-Não existe script `npm run deploy`. A publicação do frontend depende do
-provedor configurado para o projeto e deve ser comprovada pelo respectivo
-deploy e smoke test.
+Não existe script `npm run deploy`.
+
+## Publicador oficial do frontend: Vercel
+
+**Decisão de 08/11/2026:** o **Vercel** é o publicador oficial da `main` deste
+repositório (projeto `brindes-sicoob-v2`, team `juca1`). Merge em `main` =
+deploy automático em produção — o Vercel publica **sem esperar o CI**, então
+confirme os checks antes de mergear.
+
+O Lovable Cloud ainda aparece referenciado em partes do repositório
+(`README.md`, `supabase/functions/_shared/cors.ts`) por histórico do projeto;
+essa integração não é mais o publicador e deve ser desativada no dashboard do
+Lovable (fora do alcance de qualquer agente via MCP neste repo) quando o dono
+confirmar que nada depende dela.
 
 ## Publicar Edge Functions Sicoob
 

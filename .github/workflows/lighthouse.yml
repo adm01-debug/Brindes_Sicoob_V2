@@ -3,10 +3,6 @@ name: Lighthouse Performance Audit
 on:
   pull_request:
     branches: [main]
-    paths-ignore:
-      - 'docs/**'
-      - '*.md'
-      - '.github/CODEOWNERS'
 
 permissions:
   contents: read

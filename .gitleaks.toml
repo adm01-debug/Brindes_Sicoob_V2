@@ -6,3 +6,10 @@ description = "Hashes SHA-256 do inventário estrutural versionado"
 paths = ['''^scripts/db/\.inventory-cache\.json$''']
 regexTarget = "line"
 regexes = ['''^\s*"[^"]+":\s*"[0-9a-f]{64}",?\s*$''']
+
+[[allowlists]]
+description = "Chave sintética dos cenários do gerador de contexto: fixture que prova que o gerador detecta segredo no código (scripts/ai-context/cenarios.mjs); não é credencial"
+paths = ['''^scripts/ai-context/cenarios\.mjs$''']
+regexTarget = "match"
+# Padrao, nao o literal: assim o proprio arquivo nao casa com a regra stripe do gitleaks.
+regexes = ['''sk_live_[a-p]{16}''']
