@@ -2,12 +2,16 @@
 /**
  * GA02 (replicado do Zapp Web V2, scripts/ci/check-claude-md-integrity.mjs): garante que as instrucoes para agentes nao foram apagadas ou esvaziadas por outra sessao.
  * Alvo: AGENTS.md (regras) + docs/agentes/*.md (referencia). CLAUDE.md e so `@AGENTS.md`.
- * Verifica: AGENTS.md existe, cabecalhos obrigatorios presentes, o conjunto
- * AGENTS.md + CLAUDE.md + docs/agentes/*.md nao encolheu >30% em bytes vs a base, e cada arquivo
- * vigiado (AGENTS.md e cada docs/agentes/*.md que exista na base) continua existindo com >=50% do
- * tamanho que tem na base (o limiar do conjunto sozinho nao pega o esvaziamento de 1 arquivo).
+ * Verifica: AGENTS.md existe, cabecalhos obrigatorios presentes com corpo real (nao so o titulo —
+ * um cabecalho seguido de texto-placeholder do mesmo tamanho do original passaria pelas checagens
+ * de bytes sem isso), o conjunto AGENTS.md + CLAUDE.md + docs/agentes/*.md nao encolheu >30% em
+ * bytes vs a base, e cada arquivo vigiado (AGENTS.md e cada docs/agentes/*.md que exista na base)
+ * continua existindo com >=50% do tamanho que tem na base (o limiar do conjunto sozinho nao pega o
+ * esvaziamento de 1 arquivo).
  * Base: AGENTS_MD_BASE (no CI, a main buscada; no checkout do CI o HEAD e o proprio arquivo
- * e a comparacao viraria no-op). Localmente, sem a variavel, compara com o HEAD.
+ * e a comparacao viraria no-op). Localmente, sem a variavel, compara com o HEAD. Se a base nao
+ * resolver (ref inexistente), a comparacao de bytes e pulada e o motivo vai para stderr — nunca
+ * silenciosamente, mesmo que o restante do guard passe.
  * Na base o conjunto e o que existir la (na main antiga, CLAUDE.md + AGENTS.md).
  */
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
@@ -29,6 +33,10 @@ const REQUIRED_SECTIONS = [
 ];
 const SHRINK_THRESHOLD = 0.30;
 const FILE_SHRINK_THRESHOLD = 0.50;
+// Caracteres nao-whitespace exigidos no corpo de cada secao obrigatoria, antes do proximo
+// cabecalho "## " ou do fim do arquivo. Pega o ataque de deixar so os 8 titulos como placeholder
+// (bytes preservados, conteudo normativo apagado) — o que a checagem de bytes por si nao detecta.
+const MIN_SECTION_BODY_CHARS = 200;
 
 let content;
 try {
@@ -39,9 +47,23 @@ try {
   process.exit();
 }
 
-const missing = REQUIRED_SECTIONS.filter((s) => !content.includes(s));
+const missing = [];
+for (const section of REQUIRED_SECTIONS) {
+  const idx = content.indexOf(section);
+  if (idx === -1) {
+    missing.push(`${section}: secao ausente`);
+    continue;
+  }
+  const afterHeader = content.slice(idx + section.length);
+  const nextHeaderIdx = afterHeader.search(/\n## /);
+  const body = nextHeaderIdx === -1 ? afterHeader : afterHeader.slice(0, nextHeaderIdx);
+  const nonWhitespaceChars = body.replace(/\s/g, '').length;
+  if (nonWhitespaceChars < MIN_SECTION_BODY_CHARS) {
+    missing.push(`${section}: corpo com ${nonWhitespaceChars} caracteres (esperado >= ${MIN_SECTION_BODY_CHARS}) — pode ser placeholder sem conteudo real`);
+  }
+}
 if (missing.length > 0) {
-  for (const s of missing) console.error(`::error::${AGENTS}: secao obrigatoria ausente: ${s}`);
+  for (const s of missing) console.error(`::error::${AGENTS}: secao obrigatoria invalida: ${s}`);
   process.exitCode = 1;
   process.exit();
 }
@@ -88,6 +110,10 @@ function bytesNaBase(base) {
 const BASE = process.env.AGENTS_MD_BASE || process.env.CLAUDE_MD_BASE || 'HEAD';
 const atual = bytesAtuais();
 const base = bytesNaBase(BASE);
+
+if (!base) {
+  console.warn(`::warning::Base '${BASE}' nao resolveu nenhum arquivo do conjunto (ref inexistente ou checkout sem a main) — comparacao de encolhimento PULADA. Isso nao e uma aprovacao do conteudo, so a ausencia de uma base valida para comparar.`);
+}
 
 if (base) {
   const ratio = atual / base.total;
