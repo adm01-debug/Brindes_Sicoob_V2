@@ -49,9 +49,9 @@ Fatos do perímetro que já custaram retrabalho:
 - **Corrigido em 08/11/2026:** `codeql.yml` e `lighthouse.yml` tinham `paths-ignore` **no gatilho
   `pull_request`**, e `Analyze (javascript-typescript)`/`lighthouse` são required checks — o job nunca
   iniciava em PR só de `docs/**`/`*.md`, o check ficava pendente para sempre e `strict: true` nunca
-  liberava. Removido o `paths-ignore` do `pull_request` dos dois (mantido no `push`, que não é gate de
-  PR): agora os dois sempre rodam em PR contra `main`, custando mais CI em PR doc-only em troca de nunca
-  mais travar o merge.
+  liberava. Removido o `paths-ignore` do `pull_request` dos dois (`codeql.yml` manteve o `paths-ignore`
+  no `push`, que não é gate de PR; `lighthouse.yml` nunca teve gatilho `push`): agora os dois sempre
+  rodam em PR contra `main`, custando mais CI em PR doc-only em troca de nunca mais travar o merge.
 - **`environment: e2e-qa` criado em 08/11/2026, ainda sem secrets.** `e2e.yml:83`, `e2e.yml:271` e
   `security-compliance.yml:86` apontam para ele. O environment agora existe (sem branch policy nem
   revisor), mas `e2e-authenticated` continua falhando fechado — `e2e.yml:135-146` exige ~13 secrets
@@ -208,5 +208,3 @@ Rodam em nenhum workflow (não confie neles como gate, mas são úteis): `npm ru
 ## Pendências deste doc
 
 1. `environment: e2e-qa` existe mas está sem secrets (ver "Fatos do perímetro") — depende do dono.
-2. `.github/workflows/ci.yml` foi tocado por esta mudança (guard `check:agents-md` adicionado) enquanto
-   as PRs #151, #173 e #180 também o tocavam — se alguma mesclar antes desta, rebase simples.
