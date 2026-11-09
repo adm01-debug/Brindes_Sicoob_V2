@@ -5,7 +5,7 @@ import { requireInternalService } from "../_shared/internal-service-auth.ts";
  * Cruza user_comparisons ativas com price_history; se houve queda > 5% nos
  * últimos 7d em produto comparado, cria notificação em workspace_notifications.
  */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 
 const THRESHOLD_PCT = 5;
 const LOOKBACK_DAYS = 7;

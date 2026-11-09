@@ -4,9 +4,8 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
-
-// Fallback CORS headers (injected by recovery codemod) — substituído per-request quando aplicável.
-let corsHeaders: Record<string, string> = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" };
+import { authenticateRequest, authErrorResponse } from "../_shared/auth.ts";
+import { rateLimiters, applyRateLimit } from "../_shared/rate-limiter.ts";
 
 const ProductSchema = z.object({
   id: z.union([z.string(), z.number()]).transform(String),
@@ -55,9 +54,21 @@ const ToolSchema = {
 };
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: getCorsHeaders(req) });
+  const corsHeaders = getCorsHeaders(req);
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    // Auth guard: exige usuário autenticado (evita abuso/custo de chamadas pagas)
+    const auth = await authenticateRequest(req);
+
+    // Rate limit: 20 req/min por usuário
+    const rl = await applyRateLimit(req, rateLimiters.ai, () => auth.userId);
+    if (rl) {
+      const headers = new Headers(rl.headers);
+      Object.entries(corsHeaders).forEach(([k, v]) => headers.set(k, v));
+      return new Response(rl.body, { status: rl.status, headers });
+    }
+
     const json = await req.json().catch(() => ({}));
     const parsed = BodySchema.safeParse(json);
     if (!parsed.success) {
@@ -136,9 +147,13 @@ Considere preço, estoque, quantidade mínima, variedade de cores e disponibilid
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
+    // Erros de autenticação (401/403) já vêm formatados
+    if (e && typeof e === "object" && "status" in e) {
+      return authErrorResponse(e, corsHeaders);
+    }
     console.error("comparison-ai-advisor exception:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "unknown_error" }),
+      JSON.stringify({ error: "erro_interno" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

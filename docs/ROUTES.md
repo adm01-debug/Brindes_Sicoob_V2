@@ -9,7 +9,6 @@
 | `/admin/sicoob/notificacoes` | `@/pages/admin/sicoob/SicoobApprovalReconciliationPage` |
 | `/admin/usuarios` | `@/pages/admin/AdminUsuariosPage` |
 | `/admin/cadastros` | `@/pages/admin/AdminCadastrosPage` |
-| `/admin/cadastros/produto/:id` | `@/pages/admin/AdminProductFormPage` |
 | `/admin/categories` | `@/pages/admin/AdminCategoriesPage` |
 | `/admin/singulares` | `@/pages/admin/AdminSingularesPage` |
 | `/admin/pas` | `@/pages/admin/AdminPAsPage` |

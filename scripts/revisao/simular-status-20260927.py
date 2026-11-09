@@ -3,8 +3,27 @@
 import json
 import pathlib
 import subprocess
+import sys
 import time
 import uuid
+
+
+def _require_docker() -> None:
+    """Pula graciosamente se o daemon Docker não estiver acessível (ex: CI sem Docker)."""
+    try:
+        r = subprocess.run(["docker", "info"], capture_output=True, timeout=5)
+        if r.returncode != 0:
+            print("⚠️  Docker daemon não está rodando — script ignorado (ambiente sem Docker).", file=sys.stderr)
+            sys.exit(0)
+    except FileNotFoundError:
+        print("⚠️  Docker não encontrado no PATH — script ignorado (ambiente sem Docker).", file=sys.stderr)
+        sys.exit(0)
+    except subprocess.TimeoutExpired:
+        print("⚠️  Docker daemon não respondeu a tempo — script ignorado (ambiente sem Docker).", file=sys.stderr)
+        sys.exit(0)
+
+
+_require_docker()
 
 raiz = pathlib.Path(__file__).resolve().parents[2]
 nome = 'sicoob-revisao-' + uuid.uuid4().hex[:10]

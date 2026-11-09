@@ -1,7 +1,7 @@
 // Edge function: comparisons-public-react
 // Reactions anônimas (👍 ❤️ 🔥 💡) em itens de comparações públicas compartilhadas.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { z } from "https://esm.sh/zod@3.23.8";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
+import { z } from "npm:zod@3.23.8";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

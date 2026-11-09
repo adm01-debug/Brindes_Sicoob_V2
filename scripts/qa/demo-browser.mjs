@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 
@@ -8,6 +9,14 @@ const baseUrl = process.env.QA_BASE_URL ?? 'http://127.0.0.1:4178';
 const parsedUrl = new URL(baseUrl);
 if (!['127.0.0.1', 'localhost'].includes(parsedUrl.hostname)) {
   throw new Error('A demonstração automatizada só pode usar um servidor local.');
+}
+
+// Verifica se o servidor QA está rodando antes de lançar o navegador
+try {
+  await fetch(`${baseUrl}/`, { signal: AbortSignal.timeout(3000) });
+} catch {
+  console.error(`❌ Servidor QA não está rodando em ${baseUrl}. Inicie com \`npm run preview\` ou configure QA_BASE_URL.`);
+  process.exit(1);
 }
 
 const evidenceDirectory = 'docs/execucao/evidencias/visual';

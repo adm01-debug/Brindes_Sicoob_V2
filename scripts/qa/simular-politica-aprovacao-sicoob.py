@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Valida guardas de aprovação Sicoob em PostgreSQL descartável e sem rede."""
 from pathlib import Path
 import json

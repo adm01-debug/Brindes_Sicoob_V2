@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Prova o isolamento entre cooperativas e PAs no domínio de pedidos Sicoob."""
 from pathlib import Path
 import json

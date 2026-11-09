@@ -78,6 +78,3 @@ supabase/.temp/*
 
 # Relatórios locais de orçamento de bundle; a CI os publica como artefato.
 bundle-stats/
-
-# relatório do scripts/rules (gerado)
-reports/gaps/

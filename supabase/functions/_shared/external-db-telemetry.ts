@@ -1,7 +1,7 @@
 // supabase/functions/_shared/external-db-telemetry.ts
 // Query performance telemetry for external-db-bridge
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 
 export const SLOW_QUERY_THRESHOLD_MS = 3000;
 export const VERY_SLOW_QUERY_THRESHOLD_MS = 8000;

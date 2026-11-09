@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Configurar Supabase CLI
-        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3
+        uses: supabase/setup-cli@689adcfb80d947100a1eab127289b97d1fb07b13 # v3
         with:
           version: 2.120.0
 
@@ -46,7 +46,13 @@ jobs:
             sicoob-artwork-register \
             sicoob-document-ingest \
             sicoob-kit-quote \
-            sicoob-reorder
+            sicoob-reorder \
+            bi-copilot \
+            comparison-ai-advisor \
+            get-app-logs \
+            get-visitor-info \
+            secure-upload \
+            auth-integrity-check
           do
             supabase functions deploy "$function_name" --project-ref "$SUPABASE_PROJECT_ID"
           done
@@ -55,19 +61,6 @@ jobs:
         run: |
           set -euo pipefail
           published_functions="$(supabase functions list --project-ref "$SUPABASE_PROJECT_ID" --output-format json)"
-          for function_name in \
-            expert-chat \
-            external-db-bridge \
-            sicoob-approval-reconciliation \
-            sicoob-artwork-register \
-            sicoob-document-ingest \
-            sicoob-kit-quote \
-            sicoob-reorder
-          do
-            previous_version="$(jq -r --arg function_name "$function_name" '[(.functions // .)[] | select(.slug == $function_name) | .version] | first // 0' /tmp/functions-before.json)"
-            current_version="$(echo "$published_functions" | jq -r --arg function_name "$function_name" '[(.functions // .)[] | select(.slug == $function_name) | .version] | first // 0')"
-            if ! [[ "$current_version" =~ ^[0-9]+$ ]] || (( current_version <= previous_version )); then
-              echo "::error title=Publicação não confirmada::$function_name permaneceu na versão $current_version (anterior: $previous_version)."
-              exit 1
-            fi
-          done
+          printf '%s\n' "$published_functions" > /tmp/functions-after.json
+          node scripts/ci/verify-supabase-functions-published.mjs \
+            /tmp/functions-before.json /tmp/functions-after.json

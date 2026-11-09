@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Prova que usuários inativos não gerenciam nem transicionam orçamentos."""
 from pathlib import Path
 import json

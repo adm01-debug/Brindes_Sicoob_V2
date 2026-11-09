@@ -1,11 +1,12 @@
-import { publicCorsHeaders } from '../_shared/cors.ts';
+import { getCorsHeaders } from '../_shared/cors.ts';
 
 Deno.serve(async (req: Request): Promise<Response> => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: publicCorsHeaders });
+    return new Response(null, { headers: corsHeaders });
   }
 
-  const headers = { ...publicCorsHeaders, 'Content-Type': 'application/json' };
+  const headers = { ...corsHeaders, 'Content-Type': 'application/json' };
 
   try {
     // Extract visitor IP from proxy headers
@@ -37,8 +38,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       JSON.stringify({ ip, city, country_code: countryCode }),
       { status: 200, headers }
     );
-  } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Internal error';
-    return new Response(JSON.stringify({ error: msg }), { status: 500, headers });
+  } catch {
+    return new Response(JSON.stringify({ error: 'erro_interno' }), { status: 500, headers });
   }
 });

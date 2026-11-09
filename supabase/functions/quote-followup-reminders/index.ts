@@ -3,7 +3,7 @@
  * Cria notificações para vendedores cujos orçamentos enviados há ≥2 dias
  * ainda não foram visualizados pelo cliente. Idempotente por dia (não duplica).
  */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 import { requireInternalService } from "../_shared/internal-service-auth.ts";
 
 const corsHeaders = {

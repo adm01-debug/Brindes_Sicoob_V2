@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Valida retries, concorrência, hash completo e RLS do salvamento idempotente."""
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path

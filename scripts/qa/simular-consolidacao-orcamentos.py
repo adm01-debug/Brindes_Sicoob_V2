@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Consolidação atômica de orçamentos em PostgreSQL descartável."""
 from pathlib import Path
 import json, subprocess, uuid

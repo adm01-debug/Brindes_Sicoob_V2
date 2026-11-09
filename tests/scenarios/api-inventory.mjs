@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildApiInventory } from '../../scripts/db/import-api-inventory.mjs';
-import { compareInventorySnapshots } from '../../scripts/db/check-live-api-inventory.mjs';
+import { compareInventorySnapshots, hasBlockingDifferences } from '../../scripts/db/check-live-api-inventory.mjs';
 
 test('inventário preserva somente o contrato observado no projeto correto', () => {
   const api = {
@@ -67,4 +67,47 @@ test('comparação do inventário detecta alteração estrutural sem mudança de
       changed: ['products'],
     },
   ]);
+});
+
+test('evolução legítima (adição e mudança de contrato) não é bloqueante', () => {
+  const expected = {
+    project_ref: 'cfmzkthhgliqelozlmwu',
+    relations: ['products'],
+    functions: ['search_products'],
+    buckets: ['products'],
+    contract_sha256: {
+      relations: { products: 'contrato-anterior' },
+      functions: { search_products: 'contrato-estavel' },
+      buckets: { products: 'contrato-estavel' },
+    },
+  };
+  const live = {
+    ...expected,
+    relations: ['products', 'products_new'],
+    buckets: ['products', 'logs'],
+    contract_sha256: {
+      ...expected.contract_sha256,
+      relations: { products: 'contrato-novo' },
+    },
+  };
+
+  const differences = compareInventorySnapshots(expected, live);
+  assert.ok(differences.length > 0);
+  assert.equal(hasBlockingDifferences(differences), false);
+});
+
+test('regressão (item removido do live) continua bloqueante', () => {
+  const expected = {
+    project_ref: 'cfmzkthhgliqelozlmwu',
+    relations: ['products', 'legacy'],
+    functions: ['search_products'],
+    buckets: ['products'],
+  };
+  const live = { ...expected, relations: ['products'] };
+
+  const differences = compareInventorySnapshots(expected, live);
+  assert.ok(differences.length > 0);
+  assert.equal(hasBlockingDifferences(differences), true);
+
+  assert.equal(hasBlockingDifferences([{ kind: 'project_ref', expected: 'a', live: 'b' }]), true);
 });

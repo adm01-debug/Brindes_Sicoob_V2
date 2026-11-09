@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Valida delegações de aprovação Sicoob em PostgreSQL 17 descartável."""
 from pathlib import Path
 import json
