@@ -18,7 +18,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync, readdirSync, symlinkSync, copyFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { homedir, loadavg, tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const REPO = resolve(fileURLToPath(new URL('../..', import.meta.url))); // repo onde este script vive
@@ -70,8 +70,14 @@ const dayDir = join(OUT, day);
 mkdirSync(dayDir, { recursive: true });
 log(`analisando ${REF} @ ${commit.slice(0, 9)}`);
 // O runner vive no repo atual (pode ainda não estar no ref analisado); roda com cwd = worktree.
-const run = spawnSync('node', [join(REPO, 'scripts/rules/run.mjs'), '--out', dayDir], { cwd: work, encoding: 'utf8', timeout: 20 * 60 * 1000 });
-if (run.status !== 0 || !existsSync(join(dayDir, 'latest.json'))) { log(`runner falhou (exit ${run.status})\n${run.stderr}`); process.exit(1); }
+// Sob o systemd o PATH não tem o node do nvm e os gates internos chamam `node` pelo nome: propaga o diretório do node atual.
+const env = { ...process.env, PATH: `${dirname(process.execPath)}:${process.env.PATH ?? '/usr/bin:/bin'}` };
+const run = spawnSync(process.execPath, [join(REPO, 'scripts/rules/run.mjs'), '--out', dayDir], { cwd: work, env, encoding: 'utf8', timeout: 20 * 60 * 1000 });
+if (run.status !== 0 || !existsSync(join(dayDir, 'latest.json'))) {
+  log(`runner falhou (exit ${run.status}${run.error ? `, ${run.error.message}` : ''}${run.signal ? `, sinal ${run.signal}` : ''})\n${run.stderr ?? ''}${run.stdout?.split('\n').slice(-8).join('\n') ?? ''}`);
+  rmSync(dayDir, { recursive: true, force: true });
+  process.exit(1);
+}
 
 // --- comparação com a execução anterior -------------------------------------------------------
 const flat = (json) => new Map(json.results.flatMap((r) => r.items.map((i) => [`${r.id}|${i}`, { id: r.id, severity: r.severity, item: i }])));
