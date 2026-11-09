@@ -131,8 +131,13 @@ divergiu da realidade → corrija no mesmo PR do fix. Responda sempre em PT-BR.
 - `npx vitest run <caminho>`; `node scripts/tscheck-files.mjs <arquivos>` (ou `npm run typecheck`);
   `npx eslint <arquivos>`; `npm run test:scenarios`; `npm run test:e2e:smoke`; `npm run build`;
   `npm run check:agents-md` (integridade deste arquivo e de `docs/agentes/`).
-- Antes de qualquer tarefa: `PENDENCIAS.md` (o que está quebrado), `RELATORIO_CI.md` (estado do CI) e o doc
-  de `docs/agentes/` do tema. `docs/ROUTES.md` é gerado — não edite à mão.
+- Antes de qualquer tarefa: `PENDENCIAS.md` (o que está quebrado), `RELATORIO_CI.md` (estado do CI),
+  `inventario/estado/` (estado medido do banco e das rotas, regerado por script) e o doc de
+  `docs/agentes/` do tema. `docs/ROUTES.md` é gerado — não edite à mão.
+- **Contexto gerado para agentes** (não redescubra o que já está medido): branch `contexto`,
+  `git show origin/contexto:docs/contexto/00-INDEX.md` — três fontes (`codigo/`, `supabase/`,
+  `regras/`) regeradas a cada 10 min por `contexto.yml`; `inventario/estado/*.json` pelo
+  `inventario-estado-semanal.yml`. Detalhe em `docs/agentes/contexto-ia.md`.
 - Automação em `scripts/<nome>/` com README (leia antes de alterar); nunca em `supabase/` nem `src/`.
 
 ## Grafo de código (graphify)
