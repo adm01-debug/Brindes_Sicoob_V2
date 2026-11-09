@@ -76,4 +76,13 @@ describe('rules/rls-estatico — DROP POLICY', () => {
     expect(run(base, 'create policy P on a using (true);', 'drop policy "p" on a;').get('a')?.policies).toBe(0);
     expect(run(base, 'create policy "P" on a using (true);', 'drop policy p on a;').get('a')?.policies).toBe(1);
   });
+  it('ALTER PUBLICATION ... DROP TABLE não apaga a tabela; DROP TABLE de verdade apaga', () => {
+    const base = 'create table public.a (id int); alter table public.a enable row level security;';
+    expect(run(base, 'ALTER PUBLICATION supabase_realtime DROP TABLE public.a;').has('a')).toBe(true);
+    expect(run(base, 'alter publication p\n  drop table a;').has('a')).toBe(true);
+    // policies posteriores continuam sendo contabilizadas
+    expect(run(base, 'ALTER PUBLICATION supabase_realtime DROP TABLE public.a;', 'create policy p on a using (true);').get('a')?.policies).toBe(1);
+    expect(run(base, 'drop table public.a;').has('a')).toBe(false);
+    expect(run(base, 'alter publication p drop table a; drop table a;').has('a')).toBe(false);
+  });
 });

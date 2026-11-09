@@ -25,7 +25,11 @@ export function analyze(migrations) {
       if (SQL_WORDS.has(m[2].toLowerCase())) continue; // SQL dentro de string/format()
       events.push({ pos: m.index, type: 'create', name: m[2], partition: /^\s*partition\s+of\b/i.test(m[3]) });
     }
-    for (const m of sql.matchAll(new RegExp(String.raw`drop\s+table\s+(?:if\s+exists\s+)?` + NAME, 'gi'))) events.push({ pos: m.index, type: 'drop', name: m[1] });
+    for (const m of sql.matchAll(new RegExp(String.raw`drop\s+table\s+(?:if\s+exists\s+)?` + NAME, 'gi'))) {
+      // `ALTER PUBLICATION ... DROP TABLE t` só tira t da publicação; a tabela continua existindo.
+      if (/alter\s+publication\b/i.test(sql.slice(sql.lastIndexOf(';', m.index) + 1, m.index))) continue;
+      events.push({ pos: m.index, type: 'drop', name: m[1] });
+    }
     for (const m of sql.matchAll(new RegExp(String.raw`alter\s+table\s+(?:if\s+exists\s+)?(?:only\s+)?` + NAME + String.raw`\s+(enable|disable|force)\s+row\s+level\s+security`, 'gi'))) {
       if (m[2].toLowerCase() !== 'force') events.push({ pos: m.index, type: 'rls', name: m[1], on: m[2].toLowerCase() === 'enable' });
     }
