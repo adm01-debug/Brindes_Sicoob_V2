@@ -1,7 +1,7 @@
 import { readMigrations, stripSqlComments } from '../lib.mjs';
 
 // Nome de tabela, com ou sem "public." e aspas.
-const NAME = String.raw`(?:public\.)?"?([a-z_][a-z0-9_]*)"?`;
+const NAME = String.raw`(?:"?public"?\s*\.\s*)?"?([a-z_][a-z0-9_]*)"?`;
 
 const SQL_WORDS = new Set(['if', 'not', 'exists', 'as', 'only', 'public']);
 

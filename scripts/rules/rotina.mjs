@@ -20,6 +20,7 @@ import { spawnSync } from 'node:child_process';
 import { homedir, loadavg, tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { comparar } from './diff.mjs';
+import { limparRegistrados } from './worktrees.mjs';
 import { fileURLToPath } from 'node:url';
 
 const REPO = resolve(fileURLToPath(new URL('../..', import.meta.url))); // repo onde este script vive
@@ -35,6 +36,7 @@ const log = (m) => console.log(`[rotina ${new Date().toISOString()}] ${m}`);
 if (loadavg()[0] > MAX_LOAD) { log(`carga ${loadavg()[0].toFixed(1)} > ${MAX_LOAD}: pulando esta rodada`); process.exit(0); }
 
 const lock = join(tmpdir(), 'gaps-rotina.lock');
+const REGISTRO = join(tmpdir(), 'gaps-rotina.worktrees'); // worktrees temporários criados por esta rotina
 try { mkdirSync(lock); } catch {
   const pidFile = join(lock, 'pid');
   let alive = false;
@@ -48,19 +50,16 @@ writeFileSync(join(lock, 'pid'), String(process.pid));
 let work = null;
 const cleanup = () => {
   if (work) { git(['worktree', 'remove', '--force', work]); rmSync(work, { recursive: true, force: true }); git(['worktree', 'prune']); work = null; }
+  rmSync(REGISTRO, { force: true });
   rmSync(lock, { recursive: true, force: true });
 };
 process.on('exit', cleanup);
 process.on('SIGINT', () => process.exit(130));
 process.on('SIGTERM', () => process.exit(143));
 
-// Restos de execução anterior morta (SIGKILL/timeout do systemd): worktrees temporários ainda registrados.
-// A trava acima garante que nenhuma outra rotina está usando estes.
-for (const l of git(['worktree', 'list', '--porcelain']).stdout.split('\n')) {
-  const m = /^worktree (.*[\\/]gaps-wt-[^\\/]+)$/.exec(l);
-  if (m) { git(['worktree', 'remove', '--force', '--force', m[1]]); rmSync(m[1], { recursive: true, force: true }); }
-}
-git(['worktree', 'prune']);
+// Restos de execução anterior morta (SIGKILL/timeout do systemd): só os worktrees que ESTA rotina registrou.
+// (Nunca por prefixo de nome: um worktree seu chamado gaps-wt-algo, mesmo com alterações, não pode ser apagado.)
+limparRegistrados({ registro: REGISTRO, tmp: tmpdir(), git });
 
 const notes = [];
 const fetched = git(['fetch', 'origin', '--quiet', '--no-tags']);
@@ -70,6 +69,7 @@ if (sha.status !== 0) { log(`ref ${REF} não existe`); process.exit(1); }
 const commit = sha.stdout.trim();
 
 work = mkdtempSync(join(tmpdir(), 'gaps-wt-'));
+writeFileSync(REGISTRO, work + '\n'); // registra ANTES de criar: se for morta no meio, a próxima rodada limpa
 const add = git(['worktree', 'add', '--detach', '--quiet', work, commit]);
 if (add.status !== 0) { log(`worktree falhou: ${add.stderr}`); process.exit(1); }
 if (existsSync(join(REPO, 'node_modules'))) symlinkSync(join(REPO, 'node_modules'), join(work, 'node_modules'));

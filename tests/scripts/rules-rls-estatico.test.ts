@@ -62,4 +62,11 @@ describe('rules/rls-estatico — DROP POLICY', () => {
     expect(t.get('a')?.policies).toBe(1);
     expect(run(base, 'create policy p1 on a using (true);', 'drop policy p1 on a; create policy p1 on a using (true);').get('a')?.policies).toBe(1);
   });
+  it('schema public entre aspas vale em ALTER, DROP POLICY e DROP TABLE (igual a public.a)', () => {
+    const base = 'create table public.a (id int); alter table public.a enable row level security; create policy p on public.a using (true);';
+    expect(run(base, 'ALTER TABLE "public".a DISABLE ROW LEVEL SECURITY;').get('a')?.rls).toBe(false);
+    expect(run(base, 'DROP POLICY p ON "public".a;').get('a')?.policies).toBe(0);
+    expect(run(base, 'ALTER TABLE "public"."a" DISABLE ROW LEVEL SECURITY;').get('a')?.rls).toBe(false);
+    expect(run(base, 'drop table "public" . "a";').has('a')).toBe(false);
+  });
 });
