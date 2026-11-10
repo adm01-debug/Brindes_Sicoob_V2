@@ -86,8 +86,10 @@ export function analyzeMigrationSql(sql, inventory = { relations: [], functions:
   add(matches(code, /\btruncate\b/i), 'truncate');
   add(matches(code, /\bdelete\s+from\b/i), 'delete_dados');
   add(matches(code, /\bupdate\s+(?:only\s+)?[\w".]+\s+set\b/i), 'update_dados');
-  add(matches(code, /\bdrop\s+(?:table|view|materialized\s+view|column|type|function|index)\b/i), 'drop_objeto');
-  add(matches(code, /\balter\s+table[\s\S]*?\bdrop\s+(?:column|constraint)\b/i), 'drop_estrutura');
+  // schema/sequence/extension/owned também destroem objeto: `DROP SCHEMA public CASCADE` virava "candidata a dry-run".
+  add(matches(code, /\bdrop\s+(?:table|view|materialized\s+view|column|type|function|index|schema|sequence|extension|owned)\b/i), 'drop_objeto');
+  // `ALTER TABLE t DROP email` (sem a palavra COLUMN) é válido e destrói a coluna; só DROP DEFAULT/NOT NULL/IDENTITY/EXPRESSION são inofensivos.
+  add(matches(code, /\balter\s+table\b[^;]*?\bdrop\s+(?!default\b|not\s+null\b|identity\b|expression\b)/i), 'drop_estrutura');
   add(matches(code, /\bdisable\s+row\s+level\s+security\b/i), 'rls_desabilitada');
   add(matches(code, /\busing\s*\(\s*true\s*\)/i), 'policy_using_true');
   add(matches(code, /\bwith\s+check\s*\(\s*true\s*\)/i), 'policy_check_true');
@@ -237,6 +239,10 @@ async function main() {
   }
   const ledgerPath = valueAfter(args, '--ledger', DEFAULT_LEDGER);
   const inventoryPath = valueAfter(args, '--inventory', DEFAULT_INVENTORY);
+  // Flag desconhecida (`--ouptut x`) era ignorada e a saída ia para o stdout sem aviso.
+  const KNOWN_FLAGS = new Set(['--ledger', '--inventory', '--output', '--markdown', '-h', '--help']);
+  const unknown = args.filter((arg) => arg.startsWith('-') && !KNOWN_FLAGS.has(arg));
+  if (unknown.length > 0) throw new UsageError(`Flag desconhecida: ${unknown.join(', ')}`);
   const outputPath = valueAfter(args, '--output', null);
   const markdownPath = valueAfter(args, '--markdown', null);
   const result = classifyBacklog({

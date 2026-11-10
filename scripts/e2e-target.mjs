@@ -1,6 +1,13 @@
+// Projetos em que NUNCA se roda E2E/QA (docs/agentes/banco.md): oficial, catálogo externo (somente
+// leitura), CRM e os três legados de outra origem. Basta um `E2E_ALLOWED_PROJECT_ID` errado para
+// uma destas ids passar pela allowlist; esta lista é a segunda trava.
 const FORBIDDEN_PROJECT_IDS = new Set([
-  "cfmzkthhgliqelozlmwu",
-  "doufsxqlfjyuvxuezpln",
+  "cfmzkthhgliqelozlmwu", // oficial (produção)
+  "doufsxqlfjyuvxuezpln", // catálogo externo
+  "pgxfvjmuubtbowutlide", // CRM
+  "nmojwpihnslkssljowjh", // legado
+  "bojgeppypmtormfjsyun", // legado
+  "hgbzltfwozdkcudofypy", // legado
 ]);
 
 /** Valida destino isolado de QA sem imprimir URL nem credenciais. */

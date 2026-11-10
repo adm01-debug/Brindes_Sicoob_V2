@@ -28,15 +28,24 @@
  * compilavam limpos no projeto inteiro (baseline). Corrigido: sempre inclui
  * todo `src/**\/*.d.ts` junto dos arquivos pedidos.
  */
-import { writeFileSync, unlinkSync } from "node:fs";
+import { writeFileSync, unlinkSync, existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { globSync } from "node:fs";
+import { relative, resolve } from "node:path";
 
-const files = process.argv.slice(2).filter(Boolean);
-if (files.length === 0) {
+const requested = process.argv.slice(2).filter(Boolean);
+if (requested.length === 0) {
   console.error("Informe ao menos um arquivo.");
   process.exit(2);
 }
+// O tsc imprime caminhos relativos ao cwd e sem `./`. `./src/x.ts` e caminho absoluto nunca
+// casavam com a saída e davam "0 erro(s)" mesmo com erro; arquivo inexistente também.
+const missing = requested.filter((file) => !existsSync(file));
+if (missing.length > 0) {
+  console.error(`Arquivo(s) não encontrado(s): ${missing.join(", ")}`);
+  process.exit(2);
+}
+const files = requested.map((file) => relative(process.cwd(), resolve(file)).split("\\").join("/"));
 
 const ambientDeclarations = globSync("src/**/*.d.ts");
 const cfgPath = `tsconfig.probe.${process.pid}.json`;
@@ -56,10 +65,18 @@ try {
   });
   const out = `${res.stdout ?? ""}${res.stderr ?? ""}`;
   const lines = out.split("\n").filter((l) => /error TS/.test(l));
-  const scoped = lines.filter((l) => files.some((f) => l.startsWith(f)));
-  for (const l of scoped) console.log(l);
-  console.log(`\n— ${scoped.length} erro(s) nos arquivos pedidos (${lines.length} no programa inteiro).`);
-  process.exitCode = scoped.length === 0 ? 0 : 1;
+  // Falha do próprio npx/tsc (binário ausente, crash) não é "0 erros": sem diagnóstico algum
+  // e com status != 0, o resultado é desconhecido.
+  if (res.error || res.signal || (res.status !== 0 && lines.length === 0)) {
+    console.error("O compilador não concluiu uma verificação válida; nenhum resultado será presumido.");
+    console.error((res.error?.message ?? out).slice(-1500));
+    process.exitCode = 2; // sem process.exit aqui: o `finally` precisa remover o tsconfig temporário
+  } else {
+    const scoped = lines.filter((l) => files.some((f) => l.startsWith(`${f}(`)));
+    for (const l of scoped) console.log(l);
+    console.log(`\n— ${scoped.length} erro(s) nos arquivos pedidos (${lines.length} no programa inteiro).`);
+    process.exitCode = scoped.length === 0 ? 0 : 1;
+  }
 } finally {
   try {
     unlinkSync(cfgPath);
