@@ -23,6 +23,11 @@ import { spawnSync } from "node:child_process";
 const BASELINE_PATH = ".typecheck-baseline.json";
 const UPDATE = process.argv.includes("--update");
 
+// Diagnóstico de arquivo do tsc: `caminho(linha,coluna): error TSxxxx`. O caminho pode ter espaço ou
+// parêntese (`src/(grupo)/x.ts`, `bad file.ts`): a contagem usava `[^\\s(]+` e perdia essas linhas,
+// que passavam na guarda de "diagnóstico contabilizável" e sumiam do total ("0 erros").
+const TSC_FILE_DIAGNOSTIC = /^(.+\.(?:ts|tsx))\(\d+,\d+\):\s+error TS\d+/;
+
 function runTypecheck() {
   const compiler = "node_modules/typescript/bin/tsc";
   if (!existsSync(compiler)) {
@@ -40,7 +45,7 @@ function runTypecheck() {
     process.exit(2);
   }
   // Erros globais/configuração não podem desaparecer por não terem arquivo.
-  if (output.split("\n").some(line => /error TS\d+/.test(line) && !/^.+\.(?:ts|tsx)\(\d+,\d+\):/.test(line))) {
+  if (output.split("\n").some(line => /error TS\d+/.test(line) && !TSC_FILE_DIAGNOSTIC.test(line))) {
     console.error("Erro de configuração ou diagnóstico não contabilizável do TypeScript.");
     console.error(output.slice(-3000));
     process.exit(2);
@@ -51,7 +56,7 @@ function runTypecheck() {
 const out = runTypecheck();
 const counts = {};
 for (const line of out.split("\n")) {
-  const m = line.match(/^([^\s(]+\.(?:ts|tsx))\(\d+,\d+\):\s+error TS\d+/);
+  const m = line.match(TSC_FILE_DIAGNOSTIC);
   if (!m) continue;
   counts[m[1]] = (counts[m[1]] ?? 0) + 1;
 }

@@ -49,6 +49,13 @@ const flags = {
     "triage-edge-typecheck.json",
 };
 const failFast = !flags.all;
+// Flag desconhecida (`--al`, `--only zz` com espaço) era ignorada e rodava as 107 funções.
+const KNOWN_FLAG = /^(?:--all|--only=.*|--json=.*)$/;
+const unknownFlags = args.filter((a) => !KNOWN_FLAG.test(a));
+if (unknownFlags.length > 0) {
+  console.error(`❌ Argumento(s) desconhecido(s): ${unknownFlags.join(" ")}. Use --all, --only=fn1,fn2 ou --json=arquivo.json.`);
+  process.exit(2);
+}
 
 // ---------- helpers ----------
 function ensureDeno() {
@@ -71,6 +78,13 @@ function listFunctions() {
     .filter((name) => existsSync(join(FUNCTIONS_DIR, name, "index.ts")))
     .sort();
   if (flags.only.length === 0) return all;
+  const known = new Set(all);
+  const missing = flags.only.filter((n) => !known.has(n));
+  if (missing.length > 0) {
+    // `--only=nao-existe` dava "alvos: 0 ... 0 ok" com exit 0.
+    console.error(`❌ Função(ões) de --only não encontrada(s) em ${FUNCTIONS_DIR}: ${missing.join(", ")}`);
+    process.exit(2);
+  }
   const set = new Set(flags.only);
   return all.filter((n) => set.has(n));
 }
