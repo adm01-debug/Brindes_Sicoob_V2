@@ -277,7 +277,13 @@ def write(path: pathlib.Path, content: str) -> None:
 
 def redact(obj: Any) -> Any:
     if isinstance(obj, dict):
-        return {k: ("[REDACTED]" if REDACT_RE.search(str(k)) else redact(v)) for k, v in obj.items()}
+        # `hook_custom_access_token_enabled: False` e `jwt_exp: 3600` não são segredos: o valor só é
+        # redigido quando existe e é texto ou estrutura (bool/número/None viravam "[REDACTED]" e o auth.md
+        # listava hook desligado como habilitado).
+        return {
+            k: ("[REDACTED]" if REDACT_RE.search(str(k)) and isinstance(v, (str, dict, list)) and v else redact(v))
+            for k, v in obj.items()
+        }
     if isinstance(obj, list):
         return [redact(v) for v in obj]
     if isinstance(obj, str):
@@ -310,6 +316,26 @@ SCRUB_RULES: list[tuple[re.Pattern, str]] = [
     (re.compile(r"(?i)(bearer\s+)[A-Za-z0-9._~+/=-]{16,}"), r"\1[REDACTED]"),
     # valor precisa parecer token: >= 16 chars, sem espaço, com pelo menos um dígito (evita redigir prosa)
     (re.compile(r"""(?i)((?:apikey|api_key|x-api-key|authorization|token|secret|password|passwd|service_role_key|anon_key)\s*["']?\s*[:=]\s*["']?)(?=[^"'\s,;)}]*\d)[^"'\s,;)}]{16,}"""), r"\1[REDACTED]"),
+    # Authorization: Basic <base64(user:senha)>  (com o contexto "authorization", ou base64 longo após "Basic")
+    (re.compile(r"(?i)(authorization[\"']?\s*[:=,]?\s*[\"']?basic\s+)[A-Za-z0-9+/]{8,}={0,2}"), r"\1[REDACTED]"),
+    (re.compile(r"(?i)(\bbasic\s+)[A-Za-z0-9+/]{20,}={0,2}"), r"\1[REDACTED]"),
+    # Nome da chave TERMINA em secret/password/token/api_key... + valor entre aspas, separado por vírgula ou
+    # dois-pontos: jsonb_build_object('x-cron-secret', 'valor'), '{"x-webhook-secret": "valor"}'.
+    # O nome precisa fechar logo depois do termo (a aspa vem em seguida): 'quote_approval_tokens', 'mcp_api_keys'
+    # e 'secretaria' são identificadores, não segredos. Valor >= 8 chars sem espaço; com ":" (JSON) qualquer
+    # valor, com "," (lista de argumentos SQL) exige dígito para não redigir identificadores.
+    (re.compile(r"""(?i)(["'][\w.-]*(?:secret|passw(?:or)?d|passwd|token|api[_-]?key|apikey|private[_-]?key|access[_-]?key)["']\s*:\s*["'])[^"'\s]{8,}(["'])"""), r"\1[REDACTED]\2"),
+    (re.compile(r"""(?i)(["'][\w.-]*(?:secret|passw(?:or)?d|passwd|token|api[_-]?key|apikey|private[_-]?key|access[_-]?key)["']\s*,\s*["'])(?=[^"'\s]*\d)[^"'\s]{8,}(["'])"""), r"\1[REDACTED]\2"),
+    # Nome terminado em secret/password/passwd/private_key + vírgula: segredo escolhido por humano costuma não ter
+    # dígito ('x-cron-secret', 'senhasemdigitos'); aqui o termo é específico o bastante para dispensar o dígito.
+    (re.compile(r"""(?i)(["'][\w.-]*(?:secret|passw(?:or)?d|passwd|private[_-]?key)["']\s*,\s*["'])[^"'\s]{10,}(["'])"""), r"\1[REDACTED]\2"),
+    # chave=valor com nome composto (aws_secret_access_key=..., smtp_password=...) e valor com dígito
+    (re.compile(r"""(?i)\b([\w-]*(?:secret|passw(?:or)?d|token|api[_-]?key|private[_-]?key|access[_-]?key)[\w-]*\s*=\s*["']?)(?=[^"'\s,;)}&]*\d)[^"'\s,;)}&]{8,}"""), r"\1[REDACTED]"),
+    # password=abc123 (curto, com dígito) — só com "=": em TS/SQL "password: string" é tipo e
+    # "password = crypto.randomUUID()" é código, não valor
+    (re.compile(r"""(?i)\b((?:password|passwd|pwd)\s*=\s*["']?)(?=[^"'\s,;)}&]*\d)[^"'\s,;)}&]{3,}"""), r"\1[REDACTED]"),
+    # webhook do Bitrix24: o token fica no caminho (/rest/<usuario>/<token>/)
+    (re.compile(r"(?i)(/rest/\d+/)[A-Za-z0-9]{8,}"), r"\1[REDACTED]"),
     # PASSWORD 'x' em DDL de role
     (re.compile(r"(?i)(password\s+)'[^']*'"), r"\1'[REDACTED]'"),
     # DSN com senha
@@ -488,7 +514,7 @@ def get_views(conn):
                c.reloptions AS options, pg_get_userbyid(c.relowner) AS owner,
                obj_description(c.oid, 'pg_class') AS comment,
                CASE WHEN c.relkind = 'm' THEN c.relispopulated END AS populated,
-               (c.relkind = 'v' AND coalesce(array_to_string(c.reloptions, ','), '') ILIKE '%security_invoker=true%') AS security_invoker,
+               (c.relkind = 'v' AND EXISTS (SELECT 1 FROM unnest(coalesce(c.reloptions, '{{}}'::text[])) AS ro WHERE ro ~* '^security_invoker=(true|on|1|yes)$')) AS security_invoker,
                ARRAY(SELECT DISTINCT dn.nspname || '.' || dc.relname
                      FROM pg_depend d JOIN pg_rewrite r ON r.oid = d.objid
                      JOIN pg_class dc ON dc.oid = d.refobjid JOIN pg_namespace dn ON dn.oid = dc.relnamespace
@@ -710,7 +736,7 @@ def get_vault(conn):
 def get_foreign(conn):
     return q(conn, """
         SELECT s.srvname AS name, w.fdwname AS wrapper,
-               ARRAY(SELECT regexp_replace(o, '^(password|secret|token|key|api_key|service_key)=.*', '\\1=[REDACTED]', 'i')
+               ARRAY(SELECT regexp_replace(o, '^([^=]*(password|passwd|secret|token|key)[^=]*)=.*', '\\1=[REDACTED]', 'i')
                      FROM unnest(s.srvoptions) o) AS options
         FROM pg_foreign_server s JOIN pg_foreign_data_wrapper w ON w.oid = s.srvfdw ORDER BY 1""")
 
@@ -768,7 +794,7 @@ def get_lints(conn):
     for r in q(conn, """
         SELECT n.nspname AS schema, c.relname AS name FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
         WHERE c.relkind = 'v' AND n.nspname = 'public'
-          AND coalesce(array_to_string(c.reloptions, ','), '') NOT ILIKE '%security_invoker=true%'"""):
+          AND NOT EXISTS (SELECT 1 FROM unnest(coalesce(c.reloptions, '{}'::text[])) AS ro WHERE ro ~* '^security_invoker=(true|on|1|yes)$')"""):
         out.append({"severity": "ALTA", "code": "view_security_definer", "object": f"{r['schema']}.{r['name']}",
                     "detail": "View em public sem security_invoker: executa como owner e ignora RLS das tabelas base."})
     for r in q(conn, f"""
@@ -895,8 +921,14 @@ def introspect_db(previous_db: dict | None) -> tuple[dict[str, Any], dict[str, A
     db: dict[str, Any] = {}
     stats: dict[str, Any] = {}
     # prepare_threshold=None: compatível com pooler em transaction mode (sem prepared statements).
-    with psycopg.connect(DB_URL, connect_timeout=30, application_name="supabase-snapshot",
-                         prepare_threshold=None, autocommit=True) as conn:
+    try:
+        connection = psycopg.connect(DB_URL, connect_timeout=30, application_name="supabase-snapshot",
+                                     prepare_threshold=None, autocommit=True)
+    except psycopg.Error as e:
+        # A mensagem do driver pode conter trechos da connection string (senha com "@" ou ":"), e o log do
+        # Actions de repositório público é público. Só o tipo do erro vai para o log.
+        raise SystemExit(f"Falha ao conectar no banco ({type(e).__name__}); detalhe omitido por conter a connection string.") from None
+    with connection as conn:
         conn.execute("SET default_transaction_read_only = on")
         conn.execute("SET statement_timeout = '90s'")
         conn.execute("SET lock_timeout = '5s'")
@@ -952,9 +984,17 @@ def introspect_api(previous_api: dict | None) -> tuple[dict[str, Any], dict[str,
         return {k: d.get(k) for k in keys} if isinstance(d, dict) else d
 
     out["project"] = api_section("project", f"/projects/{ref}", lambda p: keep(p, ("id", "name", "region", "status", "created_at", "organization_id")))
-    out["edge_functions"] = api_section("edge_functions", f"/projects/{ref}/functions", lambda fs: sorted(
+    edge_functions = api_section("edge_functions", f"/projects/{ref}/functions", lambda fs: sorted(
         [keep(f, ("slug", "name", "status", "version", "verify_jwt", "import_map", "entrypoint_path", "import_map_path", "created_at", "updated_at")) for f in fs],
-        key=lambda f: f["slug"] or "")) or []
+        key=lambda f: f["slug"] or ""))
+    functions_carried = False
+    if edge_functions is None and isinstance((previous_api or {}).get("edge_functions"), list):
+        # Falha da API != "todas as funções foram removidas": reaproveita a coleta anterior (como as seções
+        # SQL) em vez de registrar remoção e apagar edge-functions/*.
+        edge_functions = previous_api["edge_functions"]
+        functions_carried = True
+        CARRIED.append("api.edge_functions")
+    out["edge_functions"] = edge_functions or []
     out["secrets_names"] = api_section("secrets", f"/projects/{ref}/secrets", lambda s: sorted(x.get("name") for x in s if isinstance(x, dict)))
     out["auth_config"] = api_section("auth_config", f"/projects/{ref}/config/auth", redact)
     out["postgrest_config"] = api_section("postgrest_config", f"/projects/{ref}/postgrest", redact)
@@ -983,7 +1023,7 @@ def introspect_api(previous_api: dict | None) -> tuple[dict[str, Any], dict[str,
             ["verify_jwt", f.get("verify_jwt")], ["entrypoint", f.get("entrypoint_path")], ["import_map", f.get("import_map_path")],
             ["URL", f"https://{ref}.supabase.co/functions/v1/{s}"], ["fonte no repo", f"`supabase/functions/{s}/`"]])]
         write(fn_dir / slug(s) / "README.md", "\n".join(md))
-    if fn_dir.exists():
+    if fn_dir.exists() and not functions_carried:
         for d in fn_dir.iterdir():
             if d.is_dir() and d.name not in {slug(s) for s in current}:
                 shutil.rmtree(d)
