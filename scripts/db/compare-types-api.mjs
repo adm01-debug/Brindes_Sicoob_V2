@@ -103,7 +103,9 @@ const differences = [];
 for (const [name, node] of Object.entries(relations)) {
   if (!api.definitions[name]) continue;
   const row = members(members(node).Row);
-  const props = api.definitions[name].properties;
+  // Definição sem `properties` (view/tabela sem colunas expostas) derrubava o script com TypeError e exit 1,
+  // o mesmo código de "divergências".
+  const props = api.definitions[name].properties ?? {};
   const localOnly = Object.keys(row).filter((p) => !props[p]);
   const apiOnly = Object.keys(props).filter((p) => !row[p]);
   if (localOnly.length || apiOnly.length)

@@ -144,7 +144,7 @@ Regras:
 | `scripts/db/classify-migration-backlog.mjs` | triagem do passivo fora do ledger, sem executar SQL |
 | `scripts/db/compare-types-api.mjs` | `src/integrations/supabase/types.ts` × snapshot OpenAPI; não toca no banco |
 | `scripts/check-migration-immutability.mjs` | gate de CI contra editar migration já mesclada |
-| `scripts/test-rls.mjs` | cross-check de RLS cross-tenant pela edge `rls-audit`; precisa `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` — `npm run test:rls` |
+| `scripts/test-rls.mjs` | cross-check de RLS cross-tenant pela edge `rls-audit`; **só em homologação**: precisa `E2E_SUPABASE_URL`/`E2E_SUPABASE_PROJECT_ID`/`E2E_ALLOWED_PROJECT_ID` + chaves `E2E_*` (guarda `validateE2ETarget` recusa oficial, catálogo, CRM e legados); falha se `rls-audit` rodar 0 cenários ou se não houver 2 tenants — `npm run test:rls` |
 | `scripts/scan-rls-security.mjs` | RPCs `check_tables_rls` / `audit_empty_rls_policies`; falha com tabela pública sem RLS |
 | `scripts/check-security-definer-acl.mjs` | `SECURITY DEFINER` em `public` executável por `PUBLIC`/`anon` → falha (lints Supabase 0028/0029) — `npm run check:security-definer-acl` |
 | `scripts/audit-technical-rls.sql` | policies de tabelas técnicas precisam de `is_dev(auth.uid())`; proíbe `USING (true)` |
