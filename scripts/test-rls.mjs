@@ -2,9 +2,17 @@
 /**
  * test-rls.mjs
  * ----------------------------------------------------------------
- * Gate de CI: cross-check de RLS. Cria um registro para o usuário B,
- * chama a Edge Function `rls-audit` simulando acesso do usuário A e
- * valida que o RLS bloqueia o acesso cross-tenant.
+ * Cross-check de RLS. Cria um registro para o usuário B (INSERT/DELETE em `quotes` com
+ * service_role), chama a Edge Function `rls-audit` simulando acesso do usuário A e valida que
+ * o RLS bloqueia o acesso cross-tenant.
+ *
+ * DESTINO: só o projeto de homologação. Usa as variáveis `E2E_*` e `validateE2ETarget`
+ * (scripts/e2e-target.mjs), que recusa o projeto oficial, o catálogo, o CRM e os legados. A
+ * versão anterior lia `SUPABASE_URL` + service_role e escrevia em qualquer projeto, inclusive
+ * produção.
+ *
+ * Só dá "passou" com prova: pelo menos 2 usuários de cooperativa/PA diferentes e pelo menos
+ * 1 cenário executado (total 0 antes virava "todos passaram").
  *
  * Saída:
  *  - exit 0 → auditoria passou.
@@ -12,15 +20,24 @@
  *  - exit 2 → erro de configuração.
  */
 import { createClient } from '@supabase/supabase-js';
+import { validateE2ETarget } from './e2e-target.mjs';
 
 const isCI = process.env.CI === "true" || process.env.CI === "1";
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseUrl = process.env.E2E_SUPABASE_URL;
+const supabaseKey = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseUrl || !supabaseKey) {
-  console.error('❌ SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são obrigatórios');
-  process.exit(2);
+try {
+  validateE2ETarget({
+    url: supabaseUrl,
+    projectId: process.env.E2E_SUPABASE_PROJECT_ID,
+    allowedProjectId: process.env.E2E_ALLOWED_PROJECT_ID,
+    publishableKey: process.env.E2E_SUPABASE_PUBLISHABLE_KEY,
+    serviceRoleKey: supabaseKey,
+  });
+} catch (err) {
+  console.error(`❌ ${err.message}`);
+  process.exit(err.message === 'Configuração obrigatória do destino E2E ausente.' ? 2 : 1);
 }
 
 const adminClient = createClient(supabaseUrl, supabaseKey);
@@ -44,8 +61,9 @@ async function testRLS() {
   let userB = profiles.find(p => p.cooperativa_id !== userA.cooperativa_id || p.pa_id !== userA.pa_id);
 
   if (!userB) {
-    console.warn('⚠️ Não foram encontrados usuários de organizações/PAs diferentes. Usando os dois primeiros.');
-    userB = profiles[1];
+    // Com os dois no mesmo tenant não há isolamento a provar: passar aqui seria falso verde.
+    console.error('❌ Não há usuários de cooperativas/PAs diferentes no destino de homologação; o cross-tenant não pode ser provado.');
+    process.exit(1);
   }
 
   console.log(`👤 Usuário A: ${userA.email} (Coop: ${userA.cooperativa_id}, PA: ${userA.pa_id})`);
@@ -104,6 +122,9 @@ async function testRLS() {
       }
     });
 
+    if (!(auditResult.summary.total > 0)) {
+      throw new Error('A auditoria rls-audit não executou nenhum cenário (total 0); nada foi provado.');
+    }
     if (auditResult.summary.failed > 0) {
       throw new Error(`${auditResult.summary.failed} cenário(s) de RLS falharam.`);
     }
