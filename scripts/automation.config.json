@@ -430,6 +430,13 @@
       "reason": "Legado mantido no fluxo existente; referências literais: package.json:scripts, .github/workflows/e2e.yml. O dispatcher não executa esta operação."
     },
     {
+      "id": "helper-playwright-report",
+      "kind": "helper",
+      "files": ["scripts/lib/playwright-report.mjs"],
+      "callers": ["scripts/e2e-feature-summary.mjs", "scripts/e2e-smoke-summary.mjs"],
+      "triggers": []
+    },
+    {
       "id": "legacy-ce6142da52ebda54",
       "kind": "legacy",
       "files": ["scripts/e2e-smoke-coverage-doc.mjs"],
