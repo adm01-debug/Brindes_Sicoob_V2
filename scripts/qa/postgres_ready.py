@@ -145,6 +145,9 @@ def run_overlapping(
         f"BEGIN;\n{first_sql}\nSELECT pg_sleep({hold_seconds}) /* {marker} */;\nCOMMIT;\n"
     )
     first.stdin.close()
+    # Python < 3.13: `communicate()` chama `stdin.flush()` num stdin já fechado e levanta
+    # ValueError ("I/O operation on closed file"). O runner do CI usa 3.12; o 3.13 local passava.
+    first.stdin = None
 
     probe = (
         "SELECT count(*) FROM pg_stat_activity WHERE state='active' "
