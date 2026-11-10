@@ -191,8 +191,17 @@ export async function commitWithHooks(source, workspace, jobDir, args, timeout, 
   try {
     for (const name of ['pre-commit', 'prepare-commit-msg', 'commit-msg', 'post-commit']) {
       let script;
-      if (husky) script = path.join(workspace, husky, name);
-      else if (value && inside(source, path.resolve(source, value))) {
+      if (husky && value) script = path.join(workspace, husky, name);
+      else if (husky) {
+        const common = await git(
+          source,
+          ['rev-parse', '--path-format=absolute', '--git-common-dir'],
+          timeout,
+          prefix,
+        );
+        const installed = path.join(common, 'hooks', name);
+        script = (await exists(installed)) ? installed : path.join(workspace, husky, name);
+      } else if (value && inside(source, path.resolve(source, value))) {
         script = path.join(workspace, relative, name);
         if (!(await exists(script))) {
           const installed = path.resolve(source, value, name);
