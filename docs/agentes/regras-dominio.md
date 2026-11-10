@@ -94,8 +94,8 @@ upload ou cleanup de E2E.
   (`SICOOB_TESTING.md:21-24`), recriada por `POST /functions/v1/sicoob-seed` com service role.
 - **Não existe neste repo** a regra "fixture de produção que não pode ser apagada" (isso é do Zapp Web
   V2). Aqui a proteção é a allowlist + `dryRun` do `e2e-cleanup`.
-- **Orçamento de skip de teste crítico é fixo:** `scripts/check-critical-test-skip-budget.mjs:5-13`
-  varre `tests/p0`, `tests/rls`, `tests/security` contando `.skip`/`skipIf`/`describe.skip`; se o número
+- **Orçamento de skip de teste crítico é fixo:** `scripts/check-critical-test-skip-budget.mjs` (orçamento por arquivo, `BASELINE_BY_FILE`)
+  varre `tests/p0`, `tests/rls`, `tests/security` contando `.skip`/`.todo`/`.only`/`skipIf`/`runIf`/`{ skip: true }`/`ctx.skip()`; se o número de qualquer arquivo
   **crescer**, o CI falha. Nunca resolva um teste vermelho com `skip`.
 
 ## UI
