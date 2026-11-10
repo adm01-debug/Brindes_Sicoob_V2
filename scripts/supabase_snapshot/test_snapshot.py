@@ -68,6 +68,7 @@ class SnapshotFixture(unittest.TestCase):
         # Nem driver instalado nem credenciais são necessários. Qualquer tentativa real falha.
         driver = types.ModuleType("psycopg")
         driver.connect = mock.Mock(side_effect=AssertionError("Conexão real proibida no teste"))
+        driver.Error = type("Error", (Exception,), {})
         rows = types.ModuleType("psycopg.rows")
         rows.dict_row = object()
         spec = importlib.util.spec_from_file_location("snapshot_tested", pathlib.Path(__file__).with_name("snapshot.py"))
@@ -871,6 +872,153 @@ for _auth_error in (False, True):
     for _empty in (False, True):
         setattr(SnapshotDBStatsTests, f"test_recovery_auth_{_auth_error}_empty_{_empty}",
                 db_stats_case("exercise_recovery", _auth_error, _empty))
+
+
+def _load_snapshot_module(name, env=None):
+    """Carrega snapshot.py sem driver real e sem credenciais."""
+    driver = types.ModuleType("psycopg")
+    driver.connect = mock.Mock(side_effect=AssertionError("Conexão real proibida no teste"))
+    driver.Error = type("Error", (Exception,), {})
+    rows = types.ModuleType("psycopg.rows")
+    rows.dict_row = object()
+    spec = importlib.util.spec_from_file_location(name, pathlib.Path(__file__).with_name("snapshot.py"))
+    module = importlib.util.module_from_spec(spec)
+    base = {"SUPABASE_DB_URL": "offline-fixture", "PGDUMP": "false", "GEN_TYPES": "false", "REPO_ROOT": ""}
+    with mock.patch.dict(sys.modules, {"psycopg": driver, "psycopg.rows": rows}):
+        with mock.patch.dict(os.environ, {**base, **(env or {})}, clear=True):
+            spec.loader.exec_module(module)
+    return module
+
+
+class SnapshotScrubTests(unittest.TestCase):
+    """O snapshot é publicado em branch pública: nenhum segredo conhecido pode sair no texto do banco."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.TemporaryDirectory(prefix="snapshot-scrub-")
+        cls.snapshot = _load_snapshot_module("snapshot_scrub", {"SNAPSHOT_DIR": cls.tmp.name})
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmp.cleanup()
+
+    LEAKS = {
+        "header de cron com vírgula (jsonb_build_object)": ("jsonb_build_object('x-cron-secret', 'SegredoDoCron-9f8e7d6c5b4a')", "SegredoDoCron-9f8e7d6c5b4a"),
+        "segredo escolhido por humano, sem dígito": ("jsonb_build_object('x-cron-secret', 'senhasemdigitosaqui')", "senhasemdigitosaqui"),
+        "Authorization: Basic": ("'Authorization', 'Basic dXN1YXJpbzpzZW5oYVNlY3JldGExMjM='", "dXN1YXJpbzpzZW5oYVNlY3JldGExMjM"),
+        "password= curto": ("host=h password=abc123 dbname=d", "abc123"),
+        "opção de foreign server composta": ("aws_secret_access_key=wJalrXUtnFEMIK7MDENGbPxRfiCYEXEMPLO", "wJalrXUtnFEMIK7MDENGbPxRfiCYEXEMPLO"),
+        "JSON de header com secret": ('{"x-webhook-secret": "minhasenhasecretasemdigito"}', "minhasenhasecretasemdigito"),
+        "webhook do Bitrix24 com token no caminho": ("https://x.bitrix24.com.br/rest/1/q8w7e6r5t4y3u2i1/crm.lead.add.json", "q8w7e6r5t4y3u2i1"),
+        "JWT": ("apikey: eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSJ9.c2lnbmF0dXJlMTIz", "eyJhbGciOiJIUzI1NiJ9"),
+        "DSN com senha": ("postgresql://postgres:Senha123abc@db.example.co:5432/postgres", "Senha123abc"),
+    }
+
+    def test_segredos_conhecidos_sao_redigidos(self):
+        for label, (text, secret) in self.LEAKS.items():
+            with self.subTest(label):
+                self.assertNotIn(secret, self.snapshot.scrub(text))
+
+    # Texto que parece segredo mas é código/identificador: redigir estragaria o SQL publicado.
+    SAFE = [
+        "ARRAY['quote_approval_tokens','seller_id']",
+        "ARRAY['mcp_api_keys','created_by']",
+        "-- Basic policies",
+        "('publico_alvo', 'secretaria', 'Secretária', 90)",
+        "const password = crypto.randomUUID() + 'Aa!1';",
+        "password: string",
+        "token: string;",
+        "action: action === 'rotate' ? 'secret_rotated' : 'secret_set'",
+        "SELECT 1 -- secret rotation notes",
+    ]
+
+    def test_codigo_e_identificadores_nao_sao_alterados(self):
+        for text in self.SAFE:
+            with self.subTest(text):
+                self.assertEqual(self.snapshot.scrub(text), text)
+
+    def test_redact_preserva_booleano_e_numero_sob_chave_sensivel(self):
+        redacted = self.snapshot.redact({
+            "hook_custom_access_token_enabled": False,
+            "jwt_exp": 3600,
+            "smtp_pass": "senha-de-verdade",
+            "external_google_secret": "",
+            "jwt_secret": {"kid": "abc", "k": "chave"},
+            "site_url": "https://example.test",
+        })
+        self.assertIs(redacted["hook_custom_access_token_enabled"], False)
+        self.assertEqual(redacted["jwt_exp"], 3600)
+        self.assertEqual(redacted["smtp_pass"], "[REDACTED]")
+        self.assertEqual(redacted["jwt_secret"], "[REDACTED]")
+        self.assertEqual(redacted["external_google_secret"], "")
+        self.assertEqual(redacted["site_url"], "https://example.test")
+
+
+class SnapshotConnectionAndAPIFailureTests(unittest.TestCase):
+    def test_erro_de_conexao_nao_vaza_a_connection_string(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            snapshot = _load_snapshot_module("snapshot_conn", {"SNAPSHOT_DIR": tmp})
+            leaked = "postgresql://postgres:SenhaForte2026@db.example.co:5432/postgres"
+            snapshot.psycopg.connect = mock.Mock(side_effect=snapshot.psycopg.Error(f'missing "=" after "{leaked}"'))
+            with self.assertRaises(SystemExit) as raised:
+                snapshot.introspect_db(None)
+            message = str(raised.exception.code)
+            self.assertNotIn("SenhaForte2026", message)
+            self.assertNotIn(leaked, message)
+            self.assertIn("Error", message)
+
+    def test_falha_da_management_api_preserva_as_edge_functions_anteriores(self):
+        import urllib.error
+
+        with tempfile.TemporaryDirectory() as tmp:
+            snapshot = _load_snapshot_module(
+                "snapshot_api",
+                {"SNAPSHOT_DIR": tmp, "SUPABASE_PROJECT_REF": "abcdefghijklmnopqrst", "SUPABASE_ACCESS_TOKEN": "token-offline"},
+            )
+            snapshot.ERRORS.clear()
+            snapshot.CARRIED.clear()
+            previous = {"edge_functions": [{"slug": "fn-a", "name": "fn-a"}, {"slug": "fn-b", "name": "fn-b"}]}
+            kept = snapshot.OUT / "edge-functions" / "fn-a"
+            kept.mkdir(parents=True)
+            (kept / "README.md").write_text("# fn-a\n", encoding="utf-8")
+
+            def fake_api(path):
+                if path.endswith("/functions"):
+                    raise urllib.error.HTTPError(path, 500, "boom", {}, None)
+                return {}
+
+            with mock.patch.object(snapshot, "api", side_effect=fake_api):
+                with contextlib.redirect_stdout(io.StringIO()):
+                    out, _stats = snapshot.introspect_api(previous)
+
+            self.assertEqual([f["slug"] for f in out["edge_functions"]], ["fn-a", "fn-b"])
+            self.assertIn("api.edge_functions", snapshot.CARRIED)
+            self.assertTrue((kept / "README.md").exists(), "a falha da API apagou edge-functions/*")
+
+    def test_edge_function_realmente_removida_continua_sendo_limpa(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            snapshot = _load_snapshot_module(
+                "snapshot_api_ok",
+                {"SNAPSHOT_DIR": tmp, "SUPABASE_PROJECT_REF": "abcdefghijklmnopqrst", "SUPABASE_ACCESS_TOKEN": "token-offline"},
+            )
+            snapshot.ERRORS.clear()
+            snapshot.CARRIED.clear()
+            stale = snapshot.OUT / "edge-functions" / "fn-antiga"
+            stale.mkdir(parents=True)
+            (stale / "README.md").write_text("# antiga\n", encoding="utf-8")
+
+            def fake_api(path):
+                if path.endswith("/functions"):
+                    return [{"slug": "fn-nova", "name": "fn-nova", "status": "ACTIVE"}]
+                return {}
+
+            with mock.patch.object(snapshot, "api", side_effect=fake_api):
+                with contextlib.redirect_stdout(io.StringIO()):
+                    out, _stats = snapshot.introspect_api({"edge_functions": [{"slug": "fn-antiga"}]})
+
+            self.assertEqual([f["slug"] for f in out["edge_functions"]], ["fn-nova"])
+            self.assertFalse(stale.exists())
+            self.assertEqual(snapshot.CARRIED, [])
 
 
 if __name__ == "__main__":
