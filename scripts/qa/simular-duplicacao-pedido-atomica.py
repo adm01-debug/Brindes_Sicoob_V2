@@ -2,11 +2,12 @@
 """Prova atomicidade, idempotência, autorização e recálculo da duplicação de pedido."""
 from pathlib import Path
 import json
+import re
 import subprocess
 import time
 import uuid
 
-from postgres_ready import wait_for_postgres
+from postgres_ready import run_overlapping, wait_for_postgres
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTAINER = "order-duplicate-atomic-" + uuid.uuid4().hex[:10]
@@ -161,16 +162,17 @@ try:
         f"SET request.jwt.claim.sub='{ACTOR}'; SET request.jwt.claim.role='authenticated'; "
         f"SELECT id FROM public.duplicate_order_atomic('{SOURCE}','{concurrency_key}');"
     )
-    processes = [
-        subprocess.Popen(
-            ["docker", "exec", "-i", CONTAINER, "psql", "-U", "postgres", "-XqAt", "-v", "ON_ERROR_STOP=1"],
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
-        )
-        for _ in range(2)
+    # Sobreposição real: a sessão 1 executa a duplicação e segura a transação aberta; a 2 chama
+    # a mesma chave de idempotência enquanto isso. (`communicate()` em lista fazia a 2ª sessão
+    # só receber o SQL depois que a 1ª terminava — a "concorrência" era sequencial.)
+    overlap = run_overlapping(CONTAINER, statement, statement, hold_seconds=2.0)
+    assert overlap["first"][0] == 0 and overlap["second"][0] == 0, overlap
+    uuid_line = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+    returned_ids = [
+        next(line for line in reversed(out.splitlines()) if uuid_line.match(line.strip())).strip()
+        for out in (overlap["first"][1], overlap["second"][1])
     ]
-    outputs = [process.communicate(statement, timeout=30) for process in processes]
-    assert all(process.returncode == 0 for process in processes), outputs
-    returned_ids = [out.strip().splitlines()[-1] for out, _ in outputs]
+    assert overlap["second_ms"] >= 1000, ("a sessão 2 não esperou pela 1ª transação", overlap["second_ms"])
     assert len(set(returned_ids)) == 1
     assert scalar(sql(f"SELECT count(*) FROM public.order_duplicate_requests WHERE idempotency_key='{concurrency_key}';")) == "1"
 

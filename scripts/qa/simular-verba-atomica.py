@@ -5,7 +5,7 @@ import json
 import subprocess
 import time
 import uuid
-from postgres_ready import wait_for_postgres
+from postgres_ready import run_overlapping, wait_for_postgres
 
 CONTAINER = "sicoob-verba-atomica-" + uuid.uuid4().hex[:10]
 ROOT = Path(__file__).resolve().parents[2]
@@ -91,25 +91,23 @@ try:
       ('00000000-0000-4000-8000-000000000102', '{PA}', '{COOP}', 'waiting_approval', 600),
       ('00000000-0000-4000-8000-000000000103', '{PA}', '{COOP}', 'waiting_approval', 600);
     """)
-    concurrent = []
-    for order in ("102", "103"):
-        concurrent.append(subprocess.Popen(
-            ["docker", "exec", "-i", CONTAINER, "psql", "-U", "postgres", "-v", "ON_ERROR_STOP=1", "-At"],
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
-        ))
-        concurrent[-1].stdin.write(
-            f"UPDATE sicoob_orders SET status='confirmed' WHERE id='00000000-0000-4000-8000-000000000{order}';"
-        )
-        concurrent[-1].stdin.close()
-    statuses = []
-    for process in concurrent:
-        process.wait(timeout=20)
-        statuses.append(process.returncode)
+    # Sobreposição real: a sessão 1 confirma o pedido 102 e segura a transação aberta; a
+    # sessão 2 (pedido 103) só começa depois, e precisa esperar o lock da verba. Dois
+    # Popen soltos passavam em ~50% das execuções mesmo SEM o FOR UPDATE.
+    overlap = run_overlapping(
+        CONTAINER,
+        "UPDATE sicoob_orders SET status='confirmed' WHERE id='00000000-0000-4000-8000-000000000102';",
+        "UPDATE sicoob_orders SET status='confirmed' WHERE id='00000000-0000-4000-8000-000000000103';",
+        hold_seconds=2.0,
+        psql_flags=("-v", "ON_ERROR_STOP=1", "-At"),
+    )
+    statuses = [overlap["first"][0], overlap["second"][0]]
+    assert overlap["second_ms"] >= 1000, ("a sessão 2 não esperou pelo lock", overlap["second_ms"])
     consumed = sql("SELECT verba_consumida::text FROM pa_budgets;").stdout.strip()
     confirmed = sql("SELECT count(*) FROM sicoob_orders WHERE id IN ('00000000-0000-4000-8000-000000000102','00000000-0000-4000-8000-000000000103') AND status='confirmed';").stdout.strip()
-    assert sorted(statuses) == [0, 3], statuses
+    assert statuses == [0, 3], (statuses, overlap)
     assert consumed == "600.00" and confirmed == "1", (consumed, confirmed)
-    result["concorrencia"] = {"retornos": sorted(statuses), "debito": consumed, "pedidos_confirmados": int(confirmed)}
+    result["concorrencia"] = {"retornos": statuses, "debito": consumed, "pedidos_confirmados": int(confirmed)}
 
     sql(f"""
       UPDATE sicoob_orders SET status='cancelled' WHERE status='confirmed';

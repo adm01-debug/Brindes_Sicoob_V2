@@ -26,7 +26,7 @@ try:
     remaining = float(sql('SELECT verba_consumida FROM pa_budgets;'))
     result={'ambiente':'PostgreSQL 17.6 descartável, --network none; somente dados sintéticos','fontes':[str(old.relative_to(ROOT)),str(second.relative_to(ROOT)),str(latest.relative_to(ROOT))],'pedido':100,'debito_esperado':100,'debito_observado':used,'consumido_apos_cancelamento_esperado':0,'consumido_apos_cancelamento_observado':remaining,'falha_reproduzida':used != 100 or remaining != 0,'producao_verificada':False}
     assert result['falha_reproduzida'], 'A falha esperada não foi reproduzida; revisar diagnóstico'
-    Path('docs/execucao/evidencias/verba-legada.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
+    (ROOT/'docs/execucao/evidencias/verba-legada.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
     print(json.dumps(result,ensure_ascii=False))
 finally:
     subprocess.run(['docker','rm','-f',container],capture_output=True)
