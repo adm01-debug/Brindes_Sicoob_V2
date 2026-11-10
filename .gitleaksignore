@@ -54,3 +54,8 @@ a1f3f00cdcb6e0238ca5efd250c94f659d59075f:tests/services/quoteReorder.test.ts:gen
 3989221b84549fced9137367df337d879f847029:scripts/supabase_snapshot/test_snapshot.py:generic-api-key:906
 3989221b84549fced9137367df337d879f847029:scripts/supabase_snapshot/test_snapshot.py:generic-api-key:910
 3989221b84549fced9137367df337d879f847029:scripts/supabase_snapshot/test_snapshot.py:jwt:913
+
+# Triagem 10/11/2026 - SHA do squash da PR #249 (f1e9b08): mesmas fixtures FAKE de teste
+f1e9b08bb0f5ef416ce0d3aa60bdb42297fc3a92:scripts/supabase_snapshot/test_snapshot.py:generic-api-key:906
+f1e9b08bb0f5ef416ce0d3aa60bdb42297fc3a92:scripts/supabase_snapshot/test_snapshot.py:generic-api-key:910
+f1e9b08bb0f5ef416ce0d3aa60bdb42297fc3a92:scripts/supabase_snapshot/test_snapshot.py:jwt:913
