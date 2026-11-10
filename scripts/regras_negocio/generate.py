@@ -623,7 +623,7 @@ def analyze_code_file(p: Path, root: Path) -> dict | None:
 # 4. Schema SQL (migrations / schema.sql / prisma / database.types.ts)
 # --------------------------------------------------------------------------- #
 SQL_CREATE_TABLE_RE = re.compile(r"create\s+(?:unlogged\s+|temp(?:orary)?\s+|global\s+|local\s+)*table\s+(?:if\s+not\s+exists\s+)?(?:\"?(\w+)\"?\.)?\"?(\w+)\"?\s*\(", re.I)
-SQL_ALTER_ADD_RE = re.compile(r"alter\s+table\s+(?:if\s+exists\s+)?(?:only\s+)?(?:\"?(\w+)\"?\.)?\"?(\w+)\"?\s+add\s+(?:column\s+)?(?:if\s+not\s+exists\s+)?\"?(\w+)\"?\s+([^,;]+)", re.I)
+SQL_ALTER_ADD_RE = re.compile(r"alter\s+table\s+(?:if\s+exists\s+)?(?:only\s+)?(?:\"?(\w+)\"?\.)?\"?(\w+)\"?\s+add\s+(?:column\s+)?(?:if\s+not\s+exists\s+)?\"?(\w+)\"?\s+([^;]+)", re.I)
 SQL_ALTER_ADD_CONSTRAINT_RE = re.compile(r"alter\s+table\s+(?:if\s+exists\s+)?(?:only\s+)?(?:\"?(\w+)\"?\.)?\"?(\w+)\"?\s+add\s+constraint\s+\"?(\w+)\"?\s+([^;]+);", re.I)
 SQL_ALTER_COL_RE = re.compile(r"alter\s+table\s+(?:if\s+exists\s+)?(?:only\s+)?(?:\"?(\w+)\"?\.)?\"?(\w+)\"?\s+alter\s+(?:column\s+)?\"?(\w+)\"?\s+(set\s+not\s+null|drop\s+not\s+null|set\s+default\s+[^,;]+|drop\s+default|(?:set\s+data\s+)?type\s+[^,;]+)", re.I)
 SQL_ALTER_DROP_COL_RE = re.compile(r"alter\s+table\s+(?:if\s+exists\s+)?(?:only\s+)?(?:\"?(\w+)\"?\.)?\"?(\w+)\"?\s+drop\s+column\s+(?:if\s+exists\s+)?\"?(\w+)\"?", re.I)
@@ -633,7 +633,7 @@ SQL_POLICY_RE = re.compile(
     re.I)
 SQL_DROP_POLICY_RE = re.compile(r"drop\s+policy\s+(?:if\s+exists\s+)?\"?([^\"\n]+?)\"?\s+on\s+(?:\"?(\w+)\"?\.)?\"?(\w+)\"?", re.I)
 SQL_RLS_RE = re.compile(r"alter\s+table\s+(?:if\s+exists\s+)?(?:only\s+)?(?:\"?(\w+)\"?\.)?\"?(\w+)\"?\s+(enable|disable|force|no\s+force)\s+row\s+level\s+security", re.I)
-SQL_TRIGGER_RE = re.compile(r"create\s+(?:or\s+replace\s+)?trigger\s+\"?(\w+)\"?\s+(before|after|instead\s+of)\s+([\w\s|]+?)\s+on\s+(?:\"?(\w+)\"?\.)?\"?(\w+)\"?([\s\S]*?)execute\s+(?:function|procedure)\s+(?:\"?(\w+)\"?\.)?\"?(\w+)\"?", re.I)
+SQL_TRIGGER_RE = re.compile(r"create\s+(?:or\s+replace\s+)?trigger\s+\"?(\w+)\"?\s+(before|after|instead\s+of)\s+([\w\s|,]+?)\s+on\s+(?:\"?(\w+)\"?\.)?\"?(\w+)\"?([\s\S]*?)execute\s+(?:function|procedure)\s+(?:\"?(\w+)\"?\.)?\"?(\w+)\"?", re.I)
 SQL_FUNC_RE = re.compile(r"create\s+(?:or\s+replace\s+)?function\s+(?:\"?(\w+)\"?\.)?\"?(\w+)\"?\s*\(([^)]*)\)\s*returns\s+((?:setof\s+)?[\w\s\[\]\.]+?)\s+(?=language|as|security|stable|volatile|immutable)", re.I)
 SQL_FUNC_FULL_RE = re.compile(r"create\s+(?:or\s+replace\s+)?function\s+(?:\"?\w+\"?\.)?\"?(\w+)\"?\s*\(([\s\S]*?)\$([\w]*)\$([\s\S]*?)\$\3\$([^;]*);", re.I)
 SQL_ENUM_RE = re.compile(r"create\s+type\s+(?:\"?(\w+)\"?\.)?\"?(\w+)\"?\s+as\s+enum\s*\(([^)]*)\)", re.I)
@@ -713,6 +713,58 @@ def split_sql_statements(txt: str) -> list[str]:
     return out
 
 
+SQL_ALTER_HEAD_RE = re.compile(r"(alter\s+table\s+(?:if\s+exists\s+)?(?:only\s+)?(?:\"?\w+\"?\.)?\"?\w+\"?)\s+(?=add\b|drop\b|alter\b|set\b|enable\b|disable\b|force\b|no\s+force\b|rename\b|owner\b|validate\b)", re.I)
+SQL_ALTER_ACTION_RE = re.compile(r"(?:add|drop|alter|set|enable|disable|force|no\s+force|rename|owner|validate)\b", re.I)
+
+
+def expand_alter_table(st: str) -> list[str]:
+    """`ALTER TABLE t ADD COLUMN a int, ADD COLUMN b numeric(5,2), DROP CONSTRAINT x, ADD CONSTRAINT x ...` vira um
+    statement por ação. O parser lia só a primeira ação (colunas e constraints seguintes sumiam) e cortava o tipo na
+    primeira vírgula (`NUMERIC(5`). Só divide quando TODA parte começa com uma ação válida; senão devolve o original."""
+    m = SQL_ALTER_HEAD_RE.match(st)
+    if not m:
+        return [st]
+    body = st[m.end():].strip().rstrip(";").strip()
+    parts = split_columns(body)
+    if len(parts) < 2 or not all(SQL_ALTER_ACTION_RE.match(p) for p in parts):
+        return [st]
+    return [f"{m.group(1)} {p};" for p in parts]
+
+
+DO_BLOCK_RE = re.compile(r"do\s+(?:language\s+\w+\s+)?\$(\w*)\$([\s\S]*?)\$\1\$", re.I)
+DO_DDL_RE = re.compile(r"\b(create\s+policy|drop\s+policy|create\s+(?:or\s+replace\s+)?trigger|drop\s+trigger|alter\s+table\s+(?:if\s+exists\s+)?(?:only\s+)?(?:\"?\w+\"?\.)?\"?\w+\"?\s+(?:enable|disable|force|no\s+force)\s+row\s+level\s+security)\b", re.I)
+
+
+def do_block_statements(st: str) -> list[str]:
+    """DDL escrito LITERALMENTE dentro de `DO $$ ... $$` (policy/trigger/RLS criados sob IF NOT EXISTS, por exemplo).
+    Antes o corpo do bloco era ignorado: 22 policies e vários triggers sumiam e o relatório acusava "RLS sem política".
+    SQL montado por EXECUTE format(...) continua fora (dinâmico demais para um parser estático)."""
+    m = DO_BLOCK_RE.match(st)
+    if not m:
+        return []
+    body = m.group(2)
+    found: list[str] = []
+    for hit in DO_DDL_RE.finditer(body):
+        before = body[:hit.start()]
+        last_stmt = before[before.rfind(";") + 1:]
+        if re.search(r"\bexecute\b|%I|format\s*\(", last_stmt, re.I):
+            continue
+        for piece in split_sql_statements(body[hit.start():]):
+            found.append(piece)
+            break
+    return found
+
+
+def iter_schema_statements(txt_nc: str):
+    """Statements prontos para o despacho: DO blocks expandidos e ALTER TABLE multi-ação separado em ações."""
+    for st in split_sql_statements(txt_nc):
+        if re.match(r"\s*do\b", st, re.I):
+            for inner in do_block_statements(st):
+                yield from expand_alter_table(inner)
+            continue
+        yield from expand_alter_table(st)
+
+
 SQL_RENAME_COL_RE = re.compile(r"alter\s+table\s+(?:if\s+exists\s+)?(?:only\s+)?(?:\"?(\w+)\"?\.)?\"?(\w+)\"?\s+rename\s+(?:column\s+)?\"?(\w+)\"?\s+to\s+\"?(\w+)\"?", re.I)
 SQL_RENAME_TABLE_RE = re.compile(r"alter\s+table\s+(?:if\s+exists\s+)?(?:only\s+)?(?:\"?(\w+)\"?\.)?\"?(\w+)\"?\s+rename\s+to\s+\"?(\w+)\"?", re.I)
 SQL_DROP_CONSTRAINT_RE = re.compile(r"alter\s+table\s+(?:if\s+exists\s+)?(?:only\s+)?(?:\"?(\w+)\"?\.)?\"?(\w+)\"?\s+drop\s+constraint\s+(?:if\s+exists\s+)?\"?(\w+)\"?", re.I)
@@ -764,7 +816,7 @@ def parse_sql_schema(root: Path, files: list[Path]) -> dict:
         for kind, target, comment in SQL_COMMENT_RE.findall(txt):
             tgt = target.replace('"', "").replace("public.", "")
             schema["comments"][f"{kind.lower()}:{tgt}"] = comment.replace("''", "'")
-        for st in split_sql_statements(txt_nc):
+        for st in iter_schema_statements(txt_nc):
             low = st.lower().lstrip()
             # ---- CREATE TABLE
             m = SQL_CREATE_TABLE_RE.match(st)
@@ -977,7 +1029,11 @@ def parse_sql_schema(root: Path, files: list[Path]) -> dict:
                     schema["enums"][name] = re.findall(r"\"([^\"]+)\"", vals)
             fb = block("Functions")
             if fb:
-                for name in re.findall(r"\n\s+(\w+):\s*\{", fb):
+                # Só as chaves do 1º nível de `Functions` (mesma indentação do primeiro membro): `Args: {` e `Returns:`
+                # de cada função têm indentação maior e entravam como funções SQL "Args"/"Returns".
+                first = re.search(r"\n([ \t]+)\w+:", fb)
+                indent = first.group(1) if first else ""
+                for name in re.findall(rf"\n{re.escape(indent)}(\w+):\s*\{{", fb) if indent else []:
                     schema["functions"].setdefault(name, {"args": "", "returns": "?", "lang": "", "src": rel(f, root), "security_definer": False, "search_path": False, "body": "", "raises": [], "tables": []})
             schema["sources"].append(rel(f, root))
             break
