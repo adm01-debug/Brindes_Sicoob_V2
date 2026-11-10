@@ -9,21 +9,27 @@
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
-import { convertColors } from './colors-map.mjs';
+import { convertColors, hasHardcodedColor } from './colors-map.mjs';
 
 const CODE_RE = /^src\/.*\.(?:ts|tsx|js|jsx)$/;
 const STYLE_RE = /^src\/.*\.(?:ts|tsx|js|jsx|css)$/;
 const COLOR_DIRS = ['src/pages/sicoob', 'src/components/sicoob']; // mesmo escopo do check-sicoob-hardcoded-colors
 const DRIFT_DOC = 'docs/EDGE_FUNCTIONS_DRIFT.md';
+const TEST_FILE_RE = /\.(?:test|spec)\./;
 
 const union = (ctx, re) => [...new Set([...ctx.srcFiles, ...ctx.touched])].filter((f) => re.test(f));
 
-function walk(dir, out = []) {
+// Arquivos de teste ficam fora da conversão automática (reescrever uma string que o próprio teste
+// afirma, ex. expect(...).toHaveClass('bg-red-600'), quebraria a asserção sem o `verify()` do
+// orquestrador notar — ele só confere eslint/typecheck, não roda a suíte). `includeTests` existe
+// só para o passo poder DETECTAR (sem escrever) o que o gate check-sicoob-hardcoded-colors.mjs
+// também varre nesses arquivos e sinalizar, em vez de deixar esse ponto cego em silêncio.
+function walk(dir, out = [], { includeTests = false } = {}) {
   if (!existsSync(dir)) return out;
   for (const e of readdirSync(dir, { withFileTypes: true })) {
     const p = join(dir, e.name);
-    if (e.isDirectory()) walk(p, out);
-    else if (/\.(?:tsx|ts|js|jsx)$/.test(e.name) && !/\.(?:test|spec)\./.test(e.name)) out.push(p);
+    if (e.isDirectory()) walk(p, out, { includeTests });
+    else if (/\.(?:tsx|ts|js|jsx)$/.test(e.name) && (includeTests || !TEST_FILE_RE.test(e.name))) out.push(p);
   }
   return out;
 }
@@ -36,12 +42,23 @@ export const STEPS = [
     describe: 'cores hardcoded (amber/blue/emerald/red) -> tokens warning/info/success/destructive',
     targets: () => COLOR_DIRS.flatMap((d) => walk(d)),
     async run(ctx, files) {
+      let darkSkipped = 0;
       for (const f of files) {
         const src = readFileSync(f, 'utf8');
-        const { output, review } = convertColors(src);
+        const { output, review, skipped } = convertColors(src);
+        darkSkipped += skipped;
         if (output === src) continue;
         writeFileSync(f, output);
         if (review.length) ctx.notes.push(`colors: ${f}:${review.join(',')} fundo sólido + text-white — revisar par *-foreground`);
+      }
+      if (darkSkipped) ctx.notes.push(`colors: ${darkSkipped} classe(s) dark:*-{700..950} preservada(s) sem conversão — par sutil do dark, decisão visual (ver colors-map.mjs)`);
+
+      const testFiles = COLOR_DIRS.flatMap((d) => walk(d, [], { includeTests: true })).filter((f) => TEST_FILE_RE.test(f));
+      const flagged = testFiles.filter((f) => hasHardcodedColor(readFileSync(f, 'utf8')));
+      if (flagged.length) {
+        ctx.notes.push(
+          `colors: ${flagged.length} arquivo(s) de teste com cor hardcoded fora do autofix (o gate check-sicoob-hardcoded-colors.mjs varre, mas o autofix não reescreve teste — corrija à mão): ${flagged.join(', ')}`,
+        );
       }
     },
   },
