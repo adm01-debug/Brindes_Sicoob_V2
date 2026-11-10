@@ -1864,13 +1864,15 @@
         "scripts/revisao/lacunas-20260927.cenarios.tsx"
       ],
       "manual": [
-        "bun",
-        "scripts/revisao/lacunas-20260927.cenarios.tsx"
+        "node",
+        "scripts/automation.mjs",
+        "doctor",
+        "--static"
       ],
       "triggers": [
         "manual"
       ],
-      "reason": "Legado sem chamador literal no inventário; execução manual controlada após revisar parâmetros e ambiente. O dispatcher não executa esta operação."
+      "reason": "Legado sem chamador literal no inventário; execução manual controlada após revisar parâmetros e ambiente. O dispatcher não executa esta operação. Arquivo TypeScript de apoio: a invocação manual verifica somente o inventário; execução operacional usa o chamador original e seu runtime."
     },
     {
       "id": "legacy-d638e077100d84ed",
@@ -1879,13 +1881,15 @@
         "scripts/revisao/lacunas-20260928.cenarios.tsx"
       ],
       "manual": [
-        "bun",
-        "scripts/revisao/lacunas-20260928.cenarios.tsx"
+        "node",
+        "scripts/automation.mjs",
+        "doctor",
+        "--static"
       ],
       "triggers": [
         "manual"
       ],
-      "reason": "Legado sem chamador literal no inventário; execução manual controlada após revisar parâmetros e ambiente. O dispatcher não executa esta operação."
+      "reason": "Legado sem chamador literal no inventário; execução manual controlada após revisar parâmetros e ambiente. O dispatcher não executa esta operação. Arquivo TypeScript de apoio: a invocação manual verifica somente o inventário; execução operacional usa o chamador original e seu runtime."
     },
     {
       "id": "legacy-4bf9cf3a74dae5a8",
@@ -1894,13 +1898,15 @@
         "scripts/revisao/pendencias-2026-09-12.cenarios.tsx"
       ],
       "manual": [
-        "bun",
-        "scripts/revisao/pendencias-2026-09-12.cenarios.tsx"
+        "node",
+        "scripts/automation.mjs",
+        "doctor",
+        "--static"
       ],
       "triggers": [
         "manual"
       ],
-      "reason": "Legado sem chamador literal no inventário; execução manual controlada após revisar parâmetros e ambiente. O dispatcher não executa esta operação."
+      "reason": "Legado sem chamador literal no inventário; execução manual controlada após revisar parâmetros e ambiente. O dispatcher não executa esta operação. Arquivo TypeScript de apoio: a invocação manual verifica somente o inventário; execução operacional usa o chamador original e seu runtime."
     },
     {
       "id": "legacy-c9a935beaeb87bfc",
@@ -1909,13 +1915,15 @@
         "scripts/revisao/rascunhos-20260924.cenarios.tsx"
       ],
       "manual": [
-        "bun",
-        "scripts/revisao/rascunhos-20260924.cenarios.tsx"
+        "node",
+        "scripts/automation.mjs",
+        "doctor",
+        "--static"
       ],
       "triggers": [
         "manual"
       ],
-      "reason": "Legado sem chamador literal no inventário; execução manual controlada após revisar parâmetros e ambiente. O dispatcher não executa esta operação."
+      "reason": "Legado sem chamador literal no inventário; execução manual controlada após revisar parâmetros e ambiente. O dispatcher não executa esta operação. Arquivo TypeScript de apoio: a invocação manual verifica somente o inventário; execução operacional usa o chamador original e seu runtime."
     },
     {
       "id": "legacy-e29fef671384cae6",
@@ -1984,13 +1992,15 @@
         "scripts/revisao/vitest-lacunas-20260927.config.ts"
       ],
       "manual": [
-        "bun",
-        "scripts/revisao/vitest-lacunas-20260927.config.ts"
+        "node",
+        "scripts/automation.mjs",
+        "doctor",
+        "--static"
       ],
       "triggers": [
         "manual"
       ],
-      "reason": "Legado sem chamador literal no inventário; execução manual controlada após revisar parâmetros e ambiente. O dispatcher não executa esta operação."
+      "reason": "Legado sem chamador literal no inventário; execução manual controlada após revisar parâmetros e ambiente. O dispatcher não executa esta operação. Arquivo TypeScript de apoio: a invocação manual verifica somente o inventário; execução operacional usa o chamador original e seu runtime."
     },
     {
       "id": "legacy-99404365c329c7d8",
@@ -1999,13 +2009,15 @@
         "scripts/revisao/vitest-lacunas-20260928.config.ts"
       ],
       "manual": [
-        "bun",
-        "scripts/revisao/vitest-lacunas-20260928.config.ts"
+        "node",
+        "scripts/automation.mjs",
+        "doctor",
+        "--static"
       ],
       "triggers": [
         "manual"
       ],
-      "reason": "Legado sem chamador literal no inventário; execução manual controlada após revisar parâmetros e ambiente. O dispatcher não executa esta operação."
+      "reason": "Legado sem chamador literal no inventário; execução manual controlada após revisar parâmetros e ambiente. O dispatcher não executa esta operação. Arquivo TypeScript de apoio: a invocação manual verifica somente o inventário; execução operacional usa o chamador original e seu runtime."
     },
     {
       "id": "legacy-7329eaa4ac10a8c4",
@@ -2014,13 +2026,15 @@
         "scripts/revisao/vitest-pendencias-2026-09-12.config.ts"
       ],
       "manual": [
-        "bun",
-        "scripts/revisao/vitest-pendencias-2026-09-12.config.ts"
+        "node",
+        "scripts/automation.mjs",
+        "doctor",
+        "--static"
       ],
       "triggers": [
         "manual"
       ],
-      "reason": "Legado mantido no fluxo existente; referências literais: scripts/revisao/gerar-revisao-2026-09-12.py. O dispatcher não executa esta operação."
+      "reason": "Legado mantido no fluxo existente; referências literais: scripts/revisao/gerar-revisao-2026-09-12.py. O dispatcher não executa esta operação. Arquivo TypeScript de apoio: a invocação manual verifica somente o inventário; execução operacional usa o chamador original e seu runtime."
     },
     {
       "id": "legacy-a0e6a606769362a1",
@@ -2029,13 +2043,15 @@
         "scripts/revisao/vitest-rascunhos-20260924.config.ts"
       ],
       "manual": [
-        "bun",
-        "scripts/revisao/vitest-rascunhos-20260924.config.ts"
+        "node",
+        "scripts/automation.mjs",
+        "doctor",
+        "--static"
       ],
       "triggers": [
         "manual"
       ],
-      "reason": "Legado sem chamador literal no inventário; execução manual controlada após revisar parâmetros e ambiente. O dispatcher não executa esta operação."
+      "reason": "Legado sem chamador literal no inventário; execução manual controlada após revisar parâmetros e ambiente. O dispatcher não executa esta operação. Arquivo TypeScript de apoio: a invocação manual verifica somente o inventário; execução operacional usa o chamador original e seu runtime."
     },
     {
       "id": "legacy-e44075e6c65216d6",

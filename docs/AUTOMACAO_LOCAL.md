@@ -40,7 +40,7 @@ As suites usam fixtures descartáveis e não executam os scripts operacionais do
 
 ## Registro exato dos demais scripts
 
-Os registros `legacy` abaixo preservam ferramentas anteriores e seus chamadores; não são incluídos automaticamente no novo pipeline. Referência literal indica onde o arquivo é citado, sem garantir que esse caminho rode nem autorização para executar operações contra serviços. Sem referência, o arquivo é mantido manual porque função, parâmetros e ambiente precisam de revisão antes de ativar qualquer gatilho. Scripts novos não cobertos por registro fazem `doctor --static` falhar; não existe registro genérico `scripts/**` para ocultá-los.
+Os registros `legacy` abaixo preservam ferramentas anteriores e seus chamadores; não são incluídos automaticamente no novo pipeline. Para arquivos TypeScript de apoio sem runner comprovado, o comando listado só valida o inventário; os chamadores originais continuam sendo a referência de execução. Referência literal indica onde o arquivo é citado, sem garantir que esse caminho rode nem autorização para executar operações contra serviços. Sem referência, o arquivo é mantido manual porque função, parâmetros e ambiente precisam de revisão antes de ativar qualquer gatilho. Scripts novos não cobertos por registro fazem `doctor --static` falhar; não existe registro genérico `scripts/**` para ocultá-los.
 
 | Arquivo exato | Invocação manual de inventário | Chamadores literais / justificativa |
 |---|---|---|
@@ -158,18 +158,18 @@ Os registros `legacy` abaixo preservam ferramentas anteriores e seus chamadores;
 | `scripts/revisao/gerar-revisao-2026-09-12.py` | `python3 scripts/revisao/gerar-revisao-2026-09-12.py` | Sem chamador literal; manter manual e revisar parâmetros/ambiente antes de executar. |
 | `scripts/revisao/gerar-revisao-2026-09-24.py` | `python3 scripts/revisao/gerar-revisao-2026-09-24.py` | Sem chamador literal; manter manual e revisar parâmetros/ambiente antes de executar. |
 | `scripts/revisao/gerar-revisao-2026-09-27.py` | `python3 scripts/revisao/gerar-revisao-2026-09-27.py` | Sem chamador literal; manter manual e revisar parâmetros/ambiente antes de executar. |
-| `scripts/revisao/lacunas-20260927.cenarios.tsx` | `bun scripts/revisao/lacunas-20260927.cenarios.tsx` | Sem chamador literal; manter manual e revisar parâmetros/ambiente antes de executar. |
-| `scripts/revisao/lacunas-20260928.cenarios.tsx` | `bun scripts/revisao/lacunas-20260928.cenarios.tsx` | Sem chamador literal; manter manual e revisar parâmetros/ambiente antes de executar. |
-| `scripts/revisao/pendencias-2026-09-12.cenarios.tsx` | `bun scripts/revisao/pendencias-2026-09-12.cenarios.tsx` | Sem chamador literal; manter manual e revisar parâmetros/ambiente antes de executar. |
-| `scripts/revisao/rascunhos-20260924.cenarios.tsx` | `bun scripts/revisao/rascunhos-20260924.cenarios.tsx` | Sem chamador literal; manter manual e revisar parâmetros/ambiente antes de executar. |
+| `scripts/revisao/lacunas-20260927.cenarios.tsx` | `node scripts/automation.mjs doctor --static` | Sem chamador literal; manter manual e revisar parâmetros/ambiente antes de executar. |
+| `scripts/revisao/lacunas-20260928.cenarios.tsx` | `node scripts/automation.mjs doctor --static` | Sem chamador literal; manter manual e revisar parâmetros/ambiente antes de executar. |
+| `scripts/revisao/pendencias-2026-09-12.cenarios.tsx` | `node scripts/automation.mjs doctor --static` | Sem chamador literal; manter manual e revisar parâmetros/ambiente antes de executar. |
+| `scripts/revisao/rascunhos-20260924.cenarios.tsx` | `node scripts/automation.mjs doctor --static` | Sem chamador literal; manter manual e revisar parâmetros/ambiente antes de executar. |
 | `scripts/revisao/simular-lacunas-orcamento-20260928.py` | `python3 scripts/revisao/simular-lacunas-orcamento-20260928.py` | Sem chamador literal; manter manual e revisar parâmetros/ambiente antes de executar. |
 | `scripts/revisao/simular-lacunas.mjs` | `node scripts/revisao/simular-lacunas.mjs` | scripts/revisao/gerar-matriz.py |
 | `scripts/revisao/simular-pendencias-2026-09-12.py` | `python3 scripts/revisao/simular-pendencias-2026-09-12.py` | scripts/revisao/gerar-revisao-2026-09-12.py |
 | `scripts/revisao/simular-status-20260927.py` | `python3 scripts/revisao/simular-status-20260927.py` | Sem chamador literal; manter manual e revisar parâmetros/ambiente antes de executar. |
-| `scripts/revisao/vitest-lacunas-20260927.config.ts` | `bun scripts/revisao/vitest-lacunas-20260927.config.ts` | Sem chamador literal; manter manual e revisar parâmetros/ambiente antes de executar. |
-| `scripts/revisao/vitest-lacunas-20260928.config.ts` | `bun scripts/revisao/vitest-lacunas-20260928.config.ts` | Sem chamador literal; manter manual e revisar parâmetros/ambiente antes de executar. |
-| `scripts/revisao/vitest-pendencias-2026-09-12.config.ts` | `bun scripts/revisao/vitest-pendencias-2026-09-12.config.ts` | scripts/revisao/gerar-revisao-2026-09-12.py |
-| `scripts/revisao/vitest-rascunhos-20260924.config.ts` | `bun scripts/revisao/vitest-rascunhos-20260924.config.ts` | Sem chamador literal; manter manual e revisar parâmetros/ambiente antes de executar. |
+| `scripts/revisao/vitest-lacunas-20260927.config.ts` | `node scripts/automation.mjs doctor --static` | Sem chamador literal; manter manual e revisar parâmetros/ambiente antes de executar. |
+| `scripts/revisao/vitest-lacunas-20260928.config.ts` | `node scripts/automation.mjs doctor --static` | Sem chamador literal; manter manual e revisar parâmetros/ambiente antes de executar. |
+| `scripts/revisao/vitest-pendencias-2026-09-12.config.ts` | `node scripts/automation.mjs doctor --static` | scripts/revisao/gerar-revisao-2026-09-12.py |
+| `scripts/revisao/vitest-rascunhos-20260924.config.ts` | `node scripts/automation.mjs doctor --static` | Sem chamador literal; manter manual e revisar parâmetros/ambiente antes de executar. |
 | `scripts/rules/diff.mjs` | `node scripts/rules/diff.mjs` | scripts/rules/rotina.mjs |
 | `scripts/rules/lib.mjs` | `node scripts/rules/lib.mjs` | scripts/maintenance/maintenance.unit.mjs, scripts/maintenance/run.mjs, scripts/maintenance/typecheck.mjs, scripts/rules/rules/ambiente.mjs |
 | `scripts/rules/rotina.mjs` | `node scripts/rules/rotina.mjs` | Sem chamador literal; manter manual e revisar parâmetros/ambiente antes de executar. |
