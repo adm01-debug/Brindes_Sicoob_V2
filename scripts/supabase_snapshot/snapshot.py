@@ -49,6 +49,7 @@ import sys
 import urllib.error
 import urllib.request
 from decimal import Decimal
+from urllib.parse import urlsplit, urlunsplit
 from typing import Any, Callable
 
 import psycopg
@@ -77,6 +78,8 @@ def env_int(name: str, default: int, minimum: int) -> int:
     return value
 
 DB_URL = os.environ.get("SUPABASE_DB_URL", "").strip()
+# Região do session pooler usada pelo fallback de conexão (ver session_pooler_url abaixo).
+SUPABASE_POOLER_REGION = os.environ.get("SUPABASE_POOLER_REGION", "us-east-1").strip()
 PROJECT_REF = os.environ.get("SUPABASE_PROJECT_REF", "").strip()
 ACCESS_TOKEN = os.environ.get("SUPABASE_ACCESS_TOKEN", "").strip()
 OUT = pathlib.Path(os.environ.get("SNAPSHOT_DIR", "docs/supabase")).resolve()
@@ -131,6 +134,52 @@ CARRIED: list[str] = []  # seções reaproveitadas da coleta anterior por erro
 
 def log(msg: str) -> None:
     print(f"[snapshot] {msg}", flush=True)
+
+
+SESSION_POOLER_RE = re.compile(r"^db\.([a-z0-9]+)\.supabase\.co$")
+
+def session_pooler_url() -> str:
+    """Reescreve um DSN com host direto db.<ref>.supabase.co para o session pooler (IPv4)."""
+    if not DB_URL or "://" not in DB_URL:
+        return DB_URL
+    try:
+        parts = urlsplit(DB_URL)
+    except (TypeError, ValueError):
+        return DB_URL
+    if parts.scheme not in ("postgres", "postgresql") or not parts.hostname:
+        return DB_URL
+    match = SESSION_POOLER_RE.match(parts.hostname)
+    if not match:
+        return DB_URL
+    ref = match.group(1)
+    host = f"aws-0-{SUPABASE_POOLER_REGION}.pooler.supabase.com"
+    if parts.port:
+        host += f":{parts.port}"
+    netloc = host
+    if parts.username:
+        user = parts.username if parts.username != "postgres" else f"postgres.{ref}"
+        netloc = user + (":" + parts.password if parts.password else "") + "@" + host
+    return urlunsplit((parts.scheme, netloc, parts.path, parts.query, parts.fragment))
+
+def _connect():
+    """Conecta ao Postgres; em falha no host direto IPv6-only, tenta o session pooler."""
+    global DB_URL
+    try:
+        return psycopg.connect(DB_URL, connect_timeout=30, application_name="supabase-snapshot",
+                               prepare_threshold=None, autocommit=True)
+    except psycopg.Error:
+        pooler = session_pooler_url()
+        if pooler == DB_URL:
+            raise
+        log("host direto indisponivel - tentando o session pooler")
+        try:
+            connection = psycopg.connect(pooler, connect_timeout=30,
+                                        application_name="supabase-snapshot",
+                                        prepare_threshold=None, autocommit=True)
+        except psycopg.Error:
+            raise
+        DB_URL = pooler  # pg_dump/gen types passam a usar o host que funciona
+        return connection
 
 
 def valid_previous_snapshot(path: pathlib.Path) -> bool:
@@ -922,8 +971,7 @@ def introspect_db(previous_db: dict | None) -> tuple[dict[str, Any], dict[str, A
     stats: dict[str, Any] = {}
     # prepare_threshold=None: compatível com pooler em transaction mode (sem prepared statements).
     try:
-        connection = psycopg.connect(DB_URL, connect_timeout=30, application_name="supabase-snapshot",
-                                     prepare_threshold=None, autocommit=True)
+        connection = _connect()
     except psycopg.Error as e:
         # A mensagem do driver pode conter trechos da connection string (senha com "@" ou ":"), e o log do
         # Actions de repositório público é público. Só o tipo do erro vai para o log.

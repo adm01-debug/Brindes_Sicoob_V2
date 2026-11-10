@@ -967,6 +967,21 @@ class SnapshotConnectionAndAPIFailureTests(unittest.TestCase):
             self.assertNotIn(leaked, message)
             self.assertIn("Error", message)
 
+    def test_session_pooler_url_reescreve_host_ipv6_preservando_segredo(self):
+        snapshot = _load_snapshot_module("snapshot_pooler")
+        ref = "cfmzkthhgliqelozlmwu"
+        snapshot.DB_URL = f"postgresql://postgres:MinhaSenha@db.{ref}.supabase.co:5432/postgres"
+        snapshot.SUPABASE_POOLER_REGION = "us-east-1"
+        pooler = snapshot.session_pooler_url()
+        self.assertIn("aws-0-us-east-1.pooler.supabase.com:5432", pooler)
+        self.assertIn(f"postgres.{ref}:MinhaSenha@aws-0-us-east-1.pooler.supabase.com", pooler)
+        self.assertNotIn(f"db.{ref}.supabase.co", pooler)
+
+    def test_session_pooler_url_mantem_host_fora_do_padrao(self):
+        snapshot = _load_snapshot_module("snapshot_pooler_host")
+        snapshot.DB_URL = "postgresql://postgres:MinhaSenha@aws-0-us-east-1.pooler.supabase.com:5432/postgres"
+        self.assertEqual(snapshot.session_pooler_url(), snapshot.DB_URL)
+
     def test_falha_da_management_api_preserva_as_edge_functions_anteriores(self):
         import urllib.error
 
