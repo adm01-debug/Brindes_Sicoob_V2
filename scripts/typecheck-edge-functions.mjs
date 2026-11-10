@@ -90,6 +90,12 @@ function main() {
   ensureDeno();
 
   const requested = process.argv.slice(2);
+  const unknown = requested.filter((fn) => !existsSync(join(FUNCTIONS_DIR, fn, "index.ts")));
+  if (unknown.length > 0) {
+    // Função pedida sem index.ts (nome errado, só index.tsx) virava "skipped" e "All N typecheck cleanly".
+    console.error(`❌ Função(ões) sem index.ts em ${FUNCTIONS_DIR}: ${unknown.join(", ")}`);
+    process.exit(2);
+  }
   const fns = requested.length > 0 ? requested : listFunctions();
   console.log(`\n🔎 Typechecking ${fns.length} edge function(s)...\n`);
 
@@ -118,8 +124,10 @@ function main() {
     process.exit(1);
   }
 
+  const skipped = results.filter((r) => r.status === "skipped").length;
   console.log(
-    `\n✅ All ${results.length} edge function(s) typecheck cleanly.`,
+    `\n✅ ${results.length - skipped}/${results.length} edge function(s) typecheck cleanly` +
+      (skipped > 0 ? ` (${skipped} sem arquivos .ts, não verificada(s)).` : "."),
   );
 }
 

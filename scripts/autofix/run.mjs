@@ -61,10 +61,12 @@ function listSrcFiles() {
 
 // --- trava (no máx. 1 execução por repositório; a máquina trava com paralelismo) -------------
 const lockDir = join(tmpdir(), `autofix-${createHash('sha1').update(ROOT).digest('hex').slice(0, 8)}.lock`);
+let ownsLock = false; // só quem criou a trava pode removê-la (uma 2ª execução que recusa rodar não pode apagar a da 1ª)
 function acquireLock() {
   for (let i = 0; i < 2; i++) {
     try {
       mkdirSync(lockDir);
+      ownsLock = true;
       writeFileSync(join(lockDir, 'pid'), String(process.pid));
       return;
     } catch {
@@ -89,7 +91,7 @@ function restoreAll() { for (const [f, c] of originals) if (read(f) !== c) write
 let finished = false;
 process.on('exit', () => {
   if (!finished) restoreAll(); // interrompido (Ctrl+C / erro): volta ao original
-  rmSync(lockDir, { recursive: true, force: true });
+  if (ownsLock) rmSync(lockDir, { recursive: true, force: true });
 });
 process.on('SIGINT', () => process.exit(130));
 process.on('SIGTERM', () => process.exit(143));

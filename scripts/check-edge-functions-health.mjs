@@ -18,7 +18,7 @@
  * Uso:
  *   node scripts/check-edge-functions-health.mjs            # local
  *   node scripts/check-edge-functions-health.mjs --timeout 15000
- *   (CI: roda no workflow de deploy das Edge Functions)
+ *   (uso manual/operacional: nenhum workflow chama este script hoje)
  */
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -62,6 +62,12 @@ const REQUEST_TIMEOUT_MS = timeoutArg
   : timeoutIdx >= 0
     ? Number(process.argv[timeoutIdx + 1])
     : 10000;
+
+if (!Number.isFinite(REQUEST_TIMEOUT_MS) || REQUEST_TIMEOUT_MS <= 0) {
+  // `--timeout abc` virava NaN e as 4 funções caíam como DOWN com exit 1 (erro de uso é exit 2).
+  console.error(`\x1b[31m❌ --timeout inválido: informe milissegundos > 0.\x1b[0m`);
+  process.exit(2);
+}
 
 async function checkFunctions() {
   console.log("\x1b[1m═══ check-edge-functions-health ═══\x1b[0m");

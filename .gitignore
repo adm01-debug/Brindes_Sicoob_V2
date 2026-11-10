@@ -78,3 +78,20 @@ supabase/.temp/*
 
 # Relatórios locais de orçamento de bundle; a CI os publica como artefato.
 bundle-stats/
+
+# relatório do scripts/rules (gerado)
+reports/gaps/
+# Saídas dos scripts de auditoria (artifact do security-compliance.yml; os relatórios
+# antigos já versionados continuam rastreados)
+reports/*.pdf
+reports/*.txt
+reports/DOSSIA_AUDITORIA_ENTERPRISE_V5.md
+reports/ENTERPRISE_AUDIT_REPORT_V6.md
+reports/AUDIT_EXPORT_*.md
+reports/AUDIT_REPORT_*.md
+reports/AUDIT_ENTERPRISE_FINAL.md
+
+# Estado local privado dos novos adaptadores de automação
+/.tools/repo-automation/
+/.tools/graphify/local-state/
+/.tools/graphify/.venv/

@@ -15,7 +15,7 @@
  */
 import { readdirSync, mkdirSync, writeFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 
 const ROOT = process.cwd();
 const argv = process.argv.slice(2);
@@ -35,8 +35,8 @@ function walk(dir, out = []) {
 
 const dir = new URL('./rules/', import.meta.url);
 const rules = [];
-for (const f of readdirSync(dir).filter((n) => n.endsWith('.mjs')).sort()) {
-  const mod = (await import(pathToFileURL(join(dir.pathname, f)).href)).default;
+for (const f of readdirSync(fileURLToPath(dir)).filter((n) => n.endsWith('.mjs')).sort()) {
+  const mod = (await import(new URL(f, dir).href)).default;
   rules.push(...(Array.isArray(mod) ? mod : [mod]));
 }
 // a regra de ambiente precisa rodar primeiro (preenche ctx.behind)
@@ -81,4 +81,6 @@ mkdirSync(OUT, { recursive: true });
 writeFileSync(join(OUT, 'latest.md'), md);
 writeFileSync(join(OUT, 'latest.json'), JSON.stringify({ behind: ctx.behind, results }, null, 2));
 console.log(`\n${found.length} regra(s) com achados → ${join(OUT, 'latest.md')}`);
-process.exit(argv.includes('--strict') && found.some((f) => f.severity === 'alta') ? 1 : 0);
+const comErro = results.filter((r) => r.error);
+if (comErro.length) console.error(`\n⚠ ${comErro.length} regra(s) com ERRO (resultado inconclusivo): ${comErro.map((r) => r.id).join(', ')}`);
+process.exit(argv.includes('--strict') && (comErro.length || found.some((f) => f.severity === 'alta')) ? 1 : 0);

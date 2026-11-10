@@ -1,7 +1,10 @@
-import { readMigrations, stripSqlComments } from '../lib.mjs';
+import { readMigrations, stripSqlComments, mascararCorposDeFuncao } from '../lib.mjs';
 
 // Nome de tabela, com ou sem "public." e aspas.
-const NAME = String.raw`(?:public\.)?"?([a-z_][a-z0-9_]*)"?`;
+const NAME = String.raw`(?:"?public"?\s*\.\s*)?"?([a-z_][a-z0-9_]*)"?`;
+
+// Identificador do Postgres: sem aspas vira minúsculo; entre aspas mantém a caixa e perde as aspas ("p" == p, "P" != p).
+const ident = (s) => (s.startsWith('"') ? s.slice(1, -1).replace(/""/g, '"') : s.toLowerCase());
 
 const SQL_WORDS = new Set(['if', 'not', 'exists', 'as', 'only', 'public']);
 
@@ -10,24 +13,36 @@ const SQL_WORDS = new Set(['if', 'not', 'exists', 'as', 'only', 'public']);
  * e RENAME não são seguidos — por isso o resultado é um LEVANTAMENTO, não prova.
  */
 export function analyze(migrations) {
-  const tables = new Map(); // nome -> { file, rls, policies }
+  const tables = new Map(); // nome -> { file, rls, policies, partition }
   const dynamic = new Set();
   for (const { file, sql: raw } of migrations) {
-    const sql = stripSqlComments(raw);
-    if (/execute\s+format\s*\([^;]*row level security/i.test(sql)) dynamic.add(file);
+    const todo = stripSqlComments(raw);
+    const sql = mascararCorposDeFuncao(todo); // DDL executado: o texto dentro de corpos de função é código armazenado
+    if (/execute\s+format\s*\([^;]*row level security/i.test(todo)) dynamic.add(file);
+    // Coleta os comandos com a posição e aplica NA ORDEM do SQL (DROP seguido de CREATE recria a tabela).
+    const events = [];
     for (const m of sql.matchAll(/create\s+table\s+(?:if\s+not\s+exists\s+)?(?:"?([a-z_][a-z0-9_]*)"?\.)?"?([a-z_][a-z0-9_]*)"?(?![\w."'])([^;]{0,200})/gi)) {
       if (m[1] && m[1].toLowerCase() !== 'public') continue; // outro schema
       if (SQL_WORDS.has(m[2].toLowerCase())) continue; // SQL dentro de string/format()
-      if (!tables.has(m[2])) tables.set(m[2], { file, rls: false, policies: 0, partition: /^\s*partition\s+of\b/i.test(m[3]) });
+      events.push({ pos: m.index, type: 'create', name: m[2], partition: /^\s*partition\s+of\b/i.test(m[3]) });
     }
-    for (const m of sql.matchAll(new RegExp(String.raw`drop\s+table\s+(?:if\s+exists\s+)?` + NAME, 'gi'))) tables.delete(m[1]);
+    for (const m of sql.matchAll(new RegExp(String.raw`drop\s+table\s+(?:if\s+exists\s+)?` + NAME, 'gi'))) {
+      // `ALTER PUBLICATION ... DROP TABLE t` só tira t da publicação; a tabela continua existindo.
+      if (/alter\s+publication\b/i.test(sql.slice(sql.lastIndexOf(';', m.index) + 1, m.index))) continue;
+      events.push({ pos: m.index, type: 'drop', name: m[1] });
+    }
     for (const m of sql.matchAll(new RegExp(String.raw`alter\s+table\s+(?:if\s+exists\s+)?(?:only\s+)?` + NAME + String.raw`\s+(enable|disable|force)\s+row\s+level\s+security`, 'gi'))) {
-      const t = tables.get(m[1]);
-      if (t && m[2].toLowerCase() !== 'force') t.rls = m[2].toLowerCase() === 'enable';
+      if (m[2].toLowerCase() !== 'force') events.push({ pos: m.index, type: 'rls', name: m[1], on: m[2].toLowerCase() === 'enable' });
     }
-    for (const m of sql.matchAll(new RegExp(String.raw`create\s+policy\s+(?:"[^"]+"|\w+)\s+on\s+` + NAME, 'gi'))) {
-      const t = tables.get(m[1]);
-      if (t) t.policies += 1;
+    const POL = String.raw`("[^"]+"|\w+)\s+on\s+`;
+    for (const m of sql.matchAll(new RegExp(String.raw`create\s+policy\s+` + POL + NAME, 'gi'))) events.push({ pos: m.index, type: 'policy', policy: ident(m[1]), name: m[2] });
+    for (const m of sql.matchAll(new RegExp(String.raw`drop\s+policy\s+(?:if\s+exists\s+)?` + POL + NAME, 'gi'))) events.push({ pos: m.index, type: 'droppolicy', policy: ident(m[1]), name: m[2] });
+    for (const e of events.sort((x, y) => x.pos - y.pos)) {
+      if (e.type === 'create') { if (!tables.has(e.name)) tables.set(e.name, { file, rls: false, policies: 0, policyNames: new Set(), partition: e.partition }); }
+      else if (e.type === 'drop') tables.delete(e.name);
+      else if (e.type === 'rls') { const t = tables.get(e.name); if (t) t.rls = e.on; }
+      else if (e.type === 'policy') { const t = tables.get(e.name); if (t) { t.policyNames.add(e.policy); t.policies = t.policyNames.size; } }
+      else { const t = tables.get(e.name); if (t) { t.policyNames.delete(e.policy); t.policies = t.policyNames.size; } }
     }
   }
   return { tables, dynamic };

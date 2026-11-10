@@ -20,6 +20,10 @@ describe("guarda de destino E2E", () => {
     ["project ref fora da allowlist", { ...validConfig, allowedProjectId: "outro-projeto" }],
     ["projeto canônico do portal", { ...validConfig, projectId: "cfmzkthhgliqelozlmwu", allowedProjectId: "cfmzkthhgliqelozlmwu", url: "https://cfmzkthhgliqelozlmwu.supabase.co" }],
     ["catálogo mestre", { ...validConfig, projectId: "doufsxqlfjyuvxuezpln", allowedProjectId: "doufsxqlfjyuvxuezpln", url: "https://doufsxqlfjyuvxuezpln.supabase.co" }],
+    ...["pgxfvjmuubtbowutlide", "nmojwpihnslkssljowjh", "bojgeppypmtormfjsyun", "hgbzltfwozdkcudofypy"].map((id) => [
+      `projeto proibido ${id} (CRM/legado) mesmo na allowlist`,
+      { ...validConfig, projectId: id, allowedProjectId: id, url: `https://${id}.supabase.co` },
+    ] as const),
     ["endpoint sem TLS", { ...validConfig, url: "http://qa-sicoob-123.supabase.co" }],
     ["host de projeto diferente", { ...validConfig, url: "https://other.supabase.co" }],
     ["caminho alternativo", { ...validConfig, url: "https://qa-sicoob-123.supabase.co/proxy" }],

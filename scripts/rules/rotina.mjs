@@ -15,10 +15,12 @@
  * Sai 0 mesmo com achados (achado não é falha da rotina); sai 1 só se a rotina em si quebrar.
  * Pula (exit 0) se a máquina estiver sob carga alta ou se outra execução estiver em andamento.
  */
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync, readdirSync, symlinkSync, copyFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync, readdirSync, symlinkSync, copyFileSync, renameSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { homedir, loadavg, tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
+import { comparar, carregarBase } from './diff.mjs';
+import { limparRegistrados } from './worktrees.mjs';
 import { fileURLToPath } from 'node:url';
 
 const REPO = resolve(fileURLToPath(new URL('../..', import.meta.url))); // repo onde este script vive
@@ -34,6 +36,7 @@ const log = (m) => console.log(`[rotina ${new Date().toISOString()}] ${m}`);
 if (loadavg()[0] > MAX_LOAD) { log(`carga ${loadavg()[0].toFixed(1)} > ${MAX_LOAD}: pulando esta rodada`); process.exit(0); }
 
 const lock = join(tmpdir(), 'gaps-rotina.lock');
+const REGISTRO = join(tmpdir(), 'gaps-rotina.worktrees'); // worktrees temporários criados por esta rotina
 try { mkdirSync(lock); } catch {
   const pidFile = join(lock, 'pid');
   let alive = false;
@@ -47,11 +50,16 @@ writeFileSync(join(lock, 'pid'), String(process.pid));
 let work = null;
 const cleanup = () => {
   if (work) { git(['worktree', 'remove', '--force', work]); rmSync(work, { recursive: true, force: true }); git(['worktree', 'prune']); work = null; }
+  rmSync(REGISTRO, { force: true });
   rmSync(lock, { recursive: true, force: true });
 };
 process.on('exit', cleanup);
 process.on('SIGINT', () => process.exit(130));
 process.on('SIGTERM', () => process.exit(143));
+
+// Restos de execução anterior morta (SIGKILL/timeout do systemd): só os worktrees que ESTA rotina registrou.
+// (Nunca por prefixo de nome: um worktree seu chamado gaps-wt-algo, mesmo com alterações, não pode ser apagado.)
+limparRegistrados({ registro: REGISTRO, tmp: tmpdir(), git });
 
 const notes = [];
 const fetched = git(['fetch', 'origin', '--quiet', '--no-tags']);
@@ -61,12 +69,18 @@ if (sha.status !== 0) { log(`ref ${REF} não existe`); process.exit(1); }
 const commit = sha.stdout.trim();
 
 work = mkdtempSync(join(tmpdir(), 'gaps-wt-'));
+writeFileSync(REGISTRO, work + '\n'); // registra ANTES de criar: se for morta no meio, a próxima rodada limpa
 const add = git(['worktree', 'add', '--detach', '--quiet', work, commit]);
 if (add.status !== 0) { log(`worktree falhou: ${add.stderr}`); process.exit(1); }
 if (existsSync(join(REPO, 'node_modules'))) symlinkSync(join(REPO, 'node_modules'), join(work, 'node_modules'));
 
 const day = new Date().toISOString().slice(0, 10);
-const dayDir = join(OUT, day);
+const finalDir = join(OUT, day);
+// A rodada é feita numa pasta temporária e só substitui a do dia se TERMINAR com sucesso:
+// uma repetição que falhe (ou estoure o timeout) não pode apagar o relatório válido já existente.
+mkdirSync(OUT, { recursive: true });
+for (const d of readdirSync(OUT).filter((x) => /^\.\d{4}-\d{2}-\d{2}\.tmp-/.test(x))) rmSync(join(OUT, d), { recursive: true, force: true });
+const dayDir = join(OUT, `.${day}.tmp-${process.pid}`);
 mkdirSync(dayDir, { recursive: true });
 log(`analisando ${REF} @ ${commit.slice(0, 9)}`);
 // O runner vive no repo atual (pode ainda não estar no ref analisado); roda com cwd = worktree.
@@ -80,13 +94,11 @@ if (run.status !== 0 || !existsSync(join(dayDir, 'latest.json'))) {
 }
 
 // --- comparação com a execução anterior -------------------------------------------------------
-const flat = (json) => new Map(json.results.flatMap((r) => r.items.map((i) => [`${r.id}|${i}`, { id: r.id, severity: r.severity, item: i }])));
 const cur = JSON.parse(readFileSync(join(dayDir, 'latest.json'), 'utf8'));
-const prevDir = readdirSync(OUT).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d) && d < day).sort().pop();
-const prev = prevDir && existsSync(join(OUT, prevDir, 'latest.json')) ? JSON.parse(readFileSync(join(OUT, prevDir, 'latest.json'), 'utf8')) : null;
-const a = flat(cur), b = prev ? flat(prev) : new Map();
-const novos = prev ? [...a].filter(([k]) => !b.has(k)).map(([, v]) => v) : [];
-const resolvidos = prev ? [...b].filter(([k]) => !a.has(k)).map(([, v]) => v) : [];
+const base = carregarBase(OUT, day); // lido ANTES de a pasta do dia ser substituída
+const prev = base?.json ?? null;
+const prevDir = base?.rotulo;
+const { novos, resolvidos } = comparar(cur, prev);
 const ORDER = { alta: 0, media: 1, baixa: 2 };
 const bySev = (x, y) => ORDER[x.severity] - ORDER[y.severity];
 const tabela = cur.results.filter((r) => r.items.length).sort(bySev).map((r) => `| ${r.severity} | ${r.id} | ${r.kind} | ${r.items.length} |`);
@@ -96,6 +108,7 @@ const resumo = [
   `# Gaps — ${day}`,
   `Ref analisada: \`${REF}\` @ \`${commit.slice(0, 9)}\` · comparação com: ${prevDir ?? '— (primeira execução)'}`,
   ...notes.map((n) => `> ⚠️ ${n}`),
+  ...cur.results.filter((r) => r.error).map((r) => `> ⚠️ Regra **${r.id}** falhou e NÃO foi verificada: ${r.error}`),
   ``,
   `## Mudanças desde a última execução`,
   prev ? `**${novos.length} novo(s)** · **${resolvidos.length} resolvido(s)**` : 'Primeira execução: sem base de comparação.',
@@ -105,10 +118,15 @@ const resumo = [
   `## Situação atual`,
   `| severidade | regra | tipo | qtd |`, `|---|---|---|---|`, ...tabela,
   ``,
-  `Detalhe completo: \`${join(dayDir, 'latest.md')}\``,
+  `Detalhe completo: \`${join(finalDir, 'latest.md')}\``,
 ].join('\n');
 writeFileSync(join(dayDir, 'RESUMO.md'), resumo);
-copyFileSync(join(dayDir, 'RESUMO.md'), join(OUT, 'ULTIMO.md'));
+// troca: pasta do dia antiga sai do caminho, a nova entra, a antiga é apagada só depois
+const old = `${finalDir}.old-${process.pid}`;
+if (existsSync(finalDir)) renameSync(finalDir, old);
+renameSync(dayDir, finalDir);
+rmSync(old, { recursive: true, force: true });
+copyFileSync(join(finalDir, 'RESUMO.md'), join(OUT, 'ULTIMO.md'));
 
 // --- retenção ---------------------------------------------------------------------------------
 const dias = readdirSync(OUT).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort();

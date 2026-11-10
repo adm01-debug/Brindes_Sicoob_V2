@@ -43,10 +43,12 @@ async function scanRls() {
     const noPolicy = emptyPolicies.map((table) => `public.${table.table_name}`);
     console.error(`\n❌ RLS inválido. Sem RLS: ${noRls.join(', ') || 'nenhuma'}. Sem policy: ${noPolicy.join(', ') || 'nenhuma'}.`);
     for (const t of noRls) {
-      if (isCI) console.log(`::error file=scan-rls-security.mjs,title=Tabela sem RLS::${t}`);
+      // stderr: o workflow redireciona o stdout para reports/rls-status.txt, e a anotação gravada
+      // em arquivo nunca chegava ao runner do GitHub.
+      if (isCI) console.error(`::error file=scan-rls-security.mjs,title=Tabela sem RLS::${t}`);
     }
     for (const t of noPolicy) {
-      if (isCI) console.log(`::error file=scan-rls-security.mjs,title=Policy vazia::${t}`);
+      if (isCI) console.error(`::error file=scan-rls-security.mjs,title=Policy vazia::${t}`);
     }
     console.error('\n   → Ative RLS ou crie policies para as tabelas listadas.\n');
     process.exit(1);
