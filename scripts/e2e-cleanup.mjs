@@ -52,7 +52,8 @@ await runCli(
     }
 
     const dryRun = values['dry-run'];
-    const response = await fetch(`${process.env.E2E_SUPABASE_URL}/functions/v1/e2e-cleanup`, {
+    // `new URL` evita `//functions` quando a variável termina com barra (a guarda aceita `https://x.supabase.co/`).
+    const response = await fetch(new URL('/functions/v1/e2e-cleanup', process.env.E2E_SUPABASE_URL), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -65,6 +66,19 @@ await runCli(
       return {
         exitCode: EXIT_FAIL,
         message: `Cleanup E2E recusado pelo backend (HTTP ${response.status}).`,
+      };
+    }
+
+    // A edge responde HTTP 200 com `{ ok: false, errorTables: [...] }` quando a limpeza é parcial ou
+    // falha; checar só `response.ok` dava "cleanup aceito" (exit 0) com dados E2E sobrando.
+    const payload = await response.json().catch(() => null);
+    if (!payload || payload.ok !== true) {
+      const tables = Array.isArray(payload?.errorTables) ? payload.errorTables.join(', ') : '';
+      return {
+        exitCode: EXIT_FAIL,
+        message: payload
+          ? `Cleanup E2E incompleto${tables ? ` (tabelas com erro: ${tables})` : ''}.`
+          : 'Cleanup E2E respondeu sem JSON válido; resultado desconhecido.',
       };
     }
 
