@@ -91,7 +91,16 @@
     "test:scenarios": "node --test tests/scenarios/*.mjs",
     "qa:visual:login": "node scripts/qa/login-browser.mjs",
     "qa:visual:demo": "node scripts/qa/demo-browser.mjs",
-    "audit:dossier": "playwright install chromium && node scripts/enterprise-dossier-builder.mjs"
+    "audit:dossier": "playwright install chromium && node scripts/enterprise-dossier-builder.mjs",
+    "automation:doctor": "node scripts/automation.mjs doctor",
+    "automation:test": "node scripts/automation.mjs test",
+    "automation:check": "node scripts/automation.mjs check --ref HEAD",
+    "automation:heal": "node scripts/automation.mjs heal --ref origin/main",
+    "automation:nightly": "node scripts/automation.mjs nightly --ref origin/main",
+    "automation:graph": "node scripts/automation.mjs graph",
+    "automation:status": "node scripts/automation.mjs graph status",
+    "automation:install-hooks": "node scripts/automation.mjs install-hooks",
+    "automation:uninstall-hooks": "node scripts/automation.mjs uninstall-hooks"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
