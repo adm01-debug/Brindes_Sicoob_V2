@@ -25,7 +25,9 @@ export default CHECKERS.map((c) => ({
     const r = sh('node', [`scripts/${c.script}`], ctx.root);
     if (r.status === 0) return { items: [] };
     if (c.staleSensitive && ctx.behind > 0) {
-      return { items: [], note: `inconclusivo: o clone está ${ctx.behind} commit(s) atrás de origin/main, o gate compara contra a base e acusaria arquivos que só faltam aqui` };
+      // `error` (e não `note`): a comparação diária só ignora a regra quando ela tem erro. Com `note` o resultado
+      // "sem itens" era lido como "o achado foi resolvido".
+      return { items: [], error: `inconclusivo: o clone está ${ctx.behind} commit(s) atrás de origin/main, o gate compara contra a base e acusaria arquivos que só faltam aqui` };
     }
     // Falha de EXECUÇÃO (dependência ausente, exceção não tratada, morto por sinal/timeout) não é violação:
     // vira erro da regra = inconclusivo, para a comparação nunca anunciar "resolvido" o que não foi verificado.
@@ -38,9 +40,10 @@ export default CHECKERS.map((c) => ({
     }
     // Mantém TODAS as linhas de detalhe (arquivo/ocorrência), não só o cabeçalho: é o que identifica cada achado
     // e permite a comparação entre dias enxergar "corrigi este, apareceu aquele". Só tira cor ANSI, linhas vazias e repetidas.
-    const linhas = saida.split('\n').map((l) => l.trim()).filter(Boolean);
-    const out = [...new Set(linhas)].slice(0, MAX_LINHAS);
-    if (linhas.length > out.length) out.push(`… +${new Set(linhas).size - out.length + 1} linha(s) omitida(s); rode scripts/${c.script} para ver tudo`);
+    const unicas = [...new Set(saida.split('\n').map((l) => l.trim()).filter(Boolean))];
+    const out = unicas.slice(0, MAX_LINHAS);
+    // Conta sobre as linhas ÚNICAS: comparar com o total bruto (repetidas incluídas) inventava uma linha "omitida".
+    if (unicas.length > out.length) out.push(`… +${unicas.length - out.length} linha(s) omitida(s); rode scripts/${c.script} para ver tudo`);
     return { items: out.length ? out : [`exit ${r.status} (sem detalhe parseável)`] };
   },
 }));
