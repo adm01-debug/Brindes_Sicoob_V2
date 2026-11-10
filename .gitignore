@@ -90,3 +90,8 @@ reports/ENTERPRISE_AUDIT_REPORT_V6.md
 reports/AUDIT_EXPORT_*.md
 reports/AUDIT_REPORT_*.md
 reports/AUDIT_ENTERPRISE_FINAL.md
+
+# Estado local privado dos novos adaptadores de automação
+/.tools/repo-automation/
+/.tools/graphify/local-state/
+/.tools/graphify/.venv/

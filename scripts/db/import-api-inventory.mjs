@@ -49,6 +49,14 @@ export function buildApiInventory(api, buckets, capturedAt, hashes) {
   if (!/^\d{4}-\d{2}-\d{2}(?:T.*Z)?$/.test(capturedAt) || Number.isNaN(Date.parse(capturedAt))) {
     throw new Error('Informe a data real da coleta, sem substituí-la pela data de importação.');
   }
+  // `2026-02-31` passa no Date.parse (vira 3 de março) e uma data futura fazia o check-runtime-refs
+  // sair 2 ("inventário no futuro") em TODA PR até alguém notar.
+  if (new Date(Date.parse(capturedAt)).toISOString().slice(0, 10) !== capturedAt.slice(0, 10)) {
+    throw new Error('A data da coleta não existe no calendário.');
+  }
+  if (Date.parse(capturedAt) > Date.now()) {
+    throw new Error('A data da coleta está no futuro.');
+  }
   return {
     _comment:
       'Snapshot do contrato exposto pela Data API administrativa e da listagem de Storage. Não é inventário completo do PostgreSQL. Presença na API não comprova autorização de cada usuário. Atualizar após migrations; não adicionar objetos apenas porque existem no SQL local.',
