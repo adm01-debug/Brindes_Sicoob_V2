@@ -9,9 +9,13 @@
  *   node scripts/md-to-pdf-stub.mjs [arquivo.md] [saida.pdf]
  *
  * Padrão:
- *   - entrada: public/reports/AUDIT_REPORT_<rev>.md (mais recente) ou
- *              DOSSIA_AUDITORIA_ENTERPRISE_V5.md
- *   - saída:   reports/<nome-do-md>.pdf
+ *   - entrada: o AUDIT_REPORT_<rev>.md mais recente de reports/ (ou, para os
+ *              relatórios antigos, de public/reports/); senão o
+ *              DOSSIA_AUDITORIA_ENTERPRISE_V5.md de reports/ ou da raiz.
+ *              "Mais recente" = data do último commit do arquivo; arquivo ainda
+ *              não commitado (recém-gerado) vale pela data de modificação. O
+ *              mtime sozinho não serve: em checkout novo todos são iguais.
+ *   - saída:   reports/<nome-do-md>.pdf (nunca o próprio arquivo de entrada)
  *
  * Exit codes:
  *   0 — PDF gerado com sucesso
@@ -21,10 +25,36 @@ import { chromium } from 'playwright';
 import { readFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import { resolve, dirname, basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
 import { marked } from 'marked';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, '..');
+
+/** Segundos do último commit do arquivo; sem histórico (não commitado) usa o mtime. */
+function recency(file) {
+  try {
+    const out = execFileSync('git', ['log', '-1', '--format=%ct', '--', file], {
+      cwd: REPO_ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+    if (out) return Number(out);
+  } catch {
+    // fora de um repositório git: cai no mtime
+  }
+  return statSync(file).mtimeMs / 1000;
+}
+
+function newestReport(dir) {
+  if (!existsSync(dir)) return null;
+  const mds = readdirSync(dir)
+    .filter(f => /^AUDIT_REPORT_.+\.md$/i.test(f))
+    .map(f => join(dir, f))
+    .map(file => ({ file, when: recency(file) }))
+    .sort((a, b) => b.when - a.when || a.file.localeCompare(b.file));
+  return mds.length > 0 ? mds[0].file : null;
+}
 
 function resolveInput(arg) {
   if (arg) {
@@ -35,18 +65,19 @@ function resolveInput(arg) {
     return { error: `Arquivo não encontrado: ${arg}` };
   }
 
-  // Auto-descoberta: procura relatório mais recente em public/reports/
-  const reportsDir = join(REPO_ROOT, 'public', 'reports');
-  if (existsSync(reportsDir)) {
-    const mds = readdirSync(reportsDir)
-      .filter(f => f.endsWith('.md'))
-      .sort((a, b) => statSync(join(reportsDir, b)).mtimeMs - statSync(join(reportsDir, a)).mtimeMs);
-    if (mds.length > 0) return join(reportsDir, mds[0]);
+  // Auto-descoberta: relatório mais recente, primeiro onde o builder grava hoje.
+  for (const dir of [join(REPO_ROOT, 'reports'), join(REPO_ROOT, 'public', 'reports')]) {
+    const newest = newestReport(dir);
+    if (newest) return newest;
   }
 
-  // Fallback: DOSSIE na raiz
-  const fallback = join(REPO_ROOT, 'DOSSIA_AUDITORIA_ENTERPRISE_V5.md');
-  if (existsSync(fallback)) return fallback;
+  // Fallback: dossiê V5 (saída atual em reports/, legado na raiz)
+  for (const fallback of [
+    join(REPO_ROOT, 'reports', 'DOSSIA_AUDITORIA_ENTERPRISE_V5.md'),
+    join(REPO_ROOT, 'DOSSIA_AUDITORIA_ENTERPRISE_V5.md'),
+  ]) {
+    if (existsSync(fallback)) return fallback;
+  }
 
   return null;
 }
@@ -55,7 +86,9 @@ function resolveOutput(inputPath, arg) {
   if (arg) return resolve(arg);
   const outDir = join(REPO_ROOT, 'reports');
   mkdirSync(outDir, { recursive: true });
-  return join(outDir, basename(inputPath).replace(/\.md$/i, '.pdf'));
+  const name = basename(inputPath);
+  // Entrada sem extensão .md ganha o sufixo: a saída nunca coincide com a entrada.
+  return join(outDir, /\.md$/i.test(name) ? name.replace(/\.md$/i, '.pdf') : `${name}.pdf`);
 }
 
 async function mdToPdf(inputPath, outputPath) {
@@ -116,7 +149,7 @@ const inputResult = resolveInput(arg1);
 if (!inputResult) {
   console.error('❌ md-to-pdf-stub: nenhum arquivo Markdown encontrado.');
   console.error('   Uso: node scripts/md-to-pdf-stub.mjs [arquivo.md] [saida.pdf]');
-  console.error('   Ou coloque um relatório em public/reports/*.md');
+  console.error('   Ou gere um relatório em reports/AUDIT_REPORT_<rev>.md');
   process.exit(1);
 }
 if (typeof inputResult === 'object' && inputResult.error) {
@@ -128,6 +161,12 @@ if (typeof inputResult === 'object' && inputResult.error) {
 const inputPath = inputResult;
 
 const outputPath = resolveOutput(inputPath, arg2);
+
+if (resolve(outputPath) === resolve(inputPath)) {
+  console.error(`❌ md-to-pdf-stub: a saída sobrescreveria a entrada (${inputPath}).`);
+  console.error('   Informe outro caminho de saída: node scripts/md-to-pdf-stub.mjs <arquivo.md> <saida.pdf>');
+  process.exit(1);
+}
 
 console.log(`📄 Convertendo Markdown para PDF via Playwright...`);
 console.log(`   Entrada : ${inputPath}`);
