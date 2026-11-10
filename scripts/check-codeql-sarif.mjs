@@ -65,8 +65,16 @@ export async function inspectSarif(directory) {
     const runs = document.runs ?? [];
     runCount += runs.length;
     for (const run of runs) {
+      // `results` ausente != "nenhum achado": é uma análise que não produziu resultado algum.
+      if (!Array.isArray(run.results)) {
+        throw new Error(`SARIF ${file} tem uma execução sem a lista \`results\`; a análise não é confiável.`);
+      }
+      const failed = (run.invocations ?? []).find((invocation) => invocation?.executionSuccessful === false);
+      if (failed) {
+        throw new Error(`SARIF ${file} registra execução do CodeQL com falha (executionSuccessful=false).`);
+      }
       const rules = ruleMap(run);
-      findings.push(...(run.results ?? []).map((result) => findingFrom(result, rules)));
+      findings.push(...run.results.map((result) => findingFrom(result, rules)));
     }
   }
 
