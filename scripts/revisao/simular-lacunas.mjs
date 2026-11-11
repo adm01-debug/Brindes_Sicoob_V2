@@ -26,10 +26,10 @@ function carregar(arquivo, dependencias = {}) {
 async function cenario(id, descricao, executar, tipo = 'lacuna_reproduzida') {
   try {
     const observado = await executar();
-    resultados.push({ id, descricao, resultado: tipo, observado });
+    resultados.push({ id, descricao, tipo, resultado: tipo, observado });
   } catch (err) {
     // Lacuna pode ter sido corrigida ou dependências mudaram — registra sem travar o script
-    resultados.push({ id, descricao, resultado: 'cenario_nao_reproduzido', motivo: err.message });
+    resultados.push({ id, descricao, tipo, resultado: 'cenario_nao_reproduzido', motivo: err.message });
   }
 }
 
@@ -132,3 +132,12 @@ await cenario('A03', 'Componente de recompra navega para rota de orçamentos (la
 
 const relatorio = { escopo: 'Simulação local com código real transpilado e dependências controladas; não equivale a E2E, SQL remoto ou exploração em produção.', cenarios: resultados.length, resultados };
 process.stdout.write(`${JSON.stringify(relatorio, null, 2)}\n`);
+
+// O script sempre saía 0: um cenário "lacuna_corrigida" que deixasse de confirmar o fix (a
+// asserção falha, a dependência simulada mudou) caía no mesmo catch genérico de "não reproduzido"
+// e não distinguia regressão de "bug ativo não reproduzido" (que é notícia boa, não má).
+const regressoes = resultados.filter((r) => r.tipo === 'lacuna_corrigida' && r.resultado !== 'lacuna_corrigida');
+if (regressoes.length) {
+  console.error(`\n❌ ${regressoes.length} fix(es) antes confirmado(s) deixaram de ser reproduzidos: ${regressoes.map((r) => `${r.id} (${r.motivo})`).join('; ')}`);
+}
+process.exitCode = regressoes.length ? 1 : 0;
