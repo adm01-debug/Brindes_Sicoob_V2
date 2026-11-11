@@ -20,6 +20,9 @@ function carregarAutorizador(papeis, confirmarPapel = async (_nome, args) => ({ 
     require: (nome) => {
       if (nome.includes('supabase-js')) return { createClient: () => cliente };
       if (nome === './cors.ts') return { getCorsHeaders: () => ({}) };
+            // Estrutura do JWT é coberta pelo teste dedicado (authorize-jwt-structure.test.ts);
+            // aqui o transporte/ambiente é substituído como ocorre com cors.ts.
+            if (nome === './jwt-structure.ts') return { hasJwtStructure: () => true };
       throw new Error(`Dependência não simulada: ${nome}`);
     },
   };
@@ -31,7 +34,7 @@ const papeisBasicos = ['comprador_pac', 'comprador_singular', 'gestor_compras', 
 for (const papel of papeisBasicos) {
   for (const exigido of ['dev', 'supervisor']) {
     test(`${papel} não recebe privilégio técnico de ${exigido}`, async () => {
-      const resultado = await carregarAutorizador([papel])(new Request('https://simulacao.invalid', { headers: { Authorization: 'Bearer token-sintetico' } }), { requireRole: exigido });
+          const resultado = await carregarAutorizador([papel])(new Request('https://simulacao.invalid', { headers: { Authorization: 'Bearer token-sintetico' } }), { requireRole: exigido });
       assert.equal(resultado.ok, false);
       assert.equal(resultado.response.status, 403);
     });
@@ -43,13 +46,13 @@ for (const papel of papeisBasicos) {
 }
 for (const papeis of [[], ['desconhecido'], ['desconhecido','comprador_pac'], ['comprador_pac','desconhecido']]) {
   test(`papéis inválidos não contornam autorização: ${JSON.stringify(papeis)}`, async () => {
-    const resultado = await carregarAutorizador(papeis)(new Request('https://simulacao.invalid', { headers: { Authorization: 'Bearer token-sintetico' } }), { requireRole: 'dev' });
+      const resultado = await carregarAutorizador(papeis)(new Request('https://simulacao.invalid', { headers: { Authorization: 'Bearer token-sintetico' } }), { requireRole: 'dev' });
     assert.equal(resultado.ok, false);
   });
 }
 for (const papeis of [['dev'], ['comprador_pac','dev'], ['dev','comprador_pac']]) {
   test(`papel técnico explícito funciona independentemente da ordem: ${JSON.stringify(papeis)}`, async () => {
-    const resultado = await carregarAutorizador(papeis)(new Request('https://simulacao.invalid', { headers: { Authorization: 'Bearer token-sintetico' } }), { requireRole: 'dev' });
+      const resultado = await carregarAutorizador(papeis)(new Request('https://simulacao.invalid', { headers: { Authorization: 'Bearer token-sintetico' } }), { requireRole: 'dev' });
     assert.equal(resultado.ok, true);
   });
 }
@@ -63,14 +66,14 @@ for (const papel of [...papeisBasicos, 'supervisor', 'admin', 'manager', 'dev'])
   const exigencias = papeisBasicos.includes(papel) ? ['agente'] : papel === 'dev' ? ['agente', 'supervisor', 'dev'] : ['agente', 'supervisor'];
   for (const exigido of exigencias) {
     test(`revalidação no banco preserva ${papel} como ${exigido}`, async () => {
-      const resultado = await carregarAutorizador([papel])(new Request('https://simulacao.invalid', { headers: { Authorization: 'Bearer token-sintetico' } }), { requireRole: exigido, enforceServerSide: true });
+          const resultado = await carregarAutorizador([papel])(new Request('https://simulacao.invalid', { headers: { Authorization: 'Bearer token-sintetico' } }), { requireRole: exigido, enforceServerSide: true });
       assert.equal(resultado.ok, true);
     });
   }
 }
 for (const confirmacao of [{ data: false, error: null }, { data: true, error: { message: 'falha simulada' } }]) {
   test(`revalidação recusa permissão revogada ou consulta falha: ${JSON.stringify(confirmacao)}`, async () => {
-    const resultado = await carregarAutorizador(['dev'], async () => confirmacao)(new Request('https://simulacao.invalid', { headers: { Authorization: 'Bearer token-sintetico' } }), { requireRole: 'supervisor', enforceServerSide: true });
+      const resultado = await carregarAutorizador(['dev'], async () => confirmacao)(new Request('https://simulacao.invalid', { headers: { Authorization: 'Bearer token-sintetico' } }), { requireRole: 'supervisor', enforceServerSide: true });
     assert.equal(resultado.ok, false);
     assert.equal(resultado.response.status, 403);
   });
