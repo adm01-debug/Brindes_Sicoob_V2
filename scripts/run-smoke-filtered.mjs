@@ -26,8 +26,17 @@ for (let i = 0; i < argv.length; i++) {
   const a = argv[i];
   if (a === "--tag" || a === "-t") {
     tag = argv[++i];
+    // `--tag` sem valor (ou seguido de outra flag) rodava o smoke COMPLETO em silêncio.
+    if (tag === undefined || tag.startsWith("-") || !tag.trim()) {
+      console.error("❌ --tag exige um valor (ex.: --tag favoritos).");
+      process.exit(2);
+    }
   } else if (a.startsWith("--tag=")) {
     tag = a.slice("--tag=".length);
+    if (!tag.trim()) {
+      console.error("❌ --tag= está vazio (ex.: --tag=favoritos).");
+      process.exit(2);
+    }
   } else {
     passthrough.push(a);
   }
