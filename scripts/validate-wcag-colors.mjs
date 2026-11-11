@@ -3,7 +3,7 @@
  * validate-wcag-colors
  * --------------------------------------------------------------
  * Valida contraste WCAG AA nos tokens principais do Sicoob Design
- * System. Antes este script só imprimia o resultado e sempre saia
+ * System. Antes este script só imprimia o resultado e sempre saía
  * com código 0 — um par de cores reprovado passava despercebido.
  * Agora ele falha o processo (exit 1) quando algum par fica abaixo
  * do mínimo exigido.
