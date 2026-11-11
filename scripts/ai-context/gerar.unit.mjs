@@ -10,8 +10,9 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
-const GERADOR = path.resolve(path.dirname(new URL(import.meta.url).pathname), 'gerar.mjs');
+const GERADOR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'gerar.mjs');
 const w = (root, rel, text) => { const p = path.join(root, rel); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, text); };
 
 function fixture() {
@@ -277,6 +278,41 @@ test('git: histórico preserva data, assunto e barras verticais sem executar she
   assert.match(commits[0].sha, /^[a-f0-9]{7,40}$/);
   assert.match(commits[0].data, /^\d{4}-\d{2}-\d{2}$/);
   assert.equal(commits[1].assunto, 'feat: fixture');
+});
+
+test('rotas: a tela <Auth /> da própria rota não conta como guarda', (t) => {
+  const read = isolatedFixture(t, (dir) => {
+    w(dir, 'src/pages/Auth.tsx', 'export default function Auth() { return <form/>; }');
+    w(dir, 'src/routes/AppRoutes.tsx', `import { Routes, Route } from 'react-router-dom';
+import Auth from '@/pages/Auth';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import Home from '@/pages/Login';
+export const R = () => (<Routes>
+  <Route path="/entrar" element={<Auth />} />
+  <Route path="/privada" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+</Routes>);`);
+  });
+  const perm = read('ferramentas.json').permissoes ?? read('ferramentas.json');
+  assert.ok(perm.rotas_publicas.includes('/entrar'), '/entrar (tela Auth) deve ser pública');
+  assert.ok(!perm.rotas_publicas.includes('/privada'));
+});
+
+test('rotas: a guarda aplicada por quem monta o grupo vem do inventário (rotas.json)', (t) => {
+  const rotas = (guardas) => JSON.stringify({ format_version: 1, rotas: [
+    { caminho: '/admin', guardas: guardas.admin },
+    { caminho: '/access-denied', guardas: guardas.denied },
+  ] });
+  const comInventario = isolatedFixture(t, (dir) => {
+    w(dir, 'inventario/estado/rotas.json', rotas({ admin: ['AdminRoute', 'MainLayout'], denied: ['MainLayout', 'AuthenticatedShell'] }));
+  });
+  const p1 = comInventario('ferramentas.json').permissoes ?? comInventario('ferramentas.json');
+  // /admin está sob AdminRoute no App.tsx: protegida. /access-denied só tem layouts (não são guardas de acesso).
+  assert.ok(!p1.rotas_publicas.includes('/admin'), '/admin está sob AdminRoute e não pode sair como pública');
+  assert.ok(p1.rotas_publicas.includes('/access-denied'));
+
+  const semInventario = isolatedFixture(t, () => {});
+  const p0 = semInventario('ferramentas.json').permissoes ?? semInventario('ferramentas.json');
+  assert.ok(p0.rotas_publicas.includes('/admin'), 'sem inventário, vale a leitura genérica de <Route>');
 });
 
 test('banco: arquivos _foreign e _superseded não alteram a reconstrução vigente', (t) => {
