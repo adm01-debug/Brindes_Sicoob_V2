@@ -72,6 +72,9 @@ bun.lockb
 
 # Saída gerada pelo graphify (grafo local por máquina)
 graphify-out/
+# Hooks que `graphify hook install` grava com o caminho do python deste clone (scripts/graphify/setup.sh)
+.husky/post-commit
+.husky/post-checkout
 
 # Estado efêmero gerado por `supabase link` e pela CLI local.
 supabase/.temp/*
