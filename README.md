@@ -62,7 +62,7 @@ do Sicoob que integra:
 
 | Camada | Tecnologia |
 |---|---|
-| **Frontend** | React 18, TypeScript 5, Vite 5 |
+| **Frontend** | React 18, TypeScript 5, Vite 6 |
 | **Estilização** | Tailwind CSS 3, shadcn/ui, Framer Motion |
 | **Estado** | TanStack Query (server state), Zustand (client state) |
 | **Backend** | Supabase (Auth, DB, Storage, Edge Functions) |
@@ -101,7 +101,7 @@ do Sicoob que integra:
 
 ### Pré-requisitos
 
-- Node.js 24+
+- Node.js `>=24 <25` (faixa definida em `package.json`)
 - npm
 
 ### Instalação
@@ -111,11 +111,11 @@ do Sicoob que integra:
 git clone <repo-url>
 cd Brindes_Sicoob_V2
 
-# Instale dependências
-npm install
+# Instale exatamente as dependências registradas no lockfile
+npm ci
 
-# Configure variáveis de ambiente
-# O .env é gerado automaticamente pelo Lovable Cloud
+# Configure as variáveis de ambiente necessárias para o seu ambiente.
+# Nunca reutilize credenciais de produção em desenvolvimento ou testes.
 
 # Rode o servidor de desenvolvimento
 npm run dev
@@ -128,7 +128,11 @@ npm run dev
 | `npm run dev` | Servidor de desenvolvimento (porta 8080) |
 | `npm run build` | Build de produção |
 | `npm run preview` | Preview do build |
-| `npm run test` | Executar testes com Vitest |
+| `npm run typecheck` | TypeScript completo: projetos da aplicação e Node |
+| `npm run typecheck:baseline` | Gate contra o baseline de TypeScript; não substitui a checagem completa |
+| `npm run lint:baseline` | Gate de lint que impede regressões em relação ao baseline |
+| `npm test` | Suíte Vitest completa |
+| `npm run test:scenarios` | Cenários de integração em Node |
 | `npm run test:coverage` | Testes com relatório de cobertura |
 
 ---
