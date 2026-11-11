@@ -7,6 +7,8 @@ O projeto permanece em construção até que os critérios de piloto e go-live
 sejam atendidos.
 
 > **Atualização de 29/10/2026:** [concorrência e resiliência do autosave de orçamentos](execucao/controle-concorrencia-autosave-2026-10-29.md) revalida as lacunas P056/P059. A correção ainda depende de CI remoto e não encerra as etapas integralmente.
+>
+> **Revalidação do catálogo externo (29/10/2026):** [contrato somente leitura, testes e limite de confirmação do deploy](execucao/reavaliacao-catalogo-read-only-2026-10-29.md).
 
 ## Comece por aqui
 

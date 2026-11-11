@@ -6,6 +6,7 @@
  * logic here for comprehensive unit testing in Vitest.
  */
 import { describe, it, expect, beforeEach } from "vitest";
+import { PERMISSIONS } from "../../supabase/functions/_shared/external-db-config.ts";
 
 // ============================================
 // Re-implement pure functions from the edge function
@@ -63,12 +64,6 @@ function getResourceGroup(tableName: string): ResourceGroup | null {
   if ((COMPANY_TABLES as readonly string[]).includes(tableName)) return "companies";
   return null;
 }
-
-const PERMISSIONS: Record<ResourceGroup, string[]> = {
-  products: ["select", "insert", "update", "delete"],
-  companies: ["select"],
-  views: ["select"],
-};
 
 function classifyQuerySpeed(durationMs: number): "ok" | "slow" | "very_slow" {
   if (durationMs >= VERY_SLOW_QUERY_THRESHOLD_MS) return "very_slow";
@@ -237,8 +232,11 @@ describe("external-db-bridge — getResourceGroup", () => {
 });
 
 describe("external-db-bridge — Permissions", () => {
-  it("product tables have full CRUD", () => {
-    expect(PERMISSIONS.products).toEqual(["select", "insert", "update", "delete"]);
+  it("product tables are read-only according to the shared bridge contract", () => {
+    expect(PERMISSIONS.products).toEqual(["select"]);
+    for (const operation of ["insert", "update", "delete", "upsert", "batch_insert"]) {
+      expect(PERMISSIONS.products).not.toContain(operation);
+    }
   });
 
   it("company tables are read-only", () => {
