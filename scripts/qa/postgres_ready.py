@@ -50,7 +50,10 @@ def _require_docker() -> None:
     """Sem daemon Docker acessível: falha onde a prova é obrigatória, pula onde não é."""
     try:
         result = subprocess.run(
-            ["docker", "info"], capture_output=True, timeout=DOCKER_INFO_TIMEOUT_SECONDS
+            ["docker", "info"],
+            capture_output=True,
+            timeout=DOCKER_INFO_TIMEOUT_SECONDS,
+            text=True,
         )
     except FileNotFoundError:
         _docker_unavailable("Docker não encontrado no PATH")
@@ -60,7 +63,9 @@ def _require_docker() -> None:
         )
     else:
         if result.returncode != 0:
-            _docker_unavailable("Docker daemon não está rodando")
+            _docker_unavailable(
+                f"Docker CLI falhou: {result.stderr.strip() or result.stdout.strip()}"
+            )
 
 
 def _exit_on_sigterm(signum, _frame) -> None:

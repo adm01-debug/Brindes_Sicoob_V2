@@ -39,7 +39,7 @@ export function isUnrestrictedPermissivePolicy(policy) {
   const trueCheck = isTrueOrOmitted(policy.with_check);
   const unrestrictedExpression = policy.cmd === "INSERT"
     ? trueCheck
-    : policy.cmd === "SELECT" || policy.cmd === "DELETE"
+    : policy.cmd === "SELECT" || policy.cmd === "DELETE" || policy.cmd === "ALL"
       ? trueUsing
       : trueUsing && (policy.with_check == null || trueCheck);
   return policy.permissive === "PERMISSIVE" && broadRole && unrestrictedExpression;

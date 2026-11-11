@@ -55,7 +55,20 @@ function compareFunctions() {
     }
   });
 
-  const inventoryFunctionsMatch = inventoryContent.match(/`([a-z0-9-]+)`/g) || [];
+  // Restringe a extração à seção "## 5. Lista de Edge Functions" — qualquer outro
+  // termo em crase minúsculo-com-hífen citado em outra seção do inventário não é
+  // "função documentada" (achado 3 da auditoria).
+  const section5Start = inventoryContent.indexOf('## 5. Lista de Edge Functions');
+  const section5End = section5Start === -1
+    ? -1
+    : inventoryContent.indexOf('\n## ', section5Start + 1);
+  const section5Content = section5Start === -1
+    ? (console.warn('⚠️ Seção "## 5. Lista de Edge Functions" não encontrada no inventário — usando documento inteiro.'), inventoryContent)
+    : section5End === -1
+      ? inventoryContent.slice(section5Start)
+      : inventoryContent.slice(section5Start, section5End);
+
+  const inventoryFunctionsMatch = section5Content.match(/`([a-z0-9-]+)`/g) || [];
   const inventoryFunctions = [...new Set(inventoryFunctionsMatch.map(f => f.replace(/`/g, '')))];
 
   const blacklist = ['multi-tenant', 'multi-db', 'p0', 'p1', 'p2', 'v2', 'b2b', 'admin', 'vendedor', 'gerente_pa', 'gestor_compras', 'dev'];
