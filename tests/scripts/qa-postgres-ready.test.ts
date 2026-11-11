@@ -21,6 +21,14 @@ const targets: [string, string, string[]][] = [
   ['shell (simular-governanca-orcamento.sh)', 'bash', ['scripts/qa/simular-governanca-orcamento.sh']],
 ];
 
+// `runWithoutDocker`/o spawnSync abaixo dão até 60s por chamada (DOCKER_INFO_TIMEOUT_SECONDS=30
+// dentro do script + margem) porque um DOCKER_HOST apontando pra um socket inexistente nem
+// sempre falha rápido — depende da versão do cliente docker e da carga do runner. Sem um timeout
+// de teste explícito, o padrão do vitest (5000ms) estourava mesmo com a chamada ainda dentro do
+// próprio orçamento dela, derrubando o CI por timing, não por bug (visto de verdade em CI: "Test
+// timed out in 5000ms" com o script ainda rodando).
+const TEST_TIMEOUT_MS = 45_000;
+
 describe.each(targets)('simulação QA sem Docker — %s', (_label, command, args) => {
   it('no CI a prova é obrigatória: sai 1 e não finge sucesso', () => {
     for (const env of [{ CI: 'true' }, { GITHUB_ACTIONS: 'true' }, { QA_REQUIRE_DOCKER: '1' }]) {
@@ -28,7 +36,7 @@ describe.each(targets)('simulação QA sem Docker — %s', (_label, command, arg
       expect(result.status, `${JSON.stringify(env)}: ${result.stderr}`).toBe(1);
       expect(result.stderr).toContain('NÃO foi executada');
     }
-  });
+  }, TEST_TIMEOUT_MS);
 
   it('fora do CI pula com aviso e sai 0', () => {
     for (const env of [{}, { CI: 'false' }]) {
@@ -36,12 +44,12 @@ describe.each(targets)('simulação QA sem Docker — %s', (_label, command, arg
       expect(result.status, result.stderr).toBe(0);
       expect(result.stderr).toContain('nada foi verificado');
     }
-  });
+  }, TEST_TIMEOUT_MS);
 
   it('QA_ALLOW_SKIP=1 libera o pulo mesmo no CI', () => {
     const result = runWithoutDocker(command, args, { CI: 'true', QA_ALLOW_SKIP: '1' });
     expect(result.status, result.stderr).toBe(0);
-  });
+  }, TEST_TIMEOUT_MS);
 });
 
 describe('simulação QA sem o binário docker no PATH', () => {
@@ -55,5 +63,5 @@ describe('simulação QA sem o binário docker no PATH', () => {
     });
     expect(result.status, result.stderr).toBe(1);
     expect(result.stderr).toContain('Docker não encontrado');
-  });
+  }, TEST_TIMEOUT_MS);
 });

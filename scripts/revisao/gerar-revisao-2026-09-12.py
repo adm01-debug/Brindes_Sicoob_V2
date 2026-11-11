@@ -10,22 +10,40 @@ import json
 import subprocess
 import sys
 
-def _historical_excepthook(exc_type, exc_value, exc_tb):
-    """Converte FileNotFoundError/KeyError históricos em aviso; re-lança outros erros."""
-    if exc_type in (FileNotFoundError, KeyError):
-        print(f"⚠️  Validação histórica (commit cfbcd8f, 2026-09-12) detectou divergência: {exc_value}", file=sys.stderr)
-        print("    O código evoluiu desde a data de referência — divergências são esperadas.", file=sys.stderr)
-        sys.exit(0)
-    import traceback
-    traceback.print_exception(exc_type, exc_value, exc_tb)
-    sys.exit(1)
-sys.excepthook = _historical_excepthook
-
 ROOT = Path(__file__).resolve().parents[2]
 PASTA = ROOT / 'docs/execucao/revisao-implementacao-2026-09-12'
 ANTIGA = ROOT / 'docs/execucao/revisao-implementacao'
 COMMIT = 'cfbcd8f14f023d385ae4329a3ac037c1b19c7b17'
 ANTERIOR = '6f1c5f94f612c13071b8dbe61b500b915e50b123'
+
+
+def _garantir_commit(sha):
+    """Clone raso (CI com fetch-depth=1) não tem os commits históricos COMMIT/ANTERIOR: sem
+    isto, `git show <sha>:arquivo` falha (exit != 0) e o laço do manifesto (abaixo) lia isso como
+    "arquivo mudou desde o commit candidato" para TODO arquivo — falso positivo de ambiente, não
+    de drift de código — chegando a abortar com `sys.exit(1)` por um motivo errado."""
+    def existe():
+        return subprocess.run(
+            ['git', '-C', str(ROOT), 'cat-file', '-e', f'{sha}^{{commit}}'],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        ).returncode == 0
+
+    if existe():
+        return
+    fetch = subprocess.run(
+        ['git', '-C', str(ROOT), 'fetch', '--depth', '1', 'origin', sha],
+        stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True,
+    )
+    if not existe():
+        raise RuntimeError(
+            f'Commit histórico {sha} inalcançável (clone raso; git fetch --depth 1 falhou: '
+            f'{fetch.stderr.strip() or "sem detalhe"}). Rode com histórico completo '
+            f'(git fetch --unshallow) ou busque o SHA manualmente antes de regenerar.'
+        )
+
+
+_garantir_commit(COMMIT)
+_garantir_commit(ANTERIOR)
 HASH_PLANO = '50c5d83d7af3d34bb560ddfc90a270b722cb24068463a4c94cac752f6387e9f6'
 EVID = 'docs/execucao/evidencias/'
 ATUAL = 'docs/execucao/revisao-implementacao-2026-09-12/'
