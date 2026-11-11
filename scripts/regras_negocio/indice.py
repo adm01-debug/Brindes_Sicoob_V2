@@ -27,6 +27,7 @@ import json
 import re
 import subprocess
 import sys
+import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -40,6 +41,19 @@ ROTEIRO = {
                           "Qualquer mudança de comportamento · Antes de criar status/valor/validação · Antes de planejar"),
 }
 ORDEM = ["regras de negócio", "banco real", "código"]
+
+
+def _sem_acento(s: str) -> str:
+    return unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode().lower()
+
+
+# Chamador em produção (.github/workflows/contexto.yml) passa os nomes sem acento
+# ("codigo", "regras de negocio"); normaliza para a chave acentuada de ROTEIRO/ORDEM.
+_CANONICO = {_sem_acento(k): k for k in ROTEIRO}
+
+
+def _normaliza_nome(nome: str) -> str:
+    return _CANONICO.get(_sem_acento(nome), nome)
 
 
 def git(root: Path, *a: str) -> str:
@@ -134,7 +148,7 @@ def main() -> int:
             print(f"[indice] fonte inválida: {spec}", file=sys.stderr); return 2
         nome, resto = spec.split("=", 1)
         caminho, _, branch = resto.partition("@")
-        nome, caminho, branch = nome.strip(), caminho.strip().strip("/"), branch.strip()
+        nome, caminho, branch = _normaliza_nome(nome.strip()), caminho.strip().strip("/"), branch.strip()
         d = root / caminho
         local = d.is_dir() and any(d.iterdir())
         man = read_manifest(d) if local else {}

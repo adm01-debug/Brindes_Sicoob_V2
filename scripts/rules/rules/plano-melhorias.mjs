@@ -91,9 +91,16 @@ export default [
     title: 'Mais de uma convenção de pasta de testes em uso',
     fix: 'consolidar numa convenção só (decisão de estrutura — não automatizável)',
     run(ctx) {
-      const roots = ['tests', 'src/tests', 'src/test', 'src/__tests__'];
+      const roots = ['tests', 'src/tests', 'src/test'];
       const counts = roots.map((r) => [r, ctx.walk(join(ctx.root, r)).filter((f) => /\.(?:test|spec)\.[tj]sx?$/.test(f)).length]).filter(([, n]) => n > 0);
-      const colocated = srcFiles({ ...ctx }).length ? ctx.walk(join(ctx.root, 'src')).filter((f) => /\.(?:test|spec)\.[tj]sx?$/.test(f) && !/\/(?:tests?|__tests__)\//.test(f)).length : 0;
+      // `roots` fixo só via o nível raiz de `src/__tests__`: um `__tests__` ANINHADO (ex.:
+      // src/components/foo/__tests__/Bar.test.tsx) não cai nele, e a exclusão abaixo também o
+      // descarta do "colocado" (o caminho contém /__tests__/) — ficava invisível nos dois lados.
+      // Um bucket único varrendo src/ inteiro, em qualquer profundidade, cobre o raso e o aninhado.
+      const srcTests = srcFiles({ ...ctx }).length ? ctx.walk(join(ctx.root, 'src')).filter((f) => /\.(?:test|spec)\.[tj]sx?$/.test(f)) : [];
+      const nested = srcTests.filter((f) => /\/__tests__\//.test(f)).length;
+      if (nested) counts.push(['src/**/__tests__ (qualquer profundidade)', nested]);
+      const colocated = srcTests.filter((f) => !/\/(?:tests?|__tests__)\//.test(f)).length;
       if (colocated) counts.push(['src/** (ao lado do código)', colocated]);
       return { items: counts.length > 1 ? counts.map(([r, n]) => `${r}: ${n} arquivo(s) de teste`) : [] };
     },

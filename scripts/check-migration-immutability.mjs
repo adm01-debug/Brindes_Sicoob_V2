@@ -40,7 +40,9 @@ function runGit(args) {
 
 function verifiedRef(candidate) {
   if (!candidate) return null;
-  const result = runGit(["rev-parse", "--verify", candidate]);
+  // `^{commit}` + --quiet: um SHA de 40 hex sem objeto (ex.: GITHUB_EVENT_BEFORE=000...0 no
+  // primeiro push) passa no `--verify` puro e depois quebrava o `git diff`; aqui cai no próximo candidato.
+  const result = runGit(["rev-parse", "--verify", "--quiet", `${candidate}^{commit}`]);
   return result.status === 0 ? result.stdout.trim() : null;
 }
 
@@ -55,7 +57,13 @@ function resolveBaseCommit() {
   const head = verifiedRef("HEAD");
   for (const candidate of candidates) {
     const sha = verifiedRef(candidate);
-    if (sha && sha !== head) return { ref: candidate, sha };
+    if (sha && sha !== head) {
+      // Compara com o ponto em que o branch saiu da base. Contra a ponta da base, uma migration
+      // NOVA mergeada depois na main aparecia como "removida" num branch local atrasado.
+      const mergeBase = runGit(["merge-base", sha, "HEAD"]);
+      const fork = mergeBase.status === 0 ? mergeBase.stdout.trim() : "";
+      return { ref: candidate, sha: fork && fork !== head ? fork : sha };
+    }
   }
   return null;
 }
@@ -71,7 +79,8 @@ if (!base) {
 const diff = runGit([
   "diff",
   "--name-status",
-  "--diff-filter=MDR",
+  // T = troca de tipo (arquivo regular virando symlink): o conteúdo mudou e não era visto.
+  "--diff-filter=MDRT",
   base.sha,
   "--",
   MIGRATIONS_DIR,
@@ -97,7 +106,13 @@ console.error(
 for (const line of lines) {
   const [status, ...rest] = line.split(/\s+/);
   const path = rest[rest.length - 1];
-  const verb = status.startsWith("M") ? "modificado" : status.startsWith("D") ? "removido" : "renomeado";
+  const verb = status.startsWith("M")
+    ? "modificado"
+    : status.startsWith("D")
+      ? "removido"
+      : status.startsWith("T")
+        ? "tipo alterado"
+        : "renomeado";
   console.error(`   ${verb.padEnd(10)} ${path}`);
 }
 console.error(

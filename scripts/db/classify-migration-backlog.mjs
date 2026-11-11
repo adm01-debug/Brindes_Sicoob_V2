@@ -86,13 +86,25 @@ export function analyzeMigrationSql(sql, inventory = { relations: [], functions:
   add(matches(code, /\btruncate\b/i), 'truncate');
   add(matches(code, /\bdelete\s+from\b/i), 'delete_dados');
   add(matches(code, /\bupdate\s+(?:only\s+)?[\w".]+\s+set\b/i), 'update_dados');
-  add(matches(code, /\bdrop\s+(?:table|view|materialized\s+view|column|type|function|index)\b/i), 'drop_objeto');
-  add(matches(code, /\balter\s+table[\s\S]*?\bdrop\s+(?:column|constraint)\b/i), 'drop_estrutura');
+  // schema/sequence/extension/owned também destroem objeto: `DROP SCHEMA public CASCADE` virava "candidata a dry-run".
+  add(matches(code, /\bdrop\s+(?:table|view|materialized\s+view|column|type|function|index|schema|sequence|extension|owned)\b/i), 'drop_objeto');
+  // `ALTER TABLE t DROP email` (sem a palavra COLUMN) é válido e destrói a coluna; só DROP DEFAULT/NOT NULL/IDENTITY/EXPRESSION são inofensivos.
+  add(matches(code, /\balter\s+table\b[^;]*?\bdrop\s+(?!default\b|not\s+null\b|identity\b|expression\b)/i), 'drop_estrutura');
   add(matches(code, /\bdisable\s+row\s+level\s+security\b/i), 'rls_desabilitada');
   add(matches(code, /\busing\s*\(\s*true\s*\)/i), 'policy_using_true');
   add(matches(code, /\bwith\s+check\s*\(\s*true\s*\)/i), 'policy_check_true');
   add(matches(code, /\bgrant\b[\s\S]{0,240}?\bto\s+(?:public|anon)\b/i), 'grant_publico_ou_anon');
-  add(matches(code, /\bsecurity\s+definer\b/i) && !matches(code, /\bset\s+search_path\s*(?:=|to)\s*/i), 'security_definer_sem_search_path_explicito');
+  // Por função, não pelo arquivo: um `SET search_path` numa função não protege outra
+  // SECURITY DEFINER sem o atributo no mesmo arquivo — o check anterior mascarava esse caso.
+  const functionSegments = code.split(/(?=\bcreate\s+(?:or\s+replace\s+)?function\b)/i);
+  add(
+    functionSegments.some(
+      (segment) =>
+        matches(segment, /\bsecurity\s+definer\b/i) &&
+        !matches(segment, /\bset\s+search_path\s*(?:=|to)\s*/i),
+    ),
+    'security_definer_sem_search_path_explicito',
+  );
   add(matches(code, /\b(?:products|product_images|product_variants|stock_daily_summary|tecnicas_gravacao)\b/i), 'referencia_catalogo_externo');
   add(matches(code, /\b(?:cron\.schedule|net\.http_|create\s+extension|storage\.(?:buckets|objects))\b/i), 'infraestrutura_ou_storage');
   add(matches(code, /\b(?:insert\s+into|copy\s+)\b/i), 'carga_de_dados');
@@ -237,6 +249,10 @@ async function main() {
   }
   const ledgerPath = valueAfter(args, '--ledger', DEFAULT_LEDGER);
   const inventoryPath = valueAfter(args, '--inventory', DEFAULT_INVENTORY);
+  // Flag desconhecida (`--ouptut x`) era ignorada e a saída ia para o stdout sem aviso.
+  const KNOWN_FLAGS = new Set(['--ledger', '--inventory', '--output', '--markdown', '-h', '--help']);
+  const unknown = args.filter((arg) => arg.startsWith('-') && !KNOWN_FLAGS.has(arg));
+  if (unknown.length > 0) throw new UsageError(`Flag desconhecida: ${unknown.join(', ')}`);
   const outputPath = valueAfter(args, '--output', null);
   const markdownPath = valueAfter(args, '--markdown', null);
   const result = classifyBacklog({

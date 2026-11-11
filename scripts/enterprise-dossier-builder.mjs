@@ -1,17 +1,39 @@
-import fs from 'fs';
-import { execSync } from 'child_process';
-import { createClient } from '@supabase/supabase-js';
-import fetch from 'node-fetch';
+/**
+ * enterprise-dossier-builder.mjs — dossiê de auditoria com evidências conferidas.
+ *
+ * Monta `reports/AUDIT_REPORT_<commit>.md|pdf` e `reports/AUDIT_ENTERPRISE_FINAL.md|pdf`
+ * (npm run audit:dossier). `AUDIT_REPORTS_DIR` troca o diretório. A saída NÃO vai para
+ * `public/`: tudo que está lá é servido pelo front como arquivo estático.
+ *
+ * Todo status é medido nesta execução: RLS pela RPC `check_tables_rls`, evidências pelo
+ * arquivo que existe e contém o trecho citado, links por requisição HTTP com timeout.
+ * O que não é medido sai rotulado como declaração.
+ *
+ * Requer VITE_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.
+ * Exit codes: 0 = dossiê gerado; 1 = falha de execução (RPC com erro/vazia, PDF);
+ *             2 = configuração ausente.
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 import { marked } from 'marked';
 import { chromium } from '@playwright/test';
+import {
+  AUDIT_INVENTORY,
+  DECLARED,
+  fetchRlsTables,
+  headCommit,
+  indexRlsMigrations,
+  lastCommitInfo,
+  repoWebUrl,
+  reportsDir,
+  summarizeRls,
+  verifyEvidence,
+} from './lib/audit-evidence.mjs';
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-  console.error('❌ VITE_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são necessários. Configure as variáveis de ambiente antes de executar este script.');
-  process.exit(2);
-}
+const LINK_TIMEOUT_MS = 8000;
 
 function escapeMarkdownText(value) {
   return String(value ?? '')
@@ -65,78 +87,61 @@ async function renderMarkdownPdf(markdown, outputPath) {
   }
 }
 
-async function getRlsCoverage() {
-  try {
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    const { data: tables, error } = await supabase.rpc('check_tables_rls');
-    if (error) {
-      console.warn('⚠️ RPC check_tables_rls falhou, tentando query direta no pg_class...');
-      const { data: directTables, error: directError } = await supabase
-        .from('pg_class')
-        .select('relname, relrowsecurity')
-        .filter('relkind', 'eq', 'r');
-      if (directError) throw directError;
-      return directTables || [];
-    }
-    return tables || [];
-  } catch (e) {
-    console.error('Error fetching RLS coverage:', e.message);
-    return [];
-  }
+/** Último commit do caminho; sem histórico não inventa autor nem data. */
+function getFileInfo(target, fallbackHash) {
+  const log = lastCommitInfo(target, { format: '%h|%ad|%an', date: 'short' });
+  if (!log) return { hash: fallbackHash, date: '—', author: '—' };
+  const [hash, date, author] = log.split('|');
+  return { hash, date, author };
 }
 
-async function getFileInfo(path) {
-  try {
-    const log = execSync(`git log -1 --format="%h|%ad|%an" --date=short -- ${path}`)
-      .toString()
-      .trim();
-    if (!log)
-      return { hash: 'main', date: new Date().toISOString().split('T')[0], author: 'System' };
-    const [hash, date, author] = log.split('|');
-    return { hash, date, author };
-  } catch {
-    return { hash: 'main', date: new Date().toISOString().split('T')[0], author: 'System' };
-  }
-}
-
-async function validateLink(url) {
+export async function validateLink(url, { timeoutMs = LINK_TIMEOUT_MS, fetchImpl = fetch } = {}) {
   if (!url || typeof url !== 'string') return { ok: false, error: 'Empty URL' };
-  if (url.startsWith('http')) {
-    const methods = ['HEAD', 'GET'];
-    for (const method of methods) {
+  if (/^https?:\/\//.test(url)) {
+    let lastError = 'Validation failed after HEAD/GET';
+    for (const method of ['HEAD', 'GET']) {
       try {
-        const options = {
+        const res = await fetchImpl(url, {
           method,
-          timeout: 8000,
+          signal: AbortSignal.timeout(timeoutMs),
           headers: method === 'GET' ? { Range: 'bytes=0-0' } : {},
-        };
-        const res = await fetch(url, options);
+        });
+        await res.body?.cancel?.();
         if (res.ok) return { ok: true };
-        if (method === 'GET' && res.status === 404) return { ok: false, error: '404 Not Found' };
+        lastError = `${res.status} ${res.statusText || ''}`.trim();
       } catch (e) {
-        if (method === 'GET') return { ok: false, error: e.message };
+        lastError = e.name === 'TimeoutError' ? `timeout após ${timeoutMs}ms` : e.message;
       }
     }
-    return { ok: false, error: 'Validation failed after HEAD/GET' };
+    return { ok: false, error: lastError };
   }
   const exists = fs.existsSync(url.split('#')[0]);
   return exists ? { ok: true } : { ok: false, error: 'Local file not found' };
 }
 
-async function getCoverageMetrics() {
-  const srcFiles = execSync('find src -name "*.tsx" | wc -l').toString().trim();
-  const testFiles = execSync('find src -name "*.test.ts" -o -name "*.test.tsx" | wc -l')
-    .toString()
-    .trim();
-  const summaryPath = 'coverage/coverage-summary.json';
+/** Contagens pelo índice do git: sem shell e incluindo `tests/`, onde os testes moram. */
+export function getCoverageMetrics() {
+  let tracked = [];
+  try {
+    tracked = execFileSync('git', ['ls-files', '--', 'src', 'tests'], {
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+    })
+      .split('\n')
+      .filter(Boolean);
+  } catch {
+    tracked = [];
+  }
+  const isTest = (file) => /\.(?:test|spec)\.[cm]?[jt]sx?$/.test(file);
+  const totalComponents = tracked.filter((f) => f.startsWith('src/') && f.endsWith('.tsx') && !isTest(f)).length;
+  const totalTests = tracked.filter(isTest).length;
 
   let coverage = 'indisponível';
   let isReal = false;
-
+  const summaryPath = 'coverage/coverage-summary.json';
   if (fs.existsSync(summaryPath)) {
     try {
-      const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
-      const percentage = summary.total?.lines?.pct;
+      const percentage = JSON.parse(fs.readFileSync(summaryPath, 'utf8')).total?.lines?.pct;
       if (typeof percentage === 'number' && Number.isFinite(percentage)) {
         coverage = `${percentage}%`;
         isReal = true;
@@ -145,45 +150,62 @@ async function getCoverageMetrics() {
       console.warn('⚠️ Erro ao ler summary de cobertura.');
     }
   }
+  return { coverage, totalComponents, totalTests, real: isReal };
+}
 
-  return {
-    coverage,
-    totalComponents: srcFiles,
-    totalTests: testFiles,
-    real: isReal,
-  };
+function evidenceStatus(feature) {
+  const item = AUDIT_INVENTORY.find((entry) => entry.feature === feature);
+  if (!item) return { item: null, check: { ok: false, checked: false }, label: DECLARED };
+  const check = verifyEvidence(item);
+  return { item, check, label: check.ok ? '✅ Evidência conferida' : `❌ ${check.reason}` };
 }
 
 async function buildDossier() {
+  const supabaseUrl = process.env.VITE_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    console.error(
+      '❌ VITE_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são necessários. Configure as variáveis de ambiente antes de executar este script.',
+    );
+    return 2;
+  }
+
   const env = process.env.AUDIT_ENV || 'prod';
   const envLabel = escapeMarkdownText(env.toUpperCase());
-  const envUrls = {
-    prod: 'https://github.com/promo-gifts/app',
-    staging: 'https://github.com/promo-gifts/app/tree/staging',
-    dev: 'https://github.com/promo-gifts/app/tree/dev',
-  };
-  const currentRepoUrl = envUrls[env] || envUrls.prod;
+  const repoUrl = repoWebUrl();
+  if (!repoUrl) throw new Error('Não foi possível determinar a URL do repositório (origin/GITHUB_REPOSITORY).');
 
   console.log(`🚀 Iniciando Enterprise Dossier Builder v10.6 [Ambiente: ${env}]...`);
 
-  const commitHash = execSync('git rev-parse --short HEAD').toString().trim();
-  const rlsTables = await getRlsCoverage();
-  const metrics = await getCoverageMetrics();
+  const commitHash = headCommit();
+  if (!commitHash) throw new Error('git rev-parse HEAD falhou: execute dentro do repositório.');
+
+  const { createClient } = await import('@supabase/supabase-js');
+  const rlsTables = await fetchRlsTables(createClient(supabaseUrl, supabaseKey));
+  const rls = summarizeRls(rlsTables);
+  const migrationOf = indexRlsMigrations();
+  const metrics = getCoverageMetrics();
 
   const failedLinks = [];
+  const linkCache = new Map();
+  const checkLink = async (url) => {
+    if (!linkCache.has(url)) linkCache.set(url, await validateLink(url));
+    return linkCache.get(url);
+  };
 
   let rlsReport =
     '### 🔒 Relatório de Cobertura RLS por Tabela e Rota\n\n| Tabela | Status | Verificação | Link de Migração | Última Alteração | Link Válido |\n| :--- | :--- | :--- | :--- | :--- | :--- |\n';
 
   for (const table of rlsTables) {
     const status = table.relrowsecurity ? '✅ PASSED' : '❌ FAILED';
-    const file =
-      execSync(`grep -l "ENABLE ROW LEVEL SECURITY" supabase/migrations/*.sql | head -1`)
-        .toString()
-        .trim() || 'supabase/migrations';
-    const info = await getFileInfo(file);
-    const link = `${currentRepoUrl}/blob/${info.hash}/${file}`;
-    const validation = await validateLink(link);
+    const file = migrationOf.get(table.relname.toLowerCase());
+    if (!file) {
+      rlsReport += `| ${escapeMarkdownText(table.relname)} | ${status} | Row Isolation | migration não localizada por análise estática | — | — |\n`;
+      continue;
+    }
+    const info = getFileInfo(file, commitHash);
+    const link = `${repoUrl}/blob/${info.hash}/${file}`;
+    const validation = await checkLink(link);
     if (!validation.ok)
       failedLinks.push({ item: table.relname, url: link, error: validation.error });
     rlsReport += `| ${escapeMarkdownText(table.relname)} | ${status} | Row Isolation | [Ver Migração](${link}) | ${escapeMarkdownText(info.date)} por ${escapeMarkdownText(info.author)} | ${validation.ok ? '🟢' : `🔴 (${escapeMarkdownText(validation.error)})`} |\n`;
@@ -193,51 +215,56 @@ async function buildDossier() {
     {
       item: 'Segregação de Logs de Admin',
       severity: 'P1',
-      path: 'supabase/functions/admin-audit-hook',
-      status: '✅ Mitigado (RLS Audit Log Active)',
+      path: 'supabase/functions/admin-audit-hook/index.ts',
+      quote: 'admin_audit_log',
     },
     {
       item: 'Criptografia de Dados em Repouso (Camada App)',
       severity: 'P2',
       path: 'src/services/encryption.ts',
-      status: '✅ Implementado (AES-GCM 256)',
+      quote: 'AES-GCM',
     },
   ];
 
   let gapsReport =
     '### ⚠️ Lacunas Quantificadas (Audit Gaps)\n\n| Item | Severidade | Caminho do Arquivo | Status | Evidência Relacionada |\n| :--- | :--- | :--- | :--- | :--- |\n';
   for (const gap of gaps) {
-    const info = await getFileInfo(gap.path);
-    gapsReport += `| ${gap.item} | **${gap.severity}** | \`${gap.path}\` | ${gap.status} | [Link](${currentRepoUrl}/tree/${info.hash}/${gap.path}) |\n`;
+    const check = verifyEvidence({ ...gap, status: 'implementado' });
+    const info = getFileInfo(gap.path, commitHash);
+    const status = check.ok ? `✅ Evidência conferida (\`${gap.quote}\`)` : `❌ ${escapeMarkdownText(check.reason)}`;
+    gapsReport += `| ${gap.item} | **${gap.severity}** | \`${gap.path}\` | ${status} | [Link](${repoUrl}/blob/${info.hash}/${gap.path}) |\n`;
   }
 
+  const financeiro = evidenceStatus('Precisão 4 Casas');
   const checklistItems = [
     {
       module: 'Segurança',
       item: 'RLS Multi-tenant',
-      status: '✅ Implementado',
-      evidence: `${currentRepoUrl}/commit/${commitHash}`,
-      validated: 'Sim',
+      status: rls.compliant
+        ? `✅ ${rls.withRls}/${rls.total} tabelas com RLS`
+        : `❌ ${rls.without.length} tabela(s) sem RLS`,
+      evidence: `${repoUrl}/commit/${commitHash}`,
+      validated: rls.compliant ? 'Sim' : 'Não',
     },
     {
       module: 'Financeiro',
       item: 'Precisão 4-Dec',
-      status: '✅ Implementado',
-      evidence: `${currentRepoUrl}/blob/${commitHash}/supabase/migrations/20260502174252_a88e3c13-46b8-4ce4-b1b8-c8500d390f3d.sql`,
-      validated: 'Sim',
+      status: financeiro.label,
+      evidence: `${repoUrl}/blob/${commitHash}/${financeiro.item?.path ?? ''}`,
+      validated: financeiro.check.ok ? 'Sim' : 'Não',
     },
     {
       module: 'UX',
       item: 'WCAG Compliance',
-      status: '✅ Implementado',
-      evidence: `${currentRepoUrl}/blob/${commitHash}/src/pages/admin/AdminVerbasPage.tsx`,
-      validated: 'Sim',
+      status: DECLARED,
+      evidence: `${repoUrl}/blob/${commitHash}/scripts/validate-wcag-colors.mjs`,
+      validated: '-',
     },
     {
       module: 'Governança',
       item: 'Blockchain Log',
       status: '⏳ A implementar',
-      evidence: `${currentRepoUrl}/tree/main/roadmap`,
+      evidence: null,
       validated: '-',
     },
   ];
@@ -245,10 +272,14 @@ async function buildDossier() {
   let checklist =
     '### 📑 Checklist Auditável de Conformidade\n\n| Módulo | Item | Status | Evidência (Link/Commit) | Validado | Link Ativo |\n| :--- | :--- | :--- | :--- | :--- | :--- |\n';
   for (const item of checklistItems) {
-    const validation = await validateLink(item.evidence);
+    if (!item.evidence) {
+      checklist += `| **${item.module}** | ${item.item} | ${item.status} | — | ${item.validated} | — |\n`;
+      continue;
+    }
+    const validation = await checkLink(item.evidence);
     if (!validation.ok)
       failedLinks.push({ item: item.item, url: item.evidence, error: validation.error });
-    checklist += `| **${item.module}** | ${item.item} | ${item.status} | [Ver Evidência](${item.evidence}) | ${item.validated} | ${validation.ok ? '🟢' : `🔴 <span title="${validation.error}">?</span>`} |\n`;
+    checklist += `| **${item.module}** | ${item.item} | ${item.status} | [Ver Evidência](${item.evidence}) | ${item.validated} | ${validation.ok ? '🟢' : `🔴 (${escapeMarkdownText(validation.error)})`} |\n`;
   }
 
   let failureSection = '';
@@ -260,13 +291,18 @@ async function buildDossier() {
     });
   }
 
-  const finalContent = `
+  const rlsIntegrity = rls.compliant
+    ? `${rls.pct}% (${rls.withRls}/${rls.total} tabelas do schema public com RLS ativo).`
+    : `${rls.pct}% (${rls.withRls}/${rls.total}) — ❌ sem RLS: ${rls.without.map((name) => `\`${escapeMarkdownText(name)}\``).join(', ')}.`;
+  const generatedAt = new Date();
+
+  const body = `
 # 🛡️ DOSSIÊ DE AUDITORIA ENTERPRISE - PROMAGIFTS SICOOB [${envLabel}]
-**ID da Auditoria:** \`AUDIT-${commitHash}-${Date.now()}\`
-**Ref de Versão:** [${commitHash}](${currentRepoUrl}/commit/${commitHash})
+**ID da Auditoria:** \`AUDIT-${commitHash}-${generatedAt.getTime()}\`
+**Ref de Versão:** [${commitHash}](${repoUrl}/commit/${commitHash})
 **Ambiente:** ${envLabel}
-**Data de Geração:** ${new Date().toLocaleString('pt-BR')}
-**Responsável:** Lovable Enterprise Engine
+**Data de Geração:** ${generatedAt.toISOString()}
+**Gerado por:** \`scripts/enterprise-dossier-builder.mjs\`
 
 ---
 
@@ -281,13 +317,13 @@ ${failedLinks.length > 0 ? '5. [Falhas de Validação](#failed-links)\n6. [Trilh
 
 <a name="resumo"></a>
 ## 2. RESUMO EXECUTIVO
-O sistema foi submetido a uma auditoria automatizada de 360 graus no ambiente **${envLabel}**.
+Auditoria automatizada no ambiente **${envLabel}**. Status com ✅/❌ foram medidos nesta execução; itens com 📝 são declarações de projeto, não medições.
 
 ### 📈 Métricas de Cobertura de Código (Métricas Reais: ${metrics.real ? '✅' : '❌'})
 - **Cobertura de Linhas (Vitest):** ${metrics.coverage}
 - **Componentes TSX Identificados:** ${metrics.totalComponents}
 - **Arquivos de Teste Detectados:** ${metrics.totalTests}
-- **Integridade de RLS:** 100% das tabelas validadas.
+- **Integridade de RLS:** ${rlsIntegrity}
 
 <a name="checklist"></a>
 ${checklist}
@@ -304,35 +340,41 @@ ${failureSection}
 ## ${failedLinks.length > 0 ? '6' : '5'}. TRILHA DE EVIDÊNCIAS (GIT GENESIS)
 As evidências abaixo foram extraídas diretamente do histórico de commits do repositório para garantir integridade.
 
-- **Último Deploy:** ${commitHash}
-- **Ambiente:** Lovable Cloud ${envLabel}
-- **Integridade da Auditoria:** Verified by Lovable SHA-256
+- **Commit auditado:** ${commitHash}
+- **Ambiente:** ${envLabel}
+- **Links de evidência verificados:** ${linkCache.size} (${failedLinks.length} com falha)
+`;
+  const digest = createHash('sha256').update(body).digest('hex');
+  const finalContent = `${body}- **SHA-256 do conteúdo acima:** \`${digest}\`
 
 ---
-*Relatório gerado automaticamente em ${new Date().toISOString()}. Confidencial e Intransferível.*
+*Relatório gerado automaticamente em ${generatedAt.toISOString()}.*
 `;
 
-  const publicReportsDir = 'public/reports';
-  if (!fs.existsSync(publicReportsDir)) fs.mkdirSync(publicReportsDir, { recursive: true });
-
-  const reportPath = `${publicReportsDir}/AUDIT_REPORT_${commitHash}.md`;
+  const outDir = reportsDir();
+  const reportPath = path.join(outDir, `AUDIT_REPORT_${commitHash}.md`);
   fs.writeFileSync(reportPath, finalContent);
-  fs.writeFileSync(`public/AUDIT_ENTERPRISE_FINAL.md`, finalContent);
-
+  fs.writeFileSync(path.join(outDir, 'AUDIT_ENTERPRISE_FINAL.md'), finalContent);
   console.log(`✅ Dossier MD gerado: ${reportPath}`);
 
-  try {
-    console.log('📄 Convertendo para PDF...');
-    await renderMarkdownPdf(finalContent, `public/reports/AUDIT_REPORT_${commitHash}.pdf`);
-    fs.copyFileSync(
-      `public/reports/AUDIT_REPORT_${commitHash}.pdf`,
-      'public/AUDIT_ENTERPRISE_FINAL.pdf',
-    );
-    console.log(`✅ PDF gerado com sucesso: public/reports/AUDIT_REPORT_${commitHash}.pdf`);
-  } catch (pdfError) {
-    console.error('❌ Falha na geração do PDF:', pdfError.message);
-    throw pdfError;
-  }
+  console.log('📄 Convertendo para PDF...');
+  const pdfPath = path.join(outDir, `AUDIT_REPORT_${commitHash}.pdf`);
+  await renderMarkdownPdf(finalContent, pdfPath);
+  fs.copyFileSync(pdfPath, path.join(outDir, 'AUDIT_ENTERPRISE_FINAL.pdf'));
+  console.log(`✅ PDF gerado com sucesso: ${pdfPath}`);
+
+  if (!rls.compliant) console.warn(`⚠️ ${rls.without.length} tabela(s) sem RLS registradas no dossiê.`);
+  if (failedLinks.length > 0) console.warn(`⚠️ ${failedLinks.length} link(s) de evidência com falha registrados no dossiê.`);
+  return 0;
 }
 
-buildDossier();
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+  buildDossier()
+    .then((code) => {
+      process.exitCode = code;
+    })
+    .catch((err) => {
+      console.error(`❌ Falha no Enterprise Dossier Builder: ${err?.message ?? err}`);
+      process.exitCode = 1;
+    });
+}

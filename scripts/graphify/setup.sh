@@ -37,6 +37,14 @@ if [[ "$(git rev-parse --git-path hooks)" != ".husky/_" ]]; then
 fi
 
 # post-commit/post-checkout em .husky/ (rebuild em background) + merge driver do graph.json.
+# Os dois hooks e a linha de merge driver só valem para ESTE clone (os hooks têm o caminho do
+# python deste container; o merge driver é inútil de qualquer jeito: graphify-out/ é ignorado,
+# então git nunca aplica merge driver nele) — commitá-los enchia `git status` em todo clone sem
+# nenhum ganho. Sem isto, `graphify hook install` deixava os 3 como alterações rastreadas.
 graphify hook install
+if grep -qx 'graphify-out/graph.json merge=graphify' .gitattributes 2>/dev/null; then
+  grep -vx 'graphify-out/graph.json merge=graphify' .gitattributes > .gitattributes.tmp
+  mv .gitattributes.tmp .gitattributes
+fi
 
 PYTHONHASHSEED=0 graphify update .

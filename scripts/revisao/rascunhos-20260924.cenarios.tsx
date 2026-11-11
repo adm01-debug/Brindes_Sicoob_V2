@@ -28,7 +28,7 @@ describe('Reprodução de lacunas no rascunho local de orçamento', () => {
     expect(seguinte.result.current.restore()).toEqual({ clientId: 'cliente-sintetico-a', internalNotes: 'nota-sintetica-a' });
   });
 
-  it('falha do armazenamento não expõe estado de erro ao consumidor do hook', async () => {
+  it('lacuna corrigida: falha do armazenamento agora expõe lastError ao consumidor do hook', async () => {
     vi.useFakeTimers();
     const onSave = vi.fn();
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('quota-sintetica'); });
@@ -38,7 +38,9 @@ describe('Reprodução de lacunas no rascunho local de orçamento', () => {
     hook.rerender({ data: { notes: 'rascunho-sintetico' } });
     await act(async () => { await vi.advanceTimersByTimeAsync(2100); });
     expect(onSave).not.toHaveBeenCalled();
-    expect(Object.keys(hook.result.current).sort()).toEqual(['clear', 'lastSaved', 'restore']);
+    expect(Object.keys(hook.result.current).sort()).toEqual(['clear', 'lastError', 'lastSaved', 'restore']);
+    expect(hook.result.current.lastError).toBeInstanceOf(Error);
+    expect((hook.result.current.lastError as Error).message).toContain('quota-sintetica');
     expect(localStorage.getItem('autosave_new')).toBeNull();
   });
 });

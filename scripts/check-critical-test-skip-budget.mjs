@@ -3,77 +3,125 @@
  * check-critical-test-skip-budget.mjs
  * ----------------------------------------------------------------
  * Gate de CI: impede que novos testes críticos (P0/RLS/segurança) sejam
- * silenciosamente ignorados via `.skip` / `skipIf` / `describe.skip`.
+ * silenciosamente ignorados ou desligados.
  *
  * Estratégia:
- *  - Varre `tests/p0`, `tests/rls` e `tests/security` contando ocorrências
- *    de skip declarado.
- *  - Compara com um baseline fixo (dívida conhecida e aceita).
- *  - Se o número crescer → falha (exit 1): alguém adicionou um skip novo.
- *  - Se diminuir → avisa para atualizar o baseline no próximo lote.
+ *  - Varre `tests/p0`, `tests/rls` e `tests/security` (arquivos `.test.` e
+ *    `.spec.`, que o Vitest coleta) contando skip declarado em TODAS as formas:
+ *    `.skip`, `.todo`, `.only` (desliga os demais), `.fails`, `skipIf`, `runIf`,
+ *    encadeados (`it.concurrent.skip`), `{ skip: true }`, `ctx.skip()` e `xit`/`xdescribe`.
+ *  - O orçamento é POR ARQUIVO (`BASELINE_BY_FILE`; arquivo ausente = 0). Um total
+ *    agregado deixava trocar um skip antigo por outro novo sem ninguém ver.
+ *  - Algum arquivo acima do seu orçamento → falha (exit 1).
+ *  - Abaixo → avisa para reduzir o orçamento no próximo lote (a catraca só aperta).
  *
  * Saída:
- *  - exit 0 → ok (dentro do baseline).
- *  - exit 1 → novos skips adicionados (violação).
- *  - exit 2 → erro de execução/configuração.
+ *  - exit 0 → ok (dentro do orçamento de cada arquivo).
+ *  - exit 1 → skip novo ou acima do orçamento (violação).
+ *  - exit 2 → erro de execução/configuração (inclui raiz de testes ausente).
  */
-import { readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 const isCI = process.env.CI === "true" || process.env.CI === "1";
 
-const roots = ["tests/p0", "tests/rls", "tests/security"];
+export const roots = ["tests/p0", "tests/rls", "tests/security"];
 // Os testes P0 não têm cenários ignorados. As quatro ocorrências restantes são
 // suites condicionais de RLS/segurança que só executam com credenciais de um
 // banco efêmero; elas continuam visíveis e contabilizadas pelo gate.
-const baseline = 4;
-const testFile = /\.test\.[cm]?[jt]sx?$/;
-const skipPattern = /\b(?:describe|it|test)\.skip\b|\bskipIf\b|\benabled\s*\?\s*describe\s*:\s*describe\.skip/g;
+export const BASELINE_BY_FILE = {
+  "tests/rls/e2e-cleanup-rate-limit.test.ts": 1,
+  "tests/rls/no-empty-rls-policies.test.ts": 1,
+  "tests/rls/personas.test.ts": 1,
+  "tests/security/edge-authz-bypass.test.ts": 1,
+};
+export const testFile = /\.(?:test|spec)\.[cm]?[jt]sx?$/;
+export const skipPattern =
+  /\b(?:describe|it|test|suite|bench)(?:\.\w+)*\.(?:skip|todo|only|fails|skipIf|runIf)\b|\bskip\s*:\s*true\b|\b\w+\.skip\(\s*\)|\bx(?:it|describe|test)\s*\(|\bskipIf\b|\benabled\s*\?\s*describe\s*:\s*describe\.skip/g;
 
-function files(dir) {
+/** Ocorrências de skip em um fonte de teste. */
+export function findSkips(source) {
+  return [...source.matchAll(skipPattern)].map((match) => ({ offset: match.index ?? 0, value: match[0] }));
+}
+
+export function files(dir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const path = join(dir, entry.name);
     return entry.isDirectory() ? files(path) : testFile.test(entry.name) ? [path] : [];
   });
 }
 
+/**
+ * Compara as ocorrências com o orçamento por arquivo.
+ * @returns {{ over: {file:string,count:number,allowed:number}[], under: {file:string,count:number,allowed:number}[], total: number }}
+ */
+export function evaluate(byFile, baseline = BASELINE_BY_FILE) {
+  const over = [];
+  const under = [];
+  let total = 0;
+  for (const file of new Set([...Object.keys(byFile), ...Object.keys(baseline)])) {
+    const count = byFile[file]?.length ?? 0;
+    const allowed = baseline[file] ?? 0;
+    total += count;
+    if (count > allowed) over.push({ file, count, allowed });
+    else if (count < allowed) under.push({ file, count, allowed });
+  }
+  return { over, under, total };
+}
+
 function main() {
-  const occurrences = roots.flatMap(files).flatMap((file) => {
-    const source = readFileSync(file, "utf8");
-    return [...source.matchAll(skipPattern)].map((match) => ({ file, offset: match.index ?? 0, value: match[0] }));
-  });
+  const missing = roots.filter((root) => !existsSync(root));
+  if (missing.length > 0) {
+    // Raiz ausente (cwd errado, pasta renomeada) leria 0 skip e "passaria" sem verificar nada.
+    console.error(`❌ Raiz(es) de testes críticos não encontrada(s): ${missing.join(", ")} (cwd=${process.cwd()}).`);
+    process.exit(2);
+  }
 
-  console.log(`Contratos críticos ignorados declarados: ${occurrences.length}/${baseline}`);
+  const scanned = roots.flatMap(files);
+  const byFile = {};
+  for (const file of scanned) {
+    const found = findSkips(readFileSync(file, "utf8"));
+    if (found.length > 0) byFile[file.split("\\").join("/")] = found;
+  }
 
-  if (occurrences.length > baseline) {
-    const extra = occurrences.length - baseline;
-    console.error(`\n❌ ${extra} novo(s) skip(s) adicionado(s) aos contratos P0/RLS/segurança:\n`);
-    for (const o of occurrences) {
-      console.error(`   • ${o.file}  (${o.value})`);
-      if (isCI) {
-        console.log(
-          `::error file=${o.file},title=Skip crítico adicionado::${o.value} — remova o skip ou justifique no baseline.`,
-        );
+  const { over, under, total } = evaluate(byFile);
+  const allowedTotal = Object.values(BASELINE_BY_FILE).reduce((sum, n) => sum + n, 0);
+  console.log(`Contratos críticos ignorados declarados: ${total}/${allowedTotal} (${scanned.length} arquivos varridos)`);
+
+  if (over.length > 0) {
+    console.error(`\n❌ Skip acima do orçamento nos contratos P0/RLS/segurança:\n`);
+    for (const { file, count, allowed } of over) {
+      console.error(`   • ${file}: ${count} (orçamento ${allowed})`);
+      for (const o of byFile[file] ?? []) {
+        if (isCI) {
+          console.log(
+            `::error file=${file},title=Skip crítico adicionado::${o.value} — remova o skip ou justifique no orçamento por arquivo.`,
+          );
+        }
       }
     }
     console.error(
-      `\n   → Remova o skip ou, se for dívida aceita, atualize o baseline (${baseline} → ${occurrences.length}) ` +
-        "com justificativa no código.\n",
+      "\n   → Remova o skip ou, se for dívida aceita, atualize BASELINE_BY_FILE com justificativa no código.\n",
     );
     process.exit(1);
   }
 
-  if (occurrences.length < baseline) {
-    console.log(`Dívida reduzida em ${baseline - occurrences.length}; atualize o baseline no próximo lote.`);
+  if (under.length > 0) {
+    for (const { file, count, allowed } of under) {
+      console.log(`Dívida reduzida em ${file}: ${count}/${allowed}; reduza o orçamento no próximo lote.`);
+    }
   } else {
     console.log("✅ Nenhum skip novo adicionado aos contratos críticos.");
   }
   process.exit(0);
 }
 
-try {
-  main();
-} catch (err) {
-  console.error("\x1b[31m❌ Falha inesperada no gate:\x1b[0m " + (err?.message ?? err));
-  process.exit(2);
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  try {
+    main();
+  } catch (err) {
+    console.error("\x1b[31m❌ Falha inesperada no gate:\x1b[0m " + (err?.message ?? err));
+    process.exit(2);
+  }
 }

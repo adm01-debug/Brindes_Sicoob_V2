@@ -93,6 +93,7 @@ function parsePublicSmokeTests(src) {
     const n = Number(num);
     if (n >= 90 && n <= 98) tests.push({ num, label });
   }
+  tests.sort((a, b) => Number(a.num) - Number(b.num));
   return tests;
 }
 

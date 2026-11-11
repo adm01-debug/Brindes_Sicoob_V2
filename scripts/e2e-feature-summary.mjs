@@ -26,6 +26,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { effectiveStatus, normalizeSpecPath, runErrors } from "./lib/playwright-report.mjs";
 
 const C = {
   reset: "\x1b[0m",
@@ -58,7 +59,7 @@ try {
 
 // ── Mapeamento spec → feature ──────────────────────────────────────────────
 function featureKey(file) {
-  const rel = file.replace(/^.*\/e2e\//, "e2e/").replace(/\\/g, "/");
+  const rel = normalizeSpecPath(file);
   let m = rel.match(/^e2e\/routes\/(admin|app|quotes|public)\/(.+)\.spec\.tsx?$/);
   if (m) return `${m[1]}/${m[2]}`;
   m = rel.match(/^e2e\/flows\/\d+-(.+)\.spec\.tsx?$/);
@@ -109,10 +110,7 @@ function walkSuites(suites = [], parentTitles = []) {
         const project = t.projectName || "";
         const last = (t.results ?? []).slice(-1)[0] ?? {};
         // status efetivo: usa o último result (após retries)
-        const status =
-          t.status === "skipped" || last.status === "skipped"
-            ? "skipped"
-            : last.status || t.status || "unknown";
+        const status = effectiveStatus(t, last);
         const duration = Number(last.duration) || 0;
         const errorMsg = (last.error?.message || last.errors?.[0]?.message || "")
           .toString()
@@ -135,6 +133,9 @@ function walkSuites(suites = [], parentTitles = []) {
   }
 }
 walkSuites(raw.suites);
+// Erros do run (globalSetup, config, worker) não pertencem a spec algum: com `suites` vazio o resumo dizia
+// "No failures" e saía 0 mesmo com o Playwright em exit 1.
+const errorsOfRun = runErrors(raw);
 
 // ── Agregação por feature ─────────────────────────────────────────────────
 const byFeature = new Map();
@@ -289,8 +290,16 @@ mdLines.push(
 );
 mdLines.push(``);
 
-if (failedFeatures.length === 0) {
+if (errorsOfRun.length > 0) {
+  mdLines.push(`## ❌ Run errors (fora dos specs)`);
+  mdLines.push(``);
+  for (const e of errorsOfRun) mdLines.push(`- ${e}`);
+  mdLines.push(``);
+}
+if (failedFeatures.length === 0 && errorsOfRun.length === 0) {
   mdLines.push(`✅ **No failures.**`);
+} else if (failedFeatures.length === 0) {
+  mdLines.push(`Nenhum spec falhou, mas o run terminou com erro (acima).`);
 } else {
   mdLines.push(`## Failures by feature`);
   mdLines.push(``);
@@ -365,8 +374,12 @@ console.log(
   `${C.dim}Wrote ${path.join(outDir, "feature-summary.md")} and feature-summary.json${C.reset}\n`,
 );
 
-if (totals.failed > 0) {
-  console.log(`${C.red}${C.bold}Exit: 1 (${totals.failed} failure(s) detected)${C.reset}\n`);
+if (errorsOfRun.length > 0) {
+  console.log(`${C.red}${C.bold}Run errors (${errorsOfRun.length}):${C.reset}`);
+  for (const e of errorsOfRun) console.log(`  ${C.red}${e}${C.reset}`);
+}
+if (totals.failed > 0 || errorsOfRun.length > 0) {
+  console.log(`${C.red}${C.bold}Exit: 1 (${totals.failed} failure(s), ${errorsOfRun.length} run error(s))${C.reset}\n`);
   process.exit(1);
 }
 console.log(`${C.green}${C.bold}Exit: 0 (all clear)${C.reset}\n`);
