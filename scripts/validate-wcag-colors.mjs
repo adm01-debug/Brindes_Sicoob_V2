@@ -3,7 +3,7 @@
  * validate-wcag-colors
  * --------------------------------------------------------------
  * Valida contraste WCAG AA nos tokens principais do Sicoob Design
- * System. Antes este script só imprimia o resultado e sempre saía
+ * System. Antes este script só imprimia o resultado e sempre saia
  * com código 0 — um par de cores reprovado passava despercebido.
  * Agora ele falha o processo (exit 1) quando algum par fica abaixo
  * do mínimo exigido.
@@ -14,9 +14,13 @@
  *
  * Exit codes: 0 = todos os pares aprovados, 1 = reprovação, 2 = uso inválido.
  */
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { runCli, EXIT_FAIL } from './lib/cli.mjs';
 
 const MIN_RATIO = { aa: 4.5, aaa: 7 };
+const CSS_PATH = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'src', 'index.css');
 
 function hslToRgb(h, s, l) {
   s /= 100;
@@ -41,26 +45,42 @@ function getContrastRatio(l1, l2) {
   return (brightest + 0.05) / (darkest + 0.05);
 }
 
-// Valores extraídos de src/index.css.
-const TOKENS = {
-  light: {
-    brand: [175, 100, 25],
-    primary: [190, 100, 13],
-    reward: [271, 53, 37],
-    success: [155, 60, 38],
-    background: [220, 20, 98],
-    foreground: [190, 100, 10],
-  },
-  dark: {
-    brand: [175, 90, 38],
-    primary: [190, 40, 75],
-    reward: [271, 70, 75],
-    background: [225, 25, 3],
-    foreground: [175, 20, 96],
-    accent: [44, 100, 50],
-    accent_fg: [190, 100, 13],
-  },
-};
+// Lidos de verdade de src/index.css (não copiar valores aqui — a cópia
+// hardcoded divergia silenciosamente do CSS real e mascarava regressões).
+function extractCssBlock(css, selector) {
+  const selectorIndex = css.indexOf(selector);
+  if (selectorIndex === -1) {
+    throw new Error(`Seletor "${selector}" não encontrado em ${CSS_PATH}`);
+  }
+  const braceStart = css.indexOf('{', selectorIndex);
+  let depth = 0;
+  let i = braceStart;
+  for (; i < css.length; i++) {
+    if (css[i] === '{') depth++;
+    else if (css[i] === '}' && --depth === 0) break;
+  }
+  return css.slice(braceStart + 1, i);
+}
+
+function parseHslToken(block, name) {
+  const match = block.match(new RegExp(`--${name}:\\s*([\\d.]+)\\s+([\\d.]+)%\\s+([\\d.]+)%`));
+  if (!match) throw new Error(`Token --${name} não encontrado no bloco de src/index.css`);
+  return [Number(match[1]), Number(match[2]), Number(match[3])];
+}
+
+function loadTokensFromCss() {
+  const css = fs.readFileSync(CSS_PATH, 'utf8');
+  const lightBlock = extractCssBlock(css, ':root {');
+  const darkBlock = extractCssBlock(css, '.dark {');
+  const names = ['brand', 'primary', 'reward', 'background', 'foreground'];
+  const light = Object.fromEntries(names.map((name) => [name, parseHslToken(lightBlock, name)]));
+  const dark = Object.fromEntries(names.map((name) => [name, parseHslToken(darkBlock, name)]));
+  dark.accent = parseHslToken(darkBlock, 'accent');
+  dark.accent_fg = parseHslToken(darkBlock, 'accent-foreground');
+  return { light, dark };
+}
+
+const TOKENS = loadTokensFromCss();
 
 function luminanceOf(token) {
   return getLuminance(...hslToRgb(...token));
