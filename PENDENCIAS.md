@@ -71,14 +71,14 @@ A falha é inevitável enquanto a quota Supabase não for restaurada.
 
 ## Workflow: `copilot-pull-request-reviewer`
 
-**Run atual:** `39785094125` · SHA `4f5de103`  
+**Run mais recente observado:** [40795427376](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/40795427376) · PR #152
 **Erro exato:**
 
 ```
 SessionModelError: You've reached your additional usage limit for your plan.
 Go to https://github.com/settings/copilot/features for more details.
-(Request ID: E01C:2B4931:27FA876:2E0CFAE:6AD9FDF4)
-errorType: 'quota', statusCode: 402
+(Request ID: 902B:218FBF:B4B372B:BEBD93B:6AE295C1)
+errorCode: 'quota', statusCode: 402
 ```
 
 **Causa raiz:** Quota mensal do GitHub Copilot esgotada.
