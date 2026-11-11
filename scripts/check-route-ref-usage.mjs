@@ -273,7 +273,10 @@ async function main() {
   process.exit(1);
 }
 
-main().catch((err) => {
-  console.error("Erro inesperado no route-ref checker:", err);
-  process.exit(2);
-});
+// Propositalmente SEM .catch(): uma falha de execução (arquivo ausente, symlink
+// quebrado, permissão) deve subir como exceção não tratada — é assim que
+// scripts/rules/rules/checkers.mjs (e a comparação diária) distingue
+// "gate não executou" (inconclusivo) de "gate rodou e achou violação". Um
+// catch aqui trocaria o rodapé "Node.js vX" por um exit(2) mudo, fazendo o
+// agregador ler a mensagem de erro como se fosse uma lista de violações.
+main();
