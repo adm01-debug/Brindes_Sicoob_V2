@@ -6,6 +6,8 @@ estado atual do banco, dos serviços externos ou de uma operação em produção
 O projeto permanece em construção até que os critérios de piloto e go-live
 sejam atendidos.
 
+> **Atualização de 29/10/2026:** [concorrência e resiliência do autosave de orçamentos](execucao/controle-concorrencia-autosave-2026-10-29.md) revalida as lacunas P056/P059. A correção ainda depende de CI remoto e não encerra as etapas integralmente.
+
 ## Comece por aqui
 
 1. [README do projeto](../README.md) — visão geral, arquitetura e instalação local.
