@@ -1022,7 +1022,7 @@
     {
       "id": "legacy-4bf9cf3a74dae5a8",
       "kind": "legacy",
-      "files": ["scripts/revisao/pendencias-2026-09-12.cenarios.tsx"],
+      "files": ["scripts/revisao/pendencias-2026-09-12.cenarios.test.tsx"],
       "manual": ["node", "scripts/automation.mjs", "doctor", "--static"],
       "triggers": ["manual"],
       "reason": "Legado sem chamador literal no inventário; execução manual controlada após revisar parâmetros e ambiente. O dispatcher não executa esta operação. Arquivo TypeScript de apoio: a invocação manual verifica somente o inventário; execução operacional usa o chamador original e seu runtime."

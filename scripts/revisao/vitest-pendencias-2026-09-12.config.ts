@@ -5,7 +5,7 @@ import configBase from '../../vitest.config';
 export default mergeConfig(configBase, defineConfig({
   test: {
     include: [
-      'scripts/revisao/pendencias-2026-09-12.cenarios.tsx',
+      'scripts/revisao/pendencias-2026-09-12.cenarios.test.tsx',
       'tests/hooks/useKitAutoSave.test.tsx',
       'tests/hooks/useKitStockValidation.test.tsx',
       'tests/hooks/useSearch.test.ts',
