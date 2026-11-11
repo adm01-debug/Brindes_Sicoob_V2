@@ -11,7 +11,7 @@ const map = {};
 
 lines.forEach(line => {
   if (!line.trim()) return;
-  const match = line.match(/^([^:]+):.*supabase\.(rpc|from)\(['"]([^'"]+)['"]\)/);
+  const match = line.match(/^([^:]+):.*supabase\.(rpc|from)\(['"]([^'"]+)['"]/);
   if (match) {
     const filePath = match[1];
     const type = match[2].toUpperCase();

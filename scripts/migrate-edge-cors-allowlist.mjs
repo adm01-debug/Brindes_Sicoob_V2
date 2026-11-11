@@ -134,7 +134,11 @@ for (const fn of TARGETS) {
 
   // Substitui todas as referências livres ao identificador corsHeaders
   // por getCorsHeaders(req). Cuidado: não tocar em propriedades (.corsHeaders)
-  // nem strings.
+  // nem strings. O spread (...corsHeaders) tem '.' antes do identificador
+  // (os três pontos), então precisa ser tratado antes da regra genérica —
+  // senão o lookbehind da regra genérica o trata como acesso de propriedade
+  // e pula, deixando `corsHeaders` indefinido em runtime.
+  src = src.replace(/\.\.\.corsHeaders(?![\w$])/g, "...getCorsHeaders(req)");
   src = src.replace(/(?<![\w.$"'`])corsHeaders(?![\w$])/g, "getCorsHeaders(req)");
 
   if (src === original) {

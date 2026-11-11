@@ -53,8 +53,7 @@ const CRITICAL_EDGES = [
 // Regex SSOT
 // ----------------------------------------------------------------------------
 const RX_LOGGER = /createStructuredLogger\s*\(|getOrCreateRequestId\s*\(/;
-const RX_RESPOND_OK =
-  /\blog\.respond\s*\(|\bwithRequestIdHeader\s*\(|REQUEST_ID_HEADER|["']X-Request-Id["']/i;
+const RX_RESPOND_OK = /\blog\.respond\s*\(|\bwithRequestIdHeader\s*\(/i;
 
 // Calls internas: fetch para outra edge function ou supabase.functions.invoke
 const RX_INTERNAL_CALL =
@@ -62,6 +61,14 @@ const RX_INTERNAL_CALL =
 
 const RX_REQUEST_ID_TOKEN = /REQUEST_ID_HEADER|["']X-Request-Id["']|x-request-id/i;
 const WINDOW_LINES = 30;
+
+// Sinal de ESCRITA do header (objeto de headers sendo montado/atribuído),
+// em contraste com LEITURA (`req.headers.get(REQUEST_ID_HEADER)`), que não
+// prova propagação nenhuma. Cobre os 3 padrões reais do repo: chave
+// computada em objeto literal (`[REQUEST_ID_HEADER]: x`), atribuição via
+// bracket (`headers[REQUEST_ID_HEADER] = x`) e `.set(REQUEST_ID_HEADER, x)`.
+const RX_HEADER_WRITE =
+  /\[\s*(?:REQUEST_ID_HEADER|["']X-Request-Id["'])\s*\]\s*[:=]|\.set\s*\(\s*(?:REQUEST_ID_HEADER|["']X-Request-Id["'])\s*,/i;
 
 // ----------------------------------------------------------------------------
 function readSource(name) {
@@ -77,8 +84,15 @@ function checkLogger(src) {
 }
 
 function checkResponsePropagation(src) {
-  // Pelo menos UMA evidência de que o handler injeta X-Request-Id no response.
-  return RX_RESPOND_OK.test(src);
+  // `log.respond(`/`withRequestIdHeader(` já são wrappers que garantem a
+  // propagação por construção — basta a chamada existir no arquivo.
+  if (RX_RESPOND_OK.test(src)) return true;
+
+  // Para o sinal literal (REQUEST_ID_HEADER / 'X-Request-Id'), exige um uso
+  // de ESCRITA (RX_HEADER_WRITE) — menção apenas para LER o header de
+  // entrada (ex.: `req.headers.get(REQUEST_ID_HEADER)`) não prova que
+  // alguma resposta o propaga.
+  return RX_HEADER_WRITE.test(src);
 }
 
 function checkInternalCalls(src, lines) {

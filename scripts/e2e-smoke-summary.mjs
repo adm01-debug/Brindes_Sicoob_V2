@@ -24,6 +24,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { effectiveStatus, runErrors } from "./lib/playwright-report.mjs";
 
 const C = {
   reset: "\x1b[0m",
@@ -92,10 +93,7 @@ function walkSuites(suites = [], parentTitles = [], inheritedFile = "") {
 
           const results = t.results ?? [];
           const last = results.slice(-1)[0] ?? {};
-          const status =
-            t.status === "skipped" || last.status === "skipped"
-              ? "skipped"
-              : last.status || t.status || "unknown";
+          const status = effectiveStatus(t, last);
           const duration = Number(last.duration) || 0;
           const retries = Math.max(0, results.length - 1);
           const errorMsg =
@@ -124,6 +122,14 @@ function walkSuites(suites = [], parentTitles = [], inheritedFile = "") {
   }
 }
 walkSuites(raw.suites);
+
+// Falha de globalSetup/config/worker: `suites` vem vazio e antes o script dizia "nenhum smoke" e saía 0.
+const errorsOfRun = runErrors(raw);
+if (errorsOfRun.length > 0) {
+  console.error(`${C.red}[smoke-summary] o run terminou com erro fora dos specs (${errorsOfRun.length}):${C.reset}`);
+  for (const e of errorsOfRun) console.error(`  ${C.red}${e}${C.reset}`);
+  process.exit(1);
+}
 
 if (rows.length === 0) {
   console.warn(

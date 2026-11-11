@@ -72,6 +72,9 @@ bun.lockb
 
 # Saída gerada pelo graphify (grafo local por máquina)
 graphify-out/
+# Hooks que `graphify hook install` grava com o caminho do python deste clone (scripts/graphify/setup.sh)
+.husky/post-commit
+.husky/post-checkout
 
 # Estado efêmero gerado por `supabase link` e pela CLI local.
 supabase/.temp/*
@@ -81,3 +84,20 @@ bundle-stats/
 
 # relatório do scripts/rules (gerado)
 reports/gaps/
+# Saídas dos scripts de auditoria (artifact do security-compliance.yml; os relatórios
+# antigos já versionados continuam rastreados)
+reports/*.pdf
+reports/*.txt
+reports/DOSSIA_AUDITORIA_ENTERPRISE_V5.md
+reports/ENTERPRISE_AUDIT_REPORT_V6.md
+reports/AUDIT_EXPORT_*.md
+reports/AUDIT_REPORT_*.md
+reports/AUDIT_ENTERPRISE_FINAL.md
+
+# Estado local privado dos novos adaptadores de automação
+/.tools/repo-automation/
+/.tools/graphify/local-state/
+/.tools/graphify/.venv/
+
+# Saída local do scripts/ai-context (gerar.mjs sem --out); a oficial vai para docs/contexto na branch `contexto`
+inventario/ia/

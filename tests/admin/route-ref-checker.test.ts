@@ -11,7 +11,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { execSync } from "node:child_process";
-import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
+import { mkdtempSync, writeFileSync, mkdirSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -150,6 +150,17 @@ describe("route-ref checker — detecta padrões problemáticos", () => {
     );
     const r = runChecker(work);
     expect(r.code).toBe(0);
+  });
+
+  it("falha de execução (arquivo ausente) sobe como exceção não tratada, não como violação mascarada", () => {
+    // scripts/rules/rules/checkers.mjs só reconhece "gate não executou" (inconclusivo)
+    // quando o processo filho imprime o rodapé "Node.js vX" do Node para exceção não
+    // tratada. Um catch interno que troca isso por um process.exit(2) mudo faz o
+    // agregador ler a mensagem de erro como se fosse uma lista de violações de código.
+    symlinkSync(path.join(work, "nao-existe.tsx"), path.join(work, "src/pages/Quebrado.tsx"));
+    const r = runChecker(work);
+    expect(r.code).not.toBe(0);
+    expect(r.stderr).toMatch(/Node\.js v\d+\./);
   });
 
   it("allowlist '// route-ref-allow:' suprime a violação", () => {

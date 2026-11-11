@@ -22,8 +22,10 @@ async function runLoadTest() {
     latencies: []
   };
 
+  let dispatched = 0;
   const pool = Array(CONCURRENCY).fill(0).map(async () => {
-    while (results.success + results.failed < TOTAL_REQUESTS) {
+    while (dispatched < TOTAL_REQUESTS) {
+      dispatched++; // reserva o slot de forma síncrona, antes do await
       const start = Date.now();
       try {
         const res = await fetch(TARGET_URL);
@@ -38,6 +40,7 @@ async function runLoadTest() {
 
   await Promise.all(pool);
 
+  const totalRequests = results.success + results.failed;
   const totalTime = Date.now() - startTime;
   const sortedLatencies = results.latencies.sort((a, b) => a - b);
   const p95 = sortedLatencies[Math.floor(sortedLatencies.length * 0.95)];
@@ -45,8 +48,8 @@ async function runLoadTest() {
 
   console.log('\n📈 Load Test Results:');
   console.log(`Total Time: ${totalTime}ms`);
-  console.log(`Requests/sec: ${(TOTAL_REQUESTS / (totalTime / 1000)).toFixed(2)}`);
-  console.log(`Success Rate: ${((results.success / TOTAL_REQUESTS) * 100).toFixed(2)}%`);
+  console.log(`Requests/sec: ${(totalRequests / (totalTime / 1000)).toFixed(2)}`);
+  console.log(`Success Rate: ${((results.success / totalRequests) * 100).toFixed(2)}%`);
   console.log(`Avg Latency: ${avg.toFixed(2)}ms`);
   console.log(`P95 Latency: ${p95.toFixed(2)}ms`);
 }

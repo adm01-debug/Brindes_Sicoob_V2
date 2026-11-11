@@ -131,9 +131,84 @@ function isExternalEnvName(name) {
   return /^(EXTERNAL|CRM)_/.test(name);
 }
 
+// Mascara só os caracteres não-newline de uma string (usado em trechos que já
+// sabemos ser comentário ou string "de texto", nunca código).
+function maskChars(segment) {
+  return segment.replace(/[^\n]/g, ' ');
+}
+
+// Mascara comentários dentro de um trecho de trivia (espaço + comentários,
+// entre o fim de um token e o início do próximo) — só pode conter comentário
+// de linha/bloco, nunca string/regex, então é seguro aplicar via regex direto.
+function maskTriviaComments(trivia) {
+  return trivia.replace(/\/\/[^\n]*|\/\*[^]*?\*\//g, maskChars);
+}
+
+// Mascara comentários e o conteúdo de strings/template literals que não sejam o
+// argumento literal de uma chamada `.from(`/`.rpc(` real, preservando índices e
+// quebras de linha — pra CALL_RE/INDIRECTION_RE não confundir texto em
+// comentário ou string com uma referência real (achado 2 da auditoria). Usa a
+// AST (já parseada por `ast`, que resolve JSX/regex/divisão corretamente — algo
+// que um scanner de caracteres não consegue fazer de forma segura) pra achar os
+// limites exatos de cada token; tudo que não é comentário/string é copiado como
+// está, regex literals inclusive.
+function maskNonCode(text, ast) {
+  // `.from('tabela' as never)`/`.rpc(...)` são comuns no repo (cast pra contornar
+  // tipagem estrita do client) — sobe por AsExpression/TypeAssertion/parênteses
+  // até achar a CallExpression de verdade antes de concluir que não é um argumento.
+  const isCallArgString = (node) => {
+    let current = node;
+    let parent = node.parent;
+    while (
+      parent &&
+      parent.expression === current &&
+      (ts.isAsExpression(parent) || ts.isParenthesizedExpression(parent) || ts.isTypeAssertionExpression(parent))
+    ) {
+      current = parent;
+      parent = parent.parent;
+    }
+    if (!parent || !ts.isCallExpression(parent) || parent.arguments[0] !== current) return false;
+    const callee = parent.expression;
+    return ts.isPropertyAccessExpression(callee) && (callee.name.text === 'from' || callee.name.text === 'rpc');
+  };
+
+  const leaves = [];
+  (function collect(node) {
+    const children = node.getChildren(ast);
+    if (children.length === 0) leaves.push(node);
+    else children.forEach(collect);
+  })(ast);
+
+  let out = '';
+  let cursor = 0;
+  for (const token of leaves) {
+    const start = token.getStart(ast);
+    const end = token.getEnd();
+    if (start > cursor) {
+      out += maskTriviaComments(text.slice(cursor, start));
+    }
+    const raw = text.slice(start, end);
+    if (ts.isStringLiteral(token) || ts.isNoSubstitutionTemplateLiteral(token)) {
+      out += isCallArgString(token) ? raw : maskChars(raw);
+    } else if (
+      token.kind === ts.SyntaxKind.TemplateHead ||
+      token.kind === ts.SyntaxKind.TemplateMiddle ||
+      token.kind === ts.SyntaxKind.TemplateTail
+    ) {
+      out += maskChars(raw);
+    } else {
+      out += raw;
+    }
+    cursor = end;
+  }
+  if (cursor < text.length) out += maskTriviaComments(text.slice(cursor));
+  return out;
+}
+
 export function analyzeSource(text, filePath) {
   const findings = [];
   const ast = ts.createSourceFile(filePath, text, ts.ScriptTarget.Latest, true);
+  const maskedText = maskNonCode(text, ast);
   const wrappers = new Set();
   const namespaces = new Set();
   for (const statement of ast.statements) {
@@ -236,7 +311,7 @@ export function analyzeSource(text, filePath) {
   let indMatch;
   const indRe = new RegExp(INDIRECTION_RE.source, 'g');
   const directCallVars = new Set(); // vars chamadas diretamente como função (não .rpc())
-  while ((indMatch = indRe.exec(text))) {
+  while ((indMatch = indRe.exec(maskedText))) {
     const [, aliasVar, baseVar, kind] = indMatch;
     const baseIsInternal =
       baseVar === internalName || indirectRpcVars.has(baseVar) || indirectFromVars.has(baseVar);
@@ -264,7 +339,7 @@ export function analyzeSource(text, filePath) {
   const callRe = new RegExp(CALL_RE.source, CALL_RE.flags);
   let m;
   let iter = 0;
-  while ((m = callRe.exec(text))) {
+  while ((m = callRe.exec(maskedText))) {
     iter++;
     if (iter > 5000) break; // guarda contra regex patológica em arquivo gigante
     const [, baseExpr, method, name] = m;
@@ -282,7 +357,7 @@ export function analyzeSource(text, filePath) {
 
     if (!isInternal) continue; // identificador não resolvido -> não afirma nada (evita falso-positivo)
 
-    const upto = text.slice(0, m.index);
+    const upto = maskedText.slice(0, m.index);
     const line = upto.split('\n').length;
 
     findings.push({
