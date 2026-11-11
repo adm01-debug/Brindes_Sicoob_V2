@@ -33,6 +33,9 @@ const CFG = (() => { try { return JSON.parse(fs.readFileSync(abs('ai-context.con
 const OUT = path.resolve(ROOT, argOf('--out', process.env.AI_CONTEXT_DIR || CFG.out || 'inventario/ia'));
 const OUT_REL = rel(OUT);
 const MAX_FILE_BYTES = (CFG.maxFileMB || 8) * 1024 * 1024;
+// Destinos conhecidos da própria saída: sobra de uma execução anterior com outro --out (inventario/ia, padrão; docs/contexto, workflow)
+// entrava na varredura e mudava a geração oficial (arquivos_total, docs_md, scripts_orfaos).
+const DEFAULT_OUT_DIRS = new Set(['inventario/ia', 'docs/contexto']);
 // Rodapé do INDEX.md: onde este contexto é publicado. Genérico por padrão; cada repo descreve o seu
 // workflow/branch em ai-context.config.json → "publicacao" (ou env AI_CONTEXT_PUBLICACAO).
 const PUBLICACAO = process.env.AI_CONTEXT_PUBLICACAO || CFG.publicacao || 'Publicado pelo workflow de contexto do repositório (ver .github/workflows).';
@@ -63,7 +66,7 @@ const ALL = [];
   for (const e of ents) {
     if (e.name.startsWith('.') && !KEEP_DOT.has(e.name)) continue;
     const full = path.join(dir, e.name);
-    if (e.isDirectory()) { if (SKIP_DIRS.has(e.name) || full === OUT || (e.name === '.claude' && /worktrees/.test(full))) continue; walk(full); }
+    if (e.isDirectory()) { if (SKIP_DIRS.has(e.name) || full === OUT || DEFAULT_OUT_DIRS.has(rel(full)) || (e.name === '.claude' && /worktrees/.test(full))) continue; walk(full); }
     else if (e.isFile()) ALL.push(rel(full));
   }
 })(ROOT);
@@ -318,7 +321,7 @@ secao('rotas-jsx', () => {
       if (!comp) { const inner = tags[tags.length - 1]; if (inner && !/^(Navigate|Redirect)$/.test(inner)) { comp = inner; file = componentFile(inner, rf); } }
       const redir = /<(?:Navigate|Redirect)\b[^>]*\bto=["']([^"']+)["']/.exec(attrs);
       const paiProtegido = parent ? !!rotas.find((r) => r.caminho === parent && r.definida_em === rf && r.protegida) : false;
-      if (p || isIndex) rotas.push(mk({ caminho: full, componente: comp, arquivo: file, protegida: tags.some((w) => /Protected|Private|Auth|Guard|Require|Admin/i.test(w)) || paiProtegido, wrappers: tags.filter((t) => t !== comp), pai: parent, indice: isIndex, definida_em: rf, lazy: comp ? lazyMap.has(comp) : false, tipo: redir && !comp ? 'redirect' : 'tela', redireciona: redir ? redir[1] : null }));
+      if (p || isIndex) rotas.push(mk({ caminho: full, componente: comp, arquivo: file, protegida: tags.filter((w) => w !== comp).some((w) => /Protected|Private|Auth|Guard|Require|Admin/i.test(w)) || paiProtegido, wrappers: tags.filter((t) => t !== comp), pai: parent, indice: isIndex, definida_em: rf, lazy: comp ? lazyMap.has(comp) : false, tipo: redir && !comp ? 'redirect' : 'tela', redireciona: redir ? redir[1] : null }));
       if (!self) stack.push(full);
     }
     const scanObjs = (text, parent, depth) => {
@@ -371,6 +374,17 @@ const enrich = (r) => {
   const files = [r.arquivo, ...closure(r.arquivo)]; const a = aggregate(files);
   return { ...r, hooks: a.hooks, hooks_locais: localHooks(a.hooks), tabelas: a.tabelas, rpcs: a.rpcs, edges: a.edges, canais_realtime: a.canais_realtime, flags: a.flags, papeis: a.papeis, arquivos_puxados: files.length - 1 };
 };
+// A varredura de <Route> só enxerga guarda escrita no próprio <Route>. Neste repo a guarda é aplicada por quem MONTA
+// o grupo (src/App.tsx: `<Route element={<AdminRoute/>}>{adminRoutes.map(...)}`), e rotas de src/routes/config/*.ts não
+// carregam guarda nenhuma — resultado: 107 de 138 rotas guardadas saíam como "públicas". O inventário
+// (scripts/inventario/gerar-rotas.mjs → inventario/estado/rotas.json) resolve a montagem; quando existe, é a fonte da guarda.
+const GUARDA_DE_ACESSO = /^(?:Protected|Private|Require)\w*$|\w+(?:Route|Guard)$/;
+const guardaPorCaminho = new Map();
+for (const r of readJson('inventario/estado/rotas.json')?.rotas || []) {
+  if (typeof r?.caminho !== 'string' || !Array.isArray(r.guardas)) continue;
+  guardaPorCaminho.set(r.caminho, (guardaPorCaminho.get(r.caminho) || false) || r.guardas.some((g) => GUARDA_DE_ACESSO.test(g)));
+}
+for (const r of rotas) if (guardaPorCaminho.has(r.caminho)) r.protegida = guardaPorCaminho.get(r.caminho);
 const rotasDedup = Object.values(Object.fromEntries(rotas.map((r) => [`${r.caminho}|${r.componente}|${r.definida_em}`, r])));
 const rotasEnriched = rotasDedup.sort((a, b) => a.caminho.localeCompare(b.caminho) || (a.indice ? 1 : 0) - (b.indice ? 1 : 0) || a.tipo.localeCompare(b.tipo) || a.definida_em.localeCompare(b.definida_em)).map(enrich);
 const vistasEnriched = vistasUniq.map(enrich);
@@ -582,6 +596,9 @@ const edges = secao('edges', () => {
     if (!fs.statSync(abs(dir)).isDirectory() || name.startsWith('_')) continue;
     const entry = ['index.ts', 'index.js', 'main.ts', 'handler.ts', 'mod.ts'].map((e) => `${dir}/${e}`).find((p) => FILESET.has(p));
     const files = ALL.filter((f) => f.startsWith(dir + '/') && CODE_EXT.has(path.extname(f)) && !TEST_RE.test(f));
+    // Pasta sem entrada e sem código (supabase/functions/tests só com testes, graphify-out só com .gitignore) não é edge function:
+    // entrava como "órfã" e inflava o total (108 em vez de 106).
+    if (!entry && files.length === 0) continue;
     const a = aggregate(files);
     const srcAll = files.map((f) => FILE.get(f)?.conteudo || '').join('\n');
     const callers = uniq(appFiles.filter(([f, d]) => !f.startsWith(EDGE_DIR) && d.edges.includes(name)).map(([f]) => f));

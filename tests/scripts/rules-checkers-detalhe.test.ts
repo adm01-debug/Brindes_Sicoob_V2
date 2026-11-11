@@ -81,3 +81,43 @@ describe('rules/checkers — detalhe por ocorrência', () => {
     expect(d.inconclusivas).toContain('gate-seller-scope');
   });
 });
+
+describe('rules/checkers — honestidade do resultado', () => {
+  const imutavel = (checkers as Regra[]).find((r) => r.id === 'gate-migration-imutavel')!;
+  const rodarImutavel = (behind: number) => {
+    const root = mkdtempSync(join(tmpdir(), 'checkers-'));
+    mkdirSync(join(root, 'scripts'));
+    writeFileSync(join(root, 'scripts', 'check-migration-immutability.mjs'), 'console.error("removido x");\nprocess.exit(1);');
+    const r = imutavel.run({ root, behind }) as { items: string[]; error?: string; note?: string };
+    rmSync(root, { recursive: true, force: true });
+    return r;
+  };
+
+  it('gate sensível a clone atrasado é inconclusivo (erro da regra), nunca "sem itens" resolvido', () => {
+    const r = rodarImutavel(3);
+    expect(r.items).toEqual([]);
+    expect(r.error).toContain('inconclusivo');
+    expect(r.note).toBeUndefined();
+    // Com erro a regra sai da comparação diária: não pode virar "resolvido".
+    const mk = (extra: object) => ({ results: [{ id: 'gate-migration-imutavel', severity: 'alta', kind: 'falha', items: ['removido x'], ...extra }] });
+    const d = comparar({ results: [{ id: 'gate-migration-imutavel', severity: 'alta', kind: 'falha', items: [], error: r.error }] }, mk({}));
+    expect(d.resolvidos).toEqual([]);
+  });
+
+  it('clone em dia reporta a violação normalmente', () => {
+    expect(rodarImutavel(0).items).toContain('removido x');
+  });
+
+  it('a linha de omitidas conta só as linhas únicas (repetidas não inventam omissão)', () => {
+    // 70 linhas, mas só 40 únicas (<= 60): nenhuma omitida.
+    const linhas = Array.from({ length: 70 }, (_, i) => `falha ${i % 40}`);
+    const items = rodar(linhas);
+    expect(items).toHaveLength(40);
+    expect(items.some((l) => l.includes('omitida'))).toBe(false);
+  });
+
+  it('omitidas = únicas - exibidas', () => {
+    const items = rodar(Array.from({ length: 75 }, (_, i) => `falha ${i}`));
+    expect(items.at(-1)).toContain('+15 linha(s) omitida(s)');
+  });
+});

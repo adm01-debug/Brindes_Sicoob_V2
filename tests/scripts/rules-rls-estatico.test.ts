@@ -95,3 +95,55 @@ describe('rules/rls-estatico — DROP POLICY', () => {
     expect(run(base, 'DO $$ BEGIN DROP TABLE public.a; END $$;').has('a')).toBe(false);
   });
 });
+
+describe('rules/rls-estatico — SQL dinâmico e nomes', () => {
+  const partitions = (names: string[]) =>
+    [
+      'create table public.log (id int) partition by range (id);',
+      ...names.map((n) => `create table public.${n} partition of public.log for values from (1) to (2);`),
+    ].join('\n');
+
+  it('laço por LIKE de prefixo que liga RLS e cria policy vale para as tabelas já existentes', () => {
+    const dyn = `DO $$ DECLARE t text; BEGIN
+      FOR t IN SELECT tablename FROM pg_tables WHERE tablename LIKE 'log%' AND schemaname = 'public' LOOP
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', t);
+        EXECUTE format('CREATE POLICY "Ver logs" ON public.%I FOR SELECT USING (true);', t);
+      END LOOP; END $$;`;
+    const t = run(partitions(['log_a', 'log_b']), dyn);
+    for (const n of ['log_a', 'log_b']) {
+      expect(t.get(n)?.rls, n).toBe(true);
+      expect(t.get(n)?.policies, n).toBe(1);
+    }
+  });
+
+  it('FOREACH sobre ARRAY literal liga só as tabelas listadas', () => {
+    const dyn = `DO $$ DECLARE p text; BEGIN
+      FOREACH p IN ARRAY ARRAY['log_a'] LOOP
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', p);
+      END LOOP; END $$;`;
+    const t = run(partitions(['log_a', 'log_b']), dyn);
+    expect(t.get('log_a')?.rls).toBe(true);
+    expect(t.get('log_b')?.rls).toBe(false);
+  });
+
+  it('partição criada DEPOIS do laço de prefixo continua sem RLS (o laço não é retroativo ao futuro)', () => {
+    const dyn = `DO $$ BEGIN FOR t IN SELECT tablename FROM pg_tables WHERE tablename LIKE 'log%' LOOP
+      EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t); END LOOP; END $$;`;
+    const t = run(partitions(['log_a']), dyn, 'create table public.log_c partition of public.log for values from (3) to (4);');
+    expect(t.get('log_a')?.rls).toBe(true);
+    expect(t.get('log_c')?.rls).toBe(false);
+  });
+
+  it('caixa: CREATE TABLE Mixed + ALTER minúsculo é a mesma tabela', () => {
+    expect(run('create table public.Pedidos_X (id int);', 'alter table public.pedidos_x enable row level security;').get('pedidos_x')?.rls).toBe(true);
+  });
+
+  it('DROP TABLE a, b remove as duas', () => {
+    const t = run('create table a (id int); create table b (id int); create table c (id int);', 'drop table if exists a, b cascade;');
+    expect([...t.keys()]).toEqual(['c']);
+  });
+
+  it('CREATE UNLOGGED TABLE é reconhecida', () => {
+    expect(run('create unlogged table public.cache_x (id int);').has('cache_x')).toBe(true);
+  });
+});
