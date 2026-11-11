@@ -21,6 +21,17 @@ export const FAMILIES = {
 const RE =
   /(?<![\w-])((?:[A-Za-z0-9_[\]=.&>*-]+:)*)(bg|text|border)-(amber|blue|emerald|red)-(\d{2,3})(?:\/(\d{1,3}))?(?![\w/-])/g;
 
+export function hasHardcodedColor(source) {
+  return new RegExp(RE.source).test(source);
+}
+
+// No Tailwind, o papel "sutil"/claro no modo dark é feito pelos tons ALTOS (800/900/950) — o
+// oposto do modo claro, onde é feito pelos tons baixos. `dark:bg-red-950` ao lado de
+// `bg-red-50` no claro são o MESMO par sutil, não um par "claro translúcido / escuro sólido".
+// Convertê-los pela mesma régua (shade >= 400 -> token sólido) trocaria um fundo discreto por
+// um bloco cheio só no dark. Em vez de arriscar o par errado, a conversão é pulada e sinalizada.
+const DARK_HIGH_SHADE = 700;
+
 export function mapClass(kind, family, shade, opacity) {
   const token = FAMILIES[family];
   const light = Number(shade) <= 300;
@@ -31,13 +42,22 @@ export function mapClass(kind, family, shade, opacity) {
 }
 
 /**
- * @returns {{ output: string, count: number, review: number[] }}
+ * @returns {{ output: string, count: number, review: number[], skipped: number }}
  *   review = linhas (1-based) com fundo sólido de token + `text-white`: o par certo
  *   seria `text-<token>-foreground`, mas isso é decisão visual, então só sinalizamos.
+ *   skipped = quantas classes `dark:*-{700..950}` foram preservadas sem conversão (ver nota acima).
  */
 export function convertColors(source) {
   let count = 0;
-  const output = source.replace(RE, (_m, variants, kind, family, shade, opacity) => {
+  let skipped = 0;
+  const output = source.replace(RE, (m, variants, kind, family, shade, opacity) => {
+    // `text` sempre mapeia pro mesmo `text-<token>`, sem ramo claro/forte — o risco do parágrafo
+    // acima só existe pra bg/border (que trocam de tradução conforme o tom).
+    const isDark = kind !== 'text' && variants.split(':').includes('dark');
+    if (isDark && Number(shade) >= DARK_HIGH_SHADE) {
+      skipped += 1;
+      return m;
+    }
     count += 1;
     return variants + mapClass(kind, family, shade, opacity);
   });
@@ -49,5 +69,5 @@ export function convertColors(source) {
       }
     });
   }
-  return { output, count, review };
+  return { output, count, review, skipped };
 }

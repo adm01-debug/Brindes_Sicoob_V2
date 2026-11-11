@@ -20,12 +20,13 @@
  *
  * Saída: 0 ok | 1 validação falhou (revertido) | 2 uso/lock | 3 simulação com mudanças pendentes
  */
-import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { STEPS } from './steps.mjs';
+import { acquireLock } from '../lib/pid-lock.mjs';
 
 const ROOT = process.cwd();
 const argv = process.argv.slice(2);
@@ -60,26 +61,9 @@ function listSrcFiles() {
 }
 
 // --- trava (no máx. 1 execução por repositório; a máquina trava com paralelismo) -------------
-const lockDir = join(tmpdir(), `autofix-${createHash('sha1').update(ROOT).digest('hex').slice(0, 8)}.lock`);
-let ownsLock = false; // só quem criou a trava pode removê-la (uma 2ª execução que recusa rodar não pode apagar a da 1ª)
-function acquireLock() {
-  for (let i = 0; i < 2; i++) {
-    try {
-      mkdirSync(lockDir);
-      ownsLock = true;
-      writeFileSync(join(lockDir, 'pid'), String(process.pid));
-      return;
-    } catch {
-      const pid = Number(existsSync(join(lockDir, 'pid')) ? readFileSync(join(lockDir, 'pid'), 'utf8') : 0);
-      let alive = false;
-      try { if (pid) { process.kill(pid, 0); alive = true; } } catch { /* morto */ }
-      if (alive) { console.error(`autofix já está rodando (pid ${pid}).`); process.exit(2); }
-      rmSync(lockDir, { recursive: true, force: true });
-    }
-  }
-  console.error('Não foi possível obter a trava do autofix.');
-  process.exit(2);
-}
+const lockFile = join(tmpdir(), `autofix-${createHash('sha1').update(ROOT).digest('hex').slice(0, 8)}.lock`);
+const lock = acquireLock(lockFile);
+if (lock.busy) { console.error(`autofix ${lock.message}`); process.exit(2); }
 
 // --- snapshots / restauração ---------------------------------------------------------------
 const originals = new Map(); // arquivo -> conteúdo original
@@ -91,7 +75,7 @@ function restoreAll() { for (const [f, c] of originals) if (read(f) !== c) write
 let finished = false;
 process.on('exit', () => {
   if (!finished) restoreAll(); // interrompido (Ctrl+C / erro): volta ao original
-  if (ownsLock) rmSync(lockDir, { recursive: true, force: true });
+  lock.release();
 });
 process.on('SIGINT', () => process.exit(130));
 process.on('SIGTERM', () => process.exit(143));
@@ -123,7 +107,6 @@ async function verify(changed, tsSteps) {
 }
 
 // --- main ----------------------------------------------------------------------------------
-acquireLock();
 const ctx = { root: ROOT, srcFiles: listSrcFiles(), touched: new Set(), notes: [] };
 console.log(`autofix (${APPLY ? 'APLICAR' : 'simulação'}) — ${ctx.srcFiles.length} arquivo(s) de src na base, passos: ${selected.map((s) => s.name).join(', ')}`);
 
