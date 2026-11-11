@@ -188,7 +188,7 @@ export function lerGruposDeRotas(raiz) {
           importado: m[2],
           arquivo: alvo ? rel(raiz, alvo) : null,
           // Rota embrulhada por `__ENABLE_DEMO_PAGES__ ? [...] : []` nao existe em producao.
-          condicional: /__ENABLE_DEMO_PAGES__[\s\S]{0,400}?path:\s*["']/.test(texto.slice(0, m.index + 1))
+          condicional: /__ENABLE_DEMO_PAGES__[\s\S]{0,400}?path:\s*["']/.test(texto.slice(0, m.index + m[0].length))
             && texto.slice(0, m.index).lastIndexOf('__ENABLE_DEMO_PAGES__') > texto.slice(0, m.index).lastIndexOf('] :'),
         };
       });

@@ -64,3 +64,4 @@ console.log('--- MISSING TABLES DETECTED ---');
 missing.forEach(m => {
   console.log(`${m.file}: ${m.table}`);
 });
+if (missing.length > 0) process.exit(1);

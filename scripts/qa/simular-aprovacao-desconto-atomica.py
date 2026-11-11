@@ -10,12 +10,15 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+import uuid
 from pathlib import Path
 
 from postgres_ready import wait_for_postgres
 
 
-CONTAINER = "sicoob-desconto-atomico-20260927"
+# Nome único: duas execuções simultâneas (retentativa, outro agente) compartilhavam o container
+# fixo e o `docker rm -f` de uma derrubava o Postgres da outra.
+CONTAINER = "sicoob-desconto-atomico-" + uuid.uuid4().hex[:10]
 ROOT = Path(__file__).resolve().parents[2]
 MIGRATIONS = (
     ROOT / "supabase/migrations/20260927109950_quote_status_enum_preflight.sql",

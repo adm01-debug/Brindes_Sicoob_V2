@@ -24,6 +24,34 @@ RAIZ = Path(__file__).resolve().parents[2]
 PASTA = RAIZ / 'docs/execucao/revisao-implementacao'
 COMMIT = '6f1c5f94f612c13071b8dbe61b500b915e50b123'
 BASE_GITHUB = f'https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/{COMMIT}/'
+
+
+def _garantir_commit(sha):
+    """Clone raso (CI com fetch-depth=1) não tem o commit COMMIT: `git show COMMIT:arquivo` falha
+    (CalledProcessError) para TODO arquivo, e o laço abaixo rotula isso de "arquivo novo desde o
+    commit de referência (esperado)" — mascarando a ausência total de comparação como divergência
+    histórica benigna, quando na verdade nada foi de fato comparado."""
+    def existe():
+        return subprocess.run(
+            ['git', 'cat-file', '-e', f'{sha}^{{commit}}'], cwd=RAIZ,
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        ).returncode == 0
+
+    if existe():
+        return
+    fetch = subprocess.run(
+        ['git', 'fetch', '--depth', '1', 'origin', sha], cwd=RAIZ,
+        stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True,
+    )
+    if not existe():
+        raise RuntimeError(
+            f'Commit histórico {sha} inalcançável (clone raso; git fetch --depth 1 falhou: '
+            f'{fetch.stderr.strip() or "sem detalhe"}). Rode com histórico completo '
+            f'(git fetch --unshallow) ou busque o SHA manualmente antes de regenerar.'
+        )
+
+
+_garantir_commit(COMMIT)
 ESTADOS = {
     'L': 'Evidência local suficiente no escopo descrito',
     'P': 'Implementação ou atendimento parcial',
