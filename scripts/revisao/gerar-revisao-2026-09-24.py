@@ -33,7 +33,7 @@ REFS = {
  'banco': ['docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md'],
  'governanca': ['docs/execucao/revisao-plano-20260924/protecao-github.json','.github/workflows/ci.yml'],
  'prs': ['docs/execucao/revisao-plano-20260924/prs-abertos.json'],
- 'segredos': ['docs/secrets.md','.env.production'],
+ 'segredos': ['docs/secrets.md'],
  'historico': ['docs/execucao/correcoes-reconciliacao-20260922.md','docs/auditoria-validacao-2026-09-22.md'],
  'baseline': ['supabase/migrations/20260915143442_sicoob_reconciliation_baseline.sql','supabase/migrations_archive/2026-09/20260915160000_sicoob_reconciliation_baseline.sql','docs/execucao/evidencias/baseline_diff_20260917.md'],
  'backlog': ['docs/execucao/evidencias/retomada-mcp-20260922/migration-backlog-classification.json'],

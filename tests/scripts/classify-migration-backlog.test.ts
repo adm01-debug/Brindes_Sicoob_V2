@@ -36,6 +36,18 @@ describe('classificador do backlog de migrations', () => {
     expect(result.objects.existing).toEqual([{ type: 'relation', name: 'quotes' }]);
   });
 
+  it('flagra SECURITY DEFINER sem search_path mesmo com outra função protegida no mesmo arquivo', () => {
+    const sql = `
+      CREATE FUNCTION public.safe_fn() RETURNS void LANGUAGE plpgsql SECURITY DEFINER
+      SET search_path = public AS $$ BEGIN PERFORM 1; END; $$;
+
+      CREATE FUNCTION public.unsafe_fn() RETURNS void LANGUAGE plpgsql SECURITY DEFINER
+      AS $$ BEGIN PERFORM 2; END; $$;
+    `;
+    const result = analyzeMigrationSql(sql, { relations: [], functions: ['safe_fn', 'unsafe_fn'] });
+    expect(result.flags).toContain('security_definer_sem_search_path_explicito');
+  });
+
   it('exige revisão manual antes de migrations que alteram dados', () => {
     const result = analyzeMigrationSql('UPDATE public.quotes SET status = \'draft\';', { relations: ['quotes'], functions: [] });
     expect(result.disposition).toBe('revisao_manual_prioritaria');

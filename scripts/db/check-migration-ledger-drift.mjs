@@ -33,7 +33,22 @@ export function collectLocalMigrations(root = ROOT) {
         continue;
       }
       const match = /^(\d+)_(.+)\.sql$/.exec(item.name);
-      if (!match) continue;
+      if (!match) {
+        // Um .sql fora do padrão `<versão>_<nome>.sql` (hífen no lugar do _, extensão em maiúscula,
+        // sem versão) era descartado em silêncio: nenhum gate o via. Fica visível como pendência.
+        if (!archived && /\.sql$/i.test(item.name)) {
+          files.push({
+            version: item.name,
+            name: item.name,
+            path: relative(root, full),
+            archived,
+            invalid_name: true,
+            sha256: hash(readFileSync(full, 'utf8')),
+            normalized_sha256: '',
+          });
+        }
+        continue;
+      }
       const sql = readFileSync(full, 'utf8');
       files.push({
         version: match[1],
@@ -100,6 +115,10 @@ export function compareLedger(local, ledger) {
     });
   }
   for (const file of local) {
+    if (file.invalid_name) {
+      results.push({ version: file.version, path: file.path, status: 'nome_de_arquivo_invalido' });
+      continue;
+    }
     if (!applied.has(file.version))
       results.push({
         version: file.version,

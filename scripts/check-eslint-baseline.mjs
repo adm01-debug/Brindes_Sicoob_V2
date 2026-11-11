@@ -35,8 +35,11 @@ function verifiedRef(candidate) {
 function changedSourceFiles(baseSha) {
   const result = runGit(["diff", "--name-only", "--diff-filter=ACMR", baseSha, "--", "src"]);
   if (result.status !== 0) return [];
-  return result.stdout
-    .split(/\r?\n/)
+  // `git diff` não lista arquivo novo ainda não rastreado: antes do `git add`, o uso local
+  // ("lint antes da PR") reportava "0 arquivos analisados" e aprovava erros em arquivo novo.
+  const untracked = runGit(["ls-files", "--others", "--exclude-standard", "--", "src"]);
+  const untrackedFiles = untracked.status === 0 ? untracked.stdout.split(/\r?\n/) : [];
+  return [...new Set([...result.stdout.split(/\r?\n/), ...untrackedFiles])]
     .map((file) => file.trim())
     .filter((file) => SOURCE_FILE_RE.test(file) && existsSync(join(ROOT, file)));
 }

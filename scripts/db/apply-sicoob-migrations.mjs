@@ -161,8 +161,16 @@ function stripNonCode(sql) {
     }
     if (char === "'" || char === '"') {
       const quote = char;
+      // Strings E'...'/e'...' usam barra invertida como escape (inclusive \' e
+      // \\): sem isso, uma aspas escapada fecha a string antes da hora e o
+      // restante do arquivo (incluindo um BEGIN/COMMIT real) é tratado como
+      // conteúdo de string e desaparece da verificação.
+      const isEscapeString = quote === "'"
+        && /[Ee]/.test(sql[index - 1] ?? "")
+        && !/[A-Za-z0-9_$]/.test(sql[index - 2] ?? " ");
       index += 1;
       while (index < sql.length) {
+        if (isEscapeString && sql[index] === "\\") { index += 2; continue; }
         if (sql[index] === quote) {
           if (sql[index + 1] === quote) { index += 2; continue; }
           index += 1;

@@ -34,6 +34,14 @@ test('diagnóstico conhecido é contado e não piora o baseline', () => {
   assert.equal(result.status, 0);
   assert.match(result.stdout, /Total atual:\s+1/);
 });
+for (const arquivo of ['src/bad file.ts', 'src/(grupo)/x.ts', 'src/a (copia).tsx']) {
+  test(`erro em caminho com espaço ou parêntese é contado como regressão: ${arquivo}`, () => {
+    // Antes a contagem usava `[^\\s(]+`: a linha passava na guarda de diagnóstico e sumia do total.
+    const result = executarCompiler(`console.log(${JSON.stringify(`${arquivo}(1,14): error TS2322: tipo incompatível`)}); process.exit(2)`);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /regress/);
+  });
+}
 test('erro em arquivo novo é regressão e bloqueia o gate', () => {
   assert.equal(executarCompiler('console.log("src/novo.ts(1,1): error TS2322: tipo incompatível"); process.exit(2)').status, 1);
 });

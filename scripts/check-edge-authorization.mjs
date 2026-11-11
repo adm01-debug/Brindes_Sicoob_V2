@@ -25,7 +25,7 @@
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { inspectAuthorization } from './lib/edge-authorization-contract.mjs';
+import { findSecretExposure, inspectAuthorization } from './lib/edge-authorization-contract.mjs';
 
 const FN_DIR = 'supabase/functions';
 const MANIFEST_PATH = `${FN_DIR}/_shared/edge-authz-manifest.ts`;
@@ -170,6 +170,18 @@ for (const fn of fns) {
           `Credenciais de serviço NUNCA podem ser expostas por uma edge function.`,
       );
     }
+  }
+  // Mesma regra por AST: segue o valor por variável até `Response`/`JSON.stringify`/helpers de
+  // resposta (a regex acima só enxergava `JSON.stringify(...ENV` literal e algumas chaves).
+  const reported = new Set();
+  for (const exposure of findSecretExposure(src, SECRET_ENVS)) {
+    const key = `${exposure.env}:${exposure.line}`;
+    if (reported.has(key) || errors.some((e) => e.startsWith(`[exfiltration] ${fn}:`) && e.includes(exposure.env))) continue;
+    reported.add(key);
+    errors.push(
+      `[exfiltration] ${fn}:${exposure.line}: ${exposure.env} chega ao corpo de uma resposta. ` +
+        `Credenciais de serviço NUNCA podem ser expostas por uma edge function.`,
+    );
   }
 }
 

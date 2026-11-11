@@ -25,7 +25,13 @@ if (!supabaseUrl || !supabaseKey) {
   process.exit(2);
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false, autoRefreshToken: false } });
+let supabase;
+try {
+  supabase = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false, autoRefreshToken: false } });
+} catch (error) {
+  console.error('❌ VITE_SUPABASE_URL inválida: ' + (error instanceof Error ? error.message : String(error)));
+  process.exit(2);
+}
 
 async function scanRls() {
   const [{ data: tables, error: tableError }, { data: emptyPolicies, error: policyError }] = await Promise.all([
@@ -43,10 +49,12 @@ async function scanRls() {
     const noPolicy = emptyPolicies.map((table) => `public.${table.table_name}`);
     console.error(`\n❌ RLS inválido. Sem RLS: ${noRls.join(', ') || 'nenhuma'}. Sem policy: ${noPolicy.join(', ') || 'nenhuma'}.`);
     for (const t of noRls) {
-      if (isCI) console.log(`::error file=scan-rls-security.mjs,title=Tabela sem RLS::${t}`);
+      // stderr: o workflow redireciona o stdout para reports/rls-status.txt, e a anotação gravada
+      // em arquivo nunca chegava ao runner do GitHub.
+      if (isCI) console.error(`::error file=scan-rls-security.mjs,title=Tabela sem RLS::${t}`);
     }
     for (const t of noPolicy) {
-      if (isCI) console.log(`::error file=scan-rls-security.mjs,title=Policy vazia::${t}`);
+      if (isCI) console.error(`::error file=scan-rls-security.mjs,title=Policy vazia::${t}`);
     }
     console.error('\n   → Ative RLS ou crie policies para as tabelas listadas.\n');
     process.exit(1);

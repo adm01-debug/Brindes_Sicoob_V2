@@ -38,7 +38,13 @@ for (const fn of FILES) {
   try { src = readFileSync(path, "utf8"); } catch { continue; }
 
   // Só age se o arquivo referencia `corsHeaders` mas não declara.
-  const hasReference = /(?<![\w.$"'`])corsHeaders(?![\w$])/.test(src);
+  // O spread (...corsHeaders) tem '.' antes do identificador (os três pontos),
+  // o que faz o lookbehind negativo da regra genérica tratá-lo como acesso de
+  // propriedade e ignorá-lo — por isso é checado também em separado (mesmo
+  // bug já corrigido em migrate-edge-cors-allowlist.mjs).
+  const hasReference =
+    /(?<![\w.$"'`])corsHeaders(?![\w$])/.test(src) ||
+    /\.\.\.corsHeaders(?![\w$])/.test(src);
   const hasDeclaration = /(?:const|let|var)\s+corsHeaders\b/.test(src);
   if (!hasReference || hasDeclaration) continue;
 

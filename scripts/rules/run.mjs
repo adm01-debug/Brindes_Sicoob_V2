@@ -13,7 +13,7 @@
  * Só LÊ o repositório (os gates existentes são executados em sequência, 1 por vez).
  * Correção automática, quando existe, fica em scripts/autofix (campo "correção" do relatório).
  */
-import { readdirSync, mkdirSync, writeFileSync, statSync } from 'node:fs';
+import { readdirSync, mkdirSync, writeFileSync, statSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -46,6 +46,15 @@ const selected = rules.filter((r) => !only || only.some((p) => r.id.startsWith(p
 if (argv.includes('--list')) {
   selected.forEach((r) => console.log(`${r.id.padEnd(30)} ${r.severity.padEnd(6)} ${r.kind.padEnd(9)} ${r.title}`));
   process.exit(0);
+}
+
+// `ROOT = process.cwd()` é intencional (rotina.mjs roda isto com cwd = worktree de outra ref, não
+// a cópia deste próprio arquivo) — mas rodar fora da raiz do repo faz cada regra varrer pastas
+// vazias: 0 achados, exit 0, sem aviso. Só vale a pena checar quando as regras de fato vão rodar
+// (--list só lista metadado importado, sem tocar ROOT).
+if (!existsSync(join(ROOT, 'package.json')) || !existsSync(join(ROOT, 'src'))) {
+  console.error(`❌ rules/run.mjs: ${ROOT} não parece a raiz do repositório (sem package.json/src/). Rode da raiz do repositório.`);
+  process.exit(2);
 }
 
 const ctx = { root: ROOT, behind: 0, walk };

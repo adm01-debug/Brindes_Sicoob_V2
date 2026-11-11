@@ -49,11 +49,14 @@ try {
 
 const missing = [];
 for (const section of REQUIRED_SECTIONS) {
-  const idx = content.indexOf(section);
-  if (idx === -1) {
+  // Cabecalho de verdade: `## Banco` no INICIO de linha. `indexOf` casava `### Banco` (rebaixada)
+  // e citacoes do titulo no meio de outra secao.
+  const header = new RegExp(`^${section.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\p{L}\\p{N}])`, 'mu').exec(content);
+  if (!header) {
     missing.push(`${section}: secao ausente`);
     continue;
   }
+  const idx = header.index;
   const afterHeader = content.slice(idx + section.length);
   const nextHeaderIdx = afterHeader.search(/\n## /);
   const body = nextHeaderIdx === -1 ? afterHeader : afterHeader.slice(0, nextHeaderIdx);
@@ -61,6 +64,16 @@ for (const section of REQUIRED_SECTIONS) {
   if (nonWhitespaceChars < MIN_SECTION_BODY_CHARS) {
     missing.push(`${section}: corpo com ${nonWhitespaceChars} caracteres (esperado >= ${MIN_SECTION_BODY_CHARS}) — pode ser placeholder sem conteudo real`);
   }
+}
+// CLAUDE.md e so o ponteiro `@AGENTS.md`: se for esvaziado, o agente nem carrega as regras.
+let claude = '';
+try {
+  claude = readFileSync('CLAUDE.md', 'utf8');
+} catch {
+  // ausente: tratado abaixo
+}
+if (!claude.includes('@AGENTS.md')) {
+  missing.push('CLAUDE.md: ausente ou sem o ponteiro `@AGENTS.md` (os agentes nao carregariam as regras)');
 }
 if (missing.length > 0) {
   for (const s of missing) console.error(`::error::${AGENTS}: secao obrigatoria invalida: ${s}`);

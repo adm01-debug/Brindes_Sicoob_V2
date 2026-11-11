@@ -47,62 +47,77 @@ afterEach(() => {
 });
 
 describe('Lacunas verificadas em main 8028c879 em 28/09/2026', () => {
-  it('não reencontra rascunho novo depois de desmontar e montar a página', async () => {
+  it('lacuna corrigida: autosave exige scopeId (identidade do ator) — sem ele, nada persiste; com ele, sobrevive a desmontar/montar', async () => {
     vi.useFakeTimers();
     const restore = vi.fn();
-    const primeiro = render(<QuoteAutoSave data={{ notes: '' }} onRestore={restore} />);
-    primeiro.rerender(<QuoteAutoSave data={{ notes: 'rascunho sintético' }} onRestore={restore} />);
+    const semEscopo = render(<QuoteAutoSave data={{ notes: '' }} onRestore={restore} />);
+    semEscopo.rerender(<QuoteAutoSave data={{ notes: 'rascunho sintético' }} onRestore={restore} />);
     await act(async () => { await vi.advanceTimersByTimeAsync(2100); });
-    const chaves = Object.keys(localStorage).filter((key) => key.startsWith('autosave_draft:'));
+    expect(Object.keys(localStorage)).toHaveLength(0);
+    semEscopo.unmount();
+
+    const comEscopo = render(<QuoteAutoSave scopeId="ator-sintetico" data={{ notes: '' }} onRestore={restore} />);
+    comEscopo.rerender(<QuoteAutoSave scopeId="ator-sintetico" data={{ notes: 'rascunho sintético' }} onRestore={restore} />);
+    await act(async () => { await vi.advanceTimersByTimeAsync(2100); });
+    const chaves = Object.keys(localStorage).filter((key) => key.startsWith('autosave_draft:ator-sintetico:'));
     expect(chaves).toHaveLength(1);
-    expect(localStorage.getItem(chaves[0])).toContain('rascunho sintético');
-    primeiro.unmount();
-    restore.mockClear();
-    render(<QuoteAutoSave data={{ notes: '' }} onRestore={restore} />);
-    expect(restore).not.toHaveBeenCalled();
+    expect(localStorage.getItem(chaves[0]!)).toContain('rascunho sintético');
   });
 
-  it('restaura orçamento existente sem receber identidade do ator', () => {
-    localStorage.setItem('autosave_quote:orcamento-sintetico', JSON.stringify({ notes: 'sessão anterior' }));
+  it('lacuna corrigida: restaura orçamento existente só quando o scopeId do ator coincide com o da chave gravada', () => {
+    localStorage.setItem('autosave_quote:ator-sintetico:orcamento-sintetico', JSON.stringify({ notes: 'sessão anterior' }));
     const restore = vi.fn();
     render(<QuoteAutoSave quoteId="orcamento-sintetico" data={{ notes: '' }} onRestore={restore} />);
+    expect(restore).not.toHaveBeenCalled();
+    render(<QuoteAutoSave scopeId="ator-sintetico" quoteId="orcamento-sintetico" data={{ notes: '' }} onRestore={restore} />);
     expect(restore).toHaveBeenCalledWith({ notes: 'sessão anterior' });
   });
 
-  it('retorna logística vazia se a primeira página não contém pedido logístico, ignorando o total', async () => {
+  it('lacuna corrigida: percorre todas as páginas respeitando o total, não só a primeira', async () => {
     listOrders.mockResolvedValue({
-      orders: Array.from({ length: 500 }, (_, id) => ({ id: String(id), status: 'draft' })),
-      total: 501,
+      orders: Array.from({ length: 200 }, (_, id) => ({ id: String(id), status: 'draft' })),
+      total: 450,
     });
     expect(await listSicoobLogisticsTracking()).toEqual([]);
-    expect(listOrders).toHaveBeenCalledTimes(1);
-    expect(listOrders).toHaveBeenCalledWith({ page: 1, pageSize: 500 });
+    expect(listOrders).toHaveBeenCalledTimes(3);
+    expect(listOrders).toHaveBeenNthCalledWith(1, expect.objectContaining({ page: 1, pageSize: 200 }));
+    expect(listOrders).toHaveBeenNthCalledWith(3, expect.objectContaining({ page: 3, pageSize: 200 }));
     expect(from).not.toHaveBeenCalled();
   });
 
-  it('substitui a versão conhecida pelo editor pela recém-consultada', async () => {
+  it('lacuna corrigida: update() não troca a versão silenciosamente — exige expectedRowVersion explícito do chamador', async () => {
     const rpc = vi.fn().mockResolvedValue({ data: { id: 'q' }, error: null });
     Object.assign((await import('@/integrations/supabase/client')).supabase, { rpc });
     vi.spyOn(QuoteService, 'getById').mockResolvedValue({ id: 'q', row_version: 7, items: [] } as any);
-    await QuoteService.update({ quoteId: 'q', quote: { row_version: 1 }, items: [], userId: 'ator' });
+    // Sem expectedRowVersion: recusa em vez de usar o row_version do formulário (1) ou trocar
+    // silenciosamente pelo recém-lido (7) — a lacuna original fazia a troca sem avisar ninguém.
+    await expect(QuoteService.update({ quoteId: 'q', quote: { row_version: 1 }, items: [], userId: 'ator' } as any))
+      .rejects.toThrow('A versão do orçamento não está disponível');
+    expect(rpc).not.toHaveBeenCalled();
+    // Com expectedRowVersion explícito, grava normalmente — a versão é responsabilidade do chamador.
+    await QuoteService.update({ quoteId: 'q', quote: { row_version: 1 }, items: [], userId: 'ator', expectedRowVersion: 7 });
     expect(rpc).toHaveBeenCalledWith('save_quote_atomic', expect.objectContaining({ p_expected_row_version: 7 }));
   });
 
-  it('duas criações repetidas não fornecem chave idempotente à RPC', async () => {
+  it('duas criações sem idempotencyKey (contornando o tipo) ainda viram 2 RPCs idênticas — defesa só em tempo de compilação', async () => {
     const rpc = vi.fn().mockResolvedValue({ data: { id: 'q' }, error: null });
     Object.assign((await import('@/integrations/supabase/client')).supabase, { rpc });
-    const entrada = { quote: { status: 'draft' as const }, items: [], userId: 'ator', orgId: null };
+    // idempotencyKey é obrigatório na assinatura de create() — TS recusa compilar sem ele. Este
+    // teste contorna isso de propósito (as any) para checar se há alguma defesa em runtime
+    // também: não há — as duas chamadas produzem o mesmo payload (p_idempotency_key: undefined).
+    const entrada = { quote: { status: 'draft' as const }, items: [], userId: 'ator', orgId: null } as any;
     await QuoteService.create(entrada);
     await QuoteService.create(entrada);
     expect(rpc).toHaveBeenCalledTimes(2);
-    expect(rpc.mock.calls[0][1]).toEqual(rpc.mock.calls[1][1]);
-    expect(rpc.mock.calls[0][1]).not.toHaveProperty('p_idempotency_key');
-    expect(rpc.mock.calls[0][1].p_quote_id).toBeNull();
+    expect(rpc.mock.calls[0]![1]).toEqual(rpc.mock.calls[1]![1]);
+    expect((rpc.mock.calls[0]![1] as Record<string, unknown>).p_idempotency_key).toBeUndefined();
   });
-  it('usa a mesma chave de previsão ao mudar unidades por item mantendo os mesmos produtos', () => {
+
+  it('lacuna corrigida: a chave de previsão agora varia com a quantidade — não reaproveita cache desatualizado ao trocar unidades', () => {
     const base = { id: 'produto', name: 'Caneca', quantity: 1 } as KitItem;
     const antes = useKitStockForecast([base], 10) as unknown as { queryKey: unknown[] };
     const depois = useKitStockForecast([{ ...base, quantity: 100 }], 10) as unknown as { queryKey: unknown[] };
-    expect(antes.queryKey).toEqual(depois.queryKey);
+    expect(antes.queryKey).not.toEqual(depois.queryKey);
+    expect(depois.queryKey).toContain('produto:produto:100');
   });
 });
