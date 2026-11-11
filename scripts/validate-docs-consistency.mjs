@@ -62,7 +62,8 @@ await runCli(
 
     for (const match of modulesContent.matchAll(DOC_LINK_PATTERN)) {
       const target = match[1];
-      if (!fs.existsSync(target)) {
+      const resolvedTarget = path.join(path.dirname(docsDir), target);
+      if (!fs.existsSync(resolvedTarget)) {
         errors.push(`Link quebrado em MODULES.md: ${target}`);
       }
     }

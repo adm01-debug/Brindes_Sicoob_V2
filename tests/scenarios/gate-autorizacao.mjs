@@ -15,8 +15,12 @@ for (const source of [
   });
 }
 test('gate reconhece papel da chamada correta com alias', () => {
-  const result = inspectAuthorization(`${importacao}\nconst outraOpcao = { requireRole: "dev" }; await proteger(req, { requireRole: "agente" });`);
+  const result = inspectAuthorization(`${importacao}\nconst outraOpcao = { requireRole: "dev" }; const auth = await proteger(req, { requireRole: "agente" });`);
   assert.deepEqual(result.sharedRoles, ['agente']);
+});
+test('gate recusa autorização aguardada com o resultado descartado (a função ficaria aberta)', () => {
+  const result = inspectAuthorization(`${importacao}\nawait proteger(req, { requireRole: "agente" });`);
+  assert.deepEqual(result.sharedRoles, []);
 });
 test('comentários e strings não comprovam autenticação customizada', () => {
   const result = inspectAuthorization('// client.auth.getUser();\nconst exemplo = "client.from(\'user_roles\')";');

@@ -7,8 +7,10 @@
 import { readdirSync, readFileSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const RAIZ = new URL('../../', import.meta.url).pathname;
+// fileURLToPath: `new URL(...).pathname` deixa espaço como %20 e o script quebrava (ENOENT) em checkout com espaço no caminho.
+const RAIZ = fileURLToPath(new URL('../../', import.meta.url));
 const FDIR = join(RAIZ, 'supabase/functions');
 const OUT = join(RAIZ, 'inventario/estado');
 mkdirSync(OUT, { recursive: true });
@@ -47,7 +49,11 @@ for (const f of edges) {
   const envs = [...new Set([...code.matchAll(/Deno\.env\.get\(\s*['"]([A-Z0-9_]+)['"]/g)].map((m) => m[1]))].sort();
   const src = rgFiles(`(functions\\.invoke\\(\\s*['"\`]${q}['"\`]|functions/v1/${q}\\b|['"\`]${q}['"\`]\\s*[,)])`, ['src']);
   const migrations = rgFiles(`functions/v1/${q}\\b`, ['supabase/migrations']);
-  const outrasEdges = rgFiles(`functions/v1/${q}\\b|['"\`]${q}['"\`]`, ['supabase/functions']).filter((p) => !p.startsWith(`supabase/functions/${f}/`));
+  // O manifesto de autorização (`_shared/edge-authz-manifest.ts`) cita TODAS as edges pelo nome e os testes de
+  // `supabase/functions/tests` também: contá-los como "chamador" fazia `sem_chamador` nunca disparar (30 edges sem uso real).
+  const NAO_E_CHAMADOR = /^supabase\/functions\/(?:_shared\/edge-authz-manifest\.ts|tests\/)/;
+  const outrasEdges = rgFiles(`functions/v1/${q}\\b|['"\`]${q}['"\`]`, ['supabase/functions'])
+    .filter((p) => !p.startsWith(`supabase/functions/${f}/`) && !NAO_E_CHAMADOR.test(p));
   const e2e = rgFiles(q, ['e2e']);
   const ci = rgFiles(q, ['.github/workflows', 'supabase/config.toml']);
   inventario[f] = {
@@ -62,7 +68,15 @@ writeFileSync(join(OUT, 'edges.json'), JSON.stringify({ gerado_em: new Date().to
 console.log(`edges: ${edges.length} | sem chamador no repo (src/migrations/edges): ${semChamador.length}`);
 
 if (!process.stdin.isTTY) {
-  const nomes = readFileSync(0, 'utf8').split(/\s+/).filter(Boolean);
+  // Em shell sem TTY e sem stdin redirecionado (ex.: `npm run inventario:repo`), a leitura do fd 0 não bloqueia e
+  // levanta EAGAIN depois de gravar edges.json, devolvendo exit 1; sem entrada = sem lista de tabelas.
+  let entrada = '';
+  try {
+    entrada = readFileSync(0, 'utf8');
+  } catch (erro) {
+    if (erro.code !== 'EAGAIN' && erro.code !== 'EOF') throw erro;
+  }
+  const nomes = entrada.split(/\s+/).filter(Boolean);
   if (nomes.length > 0) {
     const uso = {};
     for (const t of nomes) {

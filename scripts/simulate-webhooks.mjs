@@ -15,8 +15,8 @@ async function hmacSign(payload, secret) {
   return 'sha256=' + crypto.createHmac('sha256', secret).update(payload).digest('hex');
 }
 
-async function sendWebhook(slug, payload, headers = {}) {
-  const body = JSON.stringify(payload);
+async function sendWebhook(slug, payload, headers = {}, raw = false) {
+  const body = raw ? payload : JSON.stringify(payload);
   const signature = await hmacSign(body, HMAC_SECRET);
   
   const defaultHeaders = {
@@ -75,7 +75,7 @@ async function runSimulation() {
 
   for (const scenario of scenarios) {
     console.log(`Testing: ${scenario.name}`);
-    const res = await sendWebhook(scenario.slug, scenario.payload, scenario.headers);
+    const res = await sendWebhook(scenario.slug, scenario.payload, scenario.headers, scenario.raw);
     results.total++;
     if (res.ok) results.success++; else results.failed++;
     totalLatency += res.latency || 0;

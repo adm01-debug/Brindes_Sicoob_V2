@@ -25,7 +25,13 @@ if (!supabaseUrl || !supabaseKey) {
   process.exit(2);
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false, autoRefreshToken: false } });
+let supabase;
+try {
+  supabase = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false, autoRefreshToken: false } });
+} catch (error) {
+  console.error('❌ VITE_SUPABASE_URL inválida: ' + (error instanceof Error ? error.message : String(error)));
+  process.exit(2);
+}
 
 async function scanRls() {
   const [{ data: tables, error: tableError }, { data: emptyPolicies, error: policyError }] = await Promise.all([

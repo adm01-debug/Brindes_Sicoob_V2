@@ -48,8 +48,8 @@ import subprocess
 import sys
 import urllib.error
 import urllib.request
-from urllib.parse import urlunsplit, urlsplit
 from decimal import Decimal
+from urllib.parse import urlsplit, urlunsplit
 from typing import Any, Callable
 
 import psycopg
@@ -138,15 +138,8 @@ def log(msg: str) -> None:
 
 SESSION_POOLER_RE = re.compile(r"^db\.([a-z0-9]+)\.supabase\.co$")
 
-
 def session_pooler_url() -> str:
-    """Reescreve um DSN com host direto db.<ref>.supabase.co para o session pooler (IPv4).
-
-    O host direto só resolve IPv6 e o runner do GitHub não tem IPv6: a conexão falha com
-    OperationalError. O pooler aws-0-<regiao>.pooler.supabase.com aceita o mesmo usuário
-    (postgres.<ref>) e a mesma senha; a reescrita preserva credenciais. Retorna a URL
-    original sem alteração para qualquer outro host.
-    """
+    """Reescreve um DSN com host direto db.<ref>.supabase.co para o session pooler (IPv4)."""
     if not DB_URL or "://" not in DB_URL:
         return DB_URL
     try:
@@ -168,13 +161,8 @@ def session_pooler_url() -> str:
         netloc = user + (":" + parts.password if parts.password else "") + "@" + host
     return urlunsplit((parts.scheme, netloc, parts.path, parts.query, parts.fragment))
 
-
 def _connect():
-    """Conecta ao Postgres; em falha no host direto IPv6-only, tenta o session pooler.
-
-    O fallback apenas reescreve o host da própria URL (mesmo usuário/senha). Em caso de
-    segunda falha, re-lanca o erro original, sem a connection string.
-    """
+    """Conecta ao Postgres; em falha no host direto IPv6-only, tenta o session pooler."""
     global DB_URL
     try:
         return psycopg.connect(DB_URL, connect_timeout=30, application_name="supabase-snapshot",

@@ -70,6 +70,9 @@ if [ "$MODE" = "branch" ]; then
   if [ "$HAS_OLD" = 1 ] && git diff --quiet --cached "origin/$BRANCH_OUT" -- && [ "$(git rev-parse origin/$BRANCH_OUT^ 2>/dev/null)" = "$SRC" ]; then
     echo "branch $BRANCH_OUT já reflete este estado — nada a publicar"; git checkout -q "$SRC_REF" 2>/dev/null || true; exit 0
   fi
+  if git diff --cached --quiet; then
+    echo "nada a publicar — conteúdo já reflete $SRC"; git checkout -q "$SRC_REF" 2>/dev/null || true; exit 0
+  fi
   git commit -q -m "$MSG"
   git push -q --force "${PUSH_URL:-origin}" "HEAD:refs/heads/$BRANCH_OUT"
   echo "publicado em $BRANCH_OUT ($(git rev-parse --short HEAD) = $BRANCH + 1 commit)"
