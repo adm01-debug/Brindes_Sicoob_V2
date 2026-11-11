@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error módulo .mjs sem tipos
-import { convertColors } from '../../scripts/autofix/colors-map.mjs';
+import { convertColors, hasHardcodedColor } from '../../scripts/autofix/colors-map.mjs';
 
 const conv = (s: string) => convertColors(s).output as string;
 
@@ -52,5 +52,26 @@ describe('autofix colors-map', () => {
   it('sinaliza fundo sólido com text-white para revisão', () => {
     const r = convertColors('<A />\n<B className="bg-amber-500 text-white" />');
     expect(r.review).toEqual([2]);
+  });
+
+  it('não converte dark:bg-*-{700..950} (par sutil do dark virando bloco sólido)', () => {
+    const r = convertColors('dark:bg-red-950');
+    expect(r.output).toBe('dark:bg-red-950'); // preservado
+    expect(r.count).toBe(0);
+    expect(r.skipped).toBe(1);
+  });
+
+  it('não converte dark:border-*-forte, mas converte dark:text-* (sem ramo claro/forte)', () => {
+    expect(conv('dark:border-emerald-900')).toBe('dark:border-emerald-900');
+    expect(conv('dark:text-emerald-900')).toBe('dark:text-success');
+  });
+
+  it('dark:bg-*-claro (< 700) continua convertido normalmente', () => {
+    expect(conv('dark:bg-amber-100')).toBe('dark:bg-warning/10');
+  });
+
+  it('hasHardcodedColor detecta sem converter (para checar arquivos só em modo leitura)', () => {
+    expect(hasHardcodedColor('bg-red-500')).toBe(true);
+    expect(hasHardcodedColor('bg-warning text-slate-500')).toBe(false);
   });
 });

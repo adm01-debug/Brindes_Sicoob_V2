@@ -21,6 +21,7 @@ import { homedir, loadavg, tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { comparar, carregarBase } from './diff.mjs';
 import { limparRegistrados } from './worktrees.mjs';
+import { acquireLock } from '../lib/pid-lock.mjs';
 import { fileURLToPath } from 'node:url';
 
 const REPO = resolve(fileURLToPath(new URL('../..', import.meta.url))); // repo onde este script vive
@@ -35,23 +36,16 @@ const log = (m) => console.log(`[rotina ${new Date().toISOString()}] ${m}`);
 
 if (loadavg()[0] > MAX_LOAD) { log(`carga ${loadavg()[0].toFixed(1)} > ${MAX_LOAD}: pulando esta rodada`); process.exit(0); }
 
-const lock = join(tmpdir(), 'gaps-rotina.lock');
+const lockFile = join(tmpdir(), 'gaps-rotina.lock');
 const REGISTRO = join(tmpdir(), 'gaps-rotina.worktrees'); // worktrees temporários criados por esta rotina
-try { mkdirSync(lock); } catch {
-  const pidFile = join(lock, 'pid');
-  let alive = false;
-  try { process.kill(Number(readFileSync(pidFile, 'utf8')), 0); alive = true; } catch { /* sem pid ou morto */ }
-  if (alive) { log('já em execução: pulando'); process.exit(0); }
-  rmSync(lock, { recursive: true, force: true });
-  mkdirSync(lock);
-}
-writeFileSync(join(lock, 'pid'), String(process.pid));
+const lock = acquireLock(lockFile);
+if (lock.busy) { log('já em execução: pulando'); process.exit(0); }
 
 let work = null;
 const cleanup = () => {
   if (work) { git(['worktree', 'remove', '--force', work]); rmSync(work, { recursive: true, force: true }); git(['worktree', 'prune']); work = null; }
   rmSync(REGISTRO, { force: true });
-  rmSync(lock, { recursive: true, force: true });
+  lock.release();
 };
 process.on('exit', cleanup);
 process.on('SIGINT', () => process.exit(130));

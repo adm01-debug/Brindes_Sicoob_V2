@@ -134,6 +134,13 @@
       "reason": "Legado mantido no fluxo existente; referências literais: package.json:scripts. O dispatcher não executa esta operação."
     },
     {
+      "id": "helper-pid-lock",
+      "kind": "helper",
+      "files": ["scripts/lib/pid-lock.mjs"],
+      "callers": ["scripts/autofix/run.mjs", "scripts/rules/rotina.mjs"],
+      "triggers": []
+    },
+    {
       "id": "legacy-3e4627a071f56821",
       "kind": "legacy",
       "files": ["scripts/autofix/steps.mjs"],
