@@ -6,8 +6,31 @@ import { describe, expect, it } from 'vitest';
 
 const SCRIPT = resolve(__dirname, '../../scripts/check-migration-immutability.mjs');
 
+/**
+ * Sob o hook pre-push de um git worktree vinculado, o processo do hook herda
+ * GIT_DIR/GIT_WORK_TREE apontando para o repositório real. Sem remover essas
+ * variáveis, os comandos git abaixo (apesar do `cwd` explícito para o tmpdir
+ * isolado) operam no repositório real em vez do fixture — já corrompeu o
+ * índice/config de múltiplos worktrees nesta sessão (ex.: `core.bare` virando
+ * `true`). `cwd` por si só não tem precedência sobre essas variáveis de ambiente.
+ */
+const GIT_ENV_KEYS_TO_STRIP = [
+  'GIT_DIR',
+  'GIT_WORK_TREE',
+  'GIT_INDEX_FILE',
+  'GIT_COMMON_DIR',
+  'GIT_OBJECT_DIRECTORY',
+  'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+  'GIT_CEILING_DIRECTORIES',
+];
+function isolatedEnv(extra: Record<string, string> = {}) {
+  const env = { ...process.env, ...extra };
+  for (const key of GIT_ENV_KEYS_TO_STRIP) delete env[key];
+  return env;
+}
+
 const git = (cwd: string, ...args: string[]) => {
-  const result = spawnSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', '-c', 'commit.gpgsign=false', ...args], { cwd, encoding: 'utf8' });
+  const result = spawnSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', '-c', 'commit.gpgsign=false', ...args], { cwd, encoding: 'utf8', env: isolatedEnv() });
   if (result.status !== 0) throw new Error(`git ${args.join(' ')}: ${result.stderr}`);
   return result.stdout.trim();
 };
@@ -26,7 +49,7 @@ function repo() {
   return dir;
 }
 const run = (cwd: string, env: Record<string, string> = {}) =>
-  spawnSync(process.execPath, [SCRIPT], { cwd, encoding: 'utf8', env: { ...process.env, MIGRATION_BASE_REF: '', GITHUB_BASE_REF: '', GITHUB_EVENT_BEFORE: '', ...env } });
+  spawnSync(process.execPath, [SCRIPT], { cwd, encoding: 'utf8', env: isolatedEnv({ MIGRATION_BASE_REF: '', GITHUB_BASE_REF: '', GITHUB_EVENT_BEFORE: '', ...env }) });
 const commit = (dir: string, message = 'mudanca') => {
   git(dir, 'add', '-A');
   git(dir, 'commit', '-q', '-m', message);
