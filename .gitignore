@@ -95,3 +95,6 @@ reports/AUDIT_ENTERPRISE_FINAL.md
 /.tools/repo-automation/
 /.tools/graphify/local-state/
 /.tools/graphify/.venv/
+
+# Saída local do scripts/ai-context (gerar.mjs sem --out); a oficial vai para docs/contexto na branch `contexto`
+inventario/ia/
