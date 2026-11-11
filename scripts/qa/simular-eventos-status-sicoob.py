@@ -113,7 +113,7 @@ try:
     """).stdout.strip()
     assert recipients == f"{PA_MANAGER},{SUPERVISOR}", recipients
     result["transicao_comum"] = {
-        "historico": "gravado com ator, estado anterior, estado novo e comentario",
+        "historico": "gravado com ator, estado anterior, estado novo e comentário",
         "destinatarios": "gerente do PA e supervisor; o ator não recebe aviso redundante",
     }
 
