@@ -114,22 +114,25 @@ export function mapTechniqueFiltersToExternal(filters: Record<string, unknown> |
   if ('name' in out) { out.nome = out.name; delete out.name; }
   if ('description' in out) { out.descricao = out.description; delete out.description; }
   if ('max_colors' in out) { out.max_cores = out.max_colors; delete out.max_colors; }
-  if ('estimated_days' in out) { out.tempo_producao_dias = out.estimated_days; delete out.estimated_days; }
+  // A origem não possui SLA por técnica; não gerar filtros em colunas inexistentes.
+  delete out.estimated_days;
+  delete out.tempo_producao_dias;
   return out;
 }
 
 export function mapTechniqueOrderByToExternal(orderBy: { column: string; ascending?: boolean } | undefined) {
   if (!orderBy) return { column: 'nome', ascending: true };
+  // A origem não possui coluna de SLA; a ordenação solicitada volta para o nome.
   const columnMap: Record<string, string> = {
     name: 'nome', nome: 'nome', code: 'codigo', codigo: 'codigo',
-    is_active: 'ativo', ativo: 'ativo', estimated_days: 'tempo_producao_dias',
-    tempo_producao_dias: 'tempo_producao_dias', ordem_exibicao: 'nome', display_order: 'nome',
+    is_active: 'ativo', ativo: 'ativo', estimated_days: 'nome',
+    tempo_producao_dias: 'nome', ordem_exibicao: 'nome', display_order: 'nome',
   };
   return { ...orderBy, column: columnMap[orderBy.column] ?? orderBy.column };
 }
 
 const TECHNIQUE_OPTIONS_PUBLIC_COLUMNS = new Set([
-  'id', 'nome', 'codigo', 'tempo_producao_dias', 'ativo',
+  'id', 'nome', 'codigo', 'ativo',
 ]);
 
 function filterBaseColumn(key: string): string {
@@ -155,7 +158,9 @@ export function mapTechniqueRowToLegacyShape(row: Record<string, unknown>) {
   const nome = (row.nome as string | undefined) ?? '';
   const descricao = (row.descricao as string | undefined) ?? null;
   const ativo = (row.ativo as boolean | undefined) ?? true;
-  const tempo = (row.tempo_producao_dias as number | undefined) ?? null;
+  const tempo = (row.estimated_days as number | undefined)
+    ?? (row.tempo_producao_dias as number | undefined)
+    ?? null;
   const maxCores = typeof row.max_cores === 'number' ? row.max_cores : null;
   const cobraPorCor = (row.cobra_por_cor as boolean | undefined) ?? false;
   const custoSetup = typeof row.custo_setup === 'number' ? row.custo_setup : 0;
@@ -214,7 +219,7 @@ export function resolveTableAlias(
       table: 'tabela_preco_gravacao_oficial',
       filters: publicTechniqueOptionFilters(mappedFilters),
       orderBy: publicTechniqueOptionOrder(orderBy),
-      select: 'id,nome,codigo,tempo_producao_dias,ativo',
+      select: 'id,nome,codigo,ativo',
       aliasType: 'techniqueOptions',
     };
   }
