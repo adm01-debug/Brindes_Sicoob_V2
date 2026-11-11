@@ -52,7 +52,10 @@ const LEGACY_ALLOWLIST = new Set([
   "voice-agent","webhook-dispatcher","webhook-inbound",
 ]);
 
-const SNAPSHOT_SIZE = 84;
+// Deve ser igual a LEGACY_ALLOWLIST.size. Com o valor defasado (84 contra 77) sobravam 7 vagas
+// para adicionar edges novas à allowlist sem o gate reclamar. Ao migrar uma edge para o logger,
+// remova-a da allowlist E diminua este número.
+const SNAPSHOT_SIZE = 77;
 
 function listEdgeFunctions() {
   return readdirSync(FN_ROOT)
@@ -111,6 +114,13 @@ function main() {
   if (orphanAllowlist.length) {
     console.error("\n⚠️  Allowlist contém edges inexistentes (limpe o snapshot):");
     for (const o of orphanAllowlist) console.error(`   • ${o}`);
+    exit = 1;
+  }
+  if (sizeDelta < 0) {
+    console.error(
+      `\n❌ Allowlist encolheu (${SNAPSHOT_SIZE} → ${LEGACY_ALLOWLIST.size}). ` +
+        "Atualize SNAPSHOT_SIZE para o novo tamanho, senão sobram vagas para novas exceções.",
+    );
     exit = 1;
   }
   if (sizeDelta > 0) {

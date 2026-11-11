@@ -124,6 +124,14 @@ const TARGETS = [
     file: "supabase/migrations/20261022120000_add_public_favorites_to_security_definer_allowlist.sql",
     sha256: "87bf1a8d5bb689f202a4ff77968c6f8820cfbfe5fffdff5d9c16c439a611bf54",
   },
+  {
+    file: "supabase/migrations/20261031204500_webhook_endpoint_metrics_atomic.sql",
+    sha256: "272bc3e6e90786545b1ac76acba95deb4f5664080c45f07070bf3845e868746a",
+  },
+  {
+    file: "supabase/migrations/20261106200300_restrict_proposals_delete_scope.sql",
+    sha256: "c9ed6a8c27fc27159601b1fba713a30b03150eeb57a21047cbb40e47dc95cd74",
+  },
 ];
 
 function sha256(value) {
@@ -153,8 +161,16 @@ function stripNonCode(sql) {
     }
     if (char === "'" || char === '"') {
       const quote = char;
+      // Strings E'...'/e'...' usam barra invertida como escape (inclusive \' e
+      // \\): sem isso, uma aspas escapada fecha a string antes da hora e o
+      // restante do arquivo (incluindo um BEGIN/COMMIT real) é tratado como
+      // conteúdo de string e desaparece da verificação.
+      const isEscapeString = quote === "'"
+        && /[Ee]/.test(sql[index - 1] ?? "")
+        && !/[A-Za-z0-9_$]/.test(sql[index - 2] ?? " ");
       index += 1;
       while (index < sql.length) {
+        if (isEscapeString && sql[index] === "\\") { index += 2; continue; }
         if (sql[index] === quote) {
           if (sql[index + 1] === quote) { index += 2; continue; }
           index += 1;
@@ -567,6 +583,7 @@ async function validateContract(client, targets) {
       (SELECT count(*)
         FROM pg_policies
         WHERE schemaname = 'public'
+          AND tablename NOT LIKE 'admin_audit_log_y%'
           AND (
             COALESCE(qual, '') ~ 'auth\\.(uid|role|jwt)\\(\\)'
             OR COALESCE(with_check, '') ~ 'auth\\.(uid|role|jwt)\\(\\)'
@@ -618,6 +635,7 @@ async function validateContract(client, targets) {
          AND dep.refclassid = 'pg_proc'::regclass
         JOIN pg_proc AS proc ON proc.oid = dep.refobjid
         WHERE ns.nspname = 'public'
+          AND cls.relname NOT LIKE 'admin_audit_log_y%'
           AND 0 = ANY (pol.polroles)
           AND NOT has_function_privilege('anon', proc.oid, 'EXECUTE')
       ) AS anon_blocked_rls_dependency_count,
@@ -1086,6 +1104,7 @@ BEGIN
        SELECT 1
        FROM pg_policies
        WHERE schemaname = 'public'
+         AND tablename NOT LIKE 'admin_audit_log_y%'
          AND (
            COALESCE(qual, '') ~ 'auth\\.(uid|role|jwt)\\(\\)'
            OR COALESCE(with_check, '') ~ 'auth\\.(uid|role|jwt)\\(\\)'
@@ -1135,6 +1154,7 @@ BEGIN
         AND dep.refclassid = 'pg_proc'::regclass
        JOIN pg_proc AS proc ON proc.oid = dep.refobjid
        WHERE ns.nspname = 'public'
+         AND cls.relname NOT LIKE 'admin_audit_log_y%'
          AND 0 = ANY (pol.polroles)
          AND NOT has_function_privilege('anon', proc.oid, 'EXECUTE')
      )

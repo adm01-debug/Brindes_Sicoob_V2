@@ -1,10 +1,12 @@
+#!/usr/bin/env python3
 """Conversão quote→pedido Sicoob em PostgreSQL descartável e sem rede."""
 from pathlib import Path
 import json
+import re
 import subprocess
 import time
 import uuid
-from postgres_ready import wait_for_postgres
+from postgres_ready import run_overlapping, wait_for_postgres
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTAINER = 'sicoob-conversao-' + uuid.uuid4().hex[:10]
@@ -314,15 +316,20 @@ try:
 
     quote_race = '44444444-4444-4444-8444-444444444445'
     seed_quote(quote_race)
-    processes=[]
     statement=f"SET ROLE authenticated; SET request.jwt.claim.sub='{ACTOR}'; SELECT id FROM public.convert_quote_to_sicoob_order('{quote_race}');"
-    for _ in range(2):
-        process=subprocess.Popen(['docker','exec','-i',CONTAINER,'psql','-U','postgres','-XqAt','-v','ON_ERROR_STOP=1'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
-        process.stdin.write(statement); process.stdin.close(); processes.append(process)
-    outputs=[]
-    for process in processes:
-        process.wait(timeout=20); outputs.append((process.returncode,process.stdout.read().strip(),process.stderr.read()))
-    checks['concorrencia_retorna_mesmo_pedido'] = all(x[0] == 0 for x in outputs) and len({x[1] for x in outputs}) == 1 and scalar(f"SELECT count(*) FROM public.sicoob_orders WHERE source_quote_id='{quote_race}';") == '1'
+    # Sobreposição real: a sessão 1 abre a transação e a segura (ver docstring de
+    # `run_overlapping`); a sessão 2 só começa depois que `pg_stat_activity` confirma que a
+    # 1 está dentro do `pg_sleep`, garantindo que as duas chamadas concorrentes de fato se
+    # sobrepõem. (Dois `Popen` soltos não provam isso: o `docker exec` da 2ª sessão tinha
+    # tempo de sobra para rodar só depois que a 1ª já havia terminado.)
+    overlap = run_overlapping(CONTAINER, statement, statement, hold_seconds=2.0)
+    outputs=[overlap['first'], overlap['second']]
+    uuid_line = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+    returned_ids = [
+        next(line for line in reversed(out[1].splitlines()) if uuid_line.match(line.strip())).strip()
+        for out in outputs
+    ]
+    checks['concorrencia_retorna_mesmo_pedido'] = all(x[0] == 0 for x in outputs) and len(set(returned_ids)) == 1 and scalar(f"SELECT count(*) FROM public.sicoob_orders WHERE source_quote_id='{quote_race}';") == '1'
 
     quote_state_race = '44444444-4444-4444-8444-444444444449'
     seed_quote(quote_state_race, status='draft')

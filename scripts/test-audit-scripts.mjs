@@ -1,70 +1,109 @@
-import fs from 'fs';
-import { execFileSync } from 'child_process';
-
+#!/usr/bin/env node
 /**
- * Audit Script Consistency Test
- * Validates that generation scripts produce valid, well-structured output.
+ * test-audit-scripts.mjs
+ * ----------------------------------------------------------------
+ * Teste de consistência dos scripts de auditoria (CI: security-compliance).
+ *
+ * Executa cada gerador e valida que:
+ *  - o script existe e é executável;
+ *  - executa sem crash (exit 0);
+ *  - o arquivo de saída desta execução existe em `reports/` (ou
+ *    `AUDIT_REPORTS_DIR`) com > 100 bytes (falha se ausente/vazio/antigo);
+ *  - a estrutura interna contém o cabeçalho esperado (aviso se incompleta,
+ *    para não derrubar o pipeline só por formato).
+ *
+ * Contrato (invocado pelo workflow security-compliance.yml após gerar os
+ * dossiês):
+ *   node scripts/test-audit-scripts.mjs
+ *
+ * Saída:
+ *  - exit 0 → todos os scripts e saídas dentro do esperado.
+ *  - exit 1 → script ausente, falha de execução ou arquivo de saída
+ *    ausente/vazio.
+ *  - Erros inesperados também saem com exit 1 (nunca falso verde).
  */
+import fs from "node:fs";
+import path from "node:path";
+import { execFileSync } from "node:child_process";
+import { auditExportFileName, reportsDir } from "./lib/audit-evidence.mjs";
 
-async function testScripts() {
-  console.log('🧪 Iniciando testes de consistência de scripts de auditoria...');
-  
-  const scripts = [
-    'scripts/generate-audit-dossier.mjs',
-    'scripts/generate-enterprise-report.mjs',
-    'scripts/audit-export.mjs'
-  ];
+const isCI = process.env.CI === "true" || process.env.CI === "1";
+
+const scripts = [
+  "scripts/generate-audit-dossier.mjs",
+  "scripts/generate-enterprise-report.mjs",
+  "scripts/audit-export.mjs",
+];
+
+// Os três geradores recebem o mesmo argumento; só o audit-export o interpreta.
+const GENERATOR_ARGS = ["--status=implementado"];
+const outDir = reportsDir();
+const outputs = [
+  { file: path.join(outDir, "DOSSIA_AUDITORIA_ENTERPRISE_V5.md"), engine: "generate-audit-dossier.mjs" },
+  { file: path.join(outDir, "ENTERPRISE_AUDIT_REPORT_V6.md"), engine: "generate-enterprise-report.mjs" },
+  { file: path.join(outDir, auditExportFileName({ status: "implementado" })), engine: "audit-export.mjs" },
+];
+
+function fail(message) {
+  console.error(message);
+  process.exit(1);
+}
+
+function main() {
+  console.log("🧪 Iniciando testes de consistência de scripts de auditoria...");
+  // Saída antiga no disco não pode validar a execução de agora.
+  const startedAt = Date.now() - 2000;
 
   for (const script of scripts) {
-    try {
-      fs.accessSync(script, fs.constants.R_OK);
-    } catch {
-      console.error(`  ❌ Script não encontrado: ${script}`);
-      process.exit(1);
-    }
+    if (!fs.existsSync(script)) fail(`  ❌ Script não encontrado: ${script}`);
 
     console.log(`  🏃 Executando: ${script}`);
     try {
-      // Run script and check if it crashes
-      execFileSync(process.execPath, [script, '--status=implementado'], { stdio: 'inherit' });
+      execFileSync(process.execPath, [script, ...GENERATOR_ARGS], { stdio: "inherit" });
       console.log(`  ✅ ${script} executado com sucesso.`);
-    } catch {
-      console.error(`  ❌ ${script} falhou na execução.`);
-      process.exit(1);
+    } catch (err) {
+      const detail = err?.status !== undefined ? ` (exit ${err.status})` : "";
+      fail(`  ❌ ${script} falhou na execução${detail}.`);
     }
   }
 
-  // Validate output files exist and are not empty
-  const outputs = [
-    'DOSSIA_AUDITORIA_ENTERPRISE_V5.md',
-    'ENTERPRISE_AUDIT_REPORT_V6.md',
-    'AUDIT_EXPORT_FILTERED.md'
-  ];
-
-  for (const file of outputs) {
-    let outputSize = 0;
+  // Valida arquivos de saída: existência + não-vazio (contrato do CI).
+  for (const { file } of outputs) {
+    let size = 0;
+    let mtimeMs = 0;
     try {
-      outputSize = fs.statSync(file).size;
+      ({ size, mtimeMs } = fs.statSync(file));
     } catch {
-      outputSize = 0;
+      size = 0;
     }
-    if (outputSize > 100) {
-      console.log(`  ✅ Arquivo de saída validado: ${file}`);
-      
-      // Basic structure check
-      const content = fs.readFileSync(file, 'utf-8');
-      if (content.includes('EVIDENCE GENESIS') || content.includes('PROMOGIFTS') || content.includes('EXPORTAÇÃO')) {
-         console.log(`  🔍 Estrutura interna validada em ${file}.`);
-      } else {
-         console.warn(`  ⚠️ Estrutura interna de ${file} pode estar incompleta.`);
+    if (size <= 100) {
+      fail(`  ❌ Arquivo de saída inválido ou vazio: ${file} (${size} bytes).`);
+    }
+    if (mtimeMs < startedAt) {
+      fail(`  ❌ Arquivo de saída não foi regravado nesta execução: ${file}.`);
+    }
+    console.log(`  ✅ Arquivo de saída validado: ${file}`);
+  }
+
+  // Aviso (não-falha) se a estrutura interna estiver incompleta — preserva o
+  // comportamento original, que apenas sinalizava baixa confiança.
+  for (const { file, engine } of outputs) {
+    const content = fs.readFileSync(file, "utf8");
+    const hasHeader = content.includes("EVIDENCE GENESIS") || content.includes("PROMOGIFTS") || content.includes("EXPORTAÇÃO");
+    if (!hasHeader) {
+      console.warn(`  ⚠️ Estrutura interna de ${file} pode estar incompleta (esperado cabeçalho do ${engine}).`);
+      if (isCI) {
+        console.error(`::warning file=${file},title=Estrutura possivelmente incompleta::cabeçalho esperado não localizado.`);
       }
-    } else {
-      console.error(`  ❌ Arquivo de saída inválido ou vazio: ${file}`);
-      process.exit(1);
     }
   }
 
-  console.log('\n🏁 Todos os testes de consistência de auditoria passaram.');
+  console.log("\n🏁 Todos os testes de consistência de auditoria passaram.");
 }
 
-testScripts();
+try {
+  main();
+} catch (err) {
+  console.error(`❌ Erro inesperado no test-audit-scripts: ${err?.message ?? err}`);
+  process.exit(1);
+}

@@ -1,10 +1,11 @@
+#!/usr/bin/env python3
 """Valida os eventos transacionais de status Sicoob em PostgreSQL isolado e sem rede."""
 from pathlib import Path
 import json
 import subprocess
 import time
 import uuid
-from postgres_ready import wait_for_postgres
+from postgres_ready import run_overlapping, wait_for_postgres
 
 CONTAINER = "sicoob-eventos-status-" + uuid.uuid4().hex[:10]
 ROOT = Path(__file__).resolve().parents[2]
@@ -160,26 +161,16 @@ try:
     assert approval_notification == expected_notification, approval_notification
     result["solicitacao_de_alcada"] = "pedido, solicitação, histórico e avisos canônicos completos gravados no mesmo commit; gatilho legado removido"
 
-    concurrent = []
-    for _ in range(2):
-        process = subprocess.Popen(
-            ["docker", "exec", "-i", CONTAINER, "psql", "-U", "postgres", "-v", "ON_ERROR_STOP=1", "-At"],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-        process.stdin.write(
-            f"SET request.jwt.claim.sub = '{CREATOR}';\n"
-            f"SELECT public.transition_sicoob_order_status('{ORDER_C}', 'pending', 'waiting_approval', 'concorrência');"
-        )
-        process.stdin.close()
-        concurrent.append(process)
-    statuses = []
-    for process in concurrent:
-        process.wait(timeout=20)
-        statuses.append(process.returncode)
-    assert sorted(statuses) == [0, 3], statuses
+    concurrent_statement = (
+        f"SET request.jwt.claim.sub = '{CREATOR}';\n"
+        f"SELECT public.transition_sicoob_order_status('{ORDER_C}', 'pending', 'waiting_approval', 'concorrência');"
+    )
+    # Sobreposição real: a sessão 1 abre a transação e a segura (ver docstring de
+    # `run_overlapping`); a sessão 2 só começa depois que `pg_stat_activity` confirma que a
+    # 1 está dentro do `pg_sleep`, garantindo que as duas transações de fato se sobrepõem.
+    overlap = run_overlapping(CONTAINER, concurrent_statement, concurrent_statement, hold_seconds=2.0)
+    statuses = [overlap["first"][0], overlap["second"][0]]
+    assert sorted(statuses) == [0, 3], (statuses, overlap)
     assert scalar(sql(f"SELECT count(*) FROM public.sicoob_order_history WHERE order_id = '{ORDER_C}';")) == "1"
     result["concorrencia"] = {"retornos_psql": sorted(statuses), "historico_resultante": "um único evento"}
 

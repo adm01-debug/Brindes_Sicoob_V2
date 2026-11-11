@@ -6,6 +6,21 @@ import hashlib
 import json
 import pathlib
 import subprocess
+import sys
+
+
+def _historical_excepthook(exc_type, exc_value, exc_tb):
+    """Converte erros históricos de divergência em aviso; re-lança outros erros."""
+    if exc_type in (FileNotFoundError, KeyError, AssertionError, subprocess.CalledProcessError):
+        print(f"⚠️  Validação histórica (2026-09-27) detectou divergência: {exc_value}", file=sys.stderr)
+        print("    O código evoluiu desde a data de referência — divergências são esperadas.", file=sys.stderr)
+        sys.exit(1)
+    import traceback
+    traceback.print_exception(exc_type, exc_value, exc_tb)
+    sys.exit(1)
+
+
+sys.excepthook = _historical_excepthook
 
 RAIZ = pathlib.Path(__file__).resolve().parents[2]
 ANTERIOR = RAIZ / 'docs/execucao/revisao-plano-20260924'
@@ -23,15 +38,47 @@ def gravar(nome, dados):
 
 
 def csv_gravar(nome, linhas):
+    # csv.writer usa \r\n por padrão (RFC 4180); com newline='' nada traduz isso, então o arquivo
+    # sai inteiro em CRLF. Num repo que versiona tudo em LF, a próxima regeneração marca TODAS as
+    # linhas como alteradas (diff de final de linha, não de conteúdo) — 1641 linhas de diff falso
+    # medidas direto neste arquivo. lineterminator='\n' grava LF puro, igual ao resto do repo.
     with (DESTINO / nome).open('w', newline='') as arquivo:
-        writer = csv.DictWriter(arquivo, fieldnames=list(linhas[0]))
+        writer = csv.DictWriter(arquivo, fieldnames=list(linhas[0]), lineterminator='\n')
         writer.writeheader()
         for linha in linhas:
             writer.writerow({k: '; '.join(v) if isinstance(v, list) else v for k, v in linha.items()})
 
 
+def _garantir_commit(sha):
+    """Clone raso (CI com fetch-depth=1) não tem os commits históricos referenciados aqui: sem
+    isto, git diff/show/ls-tree falham com exit 128 e o excepthook genérico (abaixo) rotula isso
+    de "divergência histórica esperada" — escondendo que é configuração de ambiente, não o código."""
+    def existe():
+        return subprocess.run(
+            ['git', 'cat-file', '-e', f'{sha}^{{commit}}'], cwd=RAIZ,
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        ).returncode == 0
+
+    if existe():
+        return
+    fetch = subprocess.run(
+        ['git', 'fetch', '--depth', '1', 'origin', sha], cwd=RAIZ,
+        stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True,
+    )
+    if not existe():
+        raise RuntimeError(
+            f'Commit histórico {sha} inalcançável (clone raso; git fetch --depth 1 falhou: '
+            f'{fetch.stderr.strip() or "sem detalhe"}). Rode com histórico completo '
+            f'(git fetch --unshallow) ou busque o SHA manualmente antes de regenerar.'
+        )
+
+
+_garantir_commit(BASE)
+_garantir_commit(ANTIGA)
+
 alterados = set(subprocess.check_output(
     ['git', 'diff', '--name-only', ANTIGA, BASE], cwd=RAIZ, text=True,
+    stderr=subprocess.DEVNULL,
 ).splitlines())
 ajustes = json.loads((DESTINO / 'reavaliacoes.json').read_text())
 legenda = ler('resumo.json')['legenda']

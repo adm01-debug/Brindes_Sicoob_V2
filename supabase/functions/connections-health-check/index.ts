@@ -6,7 +6,7 @@ import { requireInternalService } from "../_shared/internal-service-auth.ts";
 // avoid notification spam. The "connection_down" incident additionally requires
 // a continuous-failure window (configurable via RPC
 // `set_connection_failure_window_minutes`, default 30min) to suppress flapping.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 import { castRpcResult } from "../_shared/supabase-client-adapter.ts";
 
 const DEDUPE_WINDOW_HOURS = 4;

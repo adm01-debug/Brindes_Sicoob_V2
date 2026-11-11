@@ -1,14 +1,43 @@
+#!/usr/bin/env node
+/**
+ * test-rls.mjs
+ * ----------------------------------------------------------------
+ * Cross-check de RLS. Cria um registro para o usuário B (INSERT/DELETE em `quotes` com
+ * service_role), chama a Edge Function `rls-audit` simulando acesso do usuário A e valida que
+ * o RLS bloqueia o acesso cross-tenant.
+ *
+ * DESTINO: só o projeto de homologação. Usa as variáveis `E2E_*` e `validateE2ETarget`
+ * (scripts/e2e-target.mjs), que recusa o projeto oficial, o catálogo, o CRM e os legados. A
+ * versão anterior lia `SUPABASE_URL` + service_role e escrevia em qualquer projeto, inclusive
+ * produção.
+ *
+ * Só dá "passou" com prova: pelo menos 2 usuários de cooperativa/PA diferentes e pelo menos
+ * 1 cenário executado (total 0 antes virava "todos passaram").
+ *
+ * Saída:
+ *  - exit 0 → auditoria passou.
+ *  - exit 1 → falha de RLS ou erro de execução.
+ *  - exit 2 → erro de configuração.
+ */
 import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
+import { validateE2ETarget } from './e2e-target.mjs';
 
-dotenv.config();
+const isCI = process.env.CI === "true" || process.env.CI === "1";
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseUrl = process.env.E2E_SUPABASE_URL;
+const supabaseKey = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
-  process.exit(1);
+try {
+  validateE2ETarget({
+    url: supabaseUrl,
+    projectId: process.env.E2E_SUPABASE_PROJECT_ID,
+    allowedProjectId: process.env.E2E_ALLOWED_PROJECT_ID,
+    publishableKey: process.env.E2E_SUPABASE_PUBLISHABLE_KEY,
+    serviceRoleKey: supabaseKey,
+  });
+} catch (err) {
+  console.error(`❌ ${err.message}`);
+  process.exit(err.message === 'Configuração obrigatória do destino E2E ausente.' ? 2 : 1);
 }
 
 const adminClient = createClient(supabaseUrl, supabaseKey);
@@ -23,8 +52,8 @@ async function testRLS() {
     .limit(10);
 
   if (profileErr || !profiles || profiles.length < 2) {
-    console.error('Erro ao buscar perfis para teste ou perfis insuficientes:', profileErr);
-    return;
+    console.error('❌ Erro ao buscar perfis para teste ou perfis insuficientes:', profileErr?.message || profileErr);
+    process.exit(1);
   }
 
   // Tenta encontrar dois usuários com orgs ou PAs diferentes
@@ -32,66 +61,93 @@ async function testRLS() {
   let userB = profiles.find(p => p.cooperativa_id !== userA.cooperativa_id || p.pa_id !== userA.pa_id);
 
   if (!userB) {
-    console.warn('⚠️ Não foram encontrados usuários de organizações/PAs diferentes. Usando os dois primeiros.');
-    userB = profiles[1];
+    // Com os dois no mesmo tenant não há isolamento a provar: passar aqui seria falso verde.
+    console.error('❌ Não há usuários de cooperativas/PAs diferentes no destino de homologação; o cross-tenant não pode ser provado.');
+    process.exit(1);
   }
 
   console.log(`👤 Usuário A: ${userA.email} (Coop: ${userA.cooperativa_id}, PA: ${userA.pa_id})`);
   console.log(`👤 Usuário B: ${userB.email} (Coop: ${userB.cooperativa_id}, PA: ${userB.pa_id})`);
 
-  // 2. Criar um registro para Usuário B
-  const { data: quoteB, error: quoteErr } = await adminClient
-    .from('quotes')
-    .insert({
-      seller_id: userB.user_id,
-      singular_id: userB.cooperativa_id,
-      pa_id: userB.pa_id,
-      client_name: '[RLS-TEST] Registro do Usuário B',
-      status: 'draft',
-      subtotal: 100,
-      total: 100
-    })
-    .select()
-    .single();
+  // 2. Criar um registro para Usuário B.
+  // Cleanup em `finally` garante a remoção do registro de teste mesmo em
+  // falha (erro de auditoria ou cenário RLS reprovado) — evita órfão [RLS-TEST].
+  let quoteId = null;
+  let exitCode = 0;
+  try {
+    const { data: quoteB, error: quoteErr } = await adminClient
+      .from('quotes')
+      .insert({
+        seller_id: userB.user_id,
+        singular_id: userB.cooperativa_id,
+        pa_id: userB.pa_id,
+        client_name: '[RLS-TEST] Registro do Usuário B',
+        status: 'draft',
+        subtotal: 100,
+        total: 100
+      })
+      .select()
+      .single();
 
-  if (quoteErr) {
-    console.error('Erro ao criar registro de teste para B:', quoteErr);
-    return;
-  }
-
-  console.log(`📝 Registro de teste criado para B: ${quoteB.id}`);
-
-  // 3. Simular acesso do Usuário A ao registro do Usuário B.
-  // A Edge Function realiza a auditoria sem disparar um magic link para o usuário.
-  console.log('🔗 Chamando Edge Function rls-audit para auditoria profunda...');
-  
-  // Como não temos o token fácil aqui sem simular login completo, vamos chamar a function
-  // passando o user_id que queremos auditar se a function permitir (vamos ajustar a function pra aceitar um admin trigger)
-  
-  const { data: auditResult, error: auditErr } = await adminClient.functions.invoke('rls-audit', {
-    headers: {
-      // Aqui idealmente passaríamos o token do User A, mas para o script de CLI
-      // vamos fazer uma versão que a Edge Function aceite um "target_user_id" se chamada com service role
-      "X-Admin-Audit": "true",
-      "X-Target-User-Id": userA.user_id
+    if (quoteErr) {
+      console.error('❌ Erro ao criar registro de teste para B:', quoteErr.message);
+      process.exit(1);
     }
-  });
 
-  if (auditErr) {
-    console.error('Erro ao chamar rls-audit:', auditErr);
-  } else {
+    quoteId = quoteB.id;
+    console.log(`📝 Registro de teste criado para B: ${quoteB.id}`);
+
+    // 3. Simular acesso do Usuário A ao registro do Usuário B.
+    console.log('🔗 Chamando Edge Function rls-audit para auditoria profunda...');
+
+    const { data: auditResult, error: auditErr } = await adminClient.functions.invoke('rls-audit', {
+      headers: {
+        "X-Admin-Audit": "true",
+        "X-Target-User-Id": userA.user_id
+      }
+    });
+
+    if (auditErr) {
+      throw new Error(`Erro ao chamar rls-audit: ${auditErr.message}`);
+    }
+
     console.log('\n📊 RESULTADOS DA AUDITORIA RLS:');
     console.log(`Total: ${auditResult.summary.total} | Passou: ${auditResult.summary.passed} | Falhou: ${auditResult.summary.failed}`);
-    
+
     auditResult.results.forEach((r) => {
       const icon = r.passed ? '✅' : '❌';
       console.log(`${icon} [${r.table}] ${r.op}: ${r.scenario} -> ${r.actual} (Esperado: ${r.expected})`);
+      if (!r.passed && isCI) {
+        console.log(`::error file=test-rls.mjs,title=RLS falhou::[${r.table}] ${r.op}: ${r.scenario}`);
+      }
     });
+
+    if (!(auditResult.summary.total > 0)) {
+      throw new Error('A auditoria rls-audit não executou nenhum cenário (total 0); nada foi provado.');
+    }
+    if (auditResult.summary.failed > 0) {
+      throw new Error(`${auditResult.summary.failed} cenário(s) de RLS falharam.`);
+    }
+    console.log('\n✅ Todos os cenários de RLS passaram.');
+  } catch (error) {
+    exitCode = 1;
+    console.error('❌ ' + (error instanceof Error ? error.message : String(error)));
+  } finally {
+    // Cleanup sempre executado, inclusive em caminho de erro.
+    if (quoteId) {
+      const { error: delErr } = await adminClient.from('quotes').delete().eq('id', quoteId);
+      if (delErr) {
+        console.error('⚠️ Cleanup do registro de teste falhou:', delErr.message);
+      } else {
+        console.log('\n🧹 Cleanup concluído.');
+      }
+    }
   }
 
-  // Cleanup
-  await adminClient.from('quotes').delete().eq('id', quoteB.id);
-  console.log('\n🧹 Cleanup concluído.');
+  process.exit(exitCode);
 }
 
-testRLS();
+testRLS().catch((error) => {
+  console.error('❌ Falha inesperada no gate: ' + (error instanceof Error ? error.message : String(error)));
+  process.exit(2);
+});

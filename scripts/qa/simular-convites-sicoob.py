@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Valida convites institucionais e revogação de vínculo sem rede."""
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -344,10 +345,12 @@ try:
       INSERT INTO public.sicoob_invitations(
         token_hash,email,cooperative_id,role,expires_at,invited_by,idempotency_key
       ) VALUES (
-        extensions.digest('token','sha256'),'direto@qa.sicoob.test','{COOP}','vendedor',now()+interval '1 day','{MANAGER}',gen_random_uuid()
+        decode(repeat('ab',32),'hex'),'direto@qa.sicoob.test','{COOP}','vendedor',now()+interval '1 day','{MANAGER}',gen_random_uuid()
       );
     """, check=False)
-    assert direct_write.returncode != 0
+    # O erro precisa ser a ACL da TABELA. Com `extensions.digest(...)` o INSERT falhava antes,
+    # por falta de USAGE no schema `extensions`, e o teste passava mesmo com a tabela aberta.
+    assert direct_write.returncode != 0 and "permission denied for table sicoob_invitations" in direct_write.stderr, direct_write.stderr
     immutable = sql("UPDATE public.sicoob_invitation_events SET details='{}'::jsonb;", check=False)
     assert immutable.returncode != 0 and "imutáveis" in immutable.stderr
     result["integridade"] = "escrita direta negada por ACL/RLS e trilha de eventos imutável"

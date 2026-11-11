@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Aprovação por token: papéis PostgreSQL reais, rollback e duas sessões."""
 from pathlib import Path
 import json

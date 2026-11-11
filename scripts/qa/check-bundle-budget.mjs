@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import assert from 'node:assert/strict';
 import { gzipSync } from 'node:zlib';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
@@ -8,8 +9,17 @@ const outputDirectory = path.resolve('bundle-stats');
 const hardLimitBytes = 800 * 1024;
 const warningLimitBytes = 500 * 1024;
 
+import { existsSync } from 'node:fs';
+if (!existsSync(assetsDirectory)) {
+  console.error(`❌ dist/assets não encontrado. Execute \`npm run build\` antes de rodar este script.`);
+  process.exit(1);
+}
+
 const files = (await readdir(assetsDirectory)).filter(file => file.endsWith('.js'));
-assert.ok(files.length > 0, 'Nenhum chunk JavaScript foi encontrado em dist/assets.');
+if (files.length === 0) {
+  console.error('❌ Nenhum chunk JavaScript encontrado em dist/assets. Execute `npm run build` antes deste script.');
+  process.exit(1);
+}
 
 const chunks = await Promise.all(files.map(async file => {
   const content = await readFile(path.join(assetsDirectory, file));

@@ -71,3 +71,24 @@ describe('gate SARIF do CodeQL', () => {
     await expect(inspectSarif(noRunsDirectory)).rejects.toThrow('sem execução analisável');
   });
 });
+
+describe('gate SARIF do CodeQL — execução sem resultado confiável', () => {
+  it('rejeita uma execução sem a lista `results` (não é "zero achados")', async () => {
+    const directory = await fixture([{ tool: { driver: { rules: [] } } }]);
+    await expect(inspectSarif(directory)).rejects.toThrow(/sem a lista `results`/);
+  });
+
+  it('rejeita execução registrada como falha, mesmo com `results` vazio', async () => {
+    const directory = await fixture([
+      { tool: { driver: { rules: [] } }, results: [], invocations: [{ executionSuccessful: false }] },
+    ]);
+    await expect(inspectSarif(directory)).rejects.toThrow(/executionSuccessful=false/);
+  });
+
+  it('aceita execução bem-sucedida declarada', async () => {
+    const directory = await fixture([
+      { tool: { driver: { rules: [] } }, results: [], invocations: [{ executionSuccessful: true }] },
+    ]);
+    await expect(inspectSarif(directory)).resolves.toMatchObject({ runs: 1, findings: [] });
+  });
+});

@@ -1,4 +1,6 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { authenticateRequest, authErrorResponse } from "../_shared/auth.ts";
+import { rateLimiters, applyRateLimit } from "../_shared/rate-limiter.ts";
 /**
  * Edge function `bi-copilot` — responde perguntas do vendedor sobre um cliente
  * com base no contexto BI (score, sazonalidade, afinidade, tendências, benchmarks).
@@ -24,6 +26,17 @@ Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
 
   try {
+    // Auth guard: exige usuário autenticado (evita abuso/custo de chamadas pagas)
+    const auth = await authenticateRequest(req);
+
+    // Rate limit: 20 req/min por usuário
+    const rl = await applyRateLimit(req, rateLimiters.ai, () => auth.userId);
+    if (rl) {
+      const headers = new Headers(rl.headers);
+      Object.entries(corsHeaders).forEach(([k, v]) => headers.set(k, v));
+      return new Response(rl.body, { status: rl.status, headers });
+    }
+
     if (!LOVABLE_API_KEY) {
       return new Response(
         JSON.stringify({ error: "LOVABLE_API_KEY ausente — habilite Lovable AI." }),
@@ -31,7 +44,15 @@ Deno.serve(async (req) => {
       );
     }
 
-    const body = (await req.json()) as RequestBody;
+    let body: RequestBody;
+    try {
+      body = (await req.json()) as RequestBody;
+    } catch {
+      return new Response(JSON.stringify({ error: "Corpo da requisição inválido." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     if (!body.question || body.question.length > 500) {
       return new Response(JSON.stringify({ error: "Pergunta inválida." }), {
         status: 400,
@@ -102,8 +123,12 @@ ${JSON.stringify(body.context, null, 2)}`;
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
+    // Erros de autenticação (401/403) já vêm formatados
+    if (e && typeof e === "object" && "status" in e) {
+      return authErrorResponse(e, corsHeaders);
+    }
     console.error("bi-copilot error:", e);
-    return new Response(JSON.stringify({ error: (e as Error).message }), {
+    return new Response(JSON.stringify({ error: "erro_interno" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

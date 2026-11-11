@@ -1,24 +1,51 @@
+#!/usr/bin/env node
+/**
+ * compare-edge-functions.mjs
+ * ----------------------------------------------------------------
+ * Gate de CI: compara as Edge Functions reais (supabase/functions)
+ * com o inventário (docs/INVENTARIO_FUNCIONALIDADES_v2.md) e gera
+ * docs/EDGE_FUNCTIONS_DRIFT.md.
+ *
+ * Saída:
+ *  - exit 0 → relatório gerado (divergências são reportadas, não falham).
+ *  - exit 2 → erro de configuração/execução.
+ */
 import fs from 'fs';
 import path from 'path';
 
+const isCI = process.env.CI === "true" || process.env.CI === "1";
+
 const FUNCTIONS_DIR = 'supabase/functions';
 const INVENTORY_FILE = 'docs/INVENTARIO_FUNCIONALIDADES_v2.md';
+const REPORT_FILE = 'docs/EDGE_FUNCTIONS_DRIFT.md';
 
 function compareFunctions() {
   console.log('🔍 Comparando Edge Functions reais vs Inventário...');
 
   if (!fs.existsSync(FUNCTIONS_DIR)) {
-    console.error('❌ Diretório de funções não encontrado');
-    process.exit(1);
+    console.error('❌ Diretório de funções não encontrado: ' + FUNCTIONS_DIR);
+    process.exit(2);
   }
+  if (!fs.existsSync(INVENTORY_FILE)) {
+    console.error('❌ Inventário não encontrado: ' + INVENTORY_FILE);
+    process.exit(2);
+  }
+
+  const IGNORED_DIRS = new Set(['_shared', 'tests']);
 
   const realFunctions = fs.readdirSync(FUNCTIONS_DIR).filter(file => {
     const fullPath = path.join(FUNCTIONS_DIR, file);
-    return fs.statSync(fullPath).isDirectory() && file !== '_shared' && file !== 'tests';
+    if (!fs.statSync(fullPath).isDirectory()) return false;
+    if (IGNORED_DIRS.has(file)) return false;
+    // Exige entrypoint: index.ts ou index.js — diretórios sem entrypoint
+    // (ex: placeholders com só .gitignore) não são edge functions válidas.
+    const hasEntrypoint = fs.existsSync(path.join(fullPath, 'index.ts'))
+      || fs.existsSync(path.join(fullPath, 'index.js'));
+    return hasEntrypoint;
   });
 
   const inventoryContent = fs.readFileSync(INVENTORY_FILE, 'utf8');
-  
+
   let missingInInventory = [];
   let obsoleteInInventory = [];
 
@@ -28,8 +55,20 @@ function compareFunctions() {
     }
   });
 
-  // Extrair lista de funções do inventário (sessão 5)
-  const inventoryFunctionsMatch = inventoryContent.match(/`([a-z0-9-]+)`/g) || [];
+  // Restringe a extração à seção "## 5. Lista de Edge Functions" — qualquer outro
+  // termo em crase minúsculo-com-hífen citado em outra seção do inventário não é
+  // "função documentada" (achado 3 da auditoria).
+  const section5Start = inventoryContent.indexOf('## 5. Lista de Edge Functions');
+  const section5End = section5Start === -1
+    ? -1
+    : inventoryContent.indexOf('\n## ', section5Start + 1);
+  const section5Content = section5Start === -1
+    ? (console.warn('⚠️ Seção "## 5. Lista de Edge Functions" não encontrada no inventário — usando documento inteiro.'), inventoryContent)
+    : section5End === -1
+      ? inventoryContent.slice(section5Start)
+      : inventoryContent.slice(section5Start, section5End);
+
+  const inventoryFunctionsMatch = section5Content.match(/`([a-z0-9-]+)`/g) || [];
   const inventoryFunctions = [...new Set(inventoryFunctionsMatch.map(f => f.replace(/`/g, '')))];
 
   const blacklist = ['multi-tenant', 'multi-db', 'p0', 'p1', 'p2', 'v2', 'b2b', 'admin', 'vendedor', 'gerente_pa', 'gestor_compras', 'dev'];
@@ -45,10 +84,13 @@ function compareFunctions() {
 
   console.log(`\n📊 Relatório de Divergências:`);
   console.log(`Total reais: ${realFunctions.length}`);
-  
+
   if (missingInInventory.length > 0) {
     console.log(`\n⚠️ Funções no Repo mas NÃO no Inventário (${missingInInventory.length}):`);
     console.log(missingInInventory.join(', '));
+    for (const fn of missingInInventory) {
+      if (isCI) console.log(`::warning file=compare-edge-functions.mjs,title=Funcao sem inventario::${fn}`);
+    }
   } else {
     console.log('\n✅ Todas as funções do repositório estão documentadas no inventário.');
   }
@@ -56,6 +98,9 @@ function compareFunctions() {
   if (obsoleteInInventory.length > 0) {
     console.log(`\n⚠️ Funções no Inventário mas NÃO no Repo (${obsoleteInInventory.length}):`);
     console.log(obsoleteInInventory.join(', '));
+    for (const fn of obsoleteInInventory) {
+      if (isCI) console.log(`::warning file=compare-edge-functions.mjs,title=Funcao obsoleta no inventario::${fn}`);
+    }
   } else {
     console.log('✅ Nenhuma função obsoleta encontrada no inventário.');
   }
@@ -74,7 +119,14 @@ ${missingInInventory.length > 0 ? missingInInventory.map(f => `- ${f}`).join('\n
 ## No Inventário mas ausentes no Repositório (Obsoletas):
 ${obsoleteInInventory.length > 0 ? obsoleteInInventory.map(f => `- ${f}`).join('\n') : '- Nenhuma'}
   `;
-  fs.writeFileSync('docs/EDGE_FUNCTIONS_DRIFT.md', report);
+  fs.writeFileSync(REPORT_FILE, report);
+  console.log(`\n✅ Relatório gerado em ${REPORT_FILE}`);
+  process.exit(0);
 }
 
-compareFunctions();
+try {
+  compareFunctions();
+} catch (error) {
+  console.error('❌ Falha inesperada no gate: ' + (error instanceof Error ? error.message : String(error)));
+  process.exit(2);
+}

@@ -29,6 +29,14 @@ const externalTables = [
   'mv_stock_velocity', 'mv_product_intelligence', 'v_commemorative_dates_with_colors'
 ];
 
+if (!fs.existsSync('/tmp/tables.txt')) {
+  console.error('❌ /tmp/tables.txt não encontrado. Gere-o executando o script de extração de tabelas do banco antes deste check.');
+  process.exit(2);
+}
+if (!fs.existsSync('/tmp/extracted_refs.txt')) {
+  console.error('❌ /tmp/extracted_refs.txt não encontrado. Gere-o executando o script de extração de refs supabase antes deste check.');
+  process.exit(2);
+}
 const publicTables = fs.readFileSync('/tmp/tables.txt', 'utf8')
   .split('\n')
   .map(t => t.trim())
@@ -56,3 +64,4 @@ console.log('--- MISSING TABLES DETECTED ---');
 missing.forEach(m => {
   console.log(`${m.file}: ${m.table}`);
 });
+if (missing.length > 0) process.exit(1);

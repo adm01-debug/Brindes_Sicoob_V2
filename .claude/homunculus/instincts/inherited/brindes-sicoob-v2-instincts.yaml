@@ -1,0 +1,125 @@
+# Instincts derivados de https://github.com/adm01-debug/Brindes_Sicoob_V2
+# Gerado: 2026-11-08 (medido no checkout da main, commit 2fd2d36)
+# Versão: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: brindes-sicoob-v2-commit-conventional
+trigger: "when writing a commit message"
+confidence: 0.9
+domain: git
+source: repo-analysis
+source_repo: https://github.com/adm01-debug/Brindes_Sicoob_V2
+---
+
+# Brindes Sicoob V2 Commit Conventional
+
+## Action
+
+Use conventional commit format in PT-BR with the prefixes actually in use: fix, docs, chore, infra, feat, ci
+
+## Evidence
+
+- `git log --format=%s` na main (50 commits): fix 26 · docs 10 · chore 7 · infra 3 · feat 2 · ci 1
+- Padrão documentado em `CONTRIBUTING.md` > "Commits" (Conventional Commits)
+- Não há hook `commit-msg` neste repo — o padrão não é cobrado por máquina
+
+---
+id: brindes-sicoob-v2-import-alias
+trigger: "when importing modules"
+confidence: 0.83
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/adm01-debug/Brindes_Sicoob_V2
+---
+
+# Brindes Sicoob V2 Import Alias
+
+## Action
+
+Use the `@/` alias for project imports instead of long relative paths
+
+## Evidence
+
+- 2340 imports `@/...` contra 470 relativos em `src/`
+- Alias definido em `vite.config.ts` e `tsconfig.json`
+
+---
+id: brindes-sicoob-v2-export-style
+trigger: "when exporting from a module"
+confidence: 0.94
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/adm01-debug/Brindes_Sicoob_V2
+---
+
+# Brindes Sicoob V2 Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- 2669 exports nomeados contra 164 `export default` em `src/`
+
+---
+id: brindes-sicoob-v2-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/adm01-debug/Brindes_Sicoob_V2
+---
+
+# Brindes Sicoob V2 Naming Files
+
+## Action
+
+PascalCase for components/pages, camelCase for hooks, services and utils
+
+## Evidence
+
+- 1155 arquivos PascalCase, 608 camelCase, 145 kebab-case em `src/`
+- Componentes e páginas em PascalCase (`src/components/`, `src/pages/`); hooks/serviços em camelCase
+
+---
+id: brindes-sicoob-v2-test-separate
+trigger: "when writing tests"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/adm01-debug/Brindes_Sicoob_V2
+---
+
+# Brindes Sicoob V2 Test Separate
+
+## Action
+
+Unit tests go in tests/ mirroring src/ (Vitest); browser flows go in e2e/ (Playwright)
+
+## Evidence
+
+- `tests/` com subpastas espelhando `src/` (components/, hooks/, services/, utils/, edge-functions/, scenarios/)
+- `e2e/flows/` com os specs Playwright; `npm run test` = `vitest run`
+
+---
+id: brindes-sicoob-v2-migration-immutable
+trigger: "when editing a SQL migration"
+confidence: 0.95
+domain: database
+source: repo-analysis
+source_repo: https://github.com/adm01-debug/Brindes_Sicoob_V2
+---
+
+# Brindes Sicoob V2 Migration Immutable
+
+## Action
+
+Never edit a migration already merged into main; add a new migration with the delta
+
+## Evidence
+
+- `CONTRIBUTING.md` > "Migrations Supabase" > Imutabilidade
+- `scripts/check-migration-immutability.mjs` bloqueia no CI comparando contra `origin/main`

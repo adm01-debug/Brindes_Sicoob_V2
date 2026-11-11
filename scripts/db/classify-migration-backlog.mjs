@@ -10,6 +10,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { collectLocalMigrations } from './check-migration-ledger-drift.mjs';
+import { UsageError } from '../lib/cli.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const DEFAULT_LEDGER = join(ROOT, 'docs/execucao/evidencias/retomada-mcp-20260922/ledger.json');
@@ -85,13 +86,25 @@ export function analyzeMigrationSql(sql, inventory = { relations: [], functions:
   add(matches(code, /\btruncate\b/i), 'truncate');
   add(matches(code, /\bdelete\s+from\b/i), 'delete_dados');
   add(matches(code, /\bupdate\s+(?:only\s+)?[\w".]+\s+set\b/i), 'update_dados');
-  add(matches(code, /\bdrop\s+(?:table|view|materialized\s+view|column|type|function|index)\b/i), 'drop_objeto');
-  add(matches(code, /\balter\s+table[\s\S]*?\bdrop\s+(?:column|constraint)\b/i), 'drop_estrutura');
+  // schema/sequence/extension/owned também destroem objeto: `DROP SCHEMA public CASCADE` virava "candidata a dry-run".
+  add(matches(code, /\bdrop\s+(?:table|view|materialized\s+view|column|type|function|index|schema|sequence|extension|owned)\b/i), 'drop_objeto');
+  // `ALTER TABLE t DROP email` (sem a palavra COLUMN) é válido e destrói a coluna; só DROP DEFAULT/NOT NULL/IDENTITY/EXPRESSION são inofensivos.
+  add(matches(code, /\balter\s+table\b[^;]*?\bdrop\s+(?!default\b|not\s+null\b|identity\b|expression\b)/i), 'drop_estrutura');
   add(matches(code, /\bdisable\s+row\s+level\s+security\b/i), 'rls_desabilitada');
   add(matches(code, /\busing\s*\(\s*true\s*\)/i), 'policy_using_true');
   add(matches(code, /\bwith\s+check\s*\(\s*true\s*\)/i), 'policy_check_true');
   add(matches(code, /\bgrant\b[\s\S]{0,240}?\bto\s+(?:public|anon)\b/i), 'grant_publico_ou_anon');
-  add(matches(code, /\bsecurity\s+definer\b/i) && !matches(code, /\bset\s+search_path\s*(?:=|to)\s*/i), 'security_definer_sem_search_path_explicito');
+  // Por função, não pelo arquivo: um `SET search_path` numa função não protege outra
+  // SECURITY DEFINER sem o atributo no mesmo arquivo — o check anterior mascarava esse caso.
+  const functionSegments = code.split(/(?=\bcreate\s+(?:or\s+replace\s+)?function\b)/i);
+  add(
+    functionSegments.some(
+      (segment) =>
+        matches(segment, /\bsecurity\s+definer\b/i) &&
+        !matches(segment, /\bset\s+search_path\s*(?:=|to)\s*/i),
+    ),
+    'security_definer_sem_search_path_explicito',
+  );
   add(matches(code, /\b(?:products|product_images|product_variants|stock_daily_summary|tecnicas_gravacao)\b/i), 'referencia_catalogo_externo');
   add(matches(code, /\b(?:cron\.schedule|net\.http_|create\s+extension|storage\.(?:buckets|objects))\b/i), 'infraestrutura_ou_storage');
   add(matches(code, /\b(?:insert\s+into|copy\s+)\b/i), 'carga_de_dados');
@@ -204,15 +217,42 @@ export function renderMarkdownSummary(result, jsonPath = 'migration-backlog-clas
   return lines.join('\n');
 }
 
+const USAGE = `classify-migration-backlog — classifica migrations locais ausentes do ledger (sem executar SQL).
+
+Uso:
+  node scripts/db/classify-migration-backlog.mjs [opções]
+
+Opções:
+  --ledger <arquivo>     Ledger de referência (padrão: ${DEFAULT_LEDGER})
+  --inventory <arquivo>  Inventário de objetos (padrão: ${DEFAULT_INVENTORY})
+  --output <arquivo>     Escreve o JSON no arquivo em vez do stdout
+  --markdown <arquivo>   Escreve também um resumo em Markdown
+  -h, --help             Mostra esta ajuda e sai com código 0.
+
+Exit codes: 0 = ok, 1 = cobertura incompleta/erro, 2 = uso inválido.`;
+
 function valueAfter(args, flag, fallback) {
   const index = args.indexOf(flag);
-  return index < 0 ? fallback : resolve(args[index + 1]);
+  if (index < 0) return fallback;
+  const value = args[index + 1];
+  if (value === undefined || value.startsWith('-')) {
+    throw new UsageError(`A flag ${flag} exige um valor.`);
+  }
+  return resolve(value);
 }
 
 async function main() {
   const args = process.argv.slice(2);
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(USAGE);
+    return;
+  }
   const ledgerPath = valueAfter(args, '--ledger', DEFAULT_LEDGER);
   const inventoryPath = valueAfter(args, '--inventory', DEFAULT_INVENTORY);
+  // Flag desconhecida (`--ouptut x`) era ignorada e a saída ia para o stdout sem aviso.
+  const KNOWN_FLAGS = new Set(['--ledger', '--inventory', '--output', '--markdown', '-h', '--help']);
+  const unknown = args.filter((arg) => arg.startsWith('-') && !KNOWN_FLAGS.has(arg));
+  if (unknown.length > 0) throw new UsageError(`Flag desconhecida: ${unknown.join(', ')}`);
   const outputPath = valueAfter(args, '--output', null);
   const markdownPath = valueAfter(args, '--markdown', null);
   const result = classifyBacklog({
@@ -229,5 +269,9 @@ async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch(error => { console.error(`[classificador] ${error.message}`); process.exitCode = 1; });
+  main().catch(error => {
+    console.error(`[classificador] ${error.message}`);
+    if (error instanceof UsageError) console.error(`\n${USAGE}`);
+    process.exitCode = error instanceof UsageError ? 2 : 1;
+  });
 }

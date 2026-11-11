@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Valida o trigger e o isolamento RLS das preferências de notificação."""
 
 from pathlib import Path

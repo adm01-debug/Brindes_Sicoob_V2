@@ -1,13 +1,37 @@
+#!/usr/bin/env node
+/**
+ * scan-rls-security.mjs
+ * ----------------------------------------------------------------
+ * Gate de CI: audita o RLS do banco via RPCs do Supabase.
+ *
+ * Estratégia:
+ *  - Chama `check_tables_rls` e `audit_empty_rls_policies`.
+ *  - Falha (exit 1) se houver tabela pública sem RLS ou policy vazia.
+ *  - exit 2 em erro de configuração/execução.
+ *
+ * Saída:
+ *  - exit 0 → ok.
+ *  - exit 1 → violações de RLS.
+ *  - exit 2 → erro de config/execução.
+ */
 import { createClient } from '@supabase/supabase-js';
+
+const isCI = process.env.CI === "true" || process.env.CI === "1";
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!supabaseUrl || !supabaseKey) {
-  console.error('VITE_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são obrigatórios');
-  process.exit(1);
+  console.error('❌ VITE_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são obrigatórios');
+  process.exit(2);
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false, autoRefreshToken: false } });
+let supabase;
+try {
+  supabase = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false, autoRefreshToken: false } });
+} catch (error) {
+  console.error('❌ VITE_SUPABASE_URL inválida: ' + (error instanceof Error ? error.message : String(error)));
+  process.exit(2);
+}
 
 async function scanRls() {
   const [{ data: tables, error: tableError }, { data: emptyPolicies, error: policyError }] = await Promise.all([
@@ -23,12 +47,23 @@ async function scanRls() {
   if (insecure.length || emptyPolicies.length) {
     const noRls = insecure.map((table) => `${table.schemaname}.${table.relname}`);
     const noPolicy = emptyPolicies.map((table) => `public.${table.table_name}`);
-    throw new Error(`RLS inválido. Sem RLS: ${noRls.join(', ') || 'nenhuma'}. Sem policy: ${noPolicy.join(', ') || 'nenhuma'}.`);
+    console.error(`\n❌ RLS inválido. Sem RLS: ${noRls.join(', ') || 'nenhuma'}. Sem policy: ${noPolicy.join(', ') || 'nenhuma'}.`);
+    for (const t of noRls) {
+      // stderr: o workflow redireciona o stdout para reports/rls-status.txt, e a anotação gravada
+      // em arquivo nunca chegava ao runner do GitHub.
+      if (isCI) console.error(`::error file=scan-rls-security.mjs,title=Tabela sem RLS::${t}`);
+    }
+    for (const t of noPolicy) {
+      if (isCI) console.error(`::error file=scan-rls-security.mjs,title=Policy vazia::${t}`);
+    }
+    console.error('\n   → Ative RLS ou crie policies para as tabelas listadas.\n');
+    process.exit(1);
   }
-  console.log(`${tables.length} tabelas públicas verificadas; nenhuma sem RLS ou sem policy.`);
+  console.log(`✅ ${tables.length} tabelas públicas verificadas; nenhuma sem RLS ou sem policy.`);
+  process.exit(0);
 }
 
 scanRls().catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exit(1);
+  console.error('❌ Falha inesperada no gate: ' + (error instanceof Error ? error.message : String(error)));
+  process.exit(2);
 });

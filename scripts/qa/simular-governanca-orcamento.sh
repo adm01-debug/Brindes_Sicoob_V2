@@ -6,6 +6,22 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cleanup() { docker rm -f "$container" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
 
+# Mesma regra do postgres_ready.py: no CI a prova é obrigatória (sem Docker = falha);
+# fora dele, pula com aviso. QA_ALLOW_SKIP=1 libera o pulo; QA_REQUIRE_DOCKER=1 o proíbe.
+is_true() { case "${1:-}" in 1|true|TRUE|yes|YES) return 0 ;; *) return 1 ;; esac; }
+docker_mandatory() {
+  is_true "${QA_ALLOW_SKIP:-}" && return 1
+  is_true "${QA_REQUIRE_DOCKER:-}" || is_true "${CI:-}" || is_true "${GITHUB_ACTIONS:-}"
+}
+if ! timeout 30 docker info >/dev/null 2>&1; then
+  if docker_mandatory; then
+    echo "❌ Docker não disponível — a simulação é obrigatória neste ambiente e NÃO foi executada (QA_ALLOW_SKIP=1 para pular de propósito)." >&2
+    exit 1
+  fi
+  echo "⚠️  Docker não disponível — script ignorado (ambiente local sem Docker; nada foi verificado)." >&2
+  exit 0
+fi
+
 docker run -d --rm --name "$container" \
   --network none -e POSTGRES_HOST_AUTH_METHOD=trust postgres:17-alpine >/dev/null
 

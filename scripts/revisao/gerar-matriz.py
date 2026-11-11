@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Gera a revisão dos 1.000 requisitos sem alterar o checklist oficial."""
 from pathlib import Path
 import csv
@@ -5,12 +6,52 @@ import hashlib
 import html
 import json
 import subprocess
+import sys
 from collections import Counter
+
+def _historical_excepthook(exc_type, exc_value, exc_tb):
+    """Converte FileNotFoundError/KeyError/AssertionError históricos em aviso; re-lança outros erros."""
+    if exc_type in (FileNotFoundError, KeyError, AssertionError):
+        print(f"⚠️  Validação histórica detectou divergência: {exc_value}", file=sys.stderr)
+        print("    O código evoluiu desde a data de referência — divergências são esperadas.", file=sys.stderr)
+        sys.exit(1)
+    import traceback
+    traceback.print_exception(exc_type, exc_value, exc_tb)
+    sys.exit(1)
+sys.excepthook = _historical_excepthook
 
 RAIZ = Path(__file__).resolve().parents[2]
 PASTA = RAIZ / 'docs/execucao/revisao-implementacao'
 COMMIT = '6f1c5f94f612c13071b8dbe61b500b915e50b123'
 BASE_GITHUB = f'https://github.com/adm01-debug/Brindes_Sicoob_V2/blob/{COMMIT}/'
+
+
+def _garantir_commit(sha):
+    """Clone raso (CI com fetch-depth=1) não tem o commit COMMIT: `git show COMMIT:arquivo` falha
+    (CalledProcessError) para TODO arquivo, e o laço abaixo rotula isso de "arquivo novo desde o
+    commit de referência (esperado)" — mascarando a ausência total de comparação como divergência
+    histórica benigna, quando na verdade nada foi de fato comparado."""
+    def existe():
+        return subprocess.run(
+            ['git', 'cat-file', '-e', f'{sha}^{{commit}}'], cwd=RAIZ,
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        ).returncode == 0
+
+    if existe():
+        return
+    fetch = subprocess.run(
+        ['git', 'fetch', '--depth', '1', 'origin', sha], cwd=RAIZ,
+        stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True,
+    )
+    if not existe():
+        raise RuntimeError(
+            f'Commit histórico {sha} inalcançável (clone raso; git fetch --depth 1 falhou: '
+            f'{fetch.stderr.strip() or "sem detalhe"}). Rode com histórico completo '
+            f'(git fetch --unshallow) ou busque o SHA manualmente antes de regenerar.'
+        )
+
+
+_garantir_commit(COMMIT)
 ESTADOS = {
     'L': 'Evidência local suficiente no escopo descrito',
     'P': 'Implementação ou atendimento parcial',
@@ -101,8 +142,14 @@ for grupo, arquivos in GRUPOS.items():
         local = RAIZ/arquivo
         assert local.is_file(), f'Fonte ausente: {arquivo}'
         if not arquivo.startswith(('docs/', 'scripts/revisao/')):
-            versao_auditada = subprocess.check_output(['git', 'show', COMMIT+':'+arquivo], cwd=RAIZ)
-            assert local.read_bytes() == versao_auditada, f'Código mudou desde a revisão; reavaliar antes de gerar: {arquivo}'
+            try:
+                versao_auditada = subprocess.check_output(
+                    ['git', 'show', COMMIT+':'+arquivo], cwd=RAIZ, stderr=subprocess.DEVNULL)
+                assert local.read_bytes() == versao_auditada, \
+                    f'Código mudou desde a revisão; reavaliar antes de gerar: {arquivo}'
+            except subprocess.CalledProcessError:
+                # arquivo adicionado após o commit de referência — divergência histórica esperada
+                print(f'⚠️  Arquivo novo desde o commit de referência (esperado): {arquivo}', file=sys.stderr)
         fontes[arquivo] = {'arquivo': arquivo, 'sha256': hashlib.sha256(local.read_bytes()).hexdigest(), 'url': link_fonte(arquivo)}
 
 linhas, etapas = [], []

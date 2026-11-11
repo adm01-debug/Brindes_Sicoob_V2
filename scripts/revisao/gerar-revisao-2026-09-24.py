@@ -1,9 +1,22 @@
+#!/usr/bin/env python3
 """Gera a matriz documental preservando evidência histórica e limites da revisão atual."""
 from pathlib import Path
 import csv
 import json
 import re
+import sys
 from collections import Counter
+
+def _historical_excepthook(exc_type, exc_value, exc_tb):
+    """Converte erros históricos de divergência em aviso; re-lança outros erros."""
+    if exc_type in (FileNotFoundError, KeyError, AssertionError):
+        print(f"⚠️  Validação histórica (2026-09-24) detectou divergência: {exc_value}", file=sys.stderr)
+        print("    O código evoluiu desde a data de referência — divergências são esperadas.", file=sys.stderr)
+        sys.exit(1)
+    import traceback
+    traceback.print_exception(exc_type, exc_value, exc_tb)
+    sys.exit(1)
+sys.excepthook = _historical_excepthook
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'docs/execucao/revisao-plano-20260924'
@@ -20,7 +33,7 @@ REFS = {
  'banco': ['docs/execucao/auditoria-paridade-local-github-supabase-2026-09-24.md'],
  'governanca': ['docs/execucao/revisao-plano-20260924/protecao-github.json','.github/workflows/ci.yml'],
  'prs': ['docs/execucao/revisao-plano-20260924/prs-abertos.json'],
- 'segredos': ['docs/secrets.md','.env.production'],
+ 'segredos': ['docs/secrets.md'],
  'historico': ['docs/execucao/correcoes-reconciliacao-20260922.md','docs/auditoria-validacao-2026-09-22.md'],
  'baseline': ['supabase/migrations/20260915143442_sicoob_reconciliation_baseline.sql','supabase/migrations_archive/2026-09/20260915160000_sicoob_reconciliation_baseline.sql','docs/execucao/evidencias/baseline_diff_20260917.md'],
  'backlog': ['docs/execucao/evidencias/retomada-mcp-20260922/migration-backlog-classification.json'],
@@ -100,7 +113,7 @@ for prefix in ['R','C']:
 content=(ROOT/SOURCES['T']).read_text()
 matches=re.findall(r'^(\d+)\. (.+)$',content,re.M)
 assert len(matches)==50,len(matches)
-titles.update({f'T{int(n):02}':text.split(' — ')[0].split(' ✅')[0].split(' 🔄')[0][:220] for n,text in matches})
+titles.update({f'T{int(n):02}':text.split(' — ')[0].split(' ✅')[0].split(' \U0001f504')[0][:220] for n,text in matches})
 titles.update({e['id']:e['melhoria'] for e in benchmark_old})
 
 rows=[]

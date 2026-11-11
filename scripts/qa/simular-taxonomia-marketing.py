@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Valida migration, privilégios e RLS da curadoria editorial em PostgreSQL 16."""
 from pathlib import Path
 import json

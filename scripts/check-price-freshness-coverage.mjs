@@ -9,8 +9,8 @@
  * Por que um gate por arquivo (em vez do `thresholds` global do Vitest)?
  *  - O threshold global do Vitest é uma média do projeto. Um arquivo
  *    crítico pode regredir sem disparar o gate global.
- *  - Aqui travamos arquivos específicos com um piso mais alto (95%),
- *    independente da cobertura geral do projeto.
+ *  - Aqui travamos arquivos específicos com pisos próprios (`FILE_THRESHOLDS`,
+ *    baseline atual menos ~3pp), independente da cobertura geral do projeto.
  *
  * Como ler a saída:
  *   ✓ src/utils/price-freshness.ts                   100%/100%/100%/100%
@@ -55,7 +55,13 @@ const FILE_THRESHOLDS = {
   },
 };
 
+// `COVERAGE_TOLERANCE_PP=abc` virava NaN (toda comparação com NaN é falsa: o gate nunca reprovava) e
+// `=100` desligava o piso. A margem só pode absorver o ruído do reporter (poucos pontos).
 const TOLERANCE_PP = Number(process.env.COVERAGE_TOLERANCE_PP ?? "1");
+if (!Number.isFinite(TOLERANCE_PP) || TOLERANCE_PP < 0 || TOLERANCE_PP > 5) {
+  console.error(`\n❌ COVERAGE_TOLERANCE_PP inválido (${process.env.COVERAGE_TOLERANCE_PP}): use um número entre 0 e 5.`);
+  process.exit(2);
+}
 
 const TRACKED_FILES = Object.keys(FILE_THRESHOLDS);
 

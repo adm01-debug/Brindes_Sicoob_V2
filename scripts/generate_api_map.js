@@ -1,5 +1,9 @@
 import fs from 'fs';
 
+if (!fs.existsSync('service_map.txt')) {
+  console.error('❌ service_map.txt não encontrado. Gere-o com: grep -rn -E "supabase\\.(rpc|from)" src/ > service_map.txt');
+  process.exit(2);
+}
 const serviceData = fs.readFileSync('service_map.txt', 'utf8');
 const lines = serviceData.split('\n');
 
@@ -7,7 +11,7 @@ const map = {};
 
 lines.forEach(line => {
   if (!line.trim()) return;
-  const match = line.match(/^([^:]+):.*supabase\.(rpc|from)\(['"]([^'"]+)['"]\)/);
+  const match = line.match(/^([^:]+):.*supabase\.(rpc|from)\(['"]([^'"]+)['"]/);
   if (match) {
     const filePath = match[1];
     const type = match[2].toUpperCase();

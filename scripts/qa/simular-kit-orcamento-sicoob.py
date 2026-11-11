@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Valida atomicidade, idempotência e escopo da conversão de kit em orçamento."""
 from pathlib import Path
 import json

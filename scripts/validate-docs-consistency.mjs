@@ -1,55 +1,95 @@
-import fs from 'fs';
-import path from 'path';
+#!/usr/bin/env node
+/**
+ * validate-docs-consistency
+ * --------------------------------------------------------------
+ * Confere a consistência entre docs/MODULES.md, docs/ROUTES.md e
+ * docs/INVENTARIO_FUNCIONALIDADES_v2.md: links internos válidos e
+ * rotas críticas do inventário presentes no mapa de rotas.
+ *
+ * Antes: documento ausente lançava `throw new Error` cru (stack
+ * trace, exit 1 sem mensagem útil) e não havia como apontar outro
+ * diretório de docs.
+ *
+ * Exit codes: 0 = consistente, 1 = inconsistência, 2 = uso inválido.
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import { runCli, EXIT_FAIL } from './lib/cli.mjs';
 
-const DOCS_DIR = 'docs';
-const MODULES_FILE = path.join(DOCS_DIR, 'MODULES.md');
-const ROUTES_FILE = path.join(DOCS_DIR, 'ROUTES.md');
-const INVENTORY_FILE = path.join(DOCS_DIR, 'INVENTARIO_FUNCIONALIDADES_v2.md');
+const CRITICAL_ROUTE_PREFIXES = ['/admin', '/dashboard'];
+const DOC_LINK_PATTERN = /\[[^\]]*\]\((docs\/[^)\s]+\.md)\)/g;
+const ROUTE_PATTERN = /\/[a-z0-9/-]+/g;
 
-function validateLinks() {
-  console.log('🔍 Validando consistência entre documentos...');
-  
-  if (!fs.existsSync(MODULES_FILE)) throw new Error('MODULES.md não encontrado');
-  if (!fs.existsSync(ROUTES_FILE)) throw new Error('ROUTES.md não encontrado');
-  if (!fs.existsSync(INVENTORY_FILE)) throw new Error('INVENTARIO_FUNCIONALIDADES_v2.md não encontrado');
+await runCli(
+  {
+    name: 'validate-docs-consistency',
+    summary: 'Valida links e rotas entre os documentos de arquitetura.',
+    usage: 'node scripts/validate-docs-consistency.mjs [opções]',
+    spec: {
+      'docs-dir': { type: 'string', default: 'docs', description: 'Diretório de documentação' },
+      json: { type: 'boolean', default: false, description: 'Emite o resultado em JSON' },
+    },
+    examples: [
+      'node scripts/validate-docs-consistency.mjs',
+      'node scripts/validate-docs-consistency.mjs --docs-dir docs',
+    ],
+  },
+  async ({ values, log }) => {
+    const docsDir = values['docs-dir'];
+    const modulesFile = path.join(docsDir, 'MODULES.md');
+    const routesFile = path.join(docsDir, 'ROUTES.md');
+    const inventoryFile = path.join(docsDir, 'INVENTARIO_FUNCIONALIDADES_v2.md');
 
-  const modulesContent = fs.readFileSync(MODULES_FILE, 'utf8');
-  const routesContent = fs.readFileSync(ROUTES_FILE, 'utf8');
-  const inventoryContent = fs.readFileSync(INVENTORY_FILE, 'utf8');
-
-  let errors = [];
-
-  // 1. Verificar se o inventário cita MODULES e ROUTES
-  if (!inventoryContent.includes('MODULES.md')) {
-    console.warn('⚠️ O inventário não cita explicitamente o Master Module Index (MODULES.md)');
-  }
-
-  // 2. Validar links internos no MODULES.md para arquivos em docs/
-  const docLinks = modulesContent.match(/\[.*\]\((docs\/.*\.md)\)/g) || [];
-  docLinks.forEach(link => {
-    const filePath = link.match(/\((docs\/.*\.md)\)/)[1];
-    if (!fs.existsSync(filePath)) {
-      errors.push(`❌ Link quebrado em MODULES.md: ${filePath}`);
+    const required = [modulesFile, routesFile, inventoryFile];
+    const missing = required.filter((file) => !fs.existsSync(file));
+    if (missing.length > 0) {
+      return {
+        exitCode: EXIT_FAIL,
+        message: `Documento(s) obrigatório(s) ausente(s): ${missing.join(', ')}`,
+      };
     }
-  });
 
-  // 3. Validar se rotas críticas em INVENTORY_FILE estão presentes em ROUTES_FILE
-  const criticalRoutes = inventoryContent.match(/\/[a-z0-9/-]+/g) || [];
-  criticalRoutes.forEach(route => {
-    // Filtrar rotas que parecem caminhos de arquivo ou não são do app
-    if (route.startsWith('/admin') || route.startsWith('/dashboard')) {
-       if (!routesContent.includes(route)) {
-         errors.push(`❌ Rota crítica "${route}" citada no inventário não encontrada em ROUTES.md`);
-       }
+    const modulesContent = fs.readFileSync(modulesFile, 'utf8');
+    const routesContent = fs.readFileSync(routesFile, 'utf8');
+    const inventoryContent = fs.readFileSync(inventoryFile, 'utf8');
+
+    const errors = [];
+    const warnings = [];
+
+    if (!inventoryContent.includes('MODULES.md')) {
+      warnings.push('O inventário não cita explicitamente o Master Module Index (MODULES.md).');
     }
-  });
 
-  if (errors.length > 0) {
-    console.error('\n' + errors.join('\n'));
-    process.exit(1);
-  }
+    for (const match of modulesContent.matchAll(DOC_LINK_PATTERN)) {
+      const target = match[1];
+      const resolvedTarget = path.join(path.dirname(docsDir), target);
+      if (!fs.existsSync(resolvedTarget)) {
+        errors.push(`Link quebrado em MODULES.md: ${target}`);
+      }
+    }
 
-  console.log('✅ Consistência documental validada com sucesso!');
-}
+    const criticalRoutes = new Set(
+      (inventoryContent.match(ROUTE_PATTERN) ?? []).filter((route) =>
+        CRITICAL_ROUTE_PREFIXES.some((prefix) => route.startsWith(prefix)),
+      ),
+    );
+    for (const route of criticalRoutes) {
+      if (!routesContent.includes(route)) {
+        errors.push(`Rota crítica "${route}" citada no inventário não encontrada em ROUTES.md`);
+      }
+    }
 
-validateLinks();
+    if (values.json) {
+      console.log(JSON.stringify({ errors, warnings, criticalRoutes: [...criticalRoutes] }, null, 2));
+    } else {
+      for (const warning of warnings) log.warn(warning);
+      for (const error of errors) log.error(error);
+    }
+
+    if (errors.length > 0) {
+      return { exitCode: EXIT_FAIL, message: `${errors.length} inconsistência(s) documental(is).` };
+    }
+        if (!values.json) log.info(`Consistência documental validada (${criticalRoutes.size} rota(s) crítica(s)).`);
+    return 0;
+  },
+);

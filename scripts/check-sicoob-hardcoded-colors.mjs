@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 /**
  * Script para evitar regressão de cores hardcoded em caminhos Sicoob.
@@ -21,10 +22,13 @@ const FORBIDDEN_PATTERNS = [
   /border-amber-/i
 ];
 
+// Resolvidos a partir deste arquivo: rodar de outro cwd não pode "passar" sem varrer nada.
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const TARGET_DIRS = [
   'src/pages/sicoob',
-  'src/components/sicoob'
-];
+  'src/components/sicoob',
+  'src/pages/admin/sicoob'
+].map(dir => path.join(REPO_ROOT, dir));
 
 let hasErrors = false;
 
@@ -45,7 +49,6 @@ function checkFile(filePath) {
 }
 
 function scanDir(dir) {
-  if (!fs.existsSync(dir)) return;
   
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   
@@ -60,6 +63,12 @@ function scanDir(dir) {
 }
 
 console.log('🔍 Verificando cores hardcoded em módulos Sicoob...');
+const missingDirs = TARGET_DIRS.filter(dir => !fs.existsSync(dir));
+if (missingDirs.length > 0) {
+  // Diretório renomeado/removido: antes o gate seguia verde sem cobrir nada.
+  console.error(`❌ Diretório(s) alvo não encontrado(s): ${missingDirs.join(', ')}. Atualize TARGET_DIRS.`);
+  process.exit(2);
+}
 TARGET_DIRS.forEach(scanDir);
 
 if (hasErrors) {

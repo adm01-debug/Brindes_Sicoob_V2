@@ -57,9 +57,15 @@ const report = {
   failures: [],
 };
 
-// 1) Branches lovable-sync-* recentes
+// 1) Branches lovable-sync-* recentes (criadas desde `since`)
 const branches = await gh(`/repos/${OWNER}/${REPO}/branches?per_page=100`);
-const syncBranches = branches.filter((b) => b.name.startsWith("lovable-sync-"));
+const candidateSyncBranches = branches.filter((b) => b.name.startsWith("lovable-sync-"));
+const syncBranches = [];
+for (const b of candidateSyncBranches) {
+  const detail = await gh(`/repos/${OWNER}/${REPO}/branches/${encodeURIComponent(b.name)}`);
+  const createdAt = detail?.commit?.commit?.author?.date;
+  if (createdAt && createdAt >= since) syncBranches.push(b);
+}
 report.checks.syncBranches = {
   total: syncBranches.length,
   names: syncBranches.map((b) => b.name).slice(0, 10),
