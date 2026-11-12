@@ -1,5 +1,6 @@
-import { buildPublicTokenSuite } from "../_factories";
-import { mockPublicRestResource, mockRestTable } from "../_shared";
+import { buildPublicTokenSuite, type PublicTokenScenario } from "../_factories";
+import type { Page } from "@playwright/test";
+import { mockRestTable } from "../_shared";
 
 const list = {
   id: "list1",
@@ -7,24 +8,38 @@ const list = {
   description: null,
   color: "#0B8F48",
   shared_expires_at: null,
-  user_id: "user1",
 };
+
+/**
+ * A página consome a lista pública via RPC (get_public_favorite_list),
+ * não mais via REST direto nas tabelas favorite_lists/favorite_items.
+ */
+async function mockPublicFavoriteListRpc(page: Page, scenario: PublicTokenScenario) {
+  const status =
+    scenario === "invalidPayload" ? 400
+    : scenario === "timeout" ? 504
+    : scenario === "serviceUnavailable" ? 503
+    : 200;
+  const delayMs = scenario === "timeout" ? 6000 : undefined;
+  const body =
+    scenario === "success"
+      ? { list, items: [] }
+      : scenario === "notFound" || scenario === "expired"
+        ? null
+        : scenario === "invalidPayload"
+          ? { message: "Requisição inválida" }
+          : scenario === "timeout"
+            ? {}
+            : { message: "Serviço indisponível" };
+  await mockRestTable(page, "rpc/get_public_favorite_list", status, body, { delayMs });
+}
 
 buildPublicTokenSuite({
   name: "/lista-publica/:token (favoritos público)",
   buildPath: t => `/lista-publica/${t}`,
   edgeFnName: "favorites-public-react",
-  successBody: list,
+  successBody: { list, items: [] },
   successCopy: /Lista E2E/,
   notFoundCopy: /lista não encontrada|inválido|expirado/i,
-  mockLoad: async (page, scenario) => {
-    await mockRestTable(page, "favorite_items", 200, []);
-    await mockPublicRestResource(
-      page,
-      "favorite_lists",
-      scenario,
-      list,
-      { ...list, shared_expires_at: "2000-01-01T00:00:00.000Z" },
-    );
-  },
+  mockLoad: mockPublicFavoriteListRpc,
 });
