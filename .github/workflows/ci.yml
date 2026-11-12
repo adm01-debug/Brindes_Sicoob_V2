@@ -81,6 +81,7 @@ jobs:
           # tenta resolver toda a árvore npm novamente e pode divergir do npm ci.
           deno test --no-config supabase/functions/_shared/internal-service-auth.test.ts
           deno test --no-config supabase/functions/_shared/read-limited-body.test.ts
+          deno test --no-config --allow-env supabase/functions/_shared/authorize_test.ts
           # Verificar shared utilities
           find supabase/functions/_shared -name '*.ts' -not -name '*.test.ts' -print0 | \
             xargs -0 deno check --no-config
