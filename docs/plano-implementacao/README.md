@@ -11,12 +11,17 @@
 
 ## Arquivos
 
-- [Plano completo em PDF — 108 páginas](plano-100-etapas.pdf).
-- [Plano em Markdown](plano-100-etapas.md) e [versão de leitura em HTML](plano-100-etapas.html).
-- [Checklist interativo](checklist.html), com busca, filtros, evidências, dependências e exportação do progresso.
-- [Planilha de acompanhamento](plano-100-etapas.xlsx), com cinco abas e fórmulas de fechamento.
-- [Dados estruturados](plano.json), [etapas em CSV](etapas.csv) e [subetapas em CSV](subetapas.csv).
-- [Fontes e limites de aplicação](referencias.json), [metadados da definição](metadados.json) e [verificação dos artefatos](validacao.md).
+Os artefatos abaixo pertencem ao **plano vigente T001–T100, de 01/10/2026**. Os arquivos `E001–E100` listados na seção histórica não devem ser usados para acompanhar essa definição.
+
+- [Plano completo em Markdown](plano-encerramento-100-etapas-20261001/plano.md).
+- [Dados estruturados](plano-encerramento-100-etapas-20261001/plano.json) e [100 etapas em CSV](plano-encerramento-100-etapas-20261001/etapas.csv).
+- [Checklist dos 1.000 itens](plano-encerramento-100-etapas-20261001/checklist-1000.csv).
+- [Rastreabilidade das 250 origens diretas](plano-encerramento-100-etapas-20261001/rastreabilidade-250.csv) e [origens históricas](plano-encerramento-100-etapas-20261001/origens-historicas.json).
+- [Fontes e hashes](plano-encerramento-100-etapas-20261001/fontes.json) e [validação estrutural](plano-encerramento-100-etapas-20261001/validacao.json).
+
+### Artefatos históricos E001–E100
+
+Os [arquivos de leitura em Markdown](plano-100-etapas.md), [HTML](plano-100-etapas.html), [PDF](plano-100-etapas.pdf), [checklist interativo](checklist.html), [planilha XLSX](plano-100-etapas.xlsx), [dados estruturados](plano.json), [CSVs](etapas.csv) e [metadados](metadados.json) preservam a definição anterior. Seus IDs, dependências e critérios não correspondem ao plano vigente T001–T100.
 
 ## Como acompanhar
 
@@ -34,7 +39,7 @@ Na planilha, preencha as células verdes das abas **Subetapas** e **Etapas**. As
 
 Cada etapa exige dez evidências, entregável verificável, responsável nominal, revisor, aceite específico validado e dependências concluídas. Revogar um requisito reabre o fechamento. Não existe dispensa automática: mudanças de escopo precisam de revisão versionada e justificativa. Marcar uma caixa ou fornecer qualquer texto não prova a execução.
 
-Os números das etapas são identificadores, não dias. Capacidade, esforço e calendário serão definidos na etapa E010. Os responsáveis funcionais são sugestões; a equipe deve atribuir nomes durante o planejamento.
+Os números das etapas são identificadores, não dias. Capacidade, metas e decisões bloqueantes devem ser resolvidas em T004. Os responsáveis funcionais são sugestões; a equipe deve atribuir nomes durante o planejamento.
 
 O catálogo `doufsxqlfjyuvxuezpln` permanece exclusivamente de consulta. O banco `cfmzkthhgliqelozlmwu` concentra a operação do portal. As etapas finais exigem produção e compras reais, com validação da expansão para uma segunda cooperativa.
 
