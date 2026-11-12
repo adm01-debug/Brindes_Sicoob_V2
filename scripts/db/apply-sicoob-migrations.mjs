@@ -164,12 +164,13 @@ const APPROVAL_WORKER_MONITOR_SAFE_SQL = `COALESCE((
     AND NOT has_function_privilege('anon', p.oid, 'EXECUTE')
     AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE')
     AND has_function_privilege('service_role', p.oid, 'EXECUTE')
-    AND p.prosrc LIKE '%DISTINCT ON (r.id)%'
-    AND p.prosrc LIKE '%r.created>=d.requested_at%'
-    AND p.prosrc LIKE '%r.created ASC%'
-    AND p.prosrc LIKE '%pending_status%'
-    AND p.prosrc LIKE '%has_newer_result%'
-    AND p.prosrc LIKE '%ID reciclado; resposta correlacionada ao disparo mais recente%'
+    AND EXISTS (
+      SELECT 1 FROM pg_index i
+      JOIN pg_class idx ON idx.oid = i.indexrelid
+      WHERE i.indrelid = 'public.sicoob_approval_worker_dispatches'::regclass
+        AND idx.relname = 'idx_sicoob_approval_worker_queued_request'
+        AND pg_get_indexdef(i.indexrelid) LIKE '%(request_id, requested_at DESC)%'
+    )
   FROM pg_proc p
   WHERE p.oid = to_regprocedure('public.monitor_sicoob_approval_worker()')
 ), false)`;
@@ -319,6 +320,31 @@ function latestDefiner(targets, functionName) {
   ];
   return [...targets].reverse().find((target) =>
     declarations.some((declaration) => target.sql.includes(declaration)));
+}
+
+// O corpo esperado do monitor é a função original (20260922225500) com os
+// dois patches de correlação/timeout aplicados pela migration 20261015102000.
+// O patch substitui os blocos antigos pelos novos; derivá-los em Node evita
+// guardar o corpo copiado e mantém a validação por igualdade total (hash).
+function approvalWorkerMonitorBody(targets) {
+  const base = latestDefiner(targets, "monitor_sicoob_approval_worker")?.sql
+    ?? readFileSync(join(ROOT, "supabase/migrations/20260922225500_monitor_sicoob_approval_worker.sql"), "utf8");
+  const patch = latestDefiner(targets, "dispatch_sicoob_approval_worker")?.sql
+    ?? readFileSync(join(ROOT, "supabase/migrations/20261015102000_fix_pg_net_recycled_request_ids.sql"), "utf8");
+  const findBlock = (sql, marker) => {
+    const labelIndex = sql.indexOf(`:= $${marker}$`);
+    if (labelIndex < 0) throw new Error(`Bloco $${marker}$ não encontrado no patch do monitor.`);
+    return sql.slice(labelIndex + `:= $${marker}$`.length, sql.indexOf(`$${marker}$;`, labelIndex));
+  };
+  const apply = (source, marker, targetSql) => {
+    const oldBlock = findBlock(patch, `old_${marker}`);
+    const newBlock = findBlock(patch, `new_${marker}`);
+    const replaced = targetSql.replace(oldBlock, newBlock);
+    if (replaced === targetSql) throw new Error(`Patch ${marker} não encontrado no corpo do monitor.`);
+    return replaced;
+  };
+  const body = extractFunctionBody(base, "monitor_sicoob_approval_worker");
+  return apply(patch, "response", apply(patch, "timeout", body));
 }
 
 function extractFunctionBody(sql, functionName) {
@@ -769,7 +795,9 @@ async function validateContract(client, targets) {
       to_regclass('public.idx_favorite_items_unique') IS NULL
         AS favorite_items_legacy_index_removed,
       ${APPROVAL_WORKER_STRUCTURE_SAFE_SQL} AS approval_worker_structure_safe,
-      ${APPROVAL_WORKER_MONITOR_SAFE_SQL} AS approval_worker_monitor_safe
+      ${APPROVAL_WORKER_MONITOR_SAFE_SQL} AS approval_worker_monitor_safe,
+      (SELECT p.prosrc FROM pg_proc p
+        WHERE p.oid = to_regprocedure('public.monitor_sicoob_approval_worker()')) AS monitor_source
   `);
   const result = rows[0];
   const idempotencyMigration = latestDefiner(targets, "save_quote_atomic_idempotent");
@@ -788,6 +816,7 @@ async function validateContract(client, targets) {
     && typeof result.save_atomic_source === "string"
     && typeof result.transition_assert_source === "string"
     && typeof result.quote_scope_source === "string"
+    && typeof result.monitor_source === "string"
     && sha256(result.idempotency_source.trim()) === sha256(
       extractFunctionBody(idempotencyMigration.sql, "save_quote_atomic_idempotent"),
     )
@@ -805,7 +834,8 @@ async function validateContract(client, targets) {
     )
     && sha256(result.quote_scope_source.trim()) === sha256(
       extractFunctionBody(quoteScopeMigration.sql, "can_manage_quote_scope"),
-    );
+    )
+    && sha256(result.monitor_source.trim()) === sha256(approvalWorkerMonitorBody(targets));
   const normalizeExpression = (value) => typeof value === "string"
     ? value.replace(/\s+/g, " ").trim()
     : value;
@@ -884,6 +914,7 @@ async function validateContract(client, targets) {
     delete diagnostic.status_source;
     delete diagnostic.notification_source;
     delete diagnostic.save_atomic_source;
+    delete diagnostic.monitor_source;
     throw new Error(`Contrato remoto de idempotência inválido: ${JSON.stringify({
       ...diagnostic,
       source_hashes_valid: sourceHashesValid,
@@ -891,6 +922,7 @@ async function validateContract(client, targets) {
       constraints_exact: constraintsExact,
       trigger_definition_exact: triggerDefinitionExact,
       approval_worker_monitor_safe: result?.approval_worker_monitor_safe,
+      monitor_source: typeof result?.monitor_source === "string" ? "exposed" : result?.monitor_source,
     })}`);
   }
 }
@@ -987,6 +1019,8 @@ BEGIN
         IS DISTINCT FROM ${quoteScopeBody}
      OR NOT ${APPROVAL_WORKER_STRUCTURE_SAFE_SQL}
      OR NOT ${APPROVAL_WORKER_MONITOR_SAFE_SQL}
+     OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.monitor_sicoob_approval_worker()'))
+        IS DISTINCT FROM ${dollarQuote(approvalWorkerMonitorBody(targets), "monitor_body")}
      OR COALESCE((SELECT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
         FROM pg_proc WHERE oid = to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)')), true)
      OR COALESCE((SELECT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
