@@ -28,6 +28,7 @@ import { toolRoutes } from "./routes/config/tools";
 import { devRoutes } from "./routes/config/dev";
 import { quoteRoutes } from "./routes/config/quotes";
 import { sicoobRoutes } from "./routes/config/sicoob";
+import { CLIENT_DETAIL_ROUTE } from "@/routes/clientRoutes";
 
 import "./App.css";
 
@@ -141,7 +142,7 @@ const App = () => {
                             <Route path="/pedidos" element={<RouteSuspense><OrdersPage /></RouteSuspense>} />
                             <Route path="/pedidos/:id" element={<RouteSuspense><OrderDetailPage /></RouteSuspense>} />
                             <Route path="/clientes" element={<RouteSuspense><ClientsPage /></RouteSuspense>} />
-                            <Route path="/clientes/:id" element={<RouteSuspense><ClientDetailPage /></RouteSuspense>} />
+                            <Route path={CLIENT_DETAIL_ROUTE} element={<RouteSuspense><ClientDetailPage /></RouteSuspense>} />
                             <Route path="/notificacoes" element={<RouteSuspense><NotificationsPage /></RouteSuspense>} />
                             <Route path="/pedidos/:id/auditoria" element={<RouteSuspense><OrderAuditPage /></RouteSuspense>} />
 
