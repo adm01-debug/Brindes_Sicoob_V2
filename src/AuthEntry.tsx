@@ -1,23 +1,23 @@
-import { lazy, Suspense, useEffect, useState } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { lazy, Suspense, useEffect, useState } from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
-import { AuthProvider } from "@/contexts/AuthContext";
-import { ThemeProvider } from "@/contexts/ThemeContext";
-import Auth from "@/pages/Auth";
+import { AuthProvider } from '@/contexts/AuthContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+import Auth from '@/pages/Auth';
 
-const Toaster = lazy(() => import("@/components/ui/toaster").then(module => ({ default: module.Toaster })));
-const Sonner = lazy(() => import("@/components/ui/sonner").then(module => ({ default: module.Toaster })));
-const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
-const VerificationPage = lazy(() => import("@/pages/VerificationPage"));
-const SSOCallbackPage = lazy(() => import("@/pages/SSOCallbackPage"));
+const Toaster = lazy(() =>
+  import('@/components/ui/toaster').then((module) => ({ default: module.Toaster })),
+);
+const Sonner = lazy(() =>
+  import('@/components/ui/sonner').then((module) => ({ default: module.Toaster })),
+);
+const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
+const VerificationPage = lazy(() => import('@/pages/VerificationPage'));
+const SSOCallbackPage = lazy(() => import('@/pages/SSOCallbackPage'));
 
 function RouteFallback() {
   return (
-    <main
-      className="min-h-screen bg-[#F7FAFA]"
-      role="status"
-      aria-label="Carregando página"
-    />
+    <main className="min-h-screen bg-[#F7FAFA]" role="status" aria-label="Carregando página" />
   );
 }
 

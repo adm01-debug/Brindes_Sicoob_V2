@@ -1,4 +1,4 @@
-import React, { type ReactNode, forwardRef } from "react";
+import React, { type ReactNode, forwardRef } from 'react';
 
 interface VisuallyHiddenProps {
   children: ReactNode;
@@ -9,9 +9,11 @@ interface VisuallyHiddenProps {
  * Visually hides content while keeping it accessible to screen readers.
  * Use for descriptive text that provides context for assistive technologies.
  */
-export const VisuallyHidden = forwardRef<HTMLElement, VisuallyHiddenProps>(({ children, as: component = "span" }, ref) => {
-  return React.createElement(component, { ref, className: "sr-only" }, children);
-});
+export const VisuallyHidden = forwardRef<HTMLElement, VisuallyHiddenProps>(
+  ({ children, as: component = 'span' }, ref) => {
+    return React.createElement(component, { ref, className: 'sr-only' }, children);
+  },
+);
 
 VisuallyHidden.displayName = 'VisuallyHidden';
 
@@ -21,27 +23,19 @@ VisuallyHidden.displayName = 'VisuallyHidden';
  */
 interface LiveRegionProps {
   children: ReactNode;
-  politeness?: "polite" | "assertive" | "off";
+  politeness?: 'polite' | 'assertive' | 'off';
   atomic?: boolean;
 }
 
-export const LiveRegion = forwardRef<HTMLDivElement, LiveRegionProps>(({ 
-  children, 
-  politeness = "polite", 
-  atomic = true 
-}, ref) => {
-  return (
-    <div 
-      ref={ref}
-      role="status" 
-      aria-live={politeness} 
-      aria-atomic={atomic}
-      className="sr-only"
-    >
-      {children}
-    </div>
-  );
-});
+export const LiveRegion = forwardRef<HTMLDivElement, LiveRegionProps>(
+  ({ children, politeness = 'polite', atomic = true }, ref) => {
+    return (
+      <div ref={ref} role="status" aria-live={politeness} aria-atomic={atomic} className="sr-only">
+        {children}
+      </div>
+    );
+  },
+);
 
 LiveRegion.displayName = 'LiveRegion';
 
@@ -54,16 +48,14 @@ interface LoadingAnnouncerProps {
   loadedMessage?: string;
 }
 
-export const LoadingAnnouncer = forwardRef<HTMLDivElement, LoadingAnnouncerProps>(({ 
-  isLoading, 
-  loadingMessage = "Carregando...",
-  loadedMessage = "Conteúdo carregado"
-}, ref) => {
-  return (
-    <LiveRegion ref={ref} politeness="polite">
-      {isLoading ? loadingMessage : loadedMessage}
-    </LiveRegion>
-  );
-});
+export const LoadingAnnouncer = forwardRef<HTMLDivElement, LoadingAnnouncerProps>(
+  ({ isLoading, loadingMessage = 'Carregando...', loadedMessage = 'Conteúdo carregado' }, ref) => {
+    return (
+      <LiveRegion ref={ref} politeness="polite">
+        {isLoading ? loadingMessage : loadedMessage}
+      </LiveRegion>
+    );
+  },
+);
 
 LoadingAnnouncer.displayName = 'LoadingAnnouncer';

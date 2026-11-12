@@ -1,6 +1,6 @@
-import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import { useAriaLive } from "./AriaLive";
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useAriaLive } from './AriaLive';
 
 export const RouteAnnouncer = () => {
   const location = useLocation();

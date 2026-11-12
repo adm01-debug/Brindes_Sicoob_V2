@@ -32,12 +32,29 @@ html {
 /* Better focus for accessibility — WCAG 2.4.7 (AA) + 2.4.11 (AAA)
    Anel duplo (ring + offset contrastante) garante visibilidade
    em qualquer fundo, claro ou escuro, em todos os elementos. */
-:where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"]), [role="button"], [role="link"], [role="menuitem"], [role="tab"], [role="option"]):focus-visible {
+:where(
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  summary,
+  [tabindex]:not([tabindex='-1']),
+  [role='button'],
+  [role='link'],
+  [role='menuitem'],
+  [role='tab'],
+  [role='option']
+):focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px hsl(var(--background)), 0 0 0 6px hsl(var(--ring) / 0.45);
+  box-shadow:
+    0 0 0 4px hsl(var(--background)),
+    0 0 0 6px hsl(var(--ring) / 0.45);
   border-radius: var(--radius, 0.5rem);
-  transition: box-shadow 0.15s ease, outline-offset 0.15s ease;
+  transition:
+    box-shadow 0.15s ease,
+    outline-offset 0.15s ease;
 }
 
 /* Hide focus when using mouse */
@@ -83,12 +100,12 @@ body {
 
 /* Fix for iOS input zoom */
 @media screen and (max-width: 768px) {
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="number"],
-  input[type="tel"],
-  input[type="url"],
+  input[type='text'],
+  input[type='email'],
+  input[type='password'],
+  input[type='number'],
+  input[type='tel'],
+  input[type='url'],
   select,
   textarea {
     font-size: 16px !important;
@@ -106,9 +123,14 @@ body {
 .theme-transitioning *,
 .theme-transitioning *::before,
 .theme-transitioning *::after {
-  transition: background-color 0.4s ease, border-color 0.4s ease, color 0.3s ease,
-              fill 0.3s ease, stroke 0.3s ease, box-shadow 0.4s ease,
-              outline-color 0.3s ease !important;
+  transition:
+    background-color 0.4s ease,
+    border-color 0.4s ease,
+    color 0.3s ease,
+    fill 0.3s ease,
+    stroke 0.3s ease,
+    box-shadow 0.4s ease,
+    outline-color 0.3s ease !important;
 }
 
 /* Legacy class kept for backward compatibility */
