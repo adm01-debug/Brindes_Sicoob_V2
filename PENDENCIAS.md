@@ -482,7 +482,7 @@ Este inventário substitui os snapshots antigos acima. Nenhuma migration, SQL, d
 ## Bloqueios externos e validações que ainda faltam
 
 - **E2E autenticado e RLS remoto:** confirmei que a API do GitHub retorna `404 Not Found` para o environment `e2e-qa`. O owner informou que configuraria o ambiente. Criar o environment protegido, projeto Supabase descartável, secrets/personas e variáveis descritas na seção anterior; depois executar `workflow_dispatch` na `main`. Não usar os projetos canônicos `cfmzkthhgliqelozlmwu` nem `doufsxqlfjyuvxuezpln`.
-- **Revisão Copilot:** run da PR #185 [41183332482](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41183332482) falhou com `SessionModelError`, HTTP 402, `errorCode=quota` (“additional usage limit” do plano). Açãoo do owner: revisar a cota em `github.com/settings/copilot/features`; o check não pode ser corrigido por alteração de código.
+- **Revisão Copilot:** run da PR #185 [41183332482](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41183332482) falhou com `SessionModelError`, HTTP 402, `errorCode=quota` (“additional usage limit” do plano). Ação do owner: revisar a cota em `github.com/settings/copilot/features`; o check não pode ser corrigido por alteração de código.
 - **Merge/deploy:** as PRs #184 e #185 incluem mudanças de configuração CI e/ou dependências/código de aplicação. Não mesclar se a política de produção for disparada pelo merge de alteração da aplicação; manter abertas até revisão do owner e janela segura. A PR #186 só corrige workflow manual e não foi executada contra o Supabase.
 
 ### Atualização dos checks remotos das PRs (2026-10-31)
@@ -519,7 +519,7 @@ Este inventário substitui os status históricos acima para as falhas ainda aber
 - **PR/run:** #179, [E2E run 41164617193](https://github.com/adm01-debug/Brindes_Sicoob_V2/actions/runs/41164617193).
 - **Erro exato do preflight:** `Configure secrets dedicados E2E para URL, projeto, chaves e contas de homologação. Nenhum teste remoto foi iniciado.`
 - **Causa:** faltam no escopo lido pelo workflow `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_PROJECT_ID` e `E2E_SUPABASE_SERVICE_ROLE_KEY` (além de `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` e `VITE_SUPABASE_PROJECT_ID` na validação correspondente). O workflow deste SHA lê secrets do repositório e não declara `environment: e2e-staging`; preencher apenas secrets/variables do environment não o destrava.
-- **Açãoo do owner:** configurar os secrets necessários em Settings → Secrets and variables → Actions no escopo que o workflow lê, sem compartilhar os valores no chat; depois solicitar/permitir uma nova execução do E2E. O owner respondeu “Sim, vou configurar”, mas a execução verificada ainda falhou antes dos testes e os metadados continuam sem os nomes obrigatórios.
+- **Ação do owner:** configurar os secrets necessários em Settings → Secrets and variables → Actions no escopo que o workflow lê, sem compartilhar os valores no chat; depois solicitar/permitir uma nova execução do E2E. O owner respondeu “Sim, vou configurar”, mas a execução verificada ainda falhou antes dos testes e os metadados continuam sem os nomes obrigatórios.
 - **Segurança:** não ler, copiar ou registrar valores de secrets. Nenhuma execução autenticada foi certificada.
 
 ### 2. Dependências altas no `main`
