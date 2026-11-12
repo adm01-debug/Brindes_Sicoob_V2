@@ -254,9 +254,19 @@ try:
     assert retry_body.get("target_webhook_id") == "00000000-0000-4000-8000-000000000002", "retry deve indicar somente o webhook que falhou"
     assert retry_body.get("retry_after_attempt") == 1, "retry deve preservar o contador de tentativas"
 
-    retry_lease = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
-    assert retry_lease["ok"] is True and retry_lease["retried"] == 0 and retry_lease["skipped_active_lease"] == 1 and retry_lease["skipped_max_attempts"] == 0
-    assert scalar("SELECT count(*) FROM public.webhook_dispatch_test_requests;") == "7", "lease deve impedir novo enqueue enquanto aguarda o dispatcher"
+    # Uma FALHA intermediária da MESMA tentativa reservada (delivery attempt=2,
+    # sucesso=false) NÃO pode apagar a claim: o dispatcher ainda pode estar em
+    # backoff e a lease precisa valer até ele terminar. Sem esse vínculo, a
+    # claim seria removida e a rodada reenfileiraria a MESMA tentativa.
+    sql(f"""
+      INSERT INTO public.webhook_deliveries(id,webhook_id,event,payload,payload_hash,attempt,success,delivered_at)
+      VALUES ('00000000-0000-4000-8000-000000000006','00000000-0000-4000-8000-000000000002',
+        'quote.created','{{"quote_id":"qa"}}','hash-qa',2,false,now());
+    """)
+    retry_claim_intact = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
+    assert retry_claim_intact["ok"] is True and retry_claim_intact["retried"] == 0, "entrega da MESMA tentativa falha não desbloqueia retry imediato"
+    assert scalar("SELECT count(*) FROM public.webhook_retry_claims WHERE payload->>'quote_id' = 'qa' AND attempt = 2;") == "1", "claim deve permanecer até o dispatcher concluir (geraçao preservada)"
+
     sql("""
       UPDATE public.webhook_deliveries SET delivered_at = now() - interval '16 minutes'
       WHERE webhook_id = '00000000-0000-4000-8000-000000000002' AND payload->>'quote_id' = 'qa' AND success = false;
@@ -291,16 +301,28 @@ try:
     """)
     retry_replay_generation = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
     assert retry_replay_generation["retried"] == 1 and retry_replay_generation["skipped_claim_conflicts"] == 0
-    assert scalar("SELECT count(*) FROM public.webhook_retry_claims WHERE payload->>'quote_id' = 'replay' AND attempt = 2;") == "1", "novo replay deve avançar sem herdar claim da geração anterior"
+    assert scalar("SELECT count(*) FROM public.webhook_retry_claims WHERE payload_hash = 'hash-replay-new' AND attempt = 2;") == "1", "novo replay deve enfileirar tentativa própria (hash novo) sem conflito"
+    assert scalar("SELECT count(*) FROM public.webhook_retry_claims WHERE payload_hash = 'hash-replay-old' AND attempt = 2;") == "1", "claim da geração anterior não pode ser apagada por entrega de tentativa inferior (senão a rodada reenfileiraria a MESMA reserva)"
     sql("""
       INSERT INTO public.webhook_deliveries(id,webhook_id,event,payload,payload_hash,attempt,success,delivered_at)
       VALUES ('00000000-0000-4000-8000-000000000008','00000000-0000-4000-8000-000000000002',
-        'quote.created','{\"quote_id\":\"enqueue-failure\"}','hash-failure',1,false,now());
+        'quote.created','{"quote_id":"enqueue-failure"}','hash-failure',1,false,now());
       UPDATE public.webhook_dispatch_test_config SET fail_http_post = true WHERE id = 1;
     """)
     retry_enqueue_failure = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
     assert retry_enqueue_failure["ok"] is True and retry_enqueue_failure["retried"] == 0 and retry_enqueue_failure["claimed"] == 1 and retry_enqueue_failure["enqueue_errors"] == 1, "erro do enqueue deve ser contado sem fingir envio"
     assert scalar("SELECT count(*) FROM public.webhook_retry_claims WHERE payload->>'quote_id' = 'enqueue-failure' AND attempt = 2;") == "1", "claim deve sobreviver a erro de enqueue"
+    sql("""
+      UPDATE public.webhook_dispatch_test_config SET fail_http_post = false WHERE id = 1;
+      INSERT INTO public.outbound_webhooks(id, active, events, retry_policy)
+      VALUES ('00000000-0000-4000-8000-000000000005', true, ARRAY['quote.created'], '{"max_attempts":"abc"}');
+      INSERT INTO public.webhook_deliveries(id,webhook_id,event,payload,payload_hash,attempt,success,delivered_at)
+      VALUES ('00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000005',
+        'quote.created','{"quote_id":"invalid-policy"}','hash-invalid',1,false,now());
+    """)
+    retry_invalid_policy = json.loads(scalar("SELECT public.retry_failed_webhook_deliveries()::text;"))
+    assert retry_invalid_policy["ok"] is True and retry_invalid_policy["retried"] == 1, "política inválida não pode derrubar o batch"
+    assert scalar("SELECT count(*) FROM public.webhook_retry_claims WHERE payload->>'quote_id' = 'invalid-policy' AND attempt = 2;") == "1", "max_attempts inválido deve usar o padrão conservador e enfileirar"
     sql("""
       INSERT INTO public.webhook_retry_claims(webhook_id,event,payload,payload_hash,attempt,claimed_at)
       VALUES ('00000000-0000-4000-8000-000000000002','quote.created','{\"quote_id\":\"expired\"}','hash-expired',1,now() - interval '91 days');
@@ -317,10 +339,12 @@ try:
         "eventos de orçamento, pedido, desconto e kit são preservados; rascunho RE-* é ignorado",
         "retry sem segredo retorna bloqueio fechado",
         "duas sessões concorrentes não reservam retries em paralelo",
-        "retry grava claim antes do enqueue, preserva o contador, respeita lease e max_attempts",
+        "retry grava claim antes do enqueue, preserva o contador, respeita lease, backoff e max_attempts",
+                "falha intermediária da MESMA tentativa não apaga a claim (lease impede duplicação)",
         "retry identifica apenas o hook falho e um erro de enqueue não perde a tentativa reservada",
         "resultado de sucesso mais recente encerra novos retries",
-        "delivery de replay limpa claims antigos e inicia nova geração",
+                "novo replay não herda/limpa claims de geração anterior e não gera conflito",
+                "retry_policy com max_attempts inválido usa o padrão conservador sem derrubar o batch",
         "limpeza diária retém claims por 90 dias",
         "nenhum chamador envia Authorization/service_role",
         "ACL permite retry só a postgres/service_role e nega anon/authenticated",

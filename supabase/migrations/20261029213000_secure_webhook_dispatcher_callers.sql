@@ -15,7 +15,7 @@ CREATE TABLE public.webhook_retry_claims (
 
 CREATE UNIQUE INDEX webhook_retry_claims_attempt_unique_idx
   ON public.webhook_retry_claims (
-    webhook_id, event, (COALESCE(payload::text, '<sql-null>')), attempt
+    webhook_id, event, (COALESCE(payload_hash, '<sql-null>')), attempt
   );
 CREATE INDEX webhook_retry_claims_claimed_at_idx
   ON public.webhook_retry_claims (claimed_at DESC);
@@ -245,8 +245,12 @@ BEGIN
   END IF;
 
   -- O callback de uma entrega (inclusive um replay manual) inicia uma nova
-  -- fronteira operacional. Apague apenas claims anteriores já superados por
-  -- uma entrega materializada depois deles; claims pendentes são mantidos.
+    -- Um callback entrega (inclusive replay manual) inicia nova fronteira: apague
+    -- apenas claims já superadas por uma entrega materializada depois delas:
+    -- de tentativa posterior (a rodada avançou além da reserva) ou da própria
+    -- tentativa reservada concluída com sucesso. Uma falha intermediária da MESMA
+    -- tentativa reservada NÃO apaga a claim: o dispatcher pode estar em backoff e
+    -- a lease de 15 min é o que impede o reenfileiramento (retry duplicado).
   DELETE FROM public.webhook_retry_claims AS c
   WHERE EXISTS (
     SELECT 1
@@ -255,6 +259,7 @@ BEGIN
       AND d.event = c.event
       AND d.payload IS NOT DISTINCT FROM c.payload
       AND d.delivered_at > c.claimed_at
+      AND (d.attempt > c.attempt OR (d.success AND d.attempt = c.attempt))
   );
 
   FOR rec IN
@@ -285,12 +290,29 @@ BEGIN
     JOIN public.outbound_webhooks AS w ON w.id = l.webhook_id
     WHERE l.success = false AND w.active = true
   LOOP
-    v_max_attempts := LEAST(5, GREATEST(1, COALESCE((rec.retry_policy->>'max_attempts')::integer, 3)));
+    BEGIN
+      v_max_attempts := LEAST(5, GREATEST(1, COALESCE((rec.retry_policy->>'max_attempts')::integer, 3)));
+    EXCEPTION WHEN OTHERS THEN
+      -- Retry policy inválida (ex.: max_attempts não numérico) não pode
+      -- derrubar o batch inteiro de retries; usa o padrão conservador.
+      v_max_attempts := 3;
+    END;
 
     -- A chamada HTTP é assíncrona. Aguarda sua execução antes de consumir
     -- outra tentativa; após 15 minutos, uma reserva sem resultado pode avançar.
-    IF rec.source = 'retry_claim'
-       AND rec.occurred_at > now() - interval '15 minutes' THEN
+    -- O rec pode ser a delivery mais recente da MESMA tentativa reservada (o
+    -- dispatcher está em backoff): a claim ativa também bloqueia esse caminho,
+    -- senão o retry SQL reenfileiraria antes de o dispatcher terminar.
+    IF EXISTS (
+      SELECT 1
+      FROM public.webhook_retry_claims AS c2
+      WHERE c2.webhook_id = rec.webhook_id
+        AND c2.event = rec.event
+        AND ((c2.payload_hash IS NOT NULL AND c2.payload_hash = rec.payload_hash)
+             OR (c2.payload_hash IS NULL
+                 AND c2.payload IS NOT DISTINCT FROM rec.payload))
+        AND c2.claimed_at > now() - interval '15 minutes'
+    ) THEN
       v_skipped_active_lease := v_skipped_active_lease + 1;
       CONTINUE;
     END IF;
