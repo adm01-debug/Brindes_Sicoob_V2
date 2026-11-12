@@ -17,6 +17,8 @@
     "mockup-assets": "typo de bucket, correção mecânica pendente — plano de correções Etapa 16 (deveria ser mockup-art-files)",
     "personalization": "typo de bucket, correção mecânica pendente — plano de correções Etapa 16 (deveria ser personalization-images)",
     "set_config": "chamada a função pg_catalog nunca exposta via PostgREST, não é backlog de migration — plano de correções Etapa 17",
-    "sales_goals": "código morto confirmado (zero importadores de useSalesGoals.ts) — Etapa 26 do plano principal, sem ação necessária"
+    "sales_goals": "código morto confirmado (zero importadores de useSalesGoals.ts) — Etapa 26 do plano principal, sem ação necessária",
+    "get_public_favorite_list": "RPC criada pelas migrations deste PR (20261016171500/20261016172000) — snapshot do inventário anterior; atualizar após aplicação",
+    "get_public_favorite_reactions": "RPC criada pela migration deste PR (20261031042808) — snapshot do inventário anterior; atualizar após aplicação"
   }
 }
