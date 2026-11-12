@@ -716,12 +716,21 @@
       "reason": "Legado mantido no fluxo existente; referências literais: .github/workflows/ci.yml, .github/workflows/sicoob-ci.yml. O dispatcher não executa esta operação."
     },
     {
+<<<<<<< HEAD
       "id": "legacy-862b6d6e7179ef72",
       "kind": "legacy",
       "files": ["scripts/qa/simular-destinatarios-aprovacao-singular.py"],
       "manual": ["python3", "scripts/qa/simular-destinatarios-aprovacao-singular.py"],
       "triggers": ["manual"],
       "reason": "Legado mantido no fluxo existente; simulador local de destinatarios da aprovacao singular"
+=======
+      "id": "legacy-fbe59bc80ad5778d",
+      "kind": "legacy",
+      "files": ["scripts/qa/simular-reacoes-favoritos-rls.py"],
+      "manual": ["python3", "scripts/qa/simular-reacoes-favoritos-rls.py"],
+      "triggers": ["manual"],
+      "reason": "Legado mantido no fluxo existente; simulador local de RLS de favoritos"
+>>>>>>> 667c832b5 (chore(automacao): registra simulador de RLS de favoritos no config)
     },
     {
       "id": "legacy-b3640607264697c6",
