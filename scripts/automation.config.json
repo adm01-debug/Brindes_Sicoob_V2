@@ -724,6 +724,14 @@
       "reason": "Legado mantido no fluxo existente; simulador local de destinatarios da aprovacao singular"
     },
     {
+      "id": "legacy-fbe59bc80ad5778d",
+      "kind": "legacy",
+      "files": ["scripts/qa/simular-reacoes-favoritos-rls.py"],
+      "manual": ["python3", "scripts/qa/simular-reacoes-favoritos-rls.py"],
+      "triggers": ["manual"],
+      "reason": "Legado mantido no fluxo existente; simulador local de RLS de favoritos"
+    },
+    {
       "id": "legacy-b3640607264697c6",
       "kind": "legacy",
       "files": ["scripts/qa/simular-consolidacao-orcamentos.py"],
