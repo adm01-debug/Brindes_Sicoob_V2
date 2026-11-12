@@ -38,7 +38,7 @@ Não versionar valores, tokens, senhas, URL com credenciais ou screenshots que o
 | `SUPABASE_URL` | várias (client admin) | Supabase (automático) |
 | `SUPABASE_SERVICE_ROLE_KEY` | várias (client admin) | Supabase (automático) |
 | `SUPABASE_ANON_KEY` | várias | Supabase (automático) |
-| `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` / `VITE_SUPABASE_PROJECT_ID` | build do frontend | segredo/configuração do provedor de hospedagem; usar `.env.production.example` somente como modelo local |
+| `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` | build do frontend | GitHub secret + `.env.production` |
 | `EXTERNAL_SUPABASE_URL` / `EXTERNAL_SUPABASE_SERVICE_KEY` | `categories-api`, `external-db-inspect` (catálogo externo) | **preencher** |
 | `CRM_SUPABASE_URL` / `CRM_SUPABASE_ANON_KEY` / `CRM_SUPABASE_SERVICE_KEY` | `crm-db-bridge` | **preencher** |
 | `BITRIX24_WEBHOOK_URL` | `bitrix-sync` | **preencher** |
@@ -56,7 +56,7 @@ Não versionar valores, tokens, senhas, URL com credenciais ou screenshots que o
 | `N8N_PRODUCT_WEBHOOK_SECRET` / `N8N_QUOTE_WEBHOOK_URL` | integração n8n | **preencher** |
 | `SALESPRO_WEBHOOK_URL` | integração SalesPro | **preencher** |
 | `QUOTE_SYNC_API_KEY` | sync de orçamento | **preencher** |
-| `BI_SHARE_SECRET` | `bi-share-dossier` | **preencher** |
+| `BI_SHARE_SECRET` | `bi-share-dossier` | **⛔ preencher ANTES do deploy** — sem este secret a função retorna 503 para todas as requisições. Deve ser gerado com pelo menos 32 bytes aleatórios (`openssl rand -base64 32`). Não reutilizar `SUPABASE_SERVICE_ROLE_KEY`: a separação é intencional (evita que tokens HMAC públicos compartilhem a chave administrativa). Links assinados antes do provisionamento (enquanto o fallback estava ativo) deixam de ser válidos — reemitir se necessário. |
 | `WEBHOOK_HMAC_SECRET` | validação de assinatura de webhook | **preencher** (usado também em `ci.yml`) |
 | `E2E_CLEANUP_TOKEN` | `e2e-cleanup` | **GitHub secret — pendente (etapa 03)** |
 | `E2E_CLEANUP_ALLOWED_EMAILS` / `_RATE_LIMIT_MAX` / `_RATE_LIMIT_WINDOW_SECONDS` | `e2e-cleanup` (guarda-corpo) | **preencher** |
