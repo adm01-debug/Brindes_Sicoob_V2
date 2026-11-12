@@ -1,19 +1,35 @@
-BEGIN;
-
 -- Guardrails aditivos para ambientes com drift já existente.
 -- Não altera histórico remoto já aplicado e não usa DROP.
+-- Sem transação explícita nem refresh concorrente: o aplicador executa o lote
+-- numa única transação atômica e rejeita esses padrões no preflight (parseTarget).
 
 DO $$
 DECLARE
   v_duplicates text;
+  v_has_unique_index boolean;
 BEGIN
   IF to_regclass('public.integration_secrets') IS NULL THEN
     RETURN;
   END IF;
 
-  -- Só valida duplicidade quando o índice único ainda não existe. Em produção
-  -- canônica o índice já deve ter sido criado pela migration anterior.
-  IF to_regclass('public.ux_integration_secrets_chave') IS NULL THEN
+  -- Verifica unicidade REAL no catálogo (qualquer índice único válido na coluna
+  -- chave), não apenas a existência do nome ux_integration_secrets_chave.
+  SELECT EXISTS (
+    SELECT 1
+    FROM pg_index i
+    JOIN pg_class c      ON c.oid = i.indrelid
+    JOIN pg_namespace n  ON n.oid = c.relnamespace
+    JOIN pg_attribute a  ON a.attrelid = c.oid
+                       AND a.attnum = ANY (i.indkey)
+    WHERE n.nspname = 'public'
+      AND c.relname = 'integration_secrets'
+      AND i.indisunique
+      AND i.indisvalid
+      AND NOT i.indisprimary
+      AND a.attname = 'chave'
+  ) INTO v_has_unique_index;
+
+  IF NOT v_has_unique_index THEN
     SELECT string_agg(chave, ', ' ORDER BY chave)
     INTO v_duplicates
     FROM (
@@ -33,6 +49,10 @@ BEGIN
         v_duplicates
         USING ERRCODE = '23505';
     END IF;
+
+    CREATE UNIQUE INDEX ux_integration_secrets_chave
+      ON public.integration_secrets (chave)
+      WHERE chave IS NOT NULL AND btrim(chave) <> '';
   END IF;
 END
 $$;
@@ -49,10 +69,10 @@ BEGIN
   END IF;
 
   BEGIN
-    REFRESH MATERIALIZED VIEW CONCURRENTLY public.mv_benchmark_setorial;
+    REFRESH MATERIALIZED VIEW public.mv_benchmark_setorial;
   EXCEPTION
     WHEN feature_not_supported THEN
-      REFRESH MATERIALIZED VIEW public.mv_benchmark_setorial;
+      NULL;
   END;
 END;
 $$;
@@ -81,5 +101,3 @@ BEGIN
   END IF;
 END
 $$;
-
-COMMIT;
