@@ -33,7 +33,7 @@ CREATE TABLE public.favorite_items (
 );
 CREATE TABLE public.favorite_item_reactions (
   id uuid PRIMARY KEY,
-  item_id uuid NOT NULL,
+  item_id uuid NOT NULL REFERENCES public.favorite_items(id),
   list_id uuid NOT NULL REFERENCES public.favorite_lists(id),
   anon_id text NOT NULL,
   emoji text NOT NULL,
@@ -109,9 +109,9 @@ INSERT INTO public.favorite_items (id, list_id, user_id, product_id) VALUES
 INSERT INTO public.favorite_item_reactions
   (id, item_id, list_id, anon_id, emoji, user_agent, ip_hash)
 VALUES
-  ('aaaaaaaa-1000-4000-8000-000000000001', 'aaaaaaaa-2000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001', 'visitor-a-001', '👍', 'browser-a', 'hash-a'),
-  ('aaaaaaaa-1000-4000-8000-000000000002', 'aaaaaaaa-2000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001', 'visitor-a-002', '🔥', 'browser-b', 'hash-b'),
-  ('bbbbbbbb-1000-4000-8000-000000000003', 'bbbbbbbb-2000-4000-8000-000000000002', 'bbbbbbbb-0000-4000-8000-000000000002', 'visitor-b-001', '❤️', 'browser-c', 'hash-c');
+  ('aaaaaaaa-1000-4000-8000-000000000001', 'aaaaaaaa-3000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001', 'visitor-a-001', '👍', 'browser-a', 'hash-a'),
+  ('aaaaaaaa-1000-4000-8000-000000000002', 'aaaaaaaa-3000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001', 'visitor-a-002', '🔥', 'browser-b', 'hash-b'),
+  ('bbbbbbbb-1000-4000-8000-000000000003', 'bbbbbbbb-3000-4000-8000-000000000002', 'bbbbbbbb-0000-4000-8000-000000000002', 'visitor-b-001', '❤️', 'browser-c', 'hash-c');
 
 CREATE FUNCTION public.get_public_favorite_reactions(_token text, _anon_id text)
 RETURNS TABLE(item_id uuid, emoji text, anon_id text)

@@ -76,7 +76,7 @@ try:
     anon_insert = as_role(
         "anon", "",
         "INSERT INTO public.favorite_item_reactions (id,item_id,list_id,anon_id,emoji) "
-        f"VALUES ('eeeeeeee-1000-4000-8000-000000000005','eeeeeeee-2000-4000-8000-000000000005','{LIST_A}','visitor-x-001','💡')",
+        f"VALUES ('eeeeeeee-1000-4000-8000-000000000005','aaaaaaaa-3000-4000-8000-000000000001','{LIST_A}','visitor-x-001','💡')",
         check=False,
     )
     anon_update = as_role(
@@ -94,7 +94,7 @@ try:
     authenticated_insert = as_role(
         "authenticated", OTHER_USER,
         "INSERT INTO public.favorite_item_reactions (id,item_id,list_id,anon_id,emoji) "
-        f"VALUES ('eeeeeeee-1000-4000-8000-000000000005','eeeeeeee-2000-4000-8000-000000000005','{LIST_A}','visitor-x-001','💡')",
+        f"VALUES ('eeeeeeee-1000-4000-8000-000000000005','aaaaaaaa-3000-4000-8000-000000000001','{LIST_A}','visitor-x-001','💡')",
         check=False,
     )
     evidence["anon_sem_select_direto"] = anon_select.returncode != 0
@@ -133,8 +133,8 @@ try:
     public_rpc_rows = {line for line in public_rpc.splitlines() if "|" in line}
     evidence["rpc_publico_filtra_por_token_e_mascara_outros_visitantes"] = (
         public_rpc_rows == {
-            "aaaaaaaa-2000-4000-8000-000000000001|👍|visitor-a-001",
-            "aaaaaaaa-2000-4000-8000-000000000001|🔥|",
+            "aaaaaaaa-3000-4000-8000-000000000001|👍|visitor-a-001",
+            "aaaaaaaa-3000-4000-8000-000000000001|🔥|",
         }
     )
     public_lists_rpc = as_role(
@@ -159,7 +159,7 @@ try:
     ).stdout
     evidence["rpc_token_b_retorna_somente_reacoes_da_lista_b"] = (
         {line for line in list_b_rpc.splitlines() if "|" in line}
-        == {"bbbbbbbb-2000-4000-8000-000000000002|❤️|visitor-b-001"}
+        == {"bbbbbbbb-3000-4000-8000-000000000002|❤️|visitor-b-001"}
     )
     sql(
         "UPDATE public.favorite_lists SET shared_expires_at = now() - interval '1 hour' "
@@ -174,7 +174,7 @@ try:
     service_write = as_role(
         "service_role", "",
         "INSERT INTO public.favorite_item_reactions (id,item_id,list_id,anon_id,emoji) "
-        f"VALUES ('eeeeeeee-1000-4000-8000-000000000005','eeeeeeee-2000-4000-8000-000000000005','{LIST_B}','edge-user-001','💡')",
+        f"VALUES ('eeeeeeee-1000-4000-8000-000000000005','bbbbbbbb-3000-4000-8000-000000000002','{LIST_B}','edge-user-001','💡')",
     )
     evidence["service_role_preserva_escrita_da_edge_function"] = service_write.returncode == 0
     assert all(evidence[key] for key in evidence if key not in {"ambiente", "migration", "banco_canonico_alterado"}), evidence
