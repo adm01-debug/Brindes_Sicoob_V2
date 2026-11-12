@@ -303,6 +303,11 @@ BEGIN
     -- O rec pode ser a delivery mais recente da MESMA tentativa reservada (o
     -- dispatcher está em backoff): a claim ativa também bloqueia esse caminho,
     -- senão o retry SQL reenfileiraria antes de o dispatcher terminar.
+    IF rec.source = 'retry_claim'
+       AND rec.occurred_at > now() - interval '15 minutes' THEN
+      v_skipped_active_lease := v_skipped_active_lease + 1;
+      CONTINUE;
+    END IF;
     IF EXISTS (
       SELECT 1
       FROM public.webhook_retry_claims AS c2
