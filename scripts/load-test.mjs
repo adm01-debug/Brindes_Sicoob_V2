@@ -3,8 +3,8 @@
  * Measures latency and stability under high concurrency.
  */
 
-if (!process.env.VITE_SUPABASE_URL) {
-  console.error('❌ VITE_SUPABASE_URL não configurada. Configure no .env antes de rodar o load test.');
+if (!process.env.VITE_SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+  console.error('❌ VITE_SUPABASE_URL e SUPABASE_ANON_KEY são obrigatórios. Configure no .env antes de rodar o load test.');
   process.exit(2);
 }
 const TARGET_URL = process.env.VITE_SUPABASE_URL + '/functions/v1/health-check';
@@ -13,10 +13,6 @@ const CONCURRENCY = 50;
 const TOTAL_REQUESTS = 1000;
 
 async function runLoadTest() {
-  if (!TARGET_URL || !ANON_KEY) {
-    console.error('❌ VITE_SUPABASE_URL e SUPABASE_ANON_KEY são obrigatórios.');
-    process.exit(1);
-  }
   console.log(`🔥 Starting Load Test on ${TARGET_URL}`);
   console.log(`Concurrency: ${CONCURRENCY}, Total Requests: ${TOTAL_REQUESTS}`);
 
