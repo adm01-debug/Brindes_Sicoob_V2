@@ -17,6 +17,10 @@ const PROJECT_REF = "cfmzkthhgliqelozlmwu";
 const LEDGER_HASH_MARKER = /^sha256:([a-f0-9]{64}); executor:allowlisted-management-api$/;
 const TARGETS = [
   {
+    file: "supabase/migrations/20260827102000_guardrails_integration_secrets_mv_benchmark.sql",
+    sha256: "ab113721356c5a643e72fd222410a1586b612406ac0b206a07984dcaaa6b000f",
+  },
+  {
     file: "supabase/migrations/20260928140600_rls_deny_all_internal_tables.sql",
     sha256: "00a3379cc3a0a5942c193b55e9e98a5d29bb70ec9bfd8b085a6b6461dddcedf3",
   },
