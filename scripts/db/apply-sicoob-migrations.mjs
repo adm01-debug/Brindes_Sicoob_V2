@@ -121,6 +121,10 @@ const TARGETS = [
     sha256: "f34673b492a9d222c955bed53d396121473fdbd1a32dba2e3fde3f3041f96803",
   },
   {
+      file: "supabase/migrations/20261015102000_fix_pg_net_recycled_request_ids.sql",
+      sha256: "ef148dedbf709e27899d16c2e1bf3a1f67803d314f582d84bc332b2d001b668b",
+    },
+    {
     file: "supabase/migrations/20261022120000_add_public_favorites_to_security_definer_allowlist.sql",
     sha256: "87bf1a8d5bb689f202a4ff77968c6f8820cfbfe5fffdff5d9c16c439a611bf54",
   },
@@ -133,6 +137,43 @@ const TARGETS = [
     sha256: "c9ed6a8c27fc27159601b1fba713a30b03150eeb57a21047cbb40e47dc95cd74",
   },
 ];
+
+const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
+  NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conrelid = 'public.sicoob_approval_worker_dispatches'::regclass
+      AND conname = 'sicoob_approval_worker_dispatches_request_id_key'
+      AND contype = 'u'
+  )
+  AND EXISTS (
+    SELECT 1
+    FROM pg_index i
+    JOIN pg_class idx ON idx.oid = i.indexrelid
+    WHERE i.indrelid = 'public.sicoob_approval_worker_dispatches'::regclass
+      AND idx.relname = 'idx_sicoob_approval_worker_queued_request'
+      AND i.indisvalid
+      AND i.indpred IS NOT NULL
+      AND pg_get_expr(i.indpred, i.indrelid) = '(state = ''queued''::text)'
+      AND pg_get_indexdef(i.indexrelid) LIKE '%(request_id, requested_at DESC)%'
+  )
+)`;
+
+const APPROVAL_WORKER_MONITOR_SAFE_SQL = `COALESCE((
+  SELECT p.prosecdef
+    AND p.proconfig @> ARRAY['search_path=pg_catalog, public, net']::text[]
+    AND NOT has_function_privilege('anon', p.oid, 'EXECUTE')
+    AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE')
+    AND has_function_privilege('service_role', p.oid, 'EXECUTE')
+    AND EXISTS (
+      SELECT 1 FROM pg_index i
+      JOIN pg_class idx ON idx.oid = i.indexrelid
+      WHERE i.indrelid = 'public.sicoob_approval_worker_dispatches'::regclass
+        AND idx.relname = 'idx_sicoob_approval_worker_queued_request'
+        AND pg_get_indexdef(i.indexrelid) LIKE '%(request_id, requested_at DESC)%'
+    )
+  FROM pg_proc p
+  WHERE p.oid = to_regprocedure('public.monitor_sicoob_approval_worker()')
+), false)`;
 
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
@@ -279,6 +320,31 @@ function latestDefiner(targets, functionName) {
   ];
   return [...targets].reverse().find((target) =>
     declarations.some((declaration) => target.sql.includes(declaration)));
+}
+
+// O corpo esperado do monitor é a função original (20260922225500) com os
+// dois patches de correlação/timeout aplicados pela migration 20261015102000.
+// O patch substitui os blocos antigos pelos novos; derivá-los em Node evita
+// guardar o corpo copiado e mantém a validação por igualdade total (hash).
+function approvalWorkerMonitorBody(targets) {
+  const base = latestDefiner(targets, "monitor_sicoob_approval_worker")?.sql
+    ?? readFileSync(join(ROOT, "supabase/migrations/20260922225500_monitor_sicoob_approval_worker.sql"), "utf8");
+  const patch = latestDefiner(targets, "dispatch_sicoob_approval_worker")?.sql
+    ?? readFileSync(join(ROOT, "supabase/migrations/20261015102000_fix_pg_net_recycled_request_ids.sql"), "utf8");
+  const findBlock = (sql, marker) => {
+    const labelIndex = sql.indexOf(`:= $${marker}$`);
+    if (labelIndex < 0) throw new Error(`Bloco $${marker}$ não encontrado no patch do monitor.`);
+    return sql.slice(labelIndex + `:= $${marker}$`.length, sql.indexOf(`$${marker}$;`, labelIndex));
+  };
+  const apply = (source, marker, targetSql) => {
+    const oldBlock = findBlock(patch, `old_${marker}`);
+    const newBlock = findBlock(patch, `new_${marker}`);
+    const replaced = targetSql.replace(oldBlock, newBlock);
+    if (replaced === targetSql) throw new Error(`Patch ${marker} não encontrado no corpo do monitor.`);
+    return replaced;
+  };
+  const body = extractFunctionBody(base, "monitor_sicoob_approval_worker");
+  return apply(patch, "response", apply(patch, "timeout", body));
 }
 
 function extractFunctionBody(sql, functionName) {
@@ -727,7 +793,11 @@ async function validateContract(client, targets) {
             = 'UNIQUE NULLS NOT DISTINCT (list_id, product_id, variant_id)'
       ) AS favorite_items_upsert_constraint_safe,
       to_regclass('public.idx_favorite_items_unique') IS NULL
-        AS favorite_items_legacy_index_removed
+        AS favorite_items_legacy_index_removed,
+      ${APPROVAL_WORKER_STRUCTURE_SAFE_SQL} AS approval_worker_structure_safe,
+      ${APPROVAL_WORKER_MONITOR_SAFE_SQL} AS approval_worker_monitor_safe,
+      (SELECT p.prosrc FROM pg_proc p
+        WHERE p.oid = to_regprocedure('public.monitor_sicoob_approval_worker()')) AS monitor_source
   `);
   const result = rows[0];
   const idempotencyMigration = latestDefiner(targets, "save_quote_atomic_idempotent");
@@ -746,6 +816,7 @@ async function validateContract(client, targets) {
     && typeof result.save_atomic_source === "string"
     && typeof result.transition_assert_source === "string"
     && typeof result.quote_scope_source === "string"
+    && typeof result.monitor_source === "string"
     && sha256(result.idempotency_source.trim()) === sha256(
       extractFunctionBody(idempotencyMigration.sql, "save_quote_atomic_idempotent"),
     )
@@ -763,7 +834,8 @@ async function validateContract(client, targets) {
     )
     && sha256(result.quote_scope_source.trim()) === sha256(
       extractFunctionBody(quoteScopeMigration.sql, "can_manage_quote_scope"),
-    );
+    )
+    && sha256(result.monitor_source.trim()) === sha256(approvalWorkerMonitorBody(targets));
   const normalizeExpression = (value) => typeof value === "string"
     ? value.replace(/\s+/g, " ").trim()
     : value;
@@ -833,19 +905,24 @@ async function validateContract(client, targets) {
     && result.semantic_search_contract_safe
     && result.pa_budgets_restrictive_policy_safe
     && result.favorite_items_upsert_constraint_safe
-    && result.favorite_items_legacy_index_removed;
+    && result.favorite_items_legacy_index_removed
+    && result.approval_worker_structure_safe
+    && result.approval_worker_monitor_safe;
   if (!valid) {
     const diagnostic = { ...(result ?? {}) };
     delete diagnostic.idempotency_source;
     delete diagnostic.status_source;
     delete diagnostic.notification_source;
     delete diagnostic.save_atomic_source;
+    delete diagnostic.monitor_source;
     throw new Error(`Contrato remoto de idempotência inválido: ${JSON.stringify({
       ...diagnostic,
       source_hashes_valid: sourceHashesValid,
       policies_exact: policiesExact,
       constraints_exact: constraintsExact,
       trigger_definition_exact: triggerDefinitionExact,
+      approval_worker_monitor_safe: result?.approval_worker_monitor_safe,
+      monitor_source: typeof result?.monitor_source === "string" ? "exposed" : result?.monitor_source,
     })}`);
   }
 }
@@ -902,7 +979,6 @@ VALUES (
     extractFunctionBody(quoteScopeMigration.sql, "can_manage_quote_scope"),
     "quote_scope_body",
   );
-
   return `BEGIN;
 SET LOCAL statement_timeout = '2min';
 SELECT pg_advisory_xact_lock(hashtext('sicoob-allowlisted-migrations'));
@@ -941,6 +1017,10 @@ BEGIN
         IS DISTINCT FROM ${transitionBody}
      OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.can_manage_quote_scope(uuid,uuid)'))
         IS DISTINCT FROM ${quoteScopeBody}
+     OR NOT ${APPROVAL_WORKER_STRUCTURE_SAFE_SQL}
+     OR NOT ${APPROVAL_WORKER_MONITOR_SAFE_SQL}
+     OR (SELECT btrim(prosrc, E' \n\r\t') FROM pg_proc WHERE oid = to_regprocedure('public.monitor_sicoob_approval_worker()'))
+        IS DISTINCT FROM ${dollarQuote(approvalWorkerMonitorBody(targets), "monitor_body")}
      OR COALESCE((SELECT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
         FROM pg_proc WHERE oid = to_regprocedure('public.save_quote_atomic(jsonb,jsonb,uuid,integer,jsonb)')), true)
      OR COALESCE((SELECT prosecdef OR NOT (proconfig @> ARRAY['search_path=pg_catalog, public']::text[])
