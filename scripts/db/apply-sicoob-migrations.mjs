@@ -133,12 +133,6 @@ const TARGETS = [
     sha256: "87bf1a8d5bb689f202a4ff77968c6f8820cfbfe5fffdff5d9c16c439a611bf54",
   },
   {
-    file: "supabase/migrations/20261031204500_webhook_endpoint_metrics_atomic.sql",
-    sha256: "272bc3e6e90786545b1ac76acba95deb4f5664080c45f07070bf3845e868746a",
-  },
-  {
-    file: "supabase/migrations/20261106200300_restrict_proposals_delete_scope.sql",
-    sha256: "c9ed6a8c27fc27159601b1fba713a30b03150eeb57a21047cbb40e47dc95cd74",
     file: "supabase/migrations/20261029200521_harden_singular_quote_notification_recipients.sql",
     sha256: "cd0ad2355bcbb3c07008d4375bb062edccd9495cd7be9e6c895d32d811685ec1",
   },
@@ -157,6 +151,14 @@ const TARGETS = [
   {
     file: "supabase/migrations/20261031042808_secure_public_favorite_reactions_access.sql",
     sha256: "19697e5e6df3f80b86195de4574123233b0afa2b64d4688e679011c1bf58be17",
+  },
+  {
+    file: "supabase/migrations/20261031204500_webhook_endpoint_metrics_atomic.sql",
+    sha256: "272bc3e6e90786545b1ac76acba95deb4f5664080c45f07070bf3845e868746a",
+  },
+  {
+    file: "supabase/migrations/20261106200300_restrict_proposals_delete_scope.sql",
+    sha256: "c9ed6a8c27fc27159601b1fba713a30b03150eeb57a21047cbb40e47dc95cd74",
   },
   {
     file: "supabase/migrations/20261107190600_harden_rpc_acl_and_fk_indexes.sql",
