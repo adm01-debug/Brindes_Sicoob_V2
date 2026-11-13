@@ -139,6 +139,26 @@ const TARGETS = [
   {
     file: "supabase/migrations/20261106200300_restrict_proposals_delete_scope.sql",
     sha256: "c9ed6a8c27fc27159601b1fba713a30b03150eeb57a21047cbb40e47dc95cd74",
+    file: "supabase/migrations/20261029200521_harden_singular_quote_notification_recipients.sql",
+    sha256: "dd1129be5878bc3b3832880b21f918c5bdd76bc6314b266c8cc3132cfba8ac2e",
+  },
+  {
+    file: "supabase/migrations/20261029213000_secure_webhook_dispatcher_callers.sql",
+    sha256: "da86e8e540c176ee34ad8812902e950dd0ed99c9e6f576a696a9fc9f4c5d01d4",
+  },
+  {
+    file: "supabase/migrations/20261030210000_require_active_actor_for_quote_status_retry.sql",
+    sha256: "482b69512c0ac17623ab70ce0d0f42e6324dfb962ac703f43ad61c180a36ef41",
+  },
+  {
+    file: "supabase/migrations/20261031041308_restore_pa_budget_buyer_select_scope.sql",
+    sha256: "2ff5bc2a2f6dd5a5915c08e1c7594f8a0b69a26092594122d343e47ea9a9e403",
+  },
+  {
+    file: "supabase/migrations/20261031042808_secure_public_favorite_reactions_access.sql",
+    sha256: "4494135e5e304cad62b68d5e9d6979e4b28d2ed70be4dd190f76ba4bce6f217f",
+  },
+  {
     file: "supabase/migrations/20261107190600_harden_rpc_acl_and_fk_indexes.sql",
     sha256: "2adae9ab7cbddb74fa439e940ba95d470001091839664f760785a112848afab9",
   },
