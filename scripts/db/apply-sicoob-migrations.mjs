@@ -164,6 +164,10 @@ const TARGETS = [
     file: "supabase/migrations/20261107190600_harden_rpc_acl_and_fk_indexes.sql",
     sha256: "2adae9ab7cbddb74fa439e940ba95d470001091839664f760785a112848afab9",
   },
+  {
+    file: "supabase/migrations/20261113170000_use_semantic_admin_helper_in_favorite_policies.sql",
+    sha256: "3f828b9fac8ec95fa1ad9bfd3280ffec27f96a8525a9b5f86ee4e2f36fd4f55e",
+  },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
   NOT EXISTS (
