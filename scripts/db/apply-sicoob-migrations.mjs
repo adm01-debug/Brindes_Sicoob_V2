@@ -925,8 +925,8 @@ async function validateContract(client, targets) {
     && Number(result.rls_auth_initplan_candidate_count) === 0
     && Number(result.consolidated_rls_policy_count) === 222
     && Number(result.consolidated_rls_table_count) === 63
-    && Number(result.consolidated_rls_public_policy_count) === 55
-    && Number(result.consolidated_rls_protected_policy_count) === 167
+    && Number(result.consolidated_rls_public_policy_count) === 57
+    && Number(result.consolidated_rls_protected_policy_count) === 165
     && Number(result.invalid_consolidated_rls_policy_count) === 0
     && Number(result.anon_blocked_rls_dependency_count) === 0
     && Number(result.explicit_anon_policy_count) === 4
@@ -1234,12 +1234,12 @@ BEGIN
        FROM pg_policies
        WHERE schemaname = 'public'
          AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$'
-         AND roles = ARRAY['public']::name[]) <> 55
+         AND roles = ARRAY['public']::name[]) <> 57
      OR (SELECT count(*)
        FROM pg_policies
        WHERE schemaname = 'public'
          AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$'
-         AND roles = ARRAY['authenticated', 'service_role']::name[]) <> 167
+         AND roles = ARRAY['authenticated', 'service_role']::name[]) <> 165
      OR EXISTS (
        SELECT 1
        FROM pg_policies
