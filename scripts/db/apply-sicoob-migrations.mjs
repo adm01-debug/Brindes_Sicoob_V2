@@ -139,9 +139,10 @@ const TARGETS = [
   {
     file: "supabase/migrations/20261106200300_restrict_proposals_delete_scope.sql",
     sha256: "c9ed6a8c27fc27159601b1fba713a30b03150eeb57a21047cbb40e47dc95cd74",
+    file: "supabase/migrations/20261107190600_harden_rpc_acl_and_fk_indexes.sql",
+    sha256: "2adae9ab7cbddb74fa439e940ba95d470001091839664f760785a112848afab9",
   },
 ];
-
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
   NOT EXISTS (
     SELECT 1 FROM pg_constraint
