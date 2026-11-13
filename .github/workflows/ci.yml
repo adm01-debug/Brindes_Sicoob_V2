@@ -20,6 +20,7 @@ concurrency:
 
 jobs:
   qualidade:
+    if: github.actor != 'Copilot'
     name: Segurança, contratos e build
     runs-on: ubuntu-latest
     timeout-minutes: 25

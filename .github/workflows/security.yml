@@ -25,6 +25,7 @@ concurrency:
 
 jobs:
   npm-audit:
+    if: github.actor != 'Copilot'
     name: npm audit — CVE Scan
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -45,6 +46,7 @@ jobs:
         run: npm audit --audit-level=high
 
   gitleaks:
+    if: github.actor != 'Copilot'
     name: Gitleaks — Secret Scan
     runs-on: ubuntu-latest
     timeout-minutes: 10

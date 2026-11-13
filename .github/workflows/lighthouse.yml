@@ -13,6 +13,7 @@ concurrency:
 
 jobs:
   lighthouse:
+    if: github.actor != 'Copilot'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

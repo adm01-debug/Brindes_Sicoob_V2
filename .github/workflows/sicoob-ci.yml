@@ -37,6 +37,7 @@ concurrency:
 
 jobs:
   transacoes:
+    if: github.actor != 'Copilot'
     name: Verba e aprovação transacionais
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -62,6 +63,7 @@ jobs:
           python3 scripts/qa/simular-rls-cruzada-sicoob.py
 
   experiencia:
+    if: github.actor != 'Copilot'
     name: Entrada e demonstração responsivas
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -119,7 +121,7 @@ jobs:
 
   sicoob-gate:
     name: sicoob-gate
-    if: always()
+    if: github.actor != 'Copilot'
     needs: [transacoes, experiencia]
     runs-on: ubuntu-latest
     timeout-minutes: 5

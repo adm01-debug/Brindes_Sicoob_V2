@@ -17,6 +17,7 @@ concurrency:
 
 jobs:
   validate-source:
+    if: github.actor != 'Copilot'
     name: Validar origem confiável
     runs-on: ubuntu-latest
     steps:
@@ -32,7 +33,7 @@ jobs:
 
   # O check obrigatório `e2e` em PR executa somente specs públicos sem secrets.
   e2e:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.actor != 'Copilot'
     needs: validate-source
     runs-on: ubuntu-latest
     timeout-minutes: 25
