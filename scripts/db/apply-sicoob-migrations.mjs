@@ -133,14 +133,40 @@ const TARGETS = [
     sha256: "87bf1a8d5bb689f202a4ff77968c6f8820cfbfe5fffdff5d9c16c439a611bf54",
   },
   {
+    file: "supabase/migrations/20261029200521_harden_singular_quote_notification_recipients.sql",
+    sha256: "cd0ad2355bcbb3c07008d4375bb062edccd9495cd7be9e6c895d32d811685ec1",
+  },
+  {
+    file: "supabase/migrations/20261029213000_secure_webhook_dispatcher_callers.sql",
+    sha256: "d2afc37781798529ae7549516b5ffa72501f82c532a515e60620c98fe2141824",
+  },
+  {
+    file: "supabase/migrations/20261030210000_require_active_actor_for_quote_status_retry.sql",
+    sha256: "a5a52ee6c86b0dd145ce0ca6e5c074ce176e4b6fb42dab6df2fb1484367b1cfe",
+  },
+  {
+    file: "supabase/migrations/20261031041308_restore_pa_budget_buyer_select_scope.sql",
+    sha256: "fcabbae5279c4c494c2d24db97a638529ab272bfe94b2636d78991730a02d668",
+  },
+  {
+    file: "supabase/migrations/20261031042808_secure_public_favorite_reactions_access.sql",
+    sha256: "19697e5e6df3f80b86195de4574123233b0afa2b64d4688e679011c1bf58be17",
+  },
+  {
     file: "supabase/migrations/20261031204500_webhook_endpoint_metrics_atomic.sql",
     sha256: "272bc3e6e90786545b1ac76acba95deb4f5664080c45f07070bf3845e868746a",
   },
   {
     file: "supabase/migrations/20261106200300_restrict_proposals_delete_scope.sql",
     sha256: "c9ed6a8c27fc27159601b1fba713a30b03150eeb57a21047cbb40e47dc95cd74",
+  },
+  {
     file: "supabase/migrations/20261107190600_harden_rpc_acl_and_fk_indexes.sql",
     sha256: "2adae9ab7cbddb74fa439e940ba95d470001091839664f760785a112848afab9",
+  },
+  {
+    file: "supabase/migrations/20261113170000_use_semantic_admin_helper_in_favorite_policies.sql",
+    sha256: "3f828b9fac8ec95fa1ad9bfd3280ffec27f96a8525a9b5f86ee4e2f36fd4f55e",
   },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
@@ -897,9 +923,9 @@ async function validateContract(client, targets) {
     && Number(result.covered_fk_index_count) === 17
     && Number(result.obsolete_duplicate_index_count) === 0
     && Number(result.rls_auth_initplan_candidate_count) === 0
-    && Number(result.consolidated_rls_policy_count) === 226
+    && Number(result.consolidated_rls_policy_count) === 222
     && Number(result.consolidated_rls_table_count) === 63
-    && Number(result.consolidated_rls_public_policy_count) === 59
+    && Number(result.consolidated_rls_public_policy_count) === 55
     && Number(result.consolidated_rls_protected_policy_count) === 167
     && Number(result.invalid_consolidated_rls_policy_count) === 0
     && Number(result.anon_blocked_rls_dependency_count) === 0
@@ -1199,7 +1225,7 @@ BEGIN
      OR (SELECT count(*)
        FROM pg_policies
        WHERE schemaname = 'public'
-         AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$') <> 226
+         AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$') <> 222
      OR (SELECT count(DISTINCT tablename)
        FROM pg_policies
        WHERE schemaname = 'public'
@@ -1208,7 +1234,7 @@ BEGIN
        FROM pg_policies
        WHERE schemaname = 'public'
          AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$'
-         AND roles = ARRAY['public']::name[]) <> 59
+         AND roles = ARRAY['public']::name[]) <> 55
      OR (SELECT count(*)
        FROM pg_policies
        WHERE schemaname = 'public'
