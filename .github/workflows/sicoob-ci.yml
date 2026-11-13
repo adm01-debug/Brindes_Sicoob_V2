@@ -121,7 +121,7 @@ jobs:
 
   sicoob-gate:
     name: sicoob-gate
-    if: github.actor != 'Copilot'
+    if: always() && github.actor != 'Copilot'
     needs: [transacoes, experiencia]
     runs-on: ubuntu-latest
     timeout-minutes: 5
