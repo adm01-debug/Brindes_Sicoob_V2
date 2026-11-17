@@ -39,6 +39,7 @@ const HIGH_LATENCY_MS = 2000;
 
 let cached: CloudStatusSnapshot | null = null;
 let inFlight: Promise<CloudStatusSnapshot> | null = null;
+let healthFunctionForbidden = false;
 
 const target: EventTarget = typeof EventTarget !== 'undefined' ? new EventTarget() : ({
   addEventListener() {},
@@ -95,20 +96,37 @@ async function checkRest(): Promise<{ ok: boolean; ms: number }> {
       }),
       2500,
     );
-    return { ok: res.ok || res.status === 404, ms: Math.round(performance.now() - t0) };
+    // A sonda mede alcançabilidade do PostgREST, não autorização. A raiz
+    // `/rest/v1/` devolve 401 neste projeto (spec OpenAPI fechada), o que
+    // mantinha `rest.ok` falso para sempre e travava o status em `warming`.
+    return { ok: isReachableStatus(res.status), ms: Math.round(performance.now() - t0) };
   } catch {
     return { ok: false, ms: Math.round(performance.now() - t0) };
   }
 }
 
+/** Qualquer resposta do servidor prova que o serviço está no ar; só 5xx indica indisponibilidade. */
+function isReachableStatus(status: number): boolean {
+  return status < 500;
+}
+
+function isPermissionDenied(error: unknown): boolean {
+  const context = (error as { context?: { status?: number } } | null)?.context;
+  return context?.status === 401 || context?.status === 403;
+}
+
 async function checkHealthFunction(): Promise<{ ok: boolean; ms: number; data?: unknown }> {
   const t0 = performance.now();
+  if (healthFunctionForbidden) return { ok: false, ms: 0 };
   try {
     const headers = getRequestHeaders();
     const { data, error } = await supabase.functions.invoke('system-healthcheck', {
       headers,
     });
     const ms = Math.round(performance.now() - t0);
+    // `system-healthcheck` exige papel `dev`. Para os demais usuários a negativa
+    // é definitiva: repetir a cada sondagem só gera 403 em loop no console.
+    if (error && isPermissionDenied(error)) healthFunctionForbidden = true;
     return { ok: !error, ms, data };
   } catch {
     return { ok: false, ms: Math.round(performance.now() - t0) };
@@ -190,6 +208,8 @@ export function onCloudStatusChange(
 
 export function invalidateCloudStatus(): void {
   cached = null;
+  // Troca de sessão pode elevar o papel do usuário: a sonda volta a ser tentada.
+  healthFunctionForbidden = false;
 }
 
 /**
