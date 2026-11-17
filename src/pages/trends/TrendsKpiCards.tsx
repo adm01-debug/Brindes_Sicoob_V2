@@ -20,6 +20,7 @@ interface TrendsKpiCardsProps {
   isLoading?: boolean;
   isError?: boolean;
   isDemo?: boolean;
+  hasData?: boolean;
 }
 
 // Mapeamento estático (evita purge do Tailwind JIT em produção)
@@ -92,9 +93,9 @@ function DeltaBadge({ current, previous }: { current: number; previous: number }
   );
 }
 
-export function TrendsKpiCards({ current, previous, isLoading, isError, isDemo }: TrendsKpiCardsProps) {
+export function TrendsKpiCards({ current, previous, isLoading, isError, isDemo, hasData }: TrendsKpiCardsProps) {
   if (isLoading) return <p role="status">Carregando indicadores…</p>;
-  if (!isDemo && isError) return null;
+  if (!isDemo && isError && !hasData) return null;
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {ITEMS.map(({ key, icon: Icon, label, color }) => {
