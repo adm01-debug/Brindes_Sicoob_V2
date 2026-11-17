@@ -1,4 +1,4 @@
-﻿{
+{
   "_comment": "ExceÃ§Ãµes conhecidas em 17/09/2026 (auditoria tripla + plano de correÃ§Ãµes em docs/plano-implementacao/plano-correcoes-auditoria-50-etapas-20260917.md). Cada entrada tem migration jÃ¡ escrita no repositÃ³rio esperando aplicaÃ§Ã£o (Fase C do plano, Etapas 9-11), ou Ã© uma decisÃ£o de arquitetura pendente registrada. Remover a entrada daqui assim que a etapa correspondente fechar â€” deixar aqui sem revisÃ£o Ã© reintroduzir o mesmo risco que o script existe para evitar.",
   "entries": {
     "bitrix_clients": "migration 20251214185703_ccfe43ae-... (+ 12 migrations relacionadas) nÃ£o aplicada â€” plano de correÃ§Ãµes Etapa 9",
