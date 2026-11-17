@@ -7,6 +7,11 @@ vi.mock('@/lib/external-db/bridge', () => ({
   invokeExternalDb: vi.fn(),
 }));
 
+vi.mock('@/lib/private-storage', () => ({
+  resolvePrivateStorageUrlSafe: vi.fn(async (value: string | null | undefined) =>
+    typeof value === 'string' ? value.replace('supabase-storage://', 'https://assinada/') : null),
+}));
+
 function products(offset: number, length: number) {
   return Array.from({ length }, (_, index) => ({
     id: `produto-${offset + index}`,
@@ -85,5 +90,17 @@ describe('paginação resiliente do catálogo externo', () => {
       ...products(500, 1),
     ].map(product => product.id));
     expect(invokeExternalDb).toHaveBeenCalledWith(expect.objectContaining({ limit: 500, offset: 0 }));
+  });
+
+  it('assina as referencias privadas de primary_image_url antes de devolver a lista', async () => {
+    const registro = {
+      ...products(0, 1)[0],
+      primary_image_url: 'supabase-storage://personalization-images/foto.png',
+    };
+    vi.mocked(invokeExternalDb).mockResolvedValueOnce({ records: [registro], count: null });
+
+    const result = await fetchPromobrindProductsLightweight({ limit: 1, offset: 0 });
+
+    expect(result[0].primary_image_url).toBe('https://assinada/personalization-images/foto.png');
   });
 });

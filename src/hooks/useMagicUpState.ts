@@ -376,15 +376,27 @@ export function useMagicUpState() {
           invokeExternalDb<Record<string, unknown>>({ table: "product_variants", operation: "select", filters: { product_id: selectedProduct.id }, orderBy: { column: "color_name", ascending: true }, limit: 100 }),
           invokeExternalDb<Record<string, unknown>>({ table: "product_images", operation: "select", filters: { product_id: selectedProduct.id }, orderBy: { column: "display_order", ascending: true }, limit: 100 }),
         ]);
-        const images = (imagesResult.records || [])
-          .filter((img: Record<string, unknown>) => img.image_type !== "box")
-          .map((img: Record<string, unknown>): ProductImage => ({
-            url: String(img.url_cdn || img.url_original || ""),
-            supplierCode: (img.supplier_code as string) || null,
-            isPrimary: Boolean(img.is_primary),
-            isOgImage: Boolean(img.is_og_image),
-          }))
-          .filter((img) => img.url);
+        const { resolvePrivateStorageUrlSafe } = await import("@/lib/private-storage");
+        // `url_cdn` pode ser a referencia duravel `supabase-storage://`; sem assinar aqui
+        // o Magic Up envia essa referencia como `productImageUrl` para generate-ad-image.
+        const images = (
+          await Promise.all(
+            (imagesResult.records || [])
+              .filter((img: Record<string, unknown>) => img.image_type !== "box")
+              .map(async (img: Record<string, unknown>): Promise<ProductImage> => {
+                const raw = String(img.url_cdn || img.url_original || "");
+                const resolved = raw
+                  ? (await resolvePrivateStorageUrlSafe(raw, "personalization-images")) ?? raw
+                  : raw;
+                return {
+                  url: resolved,
+                  supplierCode: (img.supplier_code as string) || null,
+                  isPrimary: Boolean(img.is_primary),
+                  isOgImage: Boolean(img.is_og_image),
+                };
+              }),
+          )
+        ).filter((img) => img.url);
         setProductImages(images);
         const uniqueColors = new Map<string, ProductColor>();
         (variantsResult.records || []).forEach((v: Record<string, unknown>) => {
