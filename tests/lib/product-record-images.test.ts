@@ -101,7 +101,7 @@ describe('resolveProductImageRecords', () => {
     );
 
     const resolved = await resolveProductImageRecords([
-      { primary_image_url: 'https://proj.supabase.co/storage/v1/object/public/personalization-images/legado.png' },
+      { primary_image_url: 'https://cfmzkthhgliqelozlmwu.supabase.co/storage/v1/object/public/personalization-images/legado.png' },
     ]);
 
     expect(resolveSafe).toHaveBeenCalled();
