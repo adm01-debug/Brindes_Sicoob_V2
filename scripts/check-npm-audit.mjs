@@ -1,10 +1,9 @@
 import { execSync } from 'child_process';
 import { createRequire } from 'module';
+import { summarize } from './lib/npm-audit-policy.mjs';
 
 console.log('🛡️  SECURITY GATE: Running npm audit...');
 
-// Sem exceções por pacote: vulnerabilidades altas ou críticas bloqueiam o build.
-const ALLOWLIST = new Set();
 const require = createRequire(import.meta.url);
 
 function verifyBracesPatch() {
@@ -30,29 +29,6 @@ try {
 } catch (error) {
   console.error(`❌ SECURITY GATE FAILED: ${error.message}`);
   process.exit(1);
-}
-
-function summarize(jsonStr) {
-  let audit;
-  try {
-    audit = JSON.parse(jsonStr);
-  } catch {
-    return null;
-  }
-  const vulns = audit?.vulnerabilities;
-  if (!vulns || typeof vulns !== 'object') {
-    // Older/alternate format — fall back to coarse metadata counts.
-    const v = audit?.metadata?.vulnerabilities;
-    if (!v) return null;
-    return { blocking: [], allowlisted: [], coarseCritical: v.critical || 0, coarseHigh: v.high || 0 };
-  }
-  const blocking = [];
-  const allowlisted = [];
-  for (const [name, info] of Object.entries(vulns)) {
-    if (info.severity !== 'critical' && info.severity !== 'high') continue;
-    (ALLOWLIST.has(name) ? allowlisted : blocking).push(`${name} (${info.severity})`);
-  }
-  return { blocking, allowlisted, coarseCritical: 0, coarseHigh: 0 };
 }
 
 let raw = '';
