@@ -1,11 +1,16 @@
-import { supabase } from "@/integrations/supabase/client";
-import { applySellerScope } from "@/lib/auth/apply-seller-scope";
-import type { SalesScope } from "@/lib/auth/visibility-scope";
-import type { Json } from "@/integrations/supabase/types";
-import type { Quote, QuoteItem, QuoteItemPersonalization } from "@/hooks/quotes/quoteTypes";
-import { calculateQuoteTotals, buildInsertPayload, buildUpdatePayload, buildAtomicQuoteItems } from "@/hooks/quotes/quoteHelpers";
-import { logger } from "@/lib/logger";
-import { beginReorderIntent, completeReorderIntent } from "@/services/sicoob/reorderIdempotency";
+import { supabase } from '@/integrations/supabase/client';
+import { applySellerScope } from '@/lib/auth/apply-seller-scope';
+import type { SalesScope } from '@/lib/auth/visibility-scope';
+import type { Json } from '@/integrations/supabase/types';
+import type { Quote, QuoteItem, QuoteItemPersonalization } from '@/hooks/quotes/quoteTypes';
+import {
+  calculateQuoteTotals,
+  buildInsertPayload,
+  buildUpdatePayload,
+  buildAtomicQuoteItems,
+} from '@/hooks/quotes/quoteHelpers';
+import { logger } from '@/lib/logger';
+import { beginReorderIntent, completeReorderIntent } from '@/services/sicoob/reorderIdempotency';
 
 /**
  * Normaliza uma linha crua de `quote_items` (colunas nulas no banco) para o
@@ -19,7 +24,7 @@ function mapDbQuoteItemRow(
 ): QuoteItem {
   return {
     ...item,
-    product_id: item.product_id ?? "",
+    product_id: item.product_id ?? '',
     notes: (item.notes as string | null | undefined) ?? undefined,
     sort_order: (item.sort_order as number | null | undefined) ?? undefined,
     color_hex: (item.color_hex as string | null | undefined) ?? undefined,
@@ -36,12 +41,21 @@ function mapDbQuoteItemRow(
 
 function describeQuoteHeaderChanges(oldQuote: Quote, newQuote: Partial<Quote>): string[] {
   const changes: string[] = [];
-  if (newQuote.discount_percent !== undefined && newQuote.discount_percent !== oldQuote.discount_percent) {
-    changes.push(`Desconto alterado de ${oldQuote.discount_percent}% para ${newQuote.discount_percent}%`);
+  if (
+    newQuote.discount_percent !== undefined &&
+    newQuote.discount_percent !== oldQuote.discount_percent
+  ) {
+    changes.push(
+      `Desconto alterado de ${oldQuote.discount_percent}% para ${newQuote.discount_percent}%`,
+    );
   }
-  if (newQuote.negotiation_markup_percent !== undefined
-      && newQuote.negotiation_markup_percent !== oldQuote.negotiation_markup_percent) {
-    changes.push(`Markup alterado de ${oldQuote.negotiation_markup_percent}% para ${newQuote.negotiation_markup_percent}%`);
+  if (
+    newQuote.negotiation_markup_percent !== undefined &&
+    newQuote.negotiation_markup_percent !== oldQuote.negotiation_markup_percent
+  ) {
+    changes.push(
+      `Markup alterado de ${oldQuote.negotiation_markup_percent}% para ${newQuote.negotiation_markup_percent}%`,
+    );
   }
 
   return changes;
@@ -63,16 +77,24 @@ function describeQuoteItemChanges(oldItems: QuoteItem[], newItems: QuoteItem[]):
       continue;
     }
     if (newItem.quantity !== oldItem.quantity) {
-      changes.push(`Quantidade de ${newItem.product_name} alterada: ${oldItem.quantity} -> ${newItem.quantity}`);
+      changes.push(
+        `Quantidade de ${newItem.product_name} alterada: ${oldItem.quantity} -> ${newItem.quantity}`,
+      );
     }
     if (newItem.unit_price !== oldItem.unit_price) {
-      changes.push(`Preço unitário de ${newItem.product_name} alterado: R$${oldItem.unit_price} -> R$${newItem.unit_price}`);
+      changes.push(
+        `Preço unitário de ${newItem.product_name} alterado: R$${oldItem.unit_price} -> R$${newItem.unit_price}`,
+      );
     }
   }
   return changes;
 }
 
-function describeQuoteChanges(oldQuote: Quote, newQuote: Partial<Quote>, newItems: QuoteItem[]): string[] {
+function describeQuoteChanges(
+  oldQuote: Quote,
+  newQuote: Partial<Quote>,
+  newItems: QuoteItem[],
+): string[] {
   return [
     ...describeQuoteHeaderChanges(oldQuote, newQuote),
     ...describeQuoteItemChanges(oldQuote.items || [], newItems),
@@ -82,7 +104,13 @@ function describeQuoteChanges(oldQuote: Quote, newQuote: Partial<Quote>, newItem
 function calculateDocumentTotals(quote: Partial<Quote>, items: QuoteItem[]) {
   const discountType = quote.discount_percent ? 'percent' : 'amount';
   const discountValue = quote.discount_percent || quote.discount_amount || 0;
-  return calculateQuoteTotals(quote, items, quote.negotiation_markup_percent, discountType, discountValue);
+  return calculateQuoteTotals(
+    quote,
+    items,
+    quote.negotiation_markup_percent,
+    discountType,
+    discountValue,
+  );
 }
 
 function quoteHistoryOrDefault(changes: string[]): Json {
@@ -94,10 +122,15 @@ function assertAtomicQuoteResult(data: Json | null, message: string): Quote {
   return data as unknown as Quote;
 }
 
-function throwQuoteSaveError(error: { code?: string; message?: string } | null, context: string): void {
+function throwQuoteSaveError(
+  error: { code?: string; message?: string } | null,
+  context: string,
+): void {
   if (!error) return;
   if (error.code === '40001') {
-    throw new Error("Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.");
+    throw new Error(
+      'Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.',
+    );
   }
   logger.error(context, error);
   throw error;
@@ -105,9 +138,9 @@ function throwQuoteSaveError(error: { code?: string; message?: string } | null, 
 
 async function fetchQuoteRecord(quoteId: string) {
   // rls-allow: lookup por id permanece sujeito a quotes_select_scope e quotes_role_access
-  const { data, error } = await supabase.from("quotes").select("*").eq("id", quoteId).maybeSingle();
+  const { data, error } = await supabase.from('quotes').select('*').eq('id', quoteId).maybeSingle();
   if (error) {
-    logger.error("Error fetching quote:", error);
+    logger.error('Error fetching quote:', error);
     throw error;
   }
   return data;
@@ -115,34 +148,36 @@ async function fetchQuoteRecord(quoteId: string) {
 
 async function fetchQuoteItems(quoteId: string) {
   const { data, error } = await supabase
-    .from("quote_items")
-    .select("*")
-    .eq("quote_id", quoteId)
-    .order("sort_order", { ascending: true });
+    .from('quote_items')
+    .select('*')
+    .eq('quote_id', quoteId)
+    .order('sort_order', { ascending: true });
   if (error) {
-    logger.error("Error fetching quote items:", error);
+    logger.error('Error fetching quote items:', error);
     throw error;
   }
   return data ?? [];
 }
 
-async function fetchQuotePersonalizations(itemIds: string[]): Promise<Array<Record<string, unknown>>> {
+async function fetchQuotePersonalizations(
+  itemIds: string[],
+): Promise<Array<Record<string, unknown>>> {
   if (itemIds.length === 0) return [];
   const { data, error } = await supabase
-    .from("quote_item_personalizations")
-    .select("*")
-    .in("quote_item_id", itemIds);
+    .from('quote_item_personalizations')
+    .select('*')
+    .in('quote_item_id', itemIds);
   if (error) {
-    logger.error("Error fetching quote personalizations:", error);
+    logger.error('Error fetching quote personalizations:', error);
     throw error;
   }
   return (data ?? []) as Array<Record<string, unknown>>;
 }
 
 function createClientMetadata(metadata?: Record<string, unknown>): Record<string, unknown> {
-  const userAgent = typeof navigator === "undefined" ? "unknown" : navigator.userAgent;
+  const userAgent = typeof navigator === 'undefined' ? 'unknown' : navigator.userAgent;
   return {
-    ip: metadata?.ip ?? "client",
+    ip: metadata?.ip ?? 'client',
     user_agent: metadata?.user_agent ?? userAgent,
     timestamp: new Date().toISOString(),
     ...(metadata ?? {}),
@@ -150,21 +185,52 @@ function createClientMetadata(metadata?: Record<string, unknown>): Record<string
 }
 
 const QUOTE_LIST_LIMIT = 500;
+async function requestQuotePriceAttestation(params: {
+  quote: Record<string, unknown>;
+  items: Json;
+  history: Json;
+  quoteId?: string;
+  expectedRowVersion?: number;
+}): Promise<string> {
+  const { data, error } = await supabase.functions.invoke('quote-price-attestation', {
+    body: {
+      quote: params.quote,
+      items: params.items,
+      history: params.history,
+      quoteId: params.quoteId ?? null,
+      expectedRowVersion: params.expectedRowVersion ?? null,
+    },
+  });
+  if (error) {
+    const responseData = data as { error?: unknown } | null;
+    const message = typeof responseData?.error === 'string' ? responseData.error : error.message;
+    throw new Error(message || 'Não foi possível validar os preços do orçamento.');
+  }
+  const attestationId = (data as { attestationId?: unknown } | null)?.attestationId;
+  if (typeof attestationId !== 'string' || !attestationId) {
+    throw new Error('O serviço de catálogo não retornou um atestado de preço válido.');
+  }
+  return attestationId;
+}
 
 export class QuoteService {
-  static async list(params: { userId: string, scope: SalesScope, orgId: string | null }): Promise<Quote[]> {
+  static async list(params: {
+    userId: string;
+    scope: SalesScope;
+    orgId: string | null;
+  }): Promise<Quote[]> {
     let q = supabase
       // rls-allow: scope self aplicado no builder seguinte; demais papéis dependem de RLS
-      .from("quotes")
-      .select("*", { count: 'estimated' })
-      .order("created_at", { ascending: false })
+      .from('quotes')
+      .select('*', { count: 'estimated' })
+      .order('created_at', { ascending: false })
       .limit(QUOTE_LIST_LIMIT);
     q = applySellerScope(q, { scope: params.scope, userId: params.userId });
-    
+
     try {
       const { data, error, count } = await q;
       if (error) {
-        logger.error("Error listing quotes:", error);
+        logger.error('Error listing quotes:', error);
         throw error;
       }
       const rows = (data || []) as Quote[];
@@ -174,12 +240,12 @@ export class QuoteService {
       if (count !== null && count > rows.length) {
         logger.error(
           `QuoteService.list: listagem truncada em ${QUOTE_LIST_LIMIT} orçamentos ` +
-          `(total estimado no banco: ${count}). Implemente paginação ou aumente o limite.`
+            `(total estimado no banco: ${count}). Implemente paginação ou aumente o limite.`,
         );
       }
       return rows;
     } catch (err) {
-      logger.error("Unexpected error in QuoteService.list:", err);
+      logger.error('Unexpected error in QuoteService.list:', err);
       throw err;
     }
   }
@@ -190,74 +256,119 @@ export class QuoteService {
       const quoteData = await fetchQuoteRecord(quoteId);
       if (!quoteData) return null;
       const itemsData = await fetchQuoteItems(quoteId);
-      const allPersonalizations = await fetchQuotePersonalizations(itemsData.map((item) => item.id));
+      const allPersonalizations = await fetchQuotePersonalizations(
+        itemsData.map((item) => item.id),
+      );
       const items = itemsData.map((item) => mapDbQuoteItemRow(item, allPersonalizations));
 
       return { ...quoteData, items } as Quote;
     } catch (err) {
-      logger.error("Unexpected error in QuoteService.getById:", err);
+      logger.error('Unexpected error in QuoteService.getById:', err);
       throw err;
     }
   }
 
-  static async create(params: { quote: Partial<Quote>, items: QuoteItem[], userId: string, orgId: string | null, idempotencyKey: string }): Promise<Quote> {
+  static async create(params: {
+    quote: Partial<Quote>;
+    items: QuoteItem[];
+    userId: string;
+    orgId: string | null;
+    idempotencyKey: string;
+  }): Promise<Quote> {
     try {
       const totals = calculateDocumentTotals(params.quote, params.items);
       const insertPayload = buildInsertPayload(params.quote, params.userId, params.orgId, totals);
-      const { data: inserted, error: insErr } = await supabase.rpc('save_quote_atomic_idempotent', {
-        p_quote: insertPayload as Json,
-        p_items: buildAtomicQuoteItems(params.items),
-        p_history: ['Orçamento criado'] as Json,
-        p_idempotency_key: params.idempotencyKey,
+      const itemsPayload = buildAtomicQuoteItems(params.items);
+      const history = ['Orçamento criado'] as Json;
+      const { data: replay, error: replayError } = await supabase.rpc(
+        'get_quote_save_idempotent_replay',
+        {
+          p_idempotency_key: params.idempotencyKey,
+          p_quote: insertPayload as Json,
+          p_items: itemsPayload as Json,
+          p_history: history,
+        },
+      );
+      throwQuoteSaveError(replayError, 'Error checking idempotent quote replay:');
+      if (replay && typeof replay === 'object' && !Array.isArray(replay)) {
+        return replay as unknown as Quote;
+      }
+      const attestationId = await requestQuotePriceAttestation({
+        quote: insertPayload as Record<string, unknown>,
+        items: itemsPayload as Json,
+        history,
       });
-      throwQuoteSaveError(insErr, "Error creating quote:");
+      const { data: inserted, error: insErr } = await supabase.rpc(
+        'save_quote_atomic_idempotent_attested',
+        {
+          p_quote: { ...insertPayload, price_attestation_id: attestationId } as Json,
+          p_items: itemsPayload as Json,
+          p_history: history,
+          p_idempotency_key: params.idempotencyKey,
+        },
+      );
+      throwQuoteSaveError(insErr, 'Error creating quote:');
       return assertAtomicQuoteResult(inserted, 'O banco não retornou o orçamento criado.');
     } catch (err) {
-      logger.error("Unexpected error in QuoteService.create:", err);
+      logger.error('Unexpected error in QuoteService.create:', err);
       throw err;
     }
   }
 
-  static async update(params: { 
-    quoteId: string, 
-    quote: Partial<Quote>, 
-    items: QuoteItem[],
-    userId: string,
-    expectedRowVersion: number,
+  static async update(params: {
+    quoteId: string;
+    quote: Partial<Quote>;
+    items: QuoteItem[];
+    userId: string;
+    expectedRowVersion: number;
   }): Promise<Quote> {
     try {
       const oldQuote = await this.getById(params.quoteId);
-      if (!oldQuote) throw new Error("Orçamento não encontrado para atualização");
+      if (!oldQuote) throw new Error('Orçamento não encontrado para atualização');
 
       if (!Number.isInteger(params.expectedRowVersion) || params.expectedRowVersion < 1) {
-        throw new Error("A versão do orçamento não está disponível. Recarregue a página antes de salvar.");
+        throw new Error(
+          'A versão do orçamento não está disponível. Recarregue a página antes de salvar.',
+        );
       }
 
       const totals = calculateDocumentTotals(params.quote, params.items);
-      const updatePayload = buildUpdatePayload({ ...params.quote, row_version: params.expectedRowVersion }, totals);
+      const updatePayload = buildUpdatePayload(
+        { ...params.quote, row_version: params.expectedRowVersion },
+        totals,
+      );
       const changes = describeQuoteChanges(oldQuote, params.quote, params.items);
-      const { data: updated, error: updErr } = await supabase.rpc('save_quote_atomic', {
-        p_quote: updatePayload as Json,
-        p_items: buildAtomicQuoteItems(params.items),
+      const itemsPayload = buildAtomicQuoteItems(params.items);
+      const history = quoteHistoryOrDefault(changes);
+      const attestationId = await requestQuotePriceAttestation({
+        quote: updatePayload as Record<string, unknown>,
+        items: itemsPayload as Json,
+        history,
+        quoteId: params.quoteId,
+        expectedRowVersion: params.expectedRowVersion,
+      });
+      const { data: updated, error: updErr } = await supabase.rpc('save_quote_atomic_attested', {
+        p_quote: { ...updatePayload, price_attestation_id: attestationId } as Json,
+        p_items: itemsPayload as Json,
         p_quote_id: params.quoteId,
         // A versão precisa ser aquela carregada pelo editor, nunca a de uma
         // leitura feita no instante do salvamento. Caso outro usuário tenha
         // gravado antes, a RPC recusa a atualização em vez de sobrescrever.
         p_expected_row_version: params.expectedRowVersion,
-        p_history: quoteHistoryOrDefault(changes),
+        p_history: history,
       });
 
-      throwQuoteSaveError(updErr, "Error updating quote:");
+      throwQuoteSaveError(updErr, 'Error updating quote:');
       return assertAtomicQuoteResult(updated, 'O banco não retornou o orçamento atualizado.');
     } catch (err) {
-      logger.error("Unexpected error in QuoteService.update:", err);
+      logger.error('Unexpected error in QuoteService.update:', err);
       throw err;
     }
   }
 
   static async delete(quoteId: string) {
     // rls-allow: exclusão por id; RLS valida ownership e organização
-    const { error } = await supabase.from("quotes").delete().eq("id", quoteId);
+    const { error } = await supabase.from('quotes').delete().eq('id', quoteId);
     if (error) throw error;
   }
 
@@ -282,7 +393,11 @@ export class QuoteService {
     return reordered;
   }
 
-  static async reorderFromOrder(orderId: string, userId: string, orgId: string | null): Promise<Quote> {
+  static async reorderFromOrder(
+    orderId: string,
+    userId: string,
+    orgId: string | null,
+  ): Promise<Quote> {
     void userId;
     void orgId;
     const intent = `order:${orderId}`;
@@ -320,7 +435,7 @@ export class QuoteService {
     // signature).
     const clientMetadata = createClientMetadata(params.metadata);
 
-    const { error } = await supabase.rpc("append_quote_history_note", {
+    const { error } = await supabase.rpc('append_quote_history_note', {
       p_quote_id: params.quoteId,
       p_action: params.action,
       p_description: params.description,
@@ -330,7 +445,7 @@ export class QuoteService {
       p_metadata: clientMetadata as Json,
     });
     if (error) {
-      logger.error("Erro ao registrar histórico do orçamento:", error);
+      logger.error('Erro ao registrar histórico do orçamento:', error);
       throw error;
     }
   }
@@ -338,18 +453,22 @@ export class QuoteService {
   static async listToConsolidate(singularId: string) {
     const { data, error } = await supabase
       // rls-allow: consolidação filtra singular; RLS valida a hierarquia do ator
-      .from("quotes")
-      .select("*")
-      .eq("singular_id", singularId)
-      .eq("status", "approved_singular")
-      .is("consolidation_id", null);
+      .from('quotes')
+      .select('*')
+      .eq('singular_id', singularId)
+      .eq('status', 'approved_singular')
+      .is('consolidation_id', null);
     if (error) throw error;
     return data;
   }
 
-  static async consolidate(params: { singularId: string | null, quoteIds: string[], notes: string }) {
-    if (!params.singularId) throw new Error("Singular não identificada para a consolidação.");
-    const { data, error } = await supabase.rpc("consolidate_sicoob_quotes", {
+  static async consolidate(params: {
+    singularId: string | null;
+    quoteIds: string[];
+    notes: string;
+  }) {
+    if (!params.singularId) throw new Error('Singular não identificada para a consolidação.');
+    const { data, error } = await supabase.rpc('consolidate_sicoob_quotes', {
       p_singular_id: params.singularId,
       p_quote_ids: params.quoteIds,
       p_notes: params.notes || undefined,

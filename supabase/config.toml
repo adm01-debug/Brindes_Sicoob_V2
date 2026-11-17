@@ -29,6 +29,10 @@ verify_jwt = false
 [functions.quote-approval]
 verify_jwt = false
 
+# O salvamento de orçamento exige JWT válido também no gateway.
+[functions.quote-price-attestation]
+verify_jwt = true
+
 # Chamadas de cron/Edge são autenticadas no próprio código pelo segredo
 # INTERNAL_FUNCTION_SECRET. A verificação explícita evita depender de estado
 # antigo do gateway e falha fechada se o segredo não estiver configurado.
