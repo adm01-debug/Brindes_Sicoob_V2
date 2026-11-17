@@ -7,7 +7,7 @@ vi.mock('@/lib/private-storage', () => ({
     resolveSafe(value, bucket),
 }));
 
-const { resolveProductRecordImages } = await import('@/lib/external-db/product-record-images');
+const { resolveProductRecordImages, resolveProductImageRecords } = await import('@/lib/external-db/product-record-images');
 
 describe('resolveProductRecordImages', () => {
   beforeEach(() => {
@@ -55,5 +55,41 @@ describe('resolveProductRecordImages', () => {
       'supabase-storage://personalization-images/indisponivel.png',
       'https://cdn.exemplo/ok.png',
     ]);
+  });
+});
+describe('resolveProductImageRecords', () => {
+  beforeEach(() => {
+    resolveSafe.mockReset();
+    resolveSafe.mockImplementation(async (value: string | null | undefined) =>
+      typeof value === 'string' && value.startsWith('supabase-storage://')
+        ? value.replace('supabase-storage://', 'https://signed/')
+        : (value ?? null),
+    );
+  });
+
+  it('assina em lote apenas os registros com referencia privada', async () => {
+    const records = [
+      { primary_image_url: 'supabase-storage://personalization-images/a.png' },
+      { primary_image_url: 'https://cdn.exemplo/b.png' },
+    ];
+
+    const resolved = await resolveProductImageRecords(records);
+
+    expect(resolved[0].primary_image_url).toBe('https://signed/personalization-images/a.png');
+    expect(resolved[1].primary_image_url).toBe('https://cdn.exemplo/b.png');
+    expect(resolveSafe).toHaveBeenCalledTimes(3);
+  });
+
+  it('nao faz nenhuma chamada ao storage quando nao ha referencia privada', async () => {
+    const resolved = await resolveProductImageRecords([
+      { primary_image_url: 'https://cdn.exemplo/a.png', images: ['https://cdn.exemplo/b.png'] },
+    ]);
+
+    expect(resolveSafe).not.toHaveBeenCalled();
+    expect(resolved).toHaveLength(1);
+  });
+
+  it('tolera lista nula', async () => {
+    await expect(resolveProductImageRecords(null)).resolves.toEqual([]);
   });
 });

@@ -28,3 +28,34 @@ export async function resolveProductRecordImages(product: PromobrindProduct): Pr
     product.images = resolved.filter((value): value is string => Boolean(value));
   }
 }
+
+type ProductImageRecord = {
+  primary_image_url?: string | null;
+  image_url?: string | null;
+  og_image_url?: string | null;
+  images?: string[] | null;
+};
+
+const hasPrivateReference = (record: ProductImageRecord): boolean => {
+  const isPrivate = (value: unknown) => typeof value === 'string' && value.startsWith('supabase-storage:');
+  return isPrivate(record.primary_image_url)
+    || isPrivate(record.image_url)
+    || isPrivate(record.og_image_url)
+    || (Array.isArray(record.images) && record.images.some(isPrivate));
+};
+
+/**
+ * Versao em lote para as leituras que consultam `products` direto pelo bridge
+ * (novidades, reposicoes, kit builder, simulador). Sem isso esses fluxos
+ * entregam a referencia duravel `supabase-storage://` para o `<img src>`.
+ * Registros sem referencia privada nao geram nenhuma requisicao.
+ */
+export async function resolveProductImageRecords<T extends ProductImageRecord>(
+  records: readonly T[] | null | undefined,
+): Promise<T[]> {
+  const list = Array.isArray(records) ? [...records] : [];
+  const pending = list.filter(hasPrivateReference);
+  if (pending.length === 0) return list;
+  await Promise.all(pending.map(record => resolveProductRecordImages(record as PromobrindProduct)));
+  return list;
+}
