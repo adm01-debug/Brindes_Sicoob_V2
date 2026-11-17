@@ -82,6 +82,18 @@ describe('integridade dos indicadores comerciais', () => {
     expect(isOrderOverPaBudget(missingPaState, 12_000, 0)).toBeNull();
   });
 
+  it('não acusa overbudget quando o pedido já foi debitado da verba', () => {
+    const configured = resolvePaBudgetState({ isLoading: false, hasError: false, hasPaId: true, hasBudget: true });
+
+    // Pedido de R$ 600 já confirmado: o saldo de R$ 400 já inclui o débito.
+    expect(isOrderOverPaBudget(configured, 600, 400, 'confirmed')).toBe(false);
+    expect(isOrderOverPaBudget(configured, 600, 400, 'delivered')).toBe(false);
+    // Ainda pendente: o débito não ocorreu, o pedido não cabe no saldo.
+    expect(isOrderOverPaBudget(configured, 600, 400, 'waiting_approval')).toBe(true);
+    // Cancelado não consome verba nem projeta consumo.
+    expect(isOrderOverPaBudget(configured, 600, 400, 'cancelled')).toBe(false);
+  });
+
   it('trata verba cadastrada em zero como limite esgotado, não como ausência de cadastro', () => {
     const configuredZero = resolvePaBudgetState({ isLoading: false, hasError: false, hasPaId: true, hasBudget: hasConfiguredPaBudget({ verba_total: 0 }) });
 

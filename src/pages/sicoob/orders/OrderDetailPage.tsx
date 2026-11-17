@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePaBudget } from "@/hooks/usePaBudget";
 import { getSlaCycleStartedAt } from "@/lib/sicoob/sla-cycle";
 import { hasConfiguredPaBudget, isOrderOverPaBudget, resolvePaBudgetState } from "@/lib/sicoob/paBudgetState";
+import { projectOrderAgainstBudget } from "@/lib/sicoob/orderBudgetProjection";
 import { useApprovalThreshold } from "@/hooks/admin/useApprovalThreshold";
 import { useApprovalRequests } from "@/hooks/useSicoobApprovals";
 import { useSicoobOrderItems } from "@/hooks/useSicoobOrderItems";
@@ -168,7 +169,7 @@ function useOrderDetailController() {
     hasPaId: Boolean(resources.budget.targetPaId),
     hasBudget: hasConfiguredPaBudget(resources.budget.budget),
   });
-  const isOverBudget = isOrderOverPaBudget(budgetState, orderTotal, resources.budget.remainingBudget);
+  const isOverBudget = isOrderOverPaBudget(budgetState, orderTotal, resources.budget.remainingBudget, order?.status);
   const slaCycleStartedAt = getSlaCycleStartedAt(order?.status, resources.history.history);
   const canManageFulfillment = canManageSicoobOrderFulfillment(order, resources.auth.profile, resources.auth.roles);
   const context = { orderId, order, dialogs, resources, activeRequest, orderTotal, isOverBudget };
@@ -263,10 +264,20 @@ function BudgetProgress({ controller }: { controller: DetailController }) {
   return <ConfiguredBudgetProgress controller={controller} />;
 }
 
+/** Em status que ja consomem verba, remainingBudget ja contem o debito do pedido. */
+function projectControllerBudget(controller: DetailController) {
+  return projectOrderAgainstBudget({
+    allocatedBudget: controller.resources.budget.budget?.verba_total ?? null,
+    remainingBudget: controller.resources.budget.remainingBudget,
+    orderTotal: controller.orderTotal,
+    orderStatus: controller.order?.status,
+  });
+}
+
 function ConfiguredBudgetProgress({ controller }: { controller: DetailController }) {
   const totalBudget = Math.max(controller.resources.budget.budget?.verba_total ?? 1, 1);
   const orderWidth = Math.min((controller.orderTotal / totalBudget) * 100, 100);
-  const remainingLeft = Math.min(((controller.resources.budget.remainingBudget - controller.orderTotal) / totalBudget) * 100, 100);
+  const remainingLeft = Math.min((projectControllerBudget(controller).projectedRemainingBudget / totalBudget) * 100, 100);
   return <div className="space-y-3"><div className="flex justify-between text-xs items-center"><span>Verba PA Disponível</span><span className={controller.isOverBudget ? "text-destructive font-bold flex items-center gap-1" : "text-success font-bold"}>{controller.isOverBudget && <AlertTriangle className="h-3 w-3" />}R$ {controller.resources.budget.remainingBudget.toLocaleString("pt-BR")}</span></div><div className="w-full h-2.5 bg-secondary rounded-full overflow-hidden relative"><div className={cn("h-full transition-all duration-500", controller.isOverBudget ? "bg-destructive" : "bg-success")} style={{ width: `${orderWidth}%` }} /><div className="absolute top-0 h-full bg-primary/30 animate-pulse" style={{ left: `${remainingLeft}%`, width: `${orderWidth}%` }} /></div><p className="text-[10px] text-muted-foreground flex justify-between"><span>Impacto do Pedido: R$ {controller.orderTotal.toLocaleString("pt-BR")}</span><span>Total Verba: R$ {(controller.resources.budget.budget?.verba_total ?? 0).toLocaleString("pt-BR")}</span></p></div>;
 }
 

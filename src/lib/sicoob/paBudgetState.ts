@@ -1,3 +1,6 @@
+import { projectOrderAgainstBudget } from "@/lib/sicoob/orderBudgetProjection";
+import type { OrderStatus } from "@/types/sicoob/orders";
+
 export type PaBudgetState = "loading" | "unavailable" | "unconfigured" | "configured";
 
 export function hasConfiguredPaBudget(budget: { verba_total: number } | null | undefined): boolean {
@@ -15,10 +18,23 @@ export function resolvePaBudgetState(input: {
   return input.hasBudget ? "configured" : "unconfigured";
 }
 
+/**
+ * Quando o pedido ja esta num status que consome verba, o saldo recebido ja
+ * inclui o debito. Comparar o total integral contra esse saldo conta o pedido
+ * duas vezes e acusa overbudget falso. A decisao usa a mesma projecao do painel
+ * de inteligencia orcamentaria.
+ */
 export function isOrderOverPaBudget(
   state: PaBudgetState,
   orderTotal: number,
   remainingBudget: number,
+  orderStatus?: OrderStatus | null,
 ): boolean | null {
-  return state === "configured" ? orderTotal > remainingBudget : null;
+  if (state !== "configured") return null;
+  return projectOrderAgainstBudget({
+    allocatedBudget: null,
+    remainingBudget,
+    orderTotal,
+    orderStatus,
+  }).isOverBudget;
 }
