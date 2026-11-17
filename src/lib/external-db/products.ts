@@ -9,7 +9,7 @@ import {
   PRODUCT_SELECT_FIELDS_LEGACY,
   shouldFallbackSelect,
 } from './product-types';
-import { resolvePrivateStorageUrl } from '@/lib/private-storage';
+import { resolvePrivateStorageUrlSafe } from '@/lib/private-storage';
 
 interface FetchPromobrindProductsOptions<ReturnCount extends boolean | undefined = undefined> {
   search?: string;
@@ -338,8 +338,8 @@ function collectRecords<T>(results: BatchResult[], indexes: number[]): T[] {
 async function resolveImageRecords(records: ImageRecord[]): Promise<ImageRecord[]> {
   return Promise.all(records.map(async (image) => ({
     ...image,
-    url_cdn: await resolvePrivateStorageUrl(image.url_cdn, 'personalization-images') ?? image.url_cdn,
-    url_original: await resolvePrivateStorageUrl(image.url_original, 'personalization-images'),
+    url_cdn: await resolvePrivateStorageUrlSafe(image.url_cdn, 'personalization-images') ?? image.url_cdn,
+    url_original: await resolvePrivateStorageUrlSafe(image.url_original, 'personalization-images'),
   })));
 }
 
@@ -350,7 +350,7 @@ async function populateSupplierCache(suppliers: SupplierRecord[]): Promise<void>
       if (supplier.id && supplier.name) putInCacheSafe('suppliers', supplier);
     }
   } catch {
-    // Cache de referência é apenas uma otimização.
+    // Cache de referÃƒÂªncia ÃƒÂ© apenas uma otimizaÃƒÂ§ÃƒÂ£o.
   }
 }
 

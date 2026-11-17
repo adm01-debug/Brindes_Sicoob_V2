@@ -19,7 +19,81 @@ import {
   isPrivateStorageUrl,
   privateStoragePathFromUrl,
   resolvePrivateStorageUrl,
+  resolvePrivateStorageUrlSafe,
+  clearPrivateStorageUrlCache,
 } from '@/lib/private-storage';
+
+describe('resolvePrivateStorageUrlSafe e cache de assinaturas', () => {
+  beforeEach(() => {
+    mocks.from.mockReset();
+    mocks.createSignedUrl.mockReset();
+    mocks.from.mockReturnValue({ createSignedUrl: mocks.createSignedUrl });
+    clearPrivateStorageUrlCache();
+  });
+
+  it('devolve null em vez de rejeitar quando o objeto nao pode ser assinado', async () => {
+    mocks.createSignedUrl.mockResolvedValue({ data: null, error: new Error('nao encontrado') });
+
+    await expect(
+      resolvePrivateStorageUrlSafe(
+        createPrivateStorageReference('personalization-images', 'produtos/1.png'),
+        'personalization-images',
+      ),
+    ).resolves.toBeNull();
+  });
+
+  it('nao derruba as imagens validas do mesmo lote', async () => {
+    mocks.createSignedUrl.mockImplementation((path: string) =>
+      path.includes('ruim')
+        ? Promise.resolve({ data: null, error: new Error('removido') })
+        : Promise.resolve({
+            data: { signedUrl: `https://storage.test/sign/${path}?token=ok` },
+            error: null,
+          }),
+    );
+
+    const resolved = await Promise.all(
+      ['produtos/ruim.png', 'produtos/boa.png'].map((path) =>
+        resolvePrivateStorageUrlSafe(
+          createPrivateStorageReference('personalization-images', path),
+          'personalization-images',
+        ),
+      ),
+    );
+
+    expect(resolved[0]).toBeNull();
+    expect(resolved[1]).toContain('produtos/boa.png');
+  });
+
+  it('compartilha a mesma requisicao entre resolucoes simultaneas do mesmo objeto', async () => {
+    mocks.createSignedUrl.mockResolvedValue({
+      data: { signedUrl: 'https://storage.test/sign/produtos/1.png?token=ok' },
+      error: null,
+    });
+    const reference = createPrivateStorageReference('personalization-images', 'produtos/1.png');
+
+    await Promise.all([
+      resolvePrivateStorageUrlSafe(reference, 'personalization-images'),
+      resolvePrivateStorageUrlSafe(reference, 'personalization-images'),
+    ]);
+
+    expect(mocks.createSignedUrl).toHaveBeenCalledTimes(1);
+  });
+
+  it('reassina apos limpar o cache, sem reaproveitar a autorizacao anterior', async () => {
+    mocks.createSignedUrl.mockResolvedValue({
+      data: { signedUrl: 'https://storage.test/sign/produtos/1.png?token=ok' },
+      error: null,
+    });
+    const reference = createPrivateStorageReference('personalization-images', 'produtos/1.png');
+
+    await resolvePrivateStorageUrlSafe(reference, 'personalization-images');
+    clearPrivateStorageUrlCache();
+    await resolvePrivateStorageUrlSafe(reference, 'personalization-images');
+
+    expect(mocks.createSignedUrl).toHaveBeenCalledTimes(2);
+  });
+});
 
 describe('createPrivateStorageUrl', () => {
   beforeEach(() => {

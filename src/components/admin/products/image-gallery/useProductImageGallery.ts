@@ -10,7 +10,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import { createPrivateStorageReference, privateStoragePathFromUrl } from '@/lib/private-storage';
+import {
+  canonicalPrivateStorageValue,
+  createPrivateStorageReference,
+  privateStoragePathFromUrl,
+} from '@/lib/private-storage';
 import { type ExternalImage, type FilterMode, type VariantInfo, type GalleryStats, IMAGE_TYPES } from "./types";
 
 const EXTERNAL_IMAGES_QUERY_KEY = 'product-images-ext';
@@ -200,8 +204,15 @@ export function useProductImageGallery({ images, onChange, folder, productId }: 
   const extImageMap = useMemo(() => {
     const map = new Map<string, ExternalImage>();
     externalImages.forEach(img => {
-      const url = img.url_cdn || img.url_original || img.url || '';
-      if (url) map.set(url, img);
+      // O formulário recebe as imagens já canonizadas (`supabase-storage://…`),
+      // mas os registros mantêm a URL original. Indexar as duas formas evita
+      // perder metadados e desativação do registro ao remover a imagem.
+      [img.url_cdn, img.url_original, img.url].forEach((candidate) => {
+        if (!candidate) return;
+        map.set(candidate, img);
+        const canonical = canonicalPrivateStorageValue(candidate, 'personalization-images');
+        if (canonical) map.set(canonical, img);
+      });
     });
     return map;
   }, [externalImages]);

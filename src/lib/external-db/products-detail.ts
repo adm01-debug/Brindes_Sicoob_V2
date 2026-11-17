@@ -1,5 +1,5 @@
 /**
- * Product detail fetching — fetchById, bySku, categories, colors.
+ * Product detail fetching Ã¢â‚¬â€ fetchById, bySku, categories, colors.
  */
 import { logger } from '@/lib/logger';
 import { invokeExternalDb, invokeBatchBridge, type InvokeResult, type BatchQuery } from './bridge';
@@ -11,7 +11,7 @@ import {
   PRODUCT_SELECT_FIELDS_DETAIL,
   shouldFallbackSelect,
 } from './product-types';
-import { resolvePrivateStorageUrl } from '@/lib/private-storage';
+import { resolvePrivateStorageUrlSafe } from '@/lib/private-storage';
 
 const PRODUCT_IMAGE_BUCKET = 'personalization-images';
 const PRODUCT_VIDEO_BUCKET = 'product-videos';
@@ -77,17 +77,17 @@ interface KitComponent {
 async function resolveProductImageRows(rows: ProductImage[]): Promise<ProductImage[]> {
   return Promise.all(rows.map(async (image) => ({
     ...image,
-    url_cdn: await resolvePrivateStorageUrl(image.url_cdn, PRODUCT_IMAGE_BUCKET) ?? image.url_cdn,
-    url_original: await resolvePrivateStorageUrl(image.url_original, PRODUCT_IMAGE_BUCKET),
+    url_cdn: await resolvePrivateStorageUrlSafe(image.url_cdn, PRODUCT_IMAGE_BUCKET) ?? image.url_cdn,
+    url_original: await resolvePrivateStorageUrlSafe(image.url_original, PRODUCT_IMAGE_BUCKET),
   })));
 }
 
 async function resolveProductVideoRows(rows: Video[]): Promise<Video[]> {
   return Promise.all(rows.map(async (video) => ({
     ...video,
-    url_stream: await resolvePrivateStorageUrl(video.url_stream, PRODUCT_VIDEO_BUCKET),
-    url_thumbnail: await resolvePrivateStorageUrl(video.url_thumbnail, PRODUCT_VIDEO_BUCKET),
-    url_original: await resolvePrivateStorageUrl(video.url_original, PRODUCT_VIDEO_BUCKET),
+    url_stream: await resolvePrivateStorageUrlSafe(video.url_stream, PRODUCT_VIDEO_BUCKET),
+    url_thumbnail: await resolvePrivateStorageUrlSafe(video.url_thumbnail, PRODUCT_VIDEO_BUCKET),
+    url_original: await resolvePrivateStorageUrlSafe(video.url_original, PRODUCT_VIDEO_BUCKET),
   })));
 }
 
@@ -161,7 +161,7 @@ async function fetchProductImages(productId: string): Promise<ProductImage[]> {
     });
     return resolveProductImageRows(result.records ?? []);
   } catch (error) {
-    logger.warn(`[product:${productId}] Não foi possível buscar imagens:`, error);
+    logger.warn(`[product:${productId}] NÃƒÂ£o foi possÃƒÂ­vel buscar imagens:`, error);
     return [];
   }
 }
@@ -254,7 +254,7 @@ async function fetchDetailEnrichment(
     });
     return { materialIds: [...materialIds] };
   } catch (error) {
-    logger.warn(`[product:${productId}] Não foi possível enriquecer em lote:`, error);
+    logger.warn(`[product:${productId}] NÃƒÂ£o foi possÃƒÂ­vel enriquecer em lote:`, error);
     return { materialIds: [] };
   }
 }
@@ -268,7 +268,7 @@ async function fetchVariants(productId: string): Promise<Variant[]> {
     });
     return result.records ?? [];
   } catch (error) {
-    logger.warn(`[product:${productId}] Não foi possível buscar variantes:`, error);
+    logger.warn(`[product:${productId}] NÃƒÂ£o foi possÃƒÂ­vel buscar variantes:`, error);
     return [];
   }
 }
@@ -283,7 +283,7 @@ async function fetchVideos(productId: string): Promise<Video[]> {
     });
     return resolveProductVideoRows(result.records ?? []);
   } catch (error) {
-    logger.warn(`[product:${productId}] Não foi possível buscar vídeos:`, error);
+    logger.warn(`[product:${productId}] NÃƒÂ£o foi possÃƒÂ­vel buscar vÃƒÂ­deos:`, error);
     return [];
   }
 }
@@ -299,7 +299,7 @@ async function fetchKitComponents(product: PromobrindProduct, productId: string)
     });
     return result.records ?? [];
   } catch (error) {
-    logger.warn(`[product:${productId}] Não foi possível buscar componentes do kit:`, error);
+    logger.warn(`[product:${productId}] NÃƒÂ£o foi possÃƒÂ­vel buscar componentes do kit:`, error);
     return [];
   }
 }
@@ -315,7 +315,7 @@ async function completeProductImages(productId: string, firstPage: ProductImage[
     });
     return [...firstPage, ...await resolveProductImageRows(result.records ?? [])];
   } catch (error) {
-    logger.warn(`[product:${productId}] Falha paginando imagens (página 2):`, error);
+    logger.warn(`[product:${productId}] Falha paginando imagens (pÃƒÂ¡gina 2):`, error);
     return firstPage;
   }
 }
@@ -344,7 +344,7 @@ async function applyMaterials(product: PromobrindProduct, productId: string, mat
     const names = materialIds.map(id => namesById.get(id)?.name).filter((name): name is string => Boolean(name));
     if (names.length) product.materials = names;
   } catch (error) {
-    logger.warn(`[product:${productId}] Não foi possível buscar nomes de material_types:`, error);
+    logger.warn(`[product:${productId}] NÃƒÂ£o foi possÃƒÂ­vel buscar nomes de material_types:`, error);
   }
 }
 
@@ -509,7 +509,7 @@ export async function fetchPromobrindCategories(): Promise<{ id: string; name: s
       table: 'categories', operation: 'select', select: 'id, name',
       limit: 500, orderBy: { column: 'name', ascending: true }, countMode: 'none',
     });
-    // Popula cache de imutáveis: economiza chamadas posteriores em telas de detalhe.
+    // Popula cache de imutÃƒÂ¡veis: economiza chamadas posteriores em telas de detalhe.
     for (const c of result.records ?? []) {
       if (c?.id && c?.name) putInCacheSafe('categories', { id: c.id, name: c.name });
     }

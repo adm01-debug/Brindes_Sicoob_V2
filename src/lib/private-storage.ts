@@ -25,6 +25,26 @@ interface PrivateStorageLocation {
 }
 
 const signedUrlCache = new Map<string, { url: string; expiresAt: number }>();
+// Assinaturas em voo: duas montagens simultâneas da mesma imagem compartilham a
+// mesma chamada ao Storage em vez de abrir duas.
+const inFlightSignatures = new Map<string, Promise<string>>();
+
+export function clearPrivateStorageUrlCache(): void {
+  signedUrlCache.clear();
+  inFlightSignatures.clear();
+}
+
+// A assinatura é emitida para a sessão corrente. Trocar de conta na mesma aba
+// precisa invalidar o cache, senão a nova conta reaproveitaria a autorização da
+// anterior para objetos que ela não poderia assinar.
+let lastAuthIdentity: string | null | undefined;
+supabase.auth?.onAuthStateChange?.((_event, session) => {
+  const identity = session?.user?.id ?? null;
+  if (lastAuthIdentity !== undefined && lastAuthIdentity !== identity) {
+    clearPrivateStorageUrlCache();
+  }
+  lastAuthIdentity = identity;
+});
 
 export function createPrivateStorageReference(
   bucket: PrivateStorageBucket,
@@ -96,12 +116,35 @@ export async function resolvePrivateStorageUrl(
   const cached = signedUrlCache.get(cacheKey);
   if (cached && cached.expiresAt > Date.now()) return cached.url;
 
-  const url = await createPrivateStorageUrl(location.bucket, location.path);
-  signedUrlCache.set(cacheKey, {
-    url,
-    expiresAt: Date.now() + (PRIVATE_STORAGE_URL_TTL_SECONDS - 60) * 1_000,
-  });
-  return url;
+  const pending = inFlightSignatures.get(cacheKey);
+  if (pending) return pending;
+
+  const request = createPrivateStorageUrl(location.bucket, location.path)
+    .then((url) => {
+      signedUrlCache.set(cacheKey, {
+        url,
+        expiresAt: Date.now() + (PRIVATE_STORAGE_URL_TTL_SECONDS - 60) * 1_000,
+      });
+      return url;
+    })
+    .finally(() => {
+      inFlightSignatures.delete(cacheKey);
+    });
+  inFlightSignatures.set(cacheKey, request);
+  return request;
+}
+
+// Variante tolerante: um objeto removido ou sem permissão de leitura devolve
+// `null` em vez de derrubar o lote inteiro de imagens que está sendo resolvido.
+export async function resolvePrivateStorageUrlSafe(
+  value: string | null | undefined,
+  expectedBucket?: PrivateStorageBucket,
+): Promise<string | null> {
+  try {
+    return await resolvePrivateStorageUrl(value, expectedBucket);
+  } catch {
+    return null;
+  }
 }
 
 export function canonicalPrivateStorageValue(
