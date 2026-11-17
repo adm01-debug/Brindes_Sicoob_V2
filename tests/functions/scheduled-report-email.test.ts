@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { sendScheduledReportEmail } from '../../supabase/functions/_shared/scheduled-report-email';
+import {
+  DUPLICATE_RECEIPT,
+  sendScheduledReportEmail,
+} from '../../supabase/functions/_shared/scheduled-report-email';
 
 const input = {
   apiKey: 're_test_key',
@@ -31,6 +34,15 @@ describe('sendScheduledReportEmail', () => {
     expect(recordSent).not.toHaveBeenCalled();
   });
 
+  it('confirma o ciclo quando o provedor responde 409 para a chave do ciclo', async () => {
+    const recordSent = vi.fn();
+    const fetcher = vi.fn().mockResolvedValue(new Response('duplicado', { status: 409 }));
+
+    const receipt = await sendScheduledReportEmail({ ...input, fetcher }, recordSent);
+
+    expect(receipt).toBe(DUPLICATE_RECEIPT);
+    expect(recordSent).toHaveBeenCalledWith(DUPLICATE_RECEIPT);
+  });
   it('não avança o agendamento sem recibo válido, mesmo com HTTP 2xx', async () => {
     const recordSent = vi.fn();
     const fetcher = vi.fn().mockResolvedValue(

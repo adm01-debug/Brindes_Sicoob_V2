@@ -10,24 +10,21 @@ type ReportEmailInput = {
 type RecordSent = (providerEmailId: string) => Promise<void>;
 
 /**
- * A chave de idempotencia precisa identificar o payload, nao apenas o ciclo.
- * Resend responde HTTP 409 quando a mesma chave reaparece com corpo diferente;
- * se o destinatario ou o conteudo mudarem entre tentativas, o agendamento
- * ficaria travado ate a chave expirar no provedor. Incluindo um digest do
- * payload, uma alteracao gera automaticamente uma nova versao de intencao e um
- * retry identico continua sendo deduplicado.
+ * A chave identifica o ciclo do agendamento, nunca o conteudo gerado. O HTML e
+ * recalculado a cada tentativa e muda sozinho quando um pedido entra no
+ * periodo; derivar a chave dele faria o mesmo ciclo enviar um segundo e-mail
+ * apos uma falha de persistencia. Com a chave presa ao ciclo, o Resend deduplica
+ * o retry e um eventual HTTP 409 e tratado como entrega ja aceita.
  */
-export async function buildScheduledReportIdempotencyKey(
-  scope: string,
-  payload: { to: string; subject: string; html: string },
-): Promise<string> {
-  const canonical = JSON.stringify([payload.to, payload.subject, payload.html]);
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(canonical));
-  const hex = Array.from(new Uint8Array(digest))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-  return `${scope.slice(0, 200)}:${hex.slice(0, 32)}`;
+export function buildScheduledReportIdempotencyKey(scope: string): string {
+  return scope.trim().slice(0, 256);
 }
+
+/**
+ * Marcador usado quando o Resend responde 409: o provedor ja aceitou um e-mail
+ * para esta chave, entao o ciclo foi entregue e so falta confirma-lo no banco.
+ */
+export const DUPLICATE_RECEIPT = "duplicate";
 
 /** Só confirma o ciclo do agendamento depois que Resend aceita o e-mail e o banco é atualizado. */
 export async function sendScheduledReportEmail(
@@ -55,6 +52,13 @@ export async function sendScheduledReportEmail(
       html: input.html,
     }),
   });
+
+  // 409 = esta chave ja foi aceita com outro corpo. O e-mail do ciclo saiu; o
+  // que falta e confirmar o ciclo no banco para nao reenviar na proxima rodada.
+  if (response.status === 409) {
+    await recordSent(DUPLICATE_RECEIPT);
+    return DUPLICATE_RECEIPT;
+  }
 
   if (!response.ok) {
     throw new Error(`Resend recusou o relatório (HTTP ${response.status}).`);

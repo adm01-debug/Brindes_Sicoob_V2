@@ -64,9 +64,8 @@ Deno.serve(async (req: Request) => {
             await sendScheduledReportEmail({
               apiKey: resendKey,
               ...emailPayload,
-              idempotencyKey: await buildScheduledReportIdempotencyKey(
+              idempotencyKey: buildScheduledReportIdempotencyKey(
                 `scheduled-report:${report.id}:${report.next_run_at}`,
-                emailPayload,
               ),
             }, () => Promise.resolve());
           }

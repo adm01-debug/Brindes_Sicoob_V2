@@ -118,9 +118,8 @@ Deno.serve(async (req) => {
         await sendScheduledReportEmail({
           apiKey: resendKey,
           ...emailPayload,
-          idempotencyKey: await buildScheduledReportIdempotencyKey(
+          idempotencyKey: buildScheduledReportIdempotencyKey(
             `scheduled-report:${report.id}:${report.next_run_at}`,
-            emailPayload,
           ),
         }, async () => {
           const nextRun = calculateNextRun(report.frequency);
