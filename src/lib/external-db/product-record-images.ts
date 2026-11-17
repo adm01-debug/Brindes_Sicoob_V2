@@ -1,4 +1,4 @@
-import { resolvePrivateStorageUrlSafe } from '@/lib/private-storage';
+import { isPrivateStorageUrl, resolvePrivateStorageUrlSafe } from '@/lib/private-storage';
 import type { PromobrindProduct } from './product-types';
 
 const PRODUCT_IMAGE_BUCKET = 'personalization-images';
@@ -37,7 +37,11 @@ type ProductImageRecord = {
 };
 
 const hasPrivateReference = (record: ProductImageRecord): boolean => {
-  const isPrivate = (value: unknown) => typeof value === 'string' && value.startsWith('supabase-storage:');
+  // Alem da referencia duravel `supabase-storage://`, registros legados guardam a URL
+  // `/storage/v1/object/public/...` do bucket privado. O resolvedor individual trata os
+  // dois formatos; o filtro em lote precisa reconhecer os mesmos valores.
+  const isPrivate = (value: unknown) =>
+    typeof value === 'string' && isPrivateStorageUrl(value, PRODUCT_IMAGE_BUCKET);
   return isPrivate(record.primary_image_url)
     || isPrivate(record.image_url)
     || isPrivate(record.og_image_url)

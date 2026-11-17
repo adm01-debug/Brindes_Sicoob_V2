@@ -5,6 +5,10 @@ const resolveSafe = vi.fn();
 vi.mock('@/lib/private-storage', () => ({
   resolvePrivateStorageUrlSafe: (value: string | null | undefined, bucket?: string) =>
     resolveSafe(value, bucket),
+  isPrivateStorageUrl: (value: string, bucket: string) =>
+    value.startsWith(`supabase-storage://${bucket}/`) ||
+    value.includes(`/storage/v1/object/public/${bucket}/`) ||
+    value.includes(`/storage/v1/object/sign/${bucket}/`),
 }));
 
 const { resolveProductRecordImages, resolveProductImageRecords } = await import('@/lib/external-db/product-record-images');
@@ -87,6 +91,21 @@ describe('resolveProductImageRecords', () => {
 
     expect(resolveSafe).not.toHaveBeenCalled();
     expect(resolved).toHaveLength(1);
+  });
+
+  it('assina em lote os registros com URL legada do bucket privado', async () => {
+    resolveSafe.mockImplementation(async (value: string | null | undefined) =>
+      typeof value === 'string' && value.includes('/storage/v1/object/public/')
+        ? 'https://signed/legado.png'
+        : (value ?? null),
+    );
+
+    const resolved = await resolveProductImageRecords([
+      { primary_image_url: 'https://proj.supabase.co/storage/v1/object/public/personalization-images/legado.png' },
+    ]);
+
+    expect(resolveSafe).toHaveBeenCalled();
+    expect(resolved[0].primary_image_url).toBe('https://signed/legado.png');
   });
 
   it('tolera lista nula', async () => {
