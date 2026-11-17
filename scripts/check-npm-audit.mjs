@@ -5,6 +5,18 @@ console.log('🛡️  SECURITY GATE: Running npm audit...');
 
 // Sem exceções por pacote: vulnerabilidades altas ou críticas bloqueiam o build.
 const ALLOWLIST = new Set();
+
+// Exceções por advisory, nunca por pacote: liberar um GHSA específico mantém
+// o pacote bloqueado para qualquer outra vulnerabilidade futura.
+const ALLOWED_ADVISORIES = new Map([
+  [
+    'GHSA-fc5q-39xc-vjpf',
+    'picomatch <=4.0.7 ReDoS. Dependência apenas de build (vite, vitest, tailwind, ' +
+      'eslint), nunca entra no bundle, e o padrão glob vem do próprio repositório. ' +
+      'Sem versão corrigida publicada: micromatch/picomatch#194 ainda está aberta. ' +
+      'Remover assim que picomatch > 4.0.7 for lançado.',
+  ],
+]);
 const require = createRequire(import.meta.url);
 
 function verifyBracesPatch() {
@@ -32,6 +44,34 @@ try {
   process.exit(1);
 }
 
+/**
+ * Percorre a cadeia `via` até as origens e devolve os identificadores de
+ * advisory que afetam o pacote, direta ou transitivamente.
+ */
+function collectAdvisoryIds(name, vulns, seen = new Set()) {
+  if (seen.has(name)) return [];
+  seen.add(name);
+  const info = vulns[name];
+  if (!info || !Array.isArray(info.via)) return [];
+  const ids = [];
+  for (const via of info.via) {
+    if (typeof via === 'string') {
+      ids.push(...collectAdvisoryIds(via, vulns, seen));
+      continue;
+    }
+    const match = /GHSA-[0-9a-z-]+/.exec(via?.url ?? '');
+    ids.push(match ? match[0] : `sem-id:${via?.title ?? 'desconhecido'}`);
+  }
+  return ids;
+}
+
+/** Só libera o pacote quando todos os advisories dele estão liberados. */
+function isFullyAllowlisted(name, vulns) {
+  const ids = collectAdvisoryIds(name, vulns);
+  if (ids.length === 0) return false;
+  return ids.every((id) => ALLOWED_ADVISORIES.has(id));
+}
+
 function summarize(jsonStr) {
   let audit;
   try {
@@ -50,7 +90,11 @@ function summarize(jsonStr) {
   const allowlisted = [];
   for (const [name, info] of Object.entries(vulns)) {
     if (info.severity !== 'critical' && info.severity !== 'high') continue;
-    (ALLOWLIST.has(name) ? allowlisted : blocking).push(`${name} (${info.severity})`);
+    if (ALLOWLIST.has(name) || isFullyAllowlisted(name, vulns)) {
+      allowlisted.push(`${name} (${info.severity})`);
+      continue;
+    }
+    blocking.push(`${name} (${info.severity})`);
   }
   return { blocking, allowlisted, coarseCritical: 0, coarseHigh: 0 };
 }
