@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 import { requireInternalService } from "../_shared/internal-service-auth.ts";
 import { getScheduledReportOwnerFilter } from "./report-scope.ts";
+import { sendScheduledReportEmail } from "../_shared/scheduled-report-email.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -58,6 +59,8 @@ Deno.serve(async (req) => {
             .limit(100);
           if (quotesError) throw quotesError;
 
+          if (quotesError) throw quotesError;
+
           const total = (quotes || []).reduce((sum, q) => sum + (q.total || 0), 0);
           const approved = (quotes || []).filter(q => q.status === "approved").length;
 
@@ -88,6 +91,8 @@ Deno.serve(async (req) => {
             .limit(100);
           if (ordersError) throw ordersError;
 
+          if (ordersError) throw ordersError;
+
           const total = (orders || []).reduce((sum, o) => sum + (o.total || 0), 0);
 
           reportData = {
@@ -100,36 +105,30 @@ Deno.serve(async (req) => {
           };
         }
 
-        // Send email via Resend
         const resendKey = Deno.env.get("RESEND_API_KEY");
-        if (resendKey) {
-          const htmlContent = generateEmailHtml(report.report_name, reportData);
+        const now = new Date().toISOString();
+        await sendScheduledReportEmail({
+          apiKey: resendKey,
+          to: report.email_to,
+          subject: `📊 ${report.report_name} — ${reportData.period}`,
+          html: generateEmailHtml(report.report_name, reportData),
+          idempotencyKey: `scheduled-report:${report.id}:${report.next_run_at}`,
+        }, async () => {
+          const nextRun = calculateNextRun(report.frequency);
+          const { data: updatedReport, error: updateError } = await supabase
+            .from("scheduled_reports")
+            .update({
+              last_sent_at: now,
+              next_run_at: nextRun.toISOString(),
+              updated_at: now,
+            })
+            .eq("id", report.id)
+            .select("id")
+            .maybeSingle();
 
-          await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${resendKey}`,
-            },
-            body: JSON.stringify({
-              from: "Promo Gifts <noreply@promogifts.com.br>",
-              to: [report.email_to],
-              subject: `📊 ${report.report_name} — ${reportData.period}`,
-              html: htmlContent,
-            }),
-          });
-        }
-
-        // Update next_run_at
-        const nextRun = calculateNextRun(report.frequency);
-        await supabase
-          .from("scheduled_reports")
-          .update({
-            last_sent_at: new Date().toISOString(),
-            next_run_at: nextRun.toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", report.id);
+          if (updateError) throw updateError;
+          if (!updatedReport) throw new Error("Agendamento não encontrado para confirmar o envio.");
+        });
 
         results.push({ id: report.id, status: "sent", email: report.email_to });
       } catch (err) {

@@ -11,6 +11,7 @@ import {
   canAccessCrmRequest,
   hasActivePortalMembership,
 } from "../_shared/portal-access-policy.ts";
+import { escapeIlikeSearchTerm } from "../_shared/ilike-pattern.ts";
 
 const breaker = getBreaker("crm-db");
 
@@ -562,7 +563,7 @@ function applySearch(query: any, search: NonNullable<CrmQuery["search"]>): any {
   if (search.columns?.length) {
     return query.or(buildCompanySearchOr(search.columns, search.term));
   }
-  if (search.column) return query.ilike(search.column, `%${search.term}%`);
+  if (search.column) return query.ilike(search.column, `%${escapeIlikeSearchTerm(search.term)}%`);
   throw new Error("Search requires a column or a non-empty columns list");
 }
 
@@ -851,7 +852,8 @@ async function handleSearch(crm: SupabaseClient, body: CrmQuery): Promise<Respon
     return jsonResponse({ error: "Search requires 'column' and 'term'" }, 400);
   }
 
-  let query = crm.from(table).select(select || "*").ilike(search.column, `%${search.term}%`);
+  let query = crm.from(table).select(select || "*")
+    .ilike(search.column, `%${escapeIlikeSearchTerm(search.term)}%`);
   if (filters) query = applyFilters(query, filters);
   if (orderBy) query = applyOrdering(query, orderBy);
   query = query.limit(limit || 50);

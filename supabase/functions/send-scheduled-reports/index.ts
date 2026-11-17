@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 import { requireInternalService } from "../_shared/internal-service-auth.ts";
 import { deliverScheduledReport } from "./report-delivery.ts";
+import { sendScheduledReportEmail } from "../_shared/scheduled-report-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -51,27 +52,34 @@ Deno.serve(async (req: Request) => {
     for (const report of dueReports) {
       try {
         const emailProvider = resendKey
-          ? (html: string) =>
-            sendEmailViaResend(
-              resendKey,
-              report.email_to,
-              report.report_name,
+          ? async (html: string) => {
+            await sendScheduledReportEmail({
+              apiKey: resendKey,
+              to: report.email_to,
+              subject: `📊 ${report.report_name}`,
               html,
-            )
+              idempotencyKey: `scheduled-report:${report.id}:${report.next_run_at}`,
+            }, () => Promise.resolve());
+          }
           : null;
         const result = await deliverScheduledReport(report, emailProvider, {
           generateData: () => generateReportData(supabase, report),
           persistSent: async () => {
             const nextRun = calculateNextRun(report.frequency);
-            const { error } = await supabase
+            const { data: updatedReport, error } = await supabase
               .from("scheduled_reports")
               .update({
                 last_sent_at: now,
                 next_run_at: nextRun.toISOString(),
                 updated_at: now,
               })
-              .eq("id", report.id);
+              .eq("id", report.id)
+              .select("id")
+              .maybeSingle();
             if (error) throw error;
+            if (!updatedReport) {
+              throw new Error("Agendamento nao encontrado para confirmar o envio.");
+            }
           },
         });
         results.push(result);
@@ -185,32 +193,6 @@ async function generateReportData(supabase: any, report: any): Promise<string> {
   html +=
     `<hr/><p style='font-size:12px;color:#888'>Relatório automático — Promo Gifts</p>`;
   return html;
-}
-
-async function sendEmailViaResend(
-  apiKey: string,
-  to: string,
-  subject: string,
-  html: string,
-) {
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "Promo Gifts <noreply@promogifts.com.br>",
-      to: [to],
-      subject: `📊 ${subject}`,
-      html,
-    }),
-  });
-
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Resend error: ${err}`);
-  }
 }
 
 function calculateNextRun(frequency: string): Date {
