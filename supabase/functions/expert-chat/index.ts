@@ -3,7 +3,7 @@ import { getCorsHeaders, handleCorsPreflightIfNeeded } from '../_shared/cors.ts'
 import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 import { authenticateRequest, authErrorResponse } from '../_shared/auth.ts';
 import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
-import { callAiWithTracking, QuotaExceededError } from '../_shared/ai-usage.ts';
+import { callAiWithTracking, checkAiQuota, QuotaExceededError } from '../_shared/ai-usage.ts';
 import { rateLimiters, applyRateLimit } from '../_shared/rate-limiter.ts';
 import { runBotProtection } from '../_shared/bot-protection.ts';
 import { resolveCredential } from '../_shared/credentials.ts';
@@ -129,6 +129,21 @@ async function expandQuerySemantically(
     synonyms: [],
     intent: "general",
   };
+
+  // A expansao semantica e opcional e consome uma reserva de cota. Se ela
+  // levar a ultima reserva do mes, a resposta principal cairia em 429 e o
+  // usuario ficaria sem resposta: nesse caso, pula a expansao.
+  try {
+    const quota = await checkAiQuota(userId);
+    const unlimited = quota.limit === -1 || quota.remaining === -1;
+    if (!unlimited && (!quota.allowed || quota.remaining <= 1)) {
+      console.warn("[expert-chat] query expansion skipped: quota reserved for main answer");
+      return defaultResult;
+    }
+  } catch (error) {
+    console.warn("[expert-chat] query expansion quota check failed:", error);
+    return defaultResult;
+  }
 
   try {
     const expansionPrompt = `Analise a mensagem do vendedor e extraia informações para busca de produtos no catálogo de brindes corporativos/promocionais.

@@ -12,11 +12,6 @@ interface ScanLog {
   status_code: number;
 }
 
-function privateStorageReference(bucket: string, path: string): string {
-  const encodedPath = path.split("/").map(encodeURIComponent).join("/");
-  return `supabase-storage://${bucket}/${encodedPath}`;
-}
-
 Deno.serve(async (req) => {
   const requestId = getOrCreateRequestId(req);
   const log = createStructuredLogger({ fn: "secure-upload", requestId, req });
@@ -163,6 +158,10 @@ Deno.serve(async (req) => {
       );
     }
 
+    const { data: { publicUrl } } = supabaseAdmin.storage
+      .from(targetBucket)
+      .getPublicUrl(uploadData.path);
+
     log.info("upload_ok", {
       bucket: targetBucket,
       path: uploadData.path,
@@ -171,12 +170,7 @@ Deno.serve(async (req) => {
 
     return log.respond(
       new Response(
-        JSON.stringify({
-          url: privateStorageReference(targetBucket, uploadData.path),
-          bucket: targetBucket,
-          path: uploadData.path,
-          request_id: requestId,
-        }),
+        JSON.stringify({ url: publicUrl, path: uploadData.path, request_id: requestId }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
       ),
     );

@@ -189,6 +189,7 @@ export async function trackStreamingResponse(
   let latestUsage = { input: 0, output: 0 };
   let finalized = false;
   let cancelled = false;
+  let deliveredBytes = 0;
   const processCompleteLines = (final = false) => {
     const lines = buffered.split(/\r?\n/);
     const trailingLine = lines.pop() ?? "";
@@ -209,18 +210,26 @@ export async function trackStreamingResponse(
       processCompleteLines(true);
     }
     finalized = true;
+    const interrupted = status === "error";
+    // A cota mensal so conta logs 'success'. Se a geracao ja aconteceu (houve
+    // consumo real no gateway), um cancelamento nao pode zerar a cobranca --
+    // caso contrario basta abortar o stream para usar IA sem limite.
+    const billable = latestUsage.input > 0 || latestUsage.output > 0 || deliveredBytes > 0;
+    const loggedStatus = interrupted && billable ? "success" : status;
     await updateLog({
       inputTokens: latestUsage.input,
       outputTokens: latestUsage.output,
       totalTokens: latestUsage.input + latestUsage.output,
       estimatedCostUsd: estimateCost(model, latestUsage.input, latestUsage.output),
       durationMs: Date.now() - startedAt,
-      status,
-      errorMessage: status === "error" ? streamErrorMessage(reason) : undefined,
+      status: loggedStatus,
+      errorMessage: interrupted ? streamErrorMessage(reason) : undefined,
       metadata: {
         stream: true,
         usageReported: latestUsage.input > 0 || latestUsage.output > 0,
-        interrupted: status === "error",
+        interrupted,
+        billedOnInterrupt: interrupted && billable,
+        deliveredBytes,
       },
     });
   };
@@ -239,6 +248,7 @@ export async function trackStreamingResponse(
         }
         buffered += decoder.decode(value, { stream: true });
         processCompleteLines();
+        deliveredBytes += value.byteLength;
         controller.enqueue(value);
       } catch (error) {
         if (cancelled) return;

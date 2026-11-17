@@ -19,8 +19,11 @@ const crmBreaker = getCircuitBreaker(CRM_DB_BRIDGE_FUNCTION, {
 
 
 export interface CrmQuery {
-  table: string;
-  operation: "select" | "search" | "insert" | "update" | "delete";
+  table?: string;
+  operation: "select" | "search" | "insert" | "update" | "delete" | "quote_directory";
+  action?: "companies" | "contacts";
+  companyId?: string;
+  term?: string;
   id?: string;
   filters?: Record<string, unknown>;
   select?: string;
@@ -170,7 +173,11 @@ async function extractResponseError(response: Response, fallback: string): Promi
 }
 
 function isReadOperation(query: CrmQuery): boolean {
-  return query.operation === "select" || query.operation === "search";
+  return (
+    query.operation === "select" ||
+    query.operation === "search" ||
+    query.operation === "quote_directory"
+  );
 }
 
 function isUnconfiguredMessage(message: string): boolean {
@@ -279,6 +286,61 @@ export async function selectCrm<T>(
     table,
     operation: "select",
     ...options,
+  });
+  return result.data || [];
+}
+
+export interface QuoteDirectoryCompany {
+  id: string;
+  name: string;
+  razao_social: string;
+  nome_fantasia: string | null;
+  ramo_atividade: string | null;
+  cnpj: string | null;
+  logo_url: string | null;
+}
+
+export interface QuoteDirectoryContact {
+  id: string;
+  name: string;
+  cargo: string | null;
+  email: string | null;
+  phone: string | null;
+}
+
+/**
+ * Diretorio de orcamento: contrato fechado que vendedor e agente podem usar.
+ * O Edge impoe tabela, projecao e filtros; o cliente so escolhe acao e escalares.
+ */
+export async function fetchQuoteDirectoryCompanies(options: {
+  term?: string;
+  companyId?: string;
+  limit?: number;
+  offset?: number;
+} = {}): Promise<QuoteDirectoryCompany[]> {
+  const { term = "", companyId = "", limit = 100, offset = 0 } = options;
+  const trimmedTerm = term.trim();
+  const query: CrmQuery = {
+    operation: "quote_directory",
+    action: "companies",
+    limit,
+    offset,
+  };
+  if (companyId) query.companyId = companyId;
+  if (trimmedTerm.length >= 2) query.term = trimmedTerm;
+  const result = await invokeCrmDb<QuoteDirectoryCompany[]>(query);
+  return result.data || [];
+}
+
+export async function fetchQuoteDirectoryContacts(
+  companyId: string,
+  limit = 50,
+): Promise<QuoteDirectoryContact[]> {
+  const result = await invokeCrmDb<QuoteDirectoryContact[]>({
+    operation: "quote_directory",
+    action: "contacts",
+    companyId,
+    limit,
   });
   return result.data || [];
 }
