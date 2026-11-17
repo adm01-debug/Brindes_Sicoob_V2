@@ -1,13 +1,16 @@
 /**
- * mockupGenerationService — Handles mockup generation API calls and history persistence.
+ * mockupGenerationService ââ‚¬â€ Handles mockup generation API calls and history persistence.
  * Extracted from useMockupGenerator to reduce hook complexity.
  */
 import { supabase } from "@/integrations/supabase/client";
 import { uploadLogoToStorage, downloadImageAsPdfFromUrl } from "@/lib/mockup-storage";
 import { toast } from "sonner";
 import type { PersonalizationArea } from "@/components/mockup/MultiAreaManager";
+import { canonicalPrivateStorageValue, resolvePrivateStorageUrlSafe } from '@/lib/private-storage';
 
-// ─── Types ───────────────────────────────────────────────────────────
+const MOCKUP_ART_BUCKET = 'mockup-art-files';
+
+// ââ€â‚¬ââ€â‚¬ââ€â‚¬ Types ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬
 
 export interface Technique {
   id: string;
@@ -37,7 +40,7 @@ export interface GeneratedMockup {
   client_id: string | null;
 }
 
-// ─── Technique prompt mapping ────────────────────────────────────────
+// ââ€â‚¬ââ€â‚¬ââ€â‚¬ Technique prompt mapping ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬
 
 const TECHNIQUE_PROMPTS: Record<string, string> = {
   bordado: "as professional machine embroidery with visible thread stitching texture",
@@ -63,7 +66,7 @@ export function getTechniquePrompt(technique: Technique): string {
   return TECHNIQUE_PROMPTS.default ?? "as professionally printed/applied logo";
 }
 
-// ─── History fetching ────────────────────────────────────────────────
+// ââ€â‚¬ââ€â‚¬ââ€â‚¬ History fetching ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬
 
 export async function fetchMockupHistory(userId?: string): Promise<GeneratedMockup[]> {
   let query = supabase
@@ -73,21 +76,22 @@ export async function fetchMockupHistory(userId?: string): Promise<GeneratedMock
   if (userId) query = query.eq("seller_id", userId);
   const { data, error } = await query;
   if (error) throw error;
-  return (data || []).map((row) => ({
+  return Promise.all((data || []).map(async (row) => ({
     ...row,
     product_sku: row.product_sku ?? null,
     technique_id: row.technique_id ?? null,
     technique_name: row.technique_name ?? "",
-    layout_url: row.layout_url ?? null,
+    logo_url: await resolvePrivateStorageUrlSafe(row.logo_url, MOCKUP_ART_BUCKET) ?? '',
+    layout_url: await resolvePrivateStorageUrlSafe(row.layout_url, MOCKUP_ART_BUCKET),
     location_name: row.location_name ?? null,
     colors_count: row.colors_count ?? null,
     client_id: row.client_id ?? null,
     client_name: row.client_name ?? null,
     annotations: (row.annotations as Array<Record<string, unknown>> | null) ?? null,
-  })) as GeneratedMockup[];
+  }))) as Promise<GeneratedMockup[]>;
 }
 
-// ─── Save to history ─────────────────────────────────────────────────
+// ââ€â‚¬ââ€â‚¬ââ€â‚¬ Save to history ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬
 
 export interface SaveMockupParams {
   userId: string;
@@ -106,7 +110,9 @@ function valueOr<T>(value: T | null | undefined | false | "" | 0, fallback: T): 
 
 async function storedLogoUrl(params: SaveMockupParams): Promise<string> {
   const preview = valueOr(params.area.logoPreview, "");
-  if (!preview.startsWith("data:")) return preview;
+  if (!preview.startsWith("data:")) {
+    return canonicalPrivateStorageValue(preview, MOCKUP_ART_BUCKET) ?? preview;
+  }
   const uploaded = await uploadLogoToStorage(
     params.userId,
     preview,
@@ -145,7 +151,9 @@ export async function saveMockupToDb(params: SaveMockupParams): Promise<string |
       technique_name: technique.name,
       logo_url: logoUrl,
       mockup_url: mockupUrl,
-      layout_url: valueOr(extra?.layoutUrl, null),
+      layout_url: extra?.layoutUrl
+        ? canonicalPrivateStorageValue(extra.layoutUrl, MOCKUP_ART_BUCKET)
+        : null,
       position_x: area.positionX,
       position_y: area.positionY,
       logo_width_cm: area.logoWidth,
@@ -163,7 +171,7 @@ export async function saveMockupToDb(params: SaveMockupParams): Promise<string |
   }
 }
 
-// ─── Generate mockup ─────────────────────────────────────────────────
+// ââ€â‚¬ââ€â‚¬ââ€â‚¬ Generate mockup ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬
 
 export interface GenerateMockupParams {
   productImage: string;
@@ -275,7 +283,7 @@ export async function generateMockupApi(params: GenerateMockupParams): Promise<G
   return generateBatchMockups(params, areasWithLogos, techniquePrompt);
 }
 
-// ─── Download ────────────────────────────────────────────────────────
+// ââ€â‚¬ââ€â‚¬ââ€â‚¬ Download ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬
 
 export async function downloadMockupAsPdf(mockupUrl: string, sku?: string, techniqueName?: string) {
   const safeSku = (sku || "produto").replace(/[^a-zA-Z0-9-_]/g, "-");
@@ -284,14 +292,14 @@ export async function downloadMockupAsPdf(mockupUrl: string, sku?: string, techn
   await downloadImageAsPdfFromUrl(mockupUrl, fileName);
 }
 
-// ─── Delete ──────────────────────────────────────────────────────────
+// ââ€â‚¬ââ€â‚¬ââ€â‚¬ Delete ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬
 
 export async function deleteMockupFromDb(id: string): Promise<void> {
   const { error } = await supabase.from("generated_mockups").delete().eq("id", id);
   if (error) throw error;
 }
 
-// ─── Default area ────────────────────────────────────────────────────
+// ââ€â‚¬ââ€â‚¬ââ€â‚¬ Default area ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬
 
 export const createDefaultArea = (): PersonalizationArea => ({
   id: crypto.randomUUID(),

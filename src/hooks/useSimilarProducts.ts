@@ -12,6 +12,7 @@ import { useQuery } from '@tanstack/react-query';
 import { invokeExternalDb } from '@/lib/external-db';
 import type { Product } from '@/types/product-catalog';
 import { logger } from '@/lib/logger';
+import { resolvePrivateStorageUrlSafe } from '@/lib/private-storage';
 
 export interface SimilarProductItem {
   id: string;
@@ -147,15 +148,27 @@ async function fetchFallbackProducts(
   }
 }
 
+// Os cards de produtos semelhantes leem `primary_image_url` direto do bridge.
+// Registros gravados com upload privado guardam a referencia durável
+// `supabase-storage://`, que precisa virar URL assinada antes do <img>.
+async function resolveSimilarItemImages(items: SimilarProductItem[]): Promise<SimilarProductItem[]> {
+  return Promise.all(items.map(async (item) => {
+    if (!item.image_url.startsWith('supabase-storage:')) return item;
+    const resolved = await resolvePrivateStorageUrlSafe(item.image_url, 'personalization-images');
+    return { ...item, image_url: resolved ?? item.image_url };
+  }));
+}
+
 async function findSimilarProducts(
   productId: string,
   supplierId?: string,
   categoryId?: string,
 ): Promise<SimilarProductItem[]> {
   const related = await fetchRelationshipProducts(productId);
-  if (related.length > 0) return related;
+  if (related.length > 0) return resolveSimilarItemImages(related);
   const grouped = await fetchGroupProducts(productId);
-  return grouped.length > 0 ? grouped : fetchFallbackProducts(productId, supplierId, categoryId);
+  const result = grouped.length > 0 ? grouped : await fetchFallbackProducts(productId, supplierId, categoryId);
+  return resolveSimilarItemImages(result);
 }
 
 export function useSimilarProducts(product: Product | null | undefined) {

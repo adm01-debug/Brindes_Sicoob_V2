@@ -1,5 +1,5 @@
 /** ProductCardImage — imagem do card com carrossel, badges e cores. */
-import { memo, useEffect, useRef, type KeyboardEvent, type TouchEvent } from "react";
+import { memo, useEffect, useRef, useState, type KeyboardEvent, type TouchEvent } from "react";
 import { Sparkles, Package } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { isLightColor } from "@/hooks/useColorSystem";
 import { OptimizedImage } from "@/components/common/OptimizedImage";
 import type { MatchedColorVariant } from "@/utils/color-variant-carousel";
+import { isPrivateStorageUrl, resolvePrivateStorageUrl } from "@/lib/private-storage";
 
 interface ProductCardImageProps {
   product: { name: string; featured?: boolean; newArrival?: boolean; isKit?: boolean; onSale?: boolean; images: string[];
@@ -20,13 +21,26 @@ interface ProductCardImageProps {
 }
 
 type SwipeElement = HTMLElement & { _swipeX?: number };
+const PRODUCT_IMAGE_BUCKET = 'personalization-images';
+const IMAGE_FALLBACK_URL = '/placeholder.svg';
+function isPrivateImageReference(url: string): boolean {
+  return isPrivateStorageUrl(url, PRODUCT_IMAGE_BUCKET);
+}
+
+async function resolveProductImageUrl(url: string): Promise<string> {
+  try {
+    return await resolvePrivateStorageUrl(url, PRODUCT_IMAGE_BUCKET) || IMAGE_FALLBACK_URL;
+  } catch {
+    return IMAGE_FALLBACK_URL;
+  }
+}
 
 function useVariantPrefetch(hovered: boolean, multiple: boolean, variants: MatchedColorVariant[], activeIndex: number) {
   const prefetched = useRef<Set<string>>(new Set());
   useEffect(() => {
     if (!hovered || !multiple) return;
     for (const [index, variant] of variants.entries()) {
-      if (index === activeIndex || !variant.image || prefetched.current.has(variant.image)) continue;
+      if (index === activeIndex || !variant.image || isPrivateImageReference(variant.image) || prefetched.current.has(variant.image)) continue;
       const image = new Image();
       image.src = variant.image;
       prefetched.current.add(variant.image);
@@ -57,8 +71,23 @@ function useVariantSwipe(enabled: boolean, index: number, variants: MatchedColor
 
 function ProductImage({ props }: { props: ProductCardImageProps }) {
   const url = props.colorSpecificImage || props.product.images[0] || "";
+  const privateImage = isPrivateImageReference(url);
+  const [resolvedImage, setResolvedImage] = useState<{ source: string; url: string } | null>(null);
+  useEffect(() => {
+    if (!privateImage) {
+      setResolvedImage((current) => current?.source === url ? current : null);
+      return;
+    }
+    let current = true;
+    void resolveProductImageUrl(url).then((resolved) => {
+      if (current) setResolvedImage({ source: url, url: resolved });
+    });
+    return () => { current = false; };
+  }, [privateImage, url]);
+  const imageUrl = resolvedImage?.source === url ? resolvedImage.url :
+    (url.startsWith('supabase-storage:') ? IMAGE_FALLBACK_URL : url);
   const name = props.activeColorName ? `${props.product.name} - ${props.activeColorName}` : props.product.name;
-  return <div className="relative w-full h-full"><OptimizedImage urlCdn={url} variant="card" context="card"
+  return <div className="relative w-full h-full"><OptimizedImage urlCdn={imageUrl} variant="card" context="card" generateSrcSet={!privateImage}
     priority={Boolean(props.product.featured) || props.safeVariantIdx === 0} alt={name} title={name}
     className={cn("w-full h-full", props.imageLoaded ? "blur-0" : "blur-sm")}
     style={props.imageLoaded ? { transform: `scale(${props.computedImageScale})` } : undefined} onLoad={props.onImageLoad}
