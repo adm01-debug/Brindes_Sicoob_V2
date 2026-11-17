@@ -51,7 +51,7 @@ export async function checkAiQuota(userId: string): Promise<QuotaResult> {
   const { data, error } = await supabase.rpc("check_ai_quota", { _user_id: userId });
   if (error) {
     console.error("[ai-usage] Quota check failed:", error.message);
-    return { allowed: true, used: 0, limit: -1, remaining: -1, reason: "quota_check_failed" };
+    return { allowed: false, used: 0, limit: 0, remaining: 0, reason: "quota_check_failed" };
   }
   return data as QuotaResult;
 }
@@ -69,8 +69,9 @@ export async function acquireAiQuota(userId: string, functionName: string, model
   });
   if (error) {
     console.error("[ai-usage] Atomic quota acquire failed:", error.message);
-    // Fallback: allow but without log_id (will create new log later)
-    return { allowed: true, used: 0, limit: -1, remaining: -1, reason: "acquire_failed" };
+    // Falha fechada: sem reserva atômica não há como limitar custo nem provar
+    // contabilização. O chamador pode orientar o usuário a tentar novamente.
+    return { allowed: false, used: 0, limit: 0, remaining: 0, reason: "acquire_failed" };
   }
   return data as QuotaResult;
 }
@@ -138,6 +139,133 @@ export function extractTokensFromResponse(responseBody: any): { input: number; o
   };
 }
 
+export function extractUsageFromSseLine(line: string): { input: number; output: number } | null {
+  const payload = line.startsWith("data:") ? line.slice(5).trim() : "";
+  if (!payload || payload === "[DONE]") return null;
+  try {
+    const parsed = JSON.parse(payload);
+    const tokens = extractTokensFromResponse(parsed);
+    return tokens.input > 0 || tokens.output > 0 ? tokens : null;
+  } catch {
+    return null;
+  }
+}
+
+interface AiLogUpdateParams {
+  inputTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
+  estimatedCostUsd?: number;
+  durationMs?: number;
+  status?: string;
+  errorMessage?: string;
+  metadata?: Record<string, unknown>;
+}
+
+function streamErrorMessage(reason: unknown): string {
+  if (reason instanceof Error) return `Stream interrupted: ${reason.name}`;
+  if (typeof reason === "string" && reason.trim()) return `Stream interrupted: ${reason.slice(0, 120)}`;
+  return "Stream interrupted by consumer";
+}
+
+export async function trackStreamingResponse(
+  response: Response,
+  model: string,
+  startedAt: number,
+  updateLog: (params: AiLogUpdateParams) => Promise<void>,
+): Promise<Response> {
+  if (!response.body) {
+    await updateLog({
+      durationMs: Date.now() - startedAt,
+      status: "error",
+      errorMessage: "Successful stream response had no body",
+      metadata: { stream: true, usageReported: false, interrupted: true },
+    });
+    return response;
+  }
+
+  const decoder = new TextDecoder();
+  let buffered = "";
+  let latestUsage = { input: 0, output: 0 };
+  let finalized = false;
+  let cancelled = false;
+  const processCompleteLines = (final = false) => {
+    const lines = buffered.split(/\r?\n/);
+    const trailingLine = lines.pop() ?? "";
+    buffered = final ? "" : trailingLine;
+    for (const line of lines) {
+      const usage = extractUsageFromSseLine(line);
+      if (usage) latestUsage = usage;
+    }
+    if (final && trailingLine) {
+      const usage = extractUsageFromSseLine(trailingLine);
+      if (usage) latestUsage = usage;
+    }
+  };
+  const finalize = async (status: "success" | "error", reason?: unknown) => {
+    if (finalized) return;
+    if (status === "error") {
+      buffered += decoder.decode();
+      processCompleteLines(true);
+    }
+    finalized = true;
+    await updateLog({
+      inputTokens: latestUsage.input,
+      outputTokens: latestUsage.output,
+      totalTokens: latestUsage.input + latestUsage.output,
+      estimatedCostUsd: estimateCost(model, latestUsage.input, latestUsage.output),
+      durationMs: Date.now() - startedAt,
+      status,
+      errorMessage: status === "error" ? streamErrorMessage(reason) : undefined,
+      metadata: {
+        stream: true,
+        usageReported: latestUsage.input > 0 || latestUsage.output > 0,
+        interrupted: status === "error",
+      },
+    });
+  };
+  const reader = response.body.getReader();
+  const tracked = new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      try {
+        const { done, value } = await reader.read();
+        if (cancelled) return;
+        if (done) {
+          buffered += decoder.decode();
+          processCompleteLines(true);
+          await finalize("success");
+          controller.close();
+          return;
+        }
+        buffered += decoder.decode(value, { stream: true });
+        processCompleteLines();
+        controller.enqueue(value);
+      } catch (error) {
+        if (cancelled) return;
+        await finalize("error", error);
+        controller.error(error);
+      }
+    },
+    async cancel(reason) {
+      cancelled = true;
+      await Promise.all([
+        reader.cancel(reason),
+        finalize("error", reason),
+      ]);
+    },
+  });
+
+  const headers = new Headers(response.headers);
+  headers.delete("content-length");
+  headers.delete("content-encoding");
+  headers.delete("transfer-encoding");
+  return new Response(tracked, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 /**
  * Wraps an AI gateway call with quota check + usage logging.
  * Returns the AI response or throws if quota exceeded.
@@ -162,23 +290,47 @@ export async function callAiWithTracking(options: {
 
   // 2. Call AI
   const startMs = Date.now();
-  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ model, stream, ...requestBody }),
-  });
+  const streamOptions = stream
+    ? { ...((requestBody.stream_options as Record<string, unknown> | undefined) ?? {}), include_usage: true }
+    : undefined;
+  let response: Response;
+  try {
+    response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        ...requestBody,
+        stream,
+        ...(streamOptions ? { stream_options: streamOptions } : {}),
+      }),
+    });
+  } catch (error) {
+    await updateAiLog(logId, {
+      durationMs: Date.now() - startMs,
+      status: "error",
+      errorMessage: error instanceof Error ? error.name : "network_error",
+    });
+    throw error;
+  }
 
   const durationMs = Date.now() - startMs;
 
   // 3. Update the reserved log with actual results
   if (stream) {
-    updateAiLog(logId, {
+    if (response.ok) return await trackStreamingResponse(
+      response,
+      model,
+      startMs,
+      (params) => updateAiLog(logId, params),
+    );
+    await updateAiLog(logId, {
       durationMs,
-      status: response.ok ? "success" : "error",
-      errorMessage: response.ok ? undefined : `HTTP ${response.status}`,
+      status: "error",
+      errorMessage: `HTTP ${response.status}`,
       metadata: { stream: true },
     });
     return response;
@@ -253,16 +405,7 @@ export async function callAiWithFallback(options: {
 /**
  * Update an existing AI usage log entry with actual results.
  */
-async function updateAiLog(logId: string | undefined, params: {
-  inputTokens?: number;
-  outputTokens?: number;
-  totalTokens?: number;
-  estimatedCostUsd?: number;
-  durationMs?: number;
-  status?: string;
-  errorMessage?: string;
-  metadata?: Record<string, unknown>;
-}): Promise<void> {
+async function updateAiLog(logId: string | undefined, params: AiLogUpdateParams): Promise<void> {
   if (!logId) {
     // Fallback: no log_id from atomic acquire, create new log
     console.warn("[ai-usage] No log_id, skipping update");
