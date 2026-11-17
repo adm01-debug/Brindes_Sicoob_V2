@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 // import { MainLayout } from "@/components/layout/MainLayout";
 import {
@@ -45,6 +45,7 @@ import { exportTrendsCsv } from '@/lib/trends-export';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { isDemoMode } from './trends/is-demo-mode';
+import { usePreservedSnapshot } from './trends/use-preserved-snapshot';
 import { Badge } from '@/components/ui/badge';
 
 type DateRange = '7d' | '30d' | '90d';
@@ -232,9 +233,10 @@ function useTrendQueries(controls: TrendsControls) {
   });
   // Atualizar cria uma nova entrada de cache. Sem preservar o último snapshot
   // válido, uma atualização que falha apaga KPIs, rankings e gráficos já lidos.
-  const lastSnapshot = useRef<TrendsActivityResult | undefined>(undefined);
-  if (activityQuery.data !== undefined) lastSnapshot.current = activityQuery.data;
-  const activityData = activityQuery.data ?? lastSnapshot.current;
+  const activityData = usePreservedSnapshot<TrendsActivityResult>(
+    `${controls.dateRange}|${controls.scopeKey}`,
+    activityQuery.data,
+  );
   const activity = {
     data: activityData,
     isLoading: activityQuery.isLoading && activityData === undefined,
