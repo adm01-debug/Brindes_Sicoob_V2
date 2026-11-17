@@ -20,7 +20,7 @@ if (!Deno.env.get("CRM_SUPABASE_URL")) {
   Deno.env.set("CRM_SUPABASE_URL", "https://fake-crm.supabase.co");
 }
 if (!Deno.env.get("CRM_SUPABASE_SERVICE_KEY") && !Deno.env.get("CRM_SUPABASE_ANON_KEY")) {
-  Deno.env.set("CRM_SUPABASE_SERVICE_KEY", "fake-key-for-singleton-test");
+  Deno.env.set("CRM_SUPABASE_SERVICE_KEY", "sb_secret_fake_key_for_singleton_test_0123456789");
 }
 
 const mod = await import("./index.ts");
