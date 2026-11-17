@@ -84,6 +84,28 @@ describe('cloud-status', () => {
     expect(invokeMock).toHaveBeenCalledTimes(2);
   });
 
+  it('re-arms system-healthcheck when the authenticated session changes', async () => {
+    pingHealthMock.mockResolvedValue({ ok: true, ms: 100 });
+    fetchMock.mockResolvedValue({ ok: true, status: 200 } as Response);
+    const forbidden = Object.assign(new Error('forbidden'), { context: { status: 403 } });
+    invokeMock.mockResolvedValue({ data: null, error: forbidden });
+
+    getSessionMock.mockResolvedValue({ data: { session: { user: { id: 'agente-1' } } }, error: null });
+    await probeCloudStatus(true);
+    await probeCloudStatus(true);
+    expect(invokeMock).toHaveBeenCalledTimes(1);
+
+    // Novo login como dev na mesma aba: a sonda precisa voltar a ser tentada.
+    getSessionMock.mockResolvedValue({ data: { session: { user: { id: 'dev-1' } } }, error: null });
+    invokeMock.mockResolvedValue({ data: { status: 'ok' }, error: null });
+    await probeCloudStatus(true);
+    expect(invokeMock).toHaveBeenCalledTimes(2);
+
+    // Sucesso limpa a memoizacao para a sessao corrente.
+    await probeCloudStatus(true);
+    expect(invokeMock).toHaveBeenCalledTimes(3);
+  });
+
   it('returns warming when 2 of 3 signals pass', async () => {
     getSessionMock.mockResolvedValue({ error: null });
     pingHealthMock.mockResolvedValue({ ok: false, ms: 2500, error: 'boom' });
