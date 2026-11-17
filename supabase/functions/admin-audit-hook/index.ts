@@ -1,14 +1,10 @@
 import { withStructuredLogging } from "../_shared/structured-logger.ts";
+import { getCorsHeaders, handleCorsPreflightIfNeeded } from "../_shared/cors.ts";
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'npm:@supabase/supabase-js@2.119.0'
 import { crypto } from "https://deno.land/std@0.177.0/crypto/mod.ts";
 import { encode as hexEncode } from "https://deno.land/std@0.177.0/encoding/hex.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, traceparent',
-}
 
 async function hash(data: string): Promise<string> {
   const msgUint8 = new TextEncoder().encode(data);
@@ -17,8 +13,9 @@ async function hash(data: string): Promise<string> {
 }
 
 serve(withStructuredLogging("admin-audit-hook", async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+  const preflight = handleCorsPreflightIfNeeded(req);
+  if (preflight) {
+    return preflight
   }
 
   try {
@@ -35,7 +32,7 @@ serve(withStructuredLogging("admin-audit-hook", async (req) => {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
     if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
         status: 401,
       })
     }
@@ -98,14 +95,14 @@ serve(withStructuredLogging("admin-audit-hook", async (req) => {
     if (insertError) throw insertError
 
     return new Response(JSON.stringify({ success: true, hash: current_hash }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       status: 200,
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error('[admin-audit-hook] request_failed', message);
     return new Response(JSON.stringify({ error: 'request_failed' }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       status: 400,
     })
   }
