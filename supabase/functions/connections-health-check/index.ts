@@ -10,10 +10,13 @@ import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 import { castRpcResult } from "../_shared/supabase-client-adapter.ts";
 import {
   buildTestFreshnessIncident,
+  DEFAULT_TEST_STALE_MINUTES,
   type IncidentKey,
   type MonitoredConnection,
 } from "./health-core.ts";
 
+// Tolera ate 3 ciclos perdidos antes de abrir incidente de teste vencido.
+const TEST_STALE_INTERVAL_FACTOR = 3;
 const DEDUPE_WINDOW_HOURS = 4;
 const STALE_SECRET_DAYS = 90;
 const DEFAULT_FAILURE_WINDOW_MINUTES = 30;
@@ -109,8 +112,25 @@ Deno.serve(async (req) => {
       .eq("auto_test_enabled", true)
       .in("status", ["active", "degraded", "error"]);
     if (monitoredError) throw monitoredError;
+    // A janela de frescor precisa acompanhar o intervalo real do cron de
+    // auto-teste (configuravel ate 240min). Um limite fixo geraria incidentes
+    // falsos em massa sempre que o intervalo for aumentado.
+    let staleMinutes = DEFAULT_TEST_STALE_MINUTES;
+    try {
+      const { data: intervalMinutes } = await castRpcResult<{
+        data: number | null;
+        error: { message: string } | null;
+      }>(service.rpc("get_connections_auto_test_interval"));
+      if (typeof intervalMinutes === "number" && intervalMinutes > 0) {
+        staleMinutes = Math.max(
+          DEFAULT_TEST_STALE_MINUTES,
+          intervalMinutes * TEST_STALE_INTERVAL_FACTOR,
+        );
+      }
+    } catch (_) { /* keep default */ }
+
     for (const connection of (monitored ?? []) as MonitoredConnection[]) {
-      const incident = buildTestFreshnessIncident(connection);
+      const incident = buildTestFreshnessIncident(connection, Date.now(), staleMinutes);
       if (incident) incidents.push(incident);
     }
 

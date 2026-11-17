@@ -14,6 +14,7 @@ import { Send, Loader2, Bot, User as UserIcon, AlertCircle, RotateCcw } from "lu
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getSupabaseFunctionUrl, supabase, supabasePublishableKey } from "@/integrations/supabase/client";
+import { selectExpertChatMessages } from "@/lib/assistant-message-window";
 import { toast } from "sonner";
 
 // ============================================
@@ -95,7 +96,9 @@ async function fetchAssistantContent(
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
-      messages: messages.map(message => ({ role: message.role, content: message.content })),
+      messages: selectExpertChatMessages(
+        messages.map(message => ({ role: message.role, content: message.content })),
+      ),
       systemPrompt,
       contextId,
     }),

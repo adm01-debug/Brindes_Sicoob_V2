@@ -7,8 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Building2, User, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { selectCrm } from "@/lib/crm-db";
-import { getCompanyDisplayName, type CrmCompany, type CrmContact, type CrmContactEmail, type CrmContactPhone } from "@/types/crm";
+import { fetchQuoteDirectoryCompanies, fetchQuoteDirectoryContacts } from "@/lib/crm-db";
 import { CompanySearchDropdown } from "./company-contact/CompanySearchDropdown";
 import { ContactDropdown, SingleContactDisplay } from "./company-contact/ContactSelector";
 import type { CompanyOption, ContactOption } from "./company-contact/shared-types";
@@ -25,39 +24,27 @@ interface CompanyContactSelectorProps {
   onContactInfoChange?: (info: SelectedContactInfo | null) => void;
 }
 
+// Empresas e contatos passam pelo contrato fechado quote_directory, unico
+// acesso ao bridge liberado para vendedor e agente. O Edge ja devolve o
+// e-mail e o telefone principais de cada contato.
 async function fetchCompany(companyId: string): Promise<CompanyOption | null> {
   if (!companyId) return null;
-  const data = await selectCrm<CrmCompany>("companies", {
-    select: "id, razao_social, nome_fantasia, ramo_atividade, cnpj, logo_url", filters: { id: companyId }, limit: 1,
-  });
+  const data = await fetchQuoteDirectoryCompanies({ companyId, limit: 1 });
   const company = data[0];
   if (!company) return null;
-  return { id: company.id, name: getCompanyDisplayName(company), razao_social: company.razao_social, nome_fantasia: company.nome_fantasia, ramo_atividade: company.ramo_atividade || null, cnpj: company.cnpj, logo_url: company.logo_url || null };
-}
-
-async function enrichContact(contact: CrmContact): Promise<ContactOption> {
-  let email: string | null = null;
-  let phone: string | null = null;
-  try {
-    const [emails, phones] = await Promise.all([
-      selectCrm<CrmContactEmail>("contact_emails", { filters: { contact_id: contact.id }, limit: 1 }),
-      selectCrm<CrmContactPhone>("contact_phones", { filters: { contact_id: contact.id }, limit: 1 }),
-    ]);
-    email = emails[0]?.email ?? null;
-    phone = phones[0]?.numero ?? null;
-  } catch {
-    // Dados auxiliares não impedem a seleção do contato.
-  }
-  return { id: contact.id, name: contact.full_name || [contact.first_name, contact.last_name].filter(Boolean).join(" "), cargo: contact.cargo, email, phone };
+  return { id: company.id, name: company.name, razao_social: company.razao_social, nome_fantasia: company.nome_fantasia, ramo_atividade: company.ramo_atividade, cnpj: company.cnpj, logo_url: company.logo_url };
 }
 
 async function fetchContacts(companyId: string): Promise<ContactOption[]> {
   if (!companyId) return [];
-  const contacts = await selectCrm<CrmContact>("contacts", {
-    select: "id, first_name, last_name, full_name, cargo", filters: { company_id: companyId, deleted_at: null },
-    orderBy: { column: "first_name", ascending: true }, limit: 50,
-  });
-  return Promise.all(contacts.map(enrichContact));
+  const contacts = await fetchQuoteDirectoryContacts(companyId, 50);
+  return contacts.map((contact) => ({
+    id: contact.id,
+    name: contact.name,
+    cargo: contact.cargo,
+    email: contact.email,
+    phone: contact.phone,
+  }));
 }
 
 function useCompanyContactData(companyId: string) {
