@@ -172,3 +172,60 @@ describe("sicoobOrderService.updateOrderStatus", () => {
     expect(mocks.from).not.toHaveBeenCalled();
   });
 });
+
+describe("sicoobOrderService.getItemLogs", () => {
+  /** Builder minimo do PostgREST: resolve no terminador da cadeia. */
+  function builder(result: { data: unknown; error: unknown }, terminator: string) {
+    const chain: Record<string, unknown> = {};
+    for (const method of ["select", "eq", "order", "in"]) {
+      chain[method] = vi.fn(() => (method === terminator ? Promise.resolve(result) : chain));
+    }
+    return chain;
+  }
+
+  it("resolve o autor por profiles.user_id sem embed irresolvivel", async () => {
+    const selects: string[] = [];
+    const logs = builder(
+      {
+        data: [
+          { id: "l1", action: "UPDATE", old_data: null, new_data: null, created_at: "2026-01-02", user_id: "u1" },
+          { id: "l2", action: "INSERT", old_data: null, new_data: null, created_at: "2026-01-01", user_id: null },
+        ],
+        error: null,
+      },
+      "order",
+    );
+    const profiles = builder({ data: [{ user_id: "u1", full_name: "Ana Souza" }], error: null }, "in");
+    mocks.from.mockImplementation((table: string) => {
+      const chain = table === "profiles" ? profiles : logs;
+      const select = chain.select as ReturnType<typeof vi.fn>;
+      select.mockImplementation((columns: string) => {
+        selects.push(columns);
+        return columns === "user_id, full_name" || table !== "profiles" ? chain : chain;
+      });
+      return chain;
+    });
+
+    const result = await sicoobOrderService.getItemLogs("pedido-1");
+
+    // O embed `profiles!user_id` nao existe no schema e devolvia 400 no PostgREST.
+    expect(selects.some((columns) => columns.includes("profiles!"))).toBe(false);
+    expect(result).toEqual([
+      { id: "l1", action: "UPDATE", old_data: null, new_data: null, created_at: "2026-01-02", user: { display_name: "Ana Souza" } },
+      { id: "l2", action: "INSERT", old_data: null, new_data: null, created_at: "2026-01-01" },
+    ]);
+  });
+
+  it("nao consulta profiles quando nenhum log tem autor", async () => {
+    const logs = builder(
+      { data: [{ id: "l1", action: "DELETE", old_data: null, new_data: null, created_at: "2026-01-03", user_id: null }], error: null },
+      "order",
+    );
+    mocks.from.mockImplementation(() => logs);
+
+    const result = await sicoobOrderService.getItemLogs("pedido-2");
+
+    expect(mocks.from).toHaveBeenCalledExactlyOnceWith("sicoob_order_item_logs");
+    expect(result[0]).not.toHaveProperty("user");
+  });
+});
