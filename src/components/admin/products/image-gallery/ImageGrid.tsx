@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { GripVertical, ZoomIn, Star, X, Film, Type, CheckSquare, Square, CheckCircle2 } from 'lucide-react';
 import { type ExternalImage, type VariantInfo, IMAGE_TYPES } from "./types";
 import { ImageMetaEditor } from './ImageMetaEditor';
+import { PrivateStorageImage } from '@/components/common/PrivateStorageImage';
 
 interface Props {
   filteredImages: string[];
@@ -97,7 +98,7 @@ function TileMedia({ external, image, index }: { external?: ExternalImage; image
   if (external?.image_type === 'video') {
     return <div className="w-full h-full bg-muted/30 flex items-center justify-center"><Film className="h-8 w-8 text-muted-foreground/40" /></div>;
   }
-  return <img src={image} alt={external?.alt_text || `Imagem ${index + 1}`} className="w-full h-full object-contain bg-muted/30" loading="lazy" />;
+  return <PrivateStorageImage value={image} bucket="personalization-images" alt={external?.alt_text || `Imagem ${index + 1}`} className="w-full h-full object-contain bg-muted/30" loading="lazy" />;
 }
 
 function TileEditor({ editing, external, image, grid }: { editing: boolean; external?: ExternalImage; image: string; grid: Props }) {

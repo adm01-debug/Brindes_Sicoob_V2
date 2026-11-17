@@ -11,6 +11,10 @@ import {
   PRODUCT_SELECT_FIELDS_DETAIL,
   shouldFallbackSelect,
 } from './product-types';
+import { resolvePrivateStorageUrl } from '@/lib/private-storage';
+
+const PRODUCT_IMAGE_BUCKET = 'personalization-images';
+const PRODUCT_VIDEO_BUCKET = 'product-videos';
 
 interface ProductImage {
   url_cdn: string;
@@ -68,6 +72,23 @@ interface KitComponent {
   length_mm: number | null;
   weight_g: number | null;
   notes: string | null;
+}
+
+async function resolveProductImageRows(rows: ProductImage[]): Promise<ProductImage[]> {
+  return Promise.all(rows.map(async (image) => ({
+    ...image,
+    url_cdn: await resolvePrivateStorageUrl(image.url_cdn, PRODUCT_IMAGE_BUCKET) ?? image.url_cdn,
+    url_original: await resolvePrivateStorageUrl(image.url_original, PRODUCT_IMAGE_BUCKET),
+  })));
+}
+
+async function resolveProductVideoRows(rows: Video[]): Promise<Video[]> {
+  return Promise.all(rows.map(async (video) => ({
+    ...video,
+    url_stream: await resolvePrivateStorageUrl(video.url_stream, PRODUCT_VIDEO_BUCKET),
+    url_thumbnail: await resolvePrivateStorageUrl(video.url_thumbnail, PRODUCT_VIDEO_BUCKET),
+    url_original: await resolvePrivateStorageUrl(video.url_original, PRODUCT_VIDEO_BUCKET),
+  })));
 }
 
 interface ColorEntry {
@@ -138,7 +159,7 @@ async function fetchProductImages(productId: string): Promise<ProductImage[]> {
       filters: { product_id: productId, is_active: true },
       orderBy: { column: 'display_order', ascending: true }, limit: 80,
     });
-    return result.records ?? [];
+    return resolveProductImageRows(result.records ?? []);
   } catch (error) {
     logger.warn(`[product:${productId}] Não foi possível buscar imagens:`, error);
     return [];
@@ -260,7 +281,7 @@ async function fetchVideos(productId: string): Promise<Video[]> {
       filters: { product_id: productId, is_active: true },
       orderBy: { column: 'display_order', ascending: true }, limit: 20,
     });
-    return result.records ?? [];
+    return resolveProductVideoRows(result.records ?? []);
   } catch (error) {
     logger.warn(`[product:${productId}] Não foi possível buscar vídeos:`, error);
     return [];
@@ -292,7 +313,7 @@ async function completeProductImages(productId: string, firstPage: ProductImage[
       filters: { product_id: productId, is_active: true },
       orderBy: { column: 'display_order', ascending: true }, limit: 80, offset: 80,
     });
-    return [...firstPage, ...(result.records ?? [])];
+    return [...firstPage, ...await resolveProductImageRows(result.records ?? [])];
   } catch (error) {
     logger.warn(`[product:${productId}] Falha paginando imagens (página 2):`, error);
     return firstPage;
