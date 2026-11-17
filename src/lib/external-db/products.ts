@@ -350,7 +350,7 @@ async function populateSupplierCache(suppliers: SupplierRecord[]): Promise<void>
       if (supplier.id && supplier.name) putInCacheSafe('suppliers', supplier);
     }
   } catch {
-    // Cache de referÃƒÂªncia ÃƒÂ© apenas uma otimizaÃƒÂ§ÃƒÂ£o.
+    // Cache de referência é apenas uma otimização.
   }
 }
 

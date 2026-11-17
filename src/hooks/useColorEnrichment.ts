@@ -1,5 +1,5 @@
 /**
- * useColorEnrichment Ã¢â‚¬â€ Batch-enriches lightweight products with color-specific
+ * useColorEnrichment ââ‚¬â€ Batch-enriches lightweight products with color-specific
  * images and stock when a color filter is active.
  * 
  * Without this, lightweight products have colors: [] and the card cannot
@@ -227,7 +227,7 @@ export function useColorEnrichment({ productIds, colorGroups, colorVariations }:
   const accumulatedMapRef = useRef<Map<string, ColorEnrichmentData>>(new Map());
   const lastFilterKeyRef = useRef<string>(filterKey);
 
-  // Reset cache when filter changes Ã¢â‚¬â€ use useEffect to avoid mutating refs during render
+  // Reset cache when filter changes ââ‚¬â€ use useEffect to avoid mutating refs during render
   useEffect(() => {
     if (lastFilterKeyRef.current !== filterKey) {
       enrichedIdsRef.current = new Set();
