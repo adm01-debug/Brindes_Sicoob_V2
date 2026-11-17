@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 // import { MainLayout } from "@/components/layout/MainLayout";
 import {
@@ -45,7 +45,6 @@ import { exportTrendsCsv } from '@/lib/trends-export';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { isDemoMode } from './trends/is-demo-mode';
-import { usePreservedSnapshot } from './trends/use-preserved-snapshot';
 import { Badge } from '@/components/ui/badge';
 
 type DateRange = '7d' | '30d' | '90d';
@@ -150,9 +149,18 @@ function useTrendsControls() {
   const renewDateWindow = useCallback(() => {
     setClock((current) => ({ referenceDate: new Date(), revision: current.revision + 1 }));
   }, []);
+  // Trocar o periodo com a pagina aberta desde o dia anterior precisa recalcular
+  // a referencia: sem isso os cartoes usariam uma janela diferente dos KPIs.
+  const changeDateRange = useCallback(
+    (range: DateRange) => {
+      setDateRange(range);
+      renewDateWindow();
+    },
+    [setDateRange, renewDateWindow],
+  );
   return {
     dateRange,
-    setDateRange,
+    setDateRange: changeDateRange,
     activeTab,
     setActiveTab,
     showCompare,
@@ -220,26 +228,28 @@ function resolveLoading(input: TrendLoadingInput) {
 
 type TrendsControls = ReturnType<typeof useTrendsControls>;
 
-type TrendsActivityResult = Awaited<ReturnType<typeof loadTrendsActivity>>;
-
 function useTrendQueries(controls: TrendsControls) {
   const activityQuery = useQuery({
-    queryKey: ['trends-activity', controls.dateRange, controls.scopeKey, controls.refreshRevision],
+    queryKey: ['trends-activity', controls.dateRange, controls.scopeKey],
     enabled: controls.queryEnabled,
     // A consulta reúne duas fontes e a tela oferece uma nova tentativa
     // explícita. Evita multiplicar os retries internos de cada chamada REST.
     retry: false,
     queryFn: () => loadTrendsActivity(controls.sincePrevious, controls.sellerScope),
   });
-  // Atualizar cria uma nova entrada de cache. Sem preservar o último snapshot
-  // válido, uma atualização que falha apaga KPIs, rankings e gráficos já lidos.
-  const activityData = usePreservedSnapshot<TrendsActivityResult>(
-    `${controls.dateRange}|${controls.scopeKey}`,
-    activityQuery.data,
-  );
+  // Atualizar refaz a propria entrada de cache em vez de criar outra: assim o
+  // ultimo snapshot valido continua na tela quando a atualizacao falha e a
+  // navegacao de volta a pagina reencontra o resultado mais recente.
+  const refetchActivity = activityQuery.refetch;
+  const appliedRevision = useRef(controls.refreshRevision);
+  useEffect(() => {
+    if (appliedRevision.current === controls.refreshRevision) return;
+    appliedRevision.current = controls.refreshRevision;
+    void refetchActivity();
+  }, [controls.refreshRevision, refetchActivity]);
   const activity = {
-    data: activityData,
-    isLoading: activityQuery.isLoading && activityData === undefined,
+    data: activityQuery.data,
+    isLoading: activityQuery.isLoading,
     isFetching: activityQuery.isFetching,
     isError: activityQuery.isError,
   };
@@ -546,8 +556,8 @@ function TrendsDecisionSupport({ model }: { model: TrendsPageModel }) {
       {showGlobalAnalysis && (
         <>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <ConversionFunnel days={model.days} />
-            <UnmetDemandCard days={model.days} />
+            <ConversionFunnel days={model.days} referenceDate={model.referenceDate} />
+            <UnmetDemandCard days={model.days} referenceDate={model.referenceDate} />
           </div>
           <HotSearchesCard
             days={model.days}

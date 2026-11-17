@@ -14,6 +14,8 @@ import { useSalesScope, type SalesScope } from "@/lib/auth/visibility-scope";
 
 interface ConversionFunnelProps {
   days: number;
+  /** Referencia compartilhada com a pagina para alinhar a janela civil. */
+  referenceDate?: Date;
 }
 
 interface FunnelStage {
@@ -81,14 +83,14 @@ async function fetchFunnel(since: string, scope: SalesScope, userId: string | nu
   return { searches: searches.count ?? 0, views: views.count ?? 0, quotes: quotes.count ?? 0, orders: orders.count ?? 0 };
 }
 
-function useConversionData(days: number) {
+function useConversionData(days: number, referenceDate?: Date) {
   const { user } = useAuth();
   const scope = useSalesScope();
   // Mesma janela de dias civis dos KPIs de Tendencias: sem isso o funil conta
   // eventos que os KPIs ja classificam como periodo anterior.
-  const since = buildCivilTrendWindow(new Date(), days).sinceCurrent;
+  const since = buildCivilTrendWindow(referenceDate ?? new Date(), days).sinceCurrent;
   return useQuery({
-    queryKey: ["conversion-funnel", days, scope, user?.id],
+    queryKey: ["conversion-funnel", since, scope, user?.id],
     queryFn: () => fetchFunnel(since, scope, user?.id),
     staleTime: 1000 * 60 * 5,
   });
@@ -132,8 +134,8 @@ function TotalConversion({ data, isLoading }: { data?: FunnelData; isLoading: bo
   return <div className="mt-4 pt-3 border-t border-border/50"><div className="flex items-center justify-between text-xs"><span className="text-muted-foreground">Conversão total (busca → pedido):</span><span className="font-bold text-success">{((data.orders / data.searches) * 100).toFixed(2)}%</span></div></div>;
 }
 
-export function ConversionFunnel({ days }: ConversionFunnelProps) {
-  const { data, isLoading } = useConversionData(days);
+export function ConversionFunnel({ days, referenceDate }: ConversionFunnelProps) {
+  const { data, isLoading } = useConversionData(days, referenceDate);
   const stages = buildStages(data);
 
   return (

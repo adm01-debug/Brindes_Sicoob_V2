@@ -15,6 +15,8 @@ import { loadUnmetDemand, type UnmetDemandItem, type UnmetDemandResult } from ".
 
 interface UnmetDemandCardProps {
   days: number;
+  /** Referencia compartilhada com a pagina para alinhar a janela civil. */
+  referenceDate?: Date;
 }
 
 function QueryErrorNotice({
@@ -89,13 +91,13 @@ function UnmetDemandResults({
   );
 }
 
-export function UnmetDemandCard({ days }: UnmetDemandCardProps) {
+export function UnmetDemandCard({ days, referenceDate }: UnmetDemandCardProps) {
   const navigate = useNavigate();
-  const since = buildCivilTrendWindow(new Date(), days).sinceCurrent;
+  const since = buildCivilTrendWindow(referenceDate ?? new Date(), days).sinceCurrent;
   const demo = isDemoMode();
 
   const { data, isLoading, isError, isFetching, refetch } = useQuery({
-    queryKey: ["unmet-demand", days, demo],
+    queryKey: ["unmet-demand", since, demo],
     queryFn: async (): Promise<UnmetDemandResult> => {
       if (demo) {
         const { MOCK_UNMET_DEMAND } = await import("@/pages/trends/trends-mock");

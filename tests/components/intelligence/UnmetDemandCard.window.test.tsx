@@ -40,5 +40,23 @@ describe('janela da demanda reprimida', () => {
     expect(since.getDate()).toBe(9);
     vi.useRealTimers();
   });
-});
 
+  it('usa a referencia compartilhada pela pagina em vez do relogio atual', async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const referenceDate = new Date('2026-10-15T15:30:00-03:00');
+
+    render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter>
+          <UnmetDemandCard days={7} referenceDate={referenceDate} />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => expect(mocks.loadUnmetDemand).toHaveBeenCalled());
+    const since = new Date(mocks.loadUnmetDemand.mock.calls[0]![0] as string);
+    expect(since.getMonth()).toBe(9);
+    expect(since.getDate()).toBe(9);
+    expect(since.getHours()).toBe(0);
+  });
+});
