@@ -1,11 +1,16 @@
-import { supabase } from "@/integrations/supabase/client";
-import { applySellerScope } from "@/lib/auth/apply-seller-scope";
-import type { SalesScope } from "@/lib/auth/visibility-scope";
-import type { Json } from "@/integrations/supabase/types";
-import type { Quote, QuoteItem, QuoteItemPersonalization } from "@/hooks/quotes/quoteTypes";
-import { calculateQuoteTotals, buildInsertPayload, buildUpdatePayload, buildAtomicQuoteItems } from "@/hooks/quotes/quoteHelpers";
-import { logger } from "@/lib/logger";
-import { beginReorderIntent, completeReorderIntent } from "@/services/sicoob/reorderIdempotency";
+import { supabase } from '@/integrations/supabase/client';
+import { applySellerScope } from '@/lib/auth/apply-seller-scope';
+import type { SalesScope } from '@/lib/auth/visibility-scope';
+import type { Json } from '@/integrations/supabase/types';
+import type { Quote, QuoteItem, QuoteItemPersonalization } from '@/hooks/quotes/quoteTypes';
+import {
+  calculateQuoteTotals,
+  buildInsertPayload,
+  buildUpdatePayload,
+  buildAtomicQuoteItems,
+} from '@/hooks/quotes/quoteHelpers';
+import { logger } from '@/lib/logger';
+import { beginReorderIntent, completeReorderIntent } from '@/services/sicoob/reorderIdempotency';
 
 /**
  * Normaliza uma linha crua de `quote_items` (colunas nulas no banco) para o
@@ -19,7 +24,7 @@ function mapDbQuoteItemRow(
 ): QuoteItem {
   return {
     ...item,
-    product_id: item.product_id ?? "",
+    product_id: item.product_id ?? '',
     notes: (item.notes as string | null | undefined) ?? undefined,
     sort_order: (item.sort_order as number | null | undefined) ?? undefined,
     color_hex: (item.color_hex as string | null | undefined) ?? undefined,
@@ -36,12 +41,21 @@ function mapDbQuoteItemRow(
 
 function describeQuoteHeaderChanges(oldQuote: Quote, newQuote: Partial<Quote>): string[] {
   const changes: string[] = [];
-  if (newQuote.discount_percent !== undefined && newQuote.discount_percent !== oldQuote.discount_percent) {
-    changes.push(`Desconto alterado de ${oldQuote.discount_percent}% para ${newQuote.discount_percent}%`);
+  if (
+    newQuote.discount_percent !== undefined &&
+    newQuote.discount_percent !== oldQuote.discount_percent
+  ) {
+    changes.push(
+      `Desconto alterado de ${oldQuote.discount_percent}% para ${newQuote.discount_percent}%`,
+    );
   }
-  if (newQuote.negotiation_markup_percent !== undefined
-      && newQuote.negotiation_markup_percent !== oldQuote.negotiation_markup_percent) {
-    changes.push(`Markup alterado de ${oldQuote.negotiation_markup_percent}% para ${newQuote.negotiation_markup_percent}%`);
+  if (
+    newQuote.negotiation_markup_percent !== undefined &&
+    newQuote.negotiation_markup_percent !== oldQuote.negotiation_markup_percent
+  ) {
+    changes.push(
+      `Markup alterado de ${oldQuote.negotiation_markup_percent}% para ${newQuote.negotiation_markup_percent}%`,
+    );
   }
 
   return changes;
@@ -63,16 +77,24 @@ function describeQuoteItemChanges(oldItems: QuoteItem[], newItems: QuoteItem[]):
       continue;
     }
     if (newItem.quantity !== oldItem.quantity) {
-      changes.push(`Quantidade de ${newItem.product_name} alterada: ${oldItem.quantity} -> ${newItem.quantity}`);
+      changes.push(
+        `Quantidade de ${newItem.product_name} alterada: ${oldItem.quantity} -> ${newItem.quantity}`,
+      );
     }
     if (newItem.unit_price !== oldItem.unit_price) {
-      changes.push(`Preço unitário de ${newItem.product_name} alterado: R$${oldItem.unit_price} -> R$${newItem.unit_price}`);
+      changes.push(
+        `Preço unitário de ${newItem.product_name} alterado: R$${oldItem.unit_price} -> R$${newItem.unit_price}`,
+      );
     }
   }
   return changes;
 }
 
-function describeQuoteChanges(oldQuote: Quote, newQuote: Partial<Quote>, newItems: QuoteItem[]): string[] {
+function describeQuoteChanges(
+  oldQuote: Quote,
+  newQuote: Partial<Quote>,
+  newItems: QuoteItem[],
+): string[] {
   return [
     ...describeQuoteHeaderChanges(oldQuote, newQuote),
     ...describeQuoteItemChanges(oldQuote.items || [], newItems),
@@ -82,7 +104,13 @@ function describeQuoteChanges(oldQuote: Quote, newQuote: Partial<Quote>, newItem
 function calculateDocumentTotals(quote: Partial<Quote>, items: QuoteItem[]) {
   const discountType = quote.discount_percent ? 'percent' : 'amount';
   const discountValue = quote.discount_percent || quote.discount_amount || 0;
-  return calculateQuoteTotals(quote, items, quote.negotiation_markup_percent, discountType, discountValue);
+  return calculateQuoteTotals(
+    quote,
+    items,
+    quote.negotiation_markup_percent,
+    discountType,
+    discountValue,
+  );
 }
 
 function quoteHistoryOrDefault(changes: string[]): Json {
@@ -94,10 +122,15 @@ function assertAtomicQuoteResult(data: Json | null, message: string): Quote {
   return data as unknown as Quote;
 }
 
-function throwQuoteSaveError(error: { code?: string; message?: string } | null, context: string): void {
+function throwQuoteSaveError(
+  error: { code?: string; message?: string } | null,
+  context: string,
+): void {
   if (!error) return;
   if (error.code === '40001') {
-    throw new Error("Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.");
+    throw new Error(
+      'Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.',
+    );
   }
   logger.error(context, error);
   throw error;
@@ -105,44 +138,116 @@ function throwQuoteSaveError(error: { code?: string; message?: string } | null, 
 
 async function fetchQuoteRecord(quoteId: string) {
   // rls-allow: lookup por id permanece sujeito a quotes_select_scope e quotes_role_access
-  const { data, error } = await supabase.from("quotes").select("*").eq("id", quoteId).maybeSingle();
+  const { data, error } = await supabase.from('quotes').select('*').eq('id', quoteId).maybeSingle();
   if (error) {
-    logger.error("Error fetching quote:", error);
+    logger.error('Error fetching quote:', error);
     throw error;
   }
   return data;
 }
 
 async function fetchQuoteItems(quoteId: string) {
-  const { data, error } = await supabase
-    .from("quote_items")
-    .select("*")
-    .eq("quote_id", quoteId)
-    .order("sort_order", { ascending: true });
-  if (error) {
-    logger.error("Error fetching quote items:", error);
-    throw error;
-  }
-  return data ?? [];
+  return fetchQuoteItemsForQuotes([quoteId]);
 }
 
-async function fetchQuotePersonalizations(itemIds: string[]): Promise<Array<Record<string, unknown>>> {
+const CHILD_QUERY_BATCH_SIZE = 100;
+const CHILD_QUERY_PAGE_SIZE = 1000;
+
+function chunkValues<T>(values: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let index = 0; index < values.length; index += size)
+    chunks.push(values.slice(index, index + size));
+  return chunks;
+}
+
+async function fetchQuoteItemsForQuotes(quoteIds: string[]) {
+  if (quoteIds.length === 0) return [];
+  const batches = await Promise.all(
+    chunkValues(quoteIds, CHILD_QUERY_BATCH_SIZE).map(async (ids) => {
+      const rows: Array<Record<string, unknown> & { id: string; product_id: string | null }> = [];
+      for (let offset = 0; ; offset += CHILD_QUERY_PAGE_SIZE) {
+        const { data, error } = await supabase
+          .from('quote_items')
+          .select('*')
+          .in('quote_id', ids)
+          .order('sort_order', { ascending: true, nullsFirst: false })
+          .order('id', { ascending: true })
+          .range(offset, offset + CHILD_QUERY_PAGE_SIZE - 1);
+        if (error) {
+          logger.error('Error fetching quote items:', error);
+          throw error;
+        }
+        const page = (data ?? []) as Array<
+          Record<string, unknown> & { id: string; product_id: string | null }
+        >;
+        rows.push(...page);
+        if (page.length < CHILD_QUERY_PAGE_SIZE) break;
+      }
+      return rows;
+    }),
+  );
+  return batches.flat();
+}
+
+async function fetchQuotePersonalizations(
+  itemIds: string[],
+): Promise<Array<Record<string, unknown>>> {
   if (itemIds.length === 0) return [];
-  const { data, error } = await supabase
-    .from("quote_item_personalizations")
-    .select("*")
-    .in("quote_item_id", itemIds);
-  if (error) {
-    logger.error("Error fetching quote personalizations:", error);
-    throw error;
+  const batches = await Promise.all(
+    chunkValues(itemIds, CHILD_QUERY_BATCH_SIZE).map(async (ids) => {
+      const rows: Array<Record<string, unknown>> = [];
+      for (let offset = 0; ; offset += CHILD_QUERY_PAGE_SIZE) {
+        const { data, error } = await supabase
+          .from('quote_item_personalizations')
+          .select('*')
+          .in('quote_item_id', ids)
+          .order('quote_item_id', { ascending: true })
+          .order('id', { ascending: true })
+          .range(offset, offset + CHILD_QUERY_PAGE_SIZE - 1);
+        if (error) {
+          logger.error('Error fetching quote personalizations:', error);
+          throw error;
+        }
+        const page = (data ?? []) as Array<Record<string, unknown>>;
+        rows.push(...page);
+        if (page.length < CHILD_QUERY_PAGE_SIZE) break;
+      }
+      return rows;
+    }),
+  );
+  return batches.flat();
+}
+
+function hydrateQuotesWithItems(
+  quotes: Quote[],
+  itemRows: Array<Record<string, unknown> & { id: string; product_id: string | null }>,
+  personalizations: Array<Record<string, unknown>>,
+): Quote[] {
+  const personalizationsByItem = new Map<string, Array<Record<string, unknown>>>();
+  for (const personalization of personalizations) {
+    const itemId = personalization.quote_item_id;
+    if (typeof itemId !== 'string') continue;
+    const current = personalizationsByItem.get(itemId) ?? [];
+    current.push(personalization);
+    personalizationsByItem.set(itemId, current);
   }
-  return (data ?? []) as Array<Record<string, unknown>>;
+
+  const itemsByQuote = new Map<string, QuoteItem[]>();
+  for (const item of itemRows) {
+    const quoteId = item.quote_id;
+    if (typeof quoteId !== 'string') continue;
+    const quoteItems = itemsByQuote.get(quoteId) ?? [];
+    quoteItems.push(mapDbQuoteItemRow(item, personalizationsByItem.get(item.id) ?? []));
+    itemsByQuote.set(quoteId, quoteItems);
+  }
+
+  return quotes.map((quote) => ({ ...quote, items: itemsByQuote.get(quote.id ?? '') ?? [] }));
 }
 
 function createClientMetadata(metadata?: Record<string, unknown>): Record<string, unknown> {
-  const userAgent = typeof navigator === "undefined" ? "unknown" : navigator.userAgent;
+  const userAgent = typeof navigator === 'undefined' ? 'unknown' : navigator.userAgent;
   return {
-    ip: metadata?.ip ?? "client",
+    ip: metadata?.ip ?? 'client',
     user_agent: metadata?.user_agent ?? userAgent,
     timestamp: new Date().toISOString(),
     ...(metadata ?? {}),
@@ -160,7 +265,7 @@ export class QuoteService {
       .order("created_at", { ascending: false })
       .limit(QUOTE_LIST_LIMIT);
     q = applySellerScope(q, { scope: params.scope, userId: params.userId });
-    
+
     try {
       const { data, error, count } = await q;
       if (error) {
@@ -184,23 +289,46 @@ export class QuoteService {
     }
   }
 
+  /** Lista os cabeçalhos no escopo atual e hidrata os filhos em lotes, sem N+1. */
+  static async listForConsolidation(params: {
+    userId: string;
+    scope: SalesScope;
+    orgId: string | null;
+  }): Promise<Quote[]> {
+    const quotes = await this.list(params);
+    const quoteIds = quotes.flatMap((quote) => (quote.id ? [quote.id] : []));
+    if (quoteIds.length === 0) return [];
+
+    const itemRows = await fetchQuoteItemsForQuotes(quoteIds);
+    const personalizations = await fetchQuotePersonalizations(itemRows.map((item) => item.id));
+    return hydrateQuotesWithItems(quotes, itemRows, personalizations);
+  }
+
   static async getById(quoteId: string): Promise<Quote | null> {
     if (!quoteId) return null;
     try {
       const quoteData = await fetchQuoteRecord(quoteId);
       if (!quoteData) return null;
       const itemsData = await fetchQuoteItems(quoteId);
-      const allPersonalizations = await fetchQuotePersonalizations(itemsData.map((item) => item.id));
+      const allPersonalizations = await fetchQuotePersonalizations(
+        itemsData.map((item) => item.id),
+      );
       const items = itemsData.map((item) => mapDbQuoteItemRow(item, allPersonalizations));
 
       return { ...quoteData, items } as Quote;
     } catch (err) {
-      logger.error("Unexpected error in QuoteService.getById:", err);
+      logger.error('Unexpected error in QuoteService.getById:', err);
       throw err;
     }
   }
 
-  static async create(params: { quote: Partial<Quote>, items: QuoteItem[], userId: string, orgId: string | null, idempotencyKey: string }): Promise<Quote> {
+  static async create(params: {
+    quote: Partial<Quote>;
+    items: QuoteItem[];
+    userId: string;
+    orgId: string | null;
+    idempotencyKey: string;
+  }): Promise<Quote> {
     try {
       const totals = calculateDocumentTotals(params.quote, params.items);
       const insertPayload = buildInsertPayload(params.quote, params.userId, params.orgId, totals);
@@ -210,31 +338,36 @@ export class QuoteService {
         p_history: ['Orçamento criado'] as Json,
         p_idempotency_key: params.idempotencyKey,
       });
-      throwQuoteSaveError(insErr, "Error creating quote:");
+      throwQuoteSaveError(insErr, 'Error creating quote:');
       return assertAtomicQuoteResult(inserted, 'O banco não retornou o orçamento criado.');
     } catch (err) {
-      logger.error("Unexpected error in QuoteService.create:", err);
+      logger.error('Unexpected error in QuoteService.create:', err);
       throw err;
     }
   }
 
-  static async update(params: { 
-    quoteId: string, 
-    quote: Partial<Quote>, 
-    items: QuoteItem[],
-    userId: string,
-    expectedRowVersion: number,
+  static async update(params: {
+    quoteId: string;
+    quote: Partial<Quote>;
+    items: QuoteItem[];
+    userId: string;
+    expectedRowVersion: number;
   }): Promise<Quote> {
     try {
       const oldQuote = await this.getById(params.quoteId);
-      if (!oldQuote) throw new Error("Orçamento não encontrado para atualização");
+      if (!oldQuote) throw new Error('Orçamento não encontrado para atualização');
 
       if (!Number.isInteger(params.expectedRowVersion) || params.expectedRowVersion < 1) {
-        throw new Error("A versão do orçamento não está disponível. Recarregue a página antes de salvar.");
+        throw new Error(
+          'A versão do orçamento não está disponível. Recarregue a página antes de salvar.',
+        );
       }
 
       const totals = calculateDocumentTotals(params.quote, params.items);
-      const updatePayload = buildUpdatePayload({ ...params.quote, row_version: params.expectedRowVersion }, totals);
+      const updatePayload = buildUpdatePayload(
+        { ...params.quote, row_version: params.expectedRowVersion },
+        totals,
+      );
       const changes = describeQuoteChanges(oldQuote, params.quote, params.items);
       const { data: updated, error: updErr } = await supabase.rpc('save_quote_atomic', {
         p_quote: updatePayload as Json,
@@ -247,17 +380,17 @@ export class QuoteService {
         p_history: quoteHistoryOrDefault(changes),
       });
 
-      throwQuoteSaveError(updErr, "Error updating quote:");
+      throwQuoteSaveError(updErr, 'Error updating quote:');
       return assertAtomicQuoteResult(updated, 'O banco não retornou o orçamento atualizado.');
     } catch (err) {
-      logger.error("Unexpected error in QuoteService.update:", err);
+      logger.error('Unexpected error in QuoteService.update:', err);
       throw err;
     }
   }
 
   static async delete(quoteId: string) {
     // rls-allow: exclusão por id; RLS valida ownership e organização
-    const { error } = await supabase.from("quotes").delete().eq("id", quoteId);
+    const { error } = await supabase.from('quotes').delete().eq('id', quoteId);
     if (error) throw error;
   }
 
@@ -282,7 +415,11 @@ export class QuoteService {
     return reordered;
   }
 
-  static async reorderFromOrder(orderId: string, userId: string, orgId: string | null): Promise<Quote> {
+  static async reorderFromOrder(
+    orderId: string,
+    userId: string,
+    orgId: string | null,
+  ): Promise<Quote> {
     void userId;
     void orgId;
     const intent = `order:${orderId}`;
@@ -320,7 +457,7 @@ export class QuoteService {
     // signature).
     const clientMetadata = createClientMetadata(params.metadata);
 
-    const { error } = await supabase.rpc("append_quote_history_note", {
+    const { error } = await supabase.rpc('append_quote_history_note', {
       p_quote_id: params.quoteId,
       p_action: params.action,
       p_description: params.description,
@@ -330,7 +467,7 @@ export class QuoteService {
       p_metadata: clientMetadata as Json,
     });
     if (error) {
-      logger.error("Erro ao registrar histórico do orçamento:", error);
+      logger.error('Erro ao registrar histórico do orçamento:', error);
       throw error;
     }
   }
@@ -338,18 +475,22 @@ export class QuoteService {
   static async listToConsolidate(singularId: string) {
     const { data, error } = await supabase
       // rls-allow: consolidação filtra singular; RLS valida a hierarquia do ator
-      .from("quotes")
-      .select("*")
-      .eq("singular_id", singularId)
-      .eq("status", "approved_singular")
-      .is("consolidation_id", null);
+      .from('quotes')
+      .select('*')
+      .eq('singular_id', singularId)
+      .eq('status', 'approved_singular')
+      .is('consolidation_id', null);
     if (error) throw error;
     return data;
   }
 
-  static async consolidate(params: { singularId: string | null, quoteIds: string[], notes: string }) {
-    if (!params.singularId) throw new Error("Singular não identificada para a consolidação.");
-    const { data, error } = await supabase.rpc("consolidate_sicoob_quotes", {
+  static async consolidate(params: {
+    singularId: string | null;
+    quoteIds: string[];
+    notes: string;
+  }) {
+    if (!params.singularId) throw new Error('Singular não identificada para a consolidação.');
+    const { data, error } = await supabase.rpc('consolidate_sicoob_quotes', {
       p_singular_id: params.singularId,
       p_quote_ids: params.quoteIds,
       p_notes: params.notes || undefined,
