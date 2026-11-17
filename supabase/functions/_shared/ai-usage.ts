@@ -213,16 +213,17 @@ export async function trackStreamingResponse(
     const interrupted = status === "error";
     // A cota mensal so conta logs 'success'. Se a geracao ja aconteceu (houve
     // consumo real no gateway), um cancelamento nao pode zerar a cobranca --
-    // caso contrario basta abortar o stream para usar IA sem limite.
+    // caso contrario basta abortar o stream para usar IA sem limite. O status
+    // continua 'error' (verdade operacional) e a cobranca e sinalizada por
+    // metadata.billedOnInterrupt, consumida por check_ai_usage_quota.
     const billable = latestUsage.input > 0 || latestUsage.output > 0 || deliveredBytes > 0;
-    const loggedStatus = interrupted && billable ? "success" : status;
     await updateLog({
       inputTokens: latestUsage.input,
       outputTokens: latestUsage.output,
       totalTokens: latestUsage.input + latestUsage.output,
       estimatedCostUsd: estimateCost(model, latestUsage.input, latestUsage.output),
       durationMs: Date.now() - startedAt,
-      status: loggedStatus,
+      status,
       errorMessage: interrupted ? streamErrorMessage(reason) : undefined,
       metadata: {
         stream: true,
