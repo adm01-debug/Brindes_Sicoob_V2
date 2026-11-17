@@ -10,6 +10,7 @@ import {
   shouldFallbackSelect,
 } from './product-types';
 import { resolvePrivateStorageUrlSafe } from '@/lib/private-storage';
+import { resolveProductRecordImages } from './product-record-images';
 
 interface FetchPromobrindProductsOptions<ReturnCount extends boolean | undefined = undefined> {
   search?: string;
@@ -490,6 +491,9 @@ function applyEnrichments(
 }
 
 async function enrichProducts(products: PromobrindProduct[], options?: { limit?: number }): Promise<void> {
+  // Campos do proprio registro vem antes do enriquecimento: produtos sem linha
+  // em `product_images` dependem deles para exibir foto na listagem.
+  await Promise.all(products.map(product => resolveProductRecordImages(product)));
   const productIds = new Set(products.map(product => product.id));
   const supplierIds = [...new Set(products.map(product => product.supplier_id).filter(Boolean))] as string[];
   const heavy = products.length <= 500 || typeof options?.limit === 'number';
