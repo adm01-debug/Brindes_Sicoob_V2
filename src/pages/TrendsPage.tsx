@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 // import { MainLayout } from "@/components/layout/MainLayout";
 import {
@@ -45,6 +45,7 @@ import { exportTrendsCsv } from '@/lib/trends-export';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { isDemoMode } from './trends/is-demo-mode';
+import { useRefetchOnRevision } from './trends/use-refetch-on-revision';
 import { Badge } from '@/components/ui/badge';
 
 type DateRange = '7d' | '30d' | '90d';
@@ -230,7 +231,9 @@ type TrendsControls = ReturnType<typeof useTrendsControls>;
 
 function useTrendQueries(controls: TrendsControls) {
   const activityQuery = useQuery({
-    queryKey: ['trends-activity', controls.dateRange, controls.scopeKey],
+    // ``sincePrevious`` ja e a meia-noite civil do periodo: a identidade muda
+    // quando o dia vira e permanece estavel dentro do mesmo dia.
+    queryKey: ['trends-activity', controls.sincePrevious, controls.scopeKey],
     enabled: controls.queryEnabled,
     // A consulta reúne duas fontes e a tela oferece uma nova tentativa
     // explícita. Evita multiplicar os retries internos de cada chamada REST.
@@ -240,13 +243,11 @@ function useTrendQueries(controls: TrendsControls) {
   // Atualizar refaz a propria entrada de cache em vez de criar outra: assim o
   // ultimo snapshot valido continua na tela quando a atualizacao falha e a
   // navegacao de volta a pagina reencontra o resultado mais recente.
-  const refetchActivity = activityQuery.refetch;
-  const appliedRevision = useRef(controls.refreshRevision);
-  useEffect(() => {
-    if (appliedRevision.current === controls.refreshRevision) return;
-    appliedRevision.current = controls.refreshRevision;
-    void refetchActivity();
-  }, [controls.refreshRevision, refetchActivity]);
+  const refetchActivityQuery = activityQuery.refetch;
+  const refetchActivity = useCallback(() => {
+    void refetchActivityQuery();
+  }, [refetchActivityQuery]);
+  useRefetchOnRevision(controls.refreshRevision, controls.queryEnabled, refetchActivity);
   const activity = {
     data: activityQuery.data,
     isLoading: activityQuery.isLoading,
