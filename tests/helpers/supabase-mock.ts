@@ -13,7 +13,7 @@
  *   ...
  *   expect(sb.calls.insert).toContainEqual({ table: "orders", payload: expect.objectContaining({ seller_id: "u1" }) });
  */
-import { vi } from "vitest";
+import { vi } from 'vitest';
 
 export interface MutationCall {
   table: string;
@@ -41,15 +41,15 @@ interface MockOptions {
   /** Resposta default do `.insert(...).select().single()`. Default: ecoa o payload com id sintético. */
   insertReturn?: (table: string, payload: unknown) => unknown;
   /** Erro a injetar em uma operação específica. */
-  errorOn?: { op: "insert" | "update" | "delete"; table: string; message: string };
+  errorOn?: { op: 'insert' | 'update' | 'delete'; table: string; message: string };
 }
 
 export function createSupabaseMock(opts: MockOptions = {}): SupabaseMock {
-  const calls: SupabaseMock["calls"] = { insert: [], update: [], delete: [] };
+  const calls: SupabaseMock['calls'] = { insert: [], update: [], delete: [] };
 
   function builder(table: string) {
     const filters: Array<{ column: string; value: unknown }> = [];
-    let pendingOp: "insert" | "update" | "delete" | "select" | null = null;
+    let pendingOp: 'insert' | 'update' | 'delete' | 'select' | null = null;
     let pendingPayload: unknown = undefined;
 
     const api: Record<string, unknown> = {};
@@ -62,20 +62,21 @@ export function createSupabaseMock(opts: MockOptions = {}): SupabaseMock {
     api.in = vi.fn(() => api);
     api.order = vi.fn(() => api);
     api.limit = vi.fn(() => api);
+    api.range = vi.fn(() => api);
 
     api.insert = vi.fn((payload: unknown) => {
-      pendingOp = "insert";
+      pendingOp = 'insert';
       pendingPayload = payload;
       calls.insert.push({ table, payload });
       return api;
     });
     api.update = vi.fn((payload: unknown) => {
-      pendingOp = "update";
+      pendingOp = 'update';
       pendingPayload = payload;
       return api;
     });
     api.delete = vi.fn(() => {
-      pendingOp = "delete";
+      pendingOp = 'delete';
       return api;
     });
 
@@ -86,15 +87,15 @@ export function createSupabaseMock(opts: MockOptions = {}): SupabaseMock {
       return sel ?? null;
     };
 
-    const errorFor = (op: "insert" | "update" | "delete") =>
+    const errorFor = (op: 'insert' | 'update' | 'delete') =>
       opts.errorOn && opts.errorOn.op === op && opts.errorOn.table === table
         ? { message: opts.errorOn.message }
         : null;
 
     api.maybeSingle = vi.fn(async () => ({ data: firstOrNull(), error: null }));
     api.single = vi.fn(async () => {
-      if (pendingOp === "insert") {
-        const err = errorFor("insert");
+      if (pendingOp === 'insert') {
+        const err = errorFor('insert');
         if (err) return { data: null, error: err };
         const ret = opts.insertReturn
           ? opts.insertReturn(table, pendingPayload)
@@ -108,20 +109,20 @@ export function createSupabaseMock(opts: MockOptions = {}): SupabaseMock {
     // `.from(...).select(...).eq(...)` resolve via then com array (multi-row).
     // `.from(...).update(...).eq(...)` / `.delete().eq(...)` registram a chamada.
     api.then = vi.fn(async (resolve: (r: unknown) => void) => {
-      if (pendingOp === "update") {
+      if (pendingOp === 'update') {
         calls.update.push({ table, payload: pendingPayload, filters: [...filters] });
-        const err = errorFor("update");
+        const err = errorFor('update');
         resolve({ data: null, error: err });
         return;
       }
-      if (pendingOp === "delete") {
+      if (pendingOp === 'delete') {
         calls.delete.push({ table, payload: undefined, filters: [...filters] });
-        const err = errorFor("delete");
+        const err = errorFor('delete');
         resolve({ data: null, error: err });
         return;
       }
-      if (pendingOp === "insert") {
-        const err = errorFor("insert");
+      if (pendingOp === 'insert') {
+        const err = errorFor('insert');
         if (err) {
           resolve({ data: null, error: err });
           return;
@@ -146,7 +147,7 @@ export function createSupabaseMock(opts: MockOptions = {}): SupabaseMock {
     client: {
       from: vi.fn(builder),
       auth: {
-        getUser: vi.fn(async () => ({ data: { user: { id: "test-user" } } })),
+        getUser: vi.fn(async () => ({ data: { user: { id: 'test-user' } } })),
       },
     },
   };
