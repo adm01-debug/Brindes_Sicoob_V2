@@ -1,7 +1,22 @@
 export type RegistrationState =
   | "not_attempted"
   | "confirmed"
+  | "rejected"
   | "unknown";
+
+/**
+ * Um erro com SQLSTATE veio do proprio Postgres: a transacao da RPC foi
+ * revertida e nenhum registro pode apontar para os objetos desta tentativa.
+ * Falhas de transporte (resposta perdida, timeout) nao trazem SQLSTATE e
+ * continuam ambiguas — nesses casos os objetos sao preservados.
+ */
+const SQLSTATE_PATTERN = /^[0-9A-Z]{5}$/;
+
+export function isDefinitiveRpcRejection(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const code = (error as { code?: unknown }).code;
+  return typeof code === "string" && SQLSTATE_PATTERN.test(code);
+}
 
 export interface ExpectedRegistration {
   id: string;
@@ -49,6 +64,10 @@ export function getDocumentCleanupPlan(state: RegistrationState): {
   }
   if (state === "confirmed") {
     return { removeFinal: false, removeQuarantine: true };
+  }
+  // Rollback comprovado pelo banco: nenhum registro referencia os objetos.
+  if (state === "rejected") {
+    return { removeFinal: true, removeQuarantine: true };
   }
   return { removeFinal: false, removeQuarantine: false };
 }

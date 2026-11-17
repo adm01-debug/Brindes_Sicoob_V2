@@ -6,6 +6,7 @@ import { requireCleanScannerVerdict, ScannerGateError } from './scanner.ts';
 import {
   getDocumentCleanupPlan,
   getVerifiedRegistrationState,
+  isDefinitiveRpcRejection,
   type RegistrationState,
 } from './registration-state.ts';
 
@@ -154,6 +155,13 @@ Deno.serve(withStructuredLogging('sicoob-document-ingest', async (req) => {
         throw registerError ?? verificationError;
       }
       if (!existingRegistration) {
+        // SQLSTATE presente = rejeição transacional comprovada pelo banco: os
+        // objetos ficariam órfãos a cada tentativa, então podem ser removidos.
+        if (isDefinitiveRpcRejection(registerError)) {
+          registrationState = 'rejected';
+          console.error(`[sicoob-document-ingest] registration_rejected document_id=${documentId}`);
+          throw registerError;
+        }
         // A leitura pode ocorrer antes de uma RPC que perdeu a resposta concluir.
         // Sem prova de rollback, preservar os objetos evita referências quebradas.
         throw registerError ?? new Error('O registro do documento não foi confirmado.');

@@ -1,7 +1,10 @@
 import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 import { requireInternalService } from "../_shared/internal-service-auth.ts";
 import { deliverScheduledReport } from "./report-delivery.ts";
-import { sendScheduledReportEmail } from "../_shared/scheduled-report-email.ts";
+import {
+  buildScheduledReportIdempotencyKey,
+  sendScheduledReportEmail,
+} from "../_shared/scheduled-report-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -53,12 +56,18 @@ Deno.serve(async (req: Request) => {
       try {
         const emailProvider = resendKey
           ? async (html: string) => {
-            await sendScheduledReportEmail({
-              apiKey: resendKey,
+            const emailPayload = {
               to: report.email_to,
               subject: `📊 ${report.report_name}`,
               html,
-              idempotencyKey: `scheduled-report:${report.id}:${report.next_run_at}`,
+            };
+            await sendScheduledReportEmail({
+              apiKey: resendKey,
+              ...emailPayload,
+              idempotencyKey: await buildScheduledReportIdempotencyKey(
+                `scheduled-report:${report.id}:${report.next_run_at}`,
+                emailPayload,
+              ),
             }, () => Promise.resolve());
           }
           : null;

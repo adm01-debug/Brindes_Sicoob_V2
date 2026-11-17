@@ -1,6 +1,7 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
   type ExpectedRegistration,
+  isDefinitiveRpcRejection,
   getDocumentCleanupPlan,
   getVerifiedRegistrationState,
   matchesExpectedRegistration,
@@ -83,5 +84,23 @@ Deno.test("falha anterior à tentativa de registro permite limpar objetos", () =
   assertEquals(getDocumentCleanupPlan("not_attempted"), {
     removeFinal: true,
     removeQuarantine: true,
+  });
+});
+
+Deno.test("rejeicao com SQLSTATE remove quarentena e destino", () => {
+  assertEquals(isDefinitiveRpcRejection({ code: "42501", message: "permission denied" }), true);
+  assertEquals(getDocumentCleanupPlan("rejected"), {
+    removeFinal: true,
+    removeQuarantine: true,
+  });
+});
+
+Deno.test("falha de transporte sem SQLSTATE preserva os objetos", () => {
+  assertEquals(isDefinitiveRpcRejection({ message: "Failed to fetch" }), false);
+  assertEquals(isDefinitiveRpcRejection({ code: "" }), false);
+  assertEquals(isDefinitiveRpcRejection(null), false);
+  assertEquals(getDocumentCleanupPlan("unknown"), {
+    removeFinal: false,
+    removeQuarantine: false,
   });
 });

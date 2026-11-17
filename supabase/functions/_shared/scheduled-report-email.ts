@@ -9,6 +9,26 @@ type ReportEmailInput = {
 
 type RecordSent = (providerEmailId: string) => Promise<void>;
 
+/**
+ * A chave de idempotencia precisa identificar o payload, nao apenas o ciclo.
+ * Resend responde HTTP 409 quando a mesma chave reaparece com corpo diferente;
+ * se o destinatario ou o conteudo mudarem entre tentativas, o agendamento
+ * ficaria travado ate a chave expirar no provedor. Incluindo um digest do
+ * payload, uma alteracao gera automaticamente uma nova versao de intencao e um
+ * retry identico continua sendo deduplicado.
+ */
+export async function buildScheduledReportIdempotencyKey(
+  scope: string,
+  payload: { to: string; subject: string; html: string },
+): Promise<string> {
+  const canonical = JSON.stringify([payload.to, payload.subject, payload.html]);
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(canonical));
+  const hex = Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+  return `${scope.slice(0, 200)}:${hex.slice(0, 32)}`;
+}
+
 /** Só confirma o ciclo do agendamento depois que Resend aceita o e-mail e o banco é atualizado. */
 export async function sendScheduledReportEmail(
   input: ReportEmailInput,
