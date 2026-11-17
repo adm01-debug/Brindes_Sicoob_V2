@@ -42,5 +42,16 @@ export function PrivateStorageImage({ value, bucket, className, alt, ...props }:
     );
   }
 
-  return <img {...props} alt={alt} className={className} src={src ?? undefined} onError={() => setFailed(true)} />;
+  return (
+    <img
+      {...props}
+      alt={alt}
+      className={className}
+      src={src ?? undefined}
+      onError={(event) => {
+        setFailed(true);
+        props.onError?.(event);
+      }}
+    />
+  );
 }

@@ -93,6 +93,35 @@ describe('resolvePrivateStorageUrlSafe e cache de assinaturas', () => {
 
     expect(mocks.createSignedUrl).toHaveBeenCalledTimes(2);
   });
+
+  it('descarta assinatura em voo quando a sessao muda antes da resposta', async () => {
+    const reference = createPrivateStorageReference('mockup-art-files', 'usuario-a/arte.png');
+    let releaseFirst: (() => void) | undefined;
+    const firstResponse = new Promise<void>((resolve) => {
+      releaseFirst = resolve;
+    });
+
+    mocks.createSignedUrl
+      .mockImplementationOnce(async () => {
+        await firstResponse;
+        return { data: { signedUrl: 'https://storage.test/sign/usuario-a?token=CONTA-ANTIGA' }, error: null };
+      })
+      .mockResolvedValue({
+        data: { signedUrl: 'https://storage.test/sign/usuario-b?token=CONTA-NOVA' },
+        error: null,
+      });
+
+    const pending = resolvePrivateStorageUrl(reference, 'mockup-art-files');
+    // Troca de conta enquanto a primeira assinatura ainda esta em voo.
+    clearPrivateStorageUrlCache();
+    releaseFirst?.();
+
+    await expect(pending).resolves.toContain('CONTA-NOVA');
+    expect(mocks.createSignedUrl).toHaveBeenCalledTimes(2);
+
+    // A URL emitida para a conta anterior nao pode ter ficado no cache.
+    await expect(resolvePrivateStorageUrl(reference, 'mockup-art-files')).resolves.toContain('CONTA-NOVA');
+  });
 });
 
 describe('createPrivateStorageUrl', () => {

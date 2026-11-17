@@ -16,7 +16,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { invokeExternalDb } from '@/lib/external-db';
 import { logger } from "@/lib/logger";
-import { resolvePrivateStorageUrl } from '@/lib/private-storage';
+import { resolvePrivateStorageUrlSafe } from '@/lib/private-storage';
 
 const PRODUCT_IMAGE_BUCKET = 'personalization-images';
 
@@ -51,10 +51,12 @@ export interface ProductImageForDisplay {
 }
 
 async function resolveProductImageRows(rows: ProductImage[]): Promise<ProductImage[]> {
+  // Resolucao tolerante por campo: um original removido nao pode descartar as
+  // demais imagens do lote nem a URL de CDN utilizavel do mesmo registro.
   return Promise.all(rows.map(async (image) => ({
     ...image,
-    url_cdn: await resolvePrivateStorageUrl(image.url_cdn, PRODUCT_IMAGE_BUCKET) ?? image.url_cdn,
-    url_original: await resolvePrivateStorageUrl(image.url_original, PRODUCT_IMAGE_BUCKET),
+    url_cdn: await resolvePrivateStorageUrlSafe(image.url_cdn, PRODUCT_IMAGE_BUCKET) ?? image.url_cdn,
+    url_original: await resolvePrivateStorageUrlSafe(image.url_original, PRODUCT_IMAGE_BUCKET),
   })));
 }
 
@@ -141,7 +143,7 @@ export async function fetchPrimaryImage(productId: string): Promise<string | nul
       limit: 1,
     });
 
-    return resolvePrivateStorageUrl(result.records?.[0]?.url_cdn, PRODUCT_IMAGE_BUCKET);
+    return resolvePrivateStorageUrlSafe(result.records?.[0]?.url_cdn, PRODUCT_IMAGE_BUCKET);
   } catch (err) {
     logger.warn('Erro ao buscar imagem principal:', productId, err);
     return null;

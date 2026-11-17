@@ -29,7 +29,13 @@ const signedUrlCache = new Map<string, { url: string; expiresAt: number }>();
 // mesma chamada ao Storage em vez de abrir duas.
 const inFlightSignatures = new Map<string, Promise<string>>();
 
+// Geracao do cache: cada limpeza invalida tambem as assinaturas que ainda
+// estavam em voo, impedindo que a resposta emitida para a conta anterior
+// repovoe o cache depois da troca de sessao.
+let cacheGeneration = 0;
+
 export function clearPrivateStorageUrlCache(): void {
+  cacheGeneration += 1;
   signedUrlCache.clear();
   inFlightSignatures.clear();
 }
@@ -103,6 +109,8 @@ export async function createPrivateStorageUrl(
   return data.signedUrl;
 }
 
+const MAX_SIGNATURE_RETRIES_ON_IDENTITY_CHANGE = 2;
+
 export async function resolvePrivateStorageUrl(
   value: string | null | undefined,
   expectedBucket?: PrivateStorageBucket,
@@ -111,7 +119,10 @@ export async function resolvePrivateStorageUrl(
   const location = parsePrivateStorageReference(value) ?? locationFromStorageUrl(value);
   if (!location) return value;
   if (expectedBucket && location.bucket !== expectedBucket) return value;
+  return signLocation(location, 0);
+}
 
+async function signLocation(location: PrivateStorageLocation, attempt: number): Promise<string> {
   const cacheKey = `${location.bucket}/${location.path}`;
   const cached = signedUrlCache.get(cacheKey);
   if (cached && cached.expiresAt > Date.now()) return cached.url;
@@ -119,8 +130,19 @@ export async function resolvePrivateStorageUrl(
   const pending = inFlightSignatures.get(cacheKey);
   if (pending) return pending;
 
+  const generation = cacheGeneration;
   const request = createPrivateStorageUrl(location.bucket, location.path)
     .then((url) => {
+      // A sessao mudou enquanto a assinatura estava em voo: a URL pertence a
+      // conta anterior e nao pode ser cacheada nem devolvida.
+      if (generation !== cacheGeneration) {
+        if (attempt >= MAX_SIGNATURE_RETRIES_ON_IDENTITY_CHANGE) {
+          throw new Error(
+            `Sessao alterada durante a assinatura de ${cacheKey}; nao foi possivel emitir uma URL valida.`,
+          );
+        }
+        return signLocation(location, attempt + 1);
+      }
       signedUrlCache.set(cacheKey, {
         url,
         expiresAt: Date.now() + (PRIVATE_STORAGE_URL_TTL_SECONDS - 60) * 1_000,
@@ -128,7 +150,7 @@ export async function resolvePrivateStorageUrl(
       return url;
     })
     .finally(() => {
-      inFlightSignatures.delete(cacheKey);
+      if (inFlightSignatures.get(cacheKey) === request) inFlightSignatures.delete(cacheKey);
     });
   inFlightSignatures.set(cacheKey, request);
   return request;

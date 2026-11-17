@@ -4,7 +4,7 @@ import type { OrderRow, OrderFilters, OrderItem, OrderStatus, OrderLogistics, Or
 import { ORDER_STATUS_LABELS } from "@/constants/orders";
 import { logger } from "@/lib/logger";
 import { invokeEdgeFunction } from "@/lib/edge-function-client";
-import { createPrivateStorageReference, resolvePrivateStorageUrl } from "@/lib/private-storage";
+import { createPrivateStorageReference, resolvePrivateStorageUrlSafe } from "@/lib/private-storage";
 
 const PILOT_IMAGE_BUCKET = 'personalization-images';
 
@@ -294,8 +294,10 @@ export class OrderService {
     if (error) throw error;
     return Promise.all((data ?? []).map(async (approval) => ({
       ...approval,
-      mockup_url: await resolvePrivateStorageUrl(approval.mockup_url, PILOT_IMAGE_BUCKET) ?? approval.mockup_url,
-      mockup_thumbnail_url: await resolvePrivateStorageUrl(approval.mockup_thumbnail_url, PILOT_IMAGE_BUCKET),
+      // Falha de midia isolada por campo: uma foto removida nao pode esconder
+      // todas as aprovacoes do pedido.
+      mockup_url: await resolvePrivateStorageUrlSafe(approval.mockup_url, PILOT_IMAGE_BUCKET) ?? approval.mockup_url,
+      mockup_thumbnail_url: await resolvePrivateStorageUrlSafe(approval.mockup_thumbnail_url, PILOT_IMAGE_BUCKET),
     })));
   }
 

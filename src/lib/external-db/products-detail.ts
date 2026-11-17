@@ -337,6 +337,31 @@ function applyDetailImages(product: PromobrindProduct, images: ProductImage[]): 
   product.images = mainImages.map(image => image.url_cdn);
 }
 
+/**
+ * Produtos criados com upload antes de existir `productId` guardam as
+ * referencias `supabase-storage://` no proprio registro de `products`, sem
+ * linha correspondente em `product_images`. Sem esta resolucao as fotos nao
+ * carregam na pagina de detalhe. Valores ja resolvidos passam inalterados.
+ */
+async function resolveProductRecordImages(product: PromobrindProduct): Promise<void> {
+  const resolveField = async (value: string | null | undefined) =>
+    (await resolvePrivateStorageUrlSafe(value, PRODUCT_IMAGE_BUCKET)) ?? value ?? null;
+
+  const [primary, image, og] = await Promise.all([
+    resolveField(product.primary_image_url),
+    resolveField(product.image_url),
+    resolveField(product.og_image_url),
+  ]);
+  if (primary) product.primary_image_url = primary;
+  if (image) product.image_url = image;
+  if (og) product.og_image_url = og;
+
+  if (Array.isArray(product.images) && product.images.length) {
+    const resolved = await Promise.all(product.images.map(value => resolveField(value)));
+    product.images = resolved.filter((value): value is string => Boolean(value));
+  }
+}
+
 async function applyMaterials(product: PromobrindProduct, productId: string, materialIds: string[]): Promise<void> {
   if (!materialIds.length) return;
   try {
@@ -477,6 +502,7 @@ export async function fetchPromobrindProductById(
 
   const imagesAll = await completeProductImages(productId, allProductImages);
   applyDetailImages(product, imagesAll);
+  await resolveProductRecordImages(product);
   await applyMaterials(product, productId, enrichment.materialIds);
 
   await applyVariantColors(product, productId, variants, imagesAll);
@@ -500,7 +526,9 @@ export async function fetchPromobrindProductBySku(sku: string): Promise<Promobri
       filters: { sku }, select: PRODUCT_SELECT_FIELDS_LEGACY, limit: 1,
     });
   }
-  return result.records?.[0] || null;
+  const product = result.records?.[0] || null;
+  if (product) await resolveProductRecordImages(product);
+  return product;
 }
 
 export async function fetchPromobrindCategories(): Promise<{ id: string; name: string }[]> {

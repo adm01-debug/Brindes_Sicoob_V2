@@ -7,7 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import { createPrivateStorageReference, resolvePrivateStorageUrl } from '@/lib/private-storage';
+import { createPrivateStorageReference, resolvePrivateStorageUrlSafe } from '@/lib/private-storage';
 import { type ExternalVideo, type VariantLink, type VideoVariant, ACCEPTED_VIDEO_TYPES, MAX_FILE_SIZE, extractThumbnailFromVideo, parseYouTubeId } from "./types";
 
 const VIDEO_STORAGE_BUCKET = 'product-videos';
@@ -16,7 +16,7 @@ const EXTERNAL_DB_BRIDGE = 'external-db-bridge';
 const VIDEO_VARIANT_LINKS_QUERY_KEY = 'video-variant-links';
 
 function videoValidationError(file: File): string | null {
-  if (!ACCEPTED_VIDEO_TYPES.includes(file.type)) return `"${file.name}" não é um formato suportado`;
+  if (!ACCEPTED_VIDEO_TYPES.includes(file.type)) return `"${file.name}" nÃ£o Ã© um formato suportado`;
   if (file.size > MAX_FILE_SIZE) return `"${file.name}" excede 100MB`;
   return null;
 }
@@ -92,7 +92,7 @@ function videoSource(video: ExternalVideo): string | null {
 
 async function regenerateVideoThumbnail(videoUrl: string, productId: string): Promise<string | null> {
   const response = await fetch(videoUrl);
-  if (!response.ok) throw new Error('Falha ao baixar vídeo');
+  if (!response.ok) throw new Error('Falha ao baixar vÃ­deo');
   const blob = await response.blob();
   const file = new File([blob], 'video.mp4', { type: blob.type || 'video/mp4' });
   const thumbnail = await extractThumbnailFromVideo(file);
@@ -138,9 +138,9 @@ export function useProductVideoGallery(productId?: string) {
       const records = (data?.data?.records || []) as ExternalVideo[];
       return Promise.all(records.map(async (video) => ({
         ...video,
-        url_original: await resolvePrivateStorageUrl(video.url_original, VIDEO_STORAGE_BUCKET),
-        url_stream: await resolvePrivateStorageUrl(video.url_stream, VIDEO_STORAGE_BUCKET),
-        url_thumbnail: await resolvePrivateStorageUrl(video.url_thumbnail, VIDEO_STORAGE_BUCKET),
+        url_original: await resolvePrivateStorageUrlSafe(video.url_original, VIDEO_STORAGE_BUCKET),
+        url_stream: await resolvePrivateStorageUrlSafe(video.url_stream, VIDEO_STORAGE_BUCKET),
+        url_thumbnail: await resolvePrivateStorageUrlSafe(video.url_thumbnail, VIDEO_STORAGE_BUCKET),
       })));
     },
     enabled: !!productId,
@@ -161,7 +161,7 @@ export function useProductVideoGallery(productId?: string) {
         const colorHex = typeof record.color_hex === 'string' ? record.color_hex : null;
         return {
           id: String(record.id),
-          name: String(record.name ?? colorName ?? 'Variação'),
+          name: String(record.name ?? colorName ?? 'VariaÃ§Ã£o'),
           color_name: colorName,
           color_hex: colorHex,
           supplier_code: !isNullish(record.color_code) ? String(record.color_code) : undefined,
@@ -236,8 +236,8 @@ export function useProductVideoGallery(productId?: string) {
       });
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: [VIDEO_VARIANT_LINKS_QUERY_KEY, productId] });
-      toast.success(`Vídeo vinculado a ${variant.color_name || variant.name}`);
-    } catch { toast.error('Erro ao vincular vídeo'); }
+      toast.success(`VÃ­deo vinculado a ${variant.color_name || variant.name}`);
+    } catch { toast.error('Erro ao vincular vÃ­deo'); }
     setLinkingVideoId(null);
   }, [productId, variantMap, queryClient]);
 
@@ -246,7 +246,7 @@ export function useProductVideoGallery(productId?: string) {
       const { error } = await supabase.from('video_variant_links').delete().eq('id', linkId);
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: [VIDEO_VARIANT_LINKS_QUERY_KEY, productId] });
-      toast.success('Vínculo removido');
+      toast.success('VÃ­nculo removido');
     } catch { toast.error('Erro ao desvincular'); }
   }, [productId, queryClient]);
 
@@ -281,7 +281,7 @@ export function useProductVideoGallery(productId?: string) {
 
   const processUploadBatch = useCallback(async (files: File[]) => {
     if (!files.length) return;
-    if (!productId) { toast.error('Salve o produto antes de enviar vídeos'); return; }
+    if (!productId) { toast.error('Salve o produto antes de enviar vÃ­deos'); return; }
     setIsUploading(true);
     setUploadCount(files.length);
     setUploadProgress(0);
@@ -293,9 +293,9 @@ export function useProductVideoGallery(productId?: string) {
       if (successCount > 0) {
         queryClient.invalidateQueries({ queryKey: [EXTERNAL_VIDEOS_QUERY_KEY, productId] });
         queryClient.invalidateQueries({ queryKey: [VIDEO_VARIANT_LINKS_QUERY_KEY, productId] });
-        toast.success(`${successCount} vídeo(s) enviado(s)!`);
+        toast.success(`${successCount} vÃ­deo(s) enviado(s)!`);
       }
-    } catch { toast.error('Erro ao enviar vídeos'); } finally {
+    } catch { toast.error('Erro ao enviar vÃ­deos'); } finally {
       setIsUploading(false);
       setUploadCount(0);
       setUploadProgress(0);
@@ -305,8 +305,8 @@ export function useProductVideoGallery(productId?: string) {
   // Add YouTube video
   const addYoutubeVideo = useCallback(async () => {
     const ytId = parseYouTubeId(youtubeUrl);
-    if (!ytId) { toast.error('URL ou ID do YouTube inválido'); return; }
-    if (!productId) { toast.error('Salve o produto antes de adicionar vídeos'); return; }
+    if (!ytId) { toast.error('URL ou ID do YouTube invÃ¡lido'); return; }
+    if (!productId) { toast.error('Salve o produto antes de adicionar vÃ­deos'); return; }
     setIsAddingYoutube(true);
     try {
       const thumbUrl = `https://img.youtube.com/vi/${ytId}/mqdefault.jpg`;
@@ -331,9 +331,9 @@ export function useProductVideoGallery(productId?: string) {
       }
       queryClient.invalidateQueries({ queryKey: [EXTERNAL_VIDEOS_QUERY_KEY, productId] });
       queryClient.invalidateQueries({ queryKey: [VIDEO_VARIANT_LINKS_QUERY_KEY, productId] });
-      toast.success('Vídeo do YouTube adicionado!');
+      toast.success('VÃ­deo do YouTube adicionado!');
       setYoutubeUrl('');
-    } catch { toast.error('Erro ao adicionar vídeo do YouTube'); } finally { setIsAddingYoutube(false); }
+    } catch { toast.error('Erro ao adicionar vÃ­deo do YouTube'); } finally { setIsAddingYoutube(false); }
   }, [youtubeUrl, productId, createExternalVideoRecord, uploadVariant, variantMap, queryClient]);
 
   // Remove
@@ -345,8 +345,8 @@ export function useProductVideoGallery(productId?: string) {
       });
       queryClient.invalidateQueries({ queryKey: [EXTERNAL_VIDEOS_QUERY_KEY, productId] });
       queryClient.invalidateQueries({ queryKey: [VIDEO_VARIANT_LINKS_QUERY_KEY, productId] });
-      toast.success('Vídeo removido');
-    } catch { toast.error('Erro ao remover vídeo'); }
+      toast.success('VÃ­deo removido');
+    } catch { toast.error('Erro ao remover vÃ­deo'); }
   }, [productId, queryClient]);
 
   // Update video metadata
@@ -356,7 +356,7 @@ export function useProductVideoGallery(productId?: string) {
         body: { table: 'product_videos', operation: 'update', id: videoId, data },
       });
       queryClient.invalidateQueries({ queryKey: [EXTERNAL_VIDEOS_QUERY_KEY, productId] });
-      toast.success('Metadados do vídeo atualizados');
+      toast.success('Metadados do vÃ­deo atualizados');
       setEditingVideoId(null);
     } catch { toast.error('Erro ao atualizar metadados'); }
   }, [productId, queryClient]);
@@ -379,7 +379,7 @@ export function useProductVideoGallery(productId?: string) {
         supabase.functions.invoke(EXTERNAL_DB_BRIDGE, { body: { table: 'product_videos', operation: 'update', id: v.id, data: { display_order: i } } })
       ));
       queryClient.invalidateQueries({ queryKey: [EXTERNAL_VIDEOS_QUERY_KEY, productId] });
-      toast.success('Ordem dos vídeos salva');
+      toast.success('Ordem dos vÃ­deos salva');
     } catch { toast.error('Erro ao salvar ordem'); }
   }, [dragIndex, filteredVideos, productId, queryClient]);
   const handleVideoDragEnd = useCallback(() => { setDragIndex(null); setDragOverIndex(null); }, []);
@@ -387,11 +387,11 @@ export function useProductVideoGallery(productId?: string) {
   // Regenerate thumbnail
   const regenerateThumbnail = useCallback(async (video: ExternalVideo) => {
     const videoUrl = videoSource(video);
-    if (!videoUrl || !productId) { toast.error('URL do vídeo não disponível'); return; }
+    if (!videoUrl || !productId) { toast.error('URL do vÃ­deo nÃ£o disponÃ­vel'); return; }
     setRegeneratingId(video.id);
     try {
       const thumbnailUrl = await regenerateVideoThumbnail(videoUrl, productId);
-      if (!thumbnailUrl) { toast.error('Não foi possível extrair frame'); return; }
+      if (!thumbnailUrl) { toast.error('NÃ£o foi possÃ­vel extrair frame'); return; }
       await supabase.functions.invoke(EXTERNAL_DB_BRIDGE, {
         body: { table: 'product_videos', operation: 'update', id: video.id, data: { url_thumbnail: thumbnailUrl } },
       });
@@ -405,7 +405,7 @@ export function useProductVideoGallery(productId?: string) {
 
   const bulkRegenerateThumbnails = useCallback(async () => {
     const withoutThumb = videos.filter(v => !v.url_thumbnail && !v.source_youtube_id && (v.url_original || v.url_stream));
-    if (withoutThumb.length === 0) { toast.info('Todos os vídeos já possuem thumbnail'); return; }
+    if (withoutThumb.length === 0) { toast.info('Todos os vÃ­deos jÃ¡ possuem thumbnail'); return; }
     setIsBulkRegenerating(true);
     let successCount = 0;
     for (const video of withoutThumb) {
@@ -433,7 +433,7 @@ export function useProductVideoGallery(productId?: string) {
     e.preventDefault(); e.stopPropagation(); setIsDragOver(false);
     const files = Array.from(e.dataTransfer.files).filter(f => ACCEPTED_VIDEO_TYPES.includes(f.type));
     if (files.length > 0) processUploadBatch(files);
-    else toast.error('Nenhum arquivo de vídeo válido encontrado');
+    else toast.error('Nenhum arquivo de vÃ­deo vÃ¡lido encontrado');
   }, [processUploadBatch]);
 
   const handleFileSelect = useCallback((e: ChangeEvent<HTMLInputElement>) => {
