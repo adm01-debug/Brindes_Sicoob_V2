@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Filter, Search, Eye, FileText, ShoppingBag, ArrowDown } from "lucide-react";
-import { subDays } from "date-fns";
+import { buildCivilTrendWindow } from "@/pages/trends/trends-projections";
 import { useAuth } from "@/contexts/AuthContext";
 import { applySellerScope, shouldShortCircuitForSelf } from "@/lib/auth/apply-seller-scope";
 import { useSalesScope, type SalesScope } from "@/lib/auth/visibility-scope";
@@ -84,7 +84,9 @@ async function fetchFunnel(since: string, scope: SalesScope, userId: string | nu
 function useConversionData(days: number) {
   const { user } = useAuth();
   const scope = useSalesScope();
-  const since = subDays(new Date(), days).toISOString();
+  // Mesma janela de dias civis dos KPIs de Tendencias: sem isso o funil conta
+  // eventos que os KPIs ja classificam como periodo anterior.
+  const since = buildCivilTrendWindow(new Date(), days).sinceCurrent;
   return useQuery({
     queryKey: ["conversion-funnel", days, scope, user?.id],
     queryFn: () => fetchFunnel(since, scope, user?.id),

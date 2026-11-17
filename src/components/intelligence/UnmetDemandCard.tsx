@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, AlertTriangle, Search, Plus } from "lucide-react";
-import { subDays } from "date-fns";
+import { buildCivilTrendWindow } from "@/pages/trends/trends-projections";
 import { loadUnmetDemand, type UnmetDemandItem, type UnmetDemandResult } from "./unmet-demand-query";
 
 interface UnmetDemandCardProps {
@@ -91,7 +91,7 @@ function UnmetDemandResults({
 
 export function UnmetDemandCard({ days }: UnmetDemandCardProps) {
   const navigate = useNavigate();
-  const since = subDays(new Date(), days).toISOString();
+  const since = buildCivilTrendWindow(new Date(), days).sinceCurrent;
   const demo = isDemoMode();
 
   const { data, isLoading, isError, isFetching, refetch } = useQuery({

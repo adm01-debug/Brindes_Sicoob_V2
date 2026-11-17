@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 // import { MainLayout } from "@/components/layout/MainLayout";
 import {
@@ -219,8 +219,10 @@ function resolveLoading(input: TrendLoadingInput) {
 
 type TrendsControls = ReturnType<typeof useTrendsControls>;
 
+type TrendsActivityResult = Awaited<ReturnType<typeof loadTrendsActivity>>;
+
 function useTrendQueries(controls: TrendsControls) {
-  const activity = useQuery({
+  const activityQuery = useQuery({
     queryKey: ['trends-activity', controls.dateRange, controls.scopeKey, controls.refreshRevision],
     enabled: controls.queryEnabled,
     // A consulta reúne duas fontes e a tela oferece uma nova tentativa
@@ -228,6 +230,17 @@ function useTrendQueries(controls: TrendsControls) {
     retry: false,
     queryFn: () => loadTrendsActivity(controls.sincePrevious, controls.sellerScope),
   });
+  // Atualizar cria uma nova entrada de cache. Sem preservar o último snapshot
+  // válido, uma atualização que falha apaga KPIs, rankings e gráficos já lidos.
+  const lastSnapshot = useRef<TrendsActivityResult | undefined>(undefined);
+  if (activityQuery.data !== undefined) lastSnapshot.current = activityQuery.data;
+  const activityData = activityQuery.data ?? lastSnapshot.current;
+  const activity = {
+    data: activityData,
+    isLoading: activityQuery.isLoading && activityData === undefined,
+    isFetching: activityQuery.isFetching,
+    isError: activityQuery.isError,
+  };
   const mock = useQuery({
     queryKey: ['trends-mock'],
     enabled: controls.demo,
