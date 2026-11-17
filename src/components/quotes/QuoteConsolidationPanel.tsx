@@ -401,9 +401,34 @@ function initialSort(): ConsolidationSortConfig {
       console.error(error);
     }
   const saved = localStorage.getItem('quote_consolidation_sort');
-  return saved
-    ? (JSON.parse(saved) as ConsolidationSortConfig)
-    : { key: 'total_value', direction: 'desc' };
+  if (saved)
+    try {
+      return JSON.parse(saved) as ConsolidationSortConfig;
+    } catch (error) {
+      console.error(error);
+      localStorage.removeItem('quote_consolidation_sort');
+    }
+  return { key: 'total_value', direction: 'desc' };
+}
+
+function initialSavedViews(): SavedView[] {
+  const saved = localStorage.getItem('quote_consolidation_views');
+  if (!saved) return [];
+  try {
+    const parsed = JSON.parse(saved) as unknown;
+    if (!Array.isArray(parsed)) throw new Error('visoes salvas em formato invalido');
+    return parsed.filter(
+      (view): view is SavedView =>
+        !!view &&
+        typeof view === 'object' &&
+        typeof (view as SavedView).id === 'string' &&
+        typeof (view as SavedView).name === 'string',
+    );
+  } catch (error) {
+    console.error(error);
+    localStorage.removeItem('quote_consolidation_views');
+    return [];
+  }
 }
 
 function useConsolidationFilters() {
@@ -419,6 +444,15 @@ function useConsolidationFilters() {
   const reset = () => {
     setSearch('');
     setSort({ key: 'total_value', direction: 'desc' });
+    const params = new URLSearchParams(window.location.search);
+    params.delete('q_search');
+    params.delete('q_sort');
+    const query = params.toString();
+    window.history.replaceState(
+      window.history.state,
+      '',
+      query ? `${window.location.pathname}?${query}` : window.location.pathname,
+    );
     toast.info('Filtros redefinidos');
   };
   const toggleSort = (key: ConsolidationSortKey) =>
@@ -447,10 +481,7 @@ function useConsolidationFilters() {
 }
 
 function useSavedViews(filters: ReturnType<typeof useConsolidationFilters>) {
-  const [views, setViews] = useState<SavedView[]>(() => {
-    const saved = localStorage.getItem('quote_consolidation_views');
-    return saved ? (JSON.parse(saved) as SavedView[]) : [];
-  });
+  const [views, setViews] = useState<SavedView[]>(initialSavedViews);
   const persist = (next: SavedView[]) => {
     setViews(next);
     localStorage.setItem('quote_consolidation_views', JSON.stringify(next));

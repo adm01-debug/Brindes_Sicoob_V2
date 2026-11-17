@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 // import { MainLayout } from "@/components/layout/MainLayout";
 import { PageSEO } from '@/components/seo/PageSEO';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,6 +20,8 @@ import { QuoteService } from '@/services/QuoteService';
  * GestorOrcamentos — Painel central do Gestor de Compras (Singular).
  * Consolida lista de solicitações, dashboard de métricas e Kanban de aprovação.
  */
+const CONSOLIDATION_QUERY_PREFIX = ['quote-consolidation-items'] as const;
+
 // eslint-disable-next-line max-lines-per-function -- componente pre-existente; esta PR apenas acrescenta estados de erro/carregamento
 export default function GestorOrcamentos() {
   const [activeTab, setActiveTab] = useState('requests');
@@ -28,7 +31,7 @@ export default function GestorOrcamentos() {
   const scope = useSalesScope();
   const { quotes } = useQuotes();
   const consolidationQuery = useQuery({
-    queryKey: ['quote-consolidation-items', user?.id, currentOrg?.id ?? null, scope],
+    queryKey: [...CONSOLIDATION_QUERY_PREFIX, user?.id, currentOrg?.id ?? null, scope],
     queryFn: () => {
       if (!user) throw new Error('Sessão ausente ao carregar a consolidação.');
       return QuoteService.listForConsolidation({
@@ -40,6 +43,10 @@ export default function GestorOrcamentos() {
     enabled: activeTab === 'consolidation' && Boolean(user),
     staleTime: 30_000,
   });
+
+  // Sem isso, alteracoes recebidas por Realtime nao chegam a aba de consolidacao.
+  useRealtimeSync('quotes', { queryKey: CONSOLIDATION_QUERY_PREFIX });
+  useRealtimeSync('quote_items', { queryKey: CONSOLIDATION_QUERY_PREFIX });
 
   // Orçamentos aguardando aprovação ou já aprovados que podem ser consolidados
   const pendingQuotes = (consolidationQuery.data ?? []).filter((q) =>
