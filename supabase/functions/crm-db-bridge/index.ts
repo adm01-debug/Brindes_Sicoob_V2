@@ -417,9 +417,10 @@ interface CrmQuery {
   data?: Record<string, unknown> | Record<string, unknown>[];
   returning?: string;
   queries?: BatchQuery[];
-  action?: "companies" | "contacts";
+  action?: "companies" | "contacts" | "industry_peers";
   companyId?: string;
   term?: string;
+  ramoAtividade?: string;
 }
 
 interface BatchQuery {
@@ -467,9 +468,10 @@ const CrmRequestSchema = z.object({
   data: z.union([z.record(z.unknown()), z.array(z.record(z.unknown()))]).optional(),
   returning: z.string().max(2000).optional(),
   queries: z.array(z.record(z.unknown())).max(10).optional(),
-  action: z.enum(["companies", "contacts"]).optional(),
+  action: z.enum(["companies", "contacts", "industry_peers"]).optional(),
   companyId: z.string().uuid().optional(),
   term: z.string().trim().min(2).max(100).optional(),
+  ramoAtividade: z.string().trim().min(2).max(100).optional(),
 });
 
 // ============================================
@@ -870,7 +872,13 @@ async function handleSearch(crm: SupabaseClient, body: CrmQuery): Promise<Respon
 }
 
 const QUOTE_COMPANY_SELECT =
-  "id, title, razao_social, nome_fantasia, ramo_atividade, cnpj, logo_url";
+  "id, title, razao_social, nome_fantasia, ramo_atividade, cnpj, logo_url, cidade, estado";
+/**
+ * Teto fixo no servidor para o universo de pares do mesmo ramo. O cliente nao
+ * escolhe: a projecao e so o id, usado como chave nas RPCs get_industry_* do
+ * Supabase oficial, onde a RLS do usuario decide o que ele enxerga.
+ */
+const INDUSTRY_PEERS_LIMIT = 500;
 const QUOTE_CONTACT_SELECT = "id, first_name, last_name, full_name, cargo";
 
 interface QuoteDirectoryContactRow {
@@ -939,6 +947,8 @@ async function handleQuoteCompanies(crm: SupabaseClient, body: CrmQuery): Promis
     ramo_atividade: row.ramo_atividade == null ? null : String(row.ramo_atividade),
     cnpj: row.cnpj == null ? null : String(row.cnpj),
     logo_url: row.logo_url == null ? null : String(row.logo_url),
+    cidade: row.cidade == null ? null : String(row.cidade),
+    estado: row.estado == null ? null : String(row.estado),
   }));
   return jsonResponse({ data: companies, count: companies.length });
 }
@@ -1018,7 +1028,34 @@ async function handleQuoteContacts(crm: SupabaseClient, body: CrmQuery): Promise
   return jsonResponse({ data: contacts, count: contacts.length });
 }
 
+/**
+ * Pares do mesmo ramo de atividade, so com o id. Alimenta os comparativos de
+ * industria do BI (get_industry_benchmark_stats, get_industry_seasonality,
+ * get_industry_top_products), que recebem _company_ids text[]. Nao devolve nome,
+ * CNPJ, e-mail nem telefone, e nao aceita is_customer: o benchmark precisa do
+ * universo do ramo, nao so da carteira.
+ */
+async function handleIndustryPeers(crm: SupabaseClient, body: CrmQuery): Promise<Response> {
+  const ramoAtividade = (body.ramoAtividade ?? "").trim();
+  if (ramoAtividade.length < 2) {
+    return jsonResponse({ error: "quote_directory_ramo_invalido" }, 400);
+  }
+  const { data, error } = await crm
+    .from("companies")
+    .select("id")
+    .eq("ramo_atividade", ramoAtividade)
+    .is("deleted_at", null)
+    .limit(INDUSTRY_PEERS_LIMIT);
+  if (error) {
+    console.error(`[quote-directory] industry_peers query_failed code=${error.code ?? "unknown"}`);
+    return jsonResponse({ error: "quote_directory_failed" }, 500);
+  }
+  const peers = (data ?? []).map((row: Record<string, unknown>) => ({ id: String(row.id) }));
+  return jsonResponse({ data: peers, count: peers.length });
+}
+
 async function handleQuoteDirectory(crm: SupabaseClient, body: CrmQuery): Promise<Response> {
+  if (body.action === "industry_peers") return handleIndustryPeers(crm, body);
   if (body.action === "companies") return handleQuoteCompanies(crm, body);
   if (body.action === "contacts") return handleQuoteContacts(crm, body);
   return jsonResponse({ error: "quote_directory_action_invalid" }, 400);

@@ -21,9 +21,10 @@ const crmBreaker = getCircuitBreaker(CRM_DB_BRIDGE_FUNCTION, {
 export interface CrmQuery {
   table?: string;
   operation: "select" | "search" | "insert" | "update" | "delete" | "quote_directory";
-  action?: "companies" | "contacts";
+  action?: "companies" | "contacts" | "industry_peers";
   companyId?: string;
   term?: string;
+  ramoAtividade?: string;
   id?: string;
   filters?: Record<string, unknown>;
   select?: string;
@@ -298,6 +299,12 @@ export interface QuoteDirectoryCompany {
   ramo_atividade: string | null;
   cnpj: string | null;
   logo_url: string | null;
+  cidade: string | null;
+  estado: string | null;
+}
+
+export interface QuoteDirectoryPeer {
+  id: string;
 }
 
 export interface QuoteDirectoryContact {
@@ -330,6 +337,24 @@ export async function fetchQuoteDirectoryCompanies(options: {
   if (trimmedTerm.length >= 2) query.term = trimmedTerm;
   const result = await invokeCrmDb<QuoteDirectoryCompany[]>(query);
   return result.data || [];
+}
+
+/**
+ * Ids das empresas do mesmo ramo de atividade. Entra nas RPCs de comparativo de
+ * industria do Supabase oficial (get_industry_benchmark_stats,
+ * get_industry_seasonality, get_industry_top_products), que recebem
+ * `_company_ids text[]` e aplicam a RLS do usuario. O teto de 500 e fixo no Edge
+ * e a projecao e somente o id — nenhum nome, CNPJ, e-mail ou telefone.
+ */
+export async function fetchIndustryPeerIds(ramoAtividade: string): Promise<string[]> {
+  const ramo = ramoAtividade.trim();
+  if (ramo.length < 2) return [];
+  const result = await invokeCrmDb<QuoteDirectoryPeer[]>({
+    operation: "quote_directory",
+    action: "industry_peers",
+    ramoAtividade: ramo,
+  });
+  return (result.data || []).map((peer) => peer.id);
 }
 
 export async function fetchQuoteDirectoryContacts(

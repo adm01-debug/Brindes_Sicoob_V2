@@ -9,7 +9,13 @@ export interface CartCompanyOption {
   logo_url: string | null;
 }
 
-const PAGE_SIZE = 500;
+/**
+ * Teto por página do contrato fechado: `isQuoteDirectoryRequest` nega
+ * `limit > 100` (supabase/functions/_shared/portal-access-policy.ts:99), e essa
+ * negação é anterior à checagem de papel — um valor maior devolveria 403 até
+ * para `dev`. O `offset` aceito vai até 10.000, ou seja 100 páginas.
+ */
+const PAGE_SIZE = 100;
 
 /**
  * Empresas do carrinho vêm pelo contrato fechado `quote_directory`, o único que

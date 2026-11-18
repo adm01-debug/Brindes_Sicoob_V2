@@ -27,6 +27,7 @@ export interface CrmAccessRequest {
   action?: unknown;
   companyId?: unknown;
   term?: unknown;
+  ramoAtividade?: unknown;
 }
 
 export interface PortalMembershipProfile {
@@ -56,7 +57,11 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
  */
 export function isQuoteDirectoryRequest(request: CrmAccessRequest): boolean {
   if (request.operation !== 'quote_directory') return false;
-  if (request.action !== 'companies' && request.action !== 'contacts') return false;
+  if (
+    request.action !== 'companies' &&
+    request.action !== 'contacts' &&
+    request.action !== 'industry_peers'
+  ) return false;
 
   const forbidden = [
     request.table,
@@ -74,6 +79,21 @@ export function isQuoteDirectoryRequest(request: CrmAccessRequest): boolean {
   ];
   if (forbidden.some((value) => value !== undefined)) return false;
 
+  if (request.action === 'industry_peers') {
+    return (
+      typeof request.ramoAtividade === 'string' &&
+      request.ramoAtividade.trim().length >= 2 &&
+      request.ramoAtividade.length <= 100 &&
+      request.companyId === undefined &&
+      request.term === undefined &&
+      request.limit === undefined &&
+      request.offset === undefined
+    );
+  }
+
+  // `ramoAtividade` existe so para industry_peers; em companies e contacts a
+  // presenca do campo e sinal de request malformada.
+  if (request.ramoAtividade !== undefined) return false;
   if (!Number.isInteger(request.limit) || Number(request.limit) < 1) return false;
   if (request.action === 'contacts') {
     return (
