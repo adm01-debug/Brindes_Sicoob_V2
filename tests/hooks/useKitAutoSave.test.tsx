@@ -48,7 +48,7 @@ describe('useKitAutoSave', () => {
   afterEach(() => vi.useRealTimers());
 
   it('nao rebaixa para rascunho o kit que o montador considera valido', async () => {
-    // O salvamento manual grava status 'complete' quando isValid; o automatico
+    // O salvamento manual grava status 'ready' quando isValid; o automatico
     // fixava 'draft' e desfazia isso no proximo autosave — o selo do kit no
     // painel voltava para "Rascunho" sozinho.
     maybeSingle.mockResolvedValue({ data: { id: 'kit-1' }, error: null });
@@ -62,7 +62,7 @@ describe('useKitAutoSave', () => {
     rerender({ kit: { ...kitValido, name: 'Kit renomeado' } });
     await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
 
-    expect(update).toHaveBeenCalledWith(expect.objectContaining({ status: 'complete' }));
+    expect(update).toHaveBeenCalledWith(expect.objectContaining({ status: 'ready' }));
   });
 
   it('grava a identidade escolhida no primeiro autosave de um kit novo', async () => {

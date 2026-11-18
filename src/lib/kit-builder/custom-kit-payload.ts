@@ -10,19 +10,22 @@
  * usuário já tinha escolhido.
  */
 import type { KitState } from '@/lib/kit-builder/types';
+import { CUSTOM_KIT_STATUS, type CustomKitStatus } from '@/lib/kit-builder/status';
 
-/** Status que o front grava. `saved` e `quoted` vêm de outros fluxos. */
-export const CUSTOM_KIT_STATUS = {
-  DRAFT: 'draft',
-  COMPLETE: 'complete',
-} as const;
-
-export type CustomKitStatus = (typeof CUSTOM_KIT_STATUS)[keyof typeof CUSTOM_KIT_STATUS];
-
-/** Um kit só é `complete` quando o montador o considera válido. */
+/**
+ * Um kit válido é gravado como `ready`, não `complete`.
+ *
+ * O banco só aceita os quatro estados de `CUSTOM_KIT_STATUS`: o gatilho
+ * `trg_validate_kit_status` em `public.custom_kits` chama
+ * `validate_status_fields`, que levanta `Invalid kit status: %` para qualquer
+ * valor fora de ('draft','ready','shared','archived'). Gravar 'complete'
+ * fazia o salvamento de um kit concluído falhar no BEFORE INSERT OR UPDATE.
+ */
 export function customKitStatus(kitState: Pick<KitState, 'isValid'>): CustomKitStatus {
-  return kitState.isValid ? CUSTOM_KIT_STATUS.COMPLETE : CUSTOM_KIT_STATUS.DRAFT;
+  return kitState.isValid ? CUSTOM_KIT_STATUS.READY : CUSTOM_KIT_STATUS.DRAFT;
 }
+
+export { CUSTOM_KIT_STATUS, type CustomKitStatus };
 
 function kitIdentityLabels(identity: KitState['identity']) {
   return {
