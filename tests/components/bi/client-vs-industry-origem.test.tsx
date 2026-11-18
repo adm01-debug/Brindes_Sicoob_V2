@@ -2,13 +2,14 @@
  * O comparativo Cliente × Setor não pode carimbar "Dados reais" sobre número
  * inventado.
  *
- * useClientBI devolve isMock: true com MOCK_CLIENT_STATS quando o cliente não
- * tem pedidos; useClientVsIndustry propaga isso e monta LTV, ticket, frequência
- * e itens/orçamento a partir desses números. O componente ignorava isMock e
- * renderizava o selo "Dados reais" fixo — o vendedor via um LTV fabricado
- * comparado contra benchmark setorial verdadeiro, afirmado como medido.
+ * Antes, `useClientBI` devolvia `isMock: true` com `MOCK_CLIENT_STATS` para
+ * qualquer cliente sem pedidos, `useClientVsIndustry` montava LTV, ticket,
+ * frequência e itens/orçamento a partir desses números e o componente
+ * renderizava o selo "Dados reais" fixo. Agora o simulado é só do cliente de
+ * demonstração, e cliente sem histórico (ou com consulta falhada) tem cartão
+ * próprio, sem comparativo nenhum.
  */
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 const useClientVsIndustry = vi.fn();
@@ -20,10 +21,17 @@ import type { ClientVsIndustryResult } from '@/hooks/bi/useClientVsIndustry';
 // Tipado pelo contrato real do hook: sem isto a fixture inventava campos
 // (`industryValue`, `deltaPct`, `isAbove`) e os cartões renderizavam com
 // valores indefinidos enquanto o teste do selo continuava passando.
-function resultado(isMock: boolean): ClientVsIndustryResult {
+function resultado(
+  parcial: Partial<ClientVsIndustryResult> = {},
+): ClientVsIndustryResult {
   return {
     isLoading: false,
-    isMock,
+    isError: false,
+    error: null,
+    refetch: async () => undefined,
+    isMock: false,
+    hasClientData: true,
+    isClientDataUnavailable: false,
     hasEnoughSample: true,
     sampleSize: 7,
     daysWindow: 180,
@@ -34,21 +42,47 @@ function resultado(isMock: boolean): ClientVsIndustryResult {
       },
     ],
     insight: null,
+    ...parcial,
   };
 }
 
 describe('ClientVsIndustryComparison — origem do dado', () => {
-  it('cliente sem histórico: avisa que os números são ilustrativos', () => {
-    useClientVsIndustry.mockReturnValue(resultado(true));
+  it('cliente de demonstracao: avisa que os números são ilustrativos', () => {
+    useClientVsIndustry.mockReturnValue(resultado({ isMock: true }));
 
     render(<ClientVsIndustryComparison clientId="c1" ramoAtividade="Cooperativa" />);
 
-    expect(screen.getByText('Cliente sem histórico · números ilustrativos')).toBeTruthy();
+    expect(screen.getByText('Cliente de demonstração · números ilustrativos')).toBeTruthy();
     expect(screen.queryByText('Dados reais')).toBeNull();
   });
 
+  it('cliente sem pedido: nao compara, e nao oferece repetir', () => {
+    useClientVsIndustry.mockReturnValue(resultado({ hasClientData: false }));
+
+    render(<ClientVsIndustryComparison clientId="c1" ramoAtividade="Cooperativa" />);
+
+    expect(screen.getByRole('status').textContent).toMatch(/ainda não tem pedido no histórico/);
+    expect(screen.queryByText('Dados reais')).toBeNull();
+    expect(screen.queryByText('LTV')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Tentar novamente' })).toBeNull();
+  });
+
+  it('historico indisponivel: avisa a falha e oferece repetir', () => {
+    const refetch = vi.fn().mockResolvedValue(undefined);
+    useClientVsIndustry.mockReturnValue(resultado({
+      hasClientData: false, isClientDataUnavailable: true, isError: true, refetch,
+    }));
+
+    render(<ClientVsIndustryComparison clientId="c1" ramoAtividade="Cooperativa" />);
+
+    expect(screen.getByRole('alert').textContent).toMatch(/Histórico do cliente indisponível/);
+    expect(screen.queryByText('Dados reais')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }));
+    expect(refetch).toHaveBeenCalledOnce();
+  });
+
   it('cliente com histórico: mantém o selo de dado real', () => {
-    useClientVsIndustry.mockReturnValue(resultado(false));
+    useClientVsIndustry.mockReturnValue(resultado());
 
     render(<ClientVsIndustryComparison clientId="c1" ramoAtividade="Cooperativa" />);
 

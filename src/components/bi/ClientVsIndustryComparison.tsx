@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Scale, TrendingUp, TrendingDown, Minus, Lightbulb, Info, Wallet } from "lucide-react";
 import { useClientVsIndustry, type MetricComparison } from "@/hooks/bi/useClientVsIndustry";
 import { ComparisonSkeleton } from "@/components/bi/BISkeletons";
@@ -138,17 +139,16 @@ function ShareOfWalletCard({ clientLtv, industryAvgLtv }: { clientLtv: number; i
 /**
  * O selo tem de dizer a verdade sobre o lado do cliente.
  *
- * Quando o cliente não tem pedidos, `useClientBI` devolve `isMock: true` com
- * `MOCK_CLIENT_STATS`, e `useClientVsIndustry` monta LTV, ticket, frequência e
- * itens/orçamento a partir desses números inventados. O benchmark do setor
- * continua real. Carimbar "Dados reais" nesse estado afirma, para o vendedor,
- * que um LTV fabricado é medido.
+ * O benchmark do setor é sempre medido; o lado do cliente nem sempre. Carimbar
+ * "Dados reais" quando o histórico veio do conjunto de demonstração afirma, para
+ * o vendedor, que um LTV ilustrativo é medido. Cliente sem pedido e falha de
+ * consulta não chegam aqui: têm cartão próprio, acima.
  */
 function OrigemDoDado({ isMock }: { isMock: boolean }) {
   if (isMock) {
     return (
       <Badge variant="outline" className="bg-warning/10 text-warning border-0 text-[10px]">
-        Cliente sem histórico · números ilustrativos
+        Cliente de demonstração · números ilustrativos
       </Badge>
     );
   }
@@ -159,12 +159,57 @@ function OrigemDoDado({ isMock }: { isMock: boolean }) {
   );
 }
 
+/**
+ * Sem histórico do lado do cliente não há comparativo — e "R$ 0 vs média do
+ * setor" seria uma afirmação falsa, não um comparativo vazio. Falha de consulta
+ * ganha retry; cliente que ainda não comprou, não (não há o que repetir).
+ */
+function ClienteSemComparativo(
+  { ramoAtividade, indisponivel, onRetry }:
+  { ramoAtividade: string; indisponivel: boolean; onRetry: () => void },
+) {
+  return (
+    <Card className="border-[1.5px] border-dashed">
+      <CardContent className="p-6 flex items-start gap-3">
+        <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
+          <Info className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <div className="space-y-2">
+          <h3 className="font-display font-semibold text-sm">Comparativo Cliente × Setor</h3>
+          <p className="text-xs text-muted-foreground" role={indisponivel ? 'alert' : 'status'}>
+            {indisponivel
+              ? `Histórico do cliente indisponível: não dá para comparar com o ramo ${ramoAtividade} agora.`
+              : `Este cliente ainda não tem pedido no histórico, então não há o que comparar com o ramo ${ramoAtividade}.`}
+          </p>
+          {indisponivel && (
+            <Button variant="outline" size="sm" className="h-7 text-xs" onClick={onRetry}>
+              Tentar novamente
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function ClientVsIndustryComparison({ clientId, ramoAtividade }: Props) {
-  const { isLoading, isMock, hasEnoughSample, sampleSize, daysWindow, metrics, insight } =
-    useClientVsIndustry(clientId, ramoAtividade);
+  const {
+    isLoading, isMock, hasClientData, isClientDataUnavailable, refetch,
+    hasEnoughSample, sampleSize, daysWindow, metrics, insight,
+  } = useClientVsIndustry(clientId, ramoAtividade);
 
   if (!ramoAtividade) return null;
   if (isLoading) return <ComparisonSkeleton />;
+
+  if (!hasClientData) {
+    return (
+      <ClienteSemComparativo
+        ramoAtividade={ramoAtividade}
+        indisponivel={isClientDataUnavailable}
+        onRetry={() => void refetch()}
+      />
+    );
+  }
 
   if (!hasEnoughSample) {
     return (
