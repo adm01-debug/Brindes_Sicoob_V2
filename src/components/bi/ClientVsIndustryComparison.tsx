@@ -135,8 +135,32 @@ function ShareOfWalletCard({ clientLtv, industryAvgLtv }: { clientLtv: number; i
   );
 }
 
+/**
+ * O selo tem de dizer a verdade sobre o lado do cliente.
+ *
+ * Quando o cliente não tem pedidos, `useClientBI` devolve `isMock: true` com
+ * `MOCK_CLIENT_STATS`, e `useClientVsIndustry` monta LTV, ticket, frequência e
+ * itens/orçamento a partir desses números inventados. O benchmark do setor
+ * continua real. Carimbar "Dados reais" nesse estado afirma, para o vendedor,
+ * que um LTV fabricado é medido.
+ */
+function OrigemDoDado({ isMock }: { isMock: boolean }) {
+  if (isMock) {
+    return (
+      <Badge variant="outline" className="bg-warning/10 text-warning border-0 text-[10px]">
+        Cliente sem histórico · números ilustrativos
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="outline" className="bg-success/10 text-success border-0 text-[10px]">
+      Dados reais
+    </Badge>
+  );
+}
+
 export function ClientVsIndustryComparison({ clientId, ramoAtividade }: Props) {
-  const { isLoading, hasEnoughSample, sampleSize, daysWindow, metrics, insight } =
+  const { isLoading, isMock, hasEnoughSample, sampleSize, daysWindow, metrics, insight } =
     useClientVsIndustry(clientId, ramoAtividade);
 
   if (!ramoAtividade) return null;
@@ -180,9 +204,7 @@ export function ClientVsIndustryComparison({ clientId, ramoAtividade }: Props) {
               </p>
             </div>
           </div>
-          <Badge variant="outline" className="bg-success/10 text-success border-0 text-[10px]">
-            Dados reais
-          </Badge>
+          <OrigemDoDado isMock={isMock} />
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
