@@ -201,20 +201,34 @@ export const sicoobOrderService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error(UNAUTHENTICATED_USER_ERROR);
 
+    // `sicoob_order_item_logs.user_id` referencia `auth.users`, nao `public.profiles`:
+    // o PostgREST nao resolve esse embed e devolve 400. O autor e resolvido em
+    // uma segunda consulta por `profiles.user_id`.
     const { data, error } = await supabase
       .from("sicoob_order_item_logs")
-      .select(`
-        id,
-        action,
-        old_data,
-        new_data,
-        created_at,
-        user:profiles!user_id(display_name)
-      `)
+      .select("id, action, old_data, new_data, created_at, user_id")
       .eq("order_id", orderId)
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return data as unknown as SicoobOrderItemLog[];
+
+    const rows = data ?? [];
+    const authorIds = [...new Set(rows.map((row) => row.user_id).filter((id): id is string => !!id))];
+    const names = new Map<string, string>();
+    if (authorIds.length > 0) {
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("user_id, full_name")
+        .in("user_id", authorIds);
+      if (profilesError) throw profilesError;
+      for (const profile of profiles ?? []) {
+        if (profile.full_name) names.set(profile.user_id, profile.full_name);
+      }
+    }
+
+    return rows.map(({ user_id: authorId, ...log }) => {
+      const displayName = authorId ? names.get(authorId) : undefined;
+      return displayName ? { ...log, user: { display_name: displayName } } : log;
+    }) as unknown as SicoobOrderItemLog[];
   },
 
   async updateOrderStatus(orderId: string, status: string, currentStatus?: string, observations?: string): Promise<void> {

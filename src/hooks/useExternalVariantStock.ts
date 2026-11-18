@@ -1,5 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { invokeExternalDb } from '@/lib/external-db';
+import { resolvePrivateStorageUrlSafe } from '@/lib/private-storage';
+
+const VARIANT_IMAGE_BUCKET = 'personalization-images';
 
 export interface ExternalVariantStock {
   id: string;
@@ -100,7 +103,19 @@ export function useExternalVariantStock(productId: string | undefined) {
       ]);
 
       const images = indexVariantImages(imagesResult.records ?? []);
-      return (variantsResult.records ?? []).map((variant) => withVariantThumbnail(variant, images));
+      const variants = (variantsResult.records ?? []).map((variant) =>
+        withVariantThumbnail(variant, images),
+      );
+      // `url_cdn` chega como referencia privada; sem assinar aqui o mockup recebe
+      // `supabase-storage://...` como `productImageUrl` e a geracao falha.
+      return Promise.all(
+        variants.map(async (variant) => ({
+          ...variant,
+          selected_thumbnail:
+            (await resolvePrivateStorageUrlSafe(variant.selected_thumbnail, VARIANT_IMAGE_BUCKET)) ??
+            variant.selected_thumbnail,
+        })),
+      );
     },
     enabled: !!productId,
     staleTime: 5 * 60 * 1000,
