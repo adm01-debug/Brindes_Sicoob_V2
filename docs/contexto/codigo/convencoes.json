@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix(atalhos): Ctrl+K deixa de roubar o foco de quem está digitando (#338)",
    "feat(sicoob): gestor de compras volta a ter indicadores reais na propria tela (#332)",
    "chore(catálogo): remove o selo \"dados ilustrativos\" que nunca podia aparecer (#321)",
    "chore(deps): remove chave autoprefixer duplicada no package.json (#320)",
-   "fix(kit): autosave para de rebaixar o kit concluído e passa a gravar a identidade (#313)",
-   "fix(bi): caminho de dado real para de devolver categoria fictícia (#316)"
+   "fix(kit): autosave para de rebaixar o kit concluído e passa a gravar a identidade (#313)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

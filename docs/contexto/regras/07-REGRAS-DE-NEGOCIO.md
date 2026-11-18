@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `7372a96c80` · branch `main` · 2026-11-18 21:04 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `2b192fb8b7` · branch `main` · 2026-11-18 21:31 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5687,7 +5687,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6601 testes em 636 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6603 testes em 636 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5958,6 +5958,7 @@ _nenhum item encontrado_
 | `supabase/functions/sicoob-document-ingest/registration-state.test.ts` | 7 | a correspondência exige id, caminhos, hash e estado limpo · resultado ambíguo preserva os dois objetos para reconciliação · registro ausente ou divergente após RPC permanece inconclusivo · registro confirmado preserva o arquivo final e limpa a quarentena … |
 | `tests/components/PriceFreshnessBadge.colorAndIcon.test.tsx` | 7 | PriceFreshnessBadge — cor e ícone por status × superfície · superfície: ${surface} (variant= · status=${status} aplica família de cor correta · status=${status} renderiza o ícone Lucide correspondente … |
 | `tests/components/QuoteBuilderSummaryColumn.confirmAll.test.tsx` | 7 | QuoteBuilderSummaryColumn — Confirmar todos (com diálogo) · não renderiza o botão  · renderiza o botão  · clicar em  … |
+| `tests/components/command/GlobalCommandBar.test.tsx` | 7 | GlobalCommandBar · exports GlobalCommandBar component · exports useCommandBar hook · abre a barra global com Ctrl+K … |
 | `tests/components/layout/MainLayout.breadcrumbs.test.tsx` | 7 | MainLayout — PersistentBreadcrumbs (PR) · renders PersistentBreadcrumbs inside the layout · renders PersistentBreadcrumbs with the current compact layout classes · renders PersistentBreadcrumbs with showBackButton=true … |
 | `tests/components/sicoob/OrderProductionReadiness.test.tsx` | 7 | pré-requisitos de produção do pedido Sicoob · não confunde arte aprovada com autorização da despesa · mantém a produção bloqueada quando a despesa foi autorizada e a arte vigente está pendente · declara prontidão somente quando todos os pré-requisitos exigidos foram atendidos … |
 | `tests/contexts/AuthContext.test.tsx` | 7 | AuthContext · throws error when useAuth is used outside AuthProvider · starts with isLoading=true then sets false when no session · sets up auth listener and calls getSession … |
@@ -5990,7 +5991,6 @@ _nenhum item encontrado_
 | `tests/e2e-nav-helper.test.ts` | 6 | gotoAndSettle · repete uma navegação interrompida por reload concorrente · propaga erros determinísticos sem repetir a navegação · waitForRouteIdle … |
 | `tests/admin/react-warning-guard-sanity.test.ts` | 6 | react-warning-guard — sanity · captura o warning canônico de ref em function component · não falha quando não há warnings · não falha por  … |
 | `tests/components/CloudStatusBanner.test.tsx` | 6 | CloudStatusBanner — visibilidade por papel e criticidade · NÃO renderiza  · EXIBE  · EXIBE  … |
-| `tests/components/ErrorBoundary.test.tsx` | 6 | ErrorBoundary · renders children when no error occurs · renders fallback UI when a render error occurs · handles ChunkLoadError specifically … |
 | … +336 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
@@ -6243,6 +6243,7 @@ _nenhum item encontrado_
 | `limit > 100` (supabase/functions/_shared/portal-access-policy.ts:99), e essa | `src/components/cart/cart-company-options.ts` |
 | usado em contextos onde o componente atua como navegador de seleção (não apenas exibição). | `src/components/categories/CategoryTreeNavigator.tsx` |
 | Uma imagem remota inválida não deve interromper a exportação dos demais produtos. | `src/components/collections/ExportCollectionButton.tsx` |
+| * Ctrl/Cmd+K não pode roubar o foco de quem está digitando: em campo de | `src/components/command/GlobalCommandBar.tsx` |
 | Recents — também filtrados por permissão (recente pode ter sido | `src/components/command/GlobalCommandBar.tsx` |
 | permissão. Ações puramente locais (toggle de tema, abrir help) podem | `src/components/common/spotlight/SpotlightItems.ts` |
 | Admin (visível apenas a admin/dev — filtrado em runtime) | `src/components/common/spotlight/SpotlightItems.ts` |
@@ -6475,5 +6476,4 @@ _nenhum item encontrado_
 | * Funções puras para validação de parâmetros de personalização. | `src/lib/personalization/validators.ts` |
 | TABLE VALIDATION | `src/lib/personalization/validators.ts` |
 | QUANTITY VALIDATION | `src/lib/personalization/validators.ts` |
-| BUSINESS RULES | `src/lib/personalization/validators.ts` |
-| … +242 linhas — lista completa em `context.json` | |
+| … +243 linhas — lista completa em `context.json` | |

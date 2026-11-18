@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "7372a96c80124111a114f785663bad0afe2b7186",
+  "sha": "2b192fb8b7f1ef143aeed3ed39788fc2392e3870",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-18 21:04 UTC",
+  "generated_at": "2026-11-18 21:31 UTC",
   "files_total": 4341,
   "code_files": 3703,
-  "code_lines": 541188
+  "code_lines": 541233
  },
  "version": "1.3.2",
- "facts_hash": "95db9f8687af1cdc",
+ "facts_hash": "3e9ac7986cc1c4e1",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -63440,7 +63440,7 @@
   {
    "module": "src/components",
    "files": 1130,
-   "lines": 165563,
+   "lines": 165580,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -65213,7 +65213,7 @@
   {
    "module": "tests",
    "files": 582,
-   "lines": 80558,
+   "lines": 80586,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -78884,6 +78884,10 @@
    {
     "file": "src/components/collections/ExportCollectionButton.tsx",
     "text": "Uma imagem remota inválida não deve interromper a exportação dos demais produtos."
+   },
+   {
+    "file": "src/components/command/GlobalCommandBar.tsx",
+    "text": "* Ctrl/Cmd+K não pode roubar o foco de quem está digitando: em campo de"
    },
    {
     "file": "src/components/command/GlobalCommandBar.tsx",
@@ -118076,6 +118080,14 @@
    {
     "file": "tests/components/command/GlobalCommandBar.test.tsx",
     "name": "mantém Ctrl+K exclusivo e reserva Ctrl+Shift+P para o spotlight"
+   },
+   {
+    "file": "tests/components/command/GlobalCommandBar.test.tsx",
+    "name": "não abre com Ctrl+K enquanto o foco está num campo de texto"
+   },
+   {
+    "file": "tests/components/command/GlobalCommandBar.test.tsx",
+    "name": "continua abrindo com Ctrl+K fora de campo de texto"
    },
    {
     "file": "tests/components/command/commandActions.test.tsx",
@@ -186978,12 +186990,13 @@
   },
   "src/components/command/GlobalCommandBar.tsx": {
    "path": "src/components/command/GlobalCommandBar.tsx",
-   "lines": 210,
+   "lines": 227,
    "exports": [
     "function GlobalCommandBar",
     "function useCommandBar"
    ],
    "rule_comments": [
+    "* Ctrl/Cmd+K não pode roubar o foco de quem está digitando: em campo de",
     "Recents — também filtrados por permissão (recente pode ter sido"
    ],
    "doc": "GlobalCommandBar — Barra de comandos global (Cmd+K) Refatorado: ações em commandActions.tsx, grupos em CommandActionGroup.tsx",
@@ -238538,7 +238551,7 @@
   },
   "tests/components/command/GlobalCommandBar.test.tsx": {
    "path": "tests/components/command/GlobalCommandBar.test.tsx",
-   "lines": 79,
+   "lines": 107,
    "is_test": true,
    "doc": "Tests for GlobalCommandBar (644 lines)",
    "tests": [
@@ -238546,7 +238559,9 @@
     "exports GlobalCommandBar component",
     "exports useCommandBar hook",
     "abre a barra global com Ctrl+K",
-    "mantém Ctrl+K exclusivo e reserva Ctrl+Shift+P para o spotlight"
+    "mantém Ctrl+K exclusivo e reserva Ctrl+Shift+P para o spotlight",
+    "não abre com Ctrl+K enquanto o foco está num campo de texto",
+    "continua abrindo com Ctrl+K fora de campo de texto"
    ]
   },
   "tests/components/command/commandActions.test.tsx": {
@@ -248304,10 +248319,20 @@
   }
  },
  "git": {
-  "sha": "7372a96c80124111a114f785663bad0afe2b7186",
+  "sha": "2b192fb8b7f1ef143aeed3ed39788fc2392e3870",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "2b192fb",
+    "date": "2026-11-18",
+    "author": "adm01-debug",
+    "subject": "fix(atalhos): Ctrl+K deixa de roubar o foco de quem está digitando (#338)",
+    "files": [
+     "src/components/command/GlobalCommandBar.tsx",
+     "tests/components/command/GlobalCommandBar.test.tsx"
+    ]
+   },
    {
     "sha": "7372a96",
     "date": "2026-11-18",
@@ -248813,22 +248838,12 @@
     "files": [
      "scripts/db/.inventory-cache.json"
     ]
-   },
-   {
-    "sha": "67f0860",
-    "date": "2026-11-13",
-    "author": "adm01-debug",
-    "subject": "infra: adiciona migrações de segurança Órfãs à allowlist de apply (#275)",
-    "files": [
-     "scripts/db/apply-sicoob-migrations.mjs",
-     "supabase/migrations/20261113170000_use_semantic_admin_helper_in_favorite_policies.sql"
-    ]
    }
   ],
   "hot_files": [
    [
     "scripts/db/apply-sicoob-migrations.mjs",
-    4
+    3
    ],
    [
     "src/hooks/useProductIntelligenceBadges.ts",
@@ -248861,6 +248876,14 @@
    [
     ".github/workflows/security.yml",
     2
+   ],
+   [
+    "src/components/command/GlobalCommandBar.tsx",
+    1
+   ],
+   [
+    "tests/components/command/GlobalCommandBar.test.tsx",
+    1
    ],
    [
     "src/components/sicoob/GestorComprasMetrics.tsx",
@@ -248896,14 +248919,6 @@
    ],
    [
     "src/pages/ProductDetail.tsx",
-    1
-   ],
-   [
-    "package-lock.json",
-    1
-   ],
-   [
-    "package.json",
     1
    ]
   ]

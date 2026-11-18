@@ -5288,7 +5288,7 @@
     "GlobalCommandBar"
    ],
    "export_default": null,
-   "linhas": 210,
+   "linhas": 227,
    "dominio": "components/command",
    "hooks_locais": [
     "useAuth",

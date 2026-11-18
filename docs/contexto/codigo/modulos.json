@@ -1518,7 +1518,7 @@
    "modulo": "components/command",
    "arquivos": 3,
    "testes": 0,
-   "linhas": 536,
+   "linhas": 553,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],

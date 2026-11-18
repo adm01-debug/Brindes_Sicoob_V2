@@ -2255,12 +2255,12 @@
   {
    "arquivo": "tests/components/command/GlobalCommandBar.test.tsx",
    "tipo": "unit",
-   "linhas": 79,
+   "linhas": 107,
    "testa": [
     "src/components/command/GlobalCommandBar.tsx",
     "src/components/common/EnhancedSpotlight.tsx"
    ],
-   "casos": 4
+   "casos": 6
   },
   {
    "arquivo": "tests/components/data-trust-indicators.test.tsx",

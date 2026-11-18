@@ -952,7 +952,7 @@
    "hooks_exportados": [
     "useCommandBar"
    ],
-   "linhas": 210,
+   "linhas": 227,
    "dominio": "components/command",
    "tabelas": [],
    "rpcs": [],

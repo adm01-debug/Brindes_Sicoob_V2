@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `7372a96c80124111a114f785663bad0afe2b7186` (2026-11-18T21:04:14Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `2b192fb8b7f1ef143aeed3ed39788fc2392e3870` (2026-11-18T21:30:28Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -36,7 +36,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 |---|---|
 | arquivos_total | 4339 |
 | arquivos_codigo | 3048 |
-| linhas_codigo | 480302 |
+| linhas_codigo | 480347 |
 | rotas | 138 |
 | rotas_http_backend | 13 |
 | vistas_por_id | 0 |
@@ -468,14 +468,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 28373 nós · 52499 arestas · 2032 comunidades · grafo do commit `7372a96c`
+- 28373 nós · 52499 arestas · 2032 comunidades · grafo do commit `2b192fb8`
 - comunidades maiores: ref_hooks (520), ref_components (473), ref_lib (281), ref_integrations (238), sonner (210), ref_contexts (202), ref_node_fs (197), framer-motion (196), expert-chat/index.ts (167), date-fns (164), react (157), external-db-bridge/index.ts (153)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (89)
-- docs/correcoes-validacao-2026-09-14.md (88)
+- docs/plano-melhorias-50-etapas.md (88)
+- docs/correcoes-validacao-2026-09-14.md (87)
 - package.json (21)
 - .github/workflows/sicoob-ci.yml (19)
 - PENDENCIAS.md (19)
@@ -691,6 +691,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-18 `2b192fb` fix(atalhos): Ctrl+K deixa de roubar o foco de quem está digitando (#338)
 - 2026-11-18 `7372a96` feat(sicoob): gestor de compras volta a ter indicadores reais na propria tela (#332)
 - 2026-11-18 `8b0910c` chore(catálogo): remove o selo "dados ilustrativos" que nunca podia aparecer (#321)
 - 2026-11-18 `fcb4b9a` chore(deps): remove chave autoprefixer duplicada no package.json (#320)
@@ -705,7 +706,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-18 `bdeb172` fix(kit): destaque de kit passa a usar a RPC atomica no banco (#307)
 - 2026-11-18 `eba624f` fix(db): recupera 8 migrations perdidas e destrava o aplicador autorizado (#305)
 - 2026-11-18 `4b45855` infra: contar na cota de IA os streams interrompidos com consumo real (#299)
-- 2026-11-18 `6e81460` fix: verba do PA na competencia do pedido e SLA com inicio real do ciclo (#297)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`
