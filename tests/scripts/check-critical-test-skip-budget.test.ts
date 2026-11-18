@@ -124,7 +124,13 @@ describe('cobertura das raízes críticas', () => {
   });
 
   it('o orçamento cobre todos os specs P0 de E2E que têm skip hoje', () => {
-    const orcados = Object.keys(BASELINE_BY_FILE).filter((f) => f.startsWith('e2e/flows/p0/'));
+    // Só entradas com orçamento positivo: zerar a dívida de um arquivo (remover
+    // o último skip e baixar o orçamento para 0) é o caminho desejado e deixa a
+    // entrada em BASELINE_BY_FILE como catraca permanente — a lista medida, que
+    // só conta arquivo com skip, não teria como incluí-la.
+    const orcados = Object.entries(BASELINE_BY_FILE)
+      .filter(([f, n]) => f.startsWith('e2e/flows/p0/') && (n as number) > 0)
+      .map(([f]) => f);
     const medidos = (files('e2e/flows/p0') as string[])
       .map((f: string) => f.split('\\').join('/'))
       .filter((f: string) => findSkips(readFileSync(f, 'utf8')).length > 0);
