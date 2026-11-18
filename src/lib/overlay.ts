@@ -32,14 +32,26 @@ export function hasOpenOverlay(): boolean {
   return false;
 }
 
+// Marca gravada no evento sintético. O Escape do descarte de overlay chega
+// ao document, onde atalhos globais também escutam: sem a marca, um atalho
+// destrutivo (ex.: limpar formulário do gerador de mockup) rodaria junto.
+const OVERLAY_DISMISS_FLAG = '__overlayDismiss';
+
+/** O keydown veio do descarte de overlay, não do teclado do usuário? */
+export function isOverlayDismissEvent(event: KeyboardEvent): boolean {
+  return (event as KeyboardEvent & { [OVERLAY_DISMISS_FLAG]?: boolean })[OVERLAY_DISMISS_FLAG] === true;
+}
+
 /**
  * Dispara Escape para que o DismissableLayer do Radix feche o overlay
  * do topo da pilha. Retorna true se havia overlay aberto.
+ * O evento vai marcado: quem tem atalho destrutivo em Escape deve
+ * ignorá-lo com `isOverlayDismissEvent`.
  */
 export function dismissTopmostOverlay(): boolean {
   if (!hasOpenOverlay()) return false;
-  document.dispatchEvent(
-    new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
-  );
+  const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+  Object.defineProperty(event, OVERLAY_DISMISS_FLAG, { value: true });
+  document.dispatchEvent(event);
   return true;
 }

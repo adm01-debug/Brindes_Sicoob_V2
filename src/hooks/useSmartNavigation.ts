@@ -20,6 +20,7 @@ interface BackNavigationDeps {
 async function performBackNavigation(deps: BackNavigationDeps) {
   const { navigate, pathname, fallbackPath, isCriticalPath, force, getPrevious, pop, setDirection } = deps;
   if (!force && isCriticalPath) {
+    trackUx('guard.shown');
     const confirmed = await askConfirm({
       title: 'Sair sem salvar?',
       description: 'Você tem alterações não salvas nesta tela.',
@@ -34,6 +35,8 @@ async function performBackNavigation(deps: BackNavigationDeps) {
     trackUx('guard.confirm');
   }
 
+  // nav.back conta retorno efetivo: só depois de passar pela confirmação.
+  trackUx('nav.back');
   Haptics.impactLight();
   setDirection('backward');
   const previous = getPrevious();
@@ -117,7 +120,6 @@ export function useSmartNavigation() {
       return;
     }
 
-    trackUx('nav.back');
     void performBackNavigation({
       navigate,
       pathname: location.pathname,

@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { type ReactNode } from 'react';
 import { act, render, renderHook, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
@@ -105,5 +107,26 @@ describe('useScrollRestoration', () => {
     document.body.removeChild(container);
     // o primeiro mount é PUSH — apenas registra, sem restaurar para si mesmo
     expect(container.scrollTop).toBe(320);
+  });
+});
+
+// Contrato de integração: o hook só restaura contêiner marcado com
+// `data-scroll-restore`. Sem marca nas listagens reais, a restauração
+// interna não tem consumidor e a funcionalidade fica pela metade.
+describe('useScrollRestoration — listagens reais marcadas', () => {
+  const ALVOS: Array<[string, string]> = [
+    ['src/components/catalog/CatalogContent.tsx', 'catalogo-lista'],
+    ['src/components/catalog/CatalogContent.tsx', 'catalogo-tabela'],
+    ['src/components/products/VirtualizedProductGrid.tsx', 'grade-produtos'],
+  ];
+
+  it.each(ALVOS)('%s marca o contêiner rolável como "%s"', (arquivo, id) => {
+    const fonte = readFileSync(resolve(process.cwd(), arquivo), 'utf-8');
+    expect(fonte).toContain(`data-scroll-restore="${id}"`);
+  });
+
+  it('cada identificador de restauração é único', () => {
+    const ids = ALVOS.map(([, id]) => id);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 });

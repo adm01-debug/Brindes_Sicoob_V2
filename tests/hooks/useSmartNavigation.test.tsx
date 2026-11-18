@@ -8,12 +8,13 @@
  * data router.
  */
 import type { ReactNode } from 'react';
-import { act, renderHook } from '@testing-library/react';
+import { act, render, renderHook } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { useSmartNavigation } from '@/hooks/useSmartNavigation';
 import { useConfirmDialogStore } from '@/stores/useConfirmDialogStore';
 import { useNavigationStore } from '@/stores/useNavigationStore';
+import { getUxMetrics } from '@/lib/uxMetrics';
 
 function setup(initialPath: string) {
   const wrapper = ({ children }: { children: ReactNode }) => (
@@ -117,6 +118,27 @@ describe('useSmartNavigation.goBack', () => {
     expect(locationRef.current).toBe('/');
   });
 
+  it('cancelar a saída não conta como retorno em nav.back', async () => {
+    // nav.back significa "voltar executado de fato". Contá-lo antes da
+    // confirmação inflava o indicador a cada "Continuar aqui".
+    const antes = getUxMetrics();
+    const { result, locationRef } = setup('/simulador');
+
+    act(() => result.current.goBack());
+    await answerConfirm(false);
+    expect(locationRef.current).toBe('/simulador');
+
+    const depoisDoCancelamento = getUxMetrics();
+    expect(depoisDoCancelamento['nav.back'] ?? 0).toBe(antes['nav.back'] ?? 0);
+    expect(depoisDoCancelamento['guard.shown'] ?? 0).toBe((antes['guard.shown'] ?? 0) + 1);
+    expect(depoisDoCancelamento['guard.cancel'] ?? 0).toBe((antes['guard.cancel'] ?? 0) + 1);
+
+    act(() => result.current.goBack());
+    await answerConfirm(true);
+    expect(locationRef.current).toBe('/');
+    expect(getUxMetrics()['nav.back'] ?? 0).toBe((antes['nav.back'] ?? 0) + 1);
+  });
+
   it('force=true ignora overlay e confirmação', async () => {
     openRoleOverlay('dialog');
     const { result, locationRef } = setup('/simulador');
@@ -128,19 +150,38 @@ describe('useSmartNavigation.goBack', () => {
     expect(locationRef.current).toBe('/');
   });
 
-  it('smart-back com duas instâncias montadas volta um passo, não dois', async () => {
-    // BackButton, Breadcrumbs e useSwipeBack instanciam o hook ao mesmo tempo:
-    // cada um registrava o seu listener e um único atalho voltava N passos.
-    const primeira = setup('/pedidos/123/itens');
-    const segunda = setup('/pedidos/123/itens');
+  it('smart-back com três instâncias no MESMO histórico volta exatamente um passo', async () => {
+    // BackButton, Breadcrumbs e useSwipeBack instanciam o hook ao mesmo tempo
+    // na mesma página: cada um registrava o seu listener e um único atalho
+    // voltava N passos. O teste precisa de UM router com várias entradas —
+    // routers separados nunca mostrariam o salto de N passos.
+    const api: { goForward: (path: string) => void } = { goForward: () => {} };
+
+    function TresConsumidores() {
+      useSmartNavigation();
+      useSmartNavigation();
+      api.goForward = useSmartNavigation().goForward;
+      return <span data-testid="rota">{useLocation().pathname}</span>;
+    }
+
+    const { getByTestId, unmount } = render(
+      <MemoryRouter initialEntries={['/pedidos']}>
+        <TresConsumidores />
+      </MemoryRouter>,
+    );
+
+    // Histórico real com 3 entradas: /pedidos → /pedidos/123 → /pedidos/123/itens
+    await act(async () => { api.goForward('/pedidos/123'); await Promise.resolve(); });
+    await act(async () => { api.goForward('/pedidos/123/itens'); await Promise.resolve(); });
+    expect(getByTestId('rota').textContent).toBe('/pedidos/123/itens');
 
     await act(async () => {
       window.dispatchEvent(new CustomEvent('smart-back'));
       await Promise.resolve();
     });
 
-    expect(segunda.locationRef.current).toBe('/pedidos/123');
-    primeira.unmount();
-    segunda.unmount();
+    // Um passo. Com os três listeners disparando seriam três: '/pedidos'.
+    expect(getByTestId('rota').textContent).toBe('/pedidos/123');
+    unmount();
   });
 });
