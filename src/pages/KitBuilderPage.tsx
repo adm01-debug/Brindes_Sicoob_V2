@@ -182,7 +182,7 @@ export default function KitBuilderPage() {
 
   const {
     lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, lastSaveConflict,
-    retry: retryAutoSave, syncPersistedVersion,
+    retry: retryAutoSave, syncPersistedVersion, flushPending: flushAutoSave,
   } = useKitAutoSave(
     kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id), isHydrated, loadedUpdatedAt,
   );
@@ -287,7 +287,11 @@ export default function KitBuilderPage() {
         await saveAsTemplate({ kitState, templateId: templateIdParam });
         return;
       }
-      const editingId = currentKitId || autoSavedKitId || undefined;
+      // Espera o salvamento automático em voo antes de decidir entre criar e
+      // atualizar. Sem isto, clicar em "Salvar" durante o INSERT de um kit
+      // novo dispara um segundo INSERT: dois kits iguais na lista.
+      const idDoAutosave = await flushAutoSave();
+      const editingId = currentKitId || idDoAutosave || autoSavedKitId || undefined;
       if (!await confirmNewKitSave(editingId)) return;
       const result = await saveKit(kitState, kitQuantity, editingId);
       if (result && 'id' in result) {
