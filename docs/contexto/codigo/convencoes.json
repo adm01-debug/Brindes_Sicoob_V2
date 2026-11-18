@@ -1,0 +1,87 @@
+{
+ "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
+ "format_version": 2,
+ "onde_ficam": {
+  "telas": [
+   "src/pages (115)"
+  ],
+  "componentes": [
+   "src/components (998)",
+   "src/pages (162)",
+   "src/contexts (9)"
+  ],
+  "hooks": [
+   "src/hooks (282)",
+   "src/components (66)",
+   "src/pages (22)"
+  ],
+  "servicos_logica": [
+   "src/lib (161)",
+   "src/utils (37)",
+   "src/services (22)"
+  ],
+  "testes": [
+   "tests/ (557)",
+   "e2e/ (149)",
+   "outro (51)"
+  ],
+  "edge_functions": "supabase/functions",
+  "migrations": "supabase/migrations",
+  "scripts": [
+   "scripts/revisao (14)",
+   "scripts/rules (10)",
+   "scripts/db (9)"
+  ],
+  "docs": [
+   "docs (66)",
+   "(raiz) (11)",
+   ".github (2)"
+  ]
+ },
+ "nomenclatura": {
+  "componentes": "PascalCase (96%)",
+  "hooks": "use + PascalCase",
+  "servicos": "kebab-case (49%)",
+  "edge_functions": "kebab-case (100%)",
+  "tabelas": "snake_case (92%)"
+ },
+ "barrels_index": 29,
+ "extensao_componentes": [
+  ".tsx (1172)"
+ ],
+ "alias_imports": {
+  "src/hooks/mockup/": {},
+  "src/pages/sicoob/orders/": {},
+  "(raiz)": {
+   "@/": "src/",
+   "~/": "src/"
+  }
+ },
+ "commits": {
+  "convencao": "conventional commits (observado)",
+  "exemplos": [
+   "fix(auth): logout apaga o historico de navegacao do vendedor anterior (#312)",
+   "feat(edge): recupera módulos das PRs #119/#178/#179 e migra os 9 consumidores que a nova política quebraria (#309)",
+   "feat(ux): confirmação unificada substitui os 19 diálogos nativos do navegador (#306)",
+   "fix(kit): destaque de kit passa a usar a RPC atomica no banco (#307)",
+   "fix(db): recupera 8 migrations perdidas e destrava o aplicador autorizado (#305)"
+  ]
+ },
+ "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",
+ "codeowners": ".github/CODEOWNERS",
+ "contributing": "CONTRIBUTING.md",
+ "instrucoes_agentes": [
+  "AGENTS.md",
+  "CLAUDE.md"
+ ],
+ "typescript": {
+  "strict": true,
+  "noImplicitAny": null,
+  "tsconfigs": [
+   "tsconfig.app.json",
+   "tsconfig.eslint.json",
+   "tsconfig.json",
+   "tsconfig.node.json"
+  ]
+ }
+}

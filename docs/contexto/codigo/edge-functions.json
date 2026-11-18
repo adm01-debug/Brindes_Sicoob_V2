@@ -1,0 +1,3684 @@
+{
+ "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
+ "format_version": 2,
+ "pasta": "supabase/functions",
+ "total": 106,
+ "verify_jwt_false": [
+  "cleanup-notifications",
+  "collections-watcher",
+  "comparison-price-watcher",
+  "connections-health-check",
+  "expert-chat",
+  "external-db-bridge",
+  "favorites-watcher",
+  "health-check",
+  "migrate-helper",
+  "monthly-health-report",
+  "ownership-audit",
+  "process-batch-export",
+  "process-queue",
+  "process-scheduled-reports",
+  "quote-approval",
+  "quote-followup-reminders",
+  "send-digest",
+  "send-notification",
+  "send-scheduled-reports",
+  "sicoob-approval-notifications",
+  "webhook-dispatcher"
+ ],
+ "shared": [
+  "supabase/functions/_shared/ai-usage-stream.test.ts",
+  "supabase/functions/_shared/ai-usage.ts",
+  "supabase/functions/_shared/approval-delivery.ts",
+  "supabase/functions/_shared/assistant-context.ts",
+  "supabase/functions/_shared/audit-log.ts",
+  "supabase/functions/_shared/auth.ts",
+  "supabase/functions/_shared/authorize.ts",
+  "supabase/functions/_shared/authorize_test.ts",
+  "supabase/functions/_shared/background-task.test.ts",
+  "supabase/functions/_shared/background-task.ts",
+  "supabase/functions/_shared/bot-protection.ts",
+  "supabase/functions/_shared/catalog-client.ts",
+  "supabase/functions/_shared/catalog-redaction.ts",
+  "supabase/functions/_shared/circuit-breaker.ts",
+  "supabase/functions/_shared/connection-test-runner.test.ts",
+  "supabase/functions/_shared/connection-test-runner.ts",
+  "supabase/functions/_shared/connection-timeouts.ts",
+  "supabase/functions/_shared/cors.ts",
+  "supabase/functions/_shared/credentials.test.ts",
+  "supabase/functions/_shared/credentials.ts",
+  "supabase/functions/_shared/edge-authz-manifest.ts",
+  "supabase/functions/_shared/expert-chat-contract.ts",
+  "supabase/functions/_shared/external-db-aliases.ts",
+  "supabase/functions/_shared/external-db-cache.ts",
+  "supabase/functions/_shared/external-db-config.ts",
+  "supabase/functions/_shared/external-db-telemetry.test.ts",
+  "supabase/functions/_shared/external-db-telemetry.ts",
+  "supabase/functions/_shared/external-fetch.ts",
+  "supabase/functions/_shared/external-product-contract.test.ts",
+  "supabase/functions/_shared/external-product-contract.ts",
+  "supabase/functions/_shared/external-read-only.ts",
+  "supabase/functions/_shared/ilike-pattern.ts",
+  "supabase/functions/_shared/internal-service-auth.test.ts",
+  "supabase/functions/_shared/internal-service-auth.ts",
+  "supabase/functions/_shared/jwt-structure.ts",
+  "supabase/functions/_shared/mcp-scopes.ts",
+  "supabase/functions/_shared/mcp-violations.ts",
+  "supabase/functions/_shared/pgrest-filter.test.ts",
+  "supabase/functions/_shared/pgrest-filter.ts",
+  "supabase/functions/_shared/pii-redaction.test.ts",
+  "supabase/functions/_shared/pii-redaction.ts",
+  "supabase/functions/_shared/portal-access-policy.ts",
+  "supabase/functions/_shared/prompt-safety.test.ts",
+  "supabase/functions/_shared/prompt-safety.ts",
+  "supabase/functions/_shared/rate-limiter.ts",
+  "supabase/functions/_shared/read-limited-body.test.ts",
+  "supabase/functions/_shared/read-limited-body.ts",
+  "supabase/functions/_shared/request-id.ts",
+  "supabase/functions/_shared/retry-backoff.test.ts",
+  "supabase/functions/_shared/retry-backoff.ts",
+  "supabase/functions/_shared/scheduled-report-email.test.ts",
+  "supabase/functions/_shared/scheduled-report-email.ts",
+  "supabase/functions/_shared/step-up-otp-delivery.ts",
+  "supabase/functions/_shared/structured-logger.ts",
+  "supabase/functions/_shared/supabase-client-adapter.ts",
+  "supabase/functions/_shared/tests/integration.test.ts",
+  "supabase/functions/_shared/validate.ts",
+  "supabase/functions/_shared/webhook-dispatcher-contract.ts",
+  "supabase/functions/_shared/zod-validate.ts"
+ ],
+ "edges": [
+  {
+   "nome": "admin-audit-hook",
+   "entrada": "supabase/functions/admin-audit-hook/index.ts",
+   "arquivos": 1,
+   "linhas": 110,
+   "verify_jwt": true,
+   "metodos": [],
+   "tabelas": [
+    "admin_audit_log"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/utils/adminAudit.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "ai-recommendations",
+   "entrada": "supabase/functions/ai-recommendations/index.ts",
+   "arquivos": 1,
+   "linhas": 255,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [
+    "LOVABLE_API_KEY"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "ai-usage.ts",
+    "auth.ts",
+    "bot-protection.ts",
+    "cors.ts",
+    "rate-limiter.ts",
+    "zod-validate.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "analyze-logo-colors",
+   "entrada": "supabase/functions/analyze-logo-colors/index.ts",
+   "arquivos": 1,
+   "linhas": 180,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [
+    "LOVABLE_API_KEY"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "ai-usage.ts",
+    "auth.ts",
+    "bot-protection.ts",
+    "cors.ts",
+    "zod-validate.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/hooks/useLogoColorAnalysis.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "auth-integrity-check",
+   "entrada": "supabase/functions/auth-integrity-check/index.ts",
+   "arquivos": 1,
+   "linhas": 65,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [
+    "get_test_auth_integrity"
+   ],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "cors.ts",
+    "request-id.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/auth/QuickTestLogin.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "bi-copilot",
+   "entrada": "supabase/functions/bi-copilot/index.ts",
+   "arquivos": 1,
+   "linhas": 137,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [
+    "LOVABLE_API_KEY"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [
+    "ai.gateway.lovable.dev"
+   ],
+   "usa_shared": [
+    "auth.ts",
+    "cors.ts",
+    "rate-limiter.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/bi/BIAiCopilot.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "bi-share-dossier",
+   "entrada": "supabase/functions/bi-share-dossier/index.ts",
+   "arquivos": 2,
+   "linhas": 208,
+   "verify_jwt": true,
+   "metodos": [
+    "GET",
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [
+    "BI_SHARE_SECRET",
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/pages/PublicDossierPage.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "bitrix-sync",
+   "entrada": "supabase/functions/bitrix-sync/index.ts",
+   "arquivos": 1,
+   "linhas": 655,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "bitrix_clients",
+    "bitrix_deals",
+    "bitrix_sync_logs"
+   ],
+   "rpcs": [],
+   "env": [
+    "BITRIX24_WEBHOOK_URL",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "cors.ts",
+    "external-fetch.ts",
+    "request-id.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "block-ip-temporarily",
+   "entrada": "supabase/functions/block-ip-temporarily/index.ts",
+   "arquivos": 1,
+   "linhas": 94,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "admin_audit_log",
+    "ip_access_control",
+    "user_roles"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/admin/security/BlockIpButton.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "categories-api",
+   "entrada": "supabase/functions/categories-api/index.ts",
+   "arquivos": 1,
+   "linhas": 234,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "categories",
+    "categories_tree_visual",
+    "product_categories",
+    "product_category_assignments",
+    "products"
+   ],
+   "rpcs": [],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "bot-protection.ts",
+    "catalog-client.ts",
+    "cors.ts",
+    "zod-validate.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/hooks/useProductsByCategory.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "cleanup-notifications",
+   "entrada": "supabase/functions/cleanup-notifications/index.ts",
+   "arquivos": 1,
+   "linhas": 57,
+   "verify_jwt": false,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [],
+   "rpcs": [
+    "cleanup_old_notifications"
+   ],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "internal-service-auth.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "cleanup-novelties",
+   "entrada": "supabase/functions/cleanup-novelties/index.ts",
+   "arquivos": 1,
+   "linhas": 9,
+   "verify_jwt": true,
+   "metodos": [],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "cnpj-lookup",
+   "entrada": "supabase/functions/cnpj-lookup/index.ts",
+   "arquivos": 1,
+   "linhas": 136,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [
+    "CNPJA_API_KEY",
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [
+    "api.cnpja.com"
+   ],
+   "usa_shared": [
+    "cors.ts",
+    "external-fetch.ts",
+    "rate-limiter.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/utils/cnpj-lookup.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "collections-public-react",
+   "entrada": "supabase/functions/collections-public-react/index.ts",
+   "arquivos": 1,
+   "linhas": 132,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "bot_detection_log",
+    "collection_item_reactions",
+    "collection_items",
+    "collections"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [],
+   "chamada_pelo_front": [
+    "src/pages/PublicCollectionPage.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "collections-watcher",
+   "entrada": "supabase/functions/collections-watcher/index.ts",
+   "arquivos": 1,
+   "linhas": 143,
+   "verify_jwt": false,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "collection_items",
+    "collections",
+    "products",
+    "workspace_notifications"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts",
+    "internal-service-auth.ts",
+    "supabase-client-adapter.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "commemorative-dates",
+   "entrada": "supabase/functions/commemorative-dates/index.ts",
+   "arquivos": 1,
+   "linhas": 110,
+   "verify_jwt": true,
+   "metodos": [],
+   "tabelas": [
+    "v_commemorative_dates_with_colors"
+   ],
+   "rpcs": [
+    "get_active_commemorative_dates",
+    "get_upcoming_commemorative_dates",
+    "get_variants_for_commemorative_date"
+   ],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "catalog-client.ts",
+    "zod-validate.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "comparison-ai-advisor",
+   "entrada": "supabase/functions/comparison-ai-advisor/index.ts",
+   "arquivos": 1,
+   "linhas": 161,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [
+    "LOVABLE_API_KEY"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [
+    "ai.gateway.lovable.dev"
+   ],
+   "usa_shared": [
+    "auth.ts",
+    "cors.ts",
+    "rate-limiter.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/compare/AIComparisonAdvisor.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "comparison-price-watcher",
+   "entrada": "supabase/functions/comparison-price-watcher/index.ts",
+   "arquivos": 1,
+   "linhas": 122,
+   "verify_jwt": false,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "price_history",
+    "user_comparisons",
+    "workspace_notifications"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts",
+    "internal-service-auth.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "comparisons-public-react",
+   "entrada": "supabase/functions/comparisons-public-react/index.ts",
+   "arquivos": 1,
+   "linhas": 122,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "bot_detection_log",
+    "comparison_reactions",
+    "user_comparisons"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [],
+   "chamada_pelo_front": [
+    "src/pages/PublicComparisonPage.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "connection-tester",
+   "entrada": "supabase/functions/connection-tester/index.ts",
+   "arquivos": 1,
+   "linhas": 332,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "connection_test_history",
+    "external_connections",
+    "user_roles"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "connection-test-runner.ts",
+    "cors.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/hooks/useConnectionTestDetails.ts",
+    "src/hooks/useConnectionTestHistory.ts",
+    "src/hooks/useConnectionTester.ts",
+    "src/hooks/useConsecutiveFailures.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "connections-auto-test",
+   "entrada": "supabase/functions/connections-auto-test/index.ts",
+   "arquivos": 1,
+   "linhas": 288,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "external_connections"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "connection-test-runner.ts",
+    "connection-timeouts.ts",
+    "cors.ts",
+    "internal-service-auth.ts",
+    "supabase-client-adapter.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": true,
+   "orfa": false,
+   "testes": 4
+  },
+  {
+   "nome": "connections-health-check",
+   "entrada": "supabase/functions/connections-health-check/index.ts",
+   "arquivos": 2,
+   "linhas": 328,
+   "verify_jwt": false,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "connection_test_history",
+    "external_connections",
+    "outbound_webhooks",
+    "secret_rotation_log",
+    "user_roles",
+    "workspace_notifications"
+   ],
+   "rpcs": [
+    "get_connection_failure_window_minutes",
+    "get_connections_auto_test_interval"
+   ],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts",
+    "internal-service-auth.ts",
+    "supabase-client-adapter.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": true,
+   "orfa": false,
+   "testes": 1
+  },
+  {
+   "nome": "connections-hub-audit",
+   "entrada": "supabase/functions/connections-hub-audit/index.ts",
+   "arquivos": 2,
+   "linhas": 281,
+   "verify_jwt": true,
+   "metodos": [],
+   "tabelas": [],
+   "rpcs": [
+    "get_connections_hub_operational_evidence"
+   ],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "cors.ts",
+    "request-id.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/admin/connections/IntegrationsHealthCard.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 1
+  },
+  {
+   "nome": "crm-db-bridge",
+   "entrada": "supabase/functions/crm-db-bridge/index.ts",
+   "arquivos": 2,
+   "linhas": 1309,
+   "verify_jwt": true,
+   "metodos": [
+    "GET",
+    "HEAD",
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "companies",
+    "contact_emails",
+    "contact_phones",
+    "contacts",
+    "profiles",
+    "quotes",
+    "user_roles"
+   ],
+   "rpcs": [],
+   "env": [
+    "LOG_CRM_BRIDGE_VERBOSE",
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "bot-protection.ts",
+    "circuit-breaker.ts",
+    "cors.ts",
+    "credentials.ts",
+    "ilike-pattern.ts",
+    "portal-access-policy.ts",
+    "request-id.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/lib/external-db-prewarm.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 9
+  },
+  {
+   "nome": "detect-new-device",
+   "entrada": "supabase/functions/detect-new-device/index.ts",
+   "arquivos": 1,
+   "linhas": 144,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "device_login_notifications",
+    "user_known_devices",
+    "workspace_notifications"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/hooks/useDeviceDetection.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "dropbox-list",
+   "entrada": "supabase/functions/dropbox-list/index.ts",
+   "arquivos": 1,
+   "linhas": 144,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [
+    "DROPBOX_ACCESS_TOKEN"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [
+    "api.dropboxapi.com",
+    "content.dropboxapi.com"
+   ],
+   "usa_shared": [
+    "cors.ts",
+    "external-fetch.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/hooks/useDropboxFiles.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "e2e-auth-test",
+   "entrada": "supabase/functions/e2e-auth-test/index.ts",
+   "arquivos": 1,
+   "linhas": 50,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "pa_budgets",
+    "postos_atendimento",
+    "profiles"
+   ],
+   "rpcs": [],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "request-id.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "e2e-cleanup",
+   "entrada": "supabase/functions/e2e-cleanup/index.ts",
+   "arquivos": 1,
+   "linhas": 672,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "e2e_cleanup_audit",
+    "quotes",
+    "seller_cart_items",
+    "seller_carts"
+   ],
+   "rpcs": [
+    "e2e_cleanup_check_rate_limit"
+   ],
+   "env": [
+    "E2E_CLEANUP_ALLOWED_EMAILS",
+    "E2E_CLEANUP_RATE_LIMIT_MAX",
+    "E2E_CLEANUP_RATE_LIMIT_WINDOW_SECONDS",
+    "E2E_CLEANUP_TOKEN",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "supabase-client-adapter.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 1
+  },
+  {
+   "nome": "elevenlabs-scribe-token",
+   "entrada": "supabase/functions/elevenlabs-scribe-token/index.ts",
+   "arquivos": 1,
+   "linhas": 74,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [
+    "ELEVENLABS_API_KEY"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [
+    "api.elevenlabs.io"
+   ],
+   "usa_shared": [
+    "auth.ts",
+    "bot-protection.ts",
+    "cors.ts",
+    "external-fetch.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/hooks/voice/scribeTokenCache.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "elevenlabs-tts",
+   "entrada": "supabase/functions/elevenlabs-tts/index.ts",
+   "arquivos": 1,
+   "linhas": 137,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [
+    "ELEVENLABS_API_KEY"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [
+    "api.elevenlabs.io"
+   ],
+   "usa_shared": [
+    "auth.ts",
+    "bot-protection.ts",
+    "cors.ts",
+    "external-fetch.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "error-monitor",
+   "entrada": "supabase/functions/error-monitor/index.ts",
+   "arquivos": 1,
+   "linhas": 89,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "telemetry_query_performance",
+    "user_roles",
+    "workspace_notifications"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "request-id.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "expert-chat",
+   "entrada": "supabase/functions/expert-chat/index.ts",
+   "arquivos": 1,
+   "linhas": 1368,
+   "verify_jwt": false,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "categories",
+    "companies",
+    "customers",
+    "orders",
+    "product_category_assignments",
+    "products",
+    "profiles",
+    "quotes",
+    "sensitive_access_logs",
+    "suppliers"
+   ],
+   "rpcs": [],
+   "env": [
+    "LOVABLE_API_KEY"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "ai-usage.ts",
+    "assistant-context.ts",
+    "auth.ts",
+    "bot-protection.ts",
+    "catalog-client.ts",
+    "cors.ts",
+    "credentials.ts",
+    "expert-chat-contract.ts",
+    "pgrest-filter.ts",
+    "portal-access-policy.ts",
+    "prompt-safety.ts",
+    "rate-limiter.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "external-connections-sync",
+   "entrada": "supabase/functions/external-connections-sync/index.ts",
+   "arquivos": 1,
+   "linhas": 29,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [],
+   "rpcs": [
+    "sync_external_connections_from_credentials"
+   ],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "cors.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/admin/connections/LastSyncRunPanel.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "external-db-bridge",
+   "entrada": "supabase/functions/external-db-bridge/index.ts",
+   "arquivos": 1,
+   "linhas": 1956,
+   "verify_jwt": false,
+   "metodos": [],
+   "tabelas": [
+    "products",
+    "suppliers",
+    "tabela_preco_gravacao_oficial",
+    "tabela_preco_gravacao_oficial_faixa"
+   ],
+   "rpcs": [
+    "get_category_descendants"
+   ],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "catalog-redaction.ts",
+    "circuit-breaker.ts",
+    "cors.ts",
+    "credentials.ts",
+    "external-db-aliases.ts",
+    "external-db-cache.ts",
+    "external-db-config.ts",
+    "external-db-telemetry.ts",
+    "external-product-contract.ts",
+    "external-read-only.ts",
+    "pgrest-filter.ts",
+    "request-id.ts",
+    "retry-backoff.ts",
+    "supabase-client-adapter.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/admin/products/ProductVariationAxesConfig.tsx",
+    "src/components/kit-builder/DiscontinuedItemsAlert.tsx",
+    "src/hooks/stock/stockFetcher.ts",
+    "src/hooks/useCategoriesTree.ts",
+    "src/hooks/useExternalCategoriesQuery.ts",
+    "src/hooks/useExternalSimulator.ts",
+    "src/hooks/useProductSupplierSources.ts",
+    "src/hooks/useProdutoRamoAtividade.ts",
+    "src/hooks/useTechniquePricing.ts",
+    "src/hooks/useTechniquePricingOptions.ts",
+    "src/lib/external-db-prewarm.ts",
+    "src/lib/external-db/health-check.ts",
+    "src/lib/external-rpc.ts",
+    "src/lib/fetch-print-areas.ts",
+    "src/pages/PublicFavoriteListPage.tsx"
+   ],
+   "chamada_por_edges": [
+    "sicoob-kit-quote",
+    "sicoob-reorder"
+   ],
+   "chamada_por_sql_ou_cron": true,
+   "orfa": false,
+   "testes": 7
+  },
+  {
+   "nome": "external-db-inspect",
+   "entrada": "supabase/functions/external-db-inspect/index.ts",
+   "arquivos": 1,
+   "linhas": 153,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "bot-protection.ts",
+    "catalog-client.ts",
+    "cors.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/hooks/useExternalDbInspect.ts",
+    "src/pages/admin/AdminExternalDbPage.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "favorites-public-react",
+   "entrada": "supabase/functions/favorites-public-react/index.ts",
+   "arquivos": 1,
+   "linhas": 142,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "bot_detection_log",
+    "favorite_item_reactions",
+    "favorite_items",
+    "favorite_lists"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [],
+   "chamada_pelo_front": [
+    "src/hooks/useFavoriteReactions.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "favorites-watcher",
+   "entrada": "supabase/functions/favorites-watcher/index.ts",
+   "arquivos": 1,
+   "linhas": 141,
+   "verify_jwt": false,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "favorite_items",
+    "products",
+    "workspace_notifications"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts",
+    "internal-service-auth.ts",
+    "supabase-client-adapter.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "force-global-logout",
+   "entrada": "supabase/functions/force-global-logout/index.ts",
+   "arquivos": 1,
+   "linhas": 109,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "admin_audit_log",
+    "user_roles"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/admin/security/ForceGlobalLogoutDialog.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "full-op-diagnostics",
+   "entrada": "supabase/functions/full-op-diagnostics/index.ts",
+   "arquivos": 1,
+   "linhas": 333,
+   "verify_jwt": true,
+   "metodos": [
+    "POST"
+   ],
+   "tabelas": [
+    "step_up_tokens"
+   ],
+   "rpcs": [
+    "can_grant_mcp_full",
+    "is_dev",
+    "validate_mcp_key"
+   ],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/admin/security/keys/diagnostics/FullOpDiagnosticsPanel.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "generate-ad-image",
+   "entrada": "supabase/functions/generate-ad-image/index.ts",
+   "arquivos": 1,
+   "linhas": 271,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [
+    "LOVABLE_API_KEY"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "ai-usage.ts",
+    "auth.ts",
+    "bot-protection.ts",
+    "cors.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 1
+  },
+  {
+   "nome": "generate-ad-prompt",
+   "entrada": "supabase/functions/generate-ad-prompt/index.ts",
+   "arquivos": 1,
+   "linhas": 208,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [
+    "LOVABLE_API_KEY"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "ai-usage.ts",
+    "auth.ts",
+    "bot-protection.ts",
+    "cors.ts",
+    "zod-validate.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/magic-up/PromptGenerator.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "generate-mockup",
+   "entrada": "supabase/functions/generate-mockup/index.ts",
+   "arquivos": 1,
+   "linhas": 288,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "mockup_prompt_configs"
+   ],
+   "rpcs": [],
+   "env": [
+    "LOVABLE_API_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "ai-usage.ts",
+    "auth.ts",
+    "bot-protection.ts",
+    "cors.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/hooks/mockup/mockupGenerationService.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "generate-mockup-nanobanana",
+   "entrada": "supabase/functions/generate-mockup-nanobanana/index.ts",
+   "arquivos": 1,
+   "linhas": 13,
+   "verify_jwt": true,
+   "metodos": [],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "generate-product-seo",
+   "entrada": "supabase/functions/generate-product-seo/index.ts",
+   "arquivos": 1,
+   "linhas": 163,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [
+    "LOVABLE_API_KEY"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "ai-usage.ts",
+    "auth.ts",
+    "bot-protection.ts",
+    "cors.ts",
+    "zod-validate.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/hooks/useProductSeoAI.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "get-app-logs",
+   "entrada": "supabase/functions/get-app-logs/index.ts",
+   "arquivos": 1,
+   "linhas": 69,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "query_telemetry"
+   ],
+   "rpcs": [],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "cors.ts",
+    "request-id.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/admin/telemetry/AppLogsTable.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "get-visitor-info",
+   "entrada": "supabase/functions/get-visitor-info/index.ts",
+   "arquivos": 1,
+   "linhas": 45,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [
+    "ip-api.com"
+   ],
+   "usa_shared": [
+    "cors.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "github-credentials-test",
+   "entrada": "supabase/functions/github-credentials-test/index.ts",
+   "arquivos": 1,
+   "linhas": 297,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "admin_audit_log",
+    "integration_credentials",
+    "user_roles"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts",
+    "supabase-client-adapter.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/admin/connections/GitHubCredentialsTester.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "github-fix-config",
+   "entrada": "supabase/functions/github-fix-config/index.ts",
+   "arquivos": 1,
+   "linhas": 171,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [
+    "GITHUB_PAT"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "cors.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "health-check",
+   "entrada": "supabase/functions/health-check/index.ts",
+   "arquivos": 2,
+   "linhas": 31,
+   "verify_jwt": false,
+   "metodos": [
+    "GET",
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 1
+  },
+  {
+   "nome": "image-proxy",
+   "entrada": "supabase/functions/image-proxy/index.ts",
+   "arquivos": 1,
+   "linhas": 125,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "bot-protection.ts",
+    "cors.ts",
+    "external-fetch.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/utils/imageProxy.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "kit-ai-builder",
+   "entrada": "supabase/functions/kit-ai-builder/index.ts",
+   "arquivos": 1,
+   "linhas": 135,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [
+    "LOVABLE_API_KEY"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [
+    "ai.gateway.lovable.dev"
+   ],
+   "usa_shared": [
+    "cors.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/kit-builder/KitAIPromptDialog.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "kit-identity-suggest",
+   "entrada": "supabase/functions/kit-identity-suggest/index.ts",
+   "arquivos": 1,
+   "linhas": 142,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [
+    "LOVABLE_API_KEY"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [
+    "ai.gateway.lovable.dev"
+   ],
+   "usa_shared": [
+    "bot-protection.ts",
+    "cors.ts",
+    "zod-validate.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/hooks/useKitIdentitySuggestion.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "kit-public-view",
+   "entrada": "supabase/functions/kit-public-view/index.ts",
+   "arquivos": 1,
+   "linhas": 223,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS",
+    "POST",
+    "PUT"
+   ],
+   "tabelas": [
+    "custom_kits",
+    "kit_share_tokens",
+    "organization_members",
+    "organizations",
+    "profiles"
+   ],
+   "rpcs": [
+    "record_public_token_failure"
+   ],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "bot-protection.ts",
+    "zod-validate.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/pages/PublicKitViewPage.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "log-login-attempt",
+   "entrada": "supabase/functions/log-login-attempt/index.ts",
+   "arquivos": 1,
+   "linhas": 93,
+   "verify_jwt": true,
+   "metodos": [],
+   "tabelas": [
+    "login_attempts"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts",
+    "rate-limiter.ts",
+    "request-id.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/contexts/AuthContext.tsx",
+    "src/hooks/useIPValidation.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "magic-up-score",
+   "entrada": "supabase/functions/magic-up-score/index.ts",
+   "arquivos": 1,
+   "linhas": 120,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [
+    "LOVABLE_API_KEY"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "ai-usage.ts",
+    "auth.ts",
+    "bot-protection.ts",
+    "cors.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "manage-users",
+   "entrada": "supabase/functions/manage-users/index.ts",
+   "arquivos": 1,
+   "linhas": 266,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "admin_audit_log",
+    "profiles",
+    "user_roles"
+   ],
+   "rpcs": [
+    "is_supervisor_or_above"
+   ],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts",
+    "supabase-client-adapter.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/admin/users/PromotionDialog.tsx",
+    "src/services/admin/UserService.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "market-intelligence-insights",
+   "entrada": "supabase/functions/market-intelligence-insights/index.ts",
+   "arquivos": 1,
+   "linhas": 413,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "ai_insights_cache",
+    "ai_usage_events",
+    "order_items",
+    "orders",
+    "quotes"
+   ],
+   "rpcs": [
+    "check_ai_quota"
+   ],
+   "env": [
+    "LOVABLE_API_KEY"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [
+    "ai.gateway.lovable.dev"
+   ],
+   "usa_shared": [
+    "auth.ts",
+    "cors.ts",
+    "supabase-client-adapter.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/intelligence/MarketIntelligenceInsightsCard.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "materials-api",
+   "entrada": "supabase/functions/materials-api/index.ts",
+   "arquivos": 1,
+   "linhas": 408,
+   "verify_jwt": true,
+   "metodos": [],
+   "tabelas": [
+    "material_groups",
+    "material_types",
+    "mv_material_group_stats",
+    "product_materials"
+   ],
+   "rpcs": [
+    "get_all_material_groups_safe",
+    "get_all_material_types_safe",
+    "get_material_types_by_group_slug",
+    "get_materials_complete_safe"
+   ],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "catalog-client.ts",
+    "zod-validate.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "mcp-keys-issue",
+   "entrada": "supabase/functions/mcp-keys-issue/index.ts",
+   "arquivos": 1,
+   "linhas": 403,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "mcp_api_keys"
+   ],
+   "rpcs": [
+    "can_grant_mcp_full",
+    "consume_step_up_token",
+    "is_dev",
+    "log_full_scope_grant"
+   ],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "audit-log.ts",
+    "background-task.ts",
+    "cors.ts",
+    "mcp-scopes.ts",
+    "mcp-violations.ts",
+    "request-id.ts",
+    "supabase-client-adapter.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 1
+  },
+  {
+   "nome": "mcp-keys-revoke",
+   "entrada": "supabase/functions/mcp-keys-revoke/index.ts",
+   "arquivos": 1,
+   "linhas": 251,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "mcp_api_keys"
+   ],
+   "rpcs": [
+    "consume_step_up_token",
+    "is_dev"
+   ],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "audit-log.ts",
+    "background-task.ts",
+    "cors.ts",
+    "mcp-violations.ts",
+    "request-id.ts",
+    "structured-logger.ts",
+    "supabase-client-adapter.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/admin/connections/McpTab.tsx",
+    "src/components/admin/security/keys/useMcpKeys.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "mcp-keys-rotate",
+   "entrada": "supabase/functions/mcp-keys-rotate/index.ts",
+   "arquivos": 1,
+   "linhas": 338,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "mcp_api_keys"
+   ],
+   "rpcs": [
+    "can_grant_mcp_full",
+    "consume_step_up_token",
+    "is_dev",
+    "log_full_scope_grant"
+   ],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "audit-log.ts",
+    "background-task.ts",
+    "cors.ts",
+    "mcp-scopes.ts",
+    "mcp-violations.ts",
+    "request-id.ts",
+    "supabase-client-adapter.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "mcp-keys-update",
+   "entrada": "supabase/functions/mcp-keys-update/index.ts",
+   "arquivos": 1,
+   "linhas": 340,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "mcp_api_keys"
+   ],
+   "rpcs": [
+    "can_grant_mcp_full",
+    "consume_step_up_token",
+    "is_dev",
+    "log_full_scope_grant"
+   ],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "audit-log.ts",
+    "background-task.ts",
+    "cors.ts",
+    "mcp-scopes.ts",
+    "mcp-violations.ts",
+    "request-id.ts",
+    "supabase-client-adapter.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/admin/security/keys/UpdateMcpKeyDialog.tsx",
+    "src/pages/admin/DevChallengeExamplesPage.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "mcp-server",
+   "entrada": "supabase/functions/mcp-server/index.ts",
+   "arquivos": 1,
+   "linhas": 505,
+   "verify_jwt": true,
+   "metodos": [],
+   "tabelas": [
+    "admin_audit_log",
+    "orders",
+    "quotes"
+   ],
+   "rpcs": [
+    "validate_mcp_key"
+   ],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "audit-log.ts",
+    "cors.ts",
+    "request-id.ts",
+    "supabase-client-adapter.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "migrate-helper",
+   "entrada": "supabase/functions/migrate-helper/index.ts",
+   "arquivos": 1,
+   "linhas": 7,
+   "verify_jwt": false,
+   "metodos": [],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "migration-health-check",
+   "entrada": "supabase/functions/migration-health-check/index.ts",
+   "arquivos": 2,
+   "linhas": 45,
+   "verify_jwt": true,
+   "metodos": [],
+   "tabelas": [],
+   "rpcs": [
+    "check_rls_enabled",
+    "get_enum_values"
+   ],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "cors.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 1
+  },
+  {
+   "nome": "monthly-health-report",
+   "entrada": "supabase/functions/monthly-health-report/index.ts",
+   "arquivos": 1,
+   "linhas": 86,
+   "verify_jwt": false,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "sicoob_orders",
+    "telemetry_query_performance"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "internal-service-auth.ts",
+    "request-id.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "ownership-audit",
+   "entrada": "supabase/functions/ownership-audit/index.ts",
+   "arquivos": 1,
+   "linhas": 100,
+   "verify_jwt": false,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "ownership_audit_reports"
+   ],
+   "rpcs": [
+    "audit_ownership_orphans"
+   ],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts",
+    "internal-service-auth.ts",
+    "supabase-client-adapter.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/pages/admin/OwnershipAuditAdminPage.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "ownership-repair",
+   "entrada": "supabase/functions/ownership-repair/index.ts",
+   "arquivos": 1,
+   "linhas": 91,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "ownership_repair_logs",
+    "user_roles"
+   ],
+   "rpcs": [
+    "repair_ownership_orphans"
+   ],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "cors.ts",
+    "supabase-client-adapter.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/admin/OwnershipRepairDialog.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "process-batch-export",
+   "entrada": "supabase/functions/process-batch-export/index.ts",
+   "arquivos": 1,
+   "linhas": 130,
+   "verify_jwt": false,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "export_audit_log",
+    "export_jobs",
+    "exports",
+    "quotes",
+    "workspace_notifications"
+   ],
+   "rpcs": [
+    "claim_sicoob_export_jobs",
+    "enqueue_due_sicoob_scheduled_exports",
+    "sicoob_export_orders_for_actor"
+   ],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [
+    "exports"
+   ],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "internal-service-auth.ts",
+    "request-id.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": true,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "process-queue",
+   "entrada": "supabase/functions/process-queue/index.ts",
+   "arquivos": 1,
+   "linhas": 82,
+   "verify_jwt": false,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "workspace_notifications"
+   ],
+   "rpcs": [
+    "cleanup_old_notifications"
+   ],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "internal-service-auth.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "process-scheduled-reports",
+   "entrada": "supabase/functions/process-scheduled-reports/index.ts",
+   "arquivos": 2,
+   "linhas": 226,
+   "verify_jwt": false,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "orders",
+    "quotes",
+    "scheduled_reports"
+   ],
+   "rpcs": [],
+   "env": [
+    "RESEND_API_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "internal-service-auth.ts",
+    "scheduled-report-email.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "product-webhook",
+   "entrada": "supabase/functions/product-webhook/index.ts",
+   "arquivos": 1,
+   "linhas": 7,
+   "verify_jwt": true,
+   "metodos": [],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 1
+  },
+  {
+   "nome": "qa-block-monitor",
+   "entrada": "supabase/functions/qa-block-monitor/index.ts",
+   "arquivos": 1,
+   "linhas": 72,
+   "verify_jwt": true,
+   "metodos": [],
+   "tabelas": [
+    "query_telemetry"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "request-id.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "quote-approval",
+   "entrada": "supabase/functions/quote-approval/index.ts",
+   "arquivos": 1,
+   "linhas": 89,
+   "verify_jwt": false,
+   "metodos": [
+    "POST"
+   ],
+   "tabelas": [],
+   "rpcs": [
+    "check_rate_limit",
+    "get_public_quote_approval",
+    "submit_signed_quote_response"
+   ],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts",
+    "rate-limiter.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/hooks/useQuoteApprovalToken.ts",
+    "src/pages/QuoteApprovalPage.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 1
+  },
+  {
+   "nome": "quote-followup-reminders",
+   "entrada": "supabase/functions/quote-followup-reminders/index.ts",
+   "arquivos": 1,
+   "linhas": 103,
+   "verify_jwt": false,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "follow_up_reminders",
+    "quote_approval_tokens",
+    "quotes"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "internal-service-auth.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "quote-public-view",
+   "entrada": "supabase/functions/quote-public-view/index.ts",
+   "arquivos": 1,
+   "linhas": 28,
+   "verify_jwt": true,
+   "metodos": [],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/pages/public-approval/usePublicQuoteApproval.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "quote-sync",
+   "entrada": "supabase/functions/quote-sync/index.ts",
+   "arquivos": 1,
+   "linhas": 352,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "profiles",
+    "quote_items",
+    "quotes"
+   ],
+   "rpcs": [],
+   "env": [
+    "N8N_QUOTE_WEBHOOK_URL",
+    "QUOTE_SYNC_API_KEY",
+    "SALESPRO_WEBHOOK_URL",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts",
+    "credentials.ts",
+    "request-id.ts",
+    "structured-logger.ts",
+    "zod-validate.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "rate-limit-check",
+   "entrada": "supabase/functions/rate-limit-check/index.ts",
+   "arquivos": 1,
+   "linhas": 126,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "rls-audit",
+   "entrada": "supabase/functions/rls-audit/index.ts",
+   "arquivos": 1,
+   "linhas": 190,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "profiles",
+    "quotes"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "cors.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "rls-integration-tests",
+   "entrada": "supabase/functions/rls-integration-tests/index.ts",
+   "arquivos": 1,
+   "linhas": 322,
+   "verify_jwt": true,
+   "metodos": [],
+   "tabelas": [
+    "user_roles"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "rls-matrix-export",
+   "entrada": "supabase/functions/rls-matrix-export/index.ts",
+   "arquivos": 1,
+   "linhas": 242,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [
+    "audit_rls_matrix",
+    "has_role"
+   ],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts",
+    "supabase-client-adapter.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "secrets-manager",
+   "entrada": "supabase/functions/secrets-manager/index.ts",
+   "arquivos": 1,
+   "linhas": 434,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "admin_audit_log",
+    "integration_credentials",
+    "secret_rotation_log",
+    "user_roles"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "audit-log.ts",
+    "background-task.ts",
+    "cors.ts",
+    "credentials.ts",
+    "request-id.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/admin/connections/CredentialCacheMetricsPanel.tsx",
+    "src/components/admin/connections/DataSourceDebugTab.tsx",
+    "src/components/admin/connections/SecretsManagerHealthPanel.tsx",
+    "src/hooks/useSecretsManager.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 1
+  },
+  {
+   "nome": "secure-upload",
+   "entrada": "supabase/functions/secure-upload/index.ts",
+   "arquivos": 1,
+   "linhas": 201,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "file_scan_logs"
+   ],
+   "rpcs": [],
+   "env": [
+    "VIRUSTOTAL_API_KEY"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [
+    "www.virustotal.com"
+   ],
+   "usa_shared": [
+    "auth.ts",
+    "cors.ts",
+    "request-id.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/admin/ImageUploadButton.tsx",
+    "src/components/admin/security/SecureUploadManager.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "semantic-search",
+   "entrada": "supabase/functions/semantic-search/index.ts",
+   "arquivos": 1,
+   "linhas": 392,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [
+    "search_products_semantic"
+   ],
+   "env": [
+    "LOVABLE_API_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "ai-usage.ts",
+    "auth.ts",
+    "bot-protection.ts",
+    "cors.ts",
+    "rate-limiter.ts",
+    "supabase-client-adapter.ts",
+    "zod-validate.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/search/useGlobalSearch.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "send-digest",
+   "entrada": "supabase/functions/send-digest/index.ts",
+   "arquivos": 1,
+   "linhas": 73,
+   "verify_jwt": false,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "workspace_notifications"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "internal-service-auth.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "send-notification",
+   "entrada": "supabase/functions/send-notification/index.ts",
+   "arquivos": 1,
+   "linhas": 184,
+   "verify_jwt": false,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "notification_digests",
+    "notification_logs",
+    "notification_preferences",
+    "scheduled_notifications",
+    "workspace_notifications"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts",
+    "internal-service-auth.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "send-scheduled-reports",
+   "entrada": "supabase/functions/send-scheduled-reports/index.ts",
+   "arquivos": 2,
+   "linhas": 258,
+   "verify_jwt": false,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "orders",
+    "quotes",
+    "scheduled_reports"
+   ],
+   "rpcs": [],
+   "env": [
+    "RESEND_API_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "internal-service-auth.ts",
+    "scheduled-report-email.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 1
+  },
+  {
+   "nome": "send-transactional-email",
+   "entrada": "supabase/functions/send-transactional-email/index.ts",
+   "arquivos": 1,
+   "linhas": 53,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/hooks/useTransactionalEmail.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "sicoob-approval-notifications",
+   "entrada": "supabase/functions/sicoob-approval-notifications/index.ts",
+   "arquivos": 1,
+   "linhas": 98,
+   "verify_jwt": false,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "sicoob_approval_requests"
+   ],
+   "rpcs": [
+    "claim_sicoob_approval_delivery",
+    "enqueue_sicoob_approval_notifications",
+    "finish_sicoob_approval_delivery",
+    "get_sicoob_approval_delivery_summary"
+   ],
+   "env": [
+    "SICOOB_APPROVAL_WORKER_SECRET",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "approval-delivery.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": true,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "sicoob-approval-reconciliation",
+   "entrada": "supabase/functions/sicoob-approval-reconciliation/index.ts",
+   "arquivos": 1,
+   "linhas": 57,
+   "verify_jwt": true,
+   "metodos": [
+    "POST"
+   ],
+   "tabelas": [
+    "sicoob_approval_deliveries"
+   ],
+   "rpcs": [
+    "monitor_sicoob_approval_worker",
+    "reconcile_sicoob_approval_delivery"
+   ],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "cors.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/pages/admin/sicoob/SicoobApprovalReconciliationPage.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "sicoob-artwork-register",
+   "entrada": "supabase/functions/sicoob-artwork-register/index.ts",
+   "arquivos": 2,
+   "linhas": 163,
+   "verify_jwt": true,
+   "metodos": [
+    "POST"
+   ],
+   "tabelas": [],
+   "rpcs": [
+    "create_sicoob_order_artwork_version"
+   ],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/hooks/orders/extensions/useOrderPilotApprovals.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 1
+  },
+  {
+   "nome": "sicoob-document-ingest",
+   "entrada": "supabase/functions/sicoob-document-ingest/index.ts",
+   "arquivos": 4,
+   "linhas": 397,
+   "verify_jwt": true,
+   "metodos": [
+    "POST"
+   ],
+   "tabelas": [
+    "sicoob_document_registry"
+   ],
+   "rpcs": [
+    "register_sicoob_clean_document",
+    "sicoob_current_actor_can_manage_fulfillment"
+   ],
+   "env": [
+    "SICOOB_MALWARE_SCANNER_TOKEN",
+    "SICOOB_MALWARE_SCANNER_URL",
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/services/sicoob/documentIngestService.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 1
+  },
+  {
+   "nome": "sicoob-kit-quote",
+   "entrada": "supabase/functions/sicoob-kit-quote/index.ts",
+   "arquivos": 3,
+   "linhas": 583,
+   "verify_jwt": true,
+   "metodos": [
+    "POST"
+   ],
+   "tabelas": [],
+   "rpcs": [
+    "create_sicoob_kit_quote",
+    "get_sicoob_kit_quote_idempotency"
+   ],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [
+    "external-db-bridge"
+   ],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts",
+    "external-product-contract.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/pages/kit-builder/useKitBuilderQuote.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "sicoob-reorder",
+   "entrada": "supabase/functions/sicoob-reorder/index.ts",
+   "arquivos": 3,
+   "linhas": 646,
+   "verify_jwt": true,
+   "metodos": [
+    "POST"
+   ],
+   "tabelas": [
+    "quote_item_personalizations",
+    "quote_items",
+    "quotes",
+    "sicoob_order_items",
+    "sicoob_orders"
+   ],
+   "rpcs": [
+    "refresh_sicoob_reorder_quote"
+   ],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [
+    "external-db-bridge"
+   ],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts",
+    "external-product-contract.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/services/QuoteService.ts",
+    "src/services/sicoob/orderService.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "sicoob-seed",
+   "entrada": "supabase/functions/sicoob-seed/index.ts",
+   "arquivos": 1,
+   "linhas": 246,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "admin_audit_log",
+    "cooperativas",
+    "pa_budgets",
+    "postos_atendimento",
+    "profiles",
+    "sicoob_centrais",
+    "user_roles"
+   ],
+   "rpcs": [
+    "cleanup_test_auth_orphans"
+   ],
+   "env": [
+    "SICOOB_TEST_EMAIL_CENTRAL",
+    "SICOOB_TEST_EMAIL_GESTOR",
+    "SICOOB_TEST_EMAIL_PA",
+    "SICOOB_TEST_EMAIL_SINGULAR",
+    "SICOOB_TEST_USER_PASSWORD",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "request-id.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/auth/QuickTestLogin.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "sicoob-seed-debug",
+   "entrada": "supabase/functions/sicoob-seed-debug/index.ts",
+   "arquivos": 1,
+   "linhas": 28,
+   "verify_jwt": true,
+   "metodos": [],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "request-id.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "sicoob-seed-qa",
+   "entrada": "supabase/functions/sicoob-seed-qa/index.ts",
+   "arquivos": 1,
+   "linhas": 193,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "cooperativas",
+    "pa_budgets",
+    "postos_atendimento",
+    "profiles",
+    "qa_run_steps",
+    "qa_runs",
+    "sicoob_approval_requests",
+    "sicoob_orders",
+    "user_roles"
+   ],
+   "rpcs": [],
+   "env": [
+    "SICOOB_QA_USER_PASSWORD",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "request-id.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "step-up-verify",
+   "entrada": "supabase/functions/step-up-verify/index.ts",
+   "arquivos": 1,
+   "linhas": 372,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "step_up_audit_log",
+    "step_up_challenges"
+   ],
+   "rpcs": [
+    "is_dev",
+    "mark_step_up_password_verified",
+    "request_step_up_challenge",
+    "verify_step_up_otp"
+   ],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts",
+    "step-up-otp-delivery.ts",
+    "supabase-client-adapter.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  },
+  {
+   "nome": "sync-quote-bitrix",
+   "entrada": "supabase/functions/sync-quote-bitrix/index.ts",
+   "arquivos": 1,
+   "linhas": 495,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "companies",
+    "product_variants",
+    "quote_item_personalizations",
+    "quote_items",
+    "quotes"
+   ],
+   "rpcs": [
+    "record_quote_bitrix_sync"
+   ],
+   "env": [
+    "N8N_QUOTE_WEBHOOK_URL",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "cors.ts",
+    "credentials.ts",
+    "external-fetch.ts",
+    "request-id.ts",
+    "structured-logger.ts",
+    "zod-validate.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/pages/quote-view/QuoteBitrixSync.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "system-healthcheck",
+   "entrada": "supabase/functions/system-healthcheck/index.ts",
+   "arquivos": 1,
+   "linhas": 129,
+   "verify_jwt": true,
+   "metodos": [
+    "GET",
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "profiles"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL",
+    "VITE_CRM_BRIDGE_URL",
+    "VITE_EXTERNAL_DB_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "cors.ts",
+    "request-id.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/lib/cloud-status.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "trends-insights",
+   "entrada": "supabase/functions/trends-insights/index.ts",
+   "arquivos": 2,
+   "linhas": 314,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "product_views",
+    "profiles",
+    "search_analytics"
+   ],
+   "rpcs": [],
+   "env": [
+    "LOVABLE_API_KEY",
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "ai-usage.ts",
+    "auth.ts",
+    "bot-protection.ts",
+    "cors.ts",
+    "pii-redaction.ts",
+    "portal-access-policy.ts",
+    "rate-limiter.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/intelligence/TrendsInsightsCard.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "validate-access",
+   "entrada": "supabase/functions/validate-access/index.ts",
+   "arquivos": 1,
+   "linhas": 229,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "access_blocked_log",
+    "access_security_settings",
+    "city_whitelist",
+    "ip_whitelist",
+    "login_attempts"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [
+    "ip-api.com"
+   ],
+   "usa_shared": [
+    "cors.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/hooks/useIPValidation.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "verify-email",
+   "entrada": "supabase/functions/verify-email/index.ts",
+   "arquivos": 1,
+   "linhas": 28,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "cors.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 1
+  },
+  {
+   "nome": "visual-search",
+   "entrada": "supabase/functions/visual-search/index.ts",
+   "arquivos": 1,
+   "linhas": 222,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "products"
+   ],
+   "rpcs": [
+    "search_products_semantic"
+   ],
+   "env": [
+    "LOVABLE_API_KEY"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "ai-usage.ts",
+    "auth.ts",
+    "bot-protection.ts",
+    "cors.ts",
+    "pgrest-filter.ts",
+    "rate-limiter.ts",
+    "zod-validate.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/search/VisualSearchButton.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "voice-agent",
+   "entrada": "supabase/functions/voice-agent/index.ts",
+   "arquivos": 3,
+   "linhas": 283,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [],
+   "rpcs": [],
+   "env": [
+    "LOVABLE_API_KEY"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "ai-usage.ts",
+    "auth.ts",
+    "bot-protection.ts",
+    "cors.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 1
+  },
+  {
+   "nome": "webhook-dispatcher",
+   "entrada": "supabase/functions/webhook-dispatcher/index.ts",
+   "arquivos": 1,
+   "linhas": 300,
+   "verify_jwt": false,
+   "metodos": [
+    "POST"
+   ],
+   "tabelas": [
+    "outbound_webhooks",
+    "webhook_deliveries"
+   ],
+   "rpcs": [],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "authorize.ts",
+    "cors.ts",
+    "external-fetch.ts",
+    "internal-service-auth.ts",
+    "read-limited-body.ts",
+    "webhook-dispatcher-contract.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/components/admin/connections/FailedDeliveriesPanel.tsx",
+    "src/components/admin/connections/WebhookPlaygroundPanel.tsx"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": true,
+   "orfa": false,
+   "testes": 0
+  },
+  {
+   "nome": "webhook-inbound",
+   "entrada": "supabase/functions/webhook-inbound/index.ts",
+   "arquivos": 1,
+   "linhas": 148,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS"
+   ],
+   "tabelas": [
+    "inbound_webhook_endpoints",
+    "inbound_webhook_events"
+   ],
+   "rpcs": [
+    "increment_webhook_endpoint_metrics"
+   ],
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "read-limited-body.ts"
+   ],
+   "chamada_pelo_front": [],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": true,
+   "testes": 0
+  }
+ ],
+ "chamadas_sem_pasta": []
+}

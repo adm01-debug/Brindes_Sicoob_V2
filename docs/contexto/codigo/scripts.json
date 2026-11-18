@@ -1,0 +1,1437 @@
+{
+ "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
+ "format_version": 2,
+ "total": 121,
+ "scripts": [
+  {
+   "arquivo": "scripts/ai-context/cenarios.mjs",
+   "descricao": "Simulação de cenários do gerador: monta centenas de repositórios sintéticos (variantes de SQL, rotas, menus, edges, workflows, monorepo, Python, arquivos corrompidos, fuzz) e confere:",
+   "linhas": 174,
+   "env": [
+    "A",
+    "K",
+    "NODE_ENV",
+    "SCRIPT_ONLY",
+    "SRK",
+    "SUPABASE_URL",
+    "VITE_A",
+    "VITE_C",
+    "VITE_FEATURE_X",
+    "X"
+   ],
+   "npm_scripts": [
+    "contexto:ia:cenarios"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/ai-context/gerar.mjs",
+   "descricao": "Gera o contexto de projeto para agentes de IA (padrão: inventario/ia/*). Zero dependências. Node >= 18. Genérico: funciona em qualquer repositório.",
+   "linhas": 941,
+   "env": [
+    "AI_CONTEXT_DIR",
+    "AI_CONTEXT_PUBLICACAO",
+    "AI_CONTEXT_ROOT"
+   ],
+   "npm_scripts": [
+    "contexto:ia"
+   ],
+   "workflows": [
+    "contexto.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/api_map.cjs",
+   "descricao": null,
+   "linhas": 58,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/audit-export.mjs",
+   "descricao": "* audit-export.mjs",
+   "linhas": 133,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [
+    "security-compliance.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/audit-technical-rls.sql",
+   "descricao": null,
+   "linhas": 181,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/autofix/colors-map.mjs",
+   "descricao": "* Codemod de cores hardcoded -> tokens semânticos (sem IA, 100% determinístico).",
+   "linhas": 74,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/autofix/run.mjs",
+   "descricao": "* autofix — correções mecânicas do código, SEM IA e SEM rede.",
+   "linhas": 157,
+   "env": [],
+   "npm_scripts": [
+    "gaps",
+    "autofix",
+    "autofix:apply"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/autofix/steps.mjs",
+   "descricao": "* Passos do autofix. Cada passo só EDITA arquivos; quem snapshota, valida e desfaz",
+   "linhas": 122,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/automation.mjs",
+   "descricao": null,
+   "linhas": 992,
+   "env": [
+    "REPO_AUTOMATION_CHAINING"
+   ],
+   "npm_scripts": [
+    "automation:doctor",
+    "automation:test",
+    "automation:check",
+    "automation:heal",
+    "automation:nightly",
+    "automation:graph",
+    "automation:status",
+    "automation:install-hooks",
+    "automation:uninstall-hooks"
+   ],
+   "workflows": [
+    "automation-local.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/check-aschild-nesting.mjs",
+   "descricao": "* Detector estático: aninhamento `<XTrigger asChild>` diretamente dentro de",
+   "linhas": 109,
+   "env": [],
+   "npm_scripts": [
+    "check:aschild-nesting"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/check-codeql-sarif.mjs",
+   "descricao": null,
+   "linhas": 138,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [
+    "codeql.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/check-critical-test-skip-budget.mjs",
+   "descricao": "* check-critical-test-skip-budget.mjs",
+   "linhas": 128,
+   "env": [
+    "CI"
+   ],
+   "npm_scripts": [
+    "check:critical-test-skips"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/check-edge-authorization.mjs",
+   "descricao": "* check-edge-authorization",
+   "linhas": 220,
+   "env": [
+    "GITHUB_ACTIONS"
+   ],
+   "npm_scripts": [],
+   "workflows": [
+    "ci.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/check-edge-functions-health.mjs",
+   "descricao": "* check-edge-functions-health — Verifica a saúde das Edge Functions",
+   "linhas": 150,
+   "env": [
+    "CI",
+    "SUPABASE_ANON_KEY",
+    "VITE_SUPABASE_URL"
+   ],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/check-edge-request-id-propagation.mjs",
+   "descricao": "* check-edge-request-id-propagation.mjs",
+   "linhas": 193,
+   "env": [
+    "LIST_ONLY"
+   ],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/check-edge-structured-logging.mjs",
+   "descricao": "* check-edge-structured-logging.mjs",
+   "linhas": 143,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [
+    "ci.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/check-eslint-baseline.mjs",
+   "descricao": "* Gate de regressão do ESLint.",
+   "linhas": 194,
+   "env": [
+    "ESLINT_BASE_REF",
+    "GITHUB_BASE_REF"
+   ],
+   "npm_scripts": [
+    "lint:baseline"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/check-migration-immutability.mjs",
+   "descricao": "* check-migration-immutability",
+   "linhas": 122,
+   "env": [
+    "GITHUB_BASE_REF",
+    "GITHUB_EVENT_BEFORE",
+    "MIGRATION_BASE_REF"
+   ],
+   "npm_scripts": [],
+   "workflows": [
+    "ci.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/check-npm-audit.mjs",
+   "descricao": null,
+   "linhas": 63,
+   "env": [],
+   "npm_scripts": [
+    "check:npm-audit"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/check-price-freshness-coverage.mjs",
+   "descricao": "* Coverage gate dedicado aos arquivos de \"price freshness\".",
+   "linhas": 142,
+   "env": [
+    "COVERAGE_TOLERANCE_PP"
+   ],
+   "npm_scripts": [
+    "test:price-freshness"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/check-route-error-element.mjs",
+   "descricao": "* check-route-error-element.mjs",
+   "linhas": 168,
+   "env": [],
+   "npm_scripts": [
+    "check:route-error-element"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/check-route-ref-usage.mjs",
+   "descricao": "* Detector estático: uso indevido de `ref` / `forwardRef` em componentes",
+   "linhas": 283,
+   "env": [
+    "ROUTE_REF_ROOT"
+   ],
+   "npm_scripts": [
+    "check:route-ref-usage"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/check-search-imports.mjs",
+   "descricao": "* check-search-imports",
+   "linhas": 106,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/check-security-definer-acl.mjs",
+   "descricao": "* check-security-definer-acl",
+   "linhas": 119,
+   "env": [
+    "GITHUB_ACTIONS",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL",
+    "VITE_SUPABASE_URL"
+   ],
+   "npm_scripts": [
+    "check:security-definer-acl"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/check-seller-scope.mjs",
+   "descricao": "* check-seller-scope.mjs",
+   "linhas": 274,
+   "env": [],
+   "npm_scripts": [
+    "check:seller-scope"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/check-sicoob-hardcoded-colors.mjs",
+   "descricao": "* Script para evitar regressão de cores hardcoded em caminhos Sicoob.",
+   "linhas": 80,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/check-smoke-tags.mjs",
+   "descricao": "* check-smoke-tags — Garante que todo `test(...)` em",
+   "linhas": 175,
+   "env": [
+    "CI"
+   ],
+   "npm_scripts": [
+    "e2e:smoke-tags-check"
+   ],
+   "workflows": [
+    "e2e.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/check-typecheck-baseline.mjs",
+   "descricao": "* check-typecheck-baseline",
+   "linhas": 113,
+   "env": [
+    "GITHUB_ACTIONS"
+   ],
+   "npm_scripts": [
+    "typecheck:baseline",
+    "typecheck:baseline:update"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/check_tables.js",
+   "descricao": null,
+   "linhas": 68,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/ci/check-agents-md-integrity.mjs",
+   "descricao": "* GA02 (replicado do Zapp Web V2, scripts/ci/check-claude-md-integrity.mjs): garante que as instrucoes para agentes nao foram apagadas ou esvaziadas por outra sessao.",
+   "linhas": 161,
+   "env": [
+    "AGENTS_MD_BASE",
+    "CLAUDE_MD_BASE"
+   ],
+   "npm_scripts": [
+    "check:agents-md"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/ci/verify-supabase-functions-published.mjs",
+   "descricao": null,
+   "linhas": 98,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [
+    "deploy-sicoob-functions.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/compare-edge-functions.mjs",
+   "descricao": "* compare-edge-functions.mjs",
+   "linhas": 132,
+   "env": [
+    "CI"
+   ],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/consolidate-console-snapshot.mjs",
+   "descricao": "* Consolida snapshots por-worker (`coverage/console-snapshot.<id>.json`)",
+   "linhas": 82,
+   "env": [],
+   "npm_scripts": [
+    "test:strict-ref"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/db-performance-audit.mjs",
+   "descricao": "* db-performance-audit.mjs",
+   "linhas": 72,
+   "env": [
+    "CI",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "VITE_SUPABASE_URL"
+   ],
+   "npm_scripts": [],
+   "workflows": [
+    "db-performance-audit.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
+   "descricao": "* Aplica somente migrations explicitamente autorizadas no banco de construção.",
+   "linhas": 1518,
+   "env": [
+    "GITHUB_ACTIONS",
+    "GITHUB_REF",
+    "SUPABASE_ACCESS_TOKEN",
+    "SUPABASE_DB_URL"
+   ],
+   "npm_scripts": [],
+   "workflows": [
+    "apply-sicoob-migrations.yml",
+    "ci.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/db/audit-core-rls.mjs",
+   "descricao": null,
+   "linhas": 129,
+   "env": [
+    "SUPABASE_ACCESS_TOKEN",
+    "SUPABASE_DB_URL"
+   ],
+   "npm_scripts": [],
+   "workflows": [
+    "migration-ledger-drift.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/db/check-live-api-inventory.mjs",
+   "descricao": null,
+   "linhas": 111,
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "VITE_SUPABASE_URL"
+   ],
+   "npm_scripts": [
+    "check:live-api-inventory"
+   ],
+   "workflows": [
+    "db-performance-audit.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/db/check-migration-ledger-drift.mjs",
+   "descricao": "Reconciliação bidirecional; nunca aplica arquivos nem repara o ledger. Preserva literais e corpos SQL; diferenças normalizadas exigem revisão,",
+   "linhas": 312,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [
+    "migration-ledger-drift.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/db/check-runtime-refs.mjs",
+   "descricao": "* check-runtime-refs.mjs",
+   "linhas": 458,
+   "env": [
+    "RUNTIME_INVENTORY_MAX_AGE_DAYS"
+   ],
+   "npm_scripts": [],
+   "workflows": [
+    "ci.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/db/classify-migration-backlog.mjs",
+   "descricao": "* Classifica migrations locais ausentes do ledger sem executar SQL.",
+   "linhas": 278,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/db/compare-types-api.mjs",
+   "descricao": "* compare-types-api",
+   "linhas": 162,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/db/import-api-inventory.mjs",
+   "descricao": "Importa snapshots obtidos por leitura; não faz requisições nem altera o banco.",
+   "linhas": 121,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/db/supabase-sql-client.mjs",
+   "descricao": null,
+   "linhas": 117,
+   "env": [
+    "SUPABASE_ACCESS_TOKEN",
+    "SUPABASE_DB_URL"
+   ],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/e2e-cleanup.mjs",
+   "descricao": "* e2e-cleanup",
+   "linhas": 93,
+   "env": [
+    "E2E_ALLOWED_PROJECT_ID",
+    "E2E_CLEANUP_DRY_RUN",
+    "E2E_CLEANUP_TOKEN",
+    "E2E_SUPABASE_PROJECT_ID",
+    "E2E_SUPABASE_PUBLISHABLE_KEY",
+    "E2E_SUPABASE_SERVICE_ROLE_KEY",
+    "E2E_SUPABASE_URL",
+    "E2E_USER_EMAIL"
+   ],
+   "npm_scripts": [
+    "test:cleanup"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/e2e-feature-summary.mjs",
+   "descricao": "* e2e-feature-summary — Agrupa resultados Playwright por FEATURE.",
+   "linhas": 387,
+   "env": [
+    "E2E_RESULTS_JSON",
+    "E2E_SUMMARY_TOP"
+   ],
+   "npm_scripts": [
+    "test:e2e:smoke:report",
+    "test:e2e:regression:report",
+    "e2e:summary"
+   ],
+   "workflows": [
+    "e2e.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/e2e-smoke-coverage-doc.mjs",
+   "descricao": "* Gera docs/E2E_SMOKE_COVERAGE.md a partir de:",
+   "linhas": 197,
+   "env": [
+    "GITHUB_STEP_SUMMARY"
+   ],
+   "npm_scripts": [
+    "e2e:smoke-coverage-doc",
+    "e2e:smoke-coverage-check"
+   ],
+   "workflows": [
+    "e2e.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/e2e-smoke-summary.mjs",
+   "descricao": "* e2e-smoke-summary — Resumo dedicado da suíte SMOKE por funcionalidade.",
+   "linhas": 417,
+   "env": [
+    "CI",
+    "E2E_RESULTS_JSON",
+    "E2E_SMOKE_PROJECT",
+    "GITHUB_ACTIONS"
+   ],
+   "npm_scripts": [
+    "test:e2e:smoke:report",
+    "e2e:smoke-summary"
+   ],
+   "workflows": [
+    "e2e.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/e2e-target.mjs",
+   "descricao": "Projetos em que NUNCA se roda E2E/QA (docs/agentes/banco.md): oficial, catálogo externo (somente leitura), CRM e os três legados de outra origem. Basta um `E2E_ALLOWED_PROJECT_ID` errado para",
+   "linhas": 61,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/enterprise-dossier-builder.mjs",
+   "descricao": "* enterprise-dossier-builder.mjs — dossiê de auditoria com evidências conferidas.",
+   "linhas": 381,
+   "env": [
+    "AUDIT_ENV",
+    "QA_CHROMIUM_PATH",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "VITE_SUPABASE_URL"
+   ],
+   "npm_scripts": [
+    "audit:dossier"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/eslint-baseline-generate.mjs",
+   "descricao": "* Gera o baseline do ESLint (apenas ERROS, severity=2) agregando",
+   "linhas": 79,
+   "env": [],
+   "npm_scripts": [
+    "lint:baseline:update"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/fix-edge-cors-allowlist.mjs",
+   "descricao": "* fix-edge-cors-allowlist",
+   "linhas": 66,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/generate-audit-dossier.mjs",
+   "descricao": "* generate-audit-dossier.mjs",
+   "linhas": 182,
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "VITE_SUPABASE_URL"
+   ],
+   "npm_scripts": [],
+   "workflows": [
+    "security-compliance.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/generate-enterprise-report.mjs",
+   "descricao": "* generate-enterprise-report.mjs",
+   "linhas": 177,
+   "env": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "VITE_SUPABASE_URL"
+   ],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/generate-routes-map.mjs",
+   "descricao": "* generate-routes-map",
+   "linhas": 114,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/generate_api_map.js",
+   "descricao": null,
+   "linhas": 60,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/graphify-local.mjs",
+   "descricao": null,
+   "linhas": 1076,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/graphify/setup.sh",
+   "descricao": "Instala o graphify (grafo de conhecimento do código) e o configura neste clone. Uso: npm run graph:setup   (Linux, macOS ou WSL; precisa de uv ou pipx)",
+   "linhas": 51,
+   "env": [],
+   "npm_scripts": [
+    "graph:setup"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/healthcheck.mjs",
+   "descricao": "Carrega .env local sem dependência de dotenv",
+   "linhas": 55,
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_URL"
+   ],
+   "npm_scripts": [
+    "healthcheck"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/inventario/banco.sql",
+   "descricao": null,
+   "linhas": 197,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/inventario/gerar-banco.mjs",
+   "descricao": "* Inventario do banco oficial -> inventario/estado/banco.json (fonte de consulta dos agentes).",
+   "linhas": 337,
+   "env": [
+    "INVENTARIO_PERMITIR_OUTRO_PROJETO",
+    "SUPABASE_ACCESS_TOKEN",
+    "SUPABASE_API_URL",
+    "SUPABASE_PROJECT_REF"
+   ],
+   "npm_scripts": [
+    "inventario:banco"
+   ],
+   "workflows": [
+    "inventario-estado-semanal.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/inventario/gerar-repo.mjs",
+   "descricao": "Inventario gerado do lado do repositorio (sem acesso ao banco):  - edge functions: linhas, segredos lidos (Deno.env.get) e quem as invoca (src, migrations, outras edges, e2e, CI)",
+   "linhas": 95,
+   "env": [],
+   "npm_scripts": [
+    "inventario:repo"
+   ],
+   "workflows": [
+    "inventario-estado-semanal.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/inventario/gerar-rotas.mjs",
+   "descricao": "* Inventario das rotas do front -> inventario/estado/rotas.json (fonte de consulta dos agentes).",
+   "linhas": 462,
+   "env": [],
+   "npm_scripts": [
+    "inventario:rotas",
+    "inventario:rotas:check"
+   ],
+   "workflows": [
+    "inventario-estado-semanal.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/inventario/mudou-conteudo.mjs",
+   "descricao": "* O inventario mudou de verdade? Compara cada arquivo de inventario/estado/ com a versao do",
+   "linhas": 102,
+   "env": [],
+   "npm_scripts": [
+    "inventario:mudou"
+   ],
+   "workflows": [
+    "inventario-estado-semanal.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/lib/audit-evidence.mjs",
+   "descricao": "* Fonte única dos scripts de auditoria (generate-audit-dossier, generate-enterprise-report,",
+   "linhas": 227,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/lib/cli.mjs",
+   "descricao": "* Contrato compartilhado de CLI para os scripts de automação.",
+   "linhas": 195,
+   "env": [
+    "DEBUG",
+    "GITHUB_ACTIONS"
+   ],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/lib/edge-authorization-contract.mjs",
+   "descricao": "Evidência estática de chamadas reais; não substitui execução por ator nem análise de fluxo de controle (uma chamada pode estar em um ramo não alcançado).",
+   "linhas": 146,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/lib/edge-logging-contract.mjs",
+   "descricao": "Contrato estático: import vinculado a uma chamada real. Não prova cobertura de todos os retornos; essa parte é exercitada nos cenários do wrapper.",
+   "linhas": 33,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/lib/npm-audit-policy.mjs",
+   "descricao": "Politica do gate de npm audit, isolada para permitir cobertura unitaria. Sem excecoes por pacote: vulnerabilidades altas ou criticas bloqueiam o build.",
+   "linhas": 71,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/lib/pid-lock.mjs",
+   "descricao": "* Trava de processo único por PID (sem IA, sem rede).",
+   "linhas": 33,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/lib/playwright-report.mjs",
+   "descricao": "* Leitura fiel do JSON do reporter do Playwright, compartilhada por e2e-feature-summary e e2e-smoke-summary.",
+   "linhas": 43,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/load-test.mjs",
+   "descricao": "* Load and Stress Testing Script",
+   "linhas": 63,
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "VITE_SUPABASE_URL"
+   ],
+   "npm_scripts": [
+    "test:load"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/maintenance/lib.mjs",
+   "descricao": null,
+   "linhas": 794,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/maintenance/run.mjs",
+   "descricao": null,
+   "linhas": 711,
+   "env": [
+    "XDG_STATE_HOME"
+   ],
+   "npm_scripts": [
+    "gaps",
+    "autofix",
+    "autofix:apply"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/maintenance/run.sh",
+   "descricao": null,
+   "linhas": 16,
+   "env": [],
+   "npm_scripts": [
+    "maintenance:doctor",
+    "maintenance:check",
+    "maintenance:heal"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/maintenance/typecheck.mjs",
+   "descricao": null,
+   "linhas": 82,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/md-to-pdf-stub.mjs",
+   "descricao": "* md-to-pdf-stub.mjs — gerador de PDF a partir de Markdown via Playwright",
+   "linhas": 183,
+   "env": [
+    "QA_CHROMIUM_PATH"
+   ],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/migrate-edge-cors-allowlist.mjs",
+   "descricao": "* migrate-edge-cors-allowlist",
+   "linhas": 161,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/regras_negocio/generate.py",
+   "descricao": null,
+   "linhas": 2197,
+   "env": [],
+   "npm_scripts": [
+    "contexto:regras",
+    "contexto:regras:test"
+   ],
+   "workflows": [
+    "contexto.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/regras_negocio/indice.py",
+   "descricao": null,
+   "linhas": 251,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [
+    "contexto.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/regras_negocio/publish.sh",
+   "descricao": "Publica docs/ai-context gerados: commit + push na branch padrão, ou PR quando a branch é protegida. Variáveis:",
+   "linhas": 198,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/revisao/gerar-benchmark.py",
+   "descricao": "Relaciona as 32 melhorias do benchmark ao plano original e à revisão.\"\"\"",
+   "linhas": 55,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/revisao/gerar-matriz.py",
+   "descricao": "Gera a revisão dos 1.000 requisitos sem alterar o checklist oficial.\"\"\" Converte FileNotFoundError/KeyError/AssertionError históricos em aviso; re-lança outros erros.\"\"\"",
+   "linhas": 262,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/revisao/gerar-plano-150-20260927.py",
+   "descricao": "Gera e verifica o plano documental, sem executar etapas ou acessar o banco.\"\"\"",
+   "linhas": 180,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/revisao/gerar-revisao-2026-09-12.py",
+   "descricao": "Materializa a revisão longitudinal sem baixar itens do plano oficial.\"\"\"",
+   "linhas": 357,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/revisao/gerar-revisao-2026-09-24.py",
+   "descricao": "Gera a matriz documental preservando evidência histórica e limites da revisão atual.\"\"\" Converte erros históricos de divergência em aviso; re-lança outros erros.\"\"\"",
+   "linhas": 211,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/revisao/gerar-revisao-2026-09-27.py",
+   "descricao": "Consolida avaliações explícitas sem promover diagnóstico histórico a ensaio atual.\"\"\" Converte erros históricos de divergência em aviso; re-lança outros erros.\"\"\"",
+   "linhas": 165,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/revisao/simular-lacunas-orcamento-20260928.py",
+   "descricao": "Sonda local: resultados positivos reproduzem lacunas, não aprovam o produto.\"\"\"",
+   "linhas": 45,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/revisao/simular-lacunas.mjs",
+   "descricao": "* Reproduz achados da revisão com módulos reais e dependências simuladas, sem rede. */",
+   "linhas": 144,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/revisao/simular-pendencias-2026-09-12.py",
+   "descricao": "Reproduz lacunas da revisão; sucesso do script NÃO significa produto aprovado.",
+   "linhas": 169,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/revisao/simular-status-20260927.py",
+   "descricao": "Sondas isoladas: confirmação da lacuna é sucesso da sonda, não do produto.\"\"\" Pula graciosamente se o daemon Docker não estiver acessível (ex: CI sem Docker).\"\"\"",
+   "linhas": 96,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/revisao/vitest-lacunas-20260927.config.ts",
+   "descricao": null,
+   "linhas": 11,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/revisao/vitest-lacunas-20260928.config.ts",
+   "descricao": null,
+   "linhas": 11,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/revisao/vitest-pendencias-2026-09-12.config.ts",
+   "descricao": "* Mantém reproduções de defeitos fora da suíte normal de aprovação do produto. */",
+   "linhas": 21,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/revisao/vitest-rascunhos-20260924.config.ts",
+   "descricao": null,
+   "linhas": 11,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/rules/diff.mjs",
+   "descricao": "* Comparação entre duas execuções do runner (usada por rotina.mjs).",
+   "linhas": 42,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/rules/lib.mjs",
+   "descricao": "* Migrations em ordem de aplicação (o nome começa com timestamp). */",
+   "linhas": 125,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/rules/rotina.mjs",
+   "descricao": "* rotina — roda o levantamento (scripts/rules/run.mjs) de forma agendada, SEM IA.",
+   "linhas": 130,
+   "env": [
+    "PATH"
+   ],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/rules/rules/ambiente.mjs",
+   "descricao": null,
+   "linhas": 16,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/rules/rules/checkers.mjs",
+   "descricao": "* Gates que o projeto já tem, agregados no mesmo relatório. `autofix` aponta a correção sem IA, se existir. */",
+   "linhas": 50,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/rules/rules/edge-inventario.mjs",
+   "descricao": null,
+   "linhas": 51,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/rules/rules/plano-melhorias.mjs",
+   "descricao": "* Regras derivadas de docs/plano-melhorias-50-etapas.md (cada uma cita a etapa em `source`).",
+   "linhas": 181,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/rules/rules/rls-estatico.mjs",
+   "descricao": "Nome de tabela, com ou sem \"public.\" e aspas. Identificador do Postgres: sem aspas vira minúsculo; entre aspas mantém a caixa e perde as aspas (\"p\" == p, \"P\" != p).",
+   "linhas": 118,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/rules/run.mjs",
+   "descricao": "* rules — levantamento de falhas, gaps e melhorias SEM IA.",
+   "linhas": 96,
+   "env": [],
+   "npm_scripts": [
+    "gaps",
+    "autofix",
+    "autofix:apply"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/rules/worktrees.mjs",
+   "descricao": "* Limpeza de worktrees temporários da rotina. Só remove o que a PRÓPRIA rotina registrou:",
+   "linhas": 26,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/run-smoke-filtered.mjs",
+   "descricao": "* run-smoke-filtered — wrapper opcional do `test:e2e:smoke` com filtro por tag/título.",
+   "linhas": 68,
+   "env": [],
+   "npm_scripts": [
+    "test:e2e:smoke",
+    "test:e2e:smoke:2h"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/scan-rls-security.mjs",
+   "descricao": "* scan-rls-security.mjs",
+   "linhas": 69,
+   "env": [
+    "CI",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "VITE_SUPABASE_URL"
+   ],
+   "npm_scripts": [],
+   "workflows": [
+    "security-compliance.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/seed-qa.mjs",
+   "descricao": "* seed-qa.mjs — popula dados de QA chamando a edge `sicoob-seed-qa`.",
+   "linhas": 71,
+   "env": [
+    "E2E_ALLOWED_PROJECT_ID",
+    "E2E_DEV_EMAIL",
+    "E2E_DEV_PASSWORD",
+    "E2E_SUPABASE_PROJECT_ID",
+    "E2E_SUPABASE_PUBLISHABLE_KEY",
+    "E2E_SUPABASE_SERVICE_ROLE_KEY",
+    "E2E_SUPABASE_URL"
+   ],
+   "npm_scripts": [
+    "seed:qa"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/simulate-webhooks.mjs",
+   "descricao": "* Webhook Simulation and Fuzzing Script",
+   "linhas": 97,
+   "env": [
+    "VITE_SUPABASE_URL",
+    "WEBHOOK_HMAC_SECRET"
+   ],
+   "npm_scripts": [
+    "test:simulation"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/smoke-tests.mjs",
+   "descricao": "* Smoke tests rápidos para o pipeline de CI.",
+   "linhas": 245,
+   "env": [
+    "SMOKE_BASE_URL",
+    "SMOKE_FAIL_ON_DEGRADED",
+    "SMOKE_HEALTH_FN_URL",
+    "SMOKE_TIMEOUT_MS"
+   ],
+   "npm_scripts": [
+    "smoke"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/supabase_snapshot/snapshot.py",
+   "descricao": "Somente leitura no banco (sessão read-only, statement_timeout, lock_timeout). Nunca grava linhas de tabelas, valores de segredos, chaves, senhas ou DSN.",
+   "linhas": 1879,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [
+    "contexto.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/test-audit-scripts.mjs",
+   "descricao": "* test-audit-scripts.mjs",
+   "linhas": 109,
+   "env": [
+    "CI"
+   ],
+   "npm_scripts": [],
+   "workflows": [
+    "security-compliance.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/test-rls-compliance.mjs",
+   "descricao": null,
+   "linhas": 195,
+   "env": [
+    "E2E_ALLOWED_PROJECT_ID",
+    "E2E_SUPABASE_PROJECT_ID",
+    "E2E_SUPABASE_PUBLISHABLE_KEY",
+    "E2E_SUPABASE_SERVICE_ROLE_KEY",
+    "E2E_SUPABASE_URL"
+   ],
+   "npm_scripts": [],
+   "workflows": [
+    "security-compliance.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/test-rls.mjs",
+   "descricao": "* test-rls.mjs",
+   "linhas": 153,
+   "env": [
+    "CI",
+    "E2E_ALLOWED_PROJECT_ID",
+    "E2E_SUPABASE_PROJECT_ID",
+    "E2E_SUPABASE_PUBLISHABLE_KEY",
+    "E2E_SUPABASE_SERVICE_ROLE_KEY",
+    "E2E_SUPABASE_URL"
+   ],
+   "npm_scripts": [
+    "test:rls"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/triage-edge-typecheck.mjs",
+   "descricao": "* Triage isolado de `deno check` por Edge Function.",
+   "linhas": 338,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/tscheck-files.mjs",
+   "descricao": "* tscheck-files",
+   "linhas": 87,
+   "env": [],
+   "npm_scripts": [
+    "typecheck:files"
+   ],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/typecheck-edge-functions.mjs",
+   "descricao": "* Typecheck all Supabase Edge Functions using `deno check`.",
+   "linhas": 135,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/validate-audit-links.mjs",
+   "descricao": "* validate-audit-links",
+   "linhas": 225,
+   "env": [
+    "AUDIT_REPORTS_DIR"
+   ],
+   "npm_scripts": [],
+   "workflows": [
+    "security-compliance.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/validate-docs-consistency.mjs",
+   "descricao": "* validate-docs-consistency",
+   "linhas": 96,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/validate-e2e-target.mjs",
+   "descricao": "* validate-e2e-target",
+   "linhas": 49,
+   "env": [
+    "E2E_ALLOWED_PROJECT_ID",
+    "E2E_SUPABASE_PROJECT_ID",
+    "E2E_SUPABASE_PUBLISHABLE_KEY",
+    "E2E_SUPABASE_SERVICE_ROLE_KEY",
+    "E2E_SUPABASE_URL"
+   ],
+   "npm_scripts": [],
+   "workflows": [
+    "e2e.yml",
+    "security-compliance.yml"
+   ],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/validate-lovable-sync-target.mjs",
+   "descricao": "* Valida que o bot de sync da Lovable está direcionando PRs para `main`",
+   "linhas": 167,
+   "env": [
+    "GH_TOKEN",
+    "GITHUB_TOKEN",
+    "LOVABLE_BOT_LOGIN",
+    "OWNER",
+    "REPO"
+   ],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  },
+  {
+   "arquivo": "scripts/validate-wcag-colors.mjs",
+   "descricao": "* validate-wcag-colors",
+   "linhas": 170,
+   "env": [],
+   "npm_scripts": [],
+   "workflows": [],
+   "orfao": false
+  }
+ ]
+}

@@ -1,0 +1,8 @@
+CREATE OR REPLACE FUNCTION public.is_gerente_pa(_user_id uuid DEFAULT auth.uid())
+ RETURNS boolean
+ LANGUAGE sql
+ STABLE SECURITY DEFINER
+ SET search_path TO ''
+AS $function$
+  SELECT public.has_role(_user_id, 'gerente_pa'::public.app_role);
+$function$

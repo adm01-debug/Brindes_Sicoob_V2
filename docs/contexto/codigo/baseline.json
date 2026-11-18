@@ -1,0 +1,1533 @@
+{
+ "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
+ "format_version": 2,
+ "git": {
+  "commit": "71d515bd8a7a47fadf0a4d6f5b29098516392909",
+  "branch": "main",
+  "data_commit": "2026-11-18T15:27:46Z",
+  "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
+  "ultimos_commits": [
+   {
+    "sha": "71d515b",
+    "data": "2026-11-18",
+    "assunto": "fix(auth): logout apaga o historico de navegacao do vendedor anterior (#312)"
+   },
+   {
+    "sha": "90a9cb3",
+    "data": "2026-11-18",
+    "assunto": "feat(edge): recupera módulos das PRs #119/#178/#179 e migra os 9 consumidores que a nova política quebraria (#309)"
+   },
+   {
+    "sha": "ca0c320",
+    "data": "2026-11-18",
+    "assunto": "feat(ux): confirmação unificada substitui os 19 diálogos nativos do navegador (#306)"
+   },
+   {
+    "sha": "bdeb172",
+    "data": "2026-11-18",
+    "assunto": "fix(kit): destaque de kit passa a usar a RPC atomica no banco (#307)"
+   },
+   {
+    "sha": "eba624f",
+    "data": "2026-11-18",
+    "assunto": "fix(db): recupera 8 migrations perdidas e destrava o aplicador autorizado (#305)"
+   },
+   {
+    "sha": "4b45855",
+    "data": "2026-11-18",
+    "assunto": "infra: contar na cota de IA os streams interrompidos com consumo real (#299)"
+   },
+   {
+    "sha": "6e81460",
+    "data": "2026-11-18",
+    "assunto": "fix: verba do PA na competencia do pedido e SLA com inicio real do ciclo (#297)"
+   },
+   {
+    "sha": "5ecb93f",
+    "data": "2026-11-18",
+    "assunto": "fix: isola rascunho de orcamento por cooperativa e PA (#304)"
+   },
+   {
+    "sha": "c2b0099",
+    "data": "2026-11-17",
+    "assunto": "fix: assinar URLs de storage privado (imagens, logos, videos e artes de mockup) (#296)"
+   },
+   {
+    "sha": "1b142b4",
+    "data": "2026-11-17",
+    "assunto": "feat: tendencias com snapshot unico e estados de erro reais (recupera PR #119) (#301)"
+   },
+   {
+    "sha": "2a8d38b",
+    "data": "2026-11-17",
+    "assunto": "chore: gate de npm audit libera advisory especifico em vez de pacote (#303)"
+   },
+   {
+    "sha": "19e692d",
+    "data": "2026-11-17",
+    "assunto": "fix: historico de itens do pedido Sicoob sem embed irresolvivel (#302)"
+   },
+   {
+    "sha": "004e313",
+    "data": "2026-11-17",
+    "assunto": "fix: sonda de REST aceita raiz protegida e para de repetir healthcheck negado (#300)"
+   },
+   {
+    "sha": "4f2531e",
+    "data": "2026-11-17",
+    "assunto": "fix: consolidacao de orcamentos carrega todos os itens e trata erro (recupera PR #179) (#294)"
+   },
+   {
+    "sha": "35f9ee2",
+    "data": "2026-11-17",
+    "assunto": "feat: rota /gestor/delegacoes para o gestor gerenciar delegacoes de aprovacao (#295)"
+   },
+   {
+    "sha": "cc036fd",
+    "data": "2026-11-17",
+    "assunto": "fix: tendencias e selos de produto passam a usar dados reais por padrao (recupera PR #178) (#293)"
+   },
+   {
+    "sha": "865ba6c",
+    "data": "2026-11-17",
+    "assunto": "fix: admin-audit-hook usa modulo CORS compartilhado em vez de Allow-Origin * (#287)"
+   },
+   {
+    "sha": "223fcf7",
+    "data": "2026-11-14",
+    "assunto": "chore: contexto agendado de 10 min para 1x/hora (#280)"
+   },
+   {
+    "sha": "6b52c0e",
+    "data": "2026-11-13",
+    "assunto": "fix(db): corrige contadores do contrato para split public/protected real (57/165) (#277)"
+   },
+   {
+    "sha": "03d9092",
+    "data": "2026-11-13",
+    "assunto": "ci(workflows): pular jobs em PRs do Copilot (#276)"
+   },
+   {
+    "sha": "1d65b3c",
+    "data": "2026-11-13",
+    "assunto": "fix(inventário): atualiza generated_at do cache para desbloquear CI (#278)"
+   },
+   {
+    "sha": "67f0860",
+    "data": "2026-11-13",
+    "assunto": "infra: adiciona migrações de segurança Órfãs à allowlist de apply (#275)"
+   },
+   {
+    "sha": "788c091",
+    "data": "2026-11-13",
+    "assunto": "infra: adiciona harden_rpc_acl_and_fk_indexes a allowlist de migrations (#274)"
+   },
+   {
+    "sha": "d9bca60",
+    "data": "2026-11-12",
+    "assunto": "fix(edge): commita trabalho pendente — contratos Edge Functions + etapa 17 secretNormalizers (#174)"
+   },
+   {
+    "sha": "387de05",
+    "data": "2026-11-12",
+    "assunto": "fix(busca): corrige rota de detalhes de clientes (#168)"
+   }
+  ],
+  "arquivos_mudados_7d": 339,
+  "pastas_mais_mudadas_30d": [
+   {
+    "pasta": "supabase/functions/_shared",
+    "mudancas": 34
+   },
+   {
+    "pasta": "docs/externo/analises-20261007",
+    "mudancas": 25
+   },
+   {
+    "pasta": "src/components/admin",
+    "mudancas": 22
+   },
+   {
+    "pasta": "PENDENCIAS.md",
+    "mudancas": 19
+   },
+   {
+    "pasta": "RELATORIO_CI.md",
+    "mudancas": 19
+   },
+   {
+    "pasta": "package.json",
+    "mudancas": 14
+   },
+   {
+    "pasta": "src/pages/admin",
+    "mudancas": 14
+   },
+   {
+    "pasta": "scripts/db/apply-sicoob-migrations.mjs",
+    "mudancas": 12
+   },
+   {
+    "pasta": "package-lock.json",
+    "mudancas": 10
+   },
+   {
+    "pasta": "src/pages/sicoob",
+    "mudancas": 9
+   },
+   {
+    "pasta": "scripts/automation.config.json",
+    "mudancas": 8
+   },
+   {
+    "pasta": "scripts/rules/rules",
+    "mudancas": 8
+   },
+   {
+    "pasta": "src/components/intelligence",
+    "mudancas": 8
+   },
+   {
+    "pasta": "src/components/quotes",
+    "mudancas": 8
+   },
+   {
+    "pasta": "src/components/sicoob",
+    "mudancas": 8
+   }
+  ],
+  "arquivos_mais_mudados_90d": [
+   {
+    "arquivo": "docs/plano-melhorias-50-etapas.md",
+    "mudancas": 97
+   },
+   {
+    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
+    "mudancas": 96
+   },
+   {
+    "arquivo": "package.json",
+    "mudancas": 20
+   },
+   {
+    "arquivo": ".github/workflows/sicoob-ci.yml",
+    "mudancas": 19
+   },
+   {
+    "arquivo": "PENDENCIAS.md",
+    "mudancas": 19
+   },
+   {
+    "arquivo": "RELATORIO_CI.md",
+    "mudancas": 19
+   },
+   {
+    "arquivo": ".github/workflows/ci.yml",
+    "mudancas": 18
+   },
+   {
+    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
+    "mudancas": 18
+   },
+   {
+    "arquivo": ".github/workflows/codeql.yml",
+    "mudancas": 17
+   },
+   {
+    "arquivo": ".github/workflows/e2e.yml",
+    "mudancas": 16
+   },
+   {
+    "arquivo": ".github/workflows/lighthouse.yml",
+    "mudancas": 15
+   },
+   {
+    "arquivo": "package-lock.json",
+    "mudancas": 15
+   },
+   {
+    "arquivo": "src/integrations/supabase/types.ts",
+    "mudancas": 14
+   },
+   {
+    "arquivo": ".github/workflows/bundle-check.yml",
+    "mudancas": 12
+   },
+   {
+    "arquivo": ".github/workflows/deploy-sicoob-functions.yml",
+    "mudancas": 11
+   },
+   {
+    "arquivo": ".github/workflows/security-compliance.yml",
+    "mudancas": 11
+   },
+   {
+    "arquivo": "docs/execucao/validacao-do-plano.md",
+    "mudancas": 11
+   },
+   {
+    "arquivo": "src/services/QuoteService.ts",
+    "mudancas": 11
+   },
+   {
+    "arquivo": ".github/workflows/migration-ledger-drift.yml",
+    "mudancas": 10
+   },
+   {
+    "arquivo": ".github/workflows/security.yml",
+    "mudancas": 10
+   },
+   {
+    "arquivo": "src/hooks/quotes/useQuotes.ts",
+    "mudancas": 10
+   },
+   {
+    "arquivo": ".github/workflows/db-performance-audit.yml",
+    "mudancas": 9
+   },
+   {
+    "arquivo": "docs/README.md",
+    "mudancas": 9
+   },
+   {
+    "arquivo": "src/pages/sicoob/orders/OrderDetailPage.tsx",
+    "mudancas": 9
+   },
+   {
+    "arquivo": "src/services/sicoob/orderService.ts",
+    "mudancas": 9
+   }
+  ],
+  "autores_30d": [
+   {
+    "autor": "adm01-debug",
+    "commits": 127
+   },
+   {
+    "autor": "dependabot[bot]",
+    "commits": 9
+   }
+  ]
+ },
+ "contagens": {
+  "arquivos_total": 4322,
+  "arquivos_codigo": 3032,
+  "linhas_codigo": 478840,
+  "rotas": 138,
+  "rotas_http_backend": 13,
+  "vistas_por_id": 0,
+  "itens_menu": 84,
+  "modulos": 145,
+  "componentes": 1172,
+  "hooks": 388,
+  "edge_functions": 106,
+  "tabelas": 291,
+  "migrations": 619,
+  "cron_jobs": 27,
+  "testes": 804,
+  "workflows": 16,
+  "scripts": 121,
+  "docs_md": 246
+ },
+ "por_pasta": {
+  "docs/execucao": {
+   "arquivos": 13,
+   "linhas": 928
+  },
+  "docs/plano-implementacao": {
+   "arquivos": 1,
+   "linhas": 152
+  },
+  "e2e/admin-conexoes-credentials-active-products.spec.ts": {
+   "arquivos": 1,
+   "linhas": 192
+  },
+  "e2e/admin-conexoes-zone-collapse.spec.ts": {
+   "arquivos": 1,
+   "linhas": 195
+  },
+  "e2e/admin-verbas-audit.spec.ts": {
+   "arquivos": 1,
+   "linhas": 31
+  },
+  "e2e/audit-validation.spec.ts": {
+   "arquivos": 1,
+   "linhas": 94
+  },
+  "e2e/auth.spec.ts": {
+   "arquivos": 1,
+   "linhas": 82
+  },
+  "e2e/critical-flows": {
+   "arquivos": 3,
+   "linhas": 60
+  },
+  "e2e/discount-approval.spec.ts": {
+   "arquivos": 1,
+   "linhas": 41
+  },
+  "e2e/editor-permissions.spec.ts": {
+   "arquivos": 1,
+   "linhas": 119
+  },
+  "e2e/fixtures": {
+   "arquivos": 5,
+   "linhas": 771
+  },
+  "e2e/flows": {
+   "arquivos": 40,
+   "linhas": 5294
+  },
+  "e2e/global-setup.ts": {
+   "arquivos": 1,
+   "linhas": 20
+  },
+  "e2e/global-teardown.ts": {
+   "arquivos": 1,
+   "linhas": 20
+  },
+  "e2e/helpers": {
+   "arquivos": 8,
+   "linhas": 1831
+  },
+  "e2e/login.spec.ts": {
+   "arquivos": 1,
+   "linhas": 38
+  },
+  "e2e/matrix-automated.spec.ts": {
+   "arquivos": 1,
+   "linhas": 68
+  },
+  "e2e/mockup-generate.spec.ts": {
+   "arquivos": 1,
+   "linhas": 20
+  },
+  "e2e/navigation.spec.ts": {
+   "arquivos": 1,
+   "linhas": 20
+  },
+  "e2e/onboarding-tour.spec.ts": {
+   "arquivos": 1,
+   "linhas": 90
+  },
+  "e2e/order-status-rbac.spec.ts": {
+   "arquivos": 1,
+   "linhas": 71
+  },
+  "e2e/protected-routes.spec.ts": {
+   "arquivos": 1,
+   "linhas": 47
+  },
+  "e2e/pwa-resilience.spec.ts": {
+   "arquivos": 1,
+   "linhas": 31
+  },
+  "e2e/quote-approval.spec.ts": {
+   "arquivos": 1,
+   "linhas": 104
+  },
+  "e2e/quote-create.spec.ts": {
+   "arquivos": 1,
+   "linhas": 46
+  },
+  "e2e/rbac-navigation.spec.ts": {
+   "arquivos": 1,
+   "linhas": 97
+  },
+  "e2e/routes": {
+   "arquivos": 70,
+   "linhas": 1958
+  },
+  "e2e/search-stability.spec.ts": {
+   "arquivos": 1,
+   "linhas": 76
+  },
+  "e2e/validate-supabase-target.mjs": {
+   "arquivos": 1,
+   "linhas": 35
+  },
+  "e2e/validate-supabase-target.test.mjs": {
+   "arquivos": 1,
+   "linhas": 37
+  },
+  "eslint.config.js": {
+   "arquivos": 1,
+   "linhas": 262
+  },
+  "playwright.config.ts": {
+   "arquivos": 1,
+   "linhas": 321
+  },
+  "playwright.pwa.config.ts": {
+   "arquivos": 1,
+   "linhas": 23
+  },
+  "postcss.config.js": {
+   "arquivos": 1,
+   "linhas": 10
+  },
+  "public/sw.js": {
+   "arquivos": 1,
+   "linhas": 209
+  },
+  "scripts/ai-context": {
+   "arquivos": 3,
+   "linhas": 1512
+  },
+  "scripts/api_map.cjs": {
+   "arquivos": 1,
+   "linhas": 58
+  },
+  "scripts/audit-export.mjs": {
+   "arquivos": 1,
+   "linhas": 133
+  },
+  "scripts/autofix": {
+   "arquivos": 3,
+   "linhas": 353
+  },
+  "scripts/automation.mjs": {
+   "arquivos": 1,
+   "linhas": 992
+  },
+  "scripts/automation.unit.mjs": {
+   "arquivos": 1,
+   "linhas": 603
+  },
+  "scripts/check-aschild-nesting.mjs": {
+   "arquivos": 1,
+   "linhas": 109
+  },
+  "scripts/check-codeql-sarif.mjs": {
+   "arquivos": 1,
+   "linhas": 138
+  },
+  "scripts/check-critical-test-skip-budget.mjs": {
+   "arquivos": 1,
+   "linhas": 128
+  },
+  "scripts/check-edge-authorization.mjs": {
+   "arquivos": 1,
+   "linhas": 220
+  },
+  "scripts/check-edge-functions-health.mjs": {
+   "arquivos": 1,
+   "linhas": 150
+  },
+  "scripts/check-edge-request-id-propagation.mjs": {
+   "arquivos": 1,
+   "linhas": 193
+  },
+  "scripts/check-edge-structured-logging.mjs": {
+   "arquivos": 1,
+   "linhas": 143
+  },
+  "scripts/check-eslint-baseline.mjs": {
+   "arquivos": 1,
+   "linhas": 194
+  },
+  "scripts/check-migration-immutability.mjs": {
+   "arquivos": 1,
+   "linhas": 122
+  },
+  "scripts/check-npm-audit.mjs": {
+   "arquivos": 1,
+   "linhas": 63
+  },
+  "scripts/check-price-freshness-coverage.mjs": {
+   "arquivos": 1,
+   "linhas": 142
+  },
+  "scripts/check-route-error-element.mjs": {
+   "arquivos": 1,
+   "linhas": 168
+  },
+  "scripts/check-route-ref-usage.mjs": {
+   "arquivos": 1,
+   "linhas": 283
+  },
+  "scripts/check-search-imports.mjs": {
+   "arquivos": 1,
+   "linhas": 106
+  },
+  "scripts/check-security-definer-acl.mjs": {
+   "arquivos": 1,
+   "linhas": 119
+  },
+  "scripts/check-seller-scope.mjs": {
+   "arquivos": 1,
+   "linhas": 274
+  },
+  "scripts/check-sicoob-hardcoded-colors.mjs": {
+   "arquivos": 1,
+   "linhas": 80
+  },
+  "scripts/check-smoke-tags.mjs": {
+   "arquivos": 1,
+   "linhas": 175
+  },
+  "scripts/check-typecheck-baseline.mjs": {
+   "arquivos": 1,
+   "linhas": 113
+  },
+  "scripts/check_tables.js": {
+   "arquivos": 1,
+   "linhas": 68
+  },
+  "scripts/ci": {
+   "arquivos": 3,
+   "linhas": 266
+  },
+  "scripts/compare-edge-functions.mjs": {
+   "arquivos": 1,
+   "linhas": 132
+  },
+  "scripts/consolidate-console-snapshot.mjs": {
+   "arquivos": 1,
+   "linhas": 82
+  },
+  "scripts/db": {
+   "arquivos": 9,
+   "linhas": 3206
+  },
+  "scripts/db-performance-audit.mjs": {
+   "arquivos": 1,
+   "linhas": 72
+  },
+  "scripts/e2e-cleanup.mjs": {
+   "arquivos": 1,
+   "linhas": 93
+  },
+  "scripts/e2e-feature-summary.mjs": {
+   "arquivos": 1,
+   "linhas": 387
+  },
+  "scripts/e2e-smoke-coverage-doc.mjs": {
+   "arquivos": 1,
+   "linhas": 197
+  },
+  "scripts/e2e-smoke-summary.mjs": {
+   "arquivos": 1,
+   "linhas": 417
+  },
+  "scripts/e2e-target.d.mts": {
+   "arquivos": 1,
+   "linhas": 10
+  },
+  "scripts/e2e-target.mjs": {
+   "arquivos": 1,
+   "linhas": 61
+  },
+  "scripts/enterprise-dossier-builder.mjs": {
+   "arquivos": 1,
+   "linhas": 381
+  },
+  "scripts/eslint-baseline-generate.mjs": {
+   "arquivos": 1,
+   "linhas": 79
+  },
+  "scripts/fix-edge-cors-allowlist.mjs": {
+   "arquivos": 1,
+   "linhas": 66
+  },
+  "scripts/generate-audit-dossier.mjs": {
+   "arquivos": 1,
+   "linhas": 182
+  },
+  "scripts/generate-enterprise-report.mjs": {
+   "arquivos": 1,
+   "linhas": 177
+  },
+  "scripts/generate-routes-map.mjs": {
+   "arquivos": 1,
+   "linhas": 114
+  },
+  "scripts/generate_api_map.js": {
+   "arquivos": 1,
+   "linhas": 60
+  },
+  "scripts/graphify-local.mjs": {
+   "arquivos": 1,
+   "linhas": 1076
+  },
+  "scripts/graphify-local.unit.mjs": {
+   "arquivos": 1,
+   "linhas": 463
+  },
+  "scripts/healthcheck.mjs": {
+   "arquivos": 1,
+   "linhas": 55
+  },
+  "scripts/inventario": {
+   "arquivos": 6,
+   "linhas": 1305
+  },
+  "scripts/lib": {
+   "arquivos": 7,
+   "linhas": 748
+  },
+  "scripts/load-test.mjs": {
+   "arquivos": 1,
+   "linhas": 63
+  },
+  "scripts/maintenance": {
+   "arquivos": 4,
+   "linhas": 2474
+  },
+  "scripts/md-to-pdf-stub.mjs": {
+   "arquivos": 1,
+   "linhas": 183
+  },
+  "scripts/migrate-edge-cors-allowlist.mjs": {
+   "arquivos": 1,
+   "linhas": 161
+  },
+  "scripts/qa": {
+   "arquivos": 37,
+   "linhas": 8033
+  },
+  "scripts/regras_negocio": {
+   "arquivos": 3,
+   "linhas": 2612
+  },
+  "scripts/revisao": {
+   "arquivos": 18,
+   "linhas": 2119
+  },
+  "scripts/rules": {
+   "arquivos": 10,
+   "linhas": 835
+  },
+  "scripts/run-smoke-filtered.mjs": {
+   "arquivos": 1,
+   "linhas": 68
+  },
+  "scripts/scan-rls-security.mjs": {
+   "arquivos": 1,
+   "linhas": 69
+  },
+  "scripts/seed-qa.mjs": {
+   "arquivos": 1,
+   "linhas": 71
+  },
+  "scripts/simulate-webhooks.mjs": {
+   "arquivos": 1,
+   "linhas": 97
+  },
+  "scripts/smoke-tests.mjs": {
+   "arquivos": 1,
+   "linhas": 245
+  },
+  "scripts/supabase_snapshot": {
+   "arquivos": 2,
+   "linhas": 2920
+  },
+  "scripts/test-audit-scripts.mjs": {
+   "arquivos": 1,
+   "linhas": 109
+  },
+  "scripts/test-rls-compliance.mjs": {
+   "arquivos": 1,
+   "linhas": 195
+  },
+  "scripts/test-rls.mjs": {
+   "arquivos": 1,
+   "linhas": 153
+  },
+  "scripts/triage-edge-typecheck.mjs": {
+   "arquivos": 1,
+   "linhas": 338
+  },
+  "scripts/tscheck-files.mjs": {
+   "arquivos": 1,
+   "linhas": 87
+  },
+  "scripts/typecheck-edge-functions.mjs": {
+   "arquivos": 1,
+   "linhas": 135
+  },
+  "scripts/validate-audit-links.mjs": {
+   "arquivos": 1,
+   "linhas": 225
+  },
+  "scripts/validate-docs-consistency.mjs": {
+   "arquivos": 1,
+   "linhas": 96
+  },
+  "scripts/validate-e2e-target.mjs": {
+   "arquivos": 1,
+   "linhas": 49
+  },
+  "scripts/validate-lovable-sync-target.mjs": {
+   "arquivos": 1,
+   "linhas": 167
+  },
+  "scripts/validate-wcag-colors.mjs": {
+   "arquivos": 1,
+   "linhas": 170
+  },
+  "src/App.tsx": {
+   "arquivos": 1,
+   "linhas": 165
+  },
+  "src/AuthEntry.tsx": {
+   "arquivos": 1,
+   "linhas": 79
+  },
+  "src/components": {
+   "arquivos": 1129,
+   "linhas": 165449
+  },
+  "src/constants": {
+   "arquivos": 3,
+   "linhas": 242
+  },
+  "src/contexts": {
+   "arquivos": 10,
+   "linhas": 1517
+  },
+  "src/data": {
+   "arquivos": 3,
+   "linhas": 1808
+  },
+  "src/hooks": {
+   "arquivos": 309,
+   "linhas": 45715
+  },
+  "src/integrations": {
+   "arquivos": 3,
+   "linhas": 13462
+  },
+  "src/lib": {
+   "arquivos": 161,
+   "linhas": 22175
+  },
+  "src/main.tsx": {
+   "arquivos": 1,
+   "linhas": 126
+  },
+  "src/pages": {
+   "arquivos": 199,
+   "linhas": 50856
+  },
+  "src/routes": {
+   "arquivos": 9,
+   "linhas": 513
+  },
+  "src/services": {
+   "arquivos": 22,
+   "linhas": 3141
+  },
+  "src/stores": {
+   "arquivos": 6,
+   "linhas": 569
+  },
+  "src/test": {
+   "arquivos": 1,
+   "linhas": 33
+  },
+  "src/tests": {
+   "arquivos": 3,
+   "linhas": 379
+  },
+  "src/types": {
+   "arquivos": 26,
+   "linhas": 3989
+  },
+  "src/utils": {
+   "arquivos": 37,
+   "linhas": 5003
+  },
+  "supabase/functions": {
+   "arquivos": 213,
+   "linhas": 34097
+  },
+  "tailwind.config.ts": {
+   "arquivos": 1,
+   "linhas": 324
+  },
+  "tests/StockFilterToolbar.test.tsx": {
+   "arquivos": 1,
+   "linhas": 129
+  },
+  "tests/StockStatCard.test.tsx": {
+   "arquivos": 1,
+   "linhas": 143
+  },
+  "tests/_helpers": {
+   "arquivos": 1,
+   "linhas": 83
+  },
+  "tests/a11y": {
+   "arquivos": 2,
+   "linhas": 123
+  },
+  "tests/admin": {
+   "arquivos": 13,
+   "linhas": 2379
+  },
+  "tests/ai-usage.test.ts": {
+   "arquivos": 1,
+   "linhas": 191
+  },
+  "tests/color-navigation.test.ts": {
+   "arquivos": 1,
+   "linhas": 348
+  },
+  "tests/components": {
+   "arquivos": 124,
+   "linhas": 25790
+  },
+  "tests/contexts": {
+   "arquivos": 3,
+   "linhas": 356
+  },
+  "tests/contract": {
+   "arquivos": 1,
+   "linhas": 34
+  },
+  "tests/contracts": {
+   "arquivos": 1,
+   "linhas": 31
+  },
+  "tests/e2e": {
+   "arquivos": 24,
+   "linhas": 4990
+  },
+  "tests/e2e-nav-helper.test.ts": {
+   "arquivos": 1,
+   "linhas": 60
+  },
+  "tests/edge-functions": {
+   "arquivos": 13,
+   "linhas": 866
+  },
+  "tests/fixtures": {
+   "arquivos": 1,
+   "linhas": 234
+  },
+  "tests/functions": {
+   "arquivos": 4,
+   "linhas": 516
+  },
+  "tests/helpers": {
+   "arquivos": 2,
+   "linhas": 316
+  },
+  "tests/hooks": {
+   "arquivos": 122,
+   "linhas": 12809
+  },
+  "tests/integration": {
+   "arquivos": 4,
+   "linhas": 908
+  },
+  "tests/lib": {
+   "arquivos": 65,
+   "linhas": 8320
+  },
+  "tests/load": {
+   "arquivos": 1,
+   "linhas": 41
+  },
+  "tests/observability": {
+   "arquivos": 1,
+   "linhas": 65
+  },
+  "tests/p0": {
+   "arquivos": 8,
+   "linhas": 874
+  },
+  "tests/pages": {
+   "arquivos": 23,
+   "linhas": 2801
+  },
+  "tests/product-form-improvements.test.ts": {
+   "arquivos": 1,
+   "linhas": 1054
+  },
+  "tests/public-approval": {
+   "arquivos": 2,
+   "linhas": 122
+  },
+  "tests/rls": {
+   "arquivos": 6,
+   "linhas": 1044
+  },
+  "tests/scenarios": {
+   "arquivos": 26,
+   "linhas": 1842
+  },
+  "tests/scripts": {
+   "arquivos": 30,
+   "linhas": 2838
+  },
+  "tests/search": {
+   "arquivos": 1,
+   "linhas": 54
+  },
+  "tests/security": {
+   "arquivos": 5,
+   "linhas": 670
+  },
+  "tests/services": {
+   "arquivos": 13,
+   "linhas": 1293
+  },
+  "tests/setup-ref-warning-capture.ts": {
+   "arquivos": 1,
+   "linhas": 140
+  },
+  "tests/setup.ts": {
+   "arquivos": 1,
+   "linhas": 43
+  },
+  "tests/sicoob": {
+   "arquivos": 9,
+   "linhas": 480
+  },
+  "tests/sicoob-status-mapping.test.ts": {
+   "arquivos": 1,
+   "linhas": 39
+  },
+  "tests/ssr": {
+   "arquivos": 1,
+   "linhas": 74
+  },
+  "tests/stock-module.test.tsx": {
+   "arquivos": 1,
+   "linhas": 605
+  },
+  "tests/stock-performance.test.ts": {
+   "arquivos": 1,
+   "linhas": 740
+  },
+  "tests/stock-types.test.ts": {
+   "arquivos": 1,
+   "linhas": 173
+  },
+  "tests/stores": {
+   "arquivos": 5,
+   "linhas": 338
+  },
+  "tests/test-utils.tsx": {
+   "arquivos": 1,
+   "linhas": 39
+  },
+  "tests/types": {
+   "arquivos": 1,
+   "linhas": 160
+  },
+  "tests/unit": {
+   "arquivos": 11,
+   "linhas": 792
+  },
+  "tests/utils": {
+   "arquivos": 20,
+   "linhas": 2619
+  },
+  "tests/workflows": {
+   "arquivos": 1,
+   "linhas": 116
+  },
+  "vite.config.ts": {
+   "arquivos": 1,
+   "linhas": 120
+  },
+  "vitest.config.ts": {
+   "arquivos": 1,
+   "linhas": 61
+  }
+ },
+ "maiores_arquivos": [
+  {
+   "arquivo": "src/integrations/supabase/types.ts",
+   "linhas": 13351
+  },
+  {
+   "arquivo": "scripts/regras_negocio/generate.py",
+   "linhas": 2197
+  },
+  {
+   "arquivo": "supabase/functions/external-db-bridge/index.ts",
+   "linhas": 1956
+  },
+  {
+   "arquivo": "scripts/supabase_snapshot/snapshot.py",
+   "linhas": 1879
+  },
+  {
+   "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
+   "linhas": 1518
+  },
+  {
+   "arquivo": "supabase/functions/expert-chat/index.ts",
+   "linhas": 1368
+  },
+  {
+   "arquivo": "supabase/functions/crm-db-bridge/index.ts",
+   "linhas": 1284
+  },
+  {
+   "arquivo": "scripts/graphify-local.mjs",
+   "linhas": 1076
+  },
+  {
+   "arquivo": "src/lib/theme-presets.ts",
+   "linhas": 1046
+  },
+  {
+   "arquivo": "scripts/automation.mjs",
+   "linhas": 992
+  },
+  {
+   "arquivo": "scripts/ai-context/gerar.mjs",
+   "linhas": 941
+  },
+  {
+   "arquivo": "src/components/admin/connections/SecretField.tsx",
+   "linhas": 921
+  },
+  {
+   "arquivo": "src/components/quotes/QuoteConsolidationPanel.tsx",
+   "linhas": 913
+  },
+  {
+   "arquivo": "src/data/mockData.ts",
+   "linhas": 825
+  },
+  {
+   "arquivo": "scripts/maintenance/lib.mjs",
+   "linhas": 794
+  },
+  {
+   "arquivo": "src/pages/sicoob/SicoobInvitationsPage.tsx",
+   "linhas": 756
+  },
+  {
+   "arquivo": "src/components/security/SecurityDashboardSections.tsx",
+   "linhas": 737
+  },
+  {
+   "arquivo": "src/pages/magic-up/MagicUpConfigPanel.tsx",
+   "linhas": 723
+  },
+  {
+   "arquivo": "src/pages/TrendsPage.tsx",
+   "linhas": 715
+  },
+  {
+   "arquivo": "src/pages/Auth.tsx",
+   "linhas": 713
+  },
+  {
+   "arquivo": "scripts/maintenance/run.mjs",
+   "linhas": 711
+  },
+  {
+   "arquivo": "src/components/admin/connections/ConnectionTestHistoryPanel.tsx",
+   "linhas": 700
+  },
+  {
+   "arquivo": "src/data/pantone-coated.ts",
+   "linhas": 695
+  },
+  {
+   "arquivo": "src/hooks/useMagicUpState.ts",
+   "linhas": 688
+  },
+  {
+   "arquivo": "src/components/layout/SidebarReorganized.tsx",
+   "linhas": 687
+  }
+ ],
+ "qualidade": {
+  "any": 489,
+  "console_log": 484,
+  "ts_ignore": 6,
+  "eslint_disable": 4,
+  "todos": 16,
+  "arquivos_acima_500_linhas": 69
+ },
+ "todos": [
+  {
+   "arquivo": "e2e/helpers/e2e-resources.ts",
+   "linha": 4,
+   "tipo": "TODO",
+   "texto": "orçamento, coleção, lista de favoritos, kit ou cart"
+  },
+  {
+   "arquivo": "public/sw.js",
+   "linha": 205,
+   "tipo": "TODO",
+   "texto": "Implementar lógica de sync"
+  },
+  {
+   "arquivo": "scripts/ai-context/gerar.mjs",
+   "linha": 191,
+   "tipo": "TODO",
+   "texto": "|FIXME|HACK|XXX)\\b[:\\s-]*([^\\n]{0,100})/.exec(line); if (m) todos.push({ linha: ln, tipo: m[1], text"
+  },
+  {
+   "arquivo": "scripts/ai-context/gerar.mjs",
+   "linha": 225,
+   "tipo": "TODO",
+   "texto": "|FIXME|HACK|XXX)\\b[:\\s-]*([^\\n]{0,100})/.exec(l); return m ? { linha: i + 1, tipo: m[1], texto: m[2]"
+  },
+  {
+   "arquivo": "scripts/check-seller-scope.mjs",
+   "linha": 10,
+   "tipo": "TODO",
+   "texto": ".eq(\"seller_id\")`"
+  },
+  {
+   "arquivo": "src/lib/telemetry/longTaskWatchdog.ts",
+   "linha": 36,
+   "tipo": "TODO",
+   "texto": "ou PARTE do bloqueio. */"
+  },
+  {
+   "arquivo": "supabase/functions/_shared/credentials.ts",
+   "linha": 72,
+   "tipo": "TODO",
+   "texto": "|PREENCHER|REPLACE_ME|YOUR[_ -].*)$/i.test(trimmed) ||"
+  },
+  {
+   "arquivo": "tests/admin/skeleton-snapshots.test.tsx",
+   "linha": 85,
+   "tipo": "XXX",
+   "texto": "\")"
+  },
+  {
+   "arquivo": "tests/admin/skeleton-snapshots.test.tsx",
+   "linha": 86,
+   "tipo": "XXX",
+   "texto": "\"')"
+  },
+  {
+   "arquivo": "tests/admin/skeleton-snapshots.test.tsx",
+   "linha": 87,
+   "tipo": "XXX",
+   "texto": "\"')"
+  },
+  {
+   "arquivo": "tests/admin/skeleton-snapshots.test.tsx",
+   "linha": 88,
+   "tipo": "XXX",
+   "texto": "\"');"
+  },
+  {
+   "arquivo": "tests/lib/personalization/adapters/price-response.adapter.test.ts",
+   "linha": 160,
+   "tipo": "TODO",
+   "texto": "ativar quando defaults explícitos para markup ausente forem"
+  },
+  {
+   "arquivo": "tests/scripts/check-seller-scope.test.ts",
+   "linha": 20,
+   "tipo": "TODO",
+   "texto": ".eq(\"seller_id\", id)\\n;'],"
+  },
+  {
+   "arquivo": "scripts/regras_negocio/generate.py",
+   "linha": 573,
+   "tipo": "TODO",
+   "texto": "\", \"http\", \"import\")) and \"://\" not in c:"
+  },
+  {
+   "arquivo": "scripts/revisao/gerar-matriz.py",
+   "linha": 31,
+   "tipo": "TODO",
+   "texto": "arquivo, e o laço abaixo rotula isso de \"arquivo novo desde o"
+  },
+  {
+   "arquivo": "scripts/revisao/gerar-revisao-2026-09-12.py",
+   "linha": 23,
+   "tipo": "TODO",
+   "texto": "arquivo — falso positivo de ambiente, não"
+  }
+ ],
+ "alertas": {
+  "rotas_sem_arquivo": [
+   "/*"
+  ],
+  "componentes_ambiguos": [],
+  "menu_sem_destino": [
+   "Ação -> #fab",
+   "Bem-vindo ao Brindes Sicoob! -> welcome",
+   "Busca Inteligente -> search",
+   "Central de Notificações -> notifications",
+   "Chat com Especialista IA -> expert-chat",
+   "Conexões -> connections",
+   "CRM de Clientes -> clients",
+   "Flow -> __open_expert__",
+   "Gerar Mockup -> mockup",
+   "Meu orçamento -> __open_cart__",
+   "Novo Orçamento -> new-quote",
+   "Operação -> operation",
+   "Pronto para vender! -> complete",
+   "Saúde -> health"
+  ],
+  "edges_orfas": [
+   "ai-recommendations",
+   "bitrix-sync",
+   "cleanup-novelties",
+   "commemorative-dates",
+   "e2e-auth-test",
+   "e2e-cleanup",
+   "elevenlabs-tts",
+   "error-monitor",
+   "generate-ad-image",
+   "generate-mockup-nanobanana",
+   "get-visitor-info",
+   "github-fix-config",
+   "magic-up-score",
+   "materials-api",
+   "mcp-keys-issue",
+   "mcp-keys-rotate",
+   "mcp-server",
+   "migration-health-check",
+   "product-webhook",
+   "qa-block-monitor",
+   "quote-sync",
+   "rate-limit-check",
+   "rls-audit",
+   "rls-integration-tests",
+   "rls-matrix-export",
+   "sicoob-seed-debug",
+   "sicoob-seed-qa",
+   "step-up-verify",
+   "verify-email",
+   "voice-agent",
+   "webhook-inbound"
+  ],
+  "edges_chamadas_sem_pasta": [],
+  "tabelas_sem_rls": [
+   "admin_audit_log_default",
+   "admin_audit_log_y2024",
+   "admin_audit_log_y2025",
+   "admin_audit_log_y2026_m01",
+   "admin_audit_log_y2026_m02",
+   "admin_audit_log_y2026_m03",
+   "admin_audit_log_y2026_m04",
+   "admin_audit_log_y2026_m05",
+   "admin_audit_log_y2026_m06",
+   "admin_audit_log_y2026_m07",
+   "admin_audit_log_y2026_m08",
+   "admin_audit_log_y2026_m09",
+   "admin_audit_log_y2026_m10",
+   "admin_audit_log_y2026_m11",
+   "admin_audit_log_y2026_m12",
+   "admin_audit_log_y2027_m01",
+   "admin_audit_log_y2027_m02",
+   "admin_audit_log_y2027_m03"
+  ],
+  "tabelas_usadas_sem_definicao": [
+   "avatars",
+   "categories_tree_visual",
+   "contacts",
+   "customers",
+   "exports",
+   "material_groups",
+   "material_types",
+   "mv_material_group_stats",
+   "product_category_assignments",
+   "product_materials",
+   "product_variants",
+   "proposals",
+   "tabela_preco_gravacao_oficial",
+   "tabela_preco_gravacao_oficial_faixa",
+   "v_commemorative_dates_with_colors"
+  ],
+  "tabelas_com_drift_migration_vs_types": [
+   "admin_settings",
+   "art_file_attachments",
+   "audit_log",
+   "cms_config",
+   "collections",
+   "e2e_cleanup_rate_limit",
+   "follow_up_reminders",
+   "magic_up_generations",
+   "mockup_prompt_configs",
+   "mockup_prompt_history",
+   "mockup_templates",
+   "notification_preferences",
+   "order_audit_events",
+   "order_items",
+   "order_payments",
+   "order_pilot_approvals",
+   "orders",
+   "pa_budgets",
+   "password_reset_requests",
+   "product_component_location_techniques",
+   "product_component_locations",
+   "product_components",
+   "product_sync_logs",
+   "profiles",
+   "qa_run_steps",
+   "qa_runs",
+   "quote_approval_tokens",
+   "quote_comments",
+   "quote_items",
+   "quotes",
+   "saved_filters",
+   "scheduled_reports",
+   "search_analytics",
+   "sicoob_rls_audit_logs",
+   "system_settings",
+   "user_preferences",
+   "user_roles"
+  ],
+  "rpcs_sem_definicao": [
+   "get_active_commemorative_dates",
+   "get_all_material_groups_safe",
+   "get_all_material_types_safe",
+   "get_category_descendants",
+   "get_material_types_by_group_slug",
+   "get_materials_complete_safe",
+   "get_upcoming_commemorative_dates",
+   "get_variants_for_commemorative_date"
+  ],
+  "componentes_orfaos": [
+   "src/components/admin/CatalogQualityDashboard.tsx",
+   "src/components/admin/connections/ConnectionErrorDetailsDialog.tsx",
+   "src/components/admin/DiscountApprovalQueue.tsx",
+   "src/components/admin/ProductPersonalizationManager.tsx",
+   "src/components/admin/products/BulkImportDialog.tsx",
+   "src/components/admin/products/CategorySelect.tsx",
+   "src/components/admin/SellerDiscountLimitsPanel.tsx",
+   "src/components/auth/PasskeyLogin.tsx",
+   "src/components/auth/QuickTestLogin.tsx",
+   "src/components/auth/SocialLoginButtons.tsx",
+   "src/components/bi/ExportDossierButton.tsx",
+   "src/components/cart/BundleSuggestionCard.tsx",
+   "src/components/cart/MiniCart.tsx",
+   "src/components/common/GlassElements.tsx",
+   "src/components/common/GlobalMotionOverlay.tsx",
+   "src/components/common/ImageWithFallback.tsx",
+   "src/components/common/StatusTimeline.tsx",
+   "src/components/compare/ComparisonShortcutsCheatsheet.tsx",
+   "src/components/compare/ComparisonWeightsPopover.tsx",
+   "src/components/compare/FocusModeToggle.tsx",
+   "src/components/compare/HistoricalPriceOverlay.tsx",
+   "src/components/compare/ImageZoomCell.tsx",
+   "src/components/compare/SortableColumnWrapper.tsx",
+   "src/components/effects/SkeletonTransition.tsx",
+   "src/components/expert/ExpertChatButton.tsx",
+   "src/components/favorites/QuickListPicker.tsx",
+   "src/components/filters/FilterSection.tsx",
+   "src/components/goals/SalesGoalsCard.tsx",
+   "src/components/intelligence/SegmentAnalysis.tsx",
+   "src/components/intelligence/TopClients.tsx",
+   "src/components/inventory/StockBadge.tsx",
+   "src/components/inventory/StockCategoryTreeSelect.tsx",
+   "src/components/kit-builder/KitComparisonDialog.tsx",
+   "src/components/layout/PageHeader.tsx",
+   "src/components/mockup/ArtFileUpload.tsx",
+   "src/components/mockup/GenerateButton.tsx",
+   "src/components/mockup/SaveTemplateDialog.tsx",
+   "src/components/mockup/TemplateSelector.tsx",
+   "src/components/navigation/DynamicBreadcrumbs.tsx",
+   "src/components/navigation/FlowProgressBar.tsx",
+   "src/components/novelties/NoveltiesSection.tsx",
+   "src/components/orders/OrderEmptyState.tsx",
+   "src/components/orders/OrderSkeletonCard.tsx",
+   "src/components/orders/OrderTrackingTimeline.tsx",
+   "src/components/orders/PilotApprovalPanel.tsx",
+   "src/components/orders/RevisionRequest.tsx",
+   "src/components/personalization/ThemeCustomization.tsx",
+   "src/components/products/KitVisualComposition.tsx",
+   "src/components/products/PriceHistoryChart.tsx",
+   "src/components/products/ProductSectionNav.tsx",
+   "src/components/products/ProductVariations.tsx",
+   "src/components/quote/MarginInsightBadge.tsx",
+   "src/components/quotes/ClientPicker.tsx",
+   "src/components/quotes/ItemsListEditor.tsx",
+   "src/components/quotes/QuoteCard.tsx",
+   "src/components/quotes/QuoteFilters.tsx",
+   "src/components/quotes/QuoteItemsList.tsx",
+   "src/components/quotes/QuoteMetricsDashboard.tsx",
+   "src/components/quotes/QuotePersonalizationSelector.tsx",
+   "src/components/quotes/QuoteTemplatePicker.tsx",
+   "src/components/search/GlobalSearch.tsx",
+   "src/components/search/SmartSuggestions.tsx",
+   "src/components/search/voice/VoiceOverlaySections.tsx",
+   "src/components/security/SecuritySettings.tsx",
+   "src/components/sicoob/BudgetExceededBanner.tsx",
+   "src/components/sicoob/orders/AIOrderPredictor.tsx",
+   "src/components/sicoob/orders/OrderAuditTimeline.tsx",
+   "src/components/simulation/SimulationPriceSourceBadge.tsx",
+   "src/components/simulator/MockupPreview.tsx",
+   "src/components/simulator/NicheRecommendationBadge.tsx",
+   "src/components/simulator/StockAlert.tsx",
+   "src/components/simulator/TechniqueCard.tsx"
+  ],
+  "componentes_com_nome_duplicado": [
+   "BreadcrumbItem",
+   "BulkAction",
+   "CardSkeleton",
+   "CompareCartsDialog",
+   "DashboardSkeleton",
+   "FadeInView",
+   "FilterSection",
+   "GestorApprovalsPage",
+   "GroupSeparator",
+   "HighlightMatch",
+   "HoverCard",
+   "LoadTemplateDialog",
+   "LoadingButton",
+   "LoadingOverlay",
+   "LoadingScreen",
+   "MiniStatCard",
+   "MobileSummarySheet",
+   "OrderAuditTimeline",
+   "OrderDetailPage",
+   "OrdersPage",
+   "ProductCardSkeleton",
+   "ProductDetailSkeleton",
+   "ProductGridSkeleton",
+   "ProductLoaderAndColorSelector",
+   "ProductPersonalizationManager",
+   "ProductRow",
+   "ProductSelector",
+   "RankBadge",
+   "STATUS_CONFIG",
+   "SaveTemplateDialog",
+   "Skeleton",
+   "SkipToContent",
+   "SmartSuggestions",
+   "StatCard",
+   "StockBadge",
+   "TableRowSkeleton",
+   "TableSkeleton",
+   "TechniqueCard",
+   "TechniqueSelector",
+   "Toaster",
+   "UnsavedChangesDialog"
+  ],
+  "scripts_orfaos": [],
+  "env_usadas_nao_declaradas": [
+   "DEV",
+   "MODE",
+   "PROD",
+   "VITE_APP_ENCRYPTION_KEY",
+   "VITE_ENABLE_DEMO_PAGES",
+   "VITE_LOVABLE_PREVIEW",
+   "VITE_SENTRY_DSN",
+   "VITE_SHOW_DEV_INFRA_MESSAGES",
+   "VITE_SICOOB_TEST_EMAIL_CENTRAL",
+   "VITE_SICOOB_TEST_EMAIL_GESTOR",
+   "VITE_SICOOB_TEST_EMAIL_PA",
+   "VITE_SICOOB_TEST_EMAIL_SINGULAR",
+   "VITE_SICOOB_TEST_USER_PASSWORD",
+   "VITE_SUPABASE_PROJECT_ID",
+   "VITE_SUPABASE_PUBLISHABLE_KEY",
+   "VITE_SUPABASE_URL"
+  ],
+  "ciclos_de_import": 15,
+  "possiveis_segredos_no_codigo": [
+   "scripts/ai-context/cenarios.mjs:103"
+  ]
+ },
+ "erros_do_gerador": []
+}

@@ -1,0 +1,2364 @@
+{
+ "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
+ "format_version": 2,
+ "stack": {
+  "linguagens": [
+   "TypeScript (2832)",
+   "SQL (672)",
+   "Markdown (246)",
+   "JSON (233)",
+   "JavaScript (144)",
+   "Python (59)",
+   "YAML (23)",
+   "CSS (7)"
+  ],
+  "linguagem_principal": "TypeScript",
+  "framework": "React",
+  "backend_http": [],
+  "bundler": "Vite",
+  "roteador": "react-router",
+  "banco": "Supabase",
+  "testes": [
+   "vitest",
+   "playwright"
+  ],
+  "ui": [
+   "tailwind",
+   "radix/shadcn"
+  ],
+  "estado": [
+   "react-query",
+   "zustand"
+  ],
+  "gerenciador_pacotes": "npm",
+  "node": ">=24 <25",
+  "python": null,
+  "deploy": [
+   "vercel",
+   "compose/swarm"
+  ],
+  "monorepo": null,
+  "pastas_fonte": [
+   "src"
+  ]
+ },
+ "workspaces": [],
+ "package": {
+  "nome": "@adm01-debug/gifts-store",
+  "versao": "2.0.0",
+  "scripts": {
+   "audit:dossier": "playwright install chromium && node scripts/enterprise-dossier-builder.mjs",
+   "autofix": "node scripts/autofix/run.mjs",
+   "autofix:apply": "node scripts/autofix/run.mjs --apply",
+   "automation:check": "node scripts/automation.mjs check --ref HEAD",
+   "automation:doctor": "node scripts/automation.mjs doctor",
+   "automation:graph": "node scripts/automation.mjs graph",
+   "automation:heal": "node scripts/automation.mjs heal --ref origin/main",
+   "automation:install-hooks": "node scripts/automation.mjs install-hooks",
+   "automation:nightly": "node scripts/automation.mjs nightly --ref origin/main",
+   "automation:status": "node scripts/automation.mjs graph status",
+   "automation:test": "node scripts/automation.mjs test",
+   "automation:uninstall-hooks": "node scripts/automation.mjs uninstall-hooks",
+   "build": "vite build",
+   "build:dev": "npm run typecheck:baseline && vite build --mode development",
+   "check:agents-md": "node scripts/ci/check-agents-md-integrity.mjs",
+   "check:aschild-nesting": "node scripts/check-aschild-nesting.mjs",
+   "check:critical-test-skips": "node scripts/check-critical-test-skip-budget.mjs",
+   "check:live-api-inventory": "node scripts/db/check-live-api-inventory.mjs",
+   "check:npm-audit": "node scripts/check-npm-audit.mjs",
+   "check:route-error-element": "node scripts/check-route-error-element.mjs",
+   "check:route-ref-usage": "node scripts/check-route-ref-usage.mjs",
+   "check:security-definer-acl": "node scripts/check-security-definer-acl.mjs",
+   "check:seller-scope": "node scripts/check-seller-scope.mjs",
+   "contexto:ia": "node scripts/ai-context/gerar.mjs --out docs/contexto/codigo",
+   "contexto:ia:cenarios": "node scripts/ai-context/cenarios.mjs",
+   "contexto:ia:test": "node --test scripts/ai-context/gerar.unit.mjs",
+   "contexto:regras": "python3 scripts/regras_negocio/generate.py --repo . --out docs/contexto/regras --profile regras --schema-snapshot docs/contexto/supabase --index-path docs/contexto/00-INDEX.md --no-pointer",
+   "contexto:regras:test": "python3 scripts/regras_negocio/test_generate.py",
+   "coverage": "vitest run --coverage",
+   "dev": "vite",
+   "e2e:smoke-coverage-check": "node scripts/e2e-smoke-coverage-doc.mjs --check",
+   "e2e:smoke-coverage-doc": "node scripts/e2e-smoke-coverage-doc.mjs",
+   "e2e:smoke-summary": "node scripts/e2e-smoke-summary.mjs",
+   "e2e:smoke-tags-check": "node scripts/check-smoke-tags.mjs",
+   "e2e:summary": "node scripts/e2e-feature-summary.mjs",
+   "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+   "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
+   "gaps": "node scripts/rules/run.mjs",
+   "graph:setup": "bash scripts/graphify/setup.sh",
+   "graph:update": "graphify update .",
+   "healthcheck": "node scripts/healthcheck.mjs",
+   "inventario:banco": "node scripts/inventario/gerar-banco.mjs",
+   "inventario:mudou": "node scripts/inventario/mudou-conteudo.mjs",
+   "inventario:repo": "node scripts/inventario/gerar-repo.mjs",
+   "inventario:rotas": "node scripts/inventario/gerar-rotas.mjs",
+   "inventario:rotas:check": "node scripts/inventario/gerar-rotas.mjs --check",
+   "inventario:test": "node --test scripts/inventario/gerar-banco.unit.mjs scripts/inventario/mudou-conteudo.unit.mjs",
+   "lint": "npm run lint:check",
+   "lint:baseline": "node scripts/check-eslint-baseline.mjs",
+   "lint:baseline:update": "node scripts/eslint-baseline-generate.mjs",
+   "lint:check": "eslint src",
+   "maintenance:check": "sh scripts/maintenance/run.sh check --root . --ref origin/main",
+   "maintenance:doctor": "sh scripts/maintenance/run.sh doctor --root .",
+   "maintenance:heal": "sh scripts/maintenance/run.sh heal --root . --ref origin/main",
+   "prepare": "husky",
+   "preview": "vite preview",
+   "qa:visual:demo": "node scripts/qa/demo-browser.mjs",
+   "qa:visual:login": "node scripts/qa/login-browser.mjs",
+   "seed:qa": "node scripts/seed-qa.mjs",
+   "smoke": "node scripts/smoke-tests.mjs",
+   "test": "vitest run",
+   "test:cleanup": "node scripts/e2e-cleanup.mjs",
+   "test:coverage": "vitest run --coverage",
+   "test:coverage:ci": "vitest run --coverage --coverage.reporter=text --coverage.reporter=json-summary --coverage.reporter=html --coverage.reporter=lcov --coverage.thresholds.statements=80 --coverage.thresholds.branches=80",
+   "test:e2e": "rm -rf e2e-artifacts playwright-report && npx playwright test --grep-invert '@smoke|@header-sticky'",
+   "test:e2e:all": "npm run test:e2e:smoke && npm run test:e2e:header-sticky && npm run test:e2e:regression",
+   "test:e2e:debug": "npx playwright test --grep-invert '@smoke|@header-sticky' --debug",
+   "test:e2e:headed": "npx playwright test --grep-invert '@smoke|@header-sticky' --headed",
+   "test:e2e:header-sticky": "npx playwright test e2e/flows/22-header-sticky.spec.ts --max-failures=1 --reporter=github,list",
+   "test:e2e:install": "npx playwright install --with-deps chromium",
+   "test:e2e:mobile": "npx playwright test --project=routes-mobile",
+   "test:e2e:pwa": "npx playwright test --config=playwright.pwa.config.ts",
+   "test:e2e:regression": "npx playwright test --project=chromium-public --project=chromium-authed --project=routes-public --project=routes-authed --grep-invert '@smoke|@header-sticky'",
+   "test:e2e:regression:headed": "npx playwright test --project=chromium-public --project=chromium-authed --project=routes-public --project=routes-authed --grep-invert '@smoke|@header-sticky' --headed",
+   "test:e2e:regression:report": "npm run test:e2e:regression; node scripts/e2e-feature-summary.mjs",
+   "test:e2e:regression:ui": "npx playwright test --project=chromium-public --project=chromium-authed --project=routes-public --project=routes-authed --grep-invert '@smoke|@header-sticky' --ui",
+   "test:e2e:report": "npx playwright show-report",
+   "test:e2e:smoke": "node scripts/run-smoke-filtered.mjs",
+   "test:e2e:smoke:2h": "node scripts/run-smoke-filtered.mjs --tag @smoke-2h",
+   "test:e2e:smoke:debug": "npx playwright test --project=chromium-smoke --workers=1 --debug",
+   "test:e2e:smoke:headed": "npx playwright test --project=chromium-smoke --workers=1 --headed",
+   "test:e2e:smoke:report": "npm run test:e2e:smoke; node scripts/e2e-smoke-summary.mjs; node scripts/e2e-feature-summary.mjs",
+   "test:e2e:smoke:ui": "npx playwright test --project=chromium-smoke --workers=1 --ui",
+   "test:e2e:ui": "npx playwright test --grep-invert '@smoke|@header-sticky' --ui",
+   "test:fuzzing": "vitest run tests/unit/fuzzing.test.ts",
+   "test:load": "node scripts/load-test.mjs",
+   "test:maintenance": "node --test scripts/maintenance/maintenance.unit.mjs",
+   "test:price-freshness": "bash -c 'set -euo pipefail; files=( tests/utils/price-freshness*.test.ts tests/components/PriceFreshnessBadge*.test.tsx ); vitest run \"${files[@]}\" --coverage --coverage.reporter=text --coverage.reporter=json-summary --coverage.reporter=html --coverage.include=src/utils/price-freshness.ts --coverage.include=src/components/products/PriceFreshnessBadge.tsx --coverage.thresholds.statements=0 --coverage.thresholds.branches=0 --coverage.thresholds.functions=0 --coverage.thresholds.lines=0 && node scripts/check-price-freshness-coverage.mjs'",
+   "test:rls": "node scripts/test-rls.mjs",
+   "test:run": "vitest run",
+   "test:scenarios": "node --test tests/scenarios/*.mjs",
+   "test:simulation": "node scripts/simulate-webhooks.mjs",
+   "test:strict-ref": "STRICT_REF_WARNINGS=1 vitest run && node scripts/consolidate-console-snapshot.mjs",
+   "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
+   "typecheck:baseline": "node scripts/check-typecheck-baseline.mjs",
+   "typecheck:baseline:update": "node scripts/check-typecheck-baseline.mjs --update",
+   "typecheck:files": "node scripts/tscheck-files.mjs"
+  },
+  "dependencias": 104,
+  "dev_dependencias": 22,
+  "principais": {
+   "@supabase/supabase-js": "^2.119.0",
+   "@tanstack/react-query": "^5.106.1",
+   "@tanstack/react-virtual": "^3.14.26",
+   "date-fns": "^2.30.0",
+   "framer-motion": "^11.0.0",
+   "react": "^18.3.1",
+   "react-day-picker": "^8.10.2",
+   "react-dom": "^18.3.1",
+   "react-helmet-async": "^2.0.5",
+   "react-hook-form": "^7.91.0",
+   "react-hot-toast": "^2.6.1",
+   "react-markdown": "^10.1.0",
+   "react-resizable-panels": "^2.0.11",
+   "react-router-dom": "7.18.5",
+   "react-signature-canvas": "^1.1.0-alpha.2",
+   "recharts": "^2.10.3",
+   "vitest": "^4.1.12",
+   "zod": "^4.6.7",
+   "zustand": "^4.5.0"
+  },
+  "engines": {
+   "node": ">=24 <25"
+  },
+  "packageManager": null
+ },
+ "python": {
+  "dependencias": [
+   "psycopg"
+  ]
+ },
+ "configs": [
+  ".github/CODEOWNERS",
+  ".github/PULL_REQUEST_TEMPLATE.md",
+  ".github/dependabot.yml",
+  ".husky/pre-commit",
+  ".husky/pre-push",
+  ".prettierrc",
+  "ai-context.config.json",
+  "components.json",
+  "deno.json",
+  "eslint.config.js",
+  "package.json",
+  "playwright.config.ts",
+  "postcss.config.js",
+  "supabase/config.toml",
+  "tailwind.config.ts",
+  "tsconfig.app.json",
+  "tsconfig.eslint.json",
+  "tsconfig.json",
+  "tsconfig.node.json",
+  "vercel.json",
+  "vite.config.ts",
+  "vitest.config.ts"
+ ],
+ "workflows": [
+  {
+   "arquivo": ".github/workflows/apply-sicoob-migrations.yml",
+   "nome": "Aplicar migrations Sicoob",
+   "gatilhos": [
+    "workflow_dispatch"
+   ],
+   "crons": [],
+   "branches": [],
+   "jobs": [
+    "migrate"
+   ],
+   "permissoes": [
+    "contents: read"
+   ],
+   "scripts_usados": [
+    "scripts/db/apply-sicoob-migrations.mjs"
+   ],
+   "npm_scripts": [],
+   "secrets": [
+    "SUPABASE_ACCESS_TOKEN"
+   ],
+   "actions": [
+    "actions/checkout",
+    "actions/setup-node"
+   ]
+  },
+  {
+   "arquivo": ".github/workflows/automation-local.yml",
+   "nome": "Automação local",
+   "gatilhos": [
+    "pull_request",
+    "push",
+    "workflow_dispatch"
+   ],
+   "crons": [],
+   "branches": [
+    "main"
+   ],
+   "jobs": [
+    "contracts"
+   ],
+   "permissoes": [
+    "contents: read"
+   ],
+   "scripts_usados": [
+    "scripts/automation.mjs"
+   ],
+   "npm_scripts": [],
+   "secrets": [],
+   "actions": [
+    "actions/checkout",
+    "actions/setup-node"
+   ]
+  },
+  {
+   "arquivo": ".github/workflows/branch-protection-sentinel.yml",
+   "nome": "Branch Protection Sentinel",
+   "gatilhos": [
+    "push",
+    "workflow_dispatch"
+   ],
+   "crons": [],
+   "branches": [
+    "main"
+   ],
+   "jobs": [
+    "verify-merge-pattern"
+   ],
+   "permissoes": [
+    "contents: read"
+   ],
+   "scripts_usados": [],
+   "npm_scripts": [],
+   "secrets": [],
+   "actions": [
+    "actions/checkout"
+   ]
+  },
+  {
+   "arquivo": ".github/workflows/bundle-check.yml",
+   "nome": "Bundle Size Check",
+   "gatilhos": [
+    "pull_request"
+   ],
+   "crons": [],
+   "branches": [
+    "main"
+   ],
+   "jobs": [
+    "bundle-stats"
+   ],
+   "permissoes": [
+    "contents: read"
+   ],
+   "scripts_usados": [
+    "scripts/qa/check-bundle-budget.mjs"
+   ],
+   "npm_scripts": [
+    "build"
+   ],
+   "secrets": [],
+   "actions": [
+    "actions/checkout",
+    "actions/setup-node",
+    "actions/upload-artifact"
+   ]
+  },
+  {
+   "arquivo": ".github/workflows/ci.yml",
+   "nome": "Qualidade contínua",
+   "gatilhos": [
+    "pull_request",
+    "push"
+   ],
+   "crons": [],
+   "branches": [
+    "main"
+   ],
+   "jobs": [
+    "qualidade"
+   ],
+   "permissoes": [
+    "contents: read"
+   ],
+   "scripts_usados": [
+    "scripts/check-edge-authorization.mjs",
+    "scripts/check-edge-structured-logging.mjs",
+    "scripts/check-migration-immutability.mjs",
+    "scripts/db/apply-sicoob-migrations.mjs",
+    "scripts/db/check-runtime-refs.mjs",
+    "scripts/qa/simular-acl-efetiva.py",
+    "scripts/qa/simular-agendamento-outbox.py",
+    "scripts/qa/simular-aprovacao-publica.py",
+    "scripts/qa/simular-autoridade-verbas-sicoob.py",
+    "scripts/qa/simular-consolidacao-orcamentos.py",
+    "scripts/qa/simular-controles-auditoria.py",
+    "scripts/qa/simular-conversao-pedido-sicoob.py",
+    "scripts/qa/simular-documentos-sicoob.py",
+    "scripts/qa/simular-escopo-orcamento-ativo.py",
+    "scripts/qa/simular-governanca-orcamento.sh",
+    "scripts/qa/simular-idempotencia-orcamento.py",
+    "scripts/qa/simular-logistica-canonica.py",
+    "scripts/qa/simular-outbox-aprovacao.py",
+    "scripts/qa/simular-reacoes-favoritos-rls.py",
+    "scripts/qa/simular-verba-atomica.py",
+    "scripts/qa/simular-webhook-internal-auth.py"
+   ],
+   "npm_scripts": [
+    "build",
+    "check:agents-md",
+    "check:critical-test-skips",
+    "check:npm-audit",
+    "check:seller-scope",
+    "lint:baseline",
+    "test:coverage:ci",
+    "test:scenarios",
+    "typecheck:baseline"
+   ],
+   "secrets": [],
+   "actions": [
+    "actions/checkout",
+    "actions/setup-node",
+    "denoland/setup-deno"
+   ]
+  },
+  {
+   "arquivo": ".github/workflows/codeql.yml",
+   "nome": "CodeQL",
+   "gatilhos": [
+    "pull_request",
+    "push",
+    "schedule"
+   ],
+   "crons": [
+    "0 9 * * 1"
+   ],
+   "branches": [
+    "main"
+   ],
+   "jobs": [
+    "analyze"
+   ],
+   "permissoes": [
+    "contents: read",
+    "security-events: write",
+    "actions: read"
+   ],
+   "scripts_usados": [
+    "scripts/check-codeql-sarif.mjs"
+   ],
+   "npm_scripts": [],
+   "secrets": [],
+   "actions": [
+    "actions/checkout",
+    "actions/setup-node",
+    "actions/upload-artifact",
+    "github/codeql-action/analyze",
+    "github/codeql-action/autobuild",
+    "github/codeql-action/init"
+   ]
+  },
+  {
+   "arquivo": ".github/workflows/contexto.yml",
+   "nome": "Contexto para agentes de IA (10 min)",
+   "gatilhos": [
+    "push",
+    "schedule",
+    "workflow_dispatch"
+   ],
+   "crons": [
+    "7 * * * *"
+   ],
+   "branches": [
+    "main"
+   ],
+   "jobs": [
+    "gate",
+    "codigo",
+    "banco",
+    "regras",
+    "publicar"
+   ],
+   "permissoes": [
+    "contents: read"
+   ],
+   "scripts_usados": [
+    "scripts/ai-context/gerar.mjs",
+    "scripts/regras_negocio/generate.py",
+    "scripts/regras_negocio/indice.py",
+    "scripts/supabase_snapshot/snapshot.py"
+   ],
+   "npm_scripts": [],
+   "secrets": [
+    "SUPABASE_DB_URL"
+   ],
+   "actions": [
+    "actions/cache",
+    "actions/checkout",
+    "actions/download-artifact",
+    "actions/setup-node",
+    "actions/upload-artifact"
+   ]
+  },
+  {
+   "arquivo": ".github/workflows/db-performance-audit.yml",
+   "nome": "Monthly DB Audit",
+   "gatilhos": [
+    "schedule",
+    "workflow_dispatch"
+   ],
+   "crons": [
+    "0 0 1 * *"
+   ],
+   "branches": [],
+   "jobs": [
+    "performance-audit"
+   ],
+   "permissoes": [
+    "contents: read"
+   ],
+   "scripts_usados": [
+    "scripts/db-performance-audit.mjs",
+    "scripts/db/check-live-api-inventory.mjs"
+   ],
+   "npm_scripts": [],
+   "secrets": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "VITE_SUPABASE_URL"
+   ],
+   "actions": [
+    "actions/checkout",
+    "actions/setup-node"
+   ]
+  },
+  {
+   "arquivo": ".github/workflows/deploy-sicoob-functions.yml",
+   "nome": "Publicar funções Sicoob",
+   "gatilhos": [
+    "workflow_dispatch"
+   ],
+   "crons": [],
+   "branches": [],
+   "jobs": [
+    "deploy"
+   ],
+   "permissoes": [
+    "contents: read"
+   ],
+   "scripts_usados": [
+    "scripts/ci/verify-supabase-functions-published.mjs"
+   ],
+   "npm_scripts": [],
+   "secrets": [
+    "SUPABASE_ACCESS_TOKEN",
+    "VITE_SUPABASE_PROJECT_ID"
+   ],
+   "actions": [
+    "actions/checkout",
+    "supabase/setup-cli"
+   ]
+  },
+  {
+   "arquivo": ".github/workflows/e2e.yml",
+   "nome": "E2E (Playwright)",
+   "gatilhos": [
+    "pull_request",
+    "workflow_dispatch"
+   ],
+   "crons": [],
+   "branches": [
+    "main"
+   ],
+   "jobs": [
+    "validate-source",
+    "e2e",
+    "e2e-authenticated",
+    "e2e-regression"
+   ],
+   "permissoes": [
+    "contents: read"
+   ],
+   "scripts_usados": [
+    "scripts/check-smoke-tags.mjs",
+    "scripts/e2e-feature-summary.mjs",
+    "scripts/e2e-smoke-coverage-doc.mjs",
+    "scripts/e2e-smoke-summary.mjs",
+    "scripts/validate-e2e-target.mjs"
+   ],
+   "npm_scripts": [
+    "e2e:smoke-coverage-doc"
+   ],
+   "secrets": [
+    "E2E_ADMIN_EMAIL",
+    "E2E_ADMIN_PASSWORD",
+    "E2E_ADMIN_TOTP_SECRET",
+    "E2E_CLEANUP_TOKEN",
+    "E2E_DEV_EMAIL",
+    "E2E_DEV_PASSWORD",
+    "E2E_DEV_TOTP_SECRET",
+    "E2E_MANAGER_EMAIL",
+    "E2E_MANAGER_PASSWORD",
+    "E2E_SUPABASE_PROJECT_ID",
+    "E2E_SUPABASE_PUBLISHABLE_KEY",
+    "E2E_SUPABASE_SERVICE_ROLE_KEY",
+    "E2E_SUPABASE_URL",
+    "E2E_USER_EMAIL",
+    "E2E_USER_PASSWORD",
+    "E2E_VIEWER_EMAIL",
+    "E2E_VIEWER_PASSWORD"
+   ],
+   "actions": [
+    "actions/cache",
+    "actions/checkout",
+    "actions/setup-node",
+    "actions/upload-artifact"
+   ]
+  },
+  {
+   "arquivo": ".github/workflows/inventario-estado-semanal.yml",
+   "nome": "Inventário do estado real (semanal)",
+   "gatilhos": [
+    "schedule",
+    "workflow_dispatch"
+   ],
+   "crons": [
+    "41 10 * * 1"
+   ],
+   "branches": [],
+   "jobs": [
+    "gerar"
+   ],
+   "permissoes": [
+    "contents: read"
+   ],
+   "scripts_usados": [
+    "scripts/inventario/gerar-banco.mjs",
+    "scripts/inventario/gerar-repo.mjs",
+    "scripts/inventario/gerar-rotas.mjs",
+    "scripts/inventario/mudou-conteudo.mjs"
+   ],
+   "npm_scripts": [],
+   "secrets": [
+    "SUPABASE_ACCESS_TOKEN"
+   ],
+   "actions": [
+    "actions/checkout",
+    "actions/github-script",
+    "actions/setup-node",
+    "actions/upload-artifact",
+    "peter-evans/create-pull-request"
+   ]
+  },
+  {
+   "arquivo": ".github/workflows/lighthouse.yml",
+   "nome": "Lighthouse Performance Audit",
+   "gatilhos": [
+    "pull_request"
+   ],
+   "crons": [],
+   "branches": [
+    "main"
+   ],
+   "jobs": [
+    "lighthouse"
+   ],
+   "permissoes": [
+    "contents: read"
+   ],
+   "scripts_usados": [],
+   "npm_scripts": [
+    "build"
+   ],
+   "secrets": [],
+   "actions": [
+    "actions/checkout",
+    "actions/setup-node",
+    "actions/upload-artifact"
+   ]
+  },
+  {
+   "arquivo": ".github/workflows/migration-ledger-drift.yml",
+   "nome": "Migration ledger drift",
+   "gatilhos": [
+    "schedule",
+    "workflow_dispatch"
+   ],
+   "crons": [
+    "0 6 * * *"
+   ],
+   "branches": [],
+   "jobs": [
+    "drift-check"
+   ],
+   "permissoes": [
+    "contents: read"
+   ],
+   "scripts_usados": [
+    "scripts/db/audit-core-rls.mjs",
+    "scripts/db/check-migration-ledger-drift.mjs"
+   ],
+   "npm_scripts": [],
+   "secrets": [
+    "SUPABASE_ACCESS_TOKEN"
+   ],
+   "actions": [
+    "actions/checkout",
+    "actions/setup-node"
+   ]
+  },
+  {
+   "arquivo": ".github/workflows/security-compliance.yml",
+   "nome": "Enterprise Compliance & Audit Reporting",
+   "gatilhos": [
+    "push",
+    "schedule",
+    "workflow_dispatch"
+   ],
+   "crons": [
+    "0 0 * * 0"
+   ],
+   "branches": [
+    "main"
+   ],
+   "jobs": [
+    "compliance-audit",
+    "seller-quote-rls-test"
+   ],
+   "permissoes": [
+    "contents: read"
+   ],
+   "scripts_usados": [
+    "scripts/audit-export.mjs",
+    "scripts/generate-audit-dossier.mjs",
+    "scripts/scan-rls-security.mjs",
+    "scripts/test-audit-scripts.mjs",
+    "scripts/test-rls-compliance.mjs",
+    "scripts/validate-audit-links.mjs",
+    "scripts/validate-e2e-target.mjs"
+   ],
+   "npm_scripts": [
+    "check:security-definer-acl"
+   ],
+   "secrets": [
+    "E2E_SUPABASE_PROJECT_ID",
+    "E2E_SUPABASE_PUBLISHABLE_KEY",
+    "E2E_SUPABASE_SERVICE_ROLE_KEY",
+    "E2E_SUPABASE_URL",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "VITE_SUPABASE_URL"
+   ],
+   "actions": [
+    "actions/checkout",
+    "actions/setup-node",
+    "actions/upload-artifact"
+   ]
+  },
+  {
+   "arquivo": ".github/workflows/security.yml",
+   "nome": "Security Scan",
+   "gatilhos": [
+    "pull_request",
+    "push",
+    "schedule"
+   ],
+   "crons": [
+    "30 6 * * 1"
+   ],
+   "branches": [
+    "main"
+   ],
+   "jobs": [
+    "npm-audit",
+    "gitleaks"
+   ],
+   "permissoes": [
+    "contents: read",
+    "pull-requests: read",
+    "security-events: write"
+   ],
+   "scripts_usados": [],
+   "npm_scripts": [
+    "check:npm-audit"
+   ],
+   "secrets": [
+    "GITHUB_TOKEN"
+   ],
+   "actions": [
+    "actions/checkout",
+    "actions/setup-node",
+    "gitleaks/gitleaks-action"
+   ]
+  },
+  {
+   "arquivo": ".github/workflows/sicoob-ci.yml",
+   "nome": "Portal Sicoob",
+   "gatilhos": [
+    "pull_request",
+    "push"
+   ],
+   "crons": [],
+   "branches": [
+    "main"
+   ],
+   "jobs": [
+    "transacoes",
+    "experiencia",
+    "sicoob-gate"
+   ],
+   "permissoes": [
+    "contents: read"
+   ],
+   "scripts_usados": [
+    "scripts/qa/simular-autoridade-verbas-sicoob.py",
+    "scripts/qa/simular-consolidacao-sicoob.py",
+    "scripts/qa/simular-delegacao-aprovacao-sicoob.py",
+    "scripts/qa/simular-duplicacao-pedido-atomica.py",
+    "scripts/qa/simular-eventos-status-sicoob.py",
+    "scripts/qa/simular-financeiro-arte-sicoob.py",
+    "scripts/qa/simular-kit-orcamento-sicoob.py",
+    "scripts/qa/simular-logistica-canonica.py",
+    "scripts/qa/simular-notification-preferences-auth.py",
+    "scripts/qa/simular-politica-aprovacao-sicoob.py",
+    "scripts/qa/simular-recompra-sicoob.py",
+    "scripts/qa/simular-rls-cruzada-sicoob.py",
+    "scripts/qa/simular-verba-atomica.py",
+    "scripts/qa/simular-versionamento-orcamento-atomico.py"
+   ],
+   "npm_scripts": [
+    "build",
+    "qa:visual:demo",
+    "qa:visual:login",
+    "test:e2e:pwa"
+   ],
+   "secrets": [],
+   "actions": [
+    "actions/cache",
+    "actions/checkout",
+    "actions/setup-node",
+    "actions/upload-artifact"
+   ]
+  }
+ ],
+ "hooks_git": [
+  {
+   "arquivo": ".husky/pre-commit",
+   "comandos": [
+    "npx lint-staged"
+   ]
+  },
+  {
+   "arquivo": ".husky/pre-push",
+   "comandos": [
+    "npm run typecheck:baseline && npm run lint:baseline && npm run test -- --run --reporter=dot"
+   ]
+  }
+ ],
+ "docs_raiz": [
+  {
+   "arquivo": ".github/PULL_REQUEST_TEMPLATE.md",
+   "titulo": null,
+   "linhas": 51
+  },
+  {
+   "arquivo": ".github/pull_request_template.md",
+   "titulo": null,
+   "linhas": 27
+  },
+  {
+   "arquivo": "AGENTS.md",
+   "titulo": "AGENTS.md — Brindes Sicoob V2",
+   "linhas": 149
+  },
+  {
+   "arquivo": "AUDIT_EXPORT_FILTERED.md",
+   "titulo": "📂 EXPORTAÇÃO DE INVENTÁRIO FILTRADA",
+   "linhas": 49
+  },
+  {
+   "arquivo": "CHANGELOG.md",
+   "titulo": "Changelog",
+   "linhas": 77
+  },
+  {
+   "arquivo": "CLAUDE.md",
+   "titulo": null,
+   "linhas": 2
+  },
+  {
+   "arquivo": "CONTRIBUTING.md",
+   "titulo": "Guia de Contribuição",
+   "linhas": 115
+  },
+  {
+   "arquivo": "PENDENCIAS.md",
+   "titulo": "Pendências de CI — adm01-debug/Brindes_Sicoob_V2",
+   "linhas": 728
+  },
+  {
+   "arquivo": "README.md",
+   "titulo": "🎁 Brindes Sicoob V2 — Portal corporativo de brindes",
+   "linhas": 367
+  },
+  {
+   "arquivo": "RELATORIO_AUDITORIA_EXAUSTIVA.md",
+   "titulo": "Relatório de Auditoria Exaustiva — Brindes Sicoob V2",
+   "linhas": 382
+  },
+  {
+   "arquivo": "RELATORIO_CI.md",
+   "titulo": "Relatório CI — adm01-debug/Brindes_Sicoob_V2",
+   "linhas": 811
+  },
+  {
+   "arquivo": "SECURITY.md",
+   "titulo": "Política de Segurança",
+   "linhas": 50
+  },
+  {
+   "arquivo": "SICOOB_TESTING.md",
+   "titulo": "Módulo Sicoob - Documentação de Usuários de Teste",
+   "linhas": 37
+  },
+  {
+   "arquivo": "docs/01_CRIAR_PRIMEIRA_ORGANIZATION.md",
+   "titulo": "🏢 Como Criar sua Primeira Organization",
+   "linhas": 440
+  },
+  {
+   "arquivo": "docs/02_INTEGRACAO_FRONTEND_REACT.md",
+   "titulo": "💻 Integração Frontend (React)",
+   "linhas": 845
+  },
+  {
+   "arquivo": "docs/03_ARQUITETURA_DO_SISTEMA.md",
+   "titulo": "🏗️ Arquitetura do Sistema",
+   "linhas": 587
+  },
+  {
+   "arquivo": "docs/04_EXPLICACAO_DAS_POLICIES.md",
+   "titulo": "🔐 Explicação das Policies (RLS)",
+   "linhas": 946
+  },
+  {
+   "arquivo": "docs/05_ROADMAP_PROXIMOS_PASSOS.md",
+   "titulo": "🚀 Roadmap - Próximos Passos",
+   "linhas": 728
+  },
+  {
+   "arquivo": "docs/ACCESSIBILITY.md",
+   "titulo": "♿ Guia de Acessibilidade (a11y)",
+   "linhas": 145
+  },
+  {
+   "arquivo": "docs/ANALISE_109_TABELAS_BANCO_EXTERNO.md",
+   "titulo": "📊 Análise Exaustiva das 109 Tabelas do Banco de Dados Externo",
+   "linhas": 432
+  },
+  {
+   "arquivo": "docs/API.md",
+   "titulo": "📡 Documentação de APIs - Gifts Store",
+   "linhas": 237
+  },
+  {
+   "arquivo": "docs/API_DEPENDENCY_MAP.md",
+   "titulo": "🗺️ Mapa de Endpoints e Dependências Sicoob",
+   "linhas": 81
+  },
+  {
+   "arquivo": "docs/AUDIT_FRONTEND_DATABASE.md",
+   "titulo": "Auditoria Técnica: Front-end ↔ Banco de Dados",
+   "linhas": 519
+  },
+  {
+   "arquivo": "docs/AUDIT_FRONTEND_DATABASE_summary.md",
+   "titulo": "Sumário Executivo — Auditoria Front-end ↔ DB (Promo_Gifts)",
+   "linhas": 28
+  },
+  {
+   "arquivo": "docs/AUTH_PASSKEYS.md",
+   "titulo": "🔐 Autenticação: Passkeys (WebAuthn) — Guia de Implementação Full 10/10",
+   "linhas": 51
+  },
+  {
+   "arquivo": "docs/AUTOMACAO_LOCAL.md",
+   "titulo": "Automação local — Brindes_Sicoob_V2",
+   "linhas": 230
+  },
+  {
+   "arquivo": "docs/BRANCH_PROTECTION.md",
+   "titulo": "Proteção da branch `main`",
+   "linhas": 63
+  },
+  {
+   "arquivo": "docs/CASOS_TESTE_E2E_POR_PAPEL.md",
+   "titulo": "Casos de Teste E2E por Papel",
+   "linhas": 41
+  },
+  {
+   "arquivo": "docs/CI_CD.md",
+   "titulo": "CI e entrega — Brindes Sicoob V2",
+   "linhas": 39
+  },
+  {
+   "arquivo": "docs/CONFIGURACAO_LOCALE_PT_BR.md",
+   "titulo": "🇧🇷 REMOÇÃO DE i18n E CONFIGURAÇÃO PT-BR - GIFTS-STORE",
+   "linhas": 514
+  },
+  {
+   "arquivo": "docs/CONNECTORS_INVENTORY.md",
+   "titulo": "Inventário de Conectores e Integrações — Connections Hub",
+   "linhas": 40
+  },
+  {
+   "arquivo": "docs/DARK_MODE.md",
+   "titulo": "🌙 Guia de Dark Mode - Gifts Store",
+   "linhas": 80
+  },
+  {
+   "arquivo": "docs/DATA_DICTIONARY.md",
+   "titulo": "Data Dictionary — Promo Gifts (Local Supabase)",
+   "linhas": 99
+  },
+  {
+   "arquivo": "docs/DEPLOYMENT.md",
+   "titulo": "Publicação e migrations",
+   "linhas": 66
+  },
+  {
+   "arquivo": "docs/DR.md",
+   "titulo": "🆘 Plano de Recuperação de Desastres (DR)",
+   "linhas": 37
+  },
+  {
+   "arquivo": "docs/E2E_SMOKE_COVERAGE.md",
+   "titulo": "Auditoria de cobertura — Smoke E2E",
+   "linhas": 71
+  },
+  {
+   "arquivo": "docs/EDGE_FUNCTIONS.md",
+   "titulo": "Edge Functions — Referência histórica",
+   "linhas": 96
+  },
+  {
+   "arquivo": "docs/EDGE_FUNCTIONS_DRIFT.md",
+   "titulo": "Relatório de Divergência de Edge Functions",
+   "linhas": 14
+  },
+  {
+   "arquivo": "docs/EXCEL_INTEGRATION_GUIDE.md",
+   "titulo": "📊 Guia de Integração - Botão Export Excel",
+   "linhas": 140
+  },
+  {
+   "arquivo": "docs/FIXTURES_E2E_POR_PAPEL.md",
+   "titulo": "Fixtures E2E por Papel",
+   "linhas": 19
+  },
+  {
+   "arquivo": "docs/FORM_VALIDATION.md",
+   "titulo": null,
+   "linhas": 5
+  },
+  {
+   "arquivo": "docs/FUNCIONALIDADES_E_FERRAMENTAS.md",
+   "titulo": "📋 Inventário Completo de Funcionalidades e Ferramentas",
+   "linhas": 1298
+  },
+  {
+   "arquivo": "docs/GO_LIVE_CHECKLIST.md",
+   "titulo": "Checklist de Go-Live — Sicoob Platform (v2026)",
+   "linhas": 33
+  },
+  {
+   "arquivo": "docs/HOOKS_USAGE_GUIDE.md",
+   "titulo": "📚 Guia de Uso dos Hooks",
+   "linhas": 122
+  },
+  {
+   "arquivo": "docs/HOTFIX_PROCEDURE.md",
+   "titulo": "Procedimento de correção urgente",
+   "linhas": 36
+  },
+  {
+   "arquivo": "docs/INVENTARIO_FUNCIONALIDADES_v2.md",
+   "titulo": "Inventário Exaustivo de Funcionalidades v2 — Promo Gifts",
+   "linhas": 78
+  },
+  {
+   "arquivo": "docs/MAGIC_UP_ONDA5_A11Y.md",
+   "titulo": "♿ Magic Up — Onda 5 a11y guideline",
+   "linhas": 81
+  },
+  {
+   "arquivo": "docs/MOBILE.md",
+   "titulo": "📱 Guia de Responsividade Mobile",
+   "linhas": 100
+  },
+  {
+   "arquivo": "docs/MODULES.md",
+   "titulo": "Master Module Index (mem://)",
+   "linhas": 41
+  },
+  {
+   "arquivo": "docs/NOTIFICATION_SYSTEM.md",
+   "titulo": "🔔 SISTEMA UNIFICADO DE NOTIFICAÇÕES",
+   "linhas": 319
+  },
+  {
+   "arquivo": "docs/OBSERVABILITY.md",
+   "titulo": "Observabilidade — Promo Gifts",
+   "linhas": 184
+  },
+  {
+   "arquivo": "docs/ONBOARDING.md",
+   "titulo": "Onboarding — Promo Gifts (Setup < 4h)",
+   "linhas": 61
+  },
+  {
+   "arquivo": "docs/PERFORMANCE.md",
+   "titulo": "Performance Optimization",
+   "linhas": 29
+  },
+  {
+   "arquivo": "docs/PERFORMANCE_AUDIT.md",
+   "titulo": "Performance Audit — N+1 & Hot Queries",
+   "linhas": 65
+  },
+  {
+   "arquivo": "docs/POLITICA_IDIOMA_PT_BR.md",
+   "titulo": "🚫 POLÍTICA DE IDIOMA - GIFTS-STORE",
+   "linhas": 232
+  },
+  {
+   "arquivo": "docs/POSTMORTEM_TEMPLATE.md",
+   "titulo": "Post-Mortem — [Título do Incidente]",
+   "linhas": 47
+  },
+  {
+   "arquivo": "docs/RBAC_HELPERS.md",
+   "titulo": "Helpers semânticos de RBAC (RLS)",
+   "linhas": 46
+  },
+  {
+   "arquivo": "docs/README.md",
+   "titulo": "Documentação do Portal de Brindes Sicoob V2",
+   "linhas": 56
+  },
+  {
+   "arquivo": "docs/REMOTE_ONLY_MIGRATIONS_STRATEGY.md",
+   "titulo": "Estratégia para 5 migrations só no remoto",
+   "linhas": 44
+  },
+  {
+   "arquivo": "docs/ROUTES.md",
+   "titulo": "🗺️ Mapa Automático de Rotas",
+   "linhas": 153
+  },
+  {
+   "arquivo": "docs/RUNBOOK.md",
+   "titulo": "📘 Runbook Operacional — Promo Brindes",
+   "linhas": 212
+  },
+  {
+   "arquivo": "docs/RUNBOOK_CONNECTIONS.md",
+   "titulo": "🔌 Runbook — Módulo `/admin/conexoes`",
+   "linhas": 184
+  },
+  {
+   "arquivo": "docs/SCOPE_ALIGNMENT.md",
+   "titulo": "🎯 Alinhamento de Escopo: Portal Sicoob Brindes",
+   "linhas": 64
+  },
+  {
+   "arquivo": "docs/SECURITY.md",
+   "titulo": "Security Best Practices",
+   "linhas": 30
+  },
+  {
+   "arquivo": "docs/SECURITY_ALERTS.md",
+   "titulo": "🛡️ Security Alerts — Configuração Completa",
+   "linhas": 109
+  },
+  {
+   "arquivo": "docs/SECURITY_PLAN.md",
+   "titulo": "🛡️ Cronograma de Segurança e Monitoramento",
+   "linhas": 26
+  },
+  {
+   "arquivo": "docs/SECURITY_RUNBOOK.md",
+   "titulo": "Security Runbook — Promo Gifts",
+   "linhas": 66
+  },
+  {
+   "arquivo": "docs/SKINS_INVENTORY.md",
+   "titulo": "Inventário Visual de Skins — Skins Factory",
+   "linhas": 45
+  },
+  {
+   "arquivo": "docs/SLA_REVIEW.md",
+   "titulo": "📑 Revisão de SLAs e Acordos de Serviço",
+   "linhas": 22
+  },
+  {
+   "arquivo": "docs/SLO.md",
+   "titulo": "📉 Metas de Nível de Serviço (SLO)",
+   "linhas": 29
+  },
+  {
+   "arquivo": "docs/TESTING.md",
+   "titulo": "Guia de testes",
+   "linhas": 59
+  },
+  {
+   "arquivo": "docs/auditoria-validacao-2026-09-22.md",
+   "titulo": "Auditoria de validação — 22/09/2026",
+   "linhas": 227
+  },
+  {
+   "arquivo": "docs/branch-protection-pendente.md",
+   "titulo": "Proteção de branch em `main` — pendente de aprovação",
+   "linhas": 68
+  },
+  {
+   "arquivo": "docs/correcoes-validacao-2026-09-13.md",
+   "titulo": "Validação do plano de 50 etapas — correções encontradas (2026-09-13)",
+   "linhas": 56
+  },
+  {
+   "arquivo": "docs/correcoes-validacao-2026-09-14.md",
+   "titulo": "Validação do plano — sessão 2026-09-14",
+   "linhas": 6683
+  },
+  {
+   "arquivo": "docs/deploy-flow.md",
+   "titulo": "Fluxo de Deploy — Promo Brindes",
+   "linhas": 92
+  },
+  {
+   "arquivo": "docs/order-workflow.md",
+   "titulo": "Workflow de Pedidos - Documentação Técnica",
+   "linhas": 35
+  },
+  {
+   "arquivo": "docs/plano-melhorias-50-etapas.md",
+   "titulo": "Runbook de correções e melhorias — 50 etapas",
+   "linhas": 102
+  },
+  {
+   "arquivo": "docs/secrets.md",
+   "titulo": "Inventário de segredos e variáveis de ambiente",
+   "linhas": 133
+  }
+ ],
+ "docs_em_subpastas": [
+  {
+   "pasta": "docs/execucao",
+   "arquivos_md": 79
+  },
+  {
+   "pasta": "docs/pesquisa",
+   "arquivos_md": 11
+  },
+  {
+   "pasta": "docs/adr",
+   "arquivos_md": 10
+  },
+  {
+   "pasta": "docs/audits",
+   "arquivos_md": 9
+  },
+  {
+   "pasta": "docs/plano-implementacao",
+   "arquivos_md": 8
+  },
+  {
+   "pasta": "docs/agentes",
+   "arquivos_md": 6
+  },
+  {
+   "pasta": "docs/RUNBOOKS",
+   "arquivos_md": 2
+  },
+  {
+   "pasta": "docs/architecture",
+   "arquivos_md": 2
+  },
+  {
+   "pasta": "docs/security",
+   "arquivos_md": 2
+  },
+  {
+   "pasta": "docs/testing",
+   "arquivos_md": 2
+  },
+  {
+   "pasta": "docs/externo",
+   "arquivos_md": 1
+  }
+ ],
+ "changelog_topo": "[Unreleased]",
+ "env": {
+  "declaradas_no_env_example": [],
+  "usadas_no_front": [
+   "DEV",
+   "MODE",
+   "PROD",
+   "VITE_APP_ENCRYPTION_KEY",
+   "VITE_ENABLE_DEMO_PAGES",
+   "VITE_LOVABLE_PREVIEW",
+   "VITE_SENTRY_DSN",
+   "VITE_SHOW_DEV_INFRA_MESSAGES",
+   "VITE_SICOOB_TEST_EMAIL_CENTRAL",
+   "VITE_SICOOB_TEST_EMAIL_GESTOR",
+   "VITE_SICOOB_TEST_EMAIL_PA",
+   "VITE_SICOOB_TEST_EMAIL_SINGULAR",
+   "VITE_SICOOB_TEST_USER_PASSWORD",
+   "VITE_SUPABASE_PROJECT_ID",
+   "VITE_SUPABASE_PUBLISHABLE_KEY",
+   "VITE_SUPABASE_URL"
+  ],
+  "usadas_nas_edges": [
+   "ALLOW_HTTP_FETCH",
+   "BITRIX24_WEBHOOK_URL",
+   "BI_SHARE_SECRET",
+   "CNPJA_API_KEY",
+   "CRM_SUPABASE_ANON_KEY",
+   "CRM_SUPABASE_SERVICE_KEY",
+   "CRM_SUPABASE_URL",
+   "DROPBOX_ACCESS_TOKEN",
+   "E2E_CLEANUP_ALLOWED_EMAILS",
+   "E2E_CLEANUP_RATE_LIMIT_MAX",
+   "E2E_CLEANUP_RATE_LIMIT_WINDOW_SECONDS",
+   "E2E_CLEANUP_TOKEN",
+   "ELEVENLABS_API_KEY",
+   "GITHUB_PAT",
+   "LOG_CREDENTIAL_RESOLUTION",
+   "LOG_CRM_BRIDGE_VERBOSE",
+   "LOVABLE_API_KEY",
+   "N8N_QUOTE_WEBHOOK_URL",
+   "NOTIFICATION_FROM_EMAIL",
+   "PUBLIC_APP_URL",
+   "QUOTE_SYNC_API_KEY",
+   "RESEND_API_KEY",
+   "SALESPRO_WEBHOOK_URL",
+   "SICOOB_APPROVAL_WORKER_SECRET",
+   "SICOOB_MALWARE_SCANNER_TOKEN",
+   "SICOOB_MALWARE_SCANNER_URL",
+   "SICOOB_QA_USER_PASSWORD",
+   "SICOOB_TEST_EMAIL_CENTRAL",
+   "SICOOB_TEST_EMAIL_GESTOR",
+   "SICOOB_TEST_EMAIL_PA",
+   "SICOOB_TEST_EMAIL_SINGULAR",
+   "SICOOB_TEST_USER_PASSWORD",
+   "SUPABASE_ANON_KEY",
+   "SUPABASE_SERVICE_ROLE_KEY",
+   "SUPABASE_URL",
+   "TEST_ADMIN_JWT",
+   "TEST_USER_EMAIL",
+   "TEST_USER_JWT",
+   "TEST_USER_PASSWORD",
+   "VIRUSTOTAL_API_KEY",
+   "VITE_CRM_BRIDGE_URL",
+   "VITE_EXTERNAL_DB_URL",
+   "VITE_SUPABASE_PUBLISHABLE_KEY",
+   "VITE_SUPABASE_URL"
+  ],
+  "usadas_no_python": [
+   "AI_CONTEXT_INDEX",
+   "AI_CONTEXT_MODEL",
+   "AI_CONTEXT_PROFILE",
+   "AI_CONTEXT_SCHEMA_SNAPSHOT",
+   "ANTHROPIC_API_KEY",
+   "CODE_SCAN_DIRS",
+   "GEN_TYPES",
+   "PGDUMP",
+   "PGDUMP_SCHEMAS",
+   "REPO_ROOT",
+   "SNAPSHOT_DIR",
+   "SNAPSHOT_EXCLUDE_SCHEMAS",
+   "SNAPSHOT_INCLUDE_SCHEMAS",
+   "SUPABASE_ACCESS_TOKEN",
+   "SUPABASE_DB_URL",
+   "SUPABASE_POOLER_REGION",
+   "SUPABASE_PROJECT_REF",
+   "SUPABASE_SNAPSHOT_PUBLICACAO"
+  ],
+  "usadas_mas_nao_declaradas": [
+   "DEV",
+   "MODE",
+   "PROD",
+   "VITE_APP_ENCRYPTION_KEY",
+   "VITE_ENABLE_DEMO_PAGES",
+   "VITE_LOVABLE_PREVIEW",
+   "VITE_SENTRY_DSN",
+   "VITE_SHOW_DEV_INFRA_MESSAGES",
+   "VITE_SICOOB_TEST_EMAIL_CENTRAL",
+   "VITE_SICOOB_TEST_EMAIL_GESTOR",
+   "VITE_SICOOB_TEST_EMAIL_PA",
+   "VITE_SICOOB_TEST_EMAIL_SINGULAR",
+   "VITE_SICOOB_TEST_USER_PASSWORD",
+   "VITE_SUPABASE_PROJECT_ID",
+   "VITE_SUPABASE_PUBLISHABLE_KEY",
+   "VITE_SUPABASE_URL"
+  ],
+  "secrets_em_workflows": [
+   "E2E_ADMIN_EMAIL",
+   "E2E_ADMIN_PASSWORD",
+   "E2E_ADMIN_TOTP_SECRET",
+   "E2E_CLEANUP_TOKEN",
+   "E2E_DEV_EMAIL",
+   "E2E_DEV_PASSWORD",
+   "E2E_DEV_TOTP_SECRET",
+   "E2E_MANAGER_EMAIL",
+   "E2E_MANAGER_PASSWORD",
+   "E2E_SUPABASE_PROJECT_ID",
+   "E2E_SUPABASE_PUBLISHABLE_KEY",
+   "E2E_SUPABASE_SERVICE_ROLE_KEY",
+   "E2E_SUPABASE_URL",
+   "E2E_USER_EMAIL",
+   "E2E_USER_PASSWORD",
+   "E2E_VIEWER_EMAIL",
+   "E2E_VIEWER_PASSWORD",
+   "GITHUB_TOKEN",
+   "SUPABASE_ACCESS_TOKEN",
+   "SUPABASE_DB_URL",
+   "SUPABASE_SERVICE_ROLE_KEY",
+   "VITE_SUPABASE_PROJECT_ID",
+   "VITE_SUPABASE_URL"
+  ]
+ },
+ "deploy": {
+  "alvos": [
+   "vercel",
+   "compose/swarm"
+  ],
+  "dockerfiles": [],
+  "compose": [
+   {
+    "arquivo": "infrastructure/github-runner/docker-compose.yml",
+    "servicos": [
+     "github-runner",
+     "runner-data"
+    ]
+   }
+  ],
+  "vercel": {
+   "framework": null,
+   "build": null,
+   "rewrites": 1,
+   "redirects": 0,
+   "headers": 1,
+   "ignore_command": null,
+   "crons": []
+  }
+ },
+ "integracoes": {
+  "sdks": [
+   {
+    "pacote": "@elevenlabs/react",
+    "servico": "ElevenLabs",
+    "versao": "^1.21.1"
+   },
+   {
+    "pacote": "@tanstack/react-query",
+    "servico": "react-query",
+    "versao": "^5.106.1"
+   },
+   {
+    "pacote": "@sentry/react",
+    "servico": "Sentry",
+    "versao": "^8.55.2"
+   },
+   {
+    "pacote": "@supabase/supabase-js",
+    "servico": "Supabase",
+    "versao": "^2.119.0"
+   },
+   {
+    "pacote": "zod",
+    "servico": "zod",
+    "versao": "^4.6.7"
+   }
+  ],
+  "hosts_externos": [
+   {
+    "host": "wa.me",
+    "arquivos": 14
+   },
+   {
+    "host": "cfmzkthhgliqelozlmwu.supabase.co",
+    "arquivos": 8
+   },
+   {
+    "host": "ai.gateway.lovable.dev",
+    "arquivos": 6
+   },
+   {
+    "host": "api.resend.com",
+    "arquivos": 6
+   },
+   {
+    "host": "simulacao.invalid",
+    "arquivos": 6
+   },
+   {
+    "host": "qa-sicoob-123.supabase.co",
+    "arquivos": 4
+   },
+   {
+    "host": "test.supabase.co",
+    "arquivos": 4
+   },
+   {
+    "host": "api.supabase.com",
+    "arquivos": 3
+   },
+   {
+    "host": "hooks.slack.com",
+    "arquivos": 3
+   },
+   {
+    "host": "imagedelivery.net",
+    "arquivos": 3
+   },
+   {
+    "host": "portal.invalid",
+    "arquivos": 3
+   },
+   {
+    "host": "youtube.com",
+    "arquivos": 3
+   },
+   {
+    "host": "api.elevenlabs.io",
+    "arquivos": 2
+   },
+   {
+    "host": "api.ipify.org",
+    "arquivos": 2
+   },
+   {
+    "host": "brindes-sicoob-v2.vercel.app",
+    "arquivos": 2
+   },
+   {
+    "host": "catalogo.example",
+    "arquivos": 2
+   },
+   {
+    "host": "doufsxqlfjyuvxuezpln.supabase.co",
+    "arquivos": 2
+   },
+   {
+    "host": "exemplo.com",
+    "arquivos": 2
+   },
+   {
+    "host": "exemplo.invalid",
+    "arquivos": 2
+   },
+   {
+    "host": "fonts.googleapis.com",
+    "arquivos": 2
+   },
+   {
+    "host": "images.unsplash.com",
+    "arquivos": 2
+   },
+   {
+    "host": "ip-api.com",
+    "arquivos": 2
+   },
+   {
+    "host": "mock.supabase.co",
+    "arquivos": 2
+   },
+   {
+    "host": "n8n.suaempresa.com",
+    "arquivos": 2
+   },
+   {
+    "host": "outro.supabase.co",
+    "arquivos": 2
+   },
+   {
+    "host": "promogifts.com.br",
+    "arquivos": 2
+   },
+   {
+    "host": "seudominio.bitrix24.com.br",
+    "arquivos": 2
+   },
+   {
+    "host": "storage.test",
+    "arquivos": 2
+   },
+   {
+    "host": "vamos-build-awesome.lovable.app",
+    "arquivos": 2
+   },
+   {
+    "host": "viacep.com.br",
+    "arquivos": 2
+   },
+   {
+    "host": "videodelivery.net",
+    "arquivos": 2
+   },
+   {
+    "host": "www.spotgifts.com.br",
+    "arquivos": 2
+   },
+   {
+    "host": "x.supabase.co",
+    "arquivos": 2
+   },
+   {
+    "host": "abc.supabase.co",
+    "arquivos": 1
+   },
+   {
+    "host": "api.cnpja.com",
+    "arquivos": 1
+   },
+   {
+    "host": "api.dropboxapi.com",
+    "arquivos": 1
+   },
+   {
+    "host": "api.exemplo.com",
+    "arquivos": 1
+   },
+   {
+    "host": "api.pwnedpasswords.com",
+    "arquivos": 1
+   },
+   {
+    "host": "api.x.com",
+    "arquivos": 1
+   },
+   {
+    "host": "app.test",
+    "arquivos": 1
+   },
+   {
+    "host": "arquivos.test",
+    "arquivos": 1
+   },
+   {
+    "host": "brindes-sicoob-v2-nwmn9rhoe-juca1.vercel.app",
+    "arquivos": 1
+   },
+   {
+    "host": "brindes-sicoob-v2.vercel.app.atacante.invalid",
+    "arquivos": 1
+   },
+   {
+    "host": "catalogo.invalid",
+    "arquivos": 1
+   },
+   {
+    "host": "cdn.example.test",
+    "arquivos": 1
+   },
+   {
+    "host": "cdn.exemplo",
+    "arquivos": 1
+   },
+   {
+    "host": "cdn.exemplo.test",
+    "arquivos": 1
+   },
+   {
+    "host": "cdn.externo.test",
+    "arquivos": 1
+   },
+   {
+    "host": "content.dropboxapi.com",
+    "arquivos": 1
+   },
+   {
+    "host": "crm.supabase.co",
+    "arquivos": 1
+   },
+   {
+    "host": "doufsxqlfjyuvxuezpln.supabase.co.atacante.invalid",
+    "arquivos": 1
+   },
+   {
+    "host": "edge.invalid",
+    "arquivos": 1
+   },
+   {
+    "host": "edge.test",
+    "arquivos": 1
+   },
+   {
+    "host": "exemplo.test",
+    "arquivos": 1
+   },
+   {
+    "host": "externo.invalid",
+    "arquivos": 1
+   },
+   {
+    "host": "facebook.com",
+    "arquivos": 1
+   },
+   {
+    "host": "fake-crm.supabase.co",
+    "arquivos": 1
+   },
+   {
+    "host": "fe8e4c8b-66f6-4a3b-bbec-0366e2d42e04.lovableproject.com",
+    "arquivos": 1
+   },
+   {
+    "host": "fonts.gstatic.com",
+    "arquivos": 1
+   },
+   {
+    "host": "fornecedor.com",
+    "arquivos": 1
+   },
+   {
+    "host": "from-db.supabase.co",
+    "arquivos": 1
+   },
+   {
+    "host": "from-env.example.co",
+    "arquivos": 1
+   },
+   {
+    "host": "id-preview--fe8e4c8b-66f6-4a3b-bbec-0366e2d42e04.lovable.app",
+    "arquivos": 1
+   },
+   {
+    "host": "iframe.videodelivery.net",
+    "arquivos": 1
+   },
+   {
+    "host": "imagedelivery.net.atacante.example",
+    "arquivos": 1
+   },
+   {
+    "host": "img.com",
+    "arquivos": 1
+   },
+   {
+    "host": "img.youtube.com",
+    "arquivos": 1
+   },
+   {
+    "host": "ipapi.co",
+    "arquivos": 1
+   },
+   {
+    "host": "legacy-alias-crm.supabase.co",
+    "arquivos": 1
+   },
+   {
+    "host": "legacy-env-alias.supabase.co",
+    "arquivos": 1
+   },
+   {
+    "host": "linkedin.com",
+    "arquivos": 1
+   },
+   {
+    "host": "local.test",
+    "arquivos": 1
+   },
+   {
+    "host": "maintenance.invalid",
+    "arquivos": 1
+   },
+   {
+    "host": "maps.google.com",
+    "arquivos": 1
+   },
+   {
+    "host": "other-cdn.com",
+    "arquivos": 1
+   },
+   {
+    "host": "other.supabase.co",
+    "arquivos": 1
+   },
+   {
+    "host": "outro-projeto.vercel.app",
+    "arquivos": 1
+   },
+   {
+    "host": "portal.test",
+    "arquivos": 1
+   },
+   {
+    "host": "production.invalid",
+    "arquivos": 1
+   },
+   {
+    "host": "production.supabase.co",
+    "arquivos": 1
+   },
+   {
+    "host": "projeto.supabase.co",
+    "arquivos": 1
+   },
+   {
+    "host": "promobrind-real.supabase.co",
+    "arquivos": 1
+   },
+   {
+    "host": "scanner.test",
+    "arquivos": 1
+   },
+   {
+    "host": "sicoobnove.com.br",
+    "arquivos": 1
+   },
+   {
+    "host": "spotgifts.com.br",
+    "arquivos": 1
+   },
+   {
+    "host": "staging-123.supabase.co",
+    "arquivos": 1
+   },
+   {
+    "host": "stream.test",
+    "arquivos": 1
+   },
+   {
+    "host": "test.com",
+    "arquivos": 1
+   },
+   {
+    "host": "vid.com",
+    "arquivos": 1
+   },
+   {
+    "host": "www.fornecedor.com.br",
+    "arquivos": 1
+   },
+   {
+    "host": "www.promogifts.com.br",
+    "arquivos": 1
+   },
+   {
+    "host": "www.rastreie.com.br",
+    "arquivos": 1
+   },
+   {
+    "host": "www.virustotal.com",
+    "arquivos": 1
+   },
+   {
+    "host": "www.w3schools.com",
+    "arquivos": 1
+   },
+   {
+    "host": "www.youtube.com",
+    "arquivos": 1
+   }
+  ],
+  "env_de_integracao": [
+   "BITRIX24_WEBHOOK_URL",
+   "BI_SHARE_SECRET",
+   "CNPJA_API_KEY",
+   "DROPBOX_ACCESS_TOKEN",
+   "E2E_CLEANUP_TOKEN",
+   "ELEVENLABS_API_KEY",
+   "LOVABLE_API_KEY",
+   "N8N_QUOTE_WEBHOOK_URL",
+   "QUOTE_SYNC_API_KEY",
+   "RESEND_API_KEY",
+   "SALESPRO_WEBHOOK_URL",
+   "SICOOB_APPROVAL_WORKER_SECRET",
+   "SICOOB_MALWARE_SCANNER_TOKEN",
+   "VIRUSTOTAL_API_KEY",
+   "VITE_SENTRY_DSN"
+  ],
+  "webhooks_recebidos": [
+   "cleanup-notifications",
+   "collections-watcher",
+   "comparison-price-watcher",
+   "connections-health-check",
+   "expert-chat",
+   "external-db-bridge",
+   "favorites-watcher",
+   "health-check",
+   "migrate-helper",
+   "monthly-health-report",
+   "ownership-audit",
+   "process-batch-export",
+   "process-queue",
+   "process-scheduled-reports",
+   "quote-approval",
+   "quote-followup-reminders",
+   "send-digest",
+   "send-notification",
+   "send-scheduled-reports",
+   "sicoob-approval-notifications",
+   "webhook-dispatcher"
+  ],
+  "realtime": [
+   "admin-conexoes-credentials-changes",
+   "discount-approvals-badge",
+   "kit-comments-${kitId}",
+   "security-notifications",
+   "sicoob-orders-realtime",
+   "trends-realtime",
+   "user:${user.id}:custom-kits"
+  ]
+ },
+ "permissoes": {
+  "papeis_no_codigo": [
+   {
+    "papel": "alert",
+    "ocorrencias": 51
+   },
+   {
+    "papel": "status",
+    "ocorrencias": 49
+   },
+   {
+    "papel": "dev",
+    "ocorrencias": 43
+   },
+   {
+    "papel": "supervisor",
+    "ocorrencias": 29
+   },
+   {
+    "papel": "user",
+    "ocorrencias": 26
+   },
+   {
+    "papel": "vendedor",
+    "ocorrencias": 23
+   },
+   {
+    "papel": "admin",
+    "ocorrencias": 22
+   },
+   {
+    "papel": "agente",
+    "ocorrencias": 16
+   },
+   {
+    "papel": "button",
+    "ocorrencias": 14
+   },
+   {
+    "papel": "system",
+    "ocorrencias": 13
+   },
+   {
+    "papel": "group",
+    "ocorrencias": 11
+   },
+   {
+    "papel": "list",
+    "ocorrencias": 11
+   },
+   {
+    "papel": "listitem",
+    "ocorrencias": 11
+   },
+   {
+    "papel": "combobox",
+    "ocorrencias": 7
+   },
+   {
+    "papel": "dialog",
+    "ocorrencias": 7
+   },
+   {
+    "papel": "img",
+    "ocorrencias": 7
+   },
+   {
+    "papel": "tab",
+    "ocorrencias": 6
+   },
+   {
+    "papel": "tablist",
+    "ocorrencias": 6
+   },
+   {
+    "papel": "assistant",
+    "ocorrencias": 5
+   },
+   {
+    "papel": "manager",
+    "ocorrencias": 5
+   },
+   {
+    "papel": "navigation",
+    "ocorrencias": 5
+   },
+   {
+    "papel": "progressbar",
+    "ocorrencias": 5
+   },
+   {
+    "papel": "radio",
+    "ocorrencias": 5
+   },
+   {
+    "papel": "radiogroup",
+    "ocorrencias": 5
+   },
+   {
+    "papel": "region",
+    "ocorrencias": 5
+   },
+   {
+    "papel": "switch",
+    "ocorrencias": 5
+   },
+   {
+    "papel": "public",
+    "ocorrencias": 4
+   },
+   {
+    "papel": "authenticated",
+    "ocorrencias": 3
+   },
+   {
+    "papel": "gerente_pa",
+    "ocorrencias": 3
+   },
+   {
+    "papel": "gestor_pa",
+    "ocorrencias": 3
+   },
+   {
+    "papel": "gestor_singular",
+    "ocorrencias": 3
+   },
+   {
+    "papel": "listbox",
+    "ocorrencias": 3
+   },
+   {
+    "papel": "main",
+    "ocorrencias": 3
+   },
+   {
+    "papel": "presentation",
+    "ocorrencias": 3
+   },
+   {
+    "papel": "separator",
+    "ocorrencias": 3
+   },
+   {
+    "papel": "agent",
+    "ocorrencias": 2
+   },
+   {
+    "papel": "alertdialog",
+    "ocorrencias": 2
+   },
+   {
+    "papel": "all",
+    "ocorrencias": 2
+   },
+   {
+    "papel": "anon",
+    "ocorrencias": 2
+   },
+   {
+    "papel": "gestor_compras",
+    "ocorrencias": 2
+   },
+   {
+    "papel": "log",
+    "ocorrencias": 2
+   },
+   {
+    "papel": "option",
+    "ocorrencias": 2
+   },
+   {
+    "papel": "owner",
+    "ocorrencias": 2
+   },
+   {
+    "papel": "string",
+    "ocorrencias": 2
+   },
+   {
+    "papel": "toolbar",
+    "ocorrencias": 2
+   },
+   {
+    "papel": "article",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "banner",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "complementary",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "comprador_singular",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "contentinfo",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "document",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "editor",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "grid",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "gridcell",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "heading",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "link",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "none",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "publico",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "seller",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "service_role",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "sicoob_central",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "sicoob_gestor",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "sicoob_pa",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "sicoob_singular",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "sup",
+    "ocorrencias": 1
+   },
+   {
+    "papel": "tooltip",
+    "ocorrencias": 1
+   }
+  ],
+  "enums_de_papel": [
+   {
+    "enum": "app_role",
+    "valores": [
+     "admin",
+     "manager",
+     "vendedor",
+     "supervisor",
+     "dev",
+     "gestor_compras",
+     "gerente_pa",
+     "comprador_pac",
+     "comprador_singular",
+     "comprador_pac",
+     "comprador_singular"
+    ]
+   },
+   {
+    "enum": "org_role",
+    "valores": [
+     "owner",
+     "admin",
+     "member"
+    ]
+   },
+   {
+    "enum": "role_migration_status",
+    "valores": [
+     "pending",
+     "running",
+     "completed",
+     "failed",
+     "partial",
+     "dry_run"
+    ]
+   },
+   {
+    "enum": "role_migration_item_status",
+    "valores": [
+     "pending",
+     "success",
+     "failed",
+     "skipped",
+     "dry_run"
+    ]
+   }
+  ],
+  "rpcs_de_autorizacao": [
+   "can_grant_mcp_full",
+   "cleanup_test_auth_orphans",
+   "execute_role_migration_batch",
+   "get_test_auth_integrity",
+   "has_role",
+   "is_dev",
+   "is_supervisor_or_above",
+   "sicoob_current_actor_approval_authority",
+   "sicoob_current_actor_can_manage_fulfillment"
+  ],
+  "guards": [
+   "src/components/admin/telemetry/RegressionGuardrailBanner.tsx",
+   "src/components/layout/ProtectedRoute.tsx"
+  ],
+  "rotas_protegidas": 108,
+  "rotas_publicas": [
+   "/*",
+   "/*",
+   "/403",
+   "/approve/:token",
+   "/colecao-publica/:token",
+   "/comparar-publica/:token",
+   "/convite/:token",
+   "/demonstracao",
+   "/dossie/:token",
+   "/gestor/delegacoes",
+   "/kit/:token",
+   "/lista-publica/:token",
+   "/login",
+   "/login",
+   "/loja-demo",
+   "/proposta/:token",
+   "/public/colecao/:token",
+   "/public/comparativo/:token",
+   "/public/dossie/:token",
+   "/public/favoritos/:token",
+   "/public/kit/:token",
+   "/public/orcamento/:token/aprovacao",
+   "/reset-password",
+   "/reset-password",
+   "/sso/callback",
+   "/sso/callback",
+   "/verificacao",
+   "/verificacao"
+  ],
+  "menu_com_papeis": [
+   {
+    "rotulo": "Agregados e recebimentos",
+    "papeis": [
+     "comprador_pac",
+     "comprador_singular",
+     "dev",
+     "gerente_pa",
+     "gestor_compras",
+     "supervisor"
+    ]
+   },
+   {
+    "rotulo": "Aprovações",
+    "papeis": [
+     "comprador_pac",
+     "comprador_singular",
+     "dev",
+     "gerente_pa",
+     "gestor_compras",
+     "supervisor"
+    ]
+   },
+   {
+    "rotulo": "Convites institucionais",
+    "papeis": [
+     "comprador_singular",
+     "dev",
+     "gestor_compras",
+     "supervisor"
+    ]
+   },
+   {
+    "rotulo": "Delegações de aprovação",
+    "papeis": [
+     "comprador_singular",
+     "dev",
+     "gestor_compras",
+     "supervisor"
+    ]
+   },
+   {
+    "rotulo": "Gestão Singular",
+    "papeis": [
+     "comprador_singular",
+     "dev",
+     "gestor_compras",
+     "supervisor"
+    ]
+   },
+   {
+    "rotulo": "Painel Gestor",
+    "papeis": [
+     "comprador_singular",
+     "dev",
+     "gestor_compras",
+     "supervisor"
+    ]
+   }
+  ],
+  "tabelas_sem_rls": [
+   "admin_audit_log_default",
+   "admin_audit_log_y2024",
+   "admin_audit_log_y2025",
+   "admin_audit_log_y2026_m01",
+   "admin_audit_log_y2026_m02",
+   "admin_audit_log_y2026_m03",
+   "admin_audit_log_y2026_m04",
+   "admin_audit_log_y2026_m05",
+   "admin_audit_log_y2026_m06",
+   "admin_audit_log_y2026_m07",
+   "admin_audit_log_y2026_m08",
+   "admin_audit_log_y2026_m09",
+   "admin_audit_log_y2026_m10",
+   "admin_audit_log_y2026_m11",
+   "admin_audit_log_y2026_m12",
+   "admin_audit_log_y2027_m01",
+   "admin_audit_log_y2027_m02",
+   "admin_audit_log_y2027_m03"
+  ]
+ },
+ "feature_flags": {
+  "total": 6,
+  "flags": [
+   {
+    "flag": "ENABLE_DEMO_PAGES",
+    "arquivos": 4
+   },
+   {
+    "flag": "ENABLE_RLS",
+    "arquivos": 1
+   },
+   {
+    "flag": "FEATURE_GROUPS",
+    "arquivos": 1
+   },
+   {
+    "flag": "FEATURE_X",
+    "arquivos": 1
+   },
+   {
+    "flag": "nova-tela",
+    "arquivos": 1
+   },
+   {
+    "flag": "novo-inbox",
+    "arquivos": 1
+   }
+  ],
+  "tabelas_de_flag": [
+   "access_security_settings",
+   "admin_settings",
+   "feature_flags",
+   "pa_notification_settings",
+   "security_settings",
+   "system_settings",
+   "user_2fa_settings"
+  ]
+ },
+ "providers": {
+  "entrada": "src/main.tsx",
+  "providers": [
+   "AccessibilityProvider",
+   "AriaLiveProvider",
+   "AuthProvider",
+   "BrowserRouter",
+   "CollectionsProvider",
+   "DevChallengeProvider",
+   "EnhancedErrorBoundary",
+   "ErrorBoundary",
+   "HelmetProvider",
+   "OrganizationProvider",
+   "ProductsProvider",
+   "QueryClientProvider",
+   "ThemeProvider",
+   "TooltipProvider"
+  ]
+ },
+ "i18n": {
+  "arquivos": 0,
+  "idiomas": [],
+  "lib": []
+ }
+}
