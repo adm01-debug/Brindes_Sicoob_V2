@@ -226,7 +226,6 @@
     "@types/react-dom": "^18.3.1",
     "@types/react-signature-canvas": "^1.0.7",
     "@vitejs/plugin-react-swc": "^3.11.0",
-    "autoprefixer": "^10.6.1",
     "axe-core": "^4.11.3",
     "autoprefixer": "^10.6.2",
     "braces": "file:vendor/braces",
