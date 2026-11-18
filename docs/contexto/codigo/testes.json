@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 808,
+ "total": 809,
  "por_tipo": {
   "contrato": 8,
   "e2e": 174,
   "pytest": 2,
   "qa": 40,
-  "unit": 584
+  "unit": 585
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 561
+   "arquivos": 562
   },
   {
    "padrao": "e2e/",
@@ -3672,6 +3672,16 @@
    "casos": 1
   },
   {
+   "arquivo": "tests/hooks/bi/useClientBI.test.ts",
+   "tipo": "unit",
+   "linhas": 69,
+   "testa": [
+    "src/hooks/bi/useClientBI.ts",
+    "src/lib/bi/mockData.ts"
+   ],
+   "casos": 2
+  },
+  {
    "arquivo": "tests/hooks/catalog-comparison-smoke.test.ts",
    "tipo": "unit",
    "linhas": 70,
@@ -7166,6 +7176,7 @@
   "src/contexts/ProductsContext.tsx": 3,
   "src/contexts/SellerCartContext.tsx": 1,
   "src/hooks/auth/useUserRoles.ts": 1,
+  "src/hooks/bi/useClientBI.ts": 1,
   "src/hooks/catalog/useCatalogFilters.ts": 1,
   "src/hooks/dev/useBridgeMetrics.ts": 5,
   "src/hooks/orders/extensions/index.ts": 1,
@@ -7289,6 +7300,7 @@
   "src/lib/auth/safe-internal-path.ts": 1,
   "src/lib/auth/sensitive-browser-data.ts": 1,
   "src/lib/auth/sso-errors.ts": 1,
+  "src/lib/bi/mockData.ts": 1,
   "src/lib/catalog-filter-state.ts": 1,
   "src/lib/cloud-status.ts": 2,
   "src/lib/connection-error-copy.ts": 1,
@@ -7644,7 +7656,6 @@
    "src/hooks/bi/useBIDossierExport.ts",
    "src/hooks/bi/useChurnRisk.ts",
    "src/hooks/bi/useClientAffinity.ts",
-   "src/hooks/bi/useClientBI.ts",
    "src/hooks/bi/useClientCategoryAffinity.ts",
    "src/hooks/bi/useClientHealthScore.ts",
    "src/hooks/bi/useClientsComparison.ts",

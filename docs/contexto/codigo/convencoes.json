@@ -21,7 +21,7 @@
    "src/services (22)"
   ],
   "testes": [
-   "tests/ (561)",
+   "tests/ (562)",
    "e2e/ (149)",
    "outro (51)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "fix(bi): caminho de dado real para de devolver categoria fictícia (#316)",
    "feat(nav): voltar fecha overlay, restaura scroll e não volta N passos (#319)",
    "fix(db): intervalo de auto-teste le agendamento de 2 e 4 horas (#310)",
    "fix(clientes): KPIs da carteira passam a ser medidos, não digitados à mão (#314)",
-   "fix(auth): logout apaga o historico de navegacao do vendedor anterior (#312)",
-   "feat(edge): recupera módulos das PRs #119/#178/#179 e migra os 9 consumidores que a nova política quebraria (#309)"
+   "fix(auth): logout apaga o historico de navegacao do vendedor anterior (#312)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

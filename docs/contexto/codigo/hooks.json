@@ -2234,7 +2234,7 @@
    "hooks_exportados": [
     "useClientBI"
    ],
-   "linhas": 160,
+   "linhas": 167,
    "dominio": "hooks/bi",
    "tabelas": [],
    "rpcs": [],
@@ -2260,7 +2260,7 @@
     "src/lib/bi/dossierPdfGenerator.ts",
     "src/lib/bi/pptxGenerator.ts"
    ],
-   "coberto_por_testes": 0
+   "coberto_por_testes": 1
   },
   {
    "arquivo": "src/hooks/bi/useClientCategoryAffinity.ts",
@@ -2324,7 +2324,7 @@
    "hooks_exportados": [
     "useSingleClientComparisonRow"
    ],
-   "linhas": 115,
+   "linhas": 135,
    "dominio": "hooks/bi",
    "tabelas": [],
    "rpcs": [],

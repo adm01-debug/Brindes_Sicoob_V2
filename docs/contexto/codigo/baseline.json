@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "781ee209ee68ccb6a5442679686093bbcefc0430",
+  "commit": "d8d7dcd171c1e339017e300469bbb0efca17ab6c",
   "branch": "main",
-  "data_commit": "2026-11-18T18:32:09Z",
+  "data_commit": "2026-11-18T18:50:14Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "d8d7dcd",
+    "data": "2026-11-18",
+    "assunto": "fix(bi): caminho de dado real para de devolver categoria fictícia (#316)"
+   },
    {
     "sha": "781ee20",
     "data": "2026-11-18",
@@ -126,14 +131,9 @@
     "sha": "1d65b3c",
     "data": "2026-11-13",
     "assunto": "fix(inventário): atualiza generated_at do cache para desbloquear CI (#278)"
-   },
-   {
-    "sha": "67f0860",
-    "data": "2026-11-13",
-    "assunto": "infra: adiciona migrações de segurança Órfãs à allowlist de apply (#275)"
    }
   ],
-  "arquivos_mudados_7d": 352,
+  "arquivos_mudados_7d": 350,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
@@ -199,11 +199,11 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 94
+    "mudancas": 93
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 93
+    "mudancas": 92
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 130
+    "commits": 131
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4331,
-  "arquivos_codigo": 3040,
-  "linhas_codigo": 479852,
+  "arquivos_total": 4332,
+  "arquivos_codigo": 3041,
+  "linhas_codigo": 479948,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -324,7 +324,7 @@
   "tabelas": 291,
   "migrations": 620,
   "cron_jobs": 27,
-  "testes": 808,
+  "testes": 809,
   "workflows": 16,
   "scripts": 121,
   "docs_md": 246
@@ -792,7 +792,7 @@
   },
   "src/hooks": {
    "arquivos": 311,
-   "linhas": 45988
+   "linhas": 46015
   },
   "src/integrations": {
    "arquivos": 3,
@@ -915,8 +915,8 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 125,
-   "linhas": 13280
+   "arquivos": 126,
+   "linhas": 13349
   },
   "tests/integration": {
    "arquivos": 4,

@@ -1437,7 +1437,7 @@
    "usado_por_modulos": [
     "hooks/bi"
    ],
-   "coberto_por_testes": 0,
+   "coberto_por_testes": 1,
    "orfao": false
   },
   {

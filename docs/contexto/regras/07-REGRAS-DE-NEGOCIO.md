@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `781ee209ee` · branch `main` · 2026-11-18 18:40 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `d8d7dcd171` · branch `main` · 2026-11-18 18:52 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5687,7 +5687,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6586 testes em 633 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6589 testes em 634 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5991,7 +5991,7 @@ _nenhum item encontrado_
 | `tests/components/CloudStatusBanner.test.tsx` | 6 | CloudStatusBanner — visibilidade por papel e criticidade · NÃO renderiza  · EXIBE  · EXIBE  … |
 | `tests/components/ErrorBoundary.test.tsx` | 6 | ErrorBoundary · renders children when no error occurs · renders fallback UI when a render error occurs · handles ChunkLoadError specifically … |
 | `tests/components/GlobalConfirmDialog.test.tsx` | 6 | GlobalConfirmDialog · exibe título/descrição e confirma com o rótulo customizado · Escape cancela e devolve o foco para quem abriu a confirmação · devolve o foco para o botão de dentro de outro diálogo … |
-| … +333 linhas — lista completa em `context.json` | | |
+| … +334 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 
