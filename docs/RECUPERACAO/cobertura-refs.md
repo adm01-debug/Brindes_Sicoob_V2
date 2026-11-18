@@ -162,7 +162,9 @@ e a remoção do gráfico de forecast do mapa de calor. É por isso que a recupe
 
 | 3b | [#349](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/349) | `ComparisonAvailability`. O painel comparador juntava sete fontes por cliente e devolvia uma linha única: falha de qualquer uma virava LTV R$ 0 e score 0 classificado como "risco". Agora oculta só a métrica da fonte caída e refaz só a consulta que falhou. `ClientVsIndustryComparison` ganhou "Comparativo indisponível" (em vez de confundir falha com amostra insuficiente) e "Último cache · atualização falhou" |
 
-Restam **9**, listados abaixo.
+| 4 | [#350](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/350) | `BIAiCopilot.context/sources` + `BIBriefingMode.history/sources`. O copiloto enviava à IA o contexto que tivesse: histórico falhado virava `ltv: 0` e `ordersCount: 0` (a IA respondia "nunca comprou" sobre quem compra), benchmark falhado virava score 0 (diagnóstico de risco) e tendência do setor em cache ia como atual. Agora o contexto declara disponibilidade, preserva zero medido e bloqueia o envio com fonte caída |
+
+Restam **5**, listados abaixo.
 
 
 `npx vitest run` com os 13 materializados sobre `origin/main`: **28 asserções falham,
