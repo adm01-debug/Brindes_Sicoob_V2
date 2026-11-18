@@ -71,13 +71,19 @@ function directoryRowToCrmCompany(row: QuoteDirectoryCompany): CrmCompany {
  */
 function fitsQuoteDirectory(filters?: CrmCompanyFilters): boolean {
   if (filters?.is_customer !== true) return false;
+  // Mesmo critério de `setDefinedFilter`: só não é enviado o que está ausente.
+  // Com `!filters.is_supplier`, pedir `is_supplier: false` (cliente que NAO e
+  // fornecedor) caía no diretório, que não aplica essa exclusão — a lista
+  // voltaria com clientes fornecedores. Filtro booleano explícito tem de sair
+  // pelo caminho genérico.
+  const ausente = (value: unknown) => value === undefined || value === null || value === '';
   return (
-    !filters.status &&
-    !filters.cidade &&
-    !filters.estado &&
-    !filters.ramo_atividade &&
-    !filters.is_supplier &&
-    !filters.is_carrier
+    ausente(filters.status) &&
+    ausente(filters.cidade) &&
+    ausente(filters.estado) &&
+    ausente(filters.ramo_atividade) &&
+    ausente(filters.is_supplier) &&
+    ausente(filters.is_carrier)
   );
 }
 
@@ -121,14 +127,24 @@ export function useCrmCompany(id: string | null | undefined) {
     queryFn: async () => {
       if (!id) return null;
       if (isDemoClient(id)) return DEMO_COMPANY as unknown as CrmCompany;
-      // `cidade` e `estado` entraram na projecao do contrato fechado, entao a
-      // ficha do cliente nao precisa mais do `select` generico, negado para
-      // vendedor e agente. BusinessIntelligencePage le esses dois campos.
+      // Registro completo primeiro: a ficha do cliente le campos que o contrato
+      // fechado nao projeta, `website` entre eles (ClientDetailHeader usa para
+      // oferecer o link do site). Quem tem direito ao `select` generico — dev,
+      // supervisor, admin, manager — continua recebendo a empresa inteira, como
+      // antes desta PR.
+      try {
+        const full = await selectCrmById<CrmCompany>("companies", id);
+        if (full) return full;
+      } catch {
+        // Negado para vendedor e agente pela politica do portal: cai no
+        // diretorio abaixo, que e o contrato que esses papeis podem usar.
+      }
+      // Registro reduzido do contrato fechado. Nao tem website, bitrix_company_id
+      // nem os demais campos fora de QUOTE_COMPANY_SELECT; a ficha renderiza o
+      // que existe e omite o resto, em vez de ficar vazia.
       const rows = await fetchQuoteDirectoryCompanies({ companyId: id, limit: 1 });
       const [first] = rows;
-      if (first) return directoryRowToCrmCompany(first);
-      // Empresa fora do contrato (nao cliente): so papeis de supervisao leem.
-      return selectCrmById<CrmCompany>("companies", id);
+      return first ? directoryRowToCrmCompany(first) : null;
     },
     enabled: !!id,
     staleTime: 10 * 60 * 1000,

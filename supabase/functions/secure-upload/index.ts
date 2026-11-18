@@ -17,11 +17,6 @@ interface ScanLog {
   status_code: number;
 }
 
-function privateStorageReference(bucket: string, path: string): string {
-  const encodedPath = path.split("/").map(encodeURIComponent).join("/");
-  return `supabase-storage://${bucket}/${encodedPath}`;
-}
-
 Deno.serve(async (req) => {
   const requestId = getOrCreateRequestId(req);
   const log = createStructuredLogger({ fn: "secure-upload", requestId, req });

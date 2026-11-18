@@ -75,6 +75,22 @@ describe('useCrmCompanies', () => {
     expect(fetchQuoteDirectoryCompanies).not.toHaveBeenCalled();
   });
 
+  it('mantém o select genérico quando o filtro booleano é explicitamente false', async () => {
+    // O contrato fechado não aplica exclusão de fornecedor/transportadora: se
+    // `is_supplier: false` caísse no diretório, a lista voltaria com clientes
+    // que também são fornecedores.
+    vi.mocked(selectCrm).mockResolvedValue([]);
+
+    const { result } = renderHook(
+      () => useCrmCompanies({ is_customer: true, is_supplier: false }),
+      { wrapper },
+    );
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(selectCrm).toHaveBeenCalled();
+    expect(fetchQuoteDirectoryCompanies).not.toHaveBeenCalled();
+  });
+
   it('mantém o select genérico quando não há is_customer', async () => {
     vi.mocked(selectCrm).mockResolvedValue([]);
 
@@ -113,24 +129,49 @@ describe('useCrmCompany', () => {
     vi.clearAllMocks();
   });
 
-  it('resolve a ficha pelo contrato fechado, sem select genérico', async () => {
+  it('entrega a empresa inteira para quem pode o select genérico, sem recorrer ao diretório', async () => {
+    // A ficha do cliente lê campos fora de QUOTE_COMPANY_SELECT — `website` é o
+    // que o ClientDetailHeader usa para oferecer o link do site. Resolver pelo
+    // diretório primeiro tirava esse campo até de supervisor e admin.
+    vi.mocked(selectCrmById).mockResolvedValue({
+      id: 'c-9',
+      razao_social: 'Sicoob Nove LTDA',
+      website: 'https://sicoobnove.com.br',
+    } as never);
+
+    const { result } = renderHook(() => useCrmCompany('c-9'), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(selectCrmById).toHaveBeenCalledWith('companies', 'c-9');
+    expect(fetchQuoteDirectoryCompanies).not.toHaveBeenCalled();
+    expect(result.current.data).toEqual(
+      expect.objectContaining({ website: 'https://sicoobnove.com.br' }),
+    );
+  });
+
+  it('recua para o contrato fechado quando o select genérico é negado', async () => {
+    vi.mocked(selectCrmById).mockRejectedValue(
+      new Error('CRM DB error: Permissão insuficiente para esta operação no CRM'),
+    );
     vi.mocked(fetchQuoteDirectoryCompanies).mockResolvedValue([directoryCompany('c-9', 'Sicoob Nove')]);
 
     const { result } = renderHook(() => useCrmCompany('c-9'), { wrapper });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(fetchQuoteDirectoryCompanies).toHaveBeenCalledWith({ companyId: 'c-9', limit: 1 });
-    expect(selectCrmById).not.toHaveBeenCalled();
-    expect(result.current.data).toEqual(expect.objectContaining({ cidade: 'Goiânia', estado: 'GO' }));
+    expect(result.current.data).toEqual(
+      expect.objectContaining({ id: 'c-9', cidade: 'Goiânia', estado: 'GO' }),
+    );
   });
 
-  it('recua para o select por id quando a empresa está fora do contrato', async () => {
-    vi.mocked(fetchQuoteDirectoryCompanies).mockResolvedValue([]);
+  it('devolve nulo quando a empresa não existe em nenhum dos dois caminhos', async () => {
     vi.mocked(selectCrmById).mockResolvedValue(null);
+    vi.mocked(fetchQuoteDirectoryCompanies).mockResolvedValue([]);
 
     const { result } = renderHook(() => useCrmCompany('fornecedor-1'), { wrapper });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(selectCrmById).toHaveBeenCalledWith('companies', 'fornecedor-1');
+    expect(result.current.data).toBeNull();
   });
 });

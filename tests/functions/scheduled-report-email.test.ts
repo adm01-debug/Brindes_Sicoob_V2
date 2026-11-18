@@ -43,6 +43,44 @@ describe('sendScheduledReportEmail', () => {
     expect(receipt).toBe(DUPLICATE_RECEIPT);
     expect(recordSent).toHaveBeenCalledWith(DUPLICATE_RECEIPT);
   });
+  it('não confirma o ciclo quando o 409 é de requisição concorrente', async () => {
+    const recordSent = vi.fn();
+    const fetcher = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          statusCode: 409,
+          name: 'concurrent_idempotent_requests',
+          message: 'Too many requests with the same idempotency key are in flight.',
+        }),
+        { status: 409 },
+      ),
+    );
+
+    await expect(sendScheduledReportEmail({ ...input, fetcher }, recordSent))
+      .rejects.toThrow('concorrente');
+
+    expect(recordSent).not.toHaveBeenCalled();
+  });
+
+  it('confirma o ciclo quando o 409 é de chave reusada com outro corpo', async () => {
+    const recordSent = vi.fn();
+    const fetcher = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          statusCode: 409,
+          name: 'invalid_idempotent_request',
+          message: 'Same idempotency key used with a different request payload.',
+        }),
+        { status: 409 },
+      ),
+    );
+
+    await expect(sendScheduledReportEmail({ ...input, fetcher }, recordSent))
+      .resolves.toBe(DUPLICATE_RECEIPT);
+
+    expect(recordSent).toHaveBeenCalledWith(DUPLICATE_RECEIPT);
+  });
+
   it('não avança o agendamento sem recibo válido, mesmo com HTTP 2xx', async () => {
     const recordSent = vi.fn();
     const fetcher = vi.fn().mockResolvedValue(

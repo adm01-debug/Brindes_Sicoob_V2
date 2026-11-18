@@ -339,6 +339,9 @@ export async function fetchQuoteDirectoryCompanies(options: {
   return result.data || [];
 }
 
+/** Espelha INDUSTRY_PEERS_LIMIT do Edge, usado so no fallback de transicao. */
+const INDUSTRY_PEERS_FALLBACK_LIMIT = 500;
+
 /**
  * Ids das empresas do mesmo ramo de atividade. Entra nas RPCs de comparativo de
  * industria do Supabase oficial (get_industry_benchmark_stats,
@@ -349,12 +352,35 @@ export async function fetchQuoteDirectoryCompanies(options: {
 export async function fetchIndustryPeerIds(ramoAtividade: string): Promise<string[]> {
   const ramo = ramoAtividade.trim();
   if (ramo.length < 2) return [];
-  const result = await invokeCrmDb<QuoteDirectoryPeer[]>({
-    operation: "quote_directory",
-    action: "industry_peers",
-    ramoAtividade: ramo,
-  });
-  return (result.data || []).map((peer) => peer.id);
+  try {
+    const result = await invokeCrmDb<QuoteDirectoryPeer[]>({
+      operation: "quote_directory",
+      action: "industry_peers",
+      ramoAtividade: ramo,
+    });
+    return (result.data || []).map((peer) => peer.id);
+  } catch (error) {
+    // Transicao, com data de validade. O crm-db-bridge publicado hoje e a v13
+    // de 15/10/2026 e nao conhece a acao industry_peers: ela entra nesta PR e o
+    // bridge nao esta em nenhum workflow de publicacao versionado, entao a acao
+    // so existe no repositorio. Medido no bundle publicado: 0 ocorrencias de
+    // "industry_peers". Sem este fallback, trocar o select generico pela acao
+    // nova tiraria o comparativo de industria de quem hoje o tem funcionando
+    // (dev, supervisor, admin, manager). Para vendedor e agente o generico ja e
+    // negado em producao pela mesma politica, entao nada piora para eles.
+    // Remover assim que o bridge for republicado com esta PR.
+    logger.warn(
+      `[CRM-DB] acao industry_peers indisponivel no bridge publicado; usando select generico: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+    const companies = await selectCrm<{ id: string }>("companies", {
+      select: "id",
+      filters: { ramo_atividade: ramo, deleted_at: null },
+      limit: INDUSTRY_PEERS_FALLBACK_LIMIT,
+    });
+    return companies.map((company) => company.id).filter(Boolean);
+  }
 }
 
 export async function fetchQuoteDirectoryContacts(

@@ -53,9 +53,23 @@ export async function sendScheduledReportEmail(
     }),
   });
 
-  // 409 = esta chave ja foi aceita com outro corpo. O e-mail do ciclo saiu; o
-  // que falta e confirmar o ciclo no banco para nao reenviar na proxima rodada.
+  // 409 tem dois significados no Resend e eles nao se confundem:
+  //   - chave reusada com outro corpo: o primeiro envio FOI aceito. O HTML e
+  //     recalculado a cada tentativa do mesmo ciclo, entao esse e o 409 normal
+  //     de um retry; o ciclo saiu e so falta confirma-lo no banco.
+  //   - requisicao concorrente com a mesma chave: outra invocacao ainda esta em
+  //     voo e pode falhar. Confirmar o ciclo aqui o marcaria como enviado sem
+  //     e-mail nenhum. Nao confirma: a proxima rodada tenta de novo e a chave
+  //     segue protegendo contra envio duplicado.
+  // Qualquer outro 409 continua tratado como aceito — tratar desconhecido como
+  // falha travaria o agendamento, que voltaria a bater 409 para sempre.
   if (response.status === 409) {
+    const detalhe = await response.text().catch(() => "");
+    if (/concurrent/i.test(detalhe)) {
+      throw new Error(
+        "Resend relatou requisição concorrente para a mesma chave de idempotência (HTTP 409).",
+      );
+    }
     await recordSent(DUPLICATE_RECEIPT);
     return DUPLICATE_RECEIPT;
   }
