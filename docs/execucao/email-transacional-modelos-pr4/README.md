@@ -43,4 +43,6 @@ domínio remetente e custo.
 Extensão `.txt` de propósito: assim o arquivo não entra no `deno check`, não
 vira código morto no bundle e ninguém o importa por engano.
 
-Veredito e medição completa em [`docs/RECUPERACAO/`](../../RECUPERACAO/README.md).
+Veredito e medição completa ficam no ledger de recuperação, publicado pela PR #315
+(`docs/RECUPERACAO/`). O link direto fica de fora enquanto aquela PR não entra na
+`main`: apontar para um arquivo ausente deste checkout não ajuda ninguém a conferir.
