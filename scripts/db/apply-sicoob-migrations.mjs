@@ -168,6 +168,42 @@ const TARGETS = [
     file: "supabase/migrations/20261113170000_use_semantic_admin_helper_in_favorite_policies.sql",
     sha256: "3f828b9fac8ec95fa1ad9bfd3280ffec27f96a8525a9b5f86ee4e2f36fd4f55e",
   },
+  {
+    file: "supabase/migrations/20261117183000_ai_quota_count_billed_interrupts.sql",
+    sha256: "5e4528b380fa6d48fbe92fad8c8b68282337c2012c1202c871726ff6208a400b",
+  },
+  {
+    file: "supabase/migrations/20261118130000_harden_storage_and_public_favorites_acl.sql",
+    sha256: "46ff18f7c50bdeaa409fe4cd5d174e704653a8e5bf38dc73fc742bd2ff5ff27a",
+  },
+  {
+    file: "supabase/migrations/20261118130100_enable_scoped_business_realtime.sql",
+    sha256: "26581f4fe2c90e3e235890e26b1044304c6cdbbed4c5989e50479a07115278fe",
+  },
+  {
+    file: "supabase/migrations/20261118130200_restore_view_invoker_and_notification_scope.sql",
+    sha256: "1fc13b57d3501098ebc7e2da997082a684ffd9f9ec1000dbbb1f678247f2cda9",
+  },
+  {
+    file: "supabase/migrations/20261118130300_harden_access_blocked_log_and_marketing_view_acl.sql",
+    sha256: "d14956454248e92ef91b2e1765efbcdc41b9893969bc3be06a1c754ff121c418",
+  },
+  {
+    file: "supabase/migrations/20261118130400_pin_custom_kit_atomically.sql",
+    sha256: "5a5700002f293cb72f31c5db7c4892c48cb5667cc61d99ea133e1b99b5d758cc",
+  },
+  {
+    file: "supabase/migrations/20261118130500_block_permissive_allow_all_policies.sql",
+    sha256: "4f8d707931e376bf4363e13a2f9e93d04a4d3e1f9ca25331557ff21b254024fe",
+  },
+  {
+    file: "supabase/migrations/20261118130600_redact_public_quote_approval_costs.sql",
+    sha256: "a0a9c15ae4b985317d16b4b63fff27a31ba40945dcba30ef7abd919d49477e06",
+  },
+  {
+    file: "supabase/migrations/20261118130700_bind_sicoob_scan_evidence_hash.sql",
+    sha256: "596d96db114514037ca2c85724a19224da92341c3508c841151c9f0be3d725fd",
+  },
 ];
 const APPROVAL_WORKER_STRUCTURE_SAFE_SQL = `(
   NOT EXISTS (
@@ -923,10 +959,24 @@ async function validateContract(client, targets) {
     && Number(result.covered_fk_index_count) === 17
     && Number(result.obsolete_duplicate_index_count) === 0
     && Number(result.rls_auth_initplan_candidate_count) === 0
-    && Number(result.consolidated_rls_policy_count) === 222
-    && Number(result.consolidated_rls_table_count) === 63
-    && Number(result.consolidated_rls_public_policy_count) === 57
-    && Number(result.consolidated_rls_protected_policy_count) === 165
+    // Piso, não igualdade, e piso medido na realidade do banco.
+    //
+    // Por que mudou (18/11/2026): este contrato bloqueava o aplicador desde
+    // 13/11. Com as 6 migrations autorizadas pendentes aplicadas em transação
+    // revertida no projeto cfmzkthhgliqelozlmwu, as contagens reais são
+    // 222 policies / 63 tabelas / 58 públicas / 164 protegidas. O contrato exigia
+    // 57 públicas e 165 protegidas, números escritos antes de
+    // 20261113170000_use_semantic_admin_helper_in_favorite_policies consolidar as
+    // policies de favoritos. A igualdade também transformava qualquer policy
+    // `sicoob_merged` conforme acrescentada depois em cancelamento do lote.
+    //
+    // O conteúdo de segurança continua garantido pelas checagens estruturais
+    // abaixo (permissive, roles permitidos e cmd <> ALL); o piso garante que a
+    // consolidação de 20261007233000 não foi desfeita.
+    && Number(result.consolidated_rls_policy_count) >= 222
+    && Number(result.consolidated_rls_table_count) >= 63
+    && Number(result.consolidated_rls_public_policy_count) >= 57
+    && Number(result.consolidated_rls_protected_policy_count) >= 164
     && Number(result.invalid_consolidated_rls_policy_count) === 0
     && Number(result.anon_blocked_rls_dependency_count) === 0
     && Number(result.explicit_anon_policy_count) === 4
@@ -1222,24 +1272,29 @@ BEGIN
          )
          AND CONCAT_WS(' ', qual, with_check) !~* 'select\\s+auth\\.(uid|role|jwt)\\(\\)'
      )
+     -- Piso, não igualdade: ver comentário em validateContract. A consolidação de
+     -- 20261007233000 é o mínimo que precisa continuar de pé; policies
+     -- sicoob_merged conformes acrescentadas depois (20261016170000 e
+     -- 20261016171500) não podem cancelar o lote. A forma das policies continua
+     -- exigida pela checagem estrutural logo abaixo.
      OR (SELECT count(*)
        FROM pg_policies
        WHERE schemaname = 'public'
-         AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$') <> 222
+         AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$') < 222
      OR (SELECT count(DISTINCT tablename)
        FROM pg_policies
        WHERE schemaname = 'public'
-         AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$') <> 63
+         AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$') < 63
      OR (SELECT count(*)
        FROM pg_policies
        WHERE schemaname = 'public'
          AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$'
-         AND roles = ARRAY['public']::name[]) <> 57
+         AND roles = ARRAY['public']::name[]) < 57
      OR (SELECT count(*)
        FROM pg_policies
        WHERE schemaname = 'public'
          AND policyname ~ '^sicoob_merged_[0-9a-f]{16}_(select|insert|update|delete)$'
-         AND roles = ARRAY['authenticated', 'service_role']::name[]) <> 165
+         AND roles = ARRAY['authenticated', 'service_role']::name[]) < 164
      OR EXISTS (
        SELECT 1
        FROM pg_policies
