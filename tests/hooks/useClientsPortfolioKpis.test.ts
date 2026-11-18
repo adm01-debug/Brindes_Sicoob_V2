@@ -83,7 +83,7 @@ function programar(filas: {
   range.mockImplementation((registro: Record<string, unknown>) => {
     const chave = qual(registro);
     if (filas.erroEm === chave) return resposta(null, new Error('RLS negou'));
-    return resposta(pendentes[chave].shift() ?? []);
+    return resposta(pendentes[chave]?.shift() ?? []);
   });
   historico.mockImplementation(() => resposta(filas.historico ?? []));
 }
