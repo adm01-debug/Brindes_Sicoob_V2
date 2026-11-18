@@ -191,22 +191,18 @@ export function useCustomKitPersistence() {
   }, [user?.id, queryClient]);
 
   /** Fixa/desfixa kit em destaque (apenas 1 por usuário). */
+  // Uma única operação no servidor. Os dois UPDATE separados que existiam aqui
+  // não eram atômicos: entre desafixar o anterior e fixar o novo, duas abas ou
+  // dois cliques rápidos deixavam dois kits em destaque, ou nenhum, e o índice
+  // único idx_custom_kits_one_pinned_per_user passava a rejeitar a escrita.
   const togglePinned = useCallback(async (kitId: string, value: boolean) => {
     if (!user?.id) return;
     try {
-      if (value) {
-        // Desfixa qualquer outro kit fixado primeiro
-        await supabase
-          .from('custom_kits')
-          .update({ is_pinned: false } as never)
-          .eq('user_id', user.id)
-          .eq('is_pinned', true);
-      }
-      await supabase
-        .from('custom_kits')
-        .update({ is_pinned: value } as never)
-        .eq('id', kitId)
-        .eq('user_id', user.id);
+      const { error } = await supabase.rpc('set_custom_kit_pinned', {
+        p_kit_id: kitId,
+        p_pinned: value,
+      });
+      if (error) throw error;
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       toast.success(value ? 'Kit fixado em destaque' : 'Kit desafixado');
     } catch {
