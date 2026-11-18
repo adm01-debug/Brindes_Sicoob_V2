@@ -48,4 +48,7 @@ verificador de imutabilidade. O arquivo SQL termina em `.sql.txt` pelo mesmo mot
 
 Enquanto 1 não acontecer, nada disso deve ser mesclado: seriam quatro peças sem consumidor.
 
-Registro completo do veredito: [`docs/RECUPERACAO/README.md`](../../RECUPERACAO/README.md).
+Registro completo do veredito: o ledger de recuperação, em `docs/RECUPERACAO/`, que entra
+pela PR #315. Enquanto ela não for mesclada, o veredito e a origem de cada arquivo deste
+diretório estão na tabela da seção "O que está preservado aqui", acima, e no corpo da PR que
+trouxe este diretório — não há link para arquivo que ainda não existe na `main`.
