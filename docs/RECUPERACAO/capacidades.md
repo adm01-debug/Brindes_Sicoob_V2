@@ -44,7 +44,17 @@ O código perdido é de boa qualidade, idiomático ao repo (zustand como os stor
 
 #### Métricas reais do Gestor de Compras (fim de métrica fictícia) — PR #157
 
-**Existe na `main`:** True · **ainda faz sentido:** False
+**Existe na `main`:** True · **ainda faz sentido:** False · **VEREDITO REVISTO EM 18/11/2026: PROCEDE EM PARTE — RECUPERADO**
+
+> **Revisão (18/11/2026).** O veredito abaixo ("nada a recuperar") estava certo sobre a
+> extração do serviço e errado sobre a tela. `/gestor/compras` de fato só oferecia atalhos:
+> para ver qualquer número o gestor precisava sair para `/gestor`. Tirar o número falso foi
+> acerto; deixar a tela sem indicador nenhum foi perda de capacidade. Recuperado em duas
+> PRs: **#332** (serviço extraído, hook e os quatro indicadores dentro da tela, com os
+> estados de carregando/erro/sem verba/sem cooperativa) — **mergeada** — e **#333**
+> (SLA de aprovação em 24h medido do histórico canônico, recorte por cooperativa).
+> O que continua valendo do texto abaixo: a catraca de `tests/pages/GestorCompras.test.tsx`
+> contra os números fictícios **não** foi afrouxada, e nenhum valor sem fonte voltou.
 
 O diagnóstico mecânico está CORRETO nos arquivos ausentes, mas ERRADO na conclusão de negócio: a main já resolveu essa capacidade por outro caminho, e resolveu melhor.
 
@@ -281,6 +291,14 @@ Nada disso foi resolvido de outra forma na main, e todos os consumidores existem
 Confirmei o diagnostico lendo os dois lados e ele esta numericamente errado e qualitativamente invertido. Sao 118 arquivos, nao 125 (comm das arvores: `git ls-tree -r --name-only origin/main -- docs/` = 508 arquivos; uniao de pr/105+119+112+85+117+118+114 = 585; diferenca = 118). A main NAO perdeu capacidade documental: ela mantem 508 arquivos em docs/, dos quais 312 em docs/execucao/ e 33 em docs/plano-implementacao/.
 
 Classificando os 118 nos tres grupos pedidos:
+
+> **Revisão (18/11/2026) — o veredito deste bloco foi parcialmente derrubado.** A
+> classificação de "evidência dispensável" valia para o volume (10,5 MB + 1,8 MB + 968 KB em
+> três arquivos), não para o pacote inteiro: a re-auditoria achou 13 blocos sem equivalente
+> na `main`. Decisão única, para acabar com a contradição apontada na revisão: **os 75
+> arquivos restantes do pacote de 13/10 voltam** (PR **#336**), e só os três grandes ficam
+> de fora, com o motivo escrito no README do pacote e no manifesto histórico. O texto abaixo
+> continua válido como medição e como explicação de por que os três ficaram de fora.
 
 (c) INVENTARIO GERADO POR SCRIPT / EVIDENCIA REGENERAVEL — 93 arquivos. Os 87 de docs/execucao/auditoria-planejamento-2026-10-13/ sao um pacote de evidencia somente leitura: 26 `bd-*.json` (metadados de catalogo), 6 `github-*.json` (retrato de PRs/protecao), 7 CSVs de matriz/checklist, `consulta.html` (buscador offline), 8 scripts em `reproducao/` e 5 `.sql`. Os 5 `.sql` sao dumps de `pg_get_functiondef`, nao DDL nova: `save_quote_atomic`, `guard_quote_governance_write`, `convert_quote_to_sicoob_order`, `generate_quote_number` e `apply_local_quote_approval_response` ja existem em 8/5/2/3/3 migrations da main, respectivamente. O proprio pacote se declara retrato: "Este pacote registra o estado encontrado e nao declara que as correcoes foram implementadas" (README.md:3) e os scripts de reproducao dependem de um worktree que nao existe mais, `/home/joaquim_ataides/hermes-workspaces/auditoria-planos-20261013` (reproducao/LEIA-ME.md). Mais 5 arquivos de auditoria-planejamento-2026-10-16/ e 1 `fontes-sha256.json`. Restaurar isso cria 93 arquivos de dados de 13/10 que contradizem o banco de hoje.
 

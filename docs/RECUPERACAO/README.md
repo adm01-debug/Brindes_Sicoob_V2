@@ -85,17 +85,38 @@ que abriam em vez de fechar (`external-db-bridge`, `mcp-server`), corrigidos na 
 | #327 | abrir um kit salvo deixa de regravá-lo no banco |
 | #328 | fallback de CORS deixa de abrir para qualquer origem |
 | #329 | catraca de skip crítico passa a cobrir os 23 cenários P0 de E2E |
+| #330 | rota `/instalar` registrada e o convite de instalação do app volta a funcionar fora do cabeçalho |
+| #331 | salvar orçamento deixa de manter o aviso de "alterações não salvas" |
+| #332 | **mergeada** — indicadores reais do Gestor de Compras dentro da própria tela (PR #157) |
+| #333 | SLA de aprovação em 24h medido do histórico, com recorte por cooperativa |
+| #334 | trava otimista: duas abas no mesmo kit param de se sobrescrever em silêncio |
+| #335 | contrato de runtime das edge functions ganha fiscal no CI (da PR #119) |
+| #336 | auditoria de planejamento de 13/10 recuperada: 75 dos 87 arquivos da PR #105 |
+| #337 | modelos de e-mail transacional da PR #4 preservados, sem o "enviado" falso |
+| #338 | **mergeada** — Ctrl+K deixa de roubar o foco de quem está digitando |
+| #339 | guarda do catálogo externo no E2E e caminhos de teste renomeados |
+| #340 | três causas de falha de CI que só existiam nas PRs #149 e #158 |
+| #341 | salvar durante o autosave de um kit novo para de criar dois kits |
 
 ## O que falta, em ordem
 
-1. **Métricas do Gestor de Compras (PR #157)** — capacidade inteira fora da `main`.
-2. **Trava otimista e fila única no Kit Builder** — duas abas ainda se sobrescrevem em
-   silêncio, e salvamento manual concorrente com autosave ainda pode criar dois kits iguais
-   (`kit-builder.md`, lacunas 2, 3, 4, 10 e 12).
-3. **Auditoria integral da PR #105** — 89 arquivos de diagnóstico, scripts de reprodução e SQL.
-4. **Contrato de runtime das edge functions** (`edge-runtime-contract`, da PR #119) e a
-   reconciliação `--verify-live`.
-5. **`crm-db-bridge` na allowlist de publicação** (PR #311) — decisão do dono, toca workflow.
+1. **KPIs de primeira compra e retenção da carteira** — `origin/claude/feat-kpis-primeira-compra-retencao-261118-1800`,
+   commit `bcac136a8`: dois indicadores medidos que a `main` **não tem**
+   (`useClientsPortfolioKpis.ts` +139 linhas, `ClientsPage.tsx` +45, teste +150). Não é
+   duplicata da PR #314, que entrou antes e cobre outros três KPIs.
+   **Veredito: NÃO APAGAR — trabalho real não incorporado, a recuperar em PR própria.**
+   Fora da fila agora só pela regra de "no máximo 5 PRs abertas" (`AGENTS.md`); esvaziar a
+   fila tem prioridade sobre aumentá-la.
+2. **Scripts de QA/CI e suíte de testes da PR #119** — 95 arquivos de teste e 9 simuladores
+   Python ainda sem veredito arquivo a arquivo (`prs.md`, PR #119).
+3. **`crm-db-bridge` na allowlist de publicação** (PR #311) — decisão do dono, toca workflow.
+4. **`WEBHOOK_DISPATCHER_SECRET`** — provisionamento pendente, bloqueado por classificador.
+5. **`connections-auto-test` divergente em produção** — fora da allowlist de publicação,
+   sem PR (`RELATORIO_CI.md`, item 4.1).
+
+Saíram desta lista por terem PR aberta ou mergeada: métricas do Gestor de Compras (#332
+mergeada, #333), trava otimista e fila única do Kit Builder (#327, #334, #341), auditoria da
+PR #105 (#336) e contrato de runtime das edge functions (#335).
 
 ## Quando uma branch pode ser apagada
 
