@@ -158,7 +158,9 @@ porque a `main` está mais correta: a troca de `fetchIndustryPeerIds` por
 e a remoção do gráfico de forecast do mapa de calor. É por isso que a recuperação
 é feita por fatia, com teste, e não por cópia da árvore.
 
-Restam **11**, listados abaixo.
+| 3a | [#348](https://github.com/adm01-debug/Brindes_Sicoob_V2/pull/348) | `ClientCategoryRadar.industry-error`. Três hooks caíam em mock no caminho real: `useClientAffinity` engolia o erro da RPC e sugeria produto fictício; `useClientCategoryAffinity` transformava RPC negada em "cliente sem produto" e elegia a **mesma** categoria favorita inventada para todo cliente; `useIndustryCategoryTrends` comparava o cliente contra um "setor dele" fabricado. O radar deixa de somar GAP sobre fonte caída |
+
+Restam **10**, listados abaixo.
 
 
 `npx vitest run` com os 13 materializados sobre `origin/main`: **28 asserções falham,
