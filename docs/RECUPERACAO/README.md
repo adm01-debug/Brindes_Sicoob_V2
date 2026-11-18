@@ -28,6 +28,7 @@ sustenta exclusão. Agora cada item tem a justificativa inteira no anexo corresp
 | [`capacidades.md`](capacidades.md) | as 11 capacidades perdidas, com plano e crítica ao plano |
 | [`kit-builder.md`](kit-builder.md) | as 13 lacunas de persistência do Kit Builder confirmadas contra a PR #119 |
 | [`itens.md`](itens.md) | o inventário arquivo a arquivo: cada caminho fora da `main` e em quais refs aparece |
+| [`testes-pr119.md`](testes-pr119.md) | a suíte de 106 arquivos da PR #119, executada contra a `main`: 8 entram sem mexer em `src/`, 52 são lacuna medida |
 | [`evidencias.md`](evidencias.md) | a medição bruta e as refutações, sem corte |
 
 ## O que a segunda rodada mudou
@@ -107,8 +108,12 @@ que abriam em vez de fechar (`external-db-bridge`, `mcp-server`), corrigidos na 
    **Veredito: NÃO APAGAR — trabalho real não incorporado, a recuperar em PR própria.**
    Fora da fila agora só pela regra de "no máximo 5 PRs abertas" (`AGENTS.md`); esvaziar a
    fila tem prioridade sobre aumentá-la.
-2. **Scripts de QA/CI e suíte de testes da PR #119** — 95 arquivos de teste e 9 simuladores
-   Python ainda sem veredito arquivo a arquivo (`prs.md`, PR #119).
+2. **Suíte de testes da PR #119** — triagem **executada** em 18/11/2026
+   ([`testes-pr119.md`](testes-pr119.md)): **8 arquivos passam contra a `main` como estão** e
+   devem entrar em PR própria, sem tocar em `src/`; 52 falham porque medem comportamento que
+   a `main` não tem (viram evidência de lacuna, ligada a `capacidades.md`); 21 cenários
+   `.mjs`, fixtures `.sql` e simuladores `.py` seguem sem triagem, por rodarem fora do
+   Vitest. **A `pr/119` não se apaga enquanto os 8 não estiverem na `main`.**
 3. **`crm-db-bridge` na allowlist de publicação** (PR #311) — decisão do dono, toca workflow.
 4. **`WEBHOOK_DISPATCHER_SECRET`** — provisionamento pendente, bloqueado por classificador.
 5. **`connections-auto-test` divergente em produção** — fora da allowlist de publicação,
