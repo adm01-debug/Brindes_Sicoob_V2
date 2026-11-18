@@ -5,18 +5,18 @@
   "vitest",
   "playwright"
  ],
- "total": 810,
+ "total": 811,
  "por_tipo": {
   "contrato": 8,
   "e2e": 174,
   "pytest": 2,
   "qa": 40,
-  "unit": 586
+  "unit": 587
  },
  "onde_ficam": [
   {
    "padrao": "tests/",
-   "arquivos": 563
+   "arquivos": 564
   },
   {
    "padrao": "e2e/",
@@ -5616,9 +5616,18 @@
    "casos": 4
   },
   {
+   "arquivo": "tests/pages/GestorCompras.metrics.test.tsx",
+   "tipo": "unit",
+   "linhas": 83,
+   "testa": [
+    "src/components/sicoob/GestorComprasMetrics.tsx"
+   ],
+   "casos": 4
+  },
+  {
    "arquivo": "tests/pages/GestorCompras.test.tsx",
    "tipo": "unit",
-   "linhas": 54,
+   "linhas": 60,
    "testa": [
     "src/pages/GestorCompras.tsx"
    ],
@@ -7157,6 +7166,7 @@
   "src/components/search/useGlobalSearch.ts": 1,
   "src/components/security/SecurityDashboard.tsx": 1,
   "src/components/seo/PageSEO.tsx": 3,
+  "src/components/sicoob/GestorComprasMetrics.tsx": 1,
   "src/components/sicoob/orders/OrderBudgetIntelligence.tsx": 1,
   "src/components/sicoob/orders/OrderCommentsTab.tsx": 1,
   "src/components/sicoob/orders/OrderInvoicesTab.tsx": 1,
@@ -7705,6 +7715,7 @@
    "src/hooks/quote/useQuoteUrlPrefill.ts",
    "src/hooks/quotes/usePendingQuotesCount.ts",
    "src/hooks/sicoob/useAIOrderPredictor.ts",
+   "src/hooks/sicoob/useManagerDashboardStats.ts",
    "src/hooks/sicoob/usePaDashboardStats.ts",
    "src/hooks/sicoob/useSellerDashboardStats.ts",
    "src/hooks/sicoob/useSicoobBudget.ts",
@@ -7958,6 +7969,7 @@
    "src/services/materialService.ts",
    "src/services/ramoAtividadeService.ts",
    "src/services/sicoob/commonService.ts",
+   "src/services/sicoob/managerStatsService.ts",
    "src/services/sicoob/reorderIdempotency.ts",
    "src/services/sicoob/statsService.ts"
   ]

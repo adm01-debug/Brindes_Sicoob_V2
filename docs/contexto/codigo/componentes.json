@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 1172,
+ "total": 1173,
  "orfaos": 72,
  "nomes_duplicados": {
   "BreadcrumbItem": [
@@ -14115,6 +14115,22 @@
    "orfao": true
   },
   {
+   "arquivo": "src/components/sicoob/GestorComprasMetrics.tsx",
+   "exports": [
+    "GestorComprasMetrics"
+   ],
+   "export_default": null,
+   "linhas": 116,
+   "dominio": "components/sicoob",
+   "hooks_locais": [
+    "useManagerDashboardStats"
+   ],
+   "tabelas": [],
+   "edges": [],
+   "usado_por": 1,
+   "orfao": false
+  },
+  {
    "arquivo": "src/components/sicoob/HierarchyPath.tsx",
    "exports": [
     "HierarchyPath"
@@ -14813,7 +14829,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 35,
+   "usado_por": 36,
    "orfao": false
   },
   {
@@ -14879,7 +14895,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 626,
+   "usado_por": 627,
    "orfao": false
   },
   {
@@ -15493,7 +15509,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 157,
+   "usado_por": 158,
    "orfao": false
   },
   {
@@ -17240,7 +17256,7 @@
     "GestorCompras"
    ],
    "export_default": "GestorCompras",
-   "linhas": 127,
+   "linhas": 133,
    "dominio": "pages",
    "hooks_locais": [
     "useAuth"
@@ -18276,17 +18292,13 @@
     "GestorDashboardPage"
    ],
    "export_default": "GestorDashboardPage",
-   "linhas": 388,
+   "linhas": 302,
    "dominio": "pages/sicoob",
    "hooks_locais": [
     "useAuth"
    ],
    "tabelas": [
-    "pa_budgets",
-    "postos_atendimento",
-    "profiles",
-    "sicoob_approval_requests",
-    "sicoob_orders"
+    "profiles"
    ],
    "edges": [],
    "usado_por": 1,

@@ -7258,6 +7258,13 @@
    "src/hooks/sicoob/useSicoobBudget.ts",
    "src/lib/format.ts"
   ],
+  "src/components/sicoob/GestorComprasMetrics.tsx": [
+   "src/components/ui/alert.tsx",
+   "src/components/ui/button.tsx",
+   "src/components/ui/skeleton.tsx",
+   "src/hooks/sicoob/useManagerDashboardStats.ts",
+   "src/lib/format.ts"
+  ],
   "src/components/sicoob/HierarchyPath.tsx": [
    "src/integrations/supabase/client.ts",
    "src/lib/utils.ts"
@@ -8237,6 +8244,9 @@
    "src/contexts/AuthContext.tsx",
    "src/integrations/supabase/client.ts",
    "src/lib/sicoob/operationalMetrics.ts"
+  ],
+  "src/hooks/sicoob/useManagerDashboardStats.ts": [
+   "src/services/sicoob/managerStatsService.ts"
   ],
   "src/hooks/sicoob/usePaDashboardStats.ts": [
    "src/contexts/AuthContext.tsx",
@@ -10043,6 +10053,7 @@
    "src/components/orders/OrderConsolidationPanel.tsx",
    "src/components/orders/SmartAlertsPanel.tsx",
    "src/components/seo/PageSEO.tsx",
+   "src/components/sicoob/GestorComprasMetrics.tsx",
    "src/components/ui/button.tsx",
    "src/components/ui/tabs.tsx",
    "src/contexts/AuthContext.tsx",
@@ -11689,7 +11700,8 @@
    "src/components/ui/skeleton.tsx",
    "src/contexts/AuthContext.tsx",
    "src/integrations/supabase/client.ts",
-   "src/lib/format.ts"
+   "src/lib/format.ts",
+   "src/services/sicoob/managerStatsService.ts"
   ],
   "src/pages/sicoob/GestorDelegationsPage.tsx": [
    "src/components/seo/PageSEO.tsx",
@@ -12110,6 +12122,9 @@
    "src/integrations/supabase/client.ts",
    "src/services/sicoob/orderService.ts",
    "src/types/sicoob/orders.ts"
+  ],
+  "src/services/sicoob/managerStatsService.ts": [
+   "src/integrations/supabase/client.ts"
   ],
   "src/services/sicoob/orderService.ts": [
    "src/integrations/supabase/client.ts",

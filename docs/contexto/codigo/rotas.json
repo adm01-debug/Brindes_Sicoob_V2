@@ -5231,7 +5231,7 @@
     "alert",
     "manager"
    ],
-   "arquivos_puxados": 35
+   "arquivos_puxados": 36
   },
   {
    "protegida": true,
@@ -5389,6 +5389,7 @@
     "useId",
     "useIsMobile",
     "useLocation",
+    "useManagerDashboardStats",
     "useMemo",
     "useMutation",
     "useNavigate",
@@ -5444,6 +5445,7 @@
     "useDuplicateEntity",
     "useExportJobs",
     "useIsMobile",
+    "useManagerDashboardStats",
     "useNavigationStore",
     "useNotificationPreferences",
     "useOrderActions",
@@ -5506,6 +5508,7 @@
     "quotes",
     "role_permissions",
     "scheduled_exports",
+    "sicoob_approval_requests",
     "sicoob_order_artwork_versions",
     "sicoob_order_invoices",
     "sicoob_order_item_logs",
@@ -5551,6 +5554,7 @@
    "flags": [],
    "papeis": [
     "admin",
+    "alert",
     "alertdialog",
     "dev",
     "dialog",
@@ -5560,10 +5564,11 @@
     "manager",
     "menu",
     "owner",
+    "progressbar",
     "supervisor",
     "tooltip"
    ],
-   "arquivos_puxados": 149
+   "arquivos_puxados": 154
   },
   {
    "protegida": true,

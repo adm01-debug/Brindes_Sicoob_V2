@@ -1,7 +1,7 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 390,
+ "total": 391,
  "hooks": [
   {
    "arquivo": "scripts/ai-context/cenarios.mjs",
@@ -3441,6 +3441,24 @@
    "usado_por": 1,
    "usado_por_arquivos": [
     "src/components/sicoob/orders/AIOrderPredictor.tsx"
+   ],
+   "coberto_por_testes": 0
+  },
+  {
+   "arquivo": "src/hooks/sicoob/useManagerDashboardStats.ts",
+   "hooks_exportados": [
+    "useManagerDashboardStats"
+   ],
+   "linhas": 21,
+   "dominio": "hooks/sicoob",
+   "tabelas": [],
+   "rpcs": [],
+   "edges": [],
+   "hooks_internos": [],
+   "canais_realtime": [],
+   "usado_por": 1,
+   "usado_por_arquivos": [
+    "src/components/sicoob/GestorComprasMetrics.tsx"
    ],
    "coberto_por_testes": 0
   },

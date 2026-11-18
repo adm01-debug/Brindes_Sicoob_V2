@@ -1,14 +1,14 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "total": 249,
+ "total": 250,
  "por_camada": {
   "contexts": 1,
   "data": 3,
   "integrations": 3,
   "lib": 165,
   "python": 12,
-  "services": 22,
+  "services": 23,
   "stores": 6,
   "utils": 37
  },
@@ -671,7 +671,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 401,
+   "usado_por": 402,
    "usado_por_modulos": [
     "components/admin",
     "components/ai",
@@ -2589,7 +2589,7 @@
    "zod_schemas": 0,
    "flags": [],
    "papeis": [],
-   "usado_por": 43,
+   "usado_por": 44,
    "usado_por_modulos": [
     "components/bi",
     "components/collections",
@@ -6232,6 +6232,37 @@
     "pages/sicoob"
    ],
    "coberto_por_testes": 1,
+   "orfao": false
+  },
+  {
+   "arquivo": "src/services/sicoob/managerStatsService.ts",
+   "camada": "services",
+   "exports": [
+    "GestorOrderSummary",
+    "GestorStats",
+    "getCooperativeDashboardStats"
+   ],
+   "export_default": null,
+   "linhas": 102,
+   "tabelas": [
+    "pa_budgets",
+    "postos_atendimento",
+    "sicoob_approval_requests",
+    "sicoob_orders"
+   ],
+   "rpcs": [],
+   "edges": [],
+   "env": [],
+   "externos": [],
+   "zod_schemas": 0,
+   "flags": [],
+   "papeis": [],
+   "usado_por": 2,
+   "usado_por_modulos": [
+    "hooks/sicoob",
+    "pages/sicoob"
+   ],
+   "coberto_por_testes": 0,
    "orfao": false
   },
   {

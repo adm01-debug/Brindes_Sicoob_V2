@@ -1,12 +1,12 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "nos": 2234,
- "arestas": 9105,
+ "nos": 2237,
+ "arestas": 9114,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
-   "importado_por": 630
+   "importado_por": 631
   },
   {
    "arquivo": "src/lib/utils.ts",
@@ -18,7 +18,7 @@
   },
   {
    "arquivo": "src/integrations/supabase/client.ts",
-   "importado_por": 418
+   "importado_por": 419
   },
   {
    "arquivo": "src/components/ui/card.tsx",
@@ -38,7 +38,7 @@
   },
   {
    "arquivo": "src/components/ui/skeleton.tsx",
-   "importado_por": 157
+   "importado_por": 158
   },
   {
    "arquivo": "src/components/ui/label.tsx",
@@ -101,11 +101,11 @@
    "importado_por": 53
   },
   {
-   "arquivo": "src/components/ui/popover.tsx",
-   "importado_por": 46
+   "arquivo": "src/lib/format.ts",
+   "importado_por": 47
   },
   {
-   "arquivo": "src/lib/format.ts",
+   "arquivo": "src/components/ui/popover.tsx",
    "importado_por": 46
   },
   {
@@ -121,11 +121,11 @@
    "importado_por": 37
   },
   {
-   "arquivo": "src/components/ui/alert-dialog.tsx",
-   "importado_por": 35
+   "arquivo": "src/components/ui/alert.tsx",
+   "importado_por": 36
   },
   {
-   "arquivo": "src/components/ui/alert.tsx",
+   "arquivo": "src/components/ui/alert-dialog.tsx",
    "importado_por": 35
   },
   {
@@ -432,7 +432,7 @@
   },
   {
    "modulo": "pages",
-   "depende_de": 78,
+   "depende_de": 79,
    "importado_por": 3
   },
   {

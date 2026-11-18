@@ -3,7 +3,7 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (2844)",
+   "TypeScript (2848)",
    "SQL (673)",
    "Markdown (246)",
    "JSON (233)",
@@ -1862,7 +1862,7 @@
   "papeis_no_codigo": [
    {
     "papel": "alert",
-    "ocorrencias": 51
+    "ocorrencias": 52
    },
    {
     "papel": "status",
@@ -1925,6 +1925,10 @@
     "ocorrencias": 7
    },
    {
+    "papel": "progressbar",
+    "ocorrencias": 6
+   },
+   {
     "papel": "tab",
     "ocorrencias": 6
    },
@@ -1942,10 +1946,6 @@
    },
    {
     "papel": "navigation",
-    "ocorrencias": 5
-   },
-   {
-    "papel": "progressbar",
     "ocorrencias": 5
    },
    {

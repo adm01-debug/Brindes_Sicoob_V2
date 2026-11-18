@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "8b0910c8cee9aedde902e975155f9dc9b1ba7b47",
+  "commit": "7372a96c80124111a114f785663bad0afe2b7186",
   "branch": "main",
-  "data_commit": "2026-11-18T20:32:10Z",
+  "data_commit": "2026-11-18T21:04:14Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "7372a96",
+    "data": "2026-11-18",
+    "assunto": "feat(sicoob): gestor de compras volta a ter indicadores reais na propria tela (#332)"
+   },
    {
     "sha": "8b0910c",
     "data": "2026-11-18",
@@ -126,14 +131,9 @@
     "sha": "865ba6c",
     "data": "2026-11-17",
     "assunto": "fix: admin-audit-hook usa modulo CORS compartilhado em vez de Allow-Origin * (#287)"
-   },
-   {
-    "sha": "223fcf7",
-    "data": "2026-11-14",
-    "assunto": "chore: contexto agendado de 10 min para 1x/hora (#280)"
    }
   ],
-  "arquivos_mudados_7d": 348,
+  "arquivos_mudados_7d": 355,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
@@ -173,6 +173,10 @@
    },
    {
     "pasta": "src/pages/sicoob",
+    "mudancas": 10
+   },
+   {
+    "pasta": "src/components/sicoob",
     "mudancas": 9
    },
    {
@@ -190,20 +194,16 @@
    {
     "pasta": "src/components/quotes",
     "mudancas": 8
-   },
-   {
-    "pasta": "src/components/sicoob",
-    "mudancas": 8
    }
   ],
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 90
+    "mudancas": 89
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 89
+    "mudancas": 88
    },
    {
     "arquivo": "package.json",
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 134
+    "commits": 135
    },
    {
     "autor": "dependabot[bot]",
@@ -310,21 +310,21 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4335,
-  "arquivos_codigo": 3044,
-  "linhas_codigo": 480054,
+  "arquivos_total": 4339,
+  "arquivos_codigo": 3048,
+  "linhas_codigo": 480302,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
   "itens_menu": 84,
   "modulos": 145,
-  "componentes": 1172,
-  "hooks": 390,
+  "componentes": 1173,
+  "hooks": 391,
   "edge_functions": 106,
   "tabelas": 291,
   "migrations": 620,
   "cron_jobs": 27,
-  "testes": 810,
+  "testes": 811,
   "workflows": 16,
   "scripts": 121,
   "docs_md": 246
@@ -775,8 +775,8 @@
    "linhas": 79
   },
   "src/components": {
-   "arquivos": 1129,
-   "linhas": 165447
+   "arquivos": 1130,
+   "linhas": 165563
   },
   "src/constants": {
    "arquivos": 3,
@@ -791,8 +791,8 @@
    "linhas": 1808
   },
   "src/hooks": {
-   "arquivos": 311,
-   "linhas": 45961
+   "arquivos": 312,
+   "linhas": 45982
   },
   "src/integrations": {
    "arquivos": 3,
@@ -808,15 +808,15 @@
   },
   "src/pages": {
    "arquivos": 199,
-   "linhas": 50895
+   "linhas": 50815
   },
   "src/routes": {
    "arquivos": 9,
    "linhas": 513
   },
   "src/services": {
-   "arquivos": 22,
-   "linhas": 3141
+   "arquivos": 23,
+   "linhas": 3243
   },
   "src/stores": {
    "arquivos": 6,
@@ -939,8 +939,8 @@
    "linhas": 874
   },
   "tests/pages": {
-   "arquivos": 23,
-   "linhas": 2801
+   "arquivos": 24,
+   "linhas": 2890
   },
   "tests/product-form-improvements.test.ts": {
    "arquivos": 1,

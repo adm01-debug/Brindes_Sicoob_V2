@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `8b0910c8ce` · branch `main` · 2026-11-18 20:33 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `7372a96c80` · branch `main` · 2026-11-18 21:04 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -5242,8 +5242,8 @@ _nenhum item encontrado_
 | 5000 | `src/pages/admin/telemetry/useResolveProductsSelectComparison.ts` |
 | 500 | `src/pages/admin/telemetry/useTelemetryData.ts` |
 | 100 | `src/pages/sicoob/GestorAuditPage.tsx` |
-| 5 | `src/pages/sicoob/GestorDashboardPage.tsx` |
 | 100 | `src/pages/sicoob/SicoobInvitationsPage.tsx` |
+| 5 | `src/services/sicoob/managerStatsService.ts` |
 | 1 | `src/services/sicoob/statsService.ts` |
 | 5 | `src/services/sicoob/statsService.ts` |
 | 1 | `supabase/functions/admin-audit-hook/index.ts` |
@@ -5583,7 +5583,7 @@ _nenhum item encontrado_
 | Erro ao remover produto | `src/components/admin/product-groups/useProductGroups.ts` |
 | ${result.failed} produto(s) falharam | `src/components/admin/products/BulkImportDialog.tsx` |
 | Nenhuma linha para importar | `src/components/admin/products/BulkImportDialog.tsx` |
-| … +951 linhas — lista completa em `context.json` | |
+| … +954 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5687,7 +5687,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6596 testes em 635 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6601 testes em 636 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5991,7 +5991,7 @@ _nenhum item encontrado_
 | `tests/admin/react-warning-guard-sanity.test.ts` | 6 | react-warning-guard — sanity · captura o warning canônico de ref em function component · não falha quando não há warnings · não falha por  … |
 | `tests/components/CloudStatusBanner.test.tsx` | 6 | CloudStatusBanner — visibilidade por papel e criticidade · NÃO renderiza  · EXIBE  · EXIBE  … |
 | `tests/components/ErrorBoundary.test.tsx` | 6 | ErrorBoundary · renders children when no error occurs · renders fallback UI when a render error occurs · handles ChunkLoadError specifically … |
-| … +335 linhas — lista completa em `context.json` | | |
+| … +336 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 

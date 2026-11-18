@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "8b0910c8cee9aedde902e975155f9dc9b1ba7b47",
+  "sha": "7372a96c80124111a114f785663bad0afe2b7186",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-18 20:33 UTC",
-  "files_total": 4337,
-  "code_files": 3699,
-  "code_lines": 540940
+  "generated_at": "2026-11-18 21:04 UTC",
+  "files_total": 4341,
+  "code_files": 3703,
+  "code_lines": 541188
  },
  "version": "1.3.2",
- "facts_hash": "3d95476fc00aeb19",
+ "facts_hash": "95db9f8687af1cdc",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -348,8 +348,8 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1436,
-   ".tsx": 1406,
+   ".ts": 1438,
+   ".tsx": 1408,
    ".sql": 673,
    ".mjs": 134,
    ".py": 59,
@@ -54897,6 +54897,7 @@
      "scheduled_exports",
      "seller_cart_items",
      "seller_carts",
+     "sicoob_approval_requests",
      "sicoob_order_invoices",
      "sicoob_order_item_logs",
      "sicoob_order_items",
@@ -54929,7 +54930,7 @@
      "save_quote_atomic_idempotent",
      "transition_sicoob_order_status"
     ],
-    "deps_count": 134
+    "deps_count": 139
    },
    {
     "path": "",
@@ -56202,6 +56203,20 @@
    },
    {
     "path": "",
+    "file": "tests/pages/GestorCompras.metrics.test.tsx",
+    "component": "GestorCompras.metrics.test",
+    "tables_transitive": [
+     "pa_budgets",
+     "postos_atendimento",
+     "sicoob_approval_requests",
+     "sicoob_orders"
+    ],
+    "invokes_transitive": [],
+    "rpc_transitive": [],
+    "deps_count": 10
+   },
+   {
+    "path": "",
     "file": "tests/pages/GestorCompras.test.tsx",
     "component": "GestorCompras.test",
     "tables_transitive": [
@@ -56235,6 +56250,7 @@
      "scheduled_exports",
      "seller_cart_items",
      "seller_carts",
+     "sicoob_approval_requests",
      "sicoob_order_invoices",
      "sicoob_order_item_logs",
      "sicoob_order_items",
@@ -56265,7 +56281,7 @@
      "save_quote_atomic_idempotent",
      "transition_sicoob_order_status"
     ],
-    "deps_count": 121
+    "deps_count": 126
    },
    {
     "path": "",
@@ -60682,7 +60698,7 @@
     "file": ".github/workflows/security.yml"
    }
   ],
-  "components_count": 1254,
+  "components_count": 1255,
   "hooks": [
    {
     "name": "useContacts",
@@ -61231,6 +61247,10 @@
    {
     "name": "useAIOrderPredictor",
     "file": "src/hooks/sicoob/useAIOrderPredictor.ts"
+   },
+   {
+    "name": "useManagerDashboardStats",
+    "file": "src/hooks/sicoob/useManagerDashboardStats.ts"
    },
    {
     "name": "usePaDashboardStats",
@@ -63419,8 +63439,8 @@
   },
   {
    "module": "src/components",
-   "files": 1129,
-   "lines": 165447,
+   "files": 1130,
+   "lines": 165563,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -63752,8 +63772,8 @@
   },
   {
    "module": "src/hooks",
-   "files": 311,
-   "lines": 45961,
+   "files": 312,
+   "lines": 45982,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -64199,7 +64219,7 @@
   {
    "module": "src/pages",
    "files": 199,
-   "lines": 50895,
+   "lines": 50815,
    "tables": [
     "admin_audit_log",
     "ai_insights_cache",
@@ -64249,7 +64269,6 @@
     "role_permissions",
     "search_analytics",
     "seller_discount_limits",
-    "sicoob_approval_requests",
     "sicoob_centrais",
     "sicoob_manager_audit",
     "sicoob_order_history",
@@ -64468,8 +64487,8 @@
   },
   {
    "module": "src/services",
-   "files": 22,
-   "lines": 3141,
+   "files": 23,
+   "lines": 3243,
    "tables": [
     "cooperativas",
     "limit_increase_requests",
@@ -64516,13 +64535,15 @@
     "documentIngestService.ts: SicoobDocumentPurpose, sicoobDocumentIngestService",
     "fulfillmentService.ts: UpdateSicoobShipmentInput, sicoobFulfillmentService",
     "logisticsReportService.ts: SicoobLogisticsStatus, SicoobLogisticsTracking, listSicoobLogisticsTracking",
+    "managerStatsService.ts: GestorOrderSummary, GestorStats, getCooperativeDashboardStats",
     "orderService.ts: sicoobOrderService",
     "reorderIdempotency.ts: beginReorderIntent, completeReorderIntent",
     "statsService.ts: sicoobStatsService",
     "userService.ts: sicoobUserService"
    ],
    "docs": [
-    "encryption.ts: Encryption Service (App Layer) Provides AES-GCM encryption/decryption for sensitive data. Used to protect PII before storage in accordance with P2 audit gap."
+    "encryption.ts: Encryption Service (App Layer) Provides AES-GCM encryption/decryption for sensitive data. Used to protect PII before storage in accordance with P2 audit gap.",
+    "managerStatsService.ts: Indicadores da Singular (gestor): PAs vinculados, aprovações pendentes, verba da competência corrente e os últimos pedidos. Nasceu inline em `src/pages/sicoob/GestorDashboardPage.tsx`, onde só o painel de indicadores conseguia usá-lo. A tela de compras precisa dos mesmos números e não tinha como lê- …"
    ],
    "deps": [],
    "imports_modules": [
@@ -64551,6 +64572,7 @@
     "src/services/sicoob/documentIngestService.ts",
     "src/services/sicoob/fulfillmentService.ts",
     "src/services/sicoob/logisticsReportService.ts",
+    "src/services/sicoob/managerStatsService.ts",
     "src/services/sicoob/orderService.ts",
     "src/services/sicoob/reorderIdempotency.ts",
     "src/services/sicoob/statsService.ts",
@@ -65190,8 +65212,8 @@
   },
   {
    "module": "tests",
-   "files": 581,
-   "lines": 80469,
+   "files": 582,
+   "lines": 80558,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -66546,9 +66568,9 @@
      "src/hooks/useQuoteBuilderState.ts",
      "src/pages/admin/AdminVerbasPage.tsx",
      "src/pages/admin/sicoob/tabs/BudgetsTab.tsx",
-     "src/pages/sicoob/GestorDashboardPage.tsx",
      "src/pages/sicoob/reports/SicoobReportsPage.tsx",
      "src/services/sicoob/budgetService.ts",
+     "src/services/sicoob/managerStatsService.ts",
      "src/services/sicoob/statsService.ts",
      "supabase/functions/e2e-auth-test/index.ts"
     ],
@@ -66624,9 +66646,9 @@
      "src/pages/admin/sicoob/tabs/NotificationSettingsTab.tsx",
      "src/pages/admin/sicoob/tabs/PAsTab.tsx",
      "src/pages/admin/sicoob/tabs/UserAssignmentTab.tsx",
-     "src/pages/sicoob/GestorDashboardPage.tsx",
      "src/services/sicoob/budgetService.ts",
      "src/services/sicoob/commonService.ts",
+     "src/services/sicoob/managerStatsService.ts",
      "supabase/functions/e2e-auth-test/index.ts"
     ],
     "update": [
@@ -67257,7 +67279,7 @@
    "sicoob_approval_requests": {
     "select": [
      "src/hooks/useSicoobApprovals.ts",
-     "src/pages/sicoob/GestorDashboardPage.tsx",
+     "src/services/sicoob/managerStatsService.ts",
      "supabase/functions/sicoob-approval-notifications/index.ts"
     ],
     "ref": [
@@ -67344,9 +67366,9 @@
      "src/hooks/sicoob/useAIOrderPredictor.ts",
      "src/pages/sicoob/GestorAuditPage.tsx",
      "src/pages/sicoob/GestorConsolidatedOrdersPage.tsx",
-     "src/pages/sicoob/GestorDashboardPage.tsx",
      "src/pages/sicoob/orders/SellerPanelPage.tsx",
      "src/pages/sicoob/reports/SicoobReportsPage.tsx",
+     "src/services/sicoob/managerStatsService.ts",
      "src/services/sicoob/orderService.ts",
      "src/services/sicoob/statsService.ts",
      "supabase/functions/monthly-health-report/index.ts",
@@ -75392,6 +75414,14 @@
     "msg": ";\nimport { AlertCircle } from "
    },
    {
+    "file": "src/components/sicoob/GestorComprasMetrics.tsx",
+    "msg": ";\nimport { Button } from "
+   },
+   {
+    "file": "src/components/sicoob/GestorComprasMetrics.tsx",
+    "msg": ">\n        <AlertCircle className="
+   },
+   {
     "file": "src/components/sicoob/orders/AIOrderPredictor.tsx",
     "msg": " className="
    },
@@ -77182,6 +77212,10 @@
    {
     "file": "src/pages/sicoob/GestorConsolidatedOrdersPage.tsx",
     "msg": "Selecione um item de destino."
+   },
+   {
+    "file": "src/pages/sicoob/GestorDashboardPage.tsx",
+    "msg": ";\nimport {\n  getCooperativeDashboardStats,\n  type GestorOrderSummary,\n  type GestorStats,\n} from "
    },
    {
     "file": "src/pages/sicoob/GestorDashboardPage.tsx",
@@ -101802,12 +101836,6 @@
     "kind": "filtra"
    },
    {
-    "file": "src/pages/sicoob/GestorDashboardPage.tsx",
-    "field": "status",
-    "value": "pending",
-    "kind": "filtra"
-   },
-   {
     "file": "src/pages/sicoob/LogisticsReportPage.tsx",
     "field": "status",
     "value": "in_transit",
@@ -102106,6 +102134,12 @@
     "field": "status",
     "value": "in_transit",
     "kind": "compara"
+   },
+   {
+    "file": "src/services/sicoob/managerStatsService.ts",
+    "field": "status",
+    "value": "pending",
+    "kind": "filtra"
    },
    {
     "file": "src/services/sicoob/orderService.ts",
@@ -132280,6 +132314,26 @@
     "name": "rejects password shorter than 8 chars"
    },
    {
+    "file": "tests/pages/GestorCompras.metrics.test.tsx",
+    "name": "Indicadores na tela de Gestão de Compras"
+   },
+   {
+    "file": "tests/pages/GestorCompras.metrics.test.tsx",
+    "name": "mostra os números que vêm do serviço, e nenhum valor fictício"
+   },
+   {
+    "file": "tests/pages/GestorCompras.metrics.test.tsx",
+    "name": "falha na consulta avisa e não inventa estimativa"
+   },
+   {
+    "file": "tests/pages/GestorCompras.metrics.test.tsx",
+    "name": "cooperativa sem verba cadastrada diz isso, em vez de mostrar zero"
+   },
+   {
+    "file": "tests/pages/GestorCompras.metrics.test.tsx",
+    "name": "perfil sem cooperativa não dispara consulta nenhuma"
+   },
+   {
     "file": "tests/pages/GestorCompras.test.tsx",
     "name": "Gestão de Compras da Singular"
    },
@@ -154926,12 +154980,12 @@
     "limit": "100"
    },
    {
-    "file": "src/pages/sicoob/GestorDashboardPage.tsx",
-    "limit": "5"
-   },
-   {
     "file": "src/pages/sicoob/SicoobInvitationsPage.tsx",
     "limit": "100"
+   },
+   {
+    "file": "src/services/sicoob/managerStatsService.ts",
+    "limit": "5"
    },
    {
     "file": "src/services/sicoob/statsService.ts",
@@ -156920,8 +156974,8 @@
       "filtra:src/hooks/usePasswordResetRequests.ts",
       "filtra:src/pages/CustomizableDashboard.tsx",
       "filtra:src/pages/admin/AdminUsuariosPage.tsx",
-      "filtra:src/pages/sicoob/GestorDashboardPage.tsx",
       "filtra:src/services/sicoob/approvalService.ts",
+      "filtra:src/services/sicoob/managerStatsService.ts",
       "filtra:src/services/sicoob/statsService.ts",
       "filtra:supabase/functions/send-notification/index.ts"
      ],
@@ -197226,6 +197280,18 @@
     ";\nimport { AlertCircle } from "
    ]
   },
+  "src/components/sicoob/GestorComprasMetrics.tsx": {
+   "path": "src/components/sicoob/GestorComprasMetrics.tsx",
+   "lines": 116,
+   "exports": [
+    "function GestorComprasMetrics"
+   ],
+   "errors": [
+    ";\nimport { Button } from ",
+    ">\n        <AlertCircle className="
+   ],
+   "doc": "Indicadores reais dentro da tela de compras. A tela só tinha dois atalhos: para ver qualquer número, o gestor precisava sair para `/gestor`. Antes disso ela mostrava valores fictícios fixos (\"85%\", \"R$ 450.000,00\"), removidos por serem falsos — e nada entrou no lugar. Recupera o componente da PR #15 …"
+  },
   "src/components/sicoob/HierarchyPath.tsx": {
    "path": "src/components/sicoob/HierarchyPath.tsx",
    "lines": 68,
@@ -208427,6 +208493,17 @@
     "const windowStart = subMonths(new Date(), 12);"
    ]
   },
+  "src/hooks/sicoob/useManagerDashboardStats.ts": {
+   "path": "src/hooks/sicoob/useManagerDashboardStats.ts",
+   "lines": 21,
+   "exports": [
+    "function useManagerDashboardStats"
+   ],
+   "doc": "Indicadores da Singular para qualquer tela que precise deles. Mesma chave de cache do painel de indicadores (`sicoob-gestor-stats`), então abrir as duas telas não dispara as consultas duas vezes.",
+   "hooks": [
+    "useManagerDashboardStats"
+   ]
+  },
   "src/hooks/sicoob/usePaDashboardStats.ts": {
    "path": "src/hooks/sicoob/usePaDashboardStats.ts",
    "lines": 18,
@@ -214512,7 +214589,7 @@
   },
   "src/pages/GestorCompras.tsx": {
    "path": "src/pages/GestorCompras.tsx",
-   "lines": 127,
+   "lines": 133,
    "exports": [
     "function GestorCompras"
    ]
@@ -219180,54 +219257,17 @@
   },
   "src/pages/sicoob/GestorDashboardPage.tsx": {
    "path": "src/pages/sicoob/GestorDashboardPage.tsx",
-   "lines": 388,
+   "lines": 302,
    "exports": [
     "function GestorDashboardPage"
    ],
    "tables": [
-    {
-     "table": "pa_budgets",
-     "op": "select"
-    },
-    {
-     "table": "sicoob_orders",
-     "op": "select"
-    },
-    {
-     "table": "postos_atendimento",
-     "op": "select"
-    },
-    {
-     "table": "sicoob_approval_requests",
-     "op": "select"
-    },
     {
      "table": "profiles",
      "op": "select"
     }
    ],
    "table_cols": {
-    "pa_budgets": [
-     "ano",
-     "mes",
-     "pa_id",
-     "verba_consumida",
-     "verba_total"
-    ],
-    "sicoob_orders": [
-     "cooperative_id",
-     "id",
-     "status",
-     "total_amount"
-    ],
-    "postos_atendimento": [
-     "cooperativa_id",
-     "id"
-    ],
-    "sicoob_approval_requests": [
-     "id",
-     "status"
-    ],
     "profiles": [
      "avatar_url",
      "cooperativa_id",
@@ -219239,17 +219279,8 @@
     ]
    },
    "errors": [
+    ";\nimport {\n  getCooperativeDashboardStats,\n  type GestorOrderSummary,\n  type GestorStats,\n} from ",
     ">\n      <AlertCircle className="
-   ],
-   "status_values": [
-    {
-     "field": "status",
-     "value": "pending",
-     "kind": "filtra"
-    }
-   ],
-   "pagination": [
-    "5"
    ]
   },
   "src/pages/sicoob/GestorDelegationsPage.tsx": {
@@ -221475,6 +221506,67 @@
      "value": "in_transit",
      "kind": "compara"
     }
+   ]
+  },
+  "src/services/sicoob/managerStatsService.ts": {
+   "path": "src/services/sicoob/managerStatsService.ts",
+   "lines": 102,
+   "exports": [
+    "interface GestorOrderSummary",
+    "interface GestorStats",
+    "function getCooperativeDashboardStats"
+   ],
+   "tables": [
+    {
+     "table": "pa_budgets",
+     "op": "select"
+    },
+    {
+     "table": "sicoob_orders",
+     "op": "select"
+    },
+    {
+     "table": "postos_atendimento",
+     "op": "select"
+    },
+    {
+     "table": "sicoob_approval_requests",
+     "op": "select"
+    }
+   ],
+   "table_cols": {
+    "pa_budgets": [
+     "ano",
+     "mes",
+     "pa_id",
+     "verba_consumida",
+     "verba_total"
+    ],
+    "sicoob_orders": [
+     "cooperative_id",
+     "id",
+     "status",
+     "total_amount"
+    ],
+    "postos_atendimento": [
+     "cooperativa_id",
+     "id"
+    ],
+    "sicoob_approval_requests": [
+     "id",
+     "status"
+    ]
+   },
+   "status_values": [
+    {
+     "field": "status",
+     "value": "pending",
+     "kind": "filtra"
+    }
+   ],
+   "doc": "Indicadores da Singular (gestor): PAs vinculados, aprovações pendentes, verba da competência corrente e os últimos pedidos. Nasceu inline em `src/pages/sicoob/GestorDashboardPage.tsx`, onde só o painel de indicadores conseguia usá-lo. A tela de compras precisa dos mesmos números e não tinha como lê- …",
+   "pagination": [
+    "5"
    ]
   },
   "src/services/sicoob/orderService.ts": {
@@ -245201,10 +245293,29 @@
     "rejects password shorter than 8 chars"
    ]
   },
+  "tests/pages/GestorCompras.metrics.test.tsx": {
+   "path": "tests/pages/GestorCompras.metrics.test.tsx",
+   "lines": 83,
+   "is_test": true,
+   "errors": [
+    ")).toBeTruthy();\n    expect(screen.getByText("
+   ],
+   "doc": "A tela de compras tem de mostrar número medido, nos quatro estados. Antes ela exibia valores fictícios fixos (\"85%\", \"R$ 450.000,00\"); eles foram removidos por serem falsos e nada entrou no lugar — o gestor ficou sem nenhum indicador na própria tela. Recupera os cenários da PR #157.",
+   "tests": [
+    "Indicadores na tela de Gestão de Compras",
+    "mostra os números que vêm do serviço, e nenhum valor fictício",
+    "falha na consulta avisa e não inventa estimativa",
+    "cooperativa sem verba cadastrada diz isso, em vez de mostrar zero",
+    "perfil sem cooperativa não dispara consulta nenhuma"
+   ]
+  },
   "tests/pages/GestorCompras.test.tsx": {
    "path": "tests/pages/GestorCompras.test.tsx",
-   "lines": 54,
+   "lines": 60,
    "is_test": true,
+   "rule_comments": [
+    "tests/pages/GestorCompras.metrics.test.tsx; aqui só não pode quebrar."
+   ],
    "tests": [
     "Gestão de Compras da Singular",
     "não exibe métricas inventadas nem ação de aprovação fictícia",
@@ -248193,10 +248304,25 @@
   }
  },
  "git": {
-  "sha": "8b0910c8cee9aedde902e975155f9dc9b1ba7b47",
+  "sha": "7372a96c80124111a114f785663bad0afe2b7186",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "7372a96",
+    "date": "2026-11-18",
+    "author": "adm01-debug",
+    "subject": "feat(sicoob): gestor de compras volta a ter indicadores reais na propria tela (#332)",
+    "files": [
+     "src/components/sicoob/GestorComprasMetrics.tsx",
+     "src/hooks/sicoob/useManagerDashboardStats.ts",
+     "src/pages/GestorCompras.tsx",
+     "src/pages/sicoob/GestorDashboardPage.tsx",
+     "src/services/sicoob/managerStatsService.ts",
+     "tests/pages/GestorCompras.metrics.test.tsx",
+     "tests/pages/GestorCompras.test.tsx"
+    ]
+   },
    {
     "sha": "8b0910c",
     "date": "2026-11-18",
@@ -248697,21 +248823,12 @@
      "scripts/db/apply-sicoob-migrations.mjs",
      "supabase/migrations/20261113170000_use_semantic_admin_helper_in_favorite_policies.sql"
     ]
-   },
-   {
-    "sha": "788c091",
-    "date": "2026-11-13",
-    "author": "adm01-debug",
-    "subject": "infra: adiciona harden_rpc_acl_and_fk_indexes a allowlist de migrations (#274)",
-    "files": [
-     "scripts/db/apply-sicoob-migrations.mjs"
-    ]
    }
   ],
   "hot_files": [
    [
     "scripts/db/apply-sicoob-migrations.mjs",
-    5
+    4
    ],
    [
     "src/hooks/useProductIntelligenceBadges.ts",
@@ -248746,6 +248863,34 @@
     2
    ],
    [
+    "src/components/sicoob/GestorComprasMetrics.tsx",
+    1
+   ],
+   [
+    "src/hooks/sicoob/useManagerDashboardStats.ts",
+    1
+   ],
+   [
+    "src/pages/GestorCompras.tsx",
+    1
+   ],
+   [
+    "src/pages/sicoob/GestorDashboardPage.tsx",
+    1
+   ],
+   [
+    "src/services/sicoob/managerStatsService.ts",
+    1
+   ],
+   [
+    "tests/pages/GestorCompras.metrics.test.tsx",
+    1
+   ],
+   [
+    "tests/pages/GestorCompras.test.tsx",
+    1
+   ],
+   [
     "src/components/common/IntelligenceBadges.tsx",
     1
    ],
@@ -248759,34 +248904,6 @@
    ],
    [
     "package.json",
-    1
-   ],
-   [
-    "src/components/dashboard/RecentKitsWidget.tsx",
-    1
-   ],
-   [
-    "src/hooks/useKitAutoSave.ts",
-    1
-   ],
-   [
-    "src/lib/kit-builder/custom-kit-payload.ts",
-    1
-   ],
-   [
-    "src/lib/kit-builder/status.ts",
-    1
-   ],
-   [
-    "tests/hooks/useKitAutoSave.test.tsx",
-    1
-   ],
-   [
-    "tests/lib/custom-kit-status.test.ts",
-    1
-   ],
-   [
-    "src/hooks/bi/useClientBI.ts",
     1
    ]
   ]

@@ -6,22 +6,22 @@
    "src/pages (115)"
   ],
   "componentes": [
-   "src/components (998)",
+   "src/components (999)",
    "src/pages (162)",
    "src/contexts (9)"
   ],
   "hooks": [
-   "src/hooks (284)",
+   "src/hooks (285)",
    "src/components (66)",
    "src/pages (22)"
   ],
   "servicos_logica": [
    "src/lib (165)",
    "src/utils (37)",
-   "src/services (22)"
+   "src/services (23)"
   ],
   "testes": [
-   "tests/ (563)",
+   "tests/ (564)",
    "e2e/ (149)",
    "outro (51)"
   ],
@@ -47,7 +47,7 @@
  },
  "barrels_index": 29,
  "extensao_componentes": [
-  ".tsx (1172)"
+  ".tsx (1173)"
  ],
  "alias_imports": {
   "src/hooks/mockup/": {},
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "feat(sicoob): gestor de compras volta a ter indicadores reais na propria tela (#332)",
    "chore(catálogo): remove o selo \"dados ilustrativos\" que nunca podia aparecer (#321)",
    "chore(deps): remove chave autoprefixer duplicada no package.json (#320)",
    "fix(kit): autosave para de rebaixar o kit concluído e passa a gravar a identidade (#313)",
-   "fix(bi): caminho de dado real para de devolver categoria fictícia (#316)",
-   "feat(nav): voltar fecha overlay, restaura scroll e não volta N passos (#319)"
+   "fix(bi): caminho de dado real para de devolver categoria fictícia (#316)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",
