@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "f2db0f8d0bfd49c1785bb8b80d4617798abc8a11",
+  "commit": "fcb4b9a6e48cf19874f8f29404ee19e1760e4aac",
   "branch": "main",
-  "data_commit": "2026-11-18T19:37:29Z",
+  "data_commit": "2026-11-18T19:54:54Z",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "fcb4b9a",
+    "data": "2026-11-18",
+    "assunto": "chore(deps): remove chave autoprefixer duplicada no package.json (#320)"
+   },
    {
     "sha": "f2db0f8",
     "data": "2026-11-18",
@@ -126,14 +131,9 @@
     "sha": "6b52c0e",
     "data": "2026-11-13",
     "assunto": "fix(db): corrige contadores do contrato para split public/protected real (57/165) (#277)"
-   },
-   {
-    "sha": "03d9092",
-    "data": "2026-11-13",
-    "assunto": "ci(workflows): pular jobs em PRs do Copilot (#276)"
    }
   ],
-  "arquivos_mudados_7d": 353,
+  "arquivos_mudados_7d": 355,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
@@ -157,7 +157,7 @@
    },
    {
     "pasta": "package.json",
-    "mudancas": 14
+    "mudancas": 15
    },
    {
     "pasta": "src/pages/admin",
@@ -169,7 +169,7 @@
    },
    {
     "pasta": "package-lock.json",
-    "mudancas": 10
+    "mudancas": 11
    },
    {
     "pasta": "src/pages/sicoob",
@@ -199,15 +199,15 @@
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 92
-   },
-   {
-    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
     "mudancas": 91
    },
    {
+    "arquivo": "docs/correcoes-validacao-2026-09-14.md",
+    "mudancas": 90
+   },
+   {
     "arquivo": "package.json",
-    "mudancas": 20
+    "mudancas": 21
    },
    {
     "arquivo": ".github/workflows/sicoob-ci.yml",
@@ -238,11 +238,11 @@
     "mudancas": 16
    },
    {
-    "arquivo": ".github/workflows/lighthouse.yml",
-    "mudancas": 15
+    "arquivo": "package-lock.json",
+    "mudancas": 16
    },
    {
-    "arquivo": "package-lock.json",
+    "arquivo": ".github/workflows/lighthouse.yml",
     "mudancas": 15
    },
    {
@@ -301,7 +301,7 @@
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 132
+    "commits": 133
    },
    {
     "autor": "dependabot[bot]",

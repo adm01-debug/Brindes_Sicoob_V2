@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `f2db0f8d0bfd49c1785bb8b80d4617798abc8a11` (2026-11-18T19:37:29Z).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `fcb4b9a6e48cf19874f8f29404ee19e1760e4aac` (2026-11-18T19:54:54Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -468,15 +468,15 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 28361 nós · 52475 arestas · 2014 comunidades · grafo do commit `f2db0f8d`
+- 28361 nós · 52475 arestas · 2014 comunidades · grafo do commit `fcb4b9a6`
 - comunidades maiores: ref_hooks (475), ref_components (429), ref_integrations (366), ref_lib (263), ref_node_fs (186), react-router-dom (176), ref_contexts (175), sonner (170), ai-usage.ts (156), ref_stores (152), react (151), date-fns (150)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (92)
-- docs/correcoes-validacao-2026-09-14.md (91)
-- package.json (20)
+- docs/plano-melhorias-50-etapas.md (91)
+- docs/correcoes-validacao-2026-09-14.md (90)
+- package.json (21)
 - .github/workflows/sicoob-ci.yml (19)
 - PENDENCIAS.md (19)
 - RELATORIO_CI.md (19)
@@ -484,8 +484,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - .github/workflows/ci.yml (18)
 - .github/workflows/codeql.yml (17)
 - .github/workflows/e2e.yml (16)
+- package-lock.json (16)
 - .github/workflows/lighthouse.yml (15)
-- package-lock.json (15)
 - src/integrations/supabase/types.ts (14)
 - .github/workflows/bundle-check.yml (12)
 - .github/workflows/deploy-sicoob-functions.yml (11)
@@ -691,6 +691,7 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-18 `fcb4b9a` chore(deps): remove chave autoprefixer duplicada no package.json (#320)
 - 2026-11-18 `f2db0f8` fix(kit): autosave para de rebaixar o kit concluído e passa a gravar a identidade (#313)
 - 2026-11-18 `d8d7dcd` fix(bi): caminho de dado real para de devolver categoria fictícia (#316)
 - 2026-11-18 `781ee20` feat(nav): voltar fecha overlay, restaura scroll e não volta N passos (#319)
@@ -705,7 +706,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-18 `6e81460` fix: verba do PA na competencia do pedido e SLA com inicio real do ciclo (#297)
 - 2026-11-18 `5ecb93f` fix: isola rascunho de orcamento por cooperativa e PA (#304)
 - 2026-11-17 `c2b0099` fix: assinar URLs de storage privado (imagens, logos, videos e artes de mockup) (#296)
-- 2026-11-17 `1b142b4` feat: tendencias com snapshot unico e estados de erro reais (recupera PR #119) (#301)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

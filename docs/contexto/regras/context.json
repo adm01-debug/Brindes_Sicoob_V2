@@ -1,9 +1,9 @@
 {
  "meta": {
-  "sha": "f2db0f8d0bfd49c1785bb8b80d4617798abc8a11",
+  "sha": "fcb4b9a6e48cf19874f8f29404ee19e1760e4aac",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-18 19:38 UTC",
+  "generated_at": "2026-11-18 19:57 UTC",
   "files_total": 4337,
   "code_files": 3699,
   "code_lines": 540955
@@ -248193,10 +248193,20 @@
   }
  },
  "git": {
-  "sha": "f2db0f8d0bfd49c1785bb8b80d4617798abc8a11",
+  "sha": "fcb4b9a6e48cf19874f8f29404ee19e1760e4aac",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "fcb4b9a",
+    "date": "2026-11-18",
+    "author": "adm01-debug",
+    "subject": "chore(deps): remove chave autoprefixer duplicada no package.json (#320)",
+    "files": [
+     "package-lock.json",
+     "package.json"
+    ]
+   },
    {
     "sha": "f2db0f8",
     "date": "2026-11-18",
@@ -248703,18 +248713,6 @@
      "supabase/functions/health-check/index.ts",
      "tests/edge-functions/public-health-and-bi-share.test.ts"
     ]
-   },
-   {
-    "sha": "387de05",
-    "date": "2026-11-12",
-    "author": "adm01-debug",
-    "subject": "fix(busca): corrige rota de detalhes de clientes (#168)",
-    "files": [
-     "src/App.tsx",
-     "src/components/search/useGlobalSearch.ts",
-     "src/routes/clientRoutes.ts",
-     "tests/components/search/client-search-route.test.ts"
-    ]
    }
   ],
   "hot_files": [
@@ -248727,19 +248725,11 @@
     2
    ],
    [
-    "src/components/search/useGlobalSearch.ts",
-    2
-   ],
-   [
     "src/hooks/useMagicUpState.ts",
     2
    ],
    [
     "supabase/functions/sicoob-document-ingest/index.ts",
-    2
-   ],
-   [
-    "tests/components/search/client-search-route.test.ts",
     2
    ],
    [
@@ -248753,6 +248743,14 @@
    [
     ".github/workflows/security.yml",
     2
+   ],
+   [
+    "package-lock.json",
+    1
+   ],
+   [
+    "package.json",
+    1
    ],
    [
     "src/components/dashboard/RecentKitsWidget.tsx",
