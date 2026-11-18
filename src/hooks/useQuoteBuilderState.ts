@@ -603,12 +603,20 @@ export function useQuoteBuilderState() {
       discountType, discountValue, markup: totals.markup, notes, internalNotes,
       validUntil, paymentTerms, deliveryTime, shippingType, shippingCost,
     });
+    // Fotografa o formulário como ele vai para o servidor, antes da chamada.
+    const submittedFormSnapshot = JSON.stringify(formSnapshotRef.current);
     const result = await persistQuote({
       isEditMode, quoteId, expectedRowVersion, quoteData, items,
       idempotencyKeyRef: createIdempotencyKeyRef, createQuote, updateQuote,
     });
     if (!result) return;
 
+    // O servidor confirmou. A referência do guarda de saída passa a ser o que
+    // foi enviado — e não o estado atual, para não marcar como salva uma edição
+    // feita durante a chamada. Sem isto, `hasUnsavedData` ficava true para
+    // sempre depois do primeiro salvamento e o vendedor era avisado de
+    // "alterações não salvas" ao sair de um orçamento que acabara de salvar.
+    initialSnapshotRef.current = submittedFormSnapshot;
     createIdempotencyKeyRef.current = null;
     const transitionApplied = await applyQuoteTransition({
       quote: result, finalStatus, persistedStatus, maxDiscountPercent,
