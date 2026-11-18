@@ -1,5 +1,10 @@
 import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 import { requireInternalService } from "../_shared/internal-service-auth.ts";
+import { getScheduledReportOwnerFilter } from "./report-scope.ts";
+import {
+  buildScheduledReportIdempotencyKey,
+  sendScheduledReportEmail,
+} from "../_shared/scheduled-report-email.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -47,12 +52,17 @@ Deno.serve(async (req) => {
         const filters = report.filters || {};
 
         if (report.report_type === "sales" || report.report_type === "quotes") {
-          const { data: quotes } = await supabase
+          const ownerFilter = getScheduledReportOwnerFilter(report.user_id);
+          const { data: quotes, error: quotesError } = await supabase
             .from("quotes")
             .select("id, quote_number, status, total, created_at, client_name, client_company")
+            .eq(ownerFilter.column, ownerFilter.value)
             .gte("created_at", getStartDate(report.frequency))
             .order("created_at", { ascending: false })
             .limit(100);
+          if (quotesError) throw quotesError;
+
+          if (quotesError) throw quotesError;
 
           const total = (quotes || []).reduce((sum, q) => sum + (q.total || 0), 0);
           const approved = (quotes || []).filter(q => q.status === "approved").length;
@@ -74,12 +84,17 @@ Deno.serve(async (req) => {
             })),
           };
         } else if (report.report_type === "orders") {
-          const { data: orders } = await supabase
+          const ownerFilter = getScheduledReportOwnerFilter(report.user_id);
+          const { data: orders, error: ordersError } = await supabase
             .from("orders")
             .select("id, order_number, status, total, created_at, client_name")
+            .eq(ownerFilter.column, ownerFilter.value)
             .gte("created_at", getStartDate(report.frequency))
             .order("created_at", { ascending: false })
             .limit(100);
+          if (ordersError) throw ordersError;
+
+          if (ordersError) throw ordersError;
 
           const total = (orders || []).reduce((sum, o) => sum + (o.total || 0), 0);
 
@@ -93,36 +108,35 @@ Deno.serve(async (req) => {
           };
         }
 
-        // Send email via Resend
         const resendKey = Deno.env.get("RESEND_API_KEY");
-        if (resendKey) {
-          const htmlContent = generateEmailHtml(report.report_name, reportData);
+        const now = new Date().toISOString();
+        const emailPayload = {
+          to: report.email_to,
+          subject: `📊 ${report.report_name} — ${reportData.period}`,
+          html: generateEmailHtml(report.report_name, reportData),
+        };
+        await sendScheduledReportEmail({
+          apiKey: resendKey,
+          ...emailPayload,
+          idempotencyKey: buildScheduledReportIdempotencyKey(
+            `scheduled-report:${report.id}:${report.next_run_at}`,
+          ),
+        }, async () => {
+          const nextRun = calculateNextRun(report.frequency);
+          const { data: updatedReport, error: updateError } = await supabase
+            .from("scheduled_reports")
+            .update({
+              last_sent_at: now,
+              next_run_at: nextRun.toISOString(),
+              updated_at: now,
+            })
+            .eq("id", report.id)
+            .select("id")
+            .maybeSingle();
 
-          await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${resendKey}`,
-            },
-            body: JSON.stringify({
-              from: "Promo Gifts <noreply@promogifts.com.br>",
-              to: [report.email_to],
-              subject: `📊 ${report.report_name} — ${reportData.period}`,
-              html: htmlContent,
-            }),
-          });
-        }
-
-        // Update next_run_at
-        const nextRun = calculateNextRun(report.frequency);
-        await supabase
-          .from("scheduled_reports")
-          .update({
-            last_sent_at: new Date().toISOString(),
-            next_run_at: nextRun.toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", report.id);
+          if (updateError) throw updateError;
+          if (!updatedReport) throw new Error("Agendamento não encontrado para confirmar o envio.");
+        });
 
         results.push({ id: report.id, status: "sent", email: report.email_to });
       } catch (err) {

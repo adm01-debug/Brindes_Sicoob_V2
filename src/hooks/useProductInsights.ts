@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSalesScope } from '@/lib/auth/visibility-scope';
@@ -58,23 +59,62 @@ function countOrderSegments(
     .slice(0, 5);
 }
 
+/** Quantas consultas ao diretório saem em paralelo no caminho do contrato fechado. */
+const SEGMENT_LOOKUP_CHUNK = 8;
+/** Teto de clientes distintos consultados um a um, para não abrir uma rajada no CRM. */
+const SEGMENT_LOOKUP_CAP = 60;
+
+/**
+ * Ramo de atividade por cliente.
+ *
+ * O `select` genérico resolve tudo numa chamada (`id IN (...)`) e continua sendo o
+ * caminho de quem pode usá-lo — dev, supervisor, admin e manager. Para `vendedor`
+ * e `agente` a política do portal nega esse `select`, e o contrato fechado aceita
+ * um `companyId` escalar por chamada: daí o lote. O escopo de vendedor já reduz a
+ * lista de clientes (`applySellerScope`), então o número de chamadas é pequeno
+ * justamente para quem cai nesse caminho.
+ */
+async function fetchSegmentByClient(clientIds: string[]): Promise<Record<string, string>> {
+  const { selectCrm, fetchQuoteDirectoryCompanies } = await import("@/lib/crm-db");
+  const segmentByClient: Record<string, string> = {};
+  try {
+    const clients = await selectCrm<{ id: string; ramo_atividade?: string }>("companies", {
+      select: "id, ramo_atividade",
+      filters: { id: { in: clientIds } },
+    });
+    for (const client of clients) {
+      if (client.ramo_atividade) segmentByClient[client.id] = client.ramo_atividade;
+    }
+    return segmentByClient;
+  } catch {
+    // Negado para vendedor e agente: segue pelo contrato fechado.
+  }
+  const alvos = clientIds.slice(0, SEGMENT_LOOKUP_CAP);
+  if (alvos.length < clientIds.length) {
+    logger.warn(
+      `[product-insights] ramo consultado para ${alvos.length} de ${clientIds.length} clientes (teto do contrato fechado)`,
+    );
+  }
+  for (let inicio = 0; inicio < alvos.length; inicio += SEGMENT_LOOKUP_CHUNK) {
+    const lote = alvos.slice(inicio, inicio + SEGMENT_LOOKUP_CHUNK);
+    const paginas = await Promise.all(
+      lote.map((companyId) => fetchQuoteDirectoryCompanies({ companyId, limit: 1 }).catch(() => [])),
+    );
+    for (const [company] of paginas) {
+      if (company?.ramo_atividade) segmentByClient[company.id] = company.ramo_atividade;
+    }
+  }
+  return segmentByClient;
+}
+
 async function fetchTopSegments(orderItems: Array<{ order_id: string | null }>, scope: ReturnType<typeof useSalesScope>, userId?: string) {
   const orderIds = orderItems.map((item) => item.order_id).filter((id): id is string => id !== null);
   if (orderIds.length === 0) return [];
   const { data } = await applySellerScope(supabase.from('orders').select('client_id').in('id', orderIds), { scope, userId });
   const orders = data || [];
-  const clientIds = [...new Set(orders.map((order) => order.client_id).filter(Boolean))];
+  const clientIds = [...new Set(orders.map((order) => order.client_id).filter((id): id is string => Boolean(id)))];
   if (clientIds.length === 0) return [];
-  const { selectCrm } = await import("@/lib/crm-db");
-  const clients = await selectCrm<{ id: string; ramo_atividade?: string }>("companies", {
-    select: "id, ramo_atividade",
-    filters: { id: { in: clientIds } },
-  });
-  const segmentByClient: Record<string, string> = {};
-  for (const client of clients) {
-    if (client.ramo_atividade) segmentByClient[client.id] = client.ramo_atividade;
-  }
-  return countOrderSegments(orders, segmentByClient);
+  return countOrderSegments(orders, await fetchSegmentByClient(clientIds));
 }
 
 async function fetchRecentActivity(productSku: string) {

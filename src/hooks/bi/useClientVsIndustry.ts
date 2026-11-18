@@ -5,10 +5,9 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { selectCrm } from "@/lib/crm-db";
+import { fetchIndustryPeerIds } from "@/lib/crm-db";
 import { useClientBI } from "@/hooks/bi/useClientBI";
 import { isDemoClient } from "@/lib/bi/demoClient";
-import type { CrmCompany } from "@/types/crm";
 
 export type ComparisonClassification = "above" | "on_par" | "below" | "no_data";
 
@@ -135,15 +134,13 @@ export function useClientVsIndustry(
         return { rows: [mockRow], sampleSize: 24 };
       }
 
-      // 1) Resolver IDs de empresas do mesmo ramo, excluindo o próprio cliente
-      const companies = await selectCrm<Pick<CrmCompany, "id">>("companies", {
-        select: "id",
-        filters: { ramo_atividade: ramoAtividade, deleted_at: null },
-        limit: 500,
-      });
-      const ids = companies
-        .map((c) => c.id)
-        .filter((id) => id && id !== clientId);
+      // 1) Resolver IDs de empresas do mesmo ramo, excluindo o próprio cliente.
+      // `selectCrm` genérico é negado para vendedor e agente pela política do
+      // portal; `fetchIndustryPeerIds` usa o contrato fechado, que devolve só os
+      // ids do ramo. O benchmark continua medido contra o universo do ramo, não
+      // apenas contra a carteira — o contrato não aplica `is_customer` aqui.
+      const peerIds = await fetchIndustryPeerIds(ramoAtividade);
+      const ids = peerIds.filter((id) => id && id !== clientId);
 
       if (ids.length === 0) {
         return { rows: [] as BenchmarkRow[], sampleSize: 0 };
