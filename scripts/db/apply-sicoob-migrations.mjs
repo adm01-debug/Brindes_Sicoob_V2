@@ -169,6 +169,10 @@ const TARGETS = [
     sha256: "3f828b9fac8ec95fa1ad9bfd3280ffec27f96a8525a9b5f86ee4e2f36fd4f55e",
   },
   {
+    file: "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+    sha256: "103b571803d9893c137d56f78f7b4bbadc360de96e9d2cf1dc63e5cecc4e603e",
+  },
+  {
     file: "supabase/migrations/20261117183000_ai_quota_count_billed_interrupts.sql",
     sha256: "5e4528b380fa6d48fbe92fad8c8b68282337c2012c1202c871726ff6208a400b",
   },
