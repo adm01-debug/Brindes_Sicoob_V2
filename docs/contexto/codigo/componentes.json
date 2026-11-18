@@ -12414,7 +12414,7 @@
     "DraggableQuoteItems"
    ],
    "export_default": null,
-   "linhas": 276,
+   "linhas": 542,
    "dominio": "components/quotes",
    "hooks_locais": [],
    "tabelas": [],
@@ -15920,7 +15920,7 @@
    "hooks_locais": [],
    "tabelas": [],
    "edges": [],
-   "usado_por": 19,
+   "usado_por": 20,
    "orfao": false
   },
   {

@@ -1,6 +1,6 @@
 # 11 · GLOSSÁRIO, DADOS DE REFERÊNCIA E LACUNAS
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `06aa890829` · branch `main` · 2026-11-18 22:16 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `64b8dc8363` · branch `main` · 2026-11-18 22:35 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## Glossário do domínio (entidades do sistema)
@@ -175,6 +175,7 @@
 | `portfolio_items` | _(sem COMMENT ON TABLE — significado não documentado)_ | 11 colunas | migration |
 | `postos_atendimento` | _(sem COMMENT ON TABLE — significado não documentado)_ | 11 colunas | migration |
 | `price_history` | _(sem COMMENT ON TABLE — significado não documentado)_ | 5 colunas | migration |
+| `private.quote_price_attestations` | Atestados transitórios e privados de preços validados pela Edge contra o catálogo autoritativo. | 9 colunas | migration |
 | `product_categories` | _(sem COMMENT ON TABLE — significado não documentado)_ | 11 colunas | migration |
 | `product_component_location_techniques` | _(sem COMMENT ON TABLE — significado não documentado)_ | 8 colunas | migration |
 | `product_component_locations` | _(sem COMMENT ON TABLE — significado não documentado)_ | 14 colunas | migration |
@@ -306,8 +307,7 @@
 | `step_up_action` (enum) | promote_dev, demote_dev, mcp_full_issue, mcp_full_escalate, secret_rotation, secret_revoke, mcp_key_revoke, mcp_key_rotate |  | banco |
 | `role_migration_item_status` (enum) | pending, success, failed, skipped, dry_run |  | banco |
 | `role_migration_status` (enum) | pending, running, completed, failed, partial, dry_run |  | banco |
-| `DevAccessUserRole` (TS) | supervisor \| agente \| agent \| vendedor |  | `src/components/access/DevAccessDeniedPage.tsx` |
-| … +171 linhas — lista completa em `context.json` | | | |
+| … +172 linhas — lista completa em `context.json` | | | |
 
 ## Dados de referência (seed — planos, categorias, perfis fixos)
 
@@ -392,6 +392,7 @@ _nenhum item encontrado_
 | coluna | coluna `product_id` usada no código não existe no schema de `product_categories` |  |
 | coluna | coluna `level` usada no código não existe no schema de `categories` |  |
 | coluna | coluna `brand` usada no código não existe no schema de `products` |  |
+| coluna | coluna `cost_price` usada no código não existe no schema de `products` |  |
 | coluna | coluna `personalization_areas` usada no código não existe no schema de `products` |  |
 | coluna | coluna `primary_image_url` usada no código não existe no schema de `products` |  |
 | coluna | coluna `sale_price` usada no código não existe no schema de `products` |  |
@@ -418,8 +419,9 @@ _nenhum item encontrado_
 | tabela | tabela `mv_material_group_stats` usada no código não existe nas migrations/types do repo | `supabase/functions/materials-api/index.ts` |
 | tabela | tabela `payments` usada no código não existe nas migrations/types do repo | `scripts/ai-context/gerar.unit.mjs` |
 | tabela | tabela `product_category_assignments` usada no código não existe nas migrations/types do repo | `supabase/functions/categories-api/index.ts`<br>`supabase/functions/expert-chat/index.ts` |
+| tabela | tabela `product_images` usada no código não existe nas migrations/types do repo | `supabase/functions/quote-price-attestation/index.ts` |
 | tabela | tabela `product_materials` usada no código não existe nas migrations/types do repo | `supabase/functions/materials-api/index.ts` |
-| tabela | tabela `product_variants` usada no código não existe nas migrations/types do repo | `supabase/functions/sync-quote-bitrix/index.ts` |
+| tabela | tabela `product_variants` usada no código não existe nas migrations/types do repo | `supabase/functions/quote-price-attestation/index.ts`<br>`supabase/functions/sync-quote-bitrix/index.ts` |
 | tabela | tabela `runtime_table` usada no código não existe nas migrations/types do repo | `scripts/ai-context/gerar.unit.mjs` |
 | tabela | tabela `so_teste` usada no código não existe nas migrations/types do repo | `scripts/ai-context/cenarios.mjs` |
 | tabela | tabela `t` usada no código não existe nas migrations/types do repo | `scripts/ai-context/cenarios.mjs` |
@@ -453,6 +455,8 @@ _nenhum item encontrado_
 | rpc | RPC `demo` chamada mas não definida nas migrations/types | `scripts/supabase_snapshot/test_snapshot.py` |
 | rpc | RPC `fixture_rpc` chamada mas não definida nas migrations/types | `scripts/ai-context/gerar.unit.mjs` |
 | rpc | RPC `fn` chamada mas não definida nas migrations/types | `scripts/supabase_snapshot/snapshot.py`<br>`supabase/functions/_shared/supabase-client-adapter.ts` |
+| rpc | RPC `fn_get_customization_price` chamada mas não definida nas migrations/types | `supabase/functions/quote-price-attestation/index.ts` |
+| rpc | RPC `fn_get_product_customization_options` chamada mas não definida nas migrations/types | `supabase/functions/quote-price-attestation/index.ts` |
 | rpc | RPC `get_active_commemorative_dates` chamada mas não definida nas migrations/types | `supabase/functions/commemorative-dates/index.ts` |
 | rpc | RPC `get_all_material_groups_safe` chamada mas não definida nas migrations/types | `supabase/functions/materials-api/index.ts` |
 | rpc | RPC `get_all_material_types_safe` chamada mas não definida nas migrations/types | `supabase/functions/materials-api/index.ts` |
@@ -595,7 +599,7 @@ _nenhum item encontrado_
 - `admin_audit_log_y2027_m01.status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.
 - `admin_audit_log_y2027_m02.status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.
 - `admin_audit_log_y2027_m03.status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.
-- 276/291 tabelas sem `COMMENT ON TABLE` — o significado de negócio não está no schema: `notification_templates`, `webhook_configs`, `webhook_logs`, `push_subscriptions`, `entity_versions`, `categories`, `suppliers`, `products`, `quotes`, `profiles`, `user_roles`, `bitrix_clients` …
+- 276/292 tabelas sem `COMMENT ON TABLE` — o significado de negócio não está no schema: `notification_templates`, `webhook_configs`, `webhook_logs`, `push_subscriptions`, `entity_versions`, `categories`, `suppliers`, `products`, `quotes`, `profiles`, `user_roles`, `bitrix_clients` …
 - Há tabelas usadas no código sem migration no repo — o schema real pode ter sido alterado pelo painel.
 
 ## Regras manuais presentes

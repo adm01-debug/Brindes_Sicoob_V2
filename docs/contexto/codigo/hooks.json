@@ -1878,7 +1878,7 @@
     "useState"
    ],
    "canais_realtime": [],
-   "usado_por": 19,
+   "usado_por": 20,
    "usado_por_arquivos": [
     "src/components/collections/CollectionsEmptyStateSmart.tsx",
     "src/components/collections/CollectionsTrashView.tsx",
@@ -1890,6 +1890,7 @@
     "src/components/products/RecentlyViewedPopover.tsx",
     "src/components/providers/AppProviders.tsx",
     "src/contexts/CollectionsContext.tsx",
+    "src/hooks/quote/useQuoteInitialization.ts",
     "src/hooks/useCatalogState.ts",
     "src/hooks/useEnrichedFavoriteItems.ts",
     "src/hooks/useMockupGenerator.ts",
@@ -3216,13 +3217,15 @@
    "hooks_exportados": [
     "useQuoteInitialization"
    ],
-   "linhas": 265,
+   "linhas": 274,
    "dominio": "hooks/quote",
    "tabelas": [],
    "rpcs": [],
    "edges": [],
    "hooks_internos": [
+    "useCallback",
     "useEffect",
+    "useProductsContextSafe",
     "useQuoteUrlPrefill"
    ],
    "canais_realtime": [],
@@ -5649,7 +5652,7 @@
    "hooks_exportados": [
     "useExternalVariantStock"
    ],
-   "linhas": 124,
+   "linhas": 130,
    "dominio": "hooks",
    "tabelas": [],
    "rpcs": [],
@@ -7546,7 +7549,7 @@
    "hooks_exportados": [
     "useQuoteBuilderState"
    ],
-   "linhas": 687,
+   "linhas": 945,
    "dominio": "hooks",
    "tabelas": [
     "pa_budgets"

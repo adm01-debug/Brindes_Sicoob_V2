@@ -385,7 +385,7 @@
   {
    "arquivo": "scripts/ci/verify-supabase-functions-published.mjs",
    "descricao": null,
-   "linhas": 98,
+   "linhas": 99,
    "env": [],
    "npm_scripts": [],
    "workflows": [
@@ -433,7 +433,7 @@
   {
    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
    "descricao": "* Aplica somente migrations explicitamente autorizadas no banco de construção.",
-   "linhas": 1522,
+   "linhas": 1526,
    "env": [
     "GITHUB_ACTIONS",
     "GITHUB_REF",

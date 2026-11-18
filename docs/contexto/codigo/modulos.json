@@ -1832,6 +1832,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -1853,9 +1854,10 @@
     "bulk_update_quote_status_atomic",
     "consolidate_sicoob_quotes",
     "create_organization_with_owner",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent"
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested"
    ],
    "buckets": [],
    "canais_realtime": [],
@@ -3413,6 +3415,7 @@
     "kit-identity-suggest",
     "log-login-attempt",
     "market-intelligence-insights",
+    "quote-price-attestation",
     "semantic-search",
     "sicoob-document-ingest",
     "sicoob-kit-quote",
@@ -3514,6 +3517,7 @@
     "ensure_default_favorite_list",
     "get_collections_weekly_count",
     "get_favorites_weekly_count",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
     "get_top_collected_products",
     "get_top_compared_products",
@@ -3531,8 +3535,8 @@
     "request_sicoob_order_approval",
     "respond_discount_approval_atomic",
     "retry_own_sicoob_export_job",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent",
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested",
     "set_custom_kit_pinned",
     "transition_sicoob_order_status"
    ],
@@ -4166,6 +4170,7 @@
     "kit-identity-suggest",
     "log-login-attempt",
     "market-intelligence-insights",
+    "quote-price-attestation",
     "semantic-search",
     "sicoob-document-ingest",
     "sicoob-kit-quote",
@@ -4263,6 +4268,7 @@
     "ensure_default_favorite_list",
     "get_collections_weekly_count",
     "get_favorites_weekly_count",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
     "get_top_collected_products",
     "get_top_compared_products",
@@ -4277,8 +4283,8 @@
     "request_sicoob_order_approval",
     "respond_discount_approval_atomic",
     "retry_own_sicoob_export_job",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent",
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested",
     "set_custom_kit_pinned",
     "transition_sicoob_order_status"
    ],
@@ -4870,6 +4876,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-artwork-register",
     "sicoob-document-ingest",
     "sicoob-reorder",
@@ -4927,6 +4934,7 @@
     "create_organization_with_owner",
     "decide_sicoob_order_artwork",
     "duplicate_order_atomic",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
     "log_order_audit_event",
     "log_rls_denial",
@@ -4935,8 +4943,8 @@
     "refund_sicoob_order_payment",
     "request_sicoob_order_approval",
     "retry_own_sicoob_export_job",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent",
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested",
     "transition_sicoob_order_status"
    ],
    "buckets": [
@@ -5657,7 +5665,7 @@
    "modulo": "components/quotes",
    "arquivos": 73,
    "testes": 0,
-   "linhas": 9242,
+   "linhas": 9508,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -5703,6 +5711,7 @@
     "external-db-bridge",
     "log-login-attempt",
     "quote-approval",
+    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -5746,6 +5755,7 @@
     "convert_quote_to_sicoob_order",
     "create_organization_with_owner",
     "duplicate_order_atomic",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
     "log_order_audit_event",
     "log_rls_denial",
@@ -5753,8 +5763,8 @@
     "request_discount_approval_atomic",
     "request_sicoob_order_approval",
     "respond_discount_approval_atomic",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent",
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested",
     "transition_sicoob_order_status"
    ],
    "buckets": [
@@ -7107,6 +7117,7 @@
     "hooks/bi",
     "hooks/cart",
     "hooks/orders",
+    "hooks/quote",
     "hooks/quotes",
     "hooks/sicoob",
     "lib/auth",
@@ -7178,7 +7189,7 @@
    "modulo": "hooks",
    "arquivos": 209,
    "testes": 0,
-   "linhas": 34236,
+   "linhas": 34500,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -7931,6 +7942,7 @@
     "kit-identity-suggest",
     "log-login-attempt",
     "quote-approval",
+    "quote-price-attestation",
     "secrets-manager",
     "send-transactional-email",
     "sicoob-document-ingest",
@@ -8052,6 +8064,7 @@
     "execute_role_migration_batch",
     "get_public_favorite_list",
     "get_public_favorite_reactions",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
     "increment_kit_template_usage",
     "log_order_audit_event",
@@ -8064,8 +8077,8 @@
     "request_sicoob_order_approval",
     "respond_discount_approval_atomic",
     "retry_own_sicoob_export_job",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent",
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested",
     "set_custom_kit_pinned",
     "sicoob_current_actor_approval_authority",
     "transition_sicoob_order_status"
@@ -9288,7 +9301,7 @@
    "modulo": "hooks/quote",
    "arquivos": 5,
    "testes": 0,
-   "linhas": 789,
+   "linhas": 800,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -9303,6 +9316,8 @@
     "useProduct",
     "useProductPrintAreasV2",
     "useProducts",
+    "useProductsContext",
+    "useProductsContextSafe",
     "useQuoteInitialization",
     "useQuoteProductSearch",
     "useQuoteUrlPrefill",
@@ -9326,6 +9341,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -9344,9 +9360,10 @@
     "bulk_update_quote_status_atomic",
     "consolidate_sicoob_quotes",
     "create_organization_with_owner",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent"
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested"
    ],
    "buckets": [],
    "canais_realtime": [],
@@ -9380,6 +9397,7 @@
    ],
    "depende_de_modulos": [
     "components/quotes",
+    "contexts",
     "hooks",
     "hooks/quotes",
     "integrations/supabase",
@@ -9398,7 +9416,7 @@
    "modulo": "hooks/quotes",
    "arquivos": 6,
    "testes": 0,
-   "linhas": 758,
+   "linhas": 832,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -9427,6 +9445,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -9445,9 +9464,10 @@
     "bulk_update_quote_status_atomic",
     "consolidate_sicoob_quotes",
     "create_organization_with_owner",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent"
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested"
    ],
    "buckets": [],
    "canais_realtime": [],
@@ -10076,7 +10096,7 @@
    "modulo": "integrations/supabase",
    "arquivos": 2,
    "testes": 0,
-   "linhas": 13423,
+   "linhas": 13451,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -10512,6 +10532,7 @@
     "kit-identity-suggest",
     "log-login-attempt",
     "market-intelligence-insights",
+    "quote-price-attestation",
     "semantic-search",
     "sicoob-document-ingest",
     "sicoob-kit-quote",
@@ -10610,6 +10631,7 @@
     "ensure_default_favorite_list",
     "get_collections_weekly_count",
     "get_favorites_weekly_count",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
     "get_top_collected_products",
     "get_top_compared_products",
@@ -10624,8 +10646,8 @@
     "request_sicoob_order_approval",
     "respond_discount_approval_atomic",
     "retry_own_sicoob_export_job",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent",
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested",
     "seed_qa_scenario",
     "set_custom_kit_pinned",
     "transition_sicoob_order_status"
@@ -12208,6 +12230,7 @@
     "log-login-attempt",
     "market-intelligence-insights",
     "quote-approval",
+    "quote-price-attestation",
     "quote-public-view",
     "secure-upload",
     "semantic-search",
@@ -12343,6 +12366,7 @@
     "get_industry_top_products",
     "get_public_favorite_list",
     "get_public_favorite_reactions",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
     "get_top_collected_products",
     "get_top_compared_products",
@@ -12359,8 +12383,8 @@
     "request_sicoob_order_approval",
     "respond_discount_approval_atomic",
     "retry_own_sicoob_export_job",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent",
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested",
     "set_custom_kit_pinned",
     "transition_sicoob_order_status"
    ],
@@ -12831,6 +12855,7 @@
     "mcp-keys-update",
     "ownership-audit",
     "ownership-repair",
+    "quote-price-attestation",
     "secrets-manager",
     "secure-upload",
     "sicoob-approval-reconciliation",
@@ -12947,6 +12972,7 @@
     "get_connections_auto_test_interval",
     "get_platform_failure_metrics",
     "get_query_telemetry_p95",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
     "has_role",
     "increment_kit_template_usage",
@@ -12957,8 +12983,8 @@
     "reset_optimization_queue",
     "respond_discount_approval_atomic",
     "revoke_sicoob_approval_delegation",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent",
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested",
     "set_connection_failure_window_minutes",
     "set_connections_auto_test_interval"
    ],
@@ -14055,6 +14081,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-reorder",
     "sync-quote-bitrix",
     "system-healthcheck"
@@ -14077,9 +14104,10 @@
     "bulk_update_quote_status_atomic",
     "consolidate_sicoob_quotes",
     "create_organization_with_owner",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent"
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested"
    ],
    "buckets": [
     "proposals"
@@ -14238,6 +14266,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -14257,9 +14286,10 @@
     "bulk_update_quote_status_atomic",
     "consolidate_sicoob_quotes",
     "create_organization_with_owner",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent"
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested"
    ],
    "buckets": [],
    "canais_realtime": [],
@@ -15218,6 +15248,7 @@
     "ownership-audit",
     "ownership-repair",
     "quote-approval",
+    "quote-price-attestation",
     "secrets-manager",
     "secure-upload",
     "semantic-search",
@@ -15421,6 +15452,7 @@
     "get_public_favorite_list",
     "get_public_favorite_reactions",
     "get_query_telemetry_p95",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
     "get_sicoob_consolidation_sellers",
     "get_sicoob_invitation",
@@ -15450,8 +15482,8 @@
     "revoke_sicoob_approval_delegation",
     "revoke_sicoob_invitation",
     "revoke_sicoob_user_access",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent",
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested",
     "set_connection_failure_window_minutes",
     "set_connections_auto_test_interval",
     "set_custom_kit_pinned",
@@ -15552,7 +15584,7 @@
    "modulo": "services",
    "arquivos": 7,
    "testes": 0,
-   "linhas": 1702,
+   "linhas": 1765,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -15569,6 +15601,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-reorder"
    ],
    "tabelas": [
@@ -15595,10 +15628,11 @@
     "consolidate_sicoob_quotes",
     "convert_quote_to_sicoob_order",
     "duplicate_order_atomic",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
     "log_order_audit_event",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent"
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested"
    ],
    "buckets": [],
    "canais_realtime": [],
@@ -15619,6 +15653,7 @@
    ],
    "diretos": {
     "edges": [
+     "quote-price-attestation",
      "sicoob-reorder"
     ],
     "tabelas": [
@@ -15645,9 +15680,10 @@
      "consolidate_sicoob_quotes",
      "convert_quote_to_sicoob_order",
      "duplicate_order_atomic",
+     "get_quote_save_idempotent_replay",
      "log_order_audit_event",
-     "save_quote_atomic",
-     "save_quote_atomic_idempotent"
+     "save_quote_atomic_attested",
+     "save_quote_atomic_idempotent_attested"
     ]
    },
    "importado_por_outros_modulos": [
@@ -16072,7 +16108,7 @@
    "modulo": "types",
    "arquivos": 19,
    "testes": 0,
-   "linhas": 2681,
+   "linhas": 2682,
    "itens_menu": [],
    "telas": [],
    "rotas_http": [],
@@ -16096,6 +16132,7 @@
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -16114,9 +16151,10 @@
     "bulk_update_quote_status_atomic",
     "consolidate_sicoob_quotes",
     "create_organization_with_owner",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent"
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested"
    ],
    "buckets": [],
    "canais_realtime": [],
@@ -16339,6 +16377,7 @@
     "external-db-bridge",
     "image-proxy",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -16360,9 +16399,10 @@
     "bulk_update_quote_status_atomic",
     "consolidate_sicoob_quotes",
     "create_organization_with_owner",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent"
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested"
    ],
    "buckets": [
     "proposals"

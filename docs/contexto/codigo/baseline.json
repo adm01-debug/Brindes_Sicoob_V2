@@ -2,11 +2,16 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "git": {
-  "commit": "06aa890829c4be2a8a036c3de10f2f35075f4b30",
+  "commit": "64b8dc83634623f390a4ab055748d5b8b10b73b7",
   "branch": "main",
-  "data_commit": "2026-11-18T22:14:05Z",
+  "data_commit": "2026-11-18T19:35:18-03:00",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "ultimos_commits": [
+   {
+    "sha": "64b8dc8",
+    "data": "2026-11-18",
+    "assunto": "feat: preco do orcamento passa a ser atestado pelo servidor (recupera #290, branch limpa sobre main) (#317)"
+   },
    {
     "sha": "06aa890",
     "data": "2026-11-18",
@@ -126,18 +131,13 @@
     "sha": "004e313",
     "data": "2026-11-17",
     "assunto": "fix: sonda de REST aceita raiz protegida e para de repetir healthcheck negado (#300)"
-   },
-   {
-    "sha": "4f2531e",
-    "data": "2026-11-17",
-    "assunto": "fix: consolidacao de orcamentos carrega todos os itens e trata erro (recupera PR #179) (#294)"
    }
   ],
-  "arquivos_mudados_7d": 348,
+  "arquivos_mudados_7d": 366,
   "pastas_mais_mudadas_30d": [
    {
     "pasta": "supabase/functions/_shared",
-    "mudancas": 34
+    "mudancas": 35
    },
    {
     "pasta": "docs/externo/analises-20261007",
@@ -160,12 +160,12 @@
     "mudancas": 15
    },
    {
-    "pasta": "src/pages/admin",
+    "pasta": "scripts/db/apply-sicoob-migrations.mjs",
     "mudancas": 14
    },
    {
-    "pasta": "scripts/db/apply-sicoob-migrations.mjs",
-    "mudancas": 13
+    "pasta": "src/pages/admin",
+    "mudancas": 14
    },
    {
     "pasta": "package-lock.json",
@@ -180,6 +180,10 @@
     "mudancas": 10
    },
    {
+    "pasta": "src/components/quotes",
+    "mudancas": 9
+   },
+   {
     "pasta": "scripts/automation.config.json",
     "mudancas": 8
    },
@@ -190,24 +194,24 @@
    {
     "pasta": "src/components/intelligence",
     "mudancas": 8
-   },
-   {
-    "pasta": "src/components/quotes",
-    "mudancas": 8
    }
   ],
   "arquivos_mais_mudados_90d": [
    {
     "arquivo": "docs/plano-melhorias-50-etapas.md",
-    "mudancas": 86
+    "mudancas": 85
    },
    {
     "arquivo": "docs/correcoes-validacao-2026-09-14.md",
-    "mudancas": 85
+    "mudancas": 84
    },
    {
     "arquivo": "package.json",
     "mudancas": 21
+   },
+   {
+    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
+    "mudancas": 20
    },
    {
     "arquivo": ".github/workflows/sicoob-ci.yml",
@@ -219,10 +223,6 @@
    },
    {
     "arquivo": "RELATORIO_CI.md",
-    "mudancas": 19
-   },
-   {
-    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
     "mudancas": 19
    },
    {
@@ -247,7 +247,7 @@
    },
    {
     "arquivo": "src/integrations/supabase/types.ts",
-    "mudancas": 14
+    "mudancas": 15
    },
    {
     "arquivo": ".github/workflows/bundle-check.yml",
@@ -255,7 +255,11 @@
    },
    {
     "arquivo": ".github/workflows/deploy-sicoob-functions.yml",
-    "mudancas": 11
+    "mudancas": 12
+   },
+   {
+    "arquivo": "src/services/QuoteService.ts",
+    "mudancas": 12
    },
    {
     "arquivo": ".github/workflows/security-compliance.yml",
@@ -263,10 +267,6 @@
    },
    {
     "arquivo": "docs/execucao/validacao-do-plano.md",
-    "mudancas": 11
-   },
-   {
-    "arquivo": "src/services/QuoteService.ts",
     "mudancas": 11
    },
    {
@@ -282,6 +282,10 @@
     "mudancas": 10
    },
    {
+    "arquivo": "supabase/config.toml",
+    "mudancas": 10
+   },
+   {
     "arquivo": ".github/workflows/db-performance-audit.yml",
     "mudancas": 9
    },
@@ -290,18 +294,14 @@
     "mudancas": 9
    },
    {
-    "arquivo": "src/pages/sicoob/orders/OrderDetailPage.tsx",
-    "mudancas": 9
-   },
-   {
-    "arquivo": "src/services/sicoob/orderService.ts",
+    "arquivo": "src/hooks/useQuoteBuilderState.ts",
     "mudancas": 9
    }
   ],
   "autores_30d": [
    {
     "autor": "adm01-debug",
-    "commits": 138
+    "commits": 139
    },
    {
     "autor": "dependabot[bot]",
@@ -310,9 +310,9 @@
   ]
  },
  "contagens": {
-  "arquivos_total": 4342,
-  "arquivos_codigo": 3051,
-  "linhas_codigo": 481071,
+  "arquivos_total": 4348,
+  "arquivos_codigo": 3055,
+  "linhas_codigo": 483084,
   "rotas": 138,
   "rotas_http_backend": 13,
   "vistas_por_id": 0,
@@ -320,14 +320,14 @@
   "modulos": 146,
   "componentes": 1173,
   "hooks": 392,
-  "edge_functions": 106,
-  "tabelas": 291,
-  "migrations": 620,
+  "edge_functions": 107,
+  "tabelas": 292,
+  "migrations": 621,
   "cron_jobs": 27,
-  "testes": 812,
+  "testes": 814,
   "workflows": 16,
   "scripts": 121,
-  "docs_md": 246
+  "docs_md": 247
  },
  "por_pasta": {
   "docs/execucao": {
@@ -576,7 +576,7 @@
   },
   "scripts/ci": {
    "arquivos": 3,
-   "linhas": 266
+   "linhas": 267
   },
   "scripts/compare-edge-functions.mjs": {
    "arquivos": 1,
@@ -588,7 +588,7 @@
   },
   "scripts/db": {
    "arquivos": 9,
-   "linhas": 3210
+   "linhas": 3214
   },
   "scripts/db-performance-audit.mjs": {
    "arquivos": 1,
@@ -684,7 +684,7 @@
   },
   "scripts/qa": {
    "arquivos": 37,
-   "linhas": 8033
+   "linhas": 8204
   },
   "scripts/regras_negocio": {
    "arquivos": 3,
@@ -776,7 +776,7 @@
   },
   "src/components": {
    "arquivos": 1130,
-   "linhas": 165625
+   "linhas": 165891
   },
   "src/constants": {
    "arquivos": 3,
@@ -792,11 +792,11 @@
   },
   "src/hooks": {
    "arquivos": 313,
-   "linhas": 46061
+   "linhas": 46410
   },
   "src/integrations": {
    "arquivos": 3,
-   "linhas": 13462
+   "linhas": 13490
   },
   "src/lib": {
    "arquivos": 166,
@@ -816,7 +816,7 @@
   },
   "src/services": {
    "arquivos": 23,
-   "linhas": 3301
+   "linhas": 3364
   },
   "src/stores": {
    "arquivos": 6,
@@ -832,15 +832,15 @@
   },
   "src/types": {
    "arquivos": 26,
-   "linhas": 3989
+   "linhas": 3990
   },
   "src/utils": {
    "arquivos": 37,
    "linhas": 5003
   },
   "supabase/functions": {
-   "arquivos": 213,
-   "linhas": 34097
+   "arquivos": 215,
+   "linhas": 34801
   },
   "tailwind.config.ts": {
    "arquivos": 1,
@@ -899,8 +899,8 @@
    "linhas": 60
   },
   "tests/edge-functions": {
-   "arquivos": 13,
-   "linhas": 866
+   "arquivos": 14,
+   "linhas": 1153
   },
   "tests/fixtures": {
    "arquivos": 1,
@@ -915,8 +915,8 @@
    "linhas": 316
   },
   "tests/hooks": {
-   "arquivos": 126,
-   "linhas": 13477
+   "arquivos": 127,
+   "linhas": 13563
   },
   "tests/integration": {
    "arquivos": 4,
@@ -960,7 +960,7 @@
   },
   "tests/scripts": {
    "arquivos": 30,
-   "linhas": 2838
+   "linhas": 2839
   },
   "tests/search": {
    "arquivos": 1,
@@ -972,7 +972,7 @@
   },
   "tests/services": {
    "arquivos": 13,
-   "linhas": 1293
+   "linhas": 1345
   },
   "tests/setup-ref-warning-capture.ts": {
    "arquivos": 1,
@@ -1042,7 +1042,7 @@
  "maiores_arquivos": [
   {
    "arquivo": "src/integrations/supabase/types.ts",
-   "linhas": 13351
+   "linhas": 13379
   },
   {
    "arquivo": "scripts/regras_negocio/generate.py",
@@ -1058,7 +1058,7 @@
   },
   {
    "arquivo": "scripts/db/apply-sicoob-migrations.mjs",
-   "linhas": 1522
+   "linhas": 1526
   },
   {
    "arquivo": "supabase/functions/expert-chat/index.ts",
@@ -1079,6 +1079,10 @@
   {
    "arquivo": "scripts/automation.mjs",
    "linhas": 992
+  },
+  {
+   "arquivo": "src/hooks/useQuoteBuilderState.ts",
+   "linhas": 945
   },
   {
    "arquivo": "scripts/ai-context/gerar.mjs",
@@ -1135,10 +1139,6 @@
   {
    "arquivo": "src/hooks/useMagicUpState.ts",
    "linhas": 688
-  },
-  {
-   "arquivo": "src/components/layout/SidebarReorganized.tsx",
-   "linhas": 687
   }
  ],
  "qualidade": {
@@ -1147,7 +1147,7 @@
   "ts_ignore": 6,
   "eslint_disable": 4,
   "todos": 16,
-  "arquivos_acima_500_linhas": 69
+  "arquivos_acima_500_linhas": 70
  },
  "todos": [
   {
@@ -1332,6 +1332,7 @@
    "material_types",
    "mv_material_group_stats",
    "product_category_assignments",
+   "product_images",
    "product_materials",
    "product_variants",
    "proposals",
@@ -1379,6 +1380,8 @@
    "user_roles"
   ],
   "rpcs_sem_definicao": [
+   "fn_get_customization_price",
+   "fn_get_product_customization_options",
    "get_active_commemorative_dates",
    "get_all_material_groups_safe",
    "get_all_material_types_safe",

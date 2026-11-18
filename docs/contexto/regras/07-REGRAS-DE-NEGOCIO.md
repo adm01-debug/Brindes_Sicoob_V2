@@ -1,6 +1,6 @@
 # 07 · REGRAS DE NEGÓCIO
 
-> Gerado automaticamente por AI Context Sync v1.3.2 · commit `06aa890829` · branch `main` · 2026-11-18 22:16 UTC
+> Gerado automaticamente por AI Context Sync v1.3.2 · commit `64b8dc8363` · branch `main` · 2026-11-18 22:35 UTC
 > Não edite à mão — regras humanas vão em `manual/`.
 
 ## A. Regras escritas por humanos (`manual/` — prioridade máxima, nunca sobrescrito)
@@ -617,7 +617,7 @@ _Nenhum arquivo em `manual/`. Copie `manual/TEMPLATE-regras-de-negocio.md` para 
 | `personalization_simulations` | `seller_id` | obrigatório; FK → users.id ON DELETE CASCADE |
 | `personalization_simulations` | `product_name` | obrigatório |
 | `personalization_simulations` | `quantity` | default 1; CHECK quantity > 0 |
-| … +1864 linhas — lista completa em `context.json` | | |
+| … +1871 linhas — lista completa em `context.json` | | |
 
 ## D. Automações no banco (triggers e funções — regras que rodam sozinhas)
 
@@ -816,6 +816,9 @@ _Nenhum arquivo em `manual/`. Copie `manual/TEMPLATE-regras-de-negocio.md` para 
 | set_catalog_marketing_terms_updated_at | BEFORE UPDATE | `catalog_marketing_terms` | `handle_updated_at` |  |
 | preserve_catalog_marketing_term_authorship | BEFORE UPDATE | `catalog_marketing_terms` | `preserve_catalog_marketing_term_authorship` |  |
 | trg_normalize_search_analytics_insert | BEFORE INSERT | `search_analytics` | `normalize_search_analytics_insert` |  |
+| zzz_guard_quote_price_attestation | BEFORE INSERT OR UPDATE OR DELETE | `quotes` | `guard_quote_price_attestation` |  |
+| zzz_guard_quote_item_price_attestation | BEFORE INSERT OR UPDATE OR DELETE | `quote_items` | `guard_quote_price_attestation` |  |
+| zzz_guard_quote_personalization_price_attestation | BEFORE INSERT OR UPDATE OR DELETE | `quote_item_personalizations` | `guard_quote_price_attestation` |  |
 
 Erros lançados por funções SQL (`RAISE EXCEPTION` = regra de negócio no banco):
 
@@ -3093,31 +3096,31 @@ _nenhum item encontrado_
   ```
 - **validateSaveForm(status: SaveStatus, isDraftValid: boolean, isFormValid: boolean, validationErrors: string[],)** — `src/hooks/useQuoteBuilderState.ts`
   ```
-  if (status === "draft" && !isDraftValid) { toast.error("Selecione uma empresa para salvar o rascunho."); return false; } if (status !== "draft" && !isFormValid) { const missing = validationErrors.map((error) => QUOTE_FIELD_LABELS[error] || error).join(", "); toast.error(`Preencha os campos obrigatórios: ${missing}`); return false; } return true;
+  if (status === 'draft' && !isDraftValid) { toast.error('Selecione uma empresa para salvar o rascunho.'); return false; } if (status !== 'draft' && !isFormValid) { const missing = validationErrors.map((error) => QUOTE_FIELD_LABELS[error] || error).join(', '); toast.error(`Preencha os campos obrigatórios: ${missing}`); return false; } return true;
   ```
 - **validateFreshPrices(status: SaveStatus, items: QuoteItem[])** — `src/hooks/useQuoteBuilderState.ts`
   ```
-  if (status === "draft") return true; const staleUnconfirmed = items.some((item) => { if (item.price_confirmed_at) return false; return getPriceFreshness(item.price_updated_at, item.price_freshness_threshold_days).isStale; }); if (!staleUnconfirmed) return true; toast.error("Confirme os preços defasados antes de fechar o orçamento"); return false;
+  if (status === 'draft') return true; const staleUnconfirmed = items.some((item) => { if (item.price_confirmed_at) return false; return getPriceFreshness(item.price_updated_at, item.price_freshness_threshold_days).isStale; }); if (!staleUnconfirmed) return true; toast.error('Confirme os preços defasados antes de fechar o orçamento'); return false;
   ```
 - **validateTransactionLimit(total: number, limit: number)** — `src/hooks/useQuoteBuilderState.ts`
   ```
-  if (limit <= 0 || total <= limit) return true; toast.error("Limite de alçada excedido!", { description: `Este pedido (R$ ${total.toLocaleString()}) supera seu limite de R$ ${limit.toLocaleString()}.`, }); return false;
+  if (limit <= 0 || total <= limit) return true; toast.error('Limite de alçada excedido!', { description: `Este pedido (R$ ${total.toLocaleString()}) supera seu limite de R$ ${limit.toLocaleString()}.`, }); return false;
   ```
-- **validateMonthlyBudget(total: number, budget: { verba_total: number; verba_consumida: number | null })** — `src/hooks/useQuoteBuilderState.ts`
+- **validateMonthlyBudget(total: number, budget: { verba_total: number; verba_consumida: number | null },)** — `src/hooks/useQuoteBuilderState.ts`
   ```
-  const remaining = budget.verba_total - (budget.verba_consumida || 0); if (budget.verba_total <= 0 || total <= remaining) return true; toast.error("Verba insuficiente!", { description: `Você possui apenas R$ ${remaining.toLocaleString()} de verba disponível este mês.`, }); return false;
+  const remaining = budget.verba_total - (budget.verba_consumida || 0); if (budget.verba_total <= 0 || total <= remaining) return true; toast.error('Verba insuficiente!', { description: `Você possui apenas R$ ${remaining.toLocaleString()} de verba disponível este mês.`, }); return false;
   ```
 - **validatePaBudget(params: BudgetValidationParams)** — `src/hooks/useQuoteBuilderState.ts`
   ```
-  const { status, isPaUser, paId, total } = params; if (status === "draft" || !isPaUser) return true; if (!paId) { toast.error("Seu perfil não possui um Ponto de Atendimento vinculado."); return false; } const { data: budget, error } = await supabase .from('pa_budgets') .select('*') .eq('pa_id', paId) .eq('ano', new Date().getFullYear()) .eq('mes', new Date().getMonth() + 1) .maybeSingle(); const validation = validateBudgetForSubmission(budget, error); if (!validation.ok) { toast.error(validation. …
+  const { status, isPaUser, paId, total } = params; if (status === 'draft' || !isPaUser) return true; if (!paId) { toast.error('Seu perfil não possui um Ponto de Atendimento vinculado.'); return false; } const { data: budget, error } = await supabase .from('pa_budgets') .select('*') .eq('pa_id', paId) .eq('ano', new Date().getFullYear()) .eq('mes', new Date().getMonth() + 1) .maybeSingle(); const validation = validateBudgetForSubmission(budget, error); if (!validation.ok) { toast.error(validation. …
   ```
 - **applyQuoteTransition(params: TransitionQuoteParams)** — `src/hooks/useQuoteBuilderState.ts`
   ```
-  const quoteId = params.quote.id; if (!quoteId) return false; let effectiveStatus = params.persistedStatus; if (quoteStatusRequiresDraftReset(effectiveStatus)) { const reopened = await params.updateQuoteStatus(quoteId, "draft"); if (!reopened) return false; effectiveStatus = "draft"; } if (params.finalStatus === "pending_approval" && params.maxDiscountPercent !== null && params.maxDiscountPercent !== undefined) { return params.requestApproval( quoteId, params.realDiscountPercent, params.maxDiscou …
+  const quoteId = params.quote.id; if (!quoteId) return false; let effectiveStatus = params.persistedStatus; if (quoteStatusRequiresDraftReset(effectiveStatus)) { const reopened = await params.updateQuoteStatus(quoteId, 'draft'); if (!reopened) return false; effectiveStatus = 'draft'; } if ( params.finalStatus === 'pending_approval' && params.maxDiscountPercent !== null && params.maxDiscountPercent !== undefined ) { return params.requestApproval( quoteId, params.realDiscountPercent, params.maxDisc …
   ```
 - **canPersistQuoteVersion(isEditMode: boolean, expectedRowVersion: number | null)** — `src/hooks/useQuoteBuilderState.ts`
   ```
-  if (!isEditMode || expectedRowVersion !== null) return true; toast.error("Não foi possível confirmar a versão do orçamento. Recarregue a página antes de salvar."); return false;
+  if (!isEditMode || expectedRowVersion !== null) return true; toast.error( 'Não foi possível confirmar a versão do orçamento. Recarregue a página antes de salvar.', ); return false;
   ```
 - **validateTemplateItems(items: QuoteTemplateItem[])** — `src/hooks/useQuoteTemplates.ts`
   ```
@@ -3277,17 +3280,17 @@ _nenhum item encontrado_
   ```
 - **personalizationTotal(item: QuoteItem)** — `src/hooks/quotes/quoteHelpers.ts`
   ```
-  return arrayOrEmpty(item.personalizations).reduce((sum, personalization) => sum + numberOr(personalization.total_cost, 0), 0);
+  return arrayOrEmpty(item.personalizations).reduce( (sum, personalization) => sum + numberOr(personalization.total_cost, 0), 0, );
   ```
-- **discountAmountFor(subtotal: number, discountType: 'percent' | 'amount', discountValue: number)** — `src/hooks/quotes/quoteHelpers.ts`
+- **discountAmountFor(subtotal: number, discountType: 'percent' | 'amount', discountValue: number,)** — `src/hooks/quotes/quoteHelpers.ts`
   ```
   return discountType === 'percent' ? subtotal * (discountValue / 100) : discountValue;
   ```
 - **quoteShippingCost(quote: Partial<Quote>)** — `src/hooks/quotes/quoteHelpers.ts`
   ```
-  return quote.shipping_type === "fob" || quote.shipping_type === "fob_pre" ? numberOr(quote.shipping_cost, 0) : 0;
+  return quote.shipping_type === 'fob' || quote.shipping_type === 'fob_pre' ? numberOr(quote.shipping_cost, 0) : 0;
   ```
-- **calculateQuoteTotals(quote: Partial<Quote>, ...options: [items: QuoteItem[], negotiationMarkup?: number, discountType?: 'percent' | 'amount',)** — `src/hooks/quotes/quoteHelpers.ts`
+- **calculateQuoteTotals(quote: Partial<Quote>, ...options: [ items: QuoteItem[], negotiationMarkup?: number, discountType?: 'percent' | 'amount')** — `src/hooks/quotes/quoteHelpers.ts`
   ```
   const [items, negotiationMarkup, discountType = 'percent', discountValue = 0] = options; // Subtotal real = soma direta dos itens + personalizações (sem markup) const realSubtotal = items.reduce((sum, item) => { const baseTotal = item.quantity * item.unit_price; return sum + baseTotal + personalizationTotal(item); }, 0); // Custo total = soma do custo dos produtos + custo das personalizações const totalCost = items.reduce((sum, item) => { const productCost = quoteItemUnitCost(item) * item.quanti …
   ```
@@ -4375,6 +4378,14 @@ _nenhum item encontrado_
   ```
   const summaryRows = Object.entries(data.summary || {}) .map(([key, val]) => `<tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:600">${key.replace(/_/g, " ")}</td><td style="padding:8px;border-bottom:1px solid #eee">${val}</td></tr>`) .join(""); return ` <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px"> <h2 style="color:#7c3aed">📊 ${reportName}</h2> <p style="color:#666">Período: ${data.period} | Tipo: ${data.type}</p> <table style="width:100% …
   ```
+- **validatePersonalizations(external: NonNullable<Awaited<ReturnType<typeof createExternalCatalogClient>>>, item: JsonObject,)** — `supabase/functions/quote-price-attestation/index.ts`
+  ```
+  const personalizations = Array.isArray(item.personalizations) ? item.personalizations : []; const validateOne = async (raw: unknown) => { if (!isRecord(raw)) throw new Error('Uma personalização do orçamento possui formato inválido.'); const techniqueId = typeof raw.technique_id === 'string' ? raw.technique_id.trim() : ''; const productId = typeof item.product_id === 'string' ? item.product_id : ''; const quantity = numberOrNull(raw.personalized_quantity) ?? numberOrNull(item.quantity); const col …
+  ```
+- **validateOne(raw: unknown)** — `supabase/functions/quote-price-attestation/index.ts`
+  ```
+  if (!isRecord(raw)) throw new Error('Uma personalização do orçamento possui formato inválido.'); const techniqueId = typeof raw.technique_id === 'string' ? raw.technique_id.trim() : ''; const productId = typeof item.product_id === 'string' ? item.product_id : ''; const quantity = numberOrNull(raw.personalized_quantity) ?? numberOrNull(item.quantity); const colors = numberOrNull(raw.colors_count) ?? 1; const positions = numberOrNull(raw.positions_count) ?? 1; const width = numberOrNull(raw.width_ …
+  ```
 - **rerankProducts(query: string, products: Array<{ id: string; name?: string; description?: string; tags?: string[]; category?: string }>,)** — `supabase/functions/semantic-search/index.ts`
   ```
   try { const url = Deno.env.get("SUPABASE_URL"); const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"); if (!url || !serviceKey) return []; const client = createClient(url, serviceKey); const { data, error } = await castRpcResult<{ data: RankResult[] | null; error: { message: string } | null; }>(client.rpc("search_products_semantic", { _query: query, _products: products, _limit: limit, })); if (error) { console.warn("[rerank] RPC error:", error.message); return []; } return data ?? []; } c …
@@ -4501,7 +4512,6 @@ _nenhum item encontrado_
 | `* - Ticket vs setor 20%` | `src/hooks/bi/useClientHealthScore.ts` |
 | `const score = Math.round(recency * 0.30 + frequency * 0.25 + ticket * 0.20 + growth.score * 0.15 + share.score * 0.10);` | `src/hooks/bi/useClientHealthScore.ts` |
 | `const THRESHOLD = 15; // ±15% = "na média"` | `src/hooks/bi/useClientVsIndustry.ts` |
-| `const quoteItemUnitCost = (item: QuoteItem): number => item.unit_cost \|\| item.unit_price * 0.7;` | `src/hooks/quotes/quoteHelpers.ts` |
 | `/** Margem de negociação interna 0–50% (default 0). Infla o subtotal apresentado para criar margem psicológica de desconto. NUNCA exposto ao cliente. */` | `src/hooks/quotes/quoteTypes.ts` |
 | `* Projeta `forecastDays` à frente. Usa intervalo de confiança ~95% (1.96 * residualStd).` | `src/lib/forecast.ts` |
 | `avg_daily_depletion_90d: Math.round(depletion30d * 0.9 * 10) / 10,` | `src/lib/stock-chart-utils.ts` |
@@ -5051,7 +5061,7 @@ _nenhum item encontrado_
 | `staleTime: 10 * 60 * 1000,` | `src/hooks/useProductsLightweight.ts` |
 | `staleTime: 5 * 60 * 1000,` | `src/hooks/useProdutoRamoAtividade.ts` |
 | `staleTime: 5 * 60 * 1000,` | `src/hooks/usePromoSalesRanking.ts` |
-| `const [validUntil, setValidUntil] = useState(format(addDays(new Date(), 7), "yyyy-MM-dd"));` | `src/hooks/useQuoteBuilderState.ts` |
+| `const [validUntil, setValidUntil] = useState(format(addDays(new Date(), 7), 'yyyy-MM-dd'));` | `src/hooks/useQuoteBuilderState.ts` |
 | `return (end - start) / (1000 * 60 * 60 * 24);` | `src/hooks/useQuoteFunnel.ts` |
 | `gcTime: 10 * 60 * 1000,` | `src/hooks/useRBAC.tsx` |
 | `staleTime: 5 * 60 * 1000,` | `src/hooks/useRBAC.tsx` |
@@ -5167,7 +5177,7 @@ _nenhum item encontrado_
 | `if (checkedTime - priceTime > thresholdDays * 24 * 60 * 60 * 1000) {` | `supabase/functions/sicoob-reorder/catalog.ts` |
 | `AND created_at < now() - interval '7 days'` | `supabase/migrations/20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql` |
 | `WHERE created_at >= now() - interval '14 days'` | `supabase/migrations/20260417115234_fc88065c-9498-42e5-8acd-a10b991168fa.sql` |
-| … +82 linhas — lista completa em `context.json` | |
+| … +84 linhas — lista completa em `context.json` | |
 
 ### H.3 Limites de paginação
 
@@ -5595,7 +5605,7 @@ _nenhum item encontrado_
 | Erro ao remover produto | `src/components/admin/product-groups/useProductGroups.ts` |
 | ${result.failed} produto(s) falharam | `src/components/admin/products/BulkImportDialog.tsx` |
 | Nenhuma linha para importar | `src/components/admin/products/BulkImportDialog.tsx` |
-| … +954 linhas — lista completa em `context.json` | |
+| … +973 linhas — lista completa em `context.json` | |
 
 ## J. Controle de acesso no código (checagens de perfil/permissão)
 
@@ -5699,7 +5709,7 @@ _nenhum item encontrado_
 | `dev` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 | `manager` | `tests/scenarios/sql/order-duplicate-atomic-fixture.sql` |
 
-## K. Testes como especificação (6625 testes em 637 arquivos — nomes completos em `context.json`)
+## K. Testes como especificação (6657 testes em 639 arquivos — nomes completos em `context.json`)
 
 | Arquivo | Testes | Exemplos do que o sistema DEVE fazer |
 |---|---|---|
@@ -5774,6 +5784,7 @@ _nenhum item encontrado_
 | `tests/rls/telemetry-logs-connections-access.test.ts` | 22 | Helpers semânticos — alinhamento com gates primitivos · can_view_audit_logs(${r}) === is_dev(${r}) · can_view_telemetry(${r}) === is_supervisor_or_above(${r}) · can_view_connections(${r}) === is_supervisor_or_above(${r}) … |
 | `tests/utils/price-freshness.extreme-thresholds.test.ts` | 22 | getPriceFreshness — thresholds inválidos voltam ao default 60d · threshold $label → default 60d e classifica corretamente · getPriceFreshness — threshold = 1 dia (cotação volátil) · hoje (0d) ainda é fresh — vendedor não é alarmado no mesmo dia … |
 | `tests/components/PriceFreshnessBadge.a11y.test.tsx` | 21 | PriceFreshnessBadge — acessibilidade · aria-label rico por status · fresh: menciona  · aging: menciona  … |
+| `tests/edge-functions/quote-price-attestation.test.ts` | 21 | atestação de preço do orçamento · limita o corpo da solicitação enquanto lê o stream · desembrulha RPCs diretas e envelopes de sucesso sem descartar o payload interno · aceita somente o preço vigente do produto e deriva custo conforme a regra do editor … |
 | `tests/hooks/useProducts.test.ts` | 21 | findKnownHex · finds exact match · is case insensitive · handles accents (NFD normalization) … |
 | `tests/hooks/useTechniquePricing.test.ts` | 21 | filterMatchingTables · filters by table_code match · filters by fullcode match · filters case-insensitively … |
 | `tests/scripts/check-smoke-tags.test.ts` | 21 | check-smoke-tags — teste FORA de describe @smoke precisa ser acusado · solto · geral · @smoke ok … |
@@ -5960,6 +5971,7 @@ _nenhum item encontrado_
 | `tests/scripts/classify-migration-backlog.test.ts` | 8 | classificador do backlog de migrations · ignora operações perigosas mencionadas apenas em comentários · bloqueia DDL destrutivo e DML de remoção · prioriza revisão de policy aberta e SECURITY DEFINER sem search_path … |
 | `tests/scripts/tscheck-files.test.ts` | 8 | tscheck-files · caminho absoluto também casa com a saída relativa do tsc · não confunde prefixo: pedir src/bad não acusa src/bad.ts · arquivo sem erro passa (exit 0) … |
 | `tests/services/publicFavoriteListService.test.ts` | 8 | lista pública de favoritos · consulta uma única RPC limitada pelo token e retorna lista e itens · não consulta a RPC quando o token não existe · preserva lista inexistente ou expirada como resposta vazia … |
+| `tests/services/quoteReorder.test.ts` | 8 | QuoteService.reorder · usa a Edge Function de revalidação em vez de copiar preço no navegador · expõe a mensagem comercial segura devolvida pela função · reutiliza a chave após perda de resposta e encerra a intenção após sucesso … |
 | `tests/sicoob/route-access-scenarios.test.tsx` | 8 | Cenários reais dos guards de compras · %s permite o papel atribuído %s · %s recusa %s mesmo com profiles.role=dev · considera todos os papéis, sem depender da ordem … |
 | `tests/workflows/WorkflowEditDialog.test.tsx` | 8 | WorkflowEditDialog · renders nothing when step is null · renders dialog with step data · shows prompt textarea for agent type … |
 | `e2e/order-status-rbac.spec.ts` | 7 | Pedidos Sicoob — RBAC canônico · vendedor consulta a lista de pedidos · vendedor acompanha pedidos pelo kanban · gestor acessa pedidos e o módulo de gestão de compras … |
@@ -5977,6 +5989,7 @@ _nenhum item encontrado_
 | `tests/components/layout/MainLayout.breadcrumbs.test.tsx` | 7 | MainLayout — PersistentBreadcrumbs (PR) · renders PersistentBreadcrumbs inside the layout · renders PersistentBreadcrumbs with the current compact layout classes · renders PersistentBreadcrumbs with showBackButton=true … |
 | `tests/components/sicoob/OrderProductionReadiness.test.tsx` | 7 | pré-requisitos de produção do pedido Sicoob · não confunde arte aprovada com autorização da despesa · mantém a produção bloqueada quando a despesa foi autorizada e a arte vigente está pendente · declara prontidão somente quando todos os pré-requisitos exigidos foram atendidos … |
 | `tests/contexts/AuthContext.test.tsx` | 7 | AuthContext · throws error when useAuth is used outside AuthProvider · starts with isLoading=true then sets false when no session · sets up auth listener and calls getSession … |
+| `tests/hooks/quoteVariantIdentity.test.ts` | 7 | identidade de variante em linhas de orçamento · reconhece a mesma variante pelo id e SKU · mantém separadas variantes diferentes com a mesma cor e tamanho · mantém separadas linhas quando o SKU difere mesmo sem id da variante … |
 | `tests/hooks/useAdvancedFilters.test.ts` | 7 | useAdvancedFilters - Reset Logic · defaultAdvancedFilters has all string arrays empty · defaultAdvancedFilters has all booleans as false · defaultAdvancedFilters has correct range defaults … |
 | `tests/hooks/useClientsPortfolioKpis.test.ts` | 7 | fetchClientsPortfolioKpis · conta clientes distintos do mês e calcula o ticket médio da janela · exclui pedido cancelado nas duas consultas · pagina até esgotar a janela, em vez de usar só a primeira resposta … |
 | `tests/hooks/useCustomizationPrice.functional.test.ts` | 7 | useCustomizationPriceCalculator · happy path PT — resolve com payload canônico · happy path EN — validador detecta missing mas hook continua funcional · error path — RPC retorna success:false … |
@@ -6000,10 +6013,7 @@ _nenhum item encontrado_
 | `tests/stores/useConfirmDialogStore.test.ts` | 7 | useConfirmDialogStore · resolve(true) confirma a ação · resolve(false) cancela a ação · novo pedido cancela o anterior pendente … |
 | `tests/utils/viacep.test.ts` | 7 | fetchAddressByCep · should return null for invalid CEP length · should strip non-digits · should return address data on success … |
 | `e2e/quote-create.spec.ts` | 6 | Quote Creation Flow · should redirect to login when accessing /orcamentos unauthenticated · should redirect to login when accessing /orcamentos/novo unauthenticated · should redirect to login when accessing quote view unauthenticated … |
-| `e2e/flows/p0/06-auth-lifecycle.spec.ts` | 6 | P0 — Auth lifecycle (login/logout/refresh) · positivo: login válido → app autenticado e logout volta para /login · negativo: credenciais inválidas mantém usuário em /login com botão habilitado · negativo: refresh de token retorna 401 → sessão é descartada e rota protegida cai em /login … |
-| `supabase/functions/_shared/retry-backoff.test.ts` | 6 | isTransientError detects statement timeout · nextDelayMs stays within [base, cap] and grows with prev · retryWithBackoff succeeds after transient failures · retryWithBackoff stops on non-transient error immediately … |
-| `tests/e2e-nav-helper.test.ts` | 6 | gotoAndSettle · repete uma navegação interrompida por reload concorrente · propaga erros determinísticos sem repetir a navegação · waitForRouteIdle … |
-| … +337 linhas — lista completa em `context.json` | | |
+| … +339 linhas — lista completa em `context.json` | | |
 
 ## L. Eventos de webhook tratados (contratos com sistemas externos)
 

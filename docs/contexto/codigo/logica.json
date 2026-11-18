@@ -753,7 +753,7 @@
     "TablesUpdate"
    ],
    "export_default": null,
-   "linhas": 13351,
+   "linhas": 13379,
    "tabelas": [],
    "rpcs": [],
    "edges": [],
@@ -5983,7 +5983,7 @@
     "QuoteService"
    ],
    "export_default": null,
-   "linhas": 502,
+   "linhas": 565,
    "tabelas": [
     "quote_item_personalizations",
     "quote_items",
@@ -5992,10 +5992,12 @@
    "rpcs": [
     "append_quote_history_note",
     "consolidate_sicoob_quotes",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent"
+    "get_quote_save_idempotent_replay",
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested"
    ],
    "edges": [
+    "quote-price-attestation",
     "sicoob-reorder"
    ],
    "env": [],

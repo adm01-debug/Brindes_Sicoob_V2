@@ -21,7 +21,7 @@
    "src/services (23)"
   ],
   "testes": [
-   "tests/ (565)",
+   "tests/ (567)",
    "e2e/ (149)",
    "outro (51)"
   ],
@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "feat: preco do orcamento passa a ser atestado pelo servidor (recupera #290, branch limpa sobre main) (#317)",
    "feat(sicoob): SLA de aprovação em 24h, que se recusa a mostrar número parcial (#333)",
    "fix(kit): abrir um kit salvo deixa de regravar no banco o que acabou de ler (#327)",
    "fix(atalhos): Ctrl+K deixa de roubar o foco de quem está digitando (#338)",
-   "feat(sicoob): gestor de compras volta a ter indicadores reais na propria tela (#332)",
-   "chore(catálogo): remove o selo \"dados ilustrativos\" que nunca podia aparecer (#321)"
+   "feat(sicoob): gestor de compras volta a ter indicadores reais na propria tela (#332)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

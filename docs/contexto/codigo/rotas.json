@@ -4062,14 +4062,16 @@
     "bulk_update_quote_status_atomic",
     "consolidate_sicoob_quotes",
     "create_organization_with_owner",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent"
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested"
    ],
    "edges": [
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -5531,6 +5533,7 @@
     "create_organization_with_owner",
     "decide_sicoob_order_artwork",
     "duplicate_order_atomic",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
     "log_order_audit_event",
     "log_rls_denial",
@@ -5539,14 +5542,15 @@
     "refund_sicoob_order_payment",
     "request_sicoob_order_approval",
     "retry_own_sicoob_export_job",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent",
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested",
     "transition_sicoob_order_status"
    ],
    "edges": [
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-artwork-register",
     "sicoob-document-ingest",
     "sicoob-reorder",
@@ -5772,14 +5776,16 @@
     "bulk_update_quote_status_atomic",
     "consolidate_sicoob_quotes",
     "create_organization_with_owner",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent"
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested"
    ],
    "edges": [
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -6564,15 +6570,17 @@
     "convert_quote_to_sicoob_order",
     "create_organization_with_owner",
     "duplicate_order_atomic",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
     "log_order_audit_event",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent"
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested"
    ],
    "edges": [
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -7226,14 +7234,16 @@
     "bulk_update_quote_status_atomic",
     "consolidate_sicoob_quotes",
     "create_organization_with_owner",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent"
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested"
    ],
    "edges": [
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -7383,6 +7393,7 @@
     "convert_quote_to_sicoob_order",
     "create_organization_with_owner",
     "duplicate_order_atomic",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
     "log_order_audit_event",
     "log_rls_denial",
@@ -7390,14 +7401,15 @@
     "request_discount_approval_atomic",
     "request_sicoob_order_approval",
     "respond_discount_approval_atomic",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent",
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested",
     "transition_sicoob_order_status"
    ],
    "edges": [
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-reorder",
     "sync-quote-bitrix",
     "system-healthcheck"
@@ -7460,6 +7472,8 @@
     "useProductCustomizationOptions",
     "useProductPrintAreasV2",
     "useProducts",
+    "useProductsContext",
+    "useProductsContextSafe",
     "useQuery",
     "useQueryClient",
     "useQuoteAutoSaveState",
@@ -7503,6 +7517,8 @@
     "useProductCustomizationOptions",
     "useProductPrintAreasV2",
     "useProducts",
+    "useProductsContext",
+    "useProductsContextSafe",
     "useQuoteBuilderState",
     "useQuoteInitialization",
     "useQuoteProductSearch",
@@ -7544,20 +7560,22 @@
     "confirm_sicoob_order",
     "consolidate_sicoob_quotes",
     "create_organization_with_owner",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
     "log_rls_denial",
     "prepare_sicoob_order_confirmation",
     "request_discount_approval_atomic",
     "request_sicoob_order_approval",
     "respond_discount_approval_atomic",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent",
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested",
     "transition_sicoob_order_status"
    ],
    "edges": [
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -7575,7 +7593,7 @@
     "supervisor",
     "tablist"
    ],
-   "arquivos_puxados": 155
+   "arquivos_puxados": 157
   },
   {
    "protegida": true,
@@ -7710,6 +7728,7 @@
     "convert_quote_to_sicoob_order",
     "create_organization_with_owner",
     "duplicate_order_atomic",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
     "log_order_audit_event",
     "log_rls_denial",
@@ -7717,14 +7736,15 @@
     "request_discount_approval_atomic",
     "request_sicoob_order_approval",
     "respond_discount_approval_atomic",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent",
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested",
     "transition_sicoob_order_status"
    ],
    "edges": [
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-reorder",
     "sync-quote-bitrix",
     "system-healthcheck"
@@ -7817,14 +7837,16 @@
     "bulk_update_quote_status_atomic",
     "consolidate_sicoob_quotes",
     "create_organization_with_owner",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent"
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested"
    ],
    "edges": [
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -7912,14 +7934,16 @@
     "bulk_update_quote_status_atomic",
     "consolidate_sicoob_quotes",
     "create_organization_with_owner",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent"
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested"
    ],
    "edges": [
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -8018,14 +8042,16 @@
     "bulk_update_quote_status_atomic",
     "consolidate_sicoob_quotes",
     "create_organization_with_owner",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent"
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested"
    ],
    "edges": [
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -8084,6 +8110,8 @@
     "useProductCustomizationOptions",
     "useProductPrintAreasV2",
     "useProducts",
+    "useProductsContext",
+    "useProductsContextSafe",
     "useQuery",
     "useQueryClient",
     "useQuoteAutoSaveState",
@@ -8127,6 +8155,8 @@
     "useProductCustomizationOptions",
     "useProductPrintAreasV2",
     "useProducts",
+    "useProductsContext",
+    "useProductsContextSafe",
     "useQuoteBuilderState",
     "useQuoteInitialization",
     "useQuoteProductSearch",
@@ -8168,20 +8198,22 @@
     "confirm_sicoob_order",
     "consolidate_sicoob_quotes",
     "create_organization_with_owner",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
     "log_rls_denial",
     "prepare_sicoob_order_confirmation",
     "request_discount_approval_atomic",
     "request_sicoob_order_approval",
     "respond_discount_approval_atomic",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent",
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested",
     "transition_sicoob_order_status"
    ],
    "edges": [
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -8199,7 +8231,7 @@
     "supervisor",
     "tablist"
    ],
-   "arquivos_puxados": 155
+   "arquivos_puxados": 157
   },
   {
    "protegida": true,
@@ -8271,14 +8303,16 @@
     "bulk_update_quote_status_atomic",
     "consolidate_sicoob_quotes",
     "create_organization_with_owner",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent"
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested"
    ],
    "edges": [
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-reorder",
     "system-healthcheck"
    ],
@@ -8501,17 +8535,19 @@
     "convert_quote_to_sicoob_order",
     "create_organization_with_owner",
     "duplicate_order_atomic",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
     "log_order_audit_event",
     "log_rls_denial",
     "retry_own_sicoob_export_job",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent"
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested"
    ],
    "edges": [
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-document-ingest",
     "sicoob-reorder",
     "system-healthcheck"
@@ -8688,19 +8724,21 @@
     "create_organization_with_owner",
     "decide_sicoob_order_artwork",
     "duplicate_order_atomic",
+    "get_quote_save_idempotent_replay",
     "get_sicoob_access_state",
     "log_order_audit_event",
     "log_rls_denial",
     "record_sicoob_order_payment",
     "refund_sicoob_order_payment",
     "retry_own_sicoob_export_job",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent"
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested"
    ],
    "edges": [
     "crm-db-bridge",
     "external-db-bridge",
     "log-login-attempt",
+    "quote-price-attestation",
     "sicoob-artwork-register",
     "sicoob-document-ingest",
     "sicoob-reorder",

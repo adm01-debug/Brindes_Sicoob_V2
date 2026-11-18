@@ -3,9 +3,9 @@
  "format_version": 2,
  "stack": {
   "linguagens": [
-   "TypeScript (2851)",
-   "SQL (673)",
-   "Markdown (246)",
+   "TypeScript (2855)",
+   "SQL (674)",
+   "Markdown (247)",
    "JSON (233)",
    "JavaScript (144)",
    "Python (59)",
@@ -1199,7 +1199,7 @@
  "docs_em_subpastas": [
   {
    "pasta": "docs/execucao",
-   "arquivos_md": 79
+   "arquivos_md": 80
   },
   {
    "pasta": "docs/pesquisa",
@@ -1592,6 +1592,10 @@
     "arquivos": 1
    },
    {
+    "host": "atacante.invalid",
+    "arquivos": 1
+   },
+   {
     "host": "brindes-sicoob-v2-nwmn9rhoe-juca1.vercel.app",
     "arquivos": 1
    },
@@ -1601,6 +1605,10 @@
    },
    {
     "host": "catalogo.invalid",
+    "arquivos": 1
+   },
+   {
+    "host": "catalogo.test",
     "arquivos": 1
    },
    {
@@ -1637,6 +1645,10 @@
    },
    {
     "host": "edge.test",
+    "arquivos": 1
+   },
+   {
+    "host": "example.test",
     "arquivos": 1
    },
    {
@@ -1745,6 +1757,10 @@
    },
    {
     "host": "production.supabase.co",
+    "arquivos": 1
+   },
+   {
+    "host": "projeto-sicoob.supabase.co",
     "arquivos": 1
    },
    {

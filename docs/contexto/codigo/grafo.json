@@ -1,8 +1,8 @@
 {
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
- "nos": 2239,
- "arestas": 9120,
+ "nos": 2241,
+ "arestas": 9129,
  "hubs": [
   {
    "arquivo": "src/components/ui/button.tsx",
@@ -66,7 +66,7 @@
   },
   {
    "arquivo": "supabase/functions/_shared/cors.ts",
-   "importado_por": 83
+   "importado_por": 84
   },
   {
    "arquivo": "src/lib/logger.ts",
@@ -134,7 +134,7 @@
   },
   {
    "arquivo": "supabase/functions/_shared/structured-logger.ts",
-   "importado_por": 29
+   "importado_por": 30
   },
   {
    "arquivo": "src/hooks/quotes/useQuotes.ts",
@@ -448,7 +448,7 @@
   {
    "modulo": "contexts",
    "depende_de": 11,
-   "importado_por": 45
+   "importado_por": 46
   },
   {
    "modulo": "types",

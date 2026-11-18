@@ -8,7 +8,7 @@
   "supabase/migrations",
   "typeorm"
  ],
- "migrations": 620,
+ "migrations": 621,
  "seeds": [],
  "avisos": [
   "44 bloco(s) com DDL dinâmico (EXECUTE format/...) não modelado — policies/colunas criadas dinamicamente podem faltar; confira no banco vivo"
@@ -183,6 +183,7 @@
   "confirm_sicoob_order",
   "connections_auto_test_interval_from_schedule",
   "consolidate_sicoob_quotes",
+  "consume_quote_price_attestation",
   "consume_step_up_token",
   "convert_quote_to_sicoob_order",
   "copy_group_personalization_to_product",
@@ -248,6 +249,7 @@
   "get_public_favorite_reactions",
   "get_public_quote_approval",
   "get_query_telemetry_p95",
+  "get_quote_save_idempotent_replay",
   "get_quote_token_by_value",
   "get_record_history",
   "get_sicoob_access_state",
@@ -277,6 +279,7 @@
   "guard_quote_governance_write",
   "guard_quote_item_content_write",
   "guard_quote_personalization_content_write",
+  "guard_quote_price_attestation",
   "guard_sicoob_approval_request_insert",
   "guard_sicoob_approval_status_transition",
   "handle_new_user",
@@ -348,6 +351,7 @@
   "prevent_critical_deletion",
   "prevent_profile_role_change",
   "prevent_role_self_update",
+  "private",
   "process_export_queue_v3",
   "products_generate_search_vector",
   "protect_latest_quote_version_deletion",
@@ -377,6 +381,7 @@
   "refresh_mv_benchmark_setorial",
   "refresh_sicoob_reorder_quote",
   "refund_sicoob_order_payment",
+  "register_quote_price_attestation",
   "register_sicoob_clean_document",
   "reject_sicoob_invitation_event_mutation",
   "reject_sicoob_order",
@@ -400,7 +405,9 @@
   "revoke_sicoob_user_access",
   "rotate_quote_approval_evidence_key",
   "save_quote_atomic",
+  "save_quote_atomic_attested",
   "save_quote_atomic_idempotent",
+  "save_quote_atomic_idempotent_attested",
   "search_products_semantic",
   "search_records_rerank",
   "seed_discount_test_users",
@@ -1282,6 +1289,13 @@
    "funcao": "guard_quote_personalization_content_write"
   },
   {
+   "nome": "zzz_guard_quote_personalization_price_attestation",
+   "quando": "before",
+   "evento": "insert or update or delete",
+   "tabela": "quote_item_personalizations",
+   "funcao": "guard_quote_price_attestation"
+  },
+  {
    "nome": "aaa_guard_quote_item_content_write",
    "quando": "before",
    "evento": "insert or update or delete",
@@ -1294,6 +1308,13 @@
    "evento": "update",
    "tabela": "quote_items",
    "funcao": "update_updated_at_column"
+  },
+  {
+   "nome": "zzz_guard_quote_item_price_attestation",
+   "quando": "before",
+   "evento": "insert or update or delete",
+   "tabela": "quote_items",
+   "funcao": "guard_quote_price_attestation"
   },
   {
    "nome": "trg_set_seller_id_default_qtemplates",
@@ -1427,6 +1448,13 @@
    "evento": "update",
    "tabela": "quotes",
    "funcao": "update_updated_at_column"
+  },
+  {
+   "nome": "zzz_guard_quote_price_attestation",
+   "quando": "before",
+   "evento": "insert or update or delete",
+   "tabela": "quotes",
+   "funcao": "guard_quote_price_attestation"
   },
   {
    "nome": "audit_sales_goals",
@@ -23111,6 +23139,89 @@
    "sem_rls": false,
    "nao_usada": false
   },
+  "private.quote_price_attestations": {
+   "colunas": {
+    "actor_id": {
+     "tipo": "uuid",
+     "nn": true,
+     "pk": false,
+     "default": null,
+     "ref": null
+    },
+    "consumed_at": {
+     "tipo": "timestamptz",
+     "nn": false,
+     "pk": false,
+     "default": null,
+     "ref": null
+    },
+    "consumed_transaction_id": {
+     "tipo": "xid8",
+     "nn": false,
+     "pk": false,
+     "default": null,
+     "ref": null
+    },
+    "created_at": {
+     "tipo": "timestamptz",
+     "nn": true,
+     "pk": false,
+     "default": "clock_timestamp()",
+     "ref": null
+    },
+    "expected_row_version": {
+     "tipo": "integer",
+     "nn": false,
+     "pk": false,
+     "default": null,
+     "ref": null
+    },
+    "expires_at": {
+     "tipo": "timestamptz",
+     "nn": true,
+     "pk": false,
+     "default": null,
+     "ref": null
+    },
+    "id": {
+     "tipo": "uuid",
+     "nn": false,
+     "pk": true,
+     "default": "gen_random_uuid()",
+     "ref": null
+    },
+    "payload_hash": {
+     "tipo": "text",
+     "nn": true,
+     "pk": false,
+     "default": null,
+     "ref": null
+    },
+    "quote_id": {
+     "tipo": "uuid",
+     "nn": false,
+     "pk": false,
+     "default": null,
+     "ref": null
+    }
+   },
+   "rls": true,
+   "policies": [],
+   "indices": [
+    {
+     "nome": "quote_price_attestations_expiration_idx",
+     "colunas": "expires_at",
+     "unico": false
+    }
+   ],
+   "fks": [],
+   "criada_em": "20261117092000_quote_price_attestation_gate.sql",
+   "usada_no_front": 0,
+   "usada_em_edges": [],
+   "triggers": [],
+   "sem_rls": false,
+   "nao_usada": true
+  },
   "product_categories": {
    "colunas": {
     "created_at": {
@@ -25268,6 +25379,7 @@
     "expert-chat",
     "external-db-bridge",
     "favorites-watcher",
+    "quote-price-attestation",
     "visual-search"
    ],
    "triggers": [
@@ -27823,11 +27935,13 @@
    },
    "usada_no_front": 1,
    "usada_em_edges": [
+    "quote-price-attestation",
     "sicoob-reorder",
     "sync-quote-bitrix"
    ],
    "triggers": [
-    "aaa_guard_quote_personalization_content_write"
+    "aaa_guard_quote_personalization_content_write",
+    "zzz_guard_quote_personalization_price_attestation"
    ],
    "sem_rls": false,
    "nao_usada": false
@@ -28184,13 +28298,15 @@
    },
    "usada_no_front": 11,
    "usada_em_edges": [
+    "quote-price-attestation",
     "quote-sync",
     "sicoob-reorder",
     "sync-quote-bitrix"
    ],
    "triggers": [
     "aaa_guard_quote_item_content_write",
-    "update_quote_items_updated_at"
+    "update_quote_items_updated_at",
+    "zzz_guard_quote_item_price_attestation"
    ],
    "sem_rls": false,
    "nao_usada": false
@@ -29291,6 +29407,7 @@
     "process-batch-export",
     "process-scheduled-reports",
     "quote-followup-reminders",
+    "quote-price-attestation",
     "quote-sync",
     "rls-audit",
     "send-scheduled-reports",
@@ -29314,7 +29431,8 @@
     "trg_validate_quote_status",
     "trig_prevent_quote_deletion",
     "trigger_generate_quote_number",
-    "update_quotes_updated_at"
+    "update_quotes_updated_at",
+    "zzz_guard_quote_price_attestation"
    ],
    "sem_rls": false,
    "nao_usada": false
@@ -40270,6 +40388,7 @@
   "material_types",
   "mv_material_group_stats",
   "product_category_assignments",
+  "product_images",
   "product_materials",
   "product_variants",
   "proposals",
@@ -40494,6 +40613,16 @@
    "usada_em": 1
   },
   {
+   "nome": "fn_get_customization_price",
+   "definida": false,
+   "usada_em": 1
+  },
+  {
+   "nome": "fn_get_product_customization_options",
+   "definida": false,
+   "usada_em": 1
+  },
+  {
    "nome": "get_active_commemorative_dates",
    "definida": false,
    "usada_em": 1
@@ -40615,6 +40744,11 @@
   },
   {
    "nome": "get_query_telemetry_p95",
+   "definida": true,
+   "usada_em": 1
+  },
+  {
+   "nome": "get_quote_save_idempotent_replay",
    "definida": true,
    "usada_em": 1
   },
@@ -40809,6 +40943,11 @@
    "usada_em": 1
   },
   {
+   "nome": "register_quote_price_attestation",
+   "definida": true,
+   "usada_em": 1
+  },
+  {
    "nome": "register_sicoob_clean_document",
    "definida": true,
    "usada_em": 1
@@ -40874,12 +41013,12 @@
    "usada_em": 1
   },
   {
-   "nome": "save_quote_atomic",
+   "nome": "save_quote_atomic_attested",
    "definida": true,
    "usada_em": 1
   },
   {
-   "nome": "save_quote_atomic_idempotent",
+   "nome": "save_quote_atomic_idempotent_attested",
    "definida": true,
    "usada_em": 1
   },

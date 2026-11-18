@@ -8185,6 +8185,7 @@
   ],
   "src/hooks/quote/useQuoteInitialization.ts": [
    "src/components/quotes/CompanyContactSelector.tsx",
+   "src/contexts/ProductsContext.tsx",
    "src/hooks/quote/useQuoteUrlPrefill.ts",
    "src/hooks/quotes/quoteTypes.ts"
   ],
@@ -8210,6 +8211,7 @@
    "src/integrations/supabase/types.ts"
   ],
   "src/hooks/quotes/quoteVariantIdentity.ts": [
+   "src/hooks/quotes/quoteTypes.ts",
    "src/hooks/useExternalVariantStock.ts"
   ],
   "src/hooks/quotes/usePendingQuotesCount.ts": [
@@ -12672,6 +12674,15 @@
   ],
   "supabase/functions/quote-followup-reminders/index.ts": [
    "supabase/functions/_shared/internal-service-auth.ts"
+  ],
+  "supabase/functions/quote-price-attestation/index.ts": [
+   "supabase/functions/_shared/catalog-client.ts",
+   "supabase/functions/_shared/circuit-breaker.ts",
+   "supabase/functions/_shared/cors.ts",
+   "supabase/functions/_shared/external-product-contract.ts",
+   "supabase/functions/_shared/structured-logger.ts",
+   "supabase/functions/quote-price-attestation/contract.ts",
+   "supabase/functions/sicoob-kit-quote/catalog.ts"
   ],
   "supabase/functions/quote-public-view/index.ts": [
    "supabase/functions/_shared/cors.ts",

@@ -1,15 +1,15 @@
 {
  "meta": {
-  "sha": "06aa890829c4be2a8a036c3de10f2f35075f4b30",
+  "sha": "64b8dc83634623f390a4ab055748d5b8b10b73b7",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-18 22:16 UTC",
-  "files_total": 4344,
-  "code_files": 3706,
-  "code_lines": 541957
+  "generated_at": "2026-11-18 22:35 UTC",
+  "files_total": 4350,
+  "code_files": 3711,
+  "code_lines": 544433
  },
  "version": "1.3.2",
- "facts_hash": "c7545abb460a1c52",
+ "facts_hash": "26da66900cd5b956",
  "stack": {
   "frameworks": [
    "React + Vite",
@@ -348,9 +348,9 @@
   ],
   "package_manager": "npm",
   "languages": {
-   ".ts": 1441,
+   ".ts": 1445,
    ".tsx": 1408,
-   ".sql": 673,
+   ".sql": 674,
    ".mjs": 134,
    ".py": 59,
    ".js": 6,
@@ -22456,6 +22456,80 @@
     "comment": "Reserva durável de tentativas antes do enqueue assíncrono; não representa uma entrega nem participa das métricas de sucesso/falha.",
     "origin": "migration"
    },
+   "private.quote_price_attestations": {
+    "columns": [
+     {
+      "name": "id",
+      "type": "uuid PRIMARY KEY DEFAULT gen_random_uuid()",
+      "fk": "",
+      "generated": "",
+      "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+     },
+     {
+      "name": "actor_id",
+      "type": "uuid NOT NULL",
+      "fk": "",
+      "generated": "",
+      "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+     },
+     {
+      "name": "quote_id",
+      "type": "uuid",
+      "fk": "",
+      "generated": "",
+      "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+     },
+     {
+      "name": "expected_row_version",
+      "type": "integer",
+      "fk": "",
+      "generated": "",
+      "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+     },
+     {
+      "name": "payload_hash",
+      "type": "text NOT NULL CHECK (length(payload_hash) = 64)",
+      "fk": "",
+      "generated": "",
+      "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+     },
+     {
+      "name": "expires_at",
+      "type": "timestamptz NOT NULL",
+      "fk": "",
+      "generated": "",
+      "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+     },
+     {
+      "name": "consumed_at",
+      "type": "timestamptz",
+      "fk": "",
+      "generated": "",
+      "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+     },
+     {
+      "name": "consumed_transaction_id",
+      "type": "xid8",
+      "fk": "",
+      "generated": "",
+      "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+     },
+     {
+      "name": "created_at",
+      "type": "timestamptz NOT NULL DEFAULT clock_timestamp()",
+      "fk": "",
+      "generated": "",
+      "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+     }
+    ],
+    "constraints": [
+     "CONSTRAINT quote_price_attestations_version_check CHECK ( (quote_id IS NULL AND expected_row_version IS NULL) OR (quote_id IS NOT NULL AND expected_row_version > 0) )",
+     "CONSTRAINT quote_price_attestations_consumption_check CHECK ( (consumed_at IS NULL AND consumed_transaction_id IS NULL) OR (consumed_at IS NOT NULL AND consumed_transaction_id IS NOT NULL) )"
+    ],
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+    "comment": "Atestados transitórios e privados de preços validados pela Edge contra o catálogo autoritativo.",
+    "origin": "migration"
+   },
    "_backup_custom_kits_pinned_20261118": {
     "columns": [
      {
@@ -35872,6 +35946,33 @@
     "condition": "",
     "each": "row",
     "src": "supabase/migrations/20261015235500_search_analytics_legacy_insert_compatibility.sql"
+   },
+   {
+    "name": "zzz_guard_quote_price_attestation",
+    "when": "BEFORE INSERT OR UPDATE OR DELETE",
+    "table": "quotes",
+    "function": "guard_quote_price_attestation",
+    "condition": "",
+    "each": "row",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "name": "zzz_guard_quote_item_price_attestation",
+    "when": "BEFORE INSERT OR UPDATE OR DELETE",
+    "table": "quote_items",
+    "function": "guard_quote_price_attestation",
+    "condition": "",
+    "each": "row",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "name": "zzz_guard_quote_personalization_price_attestation",
+    "when": "BEFORE INSERT OR UPDATE OR DELETE",
+    "table": "quote_item_personalizations",
+    "function": "guard_quote_price_attestation",
+    "condition": "",
+    "each": "row",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
    }
   ],
   "functions": {
@@ -41288,6 +41389,106 @@
      "inbound_webhook_endpoints"
     ]
    },
+   "quote_price_payload_hash": {
+    "args": "p_quote jsonb, p_items jsonb, p_history jsonb",
+    "returns": "text",
+    "lang": "sql",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+    "security_definer": false,
+    "search_path": true,
+    "body": "SELECT encode( extensions.digest( (COALESCE(p_quote, '{}'::jsonb) - 'price_attestation_id')::text || E'\\x1f' || COALESCE(p_items, '[]'::jsonb)::text || E'\\x1f' || COALESCE(p_history, '[]'::jsonb)::text, 'sha256' ), 'hex' );",
+    "raises": [],
+    "tables": []
+   },
+   "register_quote_price_attestation": {
+    "args": "p_actor_id uuid, p_quote_id uuid, p_expected_row_version integer, p_quote jsonb, p_items jsonb, p_history jsonb",
+    "returns": "uuid",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_id uuid; BEGIN IF COALESCE(auth.role(), '') IS DISTINCT FROM 'service_role' THEN RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'Somente o serviço de preços pode emitir atestados.'; END IF; IF p_actor_id IS NULL OR jsonb_typeof(p_quote) IS DISTINCT FROM 'object' OR jsonb_typeof(COALESCE(p_items, '[]'::jsonb)) IS DISTINCT FROM 'array' OR jsonb_typeof(COALESCE(p_history, '[]'::jsonb)) IS DISTINCT FROM 'array' OR (p_quote_id IS NULL AND p_expected_row_version IS NOT NULL) OR (p_quote_id IS NOT NULL AND COALESCE(p_expected_row_version, 0) <= 0) THEN RAISE EXCEPTION USING ERRCODE = '22023', MESSAGE = 'O contexto do atestado de preço é inválido.'; END IF; DELETE FROM private.quote_pr …",
+    "raises": [],
+    "tables": [
+     "private",
+     "v_id"
+    ]
+   },
+   "consume_quote_price_attestation": {
+    "args": "p_attestation_id uuid, p_actor_id uuid, p_quote_id uuid, p_expected_row_version integer, p_quote jsonb, p_items jsonb, p_history jsonb",
+    "returns": "void",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_call_context text; v_claimed_id uuid; BEGIN GET DIAGNOSTICS v_call_context = PG_CONTEXT; IF COALESCE(auth.role(), '') NOT IN ('authenticated', 'service_role') OR (auth.role() = 'authenticated' AND auth.uid() IS DISTINCT FROM p_actor_id) OR v_call_context !~ 'PL/pgSQL function (public\\.)?save_quote_atomic(_idempotent)?_attested\\(' THEN RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'O atestado só pode ser consumido pelo salvamento autenticado.'; END IF; UPDATE private.quote_price_attestations AS attestation SET consumed_at = clock_timestamp(), consumed_transaction_id = pg_current_xact_id() WHERE attestation.id = p_attestation_id AND attestation.actor_id = p_actor_id AND attestat …",
+    "raises": [],
+    "tables": [
+     "p_actor_id",
+     "p_expected_row_version",
+     "p_quote_id",
+     "private",
+     "v_claimed_id"
+    ]
+   },
+   "guard_quote_price_attestation": {
+    "args": "",
+    "returns": "trigger",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_quote_id uuid; v_attestation_id uuid; v_role text := auth.role(); v_actor_id uuid := auth.uid(); v_call_context text; v_needs_attestation boolean := false; BEGIN IF v_role = 'service_role' THEN RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END; END IF; IF TG_TABLE_NAME = 'quotes' THEN v_quote_id := CASE WHEN TG_OP = 'DELETE' THEN OLD.id ELSE NEW.id END; v_needs_attestation := TG_OP = 'INSERT' OR ( TG_OP = 'UPDATE' AND ( NEW.subtotal IS DISTINCT FROM OLD.subtotal OR NEW.discount_percent IS DISTINCT FROM OLD.discount_percent OR NEW.discount_amount IS DISTINCT FROM OLD.discount_amount OR NEW.total IS DISTINCT FROM OLD.total OR NEW.total_cost IS DISTINCT FROM OLD.total_cost OR NE …",
+    "raises": [],
+    "tables": [
+     "CASE",
+     "OLD",
+     "private",
+     "quote_items",
+     "quotes",
+     "v_quote_id"
+    ]
+   },
+   "save_quote_atomic_attested": {
+    "args": "p_quote jsonb, p_items jsonb, p_quote_id uuid DEFAULT NULL, p_expected_row_version integer DEFAULT NULL, p_history jsonb DEFAULT '[]'::jsonb",
+    "returns": "jsonb",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+    "security_definer": false,
+    "search_path": true,
+    "body": "DECLARE v_attestation_id uuid := NULLIF(p_quote ->> 'price_attestation_id', '')::uuid; v_quote jsonb := p_quote - 'price_attestation_id'; v_history jsonb := COALESCE(p_history, '[]'::jsonb); BEGIN IF v_attestation_id IS NULL THEN RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'O orçamento precisa de um atestado de preço do catálogo.'; END IF; PERFORM public.consume_quote_price_attestation( v_attestation_id, auth.uid(), p_quote_id, p_expected_row_version, v_quote, p_items, v_history ); PERFORM set_config('app.quote_price_attestation_id', v_attestation_id::text, true); RETURN public.save_quote_atomic(v_quote, p_items, p_quote_id, p_expected_row_version, v_history); END;",
+    "raises": [],
+    "tables": []
+   },
+   "save_quote_atomic_idempotent_attested": {
+    "args": "p_quote jsonb, p_items jsonb, p_idempotency_key uuid, p_history jsonb DEFAULT '[]'::jsonb",
+    "returns": "jsonb",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+    "security_definer": false,
+    "search_path": true,
+    "body": "DECLARE v_attestation_id uuid := NULLIF(p_quote ->> 'price_attestation_id', '')::uuid; v_quote jsonb := p_quote - 'price_attestation_id'; v_history jsonb := COALESCE(p_history, '[]'::jsonb); BEGIN IF v_attestation_id IS NULL THEN RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'O orçamento precisa de um atestado de preço do catálogo.'; END IF; PERFORM public.consume_quote_price_attestation( v_attestation_id, auth.uid(), NULL, NULL, v_quote, p_items, v_history ); PERFORM set_config('app.quote_price_attestation_id', v_attestation_id::text, true); RETURN public.save_quote_atomic_idempotent( v_quote, p_items, p_idempotency_key, v_history ); END;",
+    "raises": [],
+    "tables": []
+   },
+   "get_quote_save_idempotent_replay": {
+    "args": "p_idempotency_key uuid, p_quote jsonb, p_items jsonb, p_history jsonb DEFAULT '[]'::jsonb",
+    "returns": "jsonb",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_actor_id uuid := auth.uid(); v_payload_hash text; v_legacy_hash text; v_existing public.quote_save_idempotency%ROWTYPE; v_result jsonb; BEGIN IF v_actor_id IS NULL OR p_idempotency_key IS NULL OR jsonb_typeof(p_quote) IS DISTINCT FROM 'object' OR jsonb_typeof(COALESCE(p_items, '[]'::jsonb)) IS DISTINCT FROM 'array' OR jsonb_typeof(COALESCE(p_history, '[]'::jsonb)) IS DISTINCT FROM 'array' THEN RAISE EXCEPTION USING ERRCODE = '22023', MESSAGE = 'A consulta de idempotência é inválida.'; END IF; v_payload_hash := encode( extensions.digest( p_quote::text || E'\\x1f' || COALESCE(p_items, '[]'::jsonb)::text || E'\\x1f' || COALESCE(p_history, '[]'::jsonb)::text, 'sha256' ), 'hex' ); v_legac …",
+    "raises": [],
+    "tables": [
+     "quote_save_idempotency",
+     "quotes",
+     "v_existing",
+     "v_legacy_hash",
+     "v_payload_hash",
+     "v_result"
+    ]
+   },
    "dispatch_sicoob_connections_health_check": {
     "args": "",
     "returns": "bigint",
@@ -46701,6 +46902,14 @@
     "src": "supabase/migrations/20261107190600_harden_rpc_acl_and_fk_indexes.sql"
    },
    {
+    "name": "quote_price_attestations_expiration_idx",
+    "table": "private.quote_price_attestations",
+    "columns": "expires_at",
+    "unique": false,
+    "where": "",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
     "name": "idx_custom_kits_one_pinned_per_user",
     "table": "custom_kits",
     "columns": "user_id",
@@ -47443,6 +47652,7 @@
    "supabase/migrations/20261106200300_restrict_proposals_delete_scope.sql",
    "supabase/migrations/20261107190600_harden_rpc_acl_and_fk_indexes.sql",
    "supabase/migrations/20261113170000_use_semantic_admin_helper_in_favorite_policies.sql",
+   "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
    "supabase/migrations/20261117183000_ai_quota_count_billed_interrupts.sql",
    "supabase/migrations/20261118130000_harden_storage_and_public_favorites_acl.sql",
    "supabase/migrations/20261118130100_enable_scoped_business_realtime.sql",
@@ -47731,6 +47941,7 @@
    "catalog_marketing_terms": "enabled",
    "catalog_product_marketing": "enabled",
    "webhook_retry_claims": "enabled",
+   "private.quote_price_attestations": "enabled",
    "_backup_custom_kits_pinned_20261118": "enabled"
   },
   "grants": [
@@ -53497,6 +53708,110 @@
    {
     "kind": "revoke",
     "privs": "all",
+    "object": "private.quote_price_attestations",
+    "objkind": "table",
+    "roles": "PUBLIC, anon, authenticated, service_role",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "private.quote_price_payload_hash",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated, service_role",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "register_quote_price_attestation",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "register_quote_price_attestation",
+    "objkind": "function",
+    "roles": "service_role",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "consume_quote_price_attestation",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "consume_quote_price_attestation",
+    "objkind": "function",
+    "roles": "authenticated, service_role",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "guard_quote_price_attestation",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated, service_role",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "save_quote_atomic_attested",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "save_quote_atomic_attested",
+    "objkind": "function",
+    "roles": "authenticated",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "save_quote_atomic_idempotent_attested",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "save_quote_atomic_idempotent_attested",
+    "objkind": "function",
+    "roles": "authenticated",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "get_quote_save_idempotent_replay",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "get_quote_save_idempotent_replay",
+    "objkind": "function",
+    "roles": "authenticated",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
     "object": "check_ai_quota",
     "objkind": "function",
     "roles": "PUBLIC, anon",
@@ -54416,6 +54731,7 @@
    "column:search_analytics.seller_id": "Campo legado mantido temporariamente; em inserts autenticados é normalizado para auth.uid().",
    "column:search_analytics.filters_used": "Campo legado mantido temporariamente; seu JSON é copiado para search_context quando o campo canônico não é enviado.",
    "table:webhook_retry_claims": "Reserva durável de tentativas antes do enqueue assíncrono; não representa uma entrega nem participa das métricas de sucesso/falha.",
+   "table:private.quote_price_attestations": "Atestados transitórios e privados de preços validados pela Edge contra o catálogo autoritativo.",
    "table:_backup_custom_kits_pinned_20261118": "Estado de is_pinned/last_used_at/updated_at dos kits fixados imediatamente antes de 20261118130400_pin_custom_kit_atomically. RLS habilitada sem policy: somente superusuario e o owner da tabela leem."
   },
   "types_file": "src/integrations/supabase/types.ts"
@@ -54537,6 +54853,7 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
+     "quote-price-attestation",
      "sicoob-document-ingest",
      "sicoob-reorder"
     ],
@@ -54548,12 +54865,13 @@
      "convert_quote_to_sicoob_order",
      "create_organization_with_owner",
      "duplicate_order_atomic",
+     "get_quote_save_idempotent_replay",
      "get_sicoob_access_state",
      "log_order_audit_event",
      "log_rls_denial",
      "retry_own_sicoob_export_job",
-     "save_quote_atomic",
-     "save_quote_atomic_idempotent"
+     "save_quote_atomic_attested",
+     "save_quote_atomic_idempotent_attested"
     ],
     "deps_count": 93
    },
@@ -54705,6 +55023,7 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
+     "quote-price-attestation",
      "sicoob-reorder"
     ],
     "rpc_transitive": [
@@ -54712,9 +55031,10 @@
      "bulk_update_quote_status_atomic",
      "consolidate_sicoob_quotes",
      "create_organization_with_owner",
+     "get_quote_save_idempotent_replay",
      "get_sicoob_access_state",
-     "save_quote_atomic",
-     "save_quote_atomic_idempotent"
+     "save_quote_atomic_attested",
+     "save_quote_atomic_idempotent_attested"
     ],
     "deps_count": 112
    },
@@ -54909,6 +55229,7 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
+     "quote-price-attestation",
      "sicoob-document-ingest",
      "sicoob-reorder"
     ],
@@ -54921,14 +55242,15 @@
      "convert_quote_to_sicoob_order",
      "create_organization_with_owner",
      "duplicate_order_atomic",
+     "get_quote_save_idempotent_replay",
      "get_sicoob_access_state",
      "log_order_audit_event",
      "log_rls_denial",
      "prepare_sicoob_order_confirmation",
      "request_sicoob_order_approval",
      "retry_own_sicoob_export_job",
-     "save_quote_atomic",
-     "save_quote_atomic_idempotent",
+     "save_quote_atomic_attested",
+     "save_quote_atomic_idempotent_attested",
      "transition_sicoob_order_status"
     ],
     "deps_count": 141
@@ -54957,6 +55279,7 @@
      "crm-db-bridge",
      "external-db-bridge",
      "log-login-attempt",
+     "quote-price-attestation",
      "sicoob-reorder",
      "system-healthcheck"
     ],
@@ -54965,9 +55288,10 @@
      "bulk_update_quote_status_atomic",
      "consolidate_sicoob_quotes",
      "create_organization_with_owner",
+     "get_quote_save_idempotent_replay",
      "get_sicoob_access_state",
-     "save_quote_atomic",
-     "save_quote_atomic_idempotent"
+     "save_quote_atomic_attested",
+     "save_quote_atomic_idempotent_attested"
     ],
     "deps_count": 134
    },
@@ -55132,6 +55456,7 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
+     "quote-price-attestation",
      "sicoob-reorder"
     ],
     "rpc_transitive": [
@@ -55141,10 +55466,11 @@
      "convert_quote_to_sicoob_order",
      "create_organization_with_owner",
      "duplicate_order_atomic",
+     "get_quote_save_idempotent_replay",
      "get_sicoob_access_state",
      "log_order_audit_event",
-     "save_quote_atomic",
-     "save_quote_atomic_idempotent"
+     "save_quote_atomic_attested",
+     "save_quote_atomic_idempotent_attested"
     ],
     "deps_count": 115
    },
@@ -55331,6 +55657,7 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
+     "quote-price-attestation",
      "sicoob-artwork-register",
      "sicoob-document-ingest",
      "sicoob-reorder"
@@ -55344,14 +55671,15 @@
      "create_organization_with_owner",
      "decide_sicoob_order_artwork",
      "duplicate_order_atomic",
+     "get_quote_save_idempotent_replay",
      "get_sicoob_access_state",
      "log_order_audit_event",
      "log_rls_denial",
      "record_sicoob_order_payment",
      "refund_sicoob_order_payment",
      "retry_own_sicoob_export_job",
-     "save_quote_atomic",
-     "save_quote_atomic_idempotent"
+     "save_quote_atomic_attested",
+     "save_quote_atomic_idempotent_attested"
     ],
     "deps_count": 123
    },
@@ -55398,6 +55726,7 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
+     "quote-price-attestation",
      "sicoob-document-ingest",
      "sicoob-reorder"
     ],
@@ -55409,12 +55738,13 @@
      "convert_quote_to_sicoob_order",
      "create_organization_with_owner",
      "duplicate_order_atomic",
+     "get_quote_save_idempotent_replay",
      "get_sicoob_access_state",
      "log_order_audit_event",
      "log_rls_denial",
      "retry_own_sicoob_export_job",
-     "save_quote_atomic",
-     "save_quote_atomic_idempotent"
+     "save_quote_atomic_attested",
+     "save_quote_atomic_idempotent_attested"
     ],
     "deps_count": 112
    },
@@ -55674,6 +56004,7 @@
      "crm-db-bridge",
      "external-db-bridge",
      "log-login-attempt",
+     "quote-price-attestation",
      "sicoob-reorder"
     ],
     "rpc_transitive": [
@@ -55682,17 +56013,18 @@
      "confirm_sicoob_order",
      "consolidate_sicoob_quotes",
      "create_organization_with_owner",
+     "get_quote_save_idempotent_replay",
      "get_sicoob_access_state",
      "log_rls_denial",
      "prepare_sicoob_order_confirmation",
      "request_discount_approval_atomic",
      "request_sicoob_order_approval",
      "respond_discount_approval_atomic",
-     "save_quote_atomic",
-     "save_quote_atomic_idempotent",
+     "save_quote_atomic_attested",
+     "save_quote_atomic_idempotent_attested",
      "transition_sicoob_order_status"
     ],
-    "deps_count": 162
+    "deps_count": 164
    },
    {
     "path": "",
@@ -55725,6 +56057,7 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
+     "quote-price-attestation",
      "sicoob-reorder"
     ],
     "rpc_transitive": [
@@ -55734,13 +56067,14 @@
      "convert_quote_to_sicoob_order",
      "create_organization_with_owner",
      "duplicate_order_atomic",
+     "get_quote_save_idempotent_replay",
      "get_sicoob_access_state",
      "log_order_audit_event",
      "log_rls_denial",
      "request_discount_approval_atomic",
      "respond_discount_approval_atomic",
-     "save_quote_atomic",
-     "save_quote_atomic_idempotent"
+     "save_quote_atomic_attested",
+     "save_quote_atomic_idempotent_attested"
     ],
     "deps_count": 75
    },
@@ -55809,6 +56143,7 @@
      "crm-db-bridge",
      "external-db-bridge",
      "log-login-attempt",
+     "quote-price-attestation",
      "sicoob-reorder",
      "system-healthcheck"
     ],
@@ -55821,6 +56156,7 @@
      "convert_quote_to_sicoob_order",
      "create_organization_with_owner",
      "duplicate_order_atomic",
+     "get_quote_save_idempotent_replay",
      "get_sicoob_access_state",
      "log_order_audit_event",
      "log_rls_denial",
@@ -55828,8 +56164,8 @@
      "request_discount_approval_atomic",
      "request_sicoob_order_approval",
      "respond_discount_approval_atomic",
-     "save_quote_atomic",
-     "save_quote_atomic_idempotent",
+     "save_quote_atomic_attested",
+     "save_quote_atomic_idempotent_attested",
      "transition_sicoob_order_status"
     ],
     "deps_count": 162
@@ -55853,6 +56189,7 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
+     "quote-price-attestation",
      "sicoob-reorder"
     ],
     "rpc_transitive": [
@@ -55860,9 +56197,10 @@
      "bulk_update_quote_status_atomic",
      "consolidate_sicoob_quotes",
      "create_organization_with_owner",
+     "get_quote_save_idempotent_replay",
      "get_sicoob_access_state",
-     "save_quote_atomic",
-     "save_quote_atomic_idempotent"
+     "save_quote_atomic_attested",
+     "save_quote_atomic_idempotent_attested"
     ],
     "deps_count": 90
    },
@@ -55886,6 +56224,7 @@
      "crm-db-bridge",
      "external-db-bridge",
      "log-login-attempt",
+     "quote-price-attestation",
      "sicoob-reorder",
      "system-healthcheck"
     ],
@@ -55894,9 +56233,10 @@
      "bulk_update_quote_status_atomic",
      "consolidate_sicoob_quotes",
      "create_organization_with_owner",
+     "get_quote_save_idempotent_replay",
      "get_sicoob_access_state",
-     "save_quote_atomic",
-     "save_quote_atomic_idempotent"
+     "save_quote_atomic_attested",
+     "save_quote_atomic_idempotent_attested"
     ],
     "deps_count": 104
    },
@@ -55920,6 +56260,7 @@
      "crm-db-bridge",
      "external-db-bridge",
      "log-login-attempt",
+     "quote-price-attestation",
      "sicoob-reorder",
      "system-healthcheck"
     ],
@@ -55928,9 +56269,10 @@
      "bulk_update_quote_status_atomic",
      "consolidate_sicoob_quotes",
      "create_organization_with_owner",
+     "get_quote_save_idempotent_replay",
      "get_sicoob_access_state",
-     "save_quote_atomic",
-     "save_quote_atomic_idempotent"
+     "save_quote_atomic_attested",
+     "save_quote_atomic_idempotent_attested"
     ],
     "deps_count": 89
    },
@@ -56264,6 +56606,7 @@
     "invokes_transitive": [
      "crm-db-bridge",
      "log-login-attempt",
+     "quote-price-attestation",
      "sicoob-reorder"
     ],
     "rpc_transitive": [
@@ -56274,14 +56617,15 @@
      "consolidate_sicoob_quotes",
      "convert_quote_to_sicoob_order",
      "duplicate_order_atomic",
+     "get_quote_save_idempotent_replay",
      "get_sicoob_access_state",
      "log_order_audit_event",
      "log_rls_denial",
      "prepare_sicoob_order_confirmation",
      "request_sicoob_order_approval",
      "retry_own_sicoob_export_job",
-     "save_quote_atomic",
-     "save_quote_atomic_idempotent",
+     "save_quote_atomic_attested",
+     "save_quote_atomic_idempotent_attested",
      "transition_sicoob_order_status"
     ],
     "deps_count": 128
@@ -58209,6 +58553,45 @@
     "side_effects": [],
     "webhook_events": [],
     "idempotency": true
+   },
+   {
+    "name": "quote-price-attestation",
+    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "methods": [
+     "OPTIONS"
+    ],
+    "auth": "service_role (ignora RLS) + valida JWT do usuário",
+    "tables": [
+     "integration_credentials",
+     "product_images",
+     "product_variants",
+     "products",
+     "quote_item_personalizations",
+     "quote_items",
+     "quotes",
+     "user_roles"
+    ],
+    "env": [
+     "SUPABASE_ANON_KEY",
+     "SUPABASE_SERVICE_ROLE_KEY",
+     "SUPABASE_URL"
+    ],
+    "external": [],
+    "invokes": [],
+    "doc": "",
+    "errors": [
+     "A técnica, quantidade ou configuração de personalização é inválida.",
+     "Falha na consulta de produtos do catálogo.",
+     "Falha na consulta de variantes do catálogo.",
+     "O banco não retornou o atestado de preço.",
+     "O catálogo de personalização está temporariamente indisponível.",
+     "O catálogo não conseguiu consultar as regras de personalização.",
+     "O preço da personalização diverge da tabela vigente. Atualize a personalização.",
+     "Uma personalização do orçamento possui formato inválido."
+    ],
+    "side_effects": [],
+    "webhook_events": [],
+    "idempotency": false
    },
    {
     "name": "quote-public-view",
@@ -63211,7 +63594,7 @@
   {
    "module": "scripts",
    "files": 168,
-   "lines": 38528,
+   "lines": 38704,
    "tables": [
     "a",
     "admin_audit_log",
@@ -63447,7 +63830,7 @@
   {
    "module": "src/components",
    "files": 1130,
-   "lines": 165625,
+   "lines": 165891,
    "tables": [
     "admin_audit_log",
     "admin_settings",
@@ -63780,7 +64163,7 @@
   {
    "module": "src/hooks",
    "files": 313,
-   "lines": 46061,
+   "lines": 46410,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -64033,7 +64416,7 @@
   {
    "module": "src/integrations",
    "files": 3,
-   "lines": 13462,
+   "lines": 13490,
    "tables": [],
    "exports": [
     "index.ts: lovable",
@@ -64495,7 +64878,7 @@
   {
    "module": "src/services",
    "files": 23,
-   "lines": 3301,
+   "lines": 3364,
    "tables": [
     "cooperativas",
     "limit_increase_requests",
@@ -64661,7 +65044,7 @@
   {
    "module": "src/types",
    "files": 28,
-   "lines": 4072,
+   "lines": 4073,
    "tables": [],
    "exports": [
     "advancedFilters.ts: ColorOption, CategoryOption, TechniqueOption, SupplierOption, MaterialOption, StockFilterOption",
@@ -64865,8 +65248,8 @@
   },
   {
    "module": "supabase/functions",
-   "files": 213,
-   "lines": 34097,
+   "files": 215,
+   "lines": 34801,
    "tables": [
     "access_blocked_log",
     "access_security_settings",
@@ -64929,6 +65312,7 @@
     "postos_atendimento",
     "product_categories",
     "product_category_assignments",
+    "product_images",
     "product_materials",
     "product_variants",
     "product_views",
@@ -65114,8 +65498,8 @@
   },
   {
    "module": "supabase/migrations",
-   "files": 620,
-   "lines": 54487,
+   "files": 621,
+   "lines": 54944,
    "tables": [],
    "exports": [],
    "docs": [],
@@ -65219,8 +65603,8 @@
   },
   {
    "module": "tests",
-   "files": 583,
-   "lines": 80924,
+   "files": 585,
+   "lines": 81356,
    "tables": [
     "admin_audit_log",
     "bot_detection_log",
@@ -66767,6 +67151,11 @@
      "src/components/admin/product-groups/useProductGroups.ts"
     ]
    },
+   "product_images": {
+    "select": [
+     "supabase/functions/quote-price-attestation/index.ts"
+    ]
+   },
    "product_materials": {
     "ref": [
      "supabase/functions/materials-api/index.ts"
@@ -66794,6 +67183,7 @@
    },
    "product_variants": {
     "select": [
+     "supabase/functions/quote-price-attestation/index.ts",
      "supabase/functions/sync-quote-bitrix/index.ts"
     ]
    },
@@ -66816,6 +67206,7 @@
      "supabase/functions/expert-chat/index.ts",
      "supabase/functions/external-db-bridge/index.ts",
      "supabase/functions/favorites-watcher/index.ts",
+     "supabase/functions/quote-price-attestation/index.ts",
      "supabase/functions/visual-search/index.ts",
      "tests/scripts/check-seller-scope.test.ts"
     ],
@@ -66992,6 +67383,7 @@
    "quote_item_personalizations": {
     "select": [
      "src/services/QuoteService.ts",
+     "supabase/functions/quote-price-attestation/index.ts",
      "supabase/functions/sicoob-reorder/index.ts",
      "supabase/functions/sync-quote-bitrix/index.ts"
     ]
@@ -67009,6 +67401,7 @@
      "src/hooks/useSalesHistoryMacro.ts",
      "src/services/QuoteService.ts",
      "src/utils/quotePdfUtils.ts",
+     "supabase/functions/quote-price-attestation/index.ts",
      "supabase/functions/quote-sync/index.ts",
      "supabase/functions/sicoob-reorder/index.ts",
      "supabase/functions/sync-quote-bitrix/index.ts"
@@ -67063,6 +67456,7 @@
      "supabase/functions/process-batch-export/index.ts",
      "supabase/functions/process-scheduled-reports/index.ts",
      "supabase/functions/quote-followup-reminders/index.ts",
+     "supabase/functions/quote-price-attestation/index.ts",
      "supabase/functions/quote-sync/index.ts",
      "supabase/functions/rls-audit/index.ts",
      "supabase/functions/send-scheduled-reports/index.ts",
@@ -68388,6 +68782,13 @@
     "id",
     "is_active"
    ],
+   "product_images": [
+    "image_type",
+    "product_id",
+    "supplier_code",
+    "url_cdn",
+    "variant_id"
+   ],
    "product_materials": [
     "is_active",
     "material_id",
@@ -68404,7 +68805,18 @@
    ],
    "product_variants": [
     "bitrix_product_id",
-    "id"
+    "color_code",
+    "color_hex",
+    "color_name",
+    "id",
+    "images",
+    "is_active",
+    "product_id",
+    "sale_price",
+    "selected_thumbnail",
+    "size_code",
+    "sku",
+    "supplier_sku"
    ],
    "product_views": [
     "created_at",
@@ -68420,6 +68832,7 @@
     "category_id",
     "category_name",
     "colors",
+    "cost_price",
     "description",
     "id",
     "images",
@@ -68513,18 +68926,24 @@
     "colors_count",
     "height_cm",
     "notes",
+    "personalized_quantity",
+    "positions_count",
     "quote_item_id",
     "setup_cost",
     "technique_id",
     "technique_name",
     "total_cost",
+    "unit_cost",
     "width_cm"
    ],
    "quote_items": [
     "color_hex",
     "color_name",
     "created_at",
+    "gender",
     "id",
+    "kit_group_id",
+    "kit_name",
     "product_id",
     "product_image_url",
     "product_name",
@@ -68533,7 +68952,9 @@
     "quote_id",
     "size_code",
     "source_variant_id",
+    "source_variant_sku",
     "subtotal",
+    "unit_cost",
     "unit_price"
    ],
    "quote_templates": [
@@ -69495,6 +69916,7 @@
     "supabase/functions/mcp-keys-revoke/index.ts",
     "supabase/functions/mcp-keys-rotate/index.ts",
     "supabase/functions/mcp-keys-update/index.ts",
+    "supabase/functions/quote-price-attestation/index.ts",
     "supabase/functions/rls-audit/index.ts",
     "supabase/functions/rls-integration-tests/index.ts",
     "supabase/functions/rls-matrix-export/index.ts",
@@ -69581,6 +70003,7 @@
     "supabase/functions/qa-block-monitor/index.ts",
     "supabase/functions/quote-approval/index.ts",
     "supabase/functions/quote-followup-reminders/index.ts",
+    "supabase/functions/quote-price-attestation/index.ts",
     "supabase/functions/quote-sync/index.ts",
     "supabase/functions/rls-audit/index.ts",
     "supabase/functions/rls-integration-tests/index.ts",
@@ -69660,6 +70083,8 @@
     "supabase/functions/qa-block-monitor/index.ts",
     "supabase/functions/quote-approval/index.ts",
     "supabase/functions/quote-followup-reminders/index.ts",
+    "supabase/functions/quote-price-attestation/contract.ts",
+    "supabase/functions/quote-price-attestation/index.ts",
     "supabase/functions/quote-sync/index.ts",
     "supabase/functions/rls-audit/index.ts",
     "supabase/functions/rls-integration-tests/index.ts",
@@ -69992,6 +70417,12 @@
     "scripts/supabase_snapshot/snapshot.py",
     "supabase/functions/_shared/supabase-client-adapter.ts"
    ],
+   "fn_get_customization_price": [
+    "supabase/functions/quote-price-attestation/index.ts"
+   ],
+   "fn_get_product_customization_options": [
+    "supabase/functions/quote-price-attestation/index.ts"
+   ],
    "get_active_commemorative_dates": [
     "supabase/functions/commemorative-dates/index.ts"
    ],
@@ -70071,6 +70502,9 @@
    ],
    "get_query_telemetry_p95": [
     "src/pages/admin/telemetry/useAppHealth.ts"
+   ],
+   "get_quote_save_idempotent_replay": [
+    "src/services/QuoteService.ts"
    ],
    "get_sicoob_access_state": [
     "src/contexts/AuthContext.tsx"
@@ -70219,6 +70653,9 @@
    "refund_sicoob_order_payment": [
     "src/hooks/orders/extensions/useOrderPayments.ts"
    ],
+   "register_quote_price_attestation": [
+    "supabase/functions/quote-price-attestation/index.ts"
+   ],
    "register_sicoob_clean_document": [
     "supabase/functions/sicoob-document-ingest/index.ts"
    ],
@@ -70262,10 +70699,10 @@
    "runtime_rpc": [
     "scripts/ai-context/gerar.unit.mjs"
    ],
-   "save_quote_atomic": [
+   "save_quote_atomic_attested": [
     "src/services/QuoteService.ts"
    ],
-   "save_quote_atomic_idempotent": [
+   "save_quote_atomic_idempotent_attested": [
     "src/services/QuoteService.ts"
    ],
    "search_products_semantic": [
@@ -70472,6 +70909,9 @@
    "quote-approval": [
     "src/hooks/useQuoteApprovalToken.ts",
     "src/pages/QuoteApprovalPage.tsx"
+   ],
+   "quote-price-attestation": [
+    "src/services/QuoteService.ts"
    ],
    "quote-public-view": [
     "src/pages/public-approval/usePublicQuoteApproval.ts"
@@ -70987,6 +71427,7 @@
    "mv_material_group_stats",
    "payments",
    "product_category_assignments",
+   "product_images",
    "product_materials",
    "product_variants",
    "runtime_table",
@@ -71077,6 +71518,7 @@
    "quote_audit_logs",
    "quote_consolidations",
    "quote_number_counters",
+   "quote_price_attestations",
    "quote_save_idempotency",
    "rate_limits",
    "redis_config",
@@ -71137,6 +71579,10 @@
    {
     "table": "products",
     "column": "brand"
+   },
+   {
+    "table": "products",
+    "column": "cost_price"
    },
    {
     "table": "products",
@@ -77367,6 +77813,10 @@
    },
    {
     "file": "src/services/QuoteService.ts",
+    "msg": "O serviço de catálogo não retornou um atestado de preço válido."
+   },
+   {
+    "file": "src/services/QuoteService.ts",
     "msg": "Orçamento não encontrado para atualização"
    },
    {
@@ -77768,6 +78218,78 @@
    {
     "file": "supabase/functions/process-scheduled-reports/report-scope.ts",
     "msg": "scheduled_report_owner_missing"
+   },
+   {
+    "file": "supabase/functions/quote-price-attestation/contract.ts",
+    "msg": "${label} indisponível no catálogo."
+   },
+   {
+    "file": "supabase/functions/quote-price-attestation/contract.ts",
+    "msg": "A identidade da variante diverge do catálogo vigente. Atualize o item antes de salvar."
+   },
+   {
+    "file": "supabase/functions/quote-price-attestation/contract.ts",
+    "msg": "A imagem do produto diverge do catálogo vigente. Atualize o item antes de salvar."
+   },
+   {
+    "file": "supabase/functions/quote-price-attestation/contract.ts",
+    "msg": "A variante do orçamento não pertence a um produto ativo do catálogo."
+   },
+   {
+    "file": "supabase/functions/quote-price-attestation/contract.ts",
+    "msg": "Custo unitário indisponível no catálogo."
+   },
+   {
+    "file": "supabase/functions/quote-price-attestation/contract.ts",
+    "msg": "O SKU do produto diverge do catálogo vigente. Atualize o item antes de salvar."
+   },
+   {
+    "file": "supabase/functions/quote-price-attestation/contract.ts",
+    "msg": "O nome do produto diverge do catálogo vigente. Atualize o item antes de salvar."
+   },
+   {
+    "file": "supabase/functions/quote-price-attestation/contract.ts",
+    "msg": "O produto ou a variante não está ativo no catálogo vigente."
+   },
+   {
+    "file": "supabase/functions/quote-price-attestation/contract.ts",
+    "msg": "Preço ou custo do item diverge do catálogo. Atualize o preço ou use o desconto comercial aprovado."
+   },
+   {
+    "file": "supabase/functions/quote-price-attestation/contract.ts",
+    "msg": "Um produto do orçamento não existe no catálogo."
+   },
+   {
+    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "msg": "A técnica, quantidade ou configuração de personalização é inválida."
+   },
+   {
+    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "msg": "Falha na consulta de produtos do catálogo."
+   },
+   {
+    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "msg": "Falha na consulta de variantes do catálogo."
+   },
+   {
+    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "msg": "O banco não retornou o atestado de preço."
+   },
+   {
+    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "msg": "O catálogo de personalização está temporariamente indisponível."
+   },
+   {
+    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "msg": "O catálogo não conseguiu consultar as regras de personalização."
+   },
+   {
+    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "msg": "O preço da personalização diverge da tabela vigente. Atualize a personalização."
+   },
+   {
+    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "msg": "Uma personalização do orçamento possui formato inválido."
    },
    {
     "file": "supabase/functions/quote-sync/index.ts",
@@ -91161,6 +91683,41 @@
     "table": "webhook_retry_claims",
     "column": "claimed_at",
     "rule": "default now()"
+   },
+   {
+    "table": "private.quote_price_attestations",
+    "column": "id",
+    "rule": "PK; default gen_random_uuid()"
+   },
+   {
+    "table": "private.quote_price_attestations",
+    "column": "actor_id",
+    "rule": "obrigatório"
+   },
+   {
+    "table": "private.quote_price_attestations",
+    "column": "payload_hash",
+    "rule": "obrigatório; CHECK length(payload_hash) = 64"
+   },
+   {
+    "table": "private.quote_price_attestations",
+    "column": "expires_at",
+    "rule": "obrigatório"
+   },
+   {
+    "table": "private.quote_price_attestations",
+    "column": "created_at",
+    "rule": "default clock_timestamp()"
+   },
+   {
+    "table": "private.quote_price_attestations",
+    "column": "(tabela)",
+    "rule": "CONSTRAINT quote_price_attestations_version_check CHECK ( (quote_id IS NULL AND expected_row_version IS NULL) OR (quote_id IS NOT NULL AND expected_row_version > 0) )"
+   },
+   {
+    "table": "private.quote_price_attestations",
+    "column": "(tabela)",
+    "rule": "CONSTRAINT quote_price_attestations_consumption_check CHECK ( (consumed_at IS NULL AND consumed_transaction_id IS NULL) OR (consumed_at IS NOT NULL AND consumed_transaction_id IS NOT NULL) )"
    },
    {
     "table": "_backup_custom_kits_pinned_20261118",
@@ -106786,43 +107343,43 @@
     "file": "src/hooks/useQuoteBuilderState.ts",
     "name": "validateSaveForm",
     "params": "status: SaveStatus, isDraftValid: boolean, isFormValid: boolean, validationErrors: string[],",
-    "body": "if (status === \"draft\" && !isDraftValid) { toast.error(\"Selecione uma empresa para salvar o rascunho.\"); return false; } if (status !== \"draft\" && !isFormValid) { const missing = validationErrors.map((error) => QUOTE_FIELD_LABELS[error] || error).join(\", \"); toast.error(`Preencha os campos obrigatórios: ${missing}`); return false; } return true;"
+    "body": "if (status === 'draft' && !isDraftValid) { toast.error('Selecione uma empresa para salvar o rascunho.'); return false; } if (status !== 'draft' && !isFormValid) { const missing = validationErrors.map((error) => QUOTE_FIELD_LABELS[error] || error).join(', '); toast.error(`Preencha os campos obrigatórios: ${missing}`); return false; } return true;"
    },
    {
     "file": "src/hooks/useQuoteBuilderState.ts",
     "name": "validateFreshPrices",
     "params": "status: SaveStatus, items: QuoteItem[]",
-    "body": "if (status === \"draft\") return true; const staleUnconfirmed = items.some((item) => { if (item.price_confirmed_at) return false; return getPriceFreshness(item.price_updated_at, item.price_freshness_threshold_days).isStale; }); if (!staleUnconfirmed) return true; toast.error(\"Confirme os preços defasados antes de fechar o orçamento\"); return false;"
+    "body": "if (status === 'draft') return true; const staleUnconfirmed = items.some((item) => { if (item.price_confirmed_at) return false; return getPriceFreshness(item.price_updated_at, item.price_freshness_threshold_days).isStale; }); if (!staleUnconfirmed) return true; toast.error('Confirme os preços defasados antes de fechar o orçamento'); return false;"
    },
    {
     "file": "src/hooks/useQuoteBuilderState.ts",
     "name": "validateTransactionLimit",
     "params": "total: number, limit: number",
-    "body": "if (limit <= 0 || total <= limit) return true; toast.error(\"Limite de alçada excedido!\", { description: `Este pedido (R$ ${total.toLocaleString()}) supera seu limite de R$ ${limit.toLocaleString()}.`, }); return false;"
+    "body": "if (limit <= 0 || total <= limit) return true; toast.error('Limite de alçada excedido!', { description: `Este pedido (R$ ${total.toLocaleString()}) supera seu limite de R$ ${limit.toLocaleString()}.`, }); return false;"
    },
    {
     "file": "src/hooks/useQuoteBuilderState.ts",
     "name": "validateMonthlyBudget",
-    "params": "total: number, budget: { verba_total: number; verba_consumida: number | null }",
-    "body": "const remaining = budget.verba_total - (budget.verba_consumida || 0); if (budget.verba_total <= 0 || total <= remaining) return true; toast.error(\"Verba insuficiente!\", { description: `Você possui apenas R$ ${remaining.toLocaleString()} de verba disponível este mês.`, }); return false;"
+    "params": "total: number, budget: { verba_total: number; verba_consumida: number | null },",
+    "body": "const remaining = budget.verba_total - (budget.verba_consumida || 0); if (budget.verba_total <= 0 || total <= remaining) return true; toast.error('Verba insuficiente!', { description: `Você possui apenas R$ ${remaining.toLocaleString()} de verba disponível este mês.`, }); return false;"
    },
    {
     "file": "src/hooks/useQuoteBuilderState.ts",
     "name": "validatePaBudget",
     "params": "params: BudgetValidationParams",
-    "body": "const { status, isPaUser, paId, total } = params; if (status === \"draft\" || !isPaUser) return true; if (!paId) { toast.error(\"Seu perfil não possui um Ponto de Atendimento vinculado.\"); return false; } const { data: budget, error } = await supabase .from('pa_budgets') .select('*') .eq('pa_id', paId) .eq('ano', new Date().getFullYear()) .eq('mes', new Date().getMonth() + 1) .maybeSingle(); const validation = validateBudgetForSubmission(budget, error); if (!validation.ok) { toast.error(validation. …"
+    "body": "const { status, isPaUser, paId, total } = params; if (status === 'draft' || !isPaUser) return true; if (!paId) { toast.error('Seu perfil não possui um Ponto de Atendimento vinculado.'); return false; } const { data: budget, error } = await supabase .from('pa_budgets') .select('*') .eq('pa_id', paId) .eq('ano', new Date().getFullYear()) .eq('mes', new Date().getMonth() + 1) .maybeSingle(); const validation = validateBudgetForSubmission(budget, error); if (!validation.ok) { toast.error(validation. …"
    },
    {
     "file": "src/hooks/useQuoteBuilderState.ts",
     "name": "applyQuoteTransition",
     "params": "params: TransitionQuoteParams",
-    "body": "const quoteId = params.quote.id; if (!quoteId) return false; let effectiveStatus = params.persistedStatus; if (quoteStatusRequiresDraftReset(effectiveStatus)) { const reopened = await params.updateQuoteStatus(quoteId, \"draft\"); if (!reopened) return false; effectiveStatus = \"draft\"; } if (params.finalStatus === \"pending_approval\" && params.maxDiscountPercent !== null && params.maxDiscountPercent !== undefined) { return params.requestApproval( quoteId, params.realDiscountPercent, params.maxDiscou …"
+    "body": "const quoteId = params.quote.id; if (!quoteId) return false; let effectiveStatus = params.persistedStatus; if (quoteStatusRequiresDraftReset(effectiveStatus)) { const reopened = await params.updateQuoteStatus(quoteId, 'draft'); if (!reopened) return false; effectiveStatus = 'draft'; } if ( params.finalStatus === 'pending_approval' && params.maxDiscountPercent !== null && params.maxDiscountPercent !== undefined ) { return params.requestApproval( quoteId, params.realDiscountPercent, params.maxDisc …"
    },
    {
     "file": "src/hooks/useQuoteBuilderState.ts",
     "name": "canPersistQuoteVersion",
     "params": "isEditMode: boolean, expectedRowVersion: number | null",
-    "body": "if (!isEditMode || expectedRowVersion !== null) return true; toast.error(\"Não foi possível confirmar a versão do orçamento. Recarregue a página antes de salvar.\"); return false;"
+    "body": "if (!isEditMode || expectedRowVersion !== null) return true; toast.error( 'Não foi possível confirmar a versão do orçamento. Recarregue a página antes de salvar.', ); return false;"
    },
    {
     "file": "src/hooks/useQuoteTemplates.ts",
@@ -107062,24 +107619,24 @@
     "file": "src/hooks/quotes/quoteHelpers.ts",
     "name": "personalizationTotal",
     "params": "item: QuoteItem",
-    "body": "return arrayOrEmpty(item.personalizations).reduce((sum, personalization) => sum + numberOr(personalization.total_cost, 0), 0);"
+    "body": "return arrayOrEmpty(item.personalizations).reduce( (sum, personalization) => sum + numberOr(personalization.total_cost, 0), 0, );"
    },
    {
     "file": "src/hooks/quotes/quoteHelpers.ts",
     "name": "discountAmountFor",
-    "params": "subtotal: number, discountType: 'percent' | 'amount', discountValue: number",
+    "params": "subtotal: number, discountType: 'percent' | 'amount', discountValue: number,",
     "body": "return discountType === 'percent' ? subtotal * (discountValue / 100) : discountValue;"
    },
    {
     "file": "src/hooks/quotes/quoteHelpers.ts",
     "name": "quoteShippingCost",
     "params": "quote: Partial<Quote>",
-    "body": "return quote.shipping_type === \"fob\" || quote.shipping_type === \"fob_pre\" ? numberOr(quote.shipping_cost, 0) : 0;"
+    "body": "return quote.shipping_type === 'fob' || quote.shipping_type === 'fob_pre' ? numberOr(quote.shipping_cost, 0) : 0;"
    },
    {
     "file": "src/hooks/quotes/quoteHelpers.ts",
     "name": "calculateQuoteTotals",
-    "params": "quote: Partial<Quote>, ...options: [items: QuoteItem[], negotiationMarkup?: number, discountType?: 'percent' | 'amount',",
+    "params": "quote: Partial<Quote>, ...options: [ items: QuoteItem[], negotiationMarkup?: number, discountType?: 'percent' | 'amount'",
     "body": "const [items, negotiationMarkup, discountType = 'percent', discountValue = 0] = options; // Subtotal real = soma direta dos itens + personalizações (sem markup) const realSubtotal = items.reduce((sum, item) => { const baseTotal = item.quantity * item.unit_price; return sum + baseTotal + personalizationTotal(item); }, 0); // Custo total = soma do custo dos produtos + custo das personalizações const totalCost = items.reduce((sum, item) => { const productCost = quoteItemUnitCost(item) * item.quanti …"
    },
    {
@@ -108709,6 +109266,18 @@
     "body": "const summaryRows = Object.entries(data.summary || {}) .map(([key, val]) => `<tr><td style=\"padding:8px;border-bottom:1px solid #eee;font-weight:600\">${key.replace(/_/g, \" \")}</td><td style=\"padding:8px;border-bottom:1px solid #eee\">${val}</td></tr>`) .join(\"\"); return ` <div style=\"font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px\"> <h2 style=\"color:#7c3aed\">📊 ${reportName}</h2> <p style=\"color:#666\">Período: ${data.period} | Tipo: ${data.type}</p> <table style=\"width:100% …"
    },
    {
+    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "name": "validatePersonalizations",
+    "params": "external: NonNullable<Awaited<ReturnType<typeof createExternalCatalogClient>>>, item: JsonObject,",
+    "body": "const personalizations = Array.isArray(item.personalizations) ? item.personalizations : []; const validateOne = async (raw: unknown) => { if (!isRecord(raw)) throw new Error('Uma personalização do orçamento possui formato inválido.'); const techniqueId = typeof raw.technique_id === 'string' ? raw.technique_id.trim() : ''; const productId = typeof item.product_id === 'string' ? item.product_id : ''; const quantity = numberOrNull(raw.personalized_quantity) ?? numberOrNull(item.quantity); const col …"
+   },
+   {
+    "file": "supabase/functions/quote-price-attestation/index.ts",
+    "name": "validateOne",
+    "params": "raw: unknown",
+    "body": "if (!isRecord(raw)) throw new Error('Uma personalização do orçamento possui formato inválido.'); const techniqueId = typeof raw.technique_id === 'string' ? raw.technique_id.trim() : ''; const productId = typeof item.product_id === 'string' ? item.product_id : ''; const quantity = numberOrNull(raw.personalized_quantity) ?? numberOrNull(item.quantity); const colors = numberOrNull(raw.colors_count) ?? 1; const positions = numberOrNull(raw.positions_count) ?? 1; const width = numberOrNull(raw.width_ …"
+   },
+   {
     "file": "supabase/functions/semantic-search/index.ts",
     "name": "rerankProducts",
     "params": "query: string, products: Array<{ id: string; name?: string; description?: string; tags?: string[]; category?: string }>,",
@@ -109490,7 +110059,7 @@
    },
    {
     "file": "src/hooks/useQuoteBuilderState.ts",
-    "line": "const [validUntil, setValidUntil] = useState(format(addDays(new Date(), 7), \"yyyy-MM-dd\"));"
+    "line": "const [validUntil, setValidUntil] = useState(format(addDays(new Date(), 7), 'yyyy-MM-dd'));"
    },
    {
     "file": "src/hooks/useQuoteFunnel.ts",
@@ -110265,6 +110834,14 @@
     "line": "WHERE received_at < now() - interval '90 days';"
    },
    {
+    "file": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+    "line": "WHERE expires_at < clock_timestamp() - interval '1 day';"
+   },
+   {
+    "file": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+    "line": "clock_timestamp() + interval '5 minutes'"
+   },
+   {
     "file": "supabase/migrations/20261117183000_ai_quota_count_billed_interrupts.sql",
     "line": "OR (status = 'pending' AND created_at >= statement_timestamp() - interval '15 minutes')"
    },
@@ -110653,10 +111230,6 @@
    {
     "file": "src/hooks/bi/useClientVsIndustry.ts",
     "line": "const THRESHOLD = 15; // ±15% = \"na média\""
-   },
-   {
-    "file": "src/hooks/quotes/quoteHelpers.ts",
-    "line": "const quoteItemUnitCost = (item: QuoteItem): number => item.unit_cost || item.unit_price * 0.7;"
    },
    {
     "file": "src/hooks/quotes/quoteTypes.ts",
@@ -123457,6 +124030,90 @@
     "name": "não usa a service role como fallback HMAC e falha fechada sem segredo próprio"
    },
    {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "atestação de preço do orçamento"
+   },
+   {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "limita o corpo da solicitação enquanto lê o stream"
+   },
+   {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "desembrulha RPCs diretas e envelopes de sucesso sem descartar o payload interno"
+   },
+   {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "aceita somente o preço vigente do produto e deriva custo conforme a regra do editor"
+   },
+   {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "usa o custo vigente do produto quando ele difere do percentual estimado"
+   },
+   {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "recusa preço unitário adulterado mesmo que o cliente recalcule os totais"
+   },
+   {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "recusa custo de produto adulterado"
+   },
+   {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "recusa produto sem preço vigente em vez de converter null em zero"
+   },
+   {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "não aceita diferença fracionária de centavo que seria persistida no banco"
+   },
+   {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "usa preço vigente da variante e valida seu vínculo com o produto"
+   },
+   {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "recusa SKU ou atributos de variante que não correspondem ao catálogo"
+   },
+   {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "aceita apenas imagens presentes no catálogo para itens novos ou alterados"
+   },
+   {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "usa o custo estimado arredondado para centavos em produtos sem custo cadastrado"
+   },
+   {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "calcula custo estimado com regra idêntica para preço %s"
+   },
+   {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "usa SKU da variante quando não há SKU de fornecedor e preserva variante sem SKU"
+   },
+   {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "permite editar quantidade de linha antiga mantendo o snapshot imutável de SKU"
+   },
+   {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "preserva o snapshot anterior quando produto e preço do item não mudaram"
+   },
+   {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "não permite converter uma edição manual em snapshot histórico"
+   },
+   {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "não preserva identidade textual adulterada em snapshot histórico"
+   },
+   {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "revalida o preço se a quantidade do snapshot mudar"
+   },
+   {
+    "file": "tests/edge-functions/quote-price-attestation.test.ts",
+    "name": "não trata URL assinada de storage em origem diferente do projeto como privada"
+   },
+   {
     "file": "tests/edge-functions/sicoob-artwork-register.test.ts",
     "name": "registro servidor de arte Sicoob"
    },
@@ -123926,6 +124583,14 @@
    },
    {
     "file": "tests/hooks/quoteHelpers-atomic.test.ts",
+    "name": "arredonda o custo estimado a centavos como a atestação do catálogo"
+   },
+   {
+    "file": "tests/hooks/quoteHelpers-atomic.test.ts",
+    "name": "usa a mesma regra de arredondamento da atestação para preço %s"
+   },
+   {
+    "file": "tests/hooks/quoteHelpers-atomic.test.ts",
     "name": "envia o id quando é um uuid de linha já persistida"
    },
    {
@@ -123995,6 +124660,34 @@
    {
     "file": "tests/hooks/quoteStatusMutationGuards.test.ts",
     "name": "aceita somente o número exato de linhas"
+   },
+   {
+    "file": "tests/hooks/quoteVariantIdentity.test.ts",
+    "name": "identidade de variante em linhas de orçamento"
+   },
+   {
+    "file": "tests/hooks/quoteVariantIdentity.test.ts",
+    "name": "reconhece a mesma variante pelo id e SKU"
+   },
+   {
+    "file": "tests/hooks/quoteVariantIdentity.test.ts",
+    "name": "mantém separadas variantes diferentes com a mesma cor e tamanho"
+   },
+   {
+    "file": "tests/hooks/quoteVariantIdentity.test.ts",
+    "name": "mantém separadas linhas quando o SKU difere mesmo sem id da variante"
+   },
+   {
+    "file": "tests/hooks/quoteVariantIdentity.test.ts",
+    "name": "preserva a consolidação de linhas sem identidade de variante"
+   },
+   {
+    "file": "tests/hooks/quoteVariantIdentity.test.ts",
+    "name": "consolida a mesma variante e preserva uma variante com preço/SKU distinto"
+   },
+   {
+    "file": "tests/hooks/quoteVariantIdentity.test.ts",
+    "name": "não consolida a mesma variante se o preço ou custo de catálogo mudou"
    },
    {
     "file": "tests/hooks/use2FA.test.ts",
@@ -134706,7 +135399,7 @@
    },
    {
     "file": "tests/scripts/verify-supabase-functions-published.test.ts",
-    "name": "cobre as 7 canônicas e as 6 endurecidas (total 13)"
+    "name": "cobre as 7 canônicas e as 7 endurecidas (total 14)"
    },
    {
     "file": "tests/scripts/verify-supabase-functions-published.test.ts",
@@ -134999,6 +135692,14 @@
    {
     "file": "tests/services/quoteReorder.test.ts",
     "name": "envia a chave estável de criação para a RPC idempotente"
+   },
+   {
+    "file": "tests/services/quoteReorder.test.ts",
+    "name": "não chama a RPC de criação quando o atestado de preços falha"
+   },
+   {
+    "file": "tests/services/quoteReorder.test.ts",
+    "name": "recupera criação já persistida sem chamar catálogo nem RPC de gravação"
    },
    {
     "file": "tests/services/quoteReorder.test.ts",
@@ -148598,6 +149299,33 @@
     "condition": "",
     "each": "row",
     "src": "supabase/migrations/20261015235500_search_analytics_legacy_insert_compatibility.sql"
+   },
+   {
+    "name": "zzz_guard_quote_price_attestation",
+    "when": "BEFORE INSERT OR UPDATE OR DELETE",
+    "table": "quotes",
+    "function": "guard_quote_price_attestation",
+    "condition": "",
+    "each": "row",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "name": "zzz_guard_quote_item_price_attestation",
+    "when": "BEFORE INSERT OR UPDATE OR DELETE",
+    "table": "quote_items",
+    "function": "guard_quote_price_attestation",
+    "condition": "",
+    "each": "row",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "name": "zzz_guard_quote_personalization_price_attestation",
+    "when": "BEFORE INSERT OR UPDATE OR DELETE",
+    "table": "quote_item_personalizations",
+    "function": "guard_quote_price_attestation",
+    "condition": "",
+    "each": "row",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
    }
   ],
   "db_functions": {
@@ -154012,6 +154740,106 @@
     "raises": [],
     "tables": [
      "inbound_webhook_endpoints"
+    ]
+   },
+   "quote_price_payload_hash": {
+    "args": "p_quote jsonb, p_items jsonb, p_history jsonb",
+    "returns": "text",
+    "lang": "sql",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+    "security_definer": false,
+    "search_path": true,
+    "body": "SELECT encode( extensions.digest( (COALESCE(p_quote, '{}'::jsonb) - 'price_attestation_id')::text || E'\\x1f' || COALESCE(p_items, '[]'::jsonb)::text || E'\\x1f' || COALESCE(p_history, '[]'::jsonb)::text, 'sha256' ), 'hex' );",
+    "raises": [],
+    "tables": []
+   },
+   "register_quote_price_attestation": {
+    "args": "p_actor_id uuid, p_quote_id uuid, p_expected_row_version integer, p_quote jsonb, p_items jsonb, p_history jsonb",
+    "returns": "uuid",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_id uuid; BEGIN IF COALESCE(auth.role(), '') IS DISTINCT FROM 'service_role' THEN RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'Somente o serviço de preços pode emitir atestados.'; END IF; IF p_actor_id IS NULL OR jsonb_typeof(p_quote) IS DISTINCT FROM 'object' OR jsonb_typeof(COALESCE(p_items, '[]'::jsonb)) IS DISTINCT FROM 'array' OR jsonb_typeof(COALESCE(p_history, '[]'::jsonb)) IS DISTINCT FROM 'array' OR (p_quote_id IS NULL AND p_expected_row_version IS NOT NULL) OR (p_quote_id IS NOT NULL AND COALESCE(p_expected_row_version, 0) <= 0) THEN RAISE EXCEPTION USING ERRCODE = '22023', MESSAGE = 'O contexto do atestado de preço é inválido.'; END IF; DELETE FROM private.quote_pr …",
+    "raises": [],
+    "tables": [
+     "private",
+     "v_id"
+    ]
+   },
+   "consume_quote_price_attestation": {
+    "args": "p_attestation_id uuid, p_actor_id uuid, p_quote_id uuid, p_expected_row_version integer, p_quote jsonb, p_items jsonb, p_history jsonb",
+    "returns": "void",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_call_context text; v_claimed_id uuid; BEGIN GET DIAGNOSTICS v_call_context = PG_CONTEXT; IF COALESCE(auth.role(), '') NOT IN ('authenticated', 'service_role') OR (auth.role() = 'authenticated' AND auth.uid() IS DISTINCT FROM p_actor_id) OR v_call_context !~ 'PL/pgSQL function (public\\.)?save_quote_atomic(_idempotent)?_attested\\(' THEN RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'O atestado só pode ser consumido pelo salvamento autenticado.'; END IF; UPDATE private.quote_price_attestations AS attestation SET consumed_at = clock_timestamp(), consumed_transaction_id = pg_current_xact_id() WHERE attestation.id = p_attestation_id AND attestation.actor_id = p_actor_id AND attestat …",
+    "raises": [],
+    "tables": [
+     "p_actor_id",
+     "p_expected_row_version",
+     "p_quote_id",
+     "private",
+     "v_claimed_id"
+    ]
+   },
+   "guard_quote_price_attestation": {
+    "args": "",
+    "returns": "trigger",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_quote_id uuid; v_attestation_id uuid; v_role text := auth.role(); v_actor_id uuid := auth.uid(); v_call_context text; v_needs_attestation boolean := false; BEGIN IF v_role = 'service_role' THEN RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END; END IF; IF TG_TABLE_NAME = 'quotes' THEN v_quote_id := CASE WHEN TG_OP = 'DELETE' THEN OLD.id ELSE NEW.id END; v_needs_attestation := TG_OP = 'INSERT' OR ( TG_OP = 'UPDATE' AND ( NEW.subtotal IS DISTINCT FROM OLD.subtotal OR NEW.discount_percent IS DISTINCT FROM OLD.discount_percent OR NEW.discount_amount IS DISTINCT FROM OLD.discount_amount OR NEW.total IS DISTINCT FROM OLD.total OR NEW.total_cost IS DISTINCT FROM OLD.total_cost OR NE …",
+    "raises": [],
+    "tables": [
+     "CASE",
+     "OLD",
+     "private",
+     "quote_items",
+     "quotes",
+     "v_quote_id"
+    ]
+   },
+   "save_quote_atomic_attested": {
+    "args": "p_quote jsonb, p_items jsonb, p_quote_id uuid DEFAULT NULL, p_expected_row_version integer DEFAULT NULL, p_history jsonb DEFAULT '[]'::jsonb",
+    "returns": "jsonb",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+    "security_definer": false,
+    "search_path": true,
+    "body": "DECLARE v_attestation_id uuid := NULLIF(p_quote ->> 'price_attestation_id', '')::uuid; v_quote jsonb := p_quote - 'price_attestation_id'; v_history jsonb := COALESCE(p_history, '[]'::jsonb); BEGIN IF v_attestation_id IS NULL THEN RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'O orçamento precisa de um atestado de preço do catálogo.'; END IF; PERFORM public.consume_quote_price_attestation( v_attestation_id, auth.uid(), p_quote_id, p_expected_row_version, v_quote, p_items, v_history ); PERFORM set_config('app.quote_price_attestation_id', v_attestation_id::text, true); RETURN public.save_quote_atomic(v_quote, p_items, p_quote_id, p_expected_row_version, v_history); END;",
+    "raises": [],
+    "tables": []
+   },
+   "save_quote_atomic_idempotent_attested": {
+    "args": "p_quote jsonb, p_items jsonb, p_idempotency_key uuid, p_history jsonb DEFAULT '[]'::jsonb",
+    "returns": "jsonb",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+    "security_definer": false,
+    "search_path": true,
+    "body": "DECLARE v_attestation_id uuid := NULLIF(p_quote ->> 'price_attestation_id', '')::uuid; v_quote jsonb := p_quote - 'price_attestation_id'; v_history jsonb := COALESCE(p_history, '[]'::jsonb); BEGIN IF v_attestation_id IS NULL THEN RAISE EXCEPTION USING ERRCODE = '42501', MESSAGE = 'O orçamento precisa de um atestado de preço do catálogo.'; END IF; PERFORM public.consume_quote_price_attestation( v_attestation_id, auth.uid(), NULL, NULL, v_quote, p_items, v_history ); PERFORM set_config('app.quote_price_attestation_id', v_attestation_id::text, true); RETURN public.save_quote_atomic_idempotent( v_quote, p_items, p_idempotency_key, v_history ); END;",
+    "raises": [],
+    "tables": []
+   },
+   "get_quote_save_idempotent_replay": {
+    "args": "p_idempotency_key uuid, p_quote jsonb, p_items jsonb, p_history jsonb DEFAULT '[]'::jsonb",
+    "returns": "jsonb",
+    "lang": "plpgsql",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+    "security_definer": true,
+    "search_path": true,
+    "body": "DECLARE v_actor_id uuid := auth.uid(); v_payload_hash text; v_legacy_hash text; v_existing public.quote_save_idempotency%ROWTYPE; v_result jsonb; BEGIN IF v_actor_id IS NULL OR p_idempotency_key IS NULL OR jsonb_typeof(p_quote) IS DISTINCT FROM 'object' OR jsonb_typeof(COALESCE(p_items, '[]'::jsonb)) IS DISTINCT FROM 'array' OR jsonb_typeof(COALESCE(p_history, '[]'::jsonb)) IS DISTINCT FROM 'array' THEN RAISE EXCEPTION USING ERRCODE = '22023', MESSAGE = 'A consulta de idempotência é inválida.'; END IF; v_payload_hash := encode( extensions.digest( p_quote::text || E'\\x1f' || COALESCE(p_items, '[]'::jsonb)::text || E'\\x1f' || COALESCE(p_history, '[]'::jsonb)::text, 'sha256' ), 'hex' ); v_legac …",
+    "raises": [],
+    "tables": [
+     "quote_save_idempotency",
+     "quotes",
+     "v_existing",
+     "v_legacy_hash",
+     "v_payload_hash",
+     "v_result"
     ]
    },
    "dispatch_sicoob_connections_health_check": {
@@ -160743,6 +161571,13 @@
     "UPDATE": [],
     "DELETE": []
    },
+   "private.quote_price_attestations": {
+    "rls": "enabled",
+    "SELECT": [],
+    "INSERT": [],
+    "UPDATE": [],
+    "DELETE": []
+   },
    "product_categories": {
     "rls": "enabled",
     "SELECT": [
@@ -162558,6 +163393,7 @@
    "scripts/qa/simular-outbox-aprovacao.py",
    "scripts/qa/simular-reacoes-favoritos-rls.py",
    "scripts/qa/simular-recompra-sicoob.py",
+   "scripts/qa/simular-salvamento-orcamento-atomico.py",
    "scripts/qa/simular-taxonomia-marketing.py",
    "scripts/qa/simular-webhook-internal-auth.py",
    "scripts/regras_negocio/generate.py",
@@ -162637,6 +163473,7 @@
    "supabase/functions/qa-block-monitor/index.ts",
    "supabase/functions/quote-approval/index.ts",
    "supabase/functions/quote-followup-reminders/index.ts",
+   "supabase/functions/quote-price-attestation/index.ts",
    "supabase/functions/quote-sync/index.ts",
    "supabase/functions/rls-audit/index.ts",
    "supabase/functions/rls-integration-tests/index.ts",
@@ -162769,6 +163606,7 @@
    "supabase/migrations/20261030210000_require_active_actor_for_quote_status_retry.sql",
    "supabase/migrations/20261031204500_webhook_endpoint_metrics_atomic.sql",
    "supabase/migrations/20261107190600_harden_rpc_acl_and_fk_indexes.sql",
+   "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
    "supabase/migrations/20261117183000_ai_quota_count_billed_interrupts.sql",
    "supabase/migrations/20261118130000_harden_storage_and_public_favorites_acl.sql",
    "supabase/migrations/20261118130200_restore_view_invoker_and_notification_scope.sql",
@@ -162880,6 +163718,7 @@
    "complete_optimization",
    "confirm_sicoob_order",
    "consolidate_sicoob_quotes",
+   "consume_quote_price_attestation",
    "consume_step_up_token",
    "convert_quote_to_sicoob_order",
    "create_default_notification_preferences",
@@ -162942,6 +163781,7 @@
    "get_public_favorite_reactions",
    "get_public_quote_approval",
    "get_query_telemetry_p95",
+   "get_quote_save_idempotent_replay",
    "get_quote_token_by_value",
    "get_record_history",
    "get_sicoob_access_state",
@@ -162966,6 +163806,7 @@
    "guard_mcp_api_keys_writes",
    "guard_quote_item_content_write",
    "guard_quote_personalization_content_write",
+   "guard_quote_price_attestation",
    "guard_sicoob_approval_request_insert",
    "guard_sicoob_approval_status_transition",
    "handle_new_user",
@@ -163055,6 +163896,7 @@
    "refresh_mv_benchmark_setorial",
    "refresh_sicoob_reorder_quote",
    "refund_sicoob_order_payment",
+   "register_quote_price_attestation",
    "register_sicoob_clean_document",
    "reject_sicoob_order",
    "reject_sicoob_order_without_approval",
@@ -168919,6 +169761,110 @@
    {
     "kind": "revoke",
     "privs": "all",
+    "object": "private.quote_price_attestations",
+    "objkind": "table",
+    "roles": "PUBLIC, anon, authenticated, service_role",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "private.quote_price_payload_hash",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated, service_role",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "register_quote_price_attestation",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "register_quote_price_attestation",
+    "objkind": "function",
+    "roles": "service_role",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "consume_quote_price_attestation",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "consume_quote_price_attestation",
+    "objkind": "function",
+    "roles": "authenticated, service_role",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "guard_quote_price_attestation",
+    "objkind": "function",
+    "roles": "PUBLIC, anon, authenticated, service_role",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "save_quote_atomic_attested",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "save_quote_atomic_attested",
+    "objkind": "function",
+    "roles": "authenticated",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "save_quote_atomic_idempotent_attested",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "save_quote_atomic_idempotent_attested",
+    "objkind": "function",
+    "roles": "authenticated",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
+    "object": "get_quote_save_idempotent_replay",
+    "objkind": "function",
+    "roles": "PUBLIC, anon",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "grant",
+    "privs": "execute",
+    "object": "get_quote_save_idempotent_replay",
+    "objkind": "function",
+    "roles": "authenticated",
+    "src": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql"
+   },
+   {
+    "kind": "revoke",
+    "privs": "all",
     "object": "check_ai_quota",
     "objkind": "function",
     "roles": "PUBLIC, anon",
@@ -170480,6 +171426,9 @@
     "created_by"
    ],
    "webhook_retry_claims": [],
+   "private.quote_price_attestations": [
+    "created_at"
+   ],
    "_backup_custom_kits_pinned_20261118": [
     "updated_at"
    ],
@@ -171662,6 +172611,11 @@
    },
    {
     "kind": "coluna",
+    "msg": "coluna `cost_price` usada no código não existe no schema de `products`",
+    "where": []
+   },
+   {
+    "kind": "coluna",
     "msg": "coluna `personalization_areas` usada no código não existe no schema de `products`",
     "where": []
    },
@@ -171822,6 +172776,13 @@
    },
    {
     "kind": "tabela",
+    "msg": "tabela `product_images` usada no código não existe nas migrations/types do repo",
+    "where": [
+     "supabase/functions/quote-price-attestation/index.ts"
+    ]
+   },
+   {
+    "kind": "tabela",
     "msg": "tabela `product_materials` usada no código não existe nas migrations/types do repo",
     "where": [
      "supabase/functions/materials-api/index.ts"
@@ -171831,6 +172792,7 @@
     "kind": "tabela",
     "msg": "tabela `product_variants` usada no código não existe nas migrations/types do repo",
     "where": [
+     "supabase/functions/quote-price-attestation/index.ts",
      "supabase/functions/sync-quote-bitrix/index.ts"
     ]
    },
@@ -172067,6 +173029,20 @@
     "where": [
      "scripts/supabase_snapshot/snapshot.py",
      "supabase/functions/_shared/supabase-client-adapter.ts"
+    ]
+   },
+   {
+    "kind": "rpc",
+    "msg": "RPC `fn_get_customization_price` chamada mas não definida nas migrations/types",
+    "where": [
+     "supabase/functions/quote-price-attestation/index.ts"
+    ]
+   },
+   {
+    "kind": "rpc",
+    "msg": "RPC `fn_get_product_customization_options` chamada mas não definida nas migrations/types",
+    "where": [
+     "supabase/functions/quote-price-attestation/index.ts"
     ]
    },
    {
@@ -172661,7 +173637,7 @@
    "`admin_audit_log_y2027_m01.status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.",
    "`admin_audit_log_y2027_m02.status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.",
    "`admin_audit_log_y2027_m03.status` é uma coluna de status sem enum/CHECK — os valores válidos e as transições permitidas não estão no banco.",
-   "276/291 tabelas sem `COMMENT ON TABLE` — o significado de negócio não está no schema: `notification_templates`, `webhook_configs`, `webhook_logs`, `push_subscriptions`, `entity_versions`, `categories`, `suppliers`, `products`, `quotes`, `profiles`, `user_roles`, `bitrix_clients` …",
+   "276/292 tabelas sem `COMMENT ON TABLE` — o significado de negócio não está no schema: `notification_templates`, `webhook_configs`, `webhook_logs`, `push_subscriptions`, `entity_versions`, `categories`, `suppliers`, `products`, `quotes`, `profiles`, `user_roles`, `bitrix_clients` …",
    "Há tabelas usadas no código sem migration no repo — o schema real pode ter sido alterado pelo painel."
   ]
  },
@@ -176781,7 +177757,7 @@
   },
   "scripts/ci/verify-supabase-functions-published.mjs": {
    "path": "scripts/ci/verify-supabase-functions-published.mjs",
-   "lines": 98,
+   "lines": 99,
    "exports": [
     "const requiredFunctions",
     "function verifyPublishedFunctions"
@@ -176797,7 +177773,7 @@
   },
   "scripts/db/apply-sicoob-migrations.mjs": {
    "path": "scripts/db/apply-sicoob-migrations.mjs",
-   "lines": 1522,
+   "lines": 1526,
    "exports": [
     "function hasTransactionControl",
     "function loadAuthorizedTargets",
@@ -178006,26 +178982,36 @@
   },
   "scripts/qa/simular-salvamento-orcamento-atomico.py": {
    "path": "scripts/qa/simular-salvamento-orcamento-atomico.py",
-   "lines": 234,
+   "lines": 405,
    "exports": [
     "def command",
     "def sql",
     "def actor_sql",
+    "def service_role_sql",
     "def scalar",
     "def quote_payload",
-    "def rpc"
+    "def register_attestation",
+    "def rpc",
+    "def save_attested",
+    "def save_idempotent_attested"
    ],
    "errors": [
     "A consulta não retornou valor"
    ],
+   "rule_comments": [
+    "1. Somente service_role pode registrar o atestado.",
+    "3. O mesmo atestado não pode ser reutilizado (consumo já registrado)."
+   ],
    "doc": "!/usr/bin/env python3",
    "temporal": [
     "f\"UPDATE public.quotes SET updated_at=now()+interval '1 minute' WHERE id='{quote_id}'; \"",
-    "f\"UPDATE public.quotes SET updated_at=now()+interval '1 minute' WHERE id='{quote_id}';\","
+    "f\"UPDATE public.quotes SET updated_at=now()+interval '1 minute' WHERE id='{quote_id}';\",",
+    "sql(f\"UPDATE private.quote_price_attestations SET expires_at=now()-interval '1 minute' WHERE id='{expired_id}';\")"
    ],
    "percents": [
     "discount = round(subtotal * 0.1, 2)"
-   ]
+   ],
+   "uses_service_role": true
   },
   "scripts/qa/simular-taxonomia-marketing.py": {
    "path": "scripts/qa/simular-taxonomia-marketing.py",
@@ -194885,7 +195871,7 @@
   },
   "src/components/quotes/DraggableQuoteItems.tsx": {
    "path": "src/components/quotes/DraggableQuoteItems.tsx",
-   "lines": 276,
+   "lines": 542,
    "exports": [
     "function DraggableQuoteItems"
    ],
@@ -201834,7 +202820,7 @@
   },
   "src/hooks/useExternalVariantStock.ts": {
    "path": "src/hooks/useExternalVariantStock.ts",
-   "lines": 124,
+   "lines": 130,
    "exports": [
     "interface ExternalVariantStock",
     "function useExternalVariantStock"
@@ -204500,7 +205486,7 @@
   },
   "src/hooks/useQuoteBuilderState.ts": {
    "path": "src/hooks/useQuoteBuilderState.ts",
-   "lines": 687,
+   "lines": 945,
    "exports": [
     "function validateBudgetForSubmission",
     "function useQuoteBuilderState"
@@ -204574,41 +205560,41 @@
     {
      "name": "validateSaveForm",
      "params": "status: SaveStatus, isDraftValid: boolean, isFormValid: boolean, validationErrors: string[],",
-     "body": "if (status === \"draft\" && !isDraftValid) { toast.error(\"Selecione uma empresa para salvar o rascunho.\"); return false; } if (status !== \"draft\" && !isFormValid) { const missing = validationErrors.map((error) => QUOTE_FIELD_LABELS[error] || error).join(\", \"); toast.error(`Preencha os campos obrigatórios: ${missing}`); return false; } return true;"
+     "body": "if (status === 'draft' && !isDraftValid) { toast.error('Selecione uma empresa para salvar o rascunho.'); return false; } if (status !== 'draft' && !isFormValid) { const missing = validationErrors.map((error) => QUOTE_FIELD_LABELS[error] || error).join(', '); toast.error(`Preencha os campos obrigatórios: ${missing}`); return false; } return true;"
     },
     {
      "name": "validateFreshPrices",
      "params": "status: SaveStatus, items: QuoteItem[]",
-     "body": "if (status === \"draft\") return true; const staleUnconfirmed = items.some((item) => { if (item.price_confirmed_at) return false; return getPriceFreshness(item.price_updated_at, item.price_freshness_threshold_days).isStale; }); if (!staleUnconfirmed) return true; toast.error(\"Confirme os preços defasados antes de fechar o orçamento\"); return false;"
+     "body": "if (status === 'draft') return true; const staleUnconfirmed = items.some((item) => { if (item.price_confirmed_at) return false; return getPriceFreshness(item.price_updated_at, item.price_freshness_threshold_days).isStale; }); if (!staleUnconfirmed) return true; toast.error('Confirme os preços defasados antes de fechar o orçamento'); return false;"
     },
     {
      "name": "validateTransactionLimit",
      "params": "total: number, limit: number",
-     "body": "if (limit <= 0 || total <= limit) return true; toast.error(\"Limite de alçada excedido!\", { description: `Este pedido (R$ ${total.toLocaleString()}) supera seu limite de R$ ${limit.toLocaleString()}.`, }); return false;"
+     "body": "if (limit <= 0 || total <= limit) return true; toast.error('Limite de alçada excedido!', { description: `Este pedido (R$ ${total.toLocaleString()}) supera seu limite de R$ ${limit.toLocaleString()}.`, }); return false;"
     },
     {
      "name": "validateMonthlyBudget",
-     "params": "total: number, budget: { verba_total: number; verba_consumida: number | null }",
-     "body": "const remaining = budget.verba_total - (budget.verba_consumida || 0); if (budget.verba_total <= 0 || total <= remaining) return true; toast.error(\"Verba insuficiente!\", { description: `Você possui apenas R$ ${remaining.toLocaleString()} de verba disponível este mês.`, }); return false;"
+     "params": "total: number, budget: { verba_total: number; verba_consumida: number | null },",
+     "body": "const remaining = budget.verba_total - (budget.verba_consumida || 0); if (budget.verba_total <= 0 || total <= remaining) return true; toast.error('Verba insuficiente!', { description: `Você possui apenas R$ ${remaining.toLocaleString()} de verba disponível este mês.`, }); return false;"
     },
     {
      "name": "validatePaBudget",
      "params": "params: BudgetValidationParams",
-     "body": "const { status, isPaUser, paId, total } = params; if (status === \"draft\" || !isPaUser) return true; if (!paId) { toast.error(\"Seu perfil não possui um Ponto de Atendimento vinculado.\"); return false; } const { data: budget, error } = await supabase .from('pa_budgets') .select('*') .eq('pa_id', paId) .eq('ano', new Date().getFullYear()) .eq('mes', new Date().getMonth() + 1) .maybeSingle(); const validation = validateBudgetForSubmission(budget, error); if (!validation.ok) { toast.error(validation. …"
+     "body": "const { status, isPaUser, paId, total } = params; if (status === 'draft' || !isPaUser) return true; if (!paId) { toast.error('Seu perfil não possui um Ponto de Atendimento vinculado.'); return false; } const { data: budget, error } = await supabase .from('pa_budgets') .select('*') .eq('pa_id', paId) .eq('ano', new Date().getFullYear()) .eq('mes', new Date().getMonth() + 1) .maybeSingle(); const validation = validateBudgetForSubmission(budget, error); if (!validation.ok) { toast.error(validation. …"
     },
     {
      "name": "applyQuoteTransition",
      "params": "params: TransitionQuoteParams",
-     "body": "const quoteId = params.quote.id; if (!quoteId) return false; let effectiveStatus = params.persistedStatus; if (quoteStatusRequiresDraftReset(effectiveStatus)) { const reopened = await params.updateQuoteStatus(quoteId, \"draft\"); if (!reopened) return false; effectiveStatus = \"draft\"; } if (params.finalStatus === \"pending_approval\" && params.maxDiscountPercent !== null && params.maxDiscountPercent !== undefined) { return params.requestApproval( quoteId, params.realDiscountPercent, params.maxDiscou …"
+     "body": "const quoteId = params.quote.id; if (!quoteId) return false; let effectiveStatus = params.persistedStatus; if (quoteStatusRequiresDraftReset(effectiveStatus)) { const reopened = await params.updateQuoteStatus(quoteId, 'draft'); if (!reopened) return false; effectiveStatus = 'draft'; } if ( params.finalStatus === 'pending_approval' && params.maxDiscountPercent !== null && params.maxDiscountPercent !== undefined ) { return params.requestApproval( quoteId, params.realDiscountPercent, params.maxDisc …"
     },
     {
      "name": "canPersistQuoteVersion",
      "params": "isEditMode: boolean, expectedRowVersion: number | null",
-     "body": "if (!isEditMode || expectedRowVersion !== null) return true; toast.error(\"Não foi possível confirmar a versão do orçamento. Recarregue a página antes de salvar.\"); return false;"
+     "body": "if (!isEditMode || expectedRowVersion !== null) return true; toast.error( 'Não foi possível confirmar a versão do orçamento. Recarregue a página antes de salvar.', ); return false;"
     }
    ],
    "temporal": [
-    "const [validUntil, setValidUntil] = useState(format(addDays(new Date(), 7), \"yyyy-MM-dd\"));"
+    "const [validUntil, setValidUntil] = useState(format(addDays(new Date(), 7), 'yyyy-MM-dd'));"
    ]
   },
   "src/hooks/useQuoteComments.ts": {
@@ -208287,7 +209273,7 @@
   },
   "src/hooks/quote/quote-url-prefill.ts": {
    "path": "src/hooks/quote/quote-url-prefill.ts",
-   "lines": 196,
+   "lines": 198,
    "exports": [
     "interface QuotePrefillProduct",
     "interface QuoteUrlPrefillResult",
@@ -208296,7 +209282,7 @@
   },
   "src/hooks/quote/useQuoteInitialization.ts": {
    "path": "src/hooks/quote/useQuoteInitialization.ts",
-   "lines": 265,
+   "lines": 274,
    "exports": [
     "function useQuoteInitialization"
    ],
@@ -208414,7 +209400,7 @@
   },
   "src/hooks/quotes/quoteHelpers.ts": {
    "path": "src/hooks/quotes/quoteHelpers.ts",
-   "lines": 253,
+   "lines": 282,
    "exports": [
     "function calculateQuoteTotals",
     "function buildInsertPayload",
@@ -208433,26 +209419,23 @@
     {
      "name": "personalizationTotal",
      "params": "item: QuoteItem",
-     "body": "return arrayOrEmpty(item.personalizations).reduce((sum, personalization) => sum + numberOr(personalization.total_cost, 0), 0);"
+     "body": "return arrayOrEmpty(item.personalizations).reduce( (sum, personalization) => sum + numberOr(personalization.total_cost, 0), 0, );"
     },
     {
      "name": "discountAmountFor",
-     "params": "subtotal: number, discountType: 'percent' | 'amount', discountValue: number",
+     "params": "subtotal: number, discountType: 'percent' | 'amount', discountValue: number,",
      "body": "return discountType === 'percent' ? subtotal * (discountValue / 100) : discountValue;"
     },
     {
      "name": "quoteShippingCost",
      "params": "quote: Partial<Quote>",
-     "body": "return quote.shipping_type === \"fob\" || quote.shipping_type === \"fob_pre\" ? numberOr(quote.shipping_cost, 0) : 0;"
+     "body": "return quote.shipping_type === 'fob' || quote.shipping_type === 'fob_pre' ? numberOr(quote.shipping_cost, 0) : 0;"
     },
     {
      "name": "calculateQuoteTotals",
-     "params": "quote: Partial<Quote>, ...options: [items: QuoteItem[], negotiationMarkup?: number, discountType?: 'percent' | 'amount',",
+     "params": "quote: Partial<Quote>, ...options: [ items: QuoteItem[], negotiationMarkup?: number, discountType?: 'percent' | 'amount'",
      "body": "const [items, negotiationMarkup, discountType = 'percent', discountValue = 0] = options; // Subtotal real = soma direta dos itens + personalizações (sem markup) const realSubtotal = items.reduce((sum, item) => { const baseTotal = item.quantity * item.unit_price; return sum + baseTotal + personalizationTotal(item); }, 0); // Custo total = soma do custo dos produtos + custo das personalizações const totalCost = items.reduce((sum, item) => { const productCost = quoteItemUnitCost(item) * item.quanti …"
     }
-   ],
-   "percents": [
-    "const quoteItemUnitCost = (item: QuoteItem): number => item.unit_cost || item.unit_price * 0.7;"
    ]
   },
   "src/hooks/quotes/quoteStatusMutationGuards.ts": {
@@ -208494,9 +209477,11 @@
   },
   "src/hooks/quotes/quoteVariantIdentity.ts": {
    "path": "src/hooks/quotes/quoteVariantIdentity.ts",
-   "lines": 10,
+   "lines": 55,
    "exports": [
-    "function getQuoteItemVariantIdentity"
+    "function getQuoteItemVariantIdentity",
+    "function quoteItemsShareVariantIdentity",
+    "function findMergeableQuoteItemIndex"
    ]
   },
   "src/hooks/quotes/usePendingQuotesCount.ts": {
@@ -209633,7 +210618,7 @@
   },
   "src/integrations/supabase/types.ts": {
    "path": "src/integrations/supabase/types.ts",
-   "lines": 13351,
+   "lines": 13379,
    "exports": [
     "type Json",
     "type Database",
@@ -221190,7 +222175,7 @@
   },
   "src/services/QuoteService.ts": {
    "path": "src/services/QuoteService.ts",
-   "lines": 502,
+   "lines": 565,
    "exports": [
     "class QuoteService"
    ],
@@ -221237,10 +222222,12 @@
    "rpc": [
     "append_quote_history_note",
     "consolidate_sicoob_quotes",
-    "save_quote_atomic",
-    "save_quote_atomic_idempotent"
+    "get_quote_save_idempotent_replay",
+    "save_quote_atomic_attested",
+    "save_quote_atomic_idempotent_attested"
    ],
    "invokes": [
+    "quote-price-attestation",
     "sicoob-reorder"
    ],
    "errors": [
@@ -221248,6 +222235,7 @@
     "A versão do orçamento não está disponível. Recarregue a página antes de salvar.",
     "Concorrência detectada: Este orçamento foi modificado por outro usuário. Por favor, recarregue a página.",
     "O orçamento de recompra não ficou acessível após a criação.",
+    "O serviço de catálogo não retornou um atestado de preço válido.",
     "Orçamento não encontrado para atualização",
     "Singular não identificada para a consolidação."
    ],
@@ -222435,7 +223423,7 @@
   },
   "src/types/product-catalog.ts": {
    "path": "src/types/product-catalog.ts",
-   "lines": 178,
+   "lines": 179,
    "exports": [
     "interface ProductColor",
     "interface ProductVariation",
@@ -224529,7 +225517,7 @@
   },
   "supabase/functions/_shared/edge-authz-manifest.ts": {
    "path": "supabase/functions/_shared/edge-authz-manifest.ts",
-   "lines": 226,
+   "lines": 232,
    "exports": [
     "type AuthzCategory",
     "interface AuthzEntry",
@@ -230640,6 +231628,173 @@
    ],
    "uses_service_role": true
   },
+  "supabase/functions/quote-price-attestation/contract.ts": {
+   "path": "supabase/functions/quote-price-attestation/contract.ts",
+   "lines": 297,
+   "exports": [
+    "interface QuoteCatalogProduct",
+    "interface QuoteCatalogVariant",
+    "interface AttestableQuoteItem",
+    "interface VerifiedSnapshot",
+    "function readBoundedBody",
+    "function unwrapSuccessfulRpcEnvelope",
+    "function locationFromStorageUrl",
+    "function isQuoteCatalogSnapshotUnchanged",
+    "function verifyQuoteCatalogItem"
+   ],
+   "env": [
+    "SUPABASE_URL"
+   ],
+   "errors": [
+    "${label} indisponível no catálogo.",
+    "A identidade da variante diverge do catálogo vigente. Atualize o item antes de salvar.",
+    "A imagem do produto diverge do catálogo vigente. Atualize o item antes de salvar.",
+    "A variante do orçamento não pertence a um produto ativo do catálogo.",
+    "Custo unitário indisponível no catálogo.",
+    "O SKU do produto diverge do catálogo vigente. Atualize o item antes de salvar.",
+    "O nome do produto diverge do catálogo vigente. Atualize o item antes de salvar.",
+    "O produto ou a variante não está ativo no catálogo vigente.",
+    "Preço ou custo do item diverge do catálogo. Atualize o preço ou use o desconto comercial aprovado.",
+    "Um produto do orçamento não existe no catálogo."
+   ]
+  },
+  "supabase/functions/quote-price-attestation/index.ts": {
+   "path": "supabase/functions/quote-price-attestation/index.ts",
+   "lines": 401,
+   "tables": [
+    {
+     "table": "products",
+     "op": "select"
+    },
+    {
+     "table": "product_images",
+     "op": "select"
+    },
+    {
+     "table": "product_variants",
+     "op": "select"
+    },
+    {
+     "table": "product_images",
+     "op": "select"
+    },
+    {
+     "table": "product_images",
+     "op": "select"
+    },
+    {
+     "table": "quotes",
+     "op": "select"
+    },
+    {
+     "table": "quote_items",
+     "op": "select"
+    },
+    {
+     "table": "quote_item_personalizations",
+     "op": "select"
+    }
+   ],
+   "table_cols": {
+    "products": [
+     "cost_price",
+     "id",
+     "images"
+    ],
+    "product_images": [
+     "image_type",
+     "product_id",
+     "supplier_code",
+     "url_cdn",
+     "variant_id"
+    ],
+    "product_variants": [
+     "color_code",
+     "color_hex",
+     "color_name",
+     "id",
+     "images",
+     "is_active",
+     "product_id",
+     "sale_price",
+     "selected_thumbnail",
+     "size_code",
+     "sku",
+     "supplier_sku"
+    ],
+    "quotes": [
+     "id",
+     "row_version"
+    ],
+    "quote_items": [
+     "color_hex",
+     "color_name",
+     "gender",
+     "id",
+     "kit_group_id",
+     "kit_name",
+     "product_id",
+     "product_image_url",
+     "product_name",
+     "product_sku",
+     "quantity",
+     "quote_id",
+     "size_code",
+     "source_variant_id",
+     "source_variant_sku",
+     "unit_cost",
+     "unit_price"
+    ],
+    "quote_item_personalizations": [
+     "area_cm2",
+     "colors_count",
+     "height_cm",
+     "notes",
+     "personalized_quantity",
+     "positions_count",
+     "quote_item_id",
+     "setup_cost",
+     "technique_id",
+     "technique_name",
+     "total_cost",
+     "unit_cost",
+     "width_cm"
+    ]
+   },
+   "rpc": [
+    "fn_get_customization_price",
+    "fn_get_product_customization_options",
+    "register_quote_price_attestation"
+   ],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "errors": [
+    "A técnica, quantidade ou configuração de personalização é inválida.",
+    "Falha na consulta de produtos do catálogo.",
+    "Falha na consulta de variantes do catálogo.",
+    "O banco não retornou o atestado de preço.",
+    "O catálogo de personalização está temporariamente indisponível.",
+    "O catálogo não conseguiu consultar as regras de personalização.",
+    "O preço da personalização diverge da tabela vigente. Atualize a personalização.",
+    "Uma personalização do orçamento possui formato inválido."
+   ],
+   "calc_fns": [
+    {
+     "name": "validatePersonalizations",
+     "params": "external: NonNullable<Awaited<ReturnType<typeof createExternalCatalogClient>>>, item: JsonObject,",
+     "body": "const personalizations = Array.isArray(item.personalizations) ? item.personalizations : []; const validateOne = async (raw: unknown) => { if (!isRecord(raw)) throw new Error('Uma personalização do orçamento possui formato inválido.'); const techniqueId = typeof raw.technique_id === 'string' ? raw.technique_id.trim() : ''; const productId = typeof item.product_id === 'string' ? item.product_id : ''; const quantity = numberOrNull(raw.personalized_quantity) ?? numberOrNull(item.quantity); const col …"
+    },
+    {
+     "name": "validateOne",
+     "params": "raw: unknown",
+     "body": "if (!isRecord(raw)) throw new Error('Uma personalização do orçamento possui formato inválido.'); const techniqueId = typeof raw.technique_id === 'string' ? raw.technique_id.trim() : ''; const productId = typeof item.product_id === 'string' ? item.product_id : ''; const quantity = numberOrNull(raw.personalized_quantity) ?? numberOrNull(item.quantity); const colors = numberOrNull(raw.colors_count) ?? 1; const positions = numberOrNull(raw.positions_count) ?? 1; const width = numberOrNull(raw.width_ …"
+    }
+   ],
+   "uses_service_role": true
+  },
   "supabase/functions/quote-public-view/index.ts": {
    "path": "supabase/functions/quote-public-view/index.ts",
    "lines": 28
@@ -235992,6 +237147,15 @@
     "admin"
    ]
   },
+  "supabase/migrations/20261117092000_quote_price_attestation_gate.sql": {
+   "path": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+   "lines": 457,
+   "temporal": [
+    "WHERE expires_at < clock_timestamp() - interval '1 day';",
+    "clock_timestamp() + interval '5 minutes'"
+   ],
+   "uses_service_role": true
+  },
   "supabase/migrations/20261117183000_ai_quota_count_billed_interrupts.sql": {
    "path": "supabase/migrations/20261117183000_ai_quota_count_billed_interrupts.sql",
    "lines": 155,
@@ -241102,6 +242266,34 @@
    ],
    "uses_service_role": true
   },
+  "tests/edge-functions/quote-price-attestation.test.ts": {
+   "path": "tests/edge-functions/quote-price-attestation.test.ts",
+   "lines": 287,
+   "is_test": true,
+   "tests": [
+    "atestação de preço do orçamento",
+    "limita o corpo da solicitação enquanto lê o stream",
+    "desembrulha RPCs diretas e envelopes de sucesso sem descartar o payload interno",
+    "aceita somente o preço vigente do produto e deriva custo conforme a regra do editor",
+    "usa o custo vigente do produto quando ele difere do percentual estimado",
+    "recusa preço unitário adulterado mesmo que o cliente recalcule os totais",
+    "recusa custo de produto adulterado",
+    "recusa produto sem preço vigente em vez de converter null em zero",
+    "não aceita diferença fracionária de centavo que seria persistida no banco",
+    "usa preço vigente da variante e valida seu vínculo com o produto",
+    "recusa SKU ou atributos de variante que não correspondem ao catálogo",
+    "aceita apenas imagens presentes no catálogo para itens novos ou alterados",
+    "usa o custo estimado arredondado para centavos em produtos sem custo cadastrado",
+    "calcula custo estimado com regra idêntica para preço %s",
+    "usa SKU da variante quando não há SKU de fornecedor e preserva variante sem SKU",
+    "permite editar quantidade de linha antiga mantendo o snapshot imutável de SKU",
+    "preserva o snapshot anterior quando produto e preço do item não mudaram",
+    "não permite converter uma edição manual em snapshot histórico",
+    "não preserva identidade textual adulterada em snapshot histórico",
+    "revalida o preço se a quantidade do snapshot mudar",
+    "não trata URL assinada de storage em origem diferente do projeto como privada"
+   ]
+  },
   "tests/edge-functions/sicoob-artwork-register.test.ts": {
    "path": "tests/edge-functions/sicoob-artwork-register.test.ts",
    "lines": 72,
@@ -241373,12 +242565,14 @@
   },
   "tests/hooks/quoteHelpers-atomic.test.ts": {
    "path": "tests/hooks/quoteHelpers-atomic.test.ts",
-   "lines": 72,
+   "lines": 95,
    "is_test": true,
    "tests": [
     "documento transacional do orçamento",
     "preserva identidade da variante e dimensões da personalização",
     "não envia IDs e totais derivados controlados pelo navegador",
+    "arredonda o custo estimado a centavos como a atestação do catálogo",
+    "usa a mesma regra de arredondamento da atestação para preço %s",
     "envia o id quando é um uuid de linha já persistida"
    ]
   },
@@ -241416,6 +242610,20 @@
     "preserva a falha retornada pelo banco",
     "recusa lote parcial antes do registro do histórico",
     "aceita somente o número exato de linhas"
+   ]
+  },
+  "tests/hooks/quoteVariantIdentity.test.ts": {
+   "path": "tests/hooks/quoteVariantIdentity.test.ts",
+   "lines": 63,
+   "is_test": true,
+   "tests": [
+    "identidade de variante em linhas de orçamento",
+    "reconhece a mesma variante pelo id e SKU",
+    "mantém separadas variantes diferentes com a mesma cor e tamanho",
+    "mantém separadas linhas quando o SKU difere mesmo sem id da variante",
+    "preserva a consolidação de linhas sem identidade de variante",
+    "consolida a mesma variante e preserva uma variante com preço/SKU distinto",
+    "não consolida a mesma variante se o preço ou custo de catálogo mudou"
    ]
   },
   "tests/hooks/quotes-smoke.test.ts": {
@@ -246525,7 +247733,7 @@
   },
   "tests/scenarios/sql/quote-atomic-save-fixture.sql": {
    "path": "tests/scenarios/sql/quote-atomic-save-fixture.sql",
-   "lines": 197,
+   "lines": 203,
    "uses_service_role": true
   },
   "tests/scenarios/sql/quote-versionamento-atomico-fixture.sql": {
@@ -247317,7 +248525,7 @@
   },
   "tests/scripts/verify-supabase-functions-published.test.ts": {
    "path": "tests/scripts/verify-supabase-functions-published.test.ts",
-   "lines": 106,
+   "lines": 107,
    "is_test": true,
    "tests": [
     "verifyPublishedFunctions",
@@ -247327,7 +248535,7 @@
     "rejeita versão atual inválida ou regressiva",
     "rejeita função inativa, status ausente ou duplicidade de slug",
     "aceita somente números ou strings inteiras positivas sem coerção permissiva",
-    "cobre as 7 canônicas e as 6 endurecidas (total 13)",
+    "cobre as 7 canônicas e as 7 endurecidas (total 14)",
     "mantém a lista publicada no workflow em paridade com o verificador"
    ]
   },
@@ -247514,7 +248722,7 @@
   },
   "tests/services/quoteReorder.test.ts": {
    "path": "tests/services/quoteReorder.test.ts",
-   "lines": 108,
+   "lines": 160,
    "is_test": true,
    "tests": [
     "QuoteService.reorder",
@@ -247522,6 +248730,8 @@
     "expõe a mensagem comercial segura devolvida pela função",
     "reutiliza a chave após perda de resposta e encerra a intenção após sucesso",
     "envia a chave estável de criação para a RPC idempotente",
+    "não chama a RPC de criação quando o atestado de preços falha",
+    "recupera criação já persistida sem chamar catálogo nem RPC de gravação",
     "preserva a versão aberta pelo editor ao atualizar, mesmo que a leitura auxiliar seja mais nova"
    ]
   },
@@ -248600,10 +249810,48 @@
   }
  },
  "git": {
-  "sha": "06aa890829c4be2a8a036c3de10f2f35075f4b30",
+  "sha": "64b8dc83634623f390a4ab055748d5b8b10b73b7",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "64b8dc8",
+    "date": "2026-11-18",
+    "author": "adm01-debug",
+    "subject": "feat: preco do orcamento passa a ser atestado pelo servidor (recupera #290, branch limpa sobre main) (#317)",
+    "files": [
+     ".github/workflows/deploy-sicoob-functions.yml",
+     "docs/execucao/evidencias/salvamento-orcamento-atomico.json",
+     "docs/execucao/p045-integridade-precos-20261030.md",
+     "scripts/ci/verify-supabase-functions-published.mjs",
+     "scripts/db/.check-runtime-refs-allowlist.json",
+     "scripts/db/apply-sicoob-migrations.mjs",
+     "scripts/qa/simular-idempotencia-orcamento.py",
+     "scripts/qa/simular-salvamento-orcamento-atomico.py",
+     "src/components/quotes/DraggableQuoteItems.tsx",
+     "src/hooks/quote/quote-url-prefill.ts",
+     "src/hooks/quote/useQuoteInitialization.ts",
+     "src/hooks/quotes/quoteHelpers.ts",
+     "src/hooks/quotes/quoteVariantIdentity.ts",
+     "src/hooks/useExternalVariantStock.ts",
+     "src/hooks/useQuoteBuilderState.ts",
+     "src/integrations/supabase/types.ts",
+     "src/services/QuoteService.ts",
+     "src/types/product-catalog.ts",
+     "src/utils/product-mapper.ts",
+     "supabase/config.toml",
+     "supabase/functions/_shared/edge-authz-manifest.ts",
+     "supabase/functions/quote-price-attestation/contract.ts",
+     "supabase/functions/quote-price-attestation/index.ts",
+     "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+     "tests/edge-functions/quote-price-attestation.test.ts",
+     "tests/hooks/quoteHelpers-atomic.test.ts",
+     "tests/hooks/quoteVariantIdentity.test.ts",
+     "tests/scenarios/sql/quote-atomic-save-fixture.sql",
+     "tests/scripts/verify-supabase-functions-published.test.ts",
+     "tests/services/quoteReorder.test.ts"
+    ]
+   },
    {
     "sha": "06aa890",
     "date": "2026-11-18",
@@ -249111,21 +250359,40 @@
     "files": [
      ".github/workflows/contexto.yml"
     ]
-   },
-   {
-    "sha": "6b52c0e",
-    "date": "2026-11-13",
-    "author": "adm01-debug",
-    "subject": "fix(db): corrige contadores do contrato para split public/protected real (57/165) (#277)",
-    "files": [
-     "scripts/db/apply-sicoob-migrations.mjs"
-    ]
    }
   ],
   "hot_files": [
    [
     "scripts/db/apply-sicoob-migrations.mjs",
     3
+   ],
+   [
+    "scripts/db/.check-runtime-refs-allowlist.json",
+    2
+   ],
+   [
+    "src/hooks/useExternalVariantStock.ts",
+    2
+   ],
+   [
+    "src/hooks/useQuoteBuilderState.ts",
+    2
+   ],
+   [
+    "src/integrations/supabase/types.ts",
+    2
+   ],
+   [
+    "src/services/QuoteService.ts",
+    2
+   ],
+   [
+    "supabase/config.toml",
+    2
+   ],
+   [
+    "supabase/functions/_shared/edge-authz-manifest.ts",
+    2
    ],
    [
     "src/components/sicoob/GestorComprasMetrics.tsx",
@@ -249174,34 +250441,6 @@
    [
     "src/pages/sicoob/orders/OrderDetailPage.tsx",
     2
-   ],
-   [
-    "src/hooks/sicoob/usePurchasingMetrics.ts",
-    1
-   ],
-   [
-    "src/lib/orders/purchasing-sla.ts",
-    1
-   ],
-   [
-    "tests/lib/purchasing-sla.test.ts",
-    1
-   ],
-   [
-    "src/pages/KitBuilderPage.tsx",
-    1
-   ],
-   [
-    "src/components/command/GlobalCommandBar.tsx",
-    1
-   ],
-   [
-    "tests/components/command/GlobalCommandBar.test.tsx",
-    1
-   ],
-   [
-    "src/hooks/sicoob/useManagerDashboardStats.ts",
-    1
    ]
   ]
  }

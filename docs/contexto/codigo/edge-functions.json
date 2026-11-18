@@ -2,7 +2,7 @@
  "aviso": "GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.",
  "format_version": 2,
  "pasta": "supabase/functions",
- "total": 106,
+ "total": 107,
  "verify_jwt_false": [
   "cleanup-notifications",
   "collections-watcher",
@@ -2564,6 +2564,52 @@
    "chamada_por_sql_ou_cron": false,
    "orfa": false,
    "testes": 0
+  },
+  {
+   "nome": "quote-price-attestation",
+   "entrada": "supabase/functions/quote-price-attestation/index.ts",
+   "arquivos": 2,
+   "linhas": 698,
+   "verify_jwt": true,
+   "metodos": [
+    "OPTIONS",
+    "POST"
+   ],
+   "tabelas": [
+    "product_images",
+    "product_variants",
+    "products",
+    "quote_item_personalizations",
+    "quote_items",
+    "quotes"
+   ],
+   "rpcs": [
+    "fn_get_customization_price",
+    "fn_get_product_customization_options",
+    "register_quote_price_attestation"
+   ],
+   "env": [
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL"
+   ],
+   "buckets": [],
+   "chama_edges": [],
+   "hosts_externos": [],
+   "usa_shared": [
+    "catalog-client.ts",
+    "circuit-breaker.ts",
+    "cors.ts",
+    "external-product-contract.ts",
+    "structured-logger.ts"
+   ],
+   "chamada_pelo_front": [
+    "src/services/QuoteService.ts"
+   ],
+   "chamada_por_edges": [],
+   "chamada_por_sql_ou_cron": false,
+   "orfa": false,
+   "testes": 1
   },
   {
    "nome": "quote-public-view",
