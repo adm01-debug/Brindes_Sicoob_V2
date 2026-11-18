@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import type { KitState } from '@/lib/kit-builder';
+import { buildCustomKitPayload } from '@/lib/kit-builder/custom-kit-payload';
 
 // ============================================
 // TYPES
@@ -41,46 +42,10 @@ export interface CustomKitRow {
 
 const QUERY_KEY = ['custom-kits'] as const;
 
-function kitIdentityLabels(identity: KitState['identity']) {
-  return {
-    color: identity?.color ?? '#3B82F6',
-    icon: identity?.icon ?? 'Package',
-    tag: identity?.tag ?? null,
-  };
-}
-
-function kitIdentityDetails(identity: KitState['identity']) {
-  return {
-    description: identity?.description ?? null,
-    is_favorite: identity?.isFavorite ?? false,
-  };
-}
-
-function buildKitPayload(userId: string, kitState: KitState, kitQuantity: number) {
-  return {
-    user_id: userId,
-    name: kitState.name || 'Kit sem nome',
-    status: kitState.isValid ? 'complete' : 'draft',
-    kit_type: kitState.kitType || 'montado',
-    box_data: kitState.box ? JSON.parse(JSON.stringify(kitState.box)) : null,
-    items_data: JSON.parse(JSON.stringify(kitState.items)),
-    personalization_data: JSON.parse(JSON.stringify(kitState.personalization)),
-    kit_quantity: kitQuantity,
-    box_price: kitState.boxPrice,
-    items_price: kitState.itemsPrice,
-    personalization_price: kitState.personalizationPrice,
-    total_price: kitState.totalPrice,
-    volume_usage_percent: kitState.volumeUsagePercent,
-    ...kitIdentityLabels(kitState.identity),
-    ...kitIdentityDetails(kitState.identity),
-    updated_at: new Date().toISOString(),
-  };
-}
-
 async function persistCustomKit(
   userId: string,
   kitId: string | undefined,
-  payload: ReturnType<typeof buildKitPayload>,
+  payload: ReturnType<typeof buildCustomKitPayload>,
 ) {
   if (kitId) {
     const { data, error } = await supabase
@@ -133,7 +98,7 @@ export function useCustomKitPersistence() {
     }) => {
       if (!user?.id) throw new Error('Usuário não autenticado');
 
-      return persistCustomKit(user.id, kitId, buildKitPayload(user.id, kitState, kitQuantity));
+      return persistCustomKit(user.id, kitId, buildCustomKitPayload(user.id, kitState, kitQuantity));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
