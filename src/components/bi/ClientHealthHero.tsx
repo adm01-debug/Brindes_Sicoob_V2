@@ -163,9 +163,7 @@ export function ClientHealthHero({ clientId, ramoAtividade, clientName }: Props)
   const affinity = useClientAffinity(clientId);
   const trends = useIndustryTrends(ramoAtividade);
   const clientCats = useClientCategoryAffinity(clientId);
-  // `useIndustryCategoryTrends` ainda não recebe o cliente: o recorte de
-  // demonstração desse hook entra na fatia dele, não nesta.
-  const industryCats = useIndustryCategoryTrends(ramoAtividade);
+  const industryCats = useIndustryCategoryTrends(ramoAtividade, clientId);
   const [open, setOpen] = useState(false);
 
   // Categoria favorita do cliente (top 1 por receita)
