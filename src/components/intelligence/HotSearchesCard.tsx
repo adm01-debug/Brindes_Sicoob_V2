@@ -2,79 +2,79 @@
  * HotSearchesCard — Buscas Quentes.
  * Top termos buscados (com resultados) no período. Proxy de interesse real do mercado.
  */
-import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Flame, Search, TrendingUp, TrendingDown, Minus } from "lucide-react";
-import { subDays } from "date-fns";
-
-interface HotSearchItem {
-  term: string;
-  searchCount: number;
-  previousCount: number;
-  delta: number; // % vs período anterior
-}
+import { AlertTriangle, Flame, Search, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import type { HotSearchItem } from "@/pages/trends/trends-projections";
 
 interface HotSearchesCardProps {
   days: number;
+  data?: HotSearchItem[];
+  totalSearches: number;
+  isLoading?: boolean;
+  isError?: boolean;
+  isFetching?: boolean;
+  onRetry?: () => void;
 }
 
-export function HotSearchesCard({ days }: HotSearchesCardProps) {
+type Navigate = ReturnType<typeof useNavigate>;
+
+function HotSearchesError({ hasData, isFetching, onRetry }: {
+  hasData: boolean;
+  isFetching: boolean;
+  onRetry?: () => void;
+}) {
+  return (
+    <div role="alert" className="m-3 flex flex-wrap items-center justify-between gap-3 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-xs text-muted-foreground">
+      <span>{hasData ? "Não foi possível atualizar as buscas quentes. Os dados anteriores continuam exibidos." : "Não foi possível carregar as buscas quentes."}</span>
+      {onRetry && <Button size="sm" variant="outline" onClick={onRetry} disabled={isFetching}>{isFetching ? "Tentando…" : "Tentar novamente"}</Button>}
+    </div>
+  );
+}
+
+function HotSearchRow({ item, index, navigate }: { item: HotSearchItem; index: number; navigate: Navigate }) {
+  const TrendIcon = item.delta > 5 ? TrendingUp : item.delta < -5 ? TrendingDown : Minus;
+  const trendColor = item.delta > 5 ? "text-success" : item.delta < -5 ? "text-destructive" : "text-muted-foreground";
+  return (
+    <div className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/30 transition-colors">
+      <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold bg-primary/15 text-primary shrink-0">{index + 1}</span>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium truncate">"{item.term}"</p>
+        <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+          {item.searchCount} buscas
+          <span className={`inline-flex items-center gap-0.5 ${trendColor}`}>· <TrendIcon className="h-2.5 w-2.5" />{item.delta > 0 ? "+" : ""}{item.delta}%</span>
+        </p>
+      </div>
+      <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1 shrink-0" onClick={() => navigate(`/filtros?search=${encodeURIComponent(item.term)}`)} aria-label={`Ver catálogo para ${item.term}`}>Ver</Button>
+    </div>
+  );
+}
+
+function HotSearchesBody({ data, isLoading, isUnavailable, navigate }: {
+  data?: HotSearchItem[];
+  isLoading: boolean;
+  isUnavailable: boolean;
+  navigate: Navigate;
+}) {
+  if (isLoading) return <div className="p-3 space-y-2">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 rounded-lg" />)}</div>;
+  if (isUnavailable) return <div className="flex justify-center px-4 pb-8 text-muted-foreground"><AlertTriangle className="h-8 w-8 text-destructive/70" /></div>;
+  if (!data?.length) return <div className="flex flex-col items-center py-10 text-muted-foreground"><Search className="h-8 w-8 mb-2 opacity-30" /><p className="text-xs">Sem dados de busca no período</p></div>;
+  return <div className="divide-y divide-border">{data.map((item, index) => <HotSearchRow key={item.term} item={item} index={index} navigate={navigate} />)}</div>;
+}
+
+export function HotSearchesCard({
+  days,
+  data,
+  totalSearches,
+  isLoading = false,
+  isError = false,
+  isFetching = false,
+  onRetry,
+}: HotSearchesCardProps) {
   const navigate = useNavigate();
-  const since = subDays(new Date(), days).toISOString();
-  const previousSince = subDays(new Date(), days * 2).toISOString();
-
-  const { data, isLoading } = useQuery({
-    queryKey: ["hot-searches", days],
-    queryFn: async (): Promise<HotSearchItem[]> => {
-      const { isDemoMode } = await import("@/pages/trends/is-demo-mode");
-      if (isDemoMode()) {
-        const { MOCK_HOT_SEARCHES } = await import("@/pages/trends/trends-mock");
-        return MOCK_HOT_SEARCHES.map(s => ({
-          term: s.term,
-          searchCount: s.count,
-          previousCount: Math.max(1, Math.round(s.count / (1 + s.growth / 100))),
-          delta: s.growth,
-        }));
-      }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: rows, error } = await (supabase.from as any)("search_analytics")
-        .select("search_term, created_at, results_count")
-        .gt("results_count", 0)
-        .gte("created_at", previousSince)
-        .order("created_at", { ascending: false })
-        .limit(2000);
-      if (error) throw error;
-
-      const recent = new Map<string, number>();
-      const previous = new Map<string, number>();
-      (rows ?? []).forEach((r: { search_term: string; created_at: string }) => {
-        const key = r.search_term.trim().toLowerCase();
-        if (!key) return;
-        if (r.created_at >= since) {
-          recent.set(key, (recent.get(key) ?? 0) + 1);
-        } else {
-          previous.set(key, (previous.get(key) ?? 0) + 1);
-        }
-      });
-
-      return Array.from(recent.entries())
-        .map(([term, count]) => {
-          const prev = previous.get(term) ?? 0;
-          const delta = prev === 0 ? (count > 0 ? 100 : 0) : ((count - prev) / prev) * 100;
-          return { term, searchCount: count, previousCount: prev, delta: Math.round(delta) };
-        })
-        .sort((a, b) => b.searchCount - a.searchCount)
-        .slice(0, 10);
-    },
-    staleTime: 1000 * 60 * 5,
-  });
-
-  const totalSearches = data?.reduce((s, item) => s + item.searchCount, 0) ?? 0;
 
   return (
     <Card className="overflow-hidden border-primary/30">
@@ -99,52 +99,8 @@ export function HotSearchesCard({ days }: HotSearchesCardProps) {
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        {isLoading ? (
-          <div className="p-3 space-y-2">
-            {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 rounded-lg" />)}
-          </div>
-        ) : !data?.length ? (
-          <div className="flex flex-col items-center py-10 text-muted-foreground">
-            <Search className="h-8 w-8 mb-2 opacity-30" />
-            <p className="text-xs">Sem dados de busca no período</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-border">
-            {data.map((item, index) => {
-              const TrendIcon = item.delta > 5 ? TrendingUp : item.delta < -5 ? TrendingDown : Minus;
-              const trendColor = item.delta > 5 ? "text-success" : item.delta < -5 ? "text-destructive" : "text-muted-foreground";
-              return (
-                <div
-                  key={item.term}
-                  className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/30 transition-colors"
-                >
-                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold bg-primary/15 text-primary shrink-0">
-                    {index + 1}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">"{item.term}"</p>
-                    <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                      {item.searchCount} buscas
-                      <span className={`inline-flex items-center gap-0.5 ${trendColor}`}>
-                        · <TrendIcon className="h-2.5 w-2.5" />
-                        {item.delta > 0 ? "+" : ""}{item.delta}%
-                      </span>
-                    </p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-[10px] gap-1 shrink-0"
-                    onClick={() => navigate(`/filtros?search=${encodeURIComponent(item.term)}`)}
-                    aria-label={`Ver catálogo para ${item.term}`}
-                  >
-                    Ver
-                  </Button>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        {isError && <HotSearchesError hasData={Boolean(data)} isFetching={isFetching} onRetry={onRetry} />}
+        <HotSearchesBody data={data} isLoading={isLoading} isUnavailable={isError && !data} navigate={navigate} />
       </CardContent>
     </Card>
   );

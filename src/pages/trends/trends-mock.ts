@@ -248,13 +248,13 @@ export const MOCK_HOT_SEARCHES = [
   { term: 'power bank', count: 142, growth: 22 },
 ];
 
-export const MOCK_TOP_CATEGORIES = [
-  { category: 'Bebidas & Squeezes', views: 3_241, share: 25.2 },
-  { category: 'Escritório & Papelaria', views: 2_687, share: 20.9 },
-  { category: 'Mochilas & Bolsas', views: 2_104, share: 16.4 },
-  { category: 'Tecnologia', views: 1_842, share: 14.3 },
-  { category: 'Vestuário', views: 1_512, share: 11.8 },
-  { category: 'Sustentáveis', views: 1_461, share: 11.4 },
+export const MOCK_TOP_PRODUCT_FAMILIES = [
+  { family: 'Squeeze', views: 3_241, share: 25.2 },
+  { family: 'Caderno', views: 2_687, share: 20.9 },
+  { family: 'Mochila', views: 2_104, share: 16.4 },
+  { family: 'Powerbank', views: 1_842, share: 14.3 },
+  { family: 'Camiseta', views: 1_512, share: 11.8 },
+  { family: 'Ecobag', views: 1_461, share: 11.4 },
 ];
 
 export const MOCK_INSIGHTS = {

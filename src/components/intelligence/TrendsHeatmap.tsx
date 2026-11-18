@@ -2,53 +2,90 @@
  * TrendsHeatmap — matriz 7 (dias) × 24 (horas) de atividade.
  * Mostra quando os clientes mais buscam/visualizam.
  */
-import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Activity } from "lucide-react";
-import { untypedFrom } from "@/lib/supabase-untyped";
-import { subDays } from "date-fns";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import type { TrendsHeatmapData } from "@/pages/trends/trends-projections";
 
 const DAYS_PT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 interface TrendsHeatmapProps {
   days: number;
+  data?: TrendsHeatmapData;
+  isLoading?: boolean;
+  isError?: boolean;
+  isFetching?: boolean;
+  onRetry?: () => void;
 }
 
-export function TrendsHeatmap({ days }: TrendsHeatmapProps) {
-  const since = subDays(new Date(), days).toISOString();
+function HeatmapError({ hasData, isFetching, onRetry }: {
+  hasData: boolean;
+  isFetching: boolean;
+  onRetry?: () => void;
+}) {
+  return (
+    <div role="alert" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
+      <span>{hasData ? "Não foi possível atualizar o mapa. Os dados anteriores continuam exibidos." : "Não foi possível carregar os dados do mapa de calor."}</span>
+      {onRetry && <Button variant="outline" size="sm" onClick={onRetry} disabled={isFetching}>{isFetching ? "Tentando…" : "Tentar novamente"}</Button>}
+    </div>
+  );
+}
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["trends-heatmap", days],
-    queryFn: async () => {
-      const { isDemoMode } = await import("@/pages/trends/is-demo-mode");
-      if (isDemoMode()) {
-        const { buildMockHeatmap } = await import("@/pages/trends/trends-mock");
-        return buildMockHeatmap();
+function HeatmapGrid({ data }: { data: TrendsHeatmapData }) {
+  let peakDay = 0;
+  let peakHour = 0;
+  let peakCount = 0;
+  const dailyTotals = data.matrix.map((row, day) => {
+    row.forEach((count, hour) => {
+      if (count > peakCount) {
+        peakDay = day;
+        peakHour = hour;
+        peakCount = count;
       }
-      const [{ data: views }, { data: searches }] = await Promise.all([
-        untypedFrom<{ created_at: string }>("product_views").select("created_at").gte("created_at", since),
-        untypedFrom<{ created_at: string }>("search_analytics").select("created_at").gte("created_at", since),
-      ]);
-      // matriz [day][hour]
-      const matrix: number[][] = Array.from({ length: 7 }, () => Array(24).fill(0));
-      const fill = (rows: Array<{ created_at: string }> | null) => {
-        rows?.forEach(r => {
-          const d = new Date(r.created_at);
-          const row = matrix[d.getDay()];
-          const hour = d.getHours();
-          if (row) row[hour] = (row[hour] ?? 0) + 1;
-        });
-      };
-      fill(views);
-      fill(searches);
-      const flat = matrix.flat();
-      const max = Math.max(...flat, 1);
-      return { matrix, max };
-    },
+    });
+    return row.reduce((total, count) => total + count, 0);
   });
+  const accessibleSummary = `Mapa de calor de atividade. Pico de ${peakCount} eventos em ${DAYS_PT[peakDay]}, às ${peakHour} horas. Totais por dia: ${dailyTotals.map((total, day) => `${DAYS_PT[day]} ${total}`).join(', ')}.`;
+  return (
+    <div className="overflow-x-auto" role="img" aria-label={accessibleSummary}>
+      <div className="inline-block min-w-full">
+        <div className="flex gap-px text-[9px] text-muted-foreground pl-9">
+          {Array.from({ length: 24 }).map((_, hour) => <div key={hour} className="w-5 text-center">{hour % 3 === 0 ? hour : ""}</div>)}
+        </div>
+        {data.matrix.map((row, day) => (
+          <div key={day} className="flex gap-px items-center mt-px">
+            <div className="w-9 text-[10px] text-muted-foreground font-medium">{DAYS_PT[day]}</div>
+            {row.map((count, hour) => (
+              <div
+                key={hour}
+                className={cn("w-5 h-5 rounded-sm transition-transform hover:scale-125 cursor-help", count === 0 && "bg-muted/40")}
+                style={count > 0 ? { backgroundColor: `hsl(var(--primary) / ${0.15 + (count / data.max) * 0.85})` } : undefined}
+                title={`${DAYS_PT[day]} ${hour}h — ${count} eventos`}
+                aria-hidden="true"
+              />
+            ))}
+          </div>
+        ))}
+        <div className="flex items-center gap-2 mt-3 text-[10px] text-muted-foreground pl-9">
+          <span>menos</span>
+          {[0.15, 0.35, 0.55, 0.75, 1].map((intensity) => <div key={intensity} className="w-4 h-3 rounded-sm" style={{ backgroundColor: `hsl(var(--primary) / ${intensity})` }} />)}
+          <span>mais</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
+function HeatmapBody({ data, isLoading, isUnavailable }: { data?: TrendsHeatmapData; isLoading: boolean; isUnavailable: boolean }) {
+  if (isLoading) return <Skeleton className="h-[260px] w-full" />;
+  if (isUnavailable) return null;
+  if (!data || data.max === 0) return <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm">Sem dados suficientes para o mapa de calor</div>;
+  return <HeatmapGrid data={data} />;
+}
+
+export function TrendsHeatmap({ days, data, isLoading = false, isError = false, isFetching = false, onRetry }: TrendsHeatmapProps) {
   return (
     <Card>
       <CardHeader>
@@ -61,65 +98,8 @@ export function TrendsHeatmap({ days }: TrendsHeatmapProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <Skeleton className="h-[260px] w-full" />
-        ) : !data || data.max === 0 ? (
-          <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm">
-            Sem dados suficientes para o mapa de calor
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <div className="inline-block min-w-full">
-              {/* Header: horas */}
-              <div className="flex gap-px text-[9px] text-muted-foreground pl-9">
-                {Array.from({ length: 24 }).map((_, h) => (
-                  <div key={h} className="w-5 text-center">
-                    {h % 3 === 0 ? h : ""}
-                  </div>
-                ))}
-              </div>
-              {data.matrix.map((row, day) => (
-                <div key={day} className="flex gap-px items-center mt-px">
-                  <div className="w-9 text-[10px] text-muted-foreground font-medium">
-                    {DAYS_PT[day]}
-                  </div>
-                  {row.map((count, hour) => {
-                    const intensity = count / data.max;
-                    return (
-                      <div
-                        key={hour}
-                        className={cn(
-                          "w-5 h-5 rounded-sm transition-transform hover:scale-125 cursor-help",
-                          count === 0 && "bg-muted/40",
-                        )}
-                        style={
-                          count > 0
-                            ? {
-                                backgroundColor: `hsl(var(--primary) / ${0.15 + intensity * 0.85})`,
-                              }
-                            : undefined
-                        }
-                        title={`${DAYS_PT[day]} ${hour}h — ${count} eventos`}
-                      />
-                    );
-                  })}
-                </div>
-              ))}
-              {/* Legenda */}
-              <div className="flex items-center gap-2 mt-3 text-[10px] text-muted-foreground pl-9">
-                <span>menos</span>
-                {[0.15, 0.35, 0.55, 0.75, 1].map((i) => (
-                  <div
-                    key={i}
-                    className="w-4 h-3 rounded-sm"
-                    style={{ backgroundColor: `hsl(var(--primary) / ${i})` }}
-                  />
-                ))}
-                <span>mais</span>
-              </div>
-            </div>
-          </div>
-        )}
+        {isError && <HeatmapError hasData={Boolean(data)} isFetching={isFetching} onRetry={onRetry} />}
+        <HeatmapBody data={data} isLoading={isLoading} isUnavailable={isError && !data} />
       </CardContent>
     </Card>
   );

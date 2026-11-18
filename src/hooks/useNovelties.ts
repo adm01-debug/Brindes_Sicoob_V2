@@ -4,6 +4,7 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import { invokeExternalDb } from '@/lib/external-db/bridge';
+import { resolveProductImageRecords } from '@/lib/external-db/product-record-images';
 
 const NOVELTY_WINDOW_DAYS = 30;
 const NOVELTY_SELECT = 'id, name, sku, primary_image_url, sale_price, category_id, supplier_id, created_at, stock_quantity, min_quantity';
@@ -189,7 +190,8 @@ export function useNoveltiesWithDetails(options: UseNoveltiesOptions = {}) {
         limit,
       });
 
-      let novelties = (result.records || []).map(toNovelty).filter(n => n.is_active);
+      const records = await resolveProductImageRecords(result.records);
+      let novelties = records.map(toNovelty).filter(n => n.is_active);
 
       if (onlyHighlighted) {
         novelties = novelties.filter(n => n.is_highlighted);
@@ -222,7 +224,8 @@ export function useExpiringNovelties(maxDays: number = 7) {
         limit: 200,
       });
 
-      return (result.records || [])
+      const records = await resolveProductImageRecords(result.records);
+      return records
         .map(toNovelty)
         .filter(n => n.is_active && n.days_remaining <= maxDays)
         .sort((a, b) => a.days_remaining - b.days_remaining);
@@ -363,7 +366,8 @@ export function useNovelties(options: UseNoveltiesOptions & { supplierCode?: str
         limit,
       });
 
-      let novelties = (result.records || []).map(toNovelty).filter(n => n.is_active);
+      const records = await resolveProductImageRecords(result.records);
+      let novelties = records.map(toNovelty).filter(n => n.is_active);
 
       if (maxDays) {
         novelties = novelties.filter(n => n.days_remaining >= (NOVELTY_WINDOW_DAYS - maxDays));
