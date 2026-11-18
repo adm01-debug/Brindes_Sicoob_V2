@@ -15,8 +15,12 @@ const useClientVsIndustry = vi.fn();
 vi.mock('@/hooks/bi/useClientVsIndustry', () => ({ useClientVsIndustry: () => useClientVsIndustry() }));
 
 import { ClientVsIndustryComparison } from '@/components/bi/ClientVsIndustryComparison';
+import type { ClientVsIndustryResult } from '@/hooks/bi/useClientVsIndustry';
 
-function resultado(isMock: boolean) {
+// Tipado pelo contrato real do hook: sem isto a fixture inventava campos
+// (`industryValue`, `deltaPct`, `isAbove`) e os cartões renderizavam com
+// valores indefinidos enquanto o teste do selo continuava passando.
+function resultado(isMock: boolean): ClientVsIndustryResult {
   return {
     isLoading: false,
     isMock,
@@ -24,7 +28,10 @@ function resultado(isMock: boolean) {
     sampleSize: 7,
     daysWindow: 180,
     metrics: [
-      { label: 'LTV', clientValue: 12000, industryValue: 9000, deltaPct: 33, format: 'currency', isAbove: true },
+      {
+        label: 'LTV', clientValue: 12000, industryAvg: 9000,
+        deltaPercent: 33, classification: 'above', format: 'currency',
+      },
     ],
     insight: null,
   };
@@ -47,5 +54,9 @@ describe('ClientVsIndustryComparison — origem do dado', () => {
 
     expect(screen.getByText('Dados reais')).toBeTruthy();
     expect(screen.queryByText('Cliente sem histórico · números ilustrativos')).toBeNull();
+    // A linha da métrica tem que sair com o número do setor e o delta, não
+    // com buraco: é o que o cartão promete ao lado do selo.
+    expect(screen.getByText('LTV')).toBeTruthy();
+    expect(screen.getByText(/33/)).toBeTruthy();
   });
 });
