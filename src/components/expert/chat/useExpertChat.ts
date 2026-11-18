@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { getSupabaseFunctionUrl, supabase } from "@/integrations/supabase/client";
 import { invokeExternalDb } from "@/lib/external-db";
+import { selectExpertChatMessages } from "@/lib/assistant-message-window";
 import { useExpertChatTts } from "./useExpertChatTts";
 import { useExpertConversations, type ExpertConversation } from "@/hooks/useExpertConversations";
 import {
@@ -148,10 +149,13 @@ function enabled(value: boolean) {
 }
 
 function buildExpertRequestBody(messages: Message[], userMessage: string, clientId: string | undefined, filters: FlowFilterState) {
+  // A Edge rejeita mais de 30 mensagens ou 30k caracteres: janela o historico
+  // mantendo sempre a pergunta mais recente.
+  const history = [...messages, { role: "user" as const, content: userMessage }]
+    .map(message => ({ role: message.role, content: message.content }))
+    .filter(message => Boolean(message.content?.length));
   return {
-    messages: [...messages, { role: "user" as const, content: userMessage }]
-      .map(message => ({ role: message.role, content: message.content }))
-      .filter(message => Boolean(message.content?.length)),
+    messages: selectExpertChatMessages(history),
     clientId: clientId || undefined,
     categoryFilter: optionalList(filters.selectedCategories),
     priceMin: optionalNumber(filters.priceMin),

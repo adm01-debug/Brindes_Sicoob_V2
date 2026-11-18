@@ -7,6 +7,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { invokeExternalDb } from '@/lib/external-db';
+import { resolveProductImageRecords } from '@/lib/external-db/product-record-images';
 import {
   type KitBox,
   type BoxFilters,
@@ -91,7 +92,8 @@ export function useKitBuilderQueries() {
         countMode: 'none',
       });
 
-      const boxes = (result.records ?? [])
+      const boxRecords = await resolveProductImageRecords(result.records);
+      const boxes = boxRecords
         .filter(p => {
           const pt = (p.packing_type || '').toLowerCase();
           return pt.includes('caixa') || pt.includes('embalagem') || pt.includes('box');
@@ -127,7 +129,8 @@ export function useKitBuilderQueries() {
         countMode: 'none',
       });
 
-      return (result.records ?? [])
+      const itemRecords = await resolveProductImageRecords(result.records);
+      return itemRecords
         .filter(p => p.packing_classification !== 'embalagem')
         .map(p => transformToKitItem(p));
     },

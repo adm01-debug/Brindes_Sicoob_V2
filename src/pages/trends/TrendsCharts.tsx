@@ -5,12 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Eye, Search, Package, BarChart3, FileText, ExternalLink, TrendingUp, Sparkles } from "lucide-react";
+import { AlertCircle, Eye, Search, Package, BarChart3, FileText, ExternalLink, TrendingUp, Sparkles } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Area, AreaChart,
 } from "recharts";
 import { useNavigate } from "react-router-dom";
+import type { ReactNode } from "react";
 
 const tooltipStyle = {
   backgroundColor: "hsl(var(--card))",
@@ -95,12 +96,40 @@ export function ActivityChart({ dailyTrends, isLoading }: ActivityChartProps) {
 interface ProductsTabProps {
   topProducts: TrendProduct[] | undefined;
   isLoading: boolean;
+  isError?: boolean;
+  isFetching?: boolean;
+  onRetry?: () => void;
 }
 
-export function ProductsTabContent({ topProducts, isLoading }: ProductsTabProps) {
+function TrendsDataError({ message, hasData, isFetching, onRetry }: { message: string; hasData: boolean; isFetching: boolean; onRetry?: () => void }) {
+  return (
+    <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm">
+      <div className="flex items-start gap-2">
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
+        <p>{hasData ? `${message} Os dados anteriores continuam exibidos.` : message}</p>
+      </div>
+      {onRetry ? <Button variant="outline" size="sm" onClick={onRetry} disabled={isFetching}>{isFetching ? "Tentando…" : "Tentar novamente"}</Button> : null}
+    </div>
+  );
+}
+
+function TrendsDataState({ isError, hasData, message, isFetching, onRetry, children }: { isError: boolean; hasData: boolean; message: string; isFetching: boolean; onRetry?: () => void; children: ReactNode }) {
+  if (isError && !hasData) {
+    return <TrendsDataError message={message} hasData={false} isFetching={isFetching} onRetry={onRetry} />;
+  }
+  return (
+    <div className="space-y-4">
+      {isError ? <TrendsDataError message={`Não foi possível atualizar ${message.toLowerCase().replace('não foi possível carregar ', '')}`} hasData isFetching={isFetching} onRetry={onRetry} /> : null}
+      {children}
+    </div>
+  );
+}
+
+export function ProductsTabContent({ topProducts, isLoading, isError = false, isFetching = false, onRetry }: ProductsTabProps) {
   const navigate = useNavigate();
   return (
-    <div className="grid lg:grid-cols-2 gap-6">
+    <TrendsDataState isError={isError} hasData={topProducts !== undefined} message="Não foi possível carregar o ranking de produtos." isFetching={isFetching} onRetry={onRetry}>
+      <div className="grid lg:grid-cols-2 gap-6">
       <Card>
         <CardHeader>
           <CardTitle>Top 10 Produtos</CardTitle>
@@ -177,7 +206,7 @@ export function ProductsTabContent({ topProducts, isLoading }: ProductsTabProps)
                     <Badge variant="secondary" className="text-xs"><Eye className="h-3 w-3 mr-1" />{product.views}</Badge>
                     {product.compares > 0 && <Badge variant="outline" className="text-xs">Comp: {product.compares}</Badge>}
                   </div>
-                  <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex gap-1 shrink-0 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
                     <Button
                       size="icon"
                       variant="ghost"
@@ -207,18 +236,23 @@ export function ProductsTabContent({ topProducts, isLoading }: ProductsTabProps)
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </TrendsDataState>
   );
 }
 
 interface SearchesTabProps {
   topSearches: TrendSearch[] | undefined;
   isLoading: boolean;
+  isError?: boolean;
+  isFetching?: boolean;
+  onRetry?: () => void;
 }
 
-export function SearchesTabContent({ topSearches, isLoading }: SearchesTabProps) {
+export function SearchesTabContent({ topSearches, isLoading, isError = false, isFetching = false, onRetry }: SearchesTabProps) {
   return (
-    <div className="grid lg:grid-cols-2 gap-6">
+    <TrendsDataState isError={isError} hasData={topSearches !== undefined} message="Não foi possível carregar o ranking de buscas." isFetching={isFetching} onRetry={onRetry}>
+      <div className="grid lg:grid-cols-2 gap-6">
       <Card>
         <CardHeader>
           <CardTitle>Top 10 Buscas</CardTitle>
@@ -274,6 +308,7 @@ export function SearchesTabContent({ topSearches, isLoading }: SearchesTabProps)
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </TrendsDataState>
   );
 }

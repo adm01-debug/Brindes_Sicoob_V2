@@ -9,8 +9,10 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { selectCrm, searchCrm } from "@/lib/crm-db";
-import { getCompanyDisplayName, type CrmCompany } from "@/types/crm";
+import {
+  fetchQuoteDirectoryCompanies,
+  type QuoteDirectoryCompany,
+} from "@/lib/crm-db";
 import { CompanyAvatar, type CompanyOption } from "./shared-types";
 
 interface CompanySearchDropdownProps {
@@ -20,26 +22,32 @@ interface CompanySearchDropdownProps {
   onClearCompany: () => void;
 }
 
-const COMPANY_FIELDS = "id, razao_social, nome_fantasia, ramo_atividade, cnpj, logo_url";
+// O diretorio de orcamento e o unico contrato do bridge liberado para vendedor
+// e agente; tabela, projecao e filtros ficam impostos no Edge.
+const COMPANY_PAGE_SIZE = 100;
+const COMPANY_MAX_PAGES = 5;
 
-function toCompanyOption(company: CrmCompany): CompanyOption {
-  return { id: company.id, name: getCompanyDisplayName(company), razao_social: company.razao_social, nome_fantasia: company.nome_fantasia, ramo_atividade: company.ramo_atividade || null, cnpj: company.cnpj, logo_url: company.logo_url || null };
+function toCompanyOption(company: QuoteDirectoryCompany): CompanyOption {
+  return { id: company.id, name: company.name, razao_social: company.razao_social, nome_fantasia: company.nome_fantasia, ramo_atividade: company.ramo_atividade, cnpj: company.cnpj, logo_url: company.logo_url };
 }
 
 async function fetchCompanies(): Promise<CompanyOption[]> {
-  const data = await selectCrm<CrmCompany>("companies", { select: COMPANY_FIELDS, filters: { deleted_at: null }, orderBy: { column: "razao_social", ascending: true }, limit: 500 });
-  return data.map(toCompanyOption);
+  const options: CompanyOption[] = [];
+  for (let page = 0; page < COMPANY_MAX_PAGES; page += 1) {
+    const rows = await fetchQuoteDirectoryCompanies({
+      limit: COMPANY_PAGE_SIZE,
+      offset: page * COMPANY_PAGE_SIZE,
+    });
+    options.push(...rows.map(toCompanyOption));
+    if (rows.length < COMPANY_PAGE_SIZE) break;
+  }
+  return options;
 }
 
 async function searchCompanies(search: string): Promise<CompanyOption[]> {
   if (search.length < 2) return [];
-  const options = { select: COMPANY_FIELDS, limit: 50 };
-  const [byRazao, byNomeFantasia] = await Promise.all([searchCrm<CrmCompany>("companies", "razao_social", search, options), searchCrm<CrmCompany>("companies", "nome_fantasia", search, options)]);
-  const seen = new Set<string>();
-  return [...byRazao, ...byNomeFantasia].reduce<CompanyOption[]>((result, company) => {
-    if (!seen.has(company.id)) { seen.add(company.id); result.push(toCompanyOption(company)); }
-    return result;
-  }, []);
+  const rows = await fetchQuoteDirectoryCompanies({ term: search, limit: 50 });
+  return rows.map(toCompanyOption);
 }
 
 function mergeCompanyResults(companies: CompanyOption[] | undefined, serverResults: CompanyOption[] | undefined, fuse: Fuse<CompanyOption> | null, search: string): CompanyOption[] {

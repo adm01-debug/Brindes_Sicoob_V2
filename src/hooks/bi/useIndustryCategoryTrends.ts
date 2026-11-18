@@ -8,7 +8,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { selectCrm } from "@/lib/crm-db";
+import { fetchIndustryPeerIds } from "@/lib/crm-db";
 import { resolveBICategory, type BICategorySlug } from "@/lib/bi/categoryResolver";
 import { getMockIndustryTrends } from "@/lib/bi/mockData";
 
@@ -87,12 +87,10 @@ function buildMockResult(ramo?: string | null): IndustryCategoryTrendsResult {
 
 async function fetchCompanyIds(ramoAtividade: string) {
   try {
-    const companies = await selectCrm<{ id: string }>("companies", {
-      select: "id",
-      filters: { ramo_atividade: ramoAtividade, deleted_at: null },
-      limit: 500,
-    });
-    return companies.map((company) => company.id).filter(Boolean);
+    // `selectCrm` generico e negado para vendedor e agente pela politica do portal;
+    // `fetchIndustryPeerIds` usa o contrato fechado, que devolve so os ids do ramo.
+    const peerIds = await fetchIndustryPeerIds(ramoAtividade);
+    return peerIds.filter(Boolean);
   } catch {
     return [];
   }

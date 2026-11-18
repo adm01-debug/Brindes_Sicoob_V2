@@ -11,7 +11,7 @@ import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAriaLive } from "@/components/a11y";
 import { useProductCustomizationOptionsForMockup } from "@/hooks/useMockupTechniques";
-import { searchCrm } from "@/lib/crm-db";
+import { fetchQuoteDirectoryCompanies } from "@/lib/crm-db";
 import { getCompanyDisplayName, type CrmCompany } from "@/types/crm";
 import type { AreaShape, PrintAreaWithTechniques } from "@/types/gravacao";
 import type { ScenePrompt } from "@/components/magic-up/PromptBank";
@@ -289,14 +289,28 @@ export function useMagicUpState() {
   const clientQuery = useQuery({
     queryKey: ["magic-up-clients", debouncedClientSearch],
     queryFn: async () => {
-      if (debouncedClientSearch.length < 3) return [];
-      const [byRazao, byNomeFantasia] = await Promise.all([
-        searchCrm<CrmCompany>("companies", "razao_social", debouncedClientSearch, { select: "id, razao_social, nome_fantasia, ramo_atividade, logo_url", limit: 20 }),
-        searchCrm<CrmCompany>("companies", "nome_fantasia", debouncedClientSearch, { select: "id, razao_social, nome_fantasia, ramo_atividade, logo_url", limit: 20 }),
-      ]);
-      const map = new Map<string, CrmCompany>();
-      [...byRazao, ...byNomeFantasia].forEach(c => map.set(c.id, c));
-      return Array.from(map.values()).slice(0, 20);
+      const term = debouncedClientSearch.trim();
+      // O Edge valida a forma antes do papel: term fora de 2..100 caracteres volta
+      // 403 inclusive para dev. A tela já exige 3, o corte aqui é o do contrato.
+      if (term.length < 3 || term.length > 100) return [];
+      // `quote_directory` é o único contrato do CRM liberado para vendedor e
+      // agente, e /magic-up não tem guarda de papel. O `term` do Edge cobre
+      // razao_social, nome_fantasia, cnpj e ramo_atividade numa consulta só, o
+      // que dispensa as duas buscas e o dedupe que havia aqui. O `name` que o
+      // Edge devolve já é title || nome_fantasia || razao_social, a mesma regra
+      // de getCompanyDisplayName, então entra como `title`.
+      const rows = await fetchQuoteDirectoryCompanies({ term, limit: 20 });
+      return rows.map((row): CrmCompany => ({
+        id: row.id,
+        title: row.name,
+        razao_social: row.razao_social,
+        nome_fantasia: row.nome_fantasia,
+        ramo_atividade: row.ramo_atividade,
+        cnpj: row.cnpj,
+        logo_url: row.logo_url,
+        cidade: row.cidade,
+        estado: row.estado,
+      } as CrmCompany));
     },
     enabled: debouncedClientSearch.length >= 3,
   });
@@ -376,15 +390,27 @@ export function useMagicUpState() {
           invokeExternalDb<Record<string, unknown>>({ table: "product_variants", operation: "select", filters: { product_id: selectedProduct.id }, orderBy: { column: "color_name", ascending: true }, limit: 100 }),
           invokeExternalDb<Record<string, unknown>>({ table: "product_images", operation: "select", filters: { product_id: selectedProduct.id }, orderBy: { column: "display_order", ascending: true }, limit: 100 }),
         ]);
-        const images = (imagesResult.records || [])
-          .filter((img: Record<string, unknown>) => img.image_type !== "box")
-          .map((img: Record<string, unknown>): ProductImage => ({
-            url: String(img.url_cdn || img.url_original || ""),
-            supplierCode: (img.supplier_code as string) || null,
-            isPrimary: Boolean(img.is_primary),
-            isOgImage: Boolean(img.is_og_image),
-          }))
-          .filter((img) => img.url);
+        const { resolvePrivateStorageUrlSafe } = await import("@/lib/private-storage");
+        // `url_cdn` pode ser a referencia duravel `supabase-storage://`; sem assinar aqui
+        // o Magic Up envia essa referencia como `productImageUrl` para generate-ad-image.
+        const images = (
+          await Promise.all(
+            (imagesResult.records || [])
+              .filter((img: Record<string, unknown>) => img.image_type !== "box")
+              .map(async (img: Record<string, unknown>): Promise<ProductImage> => {
+                const raw = String(img.url_cdn || img.url_original || "");
+                const resolved = raw
+                  ? (await resolvePrivateStorageUrlSafe(raw, "personalization-images")) ?? raw
+                  : raw;
+                return {
+                  url: resolved,
+                  supplierCode: (img.supplier_code as string) || null,
+                  isPrimary: Boolean(img.is_primary),
+                  isOgImage: Boolean(img.is_og_image),
+                };
+              }),
+          )
+        ).filter((img) => img.url);
         setProductImages(images);
         const uniqueColors = new Map<string, ProductColor>();
         (variantsResult.records || []).forEach((v: Record<string, unknown>) => {

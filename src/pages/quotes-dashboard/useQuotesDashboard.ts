@@ -4,7 +4,7 @@
  */
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { selectCrm } from '@/lib/crm-db';
+import { fetchQuoteDirectoryCompanies } from '@/lib/crm-db';
 import { useQuotes, type Quote } from '@/hooks/quotes/useQuotes';
 import { format, differenceInHours, startOfMonth, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -16,10 +16,6 @@ import { QUOTE_STATUS_CONFIG } from '@/lib/quote-status-config';
 interface Client {
   id: string;
   name: string;
-}
-interface CrmClientRow {
-  id: string;
-  nome_fantasia: string | null;
 }
 
 const statusConfig = Object.fromEntries(
@@ -336,6 +332,41 @@ function exportDashboardPdf(input: {
   doc.save(`dashboard-orcamentos-${format(now, 'yyyy-MM-dd')}.pdf`);
 }
 
+/** Teto por página do contrato fechado: `limit > 100` volta 403 até para dev. */
+const DASHBOARD_CLIENTS_PAGE = 100;
+/** Mesmo teto de 500 clientes que o seletor tinha antes. */
+const DASHBOARD_CLIENTS_MAX = 500;
+
+/**
+ * `/orcamentos/dashboard` não tem guarda de papel, então vendedor e agente abrem
+ * esta tela — e para eles o `select` genérico do CRM é negado, o que deixava o
+ * filtro por cliente vazio com um `console.error` e nada na tela. O contrato
+ * fechado já impõe tabela, projeção, `is_customer` e `deleted_at`; a ordenação
+ * por nome fantasia, que é a que o seletor mostrava, fica no cliente.
+ */
+async function fetchDashboardClients(): Promise<Client[]> {
+  const rows = [];
+  for (let offset = 0; rows.length < DASHBOARD_CLIENTS_MAX; offset += DASHBOARD_CLIENTS_PAGE) {
+    const page = await fetchQuoteDirectoryCompanies({ limit: DASHBOARD_CLIENTS_PAGE, offset });
+    rows.push(...page);
+    if (page.length < DASHBOARD_CLIENTS_PAGE) break;
+  }
+  return rows
+    .slice(0, DASHBOARD_CLIENTS_MAX)
+    .map((company) => ({
+      id: company.id,
+      name: company.nome_fantasia || company.id,
+      semNome: !company.nome_fantasia,
+    }))
+    // `orderBy: 'nome_fantasia'` no Postgres deixava os sem nome fantasia no fim
+    // (NULLS LAST em ASC); o rótulo deles continua sendo o id.
+    .sort((esquerda, direita) =>
+      esquerda.semNome === direita.semNome
+        ? esquerda.name.localeCompare(direita.name, 'pt-BR')
+        : Number(esquerda.semNome) - Number(direita.semNome))
+    .map(({ id, name }) => ({ id, name }));
+}
+
 function useDashboardClients() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loadingClients, setLoadingClients] = useState(true);
@@ -343,14 +374,7 @@ function useDashboardClients() {
     void (async () => {
       setLoadingClients(true);
       try {
-        const data = await selectCrm<CrmClientRow>('companies', {
-          select: 'id,nome_fantasia',
-          orderBy: 'nome_fantasia',
-          limit: 500,
-        });
-        setClients(
-          data.map((client) => ({ id: client.id, name: client.nome_fantasia || client.id })),
-        );
+        setClients(await fetchDashboardClients());
       } catch (error) {
         console.error('Error fetching clients:', error);
       } finally {

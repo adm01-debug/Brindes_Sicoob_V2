@@ -39,6 +39,7 @@ const HIGH_LATENCY_MS = 2000;
 
 let cached: CloudStatusSnapshot | null = null;
 let inFlight: Promise<CloudStatusSnapshot> | null = null;
+let healthFunctionForbiddenFor: string | null = null;
 
 const target: EventTarget = typeof EventTarget !== 'undefined' ? new EventTarget() : ({
   addEventListener() {},
@@ -68,10 +69,11 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   });
 }
 
-async function checkAuth(): Promise<{ ok: boolean; ms: number }> {
-  const t0 = performance.now();
+type SessionProbe = Awaited<ReturnType<typeof supabase.auth.getSession>>;
+
+async function checkAuth(session: Promise<SessionProbe>, t0: number): Promise<{ ok: boolean; ms: number }> {
   try {
-    const { error } = await withTimeout(supabase.auth.getSession(), 2500);
+    const { error } = await session;
     return { ok: !error, ms: Math.round(performance.now() - t0) };
   } catch {
     return { ok: false, ms: Math.round(performance.now() - t0) };
@@ -95,20 +97,51 @@ async function checkRest(): Promise<{ ok: boolean; ms: number }> {
       }),
       2500,
     );
-    return { ok: res.ok || res.status === 404, ms: Math.round(performance.now() - t0) };
+    // A sonda mede alcançabilidade do PostgREST, não autorização. A raiz
+    // `/rest/v1/` devolve 401 neste projeto (spec OpenAPI fechada), o que
+    // mantinha `rest.ok` falso para sempre e travava o status em `warming`.
+    return { ok: isReachableStatus(res.status), ms: Math.round(performance.now() - t0) };
   } catch {
     return { ok: false, ms: Math.round(performance.now() - t0) };
   }
 }
 
-async function checkHealthFunction(): Promise<{ ok: boolean; ms: number; data?: unknown }> {
+/** Qualquer resposta do servidor prova que o serviço está no ar; só 5xx indica indisponibilidade. */
+function isReachableStatus(status: number): boolean {
+  return status < 500;
+}
+
+function isPermissionDenied(error: unknown): boolean {
+  const context = (error as { context?: { status?: number } } | null)?.context;
+  return context?.status === 401 || context?.status === 403;
+}
+
+const ANONYMOUS_SESSION_KEY = 'anonymous';
+
+/** Identidade da sessao corrente; muda a cada login/logout, rearmando a sonda. */
+async function sessionKeyOf(session: Promise<SessionProbe>): Promise<string> {
+  try {
+    const { data } = await session;
+    return data?.session?.user?.id ?? ANONYMOUS_SESSION_KEY;
+  } catch {
+    return ANONYMOUS_SESSION_KEY;
+  }
+}
+
+async function checkHealthFunction(session: Promise<SessionProbe>): Promise<{ ok: boolean; ms: number; data?: unknown }> {
+  const sessionKey = await sessionKeyOf(session);
   const t0 = performance.now();
+  if (healthFunctionForbiddenFor === sessionKey) return { ok: false, ms: 0 };
   try {
     const headers = getRequestHeaders();
     const { data, error } = await supabase.functions.invoke('system-healthcheck', {
       headers,
     });
     const ms = Math.round(performance.now() - t0);
+    // `system-healthcheck` exige papel `dev`. Para os demais usuários a negativa
+    // é definitiva: repetir a cada sondagem só gera 403 em loop no console.
+    if (error && isPermissionDenied(error)) healthFunctionForbiddenFor = sessionKey;
+    else if (!error) healthFunctionForbiddenFor = null;
     return { ok: !error, ms, data };
   } catch {
     return { ok: false, ms: Math.round(performance.now() - t0) };
@@ -139,11 +172,15 @@ export async function probeCloudStatus(force = false): Promise<CloudStatusSnapsh
   if (inFlight) return inFlight;
 
   inFlight = (async () => {
+    // Uma unica leitura de sessao alimenta o sinal de auth e a chave de memoizacao.
+    const authT0 = performance.now();
+    const session = withTimeout(supabase.auth.getSession(), 2500);
+    session.catch(() => undefined);
     const [auth, bridgeRes, rest, healthFn] = await Promise.all([
-      checkAuth(),
+      checkAuth(session, authT0),
       pingHealth(2500).then((r) => ({ ok: r.ok, ms: r.ms })),
       checkRest(),
-      checkHealthFunction(),
+      checkHealthFunction(session),
     ]);
 
     // O status do healthFn (que checa banco e bridges internas) tem precedência
@@ -190,6 +227,8 @@ export function onCloudStatusChange(
 
 export function invalidateCloudStatus(): void {
   cached = null;
+  // Troca de sessão pode elevar o papel do usuário: a sonda volta a ser tentada.
+  healthFunctionForbiddenFor = null;
 }
 
 /**

@@ -1,5 +1,5 @@
 /**
- * Product detail fetching — fetchById, bySku, categories, colors.
+ * Product detail fetching ââ‚¬â€ fetchById, bySku, categories, colors.
  */
 import { logger } from '@/lib/logger';
 import { invokeExternalDb, invokeBatchBridge, type InvokeResult, type BatchQuery } from './bridge';
@@ -11,6 +11,11 @@ import {
   PRODUCT_SELECT_FIELDS_DETAIL,
   shouldFallbackSelect,
 } from './product-types';
+import { resolvePrivateStorageUrlSafe } from '@/lib/private-storage';
+import { resolveProductRecordImages } from './product-record-images';
+
+const PRODUCT_IMAGE_BUCKET = 'personalization-images';
+const PRODUCT_VIDEO_BUCKET = 'product-videos';
 
 interface ProductImage {
   url_cdn: string;
@@ -68,6 +73,23 @@ interface KitComponent {
   length_mm: number | null;
   weight_g: number | null;
   notes: string | null;
+}
+
+async function resolveProductImageRows(rows: ProductImage[]): Promise<ProductImage[]> {
+  return Promise.all(rows.map(async (image) => ({
+    ...image,
+    url_cdn: await resolvePrivateStorageUrlSafe(image.url_cdn, PRODUCT_IMAGE_BUCKET) ?? image.url_cdn,
+    url_original: await resolvePrivateStorageUrlSafe(image.url_original, PRODUCT_IMAGE_BUCKET),
+  })));
+}
+
+async function resolveProductVideoRows(rows: Video[]): Promise<Video[]> {
+  return Promise.all(rows.map(async (video) => ({
+    ...video,
+    url_stream: await resolvePrivateStorageUrlSafe(video.url_stream, PRODUCT_VIDEO_BUCKET),
+    url_thumbnail: await resolvePrivateStorageUrlSafe(video.url_thumbnail, PRODUCT_VIDEO_BUCKET),
+    url_original: await resolvePrivateStorageUrlSafe(video.url_original, PRODUCT_VIDEO_BUCKET),
+  })));
 }
 
 interface ColorEntry {
@@ -138,7 +160,7 @@ async function fetchProductImages(productId: string): Promise<ProductImage[]> {
       filters: { product_id: productId, is_active: true },
       orderBy: { column: 'display_order', ascending: true }, limit: 80,
     });
-    return result.records ?? [];
+    return resolveProductImageRows(result.records ?? []);
   } catch (error) {
     logger.warn(`[product:${productId}] Não foi possível buscar imagens:`, error);
     return [];
@@ -260,7 +282,7 @@ async function fetchVideos(productId: string): Promise<Video[]> {
       filters: { product_id: productId, is_active: true },
       orderBy: { column: 'display_order', ascending: true }, limit: 20,
     });
-    return result.records ?? [];
+    return resolveProductVideoRows(result.records ?? []);
   } catch (error) {
     logger.warn(`[product:${productId}] Não foi possível buscar vídeos:`, error);
     return [];
@@ -292,7 +314,7 @@ async function completeProductImages(productId: string, firstPage: ProductImage[
       filters: { product_id: productId, is_active: true },
       orderBy: { column: 'display_order', ascending: true }, limit: 80, offset: 80,
     });
-    return [...firstPage, ...(result.records ?? [])];
+    return [...firstPage, ...await resolveProductImageRows(result.records ?? [])];
   } catch (error) {
     logger.warn(`[product:${productId}] Falha paginando imagens (página 2):`, error);
     return firstPage;
@@ -456,6 +478,7 @@ export async function fetchPromobrindProductById(
 
   const imagesAll = await completeProductImages(productId, allProductImages);
   applyDetailImages(product, imagesAll);
+  await resolveProductRecordImages(product);
   await applyMaterials(product, productId, enrichment.materialIds);
 
   await applyVariantColors(product, productId, variants, imagesAll);
@@ -479,7 +502,9 @@ export async function fetchPromobrindProductBySku(sku: string): Promise<Promobri
       filters: { sku }, select: PRODUCT_SELECT_FIELDS_LEGACY, limit: 1,
     });
   }
-  return result.records?.[0] || null;
+  const product = result.records?.[0] || null;
+  if (product) await resolveProductRecordImages(product);
+  return product;
 }
 
 export async function fetchPromobrindCategories(): Promise<{ id: string; name: string }[]> {
