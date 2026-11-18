@@ -14,6 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { askConfirm } from '@/stores/useConfirmDialogStore';
 
 interface RepairAction {
   table: string;
@@ -99,7 +100,7 @@ export function OwnershipRepairDialog({ reportId, hasIssues }: Props) {
 
   async function applyRepair() {
     if (!preview) return;
-    if (!confirm("Confirma a aplicação do reparo? Esta ação modifica o banco e é registrada nos logs.")) return;
+    if (!(await askConfirm({ title: 'Aplicar reparo?', description: 'Esta ação modifica o banco e é registrada nos logs.', variant: 'warning', confirmLabel: 'Aplicar reparo' }))) return;
     const r = await invoke(false);
     if (r) {
       setApplied(r);
