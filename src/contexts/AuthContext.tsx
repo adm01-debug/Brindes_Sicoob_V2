@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, useRef, useCallback, type ReactNode, useMemo, type Dispatch, type SetStateAction } from "react";
+import { clearSensitiveBrowserData } from '@/lib/auth/sensitive-browser-data';
 import { type User, type Session, type AuthChangeEvent } from "@supabase/supabase-js";
 import { supabase, supabaseUrl } from "@/integrations/supabase/client";
 import { createClientLogger } from "@/lib/telemetry/structuredLogger";
@@ -94,20 +95,6 @@ function hasPersistedSession(): boolean {
   } catch {
     // Em configuração não convencional, preserva o fluxo conservador.
     return true;
-  }
-}
-
-function clearSensitiveBrowserData(): void {
-  try {
-    sessionStorage.clear();
-    [
-      "product-favorites",
-      "product-comparison",
-      "recently-viewed-products",
-      "duplicate_product",
-    ].forEach(key => localStorage.removeItem(key));
-  } catch (error) {
-    console.warn("Falha ao limpar armazenamento local no logout", error);
   }
 }
 
