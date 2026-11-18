@@ -133,7 +133,6 @@ function catalogFlagsFor(product: ReturnType<typeof useProduct>["data"]) {
   if (!product) return undefined;
   return {
     featured: product.featured, newArrival: product.newArrival, onSale: product.onSale,
-    lowStock: product.stockStatus === 'low-stock', stock: product.stock,
   };
 }
 
