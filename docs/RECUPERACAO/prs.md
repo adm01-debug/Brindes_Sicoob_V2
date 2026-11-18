@@ -5,21 +5,23 @@
 ## Vereditos revistos pela segunda rodada
 
 A tabela abaixo nasceu da **primeira** rodada. A segunda — descrita em
-[`reauditoria.md`](reauditoria.md) — derrubou sete desses "nada a recuperar", e os itens que
-ela resgatou estão em [`itens.md`](itens.md) com a marca `(resgatado na refutação)`. A tabela
-foi reconciliada com o anexo: esses sete passam a dizer **REVISTO → RECUPERAR**, com a
-contagem real de itens. Veredito e anexo não podem divergir — é a tabela que autoriza apagar
-a ref, e nenhuma destas sete pode ser apagada enquanto os itens não voltarem.
+[`reauditoria.md`](reauditoria.md) — reabriu sete desses "nada a recuperar", e o que ela
+achou está em [`itens.md`](itens.md) com a marca `(resgatado na refutação)`. Lendo item por
+item, **cinco** trazem trabalho a recuperar e **dois não trazem**: o próprio texto do anexo
+os classifica como achado de varredura, não como entrega perdida. Veredito e anexo não podem
+divergir — é a tabela que autoriza apagar a ref —, então só os cinco viram
+**REVISTO → RECUPERAR**; os dois seguem `NADA_A_RECUPERAR` e suas refs não ficam presas a
+um trabalho que não existe.
 
-| PR | itens resgatados na segunda rodada |
-|---|---|
-| #85 | 2 |
-| #97 | 5 |
-| #137 | 1 |
-| #149 | 1 |
-| #154 | 6 |
-| #158 | 1 |
-| #161 | 1 |
+| PR | o que a segunda rodada achou | conta como item a recuperar? |
+|---|---|---|
+| #85 | 2 | sim |
+| #97 | 5 | sim |
+| #137 | 1 | sim |
+| #149 | 1 — referência órfã num gerador `.py` que aponta para um caminho renomeado; o anexo abre com "NÃO É RECUPERAÇÃO" e registra que o arquivo nunca foi tocado pela PR | **não** — defeito próprio da `main`, entra como tarefa avulsa |
+| #154 | 6 | sim |
+| #158 | 1 | sim |
+| #161 | 1 — o `::notice` de "função sem alteração" no log do deploy; o anexo abre com "cosmético, NÃO vale PR" e nenhum gate depende dele | **não** — churn, descartado com justificativa |
 
 
 ## As 32 PRs fechadas sem merge
@@ -41,11 +43,11 @@ a ref, e nenhuma destas sete pode ser apagada enquanto os itens não voltarem.
 | #137 | **REVISTO → RECUPERAR** | 1 | [abaixo](#pr-137) |
 | #145 | RECUPERAR | 9 | [abaixo](#pr-145) |
 | #148 | RECUPERAR | 2 | [abaixo](#pr-148) |
-| #149 | **REVISTO → RECUPERAR** | 1 | [abaixo](#pr-149) |
+| #149 | NADA_A_RECUPERAR | 0 | [abaixo](#pr-149) |
 | #154 | **REVISTO → RECUPERAR** | 6 | [abaixo](#pr-154) |
 | #158 | **REVISTO → RECUPERAR** | 1 | [abaixo](#pr-158) |
 | #160 | NADA_A_RECUPERAR | 0 | [abaixo](#pr-160) |
-| #161 | **REVISTO → RECUPERAR** | 1 | [abaixo](#pr-161) |
+| #161 | NADA_A_RECUPERAR | 0 | [abaixo](#pr-161) |
 | #164 | RECUPERAR | 1 | [abaixo](#pr-164) |
 | #165 | NADA_A_RECUPERAR | 0 | [abaixo](#pr-165) |
 | #172 | NADA_A_RECUPERAR | 0 | [abaixo](#pr-172) |

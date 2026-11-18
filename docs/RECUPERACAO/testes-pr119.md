@@ -67,13 +67,24 @@ cada um exige recuperar junto a implementação correspondente, que está catalo
 
 ### Achado novo, do cenário de realtime: canal do Kanban não é exclusivo
 
-`business-realtime-contract.scenario.mjs` exige
-`sicoob-orders-realtime:${crypto.randomUUID()}`; a `main` usa nome fixo em
-`src/services/sicoob/commonService.ts:18` e **duas telas assinam esse mesmo canal**
-(`OrdersKanbanPage.tsx:269` e `OrdersPage.tsx:138`). Com as duas montadas, o segundo
-`subscribe()` cai no mesmo tópico e o `removeChannel` de uma derruba o da outra: a atualização
-ao vivo do Kanban para de chegar, em silêncio. Correção é de uma linha, e este cenário é o
-teste dela. **Pendente — entra junto da PR dos 8 arquivos.**
+**Medido:** `business-realtime-contract.scenario.mjs` exige
+`sicoob-orders-realtime:${crypto.randomUUID()}`; a `main` usa **nome fixo** em
+`src/services/sicoob/commonService.ts:18`, e dois consumidores diferentes abrem esse mesmo
+nome — `OrdersKanbanPage.tsx:269` e `OrdersPage.tsx:138`. É esse o ponto que o cenário
+reprova, e é verificável por leitura do arquivo.
+
+**NÃO VERIFICADO:** que isso hoje faça o Kanban perder atualização na tela. As duas páginas
+estão em **rotas distintas** (`src/routes/config/sicoob.ts:9-10`), então não ficam montadas
+ao mesmo tempo na mesma aba; e duas abas usam clientes Supabase independentes
+(`src/integrations/supabase/client.ts:56-62`), cada uma com seu socket. A janela que sobra é
+a **navegação entre as duas rotas na mesma aba**, em que a saída de uma chama `removeChannel`
+sobre o mesmo tópico que a outra acaba de assinar — plausível, mas não reproduzi, e sem
+reprodução não registro como defeito confirmado.
+
+**Decisão:** o nome único entra assim mesmo (PR #342). É uma linha, não muda comportamento
+observável, elimina por construção toda a classe de colisão de tópico e é exatamente o que o
+cenário cobra — não depende de a falha estar acontecendo hoje para valer a pena.
+**Pendente — o cenário entra junto da PR dos 8 arquivos.**
 
 ## Tabela completa
 

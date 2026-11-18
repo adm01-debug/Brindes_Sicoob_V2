@@ -109,15 +109,24 @@ que abriam em vez de fechar (`external-db-bridge`, `mcp-server`), corrigidos na 
    Fora da fila agora só pela regra de "no máximo 5 PRs abertas" (`AGENTS.md`); esvaziar a
    fila tem prioridade sobre aumentá-la.
 2. **Suíte de testes da PR #119** — triagem **executada** em 18/11/2026
-   ([`testes-pr119.md`](testes-pr119.md)): **8 arquivos passam contra a `main` como estão** e
-   devem entrar em PR própria, sem tocar em `src/`; 52 falham porque medem comportamento que
-   a `main` não tem (viram evidência de lacuna, ligada a `capacidades.md`); 21 cenários
-   `.mjs` também foram executados: 1 passa como está, 2 passam só corrigindo o caminho de uma
-   migration e 1 deles achou um defeito novo na `main` — o canal de realtime do Kanban não é
-   exclusivo por montagem (`commonService.ts:18`), e duas telas assinam o mesmo, então a
-   atualização ao vivo morre em silêncio quando as duas estão abertas. Os 7 simuladores `.py`
-   exigem Docker e não rodam neste ambiente. **A `pr/119` não se apaga enquanto esses
-   arquivos não estiverem na `main`.**
+   ([`testes-pr119.md`](testes-pr119.md)). A condição de exclusão da ref é **a lista fechada
+   abaixo**, não "todos os arquivos da PR":
+   - os **8 arquivos Vitest que passam contra a `main` como estão** (PR própria, sem tocar em
+     `src/`);
+   - os **3 cenários `.mjs` aprovados**: `manager-approval-delegation-route` como está, mais
+     `access-log-marketing-acl` e `view-notification-hardening`, que só precisam do caminho
+     corrigido da migration;
+   - o cenário `business-realtime-contract` **junto da correção de uma linha** que ele cobre
+     (`commonService.ts:18`, PR #342).
+
+   Fora dessa lista, nada prende a ref: os **52 Vitest que falham** medem comportamento que a
+   `main` não tem e ficam registrados como lacuna ligada a `capacidades.md` (recuperar o teste
+   exige recuperar antes a capacidade, e é ela que fica na fila, não o arquivo);
+   `edge-runtime-contract.test.mjs` fica **descartado como obsoleto** — o contrato foi
+   reimplementado por outro caminho na PR #335 — e `critical-test-skips.scenario.mjs` também,
+   porque a `main` já fiscaliza a mesma regra por `scripts/check-critical-test-skip-budget.mjs`.
+   Os 7 simuladores `.py` exigem Docker, não rodam neste ambiente e seguem pendentes de
+   medição, sem bloquear a ref.
 3. **`crm-db-bridge` na allowlist de publicação** (PR #311) — decisão do dono, toca workflow.
 4. **`WEBHOOK_DISPATCHER_SECRET`** — provisionamento pendente, bloqueado por classificador.
 5. **`connections-auto-test` divergente em produção** — fora da allowlist de publicação,
