@@ -39,14 +39,34 @@ type ClientAffinity = ReturnType<typeof useClientAffinity>;
 type ClientBi = ReturnType<typeof useClientBI>;
 type IndustryTrends = ReturnType<typeof useIndustryCategoryTrends>;
 
+/**
+ * Categoria principal do cliente, só de fonte medida.
+ *
+ * As duas primeiras fontes têm caminho simulado: `useClientCategoryAffinity` e
+ * `useClientAffinity` devolvem categoria fictícia com `isMock: true` quando a
+ * RPC não traz produto. Sem checar a flag, a comparação entre clientes elegia
+ * a MESMA categoria inventada para todos — que é o defeito que esta PR fecha
+ * em `useClientBI`, só que uma camada acima.
+ */
+function categoriaDeCategoryAffinity(categoryAffinity: CategoryAffinity): string | null {
+  if (categoryAffinity.isMock) return null;
+  return categoryAffinity.favorite?.label ?? null;
+}
+
+function categoriaDeAffinity(affinity: ClientAffinity): string | null {
+  const dados = affinity.data;
+  if (!dados || dados.isMock) return null;
+  return dados.categories?.[0]?.category ?? null;
+}
+
 function resolveTopCategory(
   categoryAffinity: CategoryAffinity,
   affinity: ClientAffinity,
   bi: ClientBi,
 ): string | null {
   return (
-    categoryAffinity.favorite?.label ??
-    affinity.data?.categories?.[0]?.category ??
+    categoriaDeCategoryAffinity(categoryAffinity) ??
+    categoriaDeAffinity(affinity) ??
     bi.topCategories?.[0]?.category ??
     null
   );
