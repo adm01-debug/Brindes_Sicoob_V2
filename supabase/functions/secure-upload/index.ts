@@ -3,6 +3,11 @@ import { createStructuredLogger } from "../_shared/structured-logger.ts";
 import { getOrCreateRequestId } from "../_shared/request-id.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 
+function privateStorageReference(bucket: string, path: string): string {
+  const encodedPath = path.split("/").map(encodeURIComponent).join("/");
+  return `supabase-storage://${bucket}/${encodedPath}`;
+}
+
 interface ScanLog {
   user_id: string;
   bucket: string;
@@ -158,10 +163,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { data: { publicUrl } } = supabaseAdmin.storage
-      .from(targetBucket)
-      .getPublicUrl(uploadData.path);
-
     log.info("upload_ok", {
       bucket: targetBucket,
       path: uploadData.path,
@@ -170,7 +171,12 @@ Deno.serve(async (req) => {
 
     return log.respond(
       new Response(
-        JSON.stringify({ url: publicUrl, path: uploadData.path, request_id: requestId }),
+        JSON.stringify({
+          url: privateStorageReference(targetBucket, uploadData.path),
+          bucket: targetBucket,
+          path: uploadData.path,
+          request_id: requestId,
+        }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
       ),
     );

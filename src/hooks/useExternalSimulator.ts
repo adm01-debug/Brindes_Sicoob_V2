@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import Fuse from 'fuse.js';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from "@/lib/logger";
+import { resolveProductImageRecords } from '@/lib/external-db/product-record-images';
 import { createProductFuseOptions, dedupeById, rankProductSearchResults } from '@/utils/product-search';
 
 const PRODUCT_IMAGE_SELECT = 'product_id, url_cdn, image_type, is_primary, display_order';
@@ -197,7 +198,7 @@ export function useExternalProductSearch(searchQuery: string) {
         }
       }
 
-      return products;
+      return resolveProductImageRecords(products);
     },
     enabled: searchQuery.trim().length >= 2,
     staleTime: 30000, // 30 segundos
@@ -381,7 +382,7 @@ export function useExternalProductsList(options?: {
         }
       }
 
-      return products;
+      return resolveProductImageRecords(products);
     },
     staleTime: 60000, // 1 minuto
   });

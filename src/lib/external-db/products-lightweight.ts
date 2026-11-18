@@ -4,6 +4,7 @@
  */
 import { logger } from '@/lib/logger';
 import { invokeExternalDb, invokeBatchBridge, type BatchResult, type InvokeResult } from './bridge';
+import { resolvePrivateStorageUrlSafe } from '@/lib/private-storage';
 
 const PRODUCT_SELECT_LIGHTWEIGHT = 'id, name, sku, supplier_reference, sale_price, primary_image_url, supplier_id, category_id, main_category_id, brand, is_active, stock_quantity, min_quantity, is_featured, is_bestseller, is_new, is_on_sale, is_kit, allows_personalization, gender, price_updated_at';
 const LIGHTWEIGHT_PAGE_SIZE = 500;          // antes 100 — reduz round-trips em 5x
@@ -202,7 +203,7 @@ async function fetchNextPage(context: LightweightContext, offset: number, curren
   }
 }
 
-export async function fetchPromobrindProductsLightweight(options?: LightweightOptions): Promise<LightweightProduct[]> {
+async function fetchLightweightRecords(options?: LightweightOptions): Promise<LightweightProduct[]> {
   const context = lightweightContext(options);
 
   if (typeof options?.limit === 'number' && options.limit > 0) {
@@ -233,6 +234,22 @@ export async function fetchPromobrindProductsLightweight(options?: LightweightOp
   if (burst.lastPageSize < LIGHTWEIGHT_PAGE_SIZE) return burst.products;
   if (burst.products.length >= maxTotal) return burst.products.slice(0, maxTotal);
   return fetchRemainingPages(context, burst.products, maxTotal);
+}
+
+// A listagem lightweight alimenta seletores que jogam `primary_image_url`
+// direto no `src` da imagem. Registros gravados com upload privado guardam a
+// referencia `supabase-storage://`, que precisa virar URL assinada na leitura.
+async function resolveLightweightImages(products: LightweightProduct[]): Promise<LightweightProduct[]> {
+  await Promise.all(products.map(async (product) => {
+    const value = product.primary_image_url;
+    if (!value || !value.startsWith('supabase-storage:')) return;
+    product.primary_image_url = (await resolvePrivateStorageUrlSafe(value, 'personalization-images')) ?? value;
+  }));
+  return products;
+}
+
+export async function fetchPromobrindProductsLightweight(options?: LightweightOptions): Promise<LightweightProduct[]> {
+  return resolveLightweightImages(await fetchLightweightRecords(options));
 }
 
 async function fetchSequential(

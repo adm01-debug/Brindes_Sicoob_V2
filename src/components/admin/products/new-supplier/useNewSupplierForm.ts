@@ -8,6 +8,7 @@ import { fetchAddressByCep } from '@/utils/viacep';
 import { fetchCnpjData, type CnpjData } from '@/utils/cnpj-lookup';
 import { invokeExternalDb, invokeExternalDbSingle } from '@/lib/external-db';
 import { logger } from '@/lib/logger';
+import { createPrivateStorageReference } from '@/lib/private-storage';
 import { type SupplierContact, type PixKey, createEmptyContact, createEmptyPixKey, ORGANIZATION_ID } from './types';
 
 function trimmedOrNull(value: string): string | null {
@@ -46,7 +47,7 @@ async function uploadSupplierLogo(file: File): Promise<string> {
   const filePath = `suppliers/new-${Date.now()}.${extension}`;
   const { error } = await supabase.storage.from('supplier-logos').upload(filePath, file, { upsert: true });
   if (error) throw error;
-  return supabase.storage.from('supplier-logos').getPublicUrl(filePath).data.publicUrl;
+  return createPrivateStorageReference('supplier-logos', filePath);
 }
 
 interface CnpjSetters {

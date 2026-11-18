@@ -9,6 +9,8 @@ import {
   PRODUCT_SELECT_FIELDS_LEGACY,
   shouldFallbackSelect,
 } from './product-types';
+import { resolvePrivateStorageUrlSafe } from '@/lib/private-storage';
+import { resolveProductRecordImages } from './product-record-images';
 
 interface FetchPromobrindProductsOptions<ReturnCount extends boolean | undefined = undefined> {
   search?: string;
@@ -334,6 +336,14 @@ function collectRecords<T>(results: BatchResult[], indexes: number[]): T[] {
   return records;
 }
 
+async function resolveImageRecords(records: ImageRecord[]): Promise<ImageRecord[]> {
+  return Promise.all(records.map(async (image) => ({
+    ...image,
+    url_cdn: await resolvePrivateStorageUrlSafe(image.url_cdn, 'personalization-images') ?? image.url_cdn,
+    url_original: await resolvePrivateStorageUrlSafe(image.url_original, 'personalization-images'),
+  })));
+}
+
 async function populateSupplierCache(suppliers: SupplierRecord[]): Promise<void> {
   try {
     const { putInCacheSafe } = await import('./immutableCache');
@@ -481,6 +491,9 @@ function applyEnrichments(
 }
 
 async function enrichProducts(products: PromobrindProduct[], options?: { limit?: number }): Promise<void> {
+  // Campos do proprio registro vem antes do enriquecimento: produtos sem linha
+  // em `product_images` dependem deles para exibir foto na listagem.
+  await Promise.all(products.map(product => resolveProductRecordImages(product)));
   const productIds = new Set(products.map(product => product.id));
   const supplierIds = [...new Set(products.map(product => product.supplier_id).filter(Boolean))] as string[];
   const heavy = products.length <= 500 || typeof options?.limit === 'number';
@@ -491,7 +504,7 @@ async function enrichProducts(products: PromobrindProduct[], options?: { limit?:
   if (!results) return;
 
   const variants = collectRecords<VariantRecord>(results, map.variants);
-  const images = collectRecords<ImageRecord>(results, map.images);
+  const images = await resolveImageRecords(collectRecords<ImageRecord>(results, map.images));
   const supplierRecords = collectRecords<SupplierRecord>(results, map.suppliers);
   const colorVariations = collectRecords<ColorVariationRecord>(results, map.colorVariations);
   const colorGroups = collectRecords<ColorGroupRecord>(results, map.colorGroups);

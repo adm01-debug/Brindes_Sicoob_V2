@@ -11,6 +11,7 @@ interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> 
   aspectRatio?: string;
   fallbackUrl?: string;
   showSkeleton?: boolean;
+  generateSrcSet?: boolean;
 }
 
 function OptimizedImageSkeleton({ visible }: { visible: boolean }) {
@@ -26,9 +27,68 @@ function decodingMode(priority: boolean) {
   return priority ? "sync" : "async";
 }
 
+function fetchPriority(priority: boolean) {
+  return priority ? "high" : "low";
+}
+
+function imageSizes(context: OptimizedImageProps['context'], error: boolean) {
+  return error ? undefined : getImageSizes(context ?? 'card');
+}
+
+function skeletonVisible(showSkeleton: boolean, loaded: boolean, error: boolean) {
+  return showSkeleton && !loaded && !error;
+}
+
 function imageVisualClass(loaded: boolean, error: boolean) {
   const loadClass = loaded ? "opacity-100 scale-100" : "opacity-0 scale-[1.02]";
   return cn(loadClass, error && "object-center p-4 opacity-50");
+}
+
+function imageSource(url: string, variant: CdnVariant, error: boolean, fallbackUrl: string): string {
+  return error ? fallbackUrl : getCdnUrl(url, variant);
+}
+
+function imageSourceSet(url: string, error: boolean, enabled: boolean): string | undefined {
+  if (error || !enabled) return undefined;
+  return getSrcSet(url) || undefined;
+}
+
+function useImageLoadState(urlCdn: string, variant: CdnVariant) {
+  const [loaded, setLoaded] = React.useState(false);
+  const [error, setError] = React.useState(false);
+  const currentSource = React.useRef(`${urlCdn}:${variant}`);
+  currentSource.current = `${urlCdn}:${variant}`;
+  React.useEffect(() => {
+    setLoaded(false);
+    setError(false);
+  }, [urlCdn, variant]);
+  return { loaded, error, setLoaded, setError, currentSource };
+}
+
+function imageLoadHandler(
+  source: string,
+  currentSource: React.MutableRefObject<string>,
+  setLoaded: (loaded: boolean) => void,
+  callback: React.ReactEventHandler<HTMLImageElement> | undefined,
+): React.ReactEventHandler<HTMLImageElement> {
+  return (event) => {
+    if (currentSource.current !== source) return;
+    setLoaded(true);
+    callback?.(event);
+  };
+}
+
+function imageErrorHandler(
+  source: string,
+  currentSource: React.MutableRefObject<string>,
+  setError: (error: boolean) => void,
+  callback: React.ReactEventHandler<HTMLImageElement> | undefined,
+): React.ReactEventHandler<HTMLImageElement> {
+  return (event) => {
+    if (currentSource.current !== source) return;
+    setError(true);
+    callback?.(event);
+  };
 }
 
 /**
@@ -53,53 +113,48 @@ export const OptimizedImage = React.forwardRef<HTMLImageElement, OptimizedImageP
     onLoad,
     onError,
     showSkeleton = true,
+    generateSrcSet = true,
     ...props 
   }, ref) => {
-    const [loaded, setLoaded] = React.useState(false);
-    const [error, setError] = React.useState(false);
+    const { loaded, error, setLoaded, setError, currentSource } = useImageLoadState(urlCdn, variant);
 
-    const src = React.useMemo(() => {
-      if (error) return fallbackUrl;
-      return getCdnUrl(urlCdn, variant);
-    }, [urlCdn, variant, error, fallbackUrl]);
+    const src = React.useMemo(
+      () => imageSource(urlCdn, variant, error, fallbackUrl),
+      [urlCdn, variant, error, fallbackUrl],
+    );
 
-    const srcSet = React.useMemo(() => {
-      if (error) return undefined;
-      return getSrcSet(urlCdn);
-    }, [urlCdn, error]);
+    const srcSet = React.useMemo(
+      () => imageSourceSet(urlCdn, error, generateSrcSet),
+      [urlCdn, error, generateSrcSet],
+    );
 
-    const sizes = React.useMemo(() => {
-      if (error) return undefined;
-      return getImageSizes(context);
-    }, [context, error]);
+    const sizes = imageSizes(context, error);
+    const sourceKey = `${urlCdn}:${variant}`;
+    const handleLoad = imageLoadHandler(sourceKey, currentSource, setLoaded, onLoad);
+    const handleError = imageErrorHandler(sourceKey, currentSource, setError, onError);
 
     return (
       <div 
         className={cn("relative overflow-hidden bg-muted/20", className)}
         style={{ aspectRatio }}
       >
-        <OptimizedImageSkeleton visible={showSkeleton && !loaded && !error} />
+        <OptimizedImageSkeleton visible={skeletonVisible(showSkeleton, loaded, error)} />
 
         <img
+          key={sourceKey}
           ref={ref}
           src={src}
           srcSet={srcSet}
           sizes={sizes}
           loading={loadingMode(priority)}
           decoding={decodingMode(priority)}
-          {...{ fetchpriority: priority ? "high" : "low" }}
+          {...{ fetchpriority: fetchPriority(priority) }}
           className={cn(
             "h-full w-full object-contain transition-all duration-500",
             imageVisualClass(loaded, error)
           )}
-          onLoad={(e) => {
-            setLoaded(true);
-            onLoad?.(e);
-          }}
-          onError={(e) => {
-            setError(true);
-            onError?.(e);
-          }}
+          onLoad={handleLoad}
+          onError={handleError}
           {...props}
         />
       </div>

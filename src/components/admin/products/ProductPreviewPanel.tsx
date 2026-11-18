@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { getCdnUrl } from '@/utils/image-utils';
+import { PrivateStorageImage } from '@/components/common/PrivateStorageImage';
+import { parsePrivateStorageReference } from '@/lib/private-storage';
 import {
   Eye,
   Package,
@@ -40,10 +42,20 @@ const getStockStatus = (qty: number) => {
   return { label: 'Em estoque', color: 'text-success' };
 };
 
+// Imagens privadas chegam ao formulário como referência durável
+// (`supabase-storage://…`); `getCdnUrl` preserva o protocolo e a tag de imagem
+// não carregaria. Nesse caso a URL precisa ser assinada no momento da exibição.
+function PreviewPicture({ image, alt, className }: { image: string; alt: string; className: string }) {
+  if (parsePrivateStorageReference(image)) {
+    return <PrivateStorageImage value={image} bucket="personalization-images" alt={alt} className={className} loading="lazy" />;
+  }
+  return <img src={getCdnUrl(image, 'card')} alt={alt} className={className} loading="lazy" />;
+}
+
 function PreviewImage({ imageUrl, name, isFeatured, isNew, isOnSale, isKit, isActive }: Pick<ProductPreviewPanelProps, 'name' | 'isFeatured' | 'isNew' | 'isOnSale' | 'isKit' | 'isActive'> & { imageUrl: string | null }) {
   return (
     <div className="relative aspect-[4/5] overflow-hidden bg-muted/30">
-      {imageUrl ? <img src={imageUrl} alt={name || 'Produto'} className="w-full h-full object-contain" loading="lazy" onError={(event) => { event.currentTarget.style.display = 'none'; }} /> : <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-muted-foreground/40"><ImageIcon className="h-10 w-10" /><span className="text-[10px] font-medium">Sem imagem</span></div>}
+      {imageUrl ? <PreviewPicture image={imageUrl} alt={name || 'Produto'} className="w-full h-full object-contain" /> : <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-muted-foreground/40"><ImageIcon className="h-10 w-10" /><span className="text-[10px] font-medium">Sem imagem</span></div>}
       {isFeatured && <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 pointer-events-none" />}
       <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
         {isFeatured && <Badge className="bg-gradient-to-r from-primary to-primary-glow text-primary-foreground text-[10px] px-1.5 py-0.5 shadow-lg"><Sparkles className="h-2.5 w-2.5 mr-0.5" />Destaque</Badge>}
@@ -77,14 +89,14 @@ function PreviewThumbnails({ images }: { images: string[] }) {
   if (images.length <= 1) return null;
   return (
     <div className="flex gap-1.5 px-1">
-      {images.slice(0, 4).map((image, index) => <div key={image} className="w-10 h-10 rounded-md overflow-hidden border border-border/50 bg-muted/30"><img src={getCdnUrl(image, 'card')} alt={`Imagem ${index + 1}`} className="w-full h-full object-contain" loading="lazy" /></div>)}
+      {images.slice(0, 4).map((image, index) => <div key={image} className="w-10 h-10 rounded-md overflow-hidden border border-border/50 bg-muted/30"><PreviewPicture image={image} alt={`Imagem ${index + 1}`} className="w-full h-full object-contain" /></div>)}
       {images.length > 4 && <div className="w-10 h-10 rounded-md border border-border/50 bg-muted/30 flex items-center justify-center"><span className="text-[10px] font-medium text-muted-foreground">+{images.length - 4}</span></div>}
     </div>
   );
 }
 
 export const ProductPreviewPanel = memo(function ProductPreviewPanel({ name, sku, salePrice, stockQuantity, images, brand, isFeatured, isNew, isOnSale, isKit, isActive }: ProductPreviewPanelProps) {
-  const imageUrl = (images[0] ? getCdnUrl(images[0], 'card') : null);
+  const imageUrl = images[0] ?? null;
 
   return (
     <div className="space-y-3">

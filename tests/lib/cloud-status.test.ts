@@ -2,10 +2,14 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Mock supabase client + pingHealth ANTES de importar o módulo testado.
 const getSessionMock = vi.fn();
+const invokeMock = vi.fn();
 vi.mock('@/integrations/supabase/client', () => ({
   supabaseUrl: 'https://test.supabase.co',
   supabasePublishableKey: 'test-anon-key',
-  supabase: { auth: { getSession: () => getSessionMock() } },
+  supabase: {
+    auth: { getSession: () => getSessionMock() },
+    functions: { invoke: (...args: unknown[]) => invokeMock(...args) },
+  },
 }));
 
 const pingHealthMock = vi.fn();
@@ -29,6 +33,8 @@ beforeEach(() => {
   getSessionMock.mockReset();
   pingHealthMock.mockReset();
   fetchMock.mockReset();
+  invokeMock.mockReset();
+  invokeMock.mockResolvedValue({ data: null, error: new Error('no health fn') });
 });
 
 describe('cloud-status', () => {
@@ -39,6 +45,65 @@ describe('cloud-status', () => {
 
     const snap = await probeCloudStatus(true);
     expect(snap.status).toBe('healthy');
+  });
+
+  it('treats a protected REST root (401) as reachable', async () => {
+    getSessionMock.mockResolvedValue({ error: null });
+    pingHealthMock.mockResolvedValue({ ok: true, ms: 100 });
+    fetchMock.mockResolvedValue({ ok: false, status: 401 } as Response);
+
+    const snap = await probeCloudStatus(true);
+    expect(snap.signals.rest.ok).toBe(true);
+    expect(snap.status).toBe('healthy');
+  });
+
+  it('treats a REST 5xx as unreachable', async () => {
+    getSessionMock.mockResolvedValue({ error: null });
+    pingHealthMock.mockResolvedValue({ ok: true, ms: 100 });
+    fetchMock.mockResolvedValue({ ok: false, status: 503 } as Response);
+
+    const snap = await probeCloudStatus(true);
+    expect(snap.signals.rest.ok).toBe(false);
+    expect(snap.status).toBe('warming');
+  });
+
+  it('stops polling system-healthcheck after a 403 and retries after invalidate', async () => {
+    getSessionMock.mockResolvedValue({ error: null });
+    pingHealthMock.mockResolvedValue({ ok: true, ms: 100 });
+    fetchMock.mockResolvedValue({ ok: true, status: 200 } as Response);
+    const forbidden = Object.assign(new Error('forbidden'), { context: { status: 403 } });
+    invokeMock.mockResolvedValue({ data: null, error: forbidden });
+
+    await probeCloudStatus(true);
+    await probeCloudStatus(true);
+    await probeCloudStatus(true);
+    expect(invokeMock).toHaveBeenCalledTimes(1);
+
+    invalidateCloudStatus();
+    await probeCloudStatus(true);
+    expect(invokeMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('re-arms system-healthcheck when the authenticated session changes', async () => {
+    pingHealthMock.mockResolvedValue({ ok: true, ms: 100 });
+    fetchMock.mockResolvedValue({ ok: true, status: 200 } as Response);
+    const forbidden = Object.assign(new Error('forbidden'), { context: { status: 403 } });
+    invokeMock.mockResolvedValue({ data: null, error: forbidden });
+
+    getSessionMock.mockResolvedValue({ data: { session: { user: { id: 'agente-1' } } }, error: null });
+    await probeCloudStatus(true);
+    await probeCloudStatus(true);
+    expect(invokeMock).toHaveBeenCalledTimes(1);
+
+    // Novo login como dev na mesma aba: a sonda precisa voltar a ser tentada.
+    getSessionMock.mockResolvedValue({ data: { session: { user: { id: 'dev-1' } } }, error: null });
+    invokeMock.mockResolvedValue({ data: { status: 'ok' }, error: null });
+    await probeCloudStatus(true);
+    expect(invokeMock).toHaveBeenCalledTimes(2);
+
+    // Sucesso limpa a memoizacao para a sessao corrente.
+    await probeCloudStatus(true);
+    expect(invokeMock).toHaveBeenCalledTimes(3);
   });
 
   it('returns warming when 2 of 3 signals pass', async () => {
