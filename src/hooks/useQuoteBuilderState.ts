@@ -474,22 +474,26 @@ export function useQuoteBuilderState() {
     paymentTerms, deliveryTime, deliveryMode, deliveryDate, shippingType, shippingCost,
     discountType, discountValue, negotiationMarkup,
   };
-  const initialSnapshotRef = useRef<string | null>(null);
+  // Estado, não ref: `hasUnsavedData` é um useMemo sobre os campos do
+  // formulário. Escrever num ref não muda dependência nenhuma, então o valor
+  // memorizado continuaria `true` depois do salvamento e o guarda de saída
+  // seguiria avisando "alterações não salvas" num orçamento recém-salvo.
+  const [baselineSalvo, setBaselineSalvo] = useState<string | null>(null);
   useEffect(() => {
-    if (!loadingQuote && initialSnapshotRef.current === null) {
-      initialSnapshotRef.current = JSON.stringify(formSnapshotRef.current);
+    if (!loadingQuote && baselineSalvo === null) {
+      setBaselineSalvo(JSON.stringify(formSnapshotRef.current));
     }
-  }, [loadingQuote]);
+  }, [loadingQuote, baselineSalvo]);
 
   const hasUnsavedData = useMemo(() => {
-    if (initialSnapshotRef.current === null) return false;
+    if (baselineSalvo === null) return false;
     const current = JSON.stringify({
       clientId, contactId, items, notes, internalNotes, tags, validUntil,
       paymentTerms, deliveryTime, deliveryMode, deliveryDate, shippingType, shippingCost,
       discountType, discountValue, negotiationMarkup,
     });
-    return current !== initialSnapshotRef.current;
-  }, [clientId, contactId, items, notes, internalNotes, tags, validUntil, paymentTerms, deliveryTime, deliveryMode, deliveryDate, shippingType, shippingCost, discountType, discountValue, negotiationMarkup]);
+    return current !== baselineSalvo;
+  }, [baselineSalvo, clientId, contactId, items, notes, internalNotes, tags, validUntil, paymentTerms, deliveryTime, deliveryMode, deliveryDate, shippingType, shippingCost, discountType, discountValue, negotiationMarkup]);
 
   // ── Actions ──
   const toggleExpanded = useCallback((index: number) => {
@@ -616,7 +620,7 @@ export function useQuoteBuilderState() {
     // feita durante a chamada. Sem isto, `hasUnsavedData` ficava true para
     // sempre depois do primeiro salvamento e o vendedor era avisado de
     // "alterações não salvas" ao sair de um orçamento que acabara de salvar.
-    initialSnapshotRef.current = submittedFormSnapshot;
+    setBaselineSalvo(submittedFormSnapshot);
     createIdempotencyKeyRef.current = null;
     const transitionApplied = await applyQuoteTransition({
       quote: result, finalStatus, persistedStatus, maxDiscountPercent,
