@@ -10,6 +10,7 @@ import { OrdersPage } from './OrdersPage';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { GestorComprasMetrics } from '@/components/sicoob/GestorComprasMetrics';
 
 function GestorComprasTabs({ cooperativeId }: { cooperativeId: string | null }) {
   const [activeTab, setActiveTab] = useState('alerts');
@@ -56,9 +57,14 @@ function GestorComprasTabs({ cooperativeId }: { cooperativeId: string | null }) 
   );
 }
 
-function GestorComprasShortcuts() {
+function GestorComprasShortcuts({ cooperativeId }: { cooperativeId: string | null }) {
   return (
     <div className="space-y-6">
+      <div className="space-y-4 rounded-2xl border border-border/50 bg-card p-6">
+        <h3 className="text-sm font-bold">Situação agora</h3>
+        <GestorComprasMetrics cooperativeId={cooperativeId} />
+      </div>
+
       <div className="space-y-4 rounded-2xl border border-primary/20 bg-primary/5 p-6">
         <h3 className="flex items-center gap-2 font-bold">
           <ClipboardCheck className="h-4 w-4 text-primary" /> Fila de aprovações
@@ -118,7 +124,7 @@ export default function GestorCompras() {
           <div className="space-y-6 lg:col-span-2">
             <GestorComprasTabs cooperativeId={profile?.cooperativa_id || null} />
           </div>
-          <GestorComprasShortcuts />
+          <GestorComprasShortcuts cooperativeId={profile?.cooperativa_id || null} />
         </div>
       </div>
     </>
