@@ -75,4 +75,32 @@ describe("GlobalCommandBar", () => {
       await screen.findByPlaceholderText("Buscar ações, páginas, ferramentas..."),
     ).toBeInTheDocument();
   });
+
+  it("não abre com Ctrl+K enquanto o foco está num campo de texto", async () => {
+    // Em campo de texto a combinação pertence ao campo. É a guarda que
+    // useFavoritesGlobalShortcuts, useKitWizardShortcuts e os atalhos do
+    // mockup já aplicavam; só esta barra global não tinha.
+    const { GlobalCommandBar } = await import("@/components/command/GlobalCommandBar");
+    renderWithProviders(
+      <>
+        <input data-testid="campo" />
+        <GlobalCommandBar />
+      </>,
+    );
+
+    const campo = screen.getByTestId("campo");
+    campo.focus();
+    fireEvent.keyDown(campo, { key: "k", ctrlKey: true });
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+
+  it("continua abrindo com Ctrl+K fora de campo de texto", async () => {
+    const { GlobalCommandBar } = await import("@/components/command/GlobalCommandBar");
+    renderWithProviders(<GlobalCommandBar />);
+
+    fireEvent.keyDown(document.body, { key: "k", ctrlKey: true });
+
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+  });
 });
