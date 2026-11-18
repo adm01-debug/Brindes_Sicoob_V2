@@ -47,6 +47,56 @@ describe('useKitAutoSave', () => {
 
   afterEach(() => vi.useRealTimers());
 
+  it('nao rebaixa para rascunho o kit que o montador considera valido', async () => {
+    // O salvamento manual grava status 'ready' quando isValid; o automatico
+    // fixava 'draft' e desfazia isso no proximo autosave — o selo do kit no
+    // painel voltava para "Rascunho" sozinho.
+    maybeSingle.mockResolvedValue({ data: { id: 'kit-1' }, error: null });
+    const kitValido = { ...initialKit, isValid: true };
+
+    const { rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, 'kit-1'),
+      { initialProps: { kit: kitValido } },
+    );
+
+    rerender({ kit: { ...kitValido, name: 'Kit renomeado' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+
+    expect(update).toHaveBeenCalledWith(expect.objectContaining({ status: 'ready' }));
+  });
+
+  it('grava a identidade escolhida no primeiro autosave de um kit novo', async () => {
+    // Sem identidade no payload, a linha nascia com a cor e o icone padrao do
+    // banco; e sem identidade no snapshot, trocar a cor nao disparava autosave.
+    single.mockResolvedValue({ data: { id: 'kit-novo' }, error: null });
+    const kitComIdentidade = {
+      ...initialKit,
+      identity: {
+        color: '#00AE9D',
+        icon: 'Gift',
+        tag: 'Fim de ano',
+        description: 'Kit de fim de ano da cooperativa',
+        isFavorite: true,
+      },
+    };
+
+    const { rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, undefined),
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: kitComIdentidade });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+
+    expect(insert).toHaveBeenCalledWith(expect.objectContaining({
+      color: '#00AE9D',
+      icon: 'Gift',
+      tag: 'Fim de ano',
+      description: 'Kit de fim de ano da cooperativa',
+      is_favorite: true,
+    }));
+  });
+
   it('não confirma salvamento quando o Supabase retorna erro e permite nova tentativa', async () => {
     maybeSingle.mockResolvedValueOnce({ data: null, error: new Error('banco indisponível') });
     maybeSingle.mockResolvedValueOnce({ data: { id: 'kit-1' }, error: null });

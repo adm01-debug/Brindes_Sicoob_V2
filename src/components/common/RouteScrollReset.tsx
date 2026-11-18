@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useLocation, useNavigationType } from "react-router-dom";
+import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 
 /**
  * RouteScrollReset
@@ -12,11 +13,17 @@ import { useLocation, useNavigationType } from "react-router-dom";
  * - Se a URL contém hash âncora (#id), respeita o destino e não força topo.
  * - Honra `prefers-reduced-motion` (fallback para `behavior: "auto"`).
  * - Skip no primeiro mount (evita interferir em deep-links com âncora).
+ *
+ * O outro lado do POP vive em `useScrollRestoration`, montado aqui: este
+ * componente é o único dono do scroll por rota, então ir ao topo no PUSH e
+ * restaurar a posição no POP ficam no mesmo lugar.
  */
 export function RouteScrollReset() {
   const { pathname, hash } = useLocation();
   const navType = useNavigationType();
   const isFirstMount = useRef(true);
+
+  useScrollRestoration();
 
   useEffect(() => {
     if (isFirstMount.current) {

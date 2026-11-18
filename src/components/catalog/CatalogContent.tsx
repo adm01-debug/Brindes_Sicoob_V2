@@ -129,7 +129,7 @@ function VirtualList({ products, navigate, handleViewProduct, handleShareProduct
 
   return (
     <div className="relative h-full">
-      <div ref={parentRef} className={CONTAINER_CLASS} style={{ contain: "strict" }}>
+      <div ref={parentRef} data-scroll-restore="catalogo-lista" className={CONTAINER_CLASS} style={{ contain: "strict" }}>
         <div style={{ height: `${virtualizer.getTotalSize()}px`, width: "100%", position: "relative", padding: "1rem" }}>
           {virtualizer.getVirtualItems().map((vr) => {
             if (vr.index === rowCount) return (
@@ -186,7 +186,7 @@ function buildSharedProps(props: CatalogContentProps, selection: CatalogSelectio
 
 function CatalogTable({ props, selection }: { props: CatalogContentProps; selection: CatalogSelection }) {
   return (
-    <div className={`${CONTAINER_CLASS}`}>
+    <div data-scroll-restore="catalogo-tabela" className={`${CONTAINER_CLASS}`}>
       {props.shouldShowCatalogSkeleton ? (
          <div className="p-4"><ProductListSkeleton count={12} /></div>
       ) : (
