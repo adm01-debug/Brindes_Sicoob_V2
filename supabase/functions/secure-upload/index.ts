@@ -3,6 +3,11 @@ import { createStructuredLogger } from "../_shared/structured-logger.ts";
 import { getOrCreateRequestId } from "../_shared/request-id.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 
+function privateStorageReference(bucket: string, path: string): string {
+  const encodedPath = path.split("/").map(encodeURIComponent).join("/");
+  return `supabase-storage://${bucket}/${encodedPath}`;
+}
+
 interface ScanLog {
   user_id: string;
   bucket: string;

@@ -48,6 +48,9 @@ export const useUpdateSicoobOrderStatus = () => {
       queryClient.invalidateQueries({ queryKey: ["sicoob_order", variables.orderId] });
       queryClient.invalidateQueries({ queryKey: ["sicoob_orders_list"] });
       queryClient.invalidateQueries({ queryKey: ["sicoob_order_history", variables.orderId] });
+      // A projecao de verba assume que o saldo ja reflete pedidos confirmados.
+      // Sem invalidar, o indicador exibe consumo menor que o real apos a transicao.
+      queryClient.invalidateQueries({ queryKey: ["pa_budget"] });
       toast.success("Status do pedido atualizado com sucesso!");
     },
     onError: (err: unknown) => {

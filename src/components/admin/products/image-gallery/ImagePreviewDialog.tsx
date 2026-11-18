@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { type ExternalImage, type VariantInfo, IMAGE_TYPES } from './types';
+import { PrivateStorageImage } from '@/components/common/PrivateStorageImage';
 
 interface Props {
   previewUrl: string | null;
@@ -73,8 +74,9 @@ export function ImagePreviewDialog({ previewUrl, onClose, extImageMap, variantMa
       <DialogContent className="max-w-3xl p-2">
         {previewUrl && (
           <div className="space-y-2">
-            <img
-              src={previewUrl}
+            <PrivateStorageImage
+              value={previewUrl}
+              bucket="personalization-images"
               alt="Preview"
               className="h-auto max-h-[80vh] w-full rounded object-contain"
               loading="lazy"

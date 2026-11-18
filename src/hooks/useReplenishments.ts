@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { invokeExternalDb } from '@/lib/external-db/bridge';
+import { resolveProductImageRecords } from '@/lib/external-db/product-record-images';
 
 /** Window in days for considering a product as "replenished" */
 const REPLENISHMENT_WINDOW_DAYS = 30;
@@ -243,7 +244,8 @@ export function useReplenishmentsWithDetails(options: UseReplenishmentsOptions =
         limit,
       });
 
-      let items = (result.records ?? [])
+      const records = await resolveProductImageRecords(result.records);
+      let items = records
         .filter(isReplenishment)
         .map(toReplenishment)
         .filter(n => n.is_active);
