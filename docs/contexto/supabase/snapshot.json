@@ -61201,10 +61201,6 @@
               "hits": 1
             },
             {
-              "file": "src/services/QuoteService.ts",
-              "hits": 1
-            },
-            {
               "file": "supabase/migrations/20260928162048_quote_save_idempotency.sql",
               "hits": 1
             },
@@ -61215,6 +61211,10 @@
             {
               "file": "supabase/migrations/20261013123000_preserve_atomic_quote_save_under_governance.sql",
               "hits": 3
+            },
+            {
+              "file": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
+              "hits": 2
             }
           ],
           "code_total_files": 8,
@@ -61258,7 +61258,7 @@
               "hits": 1
             },
             {
-              "file": "src/services/QuoteService.ts",
+              "file": "supabase/migrations/20261117092000_quote_price_attestation_gate.sql",
               "hits": 1
             }
           ],

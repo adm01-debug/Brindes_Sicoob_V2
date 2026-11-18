@@ -60,11 +60,11 @@
  "commits": {
   "convencao": "conventional commits (observado)",
   "exemplos": [
+   "chore(ci): Bump actions/checkout from 6.1.0 to 7.0.1 (#285)",
+   "chore(ci): Bump actions/setup-node from 6.5.0 to 7.1.0 (#284)",
    "feat: preco do orcamento passa a ser atestado pelo servidor (recupera #290, branch limpa sobre main) (#317)",
    "feat(sicoob): SLA de aprovação em 24h, que se recusa a mostrar número parcial (#333)",
-   "fix(kit): abrir um kit salvo deixa de regravar no banco o que acabou de ler (#327)",
-   "fix(atalhos): Ctrl+K deixa de roubar o foco de quem está digitando (#338)",
-   "feat(sicoob): gestor de compras volta a ter indicadores reais na propria tela (#332)"
+   "fix(kit): abrir um kit salvo deixa de regravar no banco o que acabou de ler (#327)"
   ]
  },
  "pr_template": ".github/PULL_REQUEST_TEMPLATE.md",

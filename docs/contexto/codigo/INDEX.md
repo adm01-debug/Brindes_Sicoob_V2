@@ -1,7 +1,7 @@
 # Contexto do projeto para agentes de IA
 
 GERADO AUTOMATICAMENTE por scripts/ai-context/gerar.mjs — não editar à mão; será sobrescrito.
-Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `64b8dc83634623f390a4ab055748d5b8b10b73b7` (2026-11-18T19:35:18-03:00).
+Publicado em `docs/contexto/codigo/` na branch `contexto` (gerada, nunca abra PR dela) a cada push em `main` e a cada 10 minutos pelo workflow `contexto.yml`; índice único das três fontes em `docs/contexto/00-INDEX.md`. Gere local com `node scripts/ai-context/gerar.mjs`. Commit-base: `25f7ab0158a6fc9f0f139500202b27ca2a084722` (2026-11-18T22:59:53Z).
 
 ## Como usar (leia antes de planejar ou executar qualquer tarefa)
 1. **Tela/rota/menu** → `rotas.json` (url/vista/menu → arquivo → hooks → tabelas → edges; `rotas_http_backend` para APIs) e `modulos.json` (módulo inteiro + dependências entre módulos).
@@ -469,14 +469,14 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - possiveis_segredos_no_codigo: 1 — ex.: scripts/ai-context/cenarios.mjs:103
 
 ## Grafo de código (graphify)
-- 28473 nós · 52683 arestas · 2077 comunidades · grafo do commit `64b8dc83`
+- 28473 nós · 52683 arestas · 2077 comunidades · grafo do commit `25f7ab01`
 - comunidades maiores: ref_hooks (480), ref_components (438), ref_integrations (408), sonner (238), react (189), expert-chat/index.ts (173), getCorsHeaders (164), ref_lib (153), react-router-dom (152), external-db-bridge/index.ts (132), postgres_ready.py (127), ref_stores (125)
 - símbolos mais chamados: q() (scripts/supabase_snapshot/snapshot.py), useExternalDatabase() (src/hooks/useExternalDatabase.ts), .collect() (scripts/supabase_snapshot/test_snapshot.py), excluded_sql() (scripts/supabase_snapshot/snapshot.py), fail() (scripts/automation.mjs), fail() (scripts/graphify-local.mjs), .metadata() (scripts/supabase_snapshot/test_snapshot.py), MaintenanceError (scripts/maintenance/lib.mjs), header() (scripts/regras_negocio/generate.py), jsonResponse() (supabase/functions/crm-db-bridge/index.ts), uniq() (scripts/ai-context/gerar.mjs), SectionCard() (src/components/admin/products/ProductFormHelpers.tsx)
 - consulta local: `graphify query "<pergunta>"`, `graphify path "<A>" "<B>"`, `graphify explain "<X>"`
 
 ## Hotspots (arquivos mais alterados, 90 dias)
-- docs/plano-melhorias-50-etapas.md (85)
-- docs/correcoes-validacao-2026-09-14.md (84)
+- docs/plano-melhorias-50-etapas.md (83)
+- docs/correcoes-validacao-2026-09-14.md (82)
 - package.json (21)
 - scripts/db/apply-sicoob-migrations.mjs (20)
 - .github/workflows/sicoob-ci.yml (19)
@@ -692,6 +692,8 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - CHANGELOG topo: [Unreleased]
 
 ## Últimos commits
+- 2026-11-18 `25f7ab0` chore(ci): Bump actions/checkout from 6.1.0 to 7.0.1 (#285)
+- 2026-11-18 `1b11bf7` chore(ci): Bump actions/setup-node from 6.5.0 to 7.1.0 (#284)
 - 2026-11-18 `64b8dc8` feat: preco do orcamento passa a ser atestado pelo servidor (recupera #290, branch limpa sobre main) (#317)
 - 2026-11-18 `06aa890` feat(sicoob): SLA de aprovação em 24h, que se recusa a mostrar número parcial (#333)
 - 2026-11-18 `57346a6` fix(kit): abrir um kit salvo deixa de regravar no banco o que acabou de ler (#327)
@@ -705,8 +707,6 @@ Os JSONs são grandes: filtre com `grep`/`jq` pelo caminho/arquivo/tabela da sua
 - 2026-11-18 `ca76bcd` fix(db): intervalo de auto-teste le agendamento de 2 e 4 horas (#310)
 - 2026-11-18 `eeb3c4e` fix(clientes): KPIs da carteira passam a ser medidos, não digitados à mão (#314)
 - 2026-11-18 `71d515b` fix(auth): logout apaga o historico de navegacao do vendedor anterior (#312)
-- 2026-11-18 `90a9cb3` feat(edge): recupera módulos das PRs #119/#178/#179 e migra os 9 consumidores que a nova política quebraria (#309)
-- 2026-11-18 `ca0c320` feat(ux): confirmação unificada substitui os 19 diálogos nativos do navegador (#306)
 
 ## Arquivos deste diretório
 - `docs/contexto/codigo/rotas.json`

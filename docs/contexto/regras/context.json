@@ -1,9 +1,9 @@
 {
  "meta": {
-  "sha": "64b8dc83634623f390a4ab055748d5b8b10b73b7",
+  "sha": "25f7ab0158a6fc9f0f139500202b27ca2a084722",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
-  "generated_at": "2026-11-18 22:35 UTC",
+  "generated_at": "2026-11-18 23:13 UTC",
   "files_total": 4350,
   "code_files": 3711,
   "code_lines": 544433
@@ -249810,10 +249810,28 @@
   }
  },
  "git": {
-  "sha": "64b8dc83634623f390a4ab055748d5b8b10b73b7",
+  "sha": "25f7ab0158a6fc9f0f139500202b27ca2a084722",
   "branch": "main",
   "remote": "https://github.com/adm01-debug/Brindes_Sicoob_V2",
   "commits": [
+   {
+    "sha": "25f7ab0",
+    "date": "2026-11-18",
+    "author": "dependabot[bot]",
+    "subject": "chore(ci): Bump actions/checkout from 6.1.0 to 7.0.1 (#285)",
+    "files": [
+     ".github/workflows/automation-local.yml"
+    ]
+   },
+   {
+    "sha": "1b11bf7",
+    "date": "2026-11-18",
+    "author": "dependabot[bot]",
+    "subject": "chore(ci): Bump actions/setup-node from 6.5.0 to 7.1.0 (#284)",
+    "files": [
+     ".github/workflows/automation-local.yml"
+    ]
+   },
    {
     "sha": "64b8dc8",
     "date": "2026-11-18",
@@ -250341,30 +250359,16 @@
      "tests/hooks/intelligence-badges.test.ts",
      "tests/pages/trends-demo-mode.test.ts"
     ]
-   },
-   {
-    "sha": "865ba6c",
-    "date": "2026-11-17",
-    "author": "adm01-debug",
-    "subject": "fix: admin-audit-hook usa modulo CORS compartilhado em vez de Allow-Origin * (#287)",
-    "files": [
-     "supabase/functions/admin-audit-hook/index.ts"
-    ]
-   },
-   {
-    "sha": "223fcf7",
-    "date": "2026-11-14",
-    "author": "adm01-debug",
-    "subject": "chore: contexto agendado de 10 min para 1x/hora (#280)",
-    "files": [
-     ".github/workflows/contexto.yml"
-    ]
    }
   ],
   "hot_files": [
    [
     "scripts/db/apply-sicoob-migrations.mjs",
     3
+   ],
+   [
+    ".github/workflows/automation-local.yml",
+    2
    ],
    [
     "scripts/db/.check-runtime-refs-allowlist.json",
@@ -250436,10 +250440,6 @@
    ],
    [
     "src/components/admin/suppliers-manager/useSuppliersManager.ts",
-    2
-   ],
-   [
-    "src/pages/sicoob/orders/OrderDetailPage.tsx",
     2
    ]
   ]
