@@ -32,11 +32,15 @@ import type { Product, ProductVariation } from "@/types/product-catalog";
  * `isVerified` e `avgRating` continuam fora: o catálogo não tem homologação de
  * fornecedor nem avaliação de comprador, e o hook perdido que prometia os dois
  * os fabricava (`getMockSupplierTrust`). Sem fonte, o selo não aparece.
+ *
+ * Prazo zero é prazo não informado, não entrega no mesmo dia: o cartão de preço
+ * já escreve "Consultar prazo" nesse caso, e o selo tem de concordar com ele.
  */
-function supplierTrustFromProduct(product: Product) {
+export function supplierTrustFromProduct(product: Pick<Product, 'leadTimeDays'>) {
+  const leadTime = product.leadTimeDays;
   return {
     isVerified: false,
-    deliveryDays: product.leadTimeDays ?? null,
+    deliveryDays: leadTime && leadTime > 0 ? leadTime : null,
     avgRating: null,
   };
 }
