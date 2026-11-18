@@ -6,8 +6,12 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Scale, TrendingUp, TrendingDown, Minus, Lightbulb, Info, Wallet } from "lucide-react";
-import { useClientVsIndustry, type MetricComparison } from "@/hooks/bi/useClientVsIndustry";
+import { Scale, TrendingUp, TrendingDown, Minus, Lightbulb, Info, Wallet, AlertCircle, RefreshCw } from "lucide-react";
+import {
+  useClientVsIndustry,
+  type ClientVsIndustryResult,
+  type MetricComparison,
+} from "@/hooks/bi/useClientVsIndustry";
 import { ComparisonSkeleton } from "@/components/bi/BISkeletons";
 import { formatCurrencyCompact, formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -137,6 +141,47 @@ function ShareOfWalletCard({ clientLtv, industryAvgLtv }: { clientLtv: number; i
 }
 
 /**
+ * Falha de consulta não é amostra insuficiente.
+ *
+ * Sem este caminho, um erro na leitura do histórico ou do benchmark caía no
+ * cartão de "amostra do ramo ainda insuficiente" — o vendedor concluía que o
+ * setor dele é pequeno demais, quando na verdade a consulta caiu.
+ */
+function ComparativoIndisponivel({ onRetry }: { onRetry: () => void }) {
+  return (
+    <Card className="border-destructive/30 border-dashed">
+      <CardContent className="p-6 flex items-start gap-3">
+        <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
+        <div className="space-y-2">
+          <div>
+            <h3 className="font-display font-semibold text-sm">Comparativo indisponível</h3>
+            <p className="text-xs text-muted-foreground">
+              Não foi possível consultar o histórico ou o benchmark. Isto não é amostra
+              insuficiente do ramo.
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={onRetry} className="gap-1.5">
+            <RefreshCw className="h-3.5 w-3.5" />Tentar novamente
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/** Dado em cache continua na tela, mas identificado como desatualizado. */
+function AvisoDeCacheDesatualizado({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div role="status" className="flex items-center justify-between gap-2 rounded-md border border-warning/30 bg-warning/10 p-2 text-xs">
+      <span>Falha ao atualizar. Exibindo o último comparativo disponível.</span>
+      <Button variant="outline" size="sm" className="h-7 gap-1.5" onClick={onRetry}>
+        <RefreshCw className="h-3.5 w-3.5" />Tentar novamente
+      </Button>
+    </div>
+  );
+}
+
+/**
  * O selo tem de dizer a verdade sobre o lado do cliente.
  *
  * O benchmark do setor é sempre medido; o lado do cliente nem sempre. Carimbar
@@ -144,7 +189,14 @@ function ShareOfWalletCard({ clientLtv, industryAvgLtv }: { clientLtv: number; i
  * o vendedor, que um LTV ilustrativo é medido. Cliente sem pedido e falha de
  * consulta não chegam aqui: têm cartão próprio, acima.
  */
-function OrigemDoDado({ isMock }: { isMock: boolean }) {
+function OrigemDoDado({ isMock, desatualizado }: { isMock: boolean; desatualizado: boolean }) {
+  if (desatualizado) {
+    return (
+      <Badge variant="outline" className="bg-warning/10 text-warning border-0 text-[10px]">
+        Último cache · atualização falhou
+      </Badge>
+    );
+  }
   if (isMock) {
     return (
       <Badge variant="outline" className="bg-warning/10 text-warning border-0 text-[10px]">
@@ -192,45 +244,35 @@ function ClienteSemComparativo(
   );
 }
 
-export function ClientVsIndustryComparison({ clientId, ramoAtividade }: Props) {
-  const {
-    isLoading, isMock, hasClientData, isClientDataUnavailable, refetch,
-    hasEnoughSample, sampleSize, daysWindow, metrics, insight,
-  } = useClientVsIndustry(clientId, ramoAtividade);
+/** Amostra do ramo pequena demais para benchmarking — e não falha de consulta. */
+function AmostraInsuficiente(
+  { ramoAtividade, daysWindow }: { ramoAtividade: string; daysWindow: number },
+) {
+  return (
+    <Card className="border-[1.5px] border-dashed">
+      <CardContent className="p-6 flex items-start gap-3">
+        <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
+          <Info className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <div className="space-y-1">
+          <h3 className="font-display font-semibold text-sm">Comparativo Cliente × Setor</h3>
+          <p className="text-xs text-muted-foreground">
+            Amostra do ramo <span className="font-medium">{ramoAtividade}</span> ainda
+            insuficiente para gerar benchmarking. Mínimo de 3 empresas com orçamentos
+            nos últimos {daysWindow} dias.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
-  if (!ramoAtividade) return null;
-  if (isLoading) return <ComparisonSkeleton />;
-
-  if (!hasClientData) {
-    return (
-      <ClienteSemComparativo
-        ramoAtividade={ramoAtividade}
-        indisponivel={isClientDataUnavailable}
-        onRetry={() => void refetch()}
-      />
-    );
-  }
-
-  if (!hasEnoughSample) {
-    return (
-      <Card className="border-[1.5px] border-dashed">
-        <CardContent className="p-6 flex items-start gap-3">
-          <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
-            <Info className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="font-display font-semibold text-sm">Comparativo Cliente × Setor</h3>
-            <p className="text-xs text-muted-foreground">
-              Amostra do ramo <span className="font-medium">{ramoAtividade}</span> ainda
-              insuficiente para gerar benchmarking. Mínimo de 3 empresas com orçamentos
-              nos últimos {daysWindow} dias.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
+/** Comparativo com as duas pontas medidas: o único caminho que exibe números. */
+function ComparativoPronto(
+  { comparison, ramoAtividade }:
+  { comparison: ClientVsIndustryResult; ramoAtividade: string },
+) {
+  const { isError, isMock, refetch, sampleSize, daysWindow, metrics, insight } = comparison;
   const ltvMetric = metrics.find((m) => m.label === "LTV");
 
   return (
@@ -249,10 +291,11 @@ export function ClientVsIndustryComparison({ clientId, ramoAtividade }: Props) {
               </p>
             </div>
           </div>
-          <OrigemDoDado isMock={isMock} />
+          <OrigemDoDado isMock={isMock} desatualizado={isError} />
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
+        {isError && <AvisoDeCacheDesatualizado onRetry={() => void refetch()} />}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {metrics.map((m) => (
             <MetricRow key={m.label} metric={m} />
@@ -274,4 +317,30 @@ export function ClientVsIndustryComparison({ clientId, ramoAtividade }: Props) {
       </CardContent>
     </Card>
   );
+}
+
+export function ClientVsIndustryComparison({ clientId, ramoAtividade }: Props) {
+  const comparison = useClientVsIndustry(clientId, ramoAtividade);
+  const { isLoading, isError, hasClientData, isClientDataUnavailable, refetch, hasEnoughSample, daysWindow, metrics } = comparison;
+
+  if (!ramoAtividade) return null;
+  if (isLoading) return <ComparisonSkeleton />;
+  // Erro sem nada em cache vem antes de tudo: nem "sem pedido" nem "amostra
+  // insuficiente" descrevem uma consulta que falhou.
+  if (isError && metrics.length === 0) {
+    return <ComparativoIndisponivel onRetry={() => void refetch()} />;
+  }
+  if (!hasClientData) {
+    return (
+      <ClienteSemComparativo
+        ramoAtividade={ramoAtividade}
+        indisponivel={isClientDataUnavailable}
+        onRetry={() => void refetch()}
+      />
+    );
+  }
+  if (!hasEnoughSample) {
+    return <AmostraInsuficiente ramoAtividade={ramoAtividade} daysWindow={daysWindow} />;
+  }
+  return <ComparativoPronto comparison={comparison} ramoAtividade={ramoAtividade} />;
 }
