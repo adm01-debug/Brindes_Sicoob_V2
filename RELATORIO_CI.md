@@ -880,3 +880,56 @@ nestes nomes, **refaça a comparação**.
 
 Fonte: PR #149, fechada sem merge.
 
+### 4. Medição nova, de 18/11/2026: 11 das 28 funções medidas divergem
+
+A ressalva do item 3 pedia refazer a comparação. **Refeita**, somente leitura,
+pela Management API, nas 28 funções que importam: as **13 da allowlist de
+publicação** mais as **16 apontadas em 28/10** (com sobreposição).
+
+**Método, e o que ele prova.** O endpoint `/functions/<slug>/body` devolve o
+*bundle* ESZIP, com o código já transpilado pelo Deno — comparar byte a byte
+com o `index.ts` local **nunca** casa, nem para uma função publicada hoje. Foi
+assim que a primeira tentativa desta medição deu "28 de 28 divergentes", o que
+é artefato do método, não resultado. O que vale: extrair as **strings de
+execução** do fonte local (mensagens, códigos de erro, nomes de tabela; 12 a 80
+caracteres) e conferir se aparecem no bundle. Especificadores de import
+(`./`, `../`, `npm:`, `jsr:`, `node:`, `http(s)://`) ficam de fora porque o
+empacotador os reescreve.
+
+Isso **prova divergência, não identidade**: string de execução ausente
+significa que o código publicado não é este fonte; todas presentes significa
+apenas "sem evidência de divergência".
+
+| função | versão | na allowlist? | strings ausentes | exemplos |
+|---|---|---|---|---|
+| `expert-chat` | v14 | **sim** | 38/126 | `A conversa excede o limite total de 30 mil caracteres`; `Auditoria de acesso indisponível`; `Não foi possível concluir a solicitação` |
+| `bi-share-dossier` | v7 | não | 5/18 | `BI_SHARE_SECRET is not configured`; `Cache-Control`; `Internal server error` |
+| `sync-quote-bitrix` | v7 | não | 4/57 | `Erro interno ao sincronizar o orçamento.`; `Falha ao registrar a sincronização com Bitrix.`; `Não foi possível sincronizar este orçamento.` |
+| `sicoob-document-ingest` | v7 | **sim** | 3/26 | `O registro do documento não foi confirmado.`; `O registro persistido diverge do documento enviado.`; `not_attempted` |
+| `sicoob-seed` | v7 | não | 3/52 | `operation_failed`; `sicoob_centrais`; `user_id,role` |
+| `connections-auto-test` | v7 | não | 2/14 | `falha_ao_persistir_resultado`; `falha_interna_auto_teste` |
+| `crm-db-bridge` | v13 | não | 2/84 | `industry_peers`; `quote_directory_ramo_invalido` |
+| `quote-sync` | v7 | não | 2/37 | `N8N webhook test failed:`; `SalesPro webhook test failed:` |
+| `admin-audit-hook` | v7 | não | 1/13 | `[admin-audit-hook] request_failed` |
+| `github-fix-config` | v7 | não | 1/28 | `internal_error` |
+| `rls-audit` | v7 | não | 1/25 | `query_failed` |
+
+**Sem evidência de divergência** (17): `auth-integrity-check`, `bi-copilot`, `comparison-ai-advisor`, `e2e-cleanup`, `external-db-bridge`, `generate-ad-image`, `get-app-logs`, `get-visitor-info`, `mcp-keys-issue`, `secrets-manager`, `secure-upload`, `sicoob-approval-reconciliation`, `sicoob-artwork-register`, `sicoob-kit-quote`, `sicoob-reorder`, `sicoob-seed-qa`, `trends-insights`.
+
+**O que isso muda:**
+
+- **`expert-chat` está na allowlist de publicação e é a pior**: 38 de 126
+  strings de execução ausentes. O que roda em produção é versão materialmente
+  mais antiga que a `main` — inclui mensagens de limite de conversa e de
+  auditoria de acesso que o fonte atual tem e o publicado não;
+- **`sicoob-document-ingest` também está na allowlist** e perdeu três, entre
+  elas `"O registro persistido diverge do documento enviado."` — justamente uma
+  verificação de integridade;
+- **`crm-db-bridge` diverge** (`industry_peers`, `quote_directory_ramo_invalido`),
+  informação direta para a PR #311;
+- as outras sete divergentes estão fora da allowlist, então o deploy oficial
+  nunca as corrige — mesmo padrão que a medição de 28/10 descreveu.
+
+As 100 funções estão `ACTIVE`. Nenhuma escrita foi feita: só `GET` de lista e
+de corpo.
+
