@@ -11,8 +11,12 @@ import type { ReactNode } from 'react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 const getCooperativeDashboardStats = vi.fn();
+const loadPurchasingOrders = vi.fn();
+const loadManagerApprovalHistory = vi.fn();
 vi.mock('@/services/sicoob/managerStatsService', () => ({
   getCooperativeDashboardStats: (id?: string | null) => getCooperativeDashboardStats(id),
+  loadPurchasingOrders: (...args: unknown[]) => loadPurchasingOrders(...args),
+  loadManagerApprovalHistory: (...args: unknown[]) => loadManagerApprovalHistory(...args),
 }));
 
 import { GestorComprasMetrics } from '@/components/sicoob/GestorComprasMetrics';
@@ -31,8 +35,24 @@ const statsCompletas = {
   recentOrders: [],
 };
 
+function pedidos(count: number, linhas: number) {
+  return {
+    count,
+    data: Array.from({ length: linhas }, (_, i) => ({
+      id: `order-${i}`,
+      status: 'waiting_approval' as const,
+      total_amount: 1_000,
+      created_at: '2026-10-13T08:00:00.000Z',
+    })),
+  };
+}
+
 describe('Indicadores na tela de Gestão de Compras', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    loadPurchasingOrders.mockResolvedValue(pedidos(0, 0));
+    loadManagerApprovalHistory.mockResolvedValue(new Map());
+  });
 
   it('mostra os números que vêm do serviço, e nenhum valor fictício', async () => {
     getCooperativeDashboardStats.mockResolvedValue(statsCompletas);
@@ -78,5 +98,31 @@ describe('Indicadores na tela de Gestão de Compras', () => {
 
     expect(screen.getByText('Cooperativa não vinculada ao perfil.')).toBeTruthy();
     await waitFor(() => expect(getCooperativeDashboardStats).not.toHaveBeenCalled());
+  });
+
+  it('mostra travessão no SLA e no total do mês quando a consulta trunca', async () => {
+    // 1.001 pedidos no banco, 1 linha devolvida: somar seria mostrar uma
+    // fração como se fosse o total.
+    getCooperativeDashboardStats.mockResolvedValue(statsCompletas);
+    loadPurchasingOrders.mockResolvedValue(pedidos(1_001, 1));
+
+    renderizar(<GestorComprasMetrics cooperativeId="coop-1" />);
+
+    await waitFor(() => expect(screen.getAllByText('—').length).toBe(2));
+  });
+
+  it('mostra o SLA medido quando o universo está completo', async () => {
+    getCooperativeDashboardStats.mockResolvedValue(statsCompletas);
+    loadPurchasingOrders.mockResolvedValue(pedidos(2, 2));
+    loadManagerApprovalHistory.mockResolvedValue(
+      new Map([
+        ['order-0', new Date().toISOString()],
+        ['order-1', '2020-01-01T00:00:00.000Z'],
+      ]),
+    );
+
+    renderizar(<GestorComprasMetrics cooperativeId="coop-1" />);
+
+    expect(await screen.findByText('50%')).toBeTruthy();
   });
 });

@@ -8,6 +8,12 @@
  * vive aqui. Recupera a extração da PR #157, fechada sem merge.
  */
 import { supabase } from '@/integrations/supabase/client';
+import {
+  mapLatestManagerSubmissionTimes,
+  type OrderListResult,
+  type PurchasingOrder,
+  type SicoobOrderHistoryStatusEvent,
+} from '@/lib/orders/purchasing-sla';
 
 export interface GestorOrderSummary {
   id: string;
@@ -98,4 +104,47 @@ export async function getCooperativeDashboardStats(cooperativeId?: string | null
     ...budget,
     recentOrders,
   };
+}
+
+/**
+ * Pedidos para as métricas de compras: fila de pendências e o mês corrente.
+ *
+ * Pede `count: 'exact'` junto com as linhas de propósito — é o que permite
+ * saber, em `calculatePurchasingMetrics`, se a consulta trouxe o universo
+ * inteiro ou se truncou em 1.000 linhas / foi cortada pela RLS.
+ */
+export async function loadPurchasingOrders(
+  query: 'pending' | 'monthly',
+  monthStart: string,
+): Promise<OrderListResult> {
+  let request = supabase
+    .from('sicoob_orders')
+    .select('id, status, total_amount, created_at', { count: 'exact' });
+  request =
+    query === 'pending'
+      ? request.eq('status', 'waiting_approval')
+      : request.gte('created_at', monthStart);
+  const { data, error, count } = await request
+    .order('created_at', { ascending: false })
+    .range(0, 999);
+  if (error) throw error;
+  return { data: (data ?? []) as unknown as PurchasingOrder[], count };
+}
+
+/** Entradas na fila do gestor, fonte canônica do SLA de 24h. */
+export async function loadManagerApprovalHistory(
+  orderIds: string[],
+): Promise<ReadonlyMap<string, string>> {
+  if (orderIds.length === 0) return new Map();
+  const { data, error } = await supabase
+    .from('sicoob_order_history')
+    .select('order_id, new_status, created_at')
+    .in('order_id', orderIds)
+    .eq('new_status', 'waiting_approval')
+    .order('created_at', { ascending: false })
+    .limit(10_000);
+  if (error) throw error;
+  return mapLatestManagerSubmissionTimes(
+    (data ?? []) as unknown as SicoobOrderHistoryStatusEvent[],
+  );
 }
