@@ -14,7 +14,7 @@ import { ptBR } from 'date-fns/locale';
 import { useQuotes, type Quote } from '@/hooks/quotes/useQuotes';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuoteApproval } from '@/hooks/useQuoteApproval';
-import { selectCrmById } from '@/lib/crm-db';
+import { fetchQuoteDirectoryCompanies, selectCrmById } from '@/lib/crm-db';
 import { toast } from 'sonner';
 import { generateProposalPDFv2, downloadPDF } from '@/utils/proposalPdfReactGenerator';
 import { type ProposalTemplateData } from '@/components/pdf/ProposalHtmlTemplate';
@@ -152,7 +152,6 @@ function useLoadedQuote(id: string | undefined, fetchQuote: QuoteFetcher) {
   const [quote, setQuote] = useState<Quote | null>(null);
   const [isLoadingQuote, setIsLoadingQuote] = useState(true);
   const [clientCnpj, setClientCnpj] = useState<string | undefined>(undefined);
-  const [bitrixCompanyId, setBitrixCompanyId] = useState<string | null>(null);
   const loadQuote = useCallback(async () => {
     if (!id) return;
     setIsLoadingQuote(true);
@@ -161,20 +160,29 @@ function useLoadedQuote(id: string | undefined, fetchQuote: QuoteFetcher) {
     setIsLoadingQuote(false);
     if (!data?.client_id) return;
     try {
-      const company = await selectCrmById<Pick<CrmCompany, 'cnpj' | 'bitrix_company_id'>>(
-        'companies',
-        data.client_id,
-      );
-      if (company?.cnpj) setClientCnpj(formatCNPJ(company.cnpj));
-      if (company?.bitrix_company_id) setBitrixCompanyId(String(company.bitrix_company_id));
+      // Vendedor e agente abrem /orcamentos/:id sem guarda de papel, e o select
+      // genérico do crm-db-bridge é negado para eles. O contrato fechado projeta
+      // o cnpj, que é o único campo que esta tela usa daqui: `bitrix_company_id`
+      // era estado morto, sem nenhum leitor em src, tests ou e2e.
+      const [company] = await fetchQuoteDirectoryCompanies({ companyId: data.client_id, limit: 1 });
+      if (company?.cnpj) {
+        setClientCnpj(formatCNPJ(company.cnpj));
+        return;
+      }
+      // O Edge impõe `is_customer = true` no contrato fechado. Empresa de
+      // orçamento que não esteja marcada como cliente só aparece pelo select por
+      // id, que supervisão ainda pode — sem isto o CNPJ desapareceria do card e
+      // do PDF até para dev nesses orçamentos.
+      const full = await selectCrmById<Pick<CrmCompany, 'cnpj'>>('companies', data.client_id);
+      if (full?.cnpj) setClientCnpj(formatCNPJ(full.cnpj));
     } catch {
-      // Empresa não encontrada no CRM.
+      // Empresa não encontrada no CRM ou leitura negada para este papel.
     }
   }, [fetchQuote, id]);
   useEffect(() => {
     if (id) void loadQuote();
   }, [id, loadQuote]);
-  return { quote, setQuote, isLoadingQuote, clientCnpj, bitrixCompanyId };
+  return { quote, setQuote, isLoadingQuote, clientCnpj };
 }
 
 function useProposalData(quote: Quote | null, clientCnpj: string | undefined) {

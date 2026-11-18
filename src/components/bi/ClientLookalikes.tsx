@@ -5,7 +5,7 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { selectCrm } from "@/lib/crm-db";
+import { fetchIndustryPeerIds } from "@/lib/crm-db";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -53,8 +53,10 @@ function useLookalikeProducts({ clientId, ramoAtividade, avgTicket, affinityLoad
     staleTime: 10 * 60 * 1000,
     queryFn: async (): Promise<LookalikeData> => {
       if (!ramoAtividade) return { products: [], lookalikeCount: 0 };
-      const companies = await selectCrm<{ id: string }>("companies", { select: "id", filters: { ramo_atividade: ramoAtividade, deleted_at: null }, limit: 500 });
-      const ids = companies.map((company) => company.id).filter((id) => id && id !== clientId);
+      // `selectCrm` generico e negado para vendedor e agente pela politica do portal;
+      // `fetchIndustryPeerIds` usa o contrato fechado, que devolve so os ids do ramo.
+      const peerIds = await fetchIndustryPeerIds(ramoAtividade);
+      const ids = peerIds.filter((id) => id && id !== clientId);
       if (ids.length === 0) return { products: [], lookalikeCount: 0 };
       const { data, error } = await supabase.rpc("get_industry_top_products", { _company_ids: ids, _days: 90, _limit: 30 });
       if (error) return { products: [], lookalikeCount: ids.length };

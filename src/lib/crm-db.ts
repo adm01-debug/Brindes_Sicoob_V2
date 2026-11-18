@@ -19,8 +19,12 @@ const crmBreaker = getCircuitBreaker(CRM_DB_BRIDGE_FUNCTION, {
 
 
 export interface CrmQuery {
-  table: string;
-  operation: "select" | "search" | "insert" | "update" | "delete";
+  table?: string;
+  operation: "select" | "search" | "insert" | "update" | "delete" | "quote_directory";
+  action?: "companies" | "contacts" | "industry_peers";
+  companyId?: string;
+  term?: string;
+  ramoAtividade?: string;
   id?: string;
   filters?: Record<string, unknown>;
   select?: string;
@@ -170,7 +174,11 @@ async function extractResponseError(response: Response, fallback: string): Promi
 }
 
 function isReadOperation(query: CrmQuery): boolean {
-  return query.operation === "select" || query.operation === "search";
+  return (
+    query.operation === "select" ||
+    query.operation === "search" ||
+    query.operation === "quote_directory"
+  );
 }
 
 function isUnconfiguredMessage(message: string): boolean {
@@ -279,6 +287,112 @@ export async function selectCrm<T>(
     table,
     operation: "select",
     ...options,
+  });
+  return result.data || [];
+}
+
+export interface QuoteDirectoryCompany {
+  id: string;
+  name: string;
+  razao_social: string;
+  nome_fantasia: string | null;
+  ramo_atividade: string | null;
+  cnpj: string | null;
+  logo_url: string | null;
+  cidade: string | null;
+  estado: string | null;
+  website: string | null;
+}
+
+export interface QuoteDirectoryPeer {
+  id: string;
+}
+
+export interface QuoteDirectoryContact {
+  id: string;
+  name: string;
+  cargo: string | null;
+  email: string | null;
+  phone: string | null;
+}
+
+/**
+ * Diretorio de orcamento: contrato fechado que vendedor e agente podem usar.
+ * O Edge impoe tabela, projecao e filtros; o cliente so escolhe acao e escalares.
+ */
+export async function fetchQuoteDirectoryCompanies(options: {
+  term?: string;
+  companyId?: string;
+  limit?: number;
+  offset?: number;
+} = {}): Promise<QuoteDirectoryCompany[]> {
+  const { term = "", companyId = "", limit = 100, offset = 0 } = options;
+  const trimmedTerm = term.trim();
+  const query: CrmQuery = {
+    operation: "quote_directory",
+    action: "companies",
+    limit,
+    offset,
+  };
+  if (companyId) query.companyId = companyId;
+  if (trimmedTerm.length >= 2) query.term = trimmedTerm;
+  const result = await invokeCrmDb<QuoteDirectoryCompany[]>(query);
+  return result.data || [];
+}
+
+/** Espelha INDUSTRY_PEERS_LIMIT do Edge, usado so no fallback de transicao. */
+const INDUSTRY_PEERS_FALLBACK_LIMIT = 500;
+
+/**
+ * Ids das empresas do mesmo ramo de atividade. Entra nas RPCs de comparativo de
+ * industria do Supabase oficial (get_industry_benchmark_stats,
+ * get_industry_seasonality, get_industry_top_products), que recebem
+ * `_company_ids text[]` e aplicam a RLS do usuario. O teto de 500 e fixo no Edge
+ * e a projecao e somente o id — nenhum nome, CNPJ, e-mail ou telefone.
+ */
+export async function fetchIndustryPeerIds(ramoAtividade: string): Promise<string[]> {
+  const ramo = ramoAtividade.trim();
+  if (ramo.length < 2) return [];
+  try {
+    const result = await invokeCrmDb<QuoteDirectoryPeer[]>({
+      operation: "quote_directory",
+      action: "industry_peers",
+      ramoAtividade: ramo,
+    });
+    return (result.data || []).map((peer) => peer.id);
+  } catch (error) {
+    // Transicao, com data de validade. O crm-db-bridge publicado hoje e a v13
+    // de 15/10/2026 e nao conhece a acao industry_peers: ela entra nesta PR e o
+    // bridge nao esta em nenhum workflow de publicacao versionado, entao a acao
+    // so existe no repositorio. Medido no bundle publicado: 0 ocorrencias de
+    // "industry_peers". Sem este fallback, trocar o select generico pela acao
+    // nova tiraria o comparativo de industria de quem hoje o tem funcionando
+    // (dev, supervisor, admin, manager). Para vendedor e agente o generico ja e
+    // negado em producao pela mesma politica, entao nada piora para eles.
+    // Remover assim que o bridge for republicado com esta PR.
+    logger.warn(
+      `[CRM-DB] acao industry_peers indisponivel no bridge publicado; usando select generico: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+    const companies = await selectCrm<{ id: string }>("companies", {
+      select: "id",
+      filters: { ramo_atividade: ramo, deleted_at: null },
+      limit: INDUSTRY_PEERS_FALLBACK_LIMIT,
+    });
+    return companies.map((company) => company.id).filter(Boolean);
+  }
+}
+
+export async function fetchQuoteDirectoryContacts(
+  companyId: string,
+  limit = 50,
+): Promise<QuoteDirectoryContact[]> {
+  const result = await invokeCrmDb<QuoteDirectoryContact[]>({
+    operation: "quote_directory",
+    action: "contacts",
+    companyId,
+    limit,
   });
   return result.data || [];
 }

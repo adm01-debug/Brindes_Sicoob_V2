@@ -7,7 +7,7 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { selectCrm } from "@/lib/crm-db";
+import { fetchIndustryPeerIds } from "@/lib/crm-db";
 import { getMockIndustryTrends, type MockIndustryTrend } from "@/lib/bi/mockData";
 
 export interface IndustryTopProduct {
@@ -73,12 +73,10 @@ export function useIndustryTrends(ramoAtividade?: string | null) {
       // 1) Buscar empresas do mesmo ramo no CRM
       let companyIds: string[] = [];
       try {
-        const companies = await selectCrm<{ id: string }>("companies", {
-          select: "id",
-          filters: { ramo_atividade: ramoAtividade, deleted_at: null },
-          limit: 500,
-        });
-        companyIds = companies.map((c) => c.id).filter(Boolean);
+        // `selectCrm` generico e negado para vendedor e agente pela politica do portal;
+        // `fetchIndustryPeerIds` usa o contrato fechado, que devolve so os ids do ramo.
+        const peerIds = await fetchIndustryPeerIds(ramoAtividade);
+        companyIds = peerIds.filter(Boolean);
       } catch {
         companyIds = [];
       }
