@@ -2,19 +2,40 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { useState } from 'react';
 
-const maybeSingle = vi.fn();
-const select = vi.fn(() => ({ maybeSingle }));
-const secondEq = vi.fn(() => ({ select }));
-const update = vi.fn((_payload: Record<string, unknown>) => ({
-  eq: vi.fn(() => ({ eq: secondEq })),
-}));
-const single = vi.fn();
-const insert = vi.fn(() => ({
-  select: vi.fn(() => ({ single })),
-}));
+/**
+ * Mock encadeável do cliente Supabase.
+ *
+ * O autosave usa três caminhos: `update(...).eq()...select().maybeSingle()`,
+ * `insert(...).select().single()` e, para a trava otimista,
+ * `select('updated_at').eq()...maybeSingle()`. O construtor abaixo aceita
+ * qualquer quantidade de `.eq()` e devolve o terminal certo.
+ */
+const maybeSingle = vi.fn();          // terminal do UPDATE
+const leituraVersao = vi.fn();        // terminal do SELECT updated_at
+const single = vi.fn();               // terminal do INSERT
+
+function cadeia(terminal: ReturnType<typeof vi.fn>) {
+  const no: Record<string, unknown> = {};
+  no.eq = vi.fn(() => no);
+  no.select = vi.fn(() => no);
+  no.maybeSingle = terminal;
+  no.single = terminal;
+  return no;
+}
+
+const update = vi.fn((_payload: Record<string, unknown>) => cadeia(maybeSingle));
+
+/** Valor que o n-esimo UPDATE usou na trava `.eq('updated_at', ...)`. */
+function travaDoUpdate(n: number): unknown {
+  const no = update.mock.results[n]?.value as { eq: { mock: { calls: unknown[][] } } };
+  const chamada = no.eq.mock.calls.find((args) => args[0] === 'updated_at');
+  return chamada?.[1];
+}
+const insert = vi.fn((_payload: Record<string, unknown>) => cadeia(single));
+const selectTabela = vi.fn((_colunas: string) => cadeia(leituraVersao));
 
 vi.mock('@/integrations/supabase/client', () => ({
-  supabase: { from: vi.fn(() => ({ update, insert })) },
+  supabase: { from: vi.fn(() => ({ update, insert, select: selectTabela })) },
 }));
 
 vi.mock('@/contexts/AuthContext', () => ({
@@ -43,6 +64,9 @@ describe('useKitAutoSave', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllMocks();
+    // Sem versão conhecida: a primeira gravação segue sem trava, como quando o
+    // kit acabou de ser criado nesta aba.
+    leituraVersao.mockResolvedValue({ data: null, error: null });
   });
 
   afterEach(() => vi.useRealTimers());
@@ -51,7 +75,7 @@ describe('useKitAutoSave', () => {
     // O salvamento manual grava status 'ready' quando isValid; o automatico
     // fixava 'draft' e desfazia isso no proximo autosave — o selo do kit no
     // painel voltava para "Rascunho" sozinho.
-    maybeSingle.mockResolvedValue({ data: { id: 'kit-1' }, error: null });
+    maybeSingle.mockResolvedValue({ data: { id: 'kit-1', updated_at: '2026-11-18T10:00:00.000Z' }, error: null });
     const kitValido = { ...initialKit, isValid: true };
 
     const { rerender } = renderHook(
@@ -68,7 +92,7 @@ describe('useKitAutoSave', () => {
   it('grava a identidade escolhida no primeiro autosave de um kit novo', async () => {
     // Sem identidade no payload, a linha nascia com a cor e o icone padrao do
     // banco; e sem identidade no snapshot, trocar a cor nao disparava autosave.
-    single.mockResolvedValue({ data: { id: 'kit-novo' }, error: null });
+    single.mockResolvedValue({ data: { id: 'kit-novo', updated_at: '2026-11-18T10:00:00.000Z' }, error: null });
     const kitComIdentidade = {
       ...initialKit,
       identity: {
@@ -99,7 +123,7 @@ describe('useKitAutoSave', () => {
 
   it('não confirma salvamento quando o Supabase retorna erro e permite nova tentativa', async () => {
     maybeSingle.mockResolvedValueOnce({ data: null, error: new Error('banco indisponível') });
-    maybeSingle.mockResolvedValueOnce({ data: { id: 'kit-1' }, error: null });
+    maybeSingle.mockResolvedValueOnce({ data: { id: 'kit-1', updated_at: '2026-11-18T10:00:00.000Z' }, error: null });
 
     const { result, rerender } = renderHook(
       ({ kit }) => useKitAutoSave(kit, 1, 'kit-1'),
@@ -133,9 +157,9 @@ describe('useKitAutoSave', () => {
   });
 
   it('serializa gravações concorrentes e persiste por último o estado mais recente', async () => {
-    let resolveFirst: ((value: { data: { id: string }; error: null }) => void) | undefined;
+    let resolveFirst: ((value: { data: { id: string; updated_at: string }; error: null }) => void) | undefined;
     maybeSingle.mockImplementationOnce(() => new Promise(resolve => { resolveFirst = resolve; }));
-    maybeSingle.mockResolvedValueOnce({ data: { id: 'kit-1' }, error: null });
+    maybeSingle.mockResolvedValueOnce({ data: { id: 'kit-1', updated_at: '2026-11-18T10:00:00.000Z' }, error: null });
 
     const { result, rerender } = renderHook(
       ({ kit }) => useKitAutoSave(kit, 1, 'kit-1'),
@@ -151,7 +175,7 @@ describe('useKitAutoSave', () => {
     expect(update).toHaveBeenCalledTimes(1);
 
     await act(async () => {
-      resolveFirst?.({ data: { id: 'kit-1' }, error: null });
+      resolveFirst?.({ data: { id: 'kit-1', updated_at: '2026-11-18T10:00:00.000Z' }, error: null });
       await Promise.resolve();
       await Promise.resolve();
       await Promise.resolve();
@@ -163,9 +187,9 @@ describe('useKitAutoSave', () => {
   });
 
   it('preserva a edição enfileirada quando o pai adota o ID recém-criado', async () => {
-    let resolveCreation: ((value: { data: { id: string }; error: null }) => void) | undefined;
+    let resolveCreation: ((value: { data: { id: string; updated_at: string }; error: null }) => void) | undefined;
     single.mockImplementationOnce(() => new Promise(resolve => { resolveCreation = resolve; }));
-    maybeSingle.mockResolvedValueOnce({ data: { id: 'kit-criado' }, error: null });
+    maybeSingle.mockResolvedValueOnce({ data: { id: 'kit-criado', updated_at: '2026-11-18T10:00:00.000Z' }, error: null });
 
     const { result, rerender } = renderHook(
       ({ kit }) => {
@@ -187,7 +211,7 @@ describe('useKitAutoSave', () => {
     expect(update).not.toHaveBeenCalled();
 
     await act(async () => {
-      resolveCreation?.({ data: { id: 'kit-criado' }, error: null });
+      resolveCreation?.({ data: { id: 'kit-criado', updated_at: '2026-11-18T10:00:00.000Z' }, error: null });
       await Promise.resolve();
       await Promise.resolve();
       await Promise.resolve();
@@ -204,7 +228,7 @@ describe('useKitAutoSave', () => {
     // edicao. Antes do gate de hidratacao, o autosave gravava 5s depois:
     // updated_at mudava, "Meus kits" reordenava sozinho e abria janela para
     // sobrescrever o que outra aba tivesse gravado.
-    maybeSingle.mockResolvedValue({ data: { id: 'kit-1' }, error: null });
+    maybeSingle.mockResolvedValue({ data: { id: 'kit-1', updated_at: '2026-11-18T10:00:00.000Z' }, error: null });
 
     const { rerender } = renderHook(
       ({ kit, pronto }) => useKitAutoSave(kit, 1, 'kit-1', undefined, pronto),
@@ -246,7 +270,7 @@ describe('useKitAutoSave', () => {
   });
 
   it('depois de carregado, a primeira edicao de verdade grava', async () => {
-    maybeSingle.mockResolvedValue({ data: { id: 'kit-1' }, error: null });
+    maybeSingle.mockResolvedValue({ data: { id: 'kit-1', updated_at: '2026-11-18T10:00:00.000Z' }, error: null });
 
     const kitCarregado = { ...initialKit, name: 'Kit do banco', isValid: true };
     const { rerender } = renderHook(
@@ -266,7 +290,7 @@ describe('useKitAutoSave', () => {
   });
 
   it('kit novo (sem id na URL) continua salvando sozinho desde a primeira alteracao', async () => {
-    single.mockResolvedValue({ data: { id: 'kit-novo' }, error: null });
+    single.mockResolvedValue({ data: { id: 'kit-novo', updated_at: '2026-11-18T10:00:00.000Z' }, error: null });
 
     const { rerender } = renderHook(
       ({ kit }) => useKitAutoSave(kit, 1, undefined),
@@ -277,5 +301,107 @@ describe('useKitAutoSave', () => {
     await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
 
     expect(insert).toHaveBeenCalledTimes(1);
+  });
+
+  it('nao sobrescreve em silencio o kit que outra aba alterou', async () => {
+    // Esta aba abriu a linha na versao A; outra aba gravou e a linha esta na B.
+    // O UPDATE com trava nao casa nenhuma linha, e a releitura mostra que a
+    // linha existe numa versao diferente: e conflito, nao falta de permissao.
+    leituraVersao.mockResolvedValue({ data: { updated_at: 'versao-B' }, error: null });
+    maybeSingle.mockResolvedValue({ data: null, error: null });
+
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, 'kit-1', undefined, true, 'versao-A'),
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: { ...initialKit, name: 'Alteracao desta aba' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+
+    expect(result.current.lastSaveError).toContain('alterado em outro lugar');
+    expect(result.current.lastSaveConflict).toBe(true);
+    expect(result.current.lastSavedAt).toBeNull();
+  });
+
+  it('linha ausente continua sendo falta de permissao, nao conflito', async () => {
+    leituraVersao.mockResolvedValue({ data: null, error: null });
+    maybeSingle.mockResolvedValue({ data: null, error: null });
+
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, 'kit-sumido', undefined, true, 'versao-A'),
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: { ...initialKit, name: 'Alteracao' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+
+    expect(result.current.lastSaveError).toContain('nao foi encontrado'.replace('nao', 'não'));
+    expect(result.current.lastSaveConflict).toBe(false);
+  });
+
+  it('grava com a trava na versao que conhece e adota a versao devolvida', async () => {
+    maybeSingle.mockResolvedValue({ data: { id: 'kit-1', updated_at: 'versao-B' }, error: null });
+
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, 'kit-1', undefined, true, 'versao-A'),
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: { ...initialKit, name: 'Primeira' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+    expect(result.current.lastSaveError).toBeNull();
+
+    // Segunda gravacao: a versao conhecida veio da resposta anterior.
+    rerender({ kit: { ...initialKit, name: 'Segunda' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+
+    expect(update).toHaveBeenCalledTimes(2);
+    expect(travaDoUpdate(0)).toBe('versao-A');
+    expect(travaDoUpdate(1)).toBe('versao-B');
+    // Em nenhum momento a trava leu `updated_at` do banco para decidir o que
+    // gravar: ler ali adotaria a versao de quem gravou no meio-tempo.
+    expect(leituraVersao).not.toHaveBeenCalled();
+  });
+
+  it('a trava usa a versao do conteudo que esta na tela, nao a do banco na hora de gravar', async () => {
+    // Outra aba gravou entre a leitura desta tela e o primeiro autosave daqui.
+    // Com a leitura tardia, esta aba adotava a versao alheia e gravava por
+    // cima o conteudo antigo da tela, sem conflito nenhum.
+    leituraVersao.mockResolvedValue({ data: { updated_at: 'versao-da-outra-aba' }, error: null });
+    maybeSingle.mockResolvedValue({ data: null, error: null });
+
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, 'kit-1', undefined, true, 'versao-que-foi-para-a-tela'),
+      { initialProps: { kit: initialKit } },
+    );
+
+    rerender({ kit: { ...initialKit, name: 'Edicao desta aba' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+
+    expect(result.current.lastSaveConflict).toBe(true);
+  });
+
+  it('salvar manualmente sincroniza a versao e o autosave seguinte nao vira conflito', async () => {
+    // O "Salvar" grava na mesma linha e muda `updated_at`. Sem sincronizar, o
+    // proximo autosave desta mesma aba era recusado como conflito e o kit
+    // ficava travado ate recarregar a pagina.
+    maybeSingle.mockResolvedValue({ data: { id: 'kit-1', updated_at: 'versao-C' }, error: null });
+
+    const { result, rerender } = renderHook(
+      ({ kit }) => useKitAutoSave(kit, 1, 'kit-1', undefined, true, 'versao-A'),
+      { initialProps: { kit: initialKit } },
+    );
+
+    // salvamento manual devolveu a versao B
+    act(() => { result.current.syncPersistedVersion('versao-B'); });
+    expect(result.current.lastSaveError).toBeNull();
+
+    rerender({ kit: { ...initialKit, name: 'Edicao depois do salvar' } });
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+
+    expect(update).toHaveBeenCalledTimes(1);
+    expect(travaDoUpdate(0)).toBe('versao-B');
+    expect(result.current.lastSaveConflict).toBe(false);
+    expect(result.current.lastSaveError).toBeNull();
   });
 });

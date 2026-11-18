@@ -116,6 +116,8 @@ interface LoadCustomKitOptions {
   loadKit: KitBuilderState['loadKit'];
   bumpLastUsed: (id: string) => void;
   hasBumpedRef: MutableRefObject<boolean>;
+  /** Versão da linha que foi para a tela; é ela que a trava otimista defende. */
+  onVersionLoaded: (updatedAt: string | null) => void;
 }
 
 async function loadCustomKit(options: LoadCustomKitOptions): Promise<void> {
@@ -123,6 +125,7 @@ async function loadCustomKit(options: LoadCustomKitOptions): Promise<void> {
     const { data, error } = await supabase.from('custom_kits').select('*').eq('id', options.id).maybeSingle();
     if (error || !data) { toast.error('Kit não encontrado'); return; }
     options.loadKit(customKitPayload(data as Record<string, unknown>));
+    options.onVersionLoaded(recordString(data as Record<string, unknown>, 'updated_at') || null);
     toast.success('Kit carregado para edição');
     if (options.hasBumpedRef.current) return;
     options.hasBumpedRef.current = true;
@@ -159,6 +162,9 @@ export default function KitBuilderPage() {
   // ser sobrescrita, e nos dois casos o que chega à tela é material novo que
   // o autosave deve mesmo persistir.
   const [isHydrated, setIsHydrated] = useState(!kitIdParam);
+  // `updated_at` da linha que está na tela. A trava otimista do autosave só
+  // grava se a linha continuar nessa versão.
+  const [loadedUpdatedAt, setLoadedUpdatedAt] = useState<string | null>(null);
 
   const {
     kitState, setKitType, wizardState, kitQuantity, availableBoxes, availableItems,
@@ -174,8 +180,11 @@ export default function KitBuilderPage() {
   const { handleAddToQuote, isCreatingQuote } = useKitBuilderQuote();
   useCustomKitsRealtime();
 
-  const { lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, retry: retryAutoSave } = useKitAutoSave(
-    kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id), isHydrated,
+  const {
+    lastSavedAt, isSaving: isAutoSaving, autoSavedKitId, lastSaveError, lastSaveConflict,
+    retry: retryAutoSave, syncPersistedVersion,
+  } = useKitAutoSave(
+    kitState, kitQuantity, currentKitId, (id) => setCurrentKitId(id), isHydrated, loadedUpdatedAt,
   );
 
   const { pushSnapshot, undo, redo, canUndo, canRedo } = useKitUndoRedo();
@@ -226,7 +235,9 @@ export default function KitBuilderPage() {
   useEffect(() => {
     if (!kitIdParam || hasLoadedRef.current) return;
     hasLoadedRef.current = true;
-    void loadCustomKit({ id: kitIdParam, loadKit, bumpLastUsed, hasBumpedRef }).finally(() => setIsHydrated(true));
+    void loadCustomKit({
+      id: kitIdParam, loadKit, bumpLastUsed, hasBumpedRef, onVersionLoaded: setLoadedUpdatedAt,
+    }).finally(() => setIsHydrated(true));
   }, [kitIdParam, loadKit, bumpLastUsed]);
 
   // Template mode: load a kit_templates row for admin editing
@@ -279,7 +290,15 @@ export default function KitBuilderPage() {
       const editingId = currentKitId || autoSavedKitId || undefined;
       if (!await confirmNewKitSave(editingId)) return;
       const result = await saveKit(kitState, kitQuantity, editingId);
-      if (result && 'id' in result) setCurrentKitId((result as { id: string }).id);
+      if (result && 'id' in result) {
+        setCurrentKitId((result as { id: string }).id);
+        // O "Salvar" acabou de mudar `updated_at`. Sem avisar o autosave, a
+        // próxima gravação automática desta mesma aba seria recusada como
+        // conflito e o kit ficaria travado até recarregar a página.
+        const versao = (result as { updated_at?: string | null }).updated_at ?? null;
+        setLoadedUpdatedAt(versao);
+        syncPersistedVersion(versao);
+      }
     } catch { /* handled by hook */ }
   };
 
@@ -344,6 +363,7 @@ export default function KitBuilderPage() {
   function BuilderHeader() {
     return <><KitBuilderHeader kitName={kitState.name} onKitNameChange={setKitName} isValid={kitState.isValid}
       isSaving={isSaving} isAutoSaving={isAutoSaving} lastSavedAt={lastSavedAt} autoSaveError={lastSaveError}
+      autoSaveConflict={lastSaveConflict} onReloadAfterConflict={() => window.location.reload()}
       onRetryAutoSave={retryAutoSave} hasContent={hasContent} isExistingKit={isExistingKit} canUndo={canUndo}
       canRedo={canRedo} identity={kitState.identity} onIdentityChange={setIdentity} onSave={handleSaveKit}
       onUndo={() => undo()} onRedo={() => redo()} onReset={handleResetKit} kitState={kitState}

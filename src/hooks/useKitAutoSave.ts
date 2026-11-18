@@ -19,7 +19,17 @@ interface AutoSaveResult {
   isSaving: boolean;
   autoSavedKitId: string | null;
   lastSaveError: string | null;
+  /** O erro atual é conflito com outra aba: repetir não resolve, recarregar sim. */
+  lastSaveConflict: boolean;
   retry: () => void;
+  /**
+   * O salvamento manual grava na mesma linha e muda `updated_at`. Sem avisar o
+   * autosave, a versão que esta aba conhece fica velha e a próxima gravação
+   * automática é recusada como conflito — vindo da própria aba. Chamado pelo
+   * "Salvar" depois do sucesso, ele adota a nova versão e marca como
+   * persistido o que está na tela.
+   */
+  syncPersistedVersion: (updatedAt: string | null) => void;
 }
 
 function createSnapshot(kitState: KitState, kitQuantity: number): string {
@@ -46,7 +56,7 @@ function createSnapshot(kitState: KitState, kitQuantity: number): string {
 }
 
 function requirePersistedKitId(
-  result: { data: { id: string } | null; error: unknown },
+  result: { data: { id: string; updated_at?: string | null } | null; error: unknown },
   emptyMessage: string,
 ): string {
   if (result.error) throw result.error;
@@ -68,24 +78,100 @@ function isEmptyKit(kitState: KitState) {
   return !kitState.box && kitState.items.length === 0;
 }
 
+export class KitConflitoDeEdicao extends Error {
+  constructor() {
+    super(
+      'Este kit foi alterado em outro lugar depois que você abriu esta tela. ' +
+        'Recarregue antes de continuar para não apagar a alteração.',
+    );
+    this.name = 'KitConflitoDeEdicao';
+  }
+}
+
+/** Marca de versão da linha. `updated_at` é escrito pelo cliente: nenhum trigger
+ *  de `custom_kits` o reescreve (só `enforce_user_id_owner` e
+ *  `validate_status_fields`), então o valor que gravamos é o que volta. */
+async function readKnownUpdatedAt(kitId: string, userId: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('custom_kits')
+    .select('updated_at')
+    .eq('id', kitId)
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data?.updated_at ?? null;
+}
+
+interface PersistResult {
+  createdId: string | null;
+  updatedAt: string | null;
+}
+
+/**
+ * Zero linhas atualizadas tem duas causas, e elas pedem ações diferentes:
+ * outra aba gravou (conflito, recarregue) ou a linha sumiu / a RLS cortou.
+ */
+async function explainEmptyUpdate(
+  kitId: string,
+  userId: string,
+  baseline: string | null,
+): Promise<never> {
+  const aindaExiste = baseline ? await readKnownUpdatedAt(kitId, userId) : null;
+  if (aindaExiste && aindaExiste !== baseline) throw new KitConflitoDeEdicao();
+  throw new Error('O kit não foi encontrado ou você não tem permissão para atualizá-lo.');
+}
+
+/**
+ * Trava otimista: a gravação só acontece se a linha continuar na versão que
+ * esta aba conhece. Sem isso, duas abas no mesmo kit se sobrescrevem em
+ * silêncio — a última gravação vence e o trabalho da outra some sem aviso.
+ */
+async function updateWithOptimisticLock(
+  payload: ReturnType<typeof buildCustomKitPayload>,
+  kitId: string,
+  userId: string,
+  expectedUpdatedAt: string | null,
+): Promise<PersistResult> {
+  // A versão é sempre a do conteúdo que está na tela: a linha lida ao abrir o
+  // kit ou a devolvida pela própria gravação. Ler `updated_at` aqui, instantes
+  // antes de gravar, adotaria a versão de quem gravou no meio-tempo e
+  // sobrescreveria o trabalho dele sem conflito — exatamente o que a trava
+  // existe para impedir.
+  const baseline = expectedUpdatedAt;
+  let query = supabase.from('custom_kits').update(payload).eq('id', kitId).eq('user_id', userId);
+  if (baseline) query = query.eq('updated_at', baseline);
+  const result = await query.select('id, updated_at').maybeSingle();
+  if (result.error) throw result.error;
+  if (!result.data?.id) await explainEmptyUpdate(kitId, userId, baseline);
+  return { createdId: null, updatedAt: result.data?.updated_at ?? null };
+}
+
+const FALHA_GENERICA = 'Não foi possível salvar o kit automaticamente.';
+
+/** Conflito não se resolve repetindo: regravar por cima apagaria o trabalho da outra aba. */
+function avisarFalhaDeAutosave(conflito: boolean) {
+  if (conflito) {
+    toast.error('Este kit foi alterado em outro lugar.', {
+      description: 'Recarregue a página antes de continuar para não apagar a alteração de lá.',
+    });
+    return;
+  }
+  toast.error('O salvamento automático falhou. Seus dados continuam nesta página.', {
+    description: 'Tente salvar novamente antes de sair.',
+  });
+}
+
 async function persistAutoSave(
   payload: ReturnType<typeof buildCustomKitPayload>,
   kitId: string | null,
   userId: string,
-) {
-  if (kitId) {
-    const result = await supabase
-      .from('custom_kits')
-      .update(payload)
-      .eq('id', kitId)
-      .eq('user_id', userId)
-      .select('id')
-      .maybeSingle();
-    requirePersistedKitId(result, 'O kit não foi encontrado ou você não tem permissão para atualizá-lo.');
-    return null;
-  }
-  const result = await supabase.from('custom_kits').insert(payload).select('id').single();
-  return requirePersistedKitId(result, 'O kit não retornou um identificador após o salvamento.');
+  expectedUpdatedAt: string | null,
+): Promise<PersistResult> {
+  if (kitId) return updateWithOptimisticLock(payload, kitId, userId, expectedUpdatedAt);
+
+  const result = await supabase.from('custom_kits').insert(payload).select('id, updated_at').single();
+  const createdId = requirePersistedKitId(result, 'O kit não retornou um identificador após o salvamento.');
+  return { createdId, updatedAt: result.data?.updated_at ?? null };
 }
 
 /**
@@ -105,16 +191,20 @@ export function useKitAutoSave(
   currentKitId: string | undefined,
   onKitIdCreated?: (id: string) => void,
   isReady = true,
+  loadedUpdatedAt: string | null = null,
 ): AutoSaveResult {
   const { user } = useAuth();
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [autoSavedKitId, setAutoSavedKitId] = useState<string | null>(currentKitId || null);
   const [lastSaveError, setLastSaveError] = useState<string | null>(null);
+  const [lastSaveConflict, setLastSaveConflict] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
   const persistedSnapshotRef = useRef<string>('');
   const latestSnapshotRef = useRef<string>('');
   const kitIdRef = useRef<string | null>(currentKitId || null);
+  // Versão da linha que esta aba conhece, para a trava otimista.
+  const knownUpdatedAtRef = useRef<string | null>(loadedUpdatedAt);
   const scopeRef = useRef(`${user?.id ?? 'anon'}:${currentKitId ?? 'new'}`);
   const scopeGenerationRef = useRef(0);
   const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
@@ -152,21 +242,27 @@ export function useKitAutoSave(
     try {
       await previousSave;
       if (operationGeneration !== scopeGenerationRef.current) return;
-      const createdId = await persistAutoSave(payload, kitIdRef.current, operationUserId);
-      adoptCreatedId(createdId);
+      const persisted = await persistAutoSave(
+        payload,
+        kitIdRef.current,
+        operationUserId,
+        knownUpdatedAtRef.current,
+      );
+      adoptCreatedId(persisted.createdId);
+      knownUpdatedAtRef.current = persisted.updatedAt;
       if (operationGeneration === scopeGenerationRef.current) {
         persistedSnapshotRef.current = snapshot;
         setLastSavedAt(new Date());
         setLastSaveError(null);
+        setLastSaveConflict(false);
       }
     } catch (err) {
       if (operationGeneration !== scopeGenerationRef.current) return;
       logger.warn('[auto-save] Failed:', err);
-      const message = err instanceof Error ? err.message : 'Não foi possível salvar o kit automaticamente.';
-      setLastSaveError(message);
-      toast.error('O salvamento automático falhou. Seus dados continuam nesta página.', {
-        description: 'Tente salvar novamente antes de sair.',
-      });
+      const conflito = err instanceof KitConflitoDeEdicao;
+      setLastSaveError(err instanceof Error ? err.message : FALHA_GENERICA);
+      setLastSaveConflict(conflito);
+      avisarFalhaDeAutosave(conflito);
     } finally {
       releaseQueue();
       pendingSavesRef.current -= 1;
@@ -238,14 +334,30 @@ export function useKitAutoSave(
     scopeGenerationRef.current += 1;
     if (timerRef.current) clearTimeout(timerRef.current);
     kitIdRef.current = currentKitId || null;
+    knownUpdatedAtRef.current = loadedUpdatedAt;
     setAutoSavedKitId(currentKitId || null);
     setLastSavedAt(null);
     setLastSaveError(null);
+    setLastSaveConflict(false);
     setIsSaving(false);
     const snapshot = createSnapshot(kitState, kitQuantity);
     persistedSnapshotRef.current = snapshot;
     latestSnapshotRef.current = snapshot;
-  }, [currentKitId, user?.id, kitState, kitQuantity]);
+  }, [currentKitId, user?.id, kitState, kitQuantity, loadedUpdatedAt]);
+
+  // A leitura do kit chega depois do primeiro render: é aqui que a aba passa a
+  // conhecer a versão do conteúdo que está mostrando.
+  useEffect(() => {
+    if (loadedUpdatedAt) knownUpdatedAtRef.current = loadedUpdatedAt;
+  }, [loadedUpdatedAt]);
+
+  const syncPersistedVersion = useCallback((updatedAt: string | null) => {
+    knownUpdatedAtRef.current = updatedAt;
+    persistedSnapshotRef.current = latestSnapshotRef.current;
+    setLastSavedAt(new Date());
+    setLastSaveError(null);
+    setLastSaveConflict(false);
+  }, []);
 
   const retry = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -253,5 +365,7 @@ export function useKitAutoSave(
     if (snapshot && snapshot !== persistedSnapshotRef.current) void saveToDb(snapshot);
   }, [saveToDb]);
 
-  return { lastSavedAt, isSaving, autoSavedKitId, lastSaveError, retry };
+  return {
+    lastSavedAt, isSaving, autoSavedKitId, lastSaveError, lastSaveConflict, retry, syncPersistedVersion,
+  };
 }
