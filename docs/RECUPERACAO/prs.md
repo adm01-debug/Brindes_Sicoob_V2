@@ -24,6 +24,18 @@ um trabalho que não existe.
 | #161 | 1 — o `::notice` de "função sem alteração" no log do deploy; o anexo abre com "cosmético, NÃO vale PR" e nenhum gate depende dele | **não** — churn, descartado com justificativa |
 
 
+## Duas fechadas sem merge que faltavam nesta lista
+
+A varredura de cobertura de 18/11/2026 ([`cobertura-refs.md`](cobertura-refs.md))
+cruzou as 344 PRs do repo com o ledger inteiro e achou **duas** fechadas sem merge que
+não eram citadas em lugar algum. As duas foram verificadas byte a byte e **não têm nada
+a recuperar**:
+
+| PR | branch | veredito | verificação |
+|---|---|---|---|
+| #83 | `claude/fix-drop-allow-all-rls-260929-1342` | INCORPORADA com melhoria | a `main` tem `20261118130500_block_permissive_allow_all_policies.sql`, que cita a PR nominalmente, mantém o `DROP` guardado por `to_regclass` e acrescenta catraca permanente |
+| #279 | `claude/fix-admin-audit-hook-cors-261114-1154` | INCORPORADA (idêntica) | `supabase/functions/admin-audit-hook/index.ts` da `main` é linha a linha o da PR, via #287 mergeada |
+
 ## As 32 PRs fechadas sem merge
 
 | PR | veredito | itens a recuperar | detalhe |

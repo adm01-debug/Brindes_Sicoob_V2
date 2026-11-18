@@ -29,6 +29,7 @@ sustenta exclusão. Agora cada item tem a justificativa inteira no anexo corresp
 | [`kit-builder.md`](kit-builder.md) | as 13 lacunas de persistência do Kit Builder confirmadas contra a PR #119 |
 | [`itens.md`](itens.md) | o inventário arquivo a arquivo: cada caminho fora da `main` e em quais refs aparece |
 | [`testes-pr119.md`](testes-pr119.md) | a suíte de 106 arquivos da PR #119, executada contra a `main`: 8 entram sem mexer em `src/`, 52 são lacuna medida |
+| [`cobertura-refs.md`](cobertura-refs.md) | as 89 branches remotas, uma por uma: onde está o veredito de cada e o que ainda falta nelas |
 | [`evidencias.md`](evidencias.md) | a medição bruta e as refutações, sem corte |
 
 ## O que a segunda rodada mudou
@@ -129,7 +130,14 @@ que abriam em vez de fechar (`external-db-bridge`, `mcp-server`), corrigidos na 
    medição, sem bloquear a ref.
 3. **`crm-db-bridge` na allowlist de publicação** (PR #311) — decisão do dono, toca workflow.
 4. **`WEBHOOK_DISPATCHER_SECRET`** — provisionamento pendente, bloqueado por classificador.
-5. **`connections-auto-test` divergente em produção** — fora da allowlist de publicação,
+5. **13 testes de BI e o tour de onboarding da branch de produção pré-re-raiz** —
+   `claude/fix-prod-cors-audit-261118-1034` tem 138 arquivos ausentes da `main`; 19 não
+   estavam no ledger. Os 13 de teste foram executados contra a `main` (28 falham, 1 passa):
+   cobram a mesma regra das PRs #323 e #326 — nenhum selo de dado real sobre dado ausente —
+   em 11 pontos do BI que ninguém cobriu, mais `Escape` no tour e paridade de rotas. Lista,
+   motivo de cada falha e comando de origem em [`cobertura-refs.md`](cobertura-refs.md).
+   **A ref não se apaga enquanto esses 13 não entrarem ou não forem declarados obsoletos.**
+6. **`connections-auto-test` divergente em produção** — fora da allowlist de publicação,
    sem PR (`RELATORIO_CI.md`, item 4.1).
 
 Saíram desta lista por terem PR aberta ou mergeada: métricas do Gestor de Compras (#332
