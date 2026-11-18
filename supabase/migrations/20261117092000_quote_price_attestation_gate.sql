@@ -29,6 +29,10 @@ CREATE TABLE IF NOT EXISTS private.quote_price_attestations (
 );
 
 REVOKE ALL ON TABLE private.quote_price_attestations FROM PUBLIC, anon, authenticated, service_role;
+
+-- RLS obrigatorio: sem ele, a camada de protecao por linha fica a cargo apenas das REVOKEs.
+-- Sem FORCE: funcoes SECURITY DEFINER seguem como owner; acesso direto de service_role/anon/authenticated continua bloqueado pelas REVOKEs.
+ALTER TABLE private.quote_price_attestations ENABLE ROW LEVEL SECURITY;
 CREATE INDEX IF NOT EXISTS quote_price_attestations_expiration_idx
   ON private.quote_price_attestations (expires_at);
 
@@ -363,8 +367,8 @@ CREATE OR REPLACE FUNCTION public.get_quote_save_idempotent_replay(
 )
 RETURNS jsonb
 LANGUAGE plpgsql
-SECURITY INVOKER
-SET search_path = pg_catalog, public
+SECURITY DEFINER
+SET search_path = pg_catalog, public, private
 AS $function$
 DECLARE
   v_actor_id uuid := auth.uid();
