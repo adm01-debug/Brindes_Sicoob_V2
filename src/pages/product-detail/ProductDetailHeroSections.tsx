@@ -21,7 +21,25 @@ import { cn } from "@/lib/utils";
 import { Clock, Eye, FileText, GitCompare, Heart, Layers, Package, Sparkles, Tag } from "lucide-react";
 import type { Product, ProductVariation } from "@/types/product-catalog";
 
-const EMPTY_SUPPLIER_TRUST = { isVerified: false, deliveryDays: null, avgRating: null };
+/**
+ * Confiança do fornecedor a partir do dado que o catálogo realmente tem.
+ *
+ * Até aqui esta tela passava uma constante vazia, então o prazo de entrega
+ * nunca aparecia — a seção existia e não mostrava nada. `leadTimeDays` vem do
+ * catálogo e já chega mapeado em `product-mapper.ts:215`; é o prazo do produto,
+ * medido, e varia (2, 3 ou 5 dias úteis no catálogo de hoje).
+ *
+ * `isVerified` e `avgRating` continuam fora: o catálogo não tem homologação de
+ * fornecedor nem avaliação de comprador, e o hook perdido que prometia os dois
+ * os fabricava (`getMockSupplierTrust`). Sem fonte, o selo não aparece.
+ */
+function supplierTrustFromProduct(product: Product) {
+  return {
+    isVerified: false,
+    deliveryDays: product.leadTimeDays ?? null,
+    avgRating: null,
+  };
+}
 
 function formatPrice(price: number): string {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(price);
@@ -209,7 +227,7 @@ function TrustActions(props: { product: Product; selectedVariation: ProductVaria
   const { toast } = useToast();
   const isInCompare = useComparisonStore(state => state.compareIds.includes(props.product.id));
   return <div className="space-y-2.5 pt-1">
-    <DynamicTrustBadges trust={EMPTY_SUPPLIER_TRUST} productFlags={{ newArrival: props.product.newArrival, onSale: props.product.onSale, featured: props.product.featured, minQuantity: props.product.minQuantity }} className="text-[10px]" />
+    <DynamicTrustBadges trust={supplierTrustFromProduct(props.product)} productFlags={{ newArrival: props.product.newArrival, onSale: props.product.onSale, featured: props.product.featured, minQuantity: props.product.minQuantity }} className="text-[10px]" />
     <div className="flex items-center gap-3 pt-2 border-t border-border/30">
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Eye className="h-3.5 w-3.5" /><span className="font-semibold text-foreground">{props.viewCount}</span><span>visualizações</span></div>
       <div className="h-4 w-px bg-border/30" />
