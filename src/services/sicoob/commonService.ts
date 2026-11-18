@@ -16,13 +16,19 @@ export const sicoobCommonService = {
   /**
    * Um canal por montagem, nunca um nome fixo compartilhado.
    *
-   * Duas telas assinam este mesmo feed (`OrdersKanbanPage` e `OrdersPage`) e o
-   * StrictMode monta cada uma duas vezes em desenvolvimento. Com nome fixo,
-   * todas disputam o mesmo tópico do Realtime: o `removeChannel` de uma
-   * derruba a inscrição da outra e o Kanban para de receber atualização ao
-   * vivo — sem erro na tela, só silêncio. O sufixo aleatório isola cada
-   * inscrição; o `postgres_changes` continua idêntico, então o servidor
-   * entrega o mesmo evento a todas.
+   * Dois consumidores assinam este mesmo feed (`OrdersKanbanPage` e
+   * `OrdersPage`) e, em desenvolvimento, o StrictMode monta cada um duas
+   * vezes. Com nome fixo, essas inscrições caem todas no mesmo tópico do
+   * Realtime e passam a depender do que o `removeChannel` de uma faz com a
+   * inscrição da outra — acoplamento sem razão para existir. O sufixo
+   * aleatório isola cada inscrição; o `postgres_changes` continua idêntico,
+   * então o servidor entrega o mesmo evento a todas.
+   *
+   * NÃO VERIFICADO: perda de atualização na tela em produção. As duas páginas
+   * estão em rotas distintas, logo não coexistem montadas na mesma aba, e cada
+   * aba tem seu próprio cliente Supabase. A janela que sobra é a navegação
+   * entre as duas rotas; não foi reproduzida. A troca entra pelo isolamento,
+   * que é barato e verificável, não por um defeito medido.
    */
   subscribeToOrders(callback: () => void) {
     const channel = supabase
